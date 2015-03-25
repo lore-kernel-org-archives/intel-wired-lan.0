@@ -1,91 +1,114 @@
 From: Vlad Zolotarov <vladz@cloudius-systems.com>
-Date: Wed, 25 Mar 2015 19:42:35 +0200
-Subject: [Intel-wired-lan] [PATCH net-next v8 0/7]: ixgbevf: Allow querying
-	VFs RSS indirection table and key
-Message-ID: <1427305362-23948-1-git-send-email-vladz@cloudius-systems.com>
+Date: Wed, 25 Mar 2015 19:42:42 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v8 7/7] ixgbevf: Add the
+	appropriate ethtool ops to query RSS indirection table and key
+In-Reply-To: <1427305362-23948-1-git-send-email-vladz@cloudius-systems.com>
+References: <1427305362-23948-1-git-send-email-vladz@cloudius-systems.com>
+Message-ID: <1427305362-23948-8-git-send-email-vladz@cloudius-systems.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add the ethtool ops to VF driver to allow querying the RSS indirection table
-and RSS Random Key.
+Added get_rxfh_indir_size, get_rxfh_key_size and get_rxfh ethtool_ops callbacks
+implementations.
 
-On some devices VFs share the RSS Redirection Table and Hash Key with a PF and letting
-the VF query this information may introduce some security risks. Therefore we disable this
-feature by default for such devices (e.g. 82599) and allow it for those where there isn't any
-possible risk (e.g. on x550). The new netdev op is going to allow a system administrator to
-change the default behaviour with "ip link set" command.
+This enables the ethtool's "-x" and "--show-rxfh[-indir]" options for VF devices.
 
- - netdev: Add a new netdev op to allow/block VF from querying RSS Indirection Table and
-   RSS Hash Key.
- - PF driver: Add new VF-PF channel commands.
- - VF driver: Utilize these new commands and add the corresponding
-              ethtool callbacks.
-
-New in v8:
-   - Protect new mailbox operations with adapter.mbx_lock spinlock.
-
-New in v7:
-   - Add ixgbe_mbox_api_12 case in ixgbevf_set_num_queues().
-   - Properly expand HW RETA into the ethtool buffer.
-
+Signed-off-by: Vlad Zolotarov <vladz@cloudius-systems.com>
+---
 New in v6:
-   - Add a proper return code when an VF query operations are blocked by PF.
    - Added a required get_rxnfc callback to ixgbevf_ethtool_ops.
-   - Changed a description of PATCH7: set the correct ethtool options names.
-
-New in v5:
-   - Added a new netdev op to allow/block VF from querying RSS Indirection Table and
-     RSS Hash Key.
-   - Let VF query the RSS info only if VF is allowed to.
 
 New in v4:
-   - Forgot to run checkpatch on v3 and there were a few styling things to fix. ;)
+   - Removed not needed braces in if-statement in ixgbevf_get_rxfh_indir_size().
 
 New in v3:
-   - Added a missing support for x550 devices.
-   - Mask the indirection table values according to PSRTYPE[n].RQPL.
-   - Minimized the number of added VF-PF commands.
+   - Added a proper support for x550 devices: return the correct redirection table size.
 
 New in v2:
-   - Added a detailed description to patches 4 and 5.
+   - Added a detailed description to the patch.
+---
+ drivers/net/ethernet/intel/ixgbevf/ethtool.c | 58 ++++++++++++++++++++++++++++
+ 1 file changed, 58 insertions(+)
 
-New in v1 (compared to RFC):
-   - Use "if-else" statement instead of a "switch-case" for a single option case.
-     More specifically: in cases where the newly added API version is the only one
-     allowed. We may consider using a "switch-case" back again when the list of
-     allowed API versions in these specific places grows up.
-
-
-Vlad Zolotarov (7):
-  if_link: Add an additional parameter to ifla_vf_info for RSS querying
-  ixgbe: Add a new netdev op to allow/prevent a VF from querying an RSS
-    info
-  ixgbe: Add a RETA query command to VF-PF channel API
-  ixgbevf: Add a RETA query code
-  ixgbe: Add GET_RSS_KEY command to VF-PF channel commands set
-  ixgbevf: Add RSS Key query code
-  ixgbevf: Add the appropriate ethtool ops to query RSS indirection
-    table and key
-
- drivers/net/ethernet/intel/ixgbe/ixgbe.h          |   1 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |   7 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h      |  10 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c    | 119 ++++++++++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h    |   2 +
- drivers/net/ethernet/intel/ixgbevf/ethtool.c      |  58 +++++++
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   5 +-
- drivers/net/ethernet/intel/ixgbevf/mbx.h          |  10 ++
- drivers/net/ethernet/intel/ixgbevf/vf.c           | 184 ++++++++++++++++++++++
- drivers/net/ethernet/intel/ixgbevf/vf.h           |   3 +
- include/linux/if_link.h                           |   1 +
- include/linux/netdevice.h                         |   8 +
- include/uapi/linux/if_link.h                      |   8 +
- net/core/rtnetlink.c                              |  32 +++-
- 14 files changed, 441 insertions(+), 7 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ethtool.c b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
+index e83c85b..7cb4008 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
+@@ -794,6 +794,60 @@ static int ixgbevf_set_coalesce(struct net_device *netdev,
+ 	return 0;
+ }
+ 
++static int ixgbevf_get_rxnfc(struct net_device *dev, struct ethtool_rxnfc *info,
++			     u32 *rules __always_unused)
++{
++	struct ixgbevf_adapter *adapter = netdev_priv(dev);
++
++	switch (info->cmd) {
++	case ETHTOOL_GRXRINGS:
++		info->data = adapter->num_rx_queues;
++		return 0;
++	default:
++		hw_dbg(&adapter->hw, "Command parameters not supported\n");
++		return -EOPNOTSUPP;
++	}
++}
++
++static u32 ixgbevf_get_rxfh_indir_size(struct net_device *netdev)
++{
++	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
++
++	if (adapter->hw.mac.type >= ixgbe_mac_X550_vf)
++		return 64;
++	else
++		return 128;
++}
++
++static u32 ixgbevf_get_rxfh_key_size(struct net_device *netdev)
++{
++	return 40;
++}
++
++static int ixgbevf_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key,
++			    u8 *hfunc)
++{
++	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
++	int err;
++
++	if (hfunc)
++		*hfunc = ETH_RSS_HASH_TOP;
++
++	if (indir) {
++		err = ixgbevf_get_reta(adapter, indir);
++		if (err)
++			return err;
++	}
++
++	if (key) {
++		err = ixgbevf_get_rss_key(adapter, key);
++		if (err)
++			return err;
++	}
++
++	return 0;
++}
++
+ static const struct ethtool_ops ixgbevf_ethtool_ops = {
+ 	.get_settings		= ixgbevf_get_settings,
+ 	.get_drvinfo		= ixgbevf_get_drvinfo,
+@@ -811,6 +865,10 @@ static const struct ethtool_ops ixgbevf_ethtool_ops = {
+ 	.get_ethtool_stats	= ixgbevf_get_ethtool_stats,
+ 	.get_coalesce		= ixgbevf_get_coalesce,
+ 	.set_coalesce		= ixgbevf_set_coalesce,
++	.get_rxnfc		= ixgbevf_get_rxnfc,
++	.get_rxfh_indir_size	= ixgbevf_get_rxfh_indir_size,
++	.get_rxfh_key_size	= ixgbevf_get_rxfh_key_size,
++	.get_rxfh		= ixgbevf_get_rxfh,
+ };
+ 
+ void ixgbevf_set_ethtool_ops(struct net_device *netdev)
 -- 
 2.1.0
 
