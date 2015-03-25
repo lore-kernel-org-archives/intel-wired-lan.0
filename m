@@ -1,37 +1,72 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 24 Mar 2015 21:04:50 -0700
-Subject: [Intel-wired-lan] [next-queue S1 6/6] i40e: Bump version to 1.2.43
-In-Reply-To: <1427256290-24231-1-git-send-email-jeffrey.t.kirsher@intel.com>
-References: <1427256290-24231-1-git-send-email-jeffrey.t.kirsher@intel.com>
-Message-ID: <1427256290-24231-6-git-send-email-jeffrey.t.kirsher@intel.com>
+Date: Tue, 24 Mar 2015 21:07:06 -0700
+Subject: [Intel-wired-lan] [next-queue] igb: cleanup igb_enable_mas() a bit
+Message-ID: <1427256426-24377-1-git-send-email-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Catherine Sullivan <catherine.sullivan@intel.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
 
-Bump.
+Static checkers complain about this because we do:
 
-Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
+	if (!(connsw & E1000_CONNSW_SERDESD)) {
+		...
+	} else if (connsw & E1000_CONNSW_SERDESD) {
+		...
+	} else {
+		...
+	}
+
+Once you eliminate that E1000_CONNSW_SERDESD is set and not set then
+there aren't any other possibilities so the else statement is dead
+code.
+
+This function always returns zero so if you delete the "ret_val"
+variable, the code is shorter and more clear.
+
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/igb/igb_main.c | 14 +++-----------
+ 1 file changed, 3 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 048d8ec..845bcee 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -39,7 +39,7 @@ static const char i40e_driver_string[] =
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 0e07545..51def6e 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -1838,11 +1838,10 @@ static s32 igb_enable_mas(struct igb_adapter *adapter)
+ {
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	u32 connsw;
+-	s32 ret_val = 0;
  
- #define DRV_VERSION_MAJOR 1
- #define DRV_VERSION_MINOR 2
--#define DRV_VERSION_BUILD 37
-+#define DRV_VERSION_BUILD 43
- #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
- 	     __stringify(DRV_VERSION_MINOR) "." \
- 	     __stringify(DRV_VERSION_BUILD)    DRV_KERN
+ 	connsw = rd32(E1000_CONNSW);
+-	if (!(hw->phy.media_type == e1000_media_type_copper))
+-		return ret_val;
++	if (hw->phy.media_type != e1000_media_type_copper)
++		return 0;
+ 
+ 	/* configure for SerDes media detect */
+ 	if (!(connsw & E1000_CONNSW_SERDESD)) {
+@@ -1850,15 +1849,8 @@ static s32 igb_enable_mas(struct igb_adapter *adapter)
+ 		connsw |= E1000_CONNSW_AUTOSENSE_EN;
+ 		wr32(E1000_CONNSW, connsw);
+ 		wrfl();
+-	} else if (connsw & E1000_CONNSW_SERDESD) {
+-		/* already SerDes, no need to enable anything */
+-		return ret_val;
+-	} else {
+-		netdev_info(adapter->netdev,
+-			"MAS: Unable to configure feature, disabling..\n");
+-		adapter->flags &= ~IGB_FLAG_MAS_ENABLE;
+ 	}
+-	return ret_val;
++	return 0;
+ }
+ 
+ void igb_reset(struct igb_adapter *adapter)
 -- 
 1.9.3
 
