@@ -1,159 +1,145 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 24 Mar 2015 21:04:45 -0700
-Subject: [Intel-wired-lan] [next-queue S1 1/6] i40e/i40evf: implement KR2
-	support
-Message-ID: <1427256290-24231-1-git-send-email-jeffrey.t.kirsher@intel.com>
+Date: Tue, 24 Mar 2015 21:04:46 -0700
+Subject: [Intel-wired-lan] [next-queue S1 2/6] i40evf: delay releasing rings
+In-Reply-To: <1427256290-24231-1-git-send-email-jeffrey.t.kirsher@intel.com>
+References: <1427256290-24231-1-git-send-email-jeffrey.t.kirsher@intel.com>
+Message-ID: <1427256290-24231-2-git-send-email-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-The new devices need a new device ID some other defines to
-handle the new 20G speed for KR2.
+When the VF interface is closed, we cannot immediately free our rings
+and RX buffers, because the hardware hasn't yet stopped accessing this
+memory. This shows up as a panic or memory corruption when the device is
+brought down while under heavy stress.
 
-Change-ID: I03f717e364afe59657e8c9ce5ffaad856b4b21df
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Signed-off-by: Piotr Raczynski <piotr.raczynski@intel.com>
+To fix this, delay releasing resources until we receive acknowledgment
+from the PF driver that the rings have indeed been stopped. Because of
+this delay, we also need to check to make sure that all of our admin
+queue requests have been handled before allowing the device to be
+opened.
+
+Change-ID: I44edd35529ce2fa2a9512437a3a8e6f14ed8ed63
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_common.c   |  2 ++
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c  | 16 ++++++++++++++++
- drivers/net/ethernet/intel/i40e/i40e_main.c     |  4 ++++
- drivers/net/ethernet/intel/i40e/i40e_type.h     |  1 +
- drivers/net/ethernet/intel/i40evf/i40e_common.c |  1 +
- drivers/net/ethernet/intel/i40evf/i40e_type.h   |  3 ++-
- 6 files changed, 26 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/i40evf/i40evf.h         |  2 ++
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 23 ++++++++++------------
+ .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |  2 ++
+ 3 files changed, 14 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index d9f1fcb..b7cacde 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -51,6 +51,7 @@ static i40e_status i40e_set_mac_type(struct i40e_hw *hw)
- 		case I40E_DEV_ID_QSFP_B:
- 		case I40E_DEV_ID_QSFP_C:
- 		case I40E_DEV_ID_10G_BASE_T:
-+		case I40E_DEV_ID_20G_KR2:
- 			hw->mac.type = I40E_MAC_XL710;
- 			break;
- 		case I40E_DEV_ID_VF:
-@@ -841,6 +842,7 @@ static enum i40e_media_type i40e_get_media_type(struct i40e_hw *hw)
- 	case I40E_PHY_TYPE_10GBASE_KX4:
- 	case I40E_PHY_TYPE_10GBASE_KR:
- 	case I40E_PHY_TYPE_40GBASE_KR4:
-+	case I40E_PHY_TYPE_20GBASE_KR2:
- 		media = I40E_MEDIA_TYPE_BACKPLANE;
- 		break;
- 	case I40E_PHY_TYPE_SGMII:
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index b7d0aaa..c848b18 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -274,6 +274,12 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
- 	case I40E_PHY_TYPE_40GBASE_LR4:
- 		ecmd->supported = SUPPORTED_40000baseLR4_Full;
- 		break;
-+	case I40E_PHY_TYPE_20GBASE_KR2:
-+		ecmd->supported = SUPPORTED_Autoneg |
-+				  SUPPORTED_20000baseKR2_Full;
-+		ecmd->advertising = ADVERTISED_Autoneg |
-+				    ADVERTISED_20000baseKR2_Full;
-+		break;
- 	case I40E_PHY_TYPE_10GBASE_KX4:
- 		ecmd->supported = SUPPORTED_Autoneg |
- 				  SUPPORTED_10000baseKX4_Full;
-@@ -353,6 +359,9 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
- 		/* need a SPEED_40000 in ethtool.h */
- 		ethtool_cmd_speed_set(ecmd, 40000);
- 		break;
-+	case I40E_LINK_SPEED_20GB:
-+		ethtool_cmd_speed_set(ecmd, SPEED_20000);
-+		break;
- 	case I40E_LINK_SPEED_10GB:
- 		ethtool_cmd_speed_set(ecmd, SPEED_10000);
- 		break;
-@@ -418,6 +427,11 @@ static void i40e_get_settings_link_down(struct i40e_hw *hw,
- 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_100MB)
- 			ecmd->advertising |= ADVERTISED_100baseT_Full;
- 		break;
-+	case I40E_DEV_ID_20G_KR2:
-+		/* backplane 20G */
-+		ecmd->supported = SUPPORTED_20000baseKR2_Full;
-+		ecmd->advertising = ADVERTISED_20000baseKR2_Full;
-+		break;
- 	default:
- 		/* all the rest are 10G/1G */
- 		ecmd->supported = SUPPORTED_10000baseT_Full |
-@@ -633,6 +647,8 @@ static int i40e_set_settings(struct net_device *netdev,
- 	    advertise & ADVERTISED_10000baseKX4_Full ||
- 	    advertise & ADVERTISED_10000baseKR_Full)
- 		config.link_speed |= I40E_LINK_SPEED_10GB;
-+	if (advertise & ADVERTISED_20000baseKR2_Full)
-+		config.link_speed |= I40E_LINK_SPEED_20GB;
- 	if (advertise & ADVERTISED_40000baseKR4_Full ||
- 	    advertise & ADVERTISED_40000baseCR4_Full ||
- 	    advertise & ADVERTISED_40000baseSR4_Full ||
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index bc87968..048d8ec 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -75,6 +75,7 @@ static const struct pci_device_id i40e_pci_tbl[] = {
- 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_QSFP_B), 0},
- 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_QSFP_C), 0},
- 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_10G_BASE_T), 0},
-+	{PCI_VDEVICE(INTEL, I40E_DEV_ID_20G_KR2), 0},
- 	/* required last entry */
- 	{0, }
- };
-@@ -4639,6 +4640,9 @@ static void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
- 	case I40E_LINK_SPEED_40GB:
- 		strlcpy(speed, "40 Gbps", SPEED_SIZE);
- 		break;
-+	case I40E_LINK_SPEED_20GB:
-+		strncpy(speed, "20 Gbps", SPEED_SIZE);
-+		break;
- 	case I40E_LINK_SPEED_10GB:
- 		strlcpy(speed, "10 Gbps", SPEED_SIZE);
- 		break;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-index 83032d2..67c7bc9e9 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-@@ -44,6 +44,7 @@
- #define I40E_DEV_ID_QSFP_B		0x1584
- #define I40E_DEV_ID_QSFP_C		0x1585
- #define I40E_DEV_ID_10G_BASE_T		0x1586
-+#define I40E_DEV_ID_20G_KR2		0x1587
- #define I40E_DEV_ID_VF			0x154C
- #define I40E_DEV_ID_VF_HV		0x1571
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
+index 9812247..34c8565 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf.h
++++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
+@@ -272,6 +272,8 @@ void i40evf_update_stats(struct i40evf_adapter *adapter);
+ void i40evf_reset_interrupt_capability(struct i40evf_adapter *adapter);
+ int i40evf_init_interrupt_scheme(struct i40evf_adapter *adapter);
+ void i40evf_irq_enable_queues(struct i40evf_adapter *adapter, u32 mask);
++void i40evf_free_all_tx_resources(struct i40evf_adapter *adapter);
++void i40evf_free_all_rx_resources(struct i40evf_adapter *adapter);
  
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_common.c b/drivers/net/ethernet/intel/i40evf/i40e_common.c
-index f07b9ff..39fcb1d 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_common.c
-@@ -51,6 +51,7 @@ i40e_status i40e_set_mac_type(struct i40e_hw *hw)
- 		case I40E_DEV_ID_QSFP_B:
- 		case I40E_DEV_ID_QSFP_C:
- 		case I40E_DEV_ID_10G_BASE_T:
-+		case I40E_DEV_ID_20G_KR2:
- 			hw->mac.type = I40E_MAC_XL710;
- 			break;
- 		case I40E_DEV_ID_VF:
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-index eba6e4b..9c79cb6 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-@@ -44,7 +44,8 @@
- #define I40E_DEV_ID_QSFP_B		0x1584
- #define I40E_DEV_ID_QSFP_C		0x1585
- #define I40E_DEV_ID_10G_BASE_T		0x1586
--#define I40E_DEV_ID_VF		0x154C
-+#define I40E_DEV_ID_20G_KR2		0x1587
-+#define I40E_DEV_ID_VF			0x154C
- #define I40E_DEV_ID_VF_HV		0x1571
+ void i40e_napi_add_all(struct i40evf_adapter *adapter);
+ void i40e_napi_del_all(struct i40evf_adapter *adapter);
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 812b120..da901f4 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -28,8 +28,6 @@
+ #include "i40e_prototype.h"
+ static int i40evf_setup_all_tx_resources(struct i40evf_adapter *adapter);
+ static int i40evf_setup_all_rx_resources(struct i40evf_adapter *adapter);
+-static void i40evf_free_all_tx_resources(struct i40evf_adapter *adapter);
+-static void i40evf_free_all_rx_resources(struct i40evf_adapter *adapter);
+ static int i40evf_close(struct net_device *netdev);
  
- #define i40e_is_40G_device(d)		((d) == I40E_DEV_ID_QSFP_A  || \
+ char i40evf_driver_name[] = "i40evf";
+@@ -1358,6 +1356,11 @@ static void i40evf_watchdog_task(struct work_struct *work)
+ 		goto watchdog_done;
+ 	}
+ 
++	if (adapter->aq_required & I40EVF_FLAG_AQ_DISABLE_QUEUES) {
++		i40evf_disable_queues(adapter);
++		goto watchdog_done;
++	}
++
+ 	if (adapter->aq_required & I40EVF_FLAG_AQ_MAP_VECTORS) {
+ 		i40evf_map_queues(adapter);
+ 		goto watchdog_done;
+@@ -1383,11 +1386,6 @@ static void i40evf_watchdog_task(struct work_struct *work)
+ 		goto watchdog_done;
+ 	}
+ 
+-	if (adapter->aq_required & I40EVF_FLAG_AQ_DISABLE_QUEUES) {
+-		i40evf_disable_queues(adapter);
+-		goto watchdog_done;
+-	}
+-
+ 	if (adapter->aq_required & I40EVF_FLAG_AQ_CONFIGURE_QUEUES) {
+ 		i40evf_configure_queues(adapter);
+ 		goto watchdog_done;
+@@ -1724,7 +1722,7 @@ out:
+  *
+  * Free all transmit software resources
+  **/
+-static void i40evf_free_all_tx_resources(struct i40evf_adapter *adapter)
++void i40evf_free_all_tx_resources(struct i40evf_adapter *adapter)
+ {
+ 	int i;
+ 
+@@ -1794,7 +1792,7 @@ static int i40evf_setup_all_rx_resources(struct i40evf_adapter *adapter)
+  *
+  * Free all receive software resources
+  **/
+-static void i40evf_free_all_rx_resources(struct i40evf_adapter *adapter)
++void i40evf_free_all_rx_resources(struct i40evf_adapter *adapter)
+ {
+ 	int i;
+ 
+@@ -1824,7 +1822,7 @@ static int i40evf_open(struct net_device *netdev)
+ 		dev_err(&adapter->pdev->dev, "Unable to open device due to PF driver failure.\n");
+ 		return -EIO;
+ 	}
+-	if (adapter->state != __I40EVF_DOWN)
++	if (adapter->state != __I40EVF_DOWN || adapter->aq_required)
+ 		return -EBUSY;
+ 
+ 	/* allocate transmit descriptors */
+@@ -1888,9 +1886,6 @@ static int i40evf_close(struct net_device *netdev)
+ 	adapter->state = __I40EVF_DOWN;
+ 	i40evf_free_traffic_irqs(adapter);
+ 
+-	i40evf_free_all_tx_resources(adapter);
+-	i40evf_free_all_rx_resources(adapter);
+-
+ 	return 0;
+ }
+ 
+@@ -2504,6 +2499,8 @@ static void i40evf_remove(struct pci_dev *pdev)
+ 	iounmap(hw->hw_addr);
+ 	pci_release_regions(pdev);
+ 
++	i40evf_free_all_tx_resources(adapter);
++	i40evf_free_all_rx_resources(adapter);
+ 	i40evf_free_queues(adapter);
+ 	kfree(adapter->vf_res);
+ 	/* If we got removed before an up/down sequence, we've got a filter
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+index 3f0c85e..4240a49 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+@@ -761,6 +761,8 @@ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
+ 		break;
+ 	case I40E_VIRTCHNL_OP_DISABLE_QUEUES:
+ 		adapter->aq_pending &= ~(I40EVF_FLAG_AQ_DISABLE_QUEUES);
++		i40evf_free_all_tx_resources(adapter);
++		i40evf_free_all_rx_resources(adapter);
+ 		break;
+ 	case I40E_VIRTCHNL_OP_CONFIG_VSI_QUEUES:
+ 		adapter->aq_pending &= ~(I40EVF_FLAG_AQ_CONFIGURE_QUEUES);
 -- 
 1.9.3
 
