@@ -1,8 +1,8 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 24 Mar 2015 20:30:15 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: add new bridge mode support
-	function
-Message-ID: <1427254215-23356-1-git-send-email-jeffrey.t.kirsher@intel.com>
+Date: Tue, 24 Mar 2015 20:36:29 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: add support for X550
+	source_address_prunning
+Message-ID: <1427254589-23553-1-git-send-email-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,90 +11,148 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Don Skidmore <donald.c.skidmore@intel.com>
 
-This patch gathers together all the logic needed to configure bridge
-modes.  Currently that it is rather simple but this is really laying
-the ground work for future X550 feature enhancement.
+This patch will enable X550 Source Address Prunning for VEPA
+bridge mode.  This requires that we also have replication enabled
+as well, while in this mode.
 
 Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 50 ++++++++++++++++++---------
- 1 file changed, 34 insertions(+), 16 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 44 +++++++++++++++++++++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |  4 +++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 29 ++++++++++++++++++
+ 3 files changed, 77 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index aceb13c..cb9c43f 100644
+index cb9c43f..c696ad72 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -7870,6 +7870,36 @@ static int ixgbe_ndo_fdb_add(struct ndmsg *ndm, struct nlattr *tb[],
- 	return ndo_dflt_fdb_add(ndm, tb, dev, addr, vid, flags);
+@@ -7880,13 +7880,57 @@ static int ixgbe_ndo_fdb_add(struct ndmsg *ndm, struct nlattr *tb[],
+ static int ixgbe_configure_bridge_mode(struct ixgbe_adapter *adapter,
+ 				       __u16 mode)
+ {
++	struct ixgbe_hw *hw = &adapter->hw;
++	unsigned int p, num_pools;
++	u32 vmdctl;
++
+ 	switch (mode) {
+ 	case BRIDGE_MODE_VEPA:
++		/* disable Tx loopback, rely on switch hairpin mode */
+ 		IXGBE_WRITE_REG(&adapter->hw, IXGBE_PFDTXGSWC, 0);
++
++		/* must enable Rx switching replication to allow multicast
++		 * packet reception on all VFs, and to enable source address
++		 * pruning.
++		 */
++		vmdctl = IXGBE_READ_REG(hw, IXGBE_VMD_CTL);
++		vmdctl |= IXGBE_VT_CTL_REPLEN;
++		IXGBE_WRITE_REG(hw, IXGBE_VMD_CTL, vmdctl);
++
++		/* enable Rx source address pruning. Note, this requires
++		 * replication to be enabled or else it does nothing.
++		 */
++		num_pools = adapter->num_vfs + adapter->num_rx_pools;
++		for (p = 0; p < num_pools; p++) {
++			if (hw->mac.ops.set_source_address_pruning)
++				hw->mac.ops.set_source_address_pruning(hw,
++								       true,
++								       p);
++		}
+ 		break;
+ 	case BRIDGE_MODE_VEB:
++		/* enable Tx loopback for internal VF/PF communication */
+ 		IXGBE_WRITE_REG(&adapter->hw, IXGBE_PFDTXGSWC,
+ 				IXGBE_PFDTXGSWC_VT_LBEN);
++
++		/* disable Rx switching replication unless we have SR-IOV
++		 * virtual functions
++		 */
++		vmdctl = IXGBE_READ_REG(hw, IXGBE_VMD_CTL);
++		if (!adapter->num_vfs)
++			vmdctl &= ~IXGBE_VT_CTL_REPLEN;
++		IXGBE_WRITE_REG(hw, IXGBE_VMD_CTL, vmdctl);
++
++		/* disable Rx source address pruning, since we don't expect to
++		 * be receiving external loopback of our transmitted frames.
++		 */
++		num_pools = adapter->num_vfs + adapter->num_rx_pools;
++		for (p = 0; p < num_pools; p++) {
++			if (hw->mac.ops.set_source_address_pruning)
++				hw->mac.ops.set_source_address_pruning(hw,
++								       false,
++								       p);
++		}
+ 		break;
+ 	default:
+ 		return -EINVAL;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index c3ddc94..8e39309 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -285,6 +285,8 @@ struct ixgbe_thermal_sensor_data {
+ #define IXGBE_VLVF(_i)  (0x0F100 + ((_i) * 4))  /* 64 of these (0-63) */
+ #define IXGBE_VLVFB(_i) (0x0F200 + ((_i) * 4))  /* 128 of these (0-127) */
+ #define IXGBE_VMVIR(_i) (0x08000 + ((_i) * 4))  /* 64 of these (0-63) */
++#define IXGBE_PFFLPL	0x050B0
++#define IXGBE_PFFLPH	0x050B4
+ #define IXGBE_VT_CTL         0x051B0
+ #define IXGBE_PFMAILBOX(_i)  (0x04B00 + (4 * (_i))) /* 64 total */
+ #define IXGBE_PFMBMEM(_i)    (0x13000 + (64 * (_i))) /* 64 Mailboxes, 16 DW each */
+@@ -3069,6 +3071,8 @@ struct ixgbe_mac_operations {
+ 	s32 (*init_thermal_sensor_thresh)(struct ixgbe_hw *hw);
+ 	void (*disable_rx)(struct ixgbe_hw *hw);
+ 	void (*enable_rx)(struct ixgbe_hw *hw);
++	void (*set_source_address_pruning)(struct ixgbe_hw *, bool,
++					   unsigned int);
+ 	void (*set_ethertype_anti_spoofing)(struct ixgbe_hw *, bool, int);
+ 
+ 	/* DMA Coalescing */
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index 58a3155..cf5cf81 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -1363,6 +1363,33 @@ static void ixgbe_set_ethertype_anti_spoofing_X550(struct ixgbe_hw *hw,
+ 	IXGBE_WRITE_REG(hw, IXGBE_PFVFSPOOF(vf_target_reg), pfvfspoof);
  }
  
-+/**
-+ * ixgbe_configure_bridge_mode - set various bridge modes
-+ * @adapter - the private structure
-+ * @mode - requested bridge mode
-+ *
-+ * Configure some settings require for various bridge modes.
++/** ixgbe_set_source_address_pruning_X550 - Enable/Disbale src address pruning
++ *  @hw: pointer to hardware structure
++ *  @enable: enable or disable source address pruning
++ *  @pool: Rx pool to set source address pruning for
 + **/
-+static int ixgbe_configure_bridge_mode(struct ixgbe_adapter *adapter,
-+				       __u16 mode)
++static void ixgbe_set_source_address_pruning_X550(struct ixgbe_hw *hw,
++						  bool enable,
++						  unsigned int pool)
 +{
-+	switch (mode) {
-+	case BRIDGE_MODE_VEPA:
-+		IXGBE_WRITE_REG(&adapter->hw, IXGBE_PFDTXGSWC, 0);
-+		break;
-+	case BRIDGE_MODE_VEB:
-+		IXGBE_WRITE_REG(&adapter->hw, IXGBE_PFDTXGSWC,
-+				IXGBE_PFDTXGSWC_VT_LBEN);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
++	u64 pfflp;
 +
-+	adapter->bridge_mode = mode;
++	/* max rx pool is 63 */
++	if (pool > 63)
++		return;
 +
-+	e_info(drv, "enabling bridge mode: %s\n",
-+	       mode == BRIDGE_MODE_VEPA ? "VEPA" : "VEB");
++	pfflp = (u64)IXGBE_READ_REG(hw, IXGBE_PFFLPL);
++	pfflp |= (u64)IXGBE_READ_REG(hw, IXGBE_PFFLPH) << 32;
 +
-+	return 0;
++	if (enable)
++		pfflp |= (1ULL << pool);
++	else
++		pfflp &= ~(1ULL << pool);
++
++	IXGBE_WRITE_REG(hw, IXGBE_PFFLPL, (u32)pfflp);
++	IXGBE_WRITE_REG(hw, IXGBE_PFFLPH, (u32)(pfflp >> 32));
 +}
 +
- static int ixgbe_ndo_bridge_setlink(struct net_device *dev,
- 				    struct nlmsghdr *nlh, u16 flags)
- {
-@@ -7885,6 +7915,7 @@ static int ixgbe_ndo_bridge_setlink(struct net_device *dev,
- 		return -EINVAL;
- 
- 	nla_for_each_nested(attr, br_spec, rem) {
-+		u32 status;
- 		__u16 mode;
- 
- 		if (nla_type(attr) != IFLA_BRIDGE_MODE)
-@@ -7894,22 +7925,9 @@ static int ixgbe_ndo_bridge_setlink(struct net_device *dev,
- 			return -EINVAL;
- 
- 		mode = nla_get_u16(attr);
--		switch (mode) {
--		case BRIDGE_MODE_VEPA:
--			IXGBE_WRITE_REG(&adapter->hw, IXGBE_PFDTXGSWC, 0);
--			break;
--		case BRIDGE_MODE_VEB:
--			IXGBE_WRITE_REG(&adapter->hw, IXGBE_PFDTXGSWC,
--					IXGBE_PFDTXGSWC_VT_LBEN);
--			break;
--		default:
--			return -EINVAL;
--		}
--
--		adapter->bridge_mode = mode;
--
--		e_info(drv, "enabling bridge mode: %s\n",
--			mode == BRIDGE_MODE_VEPA ? "VEPA" : "VEB");
-+		status = ixgbe_configure_bridge_mode(adapter, mode);
-+		if (status)
-+			return status;
- 
- 		break;
- 	}
+ #define X550_COMMON_MAC \
+ 	.init_hw			= &ixgbe_init_hw_generic, \
+ 	.start_hw			= &ixgbe_start_hw_X540, \
+@@ -1397,6 +1424,8 @@ static void ixgbe_set_ethertype_anti_spoofing_X550(struct ixgbe_hw *hw,
+ 	.init_uta_tables		= &ixgbe_init_uta_tables_generic, \
+ 	.set_mac_anti_spoofing		= &ixgbe_set_mac_anti_spoofing, \
+ 	.set_vlan_anti_spoofing		= &ixgbe_set_vlan_anti_spoofing, \
++	.set_source_address_pruning	= \
++				&ixgbe_set_source_address_pruning_X550, \
+ 	.set_ethertype_anti_spoofing	= \
+ 				&ixgbe_set_ethertype_anti_spoofing_X550, \
+ 	.acquire_swfw_sync		= &ixgbe_acquire_swfw_sync_X540, \
 -- 
 1.9.3
 
