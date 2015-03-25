@@ -1,42 +1,37 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 24 Mar 2015 21:04:49 -0700
-Subject: [Intel-wired-lan] [next-queue S1 5/6] i40evf: add FW version to
-	ethtool info
+Date: Tue, 24 Mar 2015 21:04:50 -0700
+Subject: [Intel-wired-lan] [next-queue S1 6/6] i40e: Bump version to 1.2.43
 In-Reply-To: <1427256290-24231-1-git-send-email-jeffrey.t.kirsher@intel.com>
 References: <1427256290-24231-1-git-send-email-jeffrey.t.kirsher@intel.com>
-Message-ID: <1427256290-24231-5-git-send-email-jeffrey.t.kirsher@intel.com>
+Message-ID: <1427256290-24231-6-git-send-email-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+From: Catherine Sullivan <catherine.sullivan@intel.com>
 
-Customers reported that the firmware version information from i40evf
-is unlike that of ixgbevf and was causing problems with their scripts.
-To resolve this, populate the field to align with ixgbevf.
+Bump.
 
-Change-ID: I9f4e24f6a76cd819bbe07087aab2b74f715ec103
-Reported-by: Sourav Chatterjee <sourav.chatterjee@intel.com>
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
 ---
- drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 2 +-
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-index b68b731..f4e7766 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-@@ -209,7 +209,7 @@ static void i40evf_get_drvinfo(struct net_device *netdev,
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 048d8ec..845bcee 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -39,7 +39,7 @@ static const char i40e_driver_string[] =
  
- 	strlcpy(drvinfo->driver, i40evf_driver_name, 32);
- 	strlcpy(drvinfo->version, i40evf_driver_version, 32);
--
-+	strlcpy(drvinfo->fw_version, "N/A", 4);
- 	strlcpy(drvinfo->bus_info, pci_name(adapter->pdev), 32);
- }
- 
+ #define DRV_VERSION_MAJOR 1
+ #define DRV_VERSION_MINOR 2
+-#define DRV_VERSION_BUILD 37
++#define DRV_VERSION_BUILD 43
+ #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
+ 	     __stringify(DRV_VERSION_MINOR) "." \
+ 	     __stringify(DRV_VERSION_BUILD)    DRV_KERN
 -- 
 1.9.3
 
