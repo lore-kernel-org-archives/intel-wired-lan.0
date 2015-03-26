@@ -1,96 +1,32 @@
 From: Vlad Zolotarov <vladz@cloudius-systems.com>
-Date: Wed, 25 Mar 2015 19:42:40 +0200
-Subject: [Intel-wired-lan] [PATCH net-next v8 5/7] ixgbe: Add GET_RSS_KEY
-	command to VF-PF channel commands set
-In-Reply-To: <1427305362-23948-1-git-send-email-vladz@cloudius-systems.com>
-References: <1427305362-23948-1-git-send-email-vladz@cloudius-systems.com>
-Message-ID: <1427305362-23948-6-git-send-email-vladz@cloudius-systems.com>
+Date: Thu, 26 Mar 2015 19:56:37 +0200
+Subject: [Intel-wired-lan] [PATCH net-next v1 0/2]: ixgbe: Add the
+	appropriate ethtool ops to query RSS indirection table and key
+Message-ID: <1427392599-18184-1-git-send-email-vladz@cloudius-systems.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-For 82599 and x540 VFs and PF share the same RSS Key. Therefore we will return
-the same RSS key for all VFs.
+Add the ethtool ops to VF driver to allow querying the RSS indirection table
+and RSS Random Key.
 
-x550 on the other hand has a separate RSS Key for every pool.
+This series refactors the RSS configuration code to store the current contents of
+RSS indirection table and Hash Key in the "adapter" struct so that we won't need
+to access registers every time this info is queried.
 
-Signed-off-by: Vlad Zolotarov <vladz@cloudius-systems.com>
----
-New in v5:
-   - Use a newly added netdev op to allow/prevent the RSS Hash Key querying on a per-VF
-     basis.
+Vlad Zolotarov (2):
+  ixgbe: Refactor the RSS configuration code.
+  ixgbe: Add the appropriate ethtool ops to query RSS indirection table
+    and key
 
-New in v3:
-   - Added a support for x550 devices.
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h         |   3 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |  42 +++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    | 143 ++++++++++++++++-------
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h    |   7 ++
+ 4 files changed, 152 insertions(+), 43 deletions(-)
 
-New in v1 (compared to RFC):
-   - Use "if-else" statement instead of a "switch-case" for a single option case
-     (in ixgbe_get_vf_rss_key()).
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h   |  2 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 27 ++++++++++++++++++++++++++
- 2 files changed, 29 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h
-index f9b5eae..3f14373 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h
-@@ -105,6 +105,8 @@ enum ixgbe_pfvf_api_rev {
- #define IXGBE_VF_RETA_SZ        1	/* Number of RETA DWs to bring */
- #define IXGBE_VF_RETA_OFFSET    2	/* Offset in RETA */
- 
-+#define IXGBE_VF_GET_RSS_KEY	0x0b	/* get RSS key */
-+
- /* length of permanent address message returned from PF */
- #define IXGBE_VF_PERMADDR_MSG_LEN 4
- /* word in permanent address message with the current multicast type */
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-index 301bb1b..78517a1 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-@@ -1016,6 +1016,30 @@ static int ixgbe_get_vf_reta(struct ixgbe_adapter *adapter, u32 *msgbuf, u32 vf)
- 	return 0;
- }
- 
-+static int ixgbe_get_vf_rss_key(struct ixgbe_adapter *adapter,
-+				u32 *msgbuf, u32 vf)
-+{
-+	struct ixgbe_hw *hw = &adapter->hw;
-+	int i;
-+	u32 *rss_key = &msgbuf[1];
-+
-+	/* verify the PF is supporting the correct API */
-+	if (!adapter->vfinfo[vf].rss_query_enabled ||
-+	    (adapter->vfinfo[vf].vf_api != ixgbe_mbox_api_12))
-+		return -EPERM;
-+
-+	/* Read the RSS KEY */
-+	if (hw->mac.type >= ixgbe_mac_X550) {
-+		for (i = 0; i < 10; i++)
-+			rss_key[i] = IXGBE_READ_REG(hw,
-+						IXGBE_PFVFRSSRK(i, vf));
-+	} else
-+		for (i = 0; i < 10; i++)
-+			rss_key[i] = IXGBE_READ_REG(hw, IXGBE_RSSRK(i));
-+
-+	return 0;
-+}
-+
- static int ixgbe_rcv_msg_from_vf(struct ixgbe_adapter *adapter, u32 vf)
- {
- 	u32 mbx_size = IXGBE_VFMAILBOX_SIZE;
-@@ -1075,6 +1099,9 @@ static int ixgbe_rcv_msg_from_vf(struct ixgbe_adapter *adapter, u32 vf)
- 	case IXGBE_VF_GET_RETA:
- 		retval = ixgbe_get_vf_reta(adapter, msgbuf, vf);
- 		break;
-+	case IXGBE_VF_GET_RSS_KEY:
-+		retval = ixgbe_get_vf_rss_key(adapter, msgbuf, vf);
-+		break;
- 	default:
- 		e_err(drv, "Unhandled Msg %8.8x\n", msgbuf[0]);
- 		retval = IXGBE_ERR_MBX;
 -- 
 2.1.0
 
