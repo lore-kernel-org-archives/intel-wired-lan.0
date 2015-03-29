@@ -1,18 +1,20 @@
 From: Vlad Zolotarov <vladz@cloudius-systems.com>
-Date: Sun, 29 Mar 2015 19:16:36 +0300
-Subject: [Intel-wired-lan] [PATCH net-next v9 6/7] ixgbevf: Add RSS Key
-	query code
+Date: Sun, 29 Mar 2015 19:16:37 +0300
+Subject: [Intel-wired-lan] [PATCH net-next v9 7/7] ixgbevf: Add the
+	appropriate ethtool ops to query RSS indirection table and key
 In-Reply-To: <1427645797-10832-1-git-send-email-vladz@cloudius-systems.com>
 References: <1427645797-10832-1-git-send-email-vladz@cloudius-systems.com>
-Message-ID: <1427645797-10832-7-git-send-email-vladz@cloudius-systems.com>
+Message-ID: <1427645797-10832-8-git-send-email-vladz@cloudius-systems.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add the ixgbevf_get_rss_key() function that queries the PF for an RSS Random Key
-using a new VF-PF channel IXGBE_VF_GET_RSS_KEY command.
+Added get_rxfh_indir_size, get_rxfh_key_size and get_rxfh ethtool_ops callbacks
+implementations.
+
+This enables the ethtool's "-x" and "--show-rxfh[-indir]" options for VF devices.
 
 This patch adds the support for 82599 and x540 devices only. Support for other
 devices will be added later.
@@ -20,139 +22,99 @@ devices will be added later.
 Signed-off-by: Vlad Zolotarov <vladz@cloudius-systems.com>
 ---
 New in v9:
-   - Reduce the support to 82599 and x540 devices only.
-   - Added IXGBEVF_RSS_HASH_KEY_SIZE macro.
-
-New in v8:
-   - Protect a mailbox access.
+   - Use IXGBEVF_RSS_HASH_KEY_SIZE macro.
 
 New in v6:
-   - Return a proper return code when an operation is blocked by PF.
+   - Added a required get_rxnfc callback to ixgbevf_ethtool_ops.
+
+New in v4:
+   - Removed not needed braces in if-statement in ixgbevf_get_rxfh_indir_size().
+
+New in v3:
+   - Added a proper support for x550 devices: return the correct redirection table size.
 
 New in v2:
-   - Added a more detailed patch description.
-
-New in v1 (compared to RFC):
-   - Use "if-else" statement instead of a "switch-case" for a single option case
-     (in ixgbevf_get_rss_key()).
+   - Added a detailed description to the patch.
 ---
- drivers/net/ethernet/intel/ixgbevf/ixgbevf.h |  1 +
- drivers/net/ethernet/intel/ixgbevf/mbx.h     |  1 +
- drivers/net/ethernet/intel/ixgbevf/vf.c      | 66 ++++++++++++++++++++++++++++
- drivers/net/ethernet/intel/ixgbevf/vf.h      |  1 +
- 4 files changed, 69 insertions(+)
+ drivers/net/ethernet/intel/ixgbevf/ethtool.c | 58 ++++++++++++++++++++++++++++
+ 1 file changed, 58 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-index bc939a1..6771ae3 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-@@ -145,6 +145,7 @@ struct ixgbevf_ring {
- #define MAX_RX_QUEUES IXGBE_VF_MAX_RX_QUEUES
- #define MAX_TX_QUEUES IXGBE_VF_MAX_TX_QUEUES
- #define IXGBEVF_MAX_RSS_QUEUES	2
-+#define IXGBEVF_RSS_HASH_KEY_SIZE	40
- 
- #define IXGBEVF_DEFAULT_TXD	1024
- #define IXGBEVF_DEFAULT_RXD	512
-diff --git a/drivers/net/ethernet/intel/ixgbevf/mbx.h b/drivers/net/ethernet/intel/ixgbevf/mbx.h
-index 66e138b..82f44e0 100644
---- a/drivers/net/ethernet/intel/ixgbevf/mbx.h
-+++ b/drivers/net/ethernet/intel/ixgbevf/mbx.h
-@@ -110,6 +110,7 @@ enum ixgbe_pfvf_api_rev {
- 
- /* mailbox API, version 1.2 VF requests */
- #define IXGBE_VF_GET_RETA	0x0a	/* VF request for RETA */
-+#define IXGBE_VF_GET_RSS_KEY	0x0b	/* get RSS hash key */
- 
- /* length of permanent address message returned from PF */
- #define IXGBE_VF_PERMADDR_MSG_LEN	4
-diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.c b/drivers/net/ethernet/intel/ixgbevf/vf.c
-index 2676c0b..ec68145 100644
---- a/drivers/net/ethernet/intel/ixgbevf/vf.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/vf.c
-@@ -301,6 +301,72 @@ static inline int ixgbevf_get_reta_locked(struct ixgbe_hw *hw, u32 *msgbuf,
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ethtool.c b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
+index e83c85b..4d2f59f 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
+@@ -794,6 +794,60 @@ static int ixgbevf_set_coalesce(struct net_device *netdev,
  	return 0;
  }
  
-+static inline int ixgbevf_get_rss_key_locked(struct ixgbe_hw *hw, u8 *rss_key)
++static int ixgbevf_get_rxnfc(struct net_device *dev, struct ethtool_rxnfc *info,
++			     u32 *rules __always_unused)
 +{
++	struct ixgbevf_adapter *adapter = netdev_priv(dev);
++
++	switch (info->cmd) {
++	case ETHTOOL_GRXRINGS:
++		info->data = adapter->num_rx_queues;
++		return 0;
++	default:
++		hw_dbg(&adapter->hw, "Command parameters not supported\n");
++		return -EOPNOTSUPP;
++	}
++}
++
++static u32 ixgbevf_get_rxfh_indir_size(struct net_device *netdev)
++{
++	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
++
++	if (adapter->hw.mac.type >= ixgbe_mac_X550_vf)
++		return 64;
++	else
++		return 128;
++}
++
++static u32 ixgbevf_get_rxfh_key_size(struct net_device *netdev)
++{
++	return IXGBEVF_RSS_HASH_KEY_SIZE;
++}
++
++static int ixgbevf_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key,
++			    u8 *hfunc)
++{
++	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
 +	int err;
-+	u32 msgbuf[IXGBE_VFMAILBOX_SIZE];
 +
-+	/* We currently support the RSS Random Key retrieval for 82599 and x540
-+	 * devices only.
-+	 *
-+	 * Thus return an error if API doesn't support RSS Random Key retrieval
-+	 * or if the operation is not supported for this device type.
-+	 */
-+	if (hw->api_version != ixgbe_mbox_api_12 ||
-+	    hw->mac.type >= ixgbe_mac_X550_vf)
-+		return -EPERM;
++	if (hfunc)
++		*hfunc = ETH_RSS_HASH_TOP;
 +
-+	msgbuf[0] = IXGBE_VF_GET_RSS_KEY;
-+	err = hw->mbx.ops.write_posted(hw, msgbuf, 1);
++	if (indir) {
++		err = ixgbevf_get_reta(adapter, indir);
++		if (err)
++			return err;
++	}
 +
-+	if (err)
-+		return err;
-+
-+	err = hw->mbx.ops.read_posted(hw, msgbuf, 11);
-+
-+	if (err)
-+		return err;
-+
-+	msgbuf[0] &= ~IXGBE_VT_MSGTYPE_CTS;
-+
-+	/* If the operation has been refused by a PF return -EPERM */
-+	if (msgbuf[0] == (IXGBE_VF_GET_RETA | IXGBE_VT_MSGTYPE_NACK))
-+		return -EPERM;
-+
-+	/* If we didn't get an ACK there must have been
-+	 * some sort of mailbox error so we should treat it
-+	 * as such.
-+	 */
-+	if (msgbuf[0] != (IXGBE_VF_GET_RSS_KEY | IXGBE_VT_MSGTYPE_ACK))
-+		return IXGBE_ERR_MBX;
-+
-+	memcpy(rss_key, msgbuf + 1, IXGBEVF_RSS_HASH_KEY_SIZE);
++	if (key) {
++		err = ixgbevf_get_rss_key(adapter, key);
++		if (err)
++			return err;
++	}
 +
 +	return 0;
 +}
 +
-+/**
-+ * ixgbevf_get_rss_key - get the RSS Random Key
-+ * @hw: pointer to the HW structure
-+ * @reta: buffer to fill with RETA contents.
-+ *
-+ * The "rss_key" buffer should be big enough to contain 10 registers.
-+ * Ensures the atomicy of a mailbox access using the adapter.mbx_lock spinlock.
-+ *
-+ * Returns: 0 on success.
-+ *          if API doesn't support this operation - (-EPERM).
-+ */
-+int ixgbevf_get_rss_key(struct ixgbevf_adapter *a, u8 *rss_key)
-+{
-+	int rc;
-+
-+	spin_lock_bh(&a->mbx_lock);
-+	rc = ixgbevf_get_rss_key_locked(&a->hw, rss_key);
-+	spin_unlock_bh(&a->mbx_lock);
-+
-+	return rc;
-+}
-+
- /**
-  * ixgbevf_get_reta - get the RSS redirection table (RETA) contents.
-  * @adapter: pointer to the port handle
-diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.h b/drivers/net/ethernet/intel/ixgbevf/vf.h
-index 7944962..a054716 100644
---- a/drivers/net/ethernet/intel/ixgbevf/vf.h
-+++ b/drivers/net/ethernet/intel/ixgbevf/vf.h
-@@ -212,4 +212,5 @@ int ixgbevf_negotiate_api_version(struct ixgbe_hw *hw, int api);
- int ixgbevf_get_queues(struct ixgbe_hw *hw, unsigned int *num_tcs,
- 		       unsigned int *default_tc);
- int ixgbevf_get_reta(struct ixgbevf_adapter *adapter, u32 *reta);
-+int ixgbevf_get_rss_key(struct ixgbevf_adapter *adapter, u8 *rss_key);
- #endif /* __IXGBE_VF_H__ */
+ static const struct ethtool_ops ixgbevf_ethtool_ops = {
+ 	.get_settings		= ixgbevf_get_settings,
+ 	.get_drvinfo		= ixgbevf_get_drvinfo,
+@@ -811,6 +865,10 @@ static const struct ethtool_ops ixgbevf_ethtool_ops = {
+ 	.get_ethtool_stats	= ixgbevf_get_ethtool_stats,
+ 	.get_coalesce		= ixgbevf_get_coalesce,
+ 	.set_coalesce		= ixgbevf_set_coalesce,
++	.get_rxnfc		= ixgbevf_get_rxnfc,
++	.get_rxfh_indir_size	= ixgbevf_get_rxfh_indir_size,
++	.get_rxfh_key_size	= ixgbevf_get_rxfh_key_size,
++	.get_rxfh		= ixgbevf_get_rxfh,
+ };
+ 
+ void ixgbevf_set_ethtool_ops(struct net_device *netdev)
 -- 
 2.1.0
 
