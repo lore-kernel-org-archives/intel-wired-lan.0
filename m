@@ -1,184 +1,137 @@
 From: Vlad Zolotarov <vladz@cloudius-systems.com>
-Date: Sun, 29 Mar 2015 19:16:31 +0300
-Subject: [Intel-wired-lan] [PATCH net-next v9 1/7] if_link: Add an
-	additional parameter to ifla_vf_info for RSS querying
+Date: Sun, 29 Mar 2015 19:16:32 +0300
+Subject: [Intel-wired-lan] [PATCH net-next v9 2/7] ixgbe: Add a new netdev
+	op to allow/prevent a VF from querying an RSS info
 In-Reply-To: <1427645797-10832-1-git-send-email-vladz@cloudius-systems.com>
 References: <1427645797-10832-1-git-send-email-vladz@cloudius-systems.com>
-Message-ID: <1427645797-10832-2-git-send-email-vladz@cloudius-systems.com>
+Message-ID: <1427645797-10832-3-git-send-email-vladz@cloudius-systems.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add configuration setting for drivers to allow/block an RSS Redirection Table and
-a Hash Key querying for discrete VFs.
+Implements the new netdev op to allow user to enable/disable the ability
+of a specific VF to query its RSS Indirection Table and an RSS Hash Key.
 
-On some devices VF share the mentioned above information with PF and querying it may
-adduce a theoretical security risk. We want to let a system administrator to decide if he/she
-wants to take this risk or not.
+This patch limits the new feature support to 82599 and x540 devices only.
+Support for other devices will be added later.
 
 Signed-off-by: Vlad Zolotarov <vladz@cloudius-systems.com>
 ---
- include/linux/if_link.h      |  1 +
- include/linux/netdevice.h    |  8 ++++++++
- include/uapi/linux/if_link.h |  8 ++++++++
- net/core/rtnetlink.c         | 32 ++++++++++++++++++++++++++------
- 4 files changed, 43 insertions(+), 6 deletions(-)
+New in v9:
+   - Reduce the support to 82599 and x540 devices only.
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h       |  1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  |  7 ++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 30 ++++++++++++++++++++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h |  2 ++
+ 4 files changed, 40 insertions(+)
 
-diff --git a/include/linux/if_link.h b/include/linux/if_link.h
-index 119130e..da49299 100644
---- a/include/linux/if_link.h
-+++ b/include/linux/if_link.h
-@@ -14,5 +14,6 @@ struct ifla_vf_info {
- 	__u32 linkstate;
- 	__u32 min_tx_rate;
- 	__u32 max_tx_rate;
-+	__u32 rss_query_en;
- };
- #endif /* _LINUX_IF_LINK_H */
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index 08c4ab3..a858cda 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -875,6 +875,11 @@ typedef u16 (*select_queue_fallback_t)(struct net_device *dev,
-  * int (*ndo_set_vf_link_state)(struct net_device *dev, int vf, int link_state);
-  * int (*ndo_set_vf_port)(struct net_device *dev, int vf,
-  *			  struct nlattr *port[]);
-+ *
-+ *      Enable or disable the VF ability to query its RSS Redirection Table and
-+ *      Hash Key. This is needed since on some devices VF share this information
-+ *      with PF and querying it may adduce a theoretical security risk.
-+ * int (*ndo_set_vf_rss_query_en)(struct net_device *dev, int vf, bool setting);
-  * int (*ndo_get_vf_port)(struct net_device *dev, int vf, struct sk_buff *skb);
-  * int (*ndo_setup_tc)(struct net_device *dev, u8 tc)
-  * 	Called to setup 'tc' number of traffic classes in the net device. This
-@@ -1094,6 +1099,9 @@ struct net_device_ops {
- 						   struct nlattr *port[]);
- 	int			(*ndo_get_vf_port)(struct net_device *dev,
- 						   int vf, struct sk_buff *skb);
-+	int			(*ndo_set_vf_rss_query_en)(
-+						   struct net_device *dev,
-+						   int vf, bool setting);
- 	int			(*ndo_setup_tc)(struct net_device *dev, u8 tc);
- #if IS_ENABLED(CONFIG_FCOE)
- 	int			(*ndo_fcoe_enable)(struct net_device *dev);
-diff --git a/include/uapi/linux/if_link.h b/include/uapi/linux/if_link.h
-index 7ffb18d..d9cd192 100644
---- a/include/uapi/linux/if_link.h
-+++ b/include/uapi/linux/if_link.h
-@@ -465,6 +465,9 @@ enum {
- 	IFLA_VF_SPOOFCHK,	/* Spoof Checking on/off switch */
- 	IFLA_VF_LINK_STATE,	/* link state enable/disable/auto switch */
- 	IFLA_VF_RATE,		/* Min and Max TX Bandwidth Allocation */
-+	IFLA_VF_RSS_QUERY_EN,	/* RSS Redirection Table and Hash Key query
-+				 * on/off switch
-+				 */
- 	__IFLA_VF_MAX,
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index 42ed4b4..639aa1b 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -151,6 +151,7 @@ struct vf_data_storage {
+ 	u16 tx_rate;
+ 	u16 vlan_count;
+ 	u8 spoofchk_enabled;
++	bool rss_query_enabled;
+ 	unsigned int vf_api;
  };
  
-@@ -509,6 +512,11 @@ struct ifla_vf_link_state {
- 	__u32 link_state;
- };
- 
-+struct ifla_vf_rss_query_en {
-+	__u32 vf;
-+	__u32 setting;
-+};
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index a99bc5d..1b04cb1 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -3656,6 +3656,12 @@ static void ixgbe_configure_virtualization(struct ixgbe_adapter *adapter)
+ 		if (hw->mac.ops.set_ethertype_anti_spoofing)
+ 			hw->mac.ops.set_ethertype_anti_spoofing(hw, true, i);
+ 	}
 +
- /* VF ports management section
-  *
-  *	Nested layout of set/get msg is:
-diff --git a/net/core/rtnetlink.c b/net/core/rtnetlink.c
-index b96ac21..dcbf568 100644
---- a/net/core/rtnetlink.c
-+++ b/net/core/rtnetlink.c
-@@ -818,7 +818,8 @@ static inline int rtnl_vfinfo_size(const struct net_device *dev,
- 			 nla_total_size(sizeof(struct ifla_vf_vlan)) +
- 			 nla_total_size(sizeof(struct ifla_vf_spoofchk)) +
- 			 nla_total_size(sizeof(struct ifla_vf_rate)) +
--			 nla_total_size(sizeof(struct ifla_vf_link_state)));
-+			 nla_total_size(sizeof(struct ifla_vf_link_state)) +
-+			 nla_total_size(sizeof(struct ifla_vf_rss_query_en)));
- 		return size;
- 	} else
++	/* Enable/Disable RSS query feature  */
++	for (i = 0; i < adapter->num_vfs; i++)
++		ixgbe_ndo_set_vf_rss_query_en(adapter->netdev, i,
++					      adapter->vfinfo[i].rss_query_enabled);
++
+ }
+ 
+ static void ixgbe_set_rx_buffer_len(struct ixgbe_adapter *adapter)
+@@ -8096,6 +8102,7 @@ static const struct net_device_ops ixgbe_netdev_ops = {
+ 	.ndo_set_vf_vlan	= ixgbe_ndo_set_vf_vlan,
+ 	.ndo_set_vf_rate	= ixgbe_ndo_set_vf_bw,
+ 	.ndo_set_vf_spoofchk	= ixgbe_ndo_set_vf_spoofchk,
++	.ndo_set_vf_rss_query_en = ixgbe_ndo_set_vf_rss_query_en,
+ 	.ndo_get_vf_config	= ixgbe_ndo_get_vf_config,
+ 	.ndo_get_stats64	= ixgbe_get_stats64,
+ #ifdef CONFIG_IXGBE_DCB
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+index 09a291b..f08672a 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+@@ -108,6 +108,15 @@ static int __ixgbe_enable_sriov(struct ixgbe_adapter *adapter)
+ 		/* enable spoof checking for all VFs */
+ 		for (i = 0; i < adapter->num_vfs; i++)
+ 			adapter->vfinfo[i].spoofchk_enabled = true;
++
++		/* We support VF RSS querying only for 82599 and x540 devices at
++		 * the moment. These devices share RSS indirection table and
++		 * RSS hash key with PF therefore we want to disable the
++		 * querying by default.
++		 */
++		for (i = 0; i < adapter->num_vfs; i++)
++			adapter->vfinfo[i].rss_query_enabled = 0;
++
  		return 0;
-@@ -1132,14 +1133,16 @@ static int rtnl_fill_ifinfo(struct sk_buff *skb, struct net_device *dev,
- 			struct ifla_vf_tx_rate vf_tx_rate;
- 			struct ifla_vf_spoofchk vf_spoofchk;
- 			struct ifla_vf_link_state vf_linkstate;
-+			struct ifla_vf_rss_query_en vf_rss_query_en;
+ 	}
  
- 			/*
- 			 * Not all SR-IOV capable drivers support the
--			 * spoofcheck query.  Preset to -1 so the user
--			 * space tool can detect that the driver didn't
--			 * report anything.
-+			 * spoofcheck and "RSS query enable" query.  Preset to
-+			 * -1 so the user space tool can detect that the driver
-+			 * didn't report anything.
- 			 */
- 			ivi.spoofchk = -1;
-+			ivi.rss_query_en = -1;
- 			memset(ivi.mac, 0, sizeof(ivi.mac));
- 			/* The default value for VF link state is "auto"
- 			 * IFLA_VF_LINK_STATE_AUTO which equals zero
-@@ -1152,7 +1155,8 @@ static int rtnl_fill_ifinfo(struct sk_buff *skb, struct net_device *dev,
- 				vf_rate.vf =
- 				vf_tx_rate.vf =
- 				vf_spoofchk.vf =
--				vf_linkstate.vf = ivi.vf;
-+				vf_linkstate.vf =
-+				vf_rss_query_en.vf = ivi.vf;
+@@ -1330,6 +1339,26 @@ int ixgbe_ndo_set_vf_spoofchk(struct net_device *netdev, int vf, bool setting)
+ 	return 0;
+ }
  
- 			memcpy(vf_mac.mac, ivi.mac, sizeof(ivi.mac));
- 			vf_vlan.vlan = ivi.vlan;
-@@ -1162,6 +1166,7 @@ static int rtnl_fill_ifinfo(struct sk_buff *skb, struct net_device *dev,
- 			vf_rate.max_tx_rate = ivi.max_tx_rate;
- 			vf_spoofchk.setting = ivi.spoofchk;
- 			vf_linkstate.link_state = ivi.linkstate;
-+			vf_rss_query_en.setting = ivi.rss_query_en;
- 			vf = nla_nest_start(skb, IFLA_VF_INFO);
- 			if (!vf) {
- 				nla_nest_cancel(skb, vfinfo);
-@@ -1176,7 +1181,10 @@ static int rtnl_fill_ifinfo(struct sk_buff *skb, struct net_device *dev,
- 			    nla_put(skb, IFLA_VF_SPOOFCHK, sizeof(vf_spoofchk),
- 				    &vf_spoofchk) ||
- 			    nla_put(skb, IFLA_VF_LINK_STATE, sizeof(vf_linkstate),
--				    &vf_linkstate))
-+				    &vf_linkstate) ||
-+			    nla_put(skb, IFLA_VF_RSS_QUERY_EN,
-+				    sizeof(vf_rss_query_en),
-+				    &vf_rss_query_en))
- 				goto nla_put_failure;
- 			nla_nest_end(skb, vf);
- 		}
-@@ -1290,6 +1298,7 @@ static const struct nla_policy ifla_vf_policy[IFLA_VF_MAX+1] = {
- 	[IFLA_VF_SPOOFCHK]	= { .len = sizeof(struct ifla_vf_spoofchk) },
- 	[IFLA_VF_RATE]		= { .len = sizeof(struct ifla_vf_rate) },
- 	[IFLA_VF_LINK_STATE]	= { .len = sizeof(struct ifla_vf_link_state) },
-+	[IFLA_VF_RSS_QUERY_EN]	= { .len = sizeof(struct ifla_vf_rss_query_en) },
- };
- 
- static const struct nla_policy ifla_port_policy[IFLA_PORT_MAX+1] = {
-@@ -1500,6 +1509,17 @@ static int do_setvfinfo(struct net_device *dev, struct nlattr *attr)
- 								 ivl->link_state);
- 			break;
- 		}
-+		case IFLA_VF_RSS_QUERY_EN: {
-+			struct ifla_vf_rss_query_en *ivrssq_en;
++int ixgbe_ndo_set_vf_rss_query_en(struct net_device *netdev, int vf,
++				  bool setting)
++{
++	struct ixgbe_adapter *adapter = netdev_priv(netdev);
 +
-+			ivrssq_en = nla_data(vf);
-+			err = -EOPNOTSUPP;
-+			if (ops->ndo_set_vf_rss_query_en)
-+				err = ops->ndo_set_vf_rss_query_en(dev,
-+							    ivrssq_en->vf,
-+							    ivrssq_en->setting);
-+			break;
-+		}
- 		default:
- 			err = -EINVAL;
- 			break;
++	/* This operation is currently supported only for 82599 and x540
++	 * devices.
++	 */
++	if (adapter->hw.mac.type < ixgbe_mac_82599EB ||
++	    adapter->hw.mac.type >= ixgbe_mac_X550)
++		return -EPERM;
++
++	if (vf >= adapter->num_vfs)
++		return -EINVAL;
++
++	adapter->vfinfo[vf].rss_query_enabled = setting;
++
++	return 0;
++}
++
+ int ixgbe_ndo_get_vf_config(struct net_device *netdev,
+ 			    int vf, struct ifla_vf_info *ivi)
+ {
+@@ -1343,5 +1372,6 @@ int ixgbe_ndo_get_vf_config(struct net_device *netdev,
+ 	ivi->vlan = adapter->vfinfo[vf].pf_vlan;
+ 	ivi->qos = adapter->vfinfo[vf].pf_qos;
+ 	ivi->spoofchk = adapter->vfinfo[vf].spoofchk_enabled;
++	ivi->rss_query_en = adapter->vfinfo[vf].rss_query_enabled;
+ 	return 0;
+ }
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h
+index 32c26d5..2c197e6 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h
+@@ -47,6 +47,8 @@ int ixgbe_ndo_set_vf_vlan(struct net_device *netdev, int queue, u16 vlan,
+ int ixgbe_ndo_set_vf_bw(struct net_device *netdev, int vf, int min_tx_rate,
+ 			int max_tx_rate);
+ int ixgbe_ndo_set_vf_spoofchk(struct net_device *netdev, int vf, bool setting);
++int ixgbe_ndo_set_vf_rss_query_en(struct net_device *netdev, int vf,
++				  bool setting);
+ int ixgbe_ndo_get_vf_config(struct net_device *netdev,
+ 			    int vf, struct ifla_vf_info *ivi);
+ void ixgbe_check_vf_rate_limit(struct ixgbe_adapter *adapter);
 -- 
 2.1.0
 
