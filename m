@@ -1,111 +1,118 @@
 From: Vlad Zolotarov <vladz@cloudius-systems.com>
-Date: Mon, 30 Mar 2015 21:18:58 +0300
-Subject: [Intel-wired-lan] [PATCH net-next v3 2/2] ixgbe: Add the
-	appropriate ethtool ops to query RSS indirection table and key
-In-Reply-To: <1427739538-1038-1-git-send-email-vladz@cloudius-systems.com>
-References: <1427739538-1038-1-git-send-email-vladz@cloudius-systems.com>
-Message-ID: <1427739538-1038-3-git-send-email-vladz@cloudius-systems.com>
+Date: Mon, 30 Mar 2015 21:35:22 +0300
+Subject: [Intel-wired-lan] [PATCH net-next v10 0/7]: ixgbevf: Allow querying
+	VFs RSS indirection table and key
+Message-ID: <1427740529-9605-1-git-send-email-vladz@cloudius-systems.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Added get_rxfh_indir_size, get_rxfh_key_size and get_rxfh ethtool_ops callbacks
-implementations.
+Add the ethtool ops to VF driver to allow querying the RSS indirection table
+and RSS Random Key. 
 
-This enables the ethtool's "-x" and "--show-rxfh[-indir]" options.
+Currently we will support only 82599 and x540 devices. On these devices VFs share the
+RSS Redirection Table and Hash Key with a PF and letting the VF query this information may
+introduce some security risks. Therefore we will disable this feature by default.
 
-Signed-off-by: Vlad Zolotarov <vladz@cloudius-systems.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe.h         |  1 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 42 ++++++++++++++++++++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |  2 +-
- 3 files changed, 44 insertions(+), 1 deletion(-)
+The new netdev op is going to allow a system administrator to change the default behaviour with
+"ip link set" command. The relevant iproute2 patch has already been sent and awaits for this series to
+be accepted.
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index 7bf4b77..42ed4b4 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -963,4 +963,5 @@ void ixgbe_sriov_reinit(struct ixgbe_adapter *adapter);
- netdev_tx_t ixgbe_xmit_frame_ring(struct sk_buff *skb,
- 				  struct ixgbe_adapter *adapter,
- 				  struct ixgbe_ring *tx_ring);
-+u32 ixgbe_rss_indir_tbl_entries(struct ixgbe_adapter *adapter);
- #endif /* _IXGBE_H_ */
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-index 02ffb30..0b880a4 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-@@ -2853,6 +2853,45 @@ static int ixgbe_set_rxnfc(struct net_device *dev, struct ethtool_rxnfc *cmd)
- 	return ret;
- }
- 
-+static u32 ixgbe_get_rxfh_key_size(struct net_device *netdev)
-+{
-+	struct ixgbe_adapter *adapter = netdev_priv(netdev);
-+
-+	return sizeof(adapter->rss_key);
-+}
-+
-+static u32 ixgbe_rss_indir_size(struct net_device *netdev)
-+{
-+	struct ixgbe_adapter *adapter = netdev_priv(netdev);
-+
-+	return ixgbe_rss_indir_tbl_entries(adapter);
-+}
-+
-+static void ixgbe_get_reta(struct ixgbe_adapter *adapter, u32 *indir)
-+{
-+	int i, reta_size = ixgbe_rss_indir_tbl_entries(adapter);
-+
-+	for (i = 0; i < reta_size; i++)
-+		indir[i] = adapter->rss_indir_tbl[i];
-+}
-+
-+static int ixgbe_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key,
-+			  u8 *hfunc)
-+{
-+	struct ixgbe_adapter *adapter = netdev_priv(netdev);
-+
-+	if (hfunc)
-+		*hfunc = ETH_RSS_HASH_TOP;
-+
-+	if (indir)
-+		ixgbe_get_reta(adapter, indir);
-+
-+	if (key)
-+		memcpy(key, adapter->rss_key, ixgbe_get_rxfh_key_size(netdev));
-+
-+	return 0;
-+}
-+
- static int ixgbe_get_ts_info(struct net_device *dev,
- 			     struct ethtool_ts_info *info)
- {
-@@ -3110,6 +3149,9 @@ static const struct ethtool_ops ixgbe_ethtool_ops = {
- 	.set_coalesce           = ixgbe_set_coalesce,
- 	.get_rxnfc		= ixgbe_get_rxnfc,
- 	.set_rxnfc		= ixgbe_set_rxnfc,
-+	.get_rxfh_indir_size	= ixgbe_rss_indir_size,
-+	.get_rxfh_key_size	= ixgbe_get_rxfh_key_size,
-+	.get_rxfh		= ixgbe_get_rxfh,
- 	.get_channels		= ixgbe_get_channels,
- 	.set_channels		= ixgbe_set_channels,
- 	.get_ts_info		= ixgbe_get_ts_info,
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 3e0c1e6..24cbe015 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -3237,7 +3237,7 @@ static void ixgbe_configure_srrctl(struct ixgbe_adapter *adapter,
-  *  - X550(non-SRIOV mode): 512
-  *  - X550(SRIOV mode):     64
-  */
--static u32 ixgbe_rss_indir_tbl_entries(struct ixgbe_adapter *adapter)
-+u32 ixgbe_rss_indir_tbl_entries(struct ixgbe_adapter *adapter)
- {
- 	if (adapter->hw.mac.type < ixgbe_mac_X550)
- 		return 128;
+ - netdev: Add a new netdev op to allow/block VF from querying RSS Indirection Table and
+   RSS Hash Key.
+ - PF driver: Add new VF-PF channel commands.
+ - VF driver: Utilize these new commands and add the corresponding
+              ethtool callbacks.
+
+New in v10:
+   - United the for-each-VF loops in __ixgbe_enable_sriov() and
+     ixgbe_configure_virtualization().
+   - Drop the PRSTYPE reading since it's VF that finally modifies it (via VFPSRTYPE)
+     and we will add the proper masking at the VF driver level.
+   - Return more self-explaining values.
+   - Expose the _locked function in the vf.h interface according
+     to the current ixgbevf layering model.
+   - Mask the received RETA according to the VF Rx queues configuration.
+   - Added IXGBEVF_82599_RETA_SIZE macro.
+   - Move the mailbox locks outside the vf.c functions.
+
+New in v9:
+   - Reduce the support to 82599 and x540 devices only.
+   - ixgbe: improvements in query RETA VF-PF command implementation:
+      - Use the cached RETA contents.
+      - Compress the mailbox message.
+   - ixgbevf: improvements in RETA query code:
+      - Implement a "compression" of VF's RETA contents: pass only 2 bits
+        per-entry.
+      - RETA querying is done in a single mailbox operation thanks to compression.
+   - Get the RSS HASH Key value from the PF's adapter->rss_key[].
+   - Added IXGBEVF_RSS_HASH_KEY_SIZE macro.
+
+New in v8:
+   - Protect new mailbox operations with adapter.mbx_lock spinlock.
+
+New in v7:
+   - Add ixgbe_mbox_api_12 case in ixgbevf_set_num_queues().
+   - Properly expand HW RETA into the ethtool buffer.
+
+New in v6:
+   - Add a proper return code when an VF query operations are blocked by PF.
+   - Added a required get_rxnfc callback to ixgbevf_ethtool_ops.
+   - Changed a description of PATCH7: set the correct ethtool options names.
+
+New in v5:
+   - Added a new netdev op to allow/block VF from querying RSS Indirection Table and
+     RSS Hash Key.
+   - Let VF query the RSS info only if VF is allowed to.
+
+New in v4:
+   - Forgot to run checkpatch on v3 and there were a few styling things to fix. ;)
+
+New in v3:
+   - Added a missing support for x550 devices.
+   - Mask the indirection table values according to PSRTYPE[n].RQPL.
+   - Minimized the number of added VF-PF commands.
+
+New in v2:
+   - Added a detailed description to patches 4 and 5.
+
+New in v1 (compared to RFC):
+   - Use "if-else" statement instead of a "switch-case" for a single option case.
+     More specifically: in cases where the newly added API version is the only one
+     allowed. We may consider using a "switch-case" back again when the list of
+     allowed API versions in these specific places grows up.
+
+
+Vlad Zolotarov (7):
+  if_link: Add an additional parameter to ifla_vf_info for RSS querying
+  ixgbe: Add a new netdev op to allow/prevent a VF from querying an RSS
+    info
+  ixgbe: Add a RETA query command to VF-PF channel API
+  ixgbevf: Add a RETA query code
+  ixgbe: Add GET_RSS_KEY command to VF-PF channel commands set
+  ixgbevf: Add RSS Key query code
+  ixgbevf: Add the appropriate ethtool ops to query RSS indirection
+    table and key
+
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h          |   1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |   5 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h      |   5 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c    |  90 +++++++++++++++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h    |   2 +
+ drivers/net/ethernet/intel/ixgbevf/ethtool.c      |  69 ++++++++++++
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |   2 +
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   5 +-
+ drivers/net/ethernet/intel/ixgbevf/mbx.h          |   5 +
+ drivers/net/ethernet/intel/ixgbevf/vf.c           | 124 ++++++++++++++++++++++
+ drivers/net/ethernet/intel/ixgbevf/vf.h           |   2 +
+ include/linux/if_link.h                           |   1 +
+ include/linux/netdevice.h                         |   8 ++
+ include/uapi/linux/if_link.h                      |   8 ++
+ net/core/rtnetlink.c                              |  32 ++++--
+ 15 files changed, 350 insertions(+), 9 deletions(-)
+
 -- 
 2.1.0
 
