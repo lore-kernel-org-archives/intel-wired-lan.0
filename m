@@ -1,33 +1,37 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Mon, 30 Mar 2015 16:37:32 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v3 2/2] ixgbe: Add the
- appropriate ethtool ops to query RSS indirection table and key
-In-Reply-To: <1427739538-1038-3-git-send-email-vladz@cloudius-systems.com>
-References: <1427739538-1038-1-git-send-email-vladz@cloudius-systems.com>
- <1427739538-1038-3-git-send-email-vladz@cloudius-systems.com>
-Message-ID: <1427758652.2497.101.camel@jtkirshe-mobl>
+Date: Tue, 31 Mar 2015 00:34:56 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v10 1/7] if_link: Add an
+ additional parameter to ifla_vf_info for RSS querying
+In-Reply-To: <1427740529-9605-2-git-send-email-vladz@cloudius-systems.com>
+References: <1427740529-9605-1-git-send-email-vladz@cloudius-systems.com>
+ <1427740529-9605-2-git-send-email-vladz@cloudius-systems.com>
+Message-ID: <1427787296.2497.109.camel@jtkirshe-mobl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2015-03-30 at 21:18 +0300, Vlad Zolotarov wrote:
-> Added get_rxfh_indir_size, get_rxfh_key_size and get_rxfh ethtool_ops
-> callbacks
-> implementations.
+On Mon, 2015-03-30 at 21:35 +0300, Vlad Zolotarov wrote:
+> Add configuration setting for drivers to allow/block an RSS
+> Redirection Table and
+> a Hash Key querying for discrete VFs.
 > 
-> This enables the ethtool's "-x" and "--show-rxfh[-indir]" options.
+> On some devices VF share the mentioned above information with PF and
+> querying it may
+> adduce a theoretical security risk. We want to let a system
+> administrator to decide if he/she
+> wants to take this risk or not.
 > 
 > Signed-off-by: Vlad Zolotarov <vladz@cloudius-systems.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe.h         |  1 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 42
-> ++++++++++++++++++++++++
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |  2 +-
->  3 files changed, 44 insertions(+), 1 deletion(-)
+>  include/linux/if_link.h      |  1 +
+>  include/linux/netdevice.h    |  8 ++++++++
+>  include/uapi/linux/if_link.h |  8 ++++++++
+>  net/core/rtnetlink.c         | 32 ++++++++++++++++++++++++++------
+>  4 files changed, 43 insertions(+), 6 deletions(-)
 
-Thanks Vlad, I have added your patch to my queue.
+Thanks Vlad, applied to my queue.
 -- 
 git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
 dev-queue
@@ -37,4 +41,4 @@ Name: signature.asc
 Type: application/pgp-signature
 Size: 819 bytes
 Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150330/de220cde/attachment.asc>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150331/a62de709/attachment.asc>
