@@ -1,11 +1,11 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 31 Mar 2015 00:36:28 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v10 7/7] ixgbevf: Add the
- appropriate ethtool ops to query RSS indirection table and key
-In-Reply-To: <1427740529-9605-8-git-send-email-vladz@cloudius-systems.com>
+Date: Tue, 31 Mar 2015 00:36:13 -0700
+Subject: [Intel-wired-lan] [PATCH net-next v10 6/7] ixgbevf: Add RSS Key
+	query code
+In-Reply-To: <1427740529-9605-7-git-send-email-vladz@cloudius-systems.com>
 References: <1427740529-9605-1-git-send-email-vladz@cloudius-systems.com>
- <1427740529-9605-8-git-send-email-vladz@cloudius-systems.com>
-Message-ID: <1427787388.2497.115.camel@jtkirshe-mobl>
+ <1427740529-9605-7-git-send-email-vladz@cloudius-systems.com>
+Message-ID: <1427787373.2497.114.camel@jtkirshe-mobl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,12 +13,9 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 On Mon, 2015-03-30 at 21:35 +0300, Vlad Zolotarov wrote:
-> Added get_rxfh_indir_size, get_rxfh_key_size and get_rxfh ethtool_ops
-> callbacks
-> implementations.
-> 
-> This enables the ethtool's "-x" and "--show-rxfh[-indir]" options for
-> VF devices.
+> Add the ixgbevf_get_rss_key() function that queries the PF for an RSS
+> Random Key
+> using a new VF-PF channel IXGBE_VF_GET_RSS_KEY command.
 > 
 > This patch adds the support for 82599 and x540 devices only. Support
 > for other
@@ -27,29 +24,34 @@ On Mon, 2015-03-30 at 21:35 +0300, Vlad Zolotarov wrote:
 > Signed-off-by: Vlad Zolotarov <vladz@cloudius-systems.com>
 > ---
 > New in v10:
->    - Move the mailbox locks outside the vf.c functions.
->    - Use IXGBEVF_82599_RETA_SIZE macro.
+>    - Expose the _locked function in the vf.h interface according
+>      to the current ixgbevf layering model.
+>    - Return EOPNOTSUPP in cases then operation is not supported.
 > 
 > New in v9:
->    - Use IXGBEVF_RSS_HASH_KEY_SIZE macro.
+>    - Reduce the support to 82599 and x540 devices only.
+>    - Added IXGBEVF_RSS_HASH_KEY_SIZE macro.
+> 
+> New in v8:
+>    - Protect a mailbox access.
 > 
 > New in v6:
->    - Added a required get_rxnfc callback to ixgbevf_ethtool_ops.
-> 
-> New in v4:
->    - Removed not needed braces in if-statement in
-> ixgbevf_get_rxfh_indir_size().
-> 
-> New in v3:
->    - Added a proper support for x550 devices: return the correct
-> redirection table size.
+>    - Return a proper return code when an operation is blocked by PF.
 > 
 > New in v2:
->    - Added a detailed description to the patch.
+>    - Added a more detailed patch description.
+> 
+> New in v1 (compared to RFC):
+>    - Use "if-else" statement instead of a "switch-case" for a single
+> option case
+>      (in ixgbevf_get_rss_key()).
 > ---
->  drivers/net/ethernet/intel/ixgbevf/ethtool.c | 69
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h |  1 +
+>  drivers/net/ethernet/intel/ixgbevf/mbx.h     |  1 +
+>  drivers/net/ethernet/intel/ixgbevf/vf.c      | 54
 > ++++++++++++++++++++++++++++
->  1 file changed, 69 insertions(+)
+>  drivers/net/ethernet/intel/ixgbevf/vf.h      |  1 +
+>  4 files changed, 57 insertions(+)
 
 Thanks Vlad, applied to my queue.
 -- 
@@ -61,4 +63,4 @@ Name: signature.asc
 Type: application/pgp-signature
 Size: 819 bytes
 Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150331/35d65e19/attachment.asc>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150331/4fd30e85/attachment.asc>
