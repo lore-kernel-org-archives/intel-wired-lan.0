@@ -1,95 +1,85 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 01 Apr 2015 01:33:01 -0700
-Subject: [Intel-wired-lan] [PATCH net-next v11 3/7] ixgbe: Add a RETA
- query command to VF-PF channel API
-In-Reply-To: <1427876694-19821-1-git-send-email-vladz@cloudius-systems.com>
-References: <1427876694-19821-1-git-send-email-vladz@cloudius-systems.com>
-Message-ID: <1427877181.2662.21.camel@jtkirshe-mobl>
+From: Todd Fujinaka <todd.fujinaka@intel.com>
+Date: Wed, 01 Apr 2015 10:17:30 -0700
+Subject: [Intel-wired-lan] [PATCH] igb: simplify and clean up
+	igb_enable_mas()
+Message-ID: <20150401171704.16815.42901.stgit@htfujina-fc.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2015-04-01 at 11:24 +0300, Vlad Zolotarov wrote:
-> Add this new command for 82599 and x540 devices only. Support for
-> other devices
-> will be added later.
-> 
-> 82599 and x540 VFs and PF share the same RSS redirection table (RETA).
-> Therefore we
-> just return it for all VFs.
-> 
-> For 82599 and x540 RETA table is an array of 32 registers (128 bytes)
-> and the maximum number of
-> registers that may be delivered in a single VF-PF channel command is
-> 15. On the other hand VFs
-> of these devices can be configured to have up to 4 RSS queues.
-> Therefore we will "compress"
-> the RETA by transfering only 2 bits per entry and thereby it will take
-> only 8 registers (DWORDS)
-> to transfer the whole VF RETA.
-> 
-> Thus this patch does the following:
-> 
->   - Adds a new API version (to specify a new commands set).
->   - Adds the IXGBE_VF_GET_RETA command to the VF-PF commands set.
-> 
-> Signed-off-by: Vlad Zolotarov <vladz@cloudius-systems.com>
-> ---
-> New in v11:
->    - Updated the patch description.
-> 
-> New in v10:
->    - Drop the PRSTYPE reading since it's VF that finally modifies it
-> (via VFPSRTYPE)
->      and we will add the proper masking at the VF driver level.
->    - Return more self-explaining values.
-> 
-> New in v9:
->    - Reduce the support to 82599 and x540 devices only.
->    - Improvements in query RETA VF-PF command implementation:
->       - Use the cached RETA contents.
->       - Compress the mailbox message.
-> 
-> New in v5:
->    - Use the newly added netdev op to allow/prevent the RETA query on
-> a per-VF basis.
-> 
-> New in v4:
->    - Deleted an empty line in ixgbe_get_vf_reta() switch-case.
-> 
-> New in v3:
->    - Pass the number of dwords and offset in RETA in the
-> IXGBE_VF_GET_RETA request message.
->      This allows to reduce the added command set to a single command.
->    - Added a support for all devices supported by the ixgbe driver
-> that have
->      SR-IOV functions support: 82599, x540 and x550. The original code
-> supported
->      only 82599 and x540.
->    - Added the masking of the RETA entries according to the
-> PSRTYPE[n].RQPL
->      value.
-> 
-> New in v1 (compared to RFC):
->    - Use "if-else" statement instead of a "switch-case" for a single
-> option case
->      (in ixgbe_get_vf_reta()).
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h   |  4 +++
->  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 35
-> ++++++++++++++++++++++++++
->  2 files changed, 39 insertions(+)
+igb_enable_mas() should only be called for the 82575 and has no clear
+return so changing it to void. Also simplify the odd conditional
+expression.
 
-Thanks Vlad, applied to my queue.
--- 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
-dev-queue
+Signed-off-by: Todd Fujinaka <todd.fujinaka@intel.com>
+Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+---
+ drivers/net/ethernet/intel/igb/igb_main.c |   27 +++++++--------------------
+ 1 file changed, 7 insertions(+), 20 deletions(-)
 -------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150401/ecfb966f/attachment-0001.asc>
+igb_enable_mas() should only be called for the 82575 and has no clear
+return so changing it to void. Also simplify the odd conditional
+expression.
+
+Signed-off-by: Todd Fujinaka <todd.fujinaka@intel.com>
+Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+---
+ drivers/net/ethernet/intel/igb/igb_main.c |   27 +++++++--------------------
+ 1 file changed, 7 insertions(+), 20 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 8457d03..073a733 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -1834,31 +1834,19 @@ void igb_reinit_locked(struct igb_adapter *adapter)
+  *
+  * @adapter: adapter struct
+  **/
+-static s32 igb_enable_mas(struct igb_adapter *adapter)
++void igb_enable_mas(struct igb_adapter *adapter)
+ {
+ 	struct e1000_hw *hw = &adapter->hw;
+-	u32 connsw;
+-	s32 ret_val = 0;
+-
+-	connsw = rd32(E1000_CONNSW);
+-	if (!(hw->phy.media_type == e1000_media_type_copper))
+-		return ret_val;
++	u32 connsw = rd32(E1000_CONNSW);
+ 
+ 	/* configure for SerDes media detect */
+-	if (!(connsw & E1000_CONNSW_SERDESD)) {
++	if ((hw->phy.media_type == e1000_media_type_copper) &&
++	    (!(connsw & E1000_CONNSW_SERDESD))) {
+ 		connsw |= E1000_CONNSW_ENRGSRC;
+ 		connsw |= E1000_CONNSW_AUTOSENSE_EN;
+ 		wr32(E1000_CONNSW, connsw);
+ 		wrfl();
+-	} else if (connsw & E1000_CONNSW_SERDESD) {
+-		/* already SerDes, no need to enable anything */
+-		return ret_val;
+-	} else {
+-		netdev_info(adapter->netdev,
+-			"MAS: Unable to configure feature, disabling..\n");
+-		adapter->flags &= ~IGB_FLAG_MAS_ENABLE;
+ 	}
+-	return ret_val;
+ }
+ 
+ void igb_reset(struct igb_adapter *adapter)
+@@ -1978,10 +1966,9 @@ void igb_reset(struct igb_adapter *adapter)
+ 		adapter->ei.get_invariants(hw);
+ 		adapter->flags &= ~IGB_FLAG_MEDIA_RESET;
+ 	}
+-	if (adapter->flags & IGB_FLAG_MAS_ENABLE) {
+-		if (igb_enable_mas(adapter))
+-			dev_err(&pdev->dev,
+-				"Error enabling Media Auto Sense\n");
++	if ((mac->type == e1000_82575) &&
++	    (adapter->flags & IGB_FLAG_MAS_ENABLE)) {
++		igb_enable_mas(adapter);
+ 	}
+ 	if (hw->mac.ops.init_hw(hw))
+ 		dev_err(&pdev->dev, "Hardware Error\n");
