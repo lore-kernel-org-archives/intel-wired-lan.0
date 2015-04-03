@@ -1,53 +1,40 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri,  3 Apr 2015 13:27:15 -0700
-Subject: [Intel-wired-lan] [net-next 25/25] fm10k: corrected VF multicast
-	update
+Date: Fri,  3 Apr 2015 13:27:12 -0700
+Subject: [Intel-wired-lan] [net-next 22/25] fm10k: renamed mbx_tx_dropped to
+	mbx_tx_oversized
 In-Reply-To: <1428092835-16834-1-git-send-email-jeffrey.t.kirsher@intel.com>
 References: <1428092835-16834-1-git-send-email-jeffrey.t.kirsher@intel.com>
-Message-ID: <1428092835-16834-25-git-send-email-jeffrey.t.kirsher@intel.com>
+Message-ID: <1428092835-16834-22-git-send-email-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-VFs were being improperly added to the switch's multicast group. The
-error stems from the fact that incorrect arguments were passed to the
-"update_mc_addr" function. It would seem to be a copy paste error since
-the parameters are similar to the "update_uc_addr" function.
+The use of dropped doesn't really mean dropped mailbox messages, but
+rather specifically messages which were too large to fit in the remote
+Rx FIFO. Rename the stat to more clearly indicate what it means.
 
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Signed-off-by: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 Acked-by: Matthew Vick <matthew.vick@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_pf.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-index be80024..30264d8 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-@@ -334,6 +334,9 @@ static s32 fm10k_update_xc_addr_pf(struct fm10k_hw *hw, u16 glort,
- 	struct fm10k_mac_update mac_update;
- 	u32 msg[5];
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+index 45e504f..4b9d9f8 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+@@ -77,7 +77,7 @@ static const struct fm10k_stats fm10k_gstrings_global_stats[] = {
+ 	FM10K_STAT("mac_rules_avail", hw.swapi.mac.avail),
  
-+	/* clear set bit from VLAN ID */
-+	vid &= ~FM10K_VLAN_CLEAR;
-+
- 	/* if glort or vlan are not valid return error */
- 	if (!fm10k_glort_valid_pf(hw, glort) || vid >= FM10K_VLAN_TABLE_VID_MAX)
- 		return FM10K_ERR_PARAM;
-@@ -1264,8 +1267,8 @@ s32 fm10k_iov_msg_mac_vlan_pf(struct fm10k_hw *hw, u32 **results,
- 		}
- 
- 		/* notify switch of request for new multicast address */
--		err = hw->mac.ops.update_mc_addr(hw, vf_info->glort, mac,
--						 !(vlan & FM10K_VLAN_CLEAR), 0);
-+		err = hw->mac.ops.update_mc_addr(hw, vf_info->glort, mac, vlan,
-+						 !(vlan & FM10K_VLAN_CLEAR));
- 	}
- 
- 	return err;
+ 	FM10K_STAT("mbx_tx_busy", hw.mbx.tx_busy),
+-	FM10K_STAT("mbx_tx_dropped", hw.mbx.tx_dropped),
++	FM10K_STAT("mbx_tx_oversized", hw.mbx.tx_dropped),
+ 	FM10K_STAT("mbx_tx_messages", hw.mbx.tx_messages),
+ 	FM10K_STAT("mbx_tx_dwords", hw.mbx.tx_dwords),
+ 	FM10K_STAT("mbx_rx_messages", hw.mbx.rx_messages),
 -- 
 1.9.3
 
