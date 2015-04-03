@@ -1,33 +1,37 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri,  3 Apr 2015 13:33:10 -0700
-Subject: [Intel-wired-lan] [net-next] fm10k: Bump driver version to 0.15.2
-Message-ID: <1428093190-17097-1-git-send-email-jeffrey.t.kirsher@intel.com>
+Date: Fri, 03 Apr 2015 14:00:39 -0700
+Subject: [Intel-wired-lan] [net-next 01/25] fm10k: Corrected an error in
+	Tx statistics
+In-Reply-To: <1428092835-16834-1-git-send-email-jeffrey.t.kirsher@intel.com>
+References: <1428092835-16834-1-git-send-email-jeffrey.t.kirsher@intel.com>
+Message-ID: <1428094839.2662.112.camel@jtkirshe-mobl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-With the recent driver changes, bump the version.
+On Fri, 2015-04-03 at 13:26 -0700, Jeff Kirsher wrote:
+> The function collecting Tx statistics was actually using values from
+> the RX
+> ring. Thus, Tx and Rx statistics values reported by "ifconfig" will
+> return identical values. This change corrects this error and the Tx
+> statistics is now reading from the Tx ring.
+> 
+> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> Acked-by: Matthew Vick <matthew.vick@intel.com>
+> ---
+>  drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
----
- drivers/net/ethernet/intel/fm10k/fm10k_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index cd2e86a..7207071 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -28,7 +28,7 @@
- 
- #include "fm10k.h"
- 
--#define DRV_VERSION	"0.12.2-k"
-+#define DRV_VERSION	"0.15.2-k"
- const char fm10k_driver_version[] = DRV_VERSION;
- char fm10k_driver_name[] = "fm10k";
- static const char fm10k_driver_string[] =
+I have applied to my queue.
 -- 
-1.9.3
-
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
+dev-queue
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150403/8ea413f9/attachment.asc>
