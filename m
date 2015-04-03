@@ -1,40 +1,59 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri, 03 Apr 2015 01:56:18 -0700
-Subject: [Intel-wired-lan] [net-next v2] igb: simplify and clean up
- igb_enable_mas()
-In-Reply-To: <20150403085138.6124.95003.stgit@gmw-smvitp108.amr.corp.intel.com>
-References: <20150403085138.6124.95003.stgit@gmw-smvitp108.amr.corp.intel.com>
-Message-ID: <1428051378.2662.76.camel@jtkirshe-mobl>
+From: Yanjiang Jin <yanjiang.jin@windriver.com>
+Date: Fri, 03 Apr 2015 04:43:03 -0700
+Subject: [Intel-wired-lan] [net-next] e1000e: define lat_ns as u64 instead
+	of s64
+Message-ID: <20150403114233.15851.28992.stgit@nnlmsdk142.ccr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2015-04-03 at 01:52 -0700, Todd Fujinaka wrote:
-> 
-> igb_enable_mas() should only be called for the 82575 and has no clear
-> return so changing it to void. Also simplify the odd conditional
-> expression.
-> 
-> Signed-off-by: Todd Fujinaka <todd.fujinaka@intel.com>
-> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-> ---
-> v2: made igb_enable_mas() static based on feedback from automated
-> testing
-> ---
->  drivers/net/ethernet/intel/igb/igb_main.c |   27
-> +++++++--------------------
->  1 file changed, 7 insertions(+), 20 deletions(-)
+do_div() expects the type of "n" to be uint64_t, define "lat_ns" as u64 to
+avoid the below warning, also update its correlative operations and data.
 
-I have applied your patch to my queue.
--- 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
-dev-queue
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150403/e7f747cc/attachment.asc>
+In file included from ./arch/powerpc/include/asm/div64.h:1:0,
+                 from include/linux/kernel.h:124,
+                 from include/linux/list.h:8,
+                 from include/linux/timer.h:4,
+                 from drivers/net/ethernet/intel/e1000e/e1000.h:29,
+                 from drivers/net/ethernet/intel/e1000e/ich8lan.c:59:
+drivers/net/ethernet/intel/e1000e/ich8lan.c: In function 'e1000_platform_pm_pch_lpt':
+include/asm-generic/div64.h:43:28: warning: comparison of distinct pointer types lacks a cast [enabled by default]
+  (void)(((typeof((n)) *)0) == ((uint64_t *)0)); \
+                            ^
+drivers/net/ethernet/intel/e1000e/ich8lan.c:1016:4: note: in expansion of macro 'do_div'
+    do_div(lat_ns, speed);
+
+Signed-off-by: Yanjiang Jin <yanjiang.jin@windriver.com>
+---
+ drivers/net/ethernet/intel/e1000e/ich8lan.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+index 9d81c03..8899b20 100644
+--- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
++++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+@@ -1014,8 +1014,8 @@ static s32 e1000_platform_pm_pch_lpt(struct e1000_hw *hw, bool link)
+ 		u16 speed, duplex, scale = 0;
+ 		u16 max_snoop, max_nosnoop;
+ 		u16 max_ltr_enc;	/* max LTR latency encoded */
+-		s64 lat_ns;	/* latency (ns) */
+-		s64 value;
++		u64 lat_ns;	/* latency (ns) */
++		u64 value;
+ 		u32 rxa;
+ 
+ 		if (!hw->adapter->max_frame_size) {
+@@ -1040,8 +1040,8 @@ static s32 e1000_platform_pm_pch_lpt(struct e1000_hw *hw, bool link)
+ 		 * 2^25*(2^10-1) ns.  The scale is encoded as 0=2^0ns,
+ 		 * 1=2^5ns, 2=2^10ns,...5=2^25ns.
+ 		 */
+-		lat_ns = ((s64)rxa * 1024 -
+-			  (2 * (s64)hw->adapter->max_frame_size)) * 8 * 1000;
++		lat_ns = ((u64)rxa * 1024 -
++			  (2 * (u64)hw->adapter->max_frame_size)) * 8 * 1000;
+ 		if (lat_ns < 0)
+ 			lat_ns = 0;
+ 		else
+
