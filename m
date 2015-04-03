@@ -1,46 +1,59 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri,  3 Apr 2015 13:26:54 -0700
-Subject: [Intel-wired-lan] [net-next 04/25] fm10k: Have the VF get the
-	default VLAN during init
+Date: Fri,  3 Apr 2015 13:26:58 -0700
+Subject: [Intel-wired-lan] [net-next 08/25] fm10k: only show actual queues,
+	not the maximum in hardware
 In-Reply-To: <1428092835-16834-1-git-send-email-jeffrey.t.kirsher@intel.com>
 References: <1428092835-16834-1-git-send-email-jeffrey.t.kirsher@intel.com>
-Message-ID: <1428092835-16834-4-git-send-email-jeffrey.t.kirsher@intel.com>
+Message-ID: <1428092835-16834-8-git-send-email-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Currently, the VFs do not read the default VLAN during initialization,
-so they will not be able to indicate untagged frames properly.
+Currently, we show statistics for all 128 queues, even though we don't
+necessarily have that many queues available especially in the VF case.
+Instead, use the hw->mac.max_queues value, which tells us how many
+queues we actually have, rather than the space for the rings we
+allocated. In this way, we prevent dumping statistics that are useless
+on the VF.
 
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Signed-off-by: Matthew Vick <matthew.vick@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Acked-by: Matthew Vick <matthew.vick@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_vf.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_vf.c b/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
-index 1721967..94f0f6a 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
-@@ -1,5 +1,5 @@
- /* Intel Ethernet Switch Host Interface Driver
-- * Copyright(c) 2013 - 2014 Intel Corporation.
-+ * Copyright(c) 2013 - 2015 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-@@ -124,6 +124,10 @@ static s32 fm10k_init_hw_vf(struct fm10k_hw *hw)
- 	/* record maximum queue count */
- 	hw->mac.max_queues = i;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+index 697a269..478e67b 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+@@ -118,6 +118,7 @@ enum fm10k_self_test_types {
  
-+	/* fetch default VLAN */
-+	hw->mac.default_vid = (fm10k_read_reg(hw, FM10K_TXQCTL(0)) &
-+			       FM10K_TXQCTL_VID_MASK) >> FM10K_TXQCTL_VID_SHIFT;
-+
- 	return 0;
- }
+ static void fm10k_get_strings(struct net_device *dev, u32 stringset, u8 *data)
+ {
++	struct fm10k_intfc *interface = netdev_priv(dev);
+ 	char *p = (char *)data;
+ 	int i;
+ 
+@@ -138,7 +139,7 @@ static void fm10k_get_strings(struct net_device *dev, u32 stringset, u8 *data)
+ 			p += ETH_GSTRING_LEN;
+ 		}
+ 
+-		for (i = 0; i < MAX_QUEUES; i++) {
++		for (i = 0; i < interface->hw.mac.max_queues; i++) {
+ 			sprintf(p, "tx_queue_%u_packets", i);
+ 			p += ETH_GSTRING_LEN;
+ 			sprintf(p, "tx_queue_%u_bytes", i);
+@@ -188,7 +189,7 @@ static void fm10k_get_ethtool_stats(struct net_device *netdev,
+ 			sizeof(u64)) ? *(u64 *)p : *(u32 *)p;
+ 	}
+ 
+-	for (i = 0; i < MAX_QUEUES; i++) {
++	for (i = 0; i < interface->hw.mac.max_queues; i++) {
+ 		struct fm10k_ring *ring;
+ 		u64 *queue_stat;
  
 -- 
 1.9.3
