@@ -1,41 +1,44 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri, 03 Apr 2015 13:18:07 -0700
-Subject: [Intel-wired-lan] [PATCH] i40e: stop VF rings
-In-Reply-To: <1428085248-243781-1-git-send-email-mitch.a.williams@intel.com>
-References: <1428085248-243781-1-git-send-email-mitch.a.williams@intel.com>
-Message-ID: <1428092287.2662.103.camel@jtkirshe-mobl>
+Date: Fri,  3 Apr 2015 13:26:53 -0700
+Subject: [Intel-wired-lan] [net-next 03/25] fm10k: Correct spelling mistake
+In-Reply-To: <1428092835-16834-1-git-send-email-jeffrey.t.kirsher@intel.com>
+References: <1428092835-16834-1-git-send-email-jeffrey.t.kirsher@intel.com>
+Message-ID: <1428092835-16834-3-git-send-email-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2015-04-03 at 11:20 -0700, Mitch Williams wrote:
-> Explicitly stop the rings belonging to each VF when disabling SR-IOV.
-> Even though the VFs were gone, and the associated VSIs were removed,
-> the rings were not stopped, and in some circumstances the hardware
-> would
-> continue to access the memory formerly used by the rings, causing
-> memory corruption or DMAR errors, both of which would lead to general
-> malaise of the kernel.
-> 
-> To relieve this condition, explicitly stop all the rings associated
-> with
-> each VF before releasing its resources.
-> 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 5 +++++
->  1 file changed, 5 insertions(+)
+Corrected a spelling mistake that was found over time.
 
-I have applied your patch to my queue.
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Signed-off-by: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
+Acked-by: Matthew Vick <matthew.vick@intel.com>
+---
+ drivers/net/ethernet/intel/fm10k/fm10k_mbx.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
+index 14ee696..59faf32 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
+@@ -1,5 +1,5 @@
+ /* Intel Ethernet Switch Host Interface Driver
+- * Copyright(c) 2013 - 2014 Intel Corporation.
++ * Copyright(c) 2013 - 2015 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+@@ -818,7 +818,7 @@ static void fm10k_mbx_write(struct fm10k_hw *hw, struct fm10k_mbx_info *mbx)
+ 	/* write new msg header to notify recipient of change */
+ 	fm10k_write_reg(hw, mbmem, mbx->mbx_hdr);
+ 
+-	/* write mailbox to sent interrupt */
++	/* write mailbox to send interrupt */
+ 	if (mbx->mbx_lock)
+ 		fm10k_write_reg(hw, mbx->mbx_reg, mbx->mbx_lock);
+ 
 -- 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
-dev-queue
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150403/a086872e/attachment.asc>
+1.9.3
+
