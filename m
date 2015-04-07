@@ -1,10 +1,9 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Tue,  7 Apr 2015 19:45:39 -0400
-Subject: [Intel-wired-lan] [net-next S3 10/13] i40e: handle possible memory
-	allocation failure
+Date: Tue,  7 Apr 2015 19:45:40 -0400
+Subject: [Intel-wired-lan] [net-next S3 11/13] i40e: get rid of unused locals
 In-Reply-To: <1428450342-48517-1-git-send-email-catherine.sullivan@intel.com>
 References: <1428450342-48517-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1428450342-48517-10-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1428450342-48517-11-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,61 +12,60 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-The init_interrupt_scheme function had a possible failure
-path to allocate memory that was found by smatch.
-
-This adds the correct handling to the function to abort
-probe if the memory allocation fails.
+These changes just remove unused variables and any code that uses them
+as the results of storing into these variables doesn't have any
+side effects that I can see or provide any benefit.
 
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Change-ID: I2bf1d826a244209619da4c452d0d58b3eb5e26a3
+Change-ID: I8a5ec7132ff1443d23aae729cef94beaaaf19e3a
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_dcb.c | 6 ++----
+ drivers/net/ethernet/intel/i40e/i40e_nvm.c | 3 +--
+ 2 files changed, 3 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 63de3f4..b297294 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -7301,7 +7301,7 @@ err_out:
-  * i40e_init_interrupt_scheme - Determine proper interrupt scheme
-  * @pf: board private structure to initialize
-  **/
--static void i40e_init_interrupt_scheme(struct i40e_pf *pf)
-+static int i40e_init_interrupt_scheme(struct i40e_pf *pf)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_dcb.c b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
+index 6e14667..2547aa2 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_dcb.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
+@@ -419,7 +419,7 @@ static void i40e_cee_to_dcb_v1_config(
  {
- 	int vectors = 0;
- 	ssize_t size;
-@@ -7343,11 +7343,17 @@ static void i40e_init_interrupt_scheme(struct i40e_pf *pf)
- 	/* set up vector assignment tracking */
- 	size = sizeof(struct i40e_lump_tracking) + (sizeof(u16) * vectors);
- 	pf->irq_pile = kzalloc(size, GFP_KERNEL);
-+	if (!pf->irq_pile) {
-+		dev_err(&pf->pdev->dev, "error allocating irq_pile memory\n");
-+		return -ENOMEM;
-+	}
- 	pf->irq_pile->num_entries = vectors;
- 	pf->irq_pile->search_hint = 0;
+ 	u16 status, tlv_status = le16_to_cpu(cee_cfg->tlv_status);
+ 	u16 app_prio = le16_to_cpu(cee_cfg->oper_app_prio);
+-	u8 i, tc, err, sync, oper;
++	u8 i, tc, err;
  
--	/* track first vector for misc interrupts */
-+	/* track first vector for misc interrupts, ignore return */
- 	(void)i40e_get_lump(pf, pf->irq_pile, 1, I40E_PILE_VALID_BIT - 1);
-+
-+	return 0;
- }
+ 	/* CEE PG data to ETS config */
+ 	dcbcfg->etscfg.maxtcs = cee_cfg->oper_num_tc;
+@@ -456,9 +456,7 @@ static void i40e_cee_to_dcb_v1_config(
+ 	status = (tlv_status & I40E_AQC_CEE_APP_STATUS_MASK) >>
+ 		  I40E_AQC_CEE_APP_STATUS_SHIFT;
+ 	err = (status & I40E_TLV_STATUS_ERR) ? 1 : 0;
+-	sync = (status & I40E_TLV_STATUS_SYNC) ? 1 : 0;
+-	oper = (status & I40E_TLV_STATUS_OPER) ? 1 : 0;
+-	/* Add APPs if Error is False and Oper/Sync is True */
++	/* Add APPs if Error is False */
+ 	if (!err) {
+ 		/* CEE operating configuration supports FCoE/iSCSI/FIP only */
+ 		dcbcfg->numapps = I40E_CEE_OPER_MAX_APPS;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
+index e49acd2..554e49d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
+@@ -821,13 +821,12 @@ static enum i40e_nvmupd_cmd i40e_nvmupd_validate_command(struct i40e_hw *hw,
+ 						 int *errno)
+ {
+ 	enum i40e_nvmupd_cmd upd_cmd;
+-	u8 transaction, module;
++	u8 transaction;
  
- /**
-@@ -9827,7 +9833,9 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	/* anything that doesn't match a recognized case is an error */
+ 	upd_cmd = I40E_NVMUPD_INVALID;
  
- 	/* set up the main switch operations */
- 	i40e_determine_queue_usage(pf);
--	i40e_init_interrupt_scheme(pf);
-+	err = i40e_init_interrupt_scheme(pf);
-+	if (err)
-+		goto err_switch_setup;
+ 	transaction = i40e_nvmupd_get_transaction(cmd->config);
+-	module = i40e_nvmupd_get_module(cmd->config);
  
- 	/* The number of VSIs reported by the FW is the minimum guaranteed
- 	 * to us; HW supports far more and we share the remaining pool with
+ 	/* limits on data size */
+ 	if ((cmd->data_size < 1) ||
 -- 
 1.9.3
 
