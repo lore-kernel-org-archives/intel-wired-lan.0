@@ -1,9 +1,9 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Tue,  7 Apr 2015 19:45:32 -0400
-Subject: [Intel-wired-lan]  [net-next S3 03/13] i40evf: remove aq_pending
+Date: Tue,  7 Apr 2015 19:45:33 -0400
+Subject: [Intel-wired-lan] [net-next S3 04/13] i40e: notify VFs of link state
 In-Reply-To: <1428450342-48517-1-git-send-email-catherine.sullivan@intel.com>
 References: <1428450342-48517-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1428450342-48517-3-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1428450342-48517-4-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,213 +12,105 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Mitch Williams <mitch.a.williams@intel.com>
 
-The aq_pending field in the adapter structure is actually redundant with
-the current_op field. Remove the aq_pending field and expunge all traces
-of it from the official record. This simplifies the code significantly,
-especially in the virtual channel completion routine.
+Gratuitously notify VFs of link state when they activate their queues.
+In general, this is the last thing that a VF driver will do as it opens
+its interface, so this is a good time to notify the VF.
+
+Currently, VF devices assume link is up unless told otherwise, which
+means that VFs instantiated on a PF with no link will report the wrong
+state. This change corrects that issue.
 
 Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Change-ID: Ib2957c8c19882bd0cecc6fcd133912c24b46a1ff
+Change-ID: Iea53622904ecc681ac3f8938d81c30033ef9a0a6
 ---
- drivers/net/ethernet/intel/i40evf/i40evf.h         |  1 -
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  7 +---
- .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    | 42 ++++++----------------
- 3 files changed, 12 insertions(+), 38 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 50 ++++++++++++++--------
+ 1 file changed, 31 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
-index 34c8565..1b98c25 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
-@@ -225,7 +225,6 @@ struct i40evf_adapter {
- #define I40E_FLAG_RX_CSUM_ENABLED                I40EVF_FLAG_RX_CSUM_ENABLED
- 	/* flags for admin queue service task */
- 	u32 aq_required;
--	u32 aq_pending;
- #define I40EVF_FLAG_AQ_ENABLE_QUEUES		(u32)(1)
- #define I40EVF_FLAG_AQ_DISABLE_QUEUES		(u32)(1 << 1)
- #define I40EVF_FLAG_AQ_ADD_MAC_FILTER		(u32)(1 << 2)
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index a31bfd1..7c53aca 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -1008,7 +1008,6 @@ void i40evf_down(struct i40evf_adapter *adapter)
- 	    adapter->state != __I40EVF_RESETTING) {
- 		/* cancel any current operation */
- 		adapter->current_op = I40E_VIRTCHNL_OP_UNKNOWN;
--		adapter->aq_pending = 0;
- 		/* Schedule operations to close down the HW. Don't wait
- 		 * here for this to complete. The watchdog is still running
- 		 * and it will take care of this.
-@@ -1335,7 +1334,6 @@ static void i40evf_watchdog_task(struct work_struct *work)
- 			 */
- 			return;
- 		}
--		adapter->aq_pending = 0;
- 		adapter->aq_required = 0;
- 		adapter->current_op = I40E_VIRTCHNL_OP_UNKNOWN;
- 		goto watchdog_done;
-@@ -1355,7 +1353,6 @@ static void i40evf_watchdog_task(struct work_struct *work)
- 		adapter->flags |= I40EVF_FLAG_RESET_PENDING;
- 		dev_err(&adapter->pdev->dev, "Hardware reset detected\n");
- 		schedule_work(&adapter->reset_task);
--		adapter->aq_pending = 0;
- 		adapter->aq_required = 0;
- 		adapter->current_op = I40E_VIRTCHNL_OP_UNKNOWN;
- 		goto watchdog_done;
-@@ -1364,7 +1361,7 @@ static void i40evf_watchdog_task(struct work_struct *work)
- 	/* Process admin queue tasks. After init, everything gets done
- 	 * here so we don't race on the admin queue.
- 	 */
--	if (adapter->aq_pending) {
-+	if (adapter->current_op) {
- 		if (!i40evf_asq_done(hw)) {
- 			dev_dbg(&adapter->pdev->dev, "Admin queue timeout\n");
- 			i40evf_send_api_ver(adapter);
-@@ -2249,7 +2246,6 @@ static void i40evf_shutdown(struct pci_dev *pdev)
- 	/* Prevent the watchdog from running. */
- 	adapter->state = __I40EVF_REMOVE;
- 	adapter->aq_required = 0;
--	adapter->aq_pending = 0;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 9b3fc83..8df2b52 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -25,6 +25,7 @@
+  ******************************************************************************/
  
- #ifdef CONFIG_PM
- 	pci_save_state(pdev);
-@@ -2467,7 +2463,6 @@ static void i40evf_remove(struct pci_dev *pdev)
- 	/* Shut down all the garbage mashers on the detention level */
- 	adapter->state = __I40EVF_REMOVE;
- 	adapter->aq_required = 0;
--	adapter->aq_pending = 0;
- 	i40evf_request_reset(adapter);
- 	msleep(20);
- 	/* If the FW isn't responding, kick it once, but only once. */
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-index 4240a49..61e0905 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-@@ -250,7 +250,6 @@ void i40evf_configure_queues(struct i40evf_adapter *adapter)
- 		vqpi++;
- 	}
+ #include "i40e.h"
++static void i40e_vc_notify_vf_link_state(struct i40e_vf *vf);
  
--	adapter->aq_pending |= I40EVF_FLAG_AQ_CONFIGURE_QUEUES;
- 	adapter->aq_required &= ~I40EVF_FLAG_AQ_CONFIGURE_QUEUES;
- 	i40evf_send_pf_msg(adapter, I40E_VIRTCHNL_OP_CONFIG_VSI_QUEUES,
- 			   (u8 *)vqci, len);
-@@ -277,7 +276,6 @@ void i40evf_enable_queues(struct i40evf_adapter *adapter)
- 	vqs.vsi_id = adapter->vsi_res->vsi_id;
- 	vqs.tx_queues = (1 << adapter->num_active_queues) - 1;
- 	vqs.rx_queues = vqs.tx_queues;
--	adapter->aq_pending |= I40EVF_FLAG_AQ_ENABLE_QUEUES;
- 	adapter->aq_required &= ~I40EVF_FLAG_AQ_ENABLE_QUEUES;
- 	i40evf_send_pf_msg(adapter, I40E_VIRTCHNL_OP_ENABLE_QUEUES,
- 			   (u8 *)&vqs, sizeof(vqs));
-@@ -303,7 +301,6 @@ void i40evf_disable_queues(struct i40evf_adapter *adapter)
- 	vqs.vsi_id = adapter->vsi_res->vsi_id;
- 	vqs.tx_queues = (1 << adapter->num_active_queues) - 1;
- 	vqs.rx_queues = vqs.tx_queues;
--	adapter->aq_pending |= I40EVF_FLAG_AQ_DISABLE_QUEUES;
- 	adapter->aq_required &= ~I40EVF_FLAG_AQ_DISABLE_QUEUES;
- 	i40evf_send_pf_msg(adapter, I40E_VIRTCHNL_OP_DISABLE_QUEUES,
- 			   (u8 *)&vqs, sizeof(vqs));
-@@ -354,7 +351,6 @@ void i40evf_map_queues(struct i40evf_adapter *adapter)
- 	vimi->vecmap[v_idx].txq_map = 0;
- 	vimi->vecmap[v_idx].rxq_map = 0;
+ /***********************misc routines*****************************/
  
--	adapter->aq_pending |= I40EVF_FLAG_AQ_MAP_VECTORS;
- 	adapter->aq_required &= ~I40EVF_FLAG_AQ_MAP_VECTORS;
- 	i40evf_send_pf_msg(adapter, I40E_VIRTCHNL_OP_CONFIG_IRQ_MAP,
- 			   (u8 *)vimi, len);
-@@ -415,7 +411,6 @@ void i40evf_add_ether_addrs(struct i40evf_adapter *adapter)
- 			f->add = false;
- 		}
- 	}
--	adapter->aq_pending |= I40EVF_FLAG_AQ_ADD_MAC_FILTER;
- 	adapter->aq_required &= ~I40EVF_FLAG_AQ_ADD_MAC_FILTER;
- 	i40evf_send_pf_msg(adapter, I40E_VIRTCHNL_OP_ADD_ETHER_ADDRESS,
- 			   (u8 *)veal, len);
-@@ -476,7 +471,6 @@ void i40evf_del_ether_addrs(struct i40evf_adapter *adapter)
- 			kfree(f);
- 		}
- 	}
--	adapter->aq_pending |= I40EVF_FLAG_AQ_DEL_MAC_FILTER;
- 	adapter->aq_required &= ~I40EVF_FLAG_AQ_DEL_MAC_FILTER;
- 	i40evf_send_pf_msg(adapter, I40E_VIRTCHNL_OP_DEL_ETHER_ADDRESS,
- 			   (u8 *)veal, len);
-@@ -537,7 +531,6 @@ void i40evf_add_vlans(struct i40evf_adapter *adapter)
- 			f->add = false;
- 		}
- 	}
--	adapter->aq_pending |= I40EVF_FLAG_AQ_ADD_VLAN_FILTER;
- 	adapter->aq_required &= ~I40EVF_FLAG_AQ_ADD_VLAN_FILTER;
- 	i40evf_send_pf_msg(adapter, I40E_VIRTCHNL_OP_ADD_VLAN, (u8 *)vvfl, len);
- 	kfree(vvfl);
-@@ -598,7 +591,6 @@ void i40evf_del_vlans(struct i40evf_adapter *adapter)
- 			kfree(f);
- 		}
- 	}
--	adapter->aq_pending |= I40EVF_FLAG_AQ_DEL_VLAN_FILTER;
- 	adapter->aq_required &= ~I40EVF_FLAG_AQ_DEL_VLAN_FILTER;
- 	i40evf_send_pf_msg(adapter, I40E_VIRTCHNL_OP_DEL_VLAN, (u8 *)vvfl, len);
- 	kfree(vvfl);
-@@ -720,9 +712,6 @@ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
- 			__func__, v_retval, v_opcode);
- 	}
- 	switch (v_opcode) {
--	case I40E_VIRTCHNL_OP_VERSION:
--		/* no action, but also not an error */
--		break;
- 	case I40E_VIRTCHNL_OP_GET_STATS: {
- 		struct i40e_eth_stats *stats =
- 			(struct i40e_eth_stats *)msg;
-@@ -740,39 +729,30 @@ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
- 		adapter->current_stats = *stats;
- 		}
+@@ -1767,6 +1768,7 @@ int i40e_vc_process_vf_msg(struct i40e_pf *pf, u16 vf_id, u32 v_opcode,
  		break;
--	case I40E_VIRTCHNL_OP_ADD_ETHER_ADDRESS:
--		adapter->aq_pending &= ~(I40EVF_FLAG_AQ_ADD_MAC_FILTER);
--		break;
--	case I40E_VIRTCHNL_OP_DEL_ETHER_ADDRESS:
--		adapter->aq_pending &= ~(I40EVF_FLAG_AQ_DEL_MAC_FILTER);
--		break;
--	case I40E_VIRTCHNL_OP_ADD_VLAN:
--		adapter->aq_pending &= ~(I40EVF_FLAG_AQ_ADD_VLAN_FILTER);
--		break;
--	case I40E_VIRTCHNL_OP_DEL_VLAN:
--		adapter->aq_pending &= ~(I40EVF_FLAG_AQ_DEL_VLAN_FILTER);
--		break;
  	case I40E_VIRTCHNL_OP_ENABLE_QUEUES:
--		adapter->aq_pending &= ~(I40EVF_FLAG_AQ_ENABLE_QUEUES);
- 		/* enable transmits */
- 		i40evf_irq_enable(adapter, true);
- 		netif_tx_start_all_queues(adapter->netdev);
- 		netif_carrier_on(adapter->netdev);
+ 		ret = i40e_vc_enable_queues_msg(vf, msg, msglen);
++		i40e_vc_notify_vf_link_state(vf);
  		break;
  	case I40E_VIRTCHNL_OP_DISABLE_QUEUES:
--		adapter->aq_pending &= ~(I40EVF_FLAG_AQ_DISABLE_QUEUES);
- 		i40evf_free_all_tx_resources(adapter);
- 		i40evf_free_all_rx_resources(adapter);
- 		break;
--	case I40E_VIRTCHNL_OP_CONFIG_VSI_QUEUES:
--		adapter->aq_pending &= ~(I40EVF_FLAG_AQ_CONFIGURE_QUEUES);
--		break;
-+	case I40E_VIRTCHNL_OP_VERSION:
-+	case I40E_VIRTCHNL_OP_GET_VF_RESOURCES:
- 	case I40E_VIRTCHNL_OP_CONFIG_IRQ_MAP:
--		adapter->aq_pending &= ~(I40EVF_FLAG_AQ_MAP_VECTORS);
-+		/* Don't display an error if we get these out of sequence.
-+		 * If the firmware needed to get kicked, we'll get these and
-+		 * it's no problem.
-+		 */
-+		if (v_opcode != adapter->current_op)
-+			return;
- 		break;
- 	default:
--		dev_info(&adapter->pdev->dev, "Received unexpected message %d from PF\n",
--			 v_opcode);
-+		if (v_opcode != adapter->current_op)
-+			dev_warn(&adapter->pdev->dev, "Expected response %d from PF, received %d\n",
-+				 adapter->current_op, v_opcode);
- 		break;
- 	} /* switch v_opcode */
- 	adapter->current_op = I40E_VIRTCHNL_OP_UNKNOWN;
+ 		ret = i40e_vc_disable_queues_msg(vf, msg, msglen);
+@@ -1875,35 +1877,45 @@ static void i40e_vc_vf_broadcast(struct i40e_pf *pf,
+ 
+ /**
+  * i40e_vc_notify_link_state
+- * @pf: pointer to the PF structure
++ * @vf: pointer to the VF structure
+  *
+- * send a link status message to all VFs on a given PF
++ * send a link status message to a single VF
+  **/
+-void i40e_vc_notify_link_state(struct i40e_pf *pf)
++static void i40e_vc_notify_vf_link_state(struct i40e_vf *vf)
+ {
+ 	struct i40e_virtchnl_pf_event pfe;
++	struct i40e_pf *pf = vf->pf;
+ 	struct i40e_hw *hw = &pf->hw;
+-	struct i40e_vf *vf = pf->vf;
+ 	struct i40e_link_status *ls = &pf->hw.phy.link_info;
+-	int i;
++	int abs_vf_id = vf->vf_id + hw->func_caps.vf_base_id;
+ 
+ 	pfe.event = I40E_VIRTCHNL_EVENT_LINK_CHANGE;
+ 	pfe.severity = I40E_PF_EVENT_SEVERITY_INFO;
+-	for (i = 0; i < pf->num_alloc_vfs; i++, vf++) {
+-		int abs_vf_id = vf->vf_id + hw->func_caps.vf_base_id;
+-		if (vf->link_forced) {
+-			pfe.event_data.link_event.link_status = vf->link_up;
+-			pfe.event_data.link_event.link_speed =
+-				(vf->link_up ? I40E_LINK_SPEED_40GB : 0);
+-		} else {
+-			pfe.event_data.link_event.link_status =
+-				ls->link_info & I40E_AQ_LINK_UP;
+-			pfe.event_data.link_event.link_speed = ls->link_speed;
+-		}
+-		i40e_aq_send_msg_to_vf(hw, abs_vf_id, I40E_VIRTCHNL_OP_EVENT,
+-				       0, (u8 *)&pfe, sizeof(pfe),
+-				       NULL);
++	if (vf->link_forced) {
++		pfe.event_data.link_event.link_status = vf->link_up;
++		pfe.event_data.link_event.link_speed =
++			(vf->link_up ? I40E_LINK_SPEED_40GB : 0);
++	} else {
++		pfe.event_data.link_event.link_status =
++			ls->link_info & I40E_AQ_LINK_UP;
++		pfe.event_data.link_event.link_speed = ls->link_speed;
+ 	}
++	i40e_aq_send_msg_to_vf(hw, abs_vf_id, I40E_VIRTCHNL_OP_EVENT,
++			       0, (u8 *)&pfe, sizeof(pfe), NULL);
++}
++
++/**
++ * i40e_vc_notify_link_state
++ * @pf: pointer to the PF structure
++ *
++ * send a link status message to all VFs on a given PF
++ **/
++void i40e_vc_notify_link_state(struct i40e_pf *pf)
++{
++	int i;
++
++	for (i = 0; i < pf->num_alloc_vfs; i++)
++		i40e_vc_notify_vf_link_state(&pf->vf[i]);
+ }
+ 
+ /**
 -- 
 1.9.3
 
