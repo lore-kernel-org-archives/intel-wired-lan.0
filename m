@@ -1,265 +1,103 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 07 Apr 2015 17:47:31 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 26579306243e3dbafb12b0641fb67bf62ebb4d8f BUILD DONE
-Message-ID: <5523a7b3.CZvuoL7xP9fINYY7%fengguang.wu@intel.com>
+From: Alexander Duyck <alexander.h.duyck@redhat.com>
+Date: Tue, 07 Apr 2015 08:17:40 -0700
+Subject: [Intel-wired-lan] [net-next 05/25] fm10k: Add netconsole support
+In-Reply-To: <1428092835-16834-5-git-send-email-jeffrey.t.kirsher@intel.com>
+References: <1428092835-16834-1-git-send-email-jeffrey.t.kirsher@intel.com>
+ <1428092835-16834-5-git-send-email-jeffrey.t.kirsher@intel.com>
+Message-ID: <5523F514.20800@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-26579306243e3dbafb12b0641fb67bf62ebb4d8f  fm10k: Bump driver version to 0.15.2
+On 04/03/2015 01:26 PM, Jeff Kirsher wrote:
+> This change adds a function called "fm10k_netpoll" that's used to define
+> "ndo_poll_controller" in "fm10k_netdev_ops". This is required to enable
+> support for "netconsole" in fm10k.
+>
+> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> Signed-off-by: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
+> Acked-by: Matthew Vick <matthew.vick@intel.com>
+> ---
+>   drivers/net/ethernet/intel/fm10k/fm10k.h        |  1 +
+>   drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 21 +++++++++++++++++++++
+>   drivers/net/ethernet/intel/fm10k/fm10k_pci.c    |  2 +-
+>   3 files changed, 23 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
+> index 65e7001..715d0a0 100644
+> --- a/drivers/net/ethernet/intel/fm10k/fm10k.h
+> +++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
+> @@ -457,6 +457,7 @@ void fm10k_down(struct fm10k_intfc *interface);
+>   void fm10k_update_stats(struct fm10k_intfc *interface);
+>   void fm10k_service_event_schedule(struct fm10k_intfc *interface);
+>   void fm10k_update_rx_drop_en(struct fm10k_intfc *interface);
+> +irqreturn_t fm10k_msix_clean_rings(int irq, void *data);
+>   
+>   /* Netdev */
+>   struct net_device *fm10k_alloc_netdev(void);
+> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+> index a7db5e2..2a61b83 100644
+> --- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+> @@ -1350,6 +1350,26 @@ static void fm10k_dfwd_del_station(struct net_device *dev, void *priv)
+>   	}
+>   }
+>   
+> +/**
+> + * fm10k_netpoll - A Polling 'interrupt' handler
+> + * @netdev: network interface device structure
+> + *
+> + * This is used by netconsole to send skbs without having to re-enable
+> + * interrupts. It's not called while the normal interrupt routine is executing.
+> + **/
+> +static void fm10k_netpoll(struct net_device *netdev)
+> +{
+> +	struct fm10k_intfc *interface = netdev_priv(netdev);
+> +	int i;
+> +
+> +	/* if interface is down do nothing */
+> +	if (test_bit(__FM10K_DOWN, &interface->state))
+> +		return;
+> +
+> +	for (i = 0; i < interface->num_q_vectors; i++)
+> +		fm10k_msix_clean_rings(0, interface->q_vector[i]);
+> +}
+> +
+>   static netdev_features_t fm10k_features_check(struct sk_buff *skb,
+>   					      struct net_device *dev,
+>   					      netdev_features_t features)
+> @@ -1382,6 +1402,7 @@ static const struct net_device_ops fm10k_netdev_ops = {
+>   	.ndo_do_ioctl		= fm10k_ioctl,
+>   	.ndo_dfwd_add_station	= fm10k_dfwd_add_station,
+>   	.ndo_dfwd_del_station	= fm10k_dfwd_del_station,
+> +	.ndo_poll_controller	= fm10k_netpoll,
+>   	.ndo_features_check	= fm10k_features_check,
+>   };
+>   
+> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> index 6fc9965..c11e2c9 100644
+> --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> @@ -807,7 +807,7 @@ static void fm10k_napi_enable_all(struct fm10k_intfc *interface)
+>   	}
+>   }
+>   
+> -static irqreturn_t fm10k_msix_clean_rings(int irq, void *data)
+> +irqreturn_t fm10k_msix_clean_rings(int irq, void *data)
+>   {
+>   	struct fm10k_q_vector *q_vector = data;
+>   
 
-Warning(include/linux/netdevice.h:1745): Excess struct/union/enum/typedef member 'iflink' description in 'net_device'
-drivers/net/ethernet/intel/e1000e/ich8lan.c:1045 e1000_platform_pm_pch_lpt() warn: unsigned 'lat_ns' is never less than zero.
-drivers/net/ethernet/intel/fm10k/fm10k_netdev.c:1401:2: error: unknown field 'ndo_poll_controller' specified in initializer
-drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:738:44: error: 'struct i40e_vf' has no member named 'lan_vsi_index'
+2 quick issues with this patch based on the fact that it triggered the 
+build bot.
 
-elapsed time: 590m
+1.  You should probably place fm10k_netpoll in fm10k_pci.c since it is 
+technically an interrupt handler.  Then you can avoid issues down the 
+road for having to convert fm10k_msix_clean_rings to a non-static 
+function that is only used when CONFIG_NET_POLL_CONTROLLER is defined.
+2.  It should be wrapped in CONFIG_NET_POLL_CONTROLLER along with the 
+inititalization in the fm10k_netdev_ops structure.
 
-configs tested: 239
-
-i386                              allnoconfig
-i386                                defconfig
-i386                             allmodconfig
-i386                             alldefconfig
-mips                             allmodconfig
-mips                                   jz4740
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-x86_64                 randconfig-a1-04062129
-x86_64                 randconfig-a0-04062129
-x86_64                 randconfig-a0-04071616
-x86_64                 randconfig-a1-04071616
-x86_64                            allnoconfig
-x86_64                     randconfig-c0-0407
-x86_64                     randconfig-c2-0407
-x86_64                     randconfig-c1-0407
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-i386                   randconfig-c0-04062312
-i386                   randconfig-c1-04062312
-i386                   randconfig-c0-04071450
-i386                   randconfig-c1-04071450
-x86_64                randconfig-iv1-04070614
-x86_64                randconfig-iv0-04070614
-x86_64                randconfig-iv0-04070907
-x86_64                randconfig-iv1-04070907
-x86_64                randconfig-iv0-04071235
-x86_64                randconfig-iv1-04071235
-x86_64                randconfig-iv0-04071356
-x86_64                randconfig-iv1-04071356
-x86_64                randconfig-iv0-04071545
-x86_64                randconfig-iv1-04071545
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-powerpc                          allmodconfig
-i386                  randconfig-ib0-04070335
-i386                  randconfig-ib1-04070335
-i386                  randconfig-ib1-04070936
-i386                  randconfig-ib0-04070936
-i386                  randconfig-ib0-04071111
-i386                  randconfig-ib1-04071111
-i386                  randconfig-ib1-04071334
-i386                  randconfig-ib0-04071334
-i386                  randconfig-ib0-04071524
-i386                  randconfig-ib1-04071524
-i386                  randconfig-ib1-04071639
-i386                  randconfig-ib0-04071639
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-microblaze                       allyesconfig
-s390                             allmodconfig
-s390                              allnoconfig
-s390                                defconfig
-i386                             allyesconfig
-x86_64                randconfig-ib0-04070235
-x86_64                randconfig-ib0-04071103
-x86_64                randconfig-ib0-04071553
-x86_64                randconfig-ib0-04071700
-powerpc                      mgcoge_defconfig
-powerpc                    sam440ep_defconfig
-mips                           ip27_defconfig
-s390                           gcov_defconfig
-arm                          iop33x_defconfig
-mips                           ip22_defconfig
-arm                          lpd270_defconfig
-arm                        vexpress_defconfig
-powerpc                   currituck_defconfig
-arm                           corgi_defconfig
-powerpc                     pq2fads_defconfig
-arm                        realview_defconfig
-avr32                     atstk1002_defconfig
-i386                         randconfig-nexe1
-i386                         randconfig-nexe0
-i386                         randconfig-nexe3
-i386                         randconfig-nexe2
-i386                         randconfig-nexe5
-i386                         randconfig-nexe4
-i386                         randconfig-nexe7
-i386                         randconfig-nexe6
-i386                         randconfig-nexe9
-i386                         randconfig-nexe8
-x86_64                       randconfig-nexe6
-x86_64                       randconfig-nexe7
-x86_64                       randconfig-nexe4
-x86_64                       randconfig-nexe5
-x86_64                       randconfig-nexe2
-x86_64                       randconfig-nexe3
-x86_64                       randconfig-nexe0
-x86_64                       randconfig-nexe1
-x86_64                       randconfig-nexe8
-x86_64                       randconfig-nexe9
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64                  randconfig-nexr1-0407
-x86_64                  randconfig-nexr2-0407
-i386                    randconfig-nexr2-0407
-i386                    randconfig-nexr1-0407
-x86_64                  randconfig-nexr0-0407
-i386                    randconfig-nexr0-0407
-i386                randconfig-nexs0-04062355
-x86_64              randconfig-nexs0-04062355
-x86_64              randconfig-nexs0-04071301
-i386                randconfig-nexs0-04071301
-powerpc                      chroma_defconfig
-powerpc                 linkstation_defconfig
-powerpc                               powerpc
-powerpc                         wii_defconfig
-powerpc                    gamecube_defconfig
-powerpc               corenet64_smp_defconfig
-powerpc                               mpc512x
-powerpc                                ppc44x
-x86_64                 randconfig-n0-04061719
-x86_64                 randconfig-n0-04071223
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                              allmodconfig
-arm                          prima2_defconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                                   samsung
-arm                       spear13xx_defconfig
-arm                         s3c2410_defconfig
-arm                                  iop-adma
-arm                       imx_v6_v7_defconfig
-arm                                       mmp
-arm                           tegra_defconfig
-arm                                      arm5
-arm                          marzen_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                                        sh
-arm                                     arm67
-xtensa                           allyesconfig
-sparc64                          allyesconfig
-mips                             allyesconfig
-m68k                             allyesconfig
-sparc                            allyesconfig
-tile                             allyesconfig
-alpha                            allyesconfig
-powerpc                          allyesconfig
-sh                               allyesconfig
-avr32                            allyesconfig
-ia64                             allyesconfig
-parisc                           allyesconfig
-cris                             allyesconfig
-x86_64                           allyesconfig
-blackfin                         allyesconfig
-s390                             allyesconfig
-arm                         mv78xx0_defconfig
-powerpc                     asp8347_defconfig
-blackfin                   CM-BF548_defconfig
-arm                             msm_defconfig
-avr32                  atngw100mkii_defconfig
-arm                        keystone_defconfig
-powerpc                     taishan_defconfig
-powerpc                         ps3_defconfig
-arm                         shannon_defconfig
-powerpc                      arches_defconfig
-m68k                           sun3_defconfig
-powerpc                 mpc85xx_smp_defconfig
-arm                 armadillo800eva_defconfig
-arm                          nuc910_defconfig
-arm                          collie_defconfig
-arm                        neponset_defconfig
-ia64                        generic_defconfig
-mips                           xway_defconfig
-sparc                       sparc32_defconfig
-ia64                          tiger_defconfig
-arm                         socfpga_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                       randconfig-r2-0407
-i386                       randconfig-r0-0407
-i386                       randconfig-r1-0407
-x86_64                 randconfig-r0-04070630
-x86_64                 randconfig-r0-04071400
-x86_64                 randconfig-r0-04071632
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-m68k                             allmodconfig
-m68k                          amiga_defconfig
-x86_64                 randconfig-s1-04062253
-x86_64                 randconfig-s0-04062253
-x86_64                 randconfig-s1-04071327
-x86_64                 randconfig-s0-04071327
-x86_64                           allmodconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-i386                          randconfig-x009
-i386                          randconfig-x008
-i386                          randconfig-x005
-i386                          randconfig-x004
-i386                          randconfig-x007
-i386                          randconfig-x006
-i386                          randconfig-x001
-i386                          randconfig-x000
-i386                          randconfig-x003
-i386                          randconfig-x002
-x86_64                        randconfig-x000
-x86_64                        randconfig-x001
-x86_64                        randconfig-x002
-x86_64                        randconfig-x003
-x86_64                        randconfig-x004
-x86_64                        randconfig-x005
-x86_64                        randconfig-x006
-x86_64                        randconfig-x007
-x86_64                        randconfig-x008
-x86_64                        randconfig-x009
-i386                   randconfig-x1-04061832
-i386                   randconfig-x0-04061832
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-
-Thanks,
-Fengguang
+- Alex
