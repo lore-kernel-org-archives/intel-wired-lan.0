@@ -1,103 +1,45 @@
-From: Alexander Duyck <alexander.h.duyck@redhat.com>
-Date: Tue, 07 Apr 2015 08:17:40 -0700
-Subject: [Intel-wired-lan] [net-next 05/25] fm10k: Add netconsole support
-In-Reply-To: <1428092835-16834-5-git-send-email-jeffrey.t.kirsher@intel.com>
-References: <1428092835-16834-1-git-send-email-jeffrey.t.kirsher@intel.com>
- <1428092835-16834-5-git-send-email-jeffrey.t.kirsher@intel.com>
-Message-ID: <5523F514.20800@redhat.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
+Date: Tue,  7 Apr 2015 11:32:55 -0700
+Subject: [Intel-wired-lan] [PATCH v2 net-next] i40e: stop VF rings
+Message-ID: <1428431575-168522-1-git-send-email-mitch.a.williams@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 04/03/2015 01:26 PM, Jeff Kirsher wrote:
-> This change adds a function called "fm10k_netpoll" that's used to define
-> "ndo_poll_controller" in "fm10k_netdev_ops". This is required to enable
-> support for "netconsole" in fm10k.
->
-> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> Signed-off-by: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
-> Acked-by: Matthew Vick <matthew.vick@intel.com>
-> ---
->   drivers/net/ethernet/intel/fm10k/fm10k.h        |  1 +
->   drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 21 +++++++++++++++++++++
->   drivers/net/ethernet/intel/fm10k/fm10k_pci.c    |  2 +-
->   3 files changed, 23 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
-> index 65e7001..715d0a0 100644
-> --- a/drivers/net/ethernet/intel/fm10k/fm10k.h
-> +++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
-> @@ -457,6 +457,7 @@ void fm10k_down(struct fm10k_intfc *interface);
->   void fm10k_update_stats(struct fm10k_intfc *interface);
->   void fm10k_service_event_schedule(struct fm10k_intfc *interface);
->   void fm10k_update_rx_drop_en(struct fm10k_intfc *interface);
-> +irqreturn_t fm10k_msix_clean_rings(int irq, void *data);
->   
->   /* Netdev */
->   struct net_device *fm10k_alloc_netdev(void);
-> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-> index a7db5e2..2a61b83 100644
-> --- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-> @@ -1350,6 +1350,26 @@ static void fm10k_dfwd_del_station(struct net_device *dev, void *priv)
->   	}
->   }
->   
-> +/**
-> + * fm10k_netpoll - A Polling 'interrupt' handler
-> + * @netdev: network interface device structure
-> + *
-> + * This is used by netconsole to send skbs without having to re-enable
-> + * interrupts. It's not called while the normal interrupt routine is executing.
-> + **/
-> +static void fm10k_netpoll(struct net_device *netdev)
-> +{
-> +	struct fm10k_intfc *interface = netdev_priv(netdev);
-> +	int i;
-> +
-> +	/* if interface is down do nothing */
-> +	if (test_bit(__FM10K_DOWN, &interface->state))
-> +		return;
-> +
-> +	for (i = 0; i < interface->num_q_vectors; i++)
-> +		fm10k_msix_clean_rings(0, interface->q_vector[i]);
-> +}
-> +
->   static netdev_features_t fm10k_features_check(struct sk_buff *skb,
->   					      struct net_device *dev,
->   					      netdev_features_t features)
-> @@ -1382,6 +1402,7 @@ static const struct net_device_ops fm10k_netdev_ops = {
->   	.ndo_do_ioctl		= fm10k_ioctl,
->   	.ndo_dfwd_add_station	= fm10k_dfwd_add_station,
->   	.ndo_dfwd_del_station	= fm10k_dfwd_del_station,
-> +	.ndo_poll_controller	= fm10k_netpoll,
->   	.ndo_features_check	= fm10k_features_check,
->   };
->   
-> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> index 6fc9965..c11e2c9 100644
-> --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> @@ -807,7 +807,7 @@ static void fm10k_napi_enable_all(struct fm10k_intfc *interface)
->   	}
->   }
->   
-> -static irqreturn_t fm10k_msix_clean_rings(int irq, void *data)
-> +irqreturn_t fm10k_msix_clean_rings(int irq, void *data)
->   {
->   	struct fm10k_q_vector *q_vector = data;
->   
+Explicitly stop the rings belonging to each VF when disabling SR-IOV.
+Even though the VFs were gone, and the associated VSIs were removed,
+the rings were not stopped, and in some circumstances the hardware would
+continue to access the memory formerly used by the rings, causing
+memory corruption or DMAR errors, both of which would lead to general
+malaise of the kernel.
 
-2 quick issues with this patch based on the fact that it triggered the 
-build bot.
+To relieve this condition, explicitly stop all the rings associated with
+each VF before releasing its resources.
 
-1.  You should probably place fm10k_netpoll in fm10k_pci.c since it is 
-technically an interrupt handler.  Then you can avoid issues down the 
-road for having to convert fm10k_msix_clean_rings to a non-static 
-function that is only used when CONFIG_NET_POLL_CONTROLLER is defined.
-2.  It should be wrapped in CONFIG_NET_POLL_CONTROLLER along with the 
-inititalization in the fm10k_netdev_ops structure.
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+v2: use correct variable name (changed in a different patch)
+---
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-- Alex
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 4d69e1f..20ae88b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -733,6 +733,11 @@ void i40e_free_vfs(struct i40e_pf *pf)
+ 	while (test_and_set_bit(__I40E_VF_DISABLE, &pf->state))
+ 		usleep_range(1000, 2000);
+ 
++	for (i = 0; i < pf->num_alloc_vfs; i++)
++		if (test_bit(I40E_VF_STAT_INIT, &pf->vf[i].vf_states))
++			i40e_vsi_control_rings(pf->vsi[pf->vf[i].lan_vsi_idx],
++					       false);
++
+ 	/* Disable IOV before freeing resources. This lets any VF drivers
+ 	 * running in the host get themselves cleaned up before we yank
+ 	 * the carpet out from underneath their feet.
+-- 
+2.1.0
+
