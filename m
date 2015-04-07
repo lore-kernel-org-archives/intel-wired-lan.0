@@ -1,42 +1,41 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Tue,  7 Apr 2015 19:45:35 -0400
-Subject: [Intel-wired-lan] [net-next S3 06/13] i40e: For VF reset (VFR and
-	VFLR) add some more delay
+Date: Tue,  7 Apr 2015 19:45:36 -0400
+Subject: [Intel-wired-lan] [net-next S3 07/13] i40e: print FCoE capability
+	reported by the device function
 In-Reply-To: <1428450342-48517-1-git-send-email-catherine.sullivan@intel.com>
 References: <1428450342-48517-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1428450342-48517-6-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1428450342-48517-7-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Anjali Singhai Jain <anjali.singhai@intel.com>
+From: Vasu Dev <vasu.dev@intel.com>
 
-With a HW issue that was recently discovered, after a VFLR HW might be
-indicating to us a reset completion little too early. So wait another 10
-msec for cache to be cleaned up.
+This is to allow quick check for FCoE capability is enabled or not
+in device function before any SW overrides.
 
-Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-Change-ID: I6a24dcf5dd7ffcd6500246e717411ef58532d1e9
+Signed-off-by: Vasu Dev <vasu.dev@intel.com>
+Change-ID: I5f78ba798d566f143161273156916c6f4074496e
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 3 +++
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 3 +++
  1 file changed, 3 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 98e0921..78d1c4f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -812,6 +812,9 @@ void i40e_reset_vf(struct i40e_vf *vf, bool flr)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index d596f66..44dc4b1 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -2546,6 +2546,9 @@ static void i40e_parse_discover_capabilities(struct i40e_hw *hw, void *buff,
  		}
  	}
  
-+	if (flr)
-+		usleep_range(10000, 20000);
++	if (p->fcoe)
++		i40e_debug(hw, I40E_DEBUG_ALL, "device is FCoE capable\n");
 +
- 	if (!rsd)
- 		dev_err(&pf->pdev->dev, "VF reset check timeout on VF %d\n",
- 			vf->vf_id);
+ 	/* Software override ensuring FCoE is disabled if npar or mfp
+ 	 * mode because it is not supported in these modes.
+ 	 */
 -- 
 1.9.3
 
