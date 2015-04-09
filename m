@@ -1,68 +1,148 @@
-From: Eric Dumazet <eric.dumazet@gmail.com>
-Date: Thu, 09 Apr 2015 17:34:55 -0700
-Subject: [Intel-wired-lan] [PATCH 3/3 net-next] net_device: Add minimal
- padding to allow for net_device pointer alignment
-In-Reply-To: <1676328eb3e9d02a4432783494d0c5a13f0d4656.1428622095.git.tgraf@suug.ch>
+From: Thomas Graf <tgraf@suug.ch>
+Date: Fri, 10 Apr 2015 01:43:27 +0200
+Subject: [Intel-wired-lan] [PATCH 2/3 net-next] net_device: Reorder members
+	to fill holes
+In-Reply-To: <cover.1428622095.git.tgraf@suug.ch>
 References: <cover.1428622095.git.tgraf@suug.ch>
- <1676328eb3e9d02a4432783494d0c5a13f0d4656.1428622095.git.tgraf@suug.ch>
-Message-ID: <1428626095.25985.282.camel@edumazet-glaptop2.roam.corp.google.com>
+Message-ID: <68f97175f41297dca5cb1e2092890c9d1da0d16a.1428622095.git.tgraf@suug.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2015-04-10 at 01:43 +0200, Thomas Graf wrote:
-> Makes use of the __alignof__ GCC builtin to determine the minimal
-> amount of padding required to align the pointer afterwards.
-> 
-> Due to use of ____cacheline_aligned_in_smp inside net_device,
-> struct net_device is actually always a multiple of SMP_CACHE_BYTES
-> so typically no padding is needed but this logic is kept in place
-> in case that is no longer the case.
-> 
-> Signed-off-by: Thomas Graf <tgraf@suug.ch>
-> ---
->  include/linux/kernel.h | 2 ++
->  net/core/dev.c         | 3 +--
->  2 files changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-> index d6d630d..4ec018f 100644
-> --- a/include/linux/kernel.h
-> +++ b/include/linux/kernel.h
-> @@ -50,6 +50,8 @@
->  #define __ALIGN_MASK(x, mask)	__ALIGN_KERNEL_MASK((x), (mask))
->  #define PTR_ALIGN(p, a)		((typeof(p))ALIGN((unsigned long)(p), (a)))
->  #define IS_ALIGNED(x, a)		(((x) & ((typeof(x))(a) - 1)) == 0)
-> +#define PTR_ALIGN_PAD(type, a) \
-> +	({ (__alignof__(type) < (a)) ? @ - __alignof__(type) : 0; })
->  
->  #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
->  
-> diff --git a/net/core/dev.c b/net/core/dev.c
-> index b2775f0..2b43aba 100644
-> --- a/net/core/dev.c
-> +++ b/net/core/dev.c
-> @@ -6794,8 +6794,7 @@ struct net_device *alloc_netdev_mqs(int sizeof_priv, const char *name,
->  		alloc_size = ALIGN(alloc_size, NETDEV_ALIGN);
->  		alloc_size += sizeof_priv;
->  	}
-> -	/* ensure 32-byte alignment of whole construct */
-> -	alloc_size += NETDEV_ALIGN - 1;
-> +	alloc_size += PTR_ALIGN_PAD(struct net_device, NETDEV_ALIGN);
->  
->  	p = kzalloc(alloc_size, GFP_KERNEL | __GFP_NOWARN | __GFP_REPEAT);
->  	if (!p)
+Some trivial reorders while preserving the RX/TX cache lines
+split to fill a couple of holes.
 
+Signed-off-by: Thomas Graf <tgraf@suug.ch>
+---
+ include/linux/netdevice.h | 39 ++++++++++++++++++---------------------
+ 1 file changed, 18 insertions(+), 21 deletions(-)
 
-I believe code intent was to get an alignment even if kmalloc() returns
-say 0xxxxx0008.
-
-AFAIK, SLAB in debug mode was able to do this.
-
-
-
-
-
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index 4653422..af8e9b0 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -1305,6 +1305,8 @@ enum netdev_priv_flags {
+  *	@base_addr:	Device I/O address
+  *	@irq:		Device IRQ number
+  *
++ *	@carrier_changes:	Stats to monitor carrier on<->off transitions
++ *
+  *	@state:		Generic network queuing layer state, see netdev_state_t
+  *	@dev_list:	The global list of network devices
+  *	@napi_list:	List entry, that is used for polling napi devices
+@@ -1338,8 +1340,6 @@ enum netdev_priv_flags {
+  *	@tx_dropped:	Dropped packets by core network,
+  *			do not use this in drivers
+  *
+- *	@carrier_changes:	Stats to monitor carrier on<->off transitions
+- *
+  *	@wireless_handlers:	List of functions to handle Wireless Extensions,
+  *				instead of ioctl,
+  *				see <net/iw_handler.h> for details.
+@@ -1382,14 +1382,14 @@ enum netdev_priv_flags {
+  * 	@dev_port:		Used to differentiate devices that share
+  * 				the same function
+  *	@addr_list_lock:	XXX: need comments on this one
+- *	@uc:			unicast mac addresses
+- *	@mc:			multicast mac addresses
+- *	@dev_addrs:		list of device hw addresses
+- *	@queues_kset:		Group of all Kobjects in the Tx and RX queues
+  *	@uc_promisc:		Counter, that indicates, that promiscuous mode
+  *				has been enabled due to the need to listen to
+  *				additional unicast addresses in a device that
+  *				does not implement ndo_set_rx_mode()
++ *	@uc:			unicast mac addresses
++ *	@mc:			multicast mac addresses
++ *	@dev_addrs:		list of device hw addresses
++ *	@queues_kset:		Group of all Kobjects in the Tx and RX queues
+  *	@promiscuity:		Number of times, the NIC is told to work in
+  *				Promiscuous mode, if it becomes 0 the NIC will
+  *				exit from working in Promiscuous mode
+@@ -1419,6 +1419,11 @@ enum netdev_priv_flags {
+  *	@ingress_queue:		XXX: need comments on this one
+  *	@broadcast:		hw bcast address
+  *
++ *	@rx_cpu_rmap:	CPU reverse-mapping for RX completion interrupts,
++ *			indexed by RX queue number. Assigned by driver.
++ *			This must only be set if the ndo_rx_flow_steer
++ *			operation is defined
++ *
+  *	@_tx:			Array of TX queues
+  *	@num_tx_queues:		Number of TX queues allocated at alloc_netdev_mq() time
+  *	@real_num_tx_queues: 	Number of TX queues currently active in device
+@@ -1428,11 +1433,6 @@ enum netdev_priv_flags {
+  *
+  *	@xps_maps:	XXX: need comments on this one
+  *
+- *	@rx_cpu_rmap:	CPU reverse-mapping for RX completion interrupts,
+- *			indexed by RX queue number. Assigned by driver.
+- *			This must only be set if the ndo_rx_flow_steer
+- *			operation is defined
+- *
+  *	@trans_start:		Time (in jiffies) of last Tx
+  *	@watchdog_timeo:	Represents the timeout that is used by
+  *				the watchdog ( see dev_watchdog() )
+@@ -1507,6 +1507,8 @@ struct net_device {
+ 	unsigned long		base_addr;
+ 	int			irq;
+ 
++	atomic_t		carrier_changes;
++
+ 	/*
+ 	 *	Some hardware also needs these fields (state,dev_list,
+ 	 *	napi_list,unreg_list,close_list) but they are not
+@@ -1547,8 +1549,6 @@ struct net_device {
+ 	atomic_long_t		rx_dropped;
+ 	atomic_long_t		tx_dropped;
+ 
+-	atomic_t		carrier_changes;
+-
+ #ifdef CONFIG_WIRELESS_EXT
+ 	const struct iw_handler_def *	wireless_handlers;
+ 	struct iw_public_data *	wireless_data;
+@@ -1588,6 +1588,8 @@ struct net_device {
+ 	unsigned short          dev_id;
+ 	unsigned short          dev_port;
+ 	spinlock_t		addr_list_lock;
++	unsigned char		name_assign_type;
++	bool			uc_promisc;
+ 	struct netdev_hw_addr_list	uc;
+ 	struct netdev_hw_addr_list	mc;
+ 	struct netdev_hw_addr_list	dev_addrs;
+@@ -1595,10 +1597,6 @@ struct net_device {
+ #ifdef CONFIG_SYSFS
+ 	struct kset		*queues_kset;
+ #endif
+-
+-	unsigned char		name_assign_type;
+-
+-	bool			uc_promisc;
+ 	unsigned int		promiscuity;
+ 	unsigned int		allmulti;
+ 
+@@ -1645,7 +1643,9 @@ struct net_device {
+ 
+ 	struct netdev_queue __rcu *ingress_queue;
+ 	unsigned char		broadcast[MAX_ADDR_LEN];
+-
++#ifdef CONFIG_RFS_ACCEL
++	struct cpu_rmap		*rx_cpu_rmap;
++#endif
+ 
+ /*
+  * Cache lines mostly used on transmit path
+@@ -1660,9 +1660,6 @@ struct net_device {
+ #ifdef CONFIG_XPS
+ 	struct xps_dev_maps __rcu *xps_maps;
+ #endif
+-#ifdef CONFIG_RFS_ACCEL
+-	struct cpu_rmap		*rx_cpu_rmap;
+-#endif
+ 
+ 	/* These may be needed for future network-power-down code. */
+ 
+-- 
+1.9.3
 
