@@ -1,49 +1,37 @@
-From: Michael Cronenworth <mike@cchtml.com>
-Date: Wed, 08 Apr 2015 23:48:51 -0500
-Subject: [Intel-wired-lan] [PATCH] e1000e: Cleanup handling of VLAN_HLEN
- as a part of max frame size
-In-Reply-To: <20150408204630.4643.37880.stgit@ahduyck-vm-fedora22>
-References: <alpine.NEB.2.11.1504081019220.3388@chris.i8u.org>
- <20150408204630.4643.37880.stgit@ahduyck-vm-fedora22>
-Message-ID: <552604B3.9070204@cchtml.com>
+From: David Laight <David.Laight@ACULAB.COM>
+Date: Thu, 9 Apr 2015 09:04:57 +0000
+Subject: [Intel-wired-lan] [PATCH] e1000e: fix call to do_div() to use
+	u64 arg
+In-Reply-To: <20150408205837.4329.94829.stgit@jtkirshe-mobl.jf.intel.com>
+References: <20150408205837.4329.94829.stgit@jtkirshe-mobl.jf.intel.com>
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CB177C8@AcuExch.aculab.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 04/08/2015 04:02 PM, Alexander Duyck wrote:
-> When the VLAN_HLEN was added to the calculation for the maximum frame size
-> there seems to have been a number of issues added to the driver.
->
-> The first issue is that in some cases the maximum frame size for a device
-> never really reached the actual maximum frame size as the VLAN header
-> length was not included the calculation for that value.  As a result some
-> parts only supported a maximum frame size of either 1496 in the case of
-> parts that didn't support jumbo frames, and 8996 in the case of the parts
-> that do.
->
-> The second issue is the fact that there were several checks that weren't
-> updated so as a result setting an MTU of 1500 was treated as enabling jumbo
-> frames as the calculated value was 1522 instead of 1518.  I have addressed
-> those by replacing ETH_FRAME_LEN with VLAN_ETH_FRAME_LEN where appropriate.
->
-> The final issue was the fact that lowering the MTU below 1500 would cause
-> the driver to allocate 2K buffers for the rings.  This is an old issue that
-> was fixed several years ago in igb/ixgbe and I am addressing now by just
-> replacing == with a <= so that we always just round up to 1522 for anything
-> that isn't a jumbo frame.
+From: Jeff Kirsher
+> Sent: 08 April 2015 21:59
+> We were using s64 for lat_ns (latency nano-second value) since in
+> our calculations a negative value could be a resultant.  For negative
+> values, we then assign lat_ns to be zero, so the value passed to
+> do_div() was never negative, but do_div() expects the argument type
+> to be u64, so do a cast to resolve a compile warning seen on
+> PowerPC.
+...
+> -			do_div(lat_ns, speed);
+> +			do_div((u64)lat_ns, speed);
 
-Alex,
+Personally I think that adding casts to avoid warnings
+from integer promotions and function arguments isn't a good idea.
+The problem is that C casts are too powerful and can hide other bugs.
+In the past I've been bitten by a cast inside a (badly written) #define
+function.
 
-Thanks taking the time to work on a patch.
+The above is a typical case where the compiler should really be doing
+value domain checks before reporting anything at all - if at all.
 
-I have tested this patch in 4.0 on i218-v hardware and it is working. I see 9000 in 
-tcpdump (tso/gso off) and my switch blocks packets if I set the max frame size to 
-9017 down from 9018.
+	David
 
-I also played with a VLAN real quick, and did not encounter any problems, but I 
-don't normally use VLANs so it may need further testing.
 
-Thanks,
-Michael
