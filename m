@@ -1,76 +1,55 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 08 Apr 2015 18:19:05 -0700
-Subject: [Intel-wired-lan] [PATCH] e1000e: Cleanup handling of VLAN_HLEN
- as a part of max frame size
-In-Reply-To: <alpine.NEB.2.11.1504081714400.3388@chris.i8u.org>
-References: <alpine.NEB.2.11.1504081019220.3388@chris.i8u.org>
- <20150408204630.4643.37880.stgit@ahduyck-vm-fedora22>
- <alpine.NEB.2.11.1504081413510.3388@chris.i8u.org> <5525B2AE.80301@gmail.com>
- <alpine.NEB.2.11.1504081602260.3388@chris.i8u.org>
- <5525B62A.1050601@gmail.com>
- <alpine.NEB.2.11.1504081705350.3388@chris.i8u.org>
- <alpine.NEB.2.11.1504081714400.3388@chris.i8u.org>
-Message-ID: <5525D389.3010700@gmail.com>
+From: Alexander Duyck <alexander.h.duyck@redhat.com>
+Date: Wed, 08 Apr 2015 18:37:07 -0700
+Subject: [Intel-wired-lan] [PATCH] e1000e: Do not allow CRC stripping to be
+ disabled on 82579 w/ jumbo frames
+Message-ID: <20150409013554.3231.10427.stgit@ahduyck-vm-fedora22>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 04/08/2015 05:26 PM, Hisashi T Fujinaka wrote:
-> On Wed, 8 Apr 2015, Hisashi T Fujinaka wrote:
->
->> On Wed, 8 Apr 2015, Alexander Duyck wrote:
->>>
->>> It is but it isn't.  If you look in e1000_change_mtu you will find the
->>> node about "Jumbo frame workaround on 82579 and newer requires CRC be
->>> stripped".  With that being the case I'm wondering if the 9018 doesn't
->>> include CRC but instead includes VLAN header.  So as a result the
->>> actual
->>> hardware is processing frames that are 9022 in size, but the buffer
->>> only
->>> ever receives at most 9018 since the CRC is stripped.
->>>
->>> I suspect that is why the Windows driver has had no issues reporting
->>> support for a size of 9014 (excluding VLAN and CRC) on these parts and
->>> hasn't had any issues.
->>
->> I can only tell you what was told to me by Dave Ertman, which is that
->> there is a hard hardware limit of 9018 bytes. I wouldn't know if we do
->> have Windows issues because it's a completely different division and
->> there's no reason for any of those issues to be routed to us.
->>
->> In fact, the problem with different max MTU across the drivers in Linux
->> has only ever been reported by one user.
->>
->> I'm still looking for the HW documentation and would like Jeff to hold
->> off until we find it.
->
-> OK. So the data sheet states:
->
-> LPE controls whether long packet reception is permitted. Hardware
-> discards long packets if LPE is 0. A long packet is one longer than 1522
-> bytes. If LPE is 1, the maximum packet size that the device can receive
-> is 9018 bytes.
+The driver wasn't allowing jumbo frames to be enabled when CRC stripping
+was disabled, however it was allowing CRC stripping to be disabled while
+jumbo frames were enabled.  This fixes that by making it so that the
+NETIF_F_RXFCS flag cannot be set when jumbo frames are enabled on 82579 and
+newer parts.
 
-Yeah, that is mostly clear except it doesn't indicate if that includes
-or excludes the CRC and/or VLAN header.  All the documentation I can
-find seems to indicate it is likely skipping one or the other since it
-recommends setting any switches to support 9022 in order to account for
-both.
+Signed-off-by: Alexander Duyck <alexander.h.duyck@redhat.com>
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c |   14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-> So if you're pre-stripping the CRC, then it will be less than 9018.
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index f77db9304060..5af46b8a9a16 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -6676,6 +6676,19 @@ static void e1000_eeprom_checks(struct e1000_adapter *adapter)
+ 	}
+ }
+ 
++static netdev_features_t e1000_fix_features(struct net_device *netdev,
++					    netdev_features_t features)
++{
++	struct e1000_adapter *adapter = netdev_priv(netdev);
++	struct e1000_hw *hw = &adapter->hw;
++
++	/* Jumbo frame workaround on 82579 and newer requires CRC be stripped */
++	if ((hw->mac.type >= e1000_pch2lan) && (netdev->mtu > ETH_DATA_LEN))
++		features &= ~NETIF_F_RXFCS;
++
++	return features;
++}
++
+ static int e1000_set_features(struct net_device *netdev,
+ 			      netdev_features_t features)
+ {
+@@ -6732,6 +6745,7 @@ static const struct net_device_ops e1000e_netdev_ops = {
+ 	.ndo_poll_controller	= e1000_netpoll,
+ #endif
+ 	.ndo_set_features = e1000_set_features,
++	.ndo_fix_features = e1000_fix_features,
+ };
+ 
+ /**
 
-Right so the argument is probably moot since you cannot enable jumbo
-frames unless CRC stripping is enabled.  Ugh, but it looks like nothing
-prevents disabling CRC stripping once jumbo frames has been enabled. 
-I'll patch that shortly.
-
-> I guess I'd like to hear what Dave thinks.
-
-The problem is this pre-dates when Dave Ertman started working on
-e1000e.  All of this went into effect back during the introduction of
-82579 and i217/i218 and the two patches from Bruce that reduced the size
-down to 9018 didn't specify where the number came from.  I suspect it is
-the same data sheet we have been looking at which is a bit vague about
-what is included in that size.
