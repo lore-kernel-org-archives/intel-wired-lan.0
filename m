@@ -1,88 +1,82 @@
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Date: Wed, 8 Apr 2015 23:18:08 +0000
-Subject: [Intel-wired-lan] [E1000-devel] [PATCH v3 3/3] ixgbe: Add new
- ndo to allow VF multicast promiscuous mode
-In-Reply-To: <1428532092.2616.3.camel@jtkirshe-mobl.jf.intel.com>
-References: <7F861DC0615E0C47A872E6F3C5FCDDBD05E7CDA0@BPXM14GP.gisp.nec.co.jp>
- <5525A876.2000407@gmail.com>
- <1428532092.2616.3.camel@jtkirshe-mobl.jf.intel.com>
-Message-ID: <7F861DC0615E0C47A872E6F3C5FCDDBD05E7D92D@BPXM14GP.gisp.nec.co.jp>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed, 08 Apr 2015 17:01:36 -0700
+Subject: [Intel-wired-lan] [PATCH] e1000e: Cleanup handling of VLAN_HLEN
+ as a part of max frame size
+In-Reply-To: <20150408204630.4643.37880.stgit@ahduyck-vm-fedora22>
+References: <alpine.NEB.2.11.1504081019220.3388@chris.i8u.org>
+ <20150408204630.4643.37880.stgit@ahduyck-vm-fedora22>
+Message-ID: <1428537696.2729.4.camel@jtkirshe-mobl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> Subject: Re: [E1000-devel] [PATCH v3 3/3] ixgbe: Add new ndo to allow VF multicast promiscuous mode
+On Wed, 2015-04-08 at 14:02 -0700, Alexander Duyck wrote:
+> When the VLAN_HLEN was added to the calculation for the maximum frame
+> size
+> there seems to have been a number of issues added to the driver.
 > 
-> On Wed, 2015-04-08 at 15:15 -0700, Alexander Duyck wrote:
-> > On 04/07/2015 10:38 PM, Hiroshi Shimamoto wrote:
-> > > From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> > >
-> > > Implements the new netdev op to allow VF multicast promiscuous mode.
-> > >
-> > > The multicast promiscuous mode is not allowed for all VFs by default.
-> > >
-> > > The administrator can allow to VF multicast promiscuous mode for only
-> > > trusted VM. After allowing multicast promiscuous mode from the host,
-> > > we can use over 30 IPv6 addresses on VM.
-> > >  # ip link set dev eth0 vf 1 mc_promisc on
-> > >
-> > > When disallowing multicast promiscuous mode, ixgbevf can only handle 30
-> > > IPv6 addresses at most.
-> > >  # ip link set dev eth0 vf 1 mc_promisc off
-> > >
-> > > Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> > > Reviewed-by: Hayato Momma <h-momma@ce.jp.nec.com>
-> > > CC: Choi, Sy Jong <sy.jong.choi@intel.com>
-> > > ---
-> > >  drivers/net/ethernet/intel/ixgbe/ixgbe.h       |  1 +
-> > >  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  |  7 ++++++
-> > >  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 32 ++++++++++++++++++++++++--
-> > >  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h |  2 ++
-> > >  4 files changed, 40 insertions(+), 2 deletions(-)
-> > >
-> > > diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-> > > index 08e65b6..4a9f74d 100644
-> > > --- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-> > > +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-> > > @@ -153,6 +153,7 @@ struct vf_data_storage {
-> > >  	u16 vlan_count;
-> > >  	u8 spoofchk_enabled;
-> > >  	bool rss_query_enabled;
-> > > +	u8 mc_promisc_allowed;
-> > >  	unsigned int vf_api;
-> > >  };
-> > >
-> > > diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> > > index 2f41403..c0e07c5 100644
-> > > --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> > > +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> > > @@ -3663,6 +3663,12 @@ static void ixgbe_configure_virtualization(struct ixgbe_adapter *adapter)
-> > >  		ixgbe_ndo_set_vf_rss_query_en(adapter->netdev, i,
-> > >  					      adapter->vfinfo[i].rss_query_enabled);
-> > >  	}
-> > > +
-> > > +	/* Reconfigure multicast promiscuous mode */
-> > > +	for (i = 0; i < adapter->num_vfs; i++) {
-> > > +		ixgbe_ndo_set_vf_mc_promisc(adapter->netdev, i,
-> > > +					adapter->vfinfo[i].mc_promisc_allowed);
-> > > +	}
-> > >  }
-> > >
-> > >  static void ixgbe_set_rx_buffer_len(struct ixgbe_adapter *adapter)
-> >
-> > This doesn't need to be a separate loop.  You can push it up into the
-> > block above since it is already looping through all VFs.
-> >
-> > Once that is fixed the rest of this patch and the other two looked fine
-> > to me.
+> The first issue is that in some cases the maximum frame size for a
+> device
+> never really reached the actual maximum frame size as the VLAN header
+> length was not included the calculation for that value.  As a result
+> some
+> parts only supported a maximum frame size of either 1496 in the case
+> of
+> parts that didn't support jumbo frames, and 8996 in the case of the
+> parts
+> that do.
 > 
-> Hiroshi I am dropping this series and will await v4.
+> The second issue is the fact that there were several checks that
+> weren't
+> updated so as a result setting an MTU of 1500 was treated as enabling
+> jumbo
+> frames as the calculated value was 1522 instead of 1518.  I have
+> addressed
+> those by replacing ETH_FRAME_LEN with VLAN_ETH_FRAME_LEN where
+> appropriate.
 > 
-> Remember to send them to intel-wired-lan mailing list, please.
+> The final issue was the fact that lowering the MTU below 1500 would
+> cause
+> the driver to allocate 2K buffers for the rings.  This is an old issue
+> that
+> was fixed several years ago in igb/ixgbe and I am addressing now by
+> just
+> replacing == with a <= so that we always just round up to 1522 for
+> anything
+> that isn't a jumbo frame.
+> 
+> Fixes: c751a3d58cf2d ("e1000e: Correctly include VLAN_HLEN when
+> changing interface MTU")
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@redhat.com>
+> ---
+> 
+> I have only build tested this though I am 99% sure the fixes here are
+> correct.  This patch should fix issues on 82573 and ich8 w/ setting an
+> MTU
+> of 1500, and for the PCH series w/ setting an MTU of 9000.
+> 
+> I assume I can get away with bumping the max_hw_frame_size for the PCH
+> parts from 9018 to 9022 based on the fact that the Windows INF for the
+> parts
+> lists supporting either 1514, 4088, and 9014 all of which exclude the
+> 8
+> bytes for CRC and VLAN header.
+> 
+>  drivers/net/ethernet/intel/e1000e/82571.c   |    2 +-
+>  drivers/net/ethernet/intel/e1000e/ich8lan.c |   10 +++++-----
+>  drivers/net/ethernet/intel/e1000e/netdev.c  |   18 ++++++++----------
+>  3 files changed, 14 insertions(+), 16 deletions(-)
 
-yep, will do.
-
-thanks,
-Hiroshi
+I have applied your patch to my queue, thanks Alex.
+-- 
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
+dev-queue
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150408/7e6195a5/attachment.asc>
