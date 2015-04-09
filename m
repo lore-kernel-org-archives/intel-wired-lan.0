@@ -1,82 +1,80 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 08 Apr 2015 17:01:36 -0700
+From: Hisashi T Fujinaka <htodd@twofifty.com>
+Date: Wed, 8 Apr 2015 17:10:49 -0700 (PDT)
 Subject: [Intel-wired-lan] [PATCH] e1000e: Cleanup handling of VLAN_HLEN
  as a part of max frame size
-In-Reply-To: <20150408204630.4643.37880.stgit@ahduyck-vm-fedora22>
+In-Reply-To: <5525B62A.1050601@gmail.com>
 References: <alpine.NEB.2.11.1504081019220.3388@chris.i8u.org>
  <20150408204630.4643.37880.stgit@ahduyck-vm-fedora22>
-Message-ID: <1428537696.2729.4.camel@jtkirshe-mobl>
+ <alpine.NEB.2.11.1504081413510.3388@chris.i8u.org> <5525B2AE.80301@gmail.com>
+ <alpine.NEB.2.11.1504081602260.3388@chris.i8u.org>
+ <5525B62A.1050601@gmail.com>
+Message-ID: <alpine.NEB.2.11.1504081705350.3388@chris.i8u.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2015-04-08 at 14:02 -0700, Alexander Duyck wrote:
-> When the VLAN_HLEN was added to the calculation for the maximum frame
-> size
-> there seems to have been a number of issues added to the driver.
-> 
-> The first issue is that in some cases the maximum frame size for a
-> device
-> never really reached the actual maximum frame size as the VLAN header
-> length was not included the calculation for that value.  As a result
-> some
-> parts only supported a maximum frame size of either 1496 in the case
-> of
-> parts that didn't support jumbo frames, and 8996 in the case of the
-> parts
-> that do.
-> 
-> The second issue is the fact that there were several checks that
-> weren't
-> updated so as a result setting an MTU of 1500 was treated as enabling
-> jumbo
-> frames as the calculated value was 1522 instead of 1518.  I have
-> addressed
-> those by replacing ETH_FRAME_LEN with VLAN_ETH_FRAME_LEN where
-> appropriate.
-> 
-> The final issue was the fact that lowering the MTU below 1500 would
-> cause
-> the driver to allocate 2K buffers for the rings.  This is an old issue
-> that
-> was fixed several years ago in igb/ixgbe and I am addressing now by
-> just
-> replacing == with a <= so that we always just round up to 1522 for
-> anything
-> that isn't a jumbo frame.
-> 
-> Fixes: c751a3d58cf2d ("e1000e: Correctly include VLAN_HLEN when
-> changing interface MTU")
-> Signed-off-by: Alexander Duyck <alexander.h.duyck@redhat.com>
-> ---
-> 
-> I have only build tested this though I am 99% sure the fixes here are
-> correct.  This patch should fix issues on 82573 and ich8 w/ setting an
-> MTU
-> of 1500, and for the PCH series w/ setting an MTU of 9000.
-> 
-> I assume I can get away with bumping the max_hw_frame_size for the PCH
-> parts from 9018 to 9022 based on the fact that the Windows INF for the
-> parts
-> lists supporting either 1514, 4088, and 9014 all of which exclude the
-> 8
-> bytes for CRC and VLAN header.
-> 
->  drivers/net/ethernet/intel/e1000e/82571.c   |    2 +-
->  drivers/net/ethernet/intel/e1000e/ich8lan.c |   10 +++++-----
->  drivers/net/ethernet/intel/e1000e/netdev.c  |   18 ++++++++----------
->  3 files changed, 14 insertions(+), 16 deletions(-)
+On Wed, 8 Apr 2015, Alexander Duyck wrote:
 
-I have applied your patch to my queue, thanks Alex.
--- 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
-dev-queue
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150408/7e6195a5/attachment.asc>
+> On 04/08/2015 04:05 PM, Hisashi T Fujinaka wrote:
+>> On Wed, 8 Apr 2015, Alexander Duyck wrote:
+>>
+>>> On 04/08/2015 02:15 PM, Hisashi T Fujinaka wrote:
+>>>> On Wed, 8 Apr 2015, Alexander Duyck wrote:
+>>>>
+>>>>> Fixes: c751a3d58cf2d ("e1000e: Correctly include VLAN_HLEN when
+>>>>> changing interface MTU")
+>>>>> Signed-off-by: Alexander Duyck <alexander.h.duyck@redhat.com>
+>>>>> ---
+>>>>>
+>>>>> I have only build tested this though I am 99% sure the fixes here are
+>>>>> correct.  This patch should fix issues on 82573 and ich8 w/ setting
+>>>>> an MTU
+>>>>> of 1500, and for the PCH series w/ setting an MTU of 9000.
+>>>>
+>>>> Since the original fix was something submitted by Red Hat, can you
+>>>> check
+>>>> that you're not re-breaking whatever it was that Red Hat thought they
+>>>> were fixing?
+>>>
+>>> The original issue is referenced in the patch that this fixes.  The
+>>> problem was that the VLAN header wasn't being considered when computing
+>>> the Rx buffer size, so you could change the MTU to 1504 and the if
+>>> statement at the end of e1000_change_mtu was still using a 1522 Rx
+>>> buffer size and max frame even though we had technically just configured
+>>> things for 1526.
+>>>
+>>> The updated logic is correctly taking the VLAN header into account so if
+>>> you bump the MTU 1504 it will switch over to jumbo frames mode w/ 2K
+>>> buffers.
+>>>
+>>> The bit I am fixing is that there were several spots including the
+>>> backend value for max_hw_frame_size that didn't take VLAN header length
+>>> into account.  There were cases where 1500 MTU was being treated as a
+>>> jumbo frame, or we were coming up 4 bytes shy as in the pch2, ich8, and
+>>> 82573 e1000_info structures.
+>>
+>> The max_hw_frame_size should still be limited to 9018.
+>
+> It is but it isn't.  If you look in e1000_change_mtu you will find the
+> node about "Jumbo frame workaround on 82579 and newer requires CRC be
+> stripped".  With that being the case I'm wondering if the 9018 doesn't
+> include CRC but instead includes VLAN header.  So as a result the actual
+> hardware is processing frames that are 9022 in size, but the buffer only
+> ever receives at most 9018 since the CRC is stripped.
+>
+> I suspect that is why the Windows driver has had no issues reporting
+> support for a size of 9014 (excluding VLAN and CRC) on these parts and
+> hasn't had any issues.
+
+I can only tell you what was told to me by Dave Ertman, which is that
+there is a hard hardware limit of 9018 bytes. I wouldn't know if we do
+have Windows issues because it's a completely different division and
+there's no reason for any of those issues to be routed to us.
+
+In fact, the problem with different max MTU across the drivers in Linux
+has only ever been reported by one user.
+
+I'm still looking for the HW documentation and would like Jeff to hold
+off until we find it.
