@@ -1,61 +1,60 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri, 10 Apr 2015 15:54:37 -0700
-Subject: [Intel-wired-lan] [PATCH v4 1/3] ixgbe,
- ixgbevf: Add new mbox API to enable MC promiscuous mode
-In-Reply-To: <7F861DC0615E0C47A872E6F3C5FCDDBD05E7EBE2@BPXM14GP.gisp.nec.co.jp>
-References: <7F861DC0615E0C47A872E6F3C5FCDDBD05E7EBE2@BPXM14GP.gisp.nec.co.jp>
-Message-ID: <1428706477.2729.125.camel@jtkirshe-mobl>
+From: Schmitt, Phillip J <phillip.j.schmitt@intel.com>
+Date: Fri, 10 Apr 2015 23:06:58 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v3 1/2] ixgbe: Refactor the
+ RSS configuration code.
+In-Reply-To: <1427758606.2497.100.camel@jtkirshe-mobl>
+References: <1427739538-1038-1-git-send-email-vladz@cloudius-systems.com>
+ <1427739538-1038-2-git-send-email-vladz@cloudius-systems.com>
+ <1427758606.2497.100.camel@jtkirshe-mobl>
+Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E17F812F69@ORSMSX108.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2015-04-10 at 01:04 +0000, Hiroshi Shimamoto wrote:
-> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> 
-> The limitation of the number of multicast address for VF is not enough
-> for the large scale server with SR-IOV feature.
-> IPv6 requires the multicast MAC address for each IP address to handle
-> the Neighbor Solicitation message.
-> We couldn't assign over 30 IPv6 addresses to a single VF interface.
-> 
-> The easy way to solve this is enabling multicast promiscuous mode.
-> It is good to have a functionality to enable multicast promiscuous
-> mode
-> for each VF from VF driver.
-> 
-> This patch introduces the new mbox API, IXGBE_VF_SET_MC_PROMISC, to
-> enable/disable multicast promiscuous mode in VF. If multicast
-> promiscuous mode is enabled the VF can receive all multicast packets.
-> 
-> With this patch, the ixgbevf driver automatically enable multicast
-> promiscuous mode when the number of multicast addresses is over than
-> 30
-> if possible.
-> 
-> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> Reviewed-by: Hayato Momma <h-momma@ce.jp.nec.com>
-> CC: Choi, Sy Jong <sy.jong.choi@intel.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe.h          |  1 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h      |  2 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c    | 76
-> +++++++++++++++++++++++
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |  3 +
->  drivers/net/ethernet/intel/ixgbevf/mbx.h          |  2 +
->  drivers/net/ethernet/intel/ixgbevf/vf.c           | 27 +++++++-
->  drivers/net/ethernet/intel/ixgbevf/vf.h           |  1 +
->  7 files changed, 111 insertions(+), 1 deletion(-)
 
-Hiroshi, I have applied your 3 patch series to my queue.
--- 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
-dev-queue
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150410/14daface/attachment.asc>
+
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Jeff Kirsher
+> Sent: Monday, March 30, 2015 4:37 PM
+> To: Vlad Zolotarov
+> Cc: netdev at vger.kernel.org; avi at cloudius-systems.com; intel-wired-
+> lan at lists.osuosl.org; gleb at cloudius-systems.com
+> Subject: Re: [Intel-wired-lan] [PATCH net-next v3 1/2] ixgbe: Refactor the RSS
+> configuration code.
+> 
+> On Mon, 2015-03-30 at 21:18 +0300, Vlad Zolotarov wrote:
+> > This patch is a preparation for enablement of ethtool RSS indirection
+> > table and hash key querying. We don't want to read registers every
+> > time the RSS info is queried. Therefore we will store its current
+> > content in the arrays in the adapter struct and will read it from
+> > there (instead of from
+> > registers) when requested.
+> >
+> > Will change the code that writes the indirection table and hash key
+> > into the HW registers to take its content from these arrays. This will
+> > also simplify the indirection table updating ethtool callback
+> > implementation in the future.
+> >
+> > Signed-off-by: Vlad Zolotarov <vladz@cloudius-systems.com>
+> > ---
+> > New in v3:
+> >    - Fix the byte ordering in RETA storing.
+> >
+> > New in v2:
+> >    - Some styling fixes.
+> >    - Moved macros definitions from ixgbe_type.h to ixgbe.h.
+> > ---
+> >  drivers/net/ethernet/intel/ixgbe/ixgbe.h      |   9 ++
+> >  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 147
+> > ++++++++++++++++++--------
+> >  2 files changed, 112 insertions(+), 44 deletions(-)
+> 
+> Thanks Vlad, I have added your patch to my queue.
+> --
+> git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
+> dev-queue
+
+Tested-by: Phil Schmitt <phillip.j.schmitt@intel.com>
