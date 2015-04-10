@@ -1,12 +1,12 @@
 From: Schmitt, Phillip J <phillip.j.schmitt@intel.com>
-Date: Fri, 10 Apr 2015 23:12:22 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v10 5/7] ixgbe: Add
- GET_RSS_KEY command to VF-PF channel commands set
-In-Reply-To: <1427787359.2497.113.camel@jtkirshe-mobl>
+Date: Fri, 10 Apr 2015 23:12:31 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v10 4/7] ixgbevf: Add a
+	RETA	query code
+In-Reply-To: <1427787344.2497.112.camel@jtkirshe-mobl>
 References: <1427740529-9605-1-git-send-email-vladz@cloudius-systems.com>
- <1427740529-9605-6-git-send-email-vladz@cloudius-systems.com>
- <1427787359.2497.113.camel@jtkirshe-mobl>
-Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E17F813005@ORSMSX108.amr.corp.intel.com>
+ <1427740529-9605-5-git-send-email-vladz@cloudius-systems.com>
+ <1427787344.2497.112.camel@jtkirshe-mobl>
+Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E17F81301E@ORSMSX108.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -22,42 +22,61 @@ List-ID: <intel-wired-lan.osuosl.org>
 > To: Vlad Zolotarov
 > Cc: netdev at vger.kernel.org; avi at cloudius-systems.com; intel-wired-
 > lan at lists.osuosl.org; gleb at cloudius-systems.com
-> Subject: Re: [Intel-wired-lan] [PATCH net-next v10 5/7] ixgbe: Add GET_RSS_KEY
-> command to VF-PF channel commands set
+> Subject: Re: [Intel-wired-lan] [PATCH net-next v10 4/7] ixgbevf: Add a RETA
+> query code
 > 
 > On Mon, 2015-03-30 at 21:35 +0300, Vlad Zolotarov wrote:
-> > For 82599 and x540 VFs and PF share the same RSS Key. Therefore we
-> > will return the same RSS key for all VFs.
+> > We will currently support only 82599 and x540 deviced. Support for
+> > other devices will be added later.
 > >
-> > Support for other devices will be added later.
+> >    - Added a new API version support.
+> >    - Added the query implementation in the ixgbevf.
 > >
 > > Signed-off-by: Vlad Zolotarov <vladz@cloudius-systems.com>
 > > ---
 > > New in v10:
-> >    - Return more self-explaining values.
+> >    - Expose the _locked function in the vf.h interface according
+> >      to the current ixgbevf layering model.
+> >    - Return EOPNOTSUPP in cases then operation is not supported.
+> >    - Mask the received RETA according to the VF Rx queues
+> > configuration.
+> >    - Added IXGBEVF_82599_RETA_SIZE macro.
 > >
 > > New in v9:
 > >    - Reduce the support to 82599 and x540 devices only.
-> >    - Get rid of registers access in GET_VF_RSS_KEY flow:
-> >       - Get the RSS HASH Key value from the PF's adapter->rss_key[].
+> >    - Improvements in RETA query code:
+> >       - Implement a "compression" of VF's RETA contents: pass only 2
+> > bits
+> >         per-entry.
+> >       - RETA querying is done in a single mailbox operation thanks to
+> > compression.
 > >
-> > New in v5:
-> >    - Use a newly added netdev op to allow/prevent the RSS Hash Key
-> > querying on a per-VF
-> >      basis.
+> > New in v8:
+> >    - Protect mailbox with a spinlock.
+> >
+> > New in v7:
+> >    - Add ixgbe_mbox_api_12 case in ixgbevf_set_num_queues().
+> >    - Properly expand HW RETA into the ethtool buffer.
+> >
+> > New in v6:
+> >    - Add a proper return code when an operation is blocked by PF.
 > >
 > > New in v3:
-> >    - Added a support for x550 devices.
+> >    - Adjusted to the new interface IXGBE_VF_GET_RETA command.
+> >    - Added a proper support for x550 devices.
 > >
 > > New in v1 (compared to RFC):
 > >    - Use "if-else" statement instead of a "switch-case" for a single
 > > option case
-> >      (in ixgbe_get_vf_rss_key()).
+> >      (in ixgbevf_get_reta()).
 > > ---
-> >  drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h   |  1 +
-> >  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 21
-> > +++++++++++++++++++++
-> >  2 files changed, 22 insertions(+)
+> >  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |  1 +
+> >  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |  5 +-
+> >  drivers/net/ethernet/intel/ixgbevf/mbx.h          |  4 ++
+> >  drivers/net/ethernet/intel/ixgbevf/vf.c           | 70
+> > +++++++++++++++++++++++
+> >  drivers/net/ethernet/intel/ixgbevf/vf.h           |  1 +
+> >  5 files changed, 80 insertions(+), 1 deletion(-)
 > 
 > Thanks Vlad, applied to my queue.
 > --
