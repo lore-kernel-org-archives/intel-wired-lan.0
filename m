@@ -1,77 +1,100 @@
-From: Jonathan Toppins <jtoppins@cumulusnetworks.com>
-Date: Fri, 10 Apr 2015 16:03:38 -0700
-Subject: [Intel-wired-lan] [PATCH v1 net-next 3/3] igb: add PHY support for
-	Broadcom 54616
-In-Reply-To: <1428707018-6405-1-git-send-email-jtoppins@cumulusnetworks.com>
-References: <1428707018-6405-1-git-send-email-jtoppins@cumulusnetworks.com>
-Message-ID: <1428707018-6405-3-git-send-email-jtoppins@cumulusnetworks.com>
+From: Schmitt, Phillip J <phillip.j.schmitt@intel.com>
+Date: Fri, 10 Apr 2015 23:11:17 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v11 3/7] ixgbe: Add a RETA
+ query command to VF-PF channel API
+In-Reply-To: <1427877181.2662.21.camel@jtkirshe-mobl>
+References: <1427876694-19821-1-git-send-email-vladz@cloudius-systems.com>
+ <1427877181.2662.21.camel@jtkirshe-mobl>
+Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E17F812FBB@ORSMSX108.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alan Liebthal <alanl@cumulusnetworks.com>
 
-The Celestica Redstone-XP Ethernet management port uses a Broadcom 54616
-chip for the PHY layer. This adds support for this PHY to the Intel igb
-e1000 driver.
 
-Signed-off-by: Alan Liebthal <alanl@cumulusnetworks.com>
-Signed-off-by: Jonathan Toppins <jtoppins@cumulusnetworks.com>
----
- drivers/net/ethernet/intel/igb/e1000_82575.c   |    5 +++++
- drivers/net/ethernet/intel/igb/e1000_defines.h |    1 +
- drivers/net/ethernet/intel/igb/e1000_hw.h      |    1 +
- 3 files changed, 7 insertions(+)
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Jeff Kirsher
+> Sent: Wednesday, April 01, 2015 1:33 AM
+> To: Vlad Zolotarov
+> Cc: netdev at vger.kernel.org; avi at cloudius-systems.com; intel-wired-
+> lan at lists.osuosl.org; gleb at cloudius-systems.com
+> Subject: Re: [Intel-wired-lan] [PATCH net-next v11 3/7] ixgbe: Add a RETA query
+> command to VF-PF channel API
+> 
+> On Wed, 2015-04-01 at 11:24 +0300, Vlad Zolotarov wrote:
+> > Add this new command for 82599 and x540 devices only. Support for
+> > other devices will be added later.
+> >
+> > 82599 and x540 VFs and PF share the same RSS redirection table (RETA).
+> > Therefore we
+> > just return it for all VFs.
+> >
+> > For 82599 and x540 RETA table is an array of 32 registers (128 bytes)
+> > and the maximum number of registers that may be delivered in a single
+> > VF-PF channel command is 15. On the other hand VFs of these devices
+> > can be configured to have up to 4 RSS queues.
+> > Therefore we will "compress"
+> > the RETA by transfering only 2 bits per entry and thereby it will take
+> > only 8 registers (DWORDS) to transfer the whole VF RETA.
+> >
+> > Thus this patch does the following:
+> >
+> >   - Adds a new API version (to specify a new commands set).
+> >   - Adds the IXGBE_VF_GET_RETA command to the VF-PF commands set.
+> >
+> > Signed-off-by: Vlad Zolotarov <vladz@cloudius-systems.com>
+> > ---
+> > New in v11:
+> >    - Updated the patch description.
+> >
+> > New in v10:
+> >    - Drop the PRSTYPE reading since it's VF that finally modifies it
+> > (via VFPSRTYPE)
+> >      and we will add the proper masking at the VF driver level.
+> >    - Return more self-explaining values.
+> >
+> > New in v9:
+> >    - Reduce the support to 82599 and x540 devices only.
+> >    - Improvements in query RETA VF-PF command implementation:
+> >       - Use the cached RETA contents.
+> >       - Compress the mailbox message.
+> >
+> > New in v5:
+> >    - Use the newly added netdev op to allow/prevent the RETA query on
+> > a per-VF basis.
+> >
+> > New in v4:
+> >    - Deleted an empty line in ixgbe_get_vf_reta() switch-case.
+> >
+> > New in v3:
+> >    - Pass the number of dwords and offset in RETA in the
+> > IXGBE_VF_GET_RETA request message.
+> >      This allows to reduce the added command set to a single command.
+> >    - Added a support for all devices supported by the ixgbe driver
+> > that have
+> >      SR-IOV functions support: 82599, x540 and x550. The original code
+> > supported
+> >      only 82599 and x540.
+> >    - Added the masking of the RETA entries according to the
+> > PSRTYPE[n].RQPL
+> >      value.
+> >
+> > New in v1 (compared to RFC):
+> >    - Use "if-else" statement instead of a "switch-case" for a single
+> > option case
+> >      (in ixgbe_get_vf_reta()).
+> > ---
+> >  drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h   |  4 +++
+> >  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 35
+> > ++++++++++++++++++++++++++
+> >  2 files changed, 39 insertions(+)
+> 
+> Thanks Vlad, applied to my queue.
+> --
+> git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
+> dev-queue
 
-diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
-index 0f69ef8..2dcc808 100644
---- a/drivers/net/ethernet/intel/igb/e1000_82575.c
-+++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
-@@ -286,6 +286,9 @@ static s32 igb_init_phy_params_82575(struct e1000_hw *hw)
- 		phy->ops.set_d3_lplu_state = igb_set_d3_lplu_state_82580;
- 		phy->ops.force_speed_duplex = igb_phy_force_speed_duplex_m88;
- 		break;
-+	case BCM54616_E_PHY_ID:
-+		phy->type = e1000_phy_bcm54616;
-+		break;
- 	default:
- 		ret_val = -E1000_ERR_PHY;
- 		goto out;
-@@ -1593,6 +1596,8 @@ static s32 igb_setup_copper_link_82575(struct e1000_hw *hw)
- 	case e1000_phy_82580:
- 		ret_val = igb_copper_link_setup_82580(hw);
- 		break;
-+	case e1000_phy_bcm54616:
-+		break;
- 	default:
- 		ret_val = -E1000_ERR_PHY;
- 		break;
-diff --git a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
-index 217f813..50d51e4 100644
---- a/drivers/net/ethernet/intel/igb/e1000_defines.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
-@@ -860,6 +860,7 @@
- #define M88_VENDOR           0x0141
- #define I210_I_PHY_ID        0x01410C00
- #define M88E1543_E_PHY_ID    0x01410EA0
-+#define BCM54616_E_PHY_ID    0x03625D10
- 
- /* M88E1000 Specific Registers */
- #define M88E1000_PHY_SPEC_CTRL     0x10  /* PHY Specific Control Register */
-diff --git a/drivers/net/ethernet/intel/igb/e1000_hw.h b/drivers/net/ethernet/intel/igb/e1000_hw.h
-index 2003b37..d82c96b 100644
---- a/drivers/net/ethernet/intel/igb/e1000_hw.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_hw.h
-@@ -128,6 +128,7 @@ enum e1000_phy_type {
- 	e1000_phy_ife,
- 	e1000_phy_82580,
- 	e1000_phy_i210,
-+	e1000_phy_bcm54616,
- };
- 
- enum e1000_bus_type {
--- 
-1.7.10.4
-
+Tested-by: Phil Schmitt <phillip.j.schmitt@intel.com>
