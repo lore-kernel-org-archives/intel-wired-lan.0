@@ -1,12 +1,12 @@
 From: Schmitt, Phillip J <phillip.j.schmitt@intel.com>
-Date: Fri, 10 Apr 2015 23:12:42 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v10 2/7] ixgbe: Add a new
- netdev op to allow/prevent a VF from querying an RSS info
-In-Reply-To: <1427787311.2497.110.camel@jtkirshe-mobl>
+Date: Fri, 10 Apr 2015 23:12:51 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v10 1/7] if_link: Add an
+ additional parameter to ifla_vf_info for RSS querying
+In-Reply-To: <1427787296.2497.109.camel@jtkirshe-mobl>
 References: <1427740529-9605-1-git-send-email-vladz@cloudius-systems.com>
- <1427740529-9605-3-git-send-email-vladz@cloudius-systems.com>
- <1427787311.2497.110.camel@jtkirshe-mobl>
-Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E17F813039@ORSMSX108.amr.corp.intel.com>
+ <1427740529-9605-2-git-send-email-vladz@cloudius-systems.com>
+ <1427787296.2497.109.camel@jtkirshe-mobl>
+Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E17F813045@ORSMSX108.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -22,35 +22,25 @@ List-ID: <intel-wired-lan.osuosl.org>
 > To: Vlad Zolotarov
 > Cc: netdev at vger.kernel.org; avi at cloudius-systems.com; intel-wired-
 > lan at lists.osuosl.org; gleb at cloudius-systems.com
-> Subject: Re: [Intel-wired-lan] [PATCH net-next v10 2/7] ixgbe: Add a new netdev
-> op to allow/prevent a VF from querying an RSS info
+> Subject: Re: [Intel-wired-lan] [PATCH net-next v10 1/7] if_link: Add an additional
+> parameter to ifla_vf_info for RSS querying
 > 
 > On Mon, 2015-03-30 at 21:35 +0300, Vlad Zolotarov wrote:
-> > Implements the new netdev op to allow user to enable/disable the
-> > ability of a specific VF to query its RSS Indirection Table and an RSS
-> > Hash Key.
+> > Add configuration setting for drivers to allow/block an RSS
+> > Redirection Table and a Hash Key querying for discrete VFs.
 > >
-> > This patch limits the new feature support to 82599 and x540 devices
-> > only.
-> > Support for other devices will be added later.
+> > On some devices VF share the mentioned above information with PF and
+> > querying it may adduce a theoretical security risk. We want to let a
+> > system administrator to decide if he/she wants to take this risk or
+> > not.
 > >
 > > Signed-off-by: Vlad Zolotarov <vladz@cloudius-systems.com>
 > > ---
-> > New in v10:
-> >    - United the for-each-VF loops in __ixgbe_enable_sriov() and
-> >      ixgbe_configure_virtualization().
-> >    - Use the EOPNOTSUPP error code instead of EPERM when operation is
-> >      not supported.
-> >
-> > New in v9:
-> >    - Reduce the support to 82599 and x540 devices only.
-> > ---
-> >  drivers/net/ethernet/intel/ixgbe/ixgbe.h       |  1 +
-> >  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  |  5 ++++
-> > drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 34
-> > ++++++++++++++++++++++++--
-> >  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h |  2 ++
-> >  4 files changed, 40 insertions(+), 2 deletions(-)
+> >  include/linux/if_link.h      |  1 +
+> >  include/linux/netdevice.h    |  8 ++++++++
+> >  include/uapi/linux/if_link.h |  8 ++++++++
+> >  net/core/rtnetlink.c         | 32 ++++++++++++++++++++++++++------
+> >  4 files changed, 43 insertions(+), 6 deletions(-)
 > 
 > Thanks Vlad, applied to my queue.
 > --
