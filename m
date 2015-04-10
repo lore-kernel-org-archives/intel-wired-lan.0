@@ -1,177 +1,37 @@
-From: Thomas Graf <tgraf@suug.ch>
-Date: Fri, 10 Apr 2015 15:52:38 +0200
-Subject: [Intel-wired-lan] [PATCH 2/2 net-next] net_device: Reorder members
-	to fill holes
-In-Reply-To: <cover.1428672434.git.tgraf@suug.ch>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Fri, 10 Apr 2015 08:59:27 -0700
+Subject: [Intel-wired-lan] [PATCH 1/2 net-next] e1000e: Move pm_qos_req
+	to e1000e adapter
+In-Reply-To: <5c4f0f5fc93592d2b4bce2cd7dd494a52a2e19f8.1428672434.git.tgraf@suug.ch>
 References: <cover.1428672434.git.tgraf@suug.ch>
-Message-ID: <1df55f36edb4bd47a051e2664d243a3e91d29fb4.1428672434.git.tgraf@suug.ch>
+ <5c4f0f5fc93592d2b4bce2cd7dd494a52a2e19f8.1428672434.git.tgraf@suug.ch>
+Message-ID: <1428681567.2729.90.camel@jtkirshe-mobl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Some trivial reorders while preserving the RX/TX cache lines
-split to fill a couple of holes.
+On Fri, 2015-04-10 at 15:52 +0200, Thomas Graf wrote:
+> e1000e is the only driver requiring pm_qos_req, instead of causing
+> every device to waste up to 240 bytes. Allocate it for the specific
+> driver.
+> 
+> Signed-off-by: Thomas Graf <tgraf@suug.ch>
 
-Signed-off-by: Thomas Graf <tgraf@suug.ch>
----
- include/linux/netdevice.h | 45 +++++++++++++++++++++------------------------
- 1 file changed, 21 insertions(+), 24 deletions(-)
+Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index d66c0f9..908f0e7 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -1305,6 +1305,8 @@ enum netdev_priv_flags {
-  *	@base_addr:	Device I/O address
-  *	@irq:		Device IRQ number
-  *
-+ *	@carrier_changes:	Stats to monitor carrier on<->off transitions
-+ *
-  *	@state:		Generic network queuing layer state, see netdev_state_t
-  *	@dev_list:	The global list of network devices
-  *	@napi_list:	List entry, that is used for polling napi devices
-@@ -1338,8 +1340,6 @@ enum netdev_priv_flags {
-  *	@tx_dropped:	Dropped packets by core network,
-  *			do not use this in drivers
-  *
-- *	@carrier_changes:	Stats to monitor carrier on<->off transitions
-- *
-  *	@wireless_handlers:	List of functions to handle Wireless Extensions,
-  *				instead of ioctl,
-  *				see <net/iw_handler.h> for details.
-@@ -1382,14 +1382,14 @@ enum netdev_priv_flags {
-  * 	@dev_port:		Used to differentiate devices that share
-  * 				the same function
-  *	@addr_list_lock:	XXX: need comments on this one
-- *	@uc:			unicast mac addresses
-- *	@mc:			multicast mac addresses
-- *	@dev_addrs:		list of device hw addresses
-- *	@queues_kset:		Group of all Kobjects in the Tx and RX queues
-  *	@uc_promisc:		Counter, that indicates, that promiscuous mode
-  *				has been enabled due to the need to listen to
-  *				additional unicast addresses in a device that
-  *				does not implement ndo_set_rx_mode()
-+ *	@uc:			unicast mac addresses
-+ *	@mc:			multicast mac addresses
-+ *	@dev_addrs:		list of device hw addresses
-+ *	@queues_kset:		Group of all Kobjects in the Tx and RX queues
-  *	@promiscuity:		Number of times, the NIC is told to work in
-  *				Promiscuous mode, if it becomes 0 the NIC will
-  *				exit from working in Promiscuous mode
-@@ -1419,6 +1419,12 @@ enum netdev_priv_flags {
-  *	@ingress_queue:		XXX: need comments on this one
-  *	@broadcast:		hw bcast address
-  *
-+ *	@rx_cpu_rmap:	CPU reverse-mapping for RX completion interrupts,
-+ *			indexed by RX queue number. Assigned by driver.
-+ *			This must only be set if the ndo_rx_flow_steer
-+ *			operation is defined
-+ *	@index_hlist:		Device index hash chain
-+ *
-  *	@_tx:			Array of TX queues
-  *	@num_tx_queues:		Number of TX queues allocated at alloc_netdev_mq() time
-  *	@real_num_tx_queues: 	Number of TX queues currently active in device
-@@ -1428,11 +1434,6 @@ enum netdev_priv_flags {
-  *
-  *	@xps_maps:	XXX: need comments on this one
-  *
-- *	@rx_cpu_rmap:	CPU reverse-mapping for RX completion interrupts,
-- *			indexed by RX queue number. Assigned by driver.
-- *			This must only be set if the ndo_rx_flow_steer
-- *			operation is defined
-- *
-  *	@trans_start:		Time (in jiffies) of last Tx
-  *	@watchdog_timeo:	Represents the timeout that is used by
-  *				the watchdog ( see dev_watchdog() )
-@@ -1440,7 +1441,6 @@ enum netdev_priv_flags {
-  *
-  *	@pcpu_refcnt:		Number of references to this device
-  *	@todo_list:		Delayed register/unregister
-- *	@index_hlist:		Device index hash chain
-  *	@link_watch_list:	XXX: need comments on this one
-  *
-  *	@reg_state:		Register/unregister state machine
-@@ -1507,6 +1507,8 @@ struct net_device {
- 	unsigned long		base_addr;
- 	int			irq;
- 
-+	atomic_t		carrier_changes;
-+
- 	/*
- 	 *	Some hardware also needs these fields (state,dev_list,
- 	 *	napi_list,unreg_list,close_list) but they are not
-@@ -1547,8 +1549,6 @@ struct net_device {
- 	atomic_long_t		rx_dropped;
- 	atomic_long_t		tx_dropped;
- 
--	atomic_t		carrier_changes;
--
- #ifdef CONFIG_WIRELESS_EXT
- 	const struct iw_handler_def *	wireless_handlers;
- 	struct iw_public_data *	wireless_data;
-@@ -1588,6 +1588,8 @@ struct net_device {
- 	unsigned short          dev_id;
- 	unsigned short          dev_port;
- 	spinlock_t		addr_list_lock;
-+	unsigned char		name_assign_type;
-+	bool			uc_promisc;
- 	struct netdev_hw_addr_list	uc;
- 	struct netdev_hw_addr_list	mc;
- 	struct netdev_hw_addr_list	dev_addrs;
-@@ -1595,10 +1597,6 @@ struct net_device {
- #ifdef CONFIG_SYSFS
- 	struct kset		*queues_kset;
- #endif
--
--	unsigned char		name_assign_type;
--
--	bool			uc_promisc;
- 	unsigned int		promiscuity;
- 	unsigned int		allmulti;
- 
-@@ -1645,7 +1643,10 @@ struct net_device {
- 
- 	struct netdev_queue __rcu *ingress_queue;
- 	unsigned char		broadcast[MAX_ADDR_LEN];
--
-+#ifdef CONFIG_RFS_ACCEL
-+	struct cpu_rmap		*rx_cpu_rmap;
-+#endif
-+	struct hlist_node	index_hlist;
- 
- /*
-  * Cache lines mostly used on transmit path
-@@ -1656,13 +1657,11 @@ struct net_device {
- 	struct Qdisc		*qdisc;
- 	unsigned long		tx_queue_len;
- 	spinlock_t		tx_global_lock;
-+	int			watchdog_timeo;
- 
- #ifdef CONFIG_XPS
- 	struct xps_dev_maps __rcu *xps_maps;
- #endif
--#ifdef CONFIG_RFS_ACCEL
--	struct cpu_rmap		*rx_cpu_rmap;
--#endif
- 
- 	/* These may be needed for future network-power-down code. */
- 
-@@ -1672,13 +1671,11 @@ struct net_device {
- 	 */
- 	unsigned long		trans_start;
- 
--	int			watchdog_timeo;
- 	struct timer_list	watchdog_timer;
- 
- 	int __percpu		*pcpu_refcnt;
- 	struct list_head	todo_list;
- 
--	struct hlist_node	index_hlist;
- 	struct list_head	link_watch_list;
- 
- 	enum { NETREG_UNINITIALIZED=0,
--- 
-1.9.3
+> ---
+>  drivers/net/ethernet/intel/e1000e/e1000.h  | 1 +
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 8 ++++----
+>  include/linux/netdevice.h                  | 1 -
+>  3 files changed, 5 insertions(+), 5 deletions(-)
 
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150410/bd78a132/attachment.asc>
