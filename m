@@ -1,35 +1,38 @@
-From: Eric Dumazet <eric.dumazet@gmail.com>
-Date: Fri, 10 Apr 2015 02:03:06 -0700
-Subject: [Intel-wired-lan] [PATCH 3/3 net-next] net_device: Add minimal
- padding to allow for net_device pointer alignment
-In-Reply-To: <20150410084816.GB23070@casper.infradead.org>
-References: <cover.1428622095.git.tgraf@suug.ch>
- <1676328eb3e9d02a4432783494d0c5a13f0d4656.1428622095.git.tgraf@suug.ch>
- <1428626095.25985.282.camel@edumazet-glaptop2.roam.corp.google.com>
- <20150410084816.GB23070@casper.infradead.org>
-Message-ID: <1428656586.25985.290.camel@edumazet-glaptop2.roam.corp.google.com>
+From: Thomas Graf <tgraf@suug.ch>
+Date: Fri, 10 Apr 2015 15:52:36 +0200
+Subject: [Intel-wired-lan] [PATCH 0/2 net-next v2] Bring sizeof(net_device)
+	down to < 2K bytes
+Message-ID: <cover.1428672434.git.tgraf@suug.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2015-04-10 at 09:48 +0100, Thomas Graf wrote:
+The size of struct net_device crossed the 2K boundary a while ago which
+is a waste in combination with many net namespaces. This series brings
+the size of struct net_device down to well below 2K in total size with
+a typical configuration. Some reserves a several holes leave room for
+further expansion.
 
-> 
-> I assumed kmalloc would guarantee alignment of the return pointer as
-> indicated by __alignof__ but I now realize that this can't possibly be the
-> case. kmalloc only knows about the size. We'll have to drop patch 3.
-> Fortunately it's still below 2K.
+Before:
+/* size: 2176, cachelines: 34, members: 121 */
 
-
-If you really care for this, take a look at qdisc_alloc()
-and commit d276055c4e90a7278cd5167ba9755c9b214bcff7
-("net_sched: reduce fifo qdisc size")
-
-(Note that some setups require ~3 network devices but 3000+ qdisc)
-
-I guess it might be nice to define a common helper and reuse it.
+After:
+/* size: 1984, cachelines: 31, members: 120 */
 
 
+Thomas Graf (2):
+  e1000e: Move pm_qos_req to e1000e adapter
+  net_device: Reorder members to fill holes
 
+ drivers/net/ethernet/intel/e1000e/e1000.h  |  1 +
+ drivers/net/ethernet/intel/e1000e/netdev.c |  8 +++---
+ include/linux/netdevice.h                  | 46 ++++++++++++++----------------
+ 3 files changed, 26 insertions(+), 29 deletions(-)
+
+---
+v2:
+ - Moved pm_qos_req to e1000e adapter entirely as suggested by Daniel
+ - Dropped patch 2 based on comment from Eric. __alignof__ is not
+   reliable to derive alignment of kmalloc returned pointer.
