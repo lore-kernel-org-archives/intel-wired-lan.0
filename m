@@ -1,50 +1,95 @@
-From: Schmitt, Phillip J <phillip.j.schmitt@intel.com>
-Date: Fri, 10 Apr 2015 23:12:51 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v10 1/7] if_link: Add an
- additional parameter to ifla_vf_info for RSS querying
-In-Reply-To: <1427787296.2497.109.camel@jtkirshe-mobl>
-References: <1427740529-9605-1-git-send-email-vladz@cloudius-systems.com>
- <1427740529-9605-2-git-send-email-vladz@cloudius-systems.com>
- <1427787296.2497.109.camel@jtkirshe-mobl>
-Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E17F813045@ORSMSX108.amr.corp.intel.com>
+From: Jonathan Toppins <jtoppins@cumulusnetworks.com>
+Date: Fri, 10 Apr 2015 16:03:37 -0700
+Subject: [Intel-wired-lan] [PATCH v1 net-next 2/3] igb: move initialization
+	of link properties before igb_sw_init
+In-Reply-To: <1428707018-6405-1-git-send-email-jtoppins@cumulusnetworks.com>
+References: <1428707018-6405-1-git-send-email-jtoppins@cumulusnetworks.com>
+Message-ID: <1428707018-6405-2-git-send-email-jtoppins@cumulusnetworks.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+This is required otherwise the driver may experience a NULL ptr
+dereference if CONFIG_PCI_IOV is set to yes.
 
+Since the code can follow the flow on init (driver insmod):
+	hw->mac.autoneg = false; (this is not set it is its default)
+	igb_probe()
+	+- igb_sw_init()
+	    +- igb_probe_vfs()
+	        +- igb_pci_enable_sriov()
+	            +- igb_sriov_reinit()
+	               +- igb_reset()
+	                  trimmed path is the same see call path for
+	                  igb_reset below
+	+- hw->mac.autoneg = true;
+	+- igb_reset()
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Jeff Kirsher
-> Sent: Tuesday, March 31, 2015 12:35 AM
-> To: Vlad Zolotarov
-> Cc: netdev at vger.kernel.org; avi at cloudius-systems.com; intel-wired-
-> lan at lists.osuosl.org; gleb at cloudius-systems.com
-> Subject: Re: [Intel-wired-lan] [PATCH net-next v10 1/7] if_link: Add an additional
-> parameter to ifla_vf_info for RSS querying
-> 
-> On Mon, 2015-03-30 at 21:35 +0300, Vlad Zolotarov wrote:
-> > Add configuration setting for drivers to allow/block an RSS
-> > Redirection Table and a Hash Key querying for discrete VFs.
-> >
-> > On some devices VF share the mentioned above information with PF and
-> > querying it may adduce a theoretical security risk. We want to let a
-> > system administrator to decide if he/she wants to take this risk or
-> > not.
-> >
-> > Signed-off-by: Vlad Zolotarov <vladz@cloudius-systems.com>
-> > ---
-> >  include/linux/if_link.h      |  1 +
-> >  include/linux/netdevice.h    |  8 ++++++++
-> >  include/uapi/linux/if_link.h |  8 ++++++++
-> >  net/core/rtnetlink.c         | 32 ++++++++++++++++++++++++++------
-> >  4 files changed, 43 insertions(+), 6 deletions(-)
-> 
-> Thanks Vlad, applied to my queue.
-> --
-> git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
-> dev-queue
+	/* igb_reset() call chain */
+	igb_reset()
+	+- hw->mac.ops.init_hw() == igb_init_hw_82575
+	   +- igb_setup_link()
+	      +- hw->mac.ops.setup_physical_interface() ==
+	           igb_setup_copper_link_82575()
+	         +- igb_setup_copper_link()
+	            +- possible NULL dereference
 
-Tested-by: Phil Schmitt <phillip.j.schmitt@intel.com>
+Pseudo code from igb_setup_copper_link():
+	if (hw->mac.autoneg) {
+	    /* setup link */
+	} else {
+	    hw->phy.ops.force_speed_duplex(hw);  // <-- NULL deref here
+	}
+
+Since the way the current code is designed the driver will call
+igb_setup_copper_link twice if SRIOV is configured to be enabled. The
+call will occur once with autoneg == false and the second
+time autoneg == true. Since the decision to call the function pointer
+(hw->phy.ops.force_speed_duplex) is predicated on autoneg being set
+correctly move the setting of these parameters to as early as possible
+in the probe function.
+
+Signed-off-by: Jonathan Toppins <jtoppins@cumulusnetworks.com>
+---
+ drivers/net/ethernet/intel/igb/igb_main.c |   16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index bb467bb..720b785 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -2328,6 +2328,14 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (err)
+ 		goto err_sw_init;
+ 
++	/* Initialize link properties that are user-changeable */
++	adapter->fc_autoneg = true;
++	hw->mac.autoneg = true;
++	hw->phy.autoneg_advertised = 0x2f;
++
++	hw->fc.requested_mode = e1000_fc_default;
++	hw->fc.current_mode = e1000_fc_default;
++
+ 	/* setup the private structure */
+ 	err = igb_sw_init(adapter);
+ 	if (err)
+@@ -2449,14 +2457,6 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	INIT_WORK(&adapter->reset_task, igb_reset_task);
+ 	INIT_WORK(&adapter->watchdog_task, igb_watchdog_task);
+ 
+-	/* Initialize link properties that are user-changeable */
+-	adapter->fc_autoneg = true;
+-	hw->mac.autoneg = true;
+-	hw->phy.autoneg_advertised = 0x2f;
+-
+-	hw->fc.requested_mode = e1000_fc_default;
+-	hw->fc.current_mode = e1000_fc_default;
+-
+ 	igb_validate_mdi_setting(hw);
+ 
+ 	/* By default, support wake on port A */
+-- 
+1.7.10.4
+
