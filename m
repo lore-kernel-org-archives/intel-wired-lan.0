@@ -1,12 +1,12 @@
 From: Schmitt, Phillip J <phillip.j.schmitt@intel.com>
-Date: Fri, 10 Apr 2015 23:06:58 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v3 1/2] ixgbe: Refactor the
- RSS configuration code.
-In-Reply-To: <1427758606.2497.100.camel@jtkirshe-mobl>
+Date: Fri, 10 Apr 2015 23:07:31 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v3 2/2] ixgbe: Add the
+ appropriate ethtool ops to query RSS indirection table and key
+In-Reply-To: <1427758652.2497.101.camel@jtkirshe-mobl>
 References: <1427739538-1038-1-git-send-email-vladz@cloudius-systems.com>
- <1427739538-1038-2-git-send-email-vladz@cloudius-systems.com>
- <1427758606.2497.100.camel@jtkirshe-mobl>
-Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E17F812F69@ORSMSX108.amr.corp.intel.com>
+ <1427739538-1038-3-git-send-email-vladz@cloudius-systems.com>
+ <1427758652.2497.101.camel@jtkirshe-mobl>
+Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E17F812F93@ORSMSX108.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,39 +18,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
 > Behalf Of Jeff Kirsher
-> Sent: Monday, March 30, 2015 4:37 PM
+> Sent: Monday, March 30, 2015 4:38 PM
 > To: Vlad Zolotarov
 > Cc: netdev at vger.kernel.org; avi at cloudius-systems.com; intel-wired-
 > lan at lists.osuosl.org; gleb at cloudius-systems.com
-> Subject: Re: [Intel-wired-lan] [PATCH net-next v3 1/2] ixgbe: Refactor the RSS
-> configuration code.
+> Subject: Re: [Intel-wired-lan] [PATCH net-next v3 2/2] ixgbe: Add the
+> appropriate ethtool ops to query RSS indirection table and key
 > 
 > On Mon, 2015-03-30 at 21:18 +0300, Vlad Zolotarov wrote:
-> > This patch is a preparation for enablement of ethtool RSS indirection
-> > table and hash key querying. We don't want to read registers every
-> > time the RSS info is queried. Therefore we will store its current
-> > content in the arrays in the adapter struct and will read it from
-> > there (instead of from
-> > registers) when requested.
+> > Added get_rxfh_indir_size, get_rxfh_key_size and get_rxfh ethtool_ops
+> > callbacks implementations.
 > >
-> > Will change the code that writes the indirection table and hash key
-> > into the HW registers to take its content from these arrays. This will
-> > also simplify the indirection table updating ethtool callback
-> > implementation in the future.
+> > This enables the ethtool's "-x" and "--show-rxfh[-indir]" options.
 > >
 > > Signed-off-by: Vlad Zolotarov <vladz@cloudius-systems.com>
 > > ---
-> > New in v3:
-> >    - Fix the byte ordering in RETA storing.
-> >
-> > New in v2:
-> >    - Some styling fixes.
-> >    - Moved macros definitions from ixgbe_type.h to ixgbe.h.
-> > ---
-> >  drivers/net/ethernet/intel/ixgbe/ixgbe.h      |   9 ++
-> >  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 147
-> > ++++++++++++++++++--------
-> >  2 files changed, 112 insertions(+), 44 deletions(-)
+> >  drivers/net/ethernet/intel/ixgbe/ixgbe.h         |  1 +
+> >  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 42
+> > ++++++++++++++++++++++++
+> >  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |  2 +-
+> >  3 files changed, 44 insertions(+), 1 deletion(-)
 > 
 > Thanks Vlad, I have added your patch to my queue.
 > --
