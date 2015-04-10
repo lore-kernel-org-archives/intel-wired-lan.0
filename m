@@ -1,12 +1,12 @@
 From: Schmitt, Phillip J <phillip.j.schmitt@intel.com>
-Date: Fri, 10 Apr 2015 23:12:11 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v10 6/7] ixgbevf: Add RSS
-	Key	query code
-In-Reply-To: <1427787373.2497.114.camel@jtkirshe-mobl>
+Date: Fri, 10 Apr 2015 23:12:22 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v10 5/7] ixgbe: Add
+ GET_RSS_KEY command to VF-PF channel commands set
+In-Reply-To: <1427787359.2497.113.camel@jtkirshe-mobl>
 References: <1427740529-9605-1-git-send-email-vladz@cloudius-systems.com>
- <1427740529-9605-7-git-send-email-vladz@cloudius-systems.com>
- <1427787373.2497.114.camel@jtkirshe-mobl>
-Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E17F812FF2@ORSMSX108.amr.corp.intel.com>
+ <1427740529-9605-6-git-send-email-vladz@cloudius-systems.com>
+ <1427787359.2497.113.camel@jtkirshe-mobl>
+Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E17F813005@ORSMSX108.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -22,47 +22,42 @@ List-ID: <intel-wired-lan.osuosl.org>
 > To: Vlad Zolotarov
 > Cc: netdev at vger.kernel.org; avi at cloudius-systems.com; intel-wired-
 > lan at lists.osuosl.org; gleb at cloudius-systems.com
-> Subject: Re: [Intel-wired-lan] [PATCH net-next v10 6/7] ixgbevf: Add RSS Key
-> query code
+> Subject: Re: [Intel-wired-lan] [PATCH net-next v10 5/7] ixgbe: Add GET_RSS_KEY
+> command to VF-PF channel commands set
 > 
 > On Mon, 2015-03-30 at 21:35 +0300, Vlad Zolotarov wrote:
-> > Add the ixgbevf_get_rss_key() function that queries the PF for an RSS
-> > Random Key using a new VF-PF channel IXGBE_VF_GET_RSS_KEY command.
+> > For 82599 and x540 VFs and PF share the same RSS Key. Therefore we
+> > will return the same RSS key for all VFs.
 > >
-> > This patch adds the support for 82599 and x540 devices only. Support
-> > for other devices will be added later.
+> > Support for other devices will be added later.
 > >
 > > Signed-off-by: Vlad Zolotarov <vladz@cloudius-systems.com>
 > > ---
 > > New in v10:
-> >    - Expose the _locked function in the vf.h interface according
-> >      to the current ixgbevf layering model.
-> >    - Return EOPNOTSUPP in cases then operation is not supported.
+> >    - Return more self-explaining values.
 > >
 > > New in v9:
 > >    - Reduce the support to 82599 and x540 devices only.
-> >    - Added IXGBEVF_RSS_HASH_KEY_SIZE macro.
+> >    - Get rid of registers access in GET_VF_RSS_KEY flow:
+> >       - Get the RSS HASH Key value from the PF's adapter->rss_key[].
 > >
-> > New in v8:
-> >    - Protect a mailbox access.
+> > New in v5:
+> >    - Use a newly added netdev op to allow/prevent the RSS Hash Key
+> > querying on a per-VF
+> >      basis.
 > >
-> > New in v6:
-> >    - Return a proper return code when an operation is blocked by PF.
-> >
-> > New in v2:
-> >    - Added a more detailed patch description.
+> > New in v3:
+> >    - Added a support for x550 devices.
 > >
 > > New in v1 (compared to RFC):
 > >    - Use "if-else" statement instead of a "switch-case" for a single
 > > option case
-> >      (in ixgbevf_get_rss_key()).
+> >      (in ixgbe_get_vf_rss_key()).
 > > ---
-> >  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h |  1 +
-> >  drivers/net/ethernet/intel/ixgbevf/mbx.h     |  1 +
-> >  drivers/net/ethernet/intel/ixgbevf/vf.c      | 54
-> > ++++++++++++++++++++++++++++
-> >  drivers/net/ethernet/intel/ixgbevf/vf.h      |  1 +
-> >  4 files changed, 57 insertions(+)
+> >  drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h   |  1 +
+> >  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 21
+> > +++++++++++++++++++++
+> >  2 files changed, 22 insertions(+)
 > 
 > Thanks Vlad, applied to my queue.
 > --
