@@ -1,47 +1,40 @@
-From: Schmitt, Phillip J <phillip.j.schmitt@intel.com>
-Date: Fri, 10 Apr 2015 23:07:31 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v3 2/2] ixgbe: Add the
- appropriate ethtool ops to query RSS indirection table and key
-In-Reply-To: <1427758652.2497.101.camel@jtkirshe-mobl>
-References: <1427739538-1038-1-git-send-email-vladz@cloudius-systems.com>
- <1427739538-1038-3-git-send-email-vladz@cloudius-systems.com>
- <1427758652.2497.101.camel@jtkirshe-mobl>
-Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E17F812F93@ORSMSX108.amr.corp.intel.com>
+From: Jonathan Toppins <jtoppins@cumulusnetworks.com>
+Date: Fri, 10 Apr 2015 16:03:36 -0700
+Subject: [Intel-wired-lan] [PATCH v1 net-next 1/3] igb: set driver data for
+	device entries that were missing
+Message-ID: <1428707018-6405-1-git-send-email-jtoppins@cumulusnetworks.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Three of the supported PCI device entries neglected to set driver data
+to "board_82575". This is not a problem until a new board type is
+defined, so avoid the potential problem all together.
 
+Signed-off-by: Jonathan Toppins <jtoppins@cumulusnetworks.com>
+---
+ drivers/net/ethernet/intel/igb/igb_main.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Jeff Kirsher
-> Sent: Monday, March 30, 2015 4:38 PM
-> To: Vlad Zolotarov
-> Cc: netdev at vger.kernel.org; avi at cloudius-systems.com; intel-wired-
-> lan at lists.osuosl.org; gleb at cloudius-systems.com
-> Subject: Re: [Intel-wired-lan] [PATCH net-next v3 2/2] ixgbe: Add the
-> appropriate ethtool ops to query RSS indirection table and key
-> 
-> On Mon, 2015-03-30 at 21:18 +0300, Vlad Zolotarov wrote:
-> > Added get_rxfh_indir_size, get_rxfh_key_size and get_rxfh ethtool_ops
-> > callbacks implementations.
-> >
-> > This enables the ethtool's "-x" and "--show-rxfh[-indir]" options.
-> >
-> > Signed-off-by: Vlad Zolotarov <vladz@cloudius-systems.com>
-> > ---
-> >  drivers/net/ethernet/intel/ixgbe/ixgbe.h         |  1 +
-> >  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 42
-> > ++++++++++++++++++++++++
-> >  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |  2 +-
-> >  3 files changed, 44 insertions(+), 1 deletion(-)
-> 
-> Thanks Vlad, I have added your patch to my queue.
-> --
-> git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
-> dev-queue
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 8457d03..bb467bb 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -73,9 +73,9 @@ static const struct e1000_info *igb_info_tbl[] = {
+ };
+ 
+ static const struct pci_device_id igb_pci_tbl[] = {
+-	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I354_BACKPLANE_1GBPS) },
+-	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I354_SGMII) },
+-	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I354_BACKPLANE_2_5GBPS) },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I354_BACKPLANE_1GBPS), board_82575 },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I354_SGMII), board_82575 },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I354_BACKPLANE_2_5GBPS), board_82575 },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I211_COPPER), board_82575 },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I210_COPPER), board_82575 },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_I210_FIBER), board_82575 },
+-- 
+1.7.10.4
 
-Tested-by: Phil Schmitt <phillip.j.schmitt@intel.com>
