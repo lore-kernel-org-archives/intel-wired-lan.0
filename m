@@ -1,42 +1,133 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Fri, 10 Apr 2015 10:36:31 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Release semaphore bits in the
-	right order
-Message-ID: <20150410173631.9380.46865.stgit@mdrustad-wks.jf.intel.com>
+Date: Fri, 10 Apr 2015 10:36:36 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Use a signed type to hold error
+	codes
+Message-ID: <20150410173636.9380.22272.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The global semaphore bits should be released in the reverse of the
-order that they were taken, so correct that.
+Because error codes are negative, it only makes sense to
+consistently use signed types when handling them. Also remove
+some explicit comparisons with 0 on these variables.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
  0 files changed
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
-index f5f948d08b43..0a8b5e42e1a9 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
-@@ -696,14 +696,14 @@ static void ixgbe_release_swfw_sync_semaphore(struct ixgbe_hw *hw)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+index eafa9ec802ba..9f6fb19062a0 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+@@ -3053,7 +3053,7 @@ static int ixgbe_get_module_info(struct net_device *dev,
+ {
+ 	struct ixgbe_adapter *adapter = netdev_priv(dev);
+ 	struct ixgbe_hw *hw = &adapter->hw;
+-	u32 status;
++	s32 status;
+ 	u8 sff8472_rev, addr_mode;
+ 	bool page_swap = false;
  
- 	/* Release both semaphores by writing 0 to the bits REGSMP and SMBI */
+@@ -3061,14 +3061,14 @@ static int ixgbe_get_module_info(struct net_device *dev,
+ 	status = hw->phy.ops.read_i2c_eeprom(hw,
+ 					     IXGBE_SFF_SFF_8472_COMP,
+ 					     &sff8472_rev);
+-	if (status != 0)
++	if (status)
+ 		return -EIO;
  
--	swsm = IXGBE_READ_REG(hw, IXGBE_SWSM);
--	swsm &= ~IXGBE_SWSM_SMBI;
--	IXGBE_WRITE_REG(hw, IXGBE_SWSM, swsm);
--
- 	swsm = IXGBE_READ_REG(hw, IXGBE_SWFW_SYNC);
- 	swsm &= ~IXGBE_SWFW_REGSMP;
- 	IXGBE_WRITE_REG(hw, IXGBE_SWFW_SYNC, swsm);
+ 	/* addressing mode is not supported */
+ 	status = hw->phy.ops.read_i2c_eeprom(hw,
+ 					     IXGBE_SFF_SFF_8472_SWAP,
+ 					     &addr_mode);
+-	if (status != 0)
++	if (status)
+ 		return -EIO;
  
-+	swsm = IXGBE_READ_REG(hw, IXGBE_SWSM);
-+	swsm &= ~IXGBE_SWSM_SMBI;
-+	IXGBE_WRITE_REG(hw, IXGBE_SWSM, swsm);
-+
- 	IXGBE_WRITE_FLUSH(hw);
- }
+ 	if (addr_mode & IXGBE_SFF_ADDRESSING_MODE) {
+@@ -3095,7 +3095,7 @@ static int ixgbe_get_module_eeprom(struct net_device *dev,
+ {
+ 	struct ixgbe_adapter *adapter = netdev_priv(dev);
+ 	struct ixgbe_hw *hw = &adapter->hw;
+-	u32 status = IXGBE_ERR_PHY_ADDR_INVALID;
++	s32 status = IXGBE_ERR_PHY_ADDR_INVALID;
+ 	u8 databyte = 0xFF;
+ 	int i = 0;
+ 
+@@ -3112,7 +3112,7 @@ static int ixgbe_get_module_eeprom(struct net_device *dev,
+ 		else
+ 			status = hw->phy.ops.read_i2c_sff8472(hw, i, &databyte);
+ 
+-		if (status != 0)
++		if (status)
+ 			return -EIO;
+ 
+ 		data[i - ee->offset] = databyte;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 2f41403daedd..461c51e633b4 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -4757,7 +4757,7 @@ static int ixgbe_non_sfp_link_config(struct ixgbe_hw *hw)
+ {
+ 	u32 speed;
+ 	bool autoneg, link_up = false;
+-	u32 ret = IXGBE_ERR_LINK_SETUP;
++	int ret = IXGBE_ERR_LINK_SETUP;
+ 
+ 	if (hw->mac.ops.check_link)
+ 		ret = hw->mac.ops.check_link(hw, &speed, &link_up, false);
+@@ -8022,7 +8022,7 @@ static int ixgbe_ndo_bridge_setlink(struct net_device *dev,
+ 		return -EINVAL;
+ 
+ 	nla_for_each_nested(attr, br_spec, rem) {
+-		u32 status;
++		int status;
+ 		__u16 mode;
+ 
+ 		if (nla_type(attr) != IFLA_BRIDGE_MODE)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+index 8a2be444113d..af828f89419f 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+@@ -317,14 +317,14 @@ bool ixgbe_check_reset_blocked(struct ixgbe_hw *hw)
+  **/
+ static s32 ixgbe_get_phy_id(struct ixgbe_hw *hw)
+ {
+-	u32 status;
++	s32 status;
+ 	u16 phy_id_high = 0;
+ 	u16 phy_id_low = 0;
+ 
+ 	status = hw->phy.ops.read_reg(hw, MDIO_DEVID1, MDIO_MMD_PMAPMD,
+ 				      &phy_id_high);
+ 
+-	if (status == 0) {
++	if (!status) {
+ 		hw->phy.id = (u32)(phy_id_high << 16);
+ 		status = hw->phy.ops.read_reg(hw, MDIO_DEVID2, MDIO_MMD_PMAPMD,
+ 					      &phy_id_low);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index 58ab7d9538e7..b0236985e915 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -1063,7 +1063,7 @@ static s32 ixgbe_setup_kr_x550em(struct ixgbe_hw *hw)
+  **/
+ static s32 ixgbe_setup_internal_phy_x550em(struct ixgbe_hw *hw)
+ {
+-	u32 status;
++	s32 status;
+ 	u16 lasi, autoneg_status, speed;
+ 	ixgbe_link_speed force_speed;
+ 
+@@ -1205,7 +1205,7 @@ static enum ixgbe_media_type ixgbe_get_media_type_X550em(struct ixgbe_hw *hw)
+  **/
+ static s32 ixgbe_init_ext_t_x550em(struct ixgbe_hw *hw)
+ {
+-	u32 status;
++	s32 status;
+ 	u16 reg;
+ 	u32 retries = 2;
  
 
