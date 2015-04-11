@@ -1,89 +1,73 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri, 10 Apr 2015 19:14:31 -0700
-Subject: [Intel-wired-lan] [net-next v2 05/25] fm10k: Add netconsole support
-Message-ID: <20150411021116.27829.56207.stgit@gmw-smvitp108.amr.corp.intel.com>
+From: Vladislav Zolotarov <vladz@cloudius-systems.com>
+Date: Sat, 11 Apr 2015 09:33:07 +0300
+Subject: [Intel-wired-lan] [PATCH net-next v3 1/2] ixgbe: Refactor the
+ RSS configuration code.
+In-Reply-To: <305E19FFAC908240AB6DEBD1E2D8C1E17F812F69@ORSMSX108.amr.corp.intel.com>
+References: <1427739538-1038-1-git-send-email-vladz@cloudius-systems.com>
+ <1427739538-1038-2-git-send-email-vladz@cloudius-systems.com>
+ <1427758606.2497.100.camel@jtkirshe-mobl>
+ <305E19FFAC908240AB6DEBD1E2D8C1E17F812F69@ORSMSX108.amr.corp.intel.com>
+Message-ID: <CAOYyTHZHVdOUjDZRxrCGjH61VBkBQfZz_5aTM1cj=FpO2-x4Pg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This change adds a function called "fm10k_netpoll" that's used to define
-"ndo_poll_controller" in "fm10k_netdev_ops". This is required to enable
-support for "netconsole" in fm10k.
+On Apr 11, 2015 2:07 AM, "Schmitt, Phillip J" <phillip.j.schmitt@intel.com>
+wrote:
+>
+>
+>
+> > -----Original Message-----
+> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org]
+On
+> > Behalf Of Jeff Kirsher
+> > Sent: Monday, March 30, 2015 4:37 PM
+> > To: Vlad Zolotarov
+> > Cc: netdev at vger.kernel.org; avi at cloudius-systems.com; intel-wired-
+> > lan at lists.osuosl.org; gleb at cloudius-systems.com
+> > Subject: Re: [Intel-wired-lan] [PATCH net-next v3 1/2] ixgbe: Refactor
+the RSS
+> > configuration code.
+> >
+> > On Mon, 2015-03-30 at 21:18 +0300, Vlad Zolotarov wrote:
+> > > This patch is a preparation for enablement of ethtool RSS indirection
+> > > table and hash key querying. We don't want to read registers every
+> > > time the RSS info is queried. Therefore we will store its current
+> > > content in the arrays in the adapter struct and will read it from
+> > > there (instead of from
+> > > registers) when requested.
+> > >
+> > > Will change the code that writes the indirection table and hash key
+> > > into the HW registers to take its content from these arrays. This will
+> > > also simplify the indirection table updating ethtool callback
+> > > implementation in the future.
+> > >
+> > > Signed-off-by: Vlad Zolotarov <vladz@cloudius-systems.com>
+> > > ---
+> > > New in v3:
+> > >    - Fix the byte ordering in RETA storing.
+> > >
+> > > New in v2:
+> > >    - Some styling fixes.
+> > >    - Moved macros definitions from ixgbe_type.h to ixgbe.h.
+> > > ---
+> > >  drivers/net/ethernet/intel/ixgbe/ixgbe.h      |   9 ++
+> > >  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 147
+> > > ++++++++++++++++++--------
+> > >  2 files changed, 112 insertions(+), 44 deletions(-)
+> >
+> > Thanks Vlad, I have added your patch to my queue.
+> > --
+> > git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
+> > dev-queue
+>
+> Tested-by: Phil Schmitt <phillip.j.schmitt@intel.com>
 
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Signed-off-by: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
-Acked-by: Matthew Vick <matthew.vick@intel.com>
----
-v2: based on feedback from Alex, moved fm10k_netpoll() to fm10k_pci.c
-    since it is technically a interrupt handler and wrapped the
-    fm10k_netpoll() references with CONFIG_NET_POLL_CONTROLLER
----
- drivers/net/ethernet/intel/fm10k/fm10k.h        |    3 +++
- drivers/net/ethernet/intel/fm10k/fm10k_netdev.c |    3 +++
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c    |   22 ++++++++++++++++++++++
- 3 files changed, 28 insertions(+)
+Thanks a lot, Phil for testing them all!
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
-index 65e7001..b45f797 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
-@@ -457,6 +457,9 @@ void fm10k_down(struct fm10k_intfc *interface);
- void fm10k_update_stats(struct fm10k_intfc *interface);
- void fm10k_service_event_schedule(struct fm10k_intfc *interface);
- void fm10k_update_rx_drop_en(struct fm10k_intfc *interface);
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+void fm10k_netpoll(struct net_device *netdev);
-+#endif
- 
- /* Netdev */
- struct net_device *fm10k_alloc_netdev(void);
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-index a7db5e2..702d845 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-@@ -1382,6 +1382,9 @@ static const struct net_device_ops fm10k_netdev_ops = {
- 	.ndo_do_ioctl		= fm10k_ioctl,
- 	.ndo_dfwd_add_station	= fm10k_dfwd_add_station,
- 	.ndo_dfwd_del_station	= fm10k_dfwd_del_station,
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+	.ndo_poll_controller	= fm10k_netpoll,
-+#endif
- 	.ndo_features_check	= fm10k_features_check,
- };
- 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index 6fc9965..90d6fae 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -839,6 +839,28 @@ static irqreturn_t fm10k_msix_mbx_vf(int irq, void *data)
- 	return IRQ_HANDLED;
- }
- 
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+/**
-+ *  fm10k_netpoll - A Polling 'interrupt' handler
-+ *  @netdev: network interface device structure
-+ *
-+ *  This is used by netconsole to send skbs without having to re-enable
-+ *  interrupts. It's not called while the normal interrupt routine is executing.
-+ **/
-+void fm10k_netpoll(struct net_device *netdev)
-+{
-+	struct fm10k_intfc *interface = netdev_priv(netdev);
-+	int i;
-+
-+	/* if interface is down do nothing */
-+	if (test_bit(__FM10K_DOWN, &interface->state))
-+		return;
-+
-+	for (i = 0; i < interface->num_q_vectors; i++)
-+		fm10k_msix_clean_rings(0, interface->q_vector[i]);
-+}
-+
-+#endif
- #define FM10K_ERR_MSG(type) case (type): error = #type; break
- static void fm10k_print_fault(struct fm10k_intfc *interface, int type,
- 			      struct fm10k_fault *fault)
-
+Vlad
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150411/df449e3e/attachment.html>
