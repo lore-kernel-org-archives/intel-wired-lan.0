@@ -1,130 +1,89 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri, 10 Apr 2015 17:20:17 -0700
-Subject: [Intel-wired-lan] [net-next v2 16/25] fm10k: don't handle mailbox
- events in iov_event path and always process mailbox
-Message-ID: <20150411001618.24651.38935.stgit@gmw-smvitp108.amr.corp.intel.com>
+Date: Fri, 10 Apr 2015 19:14:31 -0700
+Subject: [Intel-wired-lan] [net-next v2 05/25] fm10k: Add netconsole support
+Message-ID: <20150411021116.27829.56207.stgit@gmw-smvitp108.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Since we already schedule the service task, we can just wait for this
-task to handle the mailbox events from the VF. This reduces some complex
-code flow, and makes it so we have a single path for handling the VF
-messages. There is a possibility that we have a slight delay in handling
-VF messages, but it should be minimal.
-
-The result of tx_complete and !rx_ready is insufficient to determine
-whether we need to process the mailbox. There is a possible race
-condition whereby the VF fills up the mbmem for us, but we have already
-recently processed the mailboxes in the interrupt. During this time,
-the interrupt is disabled. Thus, our Rx FIFO is empty, but the mbmem now
-has data in it. Since we continually check whether Rx FIFO is empty, we
-then never call process. This results in the possibility to prevent PF
-from handling the VF mailbox messages.
-
-Instead, just call process every time, despite the fact that we may or
-may not have anything to process for the VF. There should be minimal
-overhead for doing this, and it resolves an issue where the VF never
-comes up due to never getting response for its SET_LPORT_STATE message.
+This change adds a function called "fm10k_netpoll" that's used to define
+"ndo_poll_controller" in "fm10k_netdev_ops". This is required to enable
+support for "netconsole" in fm10k.
 
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
 Acked-by: Matthew Vick <matthew.vick@intel.com>
 ---
-v2: on review, found that additional change was needed in the patch to
-    resolve a possible race condition.
+v2: based on feedback from Alex, moved fm10k_netpoll() to fm10k_pci.c
+    since it is technically a interrupt handler and wrapped the
+    fm10k_netpoll() references with CONFIG_NET_POLL_CONTROLLER
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_iov.c |   34 ++------------------------
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c |    3 ++
- 2 files changed, 5 insertions(+), 32 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k.h        |    3 +++
+ drivers/net/ethernet/intel/fm10k/fm10k_netdev.c |    3 +++
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c    |   22 ++++++++++++++++++++++
+ 3 files changed, 28 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_iov.c b/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
-index 69cbfde..0b37e19 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
-@@ -47,7 +47,7 @@ s32 fm10k_iov_event(struct fm10k_intfc *interface)
- {
- 	struct fm10k_hw *hw = &interface->hw;
- 	struct fm10k_iov_data *iov_data;
--	s64 mbicr, vflre;
-+	s64 vflre;
- 	int i;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
+index 65e7001..b45f797 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k.h
++++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
+@@ -457,6 +457,9 @@ void fm10k_down(struct fm10k_intfc *interface);
+ void fm10k_update_stats(struct fm10k_intfc *interface);
+ void fm10k_service_event_schedule(struct fm10k_intfc *interface);
+ void fm10k_update_rx_drop_en(struct fm10k_intfc *interface);
++#ifdef CONFIG_NET_POLL_CONTROLLER
++void fm10k_netpoll(struct net_device *netdev);
++#endif
  
- 	/* if there is no iov_data then there is no mailboxes to process */
-@@ -63,7 +63,7 @@ s32 fm10k_iov_event(struct fm10k_intfc *interface)
- 		goto read_unlock;
+ /* Netdev */
+ struct net_device *fm10k_alloc_netdev(void);
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+index a7db5e2..702d845 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+@@ -1382,6 +1382,9 @@ static const struct net_device_ops fm10k_netdev_ops = {
+ 	.ndo_do_ioctl		= fm10k_ioctl,
+ 	.ndo_dfwd_add_station	= fm10k_dfwd_add_station,
+ 	.ndo_dfwd_del_station	= fm10k_dfwd_del_station,
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	.ndo_poll_controller	= fm10k_netpoll,
++#endif
+ 	.ndo_features_check	= fm10k_features_check,
+ };
  
- 	if (!(fm10k_read_reg(hw, FM10K_EICR) & FM10K_EICR_VFLR))
--		goto process_mbx;
-+		goto read_unlock;
- 
- 	/* read VFLRE to determine if any VFs have been reset */
- 	do {
-@@ -86,32 +86,6 @@ s32 fm10k_iov_event(struct fm10k_intfc *interface)
- 		}
- 	} while (i != iov_data->num_vfs);
- 
--process_mbx:
--	/* read MBICR to determine which VFs require attention */
--	mbicr = fm10k_read_reg(hw, FM10K_MBICR(1));
--	mbicr <<= 32;
--	mbicr |= fm10k_read_reg(hw, FM10K_MBICR(0));
--
--	i = iov_data->next_vf_mbx ? : iov_data->num_vfs;
--
--	for (mbicr <<= 64 - i; i--; mbicr += mbicr) {
--		struct fm10k_mbx_info *mbx = &iov_data->vf_info[i].mbx;
--
--		if (mbicr >= 0)
--			continue;
--
--		if (!hw->mbx.ops.tx_ready(&hw->mbx, FM10K_VFMBX_MSG_MTU))
--			break;
--
--		mbx->ops.process(hw, mbx);
--	}
--
--	if (i >= 0) {
--		iov_data->next_vf_mbx = i + 1;
--	} else if (iov_data->next_vf_mbx) {
--		iov_data->next_vf_mbx = 0;
--		goto process_mbx;
--	}
- read_unlock:
- 	rcu_read_unlock();
- 
-@@ -155,10 +129,6 @@ process_mbx:
- 			mbx->ops.connect(hw, mbx);
- 		}
- 
--		/* no work pending, then just continue */
--		if (mbx->ops.tx_complete(mbx) && !mbx->ops.rx_ready(mbx))
--			continue;
--
- 		/* guarantee we have free space in the SM mailbox */
- 		if (!hw->mbx.ops.tx_ready(&hw->mbx, FM10K_VFMBX_MSG_MTU))
- 			break;
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index 64255cd..94c602f 100644
+index 6fc9965..90d6fae 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -984,6 +984,7 @@ static irqreturn_t fm10k_msix_mbx_pf(int __always_unused irq, void *data)
- 	/* service mailboxes */
- 	if (fm10k_mbx_trylock(interface)) {
- 		mbx->ops.process(hw, mbx);
-+		/* handle VFLRE events */
- 		fm10k_iov_event(interface);
- 		fm10k_mbx_unlock(interface);
- 	}
-@@ -1000,6 +1001,8 @@ static irqreturn_t fm10k_msix_mbx_pf(int __always_unused irq, void *data)
+@@ -839,6 +839,28 @@ static irqreturn_t fm10k_msix_mbx_vf(int irq, void *data)
+ 	return IRQ_HANDLED;
+ }
  
- 	/* we should validate host state after interrupt event */
- 	hw->mac.get_host_state = 1;
++#ifdef CONFIG_NET_POLL_CONTROLLER
++/**
++ *  fm10k_netpoll - A Polling 'interrupt' handler
++ *  @netdev: network interface device structure
++ *
++ *  This is used by netconsole to send skbs without having to re-enable
++ *  interrupts. It's not called while the normal interrupt routine is executing.
++ **/
++void fm10k_netpoll(struct net_device *netdev)
++{
++	struct fm10k_intfc *interface = netdev_priv(netdev);
++	int i;
 +
-+	/* validate host state, and handle VF mailboxes in the service task */
- 	fm10k_service_event_schedule(interface);
- 
- 	/* re-enable mailbox interrupt and indicate 20us delay */
++	/* if interface is down do nothing */
++	if (test_bit(__FM10K_DOWN, &interface->state))
++		return;
++
++	for (i = 0; i < interface->num_q_vectors; i++)
++		fm10k_msix_clean_rings(0, interface->q_vector[i]);
++}
++
++#endif
+ #define FM10K_ERR_MSG(type) case (type): error = #type; break
+ static void fm10k_print_fault(struct fm10k_intfc *interface, int type,
+ 			      struct fm10k_fault *fault)
 
