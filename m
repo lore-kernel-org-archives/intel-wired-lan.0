@@ -1,53 +1,39 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sun, 12 Apr 2015 10:21:19 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- da6bbfb36522e30990817f5468fc05d71f0dc9bb BUILD SUCCESS
-Message-ID: <5529d69f.QodbUrVzv0FX7pgW%fengguang.wu@intel.com>
+Date: Sun, 12 Apr 2015 13:43:35 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
+ b641173915ae7b51c79abfde9580c3a381876bb1 BUILD SUCCESS
+Message-ID: <552a0607.8SbO0RksW9hRZSoO%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-da6bbfb36522e30990817f5468fc05d71f0dc9bb  ixgbe: Use a signed type to hold error codes
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
+b641173915ae7b51c79abfde9580c3a381876bb1  ixgbevf: Add the appropriate ethtool ops to query RSS indirection table and key
 
-elapsed time: 1307m
+elapsed time: 634m
 
-configs tested: 199
+configs tested: 182
 
 i386                             alldefconfig
 i386                             allmodconfig
 i386                              allnoconfig
 i386                                defconfig
 mips                             allmodconfig
+mips                                   jz4740
 mips                              allnoconfig
 mips                      fuloong2e_defconfig
-mips                                   jz4740
 mips                                     txx9
-x86_64                 randconfig-a0-04120842
-x86_64                 randconfig-a1-04120842
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                     randconfig-c0-0410
-x86_64                     randconfig-c1-0410
-x86_64                     randconfig-c2-0410
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-i386                   randconfig-c0-04111358
-i386                   randconfig-c1-04111358
-i386                   randconfig-c1-04120812
-i386                   randconfig-c0-04120812
-x86_64                randconfig-iv0-04120528
-x86_64                randconfig-iv1-04120528
-x86_64                randconfig-iv0-04120633
-x86_64                randconfig-iv1-04120633
-x86_64                randconfig-iv1-04120816
-x86_64                randconfig-iv0-04120816
-x86_64                randconfig-iv1-04120932
-x86_64                randconfig-iv0-04120932
+x86_64                 randconfig-a0-04121148
+x86_64                 randconfig-a1-04121148
+x86_64                     randconfig-c2-0412
+x86_64                     randconfig-c1-0412
+x86_64                     randconfig-c0-0412
+i386                   randconfig-c0-04121115
+i386                   randconfig-c1-04121115
+x86_64                randconfig-iv0-04121239
+x86_64                randconfig-iv1-04121239
 xtensa                           allyesconfig
 sparc64                          allyesconfig
 mips                             allyesconfig
@@ -68,12 +54,8 @@ powerpc                             defconfig
 powerpc                       ppc64_defconfig
 powerpc                           allnoconfig
 powerpc                          allmodconfig
-i386                  randconfig-ib0-04100854
-i386                  randconfig-ib0-04120739
-i386                  randconfig-ib1-04091050
-i386                  randconfig-ib1-04120739
-i386                  randconfig-ib1-04120935
-i386                  randconfig-ib0-04120935
+i386                  randconfig-ib0-04121140
+i386                  randconfig-ib1-04121140
 sparc                               defconfig
 sparc64                           allnoconfig
 sparc64                             defconfig
@@ -83,19 +65,19 @@ xtensa                          iss_defconfig
 m32r                         opsput_defconfig
 m32r                           usrv_defconfig
 m32r                     mappi3.smp_defconfig
-microblaze                       allyesconfig
 microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
+microblaze                       allyesconfig
 s390                             allmodconfig
 s390                              allnoconfig
 s390                                defconfig
 i386                             allyesconfig
-x86_64                randconfig-ib0-04120959
-blackfin             BF527-TLL6527M_defconfig
-mips                        maltaup_defconfig
-parisc                         b180_defconfig
-powerpc                       eiger_defconfig
-sh                           se7619_defconfig
+x86_64                randconfig-ib0-04121312
+avr32                 atngw100_mrmt_defconfig
+sh                         ap325rxa_defconfig
+arm                            lart_defconfig
+m68k                       m5275evb_defconfig
+arm                         lpc32xx_defconfig
 i386                         randconfig-nexe1
 i386                         randconfig-nexe0
 i386                         randconfig-nexe3
@@ -120,12 +102,14 @@ ia64                             allmodconfig
 ia64                              allnoconfig
 ia64                                defconfig
 ia64                             alldefconfig
-x86_64              randconfig-nexs0-04112004
-i386                randconfig-nexs0-04112004
-i386                randconfig-nexs0-04120600
-x86_64              randconfig-nexs0-04120600
-i386                randconfig-nexs0-04120715
-x86_64              randconfig-nexs0-04120715
+x86_64                  randconfig-nexr0-0410
+x86_64                  randconfig-nexr1-0410
+x86_64                  randconfig-nexr2-0410
+i386                    randconfig-nexr0-0410
+i386                    randconfig-nexr1-0410
+i386                    randconfig-nexr2-0410
+x86_64              randconfig-nexs0-04121120
+i386                randconfig-nexs0-04121120
 cris                 etrax-100lx_v2_defconfig
 blackfin                  TCM-BF537_defconfig
 blackfin            BF561-EZKIT-SMP_defconfig
@@ -139,9 +123,7 @@ powerpc                    gamecube_defconfig
 powerpc               corenet64_smp_defconfig
 powerpc                               mpc512x
 powerpc                                ppc44x
-x86_64                 randconfig-n0-04120411
-x86_64                 randconfig-n0-04120539
-x86_64                 randconfig-n0-04120815
+x86_64                 randconfig-n0-04121212
 arm                              allmodconfig
 arm                               allnoconfig
 arm                                      arm5
@@ -165,21 +147,24 @@ m68k                          multi_defconfig
 m68k                       m5475evb_defconfig
 m68k                             allmodconfig
 m68k                          amiga_defconfig
-x86_64                           allmodconfig
-arm                     davinci_all_defconfig
-m68k                          hp300_defconfig
-microblaze                      mmu_defconfig
-sh                          rsk7269_defconfig
 sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+arm                         ape6evm_defconfig
+blackfin                 BlackStamp_defconfig
+avr32            atngw100_evklcd101_defconfig
+arm                          lpd270_defconfig
+mips                         mpc30x_defconfig
 x86_64                                    lkp
 x86_64                                   rhel
-i386                       randconfig-r1-0411
-i386                       randconfig-r0-0411
-i386                       randconfig-r2-0411
-x86_64                 randconfig-r0-04120911
-x86_64                 randconfig-s0-04120945
-x86_64                 randconfig-s1-04111714
-x86_64                 randconfig-s1-04120945
+i386                       randconfig-r0-0412
+i386                       randconfig-r1-0412
+i386                       randconfig-r2-0412
+x86_64                 randconfig-r0-04121230
+x86_64                 randconfig-s0-04121308
+x86_64                 randconfig-s1-04121308
+x86_64                           allmodconfig
 mn10300                     asb2364_defconfig
 openrisc                    or1ksim_defconfig
 um                           x86_64_defconfig
@@ -208,10 +193,8 @@ x86_64                        randconfig-x006
 x86_64                        randconfig-x007
 x86_64                        randconfig-x008
 x86_64                        randconfig-x009
-x86_64                                    lkp
-x86_64                                   rhel
-i386                   randconfig-x0-04112317
-i386                   randconfig-x1-04112317
+i386                   randconfig-x0-04121057
+i386                   randconfig-x1-04121057
 x86_64                             acpi-redef
 x86_64                           allyesdebian
 x86_64                                nfsroot
