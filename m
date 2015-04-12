@@ -1,182 +1,220 @@
-From: Yanir Lubetkin <yanirx.lubetkin@intel.com>
-Date: Sun, 12 Apr 2015 02:06:06 +0300
-Subject: [Intel-wired-lan] [PATCH v4] e1000e i219 fix unit hang on reset and
-	runtime D3
-Message-ID: <1428793566-14375-1-git-send-email-yanirx.lubetkin@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sun, 12 Apr 2015 10:21:19 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ da6bbfb36522e30990817f5468fc05d71f0dc9bb BUILD SUCCESS
+Message-ID: <5529d69f.QodbUrVzv0FX7pgW%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-unit hang may occur if multiple descriptors are available in the rings during
-reset or runtime suspend. This state can be detected by testing the PCI config
-space register FEXTNVM7 bit 8 (0x100 mask). if this bit is on, and there are
-pending descriptors in one of the rings, we must flush them prior to reset.
-same goes for entering runtime suspend.
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+da6bbfb36522e30990817f5468fc05d71f0dc9bb  ixgbe: Use a signed type to hold error codes
 
-Signed-off-by: Yanir Lubetkin <yanirx.lubetkin@intel.com>
----
- drivers/net/ethernet/intel/e1000e/ich8lan.h |   5 ++
- drivers/net/ethernet/intel/e1000e/netdev.c  | 101 ++++++++++++++++++++++++++++
- drivers/net/ethernet/intel/e1000e/regs.h    |   1 +
- 3 files changed, 107 insertions(+)
+elapsed time: 1307m
 
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.h b/drivers/net/ethernet/intel/e1000e/ich8lan.h
-index 770a573..69c4dbe 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.h
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.h
-@@ -100,6 +100,11 @@
- #define E1000_FEXTNVM7_DISABLE_PB_READ	0x00040000
- 
- #define E1000_FEXTNVM7_DISABLE_SMB_PERST	0x00000020
-+#define E1000_FEXTNVM7_NEED_DESCRING_FLUSH     0x00000100
-+#define E1000_FEXTNVM11_DISABLE_MULR_FIX       0x00002000
-+
-+/* bit24: RXDCTL thresholds granularity: 0 - cache lines, 1 - descriptors */
-+#define E1000_RXDCTL_THRESH_UNIT_DESC 0x01000000
- 
- #define K1_ENTRY_LATENCY	0
- #define K1_MIN_TIME		1
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 74ec185..4880a23 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -3788,6 +3788,105 @@ static void e1000_power_down_phy(struct e1000_adapter *adapter)
- }
- 
- /**
-+ * e1000_flush_tx_ring - remove all descriptors from the tx_ring
-+ *
-+ * We want to clear all pending descriptors from the TX ring.
-+ * zeroing happens when the HW reads the regs. We  assign the ring itself as
-+ * the data of the next descriptor. We don't care about the data we are about
-+ * to reset the HW.
-+ */
-+static void e1000_flush_tx_ring(struct e1000_adapter *adapter)
-+{
-+	struct e1000_hw *hw = &adapter->hw;
-+	struct e1000_ring *tx_ring = adapter->tx_ring;
-+	struct e1000_tx_desc *tx_desc = NULL;
-+	u32 tctl, txd_lower = E1000_TXD_CMD_IFCS;
-+	u16 size = 512;
-+
-+	tctl = er32(TCTL);
-+	ew32(TCTL, tctl | E1000_TCTL_EN);
-+
-+	tx_desc =  E1000_TX_DESC(*tx_ring, tx_ring->next_to_use);
-+	tx_desc->buffer_addr = tx_ring->dma;
-+
-+	tx_desc->lower.data = cpu_to_le32(txd_lower | size);
-+	tx_desc->upper.data = 0;
-+	/* flush descriptors to memory before notifying the HW */
-+	wmb();
-+	tx_ring->next_to_use++;
-+	if (tx_ring->next_to_use == tx_ring->count)
-+		tx_ring->next_to_use = 0;
-+	ew32(TDT(0), tx_ring->next_to_use);
-+	mmiowb();
-+	usleep_range(200, 250);
-+}
-+
-+/**
-+ * e1000_flush_rx_ring - remove all descriptors from the rx_ring
-+ *
-+ * Mark all descriptors in the RX ring as consumed and disable the rx ring
-+ */
-+static void e1000_flush_rx_ring(struct e1000_adapter *adapter)
-+{
-+	u32 rctl, rxdctl;
-+	struct e1000_hw *hw = &adapter->hw;
-+
-+	rctl = er32(RCTL);
-+	ew32(RCTL, rctl & ~E1000_RCTL_EN);
-+	mmiowb();
-+	usleep_range(100, 150);
-+
-+	rxdctl = er32(RXDCTL(0));
-+	/* zero the lower 14 bits (prefetch and host thresholds) */
-+	rxdctl &= 0xffffc000;
-+
-+	/* update thresholds: prefetch threshold to 31, host threshold to 1
-+	 * and make sure the granularity is "descriptors" and not "cache lines"
-+	 */
-+	rxdctl |= (0x1F | (1 << 8) | E1000_RXDCTL_THRESH_UNIT_DESC);
-+
-+	ew32(RXDCTL(0), rxdctl);
-+	/* momentarily enable the RX ring for the changes to take effect */
-+	ew32(RCTL, rctl | E1000_RCTL_EN);
-+	mmiowb();
-+	usleep_range(100, 150);
-+	ew32(RCTL, rctl & ~E1000_RCTL_EN);
-+}
-+
-+/**
-+ * e1000_flush_desc_rings - remove all descriptors from the descriptor rings
-+ *
-+ * In i219, the descriptor rings must be emptied before resetting the HW
-+ * or before changing the device state to D3 during runtime (runtime PM).
-+ *
-+ * Failure to do this will cause the HW to enter a unit hang state which can
-+ * only be released by PCI reset on the device
-+ *
-+ */
-+
-+static void e1000_flush_desc_rings(struct e1000_adapter *adapter)
-+{
-+	u32 hang_state;
-+	u32 fext_nvm11, tdlen;
-+	struct e1000_hw *hw = &adapter->hw;
-+
-+	/* First, disable MULR fix in FEXTNVM11 */
-+	fext_nvm11 = er32(FEXTNVM11);
-+	fext_nvm11 |= E1000_FEXTNVM11_DISABLE_MULR_FIX;
-+	ew32(FEXTNVM11, fext_nvm11);
-+	/* do nothing if we're not in faulty state, or if the queue is empty */
-+	tdlen = er32(TDLEN(0));
-+	hang_state = er32(FEXTNVM7);
-+	if ((hang_state & E1000_FEXTNVM7_NEED_DESCRING_FLUSH) || tdlen)
-+		return;
-+	e1000_flush_tx_ring(adapter);
-+	/* recheck, maybe the fault is caused by the rx ring */
-+	hang_state = er32(FEXTNVM7);
-+	if (hang_state & E1000_FEXTNVM7_NEED_DESCRING_FLUSH)
-+		e1000_flush_rx_ring(adapter);
-+}
-+
-+/**
-  * e1000e_reset - bring the hardware into a known good state
-  *
-  * This function boots the hardware and enables some settings that
-@@ -3943,6 +4042,8 @@ void e1000e_reset(struct e1000_adapter *adapter)
- 		}
- 	}
- 
-+	if (hw->mac.type == e1000_pch_spt)
-+		e1000_flush_desc_rings(adapter);
- 	/* Allow time for pending master requests to run */
- 	mac->ops.reset_hw(hw);
- 
-diff --git a/drivers/net/ethernet/intel/e1000e/regs.h b/drivers/net/ethernet/intel/e1000e/regs.h
-index 85eefc4..fdaac8e 100644
---- a/drivers/net/ethernet/intel/e1000e/regs.h
-+++ b/drivers/net/ethernet/intel/e1000e/regs.h
-@@ -38,6 +38,7 @@
- #define E1000_FEXTNVM4	0x00024	/* Future Extended NVM 4 - RW */
- #define E1000_FEXTNVM6	0x00010	/* Future Extended NVM 6 - RW */
- #define E1000_FEXTNVM7	0x000E4	/* Future Extended NVM 7 - RW */
-+#define E1000_FEXTNVM11        0x5BBC  /* Future Extended NVM 11 - RW */
- #define E1000_PCIEANACFG	0x00F18	/* PCIE Analog Config */
- #define E1000_FCT	0x00030	/* Flow Control Type - RW */
- #define E1000_VET	0x00038	/* VLAN Ether Type - RW */
--- 
-1.9.3
+configs tested: 199
 
----------------------------------------------------------------------
-Intel Israel (74) Limited
+i386                             alldefconfig
+i386                             allmodconfig
+i386                              allnoconfig
+i386                                defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                 randconfig-a0-04120842
+x86_64                 randconfig-a1-04120842
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                     randconfig-c0-0410
+x86_64                     randconfig-c1-0410
+x86_64                     randconfig-c2-0410
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+i386                   randconfig-c0-04111358
+i386                   randconfig-c1-04111358
+i386                   randconfig-c1-04120812
+i386                   randconfig-c0-04120812
+x86_64                randconfig-iv0-04120528
+x86_64                randconfig-iv1-04120528
+x86_64                randconfig-iv0-04120633
+x86_64                randconfig-iv1-04120633
+x86_64                randconfig-iv1-04120816
+x86_64                randconfig-iv0-04120816
+x86_64                randconfig-iv1-04120932
+x86_64                randconfig-iv0-04120932
+xtensa                           allyesconfig
+sparc64                          allyesconfig
+mips                             allyesconfig
+m68k                             allyesconfig
+sparc                            allyesconfig
+tile                             allyesconfig
+alpha                            allyesconfig
+powerpc                          allyesconfig
+sh                               allyesconfig
+avr32                            allyesconfig
+ia64                             allyesconfig
+parisc                           allyesconfig
+cris                             allyesconfig
+x86_64                           allyesconfig
+blackfin                         allyesconfig
+s390                             allyesconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+i386                  randconfig-ib0-04100854
+i386                  randconfig-ib0-04120739
+i386                  randconfig-ib1-04091050
+i386                  randconfig-ib1-04120739
+i386                  randconfig-ib1-04120935
+i386                  randconfig-ib0-04120935
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+microblaze                       allyesconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+s390                             allmodconfig
+s390                              allnoconfig
+s390                                defconfig
+i386                             allyesconfig
+x86_64                randconfig-ib0-04120959
+blackfin             BF527-TLL6527M_defconfig
+mips                        maltaup_defconfig
+parisc                         b180_defconfig
+powerpc                       eiger_defconfig
+sh                           se7619_defconfig
+i386                         randconfig-nexe1
+i386                         randconfig-nexe0
+i386                         randconfig-nexe3
+i386                         randconfig-nexe2
+i386                         randconfig-nexe5
+i386                         randconfig-nexe4
+i386                         randconfig-nexe7
+i386                         randconfig-nexe6
+i386                         randconfig-nexe9
+i386                         randconfig-nexe8
+x86_64                       randconfig-nexe6
+x86_64                       randconfig-nexe7
+x86_64                       randconfig-nexe4
+x86_64                       randconfig-nexe5
+x86_64                       randconfig-nexe2
+x86_64                       randconfig-nexe3
+x86_64                       randconfig-nexe0
+x86_64                       randconfig-nexe1
+x86_64                       randconfig-nexe8
+x86_64                       randconfig-nexe9
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+x86_64              randconfig-nexs0-04112004
+i386                randconfig-nexs0-04112004
+i386                randconfig-nexs0-04120600
+x86_64              randconfig-nexs0-04120600
+i386                randconfig-nexs0-04120715
+x86_64              randconfig-nexs0-04120715
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+powerpc                      chroma_defconfig
+powerpc                 linkstation_defconfig
+powerpc                               powerpc
+powerpc                         wii_defconfig
+powerpc                    gamecube_defconfig
+powerpc               corenet64_smp_defconfig
+powerpc                               mpc512x
+powerpc                                ppc44x
+x86_64                 randconfig-n0-04120411
+x86_64                 randconfig-n0-04120539
+x86_64                 randconfig-n0-04120815
+arm                              allmodconfig
+arm                               allnoconfig
+arm                                      arm5
+arm                                     arm67
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                                       mmp
+arm                       omap2plus_defconfig
+arm                          prima2_defconfig
+arm                         s3c2410_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+arm                           tegra_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                             allmodconfig
+m68k                          amiga_defconfig
+x86_64                           allmodconfig
+arm                     davinci_all_defconfig
+m68k                          hp300_defconfig
+microblaze                      mmu_defconfig
+sh                          rsk7269_defconfig
+sh                            titan_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                       randconfig-r1-0411
+i386                       randconfig-r0-0411
+i386                       randconfig-r2-0411
+x86_64                 randconfig-r0-04120911
+x86_64                 randconfig-s0-04120945
+x86_64                 randconfig-s1-04111714
+x86_64                 randconfig-s1-04120945
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+i386                          randconfig-x009
+i386                          randconfig-x008
+i386                          randconfig-x005
+i386                          randconfig-x004
+i386                          randconfig-x007
+i386                          randconfig-x006
+i386                          randconfig-x001
+i386                          randconfig-x000
+i386                          randconfig-x003
+i386                          randconfig-x002
+x86_64                        randconfig-x000
+x86_64                        randconfig-x001
+x86_64                        randconfig-x002
+x86_64                        randconfig-x003
+x86_64                        randconfig-x004
+x86_64                        randconfig-x005
+x86_64                        randconfig-x006
+x86_64                        randconfig-x007
+x86_64                        randconfig-x008
+x86_64                        randconfig-x009
+x86_64                                    lkp
+x86_64                                   rhel
+i386                   randconfig-x0-04112317
+i386                   randconfig-x1-04112317
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+Thanks,
+Fengguang
