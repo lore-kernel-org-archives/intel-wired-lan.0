@@ -1,41 +1,40 @@
-From: Young, James M <james.m.young@intel.com>
-Date: Tue, 14 Apr 2015 16:40:36 +0000
-Subject: [Intel-wired-lan] [net-next S3 07/13] i40e: print FCoE
- capability reported by the device function
-In-Reply-To: <1428450897.28000.12.camel@jtkirshe-mobl>
-References: <1428450342-48517-1-git-send-email-catherine.sullivan@intel.com>
- <1428450342-48517-7-git-send-email-catherine.sullivan@intel.com>
- <1428450897.28000.12.camel@jtkirshe-mobl>
-Message-ID: <68C85B5FC2FE974B87244D7222BC92783E9E5FE1@ORSMSX102.amr.corp.intel.com>
+From: Singh, Krishneil K <krishneil.k.singh@intel.com>
+Date: Tue, 14 Apr 2015 19:36:43 +0000
+Subject: [Intel-wired-lan] [net-next 01/25] fm10k: Corrected an error in
+	Tx statistics
+In-Reply-To: <1428094839.2662.112.camel@jtkirshe-mobl>
+References: <1428092835-16834-1-git-send-email-jeffrey.t.kirsher@intel.com>
+ <1428094839.2662.112.camel@jtkirshe-mobl>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E2623D246@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+
 -----Original Message-----
 From: Kirsher, Jeffrey T 
-Sent: Tuesday, April 07, 2015 4:55 PM
-To: Sullivan, Catherine; Young, James M
-Cc: intel-wired-lan at lists.osuosl.org
-Subject: Re: [Intel-wired-lan] [net-next S3 07/13] i40e: print FCoE capability reported by the device function
+Sent: Friday, April 3, 2015 2:01 PM
+To: intel-wired-lan@lists.osuosl.org
+Cc: Singh, Krishneil K
+Subject: Re: [net-next 01/25] fm10k: Corrected an error in Tx statistics
 
-On Tue, 2015-04-07 at 19:45 -0400, Catherine Sullivan wrote:
-> From: Vasu Dev <vasu.dev@intel.com>
+On Fri, 2015-04-03 at 13:26 -0700, Jeff Kirsher wrote:
+> The function collecting Tx statistics was actually using values from 
+> the RX ring. Thus, Tx and Rx statistics values reported by "ifconfig" 
+> will return identical values. This change corrects this error and the 
+> Tx statistics is now reading from the Tx ring.
 > 
-> This is to allow quick check for FCoE capability is enabled or not in 
-> device function before any SW overrides.
-> 
-> Signed-off-by: Vasu Dev <vasu.dev@intel.com>
-> Change-ID: I5f78ba798d566f143161273156916c6f4074496e
+> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> Acked-by: Matthew Vick <matthew.vick@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_common.c | 3 +++
->  1 file changed, 3 insertions(+)
+>  drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-Thanks Catherine, I have added your patch to my queue.
+I have applied to my queue.
 --
 git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
 dev-queue
 
-Tested-by: Jim Young <james.m.young@intel.com>
-
+Tested-by: Krishneil Singh <krishneil.k.singh@intel.com>
