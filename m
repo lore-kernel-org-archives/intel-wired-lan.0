@@ -1,36 +1,86 @@
-From: Alexander Duyck <alexander.h.duyck@redhat.com>
-Date: Mon, 13 Apr 2015 17:05:53 -0700
-Subject: [Intel-wired-lan] [PATCH v5] e1000e i219 fix unit hang on reset
- and runtime D3
-In-Reply-To: <1428967221-32195-1-git-send-email-yanirx.lubetkin@intel.com>
-References: <1428967221-32195-1-git-send-email-yanirx.lubetkin@intel.com>
-Message-ID: <552C59E1.2020307@redhat.com>
+From: Fan Du <fan.du@intel.com>
+Date: Tue, 14 Apr 2015 14:36:49 +0800
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Specify rx hash type wrt rx desc
+	RSS type
+Message-ID: <1428993409-16824-1-git-send-email-fan.du@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 04/13/2015 04:20 PM, Yanir Lubetkin wrote:
-> unit hang may occur if multiple descriptors are available in the rings during
-> reset or runtime suspend. This state can be detected by testing bit 8 in the
-> FEXTNVM7 register. if this bit is set and there are pending descriptors in one
-> of the rings, we must flush them prior to reset. same applies entering runtime
-> suspend.
->
-> Signed-off-by: Yanir Lubetkin <yanirx.lubetkin@intel.com>
-> ---
->   drivers/net/ethernet/intel/e1000e/ich8lan.h |   5 ++
->   drivers/net/ethernet/intel/e1000e/netdev.c  | 102 ++++++++++++++++++++++++++++
->   drivers/net/ethernet/intel/e1000e/regs.h    |   1 +
->   3 files changed, 108 insertions(+)
->
+RSS could be leveraged by taking account L4 src/dst ports
+as ingredients, thus ingress skb rx hash type should honor
+such the real configuration.
 
-This looks okay to me.  The BUG_ON seems a bit aggressive but if you 
-think you need to do the workaround rather than just avoid it in the 
-case of TDT != next_to_use I suppose that works.  I would just suggest 
-doing testing with heavy transmit and a link partner flooding flow 
-control to see what happens.  That should be the test that would be most 
-likely to trigger something like that.
+Signed-off-by: Fan Du <fan.du@intel.com>
+---
+note:
 
-Reviewed-by: Alexander Duyck <alexander.h.duyck@redhat.com>
+1. I checked ixgbe_pci_tbl for 82598, 82599 x540 series,
+   RSS type in adavanced descriptor is all supported.
+   x550 is in trial version, so not checked.
+
+2. ixgbevf looks like didn't even set rx hash type
+   I'm not sure why this is left behind. IMHO it should be there.
+
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   23 +++++++++++++++++++++--
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |    1 +
+ 2 files changed, 22 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 395dc6b..8915992 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -1357,14 +1357,33 @@ static int __ixgbe_notify_dca(struct device *dev, void *data)
+ }
+ 
+ #endif /* CONFIG_IXGBE_DCA */
++static inline enum pkt_hash_types ixgbe_get_hash_type(__le16 pkt_info)
++{
++	switch (pkt_info & cpu_to_le16(IXGBE_RXDADV_RSSTYPE_MASK)) {
++	case IXGBE_RXDADV_RSSTYPE_IPV4_TCP:
++	case IXGBE_RXDADV_RSSTYPE_IPV4_UDP:
++	case IXGBE_RXDADV_RSSTYPE_IPV6_TCP:
++	case IXGBE_RXDADV_RSSTYPE_IPV6_UDP:
++		return PKT_HASH_TYPE_L4;
++	case IXGBE_RXDADV_RSSTYPE_IPV4:
++	case IXGBE_RXDADV_RSSTYPE_IPV6:
++		return PKT_HASH_TYPE_L3;
++	default:
++		return PKT_HASH_TYPE_NONE;
++	}
++}
++
+ static inline void ixgbe_rx_hash(struct ixgbe_ring *ring,
+ 				 union ixgbe_adv_rx_desc *rx_desc,
+ 				 struct sk_buff *skb)
+ {
+-	if (ring->netdev->features & NETIF_F_RXHASH)
++	if (ring->netdev->features & NETIF_F_RXHASH) {
++		__le16 pkt_info = rx_desc->wb.lower.lo_dword.hs_rss.pkt_info;
++
+ 		skb_set_hash(skb,
+ 			     le32_to_cpu(rx_desc->wb.lower.hi_dword.rss),
+-			     PKT_HASH_TYPE_L3);
++			     ixgbe_get_hash_type(pkt_info));
++	}
+ }
+ 
+ #ifdef IXGBE_FCOE
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index c3ddc94..97d600e 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -2225,6 +2225,7 @@ enum {
+ #define IXGBE_RXDADV_RSSTYPE_IPV4_UDP   0x00000007
+ #define IXGBE_RXDADV_RSSTYPE_IPV6_UDP   0x00000008
+ #define IXGBE_RXDADV_RSSTYPE_IPV6_UDP_EX 0x00000009
++#define IXGBE_RXDADV_RSSTYPE_MASK       0x0000000F
+ 
+ /* RSS Packet Types as indicated in the receive descriptor. */
+ #define IXGBE_RXDADV_PKTTYPE_NONE       0x00000000
+-- 
+1.7.1
+
