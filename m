@@ -1,8 +1,8 @@
 From: Fan Du <fan.du@intel.com>
-Date: Tue, 14 Apr 2015 14:36:49 +0800
+Date: Tue, 14 Apr 2015 14:56:11 +0800
 Subject: [Intel-wired-lan] [PATCH] ixgbe: Specify rx hash type wrt rx desc
 	RSS type
-Message-ID: <1428993409-16824-1-git-send-email-fan.du@intel.com>
+Message-ID: <1428994571-16976-1-git-send-email-fan.du@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,8 +15,10 @@ such the real configuration.
 
 Signed-off-by: Fan Du <fan.du@intel.com>
 ---
-note:
+Sorry for resending, I forgot to subscribe intel-wired-lan at lists.osuosl.org
+as previous mail is being held by list moderator.
 
+note:
 1. I checked ixgbe_pci_tbl for 82598, 82599 x540 series,
    RSS type in adavanced descriptor is all supported.
    x550 is in trial version, so not checked.
