@@ -1,38 +1,63 @@
-From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Tue, 14 Apr 2015 19:51:39 +0000
-Subject: [Intel-wired-lan] [net-next] fm10k: Bump driver version to
-	0.15.2
-In-Reply-To: <1428095295.2662.137.camel@jtkirshe-mobl>
-References: <1428093190-17097-1-git-send-email-jeffrey.t.kirsher@intel.com>
- <1428095295.2662.137.camel@jtkirshe-mobl>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E2623D42C@ORSMSX103.amr.corp.intel.com>
+From: Jesse Gross <jesse@nicira.com>
+Date: Tue, 14 Apr 2015 16:35:49 -0700
+Subject: [Intel-wired-lan] [PATCH net] i40e: Implement ndo_features_check()
+Message-ID: <1429054549-118911-1-git-send-email-jesse@nicira.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+From: Joe Stringer <joestringer@nicira.com>
 
+i40e supports UDP tunnel headers up to 80 bytes in length, so
+this adds a check to ensure that it doesn't try to offload
+packets that exceed that.
 
------Original Message-----
-From: Kirsher, Jeffrey T 
-Sent: Friday, April 3, 2015 2:08 PM
-To: intel-wired-lan@lists.osuosl.org
-Cc: Singh, Krishneil K
-Subject: Re: [net-next] fm10k: Bump driver version to 0.15.2
+Signed-off-by: Joe Stringer <joestringer@nicira.com>
+Signed-off-by: Jesse Gross <jesse@nicira.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-On Fri, 2015-04-03 at 13:33 -0700, Jeff Kirsher wrote:
-> With the recent driver changes, bump the version.
-> 
-> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> ---
->  drivers/net/ethernet/intel/fm10k/fm10k_main.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-
-I have applied to my queue.
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index dadda3c..16357b9 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -7653,6 +7653,25 @@ static int i40e_ndo_fdb_add(struct ndmsg *ndm, struct nlattr *tb[],
+ 	return err;
+ }
+ 
++/**
++ * i40e_features_check - Validate encapsulated packet conforms to limits
++ * @skb: skb buff
++ * @netdev: This physical port's netdev
++ * @features: Offload features that the stack believes apply
++ **/
++#define I40E_MAX_TUNNEL_HDR_LEN                80
++static netdev_features_t i40e_features_check(struct sk_buff *skb,
++					     struct net_device *dev,
++					     netdev_features_t features)
++{
++	if (skb->encapsulation &&
++	    (skb_inner_mac_header(skb) - skb_transport_header(skb) >
++	     I40E_MAX_TUNNEL_HDR_LEN))
++		return features & ~(NETIF_F_ALL_CSUM | NETIF_F_GSO_MASK);
++
++	return features;
++}
++
+ static const struct net_device_ops i40e_netdev_ops = {
+ 	.ndo_open		= i40e_open,
+ 	.ndo_stop		= i40e_close,
+@@ -7687,6 +7706,7 @@ static const struct net_device_ops i40e_netdev_ops = {
+ #endif
+ 	.ndo_get_phys_port_id	= i40e_get_phys_port_id,
+ 	.ndo_fdb_add		= i40e_ndo_fdb_add,
++	.ndo_features_check	= i40e_features_check,
+ };
+ 
+ /**
 -- 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
-dev-queue
-
-Tested-by: Krishneil Singh <krishneil.k.singh@intel.com>
+1.9.1
 
