@@ -1,12 +1,11 @@
 From: Young, James M <james.m.young@intel.com>
-Date: Tue, 14 Apr 2015 15:34:21 +0000
-Subject: [Intel-wired-lan] [net-next S3 13/13] i40e: Bump version to
- 1.3.2
-In-Reply-To: <1428451188.1860.4.camel@jtkirshe-mobl>
+Date: Tue, 14 Apr 2015 15:34:50 +0000
+Subject: [Intel-wired-lan] [net-next S3 12/13] i40e: Use new 40G speeds
+In-Reply-To: <1428451339.1860.6.camel@jtkirshe-mobl>
 References: <1428450342-48517-1-git-send-email-catherine.sullivan@intel.com>
- <1428450342-48517-13-git-send-email-catherine.sullivan@intel.com>
- <1428451188.1860.4.camel@jtkirshe-mobl>
-Message-ID: <68C85B5FC2FE974B87244D7222BC92783E9E5ED1@ORSMSX102.amr.corp.intel.com>
+ <1428450342-48517-12-git-send-email-catherine.sullivan@intel.com>
+ <1428451339.1860.6.camel@jtkirshe-mobl>
+Message-ID: <68C85B5FC2FE974B87244D7222BC92783E9E5EED@ORSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,19 +14,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 -----Original Message-----
 From: Kirsher, Jeffrey T 
-Sent: Tuesday, April 07, 2015 5:00 PM
+Sent: Tuesday, April 07, 2015 5:02 PM
 To: Sullivan, Catherine; Young, James M
 Cc: intel-wired-lan at lists.osuosl.org
-Subject: Re: [Intel-wired-lan] [net-next S3 13/13] i40e: Bump version to 1.3.2
+Subject: Re: [Intel-wired-lan] [net-next S3 12/13] i40e: Use new 40G speeds
 
 On Tue, 2015-04-07 at 19:45 -0400, Catherine Sullivan wrote:
-> Bump.
+> From: Greg Rose <gregory.v.rose@intel.com>
 > 
-> Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-> Change-ID: Id14baae72332d0f1a9bc5d351ea1a85cb0295ec3
+> The kernel has added SPEED_40000 for ethtool.
+> Go ahead and use the new #define.
+> 
+> Signed-off-by: Greg Rose <gregory.v.rose@intel.com>
+> Change-ID: Ic7e16e5c9e91085afe539f11ee1b7668adc4d0ef
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 
 Thanks Catherine, I have added your patch to my queue.
 -- 
