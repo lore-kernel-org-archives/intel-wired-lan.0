@@ -1,66 +1,39 @@
 From: Jesse Gross <jesse@nicira.com>
-Date: Tue, 14 Apr 2015 17:09:14 -0700
-Subject: [Intel-wired-lan] [PATCH net v2] i40e: Implement
+Date: Tue, 14 Apr 2015 17:09:53 -0700
+Subject: [Intel-wired-lan] [PATCH net] i40e: Implement
 	ndo_features_check()
-Message-ID: <1429056554-120070-1-git-send-email-jesse@nicira.com>
+In-Reply-To: <1429056162.2638.25.camel@jtkirshe-mobl>
+References: <1429054549-118911-1-git-send-email-jesse@nicira.com>
+ <1429056162.2638.25.camel@jtkirshe-mobl>
+Message-ID: <CAEP_g=-+jR8FDdwZQTDgs9JYNMfABrXP51qFg3h_vSGqBNPWWA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Joe Stringer <joestringer@nicira.com>
+On Tue, Apr 14, 2015 at 5:02 PM, Jeff Kirsher
+<jeffrey.t.kirsher@intel.com> wrote:
+> On Tue, 2015-04-14 at 16:35 -0700, Jesse Gross wrote:
+>> +/**
+>> + * i40e_features_check - Validate encapsulated packet conforms to
+>> limits
+>> + * @skb: skb buff
+>> + * @netdev: This physical port's netdev
+>> + * @features: Offload features that the stack believes apply
+>> + **/
+>> +#define I40E_MAX_TUNNEL_HDR_LEN                80
+>> +static netdev_features_t i40e_features_check(struct sk_buff *skb,
+>> +                                            struct net_device *dev,
+>> +                                            netdev_features_t
+>> features)
+>> +{
+>
+> Minor nitpick, although I am not sure what the precedence is.  I
+> personally do not like putting the define between the function header
+> comment and the function.  I would prefer the #define above the header
+> comment.
+>
+> But if you can find a reason otherwise, I will listen.
 
-i40e supports UDP tunnel headers up to 80 bytes in length, so
-this adds a check to ensure that it doesn't try to offload
-packets that exceed that.
-
-Signed-off-by: Joe Stringer <joestringer@nicira.com>
-Signed-off-by: Jesse Gross <jesse@nicira.com>
----
-v2: Move #define above function comment.
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index dadda3c..eeff157 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -7653,6 +7653,25 @@ static int i40e_ndo_fdb_add(struct ndmsg *ndm, struct nlattr *tb[],
- 	return err;
- }
- 
-+#define I40E_MAX_TUNNEL_HDR_LEN 80
-+/**
-+ * i40e_features_check - Validate encapsulated packet conforms to limits
-+ * @skb: skb buff
-+ * @netdev: This physical port's netdev
-+ * @features: Offload features that the stack believes apply
-+ **/
-+static netdev_features_t i40e_features_check(struct sk_buff *skb,
-+					     struct net_device *dev,
-+					     netdev_features_t features)
-+{
-+	if (skb->encapsulation &&
-+	    (skb_inner_mac_header(skb) - skb_transport_header(skb) >
-+	     I40E_MAX_TUNNEL_HDR_LEN))
-+		return features & ~(NETIF_F_ALL_CSUM | NETIF_F_GSO_MASK);
-+
-+	return features;
-+}
-+
- static const struct net_device_ops i40e_netdev_ops = {
- 	.ndo_open		= i40e_open,
- 	.ndo_stop		= i40e_close,
-@@ -7687,6 +7706,7 @@ static const struct net_device_ops i40e_netdev_ops = {
- #endif
- 	.ndo_get_phys_port_id	= i40e_get_phys_port_id,
- 	.ndo_fdb_add		= i40e_ndo_fdb_add,
-+	.ndo_features_check	= i40e_features_check,
- };
- 
- /**
--- 
-1.9.1
-
+No particular reason, I just sent a v2 with this change.
