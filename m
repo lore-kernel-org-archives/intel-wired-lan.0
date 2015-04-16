@@ -1,38 +1,47 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Thu, 16 Apr 2015 03:59:02 +0000
-Subject: [Intel-wired-lan] [net-next] e100: don't initialize int object
- to zero
-In-Reply-To: <1428447545.28000.4.camel@jtkirshe-mobl>
-References: <1428273124-14321-1-git-send-email-sakiwit@gmail.com>
- <1428447545.28000.4.camel@jtkirshe-mobl>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B78DA39AC@ORSMSX101.amr.corp.intel.com>
+From: Young, James M <james.m.young@intel.com>
+Date: Thu, 16 Apr 2015 18:09:28 +0000
+Subject: [Intel-wired-lan] [net-next S3 09/13] i40e/i40evf: Save
+ WR_CSR_PROT field from DEV/FUNC capabilities
+Message-ID: <68C85B5FC2FE974B87244D7222BC92783E9E7B42@ORSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Jeff Kirsher
-> Sent: Tuesday, April 07, 2015 3:59 PM
-> To: J?an Sacren
-> Cc: intel-wired-lan at lists.osuosl.org
-> Subject: Re: [Intel-wired-lan] [net-next] e100: don't initialize int
-> object to zero
+> -----Original Message-----
+> From: Kirsher, Jeffrey T
+> Sent: Tuesday, April 07, 2015 4:59 PM
+> To: Sullivan, Catherine; Young, James M
+> Cc: intel-wired-lan at lists.osuosl.org; Scott, Kevin C
+> Subject: Re: [Intel-wired-lan] [net-next S3 09/13] i40e/i40evf: Save
+> WR_CSR_PROT field from DEV/FUNC capabilities
 > 
-> On Sun, 2015-04-05 at 16:32 -0600, J?an Sacren wrote:
-> > From: Jean Sacren <sakiwit@gmail.com>
+> On Tue, 2015-04-07 at 19:45 -0400, Catherine Sullivan wrote:
+> > From: Kevin Scott <kevin.c.scott@intel.com>
 > >
-> > 'err' will be overwritten so no need to initialize it to zero.
+> > Store the 8 bytes of the WR_CSR_PROT field returned as part of the get
+> > device/function capabilities AQ command.
 > >
-> > Signed-off-by: Jean Sacren <sakiwit@gmail.com>
+> > Signed-off-by: Kevin Scott <kevin.c.scott@intel.com>
+> > Change-ID: Ifcaeea2ff29885fa769e4f384c7db88a25e8afd0
 > > ---
-> >  drivers/net/ethernet/intel/e100.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >  drivers/net/ethernet/intel/i40e/i40e_common.c | 5 +++++
+> >  drivers/net/ethernet/intel/i40e/i40e_type.h   | 1 +
+> >  drivers/net/ethernet/intel/i40evf/i40e_type.h | 1 +
+> >  3 files changed, 7 insertions(+)
 > 
-> Thanks Jean, I have applied your patch to my queue.
+> Thanks Catherine, I have added your patch to my queue.
 > --
 > git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
 > dev-queue
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Tested-by: Jim Young <james.m.young@intel.com>
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 836 bytes
+Desc: signature.asc
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150416/c03630e7/attachment.asc>
