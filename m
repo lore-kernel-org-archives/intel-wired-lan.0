@@ -1,156 +1,159 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Thu, 16 Apr 2015 20:06:08 -0400
-Subject: [Intel-wired-lan] [net-next S4 11/15] i40e/i40evf: Update Flex-10
-	related device/function capabilities
+Date: Thu, 16 Apr 2015 20:06:09 -0400
+Subject: [Intel-wired-lan] [net-next S4 12/15] i40evf: skb->xmit_more support
 In-Reply-To: <1429229172-143692-1-git-send-email-catherine.sullivan@intel.com>
 References: <1429229172-143692-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1429229172-143692-12-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1429229172-143692-13-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Pawel Orlowski <pawel.orlowski@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-The Flex10 device/function capability has been upgraded to include
-information needed to support Flex-10 configurations. This patch adds new
-fields to the i40e_hw_capabilities structure and updates
-i40e_parse_discover_capabilities functions to extract them from the AQ response.
-Naming convention has changed to use flex10 mode instead of existing mfp_mode_1.
+Eric added support for skb->xmit_more in i40e, this ports that into i40evf as well.
 
-Signed-off-by: Pawel Orlowski <pawel.orlowski@intel.com>
-Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
-Change-ID: I305dd888866985a30293acb3fb14fa43ca6b79ea
+Support skb->xmit_more in i40evf is straightforward; we need to move
+around i40e_maybe_stop_tx() call to correctly test netif_xmit_stopped()
+before taking the decision to not kick the NIC.
+
+Signed-off-by: Eric Dumazet <edumazet@google.com>
+Signed-off-by: Daniel Borkmann <dborkman@redhat.com>
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Change-ID: Idddda6a2e4a7ab335631c91ced51f55b25eb8468
 ---
- drivers/net/ethernet/intel/i40e/i40e_common.c | 24 +++++++++++++++++++-----
- drivers/net/ethernet/intel/i40e/i40e_main.c   |  2 +-
- drivers/net/ethernet/intel/i40e/i40e_type.h   | 12 +++++++++++-
- drivers/net/ethernet/intel/i40evf/i40e_type.h | 12 +++++++++++-
- 4 files changed, 42 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 88 ++++++++++++++-------------
+ 1 file changed, 47 insertions(+), 41 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 0bae22d..6c90d3d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -2391,7 +2391,7 @@ i40e_aq_erase_nvm_exit:
- #define I40E_DEV_FUNC_CAP_MSIX_VF	0x44
- #define I40E_DEV_FUNC_CAP_FLOW_DIRECTOR	0x45
- #define I40E_DEV_FUNC_CAP_IEEE_1588	0x46
--#define I40E_DEV_FUNC_CAP_MFP_MODE_1	0xF1
-+#define I40E_DEV_FUNC_CAP_FLEX10	0xF1
- #define I40E_DEV_FUNC_CAP_CEM		0xF2
- #define I40E_DEV_FUNC_CAP_IWARP		0x51
- #define I40E_DEV_FUNC_CAP_LED		0x61
-@@ -2415,6 +2415,7 @@ static void i40e_parse_discover_capabilities(struct i40e_hw *hw, void *buff,
- 	struct i40e_aqc_list_capabilities_element_resp *cap;
- 	u32 valid_functions, num_functions;
- 	u32 number, logical_id, phys_id;
-+	u8 major_rev;
- 	struct i40e_hw_capabilities *p;
- 	u32 i = 0;
- 	u16 id;
-@@ -2433,6 +2434,7 @@ static void i40e_parse_discover_capabilities(struct i40e_hw *hw, void *buff,
- 		number = le32_to_cpu(cap->number);
- 		logical_id = le32_to_cpu(cap->logical_id);
- 		phys_id = le32_to_cpu(cap->phys_id);
-+		major_rev = cap->major_rev;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index e1a44dd..4f77d38 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -1672,6 +1672,47 @@ linearize_chk_done:
+ }
  
- 		switch (id) {
- 		case I40E_DEV_FUNC_CAP_SWITCH_MODE:
-@@ -2507,9 +2509,21 @@ static void i40e_parse_discover_capabilities(struct i40e_hw *hw, void *buff,
- 		case I40E_DEV_FUNC_CAP_MSIX_VF:
- 			p->num_msix_vectors_vf = number;
- 			break;
--		case I40E_DEV_FUNC_CAP_MFP_MODE_1:
--			if (number == 1)
--				p->mfp_mode_1 = true;
-+		case I40E_DEV_FUNC_CAP_FLEX10:
-+			if (major_rev == 1) {
-+				if (number == 1) {
-+					p->flex10_enable = true;
-+					p->flex10_capable = true;
-+				}
-+			} else {
-+				/* Capability revision >= 2 */
-+				if (number & 1)
-+					p->flex10_enable = true;
-+				if (number & 2)
-+					p->flex10_capable = true;
-+			}
-+			p->flex10_mode = logical_id;
-+			p->flex10_status = phys_id;
- 			break;
- 		case I40E_DEV_FUNC_CAP_CEM:
- 			if (number == 1)
-@@ -2557,7 +2571,7 @@ static void i40e_parse_discover_capabilities(struct i40e_hw *hw, void *buff,
- 	/* Software override ensuring FCoE is disabled if npar or mfp
- 	 * mode because it is not supported in these modes.
- 	 */
--	if (p->npar_enable || p->mfp_mode_1)
-+	if (p->npar_enable || p->flex10_enable)
- 		p->fcoe = false;
+ /**
++ * __i40evf_maybe_stop_tx - 2nd level check for tx stop conditions
++ * @tx_ring: the ring to be checked
++ * @size:    the size buffer we want to assure is available
++ *
++ * Returns -EBUSY if a stop is needed, else 0
++ **/
++static inline int __i40evf_maybe_stop_tx(struct i40e_ring *tx_ring, int size)
++{
++	netif_stop_subqueue(tx_ring->netdev, tx_ring->queue_index);
++	/* Memory barrier before checking head and tail */
++	smp_mb();
++
++	/* Check again in a case another CPU has just made room available. */
++	if (likely(I40E_DESC_UNUSED(tx_ring) < size))
++		return -EBUSY;
++
++	/* A reprieve! - use start_queue because it doesn't call schedule */
++	netif_start_subqueue(tx_ring->netdev, tx_ring->queue_index);
++	++tx_ring->tx_stats.restart_queue;
++	return 0;
++}
++
++/**
++ * i40evf_maybe_stop_tx - 1st level check for tx stop conditions
++ * @tx_ring: the ring to be checked
++ * @size:    the size buffer we want to assure is available
++ *
++ * Returns 0 if stop is not needed
++ **/
++#ifdef I40E_FCOE
++int i40evf_maybe_stop_tx(struct i40e_ring *tx_ring, int size)
++#else
++static int i40evf_maybe_stop_tx(struct i40e_ring *tx_ring, int size)
++#endif
++{
++	if (likely(I40E_DESC_UNUSED(tx_ring) >= size))
++		return 0;
++	return __i40evf_maybe_stop_tx(tx_ring, size);
++}
++
++/**
+  * i40e_tx_map - Build the Tx descriptor
+  * @tx_ring:  ring to send buffer on
+  * @skb:      send buffer
+@@ -1808,8 +1849,12 @@ static void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
  
- 	/* count the enabled ports (aka the "not disabled" ports) */
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 44e905b..b276793 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -7681,7 +7681,7 @@ static int i40e_sw_init(struct i40e_pf *pf)
+ 	tx_ring->next_to_use = i;
+ 
++	i40evf_maybe_stop_tx(tx_ring, DESC_NEEDED);
+ 	/* notify HW of packet */
+-	writel(i, tx_ring->tail);
++	if (!skb->xmit_more ||
++	    netif_xmit_stopped(netdev_get_tx_queue(tx_ring->netdev,
++						   tx_ring->queue_index)))
++		writel(i, tx_ring->tail);
+ 
+ 	return;
+ 
+@@ -1831,43 +1876,6 @@ dma_error:
+ }
+ 
+ /**
+- * __i40e_maybe_stop_tx - 2nd level check for tx stop conditions
+- * @tx_ring: the ring to be checked
+- * @size:    the size buffer we want to assure is available
+- *
+- * Returns -EBUSY if a stop is needed, else 0
+- **/
+-static inline int __i40e_maybe_stop_tx(struct i40e_ring *tx_ring, int size)
+-{
+-	netif_stop_subqueue(tx_ring->netdev, tx_ring->queue_index);
+-	/* Memory barrier before checking head and tail */
+-	smp_mb();
+-
+-	/* Check again in a case another CPU has just made room available. */
+-	if (likely(I40E_DESC_UNUSED(tx_ring) < size))
+-		return -EBUSY;
+-
+-	/* A reprieve! - use start_queue because it doesn't call schedule */
+-	netif_start_subqueue(tx_ring->netdev, tx_ring->queue_index);
+-	++tx_ring->tx_stats.restart_queue;
+-	return 0;
+-}
+-
+-/**
+- * i40e_maybe_stop_tx - 1st level check for tx stop conditions
+- * @tx_ring: the ring to be checked
+- * @size:    the size buffer we want to assure is available
+- *
+- * Returns 0 if stop is not needed
+- **/
+-static int i40e_maybe_stop_tx(struct i40e_ring *tx_ring, int size)
+-{
+-	if (likely(I40E_DESC_UNUSED(tx_ring) >= size))
+-		return 0;
+-	return __i40e_maybe_stop_tx(tx_ring, size);
+-}
+-
+-/**
+  * i40e_xmit_descriptor_count - calculate number of tx descriptors needed
+  * @skb:     send buffer
+  * @tx_ring: ring to send buffer on
+@@ -1892,7 +1900,7 @@ static int i40e_xmit_descriptor_count(struct sk_buff *skb,
+ 		count += TXD_USE_COUNT(skb_shinfo(skb)->frags[f].size);
+ 
+ 	count += TXD_USE_COUNT(skb_headlen(skb));
+-	if (i40e_maybe_stop_tx(tx_ring, count + 4 + 1)) {
++	if (i40evf_maybe_stop_tx(tx_ring, count + 4 + 1)) {
+ 		tx_ring->tx_stats.tx_busy++;
+ 		return 0;
  	}
+@@ -1968,8 +1976,6 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
+ 	i40e_tx_map(tx_ring, skb, first, tx_flags, hdr_len,
+ 		    td_cmd, td_offset);
  
- 	/* MFP mode enabled */
--	if (pf->hw.func_caps.npar_enable || pf->hw.func_caps.mfp_mode_1) {
-+	if (pf->hw.func_caps.npar_enable || pf->hw.func_caps.flex10_enable) {
- 		pf->flags |= I40E_FLAG_MFP_ENABLED;
- 		dev_info(&pf->pdev->dev, "MFP mode Enabled\n");
- 		if (i40e_get_npar_bw_setting(pf))
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-index 350c5ee..220371e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-@@ -213,7 +213,17 @@ struct i40e_hw_capabilities {
- 	bool dcb;
- 	bool fcoe;
- 	bool iscsi; /* Indicates iSCSI enabled */
--	bool mfp_mode_1;
-+	bool flex10_enable;
-+	bool flex10_capable;
-+	u32  flex10_mode;
-+#define I40E_FLEX10_MODE_UNKNOWN	0x0
-+#define I40E_FLEX10_MODE_DCC		0x1
-+#define I40E_FLEX10_MODE_DCI		0x2
-+
-+	u32 flex10_status;
-+#define I40E_FLEX10_STATUS_DCC_ERROR	0x1
-+#define I40E_FLEX10_STATUS_VC_MODE	0x2
-+
- 	bool mgmt_cem;
- 	bool ieee_1588;
- 	bool iwarp;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-index 068813d..3969c65 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-@@ -213,7 +213,17 @@ struct i40e_hw_capabilities {
- 	bool dcb;
- 	bool fcoe;
- 	bool iscsi; /* Indicates iSCSI enabled */
--	bool mfp_mode_1;
-+	bool flex10_enable;
-+	bool flex10_capable;
-+	u32  flex10_mode;
-+#define I40E_FLEX10_MODE_UNKNOWN	0x0
-+#define I40E_FLEX10_MODE_DCC		0x1
-+#define I40E_FLEX10_MODE_DCI		0x2
-+
-+	u32 flex10_status;
-+#define I40E_FLEX10_STATUS_DCC_ERROR	0x1
-+#define I40E_FLEX10_STATUS_VC_MODE	0x2
-+
- 	bool mgmt_cem;
- 	bool ieee_1588;
- 	bool iwarp;
+-	i40e_maybe_stop_tx(tx_ring, DESC_NEEDED);
+-
+ 	return NETDEV_TX_OK;
+ 
+ out_drop:
 -- 
 1.9.3
 
