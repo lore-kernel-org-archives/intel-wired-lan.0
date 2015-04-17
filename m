@@ -1,45 +1,101 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Thu, 16 Apr 2015 20:05:58 -0400
-Subject: [Intel-wired-lan] [net-next S4 01/15] i40e: Collect PFC XOFF RX
-	stats even in single TC case
+Date: Thu, 16 Apr 2015 20:05:59 -0400
+Subject: [Intel-wired-lan] [net-next S4 02/15] i40e: Disable offline
+	diagnostics if VFs are enabled
 In-Reply-To: <1429229172-143692-1-git-send-email-catherine.sullivan@intel.com>
 References: <1429229172-143692-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1429229172-143692-2-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1429229172-143692-3-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Neerav Parikh <neerav.parikh@intel.com>
+From: Greg Rose <gregory.v.rose@intel.com>
 
-When PFC is enabled for any UP in single TC configuration the driver didn't
-collect the PFC XOFF RX stats. Though a single TC with PFC enabled is not a
-common scenario do not prevent the driver from collecting stats if firmware
-indicates that PFC is enabled.
+Require the user to disable virtual functions before running the device
+offline diagnostics.  The offline diagnostics are intended to ensure
+basic operation of the device - it is beyond the scope of the diagnostic
+test to handle the additional complexity of bringing all the virtual
+functions offline and then back online for each test run.
 
-Signed-off-by: Neerav Parikh <neerav.parikh@intel.com>
-Change-ID: Ie20bd58b07608b528f3c6d95894c9ae56b00077a
+Signed-off-by: Greg Rose <gregory.v.rose@intel.com>
+Change-ID: Ic0b854851a09fc85df0c9e82c220e45885457c30
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 27 ++++++++++++++++++++++
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  7 ++++++
+ 2 files changed, 34 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 24481cd..c48c8d6 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -772,9 +772,8 @@ static void i40e_update_prio_xoff_rx(struct i40e_pf *pf)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 4cbaaeb..e77b6bd 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -1548,6 +1548,17 @@ static int i40e_loopback_test(struct net_device *netdev, u64 *data)
+ 	return *data;
+ }
  
- 	dcb_cfg = &hw->local_dcbx_config;
++static inline bool i40e_active_vfs(struct i40e_pf *pf)
++{
++	struct i40e_vf *vfs = pf->vf;
++	int i;
++
++	for (i = 0; i < pf->num_alloc_vfs; i++)
++		if (vfs[i].vf_states & I40E_VF_STAT_ACTIVE)
++			return true;
++	return false;
++}
++
+ static void i40e_diag_test(struct net_device *netdev,
+ 			   struct ethtool_test *eth_test, u64 *data)
+ {
+@@ -1560,6 +1571,20 @@ static void i40e_diag_test(struct net_device *netdev,
+ 		netif_info(pf, drv, netdev, "offline testing starting\n");
  
--	/* See if DCB enabled with PFC TC */
--	if (!(pf->flags & I40E_FLAG_DCB_ENABLED) ||
--	    !(dcb_cfg->pfc.pfcenable)) {
-+	/* Collect Link XOFF stats when PFC is disabled */
-+	if (!dcb_cfg->pfc.pfcenable) {
- 		i40e_update_link_xoff_rx(pf);
- 		return;
+ 		set_bit(__I40E_TESTING, &pf->state);
++
++		if (i40e_active_vfs(pf)) {
++			dev_warn(&pf->pdev->dev,
++				 "Please take active VFS offline and restart the adapter before running NIC diagnostics\n");
++			data[I40E_ETH_TEST_REG]		= 1;
++			data[I40E_ETH_TEST_EEPROM]	= 1;
++			data[I40E_ETH_TEST_INTR]	= 1;
++			data[I40E_ETH_TEST_LOOPBACK]	= 1;
++			data[I40E_ETH_TEST_LINK]	= 1;
++			eth_test->flags |= ETH_TEST_FL_FAILED;
++			clear_bit(__I40E_TESTING, &pf->state);
++			goto skip_ol_tests;
++		}
++
+ 		/* If the device is online then take it offline */
+ 		if (if_running)
+ 			/* indicate we're in test mode */
+@@ -1605,6 +1630,8 @@ static void i40e_diag_test(struct net_device *netdev,
+ 		data[I40E_ETH_TEST_LOOPBACK] = 0;
  	}
+ 
++skip_ol_tests:
++
+ 	netif_info(pf, drv, netdev, "testing finished\n");
+ }
+ 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 78d1c4f..4653b6e 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -980,6 +980,13 @@ static int i40e_pci_sriov_enable(struct pci_dev *pdev, int num_vfs)
+ 	int pre_existing_vfs = pci_num_vf(pdev);
+ 	int err = 0;
+ 
++	if (pf->state & __I40E_TESTING) {
++		dev_warn(&pdev->dev,
++			 "Cannot enable SR-IOV virtual functions while the device is undergoing diagnostic testing\n");
++		err = -EPERM;
++		goto err_out;
++	}
++
+ 	dev_info(&pdev->dev, "Allocating %d VFs.\n", num_vfs);
+ 	if (pre_existing_vfs && pre_existing_vfs != num_vfs)
+ 		i40e_free_vfs(pf);
 -- 
 1.9.3
 
