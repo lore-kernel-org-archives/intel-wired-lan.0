@@ -1,10 +1,10 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Thu, 16 Apr 2015 20:06:01 -0400
-Subject: [Intel-wired-lan] [net-next S4 04/15] i40e/i40evf: Add stats to
-	count Tunnel ATR hits
+Date: Thu, 16 Apr 2015 20:06:02 -0400
+Subject: [Intel-wired-lan] [net-next S4 05/15] i40e: Remove unnecessary pf
+	members
 In-Reply-To: <1429229172-143692-1-git-send-email-catherine.sullivan@intel.com>
 References: <1429229172-143692-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1429229172-143692-5-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1429229172-143692-6-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,116 +13,74 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Anjali Singhai Jain <anjali.singhai@intel.com>
 
-Add a 3rd dynamic filter counter to track Tunneled ATR hits separately.
-Ethtool port stat "fdir_atr_tunnel_match"
+We can use the stat index macro directly, a variable is not required.
 
 Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-Change-ID: Idd978b6db2a462b5722397cd2ffd04ef055f8655
+Change-ID: I19f08ac16353dc0cd87a1a8248d714e15a54aa8a
 ---
- drivers/net/ethernet/intel/i40e/i40e.h         |  3 +++
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  1 +
- drivers/net/ethernet/intel/i40e/i40e_main.c    |  4 ++++
- drivers/net/ethernet/intel/i40e/i40e_txrx.c    | 13 ++++++++++---
- drivers/net/ethernet/intel/i40e/i40e_type.h    |  1 +
- drivers/net/ethernet/intel/i40evf/i40e_type.h  |  1 +
- 6 files changed, 20 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h         |  2 --
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  2 +-
+ drivers/net/ethernet/intel/i40e/i40e_main.c    | 10 ++++------
+ 3 files changed, 5 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 33c35d3..0bfa5a0 100644
+index 0bfa5a0..aca9cef 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -182,6 +182,7 @@ struct i40e_lump_tracking {
- enum i40e_fd_stat_idx {
- 	I40E_FD_STAT_ATR,
- 	I40E_FD_STAT_SB,
-+	I40E_FD_STAT_ATR_TUNNEL,
- 	I40E_FD_STAT_PF_COUNT
- };
- #define I40E_FD_STAT_PF_IDX(pf_id) ((pf_id) * I40E_FD_STAT_PF_COUNT)
-@@ -189,6 +190,8 @@ enum i40e_fd_stat_idx {
- 			(I40E_FD_STAT_PF_IDX(pf_id) + I40E_FD_STAT_ATR)
- #define I40E_FD_SB_STAT_IDX(pf_id)  \
- 			(I40E_FD_STAT_PF_IDX(pf_id) + I40E_FD_STAT_SB)
-+#define I40E_FD_ATR_TUNNEL_STAT_IDX(pf_id) \
-+			(I40E_FD_STAT_PF_IDX(pf_id) + I40E_FD_STAT_ATR_TUNNEL)
+@@ -266,8 +266,6 @@ struct i40e_pf {
  
- struct i40e_fdir_filter {
- 	struct hlist_node fdir_node;
+ 	struct hlist_head fdir_filter_list;
+ 	u16 fdir_pf_active_filters;
+-	u16 fd_sb_cnt_idx;
+-	u16 fd_atr_cnt_idx;
+ 	unsigned long fd_flush_timestamp;
+ 	u32 fd_flush_cnt;
+ 	u32 fd_add_err;
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index e77b6bd..c568c90 100644
+index c568c90..9a68c65 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -147,6 +147,7 @@ static struct i40e_stats i40e_gstrings_stats[] = {
- 	I40E_PF_STAT("rx_hwtstamp_cleared", rx_hwtstamp_cleared),
- 	I40E_PF_STAT("fdir_flush_cnt", fd_flush_cnt),
- 	I40E_PF_STAT("fdir_atr_match", stats.fd_atr_match),
-+	I40E_PF_STAT("fdir_atr_tunnel_match", stats.fd_atr_tunnel_match),
- 	I40E_PF_STAT("fdir_sb_match", stats.fd_sb_match),
+@@ -2293,7 +2293,7 @@ static int i40e_add_fdir_ethtool(struct i40e_vsi *vsi,
+ 	input->pctype = 0;
+ 	input->dest_vsi = vsi->id;
+ 	input->fd_status = I40E_FILTER_PROGRAM_DESC_FD_STATUS_FD_ID;
+-	input->cnt_index  = pf->fd_sb_cnt_idx;
++	input->cnt_index  = I40E_FD_SB_STAT_IDX(pf->hw.pf_id);
+ 	input->flow_type = fsp->flow_type;
+ 	input->ip4_proto = fsp->h_u.usr_ip4_spec.proto;
  
- 	/* LPI stats */
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index c48c8d6..35a571d 100644
+index 35a571d..a5c13de 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1102,6 +1102,10 @@ static void i40e_update_pf_stats(struct i40e_pf *pf)
- 	i40e_stat_update32(hw, I40E_GLQF_PCNT(pf->fd_sb_cnt_idx),
+@@ -1096,10 +1096,12 @@ static void i40e_update_pf_stats(struct i40e_pf *pf)
+ 			   &osd->rx_jabber, &nsd->rx_jabber);
+ 
+ 	/* FDIR stats */
+-	i40e_stat_update32(hw, I40E_GLQF_PCNT(pf->fd_atr_cnt_idx),
++	i40e_stat_update32(hw,
++			   I40E_GLQF_PCNT(I40E_FD_ATR_STAT_IDX(pf->hw.pf_id)),
+ 			   pf->stat_offsets_loaded,
+ 			   &osd->fd_atr_match, &nsd->fd_atr_match);
+-	i40e_stat_update32(hw, I40E_GLQF_PCNT(pf->fd_sb_cnt_idx),
++	i40e_stat_update32(hw,
++			   I40E_GLQF_PCNT(I40E_FD_SB_STAT_IDX(pf->hw.pf_id)),
  			   pf->stat_offsets_loaded,
  			   &osd->fd_sb_match, &nsd->fd_sb_match);
-+	i40e_stat_update32(hw,
-+		      I40E_GLQF_PCNT(I40E_FD_ATR_TUNNEL_STAT_IDX(pf->hw.pf_id)),
-+		      pf->stat_offsets_loaded,
-+		      &osd->fd_atr_tunnel_match, &nsd->fd_atr_tunnel_match);
- 
- 	val = rd32(hw, I40E_PRTPM_EEE_STAT);
- 	nsd->tx_lpi_status =
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index f188790..268da01 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2035,9 +2035,16 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 		     I40E_TXD_FLTR_QW1_FD_STATUS_SHIFT;
- 
- 	dtype_cmd |= I40E_TXD_FLTR_QW1_CNT_ENA_MASK;
--	dtype_cmd |=
--		((u32)pf->fd_atr_cnt_idx << I40E_TXD_FLTR_QW1_CNTINDEX_SHIFT) &
--		I40E_TXD_FLTR_QW1_CNTINDEX_MASK;
-+	if (!(tx_flags & I40E_TX_FLAGS_VXLAN_TUNNEL))
-+		dtype_cmd |=
-+			((u32)I40E_FD_ATR_STAT_IDX(pf->hw.pf_id) <<
-+			I40E_TXD_FLTR_QW1_CNTINDEX_SHIFT) &
-+			I40E_TXD_FLTR_QW1_CNTINDEX_MASK;
-+	else
-+		dtype_cmd |=
-+			((u32)I40E_FD_ATR_TUNNEL_STAT_IDX(pf->hw.pf_id) <<
-+			I40E_TXD_FLTR_QW1_CNTINDEX_SHIFT) &
-+			I40E_TXD_FLTR_QW1_CNTINDEX_MASK;
- 
- 	fdir_desc->qindex_flex_ptype_vsi = cpu_to_le32(flex_ptype);
- 	fdir_desc->rsvd = cpu_to_le32(0);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-index 568e855..9a5a75b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-@@ -1133,6 +1133,7 @@ struct i40e_hw_port_stats {
- 	/* flow director stats */
- 	u64 fd_atr_match;
- 	u64 fd_sb_match;
-+	u64 fd_atr_tunnel_match;
- 	/* EEE LPI */
- 	u32 tx_lpi_status;
- 	u32 rx_lpi_status;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-index ec9d83a..c463ec4 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-@@ -1108,6 +1108,7 @@ struct i40e_hw_port_stats {
- 	/* flow director stats */
- 	u64 fd_atr_match;
- 	u64 fd_sb_match;
-+	u64 fd_atr_tunnel_match;
- 	/* EEE LPI */
- 	u32 tx_lpi_status;
- 	u32 rx_lpi_status;
+ 	i40e_stat_update32(hw,
+@@ -7679,12 +7681,8 @@ static int i40e_sw_init(struct i40e_pf *pf)
+ 	    (pf->hw.func_caps.fd_filters_best_effort > 0)) {
+ 		pf->flags |= I40E_FLAG_FD_ATR_ENABLED;
+ 		pf->atr_sample_rate = I40E_DEFAULT_ATR_SAMPLE_RATE;
+-		/* Setup a counter for fd_atr per PF */
+-		pf->fd_atr_cnt_idx = I40E_FD_ATR_STAT_IDX(pf->hw.pf_id);
+ 		if (!(pf->flags & I40E_FLAG_MFP_ENABLED)) {
+ 			pf->flags |= I40E_FLAG_FD_SB_ENABLED;
+-			/* Setup a counter for fd_sb per PF */
+-			pf->fd_sb_cnt_idx = I40E_FD_SB_STAT_IDX(pf->hw.pf_id);
+ 		} else {
+ 			dev_info(&pf->pdev->dev,
+ 				 "Flow Director Sideband mode Disabled in MFP mode\n");
 -- 
 1.9.3
 
