@@ -1,37 +1,45 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Thu, 16 Apr 2015 20:05:57 -0400
-Subject: [Intel-wired-lan]  [net-next S4 00/15] i40e/i40evf updates
-Message-ID: <1429229172-143692-1-git-send-email-catherine.sullivan@intel.com>
+Date: Thu, 16 Apr 2015 20:05:58 -0400
+Subject: [Intel-wired-lan] [net-next S4 01/15] i40e: Collect PFC XOFF RX
+	stats even in single TC case
+In-Reply-To: <1429229172-143692-1-git-send-email-catherine.sullivan@intel.com>
+References: <1429229172-143692-1-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1429229172-143692-2-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Anjali adds ATR support for tunneled TCP/IPv4/IPv6 packets, stats to count
-tunnel ATR hits, and stats to track flow director ATR and side band dynamic
-enable state in i40e. She also removes some unnecessary members from the pf
-struct and set the flow director ATR and side band messages to a higher debug
-level.
+From: Neerav Parikh <neerav.parikh@intel.com>
 
-Greg disables offline diagnostics if VFs are enabled, and removes an unnecessary
-TODO comment in i40e.
+When PFC is enabled for any UP in single TC configuration the driver didn't
+collect the PFC XOFF RX stats. Though a single TC with PFC enabled is not a
+common scenario do not prevent the driver from collecting stats if firmware
+indicates that PFC is enabled.
 
-Jesse makes some transmit functions inline to improve performance in both i40e
-and i40evf. He also adds skb->xmit_more support to i40evf and removes
-time_stamp member from i40e since it is not being used.
+Signed-off-by: Neerav Parikh <neerav.parikh@intel.com>
+Change-ID: Ie20bd58b07608b528f3c6d95894c9ae56b00077a
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-Mitch fixes i40evf to restore state properly when a netdev is closed and a reset
-occurs.
-
-Neerav fixes i40e to collect PFC XOFF RX stats even when there is a single TC.
-
-Pawel updates device/function capabilities in i40e to include information needed
-for Flex-10 configurations.
-
-Vasu fixes an error case that should never be reached to WARN ON instead of
-printing an error message.
-
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 24481cd..c48c8d6 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -772,9 +772,8 @@ static void i40e_update_prio_xoff_rx(struct i40e_pf *pf)
+ 
+ 	dcb_cfg = &hw->local_dcbx_config;
+ 
+-	/* See if DCB enabled with PFC TC */
+-	if (!(pf->flags & I40E_FLAG_DCB_ENABLED) ||
+-	    !(dcb_cfg->pfc.pfcenable)) {
++	/* Collect Link XOFF stats when PFC is disabled */
++	if (!dcb_cfg->pfc.pfcenable) {
+ 		i40e_update_link_xoff_rx(pf);
+ 		return;
+ 	}
 -- 
 1.9.3
 
