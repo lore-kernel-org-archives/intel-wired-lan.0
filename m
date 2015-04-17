@@ -1,10 +1,10 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Thu, 16 Apr 2015 20:06:06 -0400
-Subject: [Intel-wired-lan] [net-next S4 09/15] i40e: Move the FD ATR/SB
-	messages to a higher debug level
+Date: Thu, 16 Apr 2015 20:06:07 -0400
+Subject: [Intel-wired-lan] [net-next S4 10/15] i40e/i40evf: Add stats to
+	track FD ATR and SB dynamic enable state
 In-Reply-To: <1429229172-143692-1-git-send-email-catherine.sullivan@intel.com>
 References: <1429229172-143692-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1429229172-143692-10-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1429229172-143692-11-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,114 +13,84 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Anjali Singhai Jain <anjali.singhai@intel.com>
 
-These are not useful unless SV is happening as there is a FD flush counter
-that tracks this.
+Since the driver can dynamically enable/disable FD ATR and SB features,
+these stats help keep track of the current state and along with
+fd_flush count provide a means to debug what could be going on
+with the flow director filters. This will take away the need for
+being verbose in our debug logs with respect to FD.
 
 Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-Change-ID: If2655b5a29687247d03a51d35f69854bbeb711ce
+Change-ID: I29224f750fe6602391043655d18996570720377d
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 18 ++++++++++++------
- drivers/net/ethernet/intel/i40e/i40e_txrx.c |  9 ++++++---
- 2 files changed, 18 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  2 ++
+ drivers/net/ethernet/intel/i40e/i40e_main.c    | 12 ++++++++++++
+ drivers/net/ethernet/intel/i40e/i40e_type.h    |  2 ++
+ drivers/net/ethernet/intel/i40evf/i40e_type.h  |  2 ++
+ 4 files changed, 18 insertions(+)
 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 9a68c65..0b68f61 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -148,7 +148,9 @@ static struct i40e_stats i40e_gstrings_stats[] = {
+ 	I40E_PF_STAT("fdir_flush_cnt", fd_flush_cnt),
+ 	I40E_PF_STAT("fdir_atr_match", stats.fd_atr_match),
+ 	I40E_PF_STAT("fdir_atr_tunnel_match", stats.fd_atr_tunnel_match),
++	I40E_PF_STAT("fdir_atr_status", stats.fd_atr_status),
+ 	I40E_PF_STAT("fdir_sb_match", stats.fd_sb_match),
++	I40E_PF_STAT("fdir_sb_status", stats.fd_sb_status),
+ 
+ 	/* LPI stats */
+ 	I40E_PF_STAT("tx_lpi_status", stats.tx_lpi_status),
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index a5c13de..567303e 100644
+index 567303e..44e905b 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -4744,7 +4744,8 @@ static int i40e_up_complete(struct i40e_vsi *vsi)
- 		pf->fd_add_err = pf->fd_atr_cnt = 0;
- 		if (pf->fd_tcp_rule > 0) {
- 			pf->flags &= ~I40E_FLAG_FD_ATR_ENABLED;
--			dev_info(&pf->pdev->dev, "Forcing ATR off, sideband rules for TCP/IPv4 exist\n");
-+			if (I40E_DEBUG_FD & pf->hw.debug_mask)
-+				dev_info(&pf->pdev->dev, "Forcing ATR off, sideband rules for TCP/IPv4 exist\n");
- 			pf->fd_tcp_rule = 0;
- 		}
- 		i40e_fdir_filter_restore(vsi);
-@@ -5433,7 +5434,8 @@ void i40e_fdir_check_and_reenable(struct i40e_pf *pf)
- 		if ((pf->flags & I40E_FLAG_FD_SB_ENABLED) &&
- 		    (pf->auto_disable_flags & I40E_FLAG_FD_SB_ENABLED)) {
- 			pf->auto_disable_flags &= ~I40E_FLAG_FD_SB_ENABLED;
--			dev_info(&pf->pdev->dev, "FD Sideband/ntuple is being enabled since we have space in the table now\n");
-+			if (I40E_DEBUG_FD & pf->hw.debug_mask)
-+				dev_info(&pf->pdev->dev, "FD Sideband/ntuple is being enabled since we have space in the table now\n");
- 		}
- 	}
- 	/* Wait for some more space to be available to turn on ATR */
-@@ -5441,7 +5443,8 @@ void i40e_fdir_check_and_reenable(struct i40e_pf *pf)
- 		if ((pf->flags & I40E_FLAG_FD_ATR_ENABLED) &&
- 		    (pf->auto_disable_flags & I40E_FLAG_FD_ATR_ENABLED)) {
- 			pf->auto_disable_flags &= ~I40E_FLAG_FD_ATR_ENABLED;
--			dev_info(&pf->pdev->dev, "ATR is being enabled since we have space in the table now\n");
-+			if (I40E_DEBUG_FD & pf->hw.debug_mask)
-+				dev_info(&pf->pdev->dev, "ATR is being enabled since we have space in the table now\n");
- 		}
- 	}
+@@ -1123,6 +1123,18 @@ static void i40e_update_pf_stats(struct i40e_pf *pf)
+ 			   pf->stat_offsets_loaded,
+ 			   &osd->rx_lpi_count, &nsd->rx_lpi_count);
+ 
++	if (pf->flags & I40E_FLAG_FD_SB_ENABLED &
++	    !(pf->auto_disable_flags & I40E_FLAG_FD_SB_ENABLED))
++		nsd->fd_sb_status = true;
++	else
++		nsd->fd_sb_status = false;
++
++	if (pf->flags & I40E_FLAG_FD_ATR_ENABLED &
++	    !(pf->auto_disable_flags & I40E_FLAG_FD_ATR_ENABLED))
++		nsd->fd_atr_status = true;
++	else
++		nsd->fd_atr_status = false;
++
+ 	pf->stat_offsets_loaded = true;
  }
-@@ -5474,7 +5477,8 @@ static void i40e_fdir_flush_and_replay(struct i40e_pf *pf)
  
- 		if (!(time_after(jiffies, min_flush_time)) &&
- 		    (fd_room < I40E_FDIR_BUFFER_HEAD_ROOM_FOR_ATR)) {
--			dev_info(&pf->pdev->dev, "ATR disabled, not enough FD filter space.\n");
-+			if (I40E_DEBUG_FD & pf->hw.debug_mask)
-+				dev_info(&pf->pdev->dev, "ATR disabled, not enough FD filter space.\n");
- 			disable_atr = true;
- 		}
- 
-@@ -5501,7 +5505,8 @@ static void i40e_fdir_flush_and_replay(struct i40e_pf *pf)
- 			if (!disable_atr)
- 				pf->flags |= I40E_FLAG_FD_ATR_ENABLED;
- 			clear_bit(__I40E_FD_FLUSH_REQUESTED, &pf->state);
--			dev_info(&pf->pdev->dev, "FD Filter table flushed and FD-SB replayed.\n");
-+			if (I40E_DEBUG_FD & pf->hw.debug_mask)
-+				dev_info(&pf->pdev->dev, "FD Filter table flushed and FD-SB replayed.\n");
- 		}
- 	}
- }
-@@ -7772,7 +7777,8 @@ bool i40e_set_ntuple(struct i40e_pf *pf, netdev_features_t features)
- 		pf->fd_add_err = pf->fd_atr_cnt = pf->fd_tcp_rule = 0;
- 		pf->fdir_pf_active_filters = 0;
- 		pf->flags |= I40E_FLAG_FD_ATR_ENABLED;
--		dev_info(&pf->pdev->dev, "ATR re-enabled.\n");
-+		if (I40E_DEBUG_FD & pf->hw.debug_mask)
-+			dev_info(&pf->pdev->dev, "ATR re-enabled.\n");
- 		/* if ATR was auto disabled it can be re-enabled. */
- 		if ((pf->flags & I40E_FLAG_FD_ATR_ENABLED) &&
- 		    (pf->auto_disable_flags & I40E_FLAG_FD_ATR_ENABLED))
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index d781a86..d6ad42b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -283,7 +283,8 @@ static int i40e_add_del_fdir_tcpv4(struct i40e_vsi *vsi,
- 	if (add) {
- 		pf->fd_tcp_rule++;
- 		if (pf->flags & I40E_FLAG_FD_ATR_ENABLED) {
--			dev_info(&pf->pdev->dev, "Forcing ATR off, sideband rules for TCP/IPv4 flow being applied\n");
-+			if (I40E_DEBUG_FD & pf->hw.debug_mask)
-+				dev_info(&pf->pdev->dev, "Forcing ATR off, sideband rules for TCP/IPv4 flow being applied\n");
- 			pf->flags &= ~I40E_FLAG_FD_ATR_ENABLED;
- 		}
- 	} else {
-@@ -291,7 +292,8 @@ static int i40e_add_del_fdir_tcpv4(struct i40e_vsi *vsi,
- 				  (pf->fd_tcp_rule - 1) : 0;
- 		if (pf->fd_tcp_rule == 0) {
- 			pf->flags |= I40E_FLAG_FD_ATR_ENABLED;
--			dev_info(&pf->pdev->dev, "ATR re-enabled due to no sideband TCP/IPv4 rules\n");
-+			if (I40E_DEBUG_FD & pf->hw.debug_mask)
-+				dev_info(&pf->pdev->dev, "ATR re-enabled due to no sideband TCP/IPv4 rules\n");
- 		}
- 	}
- 
-@@ -501,7 +503,8 @@ static void i40e_fd_handle_status(struct i40e_ring *rx_ring,
- 			if ((pf->flags & I40E_FLAG_FD_SB_ENABLED) &&
- 			    !(pf->auto_disable_flags &
- 				     I40E_FLAG_FD_SB_ENABLED)) {
--				dev_warn(&pdev->dev, "FD filter space full, new ntuple rules will not be added\n");
-+				if (I40E_DEBUG_FD & pf->hw.debug_mask)
-+					dev_warn(&pdev->dev, "FD filter space full, new ntuple rules will not be added\n");
- 				pf->auto_disable_flags |=
- 							I40E_FLAG_FD_SB_ENABLED;
- 			}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
+index 9a5a75b..350c5ee 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
+@@ -1134,6 +1134,8 @@ struct i40e_hw_port_stats {
+ 	u64 fd_atr_match;
+ 	u64 fd_sb_match;
+ 	u64 fd_atr_tunnel_match;
++	u32 fd_atr_status;
++	u32 fd_sb_status;
+ 	/* EEE LPI */
+ 	u32 tx_lpi_status;
+ 	u32 rx_lpi_status;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+index c463ec4..068813d 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+@@ -1109,6 +1109,8 @@ struct i40e_hw_port_stats {
+ 	u64 fd_atr_match;
+ 	u64 fd_sb_match;
+ 	u64 fd_atr_tunnel_match;
++	u32 fd_atr_status;
++	u32 fd_sb_status;
+ 	/* EEE LPI */
+ 	u32 tx_lpi_status;
+ 	u32 rx_lpi_status;
 -- 
 1.9.3
 
