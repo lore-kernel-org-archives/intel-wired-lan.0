@@ -1,61 +1,48 @@
-From: Yanir Lubetkin <yanirx.lubetkin@intel.com>
-Date: Wed, 22 Apr 2015 05:55:43 +0300
-Subject: [Intel-wired-lan] [PATCH] e1000e: remove call to do_div and sign
-	mismatch warning
-Message-ID: <1429671343-13453-1-git-send-email-yanirx.lubetkin@intel.com>
+From: Stefan Assmann <sassmann@kpanic.de>
+Date: Tue, 21 Apr 2015 16:14:01 +0200
+Subject: [Intel-wired-lan] VM guest bridging issue with i40e
+Message-ID: <55365B29.6090609@kpanic.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-fixes a warning that was reported by Yanjiang Jin <yanjiang.jin@windriver.com>
-by implementing the solution suggested by
-Alexander Duyck <alexander.h.duyck@redhat.com>.
+There's some trouble with a kvm guest that is bridged to the host
+networks i40e (X710) NIC. The guest no longer receives DHCP replies and
+probably other traffic as well.
+I bisected this back to the following commit.
+commit 79c21a827e98081895a8b9650f1b0a8b37b16125
+Author: Anjali Singhai Jain <anjali.singhai@intel.com>
+Date:   Thu Nov 13 03:06:14 2014 +0000
 
-Signed-off-by: Yanir Lubetkin <yanirx.lubetkin@intel.com>
----
- drivers/net/ethernet/intel/e1000e/ich8lan.c | 12 +++---------
- 1 file changed, 3 insertions(+), 9 deletions(-)
+    i40e: Add new update VSI flow to accommodate FW fix with VSI Loopback mode
 
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-index e18443a..b8b0900 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-@@ -1014,7 +1014,6 @@ static s32 e1000_platform_pm_pch_lpt(struct e1000_hw *hw, bool link)
- 		u16 speed, duplex, scale = 0;
- 		u16 max_snoop, max_nosnoop;
- 		u16 max_ltr_enc;	/* max LTR latency encoded */
--		s64 lat_ns;	/* latency (ns) */
- 		u64 value;
- 		u32 rxa;
- 
-@@ -1040,14 +1039,9 @@ static s32 e1000_platform_pm_pch_lpt(struct e1000_hw *hw, bool link)
- 		 * 2^25*(2^10-1) ns.  The scale is encoded as 0=2^0ns,
- 		 * 1=2^5ns, 2=2^10ns,...5=2^25ns.
- 		 */
--		lat_ns = ((s64)rxa * 1024 -
--			  (2 * (s64)hw->adapter->max_frame_size)) * 8 * 1000;
--		if (lat_ns < 0) {
--			value = 0;
--		} else {
--			value = lat_ns;
--			do_div(value, speed);
--		}
-+		rxa *= 512;
-+		value = (rxa > hw->adapter->max_frame_size) ?
-+			(rxa - hw->adapter->max_frame_size) * (16000 / speed) : 0;
- 
- 		while (value > PCI_LTR_VALUE_MASK) {
- 			scale++;
--- 
-2.1.0
+    All VSIs on a VEB should either have loopback enabled or disabled, a
+    mixed mode is not supported for a VEB. Since our driver supports multiple
+    VSIs per PF that need to talk to each other make sure to enable Loopback
+    for the PF and FDIR VSI as well.
 
----------------------------------------------------------------------
-Intel Israel (74) Limited
+    Also, we now have to explicitly enable Loopback mode otherwise we fail
+    VSI creation for VMDq and VF VSIs.
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+Reproducer:
+Adding bridge on the host
+# brctl addbr br0
+# brctl addif br0 eth6
+virt XML for bridging
+    <interface type='bridge'>
+      <source bridge='br0'/>
+    </interface>
+Now request IP via DHCP from the kvm guest.
 
+The problem appears as soon as loopback gets enabled on the main VSI.
+From the XL710 spec:
+7.4.9.5.4.1.1 Add VSI Settings Recommendations
+Table 7-86.  Add VSI Recommended settings
+Allow Loopback 0 for PF
+
+Is it correct that the main VSI represents the PF? If so shouldn't
+loopback stay disabled for the main VSI?
+
+  Stefan
