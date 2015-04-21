@@ -1,11 +1,11 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Tue, 21 Apr 2015 03:12:05 +0000
-Subject: [Intel-wired-lan] [PATCH] e1000e: Do not allow CRC stripping to
- be disabled on 82579 w/ jumbo frames
-In-Reply-To: <1428548302.2729.9.camel@jtkirshe-mobl>
-References: <20150409013554.3231.10427.stgit@ahduyck-vm-fedora22>
- <1428548302.2729.9.camel@jtkirshe-mobl>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B78DA68B4@ORSMSX101.amr.corp.intel.com>
+Date: Tue, 21 Apr 2015 03:15:03 +0000
+Subject: [Intel-wired-lan] [net-next v2] e1000e: fix call to do_div() to
+ use u64 arg
+In-Reply-To: <552700ED.3030009@redhat.com>
+References: <20150409214405.27465.51380.stgit@gmw-smvitp108.amr.corp.intel.com>
+ <552700ED.3030009@redhat.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B78DA68CB@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,32 +13,55 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Jeff Kirsher
-> Sent: Wednesday, April 08, 2015 7:58 PM
-> To: Alexander Duyck
-> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
-> Subject: Re: [Intel-wired-lan] [PATCH] e1000e: Do not allow CRC stripping
-> to be disabled on 82579 w/ jumbo frames
+> Behalf Of Alexander Duyck
+> Sent: Thursday, April 09, 2015 3:45 PM
+> To: Kirsher, Jeffrey T; intel-wired-lan at lists.osuosl.org
+> Cc: david.laight at aculab.com; Jin, Yanjiang (Wind River)
+> Subject: Re: [Intel-wired-lan] [net-next v2] e1000e: fix call to do_div()
+> to use u64 arg
 > 
-> On Wed, 2015-04-08 at 18:37 -0700, Alexander Duyck wrote:
-> > The driver wasn't allowing jumbo frames to be enabled when CRC
-> > stripping
-> > was disabled, however it was allowing CRC stripping to be disabled
-> > while
-> > jumbo frames were enabled.  This fixes that by making it so that the
-> > NETIF_F_RXFCS flag cannot be set when jumbo frames are enabled on
-> > 82579 and
-> > newer parts.
+> 
+> 
+> On 04/09/2015 02:45 PM, Jeff Kirsher wrote:
+> > We were using s64 for lat_ns (latency nano-second value) since in
+> > our calculations a negative value could be a resultant.  For negative
+> > values, we then assign lat_ns to be zero, so the value passed to
+> > do_div() was never negative, but do_div() expects the argument type
+> > to be u64, so do a cast to resolve a compile warning seen on
+> > PowerPC.
 > >
-> > Signed-off-by: Alexander Duyck <alexander.h.duyck@redhat.com>
+> > CC: Yanjiang Jin <yanjiang.jin@windriver.com>
+> > CC: Yanir Lubetkin <yanirx.lubetkin@intel.com>
+> > Reported-by: Yanjiang Jin <yanjiang.jin@windriver.com>
+> > Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 > > ---
-> >  drivers/net/ethernet/intel/e1000e/netdev.c |   14 ++++++++++++++
-> >  1 file changed, 14 insertions(+)
+> > v2: fixed the patch to not use a cast to resolve the PowerPC compile
+> >      warning
+> > ---
+> >   drivers/net/ethernet/intel/e1000e/ich8lan.c |   13 +++++++------
+> >   1 file changed, 7 insertions(+), 6 deletions(-)
+
+<snip>
 > 
-> Thanks Alex, I will add your patch to my queue.
+> Honestly the whole signed/unsigned thing is kind of a waste anyway.  You
+> could probably rewrite it to something like this and drop lat_ns entirely.
+> 
+> rxa *= 512;
+> value = (rxa > hw->adapter->max_frame_size) ?
+> 	(rxa - hw->adapter->max_frame_size) * (16000 / speed) : 0;
+> 
+> That should give you the same result without any need for the do_div or
+> the signed values.
+> 
+> - Alex
+
+Anyone want to take a stab at striking out the signed / unsigned thing per Alex's suggestion?
+
+Meanwhile I've run tons of tests with this in the queue and don't want to old things up, so...
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
 
-> --
-> git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
-> dev-queue
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at lists.osuosl.org
+> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
