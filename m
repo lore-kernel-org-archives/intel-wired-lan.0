@@ -1,83 +1,96 @@
-From: Cong Wang <cwang@twopensource.com>
-Date: Wed, 22 Apr 2015 16:23:12 -0700
-Subject: [Intel-wired-lan] [Patch net] igb: pass the correct maxlen for
-	eth_get_headlen()
-In-Reply-To: <553821E4.5010901@gmail.com>
-References: <1429724760-10075-1-git-send-email-xiyou.wangcong@gmail.com>
- <5537F9F1.1080008@gmail.com>
- <CAHA+R7PVrxJ41WSqfO4mZSpCTGdJ++Gf757f_kq5z0UeMHXbXg@mail.gmail.com>
- <553802DA.4050709@gmail.com>
- <CAHA+R7PtzNd2asXFtiqsWyzCgeE1k_iF84358cvKg6ZCU-yVkQ@mail.gmail.com>
- <553815DF.4000109@gmail.com>
- <CAHA+R7MMrrBYbQALovxuhcXrbiWjD_XpgohPXxTvNkcd3-R3WA@mail.gmail.com>
- <553821E4.5010901@gmail.com>
-Message-ID: <CAHA+R7MJv7tbHwU_ECbJunXVJ8uo=eQv+Xmw42oR5sKEde35RQ@mail.gmail.com>
+From: Catherine Sullivan <catherine.sullivan@intel.com>
+Date: Wed, 22 Apr 2015 19:34:05 -0400
+Subject: [Intel-wired-lan] [net-next S4 v2 10/15] i40e/i40evf: Add stats to
+	track FD ATR and SB dynamic enable state
+Message-ID: <1429745646-183026-1-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Apr 22, 2015 at 3:34 PM, Alexander Duyck
-<alexander.duyck@gmail.com> wrote:
-> On 04/22/2015 02:56 PM, Cong Wang wrote:
->> On Wed, Apr 22, 2015 at 2:42 PM, Alexander Duyck
->> <alexander.duyck@gmail.com> wrote:
->>> On 04/22/2015 01:33 PM, Cong Wang wrote:
->>>> First, make sure you don't miss the TSIP case right above:
->>>>
->>>> The frag starting pointer and its size are advanced by:
->>>>
->>>> skb_frag_size_sub(frag, IGB_TS_HDR_LEN);
->>>> ...
->>>> va += IGB_TS_HDR_LEN;
->>>>
->>>> even though we unlikely pull header longer than
->>>> IGB_RX_HDR_LEN - IGB_TS_HDR_LEN either.
->>> So I believe this is a possible bug, one heck of a corner case to get
->>> into though.  It requires timestamp in packet, size 240 - 256, and a
->>> malformed header.
->>>
->>> The proper fix would probably be to pull the timestamp out of the packet
->>> before we add it to the frame.  I'll submit a patch to address this.
->>>
->>
->> Huh? Doesn't my patch already fix this? skb_frag_size() is always
->> up to date. Or you mean another different problem?
->
-> Your patch has other issues.  I am still NAKing your patch, but there is
-> an issue with igb that you have pointed out.  The proper fix would be to
-> deal with the timestamp before we add the page fragment to the skb.
->
+From: Anjali Singhai Jain <anjali.singhai@intel.com>
 
-If the first frag is always 2K, then this is not a problem either.
-IGB_TS_HDR_LEN + IGB_RX_HDR_LEN < 2K.
+Since the driver can dynamically enable/disable FD ATR and SB features,
+these stats help keep track of the current state and along with
+fd_flush count provide a means to debug what could be going on
+with the flow director filters. This will take away the need for
+being verbose in our debug logs with respect to FD.
 
+Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+Change-ID: I29224f750fe6602391043655d18996570720377d
+---
+v2: Change the binary and's in if statements to logical and's
 
->>
->>>> Second, the check you mentioned above is:
->>>>
->>>> if ((size <= IGB_RX_HDR_LEN) && !skb_is_nonlinear(skb))
->>>>
->>>> skb is nonlinear _after_ the first igb_add_rx_frag(), a second
->>>> igb_add_rx_frag() is possible since igb_is_non_eop() could
->>>> return true.
->>> I'm not sure this part makes any sense.  We pull the data out of the
->>> first fragment always.  If skb_is_nonlinear is set then we should have
->>> at least 2K - 16B in the case of igb.  We will never have a second
->>> fragment without at least 2K of data being given in the first.
->> Apparently my igb knowledge isn't enough to verify this, I just did
->> logical analysis.
->
-> The logic with igb is that if skb_is_nonlinear it means that a page has
-> already been added.  The way the hardware works is that it will break a
-> frame up into 2K segments until the entire frame is written.  So the
-> only way to get a second page fragment is if the first has used the
-> entire 2K buffer it was given.
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  2 ++
+ drivers/net/ethernet/intel/i40e/i40e_main.c    | 12 ++++++++++++
+ drivers/net/ethernet/intel/i40e/i40e_type.h    |  2 ++
+ drivers/net/ethernet/intel/i40evf/i40e_type.h  |  2 ++
+ 4 files changed, 18 insertions(+)
 
-So the first frag is always 2K, at least more than IGB_RX_HDR_LEN
-then we are fine even for TSIP case.
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 9a68c65..0b68f61 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -148,7 +148,9 @@ static struct i40e_stats i40e_gstrings_stats[] = {
+ 	I40E_PF_STAT("fdir_flush_cnt", fd_flush_cnt),
+ 	I40E_PF_STAT("fdir_atr_match", stats.fd_atr_match),
+ 	I40E_PF_STAT("fdir_atr_tunnel_match", stats.fd_atr_tunnel_match),
++	I40E_PF_STAT("fdir_atr_status", stats.fd_atr_status),
+ 	I40E_PF_STAT("fdir_sb_match", stats.fd_sb_match),
++	I40E_PF_STAT("fdir_sb_status", stats.fd_sb_status),
+ 
+ 	/* LPI stats */
+ 	I40E_PF_STAT("tx_lpi_status", stats.tx_lpi_status),
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index d1ac807..29c7cdc 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -1123,6 +1123,18 @@ static void i40e_update_pf_stats(struct i40e_pf *pf)
+ 			   pf->stat_offsets_loaded,
+ 			   &osd->rx_lpi_count, &nsd->rx_lpi_count);
+ 
++	if (pf->flags & I40E_FLAG_FD_SB_ENABLED &&
++	    !(pf->auto_disable_flags & I40E_FLAG_FD_SB_ENABLED))
++		nsd->fd_sb_status = true;
++	else
++		nsd->fd_sb_status = false;
++
++	if (pf->flags & I40E_FLAG_FD_ATR_ENABLED &&
++	    !(pf->auto_disable_flags & I40E_FLAG_FD_ATR_ENABLED))
++		nsd->fd_atr_status = true;
++	else
++		nsd->fd_atr_status = false;
++
+ 	pf->stat_offsets_loaded = true;
+ }
+ 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
+index 9a5a75b..350c5ee 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
+@@ -1134,6 +1134,8 @@ struct i40e_hw_port_stats {
+ 	u64 fd_atr_match;
+ 	u64 fd_sb_match;
+ 	u64 fd_atr_tunnel_match;
++	u32 fd_atr_status;
++	u32 fd_sb_status;
+ 	/* EEE LPI */
+ 	u32 tx_lpi_status;
+ 	u32 rx_lpi_status;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+index c463ec4..068813d 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+@@ -1109,6 +1109,8 @@ struct i40e_hw_port_stats {
+ 	u64 fd_atr_match;
+ 	u64 fd_sb_match;
+ 	u64 fd_atr_tunnel_match;
++	u32 fd_atr_status;
++	u32 fd_sb_status;
+ 	/* EEE LPI */
+ 	u32 tx_lpi_status;
+ 	u32 rx_lpi_status;
+-- 
+1.9.3
 
-The code looks correct to me now, except it is suspicious skb->len
-is not updated after skb_copy_to_linear_data() while skb->tail is
-advanced already. I need to think more before submitting a patch.
