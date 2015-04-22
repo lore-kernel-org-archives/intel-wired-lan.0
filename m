@@ -1,49 +1,51 @@
-From: Yanir Lubetkin <yanirx.lubetkin@intel.com>
-Date: Wed, 22 Apr 2015 19:25:17 +0300
-Subject: [Intel-wired-lan] [PATCH] e1000e: fix logical error in
-	flush_desc_rings
-Message-ID: <1429719917-25985-1-git-send-email-yanirx.lubetkin@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 22 Apr 2015 12:43:45 -0700
+Subject: [Intel-wired-lan] [Patch net] igb: pass the correct maxlen for
+	eth_get_headlen()
+In-Reply-To: <1429724760-10075-1-git-send-email-xiyou.wangcong@gmail.com>
+References: <1429724760-10075-1-git-send-email-xiyou.wangcong@gmail.com>
+Message-ID: <5537F9F1.1080008@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-the condition under which the flush should occur was reversed.
-The fix should be applied before any HW reset (unless followed by bus reset)
-and before any power state transition from D0.
-if E1000_FEXTNVM7_NEED_DESCRING_FLUSH bit is set in FEXTNVM7 and TDLEN > 0
-the tx ring should be flushed. (fixes ~95% of the hang states).
-if the E1000_FEXTNVM7_NEED_DESCRING_FLUSH did not clear, we should also
-flush the RX ring. Bug was caught by Alexander Duyck during a code review
-when examining this fix.
+On 04/22/2015 10:45 AM, Cong Wang wrote:
+> The second parameter of eth_get_headlen() is the length of
+> the frame buffer, not the header length of skb.
+>
+> Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> Signed-off-by: Cong Wang <xiyou.wangcong@gmail.com>
+> ---
+>  drivers/net/ethernet/intel/igb/igb_main.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+> index a0a9b1f..7b3a370 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> @@ -6852,7 +6852,9 @@ static void igb_pull_tail(struct igb_ring *rx_ring,
+>  	/* we need the header to contain the greater of either ETH_HLEN or
+>  	 * 60 bytes if the skb->len is less than 60 for skb_pad.
+>  	 */
+> -	pull_len = eth_get_headlen(va, IGB_RX_HDR_LEN);
+> +	pull_len = eth_get_headlen(va, skb_frag_size(frag));
+> +	if (unlikely(pull_len > IGB_RX_HDR_LEN))
+> +		pull_len = IGB_RX_HDR_LEN;
+>  
+>  	/* align pull length to size of long to optimize memcpy performance */
+>  	skb_copy_to_linear_data(skb, va, ALIGN(pull_len, sizeof(long)));
 
-Signed-off-by: Yanir Lubetkin <yanirx.lubetkin@intel.com>
----
- drivers/net/ethernet/intel/e1000e/netdev.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+You have this part right.  The length represents the maximum length we
+are willing to traverse in the buffer.  So if we 100% want to get the
+entire header regardless of what we can copy into then we could follow
+your approach.  However, since the allocated space in the skb is only
+IGB_RX_HDR_LEN we only really want to traverse up to that length.  Then
+that is all we copy out of the header.
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 76b1a90..de8caf4 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -3878,7 +3878,7 @@ static void e1000_flush_desc_rings(struct e1000_adapter *adapter)
- 	/* do nothing if we're not in faulty state, or if the queue is empty */
- 	tdlen = er32(TDLEN(0));
- 	hang_state = er32(FEXTNVM7);
--	if ((hang_state & E1000_FEXTNVM7_NEED_DESCRING_FLUSH) || tdlen)
-+	if (!(hang_state & E1000_FEXTNVM7_NEED_DESCRING_FLUSH) || !tdlen)
- 		return;
- 	e1000_flush_tx_ring(adapter);
- 	/* recheck, maybe the fault is caused by the rx ring */
--- 
-1.9.3
+As a result we don't need the extra code for putting the upper limit on
+pull_len since that is factored in by passing IGB_RX_HDR_LEN as the
+maximum traversal length.
 
----------------------------------------------------------------------
-Intel Israel (74) Limited
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+- Alex
