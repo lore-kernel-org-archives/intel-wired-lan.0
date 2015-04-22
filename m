@@ -1,207 +1,60 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 23 Apr 2015 05:48:46 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
- 02ac4b65689f8df824117395fd8d160c04161a7b BUILD SUCCESS
-Message-ID: <5538173e.BVBFfSB7jlFKpeXk%fengguang.wu@intel.com>
+From: Cong Wang <cwang@twopensource.com>
+Date: Wed, 22 Apr 2015 14:56:41 -0700
+Subject: [Intel-wired-lan] [Patch net] igb: pass the correct maxlen for
+	eth_get_headlen()
+In-Reply-To: <553815DF.4000109@gmail.com>
+References: <1429724760-10075-1-git-send-email-xiyou.wangcong@gmail.com>
+ <5537F9F1.1080008@gmail.com>
+ <CAHA+R7PVrxJ41WSqfO4mZSpCTGdJ++Gf757f_kq5z0UeMHXbXg@mail.gmail.com>
+ <553802DA.4050709@gmail.com>
+ <CAHA+R7PtzNd2asXFtiqsWyzCgeE1k_iF84358cvKg6ZCU-yVkQ@mail.gmail.com>
+ <553815DF.4000109@gmail.com>
+Message-ID: <CAHA+R7MMrrBYbQALovxuhcXrbiWjD_XpgohPXxTvNkcd3-R3WA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-02ac4b65689f8df824117395fd8d160c04161a7b  igb: Fix NULL assignment to incorrect variable in igb_reset_q_vector
+On Wed, Apr 22, 2015 at 2:42 PM, Alexander Duyck
+<alexander.duyck@gmail.com> wrote:
+> On 04/22/2015 01:33 PM, Cong Wang wrote:
+>> First, make sure you don't miss the TSIP case right above:
+>>
+>> The frag starting pointer and its size are advanced by:
+>>
+>> skb_frag_size_sub(frag, IGB_TS_HDR_LEN);
+>> ...
+>> va += IGB_TS_HDR_LEN;
+>>
+>> even though we unlikely pull header longer than
+>> IGB_RX_HDR_LEN - IGB_TS_HDR_LEN either.
+>
+> So I believe this is a possible bug, one heck of a corner case to get
+> into though.  It requires timestamp in packet, size 240 - 256, and a
+> malformed header.
+>
+> The proper fix would probably be to pull the timestamp out of the packet
+> before we add it to the frame.  I'll submit a patch to address this.
+>
 
-elapsed time: 2094m
 
-configs tested: 186
+Huh? Doesn't my patch already fix this? skb_frag_size() is always
+up to date. Or you mean another different problem?
 
-i386                                defconfig
-i386                             allmodconfig
-i386                             alldefconfig
-mips                             allmodconfig
-mips                                   jz4740
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-x86_64                 randconfig-a1-04211255
-x86_64                 randconfig-a0-04211255
-x86_64                            allnoconfig
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                     randconfig-c1-0420
-x86_64                     randconfig-c2-0420
-x86_64                     randconfig-c0-0420
-i386                   randconfig-c0-04211254
-i386                   randconfig-c1-04211254
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64                randconfig-iv0-04221533
-x86_64                randconfig-iv1-04221533
-xtensa                           allyesconfig
-sparc64                          allyesconfig
-mips                             allyesconfig
-m68k                             allyesconfig
-sparc                            allyesconfig
-tile                             allyesconfig
-alpha                            allyesconfig
-powerpc                          allyesconfig
-sh                               allyesconfig
-avr32                            allyesconfig
-ia64                             allyesconfig
-parisc                           allyesconfig
-cris                             allyesconfig
-x86_64                           allyesconfig
-blackfin                         allyesconfig
-s390                             allyesconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-powerpc                          allmodconfig
-i386                  randconfig-ib0-04222115
-i386                  randconfig-ib1-04190732
-i386                  randconfig-ib1-04222115
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-microblaze                       allyesconfig
-s390                             allmodconfig
-s390                              allnoconfig
-s390                                defconfig
-i386                             allyesconfig
-x86_64                randconfig-ib0-04222014
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-arm                      footbridge_defconfig
-blackfin                BF526-EZBRD_defconfig
-mips                      bmips_stb_defconfig
-powerpc                      makalu_defconfig
-powerpc                       ppc64_defconfig
-i386                         randconfig-nexe1
-i386                         randconfig-nexe0
-i386                         randconfig-nexe3
-i386                         randconfig-nexe2
-i386                         randconfig-nexe5
-i386                         randconfig-nexe4
-i386                         randconfig-nexe7
-i386                         randconfig-nexe6
-i386                         randconfig-nexe9
-i386                         randconfig-nexe8
-x86_64                       randconfig-nexe6
-x86_64                       randconfig-nexe7
-x86_64                       randconfig-nexe4
-x86_64                       randconfig-nexe5
-x86_64                       randconfig-nexe2
-x86_64                       randconfig-nexe3
-x86_64                       randconfig-nexe0
-x86_64                       randconfig-nexe1
-x86_64                       randconfig-nexe8
-x86_64                       randconfig-nexe9
-x86_64                  randconfig-nexr0-0421
-i386                    randconfig-nexr2-0421
-x86_64                  randconfig-nexr1-0421
-x86_64                  randconfig-nexr2-0421
-i386                    randconfig-nexr0-0421
-i386                    randconfig-nexr1-0421
-x86_64              randconfig-nexs0-04220712
-i386                randconfig-nexs0-04220712
-x86_64                 randconfig-n0-03311232
-x86_64                 randconfig-n0-04192300
-x86_64                 randconfig-n0-04201540
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                              allmodconfig
-arm                          prima2_defconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                                   samsung
-arm                       spear13xx_defconfig
-arm                         s3c2410_defconfig
-arm                                  iop-adma
-arm                       imx_v6_v7_defconfig
-arm                                       mmp
-arm                           tegra_defconfig
-arm                                      arm5
-arm                          marzen_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                                        sh
-arm                                     arm67
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-m68k                             allmodconfig
-m68k                          amiga_defconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-x86_64                           allmodconfig
-arm                         axm55xx_defconfig
-arm                          nuc960_defconfig
-powerpc                 mpc834x_mds_defconfig
-powerpc                     tqm8555_defconfig
-sh                             espt_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                       randconfig-r1-0421
-i386                       randconfig-r2-0421
-i386                       randconfig-r0-0421
-x86_64                 randconfig-r0-04211519
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-x86_64                 randconfig-s0-04220815
-x86_64                 randconfig-s1-04220815
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-i386                          randconfig-x009
-i386                          randconfig-x008
-i386                          randconfig-x005
-i386                          randconfig-x004
-i386                          randconfig-x007
-i386                          randconfig-x006
-i386                          randconfig-x001
-i386                          randconfig-x000
-i386                          randconfig-x003
-i386                          randconfig-x002
-x86_64                        randconfig-x000
-x86_64                        randconfig-x001
-x86_64                        randconfig-x002
-x86_64                        randconfig-x003
-x86_64                        randconfig-x004
-x86_64                        randconfig-x005
-x86_64                        randconfig-x006
-x86_64                        randconfig-x007
-x86_64                        randconfig-x008
-x86_64                        randconfig-x009
-x86_64                                    lkp
-x86_64                                   rhel
-i386                   randconfig-x0-04211519
-i386                   randconfig-x1-04211519
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
+>>
+>> Second, the check you mentioned above is:
+>>
+>> if ((size <= IGB_RX_HDR_LEN) && !skb_is_nonlinear(skb))
+>>
+>> skb is nonlinear _after_ the first igb_add_rx_frag(), a second
+>> igb_add_rx_frag() is possible since igb_is_non_eop() could
+>> return true.
+>
+> I'm not sure this part makes any sense.  We pull the data out of the
+> first fragment always.  If skb_is_nonlinear is set then we should have
+> at least 2K - 16B in the case of igb.  We will never have a second
+> fragment without at least 2K of data being given in the first.
 
-Thanks,
-Fengguang
+Apparently my igb knowledge isn't enough to verify this, I just did
+logical analysis.
