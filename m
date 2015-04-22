@@ -1,48 +1,32 @@
-From: Stefan Assmann <sassmann@kpanic.de>
-Date: Tue, 21 Apr 2015 16:14:01 +0200
-Subject: [Intel-wired-lan] VM guest bridging issue with i40e
-Message-ID: <55365B29.6090609@kpanic.de>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed, 22 Apr 2015 01:13:13 -0700
+Subject: [Intel-wired-lan] [PATCH v2] igb: disable IPv6 extension header
+ processing
+In-Reply-To: <20150417182418.13628.80701.stgit@htfujina-fc.jf.intel.com>
+References: <20150417182418.13628.80701.stgit@htfujina-fc.jf.intel.com>
+Message-ID: <1429690393.2638.218.camel@jtkirshe-mobl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-There's some trouble with a kvm guest that is bridged to the host
-networks i40e (X710) NIC. The guest no longer receives DHCP replies and
-probably other traffic as well.
-I bisected this back to the following commit.
-commit 79c21a827e98081895a8b9650f1b0a8b37b16125
-Author: Anjali Singhai Jain <anjali.singhai@intel.com>
-Date:   Thu Nov 13 03:06:14 2014 +0000
+On Fri, 2015-04-17 at 11:24 -0700, Todd Fujinaka wrote:
+> Disable IPv6 extension header processing as per hardware errata.
+> 
+> Also fix copyright date.
+> 
+> Signed-off-by: Todd Fujinaka <todd.fujinaka@intel.com>
+> ---
+>  drivers/net/ethernet/intel/igb/e1000_82575.c   |   12 ++++++++----
+>  drivers/net/ethernet/intel/igb/e1000_defines.h |    3 ++-
+>  2 files changed, 10 insertions(+), 5 deletions(-)
 
-    i40e: Add new update VSI flow to accommodate FW fix with VSI Loopback mode
-
-    All VSIs on a VEB should either have loopback enabled or disabled, a
-    mixed mode is not supported for a VEB. Since our driver supports multiple
-    VSIs per PF that need to talk to each other make sure to enable Loopback
-    for the PF and FDIR VSI as well.
-
-    Also, we now have to explicitly enable Loopback mode otherwise we fail
-    VSI creation for VMDq and VF VSIs.
-
-Reproducer:
-Adding bridge on the host
-# brctl addbr br0
-# brctl addif br0 eth6
-virt XML for bridging
-    <interface type='bridge'>
-      <source bridge='br0'/>
-    </interface>
-Now request IP via DHCP from the kvm guest.
-
-The problem appears as soon as loopback gets enabled on the main VSI.
-From the XL710 spec:
-7.4.9.5.4.1.1 Add VSI Settings Recommendations
-Table 7-86.  Add VSI Recommended settings
-Allow Loopback 0 for PF
-
-Is it correct that the main VSI represents the PF? If so shouldn't
-loopback stay disabled for the main VSI?
-
-  Stefan
+Thanks Todd, applied.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150422/f801c728/attachment.asc>
