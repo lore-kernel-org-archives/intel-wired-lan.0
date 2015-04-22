@@ -1,66 +1,207 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Wed, 22 Apr 2015 21:41:13 +0000
-Subject: [Intel-wired-lan] [PATCH 0/8] clarify behavior of get_ts_info and
-	hwtstamp ioctl
-Message-ID: <1429738873.30529.20.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 23 Apr 2015 05:48:46 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ 02ac4b65689f8df824117395fd8d160c04161a7b BUILD SUCCESS
+Message-ID: <5538173e.BVBFfSB7jlFKpeXk%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch series attempts to clarify some expected behavior for drivers
-when implementing SIOCSHWSTAMP and Ethtool's get_ts_info ioctl.
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+02ac4b65689f8df824117395fd8d160c04161a7b  igb: Fix NULL assignment to incorrect variable in igb_reset_q_vector
 
-The SIOCSHWTSTAMP ioctl has several available filters for Rx timestamps
-ranging from as specific as HWTSTAMP_FILTER_PTP_V2_L4_DELAY_REQ_MESSAGE
-up to as general as HWTSTAMP_FILTER_ALL. It is expressly allowed for a
-driver to timestamp more than the requested packets, as long as at least
-the requested packets are timestamped. Many drivers do this by upscaling
-from the more specific filters into the most generic supported filters.
-In this case, some drivers also only report in the Ethtool ioctl those
-filters which are generic. Since the generic filters are more valuable
-to users of the Rx timestamps, and it is obvious that
-HWTSTAMP_FILTER_PTP_V2_EVENT will timestamp SYNC and DELAY_REQ messages,
-this patch series clarifies that this behavior is ok. In addition, I
-provided patches to implement this behavior in get_ts_info for all
-drivers which currently upscale their hwtstamp ioctl return value.
+elapsed time: 2094m
 
-I did not modify SIOCSHWTSTAMP semantics, and only modified ethtool
-output. In addition, I left alone drivers which do not actually upscale
-their filters. In this way only the filters which are *not* upscaled are
-reported in ethtool output.
+configs tested: 186
 
-The intention of this change is to report only the most useful filters
-to ethtool op output. It should not impact userspace as user
-applications most often check for the most general filters first and
-only try the very specific filters as a fallback. I tried to Cc the
-driver owners where I knew them.
+i386                                defconfig
+i386                             allmodconfig
+i386                             alldefconfig
+mips                             allmodconfig
+mips                                   jz4740
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+x86_64                 randconfig-a1-04211255
+x86_64                 randconfig-a0-04211255
+x86_64                            allnoconfig
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                     randconfig-c1-0420
+x86_64                     randconfig-c2-0420
+x86_64                     randconfig-c0-0420
+i386                   randconfig-c0-04211254
+i386                   randconfig-c1-04211254
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+x86_64                randconfig-iv0-04221533
+x86_64                randconfig-iv1-04221533
+xtensa                           allyesconfig
+sparc64                          allyesconfig
+mips                             allyesconfig
+m68k                             allyesconfig
+sparc                            allyesconfig
+tile                             allyesconfig
+alpha                            allyesconfig
+powerpc                          allyesconfig
+sh                               allyesconfig
+avr32                            allyesconfig
+ia64                             allyesconfig
+parisc                           allyesconfig
+cris                             allyesconfig
+x86_64                           allyesconfig
+blackfin                         allyesconfig
+s390                             allyesconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+i386                  randconfig-ib0-04222115
+i386                  randconfig-ib1-04190732
+i386                  randconfig-ib1-04222115
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+microblaze                       allyesconfig
+s390                             allmodconfig
+s390                              allnoconfig
+s390                                defconfig
+i386                             allyesconfig
+x86_64                randconfig-ib0-04222014
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+arm                      footbridge_defconfig
+blackfin                BF526-EZBRD_defconfig
+mips                      bmips_stb_defconfig
+powerpc                      makalu_defconfig
+powerpc                       ppc64_defconfig
+i386                         randconfig-nexe1
+i386                         randconfig-nexe0
+i386                         randconfig-nexe3
+i386                         randconfig-nexe2
+i386                         randconfig-nexe5
+i386                         randconfig-nexe4
+i386                         randconfig-nexe7
+i386                         randconfig-nexe6
+i386                         randconfig-nexe9
+i386                         randconfig-nexe8
+x86_64                       randconfig-nexe6
+x86_64                       randconfig-nexe7
+x86_64                       randconfig-nexe4
+x86_64                       randconfig-nexe5
+x86_64                       randconfig-nexe2
+x86_64                       randconfig-nexe3
+x86_64                       randconfig-nexe0
+x86_64                       randconfig-nexe1
+x86_64                       randconfig-nexe8
+x86_64                       randconfig-nexe9
+x86_64                  randconfig-nexr0-0421
+i386                    randconfig-nexr2-0421
+x86_64                  randconfig-nexr1-0421
+x86_64                  randconfig-nexr2-0421
+i386                    randconfig-nexr0-0421
+i386                    randconfig-nexr1-0421
+x86_64              randconfig-nexs0-04220712
+i386                randconfig-nexs0-04220712
+x86_64                 randconfig-n0-03311232
+x86_64                 randconfig-n0-04192300
+x86_64                 randconfig-n0-04201540
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                              allmodconfig
+arm                          prima2_defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                                   samsung
+arm                       spear13xx_defconfig
+arm                         s3c2410_defconfig
+arm                                  iop-adma
+arm                       imx_v6_v7_defconfig
+arm                                       mmp
+arm                           tegra_defconfig
+arm                                      arm5
+arm                          marzen_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                                        sh
+arm                                     arm67
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                             allmodconfig
+m68k                          amiga_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                           allmodconfig
+arm                         axm55xx_defconfig
+arm                          nuc960_defconfig
+powerpc                 mpc834x_mds_defconfig
+powerpc                     tqm8555_defconfig
+sh                             espt_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                       randconfig-r1-0421
+i386                       randconfig-r2-0421
+i386                       randconfig-r0-0421
+x86_64                 randconfig-r0-04211519
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+x86_64                 randconfig-s0-04220815
+x86_64                 randconfig-s1-04220815
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+i386                          randconfig-x009
+i386                          randconfig-x008
+i386                          randconfig-x005
+i386                          randconfig-x004
+i386                          randconfig-x007
+i386                          randconfig-x006
+i386                          randconfig-x001
+i386                          randconfig-x000
+i386                          randconfig-x003
+i386                          randconfig-x002
+x86_64                        randconfig-x000
+x86_64                        randconfig-x001
+x86_64                        randconfig-x002
+x86_64                        randconfig-x003
+x86_64                        randconfig-x004
+x86_64                        randconfig-x005
+x86_64                        randconfig-x006
+x86_64                        randconfig-x007
+x86_64                        randconfig-x008
+x86_64                        randconfig-x009
+x86_64                                    lkp
+x86_64                                   rhel
+i386                   randconfig-x0-04211519
+i386                   randconfig-x1-04211519
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
 
-There is also one patch which removes an extraneous comment I
-discovered while working on this. It was obviously kept around from an
-original copy-and-modify implementation, and bears no relation to the
-current driver code in the freescale driver.
-
-Jacob Keller (8):
-  clarify implementation of ethtool's get_ts_info op
-  [TRIVIAL] freescale: remove incorrect copied comment
-  bnx2x: only report most generic filters in get_ts_info
-  i40e: only report generic filters in get_ts_info
-  igb: only report generic filters in get_ts_info
-  ixgbe: only report generic filters in get_ts_info
-  siena: only report generic filters in get_ts_info
-  dp83640: only report generic filters in ts_info
-
- Documentation/networking/timestamping.txt           |  7 +++++++
- drivers/net/ethernet/broadcom/bnx2x/bnx2x_ethtool.c | 11 +----------
- drivers/net/ethernet/freescale/fec_ptp.c            |  6 ------
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c      | 13 ++-----------
- drivers/net/ethernet/intel/igb/igb_ethtool.c        |  4 ----
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c    |  8 --------
- drivers/net/ethernet/sfc/siena.c                    |  6 +-----
- drivers/net/phy/dp83640.c                           | 10 +---------
- include/uapi/linux/ethtool.h                        |  5 +++++
- 9 files changed, 17 insertions(+), 53 deletions(-)
-
-
+Thanks,
+Fengguang
