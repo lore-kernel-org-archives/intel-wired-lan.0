@@ -1,10 +1,11 @@
-From: Alexander Duyck <alexander.h.duyck@redhat.com>
-Date: Wed, 22 Apr 2015 07:40:55 -0700
-Subject: [Intel-wired-lan] [PATCH v5] e1000e i219 fix unit hang on reset
- and runtime D3
-In-Reply-To: <1428967221-32195-1-git-send-email-yanirx.lubetkin@intel.com>
-References: <1428967221-32195-1-git-send-email-yanirx.lubetkin@intel.com>
-Message-ID: <5537B2F7.4050805@redhat.com>
+From: Lubetkin, YanirX <yanirx.lubetkin@intel.com>
+Date: Wed, 22 Apr 2015 14:56:39 +0000
+Subject: [Intel-wired-lan] [PATCH] e1000e: i219 execute unit hang fix on
+ every reset or power state transition
+In-Reply-To: <5537B295.3060804@redhat.com>
+References: <1429665301-10596-1-git-send-email-yanirx.lubetkin@intel.com>
+ <5537B295.3060804@redhat.com>
+Message-ID: <4D1FB504F643AC4BA12C9F34A1763FA419CA10F1@HASMSX106.ger.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,171 +14,101 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 
 
-On 04/13/2015 04:20 PM, Yanir Lubetkin wrote:
-> unit hang may occur if multiple descriptors are available in the rings during
-> reset or runtime suspend. This state can be detected by testing bit 8 in the
-> FEXTNVM7 register. if this bit is set and there are pending descriptors in one
-> of the rings, we must flush them prior to reset. same applies entering runtime
-> suspend.
->
-> Signed-off-by: Yanir Lubetkin <yanirx.lubetkin@intel.com>
-> ---
->   drivers/net/ethernet/intel/e1000e/ich8lan.h |   5 ++
->   drivers/net/ethernet/intel/e1000e/netdev.c  | 102 ++++++++++++++++++++++++++++
->   drivers/net/ethernet/intel/e1000e/regs.h    |   1 +
->   3 files changed, 108 insertions(+)
->
-> diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.h b/drivers/net/ethernet/intel/e1000e/ich8lan.h
-> index 770a573..69c4dbe 100644
-> --- a/drivers/net/ethernet/intel/e1000e/ich8lan.h
-> +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.h
-> @@ -100,6 +100,11 @@
->   #define E1000_FEXTNVM7_DISABLE_PB_READ	0x00040000
->   
->   #define E1000_FEXTNVM7_DISABLE_SMB_PERST	0x00000020
-> +#define E1000_FEXTNVM7_NEED_DESCRING_FLUSH     0x00000100
-> +#define E1000_FEXTNVM11_DISABLE_MULR_FIX       0x00002000
-> +
-> +/* bit24: RXDCTL thresholds granularity: 0 - cache lines, 1 - descriptors */
-> +#define E1000_RXDCTL_THRESH_UNIT_DESC 0x01000000
->   
->   #define K1_ENTRY_LATENCY	0
->   #define K1_MIN_TIME		1
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index 74ec185..0dfdb52 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -3788,6 +3788,106 @@ static void e1000_power_down_phy(struct e1000_adapter *adapter)
->   }
->   
->   /**
-> + * e1000_flush_tx_ring - remove all descriptors from the tx_ring
-> + *
-> + * We want to clear all pending descriptors from the TX ring.
-> + * zeroing happens when the HW reads the regs. We  assign the ring itself as
-> + * the data of the next descriptor. We don't care about the data we are about
-> + * to reset the HW.
-> + */
-> +static void e1000_flush_tx_ring(struct e1000_adapter *adapter)
-> +{
-> +	struct e1000_hw *hw = &adapter->hw;
-> +	struct e1000_ring *tx_ring = adapter->tx_ring;
-> +	struct e1000_tx_desc *tx_desc = NULL;
-> +	u32 tdt, tctl, txd_lower = E1000_TXD_CMD_IFCS;
-> +	u16 size = 512;
-> +
-> +	tctl = er32(TCTL);
-> +	ew32(TCTL, tctl | E1000_TCTL_EN);
-> +	tdt = er32(TDT(0));
-> +	BUG_ON(tdt != tx_ring->next_to_use);
-> +	tx_desc =  E1000_TX_DESC(*tx_ring, tx_ring->next_to_use);
-> +	tx_desc->buffer_addr = tx_ring->dma;
-> +
-> +	tx_desc->lower.data = cpu_to_le32(txd_lower | size);
-> +	tx_desc->upper.data = 0;
-> +	/* flush descriptors to memory before notifying the HW */
-> +	wmb();
-> +	tx_ring->next_to_use++;
-> +	if (tx_ring->next_to_use == tx_ring->count)
-> +		tx_ring->next_to_use = 0;
-> +	ew32(TDT(0), tx_ring->next_to_use);
-> +	mmiowb();
-> +	usleep_range(200, 250);
-> +}
-> +
-> +/**
-> + * e1000_flush_rx_ring - remove all descriptors from the rx_ring
-> + *
-> + * Mark all descriptors in the RX ring as consumed and disable the rx ring
-> + */
-> +static void e1000_flush_rx_ring(struct e1000_adapter *adapter)
-> +{
-> +	u32 rctl, rxdctl;
-> +	struct e1000_hw *hw = &adapter->hw;
-> +
-> +	rctl = er32(RCTL);
-> +	ew32(RCTL, rctl & ~E1000_RCTL_EN);
-> +	e1e_flush();
-> +	usleep_range(100, 150);
-> +
-> +	rxdctl = er32(RXDCTL(0));
-> +	/* zero the lower 14 bits (prefetch and host thresholds) */
-> +	rxdctl &= 0xffffc000;
-> +
-> +	/* update thresholds: prefetch threshold to 31, host threshold to 1
-> +	 * and make sure the granularity is "descriptors" and not "cache lines"
-> +	 */
-> +	rxdctl |= (0x1F | (1 << 8) | E1000_RXDCTL_THRESH_UNIT_DESC);
-> +
-> +	ew32(RXDCTL(0), rxdctl);
-> +	/* momentarily enable the RX ring for the changes to take effect */
-> +	ew32(RCTL, rctl | E1000_RCTL_EN);
-> +	e1e_flush();
-> +	usleep_range(100, 150);
-> +	ew32(RCTL, rctl & ~E1000_RCTL_EN);
-> +}
-> +
-> +/**
-> + * e1000_flush_desc_rings - remove all descriptors from the descriptor rings
-> + *
-> + * In i219, the descriptor rings must be emptied before resetting the HW
-> + * or before changing the device state to D3 during runtime (runtime PM).
-> + *
-> + * Failure to do this will cause the HW to enter a unit hang state which can
-> + * only be released by PCI reset on the device
-> + *
-> + */
-> +
-> +static void e1000_flush_desc_rings(struct e1000_adapter *adapter)
-> +{
-> +	u32 hang_state;
-> +	u32 fext_nvm11, tdlen;
-> +	struct e1000_hw *hw = &adapter->hw;
-> +
-> +	/* First, disable MULR fix in FEXTNVM11 */
-> +	fext_nvm11 = er32(FEXTNVM11);
-> +	fext_nvm11 |= E1000_FEXTNVM11_DISABLE_MULR_FIX;
-> +	ew32(FEXTNVM11, fext_nvm11);
-> +	/* do nothing if we're not in faulty state, or if the queue is empty */
-> +	tdlen = er32(TDLEN(0));
-> +	hang_state = er32(FEXTNVM7);
-> +	if ((hang_state & E1000_FEXTNVM7_NEED_DESCRING_FLUSH) || tdlen)
-> +		return;
-> +	e1000_flush_tx_ring(adapter);
-> +	/* recheck, maybe the fault is caused by the rx ring */
-> +	hang_state = er32(FEXTNVM7);
-> +	if (hang_state & E1000_FEXTNVM7_NEED_DESCRING_FLUSH)
-> +		e1000_flush_rx_ring(adapter);
-> +}
-> +
-> +/**
->    * e1000e_reset - bring the hardware into a known good state
->    *
->    * This function boots the hardware and enables some settings that
+> -----Original Message-----
+> From: Alexander Duyck [mailto:alexander.h.duyck at redhat.com]
+> Sent: Wednesday, April 22, 2015 17:39
+> To: Lubetkin, YanirX; intel-wired-lan at lists.osuosl.org
+> Subject: Re: [Intel-wired-lan] [PATCH] e1000e: i219 execute unit hang fix on
+> every reset or power state transition
+> 
+> On 04/21/2015 06:15 PM, Yanir Lubetkin wrote:
+> > after testing various cases, the conclusion is that the fix MUST be
+> > executed BEFORE any event that the HW is reset or transition to D3. to
+> > fix that I moved the execution to the relevant places but per
+> > Alexander Duyck's review, ensure now that the DMA is valid and was not
+> freed before manipulating the ring.
+> >
+> > Signed-off-by: Yanir Lubetkin <yanirx.lubetkin@intel.com>
+> > ---
+> >   drivers/net/ethernet/intel/e1000e/netdev.c | 16 ++++++++++------
+> >   1 file changed, 10 insertions(+), 6 deletions(-)
+> >
+> > diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c
+> > b/drivers/net/ethernet/intel/e1000e/netdev.c
+> > index 76b1a90..3f561f3 100644
+> > --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> > +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> > @@ -4043,6 +4043,8 @@ void e1000e_reset(struct e1000_adapter
+> *adapter)
+> >   		}
+> >   	}
+> >
+> > +	if (hw->mac.type == e1000_pch_spt)
+> > +		e1000_flush_desc_rings(adapter);
+> >   	/* Allow time for pending master requests to run */
+> >   	mac->ops.reset_hw(hw);
+> >
+> > @@ -4215,10 +4217,6 @@ void e1000e_down(struct e1000_adapter
+> *adapter, bool reset)
+> >   	spin_unlock(&adapter->stats64_lock);
+> >
+> >   	e1000e_flush_descriptors(adapter);
+> > -	if (hw->mac.type == e1000_pch_spt)
+> > -		e1000_flush_desc_rings(adapter);
+> > -	e1000_clean_tx_ring(adapter->tx_ring);
+> > -	e1000_clean_rx_ring(adapter->rx_ring);
+> >
+> >   	adapter->link_speed = 0;
+> >   	adapter->link_duplex = 0;
+> > @@ -4229,8 +4227,14 @@ void e1000e_down(struct e1000_adapter
+> *adapter, bool reset)
+> >   	    e1000_lv_jumbo_workaround_ich8lan(hw, false))
+> >   		e_dbg("failed to disable jumbo frame workaround
+> mode\n");
+> >
+> > -	if (reset && !pci_channel_offline(adapter->pdev))
+> > -		e1000e_reset(adapter);
+> > +        if (!pci_channel_offline(adapter->pdev)) {
+> > +                if(reset)
+> > +                        e1000e_reset(adapter);
+> > +                else if (hw->mac.type == e1000_pch_spt)
+> > +                        e1000_flush_desc_rings(adapter);
+> > +        }
+> > +	e1000_clean_tx_ring(adapter->tx_ring);
+> > +	e1000_clean_rx_ring(adapter->rx_ring);
+> >   }
+> >
+> >   void e1000e_reinit_locked(struct e1000_adapter *adapter)
+> >
+> 
+> I'm really not a fan of this as it really seems to confuse things.  Do you know if
+> you need the full workaround or only part of it?  For example if the
+> descriptor ring is empty flushing the descriptor rings shouldn't be necessary,
+> so I suspect you probably only need to move the bits where you were setting
+> E1000_FEXTNVM11_DISABLE_MULR_FIX into the e1000_reset_hw_ich8lan
+> call itself and then you could probably just leave the rest of the workaround
+> as is.
 
-I was just looking at this and I was wondering, why is it you are 
-calling "return" on the Tx check?  Seems like you should be calling 
-e1000_flush_tx_ring shouldn't you?
+The logic is:
 
-> @@ -4115,6 +4215,8 @@ void e1000e_down(struct e1000_adapter *adapter, bool reset)
->   	spin_unlock(&adapter->stats64_lock);
->   
->   	e1000e_flush_descriptors(adapter);
-> +	if (hw->mac.type == e1000_pch_spt)
-> +		e1000_flush_desc_rings(adapter);
->   	e1000_clean_tx_ring(adapter->tx_ring);
->   	e1000_clean_rx_ring(adapter->rx_ring);
->   
-> diff --git a/drivers/net/ethernet/intel/e1000e/regs.h b/drivers/net/ethernet/intel/e1000e/regs.h
-> index 85eefc4..fdaac8e 100644
-> --- a/drivers/net/ethernet/intel/e1000e/regs.h
-> +++ b/drivers/net/ethernet/intel/e1000e/regs.h
-> @@ -38,6 +38,7 @@
->   #define E1000_FEXTNVM4	0x00024	/* Future Extended NVM 4 - RW */
->   #define E1000_FEXTNVM6	0x00010	/* Future Extended NVM 6 - RW */
->   #define E1000_FEXTNVM7	0x000E4	/* Future Extended NVM 7 - RW */
-> +#define E1000_FEXTNVM11        0x5BBC  /* Future Extended NVM 11 - RW */
->   #define E1000_PCIEANACFG	0x00F18	/* PCIE Analog Config */
->   #define E1000_FCT	0x00030	/* Flow Control Type - RW */
->   #define E1000_VET	0x00038	/* VLAN Ether Type - RW */
+If the bit is SET and TDLEN > 0
+	Clear E1000_FEXTNVM11_DISABLE_MULR_FIX
+	Execute TX ring flush
+If the bit is still set
+	Execute the RX flush
+
+This logic should be executed before any attempt to reset the hardware (unless resetting the bus), and before any state transition out of D0.
+
+the E1000_FEXTNVM11_DISABLE_MULR_FIX  bit will return SET from reset. It is set when reloading the NVM.
+
+
+> 
+> - Alex
+---------------------------------------------------------------------
+Intel Israel (74) Limited
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
