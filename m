@@ -1,82 +1,66 @@
-From: Cong Wang <cwang@twopensource.com>
-Date: Wed, 22 Apr 2015 13:33:09 -0700
-Subject: [Intel-wired-lan] [Patch net] igb: pass the correct maxlen for
-	eth_get_headlen()
-In-Reply-To: <553802DA.4050709@gmail.com>
-References: <1429724760-10075-1-git-send-email-xiyou.wangcong@gmail.com>
- <5537F9F1.1080008@gmail.com>
- <CAHA+R7PVrxJ41WSqfO4mZSpCTGdJ++Gf757f_kq5z0UeMHXbXg@mail.gmail.com>
- <553802DA.4050709@gmail.com>
-Message-ID: <CAHA+R7PtzNd2asXFtiqsWyzCgeE1k_iF84358cvKg6ZCU-yVkQ@mail.gmail.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Wed, 22 Apr 2015 21:41:13 +0000
+Subject: [Intel-wired-lan] [PATCH 0/8] clarify behavior of get_ts_info and
+	hwtstamp ioctl
+Message-ID: <1429738873.30529.20.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Apr 22, 2015 at 1:21 PM, Alexander Duyck
-<alexander.duyck@gmail.com> wrote:
-> On 04/22/2015 01:14 PM, Cong Wang wrote:
->> On Wed, Apr 22, 2015 at 12:43 PM, Alexander Duyck
->> <alexander.duyck@gmail.com> wrote:
->>> On 04/22/2015 10:45 AM, Cong Wang wrote:
->>>> The second parameter of eth_get_headlen() is the length of
->>>> the frame buffer, not the header length of skb.
->>>>
->>>> Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
->>>> Signed-off-by: Cong Wang <xiyou.wangcong@gmail.com>
->>>> ---
->>>>  drivers/net/ethernet/intel/igb/igb_main.c | 4 +++-
->>>>  1 file changed, 3 insertions(+), 1 deletion(-)
->>>>
->>>> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
->>>> index a0a9b1f..7b3a370 100644
->>>> --- a/drivers/net/ethernet/intel/igb/igb_main.c
->>>> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
->>>> @@ -6852,7 +6852,9 @@ static void igb_pull_tail(struct igb_ring *rx_ring,
->>>>       /* we need the header to contain the greater of either ETH_HLEN or
->>>>        * 60 bytes if the skb->len is less than 60 for skb_pad.
->>>>        */
->>>> -     pull_len = eth_get_headlen(va, IGB_RX_HDR_LEN);
->>>> +     pull_len = eth_get_headlen(va, skb_frag_size(frag));
->>>> +     if (unlikely(pull_len > IGB_RX_HDR_LEN))
->>>> +             pull_len = IGB_RX_HDR_LEN;
->>>>
->>>>       /* align pull length to size of long to optimize memcpy performance */
->>>>       skb_copy_to_linear_data(skb, va, ALIGN(pull_len, sizeof(long)));
->>> You have this part right.  The length represents the maximum length we
->>> are willing to traverse in the buffer.  So if we 100% want to get the
->>> entire header regardless of what we can copy into then we could follow
->>> your approach.  However, since the allocated space in the skb is only
->>> IGB_RX_HDR_LEN we only really want to traverse up to that length.  Then
->>> that is all we copy out of the header.
->> But the frag size could be smaller than IGB_RX_HDR_LEN which is
->> the case this patch tries to fix.
->
-> No it can't.  We only add frags if the first frag is larger than
-> IGB_RX_HDR_LEN.  Go look at the code where this driver calls
-> add_rx_frag.  You should find there is copybreak code in there that
-> kicks in for anything less than or equal to IGB_RX_HDR_LEN in size on
-> the first frag.  It is there to allow us to avoid having to perform an
-> atomic inc/dec on the page.
->
+This patch series attempts to clarify some expected behavior for drivers
+when implementing SIOCSHWSTAMP and Ethtool's get_ts_info ioctl.
 
-First, make sure you don't miss the TSIP case right above:
+The SIOCSHWTSTAMP ioctl has several available filters for Rx timestamps
+ranging from as specific as HWTSTAMP_FILTER_PTP_V2_L4_DELAY_REQ_MESSAGE
+up to as general as HWTSTAMP_FILTER_ALL. It is expressly allowed for a
+driver to timestamp more than the requested packets, as long as at least
+the requested packets are timestamped. Many drivers do this by upscaling
+from the more specific filters into the most generic supported filters.
+In this case, some drivers also only report in the Ethtool ioctl those
+filters which are generic. Since the generic filters are more valuable
+to users of the Rx timestamps, and it is obvious that
+HWTSTAMP_FILTER_PTP_V2_EVENT will timestamp SYNC and DELAY_REQ messages,
+this patch series clarifies that this behavior is ok. In addition, I
+provided patches to implement this behavior in get_ts_info for all
+drivers which currently upscale their hwtstamp ioctl return value.
 
-The frag starting pointer and its size are advanced by:
+I did not modify SIOCSHWTSTAMP semantics, and only modified ethtool
+output. In addition, I left alone drivers which do not actually upscale
+their filters. In this way only the filters which are *not* upscaled are
+reported in ethtool output.
 
-skb_frag_size_sub(frag, IGB_TS_HDR_LEN);
-...
-va += IGB_TS_HDR_LEN;
+The intention of this change is to report only the most useful filters
+to ethtool op output. It should not impact userspace as user
+applications most often check for the most general filters first and
+only try the very specific filters as a fallback. I tried to Cc the
+driver owners where I knew them.
 
-even though we unlikely pull header longer than
-IGB_RX_HDR_LEN - IGB_TS_HDR_LEN either.
+There is also one patch which removes an extraneous comment I
+discovered while working on this. It was obviously kept around from an
+original copy-and-modify implementation, and bears no relation to the
+current driver code in the freescale driver.
+
+Jacob Keller (8):
+  clarify implementation of ethtool's get_ts_info op
+  [TRIVIAL] freescale: remove incorrect copied comment
+  bnx2x: only report most generic filters in get_ts_info
+  i40e: only report generic filters in get_ts_info
+  igb: only report generic filters in get_ts_info
+  ixgbe: only report generic filters in get_ts_info
+  siena: only report generic filters in get_ts_info
+  dp83640: only report generic filters in ts_info
+
+ Documentation/networking/timestamping.txt           |  7 +++++++
+ drivers/net/ethernet/broadcom/bnx2x/bnx2x_ethtool.c | 11 +----------
+ drivers/net/ethernet/freescale/fec_ptp.c            |  6 ------
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c      | 13 ++-----------
+ drivers/net/ethernet/intel/igb/igb_ethtool.c        |  4 ----
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c    |  8 --------
+ drivers/net/ethernet/sfc/siena.c                    |  6 +-----
+ drivers/net/phy/dp83640.c                           | 10 +---------
+ include/uapi/linux/ethtool.h                        |  5 +++++
+ 9 files changed, 17 insertions(+), 53 deletions(-)
 
 
-Second, the check you mentioned above is:
-
-if ((size <= IGB_RX_HDR_LEN) && !skb_is_nonlinear(skb))
-
-skb is nonlinear _after_ the first igb_add_rx_frag(), a second
-igb_add_rx_frag() is possible since igb_is_non_eop() could
-return true.
