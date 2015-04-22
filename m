@@ -1,51 +1,73 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 21 Apr 2015 01:04:08 -0700
-Subject: [Intel-wired-lan] [net-next v2] e1000e: fix call to do_div() to
- use u64 arg
-In-Reply-To: <309B89C4C689E141A5FF6A0C5FB2118B78DA68CB@ORSMSX101.amr.corp.intel.com>
-References: <20150409214405.27465.51380.stgit@gmw-smvitp108.amr.corp.intel.com>
- <552700ED.3030009@redhat.com>
- <309B89C4C689E141A5FF6A0C5FB2118B78DA68CB@ORSMSX101.amr.corp.intel.com>
-Message-ID: <1429603448.2638.172.camel@jtkirshe-mobl>
+From: Yanir Lubetkin <yanirx.lubetkin@intel.com>
+Date: Wed, 22 Apr 2015 04:15:01 +0300
+Subject: [Intel-wired-lan] [PATCH] e1000e: i219 execute unit hang fix on
+	every reset or power state transition
+Message-ID: <1429665301-10596-1-git-send-email-yanirx.lubetkin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2015-04-20 at 20:15 -0700, Brown, Aaron F wrote:
-> > 
-> > Honestly the whole signed/unsigned thing is kind of a waste anyway.
-> You
-> > could probably rewrite it to something like this and drop lat_ns
-> entirely.
-> > 
-> > rxa *= 512;
-> > value = (rxa > hw->adapter->max_frame_size) ?
-> >       (rxa - hw->adapter->max_frame_size) * (16000 / speed) : 0;
-> > 
-> > That should give you the same result without any need for the do_div
-> or
-> > the signed values.
-> > 
-> > - Alex
-> 
-> Anyone want to take a stab at striking out the signed / unsigned thing
-> per Alex's suggestion?
-> 
-> Meanwhile I've run tons of tests with this in the queue and don't want
-> to old things up, so...
-> 
-> Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+after testing various cases, the conclusion is that the fix MUST be executed BEFORE
+any event that the HW is reset or transition to D3. to fix that I moved the execution
+to the relevant places but per Alexander Duyck's review, ensure now that the DMA is
+valid and was not freed before manipulating the ring.
 
-Yeah, I will be working on a follow on patch to implement Alex's
-suggestions.  For now, I wanted to go forward with this change to
-resolve the compile warning.  I should have a patch later this week to
-implement Alex's suggestions, unless Yanir gets to it before me. :-)
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150421/4d60ed61/attachment.asc>
+Signed-off-by: Yanir Lubetkin <yanirx.lubetkin@intel.com>
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c | 16 ++++++++++------
+ 1 file changed, 10 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 76b1a90..3f561f3 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -4043,6 +4043,8 @@ void e1000e_reset(struct e1000_adapter *adapter)
+ 		}
+ 	}
+ 
++	if (hw->mac.type == e1000_pch_spt)
++		e1000_flush_desc_rings(adapter);
+ 	/* Allow time for pending master requests to run */
+ 	mac->ops.reset_hw(hw);
+ 
+@@ -4215,10 +4217,6 @@ void e1000e_down(struct e1000_adapter *adapter, bool reset)
+ 	spin_unlock(&adapter->stats64_lock);
+ 
+ 	e1000e_flush_descriptors(adapter);
+-	if (hw->mac.type == e1000_pch_spt)
+-		e1000_flush_desc_rings(adapter);
+-	e1000_clean_tx_ring(adapter->tx_ring);
+-	e1000_clean_rx_ring(adapter->rx_ring);
+ 
+ 	adapter->link_speed = 0;
+ 	adapter->link_duplex = 0;
+@@ -4229,8 +4227,14 @@ void e1000e_down(struct e1000_adapter *adapter, bool reset)
+ 	    e1000_lv_jumbo_workaround_ich8lan(hw, false))
+ 		e_dbg("failed to disable jumbo frame workaround mode\n");
+ 
+-	if (reset && !pci_channel_offline(adapter->pdev))
+-		e1000e_reset(adapter);
++        if (!pci_channel_offline(adapter->pdev)) {
++                if(reset)
++                        e1000e_reset(adapter);
++                else if (hw->mac.type == e1000_pch_spt)
++                        e1000_flush_desc_rings(adapter);
++        }
++	e1000_clean_tx_ring(adapter->tx_ring);
++	e1000_clean_rx_ring(adapter->rx_ring);
+ }
+ 
+ void e1000e_reinit_locked(struct e1000_adapter *adapter)
+-- 
+2.1.0
+
+---------------------------------------------------------------------
+Intel Israel (74) Limited
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
+
