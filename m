@@ -1,96 +1,161 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Wed, 22 Apr 2015 19:34:05 -0400
-Subject: [Intel-wired-lan] [net-next S4 v2 10/15] i40e/i40evf: Add stats to
-	track FD ATR and SB dynamic enable state
-Message-ID: <1429745646-183026-1-git-send-email-catherine.sullivan@intel.com>
+Date: Wed, 22 Apr 2015 19:34:06 -0400
+Subject: [Intel-wired-lan] [net-next S4 v2 11/15] i40e/i40evf: Update
+	Flex-10 related device/function capabilities
+In-Reply-To: <1429745646-183026-1-git-send-email-catherine.sullivan@intel.com>
+References: <1429745646-183026-1-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1429745646-183026-2-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Anjali Singhai Jain <anjali.singhai@intel.com>
+From: Pawel Orlowski <pawel.orlowski@intel.com>
 
-Since the driver can dynamically enable/disable FD ATR and SB features,
-these stats help keep track of the current state and along with
-fd_flush count provide a means to debug what could be going on
-with the flow director filters. This will take away the need for
-being verbose in our debug logs with respect to FD.
+The Flex10 device/function capability has been upgraded to include
+information needed to support Flex-10 configurations. This patch adds new
+fields to the i40e_hw_capabilities structure and updates
+i40e_parse_discover_capabilities functions to extract them from the AQ
+response. Naming convention has changed to use flex10 mode instead of
+existing mfp_mode_1.
 
-Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-Change-ID: I29224f750fe6602391043655d18996570720377d
+Signed-off-by: Pawel Orlowski <pawel.orlowski@intel.com>
+Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+Change-ID: I305dd888866985a30293acb3fb14fa43ca6b79ea
 ---
-v2: Change the binary and's in if statements to logical and's
+v2: Change the order of variable declarations so it is in reverse pyramid
+    format
 
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  2 ++
- drivers/net/ethernet/intel/i40e/i40e_main.c    | 12 ++++++++++++
- drivers/net/ethernet/intel/i40e/i40e_type.h    |  2 ++
- drivers/net/ethernet/intel/i40evf/i40e_type.h  |  2 ++
- 4 files changed, 18 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 24 +++++++++++++++++++-----
+ drivers/net/ethernet/intel/i40e/i40e_main.c   |  2 +-
+ drivers/net/ethernet/intel/i40e/i40e_type.h   | 12 +++++++++++-
+ drivers/net/ethernet/intel/i40evf/i40e_type.h | 12 +++++++++++-
+ 4 files changed, 42 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 9a68c65..0b68f61 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -148,7 +148,9 @@ static struct i40e_stats i40e_gstrings_stats[] = {
- 	I40E_PF_STAT("fdir_flush_cnt", fd_flush_cnt),
- 	I40E_PF_STAT("fdir_atr_match", stats.fd_atr_match),
- 	I40E_PF_STAT("fdir_atr_tunnel_match", stats.fd_atr_tunnel_match),
-+	I40E_PF_STAT("fdir_atr_status", stats.fd_atr_status),
- 	I40E_PF_STAT("fdir_sb_match", stats.fd_sb_match),
-+	I40E_PF_STAT("fdir_sb_status", stats.fd_sb_status),
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 0bae22d..0703222 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -2391,7 +2391,7 @@ i40e_aq_erase_nvm_exit:
+ #define I40E_DEV_FUNC_CAP_MSIX_VF	0x44
+ #define I40E_DEV_FUNC_CAP_FLOW_DIRECTOR	0x45
+ #define I40E_DEV_FUNC_CAP_IEEE_1588	0x46
+-#define I40E_DEV_FUNC_CAP_MFP_MODE_1	0xF1
++#define I40E_DEV_FUNC_CAP_FLEX10	0xF1
+ #define I40E_DEV_FUNC_CAP_CEM		0xF2
+ #define I40E_DEV_FUNC_CAP_IWARP		0x51
+ #define I40E_DEV_FUNC_CAP_LED		0x61
+@@ -2416,6 +2416,7 @@ static void i40e_parse_discover_capabilities(struct i40e_hw *hw, void *buff,
+ 	u32 valid_functions, num_functions;
+ 	u32 number, logical_id, phys_id;
+ 	struct i40e_hw_capabilities *p;
++	u8 major_rev;
+ 	u32 i = 0;
+ 	u16 id;
  
- 	/* LPI stats */
- 	I40E_PF_STAT("tx_lpi_status", stats.tx_lpi_status),
+@@ -2433,6 +2434,7 @@ static void i40e_parse_discover_capabilities(struct i40e_hw *hw, void *buff,
+ 		number = le32_to_cpu(cap->number);
+ 		logical_id = le32_to_cpu(cap->logical_id);
+ 		phys_id = le32_to_cpu(cap->phys_id);
++		major_rev = cap->major_rev;
+ 
+ 		switch (id) {
+ 		case I40E_DEV_FUNC_CAP_SWITCH_MODE:
+@@ -2507,9 +2509,21 @@ static void i40e_parse_discover_capabilities(struct i40e_hw *hw, void *buff,
+ 		case I40E_DEV_FUNC_CAP_MSIX_VF:
+ 			p->num_msix_vectors_vf = number;
+ 			break;
+-		case I40E_DEV_FUNC_CAP_MFP_MODE_1:
+-			if (number == 1)
+-				p->mfp_mode_1 = true;
++		case I40E_DEV_FUNC_CAP_FLEX10:
++			if (major_rev == 1) {
++				if (number == 1) {
++					p->flex10_enable = true;
++					p->flex10_capable = true;
++				}
++			} else {
++				/* Capability revision >= 2 */
++				if (number & 1)
++					p->flex10_enable = true;
++				if (number & 2)
++					p->flex10_capable = true;
++			}
++			p->flex10_mode = logical_id;
++			p->flex10_status = phys_id;
+ 			break;
+ 		case I40E_DEV_FUNC_CAP_CEM:
+ 			if (number == 1)
+@@ -2557,7 +2571,7 @@ static void i40e_parse_discover_capabilities(struct i40e_hw *hw, void *buff,
+ 	/* Software override ensuring FCoE is disabled if npar or mfp
+ 	 * mode because it is not supported in these modes.
+ 	 */
+-	if (p->npar_enable || p->mfp_mode_1)
++	if (p->npar_enable || p->flex10_enable)
+ 		p->fcoe = false;
+ 
+ 	/* count the enabled ports (aka the "not disabled" ports) */
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index d1ac807..29c7cdc 100644
+index 29c7cdc..ed50573 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1123,6 +1123,18 @@ static void i40e_update_pf_stats(struct i40e_pf *pf)
- 			   pf->stat_offsets_loaded,
- 			   &osd->rx_lpi_count, &nsd->rx_lpi_count);
+@@ -7681,7 +7681,7 @@ static int i40e_sw_init(struct i40e_pf *pf)
+ 	}
  
-+	if (pf->flags & I40E_FLAG_FD_SB_ENABLED &&
-+	    !(pf->auto_disable_flags & I40E_FLAG_FD_SB_ENABLED))
-+		nsd->fd_sb_status = true;
-+	else
-+		nsd->fd_sb_status = false;
-+
-+	if (pf->flags & I40E_FLAG_FD_ATR_ENABLED &&
-+	    !(pf->auto_disable_flags & I40E_FLAG_FD_ATR_ENABLED))
-+		nsd->fd_atr_status = true;
-+	else
-+		nsd->fd_atr_status = false;
-+
- 	pf->stat_offsets_loaded = true;
- }
- 
+ 	/* MFP mode enabled */
+-	if (pf->hw.func_caps.npar_enable || pf->hw.func_caps.mfp_mode_1) {
++	if (pf->hw.func_caps.npar_enable || pf->hw.func_caps.flex10_enable) {
+ 		pf->flags |= I40E_FLAG_MFP_ENABLED;
+ 		dev_info(&pf->pdev->dev, "MFP mode Enabled\n");
+ 		if (i40e_get_npar_bw_setting(pf))
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-index 9a5a75b..350c5ee 100644
+index 350c5ee..220371e 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_type.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-@@ -1134,6 +1134,8 @@ struct i40e_hw_port_stats {
- 	u64 fd_atr_match;
- 	u64 fd_sb_match;
- 	u64 fd_atr_tunnel_match;
-+	u32 fd_atr_status;
-+	u32 fd_sb_status;
- 	/* EEE LPI */
- 	u32 tx_lpi_status;
- 	u32 rx_lpi_status;
+@@ -213,7 +213,17 @@ struct i40e_hw_capabilities {
+ 	bool dcb;
+ 	bool fcoe;
+ 	bool iscsi; /* Indicates iSCSI enabled */
+-	bool mfp_mode_1;
++	bool flex10_enable;
++	bool flex10_capable;
++	u32  flex10_mode;
++#define I40E_FLEX10_MODE_UNKNOWN	0x0
++#define I40E_FLEX10_MODE_DCC		0x1
++#define I40E_FLEX10_MODE_DCI		0x2
++
++	u32 flex10_status;
++#define I40E_FLEX10_STATUS_DCC_ERROR	0x1
++#define I40E_FLEX10_STATUS_VC_MODE	0x2
++
+ 	bool mgmt_cem;
+ 	bool ieee_1588;
+ 	bool iwarp;
 diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-index c463ec4..068813d 100644
+index 068813d..3969c65 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
 +++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-@@ -1109,6 +1109,8 @@ struct i40e_hw_port_stats {
- 	u64 fd_atr_match;
- 	u64 fd_sb_match;
- 	u64 fd_atr_tunnel_match;
-+	u32 fd_atr_status;
-+	u32 fd_sb_status;
- 	/* EEE LPI */
- 	u32 tx_lpi_status;
- 	u32 rx_lpi_status;
+@@ -213,7 +213,17 @@ struct i40e_hw_capabilities {
+ 	bool dcb;
+ 	bool fcoe;
+ 	bool iscsi; /* Indicates iSCSI enabled */
+-	bool mfp_mode_1;
++	bool flex10_enable;
++	bool flex10_capable;
++	u32  flex10_mode;
++#define I40E_FLEX10_MODE_UNKNOWN	0x0
++#define I40E_FLEX10_MODE_DCC		0x1
++#define I40E_FLEX10_MODE_DCI		0x2
++
++	u32 flex10_status;
++#define I40E_FLEX10_STATUS_DCC_ERROR	0x1
++#define I40E_FLEX10_STATUS_VC_MODE	0x2
++
+ 	bool mgmt_cem;
+ 	bool ieee_1588;
+ 	bool iwarp;
 -- 
 1.9.3
 
