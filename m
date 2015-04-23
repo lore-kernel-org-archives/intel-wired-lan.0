@@ -1,161 +1,83 @@
-From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Wed, 22 Apr 2015 19:34:06 -0400
-Subject: [Intel-wired-lan] [net-next S4 v2 11/15] i40e/i40evf: Update
-	Flex-10 related device/function capabilities
-In-Reply-To: <1429745646-183026-1-git-send-email-catherine.sullivan@intel.com>
-References: <1429745646-183026-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1429745646-183026-2-git-send-email-catherine.sullivan@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 22 Apr 2015 20:40:52 -0700
+Subject: [Intel-wired-lan] [Patch net] igb: pass the correct maxlen for
+	eth_get_headlen()
+In-Reply-To: <CAHA+R7MJv7tbHwU_ECbJunXVJ8uo=eQv+Xmw42oR5sKEde35RQ@mail.gmail.com>
+References: <1429724760-10075-1-git-send-email-xiyou.wangcong@gmail.com>	<5537F9F1.1080008@gmail.com>	<CAHA+R7PVrxJ41WSqfO4mZSpCTGdJ++Gf757f_kq5z0UeMHXbXg@mail.gmail.com>	<553802DA.4050709@gmail.com>	<CAHA+R7PtzNd2asXFtiqsWyzCgeE1k_iF84358cvKg6ZCU-yVkQ@mail.gmail.com>	<553815DF.4000109@gmail.com>	<CAHA+R7MMrrBYbQALovxuhcXrbiWjD_XpgohPXxTvNkcd3-R3WA@mail.gmail.com>	<553821E4.5010901@gmail.com>
+ <CAHA+R7MJv7tbHwU_ECbJunXVJ8uo=eQv+Xmw42oR5sKEde35RQ@mail.gmail.com>
+Message-ID: <553869C4.30107@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Pawel Orlowski <pawel.orlowski@intel.com>
+On 04/22/2015 04:23 PM, Cong Wang wrote:
+> On Wed, Apr 22, 2015 at 3:34 PM, Alexander Duyck
+> <alexander.duyck@gmail.com> wrote:
+>> On 04/22/2015 02:56 PM, Cong Wang wrote:
+>>> On Wed, Apr 22, 2015 at 2:42 PM, Alexander Duyck
+>>> <alexander.duyck@gmail.com> wrote:
+>>>> On 04/22/2015 01:33 PM, Cong Wang wrote:
+>>>>> First, make sure you don't miss the TSIP case right above:
+>>>>>
+>>>>> The frag starting pointer and its size are advanced by:
+>>>>>
+>>>>> skb_frag_size_sub(frag, IGB_TS_HDR_LEN);
+>>>>> ...
+>>>>> va += IGB_TS_HDR_LEN;
+>>>>>
+>>>>> even though we unlikely pull header longer than
+>>>>> IGB_RX_HDR_LEN - IGB_TS_HDR_LEN either.
+>>>> So I believe this is a possible bug, one heck of a corner case to get
+>>>> into though.  It requires timestamp in packet, size 240 - 256, and a
+>>>> malformed header.
+>>>>
+>>>> The proper fix would probably be to pull the timestamp out of the packet
+>>>> before we add it to the frame.  I'll submit a patch to address this.
+>>>>
+>>> Huh? Doesn't my patch already fix this? skb_frag_size() is always
+>>> up to date. Or you mean another different problem?
+>> Your patch has other issues.  I am still NAKing your patch, but there is
+>> an issue with igb that you have pointed out.  The proper fix would be to
+>> deal with the timestamp before we add the page fragment to the skb.
+>>
+> If the first frag is always 2K, then this is not a problem either.
+> IGB_TS_HDR_LEN + IGB_RX_HDR_LEN < 2K.
 
-The Flex10 device/function capability has been upgraded to include
-information needed to support Flex-10 configurations. This patch adds new
-fields to the i40e_hw_capabilities structure and updates
-i40e_parse_discover_capabilities functions to extract them from the AQ
-response. Naming convention has changed to use flex10 mode instead of
-existing mfp_mode_1.
+The problem is skb->tail will get screwed up.
 
-Signed-off-by: Pawel Orlowski <pawel.orlowski@intel.com>
-Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-Change-ID: I305dd888866985a30293acb3fb14fa43ca6b79ea
----
-v2: Change the order of variable declarations so it is in reverse pyramid
-    format
+>
+>>>>> Second, the check you mentioned above is:
+>>>>>
+>>>>> if ((size <= IGB_RX_HDR_LEN) && !skb_is_nonlinear(skb))
+>>>>>
+>>>>> skb is nonlinear _after_ the first igb_add_rx_frag(), a second
+>>>>> igb_add_rx_frag() is possible since igb_is_non_eop() could
+>>>>> return true.
+>>>> I'm not sure this part makes any sense.  We pull the data out of the
+>>>> first fragment always.  If skb_is_nonlinear is set then we should have
+>>>> at least 2K - 16B in the case of igb.  We will never have a second
+>>>> fragment without at least 2K of data being given in the first.
+>>> Apparently my igb knowledge isn't enough to verify this, I just did
+>>> logical analysis.
+>> The logic with igb is that if skb_is_nonlinear it means that a page has
+>> already been added.  The way the hardware works is that it will break a
+>> frame up into 2K segments until the entire frame is written.  So the
+>> only way to get a second page fragment is if the first has used the
+>> entire 2K buffer it was given.
+> So the first frag is always 2K, at least more than IGB_RX_HDR_LEN
+> then we are fine even for TSIP case.
+>
+> The code looks correct to me now, except it is suspicious skb->len
+> is not updated after skb_copy_to_linear_data() while skb->tail is
+> advanced already. I need to think more before submitting a patch.
 
- drivers/net/ethernet/intel/i40e/i40e_common.c | 24 +++++++++++++++++++-----
- drivers/net/ethernet/intel/i40e/i40e_main.c   |  2 +-
- drivers/net/ethernet/intel/i40e/i40e_type.h   | 12 +++++++++++-
- drivers/net/ethernet/intel/i40evf/i40e_type.h | 12 +++++++++++-
- 4 files changed, 42 insertions(+), 8 deletions(-)
+The first frag will be 2K in size only if there are multiple frags.  The
+problem in the TSIP case is that we will put the size reported by the
+descriptor into the fragment, and then try to pull the size we
+determined via eth_get_headlen.  So there is a window where that value
+can be wrong and result in data_len going negative and tail being moved
+beyond the end of the actual data.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 0bae22d..0703222 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -2391,7 +2391,7 @@ i40e_aq_erase_nvm_exit:
- #define I40E_DEV_FUNC_CAP_MSIX_VF	0x44
- #define I40E_DEV_FUNC_CAP_FLOW_DIRECTOR	0x45
- #define I40E_DEV_FUNC_CAP_IEEE_1588	0x46
--#define I40E_DEV_FUNC_CAP_MFP_MODE_1	0xF1
-+#define I40E_DEV_FUNC_CAP_FLEX10	0xF1
- #define I40E_DEV_FUNC_CAP_CEM		0xF2
- #define I40E_DEV_FUNC_CAP_IWARP		0x51
- #define I40E_DEV_FUNC_CAP_LED		0x61
-@@ -2416,6 +2416,7 @@ static void i40e_parse_discover_capabilities(struct i40e_hw *hw, void *buff,
- 	u32 valid_functions, num_functions;
- 	u32 number, logical_id, phys_id;
- 	struct i40e_hw_capabilities *p;
-+	u8 major_rev;
- 	u32 i = 0;
- 	u16 id;
- 
-@@ -2433,6 +2434,7 @@ static void i40e_parse_discover_capabilities(struct i40e_hw *hw, void *buff,
- 		number = le32_to_cpu(cap->number);
- 		logical_id = le32_to_cpu(cap->logical_id);
- 		phys_id = le32_to_cpu(cap->phys_id);
-+		major_rev = cap->major_rev;
- 
- 		switch (id) {
- 		case I40E_DEV_FUNC_CAP_SWITCH_MODE:
-@@ -2507,9 +2509,21 @@ static void i40e_parse_discover_capabilities(struct i40e_hw *hw, void *buff,
- 		case I40E_DEV_FUNC_CAP_MSIX_VF:
- 			p->num_msix_vectors_vf = number;
- 			break;
--		case I40E_DEV_FUNC_CAP_MFP_MODE_1:
--			if (number == 1)
--				p->mfp_mode_1 = true;
-+		case I40E_DEV_FUNC_CAP_FLEX10:
-+			if (major_rev == 1) {
-+				if (number == 1) {
-+					p->flex10_enable = true;
-+					p->flex10_capable = true;
-+				}
-+			} else {
-+				/* Capability revision >= 2 */
-+				if (number & 1)
-+					p->flex10_enable = true;
-+				if (number & 2)
-+					p->flex10_capable = true;
-+			}
-+			p->flex10_mode = logical_id;
-+			p->flex10_status = phys_id;
- 			break;
- 		case I40E_DEV_FUNC_CAP_CEM:
- 			if (number == 1)
-@@ -2557,7 +2571,7 @@ static void i40e_parse_discover_capabilities(struct i40e_hw *hw, void *buff,
- 	/* Software override ensuring FCoE is disabled if npar or mfp
- 	 * mode because it is not supported in these modes.
- 	 */
--	if (p->npar_enable || p->mfp_mode_1)
-+	if (p->npar_enable || p->flex10_enable)
- 		p->fcoe = false;
- 
- 	/* count the enabled ports (aka the "not disabled" ports) */
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 29c7cdc..ed50573 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -7681,7 +7681,7 @@ static int i40e_sw_init(struct i40e_pf *pf)
- 	}
- 
- 	/* MFP mode enabled */
--	if (pf->hw.func_caps.npar_enable || pf->hw.func_caps.mfp_mode_1) {
-+	if (pf->hw.func_caps.npar_enable || pf->hw.func_caps.flex10_enable) {
- 		pf->flags |= I40E_FLAG_MFP_ENABLED;
- 		dev_info(&pf->pdev->dev, "MFP mode Enabled\n");
- 		if (i40e_get_npar_bw_setting(pf))
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-index 350c5ee..220371e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-@@ -213,7 +213,17 @@ struct i40e_hw_capabilities {
- 	bool dcb;
- 	bool fcoe;
- 	bool iscsi; /* Indicates iSCSI enabled */
--	bool mfp_mode_1;
-+	bool flex10_enable;
-+	bool flex10_capable;
-+	u32  flex10_mode;
-+#define I40E_FLEX10_MODE_UNKNOWN	0x0
-+#define I40E_FLEX10_MODE_DCC		0x1
-+#define I40E_FLEX10_MODE_DCI		0x2
-+
-+	u32 flex10_status;
-+#define I40E_FLEX10_STATUS_DCC_ERROR	0x1
-+#define I40E_FLEX10_STATUS_VC_MODE	0x2
-+
- 	bool mgmt_cem;
- 	bool ieee_1588;
- 	bool iwarp;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-index 068813d..3969c65 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-@@ -213,7 +213,17 @@ struct i40e_hw_capabilities {
- 	bool dcb;
- 	bool fcoe;
- 	bool iscsi; /* Indicates iSCSI enabled */
--	bool mfp_mode_1;
-+	bool flex10_enable;
-+	bool flex10_capable;
-+	u32  flex10_mode;
-+#define I40E_FLEX10_MODE_UNKNOWN	0x0
-+#define I40E_FLEX10_MODE_DCC		0x1
-+#define I40E_FLEX10_MODE_DCI		0x2
-+
-+	u32 flex10_status;
-+#define I40E_FLEX10_STATUS_DCC_ERROR	0x1
-+#define I40E_FLEX10_STATUS_VC_MODE	0x2
-+
- 	bool mgmt_cem;
- 	bool ieee_1588;
- 	bool iwarp;
--- 
-1.9.3
-
+- Alex
