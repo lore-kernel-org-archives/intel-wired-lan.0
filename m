@@ -1,8 +1,8 @@
 From: Cong Wang <cwang@twopensource.com>
-Date: Thu, 23 Apr 2015 12:14:25 -0700
+Date: Thu, 23 Apr 2015 12:30:06 -0700
 Subject: [Intel-wired-lan] [Patch net] igb: pass the correct maxlen for
 	eth_get_headlen()
-In-Reply-To: <55393C92.5090903@gmail.com>
+In-Reply-To: <CAHA+R7MJv7tbHwU_ECbJunXVJ8uo=eQv+Xmw42oR5sKEde35RQ@mail.gmail.com>
 References: <1429724760-10075-1-git-send-email-xiyou.wangcong@gmail.com>
  <5537F9F1.1080008@gmail.com>
  <CAHA+R7PVrxJ41WSqfO4mZSpCTGdJ++Gf757f_kq5z0UeMHXbXg@mail.gmail.com>
@@ -12,116 +12,48 @@ References: <1429724760-10075-1-git-send-email-xiyou.wangcong@gmail.com>
  <CAHA+R7MMrrBYbQALovxuhcXrbiWjD_XpgohPXxTvNkcd3-R3WA@mail.gmail.com>
  <553821E4.5010901@gmail.com>
  <CAHA+R7MJv7tbHwU_ECbJunXVJ8uo=eQv+Xmw42oR5sKEde35RQ@mail.gmail.com>
- <553869C4.30107@gmail.com>
- <CAHA+R7O2p2VkA2KJ0QGaq4qa=BCAUFAYOQL_FByRUi=q1koQ_w@mail.gmail.com>
- <55393C92.5090903@gmail.com>
-Message-ID: <CAHA+R7P=vT_aVJU+JP91Nrn+Xury=aGOfCmHPRU50CEk_EbzcA@mail.gmail.com>
+Message-ID: <CAHA+R7OhbCSjggyb_Deq_jmoDWzEcR+=hhkKjyE9Pue7bXOmHg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Apr 23, 2015 at 11:40 AM, Alexander Duyck
-<alexander.duyck@gmail.com> wrote:
-> On 04/23/2015 11:06 AM, Cong Wang wrote:
->> On Wed, Apr 22, 2015 at 8:40 PM, Alexander Duyck
->> <alexander.duyck@gmail.com> wrote:
->>> On 04/22/2015 04:23 PM, Cong Wang wrote:
->>>> On Wed, Apr 22, 2015 at 3:34 PM, Alexander Duyck
->>>> <alexander.duyck@gmail.com> wrote:
->>>>> On 04/22/2015 02:56 PM, Cong Wang wrote:
->>>>>> On Wed, Apr 22, 2015 at 2:42 PM, Alexander Duyck
->>>>>> <alexander.duyck@gmail.com> wrote:
->>>>>>> On 04/22/2015 01:33 PM, Cong Wang wrote:
->>>>>>>> First, make sure you don't miss the TSIP case right above:
->>>>>>>>
->>>>>>>> The frag starting pointer and its size are advanced by:
->>>>>>>>
->>>>>>>> skb_frag_size_sub(frag, IGB_TS_HDR_LEN);
->>>>>>>> ...
->>>>>>>> va += IGB_TS_HDR_LEN;
->>>>>>>>
->>>>>>>> even though we unlikely pull header longer than
->>>>>>>> IGB_RX_HDR_LEN - IGB_TS_HDR_LEN either.
->>>>>>> So I believe this is a possible bug, one heck of a corner case to get
->>>>>>> into though.  It requires timestamp in packet, size 240 - 256, and a
->>>>>>> malformed header.
->>>>>>>
->>>>>>> The proper fix would probably be to pull the timestamp out of the packet
->>>>>>> before we add it to the frame.  I'll submit a patch to address this.
->>>>>>>
->>>>>> Huh? Doesn't my patch already fix this? skb_frag_size() is always
->>>>>> up to date. Or you mean another different problem?
->>>>> Your patch has other issues.  I am still NAKing your patch, but there is
->>>>> an issue with igb that you have pointed out.  The proper fix would be to
->>>>> deal with the timestamp before we add the page fragment to the skb.
->>>>>
->>>> If the first frag is always 2K, then this is not a problem either.
->>>> IGB_TS_HDR_LEN + IGB_RX_HDR_LEN < 2K.
->>> The problem is skb->tail will get screwed up.
->>>
->> Why? We don't copy timestamp into skb header, instead it is saved
->> in shared_info, why skb->tail matters here in TSIP case?
+(Off-topic...)
+
+On Wed, Apr 22, 2015 at 4:23 PM, Cong Wang <cwang@twopensource.com> wrote:
 >
-> TSIP only matters if you have a network header with bad data in it that
-> indicates the size is actually larger than it actually is.
+> The code looks correct to me now, except it is suspicious skb->len
+> is not updated after skb_copy_to_linear_data() while skb->tail is
+> advanced already. I need to think more before submitting a patch.
 
+I feel like we need the following patch, maybe skb->len is updated somewhere
+else by "skb->tail - skb->head", otherwise we are screwed?
 
-OK.
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c
+b/drivers/net/ethernet/intel/igb/igb_main.c
+index a0a9b1f..66e6fb6 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -6843,7 +6843,6 @@ static void igb_pull_tail(struct igb_ring *rx_ring,
+                skb_frag_size_sub(frag, IGB_TS_HDR_LEN);
+                frag->page_offset += IGB_TS_HDR_LEN;
+                skb->data_len -= IGB_TS_HDR_LEN;
+-               skb->len -= IGB_TS_HDR_LEN;
 
->
->>> The first frag will be 2K in size only if there are multiple frags.  The
->>
->> Or it doesn't have frags at all since we just copy it to skb header, right?
->
-> That is moot since this code only gets called if the skb is nonlinear
->
->>> problem in the TSIP case is that we will put the size reported by the
->>> descriptor into the fragment, and then try to pull the size we
->>
->> That size is saved when adding the frag, in TSIP case we just sub it
->> by IGB_TS_HDR_LEN, which seems correct.
->>
->
-> Yes, the size is saved.  But with your solution we could pull the whole
-> fragment but not free it which isn't correct as we shouldn't be left
-> with any 0 sized fragments.
+                /* move va to start of packet data */
+                va += IGB_TS_HDR_LEN;
+@@ -6856,12 +6855,12 @@ static void igb_pull_tail(struct igb_ring *rx_ring,
 
+        /* align pull length to size of long to optimize memcpy performance */
+        skb_copy_to_linear_data(skb, va, ALIGN(pull_len, sizeof(long)));
++       __skb_put(skb, pull_len);
 
-Good point, then TSIP case should check frag_size == 0 case,
-the rest handles 0-size case correctly, see below.
+        /* update all of the pointers */
+        skb_frag_size_sub(frag, pull_len);
+        frag->page_offset += pull_len;
+        skb->data_len -= pull_len;
+-       skb->tail += pull_len;
+ }
 
->
->>> determined via eth_get_headlen.  So there is a window where that value
->>> can be wrong and result in data_len going negative and tail being moved
->>> beyond the end of the actual data.
->> This sounds like a different problem if you are saying we should sub
->> the size in the descriptor too. Therefore I don't see why your patch
->> could replace mine.
->
-> Your patches sort-of fixed the problem, but they introduced other issues
-> in the process.
->
-> The thing I don't think you are getting is that the code was meant to be
-> mutually exclusive w/ the copy-break code.  Either the frag is less than
-> IGB_RX_HDR_SIZE in which case we copy-break and don't attached the
-> fragment, or we should be pulling the header and leaving at least 1 byte
-> in the fragment.  The problem with your solution is that you potentially
-> pull the entire fragment in, but you don't free it if the size drops to
-
-
-Only if it is a malformed packet, and it is still safe as long as we don't
-run over the buffer size. Also I have a upper limit check for
-IGB_RX_HDR_SIZE after eth_get_headlen().
-
-> 0.  That is why in the other mail I told you the better solution for igb
-
-I am sure eth_get_headlen() handles 0 case correctly, it simply returns 0.
-
-> would likely be to just pass IGB_RX_HDR_SIZE - IGB_TS_HDR_SIZE as that
-> way you end up with at least 1 byte left in the fragment after you pull
-> the header.
->
-
-The code should already handle pull_len==0 correctly.
+ /**
