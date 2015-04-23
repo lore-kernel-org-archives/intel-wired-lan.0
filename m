@@ -1,79 +1,60 @@
 From: Alexander Duyck <alexander.h.duyck@redhat.com>
-Date: Wed, 22 Apr 2015 21:49:17 -0700
-Subject: [Intel-wired-lan] [PATCH 1/3] igb: Pull timestamp from fragment
- before adding it to skb
+Date: Wed, 22 Apr 2015 21:49:25 -0700
+Subject: [Intel-wired-lan] [PATCH 2/3] fm10k: fold fm10k_pull_tail into
+	fm10k_add_rx_frag
 In-Reply-To: <20150423040941.18903.3545.stgit@ahduyck-vm-fedora22>
 References: <20150423040941.18903.3545.stgit@ahduyck-vm-fedora22>
-Message-ID: <20150423044917.18903.76134.stgit@ahduyck-vm-fedora22>
+Message-ID: <20150423044925.18903.17284.stgit@ahduyck-vm-fedora22>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This change makes it so that we pull the timestamp from the fragment before
-we add it to the skb.  By doing this we can avoid a possible issue in which
-the fragment can possibly be less than IGB_RX_HDR_LEN due to the timestamp
-being pulled after the copybreak check.
+This change folds the fm10k_pull_tail call into fm10k_add_rx_frag.  The
+advantage to doing this is that the fragment doesn't have to be modified
+after it is added to the skb.
 
-While making this change I realized we could also pull the rest of the
-igb_pull_tail function into igb_add_rx_frag since in the case of igb,
-unlike ixgbe, we are able to unmap the entire buffer before calling
-add_rx_frag so merging the two allows for sharing of code between the two
-merged functions.
-
-Reported-by: Cong Wang <xiyou.wangcong@gmail.com>
 Signed-off-by: Alexander Duyck <alexander.h.duyck@redhat.com>
 ---
- drivers/net/ethernet/intel/igb/igb_main.c |   94 ++++++++---------------------
- 1 file changed, 25 insertions(+), 69 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c |   66 ++++++++-----------------
+ 1 file changed, 20 insertions(+), 46 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 8457d0306e3a..cab50593c315 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -6637,22 +6637,25 @@ static bool igb_add_rx_frag(struct igb_ring *rx_ring,
- 			    struct sk_buff *skb)
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+index 1b0661e3573b..4eafdad318b4 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+@@ -269,16 +269,19 @@ static bool fm10k_add_rx_frag(struct fm10k_rx_buffer *rx_buffer,
+ 			      struct sk_buff *skb)
  {
  	struct page *page = rx_buffer->page;
 +	unsigned char *va = page_address(page) + rx_buffer->page_offset;
- 	unsigned int size = le16_to_cpu(rx_desc->wb.upper.length);
+ 	unsigned int size = le16_to_cpu(rx_desc->w.length);
  #if (PAGE_SIZE < 8192)
- 	unsigned int truesize = IGB_RX_BUFSZ;
+ 	unsigned int truesize = FM10K_RX_BUFSZ;
  #else
 -	unsigned int truesize = ALIGN(size, L1_CACHE_BYTES);
 +	unsigned int truesize = SKB_DATA_ALIGN(size);
  #endif
 +	unsigned int pull_len;
  
--	if ((size <= IGB_RX_HDR_LEN) && !skb_is_nonlinear(skb)) {
+-	if ((size <= FM10K_RX_HDR_LEN) && !skb_is_nonlinear(skb)) {
 -		unsigned char *va = page_address(page) + rx_buffer->page_offset;
 +	if (unlikely(skb_is_nonlinear(skb)))
 +		goto add_tail_frag;
  
--		if (igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP)) {
--			igb_ptp_rx_pktstamp(rx_ring->q_vector, va, skb);
--			va += IGB_TS_HDR_LEN;
--			size -= IGB_TS_HDR_LEN;
--		}
-+	if (unlikely(igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP))) {
-+		igb_ptp_rx_pktstamp(rx_ring->q_vector, va, skb);
-+		va += IGB_TS_HDR_LEN;
-+		size -= IGB_TS_HDR_LEN;
-+	}
- 
-+	if (likely(size <= IGB_RX_HDR_LEN)) {
++	if (likely(size <= FM10K_RX_HDR_LEN)) {
  		memcpy(__skb_put(skb, size), va, ALIGN(size, sizeof(long)));
  
  		/* page is not reserved, we can reuse buffer as-is */
-@@ -6664,8 +6667,21 @@ static bool igb_add_rx_frag(struct igb_ring *rx_ring,
+@@ -290,8 +293,21 @@ static bool fm10k_add_rx_frag(struct fm10k_rx_buffer *rx_buffer,
  		return false;
  	}
  
 +	/* we need the header to contain the greater of either ETH_HLEN or
 +	 * 60 bytes if the skb->len is less than 60 for skb_pad.
 +	 */
-+	pull_len = eth_get_headlen(va, IGB_RX_HDR_LEN);
++	pull_len = eth_get_headlen(va, FM10K_RX_HDR_LEN);
 +
 +	/* align pull length to size of long to optimize memcpy performance */
 +	memcpy(__skb_put(skb, pull_len), va, ALIGN(pull_len, sizeof(long)));
@@ -87,27 +68,23 @@ index 8457d0306e3a..cab50593c315 100644
 -			rx_buffer->page_offset, size, truesize);
 +			(unsigned long)va & ~PAGE_MASK, size, truesize);
  
- 	return igb_can_reuse_rx_page(rx_buffer, page, truesize);
+ 	return fm10k_can_reuse_rx_page(rx_buffer, page, truesize);
  }
-@@ -6807,62 +6823,6 @@ static bool igb_is_non_eop(struct igb_ring *rx_ring,
+@@ -518,44 +534,6 @@ static bool fm10k_is_non_eop(struct fm10k_ring *rx_ring,
  }
  
  /**
-- *  igb_pull_tail - igb specific version of skb_pull_tail
-- *  @rx_ring: rx descriptor ring packet is being transacted on
-- *  @rx_desc: pointer to the EOP Rx descriptor
-- *  @skb: pointer to current skb being adjusted
+- * fm10k_pull_tail - fm10k specific version of skb_pull_tail
+- * @skb: pointer to current skb being adjusted
 - *
-- *  This function is an igb specific version of __pskb_pull_tail.  The
-- *  main difference between this version and the original function is that
-- *  this function can make several assumptions about the state of things
-- *  that allow for significant optimizations versus the standard function.
-- *  As a result we can do things like drop a frag and maintain an accurate
-- *  truesize for the skb.
+- * This function is an fm10k specific version of __pskb_pull_tail.  The
+- * main difference between this version and the original function is that
+- * this function can make several assumptions about the state of things
+- * that allow for significant optimizations versus the standard function.
+- * As a result we can do things like drop a frag and maintain an accurate
+- * truesize for the skb.
 - */
--static void igb_pull_tail(struct igb_ring *rx_ring,
--			  union e1000_adv_rx_desc *rx_desc,
--			  struct sk_buff *skb)
+-static void fm10k_pull_tail(struct sk_buff *skb)
 -{
 -	struct skb_frag_struct *frag = &skb_shinfo(skb)->frags[0];
 -	unsigned char *va;
@@ -119,24 +96,10 @@ index 8457d0306e3a..cab50593c315 100644
 -	 */
 -	va = skb_frag_address(frag);
 -
--	if (igb_test_staterr(rx_desc, E1000_RXDADV_STAT_TSIP)) {
--		/* retrieve timestamp from buffer */
--		igb_ptp_rx_pktstamp(rx_ring->q_vector, va, skb);
--
--		/* update pointers to remove timestamp header */
--		skb_frag_size_sub(frag, IGB_TS_HDR_LEN);
--		frag->page_offset += IGB_TS_HDR_LEN;
--		skb->data_len -= IGB_TS_HDR_LEN;
--		skb->len -= IGB_TS_HDR_LEN;
--
--		/* move va to start of packet data */
--		va += IGB_TS_HDR_LEN;
--	}
--
 -	/* we need the header to contain the greater of either ETH_HLEN or
 -	 * 60 bytes if the skb->len is less than 60 for skb_pad.
 -	 */
--	pull_len = eth_get_headlen(va, IGB_RX_HDR_LEN);
+-	pull_len = eth_get_headlen(va, FM10K_RX_HDR_LEN);
 -
 -	/* align pull length to size of long to optimize memcpy performance */
 -	skb_copy_to_linear_data(skb, va, ALIGN(pull_len, sizeof(long)));
@@ -149,16 +112,16 @@ index 8457d0306e3a..cab50593c315 100644
 -}
 -
 -/**
-  *  igb_cleanup_headers - Correct corrupted or empty headers
-  *  @rx_ring: rx descriptor ring packet is being transacted on
-  *  @rx_desc: pointer to the EOP Rx descriptor
-@@ -6889,10 +6849,6 @@ static bool igb_cleanup_headers(struct igb_ring *rx_ring,
- 		}
+  * fm10k_cleanup_headers - Correct corrupted or empty headers
+  * @rx_ring: rx descriptor ring packet is being transacted on
+  * @rx_desc: pointer to the EOP Rx descriptor
+@@ -580,10 +558,6 @@ static bool fm10k_cleanup_headers(struct fm10k_ring *rx_ring,
+ 		return true;
  	}
  
 -	/* place header in linear portion of buffer */
 -	if (skb_is_nonlinear(skb))
--		igb_pull_tail(rx_ring, rx_desc, skb);
+-		fm10k_pull_tail(skb);
 -
  	/* if eth_skb_pad returns an error the skb was freed */
  	if (eth_skb_pad(skb))
