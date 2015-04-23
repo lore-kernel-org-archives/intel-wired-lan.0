@@ -1,83 +1,38 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 22 Apr 2015 20:40:52 -0700
-Subject: [Intel-wired-lan] [Patch net] igb: pass the correct maxlen for
-	eth_get_headlen()
-In-Reply-To: <CAHA+R7MJv7tbHwU_ECbJunXVJ8uo=eQv+Xmw42oR5sKEde35RQ@mail.gmail.com>
-References: <1429724760-10075-1-git-send-email-xiyou.wangcong@gmail.com>	<5537F9F1.1080008@gmail.com>	<CAHA+R7PVrxJ41WSqfO4mZSpCTGdJ++Gf757f_kq5z0UeMHXbXg@mail.gmail.com>	<553802DA.4050709@gmail.com>	<CAHA+R7PtzNd2asXFtiqsWyzCgeE1k_iF84358cvKg6ZCU-yVkQ@mail.gmail.com>	<553815DF.4000109@gmail.com>	<CAHA+R7MMrrBYbQALovxuhcXrbiWjD_XpgohPXxTvNkcd3-R3WA@mail.gmail.com>	<553821E4.5010901@gmail.com>
- <CAHA+R7MJv7tbHwU_ECbJunXVJ8uo=eQv+Xmw42oR5sKEde35RQ@mail.gmail.com>
-Message-ID: <553869C4.30107@gmail.com>
+From: Alexander Duyck <alexander.h.duyck@redhat.com>
+Date: Wed, 22 Apr 2015 21:49:10 -0700
+Subject: [Intel-wired-lan] [PATCH 0/3] igb/fm10k/ixgbevf: Drop XXX_pull_tail
+ and pull header in XXX_add_rx_frag
+Message-ID: <20150423040941.18903.3545.stgit@ahduyck-vm-fedora22>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 04/22/2015 04:23 PM, Cong Wang wrote:
-> On Wed, Apr 22, 2015 at 3:34 PM, Alexander Duyck
-> <alexander.duyck@gmail.com> wrote:
->> On 04/22/2015 02:56 PM, Cong Wang wrote:
->>> On Wed, Apr 22, 2015 at 2:42 PM, Alexander Duyck
->>> <alexander.duyck@gmail.com> wrote:
->>>> On 04/22/2015 01:33 PM, Cong Wang wrote:
->>>>> First, make sure you don't miss the TSIP case right above:
->>>>>
->>>>> The frag starting pointer and its size are advanced by:
->>>>>
->>>>> skb_frag_size_sub(frag, IGB_TS_HDR_LEN);
->>>>> ...
->>>>> va += IGB_TS_HDR_LEN;
->>>>>
->>>>> even though we unlikely pull header longer than
->>>>> IGB_RX_HDR_LEN - IGB_TS_HDR_LEN either.
->>>> So I believe this is a possible bug, one heck of a corner case to get
->>>> into though.  It requires timestamp in packet, size 240 - 256, and a
->>>> malformed header.
->>>>
->>>> The proper fix would probably be to pull the timestamp out of the packet
->>>> before we add it to the frame.  I'll submit a patch to address this.
->>>>
->>> Huh? Doesn't my patch already fix this? skb_frag_size() is always
->>> up to date. Or you mean another different problem?
->> Your patch has other issues.  I am still NAKing your patch, but there is
->> an issue with igb that you have pointed out.  The proper fix would be to
->> deal with the timestamp before we add the page fragment to the skb.
->>
-> If the first frag is always 2K, then this is not a problem either.
-> IGB_TS_HDR_LEN + IGB_RX_HDR_LEN < 2K.
+These three patches remove the _pull_tail functions for the drivers igb,
+fm10k, and ixgbevf in favor of simply pulling the header in all cases at
+the start of _add_rx_frag.
 
-The problem is skb->tail will get screwed up.
+For igb this might be considered a driver fix, but the issue would be a
+corner case in which timestamping is enabled, a packet is received that is 
+between 241 and 255 bytes in size, and the header contains bad data which 
+places its size something greater than the actual size.
 
->
->>>>> Second, the check you mentioned above is:
->>>>>
->>>>> if ((size <= IGB_RX_HDR_LEN) && !skb_is_nonlinear(skb))
->>>>>
->>>>> skb is nonlinear _after_ the first igb_add_rx_frag(), a second
->>>>> igb_add_rx_frag() is possible since igb_is_non_eop() could
->>>>> return true.
->>>> I'm not sure this part makes any sense.  We pull the data out of the
->>>> first fragment always.  If skb_is_nonlinear is set then we should have
->>>> at least 2K - 16B in the case of igb.  We will never have a second
->>>> fragment without at least 2K of data being given in the first.
->>> Apparently my igb knowledge isn't enough to verify this, I just did
->>> logical analysis.
->> The logic with igb is that if skb_is_nonlinear it means that a page has
->> already been added.  The way the hardware works is that it will break a
->> frame up into 2K segments until the entire frame is written.  So the
->> only way to get a second page fragment is if the first has used the
->> entire 2K buffer it was given.
-> So the first frag is always 2K, at least more than IGB_RX_HDR_LEN
-> then we are fine even for TSIP case.
->
-> The code looks correct to me now, except it is suspicious skb->len
-> is not updated after skb_copy_to_linear_data() while skb->tail is
-> advanced already. I need to think more before submitting a patch.
+The ixgbe driver is excluded from this set as it cannot support this due to
+RSC overwriting the header data until the EOP and DD bit are written in the
+last descriptor.
 
-The first frag will be 2K in size only if there are multiple frags.  The
-problem in the TSIP case is that we will put the size reported by the
-descriptor into the fragment, and then try to pull the size we
-determined via eth_get_headlen.  So there is a window where that value
-can be wrong and result in data_len going negative and tail being moved
-beyond the end of the actual data.
+---
 
-- Alex
+Alexander Duyck (3):
+      igb: Pull timestamp from fragment before adding it to skb
+      fm10k: fold fm10k_pull_tail into fm10k_add_rx_frag
+      ixgbevf: fold ixgbevf_pull_tail into ixgbevf_add_rx_frag
+
+
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c     |   66 ++++-----------
+ drivers/net/ethernet/intel/igb/igb_main.c         |   94 ++++++---------------
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   66 ++++-----------
+ 3 files changed, 64 insertions(+), 162 deletions(-)
+
+--
