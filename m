@@ -1,101 +1,48 @@
-From: Cong Wang <cwang@twopensource.com>
-Date: Thu, 23 Apr 2015 15:07:04 -0700
-Subject: [Intel-wired-lan] [Patch net] igb: pass the correct maxlen for
-	eth_get_headlen()
-In-Reply-To: <55394BD1.5040006@redhat.com>
-References: <1429724760-10075-1-git-send-email-xiyou.wangcong@gmail.com>
- <5537F9F1.1080008@gmail.com>
- <CAHA+R7PVrxJ41WSqfO4mZSpCTGdJ++Gf757f_kq5z0UeMHXbXg@mail.gmail.com>
- <553802DA.4050709@gmail.com>
- <CAHA+R7PtzNd2asXFtiqsWyzCgeE1k_iF84358cvKg6ZCU-yVkQ@mail.gmail.com>
- <553815DF.4000109@gmail.com>
- <CAHA+R7MMrrBYbQALovxuhcXrbiWjD_XpgohPXxTvNkcd3-R3WA@mail.gmail.com>
- <553821E4.5010901@gmail.com>
- <CAHA+R7MJv7tbHwU_ECbJunXVJ8uo=eQv+Xmw42oR5sKEde35RQ@mail.gmail.com>
- <CAHA+R7OhbCSjggyb_Deq_jmoDWzEcR+=hhkKjyE9Pue7bXOmHg@mail.gmail.com>
- <55394BD1.5040006@redhat.com>
-Message-ID: <CAHA+R7MCyWvTN1snFiVEK9pdgF0Sr694tMUEiT1QhsOtF9t1Dg@mail.gmail.com>
+From: Cong Wang <xiyou.wangcong@gmail.com>
+Date: Thu, 23 Apr 2015 17:09:50 -0700
+Subject: [Intel-wired-lan] [PATCH 1/3] igb: Pull timestamp from fragment
+ before adding it to skb
+In-Reply-To: <55393795.6000000@gmail.com>
+References: <CAM_iQpVyQoGZZByC1n3sAP0Txyf7H60WnKdNCBX+K0s8Wezscw@mail.gmail.com>
+ <55393795.6000000@gmail.com>
+Message-ID: <CAM_iQpUUweF50ucho2+v6zdLtkWfKp1k3NDXDU8znAZcXYwcFg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Apr 23, 2015 at 12:45 PM, Alexander Duyck
-<alexander.h.duyck@redhat.com> wrote:
-> On 04/23/2015 12:30 PM, Cong Wang wrote:
+On Thu, Apr 23, 2015 at 11:19 AM, Alexander Duyck
+<alexander.duyck@gmail.com> wrote:
+> On 04/23/2015 10:10 AM, Cong Wang wrote:
+>> On Wed, Apr 22, 2015 at 9:49 PM, Alexander Duyck
+>> <alexander.h.duyck@redhat.com> wrote:
+>>> This change makes it so that we pull the timestamp from the fragment before
+>>> we add it to the skb.  By doing this we can avoid a possible issue in which
+>>> the fragment can possibly be less than IGB_RX_HDR_LEN due to the timestamp
+>>> being pulled after the copybreak check.
 >>
->> (Off-topic...)
->>
->> On Wed, Apr 22, 2015 at 4:23 PM, Cong Wang <cwang@twopensource.com> wrote:
->>>
->>> The code looks correct to me now, except it is suspicious skb->len
->>> is not updated after skb_copy_to_linear_data() while skb->tail is
->>> advanced already. I need to think more before submitting a patch.
->>
->> I feel like we need the following patch, maybe skb->len is updated
->> somewhere
->> else by "skb->tail - skb->head", otherwise we are screwed?
+>> You said the first frag is always 2K if it exists. If this is not true, then
+>> my patch is needed too.
 >
+> I said the first fragment is always 2K if a secondary frag exists.  We
+> always reserve 2K for each buffer so the memory is there and could be
+> read, it just wouldn't contain valid header data once you get past the
+> size reported by the Rx descriptor.
 >
-> Maybe in skb_add_rx_frag?  You might take a look at it.
+> The issue is the data_len can get mangled due to the 16 bytes for the
+> timestamp being unaccounted for.  The goal was to fix this and not
+> introduce any other vulnerabilities or performance regressions which was
+> my concern with your patch.  I would prefer to err on the side of
+> parsing fewer bytes than possibly parsing a full frame if someone
+> decided to submit one that was nothing but tunnel headers for instance.
 
-I saw that.
+Looking deeper into this, I think we need to do nothing here.
 
->
->>
->> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c
->> b/drivers/net/ethernet/intel/igb/igb_main.c
->> index a0a9b1f..66e6fb6 100644
->> --- a/drivers/net/ethernet/intel/igb/igb_main.c
->> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
->> @@ -6843,7 +6843,6 @@ static void igb_pull_tail(struct igb_ring *rx_ring,
->>                  skb_frag_size_sub(frag, IGB_TS_HDR_LEN);
->>                  frag->page_offset += IGB_TS_HDR_LEN;
->>                  skb->data_len -= IGB_TS_HDR_LEN;
->> -               skb->len -= IGB_TS_HDR_LEN;
->>
->>                  /* move va to start of packet data */
->>                  va += IGB_TS_HDR_LEN;
->> @@ -6856,12 +6855,12 @@ static void igb_pull_tail(struct igb_ring
->> *rx_ring,
->>
->>          /* align pull length to size of long to optimize memcpy
->> performance */
->>          skb_copy_to_linear_data(skb, va, ALIGN(pull_len, sizeof(long)));
->> +       __skb_put(skb, pull_len);
->>
->>          /* update all of the pointers */
->>          skb_frag_size_sub(frag, pull_len);
->>          frag->page_offset += pull_len;
->>          skb->data_len -= pull_len;
->> -       skb->tail += pull_len;
->>   }
->>
->>   /**
->
->
-> Seriously?  Are you even reading the code?  The fragment is already a part
-> of the skb, as such it is already included in skb->len. By re-adding the
-> header you are adding bytes that aren't there.  All we were doing is moving
-> data from a fragment to the linear portion.
+a) We pass skb as NULL in eth_get_headlen(), in which case tunnel
+case is not handled;
 
-Hmm, I thought frags are counted only in skb->data_len, I misunderstood
-skb_headlen() and skb_pagelen().
+b) Even with tunnel headers, I can't think out a case we can construct
+a valid header longer than 256 to fool eth_get_headlen().
 
->
-> No offense but your starting to waste my time with these silly patch ideas.
-
-
-You can always ignore any off-topic discussion, which I already warned you
-in the beginning...
-
-> The patches I submitted to intel-wired-lan fix the issue that you found, and
-> there aren't any new issues that it creates so the issue is resolved.  And
-> like I said if you need to fix this in stable just subtract IGB_TS_HDR_LEN
-> from the header length scanned in eth_get_headlen and it will resolve the
-> issue you reported and that way we can fix the issue and avoid pulling a
-> fragment down to size 0.
->
-
-Please keep non-off-topic discussion from off-topic ones. I will reply there.
+I am fine with leaving as it is.
