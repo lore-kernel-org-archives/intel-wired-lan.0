@@ -1,48 +1,190 @@
-From: Cong Wang <xiyou.wangcong@gmail.com>
-Date: Thu, 23 Apr 2015 17:09:50 -0700
-Subject: [Intel-wired-lan] [PATCH 1/3] igb: Pull timestamp from fragment
- before adding it to skb
-In-Reply-To: <55393795.6000000@gmail.com>
-References: <CAM_iQpVyQoGZZByC1n3sAP0Txyf7H60WnKdNCBX+K0s8Wezscw@mail.gmail.com>
- <55393795.6000000@gmail.com>
-Message-ID: <CAM_iQpUUweF50ucho2+v6zdLtkWfKp1k3NDXDU8znAZcXYwcFg@mail.gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 25 Apr 2015 06:51:40 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ ab4aea1b45de6224096d1dc6f9c03b2949c18a25 BUILD DONE
+Message-ID: <553ac8fc.pCf76zDpNvTiNHDZ%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Apr 23, 2015 at 11:19 AM, Alexander Duyck
-<alexander.duyck@gmail.com> wrote:
-> On 04/23/2015 10:10 AM, Cong Wang wrote:
->> On Wed, Apr 22, 2015 at 9:49 PM, Alexander Duyck
->> <alexander.h.duyck@redhat.com> wrote:
->>> This change makes it so that we pull the timestamp from the fragment before
->>> we add it to the skb.  By doing this we can avoid a possible issue in which
->>> the fragment can possibly be less than IGB_RX_HDR_LEN due to the timestamp
->>> being pulled after the copybreak check.
->>
->> You said the first frag is always 2K if it exists. If this is not true, then
->> my patch is needed too.
->
-> I said the first fragment is always 2K if a secondary frag exists.  We
-> always reserve 2K for each buffer so the memory is there and could be
-> read, it just wouldn't contain valid header data once you get past the
-> size reported by the Rx descriptor.
->
-> The issue is the data_len can get mangled due to the 16 bytes for the
-> timestamp being unaccounted for.  The goal was to fix this and not
-> introduce any other vulnerabilities or performance regressions which was
-> my concern with your patch.  I would prefer to err on the side of
-> parsing fewer bytes than possibly parsing a full frame if someone
-> decided to submit one that was nothing but tunnel headers for instance.
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+ab4aea1b45de6224096d1dc6f9c03b2949c18a25  igb: bump version of igb to 5.2.18
 
-Looking deeper into this, I think we need to do nothing here.
+drivers/net/ethernet/intel/i40e/i40e_main.c:1132:50: sparse: dubious: x & !y
 
-a) We pass skb as NULL in eth_get_headlen(), in which case tunnel
-case is not handled;
+elapsed time: 1643m
 
-b) Even with tunnel headers, I can't think out a case we can construct
-a valid header longer than 256 to fool eth_get_headlen().
+configs tested: 167
 
-I am fine with leaving as it is.
+i386                             alldefconfig
+i386                             allmodconfig
+i386                              allnoconfig
+i386                                defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                 randconfig-a0-04222001
+x86_64                 randconfig-a1-04222001
+x86_64                            allnoconfig
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                     randconfig-c0-0422
+x86_64                     randconfig-c1-0422
+x86_64                     randconfig-c2-0422
+i386                   randconfig-c1-04232009
+i386                   randconfig-c0-04232009
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+x86_64                randconfig-iv0-04241532
+x86_64                randconfig-iv1-04241532
+i386                  randconfig-ib0-04171049
+i386                  randconfig-ib0-04181100
+i386                  randconfig-ib0-04241328
+i386                  randconfig-ib1-04231835
+i386                  randconfig-ib1-04240734
+i386                  randconfig-ib1-04241328
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+microblaze                       allyesconfig
+s390                             allmodconfig
+s390                              allnoconfig
+s390                                defconfig
+i386                             allyesconfig
+x86_64                randconfig-ib0-04250632
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+avr32                      atngw100_defconfig
+mips                           ip32_defconfig
+powerpc                     mpc512x_defconfig
+powerpc                 mpc837x_rdb_defconfig
+sh                      rts7751r2d1_defconfig
+i386                         randconfig-nexe1
+i386                         randconfig-nexe0
+i386                         randconfig-nexe3
+i386                         randconfig-nexe2
+i386                         randconfig-nexe5
+i386                         randconfig-nexe4
+i386                         randconfig-nexe7
+i386                         randconfig-nexe6
+i386                         randconfig-nexe9
+i386                         randconfig-nexe8
+x86_64                       randconfig-nexe6
+x86_64                       randconfig-nexe7
+x86_64                       randconfig-nexe4
+x86_64                       randconfig-nexe5
+x86_64                       randconfig-nexe2
+x86_64                       randconfig-nexe3
+x86_64                       randconfig-nexe0
+x86_64                       randconfig-nexe1
+x86_64                       randconfig-nexe8
+x86_64                       randconfig-nexe9
+x86_64                  randconfig-nexr0-0423
+i386                    randconfig-nexr2-0423
+x86_64                  randconfig-nexr1-0423
+x86_64                  randconfig-nexr2-0423
+i386                    randconfig-nexr0-0423
+i386                    randconfig-nexr1-0423
+x86_64              randconfig-nexs0-04241605
+i386                randconfig-nexs0-04241605
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                              allmodconfig
+arm                          prima2_defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                                   samsung
+arm                       spear13xx_defconfig
+arm                         s3c2410_defconfig
+arm                                  iop-adma
+arm                       imx_v6_v7_defconfig
+arm                                       mmp
+arm                           tegra_defconfig
+arm                                      arm5
+arm                          marzen_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                                        sh
+arm                                     arm67
+xtensa                           allyesconfig
+sparc64                          allyesconfig
+mips                             allyesconfig
+m68k                             allyesconfig
+sparc                            allyesconfig
+tile                             allyesconfig
+alpha                            allyesconfig
+powerpc                          allyesconfig
+sh                               allyesconfig
+avr32                            allyesconfig
+ia64                             allyesconfig
+parisc                           allyesconfig
+cris                             allyesconfig
+x86_64                           allyesconfig
+blackfin                         allyesconfig
+s390                             allyesconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                             allmodconfig
+m68k                          amiga_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                           allmodconfig
+blackfin                  TCM-BF518_defconfig
+parisc                         b180_defconfig
+arm                          nuc910_defconfig
+powerpc                    ge_imp3a_defconfig
+powerpc                  pseries_le_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                       randconfig-r1-0422
+i386                       randconfig-r0-0422
+i386                       randconfig-r2-0422
+x86_64                 randconfig-r0-04231536
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+x86_64                 randconfig-s0-04241558
+x86_64                 randconfig-s1-04241558
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                   randconfig-x0-04222013
+i386                   randconfig-x1-04222013
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+
+Thanks,
+Fengguang
