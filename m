@@ -1,42 +1,206 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri, 24 Apr 2015 18:25:07 -0700
-Subject: [Intel-wired-lan] [PATCH 0/3] igb/fm10k/ixgbevf: Drop
- XXX_pull_tail and pull header in XXX_add_rx_frag
-In-Reply-To: <20150423040941.18903.3545.stgit@ahduyck-vm-fedora22>
-References: <20150423040941.18903.3545.stgit@ahduyck-vm-fedora22>
-Message-ID: <1429925107.2644.64.camel@jtkirshe-mobl>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 25 Apr 2015 17:03:59 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ b0dc432053ae847f7f26ac327347c11bc9ab4c22 BUILD DONE
+Message-ID: <553b587f.EUBTGWDpTIUne8LF%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2015-04-22 at 21:49 -0700, Alexander Duyck wrote:
-> These three patches remove the _pull_tail functions for the drivers
-> igb,
-> fm10k, and ixgbevf in favor of simply pulling the header in all cases
-> at
-> the start of _add_rx_frag.
-> 
-> For igb this might be considered a driver fix, but the issue would be
-> a
-> corner case in which timestamping is enabled, a packet is received
-> that is 
-> between 241 and 255 bytes in size, and the header contains bad data
-> which 
-> places its size something greater than the actual size.
-> 
-> The ixgbe driver is excluded from this set as it cannot support this
-> due to
-> RSC overwriting the header data until the EOP and DD bit are written
-> in the
-> last descriptor.
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+b0dc432053ae847f7f26ac327347c11bc9ab4c22  ixgbevf: fold ixgbevf_pull_tail into ixgbevf_add_rx_frag
 
-Thanks Alex, applied.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150424/c95f1b2d/attachment-0001.asc>
+drivers/net/ethernet/intel/i40e/i40e_ethtool.c:1557 i40e_active_vfs() warn: bit shifter 'I40E_VF_STAT_ACTIVE' used for logical '&'
+drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:983 i40e_pci_sriov_enable() warn: bit shifter '__I40E_TESTING' used for logical '&'
+drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:983 i40e_pci_sriov_enable() warn: bitwise AND condition is false here
+
+elapsed time: 462m
+
+configs tested: 181
+
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+i386                             alldefconfig
+i386                             allmodconfig
+i386                              allnoconfig
+i386                                defconfig
+mips                             allmodconfig
+mips                                   jz4740
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+x86_64                 randconfig-a0-04222001
+x86_64                 randconfig-a1-04222001
+x86_64                            allnoconfig
+x86_64                     randconfig-c1-0422
+x86_64                     randconfig-c2-0422
+x86_64                     randconfig-c0-0422
+i386                   randconfig-c0-04251403
+i386                   randconfig-c1-04251403
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                              allmodconfig
+arm                          prima2_defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                                   samsung
+arm                       spear13xx_defconfig
+arm                         s3c2410_defconfig
+arm                                  iop-adma
+arm                       imx_v6_v7_defconfig
+arm                                       mmp
+arm                           tegra_defconfig
+arm                                      arm5
+arm                          marzen_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                                        sh
+arm                                     arm67
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+x86_64                randconfig-iv0-04251132
+x86_64                randconfig-iv1-04251132
+xtensa                           allyesconfig
+sparc64                          allyesconfig
+mips                             allyesconfig
+m68k                             allyesconfig
+sparc                            allyesconfig
+tile                             allyesconfig
+alpha                            allyesconfig
+powerpc                          allyesconfig
+sh                               allyesconfig
+avr32                            allyesconfig
+ia64                             allyesconfig
+parisc                           allyesconfig
+cris                             allyesconfig
+x86_64                           allyesconfig
+blackfin                         allyesconfig
+s390                             allyesconfig
+i386                  randconfig-ib0-04251624
+i386                  randconfig-ib1-04251624
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+microblaze                       allyesconfig
+s390                             allmodconfig
+s390                              allnoconfig
+s390                                defconfig
+i386                             allyesconfig
+x86_64                randconfig-ib0-04251536
+blackfin                BF537-STAMP_defconfig
+arm                       mainstone_defconfig
+powerpc                      tqm8xx_defconfig
+arm                         lubbock_defconfig
+powerpc                   motionpro_defconfig
+i386                         randconfig-nexe1
+i386                         randconfig-nexe0
+i386                         randconfig-nexe3
+i386                         randconfig-nexe2
+i386                         randconfig-nexe5
+i386                         randconfig-nexe4
+i386                         randconfig-nexe7
+i386                         randconfig-nexe6
+i386                         randconfig-nexe9
+i386                         randconfig-nexe8
+x86_64                       randconfig-nexe6
+x86_64                       randconfig-nexe7
+x86_64                       randconfig-nexe4
+x86_64                       randconfig-nexe5
+x86_64                       randconfig-nexe2
+x86_64                       randconfig-nexe3
+x86_64                       randconfig-nexe0
+x86_64                       randconfig-nexe1
+x86_64                       randconfig-nexe8
+x86_64                       randconfig-nexe9
+x86_64                  randconfig-nexr0-0425
+i386                    randconfig-nexr2-0425
+i386                    randconfig-nexr0-0425
+x86_64                  randconfig-nexr1-0425
+x86_64                  randconfig-nexr2-0425
+i386                    randconfig-nexr1-0425
+x86_64              randconfig-nexs0-04251546
+i386                randconfig-nexs0-04251546
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                             allmodconfig
+m68k                          amiga_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                           allmodconfig
+powerpc                      chrp32_defconfig
+arm                            lart_defconfig
+powerpc                         c2k_defconfig
+blackfin                BF527-EZKIT_defconfig
+blackfin                  CM-BF537E_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                       randconfig-r1-0425
+i386                       randconfig-r2-0425
+i386                       randconfig-r0-0425
+x86_64                 randconfig-r0-04250959
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+x86_64                 randconfig-s0-04251545
+x86_64                 randconfig-s1-04251545
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+i386                          randconfig-x009
+i386                          randconfig-x008
+i386                          randconfig-x005
+i386                          randconfig-x004
+i386                          randconfig-x007
+i386                          randconfig-x006
+i386                          randconfig-x001
+i386                          randconfig-x000
+i386                          randconfig-x003
+i386                          randconfig-x002
+x86_64                        randconfig-x000
+x86_64                        randconfig-x001
+x86_64                        randconfig-x002
+x86_64                        randconfig-x003
+x86_64                        randconfig-x004
+x86_64                        randconfig-x005
+x86_64                        randconfig-x006
+x86_64                        randconfig-x007
+x86_64                        randconfig-x008
+x86_64                        randconfig-x009
+x86_64                                    lkp
+x86_64                                   rhel
+i386                   randconfig-x0-04222013
+i386                   randconfig-x1-04222013
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+
+Thanks,
+Fengguang
