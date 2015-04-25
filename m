@@ -1,173 +1,31 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 25 Apr 2015 06:51:39 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
- 54afb7d01778429376ad4a919abc97a15489c8e0 BUILD SUCCESS
-Message-ID: <553ac8fb.cG+tDw8ucb5PLKqb%fengguang.wu@intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Fri, 24 Apr 2015 18:07:20 -0700
+Subject: [Intel-wired-lan] [Patch net] igb: pass the correct maxlen for
+	eth_get_headlen()
+In-Reply-To: <1429724760-10075-1-git-send-email-xiyou.wangcong@gmail.com>
+References: <1429724760-10075-1-git-send-email-xiyou.wangcong@gmail.com>
+Message-ID: <1429924040.2644.63.camel@jtkirshe-mobl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-54afb7d01778429376ad4a919abc97a15489c8e0  igb: Fix NULL assignment to incorrect variable in igb_reset_q_vector
+On Wed, 2015-04-22 at 10:45 -0700, Cong Wang wrote:
+> The second parameter of eth_get_headlen() is the length of
+> the frame buffer, not the header length of skb.
+> 
+> Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> Signed-off-by: Cong Wang <xiyou.wangcong@gmail.com>
+> ---
+>  drivers/net/ethernet/intel/igb/igb_main.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 
-elapsed time: 1199m
-
-configs tested: 152
-
-i386                             alldefconfig
-i386                             allmodconfig
-i386                              allnoconfig
-i386                                defconfig
-mips                             allmodconfig
-mips                                   jz4740
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-x86_64                 randconfig-a0-04222001
-x86_64                 randconfig-a1-04222001
-x86_64                            allnoconfig
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                     randconfig-c0-0422
-x86_64                     randconfig-c1-0422
-x86_64                     randconfig-c2-0422
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-i386                   randconfig-c1-04232009
-i386                   randconfig-c0-04180633
-i386                   randconfig-c0-04232009
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-powerpc                          allmodconfig
-x86_64                randconfig-iv0-04242227
-x86_64                randconfig-iv1-04242227
-xtensa                           allyesconfig
-sparc64                          allyesconfig
-mips                             allyesconfig
-m68k                             allyesconfig
-sparc                            allyesconfig
-tile                             allyesconfig
-alpha                            allyesconfig
-powerpc                          allyesconfig
-sh                               allyesconfig
-avr32                            allyesconfig
-ia64                             allyesconfig
-parisc                           allyesconfig
-cris                             allyesconfig
-x86_64                           allyesconfig
-blackfin                         allyesconfig
-s390                             allyesconfig
-i386                  randconfig-ib0-04241328
-i386                  randconfig-ib1-04241328
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-microblaze                       allyesconfig
-i386                             allyesconfig
-x86_64                randconfig-ib0-04250632
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-sh                           se7619_defconfig
-powerpc                        icon_defconfig
-arm                         at91_dt_defconfig
-arm                           omap1_defconfig
-sh                           se7751_defconfig
-i386                         randconfig-nexe1
-i386                         randconfig-nexe0
-i386                         randconfig-nexe3
-i386                         randconfig-nexe2
-i386                         randconfig-nexe5
-i386                         randconfig-nexe4
-i386                         randconfig-nexe7
-i386                         randconfig-nexe6
-i386                         randconfig-nexe9
-i386                         randconfig-nexe8
-x86_64                       randconfig-nexe6
-x86_64                       randconfig-nexe7
-x86_64                       randconfig-nexe4
-x86_64                       randconfig-nexe5
-x86_64                       randconfig-nexe2
-x86_64                       randconfig-nexe3
-x86_64                       randconfig-nexe0
-x86_64                       randconfig-nexe1
-x86_64                       randconfig-nexe8
-x86_64                       randconfig-nexe9
-x86_64                  randconfig-nexr0-0423
-x86_64                  randconfig-nexr1-0423
-x86_64                  randconfig-nexr2-0423
-i386                    randconfig-nexr0-0418
-i386                    randconfig-nexr0-0423
-i386                    randconfig-nexr1-0423
-i386                    randconfig-nexr2-0423
-s390                             allmodconfig
-s390                              allnoconfig
-s390                                defconfig
-x86_64              randconfig-nexs0-04242117
-i386                randconfig-nexs0-04242117
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-arm                       omap2plus_defconfig
-arm                                   samsung
-arm                       imx_v6_v7_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                                        sh
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-m68k                             allmodconfig
-m68k                          amiga_defconfig
-blackfin                  TCM-BF518_defconfig
-parisc                         b180_defconfig
-arm                          nuc910_defconfig
-powerpc                    ge_imp3a_defconfig
-powerpc                  pseries_le_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                       randconfig-r1-0422
-i386                       randconfig-r0-0422
-i386                       randconfig-r2-0422
-x86_64                 randconfig-r0-04242205
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-x86_64                 randconfig-s0-04241558
-x86_64                 randconfig-s1-04241558
-x86_64                           allmodconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                   randconfig-x0-04222013
-i386                   randconfig-x1-04222013
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-
-Thanks,
-Fengguang
+Dropping this patch based on feedback from Alex.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150424/fe67a989/attachment.asc>
