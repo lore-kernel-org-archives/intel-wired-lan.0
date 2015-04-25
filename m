@@ -1,66 +1,38 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 25 Apr 2015 17:03:59 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- b0dc432053ae847f7f26ac327347c11bc9ab4c22 BUILD DONE
-Message-ID: <553b587f.EUBTGWDpTIUne8LF%fengguang.wu@intel.com>
+Date: Sat, 25 Apr 2015 17:04:00 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ 390f98fb185752f62d6f6f973b1d42a86de5da60 BUILD SUCCESS
+Message-ID: <553b5880.xNujgGu66sYg4n5l%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-b0dc432053ae847f7f26ac327347c11bc9ab4c22  ixgbevf: fold ixgbevf_pull_tail into ixgbevf_add_rx_frag
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+390f98fb185752f62d6f6f973b1d42a86de5da60  igb: Fix NULL assignment to incorrect variable in igb_reset_q_vector
 
-drivers/net/ethernet/intel/i40e/i40e_ethtool.c:1557 i40e_active_vfs() warn: bit shifter 'I40E_VF_STAT_ACTIVE' used for logical '&'
-drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:983 i40e_pci_sriov_enable() warn: bit shifter '__I40E_TESTING' used for logical '&'
-drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:983 i40e_pci_sriov_enable() warn: bitwise AND condition is false here
+elapsed time: 559m
 
-elapsed time: 462m
+configs tested: 182
 
-configs tested: 181
-
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
 i386                             alldefconfig
 i386                             allmodconfig
 i386                              allnoconfig
 i386                                defconfig
 mips                             allmodconfig
-mips                                   jz4740
 mips                              allnoconfig
 mips                      fuloong2e_defconfig
+mips                                   jz4740
 mips                                     txx9
-x86_64                 randconfig-a0-04222001
 x86_64                 randconfig-a1-04222001
+x86_64                 randconfig-a0-04222001
 x86_64                            allnoconfig
 x86_64                     randconfig-c1-0422
 x86_64                     randconfig-c2-0422
 x86_64                     randconfig-c0-0422
 i386                   randconfig-c0-04251403
 i386                   randconfig-c1-04251403
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                              allmodconfig
-arm                          prima2_defconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                                   samsung
-arm                       spear13xx_defconfig
-arm                         s3c2410_defconfig
-arm                                  iop-adma
-arm                       imx_v6_v7_defconfig
-arm                                       mmp
-arm                           tegra_defconfig
-arm                                      arm5
-arm                          marzen_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                                        sh
-arm                                     arm67
 ia64                             allmodconfig
 ia64                              allnoconfig
 ia64                                defconfig
@@ -69,6 +41,7 @@ powerpc                             defconfig
 powerpc                       ppc64_defconfig
 powerpc                           allnoconfig
 powerpc                          allmodconfig
+x86_64                randconfig-iv0-04161457
 x86_64                randconfig-iv0-04251132
 x86_64                randconfig-iv1-04251132
 xtensa                           allyesconfig
@@ -106,6 +79,11 @@ s390                              allnoconfig
 s390                                defconfig
 i386                             allyesconfig
 x86_64                randconfig-ib0-04251536
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
 blackfin                BF537-STAMP_defconfig
 arm                       mainstone_defconfig
 powerpc                      tqm8xx_defconfig
@@ -131,14 +109,33 @@ x86_64                       randconfig-nexe0
 x86_64                       randconfig-nexe1
 x86_64                       randconfig-nexe8
 x86_64                       randconfig-nexe9
-x86_64                  randconfig-nexr0-0425
-i386                    randconfig-nexr2-0425
-i386                    randconfig-nexr0-0425
-x86_64                  randconfig-nexr1-0425
-x86_64                  randconfig-nexr2-0425
-i386                    randconfig-nexr1-0425
+x86_64                  randconfig-nexr0-0423
+i386                    randconfig-nexr2-0423
+x86_64                  randconfig-nexr1-0423
+x86_64                  randconfig-nexr2-0423
+i386                    randconfig-nexr0-0423
+i386                    randconfig-nexr1-0423
 x86_64              randconfig-nexs0-04251546
 i386                randconfig-nexs0-04251546
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                              allmodconfig
+arm                          prima2_defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                                   samsung
+arm                       spear13xx_defconfig
+arm                         s3c2410_defconfig
+arm                                  iop-adma
+arm                       imx_v6_v7_defconfig
+arm                                       mmp
+arm                           tegra_defconfig
+arm                                      arm5
+arm                          marzen_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                                        sh
+arm                                     arm67
 m68k                          multi_defconfig
 m68k                       m5475evb_defconfig
 m68k                             allmodconfig
@@ -147,7 +144,6 @@ sh                            titan_defconfig
 sh                          rsk7269_defconfig
 sh                  sh7785lcr_32bit_defconfig
 sh                                allnoconfig
-x86_64                           allmodconfig
 powerpc                      chrp32_defconfig
 arm                            lart_defconfig
 powerpc                         c2k_defconfig
@@ -166,6 +162,7 @@ blackfin                BF533-EZKIT_defconfig
 blackfin                BF526-EZBRD_defconfig
 x86_64                 randconfig-s0-04251545
 x86_64                 randconfig-s1-04251545
+x86_64                           allmodconfig
 mn10300                     asb2364_defconfig
 openrisc                    or1ksim_defconfig
 um                           x86_64_defconfig
