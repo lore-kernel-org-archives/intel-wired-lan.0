@@ -1,203 +1,81 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 25 Apr 2015 17:04:00 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
- 390f98fb185752f62d6f6f973b1d42a86de5da60 BUILD SUCCESS
-Message-ID: <553b5880.xNujgGu66sYg4n5l%fengguang.wu@intel.com>
+From: Du, Fan <fan.du@intel.com>
+Date: Sun, 26 Apr 2015 08:02:12 +0000
+Subject: [Intel-wired-lan] [PATCH 0/2] RSS fix for ixgbe/ixgbevf
+In-Reply-To: <D38E8E86660E514AB505863C19C9287C74187E5E@ORSMSX102.amr.corp.intel.com>
+References: <1429774270-21344-1-git-send-email-fan.du@intel.com>
+ <D38E8E86660E514AB505863C19C9287C74187E5E@ORSMSX102.amr.corp.intel.com>
+Message-ID: <5A90DA2E42F8AE43BC4A093BF0678848E4D077@SHSMSX104.ccr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-390f98fb185752f62d6f6f973b1d42a86de5da60  igb: Fix NULL assignment to incorrect variable in igb_reset_q_vector
+>-----Original Message-----
+>From: Ronciak, John
+>Sent: Thursday, April 23, 2015 11:50 PM
+>To: Du, Fan; Kirsher, Jeffrey T
+>Cc: Du, Fan; Guo, Chaohong
+>Subject: RE: [Intel-wired-lan] [PATCH 0/2] RSS fix for ixgbe/ixgbevf
+>
+>Lists removed, Minskey added
+>
+Thanks for notifying Minskey about the extra effort for community that beyond my work scope.
+Nothing in your comments as an INTEL ETHERNET DRIVERS Reviewer should be out of mail list, 
+so I insist all the discussion & challenges must be kept on the arena.
 
-elapsed time: 559m
+>You have not explained why you want these patches.  It's not obvious as to why
+>the patches would be needed.  You say what it does but you don't explain why
+>this would be needed.  Please redo the patch set and add the reasons why you
+>want this functionality.
 
-configs tested: 182
+You didn't read the cover letter thoroughly, the second sentence explained why this patchset is needed as below:
 
-i386                             alldefconfig
-i386                             allmodconfig
-i386                              allnoconfig
-i386                                defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                 randconfig-a1-04222001
-x86_64                 randconfig-a0-04222001
-x86_64                            allnoconfig
-x86_64                     randconfig-c1-0422
-x86_64                     randconfig-c2-0422
-x86_64                     randconfig-c0-0422
-i386                   randconfig-c0-04251403
-i386                   randconfig-c1-04251403
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-powerpc                          allmodconfig
-x86_64                randconfig-iv0-04161457
-x86_64                randconfig-iv0-04251132
-x86_64                randconfig-iv1-04251132
-xtensa                           allyesconfig
-sparc64                          allyesconfig
-mips                             allyesconfig
-m68k                             allyesconfig
-sparc                            allyesconfig
-tile                             allyesconfig
-alpha                            allyesconfig
-powerpc                          allyesconfig
-sh                               allyesconfig
-avr32                            allyesconfig
-ia64                             allyesconfig
-parisc                           allyesconfig
-cris                             allyesconfig
-x86_64                           allyesconfig
-blackfin                         allyesconfig
-s390                             allyesconfig
-i386                  randconfig-ib0-04251624
-i386                  randconfig-ib1-04251624
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-microblaze                       allyesconfig
-s390                             allmodconfig
-s390                              allnoconfig
-s390                                defconfig
-i386                             allyesconfig
-x86_64                randconfig-ib0-04251536
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-blackfin                BF537-STAMP_defconfig
-arm                       mainstone_defconfig
-powerpc                      tqm8xx_defconfig
-arm                         lubbock_defconfig
-powerpc                   motionpro_defconfig
-i386                         randconfig-nexe1
-i386                         randconfig-nexe0
-i386                         randconfig-nexe3
-i386                         randconfig-nexe2
-i386                         randconfig-nexe5
-i386                         randconfig-nexe4
-i386                         randconfig-nexe7
-i386                         randconfig-nexe6
-i386                         randconfig-nexe9
-i386                         randconfig-nexe8
-x86_64                       randconfig-nexe6
-x86_64                       randconfig-nexe7
-x86_64                       randconfig-nexe4
-x86_64                       randconfig-nexe5
-x86_64                       randconfig-nexe2
-x86_64                       randconfig-nexe3
-x86_64                       randconfig-nexe0
-x86_64                       randconfig-nexe1
-x86_64                       randconfig-nexe8
-x86_64                       randconfig-nexe9
-x86_64                  randconfig-nexr0-0423
-i386                    randconfig-nexr2-0423
-x86_64                  randconfig-nexr1-0423
-x86_64                  randconfig-nexr2-0423
-i386                    randconfig-nexr0-0423
-i386                    randconfig-nexr1-0423
-x86_64              randconfig-nexs0-04251546
-i386                randconfig-nexs0-04251546
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                              allmodconfig
-arm                          prima2_defconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                                   samsung
-arm                       spear13xx_defconfig
-arm                         s3c2410_defconfig
-arm                                  iop-adma
-arm                       imx_v6_v7_defconfig
-arm                                       mmp
-arm                           tegra_defconfig
-arm                                      arm5
-arm                          marzen_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                                        sh
-arm                                     arm67
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-m68k                             allmodconfig
-m68k                          amiga_defconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-powerpc                      chrp32_defconfig
-arm                            lart_defconfig
-powerpc                         c2k_defconfig
-blackfin                BF527-EZKIT_defconfig
-blackfin                  CM-BF537E_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                       randconfig-r1-0425
-i386                       randconfig-r2-0425
-i386                       randconfig-r0-0425
-x86_64                 randconfig-r0-04250959
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-x86_64                 randconfig-s0-04251545
-x86_64                 randconfig-s1-04251545
-x86_64                           allmodconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-i386                          randconfig-x009
-i386                          randconfig-x008
-i386                          randconfig-x005
-i386                          randconfig-x004
-i386                          randconfig-x007
-i386                          randconfig-x006
-i386                          randconfig-x001
-i386                          randconfig-x000
-i386                          randconfig-x003
-i386                          randconfig-x002
-x86_64                        randconfig-x000
-x86_64                        randconfig-x001
-x86_64                        randconfig-x002
-x86_64                        randconfig-x003
-x86_64                        randconfig-x004
-x86_64                        randconfig-x005
-x86_64                        randconfig-x006
-x86_64                        randconfig-x007
-x86_64                        randconfig-x008
-x86_64                        randconfig-x009
-x86_64                                    lkp
-x86_64                                   rhel
-i386                   randconfig-x0-04222013
-i386                   randconfig-x1-04222013
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
+>> This patchset provide RSS hash value for upper stack by indicating whether it's
+>> a L3 or L4 hash. Thus other component of network stack could utilize this hash
+>> value providing by NIC without calculating by themselves. 
 
-Thanks,
-Fengguang
+If you are not sure how upper stack will use skb hash, there is one scenario in OpenvSiwtch,
+Which skb L4 hash could be queried by OVS_ACTION_ATTR_HASH action. There are other
+Scenarios too, it's one grep of skb_get_hash away from why this functionality is need.
+
+Btw, i40e/i40evf has already incorporates this functionality.
+
+
+>Cheers,
+>John
+>
+>> -----Original Message-----
+>> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+>> Behalf Of Fan Du
+>> Sent: Thursday, April 23, 2015 12:31 AM
+>> To: Kirsher, Jeffrey T
+>> Cc: e1000-devel at lists.sourceforge.net; Du, Fan; intel-wired-
+>> lan at lists.osuosl.org
+>> Subject: [Intel-wired-lan] [PATCH 0/2] RSS fix for ixgbe/ixgbevf
+>>
+>> This patchset provide RSS hash value for upper stack by indicating whether it's
+>> a L3 or L4 hash. Thus other component of network stack could utilize this hash
+>> value providing by NIC without caculating by themselves.
+>>
+>> Test:
+>> * Simple iperf test using ixgbe for 82599ES
+>> * Build test only for ixgbevf
+>> * make C=1 CF=-D__CHECK_ENDIAN__, no warnings introduced by this
+>> patchset
+>>
+>> Fan Du (2):
+>>   ixgbe: Specify rx hash type wrt rx desc RSS type
+>>   ixgbevf: Set rx hash type for ingress packets
+>>
+>>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |   25
+>++++++++++++++++---
+>>  drivers/net/ethernet/intel/ixgbevf/defines.h      |   12 +++++++++
+>>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   27
+>> +++++++++++++++++++++
+>>  3 files changed, 60 insertions(+), 4 deletions(-)
+>>
+>> _______________________________________________
+>> Intel-wired-lan mailing list
+>> Intel-wired-lan at lists.osuosl.org
+>> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
