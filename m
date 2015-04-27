@@ -1,92 +1,184 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Mon, 27 Apr 2015 14:57:11 -0400
-Subject: [Intel-wired-lan] [net-next S5 04/15] i40e: Remove incorrect
-	#ifdef's
+Date: Mon, 27 Apr 2015 14:57:12 -0400
+Subject: [Intel-wired-lan] [net-next S5 05/15] i40e/i40evf: Update the admin
+	queue command header
 In-Reply-To: <1430161042-28494-1-git-send-email-catherine.sullivan@intel.com>
 References: <1430161042-28494-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1430161042-28494-5-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1430161042-28494-6-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Carolyn Wyborny <carolyn.wyborny@intel.com>
+From: Greg Rose <gregory.v.rose@intel.com>
 
-This patch removes some #ifdef's that should not be there. They
-were stopping code that is needed from being compiled in.
+Make the necessary updates to i40e_adminq_cmd.h.
 
-With these #ifdef's removed, changes are needed in the driver
-to fix some compile errors: adding missing parameters to
-the definition of ndo_bridge_setlink and a ndo_dflt_brige_getlink call.
-
-Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
-Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-Change-ID: I5516614e1bc50b6bca0647cef971bc96161ba2de
+Signed-off-by: Greg Rose <gregory.v.rose@intel.com>
+Change-ID: Ib031c86cc6cab78e5aa44c64d8ce5474be8d7e42
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 15 ++++-----------
- 1 file changed, 4 insertions(+), 11 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  | 24 ++++++++++++----------
+ .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    | 18 +++++++---------
+ 2 files changed, 20 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 9ec7f51..1b73979 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -7989,7 +7989,6 @@ static int i40e_ndo_fdb_add(struct ndmsg *ndm, struct nlattr *tb[],
- 	return err;
- }
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+index 929e3d7..9101f5c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+@@ -34,7 +34,7 @@
+  */
  
--#ifdef HAVE_BRIDGE_ATTRIBS
- /**
-  * i40e_ndo_bridge_setlink - Set the hardware bridge mode
-  * @dev: the netdev being configured
-@@ -8003,7 +8002,8 @@ static int i40e_ndo_fdb_add(struct ndmsg *ndm, struct nlattr *tb[],
-  * bridge mode enabled.
-  **/
- static int i40e_ndo_bridge_setlink(struct net_device *dev,
--				   struct nlmsghdr *nlh)
-+				   struct nlmsghdr *nlh,
-+				   u16 flags)
- {
- 	struct i40e_netdev_priv *np = netdev_priv(dev);
- 	struct i40e_vsi *vsi = np->vsi;
-@@ -8069,14 +8069,9 @@ static int i40e_ndo_bridge_setlink(struct net_device *dev,
-  * Return the mode in which the hardware bridge is operating in
-  * i.e VEB or VEPA.
-  **/
--#ifdef HAVE_BRIDGE_FILTER
- static int i40e_ndo_bridge_getlink(struct sk_buff *skb, u32 pid, u32 seq,
- 				   struct net_device *dev,
- 				   u32 __always_unused filter_mask)
--#else
--static int i40e_ndo_bridge_getlink(struct sk_buff *skb, u32 pid, u32 seq,
--				   struct net_device *dev)
--#endif /* HAVE_BRIDGE_FILTER */
- {
- 	struct i40e_netdev_priv *np = netdev_priv(dev);
- 	struct i40e_vsi *vsi = np->vsi;
-@@ -8097,9 +8092,9 @@ static int i40e_ndo_bridge_getlink(struct sk_buff *skb, u32 pid, u32 seq,
- 	if (!veb)
- 		return 0;
+ #define I40E_FW_API_VERSION_MAJOR	0x0001
+-#define I40E_FW_API_VERSION_MINOR	0x0002
++#define I40E_FW_API_VERSION_MINOR	0x0004
  
--	return ndo_dflt_bridge_getlink(skb, pid, seq, dev, veb->bridge_mode);
-+	return ndo_dflt_bridge_getlink(skb, pid, seq, dev, veb->bridge_mode, 0,
-+				       0);
- }
--#endif /* HAVE_BRIDGE_ATTRIBS */
+ struct i40e_aq_desc {
+ 	__le16 flags;
+@@ -132,12 +132,7 @@ enum i40e_admin_queue_opc {
+ 	i40e_aqc_opc_list_func_capabilities	= 0x000A,
+ 	i40e_aqc_opc_list_dev_capabilities	= 0x000B,
  
- #define I40E_MAX_TUNNEL_HDR_LEN 80
- /**
-@@ -8154,10 +8149,8 @@ static const struct net_device_ops i40e_netdev_ops = {
- #endif
- 	.ndo_get_phys_port_id	= i40e_get_phys_port_id,
- 	.ndo_fdb_add		= i40e_ndo_fdb_add,
--#ifdef HAVE_BRIDGE_ATTRIBS
- 	.ndo_bridge_getlink	= i40e_ndo_bridge_getlink,
- 	.ndo_bridge_setlink	= i40e_ndo_bridge_setlink,
--#endif /* HAVE_BRIDGE_ATTRIBS */
- 	.ndo_features_check	= i40e_features_check,
+-	i40e_aqc_opc_set_cppm_configuration	= 0x0103,
+-	i40e_aqc_opc_set_arp_proxy_entry	= 0x0104,
+-	i40e_aqc_opc_set_ns_proxy_entry		= 0x0105,
+-
+ 	/* LAA */
+-	i40e_aqc_opc_mng_laa		= 0x0106,   /* AQ obsolete */
+ 	i40e_aqc_opc_mac_address_read	= 0x0107,
+ 	i40e_aqc_opc_mac_address_write	= 0x0108,
+ 
+@@ -262,7 +257,6 @@ enum i40e_admin_queue_opc {
+ 	/* Tunnel commands */
+ 	i40e_aqc_opc_add_udp_tunnel	= 0x0B00,
+ 	i40e_aqc_opc_del_udp_tunnel	= 0x0B01,
+-	i40e_aqc_opc_tunnel_key_structure	= 0x0B10,
+ 
+ 	/* Async Events */
+ 	i40e_aqc_opc_event_lan_overflow		= 0x1001,
+@@ -274,8 +268,6 @@ enum i40e_admin_queue_opc {
+ 	i40e_aqc_opc_oem_ocbb_initialize	= 0xFE03,
+ 
+ 	/* debug commands */
+-	i40e_aqc_opc_debug_get_deviceid		= 0xFF00,
+-	i40e_aqc_opc_debug_set_mode		= 0xFF01,
+ 	i40e_aqc_opc_debug_read_reg		= 0xFF03,
+ 	i40e_aqc_opc_debug_write_reg		= 0xFF04,
+ 	i40e_aqc_opc_debug_modify_reg		= 0xFF07,
+@@ -509,7 +501,8 @@ struct i40e_aqc_mac_address_read {
+ #define I40E_AQC_SAN_ADDR_VALID		0x20
+ #define I40E_AQC_PORT_ADDR_VALID	0x40
+ #define I40E_AQC_WOL_ADDR_VALID		0x80
+-#define I40E_AQC_ADDR_VALID_MASK	0xf0
++#define I40E_AQC_MC_MAG_EN_VALID	0x100
++#define I40E_AQC_ADDR_VALID_MASK	0x1F0
+ 	u8	reserved[6];
+ 	__le32	addr_high;
+ 	__le32	addr_low;
+@@ -532,7 +525,9 @@ struct i40e_aqc_mac_address_write {
+ #define I40E_AQC_WRITE_TYPE_LAA_ONLY	0x0000
+ #define I40E_AQC_WRITE_TYPE_LAA_WOL	0x4000
+ #define I40E_AQC_WRITE_TYPE_PORT	0x8000
+-#define I40E_AQC_WRITE_TYPE_MASK	0xc000
++#define I40E_AQC_WRITE_TYPE_UPDATE_MC_MAG	0xC000
++#define I40E_AQC_WRITE_TYPE_MASK	0xC000
++
+ 	__le16	mac_sah;
+ 	__le32	mac_sal;
+ 	u8	reserved[8];
+@@ -1068,6 +1063,7 @@ struct i40e_aqc_set_vsi_promiscuous_modes {
+ 	__le16	seid;
+ #define I40E_AQC_VSI_PROM_CMD_SEID_MASK		0x3FF
+ 	__le16	vlan_tag;
++#define I40E_AQC_SET_VSI_VLAN_MASK		0x0FFF
+ #define I40E_AQC_SET_VSI_VLAN_VALID		0x8000
+ 	u8	reserved[8];
  };
+@@ -2064,6 +2060,12 @@ I40E_CHECK_CMD_LENGTH(i40e_aqc_lldp_start);
+ #define I40E_AQC_CEE_PFC_STATUS_MASK	(0x7 << I40E_AQC_CEE_PFC_STATUS_SHIFT)
+ #define I40E_AQC_CEE_APP_STATUS_SHIFT	0x8
+ #define I40E_AQC_CEE_APP_STATUS_MASK	(0x7 << I40E_AQC_CEE_APP_STATUS_SHIFT)
++#define I40E_AQC_CEE_FCOE_STATUS_SHIFT	0x8
++#define I40E_AQC_CEE_FCOE_STATUS_MASK	(0x7 << I40E_AQC_CEE_FCOE_STATUS_SHIFT)
++#define I40E_AQC_CEE_ISCSI_STATUS_SHIFT	0xA
++#define I40E_AQC_CEE_ISCSI_STATUS_MASK	(0x7 << I40E_AQC_CEE_ISCSI_STATUS_SHIFT)
++#define I40E_AQC_CEE_FIP_STATUS_SHIFT	0x10
++#define I40E_AQC_CEE_FIP_STATUS_MASK	(0x7 << I40E_AQC_CEE_FIP_STATUS_SHIFT)
+ struct i40e_aqc_get_cee_dcb_cfg_v1_resp {
+ 	u8	reserved1;
+ 	u8	oper_num_tc;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+index e715bcc..d5bd6f0 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+@@ -34,7 +34,7 @@
+  */
  
+ #define I40E_FW_API_VERSION_MAJOR	0x0001
+-#define I40E_FW_API_VERSION_MINOR	0x0002
++#define I40E_FW_API_VERSION_MINOR	0x0004
+ #define I40E_FW_API_VERSION_A0_MINOR  0x0000
+ 
+ struct i40e_aq_desc {
+@@ -133,12 +133,7 @@ enum i40e_admin_queue_opc {
+ 	i40e_aqc_opc_list_func_capabilities	= 0x000A,
+ 	i40e_aqc_opc_list_dev_capabilities	= 0x000B,
+ 
+-	i40e_aqc_opc_set_cppm_configuration	= 0x0103,
+-	i40e_aqc_opc_set_arp_proxy_entry	= 0x0104,
+-	i40e_aqc_opc_set_ns_proxy_entry		= 0x0105,
+-
+ 	/* LAA */
+-	i40e_aqc_opc_mng_laa		= 0x0106,   /* AQ obsolete */
+ 	i40e_aqc_opc_mac_address_read	= 0x0107,
+ 	i40e_aqc_opc_mac_address_write	= 0x0108,
+ 
+@@ -260,7 +255,6 @@ enum i40e_admin_queue_opc {
+ 	/* Tunnel commands */
+ 	i40e_aqc_opc_add_udp_tunnel	= 0x0B00,
+ 	i40e_aqc_opc_del_udp_tunnel	= 0x0B01,
+-	i40e_aqc_opc_tunnel_key_structure	= 0x0B10,
+ 
+ 	/* Async Events */
+ 	i40e_aqc_opc_event_lan_overflow		= 0x1001,
+@@ -272,8 +266,6 @@ enum i40e_admin_queue_opc {
+ 	i40e_aqc_opc_oem_ocbb_initialize	= 0xFE03,
+ 
+ 	/* debug commands */
+-	i40e_aqc_opc_debug_get_deviceid		= 0xFF00,
+-	i40e_aqc_opc_debug_set_mode		= 0xFF01,
+ 	i40e_aqc_opc_debug_read_reg		= 0xFF03,
+ 	i40e_aqc_opc_debug_write_reg		= 0xFF04,
+ 	i40e_aqc_opc_debug_modify_reg		= 0xFF07,
+@@ -507,7 +499,8 @@ struct i40e_aqc_mac_address_read {
+ #define I40E_AQC_SAN_ADDR_VALID		0x20
+ #define I40E_AQC_PORT_ADDR_VALID	0x40
+ #define I40E_AQC_WOL_ADDR_VALID		0x80
+-#define I40E_AQC_ADDR_VALID_MASK	0xf0
++#define I40E_AQC_MC_MAG_EN_VALID	0x100
++#define I40E_AQC_ADDR_VALID_MASK	0x1F0
+ 	u8	reserved[6];
+ 	__le32	addr_high;
+ 	__le32	addr_low;
+@@ -530,7 +523,9 @@ struct i40e_aqc_mac_address_write {
+ #define I40E_AQC_WRITE_TYPE_LAA_ONLY	0x0000
+ #define I40E_AQC_WRITE_TYPE_LAA_WOL	0x4000
+ #define I40E_AQC_WRITE_TYPE_PORT	0x8000
+-#define I40E_AQC_WRITE_TYPE_MASK	0xc000
++#define I40E_AQC_WRITE_TYPE_UPDATE_MC_MAG	0xC000
++#define I40E_AQC_WRITE_TYPE_MASK	0xC000
++
+ 	__le16	mac_sah;
+ 	__le32	mac_sal;
+ 	u8	reserved[8];
+@@ -1066,6 +1061,7 @@ struct i40e_aqc_set_vsi_promiscuous_modes {
+ 	__le16	seid;
+ #define I40E_AQC_VSI_PROM_CMD_SEID_MASK		0x3FF
+ 	__le16	vlan_tag;
++#define I40E_AQC_SET_VSI_VLAN_MASK		0x0FFF
+ #define I40E_AQC_SET_VSI_VLAN_VALID		0x8000
+ 	u8	reserved[8];
+ };
 -- 
 1.9.3
 
