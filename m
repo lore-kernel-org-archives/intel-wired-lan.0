@@ -1,184 +1,60 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Mon, 27 Apr 2015 14:57:12 -0400
-Subject: [Intel-wired-lan] [net-next S5 05/15] i40e/i40evf: Update the admin
-	queue command header
+Date: Mon, 27 Apr 2015 14:57:13 -0400
+Subject: [Intel-wired-lan] [net-next S5 06/15] i40e: correctly program
+	filters for VFs
 In-Reply-To: <1430161042-28494-1-git-send-email-catherine.sullivan@intel.com>
 References: <1430161042-28494-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1430161042-28494-6-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1430161042-28494-7-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Greg Rose <gregory.v.rose@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-Make the necessary updates to i40e_adminq_cmd.h.
+MAC filters for VFs were being programmed with 0 for the VLAN value when
+there was no VLAN assigned. This is incorrect and actually assigns the
+VF to VLAN 0. Instead, we must use -1 to indicate that no VLAN is in
+use. This change programs the filters correctly and gets rid of a bogus
+error message when setting a port VLAN on an active VF.
 
-Signed-off-by: Greg Rose <gregory.v.rose@intel.com>
-Change-ID: Ib031c86cc6cab78e5aa44c64d8ce5474be8d7e42
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-ID: Ica9a9906d768405377ff3308e27f7d0b5b2ea96e
 ---
- drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  | 24 ++++++++++++----------
- .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    | 18 +++++++---------
- 2 files changed, 20 insertions(+), 22 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-index 929e3d7..9101f5c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-@@ -34,7 +34,7 @@
-  */
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index e6ab8ee..5c7af7d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -542,11 +542,13 @@ static int i40e_alloc_vsi_res(struct i40e_vf *vf, enum i40e_vsi_type type)
+ 		if (vf->port_vlan_id)
+ 			i40e_vsi_add_pvid(vsi, vf->port_vlan_id);
+ 		f = i40e_add_filter(vsi, vf->default_lan_addr.addr,
+-				    vf->port_vlan_id, true, false);
++				    vf->port_vlan_id ? vf->port_vlan_id : -1,
++				    true, false);
+ 		if (!f)
+ 			dev_info(&pf->pdev->dev,
+ 				 "Could not allocate VF MAC addr\n");
+-		f = i40e_add_filter(vsi, brdcast, vf->port_vlan_id,
++		f = i40e_add_filter(vsi, brdcast,
++				    vf->port_vlan_id ? vf->port_vlan_id : -1,
+ 				    true, false);
+ 		if (!f)
+ 			dev_info(&pf->pdev->dev,
+@@ -2015,7 +2017,8 @@ int i40e_ndo_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
+ 	}
  
- #define I40E_FW_API_VERSION_MAJOR	0x0001
--#define I40E_FW_API_VERSION_MINOR	0x0002
-+#define I40E_FW_API_VERSION_MINOR	0x0004
+ 	/* delete the temporary mac address */
+-	i40e_del_filter(vsi, vf->default_lan_addr.addr, vf->port_vlan_id,
++	i40e_del_filter(vsi, vf->default_lan_addr.addr,
++			vf->port_vlan_id ? vf->port_vlan_id : -1,
+ 			true, false);
  
- struct i40e_aq_desc {
- 	__le16 flags;
-@@ -132,12 +132,7 @@ enum i40e_admin_queue_opc {
- 	i40e_aqc_opc_list_func_capabilities	= 0x000A,
- 	i40e_aqc_opc_list_dev_capabilities	= 0x000B,
- 
--	i40e_aqc_opc_set_cppm_configuration	= 0x0103,
--	i40e_aqc_opc_set_arp_proxy_entry	= 0x0104,
--	i40e_aqc_opc_set_ns_proxy_entry		= 0x0105,
--
- 	/* LAA */
--	i40e_aqc_opc_mng_laa		= 0x0106,   /* AQ obsolete */
- 	i40e_aqc_opc_mac_address_read	= 0x0107,
- 	i40e_aqc_opc_mac_address_write	= 0x0108,
- 
-@@ -262,7 +257,6 @@ enum i40e_admin_queue_opc {
- 	/* Tunnel commands */
- 	i40e_aqc_opc_add_udp_tunnel	= 0x0B00,
- 	i40e_aqc_opc_del_udp_tunnel	= 0x0B01,
--	i40e_aqc_opc_tunnel_key_structure	= 0x0B10,
- 
- 	/* Async Events */
- 	i40e_aqc_opc_event_lan_overflow		= 0x1001,
-@@ -274,8 +268,6 @@ enum i40e_admin_queue_opc {
- 	i40e_aqc_opc_oem_ocbb_initialize	= 0xFE03,
- 
- 	/* debug commands */
--	i40e_aqc_opc_debug_get_deviceid		= 0xFF00,
--	i40e_aqc_opc_debug_set_mode		= 0xFF01,
- 	i40e_aqc_opc_debug_read_reg		= 0xFF03,
- 	i40e_aqc_opc_debug_write_reg		= 0xFF04,
- 	i40e_aqc_opc_debug_modify_reg		= 0xFF07,
-@@ -509,7 +501,8 @@ struct i40e_aqc_mac_address_read {
- #define I40E_AQC_SAN_ADDR_VALID		0x20
- #define I40E_AQC_PORT_ADDR_VALID	0x40
- #define I40E_AQC_WOL_ADDR_VALID		0x80
--#define I40E_AQC_ADDR_VALID_MASK	0xf0
-+#define I40E_AQC_MC_MAG_EN_VALID	0x100
-+#define I40E_AQC_ADDR_VALID_MASK	0x1F0
- 	u8	reserved[6];
- 	__le32	addr_high;
- 	__le32	addr_low;
-@@ -532,7 +525,9 @@ struct i40e_aqc_mac_address_write {
- #define I40E_AQC_WRITE_TYPE_LAA_ONLY	0x0000
- #define I40E_AQC_WRITE_TYPE_LAA_WOL	0x4000
- #define I40E_AQC_WRITE_TYPE_PORT	0x8000
--#define I40E_AQC_WRITE_TYPE_MASK	0xc000
-+#define I40E_AQC_WRITE_TYPE_UPDATE_MC_MAG	0xC000
-+#define I40E_AQC_WRITE_TYPE_MASK	0xC000
-+
- 	__le16	mac_sah;
- 	__le32	mac_sal;
- 	u8	reserved[8];
-@@ -1068,6 +1063,7 @@ struct i40e_aqc_set_vsi_promiscuous_modes {
- 	__le16	seid;
- #define I40E_AQC_VSI_PROM_CMD_SEID_MASK		0x3FF
- 	__le16	vlan_tag;
-+#define I40E_AQC_SET_VSI_VLAN_MASK		0x0FFF
- #define I40E_AQC_SET_VSI_VLAN_VALID		0x8000
- 	u8	reserved[8];
- };
-@@ -2064,6 +2060,12 @@ I40E_CHECK_CMD_LENGTH(i40e_aqc_lldp_start);
- #define I40E_AQC_CEE_PFC_STATUS_MASK	(0x7 << I40E_AQC_CEE_PFC_STATUS_SHIFT)
- #define I40E_AQC_CEE_APP_STATUS_SHIFT	0x8
- #define I40E_AQC_CEE_APP_STATUS_MASK	(0x7 << I40E_AQC_CEE_APP_STATUS_SHIFT)
-+#define I40E_AQC_CEE_FCOE_STATUS_SHIFT	0x8
-+#define I40E_AQC_CEE_FCOE_STATUS_MASK	(0x7 << I40E_AQC_CEE_FCOE_STATUS_SHIFT)
-+#define I40E_AQC_CEE_ISCSI_STATUS_SHIFT	0xA
-+#define I40E_AQC_CEE_ISCSI_STATUS_MASK	(0x7 << I40E_AQC_CEE_ISCSI_STATUS_SHIFT)
-+#define I40E_AQC_CEE_FIP_STATUS_SHIFT	0x10
-+#define I40E_AQC_CEE_FIP_STATUS_MASK	(0x7 << I40E_AQC_CEE_FIP_STATUS_SHIFT)
- struct i40e_aqc_get_cee_dcb_cfg_v1_resp {
- 	u8	reserved1;
- 	u8	oper_num_tc;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-index e715bcc..d5bd6f0 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-@@ -34,7 +34,7 @@
-  */
- 
- #define I40E_FW_API_VERSION_MAJOR	0x0001
--#define I40E_FW_API_VERSION_MINOR	0x0002
-+#define I40E_FW_API_VERSION_MINOR	0x0004
- #define I40E_FW_API_VERSION_A0_MINOR  0x0000
- 
- struct i40e_aq_desc {
-@@ -133,12 +133,7 @@ enum i40e_admin_queue_opc {
- 	i40e_aqc_opc_list_func_capabilities	= 0x000A,
- 	i40e_aqc_opc_list_dev_capabilities	= 0x000B,
- 
--	i40e_aqc_opc_set_cppm_configuration	= 0x0103,
--	i40e_aqc_opc_set_arp_proxy_entry	= 0x0104,
--	i40e_aqc_opc_set_ns_proxy_entry		= 0x0105,
--
- 	/* LAA */
--	i40e_aqc_opc_mng_laa		= 0x0106,   /* AQ obsolete */
- 	i40e_aqc_opc_mac_address_read	= 0x0107,
- 	i40e_aqc_opc_mac_address_write	= 0x0108,
- 
-@@ -260,7 +255,6 @@ enum i40e_admin_queue_opc {
- 	/* Tunnel commands */
- 	i40e_aqc_opc_add_udp_tunnel	= 0x0B00,
- 	i40e_aqc_opc_del_udp_tunnel	= 0x0B01,
--	i40e_aqc_opc_tunnel_key_structure	= 0x0B10,
- 
- 	/* Async Events */
- 	i40e_aqc_opc_event_lan_overflow		= 0x1001,
-@@ -272,8 +266,6 @@ enum i40e_admin_queue_opc {
- 	i40e_aqc_opc_oem_ocbb_initialize	= 0xFE03,
- 
- 	/* debug commands */
--	i40e_aqc_opc_debug_get_deviceid		= 0xFF00,
--	i40e_aqc_opc_debug_set_mode		= 0xFF01,
- 	i40e_aqc_opc_debug_read_reg		= 0xFF03,
- 	i40e_aqc_opc_debug_write_reg		= 0xFF04,
- 	i40e_aqc_opc_debug_modify_reg		= 0xFF07,
-@@ -507,7 +499,8 @@ struct i40e_aqc_mac_address_read {
- #define I40E_AQC_SAN_ADDR_VALID		0x20
- #define I40E_AQC_PORT_ADDR_VALID	0x40
- #define I40E_AQC_WOL_ADDR_VALID		0x80
--#define I40E_AQC_ADDR_VALID_MASK	0xf0
-+#define I40E_AQC_MC_MAG_EN_VALID	0x100
-+#define I40E_AQC_ADDR_VALID_MASK	0x1F0
- 	u8	reserved[6];
- 	__le32	addr_high;
- 	__le32	addr_low;
-@@ -530,7 +523,9 @@ struct i40e_aqc_mac_address_write {
- #define I40E_AQC_WRITE_TYPE_LAA_ONLY	0x0000
- #define I40E_AQC_WRITE_TYPE_LAA_WOL	0x4000
- #define I40E_AQC_WRITE_TYPE_PORT	0x8000
--#define I40E_AQC_WRITE_TYPE_MASK	0xc000
-+#define I40E_AQC_WRITE_TYPE_UPDATE_MC_MAG	0xC000
-+#define I40E_AQC_WRITE_TYPE_MASK	0xC000
-+
- 	__le16	mac_sah;
- 	__le32	mac_sal;
- 	u8	reserved[8];
-@@ -1066,6 +1061,7 @@ struct i40e_aqc_set_vsi_promiscuous_modes {
- 	__le16	seid;
- #define I40E_AQC_VSI_PROM_CMD_SEID_MASK		0x3FF
- 	__le16	vlan_tag;
-+#define I40E_AQC_SET_VSI_VLAN_MASK		0x0FFF
- #define I40E_AQC_SET_VSI_VLAN_VALID		0x8000
- 	u8	reserved[8];
- };
+ 	/* Delete all the filters for this VSI - we're going to kill it
 -- 
 1.9.3
 
