@@ -1,169 +1,237 @@
-From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Mon, 27 Apr 2015 13:36:15 -0700
-Subject: [Intel-wired-lan] [net-next PATCH] ixgbevf: add support for
- reporting RSS key and hash table for X550
-Message-ID: <20150427203614.32710.54668.stgit@localhost6.localdomain6>
+From: Jonathan Toppins <jtoppins@cumulusnetworks.com>
+Date: Mon, 27 Apr 2015 11:44:57 -0400
+Subject: [Intel-wired-lan] [PATCH v1 net-next 1/2] igb: add PHY support
+	for Broadcom 5461S
+In-Reply-To: <1429302240-654-1-git-send-email-jtoppins@cumulusnetworks.com>
+References: <1429302240-654-1-git-send-email-jtoppins@cumulusnetworks.com>
+Message-ID: <553E5979.6090009@cumulusnetworks.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch extends the reporting of the RSS key and hash table by
-adding support for X550 VFs. The difference is that X550 VFs have
-their own registers for RSS key and indirection table, so there is
-no need to query the PF.
+On 4/17/15 4:23 PM, Jonathan Toppins wrote:
+> From: Alan Liebthal <alanl@cumulusnetworks.com>
+>
+> The Quanta LY8 Ethernet management port uses a Broadcom 5461S chip for
+> the PHY layer. This adds support for this PHY to the Intel igb driver.
+>
+> Signed-off-by: Alan Liebthal <alanl@cumulusnetworks.com>
+> Signed-off-by: Jonathan Toppins <jtoppins@cumulusnetworks.com>
+> ---
+>   drivers/net/ethernet/intel/igb/e1000_82575.c   |   20 +++++-
+>   drivers/net/ethernet/intel/igb/e1000_defines.h |    1 +
+>   drivers/net/ethernet/intel/igb/e1000_hw.h      |    1 +
+>   drivers/net/ethernet/intel/igb/e1000_phy.c     |   79 ++++++++++++++++++++++++
+>   drivers/net/ethernet/intel/igb/e1000_phy.h     |    2 +
+>   5 files changed, 102 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
+> index 2dcc808..e222804 100644
+> --- a/drivers/net/ethernet/intel/igb/e1000_82575.c
+> +++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
+> @@ -178,7 +178,7 @@ static s32 igb_init_phy_params_82575(struct e1000_hw *hw)
+>
+>   	ctrl_ext = rd32(E1000_CTRL_EXT);
+>
+> -	if (igb_sgmii_active_82575(hw)) {
+> +	if (igb_sgmii_active_82575(hw) && phy->type != e1000_phy_bcm5461s) {
+>   		phy->ops.reset = igb_phy_hw_reset_sgmii_82575;
+>   		ctrl_ext |= E1000_CTRL_I2C_ENA;
+>   	} else {
+> @@ -289,6 +289,11 @@ static s32 igb_init_phy_params_82575(struct e1000_hw *hw)
+>   	case BCM54616_E_PHY_ID:
+>   		phy->type = e1000_phy_bcm54616;
+>   		break;
+> +	case BCM5461S_E_PHY_ID:
+> +		phy->type                   = e1000_phy_bcm5461s;
+> +		phy->ops.get_phy_info       = igb_get_phy_info_5461s;
+> +		phy->ops.force_speed_duplex = igb_phy_force_speed_duplex_82580;
+> +		break;
+>   	default:
+>   		ret_val = -E1000_ERR_PHY;
+>   		goto out;
+> @@ -841,6 +846,15 @@ static s32 igb_get_phy_id_82575(struct e1000_hw *hw)
+>   			goto out;
+>   		}
+>   		ret_val = igb_get_phy_id(hw);
+> +		if (ret_val && hw->mac.type == e1000_i354) {
+> +			/* We do a special check for bcm5461s phy by setting
+> +			 * the phy->addr to 5 and doing the phy check again.
+> +			 * This call will succeed and retrieve a valid phy
+> +			 * id if we have the bcm5461s phy.
+> +			 */
+> +			phy->addr = 5;
+> +			ret_val = igb_get_phy_id(hw);
+> +		}
+>   		goto out;
+>   	}
+>
+> @@ -1221,6 +1235,9 @@ static s32 igb_get_cfg_done_82575(struct e1000_hw *hw)
+>   	    (hw->phy.type == e1000_phy_igp_3))
+>   		igb_phy_init_script_igp3(hw);
+>
+> +	if (hw->phy.type == e1000_phy_bcm5461s)
+> +		igb_phy_init_script_5461s(hw);
+> +
+>   	return 0;
+>   }
+>
+> @@ -1597,6 +1614,7 @@ static s32 igb_setup_copper_link_82575(struct e1000_hw *hw)
+>   		ret_val = igb_copper_link_setup_82580(hw);
+>   		break;
+>   	case e1000_phy_bcm54616:
+> +	case e1000_phy_bcm5461s:
+>   		break;
+>   	default:
+>   		ret_val = -E1000_ERR_PHY;
+> diff --git a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
+> index 50d51e4..787224d 100644
+> --- a/drivers/net/ethernet/intel/igb/e1000_defines.h
+> +++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
+> @@ -861,6 +861,7 @@
+>   #define I210_I_PHY_ID        0x01410C00
+>   #define M88E1543_E_PHY_ID    0x01410EA0
+>   #define BCM54616_E_PHY_ID    0x03625D10
+> +#define BCM5461S_E_PHY_ID    0x002060C0
+>
+>   /* M88E1000 Specific Registers */
+>   #define M88E1000_PHY_SPEC_CTRL     0x10  /* PHY Specific Control Register */
+> diff --git a/drivers/net/ethernet/intel/igb/e1000_hw.h b/drivers/net/ethernet/intel/igb/e1000_hw.h
+> index d82c96b..408a3e5 100644
+> --- a/drivers/net/ethernet/intel/igb/e1000_hw.h
+> +++ b/drivers/net/ethernet/intel/igb/e1000_hw.h
+> @@ -129,6 +129,7 @@ enum e1000_phy_type {
+>   	e1000_phy_82580,
+>   	e1000_phy_i210,
+>   	e1000_phy_bcm54616,
+> +	e1000_phy_bcm5461s,
+>   };
+>
+>   enum e1000_bus_type {
+> diff --git a/drivers/net/ethernet/intel/igb/e1000_phy.c b/drivers/net/ethernet/intel/igb/e1000_phy.c
+> index c1bb64d..0f5a55b 100644
+> --- a/drivers/net/ethernet/intel/igb/e1000_phy.c
+> +++ b/drivers/net/ethernet/intel/igb/e1000_phy.c
+> @@ -148,6 +148,13 @@ s32 igb_read_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 *data)
+>   	 * Control register.  The MAC will take care of interfacing with the
+>   	 * PHY to retrieve the desired data.
+>   	 */
+> +	if (phy->type == e1000_phy_bcm5461s) {
+> +		mdic = rd32(E1000_MDICNFG);
+> +		mdic &= ~E1000_MDICNFG_PHY_MASK;
+> +		mdic |= (phy->addr << E1000_MDICNFG_PHY_SHIFT);
+> +		wr32(E1000_MDICNFG, mdic);
+> +	}
+> +
+>   	mdic = ((offset << E1000_MDIC_REG_SHIFT) |
+>   		(phy->addr << E1000_MDIC_PHY_SHIFT) |
+>   		(E1000_MDIC_OP_READ));
+> @@ -204,6 +211,13 @@ s32 igb_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data)
+>   	 * Control register.  The MAC will take care of interfacing with the
+>   	 * PHY to retrieve the desired data.
+>   	 */
+> +	if (phy->type == e1000_phy_bcm5461s) {
+> +		mdic = rd32(E1000_MDICNFG);
+> +		mdic &= ~E1000_MDICNFG_PHY_MASK;
+> +		mdic |= (phy->addr << E1000_MDICNFG_PHY_SHIFT);
+> +		wr32(E1000_MDICNFG, mdic);
+> +	}
+> +
+>   	mdic = (((u32)data) |
+>   		(offset << E1000_MDIC_REG_SHIFT) |
+>   		(phy->addr << E1000_MDIC_PHY_SHIFT) |
+> @@ -2509,3 +2523,68 @@ static s32 igb_set_master_slave_mode(struct e1000_hw *hw)
+>
+>   	return hw->phy.ops.write_reg(hw, PHY_1000T_CTRL, phy_data);
+>   }
+> +
+> +/**
+> + *  igb_phy_init_script_5461s - Inits the BCM5461S PHY
+> + *  @hw: pointer to the HW structure
+> + *
+> + *  Initializes a Broadcom Gigabit PHY.
+> + **/
+> +s32 igb_phy_init_script_5461s(struct e1000_hw *hw)
+> +{
+> +	u16 mii_reg_led = 0;
+> +
+> +	/* 1. Speed LED (Set the Link LED mode), Shadow 00010, 0x1C.bit2=1 */
+> +	hw->phy.ops.write_reg(hw, 0x1C, 0x0800);
+> +	hw->phy.ops.read_reg(hw, 0x1C, &mii_reg_led);
+> +	mii_reg_led |= 0x0004;
+> +	hw->phy.ops.write_reg(hw, 0x1C, mii_reg_led | 0x8000);
+> +
+> +	/* 2. Active LED (Set the Link LED mode), Shadow 01001, 0x1C.bit4=1,
+> +	 *    0x10.bit5=0
+> +	 */
+> +	hw->phy.ops.write_reg(hw, 0x1C, 0x2400);
+> +	hw->phy.ops.read_reg(hw, 0x1C, &mii_reg_led);
+> +	mii_reg_led |= 0x0010;
+> +	hw->phy.ops.write_reg(hw, 0x1C, mii_reg_led | 0x8000);
+> +	hw->phy.ops.read_reg(hw, 0x10, &mii_reg_led);
+> +	mii_reg_led &= 0xffdf;
+> +	hw->phy.ops.write_reg(hw, 0x10, mii_reg_led);
+> +
+> +	return 0;
+> +}
+> +
+> +/**
+> + *  igb_get_phy_info_5461s - Retrieve 5461s PHY information
+> + *  @hw: pointer to the HW structure
+> + *
+> + *  Read PHY status to determine if link is up.  If link is up, then
+> + *  set/determine 10base-T extended distance and polarity correction.  Read
+> + *  PHY port status to determine MDI/MDIx and speed.  Based on the speed,
+> + *  determine on the cable length, local and remote receiver.
+> + **/
+> +s32 igb_get_phy_info_5461s(struct e1000_hw *hw)
+> +{
+> +	struct e1000_phy_info *phy = &hw->phy;
+> +	s32 ret_val;
+> +	bool link;
+> +
+> +	ret_val = igb_phy_has_link(hw, 1, 0, &link);
+> +	if (ret_val)
+> +		goto out;
+> +
+> +	if (!link) {
+> +		ret_val = -E1000_ERR_CONFIG;
+> +		goto out;
+> +	}
+> +
+> +	phy->polarity_correction = true;
+> +
+> +	phy->is_mdix = true;
+> +	phy->cable_length = E1000_CABLE_LENGTH_UNDEFINED;
+> +	phy->local_rx = e1000_1000t_rx_status_ok;
+> +	phy->remote_rx = e1000_1000t_rx_status_ok;
+> +
+> +out:
+> +	return ret_val;
+> +}
+> diff --git a/drivers/net/ethernet/intel/igb/e1000_phy.h b/drivers/net/ethernet/intel/igb/e1000_phy.h
+> index 7af4ffa..fcdd84c 100644
+> --- a/drivers/net/ethernet/intel/igb/e1000_phy.h
+> +++ b/drivers/net/ethernet/intel/igb/e1000_phy.h
+> @@ -61,6 +61,8 @@ s32  igb_phy_has_link(struct e1000_hw *hw, u32 iterations,
+>   void igb_power_up_phy_copper(struct e1000_hw *hw);
+>   void igb_power_down_phy_copper(struct e1000_hw *hw);
+>   s32  igb_phy_init_script_igp3(struct e1000_hw *hw);
+> +s32  igb_phy_init_script_5461s(struct e1000_hw *hw);
+> +s32  igb_get_phy_info_5461s(struct e1000_hw *hw);
+>   s32  igb_read_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 *data);
+>   s32  igb_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data);
+>   s32  igb_read_phy_reg_i2c(struct e1000_hw *hw, u32 offset, u16 *data);
+>
 
-Reported-by: Vlad Zolotarov <vladz@cloudius-systems.com>
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
----
- drivers/net/ethernet/intel/ixgbevf/ethtool.c      |   51 ++++++++++++---------
- drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |    9 +++-
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   21 +++++----
- 3 files changed, 47 insertions(+), 34 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ethtool.c b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
-index b2f5b16..d3e5f5b 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
-@@ -813,22 +813,15 @@ static u32 ixgbevf_get_rxfh_indir_size(struct net_device *netdev)
- {
- 	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
- 
--	/* We support this operation only for 82599 and x540 at the moment */
--	if (adapter->hw.mac.type < ixgbe_mac_X550_vf)
--		return IXGBEVF_82599_RETA_SIZE;
-+	if (adapter->hw.mac.type >= ixgbe_mac_X550_vf)
-+		return IXGBEVF_X550_VFRETA_SIZE;
- 
--	return 0;
-+	return IXGBEVF_82599_RETA_SIZE;
- }
- 
- static u32 ixgbevf_get_rxfh_key_size(struct net_device *netdev)
- {
--	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
--
--	/* We support this operation only for 82599 and x540 at the moment */
--	if (adapter->hw.mac.type < ixgbe_mac_X550_vf)
--		return IXGBEVF_RSS_HASH_KEY_SIZE;
--
--	return 0;
-+	return IXGBEVF_RSS_HASH_KEY_SIZE;
- }
- 
- static int ixgbevf_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key,
-@@ -840,21 +833,33 @@ static int ixgbevf_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key,
- 	if (hfunc)
- 		*hfunc = ETH_RSS_HASH_TOP;
- 
--	/* If neither indirection table nor hash key was requested - just
--	 * return a success avoiding taking any locks.
--	 */
--	if (!indir && !key)
--		return 0;
-+	if (adapter->hw.mac.type >= ixgbe_mac_X550_vf) {
-+		if (key)
-+			memcpy(key, adapter->rss_key, sizeof(adapter->rss_key));
- 
--	spin_lock_bh(&adapter->mbx_lock);
--	if (indir)
--		err = ixgbevf_get_reta_locked(&adapter->hw, indir,
--					      adapter->num_rx_queues);
-+		if (indir) {
-+			int i;
- 
--	if (!err && key)
--		err = ixgbevf_get_rss_key_locked(&adapter->hw, key);
-+			for (i = 0; i < IXGBEVF_X550_VFRETA_SIZE; i++)
-+				indir[i] = adapter->rss_indir_tbl[i];
-+		}
-+	} else {
-+		/* If neither indirection table nor hash key was requested
-+		 *  - just return a success avoiding taking any locks.
-+		 */
-+		if (!indir && !key)
-+			return 0;
- 
--	spin_unlock_bh(&adapter->mbx_lock);
-+		spin_lock_bh(&adapter->mbx_lock);
-+		if (indir)
-+			err = ixgbevf_get_reta_locked(&adapter->hw, indir,
-+						      adapter->num_rx_queues);
-+
-+		if (!err && key)
-+			err = ixgbevf_get_rss_key_locked(&adapter->hw, key);
-+
-+		spin_unlock_bh(&adapter->mbx_lock);
-+	}
- 
- 	return err;
- }
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-index 775d089..04c7ec8 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-@@ -144,9 +144,11 @@ struct ixgbevf_ring {
- 
- #define MAX_RX_QUEUES IXGBE_VF_MAX_RX_QUEUES
- #define MAX_TX_QUEUES IXGBE_VF_MAX_TX_QUEUES
--#define IXGBEVF_MAX_RSS_QUEUES	2
--#define IXGBEVF_82599_RETA_SIZE	128
-+#define IXGBEVF_MAX_RSS_QUEUES		2
-+#define IXGBEVF_82599_RETA_SIZE		128	/* 128 entries */
-+#define IXGBEVF_X550_VFRETA_SIZE	64	/* 64 entries */
- #define IXGBEVF_RSS_HASH_KEY_SIZE	40
-+#define IXGBEVF_VFRSSRK_REGS		10	/* 10 registers for RSS key */
- 
- #define IXGBEVF_DEFAULT_TXD	1024
- #define IXGBEVF_DEFAULT_RXD	512
-@@ -447,6 +449,9 @@ struct ixgbevf_adapter {
- 
- 	spinlock_t mbx_lock;
- 	unsigned long last_reset;
-+
-+	u32 rss_key[IXGBEVF_VFRSSRK_REGS];
-+	u8 rss_indir_tbl[IXGBEVF_X550_VFRETA_SIZE];
- };
- 
- enum ixbgevf_state_t {
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index e480708..8a73514 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -1669,22 +1669,25 @@ static void ixgbevf_setup_vfmrqc(struct ixgbevf_adapter *adapter)
- {
- 	struct ixgbe_hw *hw = &adapter->hw;
- 	u32 vfmrqc = 0, vfreta = 0;
--	u32 rss_key[10];
- 	u16 rss_i = adapter->num_rx_queues;
--	int i, j;
-+	u8 i, j;
- 
- 	/* Fill out hash function seeds */
--	netdev_rss_key_fill(rss_key, sizeof(rss_key));
--	for (i = 0; i < 10; i++)
--		IXGBE_WRITE_REG(hw, IXGBE_VFRSSRK(i), rss_key[i]);
-+	netdev_rss_key_fill(adapter->rss_key, sizeof(adapter->rss_key));
-+	for (i = 0; i < IXGBEVF_VFRSSRK_REGS; i++)
-+		IXGBE_WRITE_REG(hw, IXGBE_VFRSSRK(i), adapter->rss_key[i]);
- 
--	/* Fill out redirection table */
--	for (i = 0, j = 0; i < 64; i++, j++) {
-+	for (i = 0, j = 0; i < IXGBEVF_X550_VFRETA_SIZE; i++, j++) {
- 		if (j == rss_i)
- 			j = 0;
--		vfreta = (vfreta << 8) | (j * 0x1);
--		if ((i & 3) == 3)
-+
-+		adapter->rss_indir_tbl[i] = j;
-+
-+		vfreta |= j << (i & 0x3) * 8;
-+		if ((i & 3) == 3) {
- 			IXGBE_WRITE_REG(hw, IXGBE_VFRETA(i >> 2), vfreta);
-+			vfreta = 0;
-+		}
- 	}
- 
- 	/* Perform hash on these packet types */
+Simple keepalive to make sure these have not been forgotten, the 
+patchworks entries are still in "new" state.
 
+http://patchwork.ozlabs.org/patch/462222/
+http://patchwork.ozlabs.org/patch/462223/
+
+Regards,
+-Jon
