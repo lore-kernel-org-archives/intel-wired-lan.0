@@ -1,389 +1,166 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Mon, 27 Apr 2015 14:57:18 -0400
-Subject: [Intel-wired-lan] [net-next S5 11/15] i40e/i40evf: Fix and refactor
-	dynamic ITR code
+Date: Mon, 27 Apr 2015 14:57:19 -0400
+Subject: [Intel-wired-lan] [net-next S5 12/15] i40e/i40evf: Add support for
+	pre-allocated pages for PD
 In-Reply-To: <1430161042-28494-1-git-send-email-catherine.sullivan@intel.com>
 References: <1430161042-28494-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1430161042-28494-12-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1430161042-28494-13-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Carolyn Wyborny <carolyn.wyborny@intel.com>
+From: Faisal Latif <faisal.latif@intel.com>
 
-This patch changes the switch statement for dynamic interrupt throttling
-and adds a default case. With this patch, we check the latency setting
-instead of the current ITR settings and the included refactor improves
-performance.
+The i40e_add_pd_table_entry() routine is being modified to handle both
+cases where a backing page is passed and where backing page is allocated
+in i40e_add_pd_table_entry().
 
-Without this patch, the ITR setting would never change dynamically, and
-there was no default.
+For PBLE resource management, it is more efficient for it to manage its
+backing pages. For VF, PBLE backing page addresses will be send to PF
+driver for PBLE resource.
 
-Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
-Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Change-ID: Idb5a8a14c7109ec47c90f6e94bd43baa17d7ee37
+The i40e_remove_pd_bp() is also modified to not free pre-allocated pages and
+free only ones which were allocated in i40e_add_pd_table_entry().
+
+Signed-off-by: Faisal Latif <faisal.latif@intel.com>
+Change-ID: Ie673f0403f22979e9406f5a94048dceb91bcf9a8
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 146 ++++++++++++++++----------
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 113 +++++++++++++-------
- 2 files changed, 161 insertions(+), 98 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_hmc.c     | 30 +++++++++++++++++---------
+ drivers/net/ethernet/intel/i40e/i40e_hmc.h     |  4 +++-
+ drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c |  2 +-
+ drivers/net/ethernet/intel/i40evf/i40e_hmc.h   |  4 +++-
+ 4 files changed, 27 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 74022ac..44aa93e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -892,7 +892,7 @@ static void i40e_set_new_dynamic_itr(struct i40e_ring_container *rc)
- 	 *  20-1249MB/s bulk   (8000 ints/s)
- 	 */
- 	bytes_per_int = rc->total_bytes / rc->itr;
--	switch (rc->itr) {
-+	switch (new_latency_range) {
- 	case I40E_LOWEST_LATENCY:
- 		if (bytes_per_int > 10)
- 			new_latency_range = I40E_LOW_LATENCY;
-@@ -905,9 +905,14 @@ static void i40e_set_new_dynamic_itr(struct i40e_ring_container *rc)
- 		break;
- 	case I40E_BULK_LATENCY:
- 		if (bytes_per_int <= 20)
--			rc->latency_range = I40E_LOW_LATENCY;
-+			new_latency_range = I40E_LOW_LATENCY;
-+		break;
-+	default:
-+		if (bytes_per_int <= 20)
-+			new_latency_range = I40E_LOW_LATENCY;
- 		break;
- 	}
-+	rc->latency_range = new_latency_range;
- 
- 	switch (new_latency_range) {
- 	case I40E_LOWEST_LATENCY:
-@@ -923,42 +928,14 @@ static void i40e_set_new_dynamic_itr(struct i40e_ring_container *rc)
- 		break;
- 	}
- 
--	if (new_itr != rc->itr) {
--		/* do an exponential smoothing */
--		new_itr = (10 * new_itr * rc->itr) /
--			  ((9 * new_itr) + rc->itr);
--		rc->itr = new_itr & I40E_MAX_ITR;
--	}
-+	if (new_itr != rc->itr)
-+		rc->itr = new_itr;
- 
- 	rc->total_bytes = 0;
- 	rc->total_packets = 0;
- }
- 
- /**
-- * i40e_update_dynamic_itr - Adjust ITR based on bytes per int
-- * @q_vector: the vector to adjust
-- **/
--static void i40e_update_dynamic_itr(struct i40e_q_vector *q_vector)
--{
--	u16 vector = q_vector->vsi->base_vector + q_vector->v_idx;
--	struct i40e_hw *hw = &q_vector->vsi->back->hw;
--	u32 reg_addr;
--	u16 old_itr;
--
--	reg_addr = I40E_PFINT_ITRN(I40E_RX_ITR, vector - 1);
--	old_itr = q_vector->rx.itr;
--	i40e_set_new_dynamic_itr(&q_vector->rx);
--	if (old_itr != q_vector->rx.itr)
--		wr32(hw, reg_addr, q_vector->rx.itr);
--
--	reg_addr = I40E_PFINT_ITRN(I40E_TX_ITR, vector - 1);
--	old_itr = q_vector->tx.itr;
--	i40e_set_new_dynamic_itr(&q_vector->tx);
--	if (old_itr != q_vector->tx.itr)
--		wr32(hw, reg_addr, q_vector->tx.itr);
--}
--
--/**
-  * i40e_clean_programming_status - clean the programming status descriptor
-  * @rx_ring: the rx ring that has this descriptor
-  * @rx_desc: the rx descriptor written back by HW
-@@ -1829,6 +1806,68 @@ static int i40e_clean_rx_irq_1buf(struct i40e_ring *rx_ring, int budget)
- }
- 
- /**
-+ * i40e_update_enable_itr - Update itr and re-enable MSIX interrupt
-+ * @vsi: the VSI we care about
-+ * @q_vector: q_vector for which itr is being updated and interrupt enabled
-+ *
-+ **/
-+static inline void i40e_update_enable_itr(struct i40e_vsi *vsi,
-+					  struct i40e_q_vector *q_vector)
-+{
-+	struct i40e_hw *hw = &vsi->back->hw;
-+	u16 old_itr;
-+	int vector;
-+	u32 val;
-+
-+	vector = (q_vector->v_idx + vsi->base_vector);
-+	if (ITR_IS_DYNAMIC(vsi->rx_itr_setting)) {
-+		old_itr = q_vector->rx.itr;
-+		i40e_set_new_dynamic_itr(&q_vector->rx);
-+		if (old_itr != q_vector->rx.itr) {
-+			val = I40E_PFINT_DYN_CTLN_INTENA_MASK |
-+			I40E_PFINT_DYN_CTLN_CLEARPBA_MASK |
-+			(I40E_RX_ITR <<
-+				I40E_PFINT_DYN_CTLN_ITR_INDX_SHIFT) |
-+			(q_vector->rx.itr <<
-+				I40E_PFINT_DYN_CTLN_INTERVAL_SHIFT);
-+		} else {
-+			val = I40E_PFINT_DYN_CTLN_INTENA_MASK |
-+			I40E_PFINT_DYN_CTLN_CLEARPBA_MASK |
-+			(I40E_ITR_NONE <<
-+				I40E_PFINT_DYN_CTLN_ITR_INDX_SHIFT);
-+		}
-+		if (!test_bit(__I40E_DOWN, &vsi->state))
-+			wr32(hw, I40E_PFINT_DYN_CTLN(vector - 1), val);
-+	} else {
-+		i40e_irq_dynamic_enable(vsi,
-+					q_vector->v_idx + vsi->base_vector);
-+	}
-+	if (ITR_IS_DYNAMIC(vsi->tx_itr_setting)) {
-+		old_itr = q_vector->tx.itr;
-+		i40e_set_new_dynamic_itr(&q_vector->tx);
-+		if (old_itr != q_vector->tx.itr) {
-+			val = I40E_PFINT_DYN_CTLN_INTENA_MASK |
-+				I40E_PFINT_DYN_CTLN_CLEARPBA_MASK |
-+				(I40E_TX_ITR <<
-+				   I40E_PFINT_DYN_CTLN_ITR_INDX_SHIFT) |
-+				(q_vector->tx.itr <<
-+				   I40E_PFINT_DYN_CTLN_INTERVAL_SHIFT);
-+		} else {
-+			val = I40E_PFINT_DYN_CTLN_INTENA_MASK |
-+				I40E_PFINT_DYN_CTLN_CLEARPBA_MASK |
-+				(I40E_ITR_NONE <<
-+				   I40E_PFINT_DYN_CTLN_ITR_INDX_SHIFT);
-+		}
-+		if (!test_bit(__I40E_DOWN, &vsi->state))
-+			wr32(hw, I40E_PFINT_DYN_CTLN(q_vector->v_idx +
-+			      vsi->base_vector - 1), val);
-+	} else {
-+		i40e_irq_dynamic_enable(vsi,
-+					q_vector->v_idx + vsi->base_vector);
-+	}
-+}
-+
-+/**
-  * i40e_napi_poll - NAPI polling Rx/Tx cleanup routine
-  * @napi: napi struct with our devices info in it
-  * @budget: amount of work driver is allowed to do this pass, in packets
-@@ -1884,33 +1923,24 @@ int i40e_napi_poll(struct napi_struct *napi, int budget)
- 
- 	/* Work is done so exit the polling mode and re-enable the interrupt */
- 	napi_complete(napi);
--	if (ITR_IS_DYNAMIC(vsi->rx_itr_setting) ||
--	    ITR_IS_DYNAMIC(vsi->tx_itr_setting))
--		i40e_update_dynamic_itr(q_vector);
--
--	if (!test_bit(__I40E_DOWN, &vsi->state)) {
--		if (vsi->back->flags & I40E_FLAG_MSIX_ENABLED) {
--			i40e_irq_dynamic_enable(vsi,
--					q_vector->v_idx + vsi->base_vector);
--		} else {
--			struct i40e_hw *hw = &vsi->back->hw;
--			/* We re-enable the queue 0 cause, but
--			 * don't worry about dynamic_enable
--			 * because we left it on for the other
--			 * possible interrupts during napi
--			 */
--			u32 qval = rd32(hw, I40E_QINT_RQCTL(0));
--			qval |= I40E_QINT_RQCTL_CAUSE_ENA_MASK;
--			wr32(hw, I40E_QINT_RQCTL(0), qval);
--
--			qval = rd32(hw, I40E_QINT_TQCTL(0));
--			qval |= I40E_QINT_TQCTL_CAUSE_ENA_MASK;
--			wr32(hw, I40E_QINT_TQCTL(0), qval);
--
--			i40e_irq_dynamic_enable_icr0(vsi->back);
--		}
-+	if (vsi->back->flags & I40E_FLAG_MSIX_ENABLED) {
-+		i40e_update_enable_itr(vsi, q_vector);
-+	} else { /* Legacy mode */
-+		struct i40e_hw *hw = &vsi->back->hw;
-+		/* We re-enable the queue 0 cause, but
-+		 * don't worry about dynamic_enable
-+		 * because we left it on for the other
-+		 * possible interrupts during napi
-+		 */
-+		u32 qval = rd32(hw, I40E_QINT_RQCTL(0)) |
-+			   I40E_QINT_RQCTL_CAUSE_ENA_MASK;
-+
-+		wr32(hw, I40E_QINT_RQCTL(0), qval);
-+		qval = rd32(hw, I40E_QINT_TQCTL(0)) |
-+		       I40E_QINT_TQCTL_CAUSE_ENA_MASK;
-+		wr32(hw, I40E_QINT_TQCTL(0), qval);
-+		i40e_irq_dynamic_enable_icr0(vsi->back);
- 	}
--
- 	return 0;
- }
- 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index e629762..cce2e23 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -404,7 +404,7 @@ static void i40e_set_new_dynamic_itr(struct i40e_ring_container *rc)
- 	 *  20-1249MB/s bulk   (8000 ints/s)
- 	 */
- 	bytes_per_int = rc->total_bytes / rc->itr;
--	switch (rc->itr) {
-+	switch (new_latency_range) {
- 	case I40E_LOWEST_LATENCY:
- 		if (bytes_per_int > 10)
- 			new_latency_range = I40E_LOW_LATENCY;
-@@ -417,9 +417,14 @@ static void i40e_set_new_dynamic_itr(struct i40e_ring_container *rc)
- 		break;
- 	case I40E_BULK_LATENCY:
- 		if (bytes_per_int <= 20)
--			rc->latency_range = I40E_LOW_LATENCY;
-+			new_latency_range = I40E_LOW_LATENCY;
-+		break;
-+	default:
-+		if (bytes_per_int <= 20)
-+			new_latency_range = I40E_LOW_LATENCY;
- 		break;
- 	}
-+	rc->latency_range = new_latency_range;
- 
- 	switch (new_latency_range) {
- 	case I40E_LOWEST_LATENCY:
-@@ -435,42 +440,14 @@ static void i40e_set_new_dynamic_itr(struct i40e_ring_container *rc)
- 		break;
- 	}
- 
--	if (new_itr != rc->itr) {
--		/* do an exponential smoothing */
--		new_itr = (10 * new_itr * rc->itr) /
--			  ((9 * new_itr) + rc->itr);
--		rc->itr = new_itr & I40E_MAX_ITR;
--	}
-+	if (new_itr != rc->itr)
-+		rc->itr = new_itr;
- 
- 	rc->total_bytes = 0;
- 	rc->total_packets = 0;
- }
- 
--/**
-- * i40e_update_dynamic_itr - Adjust ITR based on bytes per int
-- * @q_vector: the vector to adjust
-- **/
--static void i40e_update_dynamic_itr(struct i40e_q_vector *q_vector)
--{
--	u16 vector = q_vector->vsi->base_vector + q_vector->v_idx;
--	struct i40e_hw *hw = &q_vector->vsi->back->hw;
--	u32 reg_addr;
--	u16 old_itr;
--
--	reg_addr = I40E_VFINT_ITRN1(I40E_RX_ITR, vector - 1);
--	old_itr = q_vector->rx.itr;
--	i40e_set_new_dynamic_itr(&q_vector->rx);
--	if (old_itr != q_vector->rx.itr)
--		wr32(hw, reg_addr, q_vector->rx.itr);
--
--	reg_addr = I40E_VFINT_ITRN1(I40E_TX_ITR, vector - 1);
--	old_itr = q_vector->tx.itr;
--	i40e_set_new_dynamic_itr(&q_vector->tx);
--	if (old_itr != q_vector->tx.itr)
--		wr32(hw, reg_addr, q_vector->tx.itr);
--}
--
--/**
-+/*
-  * i40evf_setup_tx_descriptors - Allocate the Tx descriptors
-  * @tx_ring: the tx ring to set up
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_hmc.c b/drivers/net/ethernet/intel/i40e/i40e_hmc.c
+index 9b987cc..b89856a 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_hmc.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_hmc.c
+@@ -116,6 +116,7 @@ exit:
+  * @hw: pointer to our HW structure
+  * @hmc_info: pointer to the HMC configuration information structure
+  * @pd_index: which page descriptor index to manipulate
++ * @rsrc_pg: if not NULL, use preallocated page instead of allocating new one.
   *
-@@ -1279,6 +1256,68 @@ static int i40e_clean_rx_irq_1buf(struct i40e_ring *rx_ring, int budget)
- }
- 
- /**
-+ * i40e_update_enable_itr - Update itr and re-enable MSIX interrupt
-+ * @vsi: the VSI we care about
-+ * @q_vector: q_vector for which itr is being updated and interrupt enabled
-+ *
-+ **/
-+static inline void i40e_update_enable_itr(struct i40e_vsi *vsi,
-+					  struct i40e_q_vector *q_vector)
-+{
-+	struct i40e_hw *hw = &vsi->back->hw;
-+	u16 old_itr;
-+	int vector;
-+	u32 val;
-+
-+	vector = (q_vector->v_idx + vsi->base_vector);
-+	if (ITR_IS_DYNAMIC(vsi->rx_itr_setting)) {
-+		old_itr = q_vector->rx.itr;
-+		i40e_set_new_dynamic_itr(&q_vector->rx);
-+		if (old_itr != q_vector->rx.itr) {
-+			val = I40E_VFINT_DYN_CTLN_INTENA_MASK |
-+			I40E_VFINT_DYN_CTLN_CLEARPBA_MASK |
-+			(I40E_RX_ITR <<
-+				I40E_VFINT_DYN_CTLN_ITR_INDX_SHIFT) |
-+			(q_vector->rx.itr <<
-+				I40E_VFINT_DYN_CTLN_INTERVAL_SHIFT);
+  * This function:
+  *	1. Initializes the pd entry
+@@ -129,12 +130,14 @@ exit:
+  **/
+ i40e_status i40e_add_pd_table_entry(struct i40e_hw *hw,
+ 					      struct i40e_hmc_info *hmc_info,
+-					      u32 pd_index)
++					      u32 pd_index,
++					      struct i40e_dma_mem *rsrc_pg)
+ {
+ 	i40e_status ret_code = 0;
+ 	struct i40e_hmc_pd_table *pd_table;
+ 	struct i40e_hmc_pd_entry *pd_entry;
+ 	struct i40e_dma_mem mem;
++	struct i40e_dma_mem *page = &mem;
+ 	u32 sd_idx, rel_pd_idx;
+ 	u64 *pd_addr;
+ 	u64 page_desc;
+@@ -155,18 +158,24 @@ i40e_status i40e_add_pd_table_entry(struct i40e_hw *hw,
+ 	pd_table = &hmc_info->sd_table.sd_entry[sd_idx].u.pd_table;
+ 	pd_entry = &pd_table->pd_entry[rel_pd_idx];
+ 	if (!pd_entry->valid) {
+-		/* allocate a 4K backing page */
+-		ret_code = i40e_allocate_dma_mem(hw, &mem, i40e_mem_bp,
+-						 I40E_HMC_PAGED_BP_SIZE,
+-						 I40E_HMC_PD_BP_BUF_ALIGNMENT);
+-		if (ret_code)
+-			goto exit;
++		if (rsrc_pg) {
++			pd_entry->rsrc_pg = true;
++			page = rsrc_pg;
 +		} else {
-+			val = I40E_VFINT_DYN_CTLN_INTENA_MASK |
-+			I40E_VFINT_DYN_CTLN_CLEARPBA_MASK |
-+			(I40E_ITR_NONE <<
-+				I40E_VFINT_DYN_CTLN_ITR_INDX_SHIFT);
++			/* allocate a 4K backing page */
++			ret_code = i40e_allocate_dma_mem(hw, page, i40e_mem_bp,
++						I40E_HMC_PAGED_BP_SIZE,
++						I40E_HMC_PD_BP_BUF_ALIGNMENT);
++			if (ret_code)
++				goto exit;
++			pd_entry->rsrc_pg = false;
 +		}
-+		if (!test_bit(__I40E_DOWN, &vsi->state))
-+			wr32(hw, I40E_VFINT_DYN_CTLN(vector - 1), val);
-+	} else {
-+		i40evf_irq_enable_queues(vsi->back, 1
-+			<< q_vector->v_idx);
-+	}
-+	if (ITR_IS_DYNAMIC(vsi->tx_itr_setting)) {
-+		old_itr = q_vector->tx.itr;
-+		i40e_set_new_dynamic_itr(&q_vector->tx);
-+		if (old_itr != q_vector->tx.itr) {
-+			val = I40E_VFINT_DYN_CTLN_INTENA_MASK |
-+				I40E_VFINT_DYN_CTLN_CLEARPBA_MASK |
-+				(I40E_TX_ITR <<
-+				   I40E_VFINT_DYN_CTLN_ITR_INDX_SHIFT) |
-+				(q_vector->tx.itr <<
-+				   I40E_VFINT_DYN_CTLN_INTERVAL_SHIFT);
-+
-+		} else {
-+			val = I40E_VFINT_DYN_CTLN_INTENA_MASK |
-+				I40E_VFINT_DYN_CTLN_CLEARPBA_MASK |
-+				(I40E_ITR_NONE <<
-+				   I40E_VFINT_DYN_CTLN_ITR_INDX_SHIFT);
-+		}
-+		if (!test_bit(__I40E_DOWN, &vsi->state))
-+			wr32(hw, I40E_VFINT_DYN_CTLN(vector - 1), val);
-+	} else {
-+		i40evf_irq_enable_queues(vsi->back,
-+					 1 << q_vector->v_idx);
-+	}
-+}
-+
-+/**
-  * i40evf_napi_poll - NAPI polling Rx/Tx cleanup routine
-  * @napi: napi struct with our devices info in it
-  * @budget: amount of work driver is allowed to do this pass, in packets
-@@ -1334,13 +1373,7 @@ int i40evf_napi_poll(struct napi_struct *napi, int budget)
  
- 	/* Work is done so exit the polling mode and re-enable the interrupt */
- 	napi_complete(napi);
--	if (ITR_IS_DYNAMIC(vsi->rx_itr_setting) ||
--	    ITR_IS_DYNAMIC(vsi->tx_itr_setting))
--		i40e_update_dynamic_itr(q_vector);
--
--	if (!test_bit(__I40E_DOWN, &vsi->state))
--		i40evf_irq_enable_queues(vsi->back, 1 << q_vector->v_idx);
--
-+	i40e_update_enable_itr(vsi, q_vector);
- 	return 0;
- }
+-		pd_entry->bp.addr = mem;
++		pd_entry->bp.addr = *page;
+ 		pd_entry->bp.sd_pd_index = pd_index;
+ 		pd_entry->bp.entry_type = I40E_SD_TYPE_PAGED;
+ 		/* Set page address and valid bit */
+-		page_desc = mem.pa | 0x1;
++		page_desc = page->pa | 0x1;
  
+ 		pd_addr = (u64 *)pd_table->pd_page_addr.va;
+ 		pd_addr += rel_pd_idx;
+@@ -240,7 +249,8 @@ i40e_status i40e_remove_pd_bp(struct i40e_hw *hw,
+ 	I40E_INVALIDATE_PF_HMC_PD(hw, sd_idx, idx);
+ 
+ 	/* free memory here */
+-	ret_code = i40e_free_dma_mem(hw, &(pd_entry->bp.addr));
++	if (!pd_entry->rsrc_pg)
++		ret_code = i40e_free_dma_mem(hw, &pd_entry->bp.addr);
+ 	if (ret_code)
+ 		goto exit;
+ 	if (!pd_table->ref_cnt)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_hmc.h b/drivers/net/ethernet/intel/i40e/i40e_hmc.h
+index 732a026..386416b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_hmc.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_hmc.h
+@@ -62,6 +62,7 @@ struct i40e_hmc_bp {
+ struct i40e_hmc_pd_entry {
+ 	struct i40e_hmc_bp bp;
+ 	u32 sd_index;
++	bool rsrc_pg;
+ 	bool valid;
+ };
+ 
+@@ -218,7 +219,8 @@ i40e_status i40e_add_sd_table_entry(struct i40e_hw *hw,
+ 
+ i40e_status i40e_add_pd_table_entry(struct i40e_hw *hw,
+ 					      struct i40e_hmc_info *hmc_info,
+-					      u32 pd_index);
++					      u32 pd_index,
++					      struct i40e_dma_mem *rsrc_pg);
+ i40e_status i40e_remove_pd_bp(struct i40e_hw *hw,
+ 					struct i40e_hmc_info *hmc_info,
+ 					u32 idx);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c b/drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c
+index 0079ad7..d399eaf 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c
+@@ -387,7 +387,7 @@ static i40e_status i40e_create_lan_hmc_object(struct i40e_hw *hw,
+ 				/* update the pd table entry */
+ 				ret_code = i40e_add_pd_table_entry(hw,
+ 								info->hmc_info,
+-								i);
++								i, NULL);
+ 				if (ret_code) {
+ 					pd_error = true;
+ 					break;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_hmc.h b/drivers/net/ethernet/intel/i40evf/i40e_hmc.h
+index 931c880..adc6f71 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_hmc.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_hmc.h
+@@ -62,6 +62,7 @@ struct i40e_hmc_bp {
+ struct i40e_hmc_pd_entry {
+ 	struct i40e_hmc_bp bp;
+ 	u32 sd_index;
++	bool rsrc_pg;
+ 	bool valid;
+ };
+ 
+@@ -218,7 +219,8 @@ i40e_status i40e_add_sd_table_entry(struct i40e_hw *hw,
+ 
+ i40e_status i40e_add_pd_table_entry(struct i40e_hw *hw,
+ 					      struct i40e_hmc_info *hmc_info,
+-					      u32 pd_index);
++					      u32 pd_index,
++					      struct i40e_dma_mem *rsrc_pg);
+ i40e_status i40e_remove_pd_bp(struct i40e_hw *hw,
+ 					struct i40e_hmc_info *hmc_info,
+ 					u32 idx);
 -- 
 1.9.3
 
