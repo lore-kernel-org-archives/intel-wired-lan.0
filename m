@@ -1,75 +1,169 @@
-From: Alexander Duyck <alexander.h.duyck@redhat.com>
-Date: Mon, 27 Apr 2015 12:41:29 -0700
-Subject: [Intel-wired-lan] [PATCH 1/2] ixgbe: Specify rx hash type wrt
- rx desc RSS type
-In-Reply-To: <1429774270-21344-2-git-send-email-fan.du@intel.com>
-References: <1429774270-21344-1-git-send-email-fan.du@intel.com>
- <1429774270-21344-2-git-send-email-fan.du@intel.com>
-Message-ID: <553E90E9.2050709@redhat.com>
+From: Emil Tantilov <emil.s.tantilov@intel.com>
+Date: Mon, 27 Apr 2015 13:36:15 -0700
+Subject: [Intel-wired-lan] [net-next PATCH] ixgbevf: add support for
+ reporting RSS key and hash table for X550
+Message-ID: <20150427203614.32710.54668.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+This patch extends the reporting of the RSS key and hash table by
+adding support for X550 VFs. The difference is that X550 VFs have
+their own registers for RSS key and indirection table, so there is
+no need to query the PF.
 
-On 04/23/2015 12:31 AM, Fan Du wrote:
-> RSS could be leveraged by taking account L4 src/dst ports
-> as ingredients, thus ingress skb rx hash type should honor
-> such the real configuration.
->
-> Signed-off-by: Fan Du <fan.du@intel.com>
-> ---
->   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   25 +++++++++++++++++++++----
->   1 files changed, 21 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> index d3f4b0c..5df896b 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> @@ -1357,14 +1357,31 @@ static int __ixgbe_notify_dca(struct device *dev, void *data)
->   }
->   
->   #endif /* CONFIG_IXGBE_DCA */
-> +
-> +#define IXGBE_RSS_L4_TYPES_MASK \
-> +	((1ul << IXGBE_RXDADV_RSSTYPE_IPV4_TCP) | \
-> +	 (1ul << IXGBE_RXDADV_RSSTYPE_IPV4_UDP) | \
-> +	 (1ul << IXGBE_RXDADV_RSSTYPE_IPV6_TCP) | \
-> +	 (1ul << IXGBE_RXDADV_RSSTYPE_IPV6_UDP))
-> +
->   static inline void ixgbe_rx_hash(struct ixgbe_ring *ring,
->   				 union ixgbe_adv_rx_desc *rx_desc,
->   				 struct sk_buff *skb)
->   {
-> -	if (ring->netdev->features & NETIF_F_RXHASH)
-> -		skb_set_hash(skb,
-> -			     le32_to_cpu(rx_desc->wb.lower.hi_dword.rss),
-> -			     PKT_HASH_TYPE_L3);
-> +	u16 rss_type;
-> +
-> +	if (!(ring->netdev->features & NETIF_F_RXHASH))
-> +		return;
-> +
-> +	rss_type = le16_to_cpu(rx_desc->wb.lower.lo_dword.hs_rss.pkt_info) &
-> +		   IXGBE_RXDADV_RSSTYPE_MASK;
-> +
-> +	if (!rss_type)
-> +		return;
-> +
-> +	skb_set_hash(skb, le32_to_cpu(rx_desc->wb.lower.hi_dword.rss),
-> +		     (IXGBE_RSS_L4_TYPES_MASK & (1ul << rss_type)) ?
-> +		     PKT_HASH_TYPE_L4 : PKT_HASH_TYPE_L3);
->   }
->   
->   #ifdef IXGBE_FCOE
+Reported-by: Vlad Zolotarov <vladz@cloudius-systems.com>
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbevf/ethtool.c      |   51 ++++++++++++---------
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |    9 +++-
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   21 +++++----
+ 3 files changed, 47 insertions(+), 34 deletions(-)
 
-The patch itself here is fine, however there is a complication in that 
-with the current configuration ntuple filters will cause the RSS hash to 
-be overwritten with the signature and bucket hash values.  In order to 
-resolve that you need to update ixgbe_init_fdir_perfect_82599 so that it 
-doesn't set the IXGBE_FDIRCTRL_REPORT_STATUS bit.  Otherwise there is 
-the potential for an IPv4 rule to be defined that would set the same 
-hash value for multiple flows.
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ethtool.c b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
+index b2f5b16..d3e5f5b 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
+@@ -813,22 +813,15 @@ static u32 ixgbevf_get_rxfh_indir_size(struct net_device *netdev)
+ {
+ 	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
+ 
+-	/* We support this operation only for 82599 and x540 at the moment */
+-	if (adapter->hw.mac.type < ixgbe_mac_X550_vf)
+-		return IXGBEVF_82599_RETA_SIZE;
++	if (adapter->hw.mac.type >= ixgbe_mac_X550_vf)
++		return IXGBEVF_X550_VFRETA_SIZE;
+ 
+-	return 0;
++	return IXGBEVF_82599_RETA_SIZE;
+ }
+ 
+ static u32 ixgbevf_get_rxfh_key_size(struct net_device *netdev)
+ {
+-	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
+-
+-	/* We support this operation only for 82599 and x540 at the moment */
+-	if (adapter->hw.mac.type < ixgbe_mac_X550_vf)
+-		return IXGBEVF_RSS_HASH_KEY_SIZE;
+-
+-	return 0;
++	return IXGBEVF_RSS_HASH_KEY_SIZE;
+ }
+ 
+ static int ixgbevf_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key,
+@@ -840,21 +833,33 @@ static int ixgbevf_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key,
+ 	if (hfunc)
+ 		*hfunc = ETH_RSS_HASH_TOP;
+ 
+-	/* If neither indirection table nor hash key was requested - just
+-	 * return a success avoiding taking any locks.
+-	 */
+-	if (!indir && !key)
+-		return 0;
++	if (adapter->hw.mac.type >= ixgbe_mac_X550_vf) {
++		if (key)
++			memcpy(key, adapter->rss_key, sizeof(adapter->rss_key));
+ 
+-	spin_lock_bh(&adapter->mbx_lock);
+-	if (indir)
+-		err = ixgbevf_get_reta_locked(&adapter->hw, indir,
+-					      adapter->num_rx_queues);
++		if (indir) {
++			int i;
+ 
+-	if (!err && key)
+-		err = ixgbevf_get_rss_key_locked(&adapter->hw, key);
++			for (i = 0; i < IXGBEVF_X550_VFRETA_SIZE; i++)
++				indir[i] = adapter->rss_indir_tbl[i];
++		}
++	} else {
++		/* If neither indirection table nor hash key was requested
++		 *  - just return a success avoiding taking any locks.
++		 */
++		if (!indir && !key)
++			return 0;
+ 
+-	spin_unlock_bh(&adapter->mbx_lock);
++		spin_lock_bh(&adapter->mbx_lock);
++		if (indir)
++			err = ixgbevf_get_reta_locked(&adapter->hw, indir,
++						      adapter->num_rx_queues);
++
++		if (!err && key)
++			err = ixgbevf_get_rss_key_locked(&adapter->hw, key);
++
++		spin_unlock_bh(&adapter->mbx_lock);
++	}
+ 
+ 	return err;
+ }
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+index 775d089..04c7ec8 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+@@ -144,9 +144,11 @@ struct ixgbevf_ring {
+ 
+ #define MAX_RX_QUEUES IXGBE_VF_MAX_RX_QUEUES
+ #define MAX_TX_QUEUES IXGBE_VF_MAX_TX_QUEUES
+-#define IXGBEVF_MAX_RSS_QUEUES	2
+-#define IXGBEVF_82599_RETA_SIZE	128
++#define IXGBEVF_MAX_RSS_QUEUES		2
++#define IXGBEVF_82599_RETA_SIZE		128	/* 128 entries */
++#define IXGBEVF_X550_VFRETA_SIZE	64	/* 64 entries */
+ #define IXGBEVF_RSS_HASH_KEY_SIZE	40
++#define IXGBEVF_VFRSSRK_REGS		10	/* 10 registers for RSS key */
+ 
+ #define IXGBEVF_DEFAULT_TXD	1024
+ #define IXGBEVF_DEFAULT_RXD	512
+@@ -447,6 +449,9 @@ struct ixgbevf_adapter {
+ 
+ 	spinlock_t mbx_lock;
+ 	unsigned long last_reset;
++
++	u32 rss_key[IXGBEVF_VFRSSRK_REGS];
++	u8 rss_indir_tbl[IXGBEVF_X550_VFRETA_SIZE];
+ };
+ 
+ enum ixbgevf_state_t {
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index e480708..8a73514 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -1669,22 +1669,25 @@ static void ixgbevf_setup_vfmrqc(struct ixgbevf_adapter *adapter)
+ {
+ 	struct ixgbe_hw *hw = &adapter->hw;
+ 	u32 vfmrqc = 0, vfreta = 0;
+-	u32 rss_key[10];
+ 	u16 rss_i = adapter->num_rx_queues;
+-	int i, j;
++	u8 i, j;
+ 
+ 	/* Fill out hash function seeds */
+-	netdev_rss_key_fill(rss_key, sizeof(rss_key));
+-	for (i = 0; i < 10; i++)
+-		IXGBE_WRITE_REG(hw, IXGBE_VFRSSRK(i), rss_key[i]);
++	netdev_rss_key_fill(adapter->rss_key, sizeof(adapter->rss_key));
++	for (i = 0; i < IXGBEVF_VFRSSRK_REGS; i++)
++		IXGBE_WRITE_REG(hw, IXGBE_VFRSSRK(i), adapter->rss_key[i]);
+ 
+-	/* Fill out redirection table */
+-	for (i = 0, j = 0; i < 64; i++, j++) {
++	for (i = 0, j = 0; i < IXGBEVF_X550_VFRETA_SIZE; i++, j++) {
+ 		if (j == rss_i)
+ 			j = 0;
+-		vfreta = (vfreta << 8) | (j * 0x1);
+-		if ((i & 3) == 3)
++
++		adapter->rss_indir_tbl[i] = j;
++
++		vfreta |= j << (i & 0x3) * 8;
++		if ((i & 3) == 3) {
+ 			IXGBE_WRITE_REG(hw, IXGBE_VFRETA(i >> 2), vfreta);
++			vfreta = 0;
++		}
+ 	}
+ 
+ 	/* Perform hash on these packet types */
 
-- Alex
