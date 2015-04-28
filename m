@@ -1,213 +1,105 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 28 Apr 2015 19:00:40 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
- d0cf7168b08d131f5dffbdc3393374b5bfab0d32 BUILD SUCCESS
-Message-ID: <553f6858.NbKxB/v0qwE64G9t%fengguang.wu@intel.com>
+From: Alexander Duyck <alexander.h.duyck@redhat.com>
+Date: Tue, 28 Apr 2015 08:25:36 -0700
+Subject: [Intel-wired-lan] [PATCH 1/2] ixgbe: Specify rx hash type wrt
+ rx desc RSS type
+In-Reply-To: <5A90DA2E42F8AE43BC4A093BF0678848E4D3E1@SHSMSX104.ccr.corp.intel.com>
+References: <1429774270-21344-1-git-send-email-fan.du@intel.com>
+ <1429774270-21344-2-git-send-email-fan.du@intel.com>
+ <553E90E9.2050709@redhat.com>
+ <5A90DA2E42F8AE43BC4A093BF0678848E4D3E1@SHSMSX104.ccr.corp.intel.com>
+Message-ID: <553FA670.20202@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-d0cf7168b08d131f5dffbdc3393374b5bfab0d32  igb: Fix NULL assignment to incorrect variable in igb_reset_q_vector
+On 04/27/2015 11:43 PM, Du, Fan wrote:
+>
+>> -----Original Message-----
+>> From: Alexander Duyck [mailto:alexander.h.duyck at redhat.com]
+>> Sent: Tuesday, April 28, 2015 3:41 AM
+>> To: Du, Fan; Kirsher, Jeffrey T
+>> Cc: e1000-devel at lists.sourceforge.net; intel-wired-lan at lists.osuosl.org
+>> Subject: Re: [Intel-wired-lan] [PATCH 1/2] ixgbe: Specify rx hash type wrt rx desc
+>> RSS type
+>>
+>>
+>> On 04/23/2015 12:31 AM, Fan Du wrote:
+>>> RSS could be leveraged by taking account L4 src/dst ports
+>>> as ingredients, thus ingress skb rx hash type should honor
+>>> such the real configuration.
+>>>
+>>> Signed-off-by: Fan Du <fan.du@intel.com>
+>>> ---
+>>>    drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   25
+>> +++++++++++++++++++++----
+>>>    1 files changed, 21 insertions(+), 4 deletions(-)
+>>>
+>>> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>> b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>>> index d3f4b0c..5df896b 100644
+>>> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>>> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>>> @@ -1357,14 +1357,31 @@ static int __ixgbe_notify_dca(struct device *dev,
+>> void *data)
+>>>    }
+>>>
+>>>    #endif /* CONFIG_IXGBE_DCA */
+>>> +
+>>> +#define IXGBE_RSS_L4_TYPES_MASK \
+>>> +	((1ul << IXGBE_RXDADV_RSSTYPE_IPV4_TCP) | \
+>>> +	 (1ul << IXGBE_RXDADV_RSSTYPE_IPV4_UDP) | \
+>>> +	 (1ul << IXGBE_RXDADV_RSSTYPE_IPV6_TCP) | \
+>>> +	 (1ul << IXGBE_RXDADV_RSSTYPE_IPV6_UDP))
+>>> +
+>>>    static inline void ixgbe_rx_hash(struct ixgbe_ring *ring,
+>>>    				 union ixgbe_adv_rx_desc *rx_desc,
+>>>    				 struct sk_buff *skb)
+>>>    {
+>>> -	if (ring->netdev->features & NETIF_F_RXHASH)
+>>> -		skb_set_hash(skb,
+>>> -			     le32_to_cpu(rx_desc->wb.lower.hi_dword.rss),
+>>> -			     PKT_HASH_TYPE_L3);
+>>> +	u16 rss_type;
+>>> +
+>>> +	if (!(ring->netdev->features & NETIF_F_RXHASH))
+>>> +		return;
+>>> +
+>>> +	rss_type = le16_to_cpu(rx_desc->wb.lower.lo_dword.hs_rss.pkt_info) &
+>>> +		   IXGBE_RXDADV_RSSTYPE_MASK;
+>>> +
+>>> +	if (!rss_type)
+>>> +		return;
+>>> +
+>>> +	skb_set_hash(skb, le32_to_cpu(rx_desc->wb.lower.hi_dword.rss),
+>>> +		     (IXGBE_RSS_L4_TYPES_MASK & (1ul << rss_type)) ?
+>>> +		     PKT_HASH_TYPE_L4 : PKT_HASH_TYPE_L3);
+>>>    }
+>>>
+>>>    #ifdef IXGBE_FCOE
+>> The patch itself here is fine, however there is a complication in that
+>> with the current configuration ntuple filters will cause the RSS hash to
+>> be overwritten with the signature and bucket hash values.  In order to
+>> resolve that you need to update ixgbe_init_fdir_perfect_82599 so that it
+>> doesn't set the IXGBE_FDIRCTRL_REPORT_STATUS bit.  Otherwise there is
+>> the potential for an IPv4 rule to be defined that would set the same
+>> hash value for multiple flows.
+>
+> Yes, flow director filters mechanism could set its own hash value, which is
+> unionized with RSS hash value. But by my understanding, if a packet is
+> filtered by flow director, RSS_TYPE in the write back descriptor won't be
+> set, meaning rss_type is ZERO, and here the patch has covered this by
+> checking whether rss_type is true or not.
+>
 
-elapsed time: 662m
+I just reread that section of the data sheet and it looks like you are 
+correct.  The RSS Type should be reported as 0xF in the case of a flow 
+director filter being written to that location.
 
-configs tested: 192
+Still it might be useful to add one more patch so that you disable the 
+flow director reporting since I don't believe there is anything that 
+actually makes use of it, and it will limit the functionality you have 
+added.
 
-i386                             alldefconfig
-i386                             allmodconfig
-i386                              allnoconfig
-i386                                defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                 randconfig-a0-04271354
-x86_64                 randconfig-a1-04271354
-x86_64                            allnoconfig
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                     randconfig-c0-0427
-x86_64                     randconfig-c1-0427
-x86_64                     randconfig-c2-0427
-i386                   randconfig-c0-04271544
-i386                   randconfig-c1-04271544
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                randconfig-iv0-04281714
-x86_64                randconfig-iv1-04281714
-i386                  randconfig-ib0-04281728
-i386                  randconfig-ib1-04281728
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-microblaze                       allyesconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-s390                             allmodconfig
-s390                              allnoconfig
-s390                                defconfig
-i386                             allyesconfig
-x86_64                randconfig-ib0-04281622
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-mips                         tb0287_defconfig
-powerpc                      katmai_defconfig
-powerpc                 mpc837x_mds_defconfig
-arm                         bcm2835_defconfig
-mips                     sead3micro_defconfig
-x86_64                       randconfig-nexe0
-x86_64                       randconfig-nexe1
-x86_64                       randconfig-nexe2
-x86_64                       randconfig-nexe3
-x86_64                       randconfig-nexe4
-x86_64                       randconfig-nexe5
-x86_64                       randconfig-nexe6
-x86_64                       randconfig-nexe7
-x86_64                       randconfig-nexe8
-x86_64                       randconfig-nexe9
-i386                         randconfig-nexe0
-i386                         randconfig-nexe1
-i386                         randconfig-nexe2
-i386                         randconfig-nexe3
-i386                         randconfig-nexe4
-i386                         randconfig-nexe5
-i386                         randconfig-nexe6
-i386                         randconfig-nexe7
-i386                         randconfig-nexe8
-i386                         randconfig-nexe9
-x86_64                  randconfig-nexr0-0427
-x86_64                  randconfig-nexr1-0427
-x86_64                  randconfig-nexr2-0427
-i386                    randconfig-nexr0-0427
-i386                    randconfig-nexr1-0427
-i386                    randconfig-nexr2-0427
-x86_64              randconfig-nexs0-04281721
-i386                randconfig-nexs0-04281721
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-powerpc                      chroma_defconfig
-powerpc               corenet64_smp_defconfig
-powerpc                    gamecube_defconfig
-powerpc                 linkstation_defconfig
-powerpc                               mpc512x
-powerpc                               powerpc
-powerpc                                ppc44x
-powerpc                         wii_defconfig
-x86_64                 randconfig-n0-04281719
-arm                              allmodconfig
-arm                               allnoconfig
-arm                                      arm5
-arm                                     arm67
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                                       mmp
-arm                       omap2plus_defconfig
-arm                          prima2_defconfig
-arm                         s3c2410_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-arm                           tegra_defconfig
-x86_64                           allyesconfig
-alpha                            allyesconfig
-avr32                            allyesconfig
-blackfin                         allyesconfig
-cris                             allyesconfig
-ia64                             allyesconfig
-m68k                             allyesconfig
-mips                             allyesconfig
-parisc                           allyesconfig
-powerpc                          allyesconfig
-s390                             allyesconfig
-sh                               allyesconfig
-sparc                            allyesconfig
-sparc64                          allyesconfig
-tile                             allyesconfig
-xtensa                           allyesconfig
-m68k                             allmodconfig
-m68k                          amiga_defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-arm                        multi_v7_defconfig
-arm                    realview-smp_defconfig
-mips                          lasat_defconfig
-mn10300                     asb2364_defconfig
-powerpc                    sbc8641d_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                       randconfig-r0-0427
-i386                       randconfig-r1-0427
-i386                       randconfig-r2-0427
-x86_64                 randconfig-r0-04281711
-x86_64                 randconfig-s0-04271356
-x86_64                 randconfig-s1-04271356
-x86_64                           allmodconfig
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                        randconfig-x000
-x86_64                        randconfig-x001
-x86_64                        randconfig-x002
-x86_64                        randconfig-x003
-x86_64                        randconfig-x004
-x86_64                        randconfig-x005
-x86_64                        randconfig-x006
-x86_64                        randconfig-x007
-x86_64                        randconfig-x008
-x86_64                        randconfig-x009
-i386                          randconfig-x000
-i386                          randconfig-x001
-i386                          randconfig-x002
-i386                          randconfig-x003
-i386                          randconfig-x004
-i386                          randconfig-x005
-i386                          randconfig-x006
-i386                          randconfig-x007
-i386                          randconfig-x008
-i386                          randconfig-x009
-i386                   randconfig-x0-04270747
-i386                   randconfig-x1-04270747
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-
-Thanks,
-Fengguang
+- Alex
