@@ -1,11 +1,11 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Tue, 28 Apr 2015 03:20:18 +0000
-Subject: [Intel-wired-lan] [PATCH v1 net-next 2/3] igb: move
- initialization of link properties before igb_sw_init
-In-Reply-To: <1428707018-6405-2-git-send-email-jtoppins@cumulusnetworks.com>
+Date: Tue, 28 Apr 2015 03:22:17 +0000
+Subject: [Intel-wired-lan] [PATCH v1 net-next 3/3] igb: add PHY support
+	for Broadcom 54616
+In-Reply-To: <1428707018-6405-3-git-send-email-jtoppins@cumulusnetworks.com>
 References: <1428707018-6405-1-git-send-email-jtoppins@cumulusnetworks.com>
- <1428707018-6405-2-git-send-email-jtoppins@cumulusnetworks.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B78DBB061@ORSMSX101.amr.corp.intel.com>
+ <1428707018-6405-3-git-send-email-jtoppins@cumulusnetworks.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B78DBB085@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,53 +19,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Cc: Brandeburg, Jesse; Nelson, Shannon; Wyborny, Carolyn; Skidmore, Donald
 > C; Vick, Matthew; Ronciak, John; Williams, Mitch A; intel-wired-
 > lan at lists.osuosl.org; netdev at vger.kernel.org; gospo at cumulusnetworks.com;
-> shm at cumulusnetworks.com
-> Subject: [PATCH v1 net-next 2/3] igb: move initialization of link
-> properties before igb_sw_init
+> shm at cumulusnetworks.com; Alan Liebthal
+> Subject: [PATCH v1 net-next 3/3] igb: add PHY support for Broadcom 54616
 > 
-> This is required otherwise the driver may experience a NULL ptr
-> dereference if CONFIG_PCI_IOV is set to yes.
+> From: Alan Liebthal <alanl@cumulusnetworks.com>
 > 
-> Since the code can follow the flow on init (driver insmod):
-> 	hw->mac.autoneg = false; (this is not set it is its default)
-> 	igb_probe()
-> 	+- igb_sw_init()
-> 	    +- igb_probe_vfs()
-> 	        +- igb_pci_enable_sriov()
-> 	            +- igb_sriov_reinit()
-> 	               +- igb_reset()
-> 	                  trimmed path is the same see call path for
-> 	                  igb_reset below
-> 	+- hw->mac.autoneg = true;
-> 	+- igb_reset()
+> The Celestica Redstone-XP Ethernet management port uses a Broadcom 54616
+> chip for the PHY layer. This adds support for this PHY to the Intel igb
+> e1000 driver.
 > 
-> 	/* igb_reset() call chain */
-> 	igb_reset()
-> 	+- hw->mac.ops.init_hw() == igb_init_hw_82575
-> 	   +- igb_setup_link()
-> 	      +- hw->mac.ops.setup_physical_interface() ==
-> 	           igb_setup_copper_link_82575()
-> 	         +- igb_setup_copper_link()
-> 	            +- possible NULL dereference
-> 
-> Pseudo code from igb_setup_copper_link():
-> 	if (hw->mac.autoneg) {
-> 	    /* setup link */
-> 	} else {
-> 	    hw->phy.ops.force_speed_duplex(hw);  // <-- NULL deref here
-> 	}
-> 
-> Since the way the current code is designed the driver will call
-> igb_setup_copper_link twice if SRIOV is configured to be enabled. The
-> call will occur once with autoneg == false and the second
-> time autoneg == true. Since the decision to call the function pointer
-> (hw->phy.ops.force_speed_duplex) is predicated on autoneg being set
-> correctly move the setting of these parameters to as early as possible
-> in the probe function.
-> 
+> Signed-off-by: Alan Liebthal <alanl@cumulusnetworks.com>
 > Signed-off-by: Jonathan Toppins <jtoppins@cumulusnetworks.com>
 > ---
->  drivers/net/ethernet/intel/igb/igb_main.c |   16 ++++++++--------
->  1 file changed, 8 insertions(+), 8 deletions(-)
+>  drivers/net/ethernet/intel/igb/e1000_82575.c   |    5 +++++
+>  drivers/net/ethernet/intel/igb/e1000_defines.h |    1 +
+>  drivers/net/ethernet/intel/igb/e1000_hw.h      |    1 +
+>  3 files changed, 7 insertions(+)
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+
+Again, just regression, I do not have this phy.
