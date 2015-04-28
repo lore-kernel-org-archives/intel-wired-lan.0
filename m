@@ -1,199 +1,213 @@
-From: Vlad Zolotarov <vladz@cloudius-systems.com>
-Date: Tue, 28 Apr 2015 10:54:54 +0300
-Subject: [Intel-wired-lan] [net-next PATCH] ixgbevf: add support for
- reporting RSS key and hash table for X550
-In-Reply-To: <20150427203614.32710.54668.stgit@localhost6.localdomain6>
-References: <20150427203614.32710.54668.stgit@localhost6.localdomain6>
-Message-ID: <553F3CCE.10201@cloudius-systems.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 28 Apr 2015 19:00:40 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ d0cf7168b08d131f5dffbdc3393374b5bfab0d32 BUILD SUCCESS
+Message-ID: <553f6858.NbKxB/v0qwE64G9t%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+d0cf7168b08d131f5dffbdc3393374b5bfab0d32  igb: Fix NULL assignment to incorrect variable in igb_reset_q_vector
 
+elapsed time: 662m
 
-On 04/27/15 23:36, Emil Tantilov wrote:
-> This patch extends the reporting of the RSS key and hash table by
-> adding support for X550 VFs. The difference is that X550 VFs have
-> their own registers for RSS key and indirection table, so there is
-> no need to query the PF.
+configs tested: 192
 
-Although the patch itself looks correct, there is a minor remark below.
+i386                             alldefconfig
+i386                             allmodconfig
+i386                              allnoconfig
+i386                                defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                 randconfig-a0-04271354
+x86_64                 randconfig-a1-04271354
+x86_64                            allnoconfig
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                     randconfig-c0-0427
+x86_64                     randconfig-c1-0427
+x86_64                     randconfig-c2-0427
+i386                   randconfig-c0-04271544
+i386                   randconfig-c1-04271544
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                randconfig-iv0-04281714
+x86_64                randconfig-iv1-04281714
+i386                  randconfig-ib0-04281728
+i386                  randconfig-ib1-04281728
+sparc                               defconfig
+sparc64                          allmodconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+microblaze                       allyesconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+s390                             allmodconfig
+s390                              allnoconfig
+s390                                defconfig
+i386                             allyesconfig
+x86_64                randconfig-ib0-04281622
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+mips                         tb0287_defconfig
+powerpc                      katmai_defconfig
+powerpc                 mpc837x_mds_defconfig
+arm                         bcm2835_defconfig
+mips                     sead3micro_defconfig
+x86_64                       randconfig-nexe0
+x86_64                       randconfig-nexe1
+x86_64                       randconfig-nexe2
+x86_64                       randconfig-nexe3
+x86_64                       randconfig-nexe4
+x86_64                       randconfig-nexe5
+x86_64                       randconfig-nexe6
+x86_64                       randconfig-nexe7
+x86_64                       randconfig-nexe8
+x86_64                       randconfig-nexe9
+i386                         randconfig-nexe0
+i386                         randconfig-nexe1
+i386                         randconfig-nexe2
+i386                         randconfig-nexe3
+i386                         randconfig-nexe4
+i386                         randconfig-nexe5
+i386                         randconfig-nexe6
+i386                         randconfig-nexe7
+i386                         randconfig-nexe8
+i386                         randconfig-nexe9
+x86_64                  randconfig-nexr0-0427
+x86_64                  randconfig-nexr1-0427
+x86_64                  randconfig-nexr2-0427
+i386                    randconfig-nexr0-0427
+i386                    randconfig-nexr1-0427
+i386                    randconfig-nexr2-0427
+x86_64              randconfig-nexs0-04281721
+i386                randconfig-nexs0-04281721
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+powerpc                      chroma_defconfig
+powerpc               corenet64_smp_defconfig
+powerpc                    gamecube_defconfig
+powerpc                 linkstation_defconfig
+powerpc                               mpc512x
+powerpc                               powerpc
+powerpc                                ppc44x
+powerpc                         wii_defconfig
+x86_64                 randconfig-n0-04281719
+arm                              allmodconfig
+arm                               allnoconfig
+arm                                      arm5
+arm                                     arm67
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                                       mmp
+arm                       omap2plus_defconfig
+arm                          prima2_defconfig
+arm                         s3c2410_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+arm                           tegra_defconfig
+x86_64                           allyesconfig
+alpha                            allyesconfig
+avr32                            allyesconfig
+blackfin                         allyesconfig
+cris                             allyesconfig
+ia64                             allyesconfig
+m68k                             allyesconfig
+mips                             allyesconfig
+parisc                           allyesconfig
+powerpc                          allyesconfig
+s390                             allyesconfig
+sh                               allyesconfig
+sparc                            allyesconfig
+sparc64                          allyesconfig
+tile                             allyesconfig
+xtensa                           allyesconfig
+m68k                             allmodconfig
+m68k                          amiga_defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+arm                        multi_v7_defconfig
+arm                    realview-smp_defconfig
+mips                          lasat_defconfig
+mn10300                     asb2364_defconfig
+powerpc                    sbc8641d_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                       randconfig-r0-0427
+i386                       randconfig-r1-0427
+i386                       randconfig-r2-0427
+x86_64                 randconfig-r0-04281711
+x86_64                 randconfig-s0-04271356
+x86_64                 randconfig-s1-04271356
+x86_64                           allmodconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                        randconfig-x000
+x86_64                        randconfig-x001
+x86_64                        randconfig-x002
+x86_64                        randconfig-x003
+x86_64                        randconfig-x004
+x86_64                        randconfig-x005
+x86_64                        randconfig-x006
+x86_64                        randconfig-x007
+x86_64                        randconfig-x008
+x86_64                        randconfig-x009
+i386                          randconfig-x000
+i386                          randconfig-x001
+i386                          randconfig-x002
+i386                          randconfig-x003
+i386                          randconfig-x004
+i386                          randconfig-x005
+i386                          randconfig-x006
+i386                          randconfig-x007
+i386                          randconfig-x008
+i386                          randconfig-x009
+i386                   randconfig-x0-04270747
+i386                   randconfig-x1-04270747
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
 
-The description is missing the mentioning that u have reworked the RSS 
-hash table and RSS key initialization
-flow for x550 VFs. U've added the caching the corresponding values in 
-the ixgbevf_adapter struct and set the HW from these caches.
-Then u've added some new macros which are clearly not a functional change.
-U've also changed the indirection table content layout (to match the 
-actual index of the HW entry with the index in the rss_indir_tbl[]).
-
-All the above are not functional changes but are rather 
-cleanup/refactoring. IMHO these changes deserves to be a separate patch 
-from the
-extending the RSS query (as the current patch description states) which 
-is a functional change.
-
-thanks,
-vlad
-
->
-> Reported-by: Vlad Zolotarov <vladz@cloudius-systems.com>
-> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
-> ---
->   drivers/net/ethernet/intel/ixgbevf/ethtool.c      |   51 ++++++++++++---------
->   drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |    9 +++-
->   drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   21 +++++----
->   3 files changed, 47 insertions(+), 34 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/ixgbevf/ethtool.c b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
-> index b2f5b16..d3e5f5b 100644
-> --- a/drivers/net/ethernet/intel/ixgbevf/ethtool.c
-> +++ b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
-> @@ -813,22 +813,15 @@ static u32 ixgbevf_get_rxfh_indir_size(struct net_device *netdev)
->   {
->   	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
->   
-> -	/* We support this operation only for 82599 and x540 at the moment */
-> -	if (adapter->hw.mac.type < ixgbe_mac_X550_vf)
-> -		return IXGBEVF_82599_RETA_SIZE;
-> +	if (adapter->hw.mac.type >= ixgbe_mac_X550_vf)
-> +		return IXGBEVF_X550_VFRETA_SIZE;
->   
-> -	return 0;
-> +	return IXGBEVF_82599_RETA_SIZE;
->   }
->   
->   static u32 ixgbevf_get_rxfh_key_size(struct net_device *netdev)
->   {
-> -	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
-> -
-> -	/* We support this operation only for 82599 and x540 at the moment */
-> -	if (adapter->hw.mac.type < ixgbe_mac_X550_vf)
-> -		return IXGBEVF_RSS_HASH_KEY_SIZE;
-> -
-> -	return 0;
-> +	return IXGBEVF_RSS_HASH_KEY_SIZE;
->   }
->   
->   static int ixgbevf_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key,
-> @@ -840,21 +833,33 @@ static int ixgbevf_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key,
->   	if (hfunc)
->   		*hfunc = ETH_RSS_HASH_TOP;
->   
-> -	/* If neither indirection table nor hash key was requested - just
-> -	 * return a success avoiding taking any locks.
-> -	 */
-> -	if (!indir && !key)
-> -		return 0;
-> +	if (adapter->hw.mac.type >= ixgbe_mac_X550_vf) {
-> +		if (key)
-> +			memcpy(key, adapter->rss_key, sizeof(adapter->rss_key));
->   
-> -	spin_lock_bh(&adapter->mbx_lock);
-> -	if (indir)
-> -		err = ixgbevf_get_reta_locked(&adapter->hw, indir,
-> -					      adapter->num_rx_queues);
-> +		if (indir) {
-> +			int i;
->   
-> -	if (!err && key)
-> -		err = ixgbevf_get_rss_key_locked(&adapter->hw, key);
-> +			for (i = 0; i < IXGBEVF_X550_VFRETA_SIZE; i++)
-> +				indir[i] = adapter->rss_indir_tbl[i];
-> +		}
-> +	} else {
-> +		/* If neither indirection table nor hash key was requested
-> +		 *  - just return a success avoiding taking any locks.
-> +		 */
-> +		if (!indir && !key)
-> +			return 0;
->   
-> -	spin_unlock_bh(&adapter->mbx_lock);
-> +		spin_lock_bh(&adapter->mbx_lock);
-> +		if (indir)
-> +			err = ixgbevf_get_reta_locked(&adapter->hw, indir,
-> +						      adapter->num_rx_queues);
-> +
-> +		if (!err && key)
-> +			err = ixgbevf_get_rss_key_locked(&adapter->hw, key);
-> +
-> +		spin_unlock_bh(&adapter->mbx_lock);
-> +	}
->   
->   	return err;
->   }
-> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-> index 775d089..04c7ec8 100644
-> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-> @@ -144,9 +144,11 @@ struct ixgbevf_ring {
->   
->   #define MAX_RX_QUEUES IXGBE_VF_MAX_RX_QUEUES
->   #define MAX_TX_QUEUES IXGBE_VF_MAX_TX_QUEUES
-> -#define IXGBEVF_MAX_RSS_QUEUES	2
-> -#define IXGBEVF_82599_RETA_SIZE	128
-> +#define IXGBEVF_MAX_RSS_QUEUES		2
-> +#define IXGBEVF_82599_RETA_SIZE		128	/* 128 entries */
-> +#define IXGBEVF_X550_VFRETA_SIZE	64	/* 64 entries */
->   #define IXGBEVF_RSS_HASH_KEY_SIZE	40
-> +#define IXGBEVF_VFRSSRK_REGS		10	/* 10 registers for RSS key */
->   
->   #define IXGBEVF_DEFAULT_TXD	1024
->   #define IXGBEVF_DEFAULT_RXD	512
-> @@ -447,6 +449,9 @@ struct ixgbevf_adapter {
->   
->   	spinlock_t mbx_lock;
->   	unsigned long last_reset;
-> +
-> +	u32 rss_key[IXGBEVF_VFRSSRK_REGS];
-> +	u8 rss_indir_tbl[IXGBEVF_X550_VFRETA_SIZE];
->   };
->   
->   enum ixbgevf_state_t {
-> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> index e480708..8a73514 100644
-> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> @@ -1669,22 +1669,25 @@ static void ixgbevf_setup_vfmrqc(struct ixgbevf_adapter *adapter)
->   {
->   	struct ixgbe_hw *hw = &adapter->hw;
->   	u32 vfmrqc = 0, vfreta = 0;
-> -	u32 rss_key[10];
->   	u16 rss_i = adapter->num_rx_queues;
-> -	int i, j;
-> +	u8 i, j;
->   
->   	/* Fill out hash function seeds */
-> -	netdev_rss_key_fill(rss_key, sizeof(rss_key));
-> -	for (i = 0; i < 10; i++)
-> -		IXGBE_WRITE_REG(hw, IXGBE_VFRSSRK(i), rss_key[i]);
-> +	netdev_rss_key_fill(adapter->rss_key, sizeof(adapter->rss_key));
-> +	for (i = 0; i < IXGBEVF_VFRSSRK_REGS; i++)
-> +		IXGBE_WRITE_REG(hw, IXGBE_VFRSSRK(i), adapter->rss_key[i]);
->   
-> -	/* Fill out redirection table */
-> -	for (i = 0, j = 0; i < 64; i++, j++) {
-> +	for (i = 0, j = 0; i < IXGBEVF_X550_VFRETA_SIZE; i++, j++) {
->   		if (j == rss_i)
->   			j = 0;
-> -		vfreta = (vfreta << 8) | (j * 0x1);
-> -		if ((i & 3) == 3)
-> +
-> +		adapter->rss_indir_tbl[i] = j;
-> +
-> +		vfreta |= j << (i & 0x3) * 8;
-> +		if ((i & 3) == 3) {
->   			IXGBE_WRITE_REG(hw, IXGBE_VFRETA(i >> 2), vfreta);
-> +			vfreta = 0;
-> +		}
->   	}
->   
->   	/* Perform hash on these packet types */
->
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at lists.osuosl.org
-> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-
+Thanks,
+Fengguang
