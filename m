@@ -1,48 +1,66 @@
 From: Fan Du <fan.du@intel.com>
-Date: Wed, 29 Apr 2015 10:57:39 +0800
-Subject: [Intel-wired-lan] [PATCH v2 1/3] ixgbe: Specify rx hash type wrt rx
-	desc RSS type
+Date: Wed, 29 Apr 2015 10:57:40 +0800
+Subject: [Intel-wired-lan] [PATCH v2 2/3] ixgbevf: Set rx hash type for
+	ingress packets
 In-Reply-To: <1430276261-29821-1-git-send-email-fan.du@intel.com>
 References: <1430276261-29821-1-git-send-email-fan.du@intel.com>
-Message-ID: <1430276261-29821-2-git-send-email-fan.du@intel.com>
+Message-ID: <1430276261-29821-3-git-send-email-fan.du@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-RSS could be leveraged by taking account L4 src/dst ports
-as ingredients, thus ingress skb rx hash type should honor
-such the real configuration.
+Set hash type for ingress packets according to NIC
+advanced receive descriptors RSS type part.
 
 Signed-off-by: Fan Du <fan.du@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   25 +++++++++++++++++++++----
- 1 files changed, 21 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/ixgbevf/defines.h      |   12 +++++++++
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   27 +++++++++++++++++++++
+ 2 files changed, 39 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index d3f4b0c..5df896b 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -1357,14 +1357,31 @@ static int __ixgbe_notify_dca(struct device *dev, void *data)
+diff --git a/drivers/net/ethernet/intel/ixgbevf/defines.h b/drivers/net/ethernet/intel/ixgbevf/defines.h
+index 770e21a..af28ef3 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/defines.h
++++ b/drivers/net/ethernet/intel/ixgbevf/defines.h
+@@ -161,6 +161,18 @@ typedef u32 ixgbe_link_speed;
+ #define IXGBE_RXDADV_SPLITHEADER_EN	0x00001000
+ #define IXGBE_RXDADV_SPH		0x8000
+ 
++/* RSS Hash results */
++#define IXGBE_RXDADV_RSSTYPE_NONE       0x00000000
++#define IXGBE_RXDADV_RSSTYPE_IPV4_TCP   0x00000001
++#define IXGBE_RXDADV_RSSTYPE_IPV4       0x00000002
++#define IXGBE_RXDADV_RSSTYPE_IPV6_TCP   0x00000003
++#define IXGBE_RXDADV_RSSTYPE_IPV6_EX    0x00000004
++#define IXGBE_RXDADV_RSSTYPE_IPV6       0x00000005
++#define IXGBE_RXDADV_RSSTYPE_IPV6_TCP_EX 0x00000006
++#define IXGBE_RXDADV_RSSTYPE_IPV4_UDP   0x00000007
++#define IXGBE_RXDADV_RSSTYPE_IPV6_UDP   0x00000008
++#define IXGBE_RXDADV_RSSTYPE_IPV6_UDP_EX 0x00000009
++
+ #define IXGBE_RXD_ERR_FRAME_ERR_MASK ( \
+ 				      IXGBE_RXD_ERR_CE |  \
+ 				      IXGBE_RXD_ERR_LE |  \
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index a16d267..2a4ae83 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -457,6 +457,32 @@ static void ixgbevf_rx_skb(struct ixgbevf_q_vector *q_vector,
+ 	napi_gro_receive(&q_vector->napi, skb);
  }
  
- #endif /* CONFIG_IXGBE_DCA */
-+
 +#define IXGBE_RSS_L4_TYPES_MASK \
 +	((1ul << IXGBE_RXDADV_RSSTYPE_IPV4_TCP) | \
 +	 (1ul << IXGBE_RXDADV_RSSTYPE_IPV4_UDP) | \
 +	 (1ul << IXGBE_RXDADV_RSSTYPE_IPV6_TCP) | \
 +	 (1ul << IXGBE_RXDADV_RSSTYPE_IPV6_UDP))
 +
- static inline void ixgbe_rx_hash(struct ixgbe_ring *ring,
- 				 union ixgbe_adv_rx_desc *rx_desc,
- 				 struct sk_buff *skb)
- {
--	if (ring->netdev->features & NETIF_F_RXHASH)
--		skb_set_hash(skb,
--			     le32_to_cpu(rx_desc->wb.lower.hi_dword.rss),
--			     PKT_HASH_TYPE_L3);
++static inline void ixgbevf_rx_hash(struct ixgbevf_ring *ring,
++				   union ixgbe_adv_rx_desc *rx_desc,
++				   struct sk_buff *skb)
++{
 +	u16 rss_type;
 +
 +	if (!(ring->netdev->features & NETIF_F_RXHASH))
@@ -57,9 +75,19 @@ index d3f4b0c..5df896b 100644
 +	skb_set_hash(skb, le32_to_cpu(rx_desc->wb.lower.hi_dword.rss),
 +		     (IXGBE_RSS_L4_TYPES_MASK & (1ul << rss_type)) ?
 +		     PKT_HASH_TYPE_L4 : PKT_HASH_TYPE_L3);
- }
++}
++
+ /**
+  * ixgbevf_rx_checksum - indicate in skb if hw indicated a good cksum
+  * @ring: structure containig ring specific data
+@@ -506,6 +532,7 @@ static void ixgbevf_process_skb_fields(struct ixgbevf_ring *rx_ring,
+ 				       union ixgbe_adv_rx_desc *rx_desc,
+ 				       struct sk_buff *skb)
+ {
++	ixgbevf_rx_hash(rx_ring, rx_desc, skb);
+ 	ixgbevf_rx_checksum(rx_ring, rx_desc, skb);
  
- #ifdef IXGBE_FCOE
+ 	if (ixgbevf_test_staterr(rx_desc, IXGBE_RXD_STAT_VP)) {
 -- 
 1.7.1
 
