@@ -1,60 +1,145 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu, 30 Apr 2015 06:01:46 -0700
-Subject: [Intel-wired-lan] [PATCH net 2/3] bridge/nl: remove wrong use
-	of NLM_F_MULTI
-In-Reply-To: <1430238831-29966-3-git-send-email-nicolas.dichtel@6wind.com>
-References: <1430238831-29966-1-git-send-email-nicolas.dichtel@6wind.com>
- <1430238831-29966-3-git-send-email-nicolas.dichtel@6wind.com>
-Message-ID: <1430398906.2669.111.camel@jtkirshe-mobl>
+From: Tim Harvey <tharvey@gateworks.com>
+Date: Thu, 30 Apr 2015 11:19:13 -0700
+Subject: [Intel-wired-lan] [PATCH 1/3] net: igb: add i210/i211 support for
+	phy read/write
+In-Reply-To: <1430417955-28252-1-git-send-email-tharvey@gateworks.com>
+References: <1430417955-28252-1-git-send-email-tharvey@gateworks.com>
+Message-ID: <1430417955-28252-2-git-send-email-tharvey@gateworks.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2015-04-28 at 18:33 +0200, Nicolas Dichtel wrote:
-> NLM_F_MULTI must be used only when a NLMSG_DONE message is sent. In
-> fact,
-> it is sent only at the end of a dump.
-> 
-> Libraries like libnl will wait forever for NLMSG_DONE.
-> 
-> Fixes: e5a55a898720 ("net: create generic bridge ops")
-> Fixes: 815cccbf10b2 ("ixgbe: add setlink, getlink support to ixgbe and
-> ixgbevf")
-> CC: John Fastabend <john.r.fastabend@intel.com>
-> CC: Sathya Perla <sathya.perla@emulex.com>
-> CC: Subbu Seetharaman <subbu.seetharaman@emulex.com>
-> CC: Ajit Khaparde <ajit.khaparde@emulex.com>
-> CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> CC: intel-wired-lan at lists.osuosl.org
-> CC: Jiri Pirko <jiri@resnulli.us>
-> CC: Scott Feldman <sfeldma@gmail.com>
-> CC: Stephen Hemminger <stephen@networkplumber.org>
-> CC: bridge at lists.linux-foundation.org
-> Signed-off-by: Nicolas Dichtel <nicolas.dichtel@6wind.com>
+The i210/i211 uses the MDICNFG register for the phy address instead
+of the MDIC register.
 
-Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Signed-off-by: Tim Harvey <tharvey@gateworks.com>
+---
+ drivers/net/ethernet/intel/igb/e1000_phy.c | 71 ++++++++++++++++++++++++++----
+ 1 file changed, 62 insertions(+), 9 deletions(-)
 
-For the i40e and ixgbe driver changes
+diff --git a/drivers/net/ethernet/intel/igb/e1000_phy.c b/drivers/net/ethernet/intel/igb/e1000_phy.c
+index c1bb64d..2307ac6 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_phy.c
++++ b/drivers/net/ethernet/intel/igb/e1000_phy.c
+@@ -135,7 +135,7 @@ out:
+ s32 igb_read_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 *data)
+ {
+ 	struct e1000_phy_info *phy = &hw->phy;
+-	u32 i, mdic = 0;
++	u32 i, mdicnfg, mdic = 0;
+ 	s32 ret_val = 0;
+ 
+ 	if (offset > MAX_PHY_REG_ADDRESS) {
+@@ -148,11 +148,25 @@ s32 igb_read_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 *data)
+ 	 * Control register.  The MAC will take care of interfacing with the
+ 	 * PHY to retrieve the desired data.
+ 	 */
+-	mdic = ((offset << E1000_MDIC_REG_SHIFT) |
+-		(phy->addr << E1000_MDIC_PHY_SHIFT) |
+-		(E1000_MDIC_OP_READ));
++	switch (hw->mac.type) {
++	case e1000_i210:
++	case e1000_i211:
++		mdicnfg = rd32(E1000_MDICNFG);
++		mdicnfg &= ~(E1000_MDICNFG_PHY_MASK);
++		mdicnfg |= (phy->addr << E1000_MDICNFG_PHY_SHIFT);
++		wr32(E1000_MDICNFG, mdicnfg);
++		mdic = ((offset << E1000_MDIC_REG_SHIFT) |
++			(E1000_MDIC_OP_READ));
++		break;
++	default:
++		mdic = ((offset << E1000_MDIC_REG_SHIFT) |
++			(phy->addr << E1000_MDIC_PHY_SHIFT) |
++			(E1000_MDIC_OP_READ));
++		break;
++	}
+ 
+ 	wr32(E1000_MDIC, mdic);
++	wrfl();
+ 
+ 	/* Poll the ready bit to see if the MDI read completed
+ 	 * Increasing the time out as testing showed failures with
+@@ -177,6 +191,18 @@ s32 igb_read_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 *data)
+ 	*data = (u16) mdic;
+ 
+ out:
++	switch (hw->mac.type) {
++	/* restore MDICNFG to have phy's addr */
++	case e1000_i210:
++	case e1000_i211:
++		mdicnfg = rd32(E1000_MDICNFG);
++		mdicnfg &= ~(E1000_MDICNFG_PHY_MASK);
++		mdicnfg |= (hw->phy.addr << E1000_MDICNFG_PHY_SHIFT);
++		wr32(E1000_MDICNFG, mdicnfg);
++		break;
++	default:
++		break;
++	}
+ 	return ret_val;
+ }
+ 
+@@ -191,7 +217,7 @@ out:
+ s32 igb_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data)
+ {
+ 	struct e1000_phy_info *phy = &hw->phy;
+-	u32 i, mdic = 0;
++	u32 i, mdicnfg, mdic = 0;
+ 	s32 ret_val = 0;
+ 
+ 	if (offset > MAX_PHY_REG_ADDRESS) {
+@@ -204,12 +230,27 @@ s32 igb_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data)
+ 	 * Control register.  The MAC will take care of interfacing with the
+ 	 * PHY to retrieve the desired data.
+ 	 */
+-	mdic = (((u32)data) |
+-		(offset << E1000_MDIC_REG_SHIFT) |
+-		(phy->addr << E1000_MDIC_PHY_SHIFT) |
+-		(E1000_MDIC_OP_WRITE));
++	switch (hw->mac.type) {
++	case e1000_i210:
++	case e1000_i211:
++		mdicnfg = rd32(E1000_MDICNFG);
++		mdicnfg &= ~(E1000_MDICNFG_PHY_MASK);
++		mdicnfg |= (phy->addr << E1000_MDICNFG_PHY_SHIFT);
++		wr32(E1000_MDICNFG, mdicnfg);
++		mdic = (((u32)data) |
++			(offset << E1000_MDIC_REG_SHIFT) |
++			(E1000_MDIC_OP_WRITE));
++		break;
++	default:
++		mdic = (((u32)data) |
++			(offset << E1000_MDIC_REG_SHIFT) |
++			(phy->addr << E1000_MDIC_PHY_SHIFT) |
++			(E1000_MDIC_OP_WRITE));
++		break;
++	}
+ 
+ 	wr32(E1000_MDIC, mdic);
++	wrfl();
+ 
+ 	/* Poll the ready bit to see if the MDI read completed
+ 	 * Increasing the time out as testing showed failures with
+@@ -233,6 +274,18 @@ s32 igb_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data)
+ 	}
+ 
+ out:
++	switch (hw->mac.type) {
++	/* restore MDICNFG to have phy's addr */
++	case e1000_i210:
++	case e1000_i211:
++		mdicnfg = rd32(E1000_MDICNFG);
++		mdicnfg &= ~(E1000_MDICNFG_PHY_MASK);
++		mdicnfg |= (hw->phy.addr << E1000_MDICNFG_PHY_SHIFT);
++		wr32(E1000_MDICNFG, mdicnfg);
++		break;
++	default:
++		break;
++	}
+ 	return ret_val;
+ }
+ 
+-- 
+1.9.1
 
-> ---
->  drivers/net/ethernet/emulex/benet/be_main.c   |  5 +++--
->  drivers/net/ethernet/intel/i40e/i40e_main.c   |  7 ++++---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  4 ++--
->  drivers/net/ethernet/rocker/rocker.c          |  5 +++--
->  include/linux/netdevice.h                     |  6 ++++--
->  include/linux/rtnetlink.h                     |  2 +-
->  net/bridge/br_netlink.c                       |  4 ++--
->  net/bridge/br_private.h                       |  2 +-
->  net/core/rtnetlink.c                          | 12 +++++++-----
->  9 files changed, 27 insertions(+), 20 deletions(-)
-
-
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150430/10f92f5c/attachment.asc>
