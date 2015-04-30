@@ -1,66 +1,51 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu, 30 Apr 2015 05:07:30 -0700
-Subject: [Intel-wired-lan] [PATCH] fm10k: Update ITR scaling mechanism
- based on PCIe link speed
-In-Reply-To: <1430352634-25084-1-git-send-email-jacob.e.keller@intel.com>
-References: <1430352634-25084-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1430395650.2669.70.camel@jtkirshe-mobl>
+Date: Thu, 30 Apr 2015 05:59:41 -0700
+Subject: [Intel-wired-lan] [PATCH v2 0/3] RSS fix for ixgbe/ixgbevf
+In-Reply-To: <1430276261-29821-1-git-send-email-fan.du@intel.com>
+References: <1430276261-29821-1-git-send-email-fan.du@intel.com>
+Message-ID: <1430398781.2669.110.camel@jtkirshe-mobl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2015-04-29 at 17:10 -0700, Jacob Keller wrote:
-> Red Rock Canyon's interrupt throttle timers are based on the PCIe link
-> speed. Because of this, the value being programmed into the ITR
-> registers must be scaled.
+On Wed, 2015-04-29 at 10:57 +0800, Fan Du wrote:
+> This patchset provides RSS hash value for upper stack by indicating
+> whether it's a L3 or L4 hash. Thus other component of network
+> stack could utilize this hash value provided by NIC without caculating
+> by themselves.
 > 
-> For the PF, this is as simple as reading the PCIe link speed and
-> storing
-> the result. However, in the case of SR-IOV, the VF's interrupt
-> throttle
-> timers are based on the link speed of the PF. However, the VF is
-> unable
-> to get the link speed information from its configuration space, so the
-> PF must inform it of what scale to use.
+> Test:
+> * Simple iperf test using ixgbe for 82599ES
+> * Build test only for ixgbevf
+> * make C=1 CF=-D__CHECK_ENDIAN__, no warnings introduced by this patchset
 > 
-> Rather than pass this scale via mailbox message, take advantage of
-> unused bits in the TDLEN register to pass the scale. It is the
-> responsibility of the PF to program this for the VF while setting up
-> the
-> VF queues and the responsibility of the VF to get the information
-> accordingly. This is preferable because it allows the VF to set up the
-> interrupts properly during initialization and matches how the MAC
-> address is passed in the TDBAL/TDBAH registers.
+> Changelog:
+> v2:
+>   - Add patch3 to make all hash value from RSS part.
+> v1:
+>   - Code style issue suggeted by Tantilov, Emil S.
+>   - Initial version
 > 
-> These changes also resolve an issue with the existing ITR scale being
-> too restrictive. It would throttle down to 1300ints/s at 1538 byte
-> frames. This patch modifies the algorithm to allow for a higher range
-> of
-> interrupts per second, from roughly 25000int/s up to 100000int/s
-> depending on our detection of the workload.
+> Fan Du (3):
+>   ixgbe: Specify rx hash type wrt rx desc RSS type
+>   ixgbevf: Set rx hash type for ingress packets
+>   ixgbe: Don't report flow director filter's status
 > 
-> This patch fixes a single receiving TCP_STREAM in netperf:
-> - Before: 450 Mbps
-> - After: 20,000 Mbps
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c    |    2 -
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |   25 ++++++++++++++++---
+>  drivers/net/ethernet/intel/ixgbevf/defines.h      |   12 +++++++++
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   27 +++++++++++++++++++++
+>  4 files changed, 60 insertions(+), 6 deletions(-)
 > 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Discovered-by: Matthew Vick <matthew.vick@intel.com>
-> ---
->  drivers/net/ethernet/intel/fm10k/fm10k.h      |  4 ++++
->  drivers/net/ethernet/intel/fm10k/fm10k_main.c | 17 +++++++++++++----
->  drivers/net/ethernet/intel/fm10k/fm10k_pci.c  | 12 ++++++++++--
->  drivers/net/ethernet/intel/fm10k/fm10k_pf.c   | 18 +++++++++++++++++-
->  drivers/net/ethernet/intel/fm10k/fm10k_type.h |  9 +++++++++
->  drivers/net/ethernet/intel/fm10k/fm10k_vf.c   | 15 +++++++++++++--
->  6 files changed, 66 insertions(+), 9 deletions(-)
 
-Dropping patch and await v2
+Thanks Fan, I have added your series to my queue for further review and
+testing.
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 819 bytes
 Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150430/00c6c768/attachment.asc>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150430/7731aa3f/attachment.asc>
