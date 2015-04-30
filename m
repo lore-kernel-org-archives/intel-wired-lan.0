@@ -1,181 +1,59 @@
-From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Thu, 30 Apr 2015 11:50:55 -0700
-Subject: [Intel-wired-lan] [net-next PATCH v2] ixgbevf: add support for
- reporting RSS key and hash table for X550
-Message-ID: <20150430185055.12162.45551.stgit@localhost6.localdomain6>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Thu, 30 Apr 2015 20:52:07 +0000
+Subject: [Intel-wired-lan] [PATCH] fm10k: Update ITR scaling mechanism
+ based on PCIe link speed
+In-Reply-To: <55419187.9040900@redhat.com>
+References: <1430352634-25084-1-git-send-email-jacob.e.keller@intel.com>
+ <55419187.9040900@redhat.com>
+Message-ID: <1430427126.25212.6.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch extends the reporting of the RSS key and hash table by
-adding support for X550 VFs. The difference is that X550 VFs have
-their own registers for RSS key and indirection table, so there is
-no need to query the PF.
+On Wed, 2015-04-29 at 19:20 -0700, Alexander Duyck wrote:
+> 
+> On 04/29/2015 05:10 PM, Jacob Keller wrote:
+> > Red Rock Canyon's interrupt throttle timers are based on the PCIe link
+> > speed. Because of this, the value being programmed into the ITR
+> > registers must be scaled.
+> >
+> > For the PF, this is as simple as reading the PCIe link speed and storing
+> > the result. However, in the case of SR-IOV, the VF's interrupt throttle
+> > timers are based on the link speed of the PF. However, the VF is unable
+> > to get the link speed information from its configuration space, so the
+> > PF must inform it of what scale to use.
+> >
+> > Rather than pass this scale via mailbox message, take advantage of
+> > unused bits in the TDLEN register to pass the scale. It is the
+> > responsibility of the PF to program this for the VF while setting up the
+> > VF queues and the responsibility of the VF to get the information
+> > accordingly. This is preferable because it allows the VF to set up the
+> > interrupts properly during initialization and matches how the MAC
+> > address is passed in the TDBAL/TDBAH registers.
+> >
+> > These changes also resolve an issue with the existing ITR scale being
+> > too restrictive. It would throttle down to 1300ints/s at 1538 byte
+> > frames. This patch modifies the algorithm to allow for a higher range of
+> > interrupts per second, from roughly 25000int/s up to 100000int/s
+> > depending on our detection of the workload.
+> >
+> > This patch fixes a single receiving TCP_STREAM in netperf:
+> > - Before: 450 Mbps
+> > - After: 20,000 Mbps
+> >
+> > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> > Discovered-by: Matthew Vick <matthew.vick@intel.com>
+> 
+> Should probably be Reported-by, since I don't think Discovered-by is a 
+> standard convention.
+> 
+> Also I don't think I see any of the changes I suggested.  It seems like 
+> this could still divide the interrupt throttle rate all the way down to 0.
 
-The RSS key and indirection table are stored in the adapter structure
-during the configuration of VFRSSRK and VFRETA which in turn can be
-used in ethtool for reporting.
+I'm going to defer this for a bit then, since it depends on other
+changes I wasn't aware of.. Matthew?
 
-The logic for writing VFRETA is also changed to make sure that the
-indirection table is reported correctly.
-
-In addition this patch adds defines for the VFRETA entries and number
-of VFRSSRK registers as well as some whitespace cleanups.
-
--v2 updated description
-
-Reported-by: Vlad Zolotarov <vladz@cloudius-systems.com>
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
----
- drivers/net/ethernet/intel/ixgbevf/ethtool.c      |   51 ++++++++++++---------
- drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |    9 +++-
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   21 +++++----
- 3 files changed, 47 insertions(+), 34 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ethtool.c b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
-index b2f5b16..d3e5f5b 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
-@@ -813,22 +813,15 @@ static u32 ixgbevf_get_rxfh_indir_size(struct net_device *netdev)
- {
- 	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
- 
--	/* We support this operation only for 82599 and x540 at the moment */
--	if (adapter->hw.mac.type < ixgbe_mac_X550_vf)
--		return IXGBEVF_82599_RETA_SIZE;
-+	if (adapter->hw.mac.type >= ixgbe_mac_X550_vf)
-+		return IXGBEVF_X550_VFRETA_SIZE;
- 
--	return 0;
-+	return IXGBEVF_82599_RETA_SIZE;
- }
- 
- static u32 ixgbevf_get_rxfh_key_size(struct net_device *netdev)
- {
--	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
--
--	/* We support this operation only for 82599 and x540 at the moment */
--	if (adapter->hw.mac.type < ixgbe_mac_X550_vf)
--		return IXGBEVF_RSS_HASH_KEY_SIZE;
--
--	return 0;
-+	return IXGBEVF_RSS_HASH_KEY_SIZE;
- }
- 
- static int ixgbevf_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key,
-@@ -840,21 +833,33 @@ static int ixgbevf_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key,
- 	if (hfunc)
- 		*hfunc = ETH_RSS_HASH_TOP;
- 
--	/* If neither indirection table nor hash key was requested - just
--	 * return a success avoiding taking any locks.
--	 */
--	if (!indir && !key)
--		return 0;
-+	if (adapter->hw.mac.type >= ixgbe_mac_X550_vf) {
-+		if (key)
-+			memcpy(key, adapter->rss_key, sizeof(adapter->rss_key));
- 
--	spin_lock_bh(&adapter->mbx_lock);
--	if (indir)
--		err = ixgbevf_get_reta_locked(&adapter->hw, indir,
--					      adapter->num_rx_queues);
-+		if (indir) {
-+			int i;
- 
--	if (!err && key)
--		err = ixgbevf_get_rss_key_locked(&adapter->hw, key);
-+			for (i = 0; i < IXGBEVF_X550_VFRETA_SIZE; i++)
-+				indir[i] = adapter->rss_indir_tbl[i];
-+		}
-+	} else {
-+		/* If neither indirection table nor hash key was requested
-+		 *  - just return a success avoiding taking any locks.
-+		 */
-+		if (!indir && !key)
-+			return 0;
- 
--	spin_unlock_bh(&adapter->mbx_lock);
-+		spin_lock_bh(&adapter->mbx_lock);
-+		if (indir)
-+			err = ixgbevf_get_reta_locked(&adapter->hw, indir,
-+						      adapter->num_rx_queues);
-+
-+		if (!err && key)
-+			err = ixgbevf_get_rss_key_locked(&adapter->hw, key);
-+
-+		spin_unlock_bh(&adapter->mbx_lock);
-+	}
- 
- 	return err;
- }
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-index 775d089..04c7ec8 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-@@ -144,9 +144,11 @@ struct ixgbevf_ring {
- 
- #define MAX_RX_QUEUES IXGBE_VF_MAX_RX_QUEUES
- #define MAX_TX_QUEUES IXGBE_VF_MAX_TX_QUEUES
--#define IXGBEVF_MAX_RSS_QUEUES	2
--#define IXGBEVF_82599_RETA_SIZE	128
-+#define IXGBEVF_MAX_RSS_QUEUES		2
-+#define IXGBEVF_82599_RETA_SIZE		128	/* 128 entries */
-+#define IXGBEVF_X550_VFRETA_SIZE	64	/* 64 entries */
- #define IXGBEVF_RSS_HASH_KEY_SIZE	40
-+#define IXGBEVF_VFRSSRK_REGS		10	/* 10 registers for RSS key */
- 
- #define IXGBEVF_DEFAULT_TXD	1024
- #define IXGBEVF_DEFAULT_RXD	512
-@@ -447,6 +449,9 @@ struct ixgbevf_adapter {
- 
- 	spinlock_t mbx_lock;
- 	unsigned long last_reset;
-+
-+	u32 rss_key[IXGBEVF_VFRSSRK_REGS];
-+	u8 rss_indir_tbl[IXGBEVF_X550_VFRETA_SIZE];
- };
- 
- enum ixbgevf_state_t {
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 6c9eebe..c494c35 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -1696,22 +1696,25 @@ static void ixgbevf_setup_vfmrqc(struct ixgbevf_adapter *adapter)
- {
- 	struct ixgbe_hw *hw = &adapter->hw;
- 	u32 vfmrqc = 0, vfreta = 0;
--	u32 rss_key[10];
- 	u16 rss_i = adapter->num_rx_queues;
--	int i, j;
-+	u8 i, j;
- 
- 	/* Fill out hash function seeds */
--	netdev_rss_key_fill(rss_key, sizeof(rss_key));
--	for (i = 0; i < 10; i++)
--		IXGBE_WRITE_REG(hw, IXGBE_VFRSSRK(i), rss_key[i]);
-+	netdev_rss_key_fill(adapter->rss_key, sizeof(adapter->rss_key));
-+	for (i = 0; i < IXGBEVF_VFRSSRK_REGS; i++)
-+		IXGBE_WRITE_REG(hw, IXGBE_VFRSSRK(i), adapter->rss_key[i]);
- 
--	/* Fill out redirection table */
--	for (i = 0, j = 0; i < 64; i++, j++) {
-+	for (i = 0, j = 0; i < IXGBEVF_X550_VFRETA_SIZE; i++, j++) {
- 		if (j == rss_i)
- 			j = 0;
--		vfreta = (vfreta << 8) | (j * 0x1);
--		if ((i & 3) == 3)
-+
-+		adapter->rss_indir_tbl[i] = j;
-+
-+		vfreta |= j << (i & 0x3) * 8;
-+		if ((i & 3) == 3) {
- 			IXGBE_WRITE_REG(hw, IXGBE_VFRETA(i >> 2), vfreta);
-+			vfreta = 0;
-+		}
- 	}
- 
- 	/* Perform hash on these packet types */
-
+Regards,
+Jake
