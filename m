@@ -1,36 +1,28 @@
-From: Vick, Matthew <matthew.vick@intel.com>
-Date: Fri, 1 May 2015 18:17:02 +0000
-Subject: [Intel-wired-lan] [PATCH] fm10k: Update ITR scaling mechanism
- based on PCIe link speed
-In-Reply-To: <1430427126.25212.6.camel@intel.com>
-References: <1430352634-25084-1-git-send-email-jacob.e.keller@intel.com>
- <55419187.9040900@redhat.com> <1430427126.25212.6.camel@intel.com>
-Message-ID: <D16910EA.761A6%matthew.vick@intel.com>
+From: Francois Romieu <romieu@fr.zoreil.com>
+Date: Fri, 1 May 2015 11:34:20 +0200
+Subject: [Intel-wired-lan] [PATCH 2/3] r8169: Use dev_kfree_skb in Tx
+	cleanup path
+In-Reply-To: <20150430205824.1512.35158.stgit@ahduyck-vm-fedora22>
+References: <20150430205423.1512.13487.stgit@ahduyck-vm-fedora22>
+ <20150430205824.1512.35158.stgit@ahduyck-vm-fedora22>
+Message-ID: <20150501093420.GA11669@electric-eye.fr.zoreil.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 4/30/15, 1:52 PM, "Keller, Jacob E" <jacob.e.keller@intel.com> wrote:
+Alexander Duyck <alexander.h.duyck@redhat.com> :
+> This change replaces the use of either dev_kfree_skb_any or
+> dev_consume_skb_any in the Tx cleanup path of this driver with
+> dev_kfree_skb.  There isn't any need for the "_any" version of these
+> functions since the NAPI cleanup context is not a hard irq context.
 
->On Wed, 2015-04-29 at 19:20 -0700, Alexander Duyck wrote:
->> 
->> Also I don't think I see any of the changes I suggested.  It seems like
->> this could still divide the interrupt throttle rate all the way down to
->>0.
->
->I'm going to defer this for a bit then, since it depends on other
->changes I wasn't aware of.. Matthew?
->
->Regards,
->Jake
+netconsole ?
 
-Yes, we should definitely defer this for a bit.
+__dev_kfree_skb_any contains a big "if (... || irqs_disabled())" test
+and the NAPI poll handler is called with irq disabled from
+netpoll_send_skb_on_dev.
 
-Sorry Alex, bit of a misfire on this one. I still plan to incorporate the
-changes you proposed.
-
-Cheers,
-Matthew
-
+-- 
+Ueimor
