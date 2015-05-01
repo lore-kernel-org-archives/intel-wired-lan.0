@@ -1,214 +1,32 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 01 May 2015 17:01:51 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- e02d72ae1676e2d138de227a95dbe020a3a2a4d9 BUILD DONE
-Message-ID: <554340ff.gDwX3rYFGTsVU8bb%fengguang.wu@intel.com>
+From: David Miller <davem@davemloft.net>
+Date: Fri, 01 May 2015 11:42:23 -0400 (EDT)
+Subject: [Intel-wired-lan] [PATCH 0/3] Stop using dev_kfree_skb_any in
+	NAPI Tx clean-up
+In-Reply-To: <20150430205423.1512.13487.stgit@ahduyck-vm-fedora22>
+References: <20150430205423.1512.13487.stgit@ahduyck-vm-fedora22>
+Message-ID: <20150501.114223.1837223121502998313.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-e02d72ae1676e2d138de227a95dbe020a3a2a4d9  e1000e: fix logical error in flush_desc_rings
+From: Alexander Duyck <alexander.h.duyck@redhat.com>
+Date: Thu, 30 Apr 2015 13:58:12 -0700
 
-drivers/net/ethernet/intel/e1000e/netdev.c:3811:30: sparse: incorrect type in assignment (different base types)
-drivers/net/ethernet/intel/i40e/i40e_ethtool.c:1560 i40e_active_vfs() warn: bit shifter 'I40E_VF_STAT_ACTIVE' used for logical '&'
-drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:983 i40e_pci_sriov_enable() warn: bit shifter '__I40E_TESTING' used for logical '&'
-drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:983 i40e_pci_sriov_enable() warn: bitwise AND condition is false here
+> This change replaces the call to dev_kfree_skb_any in several NAPI based Tx
+> clean-up paths with dev_kfree_skb.  Where I made the replacement the
+> function appeared to always be in softirq context so we can avoid the
+> unnecessary time spent determining if we are in a hardirq context or not.
 
-elapsed time: 284m
+It isn't always in softirq context.
 
-configs tested: 188
+We can do a netconsole transmit from any context, and that code
+can and will invoke ->poll().
 
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-i386                             alldefconfig
-i386                             allmodconfig
-i386                              allnoconfig
-i386                                defconfig
-mips                             allmodconfig
-mips                                   jz4740
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-x86_64                 randconfig-a0-05010951
-x86_64                 randconfig-a1-05010951
-x86_64                            allnoconfig
-x86_64                     randconfig-c0-0430
-x86_64                     randconfig-c1-0430
-x86_64                     randconfig-c2-0430
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-i386                   randconfig-c1-04301221
-i386                   randconfig-c0-04301221
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                              allmodconfig
-arm                          prima2_defconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                                   samsung
-arm                       spear13xx_defconfig
-arm                         s3c2410_defconfig
-arm                                  iop-adma
-arm                       imx_v6_v7_defconfig
-arm                                       mmp
-arm                           tegra_defconfig
-arm                                      arm5
-arm                          marzen_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                                        sh
-arm                                     arm67
-x86_64                         randconfig-iv0
-x86_64                         randconfig-iv1
-xtensa                           allyesconfig
-sparc64                          allyesconfig
-mips                             allyesconfig
-m68k                             allyesconfig
-sparc                            allyesconfig
-tile                             allyesconfig
-alpha                            allyesconfig
-powerpc                          allyesconfig
-sh                               allyesconfig
-avr32                            allyesconfig
-ia64                             allyesconfig
-parisc                           allyesconfig
-cris                             allyesconfig
-x86_64                           allyesconfig
-blackfin                         allyesconfig
-s390                             allyesconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-powerpc                          allmodconfig
-i386                  randconfig-ib0-05011209
-i386                  randconfig-ib1-05011209
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-microblaze                       allyesconfig
-s390                             allmodconfig
-s390                              allnoconfig
-s390                                defconfig
-i386                             allyesconfig
-x86_64                randconfig-ib0-05011525
-powerpc                     pq2fads_defconfig
-m68k                        m5407c3_defconfig
-powerpc               corenet32_smp_defconfig
-powerpc                      virtex_defconfig
-powerpc                     mpc512x_defconfig
-x86_64                       randconfig-nexe0
-x86_64                       randconfig-nexe1
-x86_64                       randconfig-nexe2
-x86_64                       randconfig-nexe3
-x86_64                       randconfig-nexe4
-x86_64                       randconfig-nexe5
-x86_64                       randconfig-nexe6
-x86_64                       randconfig-nexe7
-x86_64                       randconfig-nexe8
-x86_64                       randconfig-nexe9
-i386                         randconfig-nexe0
-i386                         randconfig-nexe1
-i386                         randconfig-nexe2
-i386                         randconfig-nexe3
-i386                         randconfig-nexe4
-i386                         randconfig-nexe5
-i386                         randconfig-nexe6
-i386                         randconfig-nexe7
-i386                         randconfig-nexe8
-i386                         randconfig-nexe9
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64                  randconfig-nexr0-0501
-x86_64                  randconfig-nexr1-0501
-x86_64                  randconfig-nexr2-0501
-i386                    randconfig-nexr0-0501
-i386                    randconfig-nexr1-0501
-i386                    randconfig-nexr2-0501
-x86_64              randconfig-nexs0-05011348
-i386                randconfig-nexs0-05011348
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-powerpc                      chroma_defconfig
-powerpc                 linkstation_defconfig
-powerpc                               powerpc
-powerpc                         wii_defconfig
-powerpc                    gamecube_defconfig
-powerpc               corenet64_smp_defconfig
-powerpc                               mpc512x
-powerpc                                ppc44x
-x86_64                 randconfig-n0-05011614
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-m68k                             allmodconfig
-m68k                          amiga_defconfig
-arm                        neponset_defconfig
-ia64                         bigsur_defconfig
-powerpc                 mpc834x_itx_defconfig
-powerpc                     sbc834x_defconfig
-s390                           gcov_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                       randconfig-r0-0501
-i386                       randconfig-r1-0501
-i386                       randconfig-r2-0501
-x86_64                 randconfig-r0-05010914
-x86_64                 randconfig-s0-05011524
-x86_64                 randconfig-s1-05011524
-x86_64                           allmodconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-x86_64                        randconfig-x000
-x86_64                        randconfig-x001
-x86_64                        randconfig-x002
-x86_64                        randconfig-x003
-x86_64                        randconfig-x004
-x86_64                        randconfig-x005
-x86_64                        randconfig-x006
-x86_64                        randconfig-x007
-x86_64                        randconfig-x008
-x86_64                        randconfig-x009
-i386                          randconfig-x000
-i386                          randconfig-x001
-i386                          randconfig-x002
-i386                          randconfig-x003
-i386                          randconfig-x004
-i386                          randconfig-x005
-i386                          randconfig-x006
-i386                          randconfig-x007
-i386                          randconfig-x008
-i386                          randconfig-x009
-i386                   randconfig-x0-04301233
-i386                   randconfig-x1-04301233
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
+As Francois noted, netpoll_send_skb_on_dev() loops trying to transmit,
+and if the TX does nto give NETDEV_TX_OK it will try to execute TX
+reclaim by invoking ->poll().
 
-Thanks,
-Fengguang
+It's hard to trigger this, but if you do... the dev_kfree_skb_any()
+really is necessary.
