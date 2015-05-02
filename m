@@ -1,60 +1,87 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Sat, 02 May 2015 05:25:21 -0700
-Subject: [Intel-wired-lan] [net-next S5 00/15] i40e/i40evf updates
-In-Reply-To: <1430161042-28494-1-git-send-email-catherine.sullivan@intel.com>
-References: <1430161042-28494-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1430569521.2669.151.camel@jtkirshe-mobl>
+Date: Sat, 02 May 2015 05:28:00 -0700
+Subject: [Intel-wired-lan] [PATCH 0/8] clarify behavior of get_ts_info
+ and hwtstamp ioctl
+In-Reply-To: <1429738873.30529.20.camel@intel.com>
+References: <1429738873.30529.20.camel@intel.com>
+Message-ID: <1430569680.2669.152.camel@jtkirshe-mobl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2015-04-27 at 14:57 -0400, Catherine Sullivan wrote:
-> Anjali refines an error message in i40e.
+On Wed, 2015-04-22 at 21:41 +0000, Keller, Jacob E wrote:
+> This patch series attempts to clarify some expected behavior for
+> drivers
+> when implementing SIOCSHWSTAMP and Ethtool's get_ts_info ioctl.
 > 
-> Carolyn removes inccorect #ifdefs and fixes the compile errors that
-> show
-> up as a result. She also refactors the dynamic ITR code for i40e and
-> i40evf.
+> The SIOCSHWTSTAMP ioctl has several available filters for Rx
+> timestamps
+> ranging from as specific as
+> HWTSTAMP_FILTER_PTP_V2_L4_DELAY_REQ_MESSAGE
+> up to as general as HWTSTAMP_FILTER_ALL. It is expressly allowed for a
+> driver to timestamp more than the requested packets, as long as at
+> least
+> the requested packets are timestamped. Many drivers do this by
+> upscaling
+> from the more specific filters into the most generic supported
+> filters.
+> In this case, some drivers also only report in the Ethtool ioctl those
+> filters which are generic. Since the generic filters are more valuable
+> to users of the Rx timestamps, and it is obvious that
+> HWTSTAMP_FILTER_PTP_V2_EVENT will timestamp SYNC and DELAY_REQ
+> messages,
+> this patch series clarifies that this behavior is ok. In addition, I
+> provided patches to implement this behavior in get_ts_info for all
+> drivers which currently upscale their hwtstamp ioctl return value.
 > 
-> Faisal adds support for pre-allocated pages for PD in i40e.
+> I did not modify SIOCSHWTSTAMP semantics, and only modified ethtool
+> output. In addition, I left alone drivers which do not actually
+> upscale
+> their filters. In this way only the filters which are *not* upscaled
+> are
+> reported in ethtool output.
 > 
-> Greg updates the admin queue command header for i40e and i40evf.
+> The intention of this change is to report only the most useful filters
+> to ethtool op output. It should not impact userspace as user
+> applications most often check for the most general filters first and
+> only try the very specific filters as a fallback. I tried to Cc the
+> driver owners where I knew them.
 > 
-> Jesse improves i40e/i40evf tx and rx performance with a couple
-> small tweaks.
+> There is also one patch which removes an extraneous comment I
+> discovered while working on this. It was obviously kept around from an
+> original copy-and-modify implementation, and bears no relation to the
+> current driver code in the freescale driver.
 > 
-> Mitch modifies i40evf to allow for an abundance of vectors, moves
-> adding
-> MAC address filters from init to open, and  to stop deleting all
-> filters
-> every time set_rx_mode was called. He also modified i40e to ignore
-> duplicate
-> port VLAN requests, to correctly program filters for VFs, to do a
-> proper reset
-> when disabling a VF, and to un-disable the VF after a reset.
+> Jacob Keller (8):
+>   clarify implementation of ethtool's get_ts_info op
+>   [TRIVIAL] freescale: remove incorrect copied comment
+>   bnx2x: only report most generic filters in get_ts_info
+>   i40e: only report generic filters in get_ts_info
+>   igb: only report generic filters in get_ts_info
+>   ixgbe: only report generic filters in get_ts_info
+>   siena: only report generic filters in get_ts_info
+>   dp83640: only report generic filters in ts_info
 > 
->  drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |  24 ++--
->  drivers/net/ethernet/intel/i40e/i40e_hmc.c         |  30 +++--
->  drivers/net/ethernet/intel/i40e/i40e_hmc.h         |   4 +-
->  drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c     |   2 +-
->  drivers/net/ethernet/intel/i40e/i40e_main.c        |   8 +-
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c        | 150
-> ++++++++++++---------
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  23 ++--
->  .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    |  18 +--
->  drivers/net/ethernet/intel/i40evf/i40e_hmc.h       |   4 +-
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c      | 117
-> ++++++++++------
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  20 +--
->  11 files changed, 236 insertions(+), 164 deletions(-)
+>  Documentation/networking/timestamping.txt           |  7 +++++++
+>  drivers/net/ethernet/broadcom/bnx2x/bnx2x_ethtool.c | 11 +----------
+>  drivers/net/ethernet/freescale/fec_ptp.c            |  6 ------
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c      | 13
+> ++-----------
+>  drivers/net/ethernet/intel/igb/igb_ethtool.c        |  4 ----
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c    |  8 --------
+>  drivers/net/ethernet/sfc/siena.c                    |  6 +-----
+>  drivers/net/phy/dp83640.c                           | 10 +---------
+>  include/uapi/linux/ethtool.h                        |  5 +++++
+>  9 files changed, 17 insertions(+), 53 deletions(-)
 
-Thanks Catherine, I have added your series to my queue.
+I have applied your series to my queue, not sure what validation can be
+done on the non-Intel driver changes.
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 819 bytes
 Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150502/c03b3bc6/attachment.asc>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150502/ee2a55d2/attachment.asc>
