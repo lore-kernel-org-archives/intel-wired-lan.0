@@ -1,214 +1,60 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 02 May 2015 18:13:58 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 3a95d4f9e51c5bb3f7e06135d15b29d1baf14f77 BUILD DONE
-Message-ID: <5544a366.2SyU6cHT5/ZWjmhN%fengguang.wu@intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Sat, 02 May 2015 05:25:21 -0700
+Subject: [Intel-wired-lan] [net-next S5 00/15] i40e/i40evf updates
+In-Reply-To: <1430161042-28494-1-git-send-email-catherine.sullivan@intel.com>
+References: <1430161042-28494-1-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1430569521.2669.151.camel@jtkirshe-mobl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-3a95d4f9e51c5bb3f7e06135d15b29d1baf14f77  e1000e: fix logical error in flush_desc_rings
+On Mon, 2015-04-27 at 14:57 -0400, Catherine Sullivan wrote:
+> Anjali refines an error message in i40e.
+> 
+> Carolyn removes inccorect #ifdefs and fixes the compile errors that
+> show
+> up as a result. She also refactors the dynamic ITR code for i40e and
+> i40evf.
+> 
+> Faisal adds support for pre-allocated pages for PD in i40e.
+> 
+> Greg updates the admin queue command header for i40e and i40evf.
+> 
+> Jesse improves i40e/i40evf tx and rx performance with a couple
+> small tweaks.
+> 
+> Mitch modifies i40evf to allow for an abundance of vectors, moves
+> adding
+> MAC address filters from init to open, and  to stop deleting all
+> filters
+> every time set_rx_mode was called. He also modified i40e to ignore
+> duplicate
+> port VLAN requests, to correctly program filters for VFs, to do a
+> proper reset
+> when disabling a VF, and to un-disable the VF after a reset.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |  24 ++--
+>  drivers/net/ethernet/intel/i40e/i40e_hmc.c         |  30 +++--
+>  drivers/net/ethernet/intel/i40e/i40e_hmc.h         |   4 +-
+>  drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c     |   2 +-
+>  drivers/net/ethernet/intel/i40e/i40e_main.c        |   8 +-
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c        | 150
+> ++++++++++++---------
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  23 ++--
+>  .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    |  18 +--
+>  drivers/net/ethernet/intel/i40evf/i40e_hmc.h       |   4 +-
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c      | 117
+> ++++++++++------
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  20 +--
+>  11 files changed, 236 insertions(+), 164 deletions(-)
 
-drivers/net/ethernet/intel/e1000e/netdev.c:3811:30: sparse: incorrect type in assignment (different base types)
-drivers/net/ethernet/intel/i40e/i40e_ethtool.c:1560 i40e_active_vfs() warn: bit shifter 'I40E_VF_STAT_ACTIVE' used for logical '&'
-drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:983 i40e_pci_sriov_enable() warn: bit shifter '__I40E_TESTING' used for logical '&'
-drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:983 i40e_pci_sriov_enable() warn: bitwise AND condition is false here
-
-elapsed time: 167m
-
-configs tested: 188
-
-i386                             alldefconfig
-i386                             allmodconfig
-i386                              allnoconfig
-i386                                defconfig
-mips                             allmodconfig
-mips                                   jz4740
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-x86_64                 randconfig-a0-05021351
-x86_64                 randconfig-a1-05021351
-x86_64                            allnoconfig
-x86_64                     randconfig-c0-0502
-x86_64                     randconfig-c1-0502
-x86_64                     randconfig-c2-0502
-i386                   randconfig-c0-05021440
-i386                   randconfig-c1-05021440
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                              allmodconfig
-arm                          prima2_defconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                                   samsung
-arm                       spear13xx_defconfig
-arm                         s3c2410_defconfig
-arm                                  iop-adma
-arm                       imx_v6_v7_defconfig
-arm                                       mmp
-arm                           tegra_defconfig
-arm                                      arm5
-arm                          marzen_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                                        sh
-arm                                     arm67
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-powerpc                          allmodconfig
-x86_64                randconfig-iv0-05021450
-x86_64                randconfig-iv1-05021450
-i386                  randconfig-ib0-05021758
-i386                  randconfig-ib1-05021758
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-microblaze                       allyesconfig
-s390                             allmodconfig
-s390                              allnoconfig
-s390                                defconfig
-i386                             allyesconfig
-x86_64                randconfig-ib0-05021758
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-arm                        vexpress_defconfig
-arm                        keystone_defconfig
-arm                       imx_v4_v5_defconfig
-powerpc                     tqm8555_defconfig
-sh                          rsk7264_defconfig
-i386                         randconfig-nexe1
-i386                         randconfig-nexe0
-i386                         randconfig-nexe3
-i386                         randconfig-nexe2
-i386                         randconfig-nexe5
-i386                         randconfig-nexe4
-i386                         randconfig-nexe7
-i386                         randconfig-nexe6
-i386                         randconfig-nexe9
-i386                         randconfig-nexe8
-x86_64                       randconfig-nexe6
-x86_64                       randconfig-nexe7
-x86_64                       randconfig-nexe4
-x86_64                       randconfig-nexe5
-x86_64                       randconfig-nexe2
-x86_64                       randconfig-nexe3
-x86_64                       randconfig-nexe0
-x86_64                       randconfig-nexe1
-x86_64                       randconfig-nexe8
-x86_64                       randconfig-nexe9
-i386                    randconfig-nexr2-0502
-i386                    randconfig-nexr0-0502
-i386                    randconfig-nexr1-0502
-x86_64                  randconfig-nexr0-0502
-x86_64                  randconfig-nexr2-0502
-x86_64                  randconfig-nexr1-0502
-x86_64              randconfig-nexs0-05021453
-i386                randconfig-nexs0-05021453
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-powerpc                      chroma_defconfig
-powerpc                 linkstation_defconfig
-powerpc                               powerpc
-powerpc                         wii_defconfig
-powerpc                    gamecube_defconfig
-powerpc               corenet64_smp_defconfig
-powerpc                               mpc512x
-powerpc                                ppc44x
-x86_64                 randconfig-n0-05021607
-xtensa                           allyesconfig
-sparc64                          allyesconfig
-mips                             allyesconfig
-m68k                             allyesconfig
-sparc                            allyesconfig
-tile                             allyesconfig
-alpha                            allyesconfig
-powerpc                          allyesconfig
-sh                               allyesconfig
-avr32                            allyesconfig
-ia64                             allyesconfig
-parisc                           allyesconfig
-cris                             allyesconfig
-x86_64                           allyesconfig
-blackfin                         allyesconfig
-s390                             allyesconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-m68k                             allmodconfig
-m68k                          amiga_defconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-x86_64                           allmodconfig
-arm                        cerfcube_defconfig
-mips                      loongson3_defconfig
-sh                          polaris_defconfig
-sparc                       sparc32_defconfig
-xtensa                    smp_lx200_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                       randconfig-r0-0502
-i386                       randconfig-r2-0502
-i386                       randconfig-r1-0502
-x86_64                 randconfig-r0-05021742
-x86_64                 randconfig-s1-05021437
-x86_64                 randconfig-s0-05021437
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-i386                          randconfig-x009
-i386                          randconfig-x008
-i386                          randconfig-x005
-i386                          randconfig-x004
-i386                          randconfig-x007
-i386                          randconfig-x006
-i386                          randconfig-x001
-i386                          randconfig-x000
-i386                          randconfig-x003
-i386                          randconfig-x002
-x86_64                        randconfig-x000
-x86_64                        randconfig-x001
-x86_64                        randconfig-x002
-x86_64                        randconfig-x003
-x86_64                        randconfig-x004
-x86_64                        randconfig-x005
-x86_64                        randconfig-x006
-x86_64                        randconfig-x007
-x86_64                        randconfig-x008
-x86_64                        randconfig-x009
-i386                   randconfig-x0-05021103
-i386                   randconfig-x1-05021103
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-
-Thanks,
-Fengguang
+Thanks Catherine, I have added your series to my queue.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150502/c03b3bc6/attachment.asc>
