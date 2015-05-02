@@ -1,63 +1,214 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Sat, 2 May 2015 01:45:39 +0000
-Subject: [Intel-wired-lan] [PATCH v1 net-next 1/2] igb: add PHY support
-	for Broadcom 5461S
-In-Reply-To: <553E5979.6090009@cumulusnetworks.com>
-References: <1429302240-654-1-git-send-email-jtoppins@cumulusnetworks.com>
- <553E5979.6090009@cumulusnetworks.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B78DBCFF2@ORSMSX101.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 02 May 2015 18:13:58 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 3a95d4f9e51c5bb3f7e06135d15b29d1baf14f77 BUILD DONE
+Message-ID: <5544a366.2SyU6cHT5/ZWjmhN%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: netdev-owner at vger.kernel.org [mailto:netdev-owner at vger.kernel.org]
-> On Behalf Of Jonathan Toppins
-> Sent: Monday, April 27, 2015 8:45 AM
-> To: Kirsher, Jeffrey T
-> Cc: Brandeburg, Jesse; Nelson, Shannon; Wyborny, Carolyn; Skidmore, Donald
-> C; Vick, Matthew; Ronciak, John; Williams, Mitch A; intel-wired-
-> lan at lists.osuosl.org; netdev at vger.kernel.org; gospo at cumulusnetworks.com;
-> shm at cumulusnetworks.com; Alan Liebthal
-> Subject: Re: [PATCH v1 net-next 1/2] igb: add PHY support for Broadcom
-> 5461S
-> 
-> On 4/17/15 4:23 PM, Jonathan Toppins wrote:
-> > From: Alan Liebthal <alanl@cumulusnetworks.com>
-> >
-> > The Quanta LY8 Ethernet management port uses a Broadcom 5461S chip for
-> > the PHY layer. This adds support for this PHY to the Intel igb driver.
-> >
-> > Signed-off-by: Alan Liebthal <alanl@cumulusnetworks.com>
-> > Signed-off-by: Jonathan Toppins <jtoppins@cumulusnetworks.com>
-> > ---
-> >   drivers/net/ethernet/intel/igb/e1000_82575.c   |   20 +++++-
-> >   drivers/net/ethernet/intel/igb/e1000_defines.h |    1 +
-> >   drivers/net/ethernet/intel/igb/e1000_hw.h      |    1 +
-> >   drivers/net/ethernet/intel/igb/e1000_phy.c     |   79
-> ++++++++++++++++++++++++
-> >   drivers/net/ethernet/intel/igb/e1000_phy.h     |    2 +
-> >   5 files changed, 102 insertions(+), 1 deletion(-)
-> >
-I don't have access to the Broadcom 5461s, but will assume Jonathan / Alan checked this on it on their end.  My set of regression systems did not have any problems with this, so...
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+3a95d4f9e51c5bb3f7e06135d15b29d1baf14f77  e1000e: fix logical error in flush_desc_rings
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+drivers/net/ethernet/intel/e1000e/netdev.c:3811:30: sparse: incorrect type in assignment (different base types)
+drivers/net/ethernet/intel/i40e/i40e_ethtool.c:1560 i40e_active_vfs() warn: bit shifter 'I40E_VF_STAT_ACTIVE' used for logical '&'
+drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:983 i40e_pci_sriov_enable() warn: bit shifter '__I40E_TESTING' used for logical '&'
+drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:983 i40e_pci_sriov_enable() warn: bitwise AND condition is false here
 
-...
-... 
-> Simple keepalive to make sure these have not been forgotten, the
-> patchworks entries are still in "new" state.
-> 
-> http://patchwork.ozlabs.org/patch/462222/
-> http://patchwork.ozlabs.org/patch/462223/
-> 
-> Regards,
-> -Jon
+elapsed time: 167m
 
-Nope, not forgotten, I've just been really busy with other things.  I'll take a closer look at that other patch (2/2) next early next week.
+configs tested: 188
 
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo at vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+i386                             alldefconfig
+i386                             allmodconfig
+i386                              allnoconfig
+i386                                defconfig
+mips                             allmodconfig
+mips                                   jz4740
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+x86_64                 randconfig-a0-05021351
+x86_64                 randconfig-a1-05021351
+x86_64                            allnoconfig
+x86_64                     randconfig-c0-0502
+x86_64                     randconfig-c1-0502
+x86_64                     randconfig-c2-0502
+i386                   randconfig-c0-05021440
+i386                   randconfig-c1-05021440
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                              allmodconfig
+arm                          prima2_defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                                   samsung
+arm                       spear13xx_defconfig
+arm                         s3c2410_defconfig
+arm                                  iop-adma
+arm                       imx_v6_v7_defconfig
+arm                                       mmp
+arm                           tegra_defconfig
+arm                                      arm5
+arm                          marzen_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                                        sh
+arm                                     arm67
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+x86_64                randconfig-iv0-05021450
+x86_64                randconfig-iv1-05021450
+i386                  randconfig-ib0-05021758
+i386                  randconfig-ib1-05021758
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+microblaze                       allyesconfig
+s390                             allmodconfig
+s390                              allnoconfig
+s390                                defconfig
+i386                             allyesconfig
+x86_64                randconfig-ib0-05021758
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+arm                        vexpress_defconfig
+arm                        keystone_defconfig
+arm                       imx_v4_v5_defconfig
+powerpc                     tqm8555_defconfig
+sh                          rsk7264_defconfig
+i386                         randconfig-nexe1
+i386                         randconfig-nexe0
+i386                         randconfig-nexe3
+i386                         randconfig-nexe2
+i386                         randconfig-nexe5
+i386                         randconfig-nexe4
+i386                         randconfig-nexe7
+i386                         randconfig-nexe6
+i386                         randconfig-nexe9
+i386                         randconfig-nexe8
+x86_64                       randconfig-nexe6
+x86_64                       randconfig-nexe7
+x86_64                       randconfig-nexe4
+x86_64                       randconfig-nexe5
+x86_64                       randconfig-nexe2
+x86_64                       randconfig-nexe3
+x86_64                       randconfig-nexe0
+x86_64                       randconfig-nexe1
+x86_64                       randconfig-nexe8
+x86_64                       randconfig-nexe9
+i386                    randconfig-nexr2-0502
+i386                    randconfig-nexr0-0502
+i386                    randconfig-nexr1-0502
+x86_64                  randconfig-nexr0-0502
+x86_64                  randconfig-nexr2-0502
+x86_64                  randconfig-nexr1-0502
+x86_64              randconfig-nexs0-05021453
+i386                randconfig-nexs0-05021453
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+powerpc                      chroma_defconfig
+powerpc                 linkstation_defconfig
+powerpc                               powerpc
+powerpc                         wii_defconfig
+powerpc                    gamecube_defconfig
+powerpc               corenet64_smp_defconfig
+powerpc                               mpc512x
+powerpc                                ppc44x
+x86_64                 randconfig-n0-05021607
+xtensa                           allyesconfig
+sparc64                          allyesconfig
+mips                             allyesconfig
+m68k                             allyesconfig
+sparc                            allyesconfig
+tile                             allyesconfig
+alpha                            allyesconfig
+powerpc                          allyesconfig
+sh                               allyesconfig
+avr32                            allyesconfig
+ia64                             allyesconfig
+parisc                           allyesconfig
+cris                             allyesconfig
+x86_64                           allyesconfig
+blackfin                         allyesconfig
+s390                             allyesconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                             allmodconfig
+m68k                          amiga_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                           allmodconfig
+arm                        cerfcube_defconfig
+mips                      loongson3_defconfig
+sh                          polaris_defconfig
+sparc                       sparc32_defconfig
+xtensa                    smp_lx200_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                       randconfig-r0-0502
+i386                       randconfig-r2-0502
+i386                       randconfig-r1-0502
+x86_64                 randconfig-r0-05021742
+x86_64                 randconfig-s1-05021437
+x86_64                 randconfig-s0-05021437
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+i386                          randconfig-x009
+i386                          randconfig-x008
+i386                          randconfig-x005
+i386                          randconfig-x004
+i386                          randconfig-x007
+i386                          randconfig-x006
+i386                          randconfig-x001
+i386                          randconfig-x000
+i386                          randconfig-x003
+i386                          randconfig-x002
+x86_64                        randconfig-x000
+x86_64                        randconfig-x001
+x86_64                        randconfig-x002
+x86_64                        randconfig-x003
+x86_64                        randconfig-x004
+x86_64                        randconfig-x005
+x86_64                        randconfig-x006
+x86_64                        randconfig-x007
+x86_64                        randconfig-x008
+x86_64                        randconfig-x009
+i386                   randconfig-x0-05021103
+i386                   randconfig-x1-05021103
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+
+Thanks,
+Fengguang
