@@ -1,87 +1,210 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Sat, 02 May 2015 05:28:00 -0700
-Subject: [Intel-wired-lan] [PATCH 0/8] clarify behavior of get_ts_info
- and hwtstamp ioctl
-In-Reply-To: <1429738873.30529.20.camel@intel.com>
-References: <1429738873.30529.20.camel@intel.com>
-Message-ID: <1430569680.2669.152.camel@jtkirshe-mobl>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 02 May 2015 21:27:52 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
+ 6794ba55fe2d6f6ee0156968fbc77fe440a26163 BUILD SUCCESS
+Message-ID: <5544d0d8.bZ9vcQLVVWzFum8F%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2015-04-22 at 21:41 +0000, Keller, Jacob E wrote:
-> This patch series attempts to clarify some expected behavior for
-> drivers
-> when implementing SIOCSHWSTAMP and Ethtool's get_ts_info ioctl.
-> 
-> The SIOCSHWTSTAMP ioctl has several available filters for Rx
-> timestamps
-> ranging from as specific as
-> HWTSTAMP_FILTER_PTP_V2_L4_DELAY_REQ_MESSAGE
-> up to as general as HWTSTAMP_FILTER_ALL. It is expressly allowed for a
-> driver to timestamp more than the requested packets, as long as at
-> least
-> the requested packets are timestamped. Many drivers do this by
-> upscaling
-> from the more specific filters into the most generic supported
-> filters.
-> In this case, some drivers also only report in the Ethtool ioctl those
-> filters which are generic. Since the generic filters are more valuable
-> to users of the Rx timestamps, and it is obvious that
-> HWTSTAMP_FILTER_PTP_V2_EVENT will timestamp SYNC and DELAY_REQ
-> messages,
-> this patch series clarifies that this behavior is ok. In addition, I
-> provided patches to implement this behavior in get_ts_info for all
-> drivers which currently upscale their hwtstamp ioctl return value.
-> 
-> I did not modify SIOCSHWTSTAMP semantics, and only modified ethtool
-> output. In addition, I left alone drivers which do not actually
-> upscale
-> their filters. In this way only the filters which are *not* upscaled
-> are
-> reported in ethtool output.
-> 
-> The intention of this change is to report only the most useful filters
-> to ethtool op output. It should not impact userspace as user
-> applications most often check for the most general filters first and
-> only try the very specific filters as a fallback. I tried to Cc the
-> driver owners where I knew them.
-> 
-> There is also one patch which removes an extraneous comment I
-> discovered while working on this. It was obviously kept around from an
-> original copy-and-modify implementation, and bears no relation to the
-> current driver code in the freescale driver.
-> 
-> Jacob Keller (8):
->   clarify implementation of ethtool's get_ts_info op
->   [TRIVIAL] freescale: remove incorrect copied comment
->   bnx2x: only report most generic filters in get_ts_info
->   i40e: only report generic filters in get_ts_info
->   igb: only report generic filters in get_ts_info
->   ixgbe: only report generic filters in get_ts_info
->   siena: only report generic filters in get_ts_info
->   dp83640: only report generic filters in ts_info
-> 
->  Documentation/networking/timestamping.txt           |  7 +++++++
->  drivers/net/ethernet/broadcom/bnx2x/bnx2x_ethtool.c | 11 +----------
->  drivers/net/ethernet/freescale/fec_ptp.c            |  6 ------
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c      | 13
-> ++-----------
->  drivers/net/ethernet/intel/igb/igb_ethtool.c        |  4 ----
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c    |  8 --------
->  drivers/net/ethernet/sfc/siena.c                    |  6 +-----
->  drivers/net/phy/dp83640.c                           | 10 +---------
->  include/uapi/linux/ethtool.h                        |  5 +++++
->  9 files changed, 17 insertions(+), 53 deletions(-)
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
+6794ba55fe2d6f6ee0156968fbc77fe440a26163  ixgbe: Use a signed type to hold error codes
 
-I have applied your series to my queue, not sure what validation can be
-done on the non-Intel driver changes.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150502/ee2a55d2/attachment.asc>
+elapsed time: 159m
+
+configs tested: 189
+
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             allmodconfig
+i386                             alldefconfig
+mips                             allmodconfig
+mips                                   jz4740
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+x86_64                 randconfig-a0-05021758
+x86_64                 randconfig-a1-05021758
+x86_64                            allnoconfig
+x86_64                     randconfig-c0-0502
+x86_64                     randconfig-c1-0502
+x86_64                     randconfig-c2-0502
+i386                   randconfig-c0-05021440
+i386                   randconfig-c1-05021440
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+x86_64                randconfig-iv1-05021450
+x86_64                randconfig-iv0-05021450
+i386                  randconfig-ib0-05021927
+i386                  randconfig-ib1-05021927
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+microblaze                       allyesconfig
+i386                             allyesconfig
+x86_64                randconfig-ib0-05021927
+x86_64                randconfig-ib0-05022033
+ia64                          tiger_defconfig
+parisc                generic-32bit_defconfig
+powerpc                mpc7448_hpc2_defconfig
+powerpc                      pasemi_defconfig
+sh                  sh7785lcr_32bit_defconfig
+i386                         randconfig-nexe1
+i386                         randconfig-nexe0
+i386                         randconfig-nexe3
+i386                         randconfig-nexe2
+i386                         randconfig-nexe5
+i386                         randconfig-nexe4
+i386                         randconfig-nexe7
+i386                         randconfig-nexe6
+i386                         randconfig-nexe9
+i386                         randconfig-nexe8
+x86_64                       randconfig-nexe6
+x86_64                       randconfig-nexe7
+x86_64                       randconfig-nexe4
+x86_64                       randconfig-nexe5
+x86_64                       randconfig-nexe2
+x86_64                       randconfig-nexe3
+x86_64                       randconfig-nexe0
+x86_64                       randconfig-nexe1
+x86_64                       randconfig-nexe8
+x86_64                       randconfig-nexe9
+i386                    randconfig-nexr2-0502
+i386                    randconfig-nexr0-0502
+i386                    randconfig-nexr1-0502
+x86_64                  randconfig-nexr0-0502
+x86_64                  randconfig-nexr2-0502
+x86_64                  randconfig-nexr1-0502
+s390                             allmodconfig
+s390                              allnoconfig
+s390                                defconfig
+x86_64              randconfig-nexs0-05021911
+i386                randconfig-nexs0-05021911
+powerpc                      chroma_defconfig
+powerpc                 linkstation_defconfig
+powerpc                               powerpc
+powerpc                         wii_defconfig
+powerpc                    gamecube_defconfig
+powerpc               corenet64_smp_defconfig
+powerpc                               mpc512x
+powerpc                                ppc44x
+x86_64                 randconfig-n0-05021933
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                              allmodconfig
+arm                          prima2_defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                                   samsung
+arm                       spear13xx_defconfig
+arm                         s3c2410_defconfig
+arm                                  iop-adma
+arm                       imx_v6_v7_defconfig
+arm                                       mmp
+arm                           tegra_defconfig
+arm                                      arm5
+arm                          marzen_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                                        sh
+arm                                     arm67
+xtensa                           allyesconfig
+sparc64                          allyesconfig
+mips                             allyesconfig
+m68k                             allyesconfig
+sparc                            allyesconfig
+tile                             allyesconfig
+alpha                            allyesconfig
+powerpc                          allyesconfig
+sh                               allyesconfig
+avr32                            allyesconfig
+ia64                             allyesconfig
+parisc                           allyesconfig
+cris                             allyesconfig
+x86_64                           allyesconfig
+blackfin                         allyesconfig
+s390                             allyesconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                             allmodconfig
+m68k                          amiga_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+avr32                       mimc200_defconfig
+m68k                          sun3x_defconfig
+powerpc                 mpc8272_ads_defconfig
+powerpc                 mpc85xx_smp_defconfig
+powerpc                     pseries_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                       randconfig-r0-0502
+i386                       randconfig-r2-0502
+i386                       randconfig-r1-0502
+x86_64                 randconfig-r0-05021901
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+x86_64                 randconfig-s0-05021908
+x86_64                 randconfig-s1-05021908
+x86_64                           allmodconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+i386                          randconfig-x009
+i386                          randconfig-x008
+i386                          randconfig-x005
+i386                          randconfig-x004
+i386                          randconfig-x007
+i386                          randconfig-x006
+i386                          randconfig-x001
+i386                          randconfig-x000
+i386                          randconfig-x003
+i386                          randconfig-x002
+x86_64                        randconfig-x000
+x86_64                        randconfig-x001
+x86_64                        randconfig-x002
+x86_64                        randconfig-x003
+x86_64                        randconfig-x004
+x86_64                        randconfig-x005
+x86_64                        randconfig-x006
+x86_64                        randconfig-x007
+x86_64                        randconfig-x008
+x86_64                        randconfig-x009
+i386                   randconfig-x0-05021103
+i386                   randconfig-x1-05021103
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+
+Thanks,
+Fengguang
