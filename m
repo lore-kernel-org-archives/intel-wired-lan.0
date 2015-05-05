@@ -1,11 +1,11 @@
 From: Alexander Duyck <alexander.h.duyck@redhat.com>
-Date: Tue, 05 May 2015 09:55:39 -0700
-Subject: [Intel-wired-lan] [net-next S4 13/15] i40e/i40evf: force inline
- transmit functions
-In-Reply-To: <1429229172-143692-14-git-send-email-catherine.sullivan@intel.com>
+Date: Tue, 05 May 2015 10:27:54 -0700
+Subject: [Intel-wired-lan] [net-next S4 12/15] i40evf: skb->xmit_more
+ support
+In-Reply-To: <1429229172-143692-13-git-send-email-catherine.sullivan@intel.com>
 References: <1429229172-143692-1-git-send-email-catherine.sullivan@intel.com>
- <1429229172-143692-14-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <5548F60B.3000209@redhat.com>
+ <1429229172-143692-13-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <5548FD9A.6010901@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,115 +15,161 @@ List-ID: <intel-wired-lan.osuosl.org>
 On 04/16/2015 05:06 PM, Catherine Sullivan wrote:
 > From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 >
-> Inlining these functions gives us about 15% more 64 byte packets per
-> second when using pktgen. 13.3 million to 15 million with a single
-> queue.
+> Eric added support for skb->xmit_more in i40e, this ports that into i40evf as well.
 >
-> Also fix the function names in i40evf to i40evf not i40e while we are
-> touching the function header.
+> Support skb->xmit_more in i40evf is straightforward; we need to move
+> around i40e_maybe_stop_tx() call to correctly test netif_xmit_stopped()
+> before taking the decision to not kick the NIC.
 >
+> Signed-off-by: Eric Dumazet <edumazet@google.com>
+> Signed-off-by: Daniel Borkmann <dborkman@redhat.com>
 > Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-> Change-ID: I3294ae9b085cf438672b6db5f9af122490ead9d0
+> Change-ID: Idddda6a2e4a7ab335631c91ced51f55b25eb8468
 > ---
 
-The code below is ugly.  If you are going to inline it anyway you might 
-as well just move the inline functions to a header file so that they can 
-all be static inline.  Also what is the difference in size between the 
-before/after with FCoE for this part enabled?  It would be useful to 
-have that info in the patch description.  I suspect the change is fairly 
-significant since you are doubling the map function which is fairly sizable.
+This patch description is confusing.  Maybe you should include and 
+indent the original patch description from what you are porting into the 
+VF rather than just including the Signed-off-by from the original 
+patch.  At first I thought Eric was helping to port the patch and had 
+contributed code to the porting effort.  Also Daniel's email address is 
+no longer valid so you probably shouldn't be Ccing the message to him.
 
-I suspect most of these changes are only showing gains in the FCoE 
-case.  Really you guys should look at reachitecting things rather than 
-bloating the driver by doubling up the xmit path.  You could probably do 
-a quick check against the netdev and then just call some FCoE specific 
-offload path before getting back to i40e_tx_map.
-
-Comments inline below.
-
-- Alex
-
->   drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 32 ++++++++++++------------
->   drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 36 ++++++++++++---------------
->   2 files changed, 32 insertions(+), 36 deletions(-)
+>   drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 88 ++++++++++++++-------------
+>   1 file changed, 47 insertions(+), 41 deletions(-)
 >
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-> index d6ad42b..ca21f9a 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-> @@ -2065,13 +2065,13 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
->    * otherwise  returns 0 to indicate the flags has been set properly.
->    **/
->   #ifdef I40E_FCOE
-> -int i40e_tx_prepare_vlan_flags(struct sk_buff *skb,
-> -			       struct i40e_ring *tx_ring,
-> -			       u32 *flags)
-> -#else
-> -static int i40e_tx_prepare_vlan_flags(struct sk_buff *skb,
-> +inline int i40e_tx_prepare_vlan_flags(struct sk_buff *skb,
->   				      struct i40e_ring *tx_ring,
->   				      u32 *flags)
+> diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+> index e1a44dd..4f77d38 100644
+> --- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+> +++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+> @@ -1672,6 +1672,47 @@ linearize_chk_done:
+>   }
+>   
+>   /**
+> + * __i40evf_maybe_stop_tx - 2nd level check for tx stop conditions
+> + * @tx_ring: the ring to be checked
+> + * @size:    the size buffer we want to assure is available
+> + *
+> + * Returns -EBUSY if a stop is needed, else 0
+> + **/
+> +static inline int __i40evf_maybe_stop_tx(struct i40e_ring *tx_ring, int size)
+> +{
+> +	netif_stop_subqueue(tx_ring->netdev, tx_ring->queue_index);
+> +	/* Memory barrier before checking head and tail */
+> +	smp_mb();
+> +
+> +	/* Check again in a case another CPU has just made room available. */
+> +	if (likely(I40E_DESC_UNUSED(tx_ring) < size))
+> +		return -EBUSY;
+> +
+> +	/* A reprieve! - use start_queue because it doesn't call schedule */
+> +	netif_start_subqueue(tx_ring->netdev, tx_ring->queue_index);
+> +	++tx_ring->tx_stats.restart_queue;
+> +	return 0;
+> +}
+> +
+> +/**
+> + * i40evf_maybe_stop_tx - 1st level check for tx stop conditions
+> + * @tx_ring: the ring to be checked
+> + * @size:    the size buffer we want to assure is available
+> + *
+> + * Returns 0 if stop is not needed
+> + **/
+> +#ifdef I40E_FCOE
+> +int i40evf_maybe_stop_tx(struct i40e_ring *tx_ring, int size)
 > +#else
-> +static inline int i40e_tx_prepare_vlan_flags(struct sk_buff *skb,
-> +					     struct i40e_ring *tx_ring,
-> +					     u32 *flags)
->   #endif
->   {
->   	__be16 protocol = skb->protocol;
-> @@ -2414,9 +2414,9 @@ static inline int __i40e_maybe_stop_tx(struct i40e_ring *tx_ring, int size)
->    * Returns 0 if stop is not needed
->    **/
->   #ifdef I40E_FCOE
-> -int i40e_maybe_stop_tx(struct i40e_ring *tx_ring, int size)
-> +inline int i40e_maybe_stop_tx(struct i40e_ring *tx_ring, int size)
->   #else
+> +static int i40evf_maybe_stop_tx(struct i40e_ring *tx_ring, int size)
+> +#endif
+> +{
+> +	if (likely(I40E_DESC_UNUSED(tx_ring) >= size))
+> +		return 0;
+> +	return __i40evf_maybe_stop_tx(tx_ring, size);
+> +}
+> +
+> +/**
+
+I didn't think the VF could do FCoE can it?
+
+>    * i40e_tx_map - Build the Tx descriptor
+>    * @tx_ring:  ring to send buffer on
+>    * @skb:      send buffer
+> @@ -1808,8 +1849,12 @@ static void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+>   
+>   	tx_ring->next_to_use = i;
+>   
+> +	i40evf_maybe_stop_tx(tx_ring, DESC_NEEDED);
+>   	/* notify HW of packet */
+> -	writel(i, tx_ring->tail);
+> +	if (!skb->xmit_more ||
+> +	    netif_xmit_stopped(netdev_get_tx_queue(tx_ring->netdev,
+> +						   tx_ring->queue_index)))
+> +		writel(i, tx_ring->tail);
+>   
+>   	return;
+>   
+
+You might want to just add a helper macro to take care of all of the 
+netdev_get_tx_queue stuff, it would help readability.
+
+> @@ -1831,43 +1876,6 @@ dma_error:
+>   }
+>   
+>   /**
+> - * __i40e_maybe_stop_tx - 2nd level check for tx stop conditions
+> - * @tx_ring: the ring to be checked
+> - * @size:    the size buffer we want to assure is available
+> - *
+> - * Returns -EBUSY if a stop is needed, else 0
+> - **/
+> -static inline int __i40e_maybe_stop_tx(struct i40e_ring *tx_ring, int size)
+> -{
+> -	netif_stop_subqueue(tx_ring->netdev, tx_ring->queue_index);
+> -	/* Memory barrier before checking head and tail */
+> -	smp_mb();
+> -
+> -	/* Check again in a case another CPU has just made room available. */
+> -	if (likely(I40E_DESC_UNUSED(tx_ring) < size))
+> -		return -EBUSY;
+> -
+> -	/* A reprieve! - use start_queue because it doesn't call schedule */
+> -	netif_start_subqueue(tx_ring->netdev, tx_ring->queue_index);
+> -	++tx_ring->tx_stats.restart_queue;
+> -	return 0;
+> -}
+> -
+> -/**
+> - * i40e_maybe_stop_tx - 1st level check for tx stop conditions
+> - * @tx_ring: the ring to be checked
+> - * @size:    the size buffer we want to assure is available
+> - *
+> - * Returns 0 if stop is not needed
+> - **/
 > -static int i40e_maybe_stop_tx(struct i40e_ring *tx_ring, int size)
-> +static inline int i40e_maybe_stop_tx(struct i40e_ring *tx_ring, int size)
->   #endif
->   {
->   	if (likely(I40E_DESC_UNUSED(tx_ring) >= size))
-> @@ -2496,13 +2496,13 @@ linearize_chk_done:
->    * @td_offset: offset for checksum or crc
->    **/
->   #ifdef I40E_FCOE
-> -void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
-> -		 struct i40e_tx_buffer *first, u32 tx_flags,
-> -		 const u8 hdr_len, u32 td_cmd, u32 td_offset)
-> -#else
-> -static void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
-> +inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
->   			struct i40e_tx_buffer *first, u32 tx_flags,
->   			const u8 hdr_len, u32 td_cmd, u32 td_offset)
-> +#else
-> +static inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
-> +			       struct i40e_tx_buffer *first, u32 tx_flags,
-> +			       const u8 hdr_len, u32 td_cmd, u32 td_offset)
->   #endif
->   {
->   	unsigned int data_len = skb->data_len;
+> -{
+> -	if (likely(I40E_DESC_UNUSED(tx_ring) >= size))
+> -		return 0;
+> -	return __i40e_maybe_stop_tx(tx_ring, size);
+> -}
+> -
+> -/**
+>    * i40e_xmit_descriptor_count - calculate number of tx descriptors needed
+>    * @skb:     send buffer
+>    * @tx_ring: ring to send buffer on
+> @@ -1892,7 +1900,7 @@ static int i40e_xmit_descriptor_count(struct sk_buff *skb,
+>   		count += TXD_USE_COUNT(skb_shinfo(skb)->frags[f].size);
+>   
+>   	count += TXD_USE_COUNT(skb_headlen(skb));
+> -	if (i40e_maybe_stop_tx(tx_ring, count + 4 + 1)) {
+> +	if (i40evf_maybe_stop_tx(tx_ring, count + 4 + 1)) {
+>   		tx_ring->tx_stats.tx_busy++;
+>   		return 0;
+>   	}
+> @@ -1968,8 +1976,6 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
+>   	i40e_tx_map(tx_ring, skb, first, tx_flags, hdr_len,
+>   		    td_cmd, td_offset);
+>   
+> -	i40e_maybe_stop_tx(tx_ring, DESC_NEEDED);
+> -
+>   	return NETDEV_TX_OK;
+>   
+>   out_drop:
 
-Inlining i40e_tx_map is kind of overkill isn't it?  Isn't this most of 
-the code for the xmit path?
-
-> @@ -2663,11 +2663,11 @@ dma_error:
->    * one descriptor.
->    **/
->   #ifdef I40E_FCOE
-> -int i40e_xmit_descriptor_count(struct sk_buff *skb,
-> -			       struct i40e_ring *tx_ring)
-> -#else
-> -static int i40e_xmit_descriptor_count(struct sk_buff *skb,
-> +inline int i40e_xmit_descriptor_count(struct sk_buff *skb,
->   				      struct i40e_ring *tx_ring)
-> +#else
-> +static inline int i40e_xmit_descriptor_count(struct sk_buff *skb,
-> +					     struct i40e_ring *tx_ring)
->   #endif
->   {
->   	unsigned int f;
-
-So the VF code is just a copy of this w/ some renaming so I dropped it.  
-I'm assuming the actual gains are none for this patch on the VF, do I 
-have that correct?  I'm assuming the compiler is smart enough to realize 
-it can inline static functions that are only called once.
