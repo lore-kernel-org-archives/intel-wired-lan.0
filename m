@@ -1,40 +1,36 @@
-From: Young, James M <james.m.young@intel.com>
-Date: Tue, 5 May 2015 17:53:07 +0000
-Subject: [Intel-wired-lan] [net-next S4 02/15] i40e: Disable
-	offline	diagnostics if VFs are enabled
-In-Reply-To: <1429229172-143692-3-git-send-email-catherine.sullivan@intel.com>
-References: <1429229172-143692-1-git-send-email-catherine.sullivan@intel.com>
- <1429229172-143692-3-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <68C85B5FC2FE974B87244D7222BC92783E9F9020@ORSMSX102.amr.corp.intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Tue, 5 May 2015 17:25:56 +0000
+Subject: [Intel-wired-lan] [PATCH v1 net-next 2/2] igb: support
+	SIOCSMIIREG
+In-Reply-To: <1429302240-654-2-git-send-email-jtoppins@cumulusnetworks.com>
+References: <1429302240-654-1-git-send-email-jtoppins@cumulusnetworks.com>
+ <1429302240-654-2-git-send-email-jtoppins@cumulusnetworks.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B78DBE9D2@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Catherine Sullivan
-> Sent: Thursday, April 16, 2015 5:06 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [net-next S4 02/15] i40e: Disable offline diagnostics
-> if VFs are enabled
+> From: netdev-owner at vger.kernel.org [mailto:netdev-owner at vger.kernel.org]
+> On Behalf Of Jonathan Toppins
+> Sent: Friday, April 17, 2015 1:24 PM
+> To: Kirsher, Jeffrey T
+> Cc: Brandeburg, Jesse; Nelson, Shannon; Wyborny, Carolyn; Skidmore, Donald
+> C; Vick, Matthew; Ronciak, John; Williams, Mitch A; intel-wired-
+> lan at lists.osuosl.org; netdev at vger.kernel.org; gospo at cumulusnetworks.com;
+> shm at cumulusnetworks.com; Alan Liebthal
+> Subject: [PATCH v1 net-next 2/2] igb: support SIOCSMIIREG
 > 
-> From: Greg Rose <gregory.v.rose@intel.com>
+> From: Alan Liebthal <alanl@cumulusnetworks.com>
 > 
-> Require the user to disable virtual functions before running the device offline
-> diagnostics.  The offline diagnostics are intended to ensure basic operation of
-> the device - it is beyond the scope of the diagnostic test to handle the
-> additional complexity of bringing all the virtual functions offline and then
-> back online for each test run.
+> Support setting the MII register via SIOCSMIIREG.
 > 
-> Signed-off-by: Greg Rose <gregory.v.rose@intel.com>
-> Change-ID: Ic0b854851a09fc85df0c9e82c220e45885457c30
+> Signed-off-by: Alan Liebthal <alanl@cumulusnetworks.com>
+> Signed-off-by: Jonathan Toppins <jtoppins@cumulusnetworks.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 27
-> ++++++++++++++++++++++
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  7 ++++++
->  2 files changed, 34 insertions(+)
+>  drivers/net/ethernet/intel/igb/igb_main.c |    5 +++++
+>  1 file changed, 5 insertions(+)
 
-Tested-by: Jim Young <james.m.young@intel.com>
-	
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+
