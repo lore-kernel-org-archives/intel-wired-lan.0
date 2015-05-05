@@ -1,56 +1,213 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Mon, 04 May 2015 19:00:29 -0700
-Subject: [Intel-wired-lan] [PATCH 0/3] igb: add i210/i211 external phy
- support
-In-Reply-To: <1430417955-28252-1-git-send-email-tharvey@gateworks.com>
-References: <1430417955-28252-1-git-send-email-tharvey@gateworks.com>
-Message-ID: <1430791229.2669.205.camel@jtkirshe-mobl>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 05 May 2015 13:58:23 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ 7ded9e91249e646dfa2d46b9b458893ad9567956 BUILD SUCCESS
+Message-ID: <55485bff.rdNWzEnvPIcqcHm4%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 2015-04-30 at 11:19 -0700, Tim Harvey wrote:
-> The i210/i211 can use an external phy and there is support built into
-> igb
-> for several. However if you instead want to use the Linux phydev
-> driver API
-> the igb driver needs to register an MDIO bus with Linux.
-> 
-> This patch series fixes mdio read/write capability for i210/i211 and
-> registers an MDIO bus if the EEPROM is configured with an external
-> phy.
-> 
-> This has only been tested on an i210 with an external phy as that is
-> all I
-> have access to. Testing is needed.
-> 
-> Signed-off-by: Tim Harvey <tharvey@gateworks.com>
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+7ded9e91249e646dfa2d46b9b458893ad9567956  igb: Fix NULL assignment to incorrect variable in igb_reset_q_vector
 
-Tried to apply your patch series and it does not apply cleanly to my
-next-queue tree (dev-queue branch).  Please update your series to my
-latest tree and re-submit.
+elapsed time: 254m
 
-> Tim Harvey (3):
->   net: igb: add i210/i211 support for phy read/write
->   net: igb: add phy read/write functions that accept phy addr
->   net: igb: register mii_bus for SerDes w/ external phy
-> 
->  drivers/net/ethernet/intel/igb/e1000_82575.c |  20 +++-
->  drivers/net/ethernet/intel/igb/e1000_hw.h    |   7 ++
->  drivers/net/ethernet/intel/igb/e1000_phy.c   | 137
-> +++++++++++++++++-----
->  drivers/net/ethernet/intel/igb/e1000_phy.h   |   6 +-
->  drivers/net/ethernet/intel/igb/igb_main.c    | 163
-> ++++++++++++++++++++++++++-
->  5 files changed, 297 insertions(+), 36 deletions(-)
+configs tested: 192
 
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+i386                             alldefconfig
+i386                             allmodconfig
+i386                              allnoconfig
+i386                                defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                 randconfig-a0-05040840
+x86_64                 randconfig-a1-05040840
+x86_64                            allnoconfig
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                     randconfig-c0-0504
+x86_64                     randconfig-c1-0504
+x86_64                     randconfig-c2-0504
+i386                   randconfig-c0-05040833
+i386                   randconfig-c1-05040833
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                              allmodconfig
+arm                          prima2_defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                                   samsung
+arm                       spear13xx_defconfig
+arm                         s3c2410_defconfig
+arm                                  iop-adma
+arm                       imx_v6_v7_defconfig
+arm                                       mmp
+arm                           tegra_defconfig
+arm                                      arm5
+arm                          marzen_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                                        sh
+arm                                     arm67
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+x86_64                randconfig-iv0-05051039
+x86_64                randconfig-iv1-05051039
+xtensa                           allyesconfig
+sparc64                          allyesconfig
+mips                             allyesconfig
+m68k                             allyesconfig
+sparc                            allyesconfig
+tile                             allyesconfig
+alpha                            allyesconfig
+powerpc                          allyesconfig
+sh                               allyesconfig
+avr32                            allyesconfig
+ia64                             allyesconfig
+parisc                           allyesconfig
+cris                             allyesconfig
+x86_64                           allyesconfig
+blackfin                         allyesconfig
+s390                             allyesconfig
+i386                  randconfig-ib0-05051136
+i386                  randconfig-ib1-04272329
+i386                  randconfig-ib1-05051136
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+microblaze                       allyesconfig
+s390                             allmodconfig
+s390                              allnoconfig
+s390                                defconfig
+i386                             allyesconfig
+x86_64                randconfig-ib0-05051121
+avr32        atngw100mkii_evklcd100_defconfig
+m68k                            mac_defconfig
+mips                         mpc30x_defconfig
+mips                           mtx1_defconfig
+powerpc                       eiger_defconfig
+x86_64                       randconfig-nexe0
+x86_64                       randconfig-nexe1
+x86_64                       randconfig-nexe2
+x86_64                       randconfig-nexe3
+x86_64                       randconfig-nexe4
+x86_64                       randconfig-nexe5
+x86_64                       randconfig-nexe6
+x86_64                       randconfig-nexe7
+x86_64                       randconfig-nexe8
+x86_64                       randconfig-nexe9
+i386                         randconfig-nexe0
+i386                         randconfig-nexe1
+i386                         randconfig-nexe2
+i386                         randconfig-nexe3
+i386                         randconfig-nexe4
+i386                         randconfig-nexe5
+i386                         randconfig-nexe6
+i386                         randconfig-nexe7
+i386                         randconfig-nexe8
+i386                         randconfig-nexe9
+x86_64                  randconfig-nexr0-0504
+x86_64                  randconfig-nexr1-0504
+x86_64                  randconfig-nexr2-0504
+i386                    randconfig-nexr0-0504
+i386                    randconfig-nexr1-0504
+i386                    randconfig-nexr2-0504
+x86_64              randconfig-nexs0-05040903
+i386                randconfig-nexs0-05040903
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+powerpc                      chroma_defconfig
+powerpc                               powerpc
+powerpc                         wii_defconfig
+powerpc                    gamecube_defconfig
+powerpc               corenet64_smp_defconfig
+powerpc                               mpc512x
+powerpc                                ppc44x
+x86_64                 randconfig-n0-05051225
+x86_64                  randconfig-nexr1-0505
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                             allmodconfig
+m68k                          amiga_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                           allmodconfig
+powerpc                       maple_defconfig
+powerpc                 linkstation_defconfig
+arm                          pxa3xx_defconfig
+arm                        realview_defconfig
+arm                      jornada720_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                       randconfig-r0-0505
+i386                       randconfig-r2-0505
+i386                       randconfig-r1-0505
+x86_64                 randconfig-r0-05040912
+x86_64                 randconfig-s0-05031954
+x86_64                 randconfig-s0-05040900
+x86_64                 randconfig-s1-05040900
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+i386                          randconfig-x009
+i386                          randconfig-x008
+i386                          randconfig-x005
+i386                          randconfig-x004
+i386                          randconfig-x007
+i386                          randconfig-x006
+i386                          randconfig-x001
+i386                          randconfig-x000
+i386                          randconfig-x003
+i386                          randconfig-x002
+x86_64                        randconfig-x000
+x86_64                        randconfig-x001
+x86_64                        randconfig-x002
+x86_64                        randconfig-x003
+x86_64                        randconfig-x004
+x86_64                        randconfig-x005
+x86_64                        randconfig-x006
+x86_64                        randconfig-x007
+x86_64                        randconfig-x008
+x86_64                        randconfig-x009
+i386                   randconfig-x1-05040910
+i386                   randconfig-x0-05040910
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150504/50ff339a/attachment.asc>
+Thanks,
+Fengguang
