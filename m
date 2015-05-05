@@ -1,11 +1,11 @@
 From: Young, James M <james.m.young@intel.com>
-Date: Tue, 5 May 2015 17:44:03 +0000
-Subject: [Intel-wired-lan] [net-next S4 01/15] i40e: Collect PFC XOFF
-	RX	stats even in single TC case
-In-Reply-To: <1429229172-143692-2-git-send-email-catherine.sullivan@intel.com>
+Date: Tue, 5 May 2015 17:51:42 +0000
+Subject: [Intel-wired-lan] [net-next S4 06/15] i40e/i40evf: Remove
+ unneeded	TODO
+In-Reply-To: <1429229172-143692-7-git-send-email-catherine.sullivan@intel.com>
 References: <1429229172-143692-1-git-send-email-catherine.sullivan@intel.com>
- <1429229172-143692-2-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <68C85B5FC2FE974B87244D7222BC92783E9F8FCA@ORSMSX102.amr.corp.intel.com>
+ <1429229172-143692-7-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <68C85B5FC2FE974B87244D7222BC92783E9F9005@ORSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,22 +17,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Catherine Sullivan
 > Sent: Thursday, April 16, 2015 5:06 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Parikh, Neerav
-> Subject: [Intel-wired-lan] [net-next S4 01/15] i40e: Collect PFC XOFF RX stats
-> even in single TC case
+> Subject: [Intel-wired-lan] [net-next S4 06/15] i40e/i40evf: Remove
+> unneeded TODO
 > 
-> From: Neerav Parikh <neerav.parikh@intel.com>
+> From: Greg Rose <gregory.v.rose@intel.com>
 > 
-> When PFC is enabled for any UP in single TC configuration the driver didn't
-> collect the PFC XOFF RX stats. Though a single TC with PFC enabled is not a
-> common scenario do not prevent the driver from collecting stats if firmware
-> indicates that PFC is enabled.
+> There's no need for a counter so remove the TODO comment.
 > 
-> Signed-off-by: Neerav Parikh <neerav.parikh@intel.com>
-> Change-ID: Ie20bd58b07608b528f3c6d95894c9ae56b00077a
+> Signed-off-by: Greg Rose <gregory.v.rose@intel.com>
+> Change-ID: I3321dda04934c4f5fda9b279ab666192bda44214
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 5 ++---
->  1 file changed, 2 insertions(+), 3 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 3 ---
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 3 ---
+>  2 files changed, 6 deletions(-)
 
 Tested-by: Jim Young <james.m.young@intel.com>
-	No DCB features tested by my, base driver only, this patch does not affect base driver function.
+	
