@@ -1,37 +1,40 @@
-From: Young, James M <james.m.young@intel.com>
-Date: Wed, 6 May 2015 16:33:36 +0000
-Subject: [Intel-wired-lan] [net-next S4 05/15] i40e: Remove unnecessary
- pf	members
-In-Reply-To: <1429229172-143692-6-git-send-email-catherine.sullivan@intel.com>
-References: <1429229172-143692-1-git-send-email-catherine.sullivan@intel.com>
- <1429229172-143692-6-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <68C85B5FC2FE974B87244D7222BC92783E9F9242@ORSMSX102.amr.corp.intel.com>
+From: Schmitt, Phillip J <phillip.j.schmitt@intel.com>
+Date: Wed, 6 May 2015 16:47:55 +0000
+Subject: [Intel-wired-lan] [PATCH 3/3] ixgbevf: fold ixgbevf_pull_tail
+ into	ixgbevf_add_rx_frag
+In-Reply-To: <20150423044932.18903.18728.stgit@ahduyck-vm-fedora22>
+References: <20150423040941.18903.3545.stgit@ahduyck-vm-fedora22>
+ <20150423044932.18903.18728.stgit@ahduyck-vm-fedora22>
+Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E17F82864B@ORSMSX108.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+
+
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Catherine Sullivan
-> Sent: Thursday, April 16, 2015 5:06 PM
+> Behalf Of Alexander Duyck
+> Sent: Wednesday, April 22, 2015 9:50 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Singhai, Anjali
-> Subject: [Intel-wired-lan] [net-next S4 05/15] i40e: Remove unnecessary pf
-> members
+> Subject: [Intel-wired-lan] [PATCH 3/3] ixgbevf: fold ixgbevf_pull_tail into
+> ixgbevf_add_rx_frag
 > 
-> From: Anjali Singhai Jain <anjali.singhai@intel.com>
+> This change folds the ixgbevf_pull_tail call into ixgbevf_add_rx_frag.  The
+> advantage to doing this is that the fragment doesn't have to be modified after it
+> is added to the skb.
 > 
-> We can use the stat index macro directly, a variable is not required.
-> 
-> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-> Change-ID: I19f08ac16353dc0cd87a1a8248d714e15a54aa8a
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@redhat.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e.h         |  2 --
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  2 +-
->  drivers/net/ethernet/intel/i40e/i40e_main.c    | 10 ++++------
->  3 files changed, 5 insertions(+), 9 deletions(-)
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   66 ++++++---------------
+>  1 file changed, 19 insertions(+), 47 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> index a16d267fbce4..cca8936f2fc3 100644
+> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
 
-Tested-by: Jim Young <james.m.young@intel.com>
-
+Tested-by: Phil Schmitt <phillip.j.schmitt@intel.com>
