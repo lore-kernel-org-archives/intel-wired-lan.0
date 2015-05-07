@@ -1,182 +1,63 @@
-From: Jonathan Toppins <jtoppins@cumulusnetworks.com>
-Date: Thu, 07 May 2015 12:57:46 -0400
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Thu, 07 May 2015 10:49:07 -0700
 Subject: [Intel-wired-lan] [PATCH v1 net-next 1/2] igb: add PHY support
-	for Broadcom 5461S
-In-Reply-To: <CAJ+vNU0NP4Lmc2=y_j9NN0AxK1pUTPs8rSNJ78SCp4CBQ6wtMg@mail.gmail.com>
+ for Broadcom 5461S
+In-Reply-To: <CAPg-hwmB-=fd_OjMbtL_Am5e9znX36KOnMnHNdwTMnCmQBeHPw@mail.gmail.com>
 References: <1429302240-654-1-git-send-email-jtoppins@cumulusnetworks.com>
- <CAJ+vNU0NP4Lmc2=y_j9NN0AxK1pUTPs8rSNJ78SCp4CBQ6wtMg@mail.gmail.com>
-Message-ID: <554B998A.9010001@cumulusnetworks.com>
+ <1430999388.32618.21.camel@jtkirshe-mobl>
+ <CAPg-hwmB-=fd_OjMbtL_Am5e9znX36KOnMnHNdwTMnCmQBeHPw@mail.gmail.com>
+Message-ID: <554BA593.6080703@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 5/7/15 12:18 PM, Tim Harvey wrote:
-> On Fri, Apr 17, 2015 at 1:23 PM, Jonathan Toppins
-> <jtoppins@cumulusnetworks.com> wrote:
->> From: Alan Liebthal <alanl@cumulusnetworks.com>
->>
->> The Quanta LY8 Ethernet management port uses a Broadcom 5461S chip for
->> the PHY layer. This adds support for this PHY to the Intel igb driver.
->>
->> Signed-off-by: Alan Liebthal <alanl@cumulusnetworks.com>
->> Signed-off-by: Jonathan Toppins <jtoppins@cumulusnetworks.com>
->> ---
-> <snip>
->> --- a/drivers/net/ethernet/intel/igb/e1000_phy.c
->> +++ b/drivers/net/ethernet/intel/igb/e1000_phy.c
->> @@ -148,6 +148,13 @@ s32 igb_read_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 *data)
->>           * Control register.  The MAC will take care of interfacing with the
->>           * PHY to retrieve the desired data.
->>           */
->> +       if (phy->type == e1000_phy_bcm5461s) {
->> +               mdic = rd32(E1000_MDICNFG);
->> +               mdic &= ~E1000_MDICNFG_PHY_MASK;
->> +               mdic |= (phy->addr << E1000_MDICNFG_PHY_SHIFT);
->> +               wr32(E1000_MDICNFG, mdic);
->> +       }
->> +
->>          mdic = ((offset << E1000_MDIC_REG_SHIFT) |
->>                  (phy->addr << E1000_MDIC_PHY_SHIFT) |
->>                  (E1000_MDIC_OP_READ));
->> @@ -204,6 +211,13 @@ s32 igb_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data)
->>           * Control register.  The MAC will take care of interfacing with the
->>           * PHY to retrieve the desired data.
->>           */
->> +       if (phy->type == e1000_phy_bcm5461s) {
->> +               mdic = rd32(E1000_MDICNFG);
->> +               mdic &= ~E1000_MDICNFG_PHY_MASK;
->> +               mdic |= (phy->addr << E1000_MDICNFG_PHY_SHIFT);
->> +               wr32(E1000_MDICNFG, mdic);
->> +       }
->> +
->>          mdic = (((u32)data) |
->>                  (offset << E1000_MDIC_REG_SHIFT) |
->>                  (phy->addr << E1000_MDIC_PHY_SHIFT) |
->> @@ -2509,3 +2523,68 @@ static s32 igb_set_master_slave_mode(struct e1000_hw *hw)
->>
->>          return hw->phy.ops.write_reg(hw, PHY_1000T_CTRL, phy_data);
->>   }
+On 05/07/2015 06:41 AM, Andy Gospodarek wrote:
+> On Thu, May 7, 2015 at 7:49 AM, Jeff Kirsher
+> <jeffrey.t.kirsher@intel.com> wrote:
+>> On Fri, 2015-04-17 at 13:23 -0700, Jonathan Toppins wrote:
+>>> From: Alan Liebthal <alanl@cumulusnetworks.com>
+>>>
+>>> The Quanta LY8 Ethernet management port uses a Broadcom 5461S chip for
+>>> the PHY layer. This adds support for this PHY to the Intel igb driver.
+>>>
+>>> Signed-off-by: Alan Liebthal <alanl@cumulusnetworks.com>
+>>> Signed-off-by: Jonathan Toppins <jtoppins@cumulusnetworks.com>
+>>> ---
+>>>   drivers/net/ethernet/intel/igb/e1000_82575.c   |   20 +++++-
+>>>   drivers/net/ethernet/intel/igb/e1000_defines.h |    1 +
+>>>   drivers/net/ethernet/intel/igb/e1000_hw.h      |    1 +
+>>>   drivers/net/ethernet/intel/igb/e1000_phy.c     |   79
+>>> ++++++++++++++++++++++++
+>>>   drivers/net/ethernet/intel/igb/e1000_phy.h     |    2 +
+>>>   5 files changed, 102 insertions(+), 1 deletion(-)
+>> After at lot of discussion on these changes, we would like to you to use
+>> the PHYLib approach.  I know that means adding PHYLib support to our
+>> drivers, which we currently do not have.
+> Jeff,
 >
-> Jonathan,
+> I think we would be willing to take on this task, but I would not like
+> that to be a gating factor for upstream acceptance of the
+> functionality added with this patch.  I see that Aaron has commented
+> that no regressions were found with this patch, but based on current
+> status in patchwork, it looks like Dave is waiting for something a bit
+> more definitive before accepting it.  Can you ACK it first so we have
+> support for this platform upstream and then we can go take a stab at
+> phylib support for igb?
 >
-> Is this bcm5461s attached to an i210/i211? These changes look a lot
-> like some changes I'm trying to upstream to add support for i210/i211
-> which require the phy address in the MDICNFG register. If this is the
-> case, then I think the right approach is to check for hw->mac.type =
-> e1000_i210/e1000_i211 and I can submit my patch for review.
+> Thanks,
 >
-> Regards,
->
-> Tim
->
+> -andy
 
-Hi Tim,
+I agree with Jeff.  We already have the code from Tim Harvey which is 
+adding PHYlib support for i210/i211, it shouldn't take much to extend 
+the same kind of SGMII support for i350/i354.  Then with that you free 
+yourself up to add whatever PHY you need in the future without having to 
+get buy-off from Intel.  As is this patch set looks fishy to me since 
+you are providing the
 
-The MAC in question are the ones integrated with Intel's Atom processor, 
-I don't recall the series off hand, output of lspci and /proc/cpuinfo 
-below. If you think your change may apply to this controller as well I 
-would be more than happy to apply your change and test.
+The fact is the merge window will still be open for a while since we are 
+only at RC2.
 
-Thanks,
--Jon
-
-Supplementary Information.
-
-Processor info (8 processors total):
-root at qct-ly8-01:~# uname -a
-Linux qct-ly8-01 3.2.60-1+deb7u1+cl2.5+1 #3.2.60-1+deb7u1+cl2.5+1 SMP 
-Mon Apr 13 23:18:31 PDT 2015 x86_64 GNU/Linux
-
-root at qct-ly8-01:~# cat /proc/cpuinfo  | grep "processor" | wc -l
-8
-
-root at qct-ly8-01:~# cat /proc/cpuinfo
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 77
-model name	: Intel(R) Atom(TM) CPU  C2758  @ 2.40GHz
-stepping	: 8
-microcode	: 0x11d
-cpu MHz		: 2400.191
-cache size	: 1024 KB
-physical id	: 0
-siblings	: 8
-core id		: 0
-cpu cores	: 8
-apicid		: 0
-initial apicid	: 0
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 11
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov 
-pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx 
-rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology 
-nonstop_tsc aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 
-ssse3 cx16 xtpr pdcm sse4_1 sse4_2 movbe popcnt tsc_deadline_timer aes 
-rdrand lahf_lm 3dnowprefetch arat epb dtherm tpr_shadow vnmi 
-flexpriority ept vpid smep erms
-bogomips	: 4800.38
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 36 bits physical, 48 bits virtual
-power management:
-
-...trimmed...
-
-
-The PCI info for the controller:
-root at qct-ly8-01:~# lspci -vvx -s 00:14.0
-00:14.0 Ethernet controller: Intel Corporation Device 1f41 (rev 03)
-	Subsystem: Intel Corporation Device 1f41
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- 
-Stepping- SERR- FastB2B- DisINTx+
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- 
-<MAbort- >SERR- <PERR- INTx-
-	Latency: 0, Cache Line Size: 64 bytes
-	Interrupt: pin A routed to IRQ 20
-	Region 0: Memory at dff60000 (64-bit, non-prefetchable) [size=128K]
-	Region 2: I/O ports at 1000 [size=32]
-	Region 4: Memory@dff84000 (64-bit, non-prefetchable) [size=16K]
-	Capabilities: [40] Power Management version 3
-		Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
-		Status: D0 NoSoftRst+ PME-Enable- DSel=0 DScale=1 PME-
-	Capabilities: [50] MSI: Enable- Count=1/1 Maskable+ 64bit+
-		Address: 0000000000000000  Data: 0000
-		Masking: 00000000  Pending: 00000000
-	Capabilities: [70] MSI-X: Enable+ Count=10 Masked-
-		Vector table: BAR=4 offset=00000000
-		PBA: BAR=4 offset=00002000
-	Capabilities: [a0] Express (v2) Root Complex Integrated Endpoint, MSI 00
-		DevCap:	MaxPayload 512 bytes, PhantFunc 0, Latency L0s <64ns, L1 <1us
-			ExtTag- RBE+ FLReset+
-		DevCtl:	Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
-			RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
-			MaxPayload 128 bytes, MaxReadReq 512 bytes
-		DevSta:	CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr+ TransPend-
-		LnkCap:	Port #0, Speed unknown, Width x0, ASPM unknown, Latency L0 
-<64ns, L1 <1us
-			ClockPM- Surprise- LLActRep- BwNot-
-		LnkCtl:	ASPM Disabled; Disabled- Retrain- CommClk-
-			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
-		LnkSta:	Speed unknown, Width x0, TrErr- Train- SlotClk- DLActive- 
-BWMgmt- ABWMgmt-
-		DevCap2: Completion Timeout: Range ABCD, TimeoutDis+
-		DevCtl2: Completion Timeout: 50us to 50ms, TimeoutDis-
-		LnkCtl2: Target Link Speed: 2.5GT/s, EnterCompliance- SpeedDis-, 
-Selectable De-emphasis: -6dB
-			 Transmit Margin: Normal Operating Range, EnterModifiedCompliance- 
-ComplianceSOS-
-			 Compliance De-emphasis: -6dB
-		LnkSta2: Current De-emphasis Level: -6dB, EqualizationComplete-, 
-EqualizationPhase1-
-			 EqualizationPhase2-, EqualizationPhase3-, LinkEqualizationRequest-
-	Kernel driver in use: igb
-00: 86 80 41 1f 07 04 10 00 03 00 00 02 10 00 00 00
-10: 04 00 f6 df 00 00 00 00 01 10 00 00 00 00 00 00
-20: 04 40 f8 df 00 00 00 00 00 00 00 00 86 80 41 1f
-30: 00 00 00 00 40 00 00 00 00 00 00 00 0b 01 00 00
-
+- Alex
