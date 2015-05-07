@@ -1,214 +1,216 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 08 May 2015 16:28:07 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- af2be61f0c4e7fc896d3bb3d18eaf459704d99af BUILD DONE
-Message-ID: <554c7397.hjrJiIgdUhi+Mvzq%fengguang.wu@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Thu, 07 May 2015 11:20:09 -0700
+Subject: [Intel-wired-lan] [PATCH v1 net-next 1/2] igb: add PHY support
+	for Broadcom 5461S
+In-Reply-To: <1429302240-654-1-git-send-email-jtoppins@cumulusnetworks.com>
+References: <1429302240-654-1-git-send-email-jtoppins@cumulusnetworks.com>
+Message-ID: <554BACD9.1010307@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-af2be61f0c4e7fc896d3bb3d18eaf459704d99af  ixgbevf: add support for reporting RSS key and hash table for X550
+On 04/17/2015 01:23 PM, Jonathan Toppins wrote:
+> From: Alan Liebthal <alanl@cumulusnetworks.com>
+>
+> The Quanta LY8 Ethernet management port uses a Broadcom 5461S chip for
+> the PHY layer. This adds support for this PHY to the Intel igb driver.
+>
+> Signed-off-by: Alan Liebthal <alanl@cumulusnetworks.com>
+> Signed-off-by: Jonathan Toppins <jtoppins@cumulusnetworks.com>
 
-drivers/net/ethernet/intel/e1000e/netdev.c:3811:30: sparse: incorrect type in assignment (different base types)
-drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:2082:22: sparse: restricted __le16 degrades to integer
+Feedback below.  I would say you need to talk to Quanta, and have them 
+talk to Intel about getting their EEPROM configuration fixed.  It looks 
+like the part you have is lacking some EEPROM configuration since most 
+of this patch contains the typical stuff one would do to workaround such 
+an issue.
 
-elapsed time: 931m
+I'm assuming this isn't an SPF pluggable PHY since you are using MDIO 
+for the interface, so they really should be doing some of the 
+initialization in the EEPROM rather than pushing it off to the driver code.
 
-configs tested: 190
+> ---
+>   drivers/net/ethernet/intel/igb/e1000_82575.c   |   20 +++++-
+>   drivers/net/ethernet/intel/igb/e1000_defines.h |    1 +
+>   drivers/net/ethernet/intel/igb/e1000_hw.h      |    1 +
+>   drivers/net/ethernet/intel/igb/e1000_phy.c     |   79 ++++++++++++++++++++++++
+>   drivers/net/ethernet/intel/igb/e1000_phy.h     |    2 +
+>   5 files changed, 102 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
+> index 2dcc808..e222804 100644
+> --- a/drivers/net/ethernet/intel/igb/e1000_82575.c
+> +++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
+> @@ -178,7 +178,7 @@ static s32 igb_init_phy_params_82575(struct e1000_hw *hw)
+>
+>   	ctrl_ext = rd32(E1000_CTRL_EXT);
+>
+> -	if (igb_sgmii_active_82575(hw)) {
+> +	if (igb_sgmii_active_82575(hw) && phy->type != e1000_phy_bcm5461s) {
+>   		phy->ops.reset = igb_phy_hw_reset_sgmii_82575;
+>   		ctrl_ext |= E1000_CTRL_I2C_ENA;
+>   	} else {
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             alldefconfig
-i386                             allmodconfig
-i386                              allnoconfig
-i386                                defconfig
-mips                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                 randconfig-a0-05040840
-x86_64                 randconfig-a1-05040840
-x86_64                            allnoconfig
-x86_64                     randconfig-c0-0504
-x86_64                     randconfig-c1-0504
-x86_64                     randconfig-c2-0504
-i386                   randconfig-c0-05040833
-i386                   randconfig-c1-05040833
-arm                              allmodconfig
-arm                               allnoconfig
-arm                                      arm5
-arm                                     arm67
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                                       mmp
-arm                       omap2plus_defconfig
-arm                          prima2_defconfig
-arm                         s3c2410_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-arm                           tegra_defconfig
-ia64                             alldefconfig
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                randconfig-iv0-05071814
-x86_64                randconfig-iv1-05071814
-i386                  randconfig-ib0-05072345
-i386                  randconfig-ib1-05072345
-sparc                               defconfig
-sparc64                          allmodconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-microblaze                       allyesconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-s390                             allmodconfig
-s390                              allnoconfig
-s390                                defconfig
-i386                             allyesconfig
-x86_64                randconfig-ib0-05080038
-arm                     eseries_pxa_defconfig
-m68k                          amiga_defconfig
-mips                          ath79_defconfig
-powerpc                   lite5200b_defconfig
-powerpc                 mpc8272_ads_defconfig
-x86_64                       randconfig-nexe0
-x86_64                       randconfig-nexe1
-x86_64                       randconfig-nexe2
-x86_64                       randconfig-nexe3
-x86_64                       randconfig-nexe4
-x86_64                       randconfig-nexe5
-x86_64                       randconfig-nexe6
-x86_64                       randconfig-nexe7
-x86_64                       randconfig-nexe8
-x86_64                       randconfig-nexe9
-i386                         randconfig-nexe0
-i386                         randconfig-nexe1
-i386                         randconfig-nexe2
-i386                         randconfig-nexe3
-i386                         randconfig-nexe4
-i386                         randconfig-nexe5
-i386                         randconfig-nexe6
-i386                         randconfig-nexe7
-i386                         randconfig-nexe8
-i386                         randconfig-nexe9
-x86_64                  randconfig-nexr0-0505
-x86_64                  randconfig-nexr1-0505
-x86_64                  randconfig-nexr2-0505
-i386                    randconfig-nexr0-0505
-i386                    randconfig-nexr1-0505
-i386                    randconfig-nexr2-0505
-x86_64              randconfig-nexs0-05071253
-i386                randconfig-nexs0-05071253
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-powerpc                      chroma_defconfig
-powerpc               corenet64_smp_defconfig
-powerpc                    gamecube_defconfig
-powerpc                 linkstation_defconfig
-powerpc                               mpc512x
-powerpc                               powerpc
-powerpc                                ppc44x
-powerpc                         wii_defconfig
-x86_64                 randconfig-n0-05071015
-x86_64                           allyesconfig
-alpha                            allyesconfig
-avr32                            allyesconfig
-blackfin                         allyesconfig
-cris                             allyesconfig
-ia64                             allyesconfig
-m68k                             allyesconfig
-mips                             allyesconfig
-parisc                           allyesconfig
-powerpc                          allyesconfig
-s390                             allyesconfig
-sh                               allyesconfig
-sparc                            allyesconfig
-sparc64                          allyesconfig
-tile                             allyesconfig
-xtensa                           allyesconfig
-m68k                             allmodconfig
-m68k                          amiga_defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-sh                               allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-arm                         iop13xx_defconfig
-arm                         palmz72_defconfig
-arm                    vt8500_v6_v7_defconfig
-powerpc                     mpc85xx_defconfig
-powerpc                  mpc885_ads_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                       randconfig-r0-0507
-i386                       randconfig-r1-0507
-i386                       randconfig-r2-0507
-x86_64                 randconfig-r0-05071205
-x86_64                          randconfig-s0
-x86_64                          randconfig-s1
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                        randconfig-x000
-x86_64                        randconfig-x001
-x86_64                        randconfig-x002
-x86_64                        randconfig-x003
-x86_64                        randconfig-x004
-x86_64                        randconfig-x005
-x86_64                        randconfig-x006
-x86_64                        randconfig-x007
-x86_64                        randconfig-x008
-x86_64                        randconfig-x009
-i386                          randconfig-x000
-i386                          randconfig-x001
-i386                          randconfig-x002
-i386                          randconfig-x003
-i386                          randconfig-x004
-i386                          randconfig-x005
-i386                          randconfig-x006
-i386                          randconfig-x007
-i386                          randconfig-x008
-i386                          randconfig-x009
-i386                            randconfig-x0
-i386                            randconfig-x1
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
+This doesn't look right to me.  Why do you need a special exception for 
+this part?  It seems like we should probably be using this patch 
+assuming you are using an external PHY as the I2C enable is what enables 
+external MII or I2C.  Is it possible that the EEPROM is missing the bits 
+for setting up external MDIO correct?  You might take a look at the code 
+related to igb_sgmii_uses_mdio_82575().
 
-Thanks,
-Fengguang
+> @@ -289,6 +289,11 @@ static s32 igb_init_phy_params_82575(struct e1000_hw *hw)
+>   	case BCM54616_E_PHY_ID:
+>   		phy->type = e1000_phy_bcm54616;
+>   		break;
+> +	case BCM5461S_E_PHY_ID:
+> +		phy->type                   = e1000_phy_bcm5461s;
+> +		phy->ops.get_phy_info       = igb_get_phy_info_5461s;
+> +		phy->ops.force_speed_duplex = igb_phy_force_speed_duplex_82580;
+> +		break;
+>   	default:
+>   		ret_val = -E1000_ERR_PHY;
+>   		goto out;
+> @@ -841,6 +846,15 @@ static s32 igb_get_phy_id_82575(struct e1000_hw *hw)
+>   			goto out;
+>   		}
+>   		ret_val = igb_get_phy_id(hw);
+> +		if (ret_val && hw->mac.type == e1000_i354) {
+> +			/* We do a special check for bcm5461s phy by setting
+> +			 * the phy->addr to 5 and doing the phy check again.
+> +			 * This call will succeed and retrieve a valid phy
+> +			 * id if we have the bcm5461s phy.
+> +			 */
+> +			phy->addr = 5;
+> +			ret_val = igb_get_phy_id(hw);
+> +		}
+>   		goto out;
+>   	}
+>
+
+This looks like a bad EEPROM to me.  The phy ID should already be stored 
+in the EEPROM or be discoverable.
+
+> @@ -1221,6 +1235,9 @@ static s32 igb_get_cfg_done_82575(struct e1000_hw *hw)
+>   	    (hw->phy.type == e1000_phy_igp_3))
+>   		igb_phy_init_script_igp3(hw);
+>
+> +	if (hw->phy.type == e1000_phy_bcm5461s)
+> +		igb_phy_init_script_5461s(hw);
+> +
+>   	return 0;
+>   }
+>
+
+Yuck, okay so this platform definitely has an EEPROM issue.  All of this 
+init stuff should really be in the EEPROM for the part.  You should 
+probably have Quanta talk to Intel about getting the correct EEPROM 
+built for this thing.
+
+> @@ -1597,6 +1614,7 @@ static s32 igb_setup_copper_link_82575(struct e1000_hw *hw)
+>   		ret_val = igb_copper_link_setup_82580(hw);
+>   		break;
+>   	case e1000_phy_bcm54616:
+> +	case e1000_phy_bcm5461s:
+>   		break;
+>   	default:
+>   		ret_val = -E1000_ERR_PHY;
+> diff --git a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
+> index 50d51e4..787224d 100644
+> --- a/drivers/net/ethernet/intel/igb/e1000_defines.h
+> +++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
+> @@ -861,6 +861,7 @@
+>   #define I210_I_PHY_ID        0x01410C00
+>   #define M88E1543_E_PHY_ID    0x01410EA0
+>   #define BCM54616_E_PHY_ID    0x03625D10
+> +#define BCM5461S_E_PHY_ID    0x002060C0
+>
+>   /* M88E1000 Specific Registers */
+>   #define M88E1000_PHY_SPEC_CTRL     0x10  /* PHY Specific Control Register */
+> diff --git a/drivers/net/ethernet/intel/igb/e1000_hw.h b/drivers/net/ethernet/intel/igb/e1000_hw.h
+> index d82c96b..408a3e5 100644
+> --- a/drivers/net/ethernet/intel/igb/e1000_hw.h
+> +++ b/drivers/net/ethernet/intel/igb/e1000_hw.h
+> @@ -129,6 +129,7 @@ enum e1000_phy_type {
+>   	e1000_phy_82580,
+>   	e1000_phy_i210,
+>   	e1000_phy_bcm54616,
+> +	e1000_phy_bcm5461s,
+>   };
+>
+>   enum e1000_bus_type {
+> diff --git a/drivers/net/ethernet/intel/igb/e1000_phy.c b/drivers/net/ethernet/intel/igb/e1000_phy.c
+> index c1bb64d..0f5a55b 100644
+> --- a/drivers/net/ethernet/intel/igb/e1000_phy.c
+> +++ b/drivers/net/ethernet/intel/igb/e1000_phy.c
+> @@ -148,6 +148,13 @@ s32 igb_read_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 *data)
+>   	 * Control register.  The MAC will take care of interfacing with the
+>   	 * PHY to retrieve the desired data.
+>   	 */
+> +	if (phy->type == e1000_phy_bcm5461s) {
+> +		mdic = rd32(E1000_MDICNFG);
+> +		mdic &= ~E1000_MDICNFG_PHY_MASK;
+> +		mdic |= (phy->addr << E1000_MDICNFG_PHY_SHIFT);
+> +		wr32(E1000_MDICNFG, mdic);
+> +	}
+> +
+>   	mdic = ((offset << E1000_MDIC_REG_SHIFT) |
+>   		(phy->addr << E1000_MDIC_PHY_SHIFT) |
+>   		(E1000_MDIC_OP_READ));
+> @@ -204,6 +211,13 @@ s32 igb_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data)
+>   	 * Control register.  The MAC will take care of interfacing with the
+>   	 * PHY to retrieve the desired data.
+>   	 */
+> +	if (phy->type == e1000_phy_bcm5461s) {
+> +		mdic = rd32(E1000_MDICNFG);
+> +		mdic &= ~E1000_MDICNFG_PHY_MASK;
+> +		mdic |= (phy->addr << E1000_MDICNFG_PHY_SHIFT);
+> +		wr32(E1000_MDICNFG, mdic);
+> +	}
+> +
+>   	mdic = (((u32)data) |
+>   		(offset << E1000_MDIC_REG_SHIFT) |
+>   		(phy->addr << E1000_MDIC_PHY_SHIFT) |
+
+This bit is already done for you if you have a valid EEPROM.
+
+> @@ -2509,3 +2523,68 @@ static s32 igb_set_master_slave_mode(struct e1000_hw *hw)
+>
+>   	return hw->phy.ops.write_reg(hw, PHY_1000T_CTRL, phy_data);
+>   }
+> +
+> +/**
+> + *  igb_phy_init_script_5461s - Inits the BCM5461S PHY
+> + *  @hw: pointer to the HW structure
+> + *
+> + *  Initializes a Broadcom Gigabit PHY.
+> + **/
+> +s32 igb_phy_init_script_5461s(struct e1000_hw *hw)
+> +{
+> +	u16 mii_reg_led = 0;
+> +
+> +	/* 1. Speed LED (Set the Link LED mode), Shadow 00010, 0x1C.bit2=1 */
+> +	hw->phy.ops.write_reg(hw, 0x1C, 0x0800);
+> +	hw->phy.ops.read_reg(hw, 0x1C, &mii_reg_led);
+> +	mii_reg_led |= 0x0004;
+> +	hw->phy.ops.write_reg(hw, 0x1C, mii_reg_led | 0x8000);
+> +
+> +	/* 2. Active LED (Set the Link LED mode), Shadow 01001, 0x1C.bit4=1,
+> +	 *    0x10.bit5=0
+> +	 */
+> +	hw->phy.ops.write_reg(hw, 0x1C, 0x2400);
+> +	hw->phy.ops.read_reg(hw, 0x1C, &mii_reg_led);
+> +	mii_reg_led |= 0x0010;
+> +	hw->phy.ops.write_reg(hw, 0x1C, mii_reg_led | 0x8000);
+> +	hw->phy.ops.read_reg(hw, 0x10, &mii_reg_led);
+> +	mii_reg_led &= 0xffdf;
+> +	hw->phy.ops.write_reg(hw, 0x10, mii_reg_led);
+> +
+> +	return 0;
+> +}
+> +
+
+This belongs in the device EEPROM, not in the driver.  This is why Jeff 
+is suggesting PHYlib.  At least if it is there then there only needs to 
+be one copy per device this is attached to while lacking an EEPROM 
+configuration.
