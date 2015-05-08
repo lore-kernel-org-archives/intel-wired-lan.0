@@ -1,161 +1,163 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Fri, 08 May 2015 15:35:57 -0700
-Subject: [Intel-wired-lan] [net PATCH 2/2] i40e: start up in VEPA mode by
-	default
-In-Reply-To: <20150508223552.26673.5631.stgit@jbrandeb-cp2.jf.intel.com>
-References: <20150508223552.26673.5631.stgit@jbrandeb-cp2.jf.intel.com>
-Message-ID: <20150508223557.26673.76301.stgit@jbrandeb-cp2.jf.intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Fri, 08 May 2015 16:06:17 -0700
+Subject: [Intel-wired-lan] [PATCH v1 net-next 1/2] igb: add PHY support
+ for Broadcom 5461S
+In-Reply-To: <554D38F8.7060500@cumulusnetworks.com>
+References: <1429302240-654-1-git-send-email-jtoppins@cumulusnetworks.com>
+ <1430999388.32618.21.camel@jtkirshe-mobl>
+ <CAPg-hwmB-=fd_OjMbtL_Am5e9znX36KOnMnHNdwTMnCmQBeHPw@mail.gmail.com>
+ <D38E8E86660E514AB505863C19C9287C74192484@ORSMSX102.amr.corp.intel.com>
+ <CAPg-hwmQgK6fibE-=RvCxESx3TzOyHnxsG+_NC4=vE3=o3SxEg@mail.gmail.com>
+ <554D2B7D.7050209@redhat.com> <554D2DD0.5070008@cumulusnetworks.com>
+ <554D3319.8090508@redhat.com> <554D38F8.7060500@cumulusnetworks.com>
+Message-ID: <554D4169.8010208@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Anjali Singhai Jain <anjali.singhai@intel.com>
+On 05/08/2015 03:30 PM, Jonathan Toppins wrote:
+> On 5/8/15 6:05 PM, Alexander Duyck wrote:
+>>
+>>
+>> On 05/08/2015 02:42 PM, Jonathan Toppins wrote:
+>>> On 5/8/15 5:32 PM, Alexander Duyck wrote:
+>>>>
+>>>>
+>>>> On 05/08/2015 10:46 AM, Andy Gospodarek wrote:
+>>>>> On Fri, May 8, 2015 at 12:39 PM, Ronciak, John
+>>>>> <john.ronciak@intel.com> wrote:
+>>>>>>> I think we would be willing to take on this task, but I would not
+>>>>>>> like that to be a
+>>>>>>> gating factor for upstream acceptance of the functionality added
+>>>>>>> with this
+>>>>>>> patch.  I see that Aaron has commented that no regressions were
+>>>>>>> found with
+>>>>>>> this patch, but based on current status in patchwork, it looks like
+>>>>>>> Dave is
+>>>>>>> waiting for something a bit more definitive before accepting it.
+>>>>>>> Can you ACK it
+>>>>>>> first so we have support for this platform upstream and then we can
+>>>>>>> go take a
+>>>>>>> stab at phylib support for igb?
+>>>>>> So Andy, are you wanting us to accept the patch and that you will
+>>>>>> then redo things to move to PHYlib in the near future? What's the
+>>>>>> time line for that work?  What happens if you guys don't get around
+>>>>>> to doing it?  This can become very problematic for us as you can
+>>>>>> imagine.  This also really isn't the upstream way of doing something
+>>>>>> like this.  So I'm a bit hesitant to do it this way.
+>>>>>>
+>>>>>> Can you explain your urgency?
+>>>>>>
+>>>>>> Cheers,
+>>>>>> John
+>>>>>>
+>>>>> John,
+>>>>>
+>>>>> It is somewhat urgent as we would like to do some upstream kernel
+>>>>> development on these platforms.  I would rather not have to coach
+>>>>> everyone/constantly rebase this patch for at least one more kernel
+>>>>> release and supply it to anyone (internal to Cumulus or outside) just
+>>>>> to run net-next on these platforms.  Once this is added ONIE kernels
+>>>>> could also use a pure upstream kernel for booting and installing
+>>>>> various distros on it, so I see inclusion as a nice feature for the
+>>>>> community as well.
+>>>>>
+>>>>> I was not aware of the patch from Tim Harvey that was adding phylib
+>>>>> support into igb when I sent the first email, so that may change the
+>>>>> scope of this effort a bit.  Of course we would now be reliant on 
+>>>>> that
+>>>>> patch being included in Dave's tree before we can do our work and 
+>>>>> that
+>>>>> appears to have the status of 'changes requested' on the
+>>>>> intel-wired-lan list, so I see no guarantee that those will be added
+>>>>> by the time the merge window closes.
+>>>>>
+>>>>> Thanks,
+>>>>>
+>>>>> -andy
+>>>>
+>>>> Andy,
+>>>>
+>>>> The patch as-is seems to have a number of issues since the 
+>>>> interface you
+>>>> are using has a misconfigured EEPROM.  If you got that addressed you
+>>>> could then probably cut down significantly on the code changes needed
+>>>> since much of it seems to be just workarounds for stuff that should 
+>>>> have
+>>>> been taken care of in the EEPROM.  For example, the PHY address and
+>>>> external MDIO value are controlled via Initialization Control 3 & 
+>>>> 4. The
+>>>> configuration for the hardware should be there.  The same goes for the
+>>>> LED configuration.  That is something that should start working at
+>>>> power-on, not after the driver is loaded.  I really think you should
+>>>> work to get those resolved with Quanta then it would probably make 
+>>>> your
+>>>> driver work much easier.
+>>>>
+>>>> Also it looks like the bcm5461 is already supported by PHYdev so there
+>>>> shouldn't be much to do other than update igb to register a 
+>>>> mii_bus, and
+>>>> with any luck the PHYdev code already implemented would take care 
+>>>> of the
+>>>> rest (assuming the EEPROM is fixed).
+>>>
+>>> Alex, appreciate your comments on the EEPROM. I forwarded them to our
+>>> platform team to inquire on the Quanta side. The initial thinking
+>>> seems to be Quanta is not going to change a shipping product. Is the
+>>> EEPROM field upgradable from software or does it require a
+>>> manufacturing line change?
+>>>
+>>> -Jon
+>>
+>> It should be field upgradable assuming they didn't do anything too goofy
+>> with the design.  If I recall correctly it can be modified via "ethtool
+>> -E ".  The i350 datasheet
+>> (http://www.intel.com/content/www/us/en/ethernet-controllers/ethernet-controller-i350-datasheet.html) 
+>>
+>> should cover Init Ctrl 3 & 4 in section 6.2 of the data sheet, that
+>> piece is pretty strait forward since those are just a few single byte
+>> replacements.  The tricky bit would be the PHY configuration Structure
+>> (section 6.3.13) which you would probably need to take care of the LED
+>> initialization at power-on.  I recall having to deal with some of this
+>> when the work was done to get the external Marvell PHY working in a
+>> similar configuration.  The fact is I am a bit rusty when it comes to
+>> this stuff since I last worked on it several years ago so my information
+>> may be out of date, and I am assuming the i354 EEPROM follows the same
+>> layout as the i350 which may or may not be the case.
+>>
+>> - Alex
+>>
+>
+> Alex, appreciate the info, this seems like a possible alternative and 
+> something we could handle all inside our distribution. If any of your 
+> other Intel friends have more recent info would much appreciate it.
+>
+> On the topic of phylib support, a point of clarification for me. Is 
+> the thinking to ADD or USE phylib for igb? By this I mean:
+> ADD == igb keeps its current phy support but adds support for using
+>        phys provided by phylib.
+> USE == igb uses phylib and gets rid of the phy support igb currently
+>        has, this would obviously require enhancing phylib for any gaps
+>        between igb phy support and phylib.
+>
+> ADD seems like the middle ground but from a design perspective it 
+> seems like USE would be the ultimate goal. Thoughts?
+>
+> Thanks!
+> -Jon
 
-The patch fixes a bug in the default configuration which
-prevented a software bridge loaded on the PF interface from
-working correctly because broadcast packets are incorrectly
-looped back.
+I agree with ADD, but it gets a bit messy.  The problem is how to split 
+off the SGMII PHYs without impacting any other platforms.
 
-Fix the general case, by loading the driver in VEPA mode Until a
-VF or VMDq VSI is added. This way loopback on the Main VSI is
-turned off until needed and can resolve the issue of unnecessary
-reflection for users that do not have VF or VMDq VSIs setup.
+My thought would be to just split off everything that uses SGMII and is 
+i354 and newer.  Then that covers the cases both you and Tim Harvey 
+have, but I am not sure what PHYs are in use with those devices already 
+so we would need to make sure they have support in phylib.
 
-The driver must now coordinate the loopback setting for the Flow
-Director (FDIR) VSI to make sure it is in sync with the current
-VEB or VEPA mode setting.
+- Alex
 
-The user can still switch bridge modes from the bridge commands and
-choose to be in VEPA mode with VF VSIs. Because of hardware
-requirements, the call to switch to VEB mode when no VF/VMDqs are
-present will be rejected.
 
-NOTE: This patch uses BIT_ULL as that is preferred going forward,
-a followup patch in the lower priority queue to net-next will fix
-up the remaining 1 << usages.
 
-Change-ID: Ib121ddb18fe4b3c4f52e9deda6fcbeb9105683d1
-Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e.h             |    1 +
- drivers/net/ethernet/intel/i40e/i40e_debugfs.c     |    9 +++++++++
- drivers/net/ethernet/intel/i40e/i40e_main.c        |   21 ++++++++++++++++----
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |   10 +++++++++-
- 4 files changed, 36 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 33c35d3..e946d75 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -317,6 +317,7 @@ struct i40e_pf {
- #endif
- #define I40E_FLAG_PORT_ID_VALID                (u64)(1 << 28)
- #define I40E_FLAG_DCB_CAPABLE                  (u64)(1 << 29)
-+#define I40E_FLAG_VEB_MODE_ENABLED             BIT_ULL(40)
- 
- 	/* tracks features that get auto disabled by errors */
- 	u64 auto_disable_flags;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-index 34170ea..da0faf4 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-@@ -1021,6 +1021,15 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
- 			goto command_write_done;
- 		}
- 
-+		/* By default we are in VEPA mode, if this is the first VF/VMDq
-+		 * VSI to be added switch to VEB mode.
-+		 */
-+		if (!(pf->flags & I40E_FLAG_VEB_MODE_ENABLED)) {
-+			pf->flags |= I40E_FLAG_VEB_MODE_ENABLED;
-+			i40e_do_reset_safe(pf,
-+					   BIT_ULL(__I40E_PF_RESET_REQUESTED));
-+		}
-+
- 		vsi = i40e_vsi_setup(pf, I40E_VSI_VMDQ2, vsi_seid, 0);
- 		if (vsi)
- 			dev_info(&pf->pdev->dev, "added VSI %d to relay %d\n",
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index a54c144..853eb2f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -6097,6 +6097,10 @@ static int i40e_reconstitute_veb(struct i40e_veb *veb)
- 	if (ret)
- 		goto end_reconstitute;
- 
-+	if (pf->flags & I40E_FLAG_VEB_MODE_ENABLED)
-+		veb->bridge_mode = BRIDGE_MODE_VEB;
-+	else
-+		veb->bridge_mode = BRIDGE_MODE_VEPA;
- 	i40e_config_bridge_mode(veb);
- 
- 	/* create the remaining VSIs attached to this VEB */
-@@ -8031,7 +8035,12 @@ static int i40e_ndo_bridge_setlink(struct net_device *dev,
- 		} else if (mode != veb->bridge_mode) {
- 			/* Existing HW bridge but different mode needs reset */
- 			veb->bridge_mode = mode;
--			i40e_do_reset(pf, (1 << __I40E_PF_RESET_REQUESTED));
-+			/* TODO: If no VFs or VMDq VSIs, disallow VEB mode */
-+			if (mode == BRIDGE_MODE_VEB)
-+				pf->flags |= I40E_FLAG_VEB_MODE_ENABLED;
-+			else
-+				pf->flags &= ~I40E_FLAG_VEB_MODE_ENABLED;
-+			i40e_do_reset(pf, BIT_ULL(__I40E_PF_RESET_REQUESTED));
- 			break;
- 		}
- 	}
-@@ -8343,11 +8352,12 @@ static int i40e_add_vsi(struct i40e_vsi *vsi)
- 		ctxt.uplink_seid = vsi->uplink_seid;
- 		ctxt.connection_type = I40E_AQ_VSI_CONN_TYPE_NORMAL;
- 		ctxt.flags = I40E_AQ_VSI_TYPE_PF;
--		if (i40e_is_vsi_uplink_mode_veb(vsi)) {
-+		if ((pf->flags & I40E_FLAG_VEB_MODE_ENABLED) &&
-+		    (i40e_is_vsi_uplink_mode_veb(vsi))) {
- 			ctxt.info.valid_sections |=
--				cpu_to_le16(I40E_AQ_VSI_PROP_SWITCH_VALID);
-+			     cpu_to_le16(I40E_AQ_VSI_PROP_SWITCH_VALID);
- 			ctxt.info.switch_id =
--				cpu_to_le16(I40E_AQ_VSI_SW_ID_FLAG_ALLOW_LB);
-+			   cpu_to_le16(I40E_AQ_VSI_SW_ID_FLAG_ALLOW_LB);
- 		}
- 		i40e_vsi_setup_queue_map(vsi, &ctxt, enabled_tc, true);
- 		break;
-@@ -8746,6 +8756,9 @@ struct i40e_vsi *i40e_vsi_setup(struct i40e_pf *pf, u8 type,
- 					 __func__);
- 				return NULL;
- 			}
-+			/* We come up by default in VEPA mode */
-+			veb->bridge_mode = BRIDGE_MODE_VEPA;
-+			pf->flags &= ~I40E_FLAG_VEB_MODE_ENABLED;
- 			i40e_config_bridge_mode(veb);
- 		}
- 		for (i = 0; i < I40E_MAX_VEB && !veb; i++) {
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 78d1c4f..4e9376d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1018,11 +1018,19 @@ int i40e_pci_sriov_configure(struct pci_dev *pdev, int num_vfs)
- {
- 	struct i40e_pf *pf = pci_get_drvdata(pdev);
- 
--	if (num_vfs)
-+	if (num_vfs) {
-+		if (!(pf->flags & I40E_FLAG_VEB_MODE_ENABLED)) {
-+			pf->flags |= I40E_FLAG_VEB_MODE_ENABLED;
-+			i40e_do_reset_safe(pf,
-+					   BIT_ULL(__I40E_PF_RESET_REQUESTED));
-+		}
- 		return i40e_pci_sriov_enable(pdev, num_vfs);
-+	}
- 
- 	if (!pci_vfs_assigned(pf->pdev)) {
- 		i40e_free_vfs(pf);
-+		pf->flags &= ~I40E_FLAG_VEB_MODE_ENABLED;
-+		i40e_do_reset_safe(pf, BIT_ULL(__I40E_PF_RESET_REQUESTED));
- 	} else {
- 		dev_warn(&pdev->dev, "Unable to free VFs because some are assigned to VMs.\n");
- 		return -EINVAL;
 
