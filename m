@@ -1,57 +1,73 @@
-From: Rustad, Mark D <mark.d.rustad@intel.com>
-Date: Thu, 7 May 2015 20:46:15 +0000
-Subject: [Intel-wired-lan] [PATCH v1 net-next 2/2] igb: support
-	SIOCSMIIREG
-In-Reply-To: <554BA646.1060000@gmail.com>
+From: Ronciak, John <john.ronciak@intel.com>
+Date: Fri, 8 May 2015 16:39:10 +0000
+Subject: [Intel-wired-lan] [PATCH v1 net-next 1/2] igb: add PHY support
+	for Broadcom 5461S
+In-Reply-To: <CAPg-hwmB-=fd_OjMbtL_Am5e9znX36KOnMnHNdwTMnCmQBeHPw@mail.gmail.com>
 References: <1429302240-654-1-git-send-email-jtoppins@cumulusnetworks.com>
- <1429302240-654-2-git-send-email-jtoppins@cumulusnetworks.com>
- <554BA646.1060000@gmail.com>
-Message-ID: <93C443E7-4209-45A3-A54F-949A4ECDD508@intel.com>
+ <1430999388.32618.21.camel@jtkirshe-mobl>
+ <CAPg-hwmB-=fd_OjMbtL_Am5e9znX36KOnMnHNdwTMnCmQBeHPw@mail.gmail.com>
+Message-ID: <D38E8E86660E514AB505863C19C9287C74192484@ORSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> On May 7, 2015, at 10:52 AM, Alexander Duyck <alexander.duyck@gmail.com> wrote:
+> I think we would be willing to take on this task, but I would not like that to be a
+> gating factor for upstream acceptance of the functionality added with this
+> patch.  I see that Aaron has commented that no regressions were found with
+> this patch, but based on current status in patchwork, it looks like Dave is
+> waiting for something a bit more definitive before accepting it.  Can you ACK it
+> first so we have support for this platform upstream and then we can go take a
+> stab at phylib support for igb?
+So Andy, are you wanting us to accept the patch and that you will then redo things to move to PHYlib in the near future?  What's the time line for that work?  What happens if you guys don't get around to doing it?  This can become very problematic for us as you can imagine.  This also really isn't the upstream way of doing something like this.  So I'm a bit hesitant to do it this way.  
+
+Can you explain your urgency?
+
+Cheers,
+John
+
+> -----Original Message-----
+> From: Andy Gospodarek [mailto:gospo at cumulusnetworks.com]
+> Sent: Thursday, May 7, 2015 6:41 AM
+> To: Kirsher, Jeffrey T
+> Cc: Jonathan Toppins; Wyborny, Carolyn; Ronciak, John; intel-wired-
+> lan at lists.osuosl.org; Shrijeet Mukherjee; Alan Liebthal; Fujinaka, Todd
+> Subject: Re: [PATCH v1 net-next 1/2] igb: add PHY support for Broadcom 5461S
 > 
->> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
->> index 720b785..1071a71 100644
->> --- a/drivers/net/ethernet/intel/igb/igb_main.c
->> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
->> @@ -7141,6 +7141,11 @@ static int igb_mii_ioctl(struct net_device *netdev, struct ifreq *ifr, int cmd)
->>  			return -EIO;
->>  		break;
->>  	case SIOCSMIIREG:
->> +		adapter->hw.phy.addr = data->phy_id;
->> +		if (igb_write_phy_reg(&adapter->hw, data->reg_num & 0x1F,
->> +				      data->val_in))
->> +			return -EIO;
->> +		break;
->>  	default:
->>  		return -EOPNOTSUPP;
->>  	}
+> On Thu, May 7, 2015 at 7:49 AM, Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> wrote:
+> > On Fri, 2015-04-17 at 13:23 -0700, Jonathan Toppins wrote:
+> >> From: Alan Liebthal <alanl@cumulusnetworks.com>
+> >>
+> >> The Quanta LY8 Ethernet management port uses a Broadcom 5461S chip
+> >> for the PHY layer. This adds support for this PHY to the Intel igb driver.
+> >>
+> >> Signed-off-by: Alan Liebthal <alanl@cumulusnetworks.com>
+> >> Signed-off-by: Jonathan Toppins <jtoppins@cumulusnetworks.com>
+> >> ---
+> >>  drivers/net/ethernet/intel/igb/e1000_82575.c   |   20 +++++-
+> >>  drivers/net/ethernet/intel/igb/e1000_defines.h |    1 +
+> >>  drivers/net/ethernet/intel/igb/e1000_hw.h      |    1 +
+> >>  drivers/net/ethernet/intel/igb/e1000_phy.c     |   79
+> >> ++++++++++++++++++++++++
+> >>  drivers/net/ethernet/intel/igb/e1000_phy.h     |    2 +
+> >>  5 files changed, 102 insertions(+), 1 deletion(-)
+> >
+> > After at lot of discussion on these changes, we would like to you to
+> > use the PHYLib approach.  I know that means adding PHYLib support to
+> > our drivers, which we currently do not have.
 > 
-> How and why is this being used?  From what I can tell it looks like it is an easy way to break any of the existing interfaces if it is misused since all you would need to do is specify a phy address that doesn't match the existing PHY in the system and then you would likely lose link, or possibly mess up the configuration on the system requiring.
+> Jeff,
 > 
-> I suspect this is a back door for some piece of user space code that is being given far more permission than it should be.
-
-I don't know about a back door, but the real problem is that it has a
-side-effect of changing the saved value of the phy addr. That is clearly
-a problem and can't be allowed.
-
-For the phylib stuff to really work as intended, the igb_write_phy_reg
-really should take the phy address as a parameter instead of getting
-the value from the structure itself. Or a new function should be
-defined that has that interface.
-
---
-Mark Rustad, Networking Division, Intel Corporation
-
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 841 bytes
-Desc: Message signed with OpenPGP using GPGMail
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150507/124da355/attachment.asc>
+> I think we would be willing to take on this task, but I would not like that to be a
+> gating factor for upstream acceptance of the functionality added with this
+> patch.  I see that Aaron has commented that no regressions were found with
+> this patch, but based on current status in patchwork, it looks like Dave is
+> waiting for something a bit more definitive before accepting it.  Can you ACK it
+> first so we have support for this platform upstream and then we can go take a
+> stab at phylib support for igb?
+> 
+> Thanks,
+> 
+> -andy
