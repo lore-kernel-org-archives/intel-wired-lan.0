@@ -1,41 +1,145 @@
-From: Young, James M <james.m.young@intel.com>
-Date: Fri, 8 May 2015 17:56:04 +0000
-Subject: [Intel-wired-lan] [net-next S4 04/15] i40e/i40evf: Add stats
-	to	count Tunnel ATR hits
-In-Reply-To: <1429229172-143692-5-git-send-email-catherine.sullivan@intel.com>
-References: <1429229172-143692-1-git-send-email-catherine.sullivan@intel.com>
- <1429229172-143692-5-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <68C85B5FC2FE974B87244D7222BC92783E9F97CC@ORSMSX102.amr.corp.intel.com>
+From: John Fastabend <john.r.fastabend@intel.com>
+Date: Fri, 08 May 2015 11:47:20 -0700
+Subject: [Intel-wired-lan] [net-next PATCH] ixgbe: Allow flow director to
+ use entire queue space
+Message-ID: <20150508184720.22470.35134.stgit@jrfastab-mobl.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Catherine Sullivan
-> Sent: Thursday, April 16, 2015 5:06 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Singhai, Anjali
-> Subject: [Intel-wired-lan] [net-next S4 04/15] i40e/i40evf: Add stats to count
-> Tunnel ATR hits
-> 
-> From: Anjali Singhai Jain <anjali.singhai@intel.com>
-> 
-> Add a 3rd dynamic filter counter to track Tunneled ATR hits separately.
-> Ethtool port stat "fdir_atr_tunnel_match"
-> 
-> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-> Change-ID: Idd978b6db2a462b5722397cd2ffd04ef055f8655
-> ---
->  drivers/net/ethernet/intel/i40e/i40e.h         |  3 +++
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  1 +
->  drivers/net/ethernet/intel/i40e/i40e_main.c    |  4 ++++
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c    | 13 ++++++++++---
->  drivers/net/ethernet/intel/i40e/i40e_type.h    |  1 +
->  drivers/net/ethernet/intel/i40evf/i40e_type.h  |  1 +
->  6 files changed, 20 insertions(+), 3 deletions(-)
+Flow director is exported to user space using the ethtool ntuple
+support. However, currently it only supports steering traffic to a
+subset of the queues in use by the hardware. This change allows
+flow director to specify queues that have been assigned to virtual
+functions or VMDQ pools.
+
+Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   22 ++++++++-----
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |   37 +++++++++++++++++++++-
+ 2 files changed, 50 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+index 0f1bff3..ccd661f 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+@@ -2595,16 +2595,18 @@ static int ixgbe_add_ethtool_fdir_entry(struct ixgbe_adapter *adapter,
+ 	struct ixgbe_fdir_filter *input;
+ 	union ixgbe_atr_input mask;
+ 	int err;
++	u8 queue;
  
-Tested-by: Jim Young <james.m.young@intel.com>
+ 	if (!(adapter->flags & IXGBE_FLAG_FDIR_PERFECT_CAPABLE))
+ 		return -EOPNOTSUPP;
+ 
+-	/*
+-	 * Don't allow programming if the action is a queue greater than
+-	 * the number of online Rx queues.
++	/* ring_cookie can not be larger than the total number of queues in use
++	 * by the device including the queues aassigned to virtual functions and
++	 * VMDQ pools.
+ 	 */
+ 	if ((fsp->ring_cookie != RX_CLS_FLOW_DISC) &&
+-	    (fsp->ring_cookie >= adapter->num_rx_queues))
++	    (fsp->ring_cookie >=
++		(adapter->num_rx_queues * (adapter->num_vfs + 1))))
+ 		return -EINVAL;
+ 
+ 	/* Don't allow indexes to exist outside of available space */
+@@ -2681,12 +2683,16 @@ static int ixgbe_add_ethtool_fdir_entry(struct ixgbe_adapter *adapter,
+ 	/* apply mask and compute/store hash */
+ 	ixgbe_atr_compute_perfect_hash_82599(&input->filter, &mask);
+ 
++	if (input->action < adapter->num_rx_queues)
++		queue = adapter->rx_ring[input->action]->reg_idx;
++	else if (input->action == IXGBE_FDIR_DROP_QUEUE)
++		queue = IXGBE_FDIR_DROP_QUEUE;
++	else
++		queue = input->action - adapter->num_rx_queues;
++
+ 	/* program filters to filter memory */
+ 	err = ixgbe_fdir_write_perfect_filter_82599(hw,
+-				&input->filter, input->sw_idx,
+-				(input->action == IXGBE_FDIR_DROP_QUEUE) ?
+-				IXGBE_FDIR_DROP_QUEUE :
+-				adapter->rx_ring[input->action]->reg_idx);
++				&input->filter, input->sw_idx, queue);
+ 	if (err)
+ 		goto err_out_w_lock;
+ 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index ee600b2..23540dd 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -3166,8 +3166,20 @@ static void ixgbe_enable_rx_drop(struct ixgbe_adapter *adapter,
+ 	u8 reg_idx = ring->reg_idx;
+ 	u32 srrctl = IXGBE_READ_REG(hw, IXGBE_SRRCTL(reg_idx));
+ 
++	pr_info("%s: enable_rx_drop on queue %d\n",
++		ixgbe_driver_string, reg_idx);
+ 	srrctl |= IXGBE_SRRCTL_DROP_EN;
++	IXGBE_WRITE_REG(hw, IXGBE_SRRCTL(reg_idx), srrctl);
++}
++
++static void ixgbe_enable_vf_rx_drop(struct ixgbe_adapter *adapter, u8 reg_idx)
++{
++	struct ixgbe_hw *hw = &adapter->hw;
++	u32 srrctl = IXGBE_READ_REG(hw, IXGBE_SRRCTL(reg_idx));
+ 
++	pr_info("%s: enable_vf_rx_drop on queue %d\n",
++		ixgbe_driver_string, reg_idx);
++	srrctl |= IXGBE_SRRCTL_DROP_EN;
+ 	IXGBE_WRITE_REG(hw, IXGBE_SRRCTL(reg_idx), srrctl);
+ }
+ 
+@@ -3183,13 +3195,22 @@ static void ixgbe_disable_rx_drop(struct ixgbe_adapter *adapter,
+ 	IXGBE_WRITE_REG(hw, IXGBE_SRRCTL(reg_idx), srrctl);
+ }
+ 
++static void ixgbe_disable_vf_rx_drop(struct ixgbe_adapter *adapter, u8 reg_idx)
++{
++	struct ixgbe_hw *hw = &adapter->hw;
++	u32 srrctl = IXGBE_READ_REG(hw, IXGBE_SRRCTL(reg_idx));
++
++	srrctl &= ~IXGBE_SRRCTL_DROP_EN;
++	IXGBE_WRITE_REG(hw, IXGBE_SRRCTL(reg_idx), srrctl);
++}
++
+ #ifdef CONFIG_IXGBE_DCB
+ void ixgbe_set_rx_drop_en(struct ixgbe_adapter *adapter)
+ #else
+ static void ixgbe_set_rx_drop_en(struct ixgbe_adapter *adapter)
+ #endif
+ {
+-	int i;
++	int i, j;
+ 	bool pfc_en = adapter->dcb_cfg.pfc_mode_enable;
+ 
+ 	if (adapter->ixgbe_ieee_pfc)
+@@ -3208,9 +3229,23 @@ static void ixgbe_set_rx_drop_en(struct ixgbe_adapter *adapter)
+ 	    !(adapter->hw.fc.current_mode & ixgbe_fc_tx_pause) && !pfc_en)) {
+ 		for (i = 0; i < adapter->num_rx_queues; i++)
+ 			ixgbe_enable_rx_drop(adapter, adapter->rx_ring[i]);
++		for (i = 0; i < adapter->num_vfs; i++) {
++			for (j = 0; j < adapter->num_rx_queues; j++) {
++				u8 q = i * adapter->num_rx_queues + j;
++
++				ixgbe_enable_vf_rx_drop(adapter, q);
++			}
++		}
+ 	} else {
+ 		for (i = 0; i < adapter->num_rx_queues; i++)
+ 			ixgbe_disable_rx_drop(adapter, adapter->rx_ring[i]);
++		for (i = 0; i < adapter->num_vfs; i++) {
++			for (j = 0; j < adapter->num_rx_queues; j++) {
++				u8 q = i * adapter->num_rx_queues + j;
++
++				ixgbe_disable_vf_rx_drop(adapter, q);
++			}
++		}
+ 	}
+ }
+ 
 
