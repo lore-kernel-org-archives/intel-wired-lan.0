@@ -1,263 +1,214 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 08 May 2015 18:07:06 -0700
-Subject: [Intel-wired-lan] [PATCH 2/3] net: igb: add phy read/write
- functions that accept phy addr
-In-Reply-To: <1430417955-28252-3-git-send-email-tharvey@gateworks.com>
-References: <1430417955-28252-1-git-send-email-tharvey@gateworks.com>
- <1430417955-28252-3-git-send-email-tharvey@gateworks.com>
-Message-ID: <554D5DBA.9070109@gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 09 May 2015 19:12:19 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:master]
+ 2439fc4d71f71b47c8ace1f42eb46039222282a0 BUILD SUCCESS
+Message-ID: <554deb93.3r5D6daTRv6TMD3Z%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 04/30/2015 11:19 AM, Tim Harvey wrote:
-> Add igb_write_reg_gs40g/igb_read_reg_gs40g that can be passed a phy address.
-> The existing igb_write_phy_reg_gs40g/igb_read_phy_reg_gs40g become wrappers
-> to this function.
->
-> Signed-off-by: Tim Harvey <tharvey@gateworks.com>
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
+2439fc4d71f71b47c8ace1f42eb46039222282a0  igb: Fix NULL assignment to incorrect variable in igb_reset_q_vector
 
-I'm pretty sure this isn't useful as well.  You really should not be 
-doing any phy address/MDICNFG manipulation in these calls.
+elapsed time: 1521m
 
-> ---
->   drivers/net/ethernet/intel/igb/e1000_82575.c |  4 +-
->   drivers/net/ethernet/intel/igb/e1000_phy.c   | 70 ++++++++++++++++++++--------
->   drivers/net/ethernet/intel/igb/e1000_phy.h   |  6 ++-
->   3 files changed, 56 insertions(+), 24 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
-> index 0f69ef8..d2afd7b 100644
-> --- a/drivers/net/ethernet/intel/igb/e1000_82575.c
-> +++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
-> @@ -2129,7 +2129,7 @@ static s32 igb_read_phy_reg_82580(struct e1000_hw *hw, u32 offset, u16 *data)
->   	if (ret_val)
->   		goto out;
->   
-> -	ret_val = igb_read_phy_reg_mdic(hw, offset, data);
-> +	ret_val = igb_read_phy_reg_mdic(hw, hw->phy.addr, offset, data);
->   
->   	hw->phy.ops.release(hw);
->   
-> @@ -2154,7 +2154,7 @@ static s32 igb_write_phy_reg_82580(struct e1000_hw *hw, u32 offset, u16 data)
->   	if (ret_val)
->   		goto out;
->   
-> -	ret_val = igb_write_phy_reg_mdic(hw, offset, data);
-> +	ret_val = igb_write_phy_reg_mdic(hw, hw->phy.addr, offset, data);
->   
->   	hw->phy.ops.release(hw);
->   
-> diff --git a/drivers/net/ethernet/intel/igb/e1000_phy.c b/drivers/net/ethernet/intel/igb/e1000_phy.c
-> index 2307ac6..66c2a09 100644
-> --- a/drivers/net/ethernet/intel/igb/e1000_phy.c
-> +++ b/drivers/net/ethernet/intel/igb/e1000_phy.c
-> @@ -132,9 +132,8 @@ out:
->    *  Reads the MDI control regsiter in the PHY at offset and stores the
->    *  information read to data.
->    **/
-> -s32 igb_read_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 *data)
-> +s32 igb_read_phy_reg_mdic(struct e1000_hw *hw, u8 addr, u32 offset, u16 *data)
->   {
-> -	struct e1000_phy_info *phy = &hw->phy;
->   	u32 i, mdicnfg, mdic = 0;
->   	s32 ret_val = 0;
->   
-> @@ -153,14 +152,14 @@ s32 igb_read_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 *data)
->   	case e1000_i211:
->   		mdicnfg = rd32(E1000_MDICNFG);
->   		mdicnfg &= ~(E1000_MDICNFG_PHY_MASK);
-> -		mdicnfg |= (phy->addr << E1000_MDICNFG_PHY_SHIFT);
-> +		mdicnfg |= (addr << E1000_MDICNFG_PHY_SHIFT);
->   		wr32(E1000_MDICNFG, mdicnfg);
->   		mdic = ((offset << E1000_MDIC_REG_SHIFT) |
->   			(E1000_MDIC_OP_READ));
->   		break;
->   	default:
->   		mdic = ((offset << E1000_MDIC_REG_SHIFT) |
-> -			(phy->addr << E1000_MDIC_PHY_SHIFT) |
-> +			(addr << E1000_MDIC_PHY_SHIFT) |
->   			(E1000_MDIC_OP_READ));
->   		break;
->   	}
-> @@ -214,9 +213,8 @@ out:
->    *
->    *  Writes data to MDI control register in the PHY at offset.
->    **/
-> -s32 igb_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data)
-> +s32 igb_write_phy_reg_mdic(struct e1000_hw *hw, u8 addr, u32 offset, u16 data)
->   {
-> -	struct e1000_phy_info *phy = &hw->phy;
->   	u32 i, mdicnfg, mdic = 0;
->   	s32 ret_val = 0;
->   
-> @@ -464,7 +462,7 @@ s32 igb_read_phy_reg_igp(struct e1000_hw *hw, u32 offset, u16 *data)
->   		goto out;
->   
->   	if (offset > MAX_PHY_MULTI_PAGE_REG) {
-> -		ret_val = igb_write_phy_reg_mdic(hw,
-> +		ret_val = igb_write_phy_reg_mdic(hw, hw->phy.addr,
->   						 IGP01E1000_PHY_PAGE_SELECT,
->   						 (u16)offset);
->   		if (ret_val) {
-> @@ -473,8 +471,8 @@ s32 igb_read_phy_reg_igp(struct e1000_hw *hw, u32 offset, u16 *data)
->   		}
->   	}
->   
-> -	ret_val = igb_read_phy_reg_mdic(hw, MAX_PHY_REG_ADDRESS & offset,
-> -					data);
-> +	ret_val = igb_read_phy_reg_mdic(hw, hw->phy.addr,
-> +					MAX_PHY_REG_ADDRESS & offset, data);
->   
->   	hw->phy.ops.release(hw);
->   
-> @@ -503,7 +501,7 @@ s32 igb_write_phy_reg_igp(struct e1000_hw *hw, u32 offset, u16 data)
->   		goto out;
->   
->   	if (offset > MAX_PHY_MULTI_PAGE_REG) {
-> -		ret_val = igb_write_phy_reg_mdic(hw,
-> +		ret_val = igb_write_phy_reg_mdic(hw, hw->phy.addr,
->   						 IGP01E1000_PHY_PAGE_SELECT,
->   						 (u16)offset);
->   		if (ret_val) {
-> @@ -512,8 +510,8 @@ s32 igb_write_phy_reg_igp(struct e1000_hw *hw, u32 offset, u16 data)
->   		}
->   	}
->   
-> -	ret_val = igb_write_phy_reg_mdic(hw, MAX_PHY_REG_ADDRESS & offset,
-> -					 data);
-> +	ret_val = igb_write_phy_reg_mdic(hw, hw->phy.addr,
-> +					 MAX_PHY_REG_ADDRESS & offset, data);
->   
->   	hw->phy.ops.release(hw);
->   
-> @@ -2464,8 +2462,9 @@ out:
->   }
->   
->   /**
-> - *  igb_write_phy_reg_gs40g - Write GS40G PHY register
-> + *  igb_write_reg_gs40g - Write GS40G PHY register
->    *  @hw: pointer to the HW structure
-> + *  @addr: phy address to write to
->    *  @offset: lower half is register offset to write to
->    *     upper half is page to use.
->    *  @data: data to write at register offset
-> @@ -2473,7 +2472,7 @@ out:
->    *  Acquires semaphore, if necessary, then writes the data to PHY register
->    *  at the offset.  Release any acquired semaphores before exiting.
->    **/
-> -s32 igb_write_phy_reg_gs40g(struct e1000_hw *hw, u32 offset, u16 data)
-> +s32 igb_write_reg_gs40g(struct e1000_hw *hw, u8 addr, u32 offset, u16 data)
->   {
->   	s32 ret_val;
->   	u16 page = offset >> GS40G_PAGE_SHIFT;
-> @@ -2483,10 +2482,10 @@ s32 igb_write_phy_reg_gs40g(struct e1000_hw *hw, u32 offset, u16 data)
->   	if (ret_val)
->   		return ret_val;
->   
-> -	ret_val = igb_write_phy_reg_mdic(hw, GS40G_PAGE_SELECT, page);
-> +	ret_val = igb_write_phy_reg_mdic(hw, addr, GS40G_PAGE_SELECT, page);
->   	if (ret_val)
->   		goto release;
-> -	ret_val = igb_write_phy_reg_mdic(hw, offset, data);
-> +	ret_val = igb_write_phy_reg_mdic(hw, addr, offset, data);
->   
->   release:
->   	hw->phy.ops.release(hw);
-> @@ -2494,8 +2493,24 @@ release:
->   }
->   
->   /**
-> - *  igb_read_phy_reg_gs40g - Read GS40G  PHY register
-> + *  igb_write_phy_reg_gs40g - Write GS40G PHY register
-> + *  @hw: pointer to the HW structure
-> + *  @offset: lower half is register offset to write to
-> + *     upper half is page to use.
-> + *  @data: data to write at register offset
-> + *
-> + *  Acquires semaphore, if necessary, then writes the data to PHY register
-> + *  at the offset.  Release any acquired semaphores before exiting.
-> + **/
-> +s32 igb_write_phy_reg_gs40g(struct e1000_hw *hw, u32 offset, u16 data)
-> +{
-> +	return igb_write_reg_gs40g(hw, hw->phy.addr, offset, data);
-> +}
-> +
-> +/**
-> + *  igb_read_reg_gs40g - Read GS40G  PHY register
->    *  @hw: pointer to the HW structure
-> + *  @addr: phy address to read from
->    *  @offset: lower half is register offset to read to
->    *     upper half is page to use.
->    *  @data: data to read at register offset
-> @@ -2503,7 +2518,7 @@ release:
->    *  Acquires semaphore, if necessary, then reads the data in the PHY register
->    *  at the offset.  Release any acquired semaphores before exiting.
->    **/
-> -s32 igb_read_phy_reg_gs40g(struct e1000_hw *hw, u32 offset, u16 *data)
-> +s32 igb_read_reg_gs40g(struct e1000_hw *hw, u8 addr, u32 offset, u16 *data)
->   {
->   	s32 ret_val;
->   	u16 page = offset >> GS40G_PAGE_SHIFT;
-> @@ -2513,10 +2528,10 @@ s32 igb_read_phy_reg_gs40g(struct e1000_hw *hw, u32 offset, u16 *data)
->   	if (ret_val)
->   		return ret_val;
->   
-> -	ret_val = igb_write_phy_reg_mdic(hw, GS40G_PAGE_SELECT, page);
-> +	ret_val = igb_write_phy_reg_mdic(hw, addr, GS40G_PAGE_SELECT, page);
->   	if (ret_val)
->   		goto release;
-> -	ret_val = igb_read_phy_reg_mdic(hw, offset, data);
-> +	ret_val = igb_read_phy_reg_mdic(hw, addr, offset, data);
->   
->   release:
->   	hw->phy.ops.release(hw);
-> @@ -2524,6 +2539,21 @@ release:
->   }
->   
->   /**
-> + *  igb_read_phy_reg_gs40g - Read GS40G  PHY register
-> + *  @hw: pointer to the HW structure
-> + *  @offset: lower half is register offset to read to
-> + *     upper half is page to use.
-> + *  @data: data to read at register offset
-> + *
-> + *  Acquires semaphore, if necessary, then reads the data in the PHY register
-> + *  at the offset.  Release any acquired semaphores before exiting.
-> + **/
-> +s32 igb_read_phy_reg_gs40g(struct e1000_hw *hw, u32 offset, u16 *data)
-> +{
-> +	return igb_read_reg_gs40g(hw, hw->phy.addr, offset, data);
-> +}
-> +
-> +/**
->    *  igb_set_master_slave_mode - Setup PHY for Master/slave mode
->    *  @hw: pointer to the HW structure
->    *
-> diff --git a/drivers/net/ethernet/intel/igb/e1000_phy.h b/drivers/net/ethernet/intel/igb/e1000_phy.h
-> index 7af4ffa..6256e76 100644
-> --- a/drivers/net/ethernet/intel/igb/e1000_phy.h
-> +++ b/drivers/net/ethernet/intel/igb/e1000_phy.h
-> @@ -61,8 +61,8 @@ s32  igb_phy_has_link(struct e1000_hw *hw, u32 iterations,
->   void igb_power_up_phy_copper(struct e1000_hw *hw);
->   void igb_power_down_phy_copper(struct e1000_hw *hw);
->   s32  igb_phy_init_script_igp3(struct e1000_hw *hw);
-> -s32  igb_read_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 *data);
-> -s32  igb_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data);
-> +s32  igb_read_phy_reg_mdic(struct e1000_hw *hw, u8 addr, u32 offset, u16 *data);
-> +s32  igb_write_phy_reg_mdic(struct e1000_hw *hw, u8 addr, u32 offset, u16 data);
->   s32  igb_read_phy_reg_i2c(struct e1000_hw *hw, u32 offset, u16 *data);
->   s32  igb_write_phy_reg_i2c(struct e1000_hw *hw, u32 offset, u16 data);
->   s32  igb_read_sfp_data_byte(struct e1000_hw *hw, u16 offset, u8 *data);
-> @@ -72,6 +72,8 @@ s32  igb_phy_force_speed_duplex_82580(struct e1000_hw *hw);
->   s32  igb_get_cable_length_82580(struct e1000_hw *hw);
->   s32  igb_read_phy_reg_gs40g(struct e1000_hw *hw, u32 offset, u16 *data);
->   s32  igb_write_phy_reg_gs40g(struct e1000_hw *hw, u32 offset, u16 data);
-> +s32  igb_read_reg_gs40g(struct e1000_hw *hw, u8 addr, u32 offset, u16 *data);
-> +s32  igb_write_reg_gs40g(struct e1000_hw *hw, u8 addr, u32 offset, u16 data);
->   s32  igb_check_polarity_m88(struct e1000_hw *hw);
->   
->   /* IGP01E1000 Specific Registers */
+configs tested: 193
 
+i386                             alldefconfig
+i386                             allmodconfig
+i386                              allnoconfig
+i386                                defconfig
+mips                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                          randconfig-a0
+x86_64                          randconfig-a1
+x86_64                            allnoconfig
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                          randconfig-c0
+x86_64                          randconfig-c1
+x86_64                          randconfig-c2
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                            randconfig-c0
+i386                            randconfig-c1
+arm                              allmodconfig
+arm                               allnoconfig
+arm                                      arm5
+arm                                     arm67
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                                       mmp
+arm                       omap2plus_defconfig
+arm                          prima2_defconfig
+arm                         s3c2410_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+arm                           tegra_defconfig
+ia64                             alldefconfig
+ia64                             allmodconfig
+ia64                              allnoconfig
+ia64                                defconfig
+powerpc                   defconfig-gcc-4.9.0
+powerpc             ppc64_defconfig-gcc-4.9.0
+powerpc                 allnoconfig-gcc-4.9.0
+powerpc                allmodconfig-gcc-4.9.0
+x86_64                randconfig-iv0-05081645
+x86_64                randconfig-iv1-05081645
+i386                  randconfig-ib0-05091843
+i386                  randconfig-ib1-05091843
+sparc                     defconfig-gcc-4.9.0
+sparc64                 allnoconfig-gcc-4.9.0
+sparc64                   defconfig-gcc-4.9.0
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+microblaze            mmu_defconfig-gcc-4.9.0
+microblaze          nommu_defconfig-gcc-4.9.0
+microblaze             allyesconfig-gcc-4.9.0
+s390                   allmodconfig-gcc-4.9.0
+s390                    allnoconfig-gcc-4.9.0
+s390                      defconfig-gcc-4.9.0
+i386                             allyesconfig
+x86_64                randconfig-ib0-05091843
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+m68k                          hp300_defconfig
+mips                     decstation_defconfig
+powerpc               mpc834x_itxgp_defconfig
+sh                     magicpanelr2_defconfig
+sh                           se7721_defconfig
+x86_64                       randconfig-nexe0
+x86_64                       randconfig-nexe1
+x86_64                       randconfig-nexe2
+x86_64                       randconfig-nexe3
+x86_64                       randconfig-nexe4
+x86_64                       randconfig-nexe5
+x86_64                       randconfig-nexe6
+x86_64                       randconfig-nexe7
+x86_64                       randconfig-nexe8
+x86_64                       randconfig-nexe9
+i386                         randconfig-nexe0
+i386                         randconfig-nexe1
+i386                         randconfig-nexe2
+i386                         randconfig-nexe3
+i386                         randconfig-nexe4
+i386                         randconfig-nexe5
+i386                         randconfig-nexe6
+i386                         randconfig-nexe7
+i386                         randconfig-nexe8
+i386                         randconfig-nexe9
+x86_64                  randconfig-nexr0-0505
+x86_64                  randconfig-nexr1-0505
+x86_64                  randconfig-nexr2-0505
+i386                    randconfig-nexr0-0505
+i386                    randconfig-nexr1-0505
+i386                    randconfig-nexr2-0505
+x86_64              randconfig-nexs0-05071253
+i386                randconfig-nexs0-05071253
+powerpc                      chroma_defconfig
+powerpc               corenet64_smp_defconfig
+powerpc                    gamecube_defconfig
+powerpc                 linkstation_defconfig
+powerpc                               mpc512x
+powerpc                               powerpc
+powerpc                                ppc44x
+powerpc                         wii_defconfig
+x86_64                 randconfig-n0-05071015
+x86_64                           allyesconfig
+alpha                            allyesconfig
+avr32                            allyesconfig
+blackfin                         allyesconfig
+cris                             allyesconfig
+ia64                             allyesconfig
+m68k                             allyesconfig
+mips                             allyesconfig
+parisc                           allyesconfig
+powerpc                          allyesconfig
+s390                             allyesconfig
+sh                               allyesconfig
+sparc                            allyesconfig
+sparc64                          allyesconfig
+tile                             allyesconfig
+xtensa                           allyesconfig
+blackfin                            defconfig
+ia64                                defconfig
+mips                                defconfig
+powerpc                             defconfig
+sh                                  defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                            randconfig-r0
+i386                            randconfig-r1
+i386                            randconfig-r2
+x86_64                          randconfig-r0
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+m68k                             allmodconfig
+m68k                          amiga_defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+x86_64                 randconfig-s0-05091445
+x86_64                 randconfig-s1-05091445
+x86_64                           allmodconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                        randconfig-x000
+x86_64                        randconfig-x001
+x86_64                        randconfig-x002
+x86_64                        randconfig-x003
+x86_64                        randconfig-x004
+x86_64                        randconfig-x005
+x86_64                        randconfig-x006
+x86_64                        randconfig-x007
+x86_64                        randconfig-x008
+x86_64                        randconfig-x009
+i386                          randconfig-x000
+i386                          randconfig-x001
+i386                          randconfig-x002
+i386                          randconfig-x003
+i386                          randconfig-x004
+i386                          randconfig-x005
+i386                          randconfig-x006
+i386                          randconfig-x007
+i386                          randconfig-x008
+i386                          randconfig-x009
+x86_64                                    lkp
+x86_64                                   rhel
+i386                            randconfig-x0
+i386                            randconfig-x1
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+
+Thanks,
+Fengguang
