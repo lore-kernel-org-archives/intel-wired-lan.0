@@ -1,116 +1,219 @@
-From: Andy Gospodarek <gospo@cumulusnetworks.com>
-Date: Mon, 11 May 2015 10:46:22 -0400
-Subject: [Intel-wired-lan] [PATCH v1 net-next 1/2] igb: add PHY support
- for Broadcom 5461S
-In-Reply-To: <554D2B7D.7050209@redhat.com>
-References: <1429302240-654-1-git-send-email-jtoppins@cumulusnetworks.com>
- <1430999388.32618.21.camel@jtkirshe-mobl>
- <CAPg-hwmB-=fd_OjMbtL_Am5e9znX36KOnMnHNdwTMnCmQBeHPw@mail.gmail.com>
- <D38E8E86660E514AB505863C19C9287C74192484@ORSMSX102.amr.corp.intel.com>
- <CAPg-hwmQgK6fibE-=RvCxESx3TzOyHnxsG+_NC4=vE3=o3SxEg@mail.gmail.com>
- <554D2B7D.7050209@redhat.com>
-Message-ID: <CAPg-hwk4fQTRhnZ6DPMYu89w8reWL7Fam_HRX=fDjKDsTWSHjw@mail.gmail.com>
+From: Tim Harvey <tharvey@gateworks.com>
+Date: Mon, 11 May 2015 08:26:29 -0700
+Subject: [Intel-wired-lan] [PATCH 1/3] net: igb: add i210/i211 support
+ for phy read/write
+In-Reply-To: <554D5DB1.2000607@gmail.com>
+References: <1430417955-28252-1-git-send-email-tharvey@gateworks.com>
+ <1430417955-28252-2-git-send-email-tharvey@gateworks.com>
+ <554D5DB1.2000607@gmail.com>
+Message-ID: <CAJ+vNU2HFomxPd=0dds2iPHNL0gKeJ81YKA7PBS796hYM_9E0g@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, May 8, 2015 at 5:32 PM, Alexander Duyck
-<alexander.h.duyck@redhat.com> wrote:
->
->
-> On 05/08/2015 10:46 AM, Andy Gospodarek wrote:
+On Fri, May 8, 2015 at 6:06 PM, Alexander Duyck
+<alexander.duyck@gmail.com> wrote:
+> On 04/30/2015 11:19 AM, Tim Harvey wrote:
 >>
->> On Fri, May 8, 2015 at 12:39 PM, Ronciak, John <john.ronciak@intel.com>
->> wrote:
->>>>
->>>> I think we would be willing to take on this task, but I would not like
->>>> that to be a
->>>> gating factor for upstream acceptance of the functionality added with
->>>> this
->>>> patch.  I see that Aaron has commented that no regressions were found
->>>> with
->>>> this patch, but based on current status in patchwork, it looks like Dave
->>>> is
->>>> waiting for something a bit more definitive before accepting it.  Can
->>>> you ACK it
->>>> first so we have support for this platform upstream and then we can go
->>>> take a
->>>> stab at phylib support for igb?
->>>
->>> So Andy, are you wanting us to accept the patch and that you will then
->>> redo things to move to PHYlib in the near future?  What's the time line for
->>> that work?  What happens if you guys don't get around to doing it?  This can
->>> become very problematic for us as you can imagine.  This also really isn't
->>> the upstream way of doing something like this.  So I'm a bit hesitant to do
->>> it this way.
->>>
->>> Can you explain your urgency?
->>>
->>> Cheers,
->>> John
->>>
->> John,
+>> The i210/i211 uses the MDICNFG register for the phy address instead
+>> of the MDIC register.
 >>
->> It is somewhat urgent as we would like to do some upstream kernel
->> development on these platforms.  I would rather not have to coach
->> everyone/constantly rebase this patch for at least one more kernel
->> release and supply it to anyone (internal to Cumulus or outside) just
->> to run net-next on these platforms.  Once this is added ONIE kernels
->> could also use a pure upstream kernel for booting and installing
->> various distros on it, so I see inclusion as a nice feature for the
->> community as well.
+>> Signed-off-by: Tim Harvey <tharvey@gateworks.com>
+>
+>
+> This patch probably is not needed.  The existing functions should work as
+> long as you have a separate means for updating the PHY addr which should
+> only need to be updated while searching for the PHY, and since the PHY isn't
+> pluggable it should probably be stored in the EEPROM.
+>
+
+Alexander,
+
+Thanks for the review!
+
+The i210 requires that the PHY address be in the MDICNFG register,
+whereas other earlier chips supported by the igb driver stored the phy
+in the MDIC register directly. You are probably thinking this is not
+necessary because typically you would use flash configuration control
+words to pre-load this value and that is correct. However, if we are
+to add support for phylib we need to export functions that allow a phy
+id to be passed in, and so I'm explicitly setting it up (as it was
+when the phy address was only in MDIC for earlier chips).
+
+>
+>> ---
+>>   drivers/net/ethernet/intel/igb/e1000_phy.c | 71
+>> ++++++++++++++++++++++++++----
+>>   1 file changed, 62 insertions(+), 9 deletions(-)
 >>
->> I was not aware of the patch from Tim Harvey that was adding phylib
->> support into igb when I sent the first email, so that may change the
->> scope of this effort a bit.  Of course we would now be reliant on that
->> patch being included in Dave's tree before we can do our work and that
->> appears to have the status of 'changes requested' on the
->> intel-wired-lan list, so I see no guarantee that those will be added
->> by the time the merge window closes.
+>> diff --git a/drivers/net/ethernet/intel/igb/e1000_phy.c
+>> b/drivers/net/ethernet/intel/igb/e1000_phy.c
+>> index c1bb64d..2307ac6 100644
+>> --- a/drivers/net/ethernet/intel/igb/e1000_phy.c
+>> +++ b/drivers/net/ethernet/intel/igb/e1000_phy.c
+>> @@ -135,7 +135,7 @@ out:
+>>   s32 igb_read_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 *data)
+>>   {
+>>         struct e1000_phy_info *phy = &hw->phy;
+>> -       u32 i, mdic = 0;
+>> +       u32 i, mdicnfg, mdic = 0;
+>>         s32 ret_val = 0;
 >>
->> Thanks,
+>>         if (offset > MAX_PHY_REG_ADDRESS) {
+>> @@ -148,11 +148,25 @@ s32 igb_read_phy_reg_mdic(struct e1000_hw *hw, u32
+>> offset, u16 *data)
+>>          * Control register.  The MAC will take care of interfacing with
+>> the
+>>          * PHY to retrieve the desired data.
+>>          */
+>> -       mdic = ((offset << E1000_MDIC_REG_SHIFT) |
+>> -               (phy->addr << E1000_MDIC_PHY_SHIFT) |
+>> -               (E1000_MDIC_OP_READ));
+>> +       switch (hw->mac.type) {
+>> +       case e1000_i210:
+>> +       case e1000_i211:
+>> +               mdicnfg = rd32(E1000_MDICNFG);
+>> +               mdicnfg &= ~(E1000_MDICNFG_PHY_MASK);
+>> +               mdicnfg |= (phy->addr << E1000_MDICNFG_PHY_SHIFT);
+>> +               wr32(E1000_MDICNFG, mdicnfg);
+>> +               mdic = ((offset << E1000_MDIC_REG_SHIFT) |
+>> +                       (E1000_MDIC_OP_READ));
+>> +               break;
+>> +       default:
+>> +               mdic = ((offset << E1000_MDIC_REG_SHIFT) |
+>> +                       (phy->addr << E1000_MDIC_PHY_SHIFT) |
+>> +                       (E1000_MDIC_OP_READ));
+>> +               break;
+>> +       }
 >>
->> -andy
+>>         wr32(E1000_MDIC, mdic);
+>> +       wrfl();
+>>
+>>         /* Poll the ready bit to see if the MDI read completed
+>>          * Increasing the time out as testing showed failures with
 >
 >
-> Andy,
->
-> The patch as-is seems to have a number of issues since the interface you are
-> using has a misconfigured EEPROM.  If you got that addressed you could then
-> probably cut down significantly on the code changes needed since much of it
-> seems to be just workarounds for stuff that should have been taken care of
-> in the EEPROM.  For example, the PHY address and external MDIO value are
-> controlled via Initialization Control 3 & 4.  The configuration for the
-> hardware should be there.  The same goes for the LED configuration.  That is
-> something that should start working at power-on, not after the driver is
-> loaded.  I really think you should work to get those resolved with Quanta
-> then it would probably make your driver work much easier.
+> I'm not really a fan of this section of code.  Why is it that you need to be
+> able to change the phy address?  It should be something that is set once for
+> the device once you have your PHY and stays that way.
 
-Alex,
-
-I think we are talking past each other a bit, sorry I wasn't more
-clear.  My question was more about the direction to take (do we need
-to push all of this to use phylib or can support for this phy be added
-directly to igb).  I certainly recognize that a v2 is needed either
-way, but I was trying help help Jon flush out what direction to take.
-
-Based on emails this weekend, it seems that the idea that adding
-phylib support (rather than moving support for all phys currently
-supported in igb to phylib) is the preferred direction as far as you
-are concerned.  That seems fair and as you stated not terribly
-challenging (EEPROM issues aside).
-
-Thanks,
-
--andy
-
+I'm not changing the phy address - I'm putting it in the correct
+register for the i210/i211.
 
 >
-> Also it looks like the bcm5461 is already supported by PHYdev so there
-> shouldn't be much to do other than update igb to register a mii_bus, and
-> with any luck the PHYdev code already implemented would take care of the
-> rest (assuming the EEPROM is fixed).
 >
-> - Alex
+>> @@ -177,6 +191,18 @@ s32 igb_read_phy_reg_mdic(struct e1000_hw *hw, u32
+>> offset, u16 *data)
+>>         *data = (u16) mdic;
+>>
+>>   out:
+>> +       switch (hw->mac.type) {
+>> +       /* restore MDICNFG to have phy's addr */
+>> +       case e1000_i210:
+>> +       case e1000_i211:
+>> +               mdicnfg = rd32(E1000_MDICNFG);
+>> +               mdicnfg &= ~(E1000_MDICNFG_PHY_MASK);
+>> +               mdicnfg |= (hw->phy.addr << E1000_MDICNFG_PHY_SHIFT);
+>> +               wr32(E1000_MDICNFG, mdicnfg);
+>> +               break;
+>> +       default:
+>> +               break;
+>> +       }
+>>         return ret_val;
+>>   }
+>>
+>> @@ -191,7 +217,7 @@ out:
+>>   s32 igb_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data)
+>>   {
+>>         struct e1000_phy_info *phy = &hw->phy;
+>> -       u32 i, mdic = 0;
+>> +       u32 i, mdicnfg, mdic = 0;
+>>         s32 ret_val = 0;
+>>
+>>         if (offset > MAX_PHY_REG_ADDRESS) {
+>> @@ -204,12 +230,27 @@ s32 igb_write_phy_reg_mdic(struct e1000_hw *hw, u32
+>> offset, u16 data)
+>>          * Control register.  The MAC will take care of interfacing with
+>> the
+>>          * PHY to retrieve the desired data.
+>>          */
+>> -       mdic = (((u32)data) |
+>> -               (offset << E1000_MDIC_REG_SHIFT) |
+>> -               (phy->addr << E1000_MDIC_PHY_SHIFT) |
+>> -               (E1000_MDIC_OP_WRITE));
+>> +       switch (hw->mac.type) {
+>> +       case e1000_i210:
+>> +       case e1000_i211:
+>> +               mdicnfg = rd32(E1000_MDICNFG);
+>> +               mdicnfg &= ~(E1000_MDICNFG_PHY_MASK);
+>> +               mdicnfg |= (phy->addr << E1000_MDICNFG_PHY_SHIFT);
+>> +               wr32(E1000_MDICNFG, mdicnfg);
+>> +               mdic = (((u32)data) |
+>> +                       (offset << E1000_MDIC_REG_SHIFT) |
+>> +                       (E1000_MDIC_OP_WRITE));
+>> +               break;
+>
+>
+> You could just fall though.  The area covered by the PHY_SHIFT should be
+> read/only and will not be impacted if any value is placed there.
+
+The i210 Programming Interface document specifies that MDIC[25:21] are
+'Reserved' and should be written with 0.
+
+I would tend to agree that these bits are likely ignored on the
+i210/i211 but I'm just following the documentation here and not
+chancing it. If its agree'd that I don't need to do this, I can
+simplify the code by falling through.
+
+I can also rename the mdic to reg and use it for both registers if its
+desired to not have an additional variable on the stack.
+
+>
+>> +       default:
+>> +               mdic = (((u32)data) |
+>> +                       (offset << E1000_MDIC_REG_SHIFT) |
+>> +                       (phy->addr << E1000_MDIC_PHY_SHIFT) |
+>> +                       (E1000_MDIC_OP_WRITE));
+>> +               break;
+>> +       }
+>>
+>>         wr32(E1000_MDIC, mdic);
+>> +       wrfl();
+>>
+>>         /* Poll the ready bit to see if the MDI read completed
+>>          * Increasing the time out as testing showed failures with
+>
+>
+> Same thing for this one.  You shouldn't need to do anything fancy to write
+> it.
+>
+>> @@ -233,6 +274,18 @@ s32 igb_write_phy_reg_mdic(struct e1000_hw *hw, u32
+>> offset, u16 data)
+>>         }
+>>
+>>   out:
+>> +       switch (hw->mac.type) {
+>> +       /* restore MDICNFG to have phy's addr */
+>> +       case e1000_i210:
+>> +       case e1000_i211:
+>> +               mdicnfg = rd32(E1000_MDICNFG);
+>> +               mdicnfg &= ~(E1000_MDICNFG_PHY_MASK);
+>> +               mdicnfg |= (hw->phy.addr << E1000_MDICNFG_PHY_SHIFT);
+>> +               wr32(E1000_MDICNFG, mdicnfg);
+>> +               break;
+>> +       default:
+>> +               break;
+>> +       }
+>>         return ret_val;
+>>   }
+>>
+>>
+>
+> This bit doesn't add any value.  You could definitely drop this.
+
+This is likely more relevant to the 2nd patch that allows a phy
+address to be passed in.
+
+Tim
