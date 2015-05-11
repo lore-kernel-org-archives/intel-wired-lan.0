@@ -1,37 +1,116 @@
-From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Fri, 22 May 2015 23:34:01 +0000
-Subject: [Intel-wired-lan] [net-next PATCH v4 2/2] ixgbe: Allow flow
- director to use entire queue space
-In-Reply-To: <20150518161930.8927.83186.stgit@nitbit.x32>
-References: <20150518161847.8927.65430.stgit@nitbit.x32>
- <20150518161930.8927.83186.stgit@nitbit.x32>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E2717055D@ORSMSX103.amr.corp.intel.com>
+From: Andy Gospodarek <gospo@cumulusnetworks.com>
+Date: Mon, 11 May 2015 10:46:22 -0400
+Subject: [Intel-wired-lan] [PATCH v1 net-next 1/2] igb: add PHY support
+ for Broadcom 5461S
+In-Reply-To: <554D2B7D.7050209@redhat.com>
+References: <1429302240-654-1-git-send-email-jtoppins@cumulusnetworks.com>
+ <1430999388.32618.21.camel@jtkirshe-mobl>
+ <CAPg-hwmB-=fd_OjMbtL_Am5e9znX36KOnMnHNdwTMnCmQBeHPw@mail.gmail.com>
+ <D38E8E86660E514AB505863C19C9287C74192484@ORSMSX102.amr.corp.intel.com>
+ <CAPg-hwmQgK6fibE-=RvCxESx3TzOyHnxsG+_NC4=vE3=o3SxEg@mail.gmail.com>
+ <554D2B7D.7050209@redhat.com>
+Message-ID: <CAPg-hwk4fQTRhnZ6DPMYu89w8reWL7Fam_HRX=fDjKDsTWSHjw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Fri, May 8, 2015 at 5:32 PM, Alexander Duyck
+<alexander.h.duyck@redhat.com> wrote:
+>
+>
+> On 05/08/2015 10:46 AM, Andy Gospodarek wrote:
+>>
+>> On Fri, May 8, 2015 at 12:39 PM, Ronciak, John <john.ronciak@intel.com>
+>> wrote:
+>>>>
+>>>> I think we would be willing to take on this task, but I would not like
+>>>> that to be a
+>>>> gating factor for upstream acceptance of the functionality added with
+>>>> this
+>>>> patch.  I see that Aaron has commented that no regressions were found
+>>>> with
+>>>> this patch, but based on current status in patchwork, it looks like Dave
+>>>> is
+>>>> waiting for something a bit more definitive before accepting it.  Can
+>>>> you ACK it
+>>>> first so we have support for this platform upstream and then we can go
+>>>> take a
+>>>> stab at phylib support for igb?
+>>>
+>>> So Andy, are you wanting us to accept the patch and that you will then
+>>> redo things to move to PHYlib in the near future?  What's the time line for
+>>> that work?  What happens if you guys don't get around to doing it?  This can
+>>> become very problematic for us as you can imagine.  This also really isn't
+>>> the upstream way of doing something like this.  So I'm a bit hesitant to do
+>>> it this way.
+>>>
+>>> Can you explain your urgency?
+>>>
+>>> Cheers,
+>>> John
+>>>
+>> John,
+>>
+>> It is somewhat urgent as we would like to do some upstream kernel
+>> development on these platforms.  I would rather not have to coach
+>> everyone/constantly rebase this patch for at least one more kernel
+>> release and supply it to anyone (internal to Cumulus or outside) just
+>> to run net-next on these platforms.  Once this is added ONIE kernels
+>> could also use a pure upstream kernel for booting and installing
+>> various distros on it, so I see inclusion as a nice feature for the
+>> community as well.
+>>
+>> I was not aware of the patch from Tim Harvey that was adding phylib
+>> support into igb when I sent the first email, so that may change the
+>> scope of this effort a bit.  Of course we would now be reliant on that
+>> patch being included in Dave's tree before we can do our work and that
+>> appears to have the status of 'changes requested' on the
+>> intel-wired-lan list, so I see no guarantee that those will be added
+>> by the time the merge window closes.
+>>
+>> Thanks,
+>>
+>> -andy
+>
+>
+> Andy,
+>
+> The patch as-is seems to have a number of issues since the interface you are
+> using has a misconfigured EEPROM.  If you got that addressed you could then
+> probably cut down significantly on the code changes needed since much of it
+> seems to be just workarounds for stuff that should have been taken care of
+> in the EEPROM.  For example, the PHY address and external MDIO value are
+> controlled via Initialization Control 3 & 4.  The configuration for the
+> hardware should be there.  The same goes for the LED configuration.  That is
+> something that should start working at power-on, not after the driver is
+> loaded.  I really think you should work to get those resolved with Quanta
+> then it would probably make your driver work much easier.
 
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of John Fastabend
-Sent: Monday, May 18, 2015 9:20 AM
-To: alexander.h.duyck@redhat.com
-Cc: intel-wired-lan at lists.osuosl.org
-Subject: [Intel-wired-lan] [net-next PATCH v4 2/2] ixgbe: Allow flow director to use entire queue space
+Alex,
 
-Flow director is exported to user space using the ethtool ntuple support. However, currently it only supports steering traffic to a subset of the queues in use by the hardware. This change allows flow director to specify queues that have been assigned to virtual functions by partitioning the ring_cookie into a 8bit vf specifier followed by 32bit queue index. At the moment we don't have any ethernet drivers with more than 2^32 queues on a single function as best I can tell and nor do I expect this to happen anytime soon. This way the ring_cookie's normal use for specifying a queue on a specific PCI function continues to work as expected.
+I think we are talking past each other a bit, sorry I wasn't more
+clear.  My question was more about the direction to take (do we need
+to push all of this to use phylib or can support for this phy be added
+directly to igb).  I certainly recognize that a v2 is needed either
+way, but I was trying help help Jon flush out what direction to take.
 
-Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   34 ++++++++++++++++------
- 1 file changed, 24 insertions(+), 10 deletions(-)
+Based on emails this weekend, it seems that the idea that adding
+phylib support (rather than moving support for all phys currently
+supported in igb to phylib) is the preferred direction as far as you
+are concerned.  That seems fair and as you stated not terribly
+challenging (EEPROM issues aside).
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-index eafa9ec..057a7c5 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+Thanks,
 
-Tested-by:  Krishneil Singh <Krishneil.k.singh@intel.com>
+-andy
 
 
+>
+> Also it looks like the bcm5461 is already supported by PHYdev so there
+> shouldn't be much to do other than update igb to register a mii_bus, and
+> with any luck the PHYdev code already implemented would take care of the
+> rest (assuming the EEPROM is fixed).
+>
+> - Alex
