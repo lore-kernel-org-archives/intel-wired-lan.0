@@ -1,43 +1,44 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 11 May 2015 08:46:30 -0700
-Subject: [Intel-wired-lan] [PATCH 2/3] net: igb: add phy read/write
- functions that accept phy addr
-In-Reply-To: <CAJ+vNU0a6tLspiJC7_-yenfCjiexrmJaH91_M+wH+6UJ0Z+NKg@mail.gmail.com>
-References: <1430417955-28252-1-git-send-email-tharvey@gateworks.com>	<1430417955-28252-3-git-send-email-tharvey@gateworks.com>	<554D5DBA.9070109@gmail.com>
- <CAJ+vNU0a6tLspiJC7_-yenfCjiexrmJaH91_M+wH+6UJ0Z+NKg@mail.gmail.com>
-Message-ID: <5550CED6.2000003@gmail.com>
+From: Young, James M <james.m.young@intel.com>
+Date: Mon, 11 May 2015 16:45:49 +0000
+Subject: [Intel-wired-lan] [Fwd: [net-next S4 14/15] i40e/i40evf: remove
+ time_stamp member]
+In-Reply-To: <1431148081.32618.35.camel@jtkirshe-mobl>
+References: <1431148081.32618.35.camel@jtkirshe-mobl>
+Message-ID: <68C85B5FC2FE974B87244D7222BC92783E9F9BE4@ORSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 05/11/2015 08:27 AM, Tim Harvey wrote:
-> On Fri, May 8, 2015 at 6:07 PM, Alexander Duyck
-> <alexander.duyck@gmail.com> wrote:
->> On 04/30/2015 11:19 AM, Tim Harvey wrote:
->>> Add igb_write_reg_gs40g/igb_read_reg_gs40g that can be passed a phy
->>> address.
->>> The existing igb_write_phy_reg_gs40g/igb_read_phy_reg_gs40g become
->>> wrappers
->>> to this function.
->>>
->>> Signed-off-by: Tim Harvey <tharvey@gateworks.com>
->>
->> I'm pretty sure this isn't useful as well.  You really should not be doing
->> any phy address/MDICNFG manipulation in these calls.
-> Alexander,
->
-> This patch is to support phylib which requires mdio functions that can
-> pass a phy address rather than take it from the e1000_phy_info
-> structure.
->
-> Tim
+> -----Original Message-----
+> From: Kirsher, Jeffrey T
+> Sent: Friday, May 08, 2015 10:08 PM
+> To: Young, James M
+> Subject: [Fwd: [Intel-wired-lan] [net-next S4 14/15] i40e/i40evf: remove
+> time_stamp member]
+> 
+> -------- Forwarded Message --------
+> From: Catherine Sullivan <catherine.sullivan@intel.com>
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [net-next S4 14/15] i40e/i40evf: remove
+> time_stamp member
+> Date: Thu, 16 Apr 2015 20:06:11 -0400
+> 
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> 
+> The driver doesn't use the time_stamp member to determine if there is a
+> tx_hang any more. There really isn't any point to the variable at all so just
+> remove it. It was left over from a previous tx_hang design.
+> 
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Change-ID: I4c814827e1bcb46e45118fe37acdcfa814fb62a0
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 10 ----------
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.h   |  1 -
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c |  7 -------
+> drivers/net/ethernet/intel/i40evf/i40e_txrx.h |  1 -
+>  4 files changed, 19 deletions(-)
 
-Tim,
+Tested-by: Jim Young <james.m.young@intel.com>
 
-You only require PHY address support if you support multiple addresses.  
-From what I can tell you don't.  You lock it down to only one address 
-via the mask field when you are initializing the phylib structures.
-
-- Alex
