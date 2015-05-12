@@ -1,31 +1,34 @@
-From: Schmitt, Phillip J <phillip.j.schmitt@intel.com>
-Date: Mon, 11 May 2015 20:54:06 +0000
-Subject: [Intel-wired-lan] [PATCH 6/8] ixgbe: only report generic
- filters in	get_ts_info
-In-Reply-To: <1429738837-25158-6-git-send-email-jacob.e.keller@intel.com>
-References: <1429738837-25158-1-git-send-email-jacob.e.keller@intel.com>
- <1429738837-25158-6-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E17F829D19@ORSMSX108.amr.corp.intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Tue, 12 May 2015 01:04:12 +0000
+Subject: [Intel-wired-lan] [PATCH] e1000e: i219 execute unit hang fix
+	on	every reset or power state transition
+In-Reply-To: <1429665301-10596-1-git-send-email-yanirx.lubetkin@intel.com>
+References: <1429665301-10596-1-git-send-email-yanirx.lubetkin@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B78DC250A@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
-> -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Jacob Keller
-> Sent: Wednesday, April 22, 2015 2:41 PM
+> Behalf Of Yanir Lubetkin
+> Sent: Tuesday, April 21, 2015 6:15 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 6/8] ixgbe: only report generic filters in
-> get_ts_info
+> Subject: [Intel-wired-lan] [PATCH] e1000e: i219 execute unit hang fix on
+> every reset or power state transition
 > 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> after testing various cases, the conclusion is that the fix MUST be
+> executed BEFORE
+> any event that the HW is reset or transition to D3. to fix that I moved
+> the execution
+> to the relevant places but per Alexander Duyck's review, ensure now that
+> the DMA is
+> valid and was not freed before manipulating the ring.
+> 
+> Signed-off-by: Yanir Lubetkin <yanirx.lubetkin@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 8 --------
->  1 file changed, 8 deletions(-)
-> 
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 16 ++++++++++------
+>  1 file changed, 10 insertions(+), 6 deletions(-)
 
-Tested-by: Phil Schmitt <phillip.j.schmitt@intel.com>
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
