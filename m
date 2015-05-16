@@ -1,59 +1,209 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Sat, 16 May 2015 03:57:28 -0700
-Subject: [Intel-wired-lan] [net PATCH 2/2] i40e: start up in VEPA mode
- by default
-In-Reply-To: <20150508223557.26673.76301.stgit@jbrandeb-cp2.jf.intel.com>
-References: <20150508223552.26673.5631.stgit@jbrandeb-cp2.jf.intel.com>
- <20150508223557.26673.76301.stgit@jbrandeb-cp2.jf.intel.com>
-Message-ID: <1431773848.32618.78.camel@jtkirshe-mobl>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 16 May 2015 22:04:35 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ e2e71c3f8cbc0490259d7864037e76feba440dad BUILD SUCCESS
+Message-ID: <55574e73.5VgoBUpNGYr38til%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2015-05-08 at 15:35 -0700, Jesse Brandeburg wrote:
-> From: Anjali Singhai Jain <anjali.singhai@intel.com>
-> 
-> The patch fixes a bug in the default configuration which
-> prevented a software bridge loaded on the PF interface from
-> working correctly because broadcast packets are incorrectly
-> looped back.
-> 
-> Fix the general case, by loading the driver in VEPA mode Until a
-> VF or VMDq VSI is added. This way loopback on the Main VSI is
-> turned off until needed and can resolve the issue of unnecessary
-> reflection for users that do not have VF or VMDq VSIs setup.
-> 
-> The driver must now coordinate the loopback setting for the Flow
-> Director (FDIR) VSI to make sure it is in sync with the current
-> VEB or VEPA mode setting.
-> 
-> The user can still switch bridge modes from the bridge commands and
-> choose to be in VEPA mode with VF VSIs. Because of hardware
-> requirements, the call to switch to VEB mode when no VF/VMDqs are
-> present will be rejected.
-> 
-> NOTE: This patch uses BIT_ULL as that is preferred going forward,
-> a followup patch in the lower priority queue to net-next will fix
-> up the remaining 1 << usages.
-> 
-> Change-ID: Ib121ddb18fe4b3c4f52e9deda6fcbeb9105683d1
-> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e.h             |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_debugfs.c     |    9 +++++++++
->  drivers/net/ethernet/intel/i40e/i40e_main.c        |   21
-> ++++++++++++++++----
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |   10 +++++++++-
->  4 files changed, 36 insertions(+), 5 deletions(-)
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+e2e71c3f8cbc0490259d7864037e76feba440dad  i40e: start up in VEPA mode by default
 
-Applied to my net-queue tree
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150516/cd7a0b94/attachment.asc>
+elapsed time: 189m
+
+configs tested: 188
+
+i386                             alldefconfig
+i386                             allmodconfig
+i386                              allnoconfig
+i386                                defconfig
+mips                   allmodconfig-gcc-4.9.0
+mips                         jz4740-gcc-4.9.0
+mips                    allnoconfig-gcc-4.9.0
+mips            fuloong2e_defconfig-gcc-4.9.0
+mips                           txx9-gcc-4.9.0
+x86_64         randconfig-a0-05161723-gcc-4.9
+x86_64         randconfig-a1-05161723-gcc-4.9
+x86_64                            allnoconfig
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                     randconfig-c0-0516
+x86_64                     randconfig-c1-0516
+x86_64                     randconfig-c2-0516
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+i386                   randconfig-c0-05161048
+i386                   randconfig-c1-05161048
+ia64                   allmodconfig-gcc-4.9.0
+ia64                    allnoconfig-gcc-4.9.0
+ia64                      defconfig-gcc-4.9.0
+ia64                   alldefconfig-gcc-4.9.0
+x86_64        randconfig-iv0-05161726-gcc-4.9
+x86_64        randconfig-iv1-05161726-gcc-4.9
+xtensa                           allyesconfig
+sparc64                          allyesconfig
+mips                             allyesconfig
+m68k                             allyesconfig
+sparc                            allyesconfig
+tile                             allyesconfig
+alpha                            allyesconfig
+powerpc                          allyesconfig
+sh                               allyesconfig
+avr32                            allyesconfig
+ia64                             allyesconfig
+parisc                           allyesconfig
+cris                             allyesconfig
+blackfin                         allyesconfig
+s390                             allyesconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+powerpc                          allmodconfig
+i386                  randconfig-ib0-05161922
+i386                  randconfig-ib1-05140849
+i386                  randconfig-ib1-05161922
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+microblaze                       allyesconfig
+i386                             allyesconfig
+x86_64                randconfig-ib0-05162110
+parisc              c3000_defconfig-gcc-4.9.0
+parisc               b180_defconfig-gcc-4.9.0
+parisc                    defconfig-gcc-4.9.0
+alpha                     defconfig-gcc-4.9.0
+parisc                  allnoconfig-gcc-4.9.0
+mips                  maltasmvp_eva_defconfig
+mips                         tb0219_defconfig
+sh                        edosk7705_defconfig
+sh                        edosk7760_defconfig
+um                             i386_defconfig
+i386                 randconfig-nexe1-gcc-4.9
+i386                 randconfig-nexe0-gcc-4.9
+i386                 randconfig-nexe3-gcc-4.9
+i386                 randconfig-nexe2-gcc-4.9
+i386                 randconfig-nexe5-gcc-4.9
+i386                 randconfig-nexe4-gcc-4.9
+i386                 randconfig-nexe7-gcc-4.9
+i386                 randconfig-nexe6-gcc-4.9
+i386                 randconfig-nexe9-gcc-4.9
+i386                 randconfig-nexe8-gcc-4.9
+x86_64               randconfig-nexe6-gcc-4.9
+x86_64               randconfig-nexe7-gcc-4.9
+x86_64               randconfig-nexe4-gcc-4.9
+x86_64               randconfig-nexe5-gcc-4.9
+x86_64               randconfig-nexe2-gcc-4.9
+x86_64               randconfig-nexe3-gcc-4.9
+x86_64               randconfig-nexe0-gcc-4.9
+x86_64               randconfig-nexe1-gcc-4.9
+x86_64               randconfig-nexe8-gcc-4.9
+x86_64               randconfig-nexe9-gcc-4.9
+x86_64          randconfig-nexr2-0516-gcc-4.9
+i386            randconfig-nexr1-0516-gcc-4.9
+x86_64          randconfig-nexr1-0516-gcc-4.9
+i386            randconfig-nexr2-0516-gcc-4.9
+i386            randconfig-nexr0-0516-gcc-4.9
+x86_64          randconfig-nexr0-0516-gcc-4.9
+s390                   allmodconfig-gcc-4.9.0
+s390                    allnoconfig-gcc-4.9.0
+s390                      defconfig-gcc-4.9.0
+x86_64              randconfig-nexs0-05162122
+i386                randconfig-nexs0-05162122
+cris         etrax-100lx_v2_defconfig-gcc-4.6.3
+blackfin        TCM-BF537_defconfig-gcc-4.6.3
+blackfin     BF561-EZKIT-SMP_defconfig-gcc-4.6.3
+blackfin      BF533-EZKIT_defconfig-gcc-4.6.3
+blackfin      BF526-EZBRD_defconfig-gcc-4.6.3
+powerpc            chroma_defconfig-gcc-4.9.0
+powerpc       linkstation_defconfig-gcc-4.9.0
+powerpc                     powerpc-gcc-4.9.0
+powerpc               wii_defconfig-gcc-4.9.0
+powerpc          gamecube_defconfig-gcc-4.9.0
+powerpc      corenet64_smp_defconfig-gcc-4.9.0
+powerpc                     mpc512x-gcc-4.9.0
+powerpc                      ppc44x-gcc-4.9.0
+x86_64         randconfig-n0-05161801-gcc-4.9
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                              allmodconfig
+arm                          prima2_defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                                   samsung
+arm                       spear13xx_defconfig
+arm                         s3c2410_defconfig
+arm                                  iop-adma
+arm                       imx_v6_v7_defconfig
+arm                                       mmp
+arm                           tegra_defconfig
+arm                                      arm5
+arm                          marzen_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                                        sh
+arm                                     arm67
+arm                         assabet_defconfig
+mips                        nlm_xlp_defconfig
+sh                         apsh4a3a_defconfig
+s390                           gcov_defconfig
+mips                malta_qemu_32r6_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                       randconfig-r0-0516
+i386                       randconfig-r2-0516
+i386                       randconfig-r1-0516
+x86_64                 randconfig-r0-05162123
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                             allmodconfig
+m68k                          amiga_defconfig
+x86_64                 randconfig-s1-05161732
+x86_64                 randconfig-s0-05161732
+x86_64                           allmodconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+i386                          randconfig-x009
+i386                          randconfig-x008
+i386                          randconfig-x005
+i386                          randconfig-x004
+i386                          randconfig-x007
+i386                          randconfig-x006
+i386                          randconfig-x001
+i386                          randconfig-x000
+i386                          randconfig-x003
+i386                          randconfig-x002
+x86_64                        randconfig-x000
+x86_64                        randconfig-x001
+x86_64                        randconfig-x002
+x86_64                        randconfig-x003
+x86_64                        randconfig-x004
+x86_64                        randconfig-x005
+x86_64                        randconfig-x006
+x86_64                        randconfig-x007
+x86_64                        randconfig-x008
+x86_64                        randconfig-x009
+i386                            randconfig-x1
+i386                            randconfig-x0
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+
+Thanks,
+Fengguang
