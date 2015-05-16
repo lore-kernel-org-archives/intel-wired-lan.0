@@ -1,37 +1,36 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 16 May 2015 22:04:35 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
- e2e71c3f8cbc0490259d7864037e76feba440dad BUILD SUCCESS
-Message-ID: <55574e73.5VgoBUpNGYr38til%fengguang.wu@intel.com>
+Date: Sat, 16 May 2015 22:53:00 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ c71527ec88fec6eba846172b1086c1e717941b9d BUILD DONE
+Message-ID: <555759cc.CJbeBI5B1kkFBTdv%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-e2e71c3f8cbc0490259d7864037e76feba440dad  i40e: start up in VEPA mode by default
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+c71527ec88fec6eba846172b1086c1e717941b9d  ixgbevf: add support for reporting RSS key and hash table for X550
 
-elapsed time: 189m
+drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:2082:22: sparse: restricted __le16 degrades to integer
 
-configs tested: 188
+elapsed time: 179m
 
-i386                             alldefconfig
-i386                             allmodconfig
-i386                              allnoconfig
-i386                                defconfig
+configs tested: 184
+
+i386                        defconfig-gcc-4.9
+i386                     allmodconfig-gcc-4.9
+i386                     alldefconfig-gcc-4.9
 mips                   allmodconfig-gcc-4.9.0
 mips                         jz4740-gcc-4.9.0
 mips                    allnoconfig-gcc-4.9.0
 mips            fuloong2e_defconfig-gcc-4.9.0
 mips                           txx9-gcc-4.9.0
-x86_64         randconfig-a0-05161723-gcc-4.9
-x86_64         randconfig-a1-05161723-gcc-4.9
+x86_64                 randconfig-a0-05162142
+x86_64                 randconfig-a1-05162142
 x86_64                            allnoconfig
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                     randconfig-c0-0516
 x86_64                     randconfig-c1-0516
+x86_64                     randconfig-c0-0516
 x86_64                     randconfig-c2-0516
 sh                            titan_defconfig
 sh                          rsk7269_defconfig
@@ -39,58 +38,47 @@ sh                  sh7785lcr_32bit_defconfig
 sh                                allnoconfig
 i386                   randconfig-c0-05161048
 i386                   randconfig-c1-05161048
-ia64                   allmodconfig-gcc-4.9.0
-ia64                    allnoconfig-gcc-4.9.0
-ia64                      defconfig-gcc-4.9.0
-ia64                   alldefconfig-gcc-4.9.0
-x86_64        randconfig-iv0-05161726-gcc-4.9
-x86_64        randconfig-iv1-05161726-gcc-4.9
-xtensa                           allyesconfig
-sparc64                          allyesconfig
-mips                             allyesconfig
-m68k                             allyesconfig
-sparc                            allyesconfig
-tile                             allyesconfig
-alpha                            allyesconfig
-powerpc                          allyesconfig
-sh                               allyesconfig
-avr32                            allyesconfig
-ia64                             allyesconfig
-parisc                           allyesconfig
-cris                             allyesconfig
-blackfin                         allyesconfig
-s390                             allyesconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-powerpc                          allmodconfig
-i386                  randconfig-ib0-05161922
-i386                  randconfig-ib1-05140849
-i386                  randconfig-ib1-05161922
+arm             omap2plus_defconfig-gcc-4.9.0
+arm                          sa1100-gcc-4.9.0
+arm                    allmodconfig-gcc-4.9.0
+arm                prima2_defconfig-gcc-4.9.0
+arm               at91_dt_defconfig-gcc-4.9.0
+arm                     allnoconfig-gcc-4.9.0
+arm                         samsung-gcc-4.9.0
+arm             spear13xx_defconfig-gcc-4.9.0
+arm               s3c2410_defconfig-gcc-4.9.0
+arm                        iop-adma-gcc-4.9.0
+arm             imx_v6_v7_defconfig-gcc-4.9.0
+arm                             mmp-gcc-4.9.0
+arm                 tegra_defconfig-gcc-4.9.0
+arm                            arm5-gcc-4.9.0
+arm                marzen_defconfig-gcc-4.9.0
+arm                        at_hdmac-gcc-4.9.0
+arm                          ep93xx-gcc-4.9.0
+arm                              sh-gcc-4.9.0
+arm                           arm67-gcc-4.9.0
+powerpc                   defconfig-gcc-4.9.0
+powerpc             ppc64_defconfig-gcc-4.9.0
+powerpc                 allnoconfig-gcc-4.9.0
+powerpc                allmodconfig-gcc-4.9.0
+x86_64                randconfig-iv0-05162122
+x86_64                randconfig-iv1-05162122
+i386                  randconfig-ib0-05162145
+i386                  randconfig-ib1-05162145
 sparc                               defconfig
 sparc64                           allnoconfig
 sparc64                             defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-microblaze                       allyesconfig
-i386                             allyesconfig
 x86_64                randconfig-ib0-05162110
 parisc              c3000_defconfig-gcc-4.9.0
 parisc               b180_defconfig-gcc-4.9.0
 parisc                    defconfig-gcc-4.9.0
 alpha                     defconfig-gcc-4.9.0
 parisc                  allnoconfig-gcc-4.9.0
-mips                  maltasmvp_eva_defconfig
-mips                         tb0219_defconfig
-sh                        edosk7705_defconfig
-sh                        edosk7760_defconfig
-um                             i386_defconfig
+m68k                          atari_defconfig
+parisc                        c3000_defconfig
+powerpc                     ep8248e_defconfig
+powerpc                     stx_gp3_defconfig
+um                           x86_64_defconfig
 i386                 randconfig-nexe1-gcc-4.9
 i386                 randconfig-nexe0-gcc-4.9
 i386                 randconfig-nexe3-gcc-4.9
@@ -111,6 +99,13 @@ x86_64               randconfig-nexe0-gcc-4.9
 x86_64               randconfig-nexe1-gcc-4.9
 x86_64               randconfig-nexe8-gcc-4.9
 x86_64               randconfig-nexe9-gcc-4.9
+ia64                   allmodconfig-gcc-4.9.0
+ia64                    allnoconfig-gcc-4.9.0
+ia64                      defconfig-gcc-4.9.0
+ia64                   alldefconfig-gcc-4.9.0
+microblaze            mmu_defconfig-gcc-4.9.0
+microblaze          nommu_defconfig-gcc-4.9.0
+microblaze             allyesconfig-gcc-4.9.0
 x86_64          randconfig-nexr2-0516-gcc-4.9
 i386            randconfig-nexr1-0516-gcc-4.9
 x86_64          randconfig-nexr1-0516-gcc-4.9
@@ -120,13 +115,15 @@ x86_64          randconfig-nexr0-0516-gcc-4.9
 s390                   allmodconfig-gcc-4.9.0
 s390                    allnoconfig-gcc-4.9.0
 s390                      defconfig-gcc-4.9.0
+i386                     allyesconfig-gcc-4.9
 x86_64              randconfig-nexs0-05162122
 i386                randconfig-nexs0-05162122
-cris         etrax-100lx_v2_defconfig-gcc-4.6.3
-blackfin        TCM-BF537_defconfig-gcc-4.6.3
-blackfin     BF561-EZKIT-SMP_defconfig-gcc-4.6.3
-blackfin      BF533-EZKIT_defconfig-gcc-4.6.3
-blackfin      BF526-EZBRD_defconfig-gcc-4.6.3
+xtensa             common_defconfig-gcc-4.9.0
+m32r             m32104ut_defconfig-gcc-4.9.0
+xtensa                iss_defconfig-gcc-4.9.0
+m32r               opsput_defconfig-gcc-4.9.0
+m32r                 usrv_defconfig-gcc-4.9.0
+m32r           mappi3.smp_defconfig-gcc-4.9.0
 powerpc            chroma_defconfig-gcc-4.9.0
 powerpc       linkstation_defconfig-gcc-4.9.0
 powerpc                     powerpc-gcc-4.9.0
@@ -135,43 +132,44 @@ powerpc          gamecube_defconfig-gcc-4.9.0
 powerpc      corenet64_smp_defconfig-gcc-4.9.0
 powerpc                     mpc512x-gcc-4.9.0
 powerpc                      ppc44x-gcc-4.9.0
-x86_64         randconfig-n0-05161801-gcc-4.9
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                              allmodconfig
-arm                          prima2_defconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                                   samsung
-arm                       spear13xx_defconfig
-arm                         s3c2410_defconfig
-arm                                  iop-adma
-arm                       imx_v6_v7_defconfig
-arm                                       mmp
-arm                           tegra_defconfig
-arm                                      arm5
-arm                          marzen_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                                        sh
-arm                                     arm67
-arm                         assabet_defconfig
-mips                        nlm_xlp_defconfig
-sh                         apsh4a3a_defconfig
-s390                           gcov_defconfig
-mips                malta_qemu_32r6_defconfig
+x86_64                 randconfig-n0-05162222
+xtensa                           allyesconfig
+sparc64                          allyesconfig
+mips                             allyesconfig
+m68k                             allyesconfig
+sparc                            allyesconfig
+tile                             allyesconfig
+alpha                            allyesconfig
+powerpc                          allyesconfig
+sh                               allyesconfig
+avr32                            allyesconfig
+ia64                             allyesconfig
+parisc                           allyesconfig
+cris                             allyesconfig
+blackfin                         allyesconfig
+s390                             allyesconfig
+arm                       mainstone_defconfig
+m68k                        mvme147_defconfig
+mips                           ip27_defconfig
+powerpc                    gamecube_defconfig
+sh                           se7705_defconfig
 x86_64                                    lkp
 x86_64                                   rhel
 i386                       randconfig-r0-0516
-i386                       randconfig-r2-0516
 i386                       randconfig-r1-0516
-x86_64                 randconfig-r0-05162123
+i386                       randconfig-r2-0516
+x86_64                 randconfig-r0-05162211
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
 m68k                          multi_defconfig
 m68k                       m5475evb_defconfig
 m68k                             allmodconfig
 m68k                          amiga_defconfig
-x86_64                 randconfig-s1-05161732
 x86_64                 randconfig-s0-05161732
+x86_64                 randconfig-s1-05161732
 x86_64                           allmodconfig
 mn10300                     asb2364_defconfig
 openrisc                    or1ksim_defconfig
@@ -199,8 +197,8 @@ x86_64                        randconfig-x006
 x86_64                        randconfig-x007
 x86_64                        randconfig-x008
 x86_64                        randconfig-x009
-i386                            randconfig-x1
 i386                            randconfig-x0
+i386                            randconfig-x1
 x86_64                             acpi-redef
 x86_64                           allyesdebian
 x86_64                                nfsroot
