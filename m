@@ -1,210 +1,126 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 02 May 2015 21:27:52 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
- 6794ba55fe2d6f6ee0156968fbc77fe440a26163 BUILD SUCCESS
-Message-ID: <5544d0d8.bZ9vcQLVVWzFum8F%fengguang.wu@intel.com>
+From: John Fastabend <john.fastabend@gmail.com>
+Date: Mon, 18 May 2015 08:22:57 -0700
+Subject: [Intel-wired-lan] [net-next PATCH v2] ixgbe: Allow flow
+ director to use entire queue space
+In-Reply-To: <5554F620.4090101@gmail.com>
+References: <20150514163616.14473.66892.stgit@nitbit.x32>
+ <5554E1F8.1050704@gmail.com> <5554E3F3.2090709@intel.com>
+ <5554F620.4090101@gmail.com>
+Message-ID: <555A03D1.1070505@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
-6794ba55fe2d6f6ee0156968fbc77fe440a26163  ixgbe: Use a signed type to hold error codes
+On 05/14/2015 12:23 PM, Alexander Duyck wrote:
+> On 05/14/2015 11:05 AM, John Fastabend wrote:
+>> On 05/14/2015 10:57 AM, Alexander Duyck wrote:
+>>> On 05/14/2015 09:36 AM, John Fastabend wrote:
+>>>> Flow director is exported to user space using the ethtool ntuple
+>>>> support. However, currently it only supports steering traffic to a
+>>>> subset of the queues in use by the hardware. This change allows
+>>>> flow director to specify queues that have been assigned to virtual
+>>>> functions by partitioning the ring_cookie into a 8bit vf specifier
+>>>> followed by 32bit queue index. At the moment we don't have any
+>>>> ethernet drivers with more than 2^32 queues on a single function
+>>>> as best I can tell and nor do I expect this to happen anytime
+>>>> soon. This way the ring_cookie's normal use for specifying a queue
+>>>> on a specific PCI function continues to work as expected.
+>>>>
+>>>> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
+>>>> ---
+>>>>    drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   32
 
-elapsed time: 159m
+[...]
 
-configs tested: 189
+>>> All of the code below this point should really be a separate patch.
+>>> vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+>> Really? I think it is likely fine to have this all in one patch.
+>
+> The general idea is that you don't want to tie driver changes that
+> closely to API changes.  It makes it easier for those of us that are
+> stuck doing things like backporting functionality into stable kernels.
+> So if for example another vendor decides to make use of the same
+> functionality you don't necessarily have to backport changes to ixgbe in
+> order to get the flow spec changes.
 
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             allmodconfig
-i386                             alldefconfig
-mips                             allmodconfig
-mips                                   jz4740
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-x86_64                 randconfig-a0-05021758
-x86_64                 randconfig-a1-05021758
-x86_64                            allnoconfig
-x86_64                     randconfig-c0-0502
-x86_64                     randconfig-c1-0502
-x86_64                     randconfig-c2-0502
-i386                   randconfig-c0-05021440
-i386                   randconfig-c1-05021440
-ia64                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-powerpc                          allmodconfig
-x86_64                randconfig-iv1-05021450
-x86_64                randconfig-iv0-05021450
-i386                  randconfig-ib0-05021927
-i386                  randconfig-ib1-05021927
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-microblaze                       allyesconfig
-i386                             allyesconfig
-x86_64                randconfig-ib0-05021927
-x86_64                randconfig-ib0-05022033
-ia64                          tiger_defconfig
-parisc                generic-32bit_defconfig
-powerpc                mpc7448_hpc2_defconfig
-powerpc                      pasemi_defconfig
-sh                  sh7785lcr_32bit_defconfig
-i386                         randconfig-nexe1
-i386                         randconfig-nexe0
-i386                         randconfig-nexe3
-i386                         randconfig-nexe2
-i386                         randconfig-nexe5
-i386                         randconfig-nexe4
-i386                         randconfig-nexe7
-i386                         randconfig-nexe6
-i386                         randconfig-nexe9
-i386                         randconfig-nexe8
-x86_64                       randconfig-nexe6
-x86_64                       randconfig-nexe7
-x86_64                       randconfig-nexe4
-x86_64                       randconfig-nexe5
-x86_64                       randconfig-nexe2
-x86_64                       randconfig-nexe3
-x86_64                       randconfig-nexe0
-x86_64                       randconfig-nexe1
-x86_64                       randconfig-nexe8
-x86_64                       randconfig-nexe9
-i386                    randconfig-nexr2-0502
-i386                    randconfig-nexr0-0502
-i386                    randconfig-nexr1-0502
-x86_64                  randconfig-nexr0-0502
-x86_64                  randconfig-nexr2-0502
-x86_64                  randconfig-nexr1-0502
-s390                             allmodconfig
-s390                              allnoconfig
-s390                                defconfig
-x86_64              randconfig-nexs0-05021911
-i386                randconfig-nexs0-05021911
-powerpc                      chroma_defconfig
-powerpc                 linkstation_defconfig
-powerpc                               powerpc
-powerpc                         wii_defconfig
-powerpc                    gamecube_defconfig
-powerpc               corenet64_smp_defconfig
-powerpc                               mpc512x
-powerpc                                ppc44x
-x86_64                 randconfig-n0-05021933
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                              allmodconfig
-arm                          prima2_defconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                                   samsung
-arm                       spear13xx_defconfig
-arm                         s3c2410_defconfig
-arm                                  iop-adma
-arm                       imx_v6_v7_defconfig
-arm                                       mmp
-arm                           tegra_defconfig
-arm                                      arm5
-arm                          marzen_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                                        sh
-arm                                     arm67
-xtensa                           allyesconfig
-sparc64                          allyesconfig
-mips                             allyesconfig
-m68k                             allyesconfig
-sparc                            allyesconfig
-tile                             allyesconfig
-alpha                            allyesconfig
-powerpc                          allyesconfig
-sh                               allyesconfig
-avr32                            allyesconfig
-ia64                             allyesconfig
-parisc                           allyesconfig
-cris                             allyesconfig
-x86_64                           allyesconfig
-blackfin                         allyesconfig
-s390                             allyesconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-m68k                             allmodconfig
-m68k                          amiga_defconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-avr32                       mimc200_defconfig
-m68k                          sun3x_defconfig
-powerpc                 mpc8272_ads_defconfig
-powerpc                 mpc85xx_smp_defconfig
-powerpc                     pseries_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                       randconfig-r0-0502
-i386                       randconfig-r2-0502
-i386                       randconfig-r1-0502
-x86_64                 randconfig-r0-05021901
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-x86_64                 randconfig-s0-05021908
-x86_64                 randconfig-s1-05021908
-x86_64                           allmodconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-i386                          randconfig-x009
-i386                          randconfig-x008
-i386                          randconfig-x005
-i386                          randconfig-x004
-i386                          randconfig-x007
-i386                          randconfig-x006
-i386                          randconfig-x001
-i386                          randconfig-x000
-i386                          randconfig-x003
-i386                          randconfig-x002
-x86_64                        randconfig-x000
-x86_64                        randconfig-x001
-x86_64                        randconfig-x002
-x86_64                        randconfig-x003
-x86_64                        randconfig-x004
-x86_64                        randconfig-x005
-x86_64                        randconfig-x006
-x86_64                        randconfig-x007
-x86_64                        randconfig-x008
-x86_64                        randconfig-x009
-i386                   randconfig-x0-05021103
-i386                   randconfig-x1-05021103
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
+You would backport one vendors feature but not another? Anyways this is
+a new feature so talking about backporting into stable kernels doesn't
+make any sense. I think its a bit strange but I'll send it as two
+patches if you want its trivial.
 
-Thanks,
-Fengguang
+>
+>>
+>>>> diff --git a/include/uapi/linux/ethtool.h
+>>>> b/include/uapi/linux/ethtool.h
+>>>> index 2e49fc8..ecc658d 100644
+>>>> --- a/include/uapi/linux/ethtool.h
+>>>> +++ b/include/uapi/linux/ethtool.h
+>>>> @@ -796,6 +796,26 @@ struct ethtool_rx_flow_spec {
+>>>>        __u32        location;
+>>>>    };
+>>>>
+>>>> +/* How rings are layed out when accessing virtual functions or
+>>>> + * offloaded queues is device specific. To allow users to flow
+>>>> + * steering and specify these queues though break the ring cookie
+>>>> + * into a 32bit queue index with an 8 bit virtual function id.
+>>>> + * This also leaves the 3bytes for further specifiers.
+>>>> + */
+>>>> +#define ETHTOOL_RX_FLOW_SPEC_RING    0x00000000FFFFFFFF
+>>> The question I would have about this is do we really need to support
+>>> 4.3 billion rings, or should we maybe look at conserving some space
+>>> by cutting this down to something like 24 or 16 bits?  I guess the
+>>> question comes down to how many queues do we ever expect a single
+>>> function to support?
+>>>
+>> We can always find holes later. Anyways if its larger than 2^32 the
+>> net_device
+>> will break.
+>
+> For now I would say 2^32 is fine since that is the upper limit on the
+> netdev struct.  My concern is user-space lock in.  Once an API is set it
+> is locked that is why I want to make sure we have covered all
+> conceivable cases.
+
+This flow director stuff is already very loose as far as an API goes.
+The ring index is a "cookie" and its 64bits so I suspect the current
+"API" is use it however you want. And its really unusable as a stable
+cross device API at the moment anyways. Try writing a program to use
+this stuff and you will quickly decide to rewrite it in netlink with
+a proper API.
+
+I happen to know many out of tree drivers are already overloading this
+"cookie".
+
+>
+>>
+>>>> +#define ETHTOOL_RX_FLOW_SPEC_RING_VF    0x000000FF00000000
+>>>> +#define ETHTOOL_RX_FLOW_SPEC_RING_VF_OFF 32
+>>> I'd say 256 is probably a bit low for the upper limit on VFs.  I know
+>>> PCIe w/ ARI technically allows a 16b requester ID so you should
+>>> probably bump this up to 16 bits.
+>> Technically yes, but do you know of any ethernet devices that support
+>> this? I
+>> couldn't find any.
+>
+> I'm not thinking necessarily about right now, but what we might be asked
+> to do.  I'm also thinking about user-space lock in again.  So for now
+> with most of the market at only 10Gb/s we see an upper limit of
+> something like 64 VFs, however when there is 100Gb/s who is to say that
+> this won't be increased to something like 256 or 512.  At a minimum we
+> probably want at least 12 bits since that will cover up to 4096
+> functions which would require at least 16 busses worth of requester ID
+> space.
+>
+
+VFs should scale with the number of cores I really see no reason to have
+more virtual functions then cores at the moment.
+
+I'm not a big fan of padding an interface for future proofing.
+
+.John
+
+
+-- 
+John Fastabend         Intel Corporation
