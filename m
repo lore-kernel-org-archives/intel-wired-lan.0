@@ -1,1342 +1,1191 @@
-From: John Fastabend <john.r.fastabend@intel.com>
-Date: Mon, 18 May 2015 15:03:27 -0700
-Subject: [Intel-wired-lan] [net-next PATCH 1/8] flow: create nl interface to
- wrap low level flow msg details
-Message-ID: <20150518220327.14831.64876.stgit@azvasil-mobl1.amr.corp.intel.com>
+From: Don Skidmore <donald.c.skidmore@intel.com>
+Date: Mon, 18 May 2015 17:17:50 -0400
+Subject: [Intel-wired-lan] [net-next PATCH 2] ixgbe: add array of MAC type
+	dependent values
+Message-ID: <20150518211750.7566.72516.stgit@dcs-desk.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: John Fastabend <john.r.fastabend@intel.com>
+Some of the register addresses and format where unfortunately changed
+between MAC types. To get around this we add a const u32 *mvals pointer
+to the ixgbe_hw struct to point to an array of mac-type-dependent
+values.  These can include register offsets, masks, whatever can be in
+a u32. When the ixgbe_hw struct is initialized, a pointer to the
+appropriate array must be set.
 
-Some low-level functions that can be used to interface with
-API from other programs without having to invoke NETLINK
-primitives.
-
-Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
+Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
 ---
- include/flowlib_nl.h |   75 ++++++
- lib/Makefile.am      |    2 
- lib/flowlib_nl.c     |  657 ++++++++++++++++++++++++++++++++++++++++++++++++++
- src/flow.c           |  266 +++-----------------
- 4 files changed, 773 insertions(+), 227 deletions(-)
- create mode 100644 include/flowlib_nl.h
- create mode 100644 lib/flowlib_nl.c
+ drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c   |    1 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c   |    7 -
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c  |   59 +++--
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.h  |    2 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |    6 -
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |   43 ++--
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c     |   44 ++--
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h    |  246 ++++++++++++++++++----
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c    |   41 ++--
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c    |   12 +
+ 10 files changed, 328 insertions(+), 133 deletions(-)
 
-diff --git a/include/flowlib_nl.h b/include/flowlib_nl.h
-new file mode 100644
-index 0000000..1aeddae
---- /dev/null
-+++ b/include/flowlib_nl.h
-@@ -0,0 +1,75 @@
-+/*******************************************************************************
-+
-+  Flow Library - Helpers for working on Flow API
-+  Copyright(c) 2014 Intel Corporation.
-+
-+  This program is free software; you can redistribute it and/or modify it
-+  under the terms and conditions of the GNU General Public License,
-+  version 2, as published by the Free Software Foundation.
-+
-+  This program is distributed in the hope it will be useful, but WITHOUT
-+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+  more details.
-+
-+  You should have received a copy of the GNU General Public License along with
-+  this program; if not, write to the Free Software Foundation, Inc.,
-+  51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
-+
-+  The full GNU General Public License is included in this distribution in
-+  the file called "COPYING".
-+
-+  Author: John Fastabend <john.r.fastabend@intel.com>
-+
-+*******************************************************************************/
-+#ifndef _FLOWLIB_NL_H
-+#define _FLOWLIB_NL_H
-+struct flow_msg {
-+	void *msg;
-+	struct nl_msg *nlbuf;
-+	uint32_t seq;
-+};
-+
-+struct nl_sock *flow_nl_get_socket(void);
-+
-+struct net_flow_hdr *flow_nl_get_headers(struct nl_sock *nsd, uint32_t pid,
-+					 unsigned int ifindex, int family);
-+struct net_flow_action *flow_nl_get_actions(struct nl_sock *nsd, uint32_t pid,
-+					    unsigned int ifindex, int family);
-+struct net_flow_tbl *flow_nl_get_tables(struct nl_sock *nsd, uint32_t pid,
-+					unsigned int ifindex, int family);
-+struct net_flow_hdr_node *flow_nl_get_hdr_graph(struct nl_sock *nsd,
-+						uint32_t pid,
-+						unsigned int ifindex,
-+						int family);
-+struct net_flow_tbl_node *flow_nl_get_tbl_graph(struct nl_sock *nsd,
-+						uint32_t pid,
-+						unsigned int ifindex,
-+						int family);
-+
-+int flow_nl_set_flows(struct nl_sock *nsd, uint32_t pid,
-+		      unsigned int ifindex, int family,
-+		      struct net_flow_flow *flow);
-+int flow_nl_create_table(struct nl_sock *nsd, uint32_t pid,
-+			 unsigned int ifindex, int family,
-+			 struct net_flow_tbl *table);
-+
-+uint32_t flow_nl_find_header(struct net_flow_hdr *hdr,
-+			     struct net_flow_hdr *search);
-+uint32_t flow_nl_find_action_by_name(char *name,
-+				     struct net_flow_action *action);
-+uint32_t flow_nl_find_instance(struct net_flow_hdr_node *graph,
-+			       uint32_t uid, uint32_t next);
-+uint32_t flow_nl_find_table_with_action(struct net_flow_tbl *tbls,
-+					uint32_t action, uint32_t next);
-+
-+void flow_nl_free_msg(struct flow_msg *msg);
-+struct flow_msg *flow_nl_wrap_msg(struct nlmsghdr *buf);
-+struct flow_msg *flow_nl_recv_msg(struct nl_sock *nsd, int *err);
-+int flow_nl_table_cmd_to_type(FILE *fp, bool print, int valid,
-+			      struct nlattr *tb[]);
-+struct flow_msg *flow_nl_alloc_msg(uint8_t type, uint32_t pid, int flags,
-+				   int size, int family);
-+struct flow_msg *flow_nl_get_msg(struct nl_sock *nsd, uint8_t cmd, uint32_t pid,
-+				 unsigned int ifindex, int family);
-+#endif
-diff --git a/lib/Makefile.am b/lib/Makefile.am
-index 5a15bf8..8f815ca 100644
---- a/lib/Makefile.am
-+++ b/lib/Makefile.am
-@@ -36,7 +36,7 @@ libflowies_la_CFLAGS = $(AM_CFLAGS) $(IES_CFLAGS) $(CFLAGS)
- libflowies_la_LDFLAGS = -release @FLOW_API_VERSION@
- 
- lib_LTLIBRARIES += libflow.la
--libflow_la_SOURCES = flowlib.c
-+libflow_la_SOURCES = flowlib_nl.c flowlib.c
- libflow_la_LDFLAGS = -release @FLOW_API_VERSION@
- 
- lib_LTLIBRARIES += libflowd.la
-diff --git a/lib/flowlib_nl.c b/lib/flowlib_nl.c
-new file mode 100644
-index 0000000..e246768
---- /dev/null
-+++ b/lib/flowlib_nl.c
-@@ -0,0 +1,657 @@
-+/*******************************************************************************
-+
-+  Functional Flow API
-+  Copyright(c) 2014 Intel Corporation.
-+
-+  This program is free software; you can redistribute it and/or modify it
-+  under the terms and conditions of the GNU General Public License,
-+  version 2, as published by the Free Software Foundation.
-+
-+  This program is distributed in the hope it will be useful, but WITHOUT
-+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+  more details.
-+
-+  You should have received a copy of the GNU General Public License along with
-+  this program; if not, write to the Free Software Foundation, Inc.,
-+  51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
-+
-+  The full GNU General Public License is included in this distribution in
-+  the file called "COPYING".
-+
-+  Author: John Fastabend <john.r.fastabend@intel.com>
-+
-+*******************************************************************************/
-+
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <errno.h>
-+#include <string.h>
-+#include <signal.h>
-+#include <sys/types.h>
-+#include <sys/socket.h>
-+#include <sys/queue.h>
-+#include <stdbool.h>
-+#include <stdarg.h>
-+#include <unistd.h>
-+#include <inttypes.h>
-+
-+#include <netinet/in.h>
-+#include <arpa/inet.h>
-+
-+#include <getopt.h>
-+
-+#include <libnl3/netlink/netlink.h>
-+#include <libnl3/netlink/socket.h>
-+#include <libnl3/netlink/genl/genl.h>
-+#include <libnl3/netlink/genl/ctrl.h>
-+#include <libnl3/netlink/route/link.h>
-+
-+#include <linux/if_ether.h>
-+
-+#include "if_flow.h"
-+#include "flowlib.h"
-+#include "flowlib_nl.h"
-+
-+struct nl_cache *link_cache;
-+int verbose = 0;
-+static struct nla_policy flow_get_tables_policy[NET_FLOW_MAX+1] = {
-+	[NET_FLOW_IDENTIFIER_TYPE] = { .type = NLA_U32 },
-+	[NET_FLOW_IDENTIFIER]	= { .type = NLA_U32 },
-+	[NET_FLOW_TABLES]	= { .type = NLA_NESTED },
-+	[NET_FLOW_HEADERS]	= { .type = NLA_NESTED },
-+	[NET_FLOW_ACTIONS] 	= { .type = NLA_NESTED },
-+	[NET_FLOW_HEADER_GRAPH]	= { .type = NLA_NESTED },
-+	[NET_FLOW_TABLE_GRAPH]	= { .type = NLA_NESTED },
-+	[NET_FLOW_FLOWS]	= { .type = NLA_NESTED },
-+};
-+
-+static void pfprintf(FILE *fp, bool p, const char *format, ...)
-+{
-+	va_list args;
-+	va_start(args, format);
-+
-+	if (p)
-+		vfprintf(fp, format, args);
-+
-+	va_end(args);
-+}
-+
-+void flow_nl_free_msg(struct flow_msg *msg)
-+{
-+	if (msg->nlbuf)
-+		nlmsg_free(msg->nlbuf);
-+	else
-+		free(msg->msg);
-+	free(msg);
-+}
-+
-+struct nl_sock *flow_nl_get_socket(void)
-+{
-+	struct nl_sock *nsd = nl_socket_alloc();
-+
-+	nl_connect(nsd, NETLINK_GENERIC);
-+
-+	return nsd;
-+}
-+
-+struct net_flow_hdr *flow_nl_get_headers(struct nl_sock *nsd, uint32_t pid,
-+					 unsigned int ifindex, int family)
-+{
-+	uint8_t cmd = NET_FLOW_TABLE_CMD_GET_HEADERS;
-+	struct net_flow_hdr *hdrs = NULL;
-+	struct flow_msg *msg;
-+
-+	msg = flow_nl_get_msg(nsd, cmd, pid, ifindex, family);
-+
-+	if (msg) {
-+		struct nlmsghdr *nlh = msg->msg;
-+		struct nlattr *tb[NET_FLOW_MAX+1];
-+		int err;
-+
-+		err = genlmsg_parse(nlh, 0, tb,
-+				    NET_FLOW_MAX, flow_get_tables_policy);
-+		if (err < 0) {
-+			fprintf(stderr, "Warning unable to parse get tables msg\n");
-+			goto out;
-+		}
-+
-+		if (flow_nl_table_cmd_to_type(stdout, true,
-+					      NET_FLOW_HEADERS, tb))
-+			goto out;
-+
-+		if (tb[NET_FLOW_HEADERS])
-+			flow_get_headers(stdout, verbose,
-+					 tb[NET_FLOW_HEADERS], &hdrs);
-+	}
-+	return hdrs;
-+out:
-+	flow_nl_free_msg(msg);
-+	return NULL;
-+}
-+
-+struct net_flow_action *flow_nl_get_actions(struct nl_sock *nsd, uint32_t pid,
-+					    unsigned int ifindex, int family)
-+{
-+	uint8_t cmd = NET_FLOW_TABLE_CMD_GET_ACTIONS;
-+	struct net_flow_action *actions = NULL;
-+	struct flow_msg *msg;
-+
-+	msg = flow_nl_get_msg(nsd, cmd, pid, ifindex, family);
-+
-+	if (msg) {
-+		struct nlmsghdr *nlh = msg->msg;
-+		struct nlattr *tb[NET_FLOW_MAX+1];
-+		int err;
-+
-+		err = genlmsg_parse(nlh, 0, tb,
-+				    NET_FLOW_MAX, flow_get_tables_policy);
-+		if (err < 0) {
-+			fprintf(stderr, "Warning unable to parse get tables msg\n");
-+			goto out;
-+		}
-+
-+		if (flow_nl_table_cmd_to_type(stdout, true,
-+					      NET_FLOW_ACTIONS, tb))
-+			goto out;
-+
-+		if (tb[NET_FLOW_ACTIONS])
-+			flow_get_actions(stdout, verbose,
-+					 tb[NET_FLOW_ACTIONS], &actions);
-+	}
-+	return actions;
-+out:
-+	flow_nl_free_msg(msg);
-+	return NULL;
-+}
-+
-+struct net_flow_tbl *flow_nl_get_tables(struct nl_sock *nsd, uint32_t pid,
-+					unsigned int ifindex, int family)
-+{
-+	uint8_t cmd = NET_FLOW_TABLE_CMD_GET_TABLES;
-+	struct net_flow_tbl *tables = NULL;
-+	struct flow_msg *msg;
-+
-+	msg = flow_nl_get_msg(nsd, cmd, pid, ifindex, family);
-+
-+	if (msg) {
-+		struct nlattr *tb[NET_FLOW_MAX+1];
-+		struct nlmsghdr *nlh = msg->msg;
-+		int err;
-+
-+		err = genlmsg_parse(nlh, 0, tb,
-+				    NET_FLOW_MAX, flow_get_tables_policy);
-+		if (err < 0) {
-+			fprintf(stderr, "Warning unable to parse get tables msg\n");
-+			goto out;
-+		}
-+
-+		if (flow_nl_table_cmd_to_type(stdout, true,
-+					      NET_FLOW_TABLES, tb))
-+			goto out;
-+
-+		if (tb[NET_FLOW_TABLES])
-+			flow_get_tables(stdout, verbose,
-+					tb[NET_FLOW_TABLES], &tables);
-+	}
-+	return tables;
-+out:
-+	flow_nl_free_msg(msg);
-+	return NULL;
-+}
-+
-+struct net_flow_hdr_node *flow_nl_get_hdr_graph(struct nl_sock *nsd,
-+						uint32_t pid,
-+						unsigned int ifindex,
-+						int family)
-+{
-+	uint8_t cmd = NET_FLOW_TABLE_CMD_GET_HDR_GRAPH;
-+	struct net_flow_hdr_node *hdr_nodes = NULL;
-+	struct flow_msg *msg;
-+
-+	msg = flow_nl_get_msg(nsd, cmd, pid, ifindex, family);
-+
-+	if (msg) {
-+		struct nlmsghdr *nlh = msg->msg;
-+		struct nlattr *tb[NET_FLOW_MAX+1];
-+		int err;
-+
-+		err = genlmsg_parse(nlh, 0, tb,
-+				    NET_FLOW_MAX, flow_get_tables_policy);
-+		if (err < 0) {
-+			fprintf(stderr, "Warning unable to parse get tables msg\n");
-+			goto out;
-+		}
-+
-+		if (flow_nl_table_cmd_to_type(stdout, true,
-+					      NET_FLOW_HEADER_GRAPH, tb))
-+			goto out;
-+
-+		if (tb[NET_FLOW_HEADER_GRAPH])
-+			flow_get_hdrs_graph(stdout, verbose,
-+					    tb[NET_FLOW_HEADER_GRAPH],
-+					    &hdr_nodes);
-+	}
-+
-+	return hdr_nodes;
-+out:
-+	flow_nl_free_msg(msg);
-+	return NULL;
-+}
-+
-+struct net_flow_tbl_node *flow_nl_get_tbl_graph(struct nl_sock*nsd,
-+						uint32_t pid,
-+						unsigned int ifindex,
-+						int family)
-+{
-+	uint8_t cmd = NET_FLOW_TABLE_CMD_GET_TABLE_GRAPH;
-+	struct net_flow_tbl_node *nodes = NULL;
-+	struct flow_msg *msg;
-+
-+	msg = flow_nl_get_msg(nsd, cmd, pid, ifindex, family);
-+
-+	if (msg) {
-+		struct nlmsghdr *nlh = msg->msg;
-+		struct nlattr *tb[NET_FLOW_MAX+1];
-+		int err;
-+
-+		err = genlmsg_parse(nlh, 0, tb,
-+				    NET_FLOW_MAX, flow_get_tables_policy);
-+		if (err < 0) {
-+			fprintf(stderr, "Warning unable to parse get tables msg\n");
-+			goto out;
-+		}
-+
-+		if (flow_nl_table_cmd_to_type(stdout, true,
-+					      NET_FLOW_TABLE_GRAPH, tb))
-+			goto out;
-+
-+		if (tb[NET_FLOW_TABLE_GRAPH])
-+			flow_get_tbl_graph(stdout, verbose,
-+					   tb[NET_FLOW_TABLE_GRAPH], &nodes);
-+	}
-+
-+	return nodes;
-+out:
-+	flow_nl_free_msg(msg);
-+	return NULL;
-+}
-+
-+int flow_nl_set_flows(struct nl_sock *nsd, uint32_t pid,
-+		      unsigned int ifindex, int family,
-+		      struct net_flow_flow *flow)
-+{
-+	uint8_t cmd = NET_FLOW_TABLE_CMD_SET_FLOWS;
-+	struct nlattr *tb[NET_FLOW_MAX+1];
-+	struct flow_msg *msg;
-+	struct nlmsghdr *nlh;
-+	struct nlattr *flows;
-+	sigset_t bs;
-+	int err = 0;
-+
-+	pp_flow(stdout, true, flow);
-+
-+	msg = flow_nl_alloc_msg(cmd, pid, NLM_F_REQUEST|NLM_F_ACK, 0, family);
-+	if (!msg) {
-+		fprintf(stderr, "Error: Allocation failure\n");
-+		return -ENOMSG;
-+	}
-+
-+	if (nla_put_u32(msg->nlbuf,
-+			NET_FLOW_IDENTIFIER_TYPE,
-+			NET_FLOW_IDENTIFIER_IFINDEX) ||
-+	    nla_put_u32(msg->nlbuf, NET_FLOW_IDENTIFIER, ifindex)) {
-+		fprintf(stderr, "Error: Identifier put failed\n");
-+		return -EMSGSIZE;
-+	}
-+
-+	err = flow_put_flow_error(msg->nlbuf, NET_FLOW_FLOWS_ERROR_CONT_LOG);
-+	if (err)
-+		return err;
-+
-+	flows = nla_nest_start(msg->nlbuf, NET_FLOW_FLOWS);
-+	if (!flows)
-+		return -EMSGSIZE;
-+	flow_put_flow(msg->nlbuf, flow);
-+	nla_nest_end(msg->nlbuf, flows);
-+
-+	nl_send_auto(nsd, msg->nlbuf);
-+
-+	/* message sent handle recv */
-+	sigemptyset(&bs);
-+	sigaddset(&bs, SIGINT);
-+	sigprocmask(SIG_UNBLOCK, &bs, NULL);
-+
-+	msg = flow_nl_recv_msg(nsd, &err);
-+	sigprocmask(SIG_BLOCK, &bs, NULL);
-+
-+	if (!msg)
-+		return -EINVAL;
-+
-+	nlh = msg->msg;
-+	err = genlmsg_parse(nlh, 0, tb, NET_FLOW_MAX, flow_get_tables_policy);
-+	if (err < 0) {
-+		fprintf(stderr, "Warning unable to parse set flows msg\n");
-+		flow_nl_free_msg(msg);
-+		return err;
-+	}
-+
-+	err = flow_nl_table_cmd_to_type(stdout, true, 0, tb);
-+	if (err)
-+		return err;
-+
-+	if (tb[NET_FLOW_FLOWS]) {
-+		fprintf(stderr, "Failed to set:\n");
-+		flow_get_flows(stdout, verbose, tb[NET_FLOW_FLOWS], NULL);
-+		flow_nl_free_msg(msg);
-+		return -EINVAL;
-+	}
-+	return 0;
-+}
-+
-+int flow_nl_create_table(struct nl_sock *nsd, uint32_t pid,
-+			 unsigned int ifindex, int family,
-+			 struct net_flow_tbl *table)
-+{
-+	uint8_t cmd = NET_FLOW_TABLE_CMD_CREATE_TABLE;
-+	struct nlattr *tb[NET_FLOW_MAX+1];
-+	struct nlattr *nest, *nest1;
-+	struct nlmsghdr *nlh;
-+	struct flow_msg *msg;
-+	sigset_t bs;
-+	int err = 0;
-+
-+	msg = flow_nl_alloc_msg(cmd, pid, NLM_F_REQUEST|NLM_F_ACK, 0, family);
-+	if (!msg) {
-+		fprintf(stderr, "Error: Allocation failure\n");
-+		return -ENOMSG;
-+	}
-+
-+	if (nla_put_u32(msg->nlbuf,
-+			NET_FLOW_IDENTIFIER_TYPE,
-+			NET_FLOW_IDENTIFIER_IFINDEX) ||
-+	    nla_put_u32(msg->nlbuf, NET_FLOW_IDENTIFIER, ifindex)) {
-+		fprintf(stderr, "Error: Identifier put failed\n");
-+		return -EMSGSIZE;
-+	}
-+
-+	nest = nla_nest_start(msg->nlbuf, NET_FLOW_TABLES);
-+	if (!nest)
-+		return -EMSGSIZE;
-+	nest1 = nla_nest_start(msg->nlbuf, NET_FLOW_TABLE);
-+	flow_put_table(msg->nlbuf, table);
-+	nla_nest_end(msg->nlbuf, nest1);
-+	nla_nest_end(msg->nlbuf, nest);
-+	nl_send_auto(nsd, msg->nlbuf);
-+
-+	sigemptyset(&bs);
-+	sigaddset(&bs, SIGINT);
-+	sigprocmask(SIG_UNBLOCK, &bs, NULL);
-+
-+	msg = flow_nl_recv_msg(nsd, &err);
-+	sigprocmask(SIG_BLOCK, &bs, NULL);
-+
-+	if (!msg)
-+		return -EINVAL;
-+
-+	nlh = msg->msg;
-+	err = genlmsg_parse(nlh, 0, tb, NET_FLOW_MAX, flow_get_tables_policy);
-+	if (err < 0) {
-+		fprintf(stderr, "Warning unable to parse create table msg\n");
-+		flow_nl_free_msg(msg);
-+		return err;
-+	}
-+	return 0;
-+}
-+
-+uint32_t flow_nl_find_header(struct net_flow_hdr *hdr,
-+			     struct net_flow_hdr *search)
-+{
-+	uint32_t i, j;
-+
-+	for (i = 0; search[i].uid; i++) {
-+		if (hdr->field_sz != search[i].field_sz)
-+			continue;
-+
-+		for (j = 0; j < hdr->field_sz; j++) {
-+			if (hdr->fields[j].bitwidth != search[i].fields[j].bitwidth)
-+				continue;
-+		}
-+
-+		if (j == hdr->field_sz)
-+			return search[i].uid;
-+	}
-+	return 0;
-+}
-+
-+uint32_t flow_nl_find_action_by_name(char *name, struct net_flow_action *acts)
-+{
-+	uint32_t i;
-+
-+	for (i = 0; acts[i].uid; i++) {
-+		if (strcmp(name, acts[i].name) == 0)
-+			return acts[i].uid;
-+	}
-+
-+	return 0;
-+}
-+
-+uint32_t flow_nl_find_instance(struct net_flow_hdr_node *graph,
-+			       uint32_t uid, uint32_t next)
-+{
-+	uint32_t i, j;
-+
-+	for (i = 0; graph[i].uid; i++) {
-+		if (graph[i].uid < next)
-+			continue;
-+
-+		for (j = 0; graph[i].hdrs[j]; j++) {
-+			if (graph[i].hdrs[j] != uid)
-+				continue;
-+
-+			return graph[i].uid;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+uint32_t flow_nl_find_table_with_action(struct net_flow_tbl *tbls,
-+					uint32_t action, uint32_t next)
-+{
-+	uint32_t i, j;
-+
-+	for (i = 0; tbls[i].uid; i++) {
-+		if (i < next)
-+			continue;
-+
-+		for (j = 0; tbls[i].actions[j]; j++) {
-+			if (tbls[i].actions[j] == action)
-+				return tbls[i].uid;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+struct flow_msg *flow_nl_wrap_msg(struct nlmsghdr *buf)
-+{
-+	struct flow_msg *msg;
-+
-+	msg = (struct flow_msg *) malloc(sizeof(struct flow_msg));
-+	if (msg) {
-+		msg->msg = buf;
-+		msg->nlbuf = NULL;
-+	}
-+
-+	return msg;
-+}
-+
-+static void flow_nl_handle_error(struct nlmsgerr *errmsg)
-+{
-+	fprintf(stderr, "Error processing request: %s\n",
-+		strerror(errmsg->error));
-+}
-+
-+struct flow_msg *flow_nl_recv_msg(struct nl_sock *nsd, int *err)
-+{
-+	static unsigned char *buf;
-+	struct flow_msg *msg;
-+	struct genlmsghdr *glm;
-+	struct sockaddr_nl nla;
-+	int type;
-+	int rc;
-+
-+	*err = 0;
-+
-+	do {
-+		rc = nl_recv(nsd, &nla, &buf, NULL);
-+		if (rc < 0) {
-+			switch (errno) {
-+			case EINTR:
-+				return NULL;
-+			default:
-+				perror("Receive operation failed:");
-+				return NULL;
-+			}
-+		}
-+	} while (rc == 0);
-+
-+	msg = flow_nl_wrap_msg((struct nlmsghdr *)buf);
-+	if (!msg) {
-+		fprintf(stderr, "Error: Message is empty\n");
-+		free(buf);
-+		return NULL;
-+	}
-+	type = ((struct nlmsghdr *)msg->msg)->nlmsg_type;
-+
-+	/*
-+	 * Note the NLMSG_ERROR is overloaded
-+	 * Its also used to deliver ACKs
-+	 */
-+	if (type == NLMSG_ERROR) {
-+		struct nlmsgerr *errm = nlmsg_data(msg->msg);
-+
-+		if (errm->error) {
-+			flow_nl_handle_error(errm);
-+			flow_nl_free_msg(msg);
-+			return NULL;
-+		}
-+
-+		flow_nl_free_msg(msg);
-+		return NULL;
-+	}
-+
-+	glm = nlmsg_data(msg->msg);
-+	type = glm->cmd;
-+
-+	if (type < 0 || type > NET_FLOW_CMD_MAX) {
-+		fprintf(stderr, "Received message of unknown type %d\n", type);
-+		flow_nl_free_msg(msg);
-+		return NULL;
-+	}
-+
-+	return msg;
-+}
-+
-+int flow_nl_table_cmd_to_type(FILE *fp, bool print, int valid,
-+			      struct nlattr *tb[])
-+{
-+	unsigned int type, ifindex;
-+	char iface[IFNAMSIZ];
-+
-+	if (!tb[NET_FLOW_IDENTIFIER_TYPE]) {
-+		fprintf(stderr,
-+			"Warning: received flow msg without identifier type!\n");
-+		return -EINVAL;
-+	}
-+	if (!tb[NET_FLOW_IDENTIFIER]) {
-+		fprintf(stderr,
-+			"Warning: received flow msg without identifier!\n");
-+		return -EINVAL;
-+	}
-+
-+	if (valid > 0 && !tb[valid]){
-+		fprintf(stderr, "Warning received cmd without valid attribute expected %i\n", valid);
-+		return -ENOMSG;
-+	}
-+
-+	if (nla_len(tb[NET_FLOW_IDENTIFIER_TYPE]) < (int)sizeof(type)) {
-+		fprintf(stderr, "Warning invalid identifier type len\n");
-+		return -EINVAL;
-+	}
-+
-+	type = nla_get_u32(tb[NET_FLOW_IDENTIFIER_TYPE]);
-+
-+	switch (type) {
-+	case NET_FLOW_IDENTIFIER_IFINDEX:
-+		ifindex = nla_get_u32(tb[NET_FLOW_IDENTIFIER]);
-+		rtnl_link_i2name(link_cache, (int)ifindex, iface, IFNAMSIZ);
-+		pfprintf(fp, print, "%s (%u):\n", iface, ifindex);
-+		break;
-+	default:
-+		fprintf(stderr, "Warning unknown interface identifier type %i\n", type);
-+		break;
-+	}
-+
-+	return 0;
-+}
-+
-+struct flow_msg *flow_nl_alloc_msg(uint8_t type, uint32_t pid,
-+				   int flags, int size, int family)
-+{
-+	struct flow_msg *msg;
-+	static uint32_t seq = 0;
-+
-+	msg = (struct flow_msg *) malloc(sizeof(struct flow_msg));
-+	if (!msg)
-+		return NULL;
-+
-+	msg->nlbuf = nlmsg_alloc();
-+
-+	msg->msg = genlmsg_put(msg->nlbuf, 0, seq, family, (int)size, flags,
-+			       type, NET_FLOW_GENL_VERSION);
-+
-+	msg->seq = seq++;
-+
-+	if (pid) {
-+		struct nl_msg *nl_msg = msg->nlbuf;
-+		struct sockaddr_nl nladdr = {
-+			.nl_family = AF_NETLINK,
-+			.nl_pid = pid,
-+			.nl_groups = 0,
-+		};
-+
-+		nlmsg_set_dst(nl_msg, &nladdr);
-+	}
-+	return msg;
-+}
-+
-+struct flow_msg *flow_nl_get_msg(struct nl_sock *nsd, uint8_t cmd, uint32_t pid,
-+				 unsigned int ifindex, int family)
-+{
-+	struct flow_msg *msg;
-+	sigset_t bs;
-+	int err;
-+
-+	msg = flow_nl_alloc_msg(cmd, pid, NLM_F_REQUEST|NLM_F_ACK, 0, family);
-+	if (!msg) {
-+		fprintf(stderr, "Error: Allocation failure\n");
-+		return NULL;
-+	}
-+
-+	nla_put_u32(msg->nlbuf,
-+		    NET_FLOW_IDENTIFIER_TYPE,
-+		    NET_FLOW_IDENTIFIER_IFINDEX);
-+	nla_put_u32(msg->nlbuf, NET_FLOW_IDENTIFIER, ifindex);
-+
-+	nl_send_auto(nsd, msg->nlbuf);
-+
-+	sigemptyset(&bs);
-+	sigaddset(&bs, SIGINT);
-+	sigprocmask(SIG_UNBLOCK, &bs, NULL);
-+
-+	msg = flow_nl_recv_msg(nsd, &err);
-+	sigprocmask(SIG_BLOCK, &bs, NULL);
-+	return msg;
-+}
-diff --git a/src/flow.c b/src/flow.c
-index f24537d..43c30c7 100644
---- a/src/flow.c
-+++ b/src/flow.c
-@@ -55,6 +55,7 @@
- 
- #include "if_flow.h"
- #include "flowlib.h"
-+#include "flowlib_nl.h"
- 
- #ifdef PRIx64
- #undef PRIx64
-@@ -72,18 +73,6 @@
- #endif /* SCNu64 */
- static struct nl_sock *nsd;
- 
--struct flow_msg {
--	void *msg;
--	struct nl_msg *nlbuf;
--	uint32_t seq;
--};
--
--static struct flow_msg *
--alloc_flow_msg(uint8_t type, uint32_t pid, int flags, int size, int family);
--
--static struct flow_msg *wrap_netlink_msg(struct nlmsghdr *buf);
--static void free_flow_msg(struct flow_msg *msg);
--static struct flow_msg *recv_flow_msg(int *err);
- static void process_rx_message(int verbose);
- 
- static int
-@@ -225,71 +214,6 @@ static void get_flows_usage(char *progname)
- }
- 
- 
--static void pfprintf(FILE *fp, bool p, const char *format, ...)
--{
--	va_list args;
--
--	va_start(args, format);
--
--	if (p)
--		vfprintf(fp, format, args);
--
--	va_end(args);
--}
--
--struct flow_msg *
--alloc_flow_msg(uint8_t type, uint32_t pid, int flags, int size, int family)
--{
--	struct flow_msg *msg;
--	static uint32_t seq;
--
--	msg = malloc(sizeof(*msg));
--	if (!msg)
--		return NULL;
--
--	msg->nlbuf = nlmsg_alloc();
--
--	msg->msg = genlmsg_put(msg->nlbuf, 0, seq, family, (int)size, flags,
--			type, NET_FLOW_GENL_VERSION);
--
--	msg->seq = seq++;
--
--	if (pid) {
--		struct nl_msg *nl_msg = msg->nlbuf;
--		struct sockaddr_nl nladdr = {
--			.nl_family = AF_NETLINK,
--			.nl_pid = pid,
--			.nl_groups = 0,
--		};
--
--		nlmsg_set_dst(nl_msg, &nladdr);
--	}
--
--	return msg;
--}
--
--struct flow_msg *wrap_netlink_msg(struct nlmsghdr *buf)
--{
--	struct flow_msg *msg;
--
--	msg = (struct flow_msg *) malloc(sizeof(struct flow_msg));
--	if (msg) {
--		msg->msg = buf;
--		msg->nlbuf = NULL;
--	}
--
--	return msg;
--}
--
--void free_flow_msg(struct flow_msg *msg)
--{
--	if (msg->nlbuf)
--		nlmsg_free(msg->nlbuf);
--	else
--		free(msg->msg);
--	free(msg);
--}
--
- static struct nla_policy flow_get_tables_policy[NET_FLOW_MAX+1] = {
- 	[NET_FLOW_IDENTIFIER_TYPE] = { .type = NLA_U32 },
- 	[NET_FLOW_IDENTIFIER]	= { .type = NLA_U32 },
-@@ -304,49 +228,6 @@ static struct nla_policy flow_get_tables_policy[NET_FLOW_MAX+1] = {
- struct nl_cache *link_cache;
- 
- static int
--flow_table_cmd_to_type(FILE *fp, bool p, int valid, struct nlattr *tb[])
--{
--	unsigned int type, ifindex;
--	char iface[IFNAMSIZ];
--
--	if (!tb[NET_FLOW_IDENTIFIER_TYPE]) {
--		fprintf(stderr,
--			"Warning: received flow msg without identifier type!\n");
--		return -EINVAL;
--	}
--	if (!tb[NET_FLOW_IDENTIFIER]) {
--		fprintf(stderr,
--			"Warning: received flow msg without identifier!\n");
--		return -EINVAL;
--	}
--
--	if (valid > 0 && !tb[valid]) {
--		fprintf(stderr, "Warning received cmd without valid attribute expected %i\n", valid);
--		return -ENOMSG;
--	}
--
--	if (nla_len(tb[NET_FLOW_IDENTIFIER_TYPE]) < (int)sizeof(type)) {
--		fprintf(stderr, "Warning invalid identifier type len\n");
--		return -EINVAL;
--	}
--
--	type = nla_get_u32(tb[NET_FLOW_IDENTIFIER_TYPE]);
--
--	switch (type) {
--	case NET_FLOW_IDENTIFIER_IFINDEX:
--		ifindex = nla_get_u32(tb[NET_FLOW_IDENTIFIER]);
--		rtnl_link_i2name(link_cache, (int)ifindex, iface, IFNAMSIZ);
--		pfprintf(fp, p, "%s (%u):\n", iface, ifindex);
--		break;
--	default:
--		fprintf(stderr, "Warning unknown interface identifier type %i\n", type);
--		break;
--	}
--
--	return 0;
--}
--
--static int
- flow_macaddr2u64(__u64 *dst, size_t n, char *src)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
+index 824a7ab..3f63065 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
+@@ -1234,4 +1234,5 @@ struct ixgbe_info ixgbe_82598_info = {
+ 	.mac_ops		= &mac_ops_82598,
+ 	.eeprom_ops		= &eeprom_ops_82598,
+ 	.phy_ops		= &phy_ops_82598,
++	.mvals			= ixgbe_mvals_8259X,
+ };
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
+index de83b6f..b1e364d 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
+@@ -71,7 +71,7 @@ bool ixgbe_mng_enabled(struct ixgbe_hw *hw)
  {
- 	__u8 tmp[ETH_ALEN];
-@@ -379,7 +260,7 @@ static void flow_table_cmd_get_tables(struct flow_msg *msg, int verbose)
- 		return;
+ 	u32 fwsm, manc, factps;
+ 
+-	fwsm = IXGBE_READ_REG(hw, IXGBE_FWSM);
++	fwsm = IXGBE_READ_REG(hw, IXGBE_FWSM(hw));
+ 	if ((fwsm & IXGBE_FWSM_MODE_MASK) != IXGBE_FWSM_FW_MODE_PT)
+ 		return false;
+ 
+@@ -79,7 +79,7 @@ bool ixgbe_mng_enabled(struct ixgbe_hw *hw)
+ 	if (!(manc & IXGBE_MANC_RCV_TCO_EN))
+ 		return false;
+ 
+-	factps = IXGBE_READ_REG(hw, IXGBE_FACTPS);
++	factps = IXGBE_READ_REG(hw, IXGBE_FACTPS(hw));
+ 	if (factps & IXGBE_FACTPS_MNGCG)
+ 		return false;
+ 
+@@ -510,7 +510,7 @@ static void ixgbe_stop_mac_link_on_d3_82599(struct ixgbe_hw *hw)
+ 	hw->eeprom.ops.read(hw, IXGBE_EEPROM_CTRL_2, &ee_ctrl_2);
+ 
+ 	/* Check to see if MNG FW could be enabled */
+-	fwsm = IXGBE_READ_REG(hw, IXGBE_FWSM);
++	fwsm = IXGBE_READ_REG(hw, IXGBE_FWSM(hw));
+ 
+ 	if (((fwsm & IXGBE_FWSM_MODE_MASK) != IXGBE_FWSM_FW_MODE_PT) &&
+ 	    !hw->wol_enabled &&
+@@ -2376,4 +2376,5 @@ struct ixgbe_info ixgbe_82599_info = {
+ 	.eeprom_ops             = &eeprom_ops_82599,
+ 	.phy_ops                = &phy_ops_82599,
+ 	.mbx_ops                = &mbx_ops_generic,
++	.mvals			= ixgbe_mvals_8259X,
+ };
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+index 06d8f3c..b0a838b 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+@@ -57,6 +57,11 @@ static s32 ixgbe_detect_eeprom_page_size_generic(struct ixgbe_hw *hw,
+ 						 u16 offset);
+ static s32 ixgbe_disable_pcie_master(struct ixgbe_hw *hw);
+ 
++/* Base table for registers values that change by MAC */
++const u32 ixgbe_mvals_8259X[IXGBE_MVALS_IDX_LIMIT] = {
++	IXGBE_MVALS_INIT(_8259X)
++};
++
+ /**
+  *  ixgbe_device_supports_autoneg_fc - Check if phy supports autoneg flow
+  *  control
+@@ -681,7 +686,7 @@ void ixgbe_set_lan_id_multi_port_pcie(struct ixgbe_hw *hw)
+ 	bus->lan_id = bus->func;
+ 
+ 	/* check for a port swap */
+-	reg = IXGBE_READ_REG(hw, IXGBE_FACTPS);
++	reg = IXGBE_READ_REG(hw, IXGBE_FACTPS(hw));
+ 	if (reg & IXGBE_FACTPS_LFS)
+ 		bus->func ^= 0x1;
+ }
+@@ -799,7 +804,7 @@ s32 ixgbe_init_eeprom_params_generic(struct ixgbe_hw *hw)
+ 		 * Check for EEPROM present first.
+ 		 * If not present leave as none
+ 		 */
+-		eec = IXGBE_READ_REG(hw, IXGBE_EEC);
++		eec = IXGBE_READ_REG(hw, IXGBE_EEC(hw));
+ 		if (eec & IXGBE_EEC_PRES) {
+ 			eeprom->type = ixgbe_eeprom_spi;
+ 
+@@ -1283,14 +1288,14 @@ static s32 ixgbe_acquire_eeprom(struct ixgbe_hw *hw)
+ 	if (hw->mac.ops.acquire_swfw_sync(hw, IXGBE_GSSR_EEP_SM) != 0)
+ 		return IXGBE_ERR_SWFW_SYNC;
+ 
+-	eec = IXGBE_READ_REG(hw, IXGBE_EEC);
++	eec = IXGBE_READ_REG(hw, IXGBE_EEC(hw));
+ 
+ 	/* Request EEPROM Access */
+ 	eec |= IXGBE_EEC_REQ;
+-	IXGBE_WRITE_REG(hw, IXGBE_EEC, eec);
++	IXGBE_WRITE_REG(hw, IXGBE_EEC(hw), eec);
+ 
+ 	for (i = 0; i < IXGBE_EEPROM_GRANT_ATTEMPTS; i++) {
+-		eec = IXGBE_READ_REG(hw, IXGBE_EEC);
++		eec = IXGBE_READ_REG(hw, IXGBE_EEC(hw));
+ 		if (eec & IXGBE_EEC_GNT)
+ 			break;
+ 		udelay(5);
+@@ -1299,7 +1304,7 @@ static s32 ixgbe_acquire_eeprom(struct ixgbe_hw *hw)
+ 	/* Release if grant not acquired */
+ 	if (!(eec & IXGBE_EEC_GNT)) {
+ 		eec &= ~IXGBE_EEC_REQ;
+-		IXGBE_WRITE_REG(hw, IXGBE_EEC, eec);
++		IXGBE_WRITE_REG(hw, IXGBE_EEC(hw), eec);
+ 		hw_dbg(hw, "Could not acquire EEPROM grant\n");
+ 
+ 		hw->mac.ops.release_swfw_sync(hw, IXGBE_GSSR_EEP_SM);
+@@ -1309,7 +1314,7 @@ static s32 ixgbe_acquire_eeprom(struct ixgbe_hw *hw)
+ 	/* Setup EEPROM for Read/Write */
+ 	/* Clear CS and SK */
+ 	eec &= ~(IXGBE_EEC_CS | IXGBE_EEC_SK);
+-	IXGBE_WRITE_REG(hw, IXGBE_EEC, eec);
++	IXGBE_WRITE_REG(hw, IXGBE_EEC(hw), eec);
+ 	IXGBE_WRITE_FLUSH(hw);
+ 	udelay(1);
+ 	return 0;
+@@ -1333,7 +1338,7 @@ static s32 ixgbe_get_eeprom_semaphore(struct ixgbe_hw *hw)
+ 		 * If the SMBI bit is 0 when we read it, then the bit will be
+ 		 * set and we have the semaphore
+ 		 */
+-		swsm = IXGBE_READ_REG(hw, IXGBE_SWSM);
++		swsm = IXGBE_READ_REG(hw, IXGBE_SWSM(hw));
+ 		if (!(swsm & IXGBE_SWSM_SMBI))
+ 			break;
+ 		usleep_range(50, 100);
+@@ -1353,7 +1358,7 @@ static s32 ixgbe_get_eeprom_semaphore(struct ixgbe_hw *hw)
+ 		 * If the SMBI bit is 0 when we read it, then the bit will be
+ 		 * set and we have the semaphore
+ 		 */
+-		swsm = IXGBE_READ_REG(hw, IXGBE_SWSM);
++		swsm = IXGBE_READ_REG(hw, IXGBE_SWSM(hw));
+ 		if (swsm & IXGBE_SWSM_SMBI) {
+ 			hw_dbg(hw, "Software semaphore SMBI between device drivers not granted.\n");
+ 			return IXGBE_ERR_EEPROM;
+@@ -1362,16 +1367,16 @@ static s32 ixgbe_get_eeprom_semaphore(struct ixgbe_hw *hw)
+ 
+ 	/* Now get the semaphore between SW/FW through the SWESMBI bit */
+ 	for (i = 0; i < timeout; i++) {
+-		swsm = IXGBE_READ_REG(hw, IXGBE_SWSM);
++		swsm = IXGBE_READ_REG(hw, IXGBE_SWSM(hw));
+ 
+ 		/* Set the SW EEPROM semaphore bit to request access */
+ 		swsm |= IXGBE_SWSM_SWESMBI;
+-		IXGBE_WRITE_REG(hw, IXGBE_SWSM, swsm);
++		IXGBE_WRITE_REG(hw, IXGBE_SWSM(hw), swsm);
+ 
+ 		/* If we set the bit successfully then we got the
+ 		 * semaphore.
+ 		 */
+-		swsm = IXGBE_READ_REG(hw, IXGBE_SWSM);
++		swsm = IXGBE_READ_REG(hw, IXGBE_SWSM(hw));
+ 		if (swsm & IXGBE_SWSM_SWESMBI)
+ 			break;
+ 
+@@ -1400,11 +1405,11 @@ static void ixgbe_release_eeprom_semaphore(struct ixgbe_hw *hw)
+ {
+ 	u32 swsm;
+ 
+-	swsm = IXGBE_READ_REG(hw, IXGBE_SWSM);
++	swsm = IXGBE_READ_REG(hw, IXGBE_SWSM(hw));
+ 
+ 	/* Release both semaphores by writing 0 to the bits SWESMBI and SMBI */
+ 	swsm &= ~(IXGBE_SWSM_SWESMBI | IXGBE_SWSM_SMBI);
+-	IXGBE_WRITE_REG(hw, IXGBE_SWSM, swsm);
++	IXGBE_WRITE_REG(hw, IXGBE_SWSM(hw), swsm);
+ 	IXGBE_WRITE_FLUSH(hw);
+ }
+ 
+@@ -1454,15 +1459,15 @@ static void ixgbe_standby_eeprom(struct ixgbe_hw *hw)
+ {
+ 	u32 eec;
+ 
+-	eec = IXGBE_READ_REG(hw, IXGBE_EEC);
++	eec = IXGBE_READ_REG(hw, IXGBE_EEC(hw));
+ 
+ 	/* Toggle CS to flush commands */
+ 	eec |= IXGBE_EEC_CS;
+-	IXGBE_WRITE_REG(hw, IXGBE_EEC, eec);
++	IXGBE_WRITE_REG(hw, IXGBE_EEC(hw), eec);
+ 	IXGBE_WRITE_FLUSH(hw);
+ 	udelay(1);
+ 	eec &= ~IXGBE_EEC_CS;
+-	IXGBE_WRITE_REG(hw, IXGBE_EEC, eec);
++	IXGBE_WRITE_REG(hw, IXGBE_EEC(hw), eec);
+ 	IXGBE_WRITE_FLUSH(hw);
+ 	udelay(1);
+ }
+@@ -1480,7 +1485,7 @@ static void ixgbe_shift_out_eeprom_bits(struct ixgbe_hw *hw, u16 data,
+ 	u32 mask;
+ 	u32 i;
+ 
+-	eec = IXGBE_READ_REG(hw, IXGBE_EEC);
++	eec = IXGBE_READ_REG(hw, IXGBE_EEC(hw));
+ 
+ 	/*
+ 	 * Mask is used to shift "count" bits of "data" out to the EEPROM
+@@ -1501,7 +1506,7 @@ static void ixgbe_shift_out_eeprom_bits(struct ixgbe_hw *hw, u16 data,
+ 		else
+ 			eec &= ~IXGBE_EEC_DI;
+ 
+-		IXGBE_WRITE_REG(hw, IXGBE_EEC, eec);
++		IXGBE_WRITE_REG(hw, IXGBE_EEC(hw), eec);
+ 		IXGBE_WRITE_FLUSH(hw);
+ 
+ 		udelay(1);
+@@ -1518,7 +1523,7 @@ static void ixgbe_shift_out_eeprom_bits(struct ixgbe_hw *hw, u16 data,
+ 
+ 	/* We leave the "DI" bit set to "0" when we leave this routine. */
+ 	eec &= ~IXGBE_EEC_DI;
+-	IXGBE_WRITE_REG(hw, IXGBE_EEC, eec);
++	IXGBE_WRITE_REG(hw, IXGBE_EEC(hw), eec);
+ 	IXGBE_WRITE_FLUSH(hw);
+ }
+ 
+@@ -1539,7 +1544,7 @@ static u16 ixgbe_shift_in_eeprom_bits(struct ixgbe_hw *hw, u16 count)
+ 	 * the value of the "DO" bit.  During this "shifting in" process the
+ 	 * "DI" bit should always be clear.
+ 	 */
+-	eec = IXGBE_READ_REG(hw, IXGBE_EEC);
++	eec = IXGBE_READ_REG(hw, IXGBE_EEC(hw));
+ 
+ 	eec &= ~(IXGBE_EEC_DO | IXGBE_EEC_DI);
+ 
+@@ -1547,7 +1552,7 @@ static u16 ixgbe_shift_in_eeprom_bits(struct ixgbe_hw *hw, u16 count)
+ 		data = data << 1;
+ 		ixgbe_raise_eeprom_clk(hw, &eec);
+ 
+-		eec = IXGBE_READ_REG(hw, IXGBE_EEC);
++		eec = IXGBE_READ_REG(hw, IXGBE_EEC(hw));
+ 
+ 		eec &= ~(IXGBE_EEC_DI);
+ 		if (eec & IXGBE_EEC_DO)
+@@ -1571,7 +1576,7 @@ static void ixgbe_raise_eeprom_clk(struct ixgbe_hw *hw, u32 *eec)
+ 	 * (setting the SK bit), then delay
+ 	 */
+ 	*eec = *eec | IXGBE_EEC_SK;
+-	IXGBE_WRITE_REG(hw, IXGBE_EEC, *eec);
++	IXGBE_WRITE_REG(hw, IXGBE_EEC(hw), *eec);
+ 	IXGBE_WRITE_FLUSH(hw);
+ 	udelay(1);
+ }
+@@ -1588,7 +1593,7 @@ static void ixgbe_lower_eeprom_clk(struct ixgbe_hw *hw, u32 *eec)
+ 	 * delay
+ 	 */
+ 	*eec = *eec & ~IXGBE_EEC_SK;
+-	IXGBE_WRITE_REG(hw, IXGBE_EEC, *eec);
++	IXGBE_WRITE_REG(hw, IXGBE_EEC(hw), *eec);
+ 	IXGBE_WRITE_FLUSH(hw);
+ 	udelay(1);
+ }
+@@ -1601,19 +1606,19 @@ static void ixgbe_release_eeprom(struct ixgbe_hw *hw)
+ {
+ 	u32 eec;
+ 
+-	eec = IXGBE_READ_REG(hw, IXGBE_EEC);
++	eec = IXGBE_READ_REG(hw, IXGBE_EEC(hw));
+ 
+ 	eec |= IXGBE_EEC_CS;  /* Pull CS high */
+ 	eec &= ~IXGBE_EEC_SK; /* Lower SCK */
+ 
+-	IXGBE_WRITE_REG(hw, IXGBE_EEC, eec);
++	IXGBE_WRITE_REG(hw, IXGBE_EEC(hw), eec);
+ 	IXGBE_WRITE_FLUSH(hw);
+ 
+ 	udelay(1);
+ 
+ 	/* Stop requesting EEPROM access */
+ 	eec &= ~IXGBE_EEC_REQ;
+-	IXGBE_WRITE_REG(hw, IXGBE_EEC, eec);
++	IXGBE_WRITE_REG(hw, IXGBE_EEC(hw), eec);
+ 
+ 	hw->mac.ops.release_swfw_sync(hw, IXGBE_GSSR_EEP_SM);
+ 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
+index f21f8a1..ec015fe 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
+@@ -118,6 +118,8 @@ bool ixgbe_mng_enabled(struct ixgbe_hw *hw);
+ void ixgbe_set_rxpba_generic(struct ixgbe_hw *hw, int num_pb,
+ 			     u32 headroom, int strategy);
+ 
++extern const u32 ixgbe_mvals_8259X[IXGBE_MVALS_IDX_LIMIT];
++
+ #define IXGBE_I2C_THERMAL_SENSOR_ADDR	0xF8
+ #define IXGBE_EMC_INTERNAL_DATA		0x00
+ #define IXGBE_EMC_INTERNAL_THERM_LIMIT	0x20
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+index 0f1bff3..1701a3b 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+@@ -470,16 +470,16 @@ static void ixgbe_get_regs(struct net_device *netdev,
+ 	regs_buff[7] = IXGBE_READ_REG(hw, IXGBE_TCPTIMER);
+ 
+ 	/* NVM Register */
+-	regs_buff[8] = IXGBE_READ_REG(hw, IXGBE_EEC);
++	regs_buff[8] = IXGBE_READ_REG(hw, IXGBE_EEC(hw));
+ 	regs_buff[9] = IXGBE_READ_REG(hw, IXGBE_EERD);
+-	regs_buff[10] = IXGBE_READ_REG(hw, IXGBE_FLA);
++	regs_buff[10] = IXGBE_READ_REG(hw, IXGBE_FLA(hw));
+ 	regs_buff[11] = IXGBE_READ_REG(hw, IXGBE_EEMNGCTL);
+ 	regs_buff[12] = IXGBE_READ_REG(hw, IXGBE_EEMNGDATA);
+ 	regs_buff[13] = IXGBE_READ_REG(hw, IXGBE_FLMNGCTL);
+ 	regs_buff[14] = IXGBE_READ_REG(hw, IXGBE_FLMNGDATA);
+ 	regs_buff[15] = IXGBE_READ_REG(hw, IXGBE_FLMNGCNT);
+ 	regs_buff[16] = IXGBE_READ_REG(hw, IXGBE_FLOP);
+-	regs_buff[17] = IXGBE_READ_REG(hw, IXGBE_GRC);
++	regs_buff[17] = IXGBE_READ_REG(hw, IXGBE_GRC(hw));
+ 
+ 	/* Interrupt */
+ 	/* don't read EICR because it can clear interrupt causes, instead
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index b1ea707..4a13096 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -2383,7 +2383,7 @@ static void ixgbe_check_overtemp_subtask(struct ixgbe_adapter *adapter)
+ 		 *  - We may have missed the interrupt so always have to
+ 		 *    check if we  got a LSC
+ 		 */
+-		if (!(eicr & IXGBE_EICR_GPI_SDP0) &&
++		if (!(eicr & IXGBE_EICR_GPI_SDP0_8259X) &&
+ 		    !(eicr & IXGBE_EICR_LSC))
+ 			return;
+ 
+@@ -2403,7 +2403,7 @@ static void ixgbe_check_overtemp_subtask(struct ixgbe_adapter *adapter)
+ 
+ 		break;
+ 	default:
+-		if (!(eicr & IXGBE_EICR_GPI_SDP0))
++		if (!(eicr & IXGBE_EICR_GPI_SDP0(hw)))
+ 			return;
+ 		break;
  	}
+@@ -2420,15 +2420,17 @@ static void ixgbe_check_fan_failure(struct ixgbe_adapter *adapter, u32 eicr)
+ 	struct ixgbe_hw *hw = &adapter->hw;
  
--	if (flow_table_cmd_to_type(stdout, false, NET_FLOW_TABLES, tb))
-+	if (flow_nl_table_cmd_to_type(stdout, false, NET_FLOW_TABLES, tb))
- 		return;
- 
- 	if (tb[NET_FLOW_TABLES])
-@@ -398,7 +279,7 @@ static void flow_table_cmd_get_headers(struct flow_msg *msg, int verbose)
- 		return;
- 	}
- 
--	if (flow_table_cmd_to_type(stdout, false, NET_FLOW_HEADERS, tb))
-+	if (flow_nl_table_cmd_to_type(stdout, false, NET_FLOW_HEADERS, tb))
- 		return;
- 
- 	if (tb[NET_FLOW_HEADERS])
-@@ -417,7 +298,7 @@ static void flow_table_cmd_get_actions(struct flow_msg *msg, int verbose)
- 		return;
- 	}
- 
--	if (flow_table_cmd_to_type(stdout, false, NET_FLOW_ACTIONS, tb))
-+	if (flow_nl_table_cmd_to_type(stdout, false, NET_FLOW_ACTIONS, tb))
- 		return;
- 
- 	if (tb[NET_FLOW_ACTIONS])
-@@ -436,7 +317,7 @@ static void flow_table_cmd_get_headers_graph(struct flow_msg *msg, int verbose)
- 		return;
- 	}
- 
--	if (flow_table_cmd_to_type(stdout, false, NET_FLOW_HEADER_GRAPH, tb))
-+	if (flow_nl_table_cmd_to_type(stdout, false, NET_FLOW_HEADER_GRAPH, tb))
- 		return;
- 
- 	if (tb[NET_FLOW_HEADER_GRAPH])
-@@ -456,7 +337,7 @@ static void flow_table_cmd_get_table_graph(struct flow_msg *msg, int verbose)
- 		return;
- 	}
- 
--	if (flow_table_cmd_to_type(stdout, false, NET_FLOW_TABLE_GRAPH, tb))
-+	if (flow_nl_table_cmd_to_type(stdout, false, NET_FLOW_TABLE_GRAPH, tb))
- 		return;
- 
- 	if (tb[NET_FLOW_TABLE_GRAPH])
-@@ -476,7 +357,7 @@ static void flow_table_cmd_get_flows(struct flow_msg *msg, int verbose)
- 		return;
- 	}
- 
--	err = flow_table_cmd_to_type(stdout, false, 0, tb);
-+	err = flow_nl_table_cmd_to_type(stdout, false, 0, tb);
- 	if (err == -ENOMSG) {
- 		fprintf(stdout, "Table empty\n");
- 		return;
-@@ -501,7 +382,7 @@ static void flow_table_cmd_set_flows(struct flow_msg *msg, int verbose)
- 		return;
- 	}
- 
--	err = flow_table_cmd_to_type(stdout, false, 0, tb);
-+	err = flow_nl_table_cmd_to_type(stdout, false, 0, tb);
- 	if (err)
- 		return;
- 
-@@ -569,73 +450,6 @@ flow_table_cmd_destroy_table(struct flow_msg *msg, int verbose __unused)
+ 	if ((adapter->flags & IXGBE_FLAG_FAN_FAIL_CAPABLE) &&
+-	    (eicr & IXGBE_EICR_GPI_SDP1)) {
++	    (eicr & IXGBE_EICR_GPI_SDP1(hw))) {
+ 		e_crit(probe, "Fan has stopped, replace the adapter\n");
+ 		/* write to clear the interrupt */
+-		IXGBE_WRITE_REG(hw, IXGBE_EICR, IXGBE_EICR_GPI_SDP1);
++		IXGBE_WRITE_REG(hw, IXGBE_EICR, IXGBE_EICR_GPI_SDP1(hw));
  	}
  }
  
--static void handle_error(struct nlmsgerr *errmsg)
--{
--	fprintf(stderr, "Error processing request: %s\n",
--		strerror(errmsg->error));
--}
--
--struct flow_msg *recv_flow_msg(int *err)
--{
--	static unsigned char *buf;
--	struct flow_msg *msg;
--	struct genlmsghdr *glm;
--	struct sockaddr_nl nla;
--	int type;
--	int rc;
--
--	*err = 0;
--
--	do {
--		rc = nl_recv(nsd, &nla, &buf, NULL);
--		if (rc < 0) {
--			switch (errno) {
--			case EINTR:
--				return NULL;
--			default:
--				perror("Receive operation failed:");
--				return NULL;
--			}
--		}
--	} while (rc == 0);
--
--	msg = wrap_netlink_msg((struct nlmsghdr *)buf);
--	if (msg == NULL) {
--		fprintf(stderr, "Error: Message is empty\n");
--		free(buf);
--		return NULL;
--	}
--	type = ((struct nlmsghdr *)msg->msg)->nlmsg_type;
--
--	/*
--	 * Note the NLMSG_ERROR is overloaded
--	 * Its also used to deliver ACKs
--	 */
--	if (type == NLMSG_ERROR) {
--		struct nlmsgerr *errm = nlmsg_data(msg->msg);
--
--		if (errm->error) {
--			handle_error(errm);
--			free_flow_msg(msg);
--			return NULL;
--		}
--
--		free_flow_msg(msg);
--		return NULL;
--	}
--
--	glm = nlmsg_data(msg->msg);
--	type = glm->cmd;
--
--	if (type < 0 || type > NET_FLOW_CMD_MAX) {
--		fprintf(stderr, "Received message of unknown type %d\n", type);
--		free_flow_msg(msg);
--		return NULL;
--	}
--
--	return msg;
--}
--
- static void(*type_cb[NET_FLOW_CMD_MAX+1])(struct flow_msg *, int verbose) = {
- 	flow_table_cmd_get_tables,
- 	flow_table_cmd_get_headers,
-@@ -667,7 +481,7 @@ void process_rx_message(int verbose)
- 	 */
- 	for (;;) {
- 		sigprocmask(SIG_UNBLOCK, &bs, NULL);
--		msg = recv_flow_msg(&err);
-+		msg = flow_nl_recv_msg(nsd, &err);
- 		sigprocmask(SIG_BLOCK, &bs, NULL);
+ static void ixgbe_check_overtemp_event(struct ixgbe_adapter *adapter, u32 eicr)
+ {
++	struct ixgbe_hw *hw = &adapter->hw;
++
+ 	if (!(adapter->flags2 & IXGBE_FLAG2_TEMP_SENSOR_CAPABLE))
+ 		return;
  
- 		if (msg) {
-@@ -675,7 +489,7 @@ void process_rx_message(int verbose)
- 			struct genlmsghdr *glh = nlmsg_data(nlh);
+@@ -2438,7 +2440,8 @@ static void ixgbe_check_overtemp_event(struct ixgbe_adapter *adapter, u32 eicr)
+ 		 * Need to check link state so complete overtemp check
+ 		 * on service task
+ 		 */
+-		if (((eicr & IXGBE_EICR_GPI_SDP0) || (eicr & IXGBE_EICR_LSC)) &&
++		if (((eicr & IXGBE_EICR_GPI_SDP0(hw)) ||
++		     (eicr & IXGBE_EICR_LSC)) &&
+ 		    (!test_bit(__IXGBE_DOWN, &adapter->state))) {
+ 			adapter->interrupt_event = eicr;
+ 			adapter->flags2 |= IXGBE_FLAG2_TEMP_SENSOR_EVENT;
+@@ -2464,18 +2467,18 @@ static void ixgbe_check_sfp_event(struct ixgbe_adapter *adapter, u32 eicr)
+ {
+ 	struct ixgbe_hw *hw = &adapter->hw;
  
- 			if (nlh->nlmsg_type == NLMSG_DONE) {
--				free_flow_msg(msg);
-+				flow_nl_free_msg(msg);
- 				break;
- 			}
+-	if (eicr & IXGBE_EICR_GPI_SDP2) {
++	if (eicr & IXGBE_EICR_GPI_SDP2(hw)) {
+ 		/* Clear the interrupt */
+-		IXGBE_WRITE_REG(hw, IXGBE_EICR, IXGBE_EICR_GPI_SDP2);
++		IXGBE_WRITE_REG(hw, IXGBE_EICR, IXGBE_EICR_GPI_SDP2(hw));
+ 		if (!test_bit(__IXGBE_DOWN, &adapter->state)) {
+ 			adapter->flags2 |= IXGBE_FLAG2_SFP_NEEDS_RESET;
+ 			ixgbe_service_event_schedule(adapter);
+ 		}
+ 	}
  
-@@ -683,10 +497,10 @@ void process_rx_message(int verbose)
- 			type_cb[type](msg, verbose);
+-	if (eicr & IXGBE_EICR_GPI_SDP1) {
++	if (eicr & IXGBE_EICR_GPI_SDP1(hw)) {
+ 		/* Clear the interrupt */
+-		IXGBE_WRITE_REG(hw, IXGBE_EICR, IXGBE_EICR_GPI_SDP1);
++		IXGBE_WRITE_REG(hw, IXGBE_EICR, IXGBE_EICR_GPI_SDP1(hw));
+ 		if (!test_bit(__IXGBE_DOWN, &adapter->state)) {
+ 			adapter->flags |= IXGBE_FLAG_NEED_LINK_CONFIG;
+ 			ixgbe_service_event_schedule(adapter);
+@@ -2560,6 +2563,7 @@ static inline void ixgbe_irq_disable_queues(struct ixgbe_adapter *adapter,
+ static inline void ixgbe_irq_enable(struct ixgbe_adapter *adapter, bool queues,
+ 				    bool flush)
+ {
++	struct ixgbe_hw *hw = &adapter->hw;
+ 	u32 mask = (IXGBE_EIMS_ENABLE_MASK & ~IXGBE_EIMS_RTX_QUEUE);
  
- 			if (!(nlh->nlmsg_flags & NLM_F_MULTI)) {
--				free_flow_msg(msg);
-+				flow_nl_free_msg(msg);
- 				break;
- 			}
--			free_flow_msg(msg);
-+			flow_nl_free_msg(msg);
- 		} else {
+ 	/* don't reenable LSC while waiting for link */
+@@ -2569,7 +2573,7 @@ static inline void ixgbe_irq_enable(struct ixgbe_adapter *adapter, bool queues,
+ 	if (adapter->flags2 & IXGBE_FLAG2_TEMP_SENSOR_CAPABLE)
+ 		switch (adapter->hw.mac.type) {
+ 		case ixgbe_mac_82599EB:
+-			mask |= IXGBE_EIMS_GPI_SDP0;
++			mask |= IXGBE_EIMS_GPI_SDP0(hw);
+ 			break;
+ 		case ixgbe_mac_X540:
+ 		case ixgbe_mac_X550:
+@@ -2580,11 +2584,11 @@ static inline void ixgbe_irq_enable(struct ixgbe_adapter *adapter, bool queues,
  			break;
  		}
-@@ -1188,7 +1002,7 @@ flow_destroy_tbl_send(int verbose, uint32_t pid, int family,
- 	nsd = nl_socket_alloc();
- 	nl_connect(nsd, NETLINK_GENERIC);
+ 	if (adapter->flags & IXGBE_FLAG_FAN_FAIL_CAPABLE)
+-		mask |= IXGBE_EIMS_GPI_SDP1;
++		mask |= IXGBE_EIMS_GPI_SDP1(hw);
+ 	switch (adapter->hw.mac.type) {
+ 	case ixgbe_mac_82599EB:
+-		mask |= IXGBE_EIMS_GPI_SDP1;
+-		mask |= IXGBE_EIMS_GPI_SDP2;
++		mask |= IXGBE_EIMS_GPI_SDP1(hw);
++		mask |= IXGBE_EIMS_GPI_SDP2(hw);
+ 		/* fall through */
+ 	case ixgbe_mac_X540:
+ 	case ixgbe_mac_X550:
+@@ -4850,7 +4854,7 @@ static void ixgbe_setup_gpie(struct ixgbe_adapter *adapter)
+ 	if (adapter->flags2 & IXGBE_FLAG2_TEMP_SENSOR_CAPABLE) {
+ 		switch (adapter->hw.mac.type) {
+ 		case ixgbe_mac_82599EB:
+-			gpie |= IXGBE_SDP0_GPIEN;
++			gpie |= IXGBE_SDP0_GPIEN_8259X;
+ 			break;
+ 		case ixgbe_mac_X540:
+ 			gpie |= IXGBE_EIMS_TS;
+@@ -4862,11 +4866,11 @@ static void ixgbe_setup_gpie(struct ixgbe_adapter *adapter)
  
--	msg = alloc_flow_msg(cmd, pid, NLM_F_REQUEST|NLM_F_ACK, 0, family);
-+	msg = flow_nl_alloc_msg(cmd, pid, NLM_F_REQUEST|NLM_F_ACK, 0, family);
- 	if (!msg) {
- 		fprintf(stderr, "Error: Allocation failure\n");
- 		return -ENOMSG;
-@@ -1198,13 +1012,13 @@ flow_destroy_tbl_send(int verbose, uint32_t pid, int family,
- 			NET_FLOW_IDENTIFIER_IFINDEX) ||
- 	    nla_put_u32(msg->nlbuf, NET_FLOW_IDENTIFIER, ifindex)) {
- 		fprintf(stderr, "Error: Identifier put failed\n");
--		free_flow_msg(msg);
-+		flow_nl_free_msg(msg);
- 		return -EMSGSIZE;
+ 	/* Enable fan failure interrupt */
+ 	if (adapter->flags & IXGBE_FLAG_FAN_FAIL_CAPABLE)
+-		gpie |= IXGBE_SDP1_GPIEN;
++		gpie |= IXGBE_SDP1_GPIEN(hw);
+ 
+ 	if (hw->mac.type == ixgbe_mac_82599EB) {
+-		gpie |= IXGBE_SDP1_GPIEN;
+-		gpie |= IXGBE_SDP2_GPIEN;
++		gpie |= IXGBE_SDP1_GPIEN_8259X;
++		gpie |= IXGBE_SDP2_GPIEN_8259X;
  	}
  
- 	nest = nla_nest_start(msg->nlbuf, NET_FLOW_TABLES);
- 	if (!nest) {
--		free_flow_msg(msg);
-+		flow_nl_free_msg(msg);
- 		return -EMSGSIZE;
+ 	IXGBE_WRITE_REG(hw, IXGBE_GPIE, gpie);
+@@ -5277,7 +5281,7 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter)
+ 			adapter->flags2 |= IXGBE_FLAG2_TEMP_SENSOR_CAPABLE;
+ 		break;
+ 	case ixgbe_mac_X540:
+-		fwsm = IXGBE_READ_REG(hw, IXGBE_FWSM);
++		fwsm = IXGBE_READ_REG(hw, IXGBE_FWSM(hw));
+ 		if (fwsm & IXGBE_FWSM_TS_ENABLED)
+ 			adapter->flags2 |= IXGBE_FLAG2_TEMP_SENSOR_CAPABLE;
+ 		break;
+@@ -8448,10 +8452,11 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	/* Setup hw api */
+ 	memcpy(&hw->mac.ops, ii->mac_ops, sizeof(hw->mac.ops));
+ 	hw->mac.type  = ii->mac;
++	hw->mvals     = ii->mvals;
+ 
+ 	/* EEPROM */
+ 	memcpy(&hw->eeprom.ops, ii->eeprom_ops, sizeof(hw->eeprom.ops));
+-	eec = IXGBE_READ_REG(hw, IXGBE_EEC);
++	eec = IXGBE_READ_REG(hw, IXGBE_EEC(hw));
+ 	if (ixgbe_removed(hw->hw_addr)) {
+ 		err = -EIO;
+ 		goto err_ioremap;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+index af828f8..8f9334d 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+@@ -1793,7 +1793,7 @@ fail:
+  **/
+ static void ixgbe_i2c_start(struct ixgbe_hw *hw)
+ {
+-	u32 i2cctl = IXGBE_READ_REG(hw, IXGBE_I2CCTL_BY_MAC(hw));
++	u32 i2cctl = IXGBE_READ_REG(hw, IXGBE_I2CCTL(hw));
+ 
+ 	/* Start condition must begin with data and clock high */
+ 	ixgbe_set_i2c_data(hw, &i2cctl, 1);
+@@ -1822,7 +1822,7 @@ static void ixgbe_i2c_start(struct ixgbe_hw *hw)
+  **/
+ static void ixgbe_i2c_stop(struct ixgbe_hw *hw)
+ {
+-	u32 i2cctl = IXGBE_READ_REG(hw, IXGBE_I2CCTL_BY_MAC(hw));
++	u32 i2cctl = IXGBE_READ_REG(hw, IXGBE_I2CCTL(hw));
+ 
+ 	/* Stop condition must begin with data low and clock high */
+ 	ixgbe_set_i2c_data(hw, &i2cctl, 0);
+@@ -1880,9 +1880,9 @@ static s32 ixgbe_clock_out_i2c_byte(struct ixgbe_hw *hw, u8 data)
  	}
- 	nest1 = nla_nest_start(msg->nlbuf, NET_FLOW_TABLE);
-@@ -1215,7 +1029,7 @@ flow_destroy_tbl_send(int verbose, uint32_t pid, int family,
- 	nl_send_auto(nsd, msg->nlbuf);
- 	process_rx_message(verbose);
  
--	free_flow_msg(msg);
-+	flow_nl_free_msg(msg);
- 	return 0;
+ 	/* Release SDA line (set high) */
+-	i2cctl = IXGBE_READ_REG(hw, IXGBE_I2CCTL_BY_MAC(hw));
+-	i2cctl |= IXGBE_I2C_DATA_OUT_BY_MAC(hw);
+-	IXGBE_WRITE_REG(hw, IXGBE_I2CCTL_BY_MAC(hw), i2cctl);
++	i2cctl = IXGBE_READ_REG(hw, IXGBE_I2CCTL(hw));
++	i2cctl |= IXGBE_I2C_DATA_OUT(hw);
++	IXGBE_WRITE_REG(hw, IXGBE_I2CCTL(hw), i2cctl);
+ 	IXGBE_WRITE_FLUSH(hw);
  
+ 	return status;
+@@ -1898,7 +1898,7 @@ static s32 ixgbe_get_i2c_ack(struct ixgbe_hw *hw)
+ {
+ 	s32 status = 0;
+ 	u32 i = 0;
+-	u32 i2cctl = IXGBE_READ_REG(hw, IXGBE_I2CCTL_BY_MAC(hw));
++	u32 i2cctl = IXGBE_READ_REG(hw, IXGBE_I2CCTL(hw));
+ 	u32 timeout = 10;
+ 	bool ack = true;
+ 
+@@ -1911,7 +1911,7 @@ static s32 ixgbe_get_i2c_ack(struct ixgbe_hw *hw)
+ 	/* Poll for ACK.  Note that ACK in I2C spec is
+ 	 * transition from 1 to 0 */
+ 	for (i = 0; i < timeout; i++) {
+-		i2cctl = IXGBE_READ_REG(hw, IXGBE_I2CCTL_BY_MAC(hw));
++		i2cctl = IXGBE_READ_REG(hw, IXGBE_I2CCTL(hw));
+ 		ack = ixgbe_get_i2c_data(hw, &i2cctl);
+ 
+ 		udelay(1);
+@@ -1941,14 +1941,14 @@ static s32 ixgbe_get_i2c_ack(struct ixgbe_hw *hw)
+  **/
+ static s32 ixgbe_clock_in_i2c_bit(struct ixgbe_hw *hw, bool *data)
+ {
+-	u32 i2cctl = IXGBE_READ_REG(hw, IXGBE_I2CCTL_BY_MAC(hw));
++	u32 i2cctl = IXGBE_READ_REG(hw, IXGBE_I2CCTL(hw));
+ 
+ 	ixgbe_raise_i2c_clk(hw, &i2cctl);
+ 
+ 	/* Minimum high period of clock is 4us */
+ 	udelay(IXGBE_I2C_T_HIGH);
+ 
+-	i2cctl = IXGBE_READ_REG(hw, IXGBE_I2CCTL_BY_MAC(hw));
++	i2cctl = IXGBE_READ_REG(hw, IXGBE_I2CCTL(hw));
+ 	*data = ixgbe_get_i2c_data(hw, &i2cctl);
+ 
+ 	ixgbe_lower_i2c_clk(hw, &i2cctl);
+@@ -1969,7 +1969,7 @@ static s32 ixgbe_clock_in_i2c_bit(struct ixgbe_hw *hw, bool *data)
+ static s32 ixgbe_clock_out_i2c_bit(struct ixgbe_hw *hw, bool data)
+ {
+ 	s32 status;
+-	u32 i2cctl = IXGBE_READ_REG(hw, IXGBE_I2CCTL_BY_MAC(hw));
++	u32 i2cctl = IXGBE_READ_REG(hw, IXGBE_I2CCTL(hw));
+ 
+ 	status = ixgbe_set_i2c_data(hw, &i2cctl, data);
+ 	if (status == 0) {
+@@ -2005,14 +2005,14 @@ static void ixgbe_raise_i2c_clk(struct ixgbe_hw *hw, u32 *i2cctl)
+ 	u32 i2cctl_r = 0;
+ 
+ 	for (i = 0; i < timeout; i++) {
+-		*i2cctl |= IXGBE_I2C_CLK_OUT_BY_MAC(hw);
+-		IXGBE_WRITE_REG(hw, IXGBE_I2CCTL_BY_MAC(hw), *i2cctl);
++		*i2cctl |= IXGBE_I2C_CLK_OUT(hw);
++		IXGBE_WRITE_REG(hw, IXGBE_I2CCTL(hw), *i2cctl);
+ 		IXGBE_WRITE_FLUSH(hw);
+ 		/* SCL rise time (1000ns) */
+ 		udelay(IXGBE_I2C_T_RISE);
+ 
+-		i2cctl_r = IXGBE_READ_REG(hw, IXGBE_I2CCTL_BY_MAC(hw));
+-		if (i2cctl_r & IXGBE_I2C_CLK_IN_BY_MAC(hw))
++		i2cctl_r = IXGBE_READ_REG(hw, IXGBE_I2CCTL(hw));
++		if (i2cctl_r & IXGBE_I2C_CLK_IN(hw))
+ 			break;
+ 	}
  }
-@@ -1352,7 +1166,7 @@ flow_create_tbl_send(int verbose, uint32_t pid, int family, uint32_t ifindex,
- 	nsd = nl_socket_alloc();
- 	nl_connect(nsd, NETLINK_GENERIC);
+@@ -2027,9 +2027,9 @@ static void ixgbe_raise_i2c_clk(struct ixgbe_hw *hw, u32 *i2cctl)
+ static void ixgbe_lower_i2c_clk(struct ixgbe_hw *hw, u32 *i2cctl)
+ {
  
--	msg = alloc_flow_msg(cmd, pid, NLM_F_REQUEST|NLM_F_ACK, 0, family);
-+	msg = flow_nl_alloc_msg(cmd, pid, NLM_F_REQUEST|NLM_F_ACK, 0, family);
- 	if (!msg) {
- 		fprintf(stderr, "Error: Allocation failure\n");
- 		return -ENOMEM;
-@@ -1362,13 +1176,13 @@ flow_create_tbl_send(int verbose, uint32_t pid, int family, uint32_t ifindex,
- 			NET_FLOW_IDENTIFIER_IFINDEX) ||
- 	    nla_put_u32(msg->nlbuf, NET_FLOW_IDENTIFIER, ifindex)) {
- 		fprintf(stderr, "Error: Identifier put failed\n");
--		free_flow_msg(msg);
-+		flow_nl_free_msg(msg);
- 		return -EMSGSIZE;
- 	}
+-	*i2cctl &= ~IXGBE_I2C_CLK_OUT_BY_MAC(hw);
++	*i2cctl &= ~IXGBE_I2C_CLK_OUT(hw);
  
- 	nest = nla_nest_start(msg->nlbuf, NET_FLOW_TABLES);
- 	if (!nest) {
--		free_flow_msg(msg);
-+		flow_nl_free_msg(msg);
- 		return -EMSGSIZE;
- 	}
- 	nest1 = nla_nest_start(msg->nlbuf, NET_FLOW_TABLE);
-@@ -1378,7 +1192,7 @@ flow_create_tbl_send(int verbose, uint32_t pid, int family, uint32_t ifindex,
+-	IXGBE_WRITE_REG(hw, IXGBE_I2CCTL_BY_MAC(hw), *i2cctl);
++	IXGBE_WRITE_REG(hw, IXGBE_I2CCTL(hw), *i2cctl);
+ 	IXGBE_WRITE_FLUSH(hw);
  
- 	nl_send_auto(nsd, msg->nlbuf);
- 	process_rx_message(verbose);
--	free_flow_msg(msg);
-+	flow_nl_free_msg(msg);
- 	return 0;
+ 	/* SCL fall time (300ns) */
+@@ -2047,18 +2047,18 @@ static void ixgbe_lower_i2c_clk(struct ixgbe_hw *hw, u32 *i2cctl)
+ static s32 ixgbe_set_i2c_data(struct ixgbe_hw *hw, u32 *i2cctl, bool data)
+ {
+ 	if (data)
+-		*i2cctl |= IXGBE_I2C_DATA_OUT_BY_MAC(hw);
++		*i2cctl |= IXGBE_I2C_DATA_OUT(hw);
+ 	else
+-		*i2cctl &= ~IXGBE_I2C_DATA_OUT_BY_MAC(hw);
++		*i2cctl &= ~IXGBE_I2C_DATA_OUT(hw);
+ 
+-	IXGBE_WRITE_REG(hw, IXGBE_I2CCTL_BY_MAC(hw), *i2cctl);
++	IXGBE_WRITE_REG(hw, IXGBE_I2CCTL(hw), *i2cctl);
+ 	IXGBE_WRITE_FLUSH(hw);
+ 
+ 	/* Data rise/fall (1000ns/300ns) and set-up time (250ns) */
+ 	udelay(IXGBE_I2C_T_RISE + IXGBE_I2C_T_FALL + IXGBE_I2C_T_SU_DATA);
+ 
+ 	/* Verify data was set correctly */
+-	*i2cctl = IXGBE_READ_REG(hw, IXGBE_I2CCTL_BY_MAC(hw));
++	*i2cctl = IXGBE_READ_REG(hw, IXGBE_I2CCTL(hw));
+ 	if (data != ixgbe_get_i2c_data(hw, i2cctl)) {
+ 		hw_dbg(hw, "Error - I2C data was not set to %X.\n", data);
+ 		return IXGBE_ERR_I2C;
+@@ -2076,7 +2076,7 @@ static s32 ixgbe_set_i2c_data(struct ixgbe_hw *hw, u32 *i2cctl, bool data)
+  **/
+ static bool ixgbe_get_i2c_data(struct ixgbe_hw *hw, u32 *i2cctl)
+ {
+-	if (*i2cctl & IXGBE_I2C_DATA_IN_BY_MAC(hw))
++	if (*i2cctl & IXGBE_I2C_DATA_IN(hw))
+ 		return true;
+ 	return false;
  }
+@@ -2090,7 +2090,7 @@ static bool ixgbe_get_i2c_data(struct ixgbe_hw *hw, u32 *i2cctl)
+  **/
+ static void ixgbe_i2c_bus_clear(struct ixgbe_hw *hw)
+ {
+-	u32 i2cctl = IXGBE_READ_REG(hw, IXGBE_I2CCTL_BY_MAC(hw));
++	u32 i2cctl = IXGBE_READ_REG(hw, IXGBE_I2CCTL(hw));
+ 	u32 i;
  
-@@ -1453,7 +1267,7 @@ flow_del_send(int verbose, uint32_t pid, int family, uint32_t ifindex,
- 	nsd = nl_socket_alloc();
- 	nl_connect(nsd, NETLINK_GENERIC);
+ 	ixgbe_i2c_start(hw);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index dd6ba59..95da0b8 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -91,14 +91,24 @@
+ #define IXGBE_DEV_ID_X550_VF		0x1565
+ #define IXGBE_DEV_ID_X550EM_X_VF	0x15A8
  
--	msg = alloc_flow_msg(cmd, pid, NLM_F_REQUEST|NLM_F_ACK, 0, family);
-+	msg = flow_nl_alloc_msg(cmd, pid, NLM_F_REQUEST|NLM_F_ACK, 0, family);
- 	if (!msg) {
- 		fprintf(stderr, "Error: Allocation failure\n");
- 		return -ENOMSG;
-@@ -1463,19 +1277,19 @@ flow_del_send(int verbose, uint32_t pid, int family, uint32_t ifindex,
- 			NET_FLOW_IDENTIFIER_IFINDEX) ||
- 	    nla_put_u32(msg->nlbuf, NET_FLOW_IDENTIFIER, ifindex)) {
- 		fprintf(stderr, "Error: Identifier put failed\n");
--		free_flow_msg(msg);
-+		flow_nl_free_msg(msg);
- 		return -EMSGSIZE;
++#define IXGBE_CAT(r, m)	IXGBE_##r##_m
++
++#define IXGBE_BY_MAC(_hw, r)	((_hw)->mvals[IXGBE_CAT(r, _IDX)])
++
+ /* General Registers */
+ #define IXGBE_CTRL      0x00000
+ #define IXGBE_STATUS    0x00008
+ #define IXGBE_CTRL_EXT  0x00018
+ #define IXGBE_ESDP      0x00020
+ #define IXGBE_EODSDP    0x00028
+-#define IXGBE_I2CCTL_BY_MAC(_hw)((((_hw)->mac.type >= ixgbe_mac_X550) ? \
+-					0x15F5C : 0x00028))
++
++#define IXGBE_I2CCTL_8259X	0x00028
++#define IXGBE_I2CCTL_X540	IXGBE_I2CCTL_8259X
++#define IXGBE_I2CCTL_X550	0x15F5C
++#define IXGBE_I2CCTL_X550EM_x	IXGBE_I2CCTL_X550
++#define IXGBE_I2CCTL_X550EM_a	IXGBE_I2CCTL_X550
++#define IXGBE_I2CCTL(_hw)	IXGBE_BY_MAC((_hw), I2CCTL)
++
+ #define IXGBE_LEDCTL    0x00200
+ #define IXGBE_FRTIMER   0x00048
+ #define IXGBE_TCPTIMER  0x0004C
+@@ -106,17 +116,39 @@
+ #define IXGBE_EXVET     0x05078
+ 
+ /* NVM Registers */
+-#define IXGBE_EEC       0x10010
++#define IXGBE_EEC_8259X		0x10010
++#define IXGBE_EEC_X540		IXGBE_EEC_8259X
++#define IXGBE_EEC_X550		IXGBE_EEC_8259X
++#define IXGBE_EEC_X550EM_x	IXGBE_EEC_8259X
++#define IXGBE_EEC_X550EM_a	0x15FF8
++#define IXGBE_EEC(_hw)		IXGBE_BY_MAC((_hw), EEC)
+ #define IXGBE_EERD      0x10014
+ #define IXGBE_EEWR      0x10018
+-#define IXGBE_FLA       0x1001C
++#define IXGBE_FLA_8259X		0x1001C
++#define IXGBE_FLA_X540		IXGBE_FLA_8259X
++#define IXGBE_FLA_X550		IXGBE_FLA_8259X
++#define IXGBE_FLA_X550EM_x	IXGBE_FLA_8259X
++#define IXGBE_FLA_X550EM_a	0x15F6C
++#define IXGBE_FLA(_hw)		IXGBE_BY_MAC((_hw), FLA)
+ #define IXGBE_EEMNGCTL  0x10110
+ #define IXGBE_EEMNGDATA 0x10114
+ #define IXGBE_FLMNGCTL  0x10118
+ #define IXGBE_FLMNGDATA 0x1011C
+ #define IXGBE_FLMNGCNT  0x10120
+ #define IXGBE_FLOP      0x1013C
+-#define IXGBE_GRC       0x10200
++#define IXGBE_GRC_8259X		0x10200
++#define IXGBE_GRC_X540		IXGBE_GRC_8259X
++#define IXGBE_GRC_X550		IXGBE_GRC_8259X
++#define IXGBE_GRC_X550EM_x	IXGBE_GRC_8259X
++#define IXGBE_GRC_X550EM_a	0x15F64
++#define IXGBE_GRC(_hw)		IXGBE_BY_MAC((_hw), GRC)
++
++#define IXGBE_SRAMREL_8259X	0x10210
++#define IXGBE_SRAMREL_X540	IXGBE_SRAMREL_8259X
++#define IXGBE_SRAMREL_X550	IXGBE_SRAMREL_8259X
++#define IXGBE_SRAMREL_X550EM_x	IXGBE_SRAMREL_8259X
++#define IXGBE_SRAMREL_X550EM_a	0x15F6C
++#define IXGBE_SRAMREL(_hw)	IXGBE_BY_MAC((_hw), SRAMREL)
+ 
+ /* General Receive Control */
+ #define IXGBE_GRC_MNG  0x00000001 /* Manageability Enable */
+@@ -126,14 +158,55 @@
+ #define IXGBE_VPDDIAG1  0x10208
+ 
+ /* I2CCTL Bit Masks */
+-#define IXGBE_I2C_CLK_IN_BY_MAC(_hw)(((_hw)->mac.type) >= ixgbe_mac_X550 ? \
+-					0x00004000 : 0x00000001)
+-#define IXGBE_I2C_CLK_OUT_BY_MAC(_hw)(((_hw)->mac.type) >= ixgbe_mac_X550 ? \
+-					0x00000200 : 0x00000002)
+-#define IXGBE_I2C_DATA_IN_BY_MAC(_hw)(((_hw)->mac.type) >= ixgbe_mac_X550 ? \
+-					0x00001000 : 0x00000004)
+-#define IXGBE_I2C_DATA_OUT_BY_MAC(_hw)(((_hw)->mac.type) >= ixgbe_mac_X550 ? \
+-					0x00000400 : 0x00000008)
++#define IXGBE_I2C_CLK_IN_8259X		0x00000001
++#define IXGBE_I2C_CLK_IN_X540		IXGBE_I2C_CLK_IN_8259X
++#define IXGBE_I2C_CLK_IN_X550		0x00004000
++#define IXGBE_I2C_CLK_IN_X550EM_x	IXGBE_I2C_CLK_IN_X550
++#define IXGBE_I2C_CLK_IN_X550EM_a	IXGBE_I2C_CLK_IN_X550
++#define IXGBE_I2C_CLK_IN(_hw)		IXGBE_BY_MAC((_hw), I2C_CLK_IN)
++
++#define IXGBE_I2C_CLK_OUT_8259X		0x00000002
++#define IXGBE_I2C_CLK_OUT_X540		IXGBE_I2C_CLK_OUT_8259X
++#define IXGBE_I2C_CLK_OUT_X550		0x00000200
++#define IXGBE_I2C_CLK_OUT_X550EM_x	IXGBE_I2C_CLK_OUT_X550
++#define IXGBE_I2C_CLK_OUT_X550EM_a	IXGBE_I2C_CLK_OUT_X550
++#define IXGBE_I2C_CLK_OUT(_hw)		IXGBE_BY_MAC((_hw), I2C_CLK_OUT)
++
++#define IXGBE_I2C_DATA_IN_8259X		x00000004
++#define IXGBE_I2C_DATA_IN_X540		IXGBE_I2C_DATA_IN_8259X
++#define IXGBE_I2C_DATA_IN_X550		0x00001000
++#define IXGBE_I2C_DATA_IN_X550EM_x	IXGBE_I2C_DATA_IN_X550
++#define IXGBE_I2C_DATA_IN_X550EM_a	IXGBE_I2C_DATA_IN_X550
++#define IXGBE_I2C_DATA_IN(_hw)		IXGBE_BY_MAC((_hw), I2C_DATA_IN)
++
++#define IXGBE_I2C_DATA_OUT_8259X	0x00000008
++#define IXGBE_I2C_DATA_OUT_X540		IXGBE_I2C_DATA_OUT_8259X
++#define IXGBE_I2C_DATA_OUT_X550		0x00000400
++#define IXGBE_I2C_DATA_OUT_X550EM_x	IXGBE_I2C_DATA_OUT_X550
++#define IXGBE_I2C_DATA_OUT_X550EM_a	IXGBE_I2C_DATA_OUT_X550
++#define IXGBE_I2C_DATA_OUT(_hw)		IXGBE_BY_MAC((_hw), I2C_DATA_OUT)
++
++#define IXGBE_I2C_DATA_OE_N_EN_8259X	0
++#define IXGBE_I2C_DATA_OE_N_EN_X540	IXGBE_I2C_DATA_OE_N_EN_8259X
++#define IXGBE_I2C_DATA_OE_N_EN_X550	0x00000800
++#define IXGBE_I2C_DATA_OE_N_EN_X550EM_x	IXGBE_I2C_DATA_OE_N_EN_X550
++#define IXGBE_I2C_DATA_OE_N_EN_X550EM_a	IXGBE_I2C_DATA_OE_N_EN_X550
++#define IXGBE_I2C_DATA_OE_N_EN(_hw)	IXGBE_BY_MAC((_hw), I2C_DATA_OE_N_EN)
++
++#define IXGBE_I2C_BB_EN_8259X		0
++#define IXGBE_I2C_BB_EN_X540		IXGBE_I2C_BB_EN_8259X
++#define IXGBE_I2C_BB_EN_X550		0x00000100
++#define IXGBE_I2C_BB_EN_X550EM_x	IXGBE_I2C_BB_EN_X550
++#define IXGBE_I2C_BB_EN_X550EM_a	IXGBE_I2C_BB_EN_X550
++#define IXGBE_I2C_BB_EN(_hw)		IXGBE_BY_MAC((_hw), I2C_BB_EN)
++
++#define IXGBE_I2C_CLK_OE_N_EN_8259X	0
++#define IXGBE_I2C_CLK_OE_N_EN_X540	IXGBE_I2C_CLK_OE_N_EN_8259X
++#define IXGBE_I2C_CLK_OE_N_EN_X550	0x00002000
++#define IXGBE_I2C_CLK_OE_N_EN_X550EM_x	IXGBE_I2C_CLK_OE_N_EN_X550
++#define IXGBE_I2C_CLK_OE_N_EN_X550EM_a	IXGBE_I2C_CLK_OE_N_EN_X550
++#define IXGBE_I2C_CLK_OE_N_EN(_hw)	 IXGBE_BY_MAC((_hw), I2C_CLK_OE_N_EN)
++
+ #define IXGBE_I2C_CLOCK_STRETCHING_TIMEOUT	500
+ 
+ #define IXGBE_I2C_THERMAL_SENSOR_ADDR	0xF8
+@@ -835,15 +908,36 @@ struct ixgbe_thermal_sensor_data {
+ #define IXGBE_GSCN_1    0x11024
+ #define IXGBE_GSCN_2    0x11028
+ #define IXGBE_GSCN_3    0x1102C
+-#define IXGBE_FACTPS    0x10150
++#define IXGBE_FACTPS_8259X	0x10150
++#define IXGBE_FACTPS_X540	IXGBE_FACTPS_8259X
++#define IXGBE_FACTPS_X550	IXGBE_FACTPS_8259X
++#define IXGBE_FACTPS_X550EM_x	IXGBE_FACTPS_8259X
++#define IXGBE_FACTPS_X550EM_a	0x15FEC
++#define IXGBE_FACTPS(_hw)	IXGBE_BY_MAC((_hw), FACTPS)
++
+ #define IXGBE_PCIEANACTL  0x11040
+-#define IXGBE_SWSM      0x10140
+-#define IXGBE_FWSM      0x10148
++#define IXGBE_SWSM_8259X	0x10140
++#define IXGBE_SWSM_X540		IXGBE_SWSM_8259X
++#define IXGBE_SWSM_X550		IXGBE_SWSM_8259X
++#define IXGBE_SWSM_X550EM_x	IXGBE_SWSM_8259X
++#define IXGBE_SWSM_X550EM_a	0x15F70
++#define IXGBE_SWSM(_hw)		IXGBE_BY_MAC((_hw), SWSM)
++#define IXGBE_FWSM_8259X	0x10148
++#define IXGBE_FWSM_X540		IXGBE_FWSM_8259X
++#define IXGBE_FWSM_X550		IXGBE_FWSM_8259X
++#define IXGBE_FWSM_X550EM_x	IXGBE_FWSM_8259X
++#define IXGBE_FWSM_X550EM_a	0x15F74
++#define IXGBE_FWSM(_hw)		IXGBE_BY_MAC((_hw), FWSM)
+ #define IXGBE_GSSR      0x10160
+ #define IXGBE_MREVID    0x11064
+ #define IXGBE_DCA_ID    0x11070
+ #define IXGBE_DCA_CTRL  0x11074
+-#define IXGBE_SWFW_SYNC IXGBE_GSSR
++#define IXGBE_SWFW_SYNC_8259X		IXGBE_GSSR
++#define IXGBE_SWFW_SYNC_X540		IXGBE_SWFW_SYNC_8259X
++#define IXGBE_SWFW_SYNC_X550		IXGBE_SWFW_SYNC_8259X
++#define IXGBE_SWFW_SYNC_X550EM_x	IXGBE_SWFW_SYNC_8259X
++#define IXGBE_SWFW_SYNC_X550EM_a	0x15F78
++#define IXGBE_SWFW_SYNC(_hw)		IXGBE_BY_MAC((_hw), SWFW_SYNC)
+ 
+ /* PCIe registers 82599-specific */
+ #define IXGBE_GCR_EXT           0x11050
+@@ -855,14 +949,21 @@ struct ixgbe_thermal_sensor_data {
+ #define IXGBE_PHYDAT_82599      0x11044
+ #define IXGBE_PHYCTL_82599      0x11048
+ #define IXGBE_PBACLR_82599      0x11068
+-#define IXGBE_CIAA_82599        0x11088
+-#define IXGBE_CIAD_82599        0x1108C
+-#define IXGBE_CIAA_X550         0x11508
+-#define IXGBE_CIAD_X550         0x11510
+-#define IXGBE_CIAA_BY_MAC(_hw)  ((((_hw)->mac.type >= ixgbe_mac_X550) ? \
+-				IXGBE_CIAA_X550 : IXGBE_CIAA_82599))
+-#define IXGBE_CIAD_BY_MAC(_hw)  ((((_hw)->mac.type >= ixgbe_mac_X550) ? \
+-				IXGBE_CIAD_X550 : IXGBE_CIAD_82599))
++
++#define IXGBE_CIAA_8259X	0x11088
++#define IXGBE_CIAA_X540		IXGBE_CIAA_8259X
++#define IXGBE_CIAA_X550		0x11508
++#define IXGBE_CIAA_X550EM_x	IXGBE_CIAA_X550
++#define IXGBE_CIAA_X550EM_a	IXGBE_CIAA_X550
++#define IXGBE_CIAA(_hw)		IXGBE_BY_MAC((_hw), CIAA)
++
++#define IXGBE_CIAD_8259X	0x1108C
++#define IXGBE_CIAD_X540		IXGBE_CIAD_8259X
++#define IXGBE_CIAD_X550		0x11510
++#define IXGBE_CIAD_X550EM_x	IXGBE_CIAD_X550
++#define IXGBE_CIAD_X550EM_a	IXGBE_CIAD_X550
++#define IXGBE_CIAD(_hw)		IXGBE_BY_MAC((_hw), CIAD)
++
+ #define IXGBE_PICAUSE           0x110B0
+ #define IXGBE_PIENA             0x110B8
+ #define IXGBE_CDQ_MBR_82599     0x110B4
+@@ -1253,9 +1354,25 @@ struct ixgbe_thermal_sensor_data {
+ #define IXGBE_CONTROL_SOL_NL     0x0000
+ 
+ /* General purpose Interrupt Enable */
+-#define IXGBE_SDP0_GPIEN         0x00000001 /* SDP0 */
+-#define IXGBE_SDP1_GPIEN         0x00000002 /* SDP1 */
+-#define IXGBE_SDP2_GPIEN         0x00000004 /* SDP2 */
++#define IXGBE_SDP0_GPIEN_8259X		0x00000001 /* SDP0 */
++#define IXGBE_SDP1_GPIEN_8259X		0x00000002 /* SDP1 */
++#define IXGBE_SDP2_GPIEN_8259X		0x00000004 /* SDP2 */
++#define IXGBE_SDP0_GPIEN_X540		0x00000002 /* SDP0 on X540 and X550 */
++#define IXGBE_SDP1_GPIEN_X540		0x00000004 /* SDP1 on X540 and X550 */
++#define IXGBE_SDP2_GPIEN_X540		0x00000008 /* SDP2 on X540 and X550 */
++#define IXGBE_SDP0_GPIEN_X550		IXGBE_SDP0_GPIEN_X540
++#define IXGBE_SDP1_GPIEN_X550		IXGBE_SDP1_GPIEN_X540
++#define IXGBE_SDP2_GPIEN_X550		IXGBE_SDP2_GPIEN_X540
++#define IXGBE_SDP0_GPIEN_X550EM_x	IXGBE_SDP0_GPIEN_X540
++#define IXGBE_SDP1_GPIEN_X550EM_x	IXGBE_SDP1_GPIEN_X540
++#define IXGBE_SDP2_GPIEN_X550EM_x	IXGBE_SDP2_GPIEN_X540
++#define IXGBE_SDP0_GPIEN_X550EM_a	IXGBE_SDP0_GPIEN_X540
++#define IXGBE_SDP1_GPIEN_X550EM_a	IXGBE_SDP1_GPIEN_X540
++#define IXGBE_SDP2_GPIEN_X550EM_a	IXGBE_SDP2_GPIEN_X540
++#define IXGBE_SDP0_GPIEN(_hw)		IXGBE_BY_MAC((_hw), SDP0_GPIEN)
++#define IXGBE_SDP1_GPIEN(_hw)		IXGBE_BY_MAC((_hw), SDP1_GPIEN)
++#define IXGBE_SDP2_GPIEN(_hw)		IXGBE_BY_MAC((_hw), SDP2_GPIEN)
++
+ #define IXGBE_GPIE_MSIX_MODE     0x00000010 /* MSI-X mode */
+ #define IXGBE_GPIE_OCD           0x00000020 /* Other Clear Disable */
+ #define IXGBE_GPIE_EIMEN         0x00000040 /* Immediate Interrupt Enable */
+@@ -1417,9 +1534,25 @@ enum {
+ #define IXGBE_EICR_MNG          0x00400000 /* Manageability Event Interrupt */
+ #define IXGBE_EICR_TS           0x00800000 /* Thermal Sensor Event */
+ #define IXGBE_EICR_TIMESYNC     0x01000000 /* Timesync Event */
+-#define IXGBE_EICR_GPI_SDP0     0x01000000 /* Gen Purpose Interrupt on SDP0 */
+-#define IXGBE_EICR_GPI_SDP1     0x02000000 /* Gen Purpose Interrupt on SDP1 */
+-#define IXGBE_EICR_GPI_SDP2     0x04000000 /* Gen Purpose Interrupt on SDP2 */
++#define IXGBE_EICR_GPI_SDP0_8259X	0x01000000 /* Gen Purpose INT on SDP0 */
++#define IXGBE_EICR_GPI_SDP1_8259X	0x02000000 /* Gen Purpose INT on SDP1 */
++#define IXGBE_EICR_GPI_SDP2_8259X	0x04000000 /* Gen Purpose INT on SDP2 */
++#define IXGBE_EICR_GPI_SDP0_X540	0x02000000
++#define IXGBE_EICR_GPI_SDP1_X540	0x04000000
++#define IXGBE_EICR_GPI_SDP2_X540	0x08000000
++#define IXGBE_EICR_GPI_SDP0_X550	IXGBE_EICR_GPI_SDP0_X540
++#define IXGBE_EICR_GPI_SDP1_X550	IXGBE_EICR_GPI_SDP1_X540
++#define IXGBE_EICR_GPI_SDP2_X550	IXGBE_EICR_GPI_SDP2_X540
++#define IXGBE_EICR_GPI_SDP0_X550EM_x	IXGBE_EICR_GPI_SDP0_X540
++#define IXGBE_EICR_GPI_SDP1_X550EM_x	IXGBE_EICR_GPI_SDP1_X540
++#define IXGBE_EICR_GPI_SDP2_X550EM_x	IXGBE_EICR_GPI_SDP2_X540
++#define IXGBE_EICR_GPI_SDP0_X550EM_a	IXGBE_EICR_GPI_SDP0_X540
++#define IXGBE_EICR_GPI_SDP1_X550EM_a	IXGBE_EICR_GPI_SDP1_X540
++#define IXGBE_EICR_GPI_SDP2_X550EM_a	IXGBE_EICR_GPI_SDP2_X540
++#define IXGBE_EICR_GPI_SDP0(_hw)	IXGBE_BY_MAC((_hw), EICR_GPI_SDP0)
++#define IXGBE_EICR_GPI_SDP1(_hw)	IXGBE_BY_MAC((_hw), EICR_GPI_SDP1)
++#define IXGBE_EICR_GPI_SDP2(_hw)	IXGBE_BY_MAC((_hw), EICR_GPI_SDP2)
++
+ #define IXGBE_EICR_ECC          0x10000000 /* ECC Error */
+ #define IXGBE_EICR_PBUR         0x10000000 /* Packet Buffer Handler Error */
+ #define IXGBE_EICR_DHER         0x20000000 /* Descriptor Handler Error */
+@@ -1435,9 +1568,9 @@ enum {
+ #define IXGBE_EICS_LSC          IXGBE_EICR_LSC       /* Link Status Change */
+ #define IXGBE_EICS_MNG          IXGBE_EICR_MNG       /* MNG Event Interrupt */
+ #define IXGBE_EICS_TIMESYNC     IXGBE_EICR_TIMESYNC  /* Timesync Event */
+-#define IXGBE_EICS_GPI_SDP0     IXGBE_EICR_GPI_SDP0  /* SDP0 Gen Purpose Int */
+-#define IXGBE_EICS_GPI_SDP1     IXGBE_EICR_GPI_SDP1  /* SDP1 Gen Purpose Int */
+-#define IXGBE_EICS_GPI_SDP2     IXGBE_EICR_GPI_SDP2  /* SDP2 Gen Purpose Int */
++#define IXGBE_EICS_GPI_SDP0(_hw)	IXGBE_EICR_GPI_SDP0(_hw)
++#define IXGBE_EICS_GPI_SDP1(_hw)	IXGBE_EICR_GPI_SDP1(_hw)
++#define IXGBE_EICS_GPI_SDP2(_hw)	IXGBE_EICR_GPI_SDP2(_hw)
+ #define IXGBE_EICS_ECC          IXGBE_EICR_ECC       /* ECC Error */
+ #define IXGBE_EICS_PBUR         IXGBE_EICR_PBUR      /* Pkt Buf Handler Err */
+ #define IXGBE_EICS_DHER         IXGBE_EICR_DHER      /* Desc Handler Error */
+@@ -1454,9 +1587,9 @@ enum {
+ #define IXGBE_EIMS_MNG          IXGBE_EICR_MNG       /* MNG Event Interrupt */
+ #define IXGBE_EIMS_TS           IXGBE_EICR_TS        /* Thermel Sensor Event */
+ #define IXGBE_EIMS_TIMESYNC     IXGBE_EICR_TIMESYNC  /* Timesync Event */
+-#define IXGBE_EIMS_GPI_SDP0     IXGBE_EICR_GPI_SDP0  /* SDP0 Gen Purpose Int */
+-#define IXGBE_EIMS_GPI_SDP1     IXGBE_EICR_GPI_SDP1  /* SDP1 Gen Purpose Int */
+-#define IXGBE_EIMS_GPI_SDP2     IXGBE_EICR_GPI_SDP2  /* SDP2 Gen Purpose Int */
++#define IXGBE_EIMS_GPI_SDP0(_hw)	IXGBE_EICR_GPI_SDP0(_hw)
++#define IXGBE_EIMS_GPI_SDP1(_hw)	IXGBE_EICR_GPI_SDP1(_hw)
++#define IXGBE_EIMS_GPI_SDP2(_hw)	IXGBE_EICR_GPI_SDP2(_hw)
+ #define IXGBE_EIMS_ECC          IXGBE_EICR_ECC       /* ECC Error */
+ #define IXGBE_EIMS_PBUR         IXGBE_EICR_PBUR      /* Pkt Buf Handler Err */
+ #define IXGBE_EIMS_DHER         IXGBE_EICR_DHER      /* Descr Handler Error */
+@@ -1472,9 +1605,9 @@ enum {
+ #define IXGBE_EIMC_LSC          IXGBE_EICR_LSC       /* Link Status Change */
+ #define IXGBE_EIMC_MNG          IXGBE_EICR_MNG       /* MNG Event Interrupt */
+ #define IXGBE_EIMC_TIMESYNC     IXGBE_EICR_TIMESYNC  /* Timesync Event */
+-#define IXGBE_EIMC_GPI_SDP0     IXGBE_EICR_GPI_SDP0  /* SDP0 Gen Purpose Int */
+-#define IXGBE_EIMC_GPI_SDP1     IXGBE_EICR_GPI_SDP1  /* SDP1 Gen Purpose Int */
+-#define IXGBE_EIMC_GPI_SDP2     IXGBE_EICR_GPI_SDP2  /* SDP2 Gen Purpose Int */
++#define IXGBE_EIMC_GPI_SDP0(_hw)	IXGBE_EICR_GPI_SDP0(_hw)
++#define IXGBE_EIMC_GPI_SDP1(_hw)	IXGBE_EICR_GPI_SDP1(_hw)
++#define IXGBE_EIMC_GPI_SDP2(_hw)	IXGBE_EICR_GPI_SDP2(_hw)
+ #define IXGBE_EIMC_ECC          IXGBE_EICR_ECC       /* ECC Error */
+ #define IXGBE_EIMC_PBUR         IXGBE_EICR_PBUR      /* Pkt Buf Handler Err */
+ #define IXGBE_EIMC_DHER         IXGBE_EICR_DHER      /* Desc Handler Err */
+@@ -2741,6 +2874,37 @@ union ixgbe_atr_hash_dword {
+ 	__be32 dword;
+ };
+ 
++#define IXGBE_MVALS_INIT(m)		\
++	IXGBE_CAT(EEC, m),		\
++	IXGBE_CAT(FLA, m),		\
++	IXGBE_CAT(GRC, m),		\
++	IXGBE_CAT(SRAMREL, m),		\
++	IXGBE_CAT(FACTPS, m),		\
++	IXGBE_CAT(SWSM, m),		\
++	IXGBE_CAT(SWFW_SYNC, m),	\
++	IXGBE_CAT(FWSM, m),		\
++	IXGBE_CAT(SDP0_GPIEN, m),	\
++	IXGBE_CAT(SDP1_GPIEN, m),	\
++	IXGBE_CAT(SDP2_GPIEN, m),	\
++	IXGBE_CAT(EICR_GPI_SDP0, m),	\
++	IXGBE_CAT(EICR_GPI_SDP1, m),	\
++	IXGBE_CAT(EICR_GPI_SDP2, m),	\
++	IXGBE_CAT(CIAA, m),		\
++	IXGBE_CAT(CIAD, m),		\
++	IXGBE_CAT(I2C_CLK_IN, m),	\
++	IXGBE_CAT(I2C_CLK_OUT, m),	\
++	IXGBE_CAT(I2C_DATA_IN, m),	\
++	IXGBE_CAT(I2C_DATA_OUT, m),	\
++	IXGBE_CAT(I2C_DATA_OE_N_EN, m),	\
++	IXGBE_CAT(I2C_BB_EN, m),	\
++	IXGBE_CAT(I2C_CLK_OE_N_EN, m),	\
++	IXGBE_CAT(I2CCTL, m)
++
++enum ixgbe_mvals {
++	IXGBE_MVALS_INIT(IDX),
++	IXGBE_MVALS_IDX_LIMIT
++};
++
+ enum ixgbe_eeprom_type {
+ 	ixgbe_eeprom_uninitialized = 0,
+ 	ixgbe_eeprom_spi,
+@@ -3216,6 +3380,7 @@ struct ixgbe_hw {
+ 	struct ixgbe_eeprom_info	eeprom;
+ 	struct ixgbe_bus_info		bus;
+ 	struct ixgbe_mbx_info		mbx;
++	const u32			*mvals;
+ 	u16				device_id;
+ 	u16				vendor_id;
+ 	u16				subsystem_device_id;
+@@ -3234,6 +3399,7 @@ struct ixgbe_info {
+ 	struct ixgbe_eeprom_operations	*eeprom_ops;
+ 	struct ixgbe_phy_operations	*phy_ops;
+ 	struct ixgbe_mbx_operations	*mbx_ops;
++	const u32			*mvals;
+ };
+ 
+ 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
+index 0a8b5e4..12ce50d 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
+@@ -202,7 +202,7 @@ s32 ixgbe_init_eeprom_params_X540(struct ixgbe_hw *hw)
+ 		eeprom->semaphore_delay = 10;
+ 		eeprom->type = ixgbe_flash;
+ 
+-		eec = IXGBE_READ_REG(hw, IXGBE_EEC);
++		eec = IXGBE_READ_REG(hw, IXGBE_EEC(hw));
+ 		eeprom_size = (u16)((eec & IXGBE_EEC_SIZE) >>
+ 				    IXGBE_EEC_SIZE_SHIFT);
+ 		eeprom->word_size = 1 << (eeprom_size +
+@@ -504,8 +504,8 @@ static s32 ixgbe_update_flash_X540(struct ixgbe_hw *hw)
+ 		return status;
  	}
  
- 	err = flow_put_flow_error(msg->nlbuf, NET_FLOW_FLOWS_ERROR_ABORT);
- 	if (err) {
--		free_flow_msg(msg);
-+		flow_nl_free_msg(msg);
- 		return err;
- 	}
+-	flup = IXGBE_READ_REG(hw, IXGBE_EEC) | IXGBE_EEC_FLUP;
+-	IXGBE_WRITE_REG(hw, IXGBE_EEC, flup);
++	flup = IXGBE_READ_REG(hw, IXGBE_EEC(hw)) | IXGBE_EEC_FLUP;
++	IXGBE_WRITE_REG(hw, IXGBE_EEC(hw), flup);
  
- 	flows = nla_nest_start(msg->nlbuf, NET_FLOW_FLOWS);
- 	if (!flows) {
--		free_flow_msg(msg);
-+		flow_nl_free_msg(msg);
- 		return -EMSGSIZE;
- 	}
- 	flow_put_flow(msg->nlbuf, &flow);
-@@ -1484,7 +1298,7 @@ flow_del_send(int verbose, uint32_t pid, int family, uint32_t ifindex,
- 	nl_send_auto(nsd, msg->nlbuf);
- 	process_rx_message(verbose);
+ 	status = ixgbe_poll_flash_update_done_X540(hw);
+ 	if (status == 0)
+@@ -514,11 +514,11 @@ static s32 ixgbe_update_flash_X540(struct ixgbe_hw *hw)
+ 		hw_dbg(hw, "Flash update time out\n");
  
--	free_flow_msg(msg);
-+	flow_nl_free_msg(msg);
- 	return 0;
- }
+ 	if (hw->revision_id == 0) {
+-		flup = IXGBE_READ_REG(hw, IXGBE_EEC);
++		flup = IXGBE_READ_REG(hw, IXGBE_EEC(hw));
  
-@@ -1560,7 +1374,7 @@ flow_get_send(int verbose, uint32_t pid, int family, uint32_t ifindex,
- 	nsd = nl_socket_alloc();
- 	nl_connect(nsd, NETLINK_GENERIC);
+ 		if (flup & IXGBE_EEC_SEC1VAL) {
+ 			flup |= IXGBE_EEC_FLUP;
+-			IXGBE_WRITE_REG(hw, IXGBE_EEC, flup);
++			IXGBE_WRITE_REG(hw, IXGBE_EEC(hw), flup);
+ 		}
  
--	msg = alloc_flow_msg(cmd, pid, NLM_F_REQUEST|NLM_F_ACK, 0, family);
-+	msg = flow_nl_alloc_msg(cmd, pid, NLM_F_REQUEST|NLM_F_ACK, 0, family);
- 	if (!msg) {
- 		fprintf(stderr, "Error: Allocation failure\n");
- 		return -ENOMSG;
-@@ -1570,20 +1384,20 @@ flow_get_send(int verbose, uint32_t pid, int family, uint32_t ifindex,
- 			NET_FLOW_IDENTIFIER_IFINDEX) ||
- 	    nla_put_u32(msg->nlbuf, NET_FLOW_IDENTIFIER, ifindex)) {
- 		fprintf(stderr, "Error: Identifier put failed\n");
--		free_flow_msg(msg);
-+		flow_nl_free_msg(msg);
- 		return -EMSGSIZE;
- 	}
+ 		status = ixgbe_poll_flash_update_done_X540(hw);
+@@ -544,7 +544,7 @@ static s32 ixgbe_poll_flash_update_done_X540(struct ixgbe_hw *hw)
+ 	u32 reg;
  
- 	flows = nla_nest_start(msg->nlbuf, NET_FLOW_FLOWS);
- 	if (!flows) {
- 		fprintf(stderr, "Error: get_flows attributes failed\n");
--		free_flow_msg(msg);
-+		flow_nl_free_msg(msg);
- 		return -ENOMSG;
- 	}
+ 	for (i = 0; i < IXGBE_FLUDONE_ATTEMPTS; i++) {
+-		reg = IXGBE_READ_REG(hw, IXGBE_EEC);
++		reg = IXGBE_READ_REG(hw, IXGBE_EEC(hw));
+ 		if (reg & IXGBE_EEC_FLUDONE)
+ 			return 0;
+ 		udelay(5);
+@@ -580,10 +580,10 @@ s32 ixgbe_acquire_swfw_sync_X540(struct ixgbe_hw *hw, u32 mask)
+ 		if (ixgbe_get_swfw_sync_semaphore(hw))
+ 			return IXGBE_ERR_SWFW_SYNC;
  
- 	err = nla_put_u32(msg->nlbuf, NET_FLOW_TABLE_FLOWS_TABLE, tableid);
- 	if (err) {
--		free_flow_msg(msg);
-+		flow_nl_free_msg(msg);
- 		return -EMSGSIZE;
- 	}
+-		swfw_sync = IXGBE_READ_REG(hw, IXGBE_SWFW_SYNC);
++		swfw_sync = IXGBE_READ_REG(hw, IXGBE_SWFW_SYNC(hw));
+ 		if (!(swfw_sync & (fwmask | swmask | hwmask))) {
+ 			swfw_sync |= swmask;
+-			IXGBE_WRITE_REG(hw, IXGBE_SWFW_SYNC, swfw_sync);
++			IXGBE_WRITE_REG(hw, IXGBE_SWFW_SYNC(hw), swfw_sync);
+ 			ixgbe_release_swfw_sync_semaphore(hw);
+ 			break;
+ 		} else {
+@@ -605,13 +605,13 @@ s32 ixgbe_acquire_swfw_sync_X540(struct ixgbe_hw *hw, u32 mask)
+ 	 * corresponding FW/HW bits in the SW_FW_SYNC register.
+ 	 */
+ 	if (i >= timeout) {
+-		swfw_sync = IXGBE_READ_REG(hw, IXGBE_SWFW_SYNC);
++		swfw_sync = IXGBE_READ_REG(hw, IXGBE_SWFW_SYNC(hw));
+ 		if (swfw_sync & (fwmask | hwmask)) {
+ 			if (ixgbe_get_swfw_sync_semaphore(hw))
+ 				return IXGBE_ERR_SWFW_SYNC;
  
-@@ -1591,7 +1405,7 @@ flow_get_send(int verbose, uint32_t pid, int family, uint32_t ifindex,
- 		err = nla_put_u32(msg->nlbuf, NET_FLOW_TABLE_FLOWS_MINPRIO,
- 				min);
- 		if (err) {
--			free_flow_msg(msg);
-+			flow_nl_free_msg(msg);
- 			return err;
+ 			swfw_sync |= swmask;
+-			IXGBE_WRITE_REG(hw, IXGBE_SWFW_SYNC, swfw_sync);
++			IXGBE_WRITE_REG(hw, IXGBE_SWFW_SYNC(hw), swfw_sync);
+ 			ixgbe_release_swfw_sync_semaphore(hw);
  		}
  	}
-@@ -1600,7 +1414,7 @@ flow_get_send(int verbose, uint32_t pid, int family, uint32_t ifindex,
- 		err = nla_put_u32(msg->nlbuf, NET_FLOW_TABLE_FLOWS_MAXPRIO,
- 				max);
- 		if (err) {
--			free_flow_msg(msg);
-+			flow_nl_free_msg(msg);
- 			return err;
- 		}
- 	}
-@@ -1610,14 +1424,14 @@ flow_get_send(int verbose, uint32_t pid, int family, uint32_t ifindex,
+@@ -635,9 +635,9 @@ void ixgbe_release_swfw_sync_X540(struct ixgbe_hw *hw, u32 mask)
  
- 	err = flow_put_flow_error(msg->nlbuf, NET_FLOW_FLOWS_ERROR_ABORT);
- 	if (err) {
--		free_flow_msg(msg);
-+		flow_nl_free_msg(msg);
- 		return err;
- 	}
+ 	ixgbe_get_swfw_sync_semaphore(hw);
  
- 	nl_send_auto(nsd, msg->nlbuf);
- 	process_rx_message(verbose);
+-	swfw_sync = IXGBE_READ_REG(hw, IXGBE_SWFW_SYNC);
++	swfw_sync = IXGBE_READ_REG(hw, IXGBE_SWFW_SYNC(hw));
+ 	swfw_sync &= ~swmask;
+-	IXGBE_WRITE_REG(hw, IXGBE_SWFW_SYNC, swfw_sync);
++	IXGBE_WRITE_REG(hw, IXGBE_SWFW_SYNC(hw), swfw_sync);
  
--	free_flow_msg(msg);
-+	flow_nl_free_msg(msg);
- 	return 0;
+ 	ixgbe_release_swfw_sync_semaphore(hw);
+ 	usleep_range(5000, 10000);
+@@ -660,7 +660,7 @@ static s32 ixgbe_get_swfw_sync_semaphore(struct ixgbe_hw *hw)
+ 		/* If the SMBI bit is 0 when we read it, then the bit will be
+ 		 * set and we have the semaphore
+ 		 */
+-		swsm = IXGBE_READ_REG(hw, IXGBE_SWSM);
++		swsm = IXGBE_READ_REG(hw, IXGBE_SWSM(hw));
+ 		if (!(swsm & IXGBE_SWSM_SMBI))
+ 			break;
+ 		usleep_range(50, 100);
+@@ -674,7 +674,7 @@ static s32 ixgbe_get_swfw_sync_semaphore(struct ixgbe_hw *hw)
+ 
+ 	/* Now get the semaphore between SW/FW through the REGSMP bit */
+ 	for (i = 0; i < timeout; i++) {
+-		swsm = IXGBE_READ_REG(hw, IXGBE_SWFW_SYNC);
++		swsm = IXGBE_READ_REG(hw, IXGBE_SWFW_SYNC(hw));
+ 		if (!(swsm & IXGBE_SWFW_REGSMP))
+ 			return 0;
+ 
+@@ -696,13 +696,13 @@ static void ixgbe_release_swfw_sync_semaphore(struct ixgbe_hw *hw)
+ 
+ 	/* Release both semaphores by writing 0 to the bits REGSMP and SMBI */
+ 
+-	swsm = IXGBE_READ_REG(hw, IXGBE_SWFW_SYNC);
++	swsm = IXGBE_READ_REG(hw, IXGBE_SWFW_SYNC(hw));
+ 	swsm &= ~IXGBE_SWFW_REGSMP;
+-	IXGBE_WRITE_REG(hw, IXGBE_SWFW_SYNC, swsm);
++	IXGBE_WRITE_REG(hw, IXGBE_SWFW_SYNC(hw), swsm);
+ 
+-	swsm = IXGBE_READ_REG(hw, IXGBE_SWSM);
++	swsm = IXGBE_READ_REG(hw, IXGBE_SWSM(hw));
+ 	swsm &= ~IXGBE_SWSM_SMBI;
+-	IXGBE_WRITE_REG(hw, IXGBE_SWSM, swsm);
++	IXGBE_WRITE_REG(hw, IXGBE_SWSM(hw), swsm);
+ 
+ 	IXGBE_WRITE_FLUSH(hw);
  }
+@@ -853,6 +853,10 @@ static struct ixgbe_phy_operations phy_ops_X540 = {
+ 	.get_firmware_version   = &ixgbe_get_phy_firmware_version_generic,
+ };
  
-@@ -1723,7 +1537,7 @@ flow_set_send(int verbose, uint32_t pid, int family, uint32_t ifindex,
- 	nsd = nl_socket_alloc();
- 	nl_connect(nsd, NETLINK_GENERIC);
++static const u32 ixgbe_mvals_X540[IXGBE_MVALS_IDX_LIMIT] = {
++	IXGBE_MVALS_INIT(X540)
++};
++
+ struct ixgbe_info ixgbe_X540_info = {
+ 	.mac                    = ixgbe_mac_X540,
+ 	.get_invariants         = &ixgbe_get_invariants_X540,
+@@ -860,4 +864,5 @@ struct ixgbe_info ixgbe_X540_info = {
+ 	.eeprom_ops             = &eeprom_ops_X540,
+ 	.phy_ops                = &phy_ops_X540,
+ 	.mbx_ops                = &mbx_ops_generic,
++	.mvals			= ixgbe_mvals_X540,
+ };
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index b023698..aaf5d1a 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -90,7 +90,7 @@ static s32 ixgbe_init_eeprom_params_X550(struct ixgbe_hw *hw)
+ 		eeprom->semaphore_delay = 10;
+ 		eeprom->type = ixgbe_flash;
  
--	msg = alloc_flow_msg(cmd, pid, NLM_F_REQUEST|NLM_F_ACK, 0, family);
-+	msg = flow_nl_alloc_msg(cmd, pid, NLM_F_REQUEST|NLM_F_ACK, 0, family);
- 	if (!msg) {
- 		fprintf(stderr, "Error: Allocation failure\n");
- 		return -ENOMSG;
-@@ -1733,19 +1547,19 @@ flow_set_send(int verbose, uint32_t pid, int family, uint32_t ifindex,
- 			NET_FLOW_IDENTIFIER_IFINDEX) ||
- 	    nla_put_u32(msg->nlbuf, NET_FLOW_IDENTIFIER, ifindex)) {
- 		fprintf(stderr, "Error: Identifier put failed\n");
--		free_flow_msg(msg);
-+		flow_nl_free_msg(msg);
- 		return -EMSGSIZE;
- 	}
+-		eec = IXGBE_READ_REG(hw, IXGBE_EEC);
++		eec = IXGBE_READ_REG(hw, IXGBE_EEC(hw));
+ 		eeprom_size = (u16)((eec & IXGBE_EEC_SIZE) >>
+ 				    IXGBE_EEC_SIZE_SHIFT);
+ 		eeprom->word_size = 1 << (eeprom_size +
+@@ -1541,6 +1541,14 @@ static struct ixgbe_phy_operations phy_ops_X550EM_x = {
+ 	.setup_link		= NULL, /* defined later */
+ };
  
- 	err = flow_put_flow_error(msg->nlbuf, NET_FLOW_FLOWS_ERROR_ABORT);
- 	if (err) {
--		free_flow_msg(msg);
-+		flow_nl_free_msg(msg);
- 		return err;
- 	}
++static const u32 ixgbe_mvals_X550[IXGBE_MVALS_IDX_LIMIT] = {
++	IXGBE_MVALS_INIT(X550)
++};
++
++static const u32 ixgbe_mvals_X550EM_x[IXGBE_MVALS_IDX_LIMIT] = {
++	IXGBE_MVALS_INIT(X550EM_x)
++};
++
+ struct ixgbe_info ixgbe_X550_info = {
+ 	.mac			= ixgbe_mac_X550,
+ 	.get_invariants		= &ixgbe_get_invariants_X540,
+@@ -1548,6 +1556,7 @@ struct ixgbe_info ixgbe_X550_info = {
+ 	.eeprom_ops		= &eeprom_ops_X550,
+ 	.phy_ops		= &phy_ops_X550,
+ 	.mbx_ops		= &mbx_ops_generic,
++	.mvals			= ixgbe_mvals_X550,
+ };
  
- 	flows = nla_nest_start(msg->nlbuf, NET_FLOW_FLOWS);
- 	if (!flows) {
--		free_flow_msg(msg);
-+		flow_nl_free_msg(msg);
- 		return -EMSGSIZE;
- 	}
- 	flow_put_flow(msg->nlbuf, &flow);
-@@ -1754,7 +1568,7 @@ flow_set_send(int verbose, uint32_t pid, int family, uint32_t ifindex,
- 	nl_send_auto(nsd, msg->nlbuf);
- 	process_rx_message(verbose);
- 
--	free_flow_msg(msg);
-+	flow_nl_free_msg(msg);
- 	return 0;
- }
- 
-@@ -1768,7 +1582,7 @@ flow_send_recv(int verbose, uint32_t pid, int family, uint32_t ifindex,
- 	nsd = nl_socket_alloc();
- 	nl_connect(nsd, NETLINK_GENERIC);
- 
--	msg = alloc_flow_msg(cmd, pid, NLM_F_REQUEST|NLM_F_ACK, 0, family);
-+	msg = flow_nl_alloc_msg(cmd, pid, NLM_F_REQUEST|NLM_F_ACK, 0, family);
- 	if (!msg) {
- 		fprintf(stderr, "Error: Allocation failure\n");
- 		return -ENOMSG;
-@@ -1781,7 +1595,7 @@ flow_send_recv(int verbose, uint32_t pid, int family, uint32_t ifindex,
- 	nl_send_auto(nsd, msg->nlbuf);
- 	process_rx_message(verbose);
- 
--	free_flow_msg(msg);
-+	flow_nl_free_msg(msg);
- 	return 0;
- }
- 
+ struct ixgbe_info ixgbe_X550EM_x_info = {
+@@ -1557,4 +1566,5 @@ struct ixgbe_info ixgbe_X550EM_x_info = {
+ 	.eeprom_ops		= &eeprom_ops_X550EM_x,
+ 	.phy_ops		= &phy_ops_X550EM_x,
+ 	.mbx_ops		= &mbx_ops_generic,
++	.mvals			= ixgbe_mvals_X550EM_x,
+ };
 
