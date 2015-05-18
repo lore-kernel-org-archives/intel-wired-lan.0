@@ -1,53 +1,88 @@
 From: John Fastabend <john.fastabend@gmail.com>
-Date: Mon, 18 May 2015 08:31:50 -0700
-Subject: [Intel-wired-lan] [net-next PATCH v3 1/2] ethtool: Add helper
- routines to pass vf to rx_flow_spec
-Message-ID: <20150518153138.2807.96111.stgit@nitbit.x32>
+Date: Mon, 18 May 2015 08:32:38 -0700
+Subject: [Intel-wired-lan] [net-next PATCH v3 2/2] ixgbe: Allow flow
+ director to use entire queue space
+In-Reply-To: <20150518153138.2807.96111.stgit@nitbit.x32>
+References: <20150518153138.2807.96111.stgit@nitbit.x32>
+Message-ID: <20150518153226.2807.87157.stgit@nitbit.x32>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The ring_cookie is 64 bits wide which is much larger than can be used
-for actual queue index values. So provide some helper routines to
-pack a VF index into the cookie. This is useful to steer packets to
-a VF ring without having to know the queue layout of the device.
+Flow director is exported to user space using the ethtool ntuple
+support. However, currently it only supports steering traffic to a
+subset of the queues in use by the hardware. This change allows
+flow director to specify queues that have been assigned to virtual
+functions by partitioning the ring_cookie into a 8bit vf specifier
+followed by 32bit queue index. At the moment we don't have any
+ethernet drivers with more than 2^32 queues on a single function
+as best I can tell and nor do I expect this to happen anytime
+soon. This way the ring_cookie's normal use for specifying a queue
+on a specific PCI function continues to work as expected.
 
 Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
 ---
- include/uapi/linux/ethtool.h |   20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   34 ++++++++++++++++------
+ 1 file changed, 24 insertions(+), 10 deletions(-)
 
-diff --git a/include/uapi/linux/ethtool.h b/include/uapi/linux/ethtool.h
-index 2e49fc8..ecc658d 100644
---- a/include/uapi/linux/ethtool.h
-+++ b/include/uapi/linux/ethtool.h
-@@ -796,6 +796,26 @@ struct ethtool_rx_flow_spec {
- 	__u32		location;
- };
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+index eafa9ec..057a7c5 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+@@ -2594,18 +2594,35 @@ static int ixgbe_add_ethtool_fdir_entry(struct ixgbe_adapter *adapter,
+ 	struct ixgbe_hw *hw = &adapter->hw;
+ 	struct ixgbe_fdir_filter *input;
+ 	union ixgbe_atr_input mask;
++	u8 queue;
+ 	int err;
  
-+/* How rings are layed out when accessing virtual functions or
-+ * offloaded queues is device specific. To allow users to flow
-+ * steering and specify these queues though break the ring cookie
-+ * into a 32bit queue index with an 8 bit virtual function id.
-+ * This also leaves the 3bytes for further specifiers.
-+ */
-+#define ETHTOOL_RX_FLOW_SPEC_RING	0x00000000FFFFFFFF
-+#define ETHTOOL_RX_FLOW_SPEC_RING_VF	0x000000FF00000000
-+#define ETHTOOL_RX_FLOW_SPEC_RING_VF_OFF 32
-+static inline __u64 ethtool_get_flow_spec_ring(__u64 ring_cookie)
-+{
-+	return ETHTOOL_RX_FLOW_SPEC_RING & ring_cookie;
-+};
+ 	if (!(adapter->flags & IXGBE_FLAG_FDIR_PERFECT_CAPABLE))
+ 		return -EOPNOTSUPP;
+ 
+-	/*
+-	 * Don't allow programming if the action is a queue greater than
+-	 * the number of online Rx queues.
++	/* ring_cookie is a masked into a set of queues and ixgbe pools or
++	 * we use the drop index.
+ 	 */
+-	if ((fsp->ring_cookie != RX_CLS_FLOW_DISC) &&
+-	    (fsp->ring_cookie >= adapter->num_rx_queues))
+-		return -EINVAL;
++	if (fsp->ring_cookie == RX_CLS_FLOW_DISC) {
++		queue = IXGBE_FDIR_DROP_QUEUE;
++	} else {
++		u32 ring = ethtool_get_flow_spec_ring(fsp->ring_cookie);
++		u8 vf = ethtool_get_flow_spec_ring_vf(fsp->ring_cookie);
 +
-+static inline __u64 ethtool_get_flow_spec_ring_vf(__u64 ring_cookie)
-+{
-+	return (ETHTOOL_RX_FLOW_SPEC_RING_VF & ring_cookie) >>
-+				ETHTOOL_RX_FLOW_SPEC_RING_VF_OFF;
-+};
++		if (!vf && (ring >= adapter->num_rx_queues))
++			return -EINVAL;
++		else if (vf &&
++			 ((vf > adapter->num_vfs) ||
++			   ring >= adapter->num_rx_queues_per_pool))
++			return -EINVAL;
 +
- /**
-  * struct ethtool_rxnfc - command to get or set RX flow classification rules
-  * @cmd: Specific command number - %ETHTOOL_GRXFH, %ETHTOOL_SRXFH,
++		/* Map the ring onto the absolute queue index */
++		if (!vf)
++			queue = adapter->rx_ring[ring]->reg_idx;
++		else
++			queue = ((vf - 1) *
++				adapter->num_rx_queues_per_pool) + ring;
++	}
+ 
+ 	/* Don't allow indexes to exist outside of available space */
+ 	if (fsp->location >= ((1024 << adapter->fdir_pballoc) - 2)) {
+@@ -2683,10 +2700,7 @@ static int ixgbe_add_ethtool_fdir_entry(struct ixgbe_adapter *adapter,
+ 
+ 	/* program filters to filter memory */
+ 	err = ixgbe_fdir_write_perfect_filter_82599(hw,
+-				&input->filter, input->sw_idx,
+-				(input->action == IXGBE_FDIR_DROP_QUEUE) ?
+-				IXGBE_FDIR_DROP_QUEUE :
+-				adapter->rx_ring[input->action]->reg_idx);
++				&input->filter, input->sw_idx, queue);
+ 	if (err)
+ 		goto err_out_w_lock;
+ 
 
