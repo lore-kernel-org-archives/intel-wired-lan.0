@@ -1,11 +1,10 @@
-From: Skidmore, Donald C <donald.c.skidmore@intel.com>
-Date: Mon, 18 May 2015 22:55:32 +0000
-Subject: [Intel-wired-lan] [net-next PATCH 2] ixgbe: add array of MAC
- type dependent values
-In-Reply-To: <1431989501.2558.16.camel@jtkirshe-mobl>
-References: <20150518163140.7168.81419.stgit@dcs-desk.jf.intel.com>
- <1431989501.2558.16.camel@jtkirshe-mobl>
-Message-ID: <F6FB0E698C9B3143BDF729DF22286646912FAD0B@ORSMSX110.amr.corp.intel.com>
+From: Nelson, Shannon <shannon.nelson@intel.com>
+Date: Mon, 18 May 2015 23:31:28 +0000
+Subject: [Intel-wired-lan] [PATCH] pci: Use a bus-global mutex to
+ protect	VPD operations
+In-Reply-To: <20150516001407.98487.1056.stgit@mdrustad-wks.jf.intel.com>
+References: <20150516001407.98487.1056.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <FC41C24E35F18A40888AACA1A36F3E418AE66237@fmsmsx115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,41 +12,121 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
-> From: Kirsher, Jeffrey T
-> Sent: Monday, May 18, 2015 3:52 PM
-> To: Skidmore, Donald C
-> Cc: intel-wired-lan at lists.osuosl.org
-> Subject: Re: [Intel-wired-lan] [net-next PATCH 2] ixgbe: add array of MAC
-> type dependent values
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org]
+> On Behalf Of Mark D Rustad
+> Sent: Friday, May 15, 2015 5:14 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH] pci: Use a bus-global mutex to
+> protect VPD operations
 > 
-> On Mon, 2015-05-18 at 12:31 -0400, Don Skidmore wrote:
-> > Some of the register addresses and format where unfortunately changed
-> > between MAC types. To get around this we add a const u32 *mvals
-> > pointer to the ixgbe_hw struct to point to an array of
-> > mac-type-dependent values.  These can include register offsets, masks,
-> > whatever can be in a u32. When the ixgbe_hw struct is initialized, a
-> > pointer to the appropriate array must be set.
-> >
-> > Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
-> > ---
-> >  drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c   |    1
-> >  drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c   |    7 -
-> >  drivers/net/ethernet/intel/ixgbe/ixgbe_common.c  |   59 +++--
-> >  drivers/net/ethernet/intel/ixgbe/ixgbe_common.h  |    2
-> >  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |    6 -
-> >  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |   43 ++--
-> >  drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c     |   44 ++--
-> >  drivers/net/ethernet/intel/ixgbe/ixgbe_type.h    |  246
-> > ++++++++++++++++++----
-> >  drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c    |   41 ++--
-> >  drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c    |   12 +
-> >  10 files changed, 328 insertions(+), 133 deletions(-)
+> Some devices have a problem with concurrent VPD access to different
+> functions of the same physical device, so move the protecting mutex
+> from the pci_vpd structure to the pci_bus structure. There are a
+> number of reports on support sites for a variety of devices from
+> various vendors getting the "vpd r/w failed" message. This is likely
+> to at least fix some of them. Thanks to Shannon Nelson for helping
+> to come up with this approach.
 > 
-> Not sure if there is a difference between this patch and the one you send
-> later today, so I am dropping this patch and will be looking to apply your
-> patch you sent later today. :-)
+> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 
-Sorry the earlier one wasn't up to date with you tree.  I ended up not having to make any changes so I wasn't sure I should bump the version.
 
-Thanks for cleaning it up.
+Acked-by: Shannon Nelson <shannon.nelson@intel.com>
 
+
+> ---
+>  drivers/pci/access.c |   10 ++++------
+>  drivers/pci/probe.c  |    1 +
+>  include/linux/pci.h  |    1 +
+>  3 files changed, 6 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/pci/access.c b/drivers/pci/access.c
+> index d9b64a175990..6a1c8d6f95f1 100644
+> --- a/drivers/pci/access.c
+> +++ b/drivers/pci/access.c
+> @@ -281,7 +281,6 @@ PCI_USER_WRITE_CONFIG(dword, u32)
+> 
+>  struct pci_vpd_pci22 {
+>  	struct pci_vpd base;
+> -	struct mutex lock;
+>  	u16	flag;
+>  	bool	busy;
+>  	u8	cap;
+> @@ -340,7 +339,7 @@ static ssize_t pci_vpd_pci22_read(struct pci_dev
+> *dev, loff_t pos, size_t count,
+>  	if (pos < 0 || pos > vpd->base.len || end > vpd->base.len)
+>  		return -EINVAL;
+> 
+> -	if (mutex_lock_killable(&vpd->lock))
+> +	if (mutex_lock_killable(&dev->bus->vpd_mutex))
+>  		return -EINTR;
+> 
+>  	ret = pci_vpd_pci22_wait(dev);
+> @@ -376,7 +375,7 @@ static ssize_t pci_vpd_pci22_read(struct pci_dev
+> *dev, loff_t pos, size_t count,
+>  		}
+>  	}
+>  out:
+> -	mutex_unlock(&vpd->lock);
+> +	mutex_unlock(&dev->bus->vpd_mutex);
+>  	return ret ? ret : count;
+>  }
+> 
+> @@ -392,7 +391,7 @@ static ssize_t pci_vpd_pci22_write(struct pci_dev
+> *dev, loff_t pos, size_t count
+>  	if (pos < 0 || (pos & 3) || (count & 3) || end > vpd->base.len)
+>  		return -EINVAL;
+> 
+> -	if (mutex_lock_killable(&vpd->lock))
+> +	if (mutex_lock_killable(&dev->bus->vpd_mutex))
+>  		return -EINTR;
+> 
+>  	ret = pci_vpd_pci22_wait(dev);
+> @@ -424,7 +423,7 @@ static ssize_t pci_vpd_pci22_write(struct pci_dev
+> *dev, loff_t pos, size_t count
+>  		pos += sizeof(u32);
+>  	}
+>  out:
+> -	mutex_unlock(&vpd->lock);
+> +	mutex_unlock(&dev->bus->vpd_mutex);
+>  	return ret ? ret : count;
+>  }
+> 
+> @@ -453,7 +452,6 @@ int pci_vpd_pci22_init(struct pci_dev *dev)
+> 
+>  	vpd->base.len = PCI_VPD_PCI22_SIZE;
+>  	vpd->base.ops = &pci_vpd_pci22_ops;
+> -	mutex_init(&vpd->lock);
+>  	vpd->cap = cap;
+>  	vpd->busy = false;
+>  	dev->vpd = &vpd->base;
+> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+> index 6675a7a1b9fc..40c2a5a751d0 100644
+> --- a/drivers/pci/probe.c
+> +++ b/drivers/pci/probe.c
+> @@ -494,6 +494,7 @@ static struct pci_bus *pci_alloc_bus(struct pci_bus
+> *parent)
+>  	INIT_LIST_HEAD(&b->devices);
+>  	INIT_LIST_HEAD(&b->slots);
+>  	INIT_LIST_HEAD(&b->resources);
+> +	mutex_init(&b->vpd_mutex);
+>  	b->max_bus_speed = PCI_SPEED_UNKNOWN;
+>  	b->cur_bus_speed = PCI_SPEED_UNKNOWN;
+>  #ifdef CONFIG_PCI_DOMAINS_GENERIC
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index 353db8dc4c6e..f8a51d172255 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -454,6 +454,7 @@ struct pci_bus {
+>  	struct msi_controller *msi;	/* MSI controller */
+>  	void		*sysdata;	/* hook for sys-specific extension */
+>  	struct proc_dir_entry *procdir;	/* directory entry in /proc/bus/pci
+> */
+> +	struct mutex	vpd_mutex;	/* bus-wide VPD access mutex */
+> 
+>  	unsigned char	number;		/* bus number */
+>  	unsigned char	primary;	/* number of primary bridge */
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at lists.osuosl.org
+> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
