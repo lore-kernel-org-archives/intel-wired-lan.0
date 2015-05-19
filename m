@@ -1,37 +1,57 @@
-From: Rustad, Mark D <mark.d.rustad@intel.com>
-Date: Tue, 19 May 2015 22:43:39 +0000
-Subject: [Intel-wired-lan] [PATCH] pci: Limit VPD reads for all Intel
- Ethernet devices
-In-Reply-To: <555BA850.1090901@gmail.com>
-References: <20150519000042.56109.69779.stgit@mdrustad-wks.jf.intel.com>
- <555B5CBF.1090902@redhat.com>
- <4AD84211-965C-4F0B-A7F4-3E6CCE6567E3@intel.com>
- <555B77E5.5060006@redhat.com>
- <99014381-25AB-416D-8E09-C431B5CD5A6C@intel.com>
- <555B9F74.3040004@redhat.com>
- <DA06AAB6-CE9B-4A27-B60D-8F55BB52A063@intel.com> <555BA850.1090901@gmail.com>
-Message-ID: <46CDD500-2A1B-4457-BE17-961AFC50769E@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Tue, 19 May 2015 16:01:58 -0700
+Subject: [Intel-wired-lan] [PATCH] pci: Use a bus-global mutex to
+ protect VPD operations
+In-Reply-To: <555B78F7.60908@redhat.com>
+References: <20150519000037.56109.68356.stgit@mdrustad-wks.jf.intel.com>
+ <555B78F7.60908@redhat.com>
+Message-ID: <20150519160158.00002cd6@unknown>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> On May 19, 2015, at 2:17 PM, Alexander Duyck <alexander.duyck@gmail.com> wrote:
+On Tue, 19 May 2015 10:55:03 -0700
+Alexander Duyck <alexander.h.duyck@redhat.com> wrote:
+
+> On 05/18/2015 05:00 PM, Mark D Rustad wrote:
+> > Some devices have a problem with concurrent VPD access to different
+> > functions of the same physical device, so move the protecting mutex
+> > from the pci_vpd structure to the pci_bus structure. There are a
+> > number of reports on support sites for a variety of devices from
+> > various vendors getting the "vpd r/w failed" message. This is likely
+> > to at least fix some of them. Thanks to Shannon Nelson for helping
+> > to come up with this approach.
+> >
+> > Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+> > Acked-by: Shannon Nelson <shannon.nelson@intel.com>
+> > Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 > 
-> Any chance you could point me toward the software in question?  Just wondering because it seems like what you are fixing with this is an implementation issue in the application since you really shouldn't be accessing areas outside the scope of the VPD data structure, and doing so is undefined in terms of what happens if you do.
+> Instead of moving the mutex lock around you would be much better served 
+> by simply removing the duplicate VPD entries for a given device in a 
+> PCIe quirk.  Then you can save yourself the extra pain and effort of 
+> having to deal with serialized VPD accesses for a multifunction device.
+> 
+> The logic for the quirk should be fairly simple.
+>    1.  Scan for any other devices with VPD that share the same bus and 
+> device number.
+>    2.  If bdf is equal to us keep searching.
+>    3.  If bdf is less than our bdf we release our VPD area and set VPD 
+> pointer to NULL.
 
-I don't have it, but if you dump VPD via sysfs you will see it comes out as 32k in size. The kernel just blindly provides access to the full 32K space provided by the spec. I'm sure that we agree that the kernel should not go parse it and find the actual size. If it is read via stdio, say fread, the read access would be whatever buffer size it chooses to use.
+But Alex if you do this you're violating the principle of least
+surprise, not to mention changing a user-space interface which should
+not be done.
 
-If you looked at the quirks, you might have noticed that Broadcom limited the VPD access for some devices for functional reasons. That is what gave me the idea for limiting access to what was possibly there. With the existing Intel Ethernet quirk, it seemed like a simple thing to do.
+Mark's solution is pretty graceful and solves the issue at heart, which
+is that
+1) several Intel chips have this issue
+2) it appears that several other vendor's chips have this issue (or
+similar) as well, but even if they don't Mark's fix will not change
+their general operation, only make a small serializing effect when
+multiple simultaneous reads are made.
 
---
-Mark Rustad, Networking Division, Intel Corporation
-
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 841 bytes
-Desc: Message signed with OpenPGP using GPGMail
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150519/ccc13c77/attachment.asc>
+This is a reasonably small fix, with a small kernel footprint, which
+does not require changing user expectations or violating user-space
+semantics that are already established, so I support it as is.
