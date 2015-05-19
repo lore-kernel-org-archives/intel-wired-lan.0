@@ -1,75 +1,38 @@
-From: Alexander Duyck <alexander.h.duyck@redhat.com>
-Date: Tue, 19 May 2015 13:58:24 -0700
-Subject: [Intel-wired-lan] [PATCH] pci: Use a bus-global mutex to
- protect VPD operations
-In-Reply-To: <E9012788-257F-4C44-B7F1-789B94423924@intel.com>
-References: <20150519000037.56109.68356.stgit@mdrustad-wks.jf.intel.com>
- <555B78F7.60908@redhat.com> <E9012788-257F-4C44-B7F1-789B94423924@intel.com>
-Message-ID: <555BA3F0.5030001@redhat.com>
+From: Rustad, Mark D <mark.d.rustad@intel.com>
+Date: Tue, 19 May 2015 21:04:17 +0000
+Subject: [Intel-wired-lan] [PATCH] pci: Limit VPD reads for all Intel
+ Ethernet devices
+In-Reply-To: <555B9F74.3040004@redhat.com>
+References: <20150519000042.56109.69779.stgit@mdrustad-wks.jf.intel.com>
+ <555B5CBF.1090902@redhat.com>
+ <4AD84211-965C-4F0B-A7F4-3E6CCE6567E3@intel.com>
+ <555B77E5.5060006@redhat.com>
+ <99014381-25AB-416D-8E09-C431B5CD5A6C@intel.com>
+ <555B9F74.3040004@redhat.com>
+Message-ID: <DA06AAB6-CE9B-4A27-B60D-8F55BB52A063@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+> On May 19, 2015, at 1:39 PM, Alexander Duyck <alexander.h.duyck@redhat.com> wrote:
+> 
+> So how does this improve boot time anyway?  The original patch description said this improved boot time and reduced memory usage but I have yet to find where any of those gains would actually occur.  If you can point me in that direction I might have a better idea of the motivations behind this.
 
+I have to admit that you won't find them in the kernel, but systems that read VPD in the course of starting up will benefit by not reading lots of useless stuff so slowly. At least those reads will be slow on any device that reads VPD from slow hardware. Since the kernel would never perform any of those reads itself, in isolation the kernel has no benefit. However the system gets a benefit.
 
-On 05/19/2015 11:28 AM, Rustad, Mark D wrote:
->> On May 19, 2015, at 10:55 AM, Alexander Duyck <alexander.h.duyck@redhat.com> wrote:
->>
->> On 05/18/2015 05:00 PM, Mark D Rustad wrote:
->>> Some devices have a problem with concurrent VPD access to different
->>> functions of the same physical device, so move the protecting mutex
->>> from the pci_vpd structure to the pci_bus structure. There are a
->>> number of reports on support sites for a variety of devices from
->>> various vendors getting the "vpd r/w failed" message. This is likely
->>> to at least fix some of them. Thanks to Shannon Nelson for helping
->>> to come up with this approach.
->>>
->>> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
->>> Acked-by: Shannon Nelson <shannon.nelson@intel.com>
->>> Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
->> Instead of moving the mutex lock around you would be much better served by simply removing the duplicate VPD entries for a given device in a PCIe quirk.  Then you can save yourself the extra pain and effort of having to deal with serialized VPD accesses for a multifunction device.
->>
->> The logic for the quirk should be fairly simple.
->>   1.  Scan for any other devices with VPD that share the same bus and device number.
->>   2.  If bdf is equal to us keep searching.
->>   3.  If bdf is less than our bdf we release our VPD area and set VPD pointer to NULL.
-> I could do that. If this issue only affected Intel devices, I would be more inclined to consider something like that. I am avoiding discussing other vendors directly, so please go and do a Google search on "vpd r/w failed" and see if you really want to quirk all those devices. It isn't just Intel and it isn't just networking.
+I can delete the reference to a memory benefit, since it would be a fleeting benefit at most and not a kernel memory footprint issue.
 
-I think you are assuming too much.  Have you root caused the other 
-devices?  All the "vpd r/w failed" means is that a given read or write 
-timed out.  There are any number of possible reasons for that including 
-VPD being unimplemented in firmware, a device falling off of the bus, 
-and many others.  What you have is a common symptom, it doesn't mean it 
-is a common ailment for all the other parts.
+This is not a big deal for me. If you don't see the value, drop it. Some people are interested in speeding up boot. Apparently VPD is now being accessed in parallel by user space as a result of such work, exposing the problem addressed in the other patch. I saw this opportunity while trying to resolve that issue. If it isn't worth it, drop it.
 
-> If after doing that you still feel that this isn't the best solution, I can go and cook up something much bigger (I already had two much bigger patches that I abandoned in favor of this approach). Bear in mind that the quirk code is dead weight in all the kernels.
+--
+Mark Rustad, Networking Division, Intel Corporation
 
-The quirk code is there to deal with buggy hardware implementations and 
-that is what it sounds like you have in this case.  I highly doubt all 
-of the other vendors implemented the same mistake.  If they did then 
-maybe you should implement a the quirk as a new function that can be 
-used by any of the devices that implement VPD with the same limitation.
-
-> As you said in another message, VPD is not that vital. Given that, I would think that some possible needless synchronization that resolves real problems for many devices should be acceptable. If it was synchronizing all config space or something that would be different, but this is just VPD.
-
-The problem is it is needless synchronization, and it only resolves 
-problems for some very specific devices.  The extra overhead for 
-serializing what is already slow accesses can be very high so I am 
-against it.  For example it will likely have unintended consequences on 
-things like virtual machines where all direct assigned devices end up on 
-the same bus.
-
-We know that all Intel Ethernet parts to date only implement one VPD 
-area per EEPROM, and that all functions in a multi-function Ethernet 
-part share the same EEPROM, so the fix is to only present one VPD area 
-so that the data is still there, without the ability of multiple 
-access.  It seems like function 0 would be the obvious choice in that 
-case so if somebody wants to be able to do their inventory they can go 
-through and pull inventory information from function 0.  Really this is 
-how this should have probably been implemented in the hardware in the 
-first place if they couldn't support multiple accesses.
-
-- Alex
-
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 841 bytes
+Desc: Message signed with OpenPGP using GPGMail
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150519/aa372f3f/attachment.asc>
