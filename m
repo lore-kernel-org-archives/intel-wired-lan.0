@@ -1,17 +1,11 @@
 From: Alexander Duyck <alexander.h.duyck@redhat.com>
-Date: Tue, 19 May 2015 16:42:02 -0700
-Subject: [Intel-wired-lan] [PATCH] pci: Limit VPD reads for all Intel
- Ethernet devices
-In-Reply-To: <46CDD500-2A1B-4457-BE17-961AFC50769E@intel.com>
-References: <20150519000042.56109.69779.stgit@mdrustad-wks.jf.intel.com>
- <555B5CBF.1090902@redhat.com>
- <4AD84211-965C-4F0B-A7F4-3E6CCE6567E3@intel.com>
- <555B77E5.5060006@redhat.com>
- <99014381-25AB-416D-8E09-C431B5CD5A6C@intel.com>
- <555B9F74.3040004@redhat.com>
- <DA06AAB6-CE9B-4A27-B60D-8F55BB52A063@intel.com> <555BA850.1090901@gmail.com>
- <46CDD500-2A1B-4457-BE17-961AFC50769E@intel.com>
-Message-ID: <555BCA4A.2080400@redhat.com>
+Date: Tue, 19 May 2015 17:07:05 -0700
+Subject: [Intel-wired-lan] [PATCH] pci: Use a bus-global mutex to
+ protect VPD operations
+In-Reply-To: <20150519160158.00002cd6@unknown>
+References: <20150519000037.56109.68356.stgit@mdrustad-wks.jf.intel.com>	<555B78F7.60908@redhat.com>
+ <20150519160158.00002cd6@unknown>
+Message-ID: <555BD029.7050803@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -20,22 +14,79 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 
 
-On 05/19/2015 03:43 PM, Rustad, Mark D wrote:
->> On May 19, 2015, at 2:17 PM, Alexander Duyck <alexander.duyck@gmail.com> wrote:
->>
->> Any chance you could point me toward the software in question?  Just wondering because it seems like what you are fixing with this is an implementation issue in the application since you really shouldn't be accessing areas outside the scope of the VPD data structure, and doing so is undefined in terms of what happens if you do.
-> I don't have it, but if you dump VPD via sysfs you will see it comes out as 32k in size. The kernel just blindly provides access to the full 32K space provided by the spec. I'm sure that we agree that the kernel should not go parse it and find the actual size. If it is read via stdio, say fread, the read access would be whatever buffer size it chooses to use.
+On 05/19/2015 04:01 PM, Jesse Brandeburg wrote:
+> On Tue, 19 May 2015 10:55:03 -0700
+> Alexander Duyck <alexander.h.duyck@redhat.com> wrote:
 >
-> If you looked at the quirks, you might have noticed that Broadcom limited the VPD access for some devices for functional reasons. That is what gave me the idea for limiting access to what was possibly there. With the existing Intel Ethernet quirk, it seemed like a simple thing to do.
+>> On 05/18/2015 05:00 PM, Mark D Rustad wrote:
+>>> Some devices have a problem with concurrent VPD access to different
+>>> functions of the same physical device, so move the protecting mutex
+>>> from the pci_vpd structure to the pci_bus structure. There are a
+>>> number of reports on support sites for a variety of devices from
+>>> various vendors getting the "vpd r/w failed" message. This is likely
+>>> to at least fix some of them. Thanks to Shannon Nelson for helping
+>>> to come up with this approach.
+>>>
+>>> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+>>> Acked-by: Shannon Nelson <shannon.nelson@intel.com>
+>>> Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+>> Instead of moving the mutex lock around you would be much better served
+>> by simply removing the duplicate VPD entries for a given device in a
+>> PCIe quirk.  Then you can save yourself the extra pain and effort of
+>> having to deal with serialized VPD accesses for a multifunction device.
+>>
+>> The logic for the quirk should be fairly simple.
+>>     1.  Scan for any other devices with VPD that share the same bus and
+>> device number.
+>>     2.  If bdf is equal to us keep searching.
+>>     3.  If bdf is less than our bdf we release our VPD area and set VPD
+>> pointer to NULL.
+> But Alex if you do this you're violating the principle of least
+> surprise, not to mention changing a user-space interface which should
+> not be done.
 
-Actually we probably should be parsing through the VPD data.  The PCIe 
-spec doesn't define what happens if you read past the end marker, and I 
-suspect most applications are probably performing sequential reads of 
-the data instead of just accessing offsets anyway since that is how this 
-is really meant to be accessed.  So if we moved this to a sequenced 
-interface instead of a memory mapped style interface it would probably 
-work out better anyway since we could perform multiple reads in sequence 
-instead of one at a time.
+I'm willing to back off on dropping the VPD info for those functions 
+entirely, but the lock should not be pushed to the bus.
+
+> Mark's solution is pretty graceful and solves the issue at heart, which
+> is that
+> 1) several Intel chips have this issue
+> 2) it appears that several other vendor's chips have this issue (or
+> similar) as well, but even if they don't Mark's fix will not change
+> their general operation, only make a small serializing effect when
+> multiple simultaneous reads are made.
+
+2 is based on a false premise.  The "vpd r/w failed" error is about as 
+common as dev_watchdog().  Just because it presents with a similar 
+symptom doesn't mean it is the same issue.
+
+> This is a reasonably small fix, with a small kernel footprint, which
+> does not require changing user expectations or violating user-space
+> semantics that are already established, so I support it as is.
+
+I am not against the shared lock approach, but the bus is the wrong 
+place for this.  Sharing a bus does not mean that the devices are all a 
+part of the same chip, it only means they share a bus.  I would guess 
+that this fix has not been tested with any LOM parts such as e1000e, or 
+in a virtualization environment, as this would exhibit different 
+behavior with this patch.  For example does it make sense for an e1000e 
+LOM to be joined at the hip with a SATA or USB controller.  They could 
+all be from different manufacturers with different requirements.
+
+If the bug is in Intel Ethernet with VPD then I would suggest tweaking 
+the VPD logic and adding a Intel Ethernet PCI quirk.  It doesn't make 
+sense to assume based on one common error message that all of creation 
+has the same issue.
+
+If anything I believe Mark's patches have revealed a bigger issue. That 
+is the fact that the sysfs file is reading outside of the VPD area which 
+the PCI spec doesn't have a defined behavior for.  I suspect this is the 
+cause of a number of the issues being reported as Broadcom had to 
+specifically quirk to prevent it, and I found one discussion that 
+indicated something similar might be needed for Realtek.
 
 - Alex
+
+
+
 
