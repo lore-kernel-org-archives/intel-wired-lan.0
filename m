@@ -1,39 +1,53 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 20 May 2015 14:26:27 -0700
-Subject: [Intel-wired-lan] [PATCH] pci: Use a bus-global mutex to
- protect VPD operations
-In-Reply-To: <C73FDF83-62F7-47F4-905A-CD7D482F0709@intel.com>
-References: <20150519000037.56109.68356.stgit@mdrustad-wks.jf.intel.com>
- <555B78F7.60908@redhat.com> <20150519160158.00002cd6@unknown>
- <555BD029.7050803@redhat.com>
- <F47DC49C-CCC5-4693-8905-20ABCE6F5993@intel.com>
- <555BDD14.2080807@redhat.com>
- <C73FDF83-62F7-47F4-905A-CD7D482F0709@intel.com>
-Message-ID: <555CFC03.5080604@gmail.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Wed, 20 May 2015 14:47:49 -0500
+Subject: [Intel-wired-lan] e1000e pci_disable_link_state_locked() issues
+Message-ID: <20150520194749.GA10210@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 05/20/2015 09:00 AM, Rustad, Mark D wrote:
->> On May 19, 2015, at 6:02 PM, Alexander Duyck <alexander.h.duyck@redhat.com> wrote:
->>
->> My suspicion is that we have a number of bugs floating around out there like the Broadcom issue.  Specifically, one of the ones I found was that the r8169 seems to have a similar issue as called out in the email thread at http://permalink.gmane.org/gmane.linux.network/232260.  I'm wondering if we shouldn't add an initializer for the read/write functions that will go through and pull out the 3 or 4 headers from the VPD data needed to get the actual length.  Then it would lock down the VPD and save some serious time on reads since most devices don't have 32K of VPD to read.
-> That is interesting. I noticed that there are functions already present to find VPD tags. If the VPD were invalid, would this block its being read at all, or would it default to allow reading/writing anything? I don't know if there might be people using Linux to completely write the VPD area. Presumably your idea would prevent rewriting the VPD area to something larger.
+I think we have some issues with the e1000e usage of
+pci_disable_link_state_locked(), which Yinghai added with 9f728f53dd70
+("PCI/e1000e: Add and use pci_disable_link_state_locked()").
 
-What we probably would need to do is split the vpd read/write functions 
-up a bit further as it turns out some vendors are using it as a means of 
-reading/writing the EEPROM for the device.  So we could have something 
-like maybe a _raw version of the read/write and one that is intended for 
-actually reading VPD.  The VPD one could call something to initialize a 
-set of offsets for the read-only descriptor, the read-write descriptor, 
-and the end descriptor.  If any read/write goes past the end descriptor 
-you could then just return 0 for the read value or skip it for the write.
+That fixed an AER deadlock in the following path, where pci_bus_sem is held
+by pci_walk_bus(), and we deadlocked when we tried to re-acquire it in
+pci_disable_link_state():
 
-By my math that means only having to read at most 6 locations in order 
-to fill in all the descriptor info and then you could save significant 
-time on VPD read for all drivers because would would cut the 32K read 
-down to something like 256 bytes which is the more common VPD size.
+  do_recovery
+    broadcast_error_message(..., report_slot_reset)
+      pci_walk_bus
+        down_read(&pci_bus_sem)
+          cb(...)                                       # report_slot_reset
+            report_slot_reset
+              dev->driver->err_handler->slot_reset      # e1000_io_slot_reset
+                e1000_io_slot_reset
+                  e1000e_disable_aspm
+                    pci_disable_link_state
+                      down_read(&pci_bus_sem)
 
-- Alex
+9f728f53dd70 fixed that by changing e1000e_disable_aspm() to use
+pci_disable_link_state_locked() instead, which assumes pci_bus_sem is
+already held.
+
+That's fine for the e1000_io_slot_reset() path, where pci_bus_sem really
+*is* held.  But e1000e_disable_aspm() is also called from e1000_probe() and
+__e1000_resume(), and in those paths, we *don't* hold pci_bus_sem.
+
+In effect, the caller of pci_disable_link_state_locked() is promising that
+pci_bus_sem is held, and __pci_disable_link_state() relies on that promise
+for its locking.  But e1000e isn't upholding its end of the bargain.
+
+I'm not 100% sure __pci_disable_link_state() actually *needs* that locking:
+it is only called from a driver, and it should be impossible for a device
+or any upstream bridge to go away while a driver is bound to it.  If
+somebody wanted to analyze this further and propose a patch to remove the
+locking (if it seems safe), that would be great.
+
+But in any case, __pci_disable_link_state() should be able to rely on its
+callers following the rules, so I'd like to see an e1000e change to use
+pci_disable_link_state() from the paths where pci_bus_sem is not held.
+
+Bjorn
