@@ -1,47 +1,33 @@
-From: Tim Harvey <tharvey@gateworks.com>
-Date: Wed, 20 May 2015 08:46:33 -0700
-Subject: [Intel-wired-lan] [PATCH 3/3] net: igb: register mii_bus for
- SerDes w/ external phy
-In-Reply-To: <5555712C.5090106@cumulusnetworks.com>
-References: <1430417955-28252-1-git-send-email-tharvey@gateworks.com>
- <1430417955-28252-4-git-send-email-tharvey@gateworks.com>
- <554D5D58.4080300@gmail.com>
- <CAJ+vNU0q+MayxY6taEJNS-vr+jkQAnpVBdb-KisFHYOkNfia-Q@mail.gmail.com>
- <555114B5.9060505@redhat.com>
- <CAJ+vNU1zFXTnaTi2ME7V6C_ucOukDwVTd3_Ne52DOz_0aHyn3A@mail.gmail.com>
- <5555712C.5090106@cumulusnetworks.com>
-Message-ID: <CAJ+vNU0NSs+yhgpHWOr5T6H3eanfWcdwEwRBzQ=epiT=zXPPMA@mail.gmail.com>
+From: Rustad, Mark D <mark.d.rustad@intel.com>
+Date: Wed, 20 May 2015 16:00:46 +0000
+Subject: [Intel-wired-lan] [PATCH] pci: Use a bus-global mutex to
+ protect VPD operations
+In-Reply-To: <555BDD14.2080807@redhat.com>
+References: <20150519000037.56109.68356.stgit@mdrustad-wks.jf.intel.com>
+ <555B78F7.60908@redhat.com> <20150519160158.00002cd6@unknown>
+ <555BD029.7050803@redhat.com>
+ <F47DC49C-CCC5-4693-8905-20ABCE6F5993@intel.com>
+ <555BDD14.2080807@redhat.com>
+Message-ID: <C73FDF83-62F7-47F4-905A-CD7D482F0709@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, May 14, 2015 at 9:08 PM, Jonathan Toppins
-<jtoppins@cumulusnetworks.com> wrote:
-> On 5/12/15 6:37 PM, Tim Harvey wrote:
->>
->>
->> agreed - I will separate this into a different patch. I think
->> SIOCGMIIREG/SIOCSMIIREG are useful for debugging and various userspace
->> tools like ethtool and others that allow direct mii register access. I'm
->> not clear what the general consusus is but there do seem to be many
->> ethernet drivers that support SIOCMIIREG including the phylib default
->> ioctl handler.
->
->
-> I am on holiday, will get a chance to read over the thread this weekend.
->
-> Regards,
-> -Jon
+> On May 19, 2015, at 6:02 PM, Alexander Duyck <alexander.h.duyck@redhat.com> wrote:
+> 
+> My suspicion is that we have a number of bugs floating around out there like the Broadcom issue.  Specifically, one of the ones I found was that the r8169 seems to have a similar issue as called out in the email thread at http://permalink.gmane.org/gmane.linux.network/232260.  I'm wondering if we shouldn't add an initializer for the read/write functions that will go through and pull out the 3 or 4 headers from the VPD data needed to get the actual length.  Then it would lock down the VPD and save some serious time on reads since most devices don't have 32K of VPD to read.
 
-Jon,
+That is interesting. I noticed that there are functions already present to find VPD tags. If the VPD were invalid, would this block its being read at all, or would it default to allow reading/writing anything? I don't know if there might be people using Linux to completely write the VPD area. Presumably your idea would prevent rewriting the VPD area to something larger.
 
-I will be posting a followup patch very soon (hopefully in the next
-couple of days) for adding phylib support to igb hopefully addressing
-Alexander's comments and concerns noted in this thread. My phylib phy
-driver is an un-posted work-in-progress and because my phy operates
-likely different from yours, you will need to write a phylib phy
-driver to test the patch when its posted.
+--
+Mark Rustad, Networking Division, Intel Corporation
 
-Tim
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 841 bytes
+Desc: Message signed with OpenPGP using GPGMail
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150520/10677af5/attachment.asc>
