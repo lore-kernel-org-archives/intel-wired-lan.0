@@ -1,158 +1,47 @@
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Date: Wed, 20 May 2015 00:06:03 +0000
-Subject: [Intel-wired-lan] [PATCH v5 3/3] ixgbe: Add new ndo to trust VF
-Message-ID: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB28F4@BPXM14GP.gisp.nec.co.jp>
+From: Tim Harvey <tharvey@gateworks.com>
+Date: Wed, 20 May 2015 08:46:33 -0700
+Subject: [Intel-wired-lan] [PATCH 3/3] net: igb: register mii_bus for
+ SerDes w/ external phy
+In-Reply-To: <5555712C.5090106@cumulusnetworks.com>
+References: <1430417955-28252-1-git-send-email-tharvey@gateworks.com>
+ <1430417955-28252-4-git-send-email-tharvey@gateworks.com>
+ <554D5D58.4080300@gmail.com>
+ <CAJ+vNU0q+MayxY6taEJNS-vr+jkQAnpVBdb-KisFHYOkNfia-Q@mail.gmail.com>
+ <555114B5.9060505@redhat.com>
+ <CAJ+vNU1zFXTnaTi2ME7V6C_ucOukDwVTd3_Ne52DOz_0aHyn3A@mail.gmail.com>
+ <5555712C.5090106@cumulusnetworks.com>
+Message-ID: <CAJ+vNU0NSs+yhgpHWOr5T6H3eanfWcdwEwRBzQ=epiT=zXPPMA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+On Thu, May 14, 2015 at 9:08 PM, Jonathan Toppins
+<jtoppins@cumulusnetworks.com> wrote:
+> On 5/12/15 6:37 PM, Tim Harvey wrote:
+>>
+>>
+>> agreed - I will separate this into a different patch. I think
+>> SIOCGMIIREG/SIOCSMIIREG are useful for debugging and various userspace
+>> tools like ethtool and others that allow direct mii register access. I'm
+>> not clear what the general consusus is but there do seem to be many
+>> ethernet drivers that support SIOCMIIREG including the phylib default
+>> ioctl handler.
+>
+>
+> I am on holiday, will get a chance to read over the thread this weekend.
+>
+> Regards,
+> -Jon
 
-Implement the new netdev op to trust VF in ixgbe and make VF multicast
-promiscuous mode enabled only in trusted VF.
+Jon,
 
-The administrator can make VF trusted by ip command which supports
-trust message.
- # ip link set dev eth0 vf 1 trust on
+I will be posting a followup patch very soon (hopefully in the next
+couple of days) for adding phylib support to igb hopefully addressing
+Alexander's comments and concerns noted in this thread. My phylib phy
+driver is an un-posted work-in-progress and because my phy operates
+likely different from yours, you will need to write a phylib phy
+driver to test the patch when its posted.
 
-After making VF untrusted, ixgbe disables VF multicast promiscuous
-feature requested from VF.
- # ip link set dev eth0 vf 1 trust off
-
-Only trusted VF can enable VF multicast promiscuous mode and handle
-over 30 IPv6 addresses on VM, because VF multicast promiscuous mode may
-hurt performance.
-
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Reviewed-by: Hayato Momma <h-momma@ce.jp.nec.com>
-CC: Choi, Sy Jong <sy.jong.choi@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe.h       |  1 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  |  5 ++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 38 +++++++++++++++++++++++---
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h |  2 ++
- 4 files changed, 42 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index 08e65b6..5181a4d 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -153,6 +153,7 @@ struct vf_data_storage {
- 	u16 vlan_count;
- 	u8 spoofchk_enabled;
- 	bool rss_query_enabled;
-+	u8 trusted;
- 	unsigned int vf_api;
- };
- 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index b1ea707..263cb40 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -3679,6 +3679,10 @@ static void ixgbe_configure_virtualization(struct ixgbe_adapter *adapter)
- 		/* Enable/Disable RSS query feature  */
- 		ixgbe_ndo_set_vf_rss_query_en(adapter->netdev, i,
- 					  adapter->vfinfo[i].rss_query_enabled);
-+
-+		/* Reconfigure features in trusted */
-+		ixgbe_ndo_set_vf_trust(adapter->netdev, i,
-+				       adapter->vfinfo[i].trusted);
- 	}
- }
- 
-@@ -8182,6 +8186,7 @@ static const struct net_device_ops ixgbe_netdev_ops = {
- 	.ndo_set_vf_rate	= ixgbe_ndo_set_vf_bw,
- 	.ndo_set_vf_spoofchk	= ixgbe_ndo_set_vf_spoofchk,
- 	.ndo_set_vf_rss_query_en = ixgbe_ndo_set_vf_rss_query_en,
-+	.ndo_set_vf_trust	= ixgbe_ndo_set_vf_trust,
- 	.ndo_get_vf_config	= ixgbe_ndo_get_vf_config,
- 	.ndo_get_stats64	= ixgbe_get_stats64,
- #ifdef CONFIG_IXGBE_DCB
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-index 615f651..6c602bc 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-@@ -117,8 +117,11 @@ static int __ixgbe_enable_sriov(struct ixgbe_adapter *adapter)
- 			 */
- 			adapter->vfinfo[i].rss_query_enabled = 0;
- 
--			/* Turn multicast promiscuous mode off for all VFs */
-+			/* Disallow VF multicast promiscuous capability
-+			 * and turn it off for all VFs
-+			 */
- 			adapter->vfinfo[i].mc_promisc = false;
-+			adapter->vfinfo[i].trusted = false;
- 		}
- 
- 		return 0;
-@@ -329,9 +332,14 @@ static int ixgbe_enable_vf_mc_promisc(struct ixgbe_adapter *adapter, u32 vf)
- 	hw = &adapter->hw;
- 	vmolr = IXGBE_READ_REG(hw, IXGBE_VMOLR(vf));
- 
--	e_info(drv, "VF %u: enabling multicast promiscuous\n", vf);
--
--	vmolr |= IXGBE_VMOLR_MPE;
-+	if (adapter->vfinfo[vf].trusted) {
-+		e_info(drv, "VF %u: enabling multicast promiscuous\n", vf);
-+		vmolr |= IXGBE_VMOLR_MPE;
-+	} else {
-+		e_info(drv, "VF %u: disabling multicast promiscuous "
-+		       "on untrusted VF.\n", vf);
-+		vmolr &= ~IXGBE_VMOLR_MPE;
-+	}
- 
- 	IXGBE_WRITE_REG(hw, IXGBE_VMOLR(vf), vmolr);
- 
-@@ -1492,6 +1500,27 @@ int ixgbe_ndo_set_vf_rss_query_en(struct net_device *netdev, int vf,
- 	return 0;
- }
- 
-+int ixgbe_ndo_set_vf_trust(struct net_device *netdev, int vf, bool setting)
-+{
-+	struct ixgbe_adapter *adapter = netdev_priv(netdev);
-+
-+	if (vf >= adapter->num_vfs)
-+		return -EINVAL;
-+
-+	/* nothing to do */
-+	if (adapter->vfinfo[vf].trusted == setting)
-+		return 0;
-+
-+	adapter->vfinfo[vf].trusted = setting;
-+
-+	/* Reconfigure features which are only allowed for trusted VF */
-+	/* VF multicast promiscuous mode */
-+	if (adapter->vfinfo[vf].mc_promisc)
-+		ixgbe_enable_vf_mc_promisc(adapter, vf);
-+
-+	return 0;
-+}
-+
- int ixgbe_ndo_get_vf_config(struct net_device *netdev,
- 			    int vf, struct ifla_vf_info *ivi)
- {
-@@ -1506,5 +1535,6 @@ int ixgbe_ndo_get_vf_config(struct net_device *netdev,
- 	ivi->qos = adapter->vfinfo[vf].pf_qos;
- 	ivi->spoofchk = adapter->vfinfo[vf].spoofchk_enabled;
- 	ivi->rss_query_en = adapter->vfinfo[vf].rss_query_enabled;
-+	ivi->trusted = adapter->vfinfo[vf].trusted;
- 	return 0;
- }
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h
-index 2c197e6..d85e6fc 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h
-@@ -49,6 +49,8 @@ int ixgbe_ndo_set_vf_bw(struct net_device *netdev, int vf, int min_tx_rate,
- int ixgbe_ndo_set_vf_spoofchk(struct net_device *netdev, int vf, bool setting);
- int ixgbe_ndo_set_vf_rss_query_en(struct net_device *netdev, int vf,
- 				  bool setting);
-+int ixgbe_ndo_set_vf_trust(struct net_device *netdev,
-+			    int vf, bool setting);
- int ixgbe_ndo_get_vf_config(struct net_device *netdev,
- 			    int vf, struct ifla_vf_info *ivi);
- void ixgbe_check_vf_rate_limit(struct ixgbe_adapter *adapter);
--- 
-1.8.3.1
-
+Tim
