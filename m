@@ -1,146 +1,84 @@
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Date: Thu, 21 May 2015 13:10:49 +0000
-Subject: [Intel-wired-lan] [PATCH v5] ixgbe: Add module parameter to disable
-	VLAN filter
-Message-ID: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB460C@BPXM14GP.gisp.nec.co.jp>
+From: Lubetkin, YanirX <yanirx.lubetkin@intel.com>
+Date: Thu, 21 May 2015 15:56:11 +0000
+Subject: [Intel-wired-lan] e1000e pci_disable_link_state_locked() issues
+In-Reply-To: <20150520194749.GA10210@google.com>
+References: <20150520194749.GA10210@google.com>
+Message-ID: <4D1FB504F643AC4BA12C9F34A1763FA419CB34F7@HASMSX106.ger.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Hi Bjorn,
 
-Introduce module parameter "disable_hw_vlan_filter" to disable HW VLAN
-filter on ixgbe module load.
+I'm going to check this and will get back to you with input/questions/resolution.
 
-From the hardware limitation, there are only 64 VLAN entries for HW VLAN
-filter, and it leads to limit the number of VLANs up to 64 among PF and
-VFs. For SDN/NFV case, we need to handle unlimited VLAN packets on VF.
-In such case, every VLAN packet can be transmitted to each VF.
+Thanks,
+Yanir
 
-When we try to make VLAN devices on VF, the 65th VLAN registration fails
-and never be able to receive a packet with that VLAN tag.
-If we do the below command on VM, ethX.65 to ethX.100 cannot be created.
-  # for i in `seq 1 100`; do \
-    ip link add link ethX name ethX.$i type vlan id $i; done
 
-There is a capability to disable HW VLAN filter and that makes all VLAN
-tagged packets can be transmitted to every VFs. After VLAN filter stage,
-unicast packets are transmitted to VF which has the MAC address same as
-the transmitting packet.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Bjorn Helgaas
+> Sent: Wednesday, May 20, 2015 22:48
+> To: Yinghai Lu; Kirsher, Jeffrey T
+> Cc: linux-pci at vger.kernel.org; intel-wired-lan at lists.osuosl.org; linux-
+> kernel at vger.kernel.org; netdev at vger.kernel.org
+> Subject: [Intel-wired-lan] e1000e pci_disable_link_state_locked() issues
+> 
+> I think we have some issues with the e1000e usage of
+> pci_disable_link_state_locked(), which Yinghai added with 9f728f53dd70
+> ("PCI/e1000e: Add and use pci_disable_link_state_locked()").
+> 
+> That fixed an AER deadlock in the following path, where pci_bus_sem is held
+> by pci_walk_bus(), and we deadlocked when we tried to re-acquire it in
+> pci_disable_link_state():
+> 
+>   do_recovery
+>     broadcast_error_message(..., report_slot_reset)
+>       pci_walk_bus
+>         down_read(&pci_bus_sem)
+>           cb(...)                                       # report_slot_reset
+>             report_slot_reset
+>               dev->driver->err_handler->slot_reset      # e1000_io_slot_reset
+>                 e1000_io_slot_reset
+>                   e1000e_disable_aspm
+>                     pci_disable_link_state
+>                       down_read(&pci_bus_sem)
+> 
+> 9f728f53dd70 fixed that by changing e1000e_disable_aspm() to use
+> pci_disable_link_state_locked() instead, which assumes pci_bus_sem is
+> already held.
+> 
+> That's fine for the e1000_io_slot_reset() path, where pci_bus_sem really
+> *is* held.  But e1000e_disable_aspm() is also called from e1000_probe() and
+> __e1000_resume(), and in those paths, we *don't* hold pci_bus_sem.
+> 
+> In effect, the caller of pci_disable_link_state_locked() is promising that
+> pci_bus_sem is held, and __pci_disable_link_state() relies on that promise
+> for its locking.  But e1000e isn't upholding its end of the bargain.
+> 
+> I'm not 100% sure __pci_disable_link_state() actually *needs* that locking:
+> it is only called from a driver, and it should be impossible for a device or any
+> upstream bridge to go away while a driver is bound to it.  If somebody
+> wanted to analyze this further and propose a patch to remove the locking (if
+> it seems safe), that would be great.
+> 
+> But in any case, __pci_disable_link_state() should be able to rely on its callers
+> following the rules, so I'd like to see an e1000e change to use
+> pci_disable_link_state() from the paths where pci_bus_sem is not held.
+> 
+> Bjorn
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at lists.osuosl.org
+> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+---------------------------------------------------------------------
+Intel Israel (74) Limited
 
-With this patch and "disable_hw_vlan_filter=1", we can use unlimited
-number of VLANs on VF.
-
-Disabling HW VLAN filter breaks some NIC features such as DCB and FCoE.
-DCB and FCoE are disabled when HW VLAN filter is disabled by this module
-parameter.
-Because of that reason, the administrator has to know that before turning
-off HW VLAN filter.
-
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe.h       |  1 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  | 29 +++++++++++++++++++++++++-
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |  4 ++++
- 3 files changed, 33 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index 5181a4d..492615d 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -632,6 +632,7 @@ struct ixgbe_adapter {
- #define IXGBE_FLAG_FCOE_ENABLED                 (u32)(1 << 21)
- #define IXGBE_FLAG_SRIOV_CAPABLE                (u32)(1 << 22)
- #define IXGBE_FLAG_SRIOV_ENABLED                (u32)(1 << 23)
-+#define IXGBE_FLAG_VLAN_FILTER_ENABLED          (u32)(1 << 24)
- 
- 	u32 flags2;
- #define IXGBE_FLAG2_RSC_CAPABLE                 (u32)(1 << 0)
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 263cb40..b45570f 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -158,6 +158,10 @@ module_param(allow_unsupported_sfp, uint, 0);
- MODULE_PARM_DESC(allow_unsupported_sfp,
- 		 "Allow unsupported and untested SFP+ modules on 82599-based adapters");
- 
-+static unsigned int disable_hw_vlan_filter;
-+module_param(disable_hw_vlan_filter, uint, 0);
-+MODULE_PARM_DESC(disable_hw_vlan_filter, "Disable HW VLAN filter");
-+
- #define DEFAULT_MSG_ENABLE (NETIF_MSG_DRV|NETIF_MSG_PROBE|NETIF_MSG_LINK)
- static int debug = -1;
- module_param(debug, int, 0);
-@@ -4159,6 +4163,9 @@ void ixgbe_set_rx_mode(struct net_device *netdev)
- 		hw->addr_ctrl.user_set_promisc = false;
- 	}
- 
-+	if (!(adapter->flags & IXGBE_FLAG_VLAN_FILTER_ENABLED))
-+		vlnctrl &= ~(IXGBE_VLNCTRL_VFE | IXGBE_VLNCTRL_CFIEN);
-+
- 	/*
- 	 * Write addresses to available RAR registers, if there is not
- 	 * sufficient space to store all the addresses then enable
-@@ -5251,6 +5258,22 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter)
- #endif /* CONFIG_IXGBE_DCB */
- #endif /* IXGBE_FCOE */
- 
-+	if (likely(!disable_hw_vlan_filter)) {
-+		/* HW VLAN filter is enabled by default */
-+		adapter->flags |= IXGBE_FLAG_VLAN_FILTER_ENABLED;
-+	} else {
-+		e_dev_warn("Disabling HW VLAN filter. "
-+			   "DCB and FCoE are also disabled.\n");
-+#ifdef IXGBE_FCOE
-+		/* Disabling FCoE */
-+		adapter->flags &= ~IXGBE_FLAG_FCOE_CAPABLE;
-+		adapter->flags &= ~IXGBE_FLAG_FCOE_ENABLED;
-+#ifdef CONFIG_IXGBE_DCB
-+		adapter->fcoe.up = 0;
-+#endif /* CONFIG_IXGBE_DCB */
-+#endif /* IXGBE_FCOE */
-+	}
-+
- 	adapter->mac_table = kzalloc(sizeof(struct ixgbe_mac_addr) *
- 				     hw->mac.num_rar_entries,
- 				     GFP_ATOMIC);
-@@ -7733,6 +7756,9 @@ int ixgbe_setup_tc(struct net_device *dev, u8 tc)
- 	ixgbe_clear_interrupt_scheme(adapter);
- 
- #ifdef CONFIG_IXGBE_DCB
-+	/* Unable to use DCB if HW VLAN filter is disabled */
-+	if (!(adapter->flags & IXGBE_FLAG_VLAN_FILTER_ENABLED))
-+		tc = 0;
- 	if (tc) {
- 		netdev_set_num_tc(dev, tc);
- 		ixgbe_set_prio_tc_map(adapter);
-@@ -8562,7 +8588,8 @@ skip_sriov:
- 	}
- 
- 	netdev->hw_features |= NETIF_F_RXALL;
--	netdev->features |= NETIF_F_HW_VLAN_CTAG_FILTER;
-+	if (adapter->flags & IXGBE_FLAG_VLAN_FILTER_ENABLED)
-+		netdev->features |= NETIF_F_HW_VLAN_CTAG_FILTER;
- 
- 	netdev->vlan_features |= NETIF_F_TSO;
- 	netdev->vlan_features |= NETIF_F_TSO6;
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-index 6c602bc..50bbc0d 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-@@ -862,6 +862,10 @@ static int ixgbe_set_vf_vlan_msg(struct ixgbe_adapter *adapter,
- 		return -1;
- 	}
- 
-+	/* If we disabled HW VLAN filter, nothing to do */
-+	if (!(adapter->flags & IXGBE_FLAG_VLAN_FILTER_ENABLED))
-+		return 0;
-+
- 	if (add)
- 		adapter->vfinfo[vf].vlan_count++;
- 	else if (adapter->vfinfo[vf].vlan_count)
--- 
-1.8.3.1
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
