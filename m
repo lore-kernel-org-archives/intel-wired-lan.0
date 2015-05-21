@@ -1,84 +1,37 @@
-From: Lubetkin, YanirX <yanirx.lubetkin@intel.com>
-Date: Thu, 21 May 2015 15:56:11 +0000
-Subject: [Intel-wired-lan] e1000e pci_disable_link_state_locked() issues
-In-Reply-To: <20150520194749.GA10210@google.com>
-References: <20150520194749.GA10210@google.com>
-Message-ID: <4D1FB504F643AC4BA12C9F34A1763FA419CB34F7@HASMSX106.ger.corp.intel.com>
+From: David Miller <davem@davemloft.net>
+Date: Thu, 21 May 2015 12:07:13 -0400 (EDT)
+Subject: [Intel-wired-lan] [PATCH v5] ixgbe: Add module parameter to
+	disable VLAN filter
+In-Reply-To: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB460C@BPXM14GP.gisp.nec.co.jp>
+References: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB460C@BPXM14GP.gisp.nec.co.jp>
+Message-ID: <20150521.120713.1811144256149554543.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Bjorn,
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Date: Thu, 21 May 2015 13:10:49 +0000
 
-I'm going to check this and will get back to you with input/questions/resolution.
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> index 263cb40..b45570f 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> @@ -158,6 +158,10 @@ module_param(allow_unsupported_sfp, uint, 0);
+>  MODULE_PARM_DESC(allow_unsupported_sfp,
+>  		 "Allow unsupported and untested SFP+ modules on 82599-based adapters");
+>  
+> +static unsigned int disable_hw_vlan_filter;
+> +module_param(disable_hw_vlan_filter, uint, 0);
+> +MODULE_PARM_DESC(disable_hw_vlan_filter, "Disable HW VLAN filter");
 
-Thanks,
-Yanir
+Sorry, module parameters like this are not allowed.
 
+You must use a generic, portable interface, to configure networking
+device settings.
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Bjorn Helgaas
-> Sent: Wednesday, May 20, 2015 22:48
-> To: Yinghai Lu; Kirsher, Jeffrey T
-> Cc: linux-pci at vger.kernel.org; intel-wired-lan at lists.osuosl.org; linux-
-> kernel at vger.kernel.org; netdev at vger.kernel.org
-> Subject: [Intel-wired-lan] e1000e pci_disable_link_state_locked() issues
-> 
-> I think we have some issues with the e1000e usage of
-> pci_disable_link_state_locked(), which Yinghai added with 9f728f53dd70
-> ("PCI/e1000e: Add and use pci_disable_link_state_locked()").
-> 
-> That fixed an AER deadlock in the following path, where pci_bus_sem is held
-> by pci_walk_bus(), and we deadlocked when we tried to re-acquire it in
-> pci_disable_link_state():
-> 
->   do_recovery
->     broadcast_error_message(..., report_slot_reset)
->       pci_walk_bus
->         down_read(&pci_bus_sem)
->           cb(...)                                       # report_slot_reset
->             report_slot_reset
->               dev->driver->err_handler->slot_reset      # e1000_io_slot_reset
->                 e1000_io_slot_reset
->                   e1000e_disable_aspm
->                     pci_disable_link_state
->                       down_read(&pci_bus_sem)
-> 
-> 9f728f53dd70 fixed that by changing e1000e_disable_aspm() to use
-> pci_disable_link_state_locked() instead, which assumes pci_bus_sem is
-> already held.
-> 
-> That's fine for the e1000_io_slot_reset() path, where pci_bus_sem really
-> *is* held.  But e1000e_disable_aspm() is also called from e1000_probe() and
-> __e1000_resume(), and in those paths, we *don't* hold pci_bus_sem.
-> 
-> In effect, the caller of pci_disable_link_state_locked() is promising that
-> pci_bus_sem is held, and __pci_disable_link_state() relies on that promise
-> for its locking.  But e1000e isn't upholding its end of the bargain.
-> 
-> I'm not 100% sure __pci_disable_link_state() actually *needs* that locking:
-> it is only called from a driver, and it should be impossible for a device or any
-> upstream bridge to go away while a driver is bound to it.  If somebody
-> wanted to analyze this further and propose a patch to remove the locking (if
-> it seems safe), that would be great.
-> 
-> But in any case, __pci_disable_link_state() should be able to rely on its callers
-> following the rules, so I'd like to see an e1000e change to use
-> pci_disable_link_state() from the paths where pci_bus_sem is not held.
-> 
-> Bjorn
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at lists.osuosl.org
-> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
----------------------------------------------------------------------
-Intel Israel (74) Limited
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+Otherwise every other driver that wants to do something similar will
+have yet another module option with a different name, and every user
+will suffer because they will need to learn a different mechanism
+to perform this configuration for every driver.
