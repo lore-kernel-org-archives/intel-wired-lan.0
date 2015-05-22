@@ -1,51 +1,48 @@
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Date: Fri, 22 May 2015 00:54:31 +0000
+From: David Miller <davem@davemloft.net>
+Date: Thu, 21 May 2015 23:56:21 -0400 (EDT)
 Subject: [Intel-wired-lan] [PATCH v5] ixgbe: Add module parameter to
 	disable VLAN filter
-In-Reply-To: <20150521.120713.1811144256149554543.davem@davemloft.net>
+In-Reply-To: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB4CA5@BPXM14GP.gisp.nec.co.jp>
 References: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB460C@BPXM14GP.gisp.nec.co.jp>
  <20150521.120713.1811144256149554543.davem@davemloft.net>
-Message-ID: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB4CA5@BPXM14GP.gisp.nec.co.jp>
+ <7F861DC0615E0C47A872E6F3C5FCDDBD05EB4CA5@BPXM14GP.gisp.nec.co.jp>
+Message-ID: <20150521.235621.1327147683644588927.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> Subject: Re: [PATCH v5] ixgbe: Add module parameter to disable VLAN filter
-> 
-> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> Date: Thu, 21 May 2015 13:10:49 +0000
-> 
-> > diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> > index 263cb40..b45570f 100644
-> > --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> > +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> > @@ -158,6 +158,10 @@ module_param(allow_unsupported_sfp, uint, 0);
-> >  MODULE_PARM_DESC(allow_unsupported_sfp,
-> >  		 "Allow unsupported and untested SFP+ modules on 82599-based adapters");
-> >
-> > +static unsigned int disable_hw_vlan_filter;
-> > +module_param(disable_hw_vlan_filter, uint, 0);
-> > +MODULE_PARM_DESC(disable_hw_vlan_filter, "Disable HW VLAN filter");
-> 
-> Sorry, module parameters like this are not allowed.
-> 
-> You must use a generic, portable interface, to configure networking
-> device settings.
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Date: Fri, 22 May 2015 00:54:31 +0000
 
-Could you please tell me which interface is good for this?
-
+>> Subject: Re: [PATCH v5] ixgbe: Add module parameter to disable VLAN filter
+>> 
+>> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>> Date: Thu, 21 May 2015 13:10:49 +0000
+>> 
+>> > diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>> > index 263cb40..b45570f 100644
+>> > --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>> > +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>> > @@ -158,6 +158,10 @@ module_param(allow_unsupported_sfp, uint, 0);
+>> >  MODULE_PARM_DESC(allow_unsupported_sfp,
+>> >  		 "Allow unsupported and untested SFP+ modules on 82599-based adapters");
+>> >
+>> > +static unsigned int disable_hw_vlan_filter;
+>> > +module_param(disable_hw_vlan_filter, uint, 0);
+>> > +MODULE_PARM_DESC(disable_hw_vlan_filter, "Disable HW VLAN filter");
+>> 
+>> Sorry, module parameters like this are not allowed.
+>> 
+>> You must use a generic, portable interface, to configure networking
+>> device settings.
 > 
-> Otherwise every other driver that wants to do something similar will
-> have yet another module option with a different name, and every user
-> will suffer because they will need to learn a different mechanism
-> to perform this configuration for every driver.
+> Could you please tell me which interface is good for this?
 
-Right, I agree.
-But I thought that this requirement seems really special and closed in
-ixgbe driver, that the reason I tried it with module parameter.
+You will have to adjust the ixgbe driver such that, at run time, the
+chip can be reset/restarted/whatever so that the VLAN filter can
+be disabled.
 
-thanks,
-Hiroshi
-
+Then you can add an ethtool knob for this, which then any other driver
+with the same issue can use.
