@@ -1,68 +1,53 @@
-From: Alexander Duyck <alexander.h.duyck@redhat.com>
-Date: Fri, 22 May 2015 09:16:04 -0700
-Subject: [Intel-wired-lan] [PATCH v5] ixgbe: Add module parameter to
- disable VLAN filter
-In-Reply-To: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB460C@BPXM14GP.gisp.nec.co.jp>
-References: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB460C@BPXM14GP.gisp.nec.co.jp>
-Message-ID: <555F5644.8040401@redhat.com>
+From: Todd Fujinaka <todd.fujinaka@intel.com>
+Date: Fri, 22 May 2015 10:49:50 -0700
+Subject: [Intel-wired-lan] [PATCH] igb: report unsupported ethtool settings
+	in set_coalesce
+Message-ID: <20150522174950.16145.78447.stgit@htfujina-fc.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+There are many settings possible using ethtool -C/--coalesce, but not
+all of them are supported. Report failure when an unsupported option is
+set.
 
+Signed-off-by: Todd Fujinaka <todd.fujinaka@intel.com>
+---
+ drivers/net/ethernet/intel/igb/igb_ethtool.c |   21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-On 05/21/2015 06:10 AM, Hiroshi Shimamoto wrote:
-> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
->
-> Introduce module parameter "disable_hw_vlan_filter" to disable HW VLAN
-> filter on ixgbe module load.
->
->  From the hardware limitation, there are only 64 VLAN entries for HW VLAN
-> filter, and it leads to limit the number of VLANs up to 64 among PF and
-> VFs. For SDN/NFV case, we need to handle unlimited VLAN packets on VF.
-> In such case, every VLAN packet can be transmitted to each VF.
->
-> When we try to make VLAN devices on VF, the 65th VLAN registration fails
-> and never be able to receive a packet with that VLAN tag.
-> If we do the below command on VM, ethX.65 to ethX.100 cannot be created.
->    # for i in `seq 1 100`; do \
->      ip link add link ethX name ethX.$i type vlan id $i; done
->
-> There is a capability to disable HW VLAN filter and that makes all VLAN
-> tagged packets can be transmitted to every VFs. After VLAN filter stage,
-> unicast packets are transmitted to VF which has the MAC address same as
-> the transmitting packet.
->
-> With this patch and "disable_hw_vlan_filter=1", we can use unlimited
-> number of VLANs on VF.
->
-> Disabling HW VLAN filter breaks some NIC features such as DCB and FCoE.
-> DCB and FCoE are disabled when HW VLAN filter is disabled by this module
-> parameter.
-> Because of that reason, the administrator has to know that before turning
-> off HW VLAN filter.
-
-You might also want to note that it makes the system susceptible to 
-broadcast/multicast storms since it eliminates any/all VLAN isolation.  
-So a broadcast or multicast packet on one VLAN is received on ALL 
-interfaces regardless of their VLAN configuration. In addition the 
-current VF driver is likely to just receive the packet as untagged, see 
-ixgbevf_process_skb_fields().  As a result one or two VFs can bring the 
-entire system to a crawl by saturating the PCIe bus via 
-broadcast/multicast traffic since there is nothing to prevent them from 
-talking to each other over VLANs that are no longer there.
-
-For the sake of backwards compatibility I would say that a feature like 
-this should be mutually exclusive with SR-IOV as well since it will 
-cause erratic behavior.  The VF will receive requests from all VLANs 
-thinking the traffic is untagged, and then send replies back to VLAN 0 
-even though that isn't where the message originated. Until the VF issue 
-is fixed this type of feature is a no-go.
-
-- Alex
-
-
-
+diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+index 109cad9..13560fe 100644
+--- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
++++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+@@ -2159,6 +2159,27 @@ static int igb_set_coalesce(struct net_device *netdev,
+ 	struct igb_adapter *adapter = netdev_priv(netdev);
+ 	int i;
+ 
++	if ((ec->rx_max_coalesced_frames != -1) ||
++	    (ec->rx_coalesce_usecs_irq != -1) ||
++	    (ec->rx_max_coalesced_frames_irq != -1) ||
++	    (ec->tx_max_coalesced_frames != -1) ||
++	    (ec->tx_coalesce_usecs_irq != -1) ||
++	    (ec->stats_block_coalesce_usecs != -1) ||
++	    (ec->use_adaptive_rx_coalesce != -1) ||
++	    (ec->use_adaptive_tx_coalesce != -1) ||
++	    (ec->pkt_rate_low != -1) ||
++	    (ec->rx_coalesce_usecs_low != -1) ||
++	    (ec->rx_max_coalesced_frames_low != -1) ||
++	    (ec->tx_coalesce_usecs_low != -1) ||
++	    (ec->tx_max_coalesced_frames_low != -1) ||
++	    (ec->pkt_rate_high != -1) ||
++	    (ec->rx_coalesce_usecs_high != -1) ||
++	    (ec->rx_max_coalesced_frames_high != -1) ||
++	    (ec->tx_coalesce_usecs_high != -1) ||
++	    (ec->tx_max_coalesced_frames_high != -1) ||
++	    (ec->rate_sample_interval != -1))
++		return -ENOTSUPP;
++
+ 	if ((ec->rx_coalesce_usecs > IGB_MAX_ITR_USECS) ||
+ 	    ((ec->rx_coalesce_usecs > 3) &&
+ 	     (ec->rx_coalesce_usecs < IGB_MIN_ITR_USECS)) ||
 
