@@ -1,9 +1,9 @@
 From: Yijing Wang <wangyijing@huawei.com>
-Date: Fri, 22 May 2015 15:14:14 +0800
+Date: Fri, 22 May 2015 15:55:30 +0800
 Subject: [Intel-wired-lan] e1000e pci_disable_link_state_locked() issues
 In-Reply-To: <20150520194749.GA10210@google.com>
 References: <20150520194749.GA10210@google.com>
-Message-ID: <555ED746.8030406@huawei.com>
+Message-ID: <555EE0F2.1010109@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -45,27 +45,14 @@ On 2015/5/21 3:47, Bjorn Helgaas wrote:
 > 
 > I'm not 100% sure __pci_disable_link_state() actually *needs* that locking:
 > it is only called from a driver, and it should be impossible for a device
-
-pci_disable_link_state()/pci_disable_link_state_locked() almost always be called in drivers,
-one exception is a quirk function quirk_disable_aspm_l0s(). Since the final fixup is called
-in pci_bus_add_device(), and we have big lock pci_rescan_remove_lock to protect the add/remove,
-so I think it's still safe to call pci_disable_link_state() in quirk_disable_aspm_l0s() without
-the pci_bus_sem lock.
-
-/*
- * The 82575 and 82598 may experience data corruption issues when transitioning
- * out of L0S.  To prevent this we need to disable L0S on the pci-e link
- */
-static void quirk_disable_aspm_l0s(struct pci_dev *dev)
-{
-	dev_info(&dev->dev, "Disabling L0s\n");
-	pci_disable_link_state(dev, PCIE_LINK_STATE_L0S);
-}
-DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x10a7, quirk_disable_aspm_l0s);
-...
-
-
 > or any upstream bridge to go away while a driver is bound to it.  If
+
+Another question, when pci_disable_link_state() is called in driver,  the device and
+its upstream bridge do not go away while a driver is bound to it, but what about a new
+function device adding to the upstream bridge secondary bus. In this case, traverse
+the pci_bus->devices list may be not safe.
+
+
 > somebody wanted to analyze this further and propose a patch to remove the
 > locking (if it seems safe), that would be great.
 > 
