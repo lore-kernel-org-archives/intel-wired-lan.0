@@ -1,93 +1,58 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 22 May 2015 11:29:07 -0700
-Subject: [Intel-wired-lan] [PATCH] igb: report unsupported ethtool
- settings in set_coalesce
-In-Reply-To: <9B4A1B1917080E46B64F07F2989DADD65354DCC3@ORSMSX114.amr.corp.intel.com>
-References: <20150522174950.16145.78447.stgit@htfujina-fc.jf.intel.com>
- <555F70BE.6090904@redhat.com>
- <9B4A1B1917080E46B64F07F2989DADD65354DCC3@ORSMSX114.amr.corp.intel.com>
-Message-ID: <555F7573.9040704@gmail.com>
+From: Rose, Gregory V <gregory.v.rose@intel.com>
+Date: Fri, 22 May 2015 15:07:33 +0000
+Subject: [Intel-wired-lan] [PATCH v5 3/3] ixgbe: Add new ndo to trust VF
+In-Reply-To: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB4EE6@BPXM14GP.gisp.nec.co.jp>
+References: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB28F4@BPXM14GP.gisp.nec.co.jp>
+ <F6FB0E698C9B3143BDF729DF22286646912FB5E4@ORSMSX110.amr.corp.intel.com>
+ <7F861DC0615E0C47A872E6F3C5FCDDBD05EB3B4A@BPXM14GP.gisp.nec.co.jp>
+ <F6FB0E698C9B3143BDF729DF22286646912FBBEC@ORSMSX110.amr.corp.intel.com>
+ <7F861DC0615E0C47A872E6F3C5FCDDBD05EB4EE6@BPXM14GP.gisp.nec.co.jp>
+Message-ID: <C5551D9AAB213A418B7FD5E4A6F30A07892F9481@ORSMSX108.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-I think I see what you are talking about.  They used s32 in the ethtool 
-do_scoalesce call, and pointed the void pointer wanted_val at it which 
-is how they did the conversion.
 
-You might want to just == ~0 or ~(ec->...) instead to test the values.
-
-- Alex
-
-On 05/22/2015 11:10 AM, Fujinaka, Todd wrote:
-> Those are unsigned? The code for ethtool set them all to -1.
->
-> Todd Fujinaka
-> Software Application Engineer
-> Networking Division (ND)
-> Intel Corporation
-> todd.fujinaka at intel.com
-> (503) 712-4565
->
 > -----Original Message-----
-> From: Alexander Duyck [mailto:alexander.h.duyck at redhat.com]
-> Sent: Friday, May 22, 2015 11:09 AM
-> To: Fujinaka, Todd; intel-wired-lan at lists.osuosl.org
-> Subject: Re: [Intel-wired-lan] [PATCH] igb: report unsupported ethtool settings in set_coalesce
->
->
->
-> On 05/22/2015 10:49 AM, Todd Fujinaka wrote:
->> There are many settings possible using ethtool -C/--coalesce, but not
->> all of them are supported. Report failure when an unsupported option
->> is set.
->>
->> Signed-off-by: Todd Fujinaka <todd.fujinaka@intel.com>
->> ---
->>    drivers/net/ethernet/intel/igb/igb_ethtool.c |   21 +++++++++++++++++++++
->>    1 file changed, 21 insertions(+)
->>
->> diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c
->> b/drivers/net/ethernet/intel/igb/igb_ethtool.c
->> index 109cad9..13560fe 100644
->> --- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
->> +++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
->> @@ -2159,6 +2159,27 @@ static int igb_set_coalesce(struct net_device *netdev,
->>    	struct igb_adapter *adapter = netdev_priv(netdev);
->>    	int i;
->>
->> +	if ((ec->rx_max_coalesced_frames != -1) ||
->> +	    (ec->rx_coalesce_usecs_irq != -1) ||
->> +	    (ec->rx_max_coalesced_frames_irq != -1) ||
->> +	    (ec->tx_max_coalesced_frames != -1) ||
->> +	    (ec->tx_coalesce_usecs_irq != -1) ||
->> +	    (ec->stats_block_coalesce_usecs != -1) ||
->> +	    (ec->use_adaptive_rx_coalesce != -1) ||
->> +	    (ec->use_adaptive_tx_coalesce != -1) ||
->> +	    (ec->pkt_rate_low != -1) ||
->> +	    (ec->rx_coalesce_usecs_low != -1) ||
->> +	    (ec->rx_max_coalesced_frames_low != -1) ||
->> +	    (ec->tx_coalesce_usecs_low != -1) ||
->> +	    (ec->tx_max_coalesced_frames_low != -1) ||
->> +	    (ec->pkt_rate_high != -1) ||
->> +	    (ec->rx_coalesce_usecs_high != -1) ||
->> +	    (ec->rx_max_coalesced_frames_high != -1) ||
->> +	    (ec->tx_coalesce_usecs_high != -1) ||
->> +	    (ec->tx_max_coalesced_frames_high != -1) ||
->> +	    (ec->rate_sample_interval != -1))
->> +		return -ENOTSUPP;
->> +
->>    	if ((ec->rx_coalesce_usecs > IGB_MAX_ITR_USECS) ||
->>    	    ((ec->rx_coalesce_usecs > 3) &&
->>    	     (ec->rx_coalesce_usecs < IGB_MIN_ITR_USECS)) ||
->>
-> Shouldn't these tests all give you a signed/unsigned mismatch since you are comparing an unsigned 32 bit value versus a signed value?
->
-> - Alex
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Hiroshi Shimamoto
+> Sent: Thursday, May 21, 2015 7:31 PM
+> To: Skidmore, Donald C; Kirsher, Jeffrey T; intel-wired-
+> lan at lists.osuosl.org
+> Cc: nhorman at redhat.com; jogreene at redhat.com; Linux Netdev List; Choi, Sy
+> Jong; Rony Efraim; David Miller; Edward Cree; Or Gerlitz;
+> sassmann at redhat.com
+> Subject: Re: [Intel-wired-lan] [PATCH v5 3/3] ixgbe: Add new ndo to trust
+> VF
+> 
+
+[big snip]
+
+> I think your concerns are related to some operational assumptions.
+> My basic concept is, not to change the behavior of VM, existing user
+> operation.
+> I mean that I didn't think it's better that the user should check the both
+> of the ixgbevf driver can deal with new API and the VF is trusted.
+> 
+> Now, I think the point is who takes care whether the VF is trusted. Right?
+> It seems that you think the VF user should handle that user is trusted and
+> do something with a notice that "you're trusted or untrusted" from the
+> host.
+> Is that correct?
+> I made it in PF side, because it looks easy to handle it. If something to
+> do in VF side, I think ixgbevf driver should handle it.
+
+Setting the VF trusted mode feature should only be allowed through the PF as it is the only trusted entity from the start.  We do not want the VF being able to decide for itself to be trusted.
+
+- Greg
+
+> 
+> thanks,
+> Hiroshi
+> 
 > _______________________________________________
 > Intel-wired-lan mailing list
 > Intel-wired-lan at lists.osuosl.org
 > http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-
