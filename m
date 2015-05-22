@@ -1,75 +1,68 @@
-From: Yijing Wang <wangyijing@huawei.com>
-Date: Fri, 22 May 2015 15:55:30 +0800
-Subject: [Intel-wired-lan] e1000e pci_disable_link_state_locked() issues
-In-Reply-To: <20150520194749.GA10210@google.com>
-References: <20150520194749.GA10210@google.com>
-Message-ID: <555EE0F2.1010109@huawei.com>
+From: Alexander Duyck <alexander.h.duyck@redhat.com>
+Date: Fri, 22 May 2015 09:16:04 -0700
+Subject: [Intel-wired-lan] [PATCH v5] ixgbe: Add module parameter to
+ disable VLAN filter
+In-Reply-To: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB460C@BPXM14GP.gisp.nec.co.jp>
+References: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB460C@BPXM14GP.gisp.nec.co.jp>
+Message-ID: <555F5644.8040401@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2015/5/21 3:47, Bjorn Helgaas wrote:
-> I think we have some issues with the e1000e usage of
-> pci_disable_link_state_locked(), which Yinghai added with 9f728f53dd70
-> ("PCI/e1000e: Add and use pci_disable_link_state_locked()").
-> 
-> That fixed an AER deadlock in the following path, where pci_bus_sem is held
-> by pci_walk_bus(), and we deadlocked when we tried to re-acquire it in
-> pci_disable_link_state():
-> 
->   do_recovery
->     broadcast_error_message(..., report_slot_reset)
->       pci_walk_bus
->         down_read(&pci_bus_sem)
->           cb(...)                                       # report_slot_reset
->             report_slot_reset
->               dev->driver->err_handler->slot_reset      # e1000_io_slot_reset
->                 e1000_io_slot_reset
->                   e1000e_disable_aspm
->                     pci_disable_link_state
->                       down_read(&pci_bus_sem)
-> 
-> 9f728f53dd70 fixed that by changing e1000e_disable_aspm() to use
-> pci_disable_link_state_locked() instead, which assumes pci_bus_sem is
-> already held.
-> 
-> That's fine for the e1000_io_slot_reset() path, where pci_bus_sem really
-> *is* held.  But e1000e_disable_aspm() is also called from e1000_probe() and
-> __e1000_resume(), and in those paths, we *don't* hold pci_bus_sem.
-> 
-> In effect, the caller of pci_disable_link_state_locked() is promising that
-> pci_bus_sem is held, and __pci_disable_link_state() relies on that promise
-> for its locking.  But e1000e isn't upholding its end of the bargain.
-> 
-> I'm not 100% sure __pci_disable_link_state() actually *needs* that locking:
-> it is only called from a driver, and it should be impossible for a device
-> or any upstream bridge to go away while a driver is bound to it.  If
-
-Another question, when pci_disable_link_state() is called in driver,  the device and
-its upstream bridge do not go away while a driver is bound to it, but what about a new
-function device adding to the upstream bridge secondary bus. In this case, traverse
-the pci_bus->devices list may be not safe.
 
 
-> somebody wanted to analyze this further and propose a patch to remove the
-> locking (if it seems safe), that would be great.
-> 
-> But in any case, __pci_disable_link_state() should be able to rely on its
-> callers following the rules, so I'd like to see an e1000e change to use
-> pci_disable_link_state() from the paths where pci_bus_sem is not held.
-> 
-> Bjorn
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo at vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
+On 05/21/2015 06:10 AM, Hiroshi Shimamoto wrote:
+> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>
+> Introduce module parameter "disable_hw_vlan_filter" to disable HW VLAN
+> filter on ixgbe module load.
+>
+>  From the hardware limitation, there are only 64 VLAN entries for HW VLAN
+> filter, and it leads to limit the number of VLANs up to 64 among PF and
+> VFs. For SDN/NFV case, we need to handle unlimited VLAN packets on VF.
+> In such case, every VLAN packet can be transmitted to each VF.
+>
+> When we try to make VLAN devices on VF, the 65th VLAN registration fails
+> and never be able to receive a packet with that VLAN tag.
+> If we do the below command on VM, ethX.65 to ethX.100 cannot be created.
+>    # for i in `seq 1 100`; do \
+>      ip link add link ethX name ethX.$i type vlan id $i; done
+>
+> There is a capability to disable HW VLAN filter and that makes all VLAN
+> tagged packets can be transmitted to every VFs. After VLAN filter stage,
+> unicast packets are transmitted to VF which has the MAC address same as
+> the transmitting packet.
+>
+> With this patch and "disable_hw_vlan_filter=1", we can use unlimited
+> number of VLANs on VF.
+>
+> Disabling HW VLAN filter breaks some NIC features such as DCB and FCoE.
+> DCB and FCoE are disabled when HW VLAN filter is disabled by this module
+> parameter.
+> Because of that reason, the administrator has to know that before turning
+> off HW VLAN filter.
+
+You might also want to note that it makes the system susceptible to 
+broadcast/multicast storms since it eliminates any/all VLAN isolation.  
+So a broadcast or multicast packet on one VLAN is received on ALL 
+interfaces regardless of their VLAN configuration. In addition the 
+current VF driver is likely to just receive the packet as untagged, see 
+ixgbevf_process_skb_fields().  As a result one or two VFs can bring the 
+entire system to a crawl by saturating the PCIe bus via 
+broadcast/multicast traffic since there is nothing to prevent them from 
+talking to each other over VLANs that are no longer there.
+
+For the sake of backwards compatibility I would say that a feature like 
+this should be mutually exclusive with SR-IOV as well since it will 
+cause erratic behavior.  The VF will receive requests from all VLANs 
+thinking the traffic is untagged, and then send replies back to VLAN 0 
+even though that isn't where the message originated. Until the VF issue 
+is fixed this type of feature is a no-go.
+
+- Alex
 
 
--- 
-Thanks!
-Yijing
+
 
