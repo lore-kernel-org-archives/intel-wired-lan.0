@@ -1,205 +1,275 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 22 May 2015 15:22:03 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 1156ea48ab7e76a27b548c7616ae85f6cd3f8e7d BUILD INCOMPLETE
-Message-ID: <555ed91b.34dQWS4nWbek6NGy%fengguang.wu@intel.com>
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Date: Fri, 22 May 2015 02:31:14 +0000
+Subject: [Intel-wired-lan] [PATCH v5 3/3] ixgbe: Add new ndo to trust VF
+In-Reply-To: <F6FB0E698C9B3143BDF729DF22286646912FBBEC@ORSMSX110.amr.corp.intel.com>
+References: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB28F4@BPXM14GP.gisp.nec.co.jp>
+ <F6FB0E698C9B3143BDF729DF22286646912FB5E4@ORSMSX110.amr.corp.intel.com>
+ <7F861DC0615E0C47A872E6F3C5FCDDBD05EB3B4A@BPXM14GP.gisp.nec.co.jp>
+ <F6FB0E698C9B3143BDF729DF22286646912FBBEC@ORSMSX110.amr.corp.intel.com>
+Message-ID: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB4EE6@BPXM14GP.gisp.nec.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-1156ea48ab7e76a27b548c7616ae85f6cd3f8e7d  igb: bump version to igb-5.3.0
+> > -----Original Message-----
+> > From: Hiroshi Shimamoto [mailto:h-shimamoto at ct.jp.nec.com]
+> > Sent: Wednesday, May 20, 2015 9:13 PM
+> > To: Skidmore, Donald C; Kirsher, Jeffrey T; intel-wired-lan at lists.osuosl.org
+> > Cc: Or Gerlitz; David Miller; Linux Netdev List; nhorman at redhat.com;
+> > sassmann at redhat.com; jogreene at redhat.com; Choi, Sy Jong; Edward Cree;
+> > Rony Efraim
+> > Subject: RE: [PATCH v5 3/3] ixgbe: Add new ndo to trust VF
+> >
+> > > > -----Original Message-----
+> > > > From: Hiroshi Shimamoto [mailto:h-shimamoto at ct.jp.nec.com]
+> > > > Sent: Tuesday, May 19, 2015 5:06 PM
+> > > > To: Kirsher, Jeffrey T; intel-wired-lan at lists.osuosl.org
+> > > > Cc: Skidmore, Donald C; Or Gerlitz; David Miller; Linux Netdev List;
+> > > > nhorman at redhat.com; sassmann at redhat.com; jogreene at redhat.com;
+> > Choi,
+> > > > Sy Jong; Edward Cree; Rony Efraim
+> > > > Subject: [PATCH v5 3/3] ixgbe: Add new ndo to trust VF
+> > > >
+> > > > From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> > > >
+> > > > Implement the new netdev op to trust VF in ixgbe and make VF
+> > > > multicast promiscuous mode enabled only in trusted VF.
+> > > >
+> > > > The administrator can make VF trusted by ip command which supports
+> > > > trust message.
+> > > >  # ip link set dev eth0 vf 1 trust on
+> > > >
+> > > > After making VF untrusted, ixgbe disables VF multicast promiscuous
+> > > > feature requested from VF.
+> > > >  # ip link set dev eth0 vf 1 trust off
+> > > >
+> > > > Only trusted VF can enable VF multicast promiscuous mode and handle
+> > > > over
+> > > > 30 IPv6 addresses on VM, because VF multicast promiscuous mode may
+> > > > hurt performance.
+> > > >
+> > > > Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> > > > Reviewed-by: Hayato Momma <h-momma@ce.jp.nec.com>
+> > > > CC: Choi, Sy Jong <sy.jong.choi@intel.com>
+> > > > ---
+> > > >  drivers/net/ethernet/intel/ixgbe/ixgbe.h       |  1 +
+> > > >  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  |  5 ++++
+> > > > drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 38
+> > > > +++++++++++++++++++++++---
+> > > > drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h |  2 ++
+> > > >  4 files changed, 42 insertions(+), 4 deletions(-)
+> > > >
+> > > > diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+> > > > b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+> > > > index 08e65b6..5181a4d 100644
+> > > > --- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+> > > > +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+> > > > @@ -153,6 +153,7 @@ struct vf_data_storage {
+> > > >  	u16 vlan_count;
+> > > >  	u8 spoofchk_enabled;
+> > > >  	bool rss_query_enabled;
+> > > > +	u8 trusted;
+> > > >  	unsigned int vf_api;
+> > > >  };
+> > > >
+> > > > diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> > > > b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> > > > index b1ea707..263cb40 100644
+> > > > --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> > > > +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> > > > @@ -3679,6 +3679,10 @@ static void
+> > > > ixgbe_configure_virtualization(struct
+> > > > ixgbe_adapter *adapter)
+> > > >  		/* Enable/Disable RSS query feature  */
+> > > >  		ixgbe_ndo_set_vf_rss_query_en(adapter->netdev, i,
+> > > >  					  adapter-
+> > > > >vfinfo[i].rss_query_enabled);
+> > > > +
+> > > > +		/* Reconfigure features in trusted */
+> > > > +		ixgbe_ndo_set_vf_trust(adapter->netdev, i,
+> > > > +				       adapter->vfinfo[i].trusted);
+> > > >  	}
+> > > >  }
+> > > >
+> > > > @@ -8182,6 +8186,7 @@ static const struct net_device_ops
+> > > > ixgbe_netdev_ops = {
+> > > >  	.ndo_set_vf_rate	= ixgbe_ndo_set_vf_bw,
+> > > >  	.ndo_set_vf_spoofchk	= ixgbe_ndo_set_vf_spoofchk,
+> > > >  	.ndo_set_vf_rss_query_en = ixgbe_ndo_set_vf_rss_query_en,
+> > > > +	.ndo_set_vf_trust	= ixgbe_ndo_set_vf_trust,
+> > > >  	.ndo_get_vf_config	= ixgbe_ndo_get_vf_config,
+> > > >  	.ndo_get_stats64	= ixgbe_get_stats64,
+> > > >  #ifdef CONFIG_IXGBE_DCB
+> > > > diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+> > > > b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+> > > > index 615f651..6c602bc 100644
+> > > > --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+> > > > +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+> > > > @@ -117,8 +117,11 @@ static int __ixgbe_enable_sriov(struct
+> > > > ixgbe_adapter
+> > > > *adapter)
+> > > >  			 */
+> > > >  			adapter->vfinfo[i].rss_query_enabled = 0;
+> > > >
+> > > > -			/* Turn multicast promiscuous mode off for all VFs */
+> > > > +			/* Disallow VF multicast promiscuous capability
+> > > > +			 * and turn it off for all VFs
+> > > > +			 */
+> > > >  			adapter->vfinfo[i].mc_promisc = false;
+> > > > +			adapter->vfinfo[i].trusted = false;
+> > > >  		}
+> > > >
+> > > >  		return 0;
+> > > > @@ -329,9 +332,14 @@ static int ixgbe_enable_vf_mc_promisc(struct
+> > > > ixgbe_adapter *adapter, u32 vf)
+> > > >  	hw = &adapter->hw;
+> > > >  	vmolr = IXGBE_READ_REG(hw, IXGBE_VMOLR(vf));
+> > > >
+> > > > -	e_info(drv, "VF %u: enabling multicast promiscuous\n", vf);
+> > > > -
+> > > > -	vmolr |= IXGBE_VMOLR_MPE;
+> > > > +	if (adapter->vfinfo[vf].trusted) {
+> > > > +		e_info(drv, "VF %u: enabling multicast promiscuous\n", vf);
+> > > > +		vmolr |= IXGBE_VMOLR_MPE;
+> > > > +	} else {
+> > > > +		e_info(drv, "VF %u: disabling multicast promiscuous "
+> > > > +		       "on untrusted VF.\n", vf);
+> > > > +		vmolr &= ~IXGBE_VMOLR_MPE;
+> > > > +	}
+> > > >
+> > > >  	IXGBE_WRITE_REG(hw, IXGBE_VMOLR(vf), vmolr);
+> > > >
+> > > > @@ -1492,6 +1500,27 @@ int ixgbe_ndo_set_vf_rss_query_en(struct
+> > > > net_device *netdev, int vf,
+> > > >  	return 0;
+> > > >  }
+> > > >
+> > > > +int ixgbe_ndo_set_vf_trust(struct net_device *netdev, int vf, bool
+> > > > +setting) {
+> > > > +	struct ixgbe_adapter *adapter = netdev_priv(netdev);
+> > > > +
+> > > > +	if (vf >= adapter->num_vfs)
+> > > > +		return -EINVAL;
+> > > > +
+> > > > +	/* nothing to do */
+> > > > +	if (adapter->vfinfo[vf].trusted == setting)
+> > > > +		return 0;
+> > > > +
+> > > > +	adapter->vfinfo[vf].trusted = setting;
+> > > > +
+> > > > +	/* Reconfigure features which are only allowed for trusted VF */
+> > > > +	/* VF multicast promiscuous mode */
+> > > > +	if (adapter->vfinfo[vf].mc_promisc)
+> > > > +		ixgbe_enable_vf_mc_promisc(adapter, vf);
+> > > > +
+> > > > +	return 0;
+> > > > +}
+> > > > +
+> > > >  int ixgbe_ndo_get_vf_config(struct net_device *netdev,
+> > > >  			    int vf, struct ifla_vf_info *ivi)  { @@ -1506,5 +1535,6
+> > @@
+> > > > int ixgbe_ndo_get_vf_config(struct net_device *netdev,
+> > > >  	ivi->qos = adapter->vfinfo[vf].pf_qos;
+> > > >  	ivi->spoofchk = adapter->vfinfo[vf].spoofchk_enabled;
+> > > >  	ivi->rss_query_en = adapter->vfinfo[vf].rss_query_enabled;
+> > > > +	ivi->trusted = adapter->vfinfo[vf].trusted;
+> > > >  	return 0;
+> > > >  }
+> > > > diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h
+> > > > b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h
+> > > > index 2c197e6..d85e6fc 100644
+> > > > --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h
+> > > > +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h
+> > > > @@ -49,6 +49,8 @@ int ixgbe_ndo_set_vf_bw(struct net_device
+> > *netdev,
+> > > > int vf, int min_tx_rate,  int ixgbe_ndo_set_vf_spoofchk(struct
+> > > > net_device *netdev, int vf, bool setting);  int
+> > > > ixgbe_ndo_set_vf_rss_query_en(struct
+> > > > net_device *netdev, int vf,
+> > > >  				  bool setting);
+> > > > +int ixgbe_ndo_set_vf_trust(struct net_device *netdev,
+> > > > +			    int vf, bool setting);
+> > > >  int ixgbe_ndo_get_vf_config(struct net_device *netdev,
+> > > >  			    int vf, struct ifla_vf_info *ivi);  void
+> > > > ixgbe_check_vf_rate_limit(struct ixgbe_adapter *adapter);
+> > > > --
+> > > > 1.8.3.1
+> > >
+> > > Hey Hiroshi,
+> > >
+> > > In general I like your patch set.   There is a little complexity I?m not sure I
+> > understand.  I'm assuming that:
+> > >
+> > >  adapter->vfinfo[vf].trusted - Clearly stores if the PF trusts a given
+> > > VF (i.e. allows it to go into "risky" configurations)
+> > >
+> > > What I'm a bit unclear about is:
+> > >
+> > > adapter->vfinfo[vf].mc_promisc - This seems to record that the VF at one
+> > time as requested over 30 MC.
+> >
+> > Yes, this is for keeping MC promisc request from VF.
+> >
+> > >
+> > > I don't understand the reason for this bit.  Wouldn't it be simpler and more
+> > straightforward to simply use the trusted
+> > > bit?   I guess specifically I don't understand why we would call
+> > ixgbe_enable_vf_mc_promisc() in ixgbe_ndo_set_vf_trust()
+> > > if mc_promisc is set.  Wouldn't just setting the trusted bit allow the
+> > > next IXGBE_VF_SET_MC_PROMISC mailbox message to
+> > > (possibly) turn on MC Promisc mode?
+> >
+> > I think that it's better to separate the features, to trust VF and to enable MC
+> > promisc.
+> > We might add other VF features which should be allowed only trusted VF.
+> > And it's good to have a knob to trust for allowing a such feature dynamically.
+> > The administrator can turn off or on MC promisc whenever it's needed.
+> 
+> 
+> My thoughts were that by enabling a VF to be trusted you would be allowing that VF to enter into MC promisc mode.  To
+> actually enter promisc MC mode all the VF would need to do is request more than 30 MC groups through the mailbox to the
+> PF.  This all makes sense to me and seems to be what you are doing.
+> 
+> My confusion comes, which I didn't explain all that well in my last email, comes from the following flow.
+> 
+> In the case where we are NOT trusted (adapter->vfinfo[vf].trusted == false).
+> 
+> - we get a IXGBE_VF_SET_MC_PROMISC from the VF.
+> - enter ixgbe_set_vf_mc_promisc()
+>   + set adapter->vfinfo[vf].mc_promisc = enable
+>   + Call return ixgbe_enable_vf_mc_promisc()
+>     ++ we do NOT set IXGBE_VMOLR_MPE since (adapter->vfinfo[vf].trusted == false)
+> 
+> - later some one turns on the trusted nod for this VF.
+> - ixgbe_ndo_set_vf_trust() sets the trusted flag
+> - <this is the part I don't understand> if the mc_promisc flag set, which it is from above, we call
+> ixgbe_enable_vf_mc_promisc().
+> 
+> 
+> It seems to me we are saving the fact that at one time in the past the VF requested to enter MC Promisc Mode
+> (IXGBE_VF_SET_MC_PROMISC) and failed since we were NOT trusted at the time.  Later if we do set this VF as "trusted" we
+> remember that fact and put the VF immediately into MC Promisc Mode.  Is this your take as well?
+> 
+> My concerns comes from entering MC Promisc Mode based on something that happened in the past.  This may not be as big
+> an issues since I notice the flag that remembers this state is cleared on reset or bringing the adapter down.  Still I
+> don't see the reason for saving that this request was made.  When it was made the VF wasn't "trusted" and we failed, like
+> we should have.  Later when the VF becomes "trusted" I would expect it to NOT enter the MC promisc state until the VF
+> requested for it again.
 
-drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:2082:22: sparse: restricted __le16 degrades to integer
-include/uapi/linux/ethtool.h:820:17: sparse: constant 0x000000FF00000000 is so big it is long
-include/uapi/linux/ethtool.h:820: warning: integer constant is too large for 'long' type
+I think your concerns are related to some operational assumptions.
+My basic concept is, not to change the behavior of VM, existing user operation.
+I mean that I didn't think it's better that the user should check the both of
+the ixgbevf driver can deal with new API and the VF is trusted.
 
-TIMEOUT after 609m
+Now, I think the point is who takes care whether the VF is trusted. Right?
+It seems that you think the VF user should handle that user is trusted and
+do something with a notice that "you're trusted or untrusted" from the host.
+Is that correct?
+I made it in PF side, because it looks easy to handle it. If something to do
+in VF side, I think ixgbevf driver should handle it.
 
+thanks,
+Hiroshi
 
-Sorry we cannot finish the testset for your branch within a reasonable time.
-It's our fault -- either some build server is down or some build worker is busy
-doing bisects for _other_ trees. The branch will get more complete coverage and
-possible error reports when our build infrastructure is restored or catches up.
-There will be no more build success notification for this branch head, but you
-can expect reasonably good test coverage after waiting for 1 day.
-
-configs tested: 173
-
-i386                             alldefconfig
-i386                             allmodconfig
-i386                              allnoconfig
-i386                                defconfig
-x86_64                 randconfig-a0-05220444
-x86_64                 randconfig-a1-05220444
-x86_64                            allnoconfig
-x86_64                     randconfig-c0-0518
-x86_64                     randconfig-c1-0518
-x86_64                     randconfig-c2-0518
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-i386                   randconfig-c0-05212033
-i386                   randconfig-c1-05212033
-arm                              allmodconfig
-arm                               allnoconfig
-arm                                      arm5
-arm                                     arm67
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                                       mmp
-arm                       omap2plus_defconfig
-arm                          prima2_defconfig
-arm                         s3c2410_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-arm                           tegra_defconfig
-powerpc                   defconfig-gcc-4.9.0
-powerpc             ppc64_defconfig-gcc-4.9.0
-powerpc                 allnoconfig-gcc-4.9.0
-powerpc                allmodconfig-gcc-4.9.0
-x86_64                randconfig-iv0-05211947
-x86_64                randconfig-iv1-05211947
-x86_64                           allyesconfig
-alpha                            allyesconfig
-avr32                            allyesconfig
-blackfin                         allyesconfig
-cris                             allyesconfig
-ia64                             allyesconfig
-m68k                             allyesconfig
-mips                             allyesconfig
-parisc                           allyesconfig
-powerpc                          allyesconfig
-s390                             allyesconfig
-sh                               allyesconfig
-sparc                            allyesconfig
-sparc64                          allyesconfig
-tile                             allyesconfig
-xtensa                           allyesconfig
-i386                  randconfig-ib0-05220908
-i386                  randconfig-ib1-05220908
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-microblaze                       allyesconfig
-x86_64                randconfig-ib0-05220909
-parisc              c3000_defconfig-gcc-4.9.0
-parisc               b180_defconfig-gcc-4.9.0
-parisc                    defconfig-gcc-4.9.0
-alpha                     defconfig-gcc-4.9.0
-parisc                  allnoconfig-gcc-4.9.0
-arm                          ixp4xx_defconfig
-blackfin                  CM-BF537U_defconfig
-powerpc                     rainier_defconfig
-sh                        edosk7705_defconfig
-sh                        sh7763rdp_defconfig
-x86_64                       randconfig-nexe1
-x86_64                       randconfig-nexe2
-x86_64                       randconfig-nexe3
-x86_64                       randconfig-nexe4
-x86_64                       randconfig-nexe5
-x86_64                       randconfig-nexe6
-x86_64                       randconfig-nexe7
-x86_64                       randconfig-nexe8
-x86_64                       randconfig-nexe9
-i386                         randconfig-nexe0
-i386                         randconfig-nexe1
-i386                         randconfig-nexe2
-i386                         randconfig-nexe3
-i386                         randconfig-nexe4
-i386                         randconfig-nexe5
-i386                         randconfig-nexe6
-i386                         randconfig-nexe7
-i386                         randconfig-nexe8
-i386                         randconfig-nexe9
-ia64                   allmodconfig-gcc-4.9.0
-ia64                    allnoconfig-gcc-4.9.0
-ia64                      defconfig-gcc-4.9.0
-ia64                   alldefconfig-gcc-4.9.0
-x86_64          randconfig-nexr2-0518-gcc-4.9
-i386            randconfig-nexr1-0518-gcc-4.9
-x86_64          randconfig-nexr1-0518-gcc-4.9
-x86_64          randconfig-nexr0-0518-gcc-4.9
-i386            randconfig-nexr0-0518-gcc-4.9
-i386            randconfig-nexr2-0518-gcc-4.9
-s390                   allmodconfig-gcc-4.9.0
-s390                    allnoconfig-gcc-4.9.0
-s390                      defconfig-gcc-4.9.0
-i386                     allyesconfig-gcc-4.9
-x86_64              randconfig-nexs0-05212027
-i386                randconfig-nexs0-05212027
-x86_64                 randconfig-n0-05211513
-x86_64                           allmodconfig
-m32r                        oaks32r_defconfig
-powerpc                 mpc832x_mds_defconfig
-s390                        default_defconfig
-sh                          sdk7786_defconfig
-sh                           se7343_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                       randconfig-r2-0521
-i386                       randconfig-r1-0521
-i386                       randconfig-r0-0521
-x86_64                 randconfig-r0-05211953
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-m68k                             allmodconfig
-m68k                          amiga_defconfig
-x86_64                 randconfig-s0-05211403
-x86_64                 randconfig-s1-05211403
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-x86_64                        randconfig-x000
-x86_64                        randconfig-x001
-x86_64                        randconfig-x002
-x86_64                        randconfig-x003
-x86_64                        randconfig-x004
-x86_64                        randconfig-x005
-x86_64                        randconfig-x006
-x86_64                        randconfig-x007
-x86_64                        randconfig-x008
-x86_64                        randconfig-x009
-i386                          randconfig-x000
-i386                          randconfig-x001
-i386                          randconfig-x002
-i386                          randconfig-x003
-i386                          randconfig-x004
-i386                          randconfig-x005
-i386                          randconfig-x006
-i386                          randconfig-x007
-i386                          randconfig-x008
-i386                          randconfig-x009
-i386                   randconfig-x0-05181040
-i386                   randconfig-x1-05181040
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-
-Thanks,
-Fengguang
