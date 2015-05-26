@@ -1,88 +1,187 @@
-From: John Fastabend <john.fastabend@gmail.com>
-Date: Tue, 26 May 2015 08:23:33 -0700
-Subject: [Intel-wired-lan] [net-next PATCH v5 2/2] ixgbe: Allow flow
- director to use entire queue space
-In-Reply-To: <20150526152231.29428.81833.stgit@nitbit.x32>
-References: <20150526152231.29428.81833.stgit@nitbit.x32>
-Message-ID: <20150526152321.29428.23903.stgit@nitbit.x32>
+From: Skidmore, Donald C <donald.c.skidmore@intel.com>
+Date: Tue, 26 May 2015 17:45:58 +0000
+Subject: [Intel-wired-lan] [PATCH v5 3/3] ixgbe: Add new ndo to trust VF
+In-Reply-To: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB8A65@BPXM14GP.gisp.nec.co.jp>
+References: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB28F4@BPXM14GP.gisp.nec.co.jp>
+ <F6FB0E698C9B3143BDF729DF22286646912FB5E4@ORSMSX110.amr.corp.intel.com>
+ <7F861DC0615E0C47A872E6F3C5FCDDBD05EB3B4A@BPXM14GP.gisp.nec.co.jp>
+ <F6FB0E698C9B3143BDF729DF22286646912FBBEC@ORSMSX110.amr.corp.intel.com>
+ <7F861DC0615E0C47A872E6F3C5FCDDBD05EB4EE6@BPXM14GP.gisp.nec.co.jp>
+ <C5551D9AAB213A418B7FD5E4A6F30A07892F9481@ORSMSX108.amr.corp.intel.com>
+ <F6FB0E698C9B3143BDF729DF22286646912FC2E3@ORSMSX110.amr.corp.intel.com>
+ <7F861DC0615E0C47A872E6F3C5FCDDBD05EB8A65@BPXM14GP.gisp.nec.co.jp>
+Message-ID: <F6FB0E698C9B3143BDF729DF22286646912FDC17@ORSMSX110.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Flow director is exported to user space using the ethtool ntuple
-support. However, currently it only supports steering traffic to a
-subset of the queues in use by the hardware. This change allows
-flow director to specify queues that have been assigned to virtual
-functions by partitioning the ring_cookie into a 8bit vf specifier
-followed by 32bit queue index. At the moment we don't have any
-ethernet drivers with more than 2^32 queues on a single function
-as best I can tell and nor do I expect this to happen anytime
-soon. This way the ring_cookie's normal use for specifying a queue
-on a specific PCI function continues to work as expected.
 
-Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   34 ++++++++++++++++------
- 1 file changed, 24 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-index eafa9ec..057a7c5 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-@@ -2594,18 +2594,35 @@ static int ixgbe_add_ethtool_fdir_entry(struct ixgbe_adapter *adapter,
- 	struct ixgbe_hw *hw = &adapter->hw;
- 	struct ixgbe_fdir_filter *input;
- 	union ixgbe_atr_input mask;
-+	u8 queue;
- 	int err;
- 
- 	if (!(adapter->flags & IXGBE_FLAG_FDIR_PERFECT_CAPABLE))
- 		return -EOPNOTSUPP;
- 
--	/*
--	 * Don't allow programming if the action is a queue greater than
--	 * the number of online Rx queues.
-+	/* ring_cookie is a masked into a set of queues and ixgbe pools or
-+	 * we use the drop index.
- 	 */
--	if ((fsp->ring_cookie != RX_CLS_FLOW_DISC) &&
--	    (fsp->ring_cookie >= adapter->num_rx_queues))
--		return -EINVAL;
-+	if (fsp->ring_cookie == RX_CLS_FLOW_DISC) {
-+		queue = IXGBE_FDIR_DROP_QUEUE;
-+	} else {
-+		u32 ring = ethtool_get_flow_spec_ring(fsp->ring_cookie);
-+		u8 vf = ethtool_get_flow_spec_ring_vf(fsp->ring_cookie);
-+
-+		if (!vf && (ring >= adapter->num_rx_queues))
-+			return -EINVAL;
-+		else if (vf &&
-+			 ((vf > adapter->num_vfs) ||
-+			   ring >= adapter->num_rx_queues_per_pool))
-+			return -EINVAL;
-+
-+		/* Map the ring onto the absolute queue index */
-+		if (!vf)
-+			queue = adapter->rx_ring[ring]->reg_idx;
-+		else
-+			queue = ((vf - 1) *
-+				adapter->num_rx_queues_per_pool) + ring;
-+	}
- 
- 	/* Don't allow indexes to exist outside of available space */
- 	if (fsp->location >= ((1024 << adapter->fdir_pballoc) - 2)) {
-@@ -2683,10 +2700,7 @@ static int ixgbe_add_ethtool_fdir_entry(struct ixgbe_adapter *adapter,
- 
- 	/* program filters to filter memory */
- 	err = ixgbe_fdir_write_perfect_filter_82599(hw,
--				&input->filter, input->sw_idx,
--				(input->action == IXGBE_FDIR_DROP_QUEUE) ?
--				IXGBE_FDIR_DROP_QUEUE :
--				adapter->rx_ring[input->action]->reg_idx);
-+				&input->filter, input->sw_idx, queue);
- 	if (err)
- 		goto err_out_w_lock;
- 
+> -----Original Message-----
+> From: Hiroshi Shimamoto [mailto:h-shimamoto at ct.jp.nec.com]
+> Sent: Monday, May 25, 2015 6:00 PM
+> To: Skidmore, Donald C; Rose, Gregory V; Kirsher, Jeffrey T; intel-wired-
+> lan at lists.osuosl.org
+> Cc: nhorman at redhat.com; jogreene at redhat.com; Linux Netdev List; Choi,
+> Sy Jong; Rony Efraim; David Miller; Edward Cree; Or Gerlitz;
+> sassmann at redhat.com
+> Subject: RE: [PATCH v5 3/3] ixgbe: Add new ndo to trust VF
+> 
+> > > -----Original Message-----
+> > > From: Rose, Gregory V
+> > > Sent: Friday, May 22, 2015 8:08 AM
+> > > To: Hiroshi Shimamoto; Skidmore, Donald C; Kirsher, Jeffrey T;
+> > > intel-wired- lan at lists.osuosl.org
+> > > Cc: nhorman at redhat.com; jogreene at redhat.com; Linux Netdev List;
+> > > Choi, Sy Jong; Rony Efraim; David Miller; Edward Cree; Or Gerlitz;
+> > > sassmann at redhat.com
+> > > Subject: RE: [PATCH v5 3/3] ixgbe: Add new ndo to trust VF
+> > >
+> > >
+> > > > -----Original Message-----
+> > > > From: Intel-wired-lan
+> > > > [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of
+> > > > Hiroshi Shimamoto
+> > > > Sent: Thursday, May 21, 2015 7:31 PM
+> > > > To: Skidmore, Donald C; Kirsher, Jeffrey T; intel-wired-
+> > > > lan at lists.osuosl.org
+> > > > Cc: nhorman at redhat.com; jogreene at redhat.com; Linux Netdev List;
+> > > > Choi, Sy Jong; Rony Efraim; David Miller; Edward Cree; Or Gerlitz;
+> > > > sassmann at redhat.com
+> > > > Subject: Re: [Intel-wired-lan] [PATCH v5 3/3] ixgbe: Add new ndo
+> > > > to trust VF
+> > > >
+> > >
+> > > [big snip]
+> > >
+> > > > I think your concerns are related to some operational assumptions.
+> > > > My basic concept is, not to change the behavior of VM, existing
+> > > > user operation.
+> > > > I mean that I didn't think it's better that the user should check
+> > > > the both of the ixgbevf driver can deal with new API and the VF is
+> trusted.
+> > > >
+> > > > Now, I think the point is who takes care whether the VF is trusted.
+> Right?
+> > > > It seems that you think the VF user should handle that user is
+> > > > trusted and do something with a notice that "you're trusted or
+> > > > untrusted" from the host.
+> > > > Is that correct?
+> > > > I made it in PF side, because it looks easy to handle it. If
+> > > > something to do in VF side, I think ixgbevf driver should handle it.
+> > >
+> > > Setting the VF trusted mode feature should only be allowed through
+> > > the PF as it is the only trusted entity from the start.  We do not
+> > > want the VF being able to decide for itself to be trusted.
+> > >
+> > > - Greg
+> > >
+> >
+> > I completely agree with Greg and never meant to imply anything else.
+> >
+> > The PF should be where a given VF is made "trusted".  Likewise a VF
+> > can get promoted to MC Promiscuous buy requesting over 30 MC groups.  I
+> like this and your patch currently does this.  So for example below:
+> >
+> > PF					VF
+> > ----------				-----------
+> > Set given VF as trusted
+> > 					Request 30+ MC groups via Mail Box
+> Put PF in MC Promiscuous mode
+> >
+> >
+> > What I am concerned about is the following flow where we seem to store
+> > the fact the VF requests more than 30+ MC groups so that we can
+> automatically enter MC Promisc Mode if that VF is ever made trusted.
+> >
+> > PF					VF
+> > -----------				----------
+> > Currently VF is NOT trusted
+> > 					Request 30+ MC groups via Mail Box
+> Do NOT put PF in MC Promisc
+> > (hw->mac.mc_promisc = true)
+> >
+> > < Some time later >
+> >
+> > Set given VF as trusted
+> > (because mc_promisc set) Put PF in MC Promisc
+> >
+> >
+> > I don't like the fact that the PF remembers that the VF was denied MC
+> > Promiscuous mode in the past.  And because of that automatically put
+> > the VF in MC Promiscuous mode when it becomes trusted.  Maybe
+> showing
+> > in code what I would like removed/added would be more helpful,
+> > probably should have started doing that. :)
+> 
+> Do you mean that VF should care about it is trusted or not?
+> Should VF request MC Promisc again when it's trusted?
+> Or, do you mean VF never be trusted during its (or VM's) lifetime?
+
+I think the VF shouldn't directly know whether it is trusted or not.  It should request MC Promisc and get it if it is trusted and not if it is not trusted.  So if you (as the system admin know you have a VF that will need to request MC Promisc make sure you promote that VF to trusted before assigning it to a VM.  That way when it requests MC Promisc the PF will be able to grant it.
+
+
+> 
+> And what do you think about being untrusted from trusted state?
+
+This is an interesting question.  If we allowed a VM to go from trusted -> untrusted we would have to turn off any "special" configuration that trusted allowed.  Maybe in such cases we could reset the PF?  And of course require all the "special" configuration (MC Promisc) to default to off after being reset.
+
+> 
+> >
+> > I would remove this bit of code from ixgbe_ndo_set_vf_trust():
+> >
+> > int ixgbe_ndo_set_vf_trust(struct net_device *netdev, int vf, bool
+> > setting) {
+> > 	struct ixgbe_adapter *adapter = netdev_priv(netdev);
+> >
+> > 	if (vf >= adapter->num_vfs)
+> > 		return -EINVAL;
+> >
+> > 	/* nothing to do */
+> > 	if (adapter->vfinfo[vf].trusted == setting)
+> > 		return 0;
+> >
+> > 	adapter->vfinfo[vf].trusted = setting;
+> >
+> > -	/* Reconfigure features which are only allowed for trusted VF */
+> > -	/* VF multicast promiscuous mode */
+> > -	if (adapter->vfinfo[vf].mc_promisc)
+> > -		ixgbe_enable_vf_mc_promisc(adapter, vf);
+> 
+> I understand, you don't think we need to have a capability to enable/disable
+> MC Promisc on the fly.
+> 
+> >
+> > 	return 0;
+> > }
+> >
+> > This of course would be we should not set mc_promisc ever if we are
+> > NOT trusted (adapter->vfinfo[vf].trusted) so in
+> > ixgbe_set_vf_mc_promisc() I would add or something like it:
+> >
+> > static int ixgbe_set_vf_mc_promisc(struct ixgbe_adapter *adapter,
+> > 				   u32 *msgbuf, u32 vf)
+> > {
+> > 	bool enable = !!msgbuf[1];	/* msgbuf contains the flag to enable
+> */
+> >
+> > 	switch (adapter->vfinfo[vf].vf_api) {
+> > 	case ixgbe_mbox_api_12:
+> > 		break;
+> > 	default:
+> > 		return -1;
+> > 	}
+> >
+> > +	/* have to be trusted */
+> > +	If (!adapter->vfinfo[vf].trusted)
+> > +		Return 0;
+> 
+> Should we return an error to VF to inform it isn't trusted?
+
+This too is a valid point.  Currently we would just not do it (MC Promisc) and the VF would have to figure that out for itself.  Passing a NAK back to the VF might be nicer. :)  Of course I assumed the sysadm would know that he/she wanted to give a VF trusted status and would do that before the VF was even assigned to a VM, so the issue would never come up.  Maybe that is not valid for your use case?
+
+Thanks,
+-Don 
 
