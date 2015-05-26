@@ -1,44 +1,38 @@
-From: Laurent Navet <laurent.navet@gmail.com>
-Date: Tue, 26 May 2015 22:26:14 +0200
-Subject: [Intel-wired-lan] [PATCH] i40e: remove unneeded tests
-Message-ID: <1432671974-16704-1-git-send-email-laurent.navet@gmail.com>
+From: Nicholas Krause <xerofoify@gmail.com>
+Date: Tue, 26 May 2015 14:50:01 -0400
+Subject: [Intel-wired-lan] [PATCH] e1000e: Fix comment for the function,
+	e1000e_setup_copper_link
+Message-ID: <1432666201-2011-1-git-send-email-xerofoify@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The same code is executed regardless ret_code value, so these tests can
-be removed.
-Fix Coverity CID 1268789 and 1268791
+This changes the comment about checking link status to state that
+we wait at least 10 microseconds rather then 100 as the third
+agrument passed to the function, e1000e_phy_has_link_generic
+for time delayed in microseconds is not 100 but 10 in this
+particular call to the function.
 
-Signed-off-by: Laurent Navet <laurent.navet@gmail.com>
+Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_hmc.c | 4 ----
- 1 file changed, 4 deletions(-)
+ drivers/net/ethernet/intel/e1000e/phy.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_hmc.c b/drivers/net/ethernet/intel/i40e/i40e_hmc.c
-index 9b987cc..eae4248 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_hmc.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_hmc.c
-@@ -298,8 +298,6 @@ i40e_status i40e_remove_sd_bp_new(struct i40e_hw *hw,
- 		goto exit;
+diff --git a/drivers/net/ethernet/intel/e1000e/phy.c b/drivers/net/ethernet/intel/e1000e/phy.c
+index b2005e1..456cd3f 100644
+--- a/drivers/net/ethernet/intel/e1000e/phy.c
++++ b/drivers/net/ethernet/intel/e1000e/phy.c
+@@ -1169,7 +1169,7 @@ s32 e1000e_setup_copper_link(struct e1000_hw *hw)
+ 		}
  	}
- 	ret_code = i40e_free_dma_mem(hw, &(sd_entry->u.bp.addr));
--	if (ret_code)
--		goto exit;
- exit:
- 	return ret_code;
- }
-@@ -353,8 +351,6 @@ i40e_status i40e_remove_pd_page_new(struct i40e_hw *hw,
- 	}
- 	/* free memory here */
- 	ret_code = i40e_free_dma_mem(hw, &(sd_entry->u.pd_table.pd_page_addr));
--	if (ret_code)
--		goto exit;
- exit:
- 	return ret_code;
- }
+ 
+-	/* Check link status. Wait up to 100 microseconds for link to become
++	/* Check link status. Wait up to 10 microseconds for link to become
+ 	 * valid.
+ 	 */
+ 	ret_val = e1000e_phy_has_link_generic(hw, COPPER_LINK_UP_LIMIT, 10,
 -- 
 2.1.4
 
