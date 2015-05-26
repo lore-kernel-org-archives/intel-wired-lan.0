@@ -1,38 +1,171 @@
-From: David Miller <davem@davemloft.net>
-Date: Sun, 31 May 2015 21:46:13 -0700 (PDT)
-Subject: [Intel-wired-lan] [PATCH] ethernet/intel: Use setup_timer
-In-Reply-To: <20150601044349.GA4730@vaishali-Ideapad-Z570>
-References: <20150601044349.GA4730@vaishali-Ideapad-Z570>
-Message-ID: <20150531.214613.1488046829950588850.davem@davemloft.net>
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Date: Tue, 26 May 2015 00:59:57 +0000
+Subject: [Intel-wired-lan] [PATCH v5 3/3] ixgbe: Add new ndo to trust VF
+In-Reply-To: <F6FB0E698C9B3143BDF729DF22286646912FC2E3@ORSMSX110.amr.corp.intel.com>
+References: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB28F4@BPXM14GP.gisp.nec.co.jp>
+ <F6FB0E698C9B3143BDF729DF22286646912FB5E4@ORSMSX110.amr.corp.intel.com>
+ <7F861DC0615E0C47A872E6F3C5FCDDBD05EB3B4A@BPXM14GP.gisp.nec.co.jp>
+ <F6FB0E698C9B3143BDF729DF22286646912FBBEC@ORSMSX110.amr.corp.intel.com>
+ <7F861DC0615E0C47A872E6F3C5FCDDBD05EB4EE6@BPXM14GP.gisp.nec.co.jp>
+ <C5551D9AAB213A418B7FD5E4A6F30A07892F9481@ORSMSX108.amr.corp.intel.com>
+ <F6FB0E698C9B3143BDF729DF22286646912FC2E3@ORSMSX110.amr.corp.intel.com>
+Message-ID: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB8A65@BPXM14GP.gisp.nec.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Vaishali Thakkar <vthakkar1994@gmail.com>
-Date: Mon, 1 Jun 2015 10:13:49 +0530
+> > -----Original Message-----
+> > From: Rose, Gregory V
+> > Sent: Friday, May 22, 2015 8:08 AM
+> > To: Hiroshi Shimamoto; Skidmore, Donald C; Kirsher, Jeffrey T; intel-wired-
+> > lan at lists.osuosl.org
+> > Cc: nhorman at redhat.com; jogreene at redhat.com; Linux Netdev List; Choi,
+> > Sy Jong; Rony Efraim; David Miller; Edward Cree; Or Gerlitz;
+> > sassmann at redhat.com
+> > Subject: RE: [PATCH v5 3/3] ixgbe: Add new ndo to trust VF
+> >
+> >
+> > > -----Original Message-----
+> > > From: Intel-wired-lan
+> > > [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Hiroshi
+> > > Shimamoto
+> > > Sent: Thursday, May 21, 2015 7:31 PM
+> > > To: Skidmore, Donald C; Kirsher, Jeffrey T; intel-wired-
+> > > lan at lists.osuosl.org
+> > > Cc: nhorman at redhat.com; jogreene at redhat.com; Linux Netdev List; Choi,
+> > > Sy Jong; Rony Efraim; David Miller; Edward Cree; Or Gerlitz;
+> > > sassmann at redhat.com
+> > > Subject: Re: [Intel-wired-lan] [PATCH v5 3/3] ixgbe: Add new ndo to
+> > > trust VF
+> > >
+> >
+> > [big snip]
+> >
+> > > I think your concerns are related to some operational assumptions.
+> > > My basic concept is, not to change the behavior of VM, existing user
+> > > operation.
+> > > I mean that I didn't think it's better that the user should check the
+> > > both of the ixgbevf driver can deal with new API and the VF is trusted.
+> > >
+> > > Now, I think the point is who takes care whether the VF is trusted. Right?
+> > > It seems that you think the VF user should handle that user is trusted
+> > > and do something with a notice that "you're trusted or untrusted" from
+> > > the host.
+> > > Is that correct?
+> > > I made it in PF side, because it looks easy to handle it. If something
+> > > to do in VF side, I think ixgbevf driver should handle it.
+> >
+> > Setting the VF trusted mode feature should only be allowed through the PF
+> > as it is the only trusted entity from the start.  We do not want the VF being
+> > able to decide for itself to be trusted.
+> >
+> > - Greg
+> >
+> 
+> I completely agree with Greg and never meant to imply anything else.
+> 
+> The PF should be where a given VF is made "trusted".  Likewise a VF can get promoted to MC Promiscuous buy requesting
+> over 30 MC groups.  I like this and your patch currently does this.  So for example below:
+> 
+> PF					VF
+> ----------				-----------
+> Set given VF as trusted
+> 					Request 30+ MC groups via Mail Box
+> Put PF in MC Promiscuous mode
+> 
+> 
+> What I am concerned about is the following flow where we seem to store the fact the VF requests more than 30+ MC groups
+> so that we can automatically enter MC Promisc Mode if that VF is ever made trusted.
+> 
+> PF					VF
+> -----------				----------
+> Currently VF is NOT trusted
+> 					Request 30+ MC groups via Mail Box
+> Do NOT put PF in MC Promisc
+> (hw->mac.mc_promisc = true)
+> 
+> < Some time later >
+> 
+> Set given VF as trusted
+> (because mc_promisc set) Put PF in MC Promisc
+> 
+> 
+> I don't like the fact that the PF remembers that the VF was denied MC Promiscuous mode in the past.  And because of that
+> automatically put the VF in MC Promiscuous mode when it becomes trusted.  Maybe showing in code what I would like removed/added
+> would be more helpful, probably should have started doing that. :)
 
-> Use the timer API function setup_timer instead of structure field
-> assignments to initialize a timer.
-> 
-> A simplified version of the Coccinelle semantic patch that performs
-> this transformation is as follows:
-> 
-> @change@
-> expression e1, e2, e3, e4, a, b;
-> @@
-> 
-> -init_timer(&e1);
-> +setup_timer(&e1, a, b);
-> 
-> ... when != a = e2
->     when != b = e3
-> 
-> -e1.function = a;
-> ... when != b = e4
-> -e1.data = b;
-> 
-> Signed-off-by: Vaishali Thakkar <vthakkar1994@gmail.com>
+Do you mean that VF should care about it is trusted or not?
+Should VF request MC Promisc again when it's trusted?
+Or, do you mean VF never be trusted during its (or VM's) lifetime?
 
-Applied, thanks.
+And what do you think about being untrusted from trusted state?
+
+> 
+> I would remove this bit of code from ixgbe_ndo_set_vf_trust():
+> 
+> int ixgbe_ndo_set_vf_trust(struct net_device *netdev, int vf, bool
+> setting) {
+> 	struct ixgbe_adapter *adapter = netdev_priv(netdev);
+> 
+> 	if (vf >= adapter->num_vfs)
+> 		return -EINVAL;
+> 
+> 	/* nothing to do */
+> 	if (adapter->vfinfo[vf].trusted == setting)
+> 		return 0;
+> 
+> 	adapter->vfinfo[vf].trusted = setting;
+> 
+> -	/* Reconfigure features which are only allowed for trusted VF */
+> -	/* VF multicast promiscuous mode */
+> -	if (adapter->vfinfo[vf].mc_promisc)
+> -		ixgbe_enable_vf_mc_promisc(adapter, vf);
+
+I understand, you don't think we need to have a capability to enable/disable MC Promisc on the fly.
+
+> 
+> 	return 0;
+> }
+> 
+> This of course would be we should not set mc_promisc ever if we are NOT trusted (adapter->vfinfo[vf].trusted) so in
+> ixgbe_set_vf_mc_promisc() I would add or something like it:
+> 
+> static int ixgbe_set_vf_mc_promisc(struct ixgbe_adapter *adapter,
+> 				   u32 *msgbuf, u32 vf)
+> {
+> 	bool enable = !!msgbuf[1];	/* msgbuf contains the flag to enable */
+> 
+> 	switch (adapter->vfinfo[vf].vf_api) {
+> 	case ixgbe_mbox_api_12:
+> 		break;
+> 	default:
+> 		return -1;
+> 	}
+> 
+> +	/* have to be trusted */
+> +	If (!adapter->vfinfo[vf].trusted)
+> +		Return 0;
+
+Should we return an error to VF to inform it isn't trusted?
+
+> +
+> 	/* nothing to do */
+> 	if (adapter->vfinfo[vf].mc_promisc == enable)
+> 		return 0;
+> 
+> 	adapter->vfinfo[vf].mc_promisc = enable;
+> 
+> 	if (enable)
+> 		return ixgbe_enable_vf_mc_promisc(adapter, vf);
+> 	else
+> 		return ixgbe_disable_vf_mc_promisc(adapter, vf); }
+> 
+> 
+> Does this better explain what my concern is?
+
+yes, I see, but I would like to clarify the above things.
+
+thanks,
+Hiroshi
