@@ -1,130 +1,66 @@
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Wed, 27 May 2015 12:27:41 -0500
+From: Rustad, Mark D <mark.d.rustad@intel.com>
+Date: Wed, 27 May 2015 19:11:05 +0000
 Subject: [Intel-wired-lan] [PATCH] pci: Use a bus-global mutex to
 	protect VPD operations
-In-Reply-To: <20150519000037.56109.68356.stgit@mdrustad-wks.jf.intel.com>
+In-Reply-To: <20150527172741.GX32152@google.com>
 References: <20150519000037.56109.68356.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <20150527172741.GX32152@google.com>
+ <20150527172741.GX32152@google.com>
+Message-ID: <151DE2D4-7D19-48B1-8317-9470F03B400D@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, May 18, 2015 at 05:00:37PM -0700, Mark D Rustad wrote:
-> Some devices have a problem with concurrent VPD access to different
-> functions of the same physical device, so move the protecting mutex
-> from the pci_vpd structure to the pci_bus structure. There are a
-> number of reports on support sites for a variety of devices from
-> various vendors getting the "vpd r/w failed" message. This is likely
-> to at least fix some of them. Thanks to Shannon Nelson for helping
-> to come up with this approach.
+> On May 27, 2015, at 10:27 AM, Bjorn Helgaas <bhelgaas@google.com> wrote:
 > 
-> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
-> Acked-by: Shannon Nelson <shannon.nelson@intel.com>
-> Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> It sounds like there are real problems here that would be fixed by changing
+> the mutex strategy and limiting VPD read lengths, but that we don't quite
+> have consensus on how to solve them yet.
 
-It sounds like there are real problems here that would be fixed by changing
-the mutex strategy and limiting VPD read lengths, but that we don't quite
-have consensus on how to solve them yet.
+I have a new pair of patches that I am getting internal feedback on. I
+will be on vacation starting tomorrow and won't be back until Tuesday, so
+I think it best to send them when I get back so that I will be available
+to respond. I could be convinced to send them now.
 
-VPD is a bit of a tar pit.  We've talked about limiting VPD read length
-before (see links below), which requires interpreting the VPD contents
-(just the tags & sizes) the kernel.  I think I'm OK with doing that,
-provided we should audit existing users and make sure we don't break them.
+> VPD is a bit of a tar pit.
 
-http://lkml.kernel.org/r/c67cd7f4-8d8f-48fc-a63c-dbdafde873a2 at CMEXHTCAS1.ad.emulex.com
-http://lkml.kernel.org/r/1f6d7b6c-7189-4fe3-926b-42609724cab9 at CMEXHTCAS2.ad.emulex.com
+It sure is.
 
-I'd also like to include specifics, e.g., bugzillas with complete dmesg and
-lspci information, for the problems we're fixing.
-
-Bjorn
-
-
-> ---
->  drivers/pci/access.c |   10 ++++------
->  drivers/pci/probe.c  |    1 +
->  2 files changed, 5 insertions(+), 6 deletions(-)
+> We've talked about limiting VPD read length
+> before (see links below), which requires interpreting the VPD contents
+> (just the tags & sizes) the kernel.  I think I'm OK with doing that,
+> provided we should audit existing users and make sure we don't break them.
 > 
-> diff --git a/drivers/pci/access.c b/drivers/pci/access.c
-> index d9b64a175990..6a1c8d6f95f1 100644
-> --- a/drivers/pci/access.c
-> +++ b/drivers/pci/access.c
-> @@ -281,7 +281,6 @@ PCI_USER_WRITE_CONFIG(dword, u32)
->  
->  struct pci_vpd_pci22 {
->  	struct pci_vpd base;
-> -	struct mutex lock;
->  	u16	flag;
->  	bool	busy;
->  	u8	cap;
-> @@ -340,7 +339,7 @@ static ssize_t pci_vpd_pci22_read(struct pci_dev *dev, loff_t pos, size_t count,
->  	if (pos < 0 || pos > vpd->base.len || end > vpd->base.len)
->  		return -EINVAL;
->  
-> -	if (mutex_lock_killable(&vpd->lock))
-> +	if (mutex_lock_killable(&dev->bus->vpd_mutex))
->  		return -EINTR;
->  
->  	ret = pci_vpd_pci22_wait(dev);
-> @@ -376,7 +375,7 @@ static ssize_t pci_vpd_pci22_read(struct pci_dev *dev, loff_t pos, size_t count,
->  		}
->  	}
->  out:
-> -	mutex_unlock(&vpd->lock);
-> +	mutex_unlock(&dev->bus->vpd_mutex);
->  	return ret ? ret : count;
->  }
->  
-> @@ -392,7 +391,7 @@ static ssize_t pci_vpd_pci22_write(struct pci_dev *dev, loff_t pos, size_t count
->  	if (pos < 0 || (pos & 3) || (count & 3) || end > vpd->base.len)
->  		return -EINVAL;
->  
-> -	if (mutex_lock_killable(&vpd->lock))
-> +	if (mutex_lock_killable(&dev->bus->vpd_mutex))
->  		return -EINTR;
->  
->  	ret = pci_vpd_pci22_wait(dev);
-> @@ -424,7 +423,7 @@ static ssize_t pci_vpd_pci22_write(struct pci_dev *dev, loff_t pos, size_t count
->  		pos += sizeof(u32);
->  	}
->  out:
-> -	mutex_unlock(&vpd->lock);
-> +	mutex_unlock(&dev->bus->vpd_mutex);
->  	return ret ? ret : count;
->  }
->  
-> @@ -453,7 +452,6 @@ int pci_vpd_pci22_init(struct pci_dev *dev)
->  
->  	vpd->base.len = PCI_VPD_PCI22_SIZE;
->  	vpd->base.ops = &pci_vpd_pci22_ops;
-> -	mutex_init(&vpd->lock);
->  	vpd->cap = cap;
->  	vpd->busy = false;
->  	dev->vpd = &vpd->base;
-> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-> index 6675a7a1b9fc..40c2a5a751d0 100644
-> --- a/drivers/pci/probe.c
-> +++ b/drivers/pci/probe.c
-> @@ -494,6 +494,7 @@ static struct pci_bus *pci_alloc_bus(struct pci_bus *parent)
->  	INIT_LIST_HEAD(&b->devices);
->  	INIT_LIST_HEAD(&b->slots);
->  	INIT_LIST_HEAD(&b->resources);
-> +	mutex_init(&b->vpd_mutex);
->  	b->max_bus_speed = PCI_SPEED_UNKNOWN;
->  	b->cur_bus_speed = PCI_SPEED_UNKNOWN;
->  #ifdef CONFIG_PCI_DOMAINS_GENERIC
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index 353db8dc4c6e..f8a51d172255 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -454,6 +454,7 @@ struct pci_bus {
->  	struct msi_controller *msi;	/* MSI controller */
->  	void		*sysdata;	/* hook for sys-specific extension */
->  	struct proc_dir_entry *procdir;	/* directory entry in /proc/bus/pci */
-> +	struct mutex	vpd_mutex;	/* bus-wide VPD access mutex */
->  
->  	unsigned char	number;		/* bus number */
->  	unsigned char	primary;	/* number of primary bridge */
+> http://lkml.kernel.org/r/c67cd7f4-8d8f-48fc-a63c-dbdafde873a2 at CMEXHTCAS1.ad.emulex.com
+> http://lkml.kernel.org/r/1f6d7b6c-7189-4fe3-926b-42609724cab9 at CMEXHTCAS2.ad.emulex.com
 > 
+> I'd also like to include specifics, e.g., bugzillas with complete dmesg and
+> lspci information, for the problems we're fixing.
+
+The issue I am addressing is for when the VPD Address/F and Data registers
+are shared across multiple functions. My latest patch addresses this by
+always performing the access through function 0. I added a dev_flags bit
+to indicate when this should be done, so only devices that have a quirk
+that sets that bit will get that treatment.
+
+The patch I have still doesn't address the issue for direct-assigned
+devices. I have no answer to that, but will point out that most guests
+seem to use virtual machines that don't support extended config space
+anyway. Only those that do support extended config space and access VPD
+could be a source of trouble.
+
+I have to say that I haven't actually reproduced the failure, but given
+the design of the hardware it is clear that somehow a common mutex needs
+to protect those shared registers.
+
+--
+Mark Rustad, Networking Division, Intel Corporation
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 841 bytes
+Desc: Message signed with OpenPGP using GPGMail
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150527/401fc125/attachment.asc>
