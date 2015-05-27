@@ -1,158 +1,130 @@
-From: Edward Cree <ecree@solarflare.com>
-Date: Wed, 27 May 2015 18:11:36 +0100
-Subject: [Intel-wired-lan] [PATCH v5 2/3] if_link: Add control trust VF
-In-Reply-To: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB28C7@BPXM14GP.gisp.nec.co.jp>
-References: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB28C7@BPXM14GP.gisp.nec.co.jp>
-Message-ID: <5565FAC8.4020906@solarflare.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Wed, 27 May 2015 12:27:41 -0500
+Subject: [Intel-wired-lan] [PATCH] pci: Use a bus-global mutex to
+	protect VPD operations
+In-Reply-To: <20150519000037.56109.68356.stgit@mdrustad-wks.jf.intel.com>
+References: <20150519000037.56109.68356.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <20150527172741.GX32152@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 20/05/15 01:04, Hiroshi Shimamoto wrote:
-> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
->
-> Add netlink directives and ndo entry to trust VF user.
->
-> This controls the special permission of VF user.
-> The administrator will dedicatedly trust VF user to use some features
-> which impacts security and/or performance.
->
-> The administrator never turn it on unless VF user is fully trusted.
-Seems fine; it's clear to me how these semantics would map to sfc (grant to the VF all the privilege groups the PF has).  So I'm happy this entry point is sufficiently generic.
+On Mon, May 18, 2015 at 05:00:37PM -0700, Mark D Rustad wrote:
+> Some devices have a problem with concurrent VPD access to different
+> functions of the same physical device, so move the protecting mutex
+> from the pci_vpd structure to the pci_bus structure. There are a
+> number of reports on support sites for a variety of devices from
+> various vendors getting the "vpd r/w failed" message. This is likely
+> to at least fix some of them. Thanks to Shannon Nelson for helping
+> to come up with this approach.
+> 
+> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+> Acked-by: Shannon Nelson <shannon.nelson@intel.com>
+> Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 
-Acked-by: Edward Cree <ecree@solarflare.com>
-> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> Reviewed-by: Hayato Momma <h-momma@ce.jp.nec.com>
-> CC: Choi, Sy Jong <sy.jong.choi@intel.com>
+It sounds like there are real problems here that would be fixed by changing
+the mutex strategy and limiting VPD read lengths, but that we don't quite
+have consensus on how to solve them yet.
+
+VPD is a bit of a tar pit.  We've talked about limiting VPD read length
+before (see links below), which requires interpreting the VPD contents
+(just the tags & sizes) the kernel.  I think I'm OK with doing that,
+provided we should audit existing users and make sure we don't break them.
+
+http://lkml.kernel.org/r/c67cd7f4-8d8f-48fc-a63c-dbdafde873a2 at CMEXHTCAS1.ad.emulex.com
+http://lkml.kernel.org/r/1f6d7b6c-7189-4fe3-926b-42609724cab9 at CMEXHTCAS2.ad.emulex.com
+
+I'd also like to include specifics, e.g., bugzillas with complete dmesg and
+lspci information, for the problems we're fixing.
+
+Bjorn
+
+
 > ---
->  include/linux/if_link.h      |  1 +
->  include/linux/netdevice.h    |  3 +++
->  include/uapi/linux/if_link.h |  6 ++++++
->  net/core/rtnetlink.c         | 19 +++++++++++++++++--
->  4 files changed, 27 insertions(+), 2 deletions(-)
->
-> diff --git a/include/linux/if_link.h b/include/linux/if_link.h
-> index da49299..f3d2d2f 100644
-> --- a/include/linux/if_link.h
-> +++ b/include/linux/if_link.h
-> @@ -15,5 +15,6 @@ struct ifla_vf_info {
->       __u32 min_tx_rate;
->       __u32 max_tx_rate;
->       __u32 rss_query_en;
-> +     __u32 trusted;
->  };
->  #endif /* _LINUX_IF_LINK_H */
-> diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-> index 51f8d2f..0875149 100644
-> --- a/include/linux/netdevice.h
-> +++ b/include/linux/netdevice.h
-> @@ -873,6 +873,7 @@ typedef u16 (*select_queue_fallback_t)(struct net_device *dev,
->   * int (*ndo_set_vf_rate)(struct net_device *dev, int vf, int min_tx_rate,
->   *                     int max_tx_rate);
->   * int (*ndo_set_vf_spoofchk)(struct net_device *dev, int vf, bool setting);
-> + * int (*ndo_set_vf_trust)(struct net_device *dev, int vf, bool setting);
->   * int (*ndo_get_vf_config)(struct net_device *dev,
->   *                       int vf, struct ifla_vf_info *ivf);
->   * int (*ndo_set_vf_link_state)(struct net_device *dev, int vf, int link_state);
-> @@ -1095,6 +1096,8 @@ struct net_device_ops {
->                                                  int max_tx_rate);
->       int                     (*ndo_set_vf_spoofchk)(struct net_device *dev,
->                                                      int vf, bool setting);
-> +     int                     (*ndo_set_vf_trust)(struct net_device *dev,
-> +                                                 int vf, bool setting);
->       int                     (*ndo_get_vf_config)(struct net_device *dev,
->                                                    int vf,
->                                                    struct ifla_vf_info *ivf);
-> diff --git a/include/uapi/linux/if_link.h b/include/uapi/linux/if_link.h
-> index afccc93..f05549c 100644
-> --- a/include/uapi/linux/if_link.h
-> +++ b/include/uapi/linux/if_link.h
-> @@ -480,6 +480,7 @@ enum {
->       IFLA_VF_RSS_QUERY_EN,   /* RSS Redirection Table and Hash Key query
->                                * on/off switch
->                                */
-> +     IFLA_VF_TRUST,          /* Trust VF */
->       __IFLA_VF_MAX,
->  };
->
-> @@ -529,6 +530,11 @@ struct ifla_vf_rss_query_en {
->       __u32 setting;
->  };
->
-> +struct ifla_vf_trust {
-> +     __u32 vf;
-> +     __u32 setting;
-> +};
-> +
->  /* VF ports management section
->   *
->   *   Nested layout of set/get msg is:
-> diff --git a/net/core/rtnetlink.c b/net/core/rtnetlink.c
-> index 141ccc3..1d9205a 100644
-> --- a/net/core/rtnetlink.c
-> +++ b/net/core/rtnetlink.c
-> @@ -819,7 +819,8 @@ static inline int rtnl_vfinfo_size(const struct net_device *dev,
->                        nla_total_size(sizeof(struct ifla_vf_spoofchk)) +
->                        nla_total_size(sizeof(struct ifla_vf_rate)) +
->                        nla_total_size(sizeof(struct ifla_vf_link_state)) +
-> -                      nla_total_size(sizeof(struct ifla_vf_rss_query_en)));
-> +                      nla_total_size(sizeof(struct ifla_vf_rss_query_en)) +
-> +                      nla_total_size(sizeof(struct ifla_vf_trust)));
->               return size;
->       } else
->               return 0;
-> @@ -1138,6 +1139,7 @@ static int rtnl_fill_ifinfo(struct sk_buff *skb, struct net_device *dev,
->                       struct ifla_vf_spoofchk vf_spoofchk;
->                       struct ifla_vf_link_state vf_linkstate;
->                       struct ifla_vf_rss_query_en vf_rss_query_en;
-> +                     struct ifla_vf_trust vf_trust;
->
->                       /*
->                        * Not all SR-IOV capable drivers support the
-> @@ -1147,6 +1149,7 @@ static int rtnl_fill_ifinfo(struct sk_buff *skb, struct net_device *dev,
->                        */
->                       ivi.spoofchk = -1;
->                       ivi.rss_query_en = -1;
-> +                     ivi.trusted = -1;
->                       memset(ivi.mac, 0, sizeof(ivi.mac));
->                       /* The default value for VF link state is "auto"
->                        * IFLA_VF_LINK_STATE_AUTO which equals zero
-> @@ -1160,7 +1163,8 @@ static int rtnl_fill_ifinfo(struct sk_buff *skb, struct net_device *dev,
->                               vf_tx_rate.vf =
->                               vf_spoofchk.vf =
->                               vf_linkstate.vf =
-> -                             vf_rss_query_en.vf = ivi.vf;
-> +                             vf_rss_query_en.vf =
-> +                             vf_trust.vf = ivi.vf;
->
->                       memcpy(vf_mac.mac, ivi.mac, sizeof(ivi.mac));
->                       vf_vlan.vlan = ivi.vlan;
-> @@ -1171,6 +1175,7 @@ static int rtnl_fill_ifinfo(struct sk_buff *skb, struct net_device *dev,
->                       vf_spoofchk.setting = ivi.spoofchk;
->                       vf_linkstate.link_state = ivi.linkstate;
->                       vf_rss_query_en.setting = ivi.rss_query_en;
-> +                     vf_trust.setting = ivi.trusted;
->                       vf = nla_nest_start(skb, IFLA_VF_INFO);
->                       if (!vf) {
->                               nla_nest_cancel(skb, vfinfo);
-> @@ -1524,6 +1529,16 @@ static int do_setvfinfo(struct net_device *dev, struct nlattr *attr)
->                                                           ivrssq_en->setting);
->                       break;
->               }
-> +             case IFLA_VF_TRUST: {
-> +                     struct ifla_vf_trust *ivt;
-> +
-> +                     ivt = nla_data(vf);
-> +                     err = -EOPNOTSUPP;
-> +                     if (ops->ndo_set_vf_trust)
-> +                             err = ops->ndo_set_vf_trust(dev, ivt->vf,
-> +                                                         ivt->setting);
-> +                     break;
-> +             }
->               default:
->                       err = -EINVAL;
->                       break;
-
-The information contained in this message is confidential and is intended for the addressee(s) only. If you have received this message in error, please notify the sender immediately and delete the message. Unless you are an addressee (or authorized to receive for an addressee), you may not use, copy or disclose to anyone this message or any information contained in this message. The unauthorized use, disclosure, copying or alteration of this message is strictly prohibited.
+>  drivers/pci/access.c |   10 ++++------
+>  drivers/pci/probe.c  |    1 +
+>  2 files changed, 5 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/pci/access.c b/drivers/pci/access.c
+> index d9b64a175990..6a1c8d6f95f1 100644
+> --- a/drivers/pci/access.c
+> +++ b/drivers/pci/access.c
+> @@ -281,7 +281,6 @@ PCI_USER_WRITE_CONFIG(dword, u32)
+>  
+>  struct pci_vpd_pci22 {
+>  	struct pci_vpd base;
+> -	struct mutex lock;
+>  	u16	flag;
+>  	bool	busy;
+>  	u8	cap;
+> @@ -340,7 +339,7 @@ static ssize_t pci_vpd_pci22_read(struct pci_dev *dev, loff_t pos, size_t count,
+>  	if (pos < 0 || pos > vpd->base.len || end > vpd->base.len)
+>  		return -EINVAL;
+>  
+> -	if (mutex_lock_killable(&vpd->lock))
+> +	if (mutex_lock_killable(&dev->bus->vpd_mutex))
+>  		return -EINTR;
+>  
+>  	ret = pci_vpd_pci22_wait(dev);
+> @@ -376,7 +375,7 @@ static ssize_t pci_vpd_pci22_read(struct pci_dev *dev, loff_t pos, size_t count,
+>  		}
+>  	}
+>  out:
+> -	mutex_unlock(&vpd->lock);
+> +	mutex_unlock(&dev->bus->vpd_mutex);
+>  	return ret ? ret : count;
+>  }
+>  
+> @@ -392,7 +391,7 @@ static ssize_t pci_vpd_pci22_write(struct pci_dev *dev, loff_t pos, size_t count
+>  	if (pos < 0 || (pos & 3) || (count & 3) || end > vpd->base.len)
+>  		return -EINVAL;
+>  
+> -	if (mutex_lock_killable(&vpd->lock))
+> +	if (mutex_lock_killable(&dev->bus->vpd_mutex))
+>  		return -EINTR;
+>  
+>  	ret = pci_vpd_pci22_wait(dev);
+> @@ -424,7 +423,7 @@ static ssize_t pci_vpd_pci22_write(struct pci_dev *dev, loff_t pos, size_t count
+>  		pos += sizeof(u32);
+>  	}
+>  out:
+> -	mutex_unlock(&vpd->lock);
+> +	mutex_unlock(&dev->bus->vpd_mutex);
+>  	return ret ? ret : count;
+>  }
+>  
+> @@ -453,7 +452,6 @@ int pci_vpd_pci22_init(struct pci_dev *dev)
+>  
+>  	vpd->base.len = PCI_VPD_PCI22_SIZE;
+>  	vpd->base.ops = &pci_vpd_pci22_ops;
+> -	mutex_init(&vpd->lock);
+>  	vpd->cap = cap;
+>  	vpd->busy = false;
+>  	dev->vpd = &vpd->base;
+> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+> index 6675a7a1b9fc..40c2a5a751d0 100644
+> --- a/drivers/pci/probe.c
+> +++ b/drivers/pci/probe.c
+> @@ -494,6 +494,7 @@ static struct pci_bus *pci_alloc_bus(struct pci_bus *parent)
+>  	INIT_LIST_HEAD(&b->devices);
+>  	INIT_LIST_HEAD(&b->slots);
+>  	INIT_LIST_HEAD(&b->resources);
+> +	mutex_init(&b->vpd_mutex);
+>  	b->max_bus_speed = PCI_SPEED_UNKNOWN;
+>  	b->cur_bus_speed = PCI_SPEED_UNKNOWN;
+>  #ifdef CONFIG_PCI_DOMAINS_GENERIC
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index 353db8dc4c6e..f8a51d172255 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -454,6 +454,7 @@ struct pci_bus {
+>  	struct msi_controller *msi;	/* MSI controller */
+>  	void		*sysdata;	/* hook for sys-specific extension */
+>  	struct proc_dir_entry *procdir;	/* directory entry in /proc/bus/pci */
+> +	struct mutex	vpd_mutex;	/* bus-wide VPD access mutex */
+>  
+>  	unsigned char	number;		/* bus number */
+>  	unsigned char	primary;	/* number of primary bridge */
+> 
