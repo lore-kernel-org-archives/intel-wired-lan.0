@@ -1,96 +1,181 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 26 May 2015 18:43:12 -0700
-Subject: [Intel-wired-lan] [PATCH v5] ixgbe: Add module parameter to
- disable VLAN filter
-In-Reply-To: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB9F5A@BPXM14GP.gisp.nec.co.jp>
-References: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB460C@BPXM14GP.gisp.nec.co.jp>
- <555F5644.8040401@redhat.com>
- <7F861DC0615E0C47A872E6F3C5FCDDBD05EB9F5A@BPXM14GP.gisp.nec.co.jp>
-Message-ID: <55652130.6090708@gmail.com>
+From: Rose, Gregory V <gregory.v.rose@intel.com>
+Date: Wed, 27 May 2015 02:00:36 +0000
+Subject: [Intel-wired-lan] [PATCH v5 3/3] ixgbe: Add new ndo to trust VF
+In-Reply-To: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB9DA7@BPXM14GP.gisp.nec.co.jp>
+References: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB28F4@BPXM14GP.gisp.nec.co.jp>
+ <F6FB0E698C9B3143BDF729DF22286646912FB5E4@ORSMSX110.amr.corp.intel.com>
+ <7F861DC0615E0C47A872E6F3C5FCDDBD05EB3B4A@BPXM14GP.gisp.nec.co.jp>
+ <F6FB0E698C9B3143BDF729DF22286646912FBBEC@ORSMSX110.amr.corp.intel.com>
+ <7F861DC0615E0C47A872E6F3C5FCDDBD05EB4EE6@BPXM14GP.gisp.nec.co.jp>
+ <C5551D9AAB213A418B7FD5E4A6F30A07892F9481@ORSMSX108.amr.corp.intel.com>
+ <F6FB0E698C9B3143BDF729DF22286646912FC2E3@ORSMSX110.amr.corp.intel.com>
+ <7F861DC0615E0C47A872E6F3C5FCDDBD05EB8A65@BPXM14GP.gisp.nec.co.jp>
+ <F6FB0E698C9B3143BDF729DF22286646912FDC17@ORSMSX110.amr.corp.intel.com>
+ <C5551D9AAB213A418B7FD5E4A6F30A07892FC8C7@ORSMSX108.amr.corp.intel.com>
+ <7F861DC0615E0C47A872E6F3C5FCDDBD05EB9DA7@BPXM14GP.gisp.nec.co.jp>
+Message-ID: <C5551D9AAB213A418B7FD5E4A6F30A07892FCD87@ORSMSX108.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 05/26/2015 06:11 PM, Hiroshi Shimamoto wrote:
->> On 05/21/2015 06:10 AM, Hiroshi Shimamoto wrote:
->>> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
->>>
->>> Introduce module parameter "disable_hw_vlan_filter" to disable HW VLAN
->>> filter on ixgbe module load.
->>>
->>>   From the hardware limitation, there are only 64 VLAN entries for HW VLAN
->>> filter, and it leads to limit the number of VLANs up to 64 among PF and
->>> VFs. For SDN/NFV case, we need to handle unlimited VLAN packets on VF.
->>> In such case, every VLAN packet can be transmitted to each VF.
->>>
->>> When we try to make VLAN devices on VF, the 65th VLAN registration fails
->>> and never be able to receive a packet with that VLAN tag.
->>> If we do the below command on VM, ethX.65 to ethX.100 cannot be created.
->>>     # for i in `seq 1 100`; do \
->>>       ip link add link ethX name ethX.$i type vlan id $i; done
->>>
->>> There is a capability to disable HW VLAN filter and that makes all VLAN
->>> tagged packets can be transmitted to every VFs. After VLAN filter stage,
->>> unicast packets are transmitted to VF which has the MAC address same as
->>> the transmitting packet.
->>>
->>> With this patch and "disable_hw_vlan_filter=1", we can use unlimited
->>> number of VLANs on VF.
->>>
->>> Disabling HW VLAN filter breaks some NIC features such as DCB and FCoE.
->>> DCB and FCoE are disabled when HW VLAN filter is disabled by this module
->>> parameter.
->>> Because of that reason, the administrator has to know that before turning
->>> off HW VLAN filter.
->> You might also want to note that it makes the system susceptible to
->> broadcast/multicast storms since it eliminates any/all VLAN isolation.
->> So a broadcast or multicast packet on one VLAN is received on ALL
->> interfaces regardless of their VLAN configuration. In addition the
->> current VF driver is likely to just receive the packet as untagged, see
->> ixgbevf_process_skb_fields().  As a result one or two VFs can bring the
->> entire system to a crawl by saturating the PCIe bus via
->> broadcast/multicast traffic since there is nothing to prevent them from
->> talking to each other over VLANs that are no longer there.
-> that's right.
->
-> On the other hand, an untagged packet is not isolated,
-> doesn't it same broadcast/multicast storm on untagged network?
 
-Yes, that is one of the reasons for VLANs.  It provides isolation so 
-that if you have two entities on the same network you won't have entity 
-A able to talk to entity B.  The problem is with VLAN promiscuous 
-enabled if entity B is a VF it will see the traffic but has no way to 
-know that it was VLAN tagged and a part of entity A's VLAN.
+> -----Original Message-----
+> From: Hiroshi Shimamoto [mailto:h-shimamoto at ct.jp.nec.com]
+> Sent: Tuesday, May 26, 2015 5:28 PM
+> To: Rose, Gregory V; Skidmore, Donald C; Kirsher, Jeffrey T; intel-wired-
+> lan at lists.osuosl.org
+> Cc: nhorman at redhat.com; jogreene at redhat.com; Linux Netdev List; Choi, Sy
+> Jong; Rony Efraim; David Miller; Edward Cree; Or Gerlitz;
+> sassmann at redhat.com
+> Subject: RE: [PATCH v5 3/3] ixgbe: Add new ndo to trust VF
+> 
+> > > -----Original Message-----
+> > > From: Skidmore, Donald C
+> > > Sent: Tuesday, May 26, 2015 10:46 AM
+> > > To: Hiroshi Shimamoto; Rose, Gregory V; Kirsher, Jeffrey T;
+> > > intel-wired- lan at lists.osuosl.org
+> > > Cc: nhorman at redhat.com; jogreene at redhat.com; Linux Netdev List;
+> > > Choi, Sy Jong; Rony Efraim; David Miller; Edward Cree; Or Gerlitz;
+> > > sassmann at redhat.com
+> > > Subject: RE: [PATCH v5 3/3] ixgbe: Add new ndo to trust VF
+> > >
+> > >
+> >
+> > [snip]
+> >
+> > >
+> > > > -----Original Message-----
+> > > > From: Hiroshi Shimamoto [mailto:h-shimamoto at ct.jp.nec.com]
+> > > > Sent: Monday, May 25, 2015 6:00 PM
+> > > > To: Skidmore, Donald C; Rose, Gregory V; Kirsher, Jeffrey T;
+> > > > intel-wired- lan at lists.osuosl.org
+> > > > Cc: nhorman at redhat.com; jogreene at redhat.com; Linux Netdev List;
+> > > > Choi, Sy Jong; Rony Efraim; David Miller; Edward Cree; Or Gerlitz;
+> > > > sassmann at redhat.com
+> > > > Subject: RE: [PATCH v5 3/3] ixgbe: Add new ndo to trust VF
+> > > >
+> > > >
+> > > > Do you mean that VF should care about it is trusted or not?
+> > > > Should VF request MC Promisc again when it's trusted?
+> > > > Or, do you mean VF never be trusted during its (or VM's) lifetime?
+> > >
+> > > I think the VF shouldn't directly know whether it is trusted or not
+> >
+> > That's completely irrevelant.  The person administering the PF will be
+> > the person who provided trusted privileges to the VF.  He'll then
+> > *tell* or somehow other communicate to the person administering the VF
+> (probably himself/herself) and then proceed to execute commands on that VF
+> that require trusted privileges.
+> >
+> > If the VF does not have trusted privileges then the commands to add
+> > VLAN filters, set promiscuous modes, and any other privileged commands
+> will fail.
+> >
+> > Let's not get too fancy with this.  It's simple - the host VMM admin
+> > provides trusted privileges to the VF.  The person administering the
+> > VF (if in fact it is not the same person, it usually will be) will
+> proceed to do things that require VF trusted privileges.
+> 
+> Now I think that it's better to have an interface between PF and VF to
+> know the VF is trusted.
+> Otherwise VM cannot know whether its VF is trusted, that prevents
+> automatic operations.
 
->
->> For the sake of backwards compatibility I would say that a feature like
->> this should be mutually exclusive with SR-IOV as well since it will
->> cause erratic behavior.  The VF will receive requests from all VLANs
->> thinking the traffic is untagged, and then send replies back to VLAN 0
->> even though that isn't where the message originated.
-> Sorry, I couldn't catch the above part.
-> Could you explain a bit more?
->
+Agreed, it would be silly for the VF to have privileges but not know that it can use them!  
+
+> Or add another communicating interface outside of ixgbe PF-VF mbox API?
+
+We can't depend on any given vendor specific interface.  I'd add a very clear comment in the 
+Physical Function ndo op that gives a VF trusted privileges that it is up to the driver to notify the VF driver.  But yes, in the case of Intel drivers the mailbox or admin queue (for i40e) would be the mechanism to do that.  I know you have some ixgbe patches that coincide with this patch so that's a good place to look.
+
+> 
+> >
+> >
+> > .  It
+> > > should request MC Promisc and get it if it is trusted and not if it
+> > > is not trusted.  So if you (as the system admin know you have a VF
+> > > that will need to request MC Promisc make sure you promote that VF
+> > > to trusted before assigning it to a VM.  That way when it requests
+> > > MC Promisc the PF will be able to grant it.
+> > >
+> >
+> > Multicast promiscuous should be allowed for the VFs.  We already allow
+> > VFs to set whatever multicast filters they want so if they want to go
+> > into MPE then so what?  We don't care.  It's not a security risk.
+> > Right now, without any modification, the VF can set 30 multicast
+> > filters and listen.  It can then remove those and set another 30 filters
+> and listen.  And so on and so on.  So if a VF can already listen on any MC
+> filter it wants then why this artificial restriction on MC promiscuous
+> mode.
+> 
+> I'm fine with that, previously I mentioned about that.
+> Without resetting PF, we can listen every MC packet which hash was set.
+> PF reset will restore the last 30 MC addresses per VF.
+> 
+> Also there is a single hash entries table, all VFs will got a MC packet
+> which hash was set in the table. If a VF user set a filter, other users
+> will receive that MC packet.
+> 
+> >
+> > We don't care about this case. Unicast promiscuous is the security risk
+> and I think we've handled that.
+> 
+> So, should we separate the discussion, about trusting VF operation and
+> about MC promiscuous?
+
+Yes.  And to my mind it shouldn't really be in the context of virtual function privilege or trust.
+
+> 
+> >
+> > >
+> > > >
+> > > > And what do you think about being untrusted from trusted state?
+> > >
+> > > This is an interesting question.  If we allowed a VM to go from
+> > > trusted -> untrusted we would have to turn off any "special"
+> > > configuration that trusted allowed.  Maybe in such cases we could
+> > > reset the PF?  And of course require all the "special" configuration
+> > > (MC Promisc) to default to off after being reset.
+> > >
+> >
+> > To remove privileges from a VF that you're already set to privileged
+> > will require destruction of the VF VSI and VFLR to the VF - after it
+> comes up it can't do any further privileged operations.
+> 
+> yeah, sounds good to reset VF on changing privilege.
+> 
+> >
+> > [snip
+> >
+> > > This too is a valid point.  Currently we would just not do it (MC
+> > > Promisc) and the VF would have to figure that out for itself.
+> > > Passing a NAK back to the VF might be nicer. :)  Of course I assumed
+> > > the sysadm would know that he/she wanted to give a VF trusted status
+> > > and would do that before the VF was even assigned to a VM, so the
+> > > issue would never come up.  Maybe that is not valid for your use case?
+> >
+> > Let's not worry about MC promiscuous mode.  As I pointed out above we
+> > already let VFs set any MC address filters they want so that horse has
+> already left the barn.
+> 
+> Do you think that VF MC promiscuous mode isn't needed to handle under
+> trusted mode, right?
+
+Correct, that's my opinion on it given the fact that historically there has never been any restriction on setting MC addresses by the VF. See my comments above in the respect.
+
+Thanks and regards Hiroshi,
+
+- Greg
+
+> 
 > thanks,
 > Hiroshi
->
->> Until the VF issue
->> is fixed this type of feature is a no-go.
->
-
-The current behavior for a VF is that if it receives a VLAN that it 
-didn't request it assumes it is operating in port VLAN mode.  The 
-problem is with your patch the VF will be receiving all traffic but have 
-no idea which VLAN it came from.  As a result it could be replying to 
-multicast or broadcast requests on one VLAN with the wrong VLAN ID.
-
-The VLAN behavior of the VF drivers will need to be fixed before 
-something like that could be supported with ANY of the VFs.  As such you 
-will probably need to fix the VF driver in order to allow any of them to 
-come online when VLAN filtering is disabled, as the driver will need to 
-report the VLAN tag ID up to the stack.
-
-- Alex
+> 
+> >
+> > Focus on getting the VF privileged mode configuration going and then
+> > we're well on our way to accomplishing what we need to do.
+> >
+> > - Greg
 
