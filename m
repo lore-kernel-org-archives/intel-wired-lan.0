@@ -1,52 +1,31 @@
-From: Shannon Nelson <shannon.nelson@intel.com>
-Date: Wed, 27 May 2015 09:31:16 -0700
-Subject: [Intel-wired-lan] [PATCH] i40e: remove unneeded tests
-In-Reply-To: <1432671974-16704-1-git-send-email-laurent.navet@gmail.com>
-References: <1432671974-16704-1-git-send-email-laurent.navet@gmail.com>
-Message-ID: <CAP-MU4MNXwJ9SzVbNoBkOM18pfc-E9HBR8OUOviFBxeyJpeTfQ@mail.gmail.com>
+From: Edward Cree <ecree@solarflare.com>
+Date: Wed, 27 May 2015 18:04:27 +0100
+Subject: [Intel-wired-lan] [PATCH v5 3/3] ixgbe: Add new ndo to trust VF
+In-Reply-To: <C5551D9AAB213A418B7FD5E4A6F30A07892FD632@ORSMSX108.amr.corp.intel.com>
+References: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB28F4@BPXM14GP.gisp.nec.co.jp>
+ <F6FB0E698C9B3143BDF729DF22286646912FB5E4@ORSMSX110.amr.corp.intel.com>
+ <7F861DC0615E0C47A872E6F3C5FCDDBD05EB3B4A@BPXM14GP.gisp.nec.co.jp>
+ <F6FB0E698C9B3143BDF729DF22286646912FBBEC@ORSMSX110.amr.corp.intel.com>
+ <7F861DC0615E0C47A872E6F3C5FCDDBD05EB4EE6@BPXM14GP.gisp.nec.co.jp>
+ <C5551D9AAB213A418B7FD5E4A6F30A07892F9481@ORSMSX108.amr.corp.intel.com>
+ <F6FB0E698C9B3143BDF729DF22286646912FC2E3@ORSMSX110.amr.corp.intel.com>
+ <7F861DC0615E0C47A872E6F3C5FCDDBD05EB8A65@BPXM14GP.gisp.nec.co.jp>
+ <F6FB0E698C9B3143BDF729DF22286646912FDC17@ORSMSX110.amr.corp.intel.com>
+ <C5551D9AAB213A418B7FD5E4A6F30A07892FC8C7@ORSMSX108.amr.corp.intel.com>
+ <7F861DC0615E0C47A872E6F3C5FCDDBD05EB9DA7@BPXM14GP.gisp.nec.co.jp>
+ <5565887B.5010808@solarflare.com>
+ <F6FB0E698C9B3143BDF729DF22286646912FE16E@ORSMSX110.amr.corp.intel.com>
+ <C5551D9AAB213A418B7FD5E4A6F30A07892FD632@ORSMSX108.amr.corp.intel.com>
+Message-ID: <5565F91B.8080405@solarflare.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, May 26, 2015 at 1:26 PM, Laurent Navet <laurent.navet@gmail.com> wrote:
-> The same code is executed regardless ret_code value, so these tests can
-> be removed.
-> Fix Coverity CID 1268789 and 1268791
->
-> Signed-off-by: Laurent Navet <laurent.navet@gmail.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_hmc.c | 4 ----
->  1 file changed, 4 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_hmc.c b/drivers/net/ethernet/intel/i40e/i40e_hmc.c
-> index 9b987cc..eae4248 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_hmc.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_hmc.c
-> @@ -298,8 +298,6 @@ i40e_status i40e_remove_sd_bp_new(struct i40e_hw *hw,
->                 goto exit;
->         }
->         ret_code = i40e_free_dma_mem(hw, &(sd_entry->u.bp.addr));
-> -       if (ret_code)
-> -               goto exit;
->  exit:
->         return ret_code;
->  }
-> @@ -353,8 +351,6 @@ i40e_status i40e_remove_pd_page_new(struct i40e_hw *hw,
->         }
->         /* free memory here */
->         ret_code = i40e_free_dma_mem(hw, &(sd_entry->u.pd_table.pd_page_addr));
-> -       if (ret_code)
-> -               goto exit;
->  exit:
->         return ret_code;
->  }
-> --
-
-Thanks, Laurent, for noticing this.  You're right, this needs some
-attention, but I think by rewriting these two functions a little we
-can come up with an even better and simpler solution.  I'll be posting
-a different patch soon.
-
-sln
+On 27/05/15 16:55, Rose, Gregory V wrote:
+> There's nothing to prevent any vendor from notifying a VF that it has privileges and there's nothing that require that they do.  This should be a vendor specific detail.
+Agreed - purely a driver implementation detail.
+> So now that I've stated my preference let me also state that I do not want to hold up acceptance of the Hiroshi's if_link patch that sets the trusted/privileged state for the VF while we further discuss this driver specific detail.
+Agreed.
+The information contained in this message is confidential and is intended for the addressee(s) only. If you have received this message in error, please notify the sender immediately and delete the message. Unless you are an addressee (or authorized to receive for an addressee), you may not use, copy or disclose to anyone this message or any information contained in this message. The unauthorized use, disclosure, copying or alteration of this message is strictly prohibited.
