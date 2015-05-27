@@ -1,46 +1,90 @@
-From: Edward Cree <ecree@solarflare.com>
-Date: Wed, 27 May 2015 10:03:55 +0100
-Subject: [Intel-wired-lan] [PATCH v5 3/3] ixgbe: Add new ndo to trust VF
-In-Reply-To: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB9DA7@BPXM14GP.gisp.nec.co.jp>
-References: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB28F4@BPXM14GP.gisp.nec.co.jp>
- <F6FB0E698C9B3143BDF729DF22286646912FB5E4@ORSMSX110.amr.corp.intel.com>
- <7F861DC0615E0C47A872E6F3C5FCDDBD05EB3B4A@BPXM14GP.gisp.nec.co.jp>
- <F6FB0E698C9B3143BDF729DF22286646912FBBEC@ORSMSX110.amr.corp.intel.com>
- <7F861DC0615E0C47A872E6F3C5FCDDBD05EB4EE6@BPXM14GP.gisp.nec.co.jp>
- <C5551D9AAB213A418B7FD5E4A6F30A07892F9481@ORSMSX108.amr.corp.intel.com>
- <F6FB0E698C9B3143BDF729DF22286646912FC2E3@ORSMSX110.amr.corp.intel.com>
- <7F861DC0615E0C47A872E6F3C5FCDDBD05EB8A65@BPXM14GP.gisp.nec.co.jp>
- <F6FB0E698C9B3143BDF729DF22286646912FDC17@ORSMSX110.amr.corp.intel.com>
- <C5551D9AAB213A418B7FD5E4A6F30A07892FC8C7@ORSMSX108.amr.corp.intel.com>
- <7F861DC0615E0C47A872E6F3C5FCDDBD05EB9DA7@BPXM14GP.gisp.nec.co.jp>
-Message-ID: <5565887B.5010808@solarflare.com>
+From: Yanir Lubetkin <yanirx.lubetkin@intel.com>
+Date: Wed, 27 May 2015 14:07:44 +0300
+Subject: [Intel-wired-lan] [PATCH v2 1/5] e1000e: fix flush_desc_ring
+	implementation
+Message-ID: <1432724864-2525-1-git-send-email-yanirx.lubetkin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 27/05/15 01:27, Hiroshi Shimamoto wrote:
->>> I think the VF shouldn't directly know whether it is trusted or not
->> That's completely irrevelant.  The person administering the PF will be the person who provided trusted privileges to the
->> VF.  He'll then *tell* or somehow other communicate to the person administering the VF (probably himself/herself) and
->> then proceed to execute commands on that VF that require trusted privileges.
->>
->> If the VF does not have trusted privileges then the commands to add VLAN filters, set promiscuous modes, and any other
->> privileged commands will fail.
->>
->> Let's not get too fancy with this.  It's simple - the host VMM admin provides trusted privileges to the VF.  The person
->> administering the VF (if in fact it is not the same person, it usually will be) will proceed to do things that require
->> VF trusted privileges.
-> Now I think that it's better to have an interface between PF and VF to know the VF is trusted.
-> Otherwise VM cannot know whether its VF is trusted, that prevents automatic operations.
-I don't think this is right.  The approach to VF trust/permissions issues we took in sfc (and that I'd recommend following) was that all drivers will always _attempt_ actions on the assumption they have privilege, then if they in fact don't, they get an EPERM (either from the firmware or from some proxy in the PF driver) and they deal with that appropriately.
+The indication that a descriptor ring flush is required was read from
+FEXTNVM7 by mistake. it should be read from the pci config space.
 
-So in this case the VF would say "I have more than 30 mcast addrs, I need promisc", it would try to set promisc, the PF would decide "it's not trusted, Denied" and the VF would get an EPERM back.  At which point the VF would presumably insert as many mcast addresses as it could and warn that it hadn't got them all (or, if the whole thing was triggered by adding a new mcast addr, it might be able to pass EPERM back to whoever requested it).
+Signed-off-by: Yanir Lubetkin <yanirx.lubetkin@intel.com>
+---
+ drivers/net/ethernet/intel/e1000e/e1000.h   |  2 ++
+ drivers/net/ethernet/intel/e1000e/ich8lan.h |  1 -
+ drivers/net/ethernet/intel/e1000e/netdev.c  | 12 +++++++-----
+ 3 files changed, 9 insertions(+), 6 deletions(-)
 
-Then if the VF's privilege is changed, VFLR it so that it re-does all of its setup this time subject to the new permissions.  (Alternatively, if the privilege is strictly increased, you can choose not to do this and instead the VF driver may be told from userspace to re-do the relevant setup, in which case traffic interruption may be able to be avoided.)
+diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h b/drivers/net/ethernet/intel/e1000e/e1000.h
+index 0abc942..e78487a 100644
+--- a/drivers/net/ethernet/intel/e1000e/e1000.h
++++ b/drivers/net/ethernet/intel/e1000e/e1000.h
+@@ -98,6 +98,8 @@ struct e1000_info;
+ #define DEFAULT_RADV			8
+ #define BURST_RDTR			0x20
+ #define BURST_RADV			0x20
++#define PCICFG_DESC_RING_STATUS		0xe4
++#define FLUSH_DESC_REQUIRED		0x100
+ 
+ /* in the case of WTHRESH, it appears at least the 82571/2 hardware
+  * writes back 4 descriptors when WTHRESH=5, and 3 descriptors when
+diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.h b/drivers/net/ethernet/intel/e1000e/ich8lan.h
+index 6b5d116..da0454c 100644
+--- a/drivers/net/ethernet/intel/e1000e/ich8lan.h
++++ b/drivers/net/ethernet/intel/e1000e/ich8lan.h
+@@ -100,7 +100,6 @@
+ #define E1000_FEXTNVM7_DISABLE_PB_READ	0x00040000
+ 
+ #define E1000_FEXTNVM7_DISABLE_SMB_PERST	0x00000020
+-#define E1000_FEXTNVM7_NEED_DESCRING_FLUSH	0x00000100
+ #define E1000_FEXTNVM11_DISABLE_MULR_FIX	0x00002000
+ 
+ /* bit24: RXDCTL thresholds granularity: 0 - cache lines, 1 - descriptors */
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index b2d77a5..4f029b6 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -3867,7 +3867,7 @@ static void e1000_flush_rx_ring(struct e1000_adapter *adapter)
+ 
+ static void e1000_flush_desc_rings(struct e1000_adapter *adapter)
+ {
+-	u32 hang_state;
++	u16 hang_state;
+ 	u32 fext_nvm11, tdlen;
+ 	struct e1000_hw *hw = &adapter->hw;
+ 
+@@ -3877,13 +3877,15 @@ static void e1000_flush_desc_rings(struct e1000_adapter *adapter)
+ 	ew32(FEXTNVM11, fext_nvm11);
+ 	/* do nothing if we're not in faulty state, or if the queue is empty */
+ 	tdlen = er32(TDLEN(0));
+-	hang_state = er32(FEXTNVM7);
+-	if (!(hang_state & E1000_FEXTNVM7_NEED_DESCRING_FLUSH) || !tdlen)
++	pci_read_config_word(adapter->pdev, PCICFG_DESC_RING_STATUS,
++			     &hang_state);
++	if (!(hang_state & FLUSH_DESC_REQUIRED) || !tdlen)
+ 		return;
+ 	e1000_flush_tx_ring(adapter);
+ 	/* recheck, maybe the fault is caused by the rx ring */
+-	hang_state = er32(FEXTNVM7);
+-	if (hang_state & E1000_FEXTNVM7_NEED_DESCRING_FLUSH)
++	pci_read_config_word(adapter->pdev, PCICFG_DESC_RING_STATUS,
++			     &hang_state);
++	if (hang_state & FLUSH_DESC_REQUIRED)
+ 		e1000_flush_rx_ring(adapter);
+ }
+ 
+-- 
+2.1.0
 
-The advantage of this model is that the VF driver doesn't have to know what permissions different operations require; that knowledge can live in one place only (in our case the firmware, in your case it sounds like the PF driver) allowing the policy to be changed without problems with version skew.
+---------------------------------------------------------------------
+Intel Israel (74) Limited
 
-The disadvantages are that the amount of control-plane traffic is increased (try, fail, try something else), and reinitialisation on privilege change may cause traffic interruption.  But the former isn't a worry since the control plane traffic volume is so small.  The latter would still have to happen on privilege decrease in any case, as Greg stated.
-The information contained in this message is confidential and is intended for the addressee(s) only. If you have received this message in error, please notify the sender immediately and delete the message. Unless you are an addressee (or authorized to receive for an addressee), you may not use, copy or disclose to anyone this message or any information contained in this message. The unauthorized use, disclosure, copying or alteration of this message is strictly prohibited.
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
+
