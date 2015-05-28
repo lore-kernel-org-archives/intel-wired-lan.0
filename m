@@ -1,110 +1,290 @@
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Date: Thu, 28 May 2015 06:42:48 +0000
-Subject: [Intel-wired-lan] [PATCH v5] ixgbe: Add module parameter to
- disable VLAN filter
-In-Reply-To: <55652130.6090708@gmail.com>
-References: <7F861DC0615E0C47A872E6F3C5FCDDBD05EB460C@BPXM14GP.gisp.nec.co.jp>
- <555F5644.8040401@redhat.com>
- <7F861DC0615E0C47A872E6F3C5FCDDBD05EB9F5A@BPXM14GP.gisp.nec.co.jp>
- <55652130.6090708@gmail.com>
-Message-ID: <7F861DC0615E0C47A872E6F3C5FCDDBD05EBB7DE@BPXM14GP.gisp.nec.co.jp>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 29 May 2015 02:24:37 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 017aed890b3853dfc9f3a9c7029dee8648269c65 BUILD DONE
+Message-ID: <55675d65.1/ziAh5ZeguLdj4X%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> Subject: Re: [Intel-wired-lan] [PATCH v5] ixgbe: Add module parameter to disable VLAN filter
-> 
-> On 05/26/2015 06:11 PM, Hiroshi Shimamoto wrote:
-> >> On 05/21/2015 06:10 AM, Hiroshi Shimamoto wrote:
-> >>> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> >>>
-> >>> Introduce module parameter "disable_hw_vlan_filter" to disable HW VLAN
-> >>> filter on ixgbe module load.
-> >>>
-> >>>   From the hardware limitation, there are only 64 VLAN entries for HW VLAN
-> >>> filter, and it leads to limit the number of VLANs up to 64 among PF and
-> >>> VFs. For SDN/NFV case, we need to handle unlimited VLAN packets on VF.
-> >>> In such case, every VLAN packet can be transmitted to each VF.
-> >>>
-> >>> When we try to make VLAN devices on VF, the 65th VLAN registration fails
-> >>> and never be able to receive a packet with that VLAN tag.
-> >>> If we do the below command on VM, ethX.65 to ethX.100 cannot be created.
-> >>>     # for i in `seq 1 100`; do \
-> >>>       ip link add link ethX name ethX.$i type vlan id $i; done
-> >>>
-> >>> There is a capability to disable HW VLAN filter and that makes all VLAN
-> >>> tagged packets can be transmitted to every VFs. After VLAN filter stage,
-> >>> unicast packets are transmitted to VF which has the MAC address same as
-> >>> the transmitting packet.
-> >>>
-> >>> With this patch and "disable_hw_vlan_filter=1", we can use unlimited
-> >>> number of VLANs on VF.
-> >>>
-> >>> Disabling HW VLAN filter breaks some NIC features such as DCB and FCoE.
-> >>> DCB and FCoE are disabled when HW VLAN filter is disabled by this module
-> >>> parameter.
-> >>> Because of that reason, the administrator has to know that before turning
-> >>> off HW VLAN filter.
-> >> You might also want to note that it makes the system susceptible to
-> >> broadcast/multicast storms since it eliminates any/all VLAN isolation.
-> >> So a broadcast or multicast packet on one VLAN is received on ALL
-> >> interfaces regardless of their VLAN configuration. In addition the
-> >> current VF driver is likely to just receive the packet as untagged, see
-> >> ixgbevf_process_skb_fields().  As a result one or two VFs can bring the
-> >> entire system to a crawl by saturating the PCIe bus via
-> >> broadcast/multicast traffic since there is nothing to prevent them from
-> >> talking to each other over VLANs that are no longer there.
-> > that's right.
-> >
-> > On the other hand, an untagged packet is not isolated,
-> > doesn't it same broadcast/multicast storm on untagged network?
-> 
-> Yes, that is one of the reasons for VLANs.  It provides isolation so
-> that if you have two entities on the same network you won't have entity
-> A able to talk to entity B.  The problem is with VLAN promiscuous
-> enabled if entity B is a VF it will see the traffic but has no way to
-> know that it was VLAN tagged and a part of entity A's VLAN.
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+017aed890b3853dfc9f3a9c7029dee8648269c65  igb: bump version to igb-5.3.0
 
-Sorry, I guess I failed to make a question to clarify.
-Occupying PCIe bus with broadcast/multicast packets causes performance
-degradation. VLAN filter can isolate traffic and reduce PCIe bus usage,
-but untagged broadcast/multicast traffic is still problem, I think.
-What is difference between tagged packet and untagged packet?
+drivers/net/ethernet/cavium/thunder/nic_main.c:563:28: sparse: restricted __be64 degrades to integer
+drivers/net/ethernet/cavium/thunder/nic_main.c:854:21: sparse: constant 0x300000000000 is so big it is long
+drivers/net/ethernet/cavium/thunder/nicvf_main.c:1141:26: sparse: symbol 'nicvf_get_stats64' was not declared. Should it be static?
+drivers/net/ethernet/cavium/thunder/nicvf_main.c:267:6: sparse: symbol 'nicvf_get_rss_size' was not declared. Should it be static?
+drivers/net/ethernet/cavium/thunder/nicvf_main.c:333:23: sparse: constant 0xFEED0BADFEED0BAD is so big it is unsigned long
+drivers/net/ethernet/cavium/thunder/nicvf_main.c:385:40: sparse: cast to restricted __le64
+drivers/net/ethernet/cavium/thunder/nicvf_main.c:575:6: sparse: symbol 'nicvf_handle_qs_err' was not declared. Should it be static?
+drivers/net/ethernet/cavium/thunder/nicvf_queues.c:231:6: sparse: symbol 'nicvf_refill_rbdr' was not declared. Should it be static?
+drivers/net/ethernet/cavium/thunder/thunder_bgx.c:256:6: sparse: symbol 'bgx_lmac_handler' was not declared. Should it be static?
+drivers/net/ethernet/cavium/thunder/thunder_bgx.c:55:12: sparse: symbol 'bgx_vnic' was not declared. Should it be static?
+drivers/net/ethernet/cavium/thunder/thunder_bgx.c:658:6: sparse: symbol 'bgx_lmac_disable' was not declared. Should it be static?
+drivers/net/ethernet/cavium/thunder/thunder_bgx.c:897:24: sparse: constant 0x300000000000 is so big it is long
+drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:2082:22: sparse: restricted __le16 degrades to integer
+include/uapi/linux/ethtool.h:820:17: sparse: constant 0x000000FF00000000 is so big it is long
+include/uapi/linux/ethtool.h:820: warning: integer constant is too large for 'long' type
 
-> 
-> >
-> >> For the sake of backwards compatibility I would say that a feature like
-> >> this should be mutually exclusive with SR-IOV as well since it will
-> >> cause erratic behavior.  The VF will receive requests from all VLANs
-> >> thinking the traffic is untagged, and then send replies back to VLAN 0
-> >> even though that isn't where the message originated.
-> > Sorry, I couldn't catch the above part.
-> > Could you explain a bit more?
-> >
-> > thanks,
-> > Hiroshi
-> >
-> >> Until the VF issue
-> >> is fixed this type of feature is a no-go.
-> >
-> 
-> The current behavior for a VF is that if it receives a VLAN that it
-> didn't request it assumes it is operating in port VLAN mode.  The
-> problem is with your patch the VF will be receiving all traffic but have
-> no idea which VLAN it came from.  As a result it could be replying to
-> multicast or broadcast requests on one VLAN with the wrong VLAN ID.
-> 
-> The VLAN behavior of the VF drivers will need to be fixed before
-> something like that could be supported with ANY of the VFs.  As such you
-> will probably need to fix the VF driver in order to allow any of them to
-> come online when VLAN filtering is disabled, as the driver will need to
-> report the VLAN tag ID up to the stack.
+elapsed time: 509m
 
-Thanks, that explains cleaner, I think I got the issue.
-I have to check the exact behavior on my box to understand correctly, will do.
+configs tested: 253
 
-thanks,
-Hiroshi
+i386                            randconfig-a0
+i386                            randconfig-a1
+i386                            randconfig-a2
+x86_64                          randconfig-a0
+x86_64                          randconfig-a1
+x86_64                          randconfig-a2
+x86_64                            allnoconfig
+x86_64                                   rhel
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                          randconfig-c0
+x86_64                          randconfig-c1
+x86_64                          randconfig-c2
+i386                            randconfig-c0
+i386                            randconfig-c1
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+x86_64                           allyesconfig
+alpha                            allyesconfig
+avr32                            allyesconfig
+blackfin                         allyesconfig
+cris                             allyesconfig
+ia64                             allyesconfig
+m68k                             allyesconfig
+mips                             allyesconfig
+parisc                           allyesconfig
+powerpc                          allyesconfig
+s390                             allyesconfig
+sh                               allyesconfig
+sparc                            allyesconfig
+sparc64                          allyesconfig
+tile                             allyesconfig
+xtensa                           allyesconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+i386                           randconfig-iv0
+i386                           randconfig-iv1
+x86_64                         randconfig-iv0
+x86_64                         randconfig-iv1
+i386                             alldefconfig
+i386                             allmodconfig
+i386                              allnoconfig
+i386                                defconfig
+x86_64                           allyesconfig
+alpha                            allyesconfig
+avr32                            allyesconfig
+blackfin                         allyesconfig
+cris                             allyesconfig
+ia64                             allyesconfig
+m68k                             allyesconfig
+mips                             allyesconfig
+parisc                           allyesconfig
+powerpc                          allyesconfig
+s390                             allyesconfig
+sh                               allyesconfig
+sparc                            allyesconfig
+sparc64                          allyesconfig
+tile                             allyesconfig
+xtensa                           allyesconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+i386                           randconfig-ib0
+i386                           randconfig-ib1
+i386                           randconfig-ib2
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                      randconfig-ir0-0529
+i386                      randconfig-ir1-0529
+s390                              allnoconfig
+s390                                defconfig
+i386                             allyesconfig
+x86_64                randconfig-ib0-05281622
+x86_64                randconfig-ib1-05281622
+x86_64                randconfig-ib2-05281622
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+blackfin                            defconfig
+ia64                                defconfig
+mips                                defconfig
+powerpc                             defconfig
+sh                                  defconfig
+x86_64                       randconfig-nexe0
+x86_64                       randconfig-nexe1
+x86_64                       randconfig-nexe2
+x86_64                       randconfig-nexe3
+x86_64                       randconfig-nexe4
+i386                         randconfig-nexe0
+i386                         randconfig-nexe1
+i386                         randconfig-nexe2
+i386                         randconfig-nexe3
+i386                         randconfig-nexe4
+i386                         randconfig-nexr0
+i386                         randconfig-nexr1
+s390                              allnoconfig
+s390                                defconfig
+i386                             allyesconfig
+i386                         randconfig-nexs0
+i386                         randconfig-nexs1
+i386                         randconfig-nexs2
+i386                         randconfig-nexs3
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+s390                              allnoconfig
+s390                                defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                         randconfig-nh0
+x86_64                         randconfig-nh1
+x86_64                         randconfig-nh2
+x86_64                 randconfig-n0-05281506
+x86_64                 randconfig-n1-05281506
+x86_64                 randconfig-n2-05281506
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+x86_64                           allyesconfig
+alpha                            allyesconfig
+avr32                            allyesconfig
+blackfin                         allyesconfig
+cris                             allyesconfig
+ia64                             allyesconfig
+m68k                             allyesconfig
+mips                             allyesconfig
+parisc                           allyesconfig
+powerpc                          allyesconfig
+s390                             allyesconfig
+sh                               allyesconfig
+sparc                            allyesconfig
+sparc64                          allyesconfig
+tile                             allyesconfig
+xtensa                           allyesconfig
+m68k                          amiga_defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+blackfin                            defconfig
+ia64                                defconfig
+mips                                defconfig
+powerpc                             defconfig
+sh                                  defconfig
+x86_64                        randconfig-x000
+x86_64                        randconfig-x001
+x86_64                        randconfig-x002
+x86_64                        randconfig-x003
+x86_64                        randconfig-x004
+x86_64                        randconfig-x005
+x86_64                        randconfig-x006
+x86_64                        randconfig-x007
+x86_64                        randconfig-x008
+x86_64                        randconfig-x009
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                            randconfig-r0
+i386                            randconfig-r1
+i386                            randconfig-r2
+x86_64                          randconfig-r0
+x86_64                          randconfig-r1
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+m68k                          amiga_defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+x86_64                 randconfig-s0-05281634
+x86_64                 randconfig-s1-05281634
+x86_64                           allmodconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+i386                          randconfig-x000
+i386                          randconfig-x001
+i386                          randconfig-x002
+i386                          randconfig-x003
+i386                          randconfig-x004
+i386                          randconfig-x005
+i386                          randconfig-x006
+i386                          randconfig-x007
+i386                          randconfig-x008
+i386                          randconfig-x009
+x86_64                                    lkp
+x86_64                                   rhel
+i386                           randconfig-xi0
+i386                           randconfig-xi1
+i386                           randconfig-xi2
+i386                           randconfig-xi0
+i386                           randconfig-xi1
 
+Thanks,
+Fengguang
