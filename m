@@ -1,82 +1,80 @@
 From: Yanir Lubetkin <yanirx.lubetkin@intel.com>
-Date: Sun, 31 May 2015 21:25:13 +0300
-Subject: [Intel-wired-lan] [PATCH 1/5] e1000e: fix flush_desc_ring
-	implementation
-Message-ID: <ad0b0062af01fe16002d93a4a77faede268071eb.1433096643.git.yanirx.lubetkin@intel.com>
+Date: Sun, 31 May 2015 21:25:17 +0300
+Subject: [Intel-wired-lan] [PATCH 2/5] e1000e: fix legacy interrupt handling
+	in i219
+In-Reply-To: <ad0b0062af01fe16002d93a4a77faede268071eb.1433096643.git.yanirx.lubetkin@intel.com>
+References: <ad0b0062af01fe16002d93a4a77faede268071eb.1433096643.git.yanirx.lubetkin@intel.com>
+Message-ID: <3936558b4108c1cca254a2e3415a79bec0ae0c92.1433096643.git.yanirx.lubetkin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The indication that a descriptor ring flush is required was read from
-FEXTNVM7 by mistake. it should be read from the pci config space.
+This fix handles a hardware issue that prevented i219 from
+working in legacy interrupts mode (IntMode=0)
 
 Signed-off-by: Yanir Lubetkin <yanirx.lubetkin@intel.com>
 ---
- drivers/net/ethernet/intel/e1000e/e1000.h   |  2 ++
- drivers/net/ethernet/intel/e1000e/ich8lan.h |  1 -
- drivers/net/ethernet/intel/e1000e/netdev.c  | 12 +++++++-----
- 3 files changed, 9 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/e1000e/ich8lan.h |  5 ++++-
+ drivers/net/ethernet/intel/e1000e/netdev.c  | 14 ++++++++++++++
+ drivers/net/ethernet/intel/e1000e/regs.h    |  1 +
+ 3 files changed, 19 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h b/drivers/net/ethernet/intel/e1000e/e1000.h
-index 0abc942..e78487a 100644
---- a/drivers/net/ethernet/intel/e1000e/e1000.h
-+++ b/drivers/net/ethernet/intel/e1000e/e1000.h
-@@ -98,6 +98,8 @@ struct e1000_info;
- #define DEFAULT_RADV			8
- #define BURST_RDTR			0x20
- #define BURST_RADV			0x20
-+#define PCICFG_DESC_RING_STATUS		0xe4
-+#define FLUSH_DESC_REQUIRED		0x100
- 
- /* in the case of WTHRESH, it appears at least the 82571/2 hardware
-  * writes back 4 descriptors when WTHRESH=5, and 3 descriptors when
 diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.h b/drivers/net/ethernet/intel/e1000e/ich8lan.h
-index 6b5d116..da0454c 100644
+index da0454c..a960d48 100644
 --- a/drivers/net/ethernet/intel/e1000e/ich8lan.h
 +++ b/drivers/net/ethernet/intel/e1000e/ich8lan.h
-@@ -100,7 +100,6 @@
+@@ -98,8 +98,11 @@
+ #define E1000_FEXTNVM6_K1_OFF_ENABLE	0x80000000
+ /* bit for disabling packet buffer read */
  #define E1000_FEXTNVM7_DISABLE_PB_READ	0x00040000
- 
+-
++#define E1000_FEXTNVM7_SIDE_CLK_UNGATE	0x00000004
  #define E1000_FEXTNVM7_DISABLE_SMB_PERST	0x00000020
--#define E1000_FEXTNVM7_NEED_DESCRING_FLUSH	0x00000100
++#define E1000_FEXTNVM9_IOSFSB_CLKGATE_DIS	0x00000800
++#define E1000_FEXTNVM9_IOSFSB_CLKREQ_DIS	0x00001000
++#define E1000_FEXTNVM11_DISABLE_PB_READ		0x00000200
  #define E1000_FEXTNVM11_DISABLE_MULR_FIX	0x00002000
  
  /* bit24: RXDCTL thresholds granularity: 0 - cache lines, 1 - descriptors */
 diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index b2d77a5..3ee379d 100644
+index 3ee379d..dec2cb8 100644
 --- a/drivers/net/ethernet/intel/e1000e/netdev.c
 +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -3867,7 +3867,7 @@ static void e1000_flush_rx_ring(struct e1000_adapter *adapter)
- 
- static void e1000_flush_desc_rings(struct e1000_adapter *adapter)
- {
--	u32 hang_state;
-+	u16 hang_state;
- 	u32 fext_nvm11, tdlen;
- 	struct e1000_hw *hw = &adapter->hw;
- 
-@@ -3877,13 +3877,15 @@ static void e1000_flush_desc_rings(struct e1000_adapter *adapter)
- 	ew32(FEXTNVM11, fext_nvm11);
- 	/* do nothing if we're not in faulty state, or if the queue is empty */
- 	tdlen = er32(TDLEN(0));
--	hang_state = er32(FEXTNVM7);
--	if (!(hang_state & E1000_FEXTNVM7_NEED_DESCRING_FLUSH) || !tdlen)
-+	pci_read_config_word(adapter->pdev, PCICFG_DESC_RING_STATUS,
-+				&hang_state);
-+	if (!(hang_state & FLUSH_DESC_REQUIRED) || !tdlen)
- 		return;
- 	e1000_flush_tx_ring(adapter);
- 	/* recheck, maybe the fault is caused by the rx ring */
--	hang_state = er32(FEXTNVM7);
--	if (hang_state & E1000_FEXTNVM7_NEED_DESCRING_FLUSH)
-+	pci_read_config_word(adapter->pdev, PCICFG_DESC_RING_STATUS,
-+				&hang_state);
-+	if (hang_state & FLUSH_DESC_REQUIRED)
- 		e1000_flush_rx_ring(adapter);
+@@ -4120,6 +4120,20 @@ void e1000e_reset(struct e1000_adapter *adapter)
+ 		phy_data &= ~IGP02E1000_PM_SPD;
+ 		e1e_wphy(hw, IGP02E1000_PHY_POWER_MGMT, phy_data);
+ 	}
++	if (hw->mac.type == e1000_pch_spt && adapter->int_mode == 0) {
++		u32 reg;
++
++		/* Fextnvm7 @ 0xe4[2] = 1 */
++		reg = er32(FEXTNVM7);
++		reg |= E1000_FEXTNVM7_SIDE_CLK_UNGATE;
++		ew32(FEXTNVM7, reg);
++		/* Fextnvm9 @ 0x5bb4[13:12] = 11 */
++		reg = er32(FEXTNVM9);
++		reg |= E1000_FEXTNVM9_IOSFSB_CLKGATE_DIS |
++		    E1000_FEXTNVM9_IOSFSB_CLKREQ_DIS;
++		ew32(FEXTNVM9, reg);
++	}
++
  }
  
+ int e1000e_up(struct e1000_adapter *adapter)
+diff --git a/drivers/net/ethernet/intel/e1000e/regs.h b/drivers/net/ethernet/intel/e1000e/regs.h
+index 200a312..110e27e 100644
+--- a/drivers/net/ethernet/intel/e1000e/regs.h
++++ b/drivers/net/ethernet/intel/e1000e/regs.h
+@@ -38,6 +38,7 @@
+ #define E1000_FEXTNVM4	0x00024	/* Future Extended NVM 4 - RW */
+ #define E1000_FEXTNVM6	0x00010	/* Future Extended NVM 6 - RW */
+ #define E1000_FEXTNVM7	0x000E4	/* Future Extended NVM 7 - RW */
++#define E1000_FEXTNVM9	0x5BB4  /* Future Extended NVM 9 - RW */
+ #define E1000_FEXTNVM11	0x5BBC  /* Future Extended NVM 11 - RW */
+ #define E1000_PCIEANACFG	0x00F18	/* PCIE Analog Config */
+ #define E1000_FCT	0x00030	/* Flow Control Type - RW */
 -- 
 2.1.0
 
