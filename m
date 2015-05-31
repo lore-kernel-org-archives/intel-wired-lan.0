@@ -1,80 +1,103 @@
 From: Yanir Lubetkin <yanirx.lubetkin@intel.com>
-Date: Sun, 31 May 2015 21:25:17 +0300
-Subject: [Intel-wired-lan] [PATCH 2/5] e1000e: fix legacy interrupt handling
-	in i219
+Date: Sun, 31 May 2015 21:25:20 +0300
+Subject: [Intel-wired-lan] [PATCH 3/5] e1000e: fix systim issues
 In-Reply-To: <ad0b0062af01fe16002d93a4a77faede268071eb.1433096643.git.yanirx.lubetkin@intel.com>
 References: <ad0b0062af01fe16002d93a4a77faede268071eb.1433096643.git.yanirx.lubetkin@intel.com>
-Message-ID: <3936558b4108c1cca254a2e3415a79bec0ae0c92.1433096643.git.yanirx.lubetkin@intel.com>
+Message-ID: <87806ac28e0a22d15f0401f3887d1b8c285cfb27.1433096643.git.yanirx.lubetkin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This fix handles a hardware issue that prevented i219 from
-working in legacy interrupts mode (IntMode=0)
+Two issues involving systim were reported.
+1. clock is not running in the correct fequency
+2. in some situations, systim values were not incremented linearly
+This patch fixes the hardware clock configuration and the spurious non-linear increment.
 
 Signed-off-by: Yanir Lubetkin <yanirx.lubetkin@intel.com>
 ---
- drivers/net/ethernet/intel/e1000e/ich8lan.h |  5 ++++-
- drivers/net/ethernet/intel/e1000e/netdev.c  | 14 ++++++++++++++
- drivers/net/ethernet/intel/e1000e/regs.h    |  1 +
- 3 files changed, 19 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/e1000e/e1000.h  |  4 ++++
+ drivers/net/ethernet/intel/e1000e/netdev.c | 36 +++++++++++++++++++++---------
+ 2 files changed, 30 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.h b/drivers/net/ethernet/intel/e1000e/ich8lan.h
-index da0454c..a960d48 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.h
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.h
-@@ -98,8 +98,11 @@
- #define E1000_FEXTNVM6_K1_OFF_ENABLE	0x80000000
- /* bit for disabling packet buffer read */
- #define E1000_FEXTNVM7_DISABLE_PB_READ	0x00040000
--
-+#define E1000_FEXTNVM7_SIDE_CLK_UNGATE	0x00000004
- #define E1000_FEXTNVM7_DISABLE_SMB_PERST	0x00000020
-+#define E1000_FEXTNVM9_IOSFSB_CLKGATE_DIS	0x00000800
-+#define E1000_FEXTNVM9_IOSFSB_CLKREQ_DIS	0x00001000
-+#define E1000_FEXTNVM11_DISABLE_PB_READ		0x00000200
- #define E1000_FEXTNVM11_DISABLE_MULR_FIX	0x00002000
+diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h b/drivers/net/ethernet/intel/e1000e/e1000.h
+index e78487a..7d8a45c 100644
+--- a/drivers/net/ethernet/intel/e1000e/e1000.h
++++ b/drivers/net/ethernet/intel/e1000e/e1000.h
+@@ -386,6 +386,10 @@ s32 e1000e_get_base_timinca(struct e1000_adapter *adapter, u32 *timinca);
+ #define INCVALUE_SHIFT_25MHz	18
+ #define INCPERIOD_25MHz		1
  
- /* bit24: RXDCTL thresholds granularity: 0 - cache lines, 1 - descriptors */
++#define INCVALUE_24MHz		125
++#define INCVALUE_SHIFT_24MHz	14
++#define INCPERIOD_24MHz		3
++
+ /* Another drawback of scaling the incvalue by a large factor is the
+  * 64-bit SYSTIM register overflows more quickly.  This is dealt with
+  * by simply reading the clock before it overflows.
 diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 3ee379d..dec2cb8 100644
+index dec2cb8..674135c 100644
 --- a/drivers/net/ethernet/intel/e1000e/netdev.c
 +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -4120,6 +4120,20 @@ void e1000e_reset(struct e1000_adapter *adapter)
- 		phy_data &= ~IGP02E1000_PM_SPD;
- 		e1e_wphy(hw, IGP02E1000_PHY_POWER_MGMT, phy_data);
- 	}
-+	if (hw->mac.type == e1000_pch_spt && adapter->int_mode == 0) {
-+		u32 reg;
-+
-+		/* Fextnvm7 @ 0xe4[2] = 1 */
-+		reg = er32(FEXTNVM7);
-+		reg |= E1000_FEXTNVM7_SIDE_CLK_UNGATE;
-+		ew32(FEXTNVM7, reg);
-+		/* Fextnvm9 @ 0x5bb4[13:12] = 11 */
-+		reg = er32(FEXTNVM9);
-+		reg |= E1000_FEXTNVM9_IOSFSB_CLKGATE_DIS |
-+		    E1000_FEXTNVM9_IOSFSB_CLKREQ_DIS;
-+		ew32(FEXTNVM9, reg);
-+	}
-+
- }
+@@ -3525,21 +3525,30 @@ s32 e1000e_get_base_timinca(struct e1000_adapter *adapter, u32 *timinca)
+ 	switch (hw->mac.type) {
+ 	case e1000_pch2lan:
+ 	case e1000_pch_lpt:
+-	case e1000_pch_spt:
+-		/* On I217, I218 and I219, the clock frequency is 25MHz
+-		 * or 96MHz as indicated by the System Clock Frequency
+-		 * Indication
+-		 */
+-		if (((hw->mac.type != e1000_pch_lpt) &&
+-		     (hw->mac.type != e1000_pch_spt)) ||
+-		    (er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_SYSCFI)) {
++		if (er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_SYSCFI) {
+ 			/* Stable 96MHz frequency */
+ 			incperiod = INCPERIOD_96MHz;
+ 			incvalue = INCVALUE_96MHz;
+ 			shift = INCVALUE_SHIFT_96MHz;
+ 			adapter->cc.shift = shift + INCPERIOD_SHIFT_96MHz;
++		} else {
++			/* Stable 25MHz frequency */
++			incperiod = INCPERIOD_25MHz;
++			incvalue = INCVALUE_25MHz;
++			shift = INCVALUE_SHIFT_25MHz;
++			adapter->cc.shift = shift;
++		}
++		break;
++	case e1000_pch_spt:
++		if (er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_SYSCFI) {
++			/* Stable 24MHz frequency */
++			incperiod = INCPERIOD_24MHz;
++			incvalue = INCVALUE_24MHz;
++			shift = INCVALUE_SHIFT_24MHz;
++			adapter->cc.shift = shift;
+ 			break;
+ 		}
++		return -EINVAL;
+ 		/* fall-through */
+ 	case e1000_82574:
+ 	case e1000_82583:
+@@ -4273,9 +4282,16 @@ static cycle_t e1000e_cyclecounter_read(const struct cyclecounter *cc)
+ 						     cc);
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	cycle_t systim, systim_next;
++	/* SYSTIMH latching upon SYSTIML read does not work well. to fix that
++	 * we don't want to allow overflow of SYSTIML and a change to SYSTIMH
++	 * to occur between reads, so if we read a vale close to overflow, we
++	 * wait for overflow to occur and read both registers when its safe.
++	 */
++	u32 systim_overflow_latch_fix = 0x3FFFFFFF;
  
- int e1000e_up(struct e1000_adapter *adapter)
-diff --git a/drivers/net/ethernet/intel/e1000e/regs.h b/drivers/net/ethernet/intel/e1000e/regs.h
-index 200a312..110e27e 100644
---- a/drivers/net/ethernet/intel/e1000e/regs.h
-+++ b/drivers/net/ethernet/intel/e1000e/regs.h
-@@ -38,6 +38,7 @@
- #define E1000_FEXTNVM4	0x00024	/* Future Extended NVM 4 - RW */
- #define E1000_FEXTNVM6	0x00010	/* Future Extended NVM 6 - RW */
- #define E1000_FEXTNVM7	0x000E4	/* Future Extended NVM 7 - RW */
-+#define E1000_FEXTNVM9	0x5BB4  /* Future Extended NVM 9 - RW */
- #define E1000_FEXTNVM11	0x5BBC  /* Future Extended NVM 11 - RW */
- #define E1000_PCIEANACFG	0x00F18	/* PCIE Analog Config */
- #define E1000_FCT	0x00030	/* Flow Control Type - RW */
+-	/* latch SYSTIMH on read of SYSTIML */
+-	systim = (cycle_t)er32(SYSTIML);
++	do {
++		systim = (cycle_t)er32(SYSTIML);
++	} while (systim > systim_overflow_latch_fix);
+ 	systim |= (cycle_t)er32(SYSTIMH) << 32;
+ 
+ 	if ((hw->mac.type == e1000_82574) || (hw->mac.type == e1000_82583)) {
 -- 
 2.1.0
 
