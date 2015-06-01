@@ -1,48 +1,53 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Mon, 15 Jun 2015 06:27:17 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 15d2d31b397c692f44fa965077d4daa5dca80557 BUILD SUCCESS
-Message-ID: <557dffc5.8mzBkBR0ipuMqZIw%fengguang.wu@intel.com>
+From: Vaishali Thakkar <vthakkar1994@gmail.com>
+Date: Mon, 1 Jun 2015 10:13:49 +0530
+Subject: [Intel-wired-lan] [PATCH] ethernet/intel: Use setup_timer
+Message-ID: <20150601044349.GA4730@vaishali-Ideapad-Z570>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-15d2d31b397c692f44fa965077d4daa5dca80557  fm10k: force LPORT delete when updating VLAN or MAC address
+Use the timer API function setup_timer instead of structure field
+assignments to initialize a timer.
 
-elapsed time: 16m
+A simplified version of the Coccinelle semantic patch that performs
+this transformation is as follows:
 
-configs tested: 27
+@change@
+expression e1, e2, e3, e4, a, b;
+@@
 
-x86_64                 randconfig-a0-06150612
-i386                   randconfig-c0-06150612
-x86_64                 randconfig-v0-06150607
-x86_64                 randconfig-v0-06150613
-m32r                   mappi2.vdec2_defconfig
-mips                        nlm_xlr_defconfig
-powerpc                     tqm8541_defconfig
-sh                           se7705_defconfig
-i386                   randconfig-b0-06150617
-x86_64                 randconfig-b0-06150608
-x86_64                 randconfig-b0-06150611
-x86_64                 randconfig-b0-06150616
-x86_64                 randconfig-b0-06150619
-i386                   randconfig-h0-06150607
-i386                   randconfig-h1-06150607
-openrisc                         alldefconfig
-sh                 kfr2r09-romimage_defconfig
-sh                           se7721_defconfig
-x86_64                 randconfig-h0-06150613
-x86_64                 randconfig-n0-06150613
-i386                  randconfig-sb0-06150607
-i386                  randconfig-sb0-06150619
-arm                           tegra_defconfig
-avr32                     atstk1006_defconfig
-parisc                        c8000_defconfig
-x86_64                 randconfig-r0-06150611
-i386                   randconfig-x0-06150611
+-init_timer(&e1);
++setup_timer(&e1, a, b);
 
-Thanks,
-Fengguang
+... when != a = e2
+    when != b = e3
+
+-e1.function = a;
+... when != b = e4
+-e1.data = b;
+
+Signed-off-by: Vaishali Thakkar <vthakkar1994@gmail.com>
+---
+ drivers/net/ethernet/intel/e100.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e100.c b/drivers/net/ethernet/intel/e100.c
+index 1a450f4..8ae9c0d 100644
+--- a/drivers/net/ethernet/intel/e100.c
++++ b/drivers/net/ethernet/intel/e100.c
+@@ -2922,9 +2922,7 @@ static int e100_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	pci_set_master(pdev);
+ 
+-	init_timer(&nic->watchdog);
+-	nic->watchdog.function = e100_watchdog;
+-	nic->watchdog.data = (unsigned long)nic;
++	setup_timer(&nic->watchdog, e100_watchdog, (unsigned long)nic);
+ 
+ 	INIT_WORK(&nic->tx_timeout_task, e100_tx_timeout_task);
+ 
+-- 
+1.9.1
+
