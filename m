@@ -1,74 +1,48 @@
-From: Rose, Gregory V <gregory.v.rose@intel.com>
-Date: Mon, 1 Jun 2015 16:48:07 +0000
-Subject: [Intel-wired-lan] vlan packet handling in ixgbevf driver when
- in	promiscuous mode
-In-Reply-To: <5568D344.9090903@windriver.com>
-References: <5568D344.9090903@windriver.com>
-Message-ID: <C5551D9AAB213A418B7FD5E4A6F30A078930269A@ORSMSX108.amr.corp.intel.com>
+From: Young, James M <james.m.young@intel.com>
+Date: Mon, 1 Jun 2015 17:12:13 +0000
+Subject: [Intel-wired-lan] [net-next S5 11/15] i40e/i40evf: Fix and
+ refactor	dynamic ITR code
+In-Reply-To: <1430161042-28494-12-git-send-email-catherine.sullivan@intel.com>
+References: <1430161042-28494-1-git-send-email-catherine.sullivan@intel.com>
+ <1430161042-28494-12-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <68C85B5FC2FE974B87244D7222BC92783EA08BC8@ORSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-82599 devices do not support promiscuous mode for the virtual functions - you should use the physical function for true promiscuous capture.
-
-----------
-Greg Rose
-FreeBSD/NFV PAE
-Network Division
-Intel Corporation
-Desk - 503-712-5048
-
-Any man who afflicts the human race with ideas must be prepared to see them misunderstood.
-?
-- H. L. Mencken
-
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Chris Friesen
-> Sent: Friday, May 29, 2015 2:00 PM
+> Behalf Of Catherine Sullivan
+> Sent: Monday, April 27, 2015 11:57 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] vlan packet handling in ixgbevf driver when in
-> promiscuous mode
+> Cc: Singhai, Anjali; Abodunrin, Akeem G
+> Subject: [Intel-wired-lan] [net-next S5 11/15] i40e/i40evf: Fix and refactor
+> dynamic ITR code
 > 
-> Hi,
+> From: Carolyn Wyborny <carolyn.wyborny@intel.com>
 > 
-> I'm doing some work with ixgbevf in the 3.10 kernel, but the current linux
-> kernel git version seems to have similar behaviour.
+> This patch changes the switch statement for dynamic interrupt throttling
+> and adds a default case. With this patch, we check the latency setting
+> instead of the current ITR settings and the included refactor improves
+> performance.
 > 
-> Basically I'm interested in doing packet sniffing in a VM guest using PCI
-> passthrough of a VF of an 82599.
+> Without this patch, the ITR setting would never change dynamically, and
+> there was no default.
 > 
-> What I'm seeing is that if I register for a vlan in the guest (creating
-> eth1.100, for example) and then run tcpdump on the underlying device
-> (eth1, for
-> example) then I see the packet with the vlan header in it.
-> 
-> If I remove that vlan, then I see the packet with no vlan header.
-> 
-> I think this is coming from ixgbevf_receive_skb() in 3.10 (or
-> ixgbevf_process_skb_fields() in current upstream git) where it has code
-> that looks like this:
-> 
-> 	if (test_bit(vid & VLAN_VID_MASK, active_vlans))
-> 		__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q), vid);
-> 
-> While this makes sense for normal operation (where traffic from other
-> vlans isn't coming in anyways) I don't think it makes sense when
-> promiscuous mode is enabled.
-> 
-> In promiscuous mode I want to be able to see exactly what packets are
-> coming on the (virtual) wire, so I should be able to see the vlan header
-> even if I haven't actually registered for that vlan.
-> 
-> Basically I think that code above should add an "or device is in
-> promiscuous mode" clause.
-> 
-> Thoughts?
-> 
-> Chris
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at lists.osuosl.org
-> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
+> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+> Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Change-ID: Idb5a8a14c7109ec47c90f6e94bd43baa17d7ee37
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 146 ++++++++++++++++---------
+> -
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 113 +++++++++++++-------
+>  2 files changed, 161 insertions(+), 98 deletions(-)
+
+Patch failed
+James.m.young at intel.com
+
+
