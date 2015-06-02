@@ -1,312 +1,89 @@
-From: Yanir Lubetkin <yanirx.lubetkin@intel.com>
-Date: Tue,  2 Jun 2015 17:05:50 +0300
-Subject: [Intel-wired-lan] [PATCH v2 5/5] e1000e: Bump the version to 3.2.5
-In-Reply-To: <5c0f5ad24e5ae3adfede0279b6fdfea4312e32da.1433253642.git.yanirx.lubetkin@intel.com>
-References: <5c0f5ad24e5ae3adfede0279b6fdfea4312e32da.1433253642.git.yanirx.lubetkin@intel.com>
-Message-ID: <a03e6685eed2938645baaa214422398443364001.1433253642.git.yanirx.lubetkin@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 02 Jun 2015 23:48:06 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ 51e9a1b95d152d69fe5f96ee0d7007a66723ab1b BUILD SUCCESS
+Message-ID: <556dd036.4R7UKxmbeM85nC7r%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Bump the version to reflect the driver changes and bug fixes for i219.
-Also update the copyright, while we are at it.
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+51e9a1b95d152d69fe5f96ee0d7007a66723ab1b  i40e: Make sure to be in VEB mode if SRIOV is enabled at probe
 
-Signed-off-by: Yanir Lubetkin <yanirx.lubetkin@intel.com>
----
- drivers/net/ethernet/intel/e1000e/80003es2lan.c | 2 +-
- drivers/net/ethernet/intel/e1000e/80003es2lan.h | 2 +-
- drivers/net/ethernet/intel/e1000e/82571.c       | 2 +-
- drivers/net/ethernet/intel/e1000e/82571.h       | 2 +-
- drivers/net/ethernet/intel/e1000e/defines.h     | 2 +-
- drivers/net/ethernet/intel/e1000e/e1000.h       | 2 +-
- drivers/net/ethernet/intel/e1000e/ethtool.c     | 2 +-
- drivers/net/ethernet/intel/e1000e/hw.h          | 2 +-
- drivers/net/ethernet/intel/e1000e/ich8lan.c     | 2 +-
- drivers/net/ethernet/intel/e1000e/ich8lan.h     | 2 +-
- drivers/net/ethernet/intel/e1000e/mac.c         | 2 +-
- drivers/net/ethernet/intel/e1000e/mac.h         | 2 +-
- drivers/net/ethernet/intel/e1000e/manage.c      | 2 +-
- drivers/net/ethernet/intel/e1000e/manage.h      | 2 +-
- drivers/net/ethernet/intel/e1000e/netdev.c      | 6 +++---
- drivers/net/ethernet/intel/e1000e/nvm.c         | 2 +-
- drivers/net/ethernet/intel/e1000e/nvm.h         | 2 +-
- drivers/net/ethernet/intel/e1000e/param.c       | 2 +-
- drivers/net/ethernet/intel/e1000e/phy.c         | 2 +-
- drivers/net/ethernet/intel/e1000e/phy.h         | 2 +-
- drivers/net/ethernet/intel/e1000e/ptp.c         | 2 +-
- drivers/net/ethernet/intel/e1000e/regs.h        | 2 +-
- 22 files changed, 24 insertions(+), 24 deletions(-)
+elapsed time: 37m
 
-diff --git a/drivers/net/ethernet/intel/e1000e/80003es2lan.c b/drivers/net/ethernet/intel/e1000e/80003es2lan.c
-index 08f22f3..2af603f 100644
---- a/drivers/net/ethernet/intel/e1000e/80003es2lan.c
-+++ b/drivers/net/ethernet/intel/e1000e/80003es2lan.c
-@@ -1,5 +1,5 @@
- /* Intel PRO/1000 Linux driver
-- * Copyright(c) 1999 - 2014 Intel Corporation.
-+ * Copyright(c) 1999 - 2015 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-diff --git a/drivers/net/ethernet/intel/e1000e/80003es2lan.h b/drivers/net/ethernet/intel/e1000e/80003es2lan.h
-index 535a943..a2162e1 100644
---- a/drivers/net/ethernet/intel/e1000e/80003es2lan.h
-+++ b/drivers/net/ethernet/intel/e1000e/80003es2lan.h
-@@ -1,5 +1,5 @@
- /* Intel PRO/1000 Linux driver
-- * Copyright(c) 1999 - 2014 Intel Corporation.
-+ * Copyright(c) 1999 - 2015 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-diff --git a/drivers/net/ethernet/intel/e1000e/82571.c b/drivers/net/ethernet/intel/e1000e/82571.c
-index 32e7775..5f70164 100644
---- a/drivers/net/ethernet/intel/e1000e/82571.c
-+++ b/drivers/net/ethernet/intel/e1000e/82571.c
-@@ -1,5 +1,5 @@
- /* Intel PRO/1000 Linux driver
-- * Copyright(c) 1999 - 2014 Intel Corporation.
-+ * Copyright(c) 1999 - 2015 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-diff --git a/drivers/net/ethernet/intel/e1000e/82571.h b/drivers/net/ethernet/intel/e1000e/82571.h
-index 2e758f7..abc6a9a 100644
---- a/drivers/net/ethernet/intel/e1000e/82571.h
-+++ b/drivers/net/ethernet/intel/e1000e/82571.h
-@@ -1,5 +1,5 @@
- /* Intel PRO/1000 Linux driver
-- * Copyright(c) 1999 - 2014 Intel Corporation.
-+ * Copyright(c) 1999 - 2015 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-diff --git a/drivers/net/ethernet/intel/e1000e/defines.h b/drivers/net/ethernet/intel/e1000e/defines.h
-index 0570c66..133d407 100644
---- a/drivers/net/ethernet/intel/e1000e/defines.h
-+++ b/drivers/net/ethernet/intel/e1000e/defines.h
-@@ -1,5 +1,5 @@
- /* Intel PRO/1000 Linux driver
-- * Copyright(c) 1999 - 2014 Intel Corporation.
-+ * Copyright(c) 1999 - 2015 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h b/drivers/net/ethernet/intel/e1000e/e1000.h
-index 7d8a45c..0b748d1 100644
---- a/drivers/net/ethernet/intel/e1000e/e1000.h
-+++ b/drivers/net/ethernet/intel/e1000e/e1000.h
-@@ -1,5 +1,5 @@
- /* Intel PRO/1000 Linux driver
-- * Copyright(c) 1999 - 2014 Intel Corporation.
-+ * Copyright(c) 1999 - 2015 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
-index 51b7806..9456dcf 100644
---- a/drivers/net/ethernet/intel/e1000e/ethtool.c
-+++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
-@@ -1,5 +1,5 @@
- /* Intel PRO/1000 Linux driver
-- * Copyright(c) 1999 - 2014 Intel Corporation.
-+ * Copyright(c) 1999 - 2015 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-diff --git a/drivers/net/ethernet/intel/e1000e/hw.h b/drivers/net/ethernet/intel/e1000e/hw.h
-index 19e8c48..c9da465 100644
---- a/drivers/net/ethernet/intel/e1000e/hw.h
-+++ b/drivers/net/ethernet/intel/e1000e/hw.h
-@@ -1,5 +1,5 @@
- /* Intel PRO/1000 Linux driver
-- * Copyright(c) 1999 - 2014 Intel Corporation.
-+ * Copyright(c) 1999 - 2015 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-index d9f7b93..b074b9a 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-@@ -1,5 +1,5 @@
- /* Intel PRO/1000 Linux driver
-- * Copyright(c) 1999 - 2014 Intel Corporation.
-+ * Copyright(c) 1999 - 2015 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.h b/drivers/net/ethernet/intel/e1000e/ich8lan.h
-index a960d48..c0e3585 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.h
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.h
-@@ -1,5 +1,5 @@
- /* Intel PRO/1000 Linux driver
-- * Copyright(c) 1999 - 2014 Intel Corporation.
-+ * Copyright(c) 1999 - 2015 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-diff --git a/drivers/net/ethernet/intel/e1000e/mac.c b/drivers/net/ethernet/intel/e1000e/mac.c
-index 30b74d5..e59d7c2 100644
---- a/drivers/net/ethernet/intel/e1000e/mac.c
-+++ b/drivers/net/ethernet/intel/e1000e/mac.c
-@@ -1,5 +1,5 @@
- /* Intel PRO/1000 Linux driver
-- * Copyright(c) 1999 - 2014 Intel Corporation.
-+ * Copyright(c) 1999 - 2015 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-diff --git a/drivers/net/ethernet/intel/e1000e/mac.h b/drivers/net/ethernet/intel/e1000e/mac.h
-index 0513d90..8284618 100644
---- a/drivers/net/ethernet/intel/e1000e/mac.h
-+++ b/drivers/net/ethernet/intel/e1000e/mac.h
-@@ -1,5 +1,5 @@
- /* Intel PRO/1000 Linux driver
-- * Copyright(c) 1999 - 2014 Intel Corporation.
-+ * Copyright(c) 1999 - 2015 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-diff --git a/drivers/net/ethernet/intel/e1000e/manage.c b/drivers/net/ethernet/intel/e1000e/manage.c
-index 06edfca..cc9b3be 100644
---- a/drivers/net/ethernet/intel/e1000e/manage.c
-+++ b/drivers/net/ethernet/intel/e1000e/manage.c
-@@ -1,5 +1,5 @@
- /* Intel PRO/1000 Linux driver
-- * Copyright(c) 1999 - 2014 Intel Corporation.
-+ * Copyright(c) 1999 - 2015 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-diff --git a/drivers/net/ethernet/intel/e1000e/manage.h b/drivers/net/ethernet/intel/e1000e/manage.h
-index a8c27f9..0b9ea59 100644
---- a/drivers/net/ethernet/intel/e1000e/manage.h
-+++ b/drivers/net/ethernet/intel/e1000e/manage.h
-@@ -1,5 +1,5 @@
- /* Intel PRO/1000 Linux driver
-- * Copyright(c) 1999 - 2014 Intel Corporation.
-+ * Copyright(c) 1999 - 2015 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index d5b02ae..325cbda 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -1,5 +1,5 @@
- /* Intel PRO/1000 Linux driver
-- * Copyright(c) 1999 - 2014 Intel Corporation.
-+ * Copyright(c) 1999 - 2015 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-@@ -48,7 +48,7 @@
- 
- #define DRV_EXTRAVERSION "-k"
- 
--#define DRV_VERSION "2.3.2" DRV_EXTRAVERSION
-+#define DRV_VERSION "3.2.5" DRV_EXTRAVERSION
- char e1000e_driver_name[] = "e1000e";
- const char e1000e_driver_version[] = DRV_VERSION;
- 
-@@ -7438,7 +7438,7 @@ static int __init e1000_init_module(void)
- 
- 	pr_info("Intel(R) PRO/1000 Network Driver - %s\n",
- 		e1000e_driver_version);
--	pr_info("Copyright(c) 1999 - 2014 Intel Corporation.\n");
-+	pr_info("Copyright(c) 1999 - 2015 Intel Corporation.\n");
- 	ret = pci_register_driver(&e1000_driver);
- 
- 	return ret;
-diff --git a/drivers/net/ethernet/intel/e1000e/nvm.c b/drivers/net/ethernet/intel/e1000e/nvm.c
-index fa6b103..49f205c 100644
---- a/drivers/net/ethernet/intel/e1000e/nvm.c
-+++ b/drivers/net/ethernet/intel/e1000e/nvm.c
-@@ -1,5 +1,5 @@
- /* Intel PRO/1000 Linux driver
-- * Copyright(c) 1999 - 2014 Intel Corporation.
-+ * Copyright(c) 1999 - 2015 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-diff --git a/drivers/net/ethernet/intel/e1000e/nvm.h b/drivers/net/ethernet/intel/e1000e/nvm.h
-index 342bf69..5d46967 100644
---- a/drivers/net/ethernet/intel/e1000e/nvm.h
-+++ b/drivers/net/ethernet/intel/e1000e/nvm.h
-@@ -1,5 +1,5 @@
- /* Intel PRO/1000 Linux driver
-- * Copyright(c) 1999 - 2014 Intel Corporation.
-+ * Copyright(c) 1999 - 2015 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-diff --git a/drivers/net/ethernet/intel/e1000e/param.c b/drivers/net/ethernet/intel/e1000e/param.c
-index aa1923f..6d8c39a 100644
---- a/drivers/net/ethernet/intel/e1000e/param.c
-+++ b/drivers/net/ethernet/intel/e1000e/param.c
-@@ -1,5 +1,5 @@
- /* Intel PRO/1000 Linux driver
-- * Copyright(c) 1999 - 2014 Intel Corporation.
-+ * Copyright(c) 1999 - 2015 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-diff --git a/drivers/net/ethernet/intel/e1000e/phy.c b/drivers/net/ethernet/intel/e1000e/phy.c
-index b2005e1..de13aea 100644
---- a/drivers/net/ethernet/intel/e1000e/phy.c
-+++ b/drivers/net/ethernet/intel/e1000e/phy.c
-@@ -1,5 +1,5 @@
- /* Intel PRO/1000 Linux driver
-- * Copyright(c) 1999 - 2014 Intel Corporation.
-+ * Copyright(c) 1999 - 2015 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-diff --git a/drivers/net/ethernet/intel/e1000e/phy.h b/drivers/net/ethernet/intel/e1000e/phy.h
-index 537d278..55bfe47 100644
---- a/drivers/net/ethernet/intel/e1000e/phy.h
-+++ b/drivers/net/ethernet/intel/e1000e/phy.h
-@@ -1,5 +1,5 @@
- /* Intel PRO/1000 Linux driver
-- * Copyright(c) 1999 - 2014 Intel Corporation.
-+ * Copyright(c) 1999 - 2015 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-diff --git a/drivers/net/ethernet/intel/e1000e/ptp.c b/drivers/net/ethernet/intel/e1000e/ptp.c
-index 8d7b21d..25a0ad5 100644
---- a/drivers/net/ethernet/intel/e1000e/ptp.c
-+++ b/drivers/net/ethernet/intel/e1000e/ptp.c
-@@ -1,5 +1,5 @@
- /* Intel PRO/1000 Linux driver
-- * Copyright(c) 1999 - 2014 Intel Corporation.
-+ * Copyright(c) 1999 - 2015 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-diff --git a/drivers/net/ethernet/intel/e1000e/regs.h b/drivers/net/ethernet/intel/e1000e/regs.h
-index 110e27e..b24e5fe 100644
---- a/drivers/net/ethernet/intel/e1000e/regs.h
-+++ b/drivers/net/ethernet/intel/e1000e/regs.h
-@@ -1,5 +1,5 @@
- /* Intel PRO/1000 Linux driver
-- * Copyright(c) 1999 - 2014 Intel Corporation.
-+ * Copyright(c) 1999 - 2015 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
--- 
-2.1.0
+configs tested: 68
 
----------------------------------------------------------------------
-Intel Israel (74) Limited
+i386                       randconfig-a0-0602
+i386                       randconfig-a1-0602
+arm                                    sa1100
+arm                          prima2_defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                                   samsung
+arm                       spear13xx_defconfig
+arm                                  iop-adma
+arm                       imx_v6_v7_defconfig
+arm                          marzen_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                                        sh
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+x86_64                     randconfig-i0-0602
+x86_64                     randconfig-i1-0602
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                       randconfig-i0-0602
+i386                       randconfig-i1-0602
+i386                       randconfig-n0-0602
+i386                       randconfig-n1-0602
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+mips                                   jz4740
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+x86_64                   randconfig-x008-0531
+x86_64                   randconfig-x005-0531
+x86_64                   randconfig-x004-0531
+x86_64                   randconfig-x000-0531
+x86_64                   randconfig-x001-0531
+x86_64                   randconfig-x007-0531
+x86_64                   randconfig-x009-0531
+x86_64                   randconfig-x003-0531
+x86_64                   randconfig-x002-0531
+x86_64                   randconfig-x006-0531
+x86_64                                    lkp
+x86_64                                   rhel
+i386                       randconfig-r1-0602
+i386                       randconfig-r0-0602
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                          amiga_defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+Thanks,
+Fengguang
