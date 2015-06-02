@@ -1,33 +1,108 @@
-From: Rustad, Mark D <mark.d.rustad@intel.com>
-Date: Tue, 2 Jun 2015 18:15:14 +0000
-Subject: [Intel-wired-lan] [PATCH 1/2] pci: Add dev_flags bit to access
- VPD through function 0
-In-Reply-To: <556DEC80.70206@redhat.com>
-References: <20150602165706.6252.76253.stgit@mdrustad-wks.jf.intel.com>
- <20150602170414.6252.48036.stgit@mdrustad-wks.jf.intel.com>
- <556DEC80.70206@redhat.com>
-Message-ID: <CCF4C06B-1029-4341-B5AE-846C834DD747@intel.com>
+From: Fujinaka, Todd <todd.fujinaka@intel.com>
+Date: Tue, 2 Jun 2015 23:02:01 +0000
+Subject: [Intel-wired-lan] [PATCH] igb: report unsupported ethtool
+ settings in set_coalesce
+In-Reply-To: <555F7573.9040704@gmail.com>
+References: <20150522174950.16145.78447.stgit@htfujina-fc.jf.intel.com>
+ <555F70BE.6090904@redhat.com>
+ <9B4A1B1917080E46B64F07F2989DADD65354DCC3@ORSMSX114.amr.corp.intel.com>
+ <555F7573.9040704@gmail.com>
+Message-ID: <9B4A1B1917080E46B64F07F2989DADD6535518D1@ORSMSX114.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> On Jun 2, 2015, at 10:48 AM, Alexander Duyck <alexander.h.duyck@redhat.com> wrote:
-> 
-> I'm pretty sure these could cause some serious errors if you direct assign the device into a VM since you then end up with multiple devices sharing a bus.  Also it would likely have side-effects on a LOM (Lan On Motherboard) as it also shares the bus with multiple non-Ethernet devices.
-> 
-> I believe you still need to add something like a check for !pci_is_root_bus(dev->bus) before you attempt to grab function 0.  It probably also wouldn't hurt to check the dev->multifunction bit before running this code since it wouldn't make sense to go chasing down the VPD on another function if the device doesn't have one.  You could probably do that either as a part of this code, or perhaps put it in the quirk.
+This doesn't appear to work quite right. Jeff, can you pop this? I've redone it.
 
-I'll look into those. I think you are right about more checks being needed. Thanks for the comments.
+Todd Fujinaka
+Software Application Engineer
+Networking Division (ND)
+Intel Corporation
+todd.fujinaka at intel.com
+(503) 712-4565
 
---
-Mark Rustad, Networking Division, Intel Corporation
+-----Original Message-----
+From: Alexander Duyck [mailto:alexander.duyck at gmail.com] 
+Sent: Friday, May 22, 2015 11:29 AM
+To: Fujinaka, Todd; Alexander Duyck; intel-wired-lan at lists.osuosl.org
+Subject: Re: [Intel-wired-lan] [PATCH] igb: report unsupported ethtool settings in set_coalesce
 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 841 bytes
-Desc: Message signed with OpenPGP using GPGMail
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150602/94886361/attachment-0001.asc>
+I think I see what you are talking about.  They used s32 in the ethtool do_scoalesce call, and pointed the void pointer wanted_val at it which is how they did the conversion.
+
+You might want to just == ~0 or ~(ec->...) instead to test the values.
+
+- Alex
+
+On 05/22/2015 11:10 AM, Fujinaka, Todd wrote:
+> Those are unsigned? The code for ethtool set them all to -1.
+>
+> Todd Fujinaka
+> Software Application Engineer
+> Networking Division (ND)
+> Intel Corporation
+> todd.fujinaka at intel.com
+> (503) 712-4565
+>
+> -----Original Message-----
+> From: Alexander Duyck [mailto:alexander.h.duyck at redhat.com]
+> Sent: Friday, May 22, 2015 11:09 AM
+> To: Fujinaka, Todd; intel-wired-lan at lists.osuosl.org
+> Subject: Re: [Intel-wired-lan] [PATCH] igb: report unsupported ethtool 
+> settings in set_coalesce
+>
+>
+>
+> On 05/22/2015 10:49 AM, Todd Fujinaka wrote:
+>> There are many settings possible using ethtool -C/--coalesce, but not 
+>> all of them are supported. Report failure when an unsupported option 
+>> is set.
+>>
+>> Signed-off-by: Todd Fujinaka <todd.fujinaka@intel.com>
+>> ---
+>>    drivers/net/ethernet/intel/igb/igb_ethtool.c |   21 +++++++++++++++++++++
+>>    1 file changed, 21 insertions(+)
+>>
+>> diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c
+>> b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+>> index 109cad9..13560fe 100644
+>> --- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
+>> +++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+>> @@ -2159,6 +2159,27 @@ static int igb_set_coalesce(struct net_device *netdev,
+>>    	struct igb_adapter *adapter = netdev_priv(netdev);
+>>    	int i;
+>>
+>> +	if ((ec->rx_max_coalesced_frames != -1) ||
+>> +	    (ec->rx_coalesce_usecs_irq != -1) ||
+>> +	    (ec->rx_max_coalesced_frames_irq != -1) ||
+>> +	    (ec->tx_max_coalesced_frames != -1) ||
+>> +	    (ec->tx_coalesce_usecs_irq != -1) ||
+>> +	    (ec->stats_block_coalesce_usecs != -1) ||
+>> +	    (ec->use_adaptive_rx_coalesce != -1) ||
+>> +	    (ec->use_adaptive_tx_coalesce != -1) ||
+>> +	    (ec->pkt_rate_low != -1) ||
+>> +	    (ec->rx_coalesce_usecs_low != -1) ||
+>> +	    (ec->rx_max_coalesced_frames_low != -1) ||
+>> +	    (ec->tx_coalesce_usecs_low != -1) ||
+>> +	    (ec->tx_max_coalesced_frames_low != -1) ||
+>> +	    (ec->pkt_rate_high != -1) ||
+>> +	    (ec->rx_coalesce_usecs_high != -1) ||
+>> +	    (ec->rx_max_coalesced_frames_high != -1) ||
+>> +	    (ec->tx_coalesce_usecs_high != -1) ||
+>> +	    (ec->tx_max_coalesced_frames_high != -1) ||
+>> +	    (ec->rate_sample_interval != -1))
+>> +		return -ENOTSUPP;
+>> +
+>>    	if ((ec->rx_coalesce_usecs > IGB_MAX_ITR_USECS) ||
+>>    	    ((ec->rx_coalesce_usecs > 3) &&
+>>    	     (ec->rx_coalesce_usecs < IGB_MIN_ITR_USECS)) ||
+>>
+> Shouldn't these tests all give you a signed/unsigned mismatch since you are comparing an unsigned 32 bit value versus a signed value?
+>
+> - Alex
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at lists.osuosl.org
+> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
