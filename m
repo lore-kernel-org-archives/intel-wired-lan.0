@@ -1,84 +1,98 @@
-From: Nelson, Shannon <shannon.nelson@intel.com>
-Date: Mon, 1 Jun 2015 19:33:03 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: clean up unneeded gotos
-Message-ID: <FC41C24E35F18A40888AACA1A36F3E418AE6C940@fmsmsx115.amr.corp.intel.com>
+From: Chris Friesen <chris.friesen@windriver.com>
+Date: Mon, 1 Jun 2015 18:01:44 -0600
+Subject: [Intel-wired-lan] vlan packet handling in ixgbevf driver when
+ in	promiscuous mode
+In-Reply-To: <C5551D9AAB213A418B7FD5E4A6F30A078930269A@ORSMSX108.amr.corp.intel.com>
+References: <5568D344.9090903@windriver.com>
+ <C5551D9AAB213A418B7FD5E4A6F30A078930269A@ORSMSX108.amr.corp.intel.com>
+Message-ID: <556CF268.2060703@windriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Could you elaborate?
 
-With a little work we can clean up some unnecessary logic jumping and
-drop a variable.
+The use-case here is for NFV/SDN type stuff, where we want to be able to run a 
+router or something similar in the guest--so it needs to be able to receive 
+packets from all VLANs.
 
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-Cc: Laurent Navet <laurent.navet@gmail.com>
----
- drivers/net/ethernet/intel/i40e/i40e_hmc.c | 37 ++++++++++--------------------
- 1 file changed, 12 insertions(+), 25 deletions(-)
+ From what I see if you enable promiscuous mode on the PF then the VFs get 
+packets from all VLANs.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_hmc.c b/drivers/net/ethernet/intel/i40e/i40e_hmc.c
-index 9b987cc..6c0dd54 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_hmc.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_hmc.c
-@@ -287,21 +287,15 @@ i40e_status i40e_remove_sd_bp_new(struct i40e_hw *hw,
- 					    u32 idx, bool is_pf)
- {
- 	struct i40e_hmc_sd_entry *sd_entry;
--	i40e_status ret_code = 0;
-+
-+	if (!is_pf)
-+		return I40E_NOT_SUPPORTED;
- 
- 	/* get the entry and decrease its ref counter */
- 	sd_entry = &hmc_info->sd_table.sd_entry[idx];
--	if (is_pf) {
--		I40E_CLEAR_PF_SD_ENTRY(hw, idx, I40E_SD_TYPE_DIRECT);
--	} else {
--		ret_code = I40E_NOT_SUPPORTED;
--		goto exit;
--	}
--	ret_code = i40e_free_dma_mem(hw, &(sd_entry->u.bp.addr));
--	if (ret_code)
--		goto exit;
--exit:
--	return ret_code;
-+	I40E_CLEAR_PF_SD_ENTRY(hw, idx, I40E_SD_TYPE_DIRECT);
-+
-+	return i40e_free_dma_mem(hw, &sd_entry->u.bp.addr);
- }
- 
- /**
-@@ -341,20 +335,13 @@ i40e_status i40e_remove_pd_page_new(struct i40e_hw *hw,
- 					      struct i40e_hmc_info *hmc_info,
- 					      u32 idx, bool is_pf)
- {
--	i40e_status ret_code = 0;
- 	struct i40e_hmc_sd_entry *sd_entry;
- 
-+	if (!is_pf)
-+		return I40E_NOT_SUPPORTED;
-+
- 	sd_entry = &hmc_info->sd_table.sd_entry[idx];
--	if (is_pf) {
--		I40E_CLEAR_PF_SD_ENTRY(hw, idx, I40E_SD_TYPE_PAGED);
--	} else {
--		ret_code = I40E_NOT_SUPPORTED;
--		goto exit;
--	}
--	/* free memory here */
--	ret_code = i40e_free_dma_mem(hw, &(sd_entry->u.pd_table.pd_page_addr));
--	if (ret_code)
--		goto exit;
--exit:
--	return ret_code;
-+	I40E_CLEAR_PF_SD_ENTRY(hw, idx, I40E_SD_TYPE_PAGED);
-+
-+	return  i40e_free_dma_mem(hw, &sd_entry->u.pd_table.pd_page_addr);
- }
--- 
-1.8.3.1
+With the stock ixgbevf driver in the guest this doesn't work well because any 
+packets from VLANs that the guest hasn't registered for do not get the vlan tags 
+added back in to the packets (which makes it useless for routing).  With a minor 
+change to the ixgbevf driver to put the vlan tags back in for all packets it 
+seems to work okay.  Maybe this change would be a reasonable thing to do in the 
+stock ixgbevf driver when enabling promiscuous mode in the guest?
 
+Also, it seems to work fine with the DPDK drivers in the guest when the host is 
+in promiscuous mode.
 
+Chris
+
+On 06/01/2015 10:48 AM, Rose, Gregory V wrote:
+> 82599 devices do not support promiscuous mode for the virtual functions - you should use the physical function for true promiscuous capture.
+>
+> ----------
+> Greg Rose
+> FreeBSD/NFV PAE
+> Network Division
+> Intel Corporation
+> Desk - 503-712-5048
+>
+> Any man who afflicts the human race with ideas must be prepared to see them misunderstood.
+>
+> - H. L. Mencken
+>
+>> -----Original Message-----
+>> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+>> Behalf Of Chris Friesen
+>> Sent: Friday, May 29, 2015 2:00 PM
+>> To: intel-wired-lan at lists.osuosl.org
+>> Subject: [Intel-wired-lan] vlan packet handling in ixgbevf driver when in
+>> promiscuous mode
+>>
+>> Hi,
+>>
+>> I'm doing some work with ixgbevf in the 3.10 kernel, but the current linux
+>> kernel git version seems to have similar behaviour.
+>>
+>> Basically I'm interested in doing packet sniffing in a VM guest using PCI
+>> passthrough of a VF of an 82599.
+>>
+>> What I'm seeing is that if I register for a vlan in the guest (creating
+>> eth1.100, for example) and then run tcpdump on the underlying device
+>> (eth1, for
+>> example) then I see the packet with the vlan header in it.
+>>
+>> If I remove that vlan, then I see the packet with no vlan header.
+>>
+>> I think this is coming from ixgbevf_receive_skb() in 3.10 (or
+>> ixgbevf_process_skb_fields() in current upstream git) where it has code
+>> that looks like this:
+>>
+>> 	if (test_bit(vid & VLAN_VID_MASK, active_vlans))
+>> 		__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q), vid);
+>>
+>> While this makes sense for normal operation (where traffic from other
+>> vlans isn't coming in anyways) I don't think it makes sense when
+>> promiscuous mode is enabled.
+>>
+>> In promiscuous mode I want to be able to see exactly what packets are
+>> coming on the (virtual) wire, so I should be able to see the vlan header
+>> even if I haven't actually registered for that vlan.
+>>
+>> Basically I think that code above should add an "or device is in
+>> promiscuous mode" clause.
+>>
+>> Thoughts?
+>>
+>> Chris
+>> _______________________________________________
+>> Intel-wired-lan mailing list
+>> Intel-wired-lan at lists.osuosl.org
+>> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
 
