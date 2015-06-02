@@ -1,80 +1,77 @@
 From: Yanir Lubetkin <yanirx.lubetkin@intel.com>
-Date: Tue,  2 Jun 2015 17:05:42 +0300
-Subject: [Intel-wired-lan] [PATCH v2 2/5] e1000e: fix legacy interrupt
-	handling in i219
+Date: Tue,  2 Jun 2015 17:05:47 +0300
+Subject: [Intel-wired-lan] [PATCH v2 4/5] e1000e: fix unit hang during
+	loopback test
 In-Reply-To: <5c0f5ad24e5ae3adfede0279b6fdfea4312e32da.1433253642.git.yanirx.lubetkin@intel.com>
 References: <5c0f5ad24e5ae3adfede0279b6fdfea4312e32da.1433253642.git.yanirx.lubetkin@intel.com>
-Message-ID: <4bd9425b152903b483996d9ea340489113cf9587.1433253642.git.yanirx.lubetkin@intel.com>
+Message-ID: <0b084820b85c25826686f51a078c5b95fe2dd696.1433253642.git.yanirx.lubetkin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This fix handles a hardware issue that prevented i219 from
-working in legacy interrupts mode (IntMode=0)
+system would hang during execution of "ethtool -t <NIC>" for the same
+reason that required flushing the descriptor rings. this fix disables
+MULR for the loopback test to avoid the hang state.
 
 Signed-off-by: Yanir Lubetkin <yanirx.lubetkin@intel.com>
 ---
- drivers/net/ethernet/intel/e1000e/ich8lan.h |  5 ++++-
- drivers/net/ethernet/intel/e1000e/netdev.c  | 14 ++++++++++++++
- drivers/net/ethernet/intel/e1000e/regs.h    |  1 +
- 3 files changed, 19 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/e1000e/ethtool.c | 27 ++++++++++++++++++++++++---
+ 1 file changed, 24 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.h b/drivers/net/ethernet/intel/e1000e/ich8lan.h
-index da0454c..a960d48 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.h
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.h
-@@ -98,8 +98,11 @@
- #define E1000_FEXTNVM6_K1_OFF_ENABLE	0x80000000
- /* bit for disabling packet buffer read */
- #define E1000_FEXTNVM7_DISABLE_PB_READ	0x00040000
+diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
+index 11f486e..51b7806 100644
+--- a/drivers/net/ethernet/intel/e1000e/ethtool.c
++++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
+@@ -1516,8 +1516,19 @@ static int e1000_set_es2lan_mac_loopback(struct e1000_adapter *adapter)
+ static int e1000_setup_loopback_test(struct e1000_adapter *adapter)
+ {
+ 	struct e1000_hw *hw = &adapter->hw;
+-	u32 rctl;
 -
-+#define E1000_FEXTNVM7_SIDE_CLK_UNGATE	0x00000004
- #define E1000_FEXTNVM7_DISABLE_SMB_PERST	0x00000020
-+#define E1000_FEXTNVM9_IOSFSB_CLKGATE_DIS	0x00000800
-+#define E1000_FEXTNVM9_IOSFSB_CLKREQ_DIS	0x00001000
-+#define E1000_FEXTNVM11_DISABLE_PB_READ		0x00000200
- #define E1000_FEXTNVM11_DISABLE_MULR_FIX	0x00002000
- 
- /* bit24: RXDCTL thresholds granularity: 0 - cache lines, 1 - descriptors */
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 4f029b6..5f94fdf 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -4120,6 +4120,20 @@ void e1000e_reset(struct e1000_adapter *adapter)
- 		phy_data &= ~IGP02E1000_PM_SPD;
- 		e1e_wphy(hw, IGP02E1000_PHY_POWER_MGMT, phy_data);
- 	}
-+	if (hw->mac.type == e1000_pch_spt && adapter->int_mode == 0) {
-+		u32 reg;
-+
-+		/* Fextnvm7 @ 0xe4[2] = 1 */
-+		reg = er32(FEXTNVM7);
-+		reg |= E1000_FEXTNVM7_SIDE_CLK_UNGATE;
-+		ew32(FEXTNVM7, reg);
-+		/* Fextnvm9 @ 0x5bb4[13:12] = 11 */
-+		reg = er32(FEXTNVM9);
-+		reg |= E1000_FEXTNVM9_IOSFSB_CLKGATE_DIS |
-+		       E1000_FEXTNVM9_IOSFSB_CLKREQ_DIS;
-+		ew32(FEXTNVM9, reg);
++	u32 rctl, fext_nvm11, tarc0;
++ 
++	if (hw->mac.type == e1000_pch_spt) {
++		fext_nvm11 = er32(FEXTNVM11);
++		fext_nvm11 |= E1000_FEXTNVM11_DISABLE_MULR_FIX;
++		ew32(FEXTNVM11, fext_nvm11);
++		tarc0 = er32(TARC(0));
++		/* clear bits 28 & 29 (control of MULR concurrent requests) */
++		tarc0 &= 0xcfffffff;
++		/* set bit 29 (value of MULR requests is now 2) */
++		tarc0 |= 0x20000000;
++		ew32(TARC(0), tarc0);
 +	}
-+
- }
+ 	if (hw->phy.media_type == e1000_media_type_fiber ||
+ 	    hw->phy.media_type == e1000_media_type_internal_serdes) {
+ 		switch (hw->mac.type) {
+@@ -1542,7 +1553,7 @@ static int e1000_setup_loopback_test(struct e1000_adapter *adapter)
+ static void e1000_loopback_cleanup(struct e1000_adapter *adapter)
+ {
+ 	struct e1000_hw *hw = &adapter->hw;
+-	u32 rctl;
++	u32 rctl, fext_nvm11, tarc0;
+ 	u16 phy_reg;
  
- int e1000e_up(struct e1000_adapter *adapter)
-diff --git a/drivers/net/ethernet/intel/e1000e/regs.h b/drivers/net/ethernet/intel/e1000e/regs.h
-index 200a312..110e27e 100644
---- a/drivers/net/ethernet/intel/e1000e/regs.h
-+++ b/drivers/net/ethernet/intel/e1000e/regs.h
-@@ -38,6 +38,7 @@
- #define E1000_FEXTNVM4	0x00024	/* Future Extended NVM 4 - RW */
- #define E1000_FEXTNVM6	0x00010	/* Future Extended NVM 6 - RW */
- #define E1000_FEXTNVM7	0x000E4	/* Future Extended NVM 7 - RW */
-+#define E1000_FEXTNVM9	0x5BB4  /* Future Extended NVM 9 - RW */
- #define E1000_FEXTNVM11	0x5BBC  /* Future Extended NVM 11 - RW */
- #define E1000_PCIEANACFG	0x00F18	/* PCIE Analog Config */
- #define E1000_FCT	0x00030	/* Flow Control Type - RW */
+ 	rctl = er32(RCTL);
+@@ -1550,6 +1561,16 @@ static void e1000_loopback_cleanup(struct e1000_adapter *adapter)
+ 	ew32(RCTL, rctl);
+ 
+ 	switch (hw->mac.type) {
++	case e1000_pch_spt:
++		fext_nvm11 = er32(FEXTNVM11);
++		fext_nvm11 &= ~E1000_FEXTNVM11_DISABLE_MULR_FIX;
++		ew32(FEXTNVM11, fext_nvm11);
++		tarc0 = er32(TARC(0));
++		/* clear bits 28 & 29 (control of MULR concurrent requests) */
++		/* set bit 29 (value of MULR requests is now 0) */
++		tarc0 &= 0xcfffffff;
++		ew32(TARC(0), tarc0);
++		/* fall through */
+ 	case e1000_80003es2lan:
+ 		if (hw->phy.media_type == e1000_media_type_fiber ||
+ 		    hw->phy.media_type == e1000_media_type_internal_serdes) {
 -- 
 2.1.0
 
