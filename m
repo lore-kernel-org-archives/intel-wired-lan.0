@@ -1,81 +1,33 @@
-From: Alexander Duyck <alexander.h.duyck@redhat.com>
-Date: Tue, 02 Jun 2015 10:48:48 -0700
+From: Rustad, Mark D <mark.d.rustad@intel.com>
+Date: Tue, 2 Jun 2015 18:15:14 +0000
 Subject: [Intel-wired-lan] [PATCH 1/2] pci: Add dev_flags bit to access
  VPD through function 0
-In-Reply-To: <20150602170414.6252.48036.stgit@mdrustad-wks.jf.intel.com>
+In-Reply-To: <556DEC80.70206@redhat.com>
 References: <20150602165706.6252.76253.stgit@mdrustad-wks.jf.intel.com>
  <20150602170414.6252.48036.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <556DEC80.70206@redhat.com>
+ <556DEC80.70206@redhat.com>
+Message-ID: <CCF4C06B-1029-4341-B5AE-846C834DD747@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 06/02/2015 10:04 AM, Mark D Rustad wrote:
-> Add a dev_flags bit, PCI_DEV_FLAGS_VPD_REF_F0, to access VPD through
-> function 0 to provide VPD access on other functions. This solves
-> concurrent access problems on many devices without changing the
-> attributes exposed in sysfs. Never set this bit on funciton 0 or
-> there will be an infinite recursion.
->
-> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
-> ---
->   drivers/pci/access.c |   39 ++++++++++++++++++++++++++++++++++++++-
->   include/linux/pci.h  |    2 ++
->   2 files changed, 40 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/pci/access.c b/drivers/pci/access.c
-> index d9b64a175990..e435c087c354 100644
-> --- a/drivers/pci/access.c
-> +++ b/drivers/pci/access.c
-> @@ -439,6 +439,40 @@ static const struct pci_vpd_ops pci_vpd_pci22_ops = {
->   	.release = pci_vpd_pci22_release,
->   };
->   
-> +static ssize_t pci_vpd_f0_read(struct pci_dev *dev, loff_t pos, size_t count,
-> +			       void *arg)
-> +{
-> +	struct pci_dev *tdev = pci_get_slot(dev->bus, PCI_SLOT(dev->devfn));
-> +	ssize_t ret;
-> +
-> +	if (!tdev)
-> +		return -ENODEV;
-> +
-> +	ret = pci_read_vpd(tdev, pos, count, arg);
-> +	pci_dev_put(tdev);
-> +	return ret;
-> +}
-> +
-> +static ssize_t pci_vpd_f0_write(struct pci_dev *dev, loff_t pos, size_t count,
-> +				const void *arg)
-> +{
-> +	struct pci_dev *tdev = pci_get_slot(dev->bus, PCI_SLOT(dev->devfn));
-> +	ssize_t ret;
-> +
-> +	if (!tdev)
-> +		return -ENODEV;
-> +
-> +	ret = pci_write_vpd(tdev, pos, count, arg);
-> +	pci_dev_put(tdev);
-> +	return ret;
-> +}
-> +
+> On Jun 2, 2015, at 10:48 AM, Alexander Duyck <alexander.h.duyck@redhat.com> wrote:
+> 
+> I'm pretty sure these could cause some serious errors if you direct assign the device into a VM since you then end up with multiple devices sharing a bus.  Also it would likely have side-effects on a LOM (Lan On Motherboard) as it also shares the bus with multiple non-Ethernet devices.
+> 
+> I believe you still need to add something like a check for !pci_is_root_bus(dev->bus) before you attempt to grab function 0.  It probably also wouldn't hurt to check the dev->multifunction bit before running this code since it wouldn't make sense to go chasing down the VPD on another function if the device doesn't have one.  You could probably do that either as a part of this code, or perhaps put it in the quirk.
 
-I'm pretty sure these could cause some serious errors if you direct 
-assign the device into a VM since you then end up with multiple devices 
-sharing a bus.  Also it would likely have side-effects on a LOM (Lan On 
-Motherboard) as it also shares the bus with multiple non-Ethernet devices.
+I'll look into those. I think you are right about more checks being needed. Thanks for the comments.
 
-I believe you still need to add something like a check for 
-!pci_is_root_bus(dev->bus) before you attempt to grab function 0.  It 
-probably also wouldn't hurt to check the dev->multifunction bit before 
-running this code since it wouldn't make sense to go chasing down the 
-VPD on another function if the device doesn't have one.  You could 
-probably do that either as a part of this code, or perhaps put it in the 
-quirk.
+--
+Mark Rustad, Networking Division, Intel Corporation
 
-- Alex
-
-- Alex
-
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 841 bytes
+Desc: Message signed with OpenPGP using GPGMail
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150602/94886361/attachment-0001.asc>
