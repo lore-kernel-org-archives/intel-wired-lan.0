@@ -1,65 +1,57 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed,  3 Jun 2015 16:31:09 -0700
-Subject: [Intel-wired-lan] [rc2 12/15] fm10k: pack TLV overlay structures
+Date: Wed,  3 Jun 2015 16:30:58 -0700
+Subject: [Intel-wired-lan] [rc2 01/15] fm10k: ignore invalid multicast
+	address entries
 In-Reply-To: <1433374272-6684-1-git-send-email-jacob.e.keller@intel.com>
 References: <1433374272-6684-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1433374272-6684-13-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1433374272-6684-2-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch adds the __attribute__((packed)) indicator to some structures
-which are overlayed onto a TLV message. These structures must be packed
-as small as possible in order to correctly align when copied into the
-mailbox buffer. Without doing so, the receiving mailbox code incorrectly
-parses the values and we get invalid message responses from the switch
-manager software.
+This change fixes an issue with adding an invalid multicast address
+using the iproute2 tool (ip maddr add <MADDR> dev <dev>). The iproute2
+tool and the kernel do not validate or filter the multicast addresses
+when adding them to the multicast list. Thus, when synchronizing this
+list with an invalid entry, the action will be aborted with an error
+since the fm10k driver currently validates the list. Consequently,
+multicast entries beyond the invalid one will not be processed and
+communicated with the switch via the mailbox. This change makes it so
+that invalid addresses will simply be skipped and allows synchronizing
+the full list to proceed.
 
--rc2
-* use __packed instead of __attribute__((packed))
-
+Signed-off-by: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_pf.h | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.h b/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
-index 7ab1db4fff32..40a0dbc62a04 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
-@@ -81,26 +81,26 @@ struct fm10k_mac_update {
- 	__le16	glort;
- 	u8	flags;
- 	u8	action;
--};
-+} __packed;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+index 2f4f41b7eae7..4c6b51111566 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+@@ -923,18 +923,12 @@ static int __fm10k_mc_sync(struct net_device *dev,
+ 	struct fm10k_intfc *interface = netdev_priv(dev);
+ 	struct fm10k_hw *hw = &interface->hw;
+ 	u16 vid, glort = interface->glort;
+-	s32 err;
+-
+-	if (!is_multicast_ether_addr(addr))
+-		return -EADDRNOTAVAIL;
  
- struct fm10k_global_table_data {
- 	__le32	used;
- 	__le32	avail;
--};
-+} __packed;
+ 	/* update table with current entries */
+ 	for (vid = hw->mac.default_vid ? fm10k_find_next_vlan(interface, 0) : 0;
+ 	     vid < VLAN_N_VID;
+ 	     vid = fm10k_find_next_vlan(interface, vid)) {
+-		err = hw->mac.ops.update_mc_addr(hw, glort, addr, vid, sync);
+-		if (err)
+-			return err;
++		hw->mac.ops.update_mc_addr(hw, glort, addr, vid, sync);
+ 	}
  
- struct fm10k_swapi_error {
- 	__le32				status;
- 	struct fm10k_global_table_data	mac;
- 	struct fm10k_global_table_data	nexthop;
- 	struct fm10k_global_table_data	ffu;
--};
-+} __packed;
- 
- struct fm10k_swapi_1588_timestamp {
- 	__le64 egress;
- 	__le64 ingress;
- 	__le16 dglort;
- 	__le16 sglort;
--};
-+} __packed;
- 
- s32 fm10k_msg_lport_map_pf(struct fm10k_hw *, u32 **, struct fm10k_mbx_info *);
- extern const struct fm10k_tlv_attr fm10k_lport_map_msg_attr[];
+ 	return 0;
 -- 
 2.1.0
 
