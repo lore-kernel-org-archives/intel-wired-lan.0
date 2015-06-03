@@ -1,28 +1,24 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 03 Jun 2015 22:03:57 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 1c72bd040ba2ab39ccd288df5507121c809cbaa7 BUILD DONE
-Message-ID: <556f094d.i4eRQRsaQ5g4QmAz%fengguang.wu@intel.com>
+Date: Wed, 03 Jun 2015 22:15:33 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
+ 529498cde04537211cc3aa8f920c371b91c0f7d8 BUILD SUCCESS
+Message-ID: <556f0c05.UGY8EuZLBqOZ7SVi%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-1c72bd040ba2ab39ccd288df5507121c809cbaa7  e1000e: Bump the version to 3.2.5
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
+529498cde04537211cc3aa8f920c371b91c0f7d8  e1000e: Bump the version to 3.2.5
 
-drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:2082:22: sparse: restricted __le16 degrades to integer
-
-elapsed time: 263m
+elapsed time: 149m
 
 configs tested: 84
 
 i386                   randconfig-a0-06031710
 i386                   randconfig-a1-06031710
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
+x86_64                            allnoconfig
 arm                               allnoconfig
 arm                         at91_dt_defconfig
 arm                                  at_hdmac
@@ -38,10 +34,6 @@ arm                       spear13xx_defconfig
 ia64                             alldefconfig
 ia64                              allnoconfig
 ia64                                defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                            allnoconfig
 i386                             alldefconfig
 i386                             allmodconfig
 i386                              allnoconfig
@@ -50,21 +42,26 @@ mips                              allnoconfig
 mips                      fuloong2e_defconfig
 mips                                   jz4740
 mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
 x86_64                     randconfig-i0-0603
 x86_64                     randconfig-i1-0603
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
 microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
 i386                       randconfig-i0-0603
 i386                       randconfig-i1-0603
-i386                             allyesconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-x86_64                                    lkp
-x86_64                                   rhel
 i386                       randconfig-n0-0603
 i386                       randconfig-n1-0603
+i386                             allyesconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+x86_64                                    lkp
+x86_64                                   rhel
 m68k                          amiga_defconfig
 m68k                       m5475evb_defconfig
 m68k                          multi_defconfig
@@ -72,16 +69,17 @@ sh                                allnoconfig
 sh                          rsk7269_defconfig
 sh                  sh7785lcr_32bit_defconfig
 sh                            titan_defconfig
-x86_64               randconfig-x000-06031659
-x86_64               randconfig-x001-06031659
+x86_64                           allmodconfig
 x86_64               randconfig-x002-06031659
-x86_64               randconfig-x003-06031659
 x86_64               randconfig-x004-06031659
-x86_64               randconfig-x005-06031659
 x86_64               randconfig-x006-06031659
+x86_64               randconfig-x005-06031659
 x86_64               randconfig-x007-06031659
-x86_64               randconfig-x008-06031659
 x86_64               randconfig-x009-06031659
+x86_64               randconfig-x003-06031659
+x86_64               randconfig-x008-06031659
+x86_64               randconfig-x001-06031659
+x86_64               randconfig-x000-06031659
 i386                       randconfig-r0-0603
 i386                       randconfig-r1-0603
 alpha                               defconfig
