@@ -1,105 +1,41 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 03 Jun 2015 22:15:33 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
- 529498cde04537211cc3aa8f920c371b91c0f7d8 BUILD SUCCESS
-Message-ID: <556f0c05.UGY8EuZLBqOZ7SVi%fengguang.wu@intel.com>
+From: Rustad, Mark D <mark.d.rustad@intel.com>
+Date: Wed, 3 Jun 2015 16:16:43 +0000
+Subject: [Intel-wired-lan] [PATCH V2 1/2] pci: Add dev_flags bit to
+ access VPD through function 0
+In-Reply-To: <556E6667.1020000@gmail.com>
+References: <20150603000645.71269.26134.stgit@mdrustad-wks.jf.intel.com>
+ <20150603001011.71269.79857.stgit@mdrustad-wks.jf.intel.com>
+ <556E6667.1020000@gmail.com>
+Message-ID: <4033DF50-0126-4F69-88FA-C6AABC0CADCE@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
-529498cde04537211cc3aa8f920c371b91c0f7d8  e1000e: Bump the version to 3.2.5
+> On Jun 2, 2015, at 7:28 PM, Alexander Duyck <alexander.duyck@gmail.com> wrote:
+> 
+> You can probably combine the dev->multifunction check with the dev_flags check.  After all you don't need this workaround if the device is not multifunction.  It might even make more sense to move the multifunction check to the quirk in patch 2/2.
 
-elapsed time: 149m
+Yes. I also realized that I really should check that tdev->vpd is not NULL. There is no point in referencing it if, for whatever reason, it has no VPD.
 
-configs tested: 84
+> I also believe this leaks a reference to the device.
 
-i386                   randconfig-a0-06031710
-i386                   randconfig-a1-06031710
-x86_64                            allnoconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                             alldefconfig
-i386                             allmodconfig
-i386                              allnoconfig
-i386                                defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                     randconfig-i0-0603
-x86_64                     randconfig-i1-0603
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                       randconfig-i0-0603
-i386                       randconfig-i1-0603
-i386                       randconfig-n0-0603
-i386                       randconfig-n1-0603
-i386                             allyesconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64                                    lkp
-x86_64                                   rhel
-m68k                          amiga_defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-x86_64               randconfig-x002-06031659
-x86_64               randconfig-x004-06031659
-x86_64               randconfig-x006-06031659
-x86_64               randconfig-x005-06031659
-x86_64               randconfig-x007-06031659
-x86_64               randconfig-x009-06031659
-x86_64               randconfig-x003-06031659
-x86_64               randconfig-x008-06031659
-x86_64               randconfig-x001-06031659
-x86_64               randconfig-x000-06031659
-i386                       randconfig-r0-0603
-i386                       randconfig-r1-0603
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
+Yes, and I was thinking that when I wrote the line, but forgot to do anything about it. Good catch!
 
-Thanks,
-Fengguang
+> You should be calling pci_dev_put(tdev) if tdev is not NULL.  As such you probably need to split up the !tdev and the rest of the checks.
+
+Yup. I will have a V3 coming. I still don't have anything to handle PFs assigned to guests, but I think that would be best in a separate patch set if there is need to fix that. It looks to me like that would involve trapping on all config space accesses to such devices and then emulating the behavior of the VPD Address/F and Data registers. It may be worth seeing if anyone cares before doing anything about it. I haven't seen any reports related to such a setup.
+
+Again, thank you for your comments.
+
+--
+Mark Rustad, Networking Division, Intel Corporation
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 841 bytes
+Desc: Message signed with OpenPGP using GPGMail
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150603/257ffcfe/attachment.asc>
