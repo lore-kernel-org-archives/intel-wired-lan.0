@@ -1,49 +1,37 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed,  3 Jun 2015 16:31:00 -0700
-Subject: [Intel-wired-lan] [rc2 03/15] fm10k: move setting shinfo inside
-	ts_tx_enqueue
+Date: Wed,  3 Jun 2015 16:31:03 -0700
+Subject: [Intel-wired-lan] [rc2 06/15] fm10k: use an unsigned int for i in
+	ethtool_get_strings
 In-Reply-To: <1433374272-6684-1-git-send-email-jacob.e.keller@intel.com>
 References: <1433374272-6684-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1433374272-6684-4-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1433374272-6684-7-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch simplifies the code flow for setting the IN_PROGRESS bit of
-the shinfo for an skb we will be timestamping.
+The value will never be negative, and we use the %i print format, use
+unsigned int for the loop counter. Issue found using cppcheck.
 
-Reported-by: Eric Dumazet <eric.dumazet@gmail.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_ptp.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ptp.c b/drivers/net/ethernet/intel/fm10k/fm10k_ptp.c
-index 95f1d62b0690..39b832889b75 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_ptp.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_ptp.c
-@@ -70,16 +70,16 @@ void fm10k_ts_tx_enqueue(struct fm10k_intfc *interface, struct sk_buff *skb)
- 	 * if none are present then insert skb in tail of list
- 	 */
- 	skb = fm10k_ts_tx_skb(interface, FM10K_CB(clone)->fi.w.dglort);
--	if (!skb)
-+	if (!skb) {
-+		skb_shinfo(clone)->tx_flags |= SKBTX_IN_PROGRESS;
- 		__skb_queue_tail(list, clone);
-+	}
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+index 4b9d9f88af70..06f0b08d9af5 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+@@ -124,7 +124,7 @@ static void fm10k_get_strings(struct net_device *dev, u32 stringset, u8 *data)
+ {
+ 	struct fm10k_intfc *interface = netdev_priv(dev);
+ 	char *p = (char *)data;
+-	int i;
++	unsigned int i;
  
- 	spin_unlock_irqrestore(&list->lock, flags);
- 
- 	/* if list is already has one then we just free the clone */
- 	if (skb)
- 		kfree_skb(skb);
--	else
--		skb_shinfo(clone)->tx_flags |= SKBTX_IN_PROGRESS;
- }
- 
- void fm10k_ts_tx_hwtstamp(struct fm10k_intfc *interface, __le16 dglort,
+ 	switch (stringset) {
+ 	case ETH_SS_TEST:
 -- 
 2.1.0
 
