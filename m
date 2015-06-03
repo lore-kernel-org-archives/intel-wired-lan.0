@@ -1,100 +1,46 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed,  3 Jun 2015 15:56:36 -0700
-Subject: [Intel-wired-lan] [PATCH 10/15] fm10k: force LPORT delete when
-	updating VLAN or MAC address
+Date: Wed,  3 Jun 2015 15:56:40 -0700
+Subject: [Intel-wired-lan] [PATCH 14/15] fm10k: remove err_no reference in
+	fm10k_mbx.c
 In-Reply-To: <1433372201-12007-1-git-send-email-jacob.e.keller@intel.com>
 References: <1433372201-12007-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1433372201-12007-10-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1433372201-12007-14-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Currently, we don't notify the switch at all when the PF
-administratively sets a new VLAN or MAC address. This causes the old
-addresses to remain valid on the switch table. Since the PF is
-overriding any configuration done directly by the VF, we choose to
-simply re-create the LPORT for the VF. This does mean that all rules for
-the VF will be dropped when we set something directly via the PF, but it
-prevents some weird issues where the MAC/VLAN table retains some stale
-configuration.
+The reference to err_no was left around after a previous code refactor.
+We never use the value, and it doesn't seem to be used in side a hidden
+macro reference. Discovered via cppcheck.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_iov.c | 38 +++++++++++++++++-----------
- 1 file changed, 23 insertions(+), 15 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_mbx.c | 5 -----
+ 1 file changed, 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_iov.c b/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
-index 5b08e6284a3c..94571e6e790c 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
-@@ -400,11 +400,31 @@ int fm10k_iov_configure(struct pci_dev *pdev, int num_vfs)
- 	return num_vfs;
- }
- 
-+static inline void fm10k_reset_vf_info(struct fm10k_intfc *interface,
-+				       struct fm10k_vf_info *vf_info)
-+{
-+	struct fm10k_hw *hw = &interface->hw;
-+
-+	/* assigning the MAC address will send a mailbox message */
-+	fm10k_mbx_lock(interface);
-+
-+	/* disable LPORT for this VF which clears switch rules */
-+	hw->iov.ops.reset_lport(hw, vf_info);
-+
-+	/* assign new MAC+VLAN for this VF */
-+	hw->iov.ops.assign_default_mac_vlan(hw, vf_info);
-+
-+	/* re-enable the LPORT for this VF */
-+	hw->iov.ops.set_lport(hw, vf_info, vf_info->vf_idx,
-+			      FM10K_VF_FLAG_MULTI_CAPABLE);
-+
-+	fm10k_mbx_unlock(interface);
-+}
-+
- int fm10k_ndo_set_vf_mac(struct net_device *netdev, int vf_idx, u8 *mac)
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
+index 1b2738380518..1a4b52637de9 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
+@@ -1259,16 +1259,11 @@ static s32 fm10k_mbx_process_error(struct fm10k_hw *hw,
+ 				   struct fm10k_mbx_info *mbx)
  {
- 	struct fm10k_intfc *interface = netdev_priv(netdev);
- 	struct fm10k_iov_data *iov_data = interface->iov_data;
--	struct fm10k_hw *hw = &interface->hw;
- 	struct fm10k_vf_info *vf_info;
+ 	const u32 *hdr = &mbx->mbx_hdr;
+-	s32 err_no;
+ 	u16 head;
  
- 	/* verify SR-IOV is active and that vf idx is valid */
-@@ -419,13 +439,7 @@ int fm10k_ndo_set_vf_mac(struct net_device *netdev, int vf_idx, u8 *mac)
- 	vf_info = &iov_data->vf_info[vf_idx];
- 	ether_addr_copy(vf_info->mac, mac);
+ 	/* we will need to pull all of the fields for verification */
+ 	head = FM10K_MSG_HDR_FIELD_GET(*hdr, HEAD);
  
--	/* assigning the MAC will send a mailbox message so lock is needed */
--	fm10k_mbx_lock(interface);
+-	/* we only have lower 10 bits of error number so add upper bits */
+-	err_no = FM10K_MSG_HDR_FIELD_GET(*hdr, ERR_NO);
+-	err_no |= ~FM10K_MSG_HDR_MASK(ERR_NO);
 -
--	/* assign MAC address to VF */
--	hw->iov.ops.assign_default_mac_vlan(hw, vf_info);
--
--	fm10k_mbx_unlock(interface);
-+	fm10k_reset_vf_info(interface, vf_info);
- 
- 	return 0;
- }
-@@ -455,16 +469,10 @@ int fm10k_ndo_set_vf_vlan(struct net_device *netdev, int vf_idx, u16 vid,
- 	/* record default VLAN ID for VF */
- 	vf_info->pf_vid = vid;
- 
--	/* assigning the VLAN will send a mailbox message so lock is needed */
--	fm10k_mbx_lock(interface);
--
- 	/* Clear the VLAN table for the VF */
- 	hw->mac.ops.update_vlan(hw, FM10K_VLAN_ALL, vf_info->vsi, false);
- 
--	/* Update VF assignment and trigger reset */
--	hw->iov.ops.assign_default_mac_vlan(hw, vf_info);
--
--	fm10k_mbx_unlock(interface);
-+	fm10k_reset_vf_info(interface, vf_info);
- 
- 	return 0;
- }
+ 	switch (mbx->state) {
+ 	case FM10K_STATE_OPEN:
+ 	case FM10K_STATE_DISCONNECT:
 -- 
 2.1.0
 
