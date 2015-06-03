@@ -1,54 +1,46 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed,  3 Jun 2015 16:31:10 -0700
-Subject: [Intel-wired-lan] [rc2 13/15] fm10k: fix incorrect DIR_NEVATIVE bit
-	in 1588 code
+Date: Wed,  3 Jun 2015 16:31:08 -0700
+Subject: [Intel-wired-lan] [rc2 11/15] fm10k: re-map all possible VF queues
+	after a VFLR
 In-Reply-To: <1433374272-6684-1-git-send-email-jacob.e.keller@intel.com>
 References: <1433374272-6684-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1433374272-6684-14-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1433374272-6684-12-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The SYSTIME_CFG.Adjust Direction bit is actually supposed to indicate
-that the adjustment is positive. Fix the code to align correctly with
-hardware and documentation.
+During initialization, the VF counts its rings by walking the TQDLOC
+registers. This works only if the TQMAP/RQMAP registers are set to map
+all of the out-of-bound rings back to the first one. This allows the VF
+to cleanly detect when it has run out of queues. Update the PF code so
+that it resets the empty TQMAP/RQMAP registers post-VFLR to prevent
+innocent VF drivers from triggering malicious driver events.
 
+Signed-off-by: Matthew Vick <matthew.vick@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_pf.c   | 4 ++--
- drivers/net/ethernet/intel/fm10k/fm10k_type.h | 2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_pf.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-index 3b942061a339..ab81c00327b2 100644
+index 891e21874b2a..3b942061a339 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-@@ -1792,8 +1792,8 @@ static s32 fm10k_adjust_systime_pf(struct fm10k_hw *hw, s32 ppb)
- 	if (systime_adjust > FM10K_SW_SYSTIME_ADJUST_MASK)
- 		return FM10K_ERR_PARAM;
+@@ -1046,6 +1046,12 @@ static s32 fm10k_iov_reset_resources_pf(struct fm10k_hw *hw,
+ 		fm10k_write_reg(hw, FM10K_RQMAP(qmap_idx + i), vf_q_idx + i);
+ 	}
  
--	if (ppb < 0)
--		systime_adjust |= FM10K_SW_SYSTIME_ADJUST_DIR_NEGATIVE;
-+	if (ppb > 0)
-+		systime_adjust |= FM10K_SW_SYSTIME_ADJUST_DIR_POSITIVE;
++	/* repeat the first ring for all the remaining VF rings */
++	for (i = queues_per_pool; i < qmap_stride; i++) {
++		fm10k_write_reg(hw, FM10K_TQMAP(qmap_idx + 1), vf_q_idx);
++		fm10k_write_reg(hw, FM10K_RQMAP(qmap_idx + 1), vf_q_idx);
++	}
++
+ 	return 0;
+ }
  
- 	fm10k_write_sw_reg(hw, FM10K_SW_SYSTIME_ADJUST, (u32)systime_adjust);
- 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_type.h b/drivers/net/ethernet/intel/fm10k/fm10k_type.h
-index 4af96686c584..2a17d82fa37d 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_type.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_type.h
-@@ -369,7 +369,7 @@ struct fm10k_hw;
- /* Registers contained in BAR 4 for Switch management */
- #define FM10K_SW_SYSTIME_ADJUST	0x0224D
- #define FM10K_SW_SYSTIME_ADJUST_MASK		0x3FFFFFFF
--#define FM10K_SW_SYSTIME_ADJUST_DIR_NEGATIVE	0x80000000
-+#define FM10K_SW_SYSTIME_ADJUST_DIR_POSITIVE	0x80000000
- #define FM10K_SW_SYSTIME_PULSE(_n)	((_n) + 0x02252)
- 
- enum fm10k_int_source {
 -- 
 2.1.0
 
