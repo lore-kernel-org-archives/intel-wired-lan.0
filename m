@@ -1,55 +1,42 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed,  3 Jun 2015 15:56:27 -0700
-Subject: [Intel-wired-lan] [PATCH 01/15] fm10k: ignore invalid multicast
-	address entries
-Message-ID: <1433372201-12007-1-git-send-email-jacob.e.keller@intel.com>
+Date: Wed,  3 Jun 2015 15:56:31 -0700
+Subject: [Intel-wired-lan] [PATCH 05/15] fm10k: add call to
+	fm10k_clean_all_rx_rings in fm10k_down
+In-Reply-To: <1433372201-12007-1-git-send-email-jacob.e.keller@intel.com>
+References: <1433372201-12007-1-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1433372201-12007-5-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This change fixes an issue with adding an invalid multicast address
-using the iproute2 tool (ip maddr add <MADDR> dev <dev>). The iproute2
-tool and the kernel do not validate or filter the multicast addresses
-when adding them to the multicast list. Thus, when synchronizing this
-list with an invalid entry, the action will be aborted with an error
-since the fm10k driver currently validates the list. Consequently,
-multicast entries beyond the invalid one will not be processed and
-communicated with the switch via the mailbox. This change makes it so
-that invalid addresses will simply be skipped and allows synchronizing
-the full list to proceed.
+This prevents a memory leak in fm10k_set_ringparams. The leak occurs
+because we go down, change ring parameters, and then come up. However,
+fm10k_down on its own is not clearing the Rx rings. Since fm10k_up
+assumes the rings are clean we basically drop the buffers and leak a
+bunch of memory. Eventually we hit dirty page faults and reboot the
+system. This issue does not occur elsewhere because other flows that
+involve fm10k_down go through fm10k_close which immediately called
+fm10k_free_all_rx_resources which properly cleans the rings.
 
-Signed-off-by: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 8 +-------
- 1 file changed, 1 insertion(+), 7 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-index 2f4f41b7eae7..4c6b51111566 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-@@ -923,18 +923,12 @@ static int __fm10k_mc_sync(struct net_device *dev,
- 	struct fm10k_intfc *interface = netdev_priv(dev);
- 	struct fm10k_hw *hw = &interface->hw;
- 	u16 vid, glort = interface->glort;
--	s32 err;
--
--	if (!is_multicast_ether_addr(addr))
--		return -EADDRNOTAVAIL;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index df9fda38bdd1..445014a49de7 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -1559,6 +1559,7 @@ void fm10k_down(struct fm10k_intfc *interface)
  
- 	/* update table with current entries */
- 	for (vid = hw->mac.default_vid ? fm10k_find_next_vlan(interface, 0) : 0;
- 	     vid < VLAN_N_VID;
- 	     vid = fm10k_find_next_vlan(interface, vid)) {
--		err = hw->mac.ops.update_mc_addr(hw, glort, addr, vid, sync);
--		if (err)
--			return err;
-+		hw->mac.ops.update_mc_addr(hw, glort, addr, vid, sync);
- 	}
+ 	/* free any buffers still on the rings */
+ 	fm10k_clean_all_tx_rings(interface);
++	fm10k_clean_all_rx_rings(interface);
+ }
  
- 	return 0;
+ /**
 -- 
 2.1.0
 
