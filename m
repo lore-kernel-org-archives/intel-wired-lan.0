@@ -1,46 +1,42 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed,  3 Jun 2015 16:31:11 -0700
-Subject: [Intel-wired-lan] [rc2 14/15] fm10k: remove err_no reference in
-	fm10k_mbx.c
+Date: Wed,  3 Jun 2015 16:31:02 -0700
+Subject: [Intel-wired-lan] [rc2 05/15] fm10k: add call to
+	fm10k_clean_all_rx_rings in fm10k_down
 In-Reply-To: <1433374272-6684-1-git-send-email-jacob.e.keller@intel.com>
 References: <1433374272-6684-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1433374272-6684-15-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1433374272-6684-6-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The reference to err_no was left around after a previous code refactor.
-We never use the value, and it doesn't seem to be used in side a hidden
-macro reference. Discovered via cppcheck.
+This prevents a memory leak in fm10k_set_ringparams. The leak occurs
+because we go down, change ring parameters, and then come up. However,
+fm10k_down on its own is not clearing the Rx rings. Since fm10k_up
+assumes the rings are clean we basically drop the buffers and leak a
+bunch of memory. Eventually we hit dirty page faults and reboot the
+system. This issue does not occur elsewhere because other flows that
+involve fm10k_down go through fm10k_close which immediately called
+fm10k_free_all_rx_resources which properly cleans the rings.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_mbx.c | 5 -----
- 1 file changed, 5 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
-index 1b2738380518..1a4b52637de9 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
-@@ -1259,16 +1259,11 @@ static s32 fm10k_mbx_process_error(struct fm10k_hw *hw,
- 				   struct fm10k_mbx_info *mbx)
- {
- 	const u32 *hdr = &mbx->mbx_hdr;
--	s32 err_no;
- 	u16 head;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index df9fda38bdd1..445014a49de7 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -1559,6 +1559,7 @@ void fm10k_down(struct fm10k_intfc *interface)
  
- 	/* we will need to pull all of the fields for verification */
- 	head = FM10K_MSG_HDR_FIELD_GET(*hdr, HEAD);
+ 	/* free any buffers still on the rings */
+ 	fm10k_clean_all_tx_rings(interface);
++	fm10k_clean_all_rx_rings(interface);
+ }
  
--	/* we only have lower 10 bits of error number so add upper bits */
--	err_no = FM10K_MSG_HDR_FIELD_GET(*hdr, ERR_NO);
--	err_no |= ~FM10K_MSG_HDR_MASK(ERR_NO);
--
- 	switch (mbx->state) {
- 	case FM10K_STATE_OPEN:
- 	case FM10K_STATE_DISCONNECT:
+ /**
 -- 
 2.1.0
 
