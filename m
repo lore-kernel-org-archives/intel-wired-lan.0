@@ -1,29 +1,107 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 03 Jun 2015 02:32:56 -0700
-Subject: [Intel-wired-lan] [PATCH] igb: report unsupported ethtool
- settings in set_coalesce
-In-Reply-To: <9B4A1B1917080E46B64F07F2989DADD6535518D1@ORSMSX114.amr.corp.intel.com>
-References: <20150522174950.16145.78447.stgit@htfujina-fc.jf.intel.com>
- <555F70BE.6090904@redhat.com>
- <9B4A1B1917080E46B64F07F2989DADD65354DCC3@ORSMSX114.amr.corp.intel.com>
- <555F7573.9040704@gmail.com>
- <9B4A1B1917080E46B64F07F2989DADD6535518D1@ORSMSX114.amr.corp.intel.com>
-Message-ID: <1433323976.3921.240.camel@jtkirshe-mobl>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 03 Jun 2015 22:03:57 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 1c72bd040ba2ab39ccd288df5507121c809cbaa7 BUILD DONE
+Message-ID: <556f094d.i4eRQRsaQ5g4QmAz%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2015-06-02 at 16:02 -0700, Fujinaka, Todd wrote:
-> This doesn't appear to work quite right. Jeff, can you pop this? I've
-> redone it.
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+1c72bd040ba2ab39ccd288df5507121c809cbaa7  e1000e: Bump the version to 3.2.5
 
-I have removed it from my queue.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150603/d0ad968d/attachment-0001.asc>
+drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:2082:22: sparse: restricted __le16 degrades to integer
+
+elapsed time: 263m
+
+configs tested: 84
+
+i386                   randconfig-a0-06031710
+i386                   randconfig-a1-06031710
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                            allnoconfig
+i386                             alldefconfig
+i386                             allmodconfig
+i386                              allnoconfig
+i386                                defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                     randconfig-i0-0603
+x86_64                     randconfig-i1-0603
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                       randconfig-i0-0603
+i386                       randconfig-i1-0603
+i386                             allyesconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                       randconfig-n0-0603
+i386                       randconfig-n1-0603
+m68k                          amiga_defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64               randconfig-x000-06031659
+x86_64               randconfig-x001-06031659
+x86_64               randconfig-x002-06031659
+x86_64               randconfig-x003-06031659
+x86_64               randconfig-x004-06031659
+x86_64               randconfig-x005-06031659
+x86_64               randconfig-x006-06031659
+x86_64               randconfig-x007-06031659
+x86_64               randconfig-x008-06031659
+x86_64               randconfig-x009-06031659
+i386                       randconfig-r0-0603
+i386                       randconfig-r1-0603
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+
+Thanks,
+Fengguang
