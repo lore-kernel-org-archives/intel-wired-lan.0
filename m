@@ -1,45 +1,50 @@
-From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Wed, 03 Jun 2015 11:47:04 -0700
-Subject: [Intel-wired-lan] [PATCH V3 2/2] pci: Add VPD quirk for Intel
-	Ethernet devices
-In-Reply-To: <20150603184445.109080.36387.stgit@mdrustad-wks.jf.intel.com>
-References: <20150603184445.109080.36387.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <20150603184704.109080.37608.stgit@mdrustad-wks.jf.intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Wed,  3 Jun 2015 15:56:30 -0700
+Subject: [Intel-wired-lan] [PATCH 04/15] fm10k: fix incorrect free on skb in
+	ts_tx_enqueue
+In-Reply-To: <1433372201-12007-1-git-send-email-jacob.e.keller@intel.com>
+References: <1433372201-12007-1-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1433372201-12007-4-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This quirk sets the PCI_DEV_FLAGS_VPD_REF_F0 flag on all Intel
-Ethernet device functions other than function 0.
+This patch resolves a bug in the ts_tx_enqueue code responsible for a
+NULL pointer dereference and invalid access of the skb list. We
+incorrectly freed the actual skb we found instead of our copy. Thus the
+skb queue is essentially invalidated. Resolve this by freeing our clone
+in the cases where we did not add it to the queue. This also avoids the
+skb memory leak caused by failure to free the clone.
 
-Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
----
-Changes in V3:
-- Added a multifunction device check
----
- drivers/pci/quirks.c |    9 +++++++++
- 1 file changed, 9 insertions(+)
+[  589.719320] BUG: unable to handle kernel NULL pointer dereference at           (null)
+[  589.722344] IP: [<ffffffffa0310e60>] fm10k_ts_tx_subtask+0xb0/0x160 [fm10k]
+[  589.723796] PGD 0
+[  589.725228] Oops: 0000 [#1] SMP
 
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index c6dc1dfd25d5..1d6d848b66f9 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -1903,6 +1903,15 @@ static void quirk_netmos(struct pci_dev *dev)
- DECLARE_PCI_FIXUP_CLASS_HEADER(PCI_VENDOR_ID_NETMOS, PCI_ANY_ID,
- 			 PCI_CLASS_COMMUNICATION_SERIAL, 8, quirk_netmos);
+Change-Id: If0ba5033d70f523e624d928bdfc3700ce5e003af
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Change-type: Defect
+Complexity: High
+Customer-visible: Yes
+---
+ drivers/net/ethernet/intel/fm10k/fm10k_ptp.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ptp.c b/drivers/net/ethernet/intel/fm10k/fm10k_ptp.c
+index 448d60ae98ce..f1dcf2e377c7 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_ptp.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_ptp.c
+@@ -79,7 +79,7 @@ void fm10k_ts_tx_enqueue(struct fm10k_intfc *interface, struct sk_buff *skb)
  
-+static void quirk_f0_vpd_link(struct pci_dev *dev)
-+{
-+	if (!dev->multifunction || !PCI_FUNC(dev->devfn))
-+		return;
-+	dev->dev_flags |= PCI_DEV_FLAGS_VPD_REF_F0;
-+}
-+DECLARE_PCI_FIXUP_CLASS_EARLY(PCI_VENDOR_ID_INTEL, PCI_ANY_ID,
-+			      PCI_CLASS_NETWORK_ETHERNET, 8, quirk_f0_vpd_link);
-+
- static void quirk_e100_interrupt(struct pci_dev *dev)
- {
- 	u16 command, pmcsr;
+ 	/* if list is already has one then we just free the clone */
+ 	if (skb)
+-		kfree_skb(skb);
++		dev_kfree_skb(clone);
+ }
+ 
+ void fm10k_ts_tx_hwtstamp(struct fm10k_intfc *interface, __le16 dglort,
+-- 
+2.1.0
 
