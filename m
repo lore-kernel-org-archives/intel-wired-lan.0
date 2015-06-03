@@ -1,46 +1,113 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Tue, 02 Jun 2015 17:10:06 -0700
-Subject: [Intel-wired-lan] [PATCH V2 0/2] pci: Provide a flag to access VPD
-	through function 0
-Message-ID: <20150603000645.71269.26134.stgit@mdrustad-wks.jf.intel.com>
+Date: Tue, 02 Jun 2015 17:10:11 -0700
+Subject: [Intel-wired-lan] [PATCH V2 1/2] pci: Add dev_flags bit to access
+ VPD through function 0
+In-Reply-To: <20150603000645.71269.26134.stgit@mdrustad-wks.jf.intel.com>
+References: <20150603000645.71269.26134.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <20150603001011.71269.79857.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Many multi-function devices provide shared registers in extended
-config space for accessing VPD. The behavior of these registers
-means that the state must be tracked and access locked correctly
-for accesses not to hang or worse. One way to meet these needs is
-to always perform the accesses through function 0, thereby using
-the state tracking and mutex that already exists.
-
-To provide this behavior, add a dev_flags bit to indicate that this
-should be done. This bit can then be set for any non-zero function
-that needs to redirect such VPD access to function 0. Do not set
-this bit on the zero function or there will be an infinite recursion.
-
-The second patch uses this new flag to invoke this behavior on all
-multi-function Intel Ethernet devices.
+Add a dev_flags bit, PCI_DEV_FLAGS_VPD_REF_F0, to access VPD through
+function 0 to provide VPD access on other functions. This solves
+concurrent access problems on many devices without changing the
+attributes exposed in sysfs. Never set this bit on function 0 or
+there will be an infinite recursion.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
-
 ---
 Changes in V2:
-- Corrected a spelling error in a log message
+- Corrected spelling in log message
 - Added checks to see that the referenced function 0 is reasonable
-
 ---
-
-Mark D Rustad (2):
-      pci: Add dev_flags bit to access VPD through function 0
-      pci: Add VPD quirk for Intel Ethernet devices
-
-
  drivers/pci/access.c |   48 +++++++++++++++++++++++++++++++++++++++++++++++-
- drivers/pci/quirks.c |    9 +++++++++
- 2 files changed, 56 insertions(+), 1 deletion(-)
+ 1 file changed, 47 insertions(+), 1 deletion(-)
 
--- 
-Mark Rustad, Network Division, Intel Corporation
+diff --git a/drivers/pci/access.c b/drivers/pci/access.c
+index d9b64a175990..74634d4868a2 100644
+--- a/drivers/pci/access.c
++++ b/drivers/pci/access.c
+@@ -439,6 +439,40 @@ static const struct pci_vpd_ops pci_vpd_pci22_ops = {
+ 	.release = pci_vpd_pci22_release,
+ };
+ 
++static ssize_t pci_vpd_f0_read(struct pci_dev *dev, loff_t pos, size_t count,
++			       void *arg)
++{
++	struct pci_dev *tdev = pci_get_slot(dev->bus, PCI_SLOT(dev->devfn));
++	ssize_t ret;
++
++	if (!tdev)
++		return -ENODEV;
++
++	ret = pci_read_vpd(tdev, pos, count, arg);
++	pci_dev_put(tdev);
++	return ret;
++}
++
++static ssize_t pci_vpd_f0_write(struct pci_dev *dev, loff_t pos, size_t count,
++				const void *arg)
++{
++	struct pci_dev *tdev = pci_get_slot(dev->bus, PCI_SLOT(dev->devfn));
++	ssize_t ret;
++
++	if (!tdev)
++		return -ENODEV;
++
++	ret = pci_write_vpd(tdev, pos, count, arg);
++	pci_dev_put(tdev);
++	return ret;
++}
++
++static const struct pci_vpd_ops pci_vpd_f0_ops = {
++	.read = pci_vpd_f0_read,
++	.write = pci_vpd_f0_write,
++	.release = pci_vpd_pci22_release,
++};
++
+ int pci_vpd_pci22_init(struct pci_dev *dev)
+ {
+ 	struct pci_vpd_pci22 *vpd;
+@@ -447,12 +481,24 @@ int pci_vpd_pci22_init(struct pci_dev *dev)
+ 	cap = pci_find_capability(dev, PCI_CAP_ID_VPD);
+ 	if (!cap)
+ 		return -ENODEV;
++	if (dev->dev_flags & PCI_DEV_FLAGS_VPD_REF_F0) {
++		struct pci_dev *tdev;
++
++		tdev = pci_get_slot(dev->bus, PCI_SLOT(dev->devfn));
++		if (!tdev || !dev->multifunction || !tdev->multifunction ||
++		    dev->class != tdev->class || dev->vendor != tdev->vendor ||
++		    dev->device != tdev->device)
++			return -ENODEV;
++	}
+ 	vpd = kzalloc(sizeof(*vpd), GFP_ATOMIC);
+ 	if (!vpd)
+ 		return -ENOMEM;
+ 
+ 	vpd->base.len = PCI_VPD_PCI22_SIZE;
+-	vpd->base.ops = &pci_vpd_pci22_ops;
++	if (dev->dev_flags & PCI_DEV_FLAGS_VPD_REF_F0)
++		vpd->base.ops = &pci_vpd_f0_ops;
++	else
++		vpd->base.ops = &pci_vpd_pci22_ops;
+ 	mutex_init(&vpd->lock);
+ 	vpd->cap = cap;
+ 	vpd->busy = false;
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 353db8dc4c6e..194df6d635e6 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -180,6 +180,8 @@ enum pci_dev_flags {
+ 	PCI_DEV_FLAGS_NO_BUS_RESET = (__force pci_dev_flags_t) (1 << 6),
+ 	/* Do not use PM reset even if device advertises NoSoftRst- */
+ 	PCI_DEV_FLAGS_NO_PM_RESET = (__force pci_dev_flags_t) (1 << 7),
++	/* Get VPD from function 0 VPD */
++	PCI_DEV_FLAGS_VPD_REF_F0 = (__force pci_dev_flags_t) (1 << 8),
+ };
+ 
+ enum pci_irq_reroute_variant {
+
