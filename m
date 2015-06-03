@@ -1,33 +1,42 @@
-From: Brandeburg, Jesse <jesse.brandeburg@intel.com>
-Date: Tue, 2 Jun 2015 23:36:31 +0000
-Subject: [Intel-wired-lan] [net PATCH] i40e: Make sure to be in VEB mode
- if	SRIOV is enabled at probe
-Message-ID: <253CF818969A9240AB2054BF91F2C2BC300B819D@ORSMSX114.amr.corp.intel.com>
+From: Mark D Rustad <mark.d.rustad@intel.com>
+Date: Tue, 02 Jun 2015 17:10:17 -0700
+Subject: [Intel-wired-lan] [PATCH V2 2/2] pci: Add VPD quirk for Intel
+	Ethernet devices
+In-Reply-To: <20150603000645.71269.26134.stgit@mdrustad-wks.jf.intel.com>
+References: <20150603000645.71269.26134.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <20150603001017.71269.13528.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Catherine Sullivan
-> Sent: Wednesday, May 27, 2015 9:06 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Singhai, Anjali
-> Subject: [Intel-wired-lan] [net PATCH] i40e: Make sure to be in VEB mode
-> if SRIOV is enabled at probe
-> 
-> From: Anjali Singhai Jain <anjali.singhai@intel.com>
-> 
-> If SRIOV is enabled we need to be in VEB mode not VEPA mode at probe.
-> This fixes an NPAR bug when SRIOV is enabled in the BIOS.
-> 
-> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-> Change-ID: Ibf006abafd9a0ca3698ec24848cd771cf345cbbc
+This quirk sets the PCI_DEV_FLAGS_VPD_REF_F0 flag on all Intel
+Ethernet device functions other than function 0.
 
-Jeff please prioritize this patch, as we have distros waiting for it.  I've asked Jim to test it ASAP.  I would like it to be sent to davem no later than Friday AM, if at all possible.
+Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+---
+ drivers/pci/quirks.c |    9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-
-
+diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+index c6dc1dfd25d5..9ddf6a533f4f 100644
+--- a/drivers/pci/quirks.c
++++ b/drivers/pci/quirks.c
+@@ -1903,6 +1903,15 @@ static void quirk_netmos(struct pci_dev *dev)
+ DECLARE_PCI_FIXUP_CLASS_HEADER(PCI_VENDOR_ID_NETMOS, PCI_ANY_ID,
+ 			 PCI_CLASS_COMMUNICATION_SERIAL, 8, quirk_netmos);
+ 
++static void quirk_f0_vpd_link(struct pci_dev *dev)
++{
++	if (!PCI_FUNC(dev->devfn))
++		return;
++	dev->dev_flags |= PCI_DEV_FLAGS_VPD_REF_F0;
++}
++DECLARE_PCI_FIXUP_CLASS_EARLY(PCI_VENDOR_ID_INTEL, PCI_ANY_ID,
++			      PCI_CLASS_NETWORK_ETHERNET, 8, quirk_f0_vpd_link);
++
+ static void quirk_e100_interrupt(struct pci_dev *dev)
+ {
+ 	u16 command, pmcsr;
 
