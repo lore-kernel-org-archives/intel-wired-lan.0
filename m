@@ -1,116 +1,57 @@
 From: Don Skidmore <donald.c.skidmore@intel.com>
-Date: Wed, 03 Jun 2015 20:14:03 -0400
-Subject: [Intel-wired-lan] [net-next PATCH 09/11] ixgbe: fix issue with sfp
- events with new X550 devices
+Date: Wed, 03 Jun 2015 20:13:48 -0400
+Subject: [Intel-wired-lan] [net-next PATCH 06/11] ixgbe: Add reset for X550
+	device
 In-Reply-To: <20150604001322.18893.48953.stgit@dcs-desk.jf.intel.com>
 References: <20150604001322.18893.48953.stgit@dcs-desk.jf.intel.com>
-Message-ID: <20150604001403.18893.91285.stgit@dcs-desk.jf.intel.com>
+Message-ID: <20150604001348.18893.57695.stgit@dcs-desk.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add checks for systems that don't have SFP's to avoid incorrectly
-acting on interrupts that are falsely interpreted as SFP events.
-We do this by updating the ixgbe_is_sfp to be aware of the
-new X550 devices.  This also includes a modified check generating
-the EICR mask to be more forward-looking.
+This patch adds a PHY reset function ixgbe_reset_phy_t_X550em. Which
+allows devices that have LASI support in enable their interrupt.
 
 Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   62 +++++++++++++------------
- 1 file changed, 33 insertions(+), 29 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index cb80404..cd782b2 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -2464,20 +2464,50 @@ static void ixgbe_check_overtemp_event(struct ixgbe_adapter *adapter, u32 eicr)
- 	e_crit(drv, "%s\n", ixgbe_overheat_msg);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index ec9112e..7b9b124 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -1385,6 +1385,22 @@ s32 ixgbe_setup_internal_phy_t_x550em(struct ixgbe_hw *hw)
+ 	return ixgbe_setup_ixfi_x550em(hw, &force_speed);
  }
  
-+static inline bool ixgbe_is_sfp(struct ixgbe_hw *hw)
++/** ixgbe_reset_phy_t_X550em - Performs X557 PHY reset and enables LASI
++ *  @hw: pointer to hardware structure
++ **/
++static s32 ixgbe_reset_phy_t_X550em(struct ixgbe_hw *hw)
 +{
-+	switch (hw->mac.type) {
-+	case ixgbe_mac_82598EB:
-+		if (hw->phy.type == ixgbe_phy_nl)
-+			return true;
-+		return false;
-+	case ixgbe_mac_82599EB:
-+	case ixgbe_mac_X550EM_x:
-+		switch (hw->mac.ops.get_media_type(hw)) {
-+		case ixgbe_media_type_fiber:
-+		case ixgbe_media_type_fiber_qsfp:
-+			return true;
-+		default:
-+			return false;
-+		}
-+	default:
-+		return false;
-+	}
++	s32 status;
++
++	status = ixgbe_reset_phy_generic(hw);
++
++	if (status)
++		return status;
++
++	/* Configure Link Status Alarm and Temperature Threshold interrupts */
++	return ixgbe_enable_lasi_ext_t_x550em(hw);
 +}
 +
- static void ixgbe_check_sfp_event(struct ixgbe_adapter *adapter, u32 eicr)
- {
- 	struct ixgbe_hw *hw = &adapter->hw;
-+	u32 eicr_mask = IXGBE_EICR_GPI_SDP2(hw);
-+
-+	if (!ixgbe_is_sfp(hw))
-+		return;
-+
-+	/* Later MAC's use different SDP */
-+	if (hw->mac.type >= ixgbe_mac_X540)
-+		eicr_mask = IXGBE_EICR_GPI_SDP0_X540;
- 
--	if (eicr & IXGBE_EICR_GPI_SDP2(hw)) {
-+	if (eicr & eicr_mask) {
- 		/* Clear the interrupt */
--		IXGBE_WRITE_REG(hw, IXGBE_EICR, IXGBE_EICR_GPI_SDP2(hw));
-+		IXGBE_WRITE_REG(hw, IXGBE_EICR, eicr_mask);
- 		if (!test_bit(__IXGBE_DOWN, &adapter->state)) {
- 			adapter->flags2 |= IXGBE_FLAG2_SFP_NEEDS_RESET;
- 			ixgbe_service_event_schedule(adapter);
+ /** ixgbe_init_phy_ops_X550em - PHY/SFP specific init
+  *  @hw: pointer to hardware structure
+  *
+@@ -1454,6 +1470,7 @@ static s32 ixgbe_init_phy_ops_X550em(struct ixgbe_hw *hw)
  		}
- 	}
  
--	if (eicr & IXGBE_EICR_GPI_SDP1(hw)) {
-+	if (adapter->hw.mac.type == ixgbe_mac_82599EB &&
-+	    (eicr & IXGBE_EICR_GPI_SDP1(hw))) {
- 		/* Clear the interrupt */
- 		IXGBE_WRITE_REG(hw, IXGBE_EICR, IXGBE_EICR_GPI_SDP1(hw));
- 		if (!test_bit(__IXGBE_DOWN, &adapter->state)) {
-@@ -4738,32 +4768,6 @@ static void ixgbe_configure(struct ixgbe_adapter *adapter)
- 	ixgbe_configure_dfwd(adapter);
- }
- 
--static inline bool ixgbe_is_sfp(struct ixgbe_hw *hw)
--{
--	switch (hw->phy.type) {
--	case ixgbe_phy_sfp_avago:
--	case ixgbe_phy_sfp_ftl:
--	case ixgbe_phy_sfp_intel:
--	case ixgbe_phy_sfp_unknown:
--	case ixgbe_phy_sfp_passive_tyco:
--	case ixgbe_phy_sfp_passive_unknown:
--	case ixgbe_phy_sfp_active_unknown:
--	case ixgbe_phy_sfp_ftl_active:
--	case ixgbe_phy_qsfp_passive_unknown:
--	case ixgbe_phy_qsfp_active_unknown:
--	case ixgbe_phy_qsfp_intel:
--	case ixgbe_phy_qsfp_unknown:
--	/* ixgbe_phy_none is set when no SFP module is present */
--	case ixgbe_phy_none:
--		return true;
--	case ixgbe_phy_nl:
--		if (hw->mac.type == ixgbe_mac_82598EB)
--			return true;
--	default:
--		return false;
--	}
--}
--
- /**
-  * ixgbe_sfp_link_config - set up SFP+ link
-  * @adapter: pointer to private adapter struct
+ 		phy->ops.handle_lasi = ixgbe_handle_lasi_ext_t_x550em;
++		phy->ops.reset = ixgbe_reset_phy_t_X550em;
+ 		break;
+ 	default:
+ 		break;
 
