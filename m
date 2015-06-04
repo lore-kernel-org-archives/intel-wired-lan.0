@@ -1,37 +1,50 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed,  3 Jun 2015 16:31:03 -0700
-Subject: [Intel-wired-lan] [rc2 06/15] fm10k: use an unsigned int for i in
-	ethtool_get_strings
-In-Reply-To: <1433374272-6684-1-git-send-email-jacob.e.keller@intel.com>
-References: <1433374272-6684-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1433374272-6684-7-git-send-email-jacob.e.keller@intel.com>
+From: Don Skidmore <donald.c.skidmore@intel.com>
+Date: Wed, 03 Jun 2015 20:13:22 -0400
+Subject: [Intel-wired-lan] [net-next PATCH 01/11] ixgbe: add support for WoL
+ and autoneg FC for some X550 devices
+Message-ID: <20150604001322.18893.48953.stgit@dcs-desk.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The value will never be negative, and we use the %i print format, use
-unsigned int for the loop counter. Issue found using cppcheck.
+These Device ID could support both WoL and autoneg flow control. In
+the case of WoL this is indicated by the eeprom.  This patch enables
+these devices this support.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |    2 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c   |    4 ++++
+ 2 files changed, 6 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-index 4b9d9f88af70..06f0b08d9af5 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-@@ -124,7 +124,7 @@ static void fm10k_get_strings(struct net_device *dev, u32 stringset, u8 *data)
- {
- 	struct fm10k_intfc *interface = netdev_priv(dev);
- 	char *p = (char *)data;
--	int i;
-+	unsigned int i;
- 
- 	switch (stringset) {
- 	case ETH_SS_TEST:
--- 
-2.1.0
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+index 13a6fe05..21e5ae3 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+@@ -96,6 +96,8 @@ bool ixgbe_device_supports_autoneg_fc(struct ixgbe_hw *hw)
+ 		case IXGBE_DEV_ID_82599_T3_LOM:
+ 		case IXGBE_DEV_ID_X540T:
+ 		case IXGBE_DEV_ID_X540T1:
++		case IXGBE_DEV_ID_X550T:
++		case IXGBE_DEV_ID_X550EM_X_10G_T:
+ 			supported = true;
+ 			break;
+ 		default:
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 2dc3f2e..43cb17f 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -8317,6 +8317,10 @@ int ixgbe_wol_supported(struct ixgbe_adapter *adapter, u16 device_id,
+ 		break;
+ 	case IXGBE_DEV_ID_X540T:
+ 	case IXGBE_DEV_ID_X540T1:
++	case IXGBE_DEV_ID_X550T:
++	case IXGBE_DEV_ID_X550EM_X_KX4:
++	case IXGBE_DEV_ID_X550EM_X_KR:
++	case IXGBE_DEV_ID_X550EM_X_10G_T:
+ 		/* check eeprom to see if enabled wol */
+ 		if ((wol_cap == IXGBE_DEVICE_CAPS_WOL_PORT0_1) ||
+ 		    ((wol_cap == IXGBE_DEVICE_CAPS_WOL_PORT0) &&
 
