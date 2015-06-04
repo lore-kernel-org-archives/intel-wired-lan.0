@@ -1,53 +1,55 @@
-From: Todd Fujinaka <todd.fujinaka@intel.com>
-Date: Thu, 04 Jun 2015 14:26:56 -0700
-Subject: [Intel-wired-lan] [PATCH v2] igb: report unsupported ethtool
-	settings in set_coalesce
-Message-ID: <20150604212640.7229.93966.stgit@htfujina-fc.jf.intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Thu, 4 Jun 2015 23:28:09 +0000
+Subject: [Intel-wired-lan] [PATCH] fm10k: Fix missing braces after if
+ statement
+In-Reply-To: <20150604015219.2895.80478.stgit@ahduyck-vm-fedora22>
+References: <20150604015219.2895.80478.stgit@ahduyck-vm-fedora22>
+Message-ID: <1433460464.1500.4.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-There are many settings possible using ethtool -C/--coalesce, but not
-all of them are supported in igb. Report failure when an unsupported
-option is set.
+Acked-by: Jacob Keller <jacob.e.keller@intel.com>
 
-Signed-off-by: Todd Fujinaka <todd.fujinaka@intel.com>
----
- drivers/net/ethernet/intel/igb/igb_ethtool.c |   21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
+Thanks Alex.
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index 109cad9..b7b9c67 100644
---- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -2159,6 +2159,27 @@ static int igb_set_coalesce(struct net_device *netdev,
- 	struct igb_adapter *adapter = netdev_priv(netdev);
- 	int i;
- 
-+	if (ec->rx_max_coalesced_frames ||
-+	    ec->rx_coalesce_usecs_irq ||
-+	    ec->rx_max_coalesced_frames_irq ||
-+	    ec->tx_max_coalesced_frames ||
-+	    ec->tx_coalesce_usecs_irq ||
-+	    ec->stats_block_coalesce_usecs ||
-+	    ec->use_adaptive_rx_coalesce ||
-+	    ec->use_adaptive_tx_coalesce ||
-+	    ec->pkt_rate_low ||
-+	    ec->rx_coalesce_usecs_low ||
-+	    ec->rx_max_coalesced_frames_low ||
-+	    ec->tx_coalesce_usecs_low ||
-+	    ec->tx_max_coalesced_frames_low ||
-+	    ec->pkt_rate_high ||
-+	    ec->rx_coalesce_usecs_high ||
-+	    ec->rx_max_coalesced_frames_high ||
-+	    ec->tx_coalesce_usecs_high ||
-+	    ec->tx_max_coalesced_frames_high ||
-+	    ec->rate_sample_interval)
-+		return -ENOTSUPP;
-+
- 	if ((ec->rx_coalesce_usecs > IGB_MAX_ITR_USECS) ||
- 	    ((ec->rx_coalesce_usecs > 3) &&
- 	     (ec->rx_coalesce_usecs < IGB_MIN_ITR_USECS)) ||
+Regards,
+Jake
+
+On Wed, 2015-06-03 at 18:53 -0700, Alexander Duyck wrote:
+> While reviewing the code I noticed that one of the commits added an if
+> statement followed by a for loop, but the if statement was missing the
+> braces around the loop.  This change corrects the coding style error.
+> 
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@redhat.com>
+> ---
+>  drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+> index 4b9d9f88af70..a9670e00cf03 100644
+> --- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+> @@ -143,12 +143,13 @@ static void fm10k_get_strings(struct net_device *dev, u32 stringset, u8 *data)
+>  			p += ETH_GSTRING_LEN;
+>  		}
+>  
+> -		if (interface->hw.mac.type != fm10k_mac_vf)
+> +		if (interface->hw.mac.type != fm10k_mac_vf) {
+>  			for (i = 0; i < FM10K_PF_STATS_LEN; i++) {
+>  				memcpy(p, fm10k_gstrings_pf_stats[i].stat_string,
+>  				       ETH_GSTRING_LEN);
+>  				p += ETH_GSTRING_LEN;
+>  			}
+> +		}
+>  
+>  		for (i = 0; i < interface->hw.mac.max_queues; i++) {
+>  			sprintf(p, "tx_queue_%u_packets", i);
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at lists.osuosl.org
+> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
 
