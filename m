@@ -1,23 +1,35 @@
-From: David Miller <davem@davemloft.net>
-Date: Wed, 03 Jun 2015 23:57:51 -0700 (PDT)
-Subject: [Intel-wired-lan] [PATCH] fm10k: Fix missing braces after if
-	statement
-In-Reply-To: <20150604015219.2895.80478.stgit@ahduyck-vm-fedora22>
-References: <20150604015219.2895.80478.stgit@ahduyck-vm-fedora22>
-Message-ID: <20150603.235751.1703498220892447151.davem@davemloft.net>
+From: Jia-Ju Bai <baijiaju1990@163.com>
+Date: Thu, 4 Jun 2015 16:56:30 +0800 (CST)
+Subject: [Intel-wired-lan] [PATCH] e1000e: Cleanup qos request in error
+ handling of e1000_open
+Message-ID: <55011bb8.127b.14dbdc937a1.Coremail.baijiaju1990@163.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Duyck <alexander.h.duyck@redhat.com>
-Date: Wed, 03 Jun 2015 18:53:17 -0700
+The driver lacks pm_qos_remove_request in error handling (err_req_irq)
+of e1000_open, and qos request inserted by pm_qos_add_request is not removed.
+This patch add pm_qos_remove_request in error handling to fix it.
 
-> While reviewing the code I noticed that one of the commits added an if
-> statement followed by a for loop, but the if statement was missing the
-> braces around the loop.  This change corrects the coding style error.
-> 
-> Signed-off-by: Alexander Duyck <alexander.h.duyck@redhat.com>
+Signed-off-by: Jia-Ju Bai <baijiaju1990@163.com>
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-I assume that I will get this via Jeff.
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index c509a5c..f8c0dc4 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -4451,6 +4451,7 @@ static int e1000_open(struct net_device *netdev)
+ 	return 0;
+ 
+ err_req_irq:
++	pm_qos_remove_request(&adapter->pm_qos_req);
+ 	e1000e_release_hw_control(adapter);
+ 	e1000_power_down_phy(adapter);
+ 	e1000e_free_rx_resources(adapter->rx_ring);
+-- 
+1.7.9.5
+
