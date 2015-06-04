@@ -1,57 +1,115 @@
-From: Rose, Gregory V <gregory.v.rose@intel.com>
-Date: Thu, 4 Jun 2015 15:54:20 +0000
-Subject: [Intel-wired-lan] vlan packet handling in ixgbevf driver when
- in	promiscuous mode
-In-Reply-To: <556CF268.2060703@windriver.com>
-References: <5568D344.9090903@windriver.com>
- <C5551D9AAB213A418B7FD5E4A6F30A078930269A@ORSMSX108.amr.corp.intel.com>
- <556CF268.2060703@windriver.com>
-Message-ID: <C5551D9AAB213A418B7FD5E4A6F30A0789304FA1@ORSMSX108.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 05 Jun 2015 01:02:26 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 13416d0142b2c8de47ab662d0d1adf452ba8bc0c BUILD SUCCESS
+Message-ID: <557084a2.sNeYnnRo9ODdGI8Z%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Chris Friesen [mailto:chris.friesen at windriver.com]
-> Sent: Monday, June 01, 2015 5:02 PM
-> To: Rose, Gregory V; intel-wired-lan at lists.osuosl.org
-> Subject: Re: [Intel-wired-lan] vlan packet handling in ixgbevf driver when
-> in promiscuous mode
-> 
-> Could you elaborate?
-> 
-> The use-case here is for NFV/SDN type stuff, where we want to be able to
-> run a router or something similar in the guest--so it needs to be able to
-> receive packets from all VLANs.
-> 
->  From what I see if you enable promiscuous mode on the PF then the VFs get
-> packets from all VLANs.
-> 
-> With the stock ixgbevf driver in the guest this doesn't work well because
-> any packets from VLANs that the guest hasn't registered for do not get the
-> vlan tags added back in to the packets (which makes it useless for
-> routing).  With a minor change to the ixgbevf driver to put the vlan tags
-> back in for all packets it seems to work okay.  Maybe this change would be
-> a reasonable thing to do in the stock ixgbevf driver when enabling
-> promiscuous mode in the guest?
-> 
-> Also, it seems to work fine with the DPDK drivers in the guest when the
-> host is in promiscuous mode.
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+13416d0142b2c8de47ab662d0d1adf452ba8bc0c  i40e: clean up unneeded gotos
 
-If you have a working configuration then that's fine.  I was merely pointing out that promiscuous mode, as the semantics are commonly applied to word in a networking context, is not supported for virtual functions on the 82599 controller.  There are configurations you can apply to suit your own purposes and we would like to support that for you if we can.
+elapsed time: 202m
 
+configs tested: 94
 
-----------
-Greg Rose
-FreeBSD/NFV PAE
-Network Division
-Intel Corporation
-Desk - 503-712-5048
+i386                       randconfig-a0-0604
+i386                       randconfig-a1-0604
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                            allnoconfig
+i386                             alldefconfig
+i386                             allmodconfig
+i386                              allnoconfig
+i386                                defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                     randconfig-i0-0604
+x86_64                     randconfig-i1-0604
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                       randconfig-i0-0604
+i386                       randconfig-i1-0604
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                       randconfig-n0-0604
+i386                       randconfig-n1-0604
+i386                             allyesconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+m68k                          amiga_defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+x86_64               randconfig-x002-06031659
+x86_64               randconfig-x004-06031659
+x86_64               randconfig-x006-06031659
+x86_64               randconfig-x005-06031659
+x86_64               randconfig-x007-06031659
+x86_64               randconfig-x009-06031659
+x86_64               randconfig-x003-06031659
+x86_64               randconfig-x008-06031659
+x86_64               randconfig-x001-06031659
+x86_64               randconfig-x000-06031659
+i386                       randconfig-r0-0604
+i386                       randconfig-r1-0604
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                 randconfig-x009-06031736
+i386                 randconfig-x008-06031736
+i386                 randconfig-x003-06031736
+i386                 randconfig-x005-06031736
+i386                 randconfig-x007-06031736
+i386                 randconfig-x002-06031736
+i386                 randconfig-x004-06031736
+i386                 randconfig-x006-06031736
+i386                 randconfig-x001-06031736
+i386                 randconfig-x000-06031736
 
-Any man who afflicts the human race with ideas must be prepared to see them misunderstood.
-?
-- H. L. Mencken
-
-
+Thanks,
+Fengguang
