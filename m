@@ -1,63 +1,100 @@
 From: Don Skidmore <donald.c.skidmore@intel.com>
-Date: Wed, 03 Jun 2015 20:13:53 -0400
-Subject: [Intel-wired-lan] [net-next PATCH 07/11] ixgbe: Add const string
-	for overheat message
+Date: Wed, 03 Jun 2015 20:13:38 -0400
+Subject: [Intel-wired-lan] [net-next PATCH 04/11] ixgbe: Restore ESDP
+	settings after MAC reset
 In-Reply-To: <20150604001322.18893.48953.stgit@dcs-desk.jf.intel.com>
 References: <20150604001322.18893.48953.stgit@dcs-desk.jf.intel.com>
-Message-ID: <20150604001353.18893.83669.stgit@dcs-desk.jf.intel.com>
+Message-ID: <20150604001338.18893.50298.stgit@dcs-desk.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The over heat message is displayed for mutliple reasons but the text is
-cut-n-pasted for each of these cases.  This patch pulls the text from the
-same location.  I noticed this as I am about to add anothere case.
+The I2C mux control relies on the SDP setting in the ESDP register
+so it is necessary to restore the value after a MAC reset.  Combine
+all this functionality in to a support function.
 
 Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   15 +++++++--------
- 1 file changed, 7 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   38 ++++++++++++++-----------
+ 1 file changed, 21 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 5aea3ef..8f8c5d3 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -81,6 +81,11 @@ const char ixgbe_driver_version[] = DRV_VERSION;
- static const char ixgbe_copyright[] =
- 				"Copyright (c) 1999-2014 Intel Corporation.";
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index 88f7862..c23ae7f 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -26,6 +26,22 @@
+ #include "ixgbe_common.h"
+ #include "ixgbe_phy.h"
  
-+static const char ixgbe_overheat_msg[] =
-+		"Network adapter has been stopped because it has over heated. "
-+		"Restart the computer. If the problem persists, "
-+		"power off the system and replace the adapter";
++/** ixgbe_setup_mux_ctl - Setup ESDP register for I2C mux control
++ *  @hw: pointer to hardware structure
++ **/
++static void ixgbe_setup_mux_ctl(struct ixgbe_hw *hw)
++{
++	u32 esdp = IXGBE_READ_REG(hw, IXGBE_ESDP);
 +
- static const struct ixgbe_info *ixgbe_info_tbl[] = {
- 	[board_82598]		= &ixgbe_82598_info,
- 	[board_82599]		= &ixgbe_82599_info,
-@@ -2407,10 +2412,7 @@ static void ixgbe_check_overtemp_subtask(struct ixgbe_adapter *adapter)
- 			return;
- 		break;
++	if (hw->bus.lan_id) {
++		esdp &= ~(IXGBE_ESDP_SDP1_NATIVE | IXGBE_ESDP_SDP1);
++		esdp |= IXGBE_ESDP_SDP1_DIR;
++	}
++	esdp &= ~(IXGBE_ESDP_SDP0_NATIVE | IXGBE_ESDP_SDP0_DIR);
++	IXGBE_WRITE_REG(hw, IXGBE_ESDP, esdp);
++	IXGBE_WRITE_FLUSH(hw);
++}
++
+ /** ixgbe_identify_phy_x550em - Get PHY type based on device id
+  *  @hw: pointer to hardware structure
+  *
+@@ -33,18 +49,11 @@
+  */
+ static s32 ixgbe_identify_phy_x550em(struct ixgbe_hw *hw)
+ {
+-	u32 esdp = IXGBE_READ_REG(hw, IXGBE_ESDP);
+-
+ 	switch (hw->device_id) {
+ 	case IXGBE_DEV_ID_X550EM_X_SFP:
+ 		/* set up for CS4227 usage */
+ 		hw->phy.phy_semaphore_mask = IXGBE_GSSR_SHARED_I2C_SM;
+-		if (hw->bus.lan_id) {
+-			esdp &= ~(IXGBE_ESDP_SDP1_NATIVE | IXGBE_ESDP_SDP1);
+-			esdp |= IXGBE_ESDP_SDP1_DIR;
+-		}
+-		esdp &= ~(IXGBE_ESDP_SDP0_NATIVE | IXGBE_ESDP_SDP0_DIR);
+-		IXGBE_WRITE_REG(hw, IXGBE_ESDP, esdp);
++		ixgbe_setup_mux_ctl(hw);
+ 
+ 		return ixgbe_identify_module_generic(hw);
+ 	case IXGBE_DEV_ID_X550EM_X_KX4:
+@@ -1127,18 +1136,10 @@ static s32 ixgbe_init_phy_ops_X550em(struct ixgbe_hw *hw)
+ {
+ 	struct ixgbe_phy_info *phy = &hw->phy;
+ 	s32 ret_val;
+-	u32 esdp;
+ 
+ 	if (hw->device_id == IXGBE_DEV_ID_X550EM_X_SFP) {
+-		esdp = IXGBE_READ_REG(hw, IXGBE_ESDP);
+ 		phy->phy_semaphore_mask = IXGBE_GSSR_SHARED_I2C_SM;
+-
+-		if (hw->bus.lan_id) {
+-			esdp &= ~(IXGBE_ESDP_SDP1_NATIVE | IXGBE_ESDP_SDP1);
+-			esdp |= IXGBE_ESDP_SDP1_DIR;
+-		}
+-		esdp &= ~(IXGBE_ESDP_SDP0_NATIVE | IXGBE_ESDP_SDP0_DIR);
+-		IXGBE_WRITE_REG(hw, IXGBE_ESDP, esdp);
++		ixgbe_setup_mux_ctl(hw);
  	}
--	e_crit(drv,
--	       "Network adapter has been stopped because it has over heated. "
--	       "Restart the computer. If the problem persists, "
--	       "power off the system and replace the adapter\n");
-+	e_crit(drv, "%s\n", ixgbe_overheat_msg);
  
- 	adapter->interrupt_event = 0;
- }
-@@ -2457,10 +2459,7 @@ static void ixgbe_check_overtemp_event(struct ixgbe_adapter *adapter, u32 eicr)
- 		return;
- 	}
+ 	/* Identify the PHY or SFP module */
+@@ -1366,6 +1367,9 @@ mac_reset_top:
+ 	hw->mac.num_rar_entries = 128;
+ 	hw->mac.ops.init_rx_addrs(hw);
  
--	e_crit(drv,
--	       "Network adapter has been stopped because it has over heated. "
--	       "Restart the computer. If the problem persists, "
--	       "power off the system and replace the adapter\n");
-+	e_crit(drv, "%s\n", ixgbe_overheat_msg);
++	if (hw->device_id == IXGBE_DEV_ID_X550EM_X_SFP)
++		ixgbe_setup_mux_ctl(hw);
++
+ 	return status;
  }
  
- static void ixgbe_check_sfp_event(struct ixgbe_adapter *adapter, u32 eicr)
 
