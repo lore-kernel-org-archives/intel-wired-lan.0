@@ -1,10 +1,10 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Fri,  5 Jun 2015 12:20:26 -0400
-Subject: [Intel-wired-lan] [intel-wired-lan][net-next PATCH S07 02/10]
-	i40e/i40evf: Add flags for X722 capabilities
+Date: Fri,  5 Jun 2015 12:20:27 -0400
+Subject: [Intel-wired-lan] [intel-wired-lan][net-next PATCH S07 03/10]
+	i40e/i40evf: Update FW API with X722 support
 In-Reply-To: <1433521234-33355-1-git-send-email-catherine.sullivan@intel.com>
 References: <1433521234-33355-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1433521234-33355-3-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1433521234-33355-4-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,88 +13,569 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Anjali Singhai Jain <anjali.singhai@intel.com>
 
-Add capapbilities flags specific to X722.
+This patch does the firmware API update to support the new X722 device.
 
 Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
 Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h      | 7 +++++++
- drivers/net/ethernet/intel/i40e/i40e_main.c | 8 ++++++++
- drivers/net/ethernet/intel/i40evf/i40evf.h  | 5 +++++
- 3 files changed, 20 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |  48 ++++++
+ drivers/net/ethernet/intel/i40e/i40e_common.c      | 163 +++++++++++++++++++++
+ drivers/net/ethernet/intel/i40e/i40e_prototype.h   |  11 ++
+ .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    |  49 ++++++-
+ drivers/net/ethernet/intel/i40evf/i40e_common.c    | 163 +++++++++++++++++++++
+ drivers/net/ethernet/intel/i40evf/i40e_prototype.h |  11 ++
+ 6 files changed, 444 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 8b4dec9..7bfb471 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -298,6 +298,7 @@ struct i40e_pf {
- #define I40E_FLAG_VMDQ_ENABLED                 BIT_ULL(7)
- #define I40E_FLAG_FDIR_REQUIRES_REINIT         BIT_ULL(8)
- #define I40E_FLAG_NEED_LINK_UPDATE             BIT_ULL(9)
-+#define I40E_FLAG_IWARP_ENABLED                BIT_ULL(10)
- #ifdef I40E_FCOE
- #define I40E_FLAG_FCOE_ENABLED                 BIT_ULL(11)
- #endif /* I40E_FCOE */
-@@ -318,6 +319,12 @@ struct i40e_pf {
- #endif
- #define I40E_FLAG_PORT_ID_VALID                BIT_ULL(28)
- #define I40E_FLAG_DCB_CAPABLE                  BIT_ULL(29)
-+#define I40E_FLAG_RSS_AQ_CAPABLE               BIT_ULL(31)
-+#define I40E_FLAG_HW_ATR_EVICT_CAPABLE         BIT_ULL(32)
-+#define I40E_FLAG_OUTER_UDP_CSUM_CAPABLE       BIT_ULL(33)
-+#define I40E_FLAG_128_QP_RSS_CAPABLE           BIT_ULL(34)
-+#define I40E_FLAG_WB_ON_ITR_CAPABLE            BIT_ULL(35)
-+#define I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE  BIT_ULL(38)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+index 9101f5c..95d23bf 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+@@ -257,6 +257,10 @@ enum i40e_admin_queue_opc {
+ 	/* Tunnel commands */
+ 	i40e_aqc_opc_add_udp_tunnel	= 0x0B00,
+ 	i40e_aqc_opc_del_udp_tunnel	= 0x0B01,
++	i40e_aqc_opc_set_rss_key	= 0x0B02,
++	i40e_aqc_opc_set_rss_lut	= 0x0B03,
++	i40e_aqc_opc_get_rss_key	= 0x0B04,
++	i40e_aqc_opc_get_rss_lut	= 0x0B05,
  
- 	/* tracks features that get auto disabled by errors */
- 	u64 auto_disable_flags;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index fdf4bd5..bb454cc 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -7781,6 +7781,14 @@ static int i40e_sw_init(struct i40e_pf *pf)
- 					I40E_MAX_VF_COUNT);
- 	}
- #endif /* CONFIG_PCI_IOV */
-+	if (pf->hw.mac.type == I40E_MAC_X722) {
-+		pf->flags |= I40E_FLAG_RSS_AQ_CAPABLE |
-+			     I40E_FLAG_128_QP_RSS_CAPABLE |
-+			     I40E_FLAG_HW_ATR_EVICT_CAPABLE |
-+			     I40E_FLAG_OUTER_UDP_CSUM_CAPABLE |
-+			     I40E_FLAG_WB_ON_ITR_CAPABLE |
-+			     I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE;
-+	}
- 	pf->eeprom_version = 0xDEAD;
- 	pf->lan_veb = I40E_NO_VEB;
- 	pf->lan_vsi = I40E_NO_VSI;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
-index b2f899c..a12f80e2 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
-@@ -218,11 +218,15 @@ struct i40evf_adapter {
- #define I40EVF_FLAG_PF_COMMS_FAILED              BIT(8)
- #define I40EVF_FLAG_RESET_PENDING                BIT(9)
- #define I40EVF_FLAG_RESET_NEEDED                 BIT(10)
-+#define I40EVF_FLAG_WB_ON_ITR_CAPABLE            BIT(11)
-+#define I40EVF_FLAG_OUTER_UDP_CSUM_CAPABLE       BIT(12)
- /* duplcates for common code */
- #define I40E_FLAG_FDIR_ATR_ENABLED		 0
- #define I40E_FLAG_DCB_ENABLED			 0
- #define I40E_FLAG_IN_NETPOLL			 I40EVF_FLAG_IN_NETPOLL
- #define I40E_FLAG_RX_CSUM_ENABLED                I40EVF_FLAG_RX_CSUM_ENABLED
-+#define I40E_FLAG_WB_ON_ITR_CAPABLE           I40EVF_FLAG_WB_ON_ITR_CAPABLE
-+#define I40E_FLAG_OUTER_UDP_CSUM_CAPABLE      I40EVF_FLAG_OUTER_UDP_CSUM_CAPABLE
- 	/* flags for admin queue service task */
- 	u32 aq_required;
- #define I40EVF_FLAG_AQ_ENABLE_QUEUES		BIT(0)
-@@ -234,6 +238,7 @@ struct i40evf_adapter {
- #define I40EVF_FLAG_AQ_CONFIGURE_QUEUES		BIT(6)
- #define I40EVF_FLAG_AQ_MAP_VECTORS		BIT(7)
- #define I40EVF_FLAG_AQ_HANDLE_RESET		BIT(8)
-+#define I40EVF_FLAG_AQ_CONFIGURE_RSS		BIT(9)
- #define I40EVF_FLAG_AQ_GET_CONFIG		BIT(10)
+ 	/* Async Events */
+ 	i40e_aqc_opc_event_lan_overflow		= 0x1001,
+@@ -821,8 +825,12 @@ struct i40e_aqc_vsi_properties_data {
+ 					 I40E_AQ_VSI_TC_QUE_NUMBER_SHIFT)
+ 	/* queueing option section */
+ 	u8	queueing_opt_flags;
++#define I40E_AQ_VSI_QUE_OPT_MULTICAST_UDP_ENA	0x04
++#define I40E_AQ_VSI_QUE_OPT_UNICAST_UDP_ENA	0x08
+ #define I40E_AQ_VSI_QUE_OPT_TCP_ENA	0x10
+ #define I40E_AQ_VSI_QUE_OPT_FCOE_ENA	0x20
++#define I40E_AQ_VSI_QUE_OPT_RSS_LUT_PF	0x00
++#define I40E_AQ_VSI_QUE_OPT_RSS_LUT_VSI	0x40
+ 	u8	queueing_opt_reserved[3];
+ 	/* scheduler section */
+ 	u8	up_enable_bits;
+@@ -2179,6 +2187,46 @@ struct i40e_aqc_del_udp_tunnel_completion {
  
- 	/* OS defined structs */
+ I40E_CHECK_CMD_LENGTH(i40e_aqc_del_udp_tunnel_completion);
+ 
++struct i40e_aqc_get_set_rss_key {
++#define I40E_AQC_SET_RSS_KEY_VSI_VALID		(0x1 << 15)
++#define I40E_AQC_SET_RSS_KEY_VSI_ID_SHIFT	0
++#define I40E_AQC_SET_RSS_KEY_VSI_ID_MASK	(0x3FF << \
++					I40E_AQC_SET_RSS_KEY_VSI_ID_SHIFT)
++	__le16	vsi_id;
++	u8	reserved[6];
++	__le32	addr_high;
++	__le32	addr_low;
++};
++
++I40E_CHECK_CMD_LENGTH(i40e_aqc_get_set_rss_key);
++
++struct i40e_aqc_get_set_rss_key_data {
++	u8 standard_rss_key[0x28];
++	u8 extended_hash_key[0xc];
++};
++
++I40E_CHECK_STRUCT_LEN(0x34, i40e_aqc_get_set_rss_key_data);
++
++struct  i40e_aqc_get_set_rss_lut {
++#define I40E_AQC_SET_RSS_LUT_VSI_VALID		(0x1 << 15)
++#define I40E_AQC_SET_RSS_LUT_VSI_ID_SHIFT	0
++#define I40E_AQC_SET_RSS_LUT_VSI_ID_MASK	(0x3FF << \
++					I40E_AQC_SET_RSS_LUT_VSI_ID_SHIFT)
++	__le16	vsi_id;
++#define I40E_AQC_SET_RSS_LUT_TABLE_TYPE_SHIFT	0
++#define I40E_AQC_SET_RSS_LUT_TABLE_TYPE_MASK	(0x1 << \
++					I40E_AQC_SET_RSS_LUT_TABLE_TYPE_SHIFT)
++
++#define I40E_AQC_SET_RSS_LUT_TABLE_TYPE_VSI	0
++#define I40E_AQC_SET_RSS_LUT_TABLE_TYPE_PF	1
++	__le16	flags;
++	u8	reserved[4];
++	__le32	addr_high;
++	__le32	addr_low;
++};
++
++I40E_CHECK_CMD_LENGTH(i40e_aqc_get_set_rss_lut);
++
+ /* tunnel key structure 0x0B10 */
+ 
+ struct i40e_aqc_tunnel_key_structure {
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 11ec264..114dc64 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -392,6 +392,169 @@ i40e_status i40e_aq_queue_shutdown(struct i40e_hw *hw,
+ 	return status;
+ }
+ 
++/**
++ * i40e_aq_get_set_rss_lut
++ * @hw: pointer to the hardware structure
++ * @vsi_id: vsi fw index
++ * @pf_lut: for PF table set true, for VSI table set false
++ * @lut: pointer to the lut buffer provided by the caller
++ * @lut_size: size of the lut buffer
++ * @set: set true to set the table, false to get the table
++ *
++ * Internal function to get or set RSS look up table
++ **/
++static i40e_status i40e_aq_get_set_rss_lut(struct i40e_hw *hw,
++					   u16 vsi_id, bool pf_lut,
++					   u8 *lut, u16 lut_size,
++					   bool set)
++{
++	i40e_status status;
++	struct i40e_aq_desc desc;
++	struct i40e_aqc_get_set_rss_lut *cmd_resp =
++		   (struct i40e_aqc_get_set_rss_lut *)&desc.params.raw;
++
++	if (set)
++		i40e_fill_default_direct_cmd_desc(&desc,
++						  i40e_aqc_opc_set_rss_lut);
++	else
++		i40e_fill_default_direct_cmd_desc(&desc,
++						  i40e_aqc_opc_get_rss_lut);
++
++	/* Indirect command */
++	desc.flags |= cpu_to_le16((u16)I40E_AQ_FLAG_BUF);
++	desc.flags |= cpu_to_le16((u16)I40E_AQ_FLAG_RD);
++
++	cmd_resp->vsi_id =
++			cpu_to_le16((u16)((vsi_id <<
++					  I40E_AQC_SET_RSS_LUT_VSI_ID_SHIFT) &
++					  I40E_AQC_SET_RSS_LUT_VSI_ID_MASK));
++	cmd_resp->vsi_id |= cpu_to_le16((u16)I40E_AQC_SET_RSS_LUT_VSI_VALID);
++
++	if (pf_lut)
++		cmd_resp->flags |= cpu_to_le16((u16)
++					((I40E_AQC_SET_RSS_LUT_TABLE_TYPE_PF <<
++					I40E_AQC_SET_RSS_LUT_TABLE_TYPE_SHIFT) &
++					I40E_AQC_SET_RSS_LUT_TABLE_TYPE_MASK));
++	else
++		cmd_resp->flags |= cpu_to_le16((u16)
++					((I40E_AQC_SET_RSS_LUT_TABLE_TYPE_VSI <<
++					I40E_AQC_SET_RSS_LUT_TABLE_TYPE_SHIFT) &
++					I40E_AQC_SET_RSS_LUT_TABLE_TYPE_MASK));
++
++	cmd_resp->addr_high = cpu_to_le32(high_16_bits((u64)lut));
++	cmd_resp->addr_low = cpu_to_le32(lower_32_bits((u64)lut));
++
++	status = i40e_asq_send_command(hw, &desc, lut, lut_size, NULL);
++
++	return status;
++}
++
++/**
++ * i40e_aq_get_rss_lut
++ * @hw: pointer to the hardware structure
++ * @vsi_id: vsi fw index
++ * @pf_lut: for PF table set true, for VSI table set false
++ * @lut: pointer to the lut buffer provided by the caller
++ * @lut_size: size of the lut buffer
++ *
++ * get the RSS lookup table, PF or VSI type
++ **/
++i40e_status i40e_aq_get_rss_lut(struct i40e_hw *hw, u16 vsi_id,
++				bool pf_lut, u8 *lut, u16 lut_size)
++{
++	return i40e_aq_get_set_rss_lut(hw, vsi_id, pf_lut, lut, lut_size,
++				       false);
++}
++
++/**
++ * i40e_aq_set_rss_lut
++ * @hw: pointer to the hardware structure
++ * @vsi_id: vsi fw index
++ * @pf_lut: for PF table set true, for VSI table set false
++ * @lut: pointer to the lut buffer provided by the caller
++ * @lut_size: size of the lut buffer
++ *
++ * set the RSS lookup table, PF or VSI type
++ **/
++i40e_status i40e_aq_set_rss_lut(struct i40e_hw *hw, u16 vsi_id,
++				bool pf_lut, u8 *lut, u16 lut_size)
++{
++	return i40e_aq_get_set_rss_lut(hw, vsi_id, pf_lut, lut, lut_size, true);
++}
++
++/**
++ * i40e_aq_get_set_rss_key
++ * @hw: pointer to the hw struct
++ * @vsi_id: vsi fw index
++ * @key: pointer to key info struct
++ * @set: set true to set the key, false to get the key
++ *
++ * get the RSS key per VSI
++ **/
++static i40e_status i40e_aq_get_set_rss_key(struct i40e_hw *hw,
++				      u16 vsi_id,
++				      struct i40e_aqc_get_set_rss_key_data *key,
++				      bool set)
++{
++	i40e_status status;
++	struct i40e_aq_desc desc;
++	struct i40e_aqc_get_set_rss_key *cmd_resp =
++			(struct i40e_aqc_get_set_rss_key *)&desc.params.raw;
++	u16 key_size = sizeof(struct i40e_aqc_get_set_rss_key_data);
++
++	if (set)
++		i40e_fill_default_direct_cmd_desc(&desc,
++						  i40e_aqc_opc_set_rss_key);
++	else
++		i40e_fill_default_direct_cmd_desc(&desc,
++						  i40e_aqc_opc_get_rss_key);
++
++	/* Indirect command */
++	desc.flags |= cpu_to_le16((u16)I40E_AQ_FLAG_BUF);
++	desc.flags |= cpu_to_le16((u16)I40E_AQ_FLAG_RD);
++
++	cmd_resp->vsi_id =
++			cpu_to_le16((u16)((vsi_id <<
++					  I40E_AQC_SET_RSS_KEY_VSI_ID_SHIFT) &
++					  I40E_AQC_SET_RSS_KEY_VSI_ID_MASK));
++	cmd_resp->vsi_id |= cpu_to_le16((u16)I40E_AQC_SET_RSS_KEY_VSI_VALID);
++	cmd_resp->addr_high = cpu_to_le32(high_16_bits((u64)key));
++	cmd_resp->addr_low = cpu_to_le32(lower_32_bits((u64)key));
++
++	status = i40e_asq_send_command(hw, &desc, key, key_size, NULL);
++
++	return status;
++}
++
++/**
++ * i40e_aq_get_rss_key
++ * @hw: pointer to the hw struct
++ * @vsi_id: vsi fw index
++ * @key: pointer to key info struct
++ *
++ **/
++i40e_status i40e_aq_get_rss_key(struct i40e_hw *hw,
++				u16 vsi_id,
++				struct i40e_aqc_get_set_rss_key_data *key)
++{
++	return i40e_aq_get_set_rss_key(hw, vsi_id, key, false);
++}
++
++/**
++ * i40e_aq_set_rss_key
++ * @hw: pointer to the hw struct
++ * @vsi_id: vsi fw index
++ * @key: pointer to key info struct
++ *
++ * set the RSS key per VSI
++ **/
++i40e_status i40e_aq_set_rss_key(struct i40e_hw *hw,
++				u16 vsi_id,
++				struct i40e_aqc_get_set_rss_key_data *key)
++{
++	return i40e_aq_get_set_rss_key(hw, vsi_id, key, true);
++}
++
+ /* The i40e_ptype_lookup table is used to convert from the 8-bit ptype in the
+  * hardware to a bit-field that can be used by SW to more easily determine the
+  * packet type.
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+index d52a9f7..dcb72a8 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+@@ -61,6 +61,17 @@ i40e_status i40e_aq_queue_shutdown(struct i40e_hw *hw, bool unloading);
+ char *i40e_aq_str(struct i40e_hw *hw, enum i40e_admin_queue_err aq_err);
+ char *i40e_stat_str(struct i40e_hw *hw, i40e_status stat_err);
+ 
++i40e_status i40e_aq_get_rss_lut(struct i40e_hw *hw, u16 seid,
++				bool pf_lut, u8 *lut, u16 lut_size);
++i40e_status i40e_aq_set_rss_lut(struct i40e_hw *hw, u16 seid,
++				bool pf_lut, u8 *lut, u16 lut_size);
++i40e_status i40e_aq_get_rss_key(struct i40e_hw *hw,
++				u16 seid,
++				struct i40e_aqc_get_set_rss_key_data *key);
++i40e_status i40e_aq_set_rss_key(struct i40e_hw *hw,
++				u16 seid,
++				struct i40e_aqc_get_set_rss_key_data *key);
++
+ u32 i40e_led_get(struct i40e_hw *hw);
+ void i40e_led_set(struct i40e_hw *hw, u32 mode, bool blink);
+ 
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+index d5bd6f0..c802209 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+@@ -35,7 +35,6 @@
+ 
+ #define I40E_FW_API_VERSION_MAJOR	0x0001
+ #define I40E_FW_API_VERSION_MINOR	0x0004
+-#define I40E_FW_API_VERSION_A0_MINOR  0x0000
+ 
+ struct i40e_aq_desc {
+ 	__le16 flags;
+@@ -255,6 +254,10 @@ enum i40e_admin_queue_opc {
+ 	/* Tunnel commands */
+ 	i40e_aqc_opc_add_udp_tunnel	= 0x0B00,
+ 	i40e_aqc_opc_del_udp_tunnel	= 0x0B01,
++	i40e_aqc_opc_set_rss_key	= 0x0B02,
++	i40e_aqc_opc_set_rss_lut	= 0x0B03,
++	i40e_aqc_opc_get_rss_key	= 0x0B04,
++	i40e_aqc_opc_get_rss_lut	= 0x0B05,
+ 
+ 	/* Async Events */
+ 	i40e_aqc_opc_event_lan_overflow		= 0x1001,
+@@ -819,8 +822,12 @@ struct i40e_aqc_vsi_properties_data {
+ 					 I40E_AQ_VSI_TC_QUE_NUMBER_SHIFT)
+ 	/* queueing option section */
+ 	u8	queueing_opt_flags;
++#define I40E_AQ_VSI_QUE_OPT_MULTICAST_UDP_ENA	0x04
++#define I40E_AQ_VSI_QUE_OPT_UNICAST_UDP_ENA	0x08
+ #define I40E_AQ_VSI_QUE_OPT_TCP_ENA	0x10
+ #define I40E_AQ_VSI_QUE_OPT_FCOE_ENA	0x20
++#define I40E_AQ_VSI_QUE_OPT_RSS_LUT_PF	0x00
++#define I40E_AQ_VSI_QUE_OPT_RSS_LUT_VSI	0x40
+ 	u8	queueing_opt_reserved[3];
+ 	/* scheduler section */
+ 	u8	up_enable_bits;
+@@ -2089,6 +2096,46 @@ struct i40e_aqc_del_udp_tunnel_completion {
+ 
+ I40E_CHECK_CMD_LENGTH(i40e_aqc_del_udp_tunnel_completion);
+ 
++struct i40e_aqc_get_set_rss_key {
++#define I40E_AQC_SET_RSS_KEY_VSI_VALID		(0x1 << 15)
++#define I40E_AQC_SET_RSS_KEY_VSI_ID_SHIFT	0
++#define I40E_AQC_SET_RSS_KEY_VSI_ID_MASK	(0x3FF << \
++					I40E_AQC_SET_RSS_KEY_VSI_ID_SHIFT)
++	__le16	vsi_id;
++	u8	reserved[6];
++	__le32	addr_high;
++	__le32	addr_low;
++};
++
++I40E_CHECK_CMD_LENGTH(i40e_aqc_get_set_rss_key);
++
++struct i40e_aqc_get_set_rss_key_data {
++	u8 standard_rss_key[0x28];
++	u8 extended_hash_key[0xc];
++};
++
++I40E_CHECK_STRUCT_LEN(0x34, i40e_aqc_get_set_rss_key_data);
++
++struct  i40e_aqc_get_set_rss_lut {
++#define I40E_AQC_SET_RSS_LUT_VSI_VALID		(0x1 << 15)
++#define I40E_AQC_SET_RSS_LUT_VSI_ID_SHIFT	0
++#define I40E_AQC_SET_RSS_LUT_VSI_ID_MASK	(0x3FF << \
++					I40E_AQC_SET_RSS_LUT_VSI_ID_SHIFT)
++	__le16	vsi_id;
++#define I40E_AQC_SET_RSS_LUT_TABLE_TYPE_SHIFT	0
++#define I40E_AQC_SET_RSS_LUT_TABLE_TYPE_MASK	(0x1 << \
++					I40E_AQC_SET_RSS_LUT_TABLE_TYPE_SHIFT)
++
++#define I40E_AQC_SET_RSS_LUT_TABLE_TYPE_VSI	0
++#define I40E_AQC_SET_RSS_LUT_TABLE_TYPE_PF	1
++	__le16	flags;
++	u8	reserved[4];
++	__le32	addr_high;
++	__le32	addr_low;
++};
++
++I40E_CHECK_CMD_LENGTH(i40e_aqc_get_set_rss_lut);
++
+ /* tunnel key structure 0x0B10 */
+ 
+ struct i40e_aqc_tunnel_key_structure_A0 {
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_common.c b/drivers/net/ethernet/intel/i40evf/i40e_common.c
+index eb54e8d..023d32d 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_common.c
+@@ -392,6 +392,169 @@ i40e_status i40evf_aq_queue_shutdown(struct i40e_hw *hw,
+ 	return status;
+ }
+ 
++/**
++ * i40e_aq_get_set_rss_lut
++ * @hw: pointer to the hardware structure
++ * @vsi_id: vsi fw index
++ * @pf_lut: for PF table set true, for VSI table set false
++ * @lut: pointer to the lut buffer provided by the caller
++ * @lut_size: size of the lut buffer
++ * @set: set true to set the table, false to get the table
++ *
++ * Internal function to get or set RSS look up table
++ **/
++static i40e_status i40e_aq_get_set_rss_lut(struct i40e_hw *hw,
++					   u16 vsi_id, bool pf_lut,
++					   u8 *lut, u16 lut_size,
++					   bool set)
++{
++	i40e_status status;
++	struct i40e_aq_desc desc;
++	struct i40e_aqc_get_set_rss_lut *cmd_resp =
++		   (struct i40e_aqc_get_set_rss_lut *)&desc.params.raw;
++
++	if (set)
++		i40evf_fill_default_direct_cmd_desc(&desc,
++						    i40e_aqc_opc_set_rss_lut);
++	else
++		i40evf_fill_default_direct_cmd_desc(&desc,
++						    i40e_aqc_opc_get_rss_lut);
++
++	/* Indirect command */
++	desc.flags |= cpu_to_le16((u16)I40E_AQ_FLAG_BUF);
++	desc.flags |= cpu_to_le16((u16)I40E_AQ_FLAG_RD);
++
++	cmd_resp->vsi_id =
++			cpu_to_le16((u16)((vsi_id <<
++					  I40E_AQC_SET_RSS_LUT_VSI_ID_SHIFT) &
++					  I40E_AQC_SET_RSS_LUT_VSI_ID_MASK));
++	cmd_resp->vsi_id |= cpu_to_le16((u16)I40E_AQC_SET_RSS_LUT_VSI_VALID);
++
++	if (pf_lut)
++		cmd_resp->flags |= cpu_to_le16((u16)
++					((I40E_AQC_SET_RSS_LUT_TABLE_TYPE_PF <<
++					I40E_AQC_SET_RSS_LUT_TABLE_TYPE_SHIFT) &
++					I40E_AQC_SET_RSS_LUT_TABLE_TYPE_MASK));
++	else
++		cmd_resp->flags |= cpu_to_le16((u16)
++					((I40E_AQC_SET_RSS_LUT_TABLE_TYPE_VSI <<
++					I40E_AQC_SET_RSS_LUT_TABLE_TYPE_SHIFT) &
++					I40E_AQC_SET_RSS_LUT_TABLE_TYPE_MASK));
++
++	cmd_resp->addr_high = cpu_to_le32(high_16_bits((u64)lut));
++	cmd_resp->addr_low = cpu_to_le32(lower_32_bits((u64)lut));
++
++	status = i40evf_asq_send_command(hw, &desc, lut, lut_size, NULL);
++
++	return status;
++}
++
++/**
++ * i40evf_aq_get_rss_lut
++ * @hw: pointer to the hardware structure
++ * @vsi_id: vsi fw index
++ * @pf_lut: for PF table set true, for VSI table set false
++ * @lut: pointer to the lut buffer provided by the caller
++ * @lut_size: size of the lut buffer
++ *
++ * get the RSS lookup table, PF or VSI type
++ **/
++i40e_status i40evf_aq_get_rss_lut(struct i40e_hw *hw, u16 vsi_id,
++				  bool pf_lut, u8 *lut, u16 lut_size)
++{
++	return i40e_aq_get_set_rss_lut(hw, vsi_id, pf_lut, lut, lut_size,
++				       false);
++}
++
++/**
++ * i40evf_aq_set_rss_lut
++ * @hw: pointer to the hardware structure
++ * @vsi_id: vsi fw index
++ * @pf_lut: for PF table set true, for VSI table set false
++ * @lut: pointer to the lut buffer provided by the caller
++ * @lut_size: size of the lut buffer
++ *
++ * set the RSS lookup table, PF or VSI type
++ **/
++i40e_status i40evf_aq_set_rss_lut(struct i40e_hw *hw, u16 vsi_id,
++				  bool pf_lut, u8 *lut, u16 lut_size)
++{
++	return i40e_aq_get_set_rss_lut(hw, vsi_id, pf_lut, lut, lut_size, true);
++}
++
++/**
++ * i40e_aq_get_set_rss_key
++ * @hw: pointer to the hw struct
++ * @vsi_id: vsi fw index
++ * @key: pointer to key info struct
++ * @set: set true to set the key, false to get the key
++ *
++ * get the RSS key per VSI
++ **/
++static i40e_status i40e_aq_get_set_rss_key(struct i40e_hw *hw,
++				      u16 vsi_id,
++				      struct i40e_aqc_get_set_rss_key_data *key,
++				      bool set)
++{
++	i40e_status status;
++	struct i40e_aq_desc desc;
++	struct i40e_aqc_get_set_rss_key *cmd_resp =
++			(struct i40e_aqc_get_set_rss_key *)&desc.params.raw;
++	u16 key_size = sizeof(struct i40e_aqc_get_set_rss_key_data);
++
++	if (set)
++		i40evf_fill_default_direct_cmd_desc(&desc,
++						    i40e_aqc_opc_set_rss_key);
++	else
++		i40evf_fill_default_direct_cmd_desc(&desc,
++						    i40e_aqc_opc_get_rss_key);
++
++	/* Indirect command */
++	desc.flags |= cpu_to_le16((u16)I40E_AQ_FLAG_BUF);
++	desc.flags |= cpu_to_le16((u16)I40E_AQ_FLAG_RD);
++
++	cmd_resp->vsi_id =
++			cpu_to_le16((u16)((vsi_id <<
++					  I40E_AQC_SET_RSS_KEY_VSI_ID_SHIFT) &
++					  I40E_AQC_SET_RSS_KEY_VSI_ID_MASK));
++	cmd_resp->vsi_id |= cpu_to_le16((u16)I40E_AQC_SET_RSS_KEY_VSI_VALID);
++	cmd_resp->addr_high = cpu_to_le32(high_16_bits((u64)key));
++	cmd_resp->addr_low = cpu_to_le32(lower_32_bits((u64)key));
++
++	status = i40evf_asq_send_command(hw, &desc, key, key_size, NULL);
++
++	return status;
++}
++
++/**
++ * i40evf_aq_get_rss_key
++ * @hw: pointer to the hw struct
++ * @vsi_id: vsi fw index
++ * @key: pointer to key info struct
++ *
++ **/
++i40e_status i40evf_aq_get_rss_key(struct i40e_hw *hw,
++				  u16 vsi_id,
++				  struct i40e_aqc_get_set_rss_key_data *key)
++{
++	return i40e_aq_get_set_rss_key(hw, vsi_id, key, false);
++}
++
++/**
++ * i40evf_aq_set_rss_key
++ * @hw: pointer to the hw struct
++ * @vsi_id: vsi fw index
++ * @key: pointer to key info struct
++ *
++ * set the RSS key per VSI
++ **/
++i40e_status i40evf_aq_set_rss_key(struct i40e_hw *hw,
++				  u16 vsi_id,
++				  struct i40e_aqc_get_set_rss_key_data *key)
++{
++	return i40e_aq_get_set_rss_key(hw, vsi_id, key, true);
++}
++
+ 
+ /* The i40evf_ptype_lookup table is used to convert from the 8-bit ptype in the
+  * hardware to a bit-field that can be used by SW to more easily determine the
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_prototype.h b/drivers/net/ethernet/intel/i40evf/i40e_prototype.h
+index 856eb9d..55ae4b0 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_prototype.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_prototype.h
+@@ -63,6 +63,17 @@ i40e_status i40evf_aq_queue_shutdown(struct i40e_hw *hw, bool unloading);
+ char *i40evf_aq_str(struct i40e_hw *hw, enum i40e_admin_queue_err aq_err);
+ char *i40evf_stat_str(struct i40e_hw *hw, i40e_status stat_err);
+ 
++i40e_status i40evf_aq_get_rss_lut(struct i40e_hw *hw, u16 seid,
++				  bool pf_lut, u8 *lut, u16 lut_size);
++i40e_status i40evf_aq_set_rss_lut(struct i40e_hw *hw, u16 seid,
++				  bool pf_lut, u8 *lut, u16 lut_size);
++i40e_status i40evf_aq_get_rss_key(struct i40e_hw *hw,
++				  u16 seid,
++				  struct i40e_aqc_get_set_rss_key_data *key);
++i40e_status i40evf_aq_set_rss_key(struct i40e_hw *hw,
++				  u16 seid,
++				  struct i40e_aqc_get_set_rss_key_data *key);
++
+ i40e_status i40e_set_mac_type(struct i40e_hw *hw);
+ 
+ extern struct i40e_rx_ptype_decoded i40evf_ptype_lookup[];
 -- 
 1.9.3
 
