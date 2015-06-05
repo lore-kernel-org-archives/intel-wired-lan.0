@@ -1,60 +1,109 @@
 From: Don Skidmore <donald.c.skidmore@intel.com>
-Date: Fri, 05 Jun 2015 00:51:14 -0400
-Subject: [Intel-wired-lan] [net-next PATCH 2 07/13] ixgbe: Add const string
- for overheat message
+Date: Fri, 05 Jun 2015 00:51:19 -0400
+Subject: [Intel-wired-lan] [net-next PATCH 2 08/13] ixgbe: add support for
+ interrupts from X550 external PHY
 In-Reply-To: <20150605045038.26373.94842.stgit@dcs-desk.jf.intel.com>
 References: <20150605045038.26373.94842.stgit@dcs-desk.jf.intel.com>
-Message-ID: <20150605045114.26373.80994.stgit@dcs-desk.jf.intel.com>
+Message-ID: <20150605045119.26373.8229.stgit@dcs-desk.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The over heat message is displayed for mutliple reasons but the text is
-cut-n-pasted for each of these cases.  This patch pulls the text from the
-same location.  I noticed this as I am about to add anothere case.
+From: Don Skidmore <dcskidmo@dcs-desk.jf.intel.com>
+
+This patch adds support for receiving interrupts from a external copper
+PHY for the X550 part.  This includes enabling, detection as well as
+re-enablement.
 
 Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h      |    1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   32 +++++++++++++++++++++++++
+ 2 files changed, 33 insertions(+)
 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index 5181a4d..99fb91b 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -645,6 +645,7 @@ struct ixgbe_adapter {
+ #define IXGBE_FLAG2_RSS_FIELD_IPV4_UDP		(u32)(1 << 8)
+ #define IXGBE_FLAG2_RSS_FIELD_IPV6_UDP		(u32)(1 << 9)
+ #define IXGBE_FLAG2_PTP_PPS_ENABLED		(u32)(1 << 10)
++#define IXGBE_FLAG2_PHY_INTERRUPT		(u32)(1 << 11)
+ 
+ 	/* Tx fast path data */
+ 	int num_tx_queues;
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 5aea3ef..83fc1a3 100644
+index 83fc1a3..aeb4fcf 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -81,6 +81,8 @@ const char ixgbe_driver_version[] = DRV_VERSION;
- static const char ixgbe_copyright[] =
- 				"Copyright (c) 1999-2014 Intel Corporation.";
+@@ -2405,6 +2405,8 @@ static void ixgbe_check_overtemp_subtask(struct ixgbe_adapter *adapter)
  
-+static const char ixgbe_overheat_msg[] = "Network adapter has been stopped because it has over heated. Restart the computer. If the problem persists, power off the system and replace the adapter";
-+
- static const struct ixgbe_info *ixgbe_info_tbl[] = {
- 	[board_82598]		= &ixgbe_82598_info,
- 	[board_82599]		= &ixgbe_82599_info,
-@@ -2407,10 +2409,7 @@ static void ixgbe_check_overtemp_subtask(struct ixgbe_adapter *adapter)
+ 		break;
+ 	default:
++		if (adapter->hw.mac.type >= ixgbe_mac_X540)
++			return;
+ 		if (!(eicr & IXGBE_EICR_GPI_SDP0(hw)))
  			return;
  		break;
- 	}
--	e_crit(drv,
--	       "Network adapter has been stopped because it has over heated. "
--	       "Restart the computer. If the problem persists, "
--	       "power off the system and replace the adapter\n");
-+	e_crit(drv, "%s\n", ixgbe_overheat_msg);
- 
- 	adapter->interrupt_event = 0;
+@@ -2589,6 +2591,8 @@ static inline void ixgbe_irq_enable(struct ixgbe_adapter *adapter, bool queues,
+ 	case ixgbe_mac_X540:
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
++		if (adapter->hw.phy.type == ixgbe_phy_x550em_ext_t)
++			mask |= IXGBE_EICR_GPI_SDP0_X540;
+ 		mask |= IXGBE_EIMS_ECC;
+ 		mask |= IXGBE_EIMS_MAILBOX;
+ 		break;
+@@ -2643,6 +2647,13 @@ static irqreturn_t ixgbe_msix_other(int irq, void *data)
+ 	case ixgbe_mac_X540:
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
++		if (hw->phy.type == ixgbe_phy_x550em_ext_t &&
++		    (eicr & IXGBE_EICR_GPI_SDP0_X540)) {
++			adapter->flags2 |= IXGBE_FLAG2_PHY_INTERRUPT;
++			ixgbe_service_event_schedule(adapter);
++			IXGBE_WRITE_REG(hw, IXGBE_EICR,
++					IXGBE_EICR_GPI_SDP0_X540);
++		}
+ 		if (eicr & IXGBE_EICR_ECC) {
+ 			e_info(link, "Received ECC Err, initiating reset\n");
+ 			adapter->flags2 |= IXGBE_FLAG2_RESET_REQUESTED;
+@@ -6754,6 +6765,26 @@ static void ixgbe_service_timer(unsigned long data)
+ 	ixgbe_service_event_schedule(adapter);
  }
-@@ -2457,10 +2456,7 @@ static void ixgbe_check_overtemp_event(struct ixgbe_adapter *adapter, u32 eicr)
+ 
++static void ixgbe_phy_interrupt_subtask(struct ixgbe_adapter *adapter)
++{
++	struct ixgbe_hw *hw = &adapter->hw;
++	u32 status;
++
++	if (!(adapter->flags2 & IXGBE_FLAG2_PHY_INTERRUPT))
++		return;
++
++	adapter->flags2 &= ~IXGBE_FLAG2_PHY_INTERRUPT;
++
++	if (!hw->phy.ops.handle_lasi)
++		return;
++
++	status = hw->phy.ops.handle_lasi(&adapter->hw);
++	if (status != IXGBE_ERR_OVERTEMP)
++		return;
++
++	e_crit(drv, "%s\n", ixgbe_overheat_msg);
++}
++
+ static void ixgbe_reset_subtask(struct ixgbe_adapter *adapter)
+ {
+ 	if (!(adapter->flags2 & IXGBE_FLAG2_RESET_REQUESTED))
+@@ -6795,6 +6826,7 @@ static void ixgbe_service_task(struct work_struct *work)
  		return;
  	}
- 
--	e_crit(drv,
--	       "Network adapter has been stopped because it has over heated. "
--	       "Restart the computer. If the problem persists, "
--	       "power off the system and replace the adapter\n");
-+	e_crit(drv, "%s\n", ixgbe_overheat_msg);
- }
- 
- static void ixgbe_check_sfp_event(struct ixgbe_adapter *adapter, u32 eicr)
+ 	ixgbe_reset_subtask(adapter);
++	ixgbe_phy_interrupt_subtask(adapter);
+ 	ixgbe_sfp_detection_subtask(adapter);
+ 	ixgbe_sfp_link_config_subtask(adapter);
+ 	ixgbe_check_overtemp_subtask(adapter);
 
