@@ -1,406 +1,54 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 06 Jun 2015 05:43:45 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 1357701ce82617240cbf7e6b656f15f083406649 BUILD DONE
-Message-ID: <55721811.ogS3V67tSgNlj/c0%fengguang.wu@intel.com>
+From: Rustad, Mark D <mark.d.rustad@intel.com>
+Date: Fri, 5 Jun 2015 21:59:20 +0000
+Subject: [Intel-wired-lan] [PATCH V3 0/2] pci: Provide a flag to access
+ VPD through function 0
+In-Reply-To: <20150603184445.109080.36387.stgit@mdrustad-wks.jf.intel.com>
+References: <20150603184445.109080.36387.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <051B68B4-3E77-4EB0-B9FE-8523631884A2@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-1357701ce82617240cbf7e6b656f15f083406649  ixgbe: Add support for another X550 device.
+> On Jun 3, 2015, at 11:46 AM, Mark D Rustad <mark.d.rustad@intel.com> wrote:
+> 
+> Many multi-function devices provide shared registers in extended
+> config space for accessing VPD. The behavior of these registers
+> means that the state must be tracked and access locked correctly
+> for accesses not to hang or worse. One way to meet these needs is
+> to always perform the accesses through function 0, thereby using
+> the state tracking and mutex that already exists.
+> 
+> To provide this behavior, add a dev_flags bit to indicate that this
+> should be done. This bit can then be set for any non-zero function
+> that needs to redirect such VPD access to function 0. Do not set
+> this bit on the zero function or there will be an infinite recursion.
+> 
+> The second patch uses this new flag to invoke this behavior on all
+> multi-function Intel Ethernet devices.
+> 
+> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+> 
+> ---
+> Changes in V2:
+> - Corrected a spelling error in a log message
+> - Added checks to see that the referenced function 0 is reasonable
+> Changes in V3:
+> - Don't leak a device reference
+> - Check that function 0 has VPD
+> - Make a helper for the function 0 checks
+> - Moved a multifunction check to the quirk patch
 
-drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c:1190:5: sparse: symbol 'ixgbe_handle_lasi_ext_t_x550em' was not declared. Should it be static?
-drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c:1338:5: sparse: symbol 'ixgbe_setup_internal_phy_t_x550em' was not declared. Should it be static?
-drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c:891:5: sparse: symbol 'ixgbe_setup_mac_link_t_X550em' was not declared. Should it be static?
+So does this series look acceptable now? I think I addressed the issues that Alex raised. Can these also be considered for -stable?
 
-elapsed time: 234m
+--
+Mark Rustad, Networking Division, Intel Corporation
 
-configs tested: 381
-
-arm                          ep93xx_defconfig
-powerpc                  pseries_le_defconfig
-xtensa                  audio_kc705_defconfig
-arm                         lpc18xx_defconfig
-mips                malta_kvm_guest_defconfig
-mips                         tb0219_defconfig
-arm                      pxa255-idp_defconfig
-ia64                          tiger_defconfig
-sh                                  defconfig
-arm                           efm32_defconfig
-m32r                        oaks32r_defconfig
-microblaze                       allmodconfig
-arm                         ebsa110_defconfig
-powerpc                     tqm8548_defconfig
-sh                   secureedge5410_defconfig
-i386                     randconfig-a0-201522
-x86_64                 randconfig-a0-06060247
-x86_64                 randconfig-a0-06060319
-x86_64                 randconfig-a0-06060402
-x86_64                 randconfig-a0-06060419
-x86_64                 randconfig-a0-06060431
-x86_64                 randconfig-a0-06060440
-x86_64                 randconfig-a0-06060449
-x86_64                 randconfig-a0-06060458
-x86_64                 randconfig-a0-06060505
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64                            allnoconfig
-blackfin                 BlackStamp_defconfig
-ia64                             allyesconfig
-powerpc                      ppc44x_defconfig
-arm                     am200epdkit_defconfig
-m68k                         apollo_defconfig
-powerpc                   gef_ppc9a_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-06060301
-i386                   randconfig-c0-06060336
-i386                   randconfig-c0-06060402
-i386                   randconfig-c0-06060416
-i386                   randconfig-c0-06060441
-i386                   randconfig-c0-06060455
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-x86_64                 randconfig-v0-06060245
-x86_64                 randconfig-v1-06060245
-x86_64                 randconfig-v0-06060254
-x86_64                 randconfig-v1-06060254
-x86_64                 randconfig-v0-06060305
-x86_64                 randconfig-v1-06060305
-x86_64                 randconfig-v0-06060318
-x86_64                 randconfig-v1-06060318
-x86_64                 randconfig-v0-06060326
-x86_64                 randconfig-v1-06060326
-x86_64                 randconfig-v0-06060336
-x86_64                 randconfig-v1-06060336
-x86_64                 randconfig-v0-06060342
-x86_64                 randconfig-v1-06060342
-x86_64                 randconfig-v0-06060351
-x86_64                 randconfig-v1-06060351
-x86_64                 randconfig-v0-06060359
-x86_64                 randconfig-v1-06060359
-x86_64                 randconfig-v0-06060411
-x86_64                 randconfig-v1-06060411
-x86_64                 randconfig-v0-06060418
-x86_64                 randconfig-v1-06060418
-x86_64                 randconfig-v0-06060429
-x86_64                 randconfig-v1-06060429
-x86_64                 randconfig-v0-06060438
-x86_64                 randconfig-v1-06060438
-x86_64                 randconfig-v0-06060450
-x86_64                 randconfig-v1-06060450
-x86_64                 randconfig-v0-06060500
-x86_64                 randconfig-v1-06060500
-x86_64                 randconfig-v0-06060509
-x86_64                 randconfig-v1-06060509
-x86_64                 randconfig-v0-06060518
-x86_64                 randconfig-v1-06060518
-x86_64                 randconfig-v0-06060528
-x86_64                 randconfig-v1-06060528
-i386                              allnoconfig
-i386                                defconfig
-i386                             allmodconfig
-i386                             alldefconfig
-arm                        cerfcube_defconfig
-mips                      pistachio_defconfig
-powerpc                 mpc834x_mds_defconfig
-sh                           se7206_defconfig
-arm                          exynos_defconfig
-microblaze                      mmu_defconfig
-mips                       rbtx49xx_defconfig
-xtensa                generic_kc705_defconfig
-arm                        keystone_defconfig
-mips                  mips_paravirt_defconfig
-arm                          ks8695_defconfig
-parisc                           allyesconfig
-powerpc                      ppc40x_defconfig
-sh                          rsk7264_defconfig
-arm                           u8500_defconfig
-m68k                        m5272c3_defconfig
-powerpc                     akebono_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i1-201522
-x86_64                   randconfig-i0-201522
-i386                   randconfig-b0-06060245
-i386                   randconfig-b1-06060245
-i386                   randconfig-b0-06060300
-i386                   randconfig-b1-06060300
-i386                   randconfig-b0-06060314
-i386                   randconfig-b1-06060314
-i386                   randconfig-b0-06060328
-i386                   randconfig-b1-06060328
-i386                   randconfig-b0-06060339
-i386                   randconfig-b1-06060339
-i386                   randconfig-b0-06060355
-i386                   randconfig-b1-06060355
-i386                   randconfig-b0-06060412
-i386                   randconfig-b1-06060412
-i386                   randconfig-b0-06060424
-i386                   randconfig-b1-06060424
-i386                   randconfig-b0-06060440
-i386                   randconfig-b1-06060440
-i386                   randconfig-b0-06060457
-i386                   randconfig-b1-06060457
-i386                   randconfig-b0-06060507
-i386                   randconfig-b1-06060507
-i386                   randconfig-b0-06060531
-i386                   randconfig-b1-06060531
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201522
-i386                     randconfig-i1-201522
-i386                             allyesconfig
-x86_64                 randconfig-b0-06060245
-x86_64                 randconfig-b1-06060245
-x86_64                 randconfig-b0-06060302
-x86_64                 randconfig-b1-06060302
-x86_64                 randconfig-b0-06060312
-x86_64                 randconfig-b1-06060312
-x86_64                 randconfig-b0-06060328
-x86_64                 randconfig-b1-06060328
-x86_64                 randconfig-b0-06060339
-x86_64                 randconfig-b1-06060339
-x86_64                 randconfig-b0-06060350
-x86_64                 randconfig-b1-06060350
-x86_64                 randconfig-b0-06060359
-x86_64                 randconfig-b1-06060359
-x86_64                 randconfig-b0-06060408
-x86_64                 randconfig-b1-06060408
-x86_64                 randconfig-b0-06060416
-x86_64                 randconfig-b1-06060416
-x86_64                 randconfig-b0-06060426
-x86_64                 randconfig-b1-06060426
-x86_64                 randconfig-b0-06060433
-x86_64                 randconfig-b1-06060433
-x86_64                 randconfig-b0-06060441
-x86_64                 randconfig-b1-06060441
-x86_64                 randconfig-b0-06060451
-x86_64                 randconfig-b1-06060451
-x86_64                 randconfig-b0-06060457
-x86_64                 randconfig-b1-06060457
-x86_64                 randconfig-b0-06060505
-x86_64                 randconfig-b1-06060505
-x86_64                 randconfig-b0-06060525
-x86_64                 randconfig-b1-06060525
-x86_64                 randconfig-b0-06060534
-x86_64                 randconfig-b1-06060534
-x86_64                           allmodconfig
-i386                     randconfig-n0-201522
-i386                     randconfig-n1-201522
-i386                   randconfig-h0-06060312
-i386                   randconfig-h1-06060312
-i386                   randconfig-h0-06060350
-i386                   randconfig-h1-06060350
-i386                   randconfig-h0-06060414
-i386                   randconfig-h1-06060414
-i386                   randconfig-h0-06060425
-i386                   randconfig-h1-06060425
-i386                   randconfig-h0-06060433
-i386                   randconfig-h1-06060433
-i386                   randconfig-h0-06060444
-i386                   randconfig-h1-06060444
-i386                   randconfig-h0-06060456
-i386                   randconfig-h1-06060456
-i386                   randconfig-h0-06060507
-i386                   randconfig-h1-06060507
-arm                                 defconfig
-arm                            netx_defconfig
-arm                           viper_defconfig
-arm                         assabet_defconfig
-arm64                             allnoconfig
-blackfin             BF527-EZKIT-V2_defconfig
-avr32            atngw100_evklcd101_defconfig
-mips                        jmr3927_defconfig
-sh                               alldefconfig
-powerpc                 mpc85xx_cds_defconfig
-sh                             sh03_defconfig
-avr32                    hammerhead_defconfig
-mips                         tb0226_defconfig
-powerpc                       maple_defconfig
-parisc                generic-32bit_defconfig
-powerpc                      cm5200_defconfig
-powerpc               mpc834x_itxgp_defconfig
-m32r                   m32700ut.smp_defconfig
-microblaze                          defconfig
-powerpc                     tqm8555_defconfig
-m68k                          multi_defconfig
-powerpc                 mpc836x_rdk_defconfig
-arm                           kzm9g_defconfig
-m68k                          hp300_defconfig
-powerpc                     mpc85xx_defconfig
-alpha                             allnoconfig
-mips                           ip22_defconfig
-mn10300                     asb2303_defconfig
-x86_64                 randconfig-h0-06060245
-x86_64                 randconfig-h1-06060245
-x86_64                 randconfig-h0-06060302
-x86_64                 randconfig-h1-06060302
-x86_64                 randconfig-h0-06060317
-x86_64                 randconfig-h1-06060317
-x86_64                 randconfig-h0-06060333
-x86_64                 randconfig-h1-06060333
-x86_64                 randconfig-h0-06060345
-x86_64                 randconfig-h1-06060345
-x86_64                 randconfig-h0-06060407
-x86_64                 randconfig-h1-06060407
-x86_64                 randconfig-h0-06060423
-x86_64                 randconfig-h1-06060423
-x86_64                 randconfig-h0-06060444
-x86_64                 randconfig-h1-06060444
-x86_64                 randconfig-h0-06060506
-x86_64                 randconfig-h1-06060506
-x86_64                 randconfig-h0-06060523
-x86_64                 randconfig-h1-06060523
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                 randconfig-n0-06060244
-x86_64                 randconfig-n0-06060254
-x86_64                 randconfig-n0-06060308
-x86_64                 randconfig-n0-06060318
-x86_64                 randconfig-n0-06060326
-x86_64                 randconfig-n0-06060337
-x86_64                 randconfig-n0-06060346
-x86_64                 randconfig-n0-06060357
-x86_64                 randconfig-n0-06060404
-x86_64                 randconfig-n0-06060413
-x86_64                 randconfig-n0-06060424
-x86_64                 randconfig-n0-06060435
-x86_64                 randconfig-n0-06060444
-x86_64                 randconfig-n0-06060452
-x86_64                 randconfig-n0-06060502
-x86_64                 randconfig-n0-06060522
-x86_64                 randconfig-n0-06060530
-x86_64                 randconfig-n0-06060536
-m68k                          amiga_defconfig
-m68k                       m5475evb_defconfig
-i386                  randconfig-sb0-06060245
-i386                  randconfig-sb0-06060253
-i386                  randconfig-sb0-06060304
-i386                  randconfig-sb0-06060312
-i386                  randconfig-sb0-06060322
-i386                  randconfig-sb0-06060336
-i386                  randconfig-sb0-06060342
-i386                  randconfig-sb0-06060358
-i386                  randconfig-sb0-06060406
-i386                  randconfig-sb0-06060414
-i386                  randconfig-sb0-06060424
-i386                  randconfig-sb0-06060431
-i386                  randconfig-sb0-06060436
-i386                  randconfig-sb0-06060447
-i386                  randconfig-sb0-06060455
-i386                  randconfig-sb0-06060502
-i386                  randconfig-sb0-06060509
-i386                  randconfig-sb0-06060519
-i386                  randconfig-sb0-06060525
-arm                         socfpga_defconfig
-mips                                defconfig
-avr32                        merisc_defconfig
-sh                        sh7763rdp_defconfig
-xtensa                          iss_defconfig
-blackfin          BF527-AD7160-EVAL_defconfig
-frv                               allnoconfig
-powerpc                      pasemi_defconfig
-arm                          pxa168_defconfig
-sparc64                          alldefconfig
-x86_64               randconfig-x002-06031659
-x86_64               randconfig-x004-06031659
-x86_64               randconfig-x006-06031659
-x86_64               randconfig-x005-06031659
-x86_64               randconfig-x007-06031659
-x86_64               randconfig-x009-06031659
-x86_64               randconfig-x003-06031659
-x86_64               randconfig-x008-06031659
-x86_64               randconfig-x001-06031659
-x86_64               randconfig-x000-06031659
-i386                     randconfig-r0-201522
-x86_64                 randconfig-r0-06060246
-x86_64                 randconfig-r0-06060357
-x86_64                 randconfig-r0-06060439
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm                          imote2_defconfig
-blackfin                    PNAV-10_defconfig
-um                               allmodconfig
-blackfin                BF537-STAMP_defconfig
-sh                         microdev_defconfig
-sh                   rts7751r2dplus_defconfig
-m68k                       m5208evb_defconfig
-powerpc                   bluestone_defconfig
-powerpc                 mpc8315_rdb_defconfig
-alpha                            allyesconfig
-m68k                        mvme16x_defconfig
-arm                       mainstone_defconfig
-arm                          pxa910_defconfig
-powerpc                     tqm5200_defconfig
-x86_64                 randconfig-s0-06060219
-x86_64                 randconfig-s0-06060246
-x86_64                 randconfig-s0-06060310
-x86_64                 randconfig-s0-06060329
-x86_64                 randconfig-s0-06060338
-x86_64                 randconfig-s0-06060359
-x86_64                 randconfig-s0-06060417
-x86_64                 randconfig-s0-06060430
-x86_64                 randconfig-s0-06060453
-x86_64                 randconfig-s0-06060501
-x86_64                 randconfig-s0-06060512
-x86_64                 randconfig-s0-06060527
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                 randconfig-x009-06031736
-i386                 randconfig-x008-06031736
-i386                 randconfig-x003-06031736
-i386                 randconfig-x005-06031736
-i386                 randconfig-x007-06031736
-i386                 randconfig-x002-06031736
-i386                 randconfig-x004-06031736
-i386                 randconfig-x006-06031736
-i386                 randconfig-x001-06031736
-i386                 randconfig-x000-06031736
-i386                   randconfig-x0-06060328
-i386                   randconfig-x0-06060404
-i386                   randconfig-x0-06060453
-i386                   randconfig-x0-06060513
-
-Thanks,
-Fengguang
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 841 bytes
+Desc: Message signed with OpenPGP using GPGMail
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150605/fb249164/attachment.asc>
