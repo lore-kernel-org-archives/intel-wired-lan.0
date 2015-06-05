@@ -1,55 +1,38 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Thu, 4 Jun 2015 23:28:09 +0000
-Subject: [Intel-wired-lan] [PATCH] fm10k: Fix missing braces after if
- statement
-In-Reply-To: <20150604015219.2895.80478.stgit@ahduyck-vm-fedora22>
-References: <20150604015219.2895.80478.stgit@ahduyck-vm-fedora22>
-Message-ID: <1433460464.1500.4.camel@intel.com>
+From: Young, James M <james.m.young@intel.com>
+Date: Fri, 5 Jun 2015 00:02:38 +0000
+Subject: [Intel-wired-lan] [net PATCH] i40e: Make sure to be in VEB mode
+ if	SRIOV is enabled at probe
+In-Reply-To: <1432742774-69564-1-git-send-email-catherine.sullivan@intel.com>
+References: <1432742774-69564-1-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <68C85B5FC2FE974B87244D7222BC92783EA09FF5@ORSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Acked-by: Jacob Keller <jacob.e.keller@intel.com>
-
-Thanks Alex.
-
-Regards,
-Jake
-
-On Wed, 2015-06-03 at 18:53 -0700, Alexander Duyck wrote:
-> While reviewing the code I noticed that one of the commits added an if
-> statement followed by a for loop, but the if statement was missing the
-> braces around the loop.  This change corrects the coding style error.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Catherine Sullivan
+> Sent: Wednesday, May 27, 2015 9:06 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Singhai, Anjali
+> Subject: [Intel-wired-lan] [net PATCH] i40e: Make sure to be in VEB mode if
+> SRIOV is enabled at probe
 > 
-> Signed-off-by: Alexander Duyck <alexander.h.duyck@redhat.com>
+> From: Anjali Singhai Jain <anjali.singhai@intel.com>
+> 
+> If SRIOV is enabled we need to be in VEB mode not VEPA mode at probe.
+> This fixes an NPAR bug when SRIOV is enabled in the BIOS.
+> 
+> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+> Change-ID: Ibf006abafd9a0ca3698ec24848cd771cf345cbbc
 > ---
->  drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 20 +++++++++++++++++---
+>  1 file changed, 17 insertions(+), 3 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-> index 4b9d9f88af70..a9670e00cf03 100644
-> --- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-> @@ -143,12 +143,13 @@ static void fm10k_get_strings(struct net_device *dev, u32 stringset, u8 *data)
->  			p += ETH_GSTRING_LEN;
->  		}
->  
-> -		if (interface->hw.mac.type != fm10k_mac_vf)
-> +		if (interface->hw.mac.type != fm10k_mac_vf) {
->  			for (i = 0; i < FM10K_PF_STATS_LEN; i++) {
->  				memcpy(p, fm10k_gstrings_pf_stats[i].stat_string,
->  				       ETH_GSTRING_LEN);
->  				p += ETH_GSTRING_LEN;
->  			}
-> +		}
->  
->  		for (i = 0; i < interface->hw.mac.max_queues; i++) {
->  			sprintf(p, "tx_queue_%u_packets", i);
-> 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at lists.osuosl.org
-> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
+Tested-by: Jim Young <james.m.young@intel.com>
+
+Tested with sriov turned off, bridging works, there is a DMESG notification that the driver came up in VEPA mode.  Pings outward over bridge do not cause messages in DMESG. 
 
