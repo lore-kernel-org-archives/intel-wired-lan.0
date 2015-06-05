@@ -1,223 +1,188 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Fri,  5 Jun 2015 12:20:31 -0400
-Subject: [Intel-wired-lan] [intel-wired-lan][net-next PATCH S07 07/10]
-	i40e/i40evf: Add TX/RX outer UDP checksum support for X722
+Date: Fri,  5 Jun 2015 12:20:34 -0400
+Subject: [Intel-wired-lan] [intel-wired-lan][net-next PATCH S07 10/10] i40e:
+	Add AQ commands for NVM Update for X722
 In-Reply-To: <1433521234-33355-1-git-send-email-catherine.sullivan@intel.com>
 References: <1433521234-33355-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1433521234-33355-8-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1433521234-33355-11-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Anjali Singhai Jain <anjali.singhai@intel.com>
+From: Shannon Nelson <shannon.nelson@intel.com>
 
-X722 supports offloading of outer UDP TX and RX checksum for tunneled
-packets. This patch exposes the support and leaves it enabled by
-default.
+X722 does NVM update via the adminq queue, so we need to add support for
+that.
 
-Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
 Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c   |  2 ++
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 16 +++++++++++++++-
- drivers/net/ethernet/intel/i40e/i40e_txrx.h   |  2 ++
- drivers/net/ethernet/intel/i40e/i40e_type.h   | 10 ++++++++--
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 13 +++++++++++++
- drivers/net/ethernet/intel/i40evf/i40e_txrx.h |  2 ++
- drivers/net/ethernet/intel/i40evf/i40e_type.h | 10 ++++++++--
- 7 files changed, 50 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_nvm.c | 129 +++++++++++++++++++++++++++++
+ 1 file changed, 129 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 904dddf..17a5345 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -7069,6 +7069,8 @@ static int i40e_alloc_rings(struct i40e_vsi *vsi)
- 		tx_ring->dcb_tc = 0;
- 		if (vsi->back->flags & I40E_FLAG_WB_ON_ITR_CAPABLE)
- 			tx_ring->flags = I40E_TXR_FLAGS_WB_ON_ITR;
-+		if (vsi->back->flags & I40E_FLAG_OUTER_UDP_CSUM_CAPABLE)
-+			tx_ring->flags |= I40E_TXR_FLAGS_OUTER_UDP_CSUM;
- 		vsi->tx_rings[i] = tx_ring;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
+index ce986af..9b83abc 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
+@@ -212,6 +212,74 @@ read_nvm_exit:
+ }
  
- 		rx_ring = &tx_ring[1];
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index c3aae08..4d48229 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1429,7 +1429,8 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
- 	 * so the total length of IPv4 header is IHL*4 bytes
- 	 * The UDP_0 bit *may* bet set if the *inner* header is UDP
- 	 */
--	if (ipv4_tunnel) {
-+	if (!(vsi->back->flags & I40E_FLAG_OUTER_UDP_CSUM_CAPABLE) &&
-+	    (ipv4_tunnel)) {
- 		skb->transport_header = skb->mac_header +
- 					sizeof(struct ethhdr) +
- 					(ip_hdr(skb)->ihl * 4);
-@@ -2301,11 +2302,15 @@ static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
- 	struct iphdr *this_ip_hdr;
- 	u32 network_hdr_len;
- 	u8 l4_hdr = 0;
-+	struct udphdr *oudph;
-+	struct iphdr *oiph;
- 	u32 l4_tunnel = 0;
- 
- 	if (skb->encapsulation) {
- 		switch (ip_hdr(skb)->protocol) {
- 		case IPPROTO_UDP:
-+			oudph = udp_hdr(skb);
-+			oiph = ip_hdr(skb);
- 			l4_tunnel = I40E_TXD_CTX_UDP_TUNNELING;
- 			*tx_flags |= I40E_TX_FLAGS_VXLAN_TUNNEL;
- 			break;
-@@ -2342,6 +2347,15 @@ static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
- 			*tx_flags &= ~I40E_TX_FLAGS_IPV4;
- 			*tx_flags |= I40E_TX_FLAGS_IPV6;
- 		}
-+		if ((tx_ring->flags & I40E_TXR_FLAGS_OUTER_UDP_CSUM) &&
-+		    (l4_tunnel == I40E_TXD_CTX_UDP_TUNNELING)        &&
-+		    (*cd_tunneling & I40E_TXD_CTX_QW0_EXT_IP_MASK)) {
-+			oudph->check = ~csum_tcpudp_magic(oiph->saddr,
-+					oiph->daddr,
-+					(skb->len - skb_transport_offset(skb)),
-+					IPPROTO_UDP, 0);
-+			*cd_tunneling |= I40E_TXD_CTX_QW0_L4T_CS_MASK;
-+		}
- 	} else {
- 		network_hdr_len = skb_network_header_len(skb);
- 		this_ip_hdr = ip_hdr(skb);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-index 0e40994..f1385a1 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-@@ -267,6 +267,8 @@ struct i40e_ring {
- 
- 	u16 flags;
- #define I40E_TXR_FLAGS_WB_ON_ITR	BIT(0)
-+#define I40E_TXR_FLAGS_OUTER_UDP_CSUM	BIT(1)
+ /**
++ * i40e_read_nvm_aq - Read Shadow RAM.
++ * @hw: pointer to the HW structure.
++ * @module_pointer: module pointer location in words from the NVM beginning
++ * @offset: offset in words from module start
++ * @words: number of words to write
++ * @data: buffer with words to write to the Shadow RAM
++ * @last_command: tells the AdminQ that this is the last command
++ *
++ * Writes a 16 bit words buffer to the Shadow RAM using the admin command.
++ **/
++static i40e_status i40e_read_nvm_aq(struct i40e_hw *hw, u8 module_pointer,
++				    u32 offset, u16 words, void *data,
++				    bool last_command)
++{
++	i40e_status ret_code = I40E_ERR_NVM;
++	struct i40e_asq_cmd_details cmd_details;
 +
- 	/* stats structs */
- 	struct i40e_queue_stats	stats;
- 	struct u64_stats_sync syncp;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-index 1ffd271..b93357d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-@@ -607,14 +607,18 @@ enum i40e_rx_desc_status_bits {
- 	I40E_RX_DESC_STATUS_CRCP_SHIFT		= 4,
- 	I40E_RX_DESC_STATUS_TSYNINDX_SHIFT	= 5, /* 2 BITS */
- 	I40E_RX_DESC_STATUS_TSYNVALID_SHIFT	= 7,
--	I40E_RX_DESC_STATUS_PIF_SHIFT		= 8,
-+	/* Note: Bit 8 is reserved in X710 and XL710 */
-+	I40E_RX_DESC_STATUS_EXT_UDP_0_SHIFT	= 8,
- 	I40E_RX_DESC_STATUS_UMBCAST_SHIFT	= 9, /* 2 BITS */
- 	I40E_RX_DESC_STATUS_FLM_SHIFT		= 11,
- 	I40E_RX_DESC_STATUS_FLTSTAT_SHIFT	= 12, /* 2 BITS */
- 	I40E_RX_DESC_STATUS_LPBK_SHIFT		= 14,
- 	I40E_RX_DESC_STATUS_IPV6EXADD_SHIFT	= 15,
- 	I40E_RX_DESC_STATUS_RESERVED_SHIFT	= 16, /* 2 BITS */
--	I40E_RX_DESC_STATUS_UDP_0_SHIFT		= 18,
-+	/* Note: For non-tunnel packets INT_UDP_0 is the right status for
-+	 * UDP header
-+	 */
-+	I40E_RX_DESC_STATUS_INT_UDP_0_SHIFT	= 18,
- 	I40E_RX_DESC_STATUS_LAST /* this entry must be last!!! */
- };
- 
-@@ -955,6 +959,8 @@ enum i40e_tx_ctx_desc_eipt_offload {
- #define I40E_TXD_CTX_QW0_DECTTL_MASK	(0xFULL << \
- 					 I40E_TXD_CTX_QW0_DECTTL_SHIFT)
- 
-+#define I40E_TXD_CTX_QW0_L4T_CS_SHIFT	23
-+#define I40E_TXD_CTX_QW0_L4T_CS_MASK	BIT_ULL(I40E_TXD_CTX_QW0_L4T_CS_SHIFT)
- struct i40e_filter_program_desc {
- 	__le32 qindex_flex_ptype_vsi;
- 	__le32 rsvd;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index 9683baf..a444355 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -1524,11 +1524,15 @@ static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
- 	struct iphdr *this_ip_hdr;
- 	u32 network_hdr_len;
- 	u8 l4_hdr = 0;
-+	struct udphdr *oudph;
-+	struct iphdr *oiph;
- 	u32 l4_tunnel = 0;
- 
- 	if (skb->encapsulation) {
- 		switch (ip_hdr(skb)->protocol) {
- 		case IPPROTO_UDP:
-+			oudph = udp_hdr(skb);
-+			oiph = ip_hdr(skb);
- 			l4_tunnel = I40E_TXD_CTX_UDP_TUNNELING;
- 			*tx_flags |= I40E_TX_FLAGS_VXLAN_TUNNEL;
- 			break;
-@@ -1567,6 +1571,15 @@ static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
- 		}
- 
- 
-+		if ((tx_ring->flags & I40E_TXR_FLAGS_OUTER_UDP_CSUM) &&
-+		    (l4_tunnel == I40E_TXD_CTX_UDP_TUNNELING)        &&
-+		    (*cd_tunneling & I40E_TXD_CTX_QW0_EXT_IP_MASK)) {
-+			oudph->check = ~csum_tcpudp_magic(oiph->saddr,
-+					oiph->daddr,
-+					(skb->len - skb_transport_offset(skb)),
-+					IPPROTO_UDP, 0);
-+			*cd_tunneling |= I40E_TXD_CTX_QW0_L4T_CS_MASK;
-+		}
- 	} else {
- 		network_hdr_len = skb_network_header_len(skb);
- 		this_ip_hdr = ip_hdr(skb);
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-index 17bb59d..9a30f5d 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-@@ -264,6 +264,8 @@ struct i40e_ring {
- 
- 	u16 flags;
- #define I40E_TXR_FLAGS_WB_ON_ITR	BIT(0)
-+#define I40E_TXR_FLAGS_OUTER_UDP_CSUM	BIT(1)
++	memset(&cmd_details, 0, sizeof(cmd_details));
 +
- 	/* stats structs */
- 	struct i40e_queue_stats	stats;
- 	struct u64_stats_sync syncp;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-index 627bf76..e32dc0b 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-@@ -601,14 +601,18 @@ enum i40e_rx_desc_status_bits {
- 	I40E_RX_DESC_STATUS_CRCP_SHIFT		= 4,
- 	I40E_RX_DESC_STATUS_TSYNINDX_SHIFT	= 5, /* 2 BITS */
- 	I40E_RX_DESC_STATUS_TSYNVALID_SHIFT	= 7,
--	I40E_RX_DESC_STATUS_PIF_SHIFT		= 8,
-+	/* Note: Bit 8 is reserved in X710 and XL710 */
-+	I40E_RX_DESC_STATUS_EXT_UDP_0_SHIFT	= 8,
- 	I40E_RX_DESC_STATUS_UMBCAST_SHIFT	= 9, /* 2 BITS */
- 	I40E_RX_DESC_STATUS_FLM_SHIFT		= 11,
- 	I40E_RX_DESC_STATUS_FLTSTAT_SHIFT	= 12, /* 2 BITS */
- 	I40E_RX_DESC_STATUS_LPBK_SHIFT		= 14,
- 	I40E_RX_DESC_STATUS_IPV6EXADD_SHIFT	= 15,
- 	I40E_RX_DESC_STATUS_RESERVED_SHIFT	= 16, /* 2 BITS */
--	I40E_RX_DESC_STATUS_UDP_0_SHIFT		= 18,
-+	/* Note: For non-tunnel packets INT_UDP_0 is the right status for
-+	 * UDP header
++	/* Here we are checking the SR limit only for the flat memory model.
++	 * We cannot do it for the module-based model, as we did not acquire
++	 * the NVM resource yet (we cannot get the module pointer value).
++	 * Firmware will check the module-based model.
 +	 */
-+	I40E_RX_DESC_STATUS_INT_UDP_0_SHIFT	= 18,
- 	I40E_RX_DESC_STATUS_LAST /* this entry must be last!!! */
- };
++	if ((offset + words) > hw->nvm.sr_size)
++		i40e_debug(hw, I40E_DEBUG_NVM,
++			   "NVM write error: offset %d beyond Shadow RAM limit %d\n",
++			   (offset + words), hw->nvm.sr_size);
++	else if (words > I40E_SR_SECTOR_SIZE_IN_WORDS)
++		/* We can write only up to 4KB (one sector), in one AQ write */
++		i40e_debug(hw, I40E_DEBUG_NVM,
++			   "NVM write fail error: tried to write %d words, limit is %d.\n",
++			   words, I40E_SR_SECTOR_SIZE_IN_WORDS);
++	else if (((offset + (words - 1)) / I40E_SR_SECTOR_SIZE_IN_WORDS)
++		 != (offset / I40E_SR_SECTOR_SIZE_IN_WORDS))
++		/* A single write cannot spread over two sectors */
++		i40e_debug(hw, I40E_DEBUG_NVM,
++			   "NVM write error: cannot spread over two sectors in a single write offset=%d words=%d\n",
++			   offset, words);
++	else
++		ret_code = i40e_aq_read_nvm(hw, module_pointer,
++					    2 * offset,  /*bytes*/
++					    2 * words,   /*bytes*/
++					    data, last_command, &cmd_details);
++
++	return ret_code;
++}
++
++/**
++ * i40e_read_nvm_word_aq - Reads Shadow RAM via AQ
++ * @hw: pointer to the HW structure
++ * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF)
++ * @data: word read from the Shadow RAM
++ *
++ * Reads one 16 bit word from the Shadow RAM using the GLNVM_SRCTL register.
++ **/
++static i40e_status i40e_read_nvm_word_aq(struct i40e_hw *hw, u16 offset,
++					 u16 *data)
++{
++	i40e_status ret_code = I40E_ERR_TIMEOUT;
++
++	ret_code = i40e_read_nvm_aq(hw, 0x0, offset, 1, data, true);
++	*data = le16_to_cpu(*(__le16 *)data);
++
++	return ret_code;
++}
++
++/**
+  * i40e_read_nvm_word - Reads Shadow RAM
+  * @hw: pointer to the HW structure
+  * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF)
+@@ -222,6 +290,8 @@ read_nvm_exit:
+ i40e_status i40e_read_nvm_word(struct i40e_hw *hw, u16 offset,
+ 			       u16 *data)
+ {
++	if (hw->mac.type == I40E_MAC_X722)
++		return i40e_read_nvm_word_aq(hw, offset, data);
+ 	return i40e_read_nvm_word_srctl(hw, offset, data);
+ }
  
-@@ -949,6 +953,8 @@ enum i40e_tx_ctx_desc_eipt_offload {
- #define I40E_TXD_CTX_QW0_DECTTL_MASK	(0xFULL << \
- 					 I40E_TXD_CTX_QW0_DECTTL_SHIFT)
+@@ -257,6 +327,63 @@ static i40e_status i40e_read_nvm_buffer_srctl(struct i40e_hw *hw, u16 offset,
+ }
  
-+#define I40E_TXD_CTX_QW0_L4T_CS_SHIFT	23
-+#define I40E_TXD_CTX_QW0_L4T_CS_MASK	BIT_ULL(I40E_TXD_CTX_QW0_L4T_CS_SHIFT)
- struct i40e_filter_program_desc {
- 	__le32 qindex_flex_ptype_vsi;
- 	__le32 rsvd;
+ /**
++ * i40e_read_nvm_buffer_aq - Reads Shadow RAM buffer via AQ
++ * @hw: pointer to the HW structure
++ * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF).
++ * @words: (in) number of words to read; (out) number of words actually read
++ * @data: words read from the Shadow RAM
++ *
++ * Reads 16 bit words (data buffer) from the SR using the i40e_read_nvm_aq()
++ * method. The buffer read is preceded by the NVM ownership take
++ * and followed by the release.
++ **/
++static i40e_status i40e_read_nvm_buffer_aq(struct i40e_hw *hw, u16 offset,
++					   u16 *words, u16 *data)
++{
++	i40e_status ret_code;
++	u16 read_size = *words;
++	bool last_cmd = false;
++	u16 words_read = 0;
++	u16 i = 0;
++
++	do {
++		/* Calculate number of bytes we should read in this step.
++		 * FVL AQ do not allow to read more than one page at a time or
++		 * to cross page boundaries.
++		 */
++		if (offset % I40E_SR_SECTOR_SIZE_IN_WORDS)
++			read_size = min(*words,
++					(u16)(I40E_SR_SECTOR_SIZE_IN_WORDS -
++				      (offset % I40E_SR_SECTOR_SIZE_IN_WORDS)));
++		else
++			read_size = min((*words - words_read),
++					I40E_SR_SECTOR_SIZE_IN_WORDS);
++
++		/* Check if this is last command, if so set proper flag */
++		if ((words_read + read_size) >= *words)
++			last_cmd = true;
++
++		ret_code = i40e_read_nvm_aq(hw, 0x0, offset, read_size,
++					    data + words_read, last_cmd);
++		if (ret_code)
++			goto read_nvm_buffer_aq_exit;
++
++		/* Increment counter for words already read and move offset to
++		 * new read location
++		 */
++		words_read += read_size;
++		offset += read_size;
++	} while (words_read < *words);
++
++	for (i = 0; i < *words; i++)
++		data[i] = le16_to_cpu(((__le16 *)data)[i]);
++
++read_nvm_buffer_aq_exit:
++	*words = words_read;
++	return ret_code;
++}
++
++/**
+  * i40e_read_nvm_buffer - Reads Shadow RAM buffer
+  * @hw: pointer to the HW structure
+  * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF).
+@@ -270,6 +397,8 @@ static i40e_status i40e_read_nvm_buffer_srctl(struct i40e_hw *hw, u16 offset,
+ i40e_status i40e_read_nvm_buffer(struct i40e_hw *hw, u16 offset,
+ 				 u16 *words, u16 *data)
+ {
++	if (hw->mac.type == I40E_MAC_X722)
++		return i40e_read_nvm_buffer_aq(hw, offset, words, data);
+ 	return i40e_read_nvm_buffer_srctl(hw, offset, words, data);
+ }
+ 
 -- 
 1.9.3
 
