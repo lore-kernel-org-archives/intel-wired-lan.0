@@ -1,119 +1,43 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 05 Jun 2015 14:01:50 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:master]
- fa11cb3d16a9b9b296a2b811a49faf1356240348 BUILD SUCCESS
-Message-ID: <55713b4e.bCTnmvZ6izHyJlbV%fengguang.wu@intel.com>
+From: Tim Harvey <tharvey@gateworks.com>
+Date: Fri, 5 Jun 2015 08:08:08 -0700
+Subject: [Intel-wired-lan] [PATCH 3/3] net: igb: register mii_bus for
+ SerDes w/ external phy
+In-Reply-To: <55688521.5030802@cumulusnetworks.com>
+References: <1430417955-28252-1-git-send-email-tharvey@gateworks.com>
+ <1430417955-28252-4-git-send-email-tharvey@gateworks.com>
+ <554D5D58.4080300@gmail.com>
+ <CAJ+vNU0q+MayxY6taEJNS-vr+jkQAnpVBdb-KisFHYOkNfia-Q@mail.gmail.com>
+ <555114B5.9060505@redhat.com>
+ <CAJ+vNU1zFXTnaTi2ME7V6C_ucOukDwVTd3_Ne52DOz_0aHyn3A@mail.gmail.com>
+ <5555712C.5090106@cumulusnetworks.com>
+ <CAJ+vNU0NSs+yhgpHWOr5T6H3eanfWcdwEwRBzQ=epiT=zXPPMA@mail.gmail.com>
+ <55688521.5030802@cumulusnetworks.com>
+Message-ID: <CAJ+vNU2D+Y9FoYU0cYbbMM638K9W-oaY-24p1_zZ3GnrPD9AzA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
-fa11cb3d16a9b9b296a2b811a49faf1356240348  i40e: Make sure to be in VEB mode if SRIOV is enabled at probe
+On Fri, May 29, 2015 at 8:26 AM, Jonathan Toppins
+<jtoppins@cumulusnetworks.com> wrote:
+> On 5/20/15 11:46 AM, Tim Harvey wrote:
+<snip>
+>
+> Thanks for the update Tim. I have not had time to look at this for now but
+> also have not seen your v2 series either, did I miss that?
+>
+> -Jon
 
-elapsed time: 116m
+Jon,
 
-configs tested: 98
+You haven't missed it - I've gotten pulled off onto some other things
+and haven't gotten back to it. Where it stands right now I have a
+patch that should be completely 'safe' and eliminate any backwards
+compatibility concerns however I'm not convinced I'm skipping enough
+phy related code when phylib mode is used. Arguably those could come
+later as issues are found with phylib phy drivers, but I feel like if
+I can just get another half day into it I could possibly work out
+those issues as well.
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                       randconfig-a0-0605
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64                            allnoconfig
-i386                             allyesconfig
-arm                                    sa1100
-arm                          prima2_defconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                                   samsung
-arm                       spear13xx_defconfig
-arm                                  iop-adma
-arm                       imx_v6_v7_defconfig
-arm                          marzen_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                                        sh
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-x86_64                     randconfig-i0-0605
-x86_64                     randconfig-i1-0605
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                       randconfig-i0-0605
-i386                       randconfig-i1-0605
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-i386                       randconfig-n0-0605
-i386                       randconfig-n1-0605
-arm                                      arm5
-arm                                     arm67
-arm                                       mmp
-arm                       omap2plus_defconfig
-arm                         s3c2410_defconfig
-arm                           tegra_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-x86_64               randconfig-x002-06031659
-x86_64               randconfig-x004-06031659
-x86_64               randconfig-x006-06031659
-x86_64               randconfig-x005-06031659
-x86_64               randconfig-x007-06031659
-x86_64               randconfig-x009-06031659
-x86_64               randconfig-x003-06031659
-x86_64               randconfig-x008-06031659
-x86_64               randconfig-x001-06031659
-x86_64               randconfig-x000-06031659
-i386                       randconfig-r0-0605
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-m68k                          amiga_defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-i386                             alldefconfig
-i386                             allmodconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                 randconfig-x009-06031736
-i386                 randconfig-x008-06031736
-i386                 randconfig-x003-06031736
-i386                 randconfig-x005-06031736
-i386                 randconfig-x007-06031736
-i386                 randconfig-x002-06031736
-i386                 randconfig-x004-06031736
-i386                 randconfig-x006-06031736
-i386                 randconfig-x001-06031736
-i386                 randconfig-x000-06031736
-mips                                   jz4740
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-
-Thanks,
-Fengguang
+Tim
