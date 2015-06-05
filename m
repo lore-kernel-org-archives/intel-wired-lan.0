@@ -1,10 +1,10 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Fri,  5 Jun 2015 12:20:30 -0400
-Subject: [Intel-wired-lan] [intel-wired-lan][net-next PATCH S07 06/10]
-	i40e/i40evf: Add support for writeback on ITR feature for X722
+Date: Fri,  5 Jun 2015 12:20:31 -0400
+Subject: [Intel-wired-lan] [intel-wired-lan][net-next PATCH S07 07/10]
+	i40e/i40evf: Add TX/RX outer UDP checksum support for X722
 In-Reply-To: <1433521234-33355-1-git-send-email-catherine.sullivan@intel.com>
 References: <1433521234-33355-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1433521234-33355-7-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1433521234-33355-8-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,207 +13,211 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Anjali Singhai Jain <anjali.singhai@intel.com>
 
-X722 fixes an issue from X710 where TX descriptor WB would not hapen if
-the interrupts were disabled. In order for the write backs to happen a
-bit needs to be set in the dynamic interrupt control register called
-WB_ON_ITR. With this feature, the SW driver need not arm SW interrupts to
-work around the issue in X710.
+X722 supports offloading of outer UDP TX and RX checksum for tunneled
+packets. This patch exposes the support and leaves it enabled by
+default.
 
 Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
 Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h        |  1 +
  drivers/net/ethernet/intel/i40e/i40e_main.c   |  2 ++
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 46 +++++++++++++++++++++------
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 16 +++++++++++++++-
  drivers/net/ethernet/intel/i40e/i40e_txrx.h   |  2 ++
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 38 ++++++++++++++++------
+ drivers/net/ethernet/intel/i40e/i40e_type.h   | 10 ++++++++--
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 13 +++++++++++++
  drivers/net/ethernet/intel/i40evf/i40e_txrx.h |  2 ++
- drivers/net/ethernet/intel/i40evf/i40evf.h    |  1 +
- 7 files changed, 74 insertions(+), 18 deletions(-)
+ drivers/net/ethernet/intel/i40evf/i40e_type.h | 10 ++++++++--
+ 7 files changed, 50 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 756c382..5ef715e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -559,6 +559,7 @@ struct i40e_q_vector {
- 	cpumask_t affinity_mask;
- 	struct rcu_head rcu;	/* to avoid race with update stats on free */
- 	char name[I40E_INT_NAME_STR_LEN];
-+	bool arm_wb_state;
- } ____cacheline_internodealigned_in_smp;
- 
- /* lan device */
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 2959fdc..904dddf 100644
+index 904dddf..17a5345 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -7067,6 +7067,8 @@ static int i40e_alloc_rings(struct i40e_vsi *vsi)
- 		tx_ring->count = vsi->num_desc;
- 		tx_ring->size = 0;
+@@ -7069,6 +7069,8 @@ static int i40e_alloc_rings(struct i40e_vsi *vsi)
  		tx_ring->dcb_tc = 0;
-+		if (vsi->back->flags & I40E_FLAG_WB_ON_ITR_CAPABLE)
-+			tx_ring->flags = I40E_TXR_FLAGS_WB_ON_ITR;
+ 		if (vsi->back->flags & I40E_FLAG_WB_ON_ITR_CAPABLE)
+ 			tx_ring->flags = I40E_TXR_FLAGS_WB_ON_ITR;
++		if (vsi->back->flags & I40E_FLAG_OUTER_UDP_CSUM_CAPABLE)
++			tx_ring->flags |= I40E_TXR_FLAGS_OUTER_UDP_CSUM;
  		vsi->tx_rings[i] = tx_ring;
  
  		rx_ring = &tx_ring[1];
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index d0339b6..c3aae08 100644
+index c3aae08..4d48229 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -853,15 +853,40 @@ static bool i40e_clean_tx_irq(struct i40e_ring *tx_ring, int budget)
-  **/
- static void i40e_force_wb(struct i40e_vsi *vsi, struct i40e_q_vector *q_vector)
- {
--	u32 val = I40E_PFINT_DYN_CTLN_INTENA_MASK |
--		  I40E_PFINT_DYN_CTLN_ITR_INDX_MASK | /* set noitr */
--		  I40E_PFINT_DYN_CTLN_SWINT_TRIG_MASK |
--		  I40E_PFINT_DYN_CTLN_SW_ITR_INDX_ENA_MASK;
--		  /* allow 00 to be written to the index */
--
--	wr32(&vsi->back->hw,
--	     I40E_PFINT_DYN_CTLN(q_vector->v_idx + vsi->base_vector - 1),
--	     val);
-+	u16 flags = q_vector->tx.ring[0].flags;
-+
-+	if (flags & I40E_TXR_FLAGS_WB_ON_ITR) {
-+		u32 val;
-+
-+		if (q_vector->arm_wb_state)
-+			return;
-+
-+		val = I40E_PFINT_DYN_CTLN_WB_ON_ITR_MASK;
-+
-+		wr32(&vsi->back->hw,
-+		     I40E_PFINT_DYN_CTLN(q_vector->v_idx +
-+					 vsi->base_vector - 1),
-+		     val);
-+		q_vector->arm_wb_state = true;
-+	} else if (vsi->back->flags & I40E_FLAG_MSIX_ENABLED) {
-+		u32 val = I40E_PFINT_DYN_CTLN_INTENA_MASK |
-+			  I40E_PFINT_DYN_CTLN_ITR_INDX_MASK | /* set noitr */
-+			  I40E_PFINT_DYN_CTLN_SWINT_TRIG_MASK |
-+			  I40E_PFINT_DYN_CTLN_SW_ITR_INDX_ENA_MASK;
-+			  /* allow 00 to be written to the index */
-+
-+		wr32(&vsi->back->hw,
-+		     I40E_PFINT_DYN_CTLN(q_vector->v_idx +
-+					 vsi->base_vector - 1), val);
-+	} else {
-+		u32 val = I40E_PFINT_DYN_CTL0_INTENA_MASK |
-+			  I40E_PFINT_DYN_CTL0_ITR_INDX_MASK | /* set noitr */
-+			  I40E_PFINT_DYN_CTL0_SWINT_TRIG_MASK |
-+			  I40E_PFINT_DYN_CTL0_SW_ITR_INDX_ENA_MASK;
-+			/* allow 00 to be written to the index */
-+
-+		wr32(&vsi->back->hw, I40E_PFINT_DYN_CTL0, val);
-+	}
- }
+@@ -1429,7 +1429,8 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
+ 	 * so the total length of IPv4 header is IHL*4 bytes
+ 	 * The UDP_0 bit *may* bet set if the *inner* header is UDP
+ 	 */
+-	if (ipv4_tunnel) {
++	if (!(vsi->back->flags & I40E_FLAG_OUTER_UDP_CSUM_CAPABLE) &&
++	    (ipv4_tunnel)) {
+ 		skb->transport_header = skb->mac_header +
+ 					sizeof(struct ethhdr) +
+ 					(ip_hdr(skb)->ihl * 4);
+@@ -2301,11 +2302,15 @@ static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
+ 	struct iphdr *this_ip_hdr;
+ 	u32 network_hdr_len;
+ 	u8 l4_hdr = 0;
++	struct udphdr *oudph;
++	struct iphdr *oiph;
+ 	u32 l4_tunnel = 0;
  
- /**
-@@ -1918,6 +1943,9 @@ int i40e_napi_poll(struct napi_struct *napi, int budget)
- 		return budget;
- 	}
- 
-+	if (vsi->back->flags & I40E_TXR_FLAGS_WB_ON_ITR)
-+		q_vector->arm_wb_state = false;
-+
- 	/* Work is done so exit the polling mode and re-enable the interrupt */
- 	napi_complete(napi);
- 	if (vsi->back->flags & I40E_FLAG_MSIX_ENABLED) {
+ 	if (skb->encapsulation) {
+ 		switch (ip_hdr(skb)->protocol) {
+ 		case IPPROTO_UDP:
++			oudph = udp_hdr(skb);
++			oiph = ip_hdr(skb);
+ 			l4_tunnel = I40E_TXD_CTX_UDP_TUNNELING;
+ 			*tx_flags |= I40E_TX_FLAGS_VXLAN_TUNNEL;
+ 			break;
+@@ -2342,6 +2347,15 @@ static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
+ 			*tx_flags &= ~I40E_TX_FLAGS_IPV4;
+ 			*tx_flags |= I40E_TX_FLAGS_IPV6;
+ 		}
++		if ((tx_ring->flags & I40E_TXR_FLAGS_OUTER_UDP_CSUM) &&
++		    (l4_tunnel == I40E_TXD_CTX_UDP_TUNNELING)        &&
++		    (*cd_tunneling & I40E_TXD_CTX_QW0_EXT_IP_MASK)) {
++			oudph->check = ~csum_tcpudp_magic(oiph->saddr,
++					oiph->daddr,
++					(skb->len - skb_transport_offset(skb)),
++					IPPROTO_UDP, 0);
++			*cd_tunneling |= I40E_TXD_CTX_QW0_L4T_CS_MASK;
++		}
+ 	} else {
+ 		network_hdr_len = skb_network_header_len(skb);
+ 		this_ip_hdr = ip_hdr(skb);
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-index 8b618d0..0e40994 100644
+index 0e40994..f1385a1 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-@@ -265,6 +265,8 @@ struct i40e_ring {
- 	bool ring_active;		/* is ring online or not */
- 	bool arm_wb;		/* do something to arm write back */
+@@ -267,6 +267,8 @@ struct i40e_ring {
  
-+	u16 flags;
-+#define I40E_TXR_FLAGS_WB_ON_ITR	BIT(0)
+ 	u16 flags;
+ #define I40E_TXR_FLAGS_WB_ON_ITR	BIT(0)
++#define I40E_TXR_FLAGS_OUTER_UDP_CSUM	BIT(1)
++
  	/* stats structs */
  	struct i40e_queue_stats	stats;
  	struct u64_stats_sync syncp;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index 4649d45..9683baf 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -366,15 +366,32 @@ static bool i40e_clean_tx_irq(struct i40e_ring *tx_ring, int budget)
-  **/
- static void i40e_force_wb(struct i40e_vsi *vsi, struct i40e_q_vector *q_vector)
- {
--	u32 val = I40E_VFINT_DYN_CTLN_INTENA_MASK |
--		  I40E_VFINT_DYN_CTLN1_ITR_INDX_MASK | /* set noitr */
--		  I40E_VFINT_DYN_CTLN_SWINT_TRIG_MASK |
--		  I40E_VFINT_DYN_CTLN_SW_ITR_INDX_ENA_MASK;
--		  /* allow 00 to be written to the index */
--
--	wr32(&vsi->back->hw,
--	     I40E_VFINT_DYN_CTLN1(q_vector->v_idx + vsi->base_vector - 1),
--	     val);
-+	u16 flags = q_vector->tx.ring[0].flags;
-+
-+	if (flags & I40E_TXR_FLAGS_WB_ON_ITR) {
-+		u32 val;
-+
-+		if (q_vector->arm_wb_state)
-+			return;
-+
-+		val = I40E_VFINT_DYN_CTLN1_WB_ON_ITR_MASK;
-+
-+		wr32(&vsi->back->hw,
-+		     I40E_VFINT_DYN_CTLN1(q_vector->v_idx +
-+					  vsi->base_vector - 1),
-+		     val);
-+		q_vector->arm_wb_state = true;
-+	} else {
-+		u32 val = I40E_VFINT_DYN_CTLN1_INTENA_MASK |
-+			  I40E_VFINT_DYN_CTLN1_ITR_INDX_MASK | /* set noitr */
-+			  I40E_VFINT_DYN_CTLN1_SWINT_TRIG_MASK |
-+			  I40E_VFINT_DYN_CTLN1_SW_ITR_INDX_ENA_MASK;
-+			  /* allow 00 to be written to the index */
-+
-+		wr32(&vsi->back->hw,
-+		     I40E_VFINT_DYN_CTLN1(q_vector->v_idx +
-+					  vsi->base_vector - 1), val);
-+	}
- }
- 
- /**
-@@ -1368,6 +1385,9 @@ int i40evf_napi_poll(struct napi_struct *napi, int budget)
- 		return budget;
- 	}
- 
-+	if (vsi->back->flags & I40E_TXR_FLAGS_WB_ON_ITR)
-+		q_vector->arm_wb_state = false;
-+
- 	/* Work is done so exit the polling mode and re-enable the interrupt */
- 	napi_complete(napi);
- 	i40e_update_enable_itr(vsi, q_vector);
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-index b2f9b82..17bb59d 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-@@ -262,6 +262,8 @@ struct i40e_ring {
- 	bool ring_active;		/* is ring online or not */
- 	bool arm_wb;		/* do something to arm write back */
- 
-+	u16 flags;
-+#define I40E_TXR_FLAGS_WB_ON_ITR	BIT(0)
- 	/* stats structs */
- 	struct i40e_queue_stats	stats;
- 	struct u64_stats_sync syncp;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
-index ef7a86d..6df20eab 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
-@@ -117,6 +117,7 @@ struct i40e_q_vector {
- 	u8 num_ringpairs;	/* total number of ring pairs in vector */
- 	int v_idx;	  /* vector index in list */
- 	char name[IFNAMSIZ + 9];
-+	bool arm_wb_state;
- 	cpumask_var_t affinity_mask;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
+index 1ffd271..b93357d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
+@@ -607,14 +607,18 @@ enum i40e_rx_desc_status_bits {
+ 	I40E_RX_DESC_STATUS_CRCP_SHIFT		= 4,
+ 	I40E_RX_DESC_STATUS_TSYNINDX_SHIFT	= 5, /* 2 BITS */
+ 	I40E_RX_DESC_STATUS_TSYNVALID_SHIFT	= 7,
+-	I40E_RX_DESC_STATUS_PIF_SHIFT		= 8,
++	/* Note: Bit 8 is reserved in X710 and XL710 */
++	I40E_RX_DESC_STATUS_EXT_UDP_0_SHIFT	= 8,
+ 	I40E_RX_DESC_STATUS_UMBCAST_SHIFT	= 9, /* 2 BITS */
+ 	I40E_RX_DESC_STATUS_FLM_SHIFT		= 11,
+ 	I40E_RX_DESC_STATUS_FLTSTAT_SHIFT	= 12, /* 2 BITS */
+ 	I40E_RX_DESC_STATUS_LPBK_SHIFT		= 14,
+ 	I40E_RX_DESC_STATUS_IPV6EXADD_SHIFT	= 15,
+ 	I40E_RX_DESC_STATUS_RESERVED_SHIFT	= 16, /* 2 BITS */
+-	I40E_RX_DESC_STATUS_UDP_0_SHIFT		= 18,
++	/* Note: For non-tunnel packets INT_UDP_0 is the right status for
++	 * UDP header
++	 */
++	I40E_RX_DESC_STATUS_INT_UDP_0_SHIFT	= 18,
+ 	I40E_RX_DESC_STATUS_LAST /* this entry must be last!!! */
  };
  
+@@ -955,6 +959,8 @@ enum i40e_tx_ctx_desc_eipt_offload {
+ #define I40E_TXD_CTX_QW0_DECTTL_MASK	(0xFULL << \
+ 					 I40E_TXD_CTX_QW0_DECTTL_SHIFT)
+ 
++#define I40E_TXD_CTX_QW0_L4T_CS_SHIFT	23
++#define I40E_TXD_CTX_QW0_L4T_CS_MASK	BIT_ULL(I40E_TXD_CTX_QW0_L4T_CS_SHIFT)
+ struct i40e_filter_program_desc {
+ 	__le32 qindex_flex_ptype_vsi;
+ 	__le32 rsvd;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index 9683baf..a444355 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -1524,11 +1524,15 @@ static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
+ 	struct iphdr *this_ip_hdr;
+ 	u32 network_hdr_len;
+ 	u8 l4_hdr = 0;
++	struct udphdr *oudph;
++	struct iphdr *oiph;
+ 	u32 l4_tunnel = 0;
+ 
+ 	if (skb->encapsulation) {
+ 		switch (ip_hdr(skb)->protocol) {
+ 		case IPPROTO_UDP:
++			oudph = udp_hdr(skb);
++			oiph = ip_hdr(skb);
+ 			l4_tunnel = I40E_TXD_CTX_UDP_TUNNELING;
+ 			*tx_flags |= I40E_TX_FLAGS_VXLAN_TUNNEL;
+ 			break;
+@@ -1567,6 +1571,15 @@ static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
+ 		}
+ 
+ 
++		if ((tx_ring->flags & I40E_TXR_FLAGS_OUTER_UDP_CSUM) &&
++		    (l4_tunnel == I40E_TXD_CTX_UDP_TUNNELING)        &&
++		    (*cd_tunneling & I40E_TXD_CTX_QW0_EXT_IP_MASK)) {
++			oudph->check = ~csum_tcpudp_magic(oiph->saddr,
++					oiph->daddr,
++					(skb->len - skb_transport_offset(skb)),
++					IPPROTO_UDP, 0);
++			*cd_tunneling |= I40E_TXD_CTX_QW0_L4T_CS_MASK;
++		}
+ 	} else {
+ 		network_hdr_len = skb_network_header_len(skb);
+ 		this_ip_hdr = ip_hdr(skb);
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
+index 17bb59d..9a30f5d 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
+@@ -264,6 +264,8 @@ struct i40e_ring {
+ 
+ 	u16 flags;
+ #define I40E_TXR_FLAGS_WB_ON_ITR	BIT(0)
++#define I40E_TXR_FLAGS_OUTER_UDP_CSUM	BIT(1)
++
+ 	/* stats structs */
+ 	struct i40e_queue_stats	stats;
+ 	struct u64_stats_sync syncp;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+index 627bf76..e32dc0b 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+@@ -601,14 +601,18 @@ enum i40e_rx_desc_status_bits {
+ 	I40E_RX_DESC_STATUS_CRCP_SHIFT		= 4,
+ 	I40E_RX_DESC_STATUS_TSYNINDX_SHIFT	= 5, /* 2 BITS */
+ 	I40E_RX_DESC_STATUS_TSYNVALID_SHIFT	= 7,
+-	I40E_RX_DESC_STATUS_PIF_SHIFT		= 8,
++	/* Note: Bit 8 is reserved in X710 and XL710 */
++	I40E_RX_DESC_STATUS_EXT_UDP_0_SHIFT	= 8,
+ 	I40E_RX_DESC_STATUS_UMBCAST_SHIFT	= 9, /* 2 BITS */
+ 	I40E_RX_DESC_STATUS_FLM_SHIFT		= 11,
+ 	I40E_RX_DESC_STATUS_FLTSTAT_SHIFT	= 12, /* 2 BITS */
+ 	I40E_RX_DESC_STATUS_LPBK_SHIFT		= 14,
+ 	I40E_RX_DESC_STATUS_IPV6EXADD_SHIFT	= 15,
+ 	I40E_RX_DESC_STATUS_RESERVED_SHIFT	= 16, /* 2 BITS */
+-	I40E_RX_DESC_STATUS_UDP_0_SHIFT		= 18,
++	/* Note: For non-tunnel packets INT_UDP_0 is the right status for
++	 * UDP header
++	 */
++	I40E_RX_DESC_STATUS_INT_UDP_0_SHIFT	= 18,
+ 	I40E_RX_DESC_STATUS_LAST /* this entry must be last!!! */
+ };
+ 
+@@ -949,6 +953,8 @@ enum i40e_tx_ctx_desc_eipt_offload {
+ #define I40E_TXD_CTX_QW0_DECTTL_MASK	(0xFULL << \
+ 					 I40E_TXD_CTX_QW0_DECTTL_SHIFT)
+ 
++#define I40E_TXD_CTX_QW0_L4T_CS_SHIFT	23
++#define I40E_TXD_CTX_QW0_L4T_CS_MASK	BIT_ULL(I40E_TXD_CTX_QW0_L4T_CS_SHIFT)
+ struct i40e_filter_program_desc {
+ 	__le32 qindex_flex_ptype_vsi;
+ 	__le32 rsvd;
 -- 
 1.9.3
 
