@@ -1,43 +1,43 @@
-From: Tim Harvey <tharvey@gateworks.com>
-Date: Fri, 5 Jun 2015 08:08:08 -0700
-Subject: [Intel-wired-lan] [PATCH 3/3] net: igb: register mii_bus for
- SerDes w/ external phy
-In-Reply-To: <55688521.5030802@cumulusnetworks.com>
-References: <1430417955-28252-1-git-send-email-tharvey@gateworks.com>
- <1430417955-28252-4-git-send-email-tharvey@gateworks.com>
- <554D5D58.4080300@gmail.com>
- <CAJ+vNU0q+MayxY6taEJNS-vr+jkQAnpVBdb-KisFHYOkNfia-Q@mail.gmail.com>
- <555114B5.9060505@redhat.com>
- <CAJ+vNU1zFXTnaTi2ME7V6C_ucOukDwVTd3_Ne52DOz_0aHyn3A@mail.gmail.com>
- <5555712C.5090106@cumulusnetworks.com>
- <CAJ+vNU0NSs+yhgpHWOr5T6H3eanfWcdwEwRBzQ=epiT=zXPPMA@mail.gmail.com>
- <55688521.5030802@cumulusnetworks.com>
-Message-ID: <CAJ+vNU2D+Y9FoYU0cYbbMM638K9W-oaY-24p1_zZ3GnrPD9AzA@mail.gmail.com>
+From: Catherine Sullivan <catherine.sullivan@intel.com>
+Date: Fri,  5 Jun 2015 12:20:24 -0400
+Subject: [Intel-wired-lan] [intel-wired-lan][net-next PATCH S07 00/10] Add
+	X722 device support to i40e and i40evf
+Message-ID: <1433521234-33355-1-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, May 29, 2015 at 8:26 AM, Jonathan Toppins
-<jtoppins@cumulusnetworks.com> wrote:
-> On 5/20/15 11:46 AM, Tim Harvey wrote:
-<snip>
->
-> Thanks for the update Tim. I have not had time to look at this for now but
-> also have not seen your v2 series either, did I miss that?
->
-> -Jon
+Anjali adds device ids, adds flags, updates the FW API, updates register.h,
+makes necessary RSS changes, adds support for writeback on ITR, adds support
+for TX/RX outer UDP checksum, adds IWARP support and adds ATR HW eviction
+support for the new X722 device.
 
-Jon,
+Shannon adds the necessary AQ commands for NVM Update for X722.
 
-You haven't missed it - I've gotten pulled off onto some other things
-and haven't gotten back to it. Where it stands right now I have a
-patch that should be completely 'safe' and eliminate any backwards
-compatibility concerns however I'm not convinced I'm skipping enough
-phy related code when phylib mode is used. Arguably those could come
-later as issues are found with phylib phy drivers, but I feel like if
-I can just get another half day into it I could possibly work out
-those issues as well.
+ drivers/net/ethernet/intel/i40e/i40e.h             |   15 +-
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |   48 +
+ drivers/net/ethernet/intel/i40e/i40e_common.c      |  173 ++
+ drivers/net/ethernet/intel/i40e/i40e_main.c        |  181 +-
+ drivers/net/ethernet/intel/i40e/i40e_nvm.c         |  129 ++
+ drivers/net/ethernet/intel/i40e/i40e_prototype.h   |   11 +
+ drivers/net/ethernet/intel/i40e/i40e_register.h    | 1931 +++++++++++++++++++-
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c        |   72 +-
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h        |   16 +
+ drivers/net/ethernet/intel/i40e/i40e_type.h        |   39 +-
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |   11 +-
+ .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    |   49 +-
+ drivers/net/ethernet/intel/i40evf/i40e_common.c    |  172 ++
+ drivers/net/ethernet/intel/i40evf/i40e_prototype.h |   11 +
+ drivers/net/ethernet/intel/i40evf/i40e_register.h  |   62 +-
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c      |   51 +-
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.h      |   16 +
+ drivers/net/ethernet/intel/i40evf/i40e_type.h      |   35 +-
+ drivers/net/ethernet/intel/i40evf/i40evf.h         |    8 +
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  167 +-
+ 20 files changed, 3080 insertions(+), 117 deletions(-)
 
-Tim
+-- 
+1.9.3
+
