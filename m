@@ -1,62 +1,50 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 05 Jun 2015 10:26:48 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- e41a0643e0360c8b07b5e8a6561f58535e03476d BUILD SUCCESS
-Message-ID: <557108e8.ImaIXFHPMIGOt+gU%fengguang.wu@intel.com>
+From: Don Skidmore <donald.c.skidmore@intel.com>
+Date: Fri, 05 Jun 2015 00:50:38 -0400
+Subject: [Intel-wired-lan] [net-next PATCH 2 01/13] ixgbe: add support for
+ WoL and autoneg FC for some X550 devices
+Message-ID: <20150605045038.26373.94842.stgit@dcs-desk.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-e41a0643e0360c8b07b5e8a6561f58535e03476d  i40e/i40evf: Fix and refactor dynamic ITR code
+These Device ID could support both WoL and autoneg flow control. In
+the case of WoL this is indicated by the eeprom.  This patch enables
+these devices this support.
 
-elapsed time: 36m
+Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |    2 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c   |    4 ++++
+ 2 files changed, 6 insertions(+)
 
-configs tested: 41
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+index 13a6fe05..21e5ae3 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+@@ -96,6 +96,8 @@ bool ixgbe_device_supports_autoneg_fc(struct ixgbe_hw *hw)
+ 		case IXGBE_DEV_ID_82599_T3_LOM:
+ 		case IXGBE_DEV_ID_X540T:
+ 		case IXGBE_DEV_ID_X540T1:
++		case IXGBE_DEV_ID_X550T:
++		case IXGBE_DEV_ID_X550EM_X_10G_T:
+ 			supported = true;
+ 			break;
+ 		default:
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 2dc3f2e..43cb17f 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -8317,6 +8317,10 @@ int ixgbe_wol_supported(struct ixgbe_adapter *adapter, u16 device_id,
+ 		break;
+ 	case IXGBE_DEV_ID_X540T:
+ 	case IXGBE_DEV_ID_X540T1:
++	case IXGBE_DEV_ID_X550T:
++	case IXGBE_DEV_ID_X550EM_X_KX4:
++	case IXGBE_DEV_ID_X550EM_X_KR:
++	case IXGBE_DEV_ID_X550EM_X_10G_T:
+ 		/* check eeprom to see if enabled wol */
+ 		if ((wol_cap == IXGBE_DEVICE_CAPS_WOL_PORT0_1) ||
+ 		    ((wol_cap == IXGBE_DEVICE_CAPS_WOL_PORT0) &&
 
-x86_64                 randconfig-a0-06050954
-x86_64                 randconfig-a1-06050954
-x86_64                 randconfig-v0-06050949
-x86_64                 randconfig-v1-06050949
-x86_64                 randconfig-v2-06050949
-x86_64                 randconfig-v0-06051004
-x86_64                 randconfig-v1-06051004
-x86_64                 randconfig-v2-06051004
-i386                   randconfig-b0-06050952
-i386                   randconfig-b1-06050952
-i386                   randconfig-b2-06050952
-i386                   randconfig-b3-06050952
-m68k                       m5275evb_defconfig
-mips                         tb0226_defconfig
-sh                          sdk7780_defconfig
-xtensa                  audio_kc705_defconfig
-x86_64                 randconfig-b0-06050959
-x86_64                 randconfig-b1-06050959
-x86_64                 randconfig-b2-06050959
-x86_64                            allnoconfig
-arm                           corgi_defconfig
-arm                         em_x270_defconfig
-mips                            e55_defconfig
-openrisc                         alldefconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                   randconfig-h0-06051002
-i386                   randconfig-h1-06051002
-i386                   randconfig-h2-06051002
-x86_64                 randconfig-h0-06051003
-x86_64                 randconfig-h1-06051003
-x86_64                 randconfig-n0-06050955
-x86_64                 randconfig-n0-06051006
-x86_64                 randconfig-n0-06051015
-i386                  randconfig-sb0-06050952
-i386                  randconfig-sb1-06050952
-i386                  randconfig-sb2-06050952
-x86_64                 randconfig-r0-06050950
-x86_64                 randconfig-r1-06050950
-x86_64                 randconfig-r0-06051013
-x86_64                 randconfig-r1-06051013
-
-Thanks,
-Fengguang
