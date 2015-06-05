@@ -1,83 +1,62 @@
 From: Don Skidmore <donald.c.skidmore@intel.com>
-Date: Fri, 05 Jun 2015 19:00:47 -0400
-Subject: [Intel-wired-lan] [net-next PATCH] ixgbe: add link check for X550
-	copper
-Message-ID: <20150605230047.16560.53688.stgit@dcs-desk.jf.intel.com>
+Date: Fri, 05 Jun 2015 19:59:37 -0400
+Subject: [Intel-wired-lan] [net-next PATCH] ixgbe: Set lan_id before using
+	I2C
+Message-ID: <20150605235937.19454.93135.stgit@dcs-desk.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch adds ixgbe_check_link_t_X550em for checking copper PHY
-link.  We check that both the MAC and external PHY have link. This
-is to avoid a false link up between the internal and external PHY
-when  the external PHY doesn't have link.
+We need to call the set_lan_id before accessing I2C and this wasn't
+being done so this patch corrects that.  Likewise we do the same for
+QSFP just to be consistent.
+
+In the X550 case this is even more important as with out it the mux
+is not controlled properly.
 
 Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   43 +++++++++++++++++++++++++
- 1 file changed, 43 insertions(+)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  |    6 +++---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |    2 ++
+ 2 files changed, 5 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+index ac6c0af..526a20b 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+@@ -1352,6 +1352,9 @@ static s32 ixgbe_identify_qsfp_module_generic(struct ixgbe_hw *hw)
+ 		return IXGBE_ERR_SFP_NOT_PRESENT;
+ 	}
+ 
++	/* LAN ID is needed for sfp_type determination */
++	hw->mac.ops.set_lan_id(hw);
++
+ 	status = hw->phy.ops.read_i2c_eeprom(hw, IXGBE_SFF_IDENTIFIER,
+ 					     &identifier);
+ 
+@@ -1365,9 +1368,6 @@ static s32 ixgbe_identify_qsfp_module_generic(struct ixgbe_hw *hw)
+ 
+ 	hw->phy.id = identifier;
+ 
+-	/* LAN ID is needed for sfp_type determination */
+-	hw->mac.ops.set_lan_id(hw);
+-
+ 	status = hw->phy.ops.read_i2c_eeprom(hw, IXGBE_SFF_QSFP_10GBE_COMP,
+ 					     &comp_codes_10g);
+ 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index af884f6..0736513 100644
+index 0736513..7b5b48e 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -914,6 +914,48 @@ s32 ixgbe_setup_mac_link_t_X550em(struct ixgbe_hw *hw,
- 	return hw->phy.ops.setup_link_speed(hw, speed, autoneg_wait);
- }
+@@ -1457,6 +1457,8 @@ static s32 ixgbe_init_phy_ops_X550em(struct ixgbe_hw *hw)
+ 	ixgbe_link_speed speed;
+ 	s32 ret_val;
  
-+/** ixgbe_check_link_t_X550em - Determine link and speed status
-+  * @hw: pointer to hardware structure
-+  * @speed: pointer to link speed
-+  * @link_up: true when link is up
-+  * @link_up_wait_to_complete: bool used to wait for link up or not
-+  *
-+  * Check that both the MAC and X557 external PHY have link.
-+  **/
-+static s32 ixgbe_check_link_t_X550em(struct ixgbe_hw *hw,
-+				     ixgbe_link_speed *speed,
-+				     bool *link_up,
-+				     bool link_up_wait_to_complete)
-+{
-+	u32 status;
-+	u16 autoneg_status;
++	hw->mac.ops.set_lan_id(hw);
 +
-+	if (hw->mac.ops.get_media_type(hw) != ixgbe_media_type_copper)
-+		return IXGBE_ERR_CONFIG;
-+
-+	status = ixgbe_check_mac_link_generic(hw, speed, link_up,
-+					      link_up_wait_to_complete);
-+
-+	/* If check link fails or MAC link is not up, then return */
-+	if (status || !(*link_up))
-+		return status;
-+
-+	 /* MAC link is up, so check external PHY link.
-+	  * Read this twice back to back to indicate current status.
-+	  */
-+	status = hw->phy.ops.read_reg(hw, IXGBE_MDIO_AUTO_NEG_STATUS,
-+				      IXGBE_MDIO_AUTO_NEG_DEV_TYPE,
-+				      &autoneg_status);
-+	if (status)
-+		return status;
-+
-+	/* If external PHY link is not up, then indicate link not up */
-+	if (!(autoneg_status & IXGBE_MDIO_AUTO_NEG_LINK_STATUS))
-+		*link_up = false;
-+
-+	return 0;
-+}
-+
- /** ixgbe_init_mac_link_ops_X550em - init mac link function pointers
-  *  @hw: pointer to hardware structure
-  **/
-@@ -932,6 +974,7 @@ static void ixgbe_init_mac_link_ops_X550em(struct ixgbe_hw *hw)
- 		break;
- 	case ixgbe_media_type_copper:
- 		mac->ops.setup_link = ixgbe_setup_mac_link_t_X550em;
-+		mac->ops.check_link = ixgbe_check_link_t_X550em;
- 		break;
- 	default:
- 		break;
+ 	if (hw->mac.ops.get_media_type(hw) == ixgbe_media_type_fiber) {
+ 		phy->phy_semaphore_mask = IXGBE_GSSR_SHARED_I2C_SM;
+ 		ixgbe_setup_mux_ctl(hw);
 
