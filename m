@@ -1,55 +1,83 @@
 From: Don Skidmore <donald.c.skidmore@intel.com>
-Date: Fri, 05 Jun 2015 18:56:14 -0400
-Subject: [Intel-wired-lan] [net-next PATCH] ixgbe: fix X550 PHY function
-	pointers
-Message-ID: <20150605225614.16409.32750.stgit@dcs-desk.jf.intel.com>
+Date: Fri, 05 Jun 2015 19:00:47 -0400
+Subject: [Intel-wired-lan] [net-next PATCH] ixgbe: add link check for X550
+	copper
+Message-ID: <20150605230047.16560.53688.stgit@dcs-desk.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-A subset of the X550 function pointers didn't have default methods. This
-didn't cause any issue with previous X550 devices as they were all
-redefined.  However future devices will need these default values.
+This patch adds ixgbe_check_link_t_X550em for checking copper PHY
+link.  We check that both the MAC and external PHY have link. This
+is to avoid a false link up between the internal and external PHY
+when  the external PHY doesn't have link.
 
 Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |    9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   43 +++++++++++++++++++++++++
+ 1 file changed, 43 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index d271076..af884f6 100644
+index af884f6..0736513 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -1807,6 +1807,9 @@ static struct ixgbe_eeprom_operations eeprom_ops_X550EM_x = {
- 	.read_i2c_sff8472	= &ixgbe_read_i2c_sff8472_generic, \
- 	.read_i2c_eeprom	= &ixgbe_read_i2c_eeprom_generic, \
- 	.write_i2c_eeprom	= &ixgbe_write_i2c_eeprom_generic, \
-+	.read_reg		= &ixgbe_read_phy_reg_generic, \
-+	.write_reg		= &ixgbe_write_phy_reg_generic, \
-+	.setup_link		= &ixgbe_setup_phy_link_generic, \
- 	.check_overtemp		= &ixgbe_tn_check_overtemp, \
- 	.get_firmware_version	= &ixgbe_get_phy_firmware_version_generic,
+@@ -914,6 +914,48 @@ s32 ixgbe_setup_mac_link_t_X550em(struct ixgbe_hw *hw,
+ 	return hw->phy.ops.setup_link_speed(hw, speed, autoneg_wait);
+ }
  
-@@ -1814,9 +1817,6 @@ static struct ixgbe_phy_operations phy_ops_X550 = {
- 	X550_COMMON_PHY
- 	.init			= NULL,
- 	.identify		= &ixgbe_identify_phy_generic,
--	.read_reg		= &ixgbe_read_phy_reg_generic,
--	.write_reg		= &ixgbe_write_phy_reg_generic,
--	.setup_link		= &ixgbe_setup_phy_link_generic,
- 	.read_i2c_combined	= &ixgbe_read_i2c_combined_generic,
- 	.write_i2c_combined	= &ixgbe_write_i2c_combined_generic,
- 	.set_phy_power		= &ixgbe_set_copper_phy_power,
-@@ -1826,9 +1826,6 @@ static struct ixgbe_phy_operations phy_ops_X550EM_x = {
- 	X550_COMMON_PHY
- 	.init			= &ixgbe_init_phy_ops_X550em,
- 	.identify		= &ixgbe_identify_phy_x550em,
--	.read_reg		= NULL, /* defined later */
--	.write_reg		= NULL, /* defined later */
--	.setup_link		= NULL, /* defined later */
- };
- 
- static const u32 ixgbe_mvals_X550[IXGBE_MVALS_IDX_LIMIT] = {
++/** ixgbe_check_link_t_X550em - Determine link and speed status
++  * @hw: pointer to hardware structure
++  * @speed: pointer to link speed
++  * @link_up: true when link is up
++  * @link_up_wait_to_complete: bool used to wait for link up or not
++  *
++  * Check that both the MAC and X557 external PHY have link.
++  **/
++static s32 ixgbe_check_link_t_X550em(struct ixgbe_hw *hw,
++				     ixgbe_link_speed *speed,
++				     bool *link_up,
++				     bool link_up_wait_to_complete)
++{
++	u32 status;
++	u16 autoneg_status;
++
++	if (hw->mac.ops.get_media_type(hw) != ixgbe_media_type_copper)
++		return IXGBE_ERR_CONFIG;
++
++	status = ixgbe_check_mac_link_generic(hw, speed, link_up,
++					      link_up_wait_to_complete);
++
++	/* If check link fails or MAC link is not up, then return */
++	if (status || !(*link_up))
++		return status;
++
++	 /* MAC link is up, so check external PHY link.
++	  * Read this twice back to back to indicate current status.
++	  */
++	status = hw->phy.ops.read_reg(hw, IXGBE_MDIO_AUTO_NEG_STATUS,
++				      IXGBE_MDIO_AUTO_NEG_DEV_TYPE,
++				      &autoneg_status);
++	if (status)
++		return status;
++
++	/* If external PHY link is not up, then indicate link not up */
++	if (!(autoneg_status & IXGBE_MDIO_AUTO_NEG_LINK_STATUS))
++		*link_up = false;
++
++	return 0;
++}
++
+ /** ixgbe_init_mac_link_ops_X550em - init mac link function pointers
+  *  @hw: pointer to hardware structure
+  **/
+@@ -932,6 +974,7 @@ static void ixgbe_init_mac_link_ops_X550em(struct ixgbe_hw *hw)
+ 		break;
+ 	case ixgbe_media_type_copper:
+ 		mac->ops.setup_link = ixgbe_setup_mac_link_t_X550em;
++		mac->ops.check_link = ixgbe_check_link_t_X550em;
+ 		break;
+ 	default:
+ 		break;
 
