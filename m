@@ -1,118 +1,119 @@
-From: Don Skidmore <donald.c.skidmore@intel.com>
-Date: Fri, 05 Jun 2015 00:51:34 -0400
-Subject: [Intel-wired-lan] [net-next PATCH 2 11/13] ixgbe: fix X550 devices
-	init flow
-In-Reply-To: <20150605045038.26373.94842.stgit@dcs-desk.jf.intel.com>
-References: <20150605045038.26373.94842.stgit@dcs-desk.jf.intel.com>
-Message-ID: <20150605045134.26373.50079.stgit@dcs-desk.jf.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 05 Jun 2015 12:49:32 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ a46934a0b86d708d30802cadebb51c16389c9423 BUILD SUCCESS
+Message-ID: <55712a5c.YbtjVFJi8mKRVyrg%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Reviewing the X550 copper initi flow with the Si team resulted in a
-new simplified flow.  We no longer wait for the PHY FW initialization
-complete bit to be set as this bit is only set once by the PHY at power
-on and then cleared on the first read. So only the first instance of
-running SW (or possibly MAC FW) needs to initialize the PHY.
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+a46934a0b86d708d30802cadebb51c16389c9423  i40e: Make sure to be in VEB mode if SRIOV is enabled at probe
 
-The PHY initialization has been simplified and now only requires that
-the PHY FW be un-stalled
-low-power mode or enabled the transceiver
+elapsed time: 111m
 
-Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   68 +++++++------------------
- 1 file changed, 19 insertions(+), 49 deletions(-)
+configs tested: 98
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index 7b9b124..4c5d94e 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -1516,65 +1516,35 @@ static s32 ixgbe_init_ext_t_x550em(struct ixgbe_hw *hw)
- {
- 	s32 status;
- 	u16 reg;
--	u32 retries = 2;
- 
--	do {
--		/* decrement retries counter and exit if we hit 0 */
--		if (retries < 1) {
--			hw_dbg(hw, "External PHY not yet finished resetting.");
--			return IXGBE_ERR_PHY;
--		}
--		retries--;
--
--		status = hw->phy.ops.read_reg(hw,
--					      IXGBE_MDIO_TX_VENDOR_ALARMS_3,
--					      IXGBE_MDIO_PMA_PMD_DEV_TYPE,
--					      &reg);
--		if (status)
--			return status;
--
--		/* Verify PHY FW reset has completed */
--	} while ((reg & IXGBE_MDIO_TX_VENDOR_ALARMS_3_RST_MASK) != 1);
--
--	/* Set port to low power mode */
--	status = hw->phy.ops.read_reg(hw,
--				      IXGBE_MDIO_VENDOR_SPECIFIC_1_CONTROL,
--				      IXGBE_MDIO_VENDOR_SPECIFIC_1_DEV_TYPE,
--				      &reg);
--	if (status)
--		return status;
--
--	/* Enable the transmitter */
- 	status = hw->phy.ops.read_reg(hw,
--				      IXGBE_MDIO_PMD_STD_TX_DISABLE_CNTR,
-+				      IXGBE_MDIO_TX_VENDOR_ALARMS_3,
- 				      IXGBE_MDIO_PMA_PMD_DEV_TYPE,
- 				      &reg);
- 	if (status)
- 		return status;
- 
--	reg &= ~IXGBE_MDIO_PMD_GLOBAL_TX_DISABLE;
--
--	status = hw->phy.ops.write_reg(hw,
--				       IXGBE_MDIO_PMD_STD_TX_DISABLE_CNTR,
--				       IXGBE_MDIO_PMA_PMD_DEV_TYPE,
--				       reg);
--	if (status)
--		return status;
-+	/* If PHY FW reset completed bit is set then this is the first
-+	 * SW instance after a power on so the PHY FW must be un-stalled.
-+	 */
-+	if (reg & IXGBE_MDIO_TX_VENDOR_ALARMS_3_RST_MASK) {
-+		status = hw->phy.ops.read_reg(hw,
-+					IXGBE_MDIO_GLOBAL_RES_PR_10,
-+					IXGBE_MDIO_VENDOR_SPECIFIC_1_DEV_TYPE,
-+					&reg);
-+		if (status)
-+			return status;
- 
--	/* Un-stall the PHY FW */
--	status = hw->phy.ops.read_reg(hw,
--				      IXGBE_MDIO_GLOBAL_RES_PR_10,
--				      IXGBE_MDIO_VENDOR_SPECIFIC_1_DEV_TYPE,
--				      &reg);
--	if (status)
--		return status;
-+		reg &= ~IXGBE_MDIO_POWER_UP_STALL;
- 
--	reg &= ~IXGBE_MDIO_POWER_UP_STALL;
-+		status = hw->phy.ops.write_reg(hw,
-+					IXGBE_MDIO_GLOBAL_RES_PR_10,
-+					IXGBE_MDIO_VENDOR_SPECIFIC_1_DEV_TYPE,
-+					reg);
-+		if (status)
-+			return status;
-+	}
- 
--	status = hw->phy.ops.write_reg(hw,
--				       IXGBE_MDIO_GLOBAL_RES_PR_10,
--				       IXGBE_MDIO_VENDOR_SPECIFIC_1_DEV_TYPE,
--				       reg);
- 	return status;
- }
- 
+i386                       randconfig-a0-0605
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+arm                                    sa1100
+arm                          prima2_defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                                   samsung
+arm                       spear13xx_defconfig
+arm                                  iop-adma
+arm                       imx_v6_v7_defconfig
+arm                          marzen_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                                        sh
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+x86_64                            allnoconfig
+mips                                   jz4740
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+x86_64                     randconfig-i0-0605
+x86_64                     randconfig-i1-0605
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                    nommu_defconfig
+i386                       randconfig-i0-0605
+i386                       randconfig-i1-0605
+i386                             allyesconfig
+microblaze                      mmu_defconfig
+i386                       randconfig-n0-0605
+i386                       randconfig-n1-0605
+arm                                      arm5
+arm                                     arm67
+arm                                       mmp
+arm                       omap2plus_defconfig
+arm                         s3c2410_defconfig
+arm                           tegra_defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                          amiga_defconfig
+x86_64               randconfig-x002-06031659
+x86_64               randconfig-x004-06031659
+x86_64               randconfig-x006-06031659
+x86_64               randconfig-x005-06031659
+x86_64               randconfig-x007-06031659
+x86_64               randconfig-x009-06031659
+x86_64               randconfig-x003-06031659
+x86_64               randconfig-x008-06031659
+x86_64               randconfig-x001-06031659
+x86_64               randconfig-x000-06031659
+x86_64                                    lkp
+x86_64                                   rhel
+i386                       randconfig-r0-0605
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+x86_64                           allmodconfig
+i386                             alldefconfig
+i386                             allmodconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                 randconfig-x009-06031736
+i386                 randconfig-x008-06031736
+i386                 randconfig-x003-06031736
+i386                 randconfig-x005-06031736
+i386                 randconfig-x007-06031736
+i386                 randconfig-x002-06031736
+i386                 randconfig-x004-06031736
+i386                 randconfig-x006-06031736
+i386                 randconfig-x001-06031736
+i386                 randconfig-x000-06031736
 
+Thanks,
+Fengguang
