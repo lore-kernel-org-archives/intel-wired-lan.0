@@ -1,7 +1,7 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Sat, 06 Jun 2015 10:07:29 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Simplifiy port-specific macros
-Message-ID: <20150606170729.16484.62870.stgit@mdrustad-wks.jf.intel.com>
+Date: Sat, 06 Jun 2015 10:41:03 -0700
+Subject: [Intel-wired-lan] [PATCH V2] ixgbe: Simplify port-specific macros
+Message-ID: <20150606174103.45169.64009.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,13 +14,26 @@ eliminate the risk of an operator precedence surprise.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |   16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+Changes in V2:
+- Corrected typo in log message
+- Updated Copyright year in the file header
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |   18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-index b6f424f3b1a8..f05127b1832d 100644
+index b6f424f3b1a8..4615a949381d 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -1,7 +1,7 @@
+ /*******************************************************************************
+ 
+   Intel 10 Gigabit PCI Express Linux driver
+-  Copyright(c) 1999 - 2014 Intel Corporation.
++  Copyright(c) 1999 - 2015 Intel Corporation.
+ 
+   This program is free software; you can redistribute it and/or modify it
+   under the terms and conditions of the GNU General Public License,
 @@ -3462,14 +3462,14 @@ struct ixgbe_info {
  #define IXGBE_ERR_HOST_INTERFACE_COMMAND        -33
  #define IXGBE_NOT_IMPLEMENTED                   0x7FFFFFFF
