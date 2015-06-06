@@ -1,62 +1,216 @@
-From: Don Skidmore <donald.c.skidmore@intel.com>
-Date: Fri, 05 Jun 2015 19:59:37 -0400
-Subject: [Intel-wired-lan] [net-next PATCH] ixgbe: Set lan_id before using
-	I2C
-Message-ID: <20150605235937.19454.93135.stgit@dcs-desk.jf.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 06 Jun 2015 08:29:39 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ d6587bd42b2b1c582218fe351fa41128c61af2cc BUILD SUCCESS
+Message-ID: <55723ef3.jKh4QNCHMxyyBP9N%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-We need to call the set_lan_id before accessing I2C and this wasn't
-being done so this patch corrects that.  Likewise we do the same for
-QSFP just to be consistent.
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+d6587bd42b2b1c582218fe351fa41128c61af2cc  i40e/i40evf: Fix mixed size frags and linearization
 
-In the X550 case this is even more important as with out it the mux
-is not controlled properly.
+elapsed time: 1204m
 
-Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  |    6 +++---
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |    2 ++
- 2 files changed, 5 insertions(+), 3 deletions(-)
+configs tested: 196
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-index ac6c0af..526a20b 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-@@ -1352,6 +1352,9 @@ static s32 ixgbe_identify_qsfp_module_generic(struct ixgbe_hw *hw)
- 		return IXGBE_ERR_SFP_NOT_PRESENT;
- 	}
- 
-+	/* LAN ID is needed for sfp_type determination */
-+	hw->mac.ops.set_lan_id(hw);
-+
- 	status = hw->phy.ops.read_i2c_eeprom(hw, IXGBE_SFF_IDENTIFIER,
- 					     &identifier);
- 
-@@ -1365,9 +1368,6 @@ static s32 ixgbe_identify_qsfp_module_generic(struct ixgbe_hw *hw)
- 
- 	hw->phy.id = identifier;
- 
--	/* LAN ID is needed for sfp_type determination */
--	hw->mac.ops.set_lan_id(hw);
--
- 	status = hw->phy.ops.read_i2c_eeprom(hw, IXGBE_SFF_QSFP_10GBE_COMP,
- 					     &comp_codes_10g);
- 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index 0736513..7b5b48e 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -1457,6 +1457,8 @@ static s32 ixgbe_init_phy_ops_X550em(struct ixgbe_hw *hw)
- 	ixgbe_link_speed speed;
- 	s32 ret_val;
- 
-+	hw->mac.ops.set_lan_id(hw);
-+
- 	if (hw->mac.ops.get_media_type(hw) == ixgbe_media_type_fiber) {
- 		phy->phy_semaphore_mask = IXGBE_GSSR_SHARED_I2C_SM;
- 		ixgbe_setup_mux_ctl(hw);
+mips                         db1xxx_defconfig
+powerpc                    gamecube_defconfig
+powerpc                    socrates_defconfig
+arm64                               defconfig
+powerpc64                        allyesconfig
+mips                          malta_defconfig
+powerpc                 mpc8560_ads_defconfig
+powerpc                 xes_mpc85xx_defconfig
+x86_64                 randconfig-a0-06051844
+x86_64                 randconfig-a0-06051900
+x86_64                 randconfig-a0-06051925
+x86_64                 randconfig-a0-06051933
+x86_64                 randconfig-a0-06060809
+arm                       imx_v6_v7_defconfig
+arm                       mainstone_defconfig
+xtensa                           allyesconfig
+i386                             allyesconfig
+i386                   randconfig-c0-06051855
+i386                   randconfig-c0-06051914
+i386                   randconfig-c0-06060818
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-v0-06051502
+x86_64                 randconfig-v1-06051502
+x86_64                 randconfig-v2-06051502
+x86_64                 randconfig-v0-06051840
+x86_64                 randconfig-v1-06051840
+x86_64                 randconfig-v0-06051849
+x86_64                 randconfig-v1-06051849
+x86_64                 randconfig-v0-06051857
+x86_64                 randconfig-v1-06051857
+x86_64                 randconfig-v0-06051912
+x86_64                 randconfig-v1-06051912
+x86_64                 randconfig-v0-06051926
+x86_64                 randconfig-v1-06051926
+x86_64                 randconfig-v0-06060801
+x86_64                 randconfig-v1-06060801
+x86_64                 randconfig-v0-06060809
+x86_64                 randconfig-v1-06060809
+x86_64                 randconfig-v0-06060819
+x86_64                 randconfig-v1-06060819
+arm                           u8500_defconfig
+m68k                                defconfig
+powerpc                   bluestone_defconfig
+sh                          sdk7786_defconfig
+i386                   randconfig-b0-06051849
+i386                   randconfig-b1-06051849
+i386                   randconfig-b0-06051900
+i386                   randconfig-b1-06051900
+i386                   randconfig-b0-06051918
+i386                   randconfig-b1-06051918
+i386                   randconfig-b0-06051930
+i386                   randconfig-b1-06051930
+i386                   randconfig-b0-06060810
+i386                   randconfig-b1-06060810
+arm                           viper_defconfig
+mips                         tb0226_defconfig
+powerpc                          alldefconfig
+powerpc                    mvme5100_defconfig
+arm                        mvebu_v5_defconfig
+arm                              zx_defconfig
+ia64                      gensparse_defconfig
+sparc                       sparc32_defconfig
+arm                        mvebu_v7_defconfig
+arm                       spear13xx_defconfig
+mips                            ar7_defconfig
+mips                       bmips_be_defconfig
+arm                          moxart_defconfig
+arm                         vf610m4_defconfig
+m68k                           sun3_defconfig
+arm                  colibri_pxa270_defconfig
+parisc                         b180_defconfig
+s390                              allnoconfig
+sh                   rts7751r2dplus_defconfig
+m32r                   mappi2.vdec2_defconfig
+powerpc                 canyonlands_defconfig
+powerpc                   lite5200b_defconfig
+sh                               alldefconfig
+sh                           se7751_defconfig
+x86_64                 randconfig-b0-06051458
+x86_64                 randconfig-b1-06051458
+x86_64                 randconfig-b2-06051458
+x86_64                 randconfig-b0-06051845
+x86_64                 randconfig-b1-06051845
+x86_64                 randconfig-b0-06051852
+x86_64                 randconfig-b1-06051852
+x86_64                 randconfig-b0-06051900
+x86_64                 randconfig-b1-06051900
+x86_64                 randconfig-b0-06051922
+x86_64                 randconfig-b1-06051922
+x86_64                 randconfig-b0-06051930
+x86_64                 randconfig-b1-06051930
+x86_64                 randconfig-b0-06051940
+x86_64                 randconfig-b1-06051940
+x86_64                 randconfig-b0-06060804
+x86_64                 randconfig-b1-06060804
+x86_64                 randconfig-b0-06060814
+x86_64                 randconfig-b1-06060814
+x86_64                 randconfig-b0-06060823
+x86_64                 randconfig-b1-06060823
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                  colibri_pxa300_defconfig
+arm                             mxs_defconfig
+avr32            atngw100_evklcd100_defconfig
+um                                allnoconfig
+parisc                        c3000_defconfig
+sh                             espt_defconfig
+arm                     davinci_all_defconfig
+blackfin                   CM-BF561_defconfig
+powerpc                      arches_defconfig
+powerpc                    ge_imp3a_defconfig
+blackfin                BF527-EZKIT_defconfig
+m68k                          sun3x_defconfig
+powerpc                       ppc64_defconfig
+sh                     magicpanelr2_defconfig
+i386                   randconfig-h0-06051507
+i386                   randconfig-h1-06051507
+i386                   randconfig-h2-06051507
+i386                   randconfig-h0-06051840
+i386                   randconfig-h1-06051840
+i386                   randconfig-h0-06051854
+i386                   randconfig-h1-06051854
+i386                   randconfig-h0-06051922
+i386                   randconfig-h1-06051922
+i386                   randconfig-h0-06060804
+i386                   randconfig-h1-06060804
+arm                            dove_defconfig
+sh                        apsh4ad0a_defconfig
+arm                         cm_x300_defconfig
+avr32                        merisc_defconfig
+sh                          rsk7201_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                 randconfig-h0-06051501
+x86_64                 randconfig-h1-06051501
+x86_64                 randconfig-h0-06051850
+x86_64                 randconfig-h1-06051850
+x86_64                 randconfig-h0-06051915
+x86_64                 randconfig-h1-06051915
+x86_64                 randconfig-n0-06051456
+x86_64                 randconfig-n0-06051851
+x86_64                 randconfig-n0-06051904
+x86_64                 randconfig-n0-06051934
+x86_64                 randconfig-n0-06060811
+x86_64                 randconfig-n0-06060820
+avr32                            alldefconfig
+avr32                             allnoconfig
+avr32                      atngw100_defconfig
+arm                           h5000_defconfig
+mn10300                          allmodconfig
+powerpc                      mgcoge_defconfig
+arm                            mmp2_defconfig
+blackfin             BF527-EZKIT-V2_defconfig
+sh                          rsk7269_defconfig
+powerpc                 mpc832x_rdb_defconfig
+sh                               allmodconfig
+i386                  randconfig-sb0-06051501
+i386                  randconfig-sb1-06051501
+i386                  randconfig-sb2-06051501
+i386                  randconfig-sb0-06051841
+i386                  randconfig-sb0-06051848
+i386                  randconfig-sb0-06051857
+i386                  randconfig-sb0-06051902
+i386                  randconfig-sb0-06051919
+i386                  randconfig-sb0-06051930
+i386                  randconfig-sb0-06051936
+i386                  randconfig-sb0-06060808
+i386                  randconfig-sb0-06060821
+mips                           ip27_defconfig
+powerpc                mpc8641_hpcn_defconfig
+powerpc                        warp_defconfig
+x86_64                 randconfig-r0-06051841
+x86_64                 randconfig-r0-06051849
+x86_64                 randconfig-r0-06051900
+x86_64                 randconfig-r0-06051925
+x86_64                 randconfig-r0-06060810
+mips                     decstation_defconfig
+sh                        edosk7705_defconfig
+arm                        keystone_defconfig
+arm                        spear6xx_defconfig
+mn10300                           allnoconfig
+ia64                            zx1_defconfig
+powerpc                           allnoconfig
+powerpc                mpc7448_hpc2_defconfig
+x86_64                 randconfig-s0-06051508
+x86_64                 randconfig-s1-06051508
+x86_64                 randconfig-s0-06051851
+x86_64                 randconfig-s0-06051909
+x86_64                 randconfig-s0-06051925
+x86_64                 randconfig-s0-06060801
+x86_64                 randconfig-s0-06060813
+i386                   randconfig-x0-06051856
 
+Thanks,
+Fengguang
