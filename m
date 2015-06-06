@@ -1,60 +1,49 @@
-From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Sat, 06 Jun 2015 10:41:03 -0700
-Subject: [Intel-wired-lan] [PATCH V2] ixgbe: Simplify port-specific macros
-Message-ID: <20150606174103.45169.64009.stgit@mdrustad-wks.jf.intel.com>
+From: Don Skidmore <donald.c.skidmore@intel.com>
+Date: Sat, 06 Jun 2015 13:53:47 -0400
+Subject: [Intel-wired-lan] [net-next PATCH] ixgbe: fix X550 default
+	set_phy_power method
+Message-ID: <20150606175347.31199.32645.stgit@dcs-desk.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Simplify port-specific macros by eliminating explicit comparison
-with 0. More importantly, enclose formal parameter in parens to
-eliminate the risk of an operator precedence surprise.
+Even though X550 may later clear this value for certain devices
+set it initially to support copper.
 
-Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
 ---
-Changes in V2:
-- Corrected typo in log message
-- Updated Copyright year in the file header
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |   18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-index b6f424f3b1a8..4615a949381d 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index 7b5b48e..dc9cdb6 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
 @@ -1,7 +1,7 @@
  /*******************************************************************************
+  *
+  *  Intel 10 Gigabit PCI Express Linux driver
+- *  Copyright(c) 1999 - 2014 Intel Corporation.
++ *  Copyright(c) 1999 - 2015 Intel Corporation.
+  *
+  *  This program is free software; you can redistribute it and/or modify it
+  *  under the terms and conditions of the GNU General Public License,
+@@ -1855,6 +1855,7 @@ static struct ixgbe_eeprom_operations eeprom_ops_X550EM_x = {
+ 	.read_reg		= &ixgbe_read_phy_reg_generic, \
+ 	.write_reg		= &ixgbe_write_phy_reg_generic, \
+ 	.setup_link		= &ixgbe_setup_phy_link_generic, \
++	.set_phy_power		= &ixgbe_set_copper_phy_power, \
+ 	.check_overtemp		= &ixgbe_tn_check_overtemp, \
+ 	.get_firmware_version	= &ixgbe_get_phy_firmware_version_generic,
  
-   Intel 10 Gigabit PCI Express Linux driver
--  Copyright(c) 1999 - 2014 Intel Corporation.
-+  Copyright(c) 1999 - 2015 Intel Corporation.
+@@ -1864,7 +1865,6 @@ static struct ixgbe_phy_operations phy_ops_X550 = {
+ 	.identify		= &ixgbe_identify_phy_generic,
+ 	.read_i2c_combined	= &ixgbe_read_i2c_combined_generic,
+ 	.write_i2c_combined	= &ixgbe_write_i2c_combined_generic,
+-	.set_phy_power		= &ixgbe_set_copper_phy_power,
+ };
  
-   This program is free software; you can redistribute it and/or modify it
-   under the terms and conditions of the GNU General Public License,
-@@ -3462,14 +3462,14 @@ struct ixgbe_info {
- #define IXGBE_ERR_HOST_INTERFACE_COMMAND        -33
- #define IXGBE_NOT_IMPLEMENTED                   0x7FFFFFFF
- 
--#define IXGBE_KRM_PORT_CAR_GEN_CTRL(P)	((P == 0) ? (0x4010) : (0x8010))
--#define IXGBE_KRM_LINK_CTRL_1(P)	((P == 0) ? (0x420C) : (0x820C))
--#define IXGBE_KRM_DSP_TXFFE_STATE_4(P)	((P == 0) ? (0x4634) : (0x8634))
--#define IXGBE_KRM_DSP_TXFFE_STATE_5(P)	((P == 0) ? (0x4638) : (0x8638))
--#define IXGBE_KRM_RX_TRN_LINKUP_CTRL(P)	((P == 0) ? (0x4B00) : (0x8B00))
--#define IXGBE_KRM_PMD_DFX_BURNIN(P)	((P == 0) ? (0x4E00) : (0x8E00))
--#define IXGBE_KRM_TX_COEFF_CTRL_1(P)	((P == 0) ? (0x5520) : (0x9520))
--#define IXGBE_KRM_RX_ANA_CTL(P)		((P == 0) ? (0x5A00) : (0x9A00))
-+#define IXGBE_KRM_PORT_CAR_GEN_CTRL(P)	((P) ? 0x8010 : 0x4010)
-+#define IXGBE_KRM_LINK_CTRL_1(P)	((P) ? 0x820C : 0x420C)
-+#define IXGBE_KRM_DSP_TXFFE_STATE_4(P)	((P) ? 0x8634 : 0x4634)
-+#define IXGBE_KRM_DSP_TXFFE_STATE_5(P)	((P) ? 0x8638 : 0x4638)
-+#define IXGBE_KRM_RX_TRN_LINKUP_CTRL(P)	((P) ? 0x8B00 : 0x4B00)
-+#define IXGBE_KRM_PMD_DFX_BURNIN(P)	((P) ? 0x8E00 : 0x4E00)
-+#define IXGBE_KRM_TX_COEFF_CTRL_1(P)	((P) ? 0x9520 : 0x5520)
-+#define IXGBE_KRM_RX_ANA_CTL(P)		((P) ? 0x9A00 : 0x5A00)
- 
- #define IXGBE_KRM_PORT_CAR_GEN_CTRL_NELB_32B		(1 << 9)
- #define IXGBE_KRM_PORT_CAR_GEN_CTRL_NELB_KRPCS		(1 << 11)
+ static struct ixgbe_phy_operations phy_ops_X550EM_x = {
 
