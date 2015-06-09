@@ -1,46 +1,49 @@
-From: Yanir Lubetkin <yanirx.lubetkin@intel.com>
-Date: Wed, 10 Jun 2015 01:16:03 +0300
-Subject: [Intel-wired-lan] [PATCH 5/5] e1000e: i219 - k1 workaround for lpt
-	is not required for spt.
-In-Reply-To: <f60bcfb3d2cf6db3c53fe84b1620dad209976300.1433877893.git.yanirx.lubetkin@intel.com>
-References: <f60bcfb3d2cf6db3c53fe84b1620dad209976300.1433877893.git.yanirx.lubetkin@intel.com>
-Message-ID: <429931829ff2314c8ee78454ea5310168bc03888.1433877893.git.yanirx.lubetkin@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Tue,  9 Jun 2015 16:32:28 -0700
+Subject: [Intel-wired-lan] [rc3] fm10k: re-map all possible VF queues after
+	a VFLR
+Message-ID: <1433892748-18136-1-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-in spt hardware does not require this driver workaround.
-removed the conditional that caused k1 workaround execution on spt.
+From: Keller Jacob <jacob.e.keller@intel.com>
 
-Signed-off-by: Yanir Lubetkin <yanirx.lubetkin@intel.com>
+During initialization, the VF counts its rings by walking the TQDLOC
+registers. This works only if the TQMAP/RQMAP registers are set to map
+all of the out-of-bound rings back to the first one. This allows the VF
+to cleanly detect when it has run out of queues. Update the PF code so
+that it resets the empty TQMAP/RQMAP registers post-VFLR to prevent
+innocent VF drivers from triggering malicious driver events.
+
+-rc3
+* Use corrected index, instead of 1
+
+Signed-off-by: Matthew Vick <matthew.vick@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/e1000e/ich8lan.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_pf.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-index 4ce57e8..3ff9b9e 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-@@ -1490,8 +1490,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
- 	if ((hw->adapter->pdev->device == E1000_DEV_ID_PCH_LPTLP_I218_LM) ||
- 	    (hw->adapter->pdev->device == E1000_DEV_ID_PCH_LPTLP_I218_V) ||
- 	    (hw->adapter->pdev->device == E1000_DEV_ID_PCH_I218_LM3) ||
--	    (hw->adapter->pdev->device == E1000_DEV_ID_PCH_I218_V3) ||
--	    (hw->mac.type == e1000_pch_spt)) {
-+	    (hw->adapter->pdev->device == E1000_DEV_ID_PCH_I218_V3)) {
- 		ret_val = e1000_k1_workaround_lpt_lp(hw, link);
- 		if (ret_val)
- 			return ret_val;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+index 891e21874b2a..49c8ad647680 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+@@ -1046,6 +1046,12 @@ static s32 fm10k_iov_reset_resources_pf(struct fm10k_hw *hw,
+ 		fm10k_write_reg(hw, FM10K_RQMAP(qmap_idx + i), vf_q_idx + i);
+ 	}
+ 
++	/* repeat the first ring for all the remaining VF rings */
++	for (i = queues_per_pool; i < qmap_stride; i++) {
++		fm10k_write_reg(hw, FM10K_TQMAP(qmap_idx + i), vf_q_idx);
++		fm10k_write_reg(hw, FM10K_RQMAP(qmap_idx + i), vf_q_idx);
++	}
++
+ 	return 0;
+ }
+ 
 -- 
-2.1.0
-
----------------------------------------------------------------------
-Intel Israel (74) Limited
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+2.4.2
 
