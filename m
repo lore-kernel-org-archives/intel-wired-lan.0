@@ -1,82 +1,81 @@
 From: Donald C Skidmore <donald.c.skidmore@intel.com>
-Date: Wed, 10 Jun 2015 20:05:02 -0400
-Subject: [Intel-wired-lan] [net-next PATCH] ixgbe: add new function to check
- for management presence
-Message-ID: <20150611000501.9686.70981.stgit@dcs-desk.jf.intel.com>
+Date: Wed, 10 Jun 2015 20:42:30 -0400
+Subject: [Intel-wired-lan] [net-next PATCH] ixgbe: Assign set_phy_power
+ dynamically where needed.
+Message-ID: <20150611004230.18302.56111.stgit@dcs-desk.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Don Skidmore <donald.c.skidmore@intel.com>
-
-This patchs adds a support function that will indicate for the
-existence of management FW.
+There are various reasons why this method may or may not need to be
+defined and some of these we don't know until runtime.  So we will
+set the value in get_invariants.
 
 Signed-off-by: Donald C Skidmore <donald.c.skidmore@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c  |    8 ++------
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |   15 +++++++++++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.h |    1 +
- 3 files changed, 18 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c |    5 +++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   18 ++++++++++++++++--
+ 2 files changed, 21 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
-index b1e364d..08fcf57 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
-@@ -504,16 +504,12 @@ static enum ixgbe_media_type ixgbe_get_media_type_82599(struct ixgbe_hw *hw)
-  **/
- static void ixgbe_stop_mac_link_on_d3_82599(struct ixgbe_hw *hw)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
+index 032a587..4e75843 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
+@@ -54,6 +54,11 @@ enum ixgbe_media_type ixgbe_get_media_type_X540(struct ixgbe_hw *hw)
+ s32 ixgbe_get_invariants_X540(struct ixgbe_hw *hw)
  {
--	u32 autoc2_reg, fwsm;
-+	u32 autoc2_reg;
- 	u16 ee_ctrl_2 = 0;
- 
- 	hw->eeprom.ops.read(hw, IXGBE_EEPROM_CTRL_2, &ee_ctrl_2);
- 
--	/* Check to see if MNG FW could be enabled */
--	fwsm = IXGBE_READ_REG(hw, IXGBE_FWSM(hw));
--
--	if (((fwsm & IXGBE_FWSM_MODE_MASK) != IXGBE_FWSM_FW_MODE_PT) &&
--	    !hw->wol_enabled &&
-+	if (!ixgbe_mng_present(hw) && !hw->wol_enabled &&
- 	    ee_ctrl_2 & IXGBE_EEPROM_CCD_BIT) {
- 		autoc2_reg = IXGBE_READ_REG(hw, IXGBE_AUTOC2);
- 		autoc2_reg |= IXGBE_AUTOC2_LINK_DISABLE_ON_D3_MASK;
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-index 4c1c267..7a5cb8b 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-@@ -3905,3 +3905,18 @@ void ixgbe_enable_rx_generic(struct ixgbe_hw *hw)
- 		}
- 	}
- }
+ 	struct ixgbe_mac_info *mac = &hw->mac;
++	struct ixgbe_phy_info *phy = &hw->phy;
 +
-+/** ixgbe_mng_present - returns true when management capability is present
-+  * @hw: pointer to hardware structure
-+  **/
-+bool ixgbe_mng_present(struct ixgbe_hw *hw)
++	/* set_phy_power was set by default to NULL */
++	if (!ixgbe_mng_present(hw))
++		phy->ops.set_phy_power = ixgbe_set_copper_phy_power;
+ 
+ 	mac->mcft_size = IXGBE_X540_MC_TBL_SIZE;
+ 	mac->vft_size = IXGBE_X540_VFT_TBL_SIZE;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index 7581da1..662d2e8 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -26,6 +26,20 @@
+ #include "ixgbe_common.h"
+ #include "ixgbe_phy.h"
+ 
++static s32 ixgbe_get_invariants_X550_x(struct ixgbe_hw *hw)
 +{
-+	u32 fwsm;
++	struct ixgbe_mac_info *mac = &hw->mac;
++	struct ixgbe_phy_info *phy = &hw->phy;
 +
-+	if (hw->mac.type < ixgbe_mac_82599EB)
-+		return false;
++	/* Start with X540 invariants, since so simular */
++	ixgbe_get_invariants_X540(hw);
 +
-+	fwsm = IXGBE_READ_REG(hw, IXGBE_FWSM(hw));
-+	fwsm &= IXGBE_FWSM_MODE_MASK;
-+	return fwsm == IXGBE_FWSM_FW_MODE_PT;
++	if (mac->ops.get_media_type(hw) != ixgbe_media_type_copper)
++		phy->ops.set_phy_power = NULL;
++
++	return 0;
 +}
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
-index ec015fe..2f779f3 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
-@@ -113,6 +113,7 @@ s32 ixgbe_set_fw_drv_ver_generic(struct ixgbe_hw *hw, u8 maj, u8 min,
- s32 ixgbe_host_interface_command(struct ixgbe_hw *hw, u32 *buffer,
- 				 u32 length, u32 timeout, bool return_data);
- void ixgbe_clear_tx_pending(struct ixgbe_hw *hw);
-+bool ixgbe_mng_present(struct ixgbe_hw *hw);
- bool ixgbe_mng_enabled(struct ixgbe_hw *hw);
++
+ /** ixgbe_setup_mux_ctl - Setup ESDP register for I2C mux control
+  *  @hw: pointer to hardware structure
+  **/
+@@ -1855,7 +1869,7 @@ static struct ixgbe_eeprom_operations eeprom_ops_X550EM_x = {
+ 	.read_reg		= &ixgbe_read_phy_reg_generic, \
+ 	.write_reg		= &ixgbe_write_phy_reg_generic, \
+ 	.setup_link		= &ixgbe_setup_phy_link_generic, \
+-	.set_phy_power		= &ixgbe_set_copper_phy_power, \
++	.set_phy_power		= NULL, \
+ 	.check_overtemp		= &ixgbe_tn_check_overtemp, \
+ 	.get_firmware_version	= &ixgbe_get_phy_firmware_version_generic,
  
- void ixgbe_set_rxpba_generic(struct ixgbe_hw *hw, int num_pb,
+@@ -1893,7 +1907,7 @@ struct ixgbe_info ixgbe_X550_info = {
+ 
+ struct ixgbe_info ixgbe_X550EM_x_info = {
+ 	.mac			= ixgbe_mac_X550EM_x,
+-	.get_invariants		= &ixgbe_get_invariants_X540,
++	.get_invariants		= &ixgbe_get_invariants_X550_x,
+ 	.mac_ops		= &mac_ops_X550EM_x,
+ 	.eeprom_ops		= &eeprom_ops_X550EM_x,
+ 	.phy_ops		= &phy_ops_X550EM_x,
 
