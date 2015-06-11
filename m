@@ -1,168 +1,301 @@
-From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Thu, 11 Jun 2015 11:02:20 -0700
-Subject: [Intel-wired-lan] [PATCH V2] ixgbe: Check whether FDIRCMD writes
-	actually complete
-Message-ID: <20150611180220.98698.69987.stgit@mdrustad-wks.jf.intel.com>
+From: Donald C Skidmore <donald.c.skidmore@intel.com>
+Date: Thu, 11 Jun 2015 19:42:39 -0400
+Subject: [Intel-wired-lan] [net-next PATCH] ixgbe: Add support for entering
+ low power link up state
+Message-ID: <20150611234239.27658.58760.stgit@dcs-desk.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Wait up to about 100 us for FDIRCMD writes to complete and return
-failure indications.
+From: Don Skidmore <donald.c.skidmore@intel.com>
 
-Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
----
-Changes in V2:
-- Remove unnecesary wait in ixgbe_fdir_add_signature_filter_82599
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c |   63 +++++++++++++++---------
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h  |    1 
- 2 files changed, 40 insertions(+), 24 deletions(-)
+When the device is closing or suspending, call ixgbe_enter_lplu to
+enter low power link up state on devices that support it. When this
+is done, prevent the phy from being reset in the ixgbe_down path
+so that link is present when calling ixgbe_enter_lplu.
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
-index b1e364d26aa7..31ba211c8ed3 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
-@@ -1,7 +1,7 @@
- /*******************************************************************************
+Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   10 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |   34 ++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |  142 +++++++++++++++++++++++++
+ 3 files changed, 184 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 0333601..9a85e24 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -5791,7 +5791,15 @@ static void ixgbe_close_suspend(struct ixgbe_adapter *adapter)
+ {
+ 	ixgbe_ptp_suspend(adapter);
  
-   Intel 10 Gigabit PCI Express Linux driver
--  Copyright(c) 1999 - 2014 Intel Corporation.
-+  Copyright(c) 1999 - 2015 Intel Corporation.
- 
-   This program is free software; you can redistribute it and/or modify it
-   under the terms and conditions of the GNU General Public License,
-@@ -1246,6 +1246,25 @@ mac_reset_top:
- }
- 
- /**
-+ * ixgbe_fdir_check_cmd_complete - poll to check whether FDIRCMD is complete
-+ * @hw: pointer to hardware structure
-+ * @fdircmd: current value of FDIRCMD register
-+ */
-+static s32 ixgbe_fdir_check_cmd_complete(struct ixgbe_hw *hw, u32 *fdircmd)
-+{
-+	int i;
-+
-+	for (i = 0; i < IXGBE_FDIRCMD_CMD_POLL; i++) {
-+		*fdircmd = IXGBE_READ_REG(hw, IXGBE_FDIRCMD);
-+		if (!(*fdircmd & IXGBE_FDIRCMD_CMD_MASK))
-+			return 0;
-+		udelay(10);
+-	ixgbe_down(adapter);
++	if (adapter->hw.phy.ops.enter_lplu) {
++		adapter->hw.phy.reset_disable = true;
++		ixgbe_down(adapter);
++		adapter->hw.phy.ops.enter_lplu(&adapter->hw);
++		adapter->hw.phy.reset_disable = false;
++	} else {
++		ixgbe_down(adapter);
 +	}
 +
-+	return IXGBE_ERR_FDIR_CMD_INCOMPLETE;
-+}
-+
-+/**
-  *  ixgbe_reinit_fdir_tables_82599 - Reinitialize Flow Director tables.
-  *  @hw: pointer to hardware structure
-  **/
-@@ -1253,6 +1272,8 @@ s32 ixgbe_reinit_fdir_tables_82599(struct ixgbe_hw *hw)
- {
- 	int i;
- 	u32 fdirctrl = IXGBE_READ_REG(hw, IXGBE_FDIRCTRL);
-+	u32 fdircmd;
-+	s32 err;
+ 	ixgbe_free_irq(adapter);
  
- 	fdirctrl &= ~IXGBE_FDIRCTRL_INIT_DONE;
- 
-@@ -1260,15 +1281,10 @@ s32 ixgbe_reinit_fdir_tables_82599(struct ixgbe_hw *hw)
- 	 * Before starting reinitialization process,
- 	 * FDIRCMD.CMD must be zero.
- 	 */
--	for (i = 0; i < IXGBE_FDIRCMD_CMD_POLL; i++) {
--		if (!(IXGBE_READ_REG(hw, IXGBE_FDIRCMD) &
--		      IXGBE_FDIRCMD_CMD_MASK))
--			break;
--		udelay(10);
--	}
--	if (i >= IXGBE_FDIRCMD_CMD_POLL) {
--		hw_dbg(hw, "Flow Director previous command isn't complete, aborting table re-initialization.\n");
--		return IXGBE_ERR_FDIR_REINIT_FAILED;
-+	err = ixgbe_fdir_check_cmd_complete(hw, &fdircmd);
-+	if (err) {
-+		hw_dbg(hw, "Flow Director previous command did not complete, aborting table re-initialization.\n");
-+		return err;
- 	}
- 
- 	IXGBE_WRITE_REG(hw, IXGBE_FDIRFREE, 0);
-@@ -1758,6 +1774,7 @@ s32 ixgbe_fdir_write_perfect_filter_82599(struct ixgbe_hw *hw,
- 					  u16 soft_id, u8 queue)
- {
- 	u32 fdirport, fdirvlan, fdirhash, fdircmd;
-+	s32 err;
- 
- 	/* currently IPv6 is not supported, must be programmed with 0 */
- 	IXGBE_WRITE_REG_BE32(hw, IXGBE_FDIRSIPv6(0),
-@@ -1806,6 +1823,11 @@ s32 ixgbe_fdir_write_perfect_filter_82599(struct ixgbe_hw *hw,
- 	fdircmd |= (u32)input->formatted.vm_pool << IXGBE_FDIRCMD_VT_POOL_SHIFT;
- 
- 	IXGBE_WRITE_REG(hw, IXGBE_FDIRCMD, fdircmd);
-+	err = ixgbe_fdir_check_cmd_complete(hw, &fdircmd);
-+	if (err) {
-+		hw_dbg(hw, "Flow Director command did not complete!\n");
-+		return err;
-+	}
- 
- 	return 0;
- }
-@@ -1815,9 +1837,8 @@ s32 ixgbe_fdir_erase_perfect_filter_82599(struct ixgbe_hw *hw,
- 					  u16 soft_id)
- {
- 	u32 fdirhash;
--	u32 fdircmd = 0;
--	u32 retry_count;
--	s32 err = 0;
-+	u32 fdircmd;
-+	s32 err;
- 
- 	/* configure FDIRHASH register */
- 	fdirhash = input->formatted.bkt_hash;
-@@ -1830,18 +1851,12 @@ s32 ixgbe_fdir_erase_perfect_filter_82599(struct ixgbe_hw *hw,
- 	/* Query if filter is present */
- 	IXGBE_WRITE_REG(hw, IXGBE_FDIRCMD, IXGBE_FDIRCMD_CMD_QUERY_REM_FILT);
- 
--	for (retry_count = 10; retry_count; retry_count--) {
--		/* allow 10us for query to process */
--		udelay(10);
--		/* verify query completed successfully */
--		fdircmd = IXGBE_READ_REG(hw, IXGBE_FDIRCMD);
--		if (!(fdircmd & IXGBE_FDIRCMD_CMD_MASK))
--			break;
-+	err = ixgbe_fdir_check_cmd_complete(hw, &fdircmd);
-+	if (err) {
-+		hw_dbg(hw, "Flow Director command did not complete!\n");
-+		return err;
- 	}
- 
--	if (!retry_count)
--		err = IXGBE_ERR_FDIR_REINIT_FAILED;
--
- 	/* if filter exists in hardware then remove it */
- 	if (fdircmd & IXGBE_FDIRCMD_FILTER_VALID) {
- 		IXGBE_WRITE_REG(hw, IXGBE_FDIRHASH, fdirhash);
-@@ -1850,7 +1865,7 @@ s32 ixgbe_fdir_erase_perfect_filter_82599(struct ixgbe_hw *hw,
- 				IXGBE_FDIRCMD_CMD_REMOVE_FLOW);
- 	}
- 
--	return err;
-+	return 0;
- }
- 
- /**
+ 	ixgbe_free_all_tx_resources(adapter);
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-index b6f424f3b1a8..b16d26b8f505 100644
+index b6f424f..6e422c3 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-@@ -3460,6 +3460,7 @@ struct ixgbe_info {
- #define IXGBE_ERR_PBA_SECTION                   -31
- #define IXGBE_ERR_INVALID_ARGUMENT              -32
+@@ -848,6 +848,7 @@ struct ixgbe_thermal_sensor_data {
+ #define IXGBE_MDIO_AUTO_NEG_LINK_STATUS	0x4 /* Indicates if link is up */
+ 
+ #define IXGBE_MDIO_AUTO_NEG_VENDOR_STATUS_MASK	0x7 /* Speed/Duplex Mask */
++#define IXGBE_MDIO_AUTO_NEG_VEN_STAT_SPEED_MASK	0x6 /* Speed Mask */
+ #define IXGBE_MDIO_AUTO_NEG_VENDOR_STATUS_10M_HALF 0x0 /* 10Mb/s Half Duplex */
+ #define IXGBE_MDIO_AUTO_NEG_VENDOR_STATUS_10M_FULL 0x1 /* 10Mb/s Full Duplex */
+ #define IXGBE_MDIO_AUTO_NEG_VENDOR_STATUS_100M_HALF 0x2 /* 100Mb/s H Duplex */
+@@ -856,6 +857,24 @@ struct ixgbe_thermal_sensor_data {
+ #define IXGBE_MDIO_AUTO_NEG_VENDOR_STATUS_1GB_FULL 0x5 /* 1Gb/s Full Duplex */
+ #define IXGBE_MDIO_AUTO_NEG_VENDOR_STATUS_10GB_HALF 0x6 /* 10Gb/s Half Duplex */
+ #define IXGBE_MDIO_AUTO_NEG_VENDOR_STATUS_10GB_FULL 0x7 /* 10Gb/s Full Duplex */
++#define IXGBE_MDIO_AUTO_NEG_VENDOR_STATUS_1GB	0x4 /* 1Gb/s */
++#define IXGBE_MDIO_AUTO_NEG_VENDOR_STATUS_10GB	0x6 /* 10Gb/s */
++
++#define IXGBE_MII_10GBASE_T_AUTONEG_CTRL_REG	0x20	/* 10G Control Reg */
++#define IXGBE_MII_AUTONEG_VENDOR_PROVISION_1_REG 0xC400	/* 1G Provisioning 1 */
++#define IXGBE_MII_AUTONEG_XNP_TX_REG		0x17	/* 1G XNP Transmit */
++#define IXGBE_MII_AUTONEG_ADVERTISE_REG		0x10	/* 100M Advertisement */
++#define IXGBE_MII_10GBASE_T_ADVERTISE		0x1000	/* full duplex, bit:12*/
++#define IXGBE_MII_1GBASE_T_ADVERTISE_XNP_TX	0x4000	/* full duplex, bit:14*/
++#define IXGBE_MII_1GBASE_T_ADVERTISE		0x8000	/* full duplex, bit:15*/
++#define IXGBE_MII_2_5GBASE_T_ADVERTISE		0x0400
++#define IXGBE_MII_5GBASE_T_ADVERTISE		0x0800
++#define IXGBE_MII_100BASE_T_ADVERTISE		0x0100	/* full duplex, bit:8 */
++#define IXGBE_MII_100BASE_T_ADVERTISE_HALF	0x0080	/* half duplex, bit:7 */
++#define IXGBE_MII_RESTART			0x200
++#define IXGBE_MII_AUTONEG_COMPLETE		0x20
++#define IXGBE_MII_AUTONEG_LINK_UP		0x04
++#define IXGBE_MII_AUTONEG_REG			0x0
+ 
+ /* Management */
+ #define IXGBE_MAVTV(_i) (0x05010 + ((_i) * 4)) /* 8 of these (0-7) */
+@@ -1305,6 +1324,7 @@ struct ixgbe_thermal_sensor_data {
+ #define IXGBE_MDIO_AUTO_NEG_CONTROL	0x0 /* AUTO_NEG Control Reg */
+ #define IXGBE_MDIO_AUTO_NEG_STATUS	0x1 /* AUTO_NEG Status Reg */
+ #define IXGBE_MDIO_AUTO_NEG_VENDOR_STAT	0xC800 /* AUTO_NEG Vendor Status Reg */
++#define IXGBE_MDIO_AUTO_NEG_VENDOR_TX_ALARM  0xCC00 /* AUTO_NEG Vendor TX Reg */
+ #define IXGBE_MDIO_AUTO_NEG_VENDOR_TX_ALARM2 0xCC01 /* AUTO_NEG Vendor Tx Reg */
+ #define IXGBE_MDIO_AUTO_NEG_VEN_LSC	0x1 /* AUTO_NEG Vendor Tx LSC */
+ #define IXGBE_MDIO_AUTO_NEG_ADVT	0x10 /* AUTO_NEG Advt Reg */
+@@ -1312,7 +1332,8 @@ struct ixgbe_thermal_sensor_data {
+ #define IXGBE_MDIO_AUTO_NEG_EEE_ADVT	0x3C /* AUTO_NEG EEE Advt Reg */
+ 
+ #define IXGBE_MDIO_PHY_SET_LOW_POWER_MODE	 0x0800 /* Set low power mode */
+-
++#define IXGBE_AUTO_NEG_LP_STATUS	0xE820 /* AUTO NEG Rx LP Status Reg */
++#define IXGBE_AUTO_NEG_LP_1000BASE_CAP	0x8000 /* AUTO NEG Rx LP 1000BaseT */
+ #define IXGBE_MDIO_TX_VENDOR_ALARMS_3	0xCC02 /* Vendor Alarms 3 Reg */
+ #define IXGBE_MDIO_TX_VENDOR_ALARMS_3_RST_MASK 0x3 /* PHY Reset Complete Mask */
+ #define IXGBE_MDIO_GLOBAL_RES_PR_10 0xC479 /* Global Resv Provisioning 10 Reg */
+@@ -2041,6 +2062,11 @@ enum {
+ #define IXGBE_NVM_POLL_WRITE       1  /* Flag for polling for write complete */
+ #define IXGBE_NVM_POLL_READ        0  /* Flag for polling for read complete */
+ 
++#define NVM_INIT_CTRL_3			0x38
++#define NVM_INIT_CTRL_3_LPLU		0x8
++#define NVM_INIT_CTRL_3_D10GMP_PORT0	0x40
++#define NVM_INIT_CTRL_3_D10GMP_PORT1	0x100
++
+ #define IXGBE_EEPROM_PAGE_SIZE_MAX       128
+ #define IXGBE_EEPROM_RD_BUFFER_MAX_COUNT 512 /* EEPROM words # read in burst */
+ #define IXGBE_EEPROM_WR_BUFFER_MAX_COUNT 256 /* EEPROM words # wr in burst */
+@@ -3298,6 +3324,7 @@ struct ixgbe_phy_operations {
+ 	s32 (*write_i2c_combined)(struct ixgbe_hw *, u8 addr, u16 reg, u16 val);
+ 	s32 (*check_overtemp)(struct ixgbe_hw *);
+ 	s32 (*set_phy_power)(struct ixgbe_hw *, bool on);
++	s32 (*enter_lplu)(struct ixgbe_hw *);
+ 	s32 (*handle_lasi)(struct ixgbe_hw *hw);
+ };
+ 
+@@ -3308,6 +3335,7 @@ struct ixgbe_eeprom_info {
+ 	u16                             word_size;
+ 	u16                             address_bits;
+ 	u16                             word_page_size;
++	u16				ctrl_word_3;
+ };
+ 
+ #define IXGBE_FLAGS_DOUBLE_RESET_REQUIRED	0x01
+@@ -3462,6 +3490,10 @@ struct ixgbe_info {
  #define IXGBE_ERR_HOST_INTERFACE_COMMAND        -33
-+#define IXGBE_ERR_FDIR_CMD_INCOMPLETE		-38
  #define IXGBE_NOT_IMPLEMENTED                   0x7FFFFFFF
  
++#define IXGBE_FUSES0_GROUP(_i)		(0x11158 + ((_i) * 4))
++#define IXGBE_FUSES0_300MHZ		BIT(5)
++#define IXGBE_FUSES0_REV1		BIT(6)
++
  #define IXGBE_KRM_PORT_CAR_GEN_CTRL(P)	((P == 0) ? (0x4010) : (0x8010))
+ #define IXGBE_KRM_LINK_CTRL_1(P)	((P == 0) ? (0x420C) : (0x820C))
+ #define IXGBE_KRM_DSP_TXFFE_STATE_4(P)	((P == 0) ? (0x4634) : (0x8634))
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index 662d2e8..ae164da 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -1458,6 +1458,143 @@ static s32 ixgbe_reset_phy_t_X550em(struct ixgbe_hw *hw)
+ 	return ixgbe_enable_lasi_ext_t_x550em(hw);
+ }
+ 
++/** ixgbe_get_lcd_x550em - Determine lowest common denominator
++ *  @hw: pointer to hardware structure
++ *  @lcd_speed: pointer to lowest common link speed
++ *
++ *  Determine lowest common link speed with link partner.
++ **/
++s32 ixgbe_get_lcd_t_x550em(struct ixgbe_hw *hw, ixgbe_link_speed *lcd_speed)
++{
++	u16 an_lp_status;
++	s32 status;
++	u16 word = hw->eeprom.ctrl_word_3;
++
++	*lcd_speed = IXGBE_LINK_SPEED_UNKNOWN;
++
++	status = hw->phy.ops.read_reg(hw, IXGBE_AUTO_NEG_LP_STATUS,
++				      IXGBE_MDIO_AUTO_NEG_DEV_TYPE,
++				      &an_lp_status);
++	if (status)
++		return status;
++
++	/* If link partner advertised 1G, return 1G */
++	if (an_lp_status & IXGBE_AUTO_NEG_LP_1000BASE_CAP) {
++		*lcd_speed = IXGBE_LINK_SPEED_1GB_FULL;
++		return status;
++	}
++
++	/* If 10G disabled for LPLU via NVM D10GMP, then return no valid LCD */
++	if ((hw->bus.lan_id && (word & NVM_INIT_CTRL_3_D10GMP_PORT1)) ||
++	    (word & NVM_INIT_CTRL_3_D10GMP_PORT0))
++		return status;
++
++	/* Link partner not capable of lower speeds, return 10G */
++	*lcd_speed = IXGBE_LINK_SPEED_10GB_FULL;
++	return status;
++}
++
++/** ixgbe_enter_lplu_x550em - Transition to low power states
++ *  @hw: pointer to hardware structure
++ *
++ *  Configures Low Power Link Up on transition to low power states
++ *  (from D0 to non-D0). Link is required to enter LPLU so avoid resetting
++ *  the X557 PHY immediately prior to entering LPLU.
++ **/
++s32 ixgbe_enter_lplu_t_x550em(struct ixgbe_hw *hw)
++{
++	u16 an_10g_cntl_reg, autoneg_reg, speed;
++	s32 status;
++	ixgbe_link_speed lcd_speed;
++	u32 save_autoneg;
++	bool link_up;
++
++	/* SW LPLU not required on later HW revisions. */
++	if (IXGBE_FUSES0_REV1 & IXGBE_READ_REG(hw, IXGBE_FUSES0_GROUP(0)))
++		return 0;
++
++	/* If blocked by MNG FW, then don't restart AN */
++	if (ixgbe_check_reset_blocked(hw))
++		return 0;
++
++	status = ixgbe_ext_phy_t_x550em_get_link(hw, &link_up);
++	if (status)
++		return status;
++
++	status = hw->eeprom.ops.read(hw, NVM_INIT_CTRL_3,
++				     &hw->eeprom.ctrl_word_3);
++	if (status)
++		return status;
++
++	/* If link is down, LPLU disabled in NVM, WoL disabled, or
++	 * manageability disabled, then force link down by entering
++	 * low power mode.
++	 */
++	if (!link_up || !(hw->eeprom.ctrl_word_3 & NVM_INIT_CTRL_3_LPLU) ||
++	    !(hw->wol_enabled || ixgbe_mng_present(hw)))
++		return ixgbe_set_copper_phy_power(hw, false);
++
++	/* Determine LCD */
++	status = ixgbe_get_lcd_t_x550em(hw, &lcd_speed);
++	if (status)
++		return status;
++
++	/* If no valid LCD link speed, then force link down and exit. */
++	if (lcd_speed == IXGBE_LINK_SPEED_UNKNOWN)
++		return ixgbe_set_copper_phy_power(hw, false);
++
++	status = hw->phy.ops.read_reg(hw, IXGBE_MDIO_AUTO_NEG_VENDOR_STAT,
++				      IXGBE_MDIO_AUTO_NEG_DEV_TYPE,
++				      &speed);
++	if (status)
++		return status;
++
++	/* If no link now, speed is invalid so take link down */
++	status = ixgbe_ext_phy_t_x550em_get_link(hw, &link_up);
++	if (status)
++		return ixgbe_set_copper_phy_power(hw, false);
++
++	/* clear everything but the speed bits */
++	speed &= IXGBE_MDIO_AUTO_NEG_VEN_STAT_SPEED_MASK;
++
++	/* If current speed is already LCD, then exit. */
++	if (((speed == IXGBE_MDIO_AUTO_NEG_VENDOR_STATUS_1GB) &&
++	     (lcd_speed == IXGBE_LINK_SPEED_1GB_FULL)) ||
++	    ((speed == IXGBE_MDIO_AUTO_NEG_VENDOR_STATUS_10GB) &&
++	     (lcd_speed == IXGBE_LINK_SPEED_10GB_FULL)))
++		return status;
++
++	/* Clear AN completed indication */
++	status = hw->phy.ops.read_reg(hw, IXGBE_MDIO_AUTO_NEG_VENDOR_TX_ALARM,
++				      IXGBE_MDIO_AUTO_NEG_DEV_TYPE,
++				      &autoneg_reg);
++	if (status)
++		return status;
++
++	status = hw->phy.ops.read_reg(hw, IXGBE_MII_10GBASE_T_AUTONEG_CTRL_REG,
++				      IXGBE_MDIO_AUTO_NEG_DEV_TYPE,
++				      &an_10g_cntl_reg);
++	if (status)
++		return status;
++
++	status = hw->phy.ops.read_reg(hw,
++				      IXGBE_MII_AUTONEG_VENDOR_PROVISION_1_REG,
++				      IXGBE_MDIO_AUTO_NEG_DEV_TYPE,
++				      &autoneg_reg);
++	if (status)
++		return status;
++
++	save_autoneg = hw->phy.autoneg_advertised;
++
++	/* Setup link at least common link speed */
++	status = hw->mac.ops.setup_link(hw, lcd_speed, false);
++
++	/* restore autoneg from before setting lplu speed */
++	hw->phy.autoneg_advertised = save_autoneg;
++
++	return status;
++}
++
+ /** ixgbe_init_phy_ops_X550em - PHY/SFP specific init
+  *  @hw: pointer to hardware structure
+  *
+@@ -1528,6 +1665,11 @@ static s32 ixgbe_init_phy_ops_X550em(struct ixgbe_hw *hw)
+ 			ret_val = ixgbe_setup_kr_speed_x550em(hw, speed);
+ 		}
+ 
++		/* setup SW LPLU only for first revision */
++		if (!(IXGBE_FUSES0_REV1 & IXGBE_READ_REG(hw,
++							IXGBE_FUSES0_GROUP(0))))
++			phy->ops.enter_lplu = ixgbe_enter_lplu_t_x550em;
++
+ 		phy->ops.handle_lasi = ixgbe_handle_lasi_ext_t_x550em;
+ 		phy->ops.reset = ixgbe_reset_phy_t_X550em;
+ 		break;
 
