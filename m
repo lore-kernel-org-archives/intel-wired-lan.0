@@ -1,48 +1,51 @@
 From: Rustad, Mark D <mark.d.rustad@intel.com>
-Date: Thu, 11 Jun 2015 16:35:44 +0000
-Subject: [Intel-wired-lan] [PATCH 1/2] ixgbe: Add support for
- UDP-encapsulated tx checksum offload
-In-Reply-To: <CAEP_g=-DPCx5_OCJoPPg-vkFkZ3T1an+jh7MOs3Ja8jZCDkMGg@mail.gmail.com>
-References: <20150610174304.85125.18769.stgit@mdrustad-wks.jf.intel.com>
- <20150610174426.85125.33055.stgit@mdrustad-wks.jf.intel.com>
- <CAEP_g=-DPCx5_OCJoPPg-vkFkZ3T1an+jh7MOs3Ja8jZCDkMGg@mail.gmail.com>
-Message-ID: <0AF8A847-ECEE-4FCA-B6E0-86B9169A14EF@intel.com>
+Date: Thu, 11 Jun 2015 17:14:34 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Check whether FDIRCMD writes
+ actually complete
+In-Reply-To: <5578A0D8.5040902@gmail.com>
+References: <20150610170003.36498.97226.stgit@mdrustad-wks.jf.intel.com>
+ <5578A0D8.5040902@gmail.com>
+Message-ID: <182A1884-DC0B-48C8-9B2C-D24AB5F27CAB@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> On Jun 10, 2015, at 11:58 AM, Jesse Gross <jesse@nicira.com> wrote:
+> On Jun 10, 2015, at 1:40 PM, Alexander Duyck <alexander.duyck@gmail.com> wrote:
 > 
-> On Wed, Jun 10, 2015 at 10:44 AM, Mark D Rustad <mark.d.rustad@intel.com> wrote:
->> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
->> index 03336013a76c..3c9bc7cc7d10 100644
->> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
->> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
->> +static netdev_features_t
->> +ixgbe_features_check(struct sk_buff *skb, struct net_device *dev,
->> +                    netdev_features_t features)
->> +{
->> +       return vxlan_features_check(skb, features);
->> +}
+> On 06/10/2015 10:00 AM, Mark D Rustad wrote:
+>> Wait up to about 100 us for FDIRCMD writes to complete and return
+>> failure indications.
+>> 
+>> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 > 
-> Do you know what the actual capabilities of the device are? My guess
-> is that in practice you can have a more liberal feature check and
-> support a greater range of protocols. Something like this:
-> https://patchwork.ozlabs.org/patch/461323/
+> Did you do any sort of performance testing with this patch applied? Specifically I would want to see the output of a TCP_RR and TCP_CRR test with this before and after.
+> 
+> The key reason being that adding signature filters is a part of the Tx hotpath when ATR is enabled, and if you are adding a spin wait to the Tx hotpath than you have killed performance.
 
-I will look further into this. With the number of devices involved it will take me some time.
+Very good point. After consulting with the source for this patch, we agree and the wait for signature filters will be removed. This really was about catching certain conditions that can come up with perfect filters.
 
-> Also, does this patch support TSO or just checksums?
+Thanks for noticing this!
 
-It relies on GSO for segmentation so the hardware can do the checksumming.
+<snip>
 
-> It looks like
-> checksums only but in that case it shouldn't expose
-> NETIF_F_GSO_UDP_TUNNEL.
+>> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+>> index b6f424f3b1a8..b16d26b8f505 100644
+>> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+>> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+>> @@ -3460,6 +3460,7 @@ struct ixgbe_info {
+>>  #define IXGBE_ERR_PBA_SECTION                   -31
+>>  #define IXGBE_ERR_INVALID_ARGUMENT              -32
+>>  #define IXGBE_ERR_HOST_INTERFACE_COMMAND        -33
+>> +#define IXGBE_ERR_FDIR_CMD_INCOMPLETE		-38
+>>  #define IXGBE_NOT_IMPLEMENTED                   0x7FFFFFFF
+>>    #define IXGBE_KRM_PORT_CAR_GEN_CTRL(P)	((P == 0) ? (0x4010) : (0x8010))
+>> 
+> 
+> Do you really need a new error return value?  Why not just rename IXGBE_ERR_FDIR_REINIT_FAILED since that is essentially what you are replacing with this new error value anyway.
 
-I thought that was what I needed to set to get GSO to be used on the tunnel. If that isn't what this does, it is very badly-named.
+It looks to me like IXGBE_ERR_FDIR_REINIT_FAILED is still used. I think a reinit failure is different enough from a command timing out that they should have different error codes. You are right that a usage of IXGBE_ERR_FDIR_REINIT_FAILED was eliminated in this patch - a usage that was not doing reinitialization - but the reference in the reinit path is still there.
 
 --
 Mark Rustad, Networking Division, Intel Corporation
@@ -53,4 +56,4 @@ Name: signature.asc
 Type: application/pgp-signature
 Size: 841 bytes
 Desc: Message signed with OpenPGP using GPGMail
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150611/91aa78ea/attachment.asc>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150611/1a501ed7/attachment.asc>
