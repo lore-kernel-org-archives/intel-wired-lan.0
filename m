@@ -1,8 +1,8 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sun, 14 Jun 2015 05:16:41 +0800
+Date: Sun, 14 Jun 2015 07:53:21 +0800
 Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 04f8b53bc44a988cf7216ead2f145ea29ef92fb9 BUILD SUCCESS
-Message-ID: <557c9db9.yXa23fAtLakmS6Ei%fengguang.wu@intel.com>
+ c679eee4edf2a3dfdd0f5b9ce0ae18681672e059 BUILD SUCCESS
+Message-ID: <557cc271.H8AITwXtIlFvRG20%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,131 +10,81 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-04f8b53bc44a988cf7216ead2f145ea29ef92fb9  fm10k: add call to fm10k_clean_all_rx_rings in fm10k_down
+c679eee4edf2a3dfdd0f5b9ce0ae18681672e059  i40evf: restore state
 
-elapsed time: 52m
+elapsed time: 29m
 
-configs tested: 120
+configs tested: 69
 
-arm                            hisi_defconfig
-m32r                           usrv_defconfig
-powerpc                     sbc8548_defconfig
-arm                            netx_defconfig
-arm                        trizeps4_defconfig
-mn10300                             defconfig
-arm                       netwinder_defconfig
-blackfin                    PNAV-10_defconfig
-xtensa                          iss_defconfig
-arm64                            alldefconfig
-microblaze                        allnoconfig
-powerpc64                        allmodconfig
-x86_64                 randconfig-a0-06140424
-x86_64                 randconfig-a0-06140434
-x86_64                 randconfig-a0-06140443
-x86_64                 randconfig-a0-06140451
-arm                           acs5k_defconfig
+m68k                           sun3_defconfig
+powerpc                      chrp32_defconfig
+sh                           se7206_defconfig
+x86_64                 randconfig-a0-06140725
+i386                   randconfig-c0-06140733
 arm                     davinci_all_defconfig
-sh                                  defconfig
-i386                   randconfig-c0-06140419
-i386                   randconfig-c0-06140427
-i386                   randconfig-c0-06140442
-arm64                               defconfig
-parisc                         b180_defconfig
-powerpc                       ppc64_defconfig
-x86_64                              defconfig
-powerpc                      mgcoge_defconfig
-sparc                               defconfig
-arm                        spear3xx_defconfig
-microblaze                    nommu_defconfig
-mips                       rbtx49xx_defconfig
-arm                        raumfeld_defconfig
-mips                           jazz_defconfig
-mips                          lasat_defconfig
-blackfin                BF537-STAMP_defconfig
-mips                         bigsur_defconfig
-sh                          rsk7203_defconfig
-arm                  colibri_pxa270_defconfig
-m68k                        m5407c3_defconfig
-sh                           se7712_defconfig
-x86_64                 randconfig-v0-06140421
-x86_64                 randconfig-v0-06140427
-x86_64                 randconfig-v0-06140435
-x86_64                 randconfig-v0-06140442
-x86_64                 randconfig-v0-06140449
-x86_64                 randconfig-v0-06140503
-x86_64                 randconfig-v0-06140508
-arm                        keystone_defconfig
-blackfin                BF533-EZKIT_defconfig
-m68k                          atari_defconfig
-sparc                            allmodconfig
-arm                            mmp2_defconfig
-m68k                             allyesconfig
-sh                           se7722_defconfig
-i386                   randconfig-b0-06140422
-i386                   randconfig-b0-06140429
-i386                   randconfig-b0-06140436
-i386                   randconfig-b0-06140443
-i386                   randconfig-b0-06140453
-i386                   randconfig-b0-06140506
-arm                     eseries_pxa_defconfig
-powerpc                         ps3_defconfig
-s390                             allyesconfig
-sh                          lboxre2_defconfig
-parisc                generic-64bit_defconfig
-powerpc                mpc7448_hpc2_defconfig
-powerpc                 mpc8272_ads_defconfig
-powerpc                      walnut_defconfig
-x86_64                 randconfig-b0-06140420
-x86_64                 randconfig-b0-06140430
-x86_64                 randconfig-b0-06140437
-x86_64                 randconfig-b0-06140444
-x86_64                 randconfig-b0-06140450
-x86_64                 randconfig-b0-06140503
-mips                      bmips_stb_defconfig
-mips                malta_kvm_guest_defconfig
-sh                               alldefconfig
+arm                         orion5x_defconfig
 blackfin             BF527-EZKIT-V2_defconfig
-mn10300                          allyesconfig
-xtensa                  audio_kc705_defconfig
-i386                   randconfig-h0-06140435
-i386                   randconfig-h1-06140435
-i386                   randconfig-h0-06140445
-i386                   randconfig-h1-06140445
-x86_64                 randconfig-h0-06140422
-x86_64                 randconfig-h0-06140429
-x86_64                 randconfig-h0-06140438
-x86_64                 randconfig-h0-06140447
-x86_64                 randconfig-h0-06140455
-x86_64                 randconfig-n0-06140435
-x86_64                 randconfig-n0-06140443
-x86_64                 randconfig-n0-06140451
-arm                 armadillo800eva_defconfig
-powerpc                     akebono_defconfig
-um                                allnoconfig
-i386                  randconfig-sb0-06140435
-i386                  randconfig-sb0-06140443
-i386                  randconfig-sb0-06140455
-mips                        bcm47xx_defconfig
-sh                        apsh4ad0a_defconfig
-sparc64                             defconfig
-arm                  colibri_pxa300_defconfig
-mips                       bmips_be_defconfig
-arm                          iop32x_defconfig
-m32r                        oaks32r_defconfig
-m68k                         apollo_defconfig
-x86_64                 randconfig-r0-06140418
-x86_64                 randconfig-r0-06140426
-x86_64                 randconfig-r0-06140442
-x86_64                 randconfig-r0-06140451
-x86_64                 randconfig-s0-06140435
-x86_64                 randconfig-s0-06140442
-x86_64                 randconfig-s0-06140452
-x86_64                 randconfig-s0-06140459
-x86_64                 randconfig-s0-06140506
-i386                   randconfig-x0-06140423
-i386                   randconfig-x0-06140435
-i386                   randconfig-x0-06140446
-i386                   randconfig-x0-06140454
+x86_64                 randconfig-v0-06140727
+x86_64                 randconfig-v0-06140735
+i386                                defconfig
+mips                             alldefconfig
+powerpc                        icon_defconfig
+sh                     magicpanelr2_defconfig
+arm                         ebsa110_defconfig
+arm                         lubbock_defconfig
+powerpc                  gef_sbc610_defconfig
+powerpc                      obs600_defconfig
+i386                   randconfig-b0-06140725
+i386                   randconfig-b0-06140735
+i386                   randconfig-b0-06140740
+mips                      maltaaprp_defconfig
+mips                        maltaup_defconfig
+powerpc                    ge_imp3a_defconfig
+powerpc                   lite5200b_defconfig
+arm                         shannon_defconfig
+m32r                    m32700ut.up_defconfig
+parisc                            allnoconfig
+powerpc                 mpc8560_ads_defconfig
+x86_64                 randconfig-b0-06140726
+x86_64                 randconfig-b0-06140733
+x86_64                 randconfig-b0-06140739
+mips                      loongson3_defconfig
+mips                          malta_defconfig
+powerpc                 mpc85xx_cds_defconfig
+i386                              allnoconfig
+arm                          iop33x_defconfig
+m68k                       m5275evb_defconfig
+mips                         tb0219_defconfig
+mn10300                           allnoconfig
+powerpc                      ppc6xx_defconfig
+sparc                       sparc32_defconfig
+i386                   randconfig-h0-06140724
+i386                   randconfig-h1-06140724
+i386                   randconfig-h0-06140734
+i386                   randconfig-h1-06140734
+x86_64                 randconfig-h0-06140729
+x86_64                 randconfig-h0-06140736
+x86_64                 randconfig-n0-06140721
+x86_64                 randconfig-n0-06140728
+x86_64                 randconfig-n0-06140740
+i386                  randconfig-sb0-06140724
+i386                  randconfig-sb0-06140731
+i386                  randconfig-sb0-06140736
+i386                  randconfig-sb0-06140742
+i386                  randconfig-sb0-06140748
+blackfin                    DNP5370_defconfig
+mn10300                             defconfig
+powerpc                      pasemi_defconfig
+mips                             allyesconfig
+powerpc                      tqm8xx_defconfig
+sh                          sdk7786_defconfig
+x86_64                 randconfig-r0-06140724
+x86_64                 randconfig-r0-06140732
+x86_64                 randconfig-s0-06140731
+x86_64                 randconfig-s0-06140736
+i386                   randconfig-x0-06140720
+i386                   randconfig-x0-06140728
+i386                   randconfig-x0-06140740
 
 Thanks,
 Fengguang
