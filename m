@@ -1,72 +1,128 @@
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Date: Mon, 15 Jun 2015 10:48:57 +0000
-Subject: [Intel-wired-lan] [PATCH 3/3] ixgbe: ping to reset on changing
-	trust status
-Message-ID: <7F861DC0615E0C47A872E6F3C5FCDDBD05EDEFDD@BPXM14GP.gisp.nec.co.jp>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Mon, 15 Jun 2015 19:24:36 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 0bcc39e1cd4b3748b4466b041d2ed69abb56a42b BUILD DONE
+Message-ID: <557eb5f4.5SV8pakHD52fvsow%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+0bcc39e1cd4b3748b4466b041d2ed69abb56a42b  e1000e: fix locking issue with e1000e_disable_aspm
 
-Send a ping to reset VF on changing the status of trusting.
-VF driver will reconfigure its features on reset.
+drivers/net/ethernet/intel/e1000e/netdev.c:6451:13: warning: 'e1000e_disable_aspm_locked' defined but not used [-Wunused-function]
+drivers/net/ethernet/intel/i40e/i40e_common.c:444:36: note: in expansion of macro 'high_16_bits'
+drivers/net/ethernet/intel/i40e/i40e_common.c:444:49: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
+drivers/net/ethernet/intel/i40e/i40e_common.c:445:35: note: in expansion of macro 'lower_32_bits'
+drivers/net/ethernet/intel/i40e/i40e_main.c:7601:2: warning: left shift count >= width of type
+drivers/net/ethernet/intel/i40evf/i40e_common.c:444:36: note: in expansion of macro 'high_16_bits'
+drivers/net/ethernet/intel/i40evf/i40e_common.c:444:49: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
+drivers/net/ethernet/intel/i40evf/i40e_common.c:445:35: note: in expansion of macro 'lower_32_bits'
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 25 +++++++++++++++++--------
- 1 file changed, 17 insertions(+), 8 deletions(-)
+error ids grouped by kconfigs:
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-index 5eb3108..7bb9926 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-@@ -1212,18 +1212,23 @@ void ixgbe_disable_tx_rx(struct ixgbe_adapter *adapter)
- 	IXGBE_WRITE_REG(hw, IXGBE_VFRE(1), 0);
- }
- 
--void ixgbe_ping_all_vfs(struct ixgbe_adapter *adapter)
-+static void ixgbe_ping_vf(struct ixgbe_adapter *adapter, int vf)
- {
- 	struct ixgbe_hw *hw = &adapter->hw;
- 	u32 ping;
-+
-+	ping = IXGBE_PF_CONTROL_MSG;
-+	if (adapter->vfinfo[vf].clear_to_send)
-+		ping |= IXGBE_VT_MSGTYPE_CTS;
-+	ixgbe_write_mbx(hw, &ping, 1, vf);
-+}
-+
-+void ixgbe_ping_all_vfs(struct ixgbe_adapter *adapter)
-+{
- 	int i;
- 
--	for (i = 0 ; i < adapter->num_vfs; i++) {
--		ping = IXGBE_PF_CONTROL_MSG;
--		if (adapter->vfinfo[i].clear_to_send)
--			ping |= IXGBE_VT_MSGTYPE_CTS;
--		ixgbe_write_mbx(hw, &ping, 1, i);
--	}
-+	for (i = 0 ; i < adapter->num_vfs; i++)
-+		ixgbe_ping_vf(adapter, i);
- }
- 
- int ixgbe_ndo_set_vf_mac(struct net_device *netdev, int vf, u8 *mac)
-@@ -1517,7 +1522,11 @@ int ixgbe_ndo_set_vf_trust(struct net_device *netdev, int vf, bool setting)
- 
- 	adapter->vfinfo[vf].trusted = setting;
- 
--	/* TODO: reset to reconfigure features */
-+	/* reset VF to reconfigure features */
-+	adapter->vfinfo[vf].clear_to_send = false;
-+	ixgbe_ping_vf(adapter, vf);
-+
-+	e_info(drv, "VF %u is %strusted\n", vf, setting ? "" : "not ");
- 
- 	return 0;
- }
--- 
-1.8.3.1
+recent_errors
+??? i386-randconfig-b0-06151911
+??? ??? drivers-net-ethernet-intel-i40e-i40e_common.c:note:in-expansion-of-macro-high_16_bits
+??? ??? drivers-net-ethernet-intel-i40e-i40e_common.c:note:in-expansion-of-macro-lower_32_bits
+??? ??? drivers-net-ethernet-intel-i40e-i40e_common.c:warning:cast-from-pointer-to-integer-of-different-size
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:left-shift-count-width-of-type
+??? i386-randconfig-x0-06151843
+??? ??? drivers-net-ethernet-intel-i40e-i40e_common.c:note:in-expansion-of-macro-high_16_bits
+??? ??? drivers-net-ethernet-intel-i40e-i40e_common.c:note:in-expansion-of-macro-lower_32_bits
+??? ??? drivers-net-ethernet-intel-i40e-i40e_common.c:warning:cast-from-pointer-to-integer-of-different-size
+??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:warning:left-shift-count-width-of-type
+??? ??? drivers-net-ethernet-intel-i40evf-i40e_common.c:note:in-expansion-of-macro-high_16_bits
+??? ??? drivers-net-ethernet-intel-i40evf-i40e_common.c:note:in-expansion-of-macro-lower_32_bits
+??? ??? drivers-net-ethernet-intel-i40evf-i40e_common.c:warning:cast-from-pointer-to-integer-of-different-size
+??? sparc-sparc64_defconfig
+??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:warning:e1000e_disable_aspm_locked-defined-but-not-used
+??? x86_64-randconfig-b0-06151900
+??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:warning:e1000e_disable_aspm_locked-defined-but-not-used
+??? x86_64-randconfig-r0-06151904
+    ??? drivers-net-ethernet-intel-e1000e-netdev.c:warning:e1000e_disable_aspm_locked-defined-but-not-used
 
+5 directories, 14 files
+
+elapsed time: 76m
+
+configs tested: 73
+
+m68k                            mac_defconfig
+mips                         rt305x_defconfig
+arm                         cm_x300_defconfig
+powerpc                     mpc86xx_defconfig
+powerpc                      pasemi_defconfig
+i386                   randconfig-c0-06151757
+i386                   randconfig-c0-06151837
+arm                        realview_defconfig
+arm                         s5pv210_defconfig
+mips                            ar7_defconfig
+arm                          exynos_defconfig
+powerpc                     mpc85xx_defconfig
+um                                  defconfig
+arm                           bockw_defconfig
+arm                      jornada720_defconfig
+m32r                      mappi.smp_defconfig
+m68k                          hp300_defconfig
+mips                          rm200_defconfig
+sparc                            allyesconfig
+x86_64                 randconfig-v0-06151758
+x86_64                 randconfig-v0-06151811
+x86_64                 randconfig-v0-06151828
+x86_64                 randconfig-v0-06151839
+x86_64                 randconfig-v0-06151857
+x86_64                 randconfig-v0-06151905
+x86_64                 randconfig-v0-06151913
+i386                   randconfig-b0-06151801
+i386                   randconfig-b0-06151813
+i386                   randconfig-b0-06151824
+i386                   randconfig-b0-06151835
+i386                   randconfig-b0-06151844
+i386                   randconfig-b0-06151857
+i386                   randconfig-b0-06151906
+i386                   randconfig-b0-06151911
+x86_64                 randconfig-b0-06151804
+x86_64                 randconfig-b0-06151821
+x86_64                 randconfig-b0-06151850
+x86_64                 randconfig-b0-06151900
+x86_64                 randconfig-b0-06151912
+i386                   randconfig-h0-06151826
+i386                   randconfig-h1-06151826
+powerpc                     asp8347_defconfig
+powerpc                  mpc866_ads_defconfig
+sparc                       sparc64_defconfig
+blackfin                BF609-EZKIT_defconfig
+powerpc                 canyonlands_defconfig
+sh                   secureedge5410_defconfig
+mips                      maltasmvp_defconfig
+mips                          sead3_defconfig
+powerpc                     ppa8548_defconfig
+x86_64                 randconfig-h0-06151802
+x86_64                 randconfig-h0-06151824
+x86_64                 randconfig-h0-06151855
+x86_64                 randconfig-h0-06151910
+x86_64                 randconfig-n0-06151812
+x86_64                 randconfig-n0-06151837
+x86_64                 randconfig-n0-06151858
+x86_64                 randconfig-n0-06151905
+arm                         shannon_defconfig
+arm                        vexpress_defconfig
+avr32                      atngw100_defconfig
+i386                  randconfig-sb0-06151807
+i386                  randconfig-sb0-06151830
+i386                  randconfig-sb0-06151847
+x86_64                 randconfig-r0-06151758
+x86_64                 randconfig-r0-06151838
+x86_64                 randconfig-r0-06151904
+x86_64                 randconfig-s0-06151755
+x86_64                 randconfig-s0-06151816
+x86_64                 randconfig-s0-06151843
+i386                   randconfig-x0-06151800
+i386                   randconfig-x0-06151829
+i386                   randconfig-x0-06151843
+
+Thanks,
+Fengguang
