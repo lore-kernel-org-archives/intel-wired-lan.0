@@ -1,69 +1,46 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Mon, 15 Jun 2015 23:00:29 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 757b0edc3ff3a350577ba86d5a9e7584bc3d04d5 BUILD SUCCESS
-Message-ID: <557ee88d.Elvm9Ocxan7rj8aZ%fengguang.wu@intel.com>
+From: Mark D Rustad <mark.d.rustad@intel.com>
+Date: Mon, 15 Jun 2015 11:33:15 -0700
+Subject: [Intel-wired-lan] [PATCH V4 0/2] ixgbe: Add support for VXLAN RX
+	offloads
+Message-ID: <20150615182643.98036.77888.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-757b0edc3ff3a350577ba86d5a9e7584bc3d04d5  igb: move initialization of link properties before igb_sw_init
+VXLAN tx checksum offload support is added for all devices and
+VXLAN rx offload support, including ATR, is added for X55x devices
+that support it.
 
-elapsed time: 53m
+Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 
-configs tested: 48
+---
+Changes in V2:
+- UDP-encapsulated tx offload should now support more than VXLAN
+- no longer set NETIF_F_GSO_UDP_TUNNEL
+- validate inner header offset for tx offload support
+Changes in V3:
+- don't clear bits that were never set
+- add unlikely to a header offset check
+- change __constant_htons to simply htons
+Changes in V4:
+- add static to ixgbe_clear_vxlan_port
+- use ixgbe_clear_vxlan_port to clear vxlan port
+- call ixgbe_clear_vxlan_port when turning checksum offload off
 
-m68k                       m5249evb_defconfig
-mips                        maltaup_defconfig
-sh                  sh7785lcr_32bit_defconfig
-arm                           corgi_defconfig
-mips                        nlm_xlp_defconfig
-powerpc                          alldefconfig
-blackfin                   CM-BF548_defconfig
-powerpc                 mpc8315_rdb_defconfig
-sh                           cayman_defconfig
-m68k                       m5475evb_defconfig
-powerpc                        icon_defconfig
-tile                              allnoconfig
-arm                           efm32_defconfig
-sh                         ecovec24_defconfig
-sh                           se7721_defconfig
-x86_64                 randconfig-v0-06152218
-x86_64                 randconfig-v0-06152223
-x86_64                 randconfig-v0-06152232
-x86_64                 randconfig-v0-06152237
-x86_64                 randconfig-v0-06152249
-i386                   randconfig-b0-06152201
-i386                   randconfig-b0-06152224
-i386                   randconfig-b0-06152230
-i386                   randconfig-b0-06152237
-i386                   randconfig-b0-06152241
-x86_64                 randconfig-b0-06152202
-x86_64                 randconfig-b0-06152208
-x86_64                 randconfig-b0-06152220
-x86_64                 randconfig-b0-06152231
-x86_64                 randconfig-b0-06152241
-i386                   randconfig-h0-06152224
-i386                   randconfig-h1-06152224
-x86_64                 randconfig-h0-06152218
-x86_64                 randconfig-h0-06152228
-x86_64                 randconfig-n0-06152201
-x86_64                 randconfig-n0-06152209
-x86_64                 randconfig-n0-06152215
-x86_64                 randconfig-n0-06152229
-i386                  randconfig-sb0-06152202
-i386                  randconfig-sb0-06152218
-i386                  randconfig-sb0-06152237
-i386                  randconfig-sb0-06152253
-x86_64                 randconfig-r0-06152224
-x86_64                 randconfig-r0-06152232
-x86_64                 randconfig-s0-06152223
-x86_64                 randconfig-s0-06152240
-i386                   randconfig-x0-06152201
-i386                   randconfig-x0-06152222
+---
 
-Thanks,
-Fengguang
+Mark Rustad (2):
+      ixgbe: Add support for UDP-encapsulated tx checksum offload
+      ixgbe: Add support for VXLAN RX offloads
+
+
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h       |    6 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c |   18 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  |  185 ++++++++++++++++++++----
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h  |   15 +-
+ 4 files changed, 181 insertions(+), 43 deletions(-)
+
+-- 
+Mark Rustad, Network Division, Intel Corporation
