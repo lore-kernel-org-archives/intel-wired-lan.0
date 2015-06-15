@@ -1,8 +1,8 @@
 From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Date: Mon, 15 Jun 2015 10:48:03 +0000
-Subject: [Intel-wired-lan] [PATCH 2/3] ixgbe,
-	ixgbevf: error MC promisc unless trusted
-Message-ID: <7F861DC0615E0C47A872E6F3C5FCDDBD05EDEFBF@BPXM14GP.gisp.nec.co.jp>
+Date: Mon, 15 Jun 2015 10:48:57 +0000
+Subject: [Intel-wired-lan] [PATCH 3/3] ixgbe: ping to reset on changing
+	trust status
+Message-ID: <7F861DC0615E0C47A872E6F3C5FCDDBD05EDEFDD@BPXM14GP.gisp.nec.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,91 +11,62 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-Make PF returns an error to VF multicast promiscuous mode if the VF is not
-trusted. On VF, check the result from PF and fallback to previous behavior
-that only 30 addresses are registered.
+Send a ping to reset VF on changing the status of trusting.
+VF driver will reconfigure its features on reset.
 
 Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |  9 +++++----
- drivers/net/ethernet/intel/ixgbevf/vf.c        | 21 +++++++++++++++++----
- 2 files changed, 22 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 25 +++++++++++++++++--------
+ 1 file changed, 17 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-index 6c602bc..5eb3108 100644
+index 5eb3108..7bb9926 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-@@ -1074,6 +1074,10 @@ static int ixgbe_set_vf_mc_promisc(struct ixgbe_adapter *adapter,
- 	if (adapter->vfinfo[vf].mc_promisc == enable)
- 		return 0;
+@@ -1212,18 +1212,23 @@ void ixgbe_disable_tx_rx(struct ixgbe_adapter *adapter)
+ 	IXGBE_WRITE_REG(hw, IXGBE_VFRE(1), 0);
+ }
  
-+	/* Don't enable MC promisc unless VF is trusted */
-+	if (enable && !adapter->vfinfo[vf].trusted)
-+		return -1;
+-void ixgbe_ping_all_vfs(struct ixgbe_adapter *adapter)
++static void ixgbe_ping_vf(struct ixgbe_adapter *adapter, int vf)
+ {
+ 	struct ixgbe_hw *hw = &adapter->hw;
+ 	u32 ping;
 +
- 	adapter->vfinfo[vf].mc_promisc = enable;
++	ping = IXGBE_PF_CONTROL_MSG;
++	if (adapter->vfinfo[vf].clear_to_send)
++		ping |= IXGBE_VT_MSGTYPE_CTS;
++	ixgbe_write_mbx(hw, &ping, 1, vf);
++}
++
++void ixgbe_ping_all_vfs(struct ixgbe_adapter *adapter)
++{
+ 	int i;
  
- 	if (enable)
-@@ -1513,10 +1517,7 @@ int ixgbe_ndo_set_vf_trust(struct net_device *netdev, int vf, bool setting)
+-	for (i = 0 ; i < adapter->num_vfs; i++) {
+-		ping = IXGBE_PF_CONTROL_MSG;
+-		if (adapter->vfinfo[i].clear_to_send)
+-			ping |= IXGBE_VT_MSGTYPE_CTS;
+-		ixgbe_write_mbx(hw, &ping, 1, i);
+-	}
++	for (i = 0 ; i < adapter->num_vfs; i++)
++		ixgbe_ping_vf(adapter, i);
+ }
+ 
+ int ixgbe_ndo_set_vf_mac(struct net_device *netdev, int vf, u8 *mac)
+@@ -1517,7 +1522,11 @@ int ixgbe_ndo_set_vf_trust(struct net_device *netdev, int vf, bool setting)
  
  	adapter->vfinfo[vf].trusted = setting;
  
--	/* Reconfigure features which are only allowed for trusted VF */
--	/* VF multicast promiscuous mode */
--	if (adapter->vfinfo[vf].mc_promisc)
--		ixgbe_enable_vf_mc_promisc(adapter, vf);
-+	/* TODO: reset to reconfigure features */
+-	/* TODO: reset to reconfigure features */
++	/* reset VF to reconfigure features */
++	adapter->vfinfo[vf].clear_to_send = false;
++	ixgbe_ping_vf(adapter, vf);
++
++	e_info(drv, "VF %u is %strusted\n", vf, setting ? "" : "not ");
  
  	return 0;
  }
-diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.c b/drivers/net/ethernet/intel/ixgbevf/vf.c
-index 89aecd0..6547c17 100644
---- a/drivers/net/ethernet/intel/ixgbevf/vf.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/vf.c
-@@ -430,6 +430,7 @@ static s32 ixgbevf_request_mc_promisc_vf(struct ixgbe_hw *hw)
- {
- 	struct ixgbevf_adapter *adapter = hw->back;
- 	u32 msgbuf[IXGBE_VFMAILBOX_SIZE];
-+	int err;
- 
- 	dev_info(&adapter->pdev->dev, "Request MC PROMISC\n");
- 
-@@ -439,7 +440,17 @@ static s32 ixgbevf_request_mc_promisc_vf(struct ixgbe_hw *hw)
- 	msgbuf[0] = IXGBE_VF_SET_MC_PROMISC;
- 	msgbuf[1] = 1;
- 
--	ixgbevf_write_msg_read_ack(hw, msgbuf, 2);
-+	err = hw->mbx.ops.write_posted(hw, msgbuf, 2);
-+	if (err)
-+		return err;
-+	err = hw->mbx.ops.read_posted(hw, msgbuf, 2);
-+	if (err)
-+		return err;
-+
-+	msgbuf[0] &= ~IXGBE_VT_MSGTYPE_CTS;
-+
-+	if (msgbuf[0] == (IXGBE_VF_SET_MC_PROMISC | IXGBE_VT_MSGTYPE_NACK))
-+		return -EPERM;
- 
- 	return 0;
- }
-@@ -474,11 +485,13 @@ static s32 ixgbevf_update_mc_addr_list_vf(struct ixgbe_hw *hw,
- 		 * mode, turn it on.
- 		 */
- 		if (hw->api_version == ixgbe_mbox_api_12) {
--			if (!hw->mac.mc_promisc) {
--				ixgbevf_request_mc_promisc_vf(hw);
-+			if (!hw->mac.mc_promisc &&
-+			    !ixgbevf_request_mc_promisc_vf(hw)) {
- 				hw->mac.mc_promisc = true;
- 			}
--			return 0;
-+			/* If we are in MC promisc, return here */
-+			if (hw->mac.mc_promisc)
-+				return 0;
- 		}
- 		cnt = 30;
- 	}
 -- 
 1.8.3.1
 
