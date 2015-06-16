@@ -1,50 +1,35 @@
-From: Alexander Duyck <alexander.h.duyck@redhat.com>
-Date: Tue, 16 Jun 2015 11:47:12 -0700
-Subject: [Intel-wired-lan] [PATCH] fm10k: Don't assume page fragments are
-	page size
-Message-ID: <20150616184712.1966.44790.stgit@ahduyck-vm-fedora22>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Tue, 16 Jun 2015 13:39:11 -0700
+Subject: [Intel-wired-lan] [PATCH rc2] fm10k: use an unsigned int for i in
+	ethtool_get_strings
+Message-ID: <1434487151-2735-1-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This change pulls out the optimization that assumed that all fragments
-would be limited to page size.  That hasn't been the case for some time now
-and to assume this is incorrect as the TCP allocator can provide up to a
-32K page fragment.
+The value will never be negative, and we use the %u print format. Thus,
+use unsigned int for the loop counter. Issue found using cppcheck.
 
-Signed-off-by: Alexander Duyck <alexander.h.duyck@redhat.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_main.c |    7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index 982fdcdc795b..620ff5e9dc59 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -1079,9 +1079,7 @@ netdev_tx_t fm10k_xmit_frame_ring(struct sk_buff *skb,
- 	struct fm10k_tx_buffer *first;
- 	int tso;
- 	u32 tx_flags = 0;
--#if PAGE_SIZE > FM10K_MAX_DATA_PER_TXD
- 	unsigned short f;
--#endif
- 	u16 count = TXD_USE_COUNT(skb_headlen(skb));
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+index 4b9d9f88af70..06f0b08d9af5 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+@@ -124,7 +124,7 @@ static void fm10k_get_strings(struct net_device *dev, u32 stringset, u8 *data)
+ {
+ 	struct fm10k_intfc *interface = netdev_priv(dev);
+ 	char *p = (char *)data;
+-	int i;
++	unsigned int i;
  
- 	/* need: 1 descriptor per page * PAGE_SIZE/FM10K_MAX_DATA_PER_TXD,
-@@ -1089,12 +1087,9 @@ netdev_tx_t fm10k_xmit_frame_ring(struct sk_buff *skb,
- 	 *       + 2 desc gap to keep tail from touching head
- 	 * otherwise try next time
- 	 */
--#if PAGE_SIZE > FM10K_MAX_DATA_PER_TXD
- 	for (f = 0; f < skb_shinfo(skb)->nr_frags; f++)
- 		count += TXD_USE_COUNT(skb_shinfo(skb)->frags[f].size);
--#else
--	count += skb_shinfo(skb)->nr_frags;
--#endif
-+
- 	if (fm10k_maybe_stop_tx(tx_ring, count + 3)) {
- 		tx_ring->tx_stats.tx_busy++;
- 		return NETDEV_TX_BUSY;
+ 	switch (stringset) {
+ 	case ETH_SS_TEST:
+-- 
+2.4.2
 
