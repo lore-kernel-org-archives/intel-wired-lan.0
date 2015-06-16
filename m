@@ -1,77 +1,70 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 16 Jun 2015 13:41:43 -0700
-Subject: [Intel-wired-lan] [PATCH rc3] fm10k: use dma_set_mask_and_coherent
-	in fm10k_probe
-Message-ID: <1434487303-4833-1-git-send-email-jacob.e.keller@intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Tue, 16 Jun 2015 21:38:55 +0000
+Subject: [Intel-wired-lan] [PATCH] fm10k: Don't assume page fragments
+ are page size
+In-Reply-To: <20150616184712.1966.44790.stgit@ahduyck-vm-fedora22>
+References: <20150616184712.1966.44790.stgit@ahduyck-vm-fedora22>
+Message-ID: <1434490735.12272.5.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch cleans up the use of dma_get_required_mask and uses the
-simpler dma_set_mask_and_coherent function instead of doing these as
-separate steps.
+Acked-by: Jacob Keller <jacob.e.keller@intel.com>
 
-I removed the dma_get_required_mask call because based on some minimal
-testing it appears that either (a) we're not doing the right thing with
-the call or (b) we don't need it anyways. If the value returned is
-<48bits, we'll end up trying with 48 bits anyways. If it's over 48bits,
-fm10k can't support that anyways, and we should try 48bits. If 48bits
-fails, we'll fallback to 32bits. This cleans up some very funky code.
+Regards,
+Jake
 
-- rc2
-* add back goto err_dma
-
-- rc3
-* use %d for error code printf
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 24 ++++++------------------
- 1 file changed, 6 insertions(+), 18 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index fe54c781d0bf..ce53ff25f88d 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -1741,30 +1741,18 @@ static int fm10k_probe(struct pci_dev *pdev,
- 	struct fm10k_intfc *interface;
- 	struct fm10k_hw *hw;
- 	int err;
--	u64 dma_mask;
- 
- 	err = pci_enable_device_mem(pdev);
- 	if (err)
- 		return err;
- 
--	/* By default fm10k only supports a 48 bit DMA mask */
--	dma_mask = DMA_BIT_MASK(48) | dma_get_required_mask(&pdev->dev);
--
--	if ((dma_mask <= DMA_BIT_MASK(32)) ||
--	    dma_set_mask_and_coherent(&pdev->dev, dma_mask)) {
--		dma_mask &= DMA_BIT_MASK(32);
--
-+	err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(48));
-+	if (err)
- 		err = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
--		err = dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
--		if (err) {
--			err = dma_set_coherent_mask(&pdev->dev,
--						    DMA_BIT_MASK(32));
--			if (err) {
--				dev_err(&pdev->dev,
--					"No usable DMA configuration, aborting\n");
--				goto err_dma;
--			}
--		}
-+	if (err) {
-+		dev_err(&pdev->dev,
-+			"DMA configuration failed: %d\n", err);
-+		goto err_dma;
- 	}
- 
- 	err = pci_request_selected_regions(pdev,
--- 
-2.4.2
-
+On Tue, 2015-06-16 at 11:47 -0700, Alexander Duyck wrote:
+> This change pulls out the optimization that assumed that all 
+> fragments
+> would be limited to page size.  That hasn't been the case for some 
+> time now
+> and to assume this is incorrect as the TCP allocator can provide up 
+> to a
+> 32K page fragment.
+> 
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@redhat.com>
+> ---
+>  drivers/net/ethernet/intel/fm10k/fm10k_main.c |    7 +------
+>  1 file changed, 1 insertion(+), 6 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c 
+> b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+> index 982fdcdc795b..620ff5e9dc59 100644
+> --- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+> @@ -1079,9 +1079,7 @@ netdev_tx_t fm10k_xmit_frame_ring(struct 
+> sk_buff *skb,
+>       struct fm10k_tx_buffer *first;
+>       int tso;
+>       u32 tx_flags = 0;
+> -#if PAGE_SIZE > FM10K_MAX_DATA_PER_TXD
+>       unsigned short f;
+> -#endif
+>       u16 count = TXD_USE_COUNT(skb_headlen(skb));
+>  
+>       /* need: 1 descriptor per page * 
+> PAGE_SIZE/FM10K_MAX_DATA_PER_TXD,
+> @@ -1089,12 +1087,9 @@ netdev_tx_t fm10k_xmit_frame_ring(struct 
+> sk_buff *skb,
+>        *       + 2 desc gap to keep tail from touching head
+>        * otherwise try next time
+>        */
+> -#if PAGE_SIZE > FM10K_MAX_DATA_PER_TXD
+>       for (f = 0; f < skb_shinfo(skb)->nr_frags; f++)
+>               count += TXD_USE_COUNT(skb_shinfo(skb)
+> ->frags[f].size);
+> -#else
+> -     count += skb_shinfo(skb)->nr_frags;
+> -#endif
+> +
+>       if (fm10k_maybe_stop_tx(tx_ring, count + 3)) {
+>               tx_ring->tx_stats.tx_busy++;
+>               return NETDEV_TX_BUSY;
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at lists.osuosl.org
+> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
