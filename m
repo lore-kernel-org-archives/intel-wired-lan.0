@@ -1,302 +1,146 @@
-From: Donald C Skidmore <donald.c.skidmore@intel.com>
-Date: Wed, 17 Jun 2015 17:34:31 -0400
-Subject: [Intel-wired-lan] [net-next PATCH 2] ixgbe: Add support for
- entering low power link up state
-Message-ID: <20150617213431.5311.39687.stgit@dcs-desk.jf.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 18 Jun 2015 06:49:08 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
+ 986eec4341729549778f374dfc97e69a991302df BUILD SUCCESS
+Message-ID: <5581f964.ZbTRSEE+vnXoIyv/%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Don Skidmore <donald.c.skidmore@intel.com>
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
+986eec4341729549778f374dfc97e69a991302df  fm10k: Fix missing braces after if statement
 
-When the device is closing or suspending, call ixgbe_enter_lplu to
-enter low power link up state on devices that support it. When this
-is done, prevent the phy from being reset in the ixgbe_down path
-so that link is present when calling ixgbe_enter_lplu.
+elapsed time: 75m
 
-Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   10 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |   34 ++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |  143 +++++++++++++++++++++++++
- 3 files changed, 185 insertions(+), 2 deletions(-)
+configs tested: 125
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 707f6cc..5a0f603 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -5786,7 +5786,15 @@ static void ixgbe_close_suspend(struct ixgbe_adapter *adapter)
- {
- 	ixgbe_ptp_suspend(adapter);
- 
--	ixgbe_down(adapter);
-+	if (adapter->hw.phy.ops.enter_lplu) {
-+		adapter->hw.phy.reset_disable = true;
-+		ixgbe_down(adapter);
-+		adapter->hw.phy.ops.enter_lplu(&adapter->hw);
-+		adapter->hw.phy.reset_disable = false;
-+	} else {
-+		ixgbe_down(adapter);
-+	}
-+
- 	ixgbe_free_irq(adapter);
- 
- 	ixgbe_free_all_tx_resources(adapter);
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-index 938a410..204712e 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-@@ -848,6 +848,7 @@ struct ixgbe_thermal_sensor_data {
- #define IXGBE_MDIO_AUTO_NEG_LINK_STATUS	0x4 /* Indicates if link is up */
- 
- #define IXGBE_MDIO_AUTO_NEG_VENDOR_STATUS_MASK	0x7 /* Speed/Duplex Mask */
-+#define IXGBE_MDIO_AUTO_NEG_VEN_STAT_SPEED_MASK	0x6 /* Speed Mask */
- #define IXGBE_MDIO_AUTO_NEG_VENDOR_STATUS_10M_HALF 0x0 /* 10Mb/s Half Duplex */
- #define IXGBE_MDIO_AUTO_NEG_VENDOR_STATUS_10M_FULL 0x1 /* 10Mb/s Full Duplex */
- #define IXGBE_MDIO_AUTO_NEG_VENDOR_STATUS_100M_HALF 0x2 /* 100Mb/s H Duplex */
-@@ -856,6 +857,24 @@ struct ixgbe_thermal_sensor_data {
- #define IXGBE_MDIO_AUTO_NEG_VENDOR_STATUS_1GB_FULL 0x5 /* 1Gb/s Full Duplex */
- #define IXGBE_MDIO_AUTO_NEG_VENDOR_STATUS_10GB_HALF 0x6 /* 10Gb/s Half Duplex */
- #define IXGBE_MDIO_AUTO_NEG_VENDOR_STATUS_10GB_FULL 0x7 /* 10Gb/s Full Duplex */
-+#define IXGBE_MDIO_AUTO_NEG_VENDOR_STATUS_1GB	0x4 /* 1Gb/s */
-+#define IXGBE_MDIO_AUTO_NEG_VENDOR_STATUS_10GB	0x6 /* 10Gb/s */
-+
-+#define IXGBE_MII_10GBASE_T_AUTONEG_CTRL_REG	0x20	/* 10G Control Reg */
-+#define IXGBE_MII_AUTONEG_VENDOR_PROVISION_1_REG 0xC400	/* 1G Provisioning 1 */
-+#define IXGBE_MII_AUTONEG_XNP_TX_REG		0x17	/* 1G XNP Transmit */
-+#define IXGBE_MII_AUTONEG_ADVERTISE_REG		0x10	/* 100M Advertisement */
-+#define IXGBE_MII_10GBASE_T_ADVERTISE		0x1000	/* full duplex, bit:12*/
-+#define IXGBE_MII_1GBASE_T_ADVERTISE_XNP_TX	0x4000	/* full duplex, bit:14*/
-+#define IXGBE_MII_1GBASE_T_ADVERTISE		0x8000	/* full duplex, bit:15*/
-+#define IXGBE_MII_2_5GBASE_T_ADVERTISE		0x0400
-+#define IXGBE_MII_5GBASE_T_ADVERTISE		0x0800
-+#define IXGBE_MII_100BASE_T_ADVERTISE		0x0100	/* full duplex, bit:8 */
-+#define IXGBE_MII_100BASE_T_ADVERTISE_HALF	0x0080	/* half duplex, bit:7 */
-+#define IXGBE_MII_RESTART			0x200
-+#define IXGBE_MII_AUTONEG_COMPLETE		0x20
-+#define IXGBE_MII_AUTONEG_LINK_UP		0x04
-+#define IXGBE_MII_AUTONEG_REG			0x0
- 
- /* Management */
- #define IXGBE_MAVTV(_i) (0x05010 + ((_i) * 4)) /* 8 of these (0-7) */
-@@ -1305,6 +1324,7 @@ struct ixgbe_thermal_sensor_data {
- #define IXGBE_MDIO_AUTO_NEG_CONTROL	0x0 /* AUTO_NEG Control Reg */
- #define IXGBE_MDIO_AUTO_NEG_STATUS	0x1 /* AUTO_NEG Status Reg */
- #define IXGBE_MDIO_AUTO_NEG_VENDOR_STAT	0xC800 /* AUTO_NEG Vendor Status Reg */
-+#define IXGBE_MDIO_AUTO_NEG_VENDOR_TX_ALARM  0xCC00 /* AUTO_NEG Vendor TX Reg */
- #define IXGBE_MDIO_AUTO_NEG_VENDOR_TX_ALARM2 0xCC01 /* AUTO_NEG Vendor Tx Reg */
- #define IXGBE_MDIO_AUTO_NEG_VEN_LSC	0x1 /* AUTO_NEG Vendor Tx LSC */
- #define IXGBE_MDIO_AUTO_NEG_ADVT	0x10 /* AUTO_NEG Advt Reg */
-@@ -1312,7 +1332,8 @@ struct ixgbe_thermal_sensor_data {
- #define IXGBE_MDIO_AUTO_NEG_EEE_ADVT	0x3C /* AUTO_NEG EEE Advt Reg */
- 
- #define IXGBE_MDIO_PHY_SET_LOW_POWER_MODE	 0x0800 /* Set low power mode */
--
-+#define IXGBE_AUTO_NEG_LP_STATUS	0xE820 /* AUTO NEG Rx LP Status Reg */
-+#define IXGBE_AUTO_NEG_LP_1000BASE_CAP	0x8000 /* AUTO NEG Rx LP 1000BaseT */
- #define IXGBE_MDIO_TX_VENDOR_ALARMS_3	0xCC02 /* Vendor Alarms 3 Reg */
- #define IXGBE_MDIO_TX_VENDOR_ALARMS_3_RST_MASK 0x3 /* PHY Reset Complete Mask */
- #define IXGBE_MDIO_GLOBAL_RES_PR_10 0xC479 /* Global Resv Provisioning 10 Reg */
-@@ -2041,6 +2062,11 @@ enum {
- #define IXGBE_NVM_POLL_WRITE       1  /* Flag for polling for write complete */
- #define IXGBE_NVM_POLL_READ        0  /* Flag for polling for read complete */
- 
-+#define NVM_INIT_CTRL_3			0x38
-+#define NVM_INIT_CTRL_3_LPLU		0x8
-+#define NVM_INIT_CTRL_3_D10GMP_PORT0	0x40
-+#define NVM_INIT_CTRL_3_D10GMP_PORT1	0x100
-+
- #define IXGBE_EEPROM_PAGE_SIZE_MAX       128
- #define IXGBE_EEPROM_RD_BUFFER_MAX_COUNT 512 /* EEPROM words # read in burst */
- #define IXGBE_EEPROM_WR_BUFFER_MAX_COUNT 256 /* EEPROM words # wr in burst */
-@@ -3298,6 +3324,7 @@ struct ixgbe_phy_operations {
- 	s32 (*write_i2c_combined)(struct ixgbe_hw *, u8 addr, u16 reg, u16 val);
- 	s32 (*check_overtemp)(struct ixgbe_hw *);
- 	s32 (*set_phy_power)(struct ixgbe_hw *, bool on);
-+	s32 (*enter_lplu)(struct ixgbe_hw *);
- 	s32 (*handle_lasi)(struct ixgbe_hw *hw);
- };
- 
-@@ -3308,6 +3335,7 @@ struct ixgbe_eeprom_info {
- 	u16                             word_size;
- 	u16                             address_bits;
- 	u16                             word_page_size;
-+	u16				ctrl_word_3;
- };
- 
- #define IXGBE_FLAGS_DOUBLE_RESET_REQUIRED	0x01
-@@ -3463,6 +3491,10 @@ struct ixgbe_info {
- #define IXGBE_ERR_FDIR_CMD_INCOMPLETE		-38
- #define IXGBE_NOT_IMPLEMENTED                   0x7FFFFFFF
- 
-+#define IXGBE_FUSES0_GROUP(_i)		(0x11158 + ((_i) * 4))
-+#define IXGBE_FUSES0_300MHZ		BIT(5)
-+#define IXGBE_FUSES0_REV1		BIT(6)
-+
- #define IXGBE_KRM_PORT_CAR_GEN_CTRL(P)	((P) ? 0x8010 : 0x4010)
- #define IXGBE_KRM_LINK_CTRL_1(P)	((P) ? 0x820C : 0x420C)
- #define IXGBE_KRM_DSP_TXFFE_STATE_4(P)	((P) ? 0x8634 : 0x4634)
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index 662d2e8..bbc5a2d 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -1458,6 +1458,144 @@ static s32 ixgbe_reset_phy_t_X550em(struct ixgbe_hw *hw)
- 	return ixgbe_enable_lasi_ext_t_x550em(hw);
- }
- 
-+/** ixgbe_get_lcd_x550em - Determine lowest common denominator
-+ *  @hw: pointer to hardware structure
-+ *  @lcd_speed: pointer to lowest common link speed
-+ *
-+ *  Determine lowest common link speed with link partner.
-+ **/
-+static s32 ixgbe_get_lcd_t_x550em(struct ixgbe_hw *hw,
-+				  ixgbe_link_speed *lcd_speed)
-+{
-+	u16 an_lp_status;
-+	s32 status;
-+	u16 word = hw->eeprom.ctrl_word_3;
-+
-+	*lcd_speed = IXGBE_LINK_SPEED_UNKNOWN;
-+
-+	status = hw->phy.ops.read_reg(hw, IXGBE_AUTO_NEG_LP_STATUS,
-+				      IXGBE_MDIO_AUTO_NEG_DEV_TYPE,
-+				      &an_lp_status);
-+	if (status)
-+		return status;
-+
-+	/* If link partner advertised 1G, return 1G */
-+	if (an_lp_status & IXGBE_AUTO_NEG_LP_1000BASE_CAP) {
-+		*lcd_speed = IXGBE_LINK_SPEED_1GB_FULL;
-+		return status;
-+	}
-+
-+	/* If 10G disabled for LPLU via NVM D10GMP, then return no valid LCD */
-+	if ((hw->bus.lan_id && (word & NVM_INIT_CTRL_3_D10GMP_PORT1)) ||
-+	    (word & NVM_INIT_CTRL_3_D10GMP_PORT0))
-+		return status;
-+
-+	/* Link partner not capable of lower speeds, return 10G */
-+	*lcd_speed = IXGBE_LINK_SPEED_10GB_FULL;
-+	return status;
-+}
-+
-+/** ixgbe_enter_lplu_x550em - Transition to low power states
-+ *  @hw: pointer to hardware structure
-+ *
-+ *  Configures Low Power Link Up on transition to low power states
-+ *  (from D0 to non-D0). Link is required to enter LPLU so avoid resetting
-+ *  the X557 PHY immediately prior to entering LPLU.
-+ **/
-+static s32 ixgbe_enter_lplu_t_x550em(struct ixgbe_hw *hw)
-+{
-+	u16 an_10g_cntl_reg, autoneg_reg, speed;
-+	s32 status;
-+	ixgbe_link_speed lcd_speed;
-+	u32 save_autoneg;
-+	bool link_up;
-+
-+	/* SW LPLU not required on later HW revisions. */
-+	if (IXGBE_FUSES0_REV1 & IXGBE_READ_REG(hw, IXGBE_FUSES0_GROUP(0)))
-+		return 0;
-+
-+	/* If blocked by MNG FW, then don't restart AN */
-+	if (ixgbe_check_reset_blocked(hw))
-+		return 0;
-+
-+	status = ixgbe_ext_phy_t_x550em_get_link(hw, &link_up);
-+	if (status)
-+		return status;
-+
-+	status = hw->eeprom.ops.read(hw, NVM_INIT_CTRL_3,
-+				     &hw->eeprom.ctrl_word_3);
-+	if (status)
-+		return status;
-+
-+	/* If link is down, LPLU disabled in NVM, WoL disabled, or
-+	 * manageability disabled, then force link down by entering
-+	 * low power mode.
-+	 */
-+	if (!link_up || !(hw->eeprom.ctrl_word_3 & NVM_INIT_CTRL_3_LPLU) ||
-+	    !(hw->wol_enabled || ixgbe_mng_present(hw)))
-+		return ixgbe_set_copper_phy_power(hw, false);
-+
-+	/* Determine LCD */
-+	status = ixgbe_get_lcd_t_x550em(hw, &lcd_speed);
-+	if (status)
-+		return status;
-+
-+	/* If no valid LCD link speed, then force link down and exit. */
-+	if (lcd_speed == IXGBE_LINK_SPEED_UNKNOWN)
-+		return ixgbe_set_copper_phy_power(hw, false);
-+
-+	status = hw->phy.ops.read_reg(hw, IXGBE_MDIO_AUTO_NEG_VENDOR_STAT,
-+				      IXGBE_MDIO_AUTO_NEG_DEV_TYPE,
-+				      &speed);
-+	if (status)
-+		return status;
-+
-+	/* If no link now, speed is invalid so take link down */
-+	status = ixgbe_ext_phy_t_x550em_get_link(hw, &link_up);
-+	if (status)
-+		return ixgbe_set_copper_phy_power(hw, false);
-+
-+	/* clear everything but the speed bits */
-+	speed &= IXGBE_MDIO_AUTO_NEG_VEN_STAT_SPEED_MASK;
-+
-+	/* If current speed is already LCD, then exit. */
-+	if (((speed == IXGBE_MDIO_AUTO_NEG_VENDOR_STATUS_1GB) &&
-+	     (lcd_speed == IXGBE_LINK_SPEED_1GB_FULL)) ||
-+	    ((speed == IXGBE_MDIO_AUTO_NEG_VENDOR_STATUS_10GB) &&
-+	     (lcd_speed == IXGBE_LINK_SPEED_10GB_FULL)))
-+		return status;
-+
-+	/* Clear AN completed indication */
-+	status = hw->phy.ops.read_reg(hw, IXGBE_MDIO_AUTO_NEG_VENDOR_TX_ALARM,
-+				      IXGBE_MDIO_AUTO_NEG_DEV_TYPE,
-+				      &autoneg_reg);
-+	if (status)
-+		return status;
-+
-+	status = hw->phy.ops.read_reg(hw, IXGBE_MII_10GBASE_T_AUTONEG_CTRL_REG,
-+				      IXGBE_MDIO_AUTO_NEG_DEV_TYPE,
-+				      &an_10g_cntl_reg);
-+	if (status)
-+		return status;
-+
-+	status = hw->phy.ops.read_reg(hw,
-+				      IXGBE_MII_AUTONEG_VENDOR_PROVISION_1_REG,
-+				      IXGBE_MDIO_AUTO_NEG_DEV_TYPE,
-+				      &autoneg_reg);
-+	if (status)
-+		return status;
-+
-+	save_autoneg = hw->phy.autoneg_advertised;
-+
-+	/* Setup link at least common link speed */
-+	status = hw->mac.ops.setup_link(hw, lcd_speed, false);
-+
-+	/* restore autoneg from before setting lplu speed */
-+	hw->phy.autoneg_advertised = save_autoneg;
-+
-+	return status;
-+}
-+
- /** ixgbe_init_phy_ops_X550em - PHY/SFP specific init
-  *  @hw: pointer to hardware structure
-  *
-@@ -1528,6 +1666,11 @@ static s32 ixgbe_init_phy_ops_X550em(struct ixgbe_hw *hw)
- 			ret_val = ixgbe_setup_kr_speed_x550em(hw, speed);
- 		}
- 
-+		/* setup SW LPLU only for first revision */
-+		if (!(IXGBE_FUSES0_REV1 & IXGBE_READ_REG(hw,
-+							IXGBE_FUSES0_GROUP(0))))
-+			phy->ops.enter_lplu = ixgbe_enter_lplu_t_x550em;
-+
- 		phy->ops.handle_lasi = ixgbe_handle_lasi_ext_t_x550em;
- 		phy->ops.reset = ixgbe_reset_phy_t_X550em;
- 		break;
+parisc                        c3000_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+i386                     randconfig-a0-201524
+x86_64                            allnoconfig
+arm                                    sa1100
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                                   samsung
+arm                                  iop-adma
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                                        sh
+mips                        qi_lb60_defconfig
+s390                              allnoconfig
+sparc64                           allnoconfig
+arm64                             allnoconfig
+mips                            gpr_defconfig
+mips                      maltasmvp_defconfig
+mips                             alldefconfig
+powerpc                   gef_ppc9a_defconfig
+sh                               allmodconfig
+blackfin                BF533-EZKIT_defconfig
+openrisc                    or1ksim_defconfig
+sh                      rts7751r2d1_defconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+x86_64                 randconfig-v0-06180620
+x86_64                 randconfig-v0-06180628
+x86_64                 randconfig-v0-06180646
+i386                              allnoconfig
+i386                                defconfig
+i386                             allmodconfig
+i386                             alldefconfig
+x86_64                           alldefconfig
+m68k                          hp300_defconfig
+mips                                defconfig
+sh                     sh7710voipgw_defconfig
+mips                                   jz4740
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201524
+i386                   randconfig-b0-06180620
+i386                   randconfig-b0-06180631
+blackfin                BF538-EZKIT_defconfig
+ia64                          tiger_defconfig
+m32r                      mappi.smp_defconfig
+parisc                      default_defconfig
+arm                          badge4_defconfig
+arm                            netx_defconfig
+avr32                     atstk1003_defconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201524
+i386                             allyesconfig
+x86_64                 randconfig-b0-06180616
+x86_64                 randconfig-b0-06180623
+x86_64                 randconfig-b0-06180639
+sparc                               defconfig
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF526-EZBRD_defconfig
+i386                     randconfig-n0-201524
+i386                     randconfig-n1-201524
+i386                   randconfig-h0-06180611
+i386                   randconfig-h1-06180611
+mn10300                     asb2364_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                            defconfig
+sh                           se7206_defconfig
+xtensa                  audio_kc705_defconfig
+x86_64                                   rhel
+x86_64                 randconfig-h0-06180616
+x86_64                 randconfig-h0-06180633
+x86_64                 randconfig-n0-06180620
+x86_64                 randconfig-n0-06180634
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                          amiga_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+i386                  randconfig-sb0-06180622
+x86_64                           allmodconfig
+x86_64                 randconfig-x005-201524
+x86_64                 randconfig-x006-201524
+x86_64                 randconfig-x009-201524
+x86_64                 randconfig-x000-201524
+x86_64                 randconfig-x003-201524
+x86_64                 randconfig-x007-201524
+x86_64                 randconfig-x001-201524
+x86_64                 randconfig-x002-201524
+x86_64                 randconfig-x008-201524
+x86_64                 randconfig-x004-201524
+x86_64                                    lkp
+i386                     randconfig-r0-201524
+x86_64                 randconfig-s0-06180626
+i386                   randconfig-x006-201524
+i386                   randconfig-x007-201524
+i386                   randconfig-x002-201524
+i386                   randconfig-x001-201524
+i386                   randconfig-x000-201524
+i386                   randconfig-x003-201524
+i386                   randconfig-x005-201524
+i386                   randconfig-x009-201524
+i386                   randconfig-x008-201524
+i386                   randconfig-x004-201524
+i386                   randconfig-x0-06180622
 
+Thanks,
+Fengguang
