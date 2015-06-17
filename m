@@ -1,19 +1,20 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 17 Jun 2015 10:23:53 -0700
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Wed, 17 Jun 2015 11:44:01 -0500
 Subject: [Intel-wired-lan] [PATCH V3 0/2] pci: Provide a flag to access
- VPD through function 0
+	VPD through function 0
 In-Reply-To: <45099CC7-DDAB-41D9-AB74-5A81E2AAF64C@intel.com>
 References: <20150603184445.109080.36387.stgit@mdrustad-wks.jf.intel.com>
  <051B68B4-3E77-4EB0-B9FE-8523631884A2@intel.com>
  <45099CC7-DDAB-41D9-AB74-5A81E2AAF64C@intel.com>
-Message-ID: <5581AD29.2040406@gmail.com>
+Message-ID: <CAErSpo7e-QtQQTj2yh_jG07vqU1j1YBez_9wrcrzOQs7+eDFng@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 06/17/2015 09:29 AM, Rustad, Mark D wrote:
+On Wed, Jun 17, 2015 at 11:29 AM, Rustad, Mark D
+<mark.d.rustad@intel.com> wrote:
 > + Alex
 >
 >> On Jun 5, 2015, at 2:59 PM, Rustad, Mark D <mark.d.rustad@intel.com> wrote:
@@ -46,10 +47,12 @@ On 06/17/2015 09:29 AM, Rustad, Mark D wrote:
 >>> - Check that function 0 has VPD
 >>> - Make a helper for the function 0 checks
 >>> - Moved a multifunction check to the quirk patch
+>>
 >> So does this series look acceptable now? I think I addressed the issues that Alex raised. Can these also be considered for -stable?
+>
 > More than a week has passed without any comment. Is this going to be accepted or is there still an issue?
 
-Yeah, this looks like it has addressed most of the corner cases so I am 
-good with it.
+Sorry, Mark, I've just been busy with other issues and haven't had a
+chance to look at this yet.
 
-Acked-by: Alexander Duyck <alexander.h.duyck@redhat.com>
+Bjorn
