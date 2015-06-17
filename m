@@ -1,284 +1,154 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 17 Jun 2015 16:27:35 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
- f8ef6f74528321b1f2ed89b201c8ea7bc1a69baa BUILD SUCCESS
-Message-ID: <55812f77.54wCh1CRpYcWthfk%fengguang.wu@intel.com>
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Date: Wed, 17 Jun 2015 11:41:54 +0000
+Subject: [Intel-wired-lan] [PATCH v6 1/3] if_link: Add control trust VF
+Message-ID: <7F861DC0615E0C47A872E6F3C5FCDDBD05EE188B@BPXM14GP.gisp.nec.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
-f8ef6f74528321b1f2ed89b201c8ea7bc1a69baa  fm10k: pack TLV overlay structures
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-elapsed time: 600m
+Add netlink directives and ndo entry to trust VF user.
 
-configs tested: 264
+This controls the special permission of VF user.
+The administrator will dedicatedly trust VF user to use some features
+which impacts security and/or performance.
 
-arm                          marzen_defconfig
-arm                            netx_defconfig
-xtensa                       common_defconfig
-powerpc                 mpc832x_rdb_defconfig
-sh                         ap325rxa_defconfig
-sh                          urquell_defconfig
-x86_64                 randconfig-a0-06170642
-x86_64                 randconfig-a0-06170735
-x86_64                 randconfig-a0-06170744
-x86_64                 randconfig-a0-06171451
-x86_64                 randconfig-a0-06171516
-x86_64                 randconfig-a0-06171559
-i386                   randconfig-c0-06170620
-i386                   randconfig-c0-06170712
-i386                   randconfig-c0-06171451
-i386                   randconfig-c0-06171517
-i386                   randconfig-c0-06171559
-m68k                          atari_defconfig
-powerpc                     sbc834x_defconfig
-sh                           se7724_defconfig
-powerpc                   lite5200b_defconfig
-powerpc                 mpc8540_ads_defconfig
-sh                           se7780_defconfig
-arm                              alldefconfig
-arm                           omap1_defconfig
-m32r                      mappi.smp_defconfig
-arm                         lubbock_defconfig
-parisc                          712_defconfig
-xtensa                  audio_kc705_defconfig
-m32r                       mappi.up_defconfig
-mn10300                     asb2303_defconfig
-powerpc               corenet64_smp_defconfig
-powerpc                 mpc832x_mds_defconfig
-tile                             allmodconfig
-ia64                             alldefconfig
-mips                        nlm_xlr_defconfig
-powerpc                mpc8610_hpcd_defconfig
-arm64                            alldefconfig
-mips                         bigsur_defconfig
-sh                        sh7763rdp_defconfig
-blackfin                            defconfig
-mips                         db1xxx_defconfig
-powerpc                      katmai_defconfig
-m68k                       m5475evb_defconfig
-powerpc                       ppc64_defconfig
-powerpc                     tqm8540_defconfig
-blackfin                 BlackStamp_defconfig
-powerpc                     pq2fads_defconfig
-tile                                defconfig
-mips                         rt305x_defconfig
-x86_64                 randconfig-v0-06170615
-x86_64                 randconfig-v0-06170630
-x86_64                 randconfig-v0-06170648
-x86_64                 randconfig-v0-06170718
-x86_64                 randconfig-v0-06170726
-x86_64                 randconfig-v0-06170735
-x86_64                 randconfig-v0-06170742
-x86_64                 randconfig-v0-06171438
-x86_64                 randconfig-v0-06171447
-x86_64                 randconfig-v0-06171454
-x86_64                 randconfig-v0-06171510
-x86_64                 randconfig-v0-06171524
-x86_64                 randconfig-v0-06171531
-x86_64                 randconfig-v0-06171544
-x86_64                 randconfig-v0-06171602
-x86_64                            allnoconfig
-arm                          pxa168_defconfig
-openrisc                            defconfig
-powerpc                 mpc834x_itx_defconfig
-um                             i386_defconfig
-arm                          ks8695_defconfig
-mips                           xway_defconfig
-powerpc                       maple_defconfig
-sh                             espt_defconfig
-avr32                 atngw100_mrmt_defconfig
-blackfin               BF518F-EZBRD_defconfig
-sparc64                          allyesconfig
-mips                            e55_defconfig
-mips                          rm200_defconfig
-sh                ecovec24-romimage_defconfig
-sh                        edosk7705_defconfig
-arm                       cns3420vb_defconfig
-arm                         s3c6400_defconfig
-arm                       versatile_defconfig
-arm                         vf610m4_defconfig
-mips                     sead3micro_defconfig
-mips                         tb0226_defconfig
-powerpc                     tqm8555_defconfig
-um                           x86_64_defconfig
-arm                        mvebu_v5_defconfig
-blackfin                BF533-EZKIT_defconfig
-powerpc64                           defconfig
-i386                             alldefconfig
-avr32                     atstk1002_defconfig
-mips                        bcm47xx_defconfig
-powerpc64                        allyesconfig
-i386                              allnoconfig
-arm                           u8500_defconfig
-powerpc                    sam440ep_defconfig
-xtensa                    smp_lx200_defconfig
-i386                   randconfig-b0-06170620
-i386                   randconfig-b0-06170652
-i386                   randconfig-b0-06170709
-i386                   randconfig-b0-06170719
-i386                   randconfig-b0-06170727
-i386                   randconfig-b0-06170739
-i386                   randconfig-b0-06171443
-i386                   randconfig-b0-06171451
-i386                   randconfig-b0-06171510
-i386                   randconfig-b0-06171518
-i386                   randconfig-b0-06171525
-i386                   randconfig-b0-06171533
-i386                   randconfig-b0-06171548
-i386                   randconfig-b0-06171556
-alpha                               defconfig
-arm                     am200epdkit_defconfig
-arm                         cm_x300_defconfig
-arm                        spear6xx_defconfig
-arm64                            allyesconfig
-powerpc                        icon_defconfig
-sh                           se7343_defconfig
-arm                          nuc960_defconfig
-ia64                             allyesconfig
-sh                   rts7751r2dplus_defconfig
-arm                        cerfcube_defconfig
-arm                      footbridge_defconfig
-blackfin             BF527-EZKIT-V2_defconfig
-mips                           ls1b_defconfig
-blackfin                BF533-STAMP_defconfig
-m32r                           usrv_defconfig
-powerpc                 mpc8315_rdb_defconfig
-arm                          exynos_defconfig
-avr32            atngw100_evklcd100_defconfig
-powerpc                       holly_defconfig
-x86_64                 randconfig-b0-06170636
-x86_64                 randconfig-b0-06170655
-x86_64                 randconfig-b0-06170704
-x86_64                 randconfig-b0-06170716
-x86_64                 randconfig-b0-06170725
-x86_64                 randconfig-b0-06170734
-x86_64                 randconfig-b0-06170740
-x86_64                 randconfig-b0-06171444
-x86_64                 randconfig-b0-06171510
-x86_64                 randconfig-b0-06171522
-x86_64                 randconfig-b0-06171529
-x86_64                 randconfig-b0-06171552
-m68k                        mvme147_defconfig
-mips                                defconfig
-mips                        jmr3927_defconfig
-sh                           se7722_defconfig
-arm                          ixp4xx_defconfig
-arm                            qcom_defconfig
-arm64                               defconfig
-arm                           h3600_defconfig
-arm                             rpc_defconfig
-sh                           se7751_defconfig
-sh                           sh2007_defconfig
-arm                          prima2_defconfig
-avr32                     atstk1003_defconfig
-mips                           ip22_defconfig
-arm                          pxa910_defconfig
-arm                           tegra_defconfig
-blackfin                BF527-EZKIT_defconfig
-m68k                        m5407c3_defconfig
-i386                   randconfig-h0-06170636
-i386                   randconfig-h1-06170636
-i386                   randconfig-h0-06170717
-i386                   randconfig-h1-06170717
-i386                   randconfig-h0-06171447
-i386                   randconfig-h1-06171447
-i386                   randconfig-h0-06171512
-i386                   randconfig-h1-06171512
-i386                   randconfig-h0-06171523
-i386                   randconfig-h1-06171523
-powerpc                     pseries_defconfig
-arm                         bcm2835_defconfig
-arm                           spitz_defconfig
-mips                          lasat_defconfig
-arm                           kzm9g_defconfig
-mips                      pistachio_defconfig
-s390                        default_defconfig
-openrisc                          allnoconfig
-sh                        sh7757lcr_defconfig
-m68k                             allmodconfig
-powerpc                     rainier_defconfig
-x86_64                 randconfig-h0-06170633
-x86_64                 randconfig-h0-06170700
-x86_64                 randconfig-h0-06170714
-x86_64                 randconfig-h0-06170731
-x86_64                 randconfig-h0-06171451
-x86_64                 randconfig-h0-06171519
-x86_64                 randconfig-h0-06171536
-x86_64                 randconfig-n0-06170633
-x86_64                 randconfig-n0-06170651
-x86_64                 randconfig-n0-06170701
-x86_64                 randconfig-n0-06170711
-x86_64                 randconfig-n0-06170728
-x86_64                 randconfig-n0-06170742
-x86_64                 randconfig-n0-06171440
-x86_64                 randconfig-n0-06171447
-x86_64                 randconfig-n0-06171512
-x86_64                 randconfig-n0-06171526
-x86_64                 randconfig-n0-06171549
-x86_64                 randconfig-n0-06171559
-x86_64                 randconfig-n0-06171606
-arm                       omap2plus_defconfig
-blackfin                   CM-BF533_defconfig
-arm                          ep93xx_defconfig
-avr32        atngw100mkii_evklcd100_defconfig
-powerpc                          allmodconfig
-arm                            zeus_defconfig
-blackfin                       SRV1_defconfig
-sparc                       sparc32_defconfig
-arm                        mini2440_defconfig
-powerpc                     mpc86xx_defconfig
-sparc                            alldefconfig
-powerpc                     sequoia_defconfig
-sh                   secureedge5410_defconfig
-sh                             shx3_defconfig
-i386                  randconfig-sb0-06170624
-i386                  randconfig-sb0-06170648
-i386                  randconfig-sb0-06170703
-i386                  randconfig-sb0-06170735
-i386                  randconfig-sb0-06171444
-i386                  randconfig-sb0-06171457
-i386                  randconfig-sb0-06171510
-i386                  randconfig-sb0-06171523
-i386                  randconfig-sb0-06171532
-i386                  randconfig-sb0-06171604
-arm                              allmodconfig
-avr32                            alldefconfig
-powerpc                         c2k_defconfig
-blackfin                BF538-EZKIT_defconfig
-m68k                          hp300_defconfig
-powerpc                  mpc885_ads_defconfig
-powerpc                       ep405_defconfig
-powerpc                mpc8641_hpcn_defconfig
-sh                              ul2_defconfig
-x86_64                 randconfig-r0-06170633
-x86_64                 randconfig-r0-06170715
-x86_64                 randconfig-r0-06170731
-x86_64                 randconfig-r0-06170742
-x86_64                 randconfig-r0-06171438
-x86_64                 randconfig-r0-06171517
-x86_64                 randconfig-r0-06171525
-x86_64                 randconfig-r0-06171535
-x86_64                 randconfig-r0-06171606
-powerpc                 mpc837x_rdb_defconfig
-sh                               allyesconfig
-sh                          kfr2r09_defconfig
-mips                      maltasmvp_defconfig
-powerpc                     taishan_defconfig
-x86_64                 randconfig-s0-06170639
-x86_64                 randconfig-s0-06170710
-x86_64                 randconfig-s0-06170748
-x86_64                 randconfig-s0-06171507
-x86_64                 randconfig-s0-06171526
-x86_64                 randconfig-s0-06171557
-i386                   randconfig-x0-06170620
-i386                   randconfig-x0-06170654
-i386                   randconfig-x0-06170736
-i386                   randconfig-x0-06171445
-i386                   randconfig-x0-06171525
+The administrator never turn it on unless VF user is fully trusted.
 
-Thanks,
-Fengguang
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Reviewed-by: Hayato Momma <h-momma@ce.jp.nec.com>
+CC: Choi, Sy Jong <sy.jong.choi@intel.com>
+---
+include/linux/if_link.h      |  1 +
+ include/linux/netdevice.h    |  3 +++
+ include/uapi/linux/if_link.h |  6 ++++++
+ net/core/rtnetlink.c         | 19 +++++++++++++++++--
+ 4 files changed, 27 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/if_link.h b/include/linux/if_link.h
+index ae5d0d2..f923d15 100644
+--- a/include/linux/if_link.h
++++ b/include/linux/if_link.h
+@@ -24,5 +24,6 @@ struct ifla_vf_info {
+ 	__u32 min_tx_rate;
+ 	__u32 max_tx_rate;
+ 	__u32 rss_query_en;
++	__u32 trusted;
+ };
+ #endif /* _LINUX_IF_LINK_H */
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index e20979d..a034fb8 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -873,6 +873,7 @@ typedef u16 (*select_queue_fallback_t)(struct net_device *dev,
+  * int (*ndo_set_vf_rate)(struct net_device *dev, int vf, int min_tx_rate,
+  *			  int max_tx_rate);
+  * int (*ndo_set_vf_spoofchk)(struct net_device *dev, int vf, bool setting);
++ * int (*ndo_set_vf_trust)(struct net_device *dev, int vf, bool setting);
+  * int (*ndo_get_vf_config)(struct net_device *dev,
+  *			    int vf, struct ifla_vf_info *ivf);
+  * int (*ndo_set_vf_link_state)(struct net_device *dev, int vf, int link_state);
+@@ -1095,6 +1096,8 @@ struct net_device_ops {
+ 						   int max_tx_rate);
+ 	int			(*ndo_set_vf_spoofchk)(struct net_device *dev,
+ 						       int vf, bool setting);
++	int			(*ndo_set_vf_trust)(struct net_device *dev,
++						    int vf, bool setting);
+ 	int			(*ndo_get_vf_config)(struct net_device *dev,
+ 						     int vf,
+ 						     struct ifla_vf_info *ivf);
+diff --git a/include/uapi/linux/if_link.h b/include/uapi/linux/if_link.h
+index 2c7e8e3..891050c 100644
+--- a/include/uapi/linux/if_link.h
++++ b/include/uapi/linux/if_link.h
+@@ -485,6 +485,7 @@ enum {
+ 				 * on/off switch
+ 				 */
+ 	IFLA_VF_STATS,		/* network device statistics */
++	IFLA_VF_TRUST,		/* Trust VF */
+ 	__IFLA_VF_MAX,
+ };
+ 
+@@ -546,6 +547,11 @@ enum {
+ 
+ #define IFLA_VF_STATS_MAX (__IFLA_VF_STATS_MAX - 1)
+ 
++struct ifla_vf_trust {
++	__u32 vf;
++	__u32 setting;
++};
++
+ /* VF ports management section
+  *
+  *	Nested layout of set/get msg is:
+diff --git a/net/core/rtnetlink.c b/net/core/rtnetlink.c
+index 2d102ce..abd1a75 100644
+--- a/net/core/rtnetlink.c
++++ b/net/core/rtnetlink.c
+@@ -831,7 +831,8 @@ static inline int rtnl_vfinfo_size(const struct net_device *dev,
+ 			 /* IFLA_VF_STATS_BROADCAST */
+ 			 nla_total_size(sizeof(__u64)) +
+ 			 /* IFLA_VF_STATS_MULTICAST */
+-			 nla_total_size(sizeof(__u64)));
++			 nla_total_size(sizeof(__u64)) +
++			 nla_total_size(sizeof(struct ifla_vf_trust)));
+ 		return size;
+ 	} else
+ 		return 0;
+@@ -1151,6 +1152,7 @@ static int rtnl_fill_ifinfo(struct sk_buff *skb, struct net_device *dev,
+ 			struct ifla_vf_link_state vf_linkstate;
+ 			struct ifla_vf_rss_query_en vf_rss_query_en;
+ 			struct ifla_vf_stats vf_stats;
++			struct ifla_vf_trust vf_trust;
+ 
+ 			/*
+ 			 * Not all SR-IOV capable drivers support the
+@@ -1160,6 +1162,7 @@ static int rtnl_fill_ifinfo(struct sk_buff *skb, struct net_device *dev,
+ 			 */
+ 			ivi.spoofchk = -1;
+ 			ivi.rss_query_en = -1;
++			ivi.trusted = -1;
+ 			memset(ivi.mac, 0, sizeof(ivi.mac));
+ 			/* The default value for VF link state is "auto"
+ 			 * IFLA_VF_LINK_STATE_AUTO which equals zero
+@@ -1173,7 +1176,8 @@ static int rtnl_fill_ifinfo(struct sk_buff *skb, struct net_device *dev,
+ 				vf_tx_rate.vf =
+ 				vf_spoofchk.vf =
+ 				vf_linkstate.vf =
+-				vf_rss_query_en.vf = ivi.vf;
++				vf_rss_query_en.vf =
++				vf_trust.vf = ivi.vf;
+ 
+ 			memcpy(vf_mac.mac, ivi.mac, sizeof(ivi.mac));
+ 			vf_vlan.vlan = ivi.vlan;
+@@ -1184,6 +1188,7 @@ static int rtnl_fill_ifinfo(struct sk_buff *skb, struct net_device *dev,
+ 			vf_spoofchk.setting = ivi.spoofchk;
+ 			vf_linkstate.link_state = ivi.linkstate;
+ 			vf_rss_query_en.setting = ivi.rss_query_en;
++			vf_trust.setting = ivi.trusted;
+ 			vf = nla_nest_start(skb, IFLA_VF_INFO);
+ 			if (!vf) {
+ 				nla_nest_cancel(skb, vfinfo);
+@@ -1571,6 +1576,16 @@ static int do_setvfinfo(struct net_device *dev, struct nlattr *attr)
+ 							    ivrssq_en->setting);
+ 			break;
+ 		}
++		case IFLA_VF_TRUST: {
++			struct ifla_vf_trust *ivt;
++
++			ivt = nla_data(vf);
++			err = -EOPNOTSUPP;
++			if (ops->ndo_set_vf_trust)
++				err = ops->ndo_set_vf_trust(dev, ivt->vf,
++							    ivt->setting);
++			break;
++		}
+ 		default:
+ 			err = -EINVAL;
+ 			break;
+-- 
+1.8.3.1
+
