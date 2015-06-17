@@ -1,42 +1,169 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 17 Jun 2015 05:23:42 -0700
-Subject: [Intel-wired-lan] [PATCH v6 1/3] if_link: Add control trust VF
-In-Reply-To: <7F861DC0615E0C47A872E6F3C5FCDDBD05EE188B@BPXM14GP.gisp.nec.co.jp>
-References: <7F861DC0615E0C47A872E6F3C5FCDDBD05EE188B@BPXM14GP.gisp.nec.co.jp>
-Message-ID: <1434543822.3530.63.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 17 Jun 2015 22:52:01 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
+ 1d15f5d628300e69cb790878c118d9db6b0f53fb BUILD SUCCESS
+Message-ID: <55818991.0AmbdkVkyZnyA7H0%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2015-06-17 at 11:41 +0000, Hiroshi Shimamoto wrote:
-> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> 
-> Add netlink directives and ndo entry to trust VF user.
-> 
-> This controls the special permission of VF user.
-> The administrator will dedicatedly trust VF user to use some features
-> which impacts security and/or performance.
-> 
-> The administrator never turn it on unless VF user is fully trusted.
-> 
-> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> Reviewed-by: Hayato Momma <h-momma@ce.jp.nec.com>
-> CC: Choi, Sy Jong <sy.jong.choi@intel.com>
-> ---
-> include/linux/if_link.h      |  1 +
->  include/linux/netdevice.h    |  3 +++
->  include/uapi/linux/if_link.h |  6 ++++++
->  net/core/rtnetlink.c         | 19 +++++++++++++++++--
->  4 files changed, 27 insertions(+), 2 deletions(-)
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
+1d15f5d628300e69cb790878c118d9db6b0f53fb  fm10k: Fix missing braces after if statement
 
-Thanks Hiroshi, if there are no comments for change, I will get this
-series applied to my next-queue for testing.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150617/e5abb4fb/attachment.asc>
+elapsed time: 77m
+
+configs tested: 148
+
+i386                     randconfig-a0-201524
+x86_64                 randconfig-a0-06172145
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                             allyesconfig
+arm                                    sa1100
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                                   samsung
+arm                                  iop-adma
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                                        sh
+blackfin                    PNAV-10_defconfig
+powerpc                 mpc834x_mds_defconfig
+xtensa                  audio_kc705_defconfig
+arm                           corgi_defconfig
+powerpc                mpc8641_hpcn_defconfig
+powerpc                        warp_defconfig
+x86_64                              defconfig
+mips                        jmr3927_defconfig
+powerpc                      makalu_defconfig
+arm                            mmp2_defconfig
+parisc                            allnoconfig
+s390                        default_defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+x86_64                 randconfig-v0-06172206
+x86_64                 randconfig-v0-06172228
+x86_64                 randconfig-v0-06172241
+i386                              allnoconfig
+i386                                defconfig
+i386                             allmodconfig
+i386                             alldefconfig
+m68k                         apollo_defconfig
+powerpc                  mpc885_ads_defconfig
+powerpc                     tqm8541_defconfig
+tile                             allmodconfig
+arm                       netwinder_defconfig
+arm                          nuc960_defconfig
+powerpc                     ppa8548_defconfig
+x86_64                   randconfig-i0-201524
+i386                   randconfig-b0-06172201
+i386                   randconfig-b0-06172222
+i386                   randconfig-b0-06172242
+arm                         assabet_defconfig
+arm                                 defconfig
+blackfin                       IP0X_defconfig
+powerpc                     mpc512x_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201524
+x86_64                 randconfig-b0-06172204
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                            allnoconfig
+arm                         mv78xx0_defconfig
+arm64                            alldefconfig
+powerpc                      mgcoge_defconfig
+i386                     randconfig-n0-201524
+i386                     randconfig-n1-201524
+arm                                      arm5
+arm                                     arm67
+arm                                       mmp
+arm                       omap2plus_defconfig
+arm                         s3c2410_defconfig
+arm                           tegra_defconfig
+i386                   randconfig-h0-06172117
+i386                   randconfig-h1-06172117
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+m32r                    mappi.nommu_defconfig
+powerpc                 canyonlands_defconfig
+s390                    performance_defconfig
+x86_64                 randconfig-h0-06172210
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                 randconfig-n0-06172200
+x86_64                 randconfig-n0-06172230
+parisc                          712_defconfig
+powerpc                 mpc836x_rdk_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                          amiga_defconfig
+i386                  randconfig-sb0-06172206
+i386                  randconfig-sb0-06172217
+i386                  randconfig-sb0-06172230
+arm                        realview_defconfig
+powerpc                     sbc834x_defconfig
+sh                ecovec24-romimage_defconfig
+arm                         s5pv210_defconfig
+m32r                         opsput_defconfig
+x86_64                 randconfig-x005-201524
+x86_64                 randconfig-x006-201524
+x86_64                 randconfig-x009-201524
+x86_64                 randconfig-x000-201524
+x86_64                 randconfig-x003-201524
+x86_64                 randconfig-x007-201524
+x86_64                 randconfig-x001-201524
+x86_64                 randconfig-x002-201524
+x86_64                 randconfig-x008-201524
+x86_64                 randconfig-x004-201524
+i386                     randconfig-r0-201524
+x86_64                 randconfig-r0-06172135
+x86_64                 randconfig-r0-06172226
+alpha                               defconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-s0-06172151
+x86_64                 randconfig-s0-06172225
+i386                   randconfig-x006-201524
+i386                   randconfig-x007-201524
+i386                   randconfig-x002-201524
+i386                   randconfig-x001-201524
+i386                   randconfig-x000-201524
+i386                   randconfig-x003-201524
+i386                   randconfig-x005-201524
+i386                   randconfig-x009-201524
+i386                   randconfig-x008-201524
+i386                   randconfig-x004-201524
+mips                                   jz4740
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+i386                   randconfig-x0-06172204
+
+Thanks,
+Fengguang
