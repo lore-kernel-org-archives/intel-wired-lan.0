@@ -1,169 +1,115 @@
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Date: Thu, 18 Jun 2015 06:16:09 +0000
-Subject: [Intel-wired-lan] [PATCH v6 1/3] if_link: Add control trust VF
-In-Reply-To: <55819DE0.2000205@gmail.com>
-References: <7F861DC0615E0C47A872E6F3C5FCDDBD05EE188B@BPXM14GP.gisp.nec.co.jp>
- <55819DE0.2000205@gmail.com>
-Message-ID: <7F861DC0615E0C47A872E6F3C5FCDDBD05EE24BB@BPXM14GP.gisp.nec.co.jp>
+From: Valdis Kletnieks <Valdis.Kletnieks@vt.edu>
+Date: Thu, 18 Jun 2015 12:46:54 -0400
+Subject: [Intel-wired-lan] e1000e driver - hang after 4 hours of uptime -
+	finally bisected!
+Message-ID: <5284.1434646014@turing-police.cc.vt.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> Subject: Re: [Intel-wired-lan] [PATCH v6 1/3] if_link: Add control trust VF
-> 
-> On 06/17/2015 04:41 AM, Hiroshi Shimamoto wrote:
-> > From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> >
-> > Add netlink directives and ndo entry to trust VF user.
-> >
-> > This controls the special permission of VF user.
-> > The administrator will dedicatedly trust VF user to use some features
-> > which impacts security and/or performance.
-> >
-> > The administrator never turn it on unless VF user is fully trusted.
-> >
-> > Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> > Reviewed-by: Hayato Momma <h-momma@ce.jp.nec.com>
-> > CC: Choi, Sy Jong <sy.jong.choi@intel.com>
-> > ---
-> > include/linux/if_link.h      |  1 +
-> >   include/linux/netdevice.h    |  3 +++
-> >   include/uapi/linux/if_link.h |  6 ++++++
-> >   net/core/rtnetlink.c         | 19 +++++++++++++++++--
-> >   4 files changed, 27 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/include/linux/if_link.h b/include/linux/if_link.h
-> > index ae5d0d2..f923d15 100644
-> > --- a/include/linux/if_link.h
-> > +++ b/include/linux/if_link.h
-> > @@ -24,5 +24,6 @@ struct ifla_vf_info {
-> >   	__u32 min_tx_rate;
-> >   	__u32 max_tx_rate;
-> >   	__u32 rss_query_en;
-> > +	__u32 trusted;
-> >   };
-> >   #endif /* _LINUX_IF_LINK_H */
-> > diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-> > index e20979d..a034fb8 100644
-> > --- a/include/linux/netdevice.h
-> > +++ b/include/linux/netdevice.h
-> > @@ -873,6 +873,7 @@ typedef u16 (*select_queue_fallback_t)(struct net_device *dev,
-> >    * int (*ndo_set_vf_rate)(struct net_device *dev, int vf, int min_tx_rate,
-> >    *			  int max_tx_rate);
-> >    * int (*ndo_set_vf_spoofchk)(struct net_device *dev, int vf, bool setting);
-> > + * int (*ndo_set_vf_trust)(struct net_device *dev, int vf, bool setting);
-> >    * int (*ndo_get_vf_config)(struct net_device *dev,
-> >    *			    int vf, struct ifla_vf_info *ivf);
-> >    * int (*ndo_set_vf_link_state)(struct net_device *dev, int vf, int link_state);
-> > @@ -1095,6 +1096,8 @@ struct net_device_ops {
-> >   						   int max_tx_rate);
-> >   	int			(*ndo_set_vf_spoofchk)(struct net_device *dev,
-> >   						       int vf, bool setting);
-> > +	int			(*ndo_set_vf_trust)(struct net_device *dev,
-> > +						    int vf, bool setting);
-> >   	int			(*ndo_get_vf_config)(struct net_device *dev,
-> >   						     int vf,
-> >   						     struct ifla_vf_info *ivf);
-> > diff --git a/include/uapi/linux/if_link.h b/include/uapi/linux/if_link.h
-> > index 2c7e8e3..891050c 100644
-> > --- a/include/uapi/linux/if_link.h
-> > +++ b/include/uapi/linux/if_link.h
-> > @@ -485,6 +485,7 @@ enum {
-> >   				 * on/off switch
-> >   				 */
-> >   	IFLA_VF_STATS,		/* network device statistics */
-> > +	IFLA_VF_TRUST,		/* Trust VF */
-> >   	__IFLA_VF_MAX,
-> >   };
-> >
-> > @@ -546,6 +547,11 @@ enum {
-> >
-> >   #define IFLA_VF_STATS_MAX (__IFLA_VF_STATS_MAX - 1)
-> >
-> > +struct ifla_vf_trust {
-> > +	__u32 vf;
-> > +	__u32 setting;
-> > +};
-> > +
-> >   /* VF ports management section
-> >    *
-> >    *	Nested layout of set/get msg is:
-> > diff --git a/net/core/rtnetlink.c b/net/core/rtnetlink.c
-> > index 2d102ce..abd1a75 100644
-> > --- a/net/core/rtnetlink.c
-> > +++ b/net/core/rtnetlink.c
-> > @@ -831,7 +831,8 @@ static inline int rtnl_vfinfo_size(const struct net_device *dev,
-> >   			 /* IFLA_VF_STATS_BROADCAST */
-> >   			 nla_total_size(sizeof(__u64)) +
-> >   			 /* IFLA_VF_STATS_MULTICAST */
-> > -			 nla_total_size(sizeof(__u64)));
-> > +			 nla_total_size(sizeof(__u64)) +
-> > +			 nla_total_size(sizeof(struct ifla_vf_trust)));
-> >   		return size;
-> >   	} else
-> >   		return 0;
-> > @@ -1151,6 +1152,7 @@ static int rtnl_fill_ifinfo(struct sk_buff *skb, struct net_device *dev,
-> >   			struct ifla_vf_link_state vf_linkstate;
-> >   			struct ifla_vf_rss_query_en vf_rss_query_en;
-> >   			struct ifla_vf_stats vf_stats;
-> > +			struct ifla_vf_trust vf_trust;
-> >
-> >   			/*
-> >   			 * Not all SR-IOV capable drivers support the
-> > @@ -1160,6 +1162,7 @@ static int rtnl_fill_ifinfo(struct sk_buff *skb, struct net_device *dev,
-> >   			 */
-> >   			ivi.spoofchk = -1;
-> >   			ivi.rss_query_en = -1;
-> > +			ivi.trusted = -1;
-> >   			memset(ivi.mac, 0, sizeof(ivi.mac));
-> >   			/* The default value for VF link state is "auto"
-> >   			 * IFLA_VF_LINK_STATE_AUTO which equals zero
-> > @@ -1173,7 +1176,8 @@ static int rtnl_fill_ifinfo(struct sk_buff *skb, struct net_device *dev,
-> >   				vf_tx_rate.vf =
-> >   				vf_spoofchk.vf =
-> >   				vf_linkstate.vf =
-> > -				vf_rss_query_en.vf = ivi.vf;
-> > +				vf_rss_query_en.vf =
-> > +				vf_trust.vf = ivi.vf;
-> >
-> >   			memcpy(vf_mac.mac, ivi.mac, sizeof(ivi.mac));
-> >   			vf_vlan.vlan = ivi.vlan;
-> > @@ -1184,6 +1188,7 @@ static int rtnl_fill_ifinfo(struct sk_buff *skb, struct net_device *dev,
-> >   			vf_spoofchk.setting = ivi.spoofchk;
-> >   			vf_linkstate.link_state = ivi.linkstate;
-> >   			vf_rss_query_en.setting = ivi.rss_query_en;
-> > +			vf_trust.setting = ivi.trusted;
-> >   			vf = nla_nest_start(skb, IFLA_VF_INFO);
-> >   			if (!vf) {
-> >   				nla_nest_cancel(skb, vfinfo);
-> 
-> Don't you also need to define a section in ifla_vf_policy for
-> IFLA_VF_TRUST?  Otherwise I thought the .len value gets configured as 0.
+(follow up to a report from last week - bisecting took a while as I could
+only do 1 or 2 tests an evening)
 
-Yes, I will check and add codes.
+My Dell Latitude E6530 crashes with a specific kernel lockup almost
+exactly 4 hours after boot if there isn't a cable connected to the
+Ethernet port:
 
-thanks,
-Hiroshi
+[14508.846327] Kernel panic - not syncing: Watchdog detected hard LOCKUP on cpu 0
+[14468.229720] Kernel panic - not syncing: Watchdog detected hard LOCKUP on cpu 0
+[14463.254791] Kernel panic - not syncing: Watchdog detected hard LOCKUP on cpu 0
+[14491.134413] Kernel panic - not syncing: Watchdog detected hard LOCKUP on cpu 1
+[14463.396593] Kernel panic - not syncing: Watchdog detected hard LOCKUP on cpu 2
+[14490.390223] Kernel panic - not syncing: Watchdog detected hard LOCKUP on cpu 1
+[14494.680591] Kernel panic - not syncing: Watchdog detected hard LOCKUP on cpu 0
+[14513.365378] Kernel panic - not syncing: Watchdog detected hard LOCKUP on cpu 1
+[14482.271716] Kernel panic - not syncing: Watchdog detected hard LOCKUP on cpu 3
+[14479.906820] Kernel panic - not syncing: Watchdog detected hard LOCKUP on cpu 0
 
-> 
-> > @@ -1571,6 +1576,16 @@ static int do_setvfinfo(struct net_device *dev, struct nlattr *attr)
-> >   							    ivrssq_en->setting);
-> >   			break;
-> >   		}
-> > +		case IFLA_VF_TRUST: {
-> > +			struct ifla_vf_trust *ivt;
-> > +
-> > +			ivt = nla_data(vf);
-> > +			err = -EOPNOTSUPP;
-> > +			if (ops->ndo_set_vf_trust)
-> > +				err = ops->ndo_set_vf_trust(dev, ivt->vf,
-> > +							    ivt->setting);
-> > +			break;
-> > +		}
-> >   		default:
-> >   			err = -EINVAL;
-> >   			break;
-> >
+As far as I can tell, the timestamp jitter is just how long it takes me to
+enter the cryptLUKS passphrase for the hard drive at boot...
 
+lspci tells me:
+
+lspci -vvv -s "00:19.0"
+00:19.0 Ethernet controller: Intel Corporation 82579LM Gigabit Network Connection (rev 04)
+        DeviceName:  Onboard LAN
+        Subsystem: Dell Device 0535
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 0
+        Interrupt: pin A routed to IRQ 28
+        Region 0: Memory at f7700000 (32-bit, non-prefetchable) [size=128K]
+        Region 1: Memory at f7739000 (32-bit, non-prefetchable) [size=4K]
+        Region 2: I/O ports@f040 [size=32]
+        Capabilities: [c8] Power Management version 2
+                Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=1 PME-
+        Capabilities: [d0] MSI: Enable+ Count=1/1 Maskable- 64bit+
+                Address: 00000000fee00318  Data: 0000
+        Capabilities: [e0] PCI Advanced Features
+                AFCap: TP+ FLR+
+                AFCtrl: FLR-
+                AFStatus: TP-
+        Kernel driver in use: e1000e
+
+
+The traceback always looks like:
+
+[14479.906820] Kernel panic - not syncing: Watchdog detected hard LOCKUP on cpu 0
+
+[14479.906908] Call Trace:
+[14479.906914]  <NMI>  [<ffffffffba94db16>] dump_stack+0x50/0xa8
+[14479.906930]  [<ffffffffba948bb9>] panic+0xcd/0x1e4
+[14479.906940]  [<ffffffffba166a60>] ? perf_event_task_disable+0xc0/0xc0
+[14479.906952]  [<ffffffffba125d8b>] watchdog_overflow_callback+0x9b/0xa0
+[14479.906959]  [<ffffffffba16a684>] __perf_event_overflow+0xc4/0x1f0
+[14479.906968]  [<ffffffffba16b3a4>] perf_event_overflow+0x14/0x20
+[14479.906976]  [<ffffffffba022271>] intel_pmu_handle_irq+0x1e1/0x430
+[14479.906990]  [<ffffffffba01a0f6>] perf_event_nmi_handler+0x26/0x40
+[14479.906999]  [<ffffffffba0085b3>] nmi_handle+0x103/0x340
+[14479.907005]  [<ffffffffba0084b5>] ? nmi_handle+0x5/0x340
+[14479.907017]  [<ffffffffba008a53>] default_do_nmi+0xc3/0x120
+[14479.907032]  [<ffffffffba008b98>] do_nmi+0xe8/0x130
+[14479.907044]  [<ffffffffba95c9a8>] end_repeat_nmi+0x1e/0x2e
+[14479.907055]  [<ffffffffba529886>] ? e1000e_cyclecounter_read+0x16/0xc0
+[14479.907061]  [<ffffffffba529886>] ? e1000e_cyclecounter_read+0x16/0xc0
+[14479.907069]  [<ffffffffba529886>] ? e1000e_cyclecounter_read+0x16/0xc0
+[14479.907075]  <<EOE>>  [<ffffffffba0e9529>] timecounter_read+0x19/0x60
+[14479.907088]  [<ffffffffba53687e>] e1000e_phc_gettime+0x2e/0x60
+[14479.907098]  [<ffffffffba536a31>] e1000e_systim_overflow_work+0x31/0x70
+[14479.907105]  [<ffffffffba07ad19>] process_one_work+0x3c9/0x980
+[14479.907115]  [<ffffffffba07ac62>] ? process_one_work+0x312/0x980
+[14479.907125]  [<ffffffffba07b348>] ? worker_thread+0x78/0x760
+[14479.907134]  [<ffffffffba07b59c>] worker_thread+0x2cc/0x760
+[14479.907144]  [<ffffffffba07b2d0>] ? process_one_work+0x980/0x980
+[14479.907154]  [<ffffffffba082a5e>] kthread+0xfe/0x120
+[14479.907163]  [<ffffffffba08ca50>] ? finish_task_switch+0x50/0x1c0
+[14479.907173]  [<ffffffffba082960>] ? kthread_create_on_node+0x270/0x270
+[14479.907179]  [<ffffffffba95ae4f>] ret_from_fork+0x3f/0x70
+[14479.907188]  [<ffffffffba082960>] ? kthread_create_on_node+0x270/0x270
+[14479.907243] Kernel Offset: 0x39000000 from 0xffffffff81000000 (relocation range: 0xffffffff80000000-0xffffffffbfffffff)
+
+Bisection tells me it's this commit:
+
+commit 83129b37ef35bb6a7f01c060129736a8db5d31c4
+Author: Yanir Lubetkin <yanirx.lubetkin@intel.com>
+Date:   Tue Jun 2 17:05:45 2015 +0300
+
+    e1000e: fix systim issues
+
+    Two issues involving systim were reported.
+    1. Clock is not running in the correct frequency
+    2. In some situations, systim values were not incremented linearly
+    This patch fixes the hardware clock configuration and the spurious
+    non-linear increment.
+
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 848 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150618/966e1be1/attachment.asc>
