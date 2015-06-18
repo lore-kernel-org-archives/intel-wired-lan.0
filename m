@@ -1,49 +1,67 @@
-From: Young, James M <james.m.young@intel.com>
-Date: Thu, 18 Jun 2015 00:24:34 +0000
-Subject: [Intel-wired-lan] [net-next S5 14/15] i40e/i40evf: remove
- last_rx	reference in receive
-In-Reply-To: <68C85B5FC2FE974B87244D7222BC92783EA16D78@ORSMSX102.amr.corp.intel.com>
-References: <1430161042-28494-1-git-send-email-catherine.sullivan@intel.com>
- <1430161042-28494-15-git-send-email-catherine.sullivan@intel.com>
- <68C85B5FC2FE974B87244D7222BC92783EA16D78@ORSMSX102.amr.corp.intel.com>
-Message-ID: <68C85B5FC2FE974B87244D7222BC92783EA19B31@ORSMSX102.amr.corp.intel.com>
+From: Donald C Skidmore <donald.c.skidmore@intel.com>
+Date: Wed, 17 Jun 2015 20:59:59 -0400
+Subject: [Intel-wired-lan] [net-next PATCH] ixgbe: add get_bus_info method
+	for X550
+Message-ID: <20150618005959.27460.11244.stgit@dcs-desk.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Young, James M
-> Sent: Friday, June 12, 2015 10:47 AM
-> To: Sullivan, Catherine; intel-wired-lan at lists.osuosl.org
-> Subject: Re: [Intel-wired-lan] [net-next S5 14/15] i40e/i40evf: remove last_rx
-> reference in receive
-> 
-> > -----Original Message-----
-> > From: Intel-wired-lan
-> > [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of
-> > Catherine Sullivan
-> > Sent: Monday, April 27, 2015 11:57 AM
-> > To: intel-wired-lan at lists.osuosl.org
-> > Subject: [Intel-wired-lan] [net-next S5 14/15] i40e/i40evf: remove
-> > last_rx reference in receive
-> >
-> > From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> >
-> > The driver was suffering a slow down in RX performance due to
-> > accessing this cache line from all receive queues, which resulted in a
-> > performance improvement for forwarding packets with this patch.
-> >
-> > Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> > Change-ID: Ie841a72289207eadf8a16b1013ffe83dfec6db1d
-> > ---
-> >  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 2 --
-> >  drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 2 --
-> >  2 files changed, 4 deletions(-)
-> >
-Tested-by: Jim Young <james.m.young@intel.com> 
-This is a resend because the original  "tested-by" email  had a formatting error which prevented it from triggering the "tested" bit in patchwork. 
+From: Don Skidmore <donald.c.skidmore@intel.com>
 
+Added ixgbe_get_bus_info_X550em to X550 code. ixgbe_get_bus_info_X550em
+sets bus.width to ixgbe_bus_width_unknown and bus.speed to
+ixgbe_bus_speed_unknown, because IOSF does not report a PCIe bus
+width or speed.
+
+Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index ae164da..50e0b05 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -611,6 +611,22 @@ static s32 ixgbe_update_flash_X550(struct ixgbe_hw *hw)
+ 	return status;
+ }
+ 
++/** ixgbe_get_bus_info_X550em - Set PCI bus info
++  * @hw: pointer to hardware structure
++  *
++  * Sets bus link width and speed to unknown because X550em is
++  * not a PCI device.
++  **/
++static s32 ixgbe_get_bus_info_X550em(struct ixgbe_hw *hw)
++{
++	hw->bus.width = ixgbe_bus_width_unknown;
++	hw->bus.speed = ixgbe_bus_speed_unknown;
++
++	hw->mac.ops.set_lan_id(hw);
++
++	return 0;
++}
++
+ /** ixgbe_disable_rx_x550 - Disable RX unit
+  *
+  *  Enables the Rx DMA unit for x550
+@@ -1965,6 +1981,7 @@ static struct ixgbe_mac_operations mac_ops_X550 = {
+ 	.get_wwn_prefix		= &ixgbe_get_wwn_prefix_generic,
+ 	.setup_link		= &ixgbe_setup_mac_link_X540,
+ 	.get_link_capabilities	= &ixgbe_get_copper_link_capabilities_generic,
++	.get_bus_info		= &ixgbe_get_bus_info_generic,
+ 	.setup_sfp		= NULL,
+ };
+ 
+@@ -1976,6 +1993,7 @@ static struct ixgbe_mac_operations mac_ops_X550EM_x = {
+ 	.get_wwn_prefix		= NULL,
+ 	.setup_link		= NULL, /* defined later */
+ 	.get_link_capabilities	= &ixgbe_get_link_capabilities_X550em,
++	.get_bus_info		= &ixgbe_get_bus_info_X550em,
+ 	.setup_sfp		= ixgbe_setup_sfp_modules_X550em,
+ 
+ };
 
