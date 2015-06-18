@@ -1,11 +1,11 @@
 From: Young, James M <james.m.young@intel.com>
-Date: Thu, 18 Jun 2015 00:18:57 +0000
-Subject: [Intel-wired-lan] [net-next S5 01/15] i40e/i40evf: improve
-	tx	performance with a small tweak
-In-Reply-To: <1430161042-28494-2-git-send-email-catherine.sullivan@intel.com>
+Date: Thu, 18 Jun 2015 00:22:03 +0000
+Subject: [Intel-wired-lan] [net-next S5 02/15] i40evf: Allow for
+	an	abundance of vectors
+In-Reply-To: <1430161042-28494-3-git-send-email-catherine.sullivan@intel.com>
 References: <1430161042-28494-1-git-send-email-catherine.sullivan@intel.com>
- <1430161042-28494-2-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <68C85B5FC2FE974B87244D7222BC92783EA19AFC@ORSMSX102.amr.corp.intel.com>
+ <1430161042-28494-3-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <68C85B5FC2FE974B87244D7222BC92783EA19B18@ORSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,20 +17,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Catherine Sullivan
 > Sent: Monday, April 27, 2015 11:57 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [net-next S5 01/15] i40e/i40evf: improve tx
-> performance with a small tweak
+> Subject: [Intel-wired-lan] [net-next S5 02/15] i40evf: Allow for an abundance
+> of vectors
 > 
-> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> From: Mitch Williams <mitch.a.williams@intel.com>
 > 
-> Add a prefetch for the next tx descriptor to be used when we know there
-> are more coming.
+> The driver currently only maps TX and RX queues to a single MSI-X vector per
+> queue pair if there are exactly enough vectors for this.
+> Unfortunately, if we have too many vectors it will fail and allocate queues to
+> vectors in a suboptimal manner. Change the condition check to allow for
+> excess vectors. In this case, the extras just won't be used.
 > 
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> Change-ID: Ibb9acab11d508eec2db7da795df74debc16eeacb
+> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+> Change-ID: I23e1e2955c64739c86612db88a25583e6a7e0b17
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 2 ++
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 2 ++
->  2 files changed, 4 insertions(+)
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
 Tested-by: Jim Young <james.m.young@intel.com>
- 
+
