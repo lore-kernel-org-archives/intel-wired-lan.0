@@ -1,173 +1,169 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 18 Jun 2015 13:48:08 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
- ec6acb801e7b2908c24a60c8aabf47c3e40508a4 BUILD SUCCESS
-Message-ID: <55825b98.UGGvSaObD5P0Sh+5%fengguang.wu@intel.com>
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Date: Thu, 18 Jun 2015 06:16:09 +0000
+Subject: [Intel-wired-lan] [PATCH v6 1/3] if_link: Add control trust VF
+In-Reply-To: <55819DE0.2000205@gmail.com>
+References: <7F861DC0615E0C47A872E6F3C5FCDDBD05EE188B@BPXM14GP.gisp.nec.co.jp>
+ <55819DE0.2000205@gmail.com>
+Message-ID: <7F861DC0615E0C47A872E6F3C5FCDDBD05EE24BB@BPXM14GP.gisp.nec.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
-ec6acb801e7b2908c24a60c8aabf47c3e40508a4  fm10k: add call to fm10k_clean_all_rx_rings in fm10k_down
+> Subject: Re: [Intel-wired-lan] [PATCH v6 1/3] if_link: Add control trust VF
+> 
+> On 06/17/2015 04:41 AM, Hiroshi Shimamoto wrote:
+> > From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> >
+> > Add netlink directives and ndo entry to trust VF user.
+> >
+> > This controls the special permission of VF user.
+> > The administrator will dedicatedly trust VF user to use some features
+> > which impacts security and/or performance.
+> >
+> > The administrator never turn it on unless VF user is fully trusted.
+> >
+> > Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> > Reviewed-by: Hayato Momma <h-momma@ce.jp.nec.com>
+> > CC: Choi, Sy Jong <sy.jong.choi@intel.com>
+> > ---
+> > include/linux/if_link.h      |  1 +
+> >   include/linux/netdevice.h    |  3 +++
+> >   include/uapi/linux/if_link.h |  6 ++++++
+> >   net/core/rtnetlink.c         | 19 +++++++++++++++++--
+> >   4 files changed, 27 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/include/linux/if_link.h b/include/linux/if_link.h
+> > index ae5d0d2..f923d15 100644
+> > --- a/include/linux/if_link.h
+> > +++ b/include/linux/if_link.h
+> > @@ -24,5 +24,6 @@ struct ifla_vf_info {
+> >   	__u32 min_tx_rate;
+> >   	__u32 max_tx_rate;
+> >   	__u32 rss_query_en;
+> > +	__u32 trusted;
+> >   };
+> >   #endif /* _LINUX_IF_LINK_H */
+> > diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+> > index e20979d..a034fb8 100644
+> > --- a/include/linux/netdevice.h
+> > +++ b/include/linux/netdevice.h
+> > @@ -873,6 +873,7 @@ typedef u16 (*select_queue_fallback_t)(struct net_device *dev,
+> >    * int (*ndo_set_vf_rate)(struct net_device *dev, int vf, int min_tx_rate,
+> >    *			  int max_tx_rate);
+> >    * int (*ndo_set_vf_spoofchk)(struct net_device *dev, int vf, bool setting);
+> > + * int (*ndo_set_vf_trust)(struct net_device *dev, int vf, bool setting);
+> >    * int (*ndo_get_vf_config)(struct net_device *dev,
+> >    *			    int vf, struct ifla_vf_info *ivf);
+> >    * int (*ndo_set_vf_link_state)(struct net_device *dev, int vf, int link_state);
+> > @@ -1095,6 +1096,8 @@ struct net_device_ops {
+> >   						   int max_tx_rate);
+> >   	int			(*ndo_set_vf_spoofchk)(struct net_device *dev,
+> >   						       int vf, bool setting);
+> > +	int			(*ndo_set_vf_trust)(struct net_device *dev,
+> > +						    int vf, bool setting);
+> >   	int			(*ndo_get_vf_config)(struct net_device *dev,
+> >   						     int vf,
+> >   						     struct ifla_vf_info *ivf);
+> > diff --git a/include/uapi/linux/if_link.h b/include/uapi/linux/if_link.h
+> > index 2c7e8e3..891050c 100644
+> > --- a/include/uapi/linux/if_link.h
+> > +++ b/include/uapi/linux/if_link.h
+> > @@ -485,6 +485,7 @@ enum {
+> >   				 * on/off switch
+> >   				 */
+> >   	IFLA_VF_STATS,		/* network device statistics */
+> > +	IFLA_VF_TRUST,		/* Trust VF */
+> >   	__IFLA_VF_MAX,
+> >   };
+> >
+> > @@ -546,6 +547,11 @@ enum {
+> >
+> >   #define IFLA_VF_STATS_MAX (__IFLA_VF_STATS_MAX - 1)
+> >
+> > +struct ifla_vf_trust {
+> > +	__u32 vf;
+> > +	__u32 setting;
+> > +};
+> > +
+> >   /* VF ports management section
+> >    *
+> >    *	Nested layout of set/get msg is:
+> > diff --git a/net/core/rtnetlink.c b/net/core/rtnetlink.c
+> > index 2d102ce..abd1a75 100644
+> > --- a/net/core/rtnetlink.c
+> > +++ b/net/core/rtnetlink.c
+> > @@ -831,7 +831,8 @@ static inline int rtnl_vfinfo_size(const struct net_device *dev,
+> >   			 /* IFLA_VF_STATS_BROADCAST */
+> >   			 nla_total_size(sizeof(__u64)) +
+> >   			 /* IFLA_VF_STATS_MULTICAST */
+> > -			 nla_total_size(sizeof(__u64)));
+> > +			 nla_total_size(sizeof(__u64)) +
+> > +			 nla_total_size(sizeof(struct ifla_vf_trust)));
+> >   		return size;
+> >   	} else
+> >   		return 0;
+> > @@ -1151,6 +1152,7 @@ static int rtnl_fill_ifinfo(struct sk_buff *skb, struct net_device *dev,
+> >   			struct ifla_vf_link_state vf_linkstate;
+> >   			struct ifla_vf_rss_query_en vf_rss_query_en;
+> >   			struct ifla_vf_stats vf_stats;
+> > +			struct ifla_vf_trust vf_trust;
+> >
+> >   			/*
+> >   			 * Not all SR-IOV capable drivers support the
+> > @@ -1160,6 +1162,7 @@ static int rtnl_fill_ifinfo(struct sk_buff *skb, struct net_device *dev,
+> >   			 */
+> >   			ivi.spoofchk = -1;
+> >   			ivi.rss_query_en = -1;
+> > +			ivi.trusted = -1;
+> >   			memset(ivi.mac, 0, sizeof(ivi.mac));
+> >   			/* The default value for VF link state is "auto"
+> >   			 * IFLA_VF_LINK_STATE_AUTO which equals zero
+> > @@ -1173,7 +1176,8 @@ static int rtnl_fill_ifinfo(struct sk_buff *skb, struct net_device *dev,
+> >   				vf_tx_rate.vf =
+> >   				vf_spoofchk.vf =
+> >   				vf_linkstate.vf =
+> > -				vf_rss_query_en.vf = ivi.vf;
+> > +				vf_rss_query_en.vf =
+> > +				vf_trust.vf = ivi.vf;
+> >
+> >   			memcpy(vf_mac.mac, ivi.mac, sizeof(ivi.mac));
+> >   			vf_vlan.vlan = ivi.vlan;
+> > @@ -1184,6 +1188,7 @@ static int rtnl_fill_ifinfo(struct sk_buff *skb, struct net_device *dev,
+> >   			vf_spoofchk.setting = ivi.spoofchk;
+> >   			vf_linkstate.link_state = ivi.linkstate;
+> >   			vf_rss_query_en.setting = ivi.rss_query_en;
+> > +			vf_trust.setting = ivi.trusted;
+> >   			vf = nla_nest_start(skb, IFLA_VF_INFO);
+> >   			if (!vf) {
+> >   				nla_nest_cancel(skb, vfinfo);
+> 
+> Don't you also need to define a section in ifla_vf_policy for
+> IFLA_VF_TRUST?  Otherwise I thought the .len value gets configured as 0.
 
-elapsed time: 72m
+Yes, I will check and add codes.
 
-configs tested: 153
+thanks,
+Hiroshi
 
-avr32                               defconfig
-mips                        nlm_xlr_defconfig
-powerpc                 mpc836x_rdk_defconfig
-arm                          prima2_defconfig
-mips                         tb0287_defconfig
-um                                  defconfig
-parisc                         a500_defconfig
-powerpc                    ge_imp3a_defconfig
-um                           x86_64_defconfig
-x86_64                 randconfig-a0-06181230
-x86_64                 randconfig-a0-06181244
-x86_64                 randconfig-a0-06181307
-x86_64                 randconfig-a0-06181324
-i386                   randconfig-c0-06181231
-i386                   randconfig-c0-06181306
-arm                    vt8500_v6_v7_defconfig
-blackfin                       IP0X_defconfig
-mips                 pnx8335_stb225_defconfig
-xtensa                           alldefconfig
-arm                         assabet_defconfig
-arm                        mini2440_defconfig
-parisc                generic-64bit_defconfig
-x86_64                 randconfig-v0-06181232
-x86_64                 randconfig-v0-06181238
-x86_64                 randconfig-v0-06181245
-x86_64                 randconfig-v0-06181253
-x86_64                 randconfig-v0-06181305
-x86_64                 randconfig-v0-06181315
-x86_64                 randconfig-v0-06181323
-x86_64                 randconfig-v0-06181336
-alpha                            allyesconfig
-arm                       cns3420vb_defconfig
-arm                        spear6xx_defconfig
-sparc                       sparc32_defconfig
-arm                      jornada720_defconfig
-mips                      malta_kvm_defconfig
-sh                   rts7751r2dplus_defconfig
-arm                          pxa168_defconfig
-avr32                     atstk1006_defconfig
-mips                       lemote2f_defconfig
-openrisc                          allnoconfig
-arm                           viper_defconfig
-blackfin                   CM-BF561_defconfig
-powerpc                      ppc44x_defconfig
-sh                        apsh4ad0a_defconfig
-arm                  colibri_pxa270_defconfig
-avr32                     atstk1003_defconfig
-blackfin              BF561-ACVILON_defconfig
-m68k                       m5208evb_defconfig
-i386                   randconfig-b0-06181233
-i386                   randconfig-b0-06181239
-i386                   randconfig-b0-06181257
-i386                   randconfig-b0-06181304
-i386                   randconfig-b0-06181320
-i386                   randconfig-b0-06181327
-i386                   randconfig-b0-06181334
-avr32                       mimc200_defconfig
-mips                       rbtx49xx_defconfig
-mips                     sead3micro_defconfig
-avr32                     atstk1002_defconfig
-ia64                        generic_defconfig
-arm                             rpc_defconfig
-arm                           sunxi_defconfig
-powerpc                     sequoia_defconfig
-blackfin                  TCM-BF518_defconfig
-sh                        dreamcast_defconfig
-sh                          landisk_defconfig
-xtensa                              defconfig
-arm                        raumfeld_defconfig
-mips                         tb0226_defconfig
-arm                      acs5k_tiny_defconfig
-sh                            hp6xx_defconfig
-tile                             allyesconfig
-x86_64                 randconfig-b0-06181231
-x86_64                 randconfig-b0-06181246
-x86_64                 randconfig-b0-06181259
-x86_64                 randconfig-b0-06181305
-x86_64                 randconfig-b0-06181315
-x86_64                 randconfig-b0-06181324
-x86_64                 randconfig-b0-06181333
-mips                            e55_defconfig
-powerpc                          alldefconfig
-sh                          lboxre2_defconfig
-sparc64                          allmodconfig
-i386                   randconfig-h0-06181237
-i386                   randconfig-h1-06181237
-i386                   randconfig-h0-06181315
-i386                   randconfig-h1-06181315
-m32r                      mappi.smp_defconfig
-sh                          r7785rp_defconfig
-sh                          urquell_defconfig
-alpha                            allmodconfig
-arm                            netx_defconfig
-openrisc                         allyesconfig
-arm                       imx_v6_v7_defconfig
-mips                malta_kvm_guest_defconfig
-arm                               allnoconfig
-powerpc                       ep405_defconfig
-m32r                     mappi3.smp_defconfig
-mips                         rt305x_defconfig
-x86_64                 randconfig-h0-06181232
-x86_64                 randconfig-h0-06181243
-x86_64                 randconfig-h0-06181323
-x86_64                 randconfig-h0-06181334
-x86_64                 randconfig-n0-06181230
-x86_64                 randconfig-n0-06181244
-x86_64                 randconfig-n0-06181258
-x86_64                 randconfig-n0-06181318
-x86_64                 randconfig-n0-06181330
-arm                          badge4_defconfig
-mips                            gpr_defconfig
-mips                           mtx1_defconfig
-arm                          iop32x_defconfig
-powerpc                      arches_defconfig
-sparc                            allyesconfig
-arm                      footbridge_defconfig
-mips                           xway_defconfig
-sh                           se7750_defconfig
-m32r                         opsput_defconfig
-mips                        msp71xx_defconfig
-i386                  randconfig-sb0-06181232
-i386                  randconfig-sb0-06181255
-i386                  randconfig-sb0-06181315
-i386                  randconfig-sb0-06181327
-i386                  randconfig-sb0-06181335
-s390                           gcov_defconfig
-sh                         ecovec24_defconfig
-arm                     am200epdkit_defconfig
-m32r                    mappi2.opsp_defconfig
-ia64                         bigsur_defconfig
-microblaze                      mmu_defconfig
-x86_64                 randconfig-r0-06181233
-x86_64                 randconfig-r0-06181303
-x86_64                 randconfig-r0-06181323
-arm                          imote2_defconfig
-arm                              zx_defconfig
-powerpc                mpc8610_hpcd_defconfig
-arm64                            alldefconfig
-mips                       bmips_be_defconfig
-arm                         s3c6400_defconfig
-arm                           sama5_defconfig
-blackfin                BF561-EZKIT_defconfig
-arm                         socfpga_defconfig
-powerpc                   currituck_defconfig
-sh                           se7206_defconfig
-x86_64                 randconfig-s0-06181231
-x86_64                 randconfig-s0-06181256
-x86_64                 randconfig-s0-06181315
-x86_64                 randconfig-s0-06181334
-i386                   randconfig-x0-06181230
-i386                   randconfig-x0-06181301
-i386                   randconfig-x0-06181315
+> 
+> > @@ -1571,6 +1576,16 @@ static int do_setvfinfo(struct net_device *dev, struct nlattr *attr)
+> >   							    ivrssq_en->setting);
+> >   			break;
+> >   		}
+> > +		case IFLA_VF_TRUST: {
+> > +			struct ifla_vf_trust *ivt;
+> > +
+> > +			ivt = nla_data(vf);
+> > +			err = -EOPNOTSUPP;
+> > +			if (ops->ndo_set_vf_trust)
+> > +				err = ops->ndo_set_vf_trust(dev, ivt->vf,
+> > +							    ivt->setting);
+> > +			break;
+> > +		}
+> >   		default:
+> >   			err = -EINVAL;
+> >   			break;
+> >
 
-Thanks,
-Fengguang
