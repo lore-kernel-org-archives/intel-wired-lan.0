@@ -1,34 +1,42 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri, 19 Jun 2015 16:37:36 -0700
-Subject: [Intel-wired-lan] [net-next 07/10] fm10k: TRIVIAL fix typo in
-	fm10k_netdev.c
+Date: Fri, 19 Jun 2015 16:37:31 -0700
+Subject: [Intel-wired-lan] [net-next 02/10] fm10k: allow creation of vlan
+	interfaces even while down
 In-Reply-To: <1434757059-3384-1-git-send-email-jacob.e.keller@intel.com>
 References: <1434757059-3384-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1434757059-3384-7-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1434757059-3384-2-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+We re-sync upon going up, so there is little reason to worry about not
+syncing immediately with switch. This prevents an error that occurs if
+you add a vlan interface while down.
+
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-index c173c79373fe..79c0fa2646e7 100644
+index b2065cb44edc..e1ceb3a2e2cd 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-@@ -1048,7 +1048,7 @@ void fm10k_restore_rx_state(struct fm10k_intfc *interface)
- 					   vid, true, 0);
- 	}
+@@ -779,6 +779,12 @@ static int fm10k_update_vid(struct net_device *netdev, u16 vid, bool set)
+ 	if (!set && vid == hw->mac.default_vid)
+ 		return 0;
  
--	/* update xcast mode before syncronizing addresses */
-+	/* update xcast mode before synchronizing addresses */
- 	hw->mac.ops.update_xcast_mode(hw, glort, xcast_mode);
++	/* Do not throw an error if the interface is down. We will sync once
++	 * we come up
++	 */
++	if (test_bit(__FM10K_DOWN, &interface->state))
++		return 0;
++
+ 	fm10k_mbx_lock(interface);
  
- 	/* synchronize all of the addresses */
+ 	/* only need to update the VLAN if not in promiscuous mode */
 -- 
 2.4.3
 
