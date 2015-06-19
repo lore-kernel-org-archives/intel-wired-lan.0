@@ -1,71 +1,91 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri, 19 Jun 2015 16:37:35 -0700
-Subject: [Intel-wired-lan] [net-next 06/10] fm10k: send traffic on default
-	vid to vlan device if we have one
+Date: Fri, 19 Jun 2015 16:37:37 -0700
+Subject: [Intel-wired-lan] [net-next 08/10] fm10k: re-enable VF after a full
+	reset on detection of a Malicious event
 In-Reply-To: <1434757059-3384-1-git-send-email-jacob.e.keller@intel.com>
 References: <1434757059-3384-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1434757059-3384-6-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1434757059-3384-8-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch ensures that vlan traffic on the default vid will go to the
-corresponding vlan device if it exists. To do this, mask the rx_ring vid
-if we have an active vlan on that vid.
+Modify behavior of Malicious Driver Detection events. Presently, the
+hardware disables the VF queues and re-assigns them to the PF. This
+causes the VF in question to continuously Tx hang, because it assumes
+that it can transmit over the queues in question. For transient events,
+this results in continuous logging of malicious events.
+
+New behavior is to reset the LPORT and VF state, so that the VF will
+have to reset and re-enable itself. This does mean that malicious VFs
+will possibly be able to continue and attempt malicious events again.
+However, it is expected that system administrators will step in and
+manually remove or disable the VF in question.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 12 ++++++++++++
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c    |  4 ++++
- 2 files changed, 16 insertions(+)
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 30 ++++++++++++++++++++++++++--
+ 1 file changed, 28 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-index e1ceb3a2e2cd..c173c79373fe 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-@@ -758,6 +758,7 @@ static int fm10k_update_vid(struct net_device *netdev, u16 vid, bool set)
- 	struct fm10k_intfc *interface = netdev_priv(netdev);
- 	struct fm10k_hw *hw = &interface->hw;
- 	s32 err;
-+	int i;
- 
- 	/* updates do not apply to VLAN 0 */
- 	if (!vid)
-@@ -775,6 +776,17 @@ static int fm10k_update_vid(struct net_device *netdev, u16 vid, bool set)
- 	if (!set)
- 		clear_bit(vid, interface->active_vlans);
- 
-+	/* disable the default vid on ring if we have an active vlan */
-+	for (i = 0; i < interface->num_rx_queues; i++) {
-+		struct fm10k_ring *rx_ring = interface->rx_ring[i];
-+		u16 rx_vid = rx_ring->vid & (VLAN_N_VID - 1);
-+
-+		if (test_bit(rx_vid, interface->active_vlans))
-+			rx_ring->vid |= FM10K_VLAN_CLEAR;
-+		else
-+			rx_ring->vid &= ~FM10K_VLAN_CLEAR;
-+	}
-+
- 	/* Do not remove default VID related entries from VLAN and MAC tables */
- 	if (!set && vid == hw->mac.default_vid)
- 		return 0;
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index 6d1364393a8b..989981ea3c64 100644
+index 989981ea3c64..1d788085b57a 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -694,6 +694,10 @@ static void fm10k_configure_rx_ring(struct fm10k_intfc *interface,
- 	/* assign default VLAN to queue */
- 	ring->vid = hw->mac.default_vid;
+@@ -896,10 +896,12 @@ void fm10k_netpoll(struct net_device *netdev)
  
-+	/* if we have an active VLAN, disable default vid */
-+	if (test_bit(hw->mac.default_vid, interface->active_vlans))
-+		ring->vid |= FM10K_VLAN_CLEAR;
+ #endif
+ #define FM10K_ERR_MSG(type) case (type): error = #type; break
+-static void fm10k_print_fault(struct fm10k_intfc *interface, int type,
++static void fm10k_handle_fault(struct fm10k_intfc *interface, int type,
+ 			      struct fm10k_fault *fault)
+ {
+ 	struct pci_dev *pdev = interface->pdev;
++	struct fm10k_hw *hw = &interface->hw;
++	struct fm10k_iov_data *iov_data = interface->iov_data;
+ 	char *error;
+ 
+ 	switch (type) {
+@@ -953,6 +955,30 @@ static void fm10k_print_fault(struct fm10k_intfc *interface, int type,
+ 		 "%s Address: 0x%llx SpecInfo: 0x%x Func: %02x.%0x\n",
+ 		 error, fault->address, fault->specinfo,
+ 		 PCI_SLOT(fault->func), PCI_FUNC(fault->func));
 +
- 	/* Map interrupt */
- 	if (ring->q_vector) {
- 		rxint = ring->q_vector->v_idx + NON_Q_VECTORS(hw);
++	/* For VF faults, clear out the respective LPORT, reset the queue
++	 * resources, and then reconnect to the mailbox. This allows the
++	 * VF in question to resume behavior. For transient faults that are
++	 * the result of non-malicious behavior this will log the fault and
++	 * allow the VF to resume functionality. Obviously for malicious VFs
++	 * they will be able to attempt malicious behavior again. In this
++	 * case, the system administrator will need to step in and manually
++	 * remove or disable the VF in question.
++	 */
++	if (fault->func && iov_data) {
++		int vf = fault->func - 1;
++		struct fm10k_vf_info *vf_info = &iov_data->vf_info[vf];
++
++		hw->iov.ops.reset_lport(hw, vf_info);
++		hw->iov.ops.reset_resources(hw, vf_info);
++
++		/* reset_lport disables the VF, so re-enable it */
++		hw->iov.ops.set_lport(hw, vf_info, vf,
++				      FM10K_VF_FLAG_MULTI_CAPABLE);
++
++		/* reset_resources will disconnect from the mbx  */
++		vf_info->mbx.ops.connect(hw, &vf_info->mbx);
++	}
+ }
+ 
+ static void fm10k_report_fault(struct fm10k_intfc *interface, u32 eicr)
+@@ -976,7 +1002,7 @@ static void fm10k_report_fault(struct fm10k_intfc *interface, u32 eicr)
+ 			continue;
+ 		}
+ 
+-		fm10k_print_fault(interface, type, &fault);
++		fm10k_handle_fault(interface, type, &fault);
+ 	}
+ }
+ 
 -- 
 2.4.3
 
