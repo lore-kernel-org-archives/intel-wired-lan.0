@@ -1,42 +1,54 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri, 19 Jun 2015 16:37:31 -0700
-Subject: [Intel-wired-lan] [net-next 02/10] fm10k: allow creation of vlan
-	interfaces even while down
+Date: Fri, 19 Jun 2015 16:37:38 -0700
+Subject: [Intel-wired-lan] [net-next 09/10] fm10k: Only trigger data path
+	reset if fabric is up
 In-Reply-To: <1434757059-3384-1-git-send-email-jacob.e.keller@intel.com>
 References: <1434757059-3384-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1434757059-3384-2-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1434757059-3384-9-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-We re-sync upon going up, so there is little reason to worry about not
-syncing immediately with switch. This prevents an error that occurs if
-you add a vlan interface while down.
+From: Alexander Duyck <alexander.h.duyck@intel.com>
 
+This change makes it so that we only trigger the data path reset if the
+fabric is ready to handle traffic.  The general idea is to avoid
+triggering the reset unless the switch API is ready for us.  Otherwise
+we can just postpone the reset until we receive a switch ready
+notification.
+
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 6 ++++++
+ drivers/net/ethernet/intel/fm10k/fm10k_pf.c | 6 ++++++
  1 file changed, 6 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-index b2065cb44edc..e1ceb3a2e2cd 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-@@ -779,6 +779,12 @@ static int fm10k_update_vid(struct net_device *netdev, u16 vid, bool set)
- 	if (!set && vid == hw->mac.default_vid)
- 		return 0;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+index 241b969626bc..d806d87a6192 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+@@ -59,6 +59,11 @@ static s32 fm10k_reset_hw_pf(struct fm10k_hw *hw)
+ 	if (reg & (FM10K_DMA_CTRL_TX_ACTIVE | FM10K_DMA_CTRL_RX_ACTIVE))
+ 		return FM10K_ERR_DMA_PENDING;
  
-+	/* Do not throw an error if the interface is down. We will sync once
-+	 * we come up
-+	 */
-+	if (test_bit(__FM10K_DOWN, &interface->state))
-+		return 0;
++	/* verify the switch is ready for reset */
++	reg = fm10k_read_reg(hw, FM10K_DMA_CTRL2);
++	if (!(reg & FM10K_DMA_CTRL2_SWITCH_READY))
++		goto out;
 +
- 	fm10k_mbx_lock(interface);
+ 	/* Inititate data path reset */
+ 	reg |= FM10K_DMA_CTRL_DATAPATH_RESET;
+ 	fm10k_write_reg(hw, FM10K_DMA_CTRL, reg);
+@@ -72,6 +77,7 @@ static s32 fm10k_reset_hw_pf(struct fm10k_hw *hw)
+ 	if (!(reg & FM10K_IP_NOTINRESET))
+ 		err = FM10K_ERR_RESET_FAILED;
  
- 	/* only need to update the VLAN if not in promiscuous mode */
++out:
+ 	return err;
+ }
+ 
 -- 
 2.4.3
 
