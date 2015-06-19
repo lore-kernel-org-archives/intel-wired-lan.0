@@ -1,40 +1,51 @@
-From: Donald C Skidmore <donald.c.skidmore@intel.com>
-Date: Fri, 19 Jun 2015 19:14:57 -0400
-Subject: [Intel-wired-lan] [net-next PATCH] ixgbe: cleanup to use cached
-	mask value
-Message-ID: <20150619231457.32172.76998.stgit@dcs-desk.jf.intel.com>
+From: Young, James M <james.m.young@intel.com>
+Date: Fri, 19 Jun 2015 23:14:24 +0000
+Subject: [Intel-wired-lan] [net-next PATCH S5 11/15 v2] i40e/i40evf: Fix
+ and refactor dynamic ITR code
+In-Reply-To: <CAL3LdT6THJw3WaDt9pwN710twzWvY2da9BnqfDSoDYkHG7_X5g@mail.gmail.com>
+References: <1433958127-222743-1-git-send-email-catherine.sullivan@intel.com>
+ <CAL3LdT6THJw3WaDt9pwN710twzWvY2da9BnqfDSoDYkHG7_X5g@mail.gmail.com>
+Message-ID: <68C85B5FC2FE974B87244D7222BC92783EA1A1D0@ORSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Don Skidmore <donald.c.skidmore@intel.com>
+> ---------- Forwarded message ----------
+> From: Catherine Sullivan <catherine.sullivan@intel.com>
+> Date: Wed, Jun 10, 2015 at 10:42 AM
+> Subject: [Intel-wired-lan] [net-next PATCH S5 11/15 v2] i40e/i40evf:
+> Fix and refactor dynamic ITR code
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Anjali Singhai Jain <anjali.singhai@intel.com>, Akeem G Abodunrin
+> <akeem.g.abodunrin@intel.com>
+> 
+> 
+> From: Carolyn Wyborny <carolyn.wyborny@intel.com>
+> 
+> This patch changes the switch statement for dynamic interrupt throttling and
+> adds a default case. With this patch, we check the latency setting instead of
+> the current ITR settings and the included refactor improves performance.
+> 
+> Without this patch, the ITR setting would never change dynamically, and
+> there was no default.
+> 
+> Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
+> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+> Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Signed-off-by: Mitch Willivam <mitch.a.williams@intel.com>
+> Change-ID: Idb5a8a14c7109ec47c90f6e94bd43baa17d7ee37
+> ---
+> v2: Fix i40e_update_enable_itr in i40evf/i40e_txrx.c to write the register
+> I40E_VF_INT_DYN_CTLN1 instead of I40E_VF_INT_DYN_CTLN in two places.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 146 ++++++++++++++++-----
+> -----
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 113 +++++++++++++-------
+>  2 files changed, 161 insertions(+), 98 deletions(-)
+>
+Tested-by: Jim Young <james.m.young@intel.com>
 
-We already cache this FW/SW semaphore mask so might as well use it
-for consistency.
-
-Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c |    7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-index 526a20b..51ec201 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-@@ -608,12 +608,7 @@ s32 ixgbe_write_phy_reg_generic(struct ixgbe_hw *hw, u32 reg_addr,
- 				u32 device_type, u16 phy_data)
- {
- 	s32 status;
--	u32 gssr;
--
--	if (IXGBE_READ_REG(hw, IXGBE_STATUS) & IXGBE_STATUS_LAN_ID_1)
--		gssr = IXGBE_GSSR_PHY1_SM;
--	else
--		gssr = IXGBE_GSSR_PHY0_SM;
-+	u32 gssr = hw->phy.phy_semaphore_mask;
- 
- 	if (hw->mac.ops.acquire_swfw_sync(hw, gssr) == 0) {
- 		status = ixgbe_write_phy_reg_mdi(hw, reg_addr, device_type,
-
+Retested in ww25 with v2 patch. 
