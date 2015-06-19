@@ -1,53 +1,40 @@
-From: Donald C Skidmore <donald.c.skidmore@intel.com>
-Date: Fri, 19 Jun 2015 12:23:36 -0400
-Subject: [Intel-wired-lan] [net-next PATCH] ixgbe: Remove second instance of
-	lan_id variable
-Message-ID: <20150619162336.23319.95448.stgit@dcs-desk.jf.intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Fri, 19 Jun 2015 10:56:09 -0700
+Subject: [Intel-wired-lan] [PATCH net-next 1/2] fm10k: allow creation of
+	vlan interfaces even while down
+Message-ID: <1434736570-12137-1-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch removes the redundant lan_id in the phy struct and uses
-the bus version.  Both variables exist and intend to represent the
-STATUS register LAN_ID field.  However, phy.lan_id is not bit shifted
-so the phy.lan_id = 0x0 for LAN Id 0 and phy.lan_id = 0x4 for LAN Id 1.
-Where bus.lan_id is bit shifted so bus.lan_id = 0x0 for LAN Id 0 and
-bus.lan_id = 0x1 for LAN Id 1. There seems no need for the additional
-lan_id variable and this should make the code less confusing.
+We re-sync upon going up, so there is little reason to worry about not
+syncing immediately with switch. This prevents an error that occurs if
+you add a vlan interface while down.
 
-Signed-off-by: Donald C Skidmore <donald.c.skidmore@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  |    4 +---
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |    1 -
- 2 files changed, 1 insertion(+), 4 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-index 526a20b..740e566 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-@@ -243,9 +243,7 @@ s32 ixgbe_identify_phy_generic(struct ixgbe_hw *hw)
- 	u16 ext_ability = 0;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+index b2065cb44edc..e1ceb3a2e2cd 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+@@ -779,6 +779,12 @@ static int fm10k_update_vid(struct net_device *netdev, u16 vid, bool set)
+ 	if (!set && vid == hw->mac.default_vid)
+ 		return 0;
  
- 	if (!hw->phy.phy_semaphore_mask) {
--		hw->phy.lan_id = IXGBE_READ_REG(hw, IXGBE_STATUS) &
--				 IXGBE_STATUS_LAN_ID_1;
--		if (hw->phy.lan_id)
-+		if (hw->bus.lan_id)
- 			hw->phy.phy_semaphore_mask = IXGBE_GSSR_PHY1_SM;
- 		else
- 			hw->phy.phy_semaphore_mask = IXGBE_GSSR_PHY0_SM;
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-index 1c5a5b3..a3eec19 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-@@ -3381,7 +3381,6 @@ struct ixgbe_phy_info {
- 	bool                            sfp_setup_needed;
- 	u32                             revision;
- 	enum ixgbe_media_type           media_type;
--	u8				lan_id;
- 	u32				phy_semaphore_mask;
- 	bool                            reset_disable;
- 	ixgbe_autoneg_advertised        autoneg_advertised;
++	/* Do not throw an error if the interface is down. We will sync once
++	 * we come up
++	 */
++	if (test_bit(__FM10K_DOWN, &interface->state))
++		return 0;
++
+ 	fm10k_mbx_lock(interface);
+ 
+ 	/* only need to update the VLAN if not in promiscuous mode */
+-- 
+2.4.3
 
