@@ -1,34 +1,45 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Thu, 18 Jun 2015 19:23:48 -0700
-Subject: [Intel-wired-lan] [PATCH] fm10k: Report MAC address on driver
- load
-In-Reply-To: <1434671381.3530.81.camel@intel.com>
-References: <20150618031252.15654.56639.stgit@ahduyck-vm-fedora22>
- <1434671381.3530.81.camel@intel.com>
-Message-ID: <55837D34.7070100@gmail.com>
+From: Alexander Duyck <alexander.h.duyck@redhat.com>
+Date: Thu, 18 Jun 2015 19:41:10 -0700
+Subject: [Intel-wired-lan] [PATCH v2] fm10k: Report MAC address on driver
+	load
+Message-ID: <20150619023812.1345.75383.stgit@ahduyck-vm-fedora22>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 06/18/2015 04:49 PM, Jeff Kirsher wrote:
-> On Wed, 2015-06-17 at 20:12 -0700, Alexander Duyck wrote:
->> This change adds the MAC address to the list of values recorded on
->> driver
->> load.  The MAC address represents the serial number of the unit and
->> allows
->> us to track the value should a card be replaced in a system.
->>
->> Signed-off-by: Alexander Duyck <alexander.h.duyck@redhat.com>
->> ---
->>   drivers/net/ethernet/intel/fm10k/fm10k_pci.c |    4 ++--
->>   1 file changed, 2 insertions(+), 2 deletions(-)
-> With the recent fm10k patches that Jake submitted, this patch no longer
-> applies cleanly.  If you could re-spin your patch against my next-queue
-> tree (dev-queue branch) that would be much appreciated.
+This change adds the MAC address to the list of values recorded on driver
+load.  The MAC address represents the serial number of the unit and allows
+us to track the value should a card be replaced in a system.
 
-I should have a new patch for you in 20 minutes or so.  Just waiting on 
-the build to finish and then I'll give it a quick test.
+The log message should now be similar in output to that of ixgbe.
 
-- Alex
+Signed-off-by: Alexander Duyck <alexander.h.duyck@redhat.com>
+---
+
+v2: Moved printing of MAC onto separate line similar to ixgbe.
+
+(Hopefully this works for you Jeff.  I took at look at the patch and just
+ moved the bit I needed down.  I figured since this block hasn't changed I
+ should be able to get away with just doing this instead of pulling and
+ rebasing off of your tree. )
+
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c |    3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index ce53ff25f88d..62a584f633d8 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -1843,6 +1843,9 @@ static int fm10k_probe(struct pci_dev *pdev,
+ 	/* print warning for non-optimal configurations */
+ 	fm10k_slot_warn(interface);
+ 
++	/* report MAC address for logging */
++	dev_info(&pdev->dev, "%pM\n", netdev->dev_addr);
++
+ 	/* enable SR-IOV after registering netdev to enforce PF/VF ordering */
+ 	fm10k_iov_configure(pdev, 0);
+ 
+
