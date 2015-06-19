@@ -1,50 +1,65 @@
-From: Maninder Singh <maninder1.s@samsung.com>
-Date: Fri, 19 Jun 2015 09:37:55 +0530
-Subject: [Intel-wired-lan] [PATCH 1/1] ixgbe: use kzalloc for allocating one
-	thing
-Message-ID: <1434686875-13040-1-git-send-email-maninder1.s@samsung.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Fri, 19 Jun 2015 15:31:41 +0000
+Subject: [Intel-wired-lan] [PATCH 5/6] fm10k: update fm10k_slot_warn to
+ use pcie_get_minimum link
+In-Reply-To: <55837CE9.1080706@gmail.com>
+References: <1434405656-10465-1-git-send-email-jacob.e.keller@intel.com>
+ <1434405656-10465-5-git-send-email-jacob.e.keller@intel.com>
+ <55837CE9.1080706@gmail.com>
+Message-ID: <1434727901.3752.6.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Use kzalloc rather than kcalloc(1..
+On Thu, 2015-06-18 at 19:22 -0700, Alexander Duyck wrote:
+> On 06/15/2015 03:00 PM, Jacob Keller wrote:
+> > This is useful in cases where we connect to a slot at Gen3, but the 
+> > slot
+> > is behind a bus which only connected at Gen2. This generally only
+> > happens when a PCIe switch is in the sequence of devices, and can 
+> > be
+> > very confusing when you see slow performance with no obvious cause.
+> > 
+> > I am aware this patch has a few lines that break 80 characters, but
+> > there does not seem to be a readable way to format them to less 
+> > than 80
+> > characters. Suggestions welcome.
+> > 
+> > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> > ---
+> >   drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 105 
+> > +++++++++++++++++++--------
+> >   1 file changed, 76 insertions(+), 29 deletions(-)
+> > 
+> > diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c 
+> > b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> > index 37cd78f3ce24..d8ab6cdca456 100644
+> > --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> > +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> > @@ -1703,22 +1703,86 @@ static int fm10k_sw_init(struct fm10k_intfc 
+> > *interface,
+> >   
+> >   static void fm10k_slot_warn(struct fm10k_intfc *interface)
+> >   {
+> > -   struct device *dev = &interface->pdev->dev;
+> > +   enum pcie_link_width width = PCIE_LNK_WIDTH_UNKNOWN;
+> > +   enum pci_bus_speed speed = PCI_SPEED_UNKNOWN;
+> >     struct fm10k_hw *hw = &interface->hw;
+> > +   int max_gts = 0, expected_gts = 0;
+> >   
+> > -   if (hw->mac.ops.is_slot_appropriate(hw))
+> 
+> If I am not mistaken I believe this is the only spot that uses the 
+> is_slot_appropriate function in the upstream driver.  You could just 
+> drop it from the code if that is the case.  I'll try to get to it in 
+> a 
+> couple of weeks when I get back from vacation otherwise.
+> 
+> - Alex
 
-The semantic patch that makes this change is as follows:
+Makes sense.
 
-// <smpl>
-@@
-@@
-
-- kcalloc(1,
-+ kzalloc(
-          ...)
-// </smpl>
-
-and removing checkpatch below CHECK:
-CHECK: Prefer kzalloc(sizeof(*fwd_adapter)...) over 
-kzalloc(sizeof(struct ixgbe_fwd_adapter)...)
-
-Signed-off-by: Maninder Singh <maninder1.s@samsung.com>
-Reviewed-by: Vaneet Narang <v.narang@samsung.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 3bf2f3c..3f58757 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -8134,7 +8134,7 @@ static void *ixgbe_fwd_add(struct net_device *pdev, struct net_device *vdev)
- 	    (adapter->num_rx_pools > IXGBE_MAX_MACVLANS))
- 		return ERR_PTR(-EBUSY);
- 
--	fwd_adapter = kcalloc(1, sizeof(struct ixgbe_fwd_adapter), GFP_KERNEL);
-+	fwd_adapter = kzalloc(sizeof(*fwd_adapter), GFP_KERNEL);
- 	if (!fwd_adapter)
- 		return ERR_PTR(-ENOMEM);
- 
--- 
-1.7.1
-
+Regards,
+Jake
