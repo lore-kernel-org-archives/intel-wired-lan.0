@@ -1,40 +1,44 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri, 19 Jun 2015 10:56:09 -0700
-Subject: [Intel-wired-lan] [PATCH net-next 1/2] fm10k: allow creation of
-	vlan interfaces even while down
-Message-ID: <1434736570-12137-1-git-send-email-jacob.e.keller@intel.com>
+Date: Fri, 19 Jun 2015 10:56:10 -0700
+Subject: [Intel-wired-lan] [PATCH net-next 2/2] fm10k: don't store sw_vid at
+	reset
+In-Reply-To: <1434736570-12137-1-git-send-email-jacob.e.keller@intel.com>
+References: <1434736570-12137-1-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1434736570-12137-2-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-We re-sync upon going up, so there is little reason to worry about not
-syncing immediately with switch. This prevents an error that occurs if
-you add a vlan interface while down.
+If we store the sw_vid at reset of PF, then we accidentally prevent the
+VF from receiving the message to update its default VID. This only
+occurs if the VF is created before the PF has come up, which is the
+standard way of creating VFs when using the module parameter.
+
+This fixes an issue where we request the incorrect MAC/VLAN
+combinations, and prevents us from accidentally reporting some frames as
+vlan tagged.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/net/ethernet/intel/fm10k/fm10k_iov.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-index b2065cb44edc..e1ceb3a2e2cd 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-@@ -779,6 +779,12 @@ static int fm10k_update_vid(struct net_device *netdev, u16 vid, bool set)
- 	if (!set && vid == hw->mac.default_vid)
- 		return 0;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_iov.c b/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
+index 94571e6e790c..0e25a80417b9 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
+@@ -228,9 +228,6 @@ int fm10k_iov_resume(struct pci_dev *pdev)
+ 		hw->iov.ops.set_lport(hw, vf_info, i,
+ 				      FM10K_VF_FLAG_MULTI_CAPABLE);
  
-+	/* Do not throw an error if the interface is down. We will sync once
-+	 * we come up
-+	 */
-+	if (test_bit(__FM10K_DOWN, &interface->state))
-+		return 0;
-+
- 	fm10k_mbx_lock(interface);
+-		/* assign our default vid to the VF following reset */
+-		vf_info->sw_vid = hw->mac.default_vid;
+-
+ 		/* mailbox is disconnected so we don't send a message */
+ 		hw->iov.ops.assign_default_mac_vlan(hw, vf_info);
  
- 	/* only need to update the VLAN if not in promiscuous mode */
 -- 
 2.4.3
 
