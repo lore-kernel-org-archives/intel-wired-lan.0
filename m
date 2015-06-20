@@ -1,10 +1,10 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Sat, 20 Jun 2015 02:43:47 +0000
-Subject: [Intel-wired-lan] [PATCH] e1000e: Cleanup qos request in
-	error	handling of e1000_open
-In-Reply-To: <1433423247-27228-1-git-send-email-baijiaju1990@163.com>
-References: <1433423247-27228-1-git-send-email-baijiaju1990@163.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B78DF861A@ORSMSX101.amr.corp.intel.com>
+Date: Sat, 20 Jun 2015 03:10:19 +0000
+Subject: [Intel-wired-lan] [PATCH v2] igb: report unsupported
+	ethtool	settings in set_coalesce
+In-Reply-To: <20150604212640.7229.93966.stgit@htfujina-fc.jf.intel.com>
+References: <20150604212640.7229.93966.stgit@htfujina-fc.jf.intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B78DF8635@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,20 +12,19 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Jia-Ju Bai
-> Sent: Thursday, June 04, 2015 6:07 AM
+> Behalf Of Todd Fujinaka
+> Sent: Thursday, June 04, 2015 2:27 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Jia-Ju Bai
-> Subject: [Intel-wired-lan] [PATCH] e1000e: Cleanup qos request in error
-> handling of e1000_open
+> Subject: [Intel-wired-lan] [PATCH v2] igb: report unsupported ethtool
+> settings in set_coalesce
 > 
-> The driver lacks pm_qos_remove_request in error handling (err_req_irq) of
-> e1000_open, and qos request inserted by pm_qos_add_request is not removed.
-> This patch add pm_qos_remove_request in error handling to fix it.
+> There are many settings possible using ethtool -C/--coalesce, but not
+> all of them are supported in igb. Report failure when an unsupported
+> option is set.
 > 
-> Signed-off-by: Jia-Ju Bai <baijiaju1990@163.com>
+> Signed-off-by: Todd Fujinaka <todd.fujinaka@intel.com>
 > ---
->  drivers/net/ethernet/intel/e1000e/netdev.c |    1 +
->  1 file changed, 1 insertion(+)
+>  drivers/net/ethernet/intel/igb/igb_ethtool.c |   21 +++++++++++++++++++++
+>  1 file changed, 21 insertions(+)
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
