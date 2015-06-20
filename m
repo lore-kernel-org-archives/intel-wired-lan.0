@@ -1,11 +1,11 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 19 Jun 2015 21:20:13 -0700
-Subject: [Intel-wired-lan] [net-next 06/10] fm10k: send traffic on
- default vid to vlan device if we have one
-In-Reply-To: <1434757059-3384-6-git-send-email-jacob.e.keller@intel.com>
+Date: Fri, 19 Jun 2015 21:41:22 -0700
+Subject: [Intel-wired-lan] [net-next 10/10] fm10k: fix
+ iov_msg_mac_vlan_pf VID checks
+In-Reply-To: <1434757059-3384-10-git-send-email-jacob.e.keller@intel.com>
 References: <1434757059-3384-1-git-send-email-jacob.e.keller@intel.com>
- <1434757059-3384-6-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <5584E9FD.1000809@gmail.com>
+ <1434757059-3384-10-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <5584EEF2.1040203@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,75 +13,133 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 On 06/19/2015 04:37 PM, Jacob Keller wrote:
-> This patch ensures that vlan traffic on the default vid will go to the
-> corresponding vlan device if it exists. To do this, mask the rx_ring vid
-> if we have an active vlan on that vid.
+> The VF will send a message to request multicast addresses with the
+> default vid. In the current code, if the PF has statically assigned a
+> VLAN to a VF, then the VF will not get the multicast addresses. Fix up
+> all of the various vlan messages to use identical checks (since each
+> check was different). Also use set as a variable, so that it simplifies
+> our check for whether vlan matches the pf_vid.
+>
+> The new logic will allow set of a vlan if it is zero, automatically
+> converting to the default vid. Otherwise it will allow setting the PF
+> vid, or any VLAN if PF has not statically assigned a VLAN. This is
+> consistent behavior, and allows VF to request either 0 or the
+> default_vid without silently failing.
+>
+> Note that we need the check for zero since VFs might not get the default
+> VID message in time to actually request non-zero VLANs.
 >
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->   drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 12 ++++++++++++
->   drivers/net/ethernet/intel/fm10k/fm10k_pci.c    |  4 ++++
->   2 files changed, 16 insertions(+)
+>   drivers/net/ethernet/intel/fm10k/fm10k_pf.c | 37 +++++++++++++++++++----------
+>   1 file changed, 25 insertions(+), 12 deletions(-)
 >
-> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-> index e1ceb3a2e2cd..c173c79373fe 100644
-> --- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-> @@ -758,6 +758,7 @@ static int fm10k_update_vid(struct net_device *netdev, u16 vid, bool set)
->   	struct fm10k_intfc *interface = netdev_priv(netdev);
->   	struct fm10k_hw *hw = &interface->hw;
->   	s32 err;
-> +	int i;
+> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+> index d806d87a6192..9bb57531b5db 100644
+> --- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+> @@ -1168,9 +1168,10 @@ s32 fm10k_iov_msg_mac_vlan_pf(struct fm10k_hw *hw, u32 **results,
+>   			      struct fm10k_mbx_info *mbx)
+>   {
+>   	struct fm10k_vf_info *vf_info = (struct fm10k_vf_info *)mbx;
+> -	int err = 0;
+>   	u8 mac[ETH_ALEN];
+>   	u32 *result;
+> +	int err = 0;
+> +	bool set;
+>   	u16 vlan;
+>   	u32 vid;
 >
->   	/* updates do not apply to VLAN 0 */
->   	if (!vid)
-> @@ -775,6 +776,17 @@ static int fm10k_update_vid(struct net_device *netdev, u16 vid, bool set)
->   	if (!set)
->   		clear_bit(vid, interface->active_vlans);
+> @@ -1186,19 +1187,25 @@ s32 fm10k_iov_msg_mac_vlan_pf(struct fm10k_hw *hw, u32 **results,
+>   		if (err)
+>   			return err;
 >
-> +	/* disable the default vid on ring if we have an active vlan */
-> +	for (i = 0; i < interface->num_rx_queues; i++) {
-> +		struct fm10k_ring *rx_ring = interface->rx_ring[i];
-> +		u16 rx_vid = rx_ring->vid & (VLAN_N_VID - 1);
+> +		/* verify upper 16 bits are zero */
+> +		if (vid >> 16)
+> +			return FM10K_ERR_PARAM;
 > +
-> +		if (test_bit(rx_vid, interface->active_vlans))
-> +			rx_ring->vid |= FM10K_VLAN_CLEAR;
-> +		else
-> +			rx_ring->vid &= ~FM10K_VLAN_CLEAR;
-> +	}
+> +		set = !(vid & FM10K_VLAN_CLEAR);
+> +		vid &= ~FM10K_VLAN_CLEAR;
 > +
->   	/* Do not remove default VID related entries from VLAN and MAC tables */
->   	if (!set && vid == hw->mac.default_vid)
->   		return 0;
-> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> index 6d1364393a8b..989981ea3c64 100644
-> --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> @@ -694,6 +694,10 @@ static void fm10k_configure_rx_ring(struct fm10k_intfc *interface,
->   	/* assign default VLAN to queue */
->   	ring->vid = hw->mac.default_vid;
+>   		/* if VLAN ID is 0, set the default VLAN ID instead of 0 */
+> -		if (!vid || (vid == FM10K_VLAN_CLEAR)) {
+> +		if (!vid) {
+>   			if (vf_info->pf_vid)
+>   				vid |= vf_info->pf_vid;
+>   			else
+>   				vid |= vf_info->sw_vid;
+> -		} else if (vid != vf_info->pf_vid) {
+> +		} else if (vf_info->pf_vid && vid != vf_info->pf_vid) {
+>   			return FM10K_ERR_PARAM;
+>   		}
 >
-> +	/* if we have an active VLAN, disable default vid */
-> +	if (test_bit(hw->mac.default_vid, interface->active_vlans))
-> +		ring->vid |= FM10K_VLAN_CLEAR;
+>   		/* update VSI info for VF in regards to VLAN table */
+> -		err = hw->mac.ops.update_vlan(hw, vid, vf_info->vsi,
+> -					      !(vid & FM10K_VLAN_CLEAR));
+> +		err = hw->mac.ops.update_vlan(hw, vid, vf_info->vsi, set);
+>   	}
+>
+>   	if (!err && !!results[FM10K_MAC_VLAN_MSG_MAC]) {
+> @@ -1214,19 +1221,22 @@ s32 fm10k_iov_msg_mac_vlan_pf(struct fm10k_hw *hw, u32 **results,
+>   		    memcmp(mac, vf_info->mac, ETH_ALEN))
+>   			return FM10K_ERR_PARAM;
+>
+> +		set = !(vlan & FM10K_VLAN_CLEAR);
+> +		vlan &= ~FM10K_VLAN_CLEAR;
 > +
->   	/* Map interrupt */
->   	if (ring->q_vector) {
->   		rxint = ring->q_vector->v_idx + NON_Q_VECTORS(hw);
+>   		/* if VLAN ID is 0, set the default VLAN ID instead of 0 */
+> -		if (!vlan || (vlan == FM10K_VLAN_CLEAR)) {
+> +		if (!vlan) {
+>   			if (vf_info->pf_vid)
+>   				vlan |= vf_info->pf_vid;
+>   			else
+>   				vlan |= vf_info->sw_vid;
+> -		} else if (vf_info->pf_vid) {
+> +		} else if (vf_info->pf_vid && vlan != vf_info->pf_vid) {
+>   			return FM10K_ERR_PARAM;
+>   		}
+>
+>   		/* notify switch of request for new unicast address */
+> -		err = hw->mac.ops.update_uc_addr(hw, vf_info->glort, mac, vlan,
+> -						 !(vlan & FM10K_VLAN_CLEAR), 0);
+> +		err = hw->mac.ops.update_uc_addr(hw, vf_info->glort,
+> +						 mac, vlan, set, 0);
+>   	}
+>
+>   	if (!err && !!results[FM10K_MAC_VLAN_MSG_MULTICAST]) {
+> @@ -1241,19 +1251,22 @@ s32 fm10k_iov_msg_mac_vlan_pf(struct fm10k_hw *hw, u32 **results,
+>   		if (!(vf_info->vf_flags & FM10K_VF_FLAG_MULTI_ENABLED))
+>   			return FM10K_ERR_PARAM;
+>
+> +		set = !(vlan & FM10K_VLAN_CLEAR);
+> +		vlan &= ~FM10K_VLAN_CLEAR;
+> +
+>   		/* if VLAN ID is 0, set the default VLAN ID instead of 0 */
+>   		if (!vlan || (vlan == FM10K_VLAN_CLEAR)) {
+
+You missed a spot here.  This should be if(!vlan) since you already 
+cleared the FM10K_VLAN_CLEAR flag.
+
+>   			if (vf_info->pf_vid)
+>   				vlan |= vf_info->pf_vid;
+>   			else
+>   				vlan |= vf_info->sw_vid;
+> -		} else if (vf_info->pf_vid) {
+> +		} else if (vf_info->pf_vid && vlan != vf_info->pf_vid) {
+>   			return FM10K_ERR_PARAM;
+>   		}
+>
+>   		/* notify switch of request for new multicast address */
+> -		err = hw->mac.ops.update_mc_addr(hw, vf_info->glort, mac, vlan,
+> -						 !(vlan & FM10K_VLAN_CLEAR));
+> +		err = hw->mac.ops.update_mc_addr(hw, vf_info->glort,
+> +						 mac, vlan, set);
+>   	}
+>
+>   	return err;
 >
 
-This doesn't quite work since the rx_ring->vid is doing a full 16b 
-comparison against a value that includes the QOS value.
+Really since the code is so identical you might just want to create a 
+function to do all of this.  You could have it return a value 
+representing the VLAN ID if >=0, or error if < 0.
 
-I just realized that is a bug in the fm10k_process_skb_fields function. 
-  You probably need to update it so that code does something more like
-
-if (rx_desc->w.vlan) {
-	u16 vid = le16_to_cpu(rx_desc->w.vlan);
-
-	if ((vid & VLAN_VID_MASK) != rx_ring->vid)
-		__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q), vid);
-	else if (vid & VLAN_PRIO_MASK)
-		__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q),
-				       vid & VLAN_PRIO_MASK);
-}	
