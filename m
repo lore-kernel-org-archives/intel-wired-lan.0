@@ -1,59 +1,80 @@
-From: Vick, Matthew <matthew.vick@intel.com>
-Date: Tue, 23 Jun 2015 16:11:30 +0000
-Subject: [Intel-wired-lan] [net-next 06/10] fm10k: send traffic on
- default vid to vlan device if we have one
-In-Reply-To: <5584E9FD.1000809@gmail.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Tue, 23 Jun 2015 18:23:14 +0000
+Subject: [Intel-wired-lan] [net-next 03/10] fm10k: don't store sw_vid at
+ reset
+In-Reply-To: <5584E612.1030001@gmail.com>
 References: <1434757059-3384-1-git-send-email-jacob.e.keller@intel.com>
- <1434757059-3384-6-git-send-email-jacob.e.keller@intel.com>
- <5584E9FD.1000809@gmail.com>
-Message-ID: <D1AED210.7D4C4%matthew.vick@intel.com>
+ <1434757059-3384-3-git-send-email-jacob.e.keller@intel.com>
+ <5584E612.1030001@gmail.com>
+Message-ID: <1435083794.20240.11.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 6/19/15, 9:20 PM, "Alexander Duyck" <alexander.duyck@gmail.com> wrote:
+On Fri, 2015-06-19 at 21:03 -0700, Alexander Duyck wrote:
+> On 06/19/2015 04:37 PM, Jacob Keller wrote:
+> > If we store the sw_vid at reset of PF, then we accidentally prevent 
+> > the
+> > VF from receiving the message to update its default VID. This only
+> > occurs if the VF is created before the PF has come up, which is the
+> > standard way of creating VFs when using the module parameter.
+> 
+> The upstream driver doesn't have a module parameter for VFs.  It uses 
+> 
+> sysfs.  It isn't clear but can this issue occur if you use the sysfs?
+> 
 
->On 06/19/2015 04:37 PM, Jacob Keller wrote:
+Yes, I can re-work the comment. It can happen if you instantiate VFs
+before you bring up the PF such as:
 
-[...]
+modprobe fm10k
+echo N > /sys/class/.../sriov_numvfs
+ip link set DEVICE up
 
->> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
->>b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
->> index 6d1364393a8b..989981ea3c64 100644
->> --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
->> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
->> @@ -694,6 +694,10 @@ static void fm10k_configure_rx_ring(struct
->>fm10k_intfc *interface,
->>   	/* assign default VLAN to queue */
->>   	ring->vid = hw->mac.default_vid;
->>
->> +	/* if we have an active VLAN, disable default vid */
->> +	if (test_bit(hw->mac.default_vid, interface->active_vlans))
->> +		ring->vid |= FM10K_VLAN_CLEAR;
->> +
->>   	/* Map interrupt */
->>   	if (ring->q_vector) {
->>   		rxint = ring->q_vector->v_idx + NON_Q_VECTORS(hw);
->>
->
->This doesn't quite work since the rx_ring->vid is doing a full 16b
->comparison against a value that includes the QOS value.
->
->I just realized that is a bug in the fm10k_process_skb_fields function.
->  You probably need to update it so that code does something more like
->
->if (rx_desc->w.vlan) {
->	u16 vid = le16_to_cpu(rx_desc->w.vlan);
->
->	if ((vid & VLAN_VID_MASK) != rx_ring->vid)
->		__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q), vid);
->	else if (vid & VLAN_PRIO_MASK)
->		__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q),
->				       vid & VLAN_PRIO_MASK);
->}
+If you do that in this order VFs will have the issue.
 
-Agreed. Coincidentally, this bit us last week and we're working internally
-to resolve it now. Your solution looks good to me.
+> > This fixes an issue where we request the incorrect MAC/VLAN
+> > combinations, and prevents us from accidentally reporting some 
+> > frames as
+> > vlan tagged.
+> > 
+> > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> > ---
+> >   drivers/net/ethernet/intel/fm10k/fm10k_iov.c | 3 ---
+> >   1 file changed, 3 deletions(-)
+> > 
+> > diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_iov.c 
+> > b/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
+> > index 94571e6e790c..0e25a80417b9 100644
+> > --- a/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
+> > +++ b/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
+> > @@ -228,9 +228,6 @@ int fm10k_iov_resume(struct pci_dev *pdev)
+> >   		hw->iov.ops.set_lport(hw, vf_info, i,
+> >   				     
+> >  FM10K_VF_FLAG_MULTI_CAPABLE);
+> >   
+> > -		/* assign our default vid to the VF following 
+> > reset */
+> > -		vf_info->sw_vid = hw->mac.default_vid;
+> > -
+> >   		/* mailbox is disconnected so we don't send a 
+> > message */
+> >   		hw->iov.ops.assign_default_mac_vlan(hw, vf_info);
+> >   
+> 
+> The patch itself looks fine.  I assume the Switch API will send a 
+> message to force us onto the correct VID if there is one already 
+> reserved for this VF.
+> 
+> I probably shouldn't have used the PF VLAN ID for the VFs anyway. 
+> Just 
+> letting the Switch API bounce a message through is a much better way 
+> to go.
 
+
+Yes, the switch sends a message which we receive on coming up.
+
+Regards,
+Jake
