@@ -1,54 +1,48 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 24 Jun 2015 13:34:49 -0700
-Subject: [Intel-wired-lan] [PATCH net-next rc1 09/10] fm10k: Only trigger
-	data path reset if fabric is up
+Date: Wed, 24 Jun 2015 13:34:44 -0700
+Subject: [Intel-wired-lan] [PATCH net-next rc1 04/10] fm10k: TRIVIAL fix up
+	ordering of __always_unused and style
 In-Reply-To: <1435178090-25422-1-git-send-email-jacob.e.keller@intel.com>
 References: <1435178090-25422-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1435178090-25422-10-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1435178090-25422-5-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Duyck <alexander.duyck@redhat.com>
+Fix some style issues in debugfs code, and correct ordering of void and
+__always_unused. Technically, the order does not matter, but preferred
+style is to put the macro between the type and name.
 
-This change makes it so that we only trigger the data path reset if the
-fabric is ready to handle traffic.  The general idea is to avoid
-triggering the reset unless the switch API is ready for us.  Otherwise
-we can just postpone the reset until we receive a switch ready
-notification.
-
-Signed-off-by: Alexander Duyck <alexander.h.duyck@redhat.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_pf.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-index 241b969626bc..d806d87a6192 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-@@ -59,6 +59,11 @@ static s32 fm10k_reset_hw_pf(struct fm10k_hw *hw)
- 	if (reg & (FM10K_DMA_CTRL_TX_ACTIVE | FM10K_DMA_CTRL_RX_ACTIVE))
- 		return FM10K_ERR_DMA_PENDING;
- 
-+	/* verify the switch is ready for reset */
-+	reg = fm10k_read_reg(hw, FM10K_DMA_CTRL2);
-+	if (!(reg & FM10K_DMA_CTRL2_SWITCH_READY))
-+		goto out;
-+
- 	/* Inititate data path reset */
- 	reg |= FM10K_DMA_CTRL_DATAPATH_RESET;
- 	fm10k_write_reg(hw, FM10K_DMA_CTRL, reg);
-@@ -72,6 +77,7 @@ static s32 fm10k_reset_hw_pf(struct fm10k_hw *hw)
- 	if (!(reg & FM10K_IP_NOTINRESET))
- 		err = FM10K_ERR_RESET_FAILED;
- 
-+out:
- 	return err;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c b/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
+index f45b4d71adb8..08ecf43dffc7 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
+@@ -37,7 +37,8 @@ static void *fm10k_dbg_desc_seq_start(struct seq_file *s, loff_t *pos)
  }
  
+ static void *fm10k_dbg_desc_seq_next(struct seq_file *s,
+-				     void __always_unused *v, loff_t *pos)
++				     void __always_unused *v,
++				     loff_t *pos)
+ {
+ 	struct fm10k_ring *ring = s->private;
+ 
+@@ -45,7 +46,7 @@ static void *fm10k_dbg_desc_seq_next(struct seq_file *s,
+ }
+ 
+ static void fm10k_dbg_desc_seq_stop(struct seq_file __always_unused *s,
+-				    __always_unused void *v)
++				    void __always_unused *v)
+ {
+ 	/* Do nothing. */
+ }
 -- 
 2.4.3
 
