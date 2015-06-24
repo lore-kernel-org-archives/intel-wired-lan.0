@@ -1,173 +1,54 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 24 Jun 2015 13:34:50 -0700
-Subject: [Intel-wired-lan] [PATCH net-next rc1 10/10] fm10k: fix
-	iov_msg_mac_vlan_pf VID checks
+Date: Wed, 24 Jun 2015 13:34:49 -0700
+Subject: [Intel-wired-lan] [PATCH net-next rc1 09/10] fm10k: Only trigger
+	data path reset if fabric is up
 In-Reply-To: <1435178090-25422-1-git-send-email-jacob.e.keller@intel.com>
 References: <1435178090-25422-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1435178090-25422-11-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1435178090-25422-10-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The VF will send a message to request multicast addresses with the
-default vid. In the current code, if the PF has statically assigned a
-VLAN to a VF, then the VF will not get the multicast addresses. Fix up
-all of the various vlan messages to use identical checks (since each
-check was different). Also use set as a variable, so that it simplifies
-our check for whether vlan matches the pf_vid.
+From: Alexander Duyck <alexander.duyck@redhat.com>
 
-The new logic will allow set of a vlan if it is zero, automatically
-converting to the default vid. Otherwise it will allow setting the PF
-vid, or any VLAN if PF has not statically assigned a VLAN. This is
-consistent behavior, and allows VF to request either 0 or the
-default_vid without silently failing.
+This change makes it so that we only trigger the data path reset if the
+fabric is ready to handle traffic.  The general idea is to avoid
+triggering the reset unless the switch API is ready for us.  Otherwise
+we can just postpone the reset until we receive a switch ready
+notification.
 
-Note that we need the check for zero since VFs might not get the default
-VID message in time to actually request non-zero VLANs.
-
-- rc1
-* Create function fm10k_iov_select_vid to remove code duplication
-
+Signed-off-by: Alexander Duyck <alexander.h.duyck@redhat.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_pf.c | 85 ++++++++++++++++++-----------
- 1 file changed, 52 insertions(+), 33 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_pf.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-index d806d87a6192..3a60ad654282 100644
+index 241b969626bc..d806d87a6192 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-@@ -1155,6 +1155,24 @@ s32 fm10k_iov_msg_msix_pf(struct fm10k_hw *hw, u32 **results,
+@@ -59,6 +59,11 @@ static s32 fm10k_reset_hw_pf(struct fm10k_hw *hw)
+ 	if (reg & (FM10K_DMA_CTRL_TX_ACTIVE | FM10K_DMA_CTRL_RX_ACTIVE))
+ 		return FM10K_ERR_DMA_PENDING;
+ 
++	/* verify the switch is ready for reset */
++	reg = fm10k_read_reg(hw, FM10K_DMA_CTRL2);
++	if (!(reg & FM10K_DMA_CTRL2_SWITCH_READY))
++		goto out;
++
+ 	/* Inititate data path reset */
+ 	reg |= FM10K_DMA_CTRL_DATAPATH_RESET;
+ 	fm10k_write_reg(hw, FM10K_DMA_CTRL, reg);
+@@ -72,6 +77,7 @@ static s32 fm10k_reset_hw_pf(struct fm10k_hw *hw)
+ 	if (!(reg & FM10K_IP_NOTINRESET))
+ 		err = FM10K_ERR_RESET_FAILED;
+ 
++out:
+ 	return err;
  }
  
- /**
-+ * fm10k_iov_select_vid - Select correct default vid
-+ * @hw: Pointer to hardware structure
-+ * @vid: vid to correct
-+ *
-+ * Will report an error if vid is out of range. For vid = 0, it will return
-+ * either the pf_vid or sw_vid depending on which one is set.
-+ */
-+static inline s32 fm10k_iov_select_vid(struct fm10k_vf_info *vf_info, u16 vid)
-+{
-+	if (!vid)
-+		return vf_info->pf_vid ? vf_info->pf_vid : vf_info->sw_vid;
-+	else if (vf_info->pf_vid && vid != vf_info->pf_vid)
-+		return FM10K_ERR_PARAM;
-+	else
-+		return vid;
-+}
-+
-+/**
-  *  fm10k_iov_msg_mac_vlan_pf - Message handler for MAC/VLAN request from VF
-  *  @hw: Pointer to hardware structure
-  *  @results: Pointer array to message, results[0] is pointer to message
-@@ -1168,9 +1186,10 @@ s32 fm10k_iov_msg_mac_vlan_pf(struct fm10k_hw *hw, u32 **results,
- 			      struct fm10k_mbx_info *mbx)
- {
- 	struct fm10k_vf_info *vf_info = (struct fm10k_vf_info *)mbx;
--	int err = 0;
- 	u8 mac[ETH_ALEN];
- 	u32 *result;
-+	int err = 0;
-+	bool set;
- 	u16 vlan;
- 	u32 vid;
- 
-@@ -1186,19 +1205,21 @@ s32 fm10k_iov_msg_mac_vlan_pf(struct fm10k_hw *hw, u32 **results,
- 		if (err)
- 			return err;
- 
--		/* if VLAN ID is 0, set the default VLAN ID instead of 0 */
--		if (!vid || (vid == FM10K_VLAN_CLEAR)) {
--			if (vf_info->pf_vid)
--				vid |= vf_info->pf_vid;
--			else
--				vid |= vf_info->sw_vid;
--		} else if (vid != vf_info->pf_vid) {
-+		/* verify upper 16 bits are zero */
-+		if (vid >> 16)
- 			return FM10K_ERR_PARAM;
--		}
-+
-+		set = !(vid & FM10K_VLAN_CLEAR);
-+		vid &= ~FM10K_VLAN_CLEAR;
-+
-+		err = fm10k_iov_select_vid(vf_info, vid);
-+		if (err < 0)
-+			return err;
-+		else
-+			vid = err;
- 
- 		/* update VSI info for VF in regards to VLAN table */
--		err = hw->mac.ops.update_vlan(hw, vid, vf_info->vsi,
--					      !(vid & FM10K_VLAN_CLEAR));
-+		err = hw->mac.ops.update_vlan(hw, vid, vf_info->vsi, set);
- 	}
- 
- 	if (!err && !!results[FM10K_MAC_VLAN_MSG_MAC]) {
-@@ -1214,19 +1235,18 @@ s32 fm10k_iov_msg_mac_vlan_pf(struct fm10k_hw *hw, u32 **results,
- 		    memcmp(mac, vf_info->mac, ETH_ALEN))
- 			return FM10K_ERR_PARAM;
- 
--		/* if VLAN ID is 0, set the default VLAN ID instead of 0 */
--		if (!vlan || (vlan == FM10K_VLAN_CLEAR)) {
--			if (vf_info->pf_vid)
--				vlan |= vf_info->pf_vid;
--			else
--				vlan |= vf_info->sw_vid;
--		} else if (vf_info->pf_vid) {
--			return FM10K_ERR_PARAM;
--		}
-+		set = !(vlan & FM10K_VLAN_CLEAR);
-+		vlan &= ~FM10K_VLAN_CLEAR;
-+
-+		err = fm10k_iov_select_vid(vf_info, vlan);
-+		if (err < 0)
-+			return err;
-+		else
-+			vlan = err;
- 
- 		/* notify switch of request for new unicast address */
--		err = hw->mac.ops.update_uc_addr(hw, vf_info->glort, mac, vlan,
--						 !(vlan & FM10K_VLAN_CLEAR), 0);
-+		err = hw->mac.ops.update_uc_addr(hw, vf_info->glort,
-+						 mac, vlan, set, 0);
- 	}
- 
- 	if (!err && !!results[FM10K_MAC_VLAN_MSG_MULTICAST]) {
-@@ -1241,19 +1261,18 @@ s32 fm10k_iov_msg_mac_vlan_pf(struct fm10k_hw *hw, u32 **results,
- 		if (!(vf_info->vf_flags & FM10K_VF_FLAG_MULTI_ENABLED))
- 			return FM10K_ERR_PARAM;
- 
--		/* if VLAN ID is 0, set the default VLAN ID instead of 0 */
--		if (!vlan || (vlan == FM10K_VLAN_CLEAR)) {
--			if (vf_info->pf_vid)
--				vlan |= vf_info->pf_vid;
--			else
--				vlan |= vf_info->sw_vid;
--		} else if (vf_info->pf_vid) {
--			return FM10K_ERR_PARAM;
--		}
-+		set = !(vlan & FM10K_VLAN_CLEAR);
-+		vlan &= ~FM10K_VLAN_CLEAR;
-+
-+		err = fm10k_iov_select_vid(vf_info, vlan);
-+		if (err < 0)
-+			return err;
-+		else
-+			vlan = err;
- 
- 		/* notify switch of request for new multicast address */
--		err = hw->mac.ops.update_mc_addr(hw, vf_info->glort, mac, vlan,
--						 !(vlan & FM10K_VLAN_CLEAR));
-+		err = hw->mac.ops.update_mc_addr(hw, vf_info->glort,
-+						 mac, vlan, set);
- 	}
- 
- 	return err;
 -- 
 2.4.3
 
