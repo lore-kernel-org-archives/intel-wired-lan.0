@@ -1,88 +1,95 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu, 25 Jun 2015 14:43:43 -0700
-Subject: [Intel-wired-lan] [PATCH v3] fm10k: drop transmitted messages in Tx
-	FIFO as part of reset_work
-Message-ID: <1435268623-17648-1-git-send-email-jacob.e.keller@intel.com>
+Date: Thu, 25 Jun 2015 15:12:04 -0700
+Subject: [Intel-wired-lan] [PATCH net-next] fm10k: create "correct" header
+	for the remote end on connect
+Message-ID: <1435270324-29738-1-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch fixes a corner case issue with the PF/VF mailbox code.
-Currently, fm10k_mbx_reset_work clears various state about the mailbox.
-However, it does not clear the Tx FIFO head/tail pointers. We can't
-simply clear these pointers as we unintentionally drop untransmitted
-messages without error.
-
-Doing nothing results in a possible phantom re-transmission of messages,
-since we leave tx.head and tx.tail intact, but clear the tx_pulled and
-tail_len values. This means that the PF could continuously re-send a
-message which triggers a reset in the VF. Upon reset, the VF will
-re-receive the same message after a reconnect.
-
-If we reset the tx.head and tx.tail pointers completely, we end up
-dropping some messages that were pending before connect. This results in
-missing LPORT_MSG_READY bits, and VFs will end up reporting no link.
-
-However, we can resolve both issues by simply incrementing head to
-account for the already transmitted messages, before we reset tx_pulled.
-We do this via the same logic as fm10k_mbx_head_pull.
-
-We account for the tail_len which includes all data not yet transmitted,
-once we account for the acked data which means re-reading the HEAD
-variable from the message header. Then, we drop messages until we've
-dropped more than the new tx_pulled value. At this point, resetting
-tail_len and tx_pulled, but not tx.head and tx.tail will result in
-prevention of the phantom message. It also prevents us from dropping
-untransmitted messages upon attempting to Tx into a connect or
-disconnect header.
+When we connect to the mailbox, we insert a fake disconnect header so
+that the code does not see an invalid header and thus instantly error
+every time we bring up the mailbox. However, we incorrectly record the
+tail and head from the local perspective. Since the remote end shouldn't
+have anything for us, add a "create_fake_disconnect_hdr" function which
+inverts the TAIL and HEAD fields. This enables us to connect without any
+errors of either TAIL or HEAD incorrectness, and prevents creating
+extraneous error messages. This is necessary now since mbx_reset_work
+does not actually reset the Tx FIFO head and tail pointers, thus head
+and tail might not be equivalent on a reconnect.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_mbx.c | 19 ++++++++++++++++++-
- 1 file changed, 18 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_mbx.c | 46 +++++++++++++++++++++++++++-
+ 1 file changed, 45 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
-index 1a4b52637de9..0ff21d1fb9db 100644
+index 0ff21d1fb9db..6bc27c2d671b 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
-@@ -1046,9 +1046,26 @@ static s32 fm10k_mbx_create_reply(struct fm10k_hw *hw,
-  **/
- static void fm10k_mbx_reset_work(struct fm10k_mbx_info *mbx)
- {
-+	u16 len, head, ack;
-+
- 	/* reset our outgoing max size back to Rx limits */
- 	mbx->max_size = mbx->rx.size - 1;
- 
-+	/* update mbx->pulled to account for tail_len and ack */
-+	head = FM10K_MSG_HDR_FIELD_GET(mbx->mbx_hdr, HEAD);
-+	ack = fm10k_mbx_index_len(mbx, head, mbx->tail);
-+	mbx->pulled += mbx->tail_len - ack;
-+
-+	/* now drop any messages which have started or finished transmitting */
-+	while (fm10k_fifo_head_len(&mbx->tx) && mbx->pulled) {
-+		len = fm10k_fifo_head_drop(&mbx->tx);
-+		mbx->tx_dropped++;
-+		if (mbx->pulled >= len)
-+			mbx->pulled -= len;
-+		else
-+			mbx->pulled = 0;
-+	}
-+
- 	/* just do a quick resysnc to start of message */
- 	mbx->pushed = 0;
- 	mbx->pulled = 0;
-@@ -1725,7 +1742,7 @@ static void fm10k_sm_mbx_disconnect(struct fm10k_hw *hw,
- 	mbx->state = FM10K_STATE_CLOSED;
- 	mbx->remote = 0;
- 	fm10k_mbx_reset_work(mbx);
--	fm10k_mbx_update_max_size(mbx, 0);
-+	fm10k_fifo_drop_all(&mbx->tx);
- 
- 	fm10k_write_reg(hw, mbx->mbmem_reg, 0);
+@@ -899,6 +899,48 @@ static void fm10k_mbx_create_disconnect_hdr(struct fm10k_mbx_info *mbx)
  }
+ 
+ /**
++ *  fm10k_mbx_create_fake_disconnect_hdr - Generate a false disconnect mailbox header
++ *  @mbx: pointer to mailbox
++ *
++ *  This function creates a fake disconnect header for loading into remote
++ *  mailbox header. The primary purpose is to prevent errors on immediate
++ *  start up after mbx->connect.
++ **/
++static void fm10k_mbx_create_fake_disconnect_hdr(struct fm10k_mbx_info *mbx)
++{
++	u32 hdr = FM10K_MSG_HDR_FIELD_SET(FM10K_MSG_DISCONNECT, TYPE) |
++		  FM10K_MSG_HDR_FIELD_SET(mbx->head, TAIL) |
++		  FM10K_MSG_HDR_FIELD_SET(mbx->tail, HEAD);
++	u16 crc = fm10k_crc_16b(&hdr, mbx->local, 1);
++
++	mbx->mbx_lock |= FM10K_MBX_ACK;
++
++	/* load header to memory to be written */
++	mbx->mbx_hdr = hdr | FM10K_MSG_HDR_FIELD_SET(crc, CRC);
++}
++
++/**
++ *  fm10k_mbx_create_fake_disconnect_hdr - Generate a false disconnect mailbox header
++ *  @mbx: pointer to mailbox
++ *
++ *  This function creates a fake disconnect header for loading into remote
++ *  mailbox header. The primary purpose is to prevent errors on immediate
++ *  start up after mbx->connect.
++ **/
++static void fm10k_mbx_create_fake_disconnect_hdr(struct fm10k_mbx_info *mbx)
++{
++	u32 hdr = FM10K_MSG_HDR_FIELD_SET(FM10K_MSG_DISCONNECT, TYPE) |
++		  FM10K_MSG_HDR_FIELD_SET(mbx->head, TAIL) |
++		  FM10K_MSG_HDR_FIELD_SET(mbx->tail, HEAD);
++	u16 crc = fm10k_crc_16b(&hdr, mbx->local, 1);
++
++	mbx->mbx_lock |= FM10K_MBX_ACK;
++
++	/* load header to memory to be written */
++	mbx->mbx_hdr = hdr | FM10K_MSG_HDR_FIELD_SET(crc, CRC);
++}
++
++/**
+  *  fm10k_mbx_create_error_msg - Generate a error message
+  *  @mbx: pointer to mailbox
+  *  @err: local error encountered
+@@ -1435,8 +1477,10 @@ static s32 fm10k_mbx_connect(struct fm10k_hw *hw, struct fm10k_mbx_info *mbx)
+ 	/* Place mbx in ready to connect state */
+ 	mbx->state = FM10K_STATE_CONNECT;
+ 
++	fm10k_mbx_reset_work(mbx);
++
+ 	/* initialize header of remote mailbox */
+-	fm10k_mbx_create_disconnect_hdr(mbx);
++	fm10k_mbx_create_fake_disconnect_hdr(mbx);
+ 	fm10k_write_reg(hw, mbx->mbmem_reg ^ mbx->mbmem_len, mbx->mbx_hdr);
+ 
+ 	/* enable interrupt and notify other party of new message */
 -- 
 2.4.3
 
