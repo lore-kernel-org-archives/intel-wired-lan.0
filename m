@@ -1,129 +1,97 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Wed, 24 Jun 2015 22:38:20 +0000
-Subject: [Intel-wired-lan] [net-next 06/10] fm10k: send traffic on
- default vid to vlan device if we have one
-In-Reply-To: <558B2B87.40301@gmail.com>
-References: <1434757059-3384-1-git-send-email-jacob.e.keller@intel.com>
- <1434757059-3384-6-git-send-email-jacob.e.keller@intel.com>
- <5584E9FD.1000809@gmail.com> <1435097908.20240.30.camel@intel.com>
- <558B2B87.40301@gmail.com>
-Message-ID: <1435185500.17626.24.camel@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Thu, 25 Jun 2015 14:29:02 -0700
+Subject: [Intel-wired-lan] [PATCH v2] fm10k: drop transmitted messages in Tx
+	FIFO as part of reset_work
+Message-ID: <1435267742-21491-1-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2015-06-24 at 15:13 -0700, Alexander Duyck wrote:
-> On 06/23/2015 03:18 PM, Keller, Jacob E wrote:
-> > On Fri, 2015-06-19 at 21:20 -0700, Alexander Duyck wrote:
-> > > On 06/19/2015 04:37 PM, Jacob Keller wrote:
-> > > > This patch ensures that vlan traffic on the default vid will go 
-> > > > to
-> > > > the
-> > > > corresponding vlan device if it exists. To do this, mask the
-> > > > rx_ring vid
-> > > > if we have an active vlan on that vid.
-> > > > 
-> > > > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> > > > ---
-> > > >    drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 12 
-> > > > ++++++++++++
-> > > >    drivers/net/ethernet/intel/fm10k/fm10k_pci.c    |  4 ++++
-> > > >    2 files changed, 16 insertions(+)
-> > > > 
-> > > > diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-> > > > b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-> > > > index e1ceb3a2e2cd..c173c79373fe 100644
-> > > > --- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-> > > > +++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-> > > > @@ -758,6 +758,7 @@ static int fm10k_update_vid(struct 
-> > > > net_device
-> > > > *netdev, u16 vid, bool set)
-> > > >    	struct fm10k_intfc *interface = netdev_priv(netdev);
-> > > >    	struct fm10k_hw *hw = &interface->hw;
-> > > >    	s32 err;
-> > > > +	int i;
-> > > > 
-> > > >    	/* updates do not apply to VLAN 0 */
-> > > >    	if (!vid)
-> > > > @@ -775,6 +776,17 @@ static int fm10k_update_vid(struct 
-> > > > net_device
-> > > > *netdev, u16 vid, bool set)
-> > > >    	if (!set)
-> > > >    		clear_bit(vid, interface->active_vlans);
-> > > > 
-> > > > +	/* disable the default vid on ring if we have an 
-> > > > active
-> > > > vlan */
-> > > > +	for (i = 0; i < interface->num_rx_queues; i++) {
-> > > > +		struct fm10k_ring *rx_ring = interface
-> > > > ->rx_ring[i];
-> > > > +		u16 rx_vid = rx_ring->vid & (VLAN_N_VID - 1);
-> > > > +
-> > > > +		if (test_bit(rx_vid, interface->active_vlans))
-> > > > +			rx_ring->vid |= FM10K_VLAN_CLEAR;
-> > > > +		else
-> > > > +			rx_ring->vid &= ~FM10K_VLAN_CLEAR;
-> > > > +	}
-> > > > +
-> > > >    	/* Do not remove default VID related entries from VLAN 
-> > > > and
-> > > > MAC tables */
-> > > >    	if (!set && vid == hw->mac.default_vid)
-> > > >    		return 0;
-> > > > diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> > > > b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> > > > index 6d1364393a8b..989981ea3c64 100644
-> > > > --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> > > > +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> > > > @@ -694,6 +694,10 @@ static void fm10k_configure_rx_ring(struct
-> > > > fm10k_intfc *interface,
-> > > >    	/* assign default VLAN to queue */
-> > > >    	ring->vid = hw->mac.default_vid;
-> > > > 
-> > > > +	/* if we have an active VLAN, disable default vid */
-> > > > +	if (test_bit(hw->mac.default_vid, interface
-> > > > ->active_vlans))
-> > > > +		ring->vid |= FM10K_VLAN_CLEAR;
-> > > > +
-> > > >    	/* Map interrupt */
-> > > >    	if (ring->q_vector) {
-> > > >    		rxint = ring->q_vector->v_idx + 
-> > > > NON_Q_VECTORS(hw);
-> > > > 
-> > > This doesn't quite work since the rx_ring->vid is doing a full 
-> > > 16b
-> > > comparison against a value that includes the QOS value.
-> > > 
-> > To clarify, this should work as long as we fix the 
-> > process_skb_fields?
-> 
-> Yeah, if you fix it then you should be all set as the change below 
-> would 
-> make it so that you could never match with the FM10K_VLAN_CLEAR bit 
-> set.
-> 
+This patch fixes a corner case issue with the PF/VF mailbox code.
+Currently, fm10k_mbx_reset_work clears various state about the mailbox.
+However, it does not clear the Tx FIFO head/tail pointers. We can't
+simply clear these pointers as we unintentionally drop untransmitted
+messages without error.
 
-Yep, that's what i figured. I've sent new patch series with this fix in
-place.
+Doing nothing results in a possible phantom re-transmission of messages,
+since we leave tx.head and tx.tail intact, but clear the tx_pulled and
+tail_len values. This means that the PF could continuously re-send a
+message which triggers a reset in the VF. Upon reset, the VF will
+re-receive the same message after a reconnect.
 
-Regards,
-Jake
+If we reset the tx.head and tx.tail pointers completely, we end up
+dropping some messages that were pending before connect. This results in
+missing LPORT_MSG_READY bits, and VFs will end up reporting no link.
 
-> > I just realized that is a bug in the fm10k_process_skb_fields
-> > function.
-> >    You probably need to update it so that code does something more
-> > like
-> > 
-> > if (rx_desc->w.vlan) {
-> > 	u16 vid = le16_to_cpu(rx_desc->w.vlan);
-> > 
-> > 	if ((vid & VLAN_VID_MASK) != rx_ring->vid)
-> > 		__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q),
-> > vid);
-> > 	else if (vid & VLAN_PRIO_MASK)
-> > 		__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q),
-> > 				       vid & VLAN_PRIO_MASK);
-> > }	
-> 
+However, we can resolve both issues by simply incrementing head to
+account for the already transmitted messages, before we reset tx_pulled.
+We do this via the same logic as fm10k_mbx_head_pull.
+
+We account for the tail_len which includes all data not yet transmitted,
+once we account for the acked data which means re-reading the HEAD
+variable from the message header. Then, we drop messages until we've
+dropped more than the new tx_pulled value. At this point, resetting
+tail_len and tx_pulled, but not tx.head and tx.tail will result in
+prevention of the phantom message. It also prevents us from dropping
+untransmitted messages upon attempting to Tx into a connect or
+disconnect header.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ drivers/net/ethernet/intel/fm10k/fm10k_mbx.c | 21 +++++++++++++++++++--
+ 1 file changed, 19 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
+index 1a4b52637de9..a86299ecbb70 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
+@@ -132,7 +132,7 @@ static u16 fm10k_fifo_head_drop(struct fm10k_mbx_fifo *fifo)
+  *  This function resets the head pointer to drop all messages in the FIFO,
+  *  and ensure the FIFO is empty.
+  **/
+-static void fm10k_fifo_drop_all(struct fm10k_mbx_fifo *fifo)
++STATIC void fm10k_fifo_drop_all(struct fm10k_mbx_fifo *fifo)
+ {
+ 	fifo->head = fifo->tail;
+ }
+@@ -1046,9 +1046,26 @@ static s32 fm10k_mbx_create_reply(struct fm10k_hw *hw,
+  **/
+ static void fm10k_mbx_reset_work(struct fm10k_mbx_info *mbx)
+ {
++	u16 len, head, ack;
++
+ 	/* reset our outgoing max size back to Rx limits */
+ 	mbx->max_size = mbx->rx.size - 1;
+ 
++	/* update mbx->pulled to account for tail_len and ack */
++	head = FM10K_MSG_HDR_FIELD_GET(mbx->mbx_hdr, HEAD);
++	ack = fm10k_mbx_index_len(mbx, head, mbx->tail);
++	mbx->pulled += mbx->tail_len - ack;
++
++	/* now drop any messages which have started or finished transmitting */
++	while (fm10k_fifo_head_len(&mbx->tx) && mbx->pulled) {
++		len = fm10k_fifo_head_drop(&mbx->tx);
++		mbx->tx_dropped++;
++		if (mbx->pulled >= len)
++			mbx->pulled -= len;
++		else
++			mbx->pulled = 0;
++	}
++
+ 	/* just do a quick resysnc to start of message */
+ 	mbx->pushed = 0;
+ 	mbx->pulled = 0;
+@@ -1725,7 +1742,7 @@ static void fm10k_sm_mbx_disconnect(struct fm10k_hw *hw,
+ 	mbx->state = FM10K_STATE_CLOSED;
+ 	mbx->remote = 0;
+ 	fm10k_mbx_reset_work(mbx);
+-	fm10k_mbx_update_max_size(mbx, 0);
++	fm10k_fifo_drop_all(&mbx->tx);
+ 
+ 	fm10k_write_reg(hw, mbx->mbmem_reg, 0);
+ }
+-- 
+2.4.3
+
