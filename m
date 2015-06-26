@@ -1,118 +1,72 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 26 Jun 2015 16:23:59 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:master]
- 40746eb14c6b44f4d635c2f4cf8c67550db9b3ab BUILD SUCCESS
-Message-ID: <558d0c1f.OEf/TFNsSdFkVZrq%fengguang.wu@intel.com>
+From: Rustad, Mark D <mark.d.rustad@intel.com>
+Date: Fri, 26 Jun 2015 18:04:21 +0000
+Subject: [Intel-wired-lan] [PATCH V3 0/2] pci: Provide a flag to access
+ VPD through function 0
+In-Reply-To: <CAErSpo7e-QtQQTj2yh_jG07vqU1j1YBez_9wrcrzOQs7+eDFng@mail.gmail.com>
+References: <20150603184445.109080.36387.stgit@mdrustad-wks.jf.intel.com>
+ <051B68B4-3E77-4EB0-B9FE-8523631884A2@intel.com>
+ <45099CC7-DDAB-41D9-AB74-5A81E2AAF64C@intel.com>
+ <CAErSpo7e-QtQQTj2yh_jG07vqU1j1YBez_9wrcrzOQs7+eDFng@mail.gmail.com>
+Message-ID: <8CB0ECE7-CFE2-43CB-BA60-2E2E0A34D5D1@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
-40746eb14c6b44f4d635c2f4cf8c67550db9b3ab  i40evf: don't configure unused RSS queues
+> On Jun 17, 2015, at 9:44 AM, Bjorn Helgaas <bhelgaas@google.com> wrote:
+> 
+> On Wed, Jun 17, 2015 at 11:29 AM, Rustad, Mark D
+> <mark.d.rustad@intel.com> wrote:
+>> + Alex
+>> 
+>>> On Jun 5, 2015, at 2:59 PM, Rustad, Mark D <mark.d.rustad@intel.com> wrote:
+>>> 
+>>>> On Jun 3, 2015, at 11:46 AM, Mark D Rustad <mark.d.rustad@intel.com> wrote:
+>>>> 
+>>>> Many multi-function devices provide shared registers in extended
+>>>> config space for accessing VPD. The behavior of these registers
+>>>> means that the state must be tracked and access locked correctly
+>>>> for accesses not to hang or worse. One way to meet these needs is
+>>>> to always perform the accesses through function 0, thereby using
+>>>> the state tracking and mutex that already exists.
+>>>> 
+>>>> To provide this behavior, add a dev_flags bit to indicate that this
+>>>> should be done. This bit can then be set for any non-zero function
+>>>> that needs to redirect such VPD access to function 0. Do not set
+>>>> this bit on the zero function or there will be an infinite recursion.
+>>>> 
+>>>> The second patch uses this new flag to invoke this behavior on all
+>>>> multi-function Intel Ethernet devices.
+>>>> 
+>>>> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+>>>> 
+>>>> ---
+>>>> Changes in V2:
+>>>> - Corrected a spelling error in a log message
+>>>> - Added checks to see that the referenced function 0 is reasonable
+>>>> Changes in V3:
+>>>> - Don't leak a device reference
+>>>> - Check that function 0 has VPD
+>>>> - Make a helper for the function 0 checks
+>>>> - Moved a multifunction check to the quirk patch
+>>> 
+>>> So does this series look acceptable now? I think I addressed the issues that Alex raised. Can these also be considered for -stable?
+>> 
+>> More than a week has passed without any comment. Is this going to be accepted or is there still an issue?
+> 
+> Sorry, Mark, I've just been busy with other issues and haven't had a
+> chance to look at this yet.
 
-elapsed time: -118m
+Is there any chance of this getting into this merge window?
 
-configs tested: 97
+--
+Mark Rustad, Networking Division, Intel Corporation
 
-i386                     randconfig-a0-201525
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-arm                                    sa1100
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                                   samsung
-arm                                  iop-adma
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                                        sh
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64                            allnoconfig
-mips                                   jz4740
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-x86_64                   randconfig-i0-201525
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201525
-i386                   randconfig-i0-06262228
-i386                             allyesconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201525
-i386                     randconfig-n1-201525
-arm                       omap2plus_defconfig
-arm                         s3c2410_defconfig
-arm                                       mmp
-arm                           tegra_defconfig
-arm                                      arm5
-arm                                     arm67
-i386                              allnoconfig
-i386                                defconfig
-i386                             allmodconfig
-i386                             alldefconfig
-arm                       imx_v6_v7_defconfig
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                       spear13xx_defconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-x86_64               randconfig-x009-06261310
-x86_64               randconfig-x004-06261310
-x86_64               randconfig-x003-06261310
-x86_64               randconfig-x000-06261310
-x86_64               randconfig-x007-06261310
-x86_64               randconfig-x005-06261310
-x86_64               randconfig-x006-06261310
-x86_64               randconfig-x002-06261310
-x86_64               randconfig-x001-06261310
-x86_64               randconfig-x008-06261310
-i386                     randconfig-r0-201525
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-m68k                          amiga_defconfig
-x86_64                           allmodconfig
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                 randconfig-x001-06261311
-i386                 randconfig-x003-06261311
-i386                 randconfig-x006-06261311
-i386                 randconfig-x008-06261311
-i386                 randconfig-x007-06261311
-i386                 randconfig-x002-06261311
-i386                 randconfig-x005-06261311
-i386                 randconfig-x004-06261311
-i386                 randconfig-x000-06261311
-i386                 randconfig-x009-06261311
-
-Thanks,
-Fengguang
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 841 bytes
+Desc: Message signed with OpenPGP using GPGMail
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150626/a9cce4ff/attachment-0001.asc>
