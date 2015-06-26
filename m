@@ -1,36 +1,77 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri, 26 Jun 2015 08:54:07 -0700
-Subject: [Intel-wired-lan] [PATCH 2/2] fm10k: TRIVIAL remove unnecessary
-	comma
-In-Reply-To: <1435334047-6404-1-git-send-email-jacob.e.keller@intel.com>
-References: <1435334047-6404-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1435334047-6404-2-git-send-email-jacob.e.keller@intel.com>
+Date: Fri, 26 Jun 2015 08:54:06 -0700
+Subject: [Intel-wired-lan] [PATCH rc2 1/2] fm10k: create "correct" header
+	for the remote end on connect
+Message-ID: <1435334047-6404-1-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+When we connect to the mailbox, we insert a fake disconnect header so
+that the code does not see an invalid header and thus instantly error
+every time we bring up the mailbox. However, we incorrectly record the
+tail and head from the local perspective. Since the remote end shouldn't
+have anything for us, add a "create_fake_disconnect_hdr" function which
+inverts the TAIL and HEAD fields. This enables us to connect without any
+errors of either TAIL or HEAD incorrectness, and prevents creating
+extraneous error messages. This is necessary now since mbx_reset_work
+does not actually reset the Tx FIFO head and tail pointers, thus head
+and tail might not be equivalent on a reconnect.
+
+-rc2
+* Remove duplicate reference
+
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_mbx.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_mbx.c | 25 ++++++++++++++++++++++++-
+ 1 file changed, 24 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
-index 5403d8602fce..af09a1b272e6 100644
+index 0ff21d1fb9db..5403d8602fce 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
-@@ -129,8 +129,8 @@ static u16 fm10k_fifo_head_drop(struct fm10k_mbx_fifo *fifo)
-  *  fm10k_fifo_drop_all - Drop all messages in FIFO
-  *  @fifo: pointer to FIFO
-  *
-- *  This function resets the head pointer to drop all messages in the FIFO,
-- *  and ensure the FIFO is empty.
-+ *  This function resets the head pointer to drop all messages in the FIFO and
-+ *  ensure the FIFO is empty.
-  **/
- static void fm10k_fifo_drop_all(struct fm10k_mbx_fifo *fifo)
- {
+@@ -899,6 +899,27 @@ static void fm10k_mbx_create_disconnect_hdr(struct fm10k_mbx_info *mbx)
+ }
+ 
+ /**
++ *  fm10k_mbx_create_fake_disconnect_hdr - Generate a false disconnect mailbox header
++ *  @mbx: pointer to mailbox
++ *
++ *  This function creates a fake disconnect header for loading into remote
++ *  mailbox header. The primary purpose is to prevent errors on immediate
++ *  start up after mbx->connect.
++ **/
++static void fm10k_mbx_create_fake_disconnect_hdr(struct fm10k_mbx_info *mbx)
++{
++	u32 hdr = FM10K_MSG_HDR_FIELD_SET(FM10K_MSG_DISCONNECT, TYPE) |
++		  FM10K_MSG_HDR_FIELD_SET(mbx->head, TAIL) |
++		  FM10K_MSG_HDR_FIELD_SET(mbx->tail, HEAD);
++	u16 crc = fm10k_crc_16b(&hdr, mbx->local, 1);
++
++	mbx->mbx_lock |= FM10K_MBX_ACK;
++
++	/* load header to memory to be written */
++	mbx->mbx_hdr = hdr | FM10K_MSG_HDR_FIELD_SET(crc, CRC);
++}
++
++/**
+  *  fm10k_mbx_create_error_msg - Generate a error message
+  *  @mbx: pointer to mailbox
+  *  @err: local error encountered
+@@ -1435,8 +1456,10 @@ static s32 fm10k_mbx_connect(struct fm10k_hw *hw, struct fm10k_mbx_info *mbx)
+ 	/* Place mbx in ready to connect state */
+ 	mbx->state = FM10K_STATE_CONNECT;
+ 
++	fm10k_mbx_reset_work(mbx);
++
+ 	/* initialize header of remote mailbox */
+-	fm10k_mbx_create_disconnect_hdr(mbx);
++	fm10k_mbx_create_fake_disconnect_hdr(mbx);
+ 	fm10k_write_reg(hw, mbx->mbmem_reg ^ mbx->mbmem_len, mbx->mbx_hdr);
+ 
+ 	/* enable interrupt and notify other party of new message */
 -- 
 2.4.3
 
