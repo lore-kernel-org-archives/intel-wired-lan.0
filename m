@@ -1,77 +1,118 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri, 26 Jun 2015 08:54:06 -0700
-Subject: [Intel-wired-lan] [PATCH rc2 1/2] fm10k: create "correct" header
-	for the remote end on connect
-Message-ID: <1435334047-6404-1-git-send-email-jacob.e.keller@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 26 Jun 2015 16:23:59 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:master]
+ 40746eb14c6b44f4d635c2f4cf8c67550db9b3ab BUILD SUCCESS
+Message-ID: <558d0c1f.OEf/TFNsSdFkVZrq%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When we connect to the mailbox, we insert a fake disconnect header so
-that the code does not see an invalid header and thus instantly error
-every time we bring up the mailbox. However, we incorrectly record the
-tail and head from the local perspective. Since the remote end shouldn't
-have anything for us, add a "create_fake_disconnect_hdr" function which
-inverts the TAIL and HEAD fields. This enables us to connect without any
-errors of either TAIL or HEAD incorrectness, and prevents creating
-extraneous error messages. This is necessary now since mbx_reset_work
-does not actually reset the Tx FIFO head and tail pointers, thus head
-and tail might not be equivalent on a reconnect.
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
+40746eb14c6b44f4d635c2f4cf8c67550db9b3ab  i40evf: don't configure unused RSS queues
 
--rc2
-* Remove duplicate reference
+elapsed time: -118m
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/fm10k/fm10k_mbx.c | 25 ++++++++++++++++++++++++-
- 1 file changed, 24 insertions(+), 1 deletion(-)
+configs tested: 97
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
-index 0ff21d1fb9db..5403d8602fce 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
-@@ -899,6 +899,27 @@ static void fm10k_mbx_create_disconnect_hdr(struct fm10k_mbx_info *mbx)
- }
- 
- /**
-+ *  fm10k_mbx_create_fake_disconnect_hdr - Generate a false disconnect mailbox header
-+ *  @mbx: pointer to mailbox
-+ *
-+ *  This function creates a fake disconnect header for loading into remote
-+ *  mailbox header. The primary purpose is to prevent errors on immediate
-+ *  start up after mbx->connect.
-+ **/
-+static void fm10k_mbx_create_fake_disconnect_hdr(struct fm10k_mbx_info *mbx)
-+{
-+	u32 hdr = FM10K_MSG_HDR_FIELD_SET(FM10K_MSG_DISCONNECT, TYPE) |
-+		  FM10K_MSG_HDR_FIELD_SET(mbx->head, TAIL) |
-+		  FM10K_MSG_HDR_FIELD_SET(mbx->tail, HEAD);
-+	u16 crc = fm10k_crc_16b(&hdr, mbx->local, 1);
-+
-+	mbx->mbx_lock |= FM10K_MBX_ACK;
-+
-+	/* load header to memory to be written */
-+	mbx->mbx_hdr = hdr | FM10K_MSG_HDR_FIELD_SET(crc, CRC);
-+}
-+
-+/**
-  *  fm10k_mbx_create_error_msg - Generate a error message
-  *  @mbx: pointer to mailbox
-  *  @err: local error encountered
-@@ -1435,8 +1456,10 @@ static s32 fm10k_mbx_connect(struct fm10k_hw *hw, struct fm10k_mbx_info *mbx)
- 	/* Place mbx in ready to connect state */
- 	mbx->state = FM10K_STATE_CONNECT;
- 
-+	fm10k_mbx_reset_work(mbx);
-+
- 	/* initialize header of remote mailbox */
--	fm10k_mbx_create_disconnect_hdr(mbx);
-+	fm10k_mbx_create_fake_disconnect_hdr(mbx);
- 	fm10k_write_reg(hw, mbx->mbmem_reg ^ mbx->mbmem_len, mbx->mbx_hdr);
- 
- 	/* enable interrupt and notify other party of new message */
--- 
-2.4.3
+i386                     randconfig-a0-201525
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+arm                                    sa1100
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                                   samsung
+arm                                  iop-adma
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                                        sh
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+x86_64                            allnoconfig
+mips                                   jz4740
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+x86_64                   randconfig-i0-201525
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201525
+i386                   randconfig-i0-06262228
+i386                             allyesconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201525
+i386                     randconfig-n1-201525
+arm                       omap2plus_defconfig
+arm                         s3c2410_defconfig
+arm                                       mmp
+arm                           tegra_defconfig
+arm                                      arm5
+arm                                     arm67
+i386                              allnoconfig
+i386                                defconfig
+i386                             allmodconfig
+i386                             alldefconfig
+arm                       imx_v6_v7_defconfig
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                       spear13xx_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64               randconfig-x009-06261310
+x86_64               randconfig-x004-06261310
+x86_64               randconfig-x003-06261310
+x86_64               randconfig-x000-06261310
+x86_64               randconfig-x007-06261310
+x86_64               randconfig-x005-06261310
+x86_64               randconfig-x006-06261310
+x86_64               randconfig-x002-06261310
+x86_64               randconfig-x001-06261310
+x86_64               randconfig-x008-06261310
+i386                     randconfig-r0-201525
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                          amiga_defconfig
+x86_64                           allmodconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                 randconfig-x001-06261311
+i386                 randconfig-x003-06261311
+i386                 randconfig-x006-06261311
+i386                 randconfig-x008-06261311
+i386                 randconfig-x007-06261311
+i386                 randconfig-x002-06261311
+i386                 randconfig-x005-06261311
+i386                 randconfig-x004-06261311
+i386                 randconfig-x000-06261311
+i386                 randconfig-x009-06261311
 
+Thanks,
+Fengguang
