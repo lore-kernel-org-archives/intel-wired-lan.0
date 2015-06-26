@@ -1,95 +1,121 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu, 25 Jun 2015 15:12:04 -0700
-Subject: [Intel-wired-lan] [PATCH net-next] fm10k: create "correct" header
-	for the remote end on connect
-Message-ID: <1435270324-29738-1-git-send-email-jacob.e.keller@intel.com>
+From: Mark D Rustad <mark.d.rustad@intel.com>
+Date: Thu, 25 Jun 2015 17:49:57 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Avoid needless phy access on
+	copper phys
+Message-ID: <20150626004957.67855.1341.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When we connect to the mailbox, we insert a fake disconnect header so
-that the code does not see an invalid header and thus instantly error
-every time we bring up the mailbox. However, we incorrectly record the
-tail and head from the local perspective. Since the remote end shouldn't
-have anything for us, add a "create_fake_disconnect_hdr" function which
-inverts the TAIL and HEAD fields. This enables us to connect without any
-errors of either TAIL or HEAD incorrectness, and prevents creating
-extraneous error messages. This is necessary now since mbx_reset_work
-does not actually reset the Tx FIFO head and tail pointers, thus head
-and tail might not be equivalent on a reconnect.
+Avoid a needless phy access on copper phys to save the 10ms wait
+time for each phy access. A helper function is introduced to
+actually do the register access and process the contents.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_mbx.c | 46 +++++++++++++++++++++++++++-
- 1 file changed, 45 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  |   64 +++++++++++++++++--------
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |    1 
+ 2 files changed, 44 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
-index 0ff21d1fb9db..6bc27c2d671b 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
-@@ -899,6 +899,48 @@ static void fm10k_mbx_create_disconnect_hdr(struct fm10k_mbx_info *mbx)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+index 740e566cca07..90e2498638d3 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+@@ -735,39 +735,61 @@ s32 ixgbe_setup_phy_link_speed_generic(struct ixgbe_hw *hw,
  }
  
  /**
-+ *  fm10k_mbx_create_fake_disconnect_hdr - Generate a false disconnect mailbox header
-+ *  @mbx: pointer to mailbox
-+ *
-+ *  This function creates a fake disconnect header for loading into remote
-+ *  mailbox header. The primary purpose is to prevent errors on immediate
-+ *  start up after mbx->connect.
-+ **/
-+static void fm10k_mbx_create_fake_disconnect_hdr(struct fm10k_mbx_info *mbx)
-+{
-+	u32 hdr = FM10K_MSG_HDR_FIELD_SET(FM10K_MSG_DISCONNECT, TYPE) |
-+		  FM10K_MSG_HDR_FIELD_SET(mbx->head, TAIL) |
-+		  FM10K_MSG_HDR_FIELD_SET(mbx->tail, HEAD);
-+	u16 crc = fm10k_crc_16b(&hdr, mbx->local, 1);
+- * ixgbe_get_copper_link_capabilities_generic - Determines link capabilities
++ * ixgbe_get_copper_speeds_supported - Get copper link speed from phy
+  * @hw: pointer to hardware structure
+- * @speed: pointer to link speed
+- * @autoneg: boolean auto-negotiation value
+  *
+- * Determines the link capabilities by reading the AUTOC register.
++ * Determines the supported link capabilities by reading the PHY auto
++ * negotiation register.
+  */
+-s32 ixgbe_get_copper_link_capabilities_generic(struct ixgbe_hw *hw,
+-					       ixgbe_link_speed *speed,
+-					       bool *autoneg)
++static s32 ixgbe_get_copper_speeds_supported(struct ixgbe_hw *hw)
+ {
+-	s32 status;
+ 	u16 speed_ability;
+-
+-	*speed = 0;
+-	*autoneg = true;
++	s32 status;
+ 
+ 	status = hw->phy.ops.read_reg(hw, MDIO_SPEED, MDIO_MMD_PMAPMD,
+ 				      &speed_ability);
++	if (status)
++		return status;
+ 
+-	if (status == 0) {
+-		if (speed_ability & MDIO_SPEED_10G)
+-			*speed |= IXGBE_LINK_SPEED_10GB_FULL;
+-		if (speed_ability & MDIO_PMA_SPEED_1000)
+-			*speed |= IXGBE_LINK_SPEED_1GB_FULL;
+-		if (speed_ability & MDIO_PMA_SPEED_100)
+-			*speed |= IXGBE_LINK_SPEED_100_FULL;
++	if (speed_ability & MDIO_SPEED_10G)
++		hw->phy.speeds_supported |= IXGBE_LINK_SPEED_10GB_FULL;
++	if (speed_ability & MDIO_PMA_SPEED_1000)
++		hw->phy.speeds_supported |= IXGBE_LINK_SPEED_1GB_FULL;
++	if (speed_ability & MDIO_PMA_SPEED_100)
++		hw->phy.speeds_supported |= IXGBE_LINK_SPEED_100_FULL;
 +
-+	mbx->mbx_lock |= FM10K_MBX_ACK;
-+
-+	/* load header to memory to be written */
-+	mbx->mbx_hdr = hdr | FM10K_MSG_HDR_FIELD_SET(crc, CRC);
++	switch (hw->mac.type) {
++	case ixgbe_mac_X550:
++		hw->phy.speeds_supported |= IXGBE_LINK_SPEED_2_5GB_FULL;
++		hw->phy.speeds_supported |= IXGBE_LINK_SPEED_5GB_FULL;
++		break;
++	case ixgbe_mac_X550EM_x:
++		hw->phy.speeds_supported &= ~IXGBE_LINK_SPEED_100_FULL;
++		break;
++	default:
++		break;
+ 	}
+ 
+-	/* Internal PHY does not support 100 Mbps */
+-	if (hw->mac.type == ixgbe_mac_X550EM_x)
+-		*speed &= ~IXGBE_LINK_SPEED_100_FULL;
++	return 0;
 +}
 +
 +/**
-+ *  fm10k_mbx_create_fake_disconnect_hdr - Generate a false disconnect mailbox header
-+ *  @mbx: pointer to mailbox
-+ *
-+ *  This function creates a fake disconnect header for loading into remote
-+ *  mailbox header. The primary purpose is to prevent errors on immediate
-+ *  start up after mbx->connect.
-+ **/
-+static void fm10k_mbx_create_fake_disconnect_hdr(struct fm10k_mbx_info *mbx)
++ * ixgbe_get_copper_link_capabilities_generic - Determines link capabilities
++ * @hw: pointer to hardware structure
++ * @speed: pointer to link speed
++ * @autoneg: boolean auto-negotiation value
++ */
++s32 ixgbe_get_copper_link_capabilities_generic(struct ixgbe_hw *hw,
++					       ixgbe_link_speed *speed,
++					       bool *autoneg)
 +{
-+	u32 hdr = FM10K_MSG_HDR_FIELD_SET(FM10K_MSG_DISCONNECT, TYPE) |
-+		  FM10K_MSG_HDR_FIELD_SET(mbx->head, TAIL) |
-+		  FM10K_MSG_HDR_FIELD_SET(mbx->tail, HEAD);
-+	u16 crc = fm10k_crc_16b(&hdr, mbx->local, 1);
++	s32 status = 0;
 +
-+	mbx->mbx_lock |= FM10K_MBX_ACK;
-+
-+	/* load header to memory to be written */
-+	mbx->mbx_hdr = hdr | FM10K_MSG_HDR_FIELD_SET(crc, CRC);
-+}
-+
-+/**
-  *  fm10k_mbx_create_error_msg - Generate a error message
-  *  @mbx: pointer to mailbox
-  *  @err: local error encountered
-@@ -1435,8 +1477,10 @@ static s32 fm10k_mbx_connect(struct fm10k_hw *hw, struct fm10k_mbx_info *mbx)
- 	/* Place mbx in ready to connect state */
- 	mbx->state = FM10K_STATE_CONNECT;
++	*autoneg = true;
++	if (!hw->phy.speeds_supported)
++		status = ixgbe_get_copper_speeds_supported(hw);
  
-+	fm10k_mbx_reset_work(mbx);
-+
- 	/* initialize header of remote mailbox */
--	fm10k_mbx_create_disconnect_hdr(mbx);
-+	fm10k_mbx_create_fake_disconnect_hdr(mbx);
- 	fm10k_write_reg(hw, mbx->mbmem_reg ^ mbx->mbmem_len, mbx->mbx_hdr);
++	*speed = hw->phy.speeds_supported;
+ 	return status;
+ }
  
- 	/* enable interrupt and notify other party of new message */
--- 
-2.4.3
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index a3eec19c9fdf..63689192b149 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -3384,6 +3384,7 @@ struct ixgbe_phy_info {
+ 	u32				phy_semaphore_mask;
+ 	bool                            reset_disable;
+ 	ixgbe_autoneg_advertised        autoneg_advertised;
++	ixgbe_link_speed		speeds_supported;
+ 	enum ixgbe_smart_speed          smart_speed;
+ 	bool                            smart_speed_active;
+ 	bool                            multispeed_fiber;
 
