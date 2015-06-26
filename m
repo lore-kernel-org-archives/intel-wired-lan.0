@@ -1,107 +1,121 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 26 Jun 2015 10:58:07 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
- ece825f835b3fd8371530401a52200e5e2354041 BUILD SUCCESS
-Message-ID: <558cbfbf.n8hMt66qSBhHBxf1%fengguang.wu@intel.com>
+From: Tom Barbette <tom.barbette@ulg.ac.be>
+Date: Fri, 26 Jun 2015 15:40:18 +0200
+Subject: [Intel-wired-lan] [net-next PATCH v2] ixgbe support for ethtool
+	set_rxfh
+Message-ID: <1435326018-6097-1-git-send-email-tom.barbette@ulg.ac.be>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-ece825f835b3fd8371530401a52200e5e2354041  i40evf: don't configure unused RSS queues
+Allows to change the rxfh indirection table and/or key using
+ ethtool interface.
 
-elapsed time: 106m
+V2: added checks for maximum number of queues per MAC type.
 
-configs tested: 86
+Signed-off-by: Tom Barbette <tom.barbette@ulg.ac.be>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h         |  1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 47 ++++++++++++++++++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |  2 +-
+ 3 files changed, 49 insertions(+), 1 deletion(-)
 
-parisc                        c3000_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-i386                     randconfig-a0-201525
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-i386                             allyesconfig
-arm                                    sa1100
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                                   samsung
-arm                                  iop-adma
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                                        sh
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64                            allnoconfig
-i386                             alldefconfig
-i386                             allmodconfig
-i386                              allnoconfig
-i386                                defconfig
-mips                                   jz4740
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-x86_64                   randconfig-i0-201525
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201525
-x86_64                           allmodconfig
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-i386                     randconfig-n0-201525
-i386                     randconfig-n1-201525
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64                                   rhel
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-m68k                          amiga_defconfig
-x86_64                 randconfig-x006-201525
-x86_64                 randconfig-x005-201525
-x86_64                 randconfig-x009-201525
-x86_64                 randconfig-x000-201525
-x86_64                 randconfig-x003-201525
-x86_64                 randconfig-x007-201525
-x86_64                 randconfig-x001-201525
-x86_64                 randconfig-x002-201525
-x86_64                 randconfig-x008-201525
-x86_64                 randconfig-x004-201525
-x86_64                                    lkp
-i386                     randconfig-r0-201525
-parisc                         b180_defconfig
-i386                 randconfig-x009-06252100
-i386                 randconfig-x004-06252100
-i386                 randconfig-x003-06252100
-i386                 randconfig-x006-06252100
-i386                 randconfig-x007-06252100
-i386                 randconfig-x008-06252100
-i386                 randconfig-x001-06252100
-i386                 randconfig-x000-06252100
-i386                 randconfig-x002-06252100
-i386                 randconfig-x005-06252100
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index ac3ac2a..4314799 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -967,4 +967,5 @@ netdev_tx_t ixgbe_xmit_frame_ring(struct sk_buff *skb,
+ 				  struct ixgbe_adapter *adapter,
+ 				  struct ixgbe_ring *tx_ring);
+ u32 ixgbe_rss_indir_tbl_entries(struct ixgbe_adapter *adapter);
++void ixgbe_store_reta(struct ixgbe_adapter *adapter);
+ #endif /* _IXGBE_H_ */
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+index ec7b232..bcd2d03 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+@@ -2868,6 +2868,14 @@ static int ixgbe_set_rxnfc(struct net_device *dev, struct ethtool_rxnfc *cmd)
+ 	return ret;
+ }
+ 
++static int ixgbe_rss_indir_tbl_max(struct ixgbe_adapter *adapter)
++{
++	if (adapter->hw.mac.type < ixgbe_mac_X550)
++		return 16;
++	else
++		return 64;
++}
++
+ static u32 ixgbe_get_rxfh_key_size(struct net_device *netdev)
+ {
+ 	struct ixgbe_adapter *adapter = netdev_priv(netdev);
+@@ -2907,6 +2915,44 @@ static int ixgbe_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key,
+ 	return 0;
+ }
+ 
++static int ixgbe_set_rxfh(struct net_device *netdev, const u32 *indir,
++			  const u8 *key, const u8 hfunc)
++{
++	struct ixgbe_adapter *adapter = netdev_priv(netdev);
++	int i;
++	u32 reta_entries = ixgbe_rss_indir_tbl_entries(adapter);
++
++	if (hfunc)
++		return -EINVAL;
++
++	/* Fill out the redirection table */
++	if (indir) {
++		int max_queues = min_t(int, adapter->num_rx_queues,
++					     ixgbe_rss_indir_tbl_max(adapter));
++
++		/*Allow at least 2 queues w/ SR-IOV.*/
++		if ((adapter->flags & IXGBE_FLAG_SRIOV_ENABLED) &&
++		    (max_queues < 2))
++			max_queues = 2;
++
++		/* Verify user input. */
++		for (i = 0; i < reta_entries; i++)
++			if (indir[i] >= max_queues)
++				return -EINVAL;
++
++		for (i = 0; i < reta_entries; i++)
++			adapter->rss_indir_tbl[i] = indir[i];
++	}
++
++	/* Fill out the rss hash key */
++	if (key)
++		memcpy(adapter->rss_key, key, ixgbe_get_rxfh_key_size(netdev));
++
++	ixgbe_store_reta(adapter);
++
++	return 0;
++}
++
+ static int ixgbe_get_ts_info(struct net_device *dev,
+ 			     struct ethtool_ts_info *info)
+ {
+@@ -3167,6 +3213,7 @@ static const struct ethtool_ops ixgbe_ethtool_ops = {
+ 	.get_rxfh_indir_size	= ixgbe_rss_indir_size,
+ 	.get_rxfh_key_size	= ixgbe_get_rxfh_key_size,
+ 	.get_rxfh		= ixgbe_get_rxfh,
++	.set_rxfh		= ixgbe_set_rxfh,
+ 	.get_channels		= ixgbe_get_channels,
+ 	.set_channels		= ixgbe_set_channels,
+ 	.get_ts_info		= ixgbe_get_ts_info,
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 9aa6104..0fdeb76 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -3287,7 +3287,7 @@ u32 ixgbe_rss_indir_tbl_entries(struct ixgbe_adapter *adapter)
+  *
+  * Write the RSS redirection table stored in adapter.rss_indir_tbl[] to HW.
+  */
+-static void ixgbe_store_reta(struct ixgbe_adapter *adapter)
++void ixgbe_store_reta(struct ixgbe_adapter *adapter)
+ {
+ 	u32 i, reta_entries = ixgbe_rss_indir_tbl_entries(adapter);
+ 	struct ixgbe_hw *hw = &adapter->hw;
+-- 
+2.1.4
 
-Thanks,
-Fengguang
