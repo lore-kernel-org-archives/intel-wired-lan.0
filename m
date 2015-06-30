@@ -1,102 +1,64 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 30 Jun 2015 02:55:42 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
- 7d967b673c2ff992205be051ffebc39e1a323400 BUILD SUCCESS
-Message-ID: <559194ae.IzN8ZQqdB0Nc+mxS%fengguang.wu@intel.com>
+From: Young, James M <james.m.young@intel.com>
+Date: Tue, 30 Jun 2015 00:26:48 +0000
+Subject: [Intel-wired-lan] [e1000-patches][net-next S6 8/8] i40e: use
+ BIT and BIT_ULL macros
+In-Reply-To: <1432859281-63600-8-git-send-email-catherine.sullivan@intel.com>
+References: <1432859281-63600-1-git-send-email-catherine.sullivan@intel.com>
+ <1432859281-63600-8-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <68C85B5FC2FE974B87244D7222BC92783EA1B876@ORSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-7d967b673c2ff992205be051ffebc39e1a323400  tipc: purge backlog queue counters when broadcast link is reset
+> -----Original Message-----
+> From: e1000-patches-bounces at isotope.jf.intel.com [mailto:e1000-patches-
+> bounces at isotope.jf.intel.com] On Behalf Of Sullivan, Catherine
+> Sent: Thursday, May 28, 2015 5:28 PM
+> To: e1000-patches at isotope.jf.intel.com
+> Subject: [e1000-patches][net-next S6 8/8] i40e: use BIT and BIT_ULL macros
+> 
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> 
+> Use macros for abstracting (1 << foo) to BIT(foo)
+> and (1ULL << foo64) to BIT_ULL(foo64) in order to match
+> better with kernel requirements.
+> 
+> NOTE: the adminq_cmd.h file was not modified on purpose because
+> of the dependency upon firmware for that file.
+> 
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
+> Change-ID: I73ee2e48c880d671948aad19bd53ca6b2ac558fc
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e.h             | 56 ++++++++--------
+>  drivers/net/ethernet/intel/i40e/i40e_common.c      |  4 +-
+>  drivers/net/ethernet/intel/i40e/i40e_dcb.h         |  8 +--
+>  drivers/net/ethernet/intel/i40e/i40e_dcb_nl.c      |  2 +-
+>  drivers/net/ethernet/intel/i40e/i40e_debugfs.c     | 10 +--
+>  drivers/net/ethernet/intel/i40e/i40e_diag.c        | 11 ++--
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 54 ++++++++--------
+>  drivers/net/ethernet/intel/i40e/i40e_fcoe.c        | 12 ++--
+>  drivers/net/ethernet/intel/i40e/i40e_fcoe.h        |  4 +-
+>  drivers/net/ethernet/intel/i40e/i40e_hmc.h         |  6 +-
+>  drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c     | 16 ++---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c        | 75 +++++++++++-----------
+>  drivers/net/ethernet/intel/i40e/i40e_nvm.c         |  6 +-
+>  drivers/net/ethernet/intel/i40e/i40e_ptp.c         |  7 +-
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c        | 39 ++++++-----
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.h        | 44 ++++++-------
+>  drivers/net/ethernet/intel/i40e/i40e_type.h        | 22 +++----
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 18 +++---
+>  drivers/net/ethernet/intel/i40evf/i40e_hmc.h       |  6 +-
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c      | 37 ++++++-----
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.h      | 42 ++++++------
+>  drivers/net/ethernet/intel/i40evf/i40e_type.h      | 22 +++----
+>  drivers/net/ethernet/intel/i40evf/i40evf.h         | 42 ++++++------
+>  drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 44 ++++++-------
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  8 +--
+>  .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |  4 +-
+>  26 files changed, 294 insertions(+), 305 deletions(-)
 
-elapsed time: 74m
+Tested-by: Jim Young <james.m.young@intel.com>
 
-configs tested: 82
-
-arm                      jornada720_defconfig
-mips                        workpad_defconfig
-sh                          kfr2r09_defconfig
-m68k                              allnoconfig
-powerpc                   lite5200b_defconfig
-sh                         ecovec24_defconfig
-m68k                         apollo_defconfig
-powerpc                        icon_defconfig
-powerpc                         ps3_defconfig
-arm                         socfpga_defconfig
-mips                         cobalt_defconfig
-powerpc                      pmac32_defconfig
-i386                   randconfig-c0-06300149
-i386                   randconfig-c0-06300204
-m68k                             allmodconfig
-mips                      fuloong2e_defconfig
-mips                     sead3micro_defconfig
-arm                           sama5_defconfig
-parisc                            allnoconfig
-powerpc                      mgcoge_defconfig
-arm                         at91_dt_defconfig
-m68k                        mvme16x_defconfig
-powerpc                mpc8641_hpcn_defconfig
-x86_64                 randconfig-v0-06300137
-x86_64                 randconfig-v0-06300158
-x86_64                 randconfig-v0-06300207
-x86_64                 randconfig-v0-06300218
-avr32                             allnoconfig
-mips                           ip22_defconfig
-powerpc                 linkstation_defconfig
-sh                           se7722_defconfig
-arm                     davinci_all_defconfig
-mn10300                          allyesconfig
-powerpc                mpc7448_hpc2_defconfig
-powerpc                     tqm8541_defconfig
-arm                        multi_v7_defconfig
-powerpc                 mpc8272_ads_defconfig
-powerpc                 mpc832x_mds_defconfig
-arm                       mainstone_defconfig
-mips                      maltasmvp_defconfig
-powerpc                   motionpro_defconfig
-sparc64                          allyesconfig
-i386                   randconfig-b0-06300141
-i386                   randconfig-b0-06300153
-i386                   randconfig-b0-06300209
-i386                   randconfig-b0-06300222
-arm                             ezx_defconfig
-blackfin               BF518F-EZBRD_defconfig
-frv                              alldefconfig
-sh                               alldefconfig
-i386                   randconfig-h0-06300207
-i386                   randconfig-h1-06300207
-microblaze                          defconfig
-powerpc                          allyesconfig
-powerpc                     sbc834x_defconfig
-mips                           ls1b_defconfig
-sh                          polaris_defconfig
-sh                   secureedge5410_defconfig
-x86_64                 randconfig-h0-06300139
-x86_64                 randconfig-h0-06300201
-x86_64                 randconfig-n0-02011308
-x86_64                 randconfig-n0-02011321
-x86_64                 randconfig-n0-02011332
-x86_64                 randconfig-n0-02011351
-mips                         tb0287_defconfig
-powerpc                 canyonlands_defconfig
-powerpc                      ppc44x_defconfig
-mips                             alldefconfig
-powerpc                     rainier_defconfig
-i386                  randconfig-sb0-06300138
-i386                  randconfig-sb0-06300154
-i386                  randconfig-sb0-06300206
-x86_64                 randconfig-r0-06300150
-arm                         lpc32xx_defconfig
-blackfin                         alldefconfig
-sparc64                           allnoconfig
-x86_64                 randconfig-s0-06291746
-x86_64                 randconfig-s0-06291806
-i386                   randconfig-x0-06300131
-i386                   randconfig-x0-06300144
-i386                   randconfig-x0-06300201
-
-Thanks,
-Fengguang
