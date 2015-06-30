@@ -1,178 +1,45 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 30 Jun 2015 08:47:44 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 6d050b3afbcc81af346cd9ce1a02f85041762125 BUILD SUCCESS
-Message-ID: <5591e730.6O8e06NHFOjwxjjV%fengguang.wu@intel.com>
+From: Nicholas Krause <xerofoify@gmail.com>
+Date: Mon, 29 Jun 2015 20:24:58 -0400
+Subject: [Intel-wired-lan] [PATCH] i40e:Make the function
+	i40e_vsi_enable_irq have a return type of void
+Message-ID: <1435623898-21549-1-git-send-email-xerofoify@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-6d050b3afbcc81af346cd9ce1a02f85041762125  i40evf: handle big resets
+This makes the function i40e_enable_irq have a return type of void
+now due to this particular function always running successfully and
+therefore can be declared as void due to never signalling its caller
+with a error code due to the above reason.
 
-elapsed time: 42m
+Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-configs tested: 158
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 48a52b3..cbd5928 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -3110,7 +3110,7 @@ static void i40e_vsi_disable_irq(struct i40e_vsi *vsi)
+  * i40e_vsi_enable_irq - Enable IRQ for the given VSI
+  * @vsi: the VSI being configured
+  **/
+-static int i40e_vsi_enable_irq(struct i40e_vsi *vsi)
++static void i40e_vsi_enable_irq(struct i40e_vsi *vsi)
+ {
+ 	struct i40e_pf *pf = vsi->back;
+ 	int i;
+@@ -3124,7 +3124,6 @@ static int i40e_vsi_enable_irq(struct i40e_vsi *vsi)
+ 	}
+ 
+ 	i40e_flush(&pf->hw);
+-	return 0;
+ }
+ 
+ /**
+-- 
+2.1.4
 
-mips                          malta_defconfig
-mips                          sead3_defconfig
-sh                                  defconfig
-blackfin                       IP0X_defconfig
-ia64                         bigsur_defconfig
-mips                       capcella_defconfig
-arm                          pxa3xx_defconfig
-arm64                             allnoconfig
-sh                   sh7724_generic_defconfig
-m32r                       mappi.up_defconfig
-powerpc                     ksi8560_defconfig
-sh                            migor_defconfig
-x86_64                 randconfig-a0-06300808
-x86_64                 randconfig-a0-06300825
-x86_64                 randconfig-a0-06300836
-microblaze                       allyesconfig
-powerpc                       holly_defconfig
-tile                                defconfig
-x86_64                           alldefconfig
-arm                         assabet_defconfig
-blackfin                  TCM-BF518_defconfig
-arm                          marzen_defconfig
-arm                          moxart_defconfig
-powerpc                    klondike_defconfig
-mips                           ip22_defconfig
-parisc                         a500_defconfig
-powerpc                        icon_defconfig
-i386                   randconfig-c0-06300804
-i386                   randconfig-c0-06300820
-i386                   randconfig-c0-06300834
-i386                   randconfig-c0-06300842
-m68k                       bvme6000_defconfig
-mips                             alldefconfig
-powerpc                     tqm8555_defconfig
-arm                          nuc910_defconfig
-m68k                             allyesconfig
-mips                        qi_lb60_defconfig
-arm                     eseries_pxa_defconfig
-mips                          rm200_defconfig
-powerpc                 mpc8560_ads_defconfig
-m68k                             allmodconfig
-sparc64                             defconfig
-mips                         rt305x_defconfig
-powerpc                         wii_defconfig
-x86_64                 randconfig-v0-06300812
-x86_64                 randconfig-v0-06300823
-x86_64                 randconfig-v0-06300831
-x86_64                 randconfig-v0-06300837
-x86_64                 randconfig-v0-06300842
-blackfin                BF538-EZKIT_defconfig
-blackfin                   CM-BF533_defconfig
-blackfin                       SRV1_defconfig
-m32r                       m32104ut_defconfig
-arm                         ebsa110_defconfig
-arm                         shannon_defconfig
-m68k                       m5275evb_defconfig
-mips                  cavium_octeon_defconfig
-arm                            netx_defconfig
-powerpc                     kmeter1_defconfig
-sparc64                          allmodconfig
-xtensa                           allmodconfig
-i386                   randconfig-b0-06300813
-i386                   randconfig-b0-06300826
-i386                   randconfig-b0-06300835
-i386                   randconfig-b0-06300844
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm                           h3600_defconfig
-openrisc                         alldefconfig
-powerpc                 mpc832x_mds_defconfig
-tile                             allyesconfig
-arm                          iop33x_defconfig
-arm                        spear3xx_defconfig
-mips                        nlm_xlr_defconfig
-powerpc                        warp_defconfig
-blackfin             BF527-TLL6527M_defconfig
-powerpc                       ep405_defconfig
-powerpc                     mpc512x_defconfig
-sh                      rts7751r2d1_defconfig
-arm                          prima2_defconfig
-m68k                        m5407c3_defconfig
-powerpc                    adder875_defconfig
-sh                           se7750_defconfig
-arm                             mxs_defconfig
-powerpc                 mpc834x_mds_defconfig
-powerpc                     rainier_defconfig
-arm                             bcm_defconfig
-parisc                      default_defconfig
-powerpc                    socrates_defconfig
-s390                       zfcpdump_defconfig
-i386                   randconfig-h0-06300818
-i386                   randconfig-h1-06300818
-i386                   randconfig-h0-06300827
-i386                   randconfig-h1-06300827
-microblaze                    nommu_defconfig
-s390                              allnoconfig
-mips                           jazz_defconfig
-sh                           cayman_defconfig
-sparc                               defconfig
-arm                        magician_defconfig
-powerpc                     stx_gp3_defconfig
-arm                             rpc_defconfig
-parisc                            allnoconfig
-sparc                       sparc64_defconfig
-arm                         axm55xx_defconfig
-mips                malta_kvm_guest_defconfig
-mips                  maltasmvp_eva_defconfig
-sh                             sh03_defconfig
-x86_64                 randconfig-h0-06300817
-x86_64                 randconfig-h0-06300826
-x86_64                 randconfig-h0-06300837
-x86_64                 randconfig-h0-06300843
-x86_64                 randconfig-n0-02011939
-x86_64                 randconfig-n0-02011946
-x86_64                 randconfig-n0-02011957
-x86_64                 randconfig-n0-02012005
-powerpc                    gamecube_defconfig
-powerpc64                        alldefconfig
-arm                            dove_defconfig
-mips                 pnx8335_stb225_defconfig
-arm                              allyesconfig
-mips                        bcm63xx_defconfig
-powerpc                      makalu_defconfig
-arm                       versatile_defconfig
-mips                      loongson3_defconfig
-mips                          rb532_defconfig
-i386                  randconfig-sb0-06300810
-i386                  randconfig-sb0-06300816
-i386                  randconfig-sb0-06300824
-i386                  randconfig-sb0-06300835
-m68k                                defconfig
-powerpc                 mpc8272_ads_defconfig
-powerpc                      pmac32_defconfig
-ia64                      gensparse_defconfig
-mips                         bigsur_defconfig
-powerpc                      obs600_defconfig
-mn10300                          alldefconfig
-powerpc                     tqm8560_defconfig
-avr32                     atstk1004_defconfig
-mips                           ci20_defconfig
-mips                   sb1250_swarm_defconfig
-arm                    realview-smp_defconfig
-sh                            hp6xx_defconfig
-arm                          pcm027_defconfig
-blackfin                         alldefconfig
-powerpc                        cell_defconfig
-x86_64                 randconfig-r0-06300811
-x86_64                 randconfig-r0-06300821
-x86_64                 randconfig-r0-06300833
-mips                       lemote2f_defconfig
-sh                        edosk7760_defconfig
-i386                   randconfig-x0-06300817
-i386                   randconfig-x0-06300828
-i386                   randconfig-x0-06300838
-
-Thanks,
-Fengguang
