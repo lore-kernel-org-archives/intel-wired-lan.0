@@ -1,56 +1,46 @@
-From: Nicholas Krause <xerofoify@gmail.com>
-Date: Mon, 29 Jun 2015 23:11:47 -0400
-Subject: [Intel-wired-lan] [PATCH] i40e:Return -ENODEV if hardware has no
-	support for certain required features in the function
-	i40e_init_pf_fcoe
-Message-ID: <1435633907-19412-1-git-send-email-xerofoify@gmail.com>
+From: Maninder Singh <maninder1.s@samsung.com>
+Date: Tue, 30 Jun 2015 10:25:30 +0530
+Subject: [Intel-wired-lan] [PATCH 1/1] igb: Use ARRAY_SIZE instead fo
+	sizeof(a)/sizeof(a[0])
+Message-ID: <1435640130-1466-1-git-send-email-maninder1.s@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This makes the function i40e_init_pf_fcoe correctly return -ENODEV
-as a error return for when the underlying hardware does not have
-support for FCOE or DCB rather then 0 to it's callers in order
-to comply with checks run by these particular function's callers
-to find out if the underlying hardware supports these features.
+Use ARRAY_SIZE instead fo sizeof(a)/sizeof(a[0])
 
-Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
+Signed-off-by: Maninder Singh <maninder1.s@samsung.com>
+Reviewed-by: Yogesh Narayan Gaur <yn.gaur@samsung.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_fcoe.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/igb/e1000_phy.c |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_fcoe.c b/drivers/net/ethernet/intel/i40e/i40e_fcoe.c
-index c8b621e..24a44dd 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_fcoe.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_fcoe.c
-@@ -273,7 +273,8 @@ out:
-  * i40e_fcoe_sw_init - sets up the HW for FCoE
-  * @pf: pointer to PF
-  *
-- * Returns 0 if FCoE is supported otherwise the error code
-+ * Returns 0 if FCoE is supported otherwise  -ENODEV if
-+ * the hardware does not support it
-  **/
- int i40e_init_pf_fcoe(struct i40e_pf *pf)
- {
-@@ -287,13 +288,13 @@ int i40e_init_pf_fcoe(struct i40e_pf *pf)
+diff --git a/drivers/net/ethernet/intel/igb/e1000_phy.c b/drivers/net/ethernet/intel/igb/e1000_phy.c
+index c1bb64d..e399b3c 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_phy.c
++++ b/drivers/net/ethernet/intel/igb/e1000_phy.c
+@@ -37,8 +37,7 @@ static s32  igb_set_master_slave_mode(struct e1000_hw *hw);
+ static const u16 e1000_m88_cable_length_table[] = {
+ 	0, 50, 80, 110, 140, 140, E1000_CABLE_LENGTH_UNDEFINED };
+ #define M88E1000_CABLE_LENGTH_TABLE_SIZE \
+-	(sizeof(e1000_m88_cable_length_table) / \
+-	sizeof(e1000_m88_cable_length_table[0]))
++	ARRAY_SIZE(e1000_m88_cable_length_table)
  
- 	if (!pf->hw.func_caps.fcoe) {
- 		dev_info(&pf->pdev->dev, "FCoE capability is disabled\n");
--		return 0;
-+		return -ENODEV;
- 	}
+ static const u16 e1000_igp_2_cable_length_table[] = {
+ 	0, 0, 0, 0, 0, 0, 0, 0, 3, 5, 8, 11, 13, 16, 18, 21,
+@@ -50,8 +49,7 @@ static const u16 e1000_igp_2_cable_length_table[] = {
+ 	83, 89, 95, 100, 105, 109, 113, 116, 119, 122, 124,
+ 	104, 109, 114, 118, 121, 124};
+ #define IGP02E1000_CABLE_LENGTH_TABLE_SIZE \
+-	(sizeof(e1000_igp_2_cable_length_table) / \
+-	 sizeof(e1000_igp_2_cable_length_table[0]))
++	ARRAY_SIZE(e1000_igp_2_cable_length_table)
  
- 	if (!pf->hw.func_caps.dcb) {
- 		dev_warn(&pf->pdev->dev,
- 			 "Hardware is not DCB capable not enabling FCoE.\n");
--		return 0;
-+		return -ENODEV;
- 	}
- 
- 	/* enable FCoE hash filter */
+ /**
+  *  igb_check_reset_block - Check if PHY reset is blocked
 -- 
-2.1.4
+1.7.9.5
 
