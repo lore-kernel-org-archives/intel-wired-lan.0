@@ -1,65 +1,65 @@
-From: Fujinaka, Todd <todd.fujinaka@intel.com>
-Date: Tue, 30 Jun 2015 14:53:05 +0000
-Subject: [Intel-wired-lan] [PATCH 1/1] igb: Use ARRAY_SIZE instead
-	fo	sizeof(a)/sizeof(a[0])
-In-Reply-To: <1435640130-1466-1-git-send-email-maninder1.s@samsung.com>
-References: <1435640130-1466-1-git-send-email-maninder1.s@samsung.com>
-Message-ID: <9B4A1B1917080E46B64F07F2989DADD653571921@ORSMSX114.amr.corp.intel.com>
+From: Young, James M <james.m.young@intel.com>
+Date: Tue, 30 Jun 2015 17:34:28 +0000
+Subject: [Intel-wired-lan] [intel-wired-lan][net-next PATCH 8/8] i40e:
+ use	BIT and BIT_ULL macros
+In-Reply-To: <1433449442-31420-9-git-send-email-catherine.sullivan@intel.com>
+References: <1433449442-31420-1-git-send-email-catherine.sullivan@intel.com>
+ <1433449442-31420-9-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <68C85B5FC2FE974B87244D7222BC92783EA1BAA7@ORSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-I don't see the reason this is needed so I'm going to say NAK.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Catherine Sullivan
+> Sent: Thursday, June 04, 2015 1:24 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [intel-wired-lan][net-next PATCH 8/8] i40e: use BIT
+> and BIT_ULL macros
+> 
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> 
+> Use macros for abstracting (1 << foo) to BIT(foo)
+> and (1ULL << foo64) to BIT_ULL(foo64) in order to match
+> better with kernel requirements.
+> 
+> NOTE: the adminq_cmd.h file was not modified on purpose because
+> of the dependency upon firmware for that file.
+> 
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
+> Change-ID: I73ee2e48c880d671948aad19bd53ca6b2ac558fc
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e.h             | 56 ++++++++--------
+>  drivers/net/ethernet/intel/i40e/i40e_common.c      |  4 +-
+>  drivers/net/ethernet/intel/i40e/i40e_dcb.h         |  8 +--
+>  drivers/net/ethernet/intel/i40e/i40e_dcb_nl.c      |  2 +-
+>  drivers/net/ethernet/intel/i40e/i40e_debugfs.c     | 10 +--
+>  drivers/net/ethernet/intel/i40e/i40e_diag.c        | 11 ++--
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 54 ++++++++--------
+>  drivers/net/ethernet/intel/i40e/i40e_fcoe.c        | 12 ++--
+>  drivers/net/ethernet/intel/i40e/i40e_fcoe.h        |  4 +-
+>  drivers/net/ethernet/intel/i40e/i40e_hmc.h         |  6 +-
+>  drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c     | 16 ++---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c        | 75 +++++++++++-----------
+>  drivers/net/ethernet/intel/i40e/i40e_nvm.c         |  6 +-
+>  drivers/net/ethernet/intel/i40e/i40e_ptp.c         |  7 +-
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c        | 39 ++++++-----
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.h        | 44 ++++++-------
+>  drivers/net/ethernet/intel/i40e/i40e_type.h        | 22 +++----
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 18 +++---
+>  drivers/net/ethernet/intel/i40evf/i40e_hmc.h       |  6 +-
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c      | 37 ++++++-----
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.h      | 42 ++++++------
+>  drivers/net/ethernet/intel/i40evf/i40e_type.h      | 22 +++----
+>  drivers/net/ethernet/intel/i40evf/i40evf.h         | 42 ++++++------
+>  drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 44 ++++++-------
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  8 +--
+>  .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |  4 +-
+>  26 files changed, 294 insertions(+), 305 deletions(-)
+> 
+Tested-by: Jim Young <james.m.young@intel.com>
 
-Todd Fujinaka
-Software Application Engineer
-Networking Division (ND)
-Intel Corporation
-todd.fujinaka at intel.com
-(503) 712-4565
-
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Maninder Singh
-Sent: Monday, June 29, 2015 9:56 PM
-To: Kirsher, Jeffrey T; Brandeburg, Jesse; Nelson, Shannon; Wyborny, Carolyn; Skidmore, Donald C; Vick, Matthew; Ronciak, John; Williams, Mitch A; intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; linux-kernel at vger.kernel.org
-Cc: Maninder Singh; pankaj.m at samsung.com
-Subject: [Intel-wired-lan] [PATCH 1/1] igb: Use ARRAY_SIZE instead fo sizeof(a)/sizeof(a[0])
-
-Use ARRAY_SIZE instead fo sizeof(a)/sizeof(a[0])
-
-Signed-off-by: Maninder Singh <maninder1.s@samsung.com>
-Reviewed-by: Yogesh Narayan Gaur <yn.gaur@samsung.com>
----
- drivers/net/ethernet/intel/igb/e1000_phy.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/e1000_phy.c b/drivers/net/ethernet/intel/igb/e1000_phy.c
-index c1bb64d..e399b3c 100644
---- a/drivers/net/ethernet/intel/igb/e1000_phy.c
-+++ b/drivers/net/ethernet/intel/igb/e1000_phy.c
-@@ -37,8 +37,7 @@ static s32  igb_set_master_slave_mode(struct e1000_hw *hw);  static const u16 e1000_m88_cable_length_table[] = {
- 	0, 50, 80, 110, 140, 140, E1000_CABLE_LENGTH_UNDEFINED };  #define M88E1000_CABLE_LENGTH_TABLE_SIZE \
--	(sizeof(e1000_m88_cable_length_table) / \
--	sizeof(e1000_m88_cable_length_table[0]))
-+	ARRAY_SIZE(e1000_m88_cable_length_table)
- 
- static const u16 e1000_igp_2_cable_length_table[] = {
- 	0, 0, 0, 0, 0, 0, 0, 0, 3, 5, 8, 11, 13, 16, 18, 21, @@ -50,8 +49,7 @@ static const u16 e1000_igp_2_cable_length_table[] = {
- 	83, 89, 95, 100, 105, 109, 113, 116, 119, 122, 124,
- 	104, 109, 114, 118, 121, 124};
- #define IGP02E1000_CABLE_LENGTH_TABLE_SIZE \
--	(sizeof(e1000_igp_2_cable_length_table) / \
--	 sizeof(e1000_igp_2_cable_length_table[0]))
-+	ARRAY_SIZE(e1000_igp_2_cable_length_table)
- 
- /**
-  *  igb_check_reset_block - Check if PHY reset is blocked
---
-1.7.9.5
-
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan at lists.osuosl.org
-http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
