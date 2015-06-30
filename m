@@ -1,64 +1,178 @@
-From: Young, James M <james.m.young@intel.com>
-Date: Tue, 30 Jun 2015 00:26:48 +0000
-Subject: [Intel-wired-lan] [e1000-patches][net-next S6 8/8] i40e: use
- BIT and BIT_ULL macros
-In-Reply-To: <1432859281-63600-8-git-send-email-catherine.sullivan@intel.com>
-References: <1432859281-63600-1-git-send-email-catherine.sullivan@intel.com>
- <1432859281-63600-8-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <68C85B5FC2FE974B87244D7222BC92783EA1B876@ORSMSX102.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 30 Jun 2015 08:47:44 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 6d050b3afbcc81af346cd9ce1a02f85041762125 BUILD SUCCESS
+Message-ID: <5591e730.6O8e06NHFOjwxjjV%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: e1000-patches-bounces at isotope.jf.intel.com [mailto:e1000-patches-
-> bounces at isotope.jf.intel.com] On Behalf Of Sullivan, Catherine
-> Sent: Thursday, May 28, 2015 5:28 PM
-> To: e1000-patches at isotope.jf.intel.com
-> Subject: [e1000-patches][net-next S6 8/8] i40e: use BIT and BIT_ULL macros
-> 
-> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> 
-> Use macros for abstracting (1 << foo) to BIT(foo)
-> and (1ULL << foo64) to BIT_ULL(foo64) in order to match
-> better with kernel requirements.
-> 
-> NOTE: the adminq_cmd.h file was not modified on purpose because
-> of the dependency upon firmware for that file.
-> 
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-> Change-ID: I73ee2e48c880d671948aad19bd53ca6b2ac558fc
-> ---
->  drivers/net/ethernet/intel/i40e/i40e.h             | 56 ++++++++--------
->  drivers/net/ethernet/intel/i40e/i40e_common.c      |  4 +-
->  drivers/net/ethernet/intel/i40e/i40e_dcb.h         |  8 +--
->  drivers/net/ethernet/intel/i40e/i40e_dcb_nl.c      |  2 +-
->  drivers/net/ethernet/intel/i40e/i40e_debugfs.c     | 10 +--
->  drivers/net/ethernet/intel/i40e/i40e_diag.c        | 11 ++--
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 54 ++++++++--------
->  drivers/net/ethernet/intel/i40e/i40e_fcoe.c        | 12 ++--
->  drivers/net/ethernet/intel/i40e/i40e_fcoe.h        |  4 +-
->  drivers/net/ethernet/intel/i40e/i40e_hmc.h         |  6 +-
->  drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c     | 16 ++---
->  drivers/net/ethernet/intel/i40e/i40e_main.c        | 75 +++++++++++-----------
->  drivers/net/ethernet/intel/i40e/i40e_nvm.c         |  6 +-
->  drivers/net/ethernet/intel/i40e/i40e_ptp.c         |  7 +-
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c        | 39 ++++++-----
->  drivers/net/ethernet/intel/i40e/i40e_txrx.h        | 44 ++++++-------
->  drivers/net/ethernet/intel/i40e/i40e_type.h        | 22 +++----
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 18 +++---
->  drivers/net/ethernet/intel/i40evf/i40e_hmc.h       |  6 +-
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c      | 37 ++++++-----
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.h      | 42 ++++++------
->  drivers/net/ethernet/intel/i40evf/i40e_type.h      | 22 +++----
->  drivers/net/ethernet/intel/i40evf/i40evf.h         | 42 ++++++------
->  drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 44 ++++++-------
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  8 +--
->  .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |  4 +-
->  26 files changed, 294 insertions(+), 305 deletions(-)
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+6d050b3afbcc81af346cd9ce1a02f85041762125  i40evf: handle big resets
 
-Tested-by: Jim Young <james.m.young@intel.com>
+elapsed time: 42m
 
+configs tested: 158
+
+mips                          malta_defconfig
+mips                          sead3_defconfig
+sh                                  defconfig
+blackfin                       IP0X_defconfig
+ia64                         bigsur_defconfig
+mips                       capcella_defconfig
+arm                          pxa3xx_defconfig
+arm64                             allnoconfig
+sh                   sh7724_generic_defconfig
+m32r                       mappi.up_defconfig
+powerpc                     ksi8560_defconfig
+sh                            migor_defconfig
+x86_64                 randconfig-a0-06300808
+x86_64                 randconfig-a0-06300825
+x86_64                 randconfig-a0-06300836
+microblaze                       allyesconfig
+powerpc                       holly_defconfig
+tile                                defconfig
+x86_64                           alldefconfig
+arm                         assabet_defconfig
+blackfin                  TCM-BF518_defconfig
+arm                          marzen_defconfig
+arm                          moxart_defconfig
+powerpc                    klondike_defconfig
+mips                           ip22_defconfig
+parisc                         a500_defconfig
+powerpc                        icon_defconfig
+i386                   randconfig-c0-06300804
+i386                   randconfig-c0-06300820
+i386                   randconfig-c0-06300834
+i386                   randconfig-c0-06300842
+m68k                       bvme6000_defconfig
+mips                             alldefconfig
+powerpc                     tqm8555_defconfig
+arm                          nuc910_defconfig
+m68k                             allyesconfig
+mips                        qi_lb60_defconfig
+arm                     eseries_pxa_defconfig
+mips                          rm200_defconfig
+powerpc                 mpc8560_ads_defconfig
+m68k                             allmodconfig
+sparc64                             defconfig
+mips                         rt305x_defconfig
+powerpc                         wii_defconfig
+x86_64                 randconfig-v0-06300812
+x86_64                 randconfig-v0-06300823
+x86_64                 randconfig-v0-06300831
+x86_64                 randconfig-v0-06300837
+x86_64                 randconfig-v0-06300842
+blackfin                BF538-EZKIT_defconfig
+blackfin                   CM-BF533_defconfig
+blackfin                       SRV1_defconfig
+m32r                       m32104ut_defconfig
+arm                         ebsa110_defconfig
+arm                         shannon_defconfig
+m68k                       m5275evb_defconfig
+mips                  cavium_octeon_defconfig
+arm                            netx_defconfig
+powerpc                     kmeter1_defconfig
+sparc64                          allmodconfig
+xtensa                           allmodconfig
+i386                   randconfig-b0-06300813
+i386                   randconfig-b0-06300826
+i386                   randconfig-b0-06300835
+i386                   randconfig-b0-06300844
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+arm                           h3600_defconfig
+openrisc                         alldefconfig
+powerpc                 mpc832x_mds_defconfig
+tile                             allyesconfig
+arm                          iop33x_defconfig
+arm                        spear3xx_defconfig
+mips                        nlm_xlr_defconfig
+powerpc                        warp_defconfig
+blackfin             BF527-TLL6527M_defconfig
+powerpc                       ep405_defconfig
+powerpc                     mpc512x_defconfig
+sh                      rts7751r2d1_defconfig
+arm                          prima2_defconfig
+m68k                        m5407c3_defconfig
+powerpc                    adder875_defconfig
+sh                           se7750_defconfig
+arm                             mxs_defconfig
+powerpc                 mpc834x_mds_defconfig
+powerpc                     rainier_defconfig
+arm                             bcm_defconfig
+parisc                      default_defconfig
+powerpc                    socrates_defconfig
+s390                       zfcpdump_defconfig
+i386                   randconfig-h0-06300818
+i386                   randconfig-h1-06300818
+i386                   randconfig-h0-06300827
+i386                   randconfig-h1-06300827
+microblaze                    nommu_defconfig
+s390                              allnoconfig
+mips                           jazz_defconfig
+sh                           cayman_defconfig
+sparc                               defconfig
+arm                        magician_defconfig
+powerpc                     stx_gp3_defconfig
+arm                             rpc_defconfig
+parisc                            allnoconfig
+sparc                       sparc64_defconfig
+arm                         axm55xx_defconfig
+mips                malta_kvm_guest_defconfig
+mips                  maltasmvp_eva_defconfig
+sh                             sh03_defconfig
+x86_64                 randconfig-h0-06300817
+x86_64                 randconfig-h0-06300826
+x86_64                 randconfig-h0-06300837
+x86_64                 randconfig-h0-06300843
+x86_64                 randconfig-n0-02011939
+x86_64                 randconfig-n0-02011946
+x86_64                 randconfig-n0-02011957
+x86_64                 randconfig-n0-02012005
+powerpc                    gamecube_defconfig
+powerpc64                        alldefconfig
+arm                            dove_defconfig
+mips                 pnx8335_stb225_defconfig
+arm                              allyesconfig
+mips                        bcm63xx_defconfig
+powerpc                      makalu_defconfig
+arm                       versatile_defconfig
+mips                      loongson3_defconfig
+mips                          rb532_defconfig
+i386                  randconfig-sb0-06300810
+i386                  randconfig-sb0-06300816
+i386                  randconfig-sb0-06300824
+i386                  randconfig-sb0-06300835
+m68k                                defconfig
+powerpc                 mpc8272_ads_defconfig
+powerpc                      pmac32_defconfig
+ia64                      gensparse_defconfig
+mips                         bigsur_defconfig
+powerpc                      obs600_defconfig
+mn10300                          alldefconfig
+powerpc                     tqm8560_defconfig
+avr32                     atstk1004_defconfig
+mips                           ci20_defconfig
+mips                   sb1250_swarm_defconfig
+arm                    realview-smp_defconfig
+sh                            hp6xx_defconfig
+arm                          pcm027_defconfig
+blackfin                         alldefconfig
+powerpc                        cell_defconfig
+x86_64                 randconfig-r0-06300811
+x86_64                 randconfig-r0-06300821
+x86_64                 randconfig-r0-06300833
+mips                       lemote2f_defconfig
+sh                        edosk7760_defconfig
+i386                   randconfig-x0-06300817
+i386                   randconfig-x0-06300828
+i386                   randconfig-x0-06300838
+
+Thanks,
+Fengguang
