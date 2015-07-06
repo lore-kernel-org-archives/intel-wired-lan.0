@@ -1,53 +1,40 @@
-From: Raanan Avargil <raanan.avargil@intel.com>
-Date: Mon,  6 Jul 2015 17:57:36 +0300
-Subject: [Intel-wired-lan] [PATCH] e1000e: Fix incorrect ASPM locking
-Message-ID: <1436194656-31370-1-git-send-email-raanan.avargil@intel.com>
+From: Rustad, Mark D <mark.d.rustad@intel.com>
+Date: Mon, 6 Jul 2015 17:31:59 +0000
+Subject: [Intel-wired-lan] [PATCH V3 0/2] pci: Provide a flag to access
+ VPD through function 0
+In-Reply-To: <8CB0ECE7-CFE2-43CB-BA60-2E2E0A34D5D1@intel.com>
+References: <20150603184445.109080.36387.stgit@mdrustad-wks.jf.intel.com>
+ <051B68B4-3E77-4EB0-B9FE-8523631884A2@intel.com>
+ <45099CC7-DDAB-41D9-AB74-5A81E2AAF64C@intel.com>
+ <CAErSpo7e-QtQQTj2yh_jG07vqU1j1YBez_9wrcrzOQs7+eDFng@mail.gmail.com>
+ <8CB0ECE7-CFE2-43CB-BA60-2E2E0A34D5D1@intel.com>
+Message-ID: <C468F237-DBA2-4503-BA99-76CC1FC46999@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch fixes wrong locking usage.
-In the context of slot reset, we should use lock.
-And during resume, there is no need of lock.
+> On Jun 26, 2015, at 11:04 AM, Rustad, Mark D <mark.d.rustad@intel.com> wrote:
+> 
+>> Sorry, Mark, I've just been busy with other issues and haven't had a
+>> chance to look at this yet.
+> 
+> Is there any chance of this getting into this merge window?
 
-Reported-by: Bjorn Helgaas <bhelgaas@google.com>
-Signed-off-by: Raanan Avargil <raanan.avargil@intel.com>
----
- drivers/net/ethernet/intel/e1000e/netdev.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Well, it has missed the merge window, but this really is a bug fix. These patches address problems that, under race conditions, can corrupt VPD data and under other conditions can cause hangs. In fact I would submit that the reason that the VPD operations have been made interruptible is directly related to hangs caused by the sharing of VPD capability registers between functions. You see, if one function ever performs a VPD write, any subsequent read on any other function that shares those registers will definitely hang.
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 6c153c1..7abe000 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -6466,7 +6466,7 @@ static int __e1000_resume(struct pci_dev *pdev)
- 	if (adapter->flags2 & FLAG2_DISABLE_ASPM_L1)
- 		aspm_disable_flag |= PCIE_LINK_STATE_L1;
- 	if (aspm_disable_flag)
--		e1000e_disable_aspm_locked(pdev, aspm_disable_flag);
-+		e1000e_disable_aspm(pdev, aspm_disable_flag);
- 
- 	pci_set_master(pdev);
- 
-@@ -6744,7 +6744,7 @@ static pci_ers_result_t e1000_io_slot_reset(struct pci_dev *pdev)
- 	if (adapter->flags2 & FLAG2_DISABLE_ASPM_L1)
- 		aspm_disable_flag |= PCIE_LINK_STATE_L1;
- 	if (aspm_disable_flag)
--		e1000e_disable_aspm(pdev, aspm_disable_flag);
-+		e1000e_disable_aspm_locked(pdev, aspm_disable_flag);
- 
- 	err = pci_enable_device_mem(pdev);
- 	if (err) {
--- 
-2.1.0
+I imagine that there are many devices beyond Intel's Ethernet devices that would benefit from using the quirk that these patches introduce.
 
----------------------------------------------------------------------
-Intel Israel (74) Limited
+Please apply it and consider it for -stable.
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+--
+Mark Rustad, Networking Division, Intel Corporation
 
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 841 bytes
+Desc: Message signed with OpenPGP using GPGMail
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150706/719cc42f/attachment.asc>
