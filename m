@@ -1,30 +1,27 @@
 From: Vasily Averin <vvs@virtuozzo.com>
-Date: Tue, 07 Jul 2015 18:53:38 +0300
-Subject: [Intel-wired-lan] [PATCH 1/3] missing rtnl_unlock in i40evf_resume()
-Message-ID: <559BF602.406@virtuozzo.com>
+Date: Tue, 07 Jul 2015 20:25:18 +0300
+Subject: [Intel-wired-lan] [PATCH 3/3] ipmr_free_table() should be
+	called under taken rtnl_lock
+In-Reply-To: <CAM_iQpW1zo4T3AyZsv7ofLLsFtAfnqzGuDcqcFKxw9uuRNk_vA@mail.gmail.com>
+References: <559BF613.7090904@virtuozzo.com>
+ <CAM_iQpW1zo4T3AyZsv7ofLLsFtAfnqzGuDcqcFKxw9uuRNk_vA@mail.gmail.com>
+Message-ID: <559C0B7E.8010108@virtuozzo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Signed-off-by: Vasily Averin <vvs@virtuozzo.com>
----
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 1 +
- 1 file changed, 1 insertion(+)
+On 07.07.2015 20:13, Cong Wang wrote:
+> On Tue, Jul 7, 2015 at 8:53 AM, Vasily Averin <vvs@virtuozzo.com> wrote:
+>> ipmr_free_table() calls unregister_netdevice_many() inside
+>> and changes net_todo_list protected by rtnl_lock
+> 
+> Did you see any real bug?
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 4ab4ebb..dd6a428 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -2402,6 +2402,7 @@ static int i40evf_resume(struct pci_dev *pdev)
- 	rtnl_lock();
- 	err = i40evf_set_interrupt_capability(adapter);
- 	if (err) {
-+		rtnl_unlock();
- 		dev_err(&pdev->dev, "Cannot enable MSI-X interrupts.\n");
- 		return err;
- 	}
--- 
-1.9.1
+No, it was result of manual code review.
 
+> ipmr_free_table() is called in failure path, in this case there is no
+> device registered yet, so unregister should be just a nop?
+
+However may be it's better to mark this place for future anyway?
