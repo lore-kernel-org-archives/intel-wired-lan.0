@@ -1,34 +1,32 @@
 From: Vasily Averin <vvs@virtuozzo.com>
-Date: Tue, 07 Jul 2015 20:53:19 +0300
-Subject: [Intel-wired-lan] [PATCH 3/3] ipmr_free_table() should be
-	called under taken rtnl_lock
-In-Reply-To: <CAM_iQpX=_chUgfy39ifgKkygYKVnh-r9WXK4P6q70xR_Oczv=g@mail.gmail.com>
-References: <559BF613.7090904@virtuozzo.com>	<CAM_iQpW1zo4T3AyZsv7ofLLsFtAfnqzGuDcqcFKxw9uuRNk_vA@mail.gmail.com>	<559C0B7E.8010108@virtuozzo.com>
- <CAM_iQpX=_chUgfy39ifgKkygYKVnh-r9WXK4P6q70xR_Oczv=g@mail.gmail.com>
-Message-ID: <559C120F.7020709@virtuozzo.com>
+Date: Wed, 08 Jul 2015 15:04:26 +0300
+Subject: [Intel-wired-lan] [PATCH] rtnl_lock called twice in
+	i40e_pci_error_resume()
+Message-ID: <559D11CA.6090006@virtuozzo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 07.07.2015 20:30, Cong Wang wrote:
-> On Tue, Jul 7, 2015 at 10:25 AM, Vasily Averin <vvs@virtuozzo.com> wrote:
->> On 07.07.2015 20:13, Cong Wang wrote:
->>> On Tue, Jul 7, 2015 at 8:53 AM, Vasily Averin <vvs@virtuozzo.com> wrote:
->>>> ipmr_free_table() calls unregister_netdevice_many() inside
->>>> and changes net_todo_list protected by rtnl_lock
->>>
->>> Did you see any real bug?
->>
->> No, it was result of manual code review.
->>
->>> ipmr_free_table() is called in failure path, in this case there is no
->>> device registered yet, so unregister should be just a nop?
->>
->> However may be it's better to mark this place for future anyway?
-> 
-> Then add a comment there. ;)
+Signed-off-by: Vasily Averin <vvs@virtuozzo.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-As you can see I'm not familiar with this code,
-so I would like to ask you to do it. :)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 48a52b3..ef091d4 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -10226,7 +10226,7 @@ static void i40e_pci_error_resume(struct pci_dev *pdev)
+ 
+ 	rtnl_lock();
+ 	i40e_handle_reset_warning(pf);
+-	rtnl_lock();
++	rtnl_unlock();
+ }
+ 
+ /**
+-- 
+1.9.1
+
