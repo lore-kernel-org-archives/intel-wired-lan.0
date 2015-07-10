@@ -1,48 +1,99 @@
-From: Stefan Assmann <sassmann@kpanic.de>
-Date: Fri, 10 Jul 2015 15:01:12 +0200
-Subject: [Intel-wired-lan] [PATCH] igb: do not re-init SR-IOV during probe
-Message-ID: <1436533272-18070-1-git-send-email-sassmann@kpanic.de>
+From: Mark D Rustad <mark.d.rustad@intel.com>
+Date: Fri, 10 Jul 2015 14:19:22 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Add support for reporting 2.5G
+	link speed
+Message-ID: <20150710211921.35052.49163.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-During driver probing the following code path is triggered.
-igb_probe
-->igb_sw_init
-  ->igb_probe_vfs
-    ->igb_pci_enable_sriov
-      ->igb_sriov_reinit
+Now that we can do 2.5G link speed, we need to be able to report it.
+Also change the nested triadic involved in creating the log message
+to instead use a simpler switch statement to set a string pointer.
 
-Doing the SR-IOV re-init is not necessary during probing since we're
-starting from scratch. Here we can call igb_enable_sriov() right away.
-
-Running igb_sriov_reinit() during igb_probe() also seems to cause
-occasional packet loss on some onboard 82576 NICs. Reproduced on
-Dell and HP servers with onboard 82576 NICs.
-Example:
-Intel Corporation 82576 Gigabit Network Connection [8086:10c9] (rev 01)
-Subsystem: Dell Device [1028:0481]
-
-Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
+Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
- drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |    7 ++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |   27 +++++++++++++++-------
+ 2 files changed, 26 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index f287186..7f41237 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -2847,7 +2847,7 @@ static void igb_probe_vfs(struct igb_adapter *adapter)
- 		return;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+index f7aeb560a504..cfdd79f24ec1 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+@@ -166,6 +166,8 @@ static int ixgbe_get_settings(struct net_device *netdev,
+ 	/* set the supported link speeds */
+ 	if (supported_link & IXGBE_LINK_SPEED_10GB_FULL)
+ 		ecmd->supported |= SUPPORTED_10000baseT_Full;
++	if (supported_link & IXGBE_LINK_SPEED_2_5GB_FULL)
++		ecmd->supported |= SUPPORTED_2500baseX_Full;
+ 	if (supported_link & IXGBE_LINK_SPEED_1GB_FULL)
+ 		ecmd->supported |= SUPPORTED_1000baseT_Full;
+ 	if (supported_link & IXGBE_LINK_SPEED_100_FULL)
+@@ -177,6 +179,8 @@ static int ixgbe_get_settings(struct net_device *netdev,
+ 			ecmd->advertising |= ADVERTISED_100baseT_Full;
+ 		if (hw->phy.autoneg_advertised & IXGBE_LINK_SPEED_10GB_FULL)
+ 			ecmd->advertising |= ADVERTISED_10000baseT_Full;
++		if (hw->phy.autoneg_advertised & IXGBE_LINK_SPEED_2_5GB_FULL)
++			ecmd->advertising |= ADVERTISED_2500baseX_Full;
+ 		if (hw->phy.autoneg_advertised & IXGBE_LINK_SPEED_1GB_FULL)
+ 			ecmd->advertising |= ADVERTISED_1000baseT_Full;
+ 	} else {
+@@ -286,6 +290,9 @@ static int ixgbe_get_settings(struct net_device *netdev,
+ 		case IXGBE_LINK_SPEED_10GB_FULL:
+ 			ethtool_cmd_speed_set(ecmd, SPEED_10000);
+ 			break;
++		case IXGBE_LINK_SPEED_2_5GB_FULL:
++			ethtool_cmd_speed_set(ecmd, SPEED_2500);
++			break;
+ 		case IXGBE_LINK_SPEED_1GB_FULL:
+ 			ethtool_cmd_speed_set(ecmd, SPEED_1000);
+ 			break;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 193d5daa723d..4cf7c17cf899 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -6395,6 +6395,7 @@ static void ixgbe_watchdog_link_is_up(struct ixgbe_adapter *adapter)
+ 	struct net_device *upper;
+ 	struct list_head *iter;
+ 	u32 link_speed = adapter->link_speed;
++	const char *speed_str;
+ 	bool flow_rx, flow_tx;
  
- 	pci_sriov_set_totalvfs(pdev, 7);
--	igb_pci_enable_sriov(pdev, max_vfs);
-+	igb_enable_sriov(pdev, max_vfs);
+ 	/* only continue if link was previously down */
+@@ -6432,14 +6433,24 @@ static void ixgbe_watchdog_link_is_up(struct ixgbe_adapter *adapter)
+ 	if (test_bit(__IXGBE_PTP_RUNNING, &adapter->state))
+ 		ixgbe_ptp_start_cyclecounter(adapter);
  
- #endif /* CONFIG_PCI_IOV */
- }
--- 
-2.4.3
+-	e_info(drv, "NIC Link is Up %s, Flow Control: %s\n",
+-	       (link_speed == IXGBE_LINK_SPEED_10GB_FULL ?
+-	       "10 Gbps" :
+-	       (link_speed == IXGBE_LINK_SPEED_1GB_FULL ?
+-	       "1 Gbps" :
+-	       (link_speed == IXGBE_LINK_SPEED_100_FULL ?
+-	       "100 Mbps" :
+-	       "unknown speed"))),
++	switch (link_speed) {
++	case IXGBE_LINK_SPEED_10GB_FULL:
++		speed_str = "10 Gbps";
++		break;
++	case IXGBE_LINK_SPEED_2_5GB_FULL:
++		speed_str = "2.5 Gbps";
++		break;
++	case IXGBE_LINK_SPEED_1GB_FULL:
++		speed_str = "1 Gbps";
++		break;
++	case IXGBE_LINK_SPEED_100_FULL:
++		speed_str = "100 Mbps";
++		break;
++	default:
++		speed_str = "unknown speed";
++		break;
++	}
++	e_info(drv, "NIC Link is Up %s, Flow Control: %s\n", speed_str,
+ 	       ((flow_rx && flow_tx) ? "RX/TX" :
+ 	       (flow_rx ? "RX" :
+ 	       (flow_tx ? "TX" : "None"))));
 
