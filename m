@@ -1,47 +1,39 @@
-From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Mon, 13 Jul 2015 11:40:07 -0700
-Subject: [Intel-wired-lan] [PATCH V4 2/2] pci: Add VPD quirk for Intel
-	Ethernet devices
-In-Reply-To: <20150713183821.19985.52157.stgit@mdrustad-wks.jf.intel.com>
-References: <20150713183821.19985.52157.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <20150713184007.19985.3960.stgit@mdrustad-wks.jf.intel.com>
+From: Emil Tantilov <emil.s.tantilov@intel.com>
+Date: Mon, 13 Jul 2015 11:58:51 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: fix bounds checking in
+	ixgbe_setup_tc for 82598
+Message-ID: <20150713185851.12746.72369.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mark Rustad <mark.d.rustad@intel.com>
+This patch resolves an issue where users were not able to dynamically
+set number of queues for 82598 via ethtool -L
 
-This quirk sets the PCI_DEV_FLAGS_VPD_REF_F0 flag on all Intel
-Ethernet device functions other than function 0.
-
-Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+Reported-by: Tal Abudi <talabudi@gmail.com>
 ---
-Changes in V3:
-- Added a multifunction device check
----
- drivers/pci/quirks.c |    9 +++++++++
- 1 file changed, 9 insertions(+)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index e9fd0e90fa3b..08c04e4f5ab2 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -1894,6 +1894,15 @@ static void quirk_netmos(struct pci_dev *dev)
- DECLARE_PCI_FIXUP_CLASS_HEADER(PCI_VENDOR_ID_NETMOS, PCI_ANY_ID,
- 			 PCI_CLASS_COMMUNICATION_SERIAL, 8, quirk_netmos);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 193d5da..0f990d5 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -7863,9 +7863,10 @@ int ixgbe_setup_tc(struct net_device *dev, u8 tc)
+ 	bool pools;
  
-+static void quirk_f0_vpd_link(struct pci_dev *dev)
-+{
-+	if (!dev->multifunction || !PCI_FUNC(dev->devfn))
-+		return;
-+	dev->dev_flags |= PCI_DEV_FLAGS_VPD_REF_F0;
-+}
-+DECLARE_PCI_FIXUP_CLASS_EARLY(PCI_VENDOR_ID_INTEL, PCI_ANY_ID,
-+			      PCI_CLASS_NETWORK_ETHERNET, 8, quirk_f0_vpd_link);
+ 	/* Hardware supports up to 8 traffic classes */
+-	if (tc > adapter->dcb_cfg.num_tcs.pg_tcs ||
+-	    (hw->mac.type == ixgbe_mac_82598EB &&
+-	     tc < MAX_TRAFFIC_CLASS))
++	if (tc > adapter->dcb_cfg.num_tcs.pg_tcs)
++		return -EINVAL;
 +
- static void quirk_e100_interrupt(struct pci_dev *dev)
- {
- 	u16 command, pmcsr;
++	if (hw->mac.type == ixgbe_mac_82598EB && tc && tc < MAX_TRAFFIC_CLASS)
+ 		return -EINVAL;
+ 
+ 	pools = (find_first_zero_bit(&adapter->fwd_bitmask, 32) > 1);
 
