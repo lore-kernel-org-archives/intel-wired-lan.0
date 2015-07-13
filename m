@@ -1,44 +1,116 @@
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Sat, 11 Jul 2015 14:49:40 -0500
-Subject: [Intel-wired-lan] [PATCH V3 0/2] pci: Provide a flag to access
- VPD through function 0
-In-Reply-To: <C468F237-DBA2-4503-BA99-76CC1FC46999@intel.com>
-References: <20150603184445.109080.36387.stgit@mdrustad-wks.jf.intel.com>
- <051B68B4-3E77-4EB0-B9FE-8523631884A2@intel.com>
- <45099CC7-DDAB-41D9-AB74-5A81E2AAF64C@intel.com>
- <CAErSpo7e-QtQQTj2yh_jG07vqU1j1YBez_9wrcrzOQs7+eDFng@mail.gmail.com>
- <8CB0ECE7-CFE2-43CB-BA60-2E2E0A34D5D1@intel.com>
- <C468F237-DBA2-4503-BA99-76CC1FC46999@intel.com>
-Message-ID: <CAErSpo5at=C78JbWEA6YKUNhV4vtUMjSiUKcWG0Ad7Gkg+i2VQ@mail.gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Mon, 13 Jul 2015 18:22:22 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ bc13c1d8cf89ae490221df67449034a8fe58f7cd BUILD SUCCESS
+Message-ID: <55a3915e.hcKLkHCwzh0VHYkt%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Jul 6, 2015 at 12:31 PM, Rustad, Mark D <mark.d.rustad@intel.com> wrote:
->> On Jun 26, 2015, at 11:04 AM, Rustad, Mark D <mark.d.rustad@intel.com> wrote:
->>
->>> Sorry, Mark, I've just been busy with other issues and haven't had a
->>> chance to look at this yet.
->>
->> Is there any chance of this getting into this merge window?
->
-> Well, it has missed the merge window, but this really is a bug fix. These patches address problems that, under race conditions, can corrupt VPD data and under other conditions can cause hangs. In fact I would submit that the reason that the VPD operations have been made interruptible is directly related to hangs caused by the sharing of VPD capability registers between functions. You see, if one function ever performs a VPD write, any subsequent read on any other function that shares those registers will definitely hang.
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+bc13c1d8cf89ae490221df67449034a8fe58f7cd  ixgbe: Avoid needless PHY access on copper phys
 
-As a rule, after the merge window closes, I only merge fixes for
-things we broke during the merge window or drivers for brand-new
-things, where there's no chance of breaking something that used to
-work.
+elapsed time: 130m
 
-It would be nice to have a description of what a user might see when
-tripping over this problem and maybe some pointers to problem reports.
-I see it fixes concurrent access problems, and I infer that it's
-related to sysfs.
+configs tested: 95
 
-Feel free to add a stable tag when you post your patches.  I'll try to
-remember to add it when merging this.  When it's relevant, it's nice
-to include the SHA1 of the commit that introduced the bug.  But in
-this case, I think it's been there "forever."
+parisc                        c3000_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+i386                     randconfig-a0-201528
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                             allyesconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+mips                                   jz4740
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201528
+i386                     randconfig-i0-201528
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+x86_64                            allnoconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201528
+i386                     randconfig-n1-201528
+arm                                      arm5
+arm                                     arm67
+arm                                       mmp
+arm                       omap2plus_defconfig
+arm                         s3c2410_defconfig
+arm                           tegra_defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             allmodconfig
+i386                             alldefconfig
+arm                                    sa1100
+arm                          prima2_defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                                   samsung
+arm                       spear13xx_defconfig
+arm                                  iop-adma
+arm                       imx_v6_v7_defconfig
+arm                          marzen_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                                        sh
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                 randconfig-x007-201528
+x86_64                 randconfig-x003-201528
+x86_64                 randconfig-x009-201528
+x86_64                 randconfig-x000-201528
+x86_64                 randconfig-x005-201528
+x86_64                 randconfig-x006-201528
+x86_64                 randconfig-x001-201528
+x86_64                 randconfig-x002-201528
+x86_64                 randconfig-x008-201528
+x86_64                 randconfig-x004-201528
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-r0-201528
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                          amiga_defconfig
+x86_64                           allmodconfig
+i386                   randconfig-x007-201528
+i386                   randconfig-x002-201528
+i386                   randconfig-x006-201528
+i386                   randconfig-x005-201528
+i386                   randconfig-x000-201528
+i386                   randconfig-x003-201528
+i386                   randconfig-x001-201528
+i386                   randconfig-x009-201528
+i386                   randconfig-x004-201528
+i386                   randconfig-x008-201528
 
-Bjorn
+Thanks,
+Fengguang
