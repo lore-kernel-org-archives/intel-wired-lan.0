@@ -1,39 +1,45 @@
-From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Mon, 13 Jul 2015 11:58:51 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: fix bounds checking in
-	ixgbe_setup_tc for 82598
-Message-ID: <20150713185851.12746.72369.stgit@localhost6.localdomain6>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Date: Tue, 14 Jul 2015 13:54:35 +1000
+Subject: [Intel-wired-lan] [PATCH] e1000e: Move e1000e_disable_aspm_locked()
+	inside CONFIG_PM
+Message-ID: <1436846075-29366-1-git-send-email-mpe@ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch resolves an issue where users were not able to dynamically
-set number of queues for 82598 via ethtool -L
+e1000e_disable_aspm_locked() is only used in __e1000_resume() which is
+inside CONFIG_PM. So when CONFIG_PM=n we get a "defined but not used"
+warning for e1000e_disable_aspm_locked().
 
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
-Reported-by: Tal Abudi <talabudi@gmail.com>
+Move it inside the existing CONFIG_PM block to avoid the warning.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/e1000e/netdev.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 193d5da..0f990d5 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -7863,9 +7863,10 @@ int ixgbe_setup_tc(struct net_device *dev, u8 tc)
- 	bool pools;
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 89d788d8f263..f1d7fe2ea183 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -6439,6 +6439,7 @@ static void e1000e_disable_aspm(struct pci_dev *pdev, u16 state)
+ 	__e1000e_disable_aspm(pdev, state, 0);
+ }
  
- 	/* Hardware supports up to 8 traffic classes */
--	if (tc > adapter->dcb_cfg.num_tcs.pg_tcs ||
--	    (hw->mac.type == ixgbe_mac_82598EB &&
--	     tc < MAX_TRAFFIC_CLASS))
-+	if (tc > adapter->dcb_cfg.num_tcs.pg_tcs)
-+		return -EINVAL;
-+
-+	if (hw->mac.type == ixgbe_mac_82598EB && tc && tc < MAX_TRAFFIC_CLASS)
- 		return -EINVAL;
++#ifdef CONFIG_PM
+ /**
+  * e1000e_disable_aspm_locked   Disable ASPM states.
+  * @pdev: pointer to PCI device struct
+@@ -6452,7 +6453,6 @@ static void e1000e_disable_aspm_locked(struct pci_dev *pdev, u16 state)
+ 	__e1000e_disable_aspm(pdev, state, 1);
+ }
  
- 	pools = (find_first_zero_bit(&adapter->fwd_bitmask, 32) > 1);
+-#ifdef CONFIG_PM
+ static int __e1000_resume(struct pci_dev *pdev)
+ {
+ 	struct net_device *netdev = pci_get_drvdata(pdev);
+-- 
+2.1.0
 
