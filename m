@@ -1,35 +1,32 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Fri, 17 Jul 2015 15:22:28 -0700
-Subject: [Intel-wired-lan] [PATCH 2/3] ixgbe: Add X550EM support for SFP
-	insertion interrupt
+Date: Fri, 17 Jul 2015 15:22:33 -0700
+Subject: [Intel-wired-lan] [PATCH 3/3] ixgbe: Add new X550EM SFP+ device ID
 In-Reply-To: <20150717222130.123580.2307.stgit@mdrustad-wks.jf.intel.com>
 References: <20150717222130.123580.2307.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <20150717222228.123580.47465.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <20150717222233.123580.45333.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add support for the SFP insertion interrupt on X550EM devices with
-SFPs.
+Add new device ID for X550EM device with SFPs.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    1 +
+ 1 file changed, 1 insertion(+)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index f2e2da65fd88..a4f5b11c9a06 100644
+index a4f5b11c9a06..c3da64cb5fd7 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -2631,6 +2631,8 @@ static inline void ixgbe_irq_enable(struct ixgbe_adapter *adapter, bool queues,
- 	case ixgbe_mac_X540:
- 	case ixgbe_mac_X550:
- 	case ixgbe_mac_X550EM_x:
-+		if (adapter->hw.device_id == IXGBE_DEV_ID_X550EM_X_SFP)
-+			mask |= IXGBE_EIMS_GPI_SDP0(&adapter->hw);
- 		if (adapter->hw.phy.type == ixgbe_phy_x550em_ext_t)
- 			mask |= IXGBE_EICR_GPI_SDP0_X540;
- 		mask |= IXGBE_EIMS_ECC;
+@@ -137,6 +137,7 @@ static const struct pci_device_id ixgbe_pci_tbl[] = {
+ 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_KX4), board_X550EM_x},
+ 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_KR), board_X550EM_x},
+ 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_10G_T), board_X550EM_x},
++	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_SFP), board_X550EM_x},
+ 	/* required last entry */
+ 	{0, }
+ };
 
