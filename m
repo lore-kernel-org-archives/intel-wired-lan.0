@@ -1,9 +1,9 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 17 Jul 2015 17:21:32 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 1/89]
- drivers/net/ethernet/intel/i40e/i40e_main.c:8134:26: error: redefinition of
- 'i40e_features_check'
-Message-ID: <201507171731.QQhSMaev%fengguang.wu@intel.com>
+Date: Fri, 17 Jul 2015 17:39:07 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 31/86]
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c:1328:20: error: redefinition
+ of 'i40e_update_enable_itr'
+Message-ID: <201507171706.augTE3L3%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,66 +11,37 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 tree:   git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   71360ba221415a02c7d73d85befa9ed95129da6f
-commit: 91db2a9e21b188b7095a8743f31ef9a53c7f405d [1/89] i40e: Implement ndo_features_check()
+head:   2907fc9defa5b4f18d388f8e8ba32878dc6f1dae
+commit: e17fce2c8a50124cbdb02dafdc995a40f21e8e05 [31/86] i40e: use BIT and BIT_ULL macros
 config: xtensa-allyesconfig (attached as .config)
 reproduce:
   wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
   chmod +x ~/bin/make.cross
-  git checkout 91db2a9e21b188b7095a8743f31ef9a53c7f405d
+  git checkout e17fce2c8a50124cbdb02dafdc995a40f21e8e05
   # save the attached .config to linux build tree
   make.cross ARCH=xtensa 
 
-Note: the jkirsher-next-queue/dev-queue HEAD 71360ba221415a02c7d73d85befa9ed95129da6f builds fine.
-      It only hurts bisectibility.
-
 All error/warnings (new ones prefixed by >>):
 
->> drivers/net/ethernet/intel/i40e/i40e_main.c:8134:26: error: redefinition of 'i40e_features_check'
-    static netdev_features_t i40e_features_check(struct sk_buff *skb,
-                             ^
-   drivers/net/ethernet/intel/i40e/i40e_main.c:8115:26: note: previous definition of 'i40e_features_check' was here
-    static netdev_features_t i40e_features_check(struct sk_buff *skb,
-                             ^
->> drivers/net/ethernet/intel/i40e/i40e_main.c:8115:26: warning: 'i40e_features_check' defined but not used [-Wunused-function]
+>> drivers/net/ethernet/intel/i40evf/i40e_txrx.c:1328:20: error: redefinition of 'i40e_update_enable_itr'
+    static inline void i40e_update_enable_itr(struct i40e_vsi *vsi,
+                       ^
+   drivers/net/ethernet/intel/i40evf/i40e_txrx.c:1266:20: note: previous definition of 'i40e_update_enable_itr' was here
+    static inline void i40e_update_enable_itr(struct i40e_vsi *vsi,
+                       ^
 
-vim +/i40e_features_check +8134 drivers/net/ethernet/intel/i40e/i40e_main.c
+vim +/i40e_update_enable_itr +1328 drivers/net/ethernet/intel/i40evf/i40e_txrx.c
 
-f44a75e2 Joe Stringer 2015-04-14  8109  /**
-f44a75e2 Joe Stringer 2015-04-14  8110   * i40e_features_check - Validate encapsulated packet conforms to limits
-f44a75e2 Joe Stringer 2015-04-14  8111   * @skb: skb buff
-91db2a9e Joe Stringer 2015-07-17  8112   * @netdev: This physical port's netdev
-91db2a9e Joe Stringer 2015-07-17  8113   * @features: Offload features that the stack believes apply
-91db2a9e Joe Stringer 2015-07-17  8114   **/
-91db2a9e Joe Stringer 2015-07-17 @8115  static netdev_features_t i40e_features_check(struct sk_buff *skb,
-91db2a9e Joe Stringer 2015-07-17  8116  					     struct net_device *dev,
-91db2a9e Joe Stringer 2015-07-17  8117  					     netdev_features_t features)
-91db2a9e Joe Stringer 2015-07-17  8118  {
-91db2a9e Joe Stringer 2015-07-17  8119  	if (skb->encapsulation &&
-91db2a9e Joe Stringer 2015-07-17  8120  	    (skb_inner_mac_header(skb) - skb_transport_header(skb) >
-91db2a9e Joe Stringer 2015-07-17  8121  	     I40E_MAX_TUNNEL_HDR_LEN))
-91db2a9e Joe Stringer 2015-07-17  8122  		return features & ~(NETIF_F_ALL_CSUM | NETIF_F_GSO_MASK);
-91db2a9e Joe Stringer 2015-07-17  8123  
-91db2a9e Joe Stringer 2015-07-17  8124  	return features;
-91db2a9e Joe Stringer 2015-07-17  8125  }
-91db2a9e Joe Stringer 2015-07-17  8126  
-91db2a9e Joe Stringer 2015-07-17  8127  #define I40E_MAX_TUNNEL_HDR_LEN 80
-91db2a9e Joe Stringer 2015-07-17  8128  /**
-91db2a9e Joe Stringer 2015-07-17  8129   * i40e_features_check - Validate encapsulated packet conforms to limits
-91db2a9e Joe Stringer 2015-07-17  8130   * @skb: skb buff
-f44a75e2 Joe Stringer 2015-04-14  8131   * @netdev: This physical port's netdev
-f44a75e2 Joe Stringer 2015-04-14  8132   * @features: Offload features that the stack believes apply
-f44a75e2 Joe Stringer 2015-04-14  8133   **/
-f44a75e2 Joe Stringer 2015-04-14 @8134  static netdev_features_t i40e_features_check(struct sk_buff *skb,
-f44a75e2 Joe Stringer 2015-04-14  8135  					     struct net_device *dev,
-f44a75e2 Joe Stringer 2015-04-14  8136  					     netdev_features_t features)
-f44a75e2 Joe Stringer 2015-04-14  8137  {
-
-:::::: The code at line 8134 was first introduced by commit
-:::::: f44a75e27d5eb4b1788f59c2bc185baaaf732f75 i40e: Implement ndo_features_check()
-
-:::::: TO: Joe Stringer <joestringer@nicira.com>
-:::::: CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+  1322	/**
+  1323	 * i40e_update_enable_itr - Update itr and re-enable MSIX interrupt
+  1324	 * @vsi: the VSI we care about
+  1325	 * @q_vector: q_vector for which itr is being updated and interrupt enabled
+  1326	 *
+  1327	 **/
+> 1328	static inline void i40e_update_enable_itr(struct i40e_vsi *vsi,
+  1329						  struct i40e_q_vector *q_vector)
+  1330	{
+  1331		struct i40e_hw *hw = &vsi->back->hw;
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
