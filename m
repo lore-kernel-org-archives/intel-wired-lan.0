@@ -1,32 +1,39 @@
-From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Fri, 17 Jul 2015 15:22:33 -0700
-Subject: [Intel-wired-lan] [PATCH 3/3] ixgbe: Add new X550EM SFP+ device ID
-In-Reply-To: <20150717222130.123580.2307.stgit@mdrustad-wks.jf.intel.com>
-References: <20150717222130.123580.2307.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <20150717222233.123580.45333.stgit@mdrustad-wks.jf.intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Sat, 18 Jul 2015 01:47:59 +0000
+Subject: [Intel-wired-lan] [PATCH] igb: use ARRAY_SIZE to replace
+ calculating sizeof(a)/sizeof(a[0])
+In-Reply-To: <20150630221655.24543.21613.stgit@htfujina-fc.jf.intel.com>
+References: <20150630221655.24543.21613.stgit@htfujina-fc.jf.intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81A906F3@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add new device ID for X550EM device with SFPs.
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Todd Fujinaka
+> Sent: Tuesday, June 30, 2015 3:17 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH] igb: use ARRAY_SIZE to replace
+> calculating sizeof(a)/sizeof(a[0])
+> 
+> Use the ARRAY_SIZE macro rather than calculating sizeof(a)/sizeof(a[0]).
+> Also directly replace the code rather than using an unnecessary define.
+> 
+> Signed-off-by: Todd Fujinaka <todd.fujinaka@intel.com>
+> Reported-by: Maninder Singh <maninder1.s@samsung.com>
+> Reported-by: Joe Perches <joe@perches.com>
+> ---
+>  drivers/net/ethernet/intel/igb/e1000_phy.c |   16 +++++-----------
+>  1 file changed, 5 insertions(+), 11 deletions(-)
 
-Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    1 +
- 1 file changed, 1 insertion(+)
+This is throwing a checkpatch over 80 character warning:
+-----------------------------------
+WARNING: line over 80 characters
+#79: FILE: drivers/net/ethernet/intel/igb/e1000_phy.c:1860:
++               if ((cur_agc_index >= ARRAY_SIZE(e1000_igp_2_cable_length_table)) ||
+-----------------------------------
+But I don't really see how to shorten it so...
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index a4f5b11c9a06..c3da64cb5fd7 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -137,6 +137,7 @@ static const struct pci_device_id ixgbe_pci_tbl[] = {
- 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_KX4), board_X550EM_x},
- 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_KR), board_X550EM_x},
- 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_10G_T), board_X550EM_x},
-+	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_SFP), board_X550EM_x},
- 	/* required last entry */
- 	{0, }
- };
-
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
