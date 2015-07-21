@@ -1,113 +1,40 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 21 Jul 2015 22:08:15 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 167118aea8f13d96bd272674714b8aab722f3433 BUILD SUCCESS
-Message-ID: <55ae524f.EV5JX/Z/GYOenre9%fengguang.wu@intel.com>
+From: Young, James M <james.m.young@intel.com>
+Date: Tue, 21 Jul 2015 19:13:37 +0000
+Subject: [Intel-wired-lan] [intel-wired-lan][net-next PATCH S07
+	09/10]	i40e/i40evf: Add ATR HW eviction support for X722
+In-Reply-To: <1433521234-33355-10-git-send-email-catherine.sullivan@intel.com>
+References: <1433521234-33355-1-git-send-email-catherine.sullivan@intel.com>
+ <1433521234-33355-10-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <68C85B5FC2FE974B87244D7222BC92783EA21099@ORSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-167118aea8f13d96bd272674714b8aab722f3433  e1000e: Fix incorrect ASPM locking
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Catherine Sullivan
+> Sent: Friday, June 05, 2015 9:21 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Singhai, Anjali
+> Subject: [Intel-wired-lan] [intel-wired-lan][net-next PATCH S07 09/10]
+> i40e/i40evf: Add ATR HW eviction support for X722
+> 
+> From: Anjali Singhai Jain <anjali.singhai@intel.com>
+> 
+> X722 supports evicting ATR filters in the HW. With this patch, we enable the
+> feature in the driver and avoid filter deletion by the driver.
+> 
+> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+> Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c | 10 ++++++++++
+> drivers/net/ethernet/intel/i40e/i40e_type.h |  4 ++++
+>  2 files changed, 14 insertions(+)
+> 
 
-elapsed time: 110m
+Tested-by: Jim Young <james.m.young@intel.com>
 
-configs tested: 92
+Retested after a HW change, feature works now. 
 
-i386                     randconfig-a0-201529
-x86_64                            allnoconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-i386                             allyesconfig
-arm                                    sa1100
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                                   samsung
-arm                                  iop-adma
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                                        sh
-i386                              allnoconfig
-i386                                defconfig
-i386                             allmodconfig
-i386                             alldefconfig
-mips                                   jz4740
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-x86_64                   randconfig-i0-201529
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201529
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-i386                     randconfig-n0-201529
-i386                     randconfig-n1-201529
-arm                       omap2plus_defconfig
-arm                         s3c2410_defconfig
-arm                                       mmp
-arm                           tegra_defconfig
-arm                                      arm5
-arm                                     arm67
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64                           allmodconfig
-x86_64               randconfig-x004-07200849
-x86_64               randconfig-x002-07200849
-x86_64               randconfig-x001-07200849
-x86_64               randconfig-x008-07200849
-x86_64               randconfig-x005-07200849
-x86_64               randconfig-x007-07200849
-x86_64               randconfig-x000-07200849
-x86_64               randconfig-x006-07200849
-x86_64               randconfig-x003-07200849
-x86_64               randconfig-x009-07200849
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-r0-201529
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-m68k                          amiga_defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-i386                 randconfig-x007-07200849
-i386                 randconfig-x005-07200849
-i386                 randconfig-x008-07200849
-i386                 randconfig-x003-07200849
-i386                 randconfig-x004-07200849
-i386                 randconfig-x000-07200849
-i386                 randconfig-x006-07200849
-i386                 randconfig-x009-07200849
-i386                 randconfig-x002-07200849
-i386                 randconfig-x001-07200849
-
-Thanks,
-Fengguang
