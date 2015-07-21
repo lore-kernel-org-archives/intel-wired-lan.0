@@ -1,73 +1,39 @@
-From: Raanan Avargil <raanan.avargil@intel.com>
-Date: Sun, 19 Jul 2015 16:33:20 +0300
-Subject: [Intel-wired-lan] [PATCH 1/2] e1000e: Fix tight loop implementation
-	of systime read algorithm
-Message-ID: <eb0fc1b6ebdfe79027886fbf2f64f985a413614d.1437312332.git.raanan.avargil@intel.com>
+From: Rustad, Mark D <mark.d.rustad@intel.com>
+Date: Tue, 21 Jul 2015 00:07:06 +0000
+Subject: [Intel-wired-lan] [PATCH 0/3] ixgbe: Add support for X550EM
+ devices	with SFPs
+In-Reply-To: <20150717222130.123580.2307.stgit@mdrustad-wks.jf.intel.com>
+References: <20150717222130.123580.2307.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <6FFB6821-C0B7-4BA3-B583-61401FBC1A18@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Change the algorithm. Read systimel twice and check for overflow.
-If there was no overflow, use the first value.
-If there was an overflow, read systimeh again and use the second systimel value.
+> On Jul 17, 2015, at 3:22 PM, Mark D Rustad <mark.d.rustad@intel.com> wrote:
+> 
+> The following patches add remaining bits of support for X550EM
+> devices with SFPs. The last patch adds the device ID.
+> 
+> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+> 
+> ---
+> 
+> Mark D Rustad (3):
+>      ixgbe: Accept SFP not present errors on all devices
+>      ixgbe: Add X550EM support for SFP insertion interrupt
+>      ixgbe: Add new X550EM SFP+ device ID
 
-Signed-off-by: Raanan Avargil <raanan.avargil@intel.com>
----
- drivers/net/ethernet/intel/e1000e/netdev.c | 29 +++++++++++++++++++----------
- 1 file changed, 19 insertions(+), 10 deletions(-)
+I found some missing pieces and other issues with this series, so I will be spinning a new series to replace these.
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index f71cd24..f6db0c2 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -4280,18 +4280,27 @@ static cycle_t e1000e_cyclecounter_read(const struct cyclecounter *cc)
- 	struct e1000_adapter *adapter = container_of(cc, struct e1000_adapter,
- 						     cc);
- 	struct e1000_hw *hw = &adapter->hw;
-+	u32 systimel_1, systimel_2, systimeh;
- 	cycle_t systim, systim_next;
--	/* SYSTIMH latching upon SYSTIML read does not work well. To fix that
--	 * we don't want to allow overflow of SYSTIML and a change to SYSTIMH
--	 * to occur between reads, so if we read a vale close to overflow, we
--	 * wait for overflow to occur and read both registers when its safe.
-+	/* SYSTIMH latching upon SYSTIML read does not work well.
-+	 * This means that if SYSTIML overflows after we read it but before
-+	 * we read SYSTIMH, the value of SYSTIMH has been incremented and we
-+	 * will experience a huge non linear increment in the systime value
-+	 * to fix that we test for overflow and if true, we re-read systime.
- 	 */
--	u32 systim_overflow_latch_fix = 0x3FFFFFFF;
--
--	do {
--		systim = (cycle_t)er32(SYSTIML);
--	} while (systim > systim_overflow_latch_fix);
--	systim |= (cycle_t)er32(SYSTIMH) << 32;
-+	systimel_1 = er32(SYSTIML);
-+	systimeh = er32(SYSTIMH);
-+	systimel_2 = er32(SYSTIML);
-+	/* Check for overflow. If there was no overflow, use the values */
-+	if (systimel_1 < systimel_2) {
-+		systim = (cycle_t)systimel_1;
-+		systim |= (cycle_t)systimeh << 32;
-+	} else {
-+		/* There was an overflow, read again SYSTIMH, and use systimel_2 */
-+		systimeh = er32(SYSTIMH);
-+		systim = (cycle_t)systimel_2;
-+		systim |= (cycle_t)systimeh << 32;
-+	}
- 
- 	if ((hw->mac.type == e1000_82574) || (hw->mac.type == e1000_82583)) {
- 		u64 incvalue, time_delta, rem, temp;
--- 
-2.1.0
+--
+Mark Rustad, Networking Division, Intel Corporation
 
----------------------------------------------------------------------
-Intel Israel (74) Limited
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 841 bytes
+Desc: Message signed with OpenPGP using GPGMail
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150721/54c9458e/attachment.asc>
