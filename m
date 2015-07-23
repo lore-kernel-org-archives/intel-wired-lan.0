@@ -1,43 +1,51 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Thu, 23 Jul 2015 16:54:43 -0400
-Subject: [Intel-wired-lan] [next PATCH S9 14/15] i40evf: tighten up reset
-	polling
+Date: Thu, 23 Jul 2015 16:54:44 -0400
+Subject: [Intel-wired-lan] [next PATCH S9 15/15] i40e/i40evf: Bump i40e to
+	1.3.12 and i40evf to 1.3.6
 In-Reply-To: <1437684884-222825-1-git-send-email-catherine.sullivan@intel.com>
 References: <1437684884-222825-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1437684884-222825-15-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1437684884-222825-16-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Bump.
 
-Poll longer and more often for reset completion. This helps the driver
-to recover more quickly and more reliably when a reset occurs.
-
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Change-ID: I27b6b5c9a79c1892f0ba453129f116bc32647dd0
+Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
+Change-ID: Iaf6c969d620704b374584ff82d09922a4d57b025
 ---
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 1681e7f..aef0a4c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -40,7 +40,7 @@ static const char i40e_driver_string[] =
+ 
+ #define DRV_VERSION_MAJOR 1
+ #define DRV_VERSION_MINOR 3
+-#define DRV_VERSION_BUILD 9
++#define DRV_VERSION_BUILD 12
+ #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
+ 	     __stringify(DRV_VERSION_MINOR) "." \
+ 	     __stringify(DRV_VERSION_BUILD)    DRV_KERN
 diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 4dccc0b..588cacf 100644
+index 588cacf..177fd47 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
 +++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -1478,8 +1478,8 @@ restart_watchdog:
- 	schedule_work(&adapter->adminq_task);
- }
+@@ -35,7 +35,7 @@ char i40evf_driver_name[] = "i40evf";
+ static const char i40evf_driver_string[] =
+ 	"Intel(R) XL710/X710 Virtual Function Network Driver";
  
--#define I40EVF_RESET_WAIT_MS 100
--#define I40EVF_RESET_WAIT_COUNT 200
-+#define I40EVF_RESET_WAIT_MS 10
-+#define I40EVF_RESET_WAIT_COUNT 500
- /**
-  * i40evf_reset_task - Call-back task to handle hardware reset
-  * @work: pointer to work_struct
+-#define DRV_VERSION "1.3.5"
++#define DRV_VERSION "1.3.6"
+ const char i40evf_driver_version[] = DRV_VERSION;
+ static const char i40evf_copyright[] =
+ 	"Copyright (c) 2013 - 2015 Intel Corporation.";
 -- 
 1.9.3
 
