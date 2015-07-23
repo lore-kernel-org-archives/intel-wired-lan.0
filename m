@@ -1,43 +1,64 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Thu, 23 Jul 2015 16:54:31 -0400
-Subject: [Intel-wired-lan] [next PATCH S9 02/15] i40e: Fix a port VLAN
-	configuration bug
+Date: Thu, 23 Jul 2015 16:54:32 -0400
+Subject: [Intel-wired-lan] [next PATCH S9 03/15] i40e: fixup padding issue
+	in get_cee_dcb_cfg_v1_resp
 In-Reply-To: <1437684884-222825-1-git-send-email-catherine.sullivan@intel.com>
 References: <1437684884-222825-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1437684884-222825-3-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1437684884-222825-4-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Greg Rose <gregory.v.rose@intel.com>
+From: Shannon Nelson <shannon.nelson@intel.com>
 
-If a port VLAN is set for a given virtual function (VF) before the VF
-driver is loaded then a configuration error results in which the port
-VLAN is ignored when the VF driver is subsequently loaded.  This causes
-the VF's MAC/VLAN filters to not use the correct VLAN filter.  This
-patch ensures that the port VLAN filter is considered at the right time
-during configuration of the VF's MAC/VLAN filters.
+The struct i40e_aqc_get_cee_dcb_cfg_v1_resp was originally defined with
+word boundary layout issues, which most compilers deal with by silently
+adding padding, making the actual struct larger than designed.
+This patch adds an extra byte in fields reserved3 and reserved4 to directly
+acknowledge that padding.
 
-Signed-off-by: Greg Rose <gregory.v.rose@intel.com>
-Change-ID: I28f404cbc21a4c6d70a7980b87c77f13f06685a4
+Because the struct doesn't actually change in size or layout, this doesn't
+constitute a change in the API.
+
+Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+Change-ID: I53fa4741b73fa255621232a85fba000b0e223015
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index ccddddf..fe3bfb8 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1186,7 +1186,7 @@ bool i40e_is_vsi_in_vlan(struct i40e_vsi *vsi)
- 	 * so we have to go through all the list in order to make sure
- 	 */
- 	list_for_each_entry(f, &vsi->mac_filter_list, list) {
--		if (f->vlan >= 0)
-+		if (f->vlan >= 0 || vsi->info.pvid)
- 			return true;
- 	}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+index 95d23bf..b840fab 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+@@ -2074,6 +2074,15 @@ I40E_CHECK_CMD_LENGTH(i40e_aqc_lldp_start);
+ #define I40E_AQC_CEE_ISCSI_STATUS_MASK	(0x7 << I40E_AQC_CEE_ISCSI_STATUS_SHIFT)
+ #define I40E_AQC_CEE_FIP_STATUS_SHIFT	0x10
+ #define I40E_AQC_CEE_FIP_STATUS_MASK	(0x7 << I40E_AQC_CEE_FIP_STATUS_SHIFT)
++
++/* struct i40e_aqc_get_cee_dcb_cfg_v1_resp was originally defined with
++ * word boundary layout issues, which the Linux compilers silently deal
++ * with by adding padding, making the actual struct larger than designed.
++ * However, the FW compiler for the NIC is less lenient and complains
++ * about the struct.  Hence, the struct defined here has an extra byte in
++ * fields reserved3 and reserved4 to directly acknowledge that padding,
++ * and the new length is used in the length check macro.
++ */
+ struct i40e_aqc_get_cee_dcb_cfg_v1_resp {
+ 	u8	reserved1;
+ 	u8	oper_num_tc;
+@@ -2081,9 +2090,9 @@ struct i40e_aqc_get_cee_dcb_cfg_v1_resp {
+ 	u8	reserved2;
+ 	u8	oper_tc_bw[8];
+ 	u8	oper_pfc_en;
+-	u8	reserved3;
++	u8	reserved3[2];
+ 	__le16	oper_app_prio;
+-	u8	reserved4;
++	u8	reserved4[2];
+ 	__le16	tlv_status;
+ };
  
 -- 
 1.9.3
