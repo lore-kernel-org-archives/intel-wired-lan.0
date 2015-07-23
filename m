@@ -1,31 +1,85 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 24 Jul 2015 07:15:15 +0000
-Subject: [Intel-wired-lan] [PATCH] e1000e: Fix EEE in Sx implementation
-In-Reply-To: <1436190480-20941-1-git-send-email-raanan.avargil@intel.com>
-References: <1436190480-20941-1-git-send-email-raanan.avargil@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81AC50D6@ORSMSX101.amr.corp.intel.com>
+From: Spencer Baugh <sbaugh@catern.com>
+Date: Thu, 23 Jul 2015 14:54:34 -0700
+Subject: [Intel-wired-lan] [PATCH] e1000: make eeprom read/write scheduler
+	friendly
+Message-ID: <1437688476-3399-4-git-send-email-sbaugh@catern.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Raanan Avargil
-> Sent: Monday, July 06, 2015 6:48 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] e1000e: Fix EEE in Sx implementation
-> 
-> This patch implements the EEE in Sx code so that it only applies to parts
-> that support EEE in Sx (as opposed to all parts that support EEE).
-> It also uses the existing eee_advert and eee_lp_abiliity to set just the
-> bits
-> (100/1000) that should be set.
-> 
-> Signed-off-by: Raanan Avargil <raanan.avargil@intel.com>
-> ---
->  drivers/net/ethernet/intel/e1000e/netdev.c | 26
-> ++++++++++++++++++++++++++
->  1 file changed, 26 insertions(+)
+From: Joern Engel <joern@logfs.org>
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Code was responsible for ~150ms scheduler latencies.
+
+Signed-off-by: Joern Engel <joern@logfs.org>
+Signed-off-by: Spencer Baugh <sbaugh@catern.com>
+---
+ drivers/net/ethernet/intel/e1000/e1000_hw.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_hw.c b/drivers/net/ethernet/intel/e1000/e1000_hw.c
+index 45c8c864..e74e9dd 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_hw.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_hw.c
+@@ -106,7 +106,7 @@ u16 e1000_igp_cable_length_table[IGP01E1000_AGC_LENGTH_TABLE_SIZE] = {
+ 	    120, 120
+ };
+ 
+-static DEFINE_SPINLOCK(e1000_eeprom_lock);
++static DEFINE_MUTEX(e1000_eeprom_lock);
+ static DEFINE_SPINLOCK(e1000_phy_lock);
+ 
+ /**
+@@ -3882,9 +3882,9 @@ static s32 e1000_spi_eeprom_ready(struct e1000_hw *hw)
+ s32 e1000_read_eeprom(struct e1000_hw *hw, u16 offset, u16 words, u16 *data)
+ {
+ 	s32 ret;
+-	spin_lock(&e1000_eeprom_lock);
++	mutex_lock(&e1000_eeprom_lock);
+ 	ret = e1000_do_read_eeprom(hw, offset, words, data);
+-	spin_unlock(&e1000_eeprom_lock);
++	mutex_unlock(&e1000_eeprom_lock);
+ 	return ret;
+ }
+ 
+@@ -3972,6 +3972,7 @@ static s32 e1000_do_read_eeprom(struct e1000_hw *hw, u16 offset, u16 words,
+ 			 */
+ 			data[i] = e1000_shift_in_ee_bits(hw, 16);
+ 			e1000_standby_eeprom(hw);
++			cond_resched();
+ 		}
+ 	}
+ 
+@@ -4056,9 +4057,9 @@ s32 e1000_update_eeprom_checksum(struct e1000_hw *hw)
+ s32 e1000_write_eeprom(struct e1000_hw *hw, u16 offset, u16 words, u16 *data)
+ {
+ 	s32 ret;
+-	spin_lock(&e1000_eeprom_lock);
++	mutex_lock(&e1000_eeprom_lock);
+ 	ret = e1000_do_write_eeprom(hw, offset, words, data);
+-	spin_unlock(&e1000_eeprom_lock);
++	mutex_unlock(&e1000_eeprom_lock);
+ 	return ret;
+ }
+ 
+@@ -4124,6 +4125,7 @@ static s32 e1000_write_eeprom_spi(struct e1000_hw *hw, u16 offset, u16 words,
+ 			return -E1000_ERR_EEPROM;
+ 
+ 		e1000_standby_eeprom(hw);
++		cond_resched();
+ 
+ 		/*  Send the WRITE ENABLE command (8 bit opcode )  */
+ 		e1000_shift_out_ee_bits(hw, EEPROM_WREN_OPCODE_SPI,
+@@ -4232,6 +4234,7 @@ static s32 e1000_write_eeprom_microwire(struct e1000_hw *hw, u16 offset,
+ 
+ 		/* Recover from write */
+ 		e1000_standby_eeprom(hw);
++		cond_resched();
+ 
+ 		words_written++;
+ 	}
+-- 
+2.5.0.rc3
+
