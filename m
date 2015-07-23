@@ -1,45 +1,87 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Thu, 23 Jul 2015 16:54:29 -0400
-Subject: [Intel-wired-lan] [next PATCH S9 00/15] i40e/i40evf updates
-Message-ID: <1437684884-222825-1-git-send-email-catherine.sullivan@intel.com>
+Date: Thu, 23 Jul 2015 16:54:30 -0400
+Subject: [Intel-wired-lan] [next PATCH S9 01/15] i40e/i40evf: fix up type
+	clash in i40e_aq_rc_to_posix conversion
+In-Reply-To: <1437684884-222825-1-git-send-email-catherine.sullivan@intel.com>
+References: <1437684884-222825-1-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1437684884-222825-2-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Anjali strips VEB stats if they are disabled in HW.
+From: Shannon Nelson <shannon.nelson@intel.com>
 
-Greg fixes a port VLAN configuration bug and removes a useless message.
+The error code sent into i40e_aq_rc_to_posix() are signed values, so we
+really need to treat them as such.
 
-Jesse fixes a tx hang workaround, adds a counter for drops in the netstat
-interface, refactors the interrupt enable, adds a warning on a double free,
-and tightens up reset polling.
+Reported-by: Helin Zhang <helin.zhang@intel.com>
+Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+Change-ID: I3d1ae0ee9ae0b1b6f5fc424f8b8cc58b0ea93203
+---
+ drivers/net/ethernet/intel/i40e/i40e_adminq.h   | 9 ++++++---
+ drivers/net/ethernet/intel/i40evf/i40e_adminq.h | 9 ++++++---
+ 2 files changed, 12 insertions(+), 6 deletions(-)
 
-Mitch modifies code to use the qos field consistently
-
-Shannon fixes up a type clash in i40e_aq_rc_to_posix conversion, fixes up
-a padding issue in get_cee_dcb_cfg_v1_resp, renames a variable to prevent
-misunderstandings, limits debugfs io ops, and adds a new device id.
-
- drivers/net/ethernet/intel/i40e/i40e.h             |   4 +-
- drivers/net/ethernet/intel/i40e/i40e_adminq.h      |   9 +-
- drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |  13 ++-
- drivers/net/ethernet/intel/i40e/i40e_common.c      |   1 +
- drivers/net/ethernet/intel/i40e/i40e_debugfs.c     |  12 +--
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c     |  10 +-
- drivers/net/ethernet/intel/i40e/i40e_main.c        |  42 ++++----
- drivers/net/ethernet/intel/i40e/i40e_nvm.c         | 114 ++++++++++-----------
- drivers/net/ethernet/intel/i40e/i40e_txrx.c        |  13 +--
- drivers/net/ethernet/intel/i40e/i40e_type.h        |   1 +
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |   9 +-
- drivers/net/ethernet/intel/i40evf/i40e_adminq.h    |   9 +-
- drivers/net/ethernet/intel/i40evf/i40e_common.c    |   1 +
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c      |   3 +-
- drivers/net/ethernet/intel/i40evf/i40e_type.h      |   1 +
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    |   6 +-
- 16 files changed, 137 insertions(+), 111 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.h b/drivers/net/ethernet/intel/i40e/i40e_adminq.h
+index 28e519a..299e3d3 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.h
+@@ -108,9 +108,10 @@ struct i40e_adminq_info {
+ 
+ /**
+  * i40e_aq_rc_to_posix - convert errors to user-land codes
+- * aq_rc: AdminQ error code to convert
++ * aq_ret: AdminQ handler error code can override aq_rc
++ * aq_rc: AdminQ firmware error code to convert
+  **/
+-static inline int i40e_aq_rc_to_posix(u32 aq_ret, u16 aq_rc)
++static inline int i40e_aq_rc_to_posix(int aq_ret, int aq_rc)
+ {
+ 	int aq_to_posix[] = {
+ 		0,           /* I40E_AQ_RC_OK */
+@@ -142,8 +143,10 @@ static inline int i40e_aq_rc_to_posix(u32 aq_ret, u16 aq_rc)
+ 	if (aq_ret == I40E_ERR_ADMIN_QUEUE_TIMEOUT)
+ 		return -EAGAIN;
+ 
+-	if (aq_rc >= ARRAY_SIZE(aq_to_posix))
++	if (aq_rc >= (sizeof(aq_to_posix) / sizeof((aq_to_posix)[0])) ||
++	    aq_rc < 0)
+ 		return -ERANGE;
++
+ 	return aq_to_posix[aq_rc];
+ }
+ 
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
+index ef43d68..c4efa6b 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
+@@ -108,9 +108,10 @@ struct i40e_adminq_info {
+ 
+ /**
+  * i40e_aq_rc_to_posix - convert errors to user-land codes
+- * aq_rc: AdminQ error code to convert
++ * aq_ret: AdminQ handler error code can override aq_rc
++ * aq_rc: AdminQ firmware error code to convert
+  **/
+-static inline int i40e_aq_rc_to_posix(u32 aq_ret, u16 aq_rc)
++static inline int i40e_aq_rc_to_posix(int aq_ret, int aq_rc)
+ {
+ 	int aq_to_posix[] = {
+ 		0,           /* I40E_AQ_RC_OK */
+@@ -142,8 +143,10 @@ static inline int i40e_aq_rc_to_posix(u32 aq_ret, u16 aq_rc)
+ 	if (aq_ret == I40E_ERR_ADMIN_QUEUE_TIMEOUT)
+ 		return -EAGAIN;
+ 
+-	if (aq_rc >= ARRAY_SIZE(aq_to_posix))
++	if (aq_rc >= (sizeof(aq_to_posix) / sizeof((aq_to_posix)[0])) ||
++	    aq_rc < 0)
+ 		return -ERANGE;
++
+ 	return aq_to_posix[aq_rc];
+ }
+ 
 -- 
 1.9.3
 
