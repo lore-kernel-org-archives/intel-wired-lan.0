@@ -1,110 +1,140 @@
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Tue, 21 Jul 2015 13:24:19 -0500
-Subject: [Intel-wired-lan] [PATCH V4 0/2] pci: Provide a flag to access
- VPD through function 0
-In-Reply-To: <20150713183821.19985.52157.stgit@mdrustad-wks.jf.intel.com>
-References: <20150713183821.19985.52157.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <20150721182419.GF21967@google.com>
+From: Suzuki Shota <suzuki_shota_t3@lab.ntt.co.jp>
+Date: Thu, 23 Jul 2015 14:56:44 +0900
+Subject: [Intel-wired-lan] [PATCH net] igb: Fix oops caused by missing
+	queue pairing
+In-Reply-To: <1435710352-956-1-git-send-email-suzuki_shota_t3@lab.ntt.co.jp>
+References: <1435710352-956-1-git-send-email-suzuki_shota_t3@lab.ntt.co.jp>
+Message-ID: <55B0821C.4060809@lab.ntt.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-[+cc Alex]
+Dear Jeffrey,
 
-On Mon, Jul 13, 2015 at 11:39:54AM -0700, Mark D Rustad wrote:
-> Many multi-function devices provide shared registers in extended
-> config space for accessing VPD. The behavior of these registers
-> means that the state must be tracked and access locked correctly
-> for accesses not to hang or worse. One way to meet these needs is
-> to always perform the accesses through function 0, thereby using
-> the state tracking and mutex that already exists.
+With regard to the patch I submitted,
+would you tell me the review status of it?
+(I'm watching Patchwork of intel-wired-lan,
+ but the state of my patch is still 'New')
+
+Do I have to do other things?
+
+Regards,
+Shota Suzuki
+
+On 2015/07/01 9:25, Shota Suzuki wrote:
+> When initializing igb driver (e.g. 82576, I350), IGB_FLAG_QUEUE_PAIRS is
+> set if adapter->rss_queues exceeds half of max_rss_queues in
+> igb_init_queue_configuration().
+> On the other hand, IGB_FLAG_QUEUE_PAIRS is not set even if the number of
+> queues exceeds half of max_combined in igb_set_channels() when changing
+> the number of queues by "ethtool -L".
+> In this case, if numvecs is larger than MAX_MSIX_ENTRIES (10), the size
+> of adapter->msix_entries[], an overflow can occur in
+> igb_set_interrupt_capability(), which in turn leads to an oops.
 > 
-> To provide this behavior, add a dev_flags bit to indicate that this
-> should be done. This bit can then be set for any non-zero function
-> that needs to redirect such VPD access to function 0. Do not set
-> this bit on the zero function or there will be an infinite recursion.
+> Fix this problem as follows:
+>   - When changing the number of queues by "ethtool -L", set
+>     IGB_FLAG_QUEUE_PAIRS in the same way as initializing igb driver.
+>   - When increasing the size of q_vector, reallocate it appropriately.
+>     (With IGB_FLAG_QUEUE_PAIRS set, the size of q_vector gets larger.)
 > 
-> The second patch uses this new flag to invoke this behavior on all
-> multi-function Intel Ethernet devices.
+> Another possible way to fix this problem is to cap the queues at its
+> initial number, which is the number of the initial online cpus. But this
+> is not the optimal way because we cannnot increase queues when another
+> cpu becomes online.
 > 
-> Any hardware that shares VPD registers with multiple functions has
-> been suffering these problems forever. The hangs result in the log
-> message:
+> Note that before commit cd14ef54d25b ("igb: Change to use statically
+> allocated array for MSIx entries"), this problem did not cause oops
+> but just made the number of queues become 1 because of entering msi_only
+> mode in igb_set_interrupt_capability().
 > 
-> vpd r/w failed.  This is likely a firmware bug on this device.
-> 
-> Both read and write data corruption are also possible during
-> overlapping accesses in addition to hangs.
-> 
-> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
-> 
+> Fixes: 907b7835799f ("igb: Add ethtool support to configure number of channels")
+> Signed-off-by: Shota Suzuki <suzuki_shota_t3@lab.ntt.co.jp>
 > ---
-> Changes in V2:
-> - Corrected a spelling error in a log message
-> - Added checks to see that the referenced function 0 is reasonable
-> Changes in V3:
-> - Don't leak a device reference
-> - Check that function 0 has VPD
-> - Make a helper for the function 0 checks
-> - Moved a multifunction check to the quirk patch
-> Changes in V4:
-> - Provide a more extensive commit log for patch 1
-
-I applied these to pci/misc for v4.3 with changelogs as follows.  I added
-Alex's ack, since he acked v3 and the only difference here is the
-changelog.  I also added a stable tag.  Thanks!
-
-Bjorn
-
-
-commit 932c435caba8a2ce473a91753bad0173269ef334
-Author: Mark Rustad <mark.d.rustad@intel.com>
-Date:   Mon Jul 13 11:40:02 2015 -0700
-
-    PCI: Add dev_flags bit to access VPD through function 0
-    
-    Add a dev_flags bit, PCI_DEV_FLAGS_VPD_REF_F0, to access VPD through
-    function 0 to provide VPD access on other functions.  This is for hardware
-    devices that provide copies of the same VPD capability registers in
-    multiple functions.  Because the kernel expects that each function has its
-    own registers, both the locking and the state tracking are affected by VPD
-    accesses to different functions.
-    
-    On such devices for example, if a VPD write is performed on function 0,
-    *any* later attempt to read VPD from any other function of that device will
-    hang.  This has to do with how the kernel tracks the expected value of the
-    F bit per function.
-    
-    Concurrent accesses to different functions of the same device can not only
-    hang but also corrupt both read and write VPD data.
-    
-    When hangs occur, typically the error message:
-    
-      vpd r/w failed.  This is likely a firmware bug on this device.
-    
-    will be seen.
-    
-    Never set this bit on function 0 or there will be an infinite recursion.
-    
-    Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
-    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-    Acked-by: Alexander Duyck <alexander.h.duyck@redhat.com>
-    CC: stable at vger.kernel.org
-
-commit 7aa6ca4d39edf01f997b9e02cf6d2fdeb224f351
-Author: Mark Rustad <mark.d.rustad@intel.com>
-Date:   Mon Jul 13 11:40:07 2015 -0700
-
-    PCI: Add VPD function 0 quirk for Intel Ethernet devices
-    
-    Set the PCI_DEV_FLAGS_VPD_REF_F0 flag on all Intel Ethernet device
-    functions other than function 0, so that on multi-function devices, we will
-    always read VPD from function 0 instead of from the other functions.
-    
-    [bhelgaas: changelog]
-    Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
-    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-    Acked-by: Alexander Duyck <alexander.h.duyck@redhat.com>
-    CC: stable at vger.kernel.org
+> Although we might be able to additionally unset IGB_FLAG_QUEUE_PAIRS
+> when it is not needed, this patch doesn't change existing behaviour
+> because such a change is not a bug fix.
+> 
+>   drivers/net/ethernet/intel/igb/igb.h         |  1 +
+>   drivers/net/ethernet/intel/igb/igb_ethtool.c |  5 ++++-
+>   drivers/net/ethernet/intel/igb/igb_main.c    | 16 ++++++++++++++--
+>   3 files changed, 19 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
+> index c2bd4f9..212d668 100644
+> --- a/drivers/net/ethernet/intel/igb/igb.h
+> +++ b/drivers/net/ethernet/intel/igb/igb.h
+> @@ -540,6 +540,7 @@ void igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector, unsigned char *va,
+>   			 struct sk_buff *skb);
+>   int igb_ptp_set_ts_config(struct net_device *netdev, struct ifreq *ifr);
+>   int igb_ptp_get_ts_config(struct net_device *netdev, struct ifreq *ifr);
+> +void igb_set_flag_queue_pairs(struct igb_adapter *, const u32);
+>   #ifdef CONFIG_IGB_HWMON
+>   void igb_sysfs_exit(struct igb_adapter *adapter);
+>   int igb_sysfs_init(struct igb_adapter *adapter);
+> diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+> index d5673eb..0afc091 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
+> @@ -2991,6 +2991,7 @@ static int igb_set_channels(struct net_device *netdev,
+>   {
+>   	struct igb_adapter *adapter = netdev_priv(netdev);
+>   	unsigned int count = ch->combined_count;
+> +	unsigned int max_combined = 0;
+>   
+>   	/* Verify they are not requesting separate vectors */
+>   	if (!count || ch->rx_count || ch->tx_count)
+> @@ -3001,11 +3002,13 @@ static int igb_set_channels(struct net_device *netdev,
+>   		return -EINVAL;
+>   
+>   	/* Verify the number of channels doesn't exceed hw limits */
+> -	if (count > igb_max_channels(adapter))
+> +	max_combined = igb_max_channels(adapter);
+> +	if (count > max_combined)
+>   		return -EINVAL;
+>   
+>   	if (count != adapter->rss_queues) {
+>   		adapter->rss_queues = count;
+> +		igb_set_flag_queue_pairs(adapter, max_combined);
+>   
+>   		/* Hardware has to reinitialize queues and interrupts to
+>   		 * match the new configuration.
+> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+> index f287186..59dc2b4 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> @@ -1205,10 +1205,14 @@ static int igb_alloc_q_vector(struct igb_adapter *adapter,
+>   
+>   	/* allocate q_vector and rings */
+>   	q_vector = adapter->q_vector[v_idx];
+> -	if (!q_vector)
+> +	if (!q_vector) {
+>   		q_vector = kzalloc(size, GFP_KERNEL);
+> -	else
+> +	} else if (size > ksize(q_vector)) {
+> +		kfree_rcu(q_vector, rcu);
+> +		q_vector = kzalloc(size, GFP_KERNEL);
+> +	} else {
+>   		memset(q_vector, 0, size);
+> +	}
+>   	if (!q_vector)
+>   		return -ENOMEM;
+>   
+> @@ -2888,6 +2892,14 @@ static void igb_init_queue_configuration(struct igb_adapter *adapter)
+>   
+>   	adapter->rss_queues = min_t(u32, max_rss_queues, num_online_cpus());
+>   
+> +	igb_set_flag_queue_pairs(adapter, max_rss_queues);
+> +}
+> +
+> +void igb_set_flag_queue_pairs(struct igb_adapter *adapter,
+> +			      const u32 max_rss_queues)
+> +{
+> +	struct e1000_hw *hw = &adapter->hw;
+> +
+>   	/* Determine if we need to pair queues. */
+>   	switch (hw->mac.type) {
+>   	case e1000_82575:
+> 
