@@ -1,85 +1,119 @@
-From: Spencer Baugh <sbaugh@catern.com>
-Date: Thu, 23 Jul 2015 14:54:34 -0700
-Subject: [Intel-wired-lan] [PATCH] e1000: make eeprom read/write scheduler
-	friendly
-Message-ID: <1437688476-3399-4-git-send-email-sbaugh@catern.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 25 Jul 2015 04:30:57 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 2307678add0e6cea39bbd474ebedcabb3c611e37 BUILD DONE
+Message-ID: <55b2a081.ZBLqSw4IugcVKIJ2%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Joern Engel <joern@logfs.org>
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+2307678add0e6cea39bbd474ebedcabb3c611e37  Subject: e1000: make eeprom read/write scheduler friendly
 
-Code was responsible for ~150ms scheduler latencies.
+drivers/net/ethernet/intel/i40e/i40e_debugfs.c:1499:4: warning: format '%lx' expects argument of type 'long unsigned int', but argument 4 has type 'u32' [-Wformat=]
 
-Signed-off-by: Joern Engel <joern@logfs.org>
-Signed-off-by: Spencer Baugh <sbaugh@catern.com>
----
- drivers/net/ethernet/intel/e1000/e1000_hw.c | 13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+Error ids grouped by kconfigs:
 
-diff --git a/drivers/net/ethernet/intel/e1000/e1000_hw.c b/drivers/net/ethernet/intel/e1000/e1000_hw.c
-index 45c8c864..e74e9dd 100644
---- a/drivers/net/ethernet/intel/e1000/e1000_hw.c
-+++ b/drivers/net/ethernet/intel/e1000/e1000_hw.c
-@@ -106,7 +106,7 @@ u16 e1000_igp_cable_length_table[IGP01E1000_AGC_LENGTH_TABLE_SIZE] = {
- 	    120, 120
- };
- 
--static DEFINE_SPINLOCK(e1000_eeprom_lock);
-+static DEFINE_MUTEX(e1000_eeprom_lock);
- static DEFINE_SPINLOCK(e1000_phy_lock);
- 
- /**
-@@ -3882,9 +3882,9 @@ static s32 e1000_spi_eeprom_ready(struct e1000_hw *hw)
- s32 e1000_read_eeprom(struct e1000_hw *hw, u16 offset, u16 words, u16 *data)
- {
- 	s32 ret;
--	spin_lock(&e1000_eeprom_lock);
-+	mutex_lock(&e1000_eeprom_lock);
- 	ret = e1000_do_read_eeprom(hw, offset, words, data);
--	spin_unlock(&e1000_eeprom_lock);
-+	mutex_unlock(&e1000_eeprom_lock);
- 	return ret;
- }
- 
-@@ -3972,6 +3972,7 @@ static s32 e1000_do_read_eeprom(struct e1000_hw *hw, u16 offset, u16 words,
- 			 */
- 			data[i] = e1000_shift_in_ee_bits(hw, 16);
- 			e1000_standby_eeprom(hw);
-+			cond_resched();
- 		}
- 	}
- 
-@@ -4056,9 +4057,9 @@ s32 e1000_update_eeprom_checksum(struct e1000_hw *hw)
- s32 e1000_write_eeprom(struct e1000_hw *hw, u16 offset, u16 words, u16 *data)
- {
- 	s32 ret;
--	spin_lock(&e1000_eeprom_lock);
-+	mutex_lock(&e1000_eeprom_lock);
- 	ret = e1000_do_write_eeprom(hw, offset, words, data);
--	spin_unlock(&e1000_eeprom_lock);
-+	mutex_unlock(&e1000_eeprom_lock);
- 	return ret;
- }
- 
-@@ -4124,6 +4125,7 @@ static s32 e1000_write_eeprom_spi(struct e1000_hw *hw, u16 offset, u16 words,
- 			return -E1000_ERR_EEPROM;
- 
- 		e1000_standby_eeprom(hw);
-+		cond_resched();
- 
- 		/*  Send the WRITE ENABLE command (8 bit opcode )  */
- 		e1000_shift_out_ee_bits(hw, EEPROM_WREN_OPCODE_SPI,
-@@ -4232,6 +4234,7 @@ static s32 e1000_write_eeprom_microwire(struct e1000_hw *hw, u16 offset,
- 
- 		/* Recover from write */
- 		e1000_standby_eeprom(hw);
-+		cond_resched();
- 
- 		words_written++;
- 	}
--- 
-2.5.0.rc3
+recent_errors
+??? i386-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u32
+??? parisc-allyesconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u32
+??? xtensa-allyesconfig
+    ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u32
 
+elapsed time: 59m
+
+configs tested: 86
+
+i386                     randconfig-a0-201529
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+i386                             allyesconfig
+arm                                    sa1100
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                                   samsung
+arm                                  iop-adma
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                                        sh
+x86_64                            allnoconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             allmodconfig
+i386                             alldefconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+x86_64                   randconfig-i0-201529
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201529
+i386                     randconfig-n0-201529
+i386                     randconfig-n1-201529
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+x86_64                           allmodconfig
+x86_64               randconfig-x004-07200849
+x86_64               randconfig-x002-07200849
+x86_64               randconfig-x001-07200849
+x86_64               randconfig-x008-07200849
+x86_64               randconfig-x005-07200849
+x86_64               randconfig-x007-07200849
+x86_64               randconfig-x000-07200849
+x86_64               randconfig-x006-07200849
+x86_64               randconfig-x003-07200849
+x86_64               randconfig-x009-07200849
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-r0-201529
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                          amiga_defconfig
+i386                 randconfig-x007-07200849
+i386                 randconfig-x005-07200849
+i386                 randconfig-x008-07200849
+i386                 randconfig-x003-07200849
+i386                 randconfig-x004-07200849
+i386                 randconfig-x000-07200849
+i386                 randconfig-x006-07200849
+i386                 randconfig-x009-07200849
+i386                 randconfig-x002-07200849
+i386                 randconfig-x001-07200849
+mips                                   jz4740
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+
+Thanks,
+Fengguang
