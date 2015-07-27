@@ -1,35 +1,49 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Mon, 27 Jul 2015 12:04:41 -0700
-Subject: [Intel-wired-lan] [PATCH V2 07/12] ixgbe: Clear I2C destination
-	location
-In-Reply-To: <20150727190244.104300.81756.stgit@mdrustad-wks.jf.intel.com>
-References: <20150727190244.104300.81756.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <20150727190441.104300.76106.stgit@mdrustad-wks.jf.intel.com>
+Date: Mon, 27 Jul 2015 12:04:05 -0700
+Subject: [Intel-wired-lan] [PATCH V2 00/12] ixgbe: Add support for X550EM
+	devices with SFPs
+Message-ID: <20150727190244.104300.81756.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Clear the destination location for I2C data initially so that
-the received data will not be affected by previous attempts.
-This could have returned wrong data in certain retry sequences.
+The following patches add remaining bits of support for X550EM
+devices with SFPs. The last patch adds the device ID.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c |    1 +
- 1 file changed, 1 insertion(+)
+Changes in V2:
+- Added more changes that had been missed (9 more patches!)
+- Added latest CS4227 reset process
+---
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-index d334011f09d1..174e75b6b6d4 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-@@ -2014,6 +2014,7 @@ static s32 ixgbe_clock_in_i2c_byte(struct ixgbe_hw *hw, u8 *data)
- 	s32 i;
- 	bool bit = false;
- 
-+	*data = 0;
- 	for (i = 7; i >= 0; i--) {
- 		ixgbe_clock_in_i2c_bit(hw, &bit);
- 		*data |= bit << i;
+Mark D Rustad (12):
+      ixgbe: Accept SFP not present errors on all devices
+      ixgbe: Add X550EM support for SFP insertion interrupt
+      ixgbe: Provide I2C combined on X550EM
+      ixgbe: Provide unlocked I2C methods
+      ixgbe: Set lan_id before first I2C eeprom access
+      ixgbe: Enable bit-banging mode on X550
+      ixgbe: Clear I2C destination location
+      ixgbe: Allow reduced delays during sfp detection
+      ixgbe: Add X550EM_x dual-speed SFP+ support
+      ixgbe: Fix 1G and 10G link stability for X550EM_x SFP+
+      ixgbe: Add logic to reset CS4227 when needed
+      ixgbe: Add new X550EM SFP+ device ID
 
+
+ drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c  |  193 +---------
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |  206 +++++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.h |    5 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c   |    6 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c    |  284 +++++++++++++--
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h    |   35 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h   |    6 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c   |  425 +++++++++++++++++++++--
+ 8 files changed, 907 insertions(+), 253 deletions(-)
+
+-- 
+Mark Rustad, Network Division, Intel Corporation
