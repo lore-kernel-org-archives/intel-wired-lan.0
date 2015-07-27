@@ -1,60 +1,52 @@
-From: Todd Fujinaka <todd.fujinaka@intel.com>
-Date: Mon, 27 Jul 2015 14:34:22 -0700
-Subject: [Intel-wired-lan] [PATCH] igb: make sure SR-IOV init uses the right
-	number of queues
-Message-ID: <20150727213422.28219.59391.stgit@htfujina-fc.jf.intel.com>
+From: Alex Williamson <alex.williamson@redhat.com>
+Date: Mon, 27 Jul 2015 17:18:28 -0600
+Subject: [Intel-wired-lan] [PATCH 0/2] igb/ixgbe: Fix ordering of SR-IOV
+	teardown
+Message-ID: <20150727223753.10121.78169.stgit@gimli.home>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Recent changes to igb_probe_vfs() could lead to the PF holding onto all
-of the queues. Reorder igb_probe_vfs() to be before
-gb_init_queue_configuration() and add some more error checking.
+When running a Windows 2012 R2 guest with a pair of VFs assigned
+through vfio-pci, we run into a problem trying to hot-unplug those VFs
+after the PF has unregistered the netdev.  This is a common scenario
+if the PF is unbound from the driver while VFs are active.  In the
+case of igb, the resulting guest behavior differs slightly between the
+Microsoft provided and Intel add-on guest drivers.  With the Microsoft
+driver, the guest seems to stumble through ejecting both VFs, but
+takes longer than normal to do so.  With the Intel drivers, only one
+VF is unplugged, but Device Manager still shows it as present.  The
+second VF is non-functional but also still shown in Device Manager.
+At this point, the guest is in such a state that it will not cleanly
+shutdown.  With ixgbe VFs, both the Microsoft and Intel drivers take
+on this latter behavior.
 
-Signed-off-by: Todd Fujinaka <todd.fujinaka@intel.com>
+For both, I've found that disabling SR-IOV before unregistering the PF
+netdev device allows the hot-unplug to proceed without interruption or
+further ill behavior in the guest.  This is true regardless of which
+driver is used.  I don't fully understand what dependency is broken
+by unregistering the netdev prior to disabling SR-IOV, but I also
+don't see the benefit in delaying SR-IOV teardown in this call path.
+It could potentially be moved even earlier, but I'll let those more
+familiar with the hardware and code make that determination.  In any
+case, the VM behavior is substantially improved by this slight
+re-ordering.
+
+I don't have an i40e for testing, but it already appears to disable
+SR-IOV much earlier in the unbind path, so I wouldn't expect to find
+similar issues.  Thanks,
+
+Alex
+
 ---
- drivers/net/ethernet/intel/igb/igb_main.c |    7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 517746f..18c16ca 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -179,6 +179,8 @@ static void igb_check_vf_rate_limit(struct igb_adapter *);
- #ifdef CONFIG_PCI_IOV
- static int igb_vf_configure(struct igb_adapter *adapter, int vf);
- static int igb_pci_enable_sriov(struct pci_dev *dev, int num_vfs);
-+static int igb_disable_sriov(struct pci_dev *dev);
-+static int igb_pci_disable_sriov(struct pci_dev *dev);
- #endif
- 
- #ifdef CONFIG_PM
-@@ -2646,6 +2648,7 @@ err_eeprom:
- 		iounmap(hw->flash_address);
- err_sw_init:
- 	igb_clear_interrupt_scheme(adapter);
-+	igb_disable_sriov(pdev);
- 	pci_iounmap(pdev, hw->hw_addr);
- err_ioremap:
- 	free_netdev(netdev);
-@@ -2968,6 +2971,8 @@ static int igb_sw_init(struct igb_adapter *adapter)
- 	}
- #endif /* CONFIG_PCI_IOV */
- 
-+	igb_probe_vfs(adapter);
-+
- 	igb_init_queue_configuration(adapter);
- 
- 	/* Setup and initialize a copy of the hw vlan table array */
-@@ -2980,8 +2985,6 @@ static int igb_sw_init(struct igb_adapter *adapter)
- 		return -ENOMEM;
- 	}
- 
--	igb_probe_vfs(adapter);
--
- 	/* Explicitly disable IRQ since the NIC can be in any state. */
- 	igb_irq_disable(adapter);
- 
+Alex Williamson (2):
+      igb: Teardown SR-IOV before unregister_netdev()
+      ixgbe: Teardown SR-IOV before unregister_netdev()
 
+
+ drivers/net/ethernet/intel/igb/igb_main.c     |    8 ++++----
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    6 +++---
+ 2 files changed, 7 insertions(+), 7 deletions(-)
