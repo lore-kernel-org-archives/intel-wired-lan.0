@@ -1,35 +1,47 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Mon, 27 Jul 2015 12:04:15 -0700
-Subject: [Intel-wired-lan] [PATCH V2 02/12] ixgbe: Add X550EM support for
- SFP insertion interrupt
+Date: Mon, 27 Jul 2015 12:04:31 -0700
+Subject: [Intel-wired-lan] [PATCH V2 05/12] ixgbe: Set lan_id before first
+	I2C eeprom access
 In-Reply-To: <20150727190244.104300.81756.stgit@mdrustad-wks.jf.intel.com>
 References: <20150727190244.104300.81756.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <20150727190415.104300.14932.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <20150727190431.104300.4814.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add support for the SFP insertion interrupt on X550EM devices with
-SFPs.
+The lan_id is being set after a previous I2C eeprom access which
+makes no sense because it needs to be set before any access. Move
+the setting to before the access.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 6c52300fecfe..d289449a9b83 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -2631,6 +2631,8 @@ static inline void ixgbe_irq_enable(struct ixgbe_adapter *adapter, bool queues,
- 	case ixgbe_mac_X540:
- 	case ixgbe_mac_X550:
- 	case ixgbe_mac_X550EM_x:
-+		if (adapter->hw.device_id == IXGBE_DEV_ID_X550EM_X_SFP)
-+			mask |= IXGBE_EIMS_GPI_SDP0(&adapter->hw);
- 		if (adapter->hw.phy.type == ixgbe_phy_x550em_ext_t)
- 			mask |= IXGBE_EICR_GPI_SDP0_X540;
- 		mask |= IXGBE_EIMS_ECC;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+index 7ff7d7012f68..f342174a4840 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+@@ -1165,6 +1165,9 @@ s32 ixgbe_identify_sfp_module_generic(struct ixgbe_hw *hw)
+ 		return IXGBE_ERR_SFP_NOT_PRESENT;
+ 	}
+ 
++	/* LAN ID is needed for sfp_type determination */
++	hw->mac.ops.set_lan_id(hw);
++
+ 	status = hw->phy.ops.read_i2c_eeprom(hw,
+ 					     IXGBE_SFF_IDENTIFIER,
+ 					     &identifier);
+@@ -1172,9 +1175,6 @@ s32 ixgbe_identify_sfp_module_generic(struct ixgbe_hw *hw)
+ 	if (status)
+ 		goto err_read_i2c_eeprom;
+ 
+-	/* LAN ID is needed for sfp_type determination */
+-	hw->mac.ops.set_lan_id(hw);
+-
+ 	if (identifier != IXGBE_SFF_IDENTIFIER_SFP) {
+ 		hw->phy.type = ixgbe_phy_sfp_unsupported;
+ 		return IXGBE_ERR_SFP_NOT_SUPPORTED;
 
