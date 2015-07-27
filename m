@@ -1,547 +1,204 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Mon, 27 Jul 2015 12:04:51 -0700
-Subject: [Intel-wired-lan] [PATCH V2 09/12] ixgbe: Add X550EM_x dual-speed
-	SFP+ support
+Date: Mon, 27 Jul 2015 12:04:56 -0700
+Subject: [Intel-wired-lan] [PATCH V2 10/12] ixgbe: Fix 1G and 10G link
+ stability for X550EM_x SFP+
 In-Reply-To: <20150727190244.104300.81756.stgit@mdrustad-wks.jf.intel.com>
 References: <20150727190244.104300.81756.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <20150727190451.104300.54886.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <20150727190456.104300.39012.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch adds X550EM_x SFP+ dual-speed support. 82599 fiber link
-code was moved from ixgbe_82599.c to ixgbe_common.c for use by
-X550EM. SFP MAC link code is added to x550EM.
+Configures the CS4227 correctly for both 1G and 10G operation,
+by moving the code to ixgbe_setup_mac_link_sfp_x550em(). It
+needs to be in this function because we need both the module
+type and the speed, and this is the only function in the init
+flow that knows the speed. In contrast,
+ixgbe_setup_sfp_modules_X550em() does not know the speed, so we
+can't do anything useful here. This is a fundamental difference
+from the previous flow, and is due to the way the CS4227 is
+implemented.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c  |  193 +++-------------------
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |  206 +++++++++++++++++++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.h |    5 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h    |    3 
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h   |    2 
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c   |   17 ++
- 6 files changed, 258 insertions(+), 168 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h  |    7 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |  126 ++++++++++++++++---------
+ 2 files changed, 89 insertions(+), 44 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
-index 85156fb53b62..17615071e79e 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
-@@ -44,9 +44,8 @@
- static void ixgbe_disable_tx_laser_multispeed_fiber(struct ixgbe_hw *hw);
- static void ixgbe_enable_tx_laser_multispeed_fiber(struct ixgbe_hw *hw);
- static void ixgbe_flap_tx_laser_multispeed_fiber(struct ixgbe_hw *hw);
--static s32 ixgbe_setup_mac_link_multispeed_fiber(struct ixgbe_hw *hw,
--						 ixgbe_link_speed speed,
--						 bool autoneg_wait_to_complete);
-+static void
-+ixgbe_set_hard_rate_select_speed(struct ixgbe_hw *, ixgbe_link_speed);
- static s32 ixgbe_setup_mac_link_smartspeed(struct ixgbe_hw *hw,
- 					   ixgbe_link_speed speed,
- 					   bool autoneg_wait_to_complete);
-@@ -109,6 +108,9 @@ static void ixgbe_init_mac_link_ops_82599(struct ixgbe_hw *hw)
- 	if (hw->phy.multispeed_fiber) {
- 		/* Set up dual speed SFP+ support */
- 		mac->ops.setup_link = &ixgbe_setup_mac_link_multispeed_fiber;
-+		mac->ops.setup_mac_link = ixgbe_setup_mac_link_82599;
-+		mac->ops.set_rate_select_speed =
-+					       ixgbe_set_hard_rate_select_speed;
- 	} else {
- 		if ((mac->ops.get_media_type(hw) ==
- 		     ixgbe_media_type_backplane) &&
-@@ -645,177 +647,32 @@ static void ixgbe_flap_tx_laser_multispeed_fiber(struct ixgbe_hw *hw)
- 	}
- }
- 
--/**
-- *  ixgbe_setup_mac_link_multispeed_fiber - Set MAC link speed
-- *  @hw: pointer to hardware structure
-- *  @speed: new link speed
-- *  @autoneg_wait_to_complete: true when waiting for completion is needed
-+/** ixgbe_set_hard_rate_select_speed - Set module link speed
-+ * @hw: pointer to hardware structure
-+ * @speed: link speed to set
-  *
-- *  Set the link speed in the AUTOC register and restarts link.
-- **/
--static s32 ixgbe_setup_mac_link_multispeed_fiber(struct ixgbe_hw *hw,
--					  ixgbe_link_speed speed,
--					  bool autoneg_wait_to_complete)
-+ * Set module link speed via RS0/RS1 rate select pins.
-+ */
-+static void
-+ixgbe_set_hard_rate_select_speed(struct ixgbe_hw *hw, ixgbe_link_speed speed)
- {
--	s32 status = 0;
--	ixgbe_link_speed link_speed = IXGBE_LINK_SPEED_UNKNOWN;
--	ixgbe_link_speed highest_link_speed = IXGBE_LINK_SPEED_UNKNOWN;
--	u32 speedcnt = 0;
- 	u32 esdp_reg = IXGBE_READ_REG(hw, IXGBE_ESDP);
--	u32 i = 0;
--	bool link_up = false;
--	bool autoneg = false;
--
--	/* Mask off requested but non-supported speeds */
--	status = hw->mac.ops.get_link_capabilities(hw, &link_speed,
--						   &autoneg);
--	if (status != 0)
--		return status;
--
--	speed &= link_speed;
--
--	/*
--	 * Try each speed one by one, highest priority first.  We do this in
--	 * software because 10gb fiber doesn't support speed autonegotiation.
--	 */
--	if (speed & IXGBE_LINK_SPEED_10GB_FULL) {
--		speedcnt++;
--		highest_link_speed = IXGBE_LINK_SPEED_10GB_FULL;
--
--		/* If we already have link at this speed, just jump out */
--		status = hw->mac.ops.check_link(hw, &link_speed, &link_up,
--						false);
--		if (status != 0)
--			return status;
--
--		if ((link_speed == IXGBE_LINK_SPEED_10GB_FULL) && link_up)
--			goto out;
--
--		/* Set the module link speed */
--		switch (hw->phy.media_type) {
--		case ixgbe_media_type_fiber:
--			esdp_reg |= (IXGBE_ESDP_SDP5_DIR | IXGBE_ESDP_SDP5);
--			IXGBE_WRITE_REG(hw, IXGBE_ESDP, esdp_reg);
--			IXGBE_WRITE_FLUSH(hw);
--			break;
--		case ixgbe_media_type_fiber_qsfp:
--			/* QSFP module automatically detects MAC link speed */
--			break;
--		default:
--			hw_dbg(hw, "Unexpected media type.\n");
--			break;
--		}
--
--		/* Allow module to change analog characteristics (1G->10G) */
--		msleep(40);
--
--		status = ixgbe_setup_mac_link_82599(hw,
--						    IXGBE_LINK_SPEED_10GB_FULL,
--						    autoneg_wait_to_complete);
--		if (status != 0)
--			return status;
--
--		/* Flap the tx laser if it has not already been done */
--		if (hw->mac.ops.flap_tx_laser)
--			hw->mac.ops.flap_tx_laser(hw);
--
--		/*
--		 * Wait for the controller to acquire link.  Per IEEE 802.3ap,
--		 * Section 73.10.2, we may have to wait up to 500ms if KR is
--		 * attempted.  82599 uses the same timing for 10g SFI.
--		 */
--		for (i = 0; i < 5; i++) {
--			/* Wait for the link partner to also set speed */
--			msleep(100);
--
--			/* If we have link, just jump out */
--			status = hw->mac.ops.check_link(hw, &link_speed,
--							&link_up, false);
--			if (status != 0)
--				return status;
- 
--			if (link_up)
--				goto out;
--		}
--	}
--
--	if (speed & IXGBE_LINK_SPEED_1GB_FULL) {
--		speedcnt++;
--		if (highest_link_speed == IXGBE_LINK_SPEED_UNKNOWN)
--			highest_link_speed = IXGBE_LINK_SPEED_1GB_FULL;
--
--		/* If we already have link at this speed, just jump out */
--		status = hw->mac.ops.check_link(hw, &link_speed, &link_up,
--						false);
--		if (status != 0)
--			return status;
--
--		if ((link_speed == IXGBE_LINK_SPEED_1GB_FULL) && link_up)
--			goto out;
--
--		/* Set the module link speed */
--		switch (hw->phy.media_type) {
--		case ixgbe_media_type_fiber:
--			esdp_reg &= ~IXGBE_ESDP_SDP5;
--			esdp_reg |= IXGBE_ESDP_SDP5_DIR;
--			IXGBE_WRITE_REG(hw, IXGBE_ESDP, esdp_reg);
--			IXGBE_WRITE_FLUSH(hw);
--			break;
--		case ixgbe_media_type_fiber_qsfp:
--			/* QSFP module automatically detects MAC link speed */
--			break;
--		default:
--			hw_dbg(hw, "Unexpected media type.\n");
--			break;
--		}
--
--		/* Allow module to change analog characteristics (10G->1G) */
--		msleep(40);
--
--		status = ixgbe_setup_mac_link_82599(hw,
--						    IXGBE_LINK_SPEED_1GB_FULL,
--						    autoneg_wait_to_complete);
--		if (status != 0)
--			return status;
--
--		/* Flap the tx laser if it has not already been done */
--		if (hw->mac.ops.flap_tx_laser)
--			hw->mac.ops.flap_tx_laser(hw);
--
--		/* Wait for the link partner to also set speed */
--		msleep(100);
--
--		/* If we have link, just jump out */
--		status = hw->mac.ops.check_link(hw, &link_speed, &link_up,
--						false);
--		if (status != 0)
--			return status;
--
--		if (link_up)
--			goto out;
-+	switch (speed) {
-+	case IXGBE_LINK_SPEED_10GB_FULL:
-+		esdp_reg |= (IXGBE_ESDP_SDP5_DIR | IXGBE_ESDP_SDP5);
-+		break;
-+	case IXGBE_LINK_SPEED_1GB_FULL:
-+		esdp_reg &= ~IXGBE_ESDP_SDP5;
-+		esdp_reg |= IXGBE_ESDP_SDP5_DIR;
-+		break;
-+	default:
-+		hw_dbg(hw, "Invalid fixed module speed\n");
-+		return;
- 	}
- 
--	/*
--	 * We didn't get link.  Configure back to the highest speed we tried,
--	 * (if there was more than one).  We call ourselves back with just the
--	 * single highest speed that the user requested.
--	 */
--	if (speedcnt > 1)
--		status = ixgbe_setup_mac_link_multispeed_fiber(hw,
--							       highest_link_speed,
--							       autoneg_wait_to_complete);
--
--out:
--	/* Set autoneg_advertised value based on input link speed */
--	hw->phy.autoneg_advertised = 0;
--
--	if (speed & IXGBE_LINK_SPEED_10GB_FULL)
--		hw->phy.autoneg_advertised |= IXGBE_LINK_SPEED_10GB_FULL;
--
--	if (speed & IXGBE_LINK_SPEED_1GB_FULL)
--		hw->phy.autoneg_advertised |= IXGBE_LINK_SPEED_1GB_FULL;
--
--	return status;
-+	IXGBE_WRITE_REG(hw, IXGBE_ESDP, esdp_reg);
-+	IXGBE_WRITE_FLUSH(hw);
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-index 7a5cb8b2891e..75def60f7840 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-@@ -3920,3 +3920,209 @@ bool ixgbe_mng_present(struct ixgbe_hw *hw)
- 	fwsm &= IXGBE_FWSM_MODE_MASK;
- 	return fwsm == IXGBE_FWSM_FW_MODE_PT;
- }
-+
-+/** ixgbe_setup_mac_link_multispeed_fiber - Set MAC link speed
-+ *  @hw: pointer to hardware structure
-+ *  @speed: new link speed
-+ *  @autoneg_wait_to_complete: true when waiting for completion is needed
-+ *
-+ *  Set the link speed in the MAC and/or PHY register and restarts link.
-+ */
-+s32 ixgbe_setup_mac_link_multispeed_fiber(struct ixgbe_hw *hw,
-+					  ixgbe_link_speed speed,
-+					  bool autoneg_wait_to_complete)
-+{
-+	ixgbe_link_speed link_speed = IXGBE_LINK_SPEED_UNKNOWN;
-+	ixgbe_link_speed highest_link_speed = IXGBE_LINK_SPEED_UNKNOWN;
-+	s32 status = 0;
-+	u32 speedcnt = 0;
-+	u32 i = 0;
-+	bool autoneg, link_up = false;
-+
-+	/* Mask off requested but non-supported speeds */
-+	status = hw->mac.ops.get_link_capabilities(hw, &link_speed, &autoneg);
-+	if (status)
-+		return status;
-+
-+	speed &= link_speed;
-+
-+	/* Try each speed one by one, highest priority first.  We do this in
-+	 * software because 10Gb fiber doesn't support speed autonegotiation.
-+	 */
-+	if (speed & IXGBE_LINK_SPEED_10GB_FULL) {
-+		speedcnt++;
-+		highest_link_speed = IXGBE_LINK_SPEED_10GB_FULL;
-+
-+		/* If we already have link at this speed, just jump out */
-+		status = hw->mac.ops.check_link(hw, &link_speed, &link_up,
-+						false);
-+		if (status)
-+			return status;
-+
-+		if (link_speed == IXGBE_LINK_SPEED_10GB_FULL && link_up)
-+			goto out;
-+
-+		/* Set the module link speed */
-+		switch (hw->phy.media_type) {
-+		case ixgbe_media_type_fiber:
-+			hw->mac.ops.set_rate_select_speed(hw,
-+						    IXGBE_LINK_SPEED_10GB_FULL);
-+			break;
-+		case ixgbe_media_type_fiber_qsfp:
-+			/* QSFP module automatically detects MAC link speed */
-+			break;
-+		default:
-+			hw_dbg(hw, "Unexpected media type\n");
-+			break;
-+		}
-+
-+		/* Allow module to change analog characteristics (1G->10G) */
-+		msleep(40);
-+
-+		status = hw->mac.ops.setup_mac_link(hw,
-+						    IXGBE_LINK_SPEED_10GB_FULL,
-+						    autoneg_wait_to_complete);
-+		if (status)
-+			return status;
-+
-+		/* Flap the Tx laser if it has not already been done */
-+		hw->mac.ops.flap_tx_laser(hw);
-+
-+		/* Wait for the controller to acquire link.  Per IEEE 802.3ap,
-+		 * Section 73.10.2, we may have to wait up to 500ms if KR is
-+		 * attempted.  82599 uses the same timing for 10g SFI.
-+		 */
-+		for (i = 0; i < 5; i++) {
-+			/* Wait for the link partner to also set speed */
-+			msleep(100);
-+
-+			/* If we have link, just jump out */
-+			status = hw->mac.ops.check_link(hw, &link_speed,
-+							&link_up, false);
-+			if (status)
-+				return status;
-+
-+			if (link_up)
-+				goto out;
-+		}
-+	}
-+
-+	if (speed & IXGBE_LINK_SPEED_1GB_FULL) {
-+		speedcnt++;
-+		if (highest_link_speed == IXGBE_LINK_SPEED_UNKNOWN)
-+			highest_link_speed = IXGBE_LINK_SPEED_1GB_FULL;
-+
-+		/* If we already have link at this speed, just jump out */
-+		status = hw->mac.ops.check_link(hw, &link_speed, &link_up,
-+						false);
-+		if (status)
-+			return status;
-+
-+		if (link_speed == IXGBE_LINK_SPEED_1GB_FULL && link_up)
-+			goto out;
-+
-+		/* Set the module link speed */
-+		switch (hw->phy.media_type) {
-+		case ixgbe_media_type_fiber:
-+			hw->mac.ops.set_rate_select_speed(hw,
-+						     IXGBE_LINK_SPEED_1GB_FULL);
-+			break;
-+		case ixgbe_media_type_fiber_qsfp:
-+			/* QSFP module automatically detects link speed */
-+			break;
-+		default:
-+			hw_dbg(hw, "Unexpected media type\n");
-+			break;
-+		}
-+
-+		/* Allow module to change analog characteristics (10G->1G) */
-+		msleep(40);
-+
-+		status = hw->mac.ops.setup_mac_link(hw,
-+						    IXGBE_LINK_SPEED_1GB_FULL,
-+						    autoneg_wait_to_complete);
-+		if (status)
-+			return status;
-+
-+		/* Flap the Tx laser if it has not already been done */
-+		hw->mac.ops.flap_tx_laser(hw);
-+
-+		/* Wait for the link partner to also set speed */
-+		msleep(100);
-+
-+		/* If we have link, just jump out */
-+		status = hw->mac.ops.check_link(hw, &link_speed, &link_up,
-+						false);
-+		if (status)
-+			return status;
-+
-+		if (link_up)
-+			goto out;
-+	}
-+
-+	/* We didn't get link.  Configure back to the highest speed we tried,
-+	 * (if there was more than one).  We call ourselves back with just the
-+	 * single highest speed that the user requested.
-+	 */
-+	if (speedcnt > 1)
-+		status = ixgbe_setup_mac_link_multispeed_fiber(hw,
-+						      highest_link_speed,
-+						      autoneg_wait_to_complete);
-+
-+out:
-+	/* Set autoneg_advertised value based on input link speed */
-+	hw->phy.autoneg_advertised = 0;
-+
-+	if (speed & IXGBE_LINK_SPEED_10GB_FULL)
-+		hw->phy.autoneg_advertised |= IXGBE_LINK_SPEED_10GB_FULL;
-+
-+	if (speed & IXGBE_LINK_SPEED_1GB_FULL)
-+		hw->phy.autoneg_advertised |= IXGBE_LINK_SPEED_1GB_FULL;
-+
-+	return status;
-+}
-+
-+/** ixgbe_set_soft_rate_select_speed - Set module link speed
-+ *  @hw: pointer to hardware structure
-+ *  @speed: link speed to set
-+ *
-+ *  Set module link speed via the soft rate select.
-+ */
-+void ixgbe_set_soft_rate_select_speed(struct ixgbe_hw *hw,
-+				      ixgbe_link_speed speed)
-+{
-+	s32 status;
-+	u8 rs, eeprom_data;
-+
-+	switch (speed) {
-+	case IXGBE_LINK_SPEED_10GB_FULL:
-+		/* one bit mask same as setting on */
-+		rs = IXGBE_SFF_SOFT_RS_SELECT_10G;
-+		break;
-+	case IXGBE_LINK_SPEED_1GB_FULL:
-+		rs = IXGBE_SFF_SOFT_RS_SELECT_1G;
-+		break;
-+	default:
-+		hw_dbg(hw, "Invalid fixed module speed\n");
-+		return;
-+	}
-+
-+	/* Set RS0 */
-+	status = hw->phy.ops.read_i2c_byte(hw, IXGBE_SFF_SFF_8472_OSCB,
-+					   IXGBE_I2C_EEPROM_DEV_ADDR2,
-+					   &eeprom_data);
-+	if (status) {
-+		hw_dbg(hw, "Failed to read Rx Rate Select RS0\n");
-+		return;
-+	}
-+
-+	eeprom_data = (eeprom_data & ~IXGBE_SFF_SOFT_RS_SELECT_MASK) | rs;
-+
-+	status = hw->phy.ops.write_i2c_byte(hw, IXGBE_SFF_SFF_8472_OSCB,
-+					    IXGBE_I2C_EEPROM_DEV_ADDR2,
-+					    eeprom_data);
-+	if (status) {
-+		hw_dbg(hw, "Failed to write Rx Rate Select RS0\n");
-+		return;
-+	}
-+}
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
-index 2f779f35dc4f..a0044e4a8b90 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
-@@ -135,6 +135,11 @@ s32 ixgbe_get_thermal_sensor_data_generic(struct ixgbe_hw *hw);
- s32 ixgbe_init_thermal_sensor_thresh_generic(struct ixgbe_hw *hw);
- void ixgbe_disable_rx_generic(struct ixgbe_hw *hw);
- void ixgbe_enable_rx_generic(struct ixgbe_hw *hw);
-+s32 ixgbe_setup_mac_link_multispeed_fiber(struct ixgbe_hw *hw,
-+					  ixgbe_link_speed speed,
-+					  bool autoneg_wait_to_complete);
-+void ixgbe_set_soft_rate_select_speed(struct ixgbe_hw *hw,
-+				      ixgbe_link_speed speed);
- 
- #define IXGBE_FAILED_READ_REG 0xffffffffU
- #define IXGBE_FAILED_READ_CFG_DWORD 0xffffffffU
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
-index 0769b40399ea..824a2636aa9a 100644
+index 824a2636aa9a..85e142cf01a8 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
-@@ -66,6 +66,9 @@
- #define IXGBE_SFF_1GBASET_CAPABLE		0x8
- #define IXGBE_SFF_10GBASESR_CAPABLE		0x10
- #define IXGBE_SFF_10GBASELR_CAPABLE		0x20
-+#define IXGBE_SFF_SOFT_RS_SELECT_MASK		0x8
-+#define IXGBE_SFF_SOFT_RS_SELECT_10G		0x8
-+#define IXGBE_SFF_SOFT_RS_SELECT_1G		0x0
- #define IXGBE_SFF_ADDRESSING_MODE		0x4
- #define IXGBE_SFF_QSFP_DA_ACTIVE_CABLE		0x1
- #define IXGBE_SFF_QSFP_DA_PASSIVE_CABLE		0x8
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-index 3be743b4f6ba..deef530348a0 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-@@ -3256,9 +3256,11 @@ struct ixgbe_mac_operations {
- 	void (*flap_tx_laser)(struct ixgbe_hw *);
- 	void (*stop_link_on_d3)(struct ixgbe_hw *);
- 	s32 (*setup_link)(struct ixgbe_hw *, ixgbe_link_speed, bool);
-+	s32 (*setup_mac_link)(struct ixgbe_hw *, ixgbe_link_speed, bool);
- 	s32 (*check_link)(struct ixgbe_hw *, ixgbe_link_speed *, bool *, bool);
- 	s32 (*get_link_capabilities)(struct ixgbe_hw *, ixgbe_link_speed *,
- 				     bool *);
-+	void (*set_rate_select_speed)(struct ixgbe_hw *, ixgbe_link_speed);
+@@ -81,7 +81,12 @@
+ #define IXGBE_I2C_EEPROM_STATUS_FAIL		0x2
+ #define IXGBE_I2C_EEPROM_STATUS_IN_PROGRESS	0x3
+ #define IXGBE_CS4227				0xBE    /* CS4227 address */
+-#define IXGBE_CS4227_SPARE24_LSB		0x12B0  /* Reg to program EDC */
++#define IXGBE_CS4227_LINE_SPARE22_MSB		0x12AD	/* Reg to set speed */
++#define IXGBE_CS4227_LINE_SPARE24_LSB		0x12B0	/* Reg to set EDC */
++#define IXGBE_CS4227_HOST_SPARE22_MSB		0x1AAD	/* Reg to set speed */
++#define IXGBE_CS4227_HOST_SPARE24_LSB		0x1AB0	/* Reg to program EDC */
++#define IXGBE_CS4227_SPEED_1G			0x8000
++#define IXGBE_CS4227_SPEED_10G			0
+ #define IXGBE_CS4227_EDC_MODE_CX1		0x0002
+ #define IXGBE_CS4227_EDC_MODE_SR		0x0004
  
- 	/* Packet Buffer Manipulation */
- 	void (*set_rxpba)(struct ixgbe_hw *, int, u32, int);
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index 128cf6ce3a46..02ec18764577 100644
+index 02ec18764577..353a04661f6c 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -908,6 +908,19 @@ static s32 ixgbe_setup_ixfi_x550em(struct ixgbe_hw *hw, ixgbe_link_speed *speed)
+@@ -908,6 +908,39 @@ static s32 ixgbe_setup_ixfi_x550em(struct ixgbe_hw *hw, ixgbe_link_speed *speed)
  	return status;
  }
  
-+/** ixgbe_setup_mac_link_sfp_x550em - Configure the KR PHY for SFP.
++/** ixgbe_supported_sfp_modules_X550em - Check if SFP module type is supported
 + *  @hw: pointer to hardware structure
-+ *
-+ *  Configures the extern PHY and the integrated KR PHY for SFP support.
++ *  @linear: true if SFP module is linear
 + */
-+static s32
-+ixgbe_setup_mac_link_sfp_x550em(struct ixgbe_hw *hw,
-+				ixgbe_link_speed speed,
-+				__always_unused bool autoneg_wait_to_complete)
++static s32 ixgbe_supported_sfp_modules_X550em(struct ixgbe_hw *hw, bool *linear)
 +{
-+	return ixgbe_setup_ixfi_x550em(hw, &speed);
++	switch (hw->phy.sfp_type) {
++	case ixgbe_sfp_type_not_present:
++		return IXGBE_ERR_SFP_NOT_PRESENT;
++	case ixgbe_sfp_type_da_cu_core0:
++	case ixgbe_sfp_type_da_cu_core1:
++		*linear = true;
++		break;
++	case ixgbe_sfp_type_srlr_core0:
++	case ixgbe_sfp_type_srlr_core1:
++	case ixgbe_sfp_type_da_act_lmt_core0:
++	case ixgbe_sfp_type_da_act_lmt_core1:
++	case ixgbe_sfp_type_1g_sx_core0:
++	case ixgbe_sfp_type_1g_sx_core1:
++	case ixgbe_sfp_type_1g_lx_core0:
++	case ixgbe_sfp_type_1g_lx_core1:
++		*linear = false;
++		break;
++	case ixgbe_sfp_type_unknown:
++	case ixgbe_sfp_type_1g_cu_core0:
++	case ixgbe_sfp_type_1g_cu_core1:
++	default:
++		return IXGBE_ERR_SFP_NOT_SUPPORTED;
++	}
++
++	return 0;
 +}
 +
+ /** ixgbe_setup_mac_link_sfp_x550em - Configure the KR PHY for SFP.
+  *  @hw: pointer to hardware structure
+  *
+@@ -918,7 +951,49 @@ ixgbe_setup_mac_link_sfp_x550em(struct ixgbe_hw *hw,
+ 				ixgbe_link_speed speed,
+ 				__always_unused bool autoneg_wait_to_complete)
+ {
+-	return ixgbe_setup_ixfi_x550em(hw, &speed);
++	s32 status;
++	u16 slice, value;
++	bool setup_linear = false;
++
++	/* Check if SFP module is supported and linear */
++	status = ixgbe_supported_sfp_modules_X550em(hw, &setup_linear);
++
++	/* If no SFP module present, then return success. Return success since
++	 * there is no reason to configure CS4227 and SFP not present error is
++	 * not accepted in the setup MAC link flow.
++	 */
++	if (status == IXGBE_ERR_SFP_NOT_PRESENT)
++		return 0;
++
++	if (status)
++		return status;
++
++	/* Configure CS4227 LINE side to 10G SR. */
++	slice = IXGBE_CS4227_LINE_SPARE22_MSB + (hw->bus.lan_id << 12);
++	value = IXGBE_CS4227_SPEED_10G;
++	status = ixgbe_write_i2c_combined_generic(hw, IXGBE_CS4227, slice,
++						  value);
++
++	/* Configure CS4227 for HOST connection rate then type. */
++	slice = IXGBE_CS4227_HOST_SPARE22_MSB + (hw->bus.lan_id << 12);
++	value = speed & IXGBE_LINK_SPEED_10GB_FULL ?
++		IXGBE_CS4227_SPEED_10G : IXGBE_CS4227_SPEED_1G;
++	status = ixgbe_write_i2c_combined_generic(hw, IXGBE_CS4227, slice,
++						  value);
++
++	slice = IXGBE_CS4227_HOST_SPARE24_LSB + (hw->bus.lan_id << 12);
++	if (setup_linear)
++		value = (IXGBE_CS4227_EDC_MODE_CX1 << 1) | 1;
++	else
++		value = (IXGBE_CS4227_EDC_MODE_SR << 1) | 1;
++	status = ixgbe_write_i2c_combined_generic(hw, IXGBE_CS4227, slice,
++						  value);
++
++	/* If internal link mode is XFI, then setup XFI internal link. */
++	if (!(hw->phy.nw_mng_if_sel & IXGBE_NW_MNG_IF_SEL_INT_PHY_MODE))
++		status = ixgbe_setup_ixfi_x550em(hw, &speed);
++
++	return status;
+ }
+ 
  /**
-  * ixgbe_setup_mac_link_t_X550em - Sets the auto advertised link speed
-  * @hw: pointer to hardware structure
-@@ -1002,6 +1015,10 @@ static void ixgbe_init_mac_link_ops_X550em(struct ixgbe_hw *hw)
- 		mac->ops.disable_tx_laser = NULL;
- 		mac->ops.enable_tx_laser = NULL;
- 		mac->ops.flap_tx_laser = NULL;
-+		mac->ops.setup_link = ixgbe_setup_mac_link_multispeed_fiber;
-+		mac->ops.setup_mac_link = ixgbe_setup_mac_link_sfp_x550em;
-+		mac->ops.set_rate_select_speed =
-+					ixgbe_set_soft_rate_select_speed;
- 		break;
- 	case ixgbe_media_type_copper:
- 		mac->ops.setup_link = ixgbe_setup_mac_link_t_X550em;
+@@ -1034,53 +1109,18 @@ static void ixgbe_init_mac_link_ops_X550em(struct ixgbe_hw *hw)
+  */
+ static s32 ixgbe_setup_sfp_modules_X550em(struct ixgbe_hw *hw)
+ {
+-	bool setup_linear;
+-	u16 reg_slice, edc_mode;
+-	s32 ret_val;
++	s32 status;
++	bool linear;
+ 
+-	switch (hw->phy.sfp_type) {
+-	case ixgbe_sfp_type_unknown:
+-		return 0;
+-	case ixgbe_sfp_type_not_present:
+-		return IXGBE_ERR_SFP_NOT_PRESENT;
+-	case ixgbe_sfp_type_da_cu_core0:
+-	case ixgbe_sfp_type_da_cu_core1:
+-		setup_linear = true;
+-		break;
+-	case ixgbe_sfp_type_srlr_core0:
+-	case ixgbe_sfp_type_srlr_core1:
+-	case ixgbe_sfp_type_da_act_lmt_core0:
+-	case ixgbe_sfp_type_da_act_lmt_core1:
+-	case ixgbe_sfp_type_1g_sx_core0:
+-	case ixgbe_sfp_type_1g_sx_core1:
+-		setup_linear = false;
+-		break;
+-	default:
+-		return IXGBE_ERR_SFP_NOT_SUPPORTED;
+-	}
++	/* Check if SFP module is supported */
++	status = ixgbe_supported_sfp_modules_X550em(hw, &linear);
++	if (status)
++		return status;
+ 
+ 	ixgbe_init_mac_link_ops_X550em(hw);
+ 	hw->phy.ops.reset = NULL;
+ 
+-	/* The CS4227 slice address is the base address + the port-pair reg
+-	 * offset. I.e. Slice 0 = 0x12B0 and slice 1 = 0x22B0.
+-	 */
+-	reg_slice = IXGBE_CS4227_SPARE24_LSB + (hw->bus.lan_id << 12);
+-
+-	if (setup_linear)
+-		edc_mode = (IXGBE_CS4227_EDC_MODE_CX1 << 1) | 0x1;
+-	else
+-		edc_mode = (IXGBE_CS4227_EDC_MODE_SR << 1) | 0x1;
+-
+-	/* Configure CS4227 for connection type. */
+-	ret_val = hw->phy.ops.write_i2c_combined(hw, IXGBE_CS4227, reg_slice,
+-						 edc_mode);
+-
+-	if (ret_val)
+-		ret_val = hw->phy.ops.write_i2c_combined(hw, 0x80, reg_slice,
+-							 edc_mode);
+-
+-	return ret_val;
++	return 0;
+ }
+ 
+ /** ixgbe_get_link_capabilities_x550em - Determines link capabilities
 
