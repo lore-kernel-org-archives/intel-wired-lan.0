@@ -1,113 +1,63 @@
-From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Tue, 28 Jul 2015 13:02:00 -0400
-Subject: [Intel-wired-lan] [net PATCH] i40e: Set defport behavior for the
-	Main VSI when in promiscuous mode
-Message-ID: <1438102920-189224-1-git-send-email-catherine.sullivan@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 28 Jul 2015 20:26:01 +0000
+Subject: [Intel-wired-lan] [next PATCH S9 15/15] i40e/i40evf: Bump i40e
+ to	1.3.12 and i40evf to 1.3.6
+In-Reply-To: <1437684884-222825-16-git-send-email-catherine.sullivan@intel.com>
+References: <1437684884-222825-1-git-send-email-catherine.sullivan@intel.com>
+ <1437684884-222825-16-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A016BE459@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Anjali Singhai Jain <anjali.singhai@intel.com>
+Verified-by: Andrew Bowers <Andrewx.bowers@intel.com>
+Present  in git log, code changes present in tree, drivers report correct versions through modinfo.
 
-This fixes bugs where the port is not receiving multicast or vlan tagged
-packets when in promiscuous mode. This can occur when a SW bridge is
-created on top of the device.
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Catherine Sullivan
+Sent: Thursday, July 23, 2015 1:55 PM
+To: intel-wired-lan@lists.osuosl.org
+Subject: [Intel-wired-lan] [next PATCH S9 15/15] i40e/i40evf: Bump i40e to 1.3.12 and i40evf to 1.3.6
 
-This also fixes issues where the promiscuous behavior setting was not
-being preserved across a reset caused by features being enabled or
-disabled.
+Bump.
 
-We are using defport instead of doing a true promiscuous mode because we do
-not need to receive the SRIOV or VMDq VSI directed traffic which would suck
-up bandwidth and is really not intended for the SW bridge.
-
-In addition, with defport we get VLAN promiscuous behavior which is not
-possible from the VSI level promiscuous setting.
-
-Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-Change-ID: Ie21985eac32d5af1c02e9d71c6430a90d5bab40f
+Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
+Change-ID: Iaf6c969d620704b374584ff82d09922a4d57b025
 ---
- drivers/net/ethernet/intel/i40e/i40e.h      |  1 +
- drivers/net/ethernet/intel/i40e/i40e_main.c | 36 ++++++++++++++++++++++++-----
- 2 files changed, 31 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index ec76c3f..2198991 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -362,6 +362,7 @@ struct i40e_pf {
- #ifdef CONFIG_DEBUG_FS
- 	struct dentry *i40e_dbg_pf;
- #endif /* CONFIG_DEBUG_FS */
-+	bool cur_promisc;
- 
- 	u16 instance; /* A unique number per i40e_pf instance in the system */
- 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 48a52b3..9295768 100644
+index 1681e7f..aef0a4c 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1885,13 +1885,36 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 		cur_promisc = (!!(vsi->current_netdev_flags & IFF_PROMISC) ||
- 			       test_bit(__I40E_FILTER_OVERFLOW_PROMISC,
- 					&vsi->state));
--		aq_ret = i40e_aq_set_vsi_unicast_promiscuous(&vsi->back->hw,
-+		if (vsi->type == I40E_VSI_MAIN && pf->lan_veb != I40E_NO_VEB) {
-+			/*  set defport ON for Main VSI instead of true promisc
-+			 *  this way we will get all unicast/multicast and vlan
-+			 *  promisc behavior but will not get VF or VMDq traffic
-+			 *  replicated on the Main VSI.
-+			 */
-+			if (pf->cur_promisc != cur_promisc) {
-+				pf->cur_promisc = cur_promisc;
-+				i40e_do_reset_safe(pf,
-+						BIT(__I40E_PF_RESET_REQUESTED));
-+			}
-+		} else {
-+			aq_ret = i40e_aq_set_vsi_unicast_promiscuous(
-+							     &vsi->back->hw,
- 							     vsi->seid,
- 							     cur_promisc, NULL);
--		if (aq_ret)
--			dev_info(&pf->pdev->dev,
--				 "set uni promisc failed, err %d, aq_err %d\n",
--				 aq_ret, pf->hw.aq.asq_last_status);
-+			if (aq_ret)
-+				dev_info(&pf->pdev->dev,
-+					 "set unicast promisc failed, err %d, aq_err %d\n",
-+					 aq_ret, pf->hw.aq.asq_last_status);
-+			aq_ret = i40e_aq_set_vsi_multicast_promiscuous(
-+								&vsi->back->hw,
-+								vsi->seid,
-+								cur_promisc,
-+								NULL);
-+			if (aq_ret)
-+				dev_info(&pf->pdev->dev,
-+					 "set multicast promisc failed, err %d, aq_err %d\n",
-+					 aq_ret, pf->hw.aq.asq_last_status);
-+		}
- 		aq_ret = i40e_aq_set_vsi_broadcast(&vsi->back->hw,
- 						   vsi->seid,
- 						   cur_promisc, NULL);
-@@ -3929,6 +3952,7 @@ static void i40e_vsi_close(struct i40e_vsi *vsi)
- 	i40e_vsi_free_irq(vsi);
- 	i40e_vsi_free_tx_resources(vsi);
- 	i40e_vsi_free_rx_resources(vsi);
-+	vsi->current_netdev_flags = 0;
- }
+@@ -40,7 +40,7 @@ static const char i40e_driver_string[] =
  
- /**
-@@ -9090,7 +9114,7 @@ void i40e_veb_release(struct i40e_veb *veb)
-  **/
- static int i40e_add_veb(struct i40e_veb *veb, struct i40e_vsi *vsi)
- {
--	bool is_default = false;
-+	bool is_default = veb->pf->cur_promisc;
- 	bool is_cloud = false;
- 	int ret;
+ #define DRV_VERSION_MAJOR 1
+ #define DRV_VERSION_MINOR 3
+-#define DRV_VERSION_BUILD 9
++#define DRV_VERSION_BUILD 12
+ #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
+ 	     __stringify(DRV_VERSION_MINOR) "." \
+ 	     __stringify(DRV_VERSION_BUILD)    DRV_KERN
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 588cacf..177fd47 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -35,7 +35,7 @@ char i40evf_driver_name[] = "i40evf";  static const char i40evf_driver_string[] =
+ 	"Intel(R) XL710/X710 Virtual Function Network Driver";
  
--- 
+-#define DRV_VERSION "1.3.5"
++#define DRV_VERSION "1.3.6"
+ const char i40evf_driver_version[] = DRV_VERSION;  static const char i40evf_copyright[] =
+ 	"Copyright (c) 2013 - 2015 Intel Corporation.";
+--
 1.9.3
 
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan at lists.osuosl.org
+http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
