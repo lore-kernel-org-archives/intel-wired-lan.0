@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 28 Jul 2015 20:33:29 +0000
-Subject: [Intel-wired-lan] [next PATCH S9 01/15] i40e/i40evf: fix up
- type	clash in i40e_aq_rc_to_posix conversion
-In-Reply-To: <1437684884-222825-2-git-send-email-catherine.sullivan@intel.com>
+Date: Tue, 28 Jul 2015 20:40:16 +0000
+Subject: [Intel-wired-lan] [next PATCH S9 03/15] i40e: fixup padding
+ issue	in get_cee_dcb_cfg_v1_resp
+In-Reply-To: <1437684884-222825-4-git-send-email-catherine.sullivan@intel.com>
 References: <1437684884-222825-1-git-send-email-catherine.sullivan@intel.com>
- <1437684884-222825-2-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A016BE475@ORSMSX104.amr.corp.intel.com>
+ <1437684884-222825-4-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A016BE4A9@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,6 +13,7 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 Verified-by: Andrew Bowers <andrewx.bowers@intel.com>
+
 Present in git log, code changes present in tree.
 
 > -----Original Message-----
@@ -20,83 +21,61 @@ Present in git log, code changes present in tree.
 > Behalf Of Catherine Sullivan
 > Sent: Thursday, July 23, 2015 1:55 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S9 01/15] i40e/i40evf: fix up type clash
-> in i40e_aq_rc_to_posix conversion
+> Subject: [Intel-wired-lan] [next PATCH S9 03/15] i40e: fixup padding issue in
+> get_cee_dcb_cfg_v1_resp
 > 
 > From: Shannon Nelson <shannon.nelson@intel.com>
 > 
-> The error code sent into i40e_aq_rc_to_posix() are signed values, so we
-> really need to treat them as such.
+> The struct i40e_aqc_get_cee_dcb_cfg_v1_resp was originally defined with
+> word boundary layout issues, which most compilers deal with by silently
+> adding padding, making the actual struct larger than designed.
+> This patch adds an extra byte in fields reserved3 and reserved4 to directly
+> acknowledge that padding.
 > 
-> Reported-by: Helin Zhang <helin.zhang@intel.com>
+> Because the struct doesn't actually change in size or layout, this doesn't
+> constitute a change in the API.
+> 
 > Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-> Change-ID: I3d1ae0ee9ae0b1b6f5fc424f8b8cc58b0ea93203
+> Change-ID: I53fa4741b73fa255621232a85fba000b0e223015
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_adminq.h   | 9 ++++++---
->  drivers/net/ethernet/intel/i40evf/i40e_adminq.h | 9 ++++++---
->  2 files changed, 12 insertions(+), 6 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h | 13 +++++++++++--
+>  1 file changed, 11 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.h
-> b/drivers/net/ethernet/intel/i40e/i40e_adminq.h
-> index 28e519a..299e3d3 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_adminq.h
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.h
-> @@ -108,9 +108,10 @@ struct i40e_adminq_info {
-> 
->  /**
->   * i40e_aq_rc_to_posix - convert errors to user-land codes
-> - * aq_rc: AdminQ error code to convert
-> + * aq_ret: AdminQ handler error code can override aq_rc
-> + * aq_rc: AdminQ firmware error code to convert
->   **/
-> -static inline int i40e_aq_rc_to_posix(u32 aq_ret, u16 aq_rc)
-> +static inline int i40e_aq_rc_to_posix(int aq_ret, int aq_rc)
->  {
->  	int aq_to_posix[] = {
->  		0,           /* I40E_AQ_RC_OK */
-> @@ -142,8 +143,10 @@ static inline int i40e_aq_rc_to_posix(u32 aq_ret, u16
-> aq_rc)
->  	if (aq_ret == I40E_ERR_ADMIN_QUEUE_TIMEOUT)
->  		return -EAGAIN;
-> 
-> -	if (aq_rc >= ARRAY_SIZE(aq_to_posix))
-> +	if (aq_rc >= (sizeof(aq_to_posix) / sizeof((aq_to_posix)[0])) ||
-> +	    aq_rc < 0)
->  		return -ERANGE;
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+> b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+> index 95d23bf..b840fab 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+> @@ -2074,6 +2074,15 @@ I40E_CHECK_CMD_LENGTH(i40e_aqc_lldp_start);
+>  #define I40E_AQC_CEE_ISCSI_STATUS_MASK	(0x7 <<
+> I40E_AQC_CEE_ISCSI_STATUS_SHIFT)
+>  #define I40E_AQC_CEE_FIP_STATUS_SHIFT	0x10
+>  #define I40E_AQC_CEE_FIP_STATUS_MASK	(0x7 <<
+> I40E_AQC_CEE_FIP_STATUS_SHIFT)
 > +
->  	return aq_to_posix[aq_rc];
->  }
-> 
-> diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
-> b/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
-> index ef43d68..c4efa6b 100644
-> --- a/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
-> +++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
-> @@ -108,9 +108,10 @@ struct i40e_adminq_info {
-> 
->  /**
->   * i40e_aq_rc_to_posix - convert errors to user-land codes
-> - * aq_rc: AdminQ error code to convert
-> + * aq_ret: AdminQ handler error code can override aq_rc
-> + * aq_rc: AdminQ firmware error code to convert
->   **/
-> -static inline int i40e_aq_rc_to_posix(u32 aq_ret, u16 aq_rc)
-> +static inline int i40e_aq_rc_to_posix(int aq_ret, int aq_rc)
->  {
->  	int aq_to_posix[] = {
->  		0,           /* I40E_AQ_RC_OK */
-> @@ -142,8 +143,10 @@ static inline int i40e_aq_rc_to_posix(u32 aq_ret, u16
-> aq_rc)
->  	if (aq_ret == I40E_ERR_ADMIN_QUEUE_TIMEOUT)
->  		return -EAGAIN;
-> 
-> -	if (aq_rc >= ARRAY_SIZE(aq_to_posix))
-> +	if (aq_rc >= (sizeof(aq_to_posix) / sizeof((aq_to_posix)[0])) ||
-> +	    aq_rc < 0)
->  		return -ERANGE;
-> +
->  	return aq_to_posix[aq_rc];
->  }
+> +/* struct i40e_aqc_get_cee_dcb_cfg_v1_resp was originally defined with
+> + * word boundary layout issues, which the Linux compilers silently deal
+> + * with by adding padding, making the actual struct larger than designed.
+> + * However, the FW compiler for the NIC is less lenient and complains
+> + * about the struct.  Hence, the struct defined here has an extra byte
+> +in
+> + * fields reserved3 and reserved4 to directly acknowledge that padding,
+> + * and the new length is used in the length check macro.
+> + */
+>  struct i40e_aqc_get_cee_dcb_cfg_v1_resp {
+>  	u8	reserved1;
+>  	u8	oper_num_tc;
+> @@ -2081,9 +2090,9 @@ struct i40e_aqc_get_cee_dcb_cfg_v1_resp {
+>  	u8	reserved2;
+>  	u8	oper_tc_bw[8];
+>  	u8	oper_pfc_en;
+> -	u8	reserved3;
+> +	u8	reserved3[2];
+>  	__le16	oper_app_prio;
+> -	u8	reserved4;
+> +	u8	reserved4[2];
+>  	__le16	tlv_status;
+>  };
 > 
 > --
 > 1.9.3
