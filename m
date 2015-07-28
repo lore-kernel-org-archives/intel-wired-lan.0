@@ -1,263 +1,113 @@
-From: Todd Fujinaka <todd.fujinaka@intel.com>
-Date: Tue, 28 Jul 2015 08:35:08 -0700
-Subject: [Intel-wired-lan] [PATCH] igb: add support for 1512 PHY
-Message-ID: <20150728153507.8369.56.stgit@htfujina-fc.jf.intel.com>
+From: Catherine Sullivan <catherine.sullivan@intel.com>
+Date: Tue, 28 Jul 2015 13:02:00 -0400
+Subject: [Intel-wired-lan] [net PATCH] i40e: Set defport behavior for the
+	Main VSI when in promiscuous mode
+Message-ID: <1438102920-189224-1-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch adds support for Marvell PHY 1512 (required for Avoton).
+From: Anjali Singhai Jain <anjali.singhai@intel.com>
 
-Submitted by: Maciej Szwed <maciej.szwed@intel.com>
-Signed-off-by: Todd Fujinaka <todd.fujinaka@intel.com>
+This fixes bugs where the port is not receiving multicast or vlan tagged
+packets when in promiscuous mode. This can occur when a SW bridge is
+created on top of the device.
+
+This also fixes issues where the promiscuous behavior setting was not
+being preserved across a reset caused by features being enabled or
+disabled.
+
+We are using defport instead of doing a true promiscuous mode because we do
+not need to receive the SRIOV or VMDq VSI directed traffic which would suck
+up bandwidth and is really not intended for the SW bridge.
+
+In addition, with defport we get VLAN promiscuous behavior which is not
+possible from the VSI level promiscuous setting.
+
+Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+Change-ID: Ie21985eac32d5af1c02e9d71c6430a90d5bab40f
 ---
- 0 files changed
+ drivers/net/ethernet/intel/i40e/i40e.h      |  1 +
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 36 ++++++++++++++++++++++++-----
+ 2 files changed, 31 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
-index 6e59d0e..f971e0c 100644
---- a/drivers/net/ethernet/intel/igb/e1000_82575.c
-+++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
-@@ -47,6 +47,7 @@ static s32  igb_phy_hw_reset_sgmii_82575(struct e1000_hw *);
- static s32  igb_read_phy_reg_sgmii_82575(struct e1000_hw *, u32, u16 *);
- static s32  igb_read_phy_reg_82580(struct e1000_hw *, u32, u16 *);
- static s32  igb_write_phy_reg_82580(struct e1000_hw *, u32, u16);
-+static s32  igb_initialize_M88E1512_phy(struct e1000_hw *hw);
- static s32  igb_reset_hw_82575(struct e1000_hw *);
- static s32  igb_reset_hw_82580(struct e1000_hw *);
- static s32  igb_set_d0_lplu_state_82575(struct e1000_hw *, bool);
-@@ -231,6 +232,7 @@ static s32 igb_init_phy_params_82575(struct e1000_hw *hw)
- 	/* Verify phy id and set remaining function pointers */
- 	switch (phy->id) {
- 	case M88E1543_E_PHY_ID:
-+	case M88E1512_E_PHY_ID:
- 	case I347AT4_E_PHY_ID:
- 	case M88E1112_E_PHY_ID:
- 	case M88E1111_I_PHY_ID:
-@@ -243,7 +245,7 @@ static s32 igb_init_phy_params_82575(struct e1000_hw *hw)
- 		else
- 			phy->ops.get_cable_length = igb_get_cable_length_m88;
- 		phy->ops.force_speed_duplex = igb_phy_force_speed_duplex_m88;
--		/* Check if this PHY is confgured for media swap. */
-+		/* Check if this PHY is configured for media swap. */
- 		if (phy->id == M88E1112_E_PHY_ID) {
- 			u16 data;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index ec76c3f..2198991 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -362,6 +362,7 @@ struct i40e_pf {
+ #ifdef CONFIG_DEBUG_FS
+ 	struct dentry *i40e_dbg_pf;
+ #endif /* CONFIG_DEBUG_FS */
++	bool cur_promisc;
  
-@@ -266,6 +268,11 @@ static s32 igb_init_phy_params_82575(struct e1000_hw *hw)
- 				hw->mac.ops.check_for_link =
- 						igb_check_for_link_media_swap;
- 		}
-+		if (phy->id == M88E1512_E_PHY_ID) {
-+			ret_val = igb_initialize_M88E1512_phy(hw);
-+			if (ret_val)
-+				goto out;
+ 	u16 instance; /* A unique number per i40e_pf instance in the system */
+ 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 48a52b3..9295768 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -1885,13 +1885,36 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
+ 		cur_promisc = (!!(vsi->current_netdev_flags & IFF_PROMISC) ||
+ 			       test_bit(__I40E_FILTER_OVERFLOW_PROMISC,
+ 					&vsi->state));
+-		aq_ret = i40e_aq_set_vsi_unicast_promiscuous(&vsi->back->hw,
++		if (vsi->type == I40E_VSI_MAIN && pf->lan_veb != I40E_NO_VEB) {
++			/*  set defport ON for Main VSI instead of true promisc
++			 *  this way we will get all unicast/multicast and vlan
++			 *  promisc behavior but will not get VF or VMDq traffic
++			 *  replicated on the Main VSI.
++			 */
++			if (pf->cur_promisc != cur_promisc) {
++				pf->cur_promisc = cur_promisc;
++				i40e_do_reset_safe(pf,
++						BIT(__I40E_PF_RESET_REQUESTED));
++			}
++		} else {
++			aq_ret = i40e_aq_set_vsi_unicast_promiscuous(
++							     &vsi->back->hw,
+ 							     vsi->seid,
+ 							     cur_promisc, NULL);
+-		if (aq_ret)
+-			dev_info(&pf->pdev->dev,
+-				 "set uni promisc failed, err %d, aq_err %d\n",
+-				 aq_ret, pf->hw.aq.asq_last_status);
++			if (aq_ret)
++				dev_info(&pf->pdev->dev,
++					 "set unicast promisc failed, err %d, aq_err %d\n",
++					 aq_ret, pf->hw.aq.asq_last_status);
++			aq_ret = i40e_aq_set_vsi_multicast_promiscuous(
++								&vsi->back->hw,
++								vsi->seid,
++								cur_promisc,
++								NULL);
++			if (aq_ret)
++				dev_info(&pf->pdev->dev,
++					 "set multicast promisc failed, err %d, aq_err %d\n",
++					 aq_ret, pf->hw.aq.asq_last_status);
 +		}
- 		break;
- 	case IGP03E1000_E_PHY_ID:
- 		phy->type = e1000_phy_igp_3;
-@@ -900,6 +907,7 @@ out:
-  **/
- static s32 igb_phy_hw_reset_sgmii_82575(struct e1000_hw *hw)
- {
-+	struct e1000_phy_info *phy = &hw->phy;
- 	s32 ret_val;
- 
- 	/* This isn't a true "hard" reset, but is the only reset
-@@ -916,7 +924,11 @@ static s32 igb_phy_hw_reset_sgmii_82575(struct e1000_hw *hw)
- 		goto out;
- 
- 	ret_val = igb_phy_sw_reset(hw);
-+	if (ret_val)
-+		goto out;
- 
-+	if (phy->id == M88E1512_E_PHY_ID)
-+		ret_val = igb_initialize_M88E1512_phy(hw);
- out:
- 	return ret_val;
- }
-@@ -1590,6 +1602,7 @@ static s32 igb_setup_copper_link_82575(struct e1000_hw *hw)
- 		case I347AT4_E_PHY_ID:
- 		case M88E1112_E_PHY_ID:
- 		case M88E1543_E_PHY_ID:
-+		case M88E1512_E_PHY_ID:
- 		case I210_I_PHY_ID:
- 			ret_val = igb_copper_link_setup_m88_gen2(hw);
- 			break;
-@@ -2634,7 +2647,8 @@ s32 igb_set_eee_i354(struct e1000_hw *hw, bool adv1G, bool adv100M)
- 	u16 phy_data;
- 
- 	if ((hw->phy.media_type != e1000_media_type_copper) ||
--	    (phy->id != M88E1543_E_PHY_ID))
-+	    ((phy->id != M88E1543_E_PHY_ID) &&
-+	     (phy->id != M88E1512_E_PHY_ID)))
- 		goto out;
- 
- 	if (!hw->dev_spec._82575.eee_disable) {
-@@ -2714,7 +2728,8 @@ s32 igb_get_eee_status_i354(struct e1000_hw *hw, bool *status)
- 
- 	/* Check if EEE is supported on this device. */
- 	if ((hw->phy.media_type != e1000_media_type_copper) ||
--	    (phy->id != M88E1543_E_PHY_ID))
-+	    ((phy->id != M88E1543_E_PHY_ID) &&
-+	     (phy->id != M88E1512_E_PHY_ID)))
- 		goto out;
- 
- 	ret_val = igb_read_xmdio_reg(hw, E1000_PCS_STATUS_ADDR_I354,
-diff --git a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
-index 1c87d74..0032517 100644
---- a/drivers/net/ethernet/intel/igb/e1000_defines.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
-@@ -604,6 +604,10 @@
- #define E1000_M88E1112_MAC_CTRL_1_MODE_SHIFT	7
- #define E1000_M88E1112_PAGE_ADDR		0x16
- #define E1000_M88E1112_STATUS			0x01
-+#define E1000_M88E1512_CFG_REG_1        0x0010
-+#define E1000_M88E1512_CFG_REG_2        0x0011
-+#define E1000_M88E1512_CFG_REG_3        0x0007
-+#define E1000_M88E1512_MODE             0x0014
- 
- /* PCI Express Control */
- #define E1000_GCR_CMPL_TMOUT_MASK       0x0000F000
-@@ -861,6 +865,7 @@
- #define M88_VENDOR           0x0141
- #define I210_I_PHY_ID        0x01410C00
- #define M88E1543_E_PHY_ID    0x01410EA0
-+#define M88E1512_E_PHY_ID    0x01410DD0
- #define BCM54616_E_PHY_ID    0x03625D10
- 
- /* M88E1000 Specific Registers */
-diff --git a/drivers/net/ethernet/intel/igb/e1000_phy.c b/drivers/net/ethernet/intel/igb/e1000_phy.c
-index 987c9de..23ec28f 100644
---- a/drivers/net/ethernet/intel/igb/e1000_phy.c
-+++ b/drivers/net/ethernet/intel/igb/e1000_phy.c
-@@ -1262,6 +1262,8 @@ s32 igb_phy_force_speed_duplex_m88(struct e1000_hw *hw)
- 			switch (hw->phy.id) {
- 			case I347AT4_E_PHY_ID:
- 			case M88E1112_E_PHY_ID:
-+			case M88E1543_E_PHY_ID:
-+			case M88E1512_E_PHY_ID:
- 			case I210_I_PHY_ID:
- 				reset_dsp = false;
- 				break;
-@@ -1270,9 +1272,9 @@ s32 igb_phy_force_speed_duplex_m88(struct e1000_hw *hw)
- 					reset_dsp = false;
- 				break;
- 			}
--			if (!reset_dsp)
-+			if (!reset_dsp) {
- 				hw_dbg("Link taking longer than expected.\n");
--			else {
-+			} else {
- 				/* We didn't get link.
- 				 * Reset the DSP and cross our fingers.
- 				 */
-@@ -1297,6 +1299,8 @@ s32 igb_phy_force_speed_duplex_m88(struct e1000_hw *hw)
- 	if (hw->phy.type != e1000_phy_m88 ||
- 	    hw->phy.id == I347AT4_E_PHY_ID ||
- 	    hw->phy.id == M88E1112_E_PHY_ID ||
-+	    hw->phy.id == M88E1543_E_PHY_ID ||
-+	    hw->phy.id == M88E1512_E_PHY_ID ||
- 	    hw->phy.id == I210_I_PHY_ID)
- 		goto out;
- 
-@@ -1737,6 +1741,7 @@ s32 igb_get_cable_length_m88_gen2(struct e1000_hw *hw)
- 		phy->cable_length = phy_data / (is_cm ? 100 : 1);
- 		break;
- 	case M88E1543_E_PHY_ID:
-+	case M88E1512_E_PHY_ID:
- 	case I347AT4_E_PHY_ID:
- 		/* Remember the original page select and set it to 7 */
- 		ret_val = phy->ops.read_reg(hw, I347AT4_PAGE_SELECT,
-@@ -2189,6 +2194,90 @@ s32 igb_phy_init_script_igp3(struct e1000_hw *hw)
+ 		aq_ret = i40e_aq_set_vsi_broadcast(&vsi->back->hw,
+ 						   vsi->seid,
+ 						   cur_promisc, NULL);
+@@ -3929,6 +3952,7 @@ static void i40e_vsi_close(struct i40e_vsi *vsi)
+ 	i40e_vsi_free_irq(vsi);
+ 	i40e_vsi_free_tx_resources(vsi);
+ 	i40e_vsi_free_rx_resources(vsi);
++	vsi->current_netdev_flags = 0;
  }
  
  /**
-+ *  igb_initialize_M88E1512_phy - Initialize M88E1512 PHY
-+ *  @hw: pointer to the HW structure
-+ *
-+ *  Initialize Marvel 1512 to work correctly with Avoton.
-+ **/
-+s32 igb_initialize_M88E1512_phy(struct e1000_hw *hw)
-+{
-+	struct e1000_phy_info *phy = &hw->phy;
-+	s32 ret_val = 0;
-+
-+	/* Switch to PHY page 0xFF. */
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1543_PAGE_ADDR, 0x00FF);
-+	if (ret_val)
-+		goto out;
-+
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1512_CFG_REG_2, 0x214B);
-+	if (ret_val)
-+		goto out;
-+
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1512_CFG_REG_1, 0x2144);
-+	if (ret_val)
-+		goto out;
-+
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1512_CFG_REG_2, 0x0C28);
-+	if (ret_val)
-+		goto out;
-+
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1512_CFG_REG_1, 0x2146);
-+	if (ret_val)
-+		goto out;
-+
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1512_CFG_REG_2, 0xB233);
-+	if (ret_val)
-+		goto out;
-+
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1512_CFG_REG_1, 0x214D);
-+	if (ret_val)
-+		goto out;
-+
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1512_CFG_REG_2, 0xCC0C);
-+	if (ret_val)
-+		goto out;
-+
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1512_CFG_REG_1, 0x2159);
-+	if (ret_val)
-+		goto out;
-+
-+	/* Switch to PHY page 0xFB. */
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1543_PAGE_ADDR, 0x00FB);
-+	if (ret_val)
-+		goto out;
-+
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1512_CFG_REG_3, 0x000D);
-+	if (ret_val)
-+		goto out;
-+
-+	/* Switch to PHY page 0x12. */
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1543_PAGE_ADDR, 0x12);
-+	if (ret_val)
-+		goto out;
-+
-+	/* Change mode to SGMII-to-Copper */
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1512_MODE, 0x8001);
-+	if (ret_val)
-+		goto out;
-+
-+	/* Return the PHY to page 0. */
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1543_PAGE_ADDR, 0);
-+	if (ret_val)
-+		goto out;
-+
-+	ret_val = igb_phy_sw_reset(hw);
-+	if (ret_val) {
-+		hw_dbg("Error committing the PHY changes\n");
-+		return ret_val;
-+	}
-+
-+	/* msec_delay(1000); */
-+	usleep_range(1000, 2000);
-+out:
-+	return ret_val;
-+}
-+
-+/**
-  * igb_power_up_phy_copper - Restore copper link in case of PHY power down
-  * @hw: pointer to the HW structure
-  *
+@@ -9090,7 +9114,7 @@ void i40e_veb_release(struct i40e_veb *veb)
+  **/
+ static int i40e_add_veb(struct i40e_veb *veb, struct i40e_vsi *vsi)
+ {
+-	bool is_default = false;
++	bool is_default = veb->pf->cur_promisc;
+ 	bool is_cloud = false;
+ 	int ret;
+ 
+-- 
+1.9.3
 
