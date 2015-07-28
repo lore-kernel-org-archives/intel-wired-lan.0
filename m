@@ -1,63 +1,107 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 28 Jul 2015 20:26:01 +0000
-Subject: [Intel-wired-lan] [next PATCH S9 15/15] i40e/i40evf: Bump i40e
- to	1.3.12 and i40evf to 1.3.6
-In-Reply-To: <1437684884-222825-16-git-send-email-catherine.sullivan@intel.com>
+Date: Tue, 28 Jul 2015 20:33:29 +0000
+Subject: [Intel-wired-lan] [next PATCH S9 01/15] i40e/i40evf: fix up
+ type	clash in i40e_aq_rc_to_posix conversion
+In-Reply-To: <1437684884-222825-2-git-send-email-catherine.sullivan@intel.com>
 References: <1437684884-222825-1-git-send-email-catherine.sullivan@intel.com>
- <1437684884-222825-16-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A016BE459@ORSMSX104.amr.corp.intel.com>
+ <1437684884-222825-2-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A016BE475@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Verified-by: Andrew Bowers <Andrewx.bowers@intel.com>
-Present  in git log, code changes present in tree, drivers report correct versions through modinfo.
+Verified-by: Andrew Bowers <andrewx.bowers@intel.com>
+Present in git log, code changes present in tree.
 
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Catherine Sullivan
-Sent: Thursday, July 23, 2015 1:55 PM
-To: intel-wired-lan@lists.osuosl.org
-Subject: [Intel-wired-lan] [next PATCH S9 15/15] i40e/i40evf: Bump i40e to 1.3.12 and i40evf to 1.3.6
-
-Bump.
-
-Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-Change-ID: Iaf6c969d620704b374584ff82d09922a4d57b025
----
- drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 1681e7f..aef0a4c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -40,7 +40,7 @@ static const char i40e_driver_string[] =
- 
- #define DRV_VERSION_MAJOR 1
- #define DRV_VERSION_MINOR 3
--#define DRV_VERSION_BUILD 9
-+#define DRV_VERSION_BUILD 12
- #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
- 	     __stringify(DRV_VERSION_MINOR) "." \
- 	     __stringify(DRV_VERSION_BUILD)    DRV_KERN
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 588cacf..177fd47 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -35,7 +35,7 @@ char i40evf_driver_name[] = "i40evf";  static const char i40evf_driver_string[] =
- 	"Intel(R) XL710/X710 Virtual Function Network Driver";
- 
--#define DRV_VERSION "1.3.5"
-+#define DRV_VERSION "1.3.6"
- const char i40evf_driver_version[] = DRV_VERSION;  static const char i40evf_copyright[] =
- 	"Copyright (c) 2013 - 2015 Intel Corporation.";
---
-1.9.3
-
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan at lists.osuosl.org
-http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Catherine Sullivan
+> Sent: Thursday, July 23, 2015 1:55 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S9 01/15] i40e/i40evf: fix up type clash
+> in i40e_aq_rc_to_posix conversion
+> 
+> From: Shannon Nelson <shannon.nelson@intel.com>
+> 
+> The error code sent into i40e_aq_rc_to_posix() are signed values, so we
+> really need to treat them as such.
+> 
+> Reported-by: Helin Zhang <helin.zhang@intel.com>
+> Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+> Change-ID: I3d1ae0ee9ae0b1b6f5fc424f8b8cc58b0ea93203
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_adminq.h   | 9 ++++++---
+>  drivers/net/ethernet/intel/i40evf/i40e_adminq.h | 9 ++++++---
+>  2 files changed, 12 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.h
+> b/drivers/net/ethernet/intel/i40e/i40e_adminq.h
+> index 28e519a..299e3d3 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_adminq.h
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.h
+> @@ -108,9 +108,10 @@ struct i40e_adminq_info {
+> 
+>  /**
+>   * i40e_aq_rc_to_posix - convert errors to user-land codes
+> - * aq_rc: AdminQ error code to convert
+> + * aq_ret: AdminQ handler error code can override aq_rc
+> + * aq_rc: AdminQ firmware error code to convert
+>   **/
+> -static inline int i40e_aq_rc_to_posix(u32 aq_ret, u16 aq_rc)
+> +static inline int i40e_aq_rc_to_posix(int aq_ret, int aq_rc)
+>  {
+>  	int aq_to_posix[] = {
+>  		0,           /* I40E_AQ_RC_OK */
+> @@ -142,8 +143,10 @@ static inline int i40e_aq_rc_to_posix(u32 aq_ret, u16
+> aq_rc)
+>  	if (aq_ret == I40E_ERR_ADMIN_QUEUE_TIMEOUT)
+>  		return -EAGAIN;
+> 
+> -	if (aq_rc >= ARRAY_SIZE(aq_to_posix))
+> +	if (aq_rc >= (sizeof(aq_to_posix) / sizeof((aq_to_posix)[0])) ||
+> +	    aq_rc < 0)
+>  		return -ERANGE;
+> +
+>  	return aq_to_posix[aq_rc];
+>  }
+> 
+> diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
+> b/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
+> index ef43d68..c4efa6b 100644
+> --- a/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
+> +++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
+> @@ -108,9 +108,10 @@ struct i40e_adminq_info {
+> 
+>  /**
+>   * i40e_aq_rc_to_posix - convert errors to user-land codes
+> - * aq_rc: AdminQ error code to convert
+> + * aq_ret: AdminQ handler error code can override aq_rc
+> + * aq_rc: AdminQ firmware error code to convert
+>   **/
+> -static inline int i40e_aq_rc_to_posix(u32 aq_ret, u16 aq_rc)
+> +static inline int i40e_aq_rc_to_posix(int aq_ret, int aq_rc)
+>  {
+>  	int aq_to_posix[] = {
+>  		0,           /* I40E_AQ_RC_OK */
+> @@ -142,8 +143,10 @@ static inline int i40e_aq_rc_to_posix(u32 aq_ret, u16
+> aq_rc)
+>  	if (aq_ret == I40E_ERR_ADMIN_QUEUE_TIMEOUT)
+>  		return -EAGAIN;
+> 
+> -	if (aq_rc >= ARRAY_SIZE(aq_to_posix))
+> +	if (aq_rc >= (sizeof(aq_to_posix) / sizeof((aq_to_posix)[0])) ||
+> +	    aq_rc < 0)
+>  		return -ERANGE;
+> +
+>  	return aq_to_posix[aq_rc];
+>  }
+> 
+> --
+> 1.9.3
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at lists.osuosl.org
+> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
