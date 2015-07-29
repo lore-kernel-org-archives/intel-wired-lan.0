@@ -1,35 +1,32 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 29 Jul 2015 21:48:35 +0000
-Subject: [Intel-wired-lan] [e1000-patches][net-next PATCH S8 02/15]
- i40e: add RX to port CRC	errors label
-In-Reply-To: <68C85B5FC2FE974B87244D7222BC92783EA1EC15@ORSMSX102.amr.corp.intel.com>
-References: <1436466416-95687-1-git-send-email-catherine.sullivan@intel.com>
- <1436466416-95687-2-git-send-email-catherine.sullivan@intel.com>
- <68C85B5FC2FE974B87244D7222BC92783EA1EC15@ORSMSX102.amr.corp.intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A016BE86E@ORSMSX104.amr.corp.intel.com>
+From: Mark D Rustad <mark.d.rustad@intel.com>
+Date: Wed, 29 Jul 2015 16:00:38 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Resolve "initialized field
+	overwritten" warnings
+Message-ID: <20150729230038.55713.326.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> > -----Original Message-----
-> > From: e1000-patches-bounces at isotope.jf.intel.com
-> > [mailto:e1000-patches- bounces at isotope.jf.intel.com] On Behalf Of
-> > Sullivan, Catherine
-> > Sent: Thursday, July 09, 2015 11:27 AM
-> > To: e1000-patches at isotope.jf.intel.com
-> > Subject: [e1000-patches][net-next PATCH S8 02/15] i40e: add RX to port
-> > CRC errors label
-> >
-> > From: Shannon Nelson <shannon.nelson@intel.com>
-> >
-> > The port.crc_errors is really an RX counter, so let's mark it as such.
-> >
-> > Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-> > Change-ID: I179afd3f8a95d45229bb4163a6aeb01f0d2d250b
-> > ---
-> >  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
+Resolve warnings resulting from redundant initialization of the
+get_bus_info field in the mac_ops_X550* structures.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index b1a895a96640..eca8a29ea683 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -2266,7 +2266,6 @@ static void ixgbe_set_source_address_pruning_X550(struct ixgbe_hw *hw,
+ 	.get_mac_addr			= &ixgbe_get_mac_addr_generic, \
+ 	.get_device_caps		= &ixgbe_get_device_caps_generic, \
+ 	.stop_adapter			= &ixgbe_stop_adapter_generic, \
+-	.get_bus_info			= &ixgbe_get_bus_info_generic, \
+ 	.set_lan_id			= &ixgbe_set_lan_id_multi_port_pcie, \
+ 	.read_analog_reg8		= NULL, \
+ 	.write_analog_reg8		= NULL, \
+
