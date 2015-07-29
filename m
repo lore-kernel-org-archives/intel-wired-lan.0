@@ -1,35 +1,135 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 28 Jul 2015 21:25:42 +0000
-Subject: [Intel-wired-lan] [next PATCH S9 15/15] i40e/i40evf: Bump i40e
- to	1.3.12 and i40evf to 1.3.6
-In-Reply-To: <1437684884-222825-16-git-send-email-catherine.sullivan@intel.com>
-References: <1437684884-222825-1-git-send-email-catherine.sullivan@intel.com>
- <1437684884-222825-16-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A016BE579@ORSMSX104.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 29 Jul 2015 11:41:22 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ c5e46b2589437349a8eda2addabaaac2f6932521 BUILD DONE
+Message-ID: <55b84b62.TktG6948A/JDM22h%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+c5e46b2589437349a8eda2addabaaac2f6932521  ixgbe: Accept SFP not present errors on all devices
 
+drivers/net/ethernet/intel/i40e/i40e_debugfs.c:1499:4: warning: format '%lx' expects argument of type 'long unsigned int', but argument 4 has type 'u32' [-Wformat=]
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Catherine Sullivan
-> Sent: Thursday, July 23, 2015 1:55 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S9 15/15] i40e/i40evf: Bump i40e to
-> 1.3.12 and i40evf to 1.3.6
-> 
-> Bump.
-> 
-> Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-> Change-ID: Iaf6c969d620704b374584ff82d09922a4d57b025
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
+Error ids grouped by kconfigs:
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Present in git log, modinfo shows correct driver versions for i40e and i40evf
+recent_errors
+??? i386-allyesconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u32
+??? i386-randconfig-x003-07271403
+??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u32
+??? parisc-allyesconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u32
+??? xtensa-allyesconfig
+    ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u32
+
+elapsed time: 54m
+
+configs tested: 100
+
+parisc                        c3000_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+i386                     randconfig-a0-201530
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+x86_64                            allnoconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+i386                             allyesconfig
+arm                       spear13xx_defconfig
+arm                                        sh
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+x86_64                   randconfig-i0-201530
+i386                     randconfig-i1-201530
+i386                     randconfig-i0-201530
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n1-201530
+i386                     randconfig-n0-201530
+arm                       omap2plus_defconfig
+arm                         s3c2410_defconfig
+arm                                       mmp
+arm                           tegra_defconfig
+arm                                      arm5
+arm                                     arm67
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+arm                                    sa1100
+arm                          prima2_defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                                   samsung
+arm                                  iop-adma
+arm                       imx_v6_v7_defconfig
+arm                          marzen_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                          amiga_defconfig
+x86_64               randconfig-x001-07271403
+x86_64               randconfig-x006-07271403
+x86_64               randconfig-x007-07271403
+x86_64               randconfig-x002-07271403
+x86_64               randconfig-x005-07271403
+x86_64               randconfig-x009-07271403
+x86_64               randconfig-x004-07271403
+x86_64               randconfig-x003-07271403
+x86_64               randconfig-x000-07271403
+x86_64               randconfig-x008-07271403
+i386                     randconfig-r0-201530
+parisc                         b180_defconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                 randconfig-x001-07271403
+i386                 randconfig-x008-07271403
+i386                 randconfig-x004-07271403
+i386                 randconfig-x003-07271403
+i386                 randconfig-x002-07271403
+i386                 randconfig-x009-07271403
+i386                 randconfig-x006-07271403
+i386                 randconfig-x005-07271403
+i386                 randconfig-x000-07271403
+i386                 randconfig-x007-07271403
+mips                                   jz4740
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+
+Thanks,
+Fengguang
