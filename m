@@ -1,12 +1,12 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 29 Jul 2015 21:47:15 +0000
-Subject: [Intel-wired-lan] [e1000-patches][net-next PATCH S8 05/15]
- i40e: Fix legacy interrupt	mode in the driver
-In-Reply-To: <68C85B5FC2FE974B87244D7222BC92783EA1EBEA@ORSMSX102.amr.corp.intel.com>
+Date: Wed, 29 Jul 2015 21:46:52 +0000
+Subject: [Intel-wired-lan] [e1000-patches][net-next PATCH S8 03/15]
+ i40e/i40evf: Move helper	functions to a header file
+In-Reply-To: <68C85B5FC2FE974B87244D7222BC92783EA1EBCC@ORSMSX102.amr.corp.intel.com>
 References: <1436466416-95687-1-git-send-email-catherine.sullivan@intel.com>
- <1436466416-95687-5-git-send-email-catherine.sullivan@intel.com>
- <68C85B5FC2FE974B87244D7222BC92783EA1EBEA@ORSMSX102.amr.corp.intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A016BE83C@ORSMSX104.amr.corp.intel.com>
+ <1436466416-95687-3-git-send-email-catherine.sullivan@intel.com>
+ <68C85B5FC2FE974B87244D7222BC92783EA1EBCC@ORSMSX102.amr.corp.intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A016BE830@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,24 +19,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 > > Sullivan, Catherine
 > > Sent: Thursday, July 09, 2015 11:27 AM
 > > To: e1000-patches at isotope.jf.intel.com
-> > Subject: [e1000-patches][net-next PATCH S8 05/15] i40e: Fix legacy
-> > interrupt mode in the driver
+> > Subject: [e1000-patches][net-next PATCH S8 03/15] i40e/i40evf: Move
+> > helper functions to a header file
 > >
 > > From: Anjali Singhai Jain <anjali.singhai@intel.com>
 > >
-> > This patch fixes the driver flow to take into account legacy interrupts.
-> > Over time we added code that assumes MSIX is the only mode that the
-> > driver runs in. It also enables a legacy workaround to trigger SWINT
-> > when the TX ring has non-cache aligned descriptors pending and
-> > interrupts are disabled.
-> >
-> > We work with a single vector in MSI mode too, so apply the same
-> > restrictions as Legacy.
+> > A new header file i40e_helper.h is added to both the PF and VF driver
+> > with functions used by both drivers.
 > >
 > > Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-> > Change-ID: I826ddff1f9bd45d2dbe11f56a3ddcef0dbf42563
+> > Change-ID: I3c6daedc2ff6f32bc7624bf5eaef05899d35f28b
 > > ---
-> >  drivers/net/ethernet/intel/i40e/i40e_main.c | 16 ++++++++++++----
-> >  1 file changed, 12 insertions(+), 4 deletions(-)
+> >  drivers/net/ethernet/intel/i40e/i40e_helper.h   | 102
+> > ++++++++++++++++++++++++
+> >  drivers/net/ethernet/intel/i40e/i40e_main.c     |  72 +----------------
+> >  drivers/net/ethernet/intel/i40evf/i40e_helper.h | 102
+> > ++++++++++++++++++++++++
+> > drivers/net/ethernet/intel/i40evf/i40evf_main.c |  80
+> > +------------------
+> >  4 files changed, 206 insertions(+), 150 deletions(-)  create mode
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
