@@ -1,127 +1,52 @@
-From: Alexander Duyck <alexander.h.duyck@redhat.com>
-Date: Thu, 30 Jul 2015 15:19:28 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Limit lowest interrupt rate for
- adaptive interrupt moderation to 12K
-Message-ID: <20150730221927.984.91700.stgit@ahduyck-vm-fedora22>
+From: Mark D Rustad <mark.d.rustad@intel.com>
+Date: Thu, 30 Jul 2015 17:19:39 -0700
+Subject: [Intel-wired-lan] [PATCH V3 00/13] ixgbe: Add support for X550EM
+	devices with SFPs
+Message-ID: <20150731001845.112031.6979.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch updates the lowest limit for adaptive interrupt interrupt
-moderation to roughly 12K interrupts per second.
+The following patches add remaining bits of support for X550EM devices with
+SFPs. The last patch adds the device ID.
 
-The way I came about reaching 12K as the desired interrupt rate is by
-testing with UDP flows.  Specifically I had a simple test that ran a
-netperf UDP_STREAM test at varying sizes.  What I found was as the packet
-sizes increased the performance fell steadily behind until we were only
-able to receive at ~4Gb/s with a message size of 65507.  A bit of digging
-found that we were dropping packets for the socket in the network stack,
-and looking at things further what I found was I could solve it by increasing
-the interrupt rate, or increasing the rmem_default/rmem_max.  What I found was
-that when the interrupt coalescing resulted in more data being processed
-per interrupt than could be stored in the socket buffer we started losing
-packets and the performance dropped.  So I reached 12K based on the
-following math.
+Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 
-rmem_default = 212992
-skb->truesize = 2994
-212992 / 2994 = 71.14 packets to fill the buffer
-
-packet rate at 1514 packet size is 812744pps
-71.14 / 812744 = 87.9us to fill socket buffer
-
-From there it was just a matter of choosing the interrupt rate and
-providing a bit of wiggle room which is why I decided to go with 12K
-interrupts per second as that uses a value of 84us.
-
-The data below is based on VM to VM over a direct assigned ixgbe interface.
-The test run was:
-	netperf -H <ip> -t UDP_STREAM"
-
-Socket  Message  Elapsed      Messages                   CPU      Service
-Size    Size     Time         Okay Errors   Throughput   Util     Demand
-bytes   bytes    secs            #      #   10^6bits/sec % SS     us/KB
-Before:
-212992   65507   60.00     1100662      0     9613.4     10.89    0.557
-212992           60.00      473474            4135.4     11.27    0.576
-
-After:
-212992   65507   60.00     1100413      0     9611.2     10.73    0.549
-212992           60.00      974132            8508.3     11.69    0.598
-
-Using bare metal the data is similar but not as dramatic as the throughput
-increases from about 8.5Gb/s to 9.5Gb/s.
-
-Signed-off-by: Alexander Duyck <alexander.h.duyck@redhat.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe.h         |    3 +--
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |    2 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c     |    2 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |    4 ++--
- 4 files changed, 5 insertions(+), 6 deletions(-)
+Changes in V2:
+- Added more changes that had been missed (9 more patches!)
+- Added latest CS4227 reset process
+Changes in V3:
+- Added a missed patch to permit SFP+ on more than just 82598 and 82599
+---
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index ac3ac2a20386..93ebb30e6cbd 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -539,8 +539,7 @@ struct hwmon_buff {
- #define IXGBE_MIN_RSC_ITR	24
- #define IXGBE_100K_ITR		40
- #define IXGBE_20K_ITR		200
--#define IXGBE_10K_ITR		400
--#define IXGBE_8K_ITR		500
-+#define IXGBE_12K_ITR		336
- 
- /* ixgbe_test_staterr - tests bits in Rx descriptor status and error fields */
- static inline __le32 ixgbe_test_staterr(union ixgbe_adv_rx_desc *rx_desc,
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-index f7aeb560a504..6a929cf2ce7c 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-@@ -2279,7 +2279,7 @@ static int ixgbe_set_coalesce(struct net_device *netdev,
- 		adapter->tx_itr_setting = ec->tx_coalesce_usecs;
- 
- 	if (adapter->tx_itr_setting == 1)
--		tx_itr_param = IXGBE_10K_ITR;
-+		tx_itr_param = IXGBE_12K_ITR;
- 	else
- 		tx_itr_param = adapter->tx_itr_setting;
- 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-index 68e1e757ecef..f3168bcc7d87 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-@@ -866,7 +866,7 @@ static int ixgbe_alloc_q_vector(struct ixgbe_adapter *adapter,
- 	if (txr_count && !rxr_count) {
- 		/* tx only vector */
- 		if (adapter->tx_itr_setting == 1)
--			q_vector->itr = IXGBE_10K_ITR;
-+			q_vector->itr = IXGBE_12K_ITR;
- 		else
- 			q_vector->itr = adapter->tx_itr_setting;
- 	} else {
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 3e6a9319c718..d35dedbb9560 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -2252,7 +2252,7 @@ static void ixgbe_update_itr(struct ixgbe_q_vector *q_vector,
- 	/* simple throttlerate management
- 	 *   0-10MB/s   lowest (100000 ints/s)
- 	 *  10-20MB/s   low    (20000 ints/s)
--	 *  20-1249MB/s bulk   (8000 ints/s)
-+	 *  20-1249MB/s bulk   (12000 ints/s)
- 	 */
- 	/* what was last interrupt timeslice? */
- 	timepassed_us = q_vector->itr >> 2;
-@@ -2341,7 +2341,7 @@ static void ixgbe_set_itr(struct ixgbe_q_vector *q_vector)
- 		new_itr = IXGBE_20K_ITR;
- 		break;
- 	case bulk_latency:
--		new_itr = IXGBE_8K_ITR;
-+		new_itr = IXGBE_12K_ITR;
- 		break;
- 	default:
- 		break;
+Mark D Rustad (13):
+      ixgbe: Accept SFP not present errors on all devices
+      ixgbe: Add X550EM support for SFP insertion interrupt
+      ixgbe: Provide I2C combined on X550EM
+      ixgbe: Provide unlocked I2C methods
+      ixgbe: Set lan_id before first I2C eeprom access
+      ixgbe: Enable bit-banging mode on X550
+      ixgbe: Clear I2C destination location
+      ixgbe: Allow reduced delays during sfp detection
+      ixgbe: Add X550EM_x dual-speed SFP+ support
+      ixgbe: Fix 1G and 10G link stability for X550EM_x SFP+
+      ixgbe: Add logic to reset CS4227 when needed
+      ixgbe: Allow SFP+ on more than 82598 and 82599
+      ixgbe: Add new X550EM SFP+ device ID
 
+
+ drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c  |  193 +---------
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |  206 +++++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.h |    5 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c   |    6 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c    |  286 +++++++++++++--
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h    |   35 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h   |    6 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c   |  425 +++++++++++++++++++++--
+ 8 files changed, 908 insertions(+), 254 deletions(-)
+
+-- 
+Mark Rustad, Network Division, Intel Corporation
