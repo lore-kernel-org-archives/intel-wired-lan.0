@@ -1,33 +1,35 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Thu, 30 Jul 2015 17:20:46 -0700
-Subject: [Intel-wired-lan] [PATCH V3 13/13] ixgbe: Add new X550EM SFP+
-	device ID
+Date: Thu, 30 Jul 2015 17:20:41 -0700
+Subject: [Intel-wired-lan] [PATCH V3 12/13] ixgbe: Allow SFP+ on more than
+	82598 and 82599
 In-Reply-To: <20150731001845.112031.6979.stgit@mdrustad-wks.jf.intel.com>
 References: <20150731001845.112031.6979.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <20150731002046.112031.23465.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <20150731002041.112031.87412.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add new device ID for X550EM device with SFPs.
+Since SFP+ can be used with some X550 devices, permit them to be
+detected.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index d289449a9b83..82ba5488c1a1 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -137,6 +137,7 @@ static const struct pci_device_id ixgbe_pci_tbl[] = {
- 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_KX4), board_X550EM_x},
- 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_KR), board_X550EM_x},
- 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_10G_T), board_X550EM_x},
-+	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_SFP), board_X550EM_x},
- 	/* required last entry */
- 	{0, }
- };
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+index 615ca764e110..5b83ad6bf48a 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+@@ -1224,7 +1224,7 @@ s32 ixgbe_identify_sfp_module_generic(struct ixgbe_hw *hw)
+ 			hw->phy.sfp_type = ixgbe_sfp_type_lr;
+ 		else
+ 			hw->phy.sfp_type = ixgbe_sfp_type_unknown;
+-	} else if (hw->mac.type == ixgbe_mac_82599EB) {
++	} else {
+ 		if (cable_tech & IXGBE_SFF_DA_PASSIVE_CABLE) {
+ 			if (hw->bus.lan_id == 0)
+ 				hw->phy.sfp_type =
 
