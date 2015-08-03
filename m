@@ -1,40 +1,49 @@
 From: Jia-Ju Bai <baijiaju1990@163.com>
-Date: Mon,  3 Aug 2015 09:36:26 +0800
-Subject: [Intel-wired-lan] [PATCH]Fix a null dereference in e1000_open
-Message-ID: <1438565786-5070-1-git-send-email-baijiaju1990@163.com>
+Date: Mon,  3 Aug 2015 10:17:08 +0800
+Subject: [Intel-wired-lan] [PATCH] e100: Add a check after pci_pool_create
+	to avoid null pointer dereference
+Message-ID: <1438568228-13288-1-git-send-email-baijiaju1990@163.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When e1000e_setup_rx_resources is failed in e1000_open,
-e1000e_free_tx_resources in "err_setup_rx" segment is executed.
-"writel(0, tx_ring->head)" statement in e1000_clean_tx_ring
-in e1000e_free_tx_resources will cause a null dereference(crash), 
-because "tx_ring->head" is only assigned in e1000_configure_tx
-in e1000_configure, but it is after e1000e_setup_rx_resources.
-This patch adds a check to fix it.
+The driver lacks the check of nic->cbs_pool after pci_pool_create
+in e100_probe. When this function is failed, a null pointer dereference 
+occurs when pci_pool_alloc uses nic->cbs_pool in e100_alloc_cbs.
+This patch adds a check and related error handling code to fix it.
 
 Signed-off-by: Jia-Ju Bai <baijiaju1990@163.com>
 ---
- drivers/net/ethernet/intel/e1000e/netdev.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/e100.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 89d788d..838ec8e 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -2448,7 +2448,8 @@ static void e1000_clean_tx_ring(struct e1000_ring *tx_ring)
- 	tx_ring->next_to_use = 0;
- 	tx_ring->next_to_clean = 0;
+diff --git a/drivers/net/ethernet/intel/e100.c b/drivers/net/ethernet/intel/e100.c
+index d2657a4..767c161 100644
+--- a/drivers/net/ethernet/intel/e100.c
++++ b/drivers/net/ethernet/intel/e100.c
+@@ -2967,6 +2967,11 @@ static int e100_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 			   nic->params.cbs.max * sizeof(struct cb),
+ 			   sizeof(u32),
+ 			   0);
++	if (!nic->cbs_pool) {
++		netif_err(nic, probe, nic->netdev, "Cannot create DMA pool, aborting\n");
++		err = -ENOMEM;
++		goto err_out_pool;
++	}
+ 	netif_info(nic, probe, nic->netdev,
+ 		   "addr 0x%llx, irq %d, MAC addr %pM\n",
+ 		   (unsigned long long)pci_resource_start(pdev, use_io ? 1 : 0),
+@@ -2974,6 +2979,8 @@ static int e100_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
  
--	writel(0, tx_ring->head);
-+	if (tx_ring->head)
-+		writel(0, tx_ring->head);
- 	if (adapter->flags2 & FLAG2_PCIM2PCI_ARBITER_WA)
- 		e1000e_update_tdt_wa(tx_ring, 0);
- 	else
+ 	return 0;
+ 
++err_out_pool:
++	unregister_netdev(netdev);
+ err_out_free:
+ 	e100_free(nic);
+ err_out_iounmap:
 -- 
 1.7.9.5
 
