@@ -1,32 +1,41 @@
-From: Jesse Gross <jesse@nicira.com>
-Date: Fri, 28 Aug 2015 16:03:26 -0700
-Subject: [Intel-wired-lan] [next PATCH S13 14/15] i40e: fix ip-ip GRE
-	encapulation
-In-Reply-To: <1440798961-17326-15-git-send-email-catherine.sullivan@intel.com>
-References: <1440798961-17326-1-git-send-email-catherine.sullivan@intel.com>
- <1440798961-17326-15-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <CAEP_g=88Nu8uOM0jvd1MTWpwy2+nWst9YQEeWibVt2Zm5mpT0A@mail.gmail.com>
+From: Jia-Ju Bai <baijiaju1990@163.com>
+Date: Mon,  3 Aug 2015 09:36:26 +0800
+Subject: [Intel-wired-lan] [PATCH]Fix a null dereference in e1000_open
+Message-ID: <1438565786-5070-1-git-send-email-baijiaju1990@163.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Aug 28, 2015 at 2:56 PM, Catherine Sullivan
-<catherine.sullivan@intel.com> wrote:
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index 469e1d5..b686450 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-[...]
-> +#if IS_ENABLED(CONFIG_VXLAN)
-> +       return vxlan_features_check(skb, features);
-> +#else
->         return features;
-> +#endif
+When e1000e_setup_rx_resources is failed in e1000_open,
+e1000e_free_tx_resources in "err_setup_rx" segment is executed.
+"writel(0, tx_ring->head)" statement in e1000_clean_tx_ring
+in e1000e_free_tx_resources will cause a null dereference(crash), 
+because "tx_ring->head" is only assigned in e1000_configure_tx
+in e1000_configure, but it is after e1000e_setup_rx_resources.
+This patch adds a check to fix it.
 
-I don't think this is right - when VXLAN is compiled in, it will
-restrict offload capabilities to that of VXLAN. But when there is no
-VXLAN support, all tunnel types will be allowed. Presumably, there is
-some underlying hardware capability here for both situations (and
-maybe even for GRE as well).
+Signed-off-by: Jia-Ju Bai <baijiaju1990@163.com>
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 89d788d..838ec8e 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -2448,7 +2448,8 @@ static void e1000_clean_tx_ring(struct e1000_ring *tx_ring)
+ 	tx_ring->next_to_use = 0;
+ 	tx_ring->next_to_clean = 0;
+ 
+-	writel(0, tx_ring->head);
++	if (tx_ring->head)
++		writel(0, tx_ring->head);
+ 	if (adapter->flags2 & FLAG2_PCIM2PCI_ARBITER_WA)
+ 		e1000e_update_tdt_wa(tx_ring, 0);
+ 	else
+-- 
+1.7.9.5
+
+
