@@ -1,42 +1,166 @@
-From: Jia-Ju Bai <baijiaju1990@163.com>
-Date: Mon,  3 Aug 2015 11:45:04 +0800
-Subject: [Intel-wired-lan] [PATCH] e1000e: Fix a null dereference in
-	e1000_open
-Message-ID: <1438573504-369-1-git-send-email-baijiaju1990@163.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Mon, 03 Aug 2015 16:01:47 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 2da8337df5c1a4416bf9283395731bd96bfb724b BUILD DONE
+Message-ID: <55bf1feb.iWx1I6ScNG1A5NLu%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When e1000e_setup_rx_resources is failed in e1000_open,
-e1000e_free_tx_resources in "err_setup_rx" segment is executed.
-"writel(0, tx_ring->head)" statement in e1000_clean_tx_ring
-in e1000e_free_tx_resources will cause a null dereference(crash), 
-because "tx_ring->head" is only assigned in e1000_configure_tx
-in e1000_configure, but it is after e1000e_setup_rx_resources.
-This patch adds a check to fix it.
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+2da8337df5c1a4416bf9283395731bd96bfb724b  igb: make sure SR-IOV init uses the right number of queues
 
-Signed-off-by: Jia-Ju Bai <baijiaju1990@163.com>
----
- drivers/net/ethernet/intel/e1000e/netdev.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+drivers/net/ethernet/intel/i40e/i40e_debugfs.c:1499:4: warning: format '%lx' expects argument of type 'long unsigned int', but argument 4 has type 'u32' [-Wformat=]
+drivers/net/ethernet/intel/igb/igb_main.c:2651:2: error: implicit declaration of function 'igb_disable_sriov' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c:153:1-7: WARNING: end returns can be simpified
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 89d788d..838ec8e 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -2448,7 +2448,8 @@ static void e1000_clean_tx_ring(struct e1000_ring *tx_ring)
- 	tx_ring->next_to_use = 0;
- 	tx_ring->next_to_clean = 0;
- 
--	writel(0, tx_ring->head);
-+	if (tx_ring->head)
-+		writel(0, tx_ring->head);
- 	if (adapter->flags2 & FLAG2_PCIM2PCI_ARBITER_WA)
- 		e1000e_update_tdt_wa(tx_ring, 0);
- 	else
--- 
-1.7.9.5
+Error ids grouped by kconfigs:
 
+recent_errors
+??? i386-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u32
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_x550.c:WARNING:end-returns-can-be-simpified
+??? i386-allyesconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u32
+??? i386-randconfig-h0-08031512
+??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-igb_disable_sriov
+??? i386-randconfig-x000-201531
+??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-igb_disable_sriov
+??? ia64-defconfig
+??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-igb_disable_sriov
+??? parisc-allyesconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u32
+??? powerpc-ppc6xx_defconfig
+??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-igb_disable_sriov
+??? x86_64-acpi-redef
+??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-igb_disable_sriov
+??? x86_64-nfsroot
+??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-igb_disable_sriov
+??? x86_64-randconfig-b0-08031538
+??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-igb_disable_sriov
+??? x86_64-randconfig-v0-08031538
+??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-igb_disable_sriov
+??? x86_64-randconfig-x001-201531
+??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-igb_disable_sriov
+??? x86_64-randconfig-x009-201531
+??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-igb_disable_sriov
+??? xtensa-allyesconfig
+    ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u32
 
+elapsed time: 112m
+
+configs tested: 108
+
+parisc                        c3000_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+arm                         s5pv210_defconfig
+m68k                        mvme16x_defconfig
+powerpc                      ppc6xx_defconfig
+i386                     randconfig-a0-201531
+x86_64                 randconfig-a0-08031520
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+x86_64                            allnoconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+i386                   randconfig-c0-08031533
+x86_64                 randconfig-v0-08031538
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                              allnoconfig
+i386                                defconfig
+i386                             allmodconfig
+i386                             alldefconfig
+mips                                   jz4740
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+x86_64                   randconfig-i0-201531
+i386                   randconfig-b0-08031532
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i1-201531
+i386                     randconfig-i0-201531
+i386                             allyesconfig
+x86_64                 randconfig-b0-08031538
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+i386                     randconfig-n1-201531
+i386                     randconfig-n0-201531
+i386                   randconfig-h0-08031512
+i386                   randconfig-h1-08031512
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+x86_64                 randconfig-n0-08031535
+arm                                    sa1100
+arm                          prima2_defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                                   samsung
+arm                       spear13xx_defconfig
+arm                                  iop-adma
+arm                       imx_v6_v7_defconfig
+arm                          marzen_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                                        sh
+x86_64                           allmodconfig
+x86_64                 randconfig-x001-201531
+x86_64                 randconfig-x004-201531
+x86_64                 randconfig-x000-201531
+x86_64                 randconfig-x006-201531
+x86_64                 randconfig-x003-201531
+x86_64                 randconfig-x009-201531
+x86_64                 randconfig-x005-201531
+x86_64                 randconfig-x002-201531
+x86_64                 randconfig-x008-201531
+x86_64                 randconfig-x007-201531
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-r0-201531
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                          amiga_defconfig
+arm                            xcep_defconfig
+i386                   randconfig-x000-201531
+i386                   randconfig-x004-201531
+i386                   randconfig-x001-201531
+i386                   randconfig-x008-201531
+i386                   randconfig-x005-201531
+i386                   randconfig-x003-201531
+i386                   randconfig-x007-201531
+i386                   randconfig-x002-201531
+i386                   randconfig-x006-201531
+i386                   randconfig-x009-201531
+
+Thanks,
+Fengguang
