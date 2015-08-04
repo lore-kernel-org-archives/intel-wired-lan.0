@@ -1,44 +1,50 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Tue, 4 Aug 2015 22:15:43 +0000
-Subject: [Intel-wired-lan] [PATCH] igb: do not re-init SR-IOV during
-	probe
-In-Reply-To: <1436533272-18070-1-git-send-email-sassmann@kpanic.de>
-References: <1436533272-18070-1-git-send-email-sassmann@kpanic.de>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81ADF460@ORSMSX101.amr.corp.intel.com>
+Date: Tue, 4 Aug 2015 22:24:39 +0000
+Subject: [Intel-wired-lan] [PATCH 1/2] e1000e: Fix tight loop
+ implementation	of systime read algorithm
+In-Reply-To: <eb0fc1b6ebdfe79027886fbf2f64f985a413614d.1437312332.git.raanan.avargil@intel.com>
+References: <eb0fc1b6ebdfe79027886fbf2f64f985a413614d.1437312332.git.raanan.avargil@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81ADF47A@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: netdev-owner at vger.kernel.org [mailto:netdev-owner at vger.kernel.org]
-> On Behalf Of Stefan Assmann
-> Sent: Friday, July 10, 2015 6:01 AM
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Raanan Avargil
+> Sent: Sunday, July 19, 2015 6:33 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org; Kirsher, Jeffrey T; sassmann at kpanic.de
-> Subject: [PATCH] igb: do not re-init SR-IOV during probe
+> Subject: [Intel-wired-lan] [PATCH 1/2] e1000e: Fix tight loop
+> implementation of systime read algorithm
 > 
-> During driver probing the following code path is triggered.
-> igb_probe
-> ->igb_sw_init
->   ->igb_probe_vfs
->     ->igb_pci_enable_sriov
->       ->igb_sriov_reinit
+> Change the algorithm. Read systimel twice and check for overflow.
+> If there was no overflow, use the first value.
+> If there was an overflow, read systimeh again and use the second systimel
+> value.
 > 
-> Doing the SR-IOV re-init is not necessary during probing since we're
-> starting from scratch. Here we can call igb_enable_sriov() right away.
-> 
-> Running igb_sriov_reinit() during igb_probe() also seems to cause
-> occasional packet loss on some onboard 82576 NICs. Reproduced on
-> Dell and HP servers with onboard 82576 NICs.
-> Example:
-> Intel Corporation 82576 Gigabit Network Connection [8086:10c9] (rev 01)
-> Subsystem: Dell Device [1028:0481]
-> 
-> Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
+> Signed-off-by: Raanan Avargil <raanan.avargil@intel.com>
 > ---
->  drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 29 +++++++++++++++++++------
+> ----
+>  1 file changed, 19 insertions(+), 10 deletions(-)
+This triggers a checkpatch warning for a long comment:
+-------------------------------------------
+WARNING: Possible unwrapped commit description (prefer a maximum 75 chars per line)
+#8:
+If there was an overflow, read systimeh again and use the second systimel value.
+
+WARNING: line over 80 characters
+#49: FILE: drivers/net/ethernet/intel/e1000e/netdev.c:4299:
++               /* There was an overflow, read again SYSTIMH, and use systimel_2 */
+
+total: 0 errors, 2 warnings, 0 checks, 37 lines checked
+
+Your patch has style problems, please review.
+
+NOTE: If any of the errors are false positives, please report
+      them to the maintainer, see CHECKPATCH in MAINTAINERS.
+-------------------------------------------
+Aside from cosmetics...
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
