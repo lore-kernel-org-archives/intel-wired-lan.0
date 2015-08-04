@@ -1,33 +1,35 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Tue, 04 Aug 2015 13:42:17 -0700
-Subject: [Intel-wired-lan] [PATCH V4 13/13] ixgbe: Add new X550EM SFP+
-	device ID
+Date: Tue, 04 Aug 2015 13:41:19 -0700
+Subject: [Intel-wired-lan] [PATCH V4 02/13] ixgbe: Add X550EM support for
+ SFP insertion interrupt
 In-Reply-To: <20150804204010.51606.29686.stgit@mdrustad-wks.jf.intel.com>
 References: <20150804204010.51606.29686.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <20150804204216.51606.16950.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <20150804204119.51606.53773.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add new device ID for X550EM device with SFPs.
+Add support for the SFP insertion interrupt on X550EM devices with
+SFPs.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index d289449a9b83..82ba5488c1a1 100644
+index 6c52300fecfe..d289449a9b83 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -137,6 +137,7 @@ static const struct pci_device_id ixgbe_pci_tbl[] = {
- 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_KX4), board_X550EM_x},
- 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_KR), board_X550EM_x},
- 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_10G_T), board_X550EM_x},
-+	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_SFP), board_X550EM_x},
- 	/* required last entry */
- 	{0, }
- };
+@@ -2631,6 +2631,8 @@ static inline void ixgbe_irq_enable(struct ixgbe_adapter *adapter, bool queues,
+ 	case ixgbe_mac_X540:
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
++		if (adapter->hw.device_id == IXGBE_DEV_ID_X550EM_X_SFP)
++			mask |= IXGBE_EIMS_GPI_SDP0(&adapter->hw);
+ 		if (adapter->hw.phy.type == ixgbe_phy_x550em_ext_t)
+ 			mask |= IXGBE_EICR_GPI_SDP0_X540;
+ 		mask |= IXGBE_EIMS_ECC;
 
