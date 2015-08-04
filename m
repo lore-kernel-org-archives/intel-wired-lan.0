@@ -1,35 +1,55 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Tue, 04 Aug 2015 13:41:19 -0700
-Subject: [Intel-wired-lan] [PATCH V4 02/13] ixgbe: Add X550EM support for
- SFP insertion interrupt
-In-Reply-To: <20150804204010.51606.29686.stgit@mdrustad-wks.jf.intel.com>
-References: <20150804204010.51606.29686.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <20150804204119.51606.53773.stgit@mdrustad-wks.jf.intel.com>
+Date: Tue, 04 Aug 2015 13:41:09 -0700
+Subject: [Intel-wired-lan] [PATCH V4 00/13] ixgbe: Add support for X550EM
+	devices with SFPs
+Message-ID: <20150804204010.51606.29686.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add support for the SFP insertion interrupt on X550EM devices with
-SFPs.
+The following patches add remaining bits of support for X550EM devices with
+SFPs. The last patch adds the device ID.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    2 ++
- 1 file changed, 2 insertions(+)
+Changes in V2:
+- Added more changes that had been missed (9 more patches!)
+- Added latest CS4227 reset process
+Changes in V3:
+- Added a missed patch to permit SFP+ on more than just 82598 and 82599
+Changes in V4:
+- Added omitted NULL check for flap_tx_laser method calls
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 6c52300fecfe..d289449a9b83 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -2631,6 +2631,8 @@ static inline void ixgbe_irq_enable(struct ixgbe_adapter *adapter, bool queues,
- 	case ixgbe_mac_X540:
- 	case ixgbe_mac_X550:
- 	case ixgbe_mac_X550EM_x:
-+		if (adapter->hw.device_id == IXGBE_DEV_ID_X550EM_X_SFP)
-+			mask |= IXGBE_EIMS_GPI_SDP0(&adapter->hw);
- 		if (adapter->hw.phy.type == ixgbe_phy_x550em_ext_t)
- 			mask |= IXGBE_EICR_GPI_SDP0_X540;
- 		mask |= IXGBE_EIMS_ECC;
+---
 
+Mark D Rustad (13):
+      ixgbe: Accept SFP not present errors on all devices
+      ixgbe: Add X550EM support for SFP insertion interrupt
+      ixgbe: Provide I2C combined on X550EM
+      ixgbe: Provide unlocked I2C methods
+      ixgbe: Set lan_id before first I2C eeprom access
+      ixgbe: Enable bit-banging mode on X550
+      ixgbe: Clear I2C destination location
+      ixgbe: Allow reduced delays during sfp detection
+      ixgbe: Add X550EM_x dual-speed SFP+ support
+      ixgbe: Fix 1G and 10G link stability for X550EM_x SFP+
+      ixgbe: Add logic to reset CS4227 when needed
+      ixgbe: Allow SFP+ on more than 82598 and 82599
+      ixgbe: Add new X550EM SFP+ device ID
+
+
+ drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c  |  193 +---------
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |  208 +++++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.h |    5 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c   |    6 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c    |  286 +++++++++++++--
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h    |   35 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h   |    6 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c   |  425 +++++++++++++++++++++--
+ 8 files changed, 910 insertions(+), 254 deletions(-)
+
+-- 
+Mark Rustad, Network Division, Intel Corporation
