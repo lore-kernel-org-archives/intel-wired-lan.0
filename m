@@ -1,37 +1,35 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Sat, 08 Aug 2015 16:17:46 -0700
-Subject: [Intel-wired-lan] [PATCH V5 01/19] ixgbe: Accept SFP not present
-	errors on all devices
+Date: Sat, 08 Aug 2015 16:17:51 -0700
+Subject: [Intel-wired-lan] [PATCH V5 02/19] ixgbe: Add X550EM support for
+ SFP insertion interrupt
 In-Reply-To: <20150808231450.94784.49531.stgit@mdrustad-wks.jf.intel.com>
 References: <20150808231450.94784.49531.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <20150808231746.94784.29796.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <20150808231751.94784.84787.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When an SFP not present error is returned by the reset_hw method,
-accept it and go on, since an SFP can still be inserted. Previously
-it was only accepted for 82598 devices.
+Add support for the SFP insertion interrupt on X550EM devices with
+SFPs.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index f77512356dae..6c52300fecfe 100644
+index 6c52300fecfe..d289449a9b83 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -8711,8 +8711,7 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	hw->phy.reset_if_overtemp = true;
- 	err = hw->mac.ops.reset_hw(hw);
- 	hw->phy.reset_if_overtemp = false;
--	if (err == IXGBE_ERR_SFP_NOT_PRESENT &&
--	    hw->mac.type == ixgbe_mac_82598EB) {
-+	if (err == IXGBE_ERR_SFP_NOT_PRESENT) {
- 		err = 0;
- 	} else if (err == IXGBE_ERR_SFP_NOT_SUPPORTED) {
- 		e_dev_err("failed to load because an unsupported SFP+ or QSFP module type was detected.\n");
+@@ -2631,6 +2631,8 @@ static inline void ixgbe_irq_enable(struct ixgbe_adapter *adapter, bool queues,
+ 	case ixgbe_mac_X540:
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
++		if (adapter->hw.device_id == IXGBE_DEV_ID_X550EM_X_SFP)
++			mask |= IXGBE_EIMS_GPI_SDP0(&adapter->hw);
+ 		if (adapter->hw.phy.type == ixgbe_phy_x550em_ext_t)
+ 			mask |= IXGBE_EICR_GPI_SDP0_X540;
+ 		mask |= IXGBE_EIMS_ECC;
 
