@@ -1,35 +1,77 @@
-From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Sat, 08 Aug 2015 16:27:56 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: X540 thermal warning interrupt not
-	a GPI
-Message-ID: <20150808232756.95142.85947.stgit@mdrustad-wks.jf.intel.com>
+From: Christopher Hall <christopher.s.hall@intel.com>
+Date: Fri,  7 Aug 2015 18:13:46 -0700
+Subject: [Intel-wired-lan] [PATCH v2 0/4] Patchset enabling hardware based
+	cross-timestamps for next gen Intel platforms
+Message-ID: <1438996430-10296-1-git-send-email-christopher.s.hall@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The X540 thermal interrupt (IXGBE_EIMS_TS) is not an SDP, so it
-doesn't need to be enabled in ixgbe_setup_gpie(). In fact the
-value is simply not for the GPIE register at all.
+6th generation Intel platforms will have an Always Running
+Timer (ART) that always runs when the system is powered and
+is available to both the CPU and various on-board devices.
+Initially, those devices include audio and network.  The
+ART will give these devices the capability of precisely
+cross timestamping their local device clock with the system
+clock.
 
-Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    3 ---
- 1 file changed, 3 deletions(-)
+A system clock value like TSC or ART is not useful
+unless translated to system time. The first *two* patches
+enable this by changing the timekeeping code to return a
+system time given a system clock value and translating ART
+to TSC.
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 9d302cbd813d..fb5528d5ace9 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -4916,9 +4916,6 @@ static void ixgbe_setup_gpie(struct ixgbe_adapter *adapter)
- 		case ixgbe_mac_82599EB:
- 			gpie |= IXGBE_SDP0_GPIEN_8259X;
- 			break;
--		case ixgbe_mac_X540:
--			gpie |= IXGBE_EIMS_TS;
--			break;
- 		default:
- 			break;
- 		}
+The last two patches modify the PTP driver to call a
+cross timestamp function in the driver when available and
+perform the cross timestamp in the e1000e driver.
+
+Given the precise relationship between the network device
+clock and system time enables better synchronization of
+events on multiple network connected devices.
+
+Changelog:
+
+* The PTP portion of the patch set was posted 7/8/2015 (v3)
+  and rejected because of there wasn't a driver that
+  implemented the new API.  Now, the driver patch is added
+  and the PTP patch operation is modified to revert to
+  previous behavior when cross timestamp can't be
+  completed.  This is indicated by the driver returning a
+  non-zero value.
+
+* v2 re-submit based on tglx provided correlated clocksource patch.  This has
+  been included verbatim as the first patch in the series.  Additions and
+  modifications are in the second patch.  The PTP driver patch is unchanged
+  and the e1000e driver patch uses the *new* correlated clocksource interface
+  but is otherwise (in terms of hardware and PTP driver) unchanged.
+
+* ART is removed as a compile option
+
+* ART is added as an X86_FEATURE
+
+Christopher Hall (4):
+  Add generic correlated clocksource code and ART to TSC conversion code
+  Add ART initialization code
+  Add support for driver cross-timestamp to PTP_SYS_OFFSET ioctl
+  Added getsynctime64() callback
+
+ Documentation/ptp/testptp.c                 |  6 +-
+ arch/x86/include/asm/cpufeature.h           |  3 +-
+ arch/x86/include/asm/tsc.h                  |  1 +
+ arch/x86/kernel/tsc.c                       | 45 +++++++++++++++
+ drivers/net/ethernet/intel/e1000e/defines.h |  7 +++
+ drivers/net/ethernet/intel/e1000e/ptp.c     | 88 +++++++++++++++++++++++++++++
+ drivers/net/ethernet/intel/e1000e/regs.h    |  4 ++
+ drivers/ptp/ptp_chardev.c                   | 29 +++++++---
+ include/linux/clocksource.h                 | 32 +++++++++++
+ include/linux/ptp_clock_kernel.h            |  7 +++
+ include/linux/timekeeping.h                 |  4 ++
+ include/uapi/linux/ptp_clock.h              |  4 +-
+ kernel/time/timekeeping.c                   | 64 +++++++++++++++++++++
+ 13 files changed, 282 insertions(+), 12 deletions(-)
+
+-- 
+1.9.1
 
