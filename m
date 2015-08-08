@@ -1,44 +1,35 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Sat, 08 Aug 2015 16:19:04 -0700
-Subject: [Intel-wired-lan] [PATCH V5 16/19] ixgbe: Correct setting of
- RDRXCTL register for X550* devices
+Date: Sat, 08 Aug 2015 16:18:43 -0700
+Subject: [Intel-wired-lan] [PATCH V5 12/19] ixgbe: Allow SFP+ on more than
+	82598 and 82599
 In-Reply-To: <20150808231450.94784.49531.stgit@mdrustad-wks.jf.intel.com>
 References: <20150808231450.94784.49531.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <20150808231904.94784.26531.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <20150808231843.94784.92638.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Setting the X550* RDRXCTL register should fall through into X540
-and 82599, not 82598.
+Since SFP+ can be used with some X550 devices, permit them to be
+detected.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index af5e49a4e95c..eecd70b170f3 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -3789,8 +3789,6 @@ static void ixgbe_setup_rdrxctl(struct ixgbe_adapter *adapter)
- 	u32 rdrxctl = IXGBE_READ_REG(hw, IXGBE_RDRXCTL);
- 
- 	switch (hw->mac.type) {
--	case ixgbe_mac_X550:
--	case ixgbe_mac_X550EM_x:
- 	case ixgbe_mac_82598EB:
- 		/*
- 		 * For VMDq support of different descriptor types or
-@@ -3804,6 +3802,8 @@ static void ixgbe_setup_rdrxctl(struct ixgbe_adapter *adapter)
- 		 */
- 		rdrxctl |= IXGBE_RDRXCTL_MVMEN;
- 		break;
-+	case ixgbe_mac_X550:
-+	case ixgbe_mac_X550EM_x:
- 	case ixgbe_mac_82599EB:
- 	case ixgbe_mac_X540:
- 		/* Disable RSC for ACK packets */
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+index 615ca764e110..5b83ad6bf48a 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+@@ -1224,7 +1224,7 @@ s32 ixgbe_identify_sfp_module_generic(struct ixgbe_hw *hw)
+ 			hw->phy.sfp_type = ixgbe_sfp_type_lr;
+ 		else
+ 			hw->phy.sfp_type = ixgbe_sfp_type_unknown;
+-	} else if (hw->mac.type == ixgbe_mac_82599EB) {
++	} else {
+ 		if (cable_tech & IXGBE_SFF_DA_PASSIVE_CABLE) {
+ 			if (hw->bus.lan_id == 0)
+ 				hw->phy.sfp_type =
 
