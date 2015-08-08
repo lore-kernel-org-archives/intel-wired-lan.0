@@ -1,351 +1,84 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Sat, 08 Aug 2015 16:18:38 -0700
-Subject: [Intel-wired-lan] [PATCH V5 11/19] ixgbe: Add logic to reset CS4227
-	when needed
+Date: Sat, 08 Aug 2015 16:18:48 -0700
+Subject: [Intel-wired-lan] [PATCH V5 13/19] ixgbe: Limit SFP polling rate
 In-Reply-To: <20150808231450.94784.49531.stgit@mdrustad-wks.jf.intel.com>
 References: <20150808231450.94784.49531.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <20150808231838.94784.26142.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <20150808231848.94784.92209.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On some hardware platforms, the CS4227 does not initialize properly.
-Detect those cases and reset it appropriately.
+Reduce the frequency of polling for SFP modules. Because the
+service task sometimes runs at high rates, we can poll for
+SFPs too often. When an SFP is not present, the I2C timeouts
+that result are very costly. So, prevent SFP polling from
+being done more than once every two seconds. To reduce latency,
+the poll time is cleared in a couple of cases to permit the
+next service task execution to poll the SFP module.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
------
-Change in V5:
-- Simplify end return of ixgbe_get_cs4227_status
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h  |   15 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |  273 +++++++++++++++++++++++++
- 2 files changed, 287 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h      |    2 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    8 ++++++++
+ 2 files changed, 10 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
-index 85e142cf01a8..5abd66c84d00 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h
-@@ -81,14 +81,29 @@
- #define IXGBE_I2C_EEPROM_STATUS_FAIL		0x2
- #define IXGBE_I2C_EEPROM_STATUS_IN_PROGRESS	0x3
- #define IXGBE_CS4227				0xBE    /* CS4227 address */
-+#define IXGBE_CS4227_SCRATCH			2
-+#define IXGBE_CS4227_RESET_PENDING		0x1357
-+#define IXGBE_CS4227_RESET_COMPLETE		0x5AA5
-+#define IXGBE_CS4227_RETRIES			15
-+#define IXGBE_CS4227_EFUSE_STATUS		0x0181
- #define IXGBE_CS4227_LINE_SPARE22_MSB		0x12AD	/* Reg to set speed */
- #define IXGBE_CS4227_LINE_SPARE24_LSB		0x12B0	/* Reg to set EDC */
- #define IXGBE_CS4227_HOST_SPARE22_MSB		0x1AAD	/* Reg to set speed */
- #define IXGBE_CS4227_HOST_SPARE24_LSB		0x1AB0	/* Reg to program EDC */
-+#define IXGBE_CS4227_EEPROM_STATUS		0x5001
-+#define IXGBE_CS4227_EEPROM_LOAD_OK		0x0001
- #define IXGBE_CS4227_SPEED_1G			0x8000
- #define IXGBE_CS4227_SPEED_10G			0
- #define IXGBE_CS4227_EDC_MODE_CX1		0x0002
- #define IXGBE_CS4227_EDC_MODE_SR		0x0004
-+#define IXGBE_CS4227_EDC_MODE_DIAG		0x0008
-+#define IXGBE_CS4227_RESET_HOLD			500	/* microseconds */
-+#define IXGBE_CS4227_RESET_DELAY		500	/* milliseconds */
-+#define IXGBE_CS4227_CHECK_DELAY		30	/* milliseconds */
-+#define IXGBE_PE				0xE0	/* Port expander addr */
-+#define IXGBE_PE_OUTPUT				1	/* Output reg offset */
-+#define IXGBE_PE_CONFIG				3	/* Config reg offset */
-+#define IXGBE_PE_BIT1				(1 << 1)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index 17250ef87883..8eafe467e558 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -603,6 +603,7 @@ struct ixgbe_mac_addr {
  
- /* Flow control defines */
- #define IXGBE_TAF_SYM_PAUSE                  0x400
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index 353a04661f6c..583cc057f4cd 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -56,6 +56,277 @@ static void ixgbe_setup_mux_ctl(struct ixgbe_hw *hw)
- 	IXGBE_WRITE_FLUSH(hw);
+ /* default to trying for four seconds */
+ #define IXGBE_TRY_LINK_TIMEOUT (4 * HZ)
++#define IXGBE_SFP_POLL_JIFFIES (2 * HZ)		/* SFP poll every 2 seconds */
+ 
+ /* board specific private data structure */
+ struct ixgbe_adapter {
+@@ -716,6 +717,7 @@ struct ixgbe_adapter {
+ 
+ 	u32 link_speed;
+ 	bool link_up;
++	unsigned long sfp_poll_time;
+ 	unsigned long link_check_timeout;
+ 
+ 	struct timer_list service_timer;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index d289449a9b83..af5e49a4e95c 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -2509,6 +2509,7 @@ static void ixgbe_check_sfp_event(struct ixgbe_adapter *adapter, u32 eicr)
+ 		IXGBE_WRITE_REG(hw, IXGBE_EICR, eicr_mask);
+ 		if (!test_bit(__IXGBE_DOWN, &adapter->state)) {
+ 			adapter->flags2 |= IXGBE_FLAG2_SFP_NEEDS_RESET;
++			adapter->sfp_poll_time = 0;
+ 			ixgbe_service_event_schedule(adapter);
+ 		}
+ 	}
+@@ -4804,6 +4805,7 @@ static void ixgbe_sfp_link_config(struct ixgbe_adapter *adapter)
+ 		adapter->flags2 |= IXGBE_FLAG2_SEARCH_FOR_SFP;
+ 
+ 	adapter->flags2 |= IXGBE_FLAG2_SFP_NEEDS_RESET;
++	adapter->sfp_poll_time = 0;
  }
  
-+/** ixgbe_read_cs4227 - Read CS4227 register
-+ * @hw: pointer to hardware structure
-+ * @reg: register number to write
-+ * @value: pointer to receive value read
-+ *
-+ * Returns status code
-+ */
-+static s32 ixgbe_read_cs4227(struct ixgbe_hw *hw, u16 reg, u16 *value)
-+{
-+	return hw->phy.ops.read_i2c_combined_unlocked(hw, IXGBE_CS4227, reg,
-+						      value);
-+}
+ /**
+@@ -6709,10 +6711,16 @@ static void ixgbe_sfp_detection_subtask(struct ixgbe_adapter *adapter)
+ 	    !(adapter->flags2 & IXGBE_FLAG2_SFP_NEEDS_RESET))
+ 		return;
+ 
++	if (adapter->sfp_poll_time &&
++	    time_after(adapter->sfp_poll_time, jiffies))
++		return; /* If not yet time to poll for SFP */
 +
-+/** ixgbe_write_cs4227 - Write CS4227 register
-+ * @hw: pointer to hardware structure
-+ * @reg: register number to write
-+ * @value: value to write to register
-+ *
-+ * Returns status code
-+ */
-+static s32 ixgbe_write_cs4227(struct ixgbe_hw *hw, u16 reg, u16 value)
-+{
-+	return hw->phy.ops.write_i2c_combined_unlocked(hw, IXGBE_CS4227, reg,
-+						       value);
-+}
+ 	/* someone else is in init, wait until next service event */
+ 	if (test_and_set_bit(__IXGBE_IN_SFP_INIT, &adapter->state))
+ 		return;
+ 
++	adapter->sfp_poll_time = jiffies + IXGBE_SFP_POLL_JIFFIES - 1;
 +
-+/**
-+ * ixgbe_check_cs4227_reg - Perform diag on a CS4227 register
-+ * @hw: pointer to hardware structure
-+ * @reg: the register to check
-+ *
-+ * Performs a diagnostic on a register in the CS4227 chip. Returns an error
-+ * if it is not operating correctly.
-+ * This function assumes that the caller has acquired the proper semaphore.
-+ */
-+static s32 ixgbe_check_cs4227_reg(struct ixgbe_hw *hw, u16 reg)
-+{
-+	s32 status;
-+	u32 retry;
-+	u16 reg_val;
-+
-+	reg_val = (IXGBE_CS4227_EDC_MODE_DIAG << 1) | 1;
-+	status = ixgbe_write_cs4227(hw, reg, reg_val);
-+	if (status)
-+		return status;
-+	for (retry = 0; retry < IXGBE_CS4227_RETRIES; retry++) {
-+		msleep(IXGBE_CS4227_CHECK_DELAY);
-+		reg_val = 0xFFFF;
-+		ixgbe_read_cs4227(hw, reg, &reg_val);
-+		if (!reg_val)
-+			break;
-+	}
-+	if (reg_val) {
-+		hw_err(hw, "CS4227 reg 0x%04X failed diagnostic\n", reg);
-+		return status;
-+	}
-+
-+	return 0;
-+}
-+
-+/** ixgbe_get_cs4227_status - Return CS4227 status
-+ * @hw: pointer to hardware structure
-+ *
-+ * Performs a diagnostic on the CS4227 chip. Returns an error if it is
-+ * not operating correctly.
-+ * This function assumes that the caller has acquired the proper semaphore.
-+ */
-+static s32 ixgbe_get_cs4227_status(struct ixgbe_hw *hw)
-+{
-+	s32 status;
-+	u16 value = 0;
-+
-+	/* Exit if the diagnostic has already been performed. */
-+	status = ixgbe_read_cs4227(hw, IXGBE_CS4227_SCRATCH, &value);
-+	if (status)
-+		return status;
-+	if (value == IXGBE_CS4227_RESET_COMPLETE)
-+		return 0;
-+
-+	/* Check port 0. */
-+	status = ixgbe_check_cs4227_reg(hw, IXGBE_CS4227_LINE_SPARE24_LSB);
-+	if (status)
-+		return status;
-+
-+	status = ixgbe_check_cs4227_reg(hw, IXGBE_CS4227_HOST_SPARE24_LSB);
-+	if (status)
-+		return status;
-+
-+	/* Check port 1. */
-+	status = ixgbe_check_cs4227_reg(hw, IXGBE_CS4227_LINE_SPARE24_LSB +
-+					(1 << 12));
-+	if (status)
-+		return status;
-+
-+	return ixgbe_check_cs4227_reg(hw, IXGBE_CS4227_HOST_SPARE24_LSB +
-+				      (1 << 12));
-+}
-+
-+/**
-+ * ixgbe_read_pe - Read register from port expander
-+ * @hw: pointer to hardware structure
-+ * @reg: register number to read
-+ * @value: pointer to receive read value
-+ *
-+ * Returns status code
-+ */
-+static s32 ixgbe_read_pe(struct ixgbe_hw *hw, u8 reg, u8 *value)
-+{
-+	s32 status;
-+
-+	status = ixgbe_read_i2c_byte_generic_unlocked(hw, reg, IXGBE_PE, value);
-+	if (status)
-+		hw_err(hw, "port expander access failed with %d\n", status);
-+	return status;
-+}
-+
-+/** ixgbe_write_pe - Write register to port expander
-+ * @hw: pointer to hardware structure
-+ * @reg: register number to write
-+ * @value: value to write
-+ *
-+ * Returns status code
-+ */
-+static s32 ixgbe_write_pe(struct ixgbe_hw *hw, u8 reg, u8 value)
-+{
-+	s32 status;
-+
-+	status = ixgbe_write_i2c_byte_generic_unlocked(hw, reg, IXGBE_PE,
-+						       value);
-+	if (status)
-+		hw_err(hw, "port expander access failed with %d\n", status);
-+	return status;
-+}
-+
-+/** ixgbe_reset_cs4227 - Reset CS4227 using port expander
-+ * @hw: pointer to hardware structure
-+ *
-+ * Returns error code
-+ */
-+static s32 ixgbe_reset_cs4227(struct ixgbe_hw *hw)
-+{
-+	s32 status;
-+	u32 retry;
-+	u16 value;
-+	u8 reg;
-+
-+	/* Trigger hard reset. */
-+	status = ixgbe_read_pe(hw, IXGBE_PE_OUTPUT, &reg);
-+	if (status)
-+		return status;
-+	reg |= IXGBE_PE_BIT1;
-+	status = ixgbe_write_pe(hw, IXGBE_PE_OUTPUT, reg);
-+	if (status)
-+		return status;
-+
-+	status = ixgbe_read_pe(hw, IXGBE_PE_CONFIG, &reg);
-+	if (status)
-+		return status;
-+	reg &= ~IXGBE_PE_BIT1;
-+	status = ixgbe_write_pe(hw, IXGBE_PE_CONFIG, reg);
-+	if (status)
-+		return status;
-+
-+	status = ixgbe_read_pe(hw, IXGBE_PE_OUTPUT, &reg);
-+	if (status)
-+		return status;
-+	reg &= ~IXGBE_PE_BIT1;
-+	status = ixgbe_write_pe(hw, IXGBE_PE_OUTPUT, reg);
-+	if (status)
-+		return status;
-+
-+	usleep_range(IXGBE_CS4227_RESET_HOLD, IXGBE_CS4227_RESET_HOLD + 100);
-+
-+	status = ixgbe_read_pe(hw, IXGBE_PE_OUTPUT, &reg);
-+	if (status)
-+		return status;
-+	reg |= IXGBE_PE_BIT1;
-+	status = ixgbe_write_pe(hw, IXGBE_PE_OUTPUT, reg);
-+	if (status)
-+		return status;
-+
-+	/* Wait for the reset to complete. */
-+	msleep(IXGBE_CS4227_RESET_DELAY);
-+	for (retry = 0; retry < IXGBE_CS4227_RETRIES; retry++) {
-+		status = ixgbe_read_cs4227(hw, IXGBE_CS4227_EFUSE_STATUS,
-+					   &value);
-+		if (!status && value == IXGBE_CS4227_EEPROM_LOAD_OK)
-+			break;
-+		msleep(IXGBE_CS4227_CHECK_DELAY);
-+	}
-+	if (retry == IXGBE_CS4227_RETRIES) {
-+		hw_err(hw, "CS4227 reset did not complete\n");
-+		return IXGBE_ERR_PHY;
-+	}
-+
-+	status = ixgbe_read_cs4227(hw, IXGBE_CS4227_EEPROM_STATUS, &value);
-+	if (status || !(value & IXGBE_CS4227_EEPROM_LOAD_OK)) {
-+		hw_err(hw, "CS4227 EEPROM did not load successfully\n");
-+		return IXGBE_ERR_PHY;
-+	}
-+
-+	return 0;
-+}
-+
-+/** ixgbe_check_cs4227 - Check CS4227 and reset as needed
-+ * @hw: pointer to hardware structure
-+ */
-+static void ixgbe_check_cs4227(struct ixgbe_hw *hw)
-+{
-+	u32 swfw_mask = hw->phy.phy_semaphore_mask;
-+	s32 status;
-+	u16 value;
-+	u8 retry;
-+
-+	for (retry = 0; retry < IXGBE_CS4227_RETRIES; retry++) {
-+		status = hw->mac.ops.acquire_swfw_sync(hw, swfw_mask);
-+		if (status) {
-+			hw_err(hw, "semaphore failed with %d\n", status);
-+			msleep(IXGBE_CS4227_CHECK_DELAY);
-+			continue;
-+		}
-+
-+		/* Get status of reset flow. */
-+		status = ixgbe_read_cs4227(hw, IXGBE_CS4227_SCRATCH, &value);
-+		if (!status && value == IXGBE_CS4227_RESET_COMPLETE)
-+			goto out;
-+
-+		if (status || value != IXGBE_CS4227_RESET_PENDING)
-+			break;
-+
-+		/* Reset is pending. Wait and check again. */
-+		hw->mac.ops.release_swfw_sync(hw, swfw_mask);
-+		msleep(IXGBE_CS4227_CHECK_DELAY);
-+	}
-+
-+	/* Reset the CS4227. */
-+	status = ixgbe_reset_cs4227(hw);
-+	if (status) {
-+		hw_err(hw, "CS4227 reset failed: %d", status);
-+		goto out;
-+	}
-+
-+	/* Reset takes so long, temporarily release semaphore in case the
-+	 * other driver instance is waiting for the reset indication.
-+	 */
-+	ixgbe_write_cs4227(hw, IXGBE_CS4227_SCRATCH,
-+			   IXGBE_CS4227_RESET_PENDING);
-+	hw->mac.ops.release_swfw_sync(hw, swfw_mask);
-+	usleep_range(10000, 12000);
-+	status = hw->mac.ops.acquire_swfw_sync(hw, swfw_mask);
-+	if (status) {
-+		hw_err(hw, "semaphore failed with %d", status);
-+		return;
-+	}
-+
-+	/* Is the CS4227 working correctly? */
-+	status = ixgbe_get_cs4227_status(hw);
-+	if (status) {
-+		hw_err(hw, "CS4227 status failed: %d", status);
-+		goto out;
-+	}
-+
-+	/* Record completion for next time. */
-+	status = ixgbe_write_cs4227(hw, IXGBE_CS4227_SCRATCH,
-+				    IXGBE_CS4227_RESET_COMPLETE);
-+
-+out:
-+	hw->mac.ops.release_swfw_sync(hw, swfw_mask);
-+	msleep(hw->eeprom.semaphore_delay);
-+}
-+
- /** ixgbe_identify_phy_x550em - Get PHY type based on device id
-  *  @hw: pointer to hardware structure
-  *
-@@ -68,7 +339,7 @@ static s32 ixgbe_identify_phy_x550em(struct ixgbe_hw *hw)
- 		/* set up for CS4227 usage */
- 		hw->phy.phy_semaphore_mask = IXGBE_GSSR_SHARED_I2C_SM;
- 		ixgbe_setup_mux_ctl(hw);
--
-+		ixgbe_check_cs4227(hw);
- 		return ixgbe_identify_module_generic(hw);
- 	case IXGBE_DEV_ID_X550EM_X_KX4:
- 		hw->phy.type = ixgbe_phy_x550em_kx4;
+ 	err = hw->phy.ops.identify_sfp(hw);
+ 	if (err == IXGBE_ERR_SFP_NOT_SUPPORTED)
+ 		goto sfp_out;
 
