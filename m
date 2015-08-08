@@ -1,230 +1,183 @@
 From: Christopher Hall <christopher.s.hall@intel.com>
-Date: Fri,  7 Aug 2015 18:13:47 -0700
-Subject: [Intel-wired-lan] [PATCH v2 1/4] Add generic correlated clocksource
-	code and ART to TSC conversion code
+Date: Fri,  7 Aug 2015 18:13:48 -0700
+Subject: [Intel-wired-lan] [PATCH v2 2/4] Add ART initialization code
 In-Reply-To: <1438996430-10296-1-git-send-email-christopher.s.hall@intel.com>
 References: <1438996430-10296-1-git-send-email-christopher.s.hall@intel.com>
-Message-ID: <1438996430-10296-2-git-send-email-christopher.s.hall@intel.com>
+Message-ID: <1438996430-10296-3-git-send-email-christopher.s.hall@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Original patch description:
+add private struct correlated_ts member used by get_ts() code
 
-Subject: ptp: Get sync timestamps
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Wed, 29 Jul 2015 10:52:06 +0200
+added EXPORTs making get_correlated_timestamp() function and
+	art_timestamper accessible
 
-The ART stuff wants to be splitted out.
-
-======== Changes =======
-
-Add struct correlated_cs (clocksource) with pointer to original clocksource
-	and function pointer to convert correlated clocksource to the original
-
-Add struct correlated_ts (timestamp) with function pointer to read correlated
-	clocksource, device and system (in terms of correlated clocksource)
-	counter values (input) with resulting converted real and monotonic raw
-	system times (output)
-
-Add get_correlated_timestamp() function which given specific correlated_cs
-	and correlated_ts convert correlated counter value to system time
-
-Add art_to_tsc conversion function translated Always Running Timer (ART) to
-	TSC value
+Add special case for denominator of 2 (art_to_tsc())
 ---
- arch/x86/kernel/tsc.c       | 31 ++++++++++++++++++++++
- include/linux/clocksource.h | 30 +++++++++++++++++++++
- include/linux/timekeeping.h |  4 +++
- kernel/time/timekeeping.c   | 63 +++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 128 insertions(+)
+ arch/x86/include/asm/cpufeature.h |  3 ++-
+ arch/x86/include/asm/tsc.h        |  1 +
+ arch/x86/kernel/tsc.c             | 42 ++++++++++++++++++++++++++-------------
+ include/linux/clocksource.h       |  8 +++++---
+ kernel/time/timekeeping.c         |  1 +
+ 5 files changed, 37 insertions(+), 18 deletions(-)
 
+diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
+index 3d6606f..a9322e5 100644
+--- a/arch/x86/include/asm/cpufeature.h
++++ b/arch/x86/include/asm/cpufeature.h
+@@ -85,7 +85,7 @@
+ #define X86_FEATURE_P4		( 3*32+ 7) /* "" P4 */
+ #define X86_FEATURE_CONSTANT_TSC ( 3*32+ 8) /* TSC ticks at a constant rate */
+ #define X86_FEATURE_UP		( 3*32+ 9) /* smp kernel running on up */
+-/* free, was #define X86_FEATURE_FXSAVE_LEAK ( 3*32+10) * "" FXSAVE leaks FOP/FIP/FOP */
++#define X86_FEATURE_ART		(3*32+10) /* Platform has always running timer (ART) */
+ #define X86_FEATURE_ARCH_PERFMON ( 3*32+11) /* Intel Architectural PerfMon */
+ #define X86_FEATURE_PEBS	( 3*32+12) /* Precise-Event Based Sampling */
+ #define X86_FEATURE_BTS		( 3*32+13) /* Branch Trace Store */
+@@ -352,6 +352,7 @@ extern const char * const x86_bug_flags[NBUGINTS*32];
+ #define cpu_has_de		boot_cpu_has(X86_FEATURE_DE)
+ #define cpu_has_pse		boot_cpu_has(X86_FEATURE_PSE)
+ #define cpu_has_tsc		boot_cpu_has(X86_FEATURE_TSC)
++#define cpu_has_art		boot_cpu_has(X86_FEATURE_ART)
+ #define cpu_has_pge		boot_cpu_has(X86_FEATURE_PGE)
+ #define cpu_has_apic		boot_cpu_has(X86_FEATURE_APIC)
+ #define cpu_has_sep		boot_cpu_has(X86_FEATURE_SEP)
+diff --git a/arch/x86/include/asm/tsc.h b/arch/x86/include/asm/tsc.h
+index 94605c0..0089991 100644
+--- a/arch/x86/include/asm/tsc.h
++++ b/arch/x86/include/asm/tsc.h
+@@ -53,6 +53,7 @@ extern int check_tsc_disabled(void);
+ extern unsigned long native_calibrate_tsc(void);
+ 
+ extern int tsc_clocksource_reliable;
++extern struct correlated_cs art_timestamper;
+ 
+ /*
+  * Boot-time check whether the TSCs are synchronized across
 diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-index 7437b41..a90aa6a 100644
+index a90aa6a..0a2f336 100644
 --- a/arch/x86/kernel/tsc.c
 +++ b/arch/x86/kernel/tsc.c
-@@ -1059,6 +1059,27 @@ int unsynchronized_tsc(void)
+@@ -1059,6 +1059,9 @@ int unsynchronized_tsc(void)
  	return 0;
  }
  
-+static u32 tsc_numerator;
-+static u32 tsc_denominator;
-+/*
-+ * CHECKME: Do we need the adjust value? It should be 0, but if we run
-+ * in a VM this might be a different story.
-+ */
-+static u64 tsc_adjust;
++#define ART_CPUID_LEAF (0x15)
++#define ART_MIN_DENOMINATOR (2)
 +
-+static u64 art_to_tsc(u64 cycles)
-+{
-+	u64 tmp, res = tsc_adjust;
-+
-+	res += (cycles / tsc_denominator) * tsc_numerator;
-+	tmp = (cycles % tsc_denominator) * tsc_numerator;
-+	res += tmp / tsc_denominator;
-+	return res;
-+}
-+
-+struct correlated_cs art_timestamper = {
-+	.convert	= art_to_tsc,
-+};
+ static u32 tsc_numerator;
+ static u32 tsc_denominator;
+ /*
+@@ -1067,19 +1070,29 @@ static u32 tsc_denominator;
+  */
+ static u64 tsc_adjust;
+ 
+-static u64 art_to_tsc(u64 cycles)
++static u64 art_to_tsc(struct correlated_cs *cs, u64 cycles)
+ {
+ 	u64 tmp, res = tsc_adjust;
+ 
+-	res += (cycles / tsc_denominator) * tsc_numerator;
+-	tmp = (cycles % tsc_denominator) * tsc_numerator;
+-	res += tmp / tsc_denominator;
++	switch (tsc_denominator) {
++	default:
++		res += (cycles / tsc_denominator) * tsc_numerator;
++		tmp = (cycles % tsc_denominator) * tsc_numerator;
++		res += tmp / tsc_denominator;
++		break;
++	case 2:
++		res += (cycles >> 1) * tsc_numerator;
++		tmp = (cycles & 0x1) * tsc_numerator;
++		res += tmp >> 1;
++		break;
++	}
+ 	return res;
+ }
+ 
+ struct correlated_cs art_timestamper = {
+ 	.convert	= art_to_tsc,
+ };
++EXPORT_SYMBOL(art_timestamper);
  
  static void tsc_refine_calibration_work(struct work_struct *work);
  static DECLARE_DELAYED_WORK(tsc_irqwork, tsc_refine_calibration_work);
-@@ -1129,6 +1150,16 @@ static void tsc_refine_calibration_work(struct work_struct *work)
+@@ -1103,6 +1116,7 @@ static void tsc_refine_calibration_work(struct work_struct *work)
+ 	static int hpet;
+ 	u64 tsc_stop, ref_stop, delta;
+ 	unsigned long freq;
++	unsigned int unused[2];
+ 
+ 	/* Don't bother refining TSC on unstable systems */
+ 	if (check_tsc_unstable())
+@@ -1150,17 +1164,17 @@ static void tsc_refine_calibration_work(struct work_struct *work)
  		(unsigned long)tsc_khz / 1000,
  		(unsigned long)tsc_khz % 1000);
  
-+	/*
-+	 * TODO:
-+	 *
-+	 * If the system has ART, initialize the art_to_tsc conversion
-+	 * and set: art_timestamp.related_cs = &tsc_clocksource.
-+	 *
-+	 * Before that point a call to get_correlated_timestamp will
-+	 * fail the clocksource match check.
-+	 */
-+
+-	/*
+-	 * TODO:
+-	 *
+-	 * If the system has ART, initialize the art_to_tsc conversion
+-	 * and set: art_timestamp.related_cs = &tsc_clocksource.
+-	 *
+-	 * Before that point a call to get_correlated_timestamp will
+-	 * fail the clocksource match check.
+-	 */
+-
  out:
++	if (boot_cpu_data.cpuid_level >= ART_CPUID_LEAF) {
++		cpuid(ART_CPUID_LEAF, &tsc_denominator, &tsc_numerator, unused,
++		      unused+1);
++
++		if (tsc_denominator >= ART_MIN_DENOMINATOR) {
++			set_cpu_cap(&boot_cpu_data, X86_FEATURE_ART);
++			art_timestamper.related_cs = &clocksource_tsc;
++		}
++	}
++
  	clocksource_register_khz(&clocksource_tsc, tsc_khz);
  }
+ 
 diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
-index 278dd27..2ed3d0c 100644
+index 2ed3d0c..46ce54b 100644
 --- a/include/linux/clocksource.h
 +++ b/include/linux/clocksource.h
-@@ -258,4 +258,34 @@ void acpi_generic_timer_init(void);
- static inline void acpi_generic_timer_init(void) { }
- #endif
- 
-+/**
-+ * struct correlated_cs - Descriptor for a clocksource correlated to another clocksource
-+ * @related_cs:		Pointer to the related timekeeping clocksource
-+ * @convert:		Conversion function to convert a timestamp from
-+ *			the correlated clocksource to cycles of the related
-+ *			timekeeping clocksource
-+ */
-+struct correlated_cs {
-+	struct clocksource	*related_cs;
-+	u64			(*convert)(u64 cycles);
-+};
-+
-+struct correlated_ts;
-+
-+/**
-+ * struct correlated_ts - Descriptor for taking a correlated time stamp
-+ * @get_ts:		Function to read out a synced system and device
-+ *			timestamp
-+ * @system_ts:		The raw system clock timestamp
-+ * @device_ts:		The raw device timestamp
-+ * @system_real:	@system_ts converted to CLOCK_REALTIME
-+ * @system_raw:		@system_ts converted to CLOCK_MONOTONIC_RAW
-+ */
-+struct correlated_ts {
-+	int			(*get_ts)(struct correlated_ts *ts);
-+	u64			system_ts;
-+	u64			device_ts;
-+	u64			system_real;
-+	u64			system_raw;
-+};
- #endif /* _LINUX_CLOCKSOURCE_H */
-diff --git a/include/linux/timekeeping.h b/include/linux/timekeeping.h
-index 6e191e4..a9e1a2d 100644
---- a/include/linux/timekeeping.h
-+++ b/include/linux/timekeeping.h
-@@ -258,6 +258,10 @@ extern void timekeeping_inject_sleeptime64(struct timespec64 *delta);
+@@ -267,7 +267,8 @@ static inline void acpi_generic_timer_init(void) { }
   */
- extern void getnstime_raw_and_real(struct timespec *ts_raw,
- 				   struct timespec *ts_real);
-+struct correlated_ts;
-+struct correlated_cs;
-+extern int get_correlated_timestamp(struct correlated_ts *crt,
-+				    struct correlated_cs *crs);
+ struct correlated_cs {
+ 	struct clocksource	*related_cs;
+-	u64			(*convert)(u64 cycles);
++	u64			(*convert)(struct correlated_cs *cs,
++					   u64 cycles);
+ };
  
- /*
-  * Persistent clock related interfaces
+ struct correlated_ts;
+@@ -285,7 +286,8 @@ struct correlated_ts {
+ 	int			(*get_ts)(struct correlated_ts *ts);
+ 	u64			system_ts;
+ 	u64			device_ts;
+-	u64			system_real;
+-	u64			system_raw;
++	ktime_t			system_real;
++	ktime_t			system_raw;
++	void			*private;
+ };
+ #endif /* _LINUX_CLOCKSOURCE_H */
 diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index bca3667..769a04b 100644
+index 769a04b..abf8aec 100644
 --- a/kernel/time/timekeeping.c
 +++ b/kernel/time/timekeeping.c
-@@ -312,6 +312,19 @@ static inline s64 timekeeping_get_ns(struct tk_read_base *tkr)
- 	return nsec + arch_gettimeoffset();
+@@ -946,6 +946,7 @@ int get_correlated_timestamp(struct correlated_ts *crt,
+ 	} while (read_seqcount_retry(&tk_core.seq, seq));
+ 	return 0;
  }
- 
-+static inline s64 timekeeping_convert_to_ns(struct tk_read_base *tkr,
-+					    cycle_t cycles)
-+{
-+	cycle_t delta;
-+	s64 nsec;
-+
-+	/* calculate the delta since the last update_wall_time */
-+	delta = clocksource_delta(cycles, tkr->cycle_last, tkr->mask);
-+
-+	nsec = delta * tkr->mult + tkr->xtime_nsec;
-+	return nsec >> tkr->shift;
-+}
-+
- /**
-  * update_fast_timekeeper - Update the fast and NMI safe monotonic timekeeper.
-  * @tkr: Timekeeping readout base from which we take the update
-@@ -885,6 +898,56 @@ EXPORT_SYMBOL(getnstime_raw_and_real);
- #endif /* CONFIG_NTP_PPS */
++EXPORT_SYMBOL(get_correlated_timestamp);
  
  /**
-+ * get_correlated_timestamp - Get a correlated timestamp
-+ *
-+ * Reads a timestamp from a device and correlates it to system time
-+ */
-+int get_correlated_timestamp(struct correlated_ts *crt,
-+			     struct correlated_cs *crs)
-+{
-+	struct timekeeper *tk = &tk_core.timekeeper;
-+	unsigned long seq;
-+	cycles_t cycles;
-+	ktime_t base;
-+	s64 nsecs;
-+	int ret;
-+
-+	do {
-+		seq = read_seqcount_begin(&tk_core.seq);
-+		/*
-+		 * Verify that the correlated clocksoure is related to
-+		 * the currently installed timekeeper clocksoure
-+		 */
-+		if (tk->tkr_mono.clock != crs->related_cs)
-+			return -ENODEV;
-+
-+		/*
-+		 * Try to get a timestamp from the device.
-+		 */
-+		ret = crt->get_ts(crt);
-+		if (ret)
-+			return ret;
-+
-+		/*
-+		 * Convert the timestamp to timekeeper clock cycles
-+		 */
-+		cycles = crs->convert(crs, crt->system_ts);
-+
-+		/* Convert to clock realtime */
-+		base = ktime_add(tk->tkr_mono.base, tk_core.timekeeper.offs_real);
-+		nsecs = timekeeping_convert_to_ns(&tk->tkr_mono, cycles);
-+		crt->system_real = ktime_add_ns(base, nsecs);
-+
-+		/* Convert to clock raw monotonic */
-+		base = tk->tkr_raw.base;
-+		nsecs = timekeeping_convert_to_ns(&tk->tkr_raw, cycles);
-+		crt->system_raw = ktime_add_ns(base, nsecs);
-+
-+	} while (read_seqcount_retry(&tk_core.seq, seq));
-+	return 0;
-+}
-+
-+/**
   * do_gettimeofday - Returns the time of day in a timeval
-  * @tv:		pointer to the timeval to be set
-  *
 -- 
 1.9.1
 
