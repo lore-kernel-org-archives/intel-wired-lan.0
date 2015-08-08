@@ -1,33 +1,138 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Sat, 08 Aug 2015 16:19:19 -0700
-Subject: [Intel-wired-lan] [PATCH V5 19/19] ixgbe: Add new X550EM SFP+
-	device ID
-In-Reply-To: <20150808231450.94784.49531.stgit@mdrustad-wks.jf.intel.com>
-References: <20150808231450.94784.49531.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <20150808231919.94784.66721.stgit@mdrustad-wks.jf.intel.com>
+Date: Sat, 08 Aug 2015 16:27:41 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Correct several flaws with with
+	DCA setup
+Message-ID: <20150808232741.95142.31565.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add new device ID for X550EM device with SFPs.
+This change does two things. First, it makes it so that we always
+set the relaxed ordering bits related to the DCA registers even if
+DCA is not enabled. Second, it moves the configuration out of the
+ixgbe_down function and into the ixgbe_configure function before
+enabling the Rx and Tx rings. This ensures that DCA is configured
+correctly before starting to process packets.
+
+Thanks to Alex Duyck for this fix.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   40 ++++++++++++++++---------
+ 1 file changed, 26 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 0ec2cd841be0..6ca8e80d6d9c 100644
+index 6ca8e80d6d9c..9d302cbd813d 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -137,6 +137,7 @@ static const struct pci_device_id ixgbe_pci_tbl[] = {
- 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_KX4), board_X550EM_x},
- 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_KR), board_X550EM_x},
- 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_10G_T), board_X550EM_x},
-+	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_SFP), board_X550EM_x},
- 	/* required last entry */
- 	{0, }
- };
+@@ -1245,9 +1245,12 @@ static void ixgbe_update_tx_dca(struct ixgbe_adapter *adapter,
+ 				int cpu)
+ {
+ 	struct ixgbe_hw *hw = &adapter->hw;
+-	u32 txctrl = dca3_get_tag(tx_ring->dev, cpu);
++	u32 txctrl = 0;
+ 	u16 reg_offset;
+ 
++	if (adapter->flags & IXGBE_FLAG_DCA_ENABLED)
++		txctrl = dca3_get_tag(tx_ring->dev, cpu);
++
+ 	switch (hw->mac.type) {
+ 	case ixgbe_mac_82598EB:
+ 		reg_offset = IXGBE_DCA_TXCTRL(tx_ring->reg_idx);
+@@ -1279,9 +1282,11 @@ static void ixgbe_update_rx_dca(struct ixgbe_adapter *adapter,
+ 				int cpu)
+ {
+ 	struct ixgbe_hw *hw = &adapter->hw;
+-	u32 rxctrl = dca3_get_tag(rx_ring->dev, cpu);
++	u32 rxctrl = 0;
+ 	u8 reg_idx = rx_ring->reg_idx;
+ 
++	if (adapter->flags & IXGBE_FLAG_DCA_ENABLED)
++		rxctrl = dca3_get_tag(rx_ring->dev, cpu);
+ 
+ 	switch (hw->mac.type) {
+ 	case ixgbe_mac_82599EB:
+@@ -1298,6 +1303,7 @@ static void ixgbe_update_rx_dca(struct ixgbe_adapter *adapter,
+ 	 * which will cause the DCA tag to be cleared.
+ 	 */
+ 	rxctrl |= IXGBE_DCA_RXCTRL_DESC_RRO_EN |
++		  IXGBE_DCA_RXCTRL_DATA_DCA_EN |
+ 		  IXGBE_DCA_RXCTRL_DESC_DCA_EN;
+ 
+ 	IXGBE_WRITE_REG(hw, IXGBE_DCA_RXCTRL(reg_idx), rxctrl);
+@@ -1327,11 +1333,13 @@ static void ixgbe_setup_dca(struct ixgbe_adapter *adapter)
+ {
+ 	int i;
+ 
+-	if (!(adapter->flags & IXGBE_FLAG_DCA_ENABLED))
+-		return;
+-
+ 	/* always use CB2 mode, difference is masked in the CB driver */
+-	IXGBE_WRITE_REG(&adapter->hw, IXGBE_DCA_CTRL, 2);
++	if (adapter->flags & IXGBE_FLAG_DCA_ENABLED)
++		IXGBE_WRITE_REG(&adapter->hw, IXGBE_DCA_CTRL,
++				IXGBE_DCA_CTRL_DCA_MODE_CB2);
++	else
++		IXGBE_WRITE_REG(&adapter->hw, IXGBE_DCA_CTRL,
++				IXGBE_DCA_CTRL_DCA_DISABLE);
+ 
+ 	for (i = 0; i < adapter->num_q_vectors; i++) {
+ 		adapter->q_vector[i]->cpu = -1;
+@@ -1354,7 +1362,8 @@ static int __ixgbe_notify_dca(struct device *dev, void *data)
+ 			break;
+ 		if (dca_add_requester(dev) == 0) {
+ 			adapter->flags |= IXGBE_FLAG_DCA_ENABLED;
+-			ixgbe_setup_dca(adapter);
++			IXGBE_WRITE_REG(&adapter->hw, IXGBE_DCA_CTRL,
++					IXGBE_DCA_CTRL_DCA_MODE_CB2);
+ 			break;
+ 		}
+ 		/* Fall Through since DCA is disabled. */
+@@ -1362,7 +1371,8 @@ static int __ixgbe_notify_dca(struct device *dev, void *data)
+ 		if (adapter->flags & IXGBE_FLAG_DCA_ENABLED) {
+ 			dca_remove_requester(dev);
+ 			adapter->flags &= ~IXGBE_FLAG_DCA_ENABLED;
+-			IXGBE_WRITE_REG(&adapter->hw, IXGBE_DCA_CTRL, 1);
++			IXGBE_WRITE_REG(&adapter->hw, IXGBE_DCA_CTRL,
++					IXGBE_DCA_CTRL_DCA_DISABLE);
+ 		}
+ 		break;
+ 	}
+@@ -4783,6 +4793,12 @@ static void ixgbe_configure(struct ixgbe_adapter *adapter)
+ 		break;
+ 	}
+ 
++#ifdef CONFIG_IXGBE_DCA
++	/* configure DCA */
++	if (adapter->flags & IXGBE_FLAG_DCA_CAPABLE)
++		ixgbe_setup_dca(adapter);
++#endif /* CONFIG_IXGBE_DCA */
++
+ #ifdef IXGBE_FCOE
+ 	/* configure FCoE L2 filters, redirection table, and Rx control */
+ 	ixgbe_configure_fcoe(adapter);
+@@ -5243,11 +5259,6 @@ void ixgbe_down(struct ixgbe_adapter *adapter)
+ 
+ 	ixgbe_clean_all_tx_rings(adapter);
+ 	ixgbe_clean_all_rx_rings(adapter);
+-
+-#ifdef CONFIG_IXGBE_DCA
+-	/* since we reset the hardware DCA settings were cleared */
+-	ixgbe_setup_dca(adapter);
+-#endif
+ }
+ 
+ /**
+@@ -9037,7 +9048,8 @@ static void ixgbe_remove(struct pci_dev *pdev)
+ 	if (adapter->flags & IXGBE_FLAG_DCA_ENABLED) {
+ 		adapter->flags &= ~IXGBE_FLAG_DCA_ENABLED;
+ 		dca_remove_requester(&pdev->dev);
+-		IXGBE_WRITE_REG(&adapter->hw, IXGBE_DCA_CTRL, 1);
++		IXGBE_WRITE_REG(&adapter->hw, IXGBE_DCA_CTRL,
++				IXGBE_DCA_CTRL_DCA_DISABLE);
+ 	}
+ 
+ #endif
 
