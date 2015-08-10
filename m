@@ -1,20 +1,34 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Mon, 10 Aug 2015 22:24:05 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
- 842c4ef08ce155bcceeec4ba47e7c3b7fbdc6f78 BUILD SUCCESS
-Message-ID: <55c8b405.QAcShqbvMiRRz41e%fengguang.wu@intel.com>
+Date: Tue, 11 Aug 2015 00:00:44 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ d3636800827fe91f8da6648baa3b7a8694b02e9f BUILD DONE
+Message-ID: <55c8caac.AsjIcIHnH8amxc9z%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-842c4ef08ce155bcceeec4ba47e7c3b7fbdc6f78  i40e: Set defport behavior for the Main VSI when in promiscuous mode
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+d3636800827fe91f8da6648baa3b7a8694b02e9f  ixgbe: Correct setting of RDRXCTL register for X550* devices
 
-elapsed time: 75m
+drivers/net/ethernet/intel/i40e/i40e_debugfs.c:1499:4: warning: format '%lx' expects argument of type 'long unsigned int', but argument 4 has type 'u32' [-Wformat=]
 
-configs tested: 94
+Error ids grouped by kconfigs:
+
+recent_errors
+??? i386-allmodconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u32
+??? i386-randconfig-x002-08101704
+??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u32
+??? parisc-allyesconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u32
+??? xtensa-allyesconfig
+    ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u32
+
+elapsed time: 81m
+
+configs tested: 101
 
 parisc                        c3000_defconfig
 parisc                              defconfig
@@ -29,29 +43,9 @@ blackfin                  TCM-BF537_defconfig
 blackfin            BF561-EZKIT-SMP_defconfig
 blackfin                BF533-EZKIT_defconfig
 blackfin                BF526-EZBRD_defconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64                            allnoconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             allmodconfig
-i386                             alldefconfig
 powerpc                             defconfig
 powerpc                       ppc64_defconfig
 powerpc                           allnoconfig
-x86_64                   randconfig-i0-201532
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i1-201532
-i386                     randconfig-i0-201532
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
 x86_64                           allmodconfig
 xtensa                       common_defconfig
 m32r                       m32104ut_defconfig
@@ -59,8 +53,26 @@ xtensa                          iss_defconfig
 m32r                         opsput_defconfig
 m32r                           usrv_defconfig
 m32r                     mappi3.smp_defconfig
+x86_64                            allnoconfig
+x86_64                   randconfig-i0-201532
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i1-201532
+i386                     randconfig-i0-201532
 i386                     randconfig-n0-201532
-x86_64                                   rhel
+arm                       omap2plus_defconfig
+arm                         s3c2410_defconfig
+arm                                       mmp
+arm                           tegra_defconfig
+arm                                      arm5
+arm                                     arm67
+i386                              allnoconfig
+i386                                defconfig
+i386                             allmodconfig
+i386                             alldefconfig
 mn10300                     asb2364_defconfig
 openrisc                    or1ksim_defconfig
 um                           x86_64_defconfig
@@ -85,6 +97,10 @@ m68k                           sun3_defconfig
 m68k                          multi_defconfig
 m68k                       m5475evb_defconfig
 m68k                          amiga_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
 x86_64                 randconfig-x001-201532
 x86_64                 randconfig-x004-201532
 x86_64                 randconfig-x006-201532
@@ -95,6 +111,11 @@ x86_64                 randconfig-x002-201532
 x86_64                 randconfig-x005-201532
 x86_64                 randconfig-x008-201532
 x86_64                 randconfig-x007-201532
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+x86_64                                    lkp
+x86_64                                   rhel
 i386                     randconfig-r0-201532
 i386                 randconfig-x000-08101704
 i386                 randconfig-x006-08101704
