@@ -1,60 +1,115 @@
-From: Dave Hansen <dave@sr71.net>
-Date: Mon, 31 Aug 2015 14:26:41 -0700
-Subject: [Intel-wired-lan] [PATCH] e1000: fix e1000e_disable_aspm_locked()
-	warning
-Message-ID: <20150831212641.FA5D579A@viggo.jf.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Mon, 10 Aug 2015 22:24:05 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ 842c4ef08ce155bcceeec4ba47e7c3b7fbdc6f78 BUILD SUCCESS
+Message-ID: <55c8b405.QAcShqbvMiRRz41e%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+842c4ef08ce155bcceeec4ba47e7c3b7fbdc6f78  i40e: Set defport behavior for the Main VSI when in promiscuous mode
 
-From: Dave Hansen <dave.hansen@linux.intel.com>
+elapsed time: 75m
 
-I have a .config with CONFIG_PM disabled.  I get the following whenever
-compiling the e1000 driver:
+configs tested: 94
 
-...net/ethernet/intel/e1000e/netdev.c:6450:13: warning: 'e1000e_disable_aspm_locked' defined but not used [-Wunused-function]
- static void e1000e_disable_aspm_locked(struct pci_dev *pdev, u16 state)
+parisc                        c3000_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+i386                     randconfig-a0-201532
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+x86_64                            allnoconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             allmodconfig
+i386                             alldefconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+x86_64                   randconfig-i0-201532
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i1-201532
+i386                     randconfig-i0-201532
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+i386                     randconfig-n0-201532
+x86_64                                   rhel
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+arm                                    sa1100
+arm                          prima2_defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                                   samsung
+arm                       spear13xx_defconfig
+arm                                  iop-adma
+arm                       imx_v6_v7_defconfig
+arm                          marzen_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                                        sh
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                          amiga_defconfig
+x86_64                 randconfig-x001-201532
+x86_64                 randconfig-x004-201532
+x86_64                 randconfig-x006-201532
+x86_64                 randconfig-x000-201532
+x86_64                 randconfig-x003-201532
+x86_64                 randconfig-x009-201532
+x86_64                 randconfig-x002-201532
+x86_64                 randconfig-x005-201532
+x86_64                 randconfig-x008-201532
+x86_64                 randconfig-x007-201532
+i386                     randconfig-r0-201532
+i386                 randconfig-x000-08101704
+i386                 randconfig-x006-08101704
+i386                 randconfig-x003-08101704
+i386                 randconfig-x005-08101704
+i386                 randconfig-x001-08101704
+i386                 randconfig-x008-08101704
+i386                 randconfig-x009-08101704
+i386                 randconfig-x002-08101704
+i386                 randconfig-x007-08101704
+i386                 randconfig-x004-08101704
+mips                                   jz4740
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
 
-Looks like we just need to move e1000e_disable_aspm_locked() to
-be underneath the CONFIG_PM #ifdef.
-
-Signed-off-by: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com> (supporter:INTEL ETHERNET DRIVERS)
-Cc: Jesse Brandeburg <jesse.brandeburg@intel.com> (reviewer)
-Cc: Shannon Nelson <shannon.nelson@intel.com> (reviewer)
-Cc: Carolyn Wyborny <carolyn.wyborny@intel.com> (reviewer)
-Cc: Don Skidmore <donald.c.skidmore@intel.com> (reviewer)
-Cc: Matthew Vick <matthew.vick@intel.com> (reviewer)
-Cc: John Ronciak <john.ronciak@intel.com> (reviewer)
-Cc: Mitch Williams <mitch.a.williams@intel.com> (reviewer)
-Cc: intel-wired-lan at lists.osuosl.org (open list:INTEL ETHERNET DRIVERS)
-Cc: netdev at vger.kernel.org (open list:NETWORKING DRIVERS)
-Cc: linux-kernel at vger.kernel.org (open list)
----
-
- b/drivers/net/ethernet/intel/e1000e/netdev.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff -puN drivers/net/ethernet/intel/e1000e/netdev.c~fix-e1000-warning drivers/net/ethernet/intel/e1000e/netdev.c
---- a/drivers/net/ethernet/intel/e1000e/netdev.c~fix-e1000-warning	2015-08-31 14:19:11.520115321 -0700
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c	2015-08-31 14:19:11.525115549 -0700
-@@ -6439,6 +6439,7 @@ static void e1000e_disable_aspm(struct p
- 	__e1000e_disable_aspm(pdev, state, 0);
- }
- 
-+#ifdef CONFIG_PM
- /**
-  * e1000e_disable_aspm_locked   Disable ASPM states.
-  * @pdev: pointer to PCI device struct
-@@ -6452,7 +6453,6 @@ static void e1000e_disable_aspm_locked(s
- 	__e1000e_disable_aspm(pdev, state, 1);
- }
- 
--#ifdef CONFIG_PM
- static int __e1000_resume(struct pci_dev *pdev)
- {
- 	struct net_device *netdev = pci_get_drvdata(pdev);
-_
+Thanks,
+Fengguang
