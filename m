@@ -1,56 +1,30 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Tue, 11 Aug 2015 00:45:31 +0300
-Subject: [Intel-wired-lan] i40e/i40evf: RSS changes for X722
-Message-ID: <20150810214531.GD31724@mwanda>
+From: Schmitt, Phillip J <phillip.j.schmitt@intel.com>
+Date: Mon, 10 Aug 2015 23:32:46 +0000
+Subject: [Intel-wired-lan] [PATCH V5 01/19] ixgbe: Accept SFP not
+ present	errors on all devices
+In-Reply-To: <20150808231746.94784.29796.stgit@mdrustad-wks.jf.intel.com>
+References: <20150808231450.94784.49531.stgit@mdrustad-wks.jf.intel.com>
+ <20150808231746.94784.29796.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E180B9F609@ORSMSX108.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello Anjali Singhai Jain,
 
-The patch e25d00b87b26: "i40e/i40evf: RSS changes for X722" from Jun
-23, 2015, leads to the following static checker warning:
 
-	drivers/net/ethernet/intel/i40e/i40e_main.c:7516 i40e_config_rss_aq()
-	warn: possible memory leak of 'rss_lut'
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Mark D Rustad
+> Sent: Saturday, August 08, 2015 4:18 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH V5 01/19] ixgbe: Accept SFP not present errors
+> on all devices
+> 
+> When an SFP not present error is returned by the reset_hw method, accept it
+> and go on, since an SFP can still be inserted. Previously it was only accepted for
+> 82598 devices.
+> 
 
-drivers/net/ethernet/intel/i40e/i40e_main.c
-  7501  
-  7502          rss_lut = kzalloc(pf->rss_table_size, GFP_KERNEL);
-  7503          if (!rss_lut)
-  7504                  return -ENOMEM;
-  7505  
-  7506          /* Populate the LUT with max no. of queues in round robin fashion */
-  7507          for (i = 0; i < vsi->rss_table_size; i++)
-  7508                  rss_lut[i] = i % vsi->rss_size;
-  7509  
-  7510          ret = i40e_aq_set_rss_key(hw, vsi->id, &rss_key);
-  7511          if (ret) {
-  7512                  dev_info(&pf->pdev->dev,
-  7513                           "Cannot set RSS key, err %s aq_err %s\n",
-  7514                           i40e_stat_str(&pf->hw, ret),
-  7515                           i40e_aq_str(&pf->hw, pf->hw.aq.asq_last_status));
-
-Missing kfree() here.
-
-  7516                  return ret;
-  7517          }
-  7518  
-  7519          if (vsi->type == I40E_VSI_MAIN)
-  7520                  pf_lut = true;
-  7521  
-  7522          ret = i40e_aq_set_rss_lut(hw, vsi->id, pf_lut, rss_lut,
-  7523                                    vsi->rss_table_size);
-  7524          if (ret)
-  7525                  dev_info(&pf->pdev->dev,
-  7526                           "Cannot set RSS lut, err %s aq_err %s\n",
-  7527                           i40e_stat_str(&pf->hw, ret),
-  7528                           i40e_aq_str(&pf->hw, pf->hw.aq.asq_last_status));
-  7529  
-  7530          return ret;
-  7531  }
-
-regards,
-dan carpenter
+Tested-by: Phil Schmitt <phillip.j.schmitt@intel.com>
