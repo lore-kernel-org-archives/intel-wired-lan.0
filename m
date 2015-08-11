@@ -1,31 +1,40 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Tue, 11 Aug 2015 02:13:48 +0000
-Subject: [Intel-wired-lan] [PATCH] igb: Fix a memory leak in igb_probe
-In-Reply-To: <1438783516-13283-1-git-send-email-baijiaju1990@163.com>
-References: <1438783516-13283-1-git-send-email-baijiaju1990@163.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81AE35CA@ORSMSX101.amr.corp.intel.com>
+Date: Tue, 11 Aug 2015 19:01:42 +0000
+Subject: [Intel-wired-lan] [PATCH v2 1/2] igb: Teardown SR-IOV
+	before	unregister_netdev()
+In-Reply-To: <20150729203814.10732.38094.stgit@gimli.home>
+References: <20150729203726.10732.91020.stgit@gimli.home>
+ <20150729203814.10732.38094.stgit@gimli.home>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81AE3CE3@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: netdev-owner at vger.kernel.org [mailto:netdev-owner at vger.kernel.org]
-> On Behalf Of Jia-Ju Bai
-> Sent: Wednesday, August 05, 2015 7:05 AM
-> To: Kirsher, Jeffrey T; Brandeburg, Jesse
-> Cc: intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; linux-
-> kernel at vger.kernel.org; Jia-Ju Bai
-> Subject: [PATCH] igb: Fix a memory leak in igb_probe
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Alex Williamson
+> Sent: Wednesday, July 29, 2015 1:38 PM
+> To: intel-wired-lan at lists.osuosl.org; davem at davemloft.net; Kirsher,
+> Jeffrey T
+> Cc: netdev at vger.kernel.org; linux-kernel at vger.kernel.org
+> Subject: [Intel-wired-lan] [PATCH v2 1/2] igb: Teardown SR-IOV before
+> unregister_netdev()
 > 
-> In error handling code of igb_probe, the memory adapter->shadow_vfta
-> allocated by kcalloc in igb_sw_init is not freed. So when register_netdev
-> or igb_init_i2c is failed, a memory leak will occur.
-> This patch adds kfree to fix it.
+> When the .remove() callback for a PF is called, SR-IOV support for the
+> device is disabled, which requires unbinding and removing the VFs.
+> The VFs may be in-use either by the host kernel or userspace, such as
+> assigned to a VM through vfio-pci.  In this latter case, the VFs may
+> be removed either by shutting down the VM or hot-unplugging the
+> devices from the VM.  Unfortunately in the case of a Windows 2012 R2
+> guest, hot-unplug is broken due to the ordering of the PF driver
+> teardown.  Disabling SR-IOV prior to unregister_netdev() avoids this
+> issue.
 > 
-> Signed-off-by: Jia-Ju Bai <baijiaju1990@163.com>
+> Signed-off-by: Alex Williamson <alex.williamson@redhat.com>
+> Acked-by: Mitch Williams <mitch.a.williams@intel.com>
 > ---
->  drivers/net/ethernet/intel/igb/igb_main.c |    1 +
->  1 file changed, 1 insertion(+)
+>  drivers/net/ethernet/intel/igb/igb_main.c |    8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
