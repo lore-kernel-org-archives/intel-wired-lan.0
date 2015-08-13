@@ -1,54 +1,47 @@
-From: Mitch Williams <mitch.a.williams@intel.com>
-Date: Thu, 13 Aug 2015 15:11:32 -0700
-Subject: [Intel-wired-lan] [next,PATCH] i40evf: tweak init timing
-Message-ID: <1439503892-26218-1-git-send-email-mitch.a.williams@intel.com>
+From: Jarod Wilson <jarod@redhat.com>
+Date: Thu, 13 Aug 2015 14:02:57 -0400
+Subject: [Intel-wired-lan] [PATCH 3/6] ethernet/ixgbe: advertise LRO support
+	in vlan_features
+In-Reply-To: <1439488980-44738-1-git-send-email-jarod@redhat.com>
+References: <1439488980-44738-1-git-send-email-jarod@redhat.com>
+Message-ID: <1439488980-44738-4-git-send-email-jarod@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch tweaks the init timing of the driver just a little bit to
-increase stability on load/unload and SR-IOV enable/disable cycles.
+Without this, the presence of a ixgbe device in a bond will not trigger
+LRO support to be enabled at the bond level, even while it is enabled on
+the slave itself.
 
-First, run the init_task loop a little quicker in order to reduce
-overall init time.
+This change becomes necessary when NETIF_F_LRO is added to
+netdev_features.h's NETIF_F_ONE_FOR_ALL.
 
-Second, stagger the start of the init task based on the device's
-PCIe function ID. This lessens the impact on the firmware when a
-whole bunch of VFs are initialized simultaneously, e.g. enabling
-SR-IOV without the VF driver blacklisted. For single VFs assigned
-to VMs this will have no effect as the function ID will always be 0.
-
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+CC: intel-wired-lan at lists.osuosl.org
+CC: netdev at vger.kernel.org
+Signed-off-by: Jarod Wilson <jarod@redhat.com>
 ---
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 2a6063a..59effa4 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -2300,8 +2300,7 @@ static void i40evf_init_task(struct work_struct *work)
- 	}
- 	return;
- restart:
--	schedule_delayed_work(&adapter->init_task,
--			      msecs_to_jiffies(50));
-+	schedule_delayed_work(&adapter->init_task, msecs_to_jiffies(30));
- 	return;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 3e6a931..0a6e4e1 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -8659,8 +8659,10 @@ skip_sriov:
  
- err_register:
-@@ -2434,7 +2433,8 @@ static int i40evf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	INIT_WORK(&adapter->adminq_task, i40evf_adminq_task);
- 	INIT_WORK(&adapter->watchdog_task, i40evf_watchdog_task);
- 	INIT_DELAYED_WORK(&adapter->init_task, i40evf_init_task);
--	schedule_delayed_work(&adapter->init_task, 10);
-+	schedule_delayed_work(&adapter->init_task,
-+			      msecs_to_jiffies(5 * (pdev->devfn & 0x07)));
+ 	if (adapter->flags2 & IXGBE_FLAG2_RSC_CAPABLE)
+ 		netdev->hw_features |= NETIF_F_LRO;
+-	if (adapter->flags2 & IXGBE_FLAG2_RSC_ENABLED)
++	if (adapter->flags2 & IXGBE_FLAG2_RSC_ENABLED) {
+ 		netdev->features |= NETIF_F_LRO;
++		netdev->vlan_features |= NETIF_F_LRO;
++	}
  
- 	return 0;
- 
+ 	/* make sure the EEPROM is good */
+ 	if (hw->eeprom.ops.validate_checksum(hw, NULL) < 0) {
 -- 
-2.4.3
+1.8.3.1
 
