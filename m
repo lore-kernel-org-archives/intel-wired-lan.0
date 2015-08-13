@@ -1,117 +1,54 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 13 Aug 2015 18:43:39 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
- 96acffbc353df7593a94e4c9accfea3686334835 BUILD SUCCESS
-Message-ID: <55cc74db.XJVhlUR54G/AjNYI%fengguang.wu@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
+Date: Thu, 13 Aug 2015 15:11:32 -0700
+Subject: [Intel-wired-lan] [next,PATCH] i40evf: tweak init timing
+Message-ID: <1439503892-26218-1-git-send-email-mitch.a.williams@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-96acffbc353df7593a94e4c9accfea3686334835  i40e: Set defport behavior for the Main VSI when in promiscuous mode
+This patch tweaks the init timing of the driver just a little bit to
+increase stability on load/unload and SR-IOV enable/disable cycles.
 
-elapsed time: 258m
+First, run the init_task loop a little quicker in order to reduce
+overall init time.
 
-configs tested: 96
+Second, stagger the start of the init task based on the device's
+PCIe function ID. This lessens the impact on the firmware when a
+whole bunch of VFs are initialized simultaneously, e.g. enabling
+SR-IOV without the VF driver blacklisted. For single VFs assigned
+to VMs this will have no effect as the function ID will always be 0.
 
-parisc                        c3000_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-i386                     randconfig-a0-201532
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-x86_64                            allnoconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-arm                                    sa1100
-arm                          prima2_defconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                                   samsung
-arm                       spear13xx_defconfig
-arm                                  iop-adma
-arm                       imx_v6_v7_defconfig
-arm                          marzen_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                                        sh
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64                           allmodconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-mips                                   jz4740
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-x86_64                   randconfig-i0-201532
-i386                     randconfig-i1-201532
-i386                     randconfig-i0-201532
-i386                             allyesconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201532
-i386                              allnoconfig
-i386                                defconfig
-i386                             allmodconfig
-i386                             alldefconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-m68k                          amiga_defconfig
-x86_64               randconfig-x002-08121450
-x86_64               randconfig-x009-08121450
-x86_64               randconfig-x004-08121450
-x86_64               randconfig-x003-08121450
-x86_64               randconfig-x006-08121450
-x86_64               randconfig-x008-08121450
-x86_64               randconfig-x007-08121450
-x86_64               randconfig-x001-08121450
-x86_64               randconfig-x000-08121450
-x86_64               randconfig-x005-08121450
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-r0-201532
-i386                 randconfig-x000-08101704
-i386                 randconfig-x006-08101704
-i386                 randconfig-x003-08101704
-i386                 randconfig-x005-08101704
-i386                 randconfig-x001-08101704
-i386                 randconfig-x008-08101704
-i386                 randconfig-x009-08101704
-i386                 randconfig-x002-08101704
-i386                 randconfig-x007-08101704
-i386                 randconfig-x004-08101704
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+---
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Thanks,
-Fengguang
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 2a6063a..59effa4 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -2300,8 +2300,7 @@ static void i40evf_init_task(struct work_struct *work)
+ 	}
+ 	return;
+ restart:
+-	schedule_delayed_work(&adapter->init_task,
+-			      msecs_to_jiffies(50));
++	schedule_delayed_work(&adapter->init_task, msecs_to_jiffies(30));
+ 	return;
+ 
+ err_register:
+@@ -2434,7 +2433,8 @@ static int i40evf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	INIT_WORK(&adapter->adminq_task, i40evf_adminq_task);
+ 	INIT_WORK(&adapter->watchdog_task, i40evf_watchdog_task);
+ 	INIT_DELAYED_WORK(&adapter->init_task, i40evf_init_task);
+-	schedule_delayed_work(&adapter->init_task, 10);
++	schedule_delayed_work(&adapter->init_task,
++			      msecs_to_jiffies(5 * (pdev->devfn & 0x07)));
+ 
+ 	return 0;
+ 
+-- 
+2.4.3
+
