@@ -1,59 +1,117 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Thu, 13 Aug 2015 01:48:30 +0000
-Subject: [Intel-wired-lan] [PATCH] igbvf: clear buffer_info->dma
-	after	dma_unmap_single()
-In-Reply-To: <1438846337-6164-1-git-send-email-sassmann@kpanic.de>
-References: <1438846337-6164-1-git-send-email-sassmann@kpanic.de>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81AE47C6@ORSMSX101.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 13 Aug 2015 18:43:39 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ 96acffbc353df7593a94e4c9accfea3686334835 BUILD SUCCESS
+Message-ID: <55cc74db.XJVhlUR54G/AjNYI%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Stefan Assmann
-> Sent: Thursday, August 06, 2015 12:32 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org; sassmann at kpanic.de
-> Subject: [Intel-wired-lan] [PATCH] igbvf: clear buffer_info->dma after
-> dma_unmap_single()
-> 
-> The driver doesn't clear buffer_info->dma after calling
-> dma_unmap_single() in all cases. This has been discovered by changing
-> the mtu twice, which caused the following backtrace.
-> 
-> [   68.569280] WARNING: CPU: 2 PID: 1860 at drivers/iommu/intel-
-> iommu.c:3517 intel_unmap+0x20c/0x220()
-> [   68.579392] Driver unmaps unmatched page at PFN fffc2a40
-> [   68.585322] Modules linked in: igbvf ipt_MASQUERADE
-> nf_nat_masquerade_ipv4 iptable_nat nf_nat_ipv4 nf_nat kvm_intel kvm igb
-> megs
-> [   68.599163] CPU: 2 PID: 1860 Comm: ifconfig Not tainted 4.2.0-rc4+ #147
-> [   68.606543] Hardware name: IBM  -[546025Z]-/00Y7630, BIOS -[VVE134TUS-
-> 1.51]- 10/17/2013
-> [   68.615473]  0000000000000dbd ffff88046441bb08 ffffffff81a5ad0b
-> ffffffff81e2f9ea
-> [   68.623775]  ffff88046441bb58 ffff88046441bb48 ffffffff81056b55
-> ffff88047fc583c0
-> [   68.632075]  0000000000000000 ffff880469a8e600 00000000fffc2a40
-> ffff880465b32098
-> [   68.640375] Call Trace:
-> [   68.643109]  [<ffffffff81a5ad0b>] dump_stack+0x48/0x5d
-> [   68.648844]  [<ffffffff81056b55>] warn_slowpath_common+0x95/0xe0
-> [   68.655549]  [<ffffffff81056c56>] warn_slowpath_fmt+0x46/0x70
-> [   68.661960]  [<ffffffff8158a614>] ? find_iova+0x54/0x90
-> [   68.667791]  [<ffffffff815988dc>] intel_unmap+0x20c/0x220
-> [   68.673815]  [<ffffffff8159891e>] intel_unmap_page+0xe/0x10
-> [   68.680038]  [<ffffffffa0067536>] igbvf_clean_rx_ring+0x96/0x370
-> [igbvf]
-> [   68.687516]  [<ffffffffa0067915>] igbvf_down+0x105/0x110 [igbvf]
-> [   68.694219]  [<ffffffffa0067beb>] igbvf_change_mtu+0x16b/0x180 [igbvf]
-> [...]
-> 
-> Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
-> ---
->  drivers/net/ethernet/intel/igbvf/netdev.c | 1 +
->  1 file changed, 1 insertion(+)
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+96acffbc353df7593a94e4c9accfea3686334835  i40e: Set defport behavior for the Main VSI when in promiscuous mode
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+elapsed time: 258m
+
+configs tested: 96
+
+parisc                        c3000_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+i386                     randconfig-a0-201532
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+x86_64                            allnoconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+arm                                    sa1100
+arm                          prima2_defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                                   samsung
+arm                       spear13xx_defconfig
+arm                                  iop-adma
+arm                       imx_v6_v7_defconfig
+arm                          marzen_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                                        sh
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+x86_64                           allmodconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+mips                                   jz4740
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+x86_64                   randconfig-i0-201532
+i386                     randconfig-i1-201532
+i386                     randconfig-i0-201532
+i386                             allyesconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201532
+i386                              allnoconfig
+i386                                defconfig
+i386                             allmodconfig
+i386                             alldefconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                          amiga_defconfig
+x86_64               randconfig-x002-08121450
+x86_64               randconfig-x009-08121450
+x86_64               randconfig-x004-08121450
+x86_64               randconfig-x003-08121450
+x86_64               randconfig-x006-08121450
+x86_64               randconfig-x008-08121450
+x86_64               randconfig-x007-08121450
+x86_64               randconfig-x001-08121450
+x86_64               randconfig-x000-08121450
+x86_64               randconfig-x005-08121450
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-r0-201532
+i386                 randconfig-x000-08101704
+i386                 randconfig-x006-08101704
+i386                 randconfig-x003-08101704
+i386                 randconfig-x005-08101704
+i386                 randconfig-x001-08101704
+i386                 randconfig-x008-08101704
+i386                 randconfig-x009-08101704
+i386                 randconfig-x002-08101704
+i386                 randconfig-x007-08101704
+i386                 randconfig-x004-08101704
+
+Thanks,
+Fengguang
