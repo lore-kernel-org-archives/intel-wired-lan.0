@@ -1,71 +1,24 @@
-From: Jarod Wilson <jarod@redhat.com>
-Date: Thu, 13 Aug 2015 14:02:54 -0400
-Subject: [Intel-wired-lan] [PATCH 0/6] bonding: only advertise LRO if
-	underlying hardware can LRO
-Message-ID: <1439488980-44738-1-git-send-email-jarod@redhat.com>
+From: Benjamin LaHaise <bcrl@kvack.org>
+Date: Thu, 13 Aug 2015 14:56:07 -0400
+Subject: [Intel-wired-lan] ixgbe on Xeon D-1540 does not come up at 1
+	gigabit or 100Mbps speeds
+Message-ID: <20150813185607.GL24295@kvack.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-At present, you can create a bond, containing only underlying slaves that do
-not support LRO, and the bond will happily claim to support LRO, and allow
-LRO to be toggled on and off by ethtool. While things actually do function
-fine in the scenario, and this is merely cosmetic, its a bit misleading to
-users, and its something we can fix.
+Hello,
 
-If we add NETIF_F_LRO to the NETIF_F_ONE_FOR_ALL flags in
-netdev_features.h, then netdev_features_increment() will only enable LRO
-if 1) its listed in the device's feature mask and 2) if there's actually a
-slave present that supports the feature.
+I have just tried to set up a new Xeon D-1540 system (a Supermicro 
+X10SDV-8C-TLN4F), and it appears that the ixgbe driver in Linus' tree 
+as of commit 58ccab91342c1cc1fe08da9b198ac5d763706c2e is unable to 
+negotiate link up at either gigabit or 100Mbps speeds.  If I plug the 
+10Gbase-T into each other back to back, the ports are able to come up 
+and transfer data.  Please let me know if any further information is 
+required to reproduce this bug.
 
-However, the bnx2x, ixgbe, netxen, qlcnic and s2io drivers all fail to report
-support for LRO in their vlan_features, which requires some minor fixups to
-these drivers to keep LRO working in cases where it should have been before
-this set. The mellanox mlx5 and cavium liquidio drivers already properly set
-the LRO flag in their vlan_features.
-
-Note: I've only tested explicitly with bnx2x, as well as some non-LRO hw,
-to confirm that:
-
-1) if all slaves support LRO, the bond enables LRO
-2) if some slaves support LRO, the bond enables LRO
-3) if no slaves support LRO, the bond disables LRO
-
-This set was generated against net-next master, it applies to 4.2.0-rc6 with
-a bit of fuzz.
-
-Jarod Wilson (6):
-  net/bonding: enable LRO if one device supports it
-  ethernet/bnx2x: advertise LRO support in vlan_features
-  ethernet/ixgbe: advertise LRO support in vlan_features
-  ethernet/netxen: advertise LRO support in vlan_features
-  ethernet/qlcnic: advertise LRO support in vlan_features
-  ethernet/s2io: advertise what hw supports in vlan_features
-
- drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c     | 3 ++-
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c        | 4 +++-
- drivers/net/ethernet/neterion/s2io.c                 | 1 +
- drivers/net/ethernet/qlogic/netxen/netxen_nic_main.c | 4 +++-
- drivers/net/ethernet/qlogic/qlcnic/qlcnic_main.c     | 4 +++-
- include/linux/netdev_features.h                      | 3 ++-
- 6 files changed, 14 insertions(+), 5 deletions(-)
-
-CC: "David S. Miller" <davem@davemloft.net>
-CC: Ariel Elior <ariel.elior@qlogic.com>
-CC: Manish Chopra <manish.chopra@qlogic.com>
-CC: Rajesh Borundia <rajesh.borundia@qlogic.com>
-CC: Shahed Shaikh <shahed.shaikh@qlogic.com>
-CC: Sony Chacko <sony.chacko@qlogic.com>
-CC: Dept-GELinuxNICDev at qlogic.com
-CC: Jiri Pirko <jiri@resnulli.us>
-CC: Jon Mason <jdmason@kudzu.us>
-CC: Scott Feldman <sfeldma@gmail.com>
-CC: Tom Herbert <therbert@google.com>
-CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-CC: intel-wired-lan at lists.osuosl.org
-CC: netdev at vger.kernel.org
+		-ben
 -- 
-1.8.3.1
-
+"Thought is the essence of where you are now."
