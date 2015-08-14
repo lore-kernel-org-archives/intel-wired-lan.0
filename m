@@ -1,82 +1,43 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Thu, 13 Aug 2015 18:54:31 -0700
-Subject: [Intel-wired-lan] [net-next PATCH 2/2] i40e: fix 32 bit build
-	warnings
-In-Reply-To: <20150814015426.3815.89257.stgit@jbrandeb-hsm1.jf.intel.com>
-References: <20150814015426.3815.89257.stgit@jbrandeb-hsm1.jf.intel.com>
-Message-ID: <20150814015431.3815.82403.stgit@jbrandeb-hsm1.jf.intel.com>
+From: Fujinaka, Todd <todd.fujinaka@intel.com>
+Date: Fri, 14 Aug 2015 03:33:35 +0000
+Subject: [Intel-wired-lan] ixgbe on Xeon D-1540 does not come up at
+	1	gigabit or 100Mbps speeds
+In-Reply-To: <20150813185607.GL24295@kvack.org>
+References: <20150813185607.GL24295@kvack.org>
+Message-ID: <9B4A1B1917080E46B64F07F2989DADD6535C9B5A@ORSMSX114.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Sparse found some issues with 32 bit compilation, which probably should
-at least work without warning.  Not only that, but the code was wrong.
-Thanks sparse!!
+You may want to post this to e1000-devel at lists.sourceforge.net, or file a bug on e1000.sourceforge.net. I think this list is mainly for patches.
 
-And thanks to the kbuild robot zero day testing for finding this issue.
+In the mean time I'll see if there's anything odd going on with that part.
 
-$ make ARCH=i386 M=drivers/net/ethernet/intel/i40e C=2 CF="-D__CHECK_ENDIAN__"
-  CHECK   drivers/net/ethernet/intel/i40e/i40e_main.c
-  include/linux/etherdevice.h:79:32: warning: restricted __be16 degrades to integer
-  drivers/net/ethernet/intel/i40e/i40e_main.c:7565:17: warning: shift too big (32) for type unsigned long
-  drivers/net/ethernet/intel/i40e/i40e_main.c:7565:17: warning: shift too big (42) for type unsigned long
-  drivers/net/ethernet/intel/i40e/i40e_main.c:7565:17: warning: shift too big (39) for type unsigned long
-  drivers/net/ethernet/intel/i40e/i40e_main.c:7565:17: warning: shift too big (40) for type unsigned long
+Thanks.
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Reported-by: kbuild test robot <fengguang.wu@intel.com>
-CC: kbuild-all at 01.org
----
- drivers/net/ethernet/intel/i40e/i40e_common.c |    5 -----
- drivers/net/ethernet/intel/i40e/i40e_txrx.h   |   12 ++++++------
- 2 files changed, 6 insertions(+), 11 deletions(-)
+Todd Fujinaka
+Software Application Engineer
+Networking Division (ND)
+Intel Corporation
+todd.fujinaka at intel.com
+(503) 712-4565
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 80c354c..6833717 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -442,9 +442,6 @@ static i40e_status i40e_aq_get_set_rss_lut(struct i40e_hw *hw,
- 					I40E_AQC_SET_RSS_LUT_TABLE_TYPE_SHIFT) &
- 					I40E_AQC_SET_RSS_LUT_TABLE_TYPE_MASK));
- 
--	cmd_resp->addr_high = cpu_to_le32(high_16_bits((u64)lut));
--	cmd_resp->addr_low = cpu_to_le32(lower_32_bits((u64)lut));
--
- 	status = i40e_asq_send_command(hw, &desc, lut, lut_size, NULL);
- 
- 	return status;
-@@ -519,8 +516,6 @@ static i40e_status i40e_aq_get_set_rss_key(struct i40e_hw *hw,
- 					  I40E_AQC_SET_RSS_KEY_VSI_ID_SHIFT) &
- 					  I40E_AQC_SET_RSS_KEY_VSI_ID_MASK));
- 	cmd_resp->vsi_id |= cpu_to_le16((u16)I40E_AQC_SET_RSS_KEY_VSI_VALID);
--	cmd_resp->addr_high = cpu_to_le32(high_16_bits((u64)key));
--	cmd_resp->addr_low = cpu_to_le32(lower_32_bits((u64)key));
- 
- 	status = i40e_asq_send_command(hw, &desc, key, key_size, NULL);
- 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-index f1385a1..a992cb8f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-@@ -79,12 +79,12 @@ enum i40e_dyn_idx_t {
- 	BIT_ULL(I40E_FILTER_PCTYPE_L2_PAYLOAD))
- 
- #define I40E_DEFAULT_RSS_HENA_EXPANDED (I40E_DEFAULT_RSS_HENA | \
--	BIT(I40E_FILTER_PCTYPE_NONF_IPV4_TCP_SYN_NO_ACK) | \
--	BIT(I40E_FILTER_PCTYPE_NONF_UNICAST_IPV4_UDP) | \
--	BIT(I40E_FILTER_PCTYPE_NONF_MULTICAST_IPV4_UDP) | \
--	BIT(I40E_FILTER_PCTYPE_NONF_IPV6_TCP_SYN_NO_ACK) | \
--	BIT(I40E_FILTER_PCTYPE_NONF_UNICAST_IPV6_UDP) | \
--	BIT(I40E_FILTER_PCTYPE_NONF_MULTICAST_IPV6_UDP))
-+	BIT_ULL(I40E_FILTER_PCTYPE_NONF_IPV4_TCP_SYN_NO_ACK) | \
-+	BIT_ULL(I40E_FILTER_PCTYPE_NONF_UNICAST_IPV4_UDP) | \
-+	BIT_ULL(I40E_FILTER_PCTYPE_NONF_MULTICAST_IPV4_UDP) | \
-+	BIT_ULL(I40E_FILTER_PCTYPE_NONF_IPV6_TCP_SYN_NO_ACK) | \
-+	BIT_ULL(I40E_FILTER_PCTYPE_NONF_UNICAST_IPV6_UDP) | \
-+	BIT_ULL(I40E_FILTER_PCTYPE_NONF_MULTICAST_IPV6_UDP))
- 
- #define i40e_pf_get_default_rss_hena(pf) \
- 	(((pf)->flags & I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE) ? \
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Benjamin LaHaise
+Sent: Thursday, August 13, 2015 11:56 AM
+To: intel-wired-lan@lists.osuosl.org
+Subject: [Intel-wired-lan] ixgbe on Xeon D-1540 does not come up at 1 gigabit or 100Mbps speeds
 
+Hello,
+
+I have just tried to set up a new Xeon D-1540 system (a Supermicro X10SDV-8C-TLN4F), and it appears that the ixgbe driver in Linus' tree as of commit 58ccab91342c1cc1fe08da9b198ac5d763706c2e is unable to negotiate link up at either gigabit or 100Mbps speeds.  If I plug the 10Gbase-T into each other back to back, the ports are able to come up and transfer data.  Please let me know if any further information is required to reproduce this bug.
+
+		-ben
+--
+"Thought is the essence of where you are now."
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan at lists.osuosl.org
+http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
