@@ -1,43 +1,82 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Thu, 13 Aug 2015 18:54:26 -0700
-Subject: [Intel-wired-lan] [net-next PATCH 1/2] i40e: fix kbuild warnings
-Message-ID: <20150814015426.3815.89257.stgit@jbrandeb-hsm1.jf.intel.com>
+Date: Thu, 13 Aug 2015 18:54:31 -0700
+Subject: [Intel-wired-lan] [net-next PATCH 2/2] i40e: fix 32 bit build
+	warnings
+In-Reply-To: <20150814015426.3815.89257.stgit@jbrandeb-hsm1.jf.intel.com>
+References: <20150814015426.3815.89257.stgit@jbrandeb-hsm1.jf.intel.com>
+Message-ID: <20150814015431.3815.82403.stgit@jbrandeb-hsm1.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The 0day build infrastructure found some issues in i40e, this
-removes the warnings by adding a harmless cast to a dev_info.
+Sparse found some issues with 32 bit compilation, which probably should
+at least work without warning.  Not only that, but the code was wrong.
+Thanks sparse!!
+
+And thanks to the kbuild robot zero day testing for finding this issue.
+
+$ make ARCH=i386 M=drivers/net/ethernet/intel/i40e C=2 CF="-D__CHECK_ENDIAN__"
+  CHECK   drivers/net/ethernet/intel/i40e/i40e_main.c
+  include/linux/etherdevice.h:79:32: warning: restricted __be16 degrades to integer
+  drivers/net/ethernet/intel/i40e/i40e_main.c:7565:17: warning: shift too big (32) for type unsigned long
+  drivers/net/ethernet/intel/i40e/i40e_main.c:7565:17: warning: shift too big (42) for type unsigned long
+  drivers/net/ethernet/intel/i40e/i40e_main.c:7565:17: warning: shift too big (39) for type unsigned long
+  drivers/net/ethernet/intel/i40e/i40e_main.c:7565:17: warning: shift too big (40) for type unsigned long
 
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 Reported-by: kbuild test robot <fengguang.wu@intel.com>
 CC: kbuild-all at 01.org
 ---
- drivers/net/ethernet/intel/i40e/i40e_debugfs.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_common.c |    5 -----
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h   |   12 ++++++------
+ 2 files changed, 6 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-index 3671611..1556c4e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-@@ -1497,7 +1497,7 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
- 		/* check the range on address */
- 		if (address > (pf->ioremap_len - sizeof(u32))) {
- 			dev_info(&pf->pdev->dev, "read reg address 0x%08x too large, max=0x%08lx\n",
--				 address, (pf->ioremap_len - sizeof(u32)));
-+				 address, (long unsigned int)(pf->ioremap_len - sizeof(u32)));
- 			goto command_write_done;
- 		}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 80c354c..6833717 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -442,9 +442,6 @@ static i40e_status i40e_aq_get_set_rss_lut(struct i40e_hw *hw,
+ 					I40E_AQC_SET_RSS_LUT_TABLE_TYPE_SHIFT) &
+ 					I40E_AQC_SET_RSS_LUT_TABLE_TYPE_MASK));
  
-@@ -1516,7 +1516,7 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
- 		/* check the range on address */
- 		if (address > (pf->ioremap_len - sizeof(u32))) {
- 			dev_info(&pf->pdev->dev, "write reg address 0x%08x too large, max=0x%08lx\n",
--				 address, (pf->ioremap_len - sizeof(u32)));
-+				 address, (long unsigned int)(pf->ioremap_len - sizeof(u32)));
- 			goto command_write_done;
- 		}
- 		wr32(&pf->hw, address, value);
+-	cmd_resp->addr_high = cpu_to_le32(high_16_bits((u64)lut));
+-	cmd_resp->addr_low = cpu_to_le32(lower_32_bits((u64)lut));
+-
+ 	status = i40e_asq_send_command(hw, &desc, lut, lut_size, NULL);
+ 
+ 	return status;
+@@ -519,8 +516,6 @@ static i40e_status i40e_aq_get_set_rss_key(struct i40e_hw *hw,
+ 					  I40E_AQC_SET_RSS_KEY_VSI_ID_SHIFT) &
+ 					  I40E_AQC_SET_RSS_KEY_VSI_ID_MASK));
+ 	cmd_resp->vsi_id |= cpu_to_le16((u16)I40E_AQC_SET_RSS_KEY_VSI_VALID);
+-	cmd_resp->addr_high = cpu_to_le32(high_16_bits((u64)key));
+-	cmd_resp->addr_low = cpu_to_le32(lower_32_bits((u64)key));
+ 
+ 	status = i40e_asq_send_command(hw, &desc, key, key_size, NULL);
+ 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+index f1385a1..a992cb8f 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+@@ -79,12 +79,12 @@ enum i40e_dyn_idx_t {
+ 	BIT_ULL(I40E_FILTER_PCTYPE_L2_PAYLOAD))
+ 
+ #define I40E_DEFAULT_RSS_HENA_EXPANDED (I40E_DEFAULT_RSS_HENA | \
+-	BIT(I40E_FILTER_PCTYPE_NONF_IPV4_TCP_SYN_NO_ACK) | \
+-	BIT(I40E_FILTER_PCTYPE_NONF_UNICAST_IPV4_UDP) | \
+-	BIT(I40E_FILTER_PCTYPE_NONF_MULTICAST_IPV4_UDP) | \
+-	BIT(I40E_FILTER_PCTYPE_NONF_IPV6_TCP_SYN_NO_ACK) | \
+-	BIT(I40E_FILTER_PCTYPE_NONF_UNICAST_IPV6_UDP) | \
+-	BIT(I40E_FILTER_PCTYPE_NONF_MULTICAST_IPV6_UDP))
++	BIT_ULL(I40E_FILTER_PCTYPE_NONF_IPV4_TCP_SYN_NO_ACK) | \
++	BIT_ULL(I40E_FILTER_PCTYPE_NONF_UNICAST_IPV4_UDP) | \
++	BIT_ULL(I40E_FILTER_PCTYPE_NONF_MULTICAST_IPV4_UDP) | \
++	BIT_ULL(I40E_FILTER_PCTYPE_NONF_IPV6_TCP_SYN_NO_ACK) | \
++	BIT_ULL(I40E_FILTER_PCTYPE_NONF_UNICAST_IPV6_UDP) | \
++	BIT_ULL(I40E_FILTER_PCTYPE_NONF_MULTICAST_IPV6_UDP))
+ 
+ #define i40e_pf_get_default_rss_hena(pf) \
+ 	(((pf)->flags & I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE) ? \
 
