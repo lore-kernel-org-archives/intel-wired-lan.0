@@ -1,42 +1,63 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 14 Aug 2015 23:28:36 +0000
-Subject: [Intel-wired-lan] [PATCH v2] e1000e: Modify tx/rx
- configurations to	avoid null pointer dereferences in e1000_open
-In-Reply-To: <1438769770-8887-1-git-send-email-baijiaju1990@163.com>
-References: <1438769770-8887-1-git-send-email-baijiaju1990@163.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81AE74F9@ORSMSX101.amr.corp.intel.com>
+Date: Sat, 15 Aug 2015 01:42:44 +0000
+Subject: [Intel-wired-lan] [PATCH net] igb: Fix oops caused by missing
+	queue pairing
+In-Reply-To: <1435710352-956-1-git-send-email-suzuki_shota_t3@lab.ntt.co.jp>
+References: <1435710352-956-1-git-send-email-suzuki_shota_t3@lab.ntt.co.jp>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81AE758E@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Jia-Ju Bai
-> Sent: Wednesday, August 05, 2015 3:16 AM
-> To: Kirsher, Jeffrey T; Brandeburg, Jesse
-> Cc: netdev at vger.kernel.org; Jia-Ju Bai; intel-wired-lan at lists.osuosl.org;
-> linux-kernel at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH v2] e1000e: Modify tx/rx configurations
-> to avoid null pointer dereferences in e1000_open
+> From: netdev-owner at vger.kernel.org [mailto:netdev-owner at vger.kernel.org]
+> On Behalf Of Shota Suzuki
+> Sent: Tuesday, June 30, 2015 5:26 PM
+> To: Kirsher, Jeffrey T; Brandeburg, Jesse; Nelson, Shannon; Wyborny,
+> Carolyn; Skidmore, Donald C; Vick, Matthew; Ronciak, John; Williams, Mitch
+> A; intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; linux-
+> kernel at vger.kernel.org
+> Cc: Shota Suzuki
+> Subject: [PATCH net] igb: Fix oops caused by missing queue pairing
 > 
-> When e1000e_setup_rx_resources is failed in e1000_open,
-> e1000e_free_tx_resources in "err_setup_rx" segment is executed.
-> "writel(0, tx_ring->head)" statement in e1000_clean_tx_ring
-> in e1000e_free_tx_resources will cause a null poonter dereference(crash),
-> because "tx_ring->head" is only assigned in e1000_configure_tx
-> in e1000_configure, but it is after e1000e_setup_rx_resources.
+> When initializing igb driver (e.g. 82576, I350), IGB_FLAG_QUEUE_PAIRS is
+> set if adapter->rss_queues exceeds half of max_rss_queues in
+> igb_init_queue_configuration().
+> On the other hand, IGB_FLAG_QUEUE_PAIRS is not set even if the number of
+> queues exceeds half of max_combined in igb_set_channels() when changing
+> the number of queues by "ethtool -L".
+> In this case, if numvecs is larger than MAX_MSIX_ENTRIES (10), the size
+> of adapter->msix_entries[], an overflow can occur in
+> igb_set_interrupt_capability(), which in turn leads to an oops.
 > 
-> This patch moves head/tail register writing to e1000_configure_tx/rx,
-> which can fix this problem. It is inspired by igb_configure_tx_ring
-> in the igb driver.
+> Fix this problem as follows:
+>  - When changing the number of queues by "ethtool -L", set
+>    IGB_FLAG_QUEUE_PAIRS in the same way as initializing igb driver.
+>  - When increasing the size of q_vector, reallocate it appropriately.
+>    (With IGB_FLAG_QUEUE_PAIRS set, the size of q_vector gets larger.)
 > 
-> Specially, thank Alexander Duyck for his valuable suggestion.
+> Another possible way to fix this problem is to cap the queues at its
+> initial number, which is the number of the initial online cpus. But this
+> is not the optimal way because we cannnot increase queues when another
+> cpu becomes online.
 > 
-> Signed-off-by: Jia-Ju Bai <baijiaju1990@163.com>
+> Note that before commit cd14ef54d25b ("igb: Change to use statically
+> allocated array for MSIx entries"), this problem did not cause oops
+> but just made the number of queues become 1 because of entering msi_only
+> mode in igb_set_interrupt_capability().
+> 
+> Fixes: 907b7835799f ("igb: Add ethtool support to configure number of
+> channels")
+> Signed-off-by: Shota Suzuki <suzuki_shota_t3@lab.ntt.co.jp>
 > ---
->  drivers/net/ethernet/intel/e1000e/netdev.c |   24 ++++++++++++-----------
-> -
->  1 file changed, 12 insertions(+), 12 deletions(-)
+> Although we might be able to additionally unset IGB_FLAG_QUEUE_PAIRS
+> when it is not needed, this patch doesn't change existing behaviour
+> because such a change is not a bug fix.
+> 
+>  drivers/net/ethernet/intel/igb/igb.h         |  1 +
+>  drivers/net/ethernet/intel/igb/igb_ethtool.c |  5 ++++-
+>  drivers/net/ethernet/intel/igb/igb_main.c    | 16 ++++++++++++++--
+>  3 files changed, 19 insertions(+), 3 deletions(-)
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
