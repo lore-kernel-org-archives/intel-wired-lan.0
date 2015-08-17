@@ -1,169 +1,247 @@
-From: Christopher Hall <christopher.s.hall@intel.com>
-Date: Fri,  7 Aug 2015 18:13:50 -0700
-Subject: [Intel-wired-lan] [PATCH v2 4/4] Added getsynctime64() callback
-In-Reply-To: <1438996430-10296-1-git-send-email-christopher.s.hall@intel.com>
-References: <1438996430-10296-1-git-send-email-christopher.s.hall@intel.com>
-Message-ID: <1438996430-10296-5-git-send-email-christopher.s.hall@intel.com>
+From: Avargil, Raanan <raanan.avargil@intel.com>
+Date: Mon, 17 Aug 2015 07:09:16 +0000
+Subject: [Intel-wired-lan] I218 e1000e hangs
+Message-ID: <8F4C390AFA9F4444A4AA77F4A3BEC78A059A2A31@HASMSX110.ger.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Reads ART (TSC correlated clocksource), converts to realtime clock, and
-	reports	cross timestamp to PTP driver
----
- drivers/net/ethernet/intel/e1000e/defines.h |  7 +++
- drivers/net/ethernet/intel/e1000e/ptp.c     | 88 +++++++++++++++++++++++++++++
- drivers/net/ethernet/intel/e1000e/regs.h    |  4 ++
- 3 files changed, 99 insertions(+)
+Hello Dave,
 
-diff --git a/drivers/net/ethernet/intel/e1000e/defines.h b/drivers/net/ethernet/intel/e1000e/defines.h
-index 133d407..9f16269 100644
---- a/drivers/net/ethernet/intel/e1000e/defines.h
-+++ b/drivers/net/ethernet/intel/e1000e/defines.h
-@@ -527,6 +527,13 @@
- #define E1000_RXCW_C          0x20000000        /* Receive config */
- #define E1000_RXCW_SYNCH      0x40000000        /* Receive config synch */
- 
-+/* HH Time Sync */
-+#define E1000_TSYNCTXCTL_MAX_ALLOWED_DLY_MASK   0x0000F000      /* max delay */
-+#define E1000_TSYNCTXCTL_SYNC_COMP              0x40000000      /* sync complete
-+ */
-+#define E1000_TSYNCTXCTL_START_SYNC             0x80000000      /* initiate sync
-+ */
-+
- #define E1000_TSYNCTXCTL_VALID		0x00000001 /* Tx timestamp valid */
- #define E1000_TSYNCTXCTL_ENABLED	0x00000010 /* enable Tx timestamping */
- 
-diff --git a/drivers/net/ethernet/intel/e1000e/ptp.c b/drivers/net/ethernet/intel/e1000e/ptp.c
-index 25a0ad5..c3d80c4 100644
---- a/drivers/net/ethernet/intel/e1000e/ptp.c
-+++ b/drivers/net/ethernet/intel/e1000e/ptp.c
-@@ -25,6 +25,8 @@
-  */
- 
- #include "e1000.h"
-+#include <asm/tsc.h>
-+#include <linux/timekeeping.h>
- 
- /**
-  * e1000e_phc_adjfreq - adjust the frequency of the hardware clock
-@@ -98,6 +100,91 @@ static int e1000e_phc_adjtime(struct ptp_clock_info *ptp, s64 delta)
- 	return 0;
- }
- 
-+#define HW_WAIT_COUNT (2)
-+#define HW_RETRY_COUNT (2)
-+
-+static int e1000e_phc_get_ts(struct correlated_ts *cts)
-+{
-+	struct e1000_adapter *adapter = (struct e1000_adapter *) cts->private;
-+	struct e1000_hw *hw = &adapter->hw;
-+	int i, j;
-+	u32 tsync_ctrl;
-+	int ret;
-+
-+	if (hw->mac.type < e1000_pch_spt)
-+		return -EOPNOTSUPP;
-+
-+	for (j = 0; j < HW_RETRY_COUNT; ++j) {
-+		tsync_ctrl = er32(TSYNCTXCTL);
-+		tsync_ctrl |= E1000_TSYNCTXCTL_START_SYNC |
-+			E1000_TSYNCTXCTL_MAX_ALLOWED_DLY_MASK;
-+		ew32(TSYNCTXCTL, tsync_ctrl);
-+		ret = 0;
-+		for (i = 0; i < HW_WAIT_COUNT; ++i) {
-+			udelay(2);
-+			tsync_ctrl = er32(TSYNCTXCTL);
-+			if (tsync_ctrl & E1000_TSYNCTXCTL_SYNC_COMP)
-+				break;
-+		}
-+
-+		if (i == HW_WAIT_COUNT) {
-+			ret = -ETIMEDOUT;
-+		} else if (ret == 0) {
-+			cts->system_ts = er32(PLTSTMPH);
-+			cts->system_ts <<= 32;
-+			cts->system_ts |= er32(PLTSTMPL);
-+			cts->device_ts = er32(SYSSTMPH);
-+			cts->device_ts <<= 32;
-+			cts->device_ts |= er32(SYSSTMPL);
-+			break;
-+		}
-+	}
-+
-+	return ret;
-+}
-+
-+#define SYNCTIME_RETRY_COUNT (2)
-+
-+static int e1000e_phc_getsynctime(struct ptp_clock_info *ptp,
-+				  struct timespec64 *devts,
-+				  struct timespec64 *systs)
-+{
-+	struct e1000_adapter *adapter = container_of(ptp, struct e1000_adapter,
-+						     ptp_clock_info);
-+	unsigned long flags;
-+	u32 remainder;
-+	struct correlated_ts art_correlated_ts;
-+	u64 device_time;
-+	int i, ret;
-+
-+	if (!cpu_has_art)
-+		return -EOPNOTSUPP;
-+
-+	for (i = 0; i < SYNCTIME_RETRY_COUNT; ++i) {
-+		art_correlated_ts.get_ts = e1000e_phc_get_ts;
-+		art_correlated_ts.private = adapter;
-+		ret = get_correlated_timestamp(&art_correlated_ts,
-+					&art_timestamper);
-+		if (ret != 0)
-+			continue;
-+
-+		systs->tv_sec =
-+			div_u64_rem(art_correlated_ts.system_real.tv64,
-+				NSEC_PER_SEC, &remainder);
-+		systs->tv_nsec = remainder;
-+		spin_lock_irqsave(&adapter->systim_lock, flags);
-+		device_time = timecounter_cyc2time(&adapter->tc,
-+					art_correlated_ts.device_ts);
-+		spin_unlock_irqrestore(&adapter->systim_lock, flags);
-+		devts->tv_sec =
-+			div_u64_rem(device_time, NSEC_PER_SEC, &remainder);
-+		devts->tv_nsec = remainder;
-+		break;
-+	}
-+
-+	return ret;
-+}
-+
- /**
-  * e1000e_phc_gettime - Reads the current time from the hardware clock
-  * @ptp: ptp clock structure
-@@ -190,6 +277,7 @@ static const struct ptp_clock_info e1000e_ptp_clock_info = {
- 	.adjfreq	= e1000e_phc_adjfreq,
- 	.adjtime	= e1000e_phc_adjtime,
- 	.gettime64	= e1000e_phc_gettime,
-+	.getsynctime64	= e1000e_phc_getsynctime,
- 	.settime64	= e1000e_phc_settime,
- 	.enable		= e1000e_phc_enable,
- };
-diff --git a/drivers/net/ethernet/intel/e1000e/regs.h b/drivers/net/ethernet/intel/e1000e/regs.h
-index b24e5fe..4dd5b54 100644
---- a/drivers/net/ethernet/intel/e1000e/regs.h
-+++ b/drivers/net/ethernet/intel/e1000e/regs.h
-@@ -246,6 +246,10 @@
- #define E1000_SYSTIML	0x0B600	/* System time register Low - RO */
- #define E1000_SYSTIMH	0x0B604	/* System time register High - RO */
- #define E1000_TIMINCA	0x0B608	/* Increment attributes register - RW */
-+#define E1000_SYSSTMPL  0x0B648 /* HH Timesync system stamp low register */
-+#define E1000_SYSSTMPH  0x0B64C /* HH Timesync system stamp hi register */
-+#define E1000_PLTSTMPL  0x0B640 /* HH Timesync platform stamp low register */
-+#define E1000_PLTSTMPH  0x0B644 /* HH Timesync platform stamp hi register */
- #define E1000_RXMTRL	0x0B634	/* Time sync Rx EtherType and Msg Type - RW */
- #define E1000_RXUDP	0x0B638	/* Time Sync Rx UDP Port - RW */
- 
--- 
-1.9.1
+Based on your input below I ran rsync command on the following setup:
+1) Board: Asus z97-a board, cpu: Intel Core i7-4770, 8 cores, 8GB RAM.
+2) Ethernet controller:  00:19.0 Ethernet controller: Intel Corporation Ethernet Connection (2) I218-V (lspci | grep Ethernet)
+
+I created a 1GB file and used rsync to transfer it to another machine, using the following command:
+> rsync -ahv /tmp/dir1/ root at 192.168.173.81:/tmp/dir2
+
+The copy action took few seconds and ended successfully. 
+No hangs and no errors in dmesg.
+
+I performed the action above with the following kernels:
+1) Fedora 22, 4.0.4-301.fc22.x86_64 (e1000e driver: 2.3.2-k)
+2) RHEL 7.1, 3.10.0-229.e17.x86_64 (e1000e driver: 2.3.2-k)
+
+Thanks,
+Raanan
+
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of intel-wired-lan-request at lists.osuosl.org
+Sent: Friday, August 14, 2015 15:00
+To: intel-wired-lan@lists.osuosl.org
+Subject: Intel-wired-lan Digest, Vol 21, Issue 9
+
+Send Intel-wired-lan mailing list submissions to
+	intel-wired-lan at lists.osuosl.org
+
+To subscribe or unsubscribe via the World Wide Web, visit
+	http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+or, via email, send a message with subject or body 'help' to
+	intel-wired-lan-request at lists.osuosl.org
+
+You can reach the person managing the list at
+	intel-wired-lan-owner at lists.osuosl.org
+
+When replying, please edit your Subject line so it is more specific than "Re: Contents of Intel-wired-lan digest..."
+
+
+Today's Topics:
+
+   1. I218 e1000e hangs. (Dave Jones)
+
+
+----------------------------------------------------------------------
+
+Message: 1
+Date: Thu, 13 Aug 2015 22:41:48 -0400
+From: Dave Jones <davej@codemonkey.org.uk>
+To: netdev@vger.kernel.org
+Cc: intel-wired-lan at lists.osuosl.org
+Subject: [Intel-wired-lan] I218 e1000e hangs.
+Message-ID: <20150814024148.GA2813@codemonkey.org.uk>
+Content-Type: text/plain; charset=us-ascii
+
+I've got a machine with an onboard NIC that reproduces a hardware hang every time I do an rsync to it.
+
+[  488.752630] e1000e 0000:00:19.0 eth0: Detected Hardware Unit Hang:
+  TDH                  <27>
+  TDT                  <34>
+  next_to_use          <34>
+  next_to_clean        <23>
+buffer_info[next_to_clean]:
+  time_stamp           <1000048b2>
+  next_to_watch        <27>
+  jiffies              <1000049d8>
+  next_to_watch.status <0>
+MAC Status             <80083>
+PHY Status             <796d>
+PHY 1000BASE-T Status  <7c00>
+PHY Extended Status    <3000>
+PCI Status             <10>
+[  490.751948] e1000e 0000:00:19.0 eth0: Detected Hardware Unit Hang:
+  TDH                  <27>
+  TDT                  <34>
+  next_to_use          <34>
+  next_to_clean        <23>
+buffer_info[next_to_clean]:
+  time_stamp           <1000048b2>
+  next_to_watch        <27>
+  jiffies              <100004aa0>
+  next_to_watch.status <0>
+MAC Status             <80083>
+PHY Status             <796d>
+PHY 1000BASE-T Status  <7c00>
+PHY Extended Status    <3000>
+PCI Status             <10>
+[  492.750447] e1000e 0000:00:19.0 eth0: Detected Hardware Unit Hang:
+  TDH                  <27>
+  TDT                  <34>
+  next_to_use          <34>
+  next_to_clean        <23>
+buffer_info[next_to_clean]:
+  time_stamp           <1000048b2>
+  next_to_watch        <27>
+  jiffies              <100004b68>
+  next_to_watch.status <0>
+MAC Status             <80083>
+PHY Status             <796d>
+PHY 1000BASE-T Status  <7c00>
+PHY Extended Status    <3000>
+PCI Status             <10>
+[  494.749507] e1000e 0000:00:19.0 eth0: Detected Hardware Unit Hang:
+  TDH                  <27>
+  TDT                  <34>
+  next_to_use          <34>
+  next_to_clean        <23>
+buffer_info[next_to_clean]:
+  time_stamp           <1000048b2>
+  next_to_watch        <27>
+  jiffies              <100004c30>
+  next_to_watch.status <0>
+MAC Status             <80083>
+PHY Status             <796d>
+PHY 1000BASE-T Status  <7c00>
+PHY Extended Status    <3000>
+PCI Status             <10>
+[  494.758881] ------------[ cut here ]------------ [  494.759109] WARNING: CPU: 0 PID: 0 at net/sched/sch_generic.c:303 dev_watchdog+0x23a/0x250() [  494.759347] NETDEV WATCHDOG: eth0 (e1000e): transmit queue 0 timed out [  494.759585] CPU: 0 PID: 0 Comm: swapper/0 Not tainted 4.2.0-rc6-backup-debug+ #1 [  494.759841]  ffffffffb0ddd622 0431bce15e8d04e9 ffff88043d803d08 ffffffffb097e15b [  494.760111]  0000000000000007 ffff88043d803d60 ffff88043d803d48 ffffffffb0076de5 [  494.760392]  0000000000000000 0000000000000000 0000000000000000 ffff880427bb7d30 [  494.760648] Call Trace:
+[  494.760896]  <IRQ>  [<ffffffffb097e15b>] dump_stack+0x4c/0x65 [  494.761160]  [<ffffffffb0076de5>] warn_slowpath_common+0x85/0xc0 [  494.761423]  [<ffffffffb0076ea5>] warn_slowpath_fmt+0x55/0x70 [  494.761686]  [<ffffffffb087b02a>] dev_watchdog+0x23a/0x250 [  494.761949]  [<ffffffffb087adf0>] ? qdisc_rcu_free+0x40/0x40 [  494.762215]  [<ffffffffb00e9703>] call_timer_fn+0xb3/0x420 [  494.762483]  [<ffffffffb00e9655>] ? call_timer_fn+0x5/0x420 [  494.762753]  [<ffffffffb00e9c02>] run_timer_softirq+0x192/0x3d0 [  494.763025]  [<ffffffffb007b6b5>] ? __do_softirq+0xb5/0x5d0 [  494.763300]  [<ffffffffb087adf0>] ? qdisc_rcu_free+0x40/0x40 [  494.763570]  [<ffffffffb007b6df>] __do_softirq+0xdf/0x5d0 [  494.763838]  [<ffffffffb007bd58>] ? irq_exit+0x78/0xc0 [  494.764108]  [<ffffffffb007bd98>] irq_exit+0xb8/0xc0 [  494.764381]  [<ffffffffb098bee6>] smp_apic_timer_interrupt+0x46/0x60
+[  494.764662]  [<ffffffffb098a8ad>] apic_timer_interrupt+0x6d/0x80 [  494.764943]  <EOI>  [<ffffffffb0815916>] ? cpuidle_enter_state+0x106/0x3a0 [  494.765232]  [<ffffffffb0815951>] ? cpuidle_enter_state+0x141/0x3a0 [  494.765525]  [<ffffffffb0815946>] ? cpuidle_enter_state+0x136/0x3a0 [  494.765815]  [<ffffffffb0815be7>] cpuidle_enter+0x17/0x20 [  494.766105]  [<ffffffffb00bca5c>] cpu_startup_entry+0x38c/0x500 [  494.766396]  [<ffffffffb0977988>] rest_init+0x138/0x140 [  494.766692]  [<ffffffffb0f91f23>] start_kernel+0x466/0x487 [  494.766990]  [<ffffffffb0f91495>] x86_64_start_reservations+0x2a/0x2c
+[  494.767292]  [<ffffffffb0f91583>] x86_64_start_kernel+0xec/0xf0
+
+Here's another instance after rebooting, with some different register states..
+
+[ 2379.674285] e1000e 0000:00:19.0 eth0: Detected Hardware Unit Hang:
+  TDH                  <50>
+  TDT                  <5d>
+  next_to_use          <5d>
+  next_to_clean        <4d>
+buffer_info[next_to_clean]:
+  time_stamp           <100032c2d>
+  next_to_watch        <50>
+  jiffies              <100032ce8>
+  next_to_watch.status <0>
+MAC Status             <80083>
+PHY Status             <796d>
+PHY 1000BASE-T Status  <3c00>
+PHY Extended Status    <3000>
+PCI Status             <10>
+[ 2381.672792] e1000e 0000:00:19.0 eth0: Detected Hardware Unit Hang:
+  TDH                  <50>
+  TDT                  <5d>
+  next_to_use          <5d>
+  next_to_clean        <4d>
+buffer_info[next_to_clean]:
+  time_stamp           <100032c2d>
+  next_to_watch        <50>
+  jiffies              <100032db0>
+  next_to_watch.status <0>
+MAC Status             <80083>
+PHY Status             <796d>
+PHY 1000BASE-T Status  <3c00>
+PHY Extended Status    <3000>
+PCI Status             <10>
+[ 2383.671379] e1000e 0000:00:19.0 eth0: Detected Hardware Unit Hang:
+  TDH                  <50>
+  TDT                  <5d>
+  next_to_use          <5d>
+  next_to_clean        <4d>
+buffer_info[next_to_clean]:
+  time_stamp           <100032c2d>
+  next_to_watch        <50>
+  jiffies              <100032e78>
+  next_to_watch.status <0>
+MAC Status             <80083>
+PHY Status             <796d>
+PHY 1000BASE-T Status  <3c00>
+PHY Extended Status    <3000>
+PCI Status             <10>
+[ 2385.669944] e1000e 0000:00:19.0 eth0: Detected Hardware Unit Hang:
+  TDH                  <50>
+  TDT                  <5d>
+  next_to_use          <5d>
+  next_to_clean        <4d>
+buffer_info[next_to_clean]:
+  time_stamp           <100032c2d>
+  next_to_watch        <50>
+  jiffies              <100032f40>
+  next_to_watch.status <0>
+MAC Status             <80083>
+PHY Status             <796d>
+PHY 1000BASE-T Status  <3c00>
+PHY Extended Status    <3000>
+PCI Status             <10>
+[ 2387.668428] e1000e 0000:00:19.0 eth0: Detected Hardware Unit Hang:
+  TDH                  <50>
+  TDT                  <5d>
+  next_to_use          <5d>
+  next_to_clean        <4d>
+buffer_info[next_to_clean]:
+  time_stamp           <100032c2d>
+  next_to_watch        <50>
+  jiffies              <100033008>
+  next_to_watch.status <0>
+MAC Status             <80083>
+PHY Status             <796d>
+PHY 1000BASE-T Status  <3c00>
+PHY Extended Status    <3000>
+PCI Status             <10>
+
+
+The rsync on the other side then craps itself detecting 'corrupted packets'.
+
+The NIC in question is..
+
+00:19.0 Ethernet controller: Intel Corporation Ethernet Connection (2) I218-V
+
+If this is a software problem, it's not anything new. I tested as far back as 3.16, which had the same problem.
+
+Is there any hw feature I can try disabling, to see if that makes a difference ?
+
+	Dave
+
+
+
+------------------------------
+
+Subject: Digest Footer
+
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan at lists.osuosl.org
+http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
+
+------------------------------
+
+End of Intel-wired-lan Digest, Vol 21, Issue 9
+**********************************************
+---------------------------------------------------------------------
+Intel Israel (74) Limited
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
