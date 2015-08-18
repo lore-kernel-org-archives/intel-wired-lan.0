@@ -1,33 +1,122 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Tue, 18 Aug 2015 02:57:14 +0000
-Subject: [Intel-wired-lan] [PATCH v2] igb: add support for 1512 PHY
-In-Reply-To: <20150729143119.19466.3645.stgit@htfujina-fc.jf.intel.com>
-References: <20150729143119.19466.3645.stgit@htfujina-fc.jf.intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81AE8768@ORSMSX101.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 18 Aug 2015 17:30:52 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ 8cd504440cbd923b266bd6f39fba078e4c5ba660 BUILD SUCCESS
+Message-ID: <55d2fb4c.IPzoXAmEnEPVVQF1%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Todd Fujinaka
-> Sent: Wednesday, July 29, 2015 7:32 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v2] igb: add support for 1512 PHY
-> 
-> This patch adds support for Marvell PHY 1512 (required for I354).
-> 
-> Submitted by: Maciej Szwed <maciej.szwed@intel.com>
-> Signed-off-by: Todd Fujinaka <todd.fujinaka@intel.com>
-> ---
->  drivers/net/ethernet/intel/igb/e1000_82575.c   |   20 ++++-
->  drivers/net/ethernet/intel/igb/e1000_defines.h |    5 +
->  drivers/net/ethernet/intel/igb/e1000_phy.c     |   93
-> +++++++++++++++++++++++-
->  drivers/net/ethernet/intel/igb/e1000_phy.h     |    1
->  4 files changed, 114 insertions(+), 5 deletions(-)
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+8cd504440cbd923b266bd6f39fba078e4c5ba660  i40e: Set defport behavior for the Main VSI when in promiscuous mode
 
-I do not have access to a system with the 1512 PHY, but am told that the PHY functionality has been tested.  Regression testing against the set of systems I do have did not uncover any problems introduced, so...
+elapsed time: 65m
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+configs tested: 101
+
+parisc                        c3000_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+i386                     randconfig-a0-201533
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+x86_64                            allnoconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+x86_64                   randconfig-i0-201533
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i1-201533
+i386                     randconfig-i0-201533
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+i386                     randconfig-n0-201533
+arm                       omap2plus_defconfig
+arm                         s3c2410_defconfig
+arm                                       mmp
+arm                           tegra_defconfig
+arm                                      arm5
+arm                                     arm67
+i386                              allnoconfig
+i386                                defconfig
+i386                             allmodconfig
+i386                             alldefconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+arm                                    sa1100
+arm                          prima2_defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                                   samsung
+arm                       spear13xx_defconfig
+arm                                  iop-adma
+arm                       imx_v6_v7_defconfig
+arm                          marzen_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                                        sh
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                          amiga_defconfig
+x86_64                 randconfig-x001-201533
+x86_64                 randconfig-x004-201533
+x86_64                 randconfig-x006-201533
+x86_64                 randconfig-x000-201533
+x86_64                 randconfig-x003-201533
+x86_64                 randconfig-x009-201533
+x86_64                 randconfig-x005-201533
+x86_64                 randconfig-x002-201533
+x86_64                 randconfig-x008-201533
+x86_64                 randconfig-x007-201533
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-r0-201533
+i386                   randconfig-x000-201533
+i386                   randconfig-x004-201533
+i386                   randconfig-x008-201533
+i386                   randconfig-x001-201533
+i386                   randconfig-x003-201533
+i386                   randconfig-x005-201533
+i386                   randconfig-x007-201533
+i386                   randconfig-x002-201533
+i386                   randconfig-x006-201533
+i386                   randconfig-x009-201533
+mips                                   jz4740
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+
+Thanks,
+Fengguang
