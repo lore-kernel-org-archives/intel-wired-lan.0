@@ -1,128 +1,41 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 18 Aug 2015 18:40:05 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 3a6f6908f94d57933d291895d87c6c61c860cc05 BUILD DONE
-Message-ID: <55d30b85.zG0uL+f7IX1wAWWH%fengguang.wu@intel.com>
+From: Valdis Kletnieks <Valdis.Kletnieks@vt.edu>
+Date: Tue, 18 Aug 2015 11:32:31 -0400
+Subject: [Intel-wired-lan] e1000e driver - commit 37b12910 needs to be in
+	Linus tree..
+Message-ID: <2887.1439911951@turing-police.cc.vt.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-3a6f6908f94d57933d291895d87c6c61c860cc05  ixgbe: Add new X550EM SFP+ device ID
+Hate to bother everybody, but we're at -rc7..
 
-drivers/net/ethernet/intel/i40e/i40e_debugfs.c:1499:4: warning: format '%lx' expects argument of type 'long unsigned int', but argument 4 has type 'u32' [-Wformat=]
+Commit 83129b37ef is still in Linus's tree.  This one causes a crash
+on my Dell Latitude after 4 hours uptime.
 
-Error ids grouped by kconfigs:
+commit 83129b37ef35bb6a7f01c060129736a8db5d31c4
+Author: Yanir Lubetkin <yanirx.lubetkin@intel.com>
+Date:   Tue Jun 2 17:05:45 2015 +0300
 
-recent_errors
-??? i386-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u32
-??? parisc-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u32
-??? xtensa-allyesconfig
-    ??? drivers-net-ethernet-intel-i40e-i40e_debugfs.c:warning:format-lx-expects-argument-of-type-long-unsigned-int-but-argument-has-type-u32
+    e1000e: fix systim issues
 
-elapsed time: 140m
+Commit 37b12910dd fixes it, but is *NOT* in Linus's tree yet.
 
-configs tested: 95
+commit 37b12910dd11d9ab969f2c310dc9160b7f3e3405
+Author: Raanan Avargil <raanan.avargil@intel.com>
+Date:   Sun Jul 19 16:33:20 2015 +0300
 
-parisc                        c3000_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-i386                     randconfig-a0-201533
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-x86_64                            allnoconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-arm                                    sa1100
-arm                          prima2_defconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                                   samsung
-arm                       spear13xx_defconfig
-arm                                  iop-adma
-arm                       imx_v6_v7_defconfig
-arm                          marzen_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                                        sh
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-x86_64                           allmodconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-x86_64                   randconfig-i0-201533
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i1-201533
-i386                     randconfig-i0-201533
-i386                     randconfig-n0-201533
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-m68k                          amiga_defconfig
-x86_64                 randconfig-x001-201533
-x86_64                 randconfig-x004-201533
-x86_64                 randconfig-x006-201533
-x86_64                 randconfig-x000-201533
-x86_64                 randconfig-x003-201533
-x86_64                 randconfig-x009-201533
-x86_64                 randconfig-x005-201533
-x86_64                 randconfig-x002-201533
-x86_64                 randconfig-x008-201533
-x86_64                 randconfig-x007-201533
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-i386                     randconfig-r0-201533
-i386                              allnoconfig
-i386                                defconfig
-i386                             allmodconfig
-i386                             alldefconfig
-i386                   randconfig-x000-201533
-i386                   randconfig-x004-201533
-i386                   randconfig-x008-201533
-i386                   randconfig-x001-201533
-i386                   randconfig-x003-201533
-i386                   randconfig-x005-201533
-i386                   randconfig-x007-201533
-i386                   randconfig-x002-201533
-i386                   randconfig-x006-201533
-i386                   randconfig-x009-201533
-mips                                   jz4740
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
+    e1000e: Fix tight loop implementation of systime read algorithm
 
-Thanks,
-Fengguang
+Can we do something to get this fix in-tree, or revert the problem commit?
+
+
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: not available
+Type: application/pgp-signature
+Size: 848 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150818/af37e799/attachment.asc>
