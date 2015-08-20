@@ -1,53 +1,123 @@
-From: Patil, Kiran <kiran.patil@intel.com>
-Date: Wed, 19 Aug 2015 22:38:09 +0000
-Subject: [Intel-wired-lan] [Patch V3 5/9] i40e: Use numa_mem_id() to
- better	support memoryless node
-In-Reply-To: <1439781546-7217-6-git-send-email-jiang.liu@linux.intel.com>
-References: <1439781546-7217-1-git-send-email-jiang.liu@linux.intel.com>
- <1439781546-7217-6-git-send-email-jiang.liu@linux.intel.com>
-Message-ID: <4197C471DCF8714FBA1FE32565271C148FFFF4D3@ORSMSX103.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 20 Aug 2015 09:50:37 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ e34fa200eebef671f0c0be3ac88dd350df073256 BUILD SUCCESS
+Message-ID: <55d5326d.I/U+7lrMJeM5F8ru%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Acked-by: Kiran Patil <kiran.patil@intel.com>
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+e34fa200eebef671f0c0be3ac88dd350df073256  i40evf: Use numa_mem_id() to better support memoryless node
 
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Jiang Liu
-Sent: Sunday, August 16, 2015 8:19 PM
-To: Andrew Morton; Mel Gorman; David Rientjes; Mike Galbraith; Peter Zijlstra; Wysocki, Rafael J; Tang Chen; Tejun Heo; Kirsher, Jeffrey T; Brandeburg, Jesse; Nelson, Shannon; Wyborny, Carolyn; Skidmore, Donald C; Vick, Matthew; Ronciak, John; Williams, Mitch A
-Cc: Luck, Tony; netdev at vger.kernel.org; x86 at kernel.org; linux-hotplug at vger.kernel.org; linux-kernel at vger.kernel.org; linux-mm at kvack.org; intel-wired-lan at lists.osuosl.org; Jiang Liu
-Subject: [Intel-wired-lan] [Patch V3 5/9] i40e: Use numa_mem_id() to better support memoryless node
+elapsed time: 171m
 
-Function i40e_clean_rx_irq() tries to reuse memory pages allocated from the nearest node. To better support memoryless node, use
-numa_mem_id() instead of numa_node_id() to get the nearest node with memory.
+configs tested: 102
 
-This change should only affect performance.
+parisc                        c3000_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+i386                     randconfig-a0-201533
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+x86_64                            allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             allmodconfig
+i386                             alldefconfig
+mips                                   jz4740
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201533
+i386                     randconfig-i1-201533
+i386                     randconfig-i0-201533
+i386                             allyesconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201533
+arm                       omap2plus_defconfig
+arm                         s3c2410_defconfig
+arm                                       mmp
+arm                           tegra_defconfig
+arm                                      arm5
+arm                                     arm67
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+arm                                    sa1100
+arm                          prima2_defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                                   samsung
+arm                       spear13xx_defconfig
+arm                                  iop-adma
+arm                       imx_v6_v7_defconfig
+arm                          marzen_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                                        sh
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                          amiga_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                           allmodconfig
+x86_64                 randconfig-x001-201533
+x86_64                 randconfig-x004-201533
+x86_64                 randconfig-x006-201533
+x86_64                 randconfig-x000-201533
+x86_64                 randconfig-x003-201533
+x86_64                 randconfig-x009-201533
+x86_64                 randconfig-x005-201533
+x86_64                 randconfig-x002-201533
+x86_64                 randconfig-x008-201533
+x86_64                 randconfig-x007-201533
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+i386                     randconfig-r0-201533
+i386                   randconfig-x000-201533
+i386                   randconfig-x004-201533
+i386                   randconfig-x008-201533
+i386                   randconfig-x001-201533
+i386                   randconfig-x003-201533
+i386                   randconfig-x005-201533
+i386                   randconfig-x007-201533
+i386                   randconfig-x002-201533
+i386                   randconfig-x006-201533
+i386                   randconfig-x009-201533
 
-Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_txrx.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 9a4f2bc70cd2..a8f618cb8eb0 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1516,7 +1516,7 @@ static int i40e_clean_rx_irq_ps(struct i40e_ring *rx_ring, int budget)
- 	unsigned int total_rx_bytes = 0, total_rx_packets = 0;
- 	u16 rx_packet_len, rx_header_len, rx_sph, rx_hbo;
- 	u16 cleaned_count = I40E_DESC_UNUSED(rx_ring);
--	const int current_node = numa_node_id();
-+	const int current_node = numa_mem_id();
- 	struct i40e_vsi *vsi = rx_ring->vsi;
- 	u16 i = rx_ring->next_to_clean;
- 	union i40e_rx_desc *rx_desc;
---
-1.7.10.4
-
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan at lists.osuosl.org
-http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+Thanks,
+Fengguang
