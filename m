@@ -1,42 +1,79 @@
-From: Singhai, Anjali <anjali.singhai@intel.com>
-Date: Thu, 20 Aug 2015 21:03:07 +0000
-Subject: [Intel-wired-lan] [PATCH 2/4] geneve: Add geneve udp port
- offload for ethernet devices
-In-Reply-To: <1440103042.28850.5.camel@intel.com>
-References: <1440096383-8915-1-git-send-email-anjali.singhai@intel.com>
- <1440096383-8915-2-git-send-email-anjali.singhai@intel.com>
- <1440103042.28850.5.camel@intel.com>
-Message-ID: <C40BE8378EF49C44B9184714DBC8EF2992EFAC2D@ORSMSX110.amr.corp.intel.com>
+From: Emil Tantilov <emil.s.tantilov@intel.com>
+Date: Thu, 20 Aug 2015 15:31:20 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: add flow control ethertype to the
+ anti-spoofing filter
+Message-ID: <20150820223120.30599.99286.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This is in preparation for making the HW aware of which UDP ports are being used for Geneve packets so that it can do the Geneve offloads.
-The TX/RX offload path is common between VXLAN and Geneve where in the skb is marked for encapsulation and the outer transport header determines
-if it?s a UDP tunnel. 
+This patch makes sure that flow control packets initiated by the VF are
+dropped and reported as spoofed.
 
-Anjali
-> -----Original Message-----
-> From: Keller, Jacob E
-> Sent: Thursday, August 20, 2015 1:37 PM
-> To: intel-wired-lan at lists.osuosl.org; Singhai, Anjali
-> Subject: Re: [Intel-wired-lan] [PATCH 2/4] geneve: Add geneve udp port
-> offload for ethernet devices
-> 
-> On Thu, 2015-08-20 at 11:46 -0700, Anjali Singhai Jain wrote:
-> > Add ndo_ops to add/del UDP ports to a device that supports geneve
-> > offload.
-> >
-> > v2:Added comments for new ndo_ops and minor format fix.
-> >
-> > Signed-off-by: Kiran Patil <kiran.patil@intel.com>
-> > Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-> > ---
-> 
-> Am I missing something about how this would enable Tx offloads? Or is that
-> enabled already?
-> 
-> Regards,
-> Jake
+Flow control packets can be used to limit the throughput or as DOS
+attack when generated from a VF. Flow control is not supported per VF
+hence any pause frames generated from a VF are considered malicious.
+
+Also cleaned up indentation and some redundant comments.
+
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   16 +++++++++++-----
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |    4 ++++
+ 2 files changed, 15 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 914c1b0..756f3a9 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -3723,14 +3723,20 @@ static void ixgbe_configure_virtualization(struct ixgbe_adapter *adapter)
+ 	hw->mac.ops.set_mac_anti_spoofing(hw, (adapter->num_vfs != 0),
+ 					  adapter->num_vfs);
+ 
+-	/* Ensure LLDP is set for Ethertype Antispoofing if we will be
++	/* Ensure LLDP and FC is set for Ethertype Antispoofing if we will be
+ 	 * calling set_ethertype_anti_spoofing for each VF in loop below
+ 	 */
+-	if (hw->mac.ops.set_ethertype_anti_spoofing)
++	if (hw->mac.ops.set_ethertype_anti_spoofing) {
+ 		IXGBE_WRITE_REG(hw, IXGBE_ETQF(IXGBE_ETQF_FILTER_LLDP),
+-				(IXGBE_ETQF_FILTER_EN    | /* enable filter */
+-				 IXGBE_ETQF_TX_ANTISPOOF | /* tx antispoof */
+-				 IXGBE_ETH_P_LLDP));	   /* LLDP eth type */
++				(IXGBE_ETQF_FILTER_EN    |
++				 IXGBE_ETQF_TX_ANTISPOOF |
++				 IXGBE_ETH_P_LLDP));
++
++		IXGBE_WRITE_REG(hw, IXGBE_ETQF(IXGBE_ETQF_FILTER_FC),
++				(IXGBE_ETQF_FILTER_EN |
++				 IXGBE_ETQF_TX_ANTISPOOF |
++				 ETH_P_PAUSE));
++	}
+ 
+ 	/* For VFs that have spoof checking turned off */
+ 	for (i = 0; i < adapter->num_vfs; i++) {
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index 939c90c..995f031 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -1752,6 +1752,9 @@ enum {
+  *    FCoE (0x8906):         Filter 2
+  *    1588 (0x88f7):         Filter 3
+  *    FIP  (0x8914):         Filter 4
++ *    LLDP (0x88CC):         Filter 5
++ *    LACP (0x8809):         Filter 6
++ *    FC   (0x8808):         Filter 7
+  */
+ #define IXGBE_ETQF_FILTER_EAPOL          0
+ #define IXGBE_ETQF_FILTER_FCOE           2
+@@ -1759,6 +1762,7 @@ enum {
+ #define IXGBE_ETQF_FILTER_FIP            4
+ #define IXGBE_ETQF_FILTER_LLDP		 5
+ #define IXGBE_ETQF_FILTER_LACP		 6
++#define IXGBE_ETQF_FILTER_FC		 7
+ 
+ /* VLAN Control Bit Masks */
+ #define IXGBE_VLNCTRL_VET       0x0000FFFF  /* bits 0-15 */
+
