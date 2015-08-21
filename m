@@ -1,82 +1,115 @@
-From: Singhai, Anjali <anjali.singhai@intel.com>
-Date: Thu, 20 Aug 2015 23:03:17 +0000
-Subject: [Intel-wired-lan] [PATCH 2/4] geneve: Add geneve udp port
- offload for ethernet devices
-In-Reply-To: <1440102733.28850.4.camel@intel.com>
-References: <1440096383-8915-1-git-send-email-anjali.singhai@intel.com>
- <1440096383-8915-2-git-send-email-anjali.singhai@intel.com>
- <1440102733.28850.4.camel@intel.com>
-Message-ID: <C40BE8378EF49C44B9184714DBC8EF2992EFAD00@ORSMSX110.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 21 Aug 2015 08:11:18 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ 196fa8b5a0f9d4f7c8981d5c207e0b7eb8f10454 BUILD SUCCESS
+Message-ID: <55d66ca6.stOycJ+TZR/v3qFs%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+196fa8b5a0f9d4f7c8981d5c207e0b7eb8f10454  i40e: Set defport behavior for the Main VSI when in promiscuous mode
 
+elapsed time: 229m
 
-> -----Original Message-----
-> From: Keller, Jacob E
-> Sent: Thursday, August 20, 2015 1:32 PM
-> To: intel-wired-lan at lists.osuosl.org; Singhai, Anjali
-> Subject: Re: [Intel-wired-lan] [PATCH 2/4] geneve: Add geneve udp port
-> offload for ethernet devices
-> 
-> On Thu, 2015-08-20 at 11:46 -0700, Anjali Singhai Jain wrote:
-> > Add ndo_ops to add/del UDP ports to a device that supports geneve
-> > offload.
-> >
-> > v2:Added comments for new ndo_ops and minor format fix.
-> >
-> > Signed-off-by: Kiran Patil <kiran.patil@intel.com>
-> > Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-> > ---
-> >  include/linux/netdevice.h | 20 +++++++++++++++++++-
-> >  net/ipv4/geneve_core.c    | 22 ++++++++++++++++++++++
-> >  2 files changed, 41 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-> > index f3bb290..d6f00c7 100644
-> > --- a/include/linux/netdevice.h
-> > +++ b/include/linux/netdevice.h
-> > @@ -1016,6 +1016,19 @@ typedef u16 (*select_queue_fallback_t)(struct
-> > net_device *dev,
-> >   *	address family that vxlan is not listening to anymore. The
-> > operation
-> >   *	is protected by the vxlan_net->sock_lock.
-> >   *
-> > + * void (*ndo_add_geneve_port)(struct net_device *dev,
-> > + *			      sa_family_t sa_family, __be16 port);
-> > + *	Called by geneve to notiy a driver about the UDP port and
-> > socket
-> > + *	address family that geneve is listnening to. It is called
-> > only when
-> > + *	a new port starts listening. The operation is protected by
-> > the
-> > + *	geneve_net->sock_lock.
-> > + *
-> > + * void (*ndo_del_geneve_port)(struct net_device *dev,
-> > + *			      sa_family_t sa_family, __be16 port);
-> > + *	Called by geneve to notify the driver about a UDP port and
-> > socket
-> > + *	address family that geneve is not listening to anymore.
-> > The operation
-> > + *	is protected by the geneve_net->sock_lock.
-> > + *
-> 
-> 
-> Would it make more sense to generalize the ndo op for future protocol
-> extension instead of continuing to add separate tunnel offload functions for
-> each one?
-> 
-> 
-> ie: generalize ndo_add_vxlan_port into "ndo_add_tunnel_port"?
-> 
-> Maybe it's not worth it though..?
-> 
+configs tested: 94
 
-Not worth it at this point,  should be done as a separate refactor patch involving cleaning up both vxlan and geneve modules plus all the drivers that use them.
+parisc                        c3000_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+i386                     randconfig-a0-201533
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+x86_64                            allnoconfig
+arm                                    sa1100
+arm                          prima2_defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                                   samsung
+arm                       spear13xx_defconfig
+arm                                  iop-adma
+arm                       imx_v6_v7_defconfig
+arm                          marzen_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                                        sh
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             allmodconfig
+i386                             alldefconfig
+mips                                   jz4740
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201533
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i1-201533
+i386                     randconfig-i0-201533
+x86_64                           allmodconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                          amiga_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64               randconfig-x007-08201912
+x86_64               randconfig-x006-08201912
+x86_64               randconfig-x008-08201912
+x86_64               randconfig-x001-08201912
+x86_64               randconfig-x005-08201912
+x86_64               randconfig-x004-08201912
+x86_64               randconfig-x009-08201912
+x86_64               randconfig-x003-08201912
+x86_64               randconfig-x002-08201912
+x86_64               randconfig-x000-08201912
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+i386                     randconfig-r0-201533
+i386                   randconfig-x000-201533
+i386                   randconfig-x004-201533
+i386                   randconfig-x008-201533
+i386                   randconfig-x001-201533
+i386                   randconfig-x003-201533
+i386                   randconfig-x005-201533
+i386                   randconfig-x007-201533
+i386                   randconfig-x002-201533
+i386                   randconfig-x006-201533
+i386                   randconfig-x009-201533
 
-
-> Regards,
-> Jake
+Thanks,
+Fengguang
