@@ -1,82 +1,148 @@
 From: Christopher S. Hall <christopher.s.hall@intel.com>
-Date: Fri, 21 Aug 2015 11:52:04 -0700
-Subject: [Intel-wired-lan] [PATCH v3 0/4] Patchset enabling hardware based
-	cross-timestamps for next gen Intel platforms
-Message-ID: <1440183128-1384-1-git-send-email-christopher.s.hall@intel.com>
+Date: Fri, 21 Aug 2015 11:52:06 -0700
+Subject: [Intel-wired-lan] [PATCH v3 2/4] Added ART correlated clocksource
+	and ART CPU feature
+In-Reply-To: <1440183128-1384-1-git-send-email-christopher.s.hall@intel.com>
+References: <1440183128-1384-1-git-send-email-christopher.s.hall@intel.com>
+Message-ID: <1440183128-1384-3-git-send-email-christopher.s.hall@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-6th generation Intel platforms will have an Always Running
-Timer (ART) that always runs when the system is powered and
-is available to both the CPU and various on-board devices.
-Initially, those devices include audio and network.  The
-ART will give these devices the capability of precisely
-cross timestamping their local device clock with the system
-clock.  The ART is precisely related to the TSC by a ratio
-read from CPUID leaf 0x15.
+Add detect_art() call to early TSC initialization which reads ART->TSC
+	numerator/denominator and sets CPU feature if present
 
-A device (such as the network controller) produces cross timestamps in 
-terms of the ART and the local device clock.  The ART value on its
-own isn't useful.
+Add convert_art_to_tsc() function performing conversion ART to TSC
 
-The first two patches enable translation of ART to system time.
-The first patch adds the correlated clocksource concept which is
-an auxiliary clock directly relate-able to a clock registered as
-a clocksource. The second patch adds the Intel specific ART 
-correlated clocksource.
+Add art_timestamp referencing art_to_tsc() and clocksource_tsc enabling
+	driver conversion of ART to TSC
 
-The last two patches modify the PTP character driver to call a
-cross timestamp function (getsynctime()) in the driver when
-available and perform the cross timestamp in the e1000e driver.
+Signed-off-by: Christopher S. Hall <christopher.s.hall@intel.com>
+---
+ arch/x86/include/asm/cpufeature.h |  3 ++-
+ arch/x86/include/asm/tsc.h        |  2 ++
+ arch/x86/kernel/tsc.c             | 54 +++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 58 insertions(+), 1 deletion(-)
 
-The patches taken together enable sub-microsecond cross timestamps
-between the system clock and network device clock
-
-Changelog since v2:
-
-Split out x86 architecture specific code from common timekeeping code
-	additions
-
-Split ART initialization between early TSC initialization and TSC
-	frequency refinement.  Now, cpu_has_art can be used in
-	driver initialization code
-
-Added e1000e PTP init code that detects presence of ART/spt disabling
-	cross timestamp if they're not available
-
-Added additional commenting in TSC/ART init code, minor renaming of
-	functions and variables for greater clarity
-
-Fixed a few formatting problems in e1000e driver patch
-
-
-Christopher Hall (2):
-  Add support for driver cross-timestamp to PTP_SYS_OFFSET ioctl
-  Enabling hardware supported PTP system/device crosstimestamping
-
-Christopher S. Hall (2):
-  Add correlated clocksource deriving system time from an auxiliary
-    clocksource
-  Added ART correlated clocksource and ART CPU feature
-
- Documentation/ptp/testptp.c                 |  6 +-
- arch/x86/include/asm/cpufeature.h           |  3 +-
- arch/x86/include/asm/tsc.h                  |  2 +
- arch/x86/kernel/tsc.c                       | 54 ++++++++++++++++++
- drivers/net/ethernet/intel/e1000e/defines.h |  5 ++
- drivers/net/ethernet/intel/e1000e/ptp.c     | 88 +++++++++++++++++++++++++++++
- drivers/net/ethernet/intel/e1000e/regs.h    |  4 ++
- drivers/ptp/ptp_chardev.c                   | 29 +++++++---
- include/linux/clocksource.h                 | 33 +++++++++++
- include/linux/ptp_clock_kernel.h            |  7 +++
- include/linux/timekeeping.h                 |  4 ++
- include/uapi/linux/ptp_clock.h              |  4 +-
- kernel/time/timekeeping.c                   | 65 +++++++++++++++++++++
- 13 files changed, 292 insertions(+), 12 deletions(-)
-
+diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
+index 3d6606f..a9322e5 100644
+--- a/arch/x86/include/asm/cpufeature.h
++++ b/arch/x86/include/asm/cpufeature.h
+@@ -85,7 +85,7 @@
+ #define X86_FEATURE_P4		( 3*32+ 7) /* "" P4 */
+ #define X86_FEATURE_CONSTANT_TSC ( 3*32+ 8) /* TSC ticks at a constant rate */
+ #define X86_FEATURE_UP		( 3*32+ 9) /* smp kernel running on up */
+-/* free, was #define X86_FEATURE_FXSAVE_LEAK ( 3*32+10) * "" FXSAVE leaks FOP/FIP/FOP */
++#define X86_FEATURE_ART		(3*32+10) /* Platform has always running timer (ART) */
+ #define X86_FEATURE_ARCH_PERFMON ( 3*32+11) /* Intel Architectural PerfMon */
+ #define X86_FEATURE_PEBS	( 3*32+12) /* Precise-Event Based Sampling */
+ #define X86_FEATURE_BTS		( 3*32+13) /* Branch Trace Store */
+@@ -352,6 +352,7 @@ extern const char * const x86_bug_flags[NBUGINTS*32];
+ #define cpu_has_de		boot_cpu_has(X86_FEATURE_DE)
+ #define cpu_has_pse		boot_cpu_has(X86_FEATURE_PSE)
+ #define cpu_has_tsc		boot_cpu_has(X86_FEATURE_TSC)
++#define cpu_has_art		boot_cpu_has(X86_FEATURE_ART)
+ #define cpu_has_pge		boot_cpu_has(X86_FEATURE_PGE)
+ #define cpu_has_apic		boot_cpu_has(X86_FEATURE_APIC)
+ #define cpu_has_sep		boot_cpu_has(X86_FEATURE_SEP)
+diff --git a/arch/x86/include/asm/tsc.h b/arch/x86/include/asm/tsc.h
+index 94605c0..8d52d91 100644
+--- a/arch/x86/include/asm/tsc.h
++++ b/arch/x86/include/asm/tsc.h
+@@ -45,6 +45,8 @@ static __always_inline cycles_t vget_cycles(void)
+ 	return (cycles_t)__native_read_tsc();
+ }
+ 
++extern struct correlated_cs art_timestamper;
++
+ extern void tsc_init(void);
+ extern void mark_tsc_unstable(char *reason);
+ extern int unsynchronized_tsc(void);
+diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+index 7437b41..13f12e0 100644
+--- a/arch/x86/kernel/tsc.c
++++ b/arch/x86/kernel/tsc.c
+@@ -939,10 +939,36 @@ static struct notifier_block time_cpufreq_notifier_block = {
+ 	.notifier_call  = time_cpufreq_notifier
+ };
+ 
++#define ART_CPUID_LEAF (0x15)
++#define ART_MIN_DENOMINATOR (2)
++
++static u32 art_to_tsc_numerator;
++static u32 art_to_tsc_denominator;
++
++/*
++ * If ART is present detect the numberator:denominator to convert to TSC
++ */
++void detect_art(void)
++{
++	unsigned int unused[2];
++
++	if (boot_cpu_data.cpuid_level >= ART_CPUID_LEAF) {
++		cpuid(ART_CPUID_LEAF, &art_to_tsc_denominator,
++		      &art_to_tsc_numerator, unused, unused+1);
++
++		if (art_to_tsc_denominator >= ART_MIN_DENOMINATOR) {
++			set_cpu_cap(&boot_cpu_data, X86_FEATURE_ART);
++		}
++	}
++}
++
+ static int __init cpufreq_tsc(void)
+ {
+ 	if (!cpu_has_tsc)
+ 		return 0;
++
++	detect_art();
++
+ 	if (boot_cpu_has(X86_FEATURE_CONSTANT_TSC))
+ 		return 0;
+ 	cpufreq_register_notifier(&time_cpufreq_notifier_block,
+@@ -1059,6 +1085,32 @@ int unsynchronized_tsc(void)
+ 	return 0;
+ }
+ 
++/*
++ * Convert ART to TSC given numerator/denominator found in detect_art()
++ */
++static u64 convert_art_to_tsc(struct correlated_cs *cs, u64 cycles)
++{
++	u64 tmp, res;
++
++	switch (art_to_tsc_denominator) {
++	default:
++		res = (cycles / art_to_tsc_denominator) * art_to_tsc_numerator;
++		tmp = (cycles % art_to_tsc_denominator) * art_to_tsc_numerator;
++		res += tmp / art_to_tsc_denominator;
++		break;
++	case 2:
++	       res = (cycles >> 1) * art_to_tsc_numerator;
++	       tmp = (cycles & 0x1) * art_to_tsc_numerator;
++	       res += tmp >> 1;
++	       break;
++	}
++	return res;
++}
++
++struct correlated_cs art_timestamper = {
++	.convert	= convert_art_to_tsc,
++};
++EXPORT_SYMBOL(art_timestamper);
+ 
+ static void tsc_refine_calibration_work(struct work_struct *work);
+ static DECLARE_DELAYED_WORK(tsc_irqwork, tsc_refine_calibration_work);
+@@ -1130,6 +1182,8 @@ static void tsc_refine_calibration_work(struct work_struct *work)
+ 		(unsigned long)tsc_khz % 1000);
+ 
+ out:
++	if (cpu_has_art)
++		art_timestamper.related_cs = &clocksource_tsc;
+ 	clocksource_register_khz(&clocksource_tsc, tsc_khz);
+ }
+ 
 -- 
 2.1.4
 
