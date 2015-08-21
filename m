@@ -1,53 +1,38 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Fri, 21 Aug 2015 22:18:59 +0000
-Subject: [Intel-wired-lan] [PATCH V4 2/2] ixgbe: Add support for VXLAN
- RX	offloads
-In-Reply-To: <305E19FFAC908240AB6DEBD1E2D8C1E180BA1A83@ORSMSX108.amr.corp.intel.com>
-References: <20150615182643.98036.77888.stgit@mdrustad-wks.jf.intel.com>
- <20150615183325.98036.686.stgit@mdrustad-wks.jf.intel.com>
- <305E19FFAC908240AB6DEBD1E2D8C1E180BA1A83@ORSMSX108.amr.corp.intel.com>
-Message-ID: <1440195539.10719.8.camel@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Fri, 21 Aug 2015 22:32:46 +0000
+Subject: [Intel-wired-lan] [PATCH next 2/4] e1000e: Enable TSO for
+ stacked	vlan
+In-Reply-To: <1438851452-13143-2-git-send-email-makita.toshiaki@lab.ntt.co.jp>
+References: <1438851452-13143-1-git-send-email-makita.toshiaki@lab.ntt.co.jp>
+ <1438851452-13143-2-git-send-email-makita.toshiaki@lab.ntt.co.jp>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81AFF4C1@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2015-08-17 at 21:17 +0000, Schmitt, Phillip J wrote:
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Toshiaki Makita
+> Sent: Thursday, August 06, 2015 1:57 AM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; Brandeburg, Jesse
+> <jesse.brandeburg@intel.com>; Nelson, Shannon <shannon.nelson@intel.com>;
+> Wyborny, Carolyn <carolyn.wyborny@intel.com>; Skidmore, Donald C
+> <donald.c.skidmore@intel.com>; Vick, Matthew <matthew.vick@intel.com>;
+> Ronciak, John <john.ronciak@intel.com>; Williams, Mitch A
+> <mitch.a.williams@intel.com>
+> Cc: intel-wired-lan at lists.osuosl.org; Toshiaki Makita
+> <makita.toshiaki@lab.ntt.co.jp>
+> Subject: [Intel-wired-lan] [PATCH next 2/4] e1000e: Enable TSO for stacked vlan
 > 
-> > -----Original Message-----
-> > From: Intel-wired-lan [mailto:
-> > intel-wired-lan-bounces at lists.osuosl.org] On
-> > Behalf Of Mark D Rustad
-> > Sent: Monday, June 15, 2015 11:33 AM
-> > To: intel-wired-lan at lists.osuosl.org
-> > Subject: [Intel-wired-lan] [PATCH V4 2/2] ixgbe: Add support for
-> > VXLAN RX
-> > offloads
-> > 
-> > From: Mark Rustad <mark.d.rustad@intel.com>
-> > 
-> > Add support for VXLAN RX offloads for the X55x devices that support
-> > them.
-> > 
-> > Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
-> > ---
-> > Changes in V3:
-> > - change __constant_htons to simply htons 
+> Setting ndo_features_check to passthru_features_check allows the driver
+> to skip the check for multiple tagged TSO packets and enables stacked
+> vlan TSO.
+> Tested with I217-LM.
 > 
-> Changes in V4:
-> > - add static to ixgbe_clear_vxlan_port
-> > - use ixgbe_clear_vxlan_port to clear vxlan port
-> > - call ixgbe_clear_vxlan_port when turning checksum offload off
-> > ---
-> 
-> 
-> Tested-by: Phil Schmitt <phillip.j.schmitt@intel.com>
+> Signed-off-by: Toshiaki Makita <makita.toshiaki@lab.ntt.co.jp>
+> ---
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 1 +
+>  1 file changed, 1 insertion(+)
 
-
-This patch causes a build failure with CONFIG_IXGBE_VXLAN enabled,
-since we already include <net/vxlan.h> which for some reason isn't
-protected by a dual-include #ifndef header check.
-
-Regards,
-Jake
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
