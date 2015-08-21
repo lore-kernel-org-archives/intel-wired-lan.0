@@ -1,184 +1,82 @@
 From: Christopher S. Hall <christopher.s.hall@intel.com>
-Date: Fri, 21 Aug 2015 11:52:08 -0700
-Subject: [Intel-wired-lan] [PATCH v3 4/4] Enabling hardware supported PTP
-	system/device crosstimestamping
-In-Reply-To: <1440183128-1384-1-git-send-email-christopher.s.hall@intel.com>
-References: <1440183128-1384-1-git-send-email-christopher.s.hall@intel.com>
-Message-ID: <1440183128-1384-5-git-send-email-christopher.s.hall@intel.com>
+Date: Fri, 21 Aug 2015 11:52:04 -0700
+Subject: [Intel-wired-lan] [PATCH v3 0/4] Patchset enabling hardware based
+	cross-timestamps for next gen Intel platforms
+Message-ID: <1440183128-1384-1-git-send-email-christopher.s.hall@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Christopher Hall <christopher.s.hall@intel.com>
+6th generation Intel platforms will have an Always Running
+Timer (ART) that always runs when the system is powered and
+is available to both the CPU and various on-board devices.
+Initially, those devices include audio and network.  The
+ART will give these devices the capability of precisely
+cross timestamping their local device clock with the system
+clock.  The ART is precisely related to the TSC by a ratio
+read from CPUID leaf 0x15.
 
-Add getsynctime() PTP device callback to cross timestamp system device
-	clock using ART	translation depends on platform being >= SPT
-	and having ART
+A device (such as the network controller) produces cross timestamps in 
+terms of the ART and the local device clock.  The ART value on its
+own isn't useful.
 
-getsynctime() reads ART (TSC-derived)/device cross timestamp and
-	converts to realtime/device time reporting cross timestamp to
-	PTP driver
+The first two patches enable translation of ART to system time.
+The first patch adds the correlated clocksource concept which is
+an auxiliary clock directly relate-able to a clock registered as
+a clocksource. The second patch adds the Intel specific ART 
+correlated clocksource.
 
-Signed-off-by: Christopher S. Hall <christopher.s.hall@intel.com>
----
+The last two patches modify the PTP character driver to call a
+cross timestamp function (getsynctime()) in the driver when
+available and perform the cross timestamp in the e1000e driver.
+
+The patches taken together enable sub-microsecond cross timestamps
+between the system clock and network device clock
+
+Changelog since v2:
+
+Split out x86 architecture specific code from common timekeeping code
+	additions
+
+Split ART initialization between early TSC initialization and TSC
+	frequency refinement.  Now, cpu_has_art can be used in
+	driver initialization code
+
+Added e1000e PTP init code that detects presence of ART/spt disabling
+	cross timestamp if they're not available
+
+Added additional commenting in TSC/ART init code, minor renaming of
+	functions and variables for greater clarity
+
+Fixed a few formatting problems in e1000e driver patch
+
+
+Christopher Hall (2):
+  Add support for driver cross-timestamp to PTP_SYS_OFFSET ioctl
+  Enabling hardware supported PTP system/device crosstimestamping
+
+Christopher S. Hall (2):
+  Add correlated clocksource deriving system time from an auxiliary
+    clocksource
+  Added ART correlated clocksource and ART CPU feature
+
+ Documentation/ptp/testptp.c                 |  6 +-
+ arch/x86/include/asm/cpufeature.h           |  3 +-
+ arch/x86/include/asm/tsc.h                  |  2 +
+ arch/x86/kernel/tsc.c                       | 54 ++++++++++++++++++
  drivers/net/ethernet/intel/e1000e/defines.h |  5 ++
  drivers/net/ethernet/intel/e1000e/ptp.c     | 88 +++++++++++++++++++++++++++++
  drivers/net/ethernet/intel/e1000e/regs.h    |  4 ++
- 3 files changed, 97 insertions(+)
+ drivers/ptp/ptp_chardev.c                   | 29 +++++++---
+ include/linux/clocksource.h                 | 33 +++++++++++
+ include/linux/ptp_clock_kernel.h            |  7 +++
+ include/linux/timekeeping.h                 |  4 ++
+ include/uapi/linux/ptp_clock.h              |  4 +-
+ kernel/time/timekeeping.c                   | 65 +++++++++++++++++++++
+ 13 files changed, 292 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/defines.h b/drivers/net/ethernet/intel/e1000e/defines.h
-index 133d407..13cff75 100644
---- a/drivers/net/ethernet/intel/e1000e/defines.h
-+++ b/drivers/net/ethernet/intel/e1000e/defines.h
-@@ -527,6 +527,11 @@
- #define E1000_RXCW_C          0x20000000        /* Receive config */
- #define E1000_RXCW_SYNCH      0x40000000        /* Receive config synch */
- 
-+/* HH Time Sync */
-+#define E1000_TSYNCTXCTL_MAX_ALLOWED_DLY_MASK	0x0000F000 /* max delay */
-+#define E1000_TSYNCTXCTL_SYNC_COMP		0x40000000 /* sync complete */
-+#define E1000_TSYNCTXCTL_START_SYNC		0x80000000 /* initiate sync */
-+
- #define E1000_TSYNCTXCTL_VALID		0x00000001 /* Tx timestamp valid */
- #define E1000_TSYNCTXCTL_ENABLED	0x00000010 /* enable Tx timestamping */
- 
-diff --git a/drivers/net/ethernet/intel/e1000e/ptp.c b/drivers/net/ethernet/intel/e1000e/ptp.c
-index 25a0ad5..228f3f3 100644
---- a/drivers/net/ethernet/intel/e1000e/ptp.c
-+++ b/drivers/net/ethernet/intel/e1000e/ptp.c
-@@ -25,6 +25,8 @@
-  */
- 
- #include "e1000.h"
-+#include <asm/tsc.h>
-+#include <linux/timekeeping.h>
- 
- /**
-  * e1000e_phc_adjfreq - adjust the frequency of the hardware clock
-@@ -98,6 +100,87 @@ static int e1000e_phc_adjtime(struct ptp_clock_info *ptp, s64 delta)
- 	return 0;
- }
- 
-+#define MAX_HW_WAIT_COUNT (3)
-+
-+static int e1000e_phc_get_ts(struct correlated_ts *cts)
-+{
-+	struct e1000_adapter *adapter = (struct e1000_adapter *)cts->private;
-+	struct e1000_hw *hw = &adapter->hw;
-+	int i;
-+	u32 tsync_ctrl;
-+	int ret;
-+
-+	tsync_ctrl = er32(TSYNCTXCTL);
-+	tsync_ctrl |= E1000_TSYNCTXCTL_START_SYNC |
-+		E1000_TSYNCTXCTL_MAX_ALLOWED_DLY_MASK;
-+	ew32(TSYNCTXCTL, tsync_ctrl);
-+	for (i = 0; i < MAX_HW_WAIT_COUNT; ++i) {
-+		udelay(1);
-+		tsync_ctrl = er32(TSYNCTXCTL);
-+		if (tsync_ctrl & E1000_TSYNCTXCTL_SYNC_COMP)
-+			break;
-+	}
-+
-+	if (i == MAX_HW_WAIT_COUNT) {
-+		ret = -ETIMEDOUT;
-+	} else {
-+		ret = 0;
-+		cts->system_ts = er32(PLTSTMPH);
-+		cts->system_ts <<= 32;
-+		cts->system_ts |= er32(PLTSTMPL);
-+		cts->device_ts = er32(SYSSTMPH);
-+		cts->device_ts <<= 32;
-+		cts->device_ts |= er32(SYSSTMPL);
-+	}
-+
-+	return ret;
-+}
-+
-+/**
-+ * e1000e_phc_getsynctime - Reads the current time from the hardware clock and
-+ * correlated system time
-+ * @ptp: ptp clock structure
-+ * @devts: timespec structure to hold the current device time value
-+ * @systs: timespec structure to hold the current system time value
-+ *
-+ * Read device and system (ART) clock simultaneously and return the correct
-+ * clock values in ns after converting into a struct timespec.
-+ **/
-+static int e1000e_phc_getsynctime(struct ptp_clock_info *ptp,
-+				  struct timespec64 *devts,
-+				  struct timespec64 *systs)
-+{
-+	struct e1000_adapter *adapter = container_of(ptp, struct e1000_adapter,
-+						     ptp_clock_info);
-+	unsigned long flags;
-+	u32 remainder;
-+	struct correlated_ts art_correlated_ts;
-+	u64 device_time;
-+	int ret;
-+
-+	art_correlated_ts.get_ts = e1000e_phc_get_ts;
-+	art_correlated_ts.private = adapter;
-+	ret = get_correlated_timestamp(&art_correlated_ts,
-+				       &art_timestamper);
-+	if (ret != 0)
-+		goto bail;
-+
-+	systs->tv_sec =
-+		div_u64_rem(art_correlated_ts.system_real.tv64,
-+			    NSEC_PER_SEC, &remainder);
-+	systs->tv_nsec = remainder;
-+	spin_lock_irqsave(&adapter->systim_lock, flags);
-+	device_time = timecounter_cyc2time(&adapter->tc,
-+					   art_correlated_ts.device_ts);
-+	spin_unlock_irqrestore(&adapter->systim_lock, flags);
-+	devts->tv_sec =
-+		div_u64_rem(device_time, NSEC_PER_SEC, &remainder);
-+	devts->tv_nsec = remainder;
-+
-+bail:
-+	return ret;
-+}
-+
- /**
-  * e1000e_phc_gettime - Reads the current time from the hardware clock
-  * @ptp: ptp clock structure
-@@ -190,6 +273,7 @@ static const struct ptp_clock_info e1000e_ptp_clock_info = {
- 	.adjfreq	= e1000e_phc_adjfreq,
- 	.adjtime	= e1000e_phc_adjtime,
- 	.gettime64	= e1000e_phc_gettime,
-+	.getsynctime64	= e1000e_phc_getsynctime,
- 	.settime64	= e1000e_phc_settime,
- 	.enable		= e1000e_phc_enable,
- };
-@@ -236,6 +320,10 @@ void e1000e_ptp_init(struct e1000_adapter *adapter)
- 		break;
- 	}
- 
-+	/* CPU must have ART and GBe must be from Sunrise Point or greater */
-+	if (hw->mac.type < e1000_pch_spt || !cpu_has_art)
-+		adapter->ptp_clock_info.getsynctime64 = NULL;
-+
- 	INIT_DELAYED_WORK(&adapter->systim_overflow_work,
- 			  e1000e_systim_overflow_work);
- 
-diff --git a/drivers/net/ethernet/intel/e1000e/regs.h b/drivers/net/ethernet/intel/e1000e/regs.h
-index b24e5fe..4dd5b54 100644
---- a/drivers/net/ethernet/intel/e1000e/regs.h
-+++ b/drivers/net/ethernet/intel/e1000e/regs.h
-@@ -246,6 +246,10 @@
- #define E1000_SYSTIML	0x0B600	/* System time register Low - RO */
- #define E1000_SYSTIMH	0x0B604	/* System time register High - RO */
- #define E1000_TIMINCA	0x0B608	/* Increment attributes register - RW */
-+#define E1000_SYSSTMPL  0x0B648 /* HH Timesync system stamp low register */
-+#define E1000_SYSSTMPH  0x0B64C /* HH Timesync system stamp hi register */
-+#define E1000_PLTSTMPL  0x0B640 /* HH Timesync platform stamp low register */
-+#define E1000_PLTSTMPH  0x0B644 /* HH Timesync platform stamp hi register */
- #define E1000_RXMTRL	0x0B634	/* Time sync Rx EtherType and Msg Type - RW */
- #define E1000_RXUDP	0x0B638	/* Time Sync Rx UDP Port - RW */
- 
 -- 
 2.1.4
 
