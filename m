@@ -1,122 +1,55 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 22 Aug 2015 12:29:09 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
- 635c33112d5c9782c14469a31245d22e5d1b6f6d BUILD SUCCESS
-Message-ID: <55d7fa95.cc04BTbXFn8oe6EY%fengguang.wu@intel.com>
+From: Richard Cochran <richardcochran@gmail.com>
+Date: Sat, 22 Aug 2015 23:17:18 +0200
+Subject: [Intel-wired-lan] [PATCH v3 3/4] Add support for driver
+ cross-timestamp to PTP_SYS_OFFSET ioctl
+In-Reply-To: <alpine.DEB.2.11.1508222226540.3873@nanos>
+References: <1440183128-1384-1-git-send-email-christopher.s.hall@intel.com>
+ <1440183128-1384-4-git-send-email-christopher.s.hall@intel.com>
+ <alpine.DEB.2.11.1508222226540.3873@nanos>
+Message-ID: <20150822211718.GA8561@netboy>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-635c33112d5c9782c14469a31245d22e5d1b6f6d  i40e: Set defport behavior for the Main VSI when in promiscuous mode
+On Sat, Aug 22, 2015 at 10:33:48PM +0200, Thomas Gleixner wrote:
+> > @@ -196,19 +197,31 @@ long ptp_ioctl(struct posix_clock *pc, unsigned int cmd, unsigned long arg)
+> >  			break;
+> >  		}
+> >  		pct = &sysoff->ts[0];
+> > -		for (i = 0; i < sysoff->n_samples; i++) {
+> > -			getnstimeofday64(&ts);
+> > +		if (ptp->info->getsynctime64 && sysoff->n_samples == 1 &&
+> 
+> The number of samples should be irrelevant for this sampling method.
 
-elapsed time: 49m
+Chris had send me a preview of this before he posted, so I can explain
+that test for one sample.
 
-configs tested: 101
+User space requests N (1 to 25) samples of the two clocks.  The kernel
+is supposed to deliver that many samples.  This has always been the
+documented behavior.  From ptp_clock.h:
 
-parisc                        c3000_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-i386                     randconfig-a0-201533
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-arm                                    sa1100
-arm                          prima2_defconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                                   samsung
-arm                       spear13xx_defconfig
-arm                                  iop-adma
-arm                       imx_v6_v7_defconfig
-arm                          marzen_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                                        sh
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-x86_64                           allmodconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             allmodconfig
-i386                             alldefconfig
-mips                                   jz4740
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-x86_64                   randconfig-i0-201533
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i1-201533
-i386                     randconfig-i0-201533
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-x86_64                            allnoconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201533
-arm                       omap2plus_defconfig
-arm                         s3c2410_defconfig
-arm                                       mmp
-arm                           tegra_defconfig
-arm                                      arm5
-arm                                     arm67
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-m68k                          amiga_defconfig
-x86_64               randconfig-x007-08201912
-x86_64               randconfig-x006-08201912
-x86_64               randconfig-x008-08201912
-x86_64               randconfig-x001-08201912
-x86_64               randconfig-x005-08201912
-x86_64               randconfig-x004-08201912
-x86_64               randconfig-x009-08201912
-x86_64               randconfig-x003-08201912
-x86_64               randconfig-x002-08201912
-x86_64               randconfig-x000-08201912
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-r0-201533
-i386                   randconfig-x000-201533
-i386                   randconfig-x004-201533
-i386                   randconfig-x008-201533
-i386                   randconfig-x001-201533
-i386                   randconfig-x003-201533
-i386                   randconfig-x005-201533
-i386                   randconfig-x007-201533
-i386                   randconfig-x002-201533
-i386                   randconfig-x006-201533
-i386                   randconfig-x009-201533
+  struct ptp_sys_offset {
+	unsigned int n_samples; /* Desired number of measurements. */
+	unsigned int rsv[3];    /* Reserved for future use. */
+	/*
+	 * Array of interleaved system/phc time stamps. The kernel
+	 * will provide 2*n_samples + 1 time stamps, with the last
+	 * one as a system time stamp.
+	 */
+	struct ptp_clock_time ts[2 * PTP_MAX_SAMPLES + 1];
+  };
+
+So the kernel cannot simply change n_samples to 1.
+
+I would prefer to have a new system call that compares any two posix
+clock_t, but that is of course more work.
+
+Allowing n_samples=1 as a special case is a kind of overloading of the
+ioctl to support the new capability.  At least it preserves the
+behavior of the interface from the user's perspective.
 
 Thanks,
-Fengguang
+Richard
