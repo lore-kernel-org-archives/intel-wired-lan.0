@@ -1,36 +1,134 @@
-From: Richard Cochran <richardcochran@gmail.com>
-Date: Sun, 23 Aug 2015 13:25:56 +0200
-Subject: [Intel-wired-lan] [PATCH v3 3/4] Add support for driver
- cross-timestamp to PTP_SYS_OFFSET ioctl
-In-Reply-To: <alpine.DEB.2.11.1508231011360.3873@nanos>
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Sat, 22 Aug 2015 22:17:00 +0200 (CEST)
+Subject: [Intel-wired-lan] [PATCH v3 1/4] Add correlated clocksource
+ deriving system time from an auxiliary clocksource
+In-Reply-To: <1440183128-1384-2-git-send-email-christopher.s.hall@intel.com>
 References: <1440183128-1384-1-git-send-email-christopher.s.hall@intel.com>
- <1440183128-1384-4-git-send-email-christopher.s.hall@intel.com>
- <alpine.DEB.2.11.1508222226540.3873@nanos>
- <20150822211718.GA8561@netboy>
- <alpine.DEB.2.11.1508231011360.3873@nanos>
-Message-ID: <20150823112556.GA8569@localhost.localdomain>
+ <1440183128-1384-2-git-send-email-christopher.s.hall@intel.com>
+Message-ID: <alpine.DEB.2.11.1508222143530.3873@nanos>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sun, Aug 23, 2015 at 10:15:00AM +0200, Thomas Gleixner wrote:
-> So why can't you take N samples from the synced hardware? It does not
-> make any sense to me to switch to the imprecise mode if nsamples > 1.
+On Fri, 21 Aug 2015, Christopher S. Hall wrote:
 
-Ok, then I prefer to leave this "imprecise" method in place and ...
- 
-> You can also provide a new IOCTL PTP_SYS_OFFSET_PRECISE which returns
-> -ENOSYS if hardware timestamping is not available and avoid the whole
-> nsamples dance for the case where we can get precise timestamps.
+> Add struct correlated_cs with pointer to original clocksource and
+> 	function pointer to convert correlated clocksource to the original
+> 
+> Add get_correlated_timestamp() function which given specific correlated_cs
+> 	and correlated_ts convert correlated counter value to system time
 
-have this for the new way.
+This is not a proper changelog.
 
-By keeping the imprecise method, we will be able to run both methods
-on the new hardware.  That will help to quantify how imprecise the old
-method is.
+1) The subject line lacks a subsystem prefix
+
+   timekeeping:
+
+   Is the proper choice here
+
+2) The subject line should be short and precise
+
+   timekeeping: Add mechanism to gather correlated timestamps
+
+   Might be an informative one.
+
+3) The changelog itself should describe the reason why we want this
+   change, the purpose of the change etc.
+
+   Add foo
+   Add bar
+
+   Is pointless because we can see that from the patch itself.
+
+   What the patch cannot not explain is the WHY. That's what the
+   changelog is for.
+
+4) You dropped the authorship
+
+   The proper way to do this is to add a 'FROM: author' at the top of
+   the changelog body.
+
+As I wrote the patch, so I give you a changelog along with it:
+
+<---
+Subject: timekeeping: Add mechanism to gather correlated timestamps
+
+From: Thomas Gleixner <tglx@linutronix.de>
+
+Modern Intel hardware provides the so called Always Running Timer
+(ART). The TSC which is usually used for timekeeping is derived from
+ART and runs with a fixed frequency ratio to it. ART is routed to
+devices and allows to take atomic timestamp samples from the device
+clock and the ART. One use case is PTP timestamps on network cards. We
+want to utilize this feature as it allows us to better correlate the
+PTP timestamp to the system time.
+
+In order to gather precise timestamps we need to make sure that the
+conversion from ART to TSC and the following conversion from TSC to
+clock realtime happens synchronized with the ongoing timekeeping
+updates. Otherwise we might convert an ART timestamp from point A in
+time with the conversion factors of point B in time. These conversion
+factors can differ due to NTP/PTP frequency adjustments and therefor
+the resulting clock realtime timestamp would be slightly off, which is
+contrary to the whole purpose of synchronized hardware timestamps.
+
+Provide data structures which describe the correlation between two
+clocksources and a function to gather correlated and convert
+timestamps from a device. The function is as any other timekeeping
+function protected against current timekeeper updates via the
+timekeeper sequence lock. It calls the device function to gather the
+hardware timestamps and converts them to clock real time and clock
+monotonic raw.
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+
+---->
+
+Can you see the difference?
+
+> Signed-off-by: Christopher S. Hall <christopher.s.hall@intel.com>
+> ---
+>  include/linux/clocksource.h | 33 +++++++++++++++++++++++
+>  include/linux/timekeeping.h |  4 +++
+>  kernel/time/timekeeping.c   | 65 +++++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 102 insertions(+)
+> 
+> diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
+> index 278dd27..4bedadb 100644
+> --- a/include/linux/clocksource.h
+> +++ b/include/linux/clocksource.h
+> @@ -258,4 +258,37 @@ void acpi_generic_timer_init(void);
+>  static inline void acpi_generic_timer_init(void) { }
+>  #endif
+>  
+> +/*
+> + * struct correlated_cs - Descriptor for a clocksource correlated to another
+> + *	clocksource
+
+Don't believe checkpatch here. KernelDoc requires that this is one
+line, 80 char limit or not.
+
+>  /**
+> + * get_correlated_timestamp - Get a correlated timestamp
+> + *
+
+Lacks the parameter documentation:
+
+* @crt: Pointer to a correlated timestamp structure which provides
+*	the device specific timestamp function and is used to store
+*	the raw and the correlated timestamps.
+* @crs:	Pointer to a correlated clocksource structure which describes 
+* 	the correlated clocksource and provides a conversion function
+*	to the timekeeping clocksource
+
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL(get_correlated_timestamp);
+
+EXPORT_SYMBOL_GPL please.
 
 Thanks,
-Richard
 
+	tglx
