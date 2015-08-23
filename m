@@ -1,110 +1,66 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Date: Sat, 22 Aug 2015 22:46:19 +0200 (CEST)
-Subject: [Intel-wired-lan] [PATCH v3 4/4] Enabling hardware supported
- PTP system/device crosstimestamping
-In-Reply-To: <1440183128-1384-5-git-send-email-christopher.s.hall@intel.com>
+Date: Sun, 23 Aug 2015 10:15:00 +0200 (CEST)
+Subject: [Intel-wired-lan] [PATCH v3 3/4] Add support for driver
+ cross-timestamp to PTP_SYS_OFFSET ioctl
+In-Reply-To: <20150822211718.GA8561@netboy>
 References: <1440183128-1384-1-git-send-email-christopher.s.hall@intel.com>
- <1440183128-1384-5-git-send-email-christopher.s.hall@intel.com>
-Message-ID: <alpine.DEB.2.11.1508222233580.3873@nanos>
+ <1440183128-1384-4-git-send-email-christopher.s.hall@intel.com>
+ <alpine.DEB.2.11.1508222226540.3873@nanos> <20150822211718.GA8561@netboy>
+Message-ID: <alpine.DEB.2.11.1508231011360.3873@nanos>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 21 Aug 2015, Christopher S. Hall wrote:
-> From: Christopher Hall <christopher.s.hall@intel.com>
+On Sat, 22 Aug 2015, Richard Cochran wrote:
+> On Sat, Aug 22, 2015 at 10:33:48PM +0200, Thomas Gleixner wrote:
+> > > @@ -196,19 +197,31 @@ long ptp_ioctl(struct posix_clock *pc, unsigned int cmd, unsigned long arg)
+> > >  			break;
+> > >  		}
+> > >  		pct = &sysoff->ts[0];
+> > > -		for (i = 0; i < sysoff->n_samples; i++) {
+> > > -			getnstimeofday64(&ts);
+> > > +		if (ptp->info->getsynctime64 && sysoff->n_samples == 1 &&
+> > 
+> > The number of samples should be irrelevant for this sampling method.
 > 
-> Add getsynctime() PTP device callback to cross timestamp system device
-> 	clock using ART	translation depends on platform being >= SPT
-> 	and having ART
+> Chris had send me a preview of this before he posted, so I can explain
+> that test for one sample.
 > 
-> getsynctime() reads ART (TSC-derived)/device cross timestamp and
-> 	converts to realtime/device time reporting cross timestamp to
-> 	PTP driver
+> User space requests N (1 to 25) samples of the two clocks.  The kernel
+> is supposed to deliver that many samples.  This has always been the
+> documented behavior.  From ptp_clock.h:
+> 
+>   struct ptp_sys_offset {
+> 	unsigned int n_samples; /* Desired number of measurements. */
+> 	unsigned int rsv[3];    /* Reserved for future use. */
+> 	/*
+> 	 * Array of interleaved system/phc time stamps. The kernel
+> 	 * will provide 2*n_samples + 1 time stamps, with the last
+> 	 * one as a system time stamp.
+> 	 */
+> 	struct ptp_clock_time ts[2 * PTP_MAX_SAMPLES + 1];
+>   };
+> 
+> So the kernel cannot simply change n_samples to 1.
+> 
+> I would prefer to have a new system call that compares any two posix
+> clock_t, but that is of course more work.
+> 
+> Allowing n_samples=1 as a special case is a kind of overloading of the
+> ioctl to support the new capability.  At least it preserves the
+> behavior of the interface from the user's perspective.
 
-See patch 1/4
- 
-> index 25a0ad5..228f3f3 100644
-> --- a/drivers/net/ethernet/intel/e1000e/ptp.c
-> +++ b/drivers/net/ethernet/intel/e1000e/ptp.c
-> @@ -25,6 +25,8 @@
->   */
->  
->  #include "e1000.h"
-> +#include <asm/tsc.h>
-> +#include <linux/timekeeping.h>
+So why can't you take N samples from the synced hardware? It does not
+make any sense to me to switch to the imprecise mode if nsamples > 1.
 
-The usual way to order includes is:
-
-#include <linux/timekeeping.h>
-
-#include <asm/tsc.h>
-
-#include "e1000.h"
-
-> +/**
-> + * e1000e_phc_getsynctime - Reads the current time from the hardware clock and
-> + * correlated system time
-> + * @ptp: ptp clock structure
-> + * @devts: timespec structure to hold the current device time value
-> + * @systs: timespec structure to hold the current system time value
-> + *
-> + * Read device and system (ART) clock simultaneously and return the correct
-> + * clock values in ns after converting into a struct timespec.
-> + **/
-> +static int e1000e_phc_getsynctime(struct ptp_clock_info *ptp,
-> +				  struct timespec64 *devts,
-> +				  struct timespec64 *systs)
-> +{
-> +	struct e1000_adapter *adapter = container_of(ptp, struct e1000_adapter,
-> +						     ptp_clock_info);
-> +	unsigned long flags;
-> +	u32 remainder;
-> +	struct correlated_ts art_correlated_ts;
-> +	u64 device_time;
-> +	int ret;
-> +
-> +	art_correlated_ts.get_ts = e1000e_phc_get_ts;
-> +	art_correlated_ts.private = adapter;
-> +	ret = get_correlated_timestamp(&art_correlated_ts,
-> +				       &art_timestamper);
-
-Pointless line break
-
-> +	if (ret != 0)
-> +		goto bail;
-
-What's the purpose of this goto?
-
-       if (ret)
-		return ret;
-
-is completely sufficient.
-
-> +
-> +	systs->tv_sec =
-> +		div_u64_rem(art_correlated_ts.system_real.tv64,
-> +			    NSEC_PER_SEC, &remainder);
-> +	systs->tv_nsec = remainder;
-
-ktime_to_timespec64() perhaps?
-
-And please move that conversion to the ptp ioctl
-
-> +	spin_lock_irqsave(&adapter->systim_lock, flags);
-> +	device_time = timecounter_cyc2time(&adapter->tc,
-> +					   art_correlated_ts.device_ts);
-
-....
-
-> +	/* CPU must have ART and GBe must be from Sunrise Point or greater */
-> +	if (hw->mac.type < e1000_pch_spt || !cpu_has_art)
-> +		adapter->ptp_clock_info.getsynctime64 = NULL;
-
-We do it the other way round. We leave the default NULL and update it
-if we detect the feature.
+You can also provide a new IOCTL PTP_SYS_OFFSET_PRECISE which returns
+-ENOSYS if hardware timestamping is not available and avoid the whole
+nsamples dance for the case where we can get precise timestamps.
 
 Thanks,
 
 	tglx
+
+
