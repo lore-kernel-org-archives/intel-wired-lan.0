@@ -1,44 +1,59 @@
-From: Anjali Singhai Jain <anjali.singhai@intel.com>
-Date: Mon, 24 Aug 2015 13:26:53 -0700
-Subject: [Intel-wired-lan] [PATCH] i40e: Fix a memory leak in X722 rss
-	config path
-Message-ID: <1440448013-196583-1-git-send-email-anjali.singhai@intel.com>
+From: Hall, Christopher S <christopher.s.hall@intel.com>
+Date: Mon, 24 Aug 2015 20:16:51 +0000
+Subject: [Intel-wired-lan] [PATCH v3 3/4] Add support for driver
+ cross-timestamp to PTP_SYS_OFFSET ioctl
+In-Reply-To: <20150823112556.GA8569@localhost.localdomain>
+References: <1440183128-1384-1-git-send-email-christopher.s.hall@intel.com>
+ <1440183128-1384-4-git-send-email-christopher.s.hall@intel.com>
+ <alpine.DEB.2.11.1508222226540.3873@nanos> <20150822211718.GA8561@netboy>
+ <alpine.DEB.2.11.1508231011360.3873@nanos>
+ <20150823112556.GA8569@localhost.localdomain>
+Message-ID: <B79D786B7111A34A8CF09F833429C493A90AD3C6@ORSMSX109.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-In any case free the memory allocated before exiting.
+> -----Original Message-----
+> From: Richard Cochran [mailto:richardcochran at gmail.com]
+> Sent: Sunday, August 23, 2015 4:26 AM
+> To: Thomas Gleixner
+> Cc: Hall, Christopher S; Kirsher, Jeffrey T; hpa at zytor.com;
+> mingo at redhat.com; john.stultz at linaro.org; x86 at kernel.org; linux-
+> kernel at vger.kernel.org; netdev at vger.kernel.org; intel-wired-
+> lan at lists.osuosl.org; peterz at infradead.org
+> Subject: Re: [PATCH v3 3/4] Add support for driver cross-timestamp to
+> PTP_SYS_OFFSET ioctl
+> 
+> On Sun, Aug 23, 2015 at 10:15:00AM +0200, Thomas Gleixner wrote:
+> > So why can't you take N samples from the synced hardware? It does not
+> > make any sense to me to switch to the imprecise mode if nsamples > 1.
+> 
+> Ok, then I prefer to leave this "imprecise" method in place and ...
+> 
+> > You can also provide a new IOCTL PTP_SYS_OFFSET_PRECISE which returns
+> > -ENOSYS if hardware timestamping is not available and avoid the whole
+> > nsamples dance for the case where we can get precise timestamps.
+> 
+> have this for the new way.
+> 
+> By keeping the imprecise method, we will be able to run both methods
+> on the new hardware.  That will help to quantify how imprecise the old
+> method is.
 
-Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+This means: remove code changes from the PTP_SYS_OFFSET ioctl and call getsynctime64() from a new ioctl PTP_SYS_OFFSET_PRECISE.  Right?
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 7b41e1a..c333ad5 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -7475,7 +7475,7 @@ static int i40e_config_rss_aq(struct i40e_vsi *vsi, const u8 *seed)
- 			 "Cannot set RSS key, err %s aq_err %s\n",
- 			 i40e_stat_str(&pf->hw, ret),
- 			 i40e_aq_str(&pf->hw, pf->hw.aq.asq_last_status));
--		return ret;
-+		goto config_rss_aq_out;
- 	}
- 
- 	if (vsi->type == I40E_VSI_MAIN)
-@@ -7489,6 +7489,8 @@ static int i40e_config_rss_aq(struct i40e_vsi *vsi, const u8 *seed)
- 			 i40e_stat_str(&pf->hw, ret),
- 			 i40e_aq_str(&pf->hw, pf->hw.aq.asq_last_status));
- 
-+config_rss_aq_out:
-+	kfree(rss_lut);
- 	return ret;
- }
- 
--- 
-1.8.1.4
+And use the same type (struct ptp_sys_offset) for the new ioctl?  Or should a new simplified struct be used? Such as:
+
+struct precise_ptp_sys_offset {
+	struct ptp_clock_time device;
+	struct ptp_clock_time system;
+};
+
+Does it make sense to keep the "cross-timestamp" capabilities flag as-is?
+
+> 
+> Thanks,
+> Richard
 
