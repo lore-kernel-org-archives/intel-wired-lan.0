@@ -1,59 +1,114 @@
-From: Hall, Christopher S <christopher.s.hall@intel.com>
-Date: Mon, 24 Aug 2015 20:16:51 +0000
-Subject: [Intel-wired-lan] [PATCH v3 3/4] Add support for driver
- cross-timestamp to PTP_SYS_OFFSET ioctl
-In-Reply-To: <20150823112556.GA8569@localhost.localdomain>
-References: <1440183128-1384-1-git-send-email-christopher.s.hall@intel.com>
- <1440183128-1384-4-git-send-email-christopher.s.hall@intel.com>
- <alpine.DEB.2.11.1508222226540.3873@nanos> <20150822211718.GA8561@netboy>
- <alpine.DEB.2.11.1508231011360.3873@nanos>
- <20150823112556.GA8569@localhost.localdomain>
-Message-ID: <B79D786B7111A34A8CF09F833429C493A90AD3C6@ORSMSX109.amr.corp.intel.com>
+From: Anjali Singhai Jain <anjali.singhai@intel.com>
+Date: Mon, 24 Aug 2015 15:04:49 -0700
+Subject: [Intel-wired-lan] [RFC v1 2/4] geneve: Add geneve udp port offload
+	for ethernet devices
+In-Reply-To: <1440453891-214878-1-git-send-email-anjali.singhai@intel.com>
+References: <1440453891-214878-1-git-send-email-anjali.singhai@intel.com>
+Message-ID: <1440453891-214878-2-git-send-email-anjali.singhai@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Richard Cochran [mailto:richardcochran at gmail.com]
-> Sent: Sunday, August 23, 2015 4:26 AM
-> To: Thomas Gleixner
-> Cc: Hall, Christopher S; Kirsher, Jeffrey T; hpa at zytor.com;
-> mingo at redhat.com; john.stultz at linaro.org; x86 at kernel.org; linux-
-> kernel at vger.kernel.org; netdev at vger.kernel.org; intel-wired-
-> lan at lists.osuosl.org; peterz at infradead.org
-> Subject: Re: [PATCH v3 3/4] Add support for driver cross-timestamp to
-> PTP_SYS_OFFSET ioctl
-> 
-> On Sun, Aug 23, 2015 at 10:15:00AM +0200, Thomas Gleixner wrote:
-> > So why can't you take N samples from the synced hardware? It does not
-> > make any sense to me to switch to the imprecise mode if nsamples > 1.
-> 
-> Ok, then I prefer to leave this "imprecise" method in place and ...
-> 
-> > You can also provide a new IOCTL PTP_SYS_OFFSET_PRECISE which returns
-> > -ENOSYS if hardware timestamping is not available and avoid the whole
-> > nsamples dance for the case where we can get precise timestamps.
-> 
-> have this for the new way.
-> 
-> By keeping the imprecise method, we will be able to run both methods
-> on the new hardware.  That will help to quantify how imprecise the old
-> method is.
+Add ndo_ops to add/del UDP ports to a device that supports geneve
+offload.
 
-This means: remove code changes from the PTP_SYS_OFFSET ioctl and call getsynctime64() from a new ioctl PTP_SYS_OFFSET_PRECISE.  Right?
+v2:Added comments for new ndo_ops and minor format fix.
 
-And use the same type (struct ptp_sys_offset) for the new ioctl?  Or should a new simplified struct be used? Such as:
+Signed-off-by: Kiran Patil <kiran.patil@intel.com>
+Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+---
+ include/linux/netdevice.h | 20 +++++++++++++++++++-
+ net/ipv4/geneve_core.c    | 22 ++++++++++++++++++++++
+ 2 files changed, 41 insertions(+), 1 deletion(-)
 
-struct precise_ptp_sys_offset {
-	struct ptp_clock_time device;
-	struct ptp_clock_time system;
-};
-
-Does it make sense to keep the "cross-timestamp" capabilities flag as-is?
-
-> 
-> Thanks,
-> Richard
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index f3bb290..d6f00c7 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -1016,6 +1016,19 @@ typedef u16 (*select_queue_fallback_t)(struct net_device *dev,
+  *	address family that vxlan is not listening to anymore. The operation
+  *	is protected by the vxlan_net->sock_lock.
+  *
++ * void (*ndo_add_geneve_port)(struct net_device *dev,
++ *			      sa_family_t sa_family, __be16 port);
++ *	Called by geneve to notiy a driver about the UDP port and socket
++ *	address family that geneve is listnening to. It is called only when
++ *	a new port starts listening. The operation is protected by the
++ *	geneve_net->sock_lock.
++ *
++ * void (*ndo_del_geneve_port)(struct net_device *dev,
++ *			      sa_family_t sa_family, __be16 port);
++ *	Called by geneve to notify the driver about a UDP port and socket
++ *	address family that geneve is not listening to anymore. The operation
++ *	is protected by the geneve_net->sock_lock.
++ *
+  * void* (*ndo_dfwd_add_station)(struct net_device *pdev,
+  *				 struct net_device *dev)
+  *	Called by upper layer devices to accelerate switching or other
+@@ -1210,7 +1223,12 @@ struct net_device_ops {
+ 	void			(*ndo_del_vxlan_port)(struct  net_device *dev,
+ 						      sa_family_t sa_family,
+ 						      __be16 port);
+-
++	void			(*ndo_add_geneve_port)(struct net_device *dev,
++						      sa_family_t sa_family,
++						      __be16 port);
++	void			(*ndo_del_geneve_port)(struct net_device *dev,
++						      sa_family_t sa_family,
++						      __be16 port);
+ 	void*			(*ndo_dfwd_add_station)(struct net_device *pdev,
+ 							struct net_device *dev);
+ 	void			(*ndo_dfwd_del_station)(struct net_device *pdev,
+diff --git a/net/ipv4/geneve_core.c b/net/ipv4/geneve_core.c
+index 311a4ba..9ea9082 100644
+--- a/net/ipv4/geneve_core.c
++++ b/net/ipv4/geneve_core.c
+@@ -234,8 +234,11 @@ static int geneve_gro_complete(struct sk_buff *skb, int nhoff,
+ 
+ static void geneve_notify_add_rx_port(struct geneve_sock *gs)
+ {
++	struct net_device *dev;
+ 	struct sock *sk = gs->sock->sk;
++	struct net *net = sock_net(sk);
+ 	sa_family_t sa_family = sk->sk_family;
++	__be16 port = inet_sk(sk)->inet_sport;
+ 	int err;
+ 
+ 	if (sa_family == AF_INET) {
+@@ -244,12 +247,31 @@ static void geneve_notify_add_rx_port(struct geneve_sock *gs)
+ 			pr_warn("geneve: udp_add_offload failed with status %d\n",
+ 				err);
+ 	}
++
++	rcu_read_lock();
++	for_each_netdev_rcu(net, dev) {
++		if (dev->netdev_ops->ndo_add_geneve_port)
++			dev->netdev_ops->ndo_add_geneve_port(dev, sa_family,
++							     port);
++	}
++	rcu_read_unlock();
+ }
+ 
+ static void geneve_notify_del_rx_port(struct geneve_sock *gs)
+ {
++	struct net_device *dev;
+ 	struct sock *sk = gs->sock->sk;
++	struct net *net = sock_net(sk);
+ 	sa_family_t sa_family = sk->sk_family;
++	__be16 port = inet_sk(sk)->inet_sport;
++
++	rcu_read_lock();
++	for_each_netdev_rcu(net, dev) {
++		if (dev->netdev_ops->ndo_del_geneve_port)
++			dev->netdev_ops->ndo_del_geneve_port(dev, sa_family,
++							     port);
++	}
++	rcu_read_unlock();
+ 
+ 	if (sa_family == AF_INET)
+ 		udp_del_offload(&gs->udp_offloads);
+-- 
+1.8.1.4
 
