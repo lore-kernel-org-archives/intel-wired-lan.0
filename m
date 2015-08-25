@@ -1,46 +1,55 @@
-From: Jesse Gross <jesse@nicira.com>
-Date: Mon, 24 Aug 2015 17:14:31 -0700
-Subject: [Intel-wired-lan] [RFC v1 2/4] geneve: Add geneve udp port
- offload for ethernet devices
-In-Reply-To: <C40BE8378EF49C44B9184714DBC8EF2992F00BDA@ORSMSX110.amr.corp.intel.com>
-References: <1440453891-214878-1-git-send-email-anjali.singhai@intel.com>
- <1440453891-214878-2-git-send-email-anjali.singhai@intel.com>
- <CAEP_g=-SvqUaaw7BeaTLmkOa=r4_NLy=yzguXSZb6AfecB_fCw@mail.gmail.com>
- <C40BE8378EF49C44B9184714DBC8EF2992F00BDA@ORSMSX110.amr.corp.intel.com>
-Message-ID: <CAEP_g=9umhav1SEBc9j2jwkzjy8zDWGWKaQ8xw1AsvGDY31pfQ@mail.gmail.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Mon, 24 Aug 2015 17:27:24 -0700
+Subject: [Intel-wired-lan] [next-queue v2] fm10k: do not assume VF always
+	has 1 queue
+Message-ID: <1440462444-32504-1-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Thanks!
+It is possible that the PF has not yet assigned resources to the VF.
+Although rare, this could result in the VF attempting to read queues it
+does not own and result in FUM or THI faults in the PF. To prevent this,
+check queue 0 before we continue in init_hw_vf.
 
-On Mon, Aug 24, 2015 at 4:03 PM, Singhai, Anjali
-<anjali.singhai@intel.com> wrote:
-> Sorry my bad. I meant to send the patch series to Netdev for further review feedback as you had suggested in the mean while but ended up resending here.
-> V2 of the patches are on the way with your feedback.
->
-> Thanks
-> Anjali
->
->> -----Original Message-----
->> From: Jesse Gross [mailto:jesse at nicira.com]
->> Sent: Monday, August 24, 2015 4:00 PM
->> To: Singhai, Anjali
->> Cc: intel-wired-lan
->> Subject: Re: [Intel-wired-lan] [RFC v1 2/4] geneve: Add geneve udp port
->> offload for ethernet devices
->>
->> On Mon, Aug 24, 2015 at 3:04 PM, Anjali Singhai Jain
->> <anjali.singhai@intel.com> wrote:
->> > Add ndo_ops to add/del UDP ports to a device that supports geneve
->> > offload.
->> >
->> > v2:Added comments for new ndo_ops and minor format fix.
->> >
->> > Signed-off-by: Kiran Patil <kiran.patil@intel.com>
->> > Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
->>
->> I'm a little confused - what happened to the comments on this patch and
->> patch 4?
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ drivers/net/ethernet/intel/fm10k/fm10k_type.h | 1 +
+ drivers/net/ethernet/intel/fm10k/fm10k_vf.c   | 7 ++++++-
+ 2 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_type.h b/drivers/net/ethernet/intel/fm10k/fm10k_type.h
+index 318a212f0a78..35afd711d144 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_type.h
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_type.h
+@@ -77,6 +77,7 @@ struct fm10k_hw;
+ #define FM10K_PCIE_SRIOV_CTRL_VFARI		0x10
+ 
+ #define FM10K_ERR_PARAM				-2
++#define FM10K_ERR_NO_RESOURCES			-3
+ #define FM10K_ERR_REQUESTS_PENDING		-4
+ #define FM10K_ERR_RESET_REQUESTED		-5
+ #define FM10K_ERR_DMA_PENDING			-6
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_vf.c b/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
+index 36c8b0aa08fd..3a18ef1cc017 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
+@@ -103,7 +103,12 @@ static s32 fm10k_init_hw_vf(struct fm10k_hw *hw)
+ 	s32 err;
+ 	u16 i;
+ 
+-	/* assume we always have at least 1 queue */
++	/* verify we have at least 1 queue */
++	if (!~fm10k_read_reg(hw, FM10K_TXQCTL(0)) ||
++	    !~fm10k_read_reg(hw, FM10K_RXQCTL(0)))
++		return FM10K_ERR_NO_RESOURCES;
++
++	/* determine how many queues we have */
+ 	for (i = 1; tqdloc0 && (i < FM10K_MAX_QUEUES_POOL); i++) {
+ 		/* verify the Descriptor cache offsets are increasing */
+ 		tqdloc = ~fm10k_read_reg(hw, FM10K_TQDLOC(i));
+-- 
+2.5.0.280.g4aaba03
+
