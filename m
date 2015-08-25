@@ -1,42 +1,117 @@
-From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Mon, 24 Aug 2015 18:08:31 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: disable LRO by default
-Message-ID: <20150825010831.13553.53705.stgit@localhost6.localdomain6>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 25 Aug 2015 10:37:33 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ 771518867d61de03e8abeb39ad1dcd134aa4d066 BUILD SUCCESS
+Message-ID: <55dbd4ed.HpIM5IjgQsFNvBTm%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch disables LRO by default in favor of GRO.
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+771518867d61de03e8abeb39ad1dcd134aa4d066  i40e: Set defport behavior for the Main VSI when in promiscuous mode
 
-LRO is incompatible with forwarding and is disabled when forwarding
-is turned on which makes the default offloads of the driver
-inconsistent. LRO can still be enabled via ethtool.
+elapsed time: 74m
 
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    2 --
- 1 file changed, 2 deletions(-)
+configs tested: 96
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 756f3a9..a2d2564 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -5307,7 +5307,6 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter)
- 	rss = min_t(int, ixgbe_max_rss_indices(adapter), num_online_cpus());
- 	adapter->ring_feature[RING_F_RSS].limit = rss;
- 	adapter->flags2 |= IXGBE_FLAG2_RSC_CAPABLE;
--	adapter->flags2 |= IXGBE_FLAG2_RSC_ENABLED;
- 	adapter->max_q_vectors = MAX_Q_VECTORS_82599;
- 	adapter->atr_sample_rate = 20;
- 	fdir = min_t(int, IXGBE_MAX_FDIR_INDICES, num_online_cpus());
-@@ -5333,7 +5332,6 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter)
- 	switch (hw->mac.type) {
- 	case ixgbe_mac_82598EB:
- 		adapter->flags2 &= ~IXGBE_FLAG2_RSC_CAPABLE;
--		adapter->flags2 &= ~IXGBE_FLAG2_RSC_ENABLED;
- 
- 		if (hw->device_id == IXGBE_DEV_ID_82598AT)
- 			adapter->flags |= IXGBE_FLAG_FAN_FAIL_CAPABLE;
+parisc                        c3000_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+i386                     randconfig-a0-201534
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+x86_64                            allnoconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             allmodconfig
+i386                             alldefconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+x86_64                   randconfig-i0-201534
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                     randconfig-i1-201534
+i386                     randconfig-i0-201534
+x86_64                           allmodconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n1-201534
+i386                     randconfig-n0-201534
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+arm                                    sa1100
+arm                          prima2_defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                                   samsung
+arm                       spear13xx_defconfig
+arm                                  iop-adma
+arm                       imx_v6_v7_defconfig
+arm                          marzen_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                                        sh
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                          amiga_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                 randconfig-x004-201534
+x86_64                 randconfig-x001-201534
+x86_64                 randconfig-x000-201534
+x86_64                 randconfig-x006-201534
+x86_64                 randconfig-x003-201534
+x86_64                 randconfig-x002-201534
+x86_64                 randconfig-x005-201534
+x86_64                 randconfig-x009-201534
+x86_64                 randconfig-x007-201534
+x86_64                 randconfig-x008-201534
+i386                     randconfig-r0-201534
+i386                   randconfig-x000-201534
+i386                   randconfig-x001-201534
+i386                   randconfig-x008-201534
+i386                   randconfig-x004-201534
+i386                   randconfig-x007-201534
+i386                   randconfig-x005-201534
+i386                   randconfig-x003-201534
+i386                   randconfig-x002-201534
+i386                   randconfig-x009-201534
+i386                   randconfig-x006-201534
+mips                                   jz4740
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
 
+Thanks,
+Fengguang
