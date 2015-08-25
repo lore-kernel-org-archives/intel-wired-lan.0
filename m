@@ -1,41 +1,36 @@
-From: Singhai, Anjali <anjali.singhai@intel.com>
-Date: Mon, 24 Aug 2015 23:03:00 +0000
-Subject: [Intel-wired-lan] [RFC v1 2/4] geneve: Add geneve udp port
- offload for ethernet devices
-In-Reply-To: <CAEP_g=-SvqUaaw7BeaTLmkOa=r4_NLy=yzguXSZb6AfecB_fCw@mail.gmail.com>
-References: <1440453891-214878-1-git-send-email-anjali.singhai@intel.com>
- <1440453891-214878-2-git-send-email-anjali.singhai@intel.com>
- <CAEP_g=-SvqUaaw7BeaTLmkOa=r4_NLy=yzguXSZb6AfecB_fCw@mail.gmail.com>
-Message-ID: <C40BE8378EF49C44B9184714DBC8EF2992F00BDA@ORSMSX110.amr.corp.intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Mon, 24 Aug 2015 17:02:00 -0700
+Subject: [Intel-wired-lan] [next-queue] fm10k: do not use enum as boolean
+In-Reply-To: <1440460921-28318-1-git-send-email-jacob.e.keller@intel.com>
+References: <1440460921-28318-1-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1440460921-28318-3-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Sorry my bad. I meant to send the patch series to Netdev for further review feedback as you had suggested in the mean while but ended up resending here.
-V2 of the patches are on the way with your feedback.
+Check for actual value NETREG_UNINITIALIZED in case it ever changes from
+the current value of zero.
 
-Thanks
-Anjali
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+---
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> -----Original Message-----
-> From: Jesse Gross [mailto:jesse at nicira.com]
-> Sent: Monday, August 24, 2015 4:00 PM
-> To: Singhai, Anjali
-> Cc: intel-wired-lan
-> Subject: Re: [Intel-wired-lan] [RFC v1 2/4] geneve: Add geneve udp port
-> offload for ethernet devices
-> 
-> On Mon, Aug 24, 2015 at 3:04 PM, Anjali Singhai Jain
-> <anjali.singhai@intel.com> wrote:
-> > Add ndo_ops to add/del UDP ports to a device that supports geneve
-> > offload.
-> >
-> > v2:Added comments for new ndo_ops and minor format fix.
-> >
-> > Signed-off-by: Kiran Patil <kiran.patil@intel.com>
-> > Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-> 
-> I'm a little confused - what happened to the comments on this patch and
-> patch 4?
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+index cb5e3150048b..000f2b5ab3e5 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+@@ -1905,7 +1905,7 @@ static void fm10k_init_reta(struct fm10k_intfc *interface)
+ 	u32 reta, base;
+ 
+ 	/* If the netdev is initialized we have to maintain table if possible */
+-	if (interface->netdev->reg_state) {
++	if (interface->netdev->reg_state != NETREG_UNINITIALIZED) {
+ 		for (i = FM10K_RETA_SIZE; i--;) {
+ 			reta = interface->reta[i];
+ 			if ((((reta << 24) >> 24) < rss_i) &&
+-- 
+2.5.0.280.g4aaba03
+
