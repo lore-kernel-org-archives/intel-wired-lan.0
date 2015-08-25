@@ -1,36 +1,44 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon, 24 Aug 2015 17:02:00 -0700
-Subject: [Intel-wired-lan] [next-queue] fm10k: do not use enum as boolean
+Date: Mon, 24 Aug 2015 17:02:01 -0700
+Subject: [Intel-wired-lan] [next-queue] fm10k: do not assume VF always has 1
+	queue
 In-Reply-To: <1440460921-28318-1-git-send-email-jacob.e.keller@intel.com>
 References: <1440460921-28318-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1440460921-28318-3-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1440460921-28318-4-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Check for actual value NETREG_UNINITIALIZED in case it ever changes from
-the current value of zero.
+It is possible that the PF has not yet assigned resources to the VF.
+Although rare, this could result in the VF attempting to read queues it
+does not own and result in FUM or THI faults in the PF. To prevent this,
+check queue 0 before we continue in init_hw_vf.
 
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_vf.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index cb5e3150048b..000f2b5ab3e5 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -1905,7 +1905,7 @@ static void fm10k_init_reta(struct fm10k_intfc *interface)
- 	u32 reta, base;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_vf.c b/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
+index 36c8b0aa08fd..4d1da54a061b 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
+@@ -103,7 +103,12 @@ static s32 fm10k_init_hw_vf(struct fm10k_hw *hw)
+ 	s32 err;
+ 	u16 i;
  
- 	/* If the netdev is initialized we have to maintain table if possible */
--	if (interface->netdev->reg_state) {
-+	if (interface->netdev->reg_state != NETREG_UNINITIALIZED) {
- 		for (i = FM10K_RETA_SIZE; i--;) {
- 			reta = interface->reta[i];
- 			if ((((reta << 24) >> 24) < rss_i) &&
+-	/* assume we always have at least 1 queue */
++	/* verify we have at least 1 queue */
++	if (!~FM10K_READ_REG(hw, FM10K_TXQCTL(0)) ||
++	    !~FM10K_READ_REG(hw, FM10K_RXQCTL(0)))
++		return FM10K_ERR_NO_RESOURCES;
++
++	/* determine how many queues we have */
+ 	for (i = 1; tqdloc0 && (i < FM10K_MAX_QUEUES_POOL); i++) {
+ 		/* verify the Descriptor cache offsets are increasing */
+ 		tqdloc = ~fm10k_read_reg(hw, FM10K_TQDLOC(i));
 -- 
 2.5.0.280.g4aaba03
 
