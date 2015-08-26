@@ -1,10 +1,10 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Wed, 26 Aug 2015 15:14:11 -0400
-Subject: [Intel-wired-lan] [next PATCH S11 05/15] i40e/i40evf: fix a
-	potential type compare issue
+Date: Wed, 26 Aug 2015 15:14:12 -0400
+Subject: [Intel-wired-lan] [next PATCH S11 06/15] i40e: fix bad CEE status
+	shift value
 In-Reply-To: <1440616461-110869-1-git-send-email-catherine.sullivan@intel.com>
 References: <1440616461-110869-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1440616461-110869-6-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1440616461-110869-7-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,45 +13,36 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Shannon Nelson <shannon.nelson@intel.com>
 
-Rework an if expression to assure there is no type compare problem between
-a size and a possible negative number.
+Fix a shift value that was wrong, ending up with a bad bitmask.  Also add
+a blank line between two sets of #defines for better readability.
 
-Reported-by: Helin Zhang <helin.zhang@intel.com>
 Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-Change-ID: I4921fcc96abfcf69490efce020a9e4007f251c99
+Change-ID: I3e41fa2a2ab904d3a4e6cbf13972ab0036a10601
 ---
- drivers/net/ethernet/intel/i40e/i40e_adminq.h   | 3 +--
- drivers/net/ethernet/intel/i40evf/i40e_adminq.h | 3 +--
- 2 files changed, 2 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.h b/drivers/net/ethernet/intel/i40e/i40e_adminq.h
-index 299e3d3..fa5c2cd 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.h
-@@ -143,8 +143,7 @@ static inline int i40e_aq_rc_to_posix(int aq_ret, int aq_rc)
- 	if (aq_ret == I40E_ERR_ADMIN_QUEUE_TIMEOUT)
- 		return -EAGAIN;
- 
--	if (aq_rc >= (sizeof(aq_to_posix) / sizeof((aq_to_posix)[0])) ||
--	    aq_rc < 0)
-+	if (!((u32)aq_rc < (sizeof(aq_to_posix) / sizeof((aq_to_posix)[0]))))
- 		return -ERANGE;
- 
- 	return aq_to_posix[aq_rc];
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
-index c4efa6b..81f9ffa 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
-@@ -143,8 +143,7 @@ static inline int i40e_aq_rc_to_posix(int aq_ret, int aq_rc)
- 	if (aq_ret == I40E_ERR_ADMIN_QUEUE_TIMEOUT)
- 		return -EAGAIN;
- 
--	if (aq_rc >= (sizeof(aq_to_posix) / sizeof((aq_to_posix)[0])) ||
--	    aq_rc < 0)
-+	if (!((u32)aq_rc < (sizeof(aq_to_posix) / sizeof((aq_to_posix)[0]))))
- 		return -ERANGE;
- 
- 	return aq_to_posix[aq_rc];
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+index b840fab..785b3db 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+@@ -2062,6 +2062,7 @@ I40E_CHECK_CMD_LENGTH(i40e_aqc_lldp_start);
+ #define I40E_AQC_CEE_APP_ISCSI_MASK	(0x7 << I40E_AQC_CEE_APP_ISCSI_SHIFT)
+ #define I40E_AQC_CEE_APP_FIP_SHIFT	0x8
+ #define I40E_AQC_CEE_APP_FIP_MASK	(0x7 << I40E_AQC_CEE_APP_FIP_SHIFT)
++
+ #define I40E_AQC_CEE_PG_STATUS_SHIFT	0x0
+ #define I40E_AQC_CEE_PG_STATUS_MASK	(0x7 << I40E_AQC_CEE_PG_STATUS_SHIFT)
+ #define I40E_AQC_CEE_PFC_STATUS_SHIFT	0x3
+@@ -2070,7 +2071,7 @@ I40E_CHECK_CMD_LENGTH(i40e_aqc_lldp_start);
+ #define I40E_AQC_CEE_APP_STATUS_MASK	(0x7 << I40E_AQC_CEE_APP_STATUS_SHIFT)
+ #define I40E_AQC_CEE_FCOE_STATUS_SHIFT	0x8
+ #define I40E_AQC_CEE_FCOE_STATUS_MASK	(0x7 << I40E_AQC_CEE_FCOE_STATUS_SHIFT)
+-#define I40E_AQC_CEE_ISCSI_STATUS_SHIFT	0xA
++#define I40E_AQC_CEE_ISCSI_STATUS_SHIFT	0xB
+ #define I40E_AQC_CEE_ISCSI_STATUS_MASK	(0x7 << I40E_AQC_CEE_ISCSI_STATUS_SHIFT)
+ #define I40E_AQC_CEE_FIP_STATUS_SHIFT	0x10
+ #define I40E_AQC_CEE_FIP_STATUS_MASK	(0x7 << I40E_AQC_CEE_FIP_STATUS_SHIFT)
 -- 
 1.9.3
 
