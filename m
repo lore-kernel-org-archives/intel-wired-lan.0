@@ -1,116 +1,138 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Wed, 26 Aug 2015 14:10:27 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Remove CS4227 diagnostic code
-Message-ID: <20150826211027.8036.22581.stgit@mdrustad-wks.jf.intel.com>
+Date: Wed, 26 Aug 2015 14:10:33 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Add KR mode support for CS4227 chip
+Message-ID: <20150826211032.8036.14838.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Testing has now shown that the diagnostic code used with the CS4227
-is no longer needed, so remove it.
+KR auto-neg mode is what we will be using going forward. The SW
+interface for this mode is different that what was used for iXFI.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   79 -------------------------
- 1 file changed, 79 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   89 +++++++++++++++++--------
+ 1 file changed, 62 insertions(+), 27 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index 028e35a5022b..d0e8a6a41721 100644
+index d0e8a6a41721..6731ee9cd550 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -83,78 +83,6 @@ static s32 ixgbe_write_cs4227(struct ixgbe_hw *hw, u16 reg, u16 value)
+@@ -26,6 +26,8 @@
+ #include "ixgbe_common.h"
+ #include "ixgbe_phy.h"
+ 
++static s32 ixgbe_setup_kr_speed_x550em(struct ixgbe_hw *, ixgbe_link_speed);
++
+ static s32 ixgbe_get_invariants_X550_x(struct ixgbe_hw *hw)
+ {
+ 	struct ixgbe_mac_info *mac = &hw->mac;
+@@ -1169,31 +1171,71 @@ ixgbe_setup_mac_link_sfp_x550em(struct ixgbe_hw *hw,
+ 	if (status)
+ 		return status;
+ 
+-	/* Configure CS4227 LINE side to 10G SR. */
+-	slice = IXGBE_CS4227_LINE_SPARE22_MSB + (hw->bus.lan_id << 12);
+-	value = IXGBE_CS4227_SPEED_10G;
+-	status = ixgbe_write_i2c_combined_generic(hw, IXGBE_CS4227, slice,
+-						  value);
+-
+-	/* Configure CS4227 for HOST connection rate then type. */
+-	slice = IXGBE_CS4227_HOST_SPARE22_MSB + (hw->bus.lan_id << 12);
+-	value = speed & IXGBE_LINK_SPEED_10GB_FULL ?
+-		IXGBE_CS4227_SPEED_10G : IXGBE_CS4227_SPEED_1G;
+-	status = ixgbe_write_i2c_combined_generic(hw, IXGBE_CS4227, slice,
+-						  value);
++	if (!(hw->phy.nw_mng_if_sel & IXGBE_NW_MNG_IF_SEL_INT_PHY_MODE)) {
++		/* Configure CS4227 LINE side to 10G SR. */
++		slice = IXGBE_CS4227_LINE_SPARE22_MSB + (hw->bus.lan_id << 12);
++		value = IXGBE_CS4227_SPEED_10G;
++		status = ixgbe_write_i2c_combined_generic(hw, IXGBE_CS4227,
++							  slice, value);
++		if (status)
++			goto i2c_err;
+ 
+-	slice = IXGBE_CS4227_HOST_SPARE24_LSB + (hw->bus.lan_id << 12);
+-	if (setup_linear)
+-		value = (IXGBE_CS4227_EDC_MODE_CX1 << 1) | 1;
+-	else
++		slice = IXGBE_CS4227_LINE_SPARE24_LSB + (hw->bus.lan_id << 12);
+ 		value = (IXGBE_CS4227_EDC_MODE_SR << 1) | 1;
+-	status = ixgbe_write_i2c_combined_generic(hw, IXGBE_CS4227, slice,
+-						  value);
++		status = ixgbe_write_i2c_combined_generic(hw, IXGBE_CS4227,
++							  slice, value);
++		if (status)
++			goto i2c_err;
++
++		/* Configure CS4227 for HOST connection rate then type. */
++		slice = IXGBE_CS4227_HOST_SPARE22_MSB + (hw->bus.lan_id << 12);
++		value = speed & IXGBE_LINK_SPEED_10GB_FULL ?
++			IXGBE_CS4227_SPEED_10G : IXGBE_CS4227_SPEED_1G;
++		status = ixgbe_write_i2c_combined_generic(hw, IXGBE_CS4227,
++							  slice, value);
++		if (status)
++			goto i2c_err;
+ 
+-	/* If internal link mode is XFI, then setup XFI internal link. */
+-	if (!(hw->phy.nw_mng_if_sel & IXGBE_NW_MNG_IF_SEL_INT_PHY_MODE))
++		slice = IXGBE_CS4227_HOST_SPARE24_LSB + (hw->bus.lan_id << 12);
++		if (setup_linear)
++			value = (IXGBE_CS4227_EDC_MODE_CX1 << 1) | 1;
++		else
++			value = (IXGBE_CS4227_EDC_MODE_SR << 1) | 1;
++		status = ixgbe_write_i2c_combined_generic(hw, IXGBE_CS4227,
++							  slice, value);
++		if (status)
++			goto i2c_err;
++
++		/* Setup XFI internal link. */
+ 		status = ixgbe_setup_ixfi_x550em(hw, &speed);
++		if (status) {
++			hw_dbg(hw, "setup_ixfi failed with %d\n", status);
++			return status;
++		}
++	} else {
++		/* Configure internal PHY for KR/KX. */
++		status = ixgbe_setup_kr_speed_x550em(hw, speed);
++		if (status) {
++			hw_dbg(hw, "setup_kr_speed failed with %d\n", status);
++			return status;
++		}
++
++		/* Configure CS4227 LINE side to proper mode. */
++		slice = IXGBE_CS4227_LINE_SPARE24_LSB + (hw->bus.lan_id << 12);
++		if (setup_linear)
++			value = (IXGBE_CS4227_EDC_MODE_CX1 << 1) | 1;
++		else
++			value = (IXGBE_CS4227_EDC_MODE_SR << 1) | 1;
++		status = ixgbe_write_i2c_combined_generic(hw, IXGBE_CS4227,
++							  slice, value);
++		if (status)
++			goto i2c_err;
++	}
+ 
++	return 0;
++
++i2c_err:
++	hw_dbg(hw, "combined i2c access failed with %d\n", status);
+ 	return status;
  }
  
- /**
-- * ixgbe_check_cs4227_reg - Perform diag on a CS4227 register
-- * @hw: pointer to hardware structure
-- * @reg: the register to check
-- *
-- * Performs a diagnostic on a register in the CS4227 chip. Returns an error
-- * if it is not operating correctly.
-- * This function assumes that the caller has acquired the proper semaphore.
-- */
--static s32 ixgbe_check_cs4227_reg(struct ixgbe_hw *hw, u16 reg)
--{
--	s32 status;
--	u32 retry;
--	u16 reg_val;
+@@ -1894,13 +1936,6 @@ static s32 ixgbe_init_phy_ops_X550em(struct ixgbe_hw *hw)
+ 		 * to determine internal PHY mode.
+ 		 */
+ 		phy->nw_mng_if_sel = IXGBE_READ_REG(hw, IXGBE_NW_MNG_IF_SEL);
 -
--	reg_val = (IXGBE_CS4227_EDC_MODE_DIAG << 1) | 1;
--	status = ixgbe_write_cs4227(hw, reg, reg_val);
--	if (status)
--		return status;
--	for (retry = 0; retry < IXGBE_CS4227_RETRIES; retry++) {
--		msleep(IXGBE_CS4227_CHECK_DELAY);
--		reg_val = 0xFFFF;
--		ixgbe_read_cs4227(hw, reg, &reg_val);
--		if (!reg_val)
--			break;
--	}
--	if (reg_val) {
--		hw_err(hw, "CS4227 reg 0x%04X failed diagnostic\n", reg);
--		return status;
--	}
--
--	return 0;
--}
--
--/** ixgbe_get_cs4227_status - Return CS4227 status
-- * @hw: pointer to hardware structure
-- *
-- * Performs a diagnostic on the CS4227 chip. Returns an error if it is
-- * not operating correctly.
-- * This function assumes that the caller has acquired the proper semaphore.
-- */
--static s32 ixgbe_get_cs4227_status(struct ixgbe_hw *hw)
--{
--	s32 status;
--	u16 value = 0;
--
--	/* Exit if the diagnostic has already been performed. */
--	status = ixgbe_read_cs4227(hw, IXGBE_CS4227_SCRATCH, &value);
--	if (status)
--		return status;
--	if (value == IXGBE_CS4227_RESET_COMPLETE)
--		return 0;
--
--	/* Check port 0. */
--	status = ixgbe_check_cs4227_reg(hw, IXGBE_CS4227_LINE_SPARE24_LSB);
--	if (status)
--		return status;
--
--	status = ixgbe_check_cs4227_reg(hw, IXGBE_CS4227_HOST_SPARE24_LSB);
--	if (status)
--		return status;
--
--	/* Check port 1. */
--	status = ixgbe_check_cs4227_reg(hw, IXGBE_CS4227_LINE_SPARE24_LSB +
--					(1 << 12));
--	if (status)
--		return status;
--
--	return ixgbe_check_cs4227_reg(hw, IXGBE_CS4227_HOST_SPARE24_LSB +
--				      (1 << 12));
--}
--
--/**
-  * ixgbe_read_pe - Read register from port expander
-  * @hw: pointer to hardware structure
-  * @reg: register number to read
-@@ -320,13 +248,6 @@ static void ixgbe_check_cs4227(struct ixgbe_hw *hw)
- 		return;
+-		/* If internal PHY mode is KR, then initialize KR link */
+-		if (phy->nw_mng_if_sel & IXGBE_NW_MNG_IF_SEL_INT_PHY_MODE) {
+-			speed = IXGBE_LINK_SPEED_10GB_FULL |
+-				IXGBE_LINK_SPEED_1GB_FULL;
+-			ret_val = ixgbe_setup_kr_speed_x550em(hw, speed);
+-		}
  	}
  
--	/* Is the CS4227 working correctly? */
--	status = ixgbe_get_cs4227_status(hw);
--	if (status) {
--		hw_err(hw, "CS4227 status failed: %d", status);
--		goto out;
--	}
--
- 	/* Record completion for next time. */
- 	status = ixgbe_write_cs4227(hw, IXGBE_CS4227_SCRATCH,
- 				    IXGBE_CS4227_RESET_COMPLETE);
+ 	/* Identify the PHY or SFP module */
 
