@@ -1,48 +1,116 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Wed, 26 Aug 2015 14:10:22 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix CS4227-related semaphore error
-	on reset failure
-Message-ID: <20150826211022.8036.69298.stgit@mdrustad-wks.jf.intel.com>
+Date: Wed, 26 Aug 2015 14:10:27 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Remove CS4227 diagnostic code
+Message-ID: <20150826211027.8036.22581.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-If the reset never completes, it is necessary to retake the
-semaphore before returning, because the caller will release
-the semaphore.
+Testing has now shown that the diagnostic code used with the CS4227
+is no longer needed, so remove it.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |    9 +++++++++
- 1 file changed, 9 insertions(+)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   79 -------------------------
+ 1 file changed, 79 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index 6a31bc4ca5e4..028e35a5022b 100644
+index 028e35a5022b..d0e8a6a41721 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -193,6 +193,7 @@ static s32 ixgbe_write_pe(struct ixgbe_hw *hw, u8 reg, u8 value)
- /** ixgbe_reset_cs4227 - Reset CS4227 using port expander
-  * @hw: pointer to hardware structure
-  *
-+ * This function assumes that the caller has acquired the proper semaphore.
-  * Returns error code
-  */
- static s32 ixgbe_reset_cs4227(struct ixgbe_hw *hw)
-@@ -290,6 +291,14 @@ static void ixgbe_check_cs4227(struct ixgbe_hw *hw)
- 		hw->mac.ops.release_swfw_sync(hw, swfw_mask);
- 		msleep(IXGBE_CS4227_CHECK_DELAY);
- 	}
-+	/* If still pending, assume other instance failed. */
-+	if (retry == IXGBE_CS4227_RETRIES) {
-+		status = hw->mac.ops.acquire_swfw_sync(hw, swfw_mask);
-+		if (status) {
-+			hw_err(hw, "semaphore failed with %d\n", status);
-+			return;
-+		}
-+	}
+@@ -83,78 +83,6 @@ static s32 ixgbe_write_cs4227(struct ixgbe_hw *hw, u16 reg, u16 value)
+ }
  
- 	/* Reset the CS4227. */
- 	status = ixgbe_reset_cs4227(hw);
+ /**
+- * ixgbe_check_cs4227_reg - Perform diag on a CS4227 register
+- * @hw: pointer to hardware structure
+- * @reg: the register to check
+- *
+- * Performs a diagnostic on a register in the CS4227 chip. Returns an error
+- * if it is not operating correctly.
+- * This function assumes that the caller has acquired the proper semaphore.
+- */
+-static s32 ixgbe_check_cs4227_reg(struct ixgbe_hw *hw, u16 reg)
+-{
+-	s32 status;
+-	u32 retry;
+-	u16 reg_val;
+-
+-	reg_val = (IXGBE_CS4227_EDC_MODE_DIAG << 1) | 1;
+-	status = ixgbe_write_cs4227(hw, reg, reg_val);
+-	if (status)
+-		return status;
+-	for (retry = 0; retry < IXGBE_CS4227_RETRIES; retry++) {
+-		msleep(IXGBE_CS4227_CHECK_DELAY);
+-		reg_val = 0xFFFF;
+-		ixgbe_read_cs4227(hw, reg, &reg_val);
+-		if (!reg_val)
+-			break;
+-	}
+-	if (reg_val) {
+-		hw_err(hw, "CS4227 reg 0x%04X failed diagnostic\n", reg);
+-		return status;
+-	}
+-
+-	return 0;
+-}
+-
+-/** ixgbe_get_cs4227_status - Return CS4227 status
+- * @hw: pointer to hardware structure
+- *
+- * Performs a diagnostic on the CS4227 chip. Returns an error if it is
+- * not operating correctly.
+- * This function assumes that the caller has acquired the proper semaphore.
+- */
+-static s32 ixgbe_get_cs4227_status(struct ixgbe_hw *hw)
+-{
+-	s32 status;
+-	u16 value = 0;
+-
+-	/* Exit if the diagnostic has already been performed. */
+-	status = ixgbe_read_cs4227(hw, IXGBE_CS4227_SCRATCH, &value);
+-	if (status)
+-		return status;
+-	if (value == IXGBE_CS4227_RESET_COMPLETE)
+-		return 0;
+-
+-	/* Check port 0. */
+-	status = ixgbe_check_cs4227_reg(hw, IXGBE_CS4227_LINE_SPARE24_LSB);
+-	if (status)
+-		return status;
+-
+-	status = ixgbe_check_cs4227_reg(hw, IXGBE_CS4227_HOST_SPARE24_LSB);
+-	if (status)
+-		return status;
+-
+-	/* Check port 1. */
+-	status = ixgbe_check_cs4227_reg(hw, IXGBE_CS4227_LINE_SPARE24_LSB +
+-					(1 << 12));
+-	if (status)
+-		return status;
+-
+-	return ixgbe_check_cs4227_reg(hw, IXGBE_CS4227_HOST_SPARE24_LSB +
+-				      (1 << 12));
+-}
+-
+-/**
+  * ixgbe_read_pe - Read register from port expander
+  * @hw: pointer to hardware structure
+  * @reg: register number to read
+@@ -320,13 +248,6 @@ static void ixgbe_check_cs4227(struct ixgbe_hw *hw)
+ 		return;
+ 	}
+ 
+-	/* Is the CS4227 working correctly? */
+-	status = ixgbe_get_cs4227_status(hw);
+-	if (status) {
+-		hw_err(hw, "CS4227 status failed: %d", status);
+-		goto out;
+-	}
+-
+ 	/* Record completion for next time. */
+ 	status = ixgbe_write_cs4227(hw, IXGBE_CS4227_SCRATCH,
+ 				    IXGBE_CS4227_RESET_COMPLETE);
 
