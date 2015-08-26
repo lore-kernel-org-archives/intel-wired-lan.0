@@ -1,51 +1,50 @@
-From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Wed, 26 Aug 2015 15:14:21 -0400
-Subject: [Intel-wired-lan] [next PATCH S11 15/15] i40e/i40evf: Bump i40e to
-	1.3.14 and i40evf to 1.3.8
-In-Reply-To: <1440616461-110869-1-git-send-email-catherine.sullivan@intel.com>
-References: <1440616461-110869-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1440616461-110869-16-git-send-email-catherine.sullivan@intel.com>
+From: Sullivan, Catherine <catherine.sullivan@intel.com>
+Date: Wed, 26 Aug 2015 19:21:29 +0000
+Subject: [Intel-wired-lan] [next PATCH S11 00/15] i40e/i40evf updates
+Message-ID: <E8A77B2FB54C194393A5C2A8E3ED1678266EC056@CRSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Bump.
+> Carolyn fixes an interrupt name that was truncated.
+> 
+> Catherine adds a check that will not allow speed get set to 0 in get_settings.
+> 
+> Jesse adds a little endian conversion for the checksum, and fixes up the return
+> value for get_link_status.
+> 
+> Mitch Williams adds a patch to stop VF rings when SR-IOV is disabled.
+> 
+> Paul increases the amount of time we wait for a reset to complete.
+>
+> Shannon enables WoL operation by default, adds driver support for a new
+> device, fixes a potential type compare issue, fixes a CEE status shift value that
+> was incorrect, changes i40e_init_pf_fcoe to a void return, zeros the clean asq
+> status report to get rid of stale errors, removes some __func__ references, and
+> fixes the unicast mac address add.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e.h             |  5 +-
+>  drivers/net/ethernet/intel/i40e/i40e_adminq.c      |  2 +
+>  drivers/net/ethernet/intel/i40e/i40e_adminq.h      |  3 +-
+>  drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |  3 +-
+>  drivers/net/ethernet/intel/i40e/i40e_common.c      |  3 +-
+>  drivers/net/ethernet/intel/i40e/i40e_dcb_nl.c      |  5 +-
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c     |  8 +++
+>  drivers/net/ethernet/intel/i40e/i40e_fcoe.c        | 10 ++--
+>  drivers/net/ethernet/intel/i40e/i40e_main.c        | 65 +++++++++++-----------
+>  drivers/net/ethernet/intel/i40e/i40e_nvm.c         |  4 +-
+>  drivers/net/ethernet/intel/i40e/i40e_type.h        |  1 +
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  5 ++
+>  drivers/net/ethernet/intel/i40evf/i40e_adminq.c    |  2 +
+>  drivers/net/ethernet/intel/i40evf/i40e_adminq.h    |  3 +-
+>  drivers/net/ethernet/intel/i40evf/i40e_common.c    |  1 +
+>  drivers/net/ethernet/intel/i40evf/i40e_type.h      |  1 +
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  2 +-
+>  17 files changed, 70 insertions(+), 53 deletions(-)
+> 
+> --
+> 1.9.3
 
-Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-Change-ID: If10c8aaac70f7ec7cc01509260e65015feba5d36
----
- drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 2b0a5ce..d6ba5f6 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -40,7 +40,7 @@ static const char i40e_driver_string[] =
- 
- #define DRV_VERSION_MAJOR 1
- #define DRV_VERSION_MINOR 3
--#define DRV_VERSION_BUILD 12
-+#define DRV_VERSION_BUILD 14
- #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
- 	     __stringify(DRV_VERSION_MINOR) "." \
- 	     __stringify(DRV_VERSION_BUILD)    DRV_KERN
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index b2d07f2..a98fa20 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -35,7 +35,7 @@ char i40evf_driver_name[] = "i40evf";
- static const char i40evf_driver_string[] =
- 	"Intel(R) XL710/X710 Virtual Function Network Driver";
- 
--#define DRV_VERSION "1.3.6"
-+#define DRV_VERSION "1.3.8"
- const char i40evf_driver_version[] = DRV_VERSION;
- static const char i40evf_copyright[] =
- 	"Copyright (c) 2013 - 2015 Intel Corporation.";
--- 
-1.9.3
-
+Fixing subject to S11
