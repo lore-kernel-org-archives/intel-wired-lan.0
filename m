@@ -1,138 +1,32 @@
-From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Wed, 26 Aug 2015 14:10:33 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Add KR mode support for CS4227 chip
-Message-ID: <20150826211032.8036.14838.stgit@mdrustad-wks.jf.intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 26 Aug 2015 23:45:17 +0000
+Subject: [Intel-wired-lan] [PATCH 1/4] i40e: Remove CONFIG_I40E_VXLAN
+In-Reply-To: <1440096383-8915-1-git-send-email-anjali.singhai@intel.com>
+References: <1440096383-8915-1-git-send-email-anjali.singhai@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0609C5F3@ORSMSX106.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-KR auto-neg mode is what we will be using going forward. The SW
-interface for this mode is different that what was used for iXFI.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Anjali Singhai Jain
+> Sent: Thursday, August 20, 2015 11:46 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH 1/4] i40e: Remove CONFIG_I40E_VXLAN
+> 
+> If the kernel flag CONFIG_VXLAN is true or CONFIG_VXLAN_MODULE is true,
+> enable VXLAN offload in the driver.
+> 
+> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
+> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+> ---
+>  drivers/net/ethernet/intel/Kconfig          | 11 -----------
+>  drivers/net/ethernet/intel/i40e/i40e.h      |  4 ----
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 14 ++++----------
+>  3 files changed, 4 insertions(+), 25 deletions(-)
 
-Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   89 +++++++++++++++++--------
- 1 file changed, 62 insertions(+), 27 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index d0e8a6a41721..6731ee9cd550 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -26,6 +26,8 @@
- #include "ixgbe_common.h"
- #include "ixgbe_phy.h"
- 
-+static s32 ixgbe_setup_kr_speed_x550em(struct ixgbe_hw *, ixgbe_link_speed);
-+
- static s32 ixgbe_get_invariants_X550_x(struct ixgbe_hw *hw)
- {
- 	struct ixgbe_mac_info *mac = &hw->mac;
-@@ -1169,31 +1171,71 @@ ixgbe_setup_mac_link_sfp_x550em(struct ixgbe_hw *hw,
- 	if (status)
- 		return status;
- 
--	/* Configure CS4227 LINE side to 10G SR. */
--	slice = IXGBE_CS4227_LINE_SPARE22_MSB + (hw->bus.lan_id << 12);
--	value = IXGBE_CS4227_SPEED_10G;
--	status = ixgbe_write_i2c_combined_generic(hw, IXGBE_CS4227, slice,
--						  value);
--
--	/* Configure CS4227 for HOST connection rate then type. */
--	slice = IXGBE_CS4227_HOST_SPARE22_MSB + (hw->bus.lan_id << 12);
--	value = speed & IXGBE_LINK_SPEED_10GB_FULL ?
--		IXGBE_CS4227_SPEED_10G : IXGBE_CS4227_SPEED_1G;
--	status = ixgbe_write_i2c_combined_generic(hw, IXGBE_CS4227, slice,
--						  value);
-+	if (!(hw->phy.nw_mng_if_sel & IXGBE_NW_MNG_IF_SEL_INT_PHY_MODE)) {
-+		/* Configure CS4227 LINE side to 10G SR. */
-+		slice = IXGBE_CS4227_LINE_SPARE22_MSB + (hw->bus.lan_id << 12);
-+		value = IXGBE_CS4227_SPEED_10G;
-+		status = ixgbe_write_i2c_combined_generic(hw, IXGBE_CS4227,
-+							  slice, value);
-+		if (status)
-+			goto i2c_err;
- 
--	slice = IXGBE_CS4227_HOST_SPARE24_LSB + (hw->bus.lan_id << 12);
--	if (setup_linear)
--		value = (IXGBE_CS4227_EDC_MODE_CX1 << 1) | 1;
--	else
-+		slice = IXGBE_CS4227_LINE_SPARE24_LSB + (hw->bus.lan_id << 12);
- 		value = (IXGBE_CS4227_EDC_MODE_SR << 1) | 1;
--	status = ixgbe_write_i2c_combined_generic(hw, IXGBE_CS4227, slice,
--						  value);
-+		status = ixgbe_write_i2c_combined_generic(hw, IXGBE_CS4227,
-+							  slice, value);
-+		if (status)
-+			goto i2c_err;
-+
-+		/* Configure CS4227 for HOST connection rate then type. */
-+		slice = IXGBE_CS4227_HOST_SPARE22_MSB + (hw->bus.lan_id << 12);
-+		value = speed & IXGBE_LINK_SPEED_10GB_FULL ?
-+			IXGBE_CS4227_SPEED_10G : IXGBE_CS4227_SPEED_1G;
-+		status = ixgbe_write_i2c_combined_generic(hw, IXGBE_CS4227,
-+							  slice, value);
-+		if (status)
-+			goto i2c_err;
- 
--	/* If internal link mode is XFI, then setup XFI internal link. */
--	if (!(hw->phy.nw_mng_if_sel & IXGBE_NW_MNG_IF_SEL_INT_PHY_MODE))
-+		slice = IXGBE_CS4227_HOST_SPARE24_LSB + (hw->bus.lan_id << 12);
-+		if (setup_linear)
-+			value = (IXGBE_CS4227_EDC_MODE_CX1 << 1) | 1;
-+		else
-+			value = (IXGBE_CS4227_EDC_MODE_SR << 1) | 1;
-+		status = ixgbe_write_i2c_combined_generic(hw, IXGBE_CS4227,
-+							  slice, value);
-+		if (status)
-+			goto i2c_err;
-+
-+		/* Setup XFI internal link. */
- 		status = ixgbe_setup_ixfi_x550em(hw, &speed);
-+		if (status) {
-+			hw_dbg(hw, "setup_ixfi failed with %d\n", status);
-+			return status;
-+		}
-+	} else {
-+		/* Configure internal PHY for KR/KX. */
-+		status = ixgbe_setup_kr_speed_x550em(hw, speed);
-+		if (status) {
-+			hw_dbg(hw, "setup_kr_speed failed with %d\n", status);
-+			return status;
-+		}
-+
-+		/* Configure CS4227 LINE side to proper mode. */
-+		slice = IXGBE_CS4227_LINE_SPARE24_LSB + (hw->bus.lan_id << 12);
-+		if (setup_linear)
-+			value = (IXGBE_CS4227_EDC_MODE_CX1 << 1) | 1;
-+		else
-+			value = (IXGBE_CS4227_EDC_MODE_SR << 1) | 1;
-+		status = ixgbe_write_i2c_combined_generic(hw, IXGBE_CS4227,
-+							  slice, value);
-+		if (status)
-+			goto i2c_err;
-+	}
- 
-+	return 0;
-+
-+i2c_err:
-+	hw_dbg(hw, "combined i2c access failed with %d\n", status);
- 	return status;
- }
- 
-@@ -1894,13 +1936,6 @@ static s32 ixgbe_init_phy_ops_X550em(struct ixgbe_hw *hw)
- 		 * to determine internal PHY mode.
- 		 */
- 		phy->nw_mng_if_sel = IXGBE_READ_REG(hw, IXGBE_NW_MNG_IF_SEL);
--
--		/* If internal PHY mode is KR, then initialize KR link */
--		if (phy->nw_mng_if_sel & IXGBE_NW_MNG_IF_SEL_INT_PHY_MODE) {
--			speed = IXGBE_LINK_SPEED_10GB_FULL |
--				IXGBE_LINK_SPEED_1GB_FULL;
--			ret_val = ixgbe_setup_kr_speed_x550em(hw, speed);
--		}
- 	}
- 
- 	/* Identify the PHY or SFP module */
-
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Present in GIT log, code changes present in tree, will pass traffic when configured, traffic appears as expected in Wireshark.
