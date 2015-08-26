@@ -1,56 +1,49 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Wed, 26 Aug 2015 15:14:08 -0400
-Subject: [Intel-wired-lan] [next PATCH S11 02/15] i40e: enable WoL operation
-	if config bit show WoL capable
-In-Reply-To: <1440616461-110869-1-git-send-email-catherine.sullivan@intel.com>
-References: <1440616461-110869-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1440616461-110869-3-git-send-email-catherine.sullivan@intel.com>
+Date: Wed, 26 Aug 2015 15:14:06 -0400
+Subject: [Intel-wired-lan] [next PATCH S10 00/15] i40e/i40evf updates
+Message-ID: <1440616461-110869-1-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Shannon Nelson <shannon.nelson@intel.com>
+Carolyn fixes an interrupt name that was truncated.
 
-The driver was disabling Wake-on-LAN by default and waiting for the user
-to expressly turn it on.  This patch has the driver turning on WoL from
-the start if enabled in the hardware config, which matches the behavior
-of our other drivers.
+Catherine adds a check that will not allow speed get set to 0 in get_settings.
 
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-Change-ID: I43faedb907f8ba4d1a61b72a7c86072b97af12b1
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+Jesse adds a little endian conversion for the checksum, and fixes up
+the return value for get_link_status.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 7b41e1a..28ab759 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -9876,6 +9876,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	struct i40e_pf *pf;
- 	struct i40e_hw *hw;
- 	static u16 pfs_found;
-+	u16 wol_nvm_bits;
- 	u16 link_status;
- 	int err = 0;
- 	u32 len;
-@@ -10093,8 +10094,12 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	pf->flags |= I40E_FLAG_NEED_LINK_UPDATE;
- 	pf->link_check_timeout = jiffies;
- 
--	/* WoL defaults to disabled */
--	pf->wol_en = false;
-+	/* NVM bit on means WoL disabled for the port */
-+	i40e_read_nvm_word(hw, I40E_SR_NVM_WAKE_ON_LAN, &wol_nvm_bits);
-+	if ((1 << hw->port) & wol_nvm_bits || hw->partition_id != 1)
-+		pf->wol_en = false;
-+	else
-+		pf->wol_en = true;
- 	device_set_wakeup_enable(&pf->pdev->dev, pf->wol_en);
- 
- 	/* set up the main switch operations */
+Mitch Williams adds a patch to stop VF rings when SR-IOV is disabled.
+
+Paul increases the amount of time we wait for a reset to complete.
+
+Shannon enables WoL operation by default, adds driver support for a new device,
+fixes a potential type compare issue, fixes a CEE status shift value that was
+incorrect, changes i40e_init_pf_fcoe to a void return, zeros the clean asq
+status report to get rid of stale errors, removes some __func__ references,
+and fixes the unicast mac address add.
+
+ drivers/net/ethernet/intel/i40e/i40e.h             |  5 +-
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c      |  2 +
+ drivers/net/ethernet/intel/i40e/i40e_adminq.h      |  3 +-
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |  3 +-
+ drivers/net/ethernet/intel/i40e/i40e_common.c      |  3 +-
+ drivers/net/ethernet/intel/i40e/i40e_dcb_nl.c      |  5 +-
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c     |  8 +++
+ drivers/net/ethernet/intel/i40e/i40e_fcoe.c        | 10 ++--
+ drivers/net/ethernet/intel/i40e/i40e_main.c        | 65 +++++++++++-----------
+ drivers/net/ethernet/intel/i40e/i40e_nvm.c         |  4 +-
+ drivers/net/ethernet/intel/i40e/i40e_type.h        |  1 +
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  5 ++
+ drivers/net/ethernet/intel/i40evf/i40e_adminq.c    |  2 +
+ drivers/net/ethernet/intel/i40evf/i40e_adminq.h    |  3 +-
+ drivers/net/ethernet/intel/i40evf/i40e_common.c    |  1 +
+ drivers/net/ethernet/intel/i40evf/i40e_type.h      |  1 +
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  2 +-
+ 17 files changed, 70 insertions(+), 53 deletions(-)
+
 -- 
 1.9.3
 
