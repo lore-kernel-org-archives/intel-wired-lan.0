@@ -1,46 +1,47 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Wed, 26 Aug 2015 15:14:16 -0400
-Subject: [Intel-wired-lan] [next PATCH S11 10/15] i40e: Never let speed get
-	set to 0 in get_settings
+Date: Wed, 26 Aug 2015 15:14:18 -0400
+Subject: [Intel-wired-lan] [next PATCH S11 12/15] i40e: add little endian
+	conversion for checksum
 In-Reply-To: <1440616461-110869-1-git-send-email-catherine.sullivan@intel.com>
 References: <1440616461-110869-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1440616461-110869-11-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1440616461-110869-13-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-In ethtool, there is a possibility of speed getting set to 0
-if advertise is set to 0 (which it is when autoneg is disabled).
-We never want this to happen as the firmware will actually attempt
-to set the speed to 0 sending link down, so add an extra check
-to make sure this doesn't happen.
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-Change-ID: I62e0eeee2cbf043d8e6f5c9c9f0b92794e877f01
+The checksum is not correct on big endian machines so add code to swap it
+correctly.
+
+Signed-off-by: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Change-ID: Ic92b886d172a2cbe49f5d7eee1bc78e447023c7b
 ---
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_nvm.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 928bd5a..930369c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -666,6 +666,13 @@ static int i40e_set_settings(struct net_device *netdev,
- 	    advertise & ADVERTISED_40000baseLR4_Full)
- 		config.link_speed |= I40E_LINK_SPEED_40GB;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
+index 3f2fec9..5475454 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
+@@ -543,11 +543,13 @@ i40e_status i40e_update_nvm_checksum(struct i40e_hw *hw)
+ {
+ 	i40e_status ret_code = 0;
+ 	u16 checksum;
++	__le16 le_sum;
  
-+	/* If speed didn't get set, set it to what it currently is.
-+	 * This is needed because if advertise is 0 (as it is when autoneg
-+	 * is disabled) then speed won't get set.
-+	 */
-+	if (!config.link_speed)
-+		config.link_speed = abilities.link_speed;
-+
- 	if (change || (abilities.link_speed != config.link_speed)) {
- 		/* copy over the rest of the abilities */
- 		config.phy_type = abilities.phy_type;
+ 	ret_code = i40e_calc_nvm_checksum(hw, &checksum);
++	le_sum = cpu_to_le16(checksum);
+ 	if (!ret_code)
+ 		ret_code = i40e_write_nvm_aq(hw, 0x00, I40E_SR_SW_CHECKSUM_WORD,
+-					     1, &checksum, true);
++					     1, &le_sum, true);
+ 
+ 	return ret_code;
+ }
 -- 
 1.9.3
 
