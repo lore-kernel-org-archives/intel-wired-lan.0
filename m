@@ -1,96 +1,92 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Thu, 27 Aug 2015 11:42:38 -0400
-Subject: [Intel-wired-lan] [next PATCH S12 10/15] i40e: Fix for extra Flow
-	Director filter in table after error
+Date: Thu, 27 Aug 2015 11:42:39 -0400
+Subject: [Intel-wired-lan] [next PATCH S12 11/15] i40e: Fix multiple link up
+	messages
 In-Reply-To: <1440690163-128213-1-git-send-email-catherine.sullivan@intel.com>
 References: <1440690163-128213-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1440690163-128213-11-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1440690163-128213-12-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Carolyn Wyborny <carolyn.wyborny@intel.com>
+From: Matt Jared <matthew.a.jared@intel.com>
 
-This patch fixes a problem where the pf's fdir filter table would have an
-entry that the hw was unable to add. This notification happens in the hot
-path, so instead of trying to fix it then, we note the location in the
-failure case and delete it during regular fdir subtask callback. Without
-this patch, a case can occur where an invalid entry gets replayed and a
-valid one is not.
+This patch addresses an issue where multiple link up messages can be logged
+resulting from aq link status timing when link properties are changed (fc,
+speed, etc.); solved by using a single function to handle status printing
+and adding a mechanism to track whether link state (up or down) has
+actually changed.
 
-Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-Change-ID: I67831c183b5d0309876de807cc434809b74c9cb7
+Signed-off-by: Matt Jared <matthew.a.jared@intel.com>
+Change-ID: Ied6ed6e49dc397c77d992adc0bc9ed3767152b9d
 ---
- drivers/net/ethernet/intel/i40e/i40e.h      |  1 +
- drivers/net/ethernet/intel/i40e/i40e_main.c | 14 ++++++++++++++
- drivers/net/ethernet/intel/i40e/i40e_txrx.c |  3 ++-
- 3 files changed, 17 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/i40e/i40e.h         | 2 ++
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 4 ++--
+ drivers/net/ethernet/intel/i40e/i40e_main.c    | 5 ++++-
+ 3 files changed, 8 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index edda619..877fab3 100644
+index 877fab3..672ca75 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -412,6 +412,7 @@ struct i40e_pf {
- 	u32 npar_min_bw;
+@@ -539,6 +539,7 @@ struct i40e_vsi {
+ 	u16 idx;               /* index in pf->vsi[] */
+ 	u16 veb_idx;           /* index of VEB parent */
+ 	struct kobject *kobj;  /* sysfs object */
++	bool current_isup;     /* Sync 'link up' logging */
  
- 	u32 ioremap_len;
-+	u32 fd_inv;
- };
+ 	/* VSI specific handlers */
+ 	irqreturn_t (*irq_handler)(int irq, void *data);
+@@ -793,4 +794,5 @@ int i40e_is_vsi_uplink_mode_veb(struct i40e_vsi *vsi);
+ i40e_status i40e_get_npar_bw_setting(struct i40e_pf *pf);
+ i40e_status i40e_set_npar_bw_setting(struct i40e_pf *pf);
+ i40e_status i40e_commit_npar_bw_setting(struct i40e_pf *pf);
++void i40e_print_link_message(struct i40e_vsi *vsi, bool isup);
+ #endif /* _I40E_H_ */
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index ef471fc..f2b4f8b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -690,7 +690,7 @@ static int i40e_set_settings(struct net_device *netdev,
+ 			/* Tell the OS link is going down, the link will go
+ 			 * back up when fw says it is ready asynchronously
+ 			 */
+-			netdev_info(netdev, "PHY settings change requested, NIC Link is going down.\n");
++			i40e_print_link_message(vsi, false);
+ 			netif_carrier_off(netdev);
+ 			netif_tx_stop_all_queues(netdev);
+ 		}
+@@ -834,7 +834,7 @@ static int i40e_set_pauseparam(struct net_device *netdev,
+ 	/* Tell the OS link is going down, the link will go back up when fw
+ 	 * says it is ready asynchronously
+ 	 */
+-	netdev_info(netdev, "Flow control settings change requested, NIC Link is going down.\n");
++	i40e_print_link_message(vsi, false);
+ 	netif_carrier_off(netdev);
+ 	netif_tx_stop_all_queues(netdev);
  
- struct i40e_mac_filter {
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 34c6796..6cc0fa0 100644
+index 6cc0fa0..73c6d37 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -5404,7 +5404,9 @@ u32 i40e_get_global_fd_count(struct i40e_pf *pf)
-  **/
- void i40e_fdir_check_and_reenable(struct i40e_pf *pf)
+@@ -4627,11 +4627,14 @@ out:
+  * i40e_print_link_message - print link up or down
+  * @vsi: the VSI for which link needs a message
+  */
+-static void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
++void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
  {
-+	struct i40e_fdir_filter *filter;
- 	u32 fcnt_prog, fcnt_avail;
-+	struct hlist_node *node;
+ 	char speed[SPEED_SIZE] = "Unknown";
+ 	char fc[FC_SIZE] = "RX/TX";
  
- 	if (test_bit(__I40E_FD_FLUSH_REQUESTED, &pf->state))
++	if (vsi->current_isup == isup)
++		return;
++	vsi->current_isup = isup;
+ 	if (!isup) {
+ 		netdev_info(vsi->netdev, "NIC Link is Down\n");
  		return;
-@@ -5433,6 +5435,18 @@ void i40e_fdir_check_and_reenable(struct i40e_pf *pf)
- 				dev_info(&pf->pdev->dev, "ATR is being enabled since we have space in the table now\n");
- 		}
- 	}
-+
-+	/* if hw had a problem adding a filter, delete it */
-+	if (pf->fd_inv > 0) {
-+		hlist_for_each_entry_safe(filter, node,
-+					  &pf->fdir_filter_list, fdir_node) {
-+			if (filter->fd_id == pf->fd_inv) {
-+				hlist_del(&filter->fdir_node);
-+				kfree(filter);
-+				pf->fdir_pf_active_filters--;
-+			}
-+		}
-+	}
- }
- 
- #define I40E_MIN_FD_FLUSH_INTERVAL 10
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 79c8f71..4232217 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -465,10 +465,11 @@ static void i40e_fd_handle_status(struct i40e_ring *rx_ring,
- 		I40E_RX_PROG_STATUS_DESC_QW1_ERROR_SHIFT;
- 
- 	if (error == BIT(I40E_RX_PROG_STATUS_DESC_FD_TBL_FULL_SHIFT)) {
-+		pf->fd_inv = le32_to_cpu(rx_desc->wb.qword0.hi_dword.fd_id);
- 		if ((rx_desc->wb.qword0.hi_dword.fd_id != 0) ||
- 		    (I40E_DEBUG_FD & pf->hw.debug_mask))
- 			dev_warn(&pdev->dev, "ntuple filter loc = %d, could not be added\n",
--				 rx_desc->wb.qword0.hi_dword.fd_id);
-+				 pf->fd_inv);
- 
- 		/* Check if the programming error is for ATR.
- 		 * If so, auto disable ATR and set a state for
 -- 
 1.9.3
 
