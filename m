@@ -1,10 +1,10 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Thu, 27 Aug 2015 11:42:31 -0400
-Subject: [Intel-wired-lan] [next PATCH S12 03/15] i40evf: propagate
-	interrupt allocation failure
+Date: Thu, 27 Aug 2015 11:42:32 -0400
+Subject: [Intel-wired-lan] [next PATCH S12 04/15] i40e/i40evf: remove unused
+	opcode
 In-Reply-To: <1440690163-128213-1-git-send-email-catherine.sullivan@intel.com>
 References: <1440690163-128213-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1440690163-128213-4-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1440690163-128213-5-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,33 +13,41 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Mitch Williams <mitch.a.williams@intel.com>
 
-Lower level functions are properly reporting errors, and higher-level
-functions are correctly responding to errors, but the errors aren't
-actually getting through. Typically, the middle-manager function seems
-to want to shield its boss from any bad news.
-
-This change fixes a panic if the driver is unable to enable MSI-X or is
-unable to acquire enough vectors.
+This opcode is not required. VFs that program RSS through the firmware
+do it by interacting directly with the firmware, and do not need to use
+the virtual channel for this functionality.
 
 Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Change-ID: Ifd5787ce92519a5d97e4b465902db930d97b71a1
+Change-ID: Iaf17d2600e28ff1b6be8653f2fe9df1facd23b0e
 ---
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl.h   | 1 -
+ drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h | 1 -
+ 2 files changed, 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index a98fa20..eccf80c 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -1085,7 +1085,7 @@ static int i40evf_set_interrupt_capability(struct i40evf_adapter *adapter)
- 	for (vector = 0; vector < v_budget; vector++)
- 		adapter->msix_entries[vector].entry = vector;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl.h
+index 0f8d415..95d0f8c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl.h
+@@ -81,7 +81,6 @@ enum i40e_virtchnl_ops {
+ 	I40E_VIRTCHNL_OP_GET_STATS = 15,
+ 	I40E_VIRTCHNL_OP_FCOE = 16,
+ 	I40E_VIRTCHNL_OP_EVENT = 17,
+-	I40E_VIRTCHNL_OP_CONFIG_RSS = 18,
+ };
  
--	i40evf_acquire_msix_vectors(adapter, v_budget);
-+	err = i40evf_acquire_msix_vectors(adapter, v_budget);
+ /* Virtual channel message descriptor. This overlays the admin queue
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h b/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h
+index e6db20e..cadda64 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h
+@@ -81,7 +81,6 @@ enum i40e_virtchnl_ops {
+ 	I40E_VIRTCHNL_OP_GET_STATS = 15,
+ 	I40E_VIRTCHNL_OP_FCOE = 16,
+ 	I40E_VIRTCHNL_OP_EVENT = 17,
+-	I40E_VIRTCHNL_OP_CONFIG_RSS = 18,
+ };
  
- out:
- 	adapter->netdev->real_num_tx_queues = pairs;
+ /* Virtual channel message descriptor. This overlays the admin queue
 -- 
 1.9.3
 
