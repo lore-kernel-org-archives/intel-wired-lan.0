@@ -1,155 +1,107 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Thu, 27 Aug 2015 11:42:29 -0400
-Subject: [Intel-wired-lan] [next PATCH S12 01/15] i40e/i40evf: Add a stat to
-	keep track of linearization count
+Date: Thu, 27 Aug 2015 11:42:30 -0400
+Subject: [Intel-wired-lan] [next PATCH S12 02/15] i40e: Additional checks
+	for CEE APP priority validity
 In-Reply-To: <1440690163-128213-1-git-send-email-catherine.sullivan@intel.com>
 References: <1440690163-128213-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1440690163-128213-2-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1440690163-128213-3-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Anjali Singhai Jain <anjali.singhai@intel.com>
+From: Neerav Parikh <neerav.parikh@intel.com>
 
-Keep track of how many times we ask the stack to linearize the
-skb because the HW cannot handle skbs with more than 8 frags per
-segment/single packet.
+The firmware has added additional status information to allow software
+to determine if the APP priority for FCoE/iSCSI/FIP is valid or not in
+CEE DCBX mode.
 
-Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-Change-ID: If455452060963a769bbe6112cba952e79e944b52
+This patch adds to support those additional checks and will only add
+applications to the software table that have oper and sync bits set
+without any error.
+
+Signed-off-by: Neerav Parikh <neerav.parikh@intel.com>
+Change-ID: I0a76c52427dadf97d4dba4538a3068d05e4eb56b
 ---
- drivers/net/ethernet/intel/i40e/i40e.h         | 1 +
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 1 +
- drivers/net/ethernet/intel/i40e/i40e_main.c    | 5 ++++-
- drivers/net/ethernet/intel/i40e/i40e_txrx.c    | 5 +++--
- drivers/net/ethernet/intel/i40e/i40e_txrx.h    | 1 +
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c  | 5 +++--
- drivers/net/ethernet/intel/i40evf/i40e_txrx.h  | 1 +
- 7 files changed, 14 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_dcb.c | 48 ++++++++++++++++++++----------
+ 1 file changed, 33 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 3d4f2e4..73d2e86 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -477,6 +477,7 @@ struct i40e_vsi {
- #endif
- 	u32 tx_restart;
- 	u32 tx_busy;
-+	u64 tx_linearize;
- 	u32 rx_buf_failed;
- 	u32 rx_page_failed;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_dcb.c b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
+index 90de46a..9aee35d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_dcb.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
+@@ -531,37 +531,55 @@ static void i40e_cee_to_dcb_config(
+ 	dcbcfg->pfc.pfcenable = cee_cfg->oper_pfc_en;
+ 	dcbcfg->pfc.pfccap = I40E_MAX_TRAFFIC_CLASS;
  
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 1fa38f6..ffa9431 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -87,6 +87,7 @@ static const struct i40e_stats i40e_gstrings_misc_stats[] = {
- 	I40E_VSI_STAT("rx_broadcast", eth_stats.rx_broadcast),
- 	I40E_VSI_STAT("tx_broadcast", eth_stats.tx_broadcast),
- 	I40E_VSI_STAT("rx_unknown_protocol", eth_stats.rx_unknown_protocol),
-+	I40E_VSI_STAT("tx_linearize", tx_linearize),
- };
- 
- static int i40e_add_fdir_ethtool(struct i40e_vsi *vsi,
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index d6ba5f6..b3328ca 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -796,6 +796,7 @@ static void i40e_update_vsi_stats(struct i40e_vsi *vsi)
- 	u32 rx_page, rx_buf;
- 	u64 bytes, packets;
- 	unsigned int start;
-+	u64 tx_linearize;
- 	u64 rx_p, rx_b;
- 	u64 tx_p, tx_b;
- 	u16 q;
-@@ -814,7 +815,7 @@ static void i40e_update_vsi_stats(struct i40e_vsi *vsi)
- 	 */
- 	rx_b = rx_p = 0;
- 	tx_b = tx_p = 0;
--	tx_restart = tx_busy = 0;
-+	tx_restart = tx_busy = tx_linearize = 0;
- 	rx_page = 0;
- 	rx_buf = 0;
- 	rcu_read_lock();
-@@ -831,6 +832,7 @@ static void i40e_update_vsi_stats(struct i40e_vsi *vsi)
- 		tx_p += packets;
- 		tx_restart += p->tx_stats.restart_queue;
- 		tx_busy += p->tx_stats.tx_busy;
-+		tx_linearize += p->tx_stats.tx_linearize;
- 
- 		/* Rx queue is part of the same block as Tx queue */
- 		p = &p[1];
-@@ -847,6 +849,7 @@ static void i40e_update_vsi_stats(struct i40e_vsi *vsi)
- 	rcu_read_unlock();
- 	vsi->tx_restart = tx_restart;
- 	vsi->tx_busy = tx_busy;
-+	vsi->tx_linearize = tx_linearize;
- 	vsi->rx_page_failed = rx_page;
- 	vsi->rx_buf_failed = rx_buf;
- 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index b93c2dc..79c8f71 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2809,10 +2809,11 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
- 	if (tsyn)
- 		tx_flags |= I40E_TX_FLAGS_TSYN;
- 
--	if (i40e_chk_linearize(skb, tx_flags))
-+	if (i40e_chk_linearize(skb, tx_flags)) {
- 		if (skb_linearize(skb))
- 			goto out_drop;
+-	status = (tlv_status & I40E_AQC_CEE_APP_STATUS_MASK) >>
+-		  I40E_AQC_CEE_APP_STATUS_SHIFT;
++	i = 0;
++	status = (tlv_status & I40E_AQC_CEE_FCOE_STATUS_MASK) >>
++		  I40E_AQC_CEE_FCOE_STATUS_SHIFT;
+ 	err = (status & I40E_TLV_STATUS_ERR) ? 1 : 0;
+ 	sync = (status & I40E_TLV_STATUS_SYNC) ? 1 : 0;
+ 	oper = (status & I40E_TLV_STATUS_OPER) ? 1 : 0;
+-	/* Add APPs if Error is False and Oper/Sync is True */
++	/* Add FCoE APP if Error is False and Oper/Sync is True */
+ 	if (!err && sync && oper) {
+-		/* CEE operating configuration supports FCoE/iSCSI/FIP only */
+-		dcbcfg->numapps = I40E_CEE_OPER_MAX_APPS;
 -
-+		tx_ring->tx_stats.tx_linearize++;
+ 		/* FCoE APP */
+-		dcbcfg->app[0].priority =
++		dcbcfg->app[i].priority =
+ 			(app_prio & I40E_AQC_CEE_APP_FCOE_MASK) >>
+ 			 I40E_AQC_CEE_APP_FCOE_SHIFT;
+-		dcbcfg->app[0].selector = I40E_APP_SEL_ETHTYPE;
+-		dcbcfg->app[0].protocolid = I40E_APP_PROTOID_FCOE;
++		dcbcfg->app[i].selector = I40E_APP_SEL_ETHTYPE;
++		dcbcfg->app[i].protocolid = I40E_APP_PROTOID_FCOE;
++		i++;
 +	}
- 	skb_tx_timestamp(skb);
  
- 	/* always enable CRC insertion offload */
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-index db2130f..c6d2995 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-@@ -188,6 +188,7 @@ struct i40e_tx_queue_stats {
- 	u64 restart_queue;
- 	u64 tx_busy;
- 	u64 tx_done_old;
-+	u64 tx_linearize;
- };
- 
- struct i40e_rx_queue_stats {
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index 37e2b05..1d0e38f 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -2005,10 +2005,11 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
- 	else if (tso)
- 		tx_flags |= I40E_TX_FLAGS_TSO;
- 
--	if (i40e_chk_linearize(skb, tx_flags))
-+	if (i40e_chk_linearize(skb, tx_flags)) {
- 		if (skb_linearize(skb))
- 			goto out_drop;
--
-+		tx_ring->tx_stats.tx_linearize++;
++	status = (tlv_status & I40E_AQC_CEE_ISCSI_STATUS_MASK) >>
++		  I40E_AQC_CEE_ISCSI_STATUS_SHIFT;
++	err = (status & I40E_TLV_STATUS_ERR) ? 1 : 0;
++	sync = (status & I40E_TLV_STATUS_SYNC) ? 1 : 0;
++	oper = (status & I40E_TLV_STATUS_OPER) ? 1 : 0;
++	/* Add iSCSI APP if Error is False and Oper/Sync is True */
++	if (!err && sync && oper) {
+ 		/* iSCSI APP */
+-		dcbcfg->app[1].priority =
++		dcbcfg->app[i].priority =
+ 			(app_prio & I40E_AQC_CEE_APP_ISCSI_MASK) >>
+ 			 I40E_AQC_CEE_APP_ISCSI_SHIFT;
+-		dcbcfg->app[1].selector = I40E_APP_SEL_TCPIP;
+-		dcbcfg->app[1].protocolid = I40E_APP_PROTOID_ISCSI;
++		dcbcfg->app[i].selector = I40E_APP_SEL_TCPIP;
++		dcbcfg->app[i].protocolid = I40E_APP_PROTOID_ISCSI;
++		i++;
 +	}
- 	skb_tx_timestamp(skb);
  
- 	/* always enable CRC insertion offload */
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-index 9a30f5d..e8dd651 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-@@ -187,6 +187,7 @@ struct i40e_tx_queue_stats {
- 	u64 restart_queue;
- 	u64 tx_busy;
- 	u64 tx_done_old;
-+	u64 tx_linearize;
- };
++	status = (tlv_status & I40E_AQC_CEE_FIP_STATUS_MASK) >>
++		  I40E_AQC_CEE_FIP_STATUS_SHIFT;
++	err = (status & I40E_TLV_STATUS_ERR) ? 1 : 0;
++	sync = (status & I40E_TLV_STATUS_SYNC) ? 1 : 0;
++	oper = (status & I40E_TLV_STATUS_OPER) ? 1 : 0;
++	/* Add FIP APP if Error is False and Oper/Sync is True */
++	if (!err && sync && oper) {
+ 		/* FIP APP */
+-		dcbcfg->app[2].priority =
++		dcbcfg->app[i].priority =
+ 			(app_prio & I40E_AQC_CEE_APP_FIP_MASK) >>
+ 			 I40E_AQC_CEE_APP_FIP_SHIFT;
+-		dcbcfg->app[2].selector = I40E_APP_SEL_ETHTYPE;
+-		dcbcfg->app[2].protocolid = I40E_APP_PROTOID_FIP;
++		dcbcfg->app[i].selector = I40E_APP_SEL_ETHTYPE;
++		dcbcfg->app[i].protocolid = I40E_APP_PROTOID_FIP;
++		i++;
+ 	}
++	dcbcfg->numapps = i;
+ }
  
- struct i40e_rx_queue_stats {
+ /**
 -- 
 1.9.3
 
