@@ -1,107 +1,45 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Thu, 27 Aug 2015 11:42:30 -0400
-Subject: [Intel-wired-lan] [next PATCH S12 02/15] i40e: Additional checks
-	for CEE APP priority validity
+Date: Thu, 27 Aug 2015 11:42:31 -0400
+Subject: [Intel-wired-lan] [next PATCH S12 03/15] i40evf: propagate
+	interrupt allocation failure
 In-Reply-To: <1440690163-128213-1-git-send-email-catherine.sullivan@intel.com>
 References: <1440690163-128213-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1440690163-128213-3-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1440690163-128213-4-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Neerav Parikh <neerav.parikh@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-The firmware has added additional status information to allow software
-to determine if the APP priority for FCoE/iSCSI/FIP is valid or not in
-CEE DCBX mode.
+Lower level functions are properly reporting errors, and higher-level
+functions are correctly responding to errors, but the errors aren't
+actually getting through. Typically, the middle-manager function seems
+to want to shield its boss from any bad news.
 
-This patch adds to support those additional checks and will only add
-applications to the software table that have oper and sync bits set
-without any error.
+This change fixes a panic if the driver is unable to enable MSI-X or is
+unable to acquire enough vectors.
 
-Signed-off-by: Neerav Parikh <neerav.parikh@intel.com>
-Change-ID: I0a76c52427dadf97d4dba4538a3068d05e4eb56b
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-ID: Ifd5787ce92519a5d97e4b465902db930d97b71a1
 ---
- drivers/net/ethernet/intel/i40e/i40e_dcb.c | 48 ++++++++++++++++++++----------
- 1 file changed, 33 insertions(+), 15 deletions(-)
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_dcb.c b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
-index 90de46a..9aee35d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_dcb.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
-@@ -531,37 +531,55 @@ static void i40e_cee_to_dcb_config(
- 	dcbcfg->pfc.pfcenable = cee_cfg->oper_pfc_en;
- 	dcbcfg->pfc.pfccap = I40E_MAX_TRAFFIC_CLASS;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index a98fa20..eccf80c 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -1085,7 +1085,7 @@ static int i40evf_set_interrupt_capability(struct i40evf_adapter *adapter)
+ 	for (vector = 0; vector < v_budget; vector++)
+ 		adapter->msix_entries[vector].entry = vector;
  
--	status = (tlv_status & I40E_AQC_CEE_APP_STATUS_MASK) >>
--		  I40E_AQC_CEE_APP_STATUS_SHIFT;
-+	i = 0;
-+	status = (tlv_status & I40E_AQC_CEE_FCOE_STATUS_MASK) >>
-+		  I40E_AQC_CEE_FCOE_STATUS_SHIFT;
- 	err = (status & I40E_TLV_STATUS_ERR) ? 1 : 0;
- 	sync = (status & I40E_TLV_STATUS_SYNC) ? 1 : 0;
- 	oper = (status & I40E_TLV_STATUS_OPER) ? 1 : 0;
--	/* Add APPs if Error is False and Oper/Sync is True */
-+	/* Add FCoE APP if Error is False and Oper/Sync is True */
- 	if (!err && sync && oper) {
--		/* CEE operating configuration supports FCoE/iSCSI/FIP only */
--		dcbcfg->numapps = I40E_CEE_OPER_MAX_APPS;
--
- 		/* FCoE APP */
--		dcbcfg->app[0].priority =
-+		dcbcfg->app[i].priority =
- 			(app_prio & I40E_AQC_CEE_APP_FCOE_MASK) >>
- 			 I40E_AQC_CEE_APP_FCOE_SHIFT;
--		dcbcfg->app[0].selector = I40E_APP_SEL_ETHTYPE;
--		dcbcfg->app[0].protocolid = I40E_APP_PROTOID_FCOE;
-+		dcbcfg->app[i].selector = I40E_APP_SEL_ETHTYPE;
-+		dcbcfg->app[i].protocolid = I40E_APP_PROTOID_FCOE;
-+		i++;
-+	}
+-	i40evf_acquire_msix_vectors(adapter, v_budget);
++	err = i40evf_acquire_msix_vectors(adapter, v_budget);
  
-+	status = (tlv_status & I40E_AQC_CEE_ISCSI_STATUS_MASK) >>
-+		  I40E_AQC_CEE_ISCSI_STATUS_SHIFT;
-+	err = (status & I40E_TLV_STATUS_ERR) ? 1 : 0;
-+	sync = (status & I40E_TLV_STATUS_SYNC) ? 1 : 0;
-+	oper = (status & I40E_TLV_STATUS_OPER) ? 1 : 0;
-+	/* Add iSCSI APP if Error is False and Oper/Sync is True */
-+	if (!err && sync && oper) {
- 		/* iSCSI APP */
--		dcbcfg->app[1].priority =
-+		dcbcfg->app[i].priority =
- 			(app_prio & I40E_AQC_CEE_APP_ISCSI_MASK) >>
- 			 I40E_AQC_CEE_APP_ISCSI_SHIFT;
--		dcbcfg->app[1].selector = I40E_APP_SEL_TCPIP;
--		dcbcfg->app[1].protocolid = I40E_APP_PROTOID_ISCSI;
-+		dcbcfg->app[i].selector = I40E_APP_SEL_TCPIP;
-+		dcbcfg->app[i].protocolid = I40E_APP_PROTOID_ISCSI;
-+		i++;
-+	}
- 
-+	status = (tlv_status & I40E_AQC_CEE_FIP_STATUS_MASK) >>
-+		  I40E_AQC_CEE_FIP_STATUS_SHIFT;
-+	err = (status & I40E_TLV_STATUS_ERR) ? 1 : 0;
-+	sync = (status & I40E_TLV_STATUS_SYNC) ? 1 : 0;
-+	oper = (status & I40E_TLV_STATUS_OPER) ? 1 : 0;
-+	/* Add FIP APP if Error is False and Oper/Sync is True */
-+	if (!err && sync && oper) {
- 		/* FIP APP */
--		dcbcfg->app[2].priority =
-+		dcbcfg->app[i].priority =
- 			(app_prio & I40E_AQC_CEE_APP_FIP_MASK) >>
- 			 I40E_AQC_CEE_APP_FIP_SHIFT;
--		dcbcfg->app[2].selector = I40E_APP_SEL_ETHTYPE;
--		dcbcfg->app[2].protocolid = I40E_APP_PROTOID_FIP;
-+		dcbcfg->app[i].selector = I40E_APP_SEL_ETHTYPE;
-+		dcbcfg->app[i].protocolid = I40E_APP_PROTOID_FIP;
-+		i++;
- 	}
-+	dcbcfg->numapps = i;
- }
- 
- /**
+ out:
+ 	adapter->netdev->real_num_tx_queues = pairs;
 -- 
 1.9.3
 
