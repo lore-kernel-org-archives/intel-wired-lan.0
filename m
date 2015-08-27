@@ -1,92 +1,87 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Thu, 27 Aug 2015 11:42:39 -0400
-Subject: [Intel-wired-lan] [next PATCH S12 11/15] i40e: Fix multiple link up
-	messages
+Date: Thu, 27 Aug 2015 11:42:41 -0400
+Subject: [Intel-wired-lan] [next PATCH S12 13/15] i40e/i40evf: Explicitly
+	assign enum index for VSI type
 In-Reply-To: <1440690163-128213-1-git-send-email-catherine.sullivan@intel.com>
 References: <1440690163-128213-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1440690163-128213-12-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1440690163-128213-14-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Matt Jared <matthew.a.jared@intel.com>
+From: Serey Kong <serey.kong@intel.com>
 
-This patch addresses an issue where multiple link up messages can be logged
-resulting from aq link status timing when link properties are changed (fc,
-speed, etc.); solved by using a single function to handle status printing
-and adding a mechanism to track whether link state (up or down) has
-actually changed.
+Ran into an issue where PF's VSI type list was different from VF's,
+which was resulted in different enum index. The VSI type list can
+be different depending on what build flag is used for PF and VF.
 
-Signed-off-by: Matt Jared <matthew.a.jared@intel.com>
-Change-ID: Ied6ed6e49dc397c77d992adc0bc9ed3767152b9d
+The change is to explicitly assign enum index for each VSI type
+so that PF and VF always reference to the same VSI type event if the
+enum lists are different.
+
+Signed-off-by: Serey Kong <serey.kong@intel.com>
+Change-ID: I8c0e5fdb515f324f7964df863a458073cf467e57
 ---
- drivers/net/ethernet/intel/i40e/i40e.h         | 2 ++
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 4 ++--
- drivers/net/ethernet/intel/i40e/i40e_main.c    | 5 ++++-
- 3 files changed, 8 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_type.h   | 16 ++++++++--------
+ drivers/net/ethernet/intel/i40evf/i40e_type.h | 16 ++++++++--------
+ 2 files changed, 16 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 877fab3..672ca75 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -539,6 +539,7 @@ struct i40e_vsi {
- 	u16 idx;               /* index in pf->vsi[] */
- 	u16 veb_idx;           /* index of VEB parent */
- 	struct kobject *kobj;  /* sysfs object */
-+	bool current_isup;     /* Sync 'link up' logging */
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
+index b1ee6ce..4d88224 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
+@@ -160,14 +160,14 @@ enum i40e_set_fc_aq_failures {
+ };
  
- 	/* VSI specific handlers */
- 	irqreturn_t (*irq_handler)(int irq, void *data);
-@@ -793,4 +794,5 @@ int i40e_is_vsi_uplink_mode_veb(struct i40e_vsi *vsi);
- i40e_status i40e_get_npar_bw_setting(struct i40e_pf *pf);
- i40e_status i40e_set_npar_bw_setting(struct i40e_pf *pf);
- i40e_status i40e_commit_npar_bw_setting(struct i40e_pf *pf);
-+void i40e_print_link_message(struct i40e_vsi *vsi, bool isup);
- #endif /* _I40E_H_ */
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index ef471fc..f2b4f8b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -690,7 +690,7 @@ static int i40e_set_settings(struct net_device *netdev,
- 			/* Tell the OS link is going down, the link will go
- 			 * back up when fw says it is ready asynchronously
- 			 */
--			netdev_info(netdev, "PHY settings change requested, NIC Link is going down.\n");
-+			i40e_print_link_message(vsi, false);
- 			netif_carrier_off(netdev);
- 			netif_tx_stop_all_queues(netdev);
- 		}
-@@ -834,7 +834,7 @@ static int i40e_set_pauseparam(struct net_device *netdev,
- 	/* Tell the OS link is going down, the link will go back up when fw
- 	 * says it is ready asynchronously
- 	 */
--	netdev_info(netdev, "Flow control settings change requested, NIC Link is going down.\n");
-+	i40e_print_link_message(vsi, false);
- 	netif_carrier_off(netdev);
- 	netif_tx_stop_all_queues(netdev);
+ enum i40e_vsi_type {
+-	I40E_VSI_MAIN = 0,
+-	I40E_VSI_VMDQ1,
+-	I40E_VSI_VMDQ2,
+-	I40E_VSI_CTRL,
+-	I40E_VSI_FCOE,
+-	I40E_VSI_MIRROR,
+-	I40E_VSI_SRIOV,
+-	I40E_VSI_FDIR,
++	I40E_VSI_MAIN	= 0,
++	I40E_VSI_VMDQ1	= 1,
++	I40E_VSI_VMDQ2	= 2,
++	I40E_VSI_CTRL	= 3,
++	I40E_VSI_FCOE	= 4,
++	I40E_VSI_MIRROR	= 5,
++	I40E_VSI_SRIOV	= 6,
++	I40E_VSI_FDIR	= 7,
+ 	I40E_VSI_TYPE_UNKNOWN
+ };
  
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 6cc0fa0..73c6d37 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -4627,11 +4627,14 @@ out:
-  * i40e_print_link_message - print link up or down
-  * @vsi: the VSI for which link needs a message
-  */
--static void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
-+void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
- {
- 	char speed[SPEED_SIZE] = "Unknown";
- 	char fc[FC_SIZE] = "RX/TX";
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+index 919516a..b7ef8aa 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+@@ -160,14 +160,14 @@ enum i40e_set_fc_aq_failures {
+ };
  
-+	if (vsi->current_isup == isup)
-+		return;
-+	vsi->current_isup = isup;
- 	if (!isup) {
- 		netdev_info(vsi->netdev, "NIC Link is Down\n");
- 		return;
+ enum i40e_vsi_type {
+-	I40E_VSI_MAIN = 0,
+-	I40E_VSI_VMDQ1,
+-	I40E_VSI_VMDQ2,
+-	I40E_VSI_CTRL,
+-	I40E_VSI_FCOE,
+-	I40E_VSI_MIRROR,
+-	I40E_VSI_SRIOV,
+-	I40E_VSI_FDIR,
++	I40E_VSI_MAIN	= 0,
++	I40E_VSI_VMDQ1	= 1,
++	I40E_VSI_VMDQ2	= 2,
++	I40E_VSI_CTRL	= 3,
++	I40E_VSI_FCOE	= 4,
++	I40E_VSI_MIRROR	= 5,
++	I40E_VSI_SRIOV	= 6,
++	I40E_VSI_FDIR	= 7,
+ 	I40E_VSI_TYPE_UNKNOWN
+ };
+ 
 -- 
 1.9.3
 
