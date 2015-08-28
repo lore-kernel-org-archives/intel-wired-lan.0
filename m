@@ -1,288 +1,204 @@
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Date: Fri, 28 Aug 2015 06:59:03 +0000
-Subject: [Intel-wired-lan] [PATCH v8 3/3] ixgbe,
-	ixgbevf: Add new mbox API xcast mode
-Message-ID: <7F861DC0615E0C47A872E6F3C5FCDDBD05F28E98@BPXM14GP.gisp.nec.co.jp>
+From: Rose, Gregory V <gregory.v.rose@intel.com>
+Date: Fri, 28 Aug 2015 14:28:24 +0000
+Subject: [Intel-wired-lan] [PATCH v8 1/3] if_link: Add control trust VF
+In-Reply-To: <7F861DC0615E0C47A872E6F3C5FCDDBD05F28E5B@BPXM14GP.gisp.nec.co.jp>
+References: <7F861DC0615E0C47A872E6F3C5FCDDBD05F28E5B@BPXM14GP.gisp.nec.co.jp>
+Message-ID: <C5551D9AAB213A418B7FD5E4A6F30A078939424F@ORSMSX108.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-The limitation of the number of multicast address for VF is not enough
-for the large scale server with SR-IOV feature. IPv6 requires the multicast
-MAC address for each IP address to handle the Neighbor Solicitation
-message. We couldn't assign over 30 IPv6 addresses to a single VF.
+> -----Original Message-----
+> From: Hiroshi Shimamoto [mailto:h-shimamoto at ct.jp.nec.com]
+> Sent: Thursday, August 27, 2015 11:58 PM
+> To: Or Gerlitz; Alexander Duyck; Skidmore, Donald C; Rose, Gregory V;
+> Kirsher, Jeffrey T; intel-wired-lan at lists.osuosl.org; nhorman at redhat.com;
+> jogreene at redhat.com; Linux Netdev List; Choi, Sy Jong; Rony Efraim; Edward
+> Cree; David Miller; sassmann at redhat.com
+> Subject: [PATCH v8 1/3] if_link: Add control trust VF
+> 
+> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> 
+> Add netlink directives and ndo entry to trust VF user.
+> 
+> This controls the special permission of VF user.
+> The administrator will dedicatedly trust VF user to use some features
+> which impacts security and/or performance.
+> 
+> The administrator never turn it on unless VF user is fully trusted.
+> 
+> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> CC: Choi, Sy Jong <sy.jong.choi@intel.com>> ---
 
-This patch introduces the new mailbox API, IXGBE_VF_UPDATE_XCAST_MODE,
-to update multicast mode of VF. This adds 3 modes;
-  - NONE     only L2 exact match addresses or Flow Director enabled
-  - MULTI    BAM and ROMPE set
-  - ALLMULTI BAM, ROMPE and MPE set
+Thank you for persisting in this!
 
-If a guest VF user wants over 30 MAC multicast addresses, set IFF_ALLMULTI
-to request PF to update xcast mode to enable VF multicast promiscuous mode.
+Acked-By: Greg Rose <gregory.v.rose@intel.com>
 
-On the other hand, enabling VF multicast promiscuous mode may affect
-security and performance in the network of the NIC. Only trusted VF can
-enable multicast promiscuous mode. The behavior of untrusted VF is the
-same as previous version.
+I'll leave the patches for ixgbe to Don Skidmore to review. 
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe.h          |  7 +++
- drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h      |  2 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c    | 59 +++++++++++++++++++++++
- drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |  6 +++
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |  8 +++
- drivers/net/ethernet/intel/ixgbevf/mbx.h          |  2 +
- drivers/net/ethernet/intel/ixgbevf/vf.c           | 41 ++++++++++++++++
- drivers/net/ethernet/intel/ixgbevf/vf.h           |  1 +
- 8 files changed, 126 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index f147a5a..838284c 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -153,9 +153,16 @@ struct vf_data_storage {
- 	u8 spoofchk_enabled;
- 	bool rss_query_enabled;
- 	u8 trusted;
-+	int xcast_mode;
- 	unsigned int vf_api;
- };
- 
-+enum ixgbevf_xcast_modes {
-+	IXGBEVF_XCAST_MODE_NONE = 0,
-+	IXGBEVF_XCAST_MODE_MULTI,
-+	IXGBEVF_XCAST_MODE_ALLMULTI,
-+};
-+
- struct vf_macvlans {
- 	struct list_head l;
- 	int vf;
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h
-index b1e4703..8daa95f 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h
-@@ -102,6 +102,8 @@ enum ixgbe_pfvf_api_rev {
- #define IXGBE_VF_GET_RETA	0x0a	/* VF request for RETA */
- #define IXGBE_VF_GET_RSS_KEY	0x0b	/* get RSS key */
- 
-+#define IXGBE_VF_UPDATE_XCAST_MODE	0x0c
-+
- /* length of permanent address message returned from PF */
- #define IXGBE_VF_PERMADDR_MSG_LEN 4
- /* word in permanent address message with the current multicast type */
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-index 65aeb58..fcd8b27 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-@@ -119,6 +119,9 @@ static int __ixgbe_enable_sriov(struct ixgbe_adapter *adapter)
- 
- 			/* Untrust all VFs */
- 			adapter->vfinfo[i].trusted = false;
-+
-+			/* set the default xcast mode */
-+			adapter->vfinfo[i].xcast_mode = IXGBEVF_XCAST_MODE_NONE;
- 		}
- 
- 		return 0;
-@@ -1004,6 +1007,59 @@ static int ixgbe_get_vf_rss_key(struct ixgbe_adapter *adapter,
- 	return 0;
- }
- 
-+static int ixgbe_update_vf_xcast_mode(struct ixgbe_adapter *adapter,
-+				      u32 *msgbuf, u32 vf)
-+{
-+	struct ixgbe_hw *hw = &adapter->hw;
-+	int xcast_mode = msgbuf[1];
-+	u32 vmolr, disable, enable;
-+
-+	/* verify the PF is supporting the correct APIs */
-+	switch (adapter->vfinfo[vf].vf_api) {
-+	case ixgbe_mbox_api_12:
-+		break;
-+	default:
-+		return -EOPNOTSUPP;
-+	}
-+
-+	if (xcast_mode > IXGBEVF_XCAST_MODE_MULTI &&
-+	    !adapter->vfinfo[vf].trusted) {
-+		xcast_mode = IXGBEVF_XCAST_MODE_MULTI;
-+	}
-+
-+	if (adapter->vfinfo[vf].xcast_mode == xcast_mode)
-+		goto out;
-+
-+	switch (xcast_mode) {
-+	case IXGBEVF_XCAST_MODE_NONE:
-+		disable = IXGBE_VMOLR_BAM | IXGBE_VMOLR_ROMPE | IXGBE_VMOLR_MPE;
-+		enable = 0;
-+		break;
-+	case IXGBEVF_XCAST_MODE_MULTI:
-+		disable = IXGBE_VMOLR_MPE;
-+		enable = IXGBE_VMOLR_BAM | IXGBE_VMOLR_ROMPE;
-+		break;
-+	case IXGBEVF_XCAST_MODE_ALLMULTI:
-+		disable = 0;
-+		enable = IXGBE_VMOLR_BAM | IXGBE_VMOLR_ROMPE | IXGBE_VMOLR_MPE;
-+		break;
-+	default:
-+		return -EOPNOTSUPP;
-+	}
-+
-+	vmolr = IXGBE_READ_REG(hw, IXGBE_VMOLR(vf));
-+	vmolr &= ~disable;
-+	vmolr |= enable;
-+	IXGBE_WRITE_REG(hw, IXGBE_VMOLR(vf), vmolr);
-+
-+	adapter->vfinfo[vf].xcast_mode = xcast_mode;
-+
-+out:
-+	msgbuf[1] = xcast_mode;
-+
-+	return 0;
-+}
-+
- static int ixgbe_rcv_msg_from_vf(struct ixgbe_adapter *adapter, u32 vf)
- {
- 	u32 mbx_size = IXGBE_VFMAILBOX_SIZE;
-@@ -1066,6 +1122,9 @@ static int ixgbe_rcv_msg_from_vf(struct ixgbe_adapter *adapter, u32 vf)
- 	case IXGBE_VF_GET_RSS_KEY:
- 		retval = ixgbe_get_vf_rss_key(adapter, msgbuf, vf);
- 		break;
-+	case IXGBE_VF_UPDATE_XCAST_MODE:
-+		retval = ixgbe_update_vf_xcast_mode(adapter, msgbuf, vf);
-+		break;
- 	default:
- 		e_err(drv, "Unhandled Msg %8.8x\n", msgbuf[0]);
- 		retval = IXGBE_ERR_MBX;
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-index 04c7ec8..ec31472 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-@@ -471,6 +471,12 @@ enum ixgbevf_boards {
- 	board_X550EM_x_vf,
- };
- 
-+enum ixgbevf_xcast_modes {
-+	IXGBEVF_XCAST_MODE_NONE = 0,
-+	IXGBEVF_XCAST_MODE_MULTI,
-+	IXGBEVF_XCAST_MODE_ALLMULTI,
-+};
-+
- extern const struct ixgbevf_info ixgbevf_82599_vf_info;
- extern const struct ixgbevf_info ixgbevf_X540_vf_info;
- extern const struct ixgbevf_info ixgbevf_X550_vf_info;
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 67c785d..cb8867f 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -1892,9 +1892,17 @@ static void ixgbevf_set_rx_mode(struct net_device *netdev)
- {
- 	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
- 	struct ixgbe_hw *hw = &adapter->hw;
-+	unsigned int flags = netdev->flags;
-+	int xcast_mode;
-+
-+	xcast_mode = (flags & IFF_ALLMULTI) ? IXGBEVF_XCAST_MODE_ALLMULTI :
-+		     (flags & (IFF_BROADCAST | IFF_MULTICAST)) ?
-+		     IXGBEVF_XCAST_MODE_MULTI : IXGBEVF_XCAST_MODE_NONE;
- 
- 	spin_lock_bh(&adapter->mbx_lock);
- 
-+	hw->mac.ops.update_xcast_mode(hw, netdev, xcast_mode);
-+
- 	/* reprogram multicast list */
- 	hw->mac.ops.update_mc_addr_list(hw, netdev);
- 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/mbx.h b/drivers/net/ethernet/intel/ixgbevf/mbx.h
-index 82f44e0..340cdd4 100644
---- a/drivers/net/ethernet/intel/ixgbevf/mbx.h
-+++ b/drivers/net/ethernet/intel/ixgbevf/mbx.h
-@@ -112,6 +112,8 @@ enum ixgbe_pfvf_api_rev {
- #define IXGBE_VF_GET_RETA	0x0a	/* VF request for RETA */
- #define IXGBE_VF_GET_RSS_KEY	0x0b	/* get RSS hash key */
- 
-+#define IXGBE_VF_UPDATE_XCAST_MODE	0x0c
-+
- /* length of permanent address message returned from PF */
- #define IXGBE_VF_PERMADDR_MSG_LEN	4
- /* word in permanent address message with the current multicast type */
-diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.c b/drivers/net/ethernet/intel/ixgbevf/vf.c
-index d1339b0..427f360 100644
---- a/drivers/net/ethernet/intel/ixgbevf/vf.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/vf.c
-@@ -469,6 +469,46 @@ static s32 ixgbevf_update_mc_addr_list_vf(struct ixgbe_hw *hw,
- }
- 
- /**
-+ *  ixgbevf_update_xcast_mode - Update Multicast mode
-+ *  @hw: pointer to the HW structure
-+ *  @netdev: pointer to net device structure
-+ *  @xcast_mode: new multicast mode
-+ *
-+ *  Updates the Multicast Mode of VF.
-+ **/
-+static s32 ixgbevf_update_xcast_mode(struct ixgbe_hw *hw,
-+				     struct net_device *netdev, int xcast_mode)
-+{
-+	struct ixgbe_mbx_info *mbx = &hw->mbx;
-+	u32 msgbuf[2];
-+	s32 err;
-+
-+	switch (hw->api_version) {
-+	case ixgbe_mbox_api_12:
-+		break;
-+	default:
-+		return -EOPNOTSUPP;
-+	}
-+
-+	msgbuf[0] = IXGBE_VF_UPDATE_XCAST_MODE;
-+	msgbuf[1] = xcast_mode;
-+
-+	err = mbx->ops.write_posted(hw, msgbuf, 2);
-+	if (err)
-+		return err;
-+
-+	err = mbx->ops.read_posted(hw, msgbuf, 2);
-+	if (err)
-+		return err;
-+
-+	msgbuf[0] &= ~IXGBE_VT_MSGTYPE_CTS;
-+	if (msgbuf[0] == (IXGBE_VF_UPDATE_XCAST_MODE | IXGBE_VT_MSGTYPE_NACK))
-+		return -EPERM;
-+
-+	return 0;
-+}
-+
-+/**
-  *  ixgbevf_set_vfta_vf - Set/Unset VLAN filter table address
-  *  @hw: pointer to the HW structure
-  *  @vlan: 12 bit VLAN ID
-@@ -727,6 +767,7 @@ static const struct ixgbe_mac_operations ixgbevf_mac_ops = {
- 	.check_link		= ixgbevf_check_mac_link_vf,
- 	.set_rar		= ixgbevf_set_rar_vf,
- 	.update_mc_addr_list	= ixgbevf_update_mc_addr_list_vf,
-+	.update_xcast_mode	= ixgbevf_update_xcast_mode,
- 	.set_uc_addr		= ixgbevf_set_uc_addr_vf,
- 	.set_vfta		= ixgbevf_set_vfta_vf,
- };
-diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.h b/drivers/net/ethernet/intel/ixgbevf/vf.h
-index d40f036..ef9f773 100644
---- a/drivers/net/ethernet/intel/ixgbevf/vf.h
-+++ b/drivers/net/ethernet/intel/ixgbevf/vf.h
-@@ -63,6 +63,7 @@ struct ixgbe_mac_operations {
- 	s32 (*set_uc_addr)(struct ixgbe_hw *, u32, u8 *);
- 	s32 (*init_rx_addrs)(struct ixgbe_hw *);
- 	s32 (*update_mc_addr_list)(struct ixgbe_hw *, struct net_device *);
-+	s32 (*update_xcast_mode)(struct ixgbe_hw *, struct net_device *, int);
- 	s32 (*enable_mc)(struct ixgbe_hw *);
- 	s32 (*disable_mc)(struct ixgbe_hw *);
- 	s32 (*clear_vfta)(struct ixgbe_hw *);
--- 
-1.8.3.1
+>  include/linux/if_link.h      |  1 +
+>  include/linux/netdevice.h    |  3 +++
+>  include/uapi/linux/if_link.h |  6 ++++++
+>  net/core/rtnetlink.c         | 24 +++++++++++++++++++++---
+>  4 files changed, 31 insertions(+), 3 deletions(-)
+> 
+> diff --git a/include/linux/if_link.h b/include/linux/if_link.h index
+> ae5d0d2..f923d15 100644
+> --- a/include/linux/if_link.h
+> +++ b/include/linux/if_link.h
+> @@ -24,5 +24,6 @@ struct ifla_vf_info {
+>  	__u32 min_tx_rate;
+>  	__u32 max_tx_rate;
+>  	__u32 rss_query_en;
+> +	__u32 trusted;
+>  };
+>  #endif /* _LINUX_IF_LINK_H */
+> diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h index
+> 6163ecb..7db19e7 100644
+> --- a/include/linux/netdevice.h
+> +++ b/include/linux/netdevice.h
+> @@ -880,6 +880,7 @@ typedef u16 (*select_queue_fallback_t)(struct
+> net_device *dev,
+>   * int (*ndo_set_vf_rate)(struct net_device *dev, int vf, int
+> min_tx_rate,
+>   *			  int max_tx_rate);
+>   * int (*ndo_set_vf_spoofchk)(struct net_device *dev, int vf, bool
+> setting);
+> + * int (*ndo_set_vf_trust)(struct net_device *dev, int vf, bool
+> + setting);
+>   * int (*ndo_get_vf_config)(struct net_device *dev,
+>   *			    int vf, struct ifla_vf_info *ivf);
+>   * int (*ndo_set_vf_link_state)(struct net_device *dev, int vf, int
+> link_state); @@ -1121,6 +1122,8 @@ struct net_device_ops {
+>  						   int max_tx_rate);
+>  	int			(*ndo_set_vf_spoofchk)(struct net_device *dev,
+>  						       int vf, bool setting);
+> +	int			(*ndo_set_vf_trust)(struct net_device *dev,
+> +						    int vf, bool setting);
+>  	int			(*ndo_get_vf_config)(struct net_device *dev,
+>  						     int vf,
+>  						     struct ifla_vf_info *ivf);
+> diff --git a/include/uapi/linux/if_link.h b/include/uapi/linux/if_link.h
+> index 313c305..2d6abd4 100644
+> --- a/include/uapi/linux/if_link.h
+> +++ b/include/uapi/linux/if_link.h
+> @@ -498,6 +498,7 @@ enum {
+>  				 * on/off switch
+>  				 */
+>  	IFLA_VF_STATS,		/* network device statistics */
+> +	IFLA_VF_TRUST,		/* Trust VF */
+>  	__IFLA_VF_MAX,
+>  };
+> 
+> @@ -559,6 +560,11 @@ enum {
+> 
+>  #define IFLA_VF_STATS_MAX (__IFLA_VF_STATS_MAX - 1)
+> 
+> +struct ifla_vf_trust {
+> +	__u32 vf;
+> +	__u32 setting;
+> +};
+> +
+>  /* VF ports management section
+>   *
+>   *	Nested layout of set/get msg is:
+> diff --git a/net/core/rtnetlink.c b/net/core/rtnetlink.c index
+> 788ceed..2836bf1 100644
+> --- a/net/core/rtnetlink.c
+> +++ b/net/core/rtnetlink.c
+> @@ -831,7 +831,8 @@ static inline int rtnl_vfinfo_size(const struct
+> net_device *dev,
+>  			 /* IFLA_VF_STATS_BROADCAST */
+>  			 nla_total_size(sizeof(__u64)) +
+>  			 /* IFLA_VF_STATS_MULTICAST */
+> -			 nla_total_size(sizeof(__u64)));
+> +			 nla_total_size(sizeof(__u64)) +
+> +			 nla_total_size(sizeof(struct ifla_vf_trust)));
+>  		return size;
+>  	} else
+>  		return 0;
+> @@ -1154,6 +1155,7 @@ static int rtnl_fill_ifinfo(struct sk_buff *skb,
+> struct net_device *dev,
+>  			struct ifla_vf_link_state vf_linkstate;
+>  			struct ifla_vf_rss_query_en vf_rss_query_en;
+>  			struct ifla_vf_stats vf_stats;
+> +			struct ifla_vf_trust vf_trust;
+> 
+>  			/*
+>  			 * Not all SR-IOV capable drivers support the @@ -1163,6
+> +1165,7 @@ static int rtnl_fill_ifinfo(struct sk_buff *skb, struct
+> net_device *dev,
+>  			 */
+>  			ivi.spoofchk = -1;
+>  			ivi.rss_query_en = -1;
+> +			ivi.trusted = -1;
+>  			memset(ivi.mac, 0, sizeof(ivi.mac));
+>  			/* The default value for VF link state is "auto"
+>  			 * IFLA_VF_LINK_STATE_AUTO which equals zero @@ -1176,7
+> +1179,8 @@ static int rtnl_fill_ifinfo(struct sk_buff *skb, struct
+> net_device *dev,
+>  				vf_tx_rate.vf =
+>  				vf_spoofchk.vf =
+>  				vf_linkstate.vf =
+> -				vf_rss_query_en.vf = ivi.vf;
+> +				vf_rss_query_en.vf =
+> +				vf_trust.vf = ivi.vf;
+> 
+>  			memcpy(vf_mac.mac, ivi.mac, sizeof(ivi.mac));
+>  			vf_vlan.vlan = ivi.vlan;
+> @@ -1187,6 +1191,7 @@ static int rtnl_fill_ifinfo(struct sk_buff *skb,
+> struct net_device *dev,
+>  			vf_spoofchk.setting = ivi.spoofchk;
+>  			vf_linkstate.link_state = ivi.linkstate;
+>  			vf_rss_query_en.setting = ivi.rss_query_en;
+> +			vf_trust.setting = ivi.trusted;
+>  			vf = nla_nest_start(skb, IFLA_VF_INFO);
+>  			if (!vf) {
+>  				nla_nest_cancel(skb, vfinfo);
+> @@ -1204,7 +1209,9 @@ static int rtnl_fill_ifinfo(struct sk_buff *skb,
+> struct net_device *dev,
+>  				    &vf_linkstate) ||
+>  			    nla_put(skb, IFLA_VF_RSS_QUERY_EN,
+>  				    sizeof(vf_rss_query_en),
+> -				    &vf_rss_query_en))
+> +				    &vf_rss_query_en) ||
+> +			    nla_put(skb, IFLA_VF_TRUST,
+> +				    sizeof(vf_trust), &vf_trust))
+>  				goto nla_put_failure;
+>  			memset(&vf_stats, 0, sizeof(vf_stats));
+>  			if (dev->netdev_ops->ndo_get_vf_stats)
+> @@ -1341,6 +1348,7 @@ static const struct nla_policy
+> ifla_vf_policy[IFLA_VF_MAX+1] = {
+>  	[IFLA_VF_LINK_STATE]	= { .len = sizeof(struct ifla_vf_link_state)
+> },
+>  	[IFLA_VF_RSS_QUERY_EN]	= { .len = sizeof(struct
+> ifla_vf_rss_query_en) },
+>  	[IFLA_VF_STATS]		= { .type = NLA_NESTED },
+> +	[IFLA_VF_TRUST]		= { .len = sizeof(struct ifla_vf_trust) },
+>  };
+> 
+>  static const struct nla_policy ifla_vf_stats_policy[IFLA_VF_STATS_MAX +
+> 1] = { @@ -1580,6 +1588,16 @@ static int do_setvfinfo(struct net_device
+> *dev, struct nlattr **tb)
+>  			return err;
+>  	}
+> 
+> +	if (tb[IFLA_VF_TRUST]) {
+> +		struct ifla_vf_trust *ivt = nla_data(tb[IFLA_VF_TRUST]);
+> +
+> +		err = -EOPNOTSUPP;
+> +		if (ops->ndo_set_vf_trust)
+> +			err = ops->ndo_set_vf_trust(dev, ivt->vf, ivt->setting);
+> +		if (err < 0)
+> +			return err;
+> +	}
+> +
+>  	return err;
+>  }
+> 
+> --
+> 1.8.3.1
 
