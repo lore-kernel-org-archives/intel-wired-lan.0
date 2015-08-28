@@ -1,55 +1,42 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Fri, 28 Aug 2015 17:55:57 -0400
-Subject: [Intel-wired-lan] [next PATCH S13 11/15] i40evf: use capabilities
-	flags properly
+Date: Fri, 28 Aug 2015 17:55:59 -0400
+Subject: [Intel-wired-lan] [next PATCH S13 13/15] i40e: print neato new
+	features
 In-Reply-To: <1440798961-17326-1-git-send-email-catherine.sullivan@intel.com>
 References: <1440798961-17326-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1440798961-17326-12-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1440798961-17326-14-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-Use the capabilities passed to us by the PF driver to control VF driver
-behavior. In the process, clean up the VLAN add/remove code so it's not
-a horrible morass of ifdefs.
+To help users and developers know what compile options
+and hardware features are enabled at compile time, print
+VxLAN is available.
 
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Change-ID: I1050eaf12b658a26fea6813047c9964163c70a73
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Change-ID: I3162f3b7678dc725a597f964217920eb218b480b
 ---
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 53ecc09..4eff523 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -730,6 +730,8 @@ static int i40evf_vlan_rx_add_vid(struct net_device *netdev,
- {
- 	struct i40evf_adapter *adapter = netdev_priv(netdev);
- 
-+	if (!VLAN_ALLOWED(adapter))
-+		return -EIO;
- 	if (i40evf_add_vlan(adapter, vid) == NULL)
- 		return -ENOMEM;
- 	return 0;
-@@ -745,8 +747,11 @@ static int i40evf_vlan_rx_kill_vid(struct net_device *netdev,
- {
- 	struct i40evf_adapter *adapter = netdev_priv(netdev);
- 
--	i40evf_del_vlan(adapter, vid);
--	return 0;
-+	if (VLAN_ALLOWED(adapter)) {
-+		i40evf_del_vlan(adapter, vid);
-+		return 0;
-+	}
-+	return -EIO;
- }
- 
- /**
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 2771259..469e1d5 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -9914,6 +9914,9 @@ static void i40e_print_features(struct i40e_pf *pf)
+ 	}
+ 	if (pf->flags & I40E_FLAG_DCB_CAPABLE)
+ 		buf += sprintf(buf, "DCB ");
++#if IS_ENABLED(CONFIG_VXLAN)
++	buf += sprintf(buf, "VxLAN ");
++#endif
+ 	if (pf->flags & I40E_FLAG_PTP)
+ 		buf += sprintf(buf, "PTP ");
+ #ifdef I40E_FCOE
 -- 
 1.9.3
 
