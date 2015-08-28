@@ -1,222 +1,125 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Fri, 28 Aug 2015 17:55:50 -0400
-Subject: [Intel-wired-lan] [next PATCH S13 04/15] i40e/i40evf: add exec_aq
-	command to nvmupdate utility
+Date: Fri, 28 Aug 2015 17:55:53 -0400
+Subject: [Intel-wired-lan] [next PATCH S13 07/15] i40evf: detect reset more
+	reliably
 In-Reply-To: <1440798961-17326-1-git-send-email-catherine.sullivan@intel.com>
 References: <1440798961-17326-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1440798961-17326-5-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1440798961-17326-8-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Shannon Nelson <shannon.nelson@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-Add a facility to run AQ commands through the nvmupdate utility in order
-to allow the update tools to interact with the FW and do special
-commands needed for updates and configuration changes.
+Using VFGEN_RSTAT to detect a VF reset is an endeavor that is fraught
+with peril. It's entirely too easy to miss a reset because none of the
+bits are sticky. By the time the VF driver reads the register, the reset
+may have been processed and cleaned up by the PF driver, leaving the
+register in the same state that it was before the reset.
 
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-Change-ID: I5c41523e4055b37f8e4ee479f7a0574368f4a588
+Instead, detect a reset with the VF_ARQLEN register. When the VF is
+reset, the enable bit in this register is cleared, and it stays cleared
+until the VF driver processes the reset and re-enables the admin queue.
+
+Because we now deal with multiple registers in the reset and watchdog
+tasks, rename the rstat_val variable to reg_val.
+
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-ID: Id1df17045c0992e607da0162d31807f7fc20d199
 ---
- drivers/net/ethernet/intel/i40e/i40e_adminq.c   |  3 +
- drivers/net/ethernet/intel/i40e/i40e_nvm.c      | 83 +++++++++++++++++++++++++
- drivers/net/ethernet/intel/i40e/i40e_type.h     |  2 +
- drivers/net/ethernet/intel/i40evf/i40e_adminq.c |  3 +
- drivers/net/ethernet/intel/i40evf/i40e_type.h   |  2 +
- 5 files changed, 93 insertions(+)
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 36 +++++++++++--------------
+ 1 file changed, 16 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-index 8ba4b60..3e1f0b2 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-@@ -657,6 +657,9 @@ i40e_status i40e_shutdown_adminq(struct i40e_hw *hw)
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 897e1ac..53ecc09 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -1419,16 +1419,16 @@ static void i40evf_watchdog_task(struct work_struct *work)
+ 						      struct i40evf_adapter,
+ 						      watchdog_task);
+ 	struct i40e_hw *hw = &adapter->hw;
+-	uint32_t rstat_val;
++	u32 reg_val;
  
- 	/* destroy the locks */
+ 	if (test_and_set_bit(__I40EVF_IN_CRITICAL_TASK, &adapter->crit_section))
+ 		goto restart_watchdog;
  
-+	if (hw->nvm_buff.va)
-+		i40e_free_virt_mem(hw, &hw->nvm_buff);
-+
- 	return ret_code;
- }
+ 	if (adapter->flags & I40EVF_FLAG_PF_COMMS_FAILED) {
+-		rstat_val = rd32(hw, I40E_VFGEN_RSTAT) &
+-			    I40E_VFGEN_RSTAT_VFR_STATE_MASK;
+-		if ((rstat_val == I40E_VFR_VFACTIVE) ||
+-		    (rstat_val == I40E_VFR_COMPLETED)) {
++		reg_val = rd32(hw, I40E_VFGEN_RSTAT) &
++			  I40E_VFGEN_RSTAT_VFR_STATE_MASK;
++		if ((reg_val == I40E_VFR_VFACTIVE) ||
++		    (reg_val == I40E_VFR_COMPLETED)) {
+ 			/* A chance for redemption! */
+ 			dev_err(&adapter->pdev->dev, "Hardware came out of reset. Attempting reinit.\n");
+ 			adapter->state = __I40EVF_STARTUP;
+@@ -1453,11 +1453,8 @@ static void i40evf_watchdog_task(struct work_struct *work)
+ 		goto watchdog_done;
  
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-index d21c652..f91294de 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-@@ -617,6 +617,9 @@ static i40e_status i40e_nvmupd_nvm_write(struct i40e_hw *hw,
- static i40e_status i40e_nvmupd_nvm_read(struct i40e_hw *hw,
- 					struct i40e_nvm_access *cmd,
- 					u8 *bytes, int *perrno);
-+static i40e_status i40e_nvmupd_exec_aq(struct i40e_hw *hw,
-+				       struct i40e_nvm_access *cmd,
-+				       u8 *bytes, int *perrno);
- static inline u8 i40e_nvmupd_get_module(u32 val)
- {
- 	return (u8)(val & I40E_NVM_MOD_PNT_MASK);
-@@ -641,6 +644,7 @@ static char *i40e_nvm_update_state_str[] = {
- 	"I40E_NVMUPD_CSUM_SA",
- 	"I40E_NVMUPD_CSUM_LCB",
- 	"I40E_NVMUPD_STATUS",
-+	"I40E_NVMUPD_EXEC_AQ",
- };
+ 	/* check for reset */
+-	rstat_val = rd32(hw, I40E_VFGEN_RSTAT) &
+-		    I40E_VFGEN_RSTAT_VFR_STATE_MASK;
+-	if (!(adapter->flags & I40EVF_FLAG_RESET_PENDING) &&
+-	    (rstat_val != I40E_VFR_VFACTIVE) &&
+-	    (rstat_val != I40E_VFR_COMPLETED)) {
++	reg_val = rd32(hw, I40E_VF_ARQLEN1) & I40E_VF_ARQLEN1_ARQENABLE_MASK;
++	if (!(adapter->flags & I40EVF_FLAG_RESET_PENDING) && !reg_val) {
+ 		adapter->state = __I40EVF_RESETTING;
+ 		adapter->flags |= I40EVF_FLAG_RESET_PENDING;
+ 		dev_err(&adapter->pdev->dev, "Hardware reset detected\n");
+@@ -1572,7 +1569,7 @@ static void i40evf_reset_task(struct work_struct *work)
+ 	struct net_device *netdev = adapter->netdev;
+ 	struct i40e_hw *hw = &adapter->hw;
+ 	struct i40evf_mac_filter *f;
+-	uint32_t rstat_val;
++	u32 reg_val;
+ 	int i = 0, err;
  
- /**
-@@ -826,6 +830,10 @@ static i40e_status i40e_nvmupd_state_init(struct i40e_hw *hw,
- 		}
- 		break;
+ 	while (test_and_set_bit(__I40EVF_IN_CRITICAL_TASK,
+@@ -1593,12 +1590,11 @@ static void i40evf_reset_task(struct work_struct *work)
  
-+	case I40E_NVMUPD_EXEC_AQ:
-+		status = i40e_nvmupd_exec_aq(hw, cmd, bytes, perrno);
-+		break;
-+
- 	default:
- 		i40e_debug(hw, I40E_DEBUG_NVM,
- 			   "NVMUPD: bad cmd %s in init state\n",
-@@ -1071,6 +1079,10 @@ static enum i40e_nvmupd_cmd i40e_nvmupd_validate_command(struct i40e_hw *hw,
- 		case (I40E_NVM_CSUM|I40E_NVM_LCB):
- 			upd_cmd = I40E_NVMUPD_CSUM_LCB;
+ 	/* poll until we see the reset actually happen */
+ 	for (i = 0; i < I40EVF_RESET_WAIT_COUNT; i++) {
+-		rstat_val = rd32(hw, I40E_VFGEN_RSTAT) &
+-			    I40E_VFGEN_RSTAT_VFR_STATE_MASK;
+-		if ((rstat_val != I40E_VFR_VFACTIVE) &&
+-		    (rstat_val != I40E_VFR_COMPLETED))
++		reg_val = rd32(hw, I40E_VF_ARQLEN1) &
++			  I40E_VF_ARQLEN1_ARQENABLE_MASK;
++		if (!reg_val)
  			break;
-+		case I40E_NVM_EXEC:
-+			if (module == 0)
-+				upd_cmd = I40E_NVMUPD_EXEC_AQ;
-+			break;
- 		}
- 		break;
+-		usleep_range(500, 1000);
++		usleep_range(5000, 10000);
  	}
-@@ -1079,6 +1091,77 @@ static enum i40e_nvmupd_cmd i40e_nvmupd_validate_command(struct i40e_hw *hw,
- }
+ 	if (i == I40EVF_RESET_WAIT_COUNT) {
+ 		dev_info(&adapter->pdev->dev, "Never saw reset\n");
+@@ -1607,9 +1603,9 @@ static void i40evf_reset_task(struct work_struct *work)
  
- /**
-+ * i40e_nvmupd_exec_aq - Run an AQ command
-+ * @hw: pointer to hardware structure
-+ * @cmd: pointer to nvm update command buffer
-+ * @bytes: pointer to the data buffer
-+ * @perrno: pointer to return error code
-+ *
-+ * cmd structure contains identifiers and data buffer
-+ **/
-+static i40e_status i40e_nvmupd_exec_aq(struct i40e_hw *hw,
-+				       struct i40e_nvm_access *cmd,
-+				       u8 *bytes, int *perrno)
-+{
-+	struct i40e_asq_cmd_details cmd_details;
-+	i40e_status status;
-+	struct i40e_aq_desc *aq_desc;
-+	u32 buff_size = 0;
-+	u8 *buff = NULL;
-+	u32 aq_desc_len;
-+	u32 aq_data_len;
-+
-+	i40e_debug(hw, I40E_DEBUG_NVM, "NVMUPD: %s\n", __func__);
-+	memset(&cmd_details, 0, sizeof(cmd_details));
-+	cmd_details.wb_desc = &hw->nvm_wb_desc;
-+
-+	aq_desc_len = sizeof(struct i40e_aq_desc);
-+	memset(&hw->nvm_wb_desc, 0, aq_desc_len);
-+
-+	/* get the aq descriptor */
-+	if (cmd->data_size < aq_desc_len) {
-+		i40e_debug(hw, I40E_DEBUG_NVM,
-+			   "NVMUPD: not enough aq desc bytes for exec, size %d < %d\n",
-+			   cmd->data_size, aq_desc_len);
-+		*perrno = -EINVAL;
-+		return I40E_ERR_PARAM;
-+	}
-+	aq_desc = (struct i40e_aq_desc *)bytes;
-+
-+	/* if data buffer needed, make sure it's ready */
-+	aq_data_len = cmd->data_size - aq_desc_len;
-+	buff_size = max_t(u32, aq_data_len, le16_to_cpu(aq_desc->datalen));
-+	if (buff_size) {
-+		if (!hw->nvm_buff.va) {
-+			status = i40e_allocate_virt_mem(hw, &hw->nvm_buff,
-+							hw->aq.asq_buf_size);
-+			if (status)
-+				i40e_debug(hw, I40E_DEBUG_NVM,
-+					   "NVMUPD: i40e_allocate_virt_mem for exec buff failed, %d\n",
-+					   status);
-+		}
-+
-+		if (hw->nvm_buff.va) {
-+			buff = hw->nvm_buff.va;
-+			memcpy(buff, &bytes[aq_desc_len], aq_data_len);
-+		}
-+	}
-+
-+	/* and away we go! */
-+	status = i40e_asq_send_command(hw, aq_desc, buff,
-+				       buff_size, &cmd_details);
-+	if (status) {
-+		i40e_debug(hw, I40E_DEBUG_NVM,
-+			   "i40e_nvmupd_exec_aq err %s aq_err %s\n",
-+			   i40e_stat_str(hw, status),
-+			   i40e_aq_str(hw, hw->aq.asq_last_status));
-+		*perrno = i40e_aq_rc_to_posix(status, hw->aq.asq_last_status);
-+	}
-+
-+	return status;
-+}
-+
-+/**
-  * i40e_nvmupd_nvm_read - Read NVM
-  * @hw: pointer to hardware structure
-  * @cmd: pointer to nvm update command buffer
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-index dd0f709..cb36b2a 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-@@ -308,6 +308,7 @@ enum i40e_nvmupd_cmd {
- 	I40E_NVMUPD_CSUM_SA,
- 	I40E_NVMUPD_CSUM_LCB,
- 	I40E_NVMUPD_STATUS,
-+	I40E_NVMUPD_EXEC_AQ,
- };
+ 	/* wait until the reset is complete and the PF is responding to us */
+ 	for (i = 0; i < I40EVF_RESET_WAIT_COUNT; i++) {
+-		rstat_val = rd32(hw, I40E_VFGEN_RSTAT) &
+-			    I40E_VFGEN_RSTAT_VFR_STATE_MASK;
+-		if (rstat_val == I40E_VFR_VFACTIVE)
++		reg_val = rd32(hw, I40E_VFGEN_RSTAT) &
++			  I40E_VFGEN_RSTAT_VFR_STATE_MASK;
++		if (reg_val == I40E_VFR_VFACTIVE)
+ 			break;
+ 		msleep(I40EVF_RESET_WAIT_MS);
+ 	}
+@@ -1621,7 +1617,7 @@ static void i40evf_reset_task(struct work_struct *work)
  
- enum i40e_nvmupd_state {
-@@ -499,6 +500,7 @@ struct i40e_hw {
- 	/* state of nvm update process */
- 	enum i40e_nvmupd_state nvmupd_state;
- 	struct i40e_aq_desc nvm_wb_desc;
-+	struct i40e_virt_mem nvm_buff;
+ 		/* reset never finished */
+ 		dev_err(&adapter->pdev->dev, "Reset never finished (%x)\n",
+-			rstat_val);
++			reg_val);
+ 		adapter->flags |= I40EVF_FLAG_PF_COMMS_FAILED;
  
- 	/* HMC info */
- 	struct i40e_hmc_info hmc; /* HMC info struct */
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq.c b/drivers/net/ethernet/intel/i40evf/i40e_adminq.c
-index 48cce43f..cb21e01 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_adminq.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq.c
-@@ -596,6 +596,9 @@ i40e_status i40evf_shutdown_adminq(struct i40e_hw *hw)
- 
- 	/* destroy the locks */
- 
-+	if (hw->nvm_buff.va)
-+		i40e_free_virt_mem(hw, &hw->nvm_buff);
-+
- 	return ret_code;
- }
- 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-index 00f4956..5510220 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-@@ -307,6 +307,7 @@ enum i40e_nvmupd_cmd {
- 	I40E_NVMUPD_CSUM_SA,
- 	I40E_NVMUPD_CSUM_LCB,
- 	I40E_NVMUPD_STATUS,
-+	I40E_NVMUPD_EXEC_AQ,
- };
- 
- enum i40e_nvmupd_state {
-@@ -493,6 +494,7 @@ struct i40e_hw {
- 	/* state of nvm update process */
- 	enum i40e_nvmupd_state nvmupd_state;
- 	struct i40e_aq_desc nvm_wb_desc;
-+	struct i40e_virt_mem nvm_buff;
- 
- 	/* HMC info */
- 	struct i40e_hmc_info hmc; /* HMC info struct */
+ 		if (netif_running(adapter->netdev)) {
 -- 
 1.9.3
 
