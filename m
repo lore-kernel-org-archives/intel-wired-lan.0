@@ -1,135 +1,117 @@
-From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Thu, 27 Aug 2015 11:42:37 -0400
-Subject: [Intel-wired-lan] [next PATCH S12 09/15] i40e/i40evf: Store CEE
-	DCBX DesiredCfg and RemoteCfg
-In-Reply-To: <1440690163-128213-1-git-send-email-catherine.sullivan@intel.com>
-References: <1440690163-128213-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1440690163-128213-10-git-send-email-catherine.sullivan@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 28 Aug 2015 09:23:07 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ cfdf08cfc9e439853068edd4c30379acd132acb5 BUILD SUCCESS
+Message-ID: <55dfb7fb.Xdcqpgf7da8864QY%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Neerav Parikh <neerav.parikh@intel.com>
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+cfdf08cfc9e439853068edd4c30379acd132acb5  i40e: Set defport behavior for the Main VSI when in promiscuous mode
 
-This patch adds capability to query and store the CEE DCBX DesiredCfg
-and RemoteCfg data from the LLDP MIB.
-Added new member "desired_dcbx_config" in the i40e_hw data structure
-to hold CEE only DesiredCfg data.
+elapsed time: 107m
 
-Signed-off-by: Neerav Parikh <neerav.parikh@intel.com>
-Change-ID: I19c550369594384eaff4cc63e690ca740231195d
----
- drivers/net/ethernet/intel/i40e/i40e_dcb.c    | 44 ++++++++++++++++++++++-----
- drivers/net/ethernet/intel/i40e/i40e_type.h   |  5 +--
- drivers/net/ethernet/intel/i40evf/i40e_type.h |  5 +--
- 3 files changed, 42 insertions(+), 12 deletions(-)
+configs tested: 96
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_dcb.c b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
-index 89e60e3..fbec7d7 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_dcb.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
-@@ -762,6 +762,36 @@ static void i40e_cee_to_dcb_config(
- }
- 
- /**
-+ * i40e_get_ieee_dcb_config
-+ * @hw: pointer to the hw struct
-+ *
-+ * Get IEEE mode DCB configuration from the Firmware
-+ **/
-+static i40e_status i40e_get_ieee_dcb_config(struct i40e_hw *hw)
-+{
-+	i40e_status ret = 0;
-+
-+	/* IEEE mode */
-+	hw->local_dcbx_config.dcbx_mode = I40E_DCBX_MODE_IEEE;
-+	/* Get Local DCB Config */
-+	ret = i40e_aq_get_dcb_config(hw, I40E_AQ_LLDP_MIB_LOCAL, 0,
-+				     &hw->local_dcbx_config);
-+	if (ret)
-+		goto out;
-+
-+	/* Get Remote DCB Config */
-+	ret = i40e_aq_get_dcb_config(hw, I40E_AQ_LLDP_MIB_REMOTE,
-+				     I40E_AQ_LLDP_BRIDGE_TYPE_NEAREST_BRIDGE,
-+				     &hw->remote_dcbx_config);
-+	/* Don't treat ENOENT as an error for Remote MIBs */
-+	if (hw->aq.asq_last_status == I40E_AQ_RC_ENOENT)
-+		ret = 0;
-+
-+out:
-+	return ret;
-+}
-+
-+/**
-  * i40e_get_dcb_config
-  * @hw: pointer to the hw struct
-  *
-@@ -776,7 +806,7 @@ i40e_status i40e_get_dcb_config(struct i40e_hw *hw)
- 	/* If Firmware version < v4.33 IEEE only */
- 	if (((hw->aq.fw_maj_ver == 4) && (hw->aq.fw_min_ver < 33)) ||
- 	    (hw->aq.fw_maj_ver < 4))
--		goto ieee;
-+		return i40e_get_ieee_dcb_config(hw);
- 
- 	/* If Firmware version == v4.33 use old CEE struct */
- 	if ((hw->aq.fw_maj_ver == 4) && (hw->aq.fw_min_ver == 33)) {
-@@ -805,16 +835,14 @@ i40e_status i40e_get_dcb_config(struct i40e_hw *hw)
- 
- 	/* CEE mode not enabled try querying IEEE data */
- 	if (hw->aq.asq_last_status == I40E_AQ_RC_ENOENT)
--		goto ieee;
--	else
-+		return i40e_get_ieee_dcb_config(hw);
-+
-+	if (ret)
- 		goto out;
- 
--ieee:
--	/* IEEE mode */
--	hw->local_dcbx_config.dcbx_mode = I40E_DCBX_MODE_IEEE;
--	/* Get Local DCB Config */
-+	/* Get CEE DCB Desired Config */
- 	ret = i40e_aq_get_dcb_config(hw, I40E_AQ_LLDP_MIB_LOCAL, 0,
--				     &hw->local_dcbx_config);
-+				     &hw->desired_dcbx_config);
- 	if (ret)
- 		goto out;
- 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-index f45f372..b1ee6ce 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-@@ -502,8 +502,9 @@ struct i40e_hw {
- 	u16 dcbx_status;
- 
- 	/* DCBX info */
--	struct i40e_dcbx_config local_dcbx_config;
--	struct i40e_dcbx_config remote_dcbx_config;
-+	struct i40e_dcbx_config local_dcbx_config; /* Oper/Local Cfg */
-+	struct i40e_dcbx_config remote_dcbx_config; /* Peer Cfg */
-+	struct i40e_dcbx_config desired_dcbx_config; /* CEE Desired Cfg */
- 
- 	/* debug mask */
- 	u32 debug_mask;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-index 43782ed..919516a 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-@@ -496,8 +496,9 @@ struct i40e_hw {
- 	u16 dcbx_status;
- 
- 	/* DCBX info */
--	struct i40e_dcbx_config local_dcbx_config;
--	struct i40e_dcbx_config remote_dcbx_config;
-+	struct i40e_dcbx_config local_dcbx_config; /* Oper/Local Cfg */
-+	struct i40e_dcbx_config remote_dcbx_config; /* Peer Cfg */
-+	struct i40e_dcbx_config desired_dcbx_config; /* CEE Desired Cfg */
- 
- 	/* debug mask */
- 	u32 debug_mask;
--- 
-1.9.3
+parisc                        c3000_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+i386                     randconfig-a0-201534
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+x86_64                   randconfig-i0-201534
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                     randconfig-i1-201534
+i386                     randconfig-i0-201534
+x86_64                           allmodconfig
+x86_64                            allnoconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n1-201534
+i386                     randconfig-n0-201534
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+arm                                    sa1100
+arm                          prima2_defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                                   samsung
+arm                       spear13xx_defconfig
+arm                                  iop-adma
+arm                       imx_v6_v7_defconfig
+arm                          marzen_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                                        sh
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+m68k                          amiga_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                 randconfig-x004-201534
+x86_64                 randconfig-x001-201534
+x86_64                 randconfig-x000-201534
+x86_64                 randconfig-x006-201534
+x86_64                 randconfig-x003-201534
+x86_64                 randconfig-x002-201534
+x86_64                 randconfig-x005-201534
+x86_64                 randconfig-x009-201534
+x86_64                 randconfig-x007-201534
+x86_64                 randconfig-x008-201534
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-r0-201534
+i386                              allnoconfig
+i386                                defconfig
+i386                             allmodconfig
+i386                             alldefconfig
+i386                   randconfig-x000-201534
+i386                   randconfig-x001-201534
+i386                   randconfig-x008-201534
+i386                   randconfig-x004-201534
+i386                   randconfig-x007-201534
+i386                   randconfig-x005-201534
+i386                   randconfig-x003-201534
+i386                   randconfig-x002-201534
+i386                   randconfig-x009-201534
+i386                   randconfig-x006-201534
+mips                                   jz4740
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
 
+Thanks,
+Fengguang
