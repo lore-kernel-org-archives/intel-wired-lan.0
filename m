@@ -1,109 +1,65 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 28 Aug 2015 11:43:31 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
- fe2188236ad04618b25978c44d896c16613de9aa BUILD SUCCESS
-Message-ID: <55dfd8e3.tAWdpgLY/afPInhT%fengguang.wu@intel.com>
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Date: Fri, 28 Aug 2015 06:57:10 +0000
+Subject: [Intel-wired-lan] [PATCH v8 0/3] Introduce VF trust capability and
+	xcast_mode in VF
+Message-ID: <7F861DC0615E0C47A872E6F3C5FCDDBD05F28E3D@BPXM14GP.gisp.nec.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
-fe2188236ad04618b25978c44d896c16613de9aa  Merge branch 'master' of git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-elapsed time: 247m
+There is a limitation in the number of multicast L2 addresses in ixgbe
+and ixgbevf driver. The number of multicast addresses in VF is 30 in the
+current implementation. That means that we can use up to 30 IPv6
+addresses only. On the other hand there is a functionality to set VF
+multicast promiscuous mode in the NIC.
 
-configs tested: 89
+This patchset addresses the issue.
 
-parisc                        c3000_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-i386                     randconfig-a0-201534
-x86_64                            allnoconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                   randconfig-s1-08280750
-i386                   randconfig-s0-08280750
-i386                              allnoconfig
-i386                                defconfig
-i386                             allmodconfig
-i386                             alldefconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i1-201534
-i386                     randconfig-i0-201534
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-i386                     randconfig-n1-201534
-i386                     randconfig-n0-201534
-arm                       omap2plus_defconfig
-arm                         s3c2410_defconfig
-arm                                       mmp
-arm                           tegra_defconfig
-arm                                      arm5
-arm                                     arm67
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-arm                                    sa1100
-arm                          prima2_defconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                                   samsung
-arm                       spear13xx_defconfig
-arm                                  iop-adma
-arm                       imx_v6_v7_defconfig
-arm                          marzen_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                                        sh
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-x86_64                           allmodconfig
-x86_64                 randconfig-x004-201534
-x86_64                 randconfig-x001-201534
-x86_64                 randconfig-x000-201534
-x86_64                 randconfig-x006-201534
-x86_64                 randconfig-x003-201534
-x86_64                 randconfig-x002-201534
-x86_64                 randconfig-x005-201534
-x86_64                 randconfig-x009-201534
-x86_64                 randconfig-x007-201534
-x86_64                 randconfig-x008-201534
-i386                     randconfig-r0-201534
-i386                   randconfig-x000-201534
-i386                   randconfig-x001-201534
-i386                   randconfig-x008-201534
-i386                   randconfig-x004-201534
-i386                   randconfig-x007-201534
-i386                   randconfig-x005-201534
-i386                   randconfig-x003-201534
-i386                   randconfig-x002-201534
-i386                   randconfig-x009-201534
-i386                   randconfig-x006-201534
+First, it introduces VF trusting capability. Like VF multicast promiscuous
+may hurt security and performance. We would like to enable such
+functionality only on trusted VF.
+Next, it introduces VF xcast_mode that represents multicast mode in VF
+and request it to PF. If ALLMULTI is set in VF network device, it requests
+VF multicast promiscuous mode to PF. And the VF is trusted, PF enables VF
+multicast promiscuous mode.
 
-Thanks,
-Fengguang
+Short history
+v5->v6
+	Reorganize patchsets, make it with VF trust and MC promisc mode.
+
+v6->v7
+	Change to introduce xcast_mode instead of dedicated VF multicast
+	promisc mode API.
+
+v7->v8
+	Fix to use EOPNOTSUPP in ixgbe_update_vf_xcast_mode() on error,
+	instead of -1.
+
+Hiroshi Shimamoto (3):
+  if_link: Add control trust VF
+  ixgbe: Add new ndo to trust VF
+  ixgbe, ixgbevf: Add new mbox API xcast mode
+
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h          |  8 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |  1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h      |  2 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c    | 96 +++++++++++++++++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h    |  1 +
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |  6 ++
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |  8 ++
+ drivers/net/ethernet/intel/ixgbevf/mbx.h          |  2 +
+ drivers/net/ethernet/intel/ixgbevf/vf.c           | 41 ++++++++++
+ drivers/net/ethernet/intel/ixgbevf/vf.h           |  1 +
+ include/linux/if_link.h                           |  1 +
+ include/linux/netdevice.h                         |  3 +
+ include/uapi/linux/if_link.h                      |  6 ++
+ net/core/rtnetlink.c                              | 24 +++++-
+ 14 files changed, 197 insertions(+), 3 deletions(-)
+
+-- 
+1.8.3.1
+
