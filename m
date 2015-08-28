@@ -1,10 +1,10 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Fri, 28 Aug 2015 17:55:49 -0400
-Subject: [Intel-wired-lan] [next PATCH S13 03/15] i40e/i40evf: add wait
-	states to NVM state machine
+Date: Fri, 28 Aug 2015 17:55:48 -0400
+Subject: [Intel-wired-lan] [next PATCH S13 02/15] i40e/i40evf: add GetStatus
+	command for nvmupdate
 In-Reply-To: <1440798961-17326-1-git-send-email-catherine.sullivan@intel.com>
 References: <1440798961-17326-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1440798961-17326-4-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1440798961-17326-3-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,207 +13,149 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Shannon Nelson <shannon.nelson@intel.com>
 
-This adds wait states to the NVM update state machine to signify when
-waiting for an update operation to finish, whether we're in the middle
-of a set of Write operations, or we're now idle but waiting.
+This adds a new GetStatus command so that the NVM update tool can query
+the current status instead of doing fake write requests to probe for
+readiness.
 
 Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-Change-ID: Iabe91d6579ef6a2ea560647e374035656211ab43
+Change-ID: I671ec6ccd4dfc9dbac3a03b964589d693fda5cd8
 ---
- drivers/net/ethernet/intel/i40e/i40e_adminq.c | 13 ++++++++
- drivers/net/ethernet/intel/i40e/i40e_nvm.c    | 48 ++++++++++++++++++++-------
- drivers/net/ethernet/intel/i40e/i40e_type.h   |  4 ++-
- drivers/net/ethernet/intel/i40evf/i40e_type.h |  4 ++-
- 4 files changed, 55 insertions(+), 14 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_nvm.c    | 42 ++++++++++++++++++++-------
+ drivers/net/ethernet/intel/i40e/i40e_type.h   |  2 ++
+ drivers/net/ethernet/intel/i40evf/i40e_type.h |  2 ++
+ 3 files changed, 35 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-index 00404fe..8ba4b60 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-@@ -1020,6 +1020,19 @@ clean_arq_element_out:
- 			i40e_release_nvm(hw);
- 			hw->aq.nvm_release_on_done = false;
- 		}
-+
-+		switch (hw->nvmupd_state) {
-+		case I40E_NVMUPD_STATE_INIT_WAIT:
-+			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
-+			break;
-+
-+		case I40E_NVMUPD_STATE_WRITE_WAIT:
-+			hw->nvmupd_state = I40E_NVMUPD_STATE_WRITING;
-+			break;
-+
-+		default:
-+			break;
-+		}
- 	}
- 
- 	return ret_code;
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-index 034e27a..d21c652 100644
+index 13534b3..034e27a 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-@@ -698,6 +698,12 @@ i40e_status i40e_nvmupd_command(struct i40e_hw *hw,
- 		status = i40e_nvmupd_state_writing(hw, cmd, bytes, perrno);
- 		break;
+@@ -640,6 +640,7 @@ static char *i40e_nvm_update_state_str[] = {
+ 	"I40E_NVMUPD_CSUM_CON",
+ 	"I40E_NVMUPD_CSUM_SA",
+ 	"I40E_NVMUPD_CSUM_LCB",
++	"I40E_NVMUPD_STATUS",
+ };
  
-+	case I40E_NVMUPD_STATE_INIT_WAIT:
-+	case I40E_NVMUPD_STATE_WRITE_WAIT:
-+		status = I40E_ERR_NOT_READY;
-+		*perrno = -EBUSY;
-+		break;
+ /**
+@@ -656,10 +657,34 @@ i40e_status i40e_nvmupd_command(struct i40e_hw *hw,
+ 				u8 *bytes, int *perrno)
+ {
+ 	i40e_status status;
++	enum i40e_nvmupd_cmd upd_cmd;
+ 
+ 	/* assume success */
+ 	*perrno = 0;
+ 
++	/* early check for status command and debug msgs */
++	upd_cmd = i40e_nvmupd_validate_command(hw, cmd, perrno);
 +
- 	default:
- 		/* invalid state, should never happen */
- 		i40e_debug(hw, I40E_DEBUG_NVM,
-@@ -761,10 +767,12 @@ static i40e_status i40e_nvmupd_state_init(struct i40e_hw *hw,
- 						     hw->aq.asq_last_status);
- 		} else {
- 			status = i40e_nvmupd_nvm_erase(hw, cmd, perrno);
--			if (status)
-+			if (status) {
- 				i40e_release_nvm(hw);
--			else
-+			} else {
- 				hw->aq.nvm_release_on_done = true;
-+				hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
-+			}
- 		}
- 		break;
- 
-@@ -775,10 +783,12 @@ static i40e_status i40e_nvmupd_state_init(struct i40e_hw *hw,
- 						     hw->aq.asq_last_status);
- 		} else {
- 			status = i40e_nvmupd_nvm_write(hw, cmd, bytes, perrno);
--			if (status)
-+			if (status) {
- 				i40e_release_nvm(hw);
--			else
-+			} else {
- 				hw->aq.nvm_release_on_done = true;
-+				hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
-+			}
- 		}
- 		break;
- 
-@@ -792,7 +802,7 @@ static i40e_status i40e_nvmupd_state_init(struct i40e_hw *hw,
- 			if (status)
- 				i40e_release_nvm(hw);
- 			else
--				hw->nvmupd_state = I40E_NVMUPD_STATE_WRITING;
-+				hw->nvmupd_state = I40E_NVMUPD_STATE_WRITE_WAIT;
- 		}
- 		break;
- 
-@@ -811,6 +821,7 @@ static i40e_status i40e_nvmupd_state_init(struct i40e_hw *hw,
- 				i40e_release_nvm(hw);
- 			} else {
- 				hw->aq.nvm_release_on_done = true;
-+				hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
- 			}
- 		}
- 		break;
-@@ -840,7 +851,7 @@ static i40e_status i40e_nvmupd_state_reading(struct i40e_hw *hw,
- 					     struct i40e_nvm_access *cmd,
- 					     u8 *bytes, int *perrno)
++	i40e_debug(hw, I40E_DEBUG_NVM, "%s state %d nvm_release_on_hold %d\n",
++		   i40e_nvm_update_state_str[upd_cmd],
++		   hw->nvmupd_state,
++		   hw->aq.nvm_release_on_done);
++
++	if (upd_cmd == I40E_NVMUPD_INVALID) {
++		*perrno = -EFAULT;
++		i40e_debug(hw, I40E_DEBUG_NVM,
++			   "i40e_nvmupd_validate_command returns %d errno %d\n",
++			   upd_cmd, *perrno);
++	}
++
++	/* a status request returns immediately rather than
++	 * going into the state machine
++	 */
++	if (upd_cmd == I40E_NVMUPD_STATUS) {
++		bytes[0] = hw->nvmupd_state;
++		return 0;
++	}
++
+ 	switch (hw->nvmupd_state) {
+ 	case I40E_NVMUPD_STATE_INIT:
+ 		status = i40e_nvmupd_state_init(hw, cmd, bytes, perrno);
+@@ -956,12 +981,13 @@ static enum i40e_nvmupd_cmd i40e_nvmupd_validate_command(struct i40e_hw *hw,
+ 						 int *perrno)
  {
--	i40e_status status;
-+	i40e_status status = 0;
  	enum i40e_nvmupd_cmd upd_cmd;
+-	u8 transaction;
++	u8 module, transaction;
  
- 	upd_cmd = i40e_nvmupd_validate_command(hw, cmd, perrno);
-@@ -882,7 +893,7 @@ static i40e_status i40e_nvmupd_state_writing(struct i40e_hw *hw,
- 					     struct i40e_nvm_access *cmd,
- 					     u8 *bytes, int *perrno)
- {
--	i40e_status status;
-+	i40e_status status = 0;
- 	enum i40e_nvmupd_cmd upd_cmd;
- 	bool retry_attempt = false;
+ 	/* anything that doesn't match a recognized case is an error */
+ 	upd_cmd = I40E_NVMUPD_INVALID;
  
-@@ -892,13 +903,22 @@ retry:
- 	switch (upd_cmd) {
- 	case I40E_NVMUPD_WRITE_CON:
- 		status = i40e_nvmupd_nvm_write(hw, cmd, bytes, perrno);
-+		if (!status)
-+			hw->nvmupd_state = I40E_NVMUPD_STATE_WRITE_WAIT;
- 		break;
+ 	transaction = i40e_nvmupd_get_transaction(cmd->config);
++	module = i40e_nvmupd_get_module(cmd->config);
  
- 	case I40E_NVMUPD_WRITE_LCB:
- 		status = i40e_nvmupd_nvm_write(hw, cmd, bytes, perrno);
--		if (!status)
-+		if (status) {
-+			*perrno = hw->aq.asq_last_status ?
-+				   i40e_aq_rc_to_posix(status,
-+						       hw->aq.asq_last_status) :
-+				   -EIO;
-+			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
-+		} else {
- 			hw->aq.nvm_release_on_done = true;
--		hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
-+			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
-+		}
- 		break;
- 
- 	case I40E_NVMUPD_CSUM_CON:
-@@ -909,19 +929,23 @@ retry:
- 						       hw->aq.asq_last_status) :
- 				   -EIO;
- 			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
-+		} else {
-+			hw->nvmupd_state = I40E_NVMUPD_STATE_WRITE_WAIT;
+ 	/* limits on data size */
+ 	if ((cmd->data_size < 1) ||
+@@ -988,6 +1014,10 @@ static enum i40e_nvmupd_cmd i40e_nvmupd_validate_command(struct i40e_hw *hw,
+ 		case I40E_NVM_SA:
+ 			upd_cmd = I40E_NVMUPD_READ_SA;
+ 			break;
++		case I40E_NVM_EXEC:
++			if (module == 0xf)
++				upd_cmd = I40E_NVMUPD_STATUS;
++			break;
  		}
  		break;
  
- 	case I40E_NVMUPD_CSUM_LCB:
- 		status = i40e_update_nvm_checksum(hw);
--		if (status)
-+		if (status) {
- 			*perrno = hw->aq.asq_last_status ?
- 				   i40e_aq_rc_to_posix(status,
- 						       hw->aq.asq_last_status) :
- 				   -EIO;
--		else
-+			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
-+		} else {
- 			hw->aq.nvm_release_on_done = true;
--		hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
-+			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
-+		}
+@@ -1020,17 +1050,7 @@ static enum i40e_nvmupd_cmd i40e_nvmupd_validate_command(struct i40e_hw *hw,
+ 		}
  		break;
+ 	}
+-	i40e_debug(hw, I40E_DEBUG_NVM, "%s state %d nvm_release_on_hold %d\n",
+-		   i40e_nvm_update_state_str[upd_cmd],
+-		   hw->nvmupd_state,
+-		   hw->aq.nvm_release_on_done);
  
- 	default:
+-	if (upd_cmd == I40E_NVMUPD_INVALID) {
+-		*perrno = -EFAULT;
+-		i40e_debug(hw, I40E_DEBUG_NVM,
+-			   "i40e_nvmupd_validate_command returns %d errno %d\n",
+-			   upd_cmd, *perrno);
+-	}
+ 	return upd_cmd;
+ }
+ 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-index 20e16ed..dd0f709 100644
+index d3558e1..20e16ed 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_type.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-@@ -313,7 +313,9 @@ enum i40e_nvmupd_cmd {
- enum i40e_nvmupd_state {
- 	I40E_NVMUPD_STATE_INIT,
- 	I40E_NVMUPD_STATE_READING,
--	I40E_NVMUPD_STATE_WRITING
-+	I40E_NVMUPD_STATE_WRITING,
-+	I40E_NVMUPD_STATE_INIT_WAIT,
-+	I40E_NVMUPD_STATE_WRITE_WAIT,
+@@ -307,6 +307,7 @@ enum i40e_nvmupd_cmd {
+ 	I40E_NVMUPD_CSUM_CON,
+ 	I40E_NVMUPD_CSUM_SA,
+ 	I40E_NVMUPD_CSUM_LCB,
++	I40E_NVMUPD_STATUS,
  };
  
- /* nvm_access definition and its masks/shifts need to be accessible to
+ enum i40e_nvmupd_state {
+@@ -331,6 +332,7 @@ enum i40e_nvmupd_state {
+ #define I40E_NVM_SA		(I40E_NVM_SNT | I40E_NVM_LCB)
+ #define I40E_NVM_ERA		0x4
+ #define I40E_NVM_CSUM		0x8
++#define I40E_NVM_EXEC		0xf
+ 
+ #define I40E_NVM_ADAPT_SHIFT	16
+ #define I40E_NVM_ADAPT_MASK	(0xffff << I40E_NVM_ADAPT_SHIFT)
 diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-index ee02e25..00f4956 100644
+index c811081..ee02e25 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
 +++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-@@ -312,7 +312,9 @@ enum i40e_nvmupd_cmd {
- enum i40e_nvmupd_state {
- 	I40E_NVMUPD_STATE_INIT,
- 	I40E_NVMUPD_STATE_READING,
--	I40E_NVMUPD_STATE_WRITING
-+	I40E_NVMUPD_STATE_WRITING,
-+	I40E_NVMUPD_STATE_INIT_WAIT,
-+	I40E_NVMUPD_STATE_WRITE_WAIT,
+@@ -306,6 +306,7 @@ enum i40e_nvmupd_cmd {
+ 	I40E_NVMUPD_CSUM_CON,
+ 	I40E_NVMUPD_CSUM_SA,
+ 	I40E_NVMUPD_CSUM_LCB,
++	I40E_NVMUPD_STATUS,
  };
  
- /* nvm_access definition and its masks/shifts need to be accessible to
+ enum i40e_nvmupd_state {
+@@ -330,6 +331,7 @@ enum i40e_nvmupd_state {
+ #define I40E_NVM_SA		(I40E_NVM_SNT | I40E_NVM_LCB)
+ #define I40E_NVM_ERA		0x4
+ #define I40E_NVM_CSUM		0x8
++#define I40E_NVM_EXEC		0xf
+ 
+ #define I40E_NVM_ADAPT_SHIFT	16
+ #define I40E_NVM_ADAPT_MASK	(0xffff << I40E_NVM_ADAPT_SHIFT)
 -- 
 1.9.3
 
