@@ -1,18 +1,18 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 28 Aug 2015 09:23:07 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
- cfdf08cfc9e439853068edd4c30379acd132acb5 BUILD SUCCESS
-Message-ID: <55dfb7fb.Xdcqpgf7da8864QY%fengguang.wu@intel.com>
+Date: Fri, 28 Aug 2015 11:09:24 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 10649b20c2a19002dd2504b1da9afdb299f7c72d BUILD SUCCESS
+Message-ID: <55dfd0e4.Wyf01boXgi+Jz0iI%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-cfdf08cfc9e439853068edd4c30379acd132acb5  i40e: Set defport behavior for the Main VSI when in promiscuous mode
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+10649b20c2a19002dd2504b1da9afdb299f7c72d  Subject: [4/4] i40e: geneve tunnel offload support
 
-elapsed time: 107m
+elapsed time: 213m
 
 configs tested: 96
 
@@ -21,9 +21,32 @@ parisc                              defconfig
 alpha                               defconfig
 parisc                            allnoconfig
 i386                     randconfig-a0-201534
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+x86_64                            allnoconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             allmodconfig
+i386                             alldefconfig
+mips                                   jz4740
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+x86_64                   randconfig-i0-201534
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                     randconfig-i1-201534
+i386                     randconfig-i0-201534
 xtensa                       common_defconfig
 m32r                       m32104ut_defconfig
 xtensa                          iss_defconfig
@@ -35,29 +58,18 @@ blackfin                  TCM-BF537_defconfig
 blackfin            BF561-EZKIT-SMP_defconfig
 blackfin                BF533-EZKIT_defconfig
 blackfin                BF526-EZBRD_defconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-x86_64                   randconfig-i0-201534
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i1-201534
-i386                     randconfig-i0-201534
-x86_64                           allmodconfig
-x86_64                            allnoconfig
+x86_64                                    lkp
+x86_64                                   rhel
 microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
 i386                     randconfig-n1-201534
 i386                     randconfig-n0-201534
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
 arm                                    sa1100
 arm                          prima2_defconfig
 arm                         at91_dt_defconfig
@@ -78,6 +90,7 @@ sh                            titan_defconfig
 sh                          rsk7269_defconfig
 sh                  sh7785lcr_32bit_defconfig
 sh                                allnoconfig
+x86_64                           allmodconfig
 x86_64                 randconfig-x004-201534
 x86_64                 randconfig-x001-201534
 x86_64                 randconfig-x000-201534
@@ -88,16 +101,7 @@ x86_64                 randconfig-x005-201534
 x86_64                 randconfig-x009-201534
 x86_64                 randconfig-x007-201534
 x86_64                 randconfig-x008-201534
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64                                    lkp
-x86_64                                   rhel
 i386                     randconfig-r0-201534
-i386                              allnoconfig
-i386                                defconfig
-i386                             allmodconfig
-i386                             alldefconfig
 i386                   randconfig-x000-201534
 i386                   randconfig-x001-201534
 i386                   randconfig-x008-201534
@@ -108,10 +112,6 @@ i386                   randconfig-x003-201534
 i386                   randconfig-x002-201534
 i386                   randconfig-x009-201534
 i386                   randconfig-x006-201534
-mips                                   jz4740
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
 
 Thanks,
 Fengguang
