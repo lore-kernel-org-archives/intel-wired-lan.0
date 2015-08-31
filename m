@@ -1,229 +1,125 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Mon, 31 Aug 2015 19:54:50 -0400
-Subject: [Intel-wired-lan] [next PATCH S14 10/15] i40e/i40evf: split device
-	ids into a separate file
+Date: Mon, 31 Aug 2015 19:54:52 -0400
+Subject: [Intel-wired-lan] [next PATCH S14 12/15] i40e: Add promiscuous on
+	VLAN support
 In-Reply-To: <1441065295-234333-1-git-send-email-catherine.sullivan@intel.com>
 References: <1441065295-234333-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1441065295-234333-11-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1441065295-234333-13-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Shannon Nelson <shannon.nelson@intel.com>
+From: Greg Rose <gregory.v.rose@intel.com>
 
-Due to desires to write userland drivers, and other requests, without
-needing the rest of the include files, the device ids are pulled out
-into a standalone file.
+NFV use cases require the ability to steer packets to VSIs by VLAN tag
+alone while being in promiscuous mode for multicast and unicast MAC
+addresses.  These two new functions support that ability.
 
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-Change-ID: Ic0b047dbf9d4b0891892309c1f2079f56d9b60e8
+Signed-off-by: Greg Rose <gregory.v.rose@intel.com>
+Change-ID: Ifef704b07e0ee8a39d3c351dbd5dc83bb2f63c45
 ---
- drivers/net/ethernet/intel/i40e/i40e_devids.h   | 55 +++++++++++++++++++++++++
- drivers/net/ethernet/intel/i40e/i40e_type.h     | 26 +-----------
- drivers/net/ethernet/intel/i40evf/i40e_devids.h | 55 +++++++++++++++++++++++++
- drivers/net/ethernet/intel/i40evf/i40e_type.h   | 26 +-----------
- 4 files changed, 112 insertions(+), 50 deletions(-)
- create mode 100644 drivers/net/ethernet/intel/i40e/i40e_devids.h
- create mode 100644 drivers/net/ethernet/intel/i40evf/i40e_devids.h
+ drivers/net/ethernet/intel/i40e/i40e_common.c    | 68 ++++++++++++++++++++++++
+ drivers/net/ethernet/intel/i40e/i40e_prototype.h |  6 +++
+ 2 files changed, 74 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_devids.h b/drivers/net/ethernet/intel/i40e/i40e_devids.h
-new file mode 100644
-index 0000000..c601ca4
---- /dev/null
-+++ b/drivers/net/ethernet/intel/i40e/i40e_devids.h
-@@ -0,0 +1,55 @@
-+/*******************************************************************************
-+ *
-+ * Intel Ethernet Controller XL710 Family Linux Driver
-+ * Copyright(c) 2013 - 2015 Intel Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
-+ *
-+ * The full GNU General Public License is included in this distribution in
-+ * the file called "COPYING".
-+ *
-+ * Contact Information:
-+ * e1000-devel Mailing List <e1000-devel@lists.sourceforge.net>
-+ * Intel Corporation, 5200 N.E. Elam Young Parkway, Hillsboro, OR 97124-6497
-+ *
-+ ******************************************************************************/
-+
-+#ifndef _I40E_DEVIDS_H_
-+#define _I40E_DEVIDS_H_
-+
-+/* Device IDs */
-+#define I40E_DEV_ID_SFP_XL710		0x1572
-+#define I40E_DEV_ID_QEMU		0x1574
-+#define I40E_DEV_ID_KX_A		0x157F
-+#define I40E_DEV_ID_KX_B		0x1580
-+#define I40E_DEV_ID_KX_C		0x1581
-+#define I40E_DEV_ID_QSFP_A		0x1583
-+#define I40E_DEV_ID_QSFP_B		0x1584
-+#define I40E_DEV_ID_QSFP_C		0x1585
-+#define I40E_DEV_ID_10G_BASE_T		0x1586
-+#define I40E_DEV_ID_20G_KR2		0x1587
-+#define I40E_DEV_ID_20G_KR2_A		0x1588
-+#define I40E_DEV_ID_10G_BASE_T4		0x1589
-+#define I40E_DEV_ID_VF			0x154C
-+#define I40E_DEV_ID_VF_HV		0x1571
-+#define I40E_DEV_ID_SFP_X722		0x37D0
-+#define I40E_DEV_ID_1G_BASE_T_X722	0x37D1
-+#define I40E_DEV_ID_10G_BASE_T_X722	0x37D2
-+#define I40E_DEV_ID_X722_VF		0x37CD
-+#define I40E_DEV_ID_X722_VF_HV		0x37D9
-+
-+#define i40e_is_40G_device(d)		((d) == I40E_DEV_ID_QSFP_A  || \
-+					 (d) == I40E_DEV_ID_QSFP_B  || \
-+					 (d) == I40E_DEV_ID_QSFP_C)
-+
-+#endif /* _I40E_DEVIDS_H_ */
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-index 4ec3ffa..102d0c4 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-@@ -33,31 +33,7 @@
- #include "i40e_adminq.h"
- #include "i40e_hmc.h"
- #include "i40e_lan_hmc.h"
--
--/* Device IDs */
--#define I40E_DEV_ID_SFP_XL710		0x1572
--#define I40E_DEV_ID_QEMU		0x1574
--#define I40E_DEV_ID_KX_A		0x157F
--#define I40E_DEV_ID_KX_B		0x1580
--#define I40E_DEV_ID_KX_C		0x1581
--#define I40E_DEV_ID_QSFP_A		0x1583
--#define I40E_DEV_ID_QSFP_B		0x1584
--#define I40E_DEV_ID_QSFP_C		0x1585
--#define I40E_DEV_ID_10G_BASE_T		0x1586
--#define I40E_DEV_ID_20G_KR2		0x1587
--#define I40E_DEV_ID_20G_KR2_A		0x1588
--#define I40E_DEV_ID_10G_BASE_T4		0x1589
--#define I40E_DEV_ID_VF			0x154C
--#define I40E_DEV_ID_VF_HV		0x1571
--#define I40E_DEV_ID_SFP_X722		0x37D0
--#define I40E_DEV_ID_1G_BASE_T_X722	0x37D1
--#define I40E_DEV_ID_10G_BASE_T_X722	0x37D2
--#define I40E_DEV_ID_X722_VF		0x37CD
--#define I40E_DEV_ID_X722_VF_HV		0x37D9
--
--#define i40e_is_40G_device(d)		((d) == I40E_DEV_ID_QSFP_A  || \
--					 (d) == I40E_DEV_ID_QSFP_B  || \
--					 (d) == I40E_DEV_ID_QSFP_C)
-+#include "i40e_devids.h"
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 2d012d9..d9519ce 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -2013,6 +2013,74 @@ i40e_status i40e_aq_set_vsi_multicast_promiscuous(struct i40e_hw *hw,
+ }
  
- /* I40E_MASK is a macro used on 32 bit registers */
- #define I40E_MASK(mask, shift) (mask << shift)
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_devids.h b/drivers/net/ethernet/intel/i40evf/i40e_devids.h
-new file mode 100644
-index 0000000..e6a39c9
---- /dev/null
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_devids.h
-@@ -0,0 +1,55 @@
-+/*******************************************************************************
-+ *
-+ * Intel Ethernet Controller XL710 Family Linux Virtual Function Driver
-+ * Copyright(c) 2013 - 2015 Intel Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
-+ *
-+ * The full GNU General Public License is included in this distribution in
-+ * the file called "COPYING".
-+ *
-+ * Contact Information:
-+ * e1000-devel Mailing List <e1000-devel@lists.sourceforge.net>
-+ * Intel Corporation, 5200 N.E. Elam Young Parkway, Hillsboro, OR 97124-6497
-+ *
-+ ******************************************************************************/
+ /**
++ * i40e_aq_set_vsi_mc_promisc_on_vlan
++ * @hw: pointer to the hw struct
++ * @seid: vsi number
++ * @enable: set MAC L2 layer unicast promiscuous enable/disable for a given VLAN
++ * @vid: The VLAN tag filter - capture any multicast packet with this VLAN tag
++ * @cmd_details: pointer to command details structure or NULL
++ **/
++i40e_status i40e_aq_set_vsi_mc_promisc_on_vlan(struct i40e_hw *hw,
++				u16 seid, bool enable, u16 vid,
++				struct i40e_asq_cmd_details *cmd_details)
++{
++	struct i40e_aq_desc desc;
++	struct i40e_aqc_set_vsi_promiscuous_modes *cmd =
++		(struct i40e_aqc_set_vsi_promiscuous_modes *)&desc.params.raw;
++	i40e_status status;
++	u16 flags = 0;
 +
-+#ifndef _I40E_DEVIDS_H_
-+#define _I40E_DEVIDS_H_
++	i40e_fill_default_direct_cmd_desc(&desc,
++					i40e_aqc_opc_set_vsi_promiscuous_modes);
 +
-+/* Device IDs */
-+#define I40E_DEV_ID_SFP_XL710		0x1572
-+#define I40E_DEV_ID_QEMU		0x1574
-+#define I40E_DEV_ID_KX_A		0x157F
-+#define I40E_DEV_ID_KX_B		0x1580
-+#define I40E_DEV_ID_KX_C		0x1581
-+#define I40E_DEV_ID_QSFP_A		0x1583
-+#define I40E_DEV_ID_QSFP_B		0x1584
-+#define I40E_DEV_ID_QSFP_C		0x1585
-+#define I40E_DEV_ID_10G_BASE_T		0x1586
-+#define I40E_DEV_ID_20G_KR2		0x1587
-+#define I40E_DEV_ID_20G_KR2_A		0x1588
-+#define I40E_DEV_ID_10G_BASE_T4		0x1589
-+#define I40E_DEV_ID_VF			0x154C
-+#define I40E_DEV_ID_VF_HV		0x1571
-+#define I40E_DEV_ID_SFP_X722		0x37D0
-+#define I40E_DEV_ID_1G_BASE_T_X722	0x37D1
-+#define I40E_DEV_ID_10G_BASE_T_X722	0x37D2
-+#define I40E_DEV_ID_X722_VF		0x37CD
-+#define I40E_DEV_ID_X722_VF_HV		0x37D9
++	if (enable)
++		flags |= I40E_AQC_SET_VSI_PROMISC_MULTICAST;
 +
-+#define i40e_is_40G_device(d)		((d) == I40E_DEV_ID_QSFP_A  || \
-+					 (d) == I40E_DEV_ID_QSFP_B  || \
-+					 (d) == I40E_DEV_ID_QSFP_C)
++	cmd->promiscuous_flags = cpu_to_le16(flags);
++	cmd->valid_flags = cpu_to_le16(I40E_AQC_SET_VSI_PROMISC_MULTICAST);
++	cmd->seid = cpu_to_le16(seid);
++	cmd->vlan_tag = cpu_to_le16(vid | I40E_AQC_SET_VSI_VLAN_VALID);
 +
-+#endif /* _I40E_DEVIDS_H_ */
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-index b3c65dd..6dbace3 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-@@ -33,31 +33,7 @@
- #include "i40e_adminq.h"
- #include "i40e_hmc.h"
- #include "i40e_lan_hmc.h"
--
--/* Device IDs */
--#define I40E_DEV_ID_SFP_XL710		0x1572
--#define I40E_DEV_ID_QEMU		0x1574
--#define I40E_DEV_ID_KX_A		0x157F
--#define I40E_DEV_ID_KX_B		0x1580
--#define I40E_DEV_ID_KX_C		0x1581
--#define I40E_DEV_ID_QSFP_A		0x1583
--#define I40E_DEV_ID_QSFP_B		0x1584
--#define I40E_DEV_ID_QSFP_C		0x1585
--#define I40E_DEV_ID_10G_BASE_T		0x1586
--#define I40E_DEV_ID_20G_KR2		0x1587
--#define I40E_DEV_ID_20G_KR2_A		0x1588
--#define I40E_DEV_ID_10G_BASE_T4		0x1589
--#define I40E_DEV_ID_VF			0x154C
--#define I40E_DEV_ID_VF_HV		0x1571
--#define I40E_DEV_ID_SFP_X722		0x37D0
--#define I40E_DEV_ID_1G_BASE_T_X722	0x37D1
--#define I40E_DEV_ID_10G_BASE_T_X722	0x37D2
--#define I40E_DEV_ID_X722_VF		0x37CD
--#define I40E_DEV_ID_X722_VF_HV		0x37D9
--
--#define i40e_is_40G_device(d)		((d) == I40E_DEV_ID_QSFP_A  || \
--					 (d) == I40E_DEV_ID_QSFP_B  || \
--					 (d) == I40E_DEV_ID_QSFP_C)
-+#include "i40e_devids.h"
- 
- /* I40E_MASK is a macro used on 32 bit registers */
- #define I40E_MASK(mask, shift) (mask << shift)
++	status = i40e_asq_send_command(hw, &desc, NULL, 0, cmd_details);
++
++	return status;
++}
++
++/**
++ * i40e_aq_set_vsi_uc_promisc_on_vlan
++ * @hw: pointer to the hw struct
++ * @seid: vsi number
++ * @enable: set MAC L2 layer unicast promiscuous enable/disable for a given VLAN
++ * @vid: The VLAN tag filter - capture any unicast packet with this VLAN tag
++ * @cmd_details: pointer to command details structure or NULL
++ **/
++i40e_status i40e_aq_set_vsi_uc_promisc_on_vlan(struct i40e_hw *hw,
++				u16 seid, bool enable, u16 vid,
++				struct i40e_asq_cmd_details *cmd_details)
++{
++	struct i40e_aq_desc desc;
++	struct i40e_aqc_set_vsi_promiscuous_modes *cmd =
++		(struct i40e_aqc_set_vsi_promiscuous_modes *)&desc.params.raw;
++	i40e_status status;
++	u16 flags = 0;
++
++	i40e_fill_default_direct_cmd_desc(&desc,
++					i40e_aqc_opc_set_vsi_promiscuous_modes);
++
++	if (enable)
++		flags |= I40E_AQC_SET_VSI_PROMISC_UNICAST;
++
++	cmd->promiscuous_flags = cpu_to_le16(flags);
++	cmd->valid_flags = cpu_to_le16(I40E_AQC_SET_VSI_PROMISC_UNICAST);
++	cmd->seid = cpu_to_le16(seid);
++	cmd->vlan_tag = cpu_to_le16(vid | I40E_AQC_SET_VSI_VLAN_VALID);
++
++	status = i40e_asq_send_command(hw, &desc, NULL, 0, cmd_details);
++
++	return status;
++}
++
++/**
+  * i40e_aq_set_vsi_broadcast
+  * @hw: pointer to the hw struct
+  * @seid: vsi number
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+index e51e156..757bf2c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+@@ -127,6 +127,12 @@ i40e_status i40e_aq_set_vsi_unicast_promiscuous(struct i40e_hw *hw,
+ 		u16 vsi_id, bool set, struct i40e_asq_cmd_details *cmd_details);
+ i40e_status i40e_aq_set_vsi_multicast_promiscuous(struct i40e_hw *hw,
+ 		u16 vsi_id, bool set, struct i40e_asq_cmd_details *cmd_details);
++i40e_status i40e_aq_set_vsi_mc_promisc_on_vlan(struct i40e_hw *hw,
++				u16 seid, bool enable, u16 vid,
++				struct i40e_asq_cmd_details *cmd_details);
++i40e_status i40e_aq_set_vsi_uc_promisc_on_vlan(struct i40e_hw *hw,
++				u16 seid, bool enable, u16 vid,
++				struct i40e_asq_cmd_details *cmd_details);
+ i40e_status i40e_aq_get_vsi_params(struct i40e_hw *hw,
+ 				struct i40e_vsi_context *vsi_ctx,
+ 				struct i40e_asq_cmd_details *cmd_details);
 -- 
 1.9.3
 
