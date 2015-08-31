@@ -1,64 +1,54 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Mon, 31 Aug 2015 10:54:52 -0700
-Subject: [Intel-wired-lan] [next PATCH S13 11/15] i40evf: use
- capabilities flags properly
-In-Reply-To: <1440798961-17326-12-git-send-email-catherine.sullivan@intel.com>
-References: <1440798961-17326-1-git-send-email-catherine.sullivan@intel.com>
- <1440798961-17326-12-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <20150831105452.00006230@unknown>
+From: Catherine Sullivan <catherine.sullivan@intel.com>
+Date: Mon, 31 Aug 2015 19:54:40 -0400
+Subject: [Intel-wired-lan] [next PATCH S14 00/15] i40e/i40evf updates
+Message-ID: <1441065295-234333-1-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 28 Aug 2015 17:55:57 -0400
-Catherine Sullivan <catherine.sullivan@intel.com> wrote:
+Carolyn marks a parameter __always_unused, adds info to nvm info struct
+for OEM version data, and updates fw version text string per previous
+product formats.
 
-> From: Mitch Williams <mitch.a.williams@intel.com>
-> 
-> Use the capabilities passed to us by the PF driver to control VF driver
-> behavior. In the process, clean up the VLAN add/remove code so it's not
-> a horrible morass of ifdefs.
+Catherine adds module_types and update_link_info and refactors PHY structure
+and add phy_capabilities enum.
 
-In this case I think the description should read:
-Use the capabilities passed to us by the PF driver to control VF driver
-behavior.
+Greg B. converts CEE App TLV selector to IEEE selector.
 
-And drop the second sentence as it doesn't make sense.
+Greg R. adds promiscuous on VLAN support.
 
-> 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-> Change-ID: I1050eaf12b658a26fea6813047c9964163c70a73
-> ---
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 9 +++++++--
->  1 file changed, 7 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-> index 53ecc09..4eff523 100644
-> --- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-> +++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-> @@ -730,6 +730,8 @@ static int i40evf_vlan_rx_add_vid(struct net_device *netdev,
->  {
->  	struct i40evf_adapter *adapter = netdev_priv(netdev);
->  
-> +	if (!VLAN_ALLOWED(adapter))
-> +		return -EIO;
->  	if (i40evf_add_vlan(adapter, vid) == NULL)
->  		return -ENOMEM;
->  	return 0;
-> @@ -745,8 +747,11 @@ static int i40evf_vlan_rx_kill_vid(struct net_device *netdev,
->  {
->  	struct i40evf_adapter *adapter = netdev_priv(netdev);
->  
-> -	i40evf_del_vlan(adapter, vid);
-> -	return 0;
-> +	if (VLAN_ALLOWED(adapter)) {
-> +		i40evf_del_vlan(adapter, vid);
-> +		return 0;
-> +	}
-> +	return -EIO;
->  }
->  
->  /**
+Mitch properly handles ndo_set_mac_address call, removes a redundant call,
+tells the pf not to panic on VSI allocation failure, and the vf not to blow
+away MAC addresses.
+
+Neerav uses the BIT() macro for priority map parsing.
+
+Shannon adds new link status defines and splits device ids into a separate
+file.
+
+ drivers/net/ethernet/intel/i40e/i40e.h             |  10 +-
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c      |   9 +-
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |   4 +-
+ drivers/net/ethernet/intel/i40e/i40e_common.c      |  98 +++++++++-
+ drivers/net/ethernet/intel/i40e/i40e_dcb.c         |  18 +-
+ drivers/net/ethernet/intel/i40e/i40e_devids.h      |  55 ++++++
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 205 ++++++++++++---------
+ drivers/net/ethernet/intel/i40e/i40e_main.c        |  22 ++-
+ drivers/net/ethernet/intel/i40e/i40e_prototype.h   |   7 +
+ drivers/net/ethernet/intel/i40e/i40e_type.h        |  86 ++++++---
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  13 +-
+ .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    |   4 +-
+ drivers/net/ethernet/intel/i40evf/i40e_devids.h    |  55 ++++++
+ drivers/net/ethernet/intel/i40evf/i40e_type.h      |  83 ++++++---
+ drivers/net/ethernet/intel/i40evf/i40evf.h         |   1 +
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  20 +-
+ .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |   2 +
+ 17 files changed, 518 insertions(+), 174 deletions(-)
+ create mode 100644 drivers/net/ethernet/intel/i40e/i40e_devids.h
+ create mode 100644 drivers/net/ethernet/intel/i40evf/i40e_devids.h
+
+-- 
+1.9.3
 
