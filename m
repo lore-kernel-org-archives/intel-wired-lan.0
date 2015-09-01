@@ -1,66 +1,409 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Sun, 23 Aug 2015 10:15:00 +0200 (CEST)
-Subject: [Intel-wired-lan] [PATCH v3 3/4] Add support for driver
- cross-timestamp to PTP_SYS_OFFSET ioctl
-In-Reply-To: <20150822211718.GA8561@netboy>
-References: <1440183128-1384-1-git-send-email-christopher.s.hall@intel.com>
- <1440183128-1384-4-git-send-email-christopher.s.hall@intel.com>
- <alpine.DEB.2.11.1508222226540.3873@nanos> <20150822211718.GA8561@netboy>
-Message-ID: <alpine.DEB.2.11.1508231011360.3873@nanos>
+From: Catherine Sullivan <catherine.sullivan@intel.com>
+Date: Tue,  1 Sep 2015 11:36:30 -0400
+Subject: [Intel-wired-lan] [next PATCH S14 v2 14/15] i40e/i40evf: Refactor
+	PHY structure and add phy_capabilities enum
+Message-ID: <1441121790-31321-1-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sat, 22 Aug 2015, Richard Cochran wrote:
-> On Sat, Aug 22, 2015 at 10:33:48PM +0200, Thomas Gleixner wrote:
-> > > @@ -196,19 +197,31 @@ long ptp_ioctl(struct posix_clock *pc, unsigned int cmd, unsigned long arg)
-> > >  			break;
-> > >  		}
-> > >  		pct = &sysoff->ts[0];
-> > > -		for (i = 0; i < sysoff->n_samples; i++) {
-> > > -			getnstimeofday64(&ts);
-> > > +		if (ptp->info->getsynctime64 && sysoff->n_samples == 1 &&
-> > 
-> > The number of samples should be irrelevant for this sampling method.
-> 
-> Chris had send me a preview of this before he posted, so I can explain
-> that test for one sample.
-> 
-> User space requests N (1 to 25) samples of the two clocks.  The kernel
-> is supposed to deliver that many samples.  This has always been the
-> documented behavior.  From ptp_clock.h:
-> 
->   struct ptp_sys_offset {
-> 	unsigned int n_samples; /* Desired number of measurements. */
-> 	unsigned int rsv[3];    /* Reserved for future use. */
-> 	/*
-> 	 * Array of interleaved system/phc time stamps. The kernel
-> 	 * will provide 2*n_samples + 1 time stamps, with the last
-> 	 * one as a system time stamp.
-> 	 */
-> 	struct ptp_clock_time ts[2 * PTP_MAX_SAMPLES + 1];
->   };
-> 
-> So the kernel cannot simply change n_samples to 1.
-> 
-> I would prefer to have a new system call that compares any two posix
-> clock_t, but that is of course more work.
-> 
-> Allowing n_samples=1 as a special case is a kind of overloading of the
-> ioctl to support the new capability.  At least it preserves the
-> behavior of the interface from the user's perspective.
+Remove unused members in the PHY structure and add a new member to store
+all the capabilities the PHY has as reported by the FW. This information
+will help us determine what speeds the device is capable of when link is
+down.
 
-So why can't you take N samples from the synced hardware? It does not
-make any sense to me to switch to the imprecise mode if nsamples > 1.
+Also add an enum to decode the PHY types the NVM is capable of.
+Use the phy_types variable to determine what phy types are possible
+when link is down instead of device id as it will be more accurate.
 
-You can also provide a new IOCTL PTP_SYS_OFFSET_PRECISE which returns
--ENOSYS if hardware timestamping is not available and avoid the whole
-nsamples dance for the case where we can get precise timestamps.
+When on a backplane device, we do not support changing any settings,
+however we should display all the phy_types we are capable of so if we
+see a backplane dev ID set supported and advertised purely based on
+the phy_types variable.
 
-Thanks,
+Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
+Change-ID: Ia75d560f1fcd30c54cbfb7458690c5867559a930
+---
+v2: Fix sparse error with le32_to_cpu call
 
-	tglx
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 189 ++++++++++++++-----------
+ drivers/net/ethernet/intel/i40e/i40e_main.c    |   8 ++
+ drivers/net/ethernet/intel/i40e/i40e_type.h    |  37 ++++-
+ drivers/net/ethernet/intel/i40evf/i40e_type.h  |  37 ++++-
+ 4 files changed, 181 insertions(+), 90 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 46019e9..831f971 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -273,36 +273,12 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
+ 	case I40E_PHY_TYPE_40GBASE_AOC:
+ 		ecmd->supported = SUPPORTED_40000baseCR4_Full;
+ 		break;
+-	case I40E_PHY_TYPE_40GBASE_KR4:
+-		ecmd->supported = SUPPORTED_Autoneg |
+-				  SUPPORTED_40000baseKR4_Full;
+-		ecmd->advertising = ADVERTISED_Autoneg |
+-				    ADVERTISED_40000baseKR4_Full;
+-		break;
+ 	case I40E_PHY_TYPE_40GBASE_SR4:
+ 		ecmd->supported = SUPPORTED_40000baseSR4_Full;
+ 		break;
+ 	case I40E_PHY_TYPE_40GBASE_LR4:
+ 		ecmd->supported = SUPPORTED_40000baseLR4_Full;
+ 		break;
+-	case I40E_PHY_TYPE_20GBASE_KR2:
+-		ecmd->supported = SUPPORTED_Autoneg |
+-				  SUPPORTED_20000baseKR2_Full;
+-		ecmd->advertising = ADVERTISED_Autoneg |
+-				    ADVERTISED_20000baseKR2_Full;
+-		break;
+-	case I40E_PHY_TYPE_10GBASE_KX4:
+-		ecmd->supported = SUPPORTED_Autoneg |
+-				  SUPPORTED_10000baseKX4_Full;
+-		ecmd->advertising = ADVERTISED_Autoneg |
+-				    ADVERTISED_10000baseKX4_Full;
+-		break;
+-	case I40E_PHY_TYPE_10GBASE_KR:
+-		ecmd->supported = SUPPORTED_Autoneg |
+-				  SUPPORTED_10000baseKR_Full;
+-		ecmd->advertising = ADVERTISED_Autoneg |
+-				    ADVERTISED_10000baseKR_Full;
+-		break;
+ 	case I40E_PHY_TYPE_10GBASE_SR:
+ 	case I40E_PHY_TYPE_10GBASE_LR:
+ 	case I40E_PHY_TYPE_1000BASE_SX:
+@@ -320,12 +296,6 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
+ 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_10GB)
+ 			ecmd->advertising |= ADVERTISED_10000baseT_Full;
+ 		break;
+-	case I40E_PHY_TYPE_1000BASE_KX:
+-		ecmd->supported = SUPPORTED_Autoneg |
+-				  SUPPORTED_1000baseKX_Full;
+-		ecmd->advertising = ADVERTISED_Autoneg |
+-				    ADVERTISED_1000baseKX_Full;
+-		break;
+ 	case I40E_PHY_TYPE_10GBASE_T:
+ 	case I40E_PHY_TYPE_1000BASE_T:
+ 	case I40E_PHY_TYPE_100BASE_TX:
+@@ -364,6 +334,15 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
+ 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_100MB)
+ 			ecmd->advertising |= ADVERTISED_100baseT_Full;
+ 		break;
++	/* Backplane is set based on supported phy types in get_settings
++	 * so don't set anything here but don't warn either
++	 */
++	case I40E_PHY_TYPE_40GBASE_KR4:
++	case I40E_PHY_TYPE_20GBASE_KR2:
++	case I40E_PHY_TYPE_10GBASE_KR:
++	case I40E_PHY_TYPE_10GBASE_KX4:
++	case I40E_PHY_TYPE_1000BASE_KX:
++		break;
+ 	default:
+ 		/* if we got here and link is up something bad is afoot */
+ 		netdev_info(netdev, "WARNING: Link is up but PHY type 0x%x is not recognized.\n",
+@@ -403,64 +382,67 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
+ static void i40e_get_settings_link_down(struct i40e_hw *hw,
+ 					struct ethtool_cmd *ecmd)
+ {
+-	struct i40e_link_status *hw_link_info = &hw->phy.link_info;
++	enum i40e_aq_capabilities_phy_type phy_types = hw->phy.phy_types;
+ 
+ 	/* link is down and the driver needs to fall back on
+-	 * device ID to determine what kinds of info to display,
+-	 * it's mostly a guess that may change when link is up
++	 * supported phy types to figure out what info to display
+ 	 */
+-	switch (hw->device_id) {
+-	case I40E_DEV_ID_QSFP_A:
+-	case I40E_DEV_ID_QSFP_B:
+-	case I40E_DEV_ID_QSFP_C:
+-		/* pluggable QSFP */
+-		ecmd->supported = SUPPORTED_40000baseSR4_Full |
+-				  SUPPORTED_40000baseCR4_Full |
+-				  SUPPORTED_40000baseLR4_Full;
+-		ecmd->advertising = ADVERTISED_40000baseSR4_Full |
+-				    ADVERTISED_40000baseCR4_Full |
+-				    ADVERTISED_40000baseLR4_Full;
+-		break;
+-	case I40E_DEV_ID_KX_B:
+-		/* backplane 40G */
+-		ecmd->supported = SUPPORTED_40000baseKR4_Full;
+-		ecmd->advertising = ADVERTISED_40000baseKR4_Full;
+-		break;
+-	case I40E_DEV_ID_KX_C:
+-		/* backplane 10G */
+-		ecmd->supported = SUPPORTED_10000baseKR_Full;
+-		ecmd->advertising = ADVERTISED_10000baseKR_Full;
+-		break;
+-	case I40E_DEV_ID_10G_BASE_T:
+-	case I40E_DEV_ID_10G_BASE_T4:
+-		ecmd->supported = SUPPORTED_10000baseT_Full |
+-				  SUPPORTED_1000baseT_Full |
+-				  SUPPORTED_100baseT_Full;
+-		/* Figure out what has been requested */
+-		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_10GB)
+-			ecmd->advertising |= ADVERTISED_10000baseT_Full;
+-		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_1GB)
+-			ecmd->advertising |= ADVERTISED_1000baseT_Full;
+-		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_100MB)
+-			ecmd->advertising |= ADVERTISED_100baseT_Full;
+-		break;
+-	case I40E_DEV_ID_20G_KR2:
+-	case I40E_DEV_ID_20G_KR2_A:
+-		/* backplane 20G */
+-		ecmd->supported = SUPPORTED_20000baseKR2_Full;
+-		ecmd->advertising = ADVERTISED_20000baseKR2_Full;
+-		break;
+-	default:
+-		/* all the rest are 10G/1G */
+-		ecmd->supported = SUPPORTED_10000baseT_Full |
+-				  SUPPORTED_1000baseT_Full;
+-		/* Figure out what has been requested */
+-		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_10GB)
+-			ecmd->advertising |= ADVERTISED_10000baseT_Full;
+-		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_1GB)
+-			ecmd->advertising |= ADVERTISED_1000baseT_Full;
+-		break;
++	ecmd->supported = 0x0;
++	ecmd->advertising = 0x0;
++	if (phy_types & I40E_CAP_PHY_TYPE_SGMII) {
++		ecmd->supported |= SUPPORTED_Autoneg |
++				   SUPPORTED_1000baseT_Full |
++				   SUPPORTED_100baseT_Full;
++		ecmd->advertising |= ADVERTISED_Autoneg |
++				     ADVERTISED_1000baseT_Full |
++				     ADVERTISED_100baseT_Full;
++	}
++	if (phy_types & I40E_CAP_PHY_TYPE_XAUI ||
++	    phy_types & I40E_CAP_PHY_TYPE_XFI ||
++	    phy_types & I40E_CAP_PHY_TYPE_SFI ||
++	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_SFPP_CU ||
++	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_AOC)
++		ecmd->supported |= SUPPORTED_10000baseT_Full;
++	if (phy_types & I40E_CAP_PHY_TYPE_10GBASE_CR1_CU ||
++	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_CR1 ||
++	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_T ||
++	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_SR ||
++	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_LR) {
++		ecmd->supported |= SUPPORTED_Autoneg |
++				   SUPPORTED_10000baseT_Full;
++		ecmd->advertising |= ADVERTISED_Autoneg |
++				     ADVERTISED_10000baseT_Full;
++	}
++	if (phy_types & I40E_CAP_PHY_TYPE_XLAUI ||
++	    phy_types & I40E_CAP_PHY_TYPE_XLPPI ||
++	    phy_types & I40E_CAP_PHY_TYPE_40GBASE_AOC)
++		ecmd->supported |= SUPPORTED_40000baseCR4_Full;
++	if (phy_types & I40E_CAP_PHY_TYPE_40GBASE_CR4_CU ||
++	    phy_types & I40E_CAP_PHY_TYPE_40GBASE_CR4) {
++		ecmd->supported |= SUPPORTED_Autoneg |
++				  SUPPORTED_40000baseCR4_Full;
++		ecmd->advertising |= ADVERTISED_Autoneg |
++				    ADVERTISED_40000baseCR4_Full;
+ 	}
++	if (phy_types & I40E_CAP_PHY_TYPE_100BASE_TX) {
++		ecmd->supported |= SUPPORTED_Autoneg |
++				   SUPPORTED_100baseT_Full;
++		ecmd->advertising |= ADVERTISED_Autoneg |
++				     ADVERTISED_100baseT_Full;
++	}
++	if (phy_types & I40E_CAP_PHY_TYPE_1000BASE_T ||
++	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_SX ||
++	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_LX ||
++	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_T_OPTICAL) {
++		ecmd->supported |= SUPPORTED_Autoneg |
++				   SUPPORTED_1000baseT_Full;
++		ecmd->advertising |= ADVERTISED_Autoneg |
++				     ADVERTISED_1000baseT_Full;
++	}
++	if (phy_types & I40E_CAP_PHY_TYPE_40GBASE_SR4)
++		ecmd->supported |= SUPPORTED_40000baseSR4_Full;
++	if (phy_types & I40E_CAP_PHY_TYPE_40GBASE_LR4)
++		ecmd->supported |= SUPPORTED_40000baseLR4_Full;
+ 
+ 	/* With no link speed and duplex are unknown */
+ 	ethtool_cmd_speed_set(ecmd, SPEED_UNKNOWN);
+@@ -490,6 +472,37 @@ static int i40e_get_settings(struct net_device *netdev,
+ 
+ 	/* Now set the settings that don't rely on link being up/down */
+ 
++	/* For backplane, supported and advertised are only reliant on the
++	 * phy types the NVM specifies are supported.
++	 */
++	if (hw->device_id == I40E_DEV_ID_KX_B ||
++	    hw->device_id == I40E_DEV_ID_KX_C ||
++	    hw->device_id == I40E_DEV_ID_20G_KR2 ||
++	    hw->device_id ==  I40E_DEV_ID_20G_KR2_A) {
++		ecmd->supported = SUPPORTED_Autoneg;
++		ecmd->advertising = ADVERTISED_Autoneg;
++		if (hw->phy.phy_types & I40E_CAP_PHY_TYPE_40GBASE_KR4) {
++			ecmd->supported |= SUPPORTED_40000baseKR4_Full;
++			ecmd->advertising |= ADVERTISED_40000baseKR4_Full;
++		}
++		if (hw->phy.phy_types & I40E_CAP_PHY_TYPE_20GBASE_KR2) {
++			ecmd->supported |= SUPPORTED_20000baseKR2_Full;
++			ecmd->advertising |= ADVERTISED_20000baseKR2_Full;
++		}
++		if (hw->phy.phy_types & I40E_CAP_PHY_TYPE_10GBASE_KR) {
++			ecmd->supported |= SUPPORTED_10000baseKR_Full;
++			ecmd->advertising |= ADVERTISED_10000baseKR_Full;
++		}
++		if (hw->phy.phy_types & I40E_CAP_PHY_TYPE_10GBASE_KX4) {
++			ecmd->supported |= SUPPORTED_10000baseKX4_Full;
++			ecmd->advertising |= ADVERTISED_10000baseKX4_Full;
++		}
++		if (hw->phy.phy_types & I40E_CAP_PHY_TYPE_1000BASE_KX) {
++			ecmd->supported |= SUPPORTED_1000baseKX_Full;
++			ecmd->advertising |= ADVERTISED_1000baseKX_Full;
++		}
++	}
++
+ 	/* Set autoneg settings */
+ 	ecmd->autoneg = ((hw_link_info->an_info & I40E_AQ_AN_COMPLETED) ?
+ 			  AUTONEG_ENABLE : AUTONEG_DISABLE);
+@@ -589,6 +602,14 @@ static int i40e_set_settings(struct net_device *netdev,
+ 	    hw->phy.link_info.link_info & I40E_AQ_LINK_UP)
+ 		return -EOPNOTSUPP;
+ 
++	if (hw->device_id == I40E_DEV_ID_KX_B ||
++	    hw->device_id == I40E_DEV_ID_KX_C ||
++	    hw->device_id == I40E_DEV_ID_20G_KR2 ||
++	    hw->device_id == I40E_DEV_ID_20G_KR2_A) {
++		netdev_info(netdev, "Changing settings is not supported on backplane.\n");
++		return -EOPNOTSUPP;
++	}
++
+ 	/* get our own copy of the bits to check against */
+ 	memset(&safe_ecmd, 0, sizeof(struct ethtool_cmd));
+ 	i40e_get_settings(netdev, &safe_ecmd);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index d318161..c093fc1 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -10369,6 +10369,14 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 			 i40e_aq_str(&pf->hw, pf->hw.aq.asq_last_status));
+ 	pf->hw.phy.link_info.requested_speeds = abilities.link_speed;
+ 
++	/* get the supported phy types from the fw */
++	err = i40e_aq_get_phy_capabilities(hw, false, true, &abilities, NULL);
++	if (err)
++		dev_dbg(&pf->pdev->dev, "get supported phy types ret =  %s last_status =  %s\n",
++			i40e_stat_str(&pf->hw, err),
++			i40e_aq_str(&pf->hw, pf->hw.aq.asq_last_status));
++	pf->hw.phy.phy_types = le32_to_cpu(abilities.phy_type);
++
+ 	/* print a string summarizing features */
+ 	i40e_print_features(pf);
+ 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
+index 0a450ac..6f69576 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
+@@ -187,14 +187,45 @@ struct i40e_link_status {
+ #define I40E_MODULE_TYPE_1000BASE_T	0x08
+ };
+ 
++enum i40e_aq_capabilities_phy_type {
++	I40E_CAP_PHY_TYPE_SGMII		  = BIT(I40E_PHY_TYPE_SGMII),
++	I40E_CAP_PHY_TYPE_1000BASE_KX	  = BIT(I40E_PHY_TYPE_1000BASE_KX),
++	I40E_CAP_PHY_TYPE_10GBASE_KX4	  = BIT(I40E_PHY_TYPE_10GBASE_KX4),
++	I40E_CAP_PHY_TYPE_10GBASE_KR	  = BIT(I40E_PHY_TYPE_10GBASE_KR),
++	I40E_CAP_PHY_TYPE_40GBASE_KR4	  = BIT(I40E_PHY_TYPE_40GBASE_KR4),
++	I40E_CAP_PHY_TYPE_XAUI		  = BIT(I40E_PHY_TYPE_XAUI),
++	I40E_CAP_PHY_TYPE_XFI		  = BIT(I40E_PHY_TYPE_XFI),
++	I40E_CAP_PHY_TYPE_SFI		  = BIT(I40E_PHY_TYPE_SFI),
++	I40E_CAP_PHY_TYPE_XLAUI		  = BIT(I40E_PHY_TYPE_XLAUI),
++	I40E_CAP_PHY_TYPE_XLPPI		  = BIT(I40E_PHY_TYPE_XLPPI),
++	I40E_CAP_PHY_TYPE_40GBASE_CR4_CU  = BIT(I40E_PHY_TYPE_40GBASE_CR4_CU),
++	I40E_CAP_PHY_TYPE_10GBASE_CR1_CU  = BIT(I40E_PHY_TYPE_10GBASE_CR1_CU),
++	I40E_CAP_PHY_TYPE_10GBASE_AOC	  = BIT(I40E_PHY_TYPE_10GBASE_AOC),
++	I40E_CAP_PHY_TYPE_40GBASE_AOC	  = BIT(I40E_PHY_TYPE_40GBASE_AOC),
++	I40E_CAP_PHY_TYPE_100BASE_TX	  = BIT(I40E_PHY_TYPE_100BASE_TX),
++	I40E_CAP_PHY_TYPE_1000BASE_T	  = BIT(I40E_PHY_TYPE_1000BASE_T),
++	I40E_CAP_PHY_TYPE_10GBASE_T	  = BIT(I40E_PHY_TYPE_10GBASE_T),
++	I40E_CAP_PHY_TYPE_10GBASE_SR	  = BIT(I40E_PHY_TYPE_10GBASE_SR),
++	I40E_CAP_PHY_TYPE_10GBASE_LR	  = BIT(I40E_PHY_TYPE_10GBASE_LR),
++	I40E_CAP_PHY_TYPE_10GBASE_SFPP_CU = BIT(I40E_PHY_TYPE_10GBASE_SFPP_CU),
++	I40E_CAP_PHY_TYPE_10GBASE_CR1	  = BIT(I40E_PHY_TYPE_10GBASE_CR1),
++	I40E_CAP_PHY_TYPE_40GBASE_CR4	  = BIT(I40E_PHY_TYPE_40GBASE_CR4),
++	I40E_CAP_PHY_TYPE_40GBASE_SR4	  = BIT(I40E_PHY_TYPE_40GBASE_SR4),
++	I40E_CAP_PHY_TYPE_40GBASE_LR4	  = BIT(I40E_PHY_TYPE_40GBASE_LR4),
++	I40E_CAP_PHY_TYPE_1000BASE_SX	  = BIT(I40E_PHY_TYPE_1000BASE_SX),
++	I40E_CAP_PHY_TYPE_1000BASE_LX	  = BIT(I40E_PHY_TYPE_1000BASE_LX),
++	I40E_CAP_PHY_TYPE_1000BASE_T_OPTICAL =
++					 BIT(I40E_PHY_TYPE_1000BASE_T_OPTICAL),
++	I40E_CAP_PHY_TYPE_20GBASE_KR2	  = BIT(I40E_PHY_TYPE_20GBASE_KR2)
++};
++
+ struct i40e_phy_info {
+ 	struct i40e_link_status link_info;
+ 	struct i40e_link_status link_info_old;
+-	u32 autoneg_advertised;
+-	u32 phy_id;
+-	u32 module_type;
+ 	bool get_link_info;
+ 	enum i40e_media_type media_type;
++	/* all the phy types the NVM is capable of */
++	enum i40e_aq_capabilities_phy_type phy_types;
+ };
+ 
+ #define I40E_HW_CAP_MAX_GPIO			30
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+index f3155e3..85af3b4 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+@@ -187,14 +187,45 @@ struct i40e_link_status {
+ #define I40E_MODULE_TYPE_1000BASE_T	0x08
+ };
+ 
++enum i40e_aq_capabilities_phy_type {
++	I40E_CAP_PHY_TYPE_SGMII		  = BIT(I40E_PHY_TYPE_SGMII),
++	I40E_CAP_PHY_TYPE_1000BASE_KX	  = BIT(I40E_PHY_TYPE_1000BASE_KX),
++	I40E_CAP_PHY_TYPE_10GBASE_KX4	  = BIT(I40E_PHY_TYPE_10GBASE_KX4),
++	I40E_CAP_PHY_TYPE_10GBASE_KR	  = BIT(I40E_PHY_TYPE_10GBASE_KR),
++	I40E_CAP_PHY_TYPE_40GBASE_KR4	  = BIT(I40E_PHY_TYPE_40GBASE_KR4),
++	I40E_CAP_PHY_TYPE_XAUI		  = BIT(I40E_PHY_TYPE_XAUI),
++	I40E_CAP_PHY_TYPE_XFI		  = BIT(I40E_PHY_TYPE_XFI),
++	I40E_CAP_PHY_TYPE_SFI		  = BIT(I40E_PHY_TYPE_SFI),
++	I40E_CAP_PHY_TYPE_XLAUI		  = BIT(I40E_PHY_TYPE_XLAUI),
++	I40E_CAP_PHY_TYPE_XLPPI		  = BIT(I40E_PHY_TYPE_XLPPI),
++	I40E_CAP_PHY_TYPE_40GBASE_CR4_CU  = BIT(I40E_PHY_TYPE_40GBASE_CR4_CU),
++	I40E_CAP_PHY_TYPE_10GBASE_CR1_CU  = BIT(I40E_PHY_TYPE_10GBASE_CR1_CU),
++	I40E_CAP_PHY_TYPE_10GBASE_AOC	  = BIT(I40E_PHY_TYPE_10GBASE_AOC),
++	I40E_CAP_PHY_TYPE_40GBASE_AOC	  = BIT(I40E_PHY_TYPE_40GBASE_AOC),
++	I40E_CAP_PHY_TYPE_100BASE_TX	  = BIT(I40E_PHY_TYPE_100BASE_TX),
++	I40E_CAP_PHY_TYPE_1000BASE_T	  = BIT(I40E_PHY_TYPE_1000BASE_T),
++	I40E_CAP_PHY_TYPE_10GBASE_T	  = BIT(I40E_PHY_TYPE_10GBASE_T),
++	I40E_CAP_PHY_TYPE_10GBASE_SR	  = BIT(I40E_PHY_TYPE_10GBASE_SR),
++	I40E_CAP_PHY_TYPE_10GBASE_LR	  = BIT(I40E_PHY_TYPE_10GBASE_LR),
++	I40E_CAP_PHY_TYPE_10GBASE_SFPP_CU = BIT(I40E_PHY_TYPE_10GBASE_SFPP_CU),
++	I40E_CAP_PHY_TYPE_10GBASE_CR1	  = BIT(I40E_PHY_TYPE_10GBASE_CR1),
++	I40E_CAP_PHY_TYPE_40GBASE_CR4	  = BIT(I40E_PHY_TYPE_40GBASE_CR4),
++	I40E_CAP_PHY_TYPE_40GBASE_SR4	  = BIT(I40E_PHY_TYPE_40GBASE_SR4),
++	I40E_CAP_PHY_TYPE_40GBASE_LR4	  = BIT(I40E_PHY_TYPE_40GBASE_LR4),
++	I40E_CAP_PHY_TYPE_1000BASE_SX	  = BIT(I40E_PHY_TYPE_1000BASE_SX),
++	I40E_CAP_PHY_TYPE_1000BASE_LX	  = BIT(I40E_PHY_TYPE_1000BASE_LX),
++	I40E_CAP_PHY_TYPE_1000BASE_T_OPTICAL =
++					 BIT(I40E_PHY_TYPE_1000BASE_T_OPTICAL),
++	I40E_CAP_PHY_TYPE_20GBASE_KR2	  = BIT(I40E_PHY_TYPE_20GBASE_KR2)
++};
++
+ struct i40e_phy_info {
+ 	struct i40e_link_status link_info;
+ 	struct i40e_link_status link_info_old;
+-	u32 autoneg_advertised;
+-	u32 phy_id;
+-	u32 module_type;
+ 	bool get_link_info;
+ 	enum i40e_media_type media_type;
++	/* all the phy types the NVM is capable of */
++	enum i40e_aq_capabilities_phy_type phy_types;
+ };
+ 
+ #define I40E_HW_CAP_MAX_GPIO			30
+-- 
+1.9.3
 
