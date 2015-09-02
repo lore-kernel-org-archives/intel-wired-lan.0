@@ -1,10 +1,11 @@
 From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Wed, 2 Sep 2015 02:01:05 +0000
-Subject: [Intel-wired-lan] [PATCH v2] fm10k: Report MAC address on
- driver	load
-In-Reply-To: <20150619023812.1345.75383.stgit@ahduyck-vm-fedora22>
-References: <20150619023812.1345.75383.stgit@ahduyck-vm-fedora22>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E271B5392@ORSMSX103.amr.corp.intel.com>
+Date: Wed, 2 Sep 2015 02:01:45 +0000
+Subject: [Intel-wired-lan] [PATCH net-next rc1 02/10] fm10k: allow
+ creation	of vlan interfaces even while down
+In-Reply-To: <1435178090-25422-3-git-send-email-jacob.e.keller@intel.com>
+References: <1435178090-25422-1-git-send-email-jacob.e.keller@intel.com>
+ <1435178090-25422-3-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E271B53A9@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,18 +14,15 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 
 -----Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Alexander Duyck
-Sent: Thursday, June 18, 2015 7:41 PM
-To: netdev@vger.kernel.org; intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-Subject: [Intel-wired-lan] [PATCH v2] fm10k: Report MAC address on driver load
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Jacob Keller
+Sent: Wednesday, June 24, 2015 1:35 PM
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Subject: [Intel-wired-lan] [PATCH net-next rc1 02/10] fm10k: allow creation of vlan interfaces even while down
 
-This change adds the MAC address to the list of values recorded on driver load.  The MAC address represents the serial number of the unit and allows us to track the value should a card be replaced in a system.
+We re-sync upon going up, so there is little reason to worry about not syncing immediately with switch. This prevents an error that occurs if you add a vlan interface while down.
 
-The log message should now be similar in output to that of ixgbe.
-
-Signed-off-by: Alexander Duyck <alexander.h.duyck@redhat.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
-
 Tested-By: Krishneil Singh <krishneil.k.singh@intel.com>
 
 _______________________________________________
