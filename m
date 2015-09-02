@@ -1,27 +1,26 @@
 From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Wed, 2 Sep 2015 02:18:59 +0000
-Subject: [Intel-wired-lan] [PATCH 6/6] fm10k: update netdev perm_addr
- during	reinit, instead of at up
-In-Reply-To: <1434405656-10465-6-git-send-email-jacob.e.keller@intel.com>
-References: <1434405656-10465-1-git-send-email-jacob.e.keller@intel.com>
- <1434405656-10465-6-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E271B5600@ORSMSX103.amr.corp.intel.com>
+Date: Wed, 2 Sep 2015 02:20:49 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Advance version to 4.2.1
+In-Reply-To: <20150811201158.123478.5775.stgit@mdrustad-wks.jf.intel.com>
+References: <20150811201158.123478.5775.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E271B5621@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+.
 
 -----Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Jacob Keller
-Sent: Monday, June 15, 2015 3:01 PM
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Subject: [Intel-wired-lan] [PATCH 6/6] fm10k: update netdev perm_addr during reinit, instead of at up
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Mark D Rustad
+Sent: Tuesday, August 11, 2015 1:12 PM
+To: intel-wired-lan@lists.osuosl.org
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Advance version to 4.2.1
 
-Update the netdev permanent address during fm10k_reinit enables the user to immediately see the new MAC address on the VF even if the device isn't up. The previous code required that the device by opened before changes would appear.
+With the addition of X550em_x SFP+ support, the driver is now functionally equivalent to what will be the 4.2.1 driver when released, so change the version to match.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
  
 Tested-By: Krishneil Singh <krishneil.k.singh@intel.com>
