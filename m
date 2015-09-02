@@ -1,10 +1,10 @@
 From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Wed, 2 Sep 2015 02:11:54 +0000
-Subject: [Intel-wired-lan] [rc3] fm10k: re-map all possible VF queues
- after	a VFLR
-In-Reply-To: <1433892748-18136-1-git-send-email-jacob.e.keller@intel.com>
-References: <1433892748-18136-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E271B54FF@ORSMSX103.amr.corp.intel.com>
+Date: Wed, 2 Sep 2015 02:12:39 +0000
+Subject: [Intel-wired-lan] [rc2 12/15] fm10k: pack TLV overlay structures
+In-Reply-To: <1433374272-6684-13-git-send-email-jacob.e.keller@intel.com>
+References: <1433374272-6684-1-git-send-email-jacob.e.keller@intel.com>
+ <1433374272-6684-13-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E271B5516@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,18 +14,15 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 -----Original Message-----
 From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Jacob Keller
-Sent: Tuesday, June 9, 2015 4:32 PM
+Sent: Wednesday, June 3, 2015 4:31 PM
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Subject: [Intel-wired-lan] [rc3] fm10k: re-map all possible VF queues after a VFLR
+Subject: [Intel-wired-lan] [rc2 12/15] fm10k: pack TLV overlay structures
 
-From: Keller Jacob <jacob.e.keller@intel.com>
+This patch adds the __attribute__((packed)) indicator to some structures which are overlayed onto a TLV message. These structures must be packed as small as possible in order to correctly align when copied into the mailbox buffer. Without doing so, the receiving mailbox code incorrectly parses the values and we get invalid message responses from the switch manager software.
 
-During initialization, the VF counts its rings by walking the TQDLOC registers. This works only if the TQMAP/RQMAP registers are set to map all of the out-of-bound rings back to the first one. This allows the VF to cleanly detect when it has run out of queues. Update the PF code so that it resets the empty TQMAP/RQMAP registers post-VFLR to prevent innocent VF drivers from triggering malicious driver events.
+-rc2
+* use __packed instead of __attribute__((packed))
 
--rc3
-* Use corrected index, instead of 1
-
-Signed-off-by: Matthew Vick <matthew.vick@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
 
