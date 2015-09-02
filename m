@@ -1,11 +1,11 @@
 From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Wed, 2 Sep 2015 02:06:54 +0000
-Subject: [Intel-wired-lan] [rc2 02/15] fm10k: use correct ethernet
- driver Tx	timestamp function
-In-Reply-To: <1433374272-6684-3-git-send-email-jacob.e.keller@intel.com>
+Date: Wed, 2 Sep 2015 02:07:43 +0000
+Subject: [Intel-wired-lan] [rc2 03/15] fm10k: move setting shinfo
+	inside	ts_tx_enqueue
+In-Reply-To: <1433374272-6684-4-git-send-email-jacob.e.keller@intel.com>
 References: <1433374272-6684-1-git-send-email-jacob.e.keller@intel.com>
- <1433374272-6684-3-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E271B5446@ORSMSX103.amr.corp.intel.com>
+ <1433374272-6684-4-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E271B5461@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,27 +17,16 @@ List-ID: <intel-wired-lan.osuosl.org>
 From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Jacob Keller
 Sent: Wednesday, June 3, 2015 4:31 PM
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Subject: [Intel-wired-lan] [rc2 02/15] fm10k: use correct ethernet driver Tx timestamp function
+Subject: [Intel-wired-lan] [rc2 03/15] fm10k: move setting shinfo inside ts_tx_enqueue
 
-skb_complete_tx_timestamp is intended for use by PHY drivers which implement a different method of returning timestamps. This method is intended to be used after a PHY driver accepts a cloned packet via its phy_driver.txtstamp function. It is not correct to use in the standard ethernet driver such as fm10k. This patch fixes the following possible kernel panic.
+This patch simplifies the code flow for setting the IN_PROGRESS bit of the shinfo for an skb we will be timestamping.
 
--rc2
-* fix typo missing ','
-
-[ 2744.552896] CPU: 0 PID: 0 Comm: swapper/0 Tainted: G        W  OE  3.19.3-200.fc21.x86_64 #1
-[ 2744.552899] Hardware name: Intel Corporation S2600CO/S2600CO, BIOS SE5C600.86B.02.03.8x23.060520140825 06/05/2014 [ 2744.552901]  0000000000000000 2f4c8b10ea3f9848 ffff88081ee03a38 ffffffff8176e215 [ 2744.552906]  0000000000000000 0000000000000000 ffff88081ee03a78 ffffffff8109bc1a [ 2744.552910]  ffff88081ee03c50 ffff88080e55fc00 ffff88080e55fc00 ffffffff81647c50 [ 2744.552914] Call Trace:
-[ 2744.552917]  <IRQ>  [<ffffffff8176e215>] dump_stack+0x45/0x57 [ 2744.552931]  [<ffffffff8109bc1a>] warn_slowpath_common+0x8a/0xc0 [ 2744.552936]  [<ffffffff81647c50>] ? skb_queue_purge+0x20/0x40 [ 2744.552941]  [<ffffffff8109bd4a>] warn_slowpath_null+0x1a/0x20 [ 2744.552946]  [<ffffffff81646911>] skb_release_head_state+0xe1/0xf0 [ 2744.552950]  [<ffffffff81647b26>] skb_release_all+0x16/0x30 [ 2744.552954]  [<ffffffff81647ba6>] kfree_skb+0x36/0x90 [ 2744.552958]  [<ffffffff81647c50>] skb_queue_purge+0x20/0x40 [ 2744.552964]  [<ffffffff81751f8d>] packet_sock_destruct+0x1d/0x90 [ 2744.552968]  [<ffffffff81642053>] __sk_free+0x23/0x140 [ 2744.552973]  [<ffffffff81642189>] sk_free+0x19/0x20 [ 2744.552977]  [<ffffffff81647d60>] skb_complete_tx_timestamp+0x50/0x60
-[ 2744.552988]  [<ffffffffa02eee40>] fm10k_ts_tx_hwtstamp+0xd0/0x100 [fm10k] [ 2744.552994]  [<ffffffffa02e054e>] fm10k_1588_msg_pf+0x12e/0x140 [fm10k] [ 2744.553002]  [<ffffffffa02edf1d>] fm10k_tlv_msg_parse+0x8d/0xc0 [fm10k] [ 2744.553010]  [<ffffffffa02eb2d0>] fm10k_mbx_dequeue_rx+0x60/0xb0 [fm10k] [ 2744.553016]  [<ffffffffa02ebf98>] fm10k_sm_mbx_process+0x178/0x3c0 [fm10k] [ 2744.553022]  [<ffffffffa02e09ca>] fm10k_msix_mbx_pf+0xfa/0x360 [fm10k] [ 2744.553030]  [<ffffffff811030a7>] ? get_next_timer_interrupt+0x1f7/0x270
-[ 2744.553036]  [<ffffffff810f2a47>] handle_irq_event_percpu+0x77/0x1a0
-[ 2744.553041]  [<ffffffff810f2bab>] handle_irq_event+0x3b/0x60 [ 2744.553045]  [<ffffffff810f5d6e>] handle_edge_irq+0x6e/0x120 [ 2744.553054]  [<ffffffff81017414>] handle_irq+0x74/0x140 [ 2744.553061]  [<ffffffff810bb54a>] ? atomic_notifier_call_chain+0x1a/0x20
-[ 2744.553066]  [<ffffffff8177777f>] do_IRQ+0x4f/0xf0 [ 2744.553072]  [<ffffffff8177556d>] common_interrupt+0x6d/0x6d [ 2744.553074]  <EOI>  [<ffffffff81609b16>] ? cpuidle_enter_state+0x66/0x160 [ 2744.553084]  [<ffffffff81609b01>] ? cpuidle_enter_state+0x51/0x160 [ 2744.553087]  [<ffffffff81609cf7>] cpuidle_enter+0x17/0x20 [ 2744.553092]  [<ffffffff810de101>] cpu_startup_entry+0x321/0x3c0 [ 2744.553098]  [<ffffffff81764497>] rest_init+0x77/0x80 [ 2744.553103]  [<ffffffff81d4f02c>] start_kernel+0x4a4/0x4c5 [ 2744.553107]  [<ffffffff81d4e120>] ? early_idt_handlers+0x120/0x120 [ 2744.553110]  [<ffffffff81d4e4d7>] x86_64_start_reservations+0x2a/0x2c
-[ 2744.553114]  [<ffffffff81d4e62b>] x86_64_start_kernel+0x152/0x175
-
+Reported-by: Eric Dumazet <eric.dumazet@gmail.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
 
-Tested-By: Krishneil Singh <krishneil.k.singh@intel.com>
 
+ Tested-By: Krishneil Singh <krishneil.k.singh@intel.com>
 
 _______________________________________________
 Intel-wired-lan mailing list
