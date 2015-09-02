@@ -1,11 +1,10 @@
 From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Wed, 2 Sep 2015 01:59:22 +0000
-Subject: [Intel-wired-lan] [PATCH 6/6] fm10k: update netdev perm_addr
- during	reinit, instead of at up
-In-Reply-To: <1434405656-10465-6-git-send-email-jacob.e.keller@intel.com>
-References: <1434405656-10465-1-git-send-email-jacob.e.keller@intel.com>
- <1434405656-10465-6-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E271B5363@ORSMSX103.amr.corp.intel.com>
+Date: Wed, 2 Sep 2015 02:00:25 +0000
+Subject: [Intel-wired-lan] [PATCH] fm10k: Don't assume page fragments
+ are	page size
+In-Reply-To: <20150616184712.1966.44790.stgit@ahduyck-vm-fedora22>
+References: <20150616184712.1966.44790.stgit@ahduyck-vm-fedora22>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E271B5379@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,19 +13,17 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 
 -----Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Jacob Keller
-Sent: Monday, June 15, 2015 3:01 PM
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Subject: [Intel-wired-lan] [PATCH 6/6] fm10k: update netdev perm_addr during reinit, instead of at up
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Alexander Duyck
+Sent: Tuesday, June 16, 2015 11:47 AM
+To: netdev@vger.kernel.org; intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+Subject: [Intel-wired-lan] [PATCH] fm10k: Don't assume page fragments are page size
 
-Update the netdev permanent address during fm10k_reinit enables the user to immediately see the new MAC address on the VF even if the device isn't up. The previous code required that the device by opened before changes would appear.
+This change pulls out the optimization that assumed that all fragments would be limited to page size.  That hasn't been the case for some time now and to assume this is incorrect as the TCP allocator can provide up to a 32K page fragment.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Signed-off-by: Alexander Duyck <alexander.h.duyck@redhat.com>
 ---
-
-
- Tested-By: Krishneil Singh <krishneil.k.singh@intel.com>
-
+ 
+Tested-By: Krishneil Singh <krishneil.k.singh@intel.com>
 _______________________________________________
 Intel-wired-lan mailing list
 Intel-wired-lan at lists.osuosl.org
