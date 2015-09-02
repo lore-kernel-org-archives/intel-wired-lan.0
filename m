@@ -1,11 +1,10 @@
 From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Wed, 2 Sep 2015 02:14:23 +0000
-Subject: [Intel-wired-lan] [rc2 15/15] fm10k: fix
-	iov_msg_lport_state_pf	issue
-In-Reply-To: <1433374272-6684-16-git-send-email-jacob.e.keller@intel.com>
-References: <1433374272-6684-1-git-send-email-jacob.e.keller@intel.com>
- <1433374272-6684-16-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E271B555A@ORSMSX103.amr.corp.intel.com>
+Date: Wed, 2 Sep 2015 02:16:16 +0000
+Subject: [Intel-wired-lan] [PATCH 1/6] fm10k: disable service task
+ during	suspend
+In-Reply-To: <1434405656-10465-1-git-send-email-jacob.e.keller@intel.com>
+References: <1434405656-10465-1-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E271B55A2@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,16 +14,15 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 -----Original Message-----
 From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Jacob Keller
-Sent: Wednesday, June 3, 2015 4:31 PM
+Sent: Monday, June 15, 2015 3:01 PM
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Subject: [Intel-wired-lan] [rc2 15/15] fm10k: fix iov_msg_lport_state_pf issue
+Subject: [Intel-wired-lan] [PATCH 1/6] fm10k: disable service task during suspend
 
-When a VF issues an LPORT_STATE request to enable a port that is already enabled, the PF will first disable the VF LPORT. Then it should re-enable the VF again with the new requested settings. This ensures that any switch rules are cleared by deleting the LPORT on the switch.
-However, the flow is bugged because we actually check if the VF is enabled at the end, and thus don't re-enable it. Fix the flow so that we actually clear the enabled flags as part of our removal of the LPORT.
+The service task reads some registers as part of its normal routine, even while the interface is down. Normally this is ok. However, during suspend we have disabled the PCI device. Due to this, registers will read in the same way as a surprise-remove event. Disable the service task while we suspend, and re-enable it after we resume. If we don't do this, the device could be UP when you suspend and come back from resume as closed (since fm10k closes the device when it gets a surprise remove).
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- 
+
 Tested-By: Krishneil Singh <krishneil.k.singh@intel.com>
 
 _______________________________________________
