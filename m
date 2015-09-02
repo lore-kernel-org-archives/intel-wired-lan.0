@@ -1,11 +1,11 @@
 From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Wed, 2 Sep 2015 01:58:25 +0000
-Subject: [Intel-wired-lan] [PATCH 5/6] fm10k: update fm10k_slot_warn to
- use	pcie_get_minimum link
-In-Reply-To: <1434405656-10465-5-git-send-email-jacob.e.keller@intel.com>
+Date: Wed, 2 Sep 2015 01:59:22 +0000
+Subject: [Intel-wired-lan] [PATCH 6/6] fm10k: update netdev perm_addr
+ during	reinit, instead of at up
+In-Reply-To: <1434405656-10465-6-git-send-email-jacob.e.keller@intel.com>
 References: <1434405656-10465-1-git-send-email-jacob.e.keller@intel.com>
- <1434405656-10465-5-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E271B534B@ORSMSX103.amr.corp.intel.com>
+ <1434405656-10465-6-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E271B5363@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,18 +17,15 @@ List-ID: <intel-wired-lan.osuosl.org>
 From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Jacob Keller
 Sent: Monday, June 15, 2015 3:01 PM
 To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Subject: [Intel-wired-lan] [PATCH 5/6] fm10k: update fm10k_slot_warn to use pcie_get_minimum link
+Subject: [Intel-wired-lan] [PATCH 6/6] fm10k: update netdev perm_addr during reinit, instead of at up
 
-This is useful in cases where we connect to a slot at Gen3, but the slot is behind a bus which only connected at Gen2. This generally only happens when a PCIe switch is in the sequence of devices, and can be very confusing when you see slow performance with no obvious cause.
-
-I am aware this patch has a few lines that break 80 characters, but there does not seem to be a readable way to format them to less than 80 characters. Suggestions welcome.
+Update the netdev permanent address during fm10k_reinit enables the user to immediately see the new MAC address on the VF even if the device isn't up. The previous code required that the device by opened before changes would appear.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 105 +++++++++++++++++++--------
- 1 file changed, 76 insertions(+), 29 deletions(-)
 
-Tested-By: Krishneil Singh <krishneil.k.singh@intel.com>
+
+ Tested-By: Krishneil Singh <krishneil.k.singh@intel.com>
 
 _______________________________________________
 Intel-wired-lan mailing list
