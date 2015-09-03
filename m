@@ -1,51 +1,40 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Thu,  3 Sep 2015 17:18:55 -0400
-Subject: [Intel-wired-lan] [next PATCH S15 08/15] i40e: allow FD SB if MFP
-	mode only has 1 partition
+Date: Thu,  3 Sep 2015 17:18:58 -0400
+Subject: [Intel-wired-lan] [next PATCH S15 11/15] i40e: Store off PHY
+	capabilities
 In-Reply-To: <1441315142-173025-1-git-send-email-catherine.sullivan@intel.com>
 References: <1441315142-173025-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1441315142-173025-9-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1441315142-173025-12-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Shannon Nelson <shannon.nelson@intel.com>
+From: Kevin Scott <kevin.c.scott@intel.com>
 
-Even though the device might be in MFP mode, if there's only one partition
-enabled, then we still have plenty of interrupts for managing the Flow
-Directory Sideband activity.  This patch enables FD SB in this case.
-This patch also reverses the sense of the conditional in order to remove
-the negative logic.
+Store off reported PHY capabilities in link_info structure.
 
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-Change-ID: I9edf211a6219fc8d159b4be9964f9fd7f4e00bc0
+Signed-off-by: Kevin Scott <kevin.c.scott@intel.com>
+Change-ID: Ife0f037c26983ca985dbf79abf33f8f8791369e8
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index dd04b61..6a28c04 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -8061,12 +8061,12 @@ static int i40e_sw_init(struct i40e_pf *pf)
- 	    (pf->hw.func_caps.fd_filters_best_effort > 0)) {
- 		pf->flags |= I40E_FLAG_FD_ATR_ENABLED;
- 		pf->atr_sample_rate = I40E_DEFAULT_ATR_SAMPLE_RATE;
--		if (!(pf->flags & I40E_FLAG_MFP_ENABLED)) {
--			pf->flags |= I40E_FLAG_FD_SB_ENABLED;
--		} else {
-+		if (pf->flags & I40E_FLAG_MFP_ENABLED &&
-+		    pf->hw.num_partitions > 1)
- 			dev_info(&pf->pdev->dev,
- 				 "Flow Director Sideband mode Disabled in MFP mode\n");
--		}
-+		else
-+			pf->flags |= I40E_FLAG_FD_SB_ENABLED;
- 		pf->fdir_pf_filter_count =
- 				 pf->hw.func_caps.fd_filters_guaranteed;
- 		pf->hw.fdir_shared_filter_count =
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index c1d0dca..26bb922 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -1617,6 +1617,9 @@ i40e_status i40e_aq_get_phy_capabilities(struct i40e_hw *hw,
+ 	if (hw->aq.asq_last_status == I40E_AQ_RC_EIO)
+ 		status = I40E_ERR_UNKNOWN_PHY;
+ 
++	if (report_init)
++		hw->phy.phy_types = le32_to_cpu(abilities->phy_type);
++
+ 	return status;
+ }
+ 
 -- 
 1.9.3
 
