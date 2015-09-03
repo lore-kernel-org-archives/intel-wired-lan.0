@@ -1,10 +1,10 @@
 From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Thu, 3 Sep 2015 21:22:45 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: fix bounds checking
-	in	ixgbe_setup_tc for 82598
-In-Reply-To: <20150713185851.12746.72369.stgit@localhost6.localdomain6>
-References: <20150713185851.12746.72369.stgit@localhost6.localdomain6>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E271B6225@ORSMSX103.amr.corp.intel.com>
+Date: Thu, 3 Sep 2015 22:22:12 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Avoid needless phy access
+	on	copper phys
+In-Reply-To: <20150626004957.67855.1341.stgit@mdrustad-wks.jf.intel.com>
+References: <20150626004957.67855.1341.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E271B62B6@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,17 +13,16 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 
 -----Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Emil Tantilov
-Sent: Monday, July 13, 2015 11:59 AM
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Mark D Rustad
+Sent: Thursday, June 25, 2015 5:50 PM
 To: intel-wired-lan@lists.osuosl.org
-Subject: [Intel-wired-lan] [PATCH] ixgbe: fix bounds checking in ixgbe_setup_tc for 82598
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Avoid needless phy access on copper phys
 
-This patch resolves an issue where users were not able to dynamically set number of queues for 82598 via ethtool -L
+Avoid a needless phy access on copper phys to save the 10ms wait time for each phy access. A helper function is introduced to actually do the register access and process the contents.
 
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
-Reported-by: Tal Abudi <talabudi@gmail.com>
+Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
- 
+
 Tested-By: Krishneil Singh <Krishneil.k.singh@intel.com>
 
 _______________________________________________
