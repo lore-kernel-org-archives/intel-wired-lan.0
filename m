@@ -1,175 +1,28 @@
-From: Todd Fujinaka <todd.fujinaka@intel.com>
-Date: Wed, 02 Sep 2015 16:54:20 -0700
-Subject: [Intel-wired-lan] [PATCH] igb: add 88E1543 initialization code
-Message-ID: <20150902235420.7649.34614.stgit@htfujina-fc.jf.intel.com>
+From: Singh, Krishneil K <krishneil.k.singh@intel.com>
+Date: Thu, 3 Sep 2015 18:37:52 +0000
+Subject: [Intel-wired-lan] [net-next PATCH] ixgbe: Add fdir support for
+ SCTP	on X550
+In-Reply-To: <20150624210330.19338.45485.stgit@dcs-desk.jf.intel.com>
+References: <20150624210330.19338.45485.stgit@dcs-desk.jf.intel.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E271B5FC6@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Initialize the 88E1543 PHY.
 
-Signed-off-by: Todd Fujinaka <todd.fujinaka@intel.com>
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Donald C Skidmore
+Sent: Wednesday, June 24, 2015 2:04 PM
+To: intel-wired-lan@lists.osuosl.org
+Subject: [Intel-wired-lan] [net-next PATCH] ixgbe: Add fdir support for SCTP on X550
+
+X550 has HW support for SCTP flow director filters SCTP mask. This patch adds it like we do for UDP and TCP.
+
+Signed-off-by: Donald C Skidmore <donald.c.skidmore@intel.com>
 ---
- drivers/net/ethernet/intel/igb/e1000_82575.c   |    7 ++
- drivers/net/ethernet/intel/igb/e1000_defines.h |    1 
- drivers/net/ethernet/intel/igb/e1000_phy.c     |   94 ++++++++++++++++++++++++
- drivers/net/ethernet/intel/igb/e1000_phy.h     |    1 
- 4 files changed, 103 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
-index cb7b78c..c1e8667 100644
---- a/drivers/net/ethernet/intel/igb/e1000_82575.c
-+++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
-@@ -272,6 +272,11 @@ static s32 igb_init_phy_params_82575(struct e1000_hw *hw)
- 			if (ret_val)
- 				goto out;
- 		}
-+		if (phy->id == M88E1543_E_PHY_ID) {
-+			ret_val = igb_initialize_M88E1543_phy(hw);
-+			if (ret_val)
-+				goto out;
-+		}
- 		break;
- 	case IGP03E1000_E_PHY_ID:
- 		phy->type = e1000_phy_igp_3;
-@@ -928,6 +933,8 @@ static s32 igb_phy_hw_reset_sgmii_82575(struct e1000_hw *hw)
+Tested-By: Krishneil Singh <Krishneil.k.singh@intel.com>
  
- 	if (phy->id == M88E1512_E_PHY_ID)
- 		ret_val = igb_initialize_M88E1512_phy(hw);
-+	if (phy->id == M88E1543_E_PHY_ID)
-+		ret_val = igb_initialize_M88E1543_phy(hw);
- out:
- 	return ret_val;
- }
-diff --git a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
-index b15d90e..68de4eb 100644
---- a/drivers/net/ethernet/intel/igb/e1000_defines.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
-@@ -991,6 +991,7 @@
- #define E1000_M88E1543_PAGE_ADDR	0x16       /* Page Offset Register */
- #define E1000_M88E1543_EEE_CTRL_1	0x0
- #define E1000_M88E1543_EEE_CTRL_1_MS	0x0001     /* EEE Master/Slave */
-+#define E1000_M88E1543_FIBER_CTRL	0x0
- #define E1000_EEE_ADV_DEV_I354		7
- #define E1000_EEE_ADV_ADDR_I354		60
- #define E1000_EEE_ADV_100_SUPPORTED	(1 << 1)   /* 100BaseTx EEE Supported */
-diff --git a/drivers/net/ethernet/intel/igb/e1000_phy.c b/drivers/net/ethernet/intel/igb/e1000_phy.c
-index 23ec28f..c0df40f 100644
---- a/drivers/net/ethernet/intel/igb/e1000_phy.c
-+++ b/drivers/net/ethernet/intel/igb/e1000_phy.c
-@@ -2278,6 +2278,100 @@ out:
- }
- 
- /**
-+ *  igb_initialize_M88E1543_phy - Initialize M88E1512 PHY
-+ *  @hw: pointer to the HW structure
-+ *
-+ *  Initialize Marvell 1543 to work correctly with Avoton.
-+ **/
-+s32 igb_initialize_M88E1543_phy(struct e1000_hw *hw)
-+{
-+	struct e1000_phy_info *phy = &hw->phy;
-+	s32 ret_val = 0;
-+
-+	/* Switch to PHY page 0xFF. */
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1543_PAGE_ADDR, 0x00FF);
-+	if (ret_val)
-+		goto out;
-+
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1512_CFG_REG_2, 0x214B);
-+	if (ret_val)
-+		goto out;
-+
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1512_CFG_REG_1, 0x2144);
-+	if (ret_val)
-+		goto out;
-+
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1512_CFG_REG_2, 0x0C28);
-+	if (ret_val)
-+		goto out;
-+
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1512_CFG_REG_1, 0x2146);
-+	if (ret_val)
-+		goto out;
-+
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1512_CFG_REG_2, 0xB233);
-+	if (ret_val)
-+		goto out;
-+
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1512_CFG_REG_1, 0x214D);
-+	if (ret_val)
-+		goto out;
-+
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1512_CFG_REG_2, 0xDC0C);
-+	if (ret_val)
-+		goto out;
-+
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1512_CFG_REG_1, 0x2159);
-+	if (ret_val)
-+		goto out;
-+
-+	/* Switch to PHY page 0xFB. */
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1543_PAGE_ADDR, 0x00FB);
-+	if (ret_val)
-+		goto out;
-+
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1512_CFG_REG_3, 0x0C0D);
-+	if (ret_val)
-+		goto out;
-+
-+	/* Switch to PHY page 0x12. */
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1543_PAGE_ADDR, 0x12);
-+	if (ret_val)
-+		goto out;
-+
-+	/* Change mode to SGMII-to-Copper */
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1512_MODE, 0x8001);
-+	if (ret_val)
-+		goto out;
-+
-+	/* Switch to PHY page 1. */
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1543_PAGE_ADDR, 0x1);
-+	if (ret_val)
-+		goto out;
-+
-+	/* Change mode to 1000BASE-X/SGMII and autoneg enable */
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1543_FIBER_CTRL, 0x9140);
-+	if (ret_val)
-+		goto out;
-+
-+	/* Return the PHY to page 0. */
-+	ret_val = phy->ops.write_reg(hw, E1000_M88E1543_PAGE_ADDR, 0);
-+	if (ret_val)
-+		goto out;
-+
-+	ret_val = igb_phy_sw_reset(hw);
-+	if (ret_val) {
-+		hw_dbg("Error committing the PHY changes\n");
-+		return ret_val;
-+	}
-+
-+	/* msec_delay(1000); */
-+	usleep_range(1000, 2000);
-+out:
-+	return ret_val;
-+}
-+
-+/**
-  * igb_power_up_phy_copper - Restore copper link in case of PHY power down
-  * @hw: pointer to the HW structure
-  *
-diff --git a/drivers/net/ethernet/intel/igb/e1000_phy.h b/drivers/net/ethernet/intel/igb/e1000_phy.h
-index 24d55ed..aa1ae61 100644
---- a/drivers/net/ethernet/intel/igb/e1000_phy.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_phy.h
-@@ -62,6 +62,7 @@ void igb_power_up_phy_copper(struct e1000_hw *hw);
- void igb_power_down_phy_copper(struct e1000_hw *hw);
- s32  igb_phy_init_script_igp3(struct e1000_hw *hw);
- s32  igb_initialize_M88E1512_phy(struct e1000_hw *hw);
-+s32  igb_initialize_M88E1543_phy(struct e1000_hw *hw);
- s32  igb_read_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 *data);
- s32  igb_write_phy_reg_mdic(struct e1000_hw *hw, u32 offset, u16 data);
- s32  igb_read_phy_reg_i2c(struct e1000_hw *hw, u32 offset, u16 *data);
 
