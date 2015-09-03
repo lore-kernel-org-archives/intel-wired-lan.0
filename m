@@ -1,55 +1,93 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Thu,  3 Sep 2015 17:19:01 -0400
-Subject: [Intel-wired-lan] [next PATCH S15 14/15] i40evf: speed up init
+Date: Thu,  3 Sep 2015 17:19:00 -0400
+Subject: [Intel-wired-lan] [next PATCH S15 13/15] i40e: remove unnecessary
+	string copy operations
 In-Reply-To: <1441315142-173025-1-git-send-email-catherine.sullivan@intel.com>
 References: <1441315142-173025-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1441315142-173025-15-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1441315142-173025-14-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+From: Shannon Nelson <shannon.nelson@intel.com>
 
-Shorten up the delays in the init task, allowing the VF driver to
-initialize faster. This aids performance in load/unload tests and
-mitigates DMAR errors in VF enable/disable tests with absurdly short
-delays. In the real world, the VF driver will come up more quickly.
+Save a little stack space and remove unnecessary strncpy() with a little
+string pointer.
 
-The original values were set conservatively based on what we expected
-from the firmware in terms of performance. Now that the driver is in use
-and we know how well firmware responds to our requests, we can shorten
-these delays.
-
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Change-ID: Ibead77d34b19e8170e667c3f58bc14748bbc5bc9
+Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+Change-ID: Id2719d34710bfc273d3bb445fec085cd04276e88
 ---
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index f156226..bccca50 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -2315,7 +2315,7 @@ static void i40evf_init_task(struct work_struct *work)
- 	}
- 	return;
- restart:
--	schedule_delayed_work(&adapter->init_task, msecs_to_jiffies(30));
-+	schedule_delayed_work(&adapter->init_task, msecs_to_jiffies(20));
- 	return;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 4bcf4a1..848482b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -4896,8 +4896,8 @@ out:
+  */
+ void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
+ {
+-	char speed[SPEED_SIZE] = "Unknown";
+-	char fc[FC_SIZE] = "RX/TX";
++	char *speed = "Unknown";
++	char *fc = "Unknown";
  
- err_register:
-@@ -2332,7 +2332,7 @@ err:
- 		adapter->flags |= I40EVF_FLAG_PF_COMMS_FAILED;
- 		return; /* do not reschedule */
+ 	if (vsi->current_isup == isup)
+ 		return;
+@@ -4918,19 +4918,19 @@ void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
+ 
+ 	switch (vsi->back->hw.phy.link_info.link_speed) {
+ 	case I40E_LINK_SPEED_40GB:
+-		strlcpy(speed, "40 Gbps", SPEED_SIZE);
++		speed = "40 G";
+ 		break;
+ 	case I40E_LINK_SPEED_20GB:
+-		strncpy(speed, "20 Gbps", SPEED_SIZE);
++		speed = "20 G";
+ 		break;
+ 	case I40E_LINK_SPEED_10GB:
+-		strlcpy(speed, "10 Gbps", SPEED_SIZE);
++		speed = "10 G";
+ 		break;
+ 	case I40E_LINK_SPEED_1GB:
+-		strlcpy(speed, "1000 Mbps", SPEED_SIZE);
++		speed = "1000 M";
+ 		break;
+ 	case I40E_LINK_SPEED_100MB:
+-		strncpy(speed, "100 Mbps", SPEED_SIZE);
++		speed = "100 M";
+ 		break;
+ 	default:
+ 		break;
+@@ -4938,20 +4938,20 @@ void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
+ 
+ 	switch (vsi->back->hw.fc.current_mode) {
+ 	case I40E_FC_FULL:
+-		strlcpy(fc, "RX/TX", FC_SIZE);
++		fc = "RX/TX";
+ 		break;
+ 	case I40E_FC_TX_PAUSE:
+-		strlcpy(fc, "TX", FC_SIZE);
++		fc = "TX";
+ 		break;
+ 	case I40E_FC_RX_PAUSE:
+-		strlcpy(fc, "RX", FC_SIZE);
++		fc = "RX";
+ 		break;
+ 	default:
+-		strlcpy(fc, "None", FC_SIZE);
++		fc = "None";
+ 		break;
  	}
--	schedule_delayed_work(&adapter->init_task, HZ * 3);
-+	schedule_delayed_work(&adapter->init_task, HZ / 2);
+ 
+-	netdev_info(vsi->netdev, "NIC Link is Up %s Full Duplex, Flow Control: %s\n",
++	netdev_info(vsi->netdev, "NIC Link is Up %sbps Full Duplex, Flow Control: %s\n",
+ 		    speed, fc);
  }
  
- /**
 -- 
 1.9.3
 
