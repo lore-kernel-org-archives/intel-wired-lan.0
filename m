@@ -1,93 +1,51 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Thu,  3 Sep 2015 17:19:00 -0400
-Subject: [Intel-wired-lan] [next PATCH S15 13/15] i40e: remove unnecessary
-	string copy operations
+Date: Thu,  3 Sep 2015 17:19:02 -0400
+Subject: [Intel-wired-lan] [next PATCH S15 15/15] i40e/i40evf: Bump i40e
+	version to 1.3.28 and i40evf to 1.3.19
 In-Reply-To: <1441315142-173025-1-git-send-email-catherine.sullivan@intel.com>
 References: <1441315142-173025-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1441315142-173025-14-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1441315142-173025-16-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Shannon Nelson <shannon.nelson@intel.com>
+Bump.
 
-Save a little stack space and remove unnecessary strncpy() with a little
-string pointer.
-
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-Change-ID: Id2719d34710bfc273d3bb445fec085cd04276e88
+Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
+Change-ID: I8d9a99f320af43960deba8718eee2d6de50eaf46
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 24 ++++++++++++------------
- 1 file changed, 12 insertions(+), 12 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 4bcf4a1..848482b 100644
+index 848482b..bacffe8 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -4896,8 +4896,8 @@ out:
-  */
- void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
- {
--	char speed[SPEED_SIZE] = "Unknown";
--	char fc[FC_SIZE] = "RX/TX";
-+	char *speed = "Unknown";
-+	char *fc = "Unknown";
+@@ -40,7 +40,7 @@ static const char i40e_driver_string[] =
  
- 	if (vsi->current_isup == isup)
- 		return;
-@@ -4918,19 +4918,19 @@ void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
+ #define DRV_VERSION_MAJOR 1
+ #define DRV_VERSION_MINOR 3
+-#define DRV_VERSION_BUILD 25
++#define DRV_VERSION_BUILD 28
+ #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
+ 	     __stringify(DRV_VERSION_MINOR) "." \
+ 	     __stringify(DRV_VERSION_BUILD)    DRV_KERN
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index bccca50..429a46c 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -34,7 +34,7 @@ char i40evf_driver_name[] = "i40evf";
+ static const char i40evf_driver_string[] =
+ 	"Intel(R) XL710/X710 Virtual Function Network Driver";
  
- 	switch (vsi->back->hw.phy.link_info.link_speed) {
- 	case I40E_LINK_SPEED_40GB:
--		strlcpy(speed, "40 Gbps", SPEED_SIZE);
-+		speed = "40 G";
- 		break;
- 	case I40E_LINK_SPEED_20GB:
--		strncpy(speed, "20 Gbps", SPEED_SIZE);
-+		speed = "20 G";
- 		break;
- 	case I40E_LINK_SPEED_10GB:
--		strlcpy(speed, "10 Gbps", SPEED_SIZE);
-+		speed = "10 G";
- 		break;
- 	case I40E_LINK_SPEED_1GB:
--		strlcpy(speed, "1000 Mbps", SPEED_SIZE);
-+		speed = "1000 M";
- 		break;
- 	case I40E_LINK_SPEED_100MB:
--		strncpy(speed, "100 Mbps", SPEED_SIZE);
-+		speed = "100 M";
- 		break;
- 	default:
- 		break;
-@@ -4938,20 +4938,20 @@ void i40e_print_link_message(struct i40e_vsi *vsi, bool isup)
- 
- 	switch (vsi->back->hw.fc.current_mode) {
- 	case I40E_FC_FULL:
--		strlcpy(fc, "RX/TX", FC_SIZE);
-+		fc = "RX/TX";
- 		break;
- 	case I40E_FC_TX_PAUSE:
--		strlcpy(fc, "TX", FC_SIZE);
-+		fc = "TX";
- 		break;
- 	case I40E_FC_RX_PAUSE:
--		strlcpy(fc, "RX", FC_SIZE);
-+		fc = "RX";
- 		break;
- 	default:
--		strlcpy(fc, "None", FC_SIZE);
-+		fc = "None";
- 		break;
- 	}
- 
--	netdev_info(vsi->netdev, "NIC Link is Up %s Full Duplex, Flow Control: %s\n",
-+	netdev_info(vsi->netdev, "NIC Link is Up %sbps Full Duplex, Flow Control: %s\n",
- 		    speed, fc);
- }
- 
+-#define DRV_VERSION "1.3.17"
++#define DRV_VERSION "1.3.19"
+ const char i40evf_driver_version[] = DRV_VERSION;
+ static const char i40evf_copyright[] =
+ 	"Copyright (c) 2013 - 2015 Intel Corporation.";
 -- 
 1.9.3
 
