@@ -1,36 +1,49 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Date: Fri, 4 Sep 2015 17:41:33 +0200
-Subject: [Intel-wired-lan] [PATCH v3 1/4] Add correlated clocksource
- deriving system time from an auxiliary clocksource
-In-Reply-To: <20150904151743.GB16862@localhost.localdomain>
-References: <1440183128-1384-1-git-send-email-christopher.s.hall@intel.com>
- <1440183128-1384-2-git-send-email-christopher.s.hall@intel.com>
- <alpine.DEB.2.11.1508222143530.3873@nanos>
- <B79D786B7111A34A8CF09F833429C493A90B2D1F@ORSMSX109.amr.corp.intel.com>
- <alpine.DEB.2.11.1509041438520.15006@nanos>
- <20150904151021.GF18489@twins.programming.kicks-ass.net>
- <20150904151743.GB16862@localhost.localdomain>
-Message-ID: <20150904154133.GI18489@twins.programming.kicks-ass.net>
+From: Patil, Kiran <kiran.patil@intel.com>
+Date: Fri, 4 Sep 2015 20:34:58 +0000
+Subject: [Intel-wired-lan] minor oddity
+	in	drivers/net/ethernet/intel/i40e/i40e_main.c
+In-Reply-To: <87fv2ucyrv.fsf@rasmusvillemoes.dk>
+References: <87fv2ucyrv.fsf@rasmusvillemoes.dk>
+Message-ID: <4197C471DCF8714FBA1FE32565271C14900040A8@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Sep 04, 2015 at 05:17:43PM +0200, Richard Cochran wrote:
-> On Fri, Sep 04, 2015 at 05:10:21PM +0200, Peter Zijlstra wrote:
-> > I think what they're getting at is asking if there's a rate limit to
-> > time adjustments, without that, saving the last n transition points will
-> > still not cover any given length of history.
-> 
-> As if the ntp code isn't complex enough already - now we're adding
-> sample histories and adjustment rating limiting?
-> 
-> And all for some unknown DSP in a mythical sound card??
+It's bug and not intentional. We will get it addressed.
 
-Hehe, I'm just a 'translator' here. But going by you answer I'm taking
-it there isn't in fact a rate-limit to adjustments. Which, even if you
-were not opposed to that direction, makes it an unfeasible proposition.
+Thanks,
+-- Kiran P.
 
-Also, I'm not thinking its too mythical, sound/soc/intel/ is full of
-audio DSP stuff, I think a newer version will just gain ART support.
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Rasmus Villemoes
+Sent: Friday, September 4, 2015 2:36 AM
+To: Brandeburg, Jesse; Kirsher, Jeffrey T
+Cc: intel-wired-lan at lists.osuosl.org
+Subject: [Intel-wired-lan] minor oddity in drivers/net/ethernet/intel/i40e/i40e_main.c
+
+I just noticed a slightly odd thing - it may be harmless, but thought I'd mention it anyway:
+
+
+   1743                 del_list = kcalloc(filter_list_len,
+   1744                             sizeof(struct i40e_aqc_remove_macvlan_element_data),
+   1745                             GFP_KERNEL);
+
+   1772                         /* flush a full buffer */
+   1773                         if (num_del == filter_list_len) {
+   1774                                 aq_ret = i40e_aq_remove_macvlan(&pf->hw,
+   1775                                             vsi->seid, del_list, num_del,
+   1776                                             NULL);
+   1777                                 num_del = 0;
+   1778                                 memset(del_list, 0, sizeof(*del_list));
+
+On line 1743, we kcalloc an array (del_list) with filter_list_len elements. When that's full, we handle what's in it and then reset num_del. However, the memset on line 1778 only clears the first element in the array, so we're not exactly in the same state as after the kcalloc. But maybe filter_list_len is always so large that we never actually hit this, or maybe it is always 1 (btw., what guarantees it is not 0?)
+
+The same issue (or non-issue :-)) applies to add_list a few lines further down.
+
+Rasmus
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan at lists.osuosl.org
+http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
