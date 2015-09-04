@@ -1,15 +1,11 @@
-From: Hall, Christopher S <christopher.s.hall@intel.com>
-Date: Fri, 4 Sep 2015 21:12:47 +0000
-Subject: [Intel-wired-lan] [PATCH v3 1/4] Add correlated clocksource
- deriving system time from an auxiliary clocksource
-In-Reply-To: <20150904142827.GE18489@twins.programming.kicks-ass.net>
-References: <1440183128-1384-1-git-send-email-christopher.s.hall@intel.com>
- <1440183128-1384-2-git-send-email-christopher.s.hall@intel.com>
- <alpine.DEB.2.11.1508222143530.3873@nanos>
- <B79D786B7111A34A8CF09F833429C493A90B2D1F@ORSMSX109.amr.corp.intel.com>
- <20150904081122.GA4201@netboy>
- <20150904142827.GE18489@twins.programming.kicks-ass.net>
-Message-ID: <B79D786B7111A34A8CF09F833429C493A90B2FF7@ORSMSX109.amr.corp.intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 4 Sep 2015 21:45:08 +0000
+Subject: [Intel-wired-lan] [next PATCH S11 02/15] i40e: enable WoL
+ operation	if config bit show WoL capable
+In-Reply-To: <1440616461-110869-3-git-send-email-catherine.sullivan@intel.com>
+References: <1440616461-110869-1-git-send-email-catherine.sullivan@intel.com>
+ <1440616461-110869-3-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060A58C5@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,26 +13,26 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
-> From: Peter Zijlstra [mailto:peterz at infradead.org]
-> Sent: Friday, September 04, 2015 7:28 AM
-> To: Richard Cochran
-> Cc: Hall, Christopher S; Thomas Gleixner; Kirsher, Jeffrey T;
-> hpa at zytor.com; mingo at redhat.com; john.stultz at linaro.org; x86 at kernel.org;
-> linux-kernel at vger.kernel.org; netdev at vger.kernel.org; intel-wired-
-> lan at lists.osuosl.org
-> Subject: Re: [PATCH v3 1/4] Add correlated clocksource deriving system time
-> from an auxiliary clocksource
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Catherine Sullivan
+> Sent: Wednesday, August 26, 2015 12:14 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S11 02/15] i40e: enable WoL operation
+> if config bit show WoL capable
 > 
-> > > (several milliseconds) and the result will be out of date by some
-> fraction of that
-> > > amount.
-> >
-> > Why does it take milliseconds to read one audio time stamp?
+> From: Shannon Nelson <shannon.nelson@intel.com>
 > 
-> So what I suspect, but please correct me if I'm wrong Chris, is that a
-> DSP will buffer and process audio signals, and only later wake up the
-> main CPU.
+> The driver was disabling Wake-on-LAN by default and waiting for the user to
+> expressly turn it on.  This patch has the driver turning on WoL from the start if
+> enabled in the hardware config, which matches the behavior of our other
+> drivers.
 > 
-> So by the time the CPU is made aware of the data, it's 'old'.
+> Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+> Change-ID: I43faedb907f8ba4d1a61b72a7c86072b97af12b1
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 9 +++++++--
+>  1 file changed, 7 insertions(+), 2 deletions(-)
 
-That's about right.  The DSP runs on a 1 ms cadence.  Any access to registers controlled by the DSP will take 1-2 DSP ticks to access.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+WoL shows "g" in ethtool on initial setup, old driver showed "d" unless it was specifically enabled with ethtool. Code changes present in tree.
+
