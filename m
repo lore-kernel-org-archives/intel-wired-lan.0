@@ -1,81 +1,154 @@
-From: Hall, Christopher S <christopher.s.hall@intel.com>
-Date: Thu, 3 Sep 2015 23:20:37 +0000
-Subject: [Intel-wired-lan] [PATCH v3 1/4] Add correlated clocksource
- deriving system time from an auxiliary clocksource
-In-Reply-To: <alpine.DEB.2.11.1508222143530.3873@nanos>
-References: <1440183128-1384-1-git-send-email-christopher.s.hall@intel.com>
- <1440183128-1384-2-git-send-email-christopher.s.hall@intel.com>
- <alpine.DEB.2.11.1508222143530.3873@nanos>
-Message-ID: <B79D786B7111A34A8CF09F833429C493A90B2D1F@ORSMSX109.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 04 Sep 2015 15:08:02 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ fabe26116d522376dfd5506bc9626d038af708e8 BUILD SUCCESS
+Message-ID: <55e94352.ZvP+22HC/GSISWw0%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Thomas Gleixner [mailto:tglx at linutronix.de]
-> Sent: Saturday, August 22, 2015 1:17 PM
-> To: Hall, Christopher S
-> Cc: Kirsher, Jeffrey T; hpa at zytor.com; mingo at redhat.com;
-> john.stultz at linaro.org; richardcochran at gmail.com; x86 at kernel.org; linux-
-> kernel at vger.kernel.org; netdev at vger.kernel.org; intel-wired-
-> lan at lists.osuosl.org; peterz at infradead.org
-> Subject: Re: [PATCH v3 1/4] Add correlated clocksource deriving system time
-> from an auxiliary clocksource
->  
-> > +/**
-> > + * get_correlated_timestamp - Get a correlated timestamp
-> > + *
-> > + * Reads a timestamp from a device and correlates it to system time
-> > + */
-> > +int get_correlated_timestamp(struct correlated_ts *crt,
-> > +			     struct correlated_cs *crs)
-> > +{
-> > +	struct timekeeper *tk = &tk_core.timekeeper;
-> > +	unsigned long seq;
-> > +	cycles_t cycles;
-> > +	ktime_t base;
-> > +	s64 nsecs;
-> > +	int ret;
-> > +
-> > +	do {
-> > +		seq = read_seqcount_begin(&tk_core.seq);
-> > +		/*
-> > +		 * Verify that the correlated clocksoure is related to
-> > +		 * the currently installed timekeeper clocksoure
-> > +		 */
-> > +		if (tk->tkr_mono.clock != crs->related_cs)
-> > +			return -ENODEV;
-> > +
-> > +		/*
-> > +		 * Try to get a timestamp from the device.
-> > +		 */
-> > +		ret = crt->get_ts(crt);
-> > +		if (ret)
-> > +			return ret;
-> > +
-[Re-added code for context]
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+fabe26116d522376dfd5506bc9626d038af708e8  i40evf: Use numa_mem_id() to better support memoryless node
 
-In addition to the network interface, ART will be used in the audio interface as well.
-We need to support the case where an audio co-processor will control the audio device.
-In this case, the get_ts() function supplied by the audio driver will be very slow
-(several milliseconds) and the result will be out of date by some fraction of that 
-amount.
+elapsed time: 120m
 
-This loop makes strict requirements on the latency and recency. Is it possible to relax
-that requirement in some way?
+configs tested: 134
 
-For example, supply the ART value as an argument and, in the case of the realtime
-clock, keep a short history of clock changes.  It would fail in cases where there
-are a lot of calls to adjtimex(), but it will would work most of the time.
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                             rpc_defconfig
+mips                        bcm47xx_defconfig
+openrisc                    or1ksim_defconfig
+i386                     randconfig-a0-201535
+x86_64                 randconfig-a0-09041305
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                            defconfig
+ia64                                defconfig
+mips                                defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                 randconfig-v0-09041315
+x86_64                           allmodconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                            allnoconfig
+i386                             alldefconfig
+i386                             allmodconfig
+i386                              allnoconfig
+i386                                defconfig
+arm                        spear3xx_defconfig
+frv                              alldefconfig
+mips                       rbtx49xx_defconfig
+mips                                   jz4740
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+x86_64                   randconfig-i0-201535
+i386                   randconfig-b0-09041338
+i386                   randconfig-b0-09041444
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                      pxa255-idp_defconfig
+powerpc                          allyesconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201535
+i386                     randconfig-i1-201535
+x86_64                 randconfig-b0-09041337
+blackfin                BF533-STAMP_defconfig
+mn10300                           allnoconfig
+mn10300                          allyesconfig
+powerpc                       ep405_defconfig
+i386                     randconfig-n0-201535
+arm                                      arm5
+arm                                     arm67
+arm                                       mmp
+arm                       omap2plus_defconfig
+arm                         s3c2410_defconfig
+arm                           tegra_defconfig
+i386                   randconfig-h0-09041302
+i386                   randconfig-h1-09041302
+arm                         vf610m4_defconfig
+m68k                              allnoconfig
+powerpc                 mpc8560_ads_defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+x86_64                                   rhel
+x86_64                 randconfig-h0-09041302
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                                    lkp
+x86_64                 randconfig-n0-09041306
+x86_64                 randconfig-n0-09041404
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+m68k                        m5307c3_defconfig
+openrisc                          allnoconfig
+powerpc                     akebono_defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                  randconfig-sb0-09041303
+i386                  randconfig-sb0-09041352
+parisc                         b180_defconfig
+powerpc                  gef_sbc610_defconfig
+s390                              allnoconfig
+x86_64                 randconfig-x004-201535
+x86_64                 randconfig-x001-201535
+x86_64                 randconfig-x000-201535
+x86_64                 randconfig-x006-201535
+x86_64                 randconfig-x003-201535
+x86_64                 randconfig-x005-201535
+x86_64                 randconfig-x002-201535
+x86_64                 randconfig-x009-201535
+x86_64                 randconfig-x007-201535
+x86_64                 randconfig-x008-201535
+i386                     randconfig-r0-201535
+x86_64                 randconfig-r0-09041301
+x86_64                 randconfig-r0-09041408
+i386                   randconfig-x000-201535
+i386                   randconfig-x001-201535
+i386                   randconfig-x002-201535
+i386                   randconfig-x003-201535
+i386                   randconfig-x004-201535
+i386                   randconfig-x005-201535
+i386                   randconfig-x006-201535
+i386                   randconfig-x007-201535
+i386                   randconfig-x008-201535
+i386                   randconfig-x009-201535
+i386                   randconfig-x0-09041331
+i386                   randconfig-x0-09041420
 
-What can you suggest? Thanks
-
-Chris
-
-> > +	} while (read_seqcount_retry(&tk_core.seq, seq));
-> > +	return 0;
-> > +}
-
-
+Thanks,
+Fengguang
