@@ -1,38 +1,33 @@
-From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Date: Fri, 04 Sep 2015 11:35:48 +0200
-Subject: [Intel-wired-lan] minor oddity in
-	drivers/net/ethernet/intel/i40e/i40e_main.c
-Message-ID: <87fv2ucyrv.fsf@rasmusvillemoes.dk>
+From: Peter Zijlstra <peterz@infradead.org>
+Date: Fri, 4 Sep 2015 16:28:27 +0200
+Subject: [Intel-wired-lan] [PATCH v3 1/4] Add correlated clocksource
+ deriving system time from an auxiliary clocksource
+In-Reply-To: <20150904081122.GA4201@netboy>
+References: <1440183128-1384-1-git-send-email-christopher.s.hall@intel.com>
+ <1440183128-1384-2-git-send-email-christopher.s.hall@intel.com>
+ <alpine.DEB.2.11.1508222143530.3873@nanos>
+ <B79D786B7111A34A8CF09F833429C493A90B2D1F@ORSMSX109.amr.corp.intel.com>
+ <20150904081122.GA4201@netboy>
+Message-ID: <20150904142827.GE18489@twins.programming.kicks-ass.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-I just noticed a slightly odd thing - it may be harmless, but thought
-I'd mention it anyway:
+On Fri, Sep 04, 2015 at 10:11:22AM +0200, Richard Cochran wrote:
+> On Thu, Sep 03, 2015 at 11:20:37PM +0000, Hall, Christopher S wrote:
+> > In addition to the network interface, ART will be used in the audio interface as well.
+> > We need to support the case where an audio co-processor will control the audio device.
+> > In this case, the get_ts() function supplied by the audio driver will be very slow
+> > (several milliseconds) and the result will be out of date by some fraction of that 
+> > amount.
+> 
+> Why does it take milliseconds to read one audio time stamp?
 
+So what I suspect, but please correct me if I'm wrong Chris, is that a
+DSP will buffer and process audio signals, and only later wake up the
+main CPU.
 
-   1743                 del_list = kcalloc(filter_list_len,
-   1744                             sizeof(struct i40e_aqc_remove_macvlan_element_data),
-   1745                             GFP_KERNEL);
+So by the time the CPU is made aware of the data, it's 'old'.
 
-   1772                         /* flush a full buffer */
-   1773                         if (num_del == filter_list_len) {
-   1774                                 aq_ret = i40e_aq_remove_macvlan(&pf->hw,
-   1775                                             vsi->seid, del_list, num_del,
-   1776                                             NULL);
-   1777                                 num_del = 0;
-   1778                                 memset(del_list, 0, sizeof(*del_list));
-
-On line 1743, we kcalloc an array (del_list) with filter_list_len
-elements. When that's full, we handle what's in it and then reset
-num_del. However, the memset on line 1778 only clears the first element
-in the array, so we're not exactly in the same state as after the
-kcalloc. But maybe filter_list_len is always so large that we never
-actually hit this, or maybe it is always 1 (btw., what guarantees it is
-not 0?)
-
-The same issue (or non-issue :-)) applies to add_list a few lines further down.
-
-Rasmus
