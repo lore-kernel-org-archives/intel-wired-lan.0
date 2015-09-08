@@ -1,465 +1,261 @@
 From: Anjali Singhai Jain <anjali.singhai@intel.com>
-Date: Tue,  8 Sep 2015 14:55:54 -0700
-Subject: [Intel-wired-lan] [PATCH v2 3/5] ethernet: Change drivers to use
-	the generalized udp tunnel offload
+Date: Tue,  8 Sep 2015 14:55:55 -0700
+Subject: [Intel-wired-lan] [PATCH v2 4/5] i40e: Generalize the flow for udp
+	based tunnels
 In-Reply-To: <1441749356-92927-1-git-send-email-anjali.singhai@intel.com>
 References: <1441749356-92927-1-git-send-email-anjali.singhai@intel.com>
-Message-ID: <1441749356-92927-3-git-send-email-anjali.singhai@intel.com>
+Message-ID: <1441749356-92927-4-git-send-email-anjali.singhai@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Previous patch in the series replaces vxlan specific ndo_ops with
-generalized udp_tunnel ndo_ops. This patch propagates the change to all
-drivers implementing vxlan offload support.
-
-Patch was compile tested with x86_64_defconfig.
+This patch generalizes the driver flow to make room for more than just
+VXLAN tunnel by defining a common data structure with tunnel type.
 
 Signed-off-by: Kiran Patil <kiran.patil@intel.com>
 Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
 ---
- drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c | 14 ++++++---
- drivers/net/ethernet/emulex/benet/be_main.c      | 14 ++++++---
- drivers/net/ethernet/intel/fm10k/fm10k_netdev.c  | 26 ++++++++++++----
- drivers/net/ethernet/intel/i40e/i40e_main.c      | 38 ++++++++++++++++--------
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    | 16 +++++++---
- drivers/net/ethernet/mellanox/mlx4/en_netdev.c   | 20 +++++++++----
- drivers/net/ethernet/qlogic/qlcnic/qlcnic_main.c | 16 +++++++---
- 7 files changed, 104 insertions(+), 40 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h      | 11 ++++--
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 54 ++++++++++++++++-------------
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c |  6 ++--
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h |  2 +-
+ 4 files changed, 41 insertions(+), 32 deletions(-)
 
-diff --git a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c
-index 26fbfcc..6c2d5f1 100644
---- a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c
-+++ b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c
-@@ -10117,11 +10117,14 @@ static void __bnx2x_add_vxlan_port(struct bnx2x *bp, u16 port)
- }
- 
- static void bnx2x_add_vxlan_port(struct net_device *netdev,
--				 sa_family_t sa_family, __be16 port)
-+				 sa_family_t sa_family, __be16 port,
-+				 u32 type)
- {
- 	struct bnx2x *bp = netdev_priv(netdev);
- 	u16 t_port = ntohs(port);
- 
-+	if (type != UDP_TUNNEL_VXLAN)
-+		return;
- 	__bnx2x_add_vxlan_port(bp, t_port);
- }
- 
-@@ -10141,11 +10144,14 @@ static void __bnx2x_del_vxlan_port(struct bnx2x *bp, u16 port)
- }
- 
- static void bnx2x_del_vxlan_port(struct net_device *netdev,
--				 sa_family_t sa_family, __be16 port)
-+				 sa_family_t sa_family, __be16 port,
-+				 u32 type)
- {
- 	struct bnx2x *bp = netdev_priv(netdev);
- 	u16 t_port = ntohs(port);
- 
-+	if (type != UDP_TUNNEL_VXLAN)
-+		return;
- 	__bnx2x_del_vxlan_port(bp, t_port);
- }
- #endif
-@@ -13000,8 +13006,8 @@ static const struct net_device_ops bnx2x_netdev_ops = {
- 	.ndo_set_vf_link_state	= bnx2x_set_vf_link_state,
- 	.ndo_features_check	= bnx2x_features_check,
- #ifdef CONFIG_BNX2X_VXLAN
--	.ndo_add_vxlan_port	= bnx2x_add_vxlan_port,
--	.ndo_del_vxlan_port	= bnx2x_del_vxlan_port,
-+	.ndo_add_tunnel_port	= bnx2x_add_vxlan_port,
-+	.ndo_del_tunnel_port	= bnx2x_del_vxlan_port,
- #endif
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 257f7d8..71752c6 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -237,6 +237,11 @@ struct i40e_tc_configuration {
+ 	struct i40e_tc_info tc_info[I40E_MAX_TRAFFIC_CLASS];
  };
  
-diff --git a/drivers/net/ethernet/emulex/benet/be_main.c b/drivers/net/ethernet/emulex/benet/be_main.c
-index 12687bf..c24d352 100644
---- a/drivers/net/ethernet/emulex/benet/be_main.c
-+++ b/drivers/net/ethernet/emulex/benet/be_main.c
-@@ -5167,12 +5167,15 @@ static int be_ndo_bridge_getlink(struct sk_buff *skb, u32 pid, u32 seq,
-  * until after all the tunnels are removed.
-  */
- static void be_add_vxlan_port(struct net_device *netdev, sa_family_t sa_family,
--			      __be16 port)
-+			      __be16 port, u32 type)
- {
- 	struct be_adapter *adapter = netdev_priv(netdev);
- 	struct device *dev = &adapter->pdev->dev;
- 	int status;
- 
-+	if (type != UDP_TUNNEL_VXLAN)
-+		return;
++struct i40e_udp_port_config {
++	__be16 index;
++	u8 type;
++};
 +
- 	if (lancer_chip(adapter) || BEx_chip(adapter) || be_is_mc(adapter))
- 		return;
+ /* struct that defines the Ethernet device */
+ struct i40e_pf {
+ 	struct pci_dev *pdev;
+@@ -274,8 +279,8 @@ struct i40e_pf {
+ 	u32 fd_atr_cnt;
+ 	u32 fd_tcp_rule;
  
-@@ -5216,10 +5219,13 @@ err:
- }
+-	__be16  vxlan_ports[I40E_MAX_PF_UDP_OFFLOAD_PORTS];
+-	u16 pending_vxlan_bitmap;
++	struct i40e_udp_port_config udp_ports[I40E_MAX_PF_UDP_OFFLOAD_PORTS];
++	u16 pending_udp_bitmap;
  
- static void be_del_vxlan_port(struct net_device *netdev, sa_family_t sa_family,
--			      __be16 port)
-+			      __be16 port, u32 type)
- {
- 	struct be_adapter *adapter = netdev_priv(netdev);
- 
-+	if (type != UDP_TUNNEL_VXLAN)
-+		return;
-+
- 	if (lancer_chip(adapter) || BEx_chip(adapter) || be_is_mc(adapter))
- 		return;
- 
-@@ -5324,8 +5330,8 @@ static const struct net_device_ops be_netdev_ops = {
- 	.ndo_busy_poll		= be_busy_poll,
- #endif
- #ifdef CONFIG_BE2NET_VXLAN
--	.ndo_add_vxlan_port	= be_add_vxlan_port,
--	.ndo_del_vxlan_port	= be_del_vxlan_port,
-+	.ndo_add_tunnel_port    = be_add_vxlan_port,
-+	.ndo_del_tunnel_port	= be_del_vxlan_port,
- 	.ndo_features_check	= be_features_check,
- #endif
- 	.ndo_get_phys_port_id   = be_get_phys_port_id,
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-index 79c0fa2..133408a 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-@@ -439,18 +439,24 @@ static void fm10k_restore_vxlan_port(struct fm10k_intfc *interface)
-  * @netdev: network interface device structure
-  * @sa_family: Address family of new port
-  * @port: port number used for VXLAN
-+ * @type: Tunnel type
-  *
-- * This funciton is called when a new VXLAN interface has added a new port
-+ * This function is called when a new VXLAN interface has added a new port
-  * number to the range that is currently in use for VXLAN.  The new port
-  * number is always added to the tail so that the port number list should
-  * match the order in which the ports were allocated.  The head of the list
-  * is always used as the VXLAN port number for offloads.
-  **/
- static void fm10k_add_vxlan_port(struct net_device *dev,
--				 sa_family_t sa_family, __be16 port) {
-+				 sa_family_t sa_family, __be16 port,
-+				 u32 type) {
-+#if IS_ENABLED(CONFIG_FM10K_VXLAN)
- 	struct fm10k_intfc *interface = netdev_priv(dev);
- 	struct fm10k_vxlan_port *vxlan_port;
- 
-+	if (type != UDP_TUNNEL_VXLAN)
-+		return;
-+
- 	/* only the PF supports configuring tunnels */
- 	if (interface->hw.mac.type != fm10k_mac_pf)
- 		return;
-@@ -476,6 +482,7 @@ insert_tail:
- 	list_add_tail(&vxlan_port->list, &interface->vxlan_port);
- 
- 	fm10k_restore_vxlan_port(interface);
-+#endif
- }
- 
- /**
-@@ -483,17 +490,23 @@ insert_tail:
-  * @netdev: network interface device structure
-  * @sa_family: Address family of freed port
-  * @port: port number used for VXLAN
-+ * @type: Tunnel type
-  *
-- * This funciton is called when a new VXLAN interface has freed a port
-+ * This function is called when a new VXLAN interface has freed a port
-  * number from the range that is currently in use for VXLAN.  The freed
-  * port is removed from the list and the new head is used to determine
-  * the port number for offloads.
-  **/
- static void fm10k_del_vxlan_port(struct net_device *dev,
--				 sa_family_t sa_family, __be16 port) {
-+				 sa_family_t sa_family, __be16 port,
-+				 u32 type) {
-+#if IS_ENABLED(CONFIG_FM10K_VXLAN)
- 	struct fm10k_intfc *interface = netdev_priv(dev);
- 	struct fm10k_vxlan_port *vxlan_port;
- 
-+	if (type != UDP_TUNNEL_VXLAN)
-+		return;
-+
- 	if (interface->hw.mac.type != fm10k_mac_pf)
- 		return;
- 
-@@ -508,6 +521,7 @@ static void fm10k_del_vxlan_port(struct net_device *dev,
- 	}
- 
- 	fm10k_restore_vxlan_port(interface);
-+#endif
- }
- 
- /**
-@@ -1373,8 +1387,8 @@ static const struct net_device_ops fm10k_netdev_ops = {
- 	.ndo_set_vf_vlan	= fm10k_ndo_set_vf_vlan,
- 	.ndo_set_vf_rate	= fm10k_ndo_set_vf_bw,
- 	.ndo_get_vf_config	= fm10k_ndo_get_vf_config,
--	.ndo_add_vxlan_port	= fm10k_add_vxlan_port,
--	.ndo_del_vxlan_port	= fm10k_del_vxlan_port,
-+	.ndo_add_tunnel_port	= fm10k_add_vxlan_port,
-+	.ndo_del_tunnel_port	= fm10k_del_vxlan_port,
- 	.ndo_do_ioctl		= fm10k_ioctl,
- 	.ndo_dfwd_add_station	= fm10k_dfwd_add_station,
- 	.ndo_dfwd_del_station	= fm10k_dfwd_del_station,
+ 	enum i40e_interrupt_policy int_policy;
+ 	u16 rx_itr_default;
+@@ -314,7 +319,7 @@ struct i40e_pf {
+ #define I40E_FLAG_FD_ATR_ENABLED		BIT_ULL(22)
+ #define I40E_FLAG_PTP				BIT_ULL(25)
+ #define I40E_FLAG_MFP_ENABLED			BIT_ULL(26)
+-#define I40E_FLAG_VXLAN_FILTER_SYNC		BIT_ULL(27)
++#define I40E_FLAG_UDP_FILTER_SYNC              BIT_ULL(27)
+ #define I40E_FLAG_PORT_ID_VALID			BIT_ULL(28)
+ #define I40E_FLAG_DCB_CAPABLE			BIT_ULL(29)
+ #define I40E_FLAG_RSS_AQ_CAPABLE		BIT_ULL(31)
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index d75dbf3..4ec16c0 100644
+index 4ec16c0..b3a6cdf 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -7962,20 +7962,26 @@ static u8 i40e_get_vxlan_port_idx(struct i40e_pf *pf, __be16 port)
+@@ -6660,10 +6660,10 @@ static void i40e_handle_mdd_event(struct i40e_pf *pf)
  }
  
  /**
-- * i40e_add_vxlan_port - Get notifications about VXLAN ports that come up
-+ * i40e_add_tunnel_port - Get notifications about UDP tunnel ports that come up
-  * @netdev: This physical port's netdev
-- * @sa_family: Socket Family that VXLAN is notifying us about
-- * @port: New UDP port number that VXLAN started listening to
-+ * @sa_family: Socket Family that tunnel netdev is  associated with
-+ * @port: New UDP port number that tunnel started listening to
-+ * @type: Tunnel Type
+- * i40e_sync_vxlan_filters_subtask - Sync the VSI filter list with HW
++ * i40e_sync_udp_filters_subtask - Sync the VSI filter list with HW
+  * @pf: board private structure
   **/
--static void i40e_add_vxlan_port(struct net_device *netdev,
--				sa_family_t sa_family, __be16 port)
-+static void i40e_add_tunnel_port(struct net_device *netdev,
-+				 sa_family_t sa_family, __be16 port,
-+				 u32 type)
+-static void i40e_sync_vxlan_filters_subtask(struct i40e_pf *pf)
++static void i40e_sync_udp_filters_subtask(struct i40e_pf *pf)
  {
-+#if IS_ENABLED(CONFIG_VXLAN)
- 	struct i40e_netdev_priv *np = netdev_priv(netdev);
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct i40e_pf *pf = vsi->back;
- 	u8 next_idx;
- 	u8 idx;
+ #if IS_ENABLED(CONFIG_VXLAN)
+ 	struct i40e_hw *hw = &pf->hw;
+@@ -6671,18 +6671,18 @@ static void i40e_sync_vxlan_filters_subtask(struct i40e_pf *pf)
+ 	__be16 port;
+ 	int i;
  
-+	if (type != UDP_TUNNEL_VXLAN)
-+		return;
-+
- 	if (sa_family == AF_INET6)
+-	if (!(pf->flags & I40E_FLAG_VXLAN_FILTER_SYNC))
++	if (!(pf->flags & I40E_FLAG_UDP_FILTER_SYNC))
  		return;
  
-@@ -8001,22 +8007,29 @@ static void i40e_add_vxlan_port(struct net_device *netdev,
- 	pf->vxlan_ports[next_idx] = port;
- 	pf->pending_vxlan_bitmap |= BIT_ULL(next_idx);
- 	pf->flags |= I40E_FLAG_VXLAN_FILTER_SYNC;
-+#endif
+-	pf->flags &= ~I40E_FLAG_VXLAN_FILTER_SYNC;
++	pf->flags &= ~I40E_FLAG_UDP_FILTER_SYNC;
+ 
+ 	for (i = 0; i < I40E_MAX_PF_UDP_OFFLOAD_PORTS; i++) {
+-		if (pf->pending_vxlan_bitmap & BIT_ULL(i)) {
+-			pf->pending_vxlan_bitmap &= ~BIT_ULL(i);
+-			port = pf->vxlan_ports[i];
++		if (pf->pending_udp_bitmap & BIT_ULL(i)) {
++			pf->pending_udp_bitmap &= ~BIT_ULL(i);
++			port = pf->udp_ports[i].index;
+ 			if (port)
+ 				ret = i40e_aq_add_udp_tunnel(hw, ntohs(port),
+-						     I40E_AQC_TUNNEL_TYPE_VXLAN,
++						     pf->udp_ports[i].type,
+ 						     NULL, NULL);
+ 			else
+ 				ret = i40e_aq_del_udp_tunnel(hw, i, NULL);
+@@ -6695,7 +6695,7 @@ static void i40e_sync_vxlan_filters_subtask(struct i40e_pf *pf)
+ 					 i40e_stat_str(&pf->hw, ret),
+ 					 i40e_aq_str(&pf->hw,
+ 						    pf->hw.aq.asq_last_status));
+-				pf->vxlan_ports[i] = 0;
++				pf->udp_ports[i].index = 0;
+ 			}
+ 		}
+ 	}
+@@ -6725,7 +6725,7 @@ static void i40e_service_task(struct work_struct *work)
+ 	i40e_watchdog_subtask(pf);
+ 	i40e_fdir_reinit_subtask(pf);
+ 	i40e_sync_filters_subtask(pf);
+-	i40e_sync_vxlan_filters_subtask(pf);
++	i40e_sync_udp_filters_subtask(pf);
+ 	i40e_clean_adminq_subtask(pf);
+ 
+ 	i40e_service_event_complete(pf);
+@@ -7943,18 +7943,18 @@ static int i40e_set_features(struct net_device *netdev,
  }
  
  /**
-- * i40e_del_vxlan_port - Get notifications about VXLAN ports that go away
-+ * i40e_del_tunnel_port - Get notifications about UDP tunnel ports that go away
-  * @netdev: This physical port's netdev
-- * @sa_family: Socket Family that VXLAN is notifying us about
-- * @port: UDP port number that VXLAN stopped listening to
-+ * @sa_family: Socket Family that tunnel netdev is associated with
-+ * @port: UDP port number that tunnel stopped listening to
-+ * @type: Tunnel Type
+- * i40e_get_vxlan_port_idx - Lookup a possibly offloaded for Rx UDP port
++ * i40e_get_udp_port_idx - Lookup a possibly offloaded for Rx UDP port
+  * @pf: board private structure
+  * @port: The UDP port to look up
+  *
+  * Returns the index number or I40E_MAX_PF_UDP_OFFLOAD_PORTS if port not found
   **/
--static void i40e_del_vxlan_port(struct net_device *netdev,
--				sa_family_t sa_family, __be16 port)
-+static void i40e_del_tunnel_port(struct net_device *netdev,
-+				 sa_family_t sa_family, __be16 port,
-+				 u32 type)
+-static u8 i40e_get_vxlan_port_idx(struct i40e_pf *pf, __be16 port)
++static u8 i40e_get_udp_port_idx(struct i40e_pf *pf, __be16 port)
  {
-+#if IS_ENABLED(CONFIG_VXLAN)
- 	struct i40e_netdev_priv *np = netdev_priv(netdev);
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct i40e_pf *pf = vsi->back;
- 	u8 idx;
+ 	u8 i;
  
-+	if (type != UDP_TUNNEL_VXLAN)
-+		return;
-+
+ 	for (i = 0; i < I40E_MAX_PF_UDP_OFFLOAD_PORTS; i++) {
+-		if (pf->vxlan_ports[i] == port)
++		if (pf->udp_ports[i].index == port)
+ 			return i;
+ 	}
+ 
+@@ -7985,28 +7985,31 @@ static void i40e_add_tunnel_port(struct net_device *netdev,
  	if (sa_family == AF_INET6)
  		return;
  
-@@ -8034,6 +8047,7 @@ static void i40e_del_vxlan_port(struct net_device *netdev,
- 		netdev_warn(netdev, "vxlan port %d was not found, not deleting\n",
+-	idx = i40e_get_vxlan_port_idx(pf, port);
++	idx = i40e_get_udp_port_idx(pf, port);
+ 
+ 	/* Check if port already exists */
+ 	if (idx < I40E_MAX_PF_UDP_OFFLOAD_PORTS) {
+-		netdev_info(netdev, "vxlan port %d already offloaded\n",
++		netdev_info(netdev, "UDP port %d already offloaded\n",
+ 			    ntohs(port));
+ 		return;
+ 	}
+ 
+ 	/* Now check if there is space to add the new port */
+-	next_idx = i40e_get_vxlan_port_idx(pf, 0);
++	next_idx = i40e_get_udp_port_idx(pf, 0);
+ 
+ 	if (next_idx == I40E_MAX_PF_UDP_OFFLOAD_PORTS) {
+-		netdev_info(netdev, "maximum number of vxlan UDP ports reached, not adding port %d\n",
++		netdev_info(netdev, "maximum number of UDP ports reached, not adding port %d\n",
+ 			    ntohs(port));
+ 		return;
+ 	}
+ 
+ 	/* New port: add it and mark its index in the bitmap */
+-	pf->vxlan_ports[next_idx] = port;
+-	pf->pending_vxlan_bitmap |= BIT_ULL(next_idx);
+-	pf->flags |= I40E_FLAG_VXLAN_FILTER_SYNC;
++	pf->udp_ports[next_idx].index = port;
++	if (type == UDP_TUNNEL_VXLAN)
++		pf->udp_ports[next_idx].type = I40E_AQC_TUNNEL_TYPE_VXLAN;
++
++	pf->pending_udp_bitmap |= BIT_ULL(next_idx);
++	pf->flags |= I40E_FLAG_UDP_FILTER_SYNC;
+ #endif
+ }
+ 
+@@ -8033,18 +8036,18 @@ static void i40e_del_tunnel_port(struct net_device *netdev,
+ 	if (sa_family == AF_INET6)
+ 		return;
+ 
+-	idx = i40e_get_vxlan_port_idx(pf, port);
++	idx = i40e_get_udp_port_idx(pf, port);
+ 
+ 	/* Check if port already exists */
+ 	if (idx < I40E_MAX_PF_UDP_OFFLOAD_PORTS) {
+ 		/* if port exists, set it to 0 (mark for deletion)
+ 		 * and make it pending
+ 		 */
+-		pf->vxlan_ports[idx] = 0;
+-		pf->pending_vxlan_bitmap |= BIT_ULL(idx);
+-		pf->flags |= I40E_FLAG_VXLAN_FILTER_SYNC;
++		pf->udp_ports[idx].index = 0;
++		pf->pending_udp_bitmap |= BIT_ULL(idx);
++		pf->flags |= I40E_FLAG_UDP_FILTER_SYNC;
+ 	} else {
+-		netdev_warn(netdev, "vxlan port %d was not found, not deleting\n",
++		netdev_warn(netdev, "udp tunnel port %d was not found, not deleting\n",
  			    ntohs(port));
  	}
-+#endif
- }
+ #endif
+@@ -8307,6 +8310,7 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
+ 	np->vsi = vsi;
  
- static int i40e_get_phys_port_id(struct net_device *netdev,
-@@ -8258,8 +8272,8 @@ static const struct net_device_ops i40e_netdev_ops = {
- 	.ndo_get_vf_config	= i40e_ndo_get_vf_config,
- 	.ndo_set_vf_link_state	= i40e_ndo_set_vf_link_state,
- 	.ndo_set_vf_spoofchk	= i40e_ndo_set_vf_spoofchk,
--	.ndo_add_vxlan_port	= i40e_add_vxlan_port,
--	.ndo_del_vxlan_port	= i40e_del_vxlan_port,
-+	.ndo_add_tunnel_port	= i40e_add_tunnel_port,
-+	.ndo_del_tunnel_port	= i40e_del_tunnel_port,
- 	.ndo_get_phys_port_id	= i40e_get_phys_port_id,
- 	.ndo_fdb_add		= i40e_ndo_fdb_add,
- 	.ndo_features_check	= i40e_features_check,
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 914c1b0..4c132dd 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -8080,14 +8080,18 @@ static int ixgbe_set_features(struct net_device *netdev,
-  * @dev: The port's netdev
-  * @sa_family: Socket Family that VXLAN is notifiying us about
-  * @port: New UDP port number that VXLAN started listening to
-+ * @type: Tunnel type
-  **/
- static void ixgbe_add_vxlan_port(struct net_device *dev, sa_family_t sa_family,
--				 __be16 port)
-+				 __be16 port, u32 type)
- {
- 	struct ixgbe_adapter *adapter = netdev_priv(dev);
- 	struct ixgbe_hw *hw = &adapter->hw;
- 	u16 new_port = ntohs(port);
+ 	netdev->hw_enc_features |= NETIF_F_IP_CSUM	 |
++				  NETIF_F_RXCSUM	 |
+ 				  NETIF_F_GSO_UDP_TUNNEL |
+ 				  NETIF_F_TSO;
  
-+	if (type != UDP_TUNNEL_VXLAN)
-+		return;
-+
- 	if (!(adapter->flags & IXGBE_FLAG_VXLAN_OFFLOAD_CAPABLE))
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 0fbcd05..424c5cc 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -2007,7 +2007,7 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 	if (!(tx_flags & (I40E_TX_FLAGS_IPV4 | I40E_TX_FLAGS_IPV6)))
  		return;
  
-@@ -8113,13 +8117,17 @@ static void ixgbe_add_vxlan_port(struct net_device *dev, sa_family_t sa_family,
-  * @dev: The port's netdev
-  * @sa_family: Socket Family that VXLAN is notifying us about
-  * @port: UDP port number that VXLAN stopped listening to
-+ * @type: Tunnel type
-  **/
- static void ixgbe_del_vxlan_port(struct net_device *dev, sa_family_t sa_family,
--				 __be16 port)
-+				 __be16 port, u32 type)
- {
- 	struct ixgbe_adapter *adapter = netdev_priv(dev);
- 	u16 new_port = ntohs(port);
+-	if (!(tx_flags & I40E_TX_FLAGS_VXLAN_TUNNEL)) {
++	if (!(tx_flags & I40E_TX_FLAGS_UDP_TUNNEL)) {
+ 		/* snag network header to get L4 type and address */
+ 		hdr.network = skb_network_header(skb);
  
-+	if (type != UDP_TUNNEL_VXLAN)
-+		return;
-+
- 	if (!(adapter->flags & IXGBE_FLAG_VXLAN_OFFLOAD_CAPABLE))
- 		return;
+@@ -2092,7 +2092,7 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 		     I40E_TXD_FLTR_QW1_FD_STATUS_SHIFT;
  
-@@ -8428,8 +8436,8 @@ static const struct net_device_ops ixgbe_netdev_ops = {
- 	.ndo_dfwd_add_station	= ixgbe_fwd_add,
- 	.ndo_dfwd_del_station	= ixgbe_fwd_del,
- #ifdef CONFIG_IXGBE_VXLAN
--	.ndo_add_vxlan_port	= ixgbe_add_vxlan_port,
--	.ndo_del_vxlan_port	= ixgbe_del_vxlan_port,
-+	.ndo_add_tunnel_port	= ixgbe_add_vxlan_port,
-+	.ndo_del_tunnel_port	= ixgbe_del_vxlan_port,
- #endif /* CONFIG_IXGBE_VXLAN */
- 	.ndo_features_check	= ixgbe_features_check,
- };
-diff --git a/drivers/net/ethernet/mellanox/mlx4/en_netdev.c b/drivers/net/ethernet/mellanox/mlx4/en_netdev.c
-index 4726122..8832cae 100644
---- a/drivers/net/ethernet/mellanox/mlx4/en_netdev.c
-+++ b/drivers/net/ethernet/mellanox/mlx4/en_netdev.c
-@@ -2386,11 +2386,15 @@ static void mlx4_en_del_vxlan_offloads(struct work_struct *work)
- }
- 
- static void mlx4_en_add_vxlan_port(struct  net_device *dev,
--				   sa_family_t sa_family, __be16 port)
-+				   sa_family_t sa_family, __be16 port,
-+				   u32 type)
- {
- 	struct mlx4_en_priv *priv = netdev_priv(dev);
- 	__be16 current_port;
- 
-+	if (type != UDP_TUNNEL_VXLAN)
-+		return;
-+
- 	if (priv->mdev->dev->caps.tunnel_offload_mode != MLX4_TUNNEL_OFFLOAD_MODE_VXLAN)
- 		return;
- 
-@@ -2409,11 +2413,15 @@ static void mlx4_en_add_vxlan_port(struct  net_device *dev,
- }
- 
- static void mlx4_en_del_vxlan_port(struct  net_device *dev,
--				   sa_family_t sa_family, __be16 port)
-+				   sa_family_t sa_family, __be16 port,
-+				   u32 type)
- {
- 	struct mlx4_en_priv *priv = netdev_priv(dev);
- 	__be16 current_port;
- 
-+	if (type != UDP_TUNNEL_VXLAN)
-+		return;
-+
- 	if (priv->mdev->dev->caps.tunnel_offload_mode != MLX4_TUNNEL_OFFLOAD_MODE_VXLAN)
- 		return;
- 
-@@ -2493,8 +2501,8 @@ static const struct net_device_ops mlx4_netdev_ops = {
- #endif
- 	.ndo_get_phys_port_id	= mlx4_en_get_phys_port_id,
- #ifdef CONFIG_MLX4_EN_VXLAN
--	.ndo_add_vxlan_port	= mlx4_en_add_vxlan_port,
--	.ndo_del_vxlan_port	= mlx4_en_del_vxlan_port,
-+	.ndo_add_tunnel_port	= mlx4_en_add_vxlan_port,
-+	.ndo_del_tunnel_port	= mlx4_en_del_vxlan_port,
- 	.ndo_features_check	= mlx4_en_features_check,
- #endif
- 	.ndo_set_tx_maxrate	= mlx4_en_set_tx_maxrate,
-@@ -2531,8 +2539,8 @@ static const struct net_device_ops mlx4_netdev_ops_master = {
- #endif
- 	.ndo_get_phys_port_id	= mlx4_en_get_phys_port_id,
- #ifdef CONFIG_MLX4_EN_VXLAN
--	.ndo_add_vxlan_port	= mlx4_en_add_vxlan_port,
--	.ndo_del_vxlan_port	= mlx4_en_del_vxlan_port,
-+	.ndo_add_tunnel_port	= mlx4_en_add_vxlan_port,
-+	.ndo_del_tunnel_port	= mlx4_en_del_vxlan_port,
- 	.ndo_features_check	= mlx4_en_features_check,
- #endif
- 	.ndo_set_tx_maxrate	= mlx4_en_set_tx_maxrate,
-diff --git a/drivers/net/ethernet/qlogic/qlcnic/qlcnic_main.c b/drivers/net/ethernet/qlogic/qlcnic/qlcnic_main.c
-index 8b08b20..048108f 100644
---- a/drivers/net/ethernet/qlogic/qlcnic/qlcnic_main.c
-+++ b/drivers/net/ethernet/qlogic/qlcnic/qlcnic_main.c
-@@ -475,11 +475,15 @@ static int qlcnic_get_phys_port_id(struct net_device *netdev,
- 
- #ifdef CONFIG_QLCNIC_VXLAN
- static void qlcnic_add_vxlan_port(struct net_device *netdev,
--				  sa_family_t sa_family, __be16 port)
-+				  sa_family_t sa_family, __be16 port,
-+				  u32 type)
- {
- 	struct qlcnic_adapter *adapter = netdev_priv(netdev);
- 	struct qlcnic_hardware_context *ahw = adapter->ahw;
- 
-+	if (type != UDP_TUNNEL_VXLAN)
-+		return;
-+
- 	/* Adapter supports only one VXLAN port. Use very first port
- 	 * for enabling offload
- 	 */
-@@ -491,11 +495,15 @@ static void qlcnic_add_vxlan_port(struct net_device *netdev,
- }
- 
- static void qlcnic_del_vxlan_port(struct net_device *netdev,
--				  sa_family_t sa_family, __be16 port)
-+				  sa_family_t sa_family, __be16 port,
-+				  u32 type)
- {
- 	struct qlcnic_adapter *adapter = netdev_priv(netdev);
- 	struct qlcnic_hardware_context *ahw = adapter->ahw;
- 
-+	if (type != UDP_TUNNEL_VXLAN)
-+		return;
-+
- 	if (!qlcnic_encap_rx_offload(adapter) || !ahw->vxlan_port ||
- 	    (ahw->vxlan_port != ntohs(port)))
- 		return;
-@@ -531,8 +539,8 @@ static const struct net_device_ops qlcnic_netdev_ops = {
- 	.ndo_fdb_dump		= qlcnic_fdb_dump,
- 	.ndo_get_phys_port_id	= qlcnic_get_phys_port_id,
- #ifdef CONFIG_QLCNIC_VXLAN
--	.ndo_add_vxlan_port	= qlcnic_add_vxlan_port,
--	.ndo_del_vxlan_port	= qlcnic_del_vxlan_port,
-+	.ndo_add_tunnel_port	= qlcnic_add_vxlan_port,
-+	.ndo_del_tunnel_port	= qlcnic_del_vxlan_port,
- 	.ndo_features_check	= qlcnic_features_check,
- #endif
- #ifdef CONFIG_NET_POLL_CONTROLLER
+ 	dtype_cmd |= I40E_TXD_FLTR_QW1_CNT_ENA_MASK;
+-	if (!(tx_flags & I40E_TX_FLAGS_VXLAN_TUNNEL))
++	if (!(tx_flags & I40E_TX_FLAGS_UDP_TUNNEL))
+ 		dtype_cmd |=
+ 			((u32)I40E_FD_ATR_STAT_IDX(pf->hw.pf_id) <<
+ 			I40E_TXD_FLTR_QW1_CNTINDEX_SHIFT) &
+@@ -2323,7 +2323,7 @@ static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
+ 			oudph = udp_hdr(skb);
+ 			oiph = ip_hdr(skb);
+ 			l4_tunnel = I40E_TXD_CTX_UDP_TUNNELING;
+-			*tx_flags |= I40E_TX_FLAGS_VXLAN_TUNNEL;
++			*tx_flags |= I40E_TX_FLAGS_UDP_TUNNEL;
+ 			break;
+ 		default:
+ 			return;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+index a992cb8f..db2130f 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+@@ -151,7 +151,7 @@ enum i40e_dyn_idx_t {
+ #define I40E_TX_FLAGS_FSO		BIT(7)
+ #define I40E_TX_FLAGS_TSYN		BIT(8)
+ #define I40E_TX_FLAGS_FD_SB		BIT(9)
+-#define I40E_TX_FLAGS_VXLAN_TUNNEL	BIT(10)
++#define I40E_TX_FLAGS_UDP_TUNNEL	BIT(10)
+ #define I40E_TX_FLAGS_VLAN_MASK		0xffff0000
+ #define I40E_TX_FLAGS_VLAN_PRIO_MASK	0xe0000000
+ #define I40E_TX_FLAGS_VLAN_PRIO_SHIFT	29
 -- 
 1.8.1.4
 
