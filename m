@@ -1,157 +1,133 @@
 From: Anjali Singhai Jain <anjali.singhai@intel.com>
-Date: Tue,  8 Sep 2015 14:55:52 -0700
-Subject: [Intel-wired-lan] [PATCH v2 1/5] i40e: Remove CONFIG_I40E_VXLAN
-Message-ID: <1441749356-92927-1-git-send-email-anjali.singhai@intel.com>
+Date: Tue,  8 Sep 2015 14:55:56 -0700
+Subject: [Intel-wired-lan] [PATCH v2 5/5] i40e: Add geneve tunnel offload
+	support
+In-Reply-To: <1441749356-92927-1-git-send-email-anjali.singhai@intel.com>
+References: <1441749356-92927-1-git-send-email-anjali.singhai@intel.com>
+Message-ID: <1441749356-92927-5-git-send-email-anjali.singhai@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-If the kernel flag CONFIG_VXLAN is true or CONFIG_VXLAN_MODULE is true,
-enable VXLAN offload in the driver.
+This patch adds driver hooks to implement ndo_ops to add/del udp
+port in the HW to identify GENEVE tunnels.
 
-Signed-off-by: Kiran Patil <kiran.patil@intel.com>
 Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+Signed-off-by: Kiran Patil <kiran.patil@intel.com>
 ---
- drivers/net/ethernet/intel/Kconfig          | 11 -----------
- drivers/net/ethernet/intel/i40e/i40e.h      |  4 ----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 14 ++++----------
- 3 files changed, 4 insertions(+), 25 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h      |  1 +
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 22 ++++++++++++++++------
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c |  2 +-
+ 3 files changed, 18 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-index 4163b16..061e4e0 100644
---- a/drivers/net/ethernet/intel/Kconfig
-+++ b/drivers/net/ethernet/intel/Kconfig
-@@ -269,17 +269,6 @@ config I40E
- 	  To compile this driver as a module, choose M here. The module
- 	  will be called i40e.
- 
--config I40E_VXLAN
--	bool "Virtual eXtensible Local Area Network Support"
--	default n
--	depends on I40E && VXLAN && !(I40E=y && VXLAN=m)
--	---help---
--	  This allows one to create VXLAN virtual interfaces that provide
--	  Layer 2 Networks over Layer 3 Networks. VXLAN is often used
--	  to tunnel virtual network infrastructure in virtualized environments.
--	  Say Y here if you want to use Virtual eXtensible Local Area Network
--	  (VXLAN) in the driver.
--
- config I40E_DCB
- 	bool "Data Center Bridging (DCB) Support"
- 	default n
 diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index c9fa289..257f7d8 100644
+index 71752c6..12c96da 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -274,11 +274,9 @@ struct i40e_pf {
- 	u32 fd_atr_cnt;
- 	u32 fd_tcp_rule;
+@@ -330,6 +330,7 @@ struct i40e_pf {
+ #define I40E_FLAG_VEB_STATS_ENABLED		BIT_ULL(37)
+ #define I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE	BIT_ULL(38)
+ #define I40E_FLAG_VEB_MODE_ENABLED		BIT_ULL(40)
++#define I40E_FLAG_GENEVE_OFFLOAD_CAPABLE	BIT_ULL(41)
  
--#ifdef CONFIG_I40E_VXLAN
- 	__be16  vxlan_ports[I40E_MAX_PF_UDP_OFFLOAD_PORTS];
- 	u16 pending_vxlan_bitmap;
- 
--#endif
- 	enum i40e_interrupt_policy int_policy;
- 	u16 rx_itr_default;
- 	u16 tx_itr_default;
-@@ -316,9 +314,7 @@ struct i40e_pf {
- #define I40E_FLAG_FD_ATR_ENABLED		BIT_ULL(22)
- #define I40E_FLAG_PTP				BIT_ULL(25)
- #define I40E_FLAG_MFP_ENABLED			BIT_ULL(26)
--#ifdef CONFIG_I40E_VXLAN
- #define I40E_FLAG_VXLAN_FILTER_SYNC		BIT_ULL(27)
--#endif
- #define I40E_FLAG_PORT_ID_VALID			BIT_ULL(28)
- #define I40E_FLAG_DCB_CAPABLE			BIT_ULL(29)
- #define I40E_FLAG_RSS_AQ_CAPABLE		BIT_ULL(31)
+ 	/* tracks features that get auto disabled by errors */
+ 	u64 auto_disable_flags;
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index aef0a4c..d75dbf3 100644
+index b3a6cdf..9bbafc3 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -28,7 +28,7 @@
- #include "i40e.h"
- #include "i40e_helper.h"
- #include "i40e_diag.h"
--#ifdef CONFIG_I40E_VXLAN
-+#if IS_ENABLED(CONFIG_VXLAN)
+@@ -31,6 +31,9 @@
+ #if IS_ENABLED(CONFIG_VXLAN)
  #include <net/vxlan.h>
  #endif
++#if IS_ENABLED(CONFIG_GENEVE)
++#include <net/geneve.h>
++#endif
  
-@@ -4934,7 +4934,7 @@ int i40e_open(struct net_device *netdev)
- 						       TCP_FLAG_CWR) >> 16);
- 	wr32(&pf->hw, I40E_GLLAN_TSOMSK_L, be32_to_cpu(TCP_FLAG_CWR) >> 16);
- 
--#ifdef CONFIG_I40E_VXLAN
-+#if IS_ENABLED(CONFIG_VXLAN)
- 	vxlan_get_rx_port(netdev);
- #endif
- 
-@@ -6659,13 +6659,13 @@ static void i40e_handle_mdd_event(struct i40e_pf *pf)
- 	i40e_flush(hw);
- }
- 
--#ifdef CONFIG_I40E_VXLAN
- /**
-  * i40e_sync_vxlan_filters_subtask - Sync the VSI filter list with HW
-  * @pf: board private structure
+ const char i40e_driver_name[] = "i40e";
+ static const char i40e_driver_string[] =
+@@ -6665,7 +6668,7 @@ static void i40e_handle_mdd_event(struct i40e_pf *pf)
   **/
- static void i40e_sync_vxlan_filters_subtask(struct i40e_pf *pf)
+ static void i40e_sync_udp_filters_subtask(struct i40e_pf *pf)
  {
-+#if IS_ENABLED(CONFIG_VXLAN)
+-#if IS_ENABLED(CONFIG_VXLAN)
++#if IS_ENABLED(CONFIG_VXLAN) || IS_ENABLED(CONFIG_GENEVE)
  	struct i40e_hw *hw = &pf->hw;
  	i40e_status ret;
  	__be16 port;
-@@ -6699,9 +6699,9 @@ static void i40e_sync_vxlan_filters_subtask(struct i40e_pf *pf)
- 			}
- 		}
+@@ -7843,7 +7846,8 @@ static int i40e_sw_init(struct i40e_pf *pf)
+ 			     I40E_FLAG_HW_ATR_EVICT_CAPABLE |
+ 			     I40E_FLAG_OUTER_UDP_CSUM_CAPABLE |
+ 			     I40E_FLAG_WB_ON_ITR_CAPABLE |
+-			     I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE;
++			     I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE |
++			     I40E_FLAG_GENEVE_OFFLOAD_CAPABLE;
  	}
-+#endif
- }
- 
--#endif
- /**
-  * i40e_service_task - Run the driver's async subtasks
-  * @work: pointer to work_struct containing our data
-@@ -6725,9 +6725,7 @@ static void i40e_service_task(struct work_struct *work)
- 	i40e_watchdog_subtask(pf);
- 	i40e_fdir_reinit_subtask(pf);
- 	i40e_sync_filters_subtask(pf);
--#ifdef CONFIG_I40E_VXLAN
- 	i40e_sync_vxlan_filters_subtask(pf);
--#endif
- 	i40e_clean_adminq_subtask(pf);
- 
- 	i40e_service_event_complete(pf);
-@@ -7944,7 +7942,6 @@ static int i40e_set_features(struct net_device *netdev,
- 	return 0;
- }
- 
--#ifdef CONFIG_I40E_VXLAN
- /**
-  * i40e_get_vxlan_port_idx - Lookup a possibly offloaded for Rx UDP port
-  * @pf: board private structure
-@@ -8039,7 +8036,6 @@ static void i40e_del_vxlan_port(struct net_device *netdev,
- 	}
- }
- 
--#endif
- static int i40e_get_phys_port_id(struct net_device *netdev,
- 				 struct netdev_phys_item_id *ppid)
+ 	pf->eeprom_version = 0xDEAD;
+ 	pf->lan_veb = I40E_NO_VEB;
+@@ -7972,14 +7976,18 @@ static void i40e_add_tunnel_port(struct net_device *netdev,
+ 				 sa_family_t sa_family, __be16 port,
+ 				 u32 type)
  {
-@@ -8262,10 +8258,8 @@ static const struct net_device_ops i40e_netdev_ops = {
- 	.ndo_get_vf_config	= i40e_ndo_get_vf_config,
- 	.ndo_set_vf_link_state	= i40e_ndo_set_vf_link_state,
- 	.ndo_set_vf_spoofchk	= i40e_ndo_set_vf_spoofchk,
--#ifdef CONFIG_I40E_VXLAN
- 	.ndo_add_vxlan_port	= i40e_add_vxlan_port,
- 	.ndo_del_vxlan_port	= i40e_del_vxlan_port,
--#endif
- 	.ndo_get_phys_port_id	= i40e_get_phys_port_id,
- 	.ndo_fdb_add		= i40e_ndo_fdb_add,
- 	.ndo_features_check	= i40e_features_check,
+-#if IS_ENABLED(CONFIG_VXLAN)
++#if IS_ENABLED(CONFIG_VXLAN) || IS_ENABLED(CONFIG_GENEVE)
+ 	struct i40e_netdev_priv *np = netdev_priv(netdev);
+ 	struct i40e_vsi *vsi = np->vsi;
+ 	struct i40e_pf *pf = vsi->back;
+ 	u8 next_idx;
+ 	u8 idx;
+ 
+-	if (type != UDP_TUNNEL_VXLAN)
++	if (!(type == UDP_TUNNEL_VXLAN || type == UDP_TUNNEL_GENEVE))
++		return;
++
++	if ((type == UDP_TUNNEL_GENEVE) &&
++	    (!(pf->flags & I40E_FLAG_GENEVE_OFFLOAD_CAPABLE)))
+ 		return;
+ 
+ 	if (sa_family == AF_INET6)
+@@ -8007,6 +8015,8 @@ static void i40e_add_tunnel_port(struct net_device *netdev,
+ 	pf->udp_ports[next_idx].index = port;
+ 	if (type == UDP_TUNNEL_VXLAN)
+ 		pf->udp_ports[next_idx].type = I40E_AQC_TUNNEL_TYPE_VXLAN;
++	else if (type == UDP_TUNNEL_GENEVE)
++		pf->udp_ports[next_idx].type = I40E_AQC_TUNNEL_TYPE_NGE;
+ 
+ 	pf->pending_udp_bitmap |= BIT_ULL(next_idx);
+ 	pf->flags |= I40E_FLAG_UDP_FILTER_SYNC;
+@@ -8024,7 +8034,7 @@ static void i40e_del_tunnel_port(struct net_device *netdev,
+ 				 sa_family_t sa_family, __be16 port,
+ 				 u32 type)
+ {
+-#if IS_ENABLED(CONFIG_VXLAN)
++#if IS_ENABLED(CONFIG_VXLAN) || IS_ENABLED(CONFIG_GENEVE)
+ 	struct i40e_netdev_priv *np = netdev_priv(netdev);
+ 	struct i40e_vsi *vsi = np->vsi;
+ 	struct i40e_pf *pf = vsi->back;
+@@ -8228,7 +8238,7 @@ static int i40e_ndo_bridge_getlink(struct sk_buff *skb, u32 pid, u32 seq,
+ 				       nlflags, 0, 0, filter_mask, NULL);
+ }
+ 
+-#define I40E_MAX_TUNNEL_HDR_LEN 80
++#define I40E_MAX_TUNNEL_HDR_LEN 260
+ /**
+  * i40e_features_check - Validate encapsulated packet conforms to limits
+  * @skb: skb buff
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 424c5cc..b93c2dc 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -1425,7 +1425,7 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
+ 	if (rx_error & BIT(I40E_RX_DESC_ERROR_PPRS_SHIFT))
+ 		return;
+ 
+-	/* If VXLAN traffic has an outer UDPv4 checksum we need to check
++	/* If VXLAN/GENEVE traffic has an outer UDPv4 checksum we need to check
+ 	 * it in the driver, hardware does not do it for us.
+ 	 * Since L3L4P bit was set we assume a valid IHL value (>=5)
+ 	 * so the total length of IPv4 header is IHL*4 bytes
 -- 
 1.8.1.4
 
