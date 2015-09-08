@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 8 Sep 2015 18:48:12 +0000
-Subject: [Intel-wired-lan] [next PATCH S11 09/15] i40e: Fix for
- truncated	interrupt name
-In-Reply-To: <1440616461-110869-10-git-send-email-catherine.sullivan@intel.com>
+Date: Tue, 8 Sep 2015 21:10:39 +0000
+Subject: [Intel-wired-lan] [next PATCH S11 10/15] i40e: Never let speed
+ get	set to 0 in get_settings
+In-Reply-To: <1440616461-110869-11-git-send-email-catherine.sullivan@intel.com>
 References: <1440616461-110869-1-git-send-email-catherine.sullivan@intel.com>
- <1440616461-110869-10-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060A5AB8@ORSMSX104.amr.corp.intel.com>
+ <1440616461-110869-11-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060A5AEF@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,20 +17,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Catherine Sullivan
 > Sent: Wednesday, August 26, 2015 12:14 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S11 09/15] i40e: Fix for truncated
-> interrupt name
+> Subject: [Intel-wired-lan] [next PATCH S11 10/15] i40e: Never let speed get
+> set to 0 in get_settings
 > 
-> From: Carolyn Wyborny <carolyn.wyborny@intel.com>
+> In ethtool, there is a possibility of speed getting set to 0 if advertise is set to 0
+> (which it is when autoneg is disabled).
+> We never want this to happen as the firmware will actually attempt to set
+> the speed to 0 sending link down, so add an extra check to make sure this
+> doesn't happen.
 > 
-> This patch extends the size of the text available for the interrupt names.
-> Without this patch, all the descriptive data available for the Flow Director
-> interrupts is truncated.
-> 
-> Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
-> Change-ID: I2ac458f23ac3b4ea8f1edf73edc283b1d3704c7f
+> Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
+> Change-ID: I62e0eeee2cbf043d8e6f5c9c9f0b92794e877f01
 > ---
->  drivers/net/ethernet/intel/i40e/i40e.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 7 +++++++
+>  1 file changed, 7 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-code changes present in tree, "cat /proc/interrupts" shows untruncated interrupt names for i40e.
+Code changes present in tree, speed does not get set to 0 with autoneg off (shows proper speed)
