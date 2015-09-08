@@ -1,45 +1,31 @@
-From: Doron Shikmoni <doron.shikmoni@gmail.com>
-Date: Sun, 27 Sep 2015 13:36:22 +0300
-Subject: [Intel-wired-lan] [PATCH] igb: garbled "ethtool -m" output in
- igb-driven NICs, patch for igb_get_module_eeprom()
-Message-ID: <CAEvZX5eZjLdD9O97EUXiBqWcnfoHrVp93tfVEHt7Mk2tEanr4A@mail.gmail.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 8 Sep 2015 17:30:02 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: Fix a memory leak in X722
+	rss	config path
+In-Reply-To: <1440448013-196583-1-git-send-email-anjali.singhai@intel.com>
+References: <1440448013-196583-1-git-send-email-anjali.singhai@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060A5A38@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-For igb-driven NICs with module/plugin EEPROM, "ethtool -m ethX" provides
-garbled output (every time). Each data byte appears to be duplicated.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Anjali Singhai Jain
+> Sent: Monday, August 24, 2015 1:27 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH] i40e: Fix a memory leak in X722 rss config
+> path
+> 
+> In any case free the memory allocated before exiting.
+> 
+> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 
-The issue is within igb_get_module_eeprom() in igb_ethtool.c. In the reading
-of the EEPROM via i2c, the eeprom offset for each word that's read via
-igb_read_phy_reg_i2c() is passed in #words, whereas it needs to be a byte
-offset.
-
-Signed-off-by: Doron Shikmoni <doron.shikmoni@gmail.com>
----
-
-Proposed patch tested; with this patch applied, the output of "ethtool -m"
-appears perfect. It'd be great if you could push this into the main tree.
-
-[ "(first_word + i ) * 2" and not "ee->offset + i", due to word boundary ]
-
-
-diff -up igb_ethtool.c igb_ethtool.c.patched
---- igb_ethtool.c
-+++ igb_ethtool.c.patched
-@@ -2808,7 +2808,7 @@ static int igb_get_module_eeprom(struct
-
-        /* Read EEPROM block, SFF-8079/SFF-8472, word at a time */
-        for (i = 0; i < last_word - first_word + 1; i++) {
--               status = igb_read_phy_reg_i2c(hw, first_word + i,
-&dataword[i]);
-+               status = igb_read_phy_reg_i2c(hw, (first_word + i) * 2,
-&dataword[i]);
-                if (status) {
-                        /* Error occurred while reading module */
-                        kfree(dataword);
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150927/cf12f26b/attachment.html>
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Code present in tree, does not break base driver.
