@@ -1,67 +1,39 @@
-From: Jesse Gross <jesse@nicira.com>
-Date: Wed, 9 Sep 2015 14:30:05 -0700
-Subject: [Intel-wired-lan] [PATCH v2 2/5] vxlan: Generalize udp based
- tunnel offload
-In-Reply-To: <1441749356-92927-2-git-send-email-anjali.singhai@intel.com>
-References: <1441749356-92927-1-git-send-email-anjali.singhai@intel.com>
- <1441749356-92927-2-git-send-email-anjali.singhai@intel.com>
-Message-ID: <CAEP_g=_K-nR2qmsNXCeQQRXHHt3GB7pJ9HsGRUztv7cvHQ6wxA@mail.gmail.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 9 Sep 2015 21:30:41 +0000
+Subject: [Intel-wired-lan] [next PATCH S13 02/15] i40e/i40evf: add
+ GetStatus	command for nvmupdate
+In-Reply-To: <1440798961-17326-3-git-send-email-catherine.sullivan@intel.com>
+References: <1440798961-17326-1-git-send-email-catherine.sullivan@intel.com>
+ <1440798961-17326-3-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060A5E68@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Sep 8, 2015 at 2:55 PM, Anjali Singhai Jain
-<anjali.singhai@intel.com> wrote:
-> Replace add/del ndo ops for vxlan_port with tunnel_port so that all UDP
-> based tunnels can use the same ndo op. Add a parameter to pass tunnel
-> type to the ndo_op.
->
-> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
-> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Catherine Sullivan
+> Sent: Friday, August 28, 2015 2:56 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S13 02/15] i40e/i40evf: add GetStatus
+> command for nvmupdate
+> 
+> From: Shannon Nelson <shannon.nelson@intel.com>
+> 
+> This adds a new GetStatus command so that the NVM update tool can query
+> the current status instead of doing fake write requests to probe for
+> readiness.
+> 
+> Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+> Change-ID: I671ec6ccd4dfc9dbac3a03b964589d693fda5cd8
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_nvm.c    | 42
+> ++++++++++++++++++++-------
+>  drivers/net/ethernet/intel/i40e/i40e_type.h   |  2 ++
+>  drivers/net/ethernet/intel/i40evf/i40e_type.h |  2 ++
+>  3 files changed, 35 insertions(+), 11 deletions(-)
 
-You should squash the patch that comes after this into this one -
-otherwise the kernel won't compile after this patch.
-
-Did you mean to also add calls from the Geneve code to this? I think
-you had it in the previous version.
-
-I believe we also need a generalization of vxlan_get_rx_port().
-Otherwise, there's no way for drivers to get the non-VXLAN tunnels
-that were created when they weren't up.
-
-> diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-> index c69072b..b6f6beb 100644
-> --- a/include/linux/netdevice.h
-> +++ b/include/linux/netdevice.h
-> + * void (*ndo_add_tunnel_port)(struct  net_device *dev,
-> + *                           sa_family_t sa_family, __be16 port, u32 type);
-> + *     Called by UDP based tunnel modules to notify a driver about a UDP
-> + *     port and socket address family that the tunnel is listening to. It is
-> + *     called only when a new port starts listening. The operation is
-> + *     protected by tunnel socket sock_lock.
-
-This locking doesn't look safe to me. Each type of tunnel will have
-its own socket lock but the data structures that are used in drivers
-implementing these functions may be shared (such as in your i40e
-patch). I believe that RTNL is currently held by both VXLAN and Geneve
-when calling this with the possible exception of vxlan_get_rx_port().
-In practice, my guess is that it is likely held then too, so it might
-only require checking this and documenting/asserting it.
-
-I might just call this ndo_add_udp_tunnel_port since that's what it
-does anyways.
-
-> diff --git a/include/net/udp_tunnel.h b/include/net/udp_tunnel.h
-> index c491c12..328f3ab 100644
-> --- a/include/net/udp_tunnel.h
-> +++ b/include/net/udp_tunnel.h
-[...]
-> +enum udp_tunnel_type {
-> +       UDP_TUNNEL_NONE,
-> +       UDP_TUNNEL_VXLAN,
-> +       UDP_TUNNEL_GENEVE,
-> +};
-
-What does UDP_TUNNEL_NONE mean?
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Code changes present in tree
