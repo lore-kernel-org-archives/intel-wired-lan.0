@@ -1,28 +1,40 @@
-From: Jesse Gross <jesse@nicira.com>
-Date: Wed, 9 Sep 2015 14:32:37 -0700
-Subject: [Intel-wired-lan] [PATCH v2 5/5] i40e: Add geneve tunnel
-	offload support
-In-Reply-To: <1441749356-92927-5-git-send-email-anjali.singhai@intel.com>
-References: <1441749356-92927-1-git-send-email-anjali.singhai@intel.com>
- <1441749356-92927-5-git-send-email-anjali.singhai@intel.com>
-Message-ID: <CAEP_g=-QsSAzRhBqdUXEA9MZ_oau4J=QjiBKx7RBZ=0hqidibw@mail.gmail.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 9 Sep 2015 21:40:19 +0000
+Subject: [Intel-wired-lan] [next PATCH S13 03/15] i40e/i40evf: add
+	wait	states to NVM state machine
+In-Reply-To: <1440798961-17326-4-git-send-email-catherine.sullivan@intel.com>
+References: <1440798961-17326-1-git-send-email-catherine.sullivan@intel.com>
+ <1440798961-17326-4-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060A5E7D@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Sep 8, 2015 at 2:55 PM, Anjali Singhai Jain
-<anjali.singhai@intel.com> wrote:
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index b3a6cdf..9bbafc3 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-[...]
-> -#define I40E_MAX_TUNNEL_HDR_LEN 80
-> +#define I40E_MAX_TUNNEL_HDR_LEN 260
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Catherine Sullivan
+> Sent: Friday, August 28, 2015 2:56 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S13 03/15] i40e/i40evf: add wait states
+> to NVM state machine
+> 
+> From: Shannon Nelson <shannon.nelson@intel.com>
+> 
+> This adds wait states to the NVM update state machine to signify when
+> waiting for an update operation to finish, whether we're in the middle of a
+> set of Write operations, or we're now idle but waiting.
+> 
+> Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+> Change-ID: Iabe91d6579ef6a2ea560647e374035656211ab43
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_adminq.c | 13 ++++++++
+>  drivers/net/ethernet/intel/i40e/i40e_nvm.c    | 48
+> ++++++++++++++++++++-------
+>  drivers/net/ethernet/intel/i40e/i40e_type.h   |  4 ++-
+>  drivers/net/ethernet/intel/i40evf/i40e_type.h |  4 ++-
+>  4 files changed, 55 insertions(+), 14 deletions(-)
 
-Are you sure that this value is correct for all hardware using this
-driver? My understanding is that Fortville doesn't support more than
-64 bytes of Geneve options (with 8 bytes of UDP header and 8 bytes of
-Geneve base header making the total tunnel header 80 bytes).
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Code changes present in tree
