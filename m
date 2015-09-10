@@ -1,11 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 10 Sep 2015 21:04:49 +0000
-Subject: [Intel-wired-lan] [next PATCH S14 13/15] i40e/i40evf:
-	Add	module_types and update_link_info
-In-Reply-To: <1441065295-234333-14-git-send-email-catherine.sullivan@intel.com>
-References: <1441065295-234333-1-git-send-email-catherine.sullivan@intel.com>
- <1441065295-234333-14-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060A626F@ORSMSX104.amr.corp.intel.com>
+Date: Thu, 10 Sep 2015 21:20:43 +0000
+Subject: [Intel-wired-lan] [next PATCH S14 v2 14/15] i40e/i40evf:
+ Refactor	PHY structure and add phy_capabilities enum
+In-Reply-To: <1441121790-31321-1-git-send-email-catherine.sullivan@intel.com>
+References: <1441121790-31321-1-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060A628D@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,38 +14,36 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
 > Behalf Of Catherine Sullivan
-> Sent: Monday, August 31, 2015 4:55 PM
+> Sent: Tuesday, September 01, 2015 8:37 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S14 13/15] i40e/i40evf: Add
-> module_types and update_link_info
+> Subject: [Intel-wired-lan] [next PATCH S14 v2 14/15] i40e/i40evf: Refactor
+> PHY structure and add phy_capabilities enum
 > 
-> Add a module_types variable to the link_info struct to save the module
-> information from get_phy_capabilities. This information can be used to
-> determine which speeds the module supports.
+> Remove unused members in the PHY structure and add a new member to
+> store all the capabilities the PHY has as reported by the FW. This information
+> will help us determine what speeds the device is capable of when link is
+> down.
 > 
-> Also add a new function update_link_info which updates the module_types
-> parameter and then calls get_link_info. This function should be called in place
-> of get_link_info so that the module_types variable stays up-to-date with the
-> rest of the link information.
+> Also add an enum to decode the PHY types the NVM is capable of.
+> Use the phy_types variable to determine what phy types are possible when
+> link is down instead of device id as it will be more accurate.
 > 
-> The EAS table does not reflect the values that are actually returned, so
-> instead, basing these values on the Ethernet compliance codes specified in
-> table 33 of SFF-8436 as these have been accurate.
-> 
-> Use the new variable in ethtool to differentiate between a 10G/1G dual
-> speed fiber module and a 10G only module.
+> When on a backplane device, we do not support changing any settings,
+> however we should display all the phy_types we are capable of so if we see a
+> backplane dev ID set supported and advertised purely based on the
+> phy_types variable.
 > 
 > Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-> Change-ID: Ib7585cce321319c10ce15180054c41a6cbd41389
+> Change-ID: Ia75d560f1fcd30c54cbfb7458690c5867559a930
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_common.c    | 30
-> +++++++++++++++++++++---
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c   | 16 +++++++++----
->  drivers/net/ethernet/intel/i40e/i40e_main.c      |  2 +-
->  drivers/net/ethernet/intel/i40e/i40e_prototype.h |  1 +
->  drivers/net/ethernet/intel/i40e/i40e_type.h      | 18 ++++++++++++++
->  drivers/net/ethernet/intel/i40evf/i40e_type.h    | 18 ++++++++++++++
->  6 files changed, 76 insertions(+), 9 deletions(-)
+> v2: Fix sparse error with le32_to_cpu call
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 189 ++++++++++++++------
+> -----
+>  drivers/net/ethernet/intel/i40e/i40e_main.c    |   8 ++
+>  drivers/net/ethernet/intel/i40e/i40e_type.h    |  37 ++++-
+>  drivers/net/ethernet/intel/i40evf/i40e_type.h  |  37 ++++-
+>  4 files changed, 181 insertions(+), 90 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 Code changes present in tree
