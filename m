@@ -1,153 +1,98 @@
-From: Jarod Wilson <jarod@redhat.com>
-Date: Thu, 10 Sep 2015 15:37:50 -0400
-Subject: [Intel-wired-lan] [PATCH v2] igb: don't unmap NULL hw_addr
-In-Reply-To: <9AC147AD-6D52-4A7D-BE5B-3A40F8D22B1A@intel.com>
-References: <9AC147AD-6D52-4A7D-BE5B-3A40F8D22B1A@intel.com>
-Message-ID: <1441913870-12953-1-git-send-email-jarod@redhat.com>
+From: Singh, Krishneil K <krishneil.k.singh@intel.com>
+Date: Thu, 10 Sep 2015 19:49:40 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Limit lowest interrupt rate
+ for adaptive interrupt moderation to 12K
+In-Reply-To: <1441188420.2783.18.camel@intel.com>
+References: <20150730221927.984.91700.stgit@ahduyck-vm-fedora22>
+ <55E655A3.9010304@gmail.com> <1441188420.2783.18.camel@intel.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E271BC9E2@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-I've got a startech thunderbolt dock someone loaned me, which among other
-things, has the following device in it:
 
-08:00.0 Ethernet controller: Intel Corporation I210 Gigabit Network Connection (rev 03)
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Jeff Kirsher
+Sent: Wednesday, September 2, 2015 3:07 AM
+To: Alexander Duyck <alexander.duyck@gmail.com>
+Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
+Subject: Re: [Intel-wired-lan] [PATCH] ixgbe: Limit lowest interrupt rate for adaptive interrupt moderation to 12K
 
-This hotplugs just fine (kernel 4.2.0 plus a patch or two here):
+On Tue, 2015-09-01 at 18:49 -0700, Alexander Duyck wrote:
+> On 07/30/2015 03:19 PM, Alexander Duyck wrote:
+> > This patch updates the lowest limit for adaptive interrupt interrupt 
+> > moderation to roughly 12K interrupts per second.
+> >
+> > The way I came about reaching 12K as the desired interrupt rate is
+> by
+> > testing with UDP flows.  Specifically I had a simple test that ran a 
+> > netperf UDP_STREAM test at varying sizes.  What I found was as the
+> packet
+> > sizes increased the performance fell steadily behind until we were
+> only
+> > able to receive at ~4Gb/s with a message size of 65507.  A bit of
+> digging
+> > found that we were dropping packets for the socket in the network
+> stack,
+> > and looking at things further what I found was I could solve it by
+> increasing
+> > the interrupt rate, or increasing the rmem_default/rmem_max.  What I
+> found was
+> > that when the interrupt coalescing resulted in more data being
+> processed
+> > per interrupt than could be stored in the socket buffer we started
+> losing
+> > packets and the performance dropped.  So I reached 12K based on the 
+> > following math.
+> >
+> > rmem_default = 212992
+> > skb->truesize = 2994
+> > 212992 / 2994 = 71.14 packets to fill the buffer
+> >
+> > packet rate at 1514 packet size is 812744pps
+> > 71.14 / 812744 = 87.9us to fill socket buffer
+> >
+> > >From there it was just a matter of choosing the interrupt rate and
+> > providing a bit of wiggle room which is why I decided to go with 12K 
+> > interrupts per second as that uses a value of 84us.
+> >
+> > The data below is based on VM to VM over a direct assigned ixgbe
+> interface.
+> > The test run was:
+> >       netperf -H <ip> -t UDP_STREAM"
+> >
+> > Socket  Message  Elapsed      Messages                   CPU
+> Service
+> > Size    Size     Time         Okay Errors   Throughput   Util
+> Demand
+> > bytes   bytes    secs            #      #   10^6bits/sec % SS
+> us/KB
+> > Before:
+> > 212992   65507   60.00     1100662      0     9613.4     10.89
+> 0.557
+> > 212992           60.00      473474            4135.4     11.27
+> 0.576
+> >
+> > After:
+> > 212992   65507   60.00     1100413      0     9611.2     10.73
+> 0.549
+> > 212992           60.00      974132            8508.3     11.69
+> 0.598
+> >
+> > Using bare metal the data is similar but not as dramatic as the
+> throughput
+> > increases from about 8.5Gb/s to 9.5Gb/s.
+> >
+> > Signed-off-by: Alexander Duyck <alexander.h.duyck@redhat.com>
+> 
+> Has there been any update on this patch?  I submitted it just over a 
+> month ago now and it hasn't received any feedback.  I was hoping this 
+> could be submitted before the merge window closes for net-next.
 
-[  863.020315] igb: Intel(R) Gigabit Ethernet Network Driver - version 5.2.18-k
-[  863.020316] igb: Copyright (c) 2007-2014 Intel Corporation.
-[  863.028657] igb 0000:08:00.0: enabling device (0000 -> 0002)
-[  863.062089] igb 0000:08:00.0: added PHC on eth0
-[  863.062090] igb 0000:08:00.0: Intel(R) Gigabit Ethernet Network Connection
-[  863.062091] igb 0000:08:00.0: eth0: (PCIe:2.5Gb/s:Width x1) e8:ea:6a:00:1b:2a
-[  863.062194] igb 0000:08:00.0: eth0: PBA No: 000200-000
-[  863.062196] igb 0000:08:00.0: Using MSI-X interrupts. 4 rx queue(s), 4 tx queue(s)
-[  863.064889] igb 0000:08:00.0 enp8s0: renamed from eth0
+It will be in the next series I push later today.
 
-But disconnecting it is another story:
+Tested-by: Krishneil Singh <krishneil.k.singh@intel.com>
 
-[ 1002.807932] igb 0000:08:00.0: removed PHC on enp8s0
-[ 1002.807944] igb 0000:08:00.0 enp8s0: PCIe link lost, device now detached
-[ 1003.341141] ------------[ cut here ]------------
-[ 1003.341148] WARNING: CPU: 0 PID: 199 at lib/iomap.c:43 bad_io_access+0x38/0x40()
-[ 1003.341149] Bad IO access at port 0x0 ()
-[ 1003.342767] Modules linked in: snd_usb_audio snd_usbmidi_lib snd_rawmidi igb dca firewire_ohci firewire_core crc_itu_t rfcomm ctr ccm arc4 iwlmvm mac80211 fuse xt_CHECKSUM ipt_MASQUERADE
-nf_nat_masquerade_ipv4 tun ip6t_rpfilter ip6t_REJECT nf_reject_ipv6 ipt_REJECT nf_reject_ipv4 xt_conntrack ebtable_nat ebtable_broute bridge stp llc ebtable_filter ebtables ip6table_nat
-nf_conntrack_ipv6 nf_defrag_ipv6 nf_nat_ipv6 ip6table_mangle ip6table_security ip6table_raw ip6table_filter ip6_tables iptable_nat nf_conntrack_ipv4 nf_defrag_ipv4 nf_nat_ipv4 nf_nat
-nf_conntrack iptable_mangle iptable_security iptable_raw iptable_filter bnep dm_mirror dm_region_hash dm_log dm_mod coretemp x86_pkg_temp_thermal intel_powerclamp kvm_intel snd_hda_codec_hdmi kvm
-crct10dif_pclmul crc32_pclmul ghash_clmulni_intel drbg
-[ 1003.342793]  ansi_cprng aesni_intel hp_wmi aes_x86_64 iTCO_wdt lrw iTCO_vendor_support ppdev gf128mul sparse_keymap glue_helper ablk_helper cryptd snd_hda_codec_realtek snd_hda_codec_generic
-microcode snd_hda_intel uvcvideo iwlwifi snd_hda_codec videobuf2_vmalloc videobuf2_memops snd_hda_core videobuf2_core snd_hwdep btusb v4l2_common btrtl snd_seq btbcm btintel videodev cfg80211
-snd_seq_device rtsx_pci_ms bluetooth pcspkr input_leds i2c_i801 media parport_pc memstick rfkill sg lpc_ich snd_pcm 8250_fintek parport joydev snd_timer snd soundcore hp_accel ie31200_edac
-mei_me lis3lv02d edac_core input_polldev mei hp_wireless shpchp tpm_infineon sch_fq_codel nfsd auth_rpcgss nfs_acl lockd grace sunrpc ip_tables autofs4 xfs libcrc32c sd_mod sr_mod cdrom
-rtsx_pci_sdmmc mmc_core crc32c_intel serio_raw rtsx_pci
-[ 1003.342822]  nouveau ahci libahci mxm_wmi e1000e xhci_pci hwmon ptp drm_kms_helper pps_core xhci_hcd ttm wmi video ipv6
-[ 1003.342839] CPU: 0 PID: 199 Comm: kworker/0:2 Not tainted 4.2.0-2.el7_UNSUPPORTED.x86_64 #1
-[ 1003.342840] Hardware name: Hewlett-Packard HP ZBook 15 G2/2253, BIOS M70 Ver. 01.07 02/26/2015
-[ 1003.342843] Workqueue: pciehp-3 pciehp_power_thread
-[ 1003.342844]  ffffffff81a90655 ffff8804866d3b48 ffffffff8164763a 0000000000000000
-[ 1003.342846]  ffff8804866d3b98 ffff8804866d3b88 ffffffff8107134a ffff8804866d3b88
-[ 1003.342847]  ffff880486f46000 ffff88046c8a8000 ffff880486f46840 ffff88046c8a8098
-[ 1003.342848] Call Trace:
-[ 1003.342852]  [<ffffffff8164763a>] dump_stack+0x45/0x57
-[ 1003.342855]  [<ffffffff8107134a>] warn_slowpath_common+0x8a/0xc0
-[ 1003.342857]  [<ffffffff810713c6>] warn_slowpath_fmt+0x46/0x50
-[ 1003.342859]  [<ffffffff8133719e>] ? pci_disable_msix+0x3e/0x50
-[ 1003.342860]  [<ffffffff812f6328>] bad_io_access+0x38/0x40
-[ 1003.342861]  [<ffffffff812f6567>] pci_iounmap+0x27/0x40
-[ 1003.342865]  [<ffffffffa0b728d7>] igb_remove+0xc7/0x160 [igb]
-[ 1003.342867]  [<ffffffff8132189f>] pci_device_remove+0x3f/0xc0
-[ 1003.342869]  [<ffffffff81433426>] __device_release_driver+0x96/0x130
-[ 1003.342870]  [<ffffffff814334e3>] device_release_driver+0x23/0x30
-[ 1003.342871]  [<ffffffff8131b404>] pci_stop_bus_device+0x94/0xa0
-[ 1003.342872]  [<ffffffff8131b3ad>] pci_stop_bus_device+0x3d/0xa0
-[ 1003.342873]  [<ffffffff8131b3ad>] pci_stop_bus_device+0x3d/0xa0
-[ 1003.342874]  [<ffffffff8131b516>] pci_stop_and_remove_bus_device+0x16/0x30
-[ 1003.342876]  [<ffffffff81333f5b>] pciehp_unconfigure_device+0x9b/0x180
-[ 1003.342877]  [<ffffffff81333a73>] pciehp_disable_slot+0x43/0xb0
-[ 1003.342878]  [<ffffffff81333b6d>] pciehp_power_thread+0x8d/0xb0
-[ 1003.342885]  [<ffffffff810881b2>] process_one_work+0x152/0x3d0
-[ 1003.342886]  [<ffffffff8108854a>] worker_thread+0x11a/0x460
-[ 1003.342887]  [<ffffffff81088430>] ? process_one_work+0x3d0/0x3d0
-[ 1003.342890]  [<ffffffff8108ddd9>] kthread+0xc9/0xe0
-[ 1003.342891]  [<ffffffff8108dd10>] ? kthread_create_on_node+0x180/0x180
-[ 1003.342893]  [<ffffffff8164e29f>] ret_from_fork+0x3f/0x70
-[ 1003.342894]  [<ffffffff8108dd10>] ? kthread_create_on_node+0x180/0x180
-[ 1003.342895] ---[ end trace 65a77e06d5aa9358 ]---
-
-Upon looking at the igb driver, I see that igb_rd32() attempted to read from
-hw_addr and failed, so it set hw->hw_addr to NULL and spit out the message
-in the log output above, "PCIe link lost, device now detached".
-
-Well, now that hw_addr is NULL, the attempt to call pci_iounmap is obviously
-not going to go well. As suggested by Mark Rustad, do something similar to
-what ixgbe does, and save a copy of hw_addr as adapter->io_addr, so we can
-still call pci_iounmap on it on teardown. Additionally, for consistency,
-make the pci_iomap call assignment directly to io_addr, so map and unmap
-match.
-
-CC: Mark Rustad <mark.d.rustad@intel.com>
-CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-CC: intel-wired-lan at lists.osuosl.org
-CC: netdev at vger.kernel.org
-Signed-off-by: Jarod Wilson <jarod@redhat.com>
----
- drivers/net/ethernet/intel/igb/igb.h      |  2 ++
- drivers/net/ethernet/intel/igb/igb_main.c | 10 ++++++----
- 2 files changed, 8 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index 212d668..df1d1c5 100644
---- a/drivers/net/ethernet/intel/igb/igb.h
-+++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -389,6 +389,8 @@ struct igb_adapter {
- 	u16 link_speed;
- 	u16 link_duplex;
- 
-+	u8 __iomem *io_addr; /* Mainly for iounmap use */
-+
- 	struct work_struct reset_task;
- 	struct work_struct watchdog_task;
- 	bool fc_autoneg;
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index e174fbb..76928b6 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -2294,9 +2294,11 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	adapter->msg_enable = netif_msg_init(debug, DEFAULT_MSG_ENABLE);
- 
- 	err = -EIO;
--	hw->hw_addr = pci_iomap(pdev, 0, 0);
--	if (!hw->hw_addr)
-+	adapter->io_addr = pci_iomap(pdev, 0, 0);
-+	if (!adapter->io_addr)
- 		goto err_ioremap;
-+	/* hw->hw_addr can be altered, we'll use adapter->io_addr for unmap */
-+	hw->hw_addr = adapter->io_addr;
- 
- 	netdev->netdev_ops = &igb_netdev_ops;
- 	igb_set_ethtool_ops(netdev);
-@@ -2656,7 +2658,7 @@ err_sw_init:
- #ifdef CONFIG_PCI_IOV
- 	igb_disable_sriov(pdev);
- #endif
--	pci_iounmap(pdev, hw->hw_addr);
-+	pci_iounmap(pdev, adapter->io_addr);
- err_ioremap:
- 	free_netdev(netdev);
- err_alloc_etherdev:
-@@ -2823,7 +2825,7 @@ static void igb_remove(struct pci_dev *pdev)
- 
- 	igb_clear_interrupt_scheme(adapter);
- 
--	pci_iounmap(pdev, hw->hw_addr);
-+	pci_iounmap(pdev, adapter->io_addr);
- 	if (hw->flash_address)
- 		iounmap(hw->flash_address);
- 	pci_release_selected_regions(pdev,
--- 
-1.8.3.1
 
