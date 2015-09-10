@@ -1,48 +1,133 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu, 10 Sep 2015 00:59:43 -0700
-Subject: [Intel-wired-lan] [PATCH V5] ixgbe: Add support for VXLAN RX
- offloads
-In-Reply-To: <20150826182933.119479.19081.stgit@mdrustad-wks.jf.intel.com>
-References: <20150826182933.119479.19081.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <1441871983.2923.6.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 10 Sep 2015 16:06:10 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 09cef3c3e66fb61b11768cb2c255ca17b16a59c8 BUILD DONE
+Message-ID: <55f139f2.1x1LOc8mUh9t7uMT%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2015-08-26 at 11:29 -0700, Mark D Rustad wrote:
-> From: Mark Rustad <mark.d.rustad@intel.com>
-> 
-> Add support for VXLAN RX offloads for the X55x devices that support
-> them.
-> 
-> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
-> ---
-> Changes in V3:
-> - change __constant_htons to simply htons
-> Changes in V4:
-> - add static to ixgbe_clear_vxlan_port
-> - use ixgbe_clear_vxlan_port to clear vxlan port
-> - call ixgbe_clear_vxlan_port when turning checksum offload off
-> Changes in V5:
-> - removed redundant include of net/vxlan.h
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe.h       |    6 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c |   18 +++-
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  |  116
-> ++++++++++++++++++++----
->  drivers/net/ethernet/intel/ixgbe/ixgbe_type.h  |   15 ++-
->  4 files changed, 124 insertions(+), 31 deletions(-)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+09cef3c3e66fb61b11768cb2c255ca17b16a59c8  i40e: Add missing parameter comment to ndo_bridge_setlink
 
-Your v4 of this patch was already pushed upstream and accepted, so I am
-dropping this patch, as most of it is already upstream.  If the
-redundant include still exists, please submit a patch to resolve that
-single issue.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150910/59fec0aa/attachment.asc>
+drivers/net/ethernet/intel/e1000e/netdev.c:6785:3: error: implicit declaration of function 'e1000e_disable_aspm_locked'
+drivers/net/ethernet/intel/e1000e/netdev.c:6785:3: error: implicit declaration of function 'e1000e_disable_aspm_locked' [-Werror=implicit-function-declaration]
+
+Error ids grouped by kconfigs:
+
+recent_errors
+??? alpha-allyesconfig
+??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
+??? parisc-allyesconfig
+??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
+??? sparc64-defconfig
+??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
+??? tile-allyesconfig
+??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
+??? x86_64-randconfig-x011-09091713
+??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
+??? x86_64-randconfig-x016-09091713
+    ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
+
+elapsed time: 26m
+
+configs tested: 93
+
+i386                     randconfig-a0-201536
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+i386                             allmodconfig
+x86_64               randconfig-x013-09091713
+x86_64               randconfig-x010-09091713
+x86_64               randconfig-x019-09091713
+x86_64               randconfig-x018-09091713
+x86_64               randconfig-x012-09091713
+x86_64               randconfig-x014-09091713
+x86_64               randconfig-x011-09091713
+x86_64               randconfig-x017-09091713
+x86_64               randconfig-x016-09091713
+x86_64               randconfig-x015-09091713
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+mips                                   jz4740
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+i386                     randconfig-s1-201536
+i386                     randconfig-s0-201536
+i386                             allyesconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+x86_64                            allnoconfig
+x86_64                   randconfig-i0-201536
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i1-201536
+i386                     randconfig-i0-201536
+i386                     randconfig-n0-201536
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                 randconfig-x004-201536
+x86_64                 randconfig-x001-201536
+x86_64                 randconfig-x006-201536
+x86_64                 randconfig-x000-201536
+x86_64                 randconfig-x003-201536
+x86_64                 randconfig-x002-201536
+x86_64                 randconfig-x005-201536
+x86_64                 randconfig-x009-201536
+x86_64                 randconfig-x007-201536
+x86_64                 randconfig-x008-201536
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+i386                     randconfig-r0-201536
+i386                   randconfig-x000-201536
+i386                   randconfig-x008-201536
+i386                   randconfig-x001-201536
+i386                   randconfig-x004-201536
+i386                   randconfig-x007-201536
+i386                   randconfig-x003-201536
+i386                   randconfig-x005-201536
+i386                   randconfig-x002-201536
+i386                   randconfig-x009-201536
+i386                   randconfig-x006-201536
+
+Thanks,
+Fengguang
