@@ -1,8 +1,8 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 10 Sep 2015 17:02:47 +0800
+Date: Thu, 10 Sep 2015 17:02:01 +0800
 Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- d3724007e0bcd07ce429236f432837bad4bffac3 BUILD DONE
-Message-ID: <55f14737.FMUx3DtC7I00cxOE%fengguang.wu@intel.com>
+ 58110e692d6b0248c20b428b00b59292f59bdde4 BUILD DONE
+Message-ID: <55f14709.CAVZXZj7OQCSUL8E%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,7 +10,7 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-d3724007e0bcd07ce429236f432837bad4bffac3  i40e: allow FD SB if MFP mode only has 1 partition
+58110e692d6b0248c20b428b00b59292f59bdde4  i40e: Store off PHY capabilities
 
 drivers/net/ethernet/intel/e1000e/netdev.c:6785:3: error: implicit declaration of function 'e1000e_disable_aspm_locked'
 drivers/net/ethernet/intel/e1000e/netdev.c:6785:3: error: implicit declaration of function 'e1000e_disable_aspm_locked' [-Werror=implicit-function-declaration]
@@ -34,11 +34,23 @@ recent_errors
 ??? x86_64-rhel
     ??? drivers-net-ethernet-intel-i40e-i40e_main.c:error:implicit-declaration-of-function-vxlan_features_check
 
-elapsed time: 44m
+elapsed time: 20m
 
 configs tested: 113
 
 i386                     randconfig-a0-201536
+arm                                    sa1100
+arm                          prima2_defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                                   samsung
+arm                       spear13xx_defconfig
+arm                                  iop-adma
+arm                       imx_v6_v7_defconfig
+arm                          marzen_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                                        sh
 x86_64                             acpi-redef
 x86_64                           allyesdebian
 x86_64                                nfsroot
@@ -84,6 +96,7 @@ powerpc                       ppc64_defconfig
 powerpc                           allnoconfig
 i386                     randconfig-s1-201536
 i386                     randconfig-s0-201536
+x86_64                           allmodconfig
 mn10300                     asb2364_defconfig
 openrisc                    or1ksim_defconfig
 um                           x86_64_defconfig
@@ -108,23 +121,10 @@ arm                                       mmp
 arm                           tegra_defconfig
 arm                                      arm5
 arm                                     arm67
-arm                                    sa1100
-arm                          prima2_defconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                                   samsung
-arm                       spear13xx_defconfig
-arm                                  iop-adma
-arm                       imx_v6_v7_defconfig
-arm                          marzen_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                                        sh
 sh                            titan_defconfig
 sh                          rsk7269_defconfig
 sh                  sh7785lcr_32bit_defconfig
 sh                                allnoconfig
-x86_64                           allmodconfig
 x86_64                 randconfig-x004-201536
 x86_64                 randconfig-x001-201536
 x86_64                 randconfig-x006-201536
