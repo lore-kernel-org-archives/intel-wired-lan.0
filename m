@@ -1,40 +1,44 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 10 Sep 2015 22:38:11 +0000
-Subject: [Intel-wired-lan] [next PATCH S15 03/15] i40e: Change some
- messages	from info to debug only
-In-Reply-To: <1441315142-173025-4-git-send-email-catherine.sullivan@intel.com>
-References: <1441315142-173025-1-git-send-email-catherine.sullivan@intel.com>
- <1441315142-173025-4-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060A6306@ORSMSX104.amr.corp.intel.com>
+From: Wen Chiu <Wen.Chiu@brocade.com>
+Date: Thu, 10 Sep 2015 22:19:08 +0000
+Subject: [Intel-wired-lan] stopping 10GC(x540T2) port does not down the link
+Message-ID: <1df36b45bac44d719d55b7ab71e4d422@Hq1wp-exmb11.corp.brocade.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Catherine Sullivan
-> Sent: Thursday, September 03, 2015 2:19 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S15 03/15] i40e: Change some
-> messages from info to debug only
-> 
-> From: Neerav Parikh <neerav.parikh@intel.com>
-> 
-> There are several error messages that have been printing when there is no
-> functional issue. These messages should be available at debug message level
-> only.
-> 
-> Signed-off-by: Neerav Parikh <neerav.parikh@intel.com>
-> Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-> Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-> Change-ID: Id91e47bf942c483563995f30d8705fa53acd5aa3
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_dcb_nl.c |  7 +++----
->  drivers/net/ethernet/intel/i40e/i40e_fcoe.c   |  2 +-
->  drivers/net/ethernet/intel/i40e/i40e_main.c   | 21 +++++++++++++--------
->  3 files changed, 17 insertions(+), 13 deletions(-)
+Hi DKDK maintainers,
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Code changes present in tree
+We are seeing an issue where if a port is shutdown in linux using "ip link set <dev> down" command on baremetal. Then use "ip link show" to show the port which got shutdown which is in DOWN state as expected. But, the port on the other end still shows UP state which should be DOWN. Following is the excerpt from DKDK notes which indicates the similar issue with 40G. But, we are seeing the problem with 10GC(x540T2) adapter. Could you confirm this? It would be highly appreciated if you could shed some lights regarding this issue, fixes or workaround.
+
+Attached has the screen traces to show how to create and show the issue using "ip link".  Eth8 and Eth9 are directly connected. Eth8 is the interface that got disabled/down via admin. Eth9 is the other end which should be down but is still UP and hence the issue. Attached also has output for "lspci -vv" in that device 42:00.0 is eth8 and 42:00.1 is eth9.
+
+PS. ixgbe_dev_stop() is called but looks phy is not turn off is it is copper. I did see laser tx is turned off if it is fiber.
+
+Thanks,
+Wen Chiu
+
+6.24. Stopping the port does not down the link on Intel(r) 40G Ethernet controller
+Description:
+On Intel(r) 40G Ethernet Controller stopping the port does not really down the port link.
+Implication:
+The port link will be still up after stopping the port.
+Resolution/Workaround:
+None
+Affected Environment/Platform:
+All.
+Driver/Module:
+Poll Mode Driver (PMD).
+
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150910/704bf06b/attachment-0001.html>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: output
+Type: application/octet-stream
+Size: 56948 bytes
+Desc: output
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150910/704bf06b/attachment-0001.obj>
