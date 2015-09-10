@@ -1,99 +1,148 @@
-From: Nelson, Shannon <shannon.nelson@intel.com>
-Date: Thu, 10 Sep 2015 04:54:29 +0000
-Subject: [Intel-wired-lan] [next PATCH S13 14/15] i40e: fix ip-ip GRE
- encapulation
-In-Reply-To: <CAEP_g=--LZxDTTVuOBSqCrppyF8p5o-2J0QQDC3=1YXGYxN8VQ@mail.gmail.com>
-References: <1440798961-17326-1-git-send-email-catherine.sullivan@intel.com>
- <1440798961-17326-15-git-send-email-catherine.sullivan@intel.com>
- <CAEP_g=88Nu8uOM0jvd1MTWpwy2+nWst9YQEeWibVt2Zm5mpT0A@mail.gmail.com>
- <E8A77B2FB54C194393A5C2A8E3ED1678266F3BA6@CRSMSX102.amr.corp.intel.com>
- <FC41C24E35F18A40888AACA1A36F3E418AF7DB60@fmsmsx115.amr.corp.intel.com>
- <CAEP_g=--LZxDTTVuOBSqCrppyF8p5o-2J0QQDC3=1YXGYxN8VQ@mail.gmail.com>
-Message-ID: <FC41C24E35F18A40888AACA1A36F3E418AF7DC97@fmsmsx115.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 10 Sep 2015 14:00:37 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ bbe2b476bf368aec750e95a780004ec8e390ac63 BUILD DONE
+Message-ID: <55f11c85.77aZchwoX4lieIWR%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Jesse Gross [mailto:jesse at nicira.com]
-> Sent: Wednesday, September 09, 2015 5:52 PM
-[...]
-> 
-> On Wed, Sep 9, 2015 at 4:32 PM, Nelson, Shannon
-> <shannon.nelson@intel.com> wrote:
-> >> > From: Jesse Gross [mailto:jesse at nicira.com]
-> >> > On Fri, Aug 28, 2015 at 2:56 PM, Catherine Sullivan
-> >> > <catherine.sullivan@intel.com> wrote:
-> >> > > diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> >> > > b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> >> > > index 469e1d5..b686450 100644
-> >> > > --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> >> > > +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> >> > [...]
-> >> > > +#if IS_ENABLED(CONFIG_VXLAN)
-> >> > > +       return vxlan_features_check(skb, features); #else
-> >> > >         return features;
-> >> > > +#endif
-> >> >
-> >> > I don't think this is right - when VXLAN is compiled in, it will
-> >> restrict offload
-> >> > capabilities to that of VXLAN. But when there is no VXLAN support,
-> all
-> >> tunnel
-> >> > types will be allowed. Presumably, there is some underlying
-> hardware
-> >> > capability here for both situations (and maybe even for GRE as
-> well).
-> >
-> > I don't understand where you this restriction.  Looking at the code in
-> vxlan_features_check(), it looks to me that the features bits are
-> mangled only if IPPROTO_UDP is set AND the other header parameters don't
-> match VXLAN needs.  If there is no encapsulation, or it is something
-> other than IPPROTO_UDP (e.g. IPPROTO_GRE), then there is no change to
-> the features bits.
-> >
-> > If you are referring to other tunneling protocols that might call
-> themselves IPROTO_UDP, then I would think there is a problem in the
-> implementation of vxlan_features_check(), not in how we call it.  In
-> that case, vxlan_features_check() should be looking at some additional
-> flag to assure VXLAN before verifying the other header parameters.
-> >
-> > What am I missing?  Are you thinking that our calling code should look
-> for some additional VXLAN flag before calling vxlan_features_check()?
-> 
-> VXLAN is not the only UDP based encapsulation, so there are other
-> protocols that call themselves that. (I'm not quite sure what you mean
-> by this, it seems to imply that these protocols are somehow spoofing
-> something. They're not - they and VXLAN are all layered under UDP).
-> However, I don't think that's really the issue.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+bbe2b476bf368aec750e95a780004ec8e390ac63  igb: add 88E1543 initialization code
 
-[...]
+drivers/net/ethernet/intel/e1000e/netdev.c:6785:3: error: implicit declaration of function 'e1000e_disable_aspm_locked' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/intel/i40e/i40e_main.c:8352:2: error: implicit declaration of function 'vxlan_features_check' [-Werror=implicit-function-declaration]
 
-Okay, so we are on the same page, just different paragraphs...
+Error ids grouped by kconfigs:
 
-> That being said, I also happen to know that the underlying hardware is
-> capable of supporting more than just VXLAN. In particular, it supports
-> Geneve, which is also a UDP based protocol. Using
-> vxlan_features_check() here will remove offload support for at least
-> some types of Geneve packets, so this is a little heavy handed.
+recent_errors
+??? sparc64-defconfig
+??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
+??? x86_64-randconfig-x011-09091713
+??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
+??? x86_64-randconfig-x016-09091713
+??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
+??? x86_64-rhel
+    ??? drivers-net-ethernet-intel-i40e-i40e_main.c:error:implicit-declaration-of-function-vxlan_features_check
 
-It becomes an issue if you rely on vxlan_features_check(), as we are currently doing, to filter the IPPROTO_UDP.  Yes, there are other UDP encapsulations, we're just not implementing them quite yet... tho' I believe you've already seen the newer Geneve patches that were just posted.  This patch is from before that.
+elapsed time: 37m
 
-> To make a long story short, it looks like the actual problem here is
-> that only UDP tunnels are supported (since that is all that is checked
-> in i40e_tx_enable_csum()). In that case, I think you could simply do:
-> 
-> if ((protocol != IPPROTO_UDP))
->     return features & ~(NETIF_F_ALL_CSUM | NETIF_F_GSO_MASK);
+configs tested: 112
 
-The GRE encapsulation uses a different IPPROTO_xxx value, which is what we're dealing with in this particular patch, so we're checking that in our own function, then using the kernel's vxlan check the IPPROTO_UDP encapsulation.  Yes, this is heavy handed, and as we expand the tunnels to be supported (E>G> Geneve), we're going to need to discern each encapsulation and check them individually.
+i386                     randconfig-a0-201536
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+x86_64                            allnoconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+i386                             allmodconfig
+x86_64               randconfig-x013-09091713
+x86_64               randconfig-x010-09091713
+x86_64               randconfig-x019-09091713
+x86_64               randconfig-x018-09091713
+x86_64               randconfig-x012-09091713
+x86_64               randconfig-x014-09091713
+x86_64               randconfig-x011-09091713
+x86_64               randconfig-x017-09091713
+x86_64               randconfig-x016-09091713
+x86_64               randconfig-x015-09091713
+mips                                   jz4740
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+i386                     randconfig-s1-201536
+i386                     randconfig-s0-201536
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+x86_64                   randconfig-i0-201536
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201536
+i386                     randconfig-i1-201536
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+i386                     randconfig-n0-201536
+arm                                      arm5
+arm                                     arm67
+arm                                       mmp
+arm                       omap2plus_defconfig
+arm                         s3c2410_defconfig
+arm                           tegra_defconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+x86_64                                   rhel
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                 randconfig-x000-201536
+x86_64                 randconfig-x001-201536
+x86_64                 randconfig-x002-201536
+x86_64                 randconfig-x003-201536
+x86_64                 randconfig-x004-201536
+x86_64                 randconfig-x005-201536
+x86_64                 randconfig-x006-201536
+x86_64                 randconfig-x007-201536
+x86_64                 randconfig-x008-201536
+x86_64                 randconfig-x009-201536
+i386                     randconfig-r0-201536
+i386                   randconfig-x000-201536
+i386                   randconfig-x008-201536
+i386                   randconfig-x001-201536
+i386                   randconfig-x004-201536
+i386                   randconfig-x007-201536
+i386                   randconfig-x003-201536
+i386                   randconfig-x005-201536
+i386                   randconfig-x002-201536
+i386                   randconfig-x009-201536
+i386                   randconfig-x006-201536
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
 
-I'd like to suggest that we use this patch as is, and continue refining the driver's feature checks as we add support for more encapsulations.
-
-In the future, as these encapsulations become supported by more devices and drivers, and the checks are coded and debugged, we'll want to move these checks into the kernel stack for all to use, along with the vxlan check.
-
-sln
-
-
-
+Thanks,
+Fengguang
