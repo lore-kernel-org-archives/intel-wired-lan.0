@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 11 Sep 2015 15:59:36 +0000
-Subject: [Intel-wired-lan] [next PATCH S15 04/15] i40e: Lock for VSI's
- MAC	filter list
-In-Reply-To: <1441315142-173025-5-git-send-email-catherine.sullivan@intel.com>
+Date: Fri, 11 Sep 2015 16:03:23 +0000
+Subject: [Intel-wired-lan] [next PATCH S15 05/15] i40e: Remove 100M
+ SGMII	unless hw is X722
+In-Reply-To: <1441315142-173025-6-git-send-email-catherine.sullivan@intel.com>
 References: <1441315142-173025-1-git-send-email-catherine.sullivan@intel.com>
- <1441315142-173025-5-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060A639F@ORSMSX104.amr.corp.intel.com>
+ <1441315142-173025-6-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060A63AF@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,31 +17,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Catherine Sullivan
 > Sent: Thursday, September 03, 2015 2:19 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S15 04/15] i40e: Lock for VSI's MAC
-> filter list
+> Subject: [Intel-wired-lan] [next PATCH S15 05/15] i40e: Remove 100M SGMII
+> unless hw is X722
 > 
-> From: Kiran Patil <kiran.patil@intel.com>
+> Only the X722 device now supports 100M SGMII, and nothing supports 100M
+> on 1000Base_T.
 > 
-> This patch introduces a spinlock which is to be used for synchronizing access
-> to VSI's MAC filter list.
-> 
-> This patch also synchronizes execution of other codepaths which are
-> accessing VSI's MAC filter list with execution of service_task:sync_vsi_filters.
-> 
-> In function i40e_add_vsi, copied out LAA MAC address instead of cloning
-> MAC filter entry because only MAC address is needed to remove MAC VLAN
-> filter from FW/HW.
-> 
-> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> Change-ID: I0e10ac7c715d44aa994239642aa4d57c998573a2
+> Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
+> Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+> Change-ID: I6f44dcd818944edd40041410e6de380f4a359a0c
 > ---
->  drivers/net/ethernet/intel/i40e/i40e.h             |   2 +
->  drivers/net/ethernet/intel/i40e/i40e_fcoe.c        |   2 +
->  drivers/net/ethernet/intel/i40e/i40e_main.c        | 326
-> +++++++++++++++++----
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  26 +-
->  4 files changed, 300 insertions(+), 56 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 42 ++++++++++++++++----
+> ------
+>  1 file changed, 26 insertions(+), 16 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 Code changes present in tree
