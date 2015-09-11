@@ -1,43 +1,84 @@
 From: Jesse Gross <jesse@nicira.com>
-Date: Thu, 10 Sep 2015 19:12:01 -0700
-Subject: [Intel-wired-lan] [next PATCH S13 14/15] i40e: fix ip-ip GRE
-	encapulation
-In-Reply-To: <FC41C24E35F18A40888AACA1A36F3E418AF7E39B@fmsmsx115.amr.corp.intel.com>
-References: <1440798961-17326-1-git-send-email-catherine.sullivan@intel.com>
- <1440798961-17326-15-git-send-email-catherine.sullivan@intel.com>
- <CAEP_g=88Nu8uOM0jvd1MTWpwy2+nWst9YQEeWibVt2Zm5mpT0A@mail.gmail.com>
- <E8A77B2FB54C194393A5C2A8E3ED1678266F3BA6@CRSMSX102.amr.corp.intel.com>
- <FC41C24E35F18A40888AACA1A36F3E418AF7DB60@fmsmsx115.amr.corp.intel.com>
- <CAEP_g=--LZxDTTVuOBSqCrppyF8p5o-2J0QQDC3=1YXGYxN8VQ@mail.gmail.com>
- <FC41C24E35F18A40888AACA1A36F3E418AF7DC97@fmsmsx115.amr.corp.intel.com>
- <CAEP_g=86=-5j5Qz9CtWvB10O8zg5JPLO8sJd_xkLtephPmC+9Q@mail.gmail.com>
- <FC41C24E35F18A40888AACA1A36F3E418AF7E39B@fmsmsx115.amr.corp.intel.com>
-Message-ID: <CAEP_g=8LCNqQ+T62RYt0Jr3Unhh26B3t7KJhs5jAAvg5uw16=Q@mail.gmail.com>
+Date: Thu, 10 Sep 2015 20:01:49 -0700
+Subject: [Intel-wired-lan] [PATCH v2 2/5] vxlan: Generalize udp based
+ tunnel offload
+In-Reply-To: <C40BE8378EF49C44B9184714DBC8EF2992F0CF58@ORSMSX110.amr.corp.intel.com>
+References: <1441749356-92927-1-git-send-email-anjali.singhai@intel.com>
+ <1441749356-92927-2-git-send-email-anjali.singhai@intel.com>
+ <CAEP_g=_K-nR2qmsNXCeQQRXHHt3GB7pJ9HsGRUztv7cvHQ6wxA@mail.gmail.com>
+ <C40BE8378EF49C44B9184714DBC8EF2992F0CF58@ORSMSX110.amr.corp.intel.com>
+Message-ID: <CAEP_g=9QmuNLyfL+nPadyc+2Pt=KD+MJZqvifDR+NLn4=2PzVQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Sep 10, 2015 at 2:53 PM, Nelson, Shannon
-<shannon.nelson@intel.com> wrote:
+On Thu, Sep 10, 2015 at 10:36 AM, Singhai, Anjali
+<anjali.singhai@intel.com> wrote:
+>> -----Original Message-----
 >> From: Jesse Gross [mailto:jesse at nicira.com]
->> Sent: Wednesday, September 09, 2015 11:02 PM
+>> Sent: Wednesday, September 09, 2015 2:30 PM
+>> To: Singhai, Anjali
+>> Cc: intel-wired-lan
+>> Subject: Re: [Intel-wired-lan] [PATCH v2 2/5] vxlan: Generalize udp based
+>> tunnel offload
 >>
->
-> Thanks, Jesse, for your perseverance.
->
->> >> To make a long story short, it looks like the actual problem here is
->> >> that only UDP tunnels are supported (since that is all that is
->> checked
->> >> in i40e_tx_enable_csum()). In that case, I think you could simply do:
->> >>
->> >> if ((protocol != IPPROTO_UDP))
->> >>     return features & ~(NETIF_F_ALL_CSUM | NETIF_F_GSO_MASK);
->
-> Ah, now I see that the GRE support patch for i40e_tx_enable_csum() hasn't been pushed out yet.  This explains some of this discussion.  Okay - for the moment we're dropping this patch, to be reworked when the other patch gets pushed.
->
-> I think you're right about simply dropping the use of vxlan_features_check() as it is too specific for our needs.  This will be part of the rework.
+>> I believe we also need a generalization of vxlan_get_rx_port().
+>> Otherwise, there's no way for drivers to get the non-VXLAN tunnels that
+>> were created when they weren't up.
+>>
+> I plan to send this out as a separate patch.
 
-Thanks a lot for taking a look at it. Not trying to be a pain here - I
-just want to make sure things work for all protocols/users.
+I would probably suggest doing it as part of this series.
+
+By the way - I do support this series and I'm not trying to add more
+work to your plate. I'm slightly worried about this being
+controversial though and so the more complete the patch is, the better
+off you'll be. Plus, I guess you probably need it in order for the
+later patches to work correctly in all circumstances.
+
+>> > diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+>> > index c69072b..b6f6beb 100644
+>> > --- a/include/linux/netdevice.h
+>> > +++ b/include/linux/netdevice.h
+>> > + * void (*ndo_add_tunnel_port)(struct  net_device *dev,
+>> > + *                           sa_family_t sa_family, __be16 port, u32 type);
+>> > + *     Called by UDP based tunnel modules to notify a driver about a UDP
+>> > + *     port and socket address family that the tunnel is listening to. It is
+>> > + *     called only when a new port starts listening. The operation is
+>> > + *     protected by tunnel socket sock_lock.
+>>
+>> This locking doesn't look safe to me. Each type of tunnel will have its own
+>> socket lock but the data structures that are used in drivers implementing
+>> these functions may be shared (such as in your i40e patch). I believe that
+>> RTNL is currently held by both VXLAN and Geneve when calling this with the
+>> possible exception of vxlan_get_rx_port().
+>> In practice, my guess is that it is likely held then too, so it might only require
+>> checking this and documenting/asserting it.
+>>
+> ASSERT_RTNL happens in dev.c for both, so do you suggest I just document in the code that we have a common data structure and is being guarded by RTNL acquired by the stack.
+
+I think mostly yes. The part that I would be concerned about is that
+vxlan_get_rx_port() also uses this function and that could be called
+from different places in drivers. In practice though, I think they are
+mostly also protected by RTNL. So I would check the callsites and
+assuming they are OK, also document the requirement for
+vxlan_get_rx_port() and maybe add an ASSERT_RTNL there.
+
+>> > diff --git a/include/net/udp_tunnel.h b/include/net/udp_tunnel.h index
+>> > c491c12..328f3ab 100644
+>> > --- a/include/net/udp_tunnel.h
+>> > +++ b/include/net/udp_tunnel.h
+>> [...]
+>> > +enum udp_tunnel_type {
+>> > +       UDP_TUNNEL_NONE,
+>> > +       UDP_TUNNEL_VXLAN,
+>> > +       UDP_TUNNEL_GENEVE,
+>> > +};
+>>
+>> What does UDP_TUNNEL_NONE mean?
+> It's a way to avoid 0 based
+
+Sorry, what's the significance of it being zero? These aren't flags so
+I'm not sure why zero isn't a valid value.
