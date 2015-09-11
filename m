@@ -1,44 +1,43 @@
-From: Wen Chiu <Wen.Chiu@brocade.com>
-Date: Thu, 10 Sep 2015 22:19:08 +0000
-Subject: [Intel-wired-lan] stopping 10GC(x540T2) port does not down the link
-Message-ID: <1df36b45bac44d719d55b7ab71e4d422@Hq1wp-exmb11.corp.brocade.com>
+From: Jesse Gross <jesse@nicira.com>
+Date: Thu, 10 Sep 2015 19:12:01 -0700
+Subject: [Intel-wired-lan] [next PATCH S13 14/15] i40e: fix ip-ip GRE
+	encapulation
+In-Reply-To: <FC41C24E35F18A40888AACA1A36F3E418AF7E39B@fmsmsx115.amr.corp.intel.com>
+References: <1440798961-17326-1-git-send-email-catherine.sullivan@intel.com>
+ <1440798961-17326-15-git-send-email-catherine.sullivan@intel.com>
+ <CAEP_g=88Nu8uOM0jvd1MTWpwy2+nWst9YQEeWibVt2Zm5mpT0A@mail.gmail.com>
+ <E8A77B2FB54C194393A5C2A8E3ED1678266F3BA6@CRSMSX102.amr.corp.intel.com>
+ <FC41C24E35F18A40888AACA1A36F3E418AF7DB60@fmsmsx115.amr.corp.intel.com>
+ <CAEP_g=--LZxDTTVuOBSqCrppyF8p5o-2J0QQDC3=1YXGYxN8VQ@mail.gmail.com>
+ <FC41C24E35F18A40888AACA1A36F3E418AF7DC97@fmsmsx115.amr.corp.intel.com>
+ <CAEP_g=86=-5j5Qz9CtWvB10O8zg5JPLO8sJd_xkLtephPmC+9Q@mail.gmail.com>
+ <FC41C24E35F18A40888AACA1A36F3E418AF7E39B@fmsmsx115.amr.corp.intel.com>
+Message-ID: <CAEP_g=8LCNqQ+T62RYt0Jr3Unhh26B3t7KJhs5jAAvg5uw16=Q@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi DKDK maintainers,
+On Thu, Sep 10, 2015 at 2:53 PM, Nelson, Shannon
+<shannon.nelson@intel.com> wrote:
+>> From: Jesse Gross [mailto:jesse at nicira.com]
+>> Sent: Wednesday, September 09, 2015 11:02 PM
+>>
+>
+> Thanks, Jesse, for your perseverance.
+>
+>> >> To make a long story short, it looks like the actual problem here is
+>> >> that only UDP tunnels are supported (since that is all that is
+>> checked
+>> >> in i40e_tx_enable_csum()). In that case, I think you could simply do:
+>> >>
+>> >> if ((protocol != IPPROTO_UDP))
+>> >>     return features & ~(NETIF_F_ALL_CSUM | NETIF_F_GSO_MASK);
+>
+> Ah, now I see that the GRE support patch for i40e_tx_enable_csum() hasn't been pushed out yet.  This explains some of this discussion.  Okay - for the moment we're dropping this patch, to be reworked when the other patch gets pushed.
+>
+> I think you're right about simply dropping the use of vxlan_features_check() as it is too specific for our needs.  This will be part of the rework.
 
-We are seeing an issue where if a port is shutdown in linux using "ip link set <dev> down" command on baremetal. Then use "ip link show" to show the port which got shutdown which is in DOWN state as expected. But, the port on the other end still shows UP state which should be DOWN. Following is the excerpt from DKDK notes which indicates the similar issue with 40G. But, we are seeing the problem with 10GC(x540T2) adapter. Could you confirm this? It would be highly appreciated if you could shed some lights regarding this issue, fixes or workaround.
-
-Attached has the screen traces to show how to create and show the issue using "ip link".  Eth8 and Eth9 are directly connected. Eth8 is the interface that got disabled/down via admin. Eth9 is the other end which should be down but is still UP and hence the issue. Attached also has output for "lspci -vv" in that device 42:00.0 is eth8 and 42:00.1 is eth9.
-
-PS. ixgbe_dev_stop() is called but looks phy is not turn off is it is copper. I did see laser tx is turned off if it is fiber.
-
-Thanks,
-Wen Chiu
-
-6.24. Stopping the port does not down the link on Intel(r) 40G Ethernet controller
-Description:
-On Intel(r) 40G Ethernet Controller stopping the port does not really down the port link.
-Implication:
-The port link will be still up after stopping the port.
-Resolution/Workaround:
-None
-Affected Environment/Platform:
-All.
-Driver/Module:
-Poll Mode Driver (PMD).
-
-
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150910/704bf06b/attachment-0001.html>
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: output
-Type: application/octet-stream
-Size: 56948 bytes
-Desc: output
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150910/704bf06b/attachment-0001.obj>
+Thanks a lot for taking a look at it. Not trying to be a pain here - I
+just want to make sure things work for all protocols/users.
