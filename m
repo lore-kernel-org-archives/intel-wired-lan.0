@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 11 Sep 2015 16:59:05 +0000
-Subject: [Intel-wired-lan] [next PATCH S12 10/15] i40e: Fix for extra
- Flow	Director filter in table after error
-In-Reply-To: <1440690163-128213-11-git-send-email-catherine.sullivan@intel.com>
-References: <1440690163-128213-1-git-send-email-catherine.sullivan@intel.com>
- <1440690163-128213-11-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060A6478@ORSMSX104.amr.corp.intel.com>
+Date: Fri, 11 Sep 2015 21:14:04 +0000
+Subject: [Intel-wired-lan] [next PATCH S14 12/15] i40e: Add promiscuous
+ on	VLAN support
+In-Reply-To: <1441065295-234333-13-git-send-email-catherine.sullivan@intel.com>
+References: <1441065295-234333-1-git-send-email-catherine.sullivan@intel.com>
+ <1441065295-234333-13-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060A64B8@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,27 +15,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
 > Behalf Of Catherine Sullivan
-> Sent: Thursday, August 27, 2015 8:43 AM
+> Sent: Monday, August 31, 2015 4:55 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S12 10/15] i40e: Fix for extra Flow
-> Director filter in table after error
+> Subject: [Intel-wired-lan] [next PATCH S14 12/15] i40e: Add promiscuous on
+> VLAN support
 > 
-> From: Carolyn Wyborny <carolyn.wyborny@intel.com>
+> From: Greg Rose <gregory.v.rose@intel.com>
 > 
-> This patch fixes a problem where the pf's fdir filter table would have an entry
-> that the hw was unable to add. This notification happens in the hot path, so
-> instead of trying to fix it then, we note the location in the failure case and
-> delete it during regular fdir subtask callback. Without this patch, a case can
-> occur where an invalid entry gets replayed and a valid one is not.
+> NFV use cases require the ability to steer packets to VSIs by VLAN tag alone
+> while being in promiscuous mode for multicast and unicast MAC addresses.
+> These two new functions support that ability.
 > 
-> Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
-> Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-> Change-ID: I67831c183b5d0309876de807cc434809b74c9cb7
+> Signed-off-by: Greg Rose <gregory.v.rose@intel.com>
+> Change-ID: Ifef704b07e0ee8a39d3c351dbd5dc83bb2f63c45
 > ---
->  drivers/net/ethernet/intel/i40e/i40e.h      |  1 +
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 14 ++++++++++++++
-> drivers/net/ethernet/intel/i40e/i40e_txrx.c |  3 ++-
->  3 files changed, 17 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/i40e/i40e_common.c    | 68
+> ++++++++++++++++++++++++
+>  drivers/net/ethernet/intel/i40e/i40e_prototype.h |  6 +++
+>  2 files changed, 74 insertions(+)
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Code changes present in tree
+Code changes present in tree, monitoring VLAN interface with Wireshark set to promiscuous mode shows "entering promiscuous mode" for the vlan, but vlan will not pass traffic. PF will pass traffic.
