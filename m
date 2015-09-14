@@ -1,38 +1,46 @@
 From: =?unknown-8bit?q?J=CE=B5an?= Sacren <sakiwit@gmail.com>
-Date: Mon, 14 Sep 2015 00:27:42 -0600
-Subject: [Intel-wired-lan] [next-queue 0/8] Trivial fix-ups for Intel wired
-	LAN drivers 09/10/2015
-Message-ID: <1442212070-24937-1-git-send-email-sakiwit@gmail.com>
+Date: Mon, 14 Sep 2015 00:27:43 -0600
+Subject: [Intel-wired-lan] [next-queue 1/8] e1000: clean up the useless
+	'continue' statement
+In-Reply-To: <1442212070-24937-1-git-send-email-sakiwit@gmail.com>
+References: <1442212070-24937-1-git-send-email-sakiwit@gmail.com>
+Message-ID: <1442212070-24937-2-git-send-email-sakiwit@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This series contains trivial fix-ups and cleanups for Intel wired LAN
-drivers as of 09/10/2015:
+From: Jean Sacren <sakiwit@gmail.com>
 
-1) Two trivial fix-ups for local object initialization and duplicate
-   exit path.
+We can delete the 'continue' statement as it is in the end of the block
+and doesn't do any good. To make it distinctive, put an empty line above
+the checking block.
 
-2) Two cleanups for local variable and a keyword.
+Additionally add a pair of braces in the 'else' branch.
 
-3) Four kernel-doc fix-ups.
+Signed-off-by: Jean Sacren <sakiwit@gmail.com>
+---
+ drivers/net/ethernet/intel/e1000/e1000_main.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-Jean Sacren (8):
-  e1000: clean up the useless 'continue' statement
-  e1000: fix a typo in the comment
-  e1000e: clean up the local variable
-  i40e: fix kernel-doc argument name
-  ixgbe: fix multiple kernel-doc errors
-  i40e: declare rather than initialize int object
-  e1000: fix kernel-doc argument being missing
-  e1000: get rid of duplicate exit path
-
- drivers/net/ethernet/intel/e1000/e1000_hw.c   | 8 ++++----
- drivers/net/ethernet/intel/e1000/e1000_main.c | 7 ++++---
- drivers/net/ethernet/intel/e1000e/netdev.c    | 5 +----
- drivers/net/ethernet/intel/i40e/i40e_main.c   | 4 ++--
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 9 +++------
- 5 files changed, 14 insertions(+), 19 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
+index 74dc15055971..47397d7b97df 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_main.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+@@ -1199,12 +1199,13 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		for (i = 0; i < 32; i++) {
+ 			hw->phy_addr = i;
+ 			e1000_read_phy_reg(hw, PHY_ID2, &tmp);
++
+ 			if (tmp == 0 || tmp == 0xFF) {
+ 				if (i == 31)
+ 					goto err_eeprom;
+-				continue;
+-			} else
++			} else {
+ 				break;
++			}
+ 		}
+ 	}
+ 
