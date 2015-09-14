@@ -1,10 +1,10 @@
 From: =?unknown-8bit?q?J=CE=B5an?= Sacren <sakiwit@gmail.com>
-Date: Mon, 14 Sep 2015 00:27:47 -0600
-Subject: [Intel-wired-lan] [next-queue 5/8] ixgbe: fix multiple kernel-doc
-	errors
+Date: Mon, 14 Sep 2015 00:27:48 -0600
+Subject: [Intel-wired-lan] [next-queue 6/8] i40e: declare rather than
+	initialize int object
 In-Reply-To: <1442212070-24937-1-git-send-email-sakiwit@gmail.com>
 References: <1442212070-24937-1-git-send-email-sakiwit@gmail.com>
-Message-ID: <1442212070-24937-6-git-send-email-sakiwit@gmail.com>
+Message-ID: <1442212070-24937-7-git-send-email-sakiwit@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,51 +13,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jean Sacren <sakiwit@gmail.com>
 
-The commit dfaf891dd3e1 ("ixgbe: Refactor the RSS configuration code")
-introduced a few kernel-doc errors:
-
-1) The function name is missing;
-2) The format is wrong;
-3) The short description is redundant.
-
-Fix all the above for the correct execution of the kernel doc.
+'err' would be overwritten immediately, so we should declare it only
+rather than initialize it to zero.
 
 Signed-off-by: Jean Sacren <sakiwit@gmail.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 49be9d21d6b5..3489c35ead2c 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -3311,8 +3311,7 @@ static void ixgbe_configure_srrctl(struct ixgbe_adapter *adapter,
- }
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 23e0a4b007a2..91224b38cbd3 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -10140,7 +10140,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	static u16 pfs_found;
+ 	u16 wol_nvm_bits;
+ 	u16 link_status;
+-	int err = 0;
++	int err;
+ 	u32 len;
+ 	u32 i;
  
- /**
-- * Return a number of entries in the RSS indirection table
-- *
-+ * ixgbe_rss_indir_tbl_entries - Return RSS indirection table entries
-  * @adapter: device handle
-  *
-  *  - 82598/82599/X540:     128
-@@ -3330,8 +3329,7 @@ u32 ixgbe_rss_indir_tbl_entries(struct ixgbe_adapter *adapter)
- }
- 
- /**
-- * Write the RETA table to HW
-- *
-+ * ixgbe_store_reta - Write the RETA table to HW
-  * @adapter: device handle
-  *
-  * Write the RSS redirection table stored in adapter.rss_indir_tbl[] to HW.
-@@ -3370,8 +3368,7 @@ void ixgbe_store_reta(struct ixgbe_adapter *adapter)
- }
- 
- /**
-- * Write the RETA table to HW (for x550 devices in SRIOV mode)
-- *
-+ * ixgbe_store_vfreta - Write the RETA table to HW (x550 devices in SRIOV mode)
-  * @adapter: device handle
-  *
-  * Write the RSS redirection table stored in adapter.rss_indir_tbl[] to HW.
