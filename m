@@ -1,10 +1,10 @@
 From: =?unknown-8bit?q?J=CE=B5an?= Sacren <sakiwit@gmail.com>
-Date: Mon, 14 Sep 2015 00:27:48 -0600
-Subject: [Intel-wired-lan] [next-queue 6/8] i40e: declare rather than
-	initialize int object
+Date: Mon, 14 Sep 2015 00:27:49 -0600
+Subject: [Intel-wired-lan] [next-queue 7/8] e1000: fix kernel-doc argument
+	being missing
 In-Reply-To: <1442212070-24937-1-git-send-email-sakiwit@gmail.com>
 References: <1442212070-24937-1-git-send-email-sakiwit@gmail.com>
-Message-ID: <1442212070-24937-7-git-send-email-sakiwit@gmail.com>
+Message-ID: <1442212070-24937-8-git-send-email-sakiwit@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,24 +13,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jean Sacren <sakiwit@gmail.com>
 
-'err' would be overwritten immediately, so we should declare it only
-rather than initialize it to zero.
+Due to historical reason, 'phy_data' has never been included in the
+kernel doc. Fix it so that the requirement could be fulfilled.
 
 Signed-off-by: Jean Sacren <sakiwit@gmail.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/e1000/e1000_hw.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 23e0a4b007a2..91224b38cbd3 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -10140,7 +10140,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	static u16 pfs_found;
- 	u16 wol_nvm_bits;
- 	u16 link_status;
--	int err = 0;
-+	int err;
- 	u32 len;
- 	u32 i;
- 
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_hw.c b/drivers/net/ethernet/intel/e1000/e1000_hw.c
+index 2523e301c26c..a67a2c4499eb 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_hw.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_hw.c
+@@ -2808,6 +2808,7 @@ static u16 e1000_shift_in_mdi_bits(struct e1000_hw *hw)
+  * e1000_read_phy_reg - read a phy register
+  * @hw: Struct containing variables accessed by shared code
+  * @reg_addr: address of the PHY register to read
++ * @phy_data: pointer to the value on the PHY register
+  *
+  * Reads the value from a PHY register, if the value is on a specific non zero
+  * page, sets the page first.
