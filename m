@@ -1,45 +1,59 @@
-From: =?unknown-8bit?q?J=CE=B5an?= Sacren <sakiwit@gmail.com>
-Date: Mon, 14 Sep 2015 00:27:50 -0600
-Subject: [Intel-wired-lan] [next-queue 8/8] e1000: get rid of duplicate exit
-	path
-In-Reply-To: <1442212070-24937-1-git-send-email-sakiwit@gmail.com>
+From: Rustad, Mark D <mark.d.rustad@intel.com>
+Date: Mon, 14 Sep 2015 16:48:48 +0000
+Subject: [Intel-wired-lan] [next-queue 1/8] e1000: clean up the
+	useless	'continue' statement
+In-Reply-To: <1442212070-24937-2-git-send-email-sakiwit@gmail.com>
 References: <1442212070-24937-1-git-send-email-sakiwit@gmail.com>
-Message-ID: <1442212070-24937-9-git-send-email-sakiwit@gmail.com>
+ <1442212070-24937-2-git-send-email-sakiwit@gmail.com>
+Message-ID: <32D3D43C-B677-4C70-8915-3B07B1175C66@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jean Sacren <sakiwit@gmail.com>
+> On Sep 13, 2015, at 11:27 PM, J?an Sacren <sakiwit@gmail.com> wrote:
+> 
+> We can delete the 'continue' statement as it is in the end of the block
+> and doesn't do any good. To make it distinctive, put an empty line above
+> the checking block.
+> 
+> Additionally add a pair of braces in the 'else' branch.
+> 
+> Signed-off-by: Jean Sacren <sakiwit@gmail.com>
+> ---
+> drivers/net/ethernet/intel/e1000/e1000_main.c | 5 +++--
+> 1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
+> index 74dc15055971..47397d7b97df 100644
+> --- a/drivers/net/ethernet/intel/e1000/e1000_main.c
+> +++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+> @@ -1199,12 +1199,13 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+> 		for (i = 0; i < 32; i++) {
+> 			hw->phy_addr = i;
+> 			e1000_read_phy_reg(hw, PHY_ID2, &tmp);
+> +
+> 			if (tmp == 0 || tmp == 0xFF) {
+> 				if (i == 31)
+> 					goto err_eeprom;
+> -				continue;
+> -			} else
+> +			} else {
+> 				break;
+> +			}
+> 		}
+> 	}
 
-By using goto statement, we can achieve sharing the same exit path so
-that code duplication could be minimized.
+I think I would prefer leaving the continue, deleting the else and undenting the break one level. Since the first portion of the original if statement will never "fall through", the else is really the redundant part.
 
-Signed-off-by: Jean Sacren <sakiwit@gmail.com>
----
- drivers/net/ethernet/intel/e1000/e1000_hw.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+--
+Mark Rustad, Networking Division, Intel Corporation
 
-diff --git a/drivers/net/ethernet/intel/e1000/e1000_hw.c b/drivers/net/ethernet/intel/e1000/e1000_hw.c
-index a67a2c4499eb..737d5c79256b 100644
---- a/drivers/net/ethernet/intel/e1000/e1000_hw.c
-+++ b/drivers/net/ethernet/intel/e1000/e1000_hw.c
-@@ -2824,14 +2824,13 @@ s32 e1000_read_phy_reg(struct e1000_hw *hw, u32 reg_addr, u16 *phy_data)
- 	    (reg_addr > MAX_PHY_MULTI_PAGE_REG)) {
- 		ret_val = e1000_write_phy_reg_ex(hw, IGP01E1000_PHY_PAGE_SELECT,
- 						 (u16) reg_addr);
--		if (ret_val) {
--			spin_unlock_irqrestore(&e1000_phy_lock, flags);
--			return ret_val;
--		}
-+		if (ret_val)
-+			goto out;
- 	}
- 
- 	ret_val = e1000_read_phy_reg_ex(hw, MAX_PHY_REG_ADDRESS & reg_addr,
- 					phy_data);
-+out:
- 	spin_unlock_irqrestore(&e1000_phy_lock, flags);
- 
- 	return ret_val;
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 841 bytes
+Desc: Message signed with OpenPGP using GPGMail
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150914/c27940eb/attachment.asc>
