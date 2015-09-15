@@ -1,83 +1,45 @@
 From: Rustad, Mark D <mark.d.rustad@intel.com>
-Date: Tue, 15 Sep 2015 18:24:39 +0000
-Subject: [Intel-wired-lan] [next-queue 1/8] e1000: clean up the useless
- 'continue' statement
-In-Reply-To: <20150915053501.GA3881@mail.gmail.com>
-References: <1442212070-24937-1-git-send-email-sakiwit@gmail.com>
- <1442212070-24937-2-git-send-email-sakiwit@gmail.com>
- <32D3D43C-B677-4C70-8915-3B07B1175C66@intel.com>
- <20150915053501.GA3881@mail.gmail.com>
-Message-ID: <9EC98ADF-EA6D-4BDC-A442-F42BB805FA84@intel.com>
+Date: Tue, 15 Sep 2015 18:39:35 +0000
+Subject: [Intel-wired-lan] [PATCH V4 1/2] pci: Add dev_flags bit to
+ access VPD through function 0
+In-Reply-To: <1442341152.23936.122.camel@redhat.com>
+References: <20150713183821.19985.52157.stgit@mdrustad-wks.jf.intel.com>
+ <20150713184001.19985.64867.stgit@mdrustad-wks.jf.intel.com>
+ <1442341152.23936.122.camel@redhat.com>
+Message-ID: <F17F8A11-FB09-4131-A404-DE106F3944BB@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> On Sep 14, 2015, at 10:35 PM, J?an Sacren <sakiwit@gmail.com> wrote:
+> On Sep 15, 2015, at 11:19 AM, Alex Williamson <alex.williamson@redhat.com> wrote:
 > 
-> From: "Rustad, Mark D" <mark.d.rustad@intel.com>
-> Date: Mon, 14 Sep 2015 16:48:48 +0000
->> 
->>> On Sep 13, 2015, at 11:27 PM, J?an Sacren <sakiwit@gmail.com> wrote:
->>> 
->>> We can delete the 'continue' statement as it is in the end of the block
->>> and doesn't do any good. To make it distinctive, put an empty line above
->>> the checking block.
->>> 
->>> Additionally add a pair of braces in the 'else' branch.
->>> 
->>> Signed-off-by: Jean Sacren <sakiwit@gmail.com>
->>> ---
->>> drivers/net/ethernet/intel/e1000/e1000_main.c | 5 +++--
->>> 1 file changed, 3 insertions(+), 2 deletions(-)
->>> 
->>> diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
->>> index 74dc15055971..47397d7b97df 100644
->>> --- a/drivers/net/ethernet/intel/e1000/e1000_main.c
->>> +++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
->>> @@ -1199,12 +1199,13 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
->>> 		for (i = 0; i < 32; i++) {
->>> 			hw->phy_addr = i;
->>> 			e1000_read_phy_reg(hw, PHY_ID2, &tmp);
->>> +
->>> 			if (tmp == 0 || tmp == 0xFF) {
->>> 				if (i == 31)
->>> 					goto err_eeprom;
->>> -				continue;
->>> -			} else
->>> +			} else {
->>> 				break;
->>> +			}
->>> 		}
->>> 	}
->> 
->> I think I would prefer leaving the continue, deleting the else and
->> undenting the break one level. Since the first portion of the original
->> if statement will never "fall through", the else is really the
->> redundant part.
-> 
-> Thank you for reviewing.
-> 
-> The goto statement might be executed if and only if at the last loop out
-> of a total of 32. I think we need to rewrite the checking logic here:
-> 
-> 			...
-> 			if (tmp != 0 && tmp != 0xFF)
-> 				break;
-> 
-> 			if (i == 31)
-> 				goto err_eeprom;
-> 			...
-> 
-> What do you think?
+> In addition to the (PCI_SLOT() != devfn) issue, I'm concerned about
+> topologies like we see on Skylake.  IIRC, the integrated NIC appears at
+> something like 00:1f.6.  I don't know if that specific NIC has VPD, nor
+> am I sure it really matter because another example or some future
+> version might.  So we'll set the PCI_DEV_FLAGS_VPD_REF_F0 because we do
+> so for all (PCI_FUNC() != 0) Intel NICs, we'll call
+> pci_vpd_f0_dev_check(), which will error because function 0 has a
+> different class code and device ID, so we return error and if VPD exists
+> on the device, it's now inaccessible.
 
-This is ok too, but this makes it look to me like the if and goto should really be outside the loop, so after the loop one would have:
+Yes, that is exactly what would happen.
 
-		if (i == 32)
-			goto err_eeprom;
+> I thought there was talk about whitelisting anything on the root bus to
+> avoid strange root complex integrated devices (and perhaps avoid the
+> general case for assigned devices within a VM), but I don't see anything
+> like that here.
 
-I think I like that best of all.
+I hadn't heard that talk, but I'm not on the PCI list and I guess I wasn't copied.
+
+> Perhaps instead of failing and hiding VPD we should fail, clear the
+> flag, and allow normal access.  Thanks,
+
+Because the purpose of VPD is to hold information about the device, I would suggest that VPD should never be provided for an embedded network device, but rather for the device as a whole. So while there may well be VPD for an SOC, that VPD should not be associated with one of its embedded devices, but rather something more appropriate for the device as a whole. And attaching VPD to a whole bunch of internal devices would just be madness.
+
+So I understand the concern, but I don't think that it should really happen in real systems. I did think about this case when I was working on the patches. A networking device should really only have VPD when it is its own physical device, such as a NIC.
 
 --
 Mark Rustad, Networking Division, Intel Corporation
@@ -88,4 +50,4 @@ Name: signature.asc
 Type: application/pgp-signature
 Size: 841 bytes
 Desc: Message signed with OpenPGP using GPGMail
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150915/d658b5b5/attachment-0001.asc>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150915/fea2b91e/attachment.asc>
