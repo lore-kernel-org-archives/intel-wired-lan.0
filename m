@@ -1,179 +1,70 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 15 Sep 2015 03:56:40 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 024ab7e68d91228aa644f0fafd6f7f73c1f8f3bd BUILD DONE
-Message-ID: <55f72678.5O5t9Q/qlZOzwg06%fengguang.wu@intel.com>
+From: =?unknown-8bit?q?J=CE=B5an?= Sacren <sakiwit@gmail.com>
+Date: Mon, 14 Sep 2015 23:35:01 -0600
+Subject: [Intel-wired-lan] [next-queue 1/8] e1000: clean up the useless
+ 'continue' statement
+In-Reply-To: <32D3D43C-B677-4C70-8915-3B07B1175C66@intel.com>
+References: <1442212070-24937-1-git-send-email-sakiwit@gmail.com>
+ <1442212070-24937-2-git-send-email-sakiwit@gmail.com>
+ <32D3D43C-B677-4C70-8915-3B07B1175C66@intel.com>
+Message-ID: <20150915053501.GA3881@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-024ab7e68d91228aa644f0fafd6f7f73c1f8f3bd  i40e: Store off PHY capabilities
+From: "Rustad, Mark D" <mark.d.rustad@intel.com>
+Date: Mon, 14 Sep 2015 16:48:48 +0000
+>
+> > On Sep 13, 2015, at 11:27 PM, J?an Sacren <sakiwit@gmail.com> wrote:
+> > 
+> > We can delete the 'continue' statement as it is in the end of the block
+> > and doesn't do any good. To make it distinctive, put an empty line above
+> > the checking block.
+> > 
+> > Additionally add a pair of braces in the 'else' branch.
+> > 
+> > Signed-off-by: Jean Sacren <sakiwit@gmail.com>
+> > ---
+> > drivers/net/ethernet/intel/e1000/e1000_main.c | 5 +++--
+> > 1 file changed, 3 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
+> > index 74dc15055971..47397d7b97df 100644
+> > --- a/drivers/net/ethernet/intel/e1000/e1000_main.c
+> > +++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+> > @@ -1199,12 +1199,13 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+> > 		for (i = 0; i < 32; i++) {
+> > 			hw->phy_addr = i;
+> > 			e1000_read_phy_reg(hw, PHY_ID2, &tmp);
+> > +
+> > 			if (tmp == 0 || tmp == 0xFF) {
+> > 				if (i == 31)
+> > 					goto err_eeprom;
+> > -				continue;
+> > -			} else
+> > +			} else {
+> > 				break;
+> > +			}
+> > 		}
+> > 	}
+> 
+> I think I would prefer leaving the continue, deleting the else and
+> undenting the break one level. Since the first portion of the original
+> if statement will never "fall through", the else is really the
+> redundant part.
 
-drivers/net/ethernet/intel/e1000e/netdev.c:6785:3: error: implicit declaration of function 'e1000e_disable_aspm_locked'
-drivers/net/ethernet/intel/e1000e/netdev.c:6785:3: error: implicit declaration of function 'e1000e_disable_aspm_locked' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/i40e/i40e_main.c:8539:2: error: implicit declaration of function 'vxlan_features_check' [-Werror=implicit-function-declaration]
+Thank you for reviewing.
 
-Error ids grouped by kconfigs:
+The goto statement might be executed if and only if at the last loop out
+of a total of 32. I think we need to rewrite the checking logic here:
 
-recent_errors
-??? alpha-allyesconfig
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
-??? parisc-allyesconfig
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
-??? sparc64-defconfig
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
-??? tile-allyesconfig
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
-??? x86_64-randconfig-s1-09150336
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
-??? x86_64-randconfig-x009-09141005
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
-??? x86_64-rhel
-    ??? drivers-net-ethernet-intel-i40e-i40e_main.c:error:implicit-declaration-of-function-vxlan_features_check
+			...
+			if (tmp != 0 && tmp != 0xFF)
+				break;
 
-elapsed time: 58m
+			if (i == 31)
+				goto err_eeprom;
+			...
 
-configs tested: 136
-
-parisc                        c3000_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-i386                     randconfig-a0-201537
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-x86_64                            allnoconfig
-arm                     davinci_all_defconfig
-powerpc                         c2k_defconfig
-powerpc                     sbc8548_defconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-i386                   randconfig-c0-09150331
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-i386                             allmodconfig
-alpha                             allnoconfig
-arm                            u300_defconfig
-mips                malta_qemu_32r6_defconfig
-powerpc                 mpc837x_mds_defconfig
-powerpc                     pq2fads_defconfig
-x86_64               randconfig-x015-09141022
-x86_64               randconfig-x016-09141022
-x86_64               randconfig-x014-09141022
-x86_64               randconfig-x010-09141022
-x86_64               randconfig-x017-09141022
-x86_64               randconfig-x019-09141022
-x86_64               randconfig-x011-09141022
-x86_64               randconfig-x018-09141022
-x86_64               randconfig-x013-09141022
-x86_64               randconfig-x012-09141022
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                     randconfig-s1-201537
-i386                     randconfig-s0-201537
-x86_64                 randconfig-s0-09150336
-x86_64                 randconfig-s1-09150336
-x86_64                 randconfig-s2-09150336
-x86_64                 randconfig-s3-09150336
-x86_64                           allmodconfig
-avr32                  atngw100mkii_defconfig
-mips                      malta_kvm_defconfig
-powerpc                       ebony_defconfig
-powerpc                      virtex_defconfig
-x86_64                   randconfig-i0-201537
-i386                   randconfig-b0-09150316
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i1-201537
-i386                     randconfig-i0-201537
-x86_64                 randconfig-b0-09150330
-x86_64                                    lkp
-x86_64                                   rhel
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201537
-i386                   randconfig-h0-09150322
-i386                   randconfig-h1-09150322
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64                 randconfig-h0-09150317
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-x86_64                 randconfig-n0-09150326
-arm                                    sa1100
-arm                          prima2_defconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                                   samsung
-arm                       spear13xx_defconfig
-arm                                  iop-adma
-arm                       imx_v6_v7_defconfig
-arm                          marzen_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                                        sh
-powerpc                    adder875_defconfig
-sh                           se7722_defconfig
-sh                          urquell_defconfig
-i386                  randconfig-sb0-09150325
-x86_64               randconfig-x000-09141005
-x86_64               randconfig-x001-09141005
-x86_64               randconfig-x004-09141005
-x86_64               randconfig-x003-09141005
-x86_64               randconfig-x008-09141005
-x86_64               randconfig-x006-09141005
-x86_64               randconfig-x007-09141005
-x86_64               randconfig-x005-09141005
-x86_64               randconfig-x002-09141005
-x86_64               randconfig-x009-09141005
-i386                     randconfig-r0-201537
-x86_64                 randconfig-r0-09150311
-parisc                        c8000_defconfig
-powerpc                      tqm8xx_defconfig
-i386                 randconfig-x003-09141004
-i386                 randconfig-x005-09141004
-i386                 randconfig-x001-09141004
-i386                 randconfig-x008-09141004
-i386                 randconfig-x007-09141004
-i386                 randconfig-x004-09141004
-i386                 randconfig-x002-09141004
-i386                 randconfig-x000-09141004
-i386                 randconfig-x009-09141004
-i386                 randconfig-x006-09141004
-mips                                   jz4740
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-
-Thanks,
-Fengguang
+What do you think?
