@@ -1,38 +1,52 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 16 Sep 2015 17:47:20 +0000
-Subject: [Intel-wired-lan] [next PATCH S13 01/15] i40e/i40evf: add
- handling	of writeback descriptor
-In-Reply-To: <1440798961-17326-2-git-send-email-catherine.sullivan@intel.com>
-References: <1440798961-17326-1-git-send-email-catherine.sullivan@intel.com>
- <1440798961-17326-2-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060A6D32@ORSMSX104.amr.corp.intel.com>
+From: Rustad, Mark D <mark.d.rustad@intel.com>
+Date: Wed, 16 Sep 2015 18:27:49 +0000
+Subject: [Intel-wired-lan] [next-queue 1/8] e1000: clean up the useless
+ 'continue' statement
+In-Reply-To: <55F99B1B.1010504@gmail.com>
+References: <1442212070-24937-1-git-send-email-sakiwit@gmail.com>
+ <1442212070-24937-2-git-send-email-sakiwit@gmail.com>
+ <32D3D43C-B677-4C70-8915-3B07B1175C66@intel.com>
+ <20150915053501.GA3881@mail.gmail.com>
+ <9EC98ADF-EA6D-4BDC-A442-F42BB805FA84@intel.com>
+ <20150916153428.GB3881@mail.gmail.com> <55F99B1B.1010504@gmail.com>
+Message-ID: <F274D7F1-7F0F-4C42-95BB-47E22E9DB386@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Catherine Sullivan
-> Sent: Friday, August 28, 2015 2:56 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S13 01/15] i40e/i40evf: add handling
-> of writeback descriptor
+> On Sep 16, 2015, at 9:38 AM, Alexander Duyck <alexander.duyck@gmail.com> wrote:
 > 
-> From: Shannon Nelson <shannon.nelson@intel.com>
+> I kind of like Mark's idea better, though I would make one change.  I would make it so that you pull the check for i outside the loop so you have something like:
+> 		for (i = 0; i < 32; i++) {
+> 			hw->phy_addr = i;
+> 			e1000_read_phy_reg(hw, PHY_ID2, &tmp);
 > 
-> If the writeback descriptor buffer was previously created, this gives it to the
-> AQ command request to be used to save the results.
+> 			if (tmp != 0 && tmp != 0xFF)
+> 				break;
+> 		}
 > 
-> Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-> Change-ID: I8c8a1af81e6ebed6d0a15ed31697fe1a6c4e3708
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_nvm.c    | 26
-> ++++++++++++++++++++++----
->  drivers/net/ethernet/intel/i40e/i40e_type.h   |  1 +
->  drivers/net/ethernet/intel/i40evf/i40e_type.h |  1 +
->  3 files changed, 24 insertions(+), 4 deletions(-)
+> 		if (i >= 32)
+> 			goto no_err;
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Code changes present in tree, admin queue data written and read correctly.
+Shouldn't that goto target be err_eeprom?
+
+> This way you should only have to ever do a comparison of i once per loop, and hopefully the compiler is smart enough to realize that i >= 32 is the exit condition for the loop and will place the jump to that label accordingly.
+
+Yes, obviously I prefer the above form, with the corrected goto target, since that is what I described. The only difference being >= vs = and thought shouldn't matter. With >= being the logical opposite of the loop end test, it is probably the better choice.
+
+> As a side note I am curious if this code is even correct.  I see tmp is a u16, the declaration for which could be moved down into the if statement if I am not mistaken, and I am curious as to why we are comparing it to 0xFF instead of 0xFFFF.  I suspect that the 0xFF check might not be adding any value, but I could be wrong.
+
+Yow! That is a really good question that I don't have an immediate answer to, having no experience with the internals of the e1000 driver and the devices it supports. Some research is required to answer that question.
+
+--
+Mark Rustad, Networking Division, Intel Corporation
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 841 bytes
+Desc: Message signed with OpenPGP using GPGMail
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150916/32366eb1/attachment-0001.asc>
