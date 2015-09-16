@@ -1,128 +1,74 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 16 Sep 2015 10:11:40 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
- 9adbac599a71bc25a2617850ffcaa4388dc5c20d BUILD SUCCESS
-Message-ID: <55f8cfdc.xpvJpl2bO3MAuptw%fengguang.wu@intel.com>
+From: =?unknown-8bit?q?J=CE=B5an?= Sacren <sakiwit@gmail.com>
+Date: Wed, 16 Sep 2015 09:34:28 -0600
+Subject: [Intel-wired-lan] [next-queue 1/8] e1000: clean up the useless
+ 'continue' statement
+In-Reply-To: <9EC98ADF-EA6D-4BDC-A442-F42BB805FA84@intel.com>
+References: <1442212070-24937-1-git-send-email-sakiwit@gmail.com>
+ <1442212070-24937-2-git-send-email-sakiwit@gmail.com>
+ <32D3D43C-B677-4C70-8915-3B07B1175C66@intel.com>
+ <20150915053501.GA3881@mail.gmail.com>
+ <9EC98ADF-EA6D-4BDC-A442-F42BB805FA84@intel.com>
+Message-ID: <20150916153428.GB3881@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
-9adbac599a71bc25a2617850ffcaa4388dc5c20d  fm10k: fix iov_msg_mac_vlan_pf VID checks
+From: "Rustad, Mark D" <mark.d.rustad@intel.com>
+Date: Tue, 15 Sep 2015 18:24:39 +0000
+>
+> > On Sep 14, 2015, at 10:35 PM, J?an Sacren <sakiwit@gmail.com> wrote:
 
-elapsed time: 41m
+[...]
 
-configs tested: 107
+> > The goto statement might be executed if and only if at the last loop out
+> > of a total of 32. I think we need to rewrite the checking logic here:
+> > 
+> > 			...
+> > 			if (tmp != 0 && tmp != 0xFF)
+> > 				break;
+> > 
+> > 			if (i == 31)
+> > 				goto err_eeprom;
+> > 			...
+> > 
+> > What do you think?
+> 
+> This is ok too, but this makes it look to me like the if and goto
+> should really be outside the loop, so after the loop one would have:
+> 
+> 		if (i == 32)
+> 			goto err_eeprom;
 
-i386                     randconfig-a0-201537
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-x86_64                            allnoconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-x86_64               randconfig-x015-09141022
-x86_64               randconfig-x016-09141022
-x86_64               randconfig-x014-09141022
-x86_64               randconfig-x010-09141022
-x86_64               randconfig-x017-09141022
-x86_64               randconfig-x019-09141022
-x86_64               randconfig-x011-09141022
-x86_64               randconfig-x018-09141022
-x86_64               randconfig-x013-09141022
-x86_64               randconfig-x012-09141022
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-mips                                   jz4740
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-i386                     randconfig-s1-201537
-i386                     randconfig-s0-201537
-i386                             allmodconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-x86_64                   randconfig-i0-201537
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i1-201537
-i386                     randconfig-i0-201537
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201537
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-arm                                    sa1100
-arm                          prima2_defconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                                   samsung
-arm                       spear13xx_defconfig
-arm                                  iop-adma
-arm                       imx_v6_v7_defconfig
-arm                          marzen_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                                        sh
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-x86_64                           allmodconfig
-x86_64               randconfig-x000-09141005
-x86_64               randconfig-x001-09141005
-x86_64               randconfig-x004-09141005
-x86_64               randconfig-x003-09141005
-x86_64               randconfig-x008-09141005
-x86_64               randconfig-x006-09141005
-x86_64               randconfig-x007-09141005
-x86_64               randconfig-x005-09141005
-x86_64               randconfig-x002-09141005
-x86_64               randconfig-x009-09141005
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-i386                     randconfig-r0-201537
-i386                 randconfig-x003-09141004
-i386                 randconfig-x005-09141004
-i386                 randconfig-x001-09141004
-i386                 randconfig-x008-09141004
-i386                 randconfig-x007-09141004
-i386                 randconfig-x004-09141004
-i386                 randconfig-x002-09141004
-i386                 randconfig-x000-09141004
-i386                 randconfig-x009-09141004
-i386                 randconfig-x006-09141004
+I think moving the above check out of the loop is a good idea, yet it
+still retains the same issue as doing the unnecessary checking.
 
-Thanks,
-Fengguang
+How about the following patch:
+
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
+index 74dc15055971..4c3ca7c9ce49 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_main.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+@@ -1199,15 +1199,14 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		for (i = 0; i < 32; i++) {
+ 			hw->phy_addr = i;
+ 			e1000_read_phy_reg(hw, PHY_ID2, &tmp);
+-			if (tmp == 0 || tmp == 0xFF) {
+-				if (i == 31)
+-					goto err_eeprom;
+-				continue;
+-			} else
+-				break;
++
++			if (tmp != 0 && tmp != 0xFF)
++				goto no_err;
+ 		}
+-	}
+ 
++		goto err_eeprom;
++	}
++no_err:
+ 	/* reset the hardware with the new settings */
+ 	e1000_reset(adapter);
+ 
