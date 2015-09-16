@@ -1,30 +1,44 @@
 From: Alex Lyakas <alex@zadarastorage.com>
-Date: Wed, 16 Sep 2015 09:42:45 +0200
+Date: Wed, 16 Sep 2015 11:46:26 +0200
 Subject: [Intel-wired-lan] ixgbevf_poll causes a crash in
 	tcp_clean_rtx_queue
-In-Reply-To: <F6FB0E698C9B3143BDF729DF222866469133F363@ORSMSX110.amr.corp.intel.com>
+In-Reply-To: <D3EA9698B6174ABBB5A5E606FBBF66FD@alyakaslap>
 References: <E5721A05874A4CD0B11DF5B6955871B6@alyakaslap>
  <F6FB0E698C9B3143BDF729DF222866469133F363@ORSMSX110.amr.corp.intel.com>
-Message-ID: <D3EA9698B6174ABBB5A5E606FBBF66FD@alyakaslap>
+ <D3EA9698B6174ABBB5A5E606FBBF66FD@alyakaslap>
+Message-ID: <474AB447916849A791972F3F9BD6821B@alyakaslap>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Apologies, I forgot to attach the logs.
+
+Alex.
+
+
+-----Original Message----- 
+From: Alex Lyakas
+Sent: 16 September, 2015 9:42 AM
+To: Skidmore, Donald C ; Kirsher, Jeffrey T ; 
+intel-wired-lan at lists.osuosl.org
+Cc: Tantilov, Emil S ; Yair Hershko ; Yaron Presente
+Subject: Re: ixgbevf_poll causes a crash in tcp_clean_rtx_queue
+
 Hello Don,
 Thank you for your response.
-Looking at the kernel logs before the crash, in both cases there is nothing 
-TCP- or network-related. However, I am attaching the full crash messages of 
+Looking at the kernel logs before the crash, in both cases there is nothing
+TCP- or network-related. However, I am attaching the full crash messages of
 both cases, maybe it will help in some way.
-Also I gave you details about the VM which experienced the crash, but missed 
-to give you some more details about the host, on which the VM in question 
+Also I gave you details about the VM which experienced the crash, but missed
+to give you some more details about the host, on which the VM in question
 was running.
 
-The host is running ubuntu Precise 12.04 kernel 3.2.0-29. The ixgbe driver 
-that the host is running is "ixgbe-3.11.33" (i.e., not the stock in-tree 
-driver that comes with the kernel), compiled from the source with 
-"-DIXGBE_NO_LRO" option. The ixgbevf driver that the host is running, is the 
+The host is running ubuntu Precise 12.04 kernel 3.2.0-29. The ixgbe driver
+that the host is running is "ixgbe-3.11.33" (i.e., not the stock in-tree
+driver that comes with the kernel), compiled from the source with
+"-DIXGBE_NO_LRO" option. The ixgbevf driver that the host is running, is the
 stock one that comes with the kernel.
 
 Maybe this additional info can help.
@@ -45,8 +59,8 @@ Subject: RE: ixgbevf_poll causes a crash in tcp_clean_rtx_queue
 
 Hey Alex,
 
-I haven't personally seen such a crash but have asked my validation team to 
-attempt to create your set up and see if we can see your crash.  By any 
+I haven't personally seen such a crash but have asked my validation team to
+attempt to create your set up and see if we can see your crash.  By any
 chance did you capture the crash dump/log before the crash occurred?
 
 Thanks,
@@ -282,4 +296,11 @@ Thanks,
 > [5203941.568009] RIP  [<ffffffff8162a043>] tcp_clean_rtx_queue+0xb3/0x6e0
 > [5203941.568009]  RSP <ffff88040f003a00> [5203941.568009] CR2:
 > 0000000003783103 [5203941.653756] ---[ end trace 363b7b17527d87fe ]---
-
+-------------- next part --------------
+An embedded and charset-unspecified text was scrubbed...
+Name: bug1.txt
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150916/974da326/attachment-0002.txt>
+-------------- next part --------------
+An embedded and charset-unspecified text was scrubbed...
+Name: bug2.txt
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150916/974da326/attachment-0003.txt>
