@@ -1,142 +1,64 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 17 Sep 2015 10:41:46 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- df1ba4cbc360f16fd29de484e0f72ce7e7688a82 BUILD DONE
-Message-ID: <55fa286a.etjPkoxoI8xFUE13%fengguang.wu@intel.com>
+From: Stefan Assmann <sassmann@kpanic.de>
+Date: Thu, 17 Sep 2015 14:46:10 +0200
+Subject: [Intel-wired-lan] [PATCH net-next] igb: assume MSI-X interrupts
+	during initialization
+Message-ID: <1442493970-20073-1-git-send-email-sassmann@kpanic.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-df1ba4cbc360f16fd29de484e0f72ce7e7688a82  fm10k: Correct MTU for jumbo frames
+In igb_sw_init() the sequence of calls was changed from
+igb_init_queue_configuration()
+igb_init_interrupt_scheme()
+igb_probe_vfs()
+to
+igb_probe_vfs()
+igb_init_queue_configuration()
+igb_init_interrupt_scheme()
 
-drivers/net/ethernet/intel/e1000e/netdev.c:6785:3: error: implicit declaration of function 'e1000e_disable_aspm_locked'
-drivers/net/ethernet/intel/e1000e/netdev.c:6785:3: error: implicit declaration of function 'e1000e_disable_aspm_locked' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/i40e/i40e_main.c:8539:2: error: implicit declaration of function 'vxlan_features_check' [-Werror=implicit-function-declaration]
+This results in adapter->flags not having the IGB_FLAG_HAS_MSIX bit set
+during igb_probe_vfs()->igb_enable_sriov(). Therefore SR-IOV does not
+get enabled properly and we run into a NULL pointer if the max_vfs
+module parameter is specified (adapter->vf_data does not get allocated,
+crash on accessing the structure).
 
-Error ids grouped by kconfigs:
+[    7.419348] BUG: unable to handle kernel NULL pointer dereference at 0000000000000048
+[    7.419367] IP: [<ffffffffa02161c6>] igb_reset+0xe6/0x5d0 [igb]
+[    7.419370] PGD 0
+[    7.419373] Oops: 0002 [#1] SMP
+[    7.419381] Modules linked in: ahci(+) libahci igb(+) i40e(+) vxlan ip6_udp_tunnel udp_tunnel megaraid_sas(+) ixgbe(+) mdio
+[    7.419385] CPU: 0 PID: 4 Comm: kworker/0:0 Not tainted 4.2.0+ #153
+[    7.419387] Hardware name: Dell Inc. PowerEdge R720/0C4Y3R, BIOS 1.6.0 03/07/2013
+[...]
+[    7.419431] Call Trace:
+[    7.419442]  [<ffffffffa0217236>] igb_probe+0x8b6/0x1340 [igb]
+[    7.419447]  [<ffffffff814c7f15>] local_pci_probe+0x45/0xa0
 
-recent_errors
-??? alpha-allyesconfig
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
-??? parisc-allyesconfig
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
-??? sparc64-defconfig
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
-??? tile-allyesconfig
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
-??? x86_64-randconfig-x009-09141005
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
-??? x86_64-rhel
-    ??? drivers-net-ethernet-intel-i40e-i40e_main.c:error:implicit-declaration-of-function-vxlan_features_check
+Prevent this by setting the IGB_FLAG_HAS_MSIX bit before calling
+igb_probe_vfs(). The real interrupt capabilities will be checked during
+igb_init_interrupt_scheme() so this is safe to do.
 
-elapsed time: 27m
+Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
+---
+ drivers/net/ethernet/intel/igb/igb_main.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-configs tested: 101
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index e174fbb..ba019fc 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -2986,6 +2986,9 @@ static int igb_sw_init(struct igb_adapter *adapter)
+ 	}
+ #endif /* CONFIG_PCI_IOV */
+ 
++	/* Assume MSI-X interrupts, will be checked during IRQ allocation */
++	adapter->flags |= IGB_FLAG_HAS_MSIX;
++
+ 	igb_probe_vfs(adapter);
+ 
+ 	igb_init_queue_configuration(adapter);
+-- 
+2.4.3
 
-i386                     randconfig-a0-201537
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-x86_64                           allmodconfig
-arm                                    sa1100
-arm                          prima2_defconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                                   samsung
-arm                       spear13xx_defconfig
-arm                                  iop-adma
-arm                       imx_v6_v7_defconfig
-arm                          marzen_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                                        sh
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-x86_64               randconfig-x015-09141022
-x86_64               randconfig-x016-09141022
-x86_64               randconfig-x014-09141022
-x86_64               randconfig-x010-09141022
-x86_64               randconfig-x017-09141022
-x86_64               randconfig-x019-09141022
-x86_64               randconfig-x011-09141022
-x86_64               randconfig-x018-09141022
-x86_64               randconfig-x013-09141022
-x86_64               randconfig-x012-09141022
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                     randconfig-s1-201537
-i386                     randconfig-s0-201537
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-mips                                   jz4740
-mips                              allnoconfig
-mips                                     txx9
-powerpc                           allnoconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i1-201537
-i386                     randconfig-i0-201537
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201537
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64               randconfig-x000-09141005
-x86_64               randconfig-x001-09141005
-x86_64               randconfig-x004-09141005
-x86_64               randconfig-x003-09141005
-x86_64               randconfig-x008-09141005
-x86_64               randconfig-x006-09141005
-x86_64               randconfig-x007-09141005
-x86_64               randconfig-x005-09141005
-x86_64               randconfig-x002-09141005
-x86_64               randconfig-x009-09141005
-i386                     randconfig-r0-201537
-i386                 randconfig-x003-09141004
-i386                 randconfig-x005-09141004
-i386                 randconfig-x001-09141004
-i386                 randconfig-x008-09141004
-i386                 randconfig-x007-09141004
-i386                 randconfig-x004-09141004
-i386                 randconfig-x002-09141004
-i386                 randconfig-x000-09141004
-i386                 randconfig-x009-09141004
-i386                 randconfig-x006-09141004
-
-Thanks,
-Fengguang
