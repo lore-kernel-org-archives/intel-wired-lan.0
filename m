@@ -1,35 +1,142 @@
-From: Rustad, Mark D <mark.d.rustad@intel.com>
-Date: Wed, 16 Sep 2015 23:36:41 +0000
-Subject: [Intel-wired-lan] [next-queue 1/8] e1000: clean up the useless
- 'continue' statement
-In-Reply-To: <55F9DA6E.8090300@gmail.com>
-References: <1442212070-24937-1-git-send-email-sakiwit@gmail.com>
- <1442212070-24937-2-git-send-email-sakiwit@gmail.com>
- <32D3D43C-B677-4C70-8915-3B07B1175C66@intel.com>
- <20150915053501.GA3881@mail.gmail.com>
- <9EC98ADF-EA6D-4BDC-A442-F42BB805FA84@intel.com>
- <20150916153428.GB3881@mail.gmail.com> <55F99B1B.1010504@gmail.com>
- <F274D7F1-7F0F-4C42-95BB-47E22E9DB386@intel.com> <55F9DA6E.8090300@gmail.com>
-Message-ID: <2E5E7AEC-E02A-42F4-96D6-CF0C35B94B96@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 17 Sep 2015 10:41:46 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ df1ba4cbc360f16fd29de484e0f72ce7e7688a82 BUILD DONE
+Message-ID: <55fa286a.etjPkoxoI8xFUE13%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> On Sep 16, 2015, at 2:09 PM, Alexander Duyck <alexander.duyck@gmail.com> wrote:
-> 
-> I have a very strong suspicion that the 0xFF value is an error, but I don't see the documentation for the ce4100 anywhere to be had on where they came up with that value.  If it is supposed to be the result of a register read failure I believe the result would already be 0 since there is a flag in the register that indicates a read status failue and if it is set the value isn't stored.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+df1ba4cbc360f16fd29de484e0f72ce7e7688a82  fm10k: Correct MTU for jumbo frames
 
-I think that it is likely that Alex is right, but the code cleanup should be separated from a functional change in any case, so for this patch, please leave it as 0xFF for now. I have asked someone more familiar with it to look further. Thanks.
+drivers/net/ethernet/intel/e1000e/netdev.c:6785:3: error: implicit declaration of function 'e1000e_disable_aspm_locked'
+drivers/net/ethernet/intel/e1000e/netdev.c:6785:3: error: implicit declaration of function 'e1000e_disable_aspm_locked' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/intel/i40e/i40e_main.c:8539:2: error: implicit declaration of function 'vxlan_features_check' [-Werror=implicit-function-declaration]
 
---
-Mark Rustad, Networking Division, Intel Corporation
+Error ids grouped by kconfigs:
 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 841 bytes
-Desc: Message signed with OpenPGP using GPGMail
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150916/a1c6c6c8/attachment.asc>
+recent_errors
+??? alpha-allyesconfig
+??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
+??? parisc-allyesconfig
+??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
+??? sparc64-defconfig
+??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
+??? tile-allyesconfig
+??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
+??? x86_64-randconfig-x009-09141005
+??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
+??? x86_64-rhel
+    ??? drivers-net-ethernet-intel-i40e-i40e_main.c:error:implicit-declaration-of-function-vxlan_features_check
+
+elapsed time: 27m
+
+configs tested: 101
+
+i386                     randconfig-a0-201537
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                           allmodconfig
+arm                                    sa1100
+arm                          prima2_defconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                                   samsung
+arm                       spear13xx_defconfig
+arm                                  iop-adma
+arm                       imx_v6_v7_defconfig
+arm                          marzen_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                                        sh
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+x86_64               randconfig-x015-09141022
+x86_64               randconfig-x016-09141022
+x86_64               randconfig-x014-09141022
+x86_64               randconfig-x010-09141022
+x86_64               randconfig-x017-09141022
+x86_64               randconfig-x019-09141022
+x86_64               randconfig-x011-09141022
+x86_64               randconfig-x018-09141022
+x86_64               randconfig-x013-09141022
+x86_64               randconfig-x012-09141022
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+i386                     randconfig-s1-201537
+i386                     randconfig-s0-201537
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+mips                                   jz4740
+mips                              allnoconfig
+mips                                     txx9
+powerpc                           allnoconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i1-201537
+i386                     randconfig-i0-201537
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201537
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+x86_64               randconfig-x000-09141005
+x86_64               randconfig-x001-09141005
+x86_64               randconfig-x004-09141005
+x86_64               randconfig-x003-09141005
+x86_64               randconfig-x008-09141005
+x86_64               randconfig-x006-09141005
+x86_64               randconfig-x007-09141005
+x86_64               randconfig-x005-09141005
+x86_64               randconfig-x002-09141005
+x86_64               randconfig-x009-09141005
+i386                     randconfig-r0-201537
+i386                 randconfig-x003-09141004
+i386                 randconfig-x005-09141004
+i386                 randconfig-x001-09141004
+i386                 randconfig-x008-09141004
+i386                 randconfig-x007-09141004
+i386                 randconfig-x004-09141004
+i386                 randconfig-x002-09141004
+i386                 randconfig-x000-09141004
+i386                 randconfig-x009-09141004
+i386                 randconfig-x006-09141004
+
+Thanks,
+Fengguang
