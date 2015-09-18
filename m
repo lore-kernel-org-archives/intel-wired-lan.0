@@ -1,167 +1,96 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 19 Sep 2015 02:26:33 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- cce803aa4f4089e4c649f0b6e3c4fa4c4135a7bf BUILD DONE
-Message-ID: <55fc5759.viNi741uubWs1vQ6%fengguang.wu@intel.com>
+From: Todd Fujinaka <todd.fujinaka@intel.com>
+Date: Fri, 18 Sep 2015 15:43:51 -0700
+Subject: [Intel-wired-lan] [PATCH] igb: use the correct i210 register for
+	EEMNGCTL
+Message-ID: <20150918224351.5228.90499.stgit@htfujina-fc.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-cce803aa4f4089e4c649f0b6e3c4fa4c4135a7bf  ixgbe: Delete redundant include file
+The i210 has two EEPROM access registers that are located in
+non-standard offsets: EEARBC and EEMNGCTL. EEARBC was fixed previously
+and EEMNGCTL should also be corrected.
 
-drivers/net/ethernet/intel/e1000e/netdev.c:6785:3: error: implicit declaration of function 'e1000e_disable_aspm_locked'
-drivers/net/ethernet/intel/e1000e/netdev.c:6785:3: error: implicit declaration of function 'e1000e_disable_aspm_locked' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/i40e/i40e_main.c:8539:2: error: implicit declaration of function 'vxlan_features_check' [-Werror=implicit-function-declaration]
+Signed-off-by: Todd Fujinaka <todd.fujinaka@intel.com>
+Reported-by: "Hodek, Roman" <roman.aud@siemens.com>
+---
+ drivers/net/ethernet/intel/igb/e1000_82575.c |    1 +
+ drivers/net/ethernet/intel/igb/e1000_i210.c  |   27 ++++++++++++++++++++++++++
+ drivers/net/ethernet/intel/igb/e1000_i210.h  |    1 +
+ drivers/net/ethernet/intel/igb/e1000_regs.h  |    1 +
+ 4 files changed, 30 insertions(+)
 
-Error ids grouped by kconfigs:
+diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
+index 7a73510..fbd3ab7 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_82575.c
++++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
+@@ -294,6 +294,7 @@ static s32 igb_init_phy_params_82575(struct e1000_hw *hw)
+ 	case I210_I_PHY_ID:
+ 		phy->type		= e1000_phy_i210;
+ 		phy->ops.check_polarity	= igb_check_polarity_m88;
++		phy->ops.get_cfg_done = igb_get_cfg_done_i210;
+ 		phy->ops.get_phy_info	= igb_get_phy_info_m88;
+ 		phy->ops.get_cable_length = igb_get_cable_length_m88_gen2;
+ 		phy->ops.set_d0_lplu_state = igb_set_d0_lplu_state_82580;
+diff --git a/drivers/net/ethernet/intel/igb/e1000_i210.c b/drivers/net/ethernet/intel/igb/e1000_i210.c
+index 65d9316..29f59c7 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_i210.c
++++ b/drivers/net/ethernet/intel/igb/e1000_i210.c
+@@ -900,3 +900,30 @@ s32 igb_pll_workaround_i210(struct e1000_hw *hw)
+ 	wr32(E1000_MDICNFG, mdicnfg);
+ 	return ret_val;
+ }
++
++/**
++ *  igb_get_cfg_done_i210 - Read config done bit
++ *  @hw: pointer to the HW structure
++ *
++ *  Read the management control register for the config done bit for
++ *  completion status.  NOTE: silicon which is EEPROM-less will fail trying
++ *  to read the config done bit, so an error is *ONLY* logged and returns
++ *  0.  If we were to return with error, EEPROM-less silicon
++ *  would not be able to be reset or change link.
++ **/
++s32 igb_get_cfg_done_i210(struct e1000_hw *hw)
++{
++	s32 timeout = PHY_CFG_TIMEOUT;
++	u32 mask = E1000_NVM_CFG_DONE_PORT_0;
++
++	while (timeout) {
++		if (rd32(E1000_EEMNGCTL_I210) & mask)
++			break;
++		usleep_range(1000, 2000);
++		timeout--;
++	}
++	if (!timeout)
++		hw_dbg("MNG configuration cycle has not completed.\n");
++
++	return 0;
++}
+diff --git a/drivers/net/ethernet/intel/igb/e1000_i210.h b/drivers/net/ethernet/intel/igb/e1000_i210.h
+index 3442b63..eaa68a5 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_i210.h
++++ b/drivers/net/ethernet/intel/igb/e1000_i210.h
+@@ -34,6 +34,7 @@ s32 igb_write_xmdio_reg(struct e1000_hw *hw, u16 addr, u8 dev_addr, u16 data);
+ s32 igb_init_nvm_params_i210(struct e1000_hw *hw);
+ bool igb_get_flash_presence_i210(struct e1000_hw *hw);
+ s32 igb_pll_workaround_i210(struct e1000_hw *hw);
++s32 igb_get_cfg_done_i210(struct e1000_hw *hw);
+ 
+ #define E1000_STM_OPCODE		0xDB00
+ #define E1000_EEPROM_FLASH_SIZE_WORD	0x11
+diff --git a/drivers/net/ethernet/intel/igb/e1000_regs.h b/drivers/net/ethernet/intel/igb/e1000_regs.h
+index 4af2870..0fdcd4d 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_regs.h
++++ b/drivers/net/ethernet/intel/igb/e1000_regs.h
+@@ -66,6 +66,7 @@
+ #define E1000_PBA      0x01000  /* Packet Buffer Allocation - RW */
+ #define E1000_PBS      0x01008  /* Packet Buffer Size */
+ #define E1000_EEMNGCTL 0x01010  /* MNG EEprom Control */
++#define E1000_EEMNGCTL_I210 0x12030  /* MNG EEprom Control */
+ #define E1000_EEARBC_I210 0x12024  /* EEPROM Auto Read Bus Control */
+ #define E1000_EEWR     0x0102C  /* EEPROM Write Register - RW */
+ #define E1000_I2CCMD   0x01028  /* SFPI2C Command Register - RW */
 
-recent_errors
-??? alpha-allyesconfig
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
-??? i386-randconfig-b0-09190010
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
-??? parisc-allyesconfig
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
-??? sparc64-defconfig
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
-??? tile-allyesconfig
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
-??? x86_64-randconfig-h0-09182325
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
-??? x86_64-randconfig-x009-09141005
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
-??? x86_64-rhel
-    ??? drivers-net-ethernet-intel-i40e-i40e_main.c:error:implicit-declaration-of-function-vxlan_features_check
-
-elapsed time: 49m
-
-configs tested: 122
-
-arm                           h5000_defconfig
-arm                         lpc32xx_defconfig
-powerpc                 mpc836x_mds_defconfig
-i386                     randconfig-a0-201537
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-x86_64                            allnoconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-i386                   randconfig-c0-09190153
-i386                   randconfig-c0-09190206
-blackfin                  CM-BF537E_defconfig
-powerpc                    amigaone_defconfig
-powerpc                mpc7448_hpc2_defconfig
-x86_64       nfsroot+CONFIG_DEBUG_INFO_REDUCED
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-x86_64                           allyesconfig
-arm                       omap2plus_defconfig
-powerpc                     kmp204x_defconfig
-x86_64               randconfig-x015-09141022
-x86_64               randconfig-x016-09141022
-x86_64               randconfig-x014-09141022
-x86_64               randconfig-x010-09141022
-x86_64               randconfig-x017-09141022
-x86_64               randconfig-x019-09141022
-x86_64               randconfig-x011-09141022
-x86_64               randconfig-x018-09141022
-x86_64               randconfig-x013-09141022
-x86_64               randconfig-x012-09141022
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-mips                                   jz4740
-mips                              allnoconfig
-mips                                     txx9
-powerpc                           allnoconfig
-i386                     randconfig-s1-201537
-i386                     randconfig-s0-201537
-x86_64                 randconfig-s0-09182354
-x86_64                 randconfig-s1-09182354
-x86_64                 randconfig-s2-09182354
-x86_64                 randconfig-s3-09182354
-x86_64                           allmodconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-x86_64                   randconfig-i0-201537
-i386                   randconfig-b0-09190010
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                         cm_x300_defconfig
-arm                          ep93xx_defconfig
-powerpc                     mpc512x_defconfig
-sh                          r7780mp_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i1-201537
-i386                     randconfig-i0-201537
-x86_64                 randconfig-b0-09182338
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-i386                     randconfig-n0-201537
-i386                   randconfig-h0-09182319
-i386                   randconfig-h1-09182319
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64                                   rhel
-x86_64                 randconfig-h0-09182325
-x86_64                 randconfig-n0-09190047
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                  randconfig-sb0-09182340
-x86_64               randconfig-x000-09141005
-x86_64               randconfig-x001-09141005
-x86_64               randconfig-x004-09141005
-x86_64               randconfig-x003-09141005
-x86_64               randconfig-x008-09141005
-x86_64               randconfig-x006-09141005
-x86_64               randconfig-x007-09141005
-x86_64               randconfig-x005-09141005
-x86_64               randconfig-x002-09141005
-x86_64               randconfig-x009-09141005
-i386                     randconfig-r0-201537
-x86_64                 randconfig-r0-09182324
-mips                           ls1b_defconfig
-powerpc                      katmai_defconfig
-powerpc                      pcm030_defconfig
-i386                 randconfig-x003-09141004
-i386                 randconfig-x005-09141004
-i386                 randconfig-x001-09141004
-i386                 randconfig-x008-09141004
-i386                 randconfig-x007-09141004
-i386                 randconfig-x004-09141004
-i386                 randconfig-x002-09141004
-i386                 randconfig-x000-09141004
-i386                 randconfig-x009-09141004
-i386                 randconfig-x006-09141004
-i386                   randconfig-x0-09190140
-
-Thanks,
-Fengguang
