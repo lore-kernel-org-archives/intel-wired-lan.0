@@ -1,96 +1,59 @@
-From: Todd Fujinaka <todd.fujinaka@intel.com>
-Date: Fri, 18 Sep 2015 15:43:51 -0700
-Subject: [Intel-wired-lan] [PATCH] igb: use the correct i210 register for
-	EEMNGCTL
-Message-ID: <20150918224351.5228.90499.stgit@htfujina-fc.jf.intel.com>
+From: =?unknown-8bit?q?J=CE=B5an?= Sacren <sakiwit@gmail.com>
+Date: Sat, 19 Sep 2015 05:08:40 -0600
+Subject: [Intel-wired-lan] [next-queue v2 1/8] e1000: clean up the checking
+	logic
+Message-ID: <1442660927-30431-1-git-send-email-sakiwit@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The i210 has two EEPROM access registers that are located in
-non-standard offsets: EEARBC and EEMNGCTL. EEARBC was fixed previously
-and EEMNGCTL should also be corrected.
+From: Jean Sacren <sakiwit@gmail.com>
 
-Signed-off-by: Todd Fujinaka <todd.fujinaka@intel.com>
-Reported-by: "Hodek, Roman" <roman.aud@siemens.com>
+The checking logic needed some clean-up work, so we rewrite it by
+checking for break first. With that change in place, we can even move
+the second check for goto statement outside of the loop.
+
+As this is merely a cleanup, no functional change is involved. The
+questionable 'tmp != 0xFF' is intentionally left alone.
+
+Mark Rustad and Alexander Duyck contributed to this patch.
+
+Signed-off-by: Jean Sacren <sakiwit@gmail.com>
+Cc: "Rustad, Mark D" <mark.d.rustad@intel.com>
+Cc: Alexander Duyck <alexander.duyck@gmail.com>
 ---
- drivers/net/ethernet/intel/igb/e1000_82575.c |    1 +
- drivers/net/ethernet/intel/igb/e1000_i210.c  |   27 ++++++++++++++++++++++++++
- drivers/net/ethernet/intel/igb/e1000_i210.h  |    1 +
- drivers/net/ethernet/intel/igb/e1000_regs.h  |    1 +
- 4 files changed, 30 insertions(+)
+v2:
 
-diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
-index 7a73510..fbd3ab7 100644
---- a/drivers/net/ethernet/intel/igb/e1000_82575.c
-+++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
-@@ -294,6 +294,7 @@ static s32 igb_init_phy_params_82575(struct e1000_hw *hw)
- 	case I210_I_PHY_ID:
- 		phy->type		= e1000_phy_i210;
- 		phy->ops.check_polarity	= igb_check_polarity_m88;
-+		phy->ops.get_cfg_done = igb_get_cfg_done_i210;
- 		phy->ops.get_phy_info	= igb_get_phy_info_m88;
- 		phy->ops.get_cable_length = igb_get_cable_length_m88_gen2;
- 		phy->ops.set_d0_lplu_state = igb_set_d0_lplu_state_82580;
-diff --git a/drivers/net/ethernet/intel/igb/e1000_i210.c b/drivers/net/ethernet/intel/igb/e1000_i210.c
-index 65d9316..29f59c7 100644
---- a/drivers/net/ethernet/intel/igb/e1000_i210.c
-+++ b/drivers/net/ethernet/intel/igb/e1000_i210.c
-@@ -900,3 +900,30 @@ s32 igb_pll_workaround_i210(struct e1000_hw *hw)
- 	wr32(E1000_MDICNFG, mdicnfg);
- 	return ret_val;
- }
+1) Update the changelog to reflect the rewrite of the checking logic and
+   others' contributions;
+2) Update the changelog title accordingly;
+3) Add credits and cc the pertinent parties.
+
+ drivers/net/ethernet/intel/e1000/e1000_main.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
+index 97e38cee649f..5ba8d13a068c 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_main.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+@@ -1199,13 +1199,13 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		for (i = 0; i < 32; i++) {
+ 			hw->phy_addr = i;
+ 			e1000_read_phy_reg(hw, PHY_ID2, &tmp);
+-			if (tmp == 0 || tmp == 0xFF) {
+-				if (i == 31)
+-					goto err_eeprom;
+-				continue;
+-			} else
 +
-+/**
-+ *  igb_get_cfg_done_i210 - Read config done bit
-+ *  @hw: pointer to the HW structure
-+ *
-+ *  Read the management control register for the config done bit for
-+ *  completion status.  NOTE: silicon which is EEPROM-less will fail trying
-+ *  to read the config done bit, so an error is *ONLY* logged and returns
-+ *  0.  If we were to return with error, EEPROM-less silicon
-+ *  would not be able to be reset or change link.
-+ **/
-+s32 igb_get_cfg_done_i210(struct e1000_hw *hw)
-+{
-+	s32 timeout = PHY_CFG_TIMEOUT;
-+	u32 mask = E1000_NVM_CFG_DONE_PORT_0;
++			if (tmp != 0 && tmp != 0xFF)
+ 				break;
+ 		}
 +
-+	while (timeout) {
-+		if (rd32(E1000_EEMNGCTL_I210) & mask)
-+			break;
-+		usleep_range(1000, 2000);
-+		timeout--;
-+	}
-+	if (!timeout)
-+		hw_dbg("MNG configuration cycle has not completed.\n");
-+
-+	return 0;
-+}
-diff --git a/drivers/net/ethernet/intel/igb/e1000_i210.h b/drivers/net/ethernet/intel/igb/e1000_i210.h
-index 3442b63..eaa68a5 100644
---- a/drivers/net/ethernet/intel/igb/e1000_i210.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_i210.h
-@@ -34,6 +34,7 @@ s32 igb_write_xmdio_reg(struct e1000_hw *hw, u16 addr, u8 dev_addr, u16 data);
- s32 igb_init_nvm_params_i210(struct e1000_hw *hw);
- bool igb_get_flash_presence_i210(struct e1000_hw *hw);
- s32 igb_pll_workaround_i210(struct e1000_hw *hw);
-+s32 igb_get_cfg_done_i210(struct e1000_hw *hw);
++		if (i >= 32)
++			goto err_eeprom;
+ 	}
  
- #define E1000_STM_OPCODE		0xDB00
- #define E1000_EEPROM_FLASH_SIZE_WORD	0x11
-diff --git a/drivers/net/ethernet/intel/igb/e1000_regs.h b/drivers/net/ethernet/intel/igb/e1000_regs.h
-index 4af2870..0fdcd4d 100644
---- a/drivers/net/ethernet/intel/igb/e1000_regs.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_regs.h
-@@ -66,6 +66,7 @@
- #define E1000_PBA      0x01000  /* Packet Buffer Allocation - RW */
- #define E1000_PBS      0x01008  /* Packet Buffer Size */
- #define E1000_EEMNGCTL 0x01010  /* MNG EEprom Control */
-+#define E1000_EEMNGCTL_I210 0x12030  /* MNG EEprom Control */
- #define E1000_EEARBC_I210 0x12024  /* EEPROM Auto Read Bus Control */
- #define E1000_EEWR     0x0102C  /* EEPROM Write Register - RW */
- #define E1000_I2CCMD   0x01028  /* SFPI2C Command Register - RW */
-
+ 	/* reset the hardware with the new settings */
