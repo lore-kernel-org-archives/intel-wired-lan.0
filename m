@@ -1,10 +1,10 @@
 From: =?unknown-8bit?q?J=CE=B5an?= Sacren <sakiwit@gmail.com>
-Date: Sat, 19 Sep 2015 05:08:41 -0600
-Subject: [Intel-wired-lan] [next-queue v2 2/8] e1000: fix a typo in the
-	comment
+Date: Sat, 19 Sep 2015 05:08:42 -0600
+Subject: [Intel-wired-lan] [next-queue v2 3/8] e1000e: clean up the local
+	variable
 In-Reply-To: <1442660927-30431-1-git-send-email-sakiwit@gmail.com>
 References: <1442660927-30431-1-git-send-email-sakiwit@gmail.com>
-Message-ID: <1442660927-30431-2-git-send-email-sakiwit@gmail.com>
+Message-ID: <1442660927-30431-3-git-send-email-sakiwit@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,25 +13,33 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jean Sacren <sakiwit@gmail.com>
 
-Use 'That' to replace 'The' so that the comment would make sense.
+The local variable 'ret' doesn't serve much purpose so we might as well
+clean it up.
 
 Signed-off-by: Jean Sacren <sakiwit@gmail.com>
 ---
 v2: No changes.
 
- drivers/net/ethernet/intel/e1000/e1000_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/e1000e/netdev.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
-index 5ba8d13a068c..36d1d48a9c60 100644
---- a/drivers/net/ethernet/intel/e1000/e1000_main.c
-+++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
-@@ -1263,7 +1263,7 @@ err_pci_reg:
-  * @pdev: PCI device information struct
-  *
-  * e1000_remove is called by the PCI subsystem to alert the driver
-- * that it should release a PCI device.  The could be caused by a
-+ * that it should release a PCI device. That could be caused by a
-  * Hot-Plug event, or because the driver is going to be removed from
-  * memory.
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 7be339eb9927..a501e7744597 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -7504,14 +7504,11 @@ static struct pci_driver e1000_driver = {
   **/
+ static int __init e1000_init_module(void)
+ {
+-	int ret;
+-
+ 	pr_info("Intel(R) PRO/1000 Network Driver - %s\n",
+ 		e1000e_driver_version);
+ 	pr_info("Copyright(c) 1999 - 2015 Intel Corporation.\n");
+-	ret = pci_register_driver(&e1000_driver);
+ 
+-	return ret;
++	return pci_register_driver(&e1000_driver);
+ }
+ module_init(e1000_init_module);
+ 
