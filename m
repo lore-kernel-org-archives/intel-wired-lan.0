@@ -1,10 +1,10 @@
 From: =?unknown-8bit?q?J=CE=B5an?= Sacren <sakiwit@gmail.com>
-Date: Sat, 19 Sep 2015 05:08:42 -0600
-Subject: [Intel-wired-lan] [next-queue v2 3/8] e1000e: clean up the local
-	variable
+Date: Sat, 19 Sep 2015 05:08:44 -0600
+Subject: [Intel-wired-lan] [next-queue v2 5/8] ixgbe: fix multiple
+	kernel-doc errors
 In-Reply-To: <1442660927-30431-1-git-send-email-sakiwit@gmail.com>
 References: <1442660927-30431-1-git-send-email-sakiwit@gmail.com>
-Message-ID: <1442660927-30431-3-git-send-email-sakiwit@gmail.com>
+Message-ID: <1442660927-30431-5-git-send-email-sakiwit@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,33 +13,53 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jean Sacren <sakiwit@gmail.com>
 
-The local variable 'ret' doesn't serve much purpose so we might as well
-clean it up.
+The commit dfaf891dd3e1 ("ixgbe: Refactor the RSS configuration code")
+introduced a few kernel-doc errors:
+
+1) The function name is missing;
+2) The format is wrong;
+3) The short description is redundant.
+
+Fix all the above for the correct execution of the kernel doc.
 
 Signed-off-by: Jean Sacren <sakiwit@gmail.com>
 ---
 v2: No changes.
 
- drivers/net/ethernet/intel/e1000e/netdev.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 7be339eb9927..a501e7744597 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -7504,14 +7504,11 @@ static struct pci_driver e1000_driver = {
-  **/
- static int __init e1000_init_module(void)
- {
--	int ret;
--
- 	pr_info("Intel(R) PRO/1000 Network Driver - %s\n",
- 		e1000e_driver_version);
- 	pr_info("Copyright(c) 1999 - 2015 Intel Corporation.\n");
--	ret = pci_register_driver(&e1000_driver);
- 
--	return ret;
-+	return pci_register_driver(&e1000_driver);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 708957c75936..e60e969c1c78 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -3308,8 +3308,7 @@ static void ixgbe_configure_srrctl(struct ixgbe_adapter *adapter,
  }
- module_init(e1000_init_module);
  
+ /**
+- * Return a number of entries in the RSS indirection table
+- *
++ * ixgbe_rss_indir_tbl_entries - Return RSS indirection table entries
+  * @adapter: device handle
+  *
+  *  - 82598/82599/X540:     128
+@@ -3327,8 +3326,7 @@ u32 ixgbe_rss_indir_tbl_entries(struct ixgbe_adapter *adapter)
+ }
+ 
+ /**
+- * Write the RETA table to HW
+- *
++ * ixgbe_store_reta - Write the RETA table to HW
+  * @adapter: device handle
+  *
+  * Write the RSS redirection table stored in adapter.rss_indir_tbl[] to HW.
+@@ -3367,8 +3365,7 @@ void ixgbe_store_reta(struct ixgbe_adapter *adapter)
+ }
+ 
+ /**
+- * Write the RETA table to HW (for x550 devices in SRIOV mode)
+- *
++ * ixgbe_store_vfreta - Write the RETA table to HW (x550 devices in SRIOV mode)
+  * @adapter: device handle
+  *
+  * Write the RSS redirection table stored in adapter.rss_indir_tbl[] to HW.
