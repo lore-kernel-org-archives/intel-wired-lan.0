@@ -1,227 +1,172 @@
-From: Alex Lyakas <alex@zadarastorage.com>
-Date: Sun, 6 Sep 2015 20:24:01 +0200
-Subject: [Intel-wired-lan] ixgbevf_poll causes a crash in tcp_clean_rtx_queue
-Message-ID: <E5721A05874A4CD0B11DF5B6955871B6@alyakaslap>
+From: Jarod Wilson <jarod@redhat.com>
+Date: Mon, 21 Sep 2015 13:11:28 -0400
+Subject: [Intel-wired-lan] [PATCH] igb: add more checks for disconnected
+	adapter
+Message-ID: <1442855488-27453-1-git-send-email-jarod@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Greetings Intel developers,
-We had two kernel crashes involving ixgbevf in [1] and [2], both are quite 
-similar.
+Some pci changes upcoming in 4.3 seem to cause additional disconnects,
+which can happen at unfortuitous times for igb, leading to issues such as
+this, where the disconnect happened just before igb_configure_tx_ring():
 
-The crashes happened within a virtual machine guest, running a mainline 
-kernel 3.8.13.
+[  414.440115] igb 0000:15:00.0: enabling device (0000 -> 0002)
+[  414.474934] pps pps0: new PPS source ptp1
+[  414.474937] igb 0000:15:00.0: added PHC on eth0
+[  414.474938] igb 0000:15:00.0: Intel(R) Gigabit Ethernet Network Connection
+[  414.474940] igb 0000:15:00.0: eth0: (PCIe:2.5Gb/s:Width x1) e8:ea:6a:00:1b:2a
+[  414.475072] igb 0000:15:00.0: eth0: PBA No: 000200-000
+[  414.475073] igb 0000:15:00.0: Using MSI-X interrupts. 4 rx queue(s), 4 tx queue(s)
+[  414.478453] igb 0000:15:00.0 enp21s0: renamed from eth0
+[  414.497747] IPv6: ADDRCONF(NETDEV_UP): enp21s0: link is not ready
+[  414.536745] igb 0000:15:00.0 enp21s0: PCIe link lost, device now detached
+[  414.854808] BUG: unable to handle kernel paging request at 0000000000003818
+[  414.854827] IP: [<ffffffffa0b95a9c>] igb_configure_tx_ring+0x14c/0x250 [igb]
+[  414.854846] PGD 0
+[  414.854849] Oops: 0002 [#1] SMP
+[  414.854856] Modules linked in: firewire_ohci firewire_core crc_itu_t igb dca ctr ccm arc4 iwlmvm mac80211 fuse xt_CHECKSUM ipt_MASQUERADE nf_nat_masquerade_ipv4 tun ip6t_rpfilter ip6t_REJECT nf_reject_ipv6 ipt_REJECT nf_reject_ipv4 xt_conntrack ebtable_nat ebtable_broute bridge stp llc ebtable_filter ebtables ip6table_nat nf_conntrack_ipv6 nf_defrag_ipv6 nf_nat_ipv6 ip6table_mangle ip6table_security ip6table_raw ip6table_filter ip6_tables iptable_nat nf_conntrack_ipv4 nf_defrag_ipv4 nf_nat_ipv4 nf_nat nf_conntrack iptable_mangle iptable_security iptable_raw iptable_filter bnep dm_mirror dm_region_hash dm_log dm_mod snd_hda_codec_hdmi coretemp x86_pkg_temp_thermal intel_powerclamp kvm_intel iTCO_wdt ppdev kvm iTCO_vendor_support hp_wmi sparse_keymap crct10dif_pclmul crc32_pclmul ghash_clmulni_intel
+[  414.855073]  drbg ansi_cprng snd_hda_codec_realtek snd_hda_codec_generic aesni_intel aes_x86_64 lrw gf128mul glue_helper ablk_helper cryptd snd_hda_intel snd_hda_codec microcode snd_hda_core snd_hwdep snd_seq snd_seq_device snd_pcm iwlwifi uvcvideo btusb cfg80211 videobuf2_vmalloc videobuf2_memops btrtl btbcm videobuf2_core btintel bluetooth v4l2_common snd_timer videodev snd parport_pc rtsx_pci_ms joydev pcspkr input_leds i2c_i801 media sg memstick rfkill soundcore lpc_ich 8250_fintek parport mei_me hp_accel ie31200_edac shpchp lis3lv02d mei edac_core input_polldev hp_wireless tpm_infineon sch_fq_codel nfsd auth_rpcgss nfs_acl lockd grace sunrpc ip_tables xfs libcrc32c sr_mod sd_mod cdrom rtsx_pci_sdmmc mmc_core crc32c_intel serio_raw rtsx_pci nouveau mxm_wmi ahci hwmon libahci e1000e drm_kms_helper
+[  414.855309]  ptp xhci_pci pps_core ttm xhci_hcd wmi video ipv6 autofs4
+[  414.855331] CPU: 2 PID: 875 Comm: NetworkManager Not tainted 4.2.0-5.el7_UNSUPPORTED.x86_64 #1
+[  414.855348] Hardware name: Hewlett-Packard HP ZBook 15 G2/2253, BIOS M70 Ver. 01.07 02/26/2015
+[  414.855365] task: ffff880484698c00 ti: ffff88005859c000 task.ti: ffff88005859c000
+[  414.855380] RIP: 0010:[<ffffffffa0b95a9c>]  [<ffffffffa0b95a9c>] igb_configure_tx_ring+0x14c/0x250 [igb]
+[  414.855401] RSP: 0018:ffff88005859f608  EFLAGS: 00010246
+[  414.855410] RAX: 0000000000003818 RBX: 0000000000000000 RCX: 0000000000003818
+[  414.855424] RDX: 0000000000000000 RSI: 0000000000000008 RDI: 00000000002a9fe6
+[  414.855437] RBP: ffff88005859f638 R08: 0000000003030300 R09: 00000000ffffffe7
+[  414.855451] R10: ffffffff81fa91b4 R11: 00000000000007e3 R12: 0000000000000000
+[  414.855464] R13: ffff880471c98840 R14: ffff8804670a1180 R15: 0000000483cce000
+[  414.855478] FS:  00007f389c6fb8c0(0000) GS:ffff88049dc80000(0000) knlGS:0000000000000000
+[  414.855493] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  414.855504] CR2: 0000000000003818 CR3: 00000004875da000 CR4: 00000000001406e0
+[  414.855518] Stack:
+[  414.855520]  ffff88005859f638 ffff880471c98840 ffff880471c98df8 0000000000000001
+[  414.855538]  ffff880471c98848 0000000000000001 ffff88005859f698 ffffffffa0b99cb0
+[  414.855555]  ffff88005859f678 59ab02179a7fe4d0 f3ce6b27ad46225f f5454218094e72d1
+[  414.855572] Call Trace:
+[  414.855577]  [<ffffffffa0b99cb0>] igb_configure+0x240/0x400 [igb]
+[  414.855590]  [<ffffffffa0b99f32>] __igb_open+0xc2/0x560 [igb]
+[  414.855602]  [<ffffffff8108f43d>] ? notifier_call_chain+0x4d/0x80
+[  414.855614]  [<ffffffffa0b9a540>] igb_open+0x10/0x20 [igb]
+[  414.855625]  [<ffffffff81581b81>] __dev_open+0xb1/0x130
+[  414.855636]  [<ffffffff81581e91>] __dev_change_flags+0xa1/0x160
+[  414.855647]  [<ffffffff81581f79>] dev_change_flags+0x29/0x60
+[  414.855658]  [<ffffffff8158efc3>] do_setlink+0x5d3/0xaa0
+[  414.855679]  [<ffffffff81308073>] ? nla_parse+0xa3/0x100
+[  414.855689]  [<ffffffff815905f0>] rtnl_newlink+0x4f0/0x880
+[  414.855700]  [<ffffffff815901f3>] ? rtnl_newlink+0xf3/0x880
+[  414.855721]  [<ffffffff815ae23e>] ? netlink_unicast+0x1ae/0x220
+[  414.855734]  [<ffffffff81266648>] ? security_capable+0x48/0x60
+[  414.855746]  [<ffffffff810796bd>] ? ns_capable+0x2d/0x60
+[  414.855756]  [<ffffffff8158db35>] rtnetlink_rcv_msg+0x95/0x240
+[  414.855768]  [<ffffffff8126adc0>] ? sock_has_perm+0x70/0x90
+[  414.855779]  [<ffffffff8158daa0>] ? rtnetlink_rcv+0x40/0x40
+[  414.855789]  [<ffffffff815ae7ff>] netlink_rcv_skb+0xaf/0xc0
+[  414.855800]  [<ffffffff8158da8c>] rtnetlink_rcv+0x2c/0x40
+[  414.855810]  [<ffffffff815ae1de>] netlink_unicast+0x14e/0x220
+[  414.855821]  [<ffffffff815ae5ca>] netlink_sendmsg+0x31a/0x390
+[  414.855833]  [<ffffffff81563208>] sock_sendmsg+0x38/0x50
+[  414.855843]  [<ffffffff81563b4e>] ___sys_sendmsg+0x27e/0x2a0
+[  414.855855]  [<ffffffff8123d82f>] ? sysctl_head_finish+0x3f/0x50
+[  414.855866]  [<ffffffff81077c10>] ? proc_put_long+0xb0/0xb0
+[  414.855877]  [<ffffffff8123d9d9>] ? proc_sys_call_handler+0x79/0xc0
+[  414.855890]  [<ffffffff812ec2fc>] ? lockref_put_or_lock+0x4c/0x80
+[  414.855902]  [<ffffffff81564432>] __sys_sendmsg+0x42/0x80
+[  414.855913]  [<ffffffff81564482>] SyS_sendmsg+0x12/0x20
+[  414.855924]  [<ffffffff8165042e>] entry_SYSCALL_64_fastpath+0x12/0x71
+[  414.855935] Code: c1 49 89 4e 30 49 8b 85 c0 05 00 00 48 85 c0 0f 84 0e 01 00 00 81 c2 10 38 00 00 48 63 d2 48 01 d0 31 d2 89 10 49 8b 46 30 31 d2 <89> 10 41 8b 95 44 06 00 00 b8 14 01 10 02 83
+fa 05 74 0b 83 fa
+[  414.856037] RIP  [<ffffffffa0b95a9c>] igb_configure_tx_ring+0x14c/0x250 [igb]
+[  414.856052]  RSP <ffff88005859f608>
+[  414.856057] CR2: 0000000000003818
+[  414.872327] ---[ end trace e97522c0c584ea70 ]---
 
-The host running this VM has a 82599EB Intel NIC, spawning 32 VFs on each 
-port. Four VFs (two from each NIC port) are assigned to the VM. Then within 
-the VM, we create two bonding interfaces, each one enslaving two VFs from 
-different ports. One of the VF pairs also has 8021q interfaces are created 
-on top (using vconfig), and the bond is created on top of the 8021q 
-interfaces.
-We are not sure which bond interface and which VF experienced the crash.
+This can at least be reduced to a harmless initialization failure with some
+additional checking of device presence, similar to ixgbe. With this patch
+in place, instead we get:
 
-Bond is in active-backup mode with failover-mac setting set to 1. They also 
-have miimon set to 100 and updelay set to 60000.
+[ 8010.562550] igb 0000:15:00.0: enabling device (0000 -> 0002)
+[ 8010.597402] pps pps0: new PPS source ptp1
+[ 8010.597406] igb 0000:15:00.0: added PHC on eth0
+[ 8010.597407] igb 0000:15:00.0: Intel(R) Gigabit Ethernet Network Connection
+[ 8010.597409] igb 0000:15:00.0: eth0: (PCIe:2.5Gb/s:Width x1) e8:ea:6a:00:1b:2a
+[ 8010.597543] igb 0000:15:00.0: eth0: PBA No: 000200-000
+[ 8010.597545] igb 0000:15:00.0: Using MSI-X interrupts. 4 rx queue(s), 4 tx queue(s)
+[ 8010.600468] igb 0000:15:00.0 enp21s0: renamed from eth0
+[ 8010.619354] IPv6: ADDRCONF(NETDEV_UP): enp21s0: link is not ready
+[ 8010.663999] igb 0000:15:00.0 enp21s0: PCIe link lost, device now detached
+[ 8011.012427] igb 0000:15:00.0: Unable to allocate memory for vectors
 
-Can you perhaps advise what might be causing these crashes? For now, it 
-happened only twice, and we don't have a repro scenario.
+CC: Mark Rustad <mark.d.rustad@intel.com>
+CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+CC: intel-wired-lan at lists.osuosl.org
+CC: netdev at vger.kernel.org
+Signed-off-by: Jarod Wilson <jarod@redhat.com>
+---
+Note: this is a follow-up patch in addition to the previously submitted
+      "igb: don't unmap NULL hw_addr"
 
-Thanks,
-Alex.
+ drivers/net/ethernet/intel/igb/igb_main.c | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
-
-
-[1]
-[224281.913038] BUG: unable to handle kernel paging request at 
-00000000a5676903
-[224281.914047] IP: [<ffffffff8162a043>] tcp_clean_rtx_queue+0xb3/0x6e0
-[224281.914884] PGD 3c4ae7067 PUD 0
-[224281.915351] Oops: 0000 [#1] SMP
-[224281.915861] Modules linked in: dm_crypt(OF) dm_queue_length xt_multiport 
-xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state nf_conntrack 
-iptable_filter ip_tables x_tables ib_iser(OF) rdma_cm(OF) ib_cm(OF) 
-iw_cm(OF) ib_sa(OF) ib_mad(OF) ib_core(OF) ib_addr(OF) compat(OF) 
-iscsi_tcp(OF) libiscsi_tcp(OF) libiscsi(OF) scsi_transport_iscsi(OF) 
-xfrm_user xfrm4_tunnel tunnel4 ipcomp xfrm_ipcomp esp4 ah4 8021q garp stp 
-llc bonding dm_zcache(OF) xfs(OF) btrfs(OF) raid456(OF) async_pq async_xor 
-xor async_memcpy async_raid6_recov raid6_pq async_tx raid1(OF) deflate 
-zlib_deflate ctr twofish_generic twofish_avx_x86_64 twofish_x86_64_3way 
-twofish_x86_64 twofish_common camellia_generic camellia_aesni_avx_x86_64 
-camellia_x86_64 serpent_avx_x86_64 serpent_sse2_x86_64 glue_helper 
-serpent_generic blowfish_generic blowfish_x86_64 blowfish_common 
-cast5_avx_x86_64 cast5_generic cast_common des_generic xcbc iscsi_scst(OF) 
-rmd160 scst_vdisk(OF) libcrc32c crypto_null scst(OF) af_key xfrm_algo kvm 
-ghash_clmulni_intel aesni_intel ablk_helper cryptd lrw aes_x86_64 xts 
-gf128mul nfsd(OF) nfs_acl auth_rpcgss nfs fscache lockd sunrpc microcode 
-virtio_balloon psmouse dm_multipath(OF) scsi_dh dm_iostat(OF) serio_raw 
-cirrus ttm drm_kms_helper drm sysimgblt sysfillrect syscopyarea i2c_piix4 
-mac_hid lp parport floppy ixgbevf(OF)
-[224281.916964] CPU 0
-[224281.916964] Pid: 0, comm: swapper/0 Tainted: GF          O 
-3.8.13-030813-generic #201305111843 Bochs Bochs
-[224281.916964] RIP: 0010:[<ffffffff8162a043>]  [<ffffffff8162a043>] 
-tcp_clean_rtx_queue+0xb3/0x6e0
-[224281.916964] RSP: 0018:ffff88040f003a00  EFLAGS: 00010206
-[224281.916964] RAX: 00000000a5676900 RBX: ffff88040803e200 RCX: 
-ffffffffffffffff
-[224281.916964] RDX: 0000000000000000 RSI: 0000000000000001 RDI: 
-000000000000000f
-[224281.916964] RBP: ffff88040f003a90 R08: 0000000000000401 R09: 
-ffffea000e995700
-[224281.916964] R10: ffffffff815d0098 R11: 0000000023020a0a R12: 
-ffff8803a5676a10
-[224281.916964] R13: 0000000000000004 R14: 0000000000000015 R15: 
-0000000000000000
-[224281.916964] FS:  0000000000000000(0000) GS:ffff88040f000000(0000) 
-knlGS:0000000000000000
-[224281.916964] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[224281.916964] CR2: 00000000a5676903 CR3: 0000000408884000 CR4: 
-00000000000406f0
-[224281.916964] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[224281.916964] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
-0000000000000400
-[224281.916964] Process swapper/0 (pid: 0, threadinfo ffffffff81c00000, task 
-ffffffff81c15440)
-[224281.916964] Stack:
-[224281.916964]  0000000000000020 ffff880407017d80 000000000f003a90 
-4f28c84d00000000
-[224281.916964]  0000000000000000 0000000003566c56 ffff88040803e310 
-0000000003566c56
-[224281.916964]  ffff88040f003a80 ffffffff81658526 0000000000000000 
-ffff88040f003aa0
-[224281.916964] Call Trace:
-[224281.916964]  <IRQ>
-[224281.916964]  [<ffffffff81658526>] ? __fib_lookup+0x46/0x70
-[224281.916964]  [<ffffffff8162aa12>] tcp_ack+0x3a2/0x600
-[224281.916964]  [<ffffffff8162b05c>] tcp_rcv_established+0xec/0x770
-[224281.916964]  [<ffffffff81635314>] tcp_v4_do_rcv+0x134/0x220
-[224281.916964]  [<ffffffff81636f09>] tcp_v4_rcv+0x569/0x840
-[224281.916964]  [<ffffffff81610b36>] ip_local_deliver_finish+0xe6/0x280
-[224281.916964]  [<ffffffff81610e5a>] ip_local_deliver+0x4a/0x90
-[224281.916964]  [<ffffffff81610809>] ip_rcv_finish+0x119/0x360
-[224281.916964]  [<ffffffff816110bd>] ip_rcv+0x21d/0x300
-[224281.916964]  [<ffffffff815dddca>] __netif_receive_skb+0x5fa/0x760
-[224281.916964]  [<ffffffff8163729e>] ? tcp4_gro_receive+0x9e/0x110
-[224281.916964]  [<ffffffff815ddf53>] netif_receive_skb+0x23/0x90
-[224281.916964]  [<ffffffff815de698>] napi_gro_receive+0xe8/0x140
-[224281.916964]  [<ffffffffa0004967>] ixgbevf_poll+0x5b7/0x980 [ixgbevf]
-[224281.916964]  [<ffffffff815df544>] net_rx_action+0x134/0x260
-[224281.916964]  [<ffffffff81045136>] ? native_safe_halt+0x6/0x10
-[224281.916964]  [<ffffffff810623f0>] __do_softirq+0xc0/0x240
-[224281.916964]  [<ffffffff816ed43e>] ? _raw_spin_lock+0xe/0x20
-[224281.916964]  [<ffffffff816f771c>] call_softirq+0x1c/0x30
-[224281.916964]  [<ffffffff81016775>] do_softirq+0x65/0xa0
-[224281.916964]  [<ffffffff810626ce>] irq_exit+0x8e/0xb0
-[224281.916964]  [<ffffffff816f7fb3>] do_IRQ+0x63/0xe0
-[224281.916964]  [<ffffffff816eda2d>] common_interrupt+0x6d/0x6d
-[224281.916964]  <EOI>
-[224281.916964]  [<ffffffff81083ea8>] ? hrtimer_start+0x18/0x20
-[224281.916964]  [<ffffffff81045136>] ? native_safe_halt+0x6/0x10
-[224281.916964]  [<ffffffff8101cc33>] default_idle+0x53/0x1f0
-[224281.916964]  [<ffffffff8101dad9>] cpu_idle+0xd9/0x120
-[224281.916964]  [<ffffffff816c0f82>] rest_init+0x72/0x80
-[224281.916964]  [<ffffffff81d04c63>] start_kernel+0x3d1/0x3de
-[224281.916964]  [<ffffffff81d04724>] ? do_early_param+0x87/0x87
-[224281.916964]  [<ffffffff81d04397>] x86_64_start_reservations+0x131/0x135
-[224281.916964]  [<ffffffff81d04120>] ? early_idt_handlers+0x120/0x120
-[224281.916964]  [<ffffffff81d04468>] x86_64_start_kernel+0xcd/0xdc
-[224281.916964] Code: 83 c0 04 00 00 41 3b 44 24 44 41 0f b6 54 24 4d 0f 88 
-a2 03 00 00 41 8b 84 24 d8 00 00 00 49 8b 8c 24 e0 00 00 00 be 01 00 00 00 
-<0f> b7 44 01 04 0f b6 d2 f6 c2 82 0f 84 44 03 00 00 f6 c2 02 74
-[224281.916964] RIP  [<ffffffff8162a043>] tcp_clean_rtx_queue+0xb3/0x6e0
-[224281.916964]  RSP <ffff88040f003a00>
-[224281.916964] CR2: 00000000a5676903
-[224281.999140] ---[ end trace 8606b25aec0e4b97 ]---
-
-[2]
-[5203941.564514] BUG: unable to handle kernel paging request at 
-0000000003783103
-[5203941.565966] IP: [<ffffffff8162a043>] tcp_clean_rtx_queue+0xb3/0x6e0
-[5203941.566783] PGD 37e3c4067 PUD 24b912067 PMD 0
-[5203941.567405] Oops: 0000 [#1] SMP
-[5203941.568009] CPU 0
-[5203941.568009] Pid: 4251, comm: dmsetup Tainted: GF       W  O 
-3.8.13-030813-generic #201305111843 Bochs Bochs
-[5203941.568009] RIP: 0010:[<ffffffff8162a043>]  [<ffffffff8162a043>] 
-tcp_clean_rtx_queue+0xb3/0x6e0
-[5203941.568009] RSP: 0000:ffff88040f003a00  EFLAGS: 00010206
-[5203941.568009] RAX: 0000000003783100 RBX: ffff880344cadb00 RCX: 
-ffffffffffffffff
-[5203941.568009] RDX: 0000000000000000 RSI: 0000000000000001 RDI: 
-ffff880344cadb00
-[5203941.568009] RBP: ffff88040f003a90 R08: 0000000000000402 R09: 
-0000000000000002
-[5203941.568009] R10: 000000000000000f R11: 0000000023020a0a R12: 
-ffff880403783210
-[5203941.568009] R13: 0000000000000000 R14: 0000000000000000 R15: 
-00000000ffffffff
-[5203941.568009] FS:  00007f49bf0b57c0(0000) GS:ffff88040f000000(0000) 
-knlGS:0000000000000000
-[5203941.568009] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[5203941.568009] CR2: 0000000003783103 CR3: 000000028032d000 CR4: 
-00000000000406f0
-[5203941.568009] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[5203941.568009] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
-0000000000000400
-[5203941.568009] Process dmsetup (pid: 4251, threadinfo ffff8802d6958000, 
-task ffff8803bfa01740)
-[5203941.568009] Stack:
-[5203941.568009]  0000000000000020 ffff880403f9ce40 000000000f003a90 
-281c1e1300000000
-[5203941.568009]  0000000000000000 000000024d8a5137 ffff880344cadc10 
-00000000ffffffff
-[5203941.568009]  ffff88040f003a80 ffffffff81658526 0000000000000000 
-ffff88040f003aa0
-[5203941.568009] Call Trace:
-[5203941.568009]  <IRQ>
-[5203941.568009] [5203941.568009]  [<ffffffff81658526>] ? 
-__fib_lookup+0x46/0x70
-[5203941.568009]  [<ffffffff8162aa12>] tcp_ack+0x3a2/0x600
-[5203941.568009]  [<ffffffff8162b05c>] tcp_rcv_established+0xec/0x770
-[5203941.568009]  [<ffffffff81635314>] tcp_v4_do_rcv+0x134/0x220
-[5203941.568009]  [<ffffffff81636f09>] tcp_v4_rcv+0x569/0x840
-[5203941.568009]  [<ffffffff81610b36>] ip_local_deliver_finish+0xe6/0x280
-[5203941.568009]  [<ffffffff81610e5a>] ip_local_deliver+0x4a/0x90
-[5203941.568009]  [<ffffffff81610809>] ip_rcv_finish+0x119/0x360
-[5203941.568009]  [<ffffffff816110bd>] ip_rcv+0x21d/0x300
-[5203941.568009]  [<ffffffff815dddca>] __netif_receive_skb+0x5fa/0x760
-[5203941.568009]  [<ffffffff8163729e>] ? tcp4_gro_receive+0x9e/0x110
-[5203941.568009]  [<ffffffff815ddf53>] netif_receive_skb+0x23/0x90
-[5203941.568009]  [<ffffffff815de698>] napi_gro_receive+0xe8/0x140
-[5203941.568009]  [<ffffffffa0779967>] ixgbevf_poll+0x5b7/0x980 [ixgbevf]
-[5203941.568009]  [<ffffffff815df544>] net_rx_action+0x134/0x260
-[5203941.568009]  [<ffffffff8107f8c1>] ? __wake_up_bit+0x31/0x40
-[5203941.568009]  [<ffffffff810623f0>] __do_softirq+0xc0/0x240
-[5203941.568009]  [<ffffffff816ed43e>] ? _raw_spin_lock+0xe/0x20
-[5203941.568009]  [<ffffffff816f771c>] call_softirq+0x1c/0x30
-[5203941.568009]  [<ffffffff81016775>] do_softirq+0x65/0xa0
-[5203941.568009]  [<ffffffff810626ce>] irq_exit+0x8e/0xb0
-[5203941.568009]  [<ffffffff816f7fb3>] do_IRQ+0x63/0xe0
-[5203941.568009]  [<ffffffff816eda2d>] common_interrupt+0x6d/0x6d
-[5203941.568009]  <EOI>
-[5203941.568009] [5203941.568009]  [<ffffffff8107f8c1>] ? 
-__wake_up_bit+0x31/0x40
-[5203941.568009]  [<ffffffff811350f7>] unlock_page+0x27/0x30
-[5203941.568009]  [<ffffffff8115bbf9>] __do_fault+0x419/0x520
-[5203941.568009]  [<ffffffff81142a34>] ? lru_cache_add_lru+0x24/0x50
-[5203941.568009]  [<ffffffff8115f896>] handle_pte_fault+0x96/0x230
-[5203941.568009]  [<ffffffff811374d1>] ? generic_file_aio_read+0xe1/0x220
-[5203941.568009]  [<ffffffff81160e60>] handle_mm_fault+0x2a0/0x3e0
-[5203941.568009]  [<ffffffff816f158f>] __do_page_fault+0x1af/0x560
-[5203941.568009]  [<ffffffff816f194e>] do_page_fault+0xe/0x10
-[5203941.568009]  [<ffffffff816f1025>] do_async_page_fault+0x35/0x90
-[5203941.568009]  [<ffffffff816edd48>] async_page_fault+0x28/0x30
-[5203941.568009] Code: 83 c0 04 00 00 41 3b 44 24 44 41 0f b6 54 24 4d 0f 88 
-a2 03 00 00 41 8b 84 24 d8 00 00 00 49 8b 8c 24 e0 00
-00 00 be 01 00 00 00 <0f> b7 44 01 04 0f b6 d2 f6 c2 82 0f 84 44 03 00 00 f6 
-c2 02 74
-[5203941.568009] RIP  [<ffffffff8162a043>] tcp_clean_rtx_queue+0xb3/0x6e0
-[5203941.568009]  RSP <ffff88040f003a00>
-[5203941.568009] CR2: 0000000003783103
-[5203941.653756] ---[ end trace 363b7b17527d87fe ]---
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 6369f9e..7060edf 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -952,6 +952,11 @@ static int igb_request_msix(struct igb_adapter *adapter)
+ 	if (err)
+ 		goto err_out;
+ 
++	if (E1000_REMOVED(hw->hw_addr)) {
++		err = -EIO;
++		goto err_free;
++	}
++
+ 	for (i = 0; i < adapter->num_q_vectors; i++) {
+ 		struct igb_q_vector *q_vector = adapter->q_vector[i];
+ 
+@@ -1199,6 +1204,9 @@ static int igb_alloc_q_vector(struct igb_adapter *adapter,
+ 	if (txr_count > 1 || rxr_count > 1)
+ 		return -ENOMEM;
+ 
++	if (E1000_REMOVED(adapter->hw.hw_addr))
++		return -EIO;
++
+ 	ring_count = txr_count + rxr_count;
+ 	size = sizeof(struct igb_q_vector) +
+ 	       (sizeof(struct igb_ring) * ring_count);
+@@ -3248,6 +3256,9 @@ void igb_configure_tx_ring(struct igb_adapter *adapter,
+ 	u64 tdba = ring->dma;
+ 	int reg_idx = ring->reg_idx;
+ 
++	if (E1000_REMOVED(adapter->io_addr))
++		return;
++
+ 	/* disable the queue */
+ 	wr32(E1000_TXDCTL(reg_idx), 0);
+ 	wrfl();
+@@ -3259,7 +3270,7 @@ void igb_configure_tx_ring(struct igb_adapter *adapter,
+ 	     tdba & 0x00000000ffffffffULL);
+ 	wr32(E1000_TDBAH(reg_idx), tdba >> 32);
+ 
+-	ring->tail = hw->hw_addr + E1000_TDT(reg_idx);
++	ring->tail = adapter->io_addr + E1000_TDT(reg_idx);
+ 	wr32(E1000_TDH(reg_idx), 0);
+ 	writel(0, ring->tail);
+ 
+@@ -3615,7 +3626,7 @@ void igb_configure_rx_ring(struct igb_adapter *adapter,
+ 	     ring->count * sizeof(union e1000_adv_rx_desc));
+ 
+ 	/* initialize head and tail */
+-	ring->tail = hw->hw_addr + E1000_RDT(reg_idx);
++	ring->tail = adapter->io_addr + E1000_RDT(reg_idx);
+ 	wr32(E1000_RDH(reg_idx), 0);
+ 	writel(0, ring->tail);
+ 
+-- 
+1.8.3.1
 
