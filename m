@@ -1,40 +1,37 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Tue, 22 Sep 2015 13:57:02 -0700
-Subject: [Intel-wired-lan] [net PATCH V2] i40e: fix VLAN inside VXLAN
-Message-ID: <1442955422-192436-1-git-send-email-jesse.brandeburg@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 22 Sep 2015 21:17:35 +0000
+Subject: [Intel-wired-lan] [next PATCH S15 12/15] i40e: X722 is on the
+ IOSF	bus and does not report the PCI bus info
+In-Reply-To: <1441315142-173025-13-git-send-email-catherine.sullivan@intel.com>
+References: <1441315142-173025-1-git-send-email-catherine.sullivan@intel.com>
+ <1441315142-173025-13-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B16FE@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Previously to this patch, the hardware was removing
-VLAN tags from the inner header of VXLAN packets.  The
-hardware configuration can be changed to leave the
-packet alone since that is what the linux stack
-expects for this type of VLAN in VXLAN packet.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Catherine Sullivan
+> Sent: Thursday, September 03, 2015 2:19 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S15 12/15] i40e: X722 is on the IOSF
+> bus and does not report the PCI bus info
+> 
+> From: Anjali Singhai Jain <anjali.singhai@intel.com>
+> 
+> X722 will report Gen 1x1 in the PCI config space as it is on IOSF bus, so skip
+> the PCI bus link/speed check.
+> 
+> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+> Change-ID: Icd5f5751dc7fb00dccf0d5dc5a0a644948e7062e
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e.h      |  1 +
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 69
+> ++++++++++++++++++++---------
+>  2 files changed, 50 insertions(+), 20 deletions(-)
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
----
-v2 - capitalized acronyms in commit message
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 9295768..3410fb3 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -2613,7 +2613,8 @@ static int i40e_configure_rx_ring(struct i40e_ring *ring)
- 		rx_ctx.lrxqthresh = 2;
- 	rx_ctx.crcstrip = 1;
- 	rx_ctx.l2tsel = 1;
--	rx_ctx.showiv = 1;
-+	/* this controls whether VLAN is stripped from inner headers */
-+	rx_ctx.showiv = 0;
- #ifdef I40E_FCOE
- 	rx_ctx.fc_ena = (vsi->type == I40E_VSI_FCOE);
- #endif
--- 
-2.4.3
-
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Code changes present in tree
