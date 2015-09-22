@@ -1,36 +1,39 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 22 Sep 2015 21:30:08 +0000
-Subject: [Intel-wired-lan] [next-queue v2 6/8] i40e: declare rather
-	than	initialize int object
-In-Reply-To: <1442660927-30431-6-git-send-email-sakiwit@gmail.com>
-References: <1442660927-30431-1-git-send-email-sakiwit@gmail.com>
- <1442660927-30431-6-git-send-email-sakiwit@gmail.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B1753@ORSMSX104.amr.corp.intel.com>
+From: Alexander Duyck <aduyck@mirantis.com>
+Date: Tue, 22 Sep 2015 14:35:35 -0700
+Subject: [Intel-wired-lan] [net PATCH 2/3] fm10k: Fix handling of napi
+ budget when multiple queues are enabled per vector
+In-Reply-To: <20150922213002.2774.37924.stgit@ahduyck-vm-fedora22>
+References: <20150922213002.2774.37924.stgit@ahduyck-vm-fedora22>
+Message-ID: <20150922213535.2774.9863.stgit@ahduyck-vm-fedora22>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Jean Sacren
-> Sent: Saturday, September 19, 2015 4:09 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next-queue v2 6/8] i40e: declare rather than
-> initialize int object
-> 
-> From: Jean Sacren <sakiwit@gmail.com>
-> 
-> 'err' would be overwritten immediately, so we should declare it only rather
-> than initialize it to zero.
-> 
-> Signed-off-by: Jean Sacren <sakiwit@gmail.com>
-> ---
-> v2: No changes.
-> 
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+This patch corrects an issue in which the polling routine would increase
+the budget for Rx to at least 1 per queue if multiple queues were present.
+This would result in Rx packets being processed when the budget was 0 which
+is meant to indicate that no Rx can be handled.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Code changes present in tree
+Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+---
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c |    4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+index 92d415584749..b5bcb8255260 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+@@ -1413,6 +1413,10 @@ static int fm10k_poll(struct napi_struct *napi, int budget)
+ 	fm10k_for_each_ring(ring, q_vector->tx)
+ 		clean_complete &= fm10k_clean_tx_irq(q_vector, ring);
+ 
++	/* Handle case where we are called by netpoll with a budget of 0 */
++	if (budget <= 0)
++		return budget;
++
+ 	/* attempt to distribute budget to each queue fairly, but don't
+ 	 * allow the budget to go below 1 because we'll exit polling
+ 	 */
+
