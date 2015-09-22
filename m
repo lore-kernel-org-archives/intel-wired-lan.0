@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 22 Sep 2015 21:24:47 +0000
-Subject: [Intel-wired-lan] [next PATCH S15 15/15] i40e/i40evf: Bump
-	i40e	version to 1.3.28 and i40evf to 1.3.19
-In-Reply-To: <1441315142-173025-16-git-send-email-catherine.sullivan@intel.com>
-References: <1441315142-173025-1-git-send-email-catherine.sullivan@intel.com>
- <1441315142-173025-16-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B1730@ORSMSX104.amr.corp.intel.com>
+Date: Tue, 22 Sep 2015 21:27:58 +0000
+Subject: [Intel-wired-lan] [next-queue 4/8] i40e: fix kernel-doc
+ argument	name
+In-Reply-To: <1442212070-24937-5-git-send-email-sakiwit@gmail.com>
+References: <1442212070-24937-1-git-send-email-sakiwit@gmail.com>
+ <1442212070-24937-5-git-send-email-sakiwit@gmail.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B1743@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,20 +14,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Catherine Sullivan
-> Sent: Thursday, September 03, 2015 2:19 PM
+> Behalf Of Jean Sacren
+> Sent: Sunday, September 13, 2015 11:28 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S15 15/15] i40e/i40evf: Bump i40e
-> version to 1.3.28 and i40evf to 1.3.19
+> Subject: [Intel-wired-lan] [next-queue 4/8] i40e: fix kernel-doc argument
+> name
 > 
-> Bump.
+> From: Jean Sacren <sakiwit@gmail.com>
 > 
-> Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-> Change-ID: I8d9a99f320af43960deba8718eee2d6de50eaf46
+> The second argument name in the kernel-doc argument list for
+> i40e_features_check() was slightly off. Fix it for the kernel doc.
+> 
+> Signed-off-by: Jean Sacren <sakiwit@gmail.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Code changes present in tree, modinfo reports 1.3.28 for i40e and 1.3.19 for i40evf
+Code changes present in tree
