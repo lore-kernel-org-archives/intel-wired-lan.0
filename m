@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 22 Sep 2015 21:27:58 +0000
-Subject: [Intel-wired-lan] [next-queue 4/8] i40e: fix kernel-doc
- argument	name
-In-Reply-To: <1442212070-24937-5-git-send-email-sakiwit@gmail.com>
-References: <1442212070-24937-1-git-send-email-sakiwit@gmail.com>
- <1442212070-24937-5-git-send-email-sakiwit@gmail.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B1743@ORSMSX104.amr.corp.intel.com>
+Date: Tue, 22 Sep 2015 21:30:08 +0000
+Subject: [Intel-wired-lan] [next-queue v2 6/8] i40e: declare rather
+	than	initialize int object
+In-Reply-To: <1442660927-30431-6-git-send-email-sakiwit@gmail.com>
+References: <1442660927-30431-1-git-send-email-sakiwit@gmail.com>
+ <1442660927-30431-6-git-send-email-sakiwit@gmail.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B1753@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,18 +15,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
 > Behalf Of Jean Sacren
-> Sent: Sunday, September 13, 2015 11:28 PM
+> Sent: Saturday, September 19, 2015 4:09 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next-queue 4/8] i40e: fix kernel-doc argument
-> name
+> Subject: [Intel-wired-lan] [next-queue v2 6/8] i40e: declare rather than
+> initialize int object
 > 
 > From: Jean Sacren <sakiwit@gmail.com>
 > 
-> The second argument name in the kernel-doc argument list for
-> i40e_features_check() was slightly off. Fix it for the kernel doc.
+> 'err' would be overwritten immediately, so we should declare it only rather
+> than initialize it to zero.
 > 
 > Signed-off-by: Jean Sacren <sakiwit@gmail.com>
 > ---
+> v2: No changes.
+> 
 >  drivers/net/ethernet/intel/i40e/i40e_main.c | 2 +-
 >  1 file changed, 1 insertion(+), 1 deletion(-)
 
