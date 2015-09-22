@@ -1,26 +1,36 @@
-From: Josh Hunt <johunt@akamai.com>
-Date: Tue, 22 Sep 2015 11:01:04 -0500
-Subject: [Intel-wired-lan] e1000e tx queue timeout with small mss values
-Message-ID: <56017B40.90308@akamai.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Tue, 22 Sep 2015 11:34:32 -0700
+Subject: [Intel-wired-lan] [net PATCH V1] i40e: fix vlan inside vxlan
+Message-ID: <20150922183432.179418.34423.stgit@jbrandeb-cp2.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-We are seeing transmit queue timeouts with the 82574L even with the 
-following patch applied, e1000e: DoS while TSO enabled caused by link 
-partner with small MSS, commit d821a4c4d11ad160925dab2bb009b8444beff484 
-upstream. We're running upstream 3.14.43. We've noticed an increase in 
-the frequency of hitting the timeouts when we have tcp mtu probing 
-enabled. This is allowing some connections to get MSS values of 36.
+Previously to this patch, the hardware was removing
+vlan tags from the inner header of vxlan packets.  The
+hardware configuration can be changed to leave the
+packet alone since that is what the linux stack
+expects for this type of vlan in vxlan packet.
 
-There was some discussion during the original reporting of this issue on 
-trying to reproduce it in a lab setting, possibly setting the advmss via 
-ip route. I've tried this in our lab, but am unable to trigger the 
-problem. I was wondering if anyone there knows how to possibly trigger 
-this issue in a lab setting?
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Thanks for any help you can provide.
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 9295768..3410fb3 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -2613,7 +2613,8 @@ static int i40e_configure_rx_ring(struct i40e_ring *ring)
+ 		rx_ctx.lrxqthresh = 2;
+ 	rx_ctx.crcstrip = 1;
+ 	rx_ctx.l2tsel = 1;
+-	rx_ctx.showiv = 1;
++	/* this controls whether VLAN is stripped from inner headers */
++	rx_ctx.showiv = 0;
+ #ifdef I40E_FCOE
+ 	rx_ctx.fc_ena = (vsi->type == I40E_VSI_FCOE);
+ #endif
 
-Josh
