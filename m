@@ -1,38 +1,35 @@
 From: Alexander Duyck <aduyck@mirantis.com>
-Date: Tue, 22 Sep 2015 14:35:41 -0700
-Subject: [Intel-wired-lan] [net PATCH 3/3] ixgbe: Fix handling of napi
- budget when multiple queues are enabled per vector
-In-Reply-To: <20150922213002.2774.37924.stgit@ahduyck-vm-fedora22>
-References: <20150922213002.2774.37924.stgit@ahduyck-vm-fedora22>
-Message-ID: <20150922213541.2774.70538.stgit@ahduyck-vm-fedora22>
+Date: Tue, 22 Sep 2015 14:35:22 -0700
+Subject: [Intel-wired-lan] [net PATCH 0/3] netpoll fixes for Intel drivers
+Message-ID: <20150922213002.2774.37924.stgit@ahduyck-vm-fedora22>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch corrects an issue in which the polling routine would increase
-the budget for Rx to at least 1 per queue if multiple queues were present.
-This would result in Rx packets being processed when the budget was 0 which
-is meant to indicate that no Rx can be handled.
+While reviewing some other patches related to netpoll I started looking at
+how the drivers were handling their budgets.  It turns out that the ixgbe,
+fm10k, and i40e drivers contained cases where they would increase the
+budget from 0 and as a result it was possible for them to clean Rx frames
+inside of netpoll context.
 
-Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+This patch set corrects that by adding a check before the Rx portion of the
+polling routines for a budget less than or equal to 0.  If the value is in
+that range we simply exit and leave ourselves on the polling list rather
+than attempt to clean any Rx frames.
+
 ---
+
+Alexander Duyck (3):
+      i40e: Fix handling of napi budget
+      fm10k: Fix handling of napi budget when multiple queues are enabled per vector
+      ixgbe: Fix handling of napi budget when multiple queues are enabled per vector
+
+
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c |    4 ++++
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   |    5 +++++
  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ 3 files changed, 11 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index acb1b91408ec..506b0944253c 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -2772,7 +2772,8 @@ int ixgbe_poll(struct napi_struct *napi, int budget)
- 	ixgbe_for_each_ring(ring, q_vector->tx)
- 		clean_complete &= !!ixgbe_clean_tx_irq(q_vector, ring);
- 
--	if (!ixgbe_qv_lock_napi(q_vector))
-+	/* Exit if we are called by netpoll or busy polling is active */
-+	if ((budget <= 0) || !ixgbe_qv_lock_napi(q_vector))
- 		return budget;
- 
- 	/* attempt to distribute budget to each queue fairly, but don't allow
-
+--
