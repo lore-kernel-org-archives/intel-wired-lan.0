@@ -1,34 +1,26 @@
-From: Mark Rustad <mrustad@gmail.com>
-Date: Mon, 21 Sep 2015 22:03:42 -0700
-Subject: [Intel-wired-lan] [PATCH] igb: add more checks for disconnected
- adapter
-In-Reply-To: <5600D5A2.70403@redhat.com>
-References: <1442855488-27453-1-git-send-email-jarod@redhat.com>
- <56007D34.1070306@gmail.com> <5600D5A2.70403@redhat.com>
-Message-ID: <5600E12E.4040005@gmail.com>
+From: Josh Hunt <johunt@akamai.com>
+Date: Tue, 22 Sep 2015 11:01:04 -0500
+Subject: [Intel-wired-lan] e1000e tx queue timeout with small mss values
+Message-ID: <56017B40.90308@akamai.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 9/21/15 9:14 PM, Jarod Wilson wrote:
-> Just switching to adapter->io_addr everywhere seems to not work as 
-> noted above. :\ Note that I'm also chasing this from the other end 
-> with the author of the pci patches that seem to have triggered this, 
-> so the real bug might be over in pci-land, but hardening against 
-> explosions in igb still seems like a worthwhile effort here.
+We are seeing transmit queue timeouts with the 82574L even with the 
+following patch applied, e1000e: DoS while TSO enabled caused by link 
+partner with small MSS, commit d821a4c4d11ad160925dab2bb009b8444beff484 
+upstream. We're running upstream 3.14.43. We've noticed an increase in 
+the frequency of hitting the timeouts when we have tcp mtu probing 
+enabled. This is allowing some connections to get MSS values of 36.
 
-My understanding is that there can be problems if too many writes to a
-removed device happen. That is why ixgbe avoids doing that by testing
-for removal in some places. The io_addr does get used in the transmit
-path simply to avoid adding a test to that hot path. That approach
-seems to be working well for ixgbe.
+There was some discussion during the original reporting of this issue on 
+trying to reproduce it in a lab setting, possibly setting the advmss via 
+ip route. I've tried this in our lab, but am unable to trigger the 
+problem. I was wondering if anyone there knows how to possibly trigger 
+this issue in a lab setting?
 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 867 bytes
-Desc: OpenPGP digital signature
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150921/cb90f123/attachment.asc>
+Thanks for any help you can provide.
+
+Josh
