@@ -1,135 +1,43 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 23 Sep 2015 10:03:01 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
- 25b1029789f98f945a03a2d04662a94b357aacb9 BUILD SUCCESS
-Message-ID: <56020855.8ovtdZWFiV71UAOo%fengguang.wu@intel.com>
+From: Fujinaka, Todd <todd.fujinaka@intel.com>
+Date: Wed, 23 Sep 2015 16:05:55 +0000
+Subject: [Intel-wired-lan] [PATCH] Re: igb: use the correct i210
+	register for EEMNGCTL
+In-Reply-To: <56027EC3.9050608@siemens.com>
+References: <20150918224351.5228.90499.stgit@htfujina-fc.jf.intel.com>
+ <56027EC3.9050608@siemens.com>
+Message-ID: <9B4A1B1917080E46B64F07F2989DADD6536040D9@ORSMSX114.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
-25b1029789f98f945a03a2d04662a94b357aacb9  ixgbe: Enable bit-banging mode on X550
+I put it into a separate function so it would have minimal effect on older parts. It's hard to regression test everything as most of our testers are on to the new products.
 
-elapsed time: 127m
+I matched on PHY because it made sense to the function in general. I'll look at it more closely later tonight to make sure I got it right.
 
-configs tested: 114
+Todd Fujinaka
+Software Application Engineer
+Networking Division (ND)
+Intel Corporation
+todd.fujinaka at intel.com
+(503) 712-4565
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201538
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-mips                         tb0219_defconfig
-openrisc                            defconfig
-powerpc64                           defconfig
-i386                   randconfig-c0-09230948
-parisc                         b180_defconfig
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-x86_64               randconfig-x014-09211934
-x86_64               randconfig-x011-09211934
-x86_64               randconfig-x012-09211934
-x86_64               randconfig-x010-09211934
-x86_64               randconfig-x015-09211934
-x86_64               randconfig-x016-09211934
-x86_64               randconfig-x018-09211934
-x86_64               randconfig-x017-09211934
-x86_64               randconfig-x019-09211934
-x86_64               randconfig-x013-09211934
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                     randconfig-s1-201538
-i386                     randconfig-s0-201538
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-x86_64                            allnoconfig
-i386                             allmodconfig
-mips                                   jz4740
-mips                              allnoconfig
-mips                                     txx9
-powerpc                           allnoconfig
-x86_64                   randconfig-i0-201538
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i1-201538
-i386                     randconfig-i0-201538
-x86_64                           allmodconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201538
-arm                                      arm5
-arm                                     arm67
-arm                                       mmp
-arm                       omap2plus_defconfig
-arm                         s3c2410_defconfig
-arm                           tegra_defconfig
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-x86_64               randconfig-x001-09220935
-x86_64               randconfig-x004-09220935
-x86_64               randconfig-x006-09220935
-x86_64               randconfig-x007-09220935
-x86_64               randconfig-x000-09220935
-x86_64               randconfig-x009-09220935
-x86_64               randconfig-x002-09220935
-x86_64               randconfig-x003-09220935
-x86_64               randconfig-x005-09220935
-x86_64               randconfig-x008-09220935
-i386                     randconfig-r0-201538
-i386                 randconfig-x007-09220931
-i386                 randconfig-x001-09220931
-i386                 randconfig-x002-09220931
-i386                 randconfig-x005-09220931
-i386                 randconfig-x008-09220931
-i386                 randconfig-x003-09220931
-i386                 randconfig-x006-09220931
-i386                 randconfig-x000-09220931
-i386                 randconfig-x004-09220931
-i386                 randconfig-x009-09220931
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
+-----Original Message-----
+From: Hodek, Roman [mailto:roman.aud at siemens.com] 
+Sent: Wednesday, September 23, 2015 3:28 AM
+To: Fujinaka, Todd; intel-wired-lan at lists.osuosl.org
+Subject: [PATCH] Re: igb: use the correct i210 register for EEMNGCTL
 
-Thanks,
-Fengguang
+Hi Todd!
+
+> +s32 igb_get_cfg_done_i210(struct e1000_hw *hw)
+
+That's of course also a possibility.
+
+And so, the new register is coupled to PHY ID not MAC type?
+
+Thanks!
+
+Roman
+
