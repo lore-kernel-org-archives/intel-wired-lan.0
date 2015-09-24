@@ -1,15 +1,15 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Thu, 24 Sep 2015 15:43:03 -0400
-Subject: [Intel-wired-lan] [next PATCH 2/2] i40e/i40evf: refactor tx timeout
-	logic
-In-Reply-To: <1443123783-86802-1-git-send-email-catherine.sullivan@intel.com>
-References: <1443123783-86802-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1443123783-86802-2-git-send-email-catherine.sullivan@intel.com>
+Date: Thu, 24 Sep 2015 15:46:23 -0400
+Subject: [Intel-wired-lan] [next PATCH 2/2 v2] i40e/i40evf: refactor tx
+	timeout logic
+Message-ID: <1443123983-86865-1-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
+
+From: Kiran Patil <kiran.patil@intel.com>
 
 This patch modifies the driver timeout logic by issuing a writeback
 request via a software interrupt to the hardware the first time the
@@ -23,6 +23,8 @@ Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 Change-ID: Ife100b9d124cd08cbdb81ab659008c1b9abbedea
 
 ---
+v2: Fix author to Kiran.
+
 HSD-number: 5644407,5644501,5644189,5644320,5644525,5644616,5645042
  drivers/net/ethernet/intel/i40e/i40e.h        |   1 -
  drivers/net/ethernet/intel/i40e/i40e_main.c   | 274 +++++++++++++++-----------
