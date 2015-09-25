@@ -1,34 +1,30 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 25 Sep 2015 22:37:10 +0000
-Subject: [Intel-wired-lan] [next PATCH 1/2] i40e: Move i40e_get_head
- into	header file
-In-Reply-To: <1443123783-86802-1-git-send-email-catherine.sullivan@intel.com>
-References: <1443123783-86802-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B1ADC@ORSMSX104.amr.corp.intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Fri, 25 Sep 2015 15:45:52 -0700
+Subject: [Intel-wired-lan] [net PATCH v1] i40e: fix recursive rtnl lock
+In-Reply-To: <1443122442-21345-1-git-send-email-jesse.brandeburg@intel.com>
+References: <1443122442-21345-1-git-send-email-jesse.brandeburg@intel.com>
+Message-ID: <20150925154552.00003ec5@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Catherine Sullivan
-> Sent: Thursday, September 24, 2015 12:43 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH 1/2] i40e: Move i40e_get_head into
-> header file
-> 
-> From: Kiran Patil <kiran.patil@intel.com>
-> 
-> i40e_get_head needs to be called in multiple files in a further patch, prepare
-> by moving the function into a header file.
-> 
-> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c | 13 -------------
-> drivers/net/ethernet/intel/i40e/i40e_txrx.h | 14 ++++++++++++++
->  2 files changed, 14 insertions(+), 13 deletions(-)
+On Thu, 24 Sep 2015 12:20:42 -0700
+Jesse Brandeburg <jesse.brandeburg@intel.com> wrote:
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Code changes present in tree
+> From: Anjali Singhai Jain <anjali.singhai@intel.com>
+> 
+> The sync_vsi_filters function can be called directly under RTNL
+> or through the timer subtask without one.  This was causing
+> a deadlock.
+
+This patch was briefly tested, and does actually fix the bug it was
+meant to fix, but this patch may cause bugs, one we thought of today was
+if another thread grabs the RTNL, this patch will act as if it has it.
+
+Another possible bug is that if another thread had the RTNL, it may
+release it while this patch's thread is not completed all the way.
+
+We are working on a further patch/refinement.
+
