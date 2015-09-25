@@ -1,30 +1,38 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Fri, 25 Sep 2015 15:45:52 -0700
-Subject: [Intel-wired-lan] [net PATCH v1] i40e: fix recursive rtnl lock
-In-Reply-To: <1443122442-21345-1-git-send-email-jesse.brandeburg@intel.com>
-References: <1443122442-21345-1-git-send-email-jesse.brandeburg@intel.com>
-Message-ID: <20150925154552.00003ec5@intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Fri, 25 Sep 2015 16:16:33 -0700
+Subject: [Intel-wired-lan] [PATCH 2/2] i40e: Disable Check for Hang
+In-Reply-To: <1443207609-171288-2-git-send-email-anjali.singhai@intel.com>
+References: <1443207609-171288-1-git-send-email-anjali.singhai@intel.com>
+ <1443207609-171288-2-git-send-email-anjali.singhai@intel.com>
+Message-ID: <1443222993.2987.45.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 24 Sep 2015 12:20:42 -0700
-Jesse Brandeburg <jesse.brandeburg@intel.com> wrote:
-
-> From: Anjali Singhai Jain <anjali.singhai@intel.com>
+On Fri, 2015-09-25 at 12:00 -0700, Anjali Singhai Jain wrote:
+> The driver doesn't need its own check for hang logic as there are no
+> known issues that cause HW Tx Hangs. This logic was actually
+> (mis)firing frequently, causing us to reset when we didn't need to.
+> If a true tx hang happens, just wait for the stack logic to catch the
+> issue and send us a tx_timeout.
 > 
-> The sync_vsi_filters function can be called directly under RTNL
-> or through the timer subtask without one.  This was causing
-> a deadlock.
+> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 99 +------------------
+> ----------
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c | 70 -------------------
+> -
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.h |  8 ---
+>  3 files changed, 1 insertion(+), 176 deletions(-)
 
-This patch was briefly tested, and does actually fix the bug it was
-meant to fix, but this patch may cause bugs, one we thought of today was
-if another thread grabs the RTNL, this patch will act as if it has it.
-
-Another possible bug is that if another thread had the RTNL, it may
-release it while this patch's thread is not completed all the way.
-
-We are working on a further patch/refinement.
-
+Does not apply at all to my next-queue tree, dev-queue branch. 
+ Dropping this patch.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150925/82234a5d/attachment.asc>
