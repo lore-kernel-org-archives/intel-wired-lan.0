@@ -1,230 +1,113 @@
-From: Anjali Singhai Jain <anjali.singhai@intel.com>
-Date: Fri, 25 Sep 2015 18:26:13 -0700
-Subject: [Intel-wired-lan] [PATCH] i40e: Fix RS bit update in Tx path and
-	disable force WB workaround
-Message-ID: <1443230773-174806-1-git-send-email-anjali.singhai@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 26 Sep 2015 11:11:07 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 851348a35fa19d622e56a6b4e087fdcff4d44f90 BUILD DONE
+Message-ID: <56060ccb.rjZXH2nNTTv/rHmk%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch fixes the issue of forcing WB too often causing us to not
-benefit from NAPI.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+851348a35fa19d622e56a6b4e087fdcff4d44f90  i40e: Fix RS bit update in Tx path and disable force WB workaround
 
-Without this patch we were forcing WB/arming interrupt too often taking
-away the benefits of NAPI and causing a performance impact.
+drivers/net/ethernet/intel/e1000e/netdev.c:6785:3: error: implicit declaration of function 'e1000e_disable_aspm_locked'
+drivers/net/ethernet/intel/e1000e/netdev.c:6785:3: error: implicit declaration of function 'e1000e_disable_aspm_locked' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/intel/i40e/i40e_txrx.c:2293:17: warning: 'oudph' may be used uninitialized in this function [-Wmaybe-uninitialized]
+drivers/net/ethernet/intel/i40e/i40e_txrx.c:2293:17: warning: 'oudph' may be used uninitialized in this function [-Wuninitialized]
+drivers/net/ethernet/intel/i40e/i40e_txrx.c:2293:20: warning: 'oiph' may be used uninitialized in this function [-Wmaybe-uninitialized]
+drivers/net/ethernet/intel/i40e/i40e_txrx.c:2293:37: warning: 'oiph' may be used uninitialized in this function [-Wuninitialized]
 
-With this patch we disable force WB in the clean routine for X710
-and XL710 adapters. X722 adapters do not enable interrupt to force
-a WB and benefit from WB_ON_ITR and hence force WB is left enabled
-for those adapters.
-For XL710 and X710 adapters if we have less than 4 packets pending
-a software Interrupt triggered from service task will force a WB.
+Error ids grouped by kconfigs:
 
-This patch also changes the conditions for setting RS bit as described
-in code comments. This optimizes when the HW does a tail bump amd when
-it does a WB. It also optimizes when we do a wmb.
+recent_errors
+??? alpha-allyesconfig
+??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
+??? parisc-allyesconfig
+??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
+??? tile-allyesconfig
+??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
+??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:oiph-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:oudph-may-be-used-uninitialized-in-this-function
+??? x86_64-rhel
+    ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:oiph-may-be-used-uninitialized-in-this-function
+    ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:oudph-may-be-used-uninitialized-in-this-function
 
-Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_txrx.c | 126 ++++++++++++++++++----------
- drivers/net/ethernet/intel/i40e/i40e_txrx.h |   2 +
- 2 files changed, 86 insertions(+), 42 deletions(-)
+elapsed time: 60m
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index bd17d89..8d83af0 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -727,15 +727,21 @@ static bool i40e_clean_tx_irq(struct i40e_ring *tx_ring, int budget)
- 	tx_ring->q_vector->tx.total_bytes += total_bytes;
- 	tx_ring->q_vector->tx.total_packets += total_packets;
- 
--	/* check to see if there are any non-cache aligned descriptors
--	 * waiting to be written back, and kick the hardware to force
--	 * them to be written back in case of napi polling
--	 */
--	if (budget &&
--	    !((i & WB_STRIDE) == WB_STRIDE) &&
--	    !test_bit(__I40E_DOWN, &tx_ring->vsi->state) &&
--	    (I40E_DESC_UNUSED(tx_ring) != tx_ring->count))
--		tx_ring->arm_wb = true;
-+	if (tx_ring->flags & I40E_TXR_FLAGS_WB_ON_ITR) {
-+		unsigned int j = 0;
-+		/* check to see if there are < 4 descriptors
-+		 * waiting to be written back, then kick the hardware to force
-+		 * them to be written back in case we stay in NAPI.
-+		 * In this mode on X722 we do not enable Interrupt.
-+		 */
-+		j = i40e_get_tx_pending(tx_ring);
-+
-+		if (budget &&
-+		    ((j / (WB_STRIDE + 1)) == 0) && (j != 0) &&
-+		    !test_bit(__I40E_DOWN, &tx_ring->vsi->state) &&
-+		    (I40E_DESC_UNUSED(tx_ring) != tx_ring->count))
-+			tx_ring->arm_wb = true;
-+	}
- 
- 	netdev_tx_completed_queue(netdev_get_tx_queue(tx_ring->netdev,
- 						      tx_ring->queue_index),
-@@ -2505,6 +2511,9 @@ static inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 	u32 td_tag = 0;
- 	dma_addr_t dma;
- 	u16 gso_segs;
-+	u16 desc_count = 0;
-+	bool tail_bump = true;
-+	bool do_rs = false;
- 
- 	if (tx_flags & I40E_TX_FLAGS_HW_VLAN) {
- 		td_cmd |= I40E_TX_DESC_CMD_IL2TAG1;
-@@ -2545,6 +2554,8 @@ static inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 
- 			tx_desc++;
- 			i++;
-+			desc_count++;
-+
- 			if (i == tx_ring->count) {
- 				tx_desc = I40E_TX_DESC(tx_ring, 0);
- 				i = 0;
-@@ -2564,6 +2575,8 @@ static inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 
- 		tx_desc++;
- 		i++;
-+		desc_count++;
-+
- 		if (i == tx_ring->count) {
- 			tx_desc = I40E_TX_DESC(tx_ring, 0);
- 			i = 0;
-@@ -2578,34 +2591,6 @@ static inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 		tx_bi = &tx_ring->tx_bi[i];
- 	}
- 
--	/* Place RS bit on last descriptor of any packet that spans across the
--	 * 4th descriptor (WB_STRIDE aka 0x3) in a 64B cacheline.
--	 */
--	if (((i & WB_STRIDE) != WB_STRIDE) &&
--	    (first <= &tx_ring->tx_bi[i]) &&
--	    (first >= &tx_ring->tx_bi[i & ~WB_STRIDE])) {
--		tx_desc->cmd_type_offset_bsz =
--			build_ctob(td_cmd, td_offset, size, td_tag) |
--			cpu_to_le64((u64)I40E_TX_DESC_CMD_EOP <<
--					 I40E_TXD_QW1_CMD_SHIFT);
--	} else {
--		tx_desc->cmd_type_offset_bsz =
--			build_ctob(td_cmd, td_offset, size, td_tag) |
--			cpu_to_le64((u64)I40E_TXD_CMD <<
--					 I40E_TXD_QW1_CMD_SHIFT);
--	}
--
--	netdev_tx_sent_queue(netdev_get_tx_queue(tx_ring->netdev,
--						 tx_ring->queue_index),
--			     first->bytecount);
--
--	/* Force memory writes to complete before letting h/w
--	 * know there are new descriptors to fetch.  (Only
--	 * applicable for weak-ordered memory model archs,
--	 * such as IA-64).
--	 */
--	wmb();
--
- 	/* set next_to_watch value indicating a packet is present */
- 	first->next_to_watch = tx_desc;
- 
-@@ -2615,15 +2600,72 @@ static inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 
- 	tx_ring->next_to_use = i;
- 
-+	netdev_tx_sent_queue(netdev_get_tx_queue(tx_ring->netdev,
-+						 tx_ring->queue_index),
-+						 first->bytecount);
- 	i40e_maybe_stop_tx(tx_ring, DESC_NEEDED);
-+
-+	/* Algorithm to optimize tail and RS bit setting:
-+	 * if xmit_more is supported
-+	 *	if xmit_more is true
-+	 *		do not update tail and do not mark RS bit.
-+	 *	if xmit_more is false and last xmit_more was false
-+	 *		if every packet spanned less than 4 desc
-+	 *			then set RS bit on 4th packet and update tail
-+	 *			on every packet
-+	 *		else
-+	 *			update tail and set RS bit on every packet.
-+	 *	if xmit_more is false and last_xmit_more was true
-+	 *		update tail and set RS bit.
-+	 *
-+	 * Optimization: wmb to be issued only in case of tail update.
-+	 * Also optimize the Descriptor WB path for RS bit with the same
-+	 * algorithm.
-+	 *
-+	 * Note: If there are less than 4 packets
-+	 * pending and interrupts were disabled the service task will
-+	 * trigger a force WB.
-+	 */
-+	if (skb->xmit_more  &&
-+	    !netif_xmit_stopped(netdev_get_tx_queue(tx_ring->netdev,
-+						    tx_ring->queue_index))) {
-+		tx_ring->flags |= I40E_TXR_FLAGS_LAST_XMIT_MORE_SET;
-+		tail_bump = false;
-+	} else if (!skb->xmit_more &&
-+		   !netif_xmit_stopped(netdev_get_tx_queue(tx_ring->netdev,
-+						       tx_ring->queue_index)) &&
-+		   (!(tx_ring->flags & I40E_TXR_FLAGS_LAST_XMIT_MORE_SET)) &&
-+		   (tx_ring->packet_stride < WB_STRIDE) &&
-+		   (desc_count < WB_STRIDE)) {
-+		tx_ring->packet_stride++;
-+	} else {
-+		tx_ring->packet_stride = 0;
-+		tx_ring->flags &= ~I40E_TXR_FLAGS_LAST_XMIT_MORE_SET;
-+		do_rs = true;
-+	}
-+	if (do_rs)
-+		tx_ring->packet_stride = 0;
-+
-+	tx_desc->cmd_type_offset_bsz =
-+			build_ctob(td_cmd, td_offset, size, td_tag) |
-+			cpu_to_le64((u64)(do_rs ? I40E_TXD_CMD :
-+						  I40E_TX_DESC_CMD_EOP) <<
-+						  I40E_TXD_QW1_CMD_SHIFT);
-+
- 	/* notify HW of packet */
--	if (!skb->xmit_more ||
--	    netif_xmit_stopped(netdev_get_tx_queue(tx_ring->netdev,
--						   tx_ring->queue_index)))
--		writel(i, tx_ring->tail);
--	else
-+	if (!tail_bump)
- 		prefetchw(tx_desc + 1);
- 
-+	if (tail_bump) {
-+		/* Force memory writes to complete before letting h/w
-+		 * know there are new descriptors to fetch.  (Only
-+		 * applicable for weak-ordered memory model archs,
-+		 * such as IA-64).
-+		 */
-+		wmb();
-+		writel(i, tx_ring->tail);
-+	}
-+
- 	return;
- 
- dma_error:
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-index c8a7cb4..75cecfa 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-@@ -258,10 +258,12 @@ struct i40e_ring {
- 
- 	bool ring_active;		/* is ring online or not */
- 	bool arm_wb;		/* do something to arm write back */
-+	u8 packet_stride;
- 
- 	u16 flags;
- #define I40E_TXR_FLAGS_WB_ON_ITR	BIT(0)
- #define I40E_TXR_FLAGS_OUTER_UDP_CSUM	BIT(1)
-+#define I40E_TXR_FLAGS_LAST_XMIT_MORE_SET BIT(2)
- 
- 	/* stats structs */
- 	struct i40e_queue_stats	stats;
--- 
-1.8.1.4
+configs tested: 70
 
+i386                     randconfig-a0-201538
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                            defconfig
+ia64                                defconfig
+mips                                defconfig
+sh                                  defconfig
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+mips                                   jz4740
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
+i386                   randconfig-s1-09261031
+i386                   randconfig-s0-09261031
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+i386                             allmodconfig
+x86_64                   randconfig-i0-201538
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i1-201538
+i386                     randconfig-i0-201538
+x86_64                 randconfig-b0-09260814
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+i386                     randconfig-n0-201538
+i386                   randconfig-h0-09260819
+i386                   randconfig-h1-09260819
+ia64                              allnoconfig
+ia64                             alldefconfig
+x86_64                                   rhel
+x86_64                 randconfig-h0-09260813
+i386                  randconfig-sb0-09260745
+x86_64               randconfig-x007-09251258
+x86_64               randconfig-x001-09251258
+x86_64               randconfig-x008-09251258
+x86_64               randconfig-x009-09251258
+x86_64               randconfig-x002-09251258
+x86_64               randconfig-x004-09251258
+x86_64               randconfig-x003-09251258
+x86_64               randconfig-x000-09251258
+x86_64               randconfig-x006-09251258
+x86_64               randconfig-x005-09251258
+i386                     randconfig-r0-201538
+
+Thanks,
+Fengguang
