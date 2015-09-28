@@ -1,45 +1,51 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Mon, 28 Sep 2015 14:12:43 -0400
-Subject: [Intel-wired-lan] [next PATCH S16 14/15] i40e: increase AQ work
-	limit
+Date: Mon, 28 Sep 2015 14:12:44 -0400
+Subject: [Intel-wired-lan] [next PATCH S16 15/15] i40e/i40evf: Bump i40e to
+	1.3.34 and i40evf to 1.3.21
 In-Reply-To: <1443463964-148204-1-git-send-email-catherine.sullivan@intel.com>
 References: <1443463964-148204-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1443463964-148204-15-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1443463964-148204-16-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+Bump.
 
-With 64 VFs, we can easily overwhelm the AQ on the PF if we have too low
-a limit on the number of AQ requests. This leads to ARQ overflow errors,
-and occasionally VFs that fail to initialize.
-
-Since we really only hit this condition on initial VF driver load, the
-requests that we process are lightweight, so this extra work doesn't
-cause problems for the PF driver.
-
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Change-ID: I620221520d8af987df6ace9ba938ffaf22107681
+Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
+Change-ID: I7ec818a507554648675b9b245ced9e6b6bd9ed4e
 ---
- drivers/net/ethernet/intel/i40e/i40e.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index c714822..666f7a5 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -93,7 +93,7 @@
- #endif /* I40E_FCOE */
- #define I40E_MAX_AQ_BUF_SIZE          4096
- #define I40E_AQ_LEN                   256
--#define I40E_AQ_WORK_LIMIT            32
-+#define I40E_AQ_WORK_LIMIT            66 /* max number of VFs + a little */
- #define I40E_MAX_USER_PRIORITY        8
- #define I40E_DEFAULT_MSG_ENABLE       4
- #define I40E_QUEUE_WAIT_RETRY_LIMIT   10
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 7989c2e..e383ac3 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -39,7 +39,7 @@ static const char i40e_driver_string[] =
+ 
+ #define DRV_VERSION_MAJOR 1
+ #define DRV_VERSION_MINOR 3
+-#define DRV_VERSION_BUILD 28
++#define DRV_VERSION_BUILD 34
+ #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
+ 	     __stringify(DRV_VERSION_MINOR) "." \
+ 	     __stringify(DRV_VERSION_BUILD)    DRV_KERN
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index b943d93..2575473 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -34,7 +34,7 @@ char i40evf_driver_name[] = "i40evf";
+ static const char i40evf_driver_string[] =
+ 	"Intel(R) XL710/X710 Virtual Function Network Driver";
+ 
+-#define DRV_VERSION "1.3.19"
++#define DRV_VERSION "1.3.21"
+ const char i40evf_driver_version[] = DRV_VERSION;
+ static const char i40evf_copyright[] =
+ 	"Copyright (c) 2013 - 2015 Intel Corporation.";
 -- 
 1.9.3
 
