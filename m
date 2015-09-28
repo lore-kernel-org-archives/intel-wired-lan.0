@@ -1,141 +1,28 @@
-From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Mon, 28 Sep 2015 14:37:47 -0700
-Subject: [Intel-wired-lan] [PATCH V2] ixgbe: Add KR mode support for CS4227
-	chip
-Message-ID: <20150928213747.85443.26775.stgit@mdrustad-wks.jf.intel.com>
+From: Janusz Wolak <januszvdm@gmail.com>
+Date: Tue, 29 Sep 2015 00:00:38 +0200
+Subject: [Intel-wired-lan] e1000_hw.c_Elementary checkpatch warnings and
+	checks removed
+In-Reply-To: <5609B848.4020505@gmail.com>
+References: <5609B848.4020505@gmail.com>
+Message-ID: <5609B886.6050306@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-KR auto-neg mode is what we will be using going forward. The SW
-interface for this mode is different that what was used for iXFI.
 
-Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
----
-Changes in V2:
-- Don't delete setting of link speed capabilities
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   85 ++++++++++++++++++-------
- 1 file changed, 62 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index d0e8a6a41721..d371df8ca746 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -26,6 +26,8 @@
- #include "ixgbe_common.h"
- #include "ixgbe_phy.h"
- 
-+static s32 ixgbe_setup_kr_speed_x550em(struct ixgbe_hw *, ixgbe_link_speed);
-+
- static s32 ixgbe_get_invariants_X550_x(struct ixgbe_hw *hw)
- {
- 	struct ixgbe_mac_info *mac = &hw->mac;
-@@ -1169,31 +1171,71 @@ ixgbe_setup_mac_link_sfp_x550em(struct ixgbe_hw *hw,
- 	if (status)
- 		return status;
- 
--	/* Configure CS4227 LINE side to 10G SR. */
--	slice = IXGBE_CS4227_LINE_SPARE22_MSB + (hw->bus.lan_id << 12);
--	value = IXGBE_CS4227_SPEED_10G;
--	status = ixgbe_write_i2c_combined_generic(hw, IXGBE_CS4227, slice,
--						  value);
--
--	/* Configure CS4227 for HOST connection rate then type. */
--	slice = IXGBE_CS4227_HOST_SPARE22_MSB + (hw->bus.lan_id << 12);
--	value = speed & IXGBE_LINK_SPEED_10GB_FULL ?
--		IXGBE_CS4227_SPEED_10G : IXGBE_CS4227_SPEED_1G;
--	status = ixgbe_write_i2c_combined_generic(hw, IXGBE_CS4227, slice,
--						  value);
-+	if (!(hw->phy.nw_mng_if_sel & IXGBE_NW_MNG_IF_SEL_INT_PHY_MODE)) {
-+		/* Configure CS4227 LINE side to 10G SR. */
-+		slice = IXGBE_CS4227_LINE_SPARE22_MSB + (hw->bus.lan_id << 12);
-+		value = IXGBE_CS4227_SPEED_10G;
-+		status = ixgbe_write_i2c_combined_generic(hw, IXGBE_CS4227,
-+							  slice, value);
-+		if (status)
-+			goto i2c_err;
- 
--	slice = IXGBE_CS4227_HOST_SPARE24_LSB + (hw->bus.lan_id << 12);
--	if (setup_linear)
--		value = (IXGBE_CS4227_EDC_MODE_CX1 << 1) | 1;
--	else
-+		slice = IXGBE_CS4227_LINE_SPARE24_LSB + (hw->bus.lan_id << 12);
- 		value = (IXGBE_CS4227_EDC_MODE_SR << 1) | 1;
--	status = ixgbe_write_i2c_combined_generic(hw, IXGBE_CS4227, slice,
--						  value);
-+		status = ixgbe_write_i2c_combined_generic(hw, IXGBE_CS4227,
-+							  slice, value);
-+		if (status)
-+			goto i2c_err;
-+
-+		/* Configure CS4227 for HOST connection rate then type. */
-+		slice = IXGBE_CS4227_HOST_SPARE22_MSB + (hw->bus.lan_id << 12);
-+		value = speed & IXGBE_LINK_SPEED_10GB_FULL ?
-+			IXGBE_CS4227_SPEED_10G : IXGBE_CS4227_SPEED_1G;
-+		status = ixgbe_write_i2c_combined_generic(hw, IXGBE_CS4227,
-+							  slice, value);
-+		if (status)
-+			goto i2c_err;
- 
--	/* If internal link mode is XFI, then setup XFI internal link. */
--	if (!(hw->phy.nw_mng_if_sel & IXGBE_NW_MNG_IF_SEL_INT_PHY_MODE))
-+		slice = IXGBE_CS4227_HOST_SPARE24_LSB + (hw->bus.lan_id << 12);
-+		if (setup_linear)
-+			value = (IXGBE_CS4227_EDC_MODE_CX1 << 1) | 1;
-+		else
-+			value = (IXGBE_CS4227_EDC_MODE_SR << 1) | 1;
-+		status = ixgbe_write_i2c_combined_generic(hw, IXGBE_CS4227,
-+							  slice, value);
-+		if (status)
-+			goto i2c_err;
-+
-+		/* Setup XFI internal link. */
- 		status = ixgbe_setup_ixfi_x550em(hw, &speed);
-+		if (status) {
-+			hw_dbg(hw, "setup_ixfi failed with %d\n", status);
-+			return status;
-+		}
-+	} else {
-+		/* Configure internal PHY for KR/KX. */
-+		status = ixgbe_setup_kr_speed_x550em(hw, speed);
-+		if (status) {
-+			hw_dbg(hw, "setup_kr_speed failed with %d\n", status);
-+			return status;
-+		}
- 
-+		/* Configure CS4227 LINE side to proper mode. */
-+		slice = IXGBE_CS4227_LINE_SPARE24_LSB + (hw->bus.lan_id << 12);
-+		if (setup_linear)
-+			value = (IXGBE_CS4227_EDC_MODE_CX1 << 1) | 1;
-+		else
-+			value = (IXGBE_CS4227_EDC_MODE_SR << 1) | 1;
-+		status = ixgbe_write_i2c_combined_generic(hw, IXGBE_CS4227,
-+							  slice, value);
-+		if (status)
-+			goto i2c_err;
-+	}
-+
-+	return 0;
-+
-+i2c_err:
-+	hw_dbg(hw, "combined i2c access failed with %d\n", status);
- 	return status;
- }
- 
-@@ -1894,12 +1936,9 @@ static s32 ixgbe_init_phy_ops_X550em(struct ixgbe_hw *hw)
- 		 * to determine internal PHY mode.
- 		 */
- 		phy->nw_mng_if_sel = IXGBE_READ_REG(hw, IXGBE_NW_MNG_IF_SEL);
--
--		/* If internal PHY mode is KR, then initialize KR link */
- 		if (phy->nw_mng_if_sel & IXGBE_NW_MNG_IF_SEL_INT_PHY_MODE) {
- 			speed = IXGBE_LINK_SPEED_10GB_FULL |
- 				IXGBE_LINK_SPEED_1GB_FULL;
--			ret_val = ixgbe_setup_kr_speed_x550em(hw, speed);
- 		}
- 	}
- 
 
+
+
+
+
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: e1000_hw_c-Elementary-checkpatch-warnings-and-checks-removed.patch
+Type: text/x-patch
+Size: 22193 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20150929/94026db0/attachment.bin>
