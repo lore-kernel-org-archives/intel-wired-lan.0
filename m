@@ -1,32 +1,33 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 28 Sep 2015 17:46:19 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: add GRE tunnel type to csum
-	encoding
-In-Reply-To: <FC41C24E35F18A40888AACA1A36F3E418AF8DF2A@fmsmsx115.amr.corp.intel.com>
-References: <FC41C24E35F18A40888AACA1A36F3E418AF8DF2A@fmsmsx115.amr.corp.intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B1D58@ORSMSX104.amr.corp.intel.com>
+From: Dave Hansen <dave@sr71.net>
+Date: Mon, 28 Sep 2015 08:57:18 -0700
+Subject: [Intel-wired-lan] [PATCH] e1000: fix
+	e1000e_disable_aspm_locked() warning
+In-Reply-To: <20150831212641.FA5D579A@viggo.jf.intel.com>
+References: <20150831212641.FA5D579A@viggo.jf.intel.com>
+Message-ID: <5609635E.6010907@sr71.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Nelson, Shannon
-> Sent: Friday, September 25, 2015 12:26 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] i40e: add GRE tunnel type to csum
-> encoding
+On 08/31/2015 02:26 PM, Dave Hansen wrote:
+> From: Dave Hansen <dave.hansen@linux.intel.com>
 > 
+> I have a .config with CONFIG_PM disabled.  I get the following whenever
+> compiling the e1000 driver:
 > 
-> Make sure the tx checksum encoder knows about GRE protocol and sets the
-> descriptor flag appropriately.
+> ...net/ethernet/intel/e1000e/netdev.c:6450:13: warning: 'e1000e_disable_aspm_locked' defined but not used [-Wunused-function]
+>  static void e1000e_disable_aspm_locked(struct pci_dev *pdev, u16 state)
 > 
-> Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c | 3 +++
->  1 file changed, 3 insertions(+)
+> Looks like we just need to move e1000e_disable_aspm_locked() to
+> be underneath the CONFIG_PM #ifdef.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Code changes present in tree
+This patch:
+
+	[2758f9edb]: e1000e: Fix incorrect ASPM locking
+
+established a new caller for e1000e_disable_aspm_locked() which makes my
+patch useless and wrong (it breaks the compile).
+
+I believe we should just revert my patch.
