@@ -1,10 +1,10 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Mon, 28 Sep 2015 14:12:40 -0400
-Subject: [Intel-wired-lan] [next PATCH S16 11/15] i40evf: correctly populate
-	vlan_features
+Date: Mon, 28 Sep 2015 14:12:43 -0400
+Subject: [Intel-wired-lan] [next PATCH S16 14/15] i40e: increase AQ work
+	limit
 In-Reply-To: <1443463964-148204-1-git-send-email-catherine.sullivan@intel.com>
 References: <1443463964-148204-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1443463964-148204-12-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1443463964-148204-15-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,39 +13,33 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Mitch Williams <mitch.a.williams@intel.com>
 
-The vlan_features field was correctly being set to the same value as the
-netdev features field. However, this was being done before the features
-were actually being set up, leaving the vlan_features empty.
+With 64 VFs, we can easily overwhelm the AQ on the PF if we have too low
+a limit on the number of AQ requests. This leads to ARQ overflow errors,
+and occasionally VFs that fail to initialize.
 
-Also, after a reset, vlan_features will be incorrectly assigned the
-previous netdev feature flags, which can contain VLAN feature bits. This
-makes the VLAN code angry and will cause a stack dump.
-
-To fix these issues, set up the netdev features first, then mask out the
-VLAN feature bits when assigning vlan_features.
+Since we really only hit this condition on initial VF driver load, the
+requests that we process are lightweight, so this extra work doesn't
+cause problems for the PF driver.
 
 Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Change-ID: Ib0548869dc83cf6a841cb8697dd94c12359ba4d2
+Change-ID: I620221520d8af987df6ace9ba938ffaf22107681
 ---
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/i40e/i40e.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 5e13363..9e754d0 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -2123,7 +2123,10 @@ int i40evf_process_config(struct i40evf_adapter *adapter)
- 
- 	if (adapter->vf_res->vf_offload_flags
- 	    & I40E_VIRTCHNL_VF_OFFLOAD_VLAN) {
--		netdev->vlan_features = netdev->features;
-+		netdev->vlan_features = netdev->features &
-+					~(NETIF_F_HW_VLAN_CTAG_TX |
-+					  NETIF_F_HW_VLAN_CTAG_RX |
-+					  NETIF_F_HW_VLAN_CTAG_FILTER);
- 		netdev->features |= NETIF_F_HW_VLAN_CTAG_TX |
- 				    NETIF_F_HW_VLAN_CTAG_RX |
- 				    NETIF_F_HW_VLAN_CTAG_FILTER;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index c714822..666f7a5 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -93,7 +93,7 @@
+ #endif /* I40E_FCOE */
+ #define I40E_MAX_AQ_BUF_SIZE          4096
+ #define I40E_AQ_LEN                   256
+-#define I40E_AQ_WORK_LIMIT            32
++#define I40E_AQ_WORK_LIMIT            66 /* max number of VFs + a little */
+ #define I40E_MAX_USER_PRIORITY        8
+ #define I40E_DEFAULT_MSG_ENABLE       4
+ #define I40E_QUEUE_WAIT_RETRY_LIMIT   10
 -- 
 1.9.3
 
