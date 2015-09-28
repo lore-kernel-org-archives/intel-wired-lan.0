@@ -1,63 +1,51 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Mon, 28 Sep 2015 14:12:39 -0400
-Subject: [Intel-wired-lan] [next PATCH S16 10/15] i40e: reset the invalid
-	msg counter in vf when a valid msg is received
+Date: Mon, 28 Sep 2015 14:12:40 -0400
+Subject: [Intel-wired-lan] [next PATCH S16 11/15] i40evf: correctly populate
+	vlan_features
 In-Reply-To: <1443463964-148204-1-git-send-email-catherine.sullivan@intel.com>
 References: <1443463964-148204-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1443463964-148204-11-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1443463964-148204-12-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jingjing Wu <jingjing.wu@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-When the number of invalid messages from a VF is exceeded, the VF
-will be disabled, due to the invalid messages.  This happens if
-other VF drivers (like DPDK) send a message through the driver's
-mailbox (aka virtchannel) interface, but the message is not
-supported by the i40e pf driver, such as CONFIG_PROMISCUOUS_MODE.
+The vlan_features field was correctly being set to the same value as the
+netdev features field. However, this was being done before the features
+were actually being set up, leaving the vlan_features empty.
 
-This patch changes the num_invalid_msgs in struct i40e_vf to record
-the continuous invalid msgs, and it will be reset when a valid msg
-is received.
+Also, after a reset, vlan_features will be incorrectly assigned the
+previous netdev feature flags, which can contain VLAN feature bits. This
+makes the VLAN code angry and will cause a stack dump.
 
-Signed-off-by: Jingjing Wu <jingjing.wu@intel.com>
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Change-ID: Iaec42fd3dcdd281476b3518be23261dd46fc3718
+To fix these issues, set up the netdev features first, then mask out the
+VLAN feature bits when assigning vlan_features.
+
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-ID: Ib0548869dc83cf6a841cb8697dd94c12359ba4d2
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 2 ++
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h | 3 ++-
- 2 files changed, 4 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 3ed8b98..d84b727 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1105,6 +1105,8 @@ static int i40e_vc_send_msg_to_vf(struct i40e_vf *vf, u32 v_opcode,
- 		}
- 	} else {
- 		vf->num_valid_msgs++;
-+		/* reset the invalid counter, if a valid message is received. */
-+		vf->num_invalid_msgs = 0;
- 	}
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 5e13363..9e754d0 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -2123,7 +2123,10 @@ int i40evf_process_config(struct i40evf_adapter *adapter)
  
- 	aq_ret = i40e_aq_send_msg_to_vf(hw, abs_vf_id,	v_opcode, v_retval,
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-index 7fe94e8..da44995 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-@@ -96,7 +96,8 @@ struct i40e_vf {
- 
- 	u8 num_queue_pairs;	/* num of qps assigned to VF vsis */
- 	u64 num_mdd_events;	/* num of mdd events detected */
--	u64 num_invalid_msgs;	/* num of malformed or invalid msgs detected */
-+	/* num of continuous malformed or invalid msgs detected */
-+	u64 num_invalid_msgs;
- 	u64 num_valid_msgs;	/* num of valid msgs detected */
- 
- 	unsigned long vf_caps;	/* vf's adv. capabilities */
+ 	if (adapter->vf_res->vf_offload_flags
+ 	    & I40E_VIRTCHNL_VF_OFFLOAD_VLAN) {
+-		netdev->vlan_features = netdev->features;
++		netdev->vlan_features = netdev->features &
++					~(NETIF_F_HW_VLAN_CTAG_TX |
++					  NETIF_F_HW_VLAN_CTAG_RX |
++					  NETIF_F_HW_VLAN_CTAG_FILTER);
+ 		netdev->features |= NETIF_F_HW_VLAN_CTAG_TX |
+ 				    NETIF_F_HW_VLAN_CTAG_RX |
+ 				    NETIF_F_HW_VLAN_CTAG_FILTER;
 -- 
 1.9.3
 
