@@ -1,31 +1,60 @@
 From: Alexander Duyck <aduyck@mirantis.com>
-Date: Tue, 29 Sep 2015 15:19:37 -0700
-Subject: [Intel-wired-lan] [PATCH 0/3] use napi_schedule_irqoff()
-Message-ID: <20150929215117.3388.48642.stgit@ahduyck-vm-fedora22>
+Date: Tue, 29 Sep 2015 15:19:43 -0700
+Subject: [Intel-wired-lan] [PATCH 1/3] ixgbe/ixgbevf: use
+	napi_schedule_irqoff()
+In-Reply-To: <20150929215117.3388.48642.stgit@ahduyck-vm-fedora22>
+References: <20150929215117.3388.48642.stgit@ahduyck-vm-fedora22>
+Message-ID: <20150929221943.3388.21859.stgit@ahduyck-vm-fedora22>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch set is meant to replace the calls to napi_schedule with
-napi_schedule_irqoff as this should help to reduce the interrupt overhead
-slightly by removing the unneeded call to local_irq_save and
-local_irq_restore.
+The ixgbe_intr and ixgbe/ixgbevf_msix_clean_rings functions run from hard
+interrupt context or with interrupts already disabled in netpoll.
 
+They can use napi_schedule_irqoff() instead of napi_schedule()
+
+Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 ---
-
-Alexander Duyck (3):
-      ixgbe/ixgbevf: use napi_schedule_irqoff()
-      i40e/i40evf: use napi_schedule_irqoff()
-      fm10k: use napi_schedule_irqoff()
-
-
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c      |    2 +-
- drivers/net/ethernet/intel/i40e/i40e_main.c       |    6 ++++--
- drivers/net/ethernet/intel/i40evf/i40evf_main.c   |    2 +-
  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |    4 ++--
  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |    2 +-
- 5 files changed, 9 insertions(+), 7 deletions(-)
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
---
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 693f2da33569..67dc916c94d6 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -2754,7 +2754,7 @@ static irqreturn_t ixgbe_msix_clean_rings(int irq, void *data)
+ 	/* EIAM disabled interrupts (on this vector) for us */
+ 
+ 	if (q_vector->rx.ring || q_vector->tx.ring)
+-		napi_schedule(&q_vector->napi);
++		napi_schedule_irqoff(&q_vector->napi);
+ 
+ 	return IRQ_HANDLED;
+ }
+@@ -2948,7 +2948,7 @@ static irqreturn_t ixgbe_intr(int irq, void *data)
+ 		ixgbe_ptp_check_pps_event(adapter, eicr);
+ 
+ 	/* would disable interrupts here but EIAM disabled it */
+-	napi_schedule(&q_vector->napi);
++	napi_schedule_irqoff(&q_vector->napi);
+ 
+ 	/*
+ 	 * re-enable link(maybe) and non-queue interrupts, no flush.
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index 592ff237d692..f1c5f3372667 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -1288,7 +1288,7 @@ static irqreturn_t ixgbevf_msix_clean_rings(int irq, void *data)
+ 
+ 	/* EIAM disabled interrupts (on this vector) for us */
+ 	if (q_vector->rx.ring || q_vector->tx.ring)
+-		napi_schedule(&q_vector->napi);
++		napi_schedule_irqoff(&q_vector->napi);
+ 
+ 	return IRQ_HANDLED;
+ }
+
