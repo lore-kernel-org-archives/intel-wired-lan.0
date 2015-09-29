@@ -1,44 +1,75 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Tue, 29 Sep 2015 12:08:12 -0700
-Subject: [Intel-wired-lan] [next PATCH S15 04/15] i40e: Lock for VSI's
-	MAC filter list
-In-Reply-To: <1441315142-173025-5-git-send-email-catherine.sullivan@intel.com>
-References: <1441315142-173025-1-git-send-email-catherine.sullivan@intel.com>
- <1441315142-173025-5-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <20150929120812.00006d1c@unknown>
+From: Alexander Duyck <aduyck@mirantis.com>
+Date: Tue, 29 Sep 2015 12:53:46 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbevf: Limit lowest interrupt rate for
+ adaptive interrupt moderation to 12K
+Message-ID: <20150929195346.1125.48492.stgit@ahduyck-vm-fedora22>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 3 Sep 2015 17:18:51 -0400
-Catherine Sullivan <catherine.sullivan@intel.com> wrote:
+This patch is the ixgbevf version of commit 8ac34f10a5ea4 "ixgbe: Limit
+lowest interrupt rate for adaptive interrupt moderation to 12K"
 
-> From: Kiran Patil <kiran.patil@intel.com>
-> 
-> This patch introduces a spinlock which is to be used for synchronizing
-> access to VSI's MAC filter list.
-> 
-> This patch also synchronizes execution of other codepaths which are
-> accessing VSI's MAC filter list with execution of
-> service_task:sync_vsi_filters.
-> 
-> In function i40e_add_vsi, copied out LAA MAC address instead of cloning
-> MAC filter entry because only MAC address is needed to remove MAC VLAN
-> filter from FW/HW.
-> 
-> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> Change-ID: I0e10ac7c715d44aa994239642aa4d57c998573a2
-> ---
->  drivers/net/ethernet/intel/i40e/i40e.h             |   2 +
->  drivers/net/ethernet/intel/i40e/i40e_fcoe.c        |   2 +
->  drivers/net/ethernet/intel/i40e/i40e_main.c        | 326 +++++++++++++++++----
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  26 +-
->  4 files changed, 300 insertions(+), 56 deletions(-)
-> 
+The same logic applies here as well as the same results since a netperf
+test will starve for memory in the time from one Tx interrupt to the next.
+As a result the ixgbevf driver underperformed when compared to vhost_net.
 
-This patch introduces a locking dependency issue, already solved by
-another patch we have prepared, which should either be applied on top of
-this one or squashed onto it.
+Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+---
+ drivers/net/ethernet/intel/ixgbevf/ethtool.c      |    2 +-
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |    3 +--
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |    4 ++--
+ 3 files changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ethtool.c b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
+index d3e5f5b37999..c48aef613b0a 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
+@@ -774,7 +774,7 @@ static int ixgbevf_set_coalesce(struct net_device *netdev,
+ 		adapter->tx_itr_setting = ec->tx_coalesce_usecs;
+ 
+ 	if (adapter->tx_itr_setting == 1)
+-		tx_itr_param = IXGBE_10K_ITR;
++		tx_itr_param = IXGBE_12K_ITR;
+ 	else
+ 		tx_itr_param = adapter->tx_itr_setting;
+ 
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+index 04c7ec8446e0..8b437b54cd98 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+@@ -326,8 +326,7 @@ static inline bool ixgbevf_qv_disable(struct ixgbevf_q_vector *q_vector)
+ #define IXGBE_MIN_RSC_ITR	24
+ #define IXGBE_100K_ITR		40
+ #define IXGBE_20K_ITR		200
+-#define IXGBE_10K_ITR		400
+-#define IXGBE_8K_ITR		500
++#define IXGBE_12K_ITR		336
+ 
+ /* Helper macros to switch between ints/sec and what the register uses.
+  * And yes, it's the same math going both ways.  The lowest value
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index 35da2d74e73e..4ae77953ad76 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -1136,7 +1136,7 @@ static void ixgbevf_configure_msix(struct ixgbevf_adapter *adapter)
+ 		if (q_vector->tx.ring && !q_vector->rx.ring) {
+ 			/* Tx only vector */
+ 			if (adapter->tx_itr_setting == 1)
+-				q_vector->itr = IXGBE_10K_ITR;
++				q_vector->itr = IXGBE_12K_ITR;
+ 			else
+ 				q_vector->itr = adapter->tx_itr_setting;
+ 		} else {
+@@ -1245,7 +1245,7 @@ static void ixgbevf_set_itr(struct ixgbevf_q_vector *q_vector)
+ 		break;
+ 	case bulk_latency:
+ 	default:
+-		new_itr = IXGBE_8K_ITR;
++		new_itr = IXGBE_12K_ITR;
+ 		break;
+ 	}
+ 
+
