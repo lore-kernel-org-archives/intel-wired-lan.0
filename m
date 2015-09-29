@@ -1,8 +1,10 @@
 From: Alexander Duyck <aduyck@mirantis.com>
-Date: Tue, 29 Sep 2015 12:53:46 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbevf: Limit lowest interrupt rate for
- adaptive interrupt moderation to 12K
-Message-ID: <20150929195346.1125.48492.stgit@ahduyck-vm-fedora22>
+Date: Tue, 29 Sep 2015 13:11:15 -0700
+Subject: [Intel-wired-lan] [PATCH v2] ixgbevf: Limit lowest interrupt rate
+ for adaptive interrupt moderation to 12K
+In-Reply-To: <20150929195346.1125.48492.stgit@ahduyck-vm-fedora22>
+References: <20150929195346.1125.48492.stgit@ahduyck-vm-fedora22>
+Message-ID: <20150929201022.1388.91691.stgit@ahduyck-vm-fedora22>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,10 +20,13 @@ As a result the ixgbevf driver underperformed when compared to vhost_net.
 
 Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 ---
+
+v2: Fixed comment describing lowest interrupt rate as 8000 ints/s
+
  drivers/net/ethernet/intel/ixgbevf/ethtool.c      |    2 +-
  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |    3 +--
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |    4 ++--
- 3 files changed, 4 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |    6 +++---
+ 3 files changed, 5 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbevf/ethtool.c b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
 index d3e5f5b37999..c48aef613b0a 100644
@@ -51,7 +56,7 @@ index 04c7ec8446e0..8b437b54cd98 100644
  /* Helper macros to switch between ints/sec and what the register uses.
   * And yes, it's the same math going both ways.  The lowest value
 diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 35da2d74e73e..4ae77953ad76 100644
+index 35da2d74e73e..1551b5dfde7e 100644
 --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
 +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
 @@ -1136,7 +1136,7 @@ static void ixgbevf_configure_msix(struct ixgbevf_adapter *adapter)
@@ -63,6 +68,15 @@ index 35da2d74e73e..4ae77953ad76 100644
  			else
  				q_vector->itr = adapter->tx_itr_setting;
  		} else {
+@@ -1194,7 +1194,7 @@ static void ixgbevf_update_itr(struct ixgbevf_q_vector *q_vector,
+ 	/* simple throttle rate management
+ 	 *    0-20MB/s lowest (100000 ints/s)
+ 	 *   20-100MB/s low   (20000 ints/s)
+-	 *  100-1249MB/s bulk (8000 ints/s)
++	 *  100-1249MB/s bulk (12000 ints/s)
+ 	 */
+ 	/* what was last interrupt timeslice? */
+ 	timepassed_us = q_vector->itr >> 2;
 @@ -1245,7 +1245,7 @@ static void ixgbevf_set_itr(struct ixgbevf_q_vector *q_vector)
  		break;
  	case bulk_latency:
