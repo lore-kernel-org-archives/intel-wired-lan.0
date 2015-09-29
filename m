@@ -1,47 +1,44 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 29 Sep 2015 17:23:42 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: Fix for recursive RTNL lock
- during	PROMISC change
-In-Reply-To: <1443472632-33873-1-git-send-email-anjali.singhai@intel.com>
-References: <1443472632-33873-1-git-send-email-anjali.singhai@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B1FFA@ORSMSX104.amr.corp.intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Tue, 29 Sep 2015 12:08:12 -0700
+Subject: [Intel-wired-lan] [next PATCH S15 04/15] i40e: Lock for VSI's
+	MAC filter list
+In-Reply-To: <1441315142-173025-5-git-send-email-catherine.sullivan@intel.com>
+References: <1441315142-173025-1-git-send-email-catherine.sullivan@intel.com>
+ <1441315142-173025-5-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <20150929120812.00006d1c@unknown>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Anjali Singhai Jain
-> Sent: Monday, September 28, 2015 1:37 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] i40e: Fix for recursive RTNL lock during
-> PROMISC change
-> 
-> The sync_vsi_filters function can be called directly under RTNL or through the
-> timer subtask without one. This was causing a deadlock.
-> 
-> If sync_vsi_filters is called from a thread which held the lock, and in another
-> thread the PROMISC setting got changed we would be executing the
-> PROMISC change in the thread which already held the lock alongside the
-> other filter update. The PROMISC change requires a reset if we are on a VEB,
-> which requires it to be called under RTNL.
-> 
-> Earlier the driver would call reset for PROMISC change without checking if we
-> were already under RTNL and would try to grab it causing a deadlock. This
-> patch changes the flow to see if we are already under RTNL before trying to
-> grab it.
-> 
-> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
-> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e.h             |  2 +-
->  drivers/net/ethernet/intel/i40e/i40e_debugfs.c     |  4 ++--
->  drivers/net/ethernet/intel/i40e/i40e_main.c        | 19 ++++++++++++-------
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  8 ++++----
->  4 files changed, 19 insertions(+), 14 deletions(-)
+On Thu, 3 Sep 2015 17:18:51 -0400
+Catherine Sullivan <catherine.sullivan@intel.com> wrote:
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Code changes present in tree, able to successfully add and delete bridges, attach bridges to VLANs, and pass traffic across the bridge without errors or lockups. Unable to pass traffic across VLAN.
+> From: Kiran Patil <kiran.patil@intel.com>
+> 
+> This patch introduces a spinlock which is to be used for synchronizing
+> access to VSI's MAC filter list.
+> 
+> This patch also synchronizes execution of other codepaths which are
+> accessing VSI's MAC filter list with execution of
+> service_task:sync_vsi_filters.
+> 
+> In function i40e_add_vsi, copied out LAA MAC address instead of cloning
+> MAC filter entry because only MAC address is needed to remove MAC VLAN
+> filter from FW/HW.
+> 
+> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Change-ID: I0e10ac7c715d44aa994239642aa4d57c998573a2
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e.h             |   2 +
+>  drivers/net/ethernet/intel/i40e/i40e_fcoe.c        |   2 +
+>  drivers/net/ethernet/intel/i40e/i40e_main.c        | 326 +++++++++++++++++----
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  26 +-
+>  4 files changed, 300 insertions(+), 56 deletions(-)
+> 
+
+This patch introduces a locking dependency issue, already solved by
+another patch we have prepared, which should either be applied on top of
+this one or squashed onto it.
