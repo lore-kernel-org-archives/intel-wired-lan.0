@@ -1,129 +1,131 @@
 From: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 30 Sep 2015 13:26:33 +0200
-Subject: [Intel-wired-lan] [PATCH 03/12] net: igb: avoid using timespec
-In-Reply-To: <1443612402-3000775-1-git-send-email-arnd@arndb.de>
-References: <1443612402-3000775-1-git-send-email-arnd@arndb.de>
-Message-ID: <1443612402-3000775-4-git-send-email-arnd@arndb.de>
+Date: Wed, 30 Sep 2015 13:26:30 +0200
+Subject: [Intel-wired-lan] [PATCH 00/12] net: assorted y2038 changes
+Message-ID: <1443612402-3000775-1-git-send-email-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-We want to deprecate the use of 'struct timespec' on 32-bit
-architectures, as it is will overflow in 2038. The igb
-driver uses it to read the current time, and can simply
-be changed to use ktime_get_real_ts64() instead.
+Hi everyone,
 
-Because of hardware limitations, there is still an overflow
-in year 2106, which we cannot really avoid, but this documents
-the overflow.
+This is a set of changes for network drivers and core code to
+get rid of the use of time_t and derived data structures.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+I have a longer set of patches that enables me to build kernels
+with the time_t definition removed completely as a help to find
+y2038 overflow issues. This is the subset for networking that
+contains all code that has a reasonable way of fixing at the
+moment and that is either commonly used (in one of the defconfigs)
+or that blocks building a whole subsystem.
+
+Most of the patches in this series should be noncontroversial,
+but the last two that I marked [RFC] are a bit tricky and
+need input from people that are more familiar with the code than
+I am. All 12 patches are independent of one another and can
+be applied in any order, so feel free to pick all that look
+good.
+
+Patches that are not included here are:
+
+ - disabling less common device drivers that I don't have a fix
+   for yet, this includes
+	drivers/net/ethernet/brocade/bna/bfa_ioc.c
+	drivers/net/ethernet/qlogic/netxen/netxen_nic_hw.c
+	drivers/net/ethernet/tile/tilegx.c
+	drivers/net/hamradio/baycom_ser_fdx.c
+	drivers/net/wireless/ath/ath10k/core.h
+	drivers/net/wireless/ath/ath9k/
+	drivers/net/wireless/ath/ath9k/
+	drivers/net/wireless/atmel.c
+	drivers/net/wireless/prism54/isl_38xx.c
+	drivers/net/wireless/rt2x00/rt2x00debug.c
+	drivers/net/wireless/rtlwifi/
+	drivers/net/wireless/ti/wlcore/
+	drivers/staging/ozwpan/
+	net/atm/mpoa_caches.c
+	net/atm/mpoa_proc.c
+	net/dccp/probe.c
+	net/ipv4/tcp_probe.c
+	net/netfilter/nfnetlink_queue_core.c
+	net/netfilter/nfnetlink_queue_core.c
+	net/netfilter/xt_time.c
+	net/openvswitch/flow.c
+	net/sctp/probe.c
+	net/sunrpc/auth_gss/
+	net/sunrpc/svcauth_unix.c
+	net/vmw_vsock/af_vsock.c
+   We'll get there eventually, or we an add a dependency to ensure
+   they are not built on 32-bit kernels that need to survive
+   beyond 2038. Most of these should be really easy to fix.
+
+ - recvmmsg/sendmmsg system calls: patches have been sent out
+   as part of the syscall series, need a little more work and
+   review
+
+ - SIOCGSTAMP/SIOCGSTAMPNS/ ioctl calls: tricky, need to discuss
+   with some folks at kernel summit
+
+ - SO_RCVTIMEO/SO_SNDTIMEO/SO_TIMESTAMP/SO_TIMESTAMPNS socket
+   opt: similar and related to the ioctl
+
+ - mmapped packet socket: need to create v4 of the API, nontrivial
+
+ - pktgen: sends 32-bit timestamps over network, need to find out
+   if using unsigned stamps is good enough
+
+ - af_rxpc: similar to pktgen, uses 32-bit times for deadlines
+
+ - ppp ioctl: patch is being worked on, nontrivial but doable
+
+	Arnd
+
+Arnd Bergmann (12):
+  net: fec: avoid timespec use
+  net: stmmac: avoid using timespec
+  net: igb: avoid using timespec
+  mwifiex: use ktime_get_real for timestamping
+  mwifiex: avoid gettimeofday in ba_threshold setting
+  mac80211: use ktime_get_seconds
+  atm: hide 'struct zatm_t_hist'
+  nfnetlink: use y2038 safe timestamp
+  ipv6: use ktime_t for internal timestamps
+  net: sctp: avoid incorrect time_t use
+  [RFC] ipv4: avoid timespec in timestamp computation
+  [RFC] can: avoid using timeval for uapi
+
+ drivers/net/ethernet/freescale/fec_ptp.c          |  6 ++--
+ drivers/net/ethernet/intel/igb/igb.h              |  4 +--
+ drivers/net/ethernet/intel/igb/igb_main.c         | 15 +++++-----
+ drivers/net/ethernet/intel/igb/igb_ptp.c          |  8 +++---
+ drivers/net/ethernet/stmicro/stmmac/stmmac_main.c |  8 ++++--
+ drivers/net/wireless/mwifiex/11n_aggr.c           |  4 +--
+ drivers/net/wireless/mwifiex/wmm.c                | 15 +++-------
+ include/linux/timekeeping.h                       |  2 ++
+ include/uapi/linux/atm_zatm.h                     |  3 +-
+ include/uapi/linux/can/bcm.h                      |  7 ++++-
+ kernel/time/timekeeping.c                         | 34 +++++++++++++++++++++++
+ net/can/bcm.c                                     | 15 ++++++----
+ net/ipv4/icmp.c                                   |  8 ++----
+ net/ipv4/ip_options.c                             |  9 ++----
+ net/ipv6/mip6.c                                   | 16 +++++------
+ net/mac80211/sta_info.c                           |  8 ++----
+ net/netfilter/nfnetlink_log.c                     |  6 ++--
+ net/sctp/sm_make_chunk.c                          |  2 +-
+ net/sctp/sm_statefuns.c                           |  2 +-
+ 19 files changed, 99 insertions(+), 73 deletions(-)
+
+Cc: coreteam at netfilter.org
 Cc: intel-wired-lan at lists.osuosl.org
----
- drivers/net/ethernet/intel/igb/igb.h      |  4 ++--
- drivers/net/ethernet/intel/igb/igb_main.c | 15 ++++++++-------
- drivers/net/ethernet/intel/igb/igb_ptp.c  |  8 ++++----
- 3 files changed, 14 insertions(+), 13 deletions(-)
+Cc: linux-api at vger.kernel.org
+Cc: linux-atm-general at lists.sourceforge.net
+Cc: linux-can at vger.kernel.org
+Cc: linux-sctp at vger.kernel.org
+Cc: linux-wireless at vger.kernel.org
+Cc: netfilter-devel at vger.kernel.org
 
-diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index 212d668dabb3..1a2f1cc44b28 100644
---- a/drivers/net/ethernet/intel/igb/igb.h
-+++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -444,8 +444,8 @@ struct igb_adapter {
- 
- 	struct ptp_pin_desc sdp_config[IGB_N_SDP];
- 	struct {
--		struct timespec start;
--		struct timespec period;
-+		struct timespec64 start;
-+		struct timespec64 period;
- 	} perout[IGB_N_PEROUT];
- 
- 	char fw_version[32];
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index e174fbbdba40..911bbadbb994 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -5389,7 +5389,7 @@ static void igb_tsync_interrupt(struct igb_adapter *adapter)
- {
- 	struct e1000_hw *hw = &adapter->hw;
- 	struct ptp_clock_event event;
--	struct timespec ts;
-+	struct timespec64 ts;
- 	u32 ack = 0, tsauxc, sec, nsec, tsicr = rd32(E1000_TSICR);
- 
- 	if (tsicr & TSINTR_SYS_WRAP) {
-@@ -5409,10 +5409,11 @@ static void igb_tsync_interrupt(struct igb_adapter *adapter)
- 
- 	if (tsicr & TSINTR_TT0) {
- 		spin_lock(&adapter->tmreg_lock);
--		ts = timespec_add(adapter->perout[0].start,
--				  adapter->perout[0].period);
-+		ts = timespec64_add(adapter->perout[0].start,
-+				    adapter->perout[0].period);
-+		/* u32 conversion of tv_sec is safe until y2106 */
- 		wr32(E1000_TRGTTIML0, ts.tv_nsec);
--		wr32(E1000_TRGTTIMH0, ts.tv_sec);
-+		wr32(E1000_TRGTTIMH0, (u32)ts.tv_sec);
- 		tsauxc = rd32(E1000_TSAUXC);
- 		tsauxc |= TSAUXC_EN_TT0;
- 		wr32(E1000_TSAUXC, tsauxc);
-@@ -5423,10 +5424,10 @@ static void igb_tsync_interrupt(struct igb_adapter *adapter)
- 
- 	if (tsicr & TSINTR_TT1) {
- 		spin_lock(&adapter->tmreg_lock);
--		ts = timespec_add(adapter->perout[1].start,
--				  adapter->perout[1].period);
-+		ts = timespec64_add(adapter->perout[1].start,
-+				    adapter->perout[1].period);
- 		wr32(E1000_TRGTTIML1, ts.tv_nsec);
--		wr32(E1000_TRGTTIMH1, ts.tv_sec);
-+		wr32(E1000_TRGTTIMH1, (u32)ts.tv_sec);
- 		tsauxc = rd32(E1000_TSAUXC);
- 		tsauxc |= TSAUXC_EN_TT1;
- 		wr32(E1000_TSAUXC, tsauxc);
-diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
-index 5982f28d521a..c44df87c38de 100644
---- a/drivers/net/ethernet/intel/igb/igb_ptp.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
-@@ -143,7 +143,7 @@ static void igb_ptp_write_i210(struct igb_adapter *adapter,
- 	 * sub-nanosecond resolution.
- 	 */
- 	wr32(E1000_SYSTIML, ts->tv_nsec);
--	wr32(E1000_SYSTIMH, ts->tv_sec);
-+	wr32(E1000_SYSTIMH, (u32)ts->tv_sec);
- }
- 
- /**
-@@ -479,7 +479,7 @@ static int igb_ptp_feature_enable_i210(struct ptp_clock_info *ptp,
- 	struct e1000_hw *hw = &igb->hw;
- 	u32 tsauxc, tsim, tsauxc_mask, tsim_mask, trgttiml, trgttimh, freqout;
- 	unsigned long flags;
--	struct timespec ts;
-+	struct timespec64 ts;
- 	int use_freq = 0, pin = -1;
- 	s64 ns;
- 
-@@ -523,14 +523,14 @@ static int igb_ptp_feature_enable_i210(struct ptp_clock_info *ptp,
- 		}
- 		ts.tv_sec = rq->perout.period.sec;
- 		ts.tv_nsec = rq->perout.period.nsec;
--		ns = timespec_to_ns(&ts);
-+		ns = timespec64_to_ns(&ts);
- 		ns = ns >> 1;
- 		if (on && ns <= 70000000LL) {
- 			if (ns < 8LL)
- 				return -EINVAL;
- 			use_freq = 1;
- 		}
--		ts = ns_to_timespec(ns);
-+		ts = ns_to_timespec64(ns);
- 		if (rq->perout.index == 1) {
- 			if (use_freq) {
- 				tsauxc_mask = TSAUXC_EN_CLK1 | TSAUXC_ST1;
+
 -- 
 2.1.0.rc2
 
