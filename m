@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 1 Oct 2015 17:36:59 +0000
-Subject: [Intel-wired-lan] [next PATCH S16 v2 07/15] i40e: Lock for
- VSI's	MAC filter list
-In-Reply-To: <1443636543-110106-2-git-send-email-catherine.sullivan@intel.com>
-References: <1443636543-110106-1-git-send-email-catherine.sullivan@intel.com>
- <1443636543-110106-2-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B2C23@ORSMSX104.amr.corp.intel.com>
+Date: Thu, 1 Oct 2015 17:44:01 +0000
+Subject: [Intel-wired-lan] [next PATCH S16 08/15] i40e/i40evf:
+	moderate	interrupts differently
+In-Reply-To: <1443463964-148204-9-git-send-email-catherine.sullivan@intel.com>
+References: <1443463964-148204-1-git-send-email-catherine.sullivan@intel.com>
+ <1443463964-148204-9-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B2C33@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,35 +15,46 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
 > Behalf Of Catherine Sullivan
-> Sent: Wednesday, September 30, 2015 11:09 AM
+> Sent: Monday, September 28, 2015 11:13 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S16 v2 07/15] i40e: Lock for VSI's MAC
-> filter list
+> Subject: [Intel-wired-lan] [next PATCH S16 08/15] i40e/i40evf: moderate
+> interrupts differently
 > 
-> From: Kiran Patil <kiran.patil@intel.com>
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > 
-> This patch introduces a spinlock which is to be used for synchronizing access
-> to VSI's MAC filter list.
+> The XL710 hardware has a different interrupt moderation design that can
+> support a limit of total interrupts per second per vector, in addition to the
+> "number of interrupts per second"
+> controls already established in the driver.  This combination of hardware
+> features allows us to set very low default latency settings but minimize the
+> total CPU utilization by not making too many interrupts, should the user
+> desire.
 > 
-> This patch also synchronizes execution of other codepaths which are
-> accessing VSI's MAC filter list with execution of service_task:sync_vsi_filters.
+> The current driver implementation is still enabling the dynamic moderation in
+> the driver, and only using the rx/tx-usecs limit in ethtool to limit the interrupt
+> rate per second, by default.
 > 
-> In function i40e_add_vsi, copied out LAA MAC address instead of cloning
-> MAC filter entry because only MAC address is needed to remove MAC VLAN
-> filter from FW/HW.
+> The new code implemented in this patch
+> 2) adds init/use of the new "Interrupt Limit" register
+> 3) adds ethtool knob to control/report the limits above
 > 
-> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
+> Usage is ethtool -C ethx rx-usecs-high <value> Where <value> is number of
+> microseconds to create a rate of 1/N interrupts per second, regardless of rx-
+> usecs or tx-usecs values. Since there is a credit based scheme in the
+> hardware, the rx-usecs and tx-usecs can be configured for very low latency
+> for short bursts, but once the credit runs out the refill rate on the credits is
+> limited by rx-usecs-high.
+> 
 > Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> Change-ID: I0e10ac7c715d44aa994239642aa4d57c998573a2
+> Change-ID: I3a1075d3296123b0f4f50623c779b027af5b188d
 > ---
-> v2: Pull in patch 04/15 from S15 to squash the fix with the patch causing the
-> problem.
->  drivers/net/ethernet/intel/i40e/i40e.h             |   2 +
->  drivers/net/ethernet/intel/i40e/i40e_fcoe.c        |   2 +
->  drivers/net/ethernet/intel/i40e/i40e_main.c        | 328
-> +++++++++++++++++----
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  26 +-
->  4 files changed, 302 insertions(+), 56 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e.h         |  1 +
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 24
+> ++++++++++++++++++++++++
+>  drivers/net/ethernet/intel/i40e/i40e_main.c    | 10 +++++++---
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.h    | 10 ++++++++++
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.h  | 10 ++++++++++
+>  5 files changed, 52 insertions(+), 3 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Code changes present in tree
+Code changes present in tree, ethtool command line switches correctly set and displayed values for tx-usecs-high
