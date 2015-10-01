@@ -1,100 +1,58 @@
-From: Abodunrin, Akeem G <akeem.g.abodunrin@intel.com>
-Date: Thu, 1 Oct 2015 19:09:51 +0000
-Subject: [Intel-wired-lan] [next PATCH S18 3/8] i40e: Fix VEB/VEPA
- bridge	mode mismatch issue
-In-Reply-To: <FC41C24E35F18A40888AACA1A36F3E418AF91A28@fmsmsx115.amr.corp.intel.com>
-References: <1443724661-92168-1-git-send-email-catherine.sullivan@intel.com>
- <1443724661-92168-4-git-send-email-catherine.sullivan@intel.com>
- <FC41C24E35F18A40888AACA1A36F3E418AF91A28@fmsmsx115.amr.corp.intel.com>
-Message-ID: <CFEEE81102D91947B9CC368106979EBA61F2B92E@ORSMSX105.amr.corp.intel.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Thu, 01 Oct 2015 22:01:57 +0200
+Subject: [Intel-wired-lan] [PATCH 03/12] net: igb: avoid using timespec
+In-Reply-To: <20151001191745.GC1872@localhost.localdomain>
+References: <1443612402-3000775-1-git-send-email-arnd@arndb.de>
+ <1443612402-3000775-4-git-send-email-arnd@arndb.de>
+ <20151001191745.GC1872@localhost.localdomain>
+Message-ID: <1803983.ImzkvzgWES@wuerfel>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Thursday 01 October 2015 21:17:45 Richard Cochran wrote:
+> On Wed, Sep 30, 2015 at 01:26:33PM +0200, Arnd Bergmann wrote:
+> > diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
+> > index 5982f28d521a..c44df87c38de 100644
+> > --- a/drivers/net/ethernet/intel/igb/igb_ptp.c
+> > +++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
+> > @@ -143,7 +143,7 @@ static void igb_ptp_write_i210(struct igb_adapter *adapter,
+> >        * sub-nanosecond resolution.
+> >        */
+> >       wr32(E1000_SYSTIML, ts->tv_nsec);
+> > -     wr32(E1000_SYSTIMH, ts->tv_sec);
+> > +     wr32(E1000_SYSTIMH, (u32)ts->tv_sec);
+> 
+> This cast is unnecessary, because wr32 is writel, and that parameter
+> is a u32.
 
+I tried to use this pattern whenever I convert the 64-bit 'long long'
+tv_sec member of 'struct timespec64' into a 32-bit number, to annotate
+the loss of range.
 
-> -----Original Message-----
-> From: Nelson, Shannon
-> Sent: Thursday, October 01, 2015 12:06 PM
-> To: Sullivan, Catherine; intel-wired-lan at lists.osuosl.org
-> Cc: Abodunrin, Akeem G
-> Subject: RE: [Intel-wired-lan] [next PATCH S18 3/8] i40e: Fix VEB/VEPA bridge
-> mode mismatch issue
-> 
-> 
-> > -----Original Message-----
-> > From: Intel-wired-lan
-> > [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of
-> > Catherine Sullivan
-> > Sent: Thursday, October 01, 2015 11:38 AM
-> > To: intel-wired-lan at lists.osuosl.org
-> > Cc: Abodunrin, Akeem G <akeem.g.abodunrin@intel.com>
-> > Subject: [Intel-wired-lan] [next PATCH S18 3/8] i40e: Fix VEB/VEPA
-> > bridge mode mismatch issue
-> >
-> > From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
-> >
-> > Fix i40e_is_vsi_uplink_mode_veb to check if bridge is actually in VEB
-> > mode before allowing LB in the add vsi routine, instead of
-> > unconditionally returning VEB bridge mode.
-> >
-> > Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
-> > Change-ID: I162397b1bdd02367735fe9baaeb51465be2a3ce9
-> > ---
-> >  drivers/net/ethernet/intel/i40e/i40e_main.c | 16 +++++++++++++---
-> >  1 file changed, 13 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> > b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> > index d341f56..a56aefe 100644
-> > --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> > +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> > @@ -8758,12 +8758,22 @@ int i40e_is_vsi_uplink_mode_veb(struct
-> > i40e_vsi
-> > *vsi)
-> >  		return 1;
-> >
-> >  	veb = pf->veb[vsi->veb_idx];
-> > +	if (!veb) {
-> > +		dev_info(&pf->pdev->dev,
-> > +			 "There is no veb associated with the bridge\n");
-> > +		return -ENOENT;
-> > +	}
-> > +
-> 
-> This introduces a subtle bug into the code - the caller of
-> i40e_is_vsi_uplink_mode_veb() is looking for 0/non-0, not looking for an
-> error condition.
-> 
-> sln
+I have thought about defining separate helpers like this
 
-So, we need to make sure that caller knows how to handle instance of non-existence of VEB or we are guaranteed there is always going to be VEB, then we can just forget checking for error? Please, let me know...
+/* result will overflow in 2038 for real time */
+static inline s32 time64_to_s32_y2038(time64_t time)
+{
+	return time;
+}
 
-Thanks,
-~Akeem
-> 
-> >  	/* Uplink is a bridge in VEPA mode */
-> > -	if (veb && (veb->bridge_mode & BRIDGE_MODE_VEPA))
-> > +	if (veb->bridge_mode & BRIDGE_MODE_VEPA) {
-> >  		return 0;
-> > +	} else {
-> > +		/* Uplink is a bridge in VEB mode */
-> > +		return 1;
-> > +	}
-> >
-> > -	/* Uplink is a bridge in VEB mode */
-> > -	return 1;
-> > +	/* VEPA is now default bridge, so return 0 */
-> > +	return 0;
-> >  }
-> >
-> >  /**
-> > --
-> > 1.9.3
-> >
-> > _______________________________________________
-> > Intel-wired-lan mailing list
-> > Intel-wired-lan at lists.osuosl.org
-> > http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+/* result will overflow in 2106 for real time */
+static inline u32 time64_to_u32_y2106(time64_t time)
+{
+	return time;
+}
+
+/* monotonic times can safely be represented as 32 bit */
+static inline s32 time64_to_s32_monotonic(time64_t time)
+{
+	return time;
+}
+
+This would make it even more explicit, but my fear was that I was
+adding too much complexity like that.
+
+	Arnd
