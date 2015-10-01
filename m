@@ -1,41 +1,50 @@
-From: Richard Cochran <richardcochran@gmail.com>
-Date: Thu, 1 Oct 2015 21:17:45 +0200
-Subject: [Intel-wired-lan] [PATCH 03/12] net: igb: avoid using timespec
-In-Reply-To: <1443612402-3000775-4-git-send-email-arnd@arndb.de>
-References: <1443612402-3000775-1-git-send-email-arnd@arndb.de>
- <1443612402-3000775-4-git-send-email-arnd@arndb.de>
-Message-ID: <20151001191745.GC1872@localhost.localdomain>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 1 Oct 2015 19:23:00 +0000
+Subject: [Intel-wired-lan] [next PATCH S16 13/15] i40evf: relax and
+ stagger	init timing a bit
+In-Reply-To: <1443463964-148204-14-git-send-email-catherine.sullivan@intel.com>
+References: <1443463964-148204-1-git-send-email-catherine.sullivan@intel.com>
+ <1443463964-148204-14-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B2CE0@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Arnd
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Catherine Sullivan
+> Sent: Monday, September 28, 2015 11:13 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S16 13/15] i40evf: relax and stagger
+> init timing a bit
+> 
+> From: Mitch Williams <mitch.a.williams@intel.com>
+> 
+> On some devices, in some systems, in some configurations, the VFs would
+> fail to initialize the first time you loaded the driver.
+> 
+> To correct this, increase the delay time for the init task slightly, and wait
+> longer before giving up.
+> 
+> If we enable VFs and load the VF driver in the same kernel as the PF driver,
+> we can totally overwhelm the PF driver with AQ requests because all of the
+> instances try to initialize at the same time.
+> 
+> To help alleviate this, stagger the initial scheduling of the init task using the
+> PCIe function as a multiplier. We mask off the function to only three bits so
+> no instance has to wait too long.
+> 
+> With these two changes, initializing 128 VFs on a single device goes from four
+> minutes to just a few seconds.
+> 
+> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+> Change-ID: If3d8720c1c4e838ab36d8781d9ec295a62380936
+> ---
+>  drivers/net/ethernet/intel/i40evf/i40evf.h      | 2 +-
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 4 ++--
+>  2 files changed, 3 insertions(+), 3 deletions(-)
 
-As author of these snippets, I went ahead and reviewed.  I have one
-comment, below.
-
-Reviewed-by: Richard Cochran <richardcochran@gmail.com>
-
-On Wed, Sep 30, 2015 at 01:26:33PM +0200, Arnd Bergmann wrote:
-> diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
-> index 5982f28d521a..c44df87c38de 100644
-> --- a/drivers/net/ethernet/intel/igb/igb_ptp.c
-> +++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
-> @@ -143,7 +143,7 @@ static void igb_ptp_write_i210(struct igb_adapter *adapter,
->  	 * sub-nanosecond resolution.
->  	 */
->  	wr32(E1000_SYSTIML, ts->tv_nsec);
-> -	wr32(E1000_SYSTIMH, ts->tv_sec);
-> +	wr32(E1000_SYSTIMH, (u32)ts->tv_sec);
-
-This cast is unnecessary, because wr32 is writel, and that parameter
-is a u32.
-
-Thanks,
-Richard
-
->  }
->  
->  /**
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Code changes present in tree, able to initialize and remove 64 VFs in a few seconds.
