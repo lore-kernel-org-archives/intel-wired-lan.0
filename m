@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 1 Oct 2015 17:02:10 +0000
-Subject: [Intel-wired-lan] [next PATCH S16 06/15] i40e: Add support
-	for	non-willing Apps
-In-Reply-To: <1443463964-148204-7-git-send-email-catherine.sullivan@intel.com>
-References: <1443463964-148204-1-git-send-email-catherine.sullivan@intel.com>
- <1443463964-148204-7-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B2C10@ORSMSX104.amr.corp.intel.com>
+Date: Thu, 1 Oct 2015 17:36:59 +0000
+Subject: [Intel-wired-lan] [next PATCH S16 v2 07/15] i40e: Lock for
+ VSI's	MAC filter list
+In-Reply-To: <1443636543-110106-2-git-send-email-catherine.sullivan@intel.com>
+References: <1443636543-110106-1-git-send-email-catherine.sullivan@intel.com>
+ <1443636543-110106-2-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B2C23@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,24 +15,35 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
 > Behalf Of Catherine Sullivan
-> Sent: Monday, September 28, 2015 11:13 AM
+> Sent: Wednesday, September 30, 2015 11:09 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Bowers, Gregory J
-> Subject: [Intel-wired-lan] [next PATCH S16 06/15] i40e: Add support for non-
-> willing Apps
+> Subject: [Intel-wired-lan] [next PATCH S16 v2 07/15] i40e: Lock for VSI's MAC
+> filter list
 > 
-> From: Greg Bowers <gregory.j.bowers@intel.com>
+> From: Kiran Patil <kiran.patil@intel.com>
 > 
-> Adds support for setting a new bit in the Set Local LLDP MIB AQ command
-> Type field.  When set to 1, the bit indicates to FW that Apps should be
-> treated as non-willing.  When 0, FW behaves as before.
+> This patch introduces a spinlock which is to be used for synchronizing access
+> to VSI's MAC filter list.
 > 
-> Signed-off-by: Greg Bowers <gregory.j.bowers@intel.com>
-> Change-ID: I0d2101c1606c59c7188d3e6a0c7810e0f205233a
+> This patch also synchronizes execution of other codepaths which are
+> accessing VSI's MAC filter list with execution of service_task:sync_vsi_filters.
+> 
+> In function i40e_add_vsi, copied out LAA MAC address instead of cloning
+> MAC filter entry because only MAC address is needed to remove MAC VLAN
+> filter from FW/HW.
+> 
+> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Change-ID: I0e10ac7c715d44aa994239642aa4d57c998573a2
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h | 7 +++++++
->  drivers/net/ethernet/intel/i40e/i40e_type.h       | 2 ++
->  2 files changed, 9 insertions(+)
+> v2: Pull in patch 04/15 from S15 to squash the fix with the patch causing the
+> problem.
+>  drivers/net/ethernet/intel/i40e/i40e.h             |   2 +
+>  drivers/net/ethernet/intel/i40e/i40e_fcoe.c        |   2 +
+>  drivers/net/ethernet/intel/i40e/i40e_main.c        | 328
+> +++++++++++++++++----
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  26 +-
+>  4 files changed, 302 insertions(+), 56 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 Code changes present in tree
