@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 1 Oct 2015 20:00:34 +0000
-Subject: [Intel-wired-lan] [next PATCH S17 01/11] i40evf: don't give up
-In-Reply-To: <1443464220-148318-2-git-send-email-catherine.sullivan@intel.com>
+Date: Thu, 1 Oct 2015 20:40:47 +0000
+Subject: [Intel-wired-lan] [next PATCH S17 03/11] i40e/i40evf: fix bug
+ in	throttle rate math
+In-Reply-To: <1443464220-148318-4-git-send-email-catherine.sullivan@intel.com>
 References: <1443464220-148318-1-git-send-email-catherine.sullivan@intel.com>
- <1443464220-148318-2-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B2D2E@ORSMSX104.amr.corp.intel.com>
+ <1443464220-148318-4-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B2D4D@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,22 +17,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Catherine Sullivan
 > Sent: Monday, September 28, 2015 11:17 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S17 01/11] i40evf: don't give up
+> Subject: [Intel-wired-lan] [next PATCH S17 03/11] i40e/i40evf: fix bug in
+> throttle rate math
 > 
-> From: Mitch Williams <mitch.a.williams@intel.com>
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > 
-> When the VF driver is unable to communicate with the PF, it just gives up and
-> never tries again. Aside from the obvious character flaw that this shows, it's
-> also a lousy user experience.
+> The driver was using a value expressed in 2us increments for the divisor to
+> figure out our bytes/usec values.
 > 
-> When PF communications fail, wait five seconds, and try again. And again.
-> Don't give up, little VF driver! Your prince will come!
+> Fix the usecs variable to contain a value in microseconds.
 > 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-> Change-ID: Ia1378a39879883563b8faffce819f375821f9585
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Change-ID: I5c20493103c295d6f201947bb908add7040b7c41
 > ---
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 7 +++++--
->  1 file changed, 5 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 9 ++++++++-
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 9 ++++++++-
+>  2 files changed, 16 insertions(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 Code changes present in tree
