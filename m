@@ -1,53 +1,75 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Thu,  1 Oct 2015 14:37:41 -0400
-Subject: [Intel-wired-lan] [next PATCH S18 8/8] i40e/i40evf: Bump i40e to
-	1.3.46 and i40evf to 1.3.33
+Date: Thu,  1 Oct 2015 14:37:39 -0400
+Subject: [Intel-wired-lan] [next PATCH S18 6/8] i40e: Fix an incorrect OEM
+	version string
 In-Reply-To: <1443724661-92168-1-git-send-email-catherine.sullivan@intel.com>
 References: <1443724661-92168-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1443724661-92168-9-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1443724661-92168-7-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Bump up the version...
+From: Carolyn Wyborny <carolyn.wyborny@intel.com>
 
-Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-Change-ID: Ib8d501021671ba20250115ed54330e2c182255b7
+This patch fixes a problem where the driver output of the oem
+version string varied from the other tools.  The mask value
+and the order of operations were incorrect, per the DCR.
+Without this patch, the version string will appear incorrect
+from the driver.
+
+Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
+Change-ID: Ie1ca6485284b4ce3b57e5a99b18b7641617c7ef7
 
 ---
-Testing-hints: check version
- drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+Testing-hints: 5646237
+ drivers/net/ethernet/intel/i40e/i40e.h | 17 +++++++++++++----
+ 1 file changed, 13 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index a887fd9..84af3df 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -39,7 +39,7 @@ static const char i40e_driver_string[] =
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 7c2b2e8..4dd3e26 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -109,8 +109,10 @@
+ #define I40E_NVM_VERSION_LO_MASK   (0xff << I40E_NVM_VERSION_LO_SHIFT)
+ #define I40E_NVM_VERSION_HI_SHIFT  12
+ #define I40E_NVM_VERSION_HI_MASK   (0xf << I40E_NVM_VERSION_HI_SHIFT)
+-#define I40E_OEM_VER_BUILD_MASK    0xff00
++#define I40E_OEM_VER_BUILD_MASK    0xffff
+ #define I40E_OEM_VER_PATCH_MASK    0xff
++#define I40E_OEM_VER_BUILD_SHIFT   8
++#define I40E_OEM_VER_SHIFT         24
  
- #define DRV_VERSION_MAJOR 1
- #define DRV_VERSION_MINOR 3
--#define DRV_VERSION_BUILD 38
-+#define DRV_VERSION_BUILD 46
- #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
- 	     __stringify(DRV_VERSION_MINOR) "." \
- 	     __stringify(DRV_VERSION_BUILD)    DRV_KERN
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index ec19b91..cff29ab 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -34,7 +34,7 @@ char i40evf_driver_name[] = "i40evf";
- static const char i40evf_driver_string[] =
- 	"Intel(R) XL710/X710 Virtual Function Network Driver";
+ /* The values in here are decimal coded as hex as is the case in the NVM map*/
+ #define I40E_CURRENT_NVM_VERSION_HI 0x2
+@@ -594,6 +596,15 @@ struct i40e_device {
+ static inline char *i40e_nvm_version_str(struct i40e_hw *hw)
+ {
+ 	static char buf[32];
++	u32 full_ver;
++	u8 ver, patch;
++	u16 build;
++
++	full_ver = hw->nvm.oem_ver;
++	ver = (u8)(full_ver >> I40E_OEM_VER_SHIFT);
++	build = (u16)((full_ver >> I40E_OEM_VER_BUILD_SHIFT)
++		 & I40E_OEM_VER_BUILD_MASK);
++	patch = (u8)(full_ver & I40E_OEM_VER_PATCH_MASK);
  
--#define DRV_VERSION "1.3.25"
-+#define DRV_VERSION "1.3.33"
- const char i40evf_driver_version[] = DRV_VERSION;
- static const char i40evf_copyright[] =
- 	"Copyright (c) 2013 - 2015 Intel Corporation.";
+ 	snprintf(buf, sizeof(buf),
+ 		 "%x.%02x 0x%x %d.%d.%d",
+@@ -601,9 +612,7 @@ static inline char *i40e_nvm_version_str(struct i40e_hw *hw)
+ 			I40E_NVM_VERSION_HI_SHIFT,
+ 		 (hw->nvm.version & I40E_NVM_VERSION_LO_MASK) >>
+ 			I40E_NVM_VERSION_LO_SHIFT,
+-		 hw->nvm.eetrack, (hw->nvm.oem_ver >> 24),
+-		 (hw->nvm.oem_ver & I40E_OEM_VER_BUILD_MASK) >> 8,
+-		 hw->nvm.oem_ver & I40E_OEM_VER_PATCH_MASK);
++		 hw->nvm.eetrack, ver, build, patch);
+ 
+ 	return buf;
+ }
 -- 
 1.9.3
 
