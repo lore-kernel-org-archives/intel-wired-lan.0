@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 1 Oct 2015 15:30:02 +0000
-Subject: [Intel-wired-lan] [next PATCH S16 01/15] i40e: generate
-	fewer	startup messages
-In-Reply-To: <1443463964-148204-2-git-send-email-catherine.sullivan@intel.com>
+Date: Thu, 1 Oct 2015 16:31:56 +0000
+Subject: [Intel-wired-lan] [next PATCH S16 02/15] i40e/i40evf: Fix
+ compile	issue related to const string
+In-Reply-To: <1443463964-148204-3-git-send-email-catherine.sullivan@intel.com>
 References: <1443463964-148204-1-git-send-email-catherine.sullivan@intel.com>
- <1443463964-148204-2-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B2BB3@ORSMSX104.amr.corp.intel.com>
+ <1443463964-148204-3-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B2BC6@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,22 +17,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Catherine Sullivan
 > Sent: Monday, September 28, 2015 11:13 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S16 01/15] i40e: generate fewer
-> startup messages
+> Cc: Wu, Jingjing
+> Subject: [Intel-wired-lan] [next PATCH S16 02/15] i40e/i40evf: Fix compile
+> issue related to const string
 > 
-> From: Shannon Nelson <shannon.nelson@intel.com>
+> From: Jingjing Wu <jingjing.wu@intel.com>
 > 
-> Cut down on the number of startup log entries by putting a couple behind
-> debug flags and combining a couple others into a single line.
+> Add const to functions that return strings that aren't going to be modified.
+> This addresses some reported compile complaints.
 > 
-> Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-> Change-ID: I708089f086308f84d43f8b6f0e8a634a02d058fb
+> Signed-off-by: Jingjing Wu <jingjing.wu@intel.com>
+> Change-ID: Ic56b1e814ab4d23a50480e7fdec652445f776ee8
 > ---
->  drivers/net/ethernet/intel/i40e/i40e.h         |  4 ++--
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  2 +-
->  drivers/net/ethernet/intel/i40e/i40e_main.c    | 20 ++++++++++++--------
->  drivers/net/ethernet/intel/i40e/i40e_ptp.c     |  4 ++--
->  4 files changed, 17 insertions(+), 13 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_common.c      | 4 ++--
+>  drivers/net/ethernet/intel/i40e/i40e_nvm.c         | 2 +-
+>  drivers/net/ethernet/intel/i40e/i40e_prototype.h   | 4 ++--
+>  drivers/net/ethernet/intel/i40evf/i40e_common.c    | 4 ++--
+>  drivers/net/ethernet/intel/i40evf/i40e_prototype.h | 4 ++--
+>  5 files changed, 9 insertions(+), 9 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Code changes present in tree, fewer startup messages printed to log on startup, fw info follows new combined format.
+Code changes present in tree, no compile errors related to changed functions.
