@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 1 Oct 2015 16:57:08 +0000
-Subject: [Intel-wired-lan] [next PATCH S16 05/15] i40e: priv flag
-	for	controlling VEB stats
-In-Reply-To: <1443463964-148204-6-git-send-email-catherine.sullivan@intel.com>
+Date: Thu, 1 Oct 2015 17:02:10 +0000
+Subject: [Intel-wired-lan] [next PATCH S16 06/15] i40e: Add support
+	for	non-willing Apps
+In-Reply-To: <1443463964-148204-7-git-send-email-catherine.sullivan@intel.com>
 References: <1443463964-148204-1-git-send-email-catherine.sullivan@intel.com>
- <1443463964-148204-6-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B2BFD@ORSMSX104.amr.corp.intel.com>
+ <1443463964-148204-7-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B2C10@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,19 +17,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Catherine Sullivan
 > Sent: Monday, September 28, 2015 11:13 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S16 05/15] i40e: priv flag for
-> controlling VEB stats
+> Cc: Bowers, Gregory J
+> Subject: [Intel-wired-lan] [next PATCH S16 06/15] i40e: Add support for non-
+> willing Apps
 > 
-> From: Shannon Nelson <shannon.nelson@intel.com>
+> From: Greg Bowers <gregory.j.bowers@intel.com>
 > 
-> Add an ethtool priv flag to enable and disable printing the VEB statistics.
+> Adds support for setting a new bit in the Set Local LLDP MIB AQ command
+> Type field.  When set to 1, the bit indicates to FW that Apps should be
+> treated as non-willing.  When 0, FW behaves as before.
 > 
-> Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-> Change-ID: I7654054a3a73b08aa8310d94ee8fce6219107dd8
+> Signed-off-by: Greg Bowers <gregory.j.bowers@intel.com>
+> Change-ID: I0d2101c1606c59c7188d3e6a0c7810e0f205233a
 > ---
->  drivers/net/ethernet/intel/i40e/i40e.h         | 1 +
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 8 ++++++++
+>  drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h | 7 +++++++
+>  drivers/net/ethernet/intel/i40e/i40e_type.h       | 2 ++
 >  2 files changed, 9 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Code changes present in tree, "ethtool --show-priv-flags [device]" shows value for "veb-stats", flag can be toggled correctly.
+Code changes present in tree
