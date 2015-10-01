@@ -1,224 +1,38 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 01 Oct 2015 20:45:47 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- dd2486a9c793bd7df0b7ac742d5ac2147598bce7 BUILD INCOMPLETE
-Message-ID: <560d2afb.9zW8NF0ZvvD59y5V%fengguang.wu@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 1 Oct 2015 15:30:02 +0000
+Subject: [Intel-wired-lan] [next PATCH S16 01/15] i40e: generate
+	fewer	startup messages
+In-Reply-To: <1443463964-148204-2-git-send-email-catherine.sullivan@intel.com>
+References: <1443463964-148204-1-git-send-email-catherine.sullivan@intel.com>
+ <1443463964-148204-2-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B2BB3@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-dd2486a9c793bd7df0b7ac742d5ac2147598bce7  net: igb: avoid using timespec
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Catherine Sullivan
+> Sent: Monday, September 28, 2015 11:13 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S16 01/15] i40e: generate fewer
+> startup messages
+> 
+> From: Shannon Nelson <shannon.nelson@intel.com>
+> 
+> Cut down on the number of startup log entries by putting a couple behind
+> debug flags and combining a couple others into a single line.
+> 
+> Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+> Change-ID: I708089f086308f84d43f8b6f0e8a634a02d058fb
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e.h         |  4 ++--
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  2 +-
+>  drivers/net/ethernet/intel/i40e/i40e_main.c    | 20 ++++++++++++--------
+>  drivers/net/ethernet/intel/i40e/i40e_ptp.c     |  4 ++--
+>  4 files changed, 17 insertions(+), 13 deletions(-)
 
-drivers/net/ethernet/intel/e1000e/netdev.c:6785:3: error: implicit declaration of function 'e1000e_disable_aspm_locked'
-drivers/net/ethernet/intel/e1000e/netdev.c:6785:3: error: implicit declaration of function 'e1000e_disable_aspm_locked' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/i40e/i40e_txrx.c:2354:17: warning: 'oudph' may be used uninitialized in this function [-Wmaybe-uninitialized]
-drivers/net/ethernet/intel/i40e/i40e_txrx.c:2354:17: warning: 'oudph' may be used uninitialized in this function [-Wuninitialized]
-drivers/net/ethernet/intel/i40e/i40e_txrx.c:2354:20: warning: 'oiph' may be used uninitialized in this function [-Wmaybe-uninitialized]
-drivers/net/ethernet/intel/i40e/i40e_txrx.c:2354:37: warning: 'oiph' may be used uninitialized in this function [-Wuninitialized]
-drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c:131:12: warning: 'ixgbe_get_cs4227_status' defined but not used [-Wunused-function]
-
-Error ids grouped by kconfigs:
-
-recent_errors
-??? alpha-allyesconfig
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_x550.c:warning:ixgbe_get_cs4227_status-defined-but-not-used
-??? i386-allmodconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_x550.c:warning:ixgbe_get_cs4227_status-defined-but-not-used
-??? i386-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_x550.c:warning:ixgbe_get_cs4227_status-defined-but-not-used
-??? i386-randconfig-i0-201539
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_x550.c:warning:ixgbe_get_cs4227_status-defined-but-not-used
-??? i386-randconfig-i1-201539
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_x550.c:warning:ixgbe_get_cs4227_status-defined-but-not-used
-??? ia64-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_x550.c:warning:ixgbe_get_cs4227_status-defined-but-not-used
-??? parisc-allyesconfig
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_x550.c:warning:ixgbe_get_cs4227_status-defined-but-not-used
-??? powerpc-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_x550.c:warning:ixgbe_get_cs4227_status-defined-but-not-used
-??? powerpc-defconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_x550.c:warning:ixgbe_get_cs4227_status-defined-but-not-used
-??? powerpc-ppc64_defconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_x550.c:warning:ixgbe_get_cs4227_status-defined-but-not-used
-??? s390-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_x550.c:warning:ixgbe_get_cs4227_status-defined-but-not-used
-??? sparc64-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_x550.c:warning:ixgbe_get_cs4227_status-defined-but-not-used
-??? sparc64-defconfig
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
-??? sparc-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_x550.c:warning:ixgbe_get_cs4227_status-defined-but-not-used
-??? tile-allyesconfig
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-e1000e_disable_aspm_locked
-??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:oiph-may-be-used-uninitialized-in-this-function
-??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:oudph-may-be-used-uninitialized-in-this-function
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_x550.c:warning:ixgbe_get_cs4227_status-defined-but-not-used
-??? x86_64-acpi-redef
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_x550.c:warning:ixgbe_get_cs4227_status-defined-but-not-used
-??? x86_64-allmodconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_x550.c:warning:ixgbe_get_cs4227_status-defined-but-not-used
-??? x86_64-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_x550.c:warning:ixgbe_get_cs4227_status-defined-but-not-used
-??? x86_64-allyesdebian
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_x550.c:warning:ixgbe_get_cs4227_status-defined-but-not-used
-??? x86_64-nfsroot
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_x550.c:warning:ixgbe_get_cs4227_status-defined-but-not-used
-??? x86_64-rhel
-??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:oiph-may-be-used-uninitialized-in-this-function
-??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:oudph-may-be-used-uninitialized-in-this-function
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_x550.c:warning:ixgbe_get_cs4227_status-defined-but-not-used
-??? xtensa-allyesconfig
-    ??? drivers-net-ethernet-intel-ixgbe-ixgbe_x550.c:warning:ixgbe_get_cs4227_status-defined-but-not-used
-
-TIMEOUT after 602m
-
-
-Sorry we cannot finish the testset for your branch within a reasonable time.
-It's our fault -- either some build server is down or some build worker is busy
-doing bisects for _other_ trees. The branch will get more complete coverage and
-possible error reports when our build infrastructure is restored or catches up.
-There will be no more build success notification for this branch head, but you
-can expect reasonably good test coverage after waiting for 1 day.
-
-configs timed out: 21
-
-alpha                            allyesconfig
-arm                                      arm5
-arm                                     arm67
-arm                                       mmp
-arm                       omap2plus_defconfig
-arm                         s3c2410_defconfig
-arm                           tegra_defconfig
-blackfin                         allyesconfig
-cris                             allyesconfig
-ia64                             allyesconfig
-m68k                             allyesconfig
-mips                             allyesconfig
-parisc                           allyesconfig
-powerpc                          allyesconfig
-s390                             allyesconfig
-sh                               allyesconfig
-sparc64                          allyesconfig
-sparc                            allyesconfig
-tile                             allyesconfig
-x86_64                           allyesconfig
-xtensa                           allyesconfig
-
-configs tested: 108
-
-i386                     randconfig-a0-201539
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-x86_64                 randconfig-x014-201539
-x86_64                 randconfig-x019-201539
-x86_64                 randconfig-x016-201539
-x86_64                 randconfig-x011-201539
-x86_64                 randconfig-x018-201539
-x86_64                 randconfig-x012-201539
-x86_64                 randconfig-x017-201539
-x86_64                 randconfig-x013-201539
-x86_64                 randconfig-x015-201539
-x86_64                 randconfig-x010-201539
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-mips                                   jz4740
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-i386                     randconfig-s1-201539
-i386                     randconfig-s0-201539
-x86_64                           allmodconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-x86_64                            allnoconfig
-i386                             allmodconfig
-x86_64                   randconfig-i0-201539
-i386                     randconfig-i1-201539
-i386                     randconfig-i0-201539
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201539
-i386                             allyesconfig
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64                                    lkp
-x86_64                                   rhel
-arm                                    sa1100
-arm                          prima2_defconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                                   samsung
-arm                       spear13xx_defconfig
-arm                                  iop-adma
-arm                       imx_v6_v7_defconfig
-arm                          marzen_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                                        sh
-x86_64                 randconfig-x001-201539
-x86_64                 randconfig-x004-201539
-x86_64                 randconfig-x000-201539
-x86_64                 randconfig-x006-201539
-x86_64                 randconfig-x003-201539
-x86_64                 randconfig-x008-201539
-x86_64                 randconfig-x007-201539
-x86_64                 randconfig-x009-201539
-x86_64                 randconfig-x005-201539
-x86_64                 randconfig-x002-201539
-i386                     randconfig-r0-201539
-i386                   randconfig-x000-201539
-i386                   randconfig-x005-201539
-i386                   randconfig-x003-201539
-i386                   randconfig-x007-201539
-i386                   randconfig-x004-201539
-i386                   randconfig-x001-201539
-i386                   randconfig-x008-201539
-i386                   randconfig-x006-201539
-i386                   randconfig-x009-201539
-i386                   randconfig-x002-201539
-
-Thanks,
-Fengguang
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Code changes present in tree, fewer startup messages printed to log on startup, fw info follows new combined format.
