@@ -1,134 +1,81 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 02 Oct 2015 10:38:50 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
- e874ae9109a81aff266c7c0009c583d3ee5be378 BUILD SUCCESS
-Message-ID: <560dee3a.4nIWp1IUPYfS5Nry%fengguang.wu@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Fri, 02 Oct 2015 06:12:34 -0000
+Subject: [Intel-wired-lan] [next PATCH v2 1/2] i40evf: fix overlong BIT
+	defines
+In-Reply-To: <1442455270-6681-1-git-send-email-jesse.brandeburg@intel.com>
+References: <1442455270-6681-1-git-send-email-jesse.brandeburg@intel.com>
+Message-ID: <1442455270-6681-2-git-send-email-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-e874ae9109a81aff266c7c0009c583d3ee5be378  i40e: fix VLAN inside VXLAN
+The defines from the RSS enabling call were mistakenly
+missed in the patches to the i40e which should have been
+to i40evf as well.
 
-elapsed time: 86m
+this is a follow up to (commit ed921559886dd40528) "fix
+32 bit build warnings".
 
-configs tested: 113
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+---
+ drivers/net/ethernet/intel/i40evf/i40e_common.c |  5 -----
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.h   | 14 +++++++-------
+ 2 files changed, 7 insertions(+), 12 deletions(-)
 
-i386                     randconfig-a0-201539
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-x86_64                            allnoconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-x86_64                 randconfig-x014-201539
-x86_64                 randconfig-x019-201539
-x86_64                 randconfig-x016-201539
-x86_64                 randconfig-x011-201539
-x86_64                 randconfig-x018-201539
-x86_64                 randconfig-x012-201539
-x86_64                 randconfig-x017-201539
-x86_64                 randconfig-x013-201539
-x86_64                 randconfig-x015-201539
-x86_64                 randconfig-x010-201539
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                     randconfig-s1-201539
-i386                     randconfig-s0-201539
-x86_64                   randconfig-i0-201539
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i1-201539
-i386                     randconfig-i0-201539
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201539
-arm                       omap2plus_defconfig
-arm                         s3c2410_defconfig
-arm                                       mmp
-arm                           tegra_defconfig
-arm                                      arm5
-arm                                     arm67
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-arm                                    sa1100
-arm                          prima2_defconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                                   samsung
-arm                       spear13xx_defconfig
-arm                                  iop-adma
-arm                       imx_v6_v7_defconfig
-arm                          marzen_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                                        sh
-x86_64                 randconfig-x001-201539
-x86_64                 randconfig-x004-201539
-x86_64                 randconfig-x000-201539
-x86_64                 randconfig-x006-201539
-x86_64                 randconfig-x003-201539
-x86_64                 randconfig-x008-201539
-x86_64                 randconfig-x007-201539
-x86_64                 randconfig-x009-201539
-x86_64                 randconfig-x005-201539
-x86_64                 randconfig-x002-201539
-i386                     randconfig-r0-201539
-i386                             allmodconfig
-i386                   randconfig-x000-201539
-i386                   randconfig-x005-201539
-i386                   randconfig-x003-201539
-i386                   randconfig-x007-201539
-i386                   randconfig-x004-201539
-i386                   randconfig-x001-201539
-i386                   randconfig-x008-201539
-i386                   randconfig-x006-201539
-i386                   randconfig-x009-201539
-i386                   randconfig-x002-201539
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-mips                                   jz4740
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_common.c b/drivers/net/ethernet/intel/i40evf/i40e_common.c
+index b98b642..a98a31f 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_common.c
+@@ -443,9 +443,6 @@ static i40e_status i40e_aq_get_set_rss_lut(struct i40e_hw *hw,
+ 					I40E_AQC_SET_RSS_LUT_TABLE_TYPE_SHIFT) &
+ 					I40E_AQC_SET_RSS_LUT_TABLE_TYPE_MASK));
+ 
+-	cmd_resp->addr_high = cpu_to_le32(high_16_bits((u64)lut));
+-	cmd_resp->addr_low = cpu_to_le32(lower_32_bits((u64)lut));
+-
+ 	status = i40evf_asq_send_command(hw, &desc, lut, lut_size, NULL);
+ 
+ 	return status;
+@@ -520,8 +517,6 @@ static i40e_status i40e_aq_get_set_rss_key(struct i40e_hw *hw,
+ 					  I40E_AQC_SET_RSS_KEY_VSI_ID_SHIFT) &
+ 					  I40E_AQC_SET_RSS_KEY_VSI_ID_MASK));
+ 	cmd_resp->vsi_id |= cpu_to_le16((u16)I40E_AQC_SET_RSS_KEY_VSI_VALID);
+-	cmd_resp->addr_high = cpu_to_le32(high_16_bits((u64)key));
+-	cmd_resp->addr_low = cpu_to_le32(lower_32_bits((u64)key));
+ 
+ 	status = i40evf_asq_send_command(hw, &desc, key, key_size, NULL);
+ 
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
+index 26fc85f..e8185c0 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
+@@ -79,16 +79,16 @@ enum i40e_dyn_idx_t {
+ 	BIT_ULL(I40E_FILTER_PCTYPE_L2_PAYLOAD))
+ 
+ #define I40E_DEFAULT_RSS_HENA_EXPANDED (I40E_DEFAULT_RSS_HENA | \
+-		BIT(I40E_FILTER_PCTYPE_NONF_IPV4_TCP_SYN_NO_ACK) | \
+-		BIT(I40E_FILTER_PCTYPE_NONF_UNICAST_IPV4_UDP) | \
+-		BIT(I40E_FILTER_PCTYPE_NONF_MULTICAST_IPV4_UDP) | \
+-		BIT(I40E_FILTER_PCTYPE_NONF_IPV6_TCP_SYN_NO_ACK) | \
+-		BIT(I40E_FILTER_PCTYPE_NONF_UNICAST_IPV6_UDP) | \
+-		BIT(I40E_FILTER_PCTYPE_NONF_MULTICAST_IPV6_UDP))
++	BIT_ULL(I40E_FILTER_PCTYPE_NONF_IPV4_TCP_SYN_NO_ACK) | \
++	BIT_ULL(I40E_FILTER_PCTYPE_NONF_UNICAST_IPV4_UDP) | \
++	BIT_ULL(I40E_FILTER_PCTYPE_NONF_MULTICAST_IPV4_UDP) | \
++	BIT_ULL(I40E_FILTER_PCTYPE_NONF_IPV6_TCP_SYN_NO_ACK) | \
++	BIT_ULL(I40E_FILTER_PCTYPE_NONF_UNICAST_IPV6_UDP) | \
++	BIT_ULL(I40E_FILTER_PCTYPE_NONF_MULTICAST_IPV6_UDP))
+ 
+ #define i40e_pf_get_default_rss_hena(pf) \
+ 	(((pf)->flags & I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE) ? \
+-		I40E_DEFAULT_RSS_HENA_EXPANDED : I40E_DEFAULT_RSS_HENA)
++	  I40E_DEFAULT_RSS_HENA_EXPANDED : I40E_DEFAULT_RSS_HENA)
+ 
+ /* Supported Rx Buffer Sizes */
+ #define I40E_RXBUFFER_512   512    /* Used for packet split */
+-- 
+2.1.0
 
-Thanks,
-Fengguang
+
