@@ -1,116 +1,37 @@
-From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Fri, 02 Oct 2015 09:23:53 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Remove CS4227 diagnostic code
-Message-ID: <20151002162352.95780.77273.stgit@mdrustad-wks.jf.intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 2 Oct 2015 16:49:20 +0000
+Subject: [Intel-wired-lan] [next PATCH S17 06/11] i40e: Fix for
+	Tools	loopback test failing after driver load
+In-Reply-To: <1443464220-148318-7-git-send-email-catherine.sullivan@intel.com>
+References: <1443464220-148318-1-git-send-email-catherine.sullivan@intel.com>
+ <1443464220-148318-7-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B2E57@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Testing has now shown that the diagnostic code used with the CS4227
-is no longer needed, so remove it.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Catherine Sullivan
+> Sent: Monday, September 28, 2015 11:17 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S17 06/11] i40e: Fix for Tools loopback
+> test failing after driver load
+> 
+> From: Carolyn Wyborny <carolyn.wyborny@intel.com>
+> 
+> This patch fixes a problem where our Tools MAC Loopback test, after driver
+> unbind would fail.  This was because the hw was configured for multiqueue
+> and unbind operation did not clear this configuration.
+> The problem is fixed by resetting this configuration in i40e_remove.
+> 
+> Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
+> Change-ID: I130c05138319182ed1476d3a0b5222d6a6320af9
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 5 +++++
+>  1 file changed, 5 insertions(+)
 
-Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   79 -------------------------
- 1 file changed, 79 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index 028e35a5022b..d0e8a6a41721 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -83,78 +83,6 @@ static s32 ixgbe_write_cs4227(struct ixgbe_hw *hw, u16 reg, u16 value)
- }
- 
- /**
-- * ixgbe_check_cs4227_reg - Perform diag on a CS4227 register
-- * @hw: pointer to hardware structure
-- * @reg: the register to check
-- *
-- * Performs a diagnostic on a register in the CS4227 chip. Returns an error
-- * if it is not operating correctly.
-- * This function assumes that the caller has acquired the proper semaphore.
-- */
--static s32 ixgbe_check_cs4227_reg(struct ixgbe_hw *hw, u16 reg)
--{
--	s32 status;
--	u32 retry;
--	u16 reg_val;
--
--	reg_val = (IXGBE_CS4227_EDC_MODE_DIAG << 1) | 1;
--	status = ixgbe_write_cs4227(hw, reg, reg_val);
--	if (status)
--		return status;
--	for (retry = 0; retry < IXGBE_CS4227_RETRIES; retry++) {
--		msleep(IXGBE_CS4227_CHECK_DELAY);
--		reg_val = 0xFFFF;
--		ixgbe_read_cs4227(hw, reg, &reg_val);
--		if (!reg_val)
--			break;
--	}
--	if (reg_val) {
--		hw_err(hw, "CS4227 reg 0x%04X failed diagnostic\n", reg);
--		return status;
--	}
--
--	return 0;
--}
--
--/** ixgbe_get_cs4227_status - Return CS4227 status
-- * @hw: pointer to hardware structure
-- *
-- * Performs a diagnostic on the CS4227 chip. Returns an error if it is
-- * not operating correctly.
-- * This function assumes that the caller has acquired the proper semaphore.
-- */
--static s32 ixgbe_get_cs4227_status(struct ixgbe_hw *hw)
--{
--	s32 status;
--	u16 value = 0;
--
--	/* Exit if the diagnostic has already been performed. */
--	status = ixgbe_read_cs4227(hw, IXGBE_CS4227_SCRATCH, &value);
--	if (status)
--		return status;
--	if (value == IXGBE_CS4227_RESET_COMPLETE)
--		return 0;
--
--	/* Check port 0. */
--	status = ixgbe_check_cs4227_reg(hw, IXGBE_CS4227_LINE_SPARE24_LSB);
--	if (status)
--		return status;
--
--	status = ixgbe_check_cs4227_reg(hw, IXGBE_CS4227_HOST_SPARE24_LSB);
--	if (status)
--		return status;
--
--	/* Check port 1. */
--	status = ixgbe_check_cs4227_reg(hw, IXGBE_CS4227_LINE_SPARE24_LSB +
--					(1 << 12));
--	if (status)
--		return status;
--
--	return ixgbe_check_cs4227_reg(hw, IXGBE_CS4227_HOST_SPARE24_LSB +
--				      (1 << 12));
--}
--
--/**
-  * ixgbe_read_pe - Read register from port expander
-  * @hw: pointer to hardware structure
-  * @reg: register number to read
-@@ -320,13 +248,6 @@ static void ixgbe_check_cs4227(struct ixgbe_hw *hw)
- 		return;
- 	}
- 
--	/* Is the CS4227 working correctly? */
--	status = ixgbe_get_cs4227_status(hw);
--	if (status) {
--		hw_err(hw, "CS4227 status failed: %d", status);
--		goto out;
--	}
--
- 	/* Record completion for next time. */
- 	status = ixgbe_write_cs4227(hw, IXGBE_CS4227_SCRATCH,
- 				    IXGBE_CS4227_RESET_COMPLETE);
-
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Code changes present in tree, MAC loopback test passes in LANConf.
