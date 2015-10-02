@@ -1,97 +1,91 @@
-From: Mitch Williams <mitch.a.williams@intel.com>
-Date: Fri,  2 Oct 2015 10:19:46 -0700
-Subject: [Intel-wired-lan] [net PATCH] i40e/i40evf: set aq count after
-	memory allocation
-Message-ID: <1443806386-150326-1-git-send-email-mitch.a.williams@intel.com>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Fri,  2 Oct 2015 12:18:16 +0300
+Subject: [Intel-wired-lan] [PATCH 1/1] i40e: re-use %*ph specifier to
+	hexdump a data
+Message-ID: <1443777496-43299-1-git-send-email-andriy.shevchenko@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The standard way to check if the AQ is enabled is to look at the
-count field. So we should only set this field after we have
-successfully allocated memory. To do otherwise is to incite
-panic among the populace.
+Instead of using a custom approach change the code to use %*ph format
+specifier.
 
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_adminq.c   | 4 ++--
- drivers/net/ethernet/intel/i40evf/i40e_adminq.c | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_common.c   | 22 ++++------------------
+ drivers/net/ethernet/intel/i40evf/i40e_common.c | 22 ++++------------------
+ 2 files changed, 8 insertions(+), 36 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-index 62488a6..c0e943a 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-@@ -386,7 +386,6 @@ static i40e_status i40e_init_asq(struct i40e_hw *hw)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 114dc64..3bc772c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -329,25 +329,11 @@ void i40e_debug_aq(struct i40e_hw *hw, enum i40e_debug_mask mask, void *desc,
+ 			len = buf_len;
+ 		/* write the full 16-byte chunks */
+ 		for (i = 0; i < (len - 16); i += 16)
+-			i40e_debug(hw, mask,
+-				   "\t0x%04X  %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X\n",
+-				   i, buf[i], buf[i + 1], buf[i + 2],
+-				   buf[i + 3], buf[i + 4], buf[i + 5],
+-				   buf[i + 6], buf[i + 7], buf[i + 8],
+-				   buf[i + 9], buf[i + 10], buf[i + 11],
+-				   buf[i + 12], buf[i + 13], buf[i + 14],
+-				   buf[i + 15]);
++			i40e_debug(hw, mask, "\t0x%04X  %16ph\n", i, buf + i);
+ 		/* write whatever's left over without overrunning the buffer */
+-		if (i < len) {
+-			char d_buf[80];
+-			int j = 0;
+-
+-			memset(d_buf, 0, sizeof(d_buf));
+-			j += sprintf(d_buf, "\t0x%04X ", i);
+-			while (i < len)
+-				j += sprintf(&d_buf[j], " %02X", buf[i++]);
+-			i40e_debug(hw, mask, "%s\n", d_buf);
+-		}
++		if (i < len)
++			i40e_debug(hw, mask, "\t0x%04X  %*ph\n",
++					     i, len - i, buf + i);
+ 	}
+ }
  
- 	hw->aq.asq.next_to_use = 0;
- 	hw->aq.asq.next_to_clean = 0;
--	hw->aq.asq.count = hw->aq.num_asq_entries;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_common.c b/drivers/net/ethernet/intel/i40evf/i40e_common.c
+index d45d0ae..200bbcb 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_common.c
+@@ -329,25 +329,11 @@ void i40evf_debug_aq(struct i40e_hw *hw, enum i40e_debug_mask mask, void *desc,
+ 			len = buf_len;
+ 		/* write the full 16-byte chunks */
+ 		for (i = 0; i < (len - 16); i += 16)
+-			i40e_debug(hw, mask,
+-				   "\t0x%04X  %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X\n",
+-				   i, buf[i], buf[i + 1], buf[i + 2],
+-				   buf[i + 3], buf[i + 4], buf[i + 5],
+-				   buf[i + 6], buf[i + 7], buf[i + 8],
+-				   buf[i + 9], buf[i + 10], buf[i + 11],
+-				   buf[i + 12], buf[i + 13], buf[i + 14],
+-				   buf[i + 15]);
++			i40e_debug(hw, mask, "\t0x%04X  %16ph\n", i, buf + i);
+ 		/* write whatever's left over without overrunning the buffer */
+-		if (i < len) {
+-			char d_buf[80];
+-			int j = 0;
+-
+-			memset(d_buf, 0, sizeof(d_buf));
+-			j += sprintf(d_buf, "\t0x%04X ", i);
+-			while (i < len)
+-				j += sprintf(&d_buf[j], " %02X", buf[i++]);
+-			i40e_debug(hw, mask, "%s\n", d_buf);
+-		}
++		if (i < len)
++			i40e_debug(hw, mask, "\t0x%04X  %*ph\n",
++					     i, len - i, buf + i);
+ 	}
+ }
  
- 	/* allocate the ring memory */
- 	ret_code = i40e_alloc_adminq_asq_ring(hw);
-@@ -404,6 +403,7 @@ static i40e_status i40e_init_asq(struct i40e_hw *hw)
- 		goto init_adminq_free_rings;
- 
- 	/* success! */
-+	hw->aq.asq.count = hw->aq.num_asq_entries;
- 	goto init_adminq_exit;
- 
- init_adminq_free_rings:
-@@ -445,7 +445,6 @@ static i40e_status i40e_init_arq(struct i40e_hw *hw)
- 
- 	hw->aq.arq.next_to_use = 0;
- 	hw->aq.arq.next_to_clean = 0;
--	hw->aq.arq.count = hw->aq.num_arq_entries;
- 
- 	/* allocate the ring memory */
- 	ret_code = i40e_alloc_adminq_arq_ring(hw);
-@@ -463,6 +462,7 @@ static i40e_status i40e_init_arq(struct i40e_hw *hw)
- 		goto init_adminq_free_rings;
- 
- 	/* success! */
-+	hw->aq.arq.count = hw->aq.num_arq_entries;
- 	goto init_adminq_exit;
- 
- init_adminq_free_rings:
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq.c b/drivers/net/ethernet/intel/i40evf/i40e_adminq.c
-index 7f52ee1..8ce43b9 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_adminq.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq.c
-@@ -384,7 +384,6 @@ static i40e_status i40e_init_asq(struct i40e_hw *hw)
- 
- 	hw->aq.asq.next_to_use = 0;
- 	hw->aq.asq.next_to_clean = 0;
--	hw->aq.asq.count = hw->aq.num_asq_entries;
- 
- 	/* allocate the ring memory */
- 	ret_code = i40e_alloc_adminq_asq_ring(hw);
-@@ -402,6 +401,7 @@ static i40e_status i40e_init_asq(struct i40e_hw *hw)
- 		goto init_adminq_free_rings;
- 
- 	/* success! */
-+	hw->aq.asq.count = hw->aq.num_asq_entries;
- 	goto init_adminq_exit;
- 
- init_adminq_free_rings:
-@@ -443,7 +443,6 @@ static i40e_status i40e_init_arq(struct i40e_hw *hw)
- 
- 	hw->aq.arq.next_to_use = 0;
- 	hw->aq.arq.next_to_clean = 0;
--	hw->aq.arq.count = hw->aq.num_arq_entries;
- 
- 	/* allocate the ring memory */
- 	ret_code = i40e_alloc_adminq_arq_ring(hw);
-@@ -461,6 +460,7 @@ static i40e_status i40e_init_arq(struct i40e_hw *hw)
- 		goto init_adminq_free_rings;
- 
- 	/* success! */
-+	hw->aq.arq.count = hw->aq.num_arq_entries;
- 	goto init_adminq_exit;
- 
- init_adminq_free_rings:
 -- 
-2.4.3
+2.5.1
 
