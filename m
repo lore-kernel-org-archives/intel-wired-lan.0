@@ -1,35 +1,36 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 2 Oct 2015 21:54:48 +0000
-Subject: [Intel-wired-lan] [next PATCH S17 10/11] i40e: Move error
- message	to debug level
-In-Reply-To: <1443464220-148318-11-git-send-email-catherine.sullivan@intel.com>
-References: <1443464220-148318-1-git-send-email-catherine.sullivan@intel.com>
- <1443464220-148318-11-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B2EF4@ORSMSX104.amr.corp.intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Fri,  2 Oct 2015 17:57:21 -0700
+Subject: [Intel-wired-lan] [net PATCH] i40e: fix annoying message
+Message-ID: <1443833841-2862-1-git-send-email-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Catherine Sullivan
-> Sent: Monday, September 28, 2015 11:17 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S17 10/11] i40e: Move error message
-> to debug level
-> 
-> There is an error coming back from get_phy_capabilities that does not seem
-> to have any functional implications. We will continue looking into why this
-> error message is occurring, but in the meantime, we will move it to debug to
-> avoid confusion.
-> 
-> Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-> Change-ID: I9091754bf62c066ddedeb249923d85606e2d68ed
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
+The driver was printing a message about not being able
+to assign VMDq because of a lack of MSI-X vectors.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Code changes present in tree
+This was because a line was missing that initialized a variable,
+simply a merge error.
+
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 851dcec..1672671 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -8164,6 +8164,7 @@ static int i40e_sw_init(struct i40e_pf *pf)
+ 	if (pf->hw.func_caps.vmdq) {
+ 		pf->num_vmdq_vsis = I40E_DEFAULT_NUM_VMDQ_VSI;
+ 		pf->flags |= I40E_FLAG_VMDQ_ENABLED;
++		pf->num_vmdq_qps = i40e_default_queues_per_vmdq(pf);
+ 	}
+ 
+ #ifdef I40E_FCOE
+-- 
+2.1.0
+
