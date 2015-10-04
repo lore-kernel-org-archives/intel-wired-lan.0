@@ -1,202 +1,46 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sun, 04 Oct 2015 09:59:32 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:master]
- 84bf0cab57ba571f5d4c0edfd6bb69206e8af2b0 BUILD SUCCESS
-Message-ID: <56108804.3i2K/DqMLEtRVxrw%fengguang.wu@intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Sun,  4 Oct 2015 01:09:49 -0700
+Subject: [Intel-wired-lan] [PATCH v2] i40evf: fix compiler warning of unused
+	variable
+Message-ID: <1443946189-8543-1-git-send-email-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
-84bf0cab57ba571f5d4c0edfd6bb69206e8af2b0  i40e: fix offload of GRE tunnels
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-elapsed time: 155m
+Compiler complained of an unused variable, which the driver was just
+using to store the result of a rd32 which is used to clear a register
+unconditionally.  Just drop the unused variable and re-use one.
 
-configs tested: 181
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+---
+v2: Fix title since Jesse used the same title for two difference patches
 
-parisc                        c3000_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-blackfin                            defconfig
-ia64                                defconfig
-mips                                defconfig
-i386                     randconfig-a0-201540
-i386                   randconfig-a0-10040759
-x86_64                 randconfig-a0-10040759
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-x86_64                            allnoconfig
-arm                        raumfeld_defconfig
-powerpc                     mpc512x_defconfig
-powerpc                  storcenter_defconfig
-blackfin                    PNAV-10_defconfig
-powerpc64                        allmodconfig
-powerpc64                           defconfig
-arm                             mxs_defconfig
-powerpc                     tqm8555_defconfig
-tile                         tilegx_defconfig
-arm                     eseries_pxa_defconfig
-arm                          pcm027_defconfig
-sh                           se7206_defconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-i386                   randconfig-c0-10040800
-i386                   randconfig-c0-10040908
-i386                   randconfig-c0-10040938
-x86_64                           allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-arm                         s3c2410_defconfig
-microblaze                       allmodconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-x86_64                 randconfig-v0-10040656
-parisc                         b180_defconfig
-i386                             allmodconfig
-sh                                  defconfig
-arm                          collie_defconfig
-arm                       mainstone_defconfig
-arm                            u300_defconfig
-m68k                       m5275evb_defconfig
-powerpc                  gef_sbc610_defconfig
-arm                         shannon_defconfig
-arm                           spitz_defconfig
-avr32                        merisc_defconfig
-sh                   sh7770_generic_defconfig
-x86_64               randconfig-x010-10040830
-x86_64               randconfig-x011-10040830
-x86_64               randconfig-x012-10040830
-x86_64               randconfig-x013-10040830
-x86_64               randconfig-x014-10040830
-x86_64               randconfig-x015-10040830
-x86_64               randconfig-x016-10040830
-x86_64               randconfig-x017-10040830
-x86_64               randconfig-x018-10040830
-x86_64               randconfig-x019-10040830
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                   randconfig-s0-10040830
-i386                   randconfig-s1-10040830
-x86_64                 randconfig-s0-10040830
-x86_64                 randconfig-s1-10040830
-x86_64                 randconfig-s2-10040830
-x86_64                 randconfig-s3-10040830
-x86_64                 randconfig-s4-10040830
-x86_64                 randconfig-s5-10040830
-x86_64                 randconfig-s3-10040922
-x86_64                 randconfig-s4-10040922
-x86_64                 randconfig-s5-10040922
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201540
-x86_64                 randconfig-i0-10040800
-i386                   randconfig-b0-10040800
-mips                       rbtx49xx_defconfig
-powerpc                     virtex5_defconfig
-sh                        apsh4ad0a_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i1-201540
-i386                     randconfig-i0-201540
-i386                             allyesconfig
-x86_64                 randconfig-b0-10040742
-x86_64                 randconfig-b0-10040844
-x86_64                 randconfig-b0-10040929
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                   randconfig-n0-10040721
-i386                     randconfig-n0-201540
-i386                   randconfig-h0-10040801
-i386                   randconfig-h1-10040801
-powerpc                    gamecube_defconfig
-sh                           se7750_defconfig
-xtensa                  audio_kc705_defconfig
-ia64                              allnoconfig
-ia64                             alldefconfig
-x86_64         rhel+CONFIG_DEBUG_INFO_REDUCED
-x86_64                 randconfig-h0-10040758
-x86_64                 randconfig-n0-10040721
-x86_64                 randconfig-n0-10040826
-i386                  randconfig-sb0-10040801
-x86_64                 randconfig-x002-201540
-x86_64                 randconfig-x009-201540
-x86_64                 randconfig-x003-201540
-x86_64                 randconfig-x000-201540
-x86_64                 randconfig-x004-201540
-x86_64                 randconfig-x001-201540
-x86_64                 randconfig-x006-201540
-x86_64                 randconfig-x007-201540
-x86_64                 randconfig-x008-201540
-x86_64                 randconfig-x005-201540
-x86_64               randconfig-x000-10040759
-x86_64               randconfig-x001-10040759
-x86_64               randconfig-x002-10040759
-x86_64               randconfig-x003-10040759
-x86_64               randconfig-x004-10040759
-x86_64               randconfig-x005-10040759
-x86_64               randconfig-x006-10040759
-x86_64               randconfig-x007-10040759
-x86_64               randconfig-x008-10040759
-x86_64               randconfig-x009-10040759
-i386                     randconfig-r0-201540
-i386                   randconfig-r0-10040759
-x86_64                 randconfig-r0-10040759
-x86_64                 randconfig-r0-10040908
-i386                   randconfig-x004-201540
-i386                   randconfig-x009-201540
-i386                   randconfig-x003-201540
-i386                   randconfig-x007-201540
-i386                   randconfig-x006-201540
-i386                   randconfig-x005-201540
-i386                   randconfig-x008-201540
-i386                   randconfig-x002-201540
-i386                   randconfig-x001-201540
-i386                   randconfig-x000-201540
-i386                   randconfig-x0-10040759
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-Thanks,
-Fengguang
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index e5e132a..3abd36d 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -305,12 +305,10 @@ static irqreturn_t i40evf_msix_aq(int irq, void *data)
+ 	struct i40evf_adapter *adapter = netdev_priv(netdev);
+ 	struct i40e_hw *hw = &adapter->hw;
+ 	u32 val;
+-	u32 ena_mask;
+ 
+-	/* handle non-queue interrupts */
++	/* handle non-queue interrupts, these reads clear the registers */
+ 	val = rd32(hw, I40E_VFINT_ICR01);
+-	ena_mask = rd32(hw, I40E_VFINT_ICR0_ENA1);
+-
++	val = rd32(hw, I40E_VFINT_ICR0_ENA1);
+ 
+ 	val = rd32(hw, I40E_VFINT_DYN_CTL01);
+ 	val = val | I40E_VFINT_DYN_CTL01_CLEARPBA_MASK;
+-- 
+2.4.3
+
