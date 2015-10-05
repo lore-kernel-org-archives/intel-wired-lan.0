@@ -1,50 +1,20 @@
-From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-Date: Fri, 30 Oct 2015 19:13:01 -0400
-Subject: [Intel-wired-lan] [PATCH v3 net] i40e: Look up MAC address in
- Open Firmware or IDPROM
-In-Reply-To: <FC41C24E35F18A40888AACA1A36F3E418AFACC2E@fmsmsx115.amr.corp.intel.com>
-References: <20151030150344.GG9312@oracle.com>
- <FC41C24E35F18A40888AACA1A36F3E418AFACA14@fmsmsx115.amr.corp.intel.com>
- <20151030183645.GD32759@oracle.com>
- <FC41C24E35F18A40888AACA1A36F3E418AFACA8F@fmsmsx115.amr.corp.intel.com>
- <20151030192437.GE32759@oracle.com>
- <FC41C24E35F18A40888AACA1A36F3E418AFACC2E@fmsmsx115.amr.corp.intel.com>
-Message-ID: <20151030231301.GA14974@oracle.com>
+From: David Miller <davem@davemloft.net>
+Date: Mon, 05 Oct 2015 03:17:04 -0700 (PDT)
+Subject: [Intel-wired-lan] [PATCH 00/12] net: assorted y2038 changes
+In-Reply-To: <1443612402-3000775-1-git-send-email-arnd@arndb.de>
+References: <1443612402-3000775-1-git-send-email-arnd@arndb.de>
+Message-ID: <20151005.031704.767722033063704258.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On (10/30/15 22:03), Nelson, Shannon wrote:
-> The more common idiom in our driver would be
-> 
-> 	err = i40e_get_platform_mac_addr(..);
-> 	if (err) {
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Wed, 30 Sep 2015 13:26:30 +0200
 
-Ok.
+> This is a set of changes for network drivers and core code to
+> get rid of the use of time_t and derived data structures.
 
-> Have you tested this beyond a compile?
-> Do you have a DT model to try this against?
-
-yes.
-
-> In looking at a couple other drivers, I see the difference being that
-> they typically are writing the primary mac filter on probe (and any
-> other reset), whereas the i40e "knows" that the default mac address is
-> already set up as the filter and doesn't bother with a redundant write.
-> If you want to add this Open Filter code, you'll need to arrange for
-> this write to happen.  You can't call i40e_set_mac() to do it, but you
-> can see the i40e_aq_mac_address_write() code there that is involved in
-> updating the mac address as an example.  You probably will want to look
-> at section 4.2.1.5.3 of the XL710 data sheet in order to know how to
-> use i40e_aq_mac_address_write() for your situation.
-
-ok. I'll look into it (and also why this did not show up in my testing).
-
-fwiw, the ixgbe patch is quite clearly missing in i40e, and hopefully
-we wont be opportunistically fixing this one driver at a time in 
-the future.
-
---Sowmini
-
+Applied patches #1-#10 to net-next, using the updated v2 version of
+the zatm change.
