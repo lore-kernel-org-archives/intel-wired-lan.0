@@ -1,11 +1,8 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 5 Oct 2015 18:51:57 +0000
-Subject: [Intel-wired-lan] [next PATCH v2 1/2] i40evf: fix overlong
-	BIT	defines
-In-Reply-To: <1442455270-6681-2-git-send-email-jesse.brandeburg@intel.com>
-References: <1442455270-6681-1-git-send-email-jesse.brandeburg@intel.com>
- <1442455270-6681-2-git-send-email-jesse.brandeburg@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B3132@ORSMSX104.amr.corp.intel.com>
+Date: Mon, 5 Oct 2015 18:52:52 +0000
+Subject: [Intel-wired-lan] [next PATCH v2 2/2] i40evf: fix compiler
+ warning of unused variable
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B3143@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,20 +14,17 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Jesse Brandeburg
 > Sent: Wednesday, September 16, 2015 7:01 PM
 > To: e1000-patches at isotope.jf.intel.com
-> Subject: [Intel-wired-lan] [next PATCH v2 1/2] i40evf: fix overlong BIT defines
+> Subject: [Intel-wired-lan] [next PATCH v2 2/2] i40evf: fix compiler warning of unused variable
 > 
-> The defines from the RSS enabling call were mistakenly missed in the patches
-> to the i40e which should have been to i40evf as well.
-> 
-> this is a follow up to (commit ed921559886dd40528) "fix
-> 32 bit build warnings".
+> Compiler complained of an unused variable, which the driver was just using
+> to store the result of a rd32 which is used to clear a register unconditionally.
+> Just drop the unused variable and re-use one.
 > 
 > Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40evf/i40e_common.c |  5 -----
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.h   | 14 +++++++-------
->  2 files changed, 7 insertions(+), 12 deletions(-)
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 6 ++----
+>  1 file changed, 2 insertions(+), 4 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied
+Patch code changes correctly applied, compiler does not issue unused variable warning at compile time.
 
