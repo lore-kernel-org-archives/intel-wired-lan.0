@@ -1,58 +1,73 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 06 Oct 2015 18:45:40 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
- 43a2a07ea0e29d9a3c992aa18cd9131664ffe60c BUILD SUCCESS
-Message-ID: <5613a654.TBwYduRS9sMeJu05%fengguang.wu@intel.com>
+Date: Tue, 06 Oct 2015 19:09:27 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 577b1b5cbd1e4624086e618fe75f8d92196dec38 BUILD DONE
+Message-ID: <5613abe7.4jKT5C/VXVq9zdMh%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-43a2a07ea0e29d9a3c992aa18cd9131664ffe60c  i40e: fix stats offsets
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+577b1b5cbd1e4624086e618fe75f8d92196dec38  i40e: Fix an incorrect OEM version string
 
-elapsed time: 54m
+drivers/net/ethernet/intel/i40e/i40e_txrx.c:2354:17: warning: 'oudph' may be used uninitialized in this function [-Wmaybe-uninitialized]
+drivers/net/ethernet/intel/i40e/i40e_txrx.c:2354:17: warning: 'oudph' may be used uninitialized in this function [-Wuninitialized]
+drivers/net/ethernet/intel/i40e/i40e_txrx.c:2354:20: warning: 'oiph' may be used uninitialized in this function [-Wmaybe-uninitialized]
+drivers/net/ethernet/intel/i40e/i40e_txrx.c:2354:37: warning: 'oiph' may be used uninitialized in this function [-Wuninitialized]
 
-configs tested: 112
+Error ids grouped by kconfigs:
+
+recent_errors
+??? tile-allyesconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:oiph-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:oudph-may-be-used-uninitialized-in-this-function
+??? x86_64-rhel
+    ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:oiph-may-be-used-uninitialized-in-this-function
+    ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:oudph-may-be-used-uninitialized-in-this-function
+
+elapsed time: 52m
+
+configs tested: 140
 
 i386                     randconfig-a0-201540
 x86_64                             acpi-redef
 x86_64                           allyesdebian
 x86_64                                nfsroot
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-x86_64                           allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
+arm                     davinci_all_defconfig
 arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
+avr32                    hammerhead_defconfig
 parisc                        c3000_defconfig
 parisc                         b180_defconfig
 parisc                              defconfig
 alpha                               defconfig
 parisc                            allnoconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+i386                             allmodconfig
+arm                       cns3420vb_defconfig
+powerpc                        cell_defconfig
+powerpc                      cm5200_defconfig
+powerpc                    klondike_defconfig
+x86_64                 randconfig-x015-201540
+x86_64                 randconfig-x019-201540
+x86_64                 randconfig-x014-201540
+x86_64                 randconfig-x018-201540
+x86_64                 randconfig-x016-201540
+x86_64                 randconfig-x011-201540
+x86_64                 randconfig-x010-201540
+x86_64                 randconfig-x013-201540
+x86_64                 randconfig-x017-201540
+x86_64                 randconfig-x012-201540
 m68k                           sun3_defconfig
 m68k                          multi_defconfig
 m68k                       m5475evb_defconfig
+i386                     randconfig-s1-201540
+i386                     randconfig-s0-201540
 x86_64                 randconfig-s0-10061804
 x86_64                 randconfig-s1-10061804
 x86_64                 randconfig-s2-10061804
@@ -67,15 +82,18 @@ avr32                      atngw100_defconfig
 frv                                 defconfig
 avr32                     atstk1006_defconfig
 tile                         tilegx_defconfig
-i386                             allmodconfig
 mips                                   jz4740
 mips                              allnoconfig
 mips                      fuloong2e_defconfig
 mips                                     txx9
-powerpc                           allnoconfig
 powerpc                             defconfig
 powerpc                       ppc64_defconfig
+powerpc                           allnoconfig
 x86_64                   randconfig-i0-201540
+i386                   randconfig-b0-10061810
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
 arm                         lpc18xx_defconfig
 arm                        mvebu_v7_defconfig
 blackfin                BF533-STAMP_defconfig
@@ -83,9 +101,8 @@ microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
 i386                     randconfig-i1-201540
 i386                     randconfig-i0-201540
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
+x86_64                 randconfig-b0-10061823
+x86_64                           allmodconfig
 xtensa                       common_defconfig
 m32r                       m32104ut_defconfig
 xtensa                          iss_defconfig
@@ -93,17 +110,43 @@ m32r                         opsput_defconfig
 m32r                           usrv_defconfig
 m32r                     mappi3.smp_defconfig
 x86_64                            allnoconfig
+arm                         hackkit_defconfig
+arm64                               defconfig
+blackfin                    PNAV-10_defconfig
 arm                                      arm5
 arm                                     arm67
 arm                                       mmp
 arm                       omap2plus_defconfig
 arm                         s3c2410_defconfig
 arm                           tegra_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
 i386                     randconfig-n0-201540
 i386                   randconfig-h0-10061616
 i386                   randconfig-h1-10061616
-x86_64                                    lkp
-x86_64                                   rhel
+arm                        clps711x_defconfig
+avr32        atngw100mkii_evklcd100_defconfig
+s390                       zfcpdump_defconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+x86_64                 randconfig-n0-10061727
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+i386                  randconfig-sb0-10061812
 x86_64                 randconfig-x002-201540
 x86_64                 randconfig-x009-201540
 x86_64                 randconfig-x003-201540
@@ -114,9 +157,6 @@ x86_64                 randconfig-x006-201540
 x86_64                 randconfig-x007-201540
 x86_64                 randconfig-x008-201540
 x86_64                 randconfig-x005-201540
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
 i386                     randconfig-r0-201540
 i386                   randconfig-x004-201540
 i386                   randconfig-x009-201540
@@ -128,6 +168,9 @@ i386                   randconfig-x008-201540
 i386                   randconfig-x002-201540
 i386                   randconfig-x001-201540
 i386                   randconfig-x000-201540
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
 
 Thanks,
 Fengguang
