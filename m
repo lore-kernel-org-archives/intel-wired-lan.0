@@ -1,38 +1,91 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 6 Oct 2015 21:22:16 +0000
-Subject: [Intel-wired-lan] [next PATCH S18 3/8] i40e: Fix VEB/VEPA
- bridge	mode mismatch issue
-In-Reply-To: <1443724661-92168-4-git-send-email-catherine.sullivan@intel.com>
-References: <1443724661-92168-1-git-send-email-catherine.sullivan@intel.com>
- <1443724661-92168-4-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B3836@ORSMSX104.amr.corp.intel.com>
+From: Jarod Wilson <jarod@redhat.com>
+Date: Tue, 06 Oct 2015 17:50:29 -0400
+Subject: [Intel-wired-lan] [PATCH] igb: add more checks for disconnected
+ adapter
+In-Reply-To: <5600E55B.1070406@gmail.com>
+References: <1442855488-27453-1-git-send-email-jarod@redhat.com>
+ <56007D34.1070306@gmail.com> <5600D5A2.70403@redhat.com>
+ <5600E55B.1070406@gmail.com>
+Message-ID: <56144225.2010308@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Catherine Sullivan
-> Sent: Thursday, October 01, 2015 11:38 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Abodunrin, Akeem G
-> Subject: [Intel-wired-lan] [next PATCH S18 3/8] i40e: Fix VEB/VEPA bridge
-> mode mismatch issue
-> 
-> From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
-> 
-> Fix i40e_is_vsi_uplink_mode_veb to check if bridge is actually in VEB mode
-> before allowing LB in the add vsi routine, instead of unconditionally returning
-> VEB bridge mode.
-> 
-> Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
-> Change-ID: I162397b1bdd02367735fe9baaeb51465be2a3ce9
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 16 +++++++++++++---
->  1 file changed, 13 insertions(+), 3 deletions(-)
+Alexander Duyck wrote:
+> On 09/21/2015 09:14 PM, Jarod Wilson wrote:
+>> Alexander Duyck wrote:
+>>> On 09/21/2015 10:11 AM, Jarod Wilson wrote:
+>>>> Some pci changes upcoming in 4.3 seem to cause additional disconnects,
+>>>> which can happen at unfortuitous times for igb, leading to issues
+>>>> such as
+>>>> this, where the disconnect happened just before
+>>>> igb_configure_tx_ring():
+>>>>
+...
+>>>> Note: this is a follow-up patch in addition to the previously submitted
+>>>> "igb: don't unmap NULL hw_addr"
+>>>>
+>>>> drivers/net/ethernet/intel/igb/igb_main.c | 15 +++++++++++++--
+>>>> 1 file changed, 13 insertions(+), 2 deletions(-)
+>>>>
+>>>> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c
+>>>> b/drivers/net/ethernet/intel/igb/igb_main.c
+>>>> index 6369f9e..7060edf 100644
+>>>> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+>>>> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+>>>> @@ -952,6 +952,11 @@ static int igb_request_msix(struct igb_adapter
+>>>> *adapter)
+>>>> if (err)
+>>>> goto err_out;
+>>>>
+>>>> + if (E1000_REMOVED(hw->hw_addr)) {
+>>>> + err = -EIO;
+>>>> + goto err_free;
+>>>> + }
+>>>> +
+>>>> for (i = 0; i < adapter->num_q_vectors; i++) {
+>>>> struct igb_q_vector *q_vector = adapter->q_vector[i];
+>>>>
+>>>
+>>>
+>>> Instead of using E1000_REMOVED we should just replace the
+>>> adapter->hw.hw_addr in the setup of the itr_register with
+>>> adapter->io_addr like you did for Rx/Tx below.
+>>
+>> I just tried that, and it reliably blows up horrifically, wedging the
+>> machine to the point where all I could get was a screen shot with my
+>> phone thus far, when we jump from igb_request_msix() to
+>> igb_configure_msix() to igb_assign_vector() and finally to
+>> igb_write_ivar(), at least as best as I can tell from what I was able to
+>> see in the trace remnants still on-screen.
+>
+> Take a look at array_rd32, that is buggy and doesn't match up with the
+> rd32 implementation. If you fix that then the blow-up should go away.
+>
+> You shouldn't need to worry about itr_register since it will only get
+> triggered if the interrupt can be enabled and that shouldn't be able to
+> happen if the device is not present.
+...
+>> Just switching to adapter->io_addr everywhere seems to not work as noted
+>> above. :\ Note that I'm also chasing this from the other end with the
+>> author of the pci patches that seem to have triggered this, so the real
+>> bug might be over in pci-land, but hardening against explosions in igb
+>> still seems like a worthwhile effort here.
+>
+> I am pretty sure array_rd32 is the problem. If you fix that then I
+> suspect you should quit seeing any further issues.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied, "Switch no longer goes to VEB mode but stays in VEPA mode. 
-No kernel crash. "
+Okay, I've reworked array_rd32 a bit to call igb_rd32 as well, and with 
+that and some other minor tweaks, nothing blowing up. The hardware still 
+doesn't work when hotplugged, due to disappearing off the pci bus 
+temporarily, but I think that's a pci hotplug issue, not igb's fault. 
+Things seem to behave just fine if the device is connected at boot. 
+Updated patch forthcoming for dissection...
+
+-- 
+Jarod Wilson
+jarod at redhat.com
+
+
