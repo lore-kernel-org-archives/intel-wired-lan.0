@@ -1,42 +1,133 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 5 Oct 2015 21:21:53 +0000
-Subject: [Intel-wired-lan] [next PATCH S17 02/11] i40e/i40evf: refactor
- irq	enable function
-In-Reply-To: <1443464220-148318-3-git-send-email-catherine.sullivan@intel.com>
-References: <1443464220-148318-1-git-send-email-catherine.sullivan@intel.com>
- <1443464220-148318-3-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B3617@ORSMSX104.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 06 Oct 2015 18:45:40 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ 43a2a07ea0e29d9a3c992aa18cd9131664ffe60c BUILD SUCCESS
+Message-ID: <5613a654.TBwYduRS9sMeJu05%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Catherine Sullivan
-> Sent: Monday, September 28, 2015 11:17 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S17 02/11] i40e/i40evf: refactor irq
-> enable function
-> 
-> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> 
-> This change moves a multi-line register setting into a function which
-> simplifies reading the flow of the enable function.
-> 
-> This also fixes a bug where the enable function was enabling the interrupt
-> twice while trying to update the two interrupt throttle rate thresholds for rx
-> and tx.
-> 
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> Change-ID: Ie308f9d0d48540204590cb9d7a5a7b1196f959bb
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 112 +++++++++++++++-------
-> ----
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 108 ++++++++++++++-------
-> ----
->  2 files changed, 128 insertions(+), 92 deletions(-)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+43a2a07ea0e29d9a3c992aa18cd9131664ffe60c  i40e: fix stats offsets
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied, does not break base driver functionality/compile
+elapsed time: 54m
+
+configs tested: 112
+
+i386                     randconfig-a0-201540
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+x86_64                 randconfig-s0-10061804
+x86_64                 randconfig-s1-10061804
+x86_64                 randconfig-s2-10061804
+x86_64                 randconfig-s3-10061817
+x86_64                 randconfig-s4-10061817
+x86_64                 randconfig-s5-10061817
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+i386                             allmodconfig
+mips                                   jz4740
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201540
+arm                         lpc18xx_defconfig
+arm                        mvebu_v7_defconfig
+blackfin                BF533-STAMP_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i1-201540
+i386                     randconfig-i0-201540
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+x86_64                            allnoconfig
+arm                                      arm5
+arm                                     arm67
+arm                                       mmp
+arm                       omap2plus_defconfig
+arm                         s3c2410_defconfig
+arm                           tegra_defconfig
+i386                     randconfig-n0-201540
+i386                   randconfig-h0-10061616
+i386                   randconfig-h1-10061616
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                 randconfig-x002-201540
+x86_64                 randconfig-x009-201540
+x86_64                 randconfig-x003-201540
+x86_64                 randconfig-x000-201540
+x86_64                 randconfig-x004-201540
+x86_64                 randconfig-x001-201540
+x86_64                 randconfig-x006-201540
+x86_64                 randconfig-x007-201540
+x86_64                 randconfig-x008-201540
+x86_64                 randconfig-x005-201540
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+i386                     randconfig-r0-201540
+i386                   randconfig-x004-201540
+i386                   randconfig-x009-201540
+i386                   randconfig-x003-201540
+i386                   randconfig-x007-201540
+i386                   randconfig-x006-201540
+i386                   randconfig-x005-201540
+i386                   randconfig-x008-201540
+i386                   randconfig-x002-201540
+i386                   randconfig-x001-201540
+i386                   randconfig-x000-201540
+
+Thanks,
+Fengguang
