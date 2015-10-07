@@ -1,121 +1,152 @@
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Date: Wed, 7 Oct 2015 10:06:32 +0000
-Subject: [Intel-wired-lan] [iproute2 PATCH] iplink: Support VF Trust
-Message-ID: <7F861DC0615E0C47A872E6F3C5FCDDBD05F42A95@BPXM14GP.gisp.nec.co.jp>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 07 Oct 2015 19:58:13 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 3ddb213e7f1df145bbcb6bf6293294d95be623df BUILD DONE
+Message-ID: <561508d5.q8n2G4bhlFJ58oUv%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+3ddb213e7f1df145bbcb6bf6293294d95be623df  i40e: re-use %*ph specifier to hexdump a data
 
-Add IFLA_VF_TRUST message to trust the VF.
-PF can accept some privileged operation from the trusted VF.
-For example, ixgbe PF doesn't allow to enable VF promiscuous mode until
-the VF is trusted because it may hurt performance.
+drivers/net/ethernet/intel/i40e/i40e_txrx.c:2354:17: warning: 'oudph' may be used uninitialized in this function [-Wmaybe-uninitialized]
+drivers/net/ethernet/intel/i40e/i40e_txrx.c:2354:17: warning: 'oudph' may be used uninitialized in this function [-Wuninitialized]
+drivers/net/ethernet/intel/i40e/i40e_txrx.c:2354:20: warning: 'oiph' may be used uninitialized in this function [-Wmaybe-uninitialized]
+drivers/net/ethernet/intel/i40e/i40e_txrx.c:2354:37: warning: 'oiph' may be used uninitialized in this function [-Wuninitialized]
 
-To trust VF.
- # ip link set dev eth0 vf 1 trust on
+Error ids grouped by kconfigs:
 
-To untrust VF.
- # ip link set dev eth0 vf 1 trust off
+recent_errors
+??? tile-allyesconfig
+??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:oiph-may-be-used-uninitialized-in-this-function
+??? ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:oudph-may-be-used-uninitialized-in-this-function
+??? x86_64-rhel
+    ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:oiph-may-be-used-uninitialized-in-this-function
+    ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:oudph-may-be-used-uninitialized-in-this-function
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
+elapsed time: 53m
 
-This patch implements a functionality for trusting a VF in ip command.
+configs tested: 116
 
-The kernel side implementation of if_link was submitted as below.
-http://marc.info/?l=linux-netdev&m=144074520803184&w=2
-[PATCH v8 1/3] if_link: Add control trust VF
+parisc                        c3000_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+i386                     randconfig-a0-201540
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x015-201540
+x86_64                 randconfig-x019-201540
+x86_64                 randconfig-x014-201540
+x86_64                 randconfig-x018-201540
+x86_64                 randconfig-x016-201540
+x86_64                 randconfig-x011-201540
+x86_64                 randconfig-x010-201540
+x86_64                 randconfig-x013-201540
+x86_64                 randconfig-x017-201540
+x86_64                 randconfig-x012-201540
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+i386                     randconfig-s1-201540
+i386                     randconfig-s0-201540
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+x86_64                            allnoconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201540
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i1-201540
+i386                     randconfig-i0-201540
+x86_64                 randconfig-b0-10071836
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                                      arm5
+arm                                     arm67
+arm                                       mmp
+arm                       omap2plus_defconfig
+arm                         s3c2410_defconfig
+arm                           tegra_defconfig
+i386                     randconfig-n0-201540
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                  randconfig-sb0-10071759
+x86_64                 randconfig-x002-201540
+x86_64                 randconfig-x009-201540
+x86_64                 randconfig-x003-201540
+x86_64                 randconfig-x000-201540
+x86_64                 randconfig-x004-201540
+x86_64                 randconfig-x001-201540
+x86_64                 randconfig-x006-201540
+x86_64                 randconfig-x007-201540
+x86_64                 randconfig-x008-201540
+x86_64                 randconfig-x005-201540
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-r0-201540
+x86_64                 randconfig-r0-10071656
+i386                   randconfig-x004-201540
+i386                   randconfig-x009-201540
+i386                   randconfig-x003-201540
+i386                   randconfig-x007-201540
+i386                   randconfig-x006-201540
+i386                   randconfig-x005-201540
+i386                   randconfig-x008-201540
+i386                   randconfig-x002-201540
+i386                   randconfig-x001-201540
+i386                   randconfig-x000-201540
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+i386                   randconfig-x0-10071725
 
----
- include/linux/if_link.h |  6 ++++++
- ip/iplink.c             | 13 +++++++++++++
- man/man8/ip-link.8.in   |  7 ++++++-
- 3 files changed, 25 insertions(+), 1 deletion(-)
-
-diff --git a/include/linux/if_link.h b/include/linux/if_link.h
-index 1934566..ca9a681 100644
---- a/include/linux/if_link.h
-+++ b/include/linux/if_link.h
-@@ -499,6 +499,7 @@ enum {
- 				 * on/off switch
- 				 */
- 	IFLA_VF_STATS,		/* network device statistics */
-+	IFLA_VF_TRUST,		/* Trust VF */
- 	__IFLA_VF_MAX,
- };
- 
-@@ -560,6 +561,11 @@ enum {
- 
- #define IFLA_VF_STATS_MAX (__IFLA_VF_STATS_MAX - 1)
- 
-+struct ifla_vf_trust {
-+	__u32 vf;
-+	__u32 setting;
-+};
-+
- /* VF ports management section
-  *
-  *	Nested layout of set/get msg is:
-diff --git a/ip/iplink.c b/ip/iplink.c
-index 1c45205..0536f34 100644
---- a/ip/iplink.c
-+++ b/ip/iplink.c
-@@ -82,6 +82,7 @@ void iplink_usage(void)
- 	fprintf(stderr, "				   [ spoofchk { on | off} ] ]\n");
- 	fprintf(stderr, "				   [ query_rss { on | off} ] ]\n");
- 	fprintf(stderr, "				   [ state { auto | enable | disable} ] ]\n");
-+	fprintf(stderr, "				   [ trust { on | off} ] ]\n");
- 	fprintf(stderr, "			  [ master DEVICE ]\n");
- 	fprintf(stderr, "			  [ nomaster ]\n");
- 	fprintf(stderr, "			  [ addrgenmode { eui64 | none } ]\n");
-@@ -352,6 +353,18 @@ static int iplink_parse_vf(int vf, int *argcp, char ***argvp,
- 			ivs.vf = vf;
- 			addattr_l(&req->n, sizeof(*req), IFLA_VF_RSS_QUERY_EN, &ivs, sizeof(ivs));
- 
-+		} else if (matches(*argv, "trust") == 0) {
-+			struct ifla_vf_trust ivt;
-+			NEXT_ARG();
-+			if (matches(*argv, "on") == 0)
-+				ivt.setting = 1;
-+			else if (matches(*argv, "off") == 0)
-+				ivt.setting = 0;
-+			else
-+				invarg("Invalid \"trust\" value\n", *argv);
-+			ivt.vf = vf;
-+			addattr_l(&req->n, sizeof(*req), IFLA_VF_TRUST, &ivt, sizeof(ivt));
-+
- 		} else if (matches(*argv, "state") == 0) {
- 			struct ifla_vf_link_state ivl;
- 
-diff --git a/man/man8/ip-link.8.in b/man/man8/ip-link.8.in
-index 4928249..6a0c876 100644
---- a/man/man8/ip-link.8.in
-+++ b/man/man8/ip-link.8.in
-@@ -142,7 +142,8 @@ ip-link \- network device configuration
- .B min_tx_rate
- .IR TXRATE " ] ["
- .B spoofchk { on | off } ] [
--.B state { auto | enable | disable}
-+.B state { auto | enable | disable} ] [
-+.B trust { on | off }
- ] |
- .br
- .B master
-@@ -968,6 +969,10 @@ parameter must be specified.
- reflection of the PF link state, enable lets the VF to communicate with other VFs on
- this host even if the PF link state is down, disable causes the HW to drop any packets
- sent by the VF.
-+.sp
-+.BI trust " on|off"
-+- trust the specified VF user. This enables that VF user can set a specific feature
-+which may impact security and/or perfomance. (e.g. VF multicast promiscuous mode)
- .in -8
- 
- .TP
--- 
-1.8.3.1
-
+Thanks,
+Fengguang
