@@ -1,67 +1,110 @@
-From: Jiang Liu <jiang.liu@linux.intel.com>
-Date: Fri, 9 Oct 2015 13:52:55 +0800
+From: Kamezawa Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Date: Fri, 9 Oct 2015 18:08:41 +0900
 Subject: [Intel-wired-lan] [Patch V3 5/9] i40e: Use numa_mem_id() to
  better support memoryless node
-In-Reply-To: <20151008132037.fc3887da0818e7d011cb752f@linux-foundation.org>
+In-Reply-To: <56175637.50102@linux.intel.com>
 References: <1439781546-7217-1-git-send-email-jiang.liu@linux.intel.com>
  <1439781546-7217-6-git-send-email-jiang.liu@linux.intel.com>
  <4197C471DCF8714FBA1FE32565271C148FFFF4D3@ORSMSX103.amr.corp.intel.com>
  <alpine.DEB.2.10.1508191717450.30666@chino.kir.corp.google.com>
  <20151008132037.fc3887da0818e7d011cb752f@linux-foundation.org>
-Message-ID: <56175637.50102@linux.intel.com>
+ <56175637.50102@linux.intel.com>
+Message-ID: <56178419.6090503@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2015/10/9 4:20, Andrew Morton wrote:
-> On Wed, 19 Aug 2015 17:18:15 -0700 (PDT) David Rientjes <rientjes@google.com> wrote:
-> 
->> On Wed, 19 Aug 2015, Patil, Kiran wrote:
+On 2015/10/09 14:52, Jiang Liu wrote:
+> On 2015/10/9 4:20, Andrew Morton wrote:
+>> On Wed, 19 Aug 2015 17:18:15 -0700 (PDT) David Rientjes <rientjes@google.com> wrote:
 >>
->>> Acked-by: Kiran Patil <kiran.patil@intel.com>
+>>> On Wed, 19 Aug 2015, Patil, Kiran wrote:
+>>>
+>>>> Acked-by: Kiran Patil <kiran.patil@intel.com>
+>>>
+>>> Where's the call to preempt_disable() to prevent kernels with preemption
+>>> from making numa_node_id() invalid during this iteration?
 >>
->> Where's the call to preempt_disable() to prevent kernels with preemption 
->> from making numa_node_id() invalid during this iteration?
-> 
-> David asked this question twice, received no answer and now the patch
-> is in the maintainer tree, destined for mainline.
-> 
-> If I was asked this question I would respond
-> 
->   The use of numa_mem_id() is racy and best-effort.  If the unlikely
->   race occurs, the memory allocation will occur on the wrong node, the
->   overall result being very slightly suboptimal performance.  The
->   existing use of numa_node_id() suffers from the same issue.
-> 
-> But I'm not the person proposing the patch.  Please don't just ignore
-> reviewer comments!
-Hi Andrew,
-	Apologize for the slow response due to personal reasons!
-And thanks for answering the question from David. To be honest,
-I didn't know how to answer this question before. Actually this
-question has puzzled me for a long time when dealing with memory
-hot-removal. For normal cases, it only causes sub-optimal memory
-allocation if schedule event happens between querying NUMA node id
-and calling alloc_pages_node(). But what happens if system run into
-following execution sequence?
-1) node = numa_mem_id();
-2) memory hot-removal event triggers
-2.1) remove affected memory
-2.2) reset pgdat to zero if node becomes empty after memory removal
-3) alloc_pages_node(), which may access zero-ed pgdat structure.
+>> David asked this question twice, received no answer and now the patch
+>> is in the maintainer tree, destined for mainline.
+>>
+>> If I was asked this question I would respond
+>>
+>>    The use of numa_mem_id() is racy and best-effort.  If the unlikely
+>>    race occurs, the memory allocation will occur on the wrong node, the
+>>    overall result being very slightly suboptimal performance.  The
+>>    existing use of numa_node_id() suffers from the same issue.
+>>
+>> But I'm not the person proposing the patch.  Please don't just ignore
+>> reviewer comments!
+> Hi Andrew,
+> 	Apologize for the slow response due to personal reasons!
+> And thanks for answering the question from David. To be honest,
+> I didn't know how to answer this question before. Actually this
+> question has puzzled me for a long time when dealing with memory
+> hot-removal. For normal cases, it only causes sub-optimal memory
+> allocation if schedule event happens between querying NUMA node id
+> and calling alloc_pages_node(). But what happens if system run into
+> following execution sequence?
+> 1) node = numa_mem_id();
+> 2) memory hot-removal event triggers
+> 2.1) remove affected memory
+> 2.2) reset pgdat to zero if node becomes empty after memory removal
 
-I haven't found a mechanism to protect system from above sequence yet,
-so puzzled for a long time already:(. Does stop_machine() protect
-system from such a execution sequence?
-Thanks!
-Gerry
+I'm sorry if I misunderstand something.
+After commit b0dc3a342af36f95a68fe229b8f0f73552c5ca08, there is no memset().
 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo at vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+> 3) alloc_pages_node(), which may access zero-ed pgdat structure.
+
+?
+
+>
+> I haven't found a mechanism to protect system from above sequence yet,
+> so puzzled for a long time already:(. Does stop_machine() protect
+> system from such a execution sequence?
+
+To access pgdat, a pgdat's zone should be on per-pgdat-zonelist.
+Now, __build_all_zonelists() is called under stop_machine(). That's the reason
+why you're asking what stop_machine() does. And, as you know, stop_machine() is not
+protecting anything. The caller may fallback into removed zone.
+
+Then, let's think.
+
+At first, please note "pgdat" is not removed (and cannot be removed),
+accessing pgdat's memory will not cause segmentation fault.
+
+Just contents are problem. At removal, zone's page related information
+and pgdat's page related information is cleared.
+
+alloc_pages uses zonelist/zoneref/cache to walk each zones without accessing
+pgdat itself. I think accessing zonelist is safe because it's an array updated
+by stop_machine().
+
+So, the problem is alloc_pages() can work correctly even if zone contains no page.
+I think it should work.
+
+(Note: zones are included in pgdat. So, zeroing pgdat means zeroing zone and other
+  structures. it will not work.)
+
+So, what problem you see now ?
+I'm sorry I can't chase old discusions.
+
+Thanks,
+-Kame
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
