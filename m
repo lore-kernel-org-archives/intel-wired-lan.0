@@ -1,11 +1,10 @@
 From: Rustad, Mark D <mark.d.rustad@intel.com>
-Date: Mon, 12 Oct 2015 17:31:15 +0000
-Subject: [Intel-wired-lan] [next-queue 2/8] ixgbe: fix a typo in
+Date: Mon, 12 Oct 2015 17:33:50 +0000
+Subject: [Intel-wired-lan] [next-queue 1/8] igb: fix a typo in
 	the	configuration help menu
-In-Reply-To: <1444629588-29933-2-git-send-email-sakiwit@gmail.com>
+In-Reply-To: <1444629588-29933-1-git-send-email-sakiwit@gmail.com>
 References: <1444629588-29933-1-git-send-email-sakiwit@gmail.com>
- <1444629588-29933-2-git-send-email-sakiwit@gmail.com>
-Message-ID: <D74D5B9C-8339-495D-B772-D3A601BCA879@intel.com>
+Message-ID: <F53FCD34-FC64-4C85-B1BF-449EADD9827A@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -26,18 +25,18 @@ J?an Sacren <sakiwit@gmail.com> wrote:
 > 1 file changed, 1 insertion(+), 1 deletion(-)
 > 
 > diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-> index 1268a182d1a2..de699cd628f4 100644
+> index 4163b16489b3..1268a182d1a2 100644
 > --- a/drivers/net/ethernet/intel/Kconfig
 > +++ b/drivers/net/ethernet/intel/Kconfig
-> @@ -215,7 +215,7 @@ config IXGBE_DCA
-> 	depends on IXGBE && DCA && !(IXGBE=y && DCA=m)
+> @@ -124,7 +124,7 @@ config IGB_DCA
+> 	depends on IGB && DCA && !(IGB=y && DCA=m)
 > 	---help---
 > 	  Say Y here if you want to use Direct Cache Access (DCA) in the
 > -	  driver.  DCA is a method for warming the CPU cache before data
 > +	  driver.  DCA is a method for warning the CPU cache before data
 > 	  is used, with the intent of lessening the impact of cache misses.
 > 
-> config IXGBE_DCB
+> config IGBVF
 
 NAK. This is not a typo! Caches are "warmed" by getting data into them that is expected to be accessed soon.
 
@@ -49,4 +48,4 @@ Name: signature.asc
 Type: application/pgp-signature
 Size: 841 bytes
 Desc: Message signed with OpenPGP using GPGMail
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151012/adcc398b/attachment.asc>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151012/631e3371/attachment.asc>
