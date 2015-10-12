@@ -1,51 +1,56 @@
-From: Rustad, Mark D <mark.d.rustad@intel.com>
-Date: Mon, 12 Oct 2015 17:33:50 +0000
-Subject: [Intel-wired-lan] [next-queue 1/8] igb: fix a typo in
-	the	configuration help menu
-In-Reply-To: <1444629588-29933-1-git-send-email-sakiwit@gmail.com>
-References: <1444629588-29933-1-git-send-email-sakiwit@gmail.com>
-Message-ID: <F53FCD34-FC64-4C85-B1BF-449EADD9827A@intel.com>
+From: Emil Tantilov <emil.s.tantilov@intel.com>
+Date: Mon, 12 Oct 2015 10:56:00 -0700
+Subject: [Intel-wired-lan] [PATCH 2/2] ixgbevf: fix spoofed packets with
+	random MAC
+In-Reply-To: <20151012175551.13894.37989.stgit@localhost6.localdomain6>
+References: <20151012175551.13894.37989.stgit@localhost6.localdomain6>
+Message-ID: <20151012175600.13894.26059.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-J?an Sacren <sakiwit@gmail.com> wrote:
+If ixgbevf is loaded while the corresponding PF interface is down
+and the driver assigns a random MAC address, that address can be
+overwritten with the value of hw->mac.perm_addr, which would be 0 at
+that point.
 
-> From: Jean Sacren <sakiwit@gmail.com>
-> 
-> 'warming' should be 'warning'. Fix it so that the pertinent text in
-> Direct Cache Access (DCA) Support menu would deliver the intended
-> semantics.
-> 
-> Signed-off-by: Jean Sacren <sakiwit@gmail.com>
-> ---
-> drivers/net/ethernet/intel/Kconfig | 2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-> index 4163b16489b3..1268a182d1a2 100644
-> --- a/drivers/net/ethernet/intel/Kconfig
-> +++ b/drivers/net/ethernet/intel/Kconfig
-> @@ -124,7 +124,7 @@ config IGB_DCA
-> 	depends on IGB && DCA && !(IGB=y && DCA=m)
-> 	---help---
-> 	  Say Y here if you want to use Direct Cache Access (DCA) in the
-> -	  driver.  DCA is a method for warming the CPU cache before data
-> +	  driver.  DCA is a method for warning the CPU cache before data
-> 	  is used, with the intent of lessening the impact of cache misses.
-> 
-> config IGBVF
+To avoid this case we init hw->mac.perm_addr to the randomly generated
+address and do not set it unless we receive ACK from ixgbe.
 
-NAK. This is not a typo! Caches are "warmed" by getting data into them that is expected to be accessed soon.
+Reported-by: John Greene <jogreene@redhat.com>
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |    1 +
+ drivers/net/ethernet/intel/ixgbevf/vf.c           |    4 +++-
+ 2 files changed, 4 insertions(+), 1 deletion(-)
 
---
-Mark Rustad, Networking Division, Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 841 bytes
-Desc: Message signed with OpenPGP using GPGMail
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151012/631e3371/attachment.asc>
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index 03ee46b..e2d07da 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -2667,6 +2667,7 @@ static int ixgbevf_sw_init(struct ixgbevf_adapter *adapter)
+ 		dev_info(&pdev->dev, "Assigning random MAC address\n");
+ 		eth_hw_addr_random(netdev);
+ 		ether_addr_copy(hw->mac.addr, netdev->dev_addr);
++		ether_addr_copy(hw->mac.perm_addr, netdev->dev_addr);
+ 	}
+ 
+ 	/* Enable dynamic interrupt throttling rates */
+diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.c b/drivers/net/ethernet/intel/ixgbevf/vf.c
+index 427f360..61a98f4 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/vf.c
++++ b/drivers/net/ethernet/intel/ixgbevf/vf.c
+@@ -117,7 +117,9 @@ static s32 ixgbevf_reset_hw_vf(struct ixgbe_hw *hw)
+ 	    msgbuf[0] != (IXGBE_VF_RESET | IXGBE_VT_MSGTYPE_NACK))
+ 		return IXGBE_ERR_INVALID_MAC_ADDR;
+ 
+-	ether_addr_copy(hw->mac.perm_addr, addr);
++	if (msgbuf[0] == (IXGBE_VF_RESET | IXGBE_VT_MSGTYPE_ACK))
++		ether_addr_copy(hw->mac.perm_addr, addr);
++
+ 	hw->mac.mc_filter_type = msgbuf[IXGBE_VF_MC_TYPE_WORD];
+ 
+ 	return 0;
+
