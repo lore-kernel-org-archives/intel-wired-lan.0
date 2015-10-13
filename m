@@ -1,73 +1,45 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 13 Oct 2015 16:39:09 -0700
-Subject: [Intel-wired-lan] [next-queue 12/17] fm10k: introduce
-	ITR_IS_ADAPTIVE macro
+Date: Tue, 13 Oct 2015 16:39:12 -0700
+Subject: [Intel-wired-lan] [next-queue 15/17] fm10k: change default Tx ITR
+	to 25usec
 In-Reply-To: <1444779554-20464-1-git-send-email-jacob.e.keller@intel.com>
 References: <1444779554-20464-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1444779554-20464-12-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1444779554-20464-15-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Define a macro for identifying when the itr value is dynamic or
-adaptive. The concept was taken from i40e. This helps make clear what
-the check is, and reduces the line length to something more reasonable
-in a few places.
+The current default ITR for Tx is overly restrictive. Using a simple
+netperf TCP_STREAM test, we top out at about 10Gb/s for a single thread
+when running using 1500 byte frames. By reducing the ITR value to 25usec
+(up to 40K interrupts a second from 10K), we are able to achieve 36Gb/s
+for a single thread TCP stream test.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k.h         | 2 ++
- drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 6 ++----
- drivers/net/ethernet/intel/fm10k/fm10k_main.c    | 2 +-
- 3 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k.h | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
-index 4d4cd006fec1..c40f50737d17 100644
+index bf2cc6f78418..5eb42fd21d3f 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k.h
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
-@@ -172,6 +172,8 @@ struct fm10k_ring_container {
+@@ -171,11 +171,12 @@ struct fm10k_ring_container {
+ #define FM10K_ITR_MAX		0x0FFF	/* maximum value for ITR */
+ #define FM10K_ITR_10K		100	/* 100us */
  #define FM10K_ITR_20K		50	/* 50us */
++#define FM10K_ITR_40K		25	/* 25us */
  #define FM10K_ITR_ADAPTIVE	0x8000	/* adaptive interrupt moderation flag */
  
-+#define ITR_IS_ADAPTIVE(itr) (!!(itr & FM10K_ITR_ADAPTIVE))
-+
+ #define ITR_IS_ADAPTIVE(itr) (!!(itr & FM10K_ITR_ADAPTIVE))
+ 
+-#define FM10K_TX_ITR_DEFAULT	FM10K_ITR_10K
++#define FM10K_TX_ITR_DEFAULT	FM10K_ITR_40K
+ #define FM10K_RX_ITR_DEFAULT	FM10K_ITR_20K
  #define FM10K_ITR_ENABLE	(FM10K_ITR_AUTOMASK | FM10K_ITR_MASK_CLEAR)
  
- static inline struct netdev_queue *txring_txq(const struct fm10k_ring *ring)
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-index b903c4646cf8..2395877f0544 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-@@ -705,12 +705,10 @@ static int fm10k_get_coalesce(struct net_device *dev,
- {
- 	struct fm10k_intfc *interface = netdev_priv(dev);
- 
--	ec->use_adaptive_tx_coalesce =
--		!!(interface->tx_itr & FM10K_ITR_ADAPTIVE);
-+	ec->use_adaptive_tx_coalesce = ITR_IS_ADAPTIVE(interface->tx_itr);
- 	ec->tx_coalesce_usecs = interface->tx_itr & ~FM10K_ITR_ADAPTIVE;
- 
--	ec->use_adaptive_rx_coalesce =
--		!!(interface->rx_itr & FM10K_ITR_ADAPTIVE);
-+	ec->use_adaptive_rx_coalesce = ITR_IS_ADAPTIVE(interface->rx_itr);
- 	ec->rx_coalesce_usecs = interface->rx_itr & ~FM10K_ITR_ADAPTIVE;
- 
- 	return 0;
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index 5dfcba72825d..babde3e4b2bb 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -1370,7 +1370,7 @@ static void fm10k_update_itr(struct fm10k_ring_container *ring_container)
- 	unsigned int avg_wire_size, packets;
- 
- 	/* Only update ITR if we are using adaptive setting */
--	if (!(ring_container->itr & FM10K_ITR_ADAPTIVE))
-+	if (!ITR_IS_ADAPTIVE(ring_container->itr))
- 		goto clear_counts;
- 
- 	packets = ring_container->total_packets;
 -- 
 2.6.1.264.gbab76a9
 
