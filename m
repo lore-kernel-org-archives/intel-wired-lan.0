@@ -1,182 +1,35 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 13 Oct 2015 16:22:06 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
- 450480c8d547a7b7a843bb2cddb6198e2f05c995 BUILD SUCCESS
-Message-ID: <561cbf2e.IjMj6ZrHm+exF2F4%fengguang.wu@intel.com>
+From: Richard Cochran <richardcochran@gmail.com>
+Date: Tue, 13 Oct 2015 10:31:13 +0200
+Subject: [Intel-wired-lan] [PATCH v4 1/4] Produce system time from
+	correlated clocksource
+In-Reply-To: <alpine.DEB.2.11.1510130944520.6097@nanos>
+References: <1444675522-4198-1-git-send-email-christopher.s.hall@intel.com>
+ <1444675522-4198-2-git-send-email-christopher.s.hall@intel.com>
+ <20151013045832.GA2437@netboy>
+ <alpine.DEB.2.11.1510130944520.6097@nanos>
+Message-ID: <20151013083113.GA1931@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
-450480c8d547a7b7a843bb2cddb6198e2f05c995  fm10k: do not use enum as boolean
+On Tue, Oct 13, 2015 at 09:51:02AM +0200, Thomas Gleixner wrote:
+> 
+> You are restricting the problem space to this particular use
+> case. There are other use cases where PTP is not available or not the
+> relevant reference, but you still want to correlate time domains to
+> ART.
 
-elapsed time: 147m
+They may well be other use cases, but they have not been identified
+here.  The PTP to media clock problem has a very simple solution.  You
+do not need a history of system time stamps to solve it.
 
-configs tested: 162
-
-blackfin                    PNAV-10_defconfig
-powerpc                     tqm5200_defconfig
-sh                          landisk_defconfig
-i386                     randconfig-a0-201541
-x86_64                 randconfig-a0-10131521
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-x86_64                            allnoconfig
-arm                           acs5k_defconfig
-arm                     davinci_all_defconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-i386                   randconfig-c0-10131451
-i386                   randconfig-c0-10131512
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-x86_64                 randconfig-v0-10131513
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-i386                             allmodconfig
-parisc                        c8000_defconfig
-powerpc                   gef_ppc9a_defconfig
-powerpc                    klondike_defconfig
-sh                           se7750_defconfig
-sparc64                           allnoconfig
-avr32                       mimc200_defconfig
-microblaze                       allyesconfig
-mips                           mtx1_defconfig
-powerpc                      mgcoge_defconfig
-xtensa                            allnoconfig
-x86_64               randconfig-x010-10130227
-x86_64               randconfig-x015-10130227
-x86_64               randconfig-x017-10130227
-x86_64               randconfig-x019-10130227
-x86_64               randconfig-x012-10130227
-x86_64               randconfig-x018-10130227
-x86_64               randconfig-x011-10130227
-x86_64               randconfig-x016-10130227
-x86_64               randconfig-x014-10130227
-x86_64               randconfig-x013-10130227
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                     randconfig-s0-201541
-i386                     randconfig-s1-201541
-x86_64                 randconfig-s0-10131440
-x86_64                 randconfig-s1-10131440
-x86_64                 randconfig-s2-10131440
-x86_64                 randconfig-s0-10131455
-x86_64                 randconfig-s1-10131455
-x86_64                 randconfig-s2-10131455
-x86_64                           allmodconfig
-x86_64                 randconfig-s3-10131453
-x86_64                 randconfig-s4-10131453
-x86_64                 randconfig-s5-10131453
-x86_64                 randconfig-s3-10131537
-x86_64                 randconfig-s4-10131537
-x86_64                 randconfig-s5-10131537
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-arm                         axm55xx_defconfig
-arm                         em_x270_defconfig
-arm                      footbridge_defconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-x86_64                   randconfig-i0-201541
-i386                   randconfig-b0-10131521
-i386                   randconfig-b0-10131555
-sparc                               defconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-i1-10122234
-i386                   randconfig-i0-10122234
-i386                     randconfig-i0-201541
-i386                     randconfig-i1-201541
-x86_64                 randconfig-b0-10131502
-x86_64                 randconfig-b0-10131551
-arm                       omap2plus_defconfig
-arm                         s3c2410_defconfig
-arm                                       mmp
-arm                           tegra_defconfig
-arm                                      arm5
-arm                                     arm67
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201541
-i386                   randconfig-h0-10131329
-i386                   randconfig-h1-10131329
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64                 randconfig-h0-10131455
-x86_64                 randconfig-n0-10131513
-arm                        mvebu_v5_defconfig
-blackfin                         allmodconfig
-sh                              ul2_defconfig
-i386                  randconfig-sb0-10131315
-x86_64                 randconfig-x002-201541
-x86_64                 randconfig-x009-201541
-x86_64                 randconfig-x000-201541
-x86_64                 randconfig-x003-201541
-x86_64                 randconfig-x004-201541
-x86_64                 randconfig-x001-201541
-x86_64                 randconfig-x006-201541
-x86_64                 randconfig-x007-201541
-x86_64                 randconfig-x008-201541
-x86_64                 randconfig-x005-201541
-i386                     randconfig-r0-201541
-i386                 randconfig-x008-10121721
-i386                 randconfig-x009-10121721
-i386                 randconfig-x001-10121721
-i386                 randconfig-x002-10121721
-i386                 randconfig-x003-10121721
-i386                 randconfig-x007-10121721
-i386                 randconfig-x006-10121721
-i386                 randconfig-x000-10121721
-i386                 randconfig-x004-10121721
-i386                 randconfig-x005-10121721
-mips                                   jz4740
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-i386                   randconfig-x0-10131155
+Even if you wanted to correlate the system time's UTC with the media
+clock, still you don't need any shadow history for that.  Just feed
+(ART, UTC) pairs into the DSP at a regular rate, and let the DSP do
+the math.  This does not need to be part of the central time keeping
+code at all.
 
 Thanks,
-Fengguang
+Richard
