@@ -1,33 +1,31 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Tue, 13 Oct 2015 13:50:59 -0700
-Subject: [Intel-wired-lan] [next PATCH v2 1/2] i40evf: fix overlong BIT
- defines
-In-Reply-To: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B3132@ORSMSX104.amr.corp.intel.com>
-References: <1442455270-6681-1-git-send-email-jesse.brandeburg@intel.com>
- <1442455270-6681-2-git-send-email-jesse.brandeburg@intel.com>
- <26D9FDECA4FBDD4AADA65D8E2FC68A4A060B3132@ORSMSX104.amr.corp.intel.com>
-Message-ID: <20151013135059.0000564c@unknown>
+From: Richard Cochran <richardcochran@gmail.com>
+Date: Tue, 13 Oct 2015 23:12:24 +0200
+Subject: [Intel-wired-lan] [PATCH v4 1/4] Produce system time from
+	correlated clocksource
+In-Reply-To: <alpine.DEB.2.11.1510132113470.25029@nanos>
+References: <1444675522-4198-1-git-send-email-christopher.s.hall@intel.com>
+ <1444675522-4198-2-git-send-email-christopher.s.hall@intel.com>
+ <20151013045832.GA2437@netboy>
+ <alpine.DEB.2.11.1510130944520.6097@nanos>
+ <20151013083113.GA1931@localhost.localdomain>
+ <alpine.DEB.2.11.1510132113470.25029@nanos>
+Message-ID: <20151013211224.GA19242@netboy>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 5 Oct 2015 18:51:57 +0000
-"Bowers, AndrewX" <andrewx.bowers@intel.com> wrote:
-> > -----Original Message-----
-> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> > Behalf Of Jesse Brandeburg
-> > Sent: Wednesday, September 16, 2015 7:01 PM
-> > To: e1000-patches at isotope.jf.intel.com
-> > Subject: [Intel-wired-lan] [next PATCH v2 1/2] i40evf: fix overlong BIT defines
-> > 
-> > The defines from the RSS enabling call were mistakenly missed in the patches
-> > to the i40e which should have been to i40evf as well.
-> > 
-> > this is a follow up to (commit ed921559886dd40528) "fix
-> > 32 bit build warnings".
-> > 
-> > Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+On Tue, Oct 13, 2015 at 09:15:51PM +0200, Thomas Gleixner wrote:
+> That's not working. The firmware is not going to change, no matter
+> what.
 
-Cc: stable at vger.kernel.org
+Can we at least have a explanation of how the firmware operates?  How
+are (ART,sys) pairs are generated, and how they are supposed to get
+into the DSP?
+
+Thanks,
+Richard
+
+
+
