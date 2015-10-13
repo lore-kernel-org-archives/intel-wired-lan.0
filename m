@@ -1,10 +1,10 @@
 From: =?unknown-8bit?q?J=CE=B5an?= Sacren <sakiwit@gmail.com>
-Date: Tue, 13 Oct 2015 01:06:29 -0600
-Subject: [Intel-wired-lan] [next-queue v2 3/6] i40e: clean up the entire
-	function exit path
+Date: Tue, 13 Oct 2015 01:06:30 -0600
+Subject: [Intel-wired-lan] [next-queue v2 4/6] i40evf: clean up local
+	variable initialization
 In-Reply-To: <1444719992-301-1-git-send-email-sakiwit@gmail.com>
 References: <1444719992-301-1-git-send-email-sakiwit@gmail.com>
-Message-ID: <1444719992-301-3-git-send-email-sakiwit@gmail.com>
+Message-ID: <1444719992-301-4-git-send-email-sakiwit@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,65 +13,36 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jean Sacren <sakiwit@gmail.com>
 
-In i40e_tsyn(), by using a label of 'no_timestamp', we will be able to
-clearly denote a slew of circumstances that return with 0, which is much
-better as a default exit than the one that returns with 1.
+In i40evf_msix_aq(), the first two lines of rd32() are mainly to clear
+the registers. If we initialize 'val' at this point, it will be
+overwritten immediately. We shall simply discard the return value here.
 
-With the above change, in the last check, we will be able to spare the
-'else' branch. Further, the whole branch for returning 1 shall be put
-together for clarity.
-
-Add a comment next to returning 1 in comparison to no_timestamp label.
+When we initialize 'val', we might as well include the mask in one step.
 
 Signed-off-by: Jean Sacren <sakiwit@gmail.com>
 ---
 v2: No changes except for the serial number.
 
- drivers/net/ethernet/intel/i40e/i40e_txrx.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 8db8b9b6cdcd..6cd091877731 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2257,31 +2257,31 @@ static int i40e_tsyn(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 	struct i40e_pf *pf;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 3b638f68b249..7d6d30c53060 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -308,11 +308,11 @@ static irqreturn_t i40evf_msix_aq(int irq, void *data)
+ 	u32 val;
  
- 	if (likely(!(skb_shinfo(skb)->tx_flags & SKBTX_HW_TSTAMP)))
--		return 0;
-+		goto no_timestamp;
+ 	/* handle non-queue interrupts, these reads clear the registers */
+-	val = rd32(hw, I40E_VFINT_ICR01);
+-	val = rd32(hw, I40E_VFINT_ICR0_ENA1);
++	rd32(hw, I40E_VFINT_ICR01);
++	rd32(hw, I40E_VFINT_ICR0_ENA1);
  
- 	/* Tx timestamps cannot be sampled when doing TSO */
- 	if (tx_flags & I40E_TX_FLAGS_TSO)
--		return 0;
-+		goto no_timestamp;
+-	val = rd32(hw, I40E_VFINT_DYN_CTL01);
+-	val = val | I40E_VFINT_DYN_CTL01_CLEARPBA_MASK;
++	val = rd32(hw, I40E_VFINT_DYN_CTL01) |
++	      I40E_VFINT_DYN_CTL01_CLEARPBA_MASK;
+ 	wr32(hw, I40E_VFINT_DYN_CTL01, val);
  
- 	/* only timestamp the outbound packet if the user has requested it and
- 	 * we are not already transmitting a packet to be timestamped
- 	 */
- 	pf = i40e_netdev_to_pf(tx_ring->netdev);
- 	if (!(pf->flags & I40E_FLAG_PTP))
--		return 0;
-+		goto no_timestamp;
- 
- 	if (pf->ptp_tx &&
- 	    !test_and_set_bit_lock(__I40E_PTP_TX_IN_PROGRESS, &pf->state)) {
- 		skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
- 		pf->ptp_tx_skb = skb_get(skb);
--	} else {
--		return 0;
--	}
-+		*cd_type_cmd_tso_mss |= (u64)I40E_TX_CTX_DESC_TSYN <<
-+					I40E_TXD_CTX_QW1_CMD_SHIFT;
- 
--	*cd_type_cmd_tso_mss |= (u64)I40E_TX_CTX_DESC_TSYN <<
--				I40E_TXD_CTX_QW1_CMD_SHIFT;
-+		return 1; /* Tx timestamp will happen */
-+	}
- 
--	return 1;
-+no_timestamp:
-+	return 0;
- }
- 
- /**
+ 	/* schedule work on the private workqueue */
