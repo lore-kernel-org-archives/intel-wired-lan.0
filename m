@@ -1,62 +1,44 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 13 Oct 2015 12:05:32 -0700
-Subject: [Intel-wired-lan] [PATCH] i40evf: fix 32 bit build warnings
-In-Reply-To: <57023416.17EujnXPCo@wuerfel>
-References: <6607276.TY67sbLLqL@wuerfel>
- <1444717101.2870.16.camel@intel.com> <57023416.17EujnXPCo@wuerfel>
-Message-ID: <1444763132.2870.32.camel@intel.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Tue, 13 Oct 2015 21:15:51 +0200 (CEST)
+Subject: [Intel-wired-lan] [PATCH v4 1/4] Produce system time from
+	correlated clocksource
+In-Reply-To: <20151013083113.GA1931@localhost.localdomain>
+References: <1444675522-4198-1-git-send-email-christopher.s.hall@intel.com>
+ <1444675522-4198-2-git-send-email-christopher.s.hall@intel.com>
+ <20151013045832.GA2437@netboy> <alpine.DEB.2.11.1510130944520.6097@nanos>
+ <20151013083113.GA1931@localhost.localdomain>
+Message-ID: <alpine.DEB.2.11.1510132113470.25029@nanos>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2015-10-13 at 13:37 +0200, Arnd Bergmann wrote:
-> This is the majority of all build warnings we get on allmodconfig
-> (both i386 and arm),
-> so it would be really nice to have it fixed before 4.3. For all I can
-> tell, the
-> patch still applies on your branch too, but see below for the rebased
-> version.
+On Tue, 13 Oct 2015, Richard Cochran wrote:
+
+> On Tue, Oct 13, 2015 at 09:51:02AM +0200, Thomas Gleixner wrote:
+> > 
+> > You are restricting the problem space to this particular use
+> > case. There are other use cases where PTP is not available or not the
+> > relevant reference, but you still want to correlate time domains to
+> > ART.
 > 
-> I also note that your branch is not part of linux-next, is that
-> intentional?
-> 
->         Arnd
+> They may well be other use cases, but they have not been identified
+> here.  The PTP to media clock problem has a very simple solution.  You
+> do not need a history of system time stamps to solve it.
 
-Huh are you sure you used by dev-queue branch?  I ask because this is
-what I am getting when I try to apply your patch:
+Well, these use cases are not in the focus of Christopher, but I have
+a few in my head. Think industrial fieldbusses.
+ 
+> Even if you wanted to correlate the system time's UTC with the media
+> clock, still you don't need any shadow history for that.  Just feed
+> (ART, UTC) pairs into the DSP at a regular rate, and let the DSP do
+> the math.  This does not need to be part of the central time keeping
+> code at all.
 
-git am .apply/i40evf-fix-32-bit-build-warnings.patch
-Applying: Jesse Brandeburg fixed a bug for 32-bit systems in the i40e
-driver
-error: patch failed:
-drivers/net/ethernet/intel/i40evf/i40e_common.c:443
-error: drivers/net/ethernet/intel/i40evf/i40e_common.c: patch does not
-apply
-Patch failed at 0001 Jesse Brandeburg fixed a bug for 32-bit systems in
-the i40e driver
-The copy of the patch that failed is found in:
-   /home/jtkirshe/Public/next-queue/.git/rebase-apply/patch
-When you have resolved this problem, run "git am --continue".
-If you prefer to skip this patch, run "git am --skip" instead.
-To restore the original branch and stop patching, run "git am --abort".
-[12:02:27 @jtkirshe-linux:next-queue]$ patch -p1 <.apply/i40evf-fix-32
--bit-build-warnings.patch 
-patching file drivers/net/ethernet/intel/i40evf/i40e_common.c
-Reversed (or previously applied) patch detected!  Assume -R? [n] 
-Apply anyway? [n] 
-Skipping patch.
-2 out of 2 hunks ignored -- saving rejects to file
-drivers/net/ethernet/intel/i40evf/i40e_common.c.rej
-[12:02:52 @jtkirshe-linux:next-queue]$
+That's not working. The firmware is not going to change, no matter
+what.
 
-Even looking@the code, the code your changing does not exist in my
-dev-queue branch of my next-queue tree. 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151013/61881730/attachment.asc>
+Thanks,
+
+	tglx
