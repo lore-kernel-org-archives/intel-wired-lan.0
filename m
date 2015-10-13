@@ -1,116 +1,140 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 13 Oct 2015 13:37:04 +0200
-Subject: [Intel-wired-lan] [PATCH] i40evf: fix 32 bit build warnings
-In-Reply-To: <1444717101.2870.16.camel@intel.com>
-References: <6607276.TY67sbLLqL@wuerfel> <1444717101.2870.16.camel@intel.com>
-Message-ID: <57023416.17EujnXPCo@wuerfel>
+From: Richard Cochran <richardcochran@gmail.com>
+Date: Tue, 13 Oct 2015 15:50:32 +0200
+Subject: [Intel-wired-lan] [PATCH v4 1/4] Produce system time from
+	correlated clocksource
+In-Reply-To: <1444675522-4198-2-git-send-email-christopher.s.hall@intel.com>
+References: <1444675522-4198-1-git-send-email-christopher.s.hall@intel.com>
+ <1444675522-4198-2-git-send-email-christopher.s.hall@intel.com>
+Message-ID: <20151013135032.GA5422@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Monday 12 October 2015 23:18:21 you wrote:
-> On Wed, 2015-10-07 at 22:13 +0200, Arnd Bergmann wrote:
-> > Jesse Brandeburg fixed a bug for 32-bit systems in the i40e driver
-> > in commit 9c70d7cebfec5 ("i40e: fix 32 bit build warnings"), but the
-> > same code still exists in the i40evf driver and causes compilation
-> > warnings in ARM and x86 allmodconfig:
-> > 
-> > drivers/net/ethernet/intel/i40evf/i40e_common.c:445:68: warning: cast
-> > from pointer to integer of different size [-Wpointer-to-int-cast]
-> > drivers/net/ethernet/intel/i40evf/i40e_common.c:446:71: warning: cast
-> > from pointer to integer of different size [-Wpointer-to-int-cast]
-> > 
-> > This applies the same fix by removing the broken code.
-> > 
-> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> 
-> Does not apply at all to my next-queue tree (dev-queue branch), my
-> guess is that this is already fixed in one of the patches already in my
-> queue.
-> 
+Now that I am starting to understand what this code is trying to
+achieve...
 
-I still get these warnings on your branch:
+On Mon, Oct 12, 2015 at 11:45:19AM -0700, Christopher S. Hall wrote:
+> The modification to the original patch accomodates these
+> slow devices by adding the option of providing an ART value outside
+> of the retry loop and adding a history which can consulted in the
+> case of an out of date counter value. The history is kept by
+> making the shadow_timekeeper an array. Each write to the
+> timekeeper rotates through the array, preserving a
+> history of updates.
 
-/git/arm-soc/drivers/net/ethernet/intel/i40evf/i40e_common.c: In function 'i40e_aq_get_set_rss_lut':
-/git/arm-soc/drivers/net/ethernet/intel/i40evf/i40e_common.c:446:68: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-/git/arm-soc/drivers/net/ethernet/intel/i40evf/i40e_common.c:446:128: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-/git/arm-soc/drivers/net/ethernet/intel/i40evf/i40e_common.c:446:207: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-/git/arm-soc/drivers/net/ethernet/intel/i40evf/i40e_common.c:446:285: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-/git/arm-soc/drivers/net/ethernet/intel/i40evf/i40e_common.c:446:363: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-/git/arm-soc/drivers/net/ethernet/intel/i40evf/i40e_common.c:446:444: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-/git/arm-soc/drivers/net/ethernet/intel/i40evf/i40e_common.c:447:71: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-/git/arm-soc/drivers/net/ethernet/intel/i40evf/i40e_common.c:447:115: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-/git/arm-soc/drivers/net/ethernet/intel/i40evf/i40e_common.c:447:178: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-/git/arm-soc/drivers/net/ethernet/intel/i40evf/i40e_common.c:447:240: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-/git/arm-soc/drivers/net/ethernet/intel/i40evf/i40e_common.c:447:302: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-/git/arm-soc/drivers/net/ethernet/intel/i40evf/i40e_common.c:447:367: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-/git/arm-soc/drivers/net/ethernet/intel/i40evf/i40e_common.c: In function 'i40e_aq_get_set_rss_key':
-/git/arm-soc/drivers/net/ethernet/intel/i40evf/i40e_common.c:523:68: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-/git/arm-soc/drivers/net/ethernet/intel/i40evf/i40e_common.c:523:128: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-/git/arm-soc/drivers/net/ethernet/intel/i40evf/i40e_common.c:523:207: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-/git/arm-soc/drivers/net/ethernet/intel/i40evf/i40e_common.c:523:285: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-/git/arm-soc/drivers/net/ethernet/intel/i40evf/i40e_common.c:523:363: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-/git/arm-soc/drivers/net/ethernet/intel/i40evf/i40e_common.c:523:444: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-/git/arm-soc/drivers/net/ethernet/intel/i40evf/i40e_common.c:524:71: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-/git/arm-soc/drivers/net/ethernet/intel/i40evf/i40e_common.c:524:115: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-/git/arm-soc/drivers/net/ethernet/intel/i40evf/i40e_common.c:524:178: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-/git/arm-soc/drivers/net/ethernet/intel/i40evf/i40e_common.c:524:240: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-/git/arm-soc/drivers/net/ethernet/intel/i40evf/i40e_common.c:524:302: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-/git/arm-soc/drivers/net/ethernet/intel/i40evf/i40e_common.c:524:367: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
+You did not provide an example of how this function is called, in the
+special case where correlated_ts.get_ts = NULL and the caller provides
+system_ts and device_ts.  Until that user appears, we do not need the
+interface at all.
 
-This is the majority of all build warnings we get on allmodconfig (both i386 and arm),
-so it would be really nice to have it fixed before 4.3. For all I can tell, the
-patch still applies on your branch too, but see below for the rebased version.
+> +/* This needs to be 3 or greater for backtracking to be useful */
+> +#define SHADOW_HISTORY_DEPTH 7
 
-I also note that your branch is not part of linux-next, is that intentional?
+Why then have you put 7?
 
-	Arnd
+This comment should really explain what is needed and why.
 
-8<-------
-From e6245d40a1ad7faa9064c23aa3d737d67d628683 Mon Sep 17 00:00:00 2001
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 7 Oct 2015 21:56:09 +0200
-Subject: [PATCH] i40evf: fix 32 bit build warnings
+> +/**
+> + * get_correlated_timestamp - Get a correlated timestamp
 
-Jesse Brandeburg fixed a bug for 32-bit systems in the i40e driver
-in commit 9c70d7cebfec5 ("i40e: fix 32 bit build warnings"), but the
-same code still exists in the i40evf driver and causes compilation
-warnings in ARM and x86 allmodconfig:
+This function is tremendously confusing.  The overloading with special
+semenatics when the callback is NULL is not nice.  There is hardly
+much shared logic, and so nothing speaks against having two methods.
+I would call them "get_correlated_timestamp" and "correlate_timestamp"
+or similar.  The "get_" prefix in the name is totally misleading in
+your special case.
 
-drivers/net/ethernet/intel/i40evf/i40e_common.c:445:68: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-drivers/net/ethernet/intel/i40evf/i40e_common.c:446:71: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
+> + * @crs: conversion between correlated clock and system clock
+> + * @crt: callback to get simultaneous device and correlated clock value *or*
+> + *	contains a valid correlated clock value and NULL callback
 
-This applies the same fix by removing the broken code.
+This description stinks.  What is crs?  It is *not* a conversion.  It is:
 
-Cc: kbuild-all at 01.org
-Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Cc: Andrew Bowers <andrewx.bowers@intel.com>
-Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+	struct correlated_ts - Descriptor for taking a correlated time stamp
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_common.c b/drivers/net/ethernet/intel/i40evf/i40e_common.c
-index b98b642b897a..a98a31f1e246 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_common.c
-@@ -443,9 +443,6 @@ static i40e_status i40e_aq_get_set_rss_lut(struct i40e_hw *hw,
- 					I40E_AQC_SET_RSS_LUT_TABLE_TYPE_SHIFT) &
- 					I40E_AQC_SET_RSS_LUT_TABLE_TYPE_MASK));
- 
--	cmd_resp->addr_high = cpu_to_le32(high_16_bits((u64)lut));
--	cmd_resp->addr_low = cpu_to_le32(lower_32_bits((u64)lut));
--
- 	status = i40evf_asq_send_command(hw, &desc, lut, lut_size, NULL);
- 
- 	return status;
-@@ -520,8 +517,6 @@ static i40e_status i40e_aq_get_set_rss_key(struct i40e_hw *hw,
- 					  I40E_AQC_SET_RSS_KEY_VSI_ID_SHIFT) &
- 					  I40E_AQC_SET_RSS_KEY_VSI_ID_MASK));
- 	cmd_resp->vsi_id |= cpu_to_le16((u16)I40E_AQC_SET_RSS_KEY_VSI_VALID);
--	cmd_resp->addr_high = cpu_to_le32(high_16_bits((u64)key));
--	cmd_resp->addr_low = cpu_to_le32(lower_32_bits((u64)key));
- 
- 	status = i40evf_asq_send_command(hw, &desc, key, key_size, NULL);
- 
+What is crt?  It is *not* a callback.  It is:
 
+	struct correlated_cs - Descriptor for a clocksource correlated to another
+
+For the crt, the kerneldoc should explain which of the fields
+
+	int			(*get_ts)(struct correlated_ts *ts);
+	u64			system_ts;
+	u64			device_ts;
+	ktime_t			system_real;
+	ktime_t			system_raw;
+	void			*private;
+
+are provided by the caller and which are set by the function.  The
+fact that fields are set either by the caller or by the method is a
+funny code smell.
+
+> + *
+> + * Reads a timestamp from a device and correlates it to system time.  This
+> + * function can be used in two ways.  If a non-NULL get_ts function pointer is
+> + * supplied in @crt, this function is called within the retry loop to
+> + * read the current correlated clock value and associated device time.
+> + * Otherwise (get_ts is NULL) a correlated clock value is supplied and
+> + * the history in shadow_timekeeper is consulted if necessary.
+> + */
+> +int get_correlated_timestamp(struct correlated_ts *crt,
+> +			     struct correlated_cs *crs)
+> +{
+...
+> +	do {
+
+This code is only used in the special case:
+
+> +		/*
+> +		 * Since the cycles value is supplied outside of the loop,
+> +		 * there is no guarantee that it represents a time *after*
+> +		 * cycle_last do some checks to figure out whether it's
+> +		 * represents the past or the future taking rollover
+> +		 * into account. If the value is in the past, try to backtrack
+> +		 */
+
+BTW, isn't there an easier way to deal with time stamps in the past?
+(Compare with timecounter_cyc2time.)
+
+> +		cycles_now = tk->tkr_mono.read(tk->tkr_mono.clock);
+> +		cycles_last = tk->tkr_mono.cycle_last;
+> +		if ((cycles >= cycles_last && cycles_now < cycles) ||
+> +		    (cycles < cycles_last && cycles_now >= cycles_last)) {
+> +			/* cycles is in the past try to backtrack */
+> +			int backtrack_index = shadow_index;
+> +
+> +			while (get_prev_shadow_index(&backtrack_index)) {
+> +				tk = shadow_timekeeper+backtrack_index;
+> +				if (cycle_between(cycles_last, cycles,
+> +						  tk->tkr_mono.cycle_last))
+> +					goto do_convert;
+> +				cycles_last = tk->tkr_mono.cycle_last;
+> +			}
+> +			return -EAGAIN;
+> +		}
+
+And this is the shared stuff:
+
+> +do_convert:
+> +		/* Convert to clock realtime */
+> +		base = ktime_add(tk->tkr_mono.base,
+> +				 tk_core.timekeeper.offs_real);
+> +		nsecs = timekeeping_convert_to_ns(&tk->tkr_mono, cycles);
+> +		crt->system_real = ktime_add_ns(base, nsecs);
+> +
+> +		/* Convert to clock raw monotonic */
+> +		base = tk->tkr_raw.base;
+> +		nsecs = timekeeping_convert_to_ns(&tk->tkr_raw, cycles);
+> +		crt->system_raw = ktime_add_ns(base, nsecs);
+> +
+> +	} while (read_seqcount_retry(&tk_core.seq, seq));
+> +	return 0;
+> +}
+
+I suggest moving the shared stuff into a subroutine and providing two
+different functions.
+
+Thanks,
+Richard
