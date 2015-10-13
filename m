@@ -1,134 +1,150 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 13 Oct 2015 16:38:59 -0700
-Subject: [Intel-wired-lan] [next-queue 02/17] fm10k: set netdev features in
-	one location
-In-Reply-To: <1444779554-20464-1-git-send-email-jacob.e.keller@intel.com>
-References: <1444779554-20464-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1444779554-20464-2-git-send-email-jacob.e.keller@intel.com>
+Date: Tue, 13 Oct 2015 16:38:58 -0700
+Subject: [Intel-wired-lan] [next-queue 01/17] fm10k: conditionally compile
+	DCB and DebugFS support
+Message-ID: <1444779554-20464-1-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Don't change netdev hw_features later in fm10k_probe, instead set all
-values inside fm10k_alloc_netdev. To do so, we need to know the MAC type
-(whether it is PF or VF) in order to determine what to do. This helps
-ensure that all logic regarding features is co-located.
+Rather than wrapping fm10k_dcbnl.c and fm10k_debugfs.c support with
+ #ifdef blocks, just conditionally include the .o files in the Makefile.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k.h        |  2 +-
- drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 31 +++++++++++++++----------
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c    |  9 +------
- 3 files changed, 21 insertions(+), 21 deletions(-)
+ drivers/net/ethernet/intel/fm10k/Makefile        | 20 +++++++++++++++-----
+ drivers/net/ethernet/intel/fm10k/fm10k.h         |  2 ++
+ drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c   |  4 ----
+ drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c |  4 ----
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c     |  4 ++++
+ 5 files changed, 21 insertions(+), 13 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/fm10k/Makefile b/drivers/net/ethernet/intel/fm10k/Makefile
+index 08859dd220a8..b006ff66d028 100644
+--- a/drivers/net/ethernet/intel/fm10k/Makefile
++++ b/drivers/net/ethernet/intel/fm10k/Makefile
+@@ -1,7 +1,7 @@
+ ################################################################################
+ #
+ # Intel Ethernet Switch Host Interface Driver
+-# Copyright(c) 2013 - 2014 Intel Corporation.
++# Copyright(c) 2013 - 2015 Intel Corporation.
+ #
+ # This program is free software; you can redistribute it and/or modify it
+ # under the terms and conditions of the GNU General Public License,
+@@ -27,7 +27,17 @@
+ 
+ obj-$(CONFIG_FM10K) += fm10k.o
+ 
+-fm10k-objs := fm10k_main.o fm10k_common.o fm10k_pci.o \
+-	      fm10k_netdev.o fm10k_ethtool.o fm10k_pf.o fm10k_vf.o \
+-	      fm10k_mbx.o fm10k_iov.o fm10k_tlv.o \
+-	      fm10k_debugfs.o fm10k_ptp.o fm10k_dcbnl.o
++fm10k-y := fm10k_main.o \
++	   fm10k_common.o \
++	   fm10k_pci.o \
++	   fm10k_ptp.o \
++	   fm10k_netdev.o \
++	   fm10k_ethtool.o \
++	   fm10k_pf.o \
++	   fm10k_vf.o \
++	   fm10k_mbx.o \
++	   fm10k_iov.o \
++	   fm10k_tlv.o
++
++fm10k-$(CONFIG_DEBUG_FS) += fm10k_debugfs.o
++fm10k-$(CONFIG_DCB) += fm10k_dcbnl.o
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
-index 504d487fa800..4d4cd006fec1 100644
+index 48809e5d3f79..504d487fa800 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k.h
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
-@@ -484,7 +484,7 @@ void fm10k_netpoll(struct net_device *netdev);
- #endif
+@@ -551,5 +551,7 @@ int fm10k_get_ts_config(struct net_device *netdev, struct ifreq *ifr);
+ int fm10k_set_ts_config(struct net_device *netdev, struct ifreq *ifr);
  
- /* Netdev */
--struct net_device *fm10k_alloc_netdev(void);
-+struct net_device *fm10k_alloc_netdev(const struct fm10k_info *info);
- int fm10k_setup_rx_resources(struct fm10k_ring *);
- int fm10k_setup_tx_resources(struct fm10k_ring *);
- void fm10k_free_rx_resources(struct fm10k_ring *);
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-index 96364c7b7719..38fe2d8c8388 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-@@ -1391,8 +1391,9 @@ static const struct net_device_ops fm10k_netdev_ops = {
+ /* DCB */
++#ifdef CONFIG_DCB
+ void fm10k_dcbnl_set_ops(struct net_device *dev);
++#endif
+ #endif /* _FM10K_H_ */
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c b/drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c
+index 5c7a4d7662d8..2be4361839db 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c
+@@ -20,7 +20,6 @@
  
- #define DEFAULT_DEBUG_LEVEL_SHIFT 3
+ #include "fm10k.h"
  
--struct net_device *fm10k_alloc_netdev(void)
-+struct net_device *fm10k_alloc_netdev(const struct fm10k_info *info)
+-#ifdef CONFIG_DCB
+ /**
+  * fm10k_dcbnl_ieee_getets - get the ETS configuration for the device
+  * @dev: netdev interface for the device
+@@ -155,7 +154,6 @@ static const struct dcbnl_rtnl_ops fm10k_dcbnl_ops = {
+ 	.setdcbx	= fm10k_dcbnl_setdcbx,
+ };
+ 
+-#endif /* CONFIG_DCB */
+ /**
+  * fm10k_dcbnl_set_ops - Configures dcbnl ops pointer for netdev
+  * @dev: netdev interface for the device
+@@ -164,11 +162,9 @@ static const struct dcbnl_rtnl_ops fm10k_dcbnl_ops = {
+  **/
+ void fm10k_dcbnl_set_ops(struct net_device *dev)
  {
-+	netdev_features_t hw_features;
- 	struct fm10k_intfc *interface;
- 	struct net_device *dev;
+-#ifdef CONFIG_DCB
+ 	struct fm10k_intfc *interface = netdev_priv(dev);
+ 	struct fm10k_hw *hw = &interface->hw;
  
-@@ -1415,27 +1416,31 @@ struct net_device *fm10k_alloc_netdev(void)
- 			 NETIF_F_TSO |
- 			 NETIF_F_TSO6 |
- 			 NETIF_F_TSO_ECN |
--			 NETIF_F_GSO_UDP_TUNNEL |
- 			 NETIF_F_RXHASH |
- 			 NETIF_F_RXCSUM;
- 
-+	/* Only the PF can support VXLAN and NVGRE tunnel offloads */
-+	if (info->mac == fm10k_mac_pf) {
-+		dev->hw_enc_features = NETIF_F_IP_CSUM |
-+				       NETIF_F_TSO |
-+				       NETIF_F_TSO6 |
-+				       NETIF_F_TSO_ECN |
-+				       NETIF_F_GSO_UDP_TUNNEL |
-+				       NETIF_F_IPV6_CSUM |
-+				       NETIF_F_SG;
-+
-+		dev->features |= NETIF_F_GSO_UDP_TUNNEL;
-+	}
-+
- 	/* all features defined to this point should be changeable */
--	dev->hw_features |= dev->features;
-+	hw_features = dev->features;
- 
- 	/* allow user to enable L2 forwarding acceleration */
--	dev->hw_features |= NETIF_F_HW_L2FW_DOFFLOAD;
-+	hw_features |= NETIF_F_HW_L2FW_DOFFLOAD;
- 
- 	/* configure VLAN features */
- 	dev->vlan_features |= dev->features;
- 
--	/* configure tunnel offloads */
--	dev->hw_enc_features |= NETIF_F_IP_CSUM |
--				NETIF_F_TSO |
--				NETIF_F_TSO6 |
--				NETIF_F_TSO_ECN |
--				NETIF_F_GSO_UDP_TUNNEL |
--				NETIF_F_IPV6_CSUM;
--
- 	/* we want to leave these both on as we cannot disable VLAN tag
- 	 * insertion or stripping on the hardware since it is contained
- 	 * in the FTAG and not in the frame itself.
-@@ -1446,5 +1451,7 @@ struct net_device *fm10k_alloc_netdev(void)
- 
- 	dev->priv_flags |= IFF_UNICAST_FLT;
- 
-+	dev->hw_features |= hw_features;
-+
- 	return dev;
+ 	if (hw->mac.type == fm10k_mac_pf)
+ 		dev->dcbnl_ops = &fm10k_dcbnl_ops;
+-#endif /* CONFIG_DCB */
  }
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c b/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
+index 5304bc1fbecd..5d6137faf7d1 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
+@@ -18,8 +18,6 @@
+  * Intel Corporation, 5200 N.E. Elam Young Parkway, Hillsboro, OR 97124-6497
+  */
+ 
+-#ifdef CONFIG_DEBUG_FS
+-
+ #include "fm10k.h"
+ 
+ #include <linux/debugfs.h>
+@@ -258,5 +256,3 @@ void fm10k_dbg_exit(void)
+ 	debugfs_remove_recursive(dbg_root);
+ 	dbg_root = NULL;
+ }
+-
+-#endif /* CONFIG_DEBUG_FS */
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index 0dece3c07727..a488bbade48b 100644
+index 5fbffbaefe32..0dece3c07727 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -1722,13 +1722,6 @@ static int fm10k_sw_init(struct fm10k_intfc *interface,
- 					     pci_resource_len(pdev, 4));
- 	hw->sw_addr = interface->sw_addr;
+@@ -1729,8 +1729,10 @@ static int fm10k_sw_init(struct fm10k_intfc *interface,
+ 		netdev->hw_features &= ~NETIF_F_GSO_UDP_TUNNEL;
+ 	}
  
--	/* Only the PF can support VXLAN and NVGRE offloads */
--	if (hw->mac.type != fm10k_mac_pf) {
--		netdev->hw_enc_features = 0;
--		netdev->features &= ~NETIF_F_GSO_UDP_TUNNEL;
--		netdev->hw_features &= ~NETIF_F_GSO_UDP_TUNNEL;
--	}
--
- #ifdef CONFIG_DCB
++#ifdef CONFIG_DCB
  	/* initialize DCBNL interface */
  	fm10k_dcbnl_set_ops(netdev);
-@@ -1896,7 +1889,7 @@ static int fm10k_probe(struct pci_dev *pdev,
- 	pci_set_master(pdev);
- 	pci_save_state(pdev);
++#endif
  
--	netdev = fm10k_alloc_netdev();
-+	netdev = fm10k_alloc_netdev(fm10k_info_tbl[ent->driver_data]);
- 	if (!netdev) {
- 		err = -ENOMEM;
- 		goto err_alloc_netdev;
+ 	/* Initialize service timer and service task */
+ 	set_bit(__FM10K_SERVICE_DISABLE, &interface->state);
+@@ -1919,8 +1921,10 @@ static int fm10k_probe(struct pci_dev *pdev,
+ 	if (err)
+ 		goto err_sw_init;
+ 
++#if IS_ENABLED(CONFIG_DEBUG_FS)
+ 	/* enable debugfs support */
+ 	fm10k_dbg_intfc_init(interface);
++#endif
+ 
+ 	err = fm10k_init_queueing_scheme(interface);
+ 	if (err)
 -- 
 2.6.1.264.gbab76a9
 
