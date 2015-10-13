@@ -1,52 +1,40 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 13 Oct 2015 16:39:04 -0700
-Subject: [Intel-wired-lan] [next-queue 07/17] fm10k: explicitly typecast
-	vlan values to u16
+Date: Tue, 13 Oct 2015 16:39:07 -0700
+Subject: [Intel-wired-lan] [next-queue 10/17] fm10k: add TEB check to
+	fm10k_gre_is_nvgre
 In-Reply-To: <1444779554-20464-1-git-send-email-jacob.e.keller@intel.com>
 References: <1444779554-20464-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1444779554-20464-7-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1444779554-20464-10-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+The NVGRE protocol should be run over transparent ethernet bridge
+protocol, so we should verify this in our check whether the GRE tunnel
+is NVGRE.
+
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_pf.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-index 789ffd9d7fd9..52f754b35972 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-@@ -1212,7 +1212,7 @@ s32 fm10k_iov_msg_mac_vlan_pf(struct fm10k_hw *hw, u32 **results,
- 		set = !(vid & FM10K_VLAN_CLEAR);
- 		vid &= ~FM10K_VLAN_CLEAR;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+index 746a1986690b..5dfcba72825d 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+@@ -708,6 +708,10 @@ static struct ethhdr *fm10k_gre_is_nvgre(struct sk_buff *skb)
+ 	if (nvgre_hdr->flags & FM10K_NVGRE_RESERVED0_FLAGS)
+ 		return NULL;
  
--		err = fm10k_iov_select_vid(vf_info, vid);
-+		err = fm10k_iov_select_vid(vf_info, (u16)vid);
- 		if (err < 0)
- 			return err;
- 		else
-@@ -1242,7 +1242,7 @@ s32 fm10k_iov_msg_mac_vlan_pf(struct fm10k_hw *hw, u32 **results,
- 		if (err < 0)
- 			return err;
- 		else
--			vlan = err;
-+			vlan = (u16)err;
- 
- 		/* notify switch of request for new unicast address */
- 		err = hw->mac.ops.update_uc_addr(hw, vf_info->glort,
-@@ -1268,7 +1268,7 @@ s32 fm10k_iov_msg_mac_vlan_pf(struct fm10k_hw *hw, u32 **results,
- 		if (err < 0)
- 			return err;
- 		else
--			vlan = err;
-+			vlan = (u16)err;
- 
- 		/* notify switch of request for new multicast address */
- 		err = hw->mac.ops.update_mc_addr(hw, vf_info->glort,
++	/* verify protocol is transparent Ethernet bridging */
++	if (nvgre_hdr->proto != htons(ETH_P_TEB))
++		return NULL;
++
+ 	/* report start of ethernet header */
+ 	if (nvgre_hdr->flags & NVGRE_TNI)
+ 		return (struct ethhdr *)(nvgre_hdr + 1);
 -- 
 2.6.1.264.gbab76a9
 
