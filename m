@@ -1,39 +1,33 @@
-From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Tue, 13 Oct 2015 16:12:26 +0000
-Subject: [Intel-wired-lan] [PATCH v8 3/3] ixgbe,
- ixgbevf: Add new mbox API xcast mode
-In-Reply-To: <7F861DC0615E0C47A872E6F3C5FCDDBD05F28E98@BPXM14GP.gisp.nec.co.jp>
-References: <7F861DC0615E0C47A872E6F3C5FCDDBD05F28E98@BPXM14GP.gisp.nec.co.jp>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E271E74C6@ORSMSX103.amr.corp.intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Tue, 13 Oct 2015 11:59:14 -0700
+Subject: [Intel-wired-lan] [PATCH] i40evf: fix 32 bit build warnings
+In-Reply-To: <57023416.17EujnXPCo@wuerfel>
+References: <6607276.TY67sbLLqL@wuerfel>
+ <1444717101.2870.16.camel@intel.com> <57023416.17EujnXPCo@wuerfel>
+Message-ID: <1444762754.2870.30.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Tue, 2015-10-13 at 13:37 +0200, Arnd Bergmann wrote:
+> This is the majority of all build warnings we get on allmodconfig
+> (both i386 and arm),
+> so it would be really nice to have it fixed before 4.3. For all I can
+> tell, the
+> patch still applies on your branch too, but see below for the rebased
+> version.
+> 
+> I also note that your branch is not part of linux-next, is that 
+> intentional?
 
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Hiroshi Shimamoto
-Sent: Thursday, August 27, 2015 11:59 PM
-To: Or Gerlitz <gerlitz.or@gmail.com>; Alexander Duyck <alexander.duyck@gmail.com>; Skidmore, Donald C <donald.c.skidmore@intel.com>; Rose, Gregory V <gregory.v.rose@intel.com>; Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; intel-wired-lan at lists.osuosl.org; nhorman at redhat.com; jogreene at redhat.com; Linux Netdev List <netdev@vger.kernel.org>; Choi, Sy Jong <sy.jong.choi@intel.com>; Rony Efraim <ronye@mellanox.com>; Edward Cree <ecree@solarflare.com>; David Miller <davem@davemloft.net>; sassmann at redhat.com
-Subject: [Intel-wired-lan] [PATCH v8 3/3] ixgbe, ixgbevf: Add new mbox API xcast mode
-
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-
-The limitation of the number of multicast address for VF is not enough for the large scale server with SR-IOV feature. IPv6 requires the multicast MAC address for each IP address to handle the Neighbor Solicitation message. We couldn't assign over 30 IPv6 addresses to a single VF.
-
-This patch introduces the new mailbox API, IXGBE_VF_UPDATE_XCAST_MODE, to update multicast mode of VF. This adds 3 modes;
-  - NONE     only L2 exact match addresses or Flow Director enabled
-  - MULTI    BAM and ROMPE set
-  - ALLMULTI BAM, ROMPE and MPE set
-
-If a guest VF user wants over 30 MAC multicast addresses, set IFF_ALLMULTI to request PF to update xcast mode to enable VF multicast promiscuous mode.
-
-On the other hand, enabling VF multicast promiscuous mode may affect security and performance in the network of the NIC. Only trusted VF can enable multicast promiscuous mode. The behavior of untrusted VF is the same as previous version.
-
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- 
-Tested-by: Krishneil Singh <Krishneil.k.singh@intel.com>
-
-
+No, I assume it is because the linux-next maintainer has not picked up
+my tree.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151013/c0a35e72/attachment.asc>
