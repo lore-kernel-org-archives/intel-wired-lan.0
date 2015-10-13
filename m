@@ -1,44 +1,47 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Tue, 13 Oct 2015 21:15:51 +0200 (CEST)
-Subject: [Intel-wired-lan] [PATCH v4 1/4] Produce system time from
-	correlated clocksource
-In-Reply-To: <20151013083113.GA1931@localhost.localdomain>
-References: <1444675522-4198-1-git-send-email-christopher.s.hall@intel.com>
- <1444675522-4198-2-git-send-email-christopher.s.hall@intel.com>
- <20151013045832.GA2437@netboy> <alpine.DEB.2.11.1510130944520.6097@nanos>
- <20151013083113.GA1931@localhost.localdomain>
-Message-ID: <alpine.DEB.2.11.1510132113470.25029@nanos>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Tue, 13 Oct 2015 12:25:10 -0700
+Subject: [Intel-wired-lan] [PATCH] i40evf: fix 32 bit build warnings
+In-Reply-To: <57023416.17EujnXPCo@wuerfel>
+References: <6607276.TY67sbLLqL@wuerfel> <1444717101.2870.16.camel@intel.com>
+ <57023416.17EujnXPCo@wuerfel>
+Message-ID: <20151013122510.0000429f@unknown>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 13 Oct 2015, Richard Cochran wrote:
+On Tue, 13 Oct 2015 13:37:04 +0200
+Arnd Bergmann <arnd@arndb.de> wrote:
 
-> On Tue, Oct 13, 2015 at 09:51:02AM +0200, Thomas Gleixner wrote:
+> On Monday 12 October 2015 23:18:21 you wrote:
+> > On Wed, 2015-10-07 at 22:13 +0200, Arnd Bergmann wrote:
+> > > Jesse Brandeburg fixed a bug for 32-bit systems in the i40e driver
+> > > in commit 9c70d7cebfec5 ("i40e: fix 32 bit build warnings"), but the
+> > > same code still exists in the i40evf driver and causes compilation
+> > > warnings in ARM and x86 allmodconfig:
+> > > 
+> > > drivers/net/ethernet/intel/i40evf/i40e_common.c:445:68: warning: cast
+> > > from pointer to integer of different size [-Wpointer-to-int-cast]
+> > > drivers/net/ethernet/intel/i40evf/i40e_common.c:446:71: warning: cast
+> > > from pointer to integer of different size [-Wpointer-to-int-cast]
+> > > 
+> > > This applies the same fix by removing the broken code.
+> > > 
+> > > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 > > 
-> > You are restricting the problem space to this particular use
-> > case. There are other use cases where PTP is not available or not the
-> > relevant reference, but you still want to correlate time domains to
-> > ART.
+> > Does not apply at all to my next-queue tree (dev-queue branch), my
+> > guess is that this is already fixed in one of the patches already in my
+> > queue.
+> > 
 > 
-> They may well be other use cases, but they have not been identified
-> here.  The PTP to media clock problem has a very simple solution.  You
-> do not need a history of system time stamps to solve it.
+> I still get these warnings on your branch:
 
-Well, these use cases are not in the focus of Christopher, but I have
-a few in my head. Think industrial fieldbusses.
- 
-> Even if you wanted to correlate the system time's UTC with the media
-> clock, still you don't need any shadow history for that.  Just feed
-> (ART, UTC) pairs into the DSP at a regular rate, and let the DSP do
-> the math.  This does not need to be part of the central time keeping
-> code at all.
+Make sure you're pulling from the dev-queue branch, not the master
+branch of Jeff's next-queue repo.
 
-That's not working. The firmware is not going to change, no matter
-what.
+I've made that mistake many times, and I do see that the code in
+question is not present in:
+https://git.kernel.org/cgit/linux/kernel/git/jkirsher/next-queue.git/tree/drivers/net/ethernet/intel/i40evf/i40e_common.c?h=dev-queue
 
-Thanks,
 
-	tglx
