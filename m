@@ -1,48 +1,62 @@
-From: =?unknown-8bit?q?J=CE=B5an?= Sacren <sakiwit@gmail.com>
-Date: Tue, 13 Oct 2015 01:06:32 -0600
-Subject: [Intel-wired-lan] [next-queue v2 6/6] i40e: fix unconditional
-	execution of cpu_to_le16()
-In-Reply-To: <1444719992-301-1-git-send-email-sakiwit@gmail.com>
-References: <1444719992-301-1-git-send-email-sakiwit@gmail.com>
-Message-ID: <1444719992-301-6-git-send-email-sakiwit@gmail.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Tue, 13 Oct 2015 09:51:02 +0200 (CEST)
+Subject: [Intel-wired-lan] [PATCH v4 1/4] Produce system time from
+	correlated clocksource
+In-Reply-To: <20151013045832.GA2437@netboy>
+References: <1444675522-4198-1-git-send-email-christopher.s.hall@intel.com>
+ <1444675522-4198-2-git-send-email-christopher.s.hall@intel.com>
+ <20151013045832.GA2437@netboy>
+Message-ID: <alpine.DEB.2.11.1510130944520.6097@nanos>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jean Sacren <sakiwit@gmail.com>
+On Tue, 13 Oct 2015, Richard Cochran wrote:
+> On Mon, Oct 12, 2015 at 11:45:19AM -0700, Christopher S. Hall wrote:
+> > The transforms such an application would
+> > perform are:
+> > 
+> > System Clock <-> Audio clock
+> > System Clock <-> Network Device Clock [<-> PTP Master Clock]
+> 
+> This is extra work with no benefit.  In fact, this hurts you
+> because of the need to take avoid update_wall_time AND because of the
+> NTP frequency adjustments.  Cascaded servos are prone to gain peaking,
+> and this can easily avoided in this case.
 
-The commit 3092e5e4cc79 ("i40e: add little endian conversion for
-checksum") fixed the checksum bug on big-endian architecture.
+In such a system the frequency updates are coming from PTP, so you
+have a strong correlation.
+  
+> > Modern Intel platforms can perform a more accurate cross-
+> > timestamp in hardware (ART,audio device clock).  The audio driver
+> > requires ART->system time transforms -- the same as required for
+> > the network driver.
+> 
+> No, it doesn't need the system time.  It only needs the PTP time.
+> 
+> > The modification to the original patch accomodates these
+> > slow devices by adding the option of providing an ART value outside
+> > of the retry loop and adding a history which can consulted in the
+> > case of an out of date counter value. The history is kept by
+> > making the shadow_timekeeper an array. Each write to the
+> > timekeeper rotates through the array, preserving a
+> > history of updates.
+> 
+> This is all wrong.  All you need to provide the DSP with (ART, PTP)
+> pairs.  This can be done in a multiple of the DSP period, like every
+> 1, 10, or 100 milliseconds.
 
-But we should not execute cpu_to_le16() unconditionally. Thus, put
-cpu_to_le16() under certain condition.
+You are restricting the problem space to this particular use
+case. There are other use cases where PTP is not available or not the
+relevant reference, but you still want to correlate time domains to
+ART.
 
-Signed-off-by: Jean Sacren <sakiwit@gmail.com>
-Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Cc: Paul M Stillwell Jr <paul.m.stillwell.jr@intel.com>
----
-v2: Update patch serial number and add CC to Paul M Stillwell Jr.
+Thanks,
 
- drivers/net/ethernet/intel/i40e/i40e_nvm.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+	tglx
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-index 1715358a8a6c..6100cdd9ad13 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-@@ -569,10 +569,11 @@ i40e_status i40e_update_nvm_checksum(struct i40e_hw *hw)
- 	__le16 le_sum;
- 
- 	ret_code = i40e_calc_nvm_checksum(hw, &checksum);
--	le_sum = cpu_to_le16(checksum);
--	if (!ret_code)
-+	if (!ret_code) {
-+		le_sum = cpu_to_le16(checksum);
- 		ret_code = i40e_write_nvm_aq(hw, 0x00, I40E_SR_SW_CHECKSUM_WORD,
- 					     1, &le_sum, true);
-+	}
- 
- 	return ret_code;
- }
+
+
+
