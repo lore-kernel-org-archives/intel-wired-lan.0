@@ -1,30 +1,37 @@
-From: Richard Cochran <richardcochran@gmail.com>
-Date: Tue, 13 Oct 2015 15:59:26 +0200
-Subject: [Intel-wired-lan] [PATCH v4 3/4] Add PTP_SYS_OFFSET_PRECISE for
- driver crosstimestamping
-In-Reply-To: <1444675522-4198-4-git-send-email-christopher.s.hall@intel.com>
-References: <1444675522-4198-1-git-send-email-christopher.s.hall@intel.com>
- <1444675522-4198-4-git-send-email-christopher.s.hall@intel.com>
-Message-ID: <20151013135925.GB5422@localhost.localdomain>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 13 Oct 2015 16:34:52 +0000
+Subject: [Intel-wired-lan] [next-queue v2 1/6] i40evf: add
+	missing	kernel-doc argument
+In-Reply-To: <1444719992-301-1-git-send-email-sakiwit@gmail.com>
+References: <1444719992-301-1-git-send-email-sakiwit@gmail.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060D1169@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Oct 12, 2015 at 11:45:21AM -0700, Christopher S. Hall wrote:
->  
-> +struct ptp_sys_offset_precise {
-> +	unsigned int rsv[4];    /* Reserved for future use. */
-> +	struct ptp_clock_time dev;
-> +	struct ptp_clock_time sys;
-> +};
-> +
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Jean Sacren
+> Sent: Tuesday, October 13, 2015 12:06 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next-queue v2 1/6] i40evf: add missing kernel-doc
+> argument
+> 
+> From: Jean Sacren <sakiwit@gmail.com>
+> 
+> @flush has been missing since the inception of i40evf_irq_enable(). Add it
+> for the kernel doc.
+> 
+> Signed-off-by: Jean Sacren <sakiwit@gmail.com>
+> ---
+> v2: For the whole series, drop the first two due to the simple mistake.
+> 
+>     For this patch, no changes except for the serial number.
+> 
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 1 +
+>  1 file changed, 1 insertion(+)
 
-Please put the reserved field at the bottom.  Also, since we reading
-the raw monotonic time under the hood, we might as well return it in
-this struct too.  It costs us almost nothing, and having that value
-can be useful for characterizing the system oscillator.
-
-Thanks,
-Richard
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Patch code changes correctly applied
