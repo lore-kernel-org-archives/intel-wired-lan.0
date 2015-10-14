@@ -1,155 +1,57 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 14 Oct 2015 11:35:56 -0700
-Subject: [Intel-wired-lan] [next-queue 13/17] fm10k: Update adaptive ITR
- algorithm
-In-Reply-To: <1444779554-20464-13-git-send-email-jacob.e.keller@intel.com>
-References: <1444779554-20464-1-git-send-email-jacob.e.keller@intel.com>
- <1444779554-20464-13-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <561EA08C.8090705@gmail.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed, 14 Oct 2015 12:48:01 -0700
+Subject: [Intel-wired-lan] [next-queue v2 01/17] fm10k: conditionally
+ compile DCB and DebugFS support
+In-Reply-To: <1444845826.26286.31.camel@intel.com>
+References: <20151014164235.GA26991@aiaiai.jf.intel.com>
+ <1444845826.26286.31.camel@intel.com>
+Message-ID: <1444852081.2794.14.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 10/13/2015 04:39 PM, Jacob Keller wrote:
-> The existing adaptive ITR algorithm is overly restrictive. It throttles
-> incorrectly for various traffic rates, and does not produce good
-> performance. The algorithm now allows for more interrupts per second,
-> and does some calculation to help improve for smaller packet loads. In
-> addition, take into account the new itr_scale from the hardware which
-> indicates how much to scale due to PCIe link speed.
->
-> A single thread of receiving TCP_STREAM in netperf:
-> - Before: 450 Mbps
-> - After: 20,000 Mbps
->
-> Reported-by: Matthew Vick <matthew.vick@intel.com>
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
->   drivers/net/ethernet/intel/fm10k/fm10k.h      |  1 +
->   drivers/net/ethernet/intel/fm10k/fm10k_main.c | 29 +++++++++++++++++++++++----
->   drivers/net/ethernet/intel/fm10k/fm10k_pci.c  |  6 ++++--
->   3 files changed, 30 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
-> index c40f50737d17..ceddf39d7cec 100644
-> --- a/drivers/net/ethernet/intel/fm10k/fm10k.h
-> +++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
-> @@ -164,6 +164,7 @@ struct fm10k_ring_container {
->   	unsigned int total_packets;	/* total packets processed this int */
->   	u16 work_limit;			/* total work allowed per interrupt */
->   	u16 itr;			/* interrupt throttle rate value */
-> +	u8 itr_scale;			/* ITR adjustment scaler based on PCI speed */
->   	u8 count;			/* total number of rings in vector */
->   };
->
-> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-> index babde3e4b2bb..cae6b4e309a9 100644
-> --- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-> @@ -1386,11 +1386,30 @@ static void fm10k_update_itr(struct fm10k_ring_container *ring_container)
->   	if (avg_wire_size > 3000)
->   		avg_wire_size = 3000;
->
-> -	/* Give a little boost to mid-size frames */
-> -	if ((avg_wire_size > 300) && (avg_wire_size < 1200))
-> -		avg_wire_size /= 3;
-> +	/* Throttle rate management based on average wire size, attempting to
-> +	 * slightly boost small and medium packet loads. Divide the average
-> +	 * wire size by a small factor to calculate the minimum time until the
-> +	 * next interrupt in microseconds. Save some cycles by using a
-> +	 * multiply then a shift, which also accounts for difference due to
-> +	 * PCIe link speed.
-> +	 */
-> +#define FM10K_ITR_SCALE_SMALL	6
-> +#define FM10K_ITR_SCALE_MEDIUM	5
-> +#define FM10K_ITR_SCALE_LARGE	4
-> +
-> +	if (avg_wire_size < 300)
-> +		avg_wire_size *= FM10K_ITR_SCALE_SMALL;
-> +	else if ((avg_wire_size >= 300) && (avg_wire_size < 1200))
-> +		avg_wire_size *= FM10K_ITR_SCALE_MEDIUM;
->   	else
-> -		avg_wire_size /= 2;
-> +		avg_wire_size *= FM10K_ITR_SCALE_LARGE;
-> +
+On Wed, 2015-10-14 at 11:03 -0700, Keller, Jacob E wrote:
+> On Wed, 2015-10-14 at 09:42 -0700, ND Linux CI Server wrote:
+> > Bisectability test results for configuration "intel_defconfig,x86"
+> > 
+> > Failed to build patch #3: 9800d00 fm10k: reinitialize queuing
+> scheme after calling init_hw
+> > Configuration: "intel_defconfig, architecture x86".
+> > 
+> > 
+> > drivers/net/ethernet/intel/fm10k/fm10k_pci.c: In function
+> ?fm10k_reinit?:
+> > drivers/net/ethernet/intel/fm10k/fm10k_pci.c:176:3: error: label
+> ?reinit_err? used but not defined
+> >    goto reinit_err;
+> >    ^
+> > make[6]: *** [drivers/net/ethernet/intel/fm10k/fm10k_pci.o] Error 1
+> > Failed to build patch #4: ef14b12 fm10k: reset max_queues on
+> init_hw_vf failure
+> > Configuration: "intel_defconfig, architecture x86".
+> > 
+> > 
+> > drivers/net/ethernet/intel/fm10k/fm10k_pci.c: In function
+> ?fm10k_reinit?:
+> > drivers/net/ethernet/intel/fm10k/fm10k_pci.c:176:3: error: label
+> ?reinit_err? used but not defined
+> >    goto reinit_err;
+> >    ^
+> > make[6]: *** [drivers/net/ethernet/intel/fm10k/fm10k_pci.o] Error 1
+> 
+> This can be fixed by just re-ordering patch 3 as patch 5, but I can
+> resend if you don't want to do that by hand. There is no merge
+> conflict
+> when I did it via interactive rebase.
 
-Where is it these scaling values originated from?  Just looking through 
-the values I am not sure having this broken out like it is provides much 
-value.
-
-What I am getting at is that the input is a packet size, and the output 
-is a value somewhere between 2 and 47.  (I think that 47 is still a bit 
-high by the way and probably should be something more like 25 which I 
-believe you established as the minimum Tx interrupt rate in a later patch.)
-
-What you may want to do is look at pulling in the upper limit to 
-something more reasonable like 1536 for avg_wire_size, and then simplify 
-this logic a bit.  Specifically what is it you are trying to accomplish 
-by tweaking the scale factor like you are?  I assume you are wanting to 
-approximate a curve.  If so you might wan to look at possibly including 
-an offset value so that you can smooth out the points where your 
-intersections occur.
-
-For example what you may want to consider doing would be to instead use 
-a multiplication factor for small, an addition value for medium, and for 
-large you simply cap it at a certain value.
-
-
-> +	/* Round up average wire size, then perform bit shift, to ensure that
-> +	 * the calculation will never get below 1. Account for changes in ITR
-> +	 * value due to PCIe link speed.
-> +	 */
-> +	avg_wire_size += (1 << (ring_container->itr_scale + 8)) - 1;
-> +	avg_wire_size >>= ring_container->itr_scale + 8;
->
-
-You might want to store off the value for itr_scale + 8 somewhere.  It 
-is likely you might save a cycle or two, especially if the compiler 
-thinks it has to read itr_scale twice.
-
->   	/* write back value and retain adaptive flag */
->   	ring_container->itr = avg_wire_size | FM10K_ITR_ADAPTIVE;
-> @@ -1608,6 +1627,7 @@ static int fm10k_alloc_q_vector(struct fm10k_intfc *interface,
->   	q_vector->tx.ring = ring;
->   	q_vector->tx.work_limit = FM10K_DEFAULT_TX_WORK;
->   	q_vector->tx.itr = interface->tx_itr;
-> +	q_vector->tx.itr_scale = interface->hw.mac.itr_scale;
->   	q_vector->tx.count = txr_count;
->
->   	while (txr_count) {
-> @@ -1636,6 +1656,7 @@ static int fm10k_alloc_q_vector(struct fm10k_intfc *interface,
->   	/* save Rx ring container info */
->   	q_vector->rx.ring = ring;
->   	q_vector->rx.itr = interface->rx_itr;
-> +	q_vector->rx.itr_scale = interface->hw.mac.itr_scale;
->   	q_vector->rx.count = rxr_count;
->
->   	while (rxr_count) {
-> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> index 9ad9f9164d91..cbf38da0ada7 100644
-> --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> @@ -880,7 +880,8 @@ static irqreturn_t fm10k_msix_mbx_vf(int __always_unused irq, void *data)
->
->   	/* re-enable mailbox interrupt and indicate 20us delay */
->   	fm10k_write_reg(hw, FM10K_VFITR(FM10K_MBX_VECTOR),
-> -			FM10K_ITR_ENABLE | FM10K_MBX_INT_DELAY);
-> +			FM10K_ITR_ENABLE | (FM10K_MBX_INT_DELAY >>
-> +					    hw->mac.itr_scale));
->
->   	/* service upstream mailbox */
->   	if (fm10k_mbx_trylock(interface)) {
-> @@ -1111,7 +1112,8 @@ static irqreturn_t fm10k_msix_mbx_pf(int __always_unused irq, void *data)
->
->   	/* re-enable mailbox interrupt and indicate 20us delay */
->   	fm10k_write_reg(hw, FM10K_ITR(FM10K_MBX_VECTOR),
-> -			FM10K_ITR_ENABLE | FM10K_MBX_INT_DELAY);
-> +			FM10K_ITR_ENABLE | (FM10K_MBX_INT_DELAY >>
-> +					    hw->mac.itr_scale));
->
->   	return IRQ_HANDLED;
->   }
->
-
+Please resend with this resolved.  If I do it by hand, I may not
+remember to do so later on when/if I push them upstream.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151014/e117a418/attachment.asc>
