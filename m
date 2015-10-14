@@ -1,35 +1,34 @@
-From: Joe Perches <joe@perches.com>
-Date: Tue, 13 Oct 2015 18:18:06 -0700
-Subject: [Intel-wired-lan] [PATCH 5/6] e1000 driver remove checkpatch
- errors, warnings and checks.
-In-Reply-To: <561D846E.1050405@gmail.com>
-References: <1444772362-25090-1-git-send-email-januszwolak@awokados.com.pl>
- <1444772362-25090-5-git-send-email-januszwolak@awokados.com.pl>
- <561D846E.1050405@gmail.com>
-Message-ID: <1444785486.9184.40.camel@perches.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Wed, 14 Oct 2015 09:21:42 +0200 (CEST)
+Subject: [Intel-wired-lan] [PATCH v4 1/4] Produce system time from
+	correlated clocksource
+In-Reply-To: <20151013211224.GA19242@netboy>
+References: <1444675522-4198-1-git-send-email-christopher.s.hall@intel.com>
+ <1444675522-4198-2-git-send-email-christopher.s.hall@intel.com>
+ <20151013045832.GA2437@netboy> <alpine.DEB.2.11.1510130944520.6097@nanos>
+ <20151013083113.GA1931@localhost.localdomain>
+ <alpine.DEB.2.11.1510132113470.25029@nanos> <20151013211224.GA19242@netboy>
+Message-ID: <alpine.DEB.2.11.1510140920200.25029@nanos>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2015-10-13 at 15:23 -0700, Alexander Duyck wrote:
-> Please don't just blindly 
-> follow checkpatch as it can give out erroneous information.
+On Tue, 13 Oct 2015, Richard Cochran wrote:
+> On Tue, Oct 13, 2015 at 09:15:51PM +0200, Thomas Gleixner wrote:
+> > That's not working. The firmware is not going to change, no matter
+> > what.
 > 
-> Looking over most of this patch series it seems like it is taking 
-> readability in the wrong direction and reducing the ability to maintain 
-> the driver since this code has been "maintenance only" for some time 
-> now.  If somebody comes up with a legitimate fix for an issue at some 
-> point in the future they will need to work around these patches in order 
-> to back-port it into a stable release and that just hurts maintainability.
-> 
-> I'd say this whole series should be rejected on the grounds that this 
-> driver is mostly stable and should only really be modified for bug fixes 
-> at this point.  If we really need to go through and do a checkpatch 
-> sweep we should probably just focus on serious errors only instead of 
-> going astray and chasing down things that are false hits or minor issues 
-> that are mostly a matter of preference.
+> Can we at least have a explanation of how the firmware operates?  How
+> are (ART,sys) pairs are generated, and how they are supposed to get
+> into the DSP?
 
-Excellent advice.
+The firmware gives you an ART/audio timestamp pair. The firmware does
+neither know about system time nor about PTP time.
 
+So we have to do correlation in software.
+
+Thanks,
+
+	tglx
