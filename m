@@ -1,11 +1,11 @@
 From: Allan, Bruce W <bruce.w.allan@intel.com>
-Date: Wed, 14 Oct 2015 00:46:51 +0000
-Subject: [Intel-wired-lan] [next-queue 06/17] fm10k: Correct typecast
-	in	fm10k_update_xc_addr_pf
-In-Reply-To: <1444779554-20464-6-git-send-email-jacob.e.keller@intel.com>
+Date: Wed, 14 Oct 2015 00:47:05 +0000
+Subject: [Intel-wired-lan] [next-queue 10/17] fm10k: add TEB check
+	to	fm10k_gre_is_nvgre
+In-Reply-To: <1444779554-20464-10-git-send-email-jacob.e.keller@intel.com>
 References: <1444779554-20464-1-git-send-email-jacob.e.keller@intel.com>
- <1444779554-20464-6-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <804857E1F29AAC47BF68C404FC60A1847EC51CDB@ORSMSX105.amr.corp.intel.com>
+ <1444779554-20464-10-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <804857E1F29AAC47BF68C404FC60A1847EC51CF5@ORSMSX105.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,38 +17,38 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Jacob Keller
 > Sent: Tuesday, October 13, 2015 4:39 PM
 > To: Intel Wired LAN
-> Subject: [Intel-wired-lan] [next-queue 06/17] fm10k: Correct typecast in
-> fm10k_update_xc_addr_pf
+> Subject: [Intel-wired-lan] [next-queue 10/17] fm10k: add TEB check to
+> fm10k_gre_is_nvgre
 > 
-> Since the resultant data type of the mac_update.mac_upper field is u16,
-> it does not make sense to typecast u8 variables to u32 first.
+> The NVGRE protocol should be run over transparent ethernet bridge
+> protocol, so we should verify this in our check whether the GRE tunnel
+> is NVGRE.
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> ---
+>  drivers/net/ethernet/intel/fm10k/fm10k_main.c | 4 ++++
 
 Care to update the copyright date in this file while you're already updating it?
 
+>  1 file changed, 4 insertions(+)
 > 
-> Reported-by: Matthew Vick <matthew.vick@intel.com>
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
->  drivers/net/ethernet/intel/fm10k/fm10k_pf.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+> b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+> index 746a1986690b..5dfcba72825d 100644
+> --- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+> @@ -708,6 +708,10 @@ static struct ethhdr *fm10k_gre_is_nvgre(struct
+> sk_buff *skb)
+>  	if (nvgre_hdr->flags & FM10K_NVGRE_RESERVED0_FLAGS)
+>  		return NULL;
 > 
-> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-> b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-> index 8c0bdc4e4edd..789ffd9d7fd9 100644
-> --- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-> @@ -334,8 +334,8 @@ static s32 fm10k_update_xc_addr_pf(struct
-> fm10k_hw *hw, u16 glort,
->  						 ((u32)mac[3] << 16) |
->  						 ((u32)mac[4] << 8) |
->  						 ((u32)mac[5]));
-> -	mac_update.mac_upper = cpu_to_le16(((u32)mac[0] << 8) |
-> -						 ((u32)mac[1]));
-> +	mac_update.mac_upper = cpu_to_le16(((u16)mac[0] << 8) |
-> +					   ((u16)mac[1]));
->  	mac_update.vlan = cpu_to_le16(vid);
->  	mac_update.glort = cpu_to_le16(glort);
->  	mac_update.action = add ? 0 : 1;
+> +	/* verify protocol is transparent Ethernet bridging */
+> +	if (nvgre_hdr->proto != htons(ETH_P_TEB))
+> +		return NULL;
+> +
+>  	/* report start of ethernet header */
+>  	if (nvgre_hdr->flags & NVGRE_TNI)
+>  		return (struct ethhdr *)(nvgre_hdr + 1);
 > --
 > 2.6.1.264.gbab76a9
 > 
