@@ -1,44 +1,52 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Wed, 14 Oct 2015 16:22:03 +0200 (CEST)
-Subject: [Intel-wired-lan] [PATCH v4 1/4] Produce system time from
-	correlated clocksource
-In-Reply-To: <20151014092923.GA23870@localhost.localdomain>
-References: <1444675522-4198-1-git-send-email-christopher.s.hall@intel.com>
- <1444675522-4198-2-git-send-email-christopher.s.hall@intel.com>
- <20151013045832.GA2437@netboy> <alpine.DEB.2.11.1510130944520.6097@nanos>
- <20151013083113.GA1931@localhost.localdomain>
- <alpine.DEB.2.11.1510132113470.25029@nanos> <20151013211224.GA19242@netboy>
- <alpine.DEB.2.11.1510140920200.25029@nanos>
- <20151014092923.GA23870@localhost.localdomain>
-Message-ID: <alpine.DEB.2.11.1510141620320.3785@nanos>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 14 Oct 2015 08:15:33 -0700
+Subject: [Intel-wired-lan] [next-queue 15/17] fm10k: change default Tx
+ ITR to 25usec
+In-Reply-To: <1444779554-20464-15-git-send-email-jacob.e.keller@intel.com>
+References: <1444779554-20464-1-git-send-email-jacob.e.keller@intel.com>
+ <1444779554-20464-15-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <561E7195.2010605@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On 10/13/2015 04:39 PM, Jacob Keller wrote:
+> The current default ITR for Tx is overly restrictive. Using a simple
+> netperf TCP_STREAM test, we top out at about 10Gb/s for a single thread
+> when running using 1500 byte frames. By reducing the ITR value to 25usec
+> (up to 40K interrupts a second from 10K), we are able to achieve 36Gb/s
+> for a single thread TCP stream test.
+>
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> ---
+>   drivers/net/ethernet/intel/fm10k/fm10k.h | 3 ++-
+>   1 file changed, 2 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
+> index bf2cc6f78418..5eb42fd21d3f 100644
+> --- a/drivers/net/ethernet/intel/fm10k/fm10k.h
+> +++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
+> @@ -171,11 +171,12 @@ struct fm10k_ring_container {
+>   #define FM10K_ITR_MAX		0x0FFF	/* maximum value for ITR */
+>   #define FM10K_ITR_10K		100	/* 100us */
+>   #define FM10K_ITR_20K		50	/* 50us */
+> +#define FM10K_ITR_40K		25	/* 25us */
+>   #define FM10K_ITR_ADAPTIVE	0x8000	/* adaptive interrupt moderation flag */
+>   
+>   #define ITR_IS_ADAPTIVE(itr) (!!(itr & FM10K_ITR_ADAPTIVE))
+>   
+> -#define FM10K_TX_ITR_DEFAULT	FM10K_ITR_10K
+> +#define FM10K_TX_ITR_DEFAULT	FM10K_ITR_40K
+>   #define FM10K_RX_ITR_DEFAULT	FM10K_ITR_20K
+>   #define FM10K_ITR_ENABLE	(FM10K_ITR_AUTOMASK | FM10K_ITR_MASK_CLEAR)
 
+Even 40K might be a bit restrictive.  I've found that 10Gb NICs need 
+about 12K interrupts per second to avoid depleting the socket buffers in 
+the case of a UDP test.  You might want to see if you see performance 
+gains by taking it up to 50K maybe even 60K.  As far as test cases to 
+use for tuning it would be useful to use a UDP_STREAM test instead of 
+TCP_STREAM since UDP is not bound by the link partner throughput.
 
-On Wed, 14 Oct 2015, Richard Cochran wrote:
-
-> On Wed, Oct 14, 2015 at 09:21:42AM +0200, Thomas Gleixner wrote:
-> > The firmware gives you an ART/audio timestamp pair. The firmware does
-> > neither know about system time nor about PTP time.
-> > 
-> > So we have to do correlation in software.
-> 
-> Ok, so give me the ART/audio and two recent ART/ptp times* spaced one
-> second apart, then I'll tell you audio/ptp with error well under 1 PPM.
-> No need to change the firmware.
-> 
-> Who cares about the system time?  If the DSP isn't using it, then just
-> leave it out of the equation.
-
-It's not only the DSP. There is a bunch of usre space software
-involved as well. Care to think about the full picture and not just
-about some randomly chosen single problem out of the full problem
-space.
-
-Thanks,
-
-	tglx
+- Alex
