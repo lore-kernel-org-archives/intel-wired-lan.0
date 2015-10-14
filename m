@@ -1,34 +1,171 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Wed, 14 Oct 2015 09:21:42 +0200 (CEST)
-Subject: [Intel-wired-lan] [PATCH v4 1/4] Produce system time from
-	correlated clocksource
-In-Reply-To: <20151013211224.GA19242@netboy>
-References: <1444675522-4198-1-git-send-email-christopher.s.hall@intel.com>
- <1444675522-4198-2-git-send-email-christopher.s.hall@intel.com>
- <20151013045832.GA2437@netboy> <alpine.DEB.2.11.1510130944520.6097@nanos>
- <20151013083113.GA1931@localhost.localdomain>
- <alpine.DEB.2.11.1510132113470.25029@nanos> <20151013211224.GA19242@netboy>
-Message-ID: <alpine.DEB.2.11.1510140920200.25029@nanos>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 14 Oct 2015 15:57:22 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
+ b4a5127b03b7f0b06dcaf08a878ffc93ad53fa82 BUILD SUCCESS
+Message-ID: <561e0ae2.C5MjHuceGB9RHuM5%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 13 Oct 2015, Richard Cochran wrote:
-> On Tue, Oct 13, 2015 at 09:15:51PM +0200, Thomas Gleixner wrote:
-> > That's not working. The firmware is not going to change, no matter
-> > what.
-> 
-> Can we at least have a explanation of how the firmware operates?  How
-> are (ART,sys) pairs are generated, and how they are supposed to get
-> into the DSP?
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
+b4a5127b03b7f0b06dcaf08a878ffc93ad53fa82  fm10k: do not use enum as boolean
 
-The firmware gives you an ART/audio timestamp pair. The firmware does
-neither know about system time nor about PTP time.
+elapsed time: 56m
 
-So we have to do correlation in software.
+configs tested: 151
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+m68k                                defconfig
+mips                        maltaup_defconfig
+mn10300                          allyesconfig
+i386                     randconfig-a0-201541
+x86_64                 randconfig-a0-10141439
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+s390                       zfcpdump_defconfig
+sh                               allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-10141504
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+sh                          lboxre2_defconfig
+sh                            shmin_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                 randconfig-v0-10141439
+parisc                         b180_defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+arm                          imote2_defconfig
+arm                          pxa910_defconfig
+avr32            atngw100_evklcd100_defconfig
+powerpc                          allmodconfig
+powerpc                      obs600_defconfig
+x86_64               randconfig-x010-10130227
+x86_64               randconfig-x011-10130227
+x86_64               randconfig-x012-10130227
+x86_64               randconfig-x013-10130227
+x86_64               randconfig-x014-10130227
+x86_64               randconfig-x015-10130227
+x86_64               randconfig-x016-10130227
+x86_64               randconfig-x017-10130227
+x86_64               randconfig-x018-10130227
+x86_64               randconfig-x019-10130227
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                     randconfig-s0-201541
+i386                     randconfig-s1-201541
+x86_64                 randconfig-s0-10141438
+x86_64                 randconfig-s1-10141438
+x86_64                 randconfig-s2-10141438
+x86_64                 randconfig-s3-10141444
+x86_64                 randconfig-s4-10141444
+x86_64                 randconfig-s5-10141444
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                            allnoconfig
+arm                         axm55xx_defconfig
+arm                         em_x270_defconfig
+arm                      footbridge_defconfig
+frv                              allmodconfig
+x86_64                   randconfig-i0-201541
+i386                   randconfig-b0-10141443
+i386                   randconfig-b0-10141531
+arm                          collie_defconfig
+arm64                            allmodconfig
+mips                          sead3_defconfig
+powerpc                 mpc832x_rdb_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201541
+i386                     randconfig-i1-201541
+x86_64                 randconfig-b0-10141443
+x86_64                 randconfig-b0-10141524
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                     randconfig-n0-201541
+i386                   randconfig-h0-10131329
+i386                   randconfig-h1-10131329
+arm                            netx_defconfig
+arm                          pcm027_defconfig
+x86_64                                   rhel
+arm                        mvebu_v5_defconfig
+sh                              ul2_defconfig
+i386                  randconfig-sb0-10131613
+powerpc                     sbc834x_defconfig
+xtensa                           allmodconfig
+x86_64                 randconfig-x000-201541
+x86_64                 randconfig-x001-201541
+x86_64                 randconfig-x002-201541
+x86_64                 randconfig-x003-201541
+x86_64                 randconfig-x004-201541
+x86_64                 randconfig-x005-201541
+x86_64                 randconfig-x006-201541
+x86_64                 randconfig-x007-201541
+x86_64                 randconfig-x008-201541
+x86_64                 randconfig-x009-201541
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                    lkp
+i386                     randconfig-r0-201541
+x86_64                 randconfig-r0-10131108
+x86_64                           allyesconfig
+blackfin                 BlackStamp_defconfig
+powerpc                mpc8610_hpcd_defconfig
+i386                 randconfig-x000-10121721
+i386                 randconfig-x001-10121721
+i386                 randconfig-x002-10121721
+i386                 randconfig-x003-10121721
+i386                 randconfig-x004-10121721
+i386                 randconfig-x005-10121721
+i386                 randconfig-x006-10121721
+i386                 randconfig-x007-10121721
+i386                 randconfig-x008-10121721
+i386                 randconfig-x009-10121721
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+i386                   randconfig-x0-10141501
 
 Thanks,
-
-	tglx
+Fengguang
