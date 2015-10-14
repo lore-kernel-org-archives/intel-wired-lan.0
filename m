@@ -1,37 +1,36 @@
 From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Wed, 14 Oct 2015 15:57:24 +0000
-Subject: [Intel-wired-lan] [next-queue 05/17] fm10k: always check
- init_hw	for errors
-In-Reply-To: <804857E1F29AAC47BF68C404FC60A1847EC51CC1@ORSMSX105.amr.corp.intel.com>
+Date: Wed, 14 Oct 2015 15:59:51 +0000
+Subject: [Intel-wired-lan] [next-queue 15/17] fm10k: change default Tx
+ ITR to 25usec
+In-Reply-To: <561E7195.2010605@gmail.com>
 References: <1444779554-20464-1-git-send-email-jacob.e.keller@intel.com>
- <1444779554-20464-5-git-send-email-jacob.e.keller@intel.com>
- <804857E1F29AAC47BF68C404FC60A1847EC51CC1@ORSMSX105.amr.corp.intel.com>
-Message-ID: <1444838244.26286.9.camel@intel.com>
+ <1444779554-20464-15-git-send-email-jacob.e.keller@intel.com>
+ <561E7195.2010605@gmail.com>
+Message-ID: <1444838391.26286.11.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2015-10-14 at 00:46 +0000, Allan, Bruce W wrote:
-> > -----Original Message-----
-> > From: Intel-wired-lan [mailto:
-> > intel-wired-lan-bounces at lists.osuosl.org] On
-> > Behalf Of Jacob Keller
-> > Sent: Tuesday, October 13, 2015 4:39 PM
-> > To: Intel Wired LAN
-> > Subject: [Intel-wired-lan] [next-queue 05/17] fm10k: always check
-> > init_hw
-> > for errors
-> > 
-> > A recent change to the SHARED code makes it such that in some
-> > flows,
+On Wed, 2015-10-14 at 08:15 -0700, Alexander Duyck wrote:
+> Even 40K might be a bit restrictive.  I've found that 10Gb NICs need 
+> about 12K interrupts per second to avoid depleting the socket buffers
+> in 
+> the case of a UDP test.  You might want to see if you see performance
+> gains by taking it up to 50K maybe even 60K.  As far as test cases to
+> use for tuning it would be useful to use a UDP_STREAM test instead of
+> TCP_STREAM since UDP is not bound by the link partner throughput.
 > 
-> "SHARED code" has no meaning in the upstream driver, please change
-> this description.
-> 
+> - Alex
 
-Woops, yep, thought I proofread for all these. Will fix.
+Thanks Alex. I tried with Tx set to 0usec up to 25, and for my tests
+with both TCP and UDP trials, I topped out at 25 and didn't see
+improvement beyond that. I think it's a reasonable default, but I
+likely have other areas on my system that need tuning first.
+
+I can give some more tests specifically with UDP again to see if any
+other changes made that not true.
 
 Regards,
 Jake
