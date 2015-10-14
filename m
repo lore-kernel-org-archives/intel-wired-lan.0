@@ -1,45 +1,41 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 14 Oct 2015 09:32:49 -0700
-Subject: [Intel-wired-lan] [next-queue v2 15/17] fm10k: change default Tx
-	ITR to 25usec
+Date: Wed, 14 Oct 2015 09:32:51 -0700
+Subject: [Intel-wired-lan] [next-queue v2 17/17] fm10k: TRIVIAL cleanup
+	order at top of fm10k_xmit_frame
 In-Reply-To: <1444840371-17328-1-git-send-email-jacob.e.keller@intel.com>
 References: <1444840371-17328-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1444840371-17328-15-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1444840371-17328-17-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The current default ITR for Tx is overly restrictive. Using a simple
-netperf TCP_STREAM test, we top out at about 10Gb/s for a single thread
-when running using 1500 byte frames. By reducing the ITR value to 25usec
-(up to 40K interrupts a second from 10K), we are able to achieve 36Gb/s
-for a single thread TCP stream test.
-
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k.h | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
-index 7bf0c2ddce75..2a16cd1b2a8b 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
-@@ -171,11 +171,12 @@ struct fm10k_ring_container {
- #define FM10K_ITR_MAX		0x0FFF	/* maximum value for ITR */
- #define FM10K_ITR_10K		100	/* 100us */
- #define FM10K_ITR_20K		50	/* 50us */
-+#define FM10K_ITR_40K		25	/* 25us */
- #define FM10K_ITR_ADAPTIVE	0x8000	/* adaptive interrupt moderation flag */
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+index 7a3388fff178..714b38bd74b1 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+@@ -1098,11 +1098,11 @@ static void fm10k_tx_map(struct fm10k_ring *tx_ring,
+ netdev_tx_t fm10k_xmit_frame_ring(struct sk_buff *skb,
+ 				  struct fm10k_ring *tx_ring)
+ {
+-	struct fm10k_tx_buffer *first;
+-	int tso;
+-	u32 tx_flags = 0;
+-	unsigned short f;
+ 	u16 count = TXD_USE_COUNT(skb_headlen(skb));
++	struct fm10k_tx_buffer *first;
++	unsigned short f;
++	u32 tx_flags = 0;
++	int tso;
  
- #define ITR_IS_ADAPTIVE(itr) (!!(itr & FM10K_ITR_ADAPTIVE))
- 
--#define FM10K_TX_ITR_DEFAULT	FM10K_ITR_10K
-+#define FM10K_TX_ITR_DEFAULT	FM10K_ITR_40K
- #define FM10K_RX_ITR_DEFAULT	FM10K_ITR_20K
- #define FM10K_ITR_ENABLE	(FM10K_ITR_AUTOMASK | FM10K_ITR_MASK_CLEAR)
- 
+ 	/* need: 1 descriptor per page * PAGE_SIZE/FM10K_MAX_DATA_PER_TXD,
+ 	 *       + 1 desc for skb_headlen/FM10K_MAX_DATA_PER_TXD,
 -- 
 2.6.1.264.gbab76a9
 
