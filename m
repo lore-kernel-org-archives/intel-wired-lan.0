@@ -1,10 +1,11 @@
 From: Allan, Bruce W <bruce.w.allan@intel.com>
-Date: Wed, 14 Oct 2015 00:46:33 +0000
-Subject: [Intel-wired-lan] [next-queue 01/17] fm10k: conditionally
- compile	DCB and DebugFS support
-In-Reply-To: <1444779554-20464-1-git-send-email-jacob.e.keller@intel.com>
+Date: Wed, 14 Oct 2015 00:46:44 +0000
+Subject: [Intel-wired-lan] [next-queue 05/17] fm10k: always check
+ init_hw	for errors
+In-Reply-To: <1444779554-20464-5-git-send-email-jacob.e.keller@intel.com>
 References: <1444779554-20464-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <804857E1F29AAC47BF68C404FC60A1847EC51CA9@ORSMSX105.amr.corp.intel.com>
+ <1444779554-20464-5-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <804857E1F29AAC47BF68C404FC60A1847EC51CC1@ORSMSX105.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,178 +17,115 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Jacob Keller
 > Sent: Tuesday, October 13, 2015 4:39 PM
 > To: Intel Wired LAN
-> Subject: [Intel-wired-lan] [next-queue 01/17] fm10k: conditionally compile
-> DCB and DebugFS support
+> Subject: [Intel-wired-lan] [next-queue 05/17] fm10k: always check init_hw
+> for errors
 > 
-> Rather than wrapping fm10k_dcbnl.c and fm10k_debugfs.c support with
->  #ifdef blocks, just conditionally include the .o files in the Makefile.
+> A recent change to the SHARED code makes it such that in some flows,
+
+"SHARED code" has no meaning in the upstream driver, please change this description.
+
+> init_hw may fail. For example, init_hw_vf will fail if the 1st queue is
+> not owned by the VF. However, previously some flows called init_hw
+> without checking the return code, or checked it but only to display a
+> diagnostic message.
+> 
+> Fix this by (a) always returning and preventing the netdevice from going
+> up, and (b) printing the diagnostic in every flow for consistency. This
+> should resolve an issue where VF drivers would attempt to come up
+> before the PF has finished assigning queues.
+> 
+> In addition, change the dmesg output to explicitly show the actual
+> function that failed, instead of combining reset_hw and init_hw into a
+> single check.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/fm10k/Makefile        | 20 +++++++++++++++----
-> -
->  drivers/net/ethernet/intel/fm10k/fm10k.h         |  2 ++
->  drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c   |  4 ----
->  drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c |  4 ----
->  drivers/net/ethernet/intel/fm10k/fm10k_pci.c     |  4 ++++
->  5 files changed, 21 insertions(+), 13 deletions(-)
+>  drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 34
+> ++++++++++++++++++++++++----
+>  1 file changed, 29 insertions(+), 5 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/fm10k/Makefile
-> b/drivers/net/ethernet/intel/fm10k/Makefile
-> index 08859dd220a8..b006ff66d028 100644
-> --- a/drivers/net/ethernet/intel/fm10k/Makefile
-> +++ b/drivers/net/ethernet/intel/fm10k/Makefile
-> @@ -1,7 +1,7 @@
-> 
-> ##########################################################
-> ######################
->  #
->  # Intel Ethernet Switch Host Interface Driver
-> -# Copyright(c) 2013 - 2014 Intel Corporation.
-> +# Copyright(c) 2013 - 2015 Intel Corporation.
-
-There's no mention of this change in the patch description.
-
->  #
->  # This program is free software; you can redistribute it and/or modify it
->  # under the terms and conditions of the GNU General Public License,
-> @@ -27,7 +27,17 @@
-> 
->  obj-$(CONFIG_FM10K) += fm10k.o
-> 
-> -fm10k-objs := fm10k_main.o fm10k_common.o fm10k_pci.o \
-> -	      fm10k_netdev.o fm10k_ethtool.o fm10k_pf.o fm10k_vf.o \
-> -	      fm10k_mbx.o fm10k_iov.o fm10k_tlv.o \
-> -	      fm10k_debugfs.o fm10k_ptp.o fm10k_dcbnl.o
-> +fm10k-y := fm10k_main.o \
-> +	   fm10k_common.o \
-> +	   fm10k_pci.o \
-> +	   fm10k_ptp.o \
-> +	   fm10k_netdev.o \
-> +	   fm10k_ethtool.o \
-> +	   fm10k_pf.o \
-> +	   fm10k_vf.o \
-> +	   fm10k_mbx.o \
-> +	   fm10k_iov.o \
-> +	   fm10k_tlv.o
-> +
-> +fm10k-$(CONFIG_DEBUG_FS) += fm10k_debugfs.o
-> +fm10k-$(CONFIG_DCB) += fm10k_dcbnl.o
-> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h
-> b/drivers/net/ethernet/intel/fm10k/fm10k.h
-> index 48809e5d3f79..504d487fa800 100644
-> --- a/drivers/net/ethernet/intel/fm10k/fm10k.h
-> +++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
-> @@ -551,5 +551,7 @@ int fm10k_get_ts_config(struct net_device *netdev,
-> struct ifreq *ifr);
->  int fm10k_set_ts_config(struct net_device *netdev, struct ifreq *ifr);
-> 
->  /* DCB */
-> +#ifdef CONFIG_DCB
->  void fm10k_dcbnl_set_ops(struct net_device *dev);
-> +#endif
-
-To avoid the use of CONFIG_DCB in fm10k_pci.c, this should be:
-
-#ifdef CONFIG_DCB
-void fm10k_dcbnl_set_ops(struct net_device *dev);
-#else
-static inline void fm10k_dcbnl_set_ops(void)	{}
-#endif
-
->  #endif /* _FM10K_H_ */
-> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c
-> b/drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c
-> index 5c7a4d7662d8..2be4361839db 100644
-> --- a/drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c
-> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c
-> @@ -20,7 +20,6 @@
-> 
->  #include "fm10k.h"
-> 
-> -#ifdef CONFIG_DCB
->  /**
->   * fm10k_dcbnl_ieee_getets - get the ETS configuration for the device
->   * @dev: netdev interface for the device
-> @@ -155,7 +154,6 @@ static const struct dcbnl_rtnl_ops fm10k_dcbnl_ops
-> = {
->  	.setdcbx	= fm10k_dcbnl_setdcbx,
->  };
-> 
-> -#endif /* CONFIG_DCB */
->  /**
->   * fm10k_dcbnl_set_ops - Configures dcbnl ops pointer for netdev
->   * @dev: netdev interface for the device
-> @@ -164,11 +162,9 @@ static const struct dcbnl_rtnl_ops fm10k_dcbnl_ops
-> = {
->   **/
->  void fm10k_dcbnl_set_ops(struct net_device *dev)
->  {
-> -#ifdef CONFIG_DCB
->  	struct fm10k_intfc *interface = netdev_priv(dev);
->  	struct fm10k_hw *hw = &interface->hw;
-> 
->  	if (hw->mac.type == fm10k_mac_pf)
->  		dev->dcbnl_ops = &fm10k_dcbnl_ops;
-> -#endif /* CONFIG_DCB */
->  }
-> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
-> b/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
-> index 5304bc1fbecd..5d6137faf7d1 100644
-> --- a/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
-> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
-> @@ -18,8 +18,6 @@
->   * Intel Corporation, 5200 N.E. Elam Young Parkway, Hillsboro, OR 97124-
-> 6497
->   */
-> 
-> -#ifdef CONFIG_DEBUG_FS
-> -
->  #include "fm10k.h"
-> 
->  #include <linux/debugfs.h>
-> @@ -258,5 +256,3 @@ void fm10k_dbg_exit(void)
->  	debugfs_remove_recursive(dbg_root);
->  	dbg_root = NULL;
->  }
-> -
-> -#endif /* CONFIG_DEBUG_FS */
 > diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
 > b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> index 5fbffbaefe32..0dece3c07727 100644
+> index 48f0ef4545a0..9ad9f9164d91 100644
 > --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
 > +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> @@ -1729,8 +1729,10 @@ static int fm10k_sw_init(struct fm10k_intfc
-> *interface,
->  		netdev->hw_features &= ~NETIF_F_GSO_UDP_TUNNEL;
->  	}
+> @@ -166,9 +166,17 @@ static void fm10k_reinit(struct fm10k_intfc
+> *interface)
+>  	interface->last_reset = jiffies + (10 * HZ);
 > 
-> +#ifdef CONFIG_DCB
->  	/* initialize DCBNL interface */
->  	fm10k_dcbnl_set_ops(netdev);
-> +#endif
-
-The above does not need to be (and should not be) wrapped with #ifdef
-CONFIG_DCB with the above change to fm10k.h
-
-> 
->  	/* Initialize service timer and service task */
->  	set_bit(__FM10K_SERVICE_DISABLE, &interface->state);
-> @@ -1919,8 +1921,10 @@ static int fm10k_probe(struct pci_dev *pdev,
->  	if (err)
->  		goto err_sw_init;
-> 
-> +#if IS_ENABLED(CONFIG_DEBUG_FS)
->  	/* enable debugfs support */
->  	fm10k_dbg_intfc_init(interface);
-> +#endif
-
-Does not need to be (should not be) wrapped with #if
-IS_ENABLED(CONFIG_DEBUG_FS).
-
+>  	/* reset and initialize the hardware so it is in a known state */
+> -	err = hw->mac.ops.reset_hw(hw) ? : hw->mac.ops.init_hw(hw);
+> -	if (err)
+> +	err = hw->mac.ops.reset_hw(hw);
+> +	if (err) {
+> +		dev_err(&interface->pdev->dev, "reset_hw failed: %d\n",
+> err);
+> +		goto reinit_err;
+> +	}
+> +
+> +	err = hw->mac.ops.init_hw(hw);
+> +	if (err) {
+>  		dev_err(&interface->pdev->dev, "init_hw failed: %d\n",
+> err);
+> +		goto reinit_err;
+> +	}
 > 
 >  	err = fm10k_init_queueing_scheme(interface);
->  	if (err)
+>  	if (err) {
+> @@ -202,6 +210,10 @@ static void fm10k_reinit(struct fm10k_intfc
+> *interface)
+> 
+>  	fm10k_iov_resume(interface->pdev);
+> 
+> +reinit_err:
+> +	if (err)
+> +		netif_device_detach(netdev);
+> +
+>  	rtnl_unlock();
+> 
+>  	clear_bit(__FM10K_RESETTING, &interface->state);
+> @@ -1693,7 +1705,13 @@ static int fm10k_sw_init(struct fm10k_intfc
+> *interface,
+>  	interface->last_reset = jiffies + (10 * HZ);
+> 
+>  	/* reset and initialize the hardware so it is in a known state */
+> -	err = hw->mac.ops.reset_hw(hw) ? : hw->mac.ops.init_hw(hw);
+> +	err = hw->mac.ops.reset_hw(hw);
+> +	if (err) {
+> +		dev_err(&pdev->dev, "reset_hw failed: %d\n", err);
+> +		return err;
+> +	}
+> +
+> +	err = hw->mac.ops.init_hw(hw);
+>  	if (err) {
+>  		dev_err(&pdev->dev, "init_hw failed: %d\n", err);
+>  		return err;
+> @@ -2077,8 +2095,10 @@ static int fm10k_resume(struct pci_dev *pdev)
+> 
+>  	/* reset hardware to known state */
+>  	err = hw->mac.ops.init_hw(&interface->hw);
+> -	if (err)
+> +	if (err) {
+> +		dev_err(&pdev->dev, "init_hw failed: %d\n", err);
+>  		return err;
+> +	}
+> 
+>  	/* reset statistics starting values */
+>  	hw->mac.ops.rebind_hw_stats(hw, &interface->stats);
+> @@ -2257,7 +2277,11 @@ static void fm10k_io_resume(struct pci_dev
+> *pdev)
+>  	int err = 0;
+> 
+>  	/* reset hardware to known state */
+> -	hw->mac.ops.init_hw(&interface->hw);
+> +	err = hw->mac.ops.init_hw(&interface->hw);
+> +	if (err) {
+> +		dev_err(&pdev->dev, "init_hw failed: %d\n", err);
+> +		return;
+> +	}
+> 
+>  	/* reset statistics starting values */
+>  	hw->mac.ops.rebind_hw_stats(hw, &interface->stats);
 > --
 > 2.6.1.264.gbab76a9
 > 
