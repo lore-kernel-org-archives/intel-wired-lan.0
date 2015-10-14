@@ -1,47 +1,40 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 14 Oct 2015 09:32:44 -0700
-Subject: [Intel-wired-lan] [next-queue v2 10/17] fm10k: add TEB check to
-	fm10k_gre_is_nvgre
+Date: Wed, 14 Oct 2015 09:32:43 -0700
+Subject: [Intel-wired-lan] [next-queue v2 09/17] fm10k: rename
+	mbx_tx_oversized statistic to mbx_tx_dropped
 In-Reply-To: <1444840371-17328-1-git-send-email-jacob.e.keller@intel.com>
 References: <1444840371-17328-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1444840371-17328-10-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1444840371-17328-9-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The NVGRE protocol should be run over transparent ethernet bridge
-protocol, so we should verify this in our check whether the GRE tunnel
-is NVGRE. While we're touching fm10k_main.c, update the copyright year.
+Originally this statistic was renamed because the method of dropping was
+called "drop_oversized_messages", but this logic has changed much, and
+this counter does actually represent messages which we failed to
+transmit for a number of reasons. Rename the counter back to tx_dropped
+since this is when it will increment, and it is less confusing.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_main.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index 746a1986690b..c5f7e0d919dc 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -1,5 +1,5 @@
- /* Intel Ethernet Switch Host Interface Driver
-- * Copyright(c) 2013 - 2014 Intel Corporation.
-+ * Copyright(c) 2013 - 2015 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-@@ -708,6 +708,10 @@ static struct ethhdr *fm10k_gre_is_nvgre(struct sk_buff *skb)
- 	if (nvgre_hdr->flags & FM10K_NVGRE_RESERVED0_FLAGS)
- 		return NULL;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+index 5db5a97cf28e..b903c4646cf8 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+@@ -111,7 +111,7 @@ static const struct fm10k_stats fm10k_gstrings_pf_stats[] = {
  
-+	/* verify protocol is transparent Ethernet bridging */
-+	if (nvgre_hdr->proto != htons(ETH_P_TEB))
-+		return NULL;
-+
- 	/* report start of ethernet header */
- 	if (nvgre_hdr->flags & NVGRE_TNI)
- 		return (struct ethhdr *)(nvgre_hdr + 1);
+ static const struct fm10k_stats fm10k_gstrings_mbx_stats[] = {
+ 	FM10K_MBX_STAT("mbx_tx_busy", tx_busy),
+-	FM10K_MBX_STAT("mbx_tx_oversized", tx_dropped),
++	FM10K_MBX_STAT("mbx_tx_dropped", tx_dropped),
+ 	FM10K_MBX_STAT("mbx_tx_messages", tx_messages),
+ 	FM10K_MBX_STAT("mbx_tx_dwords", tx_dwords),
+ 	FM10K_MBX_STAT("mbx_tx_mbmem_pulled", tx_mbmem_pulled),
 -- 
 2.6.1.264.gbab76a9
 
