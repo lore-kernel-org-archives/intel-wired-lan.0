@@ -1,68 +1,112 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu, 15 Oct 2015 15:54:38 -0700
-Subject: [Intel-wired-lan] [next-queue v4 14/17] fm10k: use macro for
-	default Tx and Rx ITR values
+Date: Thu, 15 Oct 2015 15:54:28 -0700
+Subject: [Intel-wired-lan] [next-queue v4 04/17] fm10k: always check init_hw
+	for errors
 In-Reply-To: <1444949681-14464-1-git-send-email-jacob.e.keller@intel.com>
 References: <1444949681-14464-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1444949681-14464-14-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1444949681-14464-4-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+A recent change modified init_hw in some flows the function may fail on
+VF devices. For example, if a VF doesn't yet own its own queues.
+However, many callers of init_hw didn't bother to check the error code.
+Other callers checked but only displayed diagnostic messages without
+actually handling the consequences.
+
+Fix this by (a) always returning and preventing the netdevice from going
+up, and (b) printing the diagnostic in every flow for consistency. This
+should resolve an issue where VF drivers would attempt to come up
+before the PF has finished assigning queues.
+
+In addition, change the dmesg output to explicitly show the actual
+function that failed, instead of combining reset_hw and init_hw into a
+single check, to help for future debugging.
+
+Fixes: 1d568b0f6424 ("fm10k: do not assume VF always has 1 queue")
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k.h         | 2 ++
- drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 4 ++--
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c     | 4 ++--
- 3 files changed, 6 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 34 ++++++++++++++++++++++++----
+ 1 file changed, 29 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
-index bdbb804a594f..7bf0c2ddce75 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
-@@ -175,6 +175,8 @@ struct fm10k_ring_container {
- 
- #define ITR_IS_ADAPTIVE(itr) (!!(itr & FM10K_ITR_ADAPTIVE))
- 
-+#define FM10K_TX_ITR_DEFAULT	FM10K_ITR_10K
-+#define FM10K_RX_ITR_DEFAULT	FM10K_ITR_20K
- #define FM10K_ITR_ENABLE	(FM10K_ITR_AUTOMASK | FM10K_ITR_MASK_CLEAR)
- 
- static inline struct netdev_queue *txring_txq(const struct fm10k_ring *ring)
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-index 2395877f0544..2432b6e0528f 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-@@ -733,10 +733,10 @@ static int fm10k_set_coalesce(struct net_device *dev,
- 
- 	/* set initial values for adaptive ITR */
- 	if (ec->use_adaptive_tx_coalesce)
--		tx_itr = FM10K_ITR_ADAPTIVE | FM10K_ITR_10K;
-+		tx_itr = FM10K_ITR_ADAPTIVE | FM10K_TX_ITR_DEFAULT;
- 
- 	if (ec->use_adaptive_rx_coalesce)
--		rx_itr = FM10K_ITR_ADAPTIVE | FM10K_ITR_20K;
-+		rx_itr = FM10K_ITR_ADAPTIVE | FM10K_RX_ITR_DEFAULT;
- 
- 	/* update interface */
- 	interface->tx_itr = tx_itr;
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index cbf38da0ada7..fec672f66287 100644
+index a488bbade48b..65e2ea10b890 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -1773,8 +1773,8 @@ static int fm10k_sw_init(struct fm10k_intfc *interface,
- 	interface->rx_ring_count = FM10K_DEFAULT_RXD;
+@@ -163,9 +163,17 @@ static void fm10k_reinit(struct fm10k_intfc *interface)
+ 	interface->last_reset = jiffies + (10 * HZ);
  
- 	/* set default interrupt moderation */
--	interface->tx_itr = FM10K_ITR_10K;
--	interface->rx_itr = FM10K_ITR_ADAPTIVE | FM10K_ITR_20K;
-+	interface->tx_itr = FM10K_TX_ITR_DEFAULT;
-+	interface->rx_itr = FM10K_ITR_ADAPTIVE | FM10K_RX_ITR_DEFAULT;
+ 	/* reset and initialize the hardware so it is in a known state */
+-	err = hw->mac.ops.reset_hw(hw) ? : hw->mac.ops.init_hw(hw);
+-	if (err)
++	err = hw->mac.ops.reset_hw(hw);
++	if (err) {
++		dev_err(&interface->pdev->dev, "reset_hw failed: %d\n", err);
++		goto reinit_err;
++	}
++
++	err = hw->mac.ops.init_hw(hw);
++	if (err) {
+ 		dev_err(&interface->pdev->dev, "init_hw failed: %d\n", err);
++		goto reinit_err;
++	}
  
- 	/* initialize vxlan_port list */
- 	INIT_LIST_HEAD(&interface->vxlan_port);
+ 	/* reassociate interrupts */
+ 	fm10k_mbx_request_irq(interface);
+@@ -193,6 +201,10 @@ static void fm10k_reinit(struct fm10k_intfc *interface)
+ 
+ 	fm10k_iov_resume(interface->pdev);
+ 
++reinit_err:
++	if (err)
++		netif_device_detach(netdev);
++
+ 	rtnl_unlock();
+ 
+ 	clear_bit(__FM10K_RESETTING, &interface->state);
+@@ -1684,7 +1696,13 @@ static int fm10k_sw_init(struct fm10k_intfc *interface,
+ 	interface->last_reset = jiffies + (10 * HZ);
+ 
+ 	/* reset and initialize the hardware so it is in a known state */
+-	err = hw->mac.ops.reset_hw(hw) ? : hw->mac.ops.init_hw(hw);
++	err = hw->mac.ops.reset_hw(hw);
++	if (err) {
++		dev_err(&pdev->dev, "reset_hw failed: %d\n", err);
++		return err;
++	}
++
++	err = hw->mac.ops.init_hw(hw);
+ 	if (err) {
+ 		dev_err(&pdev->dev, "init_hw failed: %d\n", err);
+ 		return err;
+@@ -2068,8 +2086,10 @@ static int fm10k_resume(struct pci_dev *pdev)
+ 
+ 	/* reset hardware to known state */
+ 	err = hw->mac.ops.init_hw(&interface->hw);
+-	if (err)
++	if (err) {
++		dev_err(&pdev->dev, "init_hw failed: %d\n", err);
+ 		return err;
++	}
+ 
+ 	/* reset statistics starting values */
+ 	hw->mac.ops.rebind_hw_stats(hw, &interface->stats);
+@@ -2245,7 +2265,11 @@ static void fm10k_io_resume(struct pci_dev *pdev)
+ 	int err = 0;
+ 
+ 	/* reset hardware to known state */
+-	hw->mac.ops.init_hw(&interface->hw);
++	err = hw->mac.ops.init_hw(&interface->hw);
++	if (err) {
++		dev_err(&pdev->dev, "init_hw failed: %d\n", err);
++		return;
++	}
+ 
+ 	/* reset statistics starting values */
+ 	hw->mac.ops.rebind_hw_stats(hw, &interface->stats);
 -- 
 2.6.1.264.gbab76a9
 
