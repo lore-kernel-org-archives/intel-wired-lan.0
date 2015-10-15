@@ -1,112 +1,47 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu, 15 Oct 2015 15:54:28 -0700
-Subject: [Intel-wired-lan] [next-queue v4 04/17] fm10k: always check init_hw
-	for errors
+Date: Thu, 15 Oct 2015 15:54:34 -0700
+Subject: [Intel-wired-lan] [next-queue v4 10/17] fm10k: add TEB check to
+	fm10k_gre_is_nvgre
 In-Reply-To: <1444949681-14464-1-git-send-email-jacob.e.keller@intel.com>
 References: <1444949681-14464-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1444949681-14464-4-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1444949681-14464-10-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-A recent change modified init_hw in some flows the function may fail on
-VF devices. For example, if a VF doesn't yet own its own queues.
-However, many callers of init_hw didn't bother to check the error code.
-Other callers checked but only displayed diagnostic messages without
-actually handling the consequences.
+The NVGRE protocol should be run over transparent ethernet bridge
+protocol, so we should verify this in our check whether the GRE tunnel
+is NVGRE. While we're touching fm10k_main.c, update the copyright year.
 
-Fix this by (a) always returning and preventing the netdevice from going
-up, and (b) printing the diagnostic in every flow for consistency. This
-should resolve an issue where VF drivers would attempt to come up
-before the PF has finished assigning queues.
-
-In addition, change the dmesg output to explicitly show the actual
-function that failed, instead of combining reset_hw and init_hw into a
-single check, to help for future debugging.
-
-Fixes: 1d568b0f6424 ("fm10k: do not assume VF always has 1 queue")
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 34 ++++++++++++++++++++++++----
- 1 file changed, 29 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index a488bbade48b..65e2ea10b890 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -163,9 +163,17 @@ static void fm10k_reinit(struct fm10k_intfc *interface)
- 	interface->last_reset = jiffies + (10 * HZ);
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+index 746a1986690b..c5f7e0d919dc 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+@@ -1,5 +1,5 @@
+ /* Intel Ethernet Switch Host Interface Driver
+- * Copyright(c) 2013 - 2014 Intel Corporation.
++ * Copyright(c) 2013 - 2015 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+@@ -708,6 +708,10 @@ static struct ethhdr *fm10k_gre_is_nvgre(struct sk_buff *skb)
+ 	if (nvgre_hdr->flags & FM10K_NVGRE_RESERVED0_FLAGS)
+ 		return NULL;
  
- 	/* reset and initialize the hardware so it is in a known state */
--	err = hw->mac.ops.reset_hw(hw) ? : hw->mac.ops.init_hw(hw);
--	if (err)
-+	err = hw->mac.ops.reset_hw(hw);
-+	if (err) {
-+		dev_err(&interface->pdev->dev, "reset_hw failed: %d\n", err);
-+		goto reinit_err;
-+	}
++	/* verify protocol is transparent Ethernet bridging */
++	if (nvgre_hdr->proto != htons(ETH_P_TEB))
++		return NULL;
 +
-+	err = hw->mac.ops.init_hw(hw);
-+	if (err) {
- 		dev_err(&interface->pdev->dev, "init_hw failed: %d\n", err);
-+		goto reinit_err;
-+	}
- 
- 	/* reassociate interrupts */
- 	fm10k_mbx_request_irq(interface);
-@@ -193,6 +201,10 @@ static void fm10k_reinit(struct fm10k_intfc *interface)
- 
- 	fm10k_iov_resume(interface->pdev);
- 
-+reinit_err:
-+	if (err)
-+		netif_device_detach(netdev);
-+
- 	rtnl_unlock();
- 
- 	clear_bit(__FM10K_RESETTING, &interface->state);
-@@ -1684,7 +1696,13 @@ static int fm10k_sw_init(struct fm10k_intfc *interface,
- 	interface->last_reset = jiffies + (10 * HZ);
- 
- 	/* reset and initialize the hardware so it is in a known state */
--	err = hw->mac.ops.reset_hw(hw) ? : hw->mac.ops.init_hw(hw);
-+	err = hw->mac.ops.reset_hw(hw);
-+	if (err) {
-+		dev_err(&pdev->dev, "reset_hw failed: %d\n", err);
-+		return err;
-+	}
-+
-+	err = hw->mac.ops.init_hw(hw);
- 	if (err) {
- 		dev_err(&pdev->dev, "init_hw failed: %d\n", err);
- 		return err;
-@@ -2068,8 +2086,10 @@ static int fm10k_resume(struct pci_dev *pdev)
- 
- 	/* reset hardware to known state */
- 	err = hw->mac.ops.init_hw(&interface->hw);
--	if (err)
-+	if (err) {
-+		dev_err(&pdev->dev, "init_hw failed: %d\n", err);
- 		return err;
-+	}
- 
- 	/* reset statistics starting values */
- 	hw->mac.ops.rebind_hw_stats(hw, &interface->stats);
-@@ -2245,7 +2265,11 @@ static void fm10k_io_resume(struct pci_dev *pdev)
- 	int err = 0;
- 
- 	/* reset hardware to known state */
--	hw->mac.ops.init_hw(&interface->hw);
-+	err = hw->mac.ops.init_hw(&interface->hw);
-+	if (err) {
-+		dev_err(&pdev->dev, "init_hw failed: %d\n", err);
-+		return;
-+	}
- 
- 	/* reset statistics starting values */
- 	hw->mac.ops.rebind_hw_stats(hw, &interface->stats);
+ 	/* report start of ethernet header */
+ 	if (nvgre_hdr->flags & NVGRE_TNI)
+ 		return (struct ethhdr *)(nvgre_hdr + 1);
 -- 
 2.6.1.264.gbab76a9
 
