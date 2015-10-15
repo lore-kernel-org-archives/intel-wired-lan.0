@@ -1,79 +1,40 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu, 15 Oct 2015 15:54:29 -0700
-Subject: [Intel-wired-lan] [next-queue v4 05/17] fm10k: reinitialize queuing
-	scheme after calling init_hw
+Date: Thu, 15 Oct 2015 15:54:33 -0700
+Subject: [Intel-wired-lan] [next-queue v4 09/17] fm10k: rename
+	mbx_tx_oversized statistic to mbx_tx_dropped
 In-Reply-To: <1444949681-14464-1-git-send-email-jacob.e.keller@intel.com>
 References: <1444949681-14464-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1444949681-14464-5-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1444949681-14464-9-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The init_hw function may fail, and in the case of VFs, it might change
-the number of maximum queues available. Thus, for every flow which
-checks init_hw, we need to ensure that we clear the queue scheme before,
-and initialize it after. The fm10k_io_slot_reset path will end up
-triggering a reset so fm10k_reinit needs this change. The
-fm10k_io_error_detected and fm10k_io_resume also need to properly clear
-and reinitialize the queue scheme.
+Originally this statistic was renamed because the method of dropping was
+called "drop_oversized_messages", but this logic has changed much, and
+this counter does actually represent messages which we failed to
+transmit for a number of reasons. Rename the counter back to tx_dropped
+since this is when it will increment, and it is less confusing.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+ drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index 65e2ea10b890..9ad9f9164d91 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -159,6 +159,9 @@ static void fm10k_reinit(struct fm10k_intfc *interface)
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+index 5db5a97cf28e..b903c4646cf8 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+@@ -111,7 +111,7 @@ static const struct fm10k_stats fm10k_gstrings_pf_stats[] = {
  
- 	fm10k_mbx_free_irq(interface);
- 
-+	/* free interrupts */
-+	fm10k_clear_queueing_scheme(interface);
-+
- 	/* delay any future reset requests */
- 	interface->last_reset = jiffies + (10 * HZ);
- 
-@@ -175,6 +178,12 @@ static void fm10k_reinit(struct fm10k_intfc *interface)
- 		goto reinit_err;
- 	}
- 
-+	err = fm10k_init_queueing_scheme(interface);
-+	if (err) {
-+		dev_err(&interface->pdev->dev, "init_queueing_scheme failed: %d\n", err);
-+		goto reinit_err;
-+	}
-+
- 	/* reassociate interrupts */
- 	fm10k_mbx_request_irq(interface);
- 
-@@ -2202,6 +2211,9 @@ static pci_ers_result_t fm10k_io_error_detected(struct pci_dev *pdev,
- 	if (netif_running(netdev))
- 		fm10k_close(netdev);
- 
-+	/* free interrupts */
-+	fm10k_clear_queueing_scheme(interface);
-+
- 	fm10k_mbx_free_irq(interface);
- 
- 	pci_disable_device(pdev);
-@@ -2274,6 +2286,12 @@ static void fm10k_io_resume(struct pci_dev *pdev)
- 	/* reset statistics starting values */
- 	hw->mac.ops.rebind_hw_stats(hw, &interface->stats);
- 
-+	err = fm10k_init_queueing_scheme(interface);
-+	if (err) {
-+		dev_err(&interface->pdev->dev, "init_queueing_scheme failed: %d\n", err);
-+		return;
-+	}
-+
- 	/* reassociate interrupts */
- 	fm10k_mbx_request_irq(interface);
- 
+ static const struct fm10k_stats fm10k_gstrings_mbx_stats[] = {
+ 	FM10K_MBX_STAT("mbx_tx_busy", tx_busy),
+-	FM10K_MBX_STAT("mbx_tx_oversized", tx_dropped),
++	FM10K_MBX_STAT("mbx_tx_dropped", tx_dropped),
+ 	FM10K_MBX_STAT("mbx_tx_messages", tx_messages),
+ 	FM10K_MBX_STAT("mbx_tx_dwords", tx_dwords),
+ 	FM10K_MBX_STAT("mbx_tx_mbmem_pulled", tx_mbmem_pulled),
 -- 
 2.6.1.264.gbab76a9
 
