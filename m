@@ -1,45 +1,44 @@
-From: Richard Cochran <richardcochran@gmail.com>
-Date: Thu, 15 Oct 2015 07:57:35 +0200
-Subject: [Intel-wired-lan] [PATCH v4 1/4] Produce system time from
-	correlated clocksource
-In-Reply-To: <op.x6iyd7gq1774gr@chall-mobl2.amr.corp.intel.com>
-References: <1444675522-4198-1-git-send-email-christopher.s.hall@intel.com>
- <1444675522-4198-2-git-send-email-christopher.s.hall@intel.com>
- <alpine.DEB.2.11.1510132116480.25029@nanos>
- <op.x6iyd7gq1774gr@chall-mobl2.amr.corp.intel.com>
-Message-ID: <20151015055734.GB4784@netboy>
+From: nick <xerofoify@gmail.com>
+Date: Wed, 14 Oct 2015 21:25:59 -0400
+Subject: [Intel-wired-lan] [PATCH RESEND 1/2] ixgb:Remove reducant error
+ path after call to ixgb_sw_init in the function ixgb_probe
+In-Reply-To: <1444872183.2928.6.camel@intel.com>
+References: <1444863479-31570-1-git-send-email-xerofoify@gmail.com>
+ <1444872183.2928.6.camel@intel.com>
+Message-ID: <561F00A7.1050907@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Oct 14, 2015 at 06:57:33PM -0700, Christopher Hall wrote:
-> >>+#define SHADOW_HISTORY_DEPTH 7
-> >
-> >And that number is 7 because?
+
+
+On 2015-10-14 09:23 PM, Jeff Kirsher wrote:
+> On Wed, 2015-10-14 at 18:57 -0400, Nicholas Krause wrote:
+>> This removes the reducant error path and now no longer used goto
+>> label  err_sw_init after the call to ixgb_probe in the function
+>> ixgb_sw_init after calling this function due to it always returning
+>> zero as it is guarantee to run successfully without any issues.
+>>
+>> Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
+>> ---
+>>  drivers/net/ethernet/intel/ixgb/ixgb_main.c | 5 +----
+>>  1 file changed, 1 insertion(+), 4 deletions(-)
 > 
-> Due to power of 2 it will be 8 instead. As above the useful history is 8-2*1
-> ms (1 ms is the minimum jiffy length).  Array size 4 would not be enough
-> history for the DSP which requires 4 ms of history, in the worst case.
-
-Just as I suspected, the magic number 7 is based on the needs of one
-particular user.  What about the next user who comes along needing 10
-milliseconds?  That will not do.  Any new interface should be generic
-enough to support a wide range of users.
-
-So I think this approach is all wrong.  Here is an idea for you to
-consider.  Instead of mucking with the TK, let the user code (possibly
-in-kernel) sample ART/sys pairs and interpolate the ART/dev time
-stamps.  That way, the user can choose the range and resolution that
-he needs.
-
-> The audio driver is structured in such a way that it's simpler to provide a
-> value rather than a callback.
-
-Can you please provide a link to the audio driver that uses this new
-interface?
-
-Thanks,
-Richard
-
+> This driver (ixgb), as well as e100 and e1000 are in maintenance mode
+> which means bug fixes ONLY!
+> 
+> Is this patch necessary?  Answer: No
+> Is this a bug fix?  Answer: No
+> Should you have sent this patch?  See answers to previous questions.
+> 
+> Please ask these questions to yourself when putting together a patch
+> against these drivers (listed above).
+> 
+> With that said, dropping this series.
+> 
+Sorry Jeff,
+I was not aware that these drivers are in maintenance only mode and therefore thought 
+this OK.
+Nick
