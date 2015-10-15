@@ -1,10 +1,10 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu, 15 Oct 2015 15:54:41 -0700
-Subject: [Intel-wired-lan] [next-queue v4 17/17] fm10k: TRIVIAL cleanup
-	order at top of fm10k_xmit_frame
+Date: Thu, 15 Oct 2015 15:54:38 -0700
+Subject: [Intel-wired-lan] [next-queue v4 14/17] fm10k: use macro for
+	default Tx and Rx ITR values
 In-Reply-To: <1444949681-14464-1-git-send-email-jacob.e.keller@intel.com>
 References: <1444949681-14464-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1444949681-14464-17-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1444949681-14464-14-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,29 +13,56 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_main.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k.h         | 2 ++
+ drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 4 ++--
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c     | 4 ++--
+ 3 files changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index 8fd9a48433a0..1e7a06f2188d 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -1098,11 +1098,11 @@ static void fm10k_tx_map(struct fm10k_ring *tx_ring,
- netdev_tx_t fm10k_xmit_frame_ring(struct sk_buff *skb,
- 				  struct fm10k_ring *tx_ring)
- {
--	struct fm10k_tx_buffer *first;
--	int tso;
--	u32 tx_flags = 0;
--	unsigned short f;
- 	u16 count = TXD_USE_COUNT(skb_headlen(skb));
-+	struct fm10k_tx_buffer *first;
-+	unsigned short f;
-+	u32 tx_flags = 0;
-+	int tso;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
+index bdbb804a594f..7bf0c2ddce75 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k.h
++++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
+@@ -175,6 +175,8 @@ struct fm10k_ring_container {
  
- 	/* need: 1 descriptor per page * PAGE_SIZE/FM10K_MAX_DATA_PER_TXD,
- 	 *       + 1 desc for skb_headlen/FM10K_MAX_DATA_PER_TXD,
+ #define ITR_IS_ADAPTIVE(itr) (!!(itr & FM10K_ITR_ADAPTIVE))
+ 
++#define FM10K_TX_ITR_DEFAULT	FM10K_ITR_10K
++#define FM10K_RX_ITR_DEFAULT	FM10K_ITR_20K
+ #define FM10K_ITR_ENABLE	(FM10K_ITR_AUTOMASK | FM10K_ITR_MASK_CLEAR)
+ 
+ static inline struct netdev_queue *txring_txq(const struct fm10k_ring *ring)
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+index 2395877f0544..2432b6e0528f 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+@@ -733,10 +733,10 @@ static int fm10k_set_coalesce(struct net_device *dev,
+ 
+ 	/* set initial values for adaptive ITR */
+ 	if (ec->use_adaptive_tx_coalesce)
+-		tx_itr = FM10K_ITR_ADAPTIVE | FM10K_ITR_10K;
++		tx_itr = FM10K_ITR_ADAPTIVE | FM10K_TX_ITR_DEFAULT;
+ 
+ 	if (ec->use_adaptive_rx_coalesce)
+-		rx_itr = FM10K_ITR_ADAPTIVE | FM10K_ITR_20K;
++		rx_itr = FM10K_ITR_ADAPTIVE | FM10K_RX_ITR_DEFAULT;
+ 
+ 	/* update interface */
+ 	interface->tx_itr = tx_itr;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index cbf38da0ada7..fec672f66287 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -1773,8 +1773,8 @@ static int fm10k_sw_init(struct fm10k_intfc *interface,
+ 	interface->rx_ring_count = FM10K_DEFAULT_RXD;
+ 
+ 	/* set default interrupt moderation */
+-	interface->tx_itr = FM10K_ITR_10K;
+-	interface->rx_itr = FM10K_ITR_ADAPTIVE | FM10K_ITR_20K;
++	interface->tx_itr = FM10K_TX_ITR_DEFAULT;
++	interface->rx_itr = FM10K_ITR_ADAPTIVE | FM10K_RX_ITR_DEFAULT;
+ 
+ 	/* initialize vxlan_port list */
+ 	INIT_LIST_HEAD(&interface->vxlan_port);
 -- 
 2.6.1.264.gbab76a9
 
