@@ -1,159 +1,140 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Thu, 15 Oct 2015 15:20:53 -0700
-Subject: [Intel-wired-lan] [next-queue v3 13/17] fm10k: Update adaptive
- ITR algorithm
-In-Reply-To: <1444944297-9733-13-git-send-email-jacob.e.keller@intel.com>
-References: <1444944297-9733-1-git-send-email-jacob.e.keller@intel.com>
- <1444944297-9733-13-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <562026C5.4080002@gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 16 Oct 2015 06:51:04 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
+ a8595455feb85f7c220f2f0f40da80dfc9573b5f BUILD SUCCESS
+Message-ID: <56202dd8.ON3onRDH8PkIq6gT%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 10/15/2015 02:24 PM, Jacob Keller wrote:
-> The existing adaptive ITR algorithm is overly restrictive. It throttles
-> incorrectly for various traffic rates, and does not produce good
-> performance. The algorithm now allows for more interrupts per second,
-> and does some calculation to help improve for smaller packet loads. In
-> addition, take into account the new itr_scale from the hardware which
-> indicates how much to scale due to PCIe link speed.
->
-> Reported-by: Matthew Vick <matthew.vick@intel.com>
-> Reported-by: Alex Duyck <alexander.duyck@gmail.com>
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
->   drivers/net/ethernet/intel/fm10k/fm10k.h      |  1 +
->   drivers/net/ethernet/intel/fm10k/fm10k_main.c | 52 ++++++++++++++++++++-------
->   drivers/net/ethernet/intel/fm10k/fm10k_pci.c  |  6 ++--
->   3 files changed, 45 insertions(+), 14 deletions(-)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
+a8595455feb85f7c220f2f0f40da80dfc9573b5f  i40e/i40evf: Bump i40e to 1.3.34 and i40evf to 1.3.21
 
-One minor typo called out below.
+elapsed time: 66m
 
-> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
-> index a2484cb88d86..bdbb804a594f 100644
-> --- a/drivers/net/ethernet/intel/fm10k/fm10k.h
-> +++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
-> @@ -164,6 +164,7 @@ struct fm10k_ring_container {
->   	unsigned int total_packets;	/* total packets processed this int */
->   	u16 work_limit;			/* total work allowed per interrupt */
->   	u16 itr;			/* interrupt throttle rate value */
-> +	u8 itr_scale;			/* ITR adjustment scaler based on PCI speed */
->   	u8 count;			/* total number of rings in vector */
->   };
->
-> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-> index 8207ee189600..2ee02e51afe9 100644
-> --- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-> @@ -1367,7 +1367,7 @@ static bool fm10k_clean_tx_irq(struct fm10k_q_vector *q_vector,
->    **/
->   static void fm10k_update_itr(struct fm10k_ring_container *ring_container)
->   {
-> -	unsigned int avg_wire_size, packets;
-> +	unsigned int avg_wire_size, packets, itr_round;
->
->   	/* Only update ITR if we are using adaptive setting */
->   	if (!ITR_IS_ADAPTIVE(ring_container->itr))
-> @@ -1379,18 +1379,44 @@ static void fm10k_update_itr(struct fm10k_ring_container *ring_container)
->
->   	avg_wire_size = ring_container->total_bytes / packets;
->
-> -	/* Add 24 bytes to size to account for CRC, preamble, and gap */
-> -	avg_wire_size += 24;
-> +	/* The following is a crude approximation of:
-> +	 *  wmem_default / (size + overhead) = desired_pkts_per_int
-> +	 *  rate / bits_per_byte / (size + ethernet overhead) = pkt_rate
-> +	 *  (desired_pkt_rate / pkt_rate) * usecs_per_sec = ITR value
-> +	 *
-> +	 * Assuming wmem_default is 212992 and overhead is 640 bytes per
-> +	 * packet, (256 skb, 64 headroom, 320 shared info), we can reduce the
-> +	 * formula down to
-> +	 *
-> +	 *  (34 * (size + 24)) / (size + 640) = ITR
-> +	 *
-> +	 * We first do some math on the packet size and then finally bitshift
-> +	 * by 8 after rounding up. We also have to account for PCIe link speed
-> +	 * difference as ITR scales based on this.
-> +	 */
-> +	if (avg_wire_size <= 360) {
-> +		/* Start at 333K ints/sec and gradually drop to 77K ints/sec */
-> +		avg_wire_size *= 8;
-> +		avg_wire_size += 376;
-> +	} else if (avg_wire_size <= 1152) {
-> +		/* 77K ints/sec to 45K ints/sec */
-> +		avg_wire_size *= 3;
-> +		avg_wire_size += 2176;
-> +	} else if (avg_wire_size <= 1920) {
-> +		/* 45K ints/ec to 38K ints/sec */
+configs tested: 119
 
-Typo here.  Should be "ints/sec", not "ints/ec".
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201541
+x86_64                            allnoconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-10160545
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+parisc                         b180_defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+arm                      jornada720_defconfig
+powerpc                         c2k_defconfig
+sh                        dreamcast_defconfig
+sh                     magicpanelr2_defconfig
+sh                        sh7785lcr_defconfig
+x86_64               randconfig-x010-10130227
+x86_64               randconfig-x011-10130227
+x86_64               randconfig-x012-10130227
+x86_64               randconfig-x013-10130227
+x86_64               randconfig-x014-10130227
+x86_64               randconfig-x015-10130227
+x86_64               randconfig-x016-10130227
+x86_64               randconfig-x017-10130227
+x86_64               randconfig-x018-10130227
+x86_64               randconfig-x019-10130227
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201541
+i386                     randconfig-s1-201541
+x86_64                 randconfig-s0-10160505
+x86_64                 randconfig-s1-10160505
+x86_64                 randconfig-s2-10160505
+x86_64                 randconfig-s3-10160541
+x86_64                 randconfig-s4-10160541
+x86_64                 randconfig-s5-10160541
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201541
+i386                   randconfig-b0-10160515
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201541
+i386                     randconfig-i1-201541
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201541
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-h0-10160312
+i386                  randconfig-sb0-10160441
+x86_64                 randconfig-x002-201541
+x86_64                 randconfig-x009-201541
+x86_64                 randconfig-x000-201541
+x86_64                 randconfig-x003-201541
+x86_64                 randconfig-x004-201541
+x86_64                 randconfig-x001-201541
+x86_64                 randconfig-x006-201541
+x86_64                 randconfig-x007-201541
+x86_64                 randconfig-x008-201541
+x86_64                 randconfig-x005-201541
+i386                     randconfig-r0-201541
+i386                 randconfig-x000-10121721
+i386                 randconfig-x001-10121721
+i386                 randconfig-x002-10121721
+i386                 randconfig-x003-10121721
+i386                 randconfig-x004-10121721
+i386                 randconfig-x005-10121721
+i386                 randconfig-x006-10121721
+i386                 randconfig-x007-10121721
+i386                 randconfig-x008-10121721
+i386                 randconfig-x009-10121721
 
-> +		avg_wire_size += 4480;
-> +	} else {
-> +		/* plateau at a limit of 38K ints/sec */
-> +		avg_wire_size = 6656;
-> +	}
->
-> -	/* Don't starve jumbo frames */
-> -	if (avg_wire_size > 3000)
-> -		avg_wire_size = 3000;
-> -
-> -	/* Give a little boost to mid-size frames */
-> -	if ((avg_wire_size > 300) && (avg_wire_size < 1200))
-> -		avg_wire_size /= 3;
-> -	else
-> -		avg_wire_size /= 2;
-> +	/* Perform final bitshift for division after rounding up to ensure
-> +	 * that the calculation will never get below a 1. The bit shift
-> +	 * accounts for changes in the ITR due to PCIe link speed.
-> +	 */
-> +	itr_round = ACCESS_ONCE(ring_container->itr_scale) + 8;
-> +	avg_wire_size += (1 << itr_round) - 1;
-> +	avg_wire_size >>= itr_round;
->
->   	/* write back value and retain adaptive flag */
->   	ring_container->itr = avg_wire_size | FM10K_ITR_ADAPTIVE;
-> @@ -1608,6 +1634,7 @@ static int fm10k_alloc_q_vector(struct fm10k_intfc *interface,
->   	q_vector->tx.ring = ring;
->   	q_vector->tx.work_limit = FM10K_DEFAULT_TX_WORK;
->   	q_vector->tx.itr = interface->tx_itr;
-> +	q_vector->tx.itr_scale = interface->hw.mac.itr_scale;
->   	q_vector->tx.count = txr_count;
->
->   	while (txr_count) {
-> @@ -1636,6 +1663,7 @@ static int fm10k_alloc_q_vector(struct fm10k_intfc *interface,
->   	/* save Rx ring container info */
->   	q_vector->rx.ring = ring;
->   	q_vector->rx.itr = interface->rx_itr;
-> +	q_vector->rx.itr_scale = interface->hw.mac.itr_scale;
->   	q_vector->rx.count = rxr_count;
->
->   	while (rxr_count) {
-> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> index 9ad9f9164d91..cbf38da0ada7 100644
-> --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-> @@ -880,7 +880,8 @@ static irqreturn_t fm10k_msix_mbx_vf(int __always_unused irq, void *data)
->
->   	/* re-enable mailbox interrupt and indicate 20us delay */
->   	fm10k_write_reg(hw, FM10K_VFITR(FM10K_MBX_VECTOR),
-> -			FM10K_ITR_ENABLE | FM10K_MBX_INT_DELAY);
-> +			FM10K_ITR_ENABLE | (FM10K_MBX_INT_DELAY >>
-> +					    hw->mac.itr_scale));
->
->   	/* service upstream mailbox */
->   	if (fm10k_mbx_trylock(interface)) {
-> @@ -1111,7 +1112,8 @@ static irqreturn_t fm10k_msix_mbx_pf(int __always_unused irq, void *data)
->
->   	/* re-enable mailbox interrupt and indicate 20us delay */
->   	fm10k_write_reg(hw, FM10K_ITR(FM10K_MBX_VECTOR),
-> -			FM10K_ITR_ENABLE | FM10K_MBX_INT_DELAY);
-> +			FM10K_ITR_ENABLE | (FM10K_MBX_INT_DELAY >>
-> +					    hw->mac.itr_scale));
->
->   	return IRQ_HANDLED;
->   }
->
-
+Thanks,
+Fengguang
