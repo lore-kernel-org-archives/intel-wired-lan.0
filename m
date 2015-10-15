@@ -1,71 +1,112 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu, 15 Oct 2015 14:24:43 -0700
-Subject: [Intel-wired-lan] [next-queue v3 03/17] fm10k: reset max_queues on
-	init_hw_vf failure
+Date: Thu, 15 Oct 2015 14:24:44 -0700
+Subject: [Intel-wired-lan] [next-queue v3 04/17] fm10k: always check init_hw
+	for errors
 In-Reply-To: <1444944297-9733-1-git-send-email-jacob.e.keller@intel.com>
 References: <1444944297-9733-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1444944297-9733-3-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1444944297-9733-4-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-VF drivers must detect how many queues are available. Previously, the
-driver assumed that each VF has at minimum 1 queue. This assumption is
-incorrect, since it is possible that the PF has not yet assigned the
-queues to the VF by the time the VF checks. To resolve this, we added a
-check first to ensure that the first queue is infact owned by the VF at
-init_hw_vf time. However, the code flow did not reset hw->mac.max_queues
-to 0. In some cases, such as during reinit flows, we call init_hw_vf
-without clearing the previous value of hw->mac.max_queues. Due to this,
-when init_hw_vf errors out, if its error code is not properly handled
-the VF driver may still believe it has queues which no longer belong to
-it. Fix this by clearing the hw->mac.max_queues on exit due to errors.
+A recent change modified init_hw in some flows the function may fail on
+VF devices. For example, if a VF doesn't yet own its own queues.
+However, many callers of init_hw didn't bother to check the error code.
+Other callers checked but only displayed diagnostic messages without
+actually handling the consequences.
 
+Fix this by (a) always returning and preventing the netdevice from going
+up, and (b) printing the diagnostic in every flow for consistency. This
+should resolve an issue where VF drivers would attempt to come up
+before the PF has finished assigning queues.
+
+In addition, change the dmesg output to explicitly show the actual
+function that failed, instead of combining reset_hw and init_hw into a
+single check, to help for future debugging.
+
+Fixes: 1d568b0f6424 ("fm10k: do not assume VF always has 1 queue")
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_vf.c | 13 ++++++++++---
- 1 file changed, 10 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 34 ++++++++++++++++++++++++----
+ 1 file changed, 29 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_vf.c b/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
-index 3a18ef1cc017..d512575c33f3 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
-@@ -105,8 +105,10 @@ static s32 fm10k_init_hw_vf(struct fm10k_hw *hw)
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index a488bbade48b..65e2ea10b890 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -163,9 +163,17 @@ static void fm10k_reinit(struct fm10k_intfc *interface)
+ 	interface->last_reset = jiffies + (10 * HZ);
  
- 	/* verify we have at least 1 queue */
- 	if (!~fm10k_read_reg(hw, FM10K_TXQCTL(0)) ||
--	    !~fm10k_read_reg(hw, FM10K_RXQCTL(0)))
--		return FM10K_ERR_NO_RESOURCES;
-+	    !~fm10k_read_reg(hw, FM10K_RXQCTL(0))) {
-+		err = FM10K_ERR_NO_RESOURCES;
-+		goto reset_max_queues;
+ 	/* reset and initialize the hardware so it is in a known state */
+-	err = hw->mac.ops.reset_hw(hw) ? : hw->mac.ops.init_hw(hw);
+-	if (err)
++	err = hw->mac.ops.reset_hw(hw);
++	if (err) {
++		dev_err(&interface->pdev->dev, "reset_hw failed: %d\n", err);
++		goto reinit_err;
++	}
++
++	err = hw->mac.ops.init_hw(hw);
++	if (err) {
+ 		dev_err(&interface->pdev->dev, "init_hw failed: %d\n", err);
++		goto reinit_err;
 +	}
  
- 	/* determine how many queues we have */
- 	for (i = 1; tqdloc0 && (i < FM10K_MAX_QUEUES_POOL); i++) {
-@@ -124,7 +126,7 @@ static s32 fm10k_init_hw_vf(struct fm10k_hw *hw)
- 	/* shut down queues we own and reset DMA configuration */
- 	err = fm10k_disable_queues_generic(hw, i);
- 	if (err)
--		return err;
-+		goto reset_max_queues;
+ 	/* reassociate interrupts */
+ 	fm10k_mbx_request_irq(interface);
+@@ -193,6 +201,10 @@ static void fm10k_reinit(struct fm10k_intfc *interface)
  
- 	/* record maximum queue count */
- 	hw->mac.max_queues = i;
-@@ -134,6 +136,11 @@ static s32 fm10k_init_hw_vf(struct fm10k_hw *hw)
- 			       FM10K_TXQCTL_VID_MASK) >> FM10K_TXQCTL_VID_SHIFT;
+ 	fm10k_iov_resume(interface->pdev);
  
- 	return 0;
++reinit_err:
++	if (err)
++		netif_device_detach(netdev);
 +
-+reset_max_queues:
-+	hw->mac.max_queues = 0;
-+
-+	return err;
- }
+ 	rtnl_unlock();
  
- /* This structure defines the attibutes to be parsed below */
+ 	clear_bit(__FM10K_RESETTING, &interface->state);
+@@ -1684,7 +1696,13 @@ static int fm10k_sw_init(struct fm10k_intfc *interface,
+ 	interface->last_reset = jiffies + (10 * HZ);
+ 
+ 	/* reset and initialize the hardware so it is in a known state */
+-	err = hw->mac.ops.reset_hw(hw) ? : hw->mac.ops.init_hw(hw);
++	err = hw->mac.ops.reset_hw(hw);
++	if (err) {
++		dev_err(&pdev->dev, "reset_hw failed: %d\n", err);
++		return err;
++	}
++
++	err = hw->mac.ops.init_hw(hw);
+ 	if (err) {
+ 		dev_err(&pdev->dev, "init_hw failed: %d\n", err);
+ 		return err;
+@@ -2068,8 +2086,10 @@ static int fm10k_resume(struct pci_dev *pdev)
+ 
+ 	/* reset hardware to known state */
+ 	err = hw->mac.ops.init_hw(&interface->hw);
+-	if (err)
++	if (err) {
++		dev_err(&pdev->dev, "init_hw failed: %d\n", err);
+ 		return err;
++	}
+ 
+ 	/* reset statistics starting values */
+ 	hw->mac.ops.rebind_hw_stats(hw, &interface->stats);
+@@ -2245,7 +2265,11 @@ static void fm10k_io_resume(struct pci_dev *pdev)
+ 	int err = 0;
+ 
+ 	/* reset hardware to known state */
+-	hw->mac.ops.init_hw(&interface->hw);
++	err = hw->mac.ops.init_hw(&interface->hw);
++	if (err) {
++		dev_err(&pdev->dev, "init_hw failed: %d\n", err);
++		return;
++	}
+ 
+ 	/* reset statistics starting values */
+ 	hw->mac.ops.rebind_hw_stats(hw, &interface->stats);
 -- 
 2.6.1.264.gbab76a9
 
