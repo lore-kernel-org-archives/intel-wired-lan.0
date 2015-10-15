@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 15 Oct 2015 19:02:19 +0000
+Date: Thu, 15 Oct 2015 19:03:22 +0000
 Subject: [Intel-wired-lan] [PATCH v2] i40evf: fix compiler warning of
  unused	variable
 In-Reply-To: <1443946189-8543-1-git-send-email-jeffrey.t.kirsher@intel.com>
 References: <1443946189-8543-1-git-send-email-jeffrey.t.kirsher@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060D1DC6@ORSMSX104.amr.corp.intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060D1DD6@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -32,5 +32,5 @@ List-ID: <intel-wired-lan.osuosl.org>
 >  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 6 ++----
 >  1 file changed, 2 insertions(+), 4 deletions(-)
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com> Patch code changes correctly applied, compiler does not issue unused variable warning at compile time.
-
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+ Patch code changes correctly applied, compiler does not issue unused variable warning at compile time.
