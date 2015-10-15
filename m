@@ -1,52 +1,40 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu, 15 Oct 2015 14:24:47 -0700
-Subject: [Intel-wired-lan] [next-queue v3 07/17] fm10k: explicitly typecast
-	vlan values to u16
+Date: Thu, 15 Oct 2015 14:24:49 -0700
+Subject: [Intel-wired-lan] [next-queue v3 09/17] fm10k: rename
+	mbx_tx_oversized statistic to mbx_tx_dropped
 In-Reply-To: <1444944297-9733-1-git-send-email-jacob.e.keller@intel.com>
 References: <1444944297-9733-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1444944297-9733-7-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1444944297-9733-9-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Originally this statistic was renamed because the method of dropping was
+called "drop_oversized_messages", but this logic has changed much, and
+this counter does actually represent messages which we failed to
+transmit for a number of reasons. Rename the counter back to tx_dropped
+since this is when it will increment, and it is less confusing.
+
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_pf.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-index b1e09756a6ef..00f7a29e734f 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-@@ -1212,7 +1212,7 @@ s32 fm10k_iov_msg_mac_vlan_pf(struct fm10k_hw *hw, u32 **results,
- 		set = !(vid & FM10K_VLAN_CLEAR);
- 		vid &= ~FM10K_VLAN_CLEAR;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+index 5db5a97cf28e..b903c4646cf8 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+@@ -111,7 +111,7 @@ static const struct fm10k_stats fm10k_gstrings_pf_stats[] = {
  
--		err = fm10k_iov_select_vid(vf_info, vid);
-+		err = fm10k_iov_select_vid(vf_info, (u16)vid);
- 		if (err < 0)
- 			return err;
- 		else
-@@ -1242,7 +1242,7 @@ s32 fm10k_iov_msg_mac_vlan_pf(struct fm10k_hw *hw, u32 **results,
- 		if (err < 0)
- 			return err;
- 		else
--			vlan = err;
-+			vlan = (u16)err;
- 
- 		/* notify switch of request for new unicast address */
- 		err = hw->mac.ops.update_uc_addr(hw, vf_info->glort,
-@@ -1268,7 +1268,7 @@ s32 fm10k_iov_msg_mac_vlan_pf(struct fm10k_hw *hw, u32 **results,
- 		if (err < 0)
- 			return err;
- 		else
--			vlan = err;
-+			vlan = (u16)err;
- 
- 		/* notify switch of request for new multicast address */
- 		err = hw->mac.ops.update_mc_addr(hw, vf_info->glort,
+ static const struct fm10k_stats fm10k_gstrings_mbx_stats[] = {
+ 	FM10K_MBX_STAT("mbx_tx_busy", tx_busy),
+-	FM10K_MBX_STAT("mbx_tx_oversized", tx_dropped),
++	FM10K_MBX_STAT("mbx_tx_dropped", tx_dropped),
+ 	FM10K_MBX_STAT("mbx_tx_messages", tx_messages),
+ 	FM10K_MBX_STAT("mbx_tx_dwords", tx_dwords),
+ 	FM10K_MBX_STAT("mbx_tx_mbmem_pulled", tx_mbmem_pulled),
 -- 
 2.6.1.264.gbab76a9
 
