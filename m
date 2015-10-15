@@ -1,34 +1,33 @@
-From: Christopher Hall <christopher.s.hall@intel.com>
-Date: Wed, 14 Oct 2015 19:47:32 -0700
-Subject: [Intel-wired-lan] [PATCH v4 3/4] Add PTP_SYS_OFFSET_PRECISE for
- driver crosstimestamping
-In-Reply-To: <20151013135925.GB5422@localhost.localdomain>
+From: Richard Cochran <richardcochran@gmail.com>
+Date: Thu, 15 Oct 2015 07:41:43 +0200
+Subject: [Intel-wired-lan] [PATCH v4 1/4] Produce system time from
+	correlated clocksource
+In-Reply-To: <op.x6iz21fw1774gr@chall-mobl2.amr.corp.intel.com>
 References: <1444675522-4198-1-git-send-email-christopher.s.hall@intel.com>
- <1444675522-4198-4-git-send-email-christopher.s.hall@intel.com>
- <20151013135925.GB5422@localhost.localdomain>
-Message-ID: <op.x6i0pip51774gr@chall-mobl2.amr.corp.intel.com>
+ <1444675522-4198-2-git-send-email-christopher.s.hall@intel.com>
+ <20151013045832.GA2437@netboy>
+ <alpine.DEB.2.11.1510130944520.6097@nanos>
+ <20151013083113.GA1931@localhost.localdomain>
+ <alpine.DEB.2.11.1510132113470.25029@nanos>
+ <20151013211224.GA19242@netboy>
+ <op.x6iz21fw1774gr@chall-mobl2.amr.corp.intel.com>
+Message-ID: <20151015054142.GA4784@netboy>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 13 Oct 2015 06:59:26 -0700, Richard Cochran  
-<richardcochran@gmail.com> wrote:
+On Wed, Oct 14, 2015 at 07:34:03PM -0700, Christopher Hall wrote:
+> I hope this is helpful. Thanks.
 
-> On Mon, Oct 12, 2015 at 11:45:21AM -0700, Christopher S. Hall wrote:
->>
->> +struct ptp_sys_offset_precise {
->> +	unsigned int rsv[4];    /* Reserved for future use. */
->> +	struct ptp_clock_time dev;
->> +	struct ptp_clock_time sys;
->> +};
->> +
->
-> Please put the reserved field at the bottom.  Also, since we reading
-> the raw monotonic time under the hood, we might as well return it in
+So the DSP does not produce or consume system time stamps. Fine.
+Still I fail to understand why you need the system time.
 
-Good idea.
+Thomas seems to say that there are *other* applications that will want
+to transform device time into system time, but why does your audio
+application use the system time, when the audio-to-ptp time is
+directly available, without any man in the middle?
 
 Thanks,
-Chris
+Richard
