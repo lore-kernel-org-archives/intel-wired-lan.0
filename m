@@ -1,76 +1,33 @@
-From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Fri, 16 Oct 2015 13:27:49 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Prevent KR PHY reset in
-	ixgbe_init_phy_ops_x550em
-Message-ID: <20151016202748.115639.26219.stgit@mdrustad-wks.jf.intel.com>
+From: Allan, Bruce W <bruce.w.allan@intel.com>
+Date: Fri, 16 Oct 2015 23:40:36 +0000
+Subject: [Intel-wired-lan] [next-queue v5 06/17] fm10k: Correct typecast
+ in	fm10k_update_xc_addr_pf
+In-Reply-To: <1445018231-3196-6-git-send-email-jacob.e.keller@intel.com>
+References: <1445018231-3196-1-git-send-email-jacob.e.keller@intel.com>
+ <1445018231-3196-6-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <804857E1F29AAC47BF68C404FC60A1847EC552A0@ORSMSX105.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch removes KR PHY reset from ixgbe_init_phy_ops_x550em,
-since this function is meant to initialize function pointers for
-the detected PHY type. Internal PHY reset was moved to
-ixgbe_setup_internal_phy_t_x550em which will now detect which
-mode the internal PHY operates in and set it up as required.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Jacob Keller
+> Sent: Friday, October 16, 2015 10:57 AM
+> To: Intel Wired LAN
+> Subject: [Intel-wired-lan] [next-queue v5 06/17] fm10k: Correct typecast in
+> fm10k_update_xc_addr_pf
+> 
+> Since the resultant data type of the mac_update.mac_upper field is u16,
+> it does not make sense to typecast u8 variables to u32 first. Since
+> we're modifying fm10k_pf.c, also update the copyright year.
+> 
+> Reported-by: Matthew Vick <matthew.vick@intel.com>
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> ---
+>  drivers/net/ethernet/intel/fm10k/fm10k_pf.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
 
-Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   21 ++++++++-------------
- 1 file changed, 8 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index bf2ae8daf717..a9c73b75a902 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -1727,6 +1727,12 @@ static s32 ixgbe_setup_internal_phy_t_x550em(struct ixgbe_hw *hw)
- 	if (hw->mac.ops.get_media_type(hw) != ixgbe_media_type_copper)
- 		return IXGBE_ERR_CONFIG;
- 
-+	if (hw->phy.nw_mng_if_sel & IXGBE_NW_MNG_IF_SEL_INT_PHY_MODE) {
-+		speed = IXGBE_LINK_SPEED_10GB_FULL |
-+			IXGBE_LINK_SPEED_1GB_FULL;
-+		return ixgbe_setup_kr_speed_x550em(hw, speed);
-+	}
-+
- 	/* If link is not up, then there is no setup necessary so return  */
- 	status = ixgbe_ext_phy_t_x550em_get_link(hw, &link_up);
- 	if (status)
-@@ -1931,7 +1937,6 @@ static s32 ixgbe_enter_lplu_t_x550em(struct ixgbe_hw *hw)
- static s32 ixgbe_init_phy_ops_X550em(struct ixgbe_hw *hw)
- {
- 	struct ixgbe_phy_info *phy = &hw->phy;
--	ixgbe_link_speed speed;
- 	s32 ret_val;
- 
- 	hw->mac.ops.set_lan_id(hw);
-@@ -1944,10 +1949,6 @@ static s32 ixgbe_init_phy_ops_X550em(struct ixgbe_hw *hw)
- 		 * to determine internal PHY mode.
- 		 */
- 		phy->nw_mng_if_sel = IXGBE_READ_REG(hw, IXGBE_NW_MNG_IF_SEL);
--		if (phy->nw_mng_if_sel & IXGBE_NW_MNG_IF_SEL_INT_PHY_MODE) {
--			speed = IXGBE_LINK_SPEED_10GB_FULL |
--				IXGBE_LINK_SPEED_1GB_FULL;
--		}
- 	}
- 
- 	/* Identify the PHY or SFP module */
-@@ -1979,14 +1980,8 @@ static s32 ixgbe_init_phy_ops_X550em(struct ixgbe_hw *hw)
- 		/* If internal link mode is XFI, then setup iXFI internal link,
- 		 * else setup KR now.
- 		 */
--		if (!(phy->nw_mng_if_sel & IXGBE_NW_MNG_IF_SEL_INT_PHY_MODE)) {
--			phy->ops.setup_internal_link =
--					ixgbe_setup_internal_phy_t_x550em;
--		} else {
--			speed = IXGBE_LINK_SPEED_10GB_FULL |
--				IXGBE_LINK_SPEED_1GB_FULL;
--			ret_val = ixgbe_setup_kr_speed_x550em(hw, speed);
--		}
-+		phy->ops.setup_internal_link =
-+					      ixgbe_setup_internal_phy_t_x550em;
- 
- 		/* setup SW LPLU only for first revision */
- 		if (!(IXGBE_FUSES0_REV1 & IXGBE_READ_REG(hw,
-
+Reviewed-by: Bruce Allan <bruce.w.allan@intel.com>
