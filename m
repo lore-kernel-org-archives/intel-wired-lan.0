@@ -1,91 +1,79 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri, 16 Oct 2015 10:57:02 -0700
-Subject: [Intel-wired-lan] [next-queue v5 08/17] fm10k: add statistics for
-	actual DWORD count of mbmem mailbox
+Date: Fri, 16 Oct 2015 10:56:59 -0700
+Subject: [Intel-wired-lan] [next-queue v5 05/17] fm10k: reinitialize queuing
+	scheme after calling init_hw
 In-Reply-To: <1445018231-3196-1-git-send-email-jacob.e.keller@intel.com>
 References: <1445018231-3196-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1445018231-3196-8-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1445018231-3196-5-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-A previous bug was uncovered by addition of a debug stat to indicate the
-actual number of DWORDS we pulled from the mbmem. It turned out this was
-not the same as the tx_dwords counter. While the previous bug fix should
-have corrected this in all cases, add some debug stats that count the
-number of DWORDs pushed or pulled from the mbmem. A future debugger may
-take advantage of this statistic for debugging purposes. Since we're
-modifying fm10k_mbx.h, update the copyright year as well.
+The init_hw function may fail, and in the case of VFs, it might change
+the number of maximum queues available. Thus, for every flow which
+checks init_hw, we need to ensure that we clear the queue scheme before,
+and initialize it after. The fm10k_io_slot_reset path will end up
+triggering a reset so fm10k_reinit needs this change. The
+fm10k_io_error_detected and fm10k_io_resume also need to properly clear
+and reinitialize the queue scheme.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 2 ++
- drivers/net/ethernet/intel/fm10k/fm10k_mbx.c     | 4 ++++
- drivers/net/ethernet/intel/fm10k/fm10k_mbx.h     | 4 +++-
- 3 files changed, 9 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-index 447a5f8da42f..5db5a97cf28e 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-@@ -114,9 +114,11 @@ static const struct fm10k_stats fm10k_gstrings_mbx_stats[] = {
- 	FM10K_MBX_STAT("mbx_tx_oversized", tx_dropped),
- 	FM10K_MBX_STAT("mbx_tx_messages", tx_messages),
- 	FM10K_MBX_STAT("mbx_tx_dwords", tx_dwords),
-+	FM10K_MBX_STAT("mbx_tx_mbmem_pulled", tx_mbmem_pulled),
- 	FM10K_MBX_STAT("mbx_rx_messages", rx_messages),
- 	FM10K_MBX_STAT("mbx_rx_dwords", rx_dwords),
- 	FM10K_MBX_STAT("mbx_rx_parse_err", rx_parse_err),
-+	FM10K_MBX_STAT("mbx_rx_mbmem_pushed", rx_mbmem_pushed),
- };
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index 9c21d1e45543..faf81492d009 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -159,6 +159,9 @@ static void fm10k_reinit(struct fm10k_intfc *interface)
  
- #define FM10K_GLOBAL_STATS_LEN ARRAY_SIZE(fm10k_gstrings_global_stats)
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
-index af09a1b272e6..2bce47490723 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
-@@ -375,6 +375,8 @@ static void fm10k_mbx_write_copy(struct fm10k_hw *hw,
- 			if (!tail)
- 				tail++;
+ 	fm10k_mbx_free_irq(interface);
  
-+			mbx->tx_mbmem_pulled++;
++	/* free interrupts */
++	fm10k_clear_queueing_scheme(interface);
 +
- 			/* write message to hardware FIFO */
- 			fm10k_write_reg(hw, mbmem + tail++, *(head++));
- 		} while (--len && --end);
-@@ -459,6 +461,8 @@ static void fm10k_mbx_read_copy(struct fm10k_hw *hw,
- 			if (!head)
- 				head++;
+ 	/* delay any future reset requests */
+ 	interface->last_reset = jiffies + (10 * HZ);
  
-+			mbx->rx_mbmem_pushed++;
+@@ -175,6 +178,12 @@ static void fm10k_reinit(struct fm10k_intfc *interface)
+ 		goto reinit_err;
+ 	}
+ 
++	err = fm10k_init_queueing_scheme(interface);
++	if (err) {
++		dev_err(&interface->pdev->dev, "init_queueing_scheme failed: %d\n", err);
++		goto reinit_err;
++	}
 +
- 			/* read message from hardware FIFO */
- 			*(tail++) = fm10k_read_reg(hw, mbmem + head++);
- 		} while (--len && --end);
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.h b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.h
-index 0419a7f0035e..c4f18a8f176c 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.h
-@@ -1,5 +1,5 @@
- /* Intel Ethernet Switch Host Interface Driver
-- * Copyright(c) 2013 - 2014 Intel Corporation.
-+ * Copyright(c) 2013 - 2015 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-@@ -291,8 +291,10 @@ struct fm10k_mbx_info {
- 	u64 tx_dropped;
- 	u64 tx_messages;
- 	u64 tx_dwords;
-+	u64 tx_mbmem_pulled;
- 	u64 rx_messages;
- 	u64 rx_dwords;
-+	u64 rx_mbmem_pushed;
- 	u64 rx_parse_err;
+ 	/* reassociate interrupts */
+ 	fm10k_mbx_request_irq(interface);
  
- 	/* Buffer to store messages */
+@@ -2198,6 +2207,9 @@ static pci_ers_result_t fm10k_io_error_detected(struct pci_dev *pdev,
+ 	if (netif_running(netdev))
+ 		fm10k_close(netdev);
+ 
++	/* free interrupts */
++	fm10k_clear_queueing_scheme(interface);
++
+ 	fm10k_mbx_free_irq(interface);
+ 
+ 	pci_disable_device(pdev);
+@@ -2270,6 +2282,12 @@ static void fm10k_io_resume(struct pci_dev *pdev)
+ 	/* reset statistics starting values */
+ 	hw->mac.ops.rebind_hw_stats(hw, &interface->stats);
+ 
++	err = fm10k_init_queueing_scheme(interface);
++	if (err) {
++		dev_err(&interface->pdev->dev, "init_queueing_scheme failed: %d\n", err);
++		return;
++	}
++
+ 	/* reassociate interrupts */
+ 	fm10k_mbx_request_irq(interface);
+ 
 -- 
 2.6.1.264.gbab76a9
 
