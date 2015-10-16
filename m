@@ -1,71 +1,48 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri, 16 Oct 2015 10:56:57 -0700
-Subject: [Intel-wired-lan] [next-queue v5 03/17] fm10k: reset max_queues on
-	init_hw_vf failure
+Date: Fri, 16 Oct 2015 10:57:00 -0700
+Subject: [Intel-wired-lan] [next-queue v5 06/17] fm10k: Correct typecast in
+	fm10k_update_xc_addr_pf
 In-Reply-To: <1445018231-3196-1-git-send-email-jacob.e.keller@intel.com>
 References: <1445018231-3196-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1445018231-3196-3-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1445018231-3196-6-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-VF drivers must detect how many queues are available. Previously, the
-driver assumed that each VF has at minimum 1 queue. This assumption is
-incorrect, since it is possible that the PF has not yet assigned the
-queues to the VF by the time the VF checks. To resolve this, we added a
-check first to ensure that the first queue is infact owned by the VF at
-init_hw_vf time. However, the code flow did not reset hw->mac.max_queues
-to 0. In some cases, such as during reinit flows, we call init_hw_vf
-without clearing the previous value of hw->mac.max_queues. Due to this,
-when init_hw_vf errors out, if its error code is not properly handled
-the VF driver may still believe it has queues which no longer belong to
-it. Fix this by clearing the hw->mac.max_queues on exit due to errors.
+Since the resultant data type of the mac_update.mac_upper field is u16,
+it does not make sense to typecast u8 variables to u32 first. Since
+we're modifying fm10k_pf.c, also update the copyright year.
 
+Reported-by: Matthew Vick <matthew.vick@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_vf.c | 13 ++++++++++---
- 1 file changed, 10 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_pf.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_vf.c b/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
-index 3a18ef1cc017..d512575c33f3 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
-@@ -105,8 +105,10 @@ static s32 fm10k_init_hw_vf(struct fm10k_hw *hw)
- 
- 	/* verify we have at least 1 queue */
- 	if (!~fm10k_read_reg(hw, FM10K_TXQCTL(0)) ||
--	    !~fm10k_read_reg(hw, FM10K_RXQCTL(0)))
--		return FM10K_ERR_NO_RESOURCES;
-+	    !~fm10k_read_reg(hw, FM10K_RXQCTL(0))) {
-+		err = FM10K_ERR_NO_RESOURCES;
-+		goto reset_max_queues;
-+	}
- 
- 	/* determine how many queues we have */
- 	for (i = 1; tqdloc0 && (i < FM10K_MAX_QUEUES_POOL); i++) {
-@@ -124,7 +126,7 @@ static s32 fm10k_init_hw_vf(struct fm10k_hw *hw)
- 	/* shut down queues we own and reset DMA configuration */
- 	err = fm10k_disable_queues_generic(hw, i);
- 	if (err)
--		return err;
-+		goto reset_max_queues;
- 
- 	/* record maximum queue count */
- 	hw->mac.max_queues = i;
-@@ -134,6 +136,11 @@ static s32 fm10k_init_hw_vf(struct fm10k_hw *hw)
- 			       FM10K_TXQCTL_VID_MASK) >> FM10K_TXQCTL_VID_SHIFT;
- 
- 	return 0;
-+
-+reset_max_queues:
-+	hw->mac.max_queues = 0;
-+
-+	return err;
- }
- 
- /* This structure defines the attibutes to be parsed below */
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+index 8c0bdc4e4edd..b1e09756a6ef 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+@@ -1,5 +1,5 @@
+ /* Intel Ethernet Switch Host Interface Driver
+- * Copyright(c) 2013 - 2014 Intel Corporation.
++ * Copyright(c) 2013 - 2015 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+@@ -334,8 +334,8 @@ static s32 fm10k_update_xc_addr_pf(struct fm10k_hw *hw, u16 glort,
+ 						 ((u32)mac[3] << 16) |
+ 						 ((u32)mac[4] << 8) |
+ 						 ((u32)mac[5]));
+-	mac_update.mac_upper = cpu_to_le16(((u32)mac[0] << 8) |
+-						 ((u32)mac[1]));
++	mac_update.mac_upper = cpu_to_le16(((u16)mac[0] << 8) |
++					   ((u16)mac[1]));
+ 	mac_update.vlan = cpu_to_le16(vid);
+ 	mac_update.glort = cpu_to_le16(glort);
+ 	mac_update.action = add ? 0 : 1;
 -- 
 2.6.1.264.gbab76a9
 
