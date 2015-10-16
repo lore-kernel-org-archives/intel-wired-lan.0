@@ -1,73 +1,157 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri, 16 Oct 2015 10:57:06 -0700
-Subject: [Intel-wired-lan] [next-queue v5 12/17] fm10k: introduce
-	ITR_IS_ADAPTIVE macro
+Date: Fri, 16 Oct 2015 10:57:07 -0700
+Subject: [Intel-wired-lan] [next-queue v5 13/17] fm10k: Update adaptive ITR
+	algorithm
 In-Reply-To: <1445018231-3196-1-git-send-email-jacob.e.keller@intel.com>
 References: <1445018231-3196-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1445018231-3196-12-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1445018231-3196-13-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Define a macro for identifying when the itr value is dynamic or
-adaptive. The concept was taken from i40e. This helps make clear what
-the check is, and reduces the line length to something more reasonable
-in a few places.
+The existing adaptive ITR algorithm is overly restrictive. It throttles
+incorrectly for various traffic rates, and does not produce good
+performance. The algorithm now allows for more interrupts per second,
+and does some calculation to help improve for smaller packet loads. In
+addition, take into account the new itr_scale from the hardware which
+indicates how much to scale due to PCIe link speed.
 
+Reported-by: Matthew Vick <matthew.vick@intel.com>
+Reported-by: Alex Duyck <alexander.duyck@gmail.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k.h         | 2 ++
- drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 6 ++----
- drivers/net/ethernet/intel/fm10k/fm10k_main.c    | 2 +-
- 3 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k.h      |  1 +
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c | 52 ++++++++++++++++++++-------
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c  |  6 ++--
+ 3 files changed, 45 insertions(+), 14 deletions(-)
+
+Changes in v5:
+* fix comment to 250k ints/sec, instead of 333k, as math for this was
+  incorrect.
 
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
-index 3495e9337745..a2484cb88d86 100644
+index a2484cb88d86..bdbb804a594f 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k.h
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
-@@ -172,6 +172,8 @@ struct fm10k_ring_container {
- #define FM10K_ITR_20K		50	/* 50us */
- #define FM10K_ITR_ADAPTIVE	0x8000	/* adaptive interrupt moderation flag */
+@@ -164,6 +164,7 @@ struct fm10k_ring_container {
+ 	unsigned int total_packets;	/* total packets processed this int */
+ 	u16 work_limit;			/* total work allowed per interrupt */
+ 	u16 itr;			/* interrupt throttle rate value */
++	u8 itr_scale;			/* ITR adjustment scaler based on PCI speed */
+ 	u8 count;			/* total number of rings in vector */
+ };
  
-+#define ITR_IS_ADAPTIVE(itr) (!!(itr & FM10K_ITR_ADAPTIVE))
-+
- #define FM10K_ITR_ENABLE	(FM10K_ITR_AUTOMASK | FM10K_ITR_MASK_CLEAR)
- 
- static inline struct netdev_queue *txring_txq(const struct fm10k_ring *ring)
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-index b903c4646cf8..2395877f0544 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-@@ -705,12 +705,10 @@ static int fm10k_get_coalesce(struct net_device *dev,
- {
- 	struct fm10k_intfc *interface = netdev_priv(dev);
- 
--	ec->use_adaptive_tx_coalesce =
--		!!(interface->tx_itr & FM10K_ITR_ADAPTIVE);
-+	ec->use_adaptive_tx_coalesce = ITR_IS_ADAPTIVE(interface->tx_itr);
- 	ec->tx_coalesce_usecs = interface->tx_itr & ~FM10K_ITR_ADAPTIVE;
- 
--	ec->use_adaptive_rx_coalesce =
--		!!(interface->rx_itr & FM10K_ITR_ADAPTIVE);
-+	ec->use_adaptive_rx_coalesce = ITR_IS_ADAPTIVE(interface->rx_itr);
- 	ec->rx_coalesce_usecs = interface->rx_itr & ~FM10K_ITR_ADAPTIVE;
- 
- 	return 0;
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index c5f7e0d919dc..8207ee189600 100644
+index 8207ee189600..c72c8054302c 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -1370,7 +1370,7 @@ static void fm10k_update_itr(struct fm10k_ring_container *ring_container)
- 	unsigned int avg_wire_size, packets;
+@@ -1367,7 +1367,7 @@ static bool fm10k_clean_tx_irq(struct fm10k_q_vector *q_vector,
+  **/
+ static void fm10k_update_itr(struct fm10k_ring_container *ring_container)
+ {
+-	unsigned int avg_wire_size, packets;
++	unsigned int avg_wire_size, packets, itr_round;
  
  	/* Only update ITR if we are using adaptive setting */
--	if (!(ring_container->itr & FM10K_ITR_ADAPTIVE))
-+	if (!ITR_IS_ADAPTIVE(ring_container->itr))
- 		goto clear_counts;
+ 	if (!ITR_IS_ADAPTIVE(ring_container->itr))
+@@ -1379,18 +1379,44 @@ static void fm10k_update_itr(struct fm10k_ring_container *ring_container)
  
- 	packets = ring_container->total_packets;
+ 	avg_wire_size = ring_container->total_bytes / packets;
+ 
+-	/* Add 24 bytes to size to account for CRC, preamble, and gap */
+-	avg_wire_size += 24;
++	/* The following is a crude approximation of:
++	 *  wmem_default / (size + overhead) = desired_pkts_per_int
++	 *  rate / bits_per_byte / (size + ethernet overhead) = pkt_rate
++	 *  (desired_pkt_rate / pkt_rate) * usecs_per_sec = ITR value
++	 *
++	 * Assuming wmem_default is 212992 and overhead is 640 bytes per
++	 * packet, (256 skb, 64 headroom, 320 shared info), we can reduce the
++	 * formula down to
++	 *
++	 *  (34 * (size + 24)) / (size + 640) = ITR
++	 *
++	 * We first do some math on the packet size and then finally bitshift
++	 * by 8 after rounding up. We also have to account for PCIe link speed
++	 * difference as ITR scales based on this.
++	 */
++	if (avg_wire_size <= 360) {
++		/* Start at 250K ints/sec and gradually drop to 77K ints/sec */
++		avg_wire_size *= 8;
++		avg_wire_size += 376;
++	} else if (avg_wire_size <= 1152) {
++		/* 77K ints/sec to 45K ints/sec */
++		avg_wire_size *= 3;
++		avg_wire_size += 2176;
++	} else if (avg_wire_size <= 1920) {
++		/* 45K ints/sec to 38K ints/sec */
++		avg_wire_size += 4480;
++	} else {
++		/* plateau@a limit of 38K ints/sec */
++		avg_wire_size = 6656;
++	}
+ 
+-	/* Don't starve jumbo frames */
+-	if (avg_wire_size > 3000)
+-		avg_wire_size = 3000;
+-
+-	/* Give a little boost to mid-size frames */
+-	if ((avg_wire_size > 300) && (avg_wire_size < 1200))
+-		avg_wire_size /= 3;
+-	else
+-		avg_wire_size /= 2;
++	/* Perform final bitshift for division after rounding up to ensure
++	 * that the calculation will never get below a 1. The bit shift
++	 * accounts for changes in the ITR due to PCIe link speed.
++	 */
++	itr_round = ACCESS_ONCE(ring_container->itr_scale) + 8;
++	avg_wire_size += (1 << itr_round) - 1;
++	avg_wire_size >>= itr_round;
+ 
+ 	/* write back value and retain adaptive flag */
+ 	ring_container->itr = avg_wire_size | FM10K_ITR_ADAPTIVE;
+@@ -1608,6 +1634,7 @@ static int fm10k_alloc_q_vector(struct fm10k_intfc *interface,
+ 	q_vector->tx.ring = ring;
+ 	q_vector->tx.work_limit = FM10K_DEFAULT_TX_WORK;
+ 	q_vector->tx.itr = interface->tx_itr;
++	q_vector->tx.itr_scale = interface->hw.mac.itr_scale;
+ 	q_vector->tx.count = txr_count;
+ 
+ 	while (txr_count) {
+@@ -1636,6 +1663,7 @@ static int fm10k_alloc_q_vector(struct fm10k_intfc *interface,
+ 	/* save Rx ring container info */
+ 	q_vector->rx.ring = ring;
+ 	q_vector->rx.itr = interface->rx_itr;
++	q_vector->rx.itr_scale = interface->hw.mac.itr_scale;
+ 	q_vector->rx.count = rxr_count;
+ 
+ 	while (rxr_count) {
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index faf81492d009..1f0d9bc3bf7b 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -880,7 +880,8 @@ static irqreturn_t fm10k_msix_mbx_vf(int __always_unused irq, void *data)
+ 
+ 	/* re-enable mailbox interrupt and indicate 20us delay */
+ 	fm10k_write_reg(hw, FM10K_VFITR(FM10K_MBX_VECTOR),
+-			FM10K_ITR_ENABLE | FM10K_MBX_INT_DELAY);
++			FM10K_ITR_ENABLE | (FM10K_MBX_INT_DELAY >>
++					    hw->mac.itr_scale));
+ 
+ 	/* service upstream mailbox */
+ 	if (fm10k_mbx_trylock(interface)) {
+@@ -1111,7 +1112,8 @@ static irqreturn_t fm10k_msix_mbx_pf(int __always_unused irq, void *data)
+ 
+ 	/* re-enable mailbox interrupt and indicate 20us delay */
+ 	fm10k_write_reg(hw, FM10K_ITR(FM10K_MBX_VECTOR),
+-			FM10K_ITR_ENABLE | FM10K_MBX_INT_DELAY);
++			FM10K_ITR_ENABLE | (FM10K_MBX_INT_DELAY >>
++					    hw->mac.itr_scale));
+ 
+ 	return IRQ_HANDLED;
+ }
 -- 
 2.6.1.264.gbab76a9
 
