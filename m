@@ -1,127 +1,91 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri, 16 Oct 2015 10:56:55 -0700
-Subject: [Intel-wired-lan] [next-queue v5 01/17] fm10k: conditionally
-	compile DCB and DebugFS support
-Message-ID: <1445018231-3196-1-git-send-email-jacob.e.keller@intel.com>
+Date: Fri, 16 Oct 2015 10:57:02 -0700
+Subject: [Intel-wired-lan] [next-queue v5 08/17] fm10k: add statistics for
+	actual DWORD count of mbmem mailbox
+In-Reply-To: <1445018231-3196-1-git-send-email-jacob.e.keller@intel.com>
+References: <1445018231-3196-1-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1445018231-3196-8-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Rather than wrapping fm10k_dcbnl.c and fm10k_debugfs.c support with
- #ifdef blocks, just conditionally include the .o files in the Makefile.
-Also, since we're modifying it, update the copyright year on the
-Makefile.
+A previous bug was uncovered by addition of a debug stat to indicate the
+actual number of DWORDS we pulled from the mbmem. It turned out this was
+not the same as the tx_dwords counter. While the previous bug fix should
+have corrected this in all cases, add some debug stats that count the
+number of DWORDs pushed or pulled from the mbmem. A future debugger may
+take advantage of this statistic for debugging purposes. Since we're
+modifying fm10k_mbx.h, update the copyright year as well.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/Makefile        | 20 +++++++++++++++-----
- drivers/net/ethernet/intel/fm10k/fm10k.h         |  4 ++++
- drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c   |  4 ----
- drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c |  4 ----
- 4 files changed, 19 insertions(+), 13 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 2 ++
+ drivers/net/ethernet/intel/fm10k/fm10k_mbx.c     | 4 ++++
+ drivers/net/ethernet/intel/fm10k/fm10k_mbx.h     | 4 +++-
+ 3 files changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/Makefile b/drivers/net/ethernet/intel/fm10k/Makefile
-index 08859dd220a8..b006ff66d028 100644
---- a/drivers/net/ethernet/intel/fm10k/Makefile
-+++ b/drivers/net/ethernet/intel/fm10k/Makefile
-@@ -1,7 +1,7 @@
- ################################################################################
- #
- # Intel Ethernet Switch Host Interface Driver
--# Copyright(c) 2013 - 2014 Intel Corporation.
-+# Copyright(c) 2013 - 2015 Intel Corporation.
- #
- # This program is free software; you can redistribute it and/or modify it
- # under the terms and conditions of the GNU General Public License,
-@@ -27,7 +27,17 @@
- 
- obj-$(CONFIG_FM10K) += fm10k.o
- 
--fm10k-objs := fm10k_main.o fm10k_common.o fm10k_pci.o \
--	      fm10k_netdev.o fm10k_ethtool.o fm10k_pf.o fm10k_vf.o \
--	      fm10k_mbx.o fm10k_iov.o fm10k_tlv.o \
--	      fm10k_debugfs.o fm10k_ptp.o fm10k_dcbnl.o
-+fm10k-y := fm10k_main.o \
-+	   fm10k_common.o \
-+	   fm10k_pci.o \
-+	   fm10k_ptp.o \
-+	   fm10k_netdev.o \
-+	   fm10k_ethtool.o \
-+	   fm10k_pf.o \
-+	   fm10k_vf.o \
-+	   fm10k_mbx.o \
-+	   fm10k_iov.o \
-+	   fm10k_tlv.o
-+
-+fm10k-$(CONFIG_DEBUG_FS) += fm10k_debugfs.o
-+fm10k-$(CONFIG_DCB) += fm10k_dcbnl.o
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
-index 48809e5d3f79..aa9674a3d9ee 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
-@@ -551,5 +551,9 @@ int fm10k_get_ts_config(struct net_device *netdev, struct ifreq *ifr);
- int fm10k_set_ts_config(struct net_device *netdev, struct ifreq *ifr);
- 
- /* DCB */
-+#ifdef CONFIG_DCB
- void fm10k_dcbnl_set_ops(struct net_device *dev);
-+#else
-+static inline void fm10k_dcbnl_set_ops(void) {}
-+#endif
- #endif /* _FM10K_H_ */
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c b/drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c
-index 5c7a4d7662d8..2be4361839db 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c
-@@ -20,7 +20,6 @@
- 
- #include "fm10k.h"
- 
--#ifdef CONFIG_DCB
- /**
-  * fm10k_dcbnl_ieee_getets - get the ETS configuration for the device
-  * @dev: netdev interface for the device
-@@ -155,7 +154,6 @@ static const struct dcbnl_rtnl_ops fm10k_dcbnl_ops = {
- 	.setdcbx	= fm10k_dcbnl_setdcbx,
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+index 447a5f8da42f..5db5a97cf28e 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+@@ -114,9 +114,11 @@ static const struct fm10k_stats fm10k_gstrings_mbx_stats[] = {
+ 	FM10K_MBX_STAT("mbx_tx_oversized", tx_dropped),
+ 	FM10K_MBX_STAT("mbx_tx_messages", tx_messages),
+ 	FM10K_MBX_STAT("mbx_tx_dwords", tx_dwords),
++	FM10K_MBX_STAT("mbx_tx_mbmem_pulled", tx_mbmem_pulled),
+ 	FM10K_MBX_STAT("mbx_rx_messages", rx_messages),
+ 	FM10K_MBX_STAT("mbx_rx_dwords", rx_dwords),
+ 	FM10K_MBX_STAT("mbx_rx_parse_err", rx_parse_err),
++	FM10K_MBX_STAT("mbx_rx_mbmem_pushed", rx_mbmem_pushed),
  };
  
--#endif /* CONFIG_DCB */
- /**
-  * fm10k_dcbnl_set_ops - Configures dcbnl ops pointer for netdev
-  * @dev: netdev interface for the device
-@@ -164,11 +162,9 @@ static const struct dcbnl_rtnl_ops fm10k_dcbnl_ops = {
-  **/
- void fm10k_dcbnl_set_ops(struct net_device *dev)
- {
--#ifdef CONFIG_DCB
- 	struct fm10k_intfc *interface = netdev_priv(dev);
- 	struct fm10k_hw *hw = &interface->hw;
+ #define FM10K_GLOBAL_STATS_LEN ARRAY_SIZE(fm10k_gstrings_global_stats)
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
+index af09a1b272e6..2bce47490723 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
+@@ -375,6 +375,8 @@ static void fm10k_mbx_write_copy(struct fm10k_hw *hw,
+ 			if (!tail)
+ 				tail++;
  
- 	if (hw->mac.type == fm10k_mac_pf)
- 		dev->dcbnl_ops = &fm10k_dcbnl_ops;
--#endif /* CONFIG_DCB */
- }
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c b/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
-index 5304bc1fbecd..5d6137faf7d1 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
-@@ -18,8 +18,6 @@
-  * Intel Corporation, 5200 N.E. Elam Young Parkway, Hillsboro, OR 97124-6497
-  */
++			mbx->tx_mbmem_pulled++;
++
+ 			/* write message to hardware FIFO */
+ 			fm10k_write_reg(hw, mbmem + tail++, *(head++));
+ 		} while (--len && --end);
+@@ -459,6 +461,8 @@ static void fm10k_mbx_read_copy(struct fm10k_hw *hw,
+ 			if (!head)
+ 				head++;
  
--#ifdef CONFIG_DEBUG_FS
--
- #include "fm10k.h"
++			mbx->rx_mbmem_pushed++;
++
+ 			/* read message from hardware FIFO */
+ 			*(tail++) = fm10k_read_reg(hw, mbmem + head++);
+ 		} while (--len && --end);
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.h b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.h
+index 0419a7f0035e..c4f18a8f176c 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.h
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.h
+@@ -1,5 +1,5 @@
+ /* Intel Ethernet Switch Host Interface Driver
+- * Copyright(c) 2013 - 2014 Intel Corporation.
++ * Copyright(c) 2013 - 2015 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+@@ -291,8 +291,10 @@ struct fm10k_mbx_info {
+ 	u64 tx_dropped;
+ 	u64 tx_messages;
+ 	u64 tx_dwords;
++	u64 tx_mbmem_pulled;
+ 	u64 rx_messages;
+ 	u64 rx_dwords;
++	u64 rx_mbmem_pushed;
+ 	u64 rx_parse_err;
  
- #include <linux/debugfs.h>
-@@ -258,5 +256,3 @@ void fm10k_dbg_exit(void)
- 	debugfs_remove_recursive(dbg_root);
- 	dbg_root = NULL;
- }
--
--#endif /* CONFIG_DEBUG_FS */
+ 	/* Buffer to store messages */
 -- 
 2.6.1.264.gbab76a9
 
