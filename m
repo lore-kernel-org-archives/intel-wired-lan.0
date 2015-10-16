@@ -1,159 +1,215 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 16 Oct 2015 23:42:45 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
- d1d39516e41d7ad107e807ebeee1519c412bb0e3 BUILD SUCCESS
-Message-ID: <56211af5.tsEJ349kGJZDPcWT%fengguang.wu@intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Fri, 16 Oct 2015 17:50:35 +0000
+Subject: [Intel-wired-lan] [next-queue v4 01/17] fm10k: conditionally
+ compile DCB and DebugFS support
+In-Reply-To: <804857E1F29AAC47BF68C404FC60A1847EC5408D@ORSMSX105.amr.corp.intel.com>
+References: <1444949681-14464-1-git-send-email-jacob.e.keller@intel.com>
+ <804857E1F29AAC47BF68C404FC60A1847EC5408D@ORSMSX105.amr.corp.intel.com>
+Message-ID: <1445017835.13478.0.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
-d1d39516e41d7ad107e807ebeee1519c412bb0e3  i40e/i40evf: Bump i40e to 1.3.34 and i40evf to 1.3.21
+On Thu, 2015-10-15 at 23:39 +0000, Allan, Bruce W wrote:
+> > -----Original Message-----
+> > From: Intel-wired-lan [mailto:
+> > intel-wired-lan-bounces at lists.osuosl.org] On
+> > Behalf Of Jacob Keller
+> > Sent: Thursday, October 15, 2015 3:54 PM
+> > To: Intel Wired LAN
+> > Subject: [Intel-wired-lan] [next-queue v4 01/17] fm10k:
+> > conditionally
+> > compile DCB and DebugFS support
+> > 
+> > Rather than wrapping fm10k_dcbnl.c and fm10k_debugfs.c support with
+> >  #ifdef blocks, just conditionally include the .o files in the
+> > Makefile.
+> >  Also, since we're modifying it, update the copyright year on the
+> >  Makefile.
+> > 
+> > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> > ---
+> >  drivers/net/ethernet/intel/fm10k/Makefile        | 20
+> > +++++++++++++++----
+> > -
+> >  drivers/net/ethernet/intel/fm10k/fm10k.h         |  4 ++++
+> >  drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c   |  4 ----
+> >  drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c |  4 ----
+> >  drivers/net/ethernet/intel/fm10k/fm10k_pci.c     |  4 ++++
+> >  5 files changed, 23 insertions(+), 13 deletions(-)
+> > 
+> > diff --git a/drivers/net/ethernet/intel/fm10k/Makefile
+> > b/drivers/net/ethernet/intel/fm10k/Makefile
+> > index 08859dd220a8..b006ff66d028 100644
+> > --- a/drivers/net/ethernet/intel/fm10k/Makefile
+> > +++ b/drivers/net/ethernet/intel/fm10k/Makefile
+> > @@ -1,7 +1,7 @@
+> > 
+> > ##########################################################
+> > ######################
+> >  #
+> >  # Intel Ethernet Switch Host Interface Driver
+> > -# Copyright(c) 2013 - 2014 Intel Corporation.
+> > +# Copyright(c) 2013 - 2015 Intel Corporation.
+> >  #
+> >  # This program is free software; you can redistribute it and/or
+> > modify it
+> >  # under the terms and conditions of the GNU General Public
+> > License,
+> > @@ -27,7 +27,17 @@
+> > 
+> >  obj-$(CONFIG_FM10K) += fm10k.o
+> > 
+> > -fm10k-objs := fm10k_main.o fm10k_common.o fm10k_pci.o \
+> > -	      fm10k_netdev.o fm10k_ethtool.o fm10k_pf.o fm10k_vf.o
+> > \
+> > -	      fm10k_mbx.o fm10k_iov.o fm10k_tlv.o \
+> > -	      fm10k_debugfs.o fm10k_ptp.o fm10k_dcbnl.o
+> > +fm10k-y := fm10k_main.o \
+> > +	   fm10k_common.o \
+> > +	   fm10k_pci.o \
+> > +	   fm10k_ptp.o \
+> > +	   fm10k_netdev.o \
+> > +	   fm10k_ethtool.o \
+> > +	   fm10k_pf.o \
+> > +	   fm10k_vf.o \
+> > +	   fm10k_mbx.o \
+> > +	   fm10k_iov.o \
+> > +	   fm10k_tlv.o
+> > +
+> > +fm10k-$(CONFIG_DEBUG_FS) += fm10k_debugfs.o
+> > +fm10k-$(CONFIG_DCB) += fm10k_dcbnl.o
+> > diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h
+> > b/drivers/net/ethernet/intel/fm10k/fm10k.h
+> > index 48809e5d3f79..aa9674a3d9ee 100644
+> > --- a/drivers/net/ethernet/intel/fm10k/fm10k.h
+> > +++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
+> > @@ -551,5 +551,9 @@ int fm10k_get_ts_config(struct net_device
+> > *netdev,
+> > struct ifreq *ifr);
+> >  int fm10k_set_ts_config(struct net_device *netdev, struct ifreq
+> > *ifr);
+> > 
+> >  /* DCB */
+> > +#ifdef CONFIG_DCB
+> >  void fm10k_dcbnl_set_ops(struct net_device *dev);
+> > +#else
+> > +static inline void fm10k_dcbnl_set_ops(void) {}
+> > +#endif
+> >  #endif /* _FM10K_H_ */
+> > diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c
+> > b/drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c
+> > index 5c7a4d7662d8..2be4361839db 100644
+> > --- a/drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c
+> > +++ b/drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c
+> > @@ -20,7 +20,6 @@
+> > 
+> >  #include "fm10k.h"
+> > 
+> > -#ifdef CONFIG_DCB
+> >  /**
+> >   * fm10k_dcbnl_ieee_getets - get the ETS configuration for the
+> > device
+> >   * @dev: netdev interface for the device
+> > @@ -155,7 +154,6 @@ static const struct dcbnl_rtnl_ops
+> > fm10k_dcbnl_ops
+> > = {
+> >  	.setdcbx	= fm10k_dcbnl_setdcbx,
+> >  };
+> > 
+> > -#endif /* CONFIG_DCB */
+> >  /**
+> >   * fm10k_dcbnl_set_ops - Configures dcbnl ops pointer for netdev
+> >   * @dev: netdev interface for the device
+> > @@ -164,11 +162,9 @@ static const struct dcbnl_rtnl_ops
+> > fm10k_dcbnl_ops
+> > = {
+> >   **/
+> >  void fm10k_dcbnl_set_ops(struct net_device *dev)
+> >  {
+> > -#ifdef CONFIG_DCB
+> >  	struct fm10k_intfc *interface = netdev_priv(dev);
+> >  	struct fm10k_hw *hw = &interface->hw;
+> > 
+> >  	if (hw->mac.type == fm10k_mac_pf)
+> >  		dev->dcbnl_ops = &fm10k_dcbnl_ops;
+> > -#endif /* CONFIG_DCB */
+> >  }
+> > diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
+> > b/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
+> > index 5304bc1fbecd..5d6137faf7d1 100644
+> > --- a/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
+> > +++ b/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
+> > @@ -18,8 +18,6 @@
+> >   * Intel Corporation, 5200 N.E. Elam Young Parkway, Hillsboro, OR
+> > 97124-
+> > 6497
+> >   */
+> > 
+> > -#ifdef CONFIG_DEBUG_FS
+> > -
+> >  #include "fm10k.h"
+> > 
+> >  #include <linux/debugfs.h>
+> > @@ -258,5 +256,3 @@ void fm10k_dbg_exit(void)
+> >  	debugfs_remove_recursive(dbg_root);
+> >  	dbg_root = NULL;
+> >  }
+> > -
+> > -#endif /* CONFIG_DEBUG_FS */
+> > diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> > b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> > index 5fbffbaefe32..0dece3c07727 100644
+> > --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> > +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> > @@ -1729,8 +1729,10 @@ static int fm10k_sw_init(struct fm10k_intfc
+> > *interface,
+> >  		netdev->hw_features &= ~NETIF_F_GSO_UDP_TUNNEL;
+> >  	}
+> > 
+> > +#ifdef CONFIG_DCB
+> >  	/* initialize DCBNL interface */
+> >  	fm10k_dcbnl_set_ops(netdev);
+> > +#endif
+> 
+> The #ifdef CONFIG_DCB/#endif is not needed; fm10k_dcbnl_set_ops()
+> will be a nop when CONFIG_DCB is not defined.
+> 
 
-elapsed time: 211m
+Sorry yes you mentioned this before and I simply lost track of it..
+Will fix.
 
-configs tested: 139
+> > 
+> >  	/* Initialize service timer and service task */
+> >  	set_bit(__FM10K_SERVICE_DISABLE, &interface->state);
+> > @@ -1919,8 +1921,10 @@ static int fm10k_probe(struct pci_dev *pdev,
+> >  	if (err)
+> >  		goto err_sw_init;
+> > 
+> > +#if IS_ENABLED(CONFIG_DEBUG_FS)
+> >  	/* enable debugfs support */
+> >  	fm10k_dbg_intfc_init(interface);
+> > +#endif
+> 
+> The #if IS_ENABLED(CONFIG_DEBUG_FS)/#endif is not needed;
+> fm10k_dbg_intfc_init() will be a nop when CONFIG_DEBUG_FS is not
+> defined.
+> 
 
-parisc                        c3000_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-i386                     randconfig-a0-201541
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                            allnoconfig
-i386                   randconfig-c0-10162209
-i386                   randconfig-c0-10162234
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-i386                              allnoconfig
-arm                          nuc910_defconfig
-mips                  maltasmvp_eva_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                             allmodconfig
-x86_64               randconfig-x010-10130227
-x86_64               randconfig-x015-10130227
-x86_64               randconfig-x017-10130227
-x86_64               randconfig-x019-10130227
-x86_64               randconfig-x012-10130227
-x86_64               randconfig-x018-10130227
-x86_64               randconfig-x011-10130227
-x86_64               randconfig-x016-10130227
-x86_64               randconfig-x014-10130227
-x86_64               randconfig-x013-10130227
-i386                                defconfig
-i386                             alldefconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s1-201541
-i386                     randconfig-s0-201541
-x86_64                 randconfig-s0-10162137
-x86_64                 randconfig-s1-10162137
-x86_64                 randconfig-s2-10162137
-x86_64                 randconfig-s0-10162228
-x86_64                 randconfig-s1-10162228
-x86_64                 randconfig-s2-10162228
-x86_64                 randconfig-s3-10162230
-x86_64                 randconfig-s4-10162230
-x86_64                 randconfig-s5-10162230
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201541
-i386                   randconfig-b0-10162236
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-avr32        atngw100mkii_evklcd100_defconfig
-ia64                              allnoconfig
-powerpc                  mpc885_ads_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i1-201541
-i386                     randconfig-i0-201541
-x86_64                           allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                                       mmp
-arm                       omap2plus_defconfig
-arm                         s3c2410_defconfig
-arm                           tegra_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201541
-i386                             allyesconfig
-avr32                        merisc_defconfig
-powerpc                          alldefconfig
-xtensa                    smp_lx200_defconfig
-ia64                             alldefconfig
-ia64                                defconfig
-x86_64                 randconfig-h0-10162222
-x86_64                 randconfig-h0-10162303
-blackfin                  CM-BF537U_defconfig
-powerpc                 mpc832x_mds_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                  randconfig-sb0-10162241
-x86_64                 randconfig-x002-201541
-x86_64                 randconfig-x009-201541
-x86_64                 randconfig-x000-201541
-x86_64                 randconfig-x003-201541
-x86_64                 randconfig-x004-201541
-x86_64                 randconfig-x001-201541
-x86_64                 randconfig-x006-201541
-x86_64                 randconfig-x007-201541
-x86_64                 randconfig-x008-201541
-x86_64                 randconfig-x005-201541
-i386                     randconfig-r0-201541
-i386                 randconfig-x008-10121721
-i386                 randconfig-x009-10121721
-i386                 randconfig-x001-10121721
-i386                 randconfig-x002-10121721
-i386                 randconfig-x003-10121721
-i386                 randconfig-x007-10121721
-i386                 randconfig-x006-10121721
-i386                 randconfig-x000-10121721
-i386                 randconfig-x004-10121721
-i386                 randconfig-x005-10121721
-i386                   randconfig-x0-10162243
+Yep will fix.
 
-Thanks,
-Fengguang
+Regards,
+Jake
+
+> > 
+> >  	err = fm10k_init_queueing_scheme(interface);
+> >  	if (err)
+> > --
+> > 2.6.1.264.gbab76a9
+> > 
+> > _______________________________________________
+> > Intel-wired-lan mailing list
+> > Intel-wired-lan at lists.osuosl.org
+> > http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
