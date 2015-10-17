@@ -1,50 +1,207 @@
-From: Nicholas Krause <xerofoify@gmail.com>
-Date: Fri, 16 Oct 2015 15:42:31 -0400
-Subject: [Intel-wired-lan] [PATCH] fm10k:Fix error handling in the function
-	fm10k_probe
-Message-ID: <1445024551-21281-1-git-send-email-xerofoify@gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 17 Oct 2015 17:53:42 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
+ bd17f452f51a7879071071e5545bf247562633b3 BUILD SUCCESS
+Message-ID: <56221aa6.0JRYZAHZLIb92jOv%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This fixes error handling in the function fm10k_probe to properly
-if the call to the function fm10k_iov_configure has failed by
-returning a error code before jumping to a new goto label,
-fm10k_iov_configure to clean up previously allocated resources
-between this goto label and the previous goto label before finally
-returning the error code to the callers of the function fm10k_probe
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
+bd17f452f51a7879071071e5545bf247562633b3  i40e/i40evf: Bump i40e to 1.3.38 and i40evf to 1.3.25
 
-Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
----
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+elapsed time: 263m
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index ce53ff2..3d7374e 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -1844,13 +1844,17 @@ static int fm10k_probe(struct pci_dev *pdev,
- 	fm10k_slot_warn(interface);
- 
- 	/* enable SR-IOV after registering netdev to enforce PF/VF ordering */
--	fm10k_iov_configure(pdev, 0);
-+	err = fm10k_iov_configure(pdev, 0);
-+	if (err)
-+		goto err_iov_configure;
- 
- 	/* clear the service task disable bit to allow service task to start */
- 	clear_bit(__FM10K_SERVICE_DISABLE, &interface->state);
- 
- 	return 0;
--
-+err_iov_configure:
-+	fm10k_ptp_unregister(interface);
-+	unregister_netdev(netdev);
- err_register:
- 	fm10k_mbx_free_irq(interface);
- err_mbx_interrupt:
--- 
-2.1.4
+configs tested: 187
 
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+alpha                            alldefconfig
+arm                         orion5x_defconfig
+avr32                     atstk1002_defconfig
+i386                     randconfig-a0-201541
+i386                   randconfig-a0-10171549
+x86_64                 randconfig-a0-10171651
+x86_64                 randconfig-a0-10171716
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                            allnoconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-10171701
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+blackfin             BF527-TLL6527M_defconfig
+mips                           ip32_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+i386                             allyesconfig
+x86_64                 randconfig-v0-10171657
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+parisc                         b180_defconfig
+i386                             allmodconfig
+arm                         lpc32xx_defconfig
+arm                         s5pv210_defconfig
+mips                        bcm47xx_defconfig
+sh                             sh03_defconfig
+um                                allnoconfig
+mips                  maltasmvp_eva_defconfig
+sh                     magicpanelr2_defconfig
+x86_64               randconfig-x010-10130227
+x86_64               randconfig-x011-10130227
+x86_64               randconfig-x012-10130227
+x86_64               randconfig-x013-10130227
+x86_64               randconfig-x014-10130227
+x86_64               randconfig-x015-10130227
+x86_64               randconfig-x016-10130227
+x86_64               randconfig-x017-10130227
+x86_64               randconfig-x018-10130227
+x86_64               randconfig-x019-10130227
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201541
+i386                     randconfig-s1-201541
+x86_64                 randconfig-s0-10171402
+x86_64                 randconfig-s1-10171402
+x86_64                 randconfig-s2-10171402
+x86_64                 randconfig-s1-10171704
+x86_64                 randconfig-s2-10171704
+x86_64                 randconfig-s3-10171402
+x86_64                 randconfig-s4-10171402
+x86_64                 randconfig-s5-10171402
+x86_64                 randconfig-s3-10171701
+x86_64                 randconfig-s4-10171701
+x86_64                 randconfig-s5-10171701
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+arm                                 defconfig
+arm                           tegra_defconfig
+sh                           se7712_defconfig
+xtensa                  audio_kc705_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201541
+x86_64                 randconfig-i0-10171523
+i386                   randconfig-b0-10171652
+i386                   randconfig-b0-10171712
+i386                   randconfig-b0-10171736
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                     davinci_all_defconfig
+ia64                            sim_defconfig
+xtensa                           allmodconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201541
+i386                     randconfig-i1-201541
+i386                   randconfig-i0-10171532
+i386                   randconfig-i1-10171532
+x86_64                 randconfig-b0-10171631
+x86_64                 randconfig-b0-10171719
+arm                                      arm5
+arm                                     arm67
+arm                                       mmp
+arm                       omap2plus_defconfig
+arm                         s3c2410_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201541
+i386                   randconfig-n0-10171647
+blackfin                            defconfig
+ia64                                defconfig
+mips                                defconfig
+powerpc                     pq2fads_defconfig
+sh                          landisk_defconfig
+sh                           se7722_defconfig
+avr32                       favr-32_defconfig
+powerpc                     kilauea_defconfig
+powerpc                     tqm8560_defconfig
+x86_64                 randconfig-h0-10171655
+avr32                    hammerhead_defconfig
+mips                  mips_paravirt_defconfig
+i386                  randconfig-sb0-10171547
+i386                  randconfig-sb0-10171642
+i386                  randconfig-sb0-10171715
+x86_64                 randconfig-x000-201541
+x86_64                 randconfig-x001-201541
+x86_64                 randconfig-x002-201541
+x86_64                 randconfig-x003-201541
+x86_64                 randconfig-x004-201541
+x86_64                 randconfig-x005-201541
+x86_64                 randconfig-x006-201541
+x86_64                 randconfig-x007-201541
+x86_64                 randconfig-x008-201541
+x86_64                 randconfig-x009-201541
+x86_64               randconfig-x000-10171539
+x86_64               randconfig-x001-10171539
+x86_64               randconfig-x002-10171539
+x86_64               randconfig-x003-10171539
+x86_64               randconfig-x004-10171539
+x86_64               randconfig-x005-10171539
+x86_64               randconfig-x006-10171539
+x86_64               randconfig-x007-10171539
+x86_64               randconfig-x008-10171539
+x86_64               randconfig-x009-10171539
+ia64                             alldefconfig
+ia64                              allnoconfig
+i386                     randconfig-r0-201541
+i386                   randconfig-r0-10171539
+x86_64                 randconfig-r0-10171715
+mips                        jmr3927_defconfig
+i386                 randconfig-x000-10121721
+i386                 randconfig-x001-10121721
+i386                 randconfig-x002-10121721
+i386                 randconfig-x003-10121721
+i386                 randconfig-x004-10121721
+i386                 randconfig-x005-10121721
+i386                 randconfig-x006-10121721
+i386                 randconfig-x007-10121721
+i386                 randconfig-x008-10121721
+i386                 randconfig-x009-10121721
+i386                   randconfig-x0-10171652
+i386                   randconfig-x0-10171708
+
+Thanks,
+Fengguang
