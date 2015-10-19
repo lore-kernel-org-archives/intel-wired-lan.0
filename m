@@ -1,104 +1,97 @@
-From: Jarod Wilson <jarod@redhat.com>
-Date: Mon, 19 Oct 2015 11:52:04 -0400
-Subject: [Intel-wired-lan] [PATCH v2] igb: improve handling of disconnected
-	adapters
-In-Reply-To: <1444716624.2870.14.camel@intel.com>
-References: <1444716624.2870.14.camel@intel.com>
-Message-ID: <1445269924-26739-1-git-send-email-jarod@redhat.com>
+From: Mark D Rustad <mark.d.rustad@intel.com>
+Date: Mon, 19 Oct 2015 09:22:14 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Add support for newer thermal alarm
+Message-ID: <20151019162214.127450.12072.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Clean up array_rd32 so that it uses igb_rd32 the same as rd32, per the
-suggestion of Alexander Duyck, and use io_addr in more places, so that
-we don't have the need to call E1000_REMOVED (which simply looks for a
-null hw_addr) nearly as much.
+The newer copper phy implementation used with newer X550EM_x
+devices uses a different thermal alarm type than the earlier
+one. Make changes to support both types.
 
-CC: Mark Rustad <mark.d.rustad@intel.com>
-CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-CC: Alexander Duyck <alexander.duyck@gmail.com>
-CC: intel-wired-lan at lists.osuosl.org
-CC: netdev at vger.kernel.org
-Acked-by: Alexander Duyck <aduyck@mirantis.com>
-Signed-off-by: Jarod Wilson <jarod@redhat.com>
+Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
-Note: this patch is rebased on Jeff's next-queue/dev-queue branch, which
-already had an earlier revision of this applied, so I've essentially
-reverted a2675ab and applied the revised version of this, squashed them
-together, and here is the end result, which matches the version Alex acked.
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |    4 ++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   22 +++++++++++++++++++---
+ 2 files changed, 23 insertions(+), 3 deletions(-)
 
- drivers/net/ethernet/intel/igb/e1000_regs.h |  3 +--
- drivers/net/ethernet/intel/igb/igb_main.c   | 15 ++-------------
- 2 files changed, 3 insertions(+), 15 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/e1000_regs.h b/drivers/net/ethernet/intel/igb/e1000_regs.h
-index 0fdcd4d..21d9d02 100644
---- a/drivers/net/ethernet/intel/igb/e1000_regs.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_regs.h
-@@ -386,8 +386,7 @@ do { \
- #define array_wr32(reg, offset, value) \
- 	wr32((reg) + ((offset) << 2), (value))
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index 995f03107eac..927349da232a 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -1345,7 +1345,10 @@ struct ixgbe_thermal_sensor_data {
+ #define IXGBE_MDIO_GLOBAL_INT_CHIP_VEN_MASK	0xFF01 /* int chip-wide mask */
+ #define IXGBE_MDIO_GLOBAL_INT_CHIP_VEN_FLAG	0xFC01 /* int chip-wide mask */
+ #define IXGBE_MDIO_GLOBAL_ALARM_1		0xCC00 /* Global alarm 1 */
++#define IXGBE_MDIO_GLOBAL_ALM_1_DEV_FAULT	0x0010 /* device fault */
+ #define IXGBE_MDIO_GLOBAL_ALM_1_HI_TMP_FAIL	0x4000 /* high temp failure */
++#define IXGBE_MDIO_GLOBAL_FAULT_MSG		0xC850 /* global fault msg */
++#define IXGBE_MDIO_GLOBAL_FAULT_MSG_HI_TMP	0x8007 /* high temp failure */
+ #define IXGBE_MDIO_GLOBAL_INT_MASK		0xD400 /* Global int mask */
+ /* autoneg vendor alarm int enable */
+ #define IXGBE_MDIO_GLOBAL_AN_VEN_ALM_INT_EN	0x1000
+@@ -1353,6 +1356,7 @@ struct ixgbe_thermal_sensor_data {
+ #define IXGBE_MDIO_GLOBAL_VEN_ALM_INT_EN	0x1 /* vendor alarm int enable */
+ #define IXGBE_MDIO_GLOBAL_STD_ALM2_INT		0x200 /* vendor alarm2 int mask */
+ #define IXGBE_MDIO_GLOBAL_INT_HI_TEMP_EN	0x4000 /* int high temp enable */
++#define IXGBE_MDIO_GLOBAL_INT_DEV_FAULT_EN	0x0010 /*int dev fault enable */
  
--#define array_rd32(reg, offset) \
--	(readl(hw->hw_addr + reg + ((offset) << 2)))
-+#define array_rd32(reg, offset) (igb_rd32(hw, reg + ((offset) << 2)))
+ #define IXGBE_MDIO_PMA_PMD_SDA_SCL_ADDR	0xC30A /* PHY_XS SDA/SCL Addr Reg */
+ #define IXGBE_MDIO_PMA_PMD_SDA_SCL_DATA	0xC30B /* PHY_XS SDA/SCL Data Reg */
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index a9c73b75a902..b8ad3f212e72 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -1444,7 +1444,7 @@ static s32 ixgbe_get_lasi_ext_t_x550em(struct ixgbe_hw *hw, bool *lsc)
+ 				IXGBE_MDIO_GLOBAL_ALARM_1_INT)))
+ 		return status;
  
- /* DMA Coalescing registers */
- #define E1000_PCIEMISC	0x05BB8 /* PCIE misc config register */
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 044a23e..68006a5 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -954,17 +954,12 @@ static int igb_request_msix(struct igb_adapter *adapter)
- 	if (err)
- 		goto err_out;
+-	/* High temperature failure alarm triggered */
++	/* Global alarm triggered */
+ 	status = hw->phy.ops.read_reg(hw, IXGBE_MDIO_GLOBAL_ALARM_1,
+ 				      IXGBE_MDIO_VENDOR_SPECIFIC_1_DEV_TYPE,
+ 				      &reg);
+@@ -1458,6 +1458,21 @@ static s32 ixgbe_get_lasi_ext_t_x550em(struct ixgbe_hw *hw, bool *lsc)
+ 		ixgbe_set_copper_phy_power(hw, false);
+ 		return IXGBE_ERR_OVERTEMP;
+ 	}
++	if (reg & IXGBE_MDIO_GLOBAL_ALM_1_DEV_FAULT) {
++		/*  device fault alarm triggered */
++		status = hw->phy.ops.read_reg(hw, IXGBE_MDIO_GLOBAL_FAULT_MSG,
++					  IXGBE_MDIO_VENDOR_SPECIFIC_1_DEV_TYPE,
++					  &reg);
++		if (status)
++			return status;
++
++		/* if device fault was due to high temp alarm handle and exit */
++		if (reg == IXGBE_MDIO_GLOBAL_FAULT_MSG_HI_TMP) {
++			/* power down the PHY in case the PHY FW didn't */
++			ixgbe_set_copper_phy_power(hw, false);
++			return IXGBE_ERR_OVERTEMP;
++		}
++	}
  
--	if (E1000_REMOVED(hw->hw_addr)) {
--		err = -EIO;
--		goto err_free;
--	}
--
- 	for (i = 0; i < adapter->num_q_vectors; i++) {
- 		struct igb_q_vector *q_vector = adapter->q_vector[i];
+ 	/* Vendor alarm 2 triggered */
+ 	status = hw->phy.ops.read_reg(hw, IXGBE_MDIO_GLOBAL_CHIP_STD_INT_FLAG,
+@@ -1511,14 +1526,15 @@ static s32 ixgbe_enable_lasi_ext_t_x550em(struct ixgbe_hw *hw)
+ 	if (status)
+ 		return status;
  
- 		vector++;
+-	/* Enables high temperature failure alarm */
++	/* Enable high temperature failure and global fault alarms */
+ 	status = hw->phy.ops.read_reg(hw, IXGBE_MDIO_GLOBAL_INT_MASK,
+ 				      IXGBE_MDIO_VENDOR_SPECIFIC_1_DEV_TYPE,
+ 				      &reg);
+ 	if (status)
+ 		return status;
  
--		q_vector->itr_register = hw->hw_addr + E1000_EITR(vector);
-+		q_vector->itr_register = adapter->io_addr + E1000_EITR(vector);
+-	reg |= IXGBE_MDIO_GLOBAL_INT_HI_TEMP_EN;
++	reg |= (IXGBE_MDIO_GLOBAL_INT_HI_TEMP_EN |
++		IXGBE_MDIO_GLOBAL_INT_DEV_FAULT_EN);
  
- 		if (q_vector->rx.ring && q_vector->tx.ring)
- 			sprintf(q_vector->name, "%s-TxRx-%u", netdev->name,
-@@ -1206,9 +1201,6 @@ static int igb_alloc_q_vector(struct igb_adapter *adapter,
- 	if (txr_count > 1 || rxr_count > 1)
- 		return -ENOMEM;
- 
--	if (E1000_REMOVED(adapter->hw.hw_addr))
--		return -EIO;
--
- 	ring_count = txr_count + rxr_count;
- 	size = sizeof(struct igb_q_vector) +
- 	       (sizeof(struct igb_ring) * ring_count);
-@@ -1238,7 +1230,7 @@ static int igb_alloc_q_vector(struct igb_adapter *adapter,
- 	q_vector->tx.work_limit = adapter->tx_work_limit;
- 
- 	/* initialize ITR configuration */
--	q_vector->itr_register = adapter->hw.hw_addr + E1000_EITR(0);
-+	q_vector->itr_register = adapter->io_addr + E1000_EITR(0);
- 	q_vector->itr_val = IGB_START_ITR;
- 
- 	/* initialize pointer to rings */
-@@ -3281,9 +3273,6 @@ void igb_configure_tx_ring(struct igb_adapter *adapter,
- 	u64 tdba = ring->dma;
- 	int reg_idx = ring->reg_idx;
- 
--	if (E1000_REMOVED(adapter->io_addr))
--		return;
--
- 	/* disable the queue */
- 	wr32(E1000_TXDCTL(reg_idx), 0);
- 	wrfl();
--- 
-1.8.3.1
+ 	status = hw->phy.ops.write_reg(hw, IXGBE_MDIO_GLOBAL_INT_MASK,
+ 				       IXGBE_MDIO_VENDOR_SPECIFIC_1_DEV_TYPE,
 
