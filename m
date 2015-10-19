@@ -1,97 +1,30 @@
-From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Mon, 19 Oct 2015 09:22:14 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Add support for newer thermal alarm
-Message-ID: <20151019162214.127450.12072.stgit@mdrustad-wks.jf.intel.com>
+From: Nelson, Shannon <shannon.nelson@intel.com>
+Date: Mon, 19 Oct 2015 16:56:15 +0000
+Subject: [Intel-wired-lan] [PATCH] intel: i40e: fix confused code
+In-Reply-To: <1445115499-28728-1-git-send-email-linux@rasmusvillemoes.dk>
+References: <1445115499-28728-1-git-send-email-linux@rasmusvillemoes.dk>
+Message-ID: <FC41C24E35F18A40888AACA1A36F3E418AFA4A68@fmsmsx115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The newer copper phy implementation used with newer X550EM_x
-devices uses a different thermal alarm type than the earlier
-one. Make changes to support both types.
+> From: Rasmus Villemoes [mailto:linux at rasmusvillemoes.dk]
+> Sent: Saturday, October 17, 2015 1:58 PM
+> Subject: [PATCH] intel: i40e: fix confused code
+> 
+> This code is pretty confused. The variable name 'bytes_not_copied'
+> clearly indicates that the programmer knew the semantics of
+> copy_{to,from}_user, but then the return value is checked for being
+> negative and used as a -Exxx return value.
+> 
+> I'm not sure this is the proper fix, but at least we get rid of the
+> dead code which pretended to check for access faults.
+> 
+> Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 
-Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |    4 ++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   22 +++++++++++++++++++---
- 2 files changed, 23 insertions(+), 3 deletions(-)
+I believe this patch is unnecessary: if the value is negative, then it already is an error code giving some potentially useful information.  When I dig into the copy_to_user() code, I see in the comments for put_user() that -EFAULT is the error being returned.  Also, if somewhere else along the line there is some other error, I'd prefer to return that value rather than stomp on it with my own error code.  
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-index 995f03107eac..927349da232a 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-@@ -1345,7 +1345,10 @@ struct ixgbe_thermal_sensor_data {
- #define IXGBE_MDIO_GLOBAL_INT_CHIP_VEN_MASK	0xFF01 /* int chip-wide mask */
- #define IXGBE_MDIO_GLOBAL_INT_CHIP_VEN_FLAG	0xFC01 /* int chip-wide mask */
- #define IXGBE_MDIO_GLOBAL_ALARM_1		0xCC00 /* Global alarm 1 */
-+#define IXGBE_MDIO_GLOBAL_ALM_1_DEV_FAULT	0x0010 /* device fault */
- #define IXGBE_MDIO_GLOBAL_ALM_1_HI_TMP_FAIL	0x4000 /* high temp failure */
-+#define IXGBE_MDIO_GLOBAL_FAULT_MSG		0xC850 /* global fault msg */
-+#define IXGBE_MDIO_GLOBAL_FAULT_MSG_HI_TMP	0x8007 /* high temp failure */
- #define IXGBE_MDIO_GLOBAL_INT_MASK		0xD400 /* Global int mask */
- /* autoneg vendor alarm int enable */
- #define IXGBE_MDIO_GLOBAL_AN_VEN_ALM_INT_EN	0x1000
-@@ -1353,6 +1356,7 @@ struct ixgbe_thermal_sensor_data {
- #define IXGBE_MDIO_GLOBAL_VEN_ALM_INT_EN	0x1 /* vendor alarm int enable */
- #define IXGBE_MDIO_GLOBAL_STD_ALM2_INT		0x200 /* vendor alarm2 int mask */
- #define IXGBE_MDIO_GLOBAL_INT_HI_TEMP_EN	0x4000 /* int high temp enable */
-+#define IXGBE_MDIO_GLOBAL_INT_DEV_FAULT_EN	0x0010 /*int dev fault enable */
- 
- #define IXGBE_MDIO_PMA_PMD_SDA_SCL_ADDR	0xC30A /* PHY_XS SDA/SCL Addr Reg */
- #define IXGBE_MDIO_PMA_PMD_SDA_SCL_DATA	0xC30B /* PHY_XS SDA/SCL Data Reg */
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index a9c73b75a902..b8ad3f212e72 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -1444,7 +1444,7 @@ static s32 ixgbe_get_lasi_ext_t_x550em(struct ixgbe_hw *hw, bool *lsc)
- 				IXGBE_MDIO_GLOBAL_ALARM_1_INT)))
- 		return status;
- 
--	/* High temperature failure alarm triggered */
-+	/* Global alarm triggered */
- 	status = hw->phy.ops.read_reg(hw, IXGBE_MDIO_GLOBAL_ALARM_1,
- 				      IXGBE_MDIO_VENDOR_SPECIFIC_1_DEV_TYPE,
- 				      &reg);
-@@ -1458,6 +1458,21 @@ static s32 ixgbe_get_lasi_ext_t_x550em(struct ixgbe_hw *hw, bool *lsc)
- 		ixgbe_set_copper_phy_power(hw, false);
- 		return IXGBE_ERR_OVERTEMP;
- 	}
-+	if (reg & IXGBE_MDIO_GLOBAL_ALM_1_DEV_FAULT) {
-+		/*  device fault alarm triggered */
-+		status = hw->phy.ops.read_reg(hw, IXGBE_MDIO_GLOBAL_FAULT_MSG,
-+					  IXGBE_MDIO_VENDOR_SPECIFIC_1_DEV_TYPE,
-+					  &reg);
-+		if (status)
-+			return status;
-+
-+		/* if device fault was due to high temp alarm handle and exit */
-+		if (reg == IXGBE_MDIO_GLOBAL_FAULT_MSG_HI_TMP) {
-+			/* power down the PHY in case the PHY FW didn't */
-+			ixgbe_set_copper_phy_power(hw, false);
-+			return IXGBE_ERR_OVERTEMP;
-+		}
-+	}
- 
- 	/* Vendor alarm 2 triggered */
- 	status = hw->phy.ops.read_reg(hw, IXGBE_MDIO_GLOBAL_CHIP_STD_INT_FLAG,
-@@ -1511,14 +1526,15 @@ static s32 ixgbe_enable_lasi_ext_t_x550em(struct ixgbe_hw *hw)
- 	if (status)
- 		return status;
- 
--	/* Enables high temperature failure alarm */
-+	/* Enable high temperature failure and global fault alarms */
- 	status = hw->phy.ops.read_reg(hw, IXGBE_MDIO_GLOBAL_INT_MASK,
- 				      IXGBE_MDIO_VENDOR_SPECIFIC_1_DEV_TYPE,
- 				      &reg);
- 	if (status)
- 		return status;
- 
--	reg |= IXGBE_MDIO_GLOBAL_INT_HI_TEMP_EN;
-+	reg |= (IXGBE_MDIO_GLOBAL_INT_HI_TEMP_EN |
-+		IXGBE_MDIO_GLOBAL_INT_DEV_FAULT_EN);
- 
- 	status = hw->phy.ops.write_reg(hw, IXGBE_MDIO_GLOBAL_INT_MASK,
- 				       IXGBE_MDIO_VENDOR_SPECIFIC_1_DEV_TYPE,
+sln
 
