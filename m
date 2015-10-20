@@ -1,212 +1,53 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 20 Oct 2015 09:38:41 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
- a1f192cf70b187ab01b8b03cdeea82b8820c927a BUILD SUCCESS
-Message-ID: <56259b21.JWwgSoDM4yq8Lrm3%fengguang.wu@intel.com>
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Date: Tue, 20 Oct 2015 09:22:14 +0200
+Subject: [Intel-wired-lan] [PATCH] intel: i40e: fix confused code
+In-Reply-To: <FC41C24E35F18A40888AACA1A36F3E418AFA4A68@fmsmsx115.amr.corp.intel.com>
+ (Shannon Nelson's message of "Mon, 19 Oct 2015 16:56:15 +0000")
+References: <1445115499-28728-1-git-send-email-linux@rasmusvillemoes.dk>
+ <FC41C24E35F18A40888AACA1A36F3E418AFA4A68@fmsmsx115.amr.corp.intel.com>
+Message-ID: <87wpuim2c9.fsf@rasmusvillemoes.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
-a1f192cf70b187ab01b8b03cdeea82b8820c927a  i40e/i40evf: Bump i40e to 1.3.38 and i40evf to 1.3.25
+On Mon, Oct 19 2015, "Nelson, Shannon" <shannon.nelson@intel.com> wrote:
 
-elapsed time: 168m
+>> From: Rasmus Villemoes [mailto:linux at rasmusvillemoes.dk]
+>> Sent: Saturday, October 17, 2015 1:58 PM
+>> Subject: [PATCH] intel: i40e: fix confused code
+>> 
+>> This code is pretty confused. The variable name 'bytes_not_copied'
+>> clearly indicates that the programmer knew the semantics of
+>> copy_{to,from}_user, but then the return value is checked for being
+>> negative and used as a -Exxx return value.
+>> 
+>> I'm not sure this is the proper fix, but at least we get rid of the
+>> dead code which pretended to check for access faults.
+>> 
+>> Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+>
+> I believe this patch is unnecessary: if the value is negative, then it
+> already is an error code giving some potentially useful information.
+> When I dig into the copy_to_user() code, I see in the comments for
+> put_user() that -EFAULT is the error being returned.
 
-configs tested: 192
+Thanks, this was precisely the kind of confusion I'm talking about:
+copy_{from,to}_user _never_ returns a negative value. It returns
+precisely what the very explicit variable name hints.
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                              allnoconfig
-arm                            xcep_defconfig
-parisc                          712_defconfig
-i386                     randconfig-a0-201542
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                            allnoconfig
-arm                         em_x270_defconfig
-sh                           se7343_defconfig
-tile                         tilegx_defconfig
-microblaze                       allmodconfig
-powerpc                  iss476-smp_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-10200652
-i386                   randconfig-c0-10200744
-i386                   randconfig-c0-10200816
-i386                   randconfig-c0-10200838
-i386                   randconfig-c0-10200853
-x86_64                           allmodconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                 randconfig-v0-10200701
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-parisc                         b180_defconfig
-i386                             allmodconfig
-mips                            gpr_defconfig
-powerpc                  gef_sbc610_defconfig
-arm                      integrator_defconfig
-blackfin                   CM-BF548_defconfig
-ia64                            sim_defconfig
-m68k                        m5307c3_defconfig
-powerpc                         wii_defconfig
-arm                          pxa3xx_defconfig
-mips                          malta_defconfig
-powerpc                         c2k_defconfig
-sh                          sdk7780_defconfig
-sparc64                          allmodconfig
-arm                         s3c6400_defconfig
-mips                  cavium_octeon_defconfig
-powerpc                      chrp32_defconfig
-powerpc                 mpc832x_rdb_defconfig
-sh                               allyesconfig
-x86_64                 randconfig-x010-201542
-x86_64                 randconfig-x011-201542
-x86_64                 randconfig-x012-201542
-x86_64                 randconfig-x013-201542
-x86_64                 randconfig-x014-201542
-x86_64                 randconfig-x015-201542
-x86_64                 randconfig-x016-201542
-x86_64                 randconfig-x017-201542
-x86_64                 randconfig-x018-201542
-x86_64                 randconfig-x019-201542
-i386                                defconfig
-i386                             alldefconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s1-201542
-i386                     randconfig-s0-201542
-x86_64                 randconfig-s0-10200631
-x86_64                 randconfig-s1-10200631
-x86_64                 randconfig-s2-10200631
-x86_64                 randconfig-s0-10200739
-x86_64                 randconfig-s1-10200739
-x86_64                 randconfig-s2-10200739
-x86_64                 randconfig-s0-10200823
-x86_64                 randconfig-s1-10200823
-x86_64                 randconfig-s2-10200823
-x86_64                 randconfig-s0-10200851
-x86_64                 randconfig-s1-10200851
-x86_64                 randconfig-s2-10200851
-x86_64                 randconfig-s3-10200736
-x86_64                 randconfig-s4-10200736
-x86_64                 randconfig-s5-10200736
-x86_64                 randconfig-s3-10200826
-x86_64                 randconfig-s4-10200826
-x86_64                 randconfig-s5-10200826
-x86_64                 randconfig-s3-10200905
-x86_64                 randconfig-s4-10200905
-x86_64                 randconfig-s5-10200905
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-arm                         socfpga_defconfig
-mips                  maltasmvp_eva_defconfig
-mips                 pnx8335_stb225_defconfig
-sh                        sh7763rdp_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201542
-i386                   randconfig-b0-10200734
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-ia64                              allnoconfig
-openrisc                         allmodconfig
-powerpc                    mvme5100_defconfig
-sh                          r7780mp_defconfig
-arm                      acs5k_tiny_defconfig
-arm                               allnoconfig
-arm                     davinci_all_defconfig
-sh                           se7705_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201542
-i386                     randconfig-i1-201542
-i386                             allyesconfig
-x86_64                 randconfig-b0-10200818
-arm                                      arm5
-arm                                     arm67
-arm                                       mmp
-arm                       omap2plus_defconfig
-arm                         s3c2410_defconfig
-arm                           tegra_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201542
-ia64                             alldefconfig
-ia64                                defconfig
-x86_64                 randconfig-h0-10200720
-x86_64                 randconfig-h0-10200824
-x86_64                 randconfig-h0-10200841
-x86_64                 randconfig-n0-10200701
-x86_64                 randconfig-n0-10200824
-arm                                    sa1100
-arm                          prima2_defconfig
-arm                         at91_dt_defconfig
-arm                                   samsung
-arm                       spear13xx_defconfig
-arm                                  iop-adma
-arm                       imx_v6_v7_defconfig
-arm                          marzen_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                                        sh
-arm                    vt8500_v6_v7_defconfig
-blackfin                   CM-BF561_defconfig
-m68k                             allmodconfig
-powerpc                  storcenter_defconfig
-xtensa                    smp_lx200_defconfig
-i386                  randconfig-sb0-10200839
-i386                  randconfig-sb0-10200902
-x86_64                 randconfig-x002-201542
-x86_64                 randconfig-x009-201542
-x86_64                 randconfig-x003-201542
-x86_64                 randconfig-x000-201542
-x86_64                 randconfig-x004-201542
-x86_64                 randconfig-x001-201542
-x86_64                 randconfig-x006-201542
-x86_64                 randconfig-x007-201542
-x86_64                 randconfig-x005-201542
-x86_64                 randconfig-x008-201542
-i386                     randconfig-r0-201542
-s390                                defconfig
-i386                 randconfig-x000-10191220
-i386                 randconfig-x001-10191220
-i386                 randconfig-x002-10191220
-i386                 randconfig-x003-10191220
-i386                 randconfig-x004-10191220
-i386                 randconfig-x005-10191220
-i386                 randconfig-x006-10191220
-i386                 randconfig-x007-10191220
-i386                 randconfig-x008-10191220
-i386                 randconfig-x009-10191220
-i386                   randconfig-x0-10200729
-i386                   randconfig-x0-10200802
+This is in contrast to the single-scalar functions get_user/put_user,
+which do return -EFAULT for error and 0 for success.
 
-Thanks,
-Fengguang
+(See also lines 479-519 of Documentation/DocBook/kernel-hacking.tmpl).
+
+In the entire kernel source tree, two files contain a check for the
+return value from copy_{from,to}_user being negative. It will never
+trigger, so might as well be removed - except if it was _supposed_ to be
+checking for access violations, in which case one should probably
+replace it with actually handling it. Try
+
+  git grep -C2 -E 'copy_(from|to)_user' drivers/net/ethernet/
+
+Rasmus
