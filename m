@@ -1,155 +1,86 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 20 Oct 2015 08:12:33 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- ae7c1331ce6091edd2c905e8796f874ee5f910c6 BUILD DONE
-Message-ID: <562586f1.0MEKLYAcRPcLVmxD%fengguang.wu@intel.com>
+From: Christopher Hall <christopher.s.hall@intel.com>
+Date: Mon, 19 Oct 2015 17:18:39 -0700
+Subject: [Intel-wired-lan] [PATCH v4 1/4] Produce system time from
+	correlated clocksource
+In-Reply-To: <alpine.DEB.2.11.1510151014330.3960@nanos>
+References: <1444675522-4198-1-git-send-email-christopher.s.hall@intel.com>
+ <1444675522-4198-2-git-send-email-christopher.s.hall@intel.com>
+ <alpine.DEB.2.11.1510132116480.25029@nanos>
+ <op.x6iyd7gq1774gr@chall-mobl2.amr.corp.intel.com>
+ <alpine.DEB.2.11.1510151014330.3960@nanos>
+Message-ID: <op.x6r25dza1774gr@chall-mobl2.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-ae7c1331ce6091edd2c905e8796f874ee5f910c6  e1000e: Increase timeout of polling bit RSPCIPHY
+Thomas,
 
-drivers/net/ethernet/intel/i40e/i40e_txrx.c:2357:17: warning: 'oudph' may be used uninitialized in this function [-Wmaybe-uninitialized]
-drivers/net/ethernet/intel/i40e/i40e_txrx.c:2357:20: warning: 'oiph' may be used uninitialized in this function [-Wmaybe-uninitialized]
+On Thu, 15 Oct 2015 01:15:57 -0700, Thomas Gleixner <tglx@linutronix.de>  
+wrote:
+>> >
+>> > > +#define SHADOW_HISTORY_DEPTH 7
+>> >
+>> > And that number is 7 because?
+>>
+>> Due to power of 2 it will be 8 instead. As above the useful history is  
+>> 8-2*1
+>> ms (1 ms is the minimum jiffy length).  Array size 4 would not be enough
+>> history for the DSP which requires 4 ms of history, in the worst case.
+>
+> And how exactly becomes 7 magically 8?
 
-Error ids grouped by kconfigs:
+I'm making the array size a power of two, per your suggestion.
 
-recent_errors
-??? x86_64-rhel
-    ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:oiph-may-be-used-uninitialized-in-this-function
-    ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:oudph-may-be-used-uninitialized-in-this-function
+In my view, the candidate array sizes are 4 and 8.  But the DSP driver  
+code requires that it be at least 8.  Here is my reasoning:
 
-elapsed time: 124m
+The number of shadow_timekeeper array elements that contain useful history  
+is n-2 where n is the size of the shadow_timekeeper array.  This is true  
+because shadow_timekeeper[shadow_index] is a copy of tk_core.timekeeper  
+(this isn't history).  The next entry of the shadow_timekeeper array may  
+be in-flight and contain invalid information, because update_wall_time()  
+makes changes to the next entry of shadow timekeeper outside of the  
+sequence lock.  If that occurs, get_correlated_timestamp() would not be  
+notified of this change through a change in sequence number.
 
-configs tested: 124
+Combining these two requirements, the candidate array sizes and their  
+effective history sizes is:
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201542
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm                         em_x270_defconfig
-sh                           se7343_defconfig
-tile                         tilegx_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-parisc                         b180_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x010-201542
-x86_64                 randconfig-x011-201542
-x86_64                 randconfig-x012-201542
-x86_64                 randconfig-x013-201542
-x86_64                 randconfig-x014-201542
-x86_64                 randconfig-x015-201542
-x86_64                 randconfig-x016-201542
-x86_64                 randconfig-x017-201542
-x86_64                 randconfig-x018-201542
-x86_64                 randconfig-x019-201542
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s1-201542
-i386                     randconfig-s0-201542
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                            allnoconfig
-mips                        nlm_xlr_defconfig
-powerpc                mpc8610_hpcd_defconfig
-powerpc                      pmac32_defconfig
-powerpc                     rainier_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201542
-i386                     randconfig-i1-201542
-i386                     randconfig-i0-201542
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                          collie_defconfig
-arm                          simpad_defconfig
-powerpc                          alldefconfig
-sh                           sh2007_defconfig
-arm                                      arm5
-arm                                     arm67
-arm                                       mmp
-arm                       omap2plus_defconfig
-arm                         s3c2410_defconfig
-arm                           tegra_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201542
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                   rhel
-x86_64                                    lkp
-x86_64                 randconfig-x002-201542
-x86_64                 randconfig-x009-201542
-x86_64                 randconfig-x003-201542
-x86_64                 randconfig-x000-201542
-x86_64                 randconfig-x004-201542
-x86_64                 randconfig-x001-201542
-x86_64                 randconfig-x006-201542
-x86_64                 randconfig-x007-201542
-x86_64                 randconfig-x005-201542
-x86_64                 randconfig-x008-201542
-i386                     randconfig-r0-201542
-i386                 randconfig-x007-10191220
-i386                 randconfig-x004-10191220
-i386                 randconfig-x000-10191220
-i386                 randconfig-x006-10191220
-i386                 randconfig-x003-10191220
-i386                 randconfig-x009-10191220
-i386                 randconfig-x008-10191220
-i386                 randconfig-x005-10191220
-i386                 randconfig-x002-10191220
-i386                 randconfig-x001-10191220
-i386                   randconfig-x0-10200644
+Array Size   Effective History (in elements)
+==========   ===============================
+4            2				
+8            6
+16           14
+
+update_wall_clock() checks that the number of elapsed cycles is >=  
+tk->cycle_interval before performing any updates to shadow_timekeeper.   
+The minimum cycle count (and minimum time) that is contained in each  
+history element is equal to cycle_interval which represents a time period  
+of 1/HZ seconds.  The smallest configurable period for cycle_interval is 1  
+ms (in cycles).  Each history element, therefore, is guaranteed to contain  
+1 ms of history for all kernel configurations.  For correct operation of  
+the DSP using the proposed ART->system time API we need at least 4 ms of  
+history.  To guarantee this much history is available, the array size  
+needs to be 8.
+
+Array Size   Minimum Effective History (in ms)
+==========   =================================
+4            2				
+8            6    <----
+16           14
+
+Does this make sense for the choice of array size 8?
+
+> Make it a seperate function which can hand in the information and
+> leave the PTP specific sample/conversion function alone.
+
+OK.  The audio driver code will conform to the original correlated  
+clocksource API.
+
+FYI, I will be away from work and email until 10/28.  Any responses will  
+be delayed until then.
 
 Thanks,
-Fengguang
+Chris
