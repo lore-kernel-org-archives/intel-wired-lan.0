@@ -1,48 +1,118 @@
-From: Richard Cochran <richardcochran@gmail.com>
-Date: Tue, 20 Oct 2015 13:51:13 +0200
-Subject: [Intel-wired-lan] [PATCH v4 1/4] Produce system time from
-	correlated clocksource
-In-Reply-To: <alpine.DEB.2.11.1510201246250.3982@nanos>
-References: <1444675522-4198-1-git-send-email-christopher.s.hall@intel.com>
- <1444675522-4198-2-git-send-email-christopher.s.hall@intel.com>
- <alpine.DEB.2.11.1510132116480.25029@nanos>
- <op.x6iyd7gq1774gr@chall-mobl2.amr.corp.intel.com>
- <alpine.DEB.2.11.1510151014330.3960@nanos>
- <op.x6r25dza1774gr@chall-mobl2.amr.corp.intel.com>
- <CALAqxLXu_C8sWaKyxqXJPFV+m5Zdk=4q4s7O6NoLR1B8bbyuxg@mail.gmail.com>
- <20151020085408.GA2542@netboy>
- <alpine.DEB.2.11.1510201246250.3982@nanos>
-Message-ID: <20151020115113.GA23428@netboy>
+From: Raanan Avargil <raanan.avargil@intel.com>
+Date: Tue, 20 Oct 2015 17:13:01 +0300
+Subject: [Intel-wired-lan] [PATCH 1/2] e1000e: initial support for i219-LM
+	(3)
+Message-ID: <1445350382-6739-1-git-send-email-raanan.avargil@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Oct 20, 2015 at 12:48:03PM +0200, Thomas Gleixner wrote:
-> On Tue, 20 Oct 2015, Richard Cochran wrote:
-> 
-> > On Mon, Oct 19, 2015 at 05:36:56PM -0700, John Stultz wrote:
-> > > If we're only tracking 4ms of history, how does this solution
-> > > measurably improve the error over using the timestamps to generate
-> > > MONOTONIC_RAW clock deltas (which doesn't require keeping any history)
-> > > and using getnstime_raw_and_real to take an anchor point to calculate
-> > > the delta from?  Why is adding complexity necessary?
-> > 
-> > This idea is variant of what I suggested in another reply in this
-> > thread.  To my understanding, there is no need at all to keep a
-> > history arbitrarily 4 ms long.  Instead, the DSP driver (or whoever
-> > else may need such a thing) can simply sample the system time at the
-> > rate needed for that particular application.
-> 
-> That's complete nonsense. The whole point is to have a proper
-> correlation from ART/audio timestamps to system time. Sampling system
-> time does not help in any way,
+i219-LM (3) is a LOM that will be available on systems with the
+Lewisburg Platform Controller Hub (PCH) chipset from Intel.
+This patch provides the initial support for the device.
 
-You can, in fact, achieve "proper" correlation by sampling.  As John
-said, the question is whether the method in the patch set "measurably
-improves the error" over using another, simpler method.
+Signed-off-by: Raanan Avargil <raanan.avargil@intel.com>
+---
+ drivers/net/ethernet/intel/e1000e/hw.h      |  1 +
+ drivers/net/ethernet/intel/e1000e/ich8lan.c | 43 +++++++++++++++++++++--------
+ drivers/net/ethernet/intel/e1000e/netdev.c  |  1 +
+ 3 files changed, 34 insertions(+), 11 deletions(-)
 
-Thanks,
-Richard
+diff --git a/drivers/net/ethernet/intel/e1000e/hw.h b/drivers/net/ethernet/intel/e1000e/hw.h
+index c9da465..b3949d5 100644
+--- a/drivers/net/ethernet/intel/e1000e/hw.h
++++ b/drivers/net/ethernet/intel/e1000e/hw.h
+@@ -91,6 +91,7 @@ struct e1000_hw;
+ #define E1000_DEV_ID_PCH_SPT_I219_V		0x1570	/* SPT PCH */
+ #define E1000_DEV_ID_PCH_SPT_I219_LM2		0x15B7	/* SPT-H PCH */
+ #define E1000_DEV_ID_PCH_SPT_I219_V2		0x15B8	/* SPT-H PCH */
++#define E1000_DEV_ID_PCH_LBG_I219_LM3		0x15B9	/* LBG PCH */
+ 
+ #define E1000_REVISION_4	4
+ 
+diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+index 64c1f36..a049e30 100644
+--- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
++++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
+@@ -3093,24 +3093,45 @@ static s32 e1000_valid_nvm_bank_detect_ich8lan(struct e1000_hw *hw, u32 *bank)
+ 	struct e1000_nvm_info *nvm = &hw->nvm;
+ 	u32 bank1_offset = nvm->flash_bank_size * sizeof(u16);
+ 	u32 act_offset = E1000_ICH_NVM_SIG_WORD * 2 + 1;
++	u32 nvm_dword = 0;
+ 	u8 sig_byte = 0;
+ 	s32 ret_val;
+ 
+ 	switch (hw->mac.type) {
+-		/* In SPT, read from the CTRL_EXT reg instead of
+-		 * accessing the sector valid bits from the nvm
+-		 */
+ 	case e1000_pch_spt:
+-		*bank = er32(CTRL_EXT)
+-		    & E1000_CTRL_EXT_NVMVS;
+-		if ((*bank == 0) || (*bank == 1)) {
+-			e_dbg("ERROR: No valid NVM bank present\n");
+-			return -E1000_ERR_NVM;
+-		} else {
+-			*bank = *bank - 2;
++		bank1_offset = nvm->flash_bank_size;
++		act_offset = E1000_ICH_NVM_SIG_WORD;
++
++		/* set bank to 0 in case flash read fails */
++		*bank = 0;
++
++		/* Check bank 0 */
++		ret_val = e1000_read_flash_dword_ich8lan(hw, act_offset,
++							 &nvm_dword);
++		if (ret_val)
++			return ret_val;
++		sig_byte = (u8)((nvm_dword & 0xFF00) >> 8);
++		if ((sig_byte & E1000_ICH_NVM_VALID_SIG_MASK) ==
++		    E1000_ICH_NVM_SIG_VALUE) {
++			*bank = 0;
+ 			return 0;
+ 		}
+-		break;
++
++		/* Check bank 1 */
++		ret_val = e1000_read_flash_dword_ich8lan(hw, act_offset +
++							 bank1_offset,
++							 &nvm_dword);
++		if (ret_val)
++			return ret_val;
++		sig_byte = (u8)((nvm_dword & 0xFF00) >> 8);
++		if ((sig_byte & E1000_ICH_NVM_VALID_SIG_MASK) ==
++		    E1000_ICH_NVM_SIG_VALUE) {
++			*bank = 1;
++			return 0;
++		}
++
++		e_dbg("ERROR: No valid NVM bank present\n");
++		return -E1000_ERR_NVM;
+ 	case e1000_ich8lan:
+ 	case e1000_ich9lan:
+ 		eecd = er32(EECD);
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 3a468435..2fd8b9d 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -7467,6 +7467,7 @@ static const struct pci_device_id e1000_pci_tbl[] = {
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_V), board_pch_spt },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_LM2), board_pch_spt },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_V2), board_pch_spt },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LBG_I219_LM3), board_pch_spt },
+ 
+ 	{ 0, 0, 0, 0, 0, 0, 0 }	/* terminate list */
+ };
+-- 
+2.1.0
+
+---------------------------------------------------------------------
+Intel Israel (74) Limited
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
