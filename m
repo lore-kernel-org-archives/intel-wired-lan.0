@@ -1,47 +1,90 @@
-From: Richard Cochran <richardcochran@gmail.com>
-Date: Tue, 20 Oct 2015 16:55:23 +0200
-Subject: [Intel-wired-lan] [PATCH v4 1/4] Produce system time from
-	correlated clocksource
-In-Reply-To: <20151020115113.GA23428@netboy>
-References: <1444675522-4198-1-git-send-email-christopher.s.hall@intel.com>
- <1444675522-4198-2-git-send-email-christopher.s.hall@intel.com>
- <alpine.DEB.2.11.1510132116480.25029@nanos>
- <op.x6iyd7gq1774gr@chall-mobl2.amr.corp.intel.com>
- <alpine.DEB.2.11.1510151014330.3960@nanos>
- <op.x6r25dza1774gr@chall-mobl2.amr.corp.intel.com>
- <CALAqxLXu_C8sWaKyxqXJPFV+m5Zdk=4q4s7O6NoLR1B8bbyuxg@mail.gmail.com>
- <20151020085408.GA2542@netboy>
- <alpine.DEB.2.11.1510201246250.3982@nanos>
- <20151020115113.GA23428@netboy>
-Message-ID: <20151020145523.GA5207@netboy>
+From: Don Buchholz <donald.buchholz@intel.com>
+Date: Tue, 20 Oct 2015 08:24:59 -0700
+Subject: [Intel-wired-lan] [PATCH net-next] igb: assume MSI-X interrupts
+ during initialization
+In-Reply-To: <1442493970-20073-1-git-send-email-sassmann@kpanic.de>
+References: <1442493970-20073-1-git-send-email-sassmann@kpanic.de>
+Message-ID: <56265CCB.3070200@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Oct 20, 2015 at 01:51:13PM +0200, Richard Cochran wrote:
-> You can, in fact, achieve "proper" correlation by sampling.  As John
-> said, the question is whether the method in the patch set "measurably
-> improves the error" over using another, simpler method.
+On 09/17/15 05:46, Stefan Assmann wrote:
+> In igb_sw_init() the sequence of calls was changed from
+> igb_init_queue_configuration()
+> igb_init_interrupt_scheme()
+> igb_probe_vfs()
+> to
+> igb_probe_vfs()
+> igb_init_queue_configuration()
+> igb_init_interrupt_scheme()
+>
+> This results in adapter->flags not having the IGB_FLAG_HAS_MSIX bit set
+> during igb_probe_vfs()->igb_enable_sriov(). Therefore SR-IOV does not
+> get enabled properly and we run into a NULL pointer if the max_vfs
+> module parameter is specified (adapter->vf_data does not get allocated,
+> crash on accessing the structure).
+>
+> [    7.419348] BUG: unable to handle kernel NULL pointer dereference at 0000000000000048
+> [    7.419367] IP: [<ffffffffa02161c6>] igb_reset+0xe6/0x5d0 [igb]
+> [    7.419370] PGD 0
+> [    7.419373] Oops: 0002 [#1] SMP
+> [    7.419381] Modules linked in: ahci(+) libahci igb(+) i40e(+) vxlan ip6_udp_tunnel udp_tunnel megaraid_sas(+) ixgbe(+) mdio
+> [    7.419385] CPU: 0 PID: 4 Comm: kworker/0:0 Not tainted 4.2.0+ #153
+> [    7.419387] Hardware name: Dell Inc. PowerEdge R720/0C4Y3R, BIOS 1.6.0 03/07/2013
+> [...]
+> [    7.419431] Call Trace:
+> [    7.419442]  [<ffffffffa0217236>] igb_probe+0x8b6/0x1340 [igb]
+> [    7.419447]  [<ffffffff814c7f15>] local_pci_probe+0x45/0xa0
+>
+> Prevent this by setting the IGB_FLAG_HAS_MSIX bit before calling
+> igb_probe_vfs(). The real interrupt capabilities will be checked during
+> igb_init_interrupt_scheme() so this is safe to do.
+>
+> Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
+> ---
+>   drivers/net/ethernet/intel/igb/igb_main.c | 3 +++
+>   1 file changed, 3 insertions(+)
+>
+> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+> index e174fbb..ba019fc 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> @@ -2986,6 +2986,9 @@ static int igb_sw_init(struct igb_adapter *adapter)
+>          }
+>   #endif /* CONFIG_PCI_IOV */
+>
+> +       /* Assume MSI-X interrupts, will be checked during IRQ allocation */
+> +       adapter->flags |= IGB_FLAG_HAS_MSIX;
+> +
+>          igb_probe_vfs(adapter);
+>
+>          igb_init_queue_configuration(adapter);
+> --
+> 2.4.3
+>
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at lists.osuosl.org
+> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+>
 
-Here is a short example to put some numbers on the expected error.
-Let the driver sample at an interval of 1 ms.  If the system time's
-frequency hasn't changed between two samples, A and B, then the driver
-may interpolate without introducing any error.
 
-If the frequency is changed between the sample times, then the
-interpolated value will have some error.  Because 1 ms is smallest HZ
-value, the frequency can change at most once during the sample.  If
-the frequency changes near point A or B, then the error is minimal.
-The worst case occurs when the frequency is changed half way between A
-and B.
+Tested-by: Don Buchholz <donald.buchholz@intel.com>
 
-Suppose the frequency is changed by 10 PPM, at point C, half way
-between A and B.  This change results in a 5 nanosecond time
-difference at B (10 PPM over C -> B).  The driver will interpolate
-using line A-B with slope increased by 5 PPM, and the worst case
-error, found at point C, is then 2.5 nanoseconds.
+Verfied - patch fixes problem.
 
-Thanks,
-Richard
+First, issue was re-created with unpatched kernel. On test system, the 
+file /etc/modprobe.d/igb.conf contains "options igb max_vfs=4 debug=16". 
+The unpatched kernel behaved poorly in two manners: (1) During system 
+boot, 'igb' driver would load with no panic or stack trace, but no VFs 
+were created. (2) When the module was removed (rmmod igb) and then 
+reloaded (modprobe igb) the "null pointer dereference / Oops" occurs and 
+stack trace is generated.
+
+Applied patch and verified 'igb' now loads as expected (VFs are created 
+at boot time and no "Oops" occurs.)
+
+
