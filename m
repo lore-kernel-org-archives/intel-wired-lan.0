@@ -1,41 +1,64 @@
-From: Richard Cochran <richardcochran@gmail.com>
-Date: Tue, 20 Oct 2015 21:36:39 +0200
-Subject: [Intel-wired-lan] [PATCH v4 1/4] Produce system time from
-	correlated clocksource
-In-Reply-To: <alpine.DEB.2.11.1510202107410.8159@nanos>
-References: <alpine.DEB.2.11.1510132116480.25029@nanos>
- <op.x6iyd7gq1774gr@chall-mobl2.amr.corp.intel.com>
- <alpine.DEB.2.11.1510151014330.3960@nanos>
- <op.x6r25dza1774gr@chall-mobl2.amr.corp.intel.com>
- <CALAqxLXu_C8sWaKyxqXJPFV+m5Zdk=4q4s7O6NoLR1B8bbyuxg@mail.gmail.com>
- <20151020085408.GA2542@netboy>
- <alpine.DEB.2.11.1510201246250.3982@nanos>
- <20151020115113.GA23428@netboy> <20151020145523.GA5207@netboy>
- <alpine.DEB.2.11.1510202107410.8159@nanos>
-Message-ID: <20151020193639.GA15095@localhost.localdomain>
+From: Alexander Duyck <aduyck@mirantis.com>
+Date: Tue, 20 Oct 2015 12:59:15 -0700
+Subject: [Intel-wired-lan] [net PATCH] ixgbe: Reset interface after enabling
+	SR-IOV
+Message-ID: <20151020195738.1495.80824.stgit@ahduyck-vm-fedora22>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Oct 20, 2015 at 09:11:21PM +0200, Thomas Gleixner wrote:
-> Darn, we don't want to have that kind of sampling in every driver
-> which has this kind of problem even if it looks like the simpler
-> choice for this particular use case. This is going to be something
-> which next generation chips will have on more than just the audio
-> interface and we realy want to have a generic solution for this.
+Enabling SR-IOV and then bringing the interface up was resulting in the PF
+MAC addresses getting into a bad state.  Specifically the MAC address was
+enabled for both VF 0 and the PF.  This resulted in some odd behaviors such
+as VF 0 receiving a copy of the PFs traffic, which in turn enables the
+ability for VF 0 to spoof the PF.
 
-Right, having multiple drivers sampling is bad.
+A workaround for this issue appears to be to bring up the interface first
+and then enable SR-IOV as this way the reset is then triggered in the
+existing code.
 
-Just thinking out loud: how about a service layer that can handle
-multiple drivers?  The layer samples at the maximum requested rate,
-and buffers the history for the maximum requested backlog.  The
-non-max rate users simply get a higher resolution than they need.
+In order to correct this I have added a change to ixgbe_setup_tc where if
+the interface is down we still will at least call ixgbe_reset so that the
+MAC addresses for the device are reset to the correct pools.
 
-A generic solution would handle any history length for old time
-stamps, within reason.  I think hard coding 4 ms (or 8 ms or 800 ms)
-is clunky.
+Steps to reproduce issue:
+modprobe ixgbe
+echo 7 > /sys/bus/pci/devices/0000\:01\:00.1/sriov_numvfs
+ifconfig enp1s0f1 up
+ethregs -s 1:00.1 | grep MPSAR | grep -v 00000000
 
-Thanks,
-Richard
+Result:
+	MPSAR[0]               00000081
+	MPSAR[254]             00000001
+
+Expected Result, behavior after patch:
+	MPSAR[0]               00000080
+	MPSAR[254]             00000080
+
+Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+---
+
+This is also a candidate for stable going back to 3.9 kernel as that
+appears to be where the code for using ixgbe_setup_tc as a part of the
+SR-IOV initialization was introduced.
+
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 191003901adb..17d3b9154c53 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -7912,6 +7912,9 @@ int ixgbe_setup_tc(struct net_device *dev, u8 tc)
+ 	 */
+ 	if (netif_running(dev))
+ 		ixgbe_close(dev);
++	else
++		ixgbe_reset(dev);
++
+ 	ixgbe_clear_interrupt_scheme(adapter);
+ 
+ #ifdef CONFIG_IXGBE_DCB
+
