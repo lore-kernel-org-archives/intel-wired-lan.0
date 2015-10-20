@@ -1,70 +1,54 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 21 Oct 2015 04:14:00 +0800
-Subject: [Intel-wired-lan] [net PATCH] ixgbe: Reset interface after
-	enabling SR-IOV
-In-Reply-To: <20151020195738.1495.80824.stgit@ahduyck-vm-fedora22>
-Message-ID: <201510210405.uOjazBto%fengguang.wu@intel.com>
+From: John Stultz <john.stultz@linaro.org>
+Date: Tue, 20 Oct 2015 13:16:29 -0700
+Subject: [Intel-wired-lan] [PATCH v4 1/4] Produce system time from
+	correlated clocksource
+In-Reply-To: <alpine.DEB.2.11.1510202107410.8159@nanos>
+References: <1444675522-4198-1-git-send-email-christopher.s.hall@intel.com>
+ <1444675522-4198-2-git-send-email-christopher.s.hall@intel.com>
+ <alpine.DEB.2.11.1510132116480.25029@nanos>
+ <op.x6iyd7gq1774gr@chall-mobl2.amr.corp.intel.com>
+ <alpine.DEB.2.11.1510151014330.3960@nanos>
+ <op.x6r25dza1774gr@chall-mobl2.amr.corp.intel.com>
+ <CALAqxLXu_C8sWaKyxqXJPFV+m5Zdk=4q4s7O6NoLR1B8bbyuxg@mail.gmail.com>
+ <20151020085408.GA2542@netboy>
+ <alpine.DEB.2.11.1510201246250.3982@nanos>
+ <20151020115113.GA23428@netboy> <20151020145523.GA5207@netboy>
+ <alpine.DEB.2.11.1510202107410.8159@nanos>
+Message-ID: <CALAqxLXGnzwH5OgDCyggzxbao7UvS6_SOtVVkNVmjrsrOL-YBw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Alexander,
+On Tue, Oct 20, 2015 at 12:11 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Tue, 20 Oct 2015, Richard Cochran wrote:
+>> On Tue, Oct 20, 2015 at 01:51:13PM +0200, Richard Cochran wrote:
+>> > You can, in fact, achieve "proper" correlation by sampling.  As John
+>> > said, the question is whether the method in the patch set "measurably
+>> > improves the error" over using another, simpler method.
+>>
+>> Here is a short example to put some numbers on the expected error.
+>> Let the driver sample at an interval of 1 ms.  If the system time's
+>> frequency hasn't changed between two samples, A and B, then the driver
+>> may interpolate without introducing any error.
+>
+> Darn, we don't want to have that kind of sampling in every driver
+> which has this kind of problem even if it looks like the simpler
+> choice for this particular use case. This is going to be something
+> which next generation chips will have on more than just the audio
+> interface and we realy want to have a generic solution for this.
 
-[auto build test WARNING on net/master -- if it's inappropriate base, please suggest rules for selecting the more suitable base]
+I sort of agree with Richard that the timekeeper history approach
+doesn't seem like a generic solution here.
 
-url:    https://github.com/0day-ci/linux/commits/Alexander-Duyck/ixgbe-Reset-interface-after-enabling-SR-IOV/20151021-040132
-config: x86_64-randconfig-x011-201542 (attached as .config)
-reproduce:
-        # save the attached .config to linux build tree
-        make ARCH=x86_64 
+And again, you seem to be speaking with a bigger picture in mind that
+at least I don't yet share (apologies for being thick headed here).
+Being able to have various hardware sharing a time base is quite
+useful, and methods for correlating timestamps together are useful.
+But I don't yet really understand why its important that we can
+translate a hardware timestamp from some time in the past to the
+correct system time in the past without error.
 
-All warnings (new ones prefixed by >>):
-
-   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c: In function 'ixgbe_setup_tc':
->> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:7879:15: warning: passing argument 1 of 'ixgbe_reset' from incompatible pointer type [-Wincompatible-pointer-types]
-      ixgbe_reset(dev);
-                  ^
-   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:4994:6: note: expected 'struct ixgbe_adapter *' but argument is of type 'struct net_device *'
-    void ixgbe_reset(struct ixgbe_adapter *adapter)
-         ^
-
-vim +/ixgbe_reset +7879 drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-
-  7863			return -EINVAL;
-  7864	
-  7865		if (hw->mac.type == ixgbe_mac_82598EB && tc && tc < MAX_TRAFFIC_CLASS)
-  7866			return -EINVAL;
-  7867	
-  7868		pools = (find_first_zero_bit(&adapter->fwd_bitmask, 32) > 1);
-  7869		if (tc && pools && adapter->num_rx_pools > IXGBE_MAX_DCBMACVLANS)
-  7870			return -EBUSY;
-  7871	
-  7872		/* Hardware has to reinitialize queues and interrupts to
-  7873		 * match packet buffer alignment. Unfortunately, the
-  7874		 * hardware is not flexible enough to do this dynamically.
-  7875		 */
-  7876		if (netif_running(dev))
-  7877			ixgbe_close(dev);
-  7878		else
-> 7879			ixgbe_reset(dev);
-  7880	
-  7881		ixgbe_clear_interrupt_scheme(adapter);
-  7882	
-  7883	#ifdef CONFIG_IXGBE_DCB
-  7884		if (tc) {
-  7885			netdev_set_num_tc(dev, tc);
-  7886			ixgbe_set_prio_tc_map(adapter);
-  7887	
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/octet-stream
-Size: 28647 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151021/ce851841/attachment-0001.obj>
+thanks
+-john
