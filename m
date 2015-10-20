@@ -1,66 +1,73 @@
-From: Alexander Duyck <aduyck@mirantis.com>
-Date: Tue, 20 Oct 2015 13:28:17 -0700
-Subject: [Intel-wired-lan] [net PATCH v2] ixgbe: Reset interface after
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 21 Oct 2015 06:25:09 +0800
+Subject: [Intel-wired-lan] [net PATCH] ixgbe: Reset interface after
 	enabling SR-IOV
-Message-ID: <20151020202715.2955.88128.stgit@ahduyck-vm-fedora22>
+In-Reply-To: <20151020195738.1495.80824.stgit@ahduyck-vm-fedora22>
+Message-ID: <201510210632.SQvcZPbZ%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Enabling SR-IOV and then bringing the interface up was resulting in the PF
-MAC addresses getting into a bad state.  Specifically the MAC address was
-enabled for both VF 0 and the PF.  This resulted in some odd behaviors such
-as VF 0 receiving a copy of the PFs traffic, which in turn enables the
-ability for VF 0 to spoof the PF.
+Hi Alexander,
 
-A workaround for this issue appears to be to bring up the interface first
-and then enable SR-IOV as this way the reset is then triggered in the
-existing code.
+[auto build test WARNING on net/master -- if it's inappropriate base, please suggest rules for selecting the more suitable base]
 
-In order to correct this I have added a change to ixgbe_setup_tc where if
-the interface is down we still will at least call ixgbe_reset so that the
-MAC addresses for the device are reset to the correct pools.
+url:    https://github.com/0day-ci/linux/commits/Alexander-Duyck/ixgbe-Reset-interface-after-enabling-SR-IOV/20151021-040132
+reproduce:
+        # apt-get install sparse
+        make ARCH=x86_64 allmodconfig
+        make C=1 CF=-D__CHECK_ENDIAN__
 
-Steps to reproduce issue:
-modprobe ixgbe
-echo 7 > /sys/bus/pci/devices/0000\:01\:00.1/sriov_numvfs
-ifconfig enp1s0f1 up
-ethregs -s 1:00.1 | grep MPSAR | grep -v 00000000
 
-Result:
-	MPSAR[0]               00000081
-	MPSAR[254]             00000001
+sparse warnings: (new ones prefixed by >>)
 
-Expected Result, behavior after patch:
-	MPSAR[0]               00000080
-	MPSAR[254]             00000080
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:675:33: sparse: cast to restricted __le64
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:675:33: sparse: cast to restricted __le64
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:787:33: sparse: cast to restricted __le64
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:787:33: sparse: cast to restricted __le64
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:793:33: sparse: cast to restricted __le64
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:793:33: sparse: cast to restricted __le64
+>> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:7879:29: sparse: incorrect type in argument 1 (different base types)
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:7879:29:    expected struct ixgbe_adapter *adapter
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:7879:29:    got struct net_device *dev
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c: In function 'ixgbe_setup_tc':
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:7879:15: warning: passing argument 1 of 'ixgbe_reset' from incompatible pointer type [-Wincompatible-pointer-types]
+      ixgbe_reset(dev);
+                  ^
+   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:4994:6: note: expected 'struct ixgbe_adapter *' but argument is of type 'struct net_device *'
+    void ixgbe_reset(struct ixgbe_adapter *adapter)
+         ^
 
-Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+vim +7879 drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+
+  7863			return -EINVAL;
+  7864	
+  7865		if (hw->mac.type == ixgbe_mac_82598EB && tc && tc < MAX_TRAFFIC_CLASS)
+  7866			return -EINVAL;
+  7867	
+  7868		pools = (find_first_zero_bit(&adapter->fwd_bitmask, 32) > 1);
+  7869		if (tc && pools && adapter->num_rx_pools > IXGBE_MAX_DCBMACVLANS)
+  7870			return -EBUSY;
+  7871	
+  7872		/* Hardware has to reinitialize queues and interrupts to
+  7873		 * match packet buffer alignment. Unfortunately, the
+  7874		 * hardware is not flexible enough to do this dynamically.
+  7875		 */
+  7876		if (netif_running(dev))
+  7877			ixgbe_close(dev);
+  7878		else
+> 7879			ixgbe_reset(dev);
+  7880	
+  7881		ixgbe_clear_interrupt_scheme(adapter);
+  7882	
+  7883	#ifdef CONFIG_IXGBE_DCB
+  7884		if (tc) {
+  7885			netdev_set_num_tc(dev, tc);
+  7886			ixgbe_set_prio_tc_map(adapter);
+  7887	
+
 ---
-
-This is also a candidate for stable going back to 3.9 kernel as that
-appears to be where the code for using ixgbe_setup_tc as a part of the
-SR-IOV initialization was introduced.
-
-v2: Replaced dev with adapter as parameter for ixgbe_reset().
-
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 191003901adb..7831346b483d 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -7912,6 +7912,9 @@ int ixgbe_setup_tc(struct net_device *dev, u8 tc)
- 	 */
- 	if (netif_running(dev))
- 		ixgbe_close(dev);
-+	else
-+		ixgbe_reset(adapter);
-+
- 	ixgbe_clear_interrupt_scheme(adapter);
- 
- #ifdef CONFIG_IXGBE_DCB
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
