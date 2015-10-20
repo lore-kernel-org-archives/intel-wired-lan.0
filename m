@@ -1,53 +1,34 @@
-From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Date: Tue, 20 Oct 2015 09:22:14 +0200
-Subject: [Intel-wired-lan] [PATCH] intel: i40e: fix confused code
-In-Reply-To: <FC41C24E35F18A40888AACA1A36F3E418AFA4A68@fmsmsx115.amr.corp.intel.com>
- (Shannon Nelson's message of "Mon, 19 Oct 2015 16:56:15 +0000")
-References: <1445115499-28728-1-git-send-email-linux@rasmusvillemoes.dk>
- <FC41C24E35F18A40888AACA1A36F3E418AFA4A68@fmsmsx115.amr.corp.intel.com>
-Message-ID: <87wpuim2c9.fsf@rasmusvillemoes.dk>
+From: Richard Cochran <richardcochran@gmail.com>
+Date: Tue, 20 Oct 2015 10:54:08 +0200
+Subject: [Intel-wired-lan] [PATCH v4 1/4] Produce system time from
+	correlated clocksource
+In-Reply-To: <CALAqxLXu_C8sWaKyxqXJPFV+m5Zdk=4q4s7O6NoLR1B8bbyuxg@mail.gmail.com>
+References: <1444675522-4198-1-git-send-email-christopher.s.hall@intel.com>
+ <1444675522-4198-2-git-send-email-christopher.s.hall@intel.com>
+ <alpine.DEB.2.11.1510132116480.25029@nanos>
+ <op.x6iyd7gq1774gr@chall-mobl2.amr.corp.intel.com>
+ <alpine.DEB.2.11.1510151014330.3960@nanos>
+ <op.x6r25dza1774gr@chall-mobl2.amr.corp.intel.com>
+ <CALAqxLXu_C8sWaKyxqXJPFV+m5Zdk=4q4s7O6NoLR1B8bbyuxg@mail.gmail.com>
+Message-ID: <20151020085408.GA2542@netboy>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Oct 19 2015, "Nelson, Shannon" <shannon.nelson@intel.com> wrote:
+On Mon, Oct 19, 2015 at 05:36:56PM -0700, John Stultz wrote:
+> If we're only tracking 4ms of history, how does this solution
+> measurably improve the error over using the timestamps to generate
+> MONOTONIC_RAW clock deltas (which doesn't require keeping any history)
+> and using getnstime_raw_and_real to take an anchor point to calculate
+> the delta from?  Why is adding complexity necessary?
 
->> From: Rasmus Villemoes [mailto:linux at rasmusvillemoes.dk]
->> Sent: Saturday, October 17, 2015 1:58 PM
->> Subject: [PATCH] intel: i40e: fix confused code
->> 
->> This code is pretty confused. The variable name 'bytes_not_copied'
->> clearly indicates that the programmer knew the semantics of
->> copy_{to,from}_user, but then the return value is checked for being
->> negative and used as a -Exxx return value.
->> 
->> I'm not sure this is the proper fix, but at least we get rid of the
->> dead code which pretended to check for access faults.
->> 
->> Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
->
-> I believe this patch is unnecessary: if the value is negative, then it
-> already is an error code giving some potentially useful information.
-> When I dig into the copy_to_user() code, I see in the comments for
-> put_user() that -EFAULT is the error being returned.
+This idea is variant of what I suggested in another reply in this
+thread.  To my understanding, there is no need at all to keep a
+history arbitrarily 4 ms long.  Instead, the DSP driver (or whoever
+else may need such a thing) can simply sample the system time at the
+rate needed for that particular application.
 
-Thanks, this was precisely the kind of confusion I'm talking about:
-copy_{from,to}_user _never_ returns a negative value. It returns
-precisely what the very explicit variable name hints.
-
-This is in contrast to the single-scalar functions get_user/put_user,
-which do return -EFAULT for error and 0 for success.
-
-(See also lines 479-519 of Documentation/DocBook/kernel-hacking.tmpl).
-
-In the entire kernel source tree, two files contain a check for the
-return value from copy_{from,to}_user being negative. It will never
-trigger, so might as well be removed - except if it was _supposed_ to be
-checking for access violations, in which case one should probably
-replace it with actually handling it. Try
-
-  git grep -C2 -E 'copy_(from|to)_user' drivers/net/ethernet/
-
-Rasmus
+Thanks,
+Richard
