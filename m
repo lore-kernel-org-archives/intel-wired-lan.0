@@ -1,90 +1,52 @@
-From: Don Buchholz <donald.buchholz@intel.com>
-Date: Tue, 20 Oct 2015 08:24:59 -0700
-Subject: [Intel-wired-lan] [PATCH net-next] igb: assume MSI-X interrupts
- during initialization
-In-Reply-To: <1442493970-20073-1-git-send-email-sassmann@kpanic.de>
-References: <1442493970-20073-1-git-send-email-sassmann@kpanic.de>
-Message-ID: <56265CCB.3070200@intel.com>
+From: Nelson, Shannon <shannon.nelson@intel.com>
+Date: Tue, 20 Oct 2015 15:27:12 +0000
+Subject: [Intel-wired-lan] [PATCH] intel: i40e: fix confused code
+In-Reply-To: <87wpuim2c9.fsf@rasmusvillemoes.dk>
+References: <1445115499-28728-1-git-send-email-linux@rasmusvillemoes.dk>
+ <FC41C24E35F18A40888AACA1A36F3E418AFA4A68@fmsmsx115.amr.corp.intel.com>
+ <87wpuim2c9.fsf@rasmusvillemoes.dk>
+Message-ID: <FC41C24E35F18A40888AACA1A36F3E418AFA5229@fmsmsx115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 09/17/15 05:46, Stefan Assmann wrote:
-> In igb_sw_init() the sequence of calls was changed from
-> igb_init_queue_configuration()
-> igb_init_interrupt_scheme()
-> igb_probe_vfs()
-> to
-> igb_probe_vfs()
-> igb_init_queue_configuration()
-> igb_init_interrupt_scheme()
->
-> This results in adapter->flags not having the IGB_FLAG_HAS_MSIX bit set
-> during igb_probe_vfs()->igb_enable_sriov(). Therefore SR-IOV does not
-> get enabled properly and we run into a NULL pointer if the max_vfs
-> module parameter is specified (adapter->vf_data does not get allocated,
-> crash on accessing the structure).
->
-> [    7.419348] BUG: unable to handle kernel NULL pointer dereference at 0000000000000048
-> [    7.419367] IP: [<ffffffffa02161c6>] igb_reset+0xe6/0x5d0 [igb]
-> [    7.419370] PGD 0
-> [    7.419373] Oops: 0002 [#1] SMP
-> [    7.419381] Modules linked in: ahci(+) libahci igb(+) i40e(+) vxlan ip6_udp_tunnel udp_tunnel megaraid_sas(+) ixgbe(+) mdio
-> [    7.419385] CPU: 0 PID: 4 Comm: kworker/0:0 Not tainted 4.2.0+ #153
-> [    7.419387] Hardware name: Dell Inc. PowerEdge R720/0C4Y3R, BIOS 1.6.0 03/07/2013
-> [...]
-> [    7.419431] Call Trace:
-> [    7.419442]  [<ffffffffa0217236>] igb_probe+0x8b6/0x1340 [igb]
-> [    7.419447]  [<ffffffff814c7f15>] local_pci_probe+0x45/0xa0
->
-> Prevent this by setting the IGB_FLAG_HAS_MSIX bit before calling
-> igb_probe_vfs(). The real interrupt capabilities will be checked during
-> igb_init_interrupt_scheme() so this is safe to do.
->
-> Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
-> ---
->   drivers/net/ethernet/intel/igb/igb_main.c | 3 +++
->   1 file changed, 3 insertions(+)
->
-> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-> index e174fbb..ba019fc 100644
-> --- a/drivers/net/ethernet/intel/igb/igb_main.c
-> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-> @@ -2986,6 +2986,9 @@ static int igb_sw_init(struct igb_adapter *adapter)
->          }
->   #endif /* CONFIG_PCI_IOV */
->
-> +       /* Assume MSI-X interrupts, will be checked during IRQ allocation */
-> +       adapter->flags |= IGB_FLAG_HAS_MSIX;
-> +
->          igb_probe_vfs(adapter);
->
->          igb_init_queue_configuration(adapter);
-> --
-> 2.4.3
->
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at lists.osuosl.org
-> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
->
+> From: Rasmus Villemoes [mailto:linux at rasmusvillemoes.dk]
+> Sent: Tuesday, October 20, 2015 12:22 AM
+> 
+> On Mon, Oct 19 2015, "Nelson, Shannon" <shannon.nelson@intel.com> wrote:
+> 
+> >> From: Rasmus Villemoes [mailto:linux at rasmusvillemoes.dk]
+> >> Sent: Saturday, October 17, 2015 1:58 PM
+> >> Subject: [PATCH] intel: i40e: fix confused code
+> >>
+> >> This code is pretty confused. The variable name 'bytes_not_copied'
+> >> clearly indicates that the programmer knew the semantics of
+> >> copy_{to,from}_user, but then the return value is checked for being
+> >> negative and used as a -Exxx return value.
+> >>
+> >> I'm not sure this is the proper fix, but at least we get rid of the
+> >> dead code which pretended to check for access faults.
+> >>
+> >> Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+> >
+> > I believe this patch is unnecessary: if the value is negative, then it
+> > already is an error code giving some potentially useful information.
+> > When I dig into the copy_to_user() code, I see in the comments for
+> > put_user() that -EFAULT is the error being returned.
+> 
+> Thanks, this was precisely the kind of confusion I'm talking about:
+> copy_{from,to}_user _never_ returns a negative value. It returns
+> precisely what the very explicit variable name hints.
+> 
+> This is in contrast to the single-scalar functions get_user/put_user,
+> which do return -EFAULT for error and 0 for success.
+> 
+> (See also lines 479-519 of Documentation/DocBook/kernel-hacking.tmpl).
 
+I like the comment about the moronic interface for copy_to/from_user...
 
-Tested-by: Don Buchholz <donald.buchholz@intel.com>
+Yes, I see where I turned left instead of right.  This would be good to fix up.
 
-Verfied - patch fixes problem.
-
-First, issue was re-created with unpatched kernel. On test system, the 
-file /etc/modprobe.d/igb.conf contains "options igb max_vfs=4 debug=16". 
-The unpatched kernel behaved poorly in two manners: (1) During system 
-boot, 'igb' driver would load with no panic or stack trace, but no VFs 
-were created. (2) When the module was removed (rmmod igb) and then 
-reloaded (modprobe igb) the "null pointer dereference / Oops" occurs and 
-stack trace is generated.
-
-Applied patch and verified 'igb' now loads as expected (VFs are created 
-at boot time and no "Oops" occurs.)
-
-
+sln
