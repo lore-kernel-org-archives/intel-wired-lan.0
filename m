@@ -1,10 +1,10 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Wed, 21 Oct 2015 19:47:11 -0400
-Subject: [Intel-wired-lan] [next PATCH S19 10/15] i40e/i40evf: clean up
-	error messages
+Date: Wed, 21 Oct 2015 19:47:12 -0400
+Subject: [Intel-wired-lan] [next PATCH S19 11/15] i40evf: handle many MAC
+	filters correctly
 In-Reply-To: <1445471236-35918-1-git-send-email-catherine.sullivan@intel.com>
 References: <1445471236-35918-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1445471236-35918-11-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1445471236-35918-12-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,128 +13,148 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Mitch Williams <mitch.a.williams@intel.com>
 
-Clean up and enhance error messages related to VF MAC/VLAN filters.
-Indicate which VF is having issues, and if possible indicate the MAC
-address or VLAN involved.
+When a lot (many hundreds) of MAC or VLAN filters are added at one time,
+we can overflow the Admin Queue buffer size with all the requests.
+Unfortunately, the driver would then calculate the message size
+incorrectly, causing it to be rejected by the PF. Furthermore, there was
+no mechanism to trigger another request to allow for configuring the
+rest of the filters that didn't fit into the first request.
 
-Also, when an error is returned from the PF driver, print useful
-information about what went wrong, for the most likely cases.
+To fix this, recalculate the correct buffer size when we detect the
+overflow condition instead of just assuming the max buffer size. Also,
+don't clear the request bit in adapter->aq_required when we have an
+overflow, so that the rest of the filters can be processed later.
 
 Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Change-ID: Ib3d15eef9e3369a78fd142948671e5fa26d921b8
+Change-ID: Idd7cbbc5af31315e0dcb1b10e6a02ad9817ce65c
 
 ---
-Testing-hints: Add 1000 VLANS to a VF and add 1000 multicast filters to
-a VF should show most of the errors, make sure the new errors are what
-is getting printed.
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 21 +++++++++--------
- .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    | 26 +++++++++++++++++++---
- 2 files changed, 35 insertions(+), 12 deletions(-)
+Testing-hints: 5645131, 5645133
+Bring up a VF and add 2000 IPv6 addresses to it. Before this patch, it
+will crash. After this patch, it will crash less horribly.
+ .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    | 32 ++++++++++++++++------
+ 1 file changed, 24 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 44462b4..9c54ca2 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1623,7 +1623,8 @@ static int i40e_vc_add_mac_addr_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
- 
- 		if (!f) {
- 			dev_err(&pf->pdev->dev,
--				"Unable to add VF MAC filter\n");
-+				"Unable to add MAC filter %pM for VF %d\n",
-+				 al->list[i].addr, vf->vf_id);
- 			ret = I40E_ERR_PARAM;
- 			spin_unlock_bh(&vsi->mac_filter_list_lock);
- 			goto error_param;
-@@ -1633,7 +1634,8 @@ static int i40e_vc_add_mac_addr_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
- 
- 	/* program the updated filter list */
- 	if (i40e_sync_vsi_filters(vsi, false))
--		dev_err(&pf->pdev->dev, "Unable to program VF MAC filters\n");
-+		dev_err(&pf->pdev->dev, "Unable to program VF %d MAC filters\n",
-+			vf->vf_id);
- 
- error_param:
- 	/* send the response to the VF */
-@@ -1669,8 +1671,8 @@ static int i40e_vc_del_mac_addr_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
- 	for (i = 0; i < al->num_elements; i++) {
- 		if (is_broadcast_ether_addr(al->list[i].addr) ||
- 		    is_zero_ether_addr(al->list[i].addr)) {
--			dev_err(&pf->pdev->dev, "invalid VF MAC addr %pM\n",
--				al->list[i].addr);
-+			dev_err(&pf->pdev->dev, "Invalid MAC addr %pM for VF %d\n",
-+				al->list[i].addr, vf->vf_id);
- 			ret = I40E_ERR_INVALID_MAC_ADDR;
- 			goto error_param;
- 		}
-@@ -1686,7 +1688,8 @@ static int i40e_vc_del_mac_addr_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
- 
- 	/* program the updated filter list */
- 	if (i40e_sync_vsi_filters(vsi, false))
--		dev_err(&pf->pdev->dev, "Unable to program VF MAC filters\n");
-+		dev_err(&pf->pdev->dev, "Unable to program VF %d MAC filters\n",
-+			vf->vf_id);
- 
- error_param:
- 	/* send the response to the VF */
-@@ -1740,8 +1743,8 @@ static int i40e_vc_add_vlan_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
- 
- 		if (ret)
- 			dev_err(&pf->pdev->dev,
--				"Unable to add VF vlan filter %d, error %d\n",
--				vfl->vlan_id[i], ret);
-+				"Unable to add VLAN filter %d for VF %d, error %d\n",
-+				vfl->vlan_id[i], vf->vf_id, ret);
- 	}
- 
- error_param:
-@@ -1792,8 +1795,8 @@ static int i40e_vc_remove_vlan_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
- 
- 		if (ret)
- 			dev_err(&pf->pdev->dev,
--				"Unable to delete VF vlan filter %d, error %d\n",
--				vfl->vlan_id[i], ret);
-+				"Unable to delete VLAN filter %d for VF %d, error %d\n",
-+				vfl->vlan_id[i], vf->vf_id, ret);
- 	}
- 
- error_param:
 diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-index 32e620e..091ef6a 100644
+index 091ef6a..46b0516 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
 +++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-@@ -724,9 +724,29 @@ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
- 		return;
+@@ -391,6 +391,7 @@ void i40evf_add_ether_addrs(struct i40evf_adapter *adapter)
+ 	struct i40e_virtchnl_ether_addr_list *veal;
+ 	int len, i = 0, count = 0;
+ 	struct i40evf_mac_filter *f;
++	bool more = false;
+ 
+ 	if (adapter->current_op != I40E_VIRTCHNL_OP_UNKNOWN) {
+ 		/* bail because we already have a command pending */
+@@ -415,7 +416,9 @@ void i40evf_add_ether_addrs(struct i40evf_adapter *adapter)
+ 		count = (I40EVF_MAX_AQ_BUF_SIZE -
+ 			 sizeof(struct i40e_virtchnl_ether_addr_list)) /
+ 			sizeof(struct i40e_virtchnl_ether_addr);
+-		len = I40EVF_MAX_AQ_BUF_SIZE;
++		len = sizeof(struct i40e_virtchnl_ether_addr_list) +
++		      (count * sizeof(struct i40e_virtchnl_ether_addr));
++		more = true;
  	}
- 	if (v_retval) {
--		dev_err(&adapter->pdev->dev, "PF returned error %d (%s) to our request %d\n",
--			v_retval, i40evf_stat_str(&adapter->hw, v_retval),
--			v_opcode);
-+		switch (v_opcode) {
-+		case I40E_VIRTCHNL_OP_ADD_VLAN:
-+			dev_err(&adapter->pdev->dev, "Failed to add VLAN filter, error %s\n",
-+				i40evf_stat_str(&adapter->hw, v_retval));
-+			break;
-+		case I40E_VIRTCHNL_OP_ADD_ETHER_ADDRESS:
-+			dev_err(&adapter->pdev->dev, "Failed to add MAC filter, error %s\n",
-+				i40evf_stat_str(&adapter->hw, v_retval));
-+			break;
-+		case I40E_VIRTCHNL_OP_DEL_VLAN:
-+			dev_err(&adapter->pdev->dev, "Failed to delete VLAN filter, error %s\n",
-+				i40evf_stat_str(&adapter->hw, v_retval));
-+			break;
-+		case I40E_VIRTCHNL_OP_DEL_ETHER_ADDRESS:
-+			dev_err(&adapter->pdev->dev, "Failed to delete MAC filter, error %s\n",
-+				i40evf_stat_str(&adapter->hw, v_retval));
-+			break;
-+		default:
-+			dev_err(&adapter->pdev->dev, "PF returned error %d (%s) to our request %d\n",
-+				v_retval,
-+				i40evf_stat_str(&adapter->hw, v_retval),
-+				v_opcode);
-+		}
+ 
+ 	veal = kzalloc(len, GFP_ATOMIC);
+@@ -431,7 +434,8 @@ void i40evf_add_ether_addrs(struct i40evf_adapter *adapter)
+ 			f->add = false;
+ 		}
  	}
- 	switch (v_opcode) {
- 	case I40E_VIRTCHNL_OP_GET_STATS: {
+-	adapter->aq_required &= ~I40EVF_FLAG_AQ_ADD_MAC_FILTER;
++	if (!more)
++		adapter->aq_required &= ~I40EVF_FLAG_AQ_ADD_MAC_FILTER;
+ 	i40evf_send_pf_msg(adapter, I40E_VIRTCHNL_OP_ADD_ETHER_ADDRESS,
+ 			   (u8 *)veal, len);
+ 	kfree(veal);
+@@ -450,6 +454,7 @@ void i40evf_del_ether_addrs(struct i40evf_adapter *adapter)
+ 	struct i40e_virtchnl_ether_addr_list *veal;
+ 	struct i40evf_mac_filter *f, *ftmp;
+ 	int len, i = 0, count = 0;
++	bool more = false;
+ 
+ 	if (adapter->current_op != I40E_VIRTCHNL_OP_UNKNOWN) {
+ 		/* bail because we already have a command pending */
+@@ -474,7 +479,9 @@ void i40evf_del_ether_addrs(struct i40evf_adapter *adapter)
+ 		count = (I40EVF_MAX_AQ_BUF_SIZE -
+ 			 sizeof(struct i40e_virtchnl_ether_addr_list)) /
+ 			sizeof(struct i40e_virtchnl_ether_addr);
+-		len = I40EVF_MAX_AQ_BUF_SIZE;
++		len = sizeof(struct i40e_virtchnl_ether_addr_list) +
++		      (count * sizeof(struct i40e_virtchnl_ether_addr));
++		more = true;
+ 	}
+ 	veal = kzalloc(len, GFP_ATOMIC);
+ 	if (!veal)
+@@ -490,7 +497,8 @@ void i40evf_del_ether_addrs(struct i40evf_adapter *adapter)
+ 			kfree(f);
+ 		}
+ 	}
+-	adapter->aq_required &= ~I40EVF_FLAG_AQ_DEL_MAC_FILTER;
++	if (!more)
++		adapter->aq_required &= ~I40EVF_FLAG_AQ_DEL_MAC_FILTER;
+ 	i40evf_send_pf_msg(adapter, I40E_VIRTCHNL_OP_DEL_ETHER_ADDRESS,
+ 			   (u8 *)veal, len);
+ 	kfree(veal);
+@@ -509,6 +517,7 @@ void i40evf_add_vlans(struct i40evf_adapter *adapter)
+ 	struct i40e_virtchnl_vlan_filter_list *vvfl;
+ 	int len, i = 0, count = 0;
+ 	struct i40evf_vlan_filter *f;
++	bool more = false;
+ 
+ 	if (adapter->current_op != I40E_VIRTCHNL_OP_UNKNOWN) {
+ 		/* bail because we already have a command pending */
+@@ -534,7 +543,9 @@ void i40evf_add_vlans(struct i40evf_adapter *adapter)
+ 		count = (I40EVF_MAX_AQ_BUF_SIZE -
+ 			 sizeof(struct i40e_virtchnl_vlan_filter_list)) /
+ 			sizeof(u16);
+-		len = I40EVF_MAX_AQ_BUF_SIZE;
++		len = sizeof(struct i40e_virtchnl_vlan_filter_list) +
++		      (count * sizeof(u16));
++		more = true;
+ 	}
+ 	vvfl = kzalloc(len, GFP_ATOMIC);
+ 	if (!vvfl)
+@@ -549,7 +560,8 @@ void i40evf_add_vlans(struct i40evf_adapter *adapter)
+ 			f->add = false;
+ 		}
+ 	}
+-	adapter->aq_required &= ~I40EVF_FLAG_AQ_ADD_VLAN_FILTER;
++	if (!more)
++		adapter->aq_required &= ~I40EVF_FLAG_AQ_ADD_VLAN_FILTER;
+ 	i40evf_send_pf_msg(adapter, I40E_VIRTCHNL_OP_ADD_VLAN, (u8 *)vvfl, len);
+ 	kfree(vvfl);
+ }
+@@ -567,6 +579,7 @@ void i40evf_del_vlans(struct i40evf_adapter *adapter)
+ 	struct i40e_virtchnl_vlan_filter_list *vvfl;
+ 	struct i40evf_vlan_filter *f, *ftmp;
+ 	int len, i = 0, count = 0;
++	bool more = false;
+ 
+ 	if (adapter->current_op != I40E_VIRTCHNL_OP_UNKNOWN) {
+ 		/* bail because we already have a command pending */
+@@ -592,7 +605,9 @@ void i40evf_del_vlans(struct i40evf_adapter *adapter)
+ 		count = (I40EVF_MAX_AQ_BUF_SIZE -
+ 			 sizeof(struct i40e_virtchnl_vlan_filter_list)) /
+ 			sizeof(u16);
+-		len = I40EVF_MAX_AQ_BUF_SIZE;
++		len = sizeof(struct i40e_virtchnl_vlan_filter_list) +
++		      (count * sizeof(u16));
++		more = true;
+ 	}
+ 	vvfl = kzalloc(len, GFP_ATOMIC);
+ 	if (!vvfl)
+@@ -608,7 +623,8 @@ void i40evf_del_vlans(struct i40evf_adapter *adapter)
+ 			kfree(f);
+ 		}
+ 	}
+-	adapter->aq_required &= ~I40EVF_FLAG_AQ_DEL_VLAN_FILTER;
++	if (!more)
++		adapter->aq_required &= ~I40EVF_FLAG_AQ_DEL_VLAN_FILTER;
+ 	i40evf_send_pf_msg(adapter, I40E_VIRTCHNL_OP_DEL_VLAN, (u8 *)vvfl, len);
+ 	kfree(vvfl);
+ }
 -- 
 1.9.3
 
