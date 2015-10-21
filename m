@@ -1,8 +1,10 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Wed, 21 Oct 2015 19:56:22 -0400
-Subject: [Intel-wired-lan] [next PATCH S19 13/15] i40e: rework the functions
-	to configure RSS with similar parameters
-Message-ID: <1445471784-36024-1-git-send-email-catherine.sullivan@intel.com>
+Date: Wed, 21 Oct 2015 19:56:23 -0400
+Subject: [Intel-wired-lan] [next PATCH S19 14/15] i40e: create a generic
+	configure rss function
+In-Reply-To: <1445471784-36024-1-git-send-email-catherine.sullivan@intel.com>
+References: <1445471784-36024-1-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1445471784-36024-2-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,204 +13,283 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Helin Zhang <helin.zhang@intel.com>
 
-Adjust the RSS configure functions so that there is a generic way to
-hook to ethtool hooks.
+This patch renames the old pf-specific function in order to clarify
+its scope. This patch also creates a more generic configure RSS
+function with the old name.
+
+This patch also creates a new more generic function to get RSS
+configuration, using the appropriate method.
 
 Signed-off-by: Helin Zhang <helin.zhang@intel.com>
-Change-ID: If446e34fcfaf1bc3320d9d319829a095b5976e67
+Change-ID: Ieddca2707b708ef19f1ebccdfd03a0a0cd63d3af
 
 ---
-Testing-hints: Test with next patch.
- drivers/net/ethernet/intel/i40e/i40e.h         |  1 +
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  1 -
- drivers/net/ethernet/intel/i40e/i40e_main.c    | 95 +++++++++++++++++++-------
- 3 files changed, 71 insertions(+), 26 deletions(-)
+Testing-hints: Test RSS hooks from ethtool for X[L]710 and X722.
+ drivers/net/ethernet/intel/i40e/i40e.h         |  2 +
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 72 ++++++++++------------
+ drivers/net/ethernet/intel/i40e/i40e_main.c    | 85 ++++++++++++++++++++++----
+ 3 files changed, 107 insertions(+), 52 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index ca07a7b..f6b747c 100644
+index f6b747c..89f5323 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -187,6 +187,7 @@ struct i40e_lump_tracking {
- #define I40E_FDIR_BUFFER_HEAD_ROOM_FOR_ATR (I40E_FDIR_BUFFER_HEAD_ROOM * 4)
- 
- #define I40E_HKEY_ARRAY_SIZE ((I40E_PFQF_HKEY_MAX_INDEX + 1) * 4)
-+#define I40E_HLUT_ARRAY_SIZE ((I40E_PFQF_HLUT_MAX_INDEX + 1) * 4)
- 
- enum i40e_fd_stat_idx {
- 	I40E_FD_STAT_ATR,
+@@ -670,6 +670,8 @@ extern const char i40e_driver_name[];
+ extern const char i40e_driver_version_str[];
+ void i40e_do_reset_safe(struct i40e_pf *pf, u32 reset_flags);
+ void i40e_do_reset(struct i40e_pf *pf, u32 reset_flags);
++int i40e_config_rss(struct i40e_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size);
++int i40e_get_rss(struct i40e_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size);
+ struct i40e_vsi *i40e_find_vsi_from_id(struct i40e_pf *pf, u16 id);
+ void i40e_update_stats(struct i40e_vsi *vsi);
+ void i40e_update_eth_stats(struct i40e_vsi *vsi);
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 9c243aa..9d66a00 100644
+index 9d66a00..0fd0801 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -2578,7 +2578,6 @@ static int i40e_set_channels(struct net_device *dev,
- 		return -EINVAL;
- }
- 
--#define I40E_HLUT_ARRAY_SIZE ((I40E_PFQF_HLUT_MAX_INDEX + 1) * 4)
- /**
-  * i40e_get_rxfh_key_size - get the RSS hash key size
-  * @netdev: network interface device structure
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 26e5ed0..be7fe65 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -55,6 +55,8 @@ static int i40e_setup_pf_switch(struct i40e_pf *pf, bool reinit);
- static int i40e_setup_misc_vector(struct i40e_pf *pf);
- static void i40e_determine_queue_usage(struct i40e_pf *pf);
- static int i40e_setup_pf_filter_control(struct i40e_pf *pf);
-+static void i40e_fill_rss_lut(struct i40e_pf *pf, u8 *lut,
-+			      u16 rss_table_size, u16 rss_size);
- static void i40e_fdir_sb_setup(struct i40e_pf *pf);
- static int i40e_veb_get_bw_info(struct i40e_veb *veb);
- 
-@@ -7817,7 +7819,8 @@ static int i40e_setup_misc_vector(struct i40e_pf *pf)
-  * @vsi: vsi structure
-  * @seed: RSS hash seed
-  **/
--static int i40e_config_rss_aq(struct i40e_vsi *vsi, const u8 *seed)
-+static int i40e_config_rss_aq(struct i40e_vsi *vsi, const u8 *seed,
-+			      u8 *lut, u16 lut_size)
+@@ -2605,10 +2605,9 @@ static int i40e_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key,
  {
- 	struct i40e_aqc_get_set_rss_key_data rss_key;
- 	struct i40e_pf *pf = vsi->back;
-@@ -7870,43 +7873,57 @@ static int i40e_vsi_config_rss(struct i40e_vsi *vsi)
- {
- 	u8 seed[I40E_HKEY_ARRAY_SIZE];
- 	struct i40e_pf *pf = vsi->back;
-+	u8 *lut;
+ 	struct i40e_netdev_priv *np = netdev_priv(netdev);
+ 	struct i40e_vsi *vsi = np->vsi;
+-	struct i40e_pf *pf = vsi->back;
+-	struct i40e_hw *hw = &pf->hw;
+-	u32 reg_val;
+-	int i, j;
++	u8 *lut, *seed = NULL;
 +	int ret;
-+
-+	if (!(pf->flags & I40E_FLAG_RSS_AQ_CAPABLE))
-+		return 0;
-+
-+	lut = kzalloc(vsi->rss_table_size, GFP_KERNEL);
++	u16 i;
+ 
+ 	if (hfunc)
+ 		*hfunc = ETH_RSS_HASH_TOP;
+@@ -2616,24 +2615,20 @@ static int i40e_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key,
+ 	if (!indir)
+ 		return 0;
+ 
+-	for (i = 0, j = 0; i <= I40E_PFQF_HLUT_MAX_INDEX; i++) {
+-		reg_val = rd32(hw, I40E_PFQF_HLUT(i));
+-		indir[j++] = reg_val & 0xff;
+-		indir[j++] = (reg_val >> 8) & 0xff;
+-		indir[j++] = (reg_val >> 16) & 0xff;
+-		indir[j++] = (reg_val >> 24) & 0xff;
+-	}
++	seed = key;
++	lut = kzalloc(I40E_HLUT_ARRAY_SIZE, GFP_KERNEL);
 +	if (!lut)
 +		return -ENOMEM;
++	ret = i40e_get_rss(vsi, seed, lut, I40E_HLUT_ARRAY_SIZE);
++	if (ret)
++		goto out;
++	for (i = 0; i < I40E_HLUT_ARRAY_SIZE; i++)
++		indir[i] = (u32)(lut[i]);
  
-+	i40e_fill_rss_lut(pf, lut, vsi->rss_table_size, vsi->rss_size);
- 	netdev_rss_key_fill((void *)seed, I40E_HKEY_ARRAY_SIZE);
- 	vsi->rss_size = min_t(int, pf->rss_size, vsi->num_queue_pairs);
-+	ret = i40e_config_rss_aq(vsi, seed, lut, vsi->rss_table_size);
-+	kfree(lut);
- 
--	if (pf->flags & I40E_FLAG_RSS_AQ_CAPABLE)
--		return i40e_config_rss_aq(vsi, seed);
--
+-	if (key) {
+-		for (i = 0, j = 0; i <= I40E_PFQF_HKEY_MAX_INDEX; i++) {
+-			reg_val = rd32(hw, I40E_PFQF_HKEY(i));
+-			key[j++] = (u8)(reg_val & 0xff);
+-			key[j++] = (u8)((reg_val >> 8) & 0xff);
+-			key[j++] = (u8)((reg_val >> 16) & 0xff);
+-			key[j++] = (u8)((reg_val >> 24) & 0xff);
+-		}
+-	}
 -	return 0;
++out:
++	kfree(lut);
++
 +	return ret;
  }
  
  /**
-  * i40e_config_rss_reg - Prepare for RSS if used
-- * @pf: board private structure
-+ * @vsi: Pointer to vsi structure
+@@ -2650,10 +2645,10 @@ static int i40e_set_rxfh(struct net_device *netdev, const u32 *indir,
+ {
+ 	struct i40e_netdev_priv *np = netdev_priv(netdev);
+ 	struct i40e_vsi *vsi = np->vsi;
+-	struct i40e_pf *pf = vsi->back;
+-	struct i40e_hw *hw = &pf->hw;
+-	u32 reg_val;
+-	int i, j;
++	u8 seed_def[I40E_HKEY_ARRAY_SIZE];
++	u8 *lut, *seed = NULL;
++	u16 i;
++	int ret;
+ 
+ 	if (hfunc != ETH_RSS_HASH_NO_CHANGE && hfunc != ETH_RSS_HASH_TOP)
+ 		return -EOPNOTSUPP;
+@@ -2661,24 +2656,19 @@ static int i40e_set_rxfh(struct net_device *netdev, const u32 *indir,
+ 	if (!indir)
+ 		return 0;
+ 
+-	for (i = 0, j = 0; i <= I40E_PFQF_HLUT_MAX_INDEX; i++) {
+-		reg_val = indir[j++];
+-		reg_val |= indir[j++] << 8;
+-		reg_val |= indir[j++] << 16;
+-		reg_val |= indir[j++] << 24;
+-		wr32(hw, I40E_PFQF_HLUT(i), reg_val);
+-	}
+-
+ 	if (key) {
+-		for (i = 0, j = 0; i <= I40E_PFQF_HKEY_MAX_INDEX; i++) {
+-			reg_val = key[j++];
+-			reg_val |= key[j++] << 8;
+-			reg_val |= key[j++] << 16;
+-			reg_val |= key[j++] << 24;
+-			wr32(hw, I40E_PFQF_HKEY(i), reg_val);
+-		}
++		memcpy(seed_def, key, I40E_HKEY_ARRAY_SIZE);
++		seed = seed_def;
+ 	}
+-	return 0;
++	lut = kzalloc(I40E_HLUT_ARRAY_SIZE, GFP_KERNEL);
++	if (!lut)
++		return -ENOMEM;
++	for (i = 0; i < I40E_HLUT_ARRAY_SIZE; i++)
++		lut[i] = (u8)(indir[i]);
++	ret = i40e_config_rss(vsi, seed, lut, I40E_HLUT_ARRAY_SIZE);
++	kfree(lut);
++
++	return ret;
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index be7fe65..cd6e278 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -7893,7 +7893,7 @@ static int i40e_vsi_config_rss(struct i40e_vsi *vsi)
+ }
+ 
+ /**
+- * i40e_config_rss_reg - Prepare for RSS if used
++ * i40e_config_rss_reg - Configure RSS keys and lut by writing registers
+  * @vsi: Pointer to vsi structure
   * @seed: RSS hash seed
-+ * @lut: Lookup table
-+ * @lut_size: Lookup table size
+  * @lut: Lookup table
+@@ -7931,6 +7931,73 @@ static int i40e_config_rss_reg(struct i40e_vsi *vsi, const u8 *seed,
+ }
+ 
+ /**
++ * i40e_get_rss_reg - Get the RSS keys and lut by reading registers
++ * @vsi: Pointer to VSI structure
++ * @seed: Buffer to store the keys
++ * @lut: Buffer to store the lookup table entries
++ * @lut_size: Size of buffer to store the lookup table entries
 + *
 + * Returns 0 on success, negative on failure
-  **/
--static int i40e_config_rss_reg(struct i40e_pf *pf, const u8 *seed)
-+static int i40e_config_rss_reg(struct i40e_vsi *vsi, const u8 *seed,
-+			       const u8 *lut, u16 lut_size)
- {
--	struct i40e_vsi *vsi = pf->vsi[pf->lan_vsi];
++ */
++static int i40e_get_rss_reg(struct i40e_vsi *vsi, u8 *seed,
++			    u8 *lut, u16 lut_size)
++{
 +	struct i40e_pf *pf = vsi->back;
- 	struct i40e_hw *hw = &pf->hw;
--	u32 *seed_dw = (u32 *)seed;
--	u32 current_queue = 0;
--	u32 lut = 0;
--	int i, j;
-+	u8 i;
- 
- 	/* Fill out hash function seed */
--	for (i = 0; i <= I40E_PFQF_HKEY_MAX_INDEX; i++)
--		wr32(hw, I40E_PFQF_HKEY(i), seed_dw[i]);
++	struct i40e_hw *hw = &pf->hw;
++	u16 i;
++
 +	if (seed) {
 +		u32 *seed_dw = (u32 *)seed;
- 
--	for (i = 0; i <= I40E_PFQF_HLUT_MAX_INDEX; i++) {
--		lut = 0;
--		for (j = 0; j < 4; j++) {
--			if (current_queue == vsi->rss_size)
--				current_queue = 0;
--			lut |= ((current_queue) << (8 * j));
--			current_queue++;
--		}
--		wr32(&pf->hw, I40E_PFQF_HLUT(i), lut);
-+		for (i = 0; i <= I40E_PFQF_HKEY_MAX_INDEX; i++)
-+			wr32(hw, I40E_PFQF_HKEY(i), seed_dw[i]);
-+	}
 +
++		for (i = 0; i <= I40E_PFQF_HKEY_MAX_INDEX; i++)
++			seed_dw[i] = rd32(hw, I40E_PFQF_HKEY(i));
++	}
 +	if (lut) {
 +		u32 *lut_dw = (u32 *)lut;
 +
 +		if (lut_size != I40E_HLUT_ARRAY_SIZE)
 +			return -EINVAL;
-+
 +		for (i = 0; i <= I40E_PFQF_HLUT_MAX_INDEX; i++)
-+			wr32(hw, I40E_PFQF_HLUT(i), lut_dw[i]);
- 	}
- 	i40e_flush(hw);
- 
-@@ -7914,6 +7931,22 @@ static int i40e_config_rss_reg(struct i40e_pf *pf, const u8 *seed)
- }
- 
- /**
-+ * i40e_fill_rss_lut - Fill the RSS lookup table with default values
-+ * @pf: Pointer to board private structure
-+ * @lut: Lookup table
-+ * @rss_table_size: Lookup table size
-+ * @rss_size: Range of queue number for hashing
-+ */
-+static void i40e_fill_rss_lut(struct i40e_pf *pf, u8 *lut,
-+			      u16 rss_table_size, u16 rss_size)
-+{
-+	u16 i;
++			lut_dw[i] = rd32(hw, I40E_PFQF_HLUT(i));
++	}
 +
-+	for (i = 0; i < rss_table_size; i++)
-+		lut[i] = i % rss_size;
++	return 0;
 +}
 +
 +/**
-  * i40e_config_rss - Prepare for RSS if used
-  * @pf: board private structure
-  **/
-@@ -7921,9 +7954,11 @@ static int i40e_config_rss(struct i40e_pf *pf)
- {
- 	struct i40e_vsi *vsi = pf->vsi[pf->lan_vsi];
- 	u8 seed[I40E_HKEY_ARRAY_SIZE];
-+	u8 *lut;
- 	struct i40e_hw *hw = &pf->hw;
- 	u32 reg_val;
- 	u64 hena;
-+	int ret;
- 
- 	netdev_rss_key_fill((void *)seed, I40E_HKEY_ARRAY_SIZE);
- 
-@@ -7944,10 +7979,20 @@ static int i40e_config_rss(struct i40e_pf *pf)
- 			(reg_val & ~I40E_PFQF_CTL_0_HASHLUTSIZE_512);
- 	wr32(hw, I40E_PFQF_CTL_0, reg_val);
- 
-+	lut = kzalloc(vsi->rss_table_size, GFP_KERNEL);
-+	if (!lut)
-+		return -ENOMEM;
++ * i40e_config_rss - Configure RSS keys and lut
++ * @vsi: Pointer to VSI structure
++ * @seed: RSS hash seed
++ * @lut: Lookup table
++ * @lut_size: Lookup table size
++ *
++ * Returns 0 on success, negative on failure
++ */
++int i40e_config_rss(struct i40e_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size)
++{
++	struct i40e_pf *pf = vsi->back;
 +
-+	i40e_fill_rss_lut(pf, lut, vsi->rss_table_size, vsi->rss_size);
++	if (pf->flags & I40E_FLAG_RSS_AQ_CAPABLE)
++		return i40e_config_rss_aq(vsi, seed, lut, lut_size);
++	else
++		return i40e_config_rss_reg(vsi, seed, lut, lut_size);
++}
 +
- 	if (pf->flags & I40E_FLAG_RSS_AQ_CAPABLE)
--		return i40e_config_rss_aq(pf->vsi[pf->lan_vsi], seed);
-+		ret = i40e_config_rss_aq(vsi, seed, lut, vsi->rss_table_size);
- 	else
--		return i40e_config_rss_reg(pf, seed);
-+		ret = i40e_config_rss_reg(vsi, seed, lut, vsi->rss_table_size);
++/**
++ * i40e_get_rss - Get RSS keys and lut
++ * @vsi: Pointer to VSI structure
++ * @seed: Buffer to store the keys
++ * @lut: Buffer to store the lookup table entries
++ * lut_size: Size of buffer to store the lookup table entries
++ *
++ * Returns 0 on success, negative on failure
++ */
++int i40e_get_rss(struct i40e_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size)
++{
++	return i40e_get_rss_reg(vsi, seed, lut, lut_size);
++}
 +
-+	kfree(lut);
-+
-+	return ret;
++/**
+  * i40e_fill_rss_lut - Fill the RSS lookup table with default values
+  * @pf: Pointer to board private structure
+  * @lut: Lookup table
+@@ -7947,10 +8014,10 @@ static void i40e_fill_rss_lut(struct i40e_pf *pf, u8 *lut,
  }
  
  /**
+- * i40e_config_rss - Prepare for RSS if used
++ * i40e_pf_config_rss - Prepare for RSS if used
+  * @pf: board private structure
+  **/
+-static int i40e_config_rss(struct i40e_pf *pf)
++static int i40e_pf_config_rss(struct i40e_pf *pf)
+ {
+ 	struct i40e_vsi *vsi = pf->vsi[pf->lan_vsi];
+ 	u8 seed[I40E_HKEY_ARRAY_SIZE];
+@@ -7960,8 +8027,6 @@ static int i40e_config_rss(struct i40e_pf *pf)
+ 	u64 hena;
+ 	int ret;
+ 
+-	netdev_rss_key_fill((void *)seed, I40E_HKEY_ARRAY_SIZE);
+-
+ 	/* By default we enable TCP/UDP with IPv4/IPv6 ptypes */
+ 	hena = (u64)rd32(hw, I40E_PFQF_HENA(0)) |
+ 		((u64)rd32(hw, I40E_PFQF_HENA(1)) << 32);
+@@ -7985,10 +8050,8 @@ static int i40e_config_rss(struct i40e_pf *pf)
+ 
+ 	i40e_fill_rss_lut(pf, lut, vsi->rss_table_size, vsi->rss_size);
+ 
+-	if (pf->flags & I40E_FLAG_RSS_AQ_CAPABLE)
+-		ret = i40e_config_rss_aq(vsi, seed, lut, vsi->rss_table_size);
+-	else
+-		ret = i40e_config_rss_reg(vsi, seed, lut, vsi->rss_table_size);
++	netdev_rss_key_fill((void *)seed, I40E_HKEY_ARRAY_SIZE);
++	ret = i40e_config_rss(vsi, seed, lut, vsi->rss_table_size);
+ 
+ 	kfree(lut);
+ 
+@@ -8020,7 +8083,7 @@ int i40e_reconfig_rss_queues(struct i40e_pf *pf, int queue_count)
+ 		pf->rss_size = new_rss_size;
+ 
+ 		i40e_reset_and_rebuild(pf, true);
+-		i40e_config_rss(pf);
++		i40e_pf_config_rss(pf);
+ 	}
+ 	dev_info(&pf->pdev->dev, "RSS count:  %d\n", pf->rss_size);
+ 	return pf->rss_size;
+@@ -10026,7 +10089,7 @@ static int i40e_setup_pf_switch(struct i40e_pf *pf, bool reinit)
+ 	 * the hash
+ 	 */
+ 	if ((pf->flags & I40E_FLAG_RSS_ENABLED))
+-		i40e_config_rss(pf);
++		i40e_pf_config_rss(pf);
+ 
+ 	/* fill in link information and enable LSE reporting */
+ 	i40e_update_link_info(&pf->hw);
 -- 
 1.9.3
 
