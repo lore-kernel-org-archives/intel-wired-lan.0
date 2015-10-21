@@ -1,11 +1,11 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 21 Oct 2015 13:58:19 -0700
-Subject: [Intel-wired-lan] [RFC Patch 06/12] IXGBEVF: Add self emulation
-	layer
-In-Reply-To: <1445445464-5056-7-git-send-email-tianyu.lan@intel.com>
+Date: Wed, 21 Oct 2015 14:14:56 -0700
+Subject: [Intel-wired-lan] [RFC Patch 08/12] IXGBEVF: Rework code of
+ finding the end transmit desc of package
+In-Reply-To: <1445445464-5056-9-git-send-email-tianyu.lan@intel.com>
 References: <1445445464-5056-1-git-send-email-tianyu.lan@intel.com>
- <1445445464-5056-7-git-send-email-tianyu.lan@intel.com>
-Message-ID: <5627FC6B.8060004@gmail.com>
+ <1445445464-5056-9-git-send-email-tianyu.lan@intel.com>
+Message-ID: <56280050.9020301@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,108 +13,123 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 On 10/21/2015 09:37 AM, Lan Tianyu wrote:
-> In order to restore VF function after migration, add self emulation layer
-> to record regs' values during accessing regs.
+> When transmit a package, the end transmit desc of package
+> indicates whether package is sent already. Current code records
+> the end desc's pointer in the next_to_watch of struct tx buffer.
+> This code will be broken if shifting desc ring after migration.
+> The pointer will be invalid. This patch is to replace recording
+> pointer with recording the desc number of the package and find
+> the end decs via the first desc and desc number.
 >
 > Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
 > ---
->   drivers/net/ethernet/intel/ixgbevf/Makefile        |  3 ++-
->   drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c  |  2 +-
->   .../net/ethernet/intel/ixgbevf/self-emulation.c    | 26 ++++++++++++++++++++++
->   drivers/net/ethernet/intel/ixgbevf/vf.h            |  5 ++++-
->   4 files changed, 33 insertions(+), 3 deletions(-)
->   create mode 100644 drivers/net/ethernet/intel/ixgbevf/self-emulation.c
+>   drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |  1 +
+>   drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 19 ++++++++++++++++---
+>   2 files changed, 17 insertions(+), 3 deletions(-)
 >
-> diff --git a/drivers/net/ethernet/intel/ixgbevf/Makefile b/drivers/net/ethernet/intel/ixgbevf/Makefile
-> index 4ce4c97..841c884 100644
-> --- a/drivers/net/ethernet/intel/ixgbevf/Makefile
-> +++ b/drivers/net/ethernet/intel/ixgbevf/Makefile
-> @@ -31,7 +31,8 @@
->   
->   obj-$(CONFIG_IXGBEVF) += ixgbevf.o
->   
-> -ixgbevf-objs := vf.o \
-> +ixgbevf-objs := self-emulation.o \
-> +		vf.o \
->                   mbx.o \
->                   ethtool.o \
->                   ixgbevf_main.o
+> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+> index 775d089..c823616 100644
+> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+> @@ -54,6 +54,7 @@
+>    */
+>   struct ixgbevf_tx_buffer {
+>   	union ixgbe_adv_tx_desc *next_to_watch;
+> +	u16 desc_num;
+>   	unsigned long time_stamp;
+>   	struct sk_buff *skb;
+>   	unsigned int bytecount;
+
+So if you can't use next_to_watch why is it left in here?  Also you 
+might want to take a look at moving desc_num to a different spot in the 
+buffer as you are leaving a 6 byte hole in the descriptor.
+
 > diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> index a16d267..4446916 100644
+> index 4446916..056841c 100644
 > --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
 > +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> @@ -156,7 +156,7 @@ u32 ixgbevf_read_reg(struct ixgbe_hw *hw, u32 reg)
->   
->   	if (IXGBE_REMOVED(reg_addr))
->   		return IXGBE_FAILED_READ_REG;
-> -	value = readl(reg_addr + reg);
-> +	value = ixgbe_self_emul_readl(reg_addr, reg);
->   	if (unlikely(value == IXGBE_FAILED_READ_REG))
->   		ixgbevf_check_remove(hw, reg);
->   	return value;
-> diff --git a/drivers/net/ethernet/intel/ixgbevf/self-emulation.c b/drivers/net/ethernet/intel/ixgbevf/self-emulation.c
-> new file mode 100644
-> index 0000000..d74b2da
-> --- /dev/null
-> +++ b/drivers/net/ethernet/intel/ixgbevf/self-emulation.c
-> @@ -0,0 +1,26 @@
-> +#include <linux/netdevice.h>
-> +#include <linux/pci.h>
-> +#include <linux/delay.h>
-> +#include <linux/interrupt.h>
-> +#include <net/arp.h>
-> +
-> +#include "vf.h"
-> +#include "ixgbevf.h"
-> +
-> +static u32 hw_regs[0x4000];
-> +
-> +u32 ixgbe_self_emul_readl(volatile void __iomem *base, u32 addr)
-> +{
-> +	u32 tmp;
-> +
-> +	tmp = readl(base + addr);
-> +	hw_regs[(unsigned long)addr] = tmp;
-> +
-> +	return tmp;
-> +}
-> +
-> +void ixgbe_self_emul_writel(u32 val, volatile void __iomem *base, u32  addr)
-> +{
-> +	hw_regs[(unsigned long)addr] = val;
-> +	writel(val, (volatile void __iomem *)(base + addr));
-> +}
+> @@ -210,6 +210,7 @@ static void ixgbevf_unmap_and_free_tx_resource(struct ixgbevf_ring *tx_ring,
+>   			       DMA_TO_DEVICE);
+>   	}
+>   	tx_buffer->next_to_watch = NULL;
+> +	tx_buffer->desc_num = 0;
+>   	tx_buffer->skb = NULL;
+>   	dma_unmap_len_set(tx_buffer, len, 0);
 
-So I see what you are doing, however I don't think this adds much 
-value.  Many of the key registers for the device are not simple 
-Read/Write registers.  Most of them are things like write 1 to clear or 
-some other sort of value where writing doesn't set the bit but has some 
-other side effect.  Just take a look through the Datasheet at registers 
-such as the VFCTRL, VFMAILBOX, or most of the interrupt registers.  The 
-fact is simply storing the values off doesn't give you any real idea of 
-what the state of things are.
+This opens up a race condition.  If you have a descriptor ready to be 
+cleaned at offset 0 what is to prevent you from just running through the 
+ring?  You likely need to find a descriptor number that cannot be valid 
+to use here.
 
-> diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.h b/drivers/net/ethernet/intel/ixgbevf/vf.h
-> index d40f036..6a3f4eb 100644
-> --- a/drivers/net/ethernet/intel/ixgbevf/vf.h
-> +++ b/drivers/net/ethernet/intel/ixgbevf/vf.h
-> @@ -39,6 +39,9 @@
+>   	/* tx_buffer must be completely set up in the transmit path */
+> @@ -295,7 +296,7 @@ static bool ixgbevf_clean_tx_irq(struct ixgbevf_q_vector *q_vector,
+>   	union ixgbe_adv_tx_desc *tx_desc;
+>   	unsigned int total_bytes = 0, total_packets = 0;
+>   	unsigned int budget = tx_ring->count / 2;
+> -	unsigned int i = tx_ring->next_to_clean;
+> +	int i, watch_index;
 >   
->   struct ixgbe_hw;
+
+Where is i being initialized?  It was here but you removed it.  Are you 
+using i without initializing it?
+
+>   	if (test_bit(__IXGBEVF_DOWN, &adapter->state))
+>   		return true;
+> @@ -305,9 +306,17 @@ static bool ixgbevf_clean_tx_irq(struct ixgbevf_q_vector *q_vector,
+>   	i -= tx_ring->count;
 >   
-> +u32 ixgbe_self_emul_readl(volatile void __iomem *base, u32 addr);
-> +void ixgbe_self_emul_writel(u32 val, volatile void __iomem *base, u32  addr);
+>   	do {
+> -		union ixgbe_adv_tx_desc *eop_desc = tx_buffer->next_to_watch;
+> +		union ixgbe_adv_tx_desc *eop_desc;
 > +
->   /* iterator type for walking multicast address lists */
->   typedef u8* (*ixgbe_mc_addr_itr) (struct ixgbe_hw *hw, u8 **mc_addr_ptr,
->   				  u32 *vmdq);
-> @@ -182,7 +185,7 @@ static inline void ixgbe_write_reg(struct ixgbe_hw *hw, u32 reg, u32 value)
+> +		if (!tx_buffer->desc_num)
+> +			break;
+> +
+> +		if (i + tx_buffer->desc_num >= 0)
+> +			watch_index = i + tx_buffer->desc_num;
+> +		else
+> +			watch_index = i + tx_ring->count + tx_buffer->desc_num;
 >   
->   	if (IXGBE_REMOVED(reg_addr))
->   		return;
-> -	writel(value, reg_addr + reg);
-> +	ixgbe_self_emul_writel(value, reg_addr, reg);
->   }
+> -		/* if next_to_watch is not set then there is no work pending */
+> +		eop_desc = IXGBEVF_TX_DESC(tx_ring, watch_index);
+>   		if (!eop_desc)
+>   			break;
 >   
->   #define IXGBE_WRITE_REG(h, r, v) ixgbe_write_reg(h, r, v)
 
+So I don't see how this isn't triggering Tx hangs.  I suspect for the 
+simple ping case desc_num will often be 0.  The fact is there are many 
+cases where first and tx_buffer_info are the same descriptor.
+
+> @@ -320,6 +329,7 @@ static bool ixgbevf_clean_tx_irq(struct ixgbevf_q_vector *q_vector,
+>   
+>   		/* clear next_to_watch to prevent false hangs */
+>   		tx_buffer->next_to_watch = NULL;
+> +		tx_buffer->desc_num = 0;
+>   
+>   		/* update the statistics for this packet */
+>   		total_bytes += tx_buffer->bytecount;
+
+You cannot use 0 because 0 is a valid number.  You are using it as a 
+look-ahead currently and there are cases where i is the eop_desc index.
+
+> @@ -3457,6 +3467,7 @@ static void ixgbevf_tx_map(struct ixgbevf_ring *tx_ring,
+>   	u32 tx_flags = first->tx_flags;
+>   	__le32 cmd_type;
+>   	u16 i = tx_ring->next_to_use;
+> +	u16 start;
+>   
+>   	tx_desc = IXGBEVF_TX_DESC(tx_ring, i);
+>   
+> @@ -3540,6 +3551,8 @@ static void ixgbevf_tx_map(struct ixgbevf_ring *tx_ring,
+>   
+>   	/* set next_to_watch value indicating a packet is present */
+>   	first->next_to_watch = tx_desc;
+> +	start = first - tx_ring->tx_buffer_info;
+> +	first->desc_num = (i - start >= 0) ? i - start: i + tx_ring->count - start;
+>   
+>   	i++;
+>   	if (i == tx_ring->count)
+
+start and i could be the same value.  If you look at ixgbevf_tx_map you 
+should find that if the packet is contained in a single buffer then the 
+first and last descriptor in your send will be the same one.
