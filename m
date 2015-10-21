@@ -1,141 +1,64 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 21 Oct 2015 10:17:05 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- d80fcf2538400172641fcec7fe6ad39bbe49dcda BUILD DONE
-Message-ID: <5626f5a1.CZ9V5GxaiZwkkU6x%fengguang.wu@intel.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Wed, 21 Oct 2015 09:44:10 +0200 (CEST)
+Subject: [Intel-wired-lan] [PATCH v4 1/4] Produce system time from
+	correlated clocksource
+In-Reply-To: <CALAqxLXGnzwH5OgDCyggzxbao7UvS6_SOtVVkNVmjrsrOL-YBw@mail.gmail.com>
+References: <1444675522-4198-1-git-send-email-christopher.s.hall@intel.com>
+ <1444675522-4198-2-git-send-email-christopher.s.hall@intel.com>
+ <alpine.DEB.2.11.1510132116480.25029@nanos>
+ <op.x6iyd7gq1774gr@chall-mobl2.amr.corp.intel.com>
+ <alpine.DEB.2.11.1510151014330.3960@nanos>
+ <op.x6r25dza1774gr@chall-mobl2.amr.corp.intel.com>
+ <CALAqxLXu_C8sWaKyxqXJPFV+m5Zdk=4q4s7O6NoLR1B8bbyuxg@mail.gmail.com>
+ <20151020085408.GA2542@netboy> <alpine.DEB.2.11.1510201246250.3982@nanos>
+ <20151020115113.GA23428@netboy> <20151020145523.GA5207@netboy>
+ <alpine.DEB.2.11.1510202107410.8159@nanos>
+ <CALAqxLXGnzwH5OgDCyggzxbao7UvS6_SOtVVkNVmjrsrOL-YBw@mail.gmail.com>
+Message-ID: <alpine.DEB.2.11.1510210941130.4000@nanos>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-d80fcf2538400172641fcec7fe6ad39bbe49dcda  fm10k: TRIVIAL cleanup order at top of fm10k_xmit_frame
+On Tue, 20 Oct 2015, John Stultz wrote:
 
-drivers/net/ethernet/intel/fm10k/fm10k_pci.c:1755:2: error: too many arguments to function 'fm10k_dcbnl_set_ops'
-drivers/net/ethernet/intel/i40e/i40e_txrx.c:2357:17: warning: 'oudph' may be used uninitialized in this function [-Wmaybe-uninitialized]
-drivers/net/ethernet/intel/i40e/i40e_txrx.c:2357:20: warning: 'oiph' may be used uninitialized in this function [-Wmaybe-uninitialized]
+> On Tue, Oct 20, 2015 at 12:11 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> > On Tue, 20 Oct 2015, Richard Cochran wrote:
+> >> On Tue, Oct 20, 2015 at 01:51:13PM +0200, Richard Cochran wrote:
+> >> > You can, in fact, achieve "proper" correlation by sampling.  As John
+> >> > said, the question is whether the method in the patch set "measurably
+> >> > improves the error" over using another, simpler method.
+> >>
+> >> Here is a short example to put some numbers on the expected error.
+> >> Let the driver sample at an interval of 1 ms.  If the system time's
+> >> frequency hasn't changed between two samples, A and B, then the driver
+> >> may interpolate without introducing any error.
+> >
+> > Darn, we don't want to have that kind of sampling in every driver
+> > which has this kind of problem even if it looks like the simpler
+> > choice for this particular use case. This is going to be something
+> > which next generation chips will have on more than just the audio
+> > interface and we realy want to have a generic solution for this.
+> 
+> I sort of agree with Richard that the timekeeper history approach
+> doesn't seem like a generic solution here.
+ 
+I'm not pushing that approach. I just want a generic facility of some
+sort to solve that.
 
-Error ids grouped by kconfigs:
+> And again, you seem to be speaking with a bigger picture in mind that
+> at least I don't yet share (apologies for being thick headed here).
+> Being able to have various hardware sharing a time base is quite
+> useful, and methods for correlating timestamps together are useful.
+> But I don't yet really understand why its important that we can
+> translate a hardware timestamp from some time in the past to the
+> correct system time in the past without error.
 
-recent_errors
-??? i386-randconfig-a0-201542
-??? ??? drivers-net-ethernet-intel-fm10k-fm10k_pci.c:error:too-many-arguments-to-function-fm10k_dcbnl_set_ops
-??? x86_64-rhel
-    ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:oiph-may-be-used-uninitialized-in-this-function
-    ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:oudph-may-be-used-uninitialized-in-this-function
-
-elapsed time: 66m
-
-configs tested: 108
-
-i386                     randconfig-a0-201542
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64                            allnoconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x015-201542
-x86_64                 randconfig-x019-201542
-x86_64                 randconfig-x014-201542
-x86_64                 randconfig-x016-201542
-x86_64                 randconfig-x018-201542
-x86_64                 randconfig-x011-201542
-x86_64                 randconfig-x010-201542
-x86_64                 randconfig-x013-201542
-x86_64                 randconfig-x017-201542
-x86_64                 randconfig-x012-201542
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s1-201542
-i386                     randconfig-s0-201542
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201542
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201542
-i386                     randconfig-i1-201542
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201542
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-x002-201542
-x86_64                 randconfig-x009-201542
-x86_64                 randconfig-x003-201542
-x86_64                 randconfig-x000-201542
-x86_64                 randconfig-x004-201542
-x86_64                 randconfig-x001-201542
-x86_64                 randconfig-x006-201542
-x86_64                 randconfig-x007-201542
-x86_64                 randconfig-x005-201542
-x86_64                 randconfig-x008-201542
-i386                     randconfig-r0-201542
-i386                 randconfig-x007-10191220
-i386                 randconfig-x004-10191220
-i386                 randconfig-x000-10191220
-i386                 randconfig-x006-10191220
-i386                 randconfig-x003-10191220
-i386                 randconfig-x009-10191220
-i386                 randconfig-x008-10191220
-i386                 randconfig-x005-10191220
-i386                 randconfig-x002-10191220
-i386                 randconfig-x001-10191220
+If your device can only provide timestamps from the past, then having
+access to the history is important if you want to have precise
+correlation.
 
 Thanks,
-Fengguang
+
+	tglx
