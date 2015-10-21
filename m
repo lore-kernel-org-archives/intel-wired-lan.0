@@ -1,47 +1,48 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Wed, 21 Oct 2015 19:47:05 -0400
-Subject: [Intel-wired-lan] [next PATCH S19 04/15] i40e: remove BUG_ON from
-	fcoe setup
+Date: Wed, 21 Oct 2015 19:47:06 -0400
+Subject: [Intel-wired-lan] [next PATCH S19 05/15] i40e: Properly cast type
+	for arithmetic
 In-Reply-To: <1445471236-35918-1-git-send-email-catherine.sullivan@intel.com>
 References: <1445471236-35918-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1445471236-35918-5-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1445471236-35918-6-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Shannon Nelson <shannon.nelson@intel.com>
+From: Helin Zhang <helin.zhang@intel.com>
 
-There's no need to kill the kernel thread here. If this condition was
-true, the probe() would have died long before we got here. In any case,
-we'll get the same result when this code tries to use the vsi pointer
-being checked.
+Pointer of type void * shouldn't be used in arithmetic, which may
+result in compilation error. Casting of (u8 *) can be added to fix
+that.
 
-Prompted by a recent Linus diatribe.
-
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-Change-ID: I62f531cac34d4fc28ff9657d5b2d9523ae5e33a4
+Signed-off-by: Helin Zhang <helin.zhang@intel.com>
+Change-ID: I273aa57cdef7cacac5c552c348d585cd09d7e06b
 
 ---
-Testing-hints: Internal code change, check that the patch was applied
-and compiled correctly.
- drivers/net/ethernet/intel/i40e/i40e_fcoe.c | 2 --
- 1 file changed, 2 deletions(-)
+Testing-hints: Patch just avoids a compile warning with cast to u8 *, so
+verify with gcc option:
+-Wpointer-arith like make -C /lib/modules/`uname -r`/build \
+ M=driver/net/ethernet/intel EXTRA_CFLAGS=-Wpointer-arith
+Before this patch, there will be a warning on this line (among many
+others) - search for buff.va, and after it will be gone.
+ drivers/net/ethernet/intel/i40e/i40e_nvm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_fcoe.c b/drivers/net/ethernet/intel/i40e/i40e_fcoe.c
-index fe5d9bf..579a46c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_fcoe.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_fcoe.c
-@@ -1544,8 +1544,6 @@ void i40e_fcoe_vsi_setup(struct i40e_pf *pf)
- 	if (!(pf->flags & I40E_FLAG_FCOE_ENABLED))
- 		return;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
+index 6100cdd..29d6785 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
+@@ -1246,7 +1246,7 @@ static i40e_status i40e_nvmupd_get_aq_result(struct i40e_hw *hw,
+ 		remainder -= len;
+ 		buff = hw->nvm_buff.va;
+ 	} else {
+-		buff = hw->nvm_buff.va + (cmd->offset - aq_desc_len);
++		buff = (u8 *)hw->nvm_buff.va + (cmd->offset - aq_desc_len);
+ 	}
  
--	BUG_ON(!pf->vsi[pf->lan_vsi]);
--
- 	for (i = 0; i < pf->num_alloc_vsi; i++) {
- 		vsi = pf->vsi[i];
- 		if (vsi && vsi->type == I40E_VSI_FCOE) {
+ 	if (remainder > 0) {
 -- 
 1.9.3
 
