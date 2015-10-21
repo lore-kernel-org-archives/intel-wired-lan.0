@@ -1,64 +1,46 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Wed, 21 Oct 2015 09:44:10 +0200 (CEST)
-Subject: [Intel-wired-lan] [PATCH v4 1/4] Produce system time from
-	correlated clocksource
-In-Reply-To: <CALAqxLXGnzwH5OgDCyggzxbao7UvS6_SOtVVkNVmjrsrOL-YBw@mail.gmail.com>
-References: <1444675522-4198-1-git-send-email-christopher.s.hall@intel.com>
- <1444675522-4198-2-git-send-email-christopher.s.hall@intel.com>
- <alpine.DEB.2.11.1510132116480.25029@nanos>
- <op.x6iyd7gq1774gr@chall-mobl2.amr.corp.intel.com>
- <alpine.DEB.2.11.1510151014330.3960@nanos>
- <op.x6r25dza1774gr@chall-mobl2.amr.corp.intel.com>
- <CALAqxLXu_C8sWaKyxqXJPFV+m5Zdk=4q4s7O6NoLR1B8bbyuxg@mail.gmail.com>
- <20151020085408.GA2542@netboy> <alpine.DEB.2.11.1510201246250.3982@nanos>
- <20151020115113.GA23428@netboy> <20151020145523.GA5207@netboy>
- <alpine.DEB.2.11.1510202107410.8159@nanos>
- <CALAqxLXGnzwH5OgDCyggzxbao7UvS6_SOtVVkNVmjrsrOL-YBw@mail.gmail.com>
-Message-ID: <alpine.DEB.2.11.1510210941130.4000@nanos>
+From: Catherine Sullivan <catherine.sullivan@intel.com>
+Date: Wed, 21 Oct 2015 19:47:01 -0400
+Subject: [Intel-wired-lan] [next PATCH S19 00/15] i40e/i40evf updates
+Message-ID: <1445471236-35918-1-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 20 Oct 2015, John Stultz wrote:
+Anjali adds a workaround fix for mss < 256 issue and adds a stat to track
+how many times we have to do a force WB.
 
-> On Tue, Oct 20, 2015 at 12:11 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> > On Tue, 20 Oct 2015, Richard Cochran wrote:
-> >> On Tue, Oct 20, 2015 at 01:51:13PM +0200, Richard Cochran wrote:
-> >> > You can, in fact, achieve "proper" correlation by sampling.  As John
-> >> > said, the question is whether the method in the patch set "measurably
-> >> > improves the error" over using another, simpler method.
-> >>
-> >> Here is a short example to put some numbers on the expected error.
-> >> Let the driver sample at an interval of 1 ms.  If the system time's
-> >> frequency hasn't changed between two samples, A and B, then the driver
-> >> may interpolate without introducing any error.
-> >
-> > Darn, we don't want to have that kind of sampling in every driver
-> > which has this kind of problem even if it looks like the simpler
-> > choice for this particular use case. This is going to be something
-> > which next generation chips will have on more than just the audio
-> > interface and we realy want to have a generic solution for this.
-> 
-> I sort of agree with Richard that the timekeeper history approach
-> doesn't seem like a generic solution here.
- 
-I'm not pushing that approach. I just want a generic facility of some
-sort to solve that.
+Catherine moves the saving of old link info from handle_link_event to
+link_event.
 
-> And again, you seem to be speaking with a bigger picture in mind that
-> at least I don't yet share (apologies for being thick headed here).
-> Being able to have various hardware sharing a time base is quite
-> useful, and methods for correlating timestamps together are useful.
-> But I don't yet really understand why its important that we can
-> translate a hardware timestamp from some time in the past to the
-> correct system time in the past without error.
+Helin properly cast type for arithmetic, adds a comment to #endif, returns
+the number of enabled queues for ETHTOOL_GRXRINGS, reworks the functions
+to configure RSS with similar parameters, and creates a generic configure rss
+function.
 
-If your device can only provide timestamps from the past, then having
-access to the history is important if you want to have precise
-correlation.
+Mitch cleans up error messages, and adds support to handle many MAC filters
+correctly.
 
-Thanks,
+Shannon removes an unused tunnel parameter, changes BUG_ON to WARN_ON in
+service event complete, removes BUG_ON from feature string building,
+and removes BUG_ON from fcoe setup
 
-	tglx
+ drivers/net/ethernet/intel/i40e/i40e.h             |   4 +
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |   2 +-
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c     |  76 +++---
+ drivers/net/ethernet/intel/i40e/i40e_fcoe.c        |   2 -
+ drivers/net/ethernet/intel/i40e/i40e_main.c        | 255 ++++++++++++++++-----
+ drivers/net/ethernet/intel/i40e/i40e_nvm.c         |   2 +-
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c        |  15 +-
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h        |   1 +
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  21 +-
+ .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    |   2 +-
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c      |  12 +-
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.h      |   1 +
+ .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |  58 ++++-
+ 13 files changed, 311 insertions(+), 140 deletions(-)
+
+-- 
+1.9.3
+
