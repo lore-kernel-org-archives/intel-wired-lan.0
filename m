@@ -1,201 +1,81 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 21 Oct 2015 14:55:54 -0700
-Subject: [Intel-wired-lan] [RFC Patch 10/12] IXGBEVF: Add lock to
- protect tx/rx ring operation
-In-Reply-To: <1445445464-5056-11-git-send-email-tianyu.lan@intel.com>
+Date: Wed, 21 Oct 2015 16:26:47 -0700
+Subject: [Intel-wired-lan] [RFC Patch 00/12] IXGBE: Add live migration
+	support for SRIOV NIC
+In-Reply-To: <1445455227.4059.867.camel@redhat.com>
 References: <1445445464-5056-1-git-send-email-tianyu.lan@intel.com>
- <1445445464-5056-11-git-send-email-tianyu.lan@intel.com>
-Message-ID: <562809EA.2070601@gmail.com>
+ <CAJ3xEMiStMJdGjgO9=MQrhLpBo8ZiTRoOL_P=aC9kyrNi91FSw@mail.gmail.com>
+ <1445455227.4059.867.camel@redhat.com>
+Message-ID: <56281F37.1050506@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 10/21/2015 09:37 AM, Lan Tianyu wrote:
-> Ring shifting during restoring VF function maybe race with original
-> ring operation(transmit/receive package). This patch is to add tx/rx
-> lock to protect ring related data.
+On 10/21/2015 12:20 PM, Alex Williamson wrote:
+> On Wed, 2015-10-21 at 21:45 +0300, Or Gerlitz wrote:
+>> On Wed, Oct 21, 2015 at 7:37 PM, Lan Tianyu <tianyu.lan@intel.com> wrote:
+>>> This patchset is to propose a new solution to add live migration support
+>>> for 82599 SRIOV network card.
+>>
+>>> In our solution, we prefer to put all device specific operation into VF and
+>>> PF driver and make code in the Qemu more general.
+>>
+>> [...]
+>>
+>>> Service down time test
+>>> So far, we tested migration between two laptops with 82599 nic which
+>>> are connected to a gigabit switch. Ping VF in the 0.001s interval
+>>> during migration on the host of source side. It service down
+>>> time is about 180ms.
+>>
+>> So... what would you expect service down wise for the following
+>> solution which is zero touch and I think should work for any VF
+>> driver:
+>>
+>> on host A: unplug the VM and conduct live migration to host B ala the
+>> no-SRIOV case.
 >
-> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
-> ---
->   drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |  2 ++
->   drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 28 ++++++++++++++++++++---
->   2 files changed, 27 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-> index 6eab402e..3a748c8 100644
-> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-> @@ -448,6 +448,8 @@ struct ixgbevf_adapter {
->
->   	spinlock_t mbx_lock;
->   	unsigned long last_reset;
-> +	spinlock_t mg_rx_lock;
-> +	spinlock_t mg_tx_lock;
->   };
->
+> The trouble here is that the VF needs to be unplugged prior to the start
+> of migration because we can't do effective dirty page tracking while the
+> device is connected and doing DMA.  So the downtime, assuming we're
+> counting only VF connectivity, is dependent on memory size, rate of
+> dirtying, and network bandwidth; seconds for small guests, minutes or
+> more (maybe much, much more) for large guests.
 
-Really, a shared lock for all of the Rx or Tx rings?  This is going to 
-kill any chance at performance.  Especially since just recently the VFs 
-got support for RSS.
+The question of dirty page tracking though should be pretty simple.  We 
+start the Tx packets out as dirty so we don't need to add anything 
+there.  It seems like the Rx data and Tx/Rx descriptor rings are the issue.
 
-To top it off it also means we cannot clean Tx while adding new buffers 
-which will kill Tx performance.
+> This is why the typical VF agnostic approach here is to using bonding
+> and fail over to a emulated device during migration, so performance
+> suffers, but downtime is something acceptable.
+>
+> If we want the ability to defer the VF unplug until just before the
+> final stages of the migration, we need the VF to participate in dirty
+> page tracking.  Here it's done via an enlightened guest driver.  Alex
+> Graf presented a solution using a device specific enlightenment in QEMU.
+> Otherwise we'd need hardware support from the IOMMU.
 
-The other concern I have is what is supposed to prevent the hardware 
-from accessing the rings while you are reading?  I suspect nothing so I 
-don't see how this helps anything.
+My only real complaint with this patch series is that it seems like 
+there was to much focus on instrumenting the driver instead of providing 
+the code necessary to enable a driver ecosystem that enables migration.
 
-I would honestly say you are better off just giving up on all of the 
-data stored in the descriptor rings rather than trying to restore them. 
-  Yes you are going to lose a few packets but you don't have the risk 
-for races that this code introduces.
+I don't know if what we need is a full hardware IOMMU.  It seems like a 
+good way to take care of the need to flag dirty pages for DMA capable 
+devices would be to add functionality to the dma_map_ops calls 
+sync_{sg|single}for_cpu and unmap_{page|sg} so that they would take care 
+of mapping the pages as dirty for us when needed.  We could probably 
+make do with just a few tweaks to existing API in order to make this work.
 
->   enum ixbgevf_state_t {
-> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> index 15ec361..04b6ce7 100644
-> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> @@ -227,8 +227,10 @@ static u64 ixgbevf_get_tx_completed(struct ixgbevf_ring *ring)
->
->   int ixgbevf_tx_ring_shift(struct ixgbevf_ring *r, u32 head)
->   {
-> +	struct ixgbevf_adapter *adapter = netdev_priv(r->netdev);
->   	struct ixgbevf_tx_buffer *tx_buffer = NULL;
->   	static union ixgbevf_desc *tx_desc = NULL;
-> +	unsigned long flags;
->
->   	tx_buffer = vmalloc(sizeof(struct ixgbevf_tx_buffer) * (r->count));
->   	if (!tx_buffer)
-> @@ -238,6 +240,7 @@ int ixgbevf_tx_ring_shift(struct ixgbevf_ring *r, u32 head)
->   	if (!tx_desc)
->   		return -ENOMEM;
->
-> +	spin_lock_irqsave(&adapter->mg_tx_lock, flags);
->   	memcpy(tx_desc, r->desc, sizeof(union ixgbevf_desc) * r->count);
->   	memcpy(r->desc, &tx_desc[head], sizeof(union ixgbevf_desc) * (r->count - head));
->   	memcpy(&r->desc[r->count - head], tx_desc, sizeof(union ixgbevf_desc) * head);
-> @@ -256,6 +259,8 @@ int ixgbevf_tx_ring_shift(struct ixgbevf_ring *r, u32 head)
->   	else
->   		r->next_to_use += (r->count - head);
->
-> +	spin_unlock_irqrestore(&adapter->mg_tx_lock, flags);
-> +
->   	vfree(tx_buffer);
->   	vfree(tx_desc);
->   	return 0;
-> @@ -263,8 +268,10 @@ int ixgbevf_tx_ring_shift(struct ixgbevf_ring *r, u32 head)
->
->   int ixgbevf_rx_ring_shift(struct ixgbevf_ring *r, u32 head)
->   {
-> +	struct ixgbevf_adapter *adapter = netdev_priv(r->netdev);
->   	struct ixgbevf_rx_buffer *rx_buffer = NULL;
->   	static union ixgbevf_desc *rx_desc = NULL;
-> +	unsigned long flags;	
->
->   	rx_buffer = vmalloc(sizeof(struct ixgbevf_rx_buffer) * (r->count));
->   	if (!rx_buffer)
-> @@ -274,6 +281,7 @@ int ixgbevf_rx_ring_shift(struct ixgbevf_ring *r, u32 head)
->   	if (!rx_desc)
->   		return -ENOMEM;
->
-> +	spin_lock_irqsave(&adapter->mg_rx_lock, flags);
->   	memcpy(rx_desc, r->desc, sizeof(union ixgbevf_desc) * (r->count));
->   	memcpy(r->desc, &rx_desc[head], sizeof(union ixgbevf_desc) * (r->count - head));
->   	memcpy(&r->desc[r->count - head], rx_desc, sizeof(union ixgbevf_desc) * head);
-> @@ -291,6 +299,7 @@ int ixgbevf_rx_ring_shift(struct ixgbevf_ring *r, u32 head)
->   		r->next_to_use -= head;
->   	else
->   		r->next_to_use += (r->count - head);
-> +	spin_unlock_irqrestore(&adapter->mg_rx_lock, flags);
->
->   	vfree(rx_buffer);
->   	vfree(rx_desc);
-> @@ -377,6 +386,8 @@ static bool ixgbevf_clean_tx_irq(struct ixgbevf_q_vector *q_vector,
->   	if (test_bit(__IXGBEVF_DOWN, &adapter->state))
->   		return true;
->
-> +	spin_lock(&adapter->mg_tx_lock);
-> +	i = tx_ring->next_to_clean;
->   	tx_buffer = &tx_ring->tx_buffer_info[i];
->   	tx_desc = IXGBEVF_TX_DESC(tx_ring, i);
->   	i -= tx_ring->count;
-> @@ -471,6 +482,8 @@ static bool ixgbevf_clean_tx_irq(struct ixgbevf_q_vector *q_vector,
->   	q_vector->tx.total_bytes += total_bytes;
->   	q_vector->tx.total_packets += total_packets;
->
-> +	spin_unlock(&adapter->mg_tx_lock);
-> +
->   	if (check_for_tx_hang(tx_ring) && ixgbevf_check_tx_hang(tx_ring)) {
->   		struct ixgbe_hw *hw = &adapter->hw;
->   		union ixgbe_adv_tx_desc *eop_desc;
-> @@ -999,10 +1012,12 @@ static int ixgbevf_clean_rx_irq(struct ixgbevf_q_vector *q_vector,
->   				struct ixgbevf_ring *rx_ring,
->   				int budget)
->   {
-> +	struct ixgbevf_adapter *adapter = netdev_priv(rx_ring->netdev);
->   	unsigned int total_rx_bytes = 0, total_rx_packets = 0;
->   	u16 cleaned_count = ixgbevf_desc_unused(rx_ring);
->   	struct sk_buff *skb = rx_ring->skb;
->
-> +	spin_lock(&adapter->mg_rx_lock);
->   	while (likely(total_rx_packets < budget)) {
->   		union ixgbe_adv_rx_desc *rx_desc;
->
-> @@ -1078,6 +1093,7 @@ static int ixgbevf_clean_rx_irq(struct ixgbevf_q_vector *q_vector,
->   	q_vector->rx.total_packets += total_rx_packets;
->   	q_vector->rx.total_bytes += total_rx_bytes;
->
-> +	spin_unlock(&adapter->mg_rx_lock);
->   	return total_rx_packets;
->   }
->
-> @@ -3572,14 +3588,17 @@ static void ixgbevf_tx_map(struct ixgbevf_ring *tx_ring,
->   	struct ixgbevf_tx_buffer *tx_buffer;
->   	union ixgbe_adv_tx_desc *tx_desc;
->   	struct skb_frag_struct *frag = &skb_shinfo(skb)->frags[0];
-> +	struct ixgbevf_adapter *adapter = netdev_priv(tx_ring->netdev);
->   	unsigned int data_len = skb->data_len;
->   	unsigned int size = skb_headlen(skb);
->   	unsigned int paylen = skb->len - hdr_len;
-> +	unsigned long flags;
->   	u32 tx_flags = first->tx_flags;
->   	__le32 cmd_type;
-> -	u16 i = tx_ring->next_to_use;
-> -	u16 start;
-> +	u16 i, start;
->
-> +	spin_lock_irqsave(&adapter->mg_tx_lock, flags);
-> +	i = tx_ring->next_to_use;
->   	tx_desc = IXGBEVF_TX_DESC(tx_ring, i);
->
->   	ixgbevf_tx_olinfo_status(tx_desc, tx_flags, paylen);
-> @@ -3673,7 +3692,7 @@ static void ixgbevf_tx_map(struct ixgbevf_ring *tx_ring,
->
->   	/* notify HW of packet */
->   	ixgbevf_write_tail(tx_ring, i);
-> -
-> +	spin_unlock_irqrestore(&adapter->mg_tx_lock, flags);
->   	return;
->   dma_error:
->   	dev_err(tx_ring->dev, "TX DMA map failed\n");
-> @@ -3690,6 +3709,7 @@ dma_error:
->   	}
->
->   	tx_ring->next_to_use = i;
-> +	spin_unlock_irqrestore(&adapter->mg_tx_lock, flags);
->   }
->
->   static int __ixgbevf_maybe_stop_tx(struct ixgbevf_ring *tx_ring, int size)
-> @@ -4188,6 +4208,8 @@ static int ixgbevf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
->   		break;
->   	}
->
-> +	spin_lock_init(&adapter->mg_tx_lock);
-> +	spin_lock_init(&adapter->mg_rx_lock);
->   	return 0;
->
->   err_register:
->
+As far as the descriptor rings I would argue they are invalid as soon as 
+we migrate.  The problem is there is no way to guarantee ordering as we 
+cannot pre-emptively mark an Rx data buffer as being a dirty page when 
+we haven't even looked at the Rx descriptor for the given buffer yet. 
+Tx has similar issues as we cannot guarantee the Tx will disable itself 
+after a complete frame.  As such I would say the moment we migrate we 
+should just give up on the frames that are still in the descriptor 
+rings, drop them, and then start over with fresh rings.
 
+- Alex
