@@ -1,72 +1,57 @@
-From: Lan Tianyu <tianyu.lan@intel.com>
-Date: Thu, 22 Oct 2015 00:37:44 +0800
-Subject: [Intel-wired-lan] [RFC Patch 12/12] IXGBEVF: Track dma dirty pages
-In-Reply-To: <1445445464-5056-1-git-send-email-tianyu.lan@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 21 Oct 2015 11:07:22 -0700
+Subject: [Intel-wired-lan] [RFC Patch 01/12] PCI: Add virtfn_index for
+	struct pci_device
+In-Reply-To: <1445445464-5056-2-git-send-email-tianyu.lan@intel.com>
 References: <1445445464-5056-1-git-send-email-tianyu.lan@intel.com>
-Message-ID: <1445445464-5056-13-git-send-email-tianyu.lan@intel.com>
+ <1445445464-5056-2-git-send-email-tianyu.lan@intel.com>
+Message-ID: <5627D45A.4040502@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Migration relies on tracking dirty page to migrate memory.
-Hardware can't automatically mark a page as dirty after DMA
-memory access. VF descriptor rings and data buffers are modified
-by hardware when receive and transmit data. To track such dirty memory
-manually, do dummy writes(read a byte and write it back) during receive
-and transmit data.
+On 10/21/2015 09:37 AM, Lan Tianyu wrote:
+> Add "virtfn_index" member in the struct pci_device to record VF sequence
+> of PF. This will be used in the VF sysfs node handle.
+>
+> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+> ---
+>   drivers/pci/iov.c   | 1 +
+>   include/linux/pci.h | 1 +
+>   2 files changed, 2 insertions(+)
+>
+> diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
+> index ee0ebff..065b6bb 100644
+> --- a/drivers/pci/iov.c
+> +++ b/drivers/pci/iov.c
+> @@ -136,6 +136,7 @@ static int virtfn_add(struct pci_dev *dev, int id, int reset)
+>   	virtfn->physfn = pci_dev_get(dev);
+>   	virtfn->is_virtfn = 1;
+>   	virtfn->multifunction = 0;
+> +	virtfn->virtfn_index = id;
+>   
+>   	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
+>   		res = &dev->resource[i + PCI_IOV_RESOURCES];
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index 353db8d..85c5531 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -356,6 +356,7 @@ struct pci_dev {
+>   	unsigned int	io_window_1k:1;	/* Intel P2P bridge 1K I/O windows */
+>   	unsigned int	irq_managed:1;
+>   	pci_dev_flags_t dev_flags;
+> +	unsigned int	virtfn_index;
+>   	atomic_t	enable_cnt;	/* pci_enable_device has been called */
+>   
+>   	u32		saved_config_space[16]; /* config space saved at suspend time */
+>
 
-Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
----
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
+Can't you just calculate the VF index based on the VF BDF number 
+combined with the information in the PF BDF number and VF 
+offset/stride?  Seems kind of pointless to add a variable that is only 
+used by one driver and is in a slowpath when you can just calculate it 
+pretty quickly.
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index d22160f..ce7bd7a 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -414,6 +414,9 @@ static bool ixgbevf_clean_tx_irq(struct ixgbevf_q_vector *q_vector,
- 		if (!(eop_desc->wb.status & cpu_to_le32(IXGBE_TXD_STAT_DD)))
- 			break;
- 
-+		/* write back status to mark page dirty */
-+		eop_desc->wb.status = eop_desc->wb.status;
-+
- 		/* clear next_to_watch to prevent false hangs */
- 		tx_buffer->next_to_watch = NULL;
- 		tx_buffer->desc_num = 0;
-@@ -946,15 +949,17 @@ static struct sk_buff *ixgbevf_fetch_rx_buffer(struct ixgbevf_ring *rx_ring,
- {
- 	struct ixgbevf_rx_buffer *rx_buffer;
- 	struct page *page;
-+	u8 *page_addr;
- 
- 	rx_buffer = &rx_ring->rx_buffer_info[rx_ring->next_to_clean];
- 	page = rx_buffer->page;
- 	prefetchw(page);
- 
--	if (likely(!skb)) {
--		void *page_addr = page_address(page) +
--				  rx_buffer->page_offset;
-+	/* Mark page dirty */
-+	page_addr = page_address(page) + rx_buffer->page_offset;
-+	*page_addr = *page_addr;
- 
-+	if (likely(!skb)) {
- 		/* prefetch first cache line of first page */
- 		prefetch(page_addr);
- #if L1_CACHE_BYTES < 128
-@@ -1032,6 +1037,9 @@ static int ixgbevf_clean_rx_irq(struct ixgbevf_q_vector *q_vector,
- 		if (!ixgbevf_test_staterr(rx_desc, IXGBE_RXD_STAT_DD))
- 			break;
- 
-+		/* Write back status to mark page dirty */
-+		rx_desc->wb.upper.status_error = rx_desc->wb.upper.status_error;
-+
- 		/* This memory barrier is needed to keep us from reading
- 		 * any other fields out of the rx_desc until we know the
- 		 * RXD_STAT_DD bit is set
--- 
-1.8.4.rc0.1.g8f6a3e5.dirty
-
+- Alex
