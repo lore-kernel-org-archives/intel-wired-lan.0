@@ -1,68 +1,61 @@
-From: Nicholas Krause <xerofoify@gmail.com>
-Date: Tue, 20 Oct 2015 19:25:35 -0400
-Subject: [Intel-wired-lan] [PATCH] fm10k:Fix error handling in the
-	function	fm10k_setup_tc
-In-Reply-To: <6C4F5FD8-58B6-4A4D-8EAF-A02C3DB64560@intel.com>
-References: <1445375114-13378-1-git-send-email-xerofoify@gmail.com>
- <6C4F5FD8-58B6-4A4D-8EAF-A02C3DB64560@intel.com>
-Message-ID: <1F6ACC54-8E1F-4F64-A6FF-08877AA36420@gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 21 Oct 2015 08:47:24 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 71/77]
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c:1733:2: error: too many
+ arguments to function 'fm10k_dcbnl_set_ops'
+Message-ID: <201510210822.8OAYxNgA%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   18d709528c94cdf8c15cd0bf4deb2f5c3b9c655a
+commit: c90f3cb604214aceecf2271c3d32e48159b23d7c [71/77] fm10k: conditionally compile DCB and DebugFS support
+config: i386-randconfig-a0-201542 (attached as .config)
+reproduce:
+        git checkout c90f3cb604214aceecf2271c3d32e48159b23d7c
+        # save the attached .config to linux build tree
+        make ARCH=i386 
 
+All errors (new ones prefixed by >>):
 
-On October 20, 2015 7:11:51 PM EDT, "Rustad, Mark D" <mark.d.rustad@intel.com> wrote:
->Nicholas Krause <xerofoify@gmail.com> wrote:
->
->> This fixes error handling in the function fm10k_setup_tc to properly
->> check if the call to the function fm10k_open has failed by returning
->> a error and if so return immediately to the caller of the function
->> fm10k_setup_tc to properly signal this non recoverable failure.
->> 
->> Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
->> ---
->> drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 5 ++++-
->> 1 file changed, 4 insertions(+), 1 deletion(-)
->> 
->> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
->b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
->> index 99228bf..5a4e702 100644
->> --- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
->> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
->> @@ -1146,6 +1146,7 @@ static struct rtnl_link_stats64
->*fm10k_get_stats64(struct net_device *netdev,
->> int fm10k_setup_tc(struct net_device *dev, u8 tc)
->> {
->> 	struct fm10k_intfc *interface = netdev_priv(dev);
->> +	int err;
->> 
->> 	/* Currently only the PF supports priority classes */
->> 	if (tc && (interface->hw.mac.type != fm10k_mac_pf))
->> @@ -1175,7 +1176,9 @@ int fm10k_setup_tc(struct net_device *dev, u8
->tc)
->> 	fm10k_mbx_request_irq(interface);
->> 
->> 	if (netif_running(dev))
->> -		fm10k_open(dev);
->> +		err = fm10k_open(dev);
->> +	if (err)
->> +		return err;
->> 
->> 	/* flag to indicate SWPRI has yet to be updated */
->> 	interface->flags |= FM10K_FLAG_SWPRI_CONFIG;
->
->NAK. This will reference an uninitialized err variable when
->netif_running returns false. The compiler should complain about this,
->suggesting that it wasn't compiled.
->
->--
-I compiled it but my compiler builds it fine.  However this is a valid complaint that I don't mind fixing if there are no other complaints about the patch content. 
-Nick 
+   drivers/net/ethernet/intel/fm10k/fm10k_pci.c: In function 'fm10k_sw_init':
+>> drivers/net/ethernet/intel/fm10k/fm10k_pci.c:1733:2: error: too many arguments to function 'fm10k_dcbnl_set_ops'
+     fm10k_dcbnl_set_ops(netdev);
+     ^
+   In file included from drivers/net/ethernet/intel/fm10k/fm10k_pci.c:24:0:
+   drivers/net/ethernet/intel/fm10k/fm10k.h:557:20: note: declared here
+    static inline void fm10k_dcbnl_set_ops(void) {}
+                       ^
 
+vim +/fm10k_dcbnl_set_ops +1733 drivers/net/ethernet/intel/fm10k/fm10k_pci.c
 
+0e7b3644 Alexander Duyck 2014-09-20  1727  		netdev->hw_enc_features = 0;
+0e7b3644 Alexander Duyck 2014-09-20  1728  		netdev->features &= ~NETIF_F_GSO_UDP_TUNNEL;
+0e7b3644 Alexander Duyck 2014-09-20  1729  		netdev->hw_features &= ~NETIF_F_GSO_UDP_TUNNEL;
+0e7b3644 Alexander Duyck 2014-09-20  1730  	}
+0e7b3644 Alexander Duyck 2014-09-20  1731  
+9f801abc Alexander Duyck 2014-09-20  1732  	/* initialize DCBNL interface */
+9f801abc Alexander Duyck 2014-09-20 @1733  	fm10k_dcbnl_set_ops(netdev);
+9f801abc Alexander Duyck 2014-09-20  1734  
+b7d8514c Alexander Duyck 2014-09-20  1735  	/* Initialize service timer and service task */
+b7d8514c Alexander Duyck 2014-09-20  1736  	set_bit(__FM10K_SERVICE_DISABLE, &interface->state);
 
->Mark Rustad, Networking Division, Intel Corporation
+:::::: The code at line 1733 was first introduced by commit
+:::::: 9f801abc3d4fe1e770268ae4e610556e79be6fca fm10k: Add support for IEEE DCBx
 
+:::::: TO: Alexander Duyck <alexander.h.duyck@intel.com>
+:::::: CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/octet-stream
+Size: 26935 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151021/c1577f8c/attachment-0001.obj>
