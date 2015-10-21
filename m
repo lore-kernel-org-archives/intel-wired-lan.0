@@ -1,49 +1,206 @@
 From: Lan Tianyu <tianyu.lan@intel.com>
-Date: Thu, 22 Oct 2015 00:37:33 +0800
-Subject: [Intel-wired-lan] [RFC Patch 01/12] PCI: Add virtfn_index for
-	struct pci_device
+Date: Thu, 22 Oct 2015 00:37:35 +0800
+Subject: [Intel-wired-lan] [RFC Patch 03/12] IXGBE: Add sysfs interface for
+	Qemu to migrate VF status in the PF driver
 In-Reply-To: <1445445464-5056-1-git-send-email-tianyu.lan@intel.com>
 References: <1445445464-5056-1-git-send-email-tianyu.lan@intel.com>
-Message-ID: <1445445464-5056-2-git-send-email-tianyu.lan@intel.com>
+Message-ID: <1445445464-5056-4-git-send-email-tianyu.lan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add "virtfn_index" member in the struct pci_device to record VF sequence
-of PF. This will be used in the VF sysfs node handle.
+This patch is to add sysfs interface state_in_pf under sysfs directory
+of VF PCI device for Qemu to get and put VF status in the PF driver during
+migration.
 
 Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
 ---
- drivers/pci/iov.c   | 1 +
- include/linux/pci.h | 1 +
- 2 files changed, 2 insertions(+)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c | 156 ++++++++++++++++++++++++-
+ 1 file changed, 155 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
-index ee0ebff..065b6bb 100644
---- a/drivers/pci/iov.c
-+++ b/drivers/pci/iov.c
-@@ -136,6 +136,7 @@ static int virtfn_add(struct pci_dev *dev, int id, int reset)
- 	virtfn->physfn = pci_dev_get(dev);
- 	virtfn->is_virtfn = 1;
- 	virtfn->multifunction = 0;
-+	virtfn->virtfn_index = id;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+index ab2a2e2..89671eb 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+@@ -124,6 +124,157 @@ static int __ixgbe_enable_sriov(struct ixgbe_adapter *adapter)
+ 	return -ENOMEM;
+ }
  
- 	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
- 		res = &dev->resource[i + PCI_IOV_RESOURCES];
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 353db8d..85c5531 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -356,6 +356,7 @@ struct pci_dev {
- 	unsigned int	io_window_1k:1;	/* Intel P2P bridge 1K I/O windows */
- 	unsigned int	irq_managed:1;
- 	pci_dev_flags_t dev_flags;
-+	unsigned int	virtfn_index;
- 	atomic_t	enable_cnt;	/* pci_enable_device has been called */
++#define IXGBE_PCI_VFCOMMAND   0x4
++#define IXGBE_PCI_VFMSIXMC    0x72
++#define IXGBE_SRIOV_VF_OFFSET 0x180
++#define IXGBE_SRIOV_VF_STRIDE 0x2
++
++#define to_adapter(dev) ((struct ixgbe_adapter *)(pci_get_drvdata(to_pci_dev(dev)->physfn)))
++
++struct state_in_pf {
++	u16 command;
++	u16 msix_message_control;
++	struct vf_data_storage vf_data;
++};
++
++static struct pci_dev *ixgbe_get_virtfn_dev(struct pci_dev *pdev, int vfn)
++{
++	u16 rid = pdev->devfn + IXGBE_SRIOV_VF_OFFSET + IXGBE_SRIOV_VF_STRIDE * vfn;
++	return pci_get_bus_and_slot(pdev->bus->number + (rid >> 8), rid & 0xff);
++}
++
++static ssize_t ixgbe_show_state_in_pf(struct device *dev,
++				      struct device_attribute *attr, char *buf)
++{
++	struct ixgbe_adapter *adapter = to_adapter(dev);
++	struct pci_dev *pdev = adapter->pdev, *vdev;
++	struct pci_dev *vf_pdev = to_pci_dev(dev);
++	struct ixgbe_hw *hw = &adapter->hw;
++	struct state_in_pf *state = (struct state_in_pf *)buf;
++	int vfn = vf_pdev->virtfn_index;
++	u32 reg, reg_offset, vf_shift;
++
++	/* Clear VF mac and disable VF */
++	ixgbe_del_mac_filter(adapter, adapter->vfinfo[vfn].vf_mac_addresses, vfn);
++
++	/* Record PCI configurations */
++	vdev = ixgbe_get_virtfn_dev(pdev, vfn);
++	if (vdev) {
++		pci_read_config_word(vdev, IXGBE_PCI_VFCOMMAND, &state->command);
++		pci_read_config_word(vdev, IXGBE_PCI_VFMSIXMC, &state->msix_message_control);
++	}
++	else
++		printk(KERN_WARNING "Unable to find VF device.\n");
++
++	/* Record states hold by PF */
++	memcpy(&state->vf_data, &adapter->vfinfo[vfn], sizeof(struct vf_data_storage));
++
++	vf_shift = vfn % 32;
++	reg_offset = vfn / 32;
++
++	reg = IXGBE_READ_REG(hw, IXGBE_VFTE(reg_offset));
++	reg &= ~(1 << vf_shift);
++	IXGBE_WRITE_REG(hw, IXGBE_VFTE(reg_offset), reg);
++
++	reg = IXGBE_READ_REG(hw, IXGBE_VFRE(reg_offset));
++	reg &= ~(1 << vf_shift);
++	IXGBE_WRITE_REG(hw, IXGBE_VFRE(reg_offset), reg);
++
++	reg = IXGBE_READ_REG(hw, IXGBE_VMECM(reg_offset));
++	reg &= ~(1 << vf_shift);
++	IXGBE_WRITE_REG(hw, IXGBE_VMECM(reg_offset), reg);
++
++	return sizeof(struct state_in_pf);
++}
++
++static ssize_t ixgbe_store_state_in_pf(struct device *dev,
++				       struct device_attribute *attr,
++				       const char *buf, size_t count)
++{
++	struct ixgbe_adapter *adapter = to_adapter(dev);
++	struct pci_dev *pdev = adapter->pdev, *vdev;
++	struct pci_dev *vf_pdev = to_pci_dev(dev);
++	struct state_in_pf *state = (struct state_in_pf *)buf;
++	int vfn = vf_pdev->virtfn_index;
++
++	/* Check struct size */
++	if (count != sizeof(struct state_in_pf)) {
++		printk(KERN_ERR "State in PF size does not fit.\n");
++		goto out;
++	}
++
++	/* Restore PCI configurations */
++	vdev = ixgbe_get_virtfn_dev(pdev, vfn);
++	if (vdev) {
++		pci_write_config_word(vdev, IXGBE_PCI_VFCOMMAND, state->command);
++		pci_write_config_word(vdev, IXGBE_PCI_VFMSIXMC, state->msix_message_control);
++	}
++
++	/* Restore states hold by PF */
++	memcpy(&adapter->vfinfo[vfn], &state->vf_data, sizeof(struct vf_data_storage));
++
++  out:
++	return count;
++}
++
++static struct device_attribute ixgbe_per_state_in_pf_attribute =
++	__ATTR(state_in_pf, S_IRUGO | S_IWUSR,
++		ixgbe_show_state_in_pf, ixgbe_store_state_in_pf);
++
++void ixgbe_add_vf_attrib(struct ixgbe_adapter *adapter)
++{
++	struct pci_dev *pdev = adapter->pdev;
++	struct pci_dev *vfdev;
++	unsigned short vf_id;
++	int pos, ret;
++
++	pos = pci_find_ext_capability(pdev, PCI_EXT_CAP_ID_SRIOV);
++	if (!pos)
++		return;
++
++	/* get the device ID for the VF */
++	pci_read_config_word(pdev, pos + PCI_SRIOV_VF_DID, &vf_id);
++
++	vfdev = pci_get_device(pdev->vendor, vf_id, NULL);
++
++	while (vfdev) {
++		if (vfdev->is_virtfn) {
++			ret = device_create_file(&vfdev->dev,
++					&ixgbe_per_state_in_pf_attribute);
++			if (ret)
++				pr_warn("Unable to add VF attribute for dev %s,\n",
++					dev_name(&vfdev->dev));
++		}
++
++		vfdev = pci_get_device(pdev->vendor, vf_id, vfdev);
++	}
++}
++
++void ixgbe_remove_vf_attrib(struct ixgbe_adapter *adapter)
++{
++	struct pci_dev *pdev = adapter->pdev;
++	struct pci_dev *vfdev;
++	unsigned short vf_id;
++	int pos;
++
++	pos = pci_find_ext_capability(pdev, PCI_EXT_CAP_ID_SRIOV);
++	if (!pos)
++		return;
++
++	/* get the device ID for the VF */
++	pci_read_config_word(pdev, pos + PCI_SRIOV_VF_DID, &vf_id);
++
++	vfdev = pci_get_device(pdev->vendor, vf_id, NULL);
++
++	while (vfdev) {
++		if (vfdev->is_virtfn) {
++			device_remove_file(&vfdev->dev, &ixgbe_per_state_in_pf_attribute);
++		}
++
++		vfdev = pci_get_device(pdev->vendor, vf_id, vfdev);
++	}
++}
++
+ /* Note this function is called when the user wants to enable SR-IOV
+  * VFs using the now deprecated module parameter
+  */
+@@ -198,6 +349,9 @@ int ixgbe_disable_sriov(struct ixgbe_adapter *adapter)
+ 	if (!(adapter->flags & IXGBE_FLAG_SRIOV_ENABLED))
+ 		return 0;
  
- 	u32		saved_config_space[16]; /* config space saved at suspend time */
++
++	ixgbe_remove_vf_attrib(adapter);
++
+ #ifdef CONFIG_PCI_IOV
+ 	/*
+ 	 * If our VFs are assigned we cannot shut down SR-IOV
+@@ -284,7 +438,7 @@ static int ixgbe_pci_sriov_enable(struct pci_dev *dev, int num_vfs)
+ 		return err;
+ 	}
+ 	ixgbe_sriov_reinit(adapter);
+-
++	ixgbe_add_vf_attrib(adapter);
+ 	return num_vfs;
+ #else
+ 	return 0;
 -- 
 1.8.4.rc0.1.g8f6a3e5.dirty
 
