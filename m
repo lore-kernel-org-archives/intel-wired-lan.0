@@ -1,8 +1,8 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 21 Oct 2015 09:28:14 +0800
+Date: Wed, 21 Oct 2015 10:17:05 +0800
 Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- b4ad5997d4a1e8456cda59dac1e9c9fd8983ec97 BUILD DONE
-Message-ID: <5626ea2e.TQg04hWI9yzK+Ghk%fengguang.wu@intel.com>
+ d80fcf2538400172641fcec7fe6ad39bbe49dcda BUILD DONE
+Message-ID: <5626f5a1.CZ9V5GxaiZwkkU6x%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,9 +10,9 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-b4ad5997d4a1e8456cda59dac1e9c9fd8983ec97  fm10k: Add support for ITR scaling based on PCIe link speed
+d80fcf2538400172641fcec7fe6ad39bbe49dcda  fm10k: TRIVIAL cleanup order at top of fm10k_xmit_frame
 
-drivers/net/ethernet/intel/fm10k/fm10k_pci.c:1753:2: error: too many arguments to function 'fm10k_dcbnl_set_ops'
+drivers/net/ethernet/intel/fm10k/fm10k_pci.c:1755:2: error: too many arguments to function 'fm10k_dcbnl_set_ops'
 drivers/net/ethernet/intel/i40e/i40e_txrx.c:2357:17: warning: 'oudph' may be used uninitialized in this function [-Wmaybe-uninitialized]
 drivers/net/ethernet/intel/i40e/i40e_txrx.c:2357:20: warning: 'oiph' may be used uninitialized in this function [-Wmaybe-uninitialized]
 
@@ -25,12 +25,20 @@ recent_errors
     ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:oiph-may-be-used-uninitialized-in-this-function
     ??? drivers-net-ethernet-intel-i40e-i40e_txrx.c:warning:oudph-may-be-used-uninitialized-in-this-function
 
-elapsed time: 47m
+elapsed time: 66m
 
-configs tested: 107
+configs tested: 108
 
 i386                     randconfig-a0-201542
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
 x86_64                            allnoconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
 arm                               allnoconfig
 arm                         at91_dt_defconfig
 arm                                  at_hdmac
@@ -43,9 +51,9 @@ arm                                    sa1100
 arm                                   samsung
 arm                                        sh
 arm                       spear13xx_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
 alpha                               defconfig
 parisc                            allnoconfig
 parisc                         b180_defconfig
@@ -73,9 +81,8 @@ i386                                defconfig
 m68k                       m5475evb_defconfig
 m68k                          multi_defconfig
 m68k                           sun3_defconfig
-i386                     randconfig-s0-201542
 i386                     randconfig-s1-201542
-x86_64                           allmodconfig
+i386                     randconfig-s0-201542
 avr32                      atngw100_defconfig
 avr32                     atstk1006_defconfig
 frv                                 defconfig
@@ -88,9 +95,6 @@ mips                              allnoconfig
 mips                      fuloong2e_defconfig
 mips                                   jz4740
 mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
 x86_64                   randconfig-i0-201542
 sparc                               defconfig
 sparc64                           allnoconfig
@@ -105,13 +109,12 @@ m32r                         opsput_defconfig
 m32r                           usrv_defconfig
 xtensa                       common_defconfig
 xtensa                          iss_defconfig
-i386                     randconfig-n0-201542
 x86_64                                    lkp
 x86_64                                   rhel
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
+i386                     randconfig-n0-201542
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
 x86_64                 randconfig-x002-201542
 x86_64                 randconfig-x009-201542
 x86_64                 randconfig-x003-201542
@@ -122,9 +125,6 @@ x86_64                 randconfig-x006-201542
 x86_64                 randconfig-x007-201542
 x86_64                 randconfig-x005-201542
 x86_64                 randconfig-x008-201542
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
 i386                     randconfig-r0-201542
 i386                 randconfig-x007-10191220
 i386                 randconfig-x004-10191220
