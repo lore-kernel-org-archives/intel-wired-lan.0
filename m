@@ -1,57 +1,47 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 21 Oct 2015 11:07:22 -0700
-Subject: [Intel-wired-lan] [RFC Patch 01/12] PCI: Add virtfn_index for
-	struct pci_device
-In-Reply-To: <1445445464-5056-2-git-send-email-tianyu.lan@intel.com>
+From: Or Gerlitz <gerlitz.or@gmail.com>
+Date: Wed, 21 Oct 2015 21:45:42 +0300
+Subject: [Intel-wired-lan] [RFC Patch 00/12] IXGBE: Add live migration
+	support for SRIOV NIC
+In-Reply-To: <1445445464-5056-1-git-send-email-tianyu.lan@intel.com>
 References: <1445445464-5056-1-git-send-email-tianyu.lan@intel.com>
- <1445445464-5056-2-git-send-email-tianyu.lan@intel.com>
-Message-ID: <5627D45A.4040502@gmail.com>
+Message-ID: <CAJ3xEMiStMJdGjgO9=MQrhLpBo8ZiTRoOL_P=aC9kyrNi91FSw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 10/21/2015 09:37 AM, Lan Tianyu wrote:
-> Add "virtfn_index" member in the struct pci_device to record VF sequence
-> of PF. This will be used in the VF sysfs node handle.
->
-> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
-> ---
->   drivers/pci/iov.c   | 1 +
->   include/linux/pci.h | 1 +
->   2 files changed, 2 insertions(+)
->
-> diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
-> index ee0ebff..065b6bb 100644
-> --- a/drivers/pci/iov.c
-> +++ b/drivers/pci/iov.c
-> @@ -136,6 +136,7 @@ static int virtfn_add(struct pci_dev *dev, int id, int reset)
->   	virtfn->physfn = pci_dev_get(dev);
->   	virtfn->is_virtfn = 1;
->   	virtfn->multifunction = 0;
-> +	virtfn->virtfn_index = id;
->   
->   	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
->   		res = &dev->resource[i + PCI_IOV_RESOURCES];
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index 353db8d..85c5531 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -356,6 +356,7 @@ struct pci_dev {
->   	unsigned int	io_window_1k:1;	/* Intel P2P bridge 1K I/O windows */
->   	unsigned int	irq_managed:1;
->   	pci_dev_flags_t dev_flags;
-> +	unsigned int	virtfn_index;
->   	atomic_t	enable_cnt;	/* pci_enable_device has been called */
->   
->   	u32		saved_config_space[16]; /* config space saved at suspend time */
->
+On Wed, Oct 21, 2015 at 7:37 PM, Lan Tianyu <tianyu.lan@intel.com> wrote:
+> This patchset is to propose a new solution to add live migration support
+> for 82599 SRIOV network card.
 
-Can't you just calculate the VF index based on the VF BDF number 
-combined with the information in the PF BDF number and VF 
-offset/stride?  Seems kind of pointless to add a variable that is only 
-used by one driver and is in a slowpath when you can just calculate it 
-pretty quickly.
+> In our solution, we prefer to put all device specific operation into VF and
+> PF driver and make code in the Qemu more general.
 
-- Alex
+[...]
+
+> Service down time test
+> So far, we tested migration between two laptops with 82599 nic which
+> are connected to a gigabit switch. Ping VF in the 0.001s interval
+> during migration on the host of source side. It service down
+> time is about 180ms.
+
+So... what would you expect service down wise for the following
+solution which is zero touch and I think should work for any VF
+driver:
+
+on host A: unplug the VM and conduct live migration to host B ala the
+no-SRIOV case.
+
+on host B:
+
+when the VM "gets back to live", probe a VF there with the same assigned mac
+
+next, udev on the VM will call the VF driver to create netdev instance
+
+DHCP client would run to get the same IP address
+
++ under config directive (or from Qemu) send Gratuitous ARP to notify
+the switch/es on the new location for that mac.
+
+Or.
