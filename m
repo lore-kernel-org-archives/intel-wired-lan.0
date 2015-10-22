@@ -1,43 +1,145 @@
-From: Alexander Duyck <aduyck@mirantis.com>
-Date: Thu, 22 Oct 2015 16:26:42 -0700
-Subject: [Intel-wired-lan] [net-next PATCH 3/3] ixgbe: Allow FDB entries
- access to more RAR filters
-In-Reply-To: <20151022232228.24612.81341.stgit@ahduyck-vm-fedora22>
-References: <20151022232228.24612.81341.stgit@ahduyck-vm-fedora22>
-Message-ID: <20151022232642.24612.46212.stgit@ahduyck-vm-fedora22>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 23 Oct 2015 07:52:44 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ 30cf27d3c760537694dd1c948553850343c15003 BUILD SUCCESS
+Message-ID: <562976cc.vCsibP0Fg2/H0EYB%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This change makes it so that we allow the PF to make use of all free RAR
-entries for FDB use if needed.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+30cf27d3c760537694dd1c948553850343c15003  i40e: fix stats offsets
 
-Previously the code limited us to 16 unicast entries, however this was
-shared between MACVLAN which wasn't limited and the FDB code which was.  So
-instead of treating the FDB code as a second class citizen I have updated
-it so that it has access to just as many entries as the MACVLAN filters.
+elapsed time: 43m
 
-Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+configs tested: 124
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index ba5c0d5b95b9..4befe637b9be 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -8206,7 +8206,10 @@ static int ixgbe_ndo_fdb_add(struct ndmsg *ndm, struct nlattr *tb[],
- {
- 	/* guarantee we can provide a unique filter for the unicast address */
- 	if (is_unicast_ether_addr(addr) || is_link_local_ether_addr(addr)) {
--		if (IXGBE_MAX_PF_MACVLANS <= netdev_uc_count(dev))
-+		struct ixgbe_adapter *adapter = netdev_priv(dev);
-+		u16 pool = VMDQ_P(0);
-+
-+		if (netdev_uc_count(dev) >= ixgbe_available_rars(adapter, pool))
- 			return -ENOMEM;
- 	}
- 
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201542
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+x86_64                            allnoconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-10230643
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+parisc                         b180_defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64               randconfig-x013-10211707
+x86_64               randconfig-x014-10211707
+x86_64               randconfig-x011-10211707
+x86_64               randconfig-x010-10211707
+x86_64               randconfig-x015-10211707
+x86_64               randconfig-x016-10211707
+x86_64               randconfig-x012-10211707
+x86_64               randconfig-x019-10211707
+x86_64               randconfig-x017-10211707
+x86_64               randconfig-x018-10211707
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201542
+i386                     randconfig-s1-201542
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                 randconfig-i0-10211829
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                         iop13xx_defconfig
+m68k                            mac_defconfig
+powerpc                 linkstation_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201542
+i386                     randconfig-i1-201542
+x86_64                           allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                                       mmp
+arm                       omap2plus_defconfig
+arm                         s3c2410_defconfig
+arm                           tegra_defconfig
+i386                     randconfig-n0-201542
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                 randconfig-n0-10230616
+arm                        raumfeld_defconfig
+blackfin          BF527-AD7160-EVAL_defconfig
+blackfin                  TCM-BF518_defconfig
+x86_64               randconfig-x001-10211812
+x86_64               randconfig-x004-10211812
+x86_64               randconfig-x005-10211812
+x86_64               randconfig-x003-10211812
+x86_64               randconfig-x007-10211812
+x86_64               randconfig-x000-10211812
+x86_64               randconfig-x009-10211812
+x86_64               randconfig-x002-10211812
+x86_64               randconfig-x008-10211812
+x86_64               randconfig-x006-10211812
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201542
+arm                        mini2440_defconfig
+powerpc                 mpc834x_itx_defconfig
+powerpc                     redwood_defconfig
+i386                 randconfig-x008-10211814
+i386                 randconfig-x002-10211814
+i386                 randconfig-x009-10211814
+i386                 randconfig-x003-10211814
+i386                 randconfig-x004-10211814
+i386                 randconfig-x005-10211814
+i386                 randconfig-x006-10211814
+i386                 randconfig-x000-10211814
+i386                 randconfig-x007-10211814
+i386                 randconfig-x001-10211814
 
+Thanks,
+Fengguang
