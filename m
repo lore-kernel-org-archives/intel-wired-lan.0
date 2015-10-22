@@ -1,31 +1,49 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Thu, 22 Oct 2015 12:10:14 +0300
-Subject: [Intel-wired-lan] [patch] igbvf: integer overflow in
-	igbvf_change_mtu()
-Message-ID: <20151022091013.GC9202@mwanda>
+From: Jason A. Donenfeld <Jason@zx2c4.com>
+Date: Thu, 22 Oct 2015 17:27:22 +0200
+Subject: [Intel-wired-lan] [PATCH] e1000: free skb when returning on -ENOMEM
+	error
+Message-ID: <1445527642-15567-1-git-send-email-Jason@zx2c4.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The "new_mtu" is between 0 and INT_MAX but when we add ETH_HLEN and
-ETH_FCS_LEN to it then it could overflow so "max_frame" is negative.  We
-cap the upper bound of "max_frame" but we don't check for negative
-values.  This leads to a static checker warning.
+eth_skb_pad returns 0 if it was successful, or -ENOMEM if it was not. In
+that case, this function exits early. Some early exits return with
+NETDEV_TX_BUSY, which queues the skb up to be tried again, and so the
+skb should not be freed. Other early exits return with NETDEV_TX_OK,
+like this one, in which case it's imperative that the skb is freed,
+since it is not queued back up. In this case, upon receiving -ENOMEM
+from eth_skb_pad, the function exits early with NETDEV_TX_OK, but
+forgets to free the skb. This patch fixes that.
 
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+In a low memory situation, in which the GFP_ATOMIC allocation from
+eth_skb_pad fails, if a network device is transmitting repeatedly, this
+bug could lead to rapidly leaking memory that could only be recovered by
+a reboot or crash.
 
-diff --git a/drivers/net/ethernet/intel/igbvf/netdev.c b/drivers/net/ethernet/intel/igbvf/netdev.c
-index 297af80..fa338e0 100644
---- a/drivers/net/ethernet/intel/igbvf/netdev.c
-+++ b/drivers/net/ethernet/intel/igbvf/netdev.c
-@@ -2350,7 +2350,7 @@ static struct net_device_stats *igbvf_get_stats(struct net_device *netdev)
- static int igbvf_change_mtu(struct net_device *netdev, int new_mtu)
- {
- 	struct igbvf_adapter *adapter = netdev_priv(netdev);
--	int max_frame = new_mtu + ETH_HLEN + ETH_FCS_LEN;
-+	unsigned int max_frame = new_mtu + ETH_HLEN + ETH_FCS_LEN;
+Signed-off-by: Jason A. Donenfeld <Jason@zx2c4.com>
+---
+ drivers/net/ethernet/intel/e1000/e1000_main.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
+index 74dc150..0d6b4c8 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_main.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+@@ -3130,8 +3130,10 @@ static netdev_tx_t e1000_xmit_frame(struct sk_buff *skb,
+ 	 * packets may get corrupted during padding by HW.
+ 	 * To WA this issue, pad all small packets manually.
+ 	 */
+-	if (eth_skb_pad(skb))
++	if (eth_skb_pad(skb)) {
++		dev_kfree_skb_any(skb);
+ 		return NETDEV_TX_OK;
++	}
  
- 	if (new_mtu < 68 || new_mtu > INT_MAX - ETH_HLEN - ETH_FCS_LEN ||
- 	    max_frame > MAX_JUMBO_FRAME_SIZE)
+ 	mss = skb_shinfo(skb)->gso_size;
+ 	/* The controller does a simple calculation to
+-- 
+2.6.2
+
