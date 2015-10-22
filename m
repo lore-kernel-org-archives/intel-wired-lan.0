@@ -1,75 +1,141 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Wed, 21 Oct 2015 17:21:15 -0700
-Subject: [Intel-wired-lan] [PATCH 2/3] ixgbevf: Use a private workqueue to
- avoid certain possible hangs
+Date: Wed, 21 Oct 2015 17:21:20 -0700
+Subject: [Intel-wired-lan] [PATCH 3/3] ixgbevf: Minor cleanups
 In-Reply-To: <20151022002110.51120.4643.stgit@mdrustad-wks.jf.intel.com>
 References: <20151022002110.51120.4643.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <20151022002115.51120.4428.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <20151022002120.51120.55397.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Use a private workqueue to avoid hangs that were otherwise possible
-when performing stress tests, such as creating and destroying many
-vfs repeatedly.
+Make some minor cleanups, such as simplifying return paths, deleting
+unneded initializations, return values more directly and so forth.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   36 +++++++--------------
+ 1 file changed, 12 insertions(+), 24 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index e2d07da480cc..7a7cc7d85bb8 100644
+index 7a7cc7d85bb8..3d257279e770 100644
 --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
 +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -59,7 +59,7 @@ static const char ixgbevf_driver_string[] =
- #define DRV_VERSION "2.12.1-k"
- const char ixgbevf_driver_version[] = DRV_VERSION;
- static char ixgbevf_copyright[] =
--	"Copyright (c) 2009 - 2012 Intel Corporation.";
-+	"Copyright (c) 2009 - 2015 Intel Corporation.";
+@@ -1334,7 +1334,6 @@ static int ixgbevf_map_rings_to_vectors(struct ixgbevf_adapter *adapter)
+ 	int txr_remaining = adapter->num_tx_queues;
+ 	int i, j;
+ 	int rqpv, tqpv;
+-	int err = 0;
  
- static const struct ixgbevf_info *ixgbevf_info_tbl[] = {
- 	[board_82599_vf] = &ixgbevf_82599_vf_info,
-@@ -96,12 +96,14 @@ static int debug = -1;
- module_param(debug, int, 0);
- MODULE_PARM_DESC(debug, "Debug level (0=none,...,16=all)");
+ 	q_vectors = adapter->num_msix_vectors - NON_Q_VECTORS;
  
-+static struct workqueue_struct *ixgbevf_wq;
-+
- static void ixgbevf_service_event_schedule(struct ixgbevf_adapter *adapter)
- {
- 	if (!test_bit(__IXGBEVF_DOWN, &adapter->state) &&
- 	    !test_bit(__IXGBEVF_REMOVING, &adapter->state) &&
- 	    !test_and_set_bit(__IXGBEVF_SERVICE_SCHED, &adapter->state))
--		schedule_work(&adapter->service_task);
-+		queue_work(ixgbevf_wq, &adapter->service_task);
+@@ -1347,7 +1346,7 @@ static int ixgbevf_map_rings_to_vectors(struct ixgbevf_adapter *adapter)
+ 
+ 		for (; txr_idx < txr_remaining; v_start++, txr_idx++)
+ 			map_vector_to_txq(adapter, v_start, txr_idx);
+-		goto out;
++		return 0;
+ 	}
+ 
+ 	/* If we don't have enough vectors for a 1-to-1
+@@ -1372,8 +1371,7 @@ static int ixgbevf_map_rings_to_vectors(struct ixgbevf_adapter *adapter)
+ 		}
+ 	}
+ 
+-out:
+-	return err;
++	return 0;
  }
  
- static void ixgbevf_service_event_complete(struct ixgbevf_adapter *adapter)
-@@ -4253,6 +4255,11 @@ static int __init ixgbevf_init_module(void)
+ /**
+@@ -1471,9 +1469,7 @@ static inline void ixgbevf_reset_q_vectors(struct ixgbevf_adapter *adapter)
+  **/
+ static int ixgbevf_request_irq(struct ixgbevf_adapter *adapter)
+ {
+-	int err = 0;
+-
+-	err = ixgbevf_request_msix_irqs(adapter);
++	int err = ixgbevf_request_msix_irqs(adapter);
+ 
+ 	if (err)
+ 		hw_dbg(&adapter->hw, "request_irq failed, Error %d\n", err);
+@@ -1832,7 +1828,7 @@ static int ixgbevf_vlan_rx_kill_vid(struct net_device *netdev,
+ {
+ 	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
+ 	struct ixgbe_hw *hw = &adapter->hw;
+-	int err = -EOPNOTSUPP;
++	int err;
+ 
+ 	spin_lock_bh(&adapter->mbx_lock);
+ 
+@@ -2048,7 +2044,7 @@ static void ixgbevf_negotiate_api(struct ixgbevf_adapter *adapter)
+ 		      ixgbe_mbox_api_11,
+ 		      ixgbe_mbox_api_10,
+ 		      ixgbe_mbox_api_unknown };
+-	int err = 0, idx = 0;
++	int err, idx = 0;
+ 
+ 	spin_lock_bh(&adapter->mbx_lock);
+ 
+@@ -2421,7 +2417,7 @@ err_allocation:
+ static int ixgbevf_set_interrupt_capability(struct ixgbevf_adapter *adapter)
+ {
+ 	struct net_device *netdev = adapter->netdev;
+-	int err = 0;
++	int err;
+ 	int vector, v_budget;
+ 
+ 	/* It's easy to be greedy for MSI-X vectors, but it really
+@@ -2439,26 +2435,21 @@ static int ixgbevf_set_interrupt_capability(struct ixgbevf_adapter *adapter)
+ 	 */
+ 	adapter->msix_entries = kcalloc(v_budget,
+ 					sizeof(struct msix_entry), GFP_KERNEL);
+-	if (!adapter->msix_entries) {
+-		err = -ENOMEM;
+-		goto out;
+-	}
++	if (!adapter->msix_entries)
++		return -ENOMEM;
+ 
+ 	for (vector = 0; vector < v_budget; vector++)
+ 		adapter->msix_entries[vector].entry = vector;
+ 
+ 	err = ixgbevf_acquire_msix_vectors(adapter, v_budget);
+ 	if (err)
+-		goto out;
++		return err;
+ 
+ 	err = netif_set_real_num_tx_queues(netdev, adapter->num_tx_queues);
+ 	if (err)
+-		goto out;
+-
+-	err = netif_set_real_num_rx_queues(netdev, adapter->num_rx_queues);
++		return err;
+ 
+-out:
+-	return err;
++	return netif_set_real_num_rx_queues(netdev, adapter->num_rx_queues);
+ }
+ 
+ /**
+@@ -4249,8 +4240,6 @@ static struct pci_driver ixgbevf_driver = {
+  **/
+ static int __init ixgbevf_init_module(void)
+ {
+-	int ret;
+-
+ 	pr_info("%s - version %s\n", ixgbevf_driver_string,
  		ixgbevf_driver_version);
  
- 	pr_info("%s\n", ixgbevf_copyright);
-+	ixgbevf_wq = create_singlethread_workqueue(ixgbevf_driver_name);
-+	if (!ixgbevf_wq) {
-+		pr_err("%s: Failed to create workqueue\n", ixgbevf_driver_name);
-+		return -ENOMEM;
-+	}
+@@ -4261,8 +4250,7 @@ static int __init ixgbevf_init_module(void)
+ 		return -ENOMEM;
+ 	}
  
- 	ret = pci_register_driver(&ixgbevf_driver);
- 	return ret;
-@@ -4269,6 +4276,10 @@ module_init(ixgbevf_init_module);
- static void __exit ixgbevf_exit_module(void)
- {
- 	pci_unregister_driver(&ixgbevf_driver);
-+	if (ixgbevf_wq) {
-+		destroy_workqueue(ixgbevf_wq);
-+		ixgbevf_wq = NULL;
-+	}
+-	ret = pci_register_driver(&ixgbevf_driver);
+-	return ret;
++	return pci_register_driver(&ixgbevf_driver);
  }
  
- #ifdef DEBUG
+ module_init(ixgbevf_init_module);
 
