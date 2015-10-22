@@ -1,78 +1,43 @@
 From: Alexander Duyck <aduyck@mirantis.com>
-Date: Thu, 22 Oct 2015 16:26:36 -0700
-Subject: [Intel-wired-lan] [net-next PATCH 2/3] ixgbe: Use __dev_uc_sync and
- __dev_uc_unsync for unicast addresses
+Date: Thu, 22 Oct 2015 16:26:42 -0700
+Subject: [Intel-wired-lan] [net-next PATCH 3/3] ixgbe: Allow FDB entries
+ access to more RAR filters
 In-Reply-To: <20151022232228.24612.81341.stgit@ahduyck-vm-fedora22>
 References: <20151022232228.24612.81341.stgit@ahduyck-vm-fedora22>
-Message-ID: <20151022232636.24612.12045.stgit@ahduyck-vm-fedora22>
+Message-ID: <20151022232642.24612.46212.stgit@ahduyck-vm-fedora22>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This change replaces the ixgbe_write_uc_addr_list call in ixgbe_set_rx_mode
-with a call to __dev_uc_sync instead.  This works much better with the MAC
-addr list code that was already in place and solves an issue in which you
-couldn't remove an fdb address without having to reset the port.
+This change makes it so that we allow the PF to make use of all free RAR
+entries for FDB use if needed.
+
+Previously the code limited us to 16 unicast entries, however this was
+shared between MACVLAN which wasn't limited and the FDB code which was.  So
+instead of treating the FDB code as a second class citizen I have updated
+it so that it has access to just as many entries as the MACVLAN filters.
 
 Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   28 ++++++++++++++++++++++---
- 1 file changed, 25 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 650c9526bbde..ba5c0d5b95b9 100644
+index ba5c0d5b95b9..4befe637b9be 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -4215,6 +4215,25 @@ static int ixgbe_write_uc_addr_list(struct net_device *netdev, int vfn)
- 	return count;
- }
- 
-+static int ixgbe_uc_sync(struct net_device *netdev, const unsigned char *addr)
-+{
-+	struct ixgbe_adapter *adapter = netdev_priv(netdev);
-+	int ret;
+@@ -8206,7 +8206,10 @@ static int ixgbe_ndo_fdb_add(struct ndmsg *ndm, struct nlattr *tb[],
+ {
+ 	/* guarantee we can provide a unique filter for the unicast address */
+ 	if (is_unicast_ether_addr(addr) || is_link_local_ether_addr(addr)) {
+-		if (IXGBE_MAX_PF_MACVLANS <= netdev_uc_count(dev))
++		struct ixgbe_adapter *adapter = netdev_priv(dev);
++		u16 pool = VMDQ_P(0);
 +
-+	ret = ixgbe_add_mac_filter(adapter, addr, VMDQ_P(0));
-+
-+	return min_t(int, ret, 0);
-+}
-+
-+static int ixgbe_uc_unsync(struct net_device *netdev, const unsigned char *addr)
-+{
-+	struct ixgbe_adapter *adapter = netdev_priv(netdev);
-+
-+	ixgbe_del_mac_filter(adapter, addr, VMDQ_P(0));
-+
-+	return 0;
-+}
-+
- /**
-  * ixgbe_set_rx_mode - Unicast, Multicast and Promiscuous mode set
-  * @netdev: network interface device structure
-@@ -4270,8 +4289,7 @@ void ixgbe_set_rx_mode(struct net_device *netdev)
- 	 * sufficient space to store all the addresses then enable
- 	 * unicast promiscuous mode
- 	 */
--	count = ixgbe_write_uc_addr_list(netdev, VMDQ_P(0));
--	if (count < 0) {
-+	if (__dev_uc_sync(netdev, ixgbe_uc_sync, ixgbe_uc_unsync)) {
- 		fctrl |= IXGBE_FCTRL_UPE;
- 		vmolr |= IXGBE_VMOLR_ROPE;
- 	}
-@@ -5109,8 +5127,12 @@ void ixgbe_reset(struct ixgbe_adapter *adapter)
++		if (netdev_uc_count(dev) >= ixgbe_available_rars(adapter, pool))
+ 			return -ENOMEM;
  	}
  
- 	clear_bit(__IXGBE_IN_SFP_INIT, &adapter->state);
--	/* do not flush user set addresses */
-+
-+	/* flush entries out of MAC table */
- 	ixgbe_flush_sw_mac_table(adapter);
-+	__dev_uc_unsync(netdev, NULL);
-+
-+	/* do not flush user set addresses */
- 	ixgbe_mac_set_default_filter(adapter);
- 
- 	/* update SAN MAC vmdq pool selection */
 
