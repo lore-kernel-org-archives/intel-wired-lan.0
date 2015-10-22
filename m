@@ -1,59 +1,126 @@
-From: walter harms <wharms@bfs.de>
-Date: Thu, 22 Oct 2015 13:52:38 +0200
-Subject: [Intel-wired-lan] [patch] igbvf: integer overflow in
-	igbvf_change_mtu()
-In-Reply-To: <20151022091013.GC9202@mwanda>
-References: <20151022091013.GC9202@mwanda>
-Message-ID: <5628CE06.4070601@bfs.de>
+From: Michael S. Tsirkin <mst@redhat.com>
+Date: Thu, 22 Oct 2015 15:30:46 +0300
+Subject: [Intel-wired-lan] [RFC Patch 12/12] IXGBEVF: Track dma dirty
+	pages
+In-Reply-To: <1445445464-5056-13-git-send-email-tianyu.lan@intel.com>
+References: <1445445464-5056-1-git-send-email-tianyu.lan@intel.com>
+ <1445445464-5056-13-git-send-email-tianyu.lan@intel.com>
+Message-ID: <20151022150137-mutt-send-email-mst@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
-Am 22.10.2015 11:10, schrieb Dan Carpenter:
-> The "new_mtu" is between 0 and INT_MAX but when we add ETH_HLEN and
-> ETH_FCS_LEN to it then it could overflow so "max_frame" is negative.  We
-> cap the upper bound of "max_frame" but we don't check for negative
-> values.  This leads to a static checker warning.
+On Thu, Oct 22, 2015 at 12:37:44AM +0800, Lan Tianyu wrote:
+> Migration relies on tracking dirty page to migrate memory.
+> Hardware can't automatically mark a page as dirty after DMA
+> memory access. VF descriptor rings and data buffers are modified
+> by hardware when receive and transmit data. To track such dirty memory
+> manually, do dummy writes(read a byte and write it back) during receive
+> and transmit data.
 > 
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 14 +++++++++++---
+>  1 file changed, 11 insertions(+), 3 deletions(-)
 > 
-> diff --git a/drivers/net/ethernet/intel/igbvf/netdev.c b/drivers/net/ethernet/intel/igbvf/netdev.c
-> index 297af80..fa338e0 100644
-> --- a/drivers/net/ethernet/intel/igbvf/netdev.c
-> +++ b/drivers/net/ethernet/intel/igbvf/netdev.c
-> @@ -2350,7 +2350,7 @@ static struct net_device_stats *igbvf_get_stats(struct net_device *netdev)
->  static int igbvf_change_mtu(struct net_device *netdev, int new_mtu)
->  {
->  	struct igbvf_adapter *adapter = netdev_priv(netdev);
-> -	int max_frame = new_mtu + ETH_HLEN + ETH_FCS_LEN;
-> +	unsigned int max_frame = new_mtu + ETH_HLEN + ETH_FCS_LEN;
+> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> index d22160f..ce7bd7a 100644
+> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+> @@ -414,6 +414,9 @@ static bool ixgbevf_clean_tx_irq(struct ixgbevf_q_vector *q_vector,
+>  		if (!(eop_desc->wb.status & cpu_to_le32(IXGBE_TXD_STAT_DD)))
+>  			break;
 >  
->  	if (new_mtu < 68 || new_mtu > INT_MAX - ETH_HLEN - ETH_FCS_LEN ||
->  	    max_frame > MAX_JUMBO_FRAME_SIZE)
+> +		/* write back status to mark page dirty */
 
-Perhaps it is better to use MAX_JUMBO_FRAME_SIZE.
+Which page? the descriptor ring?  What does marking it dirty accomplish
+though, given that we might migrate right before this happens?
 
-max_frame = new_mtu + ETH_HLEN + ETH_FCS_LEN = MAX_JUMBO_FRAME_SIZE // max valid
+It might be a good idea to just specify addresses of rings
+to hypervisor, and have it send the ring pages after VM
+and the VF are stopped.
 
-new_mtu=MAX_JUMBO_FRAME_SIZE-ETH_HLEN-ETH_FCS_LEN
 
-so you can avoid adding a "new" variable INT_MAX into this context.
+> +		eop_desc->wb.status = eop_desc->wb.status;
+> +
+Compiler is likely to optimize this out.
+You also probably need a wmb here ...
 
-Note: perhaps it would be better for the flow the check new_mtu before
-calculating max_frame.
+>  		/* clear next_to_watch to prevent false hangs */
+>  		tx_buffer->next_to_watch = NULL;
+>  		tx_buffer->desc_num = 0;
+> @@ -946,15 +949,17 @@ static struct sk_buff *ixgbevf_fetch_rx_buffer(struct ixgbevf_ring *rx_ring,
+>  {
+>  	struct ixgbevf_rx_buffer *rx_buffer;
+>  	struct page *page;
+> +	u8 *page_addr;
+>  
+>  	rx_buffer = &rx_ring->rx_buffer_info[rx_ring->next_to_clean];
+>  	page = rx_buffer->page;
+>  	prefetchw(page);
+>  
+> -	if (likely(!skb)) {
+> -		void *page_addr = page_address(page) +
+> -				  rx_buffer->page_offset;
+> +	/* Mark page dirty */
 
-btw: can someone add a comment about the magic 68 ? is there something like a min_frame_size ?
-(it is a real question i have no idea)
+Looks like there's a race condition here: VM could
+migrate at this point. RX ring will indicate
+packet has been received, but page data would be stale.
 
-re,
- wh
 
+One solution I see is explicitly testing for this
+condition and discarding the packet.
+For example, hypervisor could increment some counter
+in RAM during migration.
+
+Then:
+
+	x = read counter
+
+	get packet from rx ring
+	mark page dirty
+
+	y = read counter
+
+	if (x != y)
+		discard packet
+
+
+> +	page_addr = page_address(page) + rx_buffer->page_offset;
+> +	*page_addr = *page_addr;
+
+Compiler is likely to optimize this out.
+You also probably need a wmb here ...
+
+
+>  
+> +	if (likely(!skb)) {
+>  		/* prefetch first cache line of first page */
+>  		prefetch(page_addr);
+
+prefetch makes no sense if you read it right here.
+
+>  #if L1_CACHE_BYTES < 128
+> @@ -1032,6 +1037,9 @@ static int ixgbevf_clean_rx_irq(struct ixgbevf_q_vector *q_vector,
+>  		if (!ixgbevf_test_staterr(rx_desc, IXGBE_RXD_STAT_DD))
+>  			break;
+>  
+> +		/* Write back status to mark page dirty */
+> +		rx_desc->wb.upper.status_error = rx_desc->wb.upper.status_error;
+> +
+
+same question as for tx.
+
+>  		/* This memory barrier is needed to keep us from reading
+>  		 * any other fields out of the rx_desc until we know the
+>  		 * RXD_STAT_DD bit is set
+> -- 
+> 1.8.4.rc0.1.g8f6a3e5.dirty
+> 
 > --
-> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
+> To unsubscribe from this list: send the line "unsubscribe kvm" in
 > the body of a message to majordomo at vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
