@@ -1,47 +1,180 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Thu, 22 Oct 2015 11:03:10 -0700
-Subject: [Intel-wired-lan] [PATCH] net: Fix warnings from
-	inet_timewait_sock.h
-Message-ID: <20151022180310.105186.43189.stgit@mdrustad-wks.jf.intel.com>
+Date: Thu, 22 Oct 2015 11:03:15 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Save VF info and take references
+Message-ID: <20151022180315.105186.71793.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-With W=1, inet_timewait_sock.h is generating the following warnings:
-
-include/net/inet_timewait_sock.h:116:1: warning: <E2><80><98>inline<E2><80><99> is not at beginning of declaration [-Wold-style-declaration]
- static void inline inet_twsk_schedule(struct inet_timewait_sock *tw, int timeo)
- ^
-include/net/inet_timewait_sock.h:121:1: warning: <E2><80><98>inline<E2><80><99> is not at beginning of declaration [-Wold-style-declaration]
- static void inline inet_twsk_reschedule(struct inet_timewait_sock *tw, int timeo)
- ^
-
-Simply reorder the declaration to the proper order to resolve them.
+Save VF device pointers and take references to speed accesses used
+to monitor the device behavior to avoid slot resets. The saved
+information avoids lock contention during the search used to access
+each of the VFs.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
- include/net/inet_timewait_sock.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ 0 files changed
 
-diff --git a/include/net/inet_timewait_sock.h b/include/net/inet_timewait_sock.h
-index e581fc69129d..c9b3eb70f340 100644
---- a/include/net/inet_timewait_sock.h
-+++ b/include/net/inet_timewait_sock.h
-@@ -113,12 +113,12 @@ void __inet_twsk_hashdance(struct inet_timewait_sock *tw, struct sock *sk,
- void __inet_twsk_schedule(struct inet_timewait_sock *tw, int timeo,
- 			  bool rearm);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index 1d2174526a4c..9e9aa9a3fde8 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -139,6 +139,7 @@ enum ixgbe_tx_flags {
+ #define IXGBE_X540_VF_DEVICE_ID         0x1515
  
--static void inline inet_twsk_schedule(struct inet_timewait_sock *tw, int timeo)
-+static inline void inet_twsk_schedule(struct inet_timewait_sock *tw, int timeo)
+ struct vf_data_storage {
++	struct pci_dev *vfdev;
+ 	unsigned char vf_mac_addresses[ETH_ALEN];
+ 	u16 vf_mc_hashes[IXGBE_MAX_VF_MC_ENTRIES];
+ 	u16 num_vf_mc_hashes;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 391f39b2776f..269bd1c47605 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -6611,10 +6611,8 @@ static void ixgbe_check_for_bad_vf(struct ixgbe_adapter *adapter)
  {
- 	__inet_twsk_schedule(tw, timeo, false);
+ 	struct ixgbe_hw *hw = &adapter->hw;
+ 	struct pci_dev *pdev = adapter->pdev;
+-	struct pci_dev *vfdev;
++	unsigned int vf;
+ 	u32 gpc;
+-	int pos;
+-	unsigned short vf_id;
+ 
+ 	if (!(netif_carrier_ok(adapter->netdev)))
+ 		return;
+@@ -6631,26 +6629,16 @@ static void ixgbe_check_for_bad_vf(struct ixgbe_adapter *adapter)
+ 	if (!pdev)
+ 		return;
+ 
+-	pos = pci_find_ext_capability(pdev, PCI_EXT_CAP_ID_SRIOV);
+-	if (!pos)
+-		return;
+-
+-	/* get the device ID for the VF */
+-	pci_read_config_word(pdev, pos + PCI_SRIOV_VF_DID, &vf_id);
+-
+ 	/* check status reg for all VFs owned by this PF */
+-	vfdev = pci_get_device(pdev->vendor, vf_id, NULL);
+-	while (vfdev) {
+-		if (vfdev->is_virtfn && (vfdev->physfn == pdev)) {
+-			u16 status_reg;
+-
+-			pci_read_config_word(vfdev, PCI_STATUS, &status_reg);
+-			if (status_reg & PCI_STATUS_REC_MASTER_ABORT)
+-				/* issue VFLR */
+-				ixgbe_issue_vf_flr(adapter, vfdev);
+-		}
++	for (vf = 0; vf < adapter->num_vfs; ++vf) {
++		struct pci_dev *vfdev = adapter->vfinfo[vf].vfdev;
++		u16 status_reg;
+ 
+-		vfdev = pci_get_device(pdev->vendor, vf_id, vfdev);
++		if (!vfdev)
++			continue;
++		pci_read_config_word(vfdev, PCI_STATUS, &status_reg);
++		if (status_reg & PCI_STATUS_REC_MASTER_ABORT)
++			ixgbe_issue_vf_flr(adapter, vfdev);
+ 	}
  }
  
--static void inline inet_twsk_reschedule(struct inet_timewait_sock *tw, int timeo)
-+static inline void inet_twsk_reschedule(struct inet_timewait_sock *tw, int timeo)
- {
- 	__inet_twsk_schedule(tw, timeo, true);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+index fcd8b27a0ccb..31de6cf7adb0 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+@@ -1,7 +1,7 @@
+ /*******************************************************************************
+ 
+   Intel 10 Gigabit PCI Express Linux driver
+-  Copyright(c) 1999 - 2014 Intel Corporation.
++  Copyright(c) 1999 - 2015 Intel Corporation.
+ 
+   This program is free software; you can redistribute it and/or modify it
+   under the terms and conditions of the GNU General Public License,
+@@ -130,6 +130,38 @@ static int __ixgbe_enable_sriov(struct ixgbe_adapter *adapter)
+ 	return -ENOMEM;
  }
+ 
++/**
++ * ixgbe_get_vfs - Find and take references to all vf devices
++ * @adapter: Pointer to adapter struct
++ */
++static void ixgbe_get_vfs(struct ixgbe_adapter *adapter)
++{
++	struct pci_dev *pdev = adapter->pdev;
++	u16 vendor = pdev->vendor;
++	struct pci_dev *vfdev;
++	int vf = 0;
++	u16 vf_id;
++	int pos;
++
++	pos = pci_find_ext_capability(pdev, PCI_EXT_CAP_ID_SRIOV);
++	if (!pos)
++		return;
++	pci_read_config_word(pdev, pos + PCI_SRIOV_VF_DID, &vf_id);
++
++	vfdev = pci_get_device(vendor, vf_id, NULL);
++	for (; vfdev; vfdev = pci_get_device(vendor, vf_id, vfdev)) {
++		if (!vfdev->is_virtfn)
++			continue;
++		if (vfdev->physfn != pdev)
++			continue;
++		if (vf >= adapter->num_vfs)
++			continue;
++		pci_dev_get(vfdev);
++		adapter->vfinfo[vf].vfdev = vfdev;
++		++vf;
++	}
++}
++
+ /* Note this function is called when the user wants to enable SR-IOV
+  * VFs using the now deprecated module parameter
+  */
+@@ -170,8 +202,10 @@ void ixgbe_enable_sriov(struct ixgbe_adapter *adapter)
+ 		}
+ 	}
+ 
+-	if (!__ixgbe_enable_sriov(adapter))
++	if (!__ixgbe_enable_sriov(adapter)) {
++		ixgbe_get_vfs(adapter);
+ 		return;
++	}
+ 
+ 	/* If we have gotten to this point then there is no memory available
+ 	 * to manage the VF devices - print message and bail.
+@@ -184,6 +218,7 @@ void ixgbe_enable_sriov(struct ixgbe_adapter *adapter)
+ #endif /* #ifdef CONFIG_PCI_IOV */
+ int ixgbe_disable_sriov(struct ixgbe_adapter *adapter)
+ {
++	unsigned int num_vfs = adapter->num_vfs, vf;
+ 	struct ixgbe_hw *hw = &adapter->hw;
+ 	u32 gpie;
+ 	u32 vmdctl;
+@@ -192,6 +227,16 @@ int ixgbe_disable_sriov(struct ixgbe_adapter *adapter)
+ 	/* set num VFs to 0 to prevent access to vfinfo */
+ 	adapter->num_vfs = 0;
+ 
++	/* put the reference to all of the vf devices */
++	for (vf = 0; vf < num_vfs; ++vf) {
++		struct pci_dev *vfdev = adapter->vfinfo[vf].vfdev;
++
++		if (!vfdev)
++			continue;
++		adapter->vfinfo[vf].vfdev = NULL;
++		pci_dev_put(vfdev);
++	}
++
+ 	/* free VF control structures */
+ 	kfree(adapter->vfinfo);
+ 	adapter->vfinfo = NULL;
+@@ -289,6 +334,7 @@ static int ixgbe_pci_sriov_enable(struct pci_dev *dev, int num_vfs)
+ 		e_dev_warn("Failed to enable PCI sriov: %d\n", err);
+ 		return err;
+ 	}
++	ixgbe_get_vfs(adapter);
+ 	ixgbe_sriov_reinit(adapter);
+ 
+ 	return num_vfs;
 
