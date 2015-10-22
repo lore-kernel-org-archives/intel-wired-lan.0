@@ -1,141 +1,31 @@
-From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Wed, 21 Oct 2015 17:21:20 -0700
-Subject: [Intel-wired-lan] [PATCH 3/3] ixgbevf: Minor cleanups
-In-Reply-To: <20151022002110.51120.4643.stgit@mdrustad-wks.jf.intel.com>
-References: <20151022002110.51120.4643.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <20151022002120.51120.55397.stgit@mdrustad-wks.jf.intel.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Thu, 22 Oct 2015 12:10:14 +0300
+Subject: [Intel-wired-lan] [patch] igbvf: integer overflow in
+	igbvf_change_mtu()
+Message-ID: <20151022091013.GC9202@mwanda>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Make some minor cleanups, such as simplifying return paths, deleting
-unneded initializations, return values more directly and so forth.
+The "new_mtu" is between 0 and INT_MAX but when we add ETH_HLEN and
+ETH_FCS_LEN to it then it could overflow so "max_frame" is negative.  We
+cap the upper bound of "max_frame" but we don't check for negative
+values.  This leads to a static checker warning.
 
-Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
----
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   36 +++++++--------------
- 1 file changed, 12 insertions(+), 24 deletions(-)
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 7a7cc7d85bb8..3d257279e770 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -1334,7 +1334,6 @@ static int ixgbevf_map_rings_to_vectors(struct ixgbevf_adapter *adapter)
- 	int txr_remaining = adapter->num_tx_queues;
- 	int i, j;
- 	int rqpv, tqpv;
--	int err = 0;
- 
- 	q_vectors = adapter->num_msix_vectors - NON_Q_VECTORS;
- 
-@@ -1347,7 +1346,7 @@ static int ixgbevf_map_rings_to_vectors(struct ixgbevf_adapter *adapter)
- 
- 		for (; txr_idx < txr_remaining; v_start++, txr_idx++)
- 			map_vector_to_txq(adapter, v_start, txr_idx);
--		goto out;
-+		return 0;
- 	}
- 
- 	/* If we don't have enough vectors for a 1-to-1
-@@ -1372,8 +1371,7 @@ static int ixgbevf_map_rings_to_vectors(struct ixgbevf_adapter *adapter)
- 		}
- 	}
- 
--out:
--	return err;
-+	return 0;
- }
- 
- /**
-@@ -1471,9 +1469,7 @@ static inline void ixgbevf_reset_q_vectors(struct ixgbevf_adapter *adapter)
-  **/
- static int ixgbevf_request_irq(struct ixgbevf_adapter *adapter)
+diff --git a/drivers/net/ethernet/intel/igbvf/netdev.c b/drivers/net/ethernet/intel/igbvf/netdev.c
+index 297af80..fa338e0 100644
+--- a/drivers/net/ethernet/intel/igbvf/netdev.c
++++ b/drivers/net/ethernet/intel/igbvf/netdev.c
+@@ -2350,7 +2350,7 @@ static struct net_device_stats *igbvf_get_stats(struct net_device *netdev)
+ static int igbvf_change_mtu(struct net_device *netdev, int new_mtu)
  {
--	int err = 0;
--
--	err = ixgbevf_request_msix_irqs(adapter);
-+	int err = ixgbevf_request_msix_irqs(adapter);
+ 	struct igbvf_adapter *adapter = netdev_priv(netdev);
+-	int max_frame = new_mtu + ETH_HLEN + ETH_FCS_LEN;
++	unsigned int max_frame = new_mtu + ETH_HLEN + ETH_FCS_LEN;
  
- 	if (err)
- 		hw_dbg(&adapter->hw, "request_irq failed, Error %d\n", err);
-@@ -1832,7 +1828,7 @@ static int ixgbevf_vlan_rx_kill_vid(struct net_device *netdev,
- {
- 	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
- 	struct ixgbe_hw *hw = &adapter->hw;
--	int err = -EOPNOTSUPP;
-+	int err;
- 
- 	spin_lock_bh(&adapter->mbx_lock);
- 
-@@ -2048,7 +2044,7 @@ static void ixgbevf_negotiate_api(struct ixgbevf_adapter *adapter)
- 		      ixgbe_mbox_api_11,
- 		      ixgbe_mbox_api_10,
- 		      ixgbe_mbox_api_unknown };
--	int err = 0, idx = 0;
-+	int err, idx = 0;
- 
- 	spin_lock_bh(&adapter->mbx_lock);
- 
-@@ -2421,7 +2417,7 @@ err_allocation:
- static int ixgbevf_set_interrupt_capability(struct ixgbevf_adapter *adapter)
- {
- 	struct net_device *netdev = adapter->netdev;
--	int err = 0;
-+	int err;
- 	int vector, v_budget;
- 
- 	/* It's easy to be greedy for MSI-X vectors, but it really
-@@ -2439,26 +2435,21 @@ static int ixgbevf_set_interrupt_capability(struct ixgbevf_adapter *adapter)
- 	 */
- 	adapter->msix_entries = kcalloc(v_budget,
- 					sizeof(struct msix_entry), GFP_KERNEL);
--	if (!adapter->msix_entries) {
--		err = -ENOMEM;
--		goto out;
--	}
-+	if (!adapter->msix_entries)
-+		return -ENOMEM;
- 
- 	for (vector = 0; vector < v_budget; vector++)
- 		adapter->msix_entries[vector].entry = vector;
- 
- 	err = ixgbevf_acquire_msix_vectors(adapter, v_budget);
- 	if (err)
--		goto out;
-+		return err;
- 
- 	err = netif_set_real_num_tx_queues(netdev, adapter->num_tx_queues);
- 	if (err)
--		goto out;
--
--	err = netif_set_real_num_rx_queues(netdev, adapter->num_rx_queues);
-+		return err;
- 
--out:
--	return err;
-+	return netif_set_real_num_rx_queues(netdev, adapter->num_rx_queues);
- }
- 
- /**
-@@ -4249,8 +4240,6 @@ static struct pci_driver ixgbevf_driver = {
-  **/
- static int __init ixgbevf_init_module(void)
- {
--	int ret;
--
- 	pr_info("%s - version %s\n", ixgbevf_driver_string,
- 		ixgbevf_driver_version);
- 
-@@ -4261,8 +4250,7 @@ static int __init ixgbevf_init_module(void)
- 		return -ENOMEM;
- 	}
- 
--	ret = pci_register_driver(&ixgbevf_driver);
--	return ret;
-+	return pci_register_driver(&ixgbevf_driver);
- }
- 
- module_init(ixgbevf_init_module);
-
+ 	if (new_mtu < 68 || new_mtu > INT_MAX - ETH_HLEN - ETH_FCS_LEN ||
+ 	    max_frame > MAX_JUMBO_FRAME_SIZE)
