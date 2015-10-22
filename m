@@ -1,37 +1,40 @@
-From: Alex Williamson <alex.williamson@redhat.com>
-Date: Thu, 22 Oct 2015 10:17:30 -0600
-Subject: [Intel-wired-lan] [RFC Patch 00/12] IXGBE: Add live migration
- support for SRIOV NIC
-In-Reply-To: <CAJ3xEMhgzfbGf-3Z7GJGxg5VqbWGyKqoTt6c4C54sDNehdXVMg@mail.gmail.com>
-References: <1445445464-5056-1-git-send-email-tianyu.lan@intel.com>
- <CAJ3xEMiStMJdGjgO9=MQrhLpBo8ZiTRoOL_P=aC9kyrNi91FSw@mail.gmail.com>
- <1445455227.4059.867.camel@redhat.com>
- <CAJ3xEMhgzfbGf-3Z7GJGxg5VqbWGyKqoTt6c4C54sDNehdXVMg@mail.gmail.com>
-Message-ID: <1445530650.5050.19.camel@redhat.com>
+From: Alexander Duyck <aduyck@mirantis.com>
+Date: Thu, 22 Oct 2015 16:26:23 -0700
+Subject: [Intel-wired-lan] [net-next PATCH 0/3] ixgbe: Fix FDB handling
+Message-ID: <20151022232228.24612.81341.stgit@ahduyck-vm-fedora22>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 2015-10-22 at 18:58 +0300, Or Gerlitz wrote:
-> On Wed, Oct 21, 2015 at 10:20 PM, Alex Williamson
-> <alex.williamson@redhat.com> wrote:
-> 
-> > This is why the typical VF agnostic approach here is to using bonding
-> > and fail over to a emulated device during migration, so performance
-> > suffers, but downtime is something acceptable.
-> 
-> bonding in the VM isn't a zero touch solution, right? is it really acceptable?
+This patch series addresses a number of issues in the FDB handling code of
+the ixgbe driver.  Specifically there were 3 issues.
 
-The bonding solution requires configuring the bond in the guest and
-doing the hot unplug/re-plug around migration.  It's zero touch in that
-it works on current code with any PF/VF, but it's certainly not zero
-configuration in the guest.  Is what acceptable?  The configuration?
-The performance?  The downtime?  I don't think we can hope to improve on
-the downtime of an emulated device, but obviously the configuration and
-performance are not always acceptable or we wouldn't be seeing so many
-people working on migration of assigned devices.  Thanks,
+1.  The addresses were being allocated but not freed from the MAC address
+tables.  As a result cycling in and out various addresses would end up
+exhausing the table.
 
-Alex
+2.  The entries weren't being counted correclty and as a result only half
+of the MAC address entries could be used at any given point in time.
 
+3.  The FDB entries were being limited to only 15 while there were 126
+RAL/H entries available.
+
+With this patch series in place it is possible ot maintain a decent sized
+set of FDB entries and they can cycle in and out without incurring any
+heavy cost as previously seen.
+
+---
+
+Alexander Duyck (3):
+      ixgbe: Refactor MAC address configuration code
+      ixgbe: Use __dev_uc_sync and __dev_uc_unsync for unicast addresses
+      ixgbe: Allow FDB entries access to more RAR filters
+
+
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h      |    7 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  196 ++++++++++++++++---------
+ 2 files changed, 129 insertions(+), 74 deletions(-)
+
+--
