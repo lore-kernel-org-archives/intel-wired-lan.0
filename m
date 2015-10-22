@@ -1,8 +1,10 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Wed, 21 Oct 2015 17:21:10 -0700
-Subject: [Intel-wired-lan] [PATCH 1/3] ixgbe: Use private workqueue to avoid
- certain possible hangs
-Message-ID: <20151022002110.51120.4643.stgit@mdrustad-wks.jf.intel.com>
+Date: Wed, 21 Oct 2015 17:21:15 -0700
+Subject: [Intel-wired-lan] [PATCH 2/3] ixgbevf: Use a private workqueue to
+ avoid certain possible hangs
+In-Reply-To: <20151022002110.51120.4643.stgit@mdrustad-wks.jf.intel.com>
+References: <20151022002110.51120.4643.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <20151022002115.51120.4428.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,52 +17,59 @@ vfs repeatedly.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
- 0 files changed
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 391f39b2776f..494ce197a620 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -172,6 +172,8 @@ MODULE_DESCRIPTION("Intel(R) 10 Gigabit PCI Express Network Driver");
- MODULE_LICENSE("GPL");
- MODULE_VERSION(DRV_VERSION);
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index e2d07da480cc..7a7cc7d85bb8 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -59,7 +59,7 @@ static const char ixgbevf_driver_string[] =
+ #define DRV_VERSION "2.12.1-k"
+ const char ixgbevf_driver_version[] = DRV_VERSION;
+ static char ixgbevf_copyright[] =
+-	"Copyright (c) 2009 - 2012 Intel Corporation.";
++	"Copyright (c) 2009 - 2015 Intel Corporation.";
  
-+static struct workqueue_struct *ixgbe_wq;
+ static const struct ixgbevf_info *ixgbevf_info_tbl[] = {
+ 	[board_82599_vf] = &ixgbevf_82599_vf_info,
+@@ -96,12 +96,14 @@ static int debug = -1;
+ module_param(debug, int, 0);
+ MODULE_PARM_DESC(debug, "Debug level (0=none,...,16=all)");
+ 
++static struct workqueue_struct *ixgbevf_wq;
 +
- static bool ixgbe_check_cfg_remove(struct ixgbe_hw *hw, struct pci_dev *pdev);
- 
- static int ixgbe_read_pci_cfg_word_parent(struct ixgbe_adapter *adapter,
-@@ -313,7 +315,7 @@ static void ixgbe_service_event_schedule(struct ixgbe_adapter *adapter)
- 	if (!test_bit(__IXGBE_DOWN, &adapter->state) &&
- 	    !test_bit(__IXGBE_REMOVING, &adapter->state) &&
- 	    !test_and_set_bit(__IXGBE_SERVICE_SCHED, &adapter->state))
+ static void ixgbevf_service_event_schedule(struct ixgbevf_adapter *adapter)
+ {
+ 	if (!test_bit(__IXGBEVF_DOWN, &adapter->state) &&
+ 	    !test_bit(__IXGBEVF_REMOVING, &adapter->state) &&
+ 	    !test_and_set_bit(__IXGBEVF_SERVICE_SCHED, &adapter->state))
 -		schedule_work(&adapter->service_task);
-+		queue_work(ixgbe_wq, &adapter->service_task);
++		queue_work(ixgbevf_wq, &adapter->service_task);
  }
  
- static void ixgbe_remove_adapter(struct ixgbe_hw *hw)
-@@ -9320,6 +9322,12 @@ static int __init ixgbe_init_module(void)
- 	pr_info("%s - version %s\n", ixgbe_driver_string, ixgbe_driver_version);
- 	pr_info("%s\n", ixgbe_copyright);
+ static void ixgbevf_service_event_complete(struct ixgbevf_adapter *adapter)
+@@ -4253,6 +4255,11 @@ static int __init ixgbevf_init_module(void)
+ 		ixgbevf_driver_version);
  
-+	ixgbe_wq = create_singlethread_workqueue(ixgbe_driver_name);
-+	if (!ixgbe_wq) {
-+		pr_err("%s: Failed to create workqueue\n", ixgbe_driver_name);
+ 	pr_info("%s\n", ixgbevf_copyright);
++	ixgbevf_wq = create_singlethread_workqueue(ixgbevf_driver_name);
++	if (!ixgbevf_wq) {
++		pr_err("%s: Failed to create workqueue\n", ixgbevf_driver_name);
 +		return -ENOMEM;
 +	}
-+
- 	ixgbe_dbg_init();
  
- 	ret = pci_register_driver(&ixgbe_driver);
-@@ -9351,6 +9359,10 @@ static void __exit ixgbe_exit_module(void)
- 	pci_unregister_driver(&ixgbe_driver);
- 
- 	ixgbe_dbg_exit();
-+	if (ixgbe_wq) {
-+		destroy_workqueue(ixgbe_wq);
-+		ixgbe_wq = NULL;
+ 	ret = pci_register_driver(&ixgbevf_driver);
+ 	return ret;
+@@ -4269,6 +4276,10 @@ module_init(ixgbevf_init_module);
+ static void __exit ixgbevf_exit_module(void)
+ {
+ 	pci_unregister_driver(&ixgbevf_driver);
++	if (ixgbevf_wq) {
++		destroy_workqueue(ixgbevf_wq);
++		ixgbevf_wq = NULL;
 +	}
  }
  
- #ifdef CONFIG_IXGBE_DCA
+ #ifdef DEBUG
 
