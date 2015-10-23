@@ -1,149 +1,79 @@
 From: Toshiaki Makita <makita.toshiaki@lab.ntt.co.jp>
-Date: Fri, 23 Oct 2015 12:49:32 +0900
-Subject: [Intel-wired-lan] [PATCH net-next 3/4] vlan: Notify real device of
-	encap header length
-In-Reply-To: <1445572173-15402-1-git-send-email-makita.toshiaki@lab.ntt.co.jp>
-References: <1445572173-15402-1-git-send-email-makita.toshiaki@lab.ntt.co.jp>
-Message-ID: <1445572173-15402-4-git-send-email-makita.toshiaki@lab.ntt.co.jp>
+Date: Fri, 23 Oct 2015 12:49:29 +0900
+Subject: [Intel-wired-lan] [PATCH net-next 0/4] Automatic adjustment of max
+	frame size
+Message-ID: <1445572173-15402-1-git-send-email-makita.toshiaki@lab.ntt.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Reserve extra 4 bytes on real_dev in addition to the length notified
-from upper device.
-In 802.1ad mode, set enc_hdr_len to 4 bytes by default, since it is
-likely to send already tagged frame.
+This patch set tries to resolve packet drop by oversize error on receiving
+double tagged packets and possibly other encapsulated packets.
 
-Signed-off-by: Toshiaki Makita <makita.toshiaki@lab.ntt.co.jp>
----
- net/8021q/vlan.c     | 16 ++++++++++++++--
- net/8021q/vlan_dev.c | 47 ++++++++++++++++++++++++++++++++++++++++++-----
- 2 files changed, 56 insertions(+), 7 deletions(-)
+Problem description:
+Currently most NICs have 4 bytes room of receive buffer for vlan header and
+can receive 1522 bytes frame at maximum.
+This is, however, not sufficient once double tagged vlan is used.
+As MEF [1] says, maximum frame size of double tagged packets need to be at
+least 1526 to provide transparent ethernet VPN, and along the same line,
+HW switches send 1526 bytes double tagged packets.
+Thus, double tagged packets are dropped by default in most cases by
+oversize error. NICs need to accept 1526 bytes packets in this situation.
 
-diff --git a/net/8021q/vlan.c b/net/8021q/vlan.c
-index d2cd9de..bbafc5c 100644
---- a/net/8021q/vlan.c
-+++ b/net/8021q/vlan.c
-@@ -355,6 +355,7 @@ static int vlan_device_event(struct notifier_block *unused, unsigned long event,
- 	struct net_device *vlandev;
- 	struct vlan_dev_priv *vlan;
- 	bool last = false;
-+	int dev_max_frame;
- 	LIST_HEAD(list);
- 
- 	if (is_vlan_dev(dev)) {
-@@ -399,11 +400,22 @@ static int vlan_device_event(struct notifier_block *unused, unsigned long event,
- 		break;
- 
- 	case NETDEV_CHANGEMTU:
-+		dev_max_frame = dev->mtu + dev->enc_hdr_len;
- 		vlan_group_for_each_dev(grp, i, vlandev) {
--			if (vlandev->mtu <= dev->mtu)
-+			int enc_hdr_len = vlandev->enc_hdr_len + VLAN_HLEN;
-+
-+			if (vlandev->mtu <= dev->mtu &&
-+			    vlandev->mtu + enc_hdr_len <= dev_max_frame)
- 				continue;
- 
--			dev_set_mtu(vlandev, dev->mtu);
-+			if (vlandev->mtu > dev->mtu) {
-+				dev_set_mtu(vlandev, dev->mtu);
-+			} else {
-+				int mtu_room = dev->mtu - vlandev->mtu;
-+
-+				dev_set_enc_hdr_len(dev,
-+						    enc_hdr_len - mtu_room);
-+			}
- 		}
- 		break;
- 
-diff --git a/net/8021q/vlan_dev.c b/net/8021q/vlan_dev.c
-index fded865..f803ce4 100644
---- a/net/8021q/vlan_dev.c
-+++ b/net/8021q/vlan_dev.c
-@@ -143,17 +143,35 @@ static netdev_tx_t vlan_dev_hard_start_xmit(struct sk_buff *skb,
- 	return ret;
- }
- 
-+static int vlan_dev_enc_hdr_len(struct net_device *dev, int new_len)
-+{
-+	struct net_device *real_dev = vlan_dev_priv(dev)->real_dev;
-+	int mtu_room = real_dev->mtu - dev->mtu;
-+
-+	new_len += VLAN_HLEN;
-+	if (new_len > mtu_room)
-+		return dev_set_enc_hdr_len(real_dev, new_len - mtu_room);
-+
-+	return 0;
-+}
-+
- static int vlan_dev_change_mtu(struct net_device *dev, int new_mtu)
- {
--	/* TODO: gotta make sure the underlying layer can handle it,
--	 * maybe an IFF_VLAN_CAPABLE flag for devices?
--	 */
--	if (vlan_dev_priv(dev)->real_dev->mtu < new_mtu)
-+	struct net_device *real_dev = vlan_dev_priv(dev)->real_dev;
-+	int orig_mtu;
-+	int err;
-+
-+	if (real_dev->mtu < new_mtu)
- 		return -ERANGE;
- 
-+	orig_mtu = dev->mtu;
- 	dev->mtu = new_mtu;
- 
--	return 0;
-+	err = vlan_dev_enc_hdr_len(dev, dev->enc_hdr_len);
-+	if (err)
-+		dev->mtu = orig_mtu;
-+
-+	return err;
- }
- 
- void vlan_dev_set_ingress_priority(const struct net_device *dev,
-@@ -532,6 +550,8 @@ static const struct net_device_ops vlan_netdev_ops;
- static int vlan_dev_init(struct net_device *dev)
- {
- 	struct net_device *real_dev = vlan_dev_priv(dev)->real_dev;
-+	int enc_hdr_len;
-+	int err;
- 
- 	netif_carrier_off(dev);
- 
-@@ -583,6 +603,22 @@ static int vlan_dev_init(struct net_device *dev)
- 
- 	vlan_dev_set_lockdep_class(dev, vlan_dev_get_lock_subclass(dev));
- 
-+	if (vlan_dev_priv(dev)->vlan_proto == htons(ETH_P_8021AD))
-+		dev->enc_hdr_len = VLAN_HLEN;
-+
-+	enc_hdr_len = dev->enc_hdr_len + VLAN_HLEN;
-+	err = dev_set_enc_hdr_len(real_dev, enc_hdr_len);
-+	if (err) {
-+		int new_mtu = real_dev->mtu + real_dev->enc_hdr_len - enc_hdr_len;
-+
-+		if (new_mtu < 0)
-+			return -ENOSPC;
-+
-+		netdev_warn(dev, "Failed to expand encap header room to %d on real device. Decrease MTU to %d on vlan device.\n",
-+			    enc_hdr_len, new_mtu);
-+		dev->mtu = new_mtu;
-+	}
-+
- 	vlan_dev_priv(dev)->vlan_pcpu_stats = netdev_alloc_pcpu_stats(struct vlan_pcpu_stats);
- 	if (!vlan_dev_priv(dev)->vlan_pcpu_stats)
- 		return -ENOMEM;
-@@ -776,6 +812,7 @@ static const struct net_device_ops vlan_netdev_ops = {
- 	.ndo_fix_features	= vlan_dev_fix_features,
- 	.ndo_get_lock_subclass  = vlan_dev_get_lock_subclass,
- 	.ndo_get_iflink		= vlan_dev_get_iflink,
-+	.ndo_enc_hdr_len	= vlan_dev_enc_hdr_len,
- };
- 
- static void vlan_dev_free(struct net_device *dev)
+Approaches:
+To satisfy this requirement, this patch set introduces a way to indicate
+needed extra buffer space to drivers.
+This way can be re-used by other protocols than vlan, like mpls, vxlan, etc.
+
+Other possible solutions:
+
+- To adjust mtu automatically when stacked vlan device is created.
+  This is suboptimal because lower device is not necessarily used for only
+  vlan. Sometimes tagged and untagged traffic are both used at the same time.
+  Also, there are devices that already reserve 8 bytes room, in which case mtu
+  adjustment is unnecessary.
+
+- To reserve more room by default.
+  This is also suboptimal because there are devices that chages behavior
+  when max acceptable frame size gets larger. For exapmle, e1000e enters
+  jumbo frame mode which has some additional ristrictions than normal.
+  Also, this is vlan-specific solution and not reusable by other encapsulation
+  protocols.
+
+This patch set introduces .ndo_enc_hdr_len() and I chose e1000e as the first
+implementation. Patch 3 makes vlan driver utilize this API and automatically
+expand max frame size of the real device. Patch 4 makes bridge use the API
+in similar way as vlan.
+
+Challenges:
+- Restore/shrink extra header room after vlan devices are deleted.
+  This will need some additional memory storage.
+- Manual modification of extra buffer size (by iproute2).
+
+Note:
+- This problem was once discussed in Netdev 0.1 [2].
+  This patch set is based on the conclusion of the discussion.
+
+[1] https://wiki.mef.net/display/CESG/ENNI+Frame
+[2] https://www.netdev01.org/docs/netdev01_bof_8021ad_makita_150212.pdf
+
+Toshiaki Makita (4):
+  net: Add ndo_enc_hdr_len to notify extra header room for encapsulated
+    frames
+  e1000e: Add ndo_enc_hdr_len
+  vlan: Notify real device of encap header length
+  bridge: Notify port device of encap header length
+
+ drivers/net/ethernet/intel/e1000e/netdev.c | 79 +++++++++++++++++++++---------
+ include/linux/netdevice.h                  |  9 ++++
+ net/8021q/vlan.c                           | 16 +++++-
+ net/8021q/vlan_dev.c                       | 47 ++++++++++++++++--
+ net/bridge/br_vlan.c                       | 18 +++++++
+ net/core/dev.c                             | 36 ++++++++++++++
+ 6 files changed, 176 insertions(+), 29 deletions(-)
+
 -- 
 1.8.1.2
 
