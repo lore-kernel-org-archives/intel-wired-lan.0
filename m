@@ -1,124 +1,149 @@
 From: Toshiaki Makita <makita.toshiaki@lab.ntt.co.jp>
-Date: Fri, 23 Oct 2015 12:49:30 +0900
-Subject: [Intel-wired-lan] [PATCH net-next 1/4] net: Add ndo_enc_hdr_len to
-	notify extra header room for encapsulated frames
+Date: Fri, 23 Oct 2015 12:49:32 +0900
+Subject: [Intel-wired-lan] [PATCH net-next 3/4] vlan: Notify real device of
+	encap header length
 In-Reply-To: <1445572173-15402-1-git-send-email-makita.toshiaki@lab.ntt.co.jp>
 References: <1445572173-15402-1-git-send-email-makita.toshiaki@lab.ntt.co.jp>
-Message-ID: <1445572173-15402-2-git-send-email-makita.toshiaki@lab.ntt.co.jp>
+Message-ID: <1445572173-15402-4-git-send-email-makita.toshiaki@lab.ntt.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Currently most NICs reserve 1522 bytes space for frames to handle 4
-bytes VLAN header in addition to 1518, maximum size of ethernet frame.
-This is, however, not sufficient when stacked vlan or other encapsulation
-protocols are used.
-To accommodate this, add .ndo_enc_hdr_len() and inform drivers of needed
-encapsulation header size.
+Reserve extra 4 bytes on real_dev in addition to the length notified
+from upper device.
+In 802.1ad mode, set enc_hdr_len to 4 bytes by default, since it is
+likely to send already tagged frame.
 
 Signed-off-by: Toshiaki Makita <makita.toshiaki@lab.ntt.co.jp>
 ---
- include/linux/netdevice.h |  9 +++++++++
- net/core/dev.c            | 36 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 45 insertions(+)
+ net/8021q/vlan.c     | 16 ++++++++++++++--
+ net/8021q/vlan_dev.c | 47 ++++++++++++++++++++++++++++++++++++++++++-----
+ 2 files changed, 56 insertions(+), 7 deletions(-)
 
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index 69fdd42..4d2ce91 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -1054,6 +1054,10 @@ typedef u16 (*select_queue_fallback_t)(struct net_device *dev,
-  *	This function is used to pass protocol port error state information
-  *	to the switch driver. The switch driver can react to the proto_down
-  *      by doing a phys down on the associated switch port.
-+ * int (*ndo_enc_hdr_len)(struct net_device *dev, int hdr_len);
-+ *	Called to notify addtional encapsulation header length to reserve.
-+ *	Implements should reserve hdr_len room in addition to MTU to handle
-+ *	encapsulated frames.
-  *
-  */
- struct net_device_ops {
-@@ -1227,6 +1231,8 @@ struct net_device_ops {
- 	int			(*ndo_get_iflink)(const struct net_device *dev);
- 	int			(*ndo_change_proto_down)(struct net_device *dev,
- 							 bool proto_down);
-+	int			(*ndo_enc_hdr_len)(struct net_device *dev,
-+						   int hdr_len);
- };
+diff --git a/net/8021q/vlan.c b/net/8021q/vlan.c
+index d2cd9de..bbafc5c 100644
+--- a/net/8021q/vlan.c
++++ b/net/8021q/vlan.c
+@@ -355,6 +355,7 @@ static int vlan_device_event(struct notifier_block *unused, unsigned long event,
+ 	struct net_device *vlandev;
+ 	struct vlan_dev_priv *vlan;
+ 	bool last = false;
++	int dev_max_frame;
+ 	LIST_HEAD(list);
  
- /**
-@@ -1387,6 +1393,7 @@ enum netdev_priv_flags {
-  *	@if_port:	Selectable AUI, TP, ...
-  *	@dma:		DMA channel
-  *	@mtu:		Interface MTU value
-+ *	@enc_hdr_len:	Additional encapsulation header length to MTU
-  *	@type:		Interface hardware type
-  *	@hard_header_len: Hardware header length
-  *
-@@ -1607,6 +1614,7 @@ struct net_device {
- 	unsigned char		dma;
+ 	if (is_vlan_dev(dev)) {
+@@ -399,11 +400,22 @@ static int vlan_device_event(struct notifier_block *unused, unsigned long event,
+ 		break;
  
- 	unsigned int		mtu;
-+	unsigned int		enc_hdr_len;
- 	unsigned short		type;
- 	unsigned short		hard_header_len;
+ 	case NETDEV_CHANGEMTU:
++		dev_max_frame = dev->mtu + dev->enc_hdr_len;
+ 		vlan_group_for_each_dev(grp, i, vlandev) {
+-			if (vlandev->mtu <= dev->mtu)
++			int enc_hdr_len = vlandev->enc_hdr_len + VLAN_HLEN;
++
++			if (vlandev->mtu <= dev->mtu &&
++			    vlandev->mtu + enc_hdr_len <= dev_max_frame)
+ 				continue;
  
-@@ -3021,6 +3029,7 @@ int dev_change_name(struct net_device *, const char *);
- int dev_set_alias(struct net_device *, const char *, size_t);
- int dev_change_net_namespace(struct net_device *, struct net *, const char *);
- int dev_set_mtu(struct net_device *, int);
-+int dev_set_enc_hdr_len(struct net_device *, int);
- void dev_set_group(struct net_device *, int);
- int dev_set_mac_address(struct net_device *, struct sockaddr *);
- int dev_change_carrier(struct net_device *, bool new_carrier);
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 1225b4b..056a16e 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -6024,6 +6024,42 @@ int dev_set_mtu(struct net_device *dev, int new_mtu)
- EXPORT_SYMBOL(dev_set_mtu);
+-			dev_set_mtu(vlandev, dev->mtu);
++			if (vlandev->mtu > dev->mtu) {
++				dev_set_mtu(vlandev, dev->mtu);
++			} else {
++				int mtu_room = dev->mtu - vlandev->mtu;
++
++				dev_set_enc_hdr_len(dev,
++						    enc_hdr_len - mtu_room);
++			}
+ 		}
+ 		break;
  
- /**
-+ *	dev_set_enc_hdr_len - Expand encapsulation header room
-+ *	@dev: device
-+ *	@new_len: new length
-+ */
-+int dev_set_enc_hdr_len(struct net_device *dev, int new_len)
+diff --git a/net/8021q/vlan_dev.c b/net/8021q/vlan_dev.c
+index fded865..f803ce4 100644
+--- a/net/8021q/vlan_dev.c
++++ b/net/8021q/vlan_dev.c
+@@ -143,17 +143,35 @@ static netdev_tx_t vlan_dev_hard_start_xmit(struct sk_buff *skb,
+ 	return ret;
+ }
+ 
++static int vlan_dev_enc_hdr_len(struct net_device *dev, int new_len)
 +{
-+	const struct net_device_ops *ops = dev->netdev_ops;
++	struct net_device *real_dev = vlan_dev_priv(dev)->real_dev;
++	int mtu_room = real_dev->mtu - dev->mtu;
 +
-+	if (new_len < 0)
-+		return -EINVAL;
-+
-+	if (!netif_device_present(dev))
-+		return -ENODEV;
-+
-+	if (new_len <= dev->enc_hdr_len)
-+		return 0;
-+
-+	if (ops->ndo_enc_hdr_len) {
-+		int err;
-+
-+		/* This function can be called from child user/net namespace */
-+		if (!ns_capable(dev_net(dev)->user_ns, CAP_NET_ADMIN))
-+			return -EPERM;
-+
-+		err = ops->ndo_enc_hdr_len(dev, new_len);
-+		if (err)
-+			return err;
-+	}
-+
-+	dev->enc_hdr_len = new_len;
++	new_len += VLAN_HLEN;
++	if (new_len > mtu_room)
++		return dev_set_enc_hdr_len(real_dev, new_len - mtu_room);
 +
 +	return 0;
 +}
-+EXPORT_SYMBOL(dev_set_enc_hdr_len);
 +
-+/**
-  *	dev_set_group - Change group this device belongs to
-  *	@dev: device
-  *	@new_group: group this device should belong to
+ static int vlan_dev_change_mtu(struct net_device *dev, int new_mtu)
+ {
+-	/* TODO: gotta make sure the underlying layer can handle it,
+-	 * maybe an IFF_VLAN_CAPABLE flag for devices?
+-	 */
+-	if (vlan_dev_priv(dev)->real_dev->mtu < new_mtu)
++	struct net_device *real_dev = vlan_dev_priv(dev)->real_dev;
++	int orig_mtu;
++	int err;
++
++	if (real_dev->mtu < new_mtu)
+ 		return -ERANGE;
+ 
++	orig_mtu = dev->mtu;
+ 	dev->mtu = new_mtu;
+ 
+-	return 0;
++	err = vlan_dev_enc_hdr_len(dev, dev->enc_hdr_len);
++	if (err)
++		dev->mtu = orig_mtu;
++
++	return err;
+ }
+ 
+ void vlan_dev_set_ingress_priority(const struct net_device *dev,
+@@ -532,6 +550,8 @@ static const struct net_device_ops vlan_netdev_ops;
+ static int vlan_dev_init(struct net_device *dev)
+ {
+ 	struct net_device *real_dev = vlan_dev_priv(dev)->real_dev;
++	int enc_hdr_len;
++	int err;
+ 
+ 	netif_carrier_off(dev);
+ 
+@@ -583,6 +603,22 @@ static int vlan_dev_init(struct net_device *dev)
+ 
+ 	vlan_dev_set_lockdep_class(dev, vlan_dev_get_lock_subclass(dev));
+ 
++	if (vlan_dev_priv(dev)->vlan_proto == htons(ETH_P_8021AD))
++		dev->enc_hdr_len = VLAN_HLEN;
++
++	enc_hdr_len = dev->enc_hdr_len + VLAN_HLEN;
++	err = dev_set_enc_hdr_len(real_dev, enc_hdr_len);
++	if (err) {
++		int new_mtu = real_dev->mtu + real_dev->enc_hdr_len - enc_hdr_len;
++
++		if (new_mtu < 0)
++			return -ENOSPC;
++
++		netdev_warn(dev, "Failed to expand encap header room to %d on real device. Decrease MTU to %d on vlan device.\n",
++			    enc_hdr_len, new_mtu);
++		dev->mtu = new_mtu;
++	}
++
+ 	vlan_dev_priv(dev)->vlan_pcpu_stats = netdev_alloc_pcpu_stats(struct vlan_pcpu_stats);
+ 	if (!vlan_dev_priv(dev)->vlan_pcpu_stats)
+ 		return -ENOMEM;
+@@ -776,6 +812,7 @@ static const struct net_device_ops vlan_netdev_ops = {
+ 	.ndo_fix_features	= vlan_dev_fix_features,
+ 	.ndo_get_lock_subclass  = vlan_dev_get_lock_subclass,
+ 	.ndo_get_iflink		= vlan_dev_get_iflink,
++	.ndo_enc_hdr_len	= vlan_dev_enc_hdr_len,
+ };
+ 
+ static void vlan_dev_free(struct net_device *dev)
 -- 
 1.8.1.2
 
