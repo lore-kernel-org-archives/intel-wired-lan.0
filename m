@@ -1,232 +1,189 @@
-From: Benjamin Poirier <bpoirier@suse.com>
-Date: Thu, 22 Oct 2015 17:32:26 -0700
-Subject: [Intel-wired-lan] [PATCH 0/2] e1000e msi-x fixes
-Message-ID: <1445560348-29872-1-git-send-email-bpoirier@suse.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 23 Oct 2015 23:19:30 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
+ 8443c1a4b192089e62642d847ebac3e4d15134c3 BUILD SUCCESS
+Message-ID: <562a5002.F3HCxcpv8SyZiVlg%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
+8443c1a4b192089e62642d847ebac3e4d15134c3  ixgbe, ixgbevf: Add new mbox API xcast mode
 
-For this series:
+elapsed time: 120m
 
+configs tested: 168
 
-Benjamin Poirier (2):
-  e1000e: remove unreachable code
-  e1000e: Fix msi-x interrupt automask
+i386                     randconfig-a0-201542
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-10232115
+i386                   randconfig-c0-10232249
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+arm                          moxart_defconfig
+arm                         s3c6400_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                             allmodconfig
+arm                          ks8695_defconfig
+arm                        mvebu_v7_defconfig
+frv                               allnoconfig
+m32r                       mappi.up_defconfig
+powerpc                     sbc8548_defconfig
+arm                             rpc_defconfig
+avr32                     atstk1003_defconfig
+mips                       bmips_be_defconfig
+mn10300                     asb2364_defconfig
+powerpc                     pq2fads_defconfig
+x86_64                           allyesconfig
+blackfin          BF527-AD7160-EVAL_defconfig
+mips                  mips_paravirt_defconfig
+powerpc                      katmai_defconfig
+sparc                               defconfig
+arm                          iop32x_defconfig
+mips                       rbtx49xx_defconfig
+mn10300                           allnoconfig
+powerpc                  gef_sbc310_defconfig
+powerpc                     mpc5200_defconfig
+x86_64               randconfig-x013-10211707
+x86_64               randconfig-x014-10211707
+x86_64               randconfig-x011-10211707
+x86_64               randconfig-x010-10211707
+x86_64               randconfig-x015-10211707
+x86_64               randconfig-x016-10211707
+x86_64               randconfig-x012-10211707
+x86_64               randconfig-x019-10211707
+x86_64               randconfig-x017-10211707
+x86_64               randconfig-x018-10211707
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s1-201542
+i386                     randconfig-s0-201542
+x86_64                 randconfig-s3-10232225
+x86_64                 randconfig-s4-10232225
+x86_64                 randconfig-s5-10232225
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                            allnoconfig
+arm                  colibri_pxa300_defconfig
+arm                      pxa255-idp_defconfig
+m68k                                defconfig
+sparc                       sparc32_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                 randconfig-i0-10232128
+i386                   randconfig-b0-10232028
+i386                   randconfig-b0-10232128
+i386                   randconfig-b0-10232234
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                            hisi_defconfig
+blackfin                    PNAV-10_defconfig
+blackfin                         alldefconfig
+mips                         rt305x_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201542
+i386                     randconfig-i1-201542
+x86_64                 randconfig-b0-10232052
+x86_64                 randconfig-b0-10232230
+arm                      integrator_defconfig
+blackfin                         allyesconfig
+mips                           ip32_defconfig
+arm                                      arm5
+arm                                     arm67
+arm                                       mmp
+arm                       omap2plus_defconfig
+arm                         s3c2410_defconfig
+arm                           tegra_defconfig
+i386                     randconfig-n0-201542
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-h0-10232230
+arm                              zx_defconfig
+avr32                  atngw100mkii_defconfig
+powerpc                  iss476-smp_defconfig
+i386                  randconfig-sb0-10232037
+m32r                    m32700ut.up_defconfig
+powerpc                      cm5200_defconfig
+xtensa                           allyesconfig
+blackfin                    DNP5370_defconfig
+ia64                         bigsur_defconfig
+sh                          polaris_defconfig
+x86_64               randconfig-x001-10211812
+x86_64               randconfig-x004-10211812
+x86_64               randconfig-x005-10211812
+x86_64               randconfig-x003-10211812
+x86_64               randconfig-x007-10211812
+x86_64               randconfig-x000-10211812
+x86_64               randconfig-x009-10211812
+x86_64               randconfig-x002-10211812
+x86_64               randconfig-x008-10211812
+x86_64               randconfig-x006-10211812
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-r0-201542
+avr32                       favr-32_defconfig
+blackfin                BF609-EZKIT_defconfig
+powerpc                     tqm8548_defconfig
+i386                 randconfig-x008-10211814
+i386                 randconfig-x002-10211814
+i386                 randconfig-x009-10211814
+i386                 randconfig-x003-10211814
+i386                 randconfig-x004-10211814
+i386                 randconfig-x005-10211814
+i386                 randconfig-x006-10211814
+i386                 randconfig-x000-10211814
+i386                 randconfig-x007-10211814
+i386                 randconfig-x001-10211814
 
- drivers/net/ethernet/intel/e1000e/netdev.c | 18 ++++++------------
- 1 file changed, 6 insertions(+), 12 deletions(-)
-
-
-The first patch is a cleanup but the second one is the real deal. Please
-consider reading the description for that patch before proceeding. I
-believe that the following simple tracing statements are helpful in
-detecting the problem fixed by the second patch.
-
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 8881256..707a525 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -1952,6 +1952,9 @@ static irqreturn_t e1000_intr_msix_rx(int __always_unused irq, void *data)
- 	struct net_device *netdev = data;
- 	struct e1000_adapter *adapter = netdev_priv(netdev);
- 	struct e1000_ring *rx_ring = adapter->rx_ring;
-+	struct e1000_hw *hw = &adapter->hw;
-+
-+	trace_printk("%s: rxq0 irq ims 0x%08x\n", netdev->name, er32(IMS));
- 
- 	/* Write the ITR value calculated at the end of the
- 	 * previous interrupt.
-@@ -1966,6 +1969,7 @@ static irqreturn_t e1000_intr_msix_rx(int __always_unused irq, void *data)
- 		adapter->total_rx_bytes = 0;
- 		adapter->total_rx_packets = 0;
- 		__napi_schedule(&adapter->napi);
-+		trace_printk("%s: scheduling napi\n", netdev->name);
- 	}
- 	return IRQ_HANDLED;
- }
-@@ -2672,6 +2676,8 @@ static int e1000e_poll(struct napi_struct *napi, int weight)
- 	struct net_device *poll_dev = adapter->netdev;
- 	int tx_cleaned = 1, work_done = 0;
- 
-+	trace_printk("%s: poll starting ims 0x%08x\n", poll_dev->name,
-+		     er32(IMS));
- 	adapter = netdev_priv(poll_dev);
- 
- 	if (!adapter->msix_entries ||
-@@ -2689,6 +2695,8 @@ static int e1000e_poll(struct napi_struct *napi, int weight)
- 			e1000_set_itr(adapter);
- 		napi_complete_done(napi, work_done);
- 		if (!test_bit(__E1000_DOWN, &adapter->state)) {
-+			trace_printk("%s: will enable rxq0 irq\n",
-+				     poll_dev->name);
- 			if (adapter->msix_entries)
- 				ew32(IMS, adapter->rx_ring->ims_val);
- 			else
-
--------- 8< --------
-
-With that patch but without the patches in this series we can see that rx irqs
-occur@unexpected times:
-
-          <idle>-0     [000] .Ns.  1986.887517: e1000e_poll: eth1: will enable rxq0 irq
-          <idle>-0     [000] d.h.  1986.896654: e1000_intr_msix_rx: eth1: rxq0 irq ims 0x01500004
-          <idle>-0     [000] d.h.  1986.896657: e1000_intr_msix_rx: eth1: scheduling napi
-          <idle>-0     [000] d.H.  1986.896662: e1000_intr_msix_rx: eth1: rxq0 irq ims 0x01500004
-          <idle>-0     [000] ..s.  1986.896667: e1000e_poll: eth1: poll starting ims 0x01500004
-Warning: many interrupts (2) before napi
-          <idle>-0     [000] ..s.  1986.896685: e1000e_poll: eth1: will enable rxq0 irq
-
-          <idle>-0     [000] d.h.  1990.688870: e1000_intr_msix_rx: eth1: scheduling napi
-          <idle>-0     [000] ..s.  1990.688875: e1000e_poll: eth1: poll starting ims 0x01500004
-          <idle>-0     [000] dNH.  1990.688913: e1000_intr_msix_rx: eth1: rxq0 irq ims 0x01500004
-Warning: interrupt inside napi
-          <idle>-0     [000] .Ns.  1990.688916: e1000e_poll: eth1: will enable rxq0 irq
-          <idle>-0     [000] d.h.  1990.729688: e1000_intr_msix_rx: eth1: rxq0 irq ims 0x01500004
-
-Here's a typical sequence after applying the patches in this series. Notice
-that ims is changed. Another printk at the end of e1000e_poll would show it to
-be 0x01500004.
-
-          <idle>-0     [000] d.h.  3896.134376: e1000_intr_msix_rx: eth1: rxq0 irq ims 0x01400004
-          <idle>-0     [000] d.h.  3896.134379: e1000_intr_msix_rx: eth1: scheduling napi
-          <idle>-0     [000] ..s.  3896.134384: e1000e_poll: eth1: poll starting ims 0x01400004
-          <idle>-0     [000] ..s.  3896.134398: e1000e_poll: eth1: will enable rxq0 irq
-
-Finally, here's the script I used to generate the warnings above:
-
-#!/usr/bin/python3
-
-import sys
-import re
-import pprint
-
-
-class NaE(Exception):
-    "Not an Event"
-    pass
-
-class Event:
-    def __init__(self, line):
-        # sample events:
-        #  <idle>-0     [000] d.h.  2025.256536: e1000_intr_msix_rx: eth1: rxq0 irq ims 0x01500004
-        #  <idle>-0     [000] d.h.  2025.256539: e1000_intr_msix_rx: eth1: scheduling napi
-        #  <idle>-0     [000] ..s.  2025.256544: e1000e_poll: eth1: poll starting ims 0x01500004
-        #  <idle>-0     [000] ..s.  2025.256558: e1000e_poll: eth1: will enable rxq0 irq
-        retval = re.match(" +<?(?P<comm>.*)>?-(?P<pid>[0-9]+) +\[(?P<cpu>.*)\] (?P<flags>[^ ]+) +(?P<time>[0-9.]+): (?P<funcname>[^:]+): (?P<ifname>[^:]+): (?P<args>.*)", line)
-        if retval:
-            self.comm = retval.group("comm")
-            self.pid = retval.group("pid")
-            self.cpu = retval.group("cpu")
-            self.flags = retval.group("flags")
-            self.time = retval.group("time")
-            self.funcname = retval.group("funcname")
-            self.ifname = retval.group("ifname")
-            self.args = retval.group("args")
-        else:
-            raise NaE
-
-
-class Machine:
-    pass
-
-class State:
-    def __init__(self, machine):
-        self.machine = machine
-
-    def entry(self, event):
-        pass
-
-    def transition(self, event):
-        "self.machine should be considered read-only in transition"
-        return State(self.machine)
-
-    def run(self, event):
-        pass
-
-    def exit(self, event):
-        pass
-
-    def advance(self, event):
-            nextState = self.transition(event)
-            if (nextState != self):
-                self.exit(event)
-                nextState.entry(event)
-            nextState.run(event)
-            return nextState
-
-# general receive processing machine
-def enteringNapi(machine, event):
-    if event.args.startswith("poll starting"):
-        return True
-    else:
-        return False
-
-def exitingNapi(machine, event):
-    if event.args.startswith("will enable"):
-        return True
-    else:
-        return False
-
-class OutsideNapi(State):
-    def entry(self, event):
-        self.machine.intr = []
-
-    def transition(self, event):
-        if enteringNapi(self.machine, event):
-            return InsideNapi(self.machine)
-        else:
-            return self
-
-    def run(self, event):
-        if event.args.startswith("rxq0 irq"):
-            self.machine.intr.append(event)
-
-    def exit(self, event):
-        if len(self.machine.intr) > 1:
-            print("Warning: many interrupts (%d) before napi at %s" % (
-                len(self.machine.intr), event.time,))
-
-class InsideNapi(State):
-    def transition(self, event):
-        if exitingNapi(self.machine, event):
-            return OutsideNapi(self.machine)
-        else:
-            return self
-
-    def run(self, event):
-        if event.args.startswith("rxq0 irq"):
-            print("Warning: interrupt inside napi")
-
-class UnknownState(State):
-    def transition(self, event):
-        if enteringNapi(self.machine, event):
-            return InsideNapi(self.machine)
-        elif exitingNapi(self.machine, event):
-            return ExitingNapi(self.machine)
-        else:
-            return self
-
-
-if __name__ == '__main__':
-    debug = False
-
-    state = UnknownState(Machine())
-
-    for line in sys.stdin:
-        print(line, end='')
-        try:
-            event = Event(line)
-        except NaE:
-            pass
-        else:
-            if debug:
-                pprinter.pprint(event)
-            state = state.advance(event)
-
--- 
-2.5.0
-
+Thanks,
+Fengguang
