@@ -1,22 +1,65 @@
-From: Toshiaki Makita <toshiaki.makita1@gmail.com>
-Date: Sat, 24 Oct 2015 17:50:59 +0900
-Subject: [Intel-wired-lan] [PATCH net-next 0/4] Automatic adjustment of
-	max frame size
-In-Reply-To: <1445572173-15402-1-git-send-email-makita.toshiaki@lab.ntt.co.jp>
-References: <1445572173-15402-1-git-send-email-makita.toshiaki@lab.ntt.co.jp>
-Message-ID: <562B4673.7020608@gmail.com>
+From: Lan, Tianyu <tianyu.lan@intel.com>
+Date: Sat, 24 Oct 2015 22:46:59 +0800
+Subject: [Intel-wired-lan] [RFC Patch 01/12] PCI: Add virtfn_index for
+	struct pci_device
+In-Reply-To: <5627D45A.4040502@gmail.com>
+References: <1445445464-5056-1-git-send-email-tianyu.lan@intel.com>
+ <1445445464-5056-2-git-send-email-tianyu.lan@intel.com>
+ <5627D45A.4040502@gmail.com>
+Message-ID: <562B99E3.7020209@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-David,
 
-I found my patch set is marked with Changes Requested, but I haven't
-seen any feedback.
 
-Could you give me your feedback?
+On 10/22/2015 2:07 AM, Alexander Duyck wrote:
+> On 10/21/2015 09:37 AM, Lan Tianyu wrote:
+>> Add "virtfn_index" member in the struct pci_device to record VF sequence
+>> of PF. This will be used in the VF sysfs node handle.
+>>
+>> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+>> ---
+>>   drivers/pci/iov.c   | 1 +
+>>   include/linux/pci.h | 1 +
+>>   2 files changed, 2 insertions(+)
+>>
+>> diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
+>> index ee0ebff..065b6bb 100644
+>> --- a/drivers/pci/iov.c
+>> +++ b/drivers/pci/iov.c
+>> @@ -136,6 +136,7 @@ static int virtfn_add(struct pci_dev *dev, int id,
+>> int reset)
+>>       virtfn->physfn = pci_dev_get(dev);
+>>       virtfn->is_virtfn = 1;
+>>       virtfn->multifunction = 0;
+>> +    virtfn->virtfn_index = id;
+>>       for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
+>>           res = &dev->resource[i + PCI_IOV_RESOURCES];
+>> diff --git a/include/linux/pci.h b/include/linux/pci.h
+>> index 353db8d..85c5531 100644
+>> --- a/include/linux/pci.h
+>> +++ b/include/linux/pci.h
+>> @@ -356,6 +356,7 @@ struct pci_dev {
+>>       unsigned int    io_window_1k:1;    /* Intel P2P bridge 1K I/O
+>> windows */
+>>       unsigned int    irq_managed:1;
+>>       pci_dev_flags_t dev_flags;
+>> +    unsigned int    virtfn_index;
+>>       atomic_t    enable_cnt;    /* pci_enable_device has been called */
+>>       u32        saved_config_space[16]; /* config space saved at
+>> suspend time */
+>>
+>
+> Can't you just calculate the VF index based on the VF BDF number
+> combined with the information in the PF BDF number and VF
+> offset/stride?  Seems kind of pointless to add a variable that is only
+> used by one driver and is in a slowpath when you can just calculate it
+> pretty quickly.
 
-Thanks,
-Toshiaki Makita
+Good suggestion. Will try it.
+
+>
+> - Alex
