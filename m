@@ -1,122 +1,187 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 23 Oct 2015 13:01:10 -0700
-Subject: [Intel-wired-lan] [RFC Patch 00/12] IXGBE: Add live migration
-	support for SRIOV NIC
-In-Reply-To: <1445627153.5050.52.camel@redhat.com>
-References: <1445445464-5056-1-git-send-email-tianyu.lan@intel.com>
- <562A7E33.4080800@gmail.com> <1445627153.5050.52.camel@redhat.com>
-Message-ID: <562A9206.6040409@gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 24 Oct 2015 08:19:21 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ 505b857d512958dfd3781167a2f24b94f63d0912 BUILD SUCCESS
+Message-ID: <562ace89.YkUnG+gGJfk9wjvy%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 10/23/2015 12:05 PM, Alex Williamson wrote:
-> On Fri, 2015-10-23 at 11:36 -0700, Alexander Duyck wrote:
->> On 10/21/2015 09:37 AM, Lan Tianyu wrote:
->>> This patchset is to propose a new solution to add live migration support for 82599
->>> SRIOV network card.
->>>
->>> Im our solution, we prefer to put all device specific operation into VF and
->>> PF driver and make code in the Qemu more general.
->>>
->>>
->>> VF status migration
->>> =================================================================
->>> VF status can be divided into 4 parts
->>> 1) PCI configure regs
->>> 2) MSIX configure
->>> 3) VF status in the PF driver
->>> 4) VF MMIO regs
->>>
->>> The first three status are all handled by Qemu.
->>> The PCI configure space regs and MSIX configure are originally
->>> stored in Qemu. To save and restore "VF status in the PF driver"
->>> by Qemu during migration, adds new sysfs node "state_in_pf" under
->>> VF sysfs directory.
->>>
->>> For VF MMIO regs, we introduce self emulation layer in the VF
->>> driver to record MMIO reg values during reading or writing MMIO
->>> and put these data in the guest memory. It will be migrated with
->>> guest memory to new machine.
->>>
->>>
->>> VF function restoration
->>> ================================================================
->>> Restoring VF function operation are done in the VF and PF driver.
->>>
->>> In order to let VF driver to know migration status, Qemu fakes VF
->>> PCI configure regs to indicate migration status and add new sysfs
->>> node "notify_vf" to trigger VF mailbox irq in order to notify VF
->>> about migration status change.
->>>
->>> Transmit/Receive descriptor head regs are read-only and can't
->>> be restored via writing back recording reg value directly and they
->>> are set to 0 during VF reset. To reuse original tx/rx rings, shift
->>> desc ring in order to move the desc pointed by original head reg to
->>> first entry of the ring and then enable tx/rx rings. VF restarts to
->>> receive and transmit from original head desc.
->>>
->>>
->>> Tracking DMA accessed memory
->>> =================================================================
->>> Migration relies on tracking dirty page to migrate memory.
->>> Hardware can't automatically mark a page as dirty after DMA
->>> memory access. VF descriptor rings and data buffers are modified
->>> by hardware when receive and transmit data. To track such dirty memory
->>> manually, do dummy writes(read a byte and write it back) when receive
->>> and transmit data.
->>
->> I was thinking about it and I am pretty sure the dummy write approach is
->> problematic at best.  Specifically the issue is that while you are
->> performing a dummy write you risk pulling in descriptors for data that
->> hasn't been dummy written to yet.  So when you resume and restore your
->> descriptors you will have once that may contain Rx descriptors
->> indicating they contain data when after the migration they don't.
->>
->> I really think the best approach to take would be to look at
->> implementing an emulated IOMMU so that you could track DMA mapped pages
->> and avoid migrating the ones marked as DMA_FROM_DEVICE until they are
->> unmapped.  The advantage to this is that in the case of the ixgbevf
->> driver it now reuses the same pages for Rx DMA.  As a result it will be
->> rewriting the same pages often and if you are marking those pages as
->> dirty and transitioning them it is possible for a flow of small packets
->> to really make a mess of things since you would be rewriting the same
->> pages in a loop while the device is processing packets.
->
-> I'd be concerned that an emulated IOMMU on the DMA path would reduce
-> throughput to the point where we shouldn't even bother with assigning
-> the device in the first place and should be using virtio-net instead.
-> POWER systems have a guest visible IOMMU and it's been challenging for
-> them to get to 10Gbps, requiring real-mode tricks.  virtio-net may add
-> some latency, but it's not that hard to get it to 10Gbps and it already
-> supports migration.  An emulated IOMMU in the guest is really only good
-> for relatively static mappings, the latency for anything else is likely
-> too high.  Maybe there are shadow page table tricks that could help, but
-> it's imposing overhead the whole time the guest is running, not only on
-> migration.  Thanks,
->
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+505b857d512958dfd3781167a2f24b94f63d0912  ixgbe: Reset interface after enabling SR-IOV
 
-The big overhead I have seen with IOMMU implementations is the fact that 
-they almost always have some sort of locked table or tree that prevents 
-multiple CPUs from accessing resources in any kind of timely fashion. 
-As a result things like Tx is usually slowed down for network workloads 
-when multiple CPUs are enabled.
+elapsed time: 117m
 
-I admit doing a guest visible IOMMU would probably add some overhead, 
-but this current patch set as implemented already has some of the hints 
-of that as the descriptor rings are locked which means we cannot unmap 
-in the Tx clean-up while we are mapping on another Tx queue for instance.
+configs tested: 166
 
-One approach for this would be to implement or extend a lightweight DMA 
-API such as swiotlb or nommu.  The code would need to have a bit in 
-there so it can take care of marking the pages as dirty on sync_for_cpu 
-and unmap calls when set for BIDIRECTIONAL or FROM_DEVICE.  Then if we 
-could somehow have some mechanism for the hypervisor to tell us when the 
-feature is needed or not we could probably drop the overhead for page 
-dirtying as well.  That was why I even mentioned IOMMU, but the fact is 
-all we really need is some means of tracking if we should be marking the 
-pages as dirty or not.
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201542
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-10240703
+i386                   randconfig-c0-10240744
+i386                   randconfig-c0-10240807
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+parisc                         b180_defconfig
+i386                             allmodconfig
+i386                                defconfig
+arm                          nuc950_defconfig
+m68k                           sun3_defconfig
+powerpc                      walnut_defconfig
+sh                           se7751_defconfig
+x86_64                              defconfig
+m68k                        mvme147_defconfig
+sh                           se7343_defconfig
+sh                          urquell_defconfig
+arm                          collie_defconfig
+powerpc                     kmeter1_defconfig
+powerpc                 mpc834x_mds_defconfig
+powerpc                      obs600_defconfig
+x86_64               randconfig-x013-10211707
+x86_64               randconfig-x014-10211707
+x86_64               randconfig-x011-10211707
+x86_64               randconfig-x010-10211707
+x86_64               randconfig-x015-10211707
+x86_64               randconfig-x016-10211707
+x86_64               randconfig-x012-10211707
+x86_64               randconfig-x019-10211707
+x86_64               randconfig-x017-10211707
+x86_64               randconfig-x018-10211707
+i386                             alldefconfig
+i386                              allnoconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+i386                     randconfig-s0-201542
+i386                     randconfig-s1-201542
+x86_64                 randconfig-s0-10240712
+x86_64                 randconfig-s1-10240712
+x86_64                 randconfig-s2-10240712
+x86_64                 randconfig-s0-10240806
+x86_64                 randconfig-s1-10240806
+x86_64                 randconfig-s2-10240806
+x86_64                 randconfig-s3-10240710
+x86_64                 randconfig-s4-10240710
+x86_64                 randconfig-s5-10240710
+x86_64                 randconfig-s3-10240754
+x86_64                 randconfig-s4-10240754
+x86_64                 randconfig-s5-10240754
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                            allnoconfig
+arm                       omap2plus_defconfig
+blackfin                    DNP5370_defconfig
+mn10300                     asb2303_defconfig
+powerpc                         c2k_defconfig
+arm                        clps711x_defconfig
+arm                         s5pv210_defconfig
+mips                      maltaaprp_defconfig
+mips                      pistachio_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                 randconfig-i0-10232128
+i386                   randconfig-b0-10240607
+i386                   randconfig-b0-10240744
+i386                   randconfig-b0-10240803
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201542
+i386                     randconfig-i1-201542
+x86_64                 randconfig-b0-10240714
+x86_64                 randconfig-b0-10240756
+arm                                      arm5
+arm                                     arm67
+arm                                       mmp
+arm                         s3c2410_defconfig
+arm                           tegra_defconfig
+i386                     randconfig-n0-201542
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                   rhel
+sparc                            alldefconfig
+arm64                            alldefconfig
+avr32                               defconfig
+arm                                 defconfig
+arm                      pxa255-idp_defconfig
+arm                      jornada720_defconfig
+powerpc                 mpc836x_mds_defconfig
+x86_64                 randconfig-n0-10240743
+x86_64                 randconfig-n0-10240800
+x86_64                 randconfig-n0-10240808
+microblaze                        allnoconfig
+mips                         tb0287_defconfig
+sh                     magicpanelr2_defconfig
+i386                  randconfig-sb0-10240739
+x86_64               randconfig-x001-10211812
+x86_64               randconfig-x004-10211812
+x86_64               randconfig-x005-10211812
+x86_64               randconfig-x003-10211812
+x86_64               randconfig-x007-10211812
+x86_64               randconfig-x000-10211812
+x86_64               randconfig-x009-10211812
+x86_64               randconfig-x002-10211812
+x86_64               randconfig-x008-10211812
+x86_64               randconfig-x006-10211812
+i386                     randconfig-r0-201542
+x86_64                 randconfig-r0-10240448
+i386                 randconfig-x008-10211814
+i386                 randconfig-x002-10211814
+i386                 randconfig-x009-10211814
+i386                 randconfig-x003-10211814
+i386                 randconfig-x004-10211814
+i386                 randconfig-x005-10211814
+i386                 randconfig-x006-10211814
+i386                 randconfig-x000-10211814
+i386                 randconfig-x007-10211814
+i386                 randconfig-x001-10211814
+i386                   randconfig-x0-10240734
 
-- Alex
+Thanks,
+Fengguang
