@@ -1,54 +1,56 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 24 Oct 2015 13:11:59 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 82/82]
- drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c:1067:2: error: implicit
- declaration of function 'CLOCKSOURCE_MASK'
-Message-ID: <201510241358.cD4Q6z5X%fengguang.wu@intel.com>
+From: Nicholas Krause <xerofoify@gmail.com>
+Date: Sat, 24 Oct 2015 00:09:51 -0400
+Subject: [Intel-wired-lan] [PATCH] e1000e:Fix incorrect assumption that the
+	function e1000e_up always runs successfully in e1000_change_mtu
+Message-ID: <1445659791-30497-1-git-send-email-xerofoify@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   178bf00918593457f983873c49d3072f54eacfed
-commit: 178bf00918593457f983873c49d3072f54eacfed [82/82] ixgbe: Update PTP to support X550EM_x devices
-config: xtensa-allyesconfig (attached as .config)
-reproduce:
-        wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        git checkout 178bf00918593457f983873c49d3072f54eacfed
-        # save the attached .config to linux build tree
-        make.cross ARCH=xtensa 
+This fixes the function e1000_change_mtu to properly check and run
+the error code by e1000e_up as this function can fail and the error
+code should be returned to the caller of the function e1000_change_mtu
+to signal a error has occurred when calling this particular function
 
-All errors (new ones prefixed by >>):
-
-   drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c: In function 'ixgbe_ptp_start_cyclecounter':
->> drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c:1067:2: error: implicit declaration of function 'CLOCKSOURCE_MASK' [-Werror=implicit-function-declaration]
-     cc.mask = CLOCKSOURCE_MASK(64);
-     ^
-   cc1: some warnings being treated as errors
-
-vim +/CLOCKSOURCE_MASK +1067 drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c
-
-  1061		 * they do not properly function if the overflow point isn't 2^N-1.
-  1062		 * However, the actual SYSTIME values in question take ~138 years to
-  1063		 * overflow. In practice this means they won't actually overflow. A
-  1064		 * proper fix to this problem would require modification of the
-  1065		 * timecounter delta calculations.
-  1066		 */
-> 1067		cc.mask = CLOCKSOURCE_MASK(64);
-  1068		cc.mult = 1;
-  1069		cc.shift = 0;
-  1070	
-
+Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/octet-stream
-Size: 42521 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151024/9f9d9f4a/attachment-0001.obj>
+ drivers/net/ethernet/intel/e1000e/netdev.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index faf4b3f..aebccb1 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -5931,6 +5931,7 @@ static int e1000_change_mtu(struct net_device *netdev, int new_mtu)
+ {
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+ 	int max_frame = new_mtu + VLAN_ETH_HLEN + ETH_FCS_LEN;
++	int err = 0;
+ 
+ 	/* Jumbo frame support */
+ 	if ((max_frame > (VLAN_ETH_FRAME_LEN + ETH_FCS_LEN)) &&
+@@ -5984,7 +5985,9 @@ static int e1000_change_mtu(struct net_device *netdev, int new_mtu)
+ 		adapter->rx_buffer_len = VLAN_ETH_FRAME_LEN + ETH_FCS_LEN;
+ 
+ 	if (netif_running(netdev))
+-		e1000e_up(adapter);
++		err = e1000e_up(adapter);
++		if (err)
++			e_err("Failed to successfully bring up this adapter\n");
+ 	else
+ 		e1000e_reset(adapter);
+ 
+@@ -5992,7 +5995,7 @@ static int e1000_change_mtu(struct net_device *netdev, int new_mtu)
+ 
+ 	clear_bit(__E1000_RESETTING, &adapter->state);
+ 
+-	return 0;
++	return err;
+ }
+ 
+ static int e1000_mii_ioctl(struct net_device *netdev, struct ifreq *ifr,
+-- 
+2.1.4
+
