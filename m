@@ -1,48 +1,77 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon, 26 Oct 2015 16:32:02 -0700
-Subject: [Intel-wired-lan] [next-queue 1/6] fm10k: use ether_addr_copy to
-	copy MAC address
-Message-ID: <1445902327-6717-1-git-send-email-jacob.e.keller@intel.com>
+Date: Mon, 26 Oct 2015 16:32:04 -0700
+Subject: [Intel-wired-lan] [next-queue 3/6] fm10k: do not use CamelCase
+In-Reply-To: <1445902327-6717-1-git-send-email-jacob.e.keller@intel.com>
+References: <1445902327-6717-1-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1445902327-6717-3-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Use the ether_addr_copy function instead of copying byte-by-byte in a
-for-loop by hand.
+From: Bruce Allan <bruce.w.allan@intel.com>
+
+Avoid the use of CamelCase for some variable names that previously
+slipped through review.
 
 Reported-by: Bruce Allan <bruce.w.allan@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_pf.c | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c  | 12 ++++++------
+ drivers/net/ethernet/intel/fm10k/fm10k_type.h | 14 +++++++-------
+ 2 files changed, 13 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-index 8b9b6ba5b92b..bbf0b4aef241 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-@@ -266,7 +266,6 @@ static s32 fm10k_read_mac_addr_pf(struct fm10k_hw *hw)
- {
- 	u8 perm_addr[ETH_ALEN];
- 	u32 serial_num;
--	int i;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index 73254b2b0a51..e68000c35e02 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -1418,14 +1418,14 @@ static int fm10k_mbx_request_irq_pf(struct fm10k_intfc *interface)
+ 	}
  
- 	serial_num = fm10k_read_reg(hw, FM10K_SM_AREA(1));
+ 	/* Enable interrupts w/ no moderation for "other" interrupts */
+-	fm10k_write_reg(hw, FM10K_INT_MAP(fm10k_int_PCIeFault), other_itr);
+-	fm10k_write_reg(hw, FM10K_INT_MAP(fm10k_int_SwitchUpDown), other_itr);
+-	fm10k_write_reg(hw, FM10K_INT_MAP(fm10k_int_SRAM), other_itr);
+-	fm10k_write_reg(hw, FM10K_INT_MAP(fm10k_int_MaxHoldTime), other_itr);
+-	fm10k_write_reg(hw, FM10K_INT_MAP(fm10k_int_VFLR), other_itr);
++	fm10k_write_reg(hw, FM10K_INT_MAP(fm10k_int_pcie_fault), other_itr);
++	fm10k_write_reg(hw, FM10K_INT_MAP(fm10k_int_switch_up_down), other_itr);
++	fm10k_write_reg(hw, FM10K_INT_MAP(fm10k_int_sram), other_itr);
++	fm10k_write_reg(hw, FM10K_INT_MAP(fm10k_int_max_hold_time), other_itr);
++	fm10k_write_reg(hw, FM10K_INT_MAP(fm10k_int_vflr), other_itr);
  
-@@ -288,10 +287,8 @@ static s32 fm10k_read_mac_addr_pf(struct fm10k_hw *hw)
- 	perm_addr[4] = (u8)(serial_num >> 8);
- 	perm_addr[5] = (u8)(serial_num);
+ 	/* Enable interrupts w/ moderation for mailbox */
+-	fm10k_write_reg(hw, FM10K_INT_MAP(fm10k_int_Mailbox), mbx_itr);
++	fm10k_write_reg(hw, FM10K_INT_MAP(fm10k_int_mailbox), mbx_itr);
  
--	for (i = 0; i < ETH_ALEN; i++) {
--		hw->mac.perm_addr[i] = perm_addr[i];
--		hw->mac.addr[i] = perm_addr[i];
--	}
-+	ether_addr_copy(hw->mac.perm_addr, perm_addr);
-+	ether_addr_copy(hw->mac.addr, perm_addr);
+ 	/* Enable individual interrupt causes */
+ 	fm10k_write_reg(hw, FM10K_EIMR, FM10K_EIMR_ENABLE(PCA_FAULT) |
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_type.h b/drivers/net/ethernet/intel/fm10k/fm10k_type.h
+index 02727250ce1f..2fd962f97cb9 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_type.h
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_type.h
+@@ -388,13 +388,13 @@ struct fm10k_hw;
+ #define FM10K_SW_SYSTIME_PULSE(_n)	((_n) + 0x02252)
  
- 	return 0;
- }
+ enum fm10k_int_source {
+-	fm10k_int_Mailbox	= 0,
+-	fm10k_int_PCIeFault	= 1,
+-	fm10k_int_SwitchUpDown	= 2,
+-	fm10k_int_SwitchEvent	= 3,
+-	fm10k_int_SRAM		= 4,
+-	fm10k_int_VFLR		= 5,
+-	fm10k_int_MaxHoldTime	= 6,
++	fm10k_int_mailbox		= 0,
++	fm10k_int_pcie_fault		= 1,
++	fm10k_int_switch_up_down	= 2,
++	fm10k_int_switch_event		= 3,
++	fm10k_int_sram			= 4,
++	fm10k_int_vflr			= 5,
++	fm10k_int_max_hold_time		= 6,
+ 	fm10k_int_sources_max_pf
+ };
+ 
 -- 
 2.6.1.264.gbab76a9
 
