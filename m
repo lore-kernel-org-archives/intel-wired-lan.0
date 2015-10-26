@@ -1,42 +1,35 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 26 Oct 2015 21:29:50 +0000
-Subject: [Intel-wired-lan] [next PATCH S19 12/15] i40e: return the
- number of	enabled queues for ETHTOOL_GRXRINGS
-In-Reply-To: <1445471236-35918-13-git-send-email-catherine.sullivan@intel.com>
-References: <1445471236-35918-1-git-send-email-catherine.sullivan@intel.com>
- <1445471236-35918-13-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060D3F83@ORSMSX104.amr.corp.intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Mon, 26 Oct 2015 14:35:39 -0700
+Subject: [Intel-wired-lan] [next-queue] fm10k: bump driver version
+Message-ID: <1445895339-1610-1-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Catherine Sullivan
-> Sent: Wednesday, October 21, 2015 4:47 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Zhang, Helin
-> Subject: [Intel-wired-lan] [next PATCH S19 12/15] i40e: return the number of
-> enabled queues for ETHTOOL_GRXRINGS
-> 
-> From: Helin Zhang <helin.zhang@intel.com>
-> 
-> This patch fixes a problem where using ethtool rxnfc command could let RX
-> flow hash be set on disabled queues. This patch fixes the problem by
-> returning the number of enabled queues before setting rxnfc.
-> 
-> Signed-off-by: Helin Zhang <helin.zhang@intel.com>
-> Change-ID: Idbac86b0b47ddacc8deee7cd257e41de01cbe5c0
-> 
-> ---
-> Testing-hints: 5535691
-> Verify that ethtool set rxnfc cannot set the flow hash on queues that are not
-> active, on a system that has a non power of two number of cpus.
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+We haven't bumped the driver version in a while despite many fixes being
+pulled in from the out-of-tree Sourceforge driver. Update the version to
+match.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied, cannot set number of queues to greater than number of processors.
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+index 7114bea841d3..44576fe51132 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+@@ -28,7 +28,7 @@
+ 
+ #include "fm10k.h"
+ 
+-#define DRV_VERSION	"0.15.2-k"
++#define DRV_VERSION	"0.19.1-k"
+ const char fm10k_driver_version[] = DRV_VERSION;
+ char fm10k_driver_name[] = "fm10k";
+ static const char fm10k_driver_string[] =
+-- 
+2.6.1.264.gbab76a9
 
