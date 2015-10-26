@@ -1,135 +1,162 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon, 26 Oct 2015 15:18:13 -0700
-Subject: [Intel-wired-lan] [next-queue v2] fm10k: conditionally compile DCB
-	and DebugFS support
-Message-ID: <1445897893-19723-1-git-send-email-jacob.e.keller@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 27 Oct 2015 07:17:20 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 9834035f8d47d1e1d3d167a6180faada3ad70a12 BUILD DONE
+Message-ID: <562eb480.ZgG99x03EWcAWfpj%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Rather than wrapping fm10k_dcbnl.c and fm10k_debugfs.c support with
- #ifdef blocks, just conditionally include the .o files in the Makefile.
-Also, since we're modifying it, update the copyright year on the
-Makefile.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+9834035f8d47d1e1d3d167a6180faada3ad70a12  fm10k: bump driver version
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
----
-This replaces in-place the previous version of the patch currently in
-the queue, fixing a compilation error
+drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c:1067:12: error: implicit declaration of function 'CLOCKSOURCE_MASK' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c:1067:2: error: implicit declaration of function 'CLOCKSOURCE_MASK'
+drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c:1067:2: error: implicit declaration of function 'CLOCKSOURCE_MASK' [-Werror=implicit-function-declaration]
 
--v2
-* Fix issue when DCB is disabled, since the function didn't take the
-  same parameters.
+Error ids grouped by kconfigs:
 
- drivers/net/ethernet/intel/fm10k/Makefile        | 20 +++++++++++++++-----
- drivers/net/ethernet/intel/fm10k/fm10k.h         |  4 ++++
- drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c   |  4 ----
- drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c |  4 ----
- 4 files changed, 19 insertions(+), 13 deletions(-)
+recent_errors
+??? alpha-allyesconfig
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
+??? ia64-allyesconfig
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
+??? parisc-allyesconfig
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
+??? powerpc-defconfig
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
+??? powerpc-ppc64_defconfig
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
+??? s390-allyesconfig
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
+??? sparc64-allyesconfig
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
+??? sparc-allyesconfig
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
+??? tile-allyesconfig
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
+??? x86_64-randconfig-x008-10252017
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
+??? x86_64-randconfig-x013-201543
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
+??? x86_64-randconfig-x018-201543
+??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
+??? x86_64-randconfig-x019-201543
+    ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
 
-diff --git a/drivers/net/ethernet/intel/fm10k/Makefile b/drivers/net/ethernet/intel/fm10k/Makefile
-index 08859dd220a8..b006ff66d028 100644
---- a/drivers/net/ethernet/intel/fm10k/Makefile
-+++ b/drivers/net/ethernet/intel/fm10k/Makefile
-@@ -1,7 +1,7 @@
- ################################################################################
- #
- # Intel Ethernet Switch Host Interface Driver
--# Copyright(c) 2013 - 2014 Intel Corporation.
-+# Copyright(c) 2013 - 2015 Intel Corporation.
- #
- # This program is free software; you can redistribute it and/or modify it
- # under the terms and conditions of the GNU General Public License,
-@@ -27,7 +27,17 @@
- 
- obj-$(CONFIG_FM10K) += fm10k.o
- 
--fm10k-objs := fm10k_main.o fm10k_common.o fm10k_pci.o \
--	      fm10k_netdev.o fm10k_ethtool.o fm10k_pf.o fm10k_vf.o \
--	      fm10k_mbx.o fm10k_iov.o fm10k_tlv.o \
--	      fm10k_debugfs.o fm10k_ptp.o fm10k_dcbnl.o
-+fm10k-y := fm10k_main.o \
-+	   fm10k_common.o \
-+	   fm10k_pci.o \
-+	   fm10k_ptp.o \
-+	   fm10k_netdev.o \
-+	   fm10k_ethtool.o \
-+	   fm10k_pf.o \
-+	   fm10k_vf.o \
-+	   fm10k_mbx.o \
-+	   fm10k_iov.o \
-+	   fm10k_tlv.o
-+
-+fm10k-$(CONFIG_DEBUG_FS) += fm10k_debugfs.o
-+fm10k-$(CONFIG_DCB) += fm10k_dcbnl.o
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
-index 48809e5d3f79..2e1e3e9c59c9 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
-@@ -551,5 +551,9 @@ int fm10k_get_ts_config(struct net_device *netdev, struct ifreq *ifr);
- int fm10k_set_ts_config(struct net_device *netdev, struct ifreq *ifr);
- 
- /* DCB */
-+#ifdef CONFIG_DCB
- void fm10k_dcbnl_set_ops(struct net_device *dev);
-+#else
-+static inline void fm10k_dcbnl_set_ops(struct net_device __always_unused *dev) {}
-+#endif
- #endif /* _FM10K_H_ */
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c b/drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c
-index 5c7a4d7662d8..2be4361839db 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c
-@@ -20,7 +20,6 @@
- 
- #include "fm10k.h"
- 
--#ifdef CONFIG_DCB
- /**
-  * fm10k_dcbnl_ieee_getets - get the ETS configuration for the device
-  * @dev: netdev interface for the device
-@@ -155,7 +154,6 @@ static const struct dcbnl_rtnl_ops fm10k_dcbnl_ops = {
- 	.setdcbx	= fm10k_dcbnl_setdcbx,
- };
- 
--#endif /* CONFIG_DCB */
- /**
-  * fm10k_dcbnl_set_ops - Configures dcbnl ops pointer for netdev
-  * @dev: netdev interface for the device
-@@ -164,11 +162,9 @@ static const struct dcbnl_rtnl_ops fm10k_dcbnl_ops = {
-  **/
- void fm10k_dcbnl_set_ops(struct net_device *dev)
- {
--#ifdef CONFIG_DCB
- 	struct fm10k_intfc *interface = netdev_priv(dev);
- 	struct fm10k_hw *hw = &interface->hw;
- 
- 	if (hw->mac.type == fm10k_mac_pf)
- 		dev->dcbnl_ops = &fm10k_dcbnl_ops;
--#endif /* CONFIG_DCB */
- }
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c b/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
-index 5304bc1fbecd..5d6137faf7d1 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
-@@ -18,8 +18,6 @@
-  * Intel Corporation, 5200 N.E. Elam Young Parkway, Hillsboro, OR 97124-6497
-  */
- 
--#ifdef CONFIG_DEBUG_FS
--
- #include "fm10k.h"
- 
- #include <linux/debugfs.h>
-@@ -258,5 +256,3 @@ void fm10k_dbg_exit(void)
- 	debugfs_remove_recursive(dbg_root);
- 	dbg_root = NULL;
- }
--
--#endif /* CONFIG_DEBUG_FS */
--- 
-2.6.1.264.gbab76a9
+elapsed time: 42m
 
+configs tested: 107
+
+i386                   randconfig-a0-10252128
+x86_64                            allnoconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                 randconfig-x015-201543
+x86_64                 randconfig-x019-201543
+x86_64                 randconfig-x014-201543
+x86_64                 randconfig-x016-201543
+x86_64                 randconfig-x018-201543
+x86_64                 randconfig-x011-201543
+x86_64                 randconfig-x013-201543
+x86_64                 randconfig-x010-201543
+x86_64                 randconfig-x017-201543
+x86_64                 randconfig-x012-201543
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201543
+i386                     randconfig-s1-201543
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                             allmodconfig
+x86_64                   randconfig-i0-201543
+i386                     randconfig-i0-201543
+i386                     randconfig-i1-201543
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+x86_64                                    lkp
+x86_64                                   rhel
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-n0-10260618
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64               randconfig-x008-10252017
+x86_64               randconfig-x007-10252017
+x86_64               randconfig-x001-10252017
+x86_64               randconfig-x005-10252017
+x86_64               randconfig-x004-10252017
+x86_64               randconfig-x000-10252017
+x86_64               randconfig-x002-10252017
+x86_64               randconfig-x006-10252017
+x86_64               randconfig-x009-10252017
+x86_64               randconfig-x003-10252017
+i386                   randconfig-r0-10252017
+i386                   randconfig-x004-201543
+i386                   randconfig-x003-201543
+i386                   randconfig-x009-201543
+i386                   randconfig-x007-201543
+i386                   randconfig-x008-201543
+i386                   randconfig-x005-201543
+i386                   randconfig-x006-201543
+i386                   randconfig-x001-201543
+i386                   randconfig-x002-201543
+i386                   randconfig-x000-201543
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+
+Thanks,
+Fengguang
