@@ -1,10 +1,10 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Mon, 26 Oct 2015 19:44:39 -0400
-Subject: [Intel-wired-lan] [next PATCH S20 13/15] i40evf: allocate queue
-	vectors dynamically
+Date: Mon, 26 Oct 2015 19:44:40 -0400
+Subject: [Intel-wired-lan] [next PATCH S20 14/15] i40evf: allocate ring
+	structs dynamically
 In-Reply-To: <1445903081-155893-1-git-send-email-catherine.sullivan@intel.com>
 References: <1445903081-155893-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1445903081-155893-14-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1445903081-155893-15-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,207 +13,271 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Mitch Williams <mitch.a.williams@intel.com>
 
-Change the queue_vector array from a statically-sized member of the
-adapter structure to a dynamically-allocated and -sized array.
-
-This reduces the size of the adapter structure, and allows us to support
-any number of queue vectors in the future without changing the code.
+Instead of awkwardly keeping a fixed array of pointers in the adapter
+struct and then allocating ring structs individually, just keep a single
+pointer and allocate a single blob for the arrays. This simplifies code,
+shrinks the adapter structure, and future-proofs the driver by not
+limiting the number of rings we can handle.
 
 Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Change-ID: I08dc622cb2f2ad01e832e51c1ad9b86524730693
+Change-ID: I31334ff911a6474954232cfe4bc98ccca3c769ff
 
 ---
-Testing-hints: Open and close the interface several times and ensure
-that traffic continues to pass.
- drivers/net/ethernet/intel/i40evf/i40evf.h         |  5 +--
- drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c |  2 +-
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 38 ++++++++++------------
- .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |  2 +-
- 4 files changed, 21 insertions(+), 26 deletions(-)
+Testing-hints: Ensure the driver loads and passes traffic, and unloads
+properly.
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c      |  2 +-
+ drivers/net/ethernet/intel/i40evf/i40evf.h         |  4 +-
+ drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c |  8 +--
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 57 +++++++++++-----------
+ .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    | 10 ++--
+ 5 files changed, 40 insertions(+), 41 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index 35fc721..3725744 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -2064,7 +2064,7 @@ out_drop:
+ netdev_tx_t i40evf_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
+ {
+ 	struct i40evf_adapter *adapter = netdev_priv(netdev);
+-	struct i40e_ring *tx_ring = adapter->tx_rings[skb->queue_mapping];
++	struct i40e_ring *tx_ring = &adapter->tx_rings[skb->queue_mapping];
+ 
+ 	/* hardware can't handle really short frames, hardware padding works
+ 	 * beyond this point
 diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
-index 090c604..bd185ad 100644
+index bd185ad..a6318c4 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40evf.h
 +++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
-@@ -145,9 +145,6 @@ struct i40e_q_vector {
- #define OTHER_VECTOR 1
- #define NONQ_VECS (OTHER_VECTOR)
- 
--#define MAX_MSIX_Q_VECTORS 4
--#define MAX_MSIX_COUNT 5
--
- #define MIN_MSIX_Q_VECTORS 1
- #define MIN_MSIX_COUNT (MIN_MSIX_Q_VECTORS + NONQ_VECS)
- 
-@@ -193,7 +190,7 @@ struct i40evf_adapter {
- 	struct work_struct reset_task;
- 	struct work_struct adminq_task;
- 	struct delayed_work init_task;
--	struct i40e_q_vector *q_vector[MAX_MSIX_Q_VECTORS];
-+	struct i40e_q_vector *q_vectors;
- 	struct list_head vlan_filter_list;
- 	char misc_vector_name[IFNAMSIZ + 9];
+@@ -196,13 +196,13 @@ struct i40evf_adapter {
  	int num_active_queues;
+ 
+ 	/* TX */
+-	struct i40e_ring *tx_rings[I40E_MAX_VSI_QP];
++	struct i40e_ring *tx_rings;
+ 	u32 tx_timeout_count;
+ 	struct list_head mac_filter_list;
+ 	u32 tx_desc_count;
+ 
+ 	/* RX */
+-	struct i40e_ring *rx_rings[I40E_MAX_VSI_QP];
++	struct i40e_ring *rx_rings;
+ 	u64 hw_csum_rx_error;
+ 	u32 rx_desc_count;
+ 	int num_msix_vectors;
 diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-index 4f4e5a3..ec059b3 100644
+index ec059b3..2e5c940 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
 +++ b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-@@ -351,7 +351,7 @@ static int i40evf_set_coalesce(struct net_device *netdev,
- 		vsi->tx_itr_setting &= ~I40E_ITR_DYNAMIC;
+@@ -121,12 +121,12 @@ static void i40evf_get_ethtool_stats(struct net_device *netdev,
+ 		data[i] =  *(u64 *)p;
+ 	}
+ 	for (j = 0; j < adapter->num_active_queues; j++) {
+-		data[i++] = adapter->tx_rings[j]->stats.packets;
+-		data[i++] = adapter->tx_rings[j]->stats.bytes;
++		data[i++] = adapter->tx_rings[j].stats.packets;
++		data[i++] = adapter->tx_rings[j].stats.bytes;
+ 	}
+ 	for (j = 0; j < adapter->num_active_queues; j++) {
+-		data[i++] = adapter->rx_rings[j]->stats.packets;
+-		data[i++] = adapter->rx_rings[j]->stats.bytes;
++		data[i++] = adapter->rx_rings[j].stats.packets;
++		data[i++] = adapter->rx_rings[j].stats.bytes;
+ 	}
+ }
  
- 	for (i = 0; i < adapter->num_msix_vectors - NONQ_VECS; i++) {
--		q_vector = adapter->q_vector[i];
-+		q_vector = &adapter->q_vectors[i];
- 		q_vector->rx.itr = ITR_TO_REG(vsi->rx_itr_setting);
- 		wr32(hw, I40E_VFINT_ITRN1(0, i), q_vector->rx.itr);
- 		q_vector->tx.itr = ITR_TO_REG(vsi->tx_itr_setting);
 diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index f5d6932..d12bd56 100644
+index d12bd56..67a2b47 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
 +++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -347,7 +347,7 @@ static irqreturn_t i40evf_msix_clean_rings(int irq, void *data)
- static void
+@@ -348,7 +348,7 @@ static void
  i40evf_map_vector_to_rxq(struct i40evf_adapter *adapter, int v_idx, int r_idx)
  {
--	struct i40e_q_vector *q_vector = adapter->q_vector[v_idx];
-+	struct i40e_q_vector *q_vector = &adapter->q_vectors[v_idx];
- 	struct i40e_ring *rx_ring = adapter->rx_rings[r_idx];
+ 	struct i40e_q_vector *q_vector = &adapter->q_vectors[v_idx];
+-	struct i40e_ring *rx_ring = adapter->rx_rings[r_idx];
++	struct i40e_ring *rx_ring = &adapter->rx_rings[r_idx];
  
  	rx_ring->q_vector = q_vector;
-@@ -368,7 +368,7 @@ i40evf_map_vector_to_rxq(struct i40evf_adapter *adapter, int v_idx, int r_idx)
- static void
+ 	rx_ring->next = q_vector->rx.ring;
+@@ -369,7 +369,7 @@ static void
  i40evf_map_vector_to_txq(struct i40evf_adapter *adapter, int v_idx, int t_idx)
  {
--	struct i40e_q_vector *q_vector = adapter->q_vector[v_idx];
-+	struct i40e_q_vector *q_vector = &adapter->q_vectors[v_idx];
- 	struct i40e_ring *tx_ring = adapter->tx_rings[t_idx];
+ 	struct i40e_q_vector *q_vector = &adapter->q_vectors[v_idx];
+-	struct i40e_ring *tx_ring = adapter->tx_rings[t_idx];
++	struct i40e_ring *tx_ring = &adapter->tx_rings[t_idx];
  
  	tx_ring->q_vector = q_vector;
-@@ -464,7 +464,7 @@ static void i40evf_netpoll(struct net_device *netdev)
- 		return;
+ 	tx_ring->next = q_vector->tx.ring;
+@@ -610,7 +610,7 @@ static void i40evf_configure_tx(struct i40evf_adapter *adapter)
+ 	int i;
  
- 	for (i = 0; i < q_vectors; i++)
--		i40evf_msix_clean_rings(0, adapter->q_vector[i]);
-+		i40evf_msix_clean_rings(0, &adapter->q_vectors[i]);
+ 	for (i = 0; i < adapter->num_active_queues; i++)
+-		adapter->tx_rings[i]->tail = hw->hw_addr + I40E_QTX_TAIL1(i);
++		adapter->tx_rings[i].tail = hw->hw_addr + I40E_QTX_TAIL1(i);
  }
  
- #endif
-@@ -486,7 +486,7 @@ i40evf_request_traffic_irqs(struct i40evf_adapter *adapter, char *basename)
- 	q_vectors = adapter->num_msix_vectors - NONQ_VECS;
- 
- 	for (vector = 0; vector < q_vectors; vector++) {
--		struct i40e_q_vector *q_vector = adapter->q_vector[vector];
-+		struct i40e_q_vector *q_vector = &adapter->q_vectors[vector];
- 
- 		if (q_vector->tx.ring && q_vector->rx.ring) {
- 			snprintf(q_vector->name, sizeof(q_vector->name) - 1,
-@@ -531,7 +531,7 @@ free_queue_irqs:
- 			adapter->msix_entries[vector + NONQ_VECS].vector,
- 			NULL);
- 		free_irq(adapter->msix_entries[vector + NONQ_VECS].vector,
--			 adapter->q_vector[vector]);
-+			 &adapter->q_vectors[vector]);
+ /**
+@@ -655,8 +655,8 @@ static void i40evf_configure_rx(struct i40evf_adapter *adapter)
  	}
- 	return err;
- }
-@@ -581,7 +581,7 @@ static void i40evf_free_traffic_irqs(struct i40evf_adapter *adapter)
- 		irq_set_affinity_hint(adapter->msix_entries[i+1].vector,
- 				      NULL);
- 		free_irq(adapter->msix_entries[i+1].vector,
--			 adapter->q_vector[i]);
-+			 &adapter->q_vectors[i]);
+ 
+ 	for (i = 0; i < adapter->num_active_queues; i++) {
+-		adapter->rx_rings[i]->tail = hw->hw_addr + I40E_QRX_TAIL1(i);
+-		adapter->rx_rings[i]->rx_buf_len = rx_buf_len;
++		adapter->rx_rings[i].tail = hw->hw_addr + I40E_QRX_TAIL1(i);
++		adapter->rx_rings[i].rx_buf_len = rx_buf_len;
  	}
  }
  
-@@ -953,7 +953,7 @@ static void i40evf_napi_enable_all(struct i40evf_adapter *adapter)
- 	for (q_idx = 0; q_idx < q_vectors; q_idx++) {
- 		struct napi_struct *napi;
+@@ -991,7 +991,7 @@ static void i40evf_configure(struct i40evf_adapter *adapter)
+ 	adapter->aq_required |= I40EVF_FLAG_AQ_CONFIGURE_QUEUES;
  
--		q_vector = adapter->q_vector[q_idx];
-+		q_vector = &adapter->q_vectors[q_idx];
- 		napi = &q_vector->napi;
- 		napi_enable(napi);
- 	}
-@@ -970,7 +970,7 @@ static void i40evf_napi_disable_all(struct i40evf_adapter *adapter)
- 	int q_vectors = adapter->num_msix_vectors - NONQ_VECS;
+ 	for (i = 0; i < adapter->num_active_queues; i++) {
+-		struct i40e_ring *ring = adapter->rx_rings[i];
++		struct i40e_ring *ring = &adapter->rx_rings[i];
  
- 	for (q_idx = 0; q_idx < q_vectors; q_idx++) {
--		q_vector = adapter->q_vector[q_idx];
-+		q_vector = &adapter->q_vectors[q_idx];
- 		napi_disable(&q_vector->napi);
- 	}
- }
-@@ -1483,21 +1483,22 @@ static int i40evf_init_rss(struct i40evf_adapter *adapter)
+ 		i40evf_alloc_rx_buffers_1buf(ring, ring->count);
+ 		ring->next_to_use = ring->count - 1;
+@@ -1111,16 +1111,10 @@ i40evf_acquire_msix_vectors(struct i40evf_adapter *adapter, int vectors)
   **/
- static int i40evf_alloc_q_vectors(struct i40evf_adapter *adapter)
+ static void i40evf_free_queues(struct i40evf_adapter *adapter)
  {
--	int q_idx, num_q_vectors;
-+	int q_idx = 0, num_q_vectors;
- 	struct i40e_q_vector *q_vector;
+-	int i;
+-
+ 	if (!adapter->vsi_res)
+ 		return;
+-	for (i = 0; i < adapter->num_active_queues; i++) {
+-		if (adapter->tx_rings[i])
+-			kfree_rcu(adapter->tx_rings[i], rcu);
+-		adapter->tx_rings[i] = NULL;
+-		adapter->rx_rings[i] = NULL;
+-	}
++	kfree(adapter->tx_rings);
++	kfree(adapter->rx_rings);
+ }
  
- 	num_q_vectors = adapter->num_msix_vectors - NONQ_VECS;
-+	adapter->q_vectors = kzalloc(sizeof(*q_vector) * num_q_vectors,
-+				     GFP_KERNEL);
-+	if (!adapter->q_vectors)
+ /**
+@@ -1135,13 +1129,20 @@ static int i40evf_alloc_queues(struct i40evf_adapter *adapter)
+ {
+ 	int i;
+ 
++	adapter->tx_rings = kcalloc(adapter->num_active_queues,
++				    sizeof(struct i40e_ring), GFP_KERNEL);
++	if (!adapter->tx_rings)
 +		goto err_out;
++	adapter->rx_rings = kcalloc(adapter->num_active_queues,
++				    sizeof(struct i40e_ring), GFP_KERNEL);
++	if (!adapter->rx_rings)
++		goto err_out;
++
+ 	for (i = 0; i < adapter->num_active_queues; i++) {
+ 		struct i40e_ring *tx_ring;
+ 		struct i40e_ring *rx_ring;
  
- 	for (q_idx = 0; q_idx < num_q_vectors; q_idx++) {
--		q_vector = kzalloc(sizeof(*q_vector), GFP_KERNEL);
--		if (!q_vector)
+-		tx_ring = kzalloc(sizeof(*tx_ring) * 2, GFP_KERNEL);
+-		if (!tx_ring)
 -			goto err_out;
-+		q_vector = &adapter->q_vectors[q_idx];
- 		q_vector->adapter = adapter;
- 		q_vector->vsi = &adapter->vsi;
- 		q_vector->v_idx = q_idx;
- 		netif_napi_add(adapter->netdev, &q_vector->napi,
- 			       i40evf_napi_poll, NAPI_POLL_WEIGHT);
--		adapter->q_vector[q_idx] = q_vector;
++		tx_ring = &adapter->tx_rings[i];
+ 
+ 		tx_ring->queue_index = i;
+ 		tx_ring->netdev = adapter->netdev;
+@@ -1149,14 +1150,12 @@ static int i40evf_alloc_queues(struct i40evf_adapter *adapter)
+ 		tx_ring->count = adapter->tx_desc_count;
+ 		if (adapter->flags & I40E_FLAG_WB_ON_ITR_CAPABLE)
+ 			tx_ring->flags |= I40E_TXR_FLAGS_WB_ON_ITR;
+-		adapter->tx_rings[i] = tx_ring;
+ 
+-		rx_ring = &tx_ring[1];
++		rx_ring = &adapter->rx_rings[i];
+ 		rx_ring->queue_index = i;
+ 		rx_ring->netdev = adapter->netdev;
+ 		rx_ring->dev = &adapter->pdev->dev;
+ 		rx_ring->count = adapter->rx_desc_count;
+-		adapter->rx_rings[i] = rx_ring;
  	}
  
  	return 0;
-@@ -1505,11 +1506,10 @@ static int i40evf_alloc_q_vectors(struct i40evf_adapter *adapter)
- err_out:
- 	while (q_idx) {
- 		q_idx--;
--		q_vector = adapter->q_vector[q_idx];
-+		q_vector = &adapter->q_vectors[q_idx];
- 		netif_napi_del(&q_vector->napi);
--		kfree(q_vector);
--		adapter->q_vector[q_idx] = NULL;
- 	}
-+	kfree(adapter->q_vectors);
- 	return -ENOMEM;
+@@ -1487,7 +1486,7 @@ static int i40evf_alloc_q_vectors(struct i40evf_adapter *adapter)
+ 	struct i40e_q_vector *q_vector;
+ 
+ 	num_q_vectors = adapter->num_msix_vectors - NONQ_VECS;
+-	adapter->q_vectors = kzalloc(sizeof(*q_vector) * num_q_vectors,
++	adapter->q_vectors = kcalloc(num_q_vectors, sizeof(*q_vector),
+ 				     GFP_KERNEL);
+ 	if (!adapter->q_vectors)
+ 		goto err_out;
+@@ -2035,8 +2034,8 @@ void i40evf_free_all_tx_resources(struct i40evf_adapter *adapter)
+ 	int i;
+ 
+ 	for (i = 0; i < adapter->num_active_queues; i++)
+-		if (adapter->tx_rings[i]->desc)
+-			i40evf_free_tx_resources(adapter->tx_rings[i]);
++		if (adapter->tx_rings[i].desc)
++			i40evf_free_tx_resources(&adapter->tx_rings[i]);
  }
  
-@@ -1530,13 +1530,11 @@ static void i40evf_free_q_vectors(struct i40evf_adapter *adapter)
- 	napi_vectors = adapter->num_active_queues;
+ /**
+@@ -2054,8 +2053,8 @@ static int i40evf_setup_all_tx_resources(struct i40evf_adapter *adapter)
+ 	int i, err = 0;
  
- 	for (q_idx = 0; q_idx < num_q_vectors; q_idx++) {
--		struct i40e_q_vector *q_vector = adapter->q_vector[q_idx];
--
--		adapter->q_vector[q_idx] = NULL;
-+		struct i40e_q_vector *q_vector = &adapter->q_vectors[q_idx];
- 		if (q_idx < napi_vectors)
- 			netif_napi_del(&q_vector->napi);
--		kfree(q_vector);
- 	}
-+	kfree(adapter->q_vectors);
+ 	for (i = 0; i < adapter->num_active_queues; i++) {
+-		adapter->tx_rings[i]->count = adapter->tx_desc_count;
+-		err = i40evf_setup_tx_descriptors(adapter->tx_rings[i]);
++		adapter->tx_rings[i].count = adapter->tx_desc_count;
++		err = i40evf_setup_tx_descriptors(&adapter->tx_rings[i]);
+ 		if (!err)
+ 			continue;
+ 		dev_err(&adapter->pdev->dev,
+@@ -2081,8 +2080,8 @@ static int i40evf_setup_all_rx_resources(struct i40evf_adapter *adapter)
+ 	int i, err = 0;
+ 
+ 	for (i = 0; i < adapter->num_active_queues; i++) {
+-		adapter->rx_rings[i]->count = adapter->rx_desc_count;
+-		err = i40evf_setup_rx_descriptors(adapter->rx_rings[i]);
++		adapter->rx_rings[i].count = adapter->rx_desc_count;
++		err = i40evf_setup_rx_descriptors(&adapter->rx_rings[i]);
+ 		if (!err)
+ 			continue;
+ 		dev_err(&adapter->pdev->dev,
+@@ -2103,8 +2102,8 @@ void i40evf_free_all_rx_resources(struct i40evf_adapter *adapter)
+ 	int i;
+ 
+ 	for (i = 0; i < adapter->num_active_queues; i++)
+-		if (adapter->rx_rings[i]->desc)
+-			i40evf_free_rx_resources(adapter->rx_rings[i]);
++		if (adapter->rx_rings[i].desc)
++			i40evf_free_rx_resources(&adapter->rx_rings[i]);
  }
  
  /**
 diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-index 46b0516..24b3af3 100644
+index 24b3af3..9b55576 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
 +++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-@@ -360,7 +360,7 @@ void i40evf_map_queues(struct i40evf_adapter *adapter)
- 	vimi->num_vectors = adapter->num_msix_vectors;
- 	/* Queue vectors first */
- 	for (v_idx = 0; v_idx < q_vectors; v_idx++) {
--		q_vector = adapter->q_vector[v_idx];
-+		q_vector = adapter->q_vectors + v_idx;
- 		vimi->vecmap[v_idx].vsi_id = adapter->vsi_res->vsi_id;
- 		vimi->vecmap[v_idx].vector_id = v_idx + NONQ_VECS;
- 		vimi->vecmap[v_idx].txq_map = q_vector->ring_mask;
+@@ -255,19 +255,19 @@ void i40evf_configure_queues(struct i40evf_adapter *adapter)
+ 	for (i = 0; i < pairs; i++) {
+ 		vqpi->txq.vsi_id = vqci->vsi_id;
+ 		vqpi->txq.queue_id = i;
+-		vqpi->txq.ring_len = adapter->tx_rings[i]->count;
+-		vqpi->txq.dma_ring_addr = adapter->tx_rings[i]->dma;
++		vqpi->txq.ring_len = adapter->tx_rings[i].count;
++		vqpi->txq.dma_ring_addr = adapter->tx_rings[i].dma;
+ 		vqpi->txq.headwb_enabled = 1;
+ 		vqpi->txq.dma_headwb_addr = vqpi->txq.dma_ring_addr +
+ 		    (vqpi->txq.ring_len * sizeof(struct i40e_tx_desc));
+ 
+ 		vqpi->rxq.vsi_id = vqci->vsi_id;
+ 		vqpi->rxq.queue_id = i;
+-		vqpi->rxq.ring_len = adapter->rx_rings[i]->count;
+-		vqpi->rxq.dma_ring_addr = adapter->rx_rings[i]->dma;
++		vqpi->rxq.ring_len = adapter->rx_rings[i].count;
++		vqpi->rxq.dma_ring_addr = adapter->rx_rings[i].dma;
+ 		vqpi->rxq.max_pkt_size = adapter->netdev->mtu
+ 					+ ETH_HLEN + VLAN_HLEN + ETH_FCS_LEN;
+-		vqpi->rxq.databuffer_size = adapter->rx_rings[i]->rx_buf_len;
++		vqpi->rxq.databuffer_size = adapter->rx_rings[i].rx_buf_len;
+ 		vqpi++;
+ 	}
+ 
 -- 
 1.9.3
 
