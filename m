@@ -1,51 +1,44 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Mon, 26 Oct 2015 19:44:41 -0400
-Subject: [Intel-wired-lan] [next PATCH S20 15/15] i40e/i40evf: Bump i40e
-	version to 1.4.4 and i40evf to 1.4.1
+Date: Mon, 26 Oct 2015 19:44:36 -0400
+Subject: [Intel-wired-lan] [next PATCH S20 10/15] i40e: fix confusing message
 In-Reply-To: <1445903081-155893-1-git-send-email-catherine.sullivan@intel.com>
 References: <1445903081-155893-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1445903081-155893-16-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1445903081-155893-11-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Bump.
+From: Helin Zhang <helin.zhang@intel.com>
 
-Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-Change-ID: I00ebbb2e5e5572f947502b8f6db4d94f666d6b14
+This patch fixes the confusing kernel message of enabled RSS size,
+by reporting it together with the hardware maximum RSS size.
+
+Signed-off-by: Helin Zhang <helin.zhang@intel.com>
+Change-ID: I64864dbfbc13beccc180a7871680def1f3d5a339
+
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+Testing-hints: Check for "RSS count/HW max RSS count" in dmesg when the
+RSS size is changed through "ethtool -l ethx", especially when the
+number of queues are brought down.
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 4e9d6e5..7759703 100644
+index 508cf9a..4e9d6e5 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -39,7 +39,7 @@ static const char i40e_driver_string[] =
+@@ -8110,7 +8110,8 @@ int i40e_reconfig_rss_queues(struct i40e_pf *pf, int queue_count)
  
- #define DRV_VERSION_MAJOR 1
- #define DRV_VERSION_MINOR 4
--#define DRV_VERSION_BUILD 2
-+#define DRV_VERSION_BUILD 4
- #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
- 	     __stringify(DRV_VERSION_MINOR) "." \
- 	     __stringify(DRV_VERSION_BUILD)    DRV_KERN
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 67a2b47..0776e67 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -34,7 +34,7 @@ char i40evf_driver_name[] = "i40evf";
- static const char i40evf_driver_string[] =
- 	"Intel(R) XL710/X710 Virtual Function Network Driver";
+ 		i40e_pf_config_rss(pf);
+ 	}
+-	dev_info(&pf->pdev->dev, "RSS count:  %d\n", pf->alloc_rss_size);
++	dev_info(&pf->pdev->dev, "RSS count/HW max RSS count:  %d/%d\n",
++		 pf->alloc_rss_size, pf->rss_size_max);
+ 	return pf->alloc_rss_size;
+ }
  
--#define DRV_VERSION "1.3.33"
-+#define DRV_VERSION "1.4.1"
- const char i40evf_driver_version[] = DRV_VERSION;
- static const char i40evf_copyright[] =
- 	"Copyright (c) 2013 - 2015 Intel Corporation.";
 -- 
 1.9.3
 
