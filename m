@@ -1,162 +1,54 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Mon, 26 Oct 2015 19:44:34 -0400
-Subject: [Intel-wired-lan] [next PATCH S20 08/15] i40evf: add new fields to
-	store user configuration of RSS
+Date: Mon, 26 Oct 2015 19:44:38 -0400
+Subject: [Intel-wired-lan] [next PATCH S20 12/15] i40evf: quoth the VF
+	driver, Nevermore
 In-Reply-To: <1445903081-155893-1-git-send-email-catherine.sullivan@intel.com>
 References: <1445903081-155893-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1445903081-155893-9-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1445903081-155893-13-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Helin Zhang <helin.zhang@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-This patch adds new fields to i40e_vsi to store user configured
-RSS config data and code to use it.
+If, upon a midnight dreary, the PF returns ERR_PARAM when the VF is
+requesting resources, that's fatal. Either the firmware or NVM is badly,
+badly misconfigured, or this VF has been disabled due to a previous VF
+driver sending a bunch of bogus messages.
 
-Signed-off-by: Helin Zhang <helin.zhang@intel.com>
-Change-ID: Ic5d3db8d9df52182b560248f8cdca9c5c7546879
+Either way, there is no recovery from this. Don't ponder weak and weary,
+just quit.
+
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-ID: I09d9f16cc4ee7fec3b57646a289d33838c1c5bf5
 
 ---
-Testing-hints: Test ethtool -x and ethtool -X work correctly on VF.
-After VF reset, user configured settings via ethtool -X should be
-restored.
- drivers/net/ethernet/intel/i40evf/i40evf.h         |  2 ++
- drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 31 ++++++++++--------
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 37 ++++++++++++++++++++--
- 3 files changed, 54 insertions(+), 16 deletions(-)
+Testing-hints: Ensure that the VF driver loads and initializes
+correctly.
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
-index 5f2e61d..090c604 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
-@@ -67,6 +67,8 @@ struct i40e_vsi {
- 	u16 rx_itr_setting;
- 	u16 tx_itr_setting;
- 	u16 qs_handle;
-+	u8 *rss_hkey_user; /* User configured hash keys */
-+	u8 *rss_lut_user;  /* User configured lookup table entries */
- };
- 
- /* How many Rx Buffers do we bundle into one write to the hardware ? */
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-index 0222e16..4f4e5a3 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-@@ -678,9 +678,7 @@ static int i40evf_set_rxfh(struct net_device *netdev, const u32 *indir,
- {
- 	struct i40evf_adapter *adapter = netdev_priv(netdev);
- 	struct i40e_vsi *vsi = &adapter->vsi;
--	u8 seed_def[I40EVF_HKEY_ARRAY_SIZE];
--	u8 *seed = NULL, *lut;
--	int ret;
-+	u8 *seed = NULL;
- 	u16 i;
- 
- 	/* We do not allow change in unsupported parameters */
-@@ -691,21 +689,28 @@ static int i40evf_set_rxfh(struct net_device *netdev, const u32 *indir,
- 		return 0;
- 
- 	if (key) {
--		memcpy(seed_def, key, I40EVF_HKEY_ARRAY_SIZE);
--		seed = seed_def;
-+		if (!vsi->rss_hkey_user) {
-+			vsi->rss_hkey_user = kzalloc(I40EVF_HKEY_ARRAY_SIZE,
-+						     GFP_KERNEL);
-+			if (!vsi->rss_hkey_user)
-+				return -ENOMEM;
-+		}
-+		memcpy(vsi->rss_hkey_user, key, I40EVF_HKEY_ARRAY_SIZE);
-+		seed = vsi->rss_hkey_user;
-+	}
-+	if (!vsi->rss_lut_user) {
-+		vsi->rss_lut_user = kzalloc(I40EVF_HLUT_ARRAY_SIZE,
-+					    GFP_KERNEL);
-+		if (!vsi->rss_lut_user)
-+			return -ENOMEM;
- 	}
--	lut = kzalloc(I40EVF_HLUT_ARRAY_SIZE, GFP_KERNEL);
--	if (!lut)
--		return -ENOMEM;
- 
- 	/* Each 32 bits pointed by 'indir' is sotred with a lut entry */
- 	for (i = 0; i < I40EVF_HLUT_ARRAY_SIZE; i++)
--		lut[i] = (u8)(indir[i]);
-+		vsi->rss_lut_user[i] = (u8)(indir[i]);
- 
--	ret = i40evf_config_rss(vsi, seed, lut, I40EVF_HLUT_ARRAY_SIZE);
--	kfree(lut);
--
--	return ret;
-+	return i40evf_config_rss(vsi, seed, vsi->rss_lut_user,
-+				 I40EVF_HLUT_ARRAY_SIZE);
- }
- 
- static const struct ethtool_ops i40evf_ethtool_ops = {
 diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index ae20d95..52a3286 100644
+index 52a3286..f5d6932 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
 +++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -1453,9 +1453,21 @@ static int i40evf_init_rss(struct i40evf_adapter *adapter)
- 	lut = kzalloc(I40EVF_HLUT_ARRAY_SIZE, GFP_KERNEL);
- 	if (!lut)
- 		return -ENOMEM;
--	i40evf_fill_rss_lut(lut, I40EVF_HLUT_ARRAY_SIZE,
--			    adapter->num_active_queues);
--	netdev_rss_key_fill((void *)seed, I40EVF_HKEY_ARRAY_SIZE);
-+
-+	/* Use user configured lut if there is one, otherwise use default */
-+	if (vsi->rss_lut_user)
-+		memcpy(lut, vsi->rss_lut_user, I40EVF_HLUT_ARRAY_SIZE);
-+	else
-+		i40evf_fill_rss_lut(lut, I40EVF_HLUT_ARRAY_SIZE,
-+				    adapter->num_active_queues);
-+
-+	/* Use user configured hash key if there is one, otherwise
-+	 * user default.
-+	 */
-+	if (vsi->rss_hkey_user)
-+		memcpy(seed, vsi->rss_hkey_user, I40EVF_HKEY_ARRAY_SIZE);
-+	else
-+		netdev_rss_key_fill((void *)seed, I40EVF_HKEY_ARRAY_SIZE);
- 	ret = i40evf_config_rss(vsi, seed, lut, I40EVF_HLUT_ARRAY_SIZE);
- 	kfree(lut);
- 
-@@ -1583,6 +1595,22 @@ err_set_interrupt:
- }
- 
- /**
-+ * i40evf_clear_rss_config_user - Clear user configurations of RSS
-+ * @vsi: Pointer to VSI structure
-+ **/
-+static void i40evf_clear_rss_config_user(struct i40e_vsi *vsi)
-+{
-+	if (!vsi)
-+		return;
-+
-+	kfree(vsi->rss_hkey_user);
-+	vsi->rss_hkey_user = NULL;
-+
-+	kfree(vsi->rss_lut_user);
-+	vsi->rss_lut_user = NULL;
-+}
-+
-+/**
-  * i40evf_watchdog_timer - Periodic call-back timer
-  * @data: pointer to adapter disguised as unsigned long
-  **/
-@@ -2770,6 +2798,9 @@ static void i40evf_remove(struct pci_dev *pdev)
- 
- 	flush_scheduled_work();
- 
-+	/* Clear user configurations for RSS */
-+	i40evf_clear_rss_config_user(&adapter->vsi);
-+
- 	if (hw->aq.asq.count)
- 		i40evf_shutdown_adminq(hw);
- 
+@@ -2435,6 +2435,14 @@ static void i40evf_init_task(struct work_struct *work)
+ 		if (err == I40E_ERR_ADMIN_QUEUE_NO_WORK) {
+ 			err = i40evf_send_vf_config_msg(adapter);
+ 			goto err;
++		} else if (err == I40E_ERR_PARAM) {
++			/* We only get ERR_PARAM if the device is in a very bad
++			 * state or if we've been disabled for previous bad
++			 * behavior. Either way, we're done now.
++			 */
++			i40evf_shutdown_adminq(hw);
++			dev_err(&pdev->dev, "Unable to get VF config due to PF error condition, not retrying\n");
++			return;
+ 		}
+ 		if (err) {
+ 			dev_err(&pdev->dev, "Unable to get VF config (%d)\n",
 -- 
 1.9.3
 
