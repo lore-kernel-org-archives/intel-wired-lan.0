@@ -1,10 +1,10 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Mon, 26 Oct 2015 19:44:33 -0400
-Subject: [Intel-wired-lan] [next PATCH S20 07/15] i40evf: create a generic
-	get rss function
+Date: Mon, 26 Oct 2015 19:44:34 -0400
+Subject: [Intel-wired-lan] [next PATCH S20 08/15] i40evf: add new fields to
+	store user configuration of RSS
 In-Reply-To: <1445903081-155893-1-git-send-email-catherine.sullivan@intel.com>
 References: <1445903081-155893-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1445903081-155893-8-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1445903081-155893-9-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,200 +13,150 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Helin Zhang <helin.zhang@intel.com>
 
-There are two ways to get RSS, this patch implements two functions
-with the same input parameters, and creates a more generic function
-for getting RSS configuration.
+This patch adds new fields to i40e_vsi to store user configured
+RSS config data and code to use it.
 
 Signed-off-by: Helin Zhang <helin.zhang@intel.com>
-Change-ID: I12d3b712c21455d47dd0a5aae58fc9b7c680db59
+Change-ID: Ic5d3db8d9df52182b560248f8cdca9c5c7546879
 
 ---
-Testing-hints: Test RSS still works right on multiple RX queues in the
-VF (via testing multiple flows RX). Test setting RSS indirection table
-via ethtool -X, and reading via ethtool -x works.
- drivers/net/ethernet/intel/i40evf/i40evf.h         |  2 +
- drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 35 +++++---
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 97 ++++++++++++++++++++++
- 3 files changed, 121 insertions(+), 13 deletions(-)
+Testing-hints: Test ethtool -x and ethtool -X work correctly on VF.
+After VF reset, user configured settings via ethtool -X should be
+restored.
+ drivers/net/ethernet/intel/i40evf/i40evf.h         |  2 ++
+ drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 31 ++++++++++--------
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 37 ++++++++++++++++++++--
+ 3 files changed, 54 insertions(+), 16 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
-index b5aa377..5f2e61d 100644
+index 5f2e61d..090c604 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40evf.h
 +++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
-@@ -316,4 +316,6 @@ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
- 				i40e_status v_retval, u8 *msg, u16 msglen);
- int i40evf_config_rss(struct i40e_vsi *vsi, const u8 *seed, u8 *lut,
- 		      u16 lut_size);
-+int i40evf_get_rss(struct i40e_vsi *vsi, const u8 *seed, u8 *lut,
-+		   u16 lut_size);
- #endif /* _I40EVF_H_ */
+@@ -67,6 +67,8 @@ struct i40e_vsi {
+ 	u16 rx_itr_setting;
+ 	u16 tx_itr_setting;
+ 	u16 qs_handle;
++	u8 *rss_hkey_user; /* User configured hash keys */
++	u8 *rss_lut_user;  /* User configured lookup table entries */
+ };
+ 
+ /* How many Rx Buffers do we bundle into one write to the hardware ? */
 diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-index fe1d1a3..0222e16 100644
+index 0222e16..4f4e5a3 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
 +++ b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-@@ -634,25 +634,34 @@ static int i40evf_get_rxfh(struct net_device *netdev, u32 *indir, u8 *key,
- 			   u8 *hfunc)
+@@ -678,9 +678,7 @@ static int i40evf_set_rxfh(struct net_device *netdev, const u32 *indir,
  {
  	struct i40evf_adapter *adapter = netdev_priv(netdev);
--	struct i40e_hw *hw = &adapter->hw;
--	u32 hlut_val;
--	int i, j;
-+	struct i40e_vsi *vsi = &adapter->vsi;
-+	u8 *seed = NULL, *lut;
-+	int ret;
-+	u16 i;
+ 	struct i40e_vsi *vsi = &adapter->vsi;
+-	u8 seed_def[I40EVF_HKEY_ARRAY_SIZE];
+-	u8 *seed = NULL, *lut;
+-	int ret;
++	u8 *seed = NULL;
+ 	u16 i;
  
- 	if (hfunc)
- 		*hfunc = ETH_RSS_HASH_TOP;
- 	if (!indir)
+ 	/* We do not allow change in unsupported parameters */
+@@ -691,21 +689,28 @@ static int i40evf_set_rxfh(struct net_device *netdev, const u32 *indir,
  		return 0;
  
--	if (indir) {
--		for (i = 0, j = 0; i <= I40E_VFQF_HLUT_MAX_INDEX; i++) {
--			hlut_val = rd32(hw, I40E_VFQF_HLUT(i));
--			indir[j++] = hlut_val & 0xff;
--			indir[j++] = (hlut_val >> 8) & 0xff;
--			indir[j++] = (hlut_val >> 16) & 0xff;
--			indir[j++] = (hlut_val >> 24) & 0xff;
--		}
--	}
--	return 0;
-+	seed = key;
-+
-+	lut = kzalloc(I40EVF_HLUT_ARRAY_SIZE, GFP_KERNEL);
-+	if (!lut)
-+		return -ENOMEM;
-+
-+	ret = i40evf_get_rss(vsi, seed, lut, I40EVF_HLUT_ARRAY_SIZE);
-+	if (ret)
-+		goto out;
-+
-+	/* Each 32 bits pointed by 'indir' is stored with a lut entry */
-+	for (i = 0; i < I40EVF_HLUT_ARRAY_SIZE; i++)
-+		indir[i] = (u32)lut[i];
-+
-+out:
-+	kfree(lut);
-+
-+	return ret;
+ 	if (key) {
+-		memcpy(seed_def, key, I40EVF_HKEY_ARRAY_SIZE);
+-		seed = seed_def;
++		if (!vsi->rss_hkey_user) {
++			vsi->rss_hkey_user = kzalloc(I40EVF_HKEY_ARRAY_SIZE,
++						     GFP_KERNEL);
++			if (!vsi->rss_hkey_user)
++				return -ENOMEM;
++		}
++		memcpy(vsi->rss_hkey_user, key, I40EVF_HKEY_ARRAY_SIZE);
++		seed = vsi->rss_hkey_user;
++	}
++	if (!vsi->rss_lut_user) {
++		vsi->rss_lut_user = kzalloc(I40EVF_HLUT_ARRAY_SIZE,
++					    GFP_KERNEL);
++		if (!vsi->rss_lut_user)
++			return -ENOMEM;
+ 	}
+-	lut = kzalloc(I40EVF_HLUT_ARRAY_SIZE, GFP_KERNEL);
+-	if (!lut)
+-		return -ENOMEM;
+ 
+ 	/* Each 32 bits pointed by 'indir' is sotred with a lut entry */
+ 	for (i = 0; i < I40EVF_HLUT_ARRAY_SIZE; i++)
+-		lut[i] = (u8)(indir[i]);
++		vsi->rss_lut_user[i] = (u8)(indir[i]);
+ 
+-	ret = i40evf_config_rss(vsi, seed, lut, I40EVF_HLUT_ARRAY_SIZE);
+-	kfree(lut);
+-
+-	return ret;
++	return i40evf_config_rss(vsi, seed, vsi->rss_lut_user,
++				 I40EVF_HLUT_ARRAY_SIZE);
  }
  
- /**
+ static const struct ethtool_ops i40evf_ethtool_ops = {
 diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 65d0e04..ae20d95 100644
+index ae20d95..52a3286 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
 +++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -1300,6 +1300,84 @@ static int i40evf_config_rss_reg(struct i40e_vsi *vsi, const u8 *seed,
- }
- 
- /**
-+ *  * i40evf_get_rss_aq - Get RSS keys and lut by using AQ commands
-+ *  @vsi: Pointer to vsi structure
-+ *  @seed: RSS hash seed
-+ *  @lut: Lookup table
-+ *  @lut_size: Lookup table size
-+ *
-+ *  Return 0 on success, negative on failure
-+ **/
-+static int i40evf_get_rss_aq(struct i40e_vsi *vsi, const u8 *seed,
-+			     u8 *lut, u16 lut_size)
-+{
-+	struct i40evf_adapter *adapter = vsi->back;
-+	struct i40e_hw *hw = &adapter->hw;
-+	int ret = 0;
+@@ -1453,9 +1453,21 @@ static int i40evf_init_rss(struct i40evf_adapter *adapter)
+ 	lut = kzalloc(I40EVF_HLUT_ARRAY_SIZE, GFP_KERNEL);
+ 	if (!lut)
+ 		return -ENOMEM;
+-	i40evf_fill_rss_lut(lut, I40EVF_HLUT_ARRAY_SIZE,
+-			    adapter->num_active_queues);
+-	netdev_rss_key_fill((void *)seed, I40EVF_HKEY_ARRAY_SIZE);
 +
-+	if (seed) {
-+		ret = i40evf_aq_get_rss_key(hw, vsi->id,
-+			(struct i40e_aqc_get_set_rss_key_data *)seed);
-+		if (ret) {
-+			dev_err(&adapter->pdev->dev,
-+				"Cannot get RSS key, err %s aq_err %s\n",
-+				i40evf_stat_str(hw, ret),
-+				i40evf_aq_str(hw, hw->aq.asq_last_status));
-+			return ret;
-+		}
-+	}
-+
-+	if (lut) {
-+		ret = i40evf_aq_get_rss_lut(hw, vsi->id, seed, lut, lut_size);
-+		if (ret) {
-+			dev_err(&adapter->pdev->dev,
-+				"Cannot get RSS lut, err %s aq_err %s\n",
-+				i40evf_stat_str(hw, ret),
-+				i40evf_aq_str(hw, hw->aq.asq_last_status));
-+			return ret;
-+		}
-+	}
-+
-+	return ret;
-+}
-+
-+/**
-+ *  * i40evf_get_rss_reg - Get RSS keys and lut by reading registers
-+ *  @vsi: Pointer to vsi structure
-+ *  @seed: RSS hash seed
-+ *  @lut: Lookup table
-+ *  @lut_size: Lookup table size
-+ *
-+ *  Returns 0 on success, negative on failure
-+ **/
-+static int i40evf_get_rss_reg(struct i40e_vsi *vsi, const u8 *seed,
-+			      const u8 *lut, u16 lut_size)
-+{
-+	struct i40evf_adapter *adapter = vsi->back;
-+	struct i40e_hw *hw = &adapter->hw;
-+	u16 i;
-+
-+	if (seed) {
-+		u32 *seed_dw = (u32 *)seed;
-+
-+		for (i = 0; i <= I40E_VFQF_HKEY_MAX_INDEX; i++)
-+			seed_dw[i] = rd32(hw, I40E_VFQF_HKEY(i));
-+	}
-+
-+	if (lut) {
-+		u32 *lut_dw = (u32 *)lut;
-+
-+		if (lut_size != I40EVF_HLUT_ARRAY_SIZE)
-+			return -EINVAL;
-+
-+		for (i = 0; i <= I40E_VFQF_HLUT_MAX_INDEX; i++)
-+			lut_dw[i] = rd32(hw, I40E_VFQF_HLUT(i));
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-  * i40evf_config_rss - Configure RSS keys and lut
-  * @vsi: Pointer to vsi structure
-  * @seed: RSS hash seed
-@@ -1320,6 +1398,25 @@ int i40evf_config_rss(struct i40e_vsi *vsi, const u8 *seed,
- }
- 
- /**
-+ * i40evf_get_rss - Get RSS keys and lut
-+ * @vsi: Pointer to vsi structure
-+ * @seed: RSS hash seed
-+ * @lut: Lookup table
-+ * @lut_size: Lookup table size
-+ *
-+ * Returns 0 on success, negative on failure
-+ **/
-+int i40evf_get_rss(struct i40e_vsi *vsi, const u8 *seed, u8 *lut, u16 lut_size)
-+{
-+	struct i40evf_adapter *adapter = vsi->back;
-+
-+	if (RSS_AQ(adapter))
-+		return i40evf_get_rss_aq(vsi, seed, lut, lut_size);
++	/* Use user configured lut if there is one, otherwise use default */
++	if (vsi->rss_lut_user)
++		memcpy(lut, vsi->rss_lut_user, I40EVF_HLUT_ARRAY_SIZE);
 +	else
-+		return i40evf_get_rss_reg(vsi, seed, lut, lut_size);
++		i40evf_fill_rss_lut(lut, I40EVF_HLUT_ARRAY_SIZE,
++				    adapter->num_active_queues);
++
++	/* Use user configured hash key if there is one, otherwise
++	 * user default.
++	 */
++	if (vsi->rss_hkey_user)
++		memcpy(seed, vsi->rss_hkey_user, I40EVF_HKEY_ARRAY_SIZE);
++	else
++		netdev_rss_key_fill((void *)seed, I40EVF_HKEY_ARRAY_SIZE);
+ 	ret = i40evf_config_rss(vsi, seed, lut, I40EVF_HLUT_ARRAY_SIZE);
+ 	kfree(lut);
+ 
+@@ -1583,6 +1595,22 @@ err_set_interrupt:
+ }
+ 
+ /**
++ * i40evf_clear_rss_config_user - Clear user configurations of RSS
++ * @vsi: Pointer to VSI structure
++ **/
++static void i40evf_clear_rss_config_user(struct i40e_vsi *vsi)
++{
++	if (!vsi)
++		return;
++
++	kfree(vsi->rss_hkey_user);
++	vsi->rss_hkey_user = NULL;
++
++	kfree(vsi->rss_lut_user);
++	vsi->rss_lut_user = NULL;
 +}
 +
 +/**
-  * i40evf_fill_rss_lut - Fill the lut with default values
-  * @lut: Lookup table to be filled with
-  * @rss_table_size: Lookup table size
+  * i40evf_watchdog_timer - Periodic call-back timer
+  * @data: pointer to adapter disguised as unsigned long
+  **/
+@@ -2770,6 +2798,9 @@ static void i40evf_remove(struct pci_dev *pdev)
+ 
+ 	flush_scheduled_work();
+ 
++	/* Clear user configurations for RSS */
++	i40evf_clear_rss_config_user(&adapter->vsi);
++
+ 	if (hw->aq.asq.count)
+ 		i40evf_shutdown_adminq(hw);
+ 
 -- 
 1.9.3
 
