@@ -1,13 +1,47 @@
-From: Sullivan, Catherine <catherine.sullivan@intel.com>
-Date: Tue, 27 Oct 2015 20:16:31 +0000
-Subject: [Intel-wired-lan] [next PATCH S20 00/15] i40e/i40evf updates
-In-Reply-To: <1445903081-155893-1-git-send-email-catherine.sullivan@intel.com>
-References: <1445903081-155893-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <E8A77B2FB54C194393A5C2A8E3ED167827A64FC6@CRSMSX102.amr.corp.intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Mon, 26 Oct 2015 08:03:23 -0700
+Subject: [Intel-wired-lan] [RFC Patch 00/12] IXGBE: Add live migration
+	support for SRIOV NIC
+In-Reply-To: <562DBBC9.4000104@intel.com>
+References: <1445445464-5056-1-git-send-email-tianyu.lan@intel.com>
+ <562A7E33.4080800@gmail.com> <562DBBC9.4000104@intel.com>
+Message-ID: <562E40BB.6040404@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-v2 with fixed spelling sent.
+On 10/25/2015 10:36 PM, Lan Tianyu wrote:
+> On 2015?10?24? 02:36, Alexander Duyck wrote:
+>> I was thinking about it and I am pretty sure the dummy write approach is
+>> problematic at best.  Specifically the issue is that while you are
+>> performing a dummy write you risk pulling in descriptors for data that
+>> hasn't been dummy written to yet.  So when you resume and restore your
+>> descriptors you will have once that may contain Rx descriptors
+>> indicating they contain data when after the migration they don't.
+> How about changing sequence? dummy writing Rx packet data fist and then
+> its desc. This can ensure that RX data is migrated before its desc and
+> prevent such case.
+
+No.  I think you are missing the fact that there are 256 descriptors per 
+page.  As such if you dirty just 1 you will be pulling in 255 more, of 
+which you may or may not have pulled in the receive buffer for.
+
+So for example if you have the descriptor ring size set to 256 then that 
+means you are going to get whatever the descriptor ring has since you 
+will be marking the entire ring dirty with every packet processed, 
+however you cannot guarantee that you are going to get all of the 
+receive buffers unless you go through and flush the entire ring prior to 
+migrating.
+
+This is why I have said you will need to do something to force the rings 
+to be flushed such as initiating a PM suspend prior to migrating.  You 
+need to do something to stop the DMA and flush the remaining Rx buffers 
+if you want to have any hope of being able to migrate the Rx in a 
+consistent state.  Beyond that the only other thing you have to worry 
+about are the Rx buffers that have already been handed off to the 
+stack.  However those should be handled if you do a suspend and somehow 
+flag pages as dirty when they are unmapped from the DMA.
+
+- Alex
