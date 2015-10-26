@@ -1,82 +1,124 @@
 From: Toshiaki Makita <makita.toshiaki@lab.ntt.co.jp>
-Date: Mon, 26 Oct 2015 12:40:55 +0900
-Subject: [Intel-wired-lan] [PATCH v2 net-next 0/4] Automatic adjustment of
-	max frame size
-Message-ID: <1445830859-4651-1-git-send-email-makita.toshiaki@lab.ntt.co.jp>
+Date: Mon, 26 Oct 2015 12:40:56 +0900
+Subject: [Intel-wired-lan] [PATCH v2 net-next 1/4] net: Add ndo_enc_hdr_len
+	to notify extra header room for encapsulated frames
+In-Reply-To: <1445830859-4651-1-git-send-email-makita.toshiaki@lab.ntt.co.jp>
+References: <1445830859-4651-1-git-send-email-makita.toshiaki@lab.ntt.co.jp>
+Message-ID: <1445830859-4651-2-git-send-email-makita.toshiaki@lab.ntt.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch set tries to resolve packet drop by oversize error on receiving
-double tagged packets and possibly other encapsulated packets.
+Currently most NICs reserve 1522 bytes space for frames to handle 4
+bytes VLAN header in addition to 1518, maximum size of ethernet frame.
+This is, however, not sufficient when stacked vlan or other encapsulation
+protocols are used.
+To accommodate this, add .ndo_enc_hdr_len() and inform drivers of needed
+encapsulation header size.
 
-Problem description:
-Currently most NICs have 4 bytes room of receive buffer for vlan header and
-can receive 1522 bytes frame at maximum.
-This is, however, not sufficient once double tagged vlan is used.
-As MEF [1] says, maximum frame size of double tagged packets need to be at
-least 1526 to provide transparent ethernet VPN, and along the same line,
-HW switches send 1526 bytes double tagged packets.
-Thus, double tagged packets are dropped by default in most cases by
-oversize error. NICs need to accept 1526 bytes packets in this situation.
+Signed-off-by: Toshiaki Makita <makita.toshiaki@lab.ntt.co.jp>
+---
+ include/linux/netdevice.h |  9 +++++++++
+ net/core/dev.c            | 36 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 45 insertions(+)
 
-Approaches:
-To satisfy this requirement, this patch set introduces a way to indicate
-needed extra buffer space to drivers.
-This way can be re-used by other protocols than vlan, like mpls, vxlan, etc.
-
-Other possible solutions:
-
-- To adjust mtu automatically when stacked vlan device is created.
-  This is suboptimal because lower device is not necessarily used for only
-  vlan. Sometimes tagged and untagged traffic are both used at the same time.
-  Also, there are devices that already reserve 8 bytes room, in which case mtu
-  adjustment is unnecessary.
-
-- To reserve more room by default.
-  This is also suboptimal because there are devices that chages behavior
-  when max acceptable frame size gets larger. For exapmle, e1000e enters
-  jumbo frame mode which has some additional ristrictions than normal.
-  Also, this is vlan-specific solution and not reusable by other encapsulation
-  protocols.
-
-This patch set introduces .ndo_enc_hdr_len() and I chose e1000e as the first
-implementation. Patch 3 makes vlan driver utilize this API and automatically
-expand max frame size of the real device. Patch 4 makes bridge use the API
-in similar way as vlan.
-
-Challenges:
-- Restore/shrink extra header room after vlan devices are deleted.
-  This will need some additional memory storage.
-- Manual modification of extra buffer size (by iproute2).
-
-Note:
-- This problem was once discussed in Netdev 0.1 [2].
-  This patch set is based on the conclusion of the discussion.
-
-Changes:
- v2: Fixed chackpatch warnings
-
-[1] https://wiki.mef.net/display/CESG/ENNI+Frame
-[2] https://www.netdev01.org/docs/netdev01_bof_8021ad_makita_150212.pdf
-
-Toshiaki Makita (4):
-  net: Add ndo_enc_hdr_len to notify extra header room for encapsulated
-    frames
-  e1000e: Add ndo_enc_hdr_len
-  vlan: Notify real device of encap header length
-  bridge: Notify port device of encap header length
-
- drivers/net/ethernet/intel/e1000e/netdev.c | 82 ++++++++++++++++++++++--------
- include/linux/netdevice.h                  |  9 ++++
- net/8021q/vlan.c                           | 16 +++++-
- net/8021q/vlan_dev.c                       | 48 +++++++++++++++--
- net/bridge/br_vlan.c                       | 18 +++++++
- net/core/dev.c                             | 36 +++++++++++++
- 6 files changed, 180 insertions(+), 29 deletions(-)
-
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index 4ac653b..1b2b587 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -1059,6 +1059,10 @@ typedef u16 (*select_queue_fallback_t)(struct net_device *dev,
+  *	This function is used to get egress tunnel information for given skb.
+  *	This is useful for retrieving outer tunnel header parameters while
+  *	sampling packet.
++ * int (*ndo_enc_hdr_len)(struct net_device *dev, int hdr_len);
++ *	Called to notify addtional encapsulation header length to reserve.
++ *	Implements should reserve hdr_len room in addition to MTU to handle
++ *	encapsulated frames.
+  *
+  */
+ struct net_device_ops {
+@@ -1236,6 +1240,8 @@ struct net_device_ops {
+ 							 bool proto_down);
+ 	int			(*ndo_fill_metadata_dst)(struct net_device *dev,
+ 						       struct sk_buff *skb);
++	int			(*ndo_enc_hdr_len)(struct net_device *dev,
++						   int hdr_len);
+ };
+ 
+ /**
+@@ -1396,6 +1402,7 @@ enum netdev_priv_flags {
+  *	@if_port:	Selectable AUI, TP, ...
+  *	@dma:		DMA channel
+  *	@mtu:		Interface MTU value
++ *	@enc_hdr_len:	Additional encapsulation header length to MTU
+  *	@type:		Interface hardware type
+  *	@hard_header_len: Hardware header length
+  *
+@@ -1616,6 +1623,7 @@ struct net_device {
+ 	unsigned char		dma;
+ 
+ 	unsigned int		mtu;
++	unsigned int		enc_hdr_len;
+ 	unsigned short		type;
+ 	unsigned short		hard_header_len;
+ 
+@@ -3031,6 +3039,7 @@ int dev_change_name(struct net_device *, const char *);
+ int dev_set_alias(struct net_device *, const char *, size_t);
+ int dev_change_net_namespace(struct net_device *, struct net *, const char *);
+ int dev_set_mtu(struct net_device *, int);
++int dev_set_enc_hdr_len(struct net_device *, int);
+ void dev_set_group(struct net_device *, int);
+ int dev_set_mac_address(struct net_device *, struct sockaddr *);
+ int dev_change_carrier(struct net_device *, bool new_carrier);
+diff --git a/net/core/dev.c b/net/core/dev.c
+index 13f49f8..7c4114b 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -6051,6 +6051,42 @@ int dev_set_mtu(struct net_device *dev, int new_mtu)
+ EXPORT_SYMBOL(dev_set_mtu);
+ 
+ /**
++ *	dev_set_enc_hdr_len - Expand encapsulation header room
++ *	@dev: device
++ *	@new_len: new length
++ */
++int dev_set_enc_hdr_len(struct net_device *dev, int new_len)
++{
++	const struct net_device_ops *ops = dev->netdev_ops;
++
++	if (new_len < 0)
++		return -EINVAL;
++
++	if (!netif_device_present(dev))
++		return -ENODEV;
++
++	if (new_len <= dev->enc_hdr_len)
++		return 0;
++
++	if (ops->ndo_enc_hdr_len) {
++		int err;
++
++		/* This function can be called from child user/net namespace */
++		if (!ns_capable(dev_net(dev)->user_ns, CAP_NET_ADMIN))
++			return -EPERM;
++
++		err = ops->ndo_enc_hdr_len(dev, new_len);
++		if (err)
++			return err;
++	}
++
++	dev->enc_hdr_len = new_len;
++
++	return 0;
++}
++EXPORT_SYMBOL(dev_set_enc_hdr_len);
++
++/**
+  *	dev_set_group - Change group this device belongs to
+  *	@dev: device
+  *	@new_group: group this device should belong to
 -- 
 1.8.1.2
 
