@@ -1,30 +1,45 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Sat, 17 Oct 2015 17:39:09 -0700
-Subject: [Intel-wired-lan] e1000e: hard system lockup on Linux 4.2
-In-Reply-To: <CAHmME9rvnmdn-1Yy6jJYsY-4Ocb5bjimftRpMhxrmTYhOn07DA@mail.gmail.com>
-References: <CAHmME9r9PbyqpRd6shT8Ep5WmLbUBv9dOdXRAzhGykgT0AM+sA@mail.gmail.com>
- <8F4C390AFA9F4444A4AA77F4A3BEC78A059D9C26@HASMSX110.ger.corp.intel.com>
- <CAHmME9rvnmdn-1Yy6jJYsY-4Ocb5bjimftRpMhxrmTYhOn07DA@mail.gmail.com>
-Message-ID: <20151018003909.GJ18971@kroah.com>
+From: Toshiaki Makita <makita.toshiaki@lab.ntt.co.jp>
+Date: Mon, 26 Oct 2015 10:09:46 +0900
+Subject: [Intel-wired-lan] [PATCH net-next 0/4] Automatic adjustment of
+ max frame size
+In-Reply-To: <20151023044604.GA5024@aiaiai.jf.intel.com>
+References: <20151023044604.GA5024@aiaiai.jf.intel.com>
+Message-ID: <562D7D5A.6050400@lab.ntt.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Oct 12, 2015 at 12:58:09PM +0200, Jason A. Donenfeld wrote:
+On 2015/10/23 13:46, ND Linux CI Server wrote:
+...
+> checkpatch.pl has some complaints:
 > 
-> On Oct 12, 2015 8:59 AM, "Avargil, Raanan" <raanan.avargil@intel.com> wrote:
-> >
-> > Your analysis is correct.
-> > Commit 37b12910dd11d9ab969f2c310dc9160b7f3e3405 fixes the lockup issue, and
-> according to my last check it is in 4.3-rc5.
+> --------------------------------------------------------------------------------
 > 
-> Cool okay.
-> But can we please get this patched marked for stable? It should be backported
-> to the upcoming 4.2.4.
+> checkpatch.pl results for patch "[PATCH 2/4] e1000e: Add ndo_enc_hdr_len"
 > 
+> WARNING:LONG_LINE: line over 80 characters
+> #53: FILE: drivers/net/ethernet/intel/e1000e/netdev.c:3981:
+> +		if (adapter->max_frame_size > VLAN_ETH_FRAME_LEN + ETH_FCS_LEN) {
+> 
+> WARNING:LONG_LINE: line over 80 characters
+> #62: FILE: drivers/net/ethernet/intel/e1000e/netdev.c:4000:
+> +		if (adapter->max_frame_size > VLAN_ETH_FRAME_LEN + ETH_FCS_LEN) {
+> 
+> WARNING:LONG_LINE: line over 80 characters
+> #71: FILE: drivers/net/ethernet/intel/e1000e/netdev.c:4014:
+> +		if (adapter->max_frame_size <= VLAN_ETH_FRAME_LEN + ETH_FCS_LEN) {
+> 
+> total: 0 errors, 3 warnings, 0 checks, 184 lines checked
 
-Now applied, thanks.
+I was aware of these warnings but my understanding was that lines
+without over 80 characters are not mandatory requirement and a short
+overrun can be acceptable, like 81 or 82... Not sure what made me think
+so, though.
 
-greg k-h
+Anyway, I will fix these warnings.
+
+Thanks,
+Toshiaki Makita
+
