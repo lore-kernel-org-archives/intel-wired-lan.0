@@ -1,162 +1,48 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 27 Oct 2015 07:17:20 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 9834035f8d47d1e1d3d167a6180faada3ad70a12 BUILD DONE
-Message-ID: <562eb480.ZgG99x03EWcAWfpj%fengguang.wu@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Mon, 26 Oct 2015 16:32:02 -0700
+Subject: [Intel-wired-lan] [next-queue 1/6] fm10k: use ether_addr_copy to
+	copy MAC address
+Message-ID: <1445902327-6717-1-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-9834035f8d47d1e1d3d167a6180faada3ad70a12  fm10k: bump driver version
+Use the ether_addr_copy function instead of copying byte-by-byte in a
+for-loop by hand.
 
-drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c:1067:12: error: implicit declaration of function 'CLOCKSOURCE_MASK' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c:1067:2: error: implicit declaration of function 'CLOCKSOURCE_MASK'
-drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c:1067:2: error: implicit declaration of function 'CLOCKSOURCE_MASK' [-Werror=implicit-function-declaration]
+Reported-by: Bruce Allan <bruce.w.allan@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ drivers/net/ethernet/intel/fm10k/fm10k_pf.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-Error ids grouped by kconfigs:
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+index 8b9b6ba5b92b..bbf0b4aef241 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+@@ -266,7 +266,6 @@ static s32 fm10k_read_mac_addr_pf(struct fm10k_hw *hw)
+ {
+ 	u8 perm_addr[ETH_ALEN];
+ 	u32 serial_num;
+-	int i;
+ 
+ 	serial_num = fm10k_read_reg(hw, FM10K_SM_AREA(1));
+ 
+@@ -288,10 +287,8 @@ static s32 fm10k_read_mac_addr_pf(struct fm10k_hw *hw)
+ 	perm_addr[4] = (u8)(serial_num >> 8);
+ 	perm_addr[5] = (u8)(serial_num);
+ 
+-	for (i = 0; i < ETH_ALEN; i++) {
+-		hw->mac.perm_addr[i] = perm_addr[i];
+-		hw->mac.addr[i] = perm_addr[i];
+-	}
++	ether_addr_copy(hw->mac.perm_addr, perm_addr);
++	ether_addr_copy(hw->mac.addr, perm_addr);
+ 
+ 	return 0;
+ }
+-- 
+2.6.1.264.gbab76a9
 
-recent_errors
-??? alpha-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
-??? ia64-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
-??? parisc-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
-??? powerpc-defconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
-??? powerpc-ppc64_defconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
-??? s390-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
-??? sparc64-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
-??? sparc-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
-??? tile-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
-??? x86_64-randconfig-x008-10252017
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
-??? x86_64-randconfig-x013-201543
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
-??? x86_64-randconfig-x018-201543
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
-??? x86_64-randconfig-x019-201543
-    ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
-
-elapsed time: 42m
-
-configs tested: 107
-
-i386                   randconfig-a0-10252128
-x86_64                            allnoconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                 randconfig-x015-201543
-x86_64                 randconfig-x019-201543
-x86_64                 randconfig-x014-201543
-x86_64                 randconfig-x016-201543
-x86_64                 randconfig-x018-201543
-x86_64                 randconfig-x011-201543
-x86_64                 randconfig-x013-201543
-x86_64                 randconfig-x010-201543
-x86_64                 randconfig-x017-201543
-x86_64                 randconfig-x012-201543
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201543
-i386                     randconfig-s1-201543
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
-x86_64                   randconfig-i0-201543
-i386                     randconfig-i0-201543
-i386                     randconfig-i1-201543
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-x86_64                                    lkp
-x86_64                                   rhel
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-n0-10260618
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64               randconfig-x008-10252017
-x86_64               randconfig-x007-10252017
-x86_64               randconfig-x001-10252017
-x86_64               randconfig-x005-10252017
-x86_64               randconfig-x004-10252017
-x86_64               randconfig-x000-10252017
-x86_64               randconfig-x002-10252017
-x86_64               randconfig-x006-10252017
-x86_64               randconfig-x009-10252017
-x86_64               randconfig-x003-10252017
-i386                   randconfig-r0-10252017
-i386                   randconfig-x004-201543
-i386                   randconfig-x003-201543
-i386                   randconfig-x009-201543
-i386                   randconfig-x007-201543
-i386                   randconfig-x008-201543
-i386                   randconfig-x005-201543
-i386                   randconfig-x006-201543
-i386                   randconfig-x001-201543
-i386                   randconfig-x002-201543
-i386                   randconfig-x000-201543
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-
-Thanks,
-Fengguang
