@@ -1,124 +1,67 @@
 From: Toshiaki Makita <makita.toshiaki@lab.ntt.co.jp>
-Date: Mon, 26 Oct 2015 12:40:56 +0900
-Subject: [Intel-wired-lan] [PATCH v2 net-next 1/4] net: Add ndo_enc_hdr_len
-	to notify extra header room for encapsulated frames
+Date: Mon, 26 Oct 2015 12:40:59 +0900
+Subject: [Intel-wired-lan] [PATCH v2 net-next 4/4] bridge: Notify port
+	device of encap header length
 In-Reply-To: <1445830859-4651-1-git-send-email-makita.toshiaki@lab.ntt.co.jp>
 References: <1445830859-4651-1-git-send-email-makita.toshiaki@lab.ntt.co.jp>
-Message-ID: <1445830859-4651-2-git-send-email-makita.toshiaki@lab.ntt.co.jp>
+Message-ID: <1445830859-4651-5-git-send-email-makita.toshiaki@lab.ntt.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Currently most NICs reserve 1522 bytes space for frames to handle 4
-bytes VLAN header in addition to 1518, maximum size of ethernet frame.
-This is, however, not sufficient when stacked vlan or other encapsulation
-protocols are used.
-To accommodate this, add .ndo_enc_hdr_len() and inform drivers of needed
-encapsulation header size.
+If vlan is assigned to a port, notify the port of 4 bytes header length,
+or 8 bytes if 802.1ad.
 
 Signed-off-by: Toshiaki Makita <makita.toshiaki@lab.ntt.co.jp>
 ---
- include/linux/netdevice.h |  9 +++++++++
- net/core/dev.c            | 36 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 45 insertions(+)
+ net/bridge/br_vlan.c | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index 4ac653b..1b2b587 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -1059,6 +1059,10 @@ typedef u16 (*select_queue_fallback_t)(struct net_device *dev,
-  *	This function is used to get egress tunnel information for given skb.
-  *	This is useful for retrieving outer tunnel header parameters while
-  *	sampling packet.
-+ * int (*ndo_enc_hdr_len)(struct net_device *dev, int hdr_len);
-+ *	Called to notify addtional encapsulation header length to reserve.
-+ *	Implements should reserve hdr_len room in addition to MTU to handle
-+ *	encapsulated frames.
-  *
-  */
- struct net_device_ops {
-@@ -1236,6 +1240,8 @@ struct net_device_ops {
- 							 bool proto_down);
- 	int			(*ndo_fill_metadata_dst)(struct net_device *dev,
- 						       struct sk_buff *skb);
-+	int			(*ndo_enc_hdr_len)(struct net_device *dev,
-+						   int hdr_len);
- };
+diff --git a/net/bridge/br_vlan.c b/net/bridge/br_vlan.c
+index 5f0d0cc..9c678de 100644
+--- a/net/bridge/br_vlan.c
++++ b/net/bridge/br_vlan.c
+@@ -208,6 +208,8 @@ static int __vlan_add(struct net_bridge_vlan *v, u16 flags)
+ 	}
  
- /**
-@@ -1396,6 +1402,7 @@ enum netdev_priv_flags {
-  *	@if_port:	Selectable AUI, TP, ...
-  *	@dma:		DMA channel
-  *	@mtu:		Interface MTU value
-+ *	@enc_hdr_len:	Additional encapsulation header length to MTU
-  *	@type:		Interface hardware type
-  *	@hard_header_len: Hardware header length
-  *
-@@ -1616,6 +1623,7 @@ struct net_device {
- 	unsigned char		dma;
+ 	if (p) {
++		int enc_hdr_len;
++
+ 		/* Add VLAN to the device filter if it is supported.
+ 		 * This ensures tagged traffic enters the bridge when
+ 		 * promiscuous mode is disabled by br_manage_promisc().
+@@ -228,6 +230,13 @@ static int __vlan_add(struct net_bridge_vlan *v, u16 flags)
+ 		if (!masterv)
+ 			goto out_filt;
+ 		v->brvlan = masterv;
++
++		if (!vg->num_vlans) {
++			enc_hdr_len = VLAN_HLEN;
++			if (br->vlan_proto == htons(ETH_P_8021AD))
++				enc_hdr_len += VLAN_HLEN;
++			dev_set_enc_hdr_len(dev, enc_hdr_len);
++		}
+ 	}
  
- 	unsigned int		mtu;
-+	unsigned int		enc_hdr_len;
- 	unsigned short		type;
- 	unsigned short		hard_header_len;
+ 	/* Add the dev mac and count the vlan only if it's usable */
+@@ -667,6 +676,15 @@ int __br_vlan_set_proto(struct net_bridge *br, __be16 proto)
+ 		}
+ 	}
  
-@@ -3031,6 +3039,7 @@ int dev_change_name(struct net_device *, const char *);
- int dev_set_alias(struct net_device *, const char *, size_t);
- int dev_change_net_namespace(struct net_device *, struct net *, const char *);
- int dev_set_mtu(struct net_device *, int);
-+int dev_set_enc_hdr_len(struct net_device *, int);
- void dev_set_group(struct net_device *, int);
- int dev_set_mac_address(struct net_device *, struct sockaddr *);
- int dev_change_carrier(struct net_device *, bool new_carrier);
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 13f49f8..7c4114b 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -6051,6 +6051,42 @@ int dev_set_mtu(struct net_device *dev, int new_mtu)
- EXPORT_SYMBOL(dev_set_mtu);
- 
- /**
-+ *	dev_set_enc_hdr_len - Expand encapsulation header room
-+ *	@dev: device
-+ *	@new_len: new length
-+ */
-+int dev_set_enc_hdr_len(struct net_device *dev, int new_len)
-+{
-+	const struct net_device_ops *ops = dev->netdev_ops;
++	if (proto == htons(ETH_P_8021AD)) {
++		list_for_each_entry(p, &br->port_list, list) {
++			if (!p->vlgrp->num_vlans)
++				continue;
 +
-+	if (new_len < 0)
-+		return -EINVAL;
-+
-+	if (!netif_device_present(dev))
-+		return -ENODEV;
-+
-+	if (new_len <= dev->enc_hdr_len)
-+		return 0;
-+
-+	if (ops->ndo_enc_hdr_len) {
-+		int err;
-+
-+		/* This function can be called from child user/net namespace */
-+		if (!ns_capable(dev_net(dev)->user_ns, CAP_NET_ADMIN))
-+			return -EPERM;
-+
-+		err = ops->ndo_enc_hdr_len(dev, new_len);
-+		if (err)
-+			return err;
++			dev_set_enc_hdr_len(p->dev, VLAN_HLEN * 2);
++		}
 +	}
 +
-+	dev->enc_hdr_len = new_len;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(dev_set_enc_hdr_len);
-+
-+/**
-  *	dev_set_group - Change group this device belongs to
-  *	@dev: device
-  *	@new_group: group this device should belong to
+ 	oldproto = br->vlan_proto;
+ 	br->vlan_proto = proto;
+ 
 -- 
 1.8.1.2
 
