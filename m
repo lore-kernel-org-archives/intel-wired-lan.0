@@ -1,10 +1,10 @@
 From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Mon, 26 Oct 2015 19:44:27 -0400
-Subject: [Intel-wired-lan] [next PATCH S20 01/15] i40e: add new fields to
-	store user configuraion
+Date: Mon, 26 Oct 2015 19:44:28 -0400
+Subject: [Intel-wired-lan] [next PATCH S20 02/15] i40e: rename rss_size to
+	alloc_rss_size in i40e_pf
 In-Reply-To: <1445903081-155893-1-git-send-email-catherine.sullivan@intel.com>
 References: <1445903081-155893-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1445903081-155893-2-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <1445903081-155893-3-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,182 +13,158 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Helin Zhang <helin.zhang@intel.com>
 
-This patch adds new fields to i40e_vsi to store user configured
-RSS config data and code to use it.
+This patch renames rss_size to alloc_rss_size in i40e_pf, which is
+clearer and avoids confusion. It also adds comments to the other
+related structure members to help clarify usage.
 
 Signed-off-by: Helin Zhang <helin.zhang@intel.com>
-Change-ID: I73886469dca9e9f6b16d842182a87f3f4009f95d
+Change-ID: Ia90090609d006ab589cb639975bb8a0af795d16f
 
 ---
-Testing-hints: Test with the next patch.
- drivers/net/ethernet/intel/i40e/i40e.h         |  2 +
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 31 +++++++++------
- drivers/net/ethernet/intel/i40e/i40e_main.c    | 52 +++++++++++++++++++++++---
- 3 files changed, 68 insertions(+), 17 deletions(-)
+Testing-hints: Test all the RSS knobs from ethtool for X[L]710 and X722.
+ drivers/net/ethernet/intel/i40e/i40e.h      |  8 ++++----
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 31 +++++++++++++++++------------
+ 2 files changed, 22 insertions(+), 17 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 89f5323..6efab66 100644
+index 6efab66..d854a46 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -508,6 +508,8 @@ struct i40e_vsi {
+@@ -266,7 +266,7 @@ struct i40e_pf {
+ 	u16 num_lan_qps;           /* num lan queues this PF has set up */
+ 	u16 num_lan_msix;          /* num queue vectors for the base PF vsi */
+ 	int queues_left;           /* queues left unclaimed */
+-	u16 rss_size;              /* num queues in the RSS array */
++	u16 alloc_rss_size;        /* allocated RSS queues */
+ 	u16 rss_size_max;          /* HW defined max RSS queues */
+ 	u16 fdir_pf_filter_count;  /* num of guaranteed filters for this PF */
+ 	u16 num_alloc_vsi;         /* num VSIs this driver supports */
+@@ -413,7 +413,7 @@ struct i40e_pf {
+ 	u32 rx_hwtstamp_cleared;
+ 	bool ptp_tx;
+ 	bool ptp_rx;
+-	u16 rss_table_size;
++	u16 rss_table_size; /* HW RSS table size */
+ 	/* These are only valid in NPAR modes */
+ 	u32 npar_max_bw;
+ 	u32 npar_min_bw;
+@@ -506,8 +506,8 @@ struct i40e_vsi {
+ 	u16 tx_itr_setting;
+ 	u16 int_rate_limit;  /* value in usecs */
  
- 	u16 rss_table_size;
- 	u16 rss_size;
-+	u8  *rss_hkey_user; /* User configured hash keys */
-+	u8  *rss_lut_user;  /* User configured lookup table entries */
+-	u16 rss_table_size;
+-	u16 rss_size;
++	u16 rss_table_size; /* HW RSS table size */
++	u16 rss_size;       /* Allocated RSS queues */
+ 	u8  *rss_hkey_user; /* User configured hash keys */
+ 	u8  *rss_lut_user;  /* User configured lookup table entries */
  
- 	u16 max_frame;
- 	u16 rx_hdr_len;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 6cb2b34..b52c509 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -2651,10 +2651,8 @@ static int i40e_set_rxfh(struct net_device *netdev, const u32 *indir,
- {
- 	struct i40e_netdev_priv *np = netdev_priv(netdev);
- 	struct i40e_vsi *vsi = np->vsi;
--	u8 seed_def[I40E_HKEY_ARRAY_SIZE];
--	u8 *lut, *seed = NULL;
-+	u8 *seed = NULL;
- 	u16 i;
--	int ret;
- 
- 	if (hfunc != ETH_RSS_HASH_NO_CHANGE && hfunc != ETH_RSS_HASH_TOP)
- 		return -EOPNOTSUPP;
-@@ -2663,18 +2661,27 @@ static int i40e_set_rxfh(struct net_device *netdev, const u32 *indir,
- 		return 0;
- 
- 	if (key) {
--		memcpy(seed_def, key, I40E_HKEY_ARRAY_SIZE);
--		seed = seed_def;
-+		if (!vsi->rss_hkey_user) {
-+			vsi->rss_hkey_user = kzalloc(I40E_HKEY_ARRAY_SIZE,
-+						     GFP_KERNEL);
-+			if (!vsi->rss_hkey_user)
-+				return -ENOMEM;
-+		}
-+		memcpy(vsi->rss_hkey_user, key, I40E_HKEY_ARRAY_SIZE);
-+		seed = vsi->rss_hkey_user;
- 	}
--	lut = kzalloc(I40E_HLUT_ARRAY_SIZE, GFP_KERNEL);
--	if (!lut)
--		return -ENOMEM;
-+	if (!vsi->rss_lut_user) {
-+		vsi->rss_lut_user = kzalloc(I40E_HLUT_ARRAY_SIZE, GFP_KERNEL);
-+		if (!vsi->rss_lut_user)
-+			return -ENOMEM;
-+	}
-+
-+	/* Each 32 bits pointed by 'indir' is stored with a lut entry */
- 	for (i = 0; i < I40E_HLUT_ARRAY_SIZE; i++)
--		lut[i] = (u8)(indir[i]);
--	ret = i40e_config_rss(vsi, seed, lut, I40E_HLUT_ARRAY_SIZE);
--	kfree(lut);
-+		vsi->rss_lut_user[i] = (u8)(indir[i]);
- 
--	return ret;
-+	return i40e_config_rss(vsi, seed, vsi->rss_lut_user,
-+			       I40E_HLUT_ARRAY_SIZE);
- }
- 
- /**
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 4b7d874..c0a784f 100644
+index c0a784f..491c82f 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -7301,6 +7301,23 @@ static void i40e_vsi_free_arrays(struct i40e_vsi *vsi, bool free_qvectors)
+@@ -1630,7 +1630,8 @@ static void i40e_vsi_setup_queue_map(struct i40e_vsi *vsi,
+ 
+ 			switch (vsi->type) {
+ 			case I40E_VSI_MAIN:
+-				qcount = min_t(int, pf->rss_size, num_tc_qps);
++				qcount = min_t(int, pf->alloc_rss_size,
++					       num_tc_qps);
+ 				break;
+ #ifdef I40E_FCOE
+ 			case I40E_VSI_FCOE:
+@@ -7883,7 +7884,7 @@ static int i40e_vsi_config_rss(struct i40e_vsi *vsi)
+ 
+ 	i40e_fill_rss_lut(pf, lut, vsi->rss_table_size, vsi->rss_size);
+ 	netdev_rss_key_fill((void *)seed, I40E_HKEY_ARRAY_SIZE);
+-	vsi->rss_size = min_t(int, pf->rss_size, vsi->num_queue_pairs);
++	vsi->rss_size = min_t(int, pf->alloc_rss_size, vsi->num_queue_pairs);
+ 	ret = i40e_config_rss_aq(vsi, seed, lut, vsi->rss_table_size);
+ 	kfree(lut);
+ 
+@@ -8042,7 +8043,8 @@ static int i40e_pf_config_rss(struct i40e_pf *pf)
+ 
+ 	/* Determine the RSS size of the VSI */
+ 	if (!vsi->rss_size)
+-		vsi->rss_size = min_t(int, pf->rss_size, vsi->num_queue_pairs);
++		vsi->rss_size = min_t(int, pf->alloc_rss_size,
++				      vsi->num_queue_pairs);
+ 
+ 	lut = kzalloc(vsi->rss_table_size, GFP_KERNEL);
+ 	if (!lut)
+@@ -8089,7 +8091,7 @@ int i40e_reconfig_rss_queues(struct i40e_pf *pf, int queue_count)
+ 		vsi->req_queue_pairs = queue_count;
+ 		i40e_prep_for_reset(pf);
+ 
+-		pf->rss_size = new_rss_size;
++		pf->alloc_rss_size = new_rss_size;
+ 
+ 		i40e_reset_and_rebuild(pf, true);
+ 
+@@ -8103,12 +8105,13 @@ int i40e_reconfig_rss_queues(struct i40e_pf *pf, int queue_count)
+ 		}
+ 
+ 		/* Reset vsi->rss_size, as number of enabled queues changed */
+-		vsi->rss_size = min_t(int, pf->rss_size, vsi->num_queue_pairs);
++		vsi->rss_size = min_t(int, pf->alloc_rss_size,
++				      vsi->num_queue_pairs);
+ 
+ 		i40e_pf_config_rss(pf);
+ 	}
+-	dev_info(&pf->pdev->dev, "RSS count:  %d\n", pf->rss_size);
+-	return pf->rss_size;
++	dev_info(&pf->pdev->dev, "RSS count:  %d\n", pf->alloc_rss_size);
++	return pf->alloc_rss_size;
  }
  
  /**
-+ * i40e_clear_rss_config_user - clear the user configured RSS hash keys
-+ * and lookup table
-+ * @vsi: Pointer to VSI structure
-+ */
-+static void i40e_clear_rss_config_user(struct i40e_vsi *vsi)
-+{
-+	if (!vsi)
-+		return;
-+
-+	kfree(vsi->rss_hkey_user);
-+	vsi->rss_hkey_user = NULL;
-+
-+	kfree(vsi->rss_lut_user);
-+	vsi->rss_lut_user = NULL;
-+}
-+
-+/**
-  * i40e_vsi_clear - Deallocate the VSI provided
-  * @vsi: the VSI being un-configured
-  **/
-@@ -7337,6 +7354,7 @@ static int i40e_vsi_clear(struct i40e_vsi *vsi)
- 	i40e_put_lump(pf->irq_pile, vsi->base_vector, vsi->idx);
- 
- 	i40e_vsi_free_arrays(vsi, true);
-+	i40e_clear_rss_config_user(vsi);
- 
- 	pf->vsi[vsi->idx] = NULL;
- 	if (vsi->idx < pf->next_vsi)
-@@ -8015,8 +8033,6 @@ static int i40e_pf_config_rss(struct i40e_pf *pf)
- 	wr32(hw, I40E_PFQF_HENA(0), (u32)hena);
- 	wr32(hw, I40E_PFQF_HENA(1), (u32)(hena >> 32));
- 
--	vsi->rss_size = min_t(int, pf->rss_size, vsi->num_queue_pairs);
--
- 	/* Determine the RSS table size based on the hardware capabilities */
- 	reg_val = rd32(hw, I40E_PFQF_CTL_0);
- 	reg_val = (pf->rss_table_size == 512) ?
-@@ -8024,15 +8040,28 @@ static int i40e_pf_config_rss(struct i40e_pf *pf)
- 			(reg_val & ~I40E_PFQF_CTL_0_HASHLUTSIZE_512);
- 	wr32(hw, I40E_PFQF_CTL_0, reg_val);
- 
-+	/* Determine the RSS size of the VSI */
-+	if (!vsi->rss_size)
-+		vsi->rss_size = min_t(int, pf->rss_size, vsi->num_queue_pairs);
-+
- 	lut = kzalloc(vsi->rss_table_size, GFP_KERNEL);
- 	if (!lut)
- 		return -ENOMEM;
- 
--	i40e_fill_rss_lut(pf, lut, vsi->rss_table_size, vsi->rss_size);
-+	/* Use user configured lut if there is one, otherwise use default */
-+	if (vsi->rss_lut_user)
-+		memcpy(lut, vsi->rss_lut_user, vsi->rss_table_size);
-+	else
-+		i40e_fill_rss_lut(pf, lut, vsi->rss_table_size, vsi->rss_size);
- 
--	netdev_rss_key_fill((void *)seed, I40E_HKEY_ARRAY_SIZE);
-+	/* Use user configured hash key if there is one, otherwise
-+	 * use default.
-+	 */
-+	if (vsi->rss_hkey_user)
-+		memcpy(seed, vsi->rss_hkey_user, I40E_HKEY_ARRAY_SIZE);
-+	else
-+		netdev_rss_key_fill((void *)seed, I40E_HKEY_ARRAY_SIZE);
- 	ret = i40e_config_rss(vsi, seed, lut, vsi->rss_table_size);
--
- 	kfree(lut);
- 
- 	return ret;
-@@ -8063,6 +8092,19 @@ int i40e_reconfig_rss_queues(struct i40e_pf *pf, int queue_count)
- 		pf->rss_size = new_rss_size;
- 
- 		i40e_reset_and_rebuild(pf, true);
-+
-+		/* Discard the user configured hash keys and lut, if less
-+		 * queues are enabled.
-+		 */
-+		if (queue_count < vsi->rss_size) {
-+			i40e_clear_rss_config_user(vsi);
-+			dev_dbg(&pf->pdev->dev,
-+				"discard user configured hash keys and lut\n");
-+		}
-+
-+		/* Reset vsi->rss_size, as number of enabled queues changed */
-+		vsi->rss_size = min_t(int, pf->rss_size, vsi->num_queue_pairs);
-+
- 		i40e_pf_config_rss(pf);
+@@ -8279,13 +8282,14 @@ static int i40e_sw_init(struct i40e_pf *pf)
+ 	 * maximum might end up larger than the available queues
+ 	 */
+ 	pf->rss_size_max = BIT(pf->hw.func_caps.rss_table_entry_width);
+-	pf->rss_size = 1;
++	pf->alloc_rss_size = 1;
+ 	pf->rss_table_size = pf->hw.func_caps.rss_table_size;
+ 	pf->rss_size_max = min_t(int, pf->rss_size_max,
+ 				 pf->hw.func_caps.num_tx_qp);
+ 	if (pf->hw.func_caps.rss) {
+ 		pf->flags |= I40E_FLAG_RSS_ENABLED;
+-		pf->rss_size = min_t(int, pf->rss_size_max, num_online_cpus());
++		pf->alloc_rss_size = min_t(int, pf->rss_size_max,
++					   num_online_cpus());
  	}
- 	dev_info(&pf->pdev->dev, "RSS count:  %d\n", pf->rss_size);
+ 
+ 	/* MFP mode enabled */
+@@ -10152,7 +10156,7 @@ static void i40e_determine_queue_usage(struct i40e_pf *pf)
+ 	    !(pf->flags & I40E_FLAG_MSIX_ENABLED)) {
+ 		/* one qp for PF, no queues for anything else */
+ 		queues_left = 0;
+-		pf->rss_size = pf->num_lan_qps = 1;
++		pf->alloc_rss_size = pf->num_lan_qps = 1;
+ 
+ 		/* make sure all the fancies are disabled */
+ 		pf->flags &= ~(I40E_FLAG_RSS_ENABLED	|
+@@ -10169,7 +10173,7 @@ static void i40e_determine_queue_usage(struct i40e_pf *pf)
+ 				  I40E_FLAG_FD_ATR_ENABLED |
+ 				  I40E_FLAG_DCB_CAPABLE))) {
+ 		/* one qp for PF */
+-		pf->rss_size = pf->num_lan_qps = 1;
++		pf->alloc_rss_size = pf->num_lan_qps = 1;
+ 		queues_left -= pf->num_lan_qps;
+ 
+ 		pf->flags &= ~(I40E_FLAG_RSS_ENABLED	|
+@@ -10239,8 +10243,9 @@ static void i40e_determine_queue_usage(struct i40e_pf *pf)
+ 		"qs_avail=%d FD SB=%d lan_qs=%d lan_tc0=%d vf=%d*%d vmdq=%d*%d, remaining=%d\n",
+ 		pf->hw.func_caps.num_tx_qp,
+ 		!!(pf->flags & I40E_FLAG_FD_SB_ENABLED),
+-		pf->num_lan_qps, pf->rss_size, pf->num_req_vfs, pf->num_vf_qps,
+-		pf->num_vmdq_vsis, pf->num_vmdq_qps, queues_left);
++		pf->num_lan_qps, pf->alloc_rss_size, pf->num_req_vfs,
++		pf->num_vf_qps, pf->num_vmdq_vsis, pf->num_vmdq_qps,
++		queues_left);
+ #ifdef I40E_FCOE
+ 	dev_dbg(&pf->pdev->dev, "fcoe queues = %d\n", pf->num_fcoe_qps);
+ #endif
 -- 
 1.9.3
 
