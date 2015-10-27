@@ -1,327 +1,115 @@
-From: Catherine Sullivan <catherine.sullivan@intel.com>
-Date: Tue, 27 Oct 2015 16:15:06 -0400
-Subject: [Intel-wired-lan] [next PATCH S20 v2 06/15] i40evf: create a
-	generic config rss function
-In-Reply-To: <1445976906-161903-1-git-send-email-catherine.sullivan@intel.com>
-References: <1445976906-161903-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <1445976906-161903-2-git-send-email-catherine.sullivan@intel.com>
+From: Mark D Rustad <mark.d.rustad@intel.com>
+Date: Tue, 27 Oct 2015 13:23:14 -0700
+Subject: [Intel-wired-lan] [PATCH 1/2] ixgbe: Correct spec violations by
+	waiting after reset
+Message-ID: <20151027202314.87452.46904.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Helin Zhang <helin.zhang@intel.com>
+The ixgbe driver was violating the specification in the datasheel
+by not waiting 1ms before checking for the reset bit clearing. This
+is called out for devices supported by ixgbe, so implement the
+required delay.
 
-There are two ways to configure RSS, this patch adjusts those two
-functions with the same input parameters, and creates a more
-generic function for configuring RSS.
-
-Signed-off-by: Helin Zhang <helin.zhang@intel.com>
-Change-ID: Iace73bdeba4831909979bef221011060ab327f71
-
+Reported-by: Dan Streetman <dan.streetman@canonical.com>
+Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
-v2: Fixed spelling
+ drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c |    5 +++--
+ drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c |    3 ++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c  |    3 ++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c  |    3 ++-
+ 4 files changed, 9 insertions(+), 5 deletions(-)
 
-Testing-hints: Test VFQF_HKEY and VFQF_HLUT registers are the same
-before and after and make sure that ethtool -x and ethtool -X still work
-correctly.
- drivers/net/ethernet/intel/i40evf/i40evf.h         |   3 +
- drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c |  29 ++--
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 168 +++++++++++++--------
- 3 files changed, 130 insertions(+), 70 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
-index 22fc3d4..b5aa377 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
-@@ -99,6 +99,7 @@ struct i40e_vsi {
- #define MAX_TX_QUEUES MAX_RX_QUEUES
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
+index 65db69b862fb..8f09d291a043 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
+@@ -1,7 +1,7 @@
+ /*******************************************************************************
  
- #define I40EVF_HKEY_ARRAY_SIZE ((I40E_VFQF_HKEY_MAX_INDEX + 1) * 4)
-+#define I40EVF_HLUT_ARRAY_SIZE ((I40E_VFQF_HLUT_MAX_INDEX + 1) * 4)
+   Intel 10 Gigabit PCI Express Linux driver
+-  Copyright(c) 1999 - 2014 Intel Corporation.
++  Copyright(c) 1999 - 2015 Intel Corporation.
  
- /* MAX_MSIX_Q_VECTORS of these are allocated,
-  * but we only use one per queue-specific vector.
-@@ -313,4 +314,6 @@ void i40evf_request_reset(struct i40evf_adapter *adapter);
- void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
- 				enum i40e_virtchnl_ops v_opcode,
- 				i40e_status v_retval, u8 *msg, u16 msglen);
-+int i40evf_config_rss(struct i40e_vsi *vsi, const u8 *seed, u8 *lut,
-+		      u16 lut_size);
- #endif /* _I40EVF_H_ */
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-index 4790437..cf253df 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-@@ -668,9 +668,11 @@ static int i40evf_set_rxfh(struct net_device *netdev, const u32 *indir,
- 			   const u8 *key, const u8 hfunc)
- {
- 	struct i40evf_adapter *adapter = netdev_priv(netdev);
--	struct i40e_hw *hw = &adapter->hw;
--	u32 hlut_val;
--	int i, j;
-+	struct i40e_vsi *vsi = &adapter->vsi;
-+	u8 seed_def[I40EVF_HKEY_ARRAY_SIZE];
-+	u8 *seed = NULL, *lut;
-+	int ret;
-+	u16 i;
+   This program is free software; you can redistribute it and/or modify it
+   under the terms and conditions of the GNU General Public License,
+@@ -765,13 +765,14 @@ mac_reset_top:
+ 	ctrl = IXGBE_READ_REG(hw, IXGBE_CTRL) | IXGBE_CTRL_RST;
+ 	IXGBE_WRITE_REG(hw, IXGBE_CTRL, ctrl);
+ 	IXGBE_WRITE_FLUSH(hw);
++	usleep_range(1000, 1200);
  
- 	/* We do not allow change in unsupported parameters */
- 	if (key ||
-@@ -679,15 +681,22 @@ static int i40evf_set_rxfh(struct net_device *netdev, const u32 *indir,
- 	if (!indir)
- 		return 0;
- 
--	for (i = 0, j = 0; i <= I40E_VFQF_HLUT_MAX_INDEX; i++) {
--		hlut_val = indir[j++];
--		hlut_val |= indir[j++] << 8;
--		hlut_val |= indir[j++] << 16;
--		hlut_val |= indir[j++] << 24;
--		wr32(hw, I40E_VFQF_HLUT(i), hlut_val);
-+	if (key) {
-+		memcpy(seed_def, key, I40EVF_HKEY_ARRAY_SIZE);
-+		seed = seed_def;
+ 	/* Poll for reset bit to self-clear indicating reset is complete */
+ 	for (i = 0; i < 10; i++) {
+-		udelay(1);
+ 		ctrl = IXGBE_READ_REG(hw, IXGBE_CTRL);
+ 		if (!(ctrl & IXGBE_CTRL_RST))
+ 			break;
++		udelay(1);
  	}
-+	lut = kzalloc(I40EVF_HLUT_ARRAY_SIZE, GFP_KERNEL);
-+	if (!lut)
-+		return -ENOMEM;
+ 	if (ctrl & IXGBE_CTRL_RST) {
+ 		status = IXGBE_ERR_RESET_FAILED;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
+index a39afcf03e2c..b8bd72589f72 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
+@@ -990,13 +990,14 @@ mac_reset_top:
+ 	ctrl |= IXGBE_READ_REG(hw, IXGBE_CTRL);
+ 	IXGBE_WRITE_REG(hw, IXGBE_CTRL, ctrl);
+ 	IXGBE_WRITE_FLUSH(hw);
++	usleep_range(1000, 1200);
  
--	return 0;
-+	/* Each 32 bits pointed by 'indir' is stored with a lut entry */
-+	for (i = 0; i < I40EVF_HLUT_ARRAY_SIZE; i++)
-+		lut[i] = (u8)(indir[i]);
-+
-+	ret = i40evf_config_rss(vsi, seed, lut, I40EVF_HLUT_ARRAY_SIZE);
-+	kfree(lut);
-+
-+	return ret;
- }
- 
- static const struct ethtool_ops i40evf_ethtool_ops = {
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index a8f67d3..65d0e04 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -1211,110 +1211,158 @@ out:
- }
- 
- /**
-- * i40e_configure_rss_aq - Prepare for RSS using AQ commands
-+ * i40e_config_rss_aq - Prepare for RSS using AQ commands
-  * @vsi: vsi structure
-  * @seed: RSS hash seed
-+ * @lut: Lookup table
-+ * @lut_size: Lookup table size
-+ *
-+ * Return 0 on success, negative on failure
-  **/
--static void i40evf_configure_rss_aq(struct i40e_vsi *vsi, const u8 *seed)
-+static int i40evf_config_rss_aq(struct i40e_vsi *vsi, const u8 *seed,
-+				u8 *lut, u16 lut_size)
- {
--	struct i40e_aqc_get_set_rss_key_data rss_key;
- 	struct i40evf_adapter *adapter = vsi->back;
- 	struct i40e_hw *hw = &adapter->hw;
--	int ret = 0, i;
--	u8 *rss_lut;
-+	int ret = 0;
- 
- 	if (!vsi->id)
--		return;
-+		return -EINVAL;
- 
- 	if (adapter->current_op != I40E_VIRTCHNL_OP_UNKNOWN) {
- 		/* bail because we already have a command pending */
- 		dev_err(&adapter->pdev->dev, "Cannot confiure RSS, command %d pending\n",
- 			adapter->current_op);
--		return;
-+		return -EBUSY;
+ 	/* Poll for reset bit to self-clear indicating reset is complete */
+ 	for (i = 0; i < 10; i++) {
+-		udelay(1);
+ 		ctrl = IXGBE_READ_REG(hw, IXGBE_CTRL);
+ 		if (!(ctrl & IXGBE_CTRL_RST_MASK))
+ 			break;
++		udelay(1);
  	}
  
--	memset(&rss_key, 0, sizeof(rss_key));
--	memcpy(&rss_key, seed, sizeof(rss_key));
--
--	rss_lut = kzalloc(((I40E_VFQF_HLUT_MAX_INDEX + 1) * 4), GFP_KERNEL);
--	if (!rss_lut)
--		return;
--
--	/* Populate the LUT with max no. PF queues in round robin fashion */
--	for (i = 0; i <= (I40E_VFQF_HLUT_MAX_INDEX * 4); i++)
--		rss_lut[i] = i % adapter->num_active_queues;
-+	if (seed) {
-+		struct i40e_aqc_get_set_rss_key_data *rss_key =
-+			(struct i40e_aqc_get_set_rss_key_data *)seed;
-+		ret = i40evf_aq_set_rss_key(hw, vsi->id, rss_key);
-+		if (ret) {
-+			dev_err(&adapter->pdev->dev, "Cannot set RSS key, err %s aq_err %s\n",
-+				i40evf_stat_str(hw, ret),
-+				i40evf_aq_str(hw, hw->aq.asq_last_status));
-+			return ret;
-+		}
-+	}
+ 	if (ctrl & IXGBE_CTRL_RST_MASK) {
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
+index c1d4584f6469..b9e9b0c17398 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
+@@ -110,13 +110,14 @@ mac_reset_top:
+ 	ctrl |= IXGBE_READ_REG(hw, IXGBE_CTRL);
+ 	IXGBE_WRITE_REG(hw, IXGBE_CTRL, ctrl);
+ 	IXGBE_WRITE_FLUSH(hw);
++	usleep_range(1000, 1200);
  
--	ret = i40evf_aq_set_rss_key(hw, vsi->id, &rss_key);
--	if (ret) {
--		dev_err(&adapter->pdev->dev,
--			"Cannot set RSS key, err %s aq_err %s\n",
--			i40evf_stat_str(hw, ret),
--			i40evf_aq_str(hw, hw->aq.asq_last_status));
--		return;
-+	if (lut) {
-+		ret = i40evf_aq_set_rss_lut(hw, vsi->id, false, lut, lut_size);
-+		if (ret) {
-+			dev_err(&adapter->pdev->dev,
-+				"Cannot set RSS lut, err %s aq_err %s\n",
-+				i40evf_stat_str(hw, ret),
-+				i40evf_aq_str(hw, hw->aq.asq_last_status));
-+			return ret;
-+		}
+ 	/* Poll for reset bit to self-clear indicating reset is complete */
+ 	for (i = 0; i < 10; i++) {
+-		udelay(1);
+ 		ctrl = IXGBE_READ_REG(hw, IXGBE_CTRL);
+ 		if (!(ctrl & IXGBE_CTRL_RST_MASK))
+ 			break;
++		udelay(1);
  	}
  
--	ret = i40evf_aq_set_rss_lut(hw, vsi->id, false, rss_lut,
--				    (I40E_VFQF_HLUT_MAX_INDEX + 1) * 4);
--	if (ret)
--		dev_err(&adapter->pdev->dev,
--			"Cannot set RSS lut, err %s aq_err %s\n",
--			i40evf_stat_str(hw, ret),
--			i40evf_aq_str(hw, hw->aq.asq_last_status));
-+	return ret;
- }
+ 	if (ctrl & IXGBE_CTRL_RST_MASK) {
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index b8ad3f212e72..f4ef0d1a5dbe 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -2146,13 +2146,14 @@ mac_reset_top:
+ 	ctrl |= IXGBE_READ_REG(hw, IXGBE_CTRL);
+ 	IXGBE_WRITE_REG(hw, IXGBE_CTRL, ctrl);
+ 	IXGBE_WRITE_FLUSH(hw);
++	usleep_range(1000, 1200);
  
- /**
-- * i40e_configure_rss_reg - Prepare for RSS if used
-- * @adapter: board private structure
-+ * i40evf_config_rss_reg - Configure RSS keys and lut by writing registers
-+ * @vsi: Pointer to vsi structure
-  * @seed: RSS hash seed
-+ * @lut: Lookup table
-+ * @lut_size: Lookup table size
-+ *
-+ * Returns 0 on success, negative on failure
-  **/
--static void i40evf_configure_rss_reg(struct i40evf_adapter *adapter,
--				     const u8 *seed)
-+static int i40evf_config_rss_reg(struct i40e_vsi *vsi, const u8 *seed,
-+				 const u8 *lut, u16 lut_size)
- {
-+	struct i40evf_adapter *adapter = vsi->back;
- 	struct i40e_hw *hw = &adapter->hw;
--	u32 *seed_dw = (u32 *)seed;
--	u32 cqueue = 0;
--	u32 lut = 0;
--	int i, j;
-+	u16 i;
- 
--	/* Fill out hash function seed */
--	for (i = 0; i <= I40E_VFQF_HKEY_MAX_INDEX; i++)
--		wr32(hw, I40E_VFQF_HKEY(i), seed_dw[i]);
--
--	/* Populate the LUT with max no. PF queues in round robin fashion */
--	for (i = 0; i <= I40E_VFQF_HLUT_MAX_INDEX; i++) {
--		lut = 0;
--		for (j = 0; j < 4; j++) {
--			if (cqueue == adapter->num_active_queues)
--				cqueue = 0;
--			lut |= ((cqueue) << (8 * j));
--			cqueue++;
--		}
--		wr32(hw, I40E_VFQF_HLUT(i), lut);
-+	if (seed) {
-+		u32 *seed_dw = (u32 *)seed;
-+
-+		for (i = 0; i <= I40E_VFQF_HKEY_MAX_INDEX; i++)
-+			wr32(hw, I40E_VFQF_HKEY(i), seed_dw[i]);
-+	}
-+
-+	if (lut) {
-+		u32 *lut_dw = (u32 *)lut;
-+
-+		if (lut_size != I40EVF_HLUT_ARRAY_SIZE)
-+			return -EINVAL;
-+
-+		for (i = 0; i <= I40E_VFQF_HLUT_MAX_INDEX; i++)
-+			wr32(hw, I40E_VFQF_HLUT(i), lut_dw[i]);
+ 	/* Poll for reset bit to self-clear meaning reset is complete */
+ 	for (i = 0; i < 10; i++) {
+-		udelay(1);
+ 		ctrl = IXGBE_READ_REG(hw, IXGBE_CTRL);
+ 		if (!(ctrl & IXGBE_CTRL_RST_MASK))
+ 			break;
++		udelay(1);
  	}
- 	i40e_flush(hw);
-+
-+	return 0;
-+}
-+
-+/**
-+ * i40evf_config_rss - Configure RSS keys and lut
-+ * @vsi: Pointer to vsi structure
-+ * @seed: RSS hash seed
-+ * @lut: Lookup table
-+ * @lut_size: Lookup table size
-+ *
-+ * Returns 0 on success, negative on failure
-+ **/
-+int i40evf_config_rss(struct i40e_vsi *vsi, const u8 *seed,
-+		      u8 *lut, u16 lut_size)
-+{
-+	struct i40evf_adapter *adapter = vsi->back;
-+
-+	if (RSS_AQ(adapter))
-+		return i40evf_config_rss_aq(vsi, seed, lut, lut_size);
-+	else
-+		return i40evf_config_rss_reg(vsi, seed, lut, lut_size);
-+}
-+
-+/**
-+ * i40evf_fill_rss_lut - Fill the lut with default values
-+ * @lut: Lookup table to be filled with
-+ * @rss_table_size: Lookup table size
-+ * @rss_size: Range of queue number for hashing
-+ **/
-+static void i40evf_fill_rss_lut(u8 *lut, u16 rss_table_size, u16 rss_size)
-+{
-+	u16 i;
-+
-+	for (i = 0; i < rss_table_size; i++)
-+		lut[i] = i % rss_size;
- }
  
- /**
-  * i40evf_init_rss - Prepare for RSS
-  * @adapter: board private structure
-+ *
-+ * Return 0 on success, negative on failure
-  **/
--static void i40evf_init_rss(struct i40evf_adapter *adapter)
-+static int i40evf_init_rss(struct i40evf_adapter *adapter)
- {
-+	struct i40e_vsi *vsi = &adapter->vsi;
- 	struct i40e_hw *hw = &adapter->hw;
- 	u8 seed[I40EVF_HKEY_ARRAY_SIZE];
- 	u64 hena;
--
--	netdev_rss_key_fill((void *)seed, I40EVF_HKEY_ARRAY_SIZE);
-+	u8 *lut;
-+	int ret;
- 
- 	/* Enable PCTYPES for RSS, TCP/UDP with IPv4/IPv6 */
- 	hena = I40E_DEFAULT_RSS_HENA;
- 	wr32(hw, I40E_VFQF_HENA(0), (u32)hena);
- 	wr32(hw, I40E_VFQF_HENA(1), (u32)(hena >> 32));
- 
--	if (RSS_AQ(adapter))
--		i40evf_configure_rss_aq(&adapter->vsi, seed);
--	else
--		i40evf_configure_rss_reg(adapter, seed);
-+	lut = kzalloc(I40EVF_HLUT_ARRAY_SIZE, GFP_KERNEL);
-+	if (!lut)
-+		return -ENOMEM;
-+	i40evf_fill_rss_lut(lut, I40EVF_HLUT_ARRAY_SIZE,
-+			    adapter->num_active_queues);
-+	netdev_rss_key_fill((void *)seed, I40EVF_HKEY_ARRAY_SIZE);
-+	ret = i40evf_config_rss(vsi, seed, lut, I40EVF_HLUT_ARRAY_SIZE);
-+	kfree(lut);
-+
-+	return ret;
- }
- 
- /**
--- 
-1.9.3
+ 	if (ctrl & IXGBE_CTRL_RST_MASK) {
 
