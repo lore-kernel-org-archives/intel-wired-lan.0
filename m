@@ -1,163 +1,84 @@
 From: Alexander Duyck <aduyck@mirantis.com>
-Date: Tue, 27 Oct 2015 16:59:24 -0700
-Subject: [Intel-wired-lan] [next PATCH 3/5] fm10k: Cleanup exception
- handling for changing queues
+Date: Tue, 27 Oct 2015 16:59:31 -0700
+Subject: [Intel-wired-lan] [next PATCH 4/5] e1000e: Switch e1000e_up to void,
+ drop code checking for error result
 In-Reply-To: <20151027235341.30048.46286.stgit@localhost.localdomain>
 References: <20151027235341.30048.46286.stgit@localhost.localdomain>
-Message-ID: <20151027235924.30048.24399.stgit@localhost.localdomain>
+Message-ID: <20151027235931.30048.548.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch is meant to cleanup the exception handling for the paths where
-we reset the interrupts and then reconfigure them.  In all of these paths
-we had very different levels of exception handling.  I have updated the
-driver so that all of the paths should result in a similar state if we
-fail.
-
-Specifically the driver will now unload the mailbox interrupt, free the
-queue vectors and MSI-X, and then detach the interface.
-
-In addition for any of the PCIe related resets I have added a check with
-the hw_ready function to just make sure the registers are in a readable
-state prior to reopening the interface.
+The function e1000e_up always returns 0.  As such we can convert it to a
+void and just ignore the results.  This allows us to drop some code in a
+couple spots as we no longer need to worry about non-zero return values.
 
 Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_netdev.c |   17 +++++--
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c    |   55 ++++++++++++++++++-----
- 2 files changed, 55 insertions(+), 17 deletions(-)
+ drivers/net/ethernet/intel/e1000e/e1000.h  |    2 +-
+ drivers/net/ethernet/intel/e1000e/netdev.c |   15 ++++-----------
+ 2 files changed, 5 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-index 38fe2d8c8388..4855686d2b4e 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-@@ -1176,19 +1176,28 @@ int fm10k_setup_tc(struct net_device *dev, u8 tc)
+diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h b/drivers/net/ethernet/intel/e1000e/e1000.h
+index 0b748d1959d9..1dc293bad87b 100644
+--- a/drivers/net/ethernet/intel/e1000e/e1000.h
++++ b/drivers/net/ethernet/intel/e1000e/e1000.h
+@@ -480,7 +480,7 @@ extern const char e1000e_driver_version[];
+ void e1000e_check_options(struct e1000_adapter *adapter);
+ void e1000e_set_ethtool_ops(struct net_device *netdev);
  
- 	err = fm10k_init_queueing_scheme(interface);
- 	if (err)
--		return err;
-+		goto err_queueing_scheme;
+-int e1000e_up(struct e1000_adapter *adapter);
++void e1000e_up(struct e1000_adapter *adapter);
+ void e1000e_down(struct e1000_adapter *adapter, bool reset);
+ void e1000e_reinit_locked(struct e1000_adapter *adapter);
+ void e1000e_reset(struct e1000_adapter *adapter);
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 7a10bb0a83f4..4ed69fee8549 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -4143,7 +4143,7 @@ void e1000e_reset(struct e1000_adapter *adapter)
  
- 	err = fm10k_mbx_request_irq(interface);
- 	if (err)
--		return err;
-+		goto err_mbx_irq;
- 
--	if (netif_running(dev))
--		fm10k_open(dev);
-+	err = netif_running(dev) ? fm10k_open(dev) : 0;
-+	if (err)
-+		goto err_open;
- 
- 	/* flag to indicate SWPRI has yet to be updated */
- 	interface->flags |= FM10K_FLAG_SWPRI_CONFIG;
- 
- 	return 0;
-+err_open:
-+	fm10k_mbx_free_irq(interface);
-+err_mbx_irq:
-+	fm10k_clear_queueing_scheme(interface);
-+err_queueing_scheme:
-+	netif_device_detach(dev);
-+
-+	return err;
  }
  
- static int fm10k_ioctl(struct net_device *netdev, struct ifreq *ifr, int cmd)
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index 15327d274d72..7b33cddfc6be 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -185,7 +185,13 @@ static void fm10k_reinit(struct fm10k_intfc *interface)
- 	}
+-int e1000e_up(struct e1000_adapter *adapter)
++void e1000e_up(struct e1000_adapter *adapter)
+ {
+ 	struct e1000_hw *hw = &adapter->hw;
  
- 	/* reassociate interrupts */
--	fm10k_mbx_request_irq(interface);
-+	err = fm10k_mbx_request_irq(interface);
-+	if (err)
-+		goto err_mbx_irq;
-+
-+	err = fm10k_hw_ready(interface);
-+	if (err)
-+		goto err_open;
- 
- 	/* update hardware address for VFs if perm_addr has changed */
- 	if (hw->mac.type == fm10k_mac_vf) {
-@@ -205,14 +211,23 @@ static void fm10k_reinit(struct fm10k_intfc *interface)
- 	/* reset clock */
- 	fm10k_ts_reset(interface);
- 
--	if (netif_running(netdev))
--		fm10k_open(netdev);
+@@ -4163,8 +4163,6 @@ int e1000e_up(struct e1000_adapter *adapter)
+ 		ew32(ICS, E1000_ICS_LSC | E1000_ICR_OTHER);
+ 	else
+ 		ew32(ICS, E1000_ICS_LSC);
 -
-+	err = netif_running(netdev) ? fm10k_open(netdev) : 0;
-+	if (err)
-+		goto err_open;
-+		
- 	fm10k_iov_resume(interface->pdev);
+-	return 0;
+ }
  
-+	rtnl_unlock();
-+
-+	clear_bit(__FM10K_RESETTING, &interface->state);
-+
-+	return;
-+err_open:
-+	fm10k_mbx_free_irq(interface);
-+err_mbx_irq:
-+	fm10k_clear_queueing_scheme(interface);
- reinit_err:
--	if (err)
--		netif_device_detach(netdev);
-+	netif_device_detach(netdev);
+ static void e1000e_flush_descriptors(struct e1000_adapter *adapter)
+@@ -6643,7 +6641,7 @@ static int e1000e_pm_runtime_resume(struct device *dev)
+ 		return rc;
  
- 	rtnl_unlock();
+ 	if (netdev->flags & IFF_UP)
+-		rc = e1000e_up(adapter);
++		e1000e_up(adapter);
  
-@@ -2130,16 +2145,22 @@ static int fm10k_resume(struct pci_dev *pdev)
- 	rtnl_lock();
+ 	return rc;
+ }
+@@ -6834,13 +6832,8 @@ static void e1000_io_resume(struct pci_dev *pdev)
  
- 	err = fm10k_init_queueing_scheme(interface);
--	if (!err) {
--		fm10k_mbx_request_irq(interface);
--		if (netif_running(netdev))
--			err = fm10k_open(netdev);
+ 	e1000_init_manageability_pt(adapter);
+ 
+-	if (netif_running(netdev)) {
+-		if (e1000e_up(adapter)) {
+-			dev_err(&pdev->dev,
+-				"can't bring device back up after reset\n");
+-			return;
+-		}
 -	}
-+	if (err)
-+		goto err_queueing_scheme;
++	if (netif_running(netdev))
++		e1000e_up(adapter);
  
--	rtnl_unlock();
-+	err = fm10k_mbx_request_irq(interface);
-+	if (err)
-+		goto err_mbx_irq;
- 
-+	err = fm10k_hw_ready(interface);
- 	if (err)
--		return err;
-+		goto err_open;
-+
-+	err = netif_running(netdev) ? fm10k_open(netdev) : 0;
-+	if (err)
-+		goto err_open;
-+		
-+	rtnl_unlock();
- 
- 	/* assume host is not ready, to prevent race with watchdog in case we
- 	 * actually don't have connection to the switch
-@@ -2157,6 +2178,14 @@ static int fm10k_resume(struct pci_dev *pdev)
  	netif_device_attach(netdev);
  
- 	return 0;
-+err_open:
-+	fm10k_mbx_free_irq(interface);
-+err_mbx_irq:
-+	fm10k_clear_queueing_scheme(interface);
-+err_queueing_scheme:
-+	rtnl_unlock();
-+
-+	return err;
- }
- 
- /**
 
