@@ -1,139 +1,47 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 28 Oct 2015 07:52:12 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
- d5450ca829db93594fb39e82ef081f0c85519121 BUILD SUCCESS
-Message-ID: <56300e2c.7/8aDsSd3XNhR53w%fengguang.wu@intel.com>
+From: Alexander Duyck <aduyck@mirantis.com>
+Date: Tue, 27 Oct 2015 16:59:05 -0700
+Subject: [Intel-wired-lan] [next PATCH 0/5] Misc Intel driver cleanups
+Message-ID: <20151027235341.30048.46286.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-d5450ca829db93594fb39e82ef081f0c85519121  ixgbe: Reset interface after enabling SR-IOV
+These are some assorted cleanups that occurred to me over the last several
+days.  They are compile tested only.
 
-elapsed time: 56m
+The first three are based on review of some patches I saw recently accepted
+into fm10k.  We weren't doing consistent exception handling when we
+probably should have been.  Also it looks like there are some exception
+paths what would have likely resulted in a kernel panic so I decided to try
+and address those.
 
-configs tested: 118
+The fourth is based on a suggestion I had given to Nick but he ignored.
+Basically e1000e_up is always returning 0, there was code that was checking
+for it returning non-zero so I make e1000e_up void and dropped all code
+that was checking it for a non-zero return value.
 
-i386                   randconfig-a0-10252128
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-10280614
-x86_64                           allmodconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                 randconfig-x015-201543
-x86_64                 randconfig-x019-201543
-x86_64                 randconfig-x014-201543
-x86_64                 randconfig-x016-201543
-x86_64                 randconfig-x018-201543
-x86_64                 randconfig-x011-201543
-x86_64                 randconfig-x013-201543
-x86_64                 randconfig-x010-201543
-x86_64                 randconfig-x017-201543
-x86_64                 randconfig-x012-201543
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201543
-i386                     randconfig-s1-201543
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                   randconfig-i0-201543
-arm                           h5000_defconfig
-blackfin                      H8606_defconfig
-m32r                    mappi.nommu_defconfig
-mips                           jazz_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201543
-i386                     randconfig-i1-201543
-x86_64                 randconfig-b0-10280613
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                   randconfig-n0-10260618
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-n0-10280651
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-m68k                             allmodconfig
-m68k                                defconfig
-powerpc                         c2k_defconfig
-i386                  randconfig-sb0-10280602
-x86_64               randconfig-x008-10252017
-x86_64               randconfig-x007-10252017
-x86_64               randconfig-x001-10252017
-x86_64               randconfig-x005-10252017
-x86_64               randconfig-x004-10252017
-x86_64               randconfig-x000-10252017
-x86_64               randconfig-x002-10252017
-x86_64               randconfig-x006-10252017
-x86_64               randconfig-x009-10252017
-x86_64               randconfig-x003-10252017
-i386                   randconfig-r0-10252017
-i386                             allmodconfig
-i386                   randconfig-x000-201543
-i386                   randconfig-x001-201543
-i386                   randconfig-x002-201543
-i386                   randconfig-x003-201543
-i386                   randconfig-x004-201543
-i386                   randconfig-x005-201543
-i386                   randconfig-x006-201543
-i386                   randconfig-x007-201543
-i386                   randconfig-x008-201543
-i386                   randconfig-x009-201543
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
+The last patch is a minor tweak to an existing patch in the dev-queue.
+Feel free to just fold it into the patch it fixes and add my signed-off-by
+or carry it separately.  I am good either way.
 
-Thanks,
-Fengguang
+---
+
+Alexander Duyck (5):
+      fm10k: Cleanup MSI-X interrupts in case of failure
+      fm10k: Cleanup exception handling for mailbox interrupt
+      fm10k: Cleanup exception handling for changing queues
+      e1000e: Switch e1000e_up to void, drop code checking for error result
+      igb: Fix unused variable warning
+
+
+ drivers/net/ethernet/intel/e1000e/e1000.h       |    2 -
+ drivers/net/ethernet/intel/e1000e/netdev.c      |   15 +----
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c   |    4 +
+ drivers/net/ethernet/intel/fm10k/fm10k_netdev.c |   17 ++++--
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c    |   68 ++++++++++++++++++-----
+ drivers/net/ethernet/intel/igb/igb_main.c       |    1 
+ 6 files changed, 74 insertions(+), 33 deletions(-)
+
+--
