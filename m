@@ -1,49 +1,160 @@
-From: Dan Streetman <dan.streetman@canonical.com>
-Date: Tue, 27 Oct 2015 14:27:55 -0400
-Subject: [Intel-wired-lan] [PATCHv2] ixgbe: Wait for 1ms, not 1us, after RST
-In-Reply-To: <562FBB01.3080901@hurleysoftware.com>
-References: <562FBB01.3080901@hurleysoftware.com>
-Message-ID: <1445970475-19111-1-git-send-email-dan.streetman@canonical.com>
+From: Allan, Bruce W <bruce.w.allan@intel.com>
+Date: Tue, 27 Oct 2015 18:57:21 +0000
+Subject: [Intel-wired-lan] [next-queue v2] fm10k: conditionally compile
+ DCB and DebugFS support
+In-Reply-To: <1445897893-19723-1-git-send-email-jacob.e.keller@intel.com>
+References: <1445897893-19723-1-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <804857E1F29AAC47BF68C404FC60A1847EC6BCFF@ORSMSX105.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The driver currently waits 1us after issuing a RST, but the spec
-requires it to wait 1ms.  This adds a msleep(1) before polling the
-reset bit.
+> -----Original Message-----
+> From: Keller, Jacob E
+> Sent: Monday, October 26, 2015 3:18 PM
+> To: Intel Wired LAN
+> Cc: Keller, Jacob E; Allan, Bruce W
+> Subject: [next-queue v2] fm10k: conditionally compile DCB and DebugFS
+> support
+> 
+> Rather than wrapping fm10k_dcbnl.c and fm10k_debugfs.c support with
+>  #ifdef blocks, just conditionally include the .o files in the Makefile.
+> Also, since we're modifying it, update the copyright year on the
+> Makefile.
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+> ---
+> This replaces in-place the previous version of the patch currently in
+> the queue, fixing a compilation error
+> 
+> -v2
+> * Fix issue when DCB is disabled, since the function didn't take the
+>   same parameters.
+> 
+>  drivers/net/ethernet/intel/fm10k/Makefile        | 20 +++++++++++++++----
+> -
+>  drivers/net/ethernet/intel/fm10k/fm10k.h         |  4 ++++
+>  drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c   |  4 ----
+>  drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c |  4 ----
+>  4 files changed, 19 insertions(+), 13 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/fm10k/Makefile
+> b/drivers/net/ethernet/intel/fm10k/Makefile
+> index 08859dd220a8..b006ff66d028 100644
+> --- a/drivers/net/ethernet/intel/fm10k/Makefile
+> +++ b/drivers/net/ethernet/intel/fm10k/Makefile
+> @@ -1,7 +1,7 @@
+> 
+> ##########################################################
+> ######################
+>  #
+>  # Intel Ethernet Switch Host Interface Driver
+> -# Copyright(c) 2013 - 2014 Intel Corporation.
+> +# Copyright(c) 2013 - 2015 Intel Corporation.
+>  #
+>  # This program is free software; you can redistribute it and/or modify it
+>  # under the terms and conditions of the GNU General Public License,
+> @@ -27,7 +27,17 @@
+> 
+>  obj-$(CONFIG_FM10K) += fm10k.o
+> 
+> -fm10k-objs := fm10k_main.o fm10k_common.o fm10k_pci.o \
+> -	      fm10k_netdev.o fm10k_ethtool.o fm10k_pf.o fm10k_vf.o \
+> -	      fm10k_mbx.o fm10k_iov.o fm10k_tlv.o \
+> -	      fm10k_debugfs.o fm10k_ptp.o fm10k_dcbnl.o
+> +fm10k-y := fm10k_main.o \
+> +	   fm10k_common.o \
+> +	   fm10k_pci.o \
+> +	   fm10k_ptp.o \
+> +	   fm10k_netdev.o \
+> +	   fm10k_ethtool.o \
+> +	   fm10k_pf.o \
+> +	   fm10k_vf.o \
+> +	   fm10k_mbx.o \
+> +	   fm10k_iov.o \
+> +	   fm10k_tlv.o
+> +
+> +fm10k-$(CONFIG_DEBUG_FS) += fm10k_debugfs.o
+> +fm10k-$(CONFIG_DCB) += fm10k_dcbnl.o
+> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h
+> b/drivers/net/ethernet/intel/fm10k/fm10k.h
+> index 48809e5d3f79..2e1e3e9c59c9 100644
+> --- a/drivers/net/ethernet/intel/fm10k/fm10k.h
+> +++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
+> @@ -551,5 +551,9 @@ int fm10k_get_ts_config(struct net_device *netdev,
+> struct ifreq *ifr);
+>  int fm10k_set_ts_config(struct net_device *netdev, struct ifreq *ifr);
+> 
+>  /* DCB */
+> +#ifdef CONFIG_DCB
+>  void fm10k_dcbnl_set_ops(struct net_device *dev);
+> +#else
+> +static inline void fm10k_dcbnl_set_ops(struct net_device
+> __always_unused *dev) {}
 
-Signed-off-by: Dan Streetman <dan.streetman@canonical.com>
-Signed-off-by: Dan Streetman <ddstreet@ieee.org>
----
-changes since v1:
- use msleep(1) instead of mdelay(1), per Peter Hurley
- move msleep(1) out of for loop - only msleep once, leave udelay(1)
-   inside for loop
- use spec sec title instead of number, per Don Skidmore
+"__always_unused" is unnecessary.
 
- drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c | 7 +++++++
- 1 file changed, 7 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
-index 4e75843..02cfa1e 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
-@@ -111,6 +111,13 @@ mac_reset_top:
- 	IXGBE_WRITE_REG(hw, IXGBE_CTRL, ctrl);
- 	IXGBE_WRITE_FLUSH(hw);
- 
-+	/* From the spec "General Control Registers - Device Control Register":
-+	 * "...programmers must wait approximately 1 ms after setting before
-+	 *  attempting to check if the bit has cleared or to access (read
-+	 *  or write) any other device register."
-+	 */
-+	msleep(1);
-+
- 	/* Poll for reset bit to self-clear indicating reset is complete */
- 	for (i = 0; i < 10; i++) {
- 		udelay(1);
--- 
-2.5.0
+> +#endif
+>  #endif /* _FM10K_H_ */
+> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c
+> b/drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c
+> index 5c7a4d7662d8..2be4361839db 100644
+> --- a/drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c
+> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c
+> @@ -20,7 +20,6 @@
+> 
+>  #include "fm10k.h"
+> 
+> -#ifdef CONFIG_DCB
+>  /**
+>   * fm10k_dcbnl_ieee_getets - get the ETS configuration for the device
+>   * @dev: netdev interface for the device
+> @@ -155,7 +154,6 @@ static const struct dcbnl_rtnl_ops fm10k_dcbnl_ops
+> = {
+>  	.setdcbx	= fm10k_dcbnl_setdcbx,
+>  };
+> 
+> -#endif /* CONFIG_DCB */
+>  /**
+>   * fm10k_dcbnl_set_ops - Configures dcbnl ops pointer for netdev
+>   * @dev: netdev interface for the device
+> @@ -164,11 +162,9 @@ static const struct dcbnl_rtnl_ops fm10k_dcbnl_ops
+> = {
+>   **/
+>  void fm10k_dcbnl_set_ops(struct net_device *dev)
+>  {
+> -#ifdef CONFIG_DCB
+>  	struct fm10k_intfc *interface = netdev_priv(dev);
+>  	struct fm10k_hw *hw = &interface->hw;
+> 
+>  	if (hw->mac.type == fm10k_mac_pf)
+>  		dev->dcbnl_ops = &fm10k_dcbnl_ops;
+> -#endif /* CONFIG_DCB */
+>  }
+> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
+> b/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
+> index 5304bc1fbecd..5d6137faf7d1 100644
+> --- a/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
+> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
+> @@ -18,8 +18,6 @@
+>   * Intel Corporation, 5200 N.E. Elam Young Parkway, Hillsboro, OR 97124-
+> 6497
+>   */
+> 
+> -#ifdef CONFIG_DEBUG_FS
+> -
+>  #include "fm10k.h"
+> 
+>  #include <linux/debugfs.h>
+> @@ -258,5 +256,3 @@ void fm10k_dbg_exit(void)
+>  	debugfs_remove_recursive(dbg_root);
+>  	dbg_root = NULL;
+>  }
+> -
+> -#endif /* CONFIG_DEBUG_FS */
+> --
+> 2.6.1.264.gbab76a9
 
