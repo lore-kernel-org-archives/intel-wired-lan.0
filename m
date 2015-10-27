@@ -1,47 +1,57 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 26 Oct 2015 08:03:23 -0700
-Subject: [Intel-wired-lan] [RFC Patch 00/12] IXGBE: Add live migration
-	support for SRIOV NIC
-In-Reply-To: <562DBBC9.4000104@intel.com>
-References: <1445445464-5056-1-git-send-email-tianyu.lan@intel.com>
- <562A7E33.4080800@gmail.com> <562DBBC9.4000104@intel.com>
-Message-ID: <562E40BB.6040404@gmail.com>
+From: Peter Hurley <peter@hurleysoftware.com>
+Date: Tue, 27 Oct 2015 13:57:21 -0400
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Wait for 1ms, not 1us,
+	after RST
+In-Reply-To: <1445904971-9442-1-git-send-email-dan.streetman@canonical.com>
+References: <1445904971-9442-1-git-send-email-dan.streetman@canonical.com>
+Message-ID: <562FBB01.3080901@hurleysoftware.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 10/25/2015 10:36 PM, Lan Tianyu wrote:
-> On 2015?10?24? 02:36, Alexander Duyck wrote:
->> I was thinking about it and I am pretty sure the dummy write approach is
->> problematic at best.  Specifically the issue is that while you are
->> performing a dummy write you risk pulling in descriptors for data that
->> hasn't been dummy written to yet.  So when you resume and restore your
->> descriptors you will have once that may contain Rx descriptors
->> indicating they contain data when after the migration they don't.
-> How about changing sequence? dummy writing Rx packet data fist and then
-> its desc. This can ensure that RX data is migrated before its desc and
-> prevent such case.
+Hi Dan,
 
-No.  I think you are missing the fact that there are 256 descriptors per 
-page.  As such if you dirty just 1 you will be pulling in 255 more, of 
-which you may or may not have pulled in the receive buffer for.
+On 10/26/2015 08:16 PM, dan.streetman at canonical.com wrote:
+> From: Dan Streetman <dan.streetman@canonical.com>
+> 
+> The driver currently waits 1us after issuing a RST, but the spec
+> requires it to wait 1ms.
+> 
+> Signed-off-by: Dan Streetman <dan.streetman@canonical.com>
+> Signed-off-by: Dan Streetman <ddstreet@ieee.org>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c | 7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
+> index 4e75843..147bc65 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
+> @@ -113,7 +113,12 @@ mac_reset_top:
+>  
+>  	/* Poll for reset bit to self-clear indicating reset is complete */
+>  	for (i = 0; i < 10; i++) {
+> -		udelay(1);
+> +		/* sec 8.2.4.1.1 :
+> +		 * programmers must wait approximately 1 ms after setting before
+> +		 * attempting to check if the bit has cleared or to access (read
+> +		 * or write) any other device register.
+> +		 */
+> +		mdelay(1);
 
-So for example if you have the descriptor ring size set to 256 then that 
-means you are going to get whatever the descriptor ring has since you 
-will be marking the entire ring dirty with every packet processed, 
-however you cannot guarantee that you are going to get all of the 
-receive buffers unless you go through and flush the entire ring prior to 
-migrating.
+Since ixgbe_reset_hw_x540() goes on to msleep(100) immediately after this
+busy-wait loop, this should instead be:
 
-This is why I have said you will need to do something to force the rings 
-to be flushed such as initiating a PM suspend prior to migrating.  You 
-need to do something to stop the DMA and flush the remaining Rx buffers 
-if you want to have any hope of being able to migrate the Rx in a 
-consistent state.  Beyond that the only other thing you have to worry 
-about are the Rx buffers that have already been handed off to the 
-stack.  However those should be handled if you do a suspend and somehow 
-flag pages as dirty when they are unmapped from the DMA.
+		msleep(1);
 
-- Alex
+Regards,
+Peter Hurley
+
+
+>  		ctrl = IXGBE_READ_REG(hw, IXGBE_CTRL);
+>  		if (!(ctrl & IXGBE_CTRL_RST_MASK))
+>  			break;
+> 
+
