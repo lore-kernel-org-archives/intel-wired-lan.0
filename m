@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 27 Oct 2015 15:25:36 +0000
-Subject: [Intel-wired-lan] [next PATCH S19 13/15] i40e: rework the
- functions	to configure RSS with similar parameters
-In-Reply-To: <1445471784-36024-1-git-send-email-catherine.sullivan@intel.com>
+Date: Tue, 27 Oct 2015 15:26:46 +0000
+Subject: [Intel-wired-lan] [next PATCH S19 14/15] i40e: create a
+	generic	configure rss function
+In-Reply-To: <1445471784-36024-2-git-send-email-catherine.sullivan@intel.com>
 References: <1445471784-36024-1-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060D43E4@ORSMSX104.amr.corp.intel.com>
+ <1445471784-36024-2-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060D43F4@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,24 +18,28 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Wednesday, October 21, 2015 4:56 PM
 > To: intel-wired-lan at lists.osuosl.org
 > Cc: Zhang, Helin
-> Subject: [Intel-wired-lan] [next PATCH S19 13/15] i40e: rework the functions
-> to configure RSS with similar parameters
+> Subject: [Intel-wired-lan] [next PATCH S19 14/15] i40e: create a generic
+> configure rss function
 > 
 > From: Helin Zhang <helin.zhang@intel.com>
 > 
-> Adjust the RSS configure functions so that there is a generic way to hook to
-> ethtool hooks.
+> This patch renames the old pf-specific function in order to clarify its scope.
+> This patch also creates a more generic configure RSS function with the old
+> name.
+> 
+> This patch also creates a new more generic function to get RSS configuration,
+> using the appropriate method.
 > 
 > Signed-off-by: Helin Zhang <helin.zhang@intel.com>
-> Change-ID: If446e34fcfaf1bc3320d9d319829a095b5976e67
+> Change-ID: Ieddca2707b708ef19f1ebccdfd03a0a0cd63d3af
 > 
 > ---
-> Testing-hints: Test with next patch.
->  drivers/net/ethernet/intel/i40e/i40e.h         |  1 +
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  1 -
->  drivers/net/ethernet/intel/i40e/i40e_main.c    | 95
-> +++++++++++++++++++-------
->  3 files changed, 71 insertions(+), 26 deletions(-)
+> Testing-hints: Test RSS hooks from ethtool for X[L]710 and X722.
+>  drivers/net/ethernet/intel/i40e/i40e.h         |  2 +
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 72 ++++++++++------------
+>  drivers/net/ethernet/intel/i40e/i40e_main.c    | 85
+> ++++++++++++++++++++++----
+>  3 files changed, 107 insertions(+), 52 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied
+Patch code changes correctly applied, settings with ethtool -X and -L set correctly, and persist across PF and global resets
