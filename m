@@ -1,80 +1,49 @@
 From: Dan Streetman <dan.streetman@canonical.com>
-Date: Tue, 27 Oct 2015 13:32:01 -0400
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Wait for 1ms, not 1us,
-	after RST
-In-Reply-To: <F6FB0E698C9B3143BDF729DF22286646913C0CCF@ORSMSX110.amr.corp.intel.com>
-References: <1445904971-9442-1-git-send-email-dan.streetman@canonical.com>
- <F6FB0E698C9B3143BDF729DF22286646913C0CCF@ORSMSX110.amr.corp.intel.com>
-Message-ID: <CAOZ2QJMivr=UADrQmVRyNA3F+t0vs2YhQuurczL0FQ8gS95Wcw@mail.gmail.com>
+Date: Tue, 27 Oct 2015 14:27:55 -0400
+Subject: [Intel-wired-lan] [PATCHv2] ixgbe: Wait for 1ms, not 1us, after RST
+In-Reply-To: <562FBB01.3080901@hurleysoftware.com>
+References: <562FBB01.3080901@hurleysoftware.com>
+Message-ID: <1445970475-19111-1-git-send-email-dan.streetman@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Oct 27, 2015 at 1:03 PM, Skidmore, Donald C
-<donald.c.skidmore@intel.com> wrote:
->
->
->> -----Original Message-----
->> From: dan.streetman at canonical.com
->> [mailto:dan.streetman at canonical.com]
->> Sent: Monday, October 26, 2015 5:16 PM
->> To: Kirsher, Jeffrey T
->> Cc: Brandeburg, Jesse; Nelson, Shannon; Wyborny, Carolyn; Skidmore,
->> Donald C; Vick, Matthew; Ronciak, John; Williams, Mitch A; intel-wired-
->> lan at lists.osuosl.org; netdev at vger.kernel.org; linux-kernel at vger.kernel.org;
->> Dan Streetman; Dan Streetman
->> Subject: [PATCH] ixgbe: Wait for 1ms, not 1us, after RST
->>
->> From: Dan Streetman <dan.streetman@canonical.com>
->>
->> The driver currently waits 1us after issuing a RST, but the spec requires it to
->> wait 1ms.
->>
->> Signed-off-by: Dan Streetman <dan.streetman@canonical.com>
->> Signed-off-by: Dan Streetman <ddstreet@ieee.org>
->> ---
->>  drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c | 7 ++++++-
->>  1 file changed, 6 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
->> b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
->> index 4e75843..147bc65 100644
->> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
->> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
->> @@ -113,7 +113,12 @@ mac_reset_top:
->>
->>       /* Poll for reset bit to self-clear indicating reset is complete */
->>       for (i = 0; i < 10; i++) {
->> -             udelay(1);
->> +             /* sec 8.2.4.1.1 :
->> +              * programmers must wait approximately 1 ms after setting
->> before
->> +              * attempting to check if the bit has cleared or to access
->> (read
->> +              * or write) any other device register.
->> +              */
->> +             mdelay(1);
->>               ctrl = IXGBE_READ_REG(hw, IXGBE_CTRL);
->>               if (!(ctrl & IXGBE_CTRL_RST_MASK))
->>                       break;
->> --
->> 2.5.0
->
-> While the Data Sheet does mention that this should take ~ 1ms, we are in a busy wait state so it probably isn't that big of a deal to check more frequently for our exit condition.  That said there are plenty of other delays later on in the reset path so keeping the udelay really isn't speeding things up much. :)
+The driver currently waits 1us after issuing a RST, but the spec
+requires it to wait 1ms.  This adds a msleep(1) before polling the
+reset bit.
 
-I don't know the hw details of course, I was just going on the spec's
-use of "must" when stating how long the driver should wait before
-talking to the hw.  If the hw doesn't actually care, then no need for
-this patch (although the spec should probably be changed to not use
-"must").
+Signed-off-by: Dan Streetman <dan.streetman@canonical.com>
+Signed-off-by: Dan Streetman <ddstreet@ieee.org>
+---
+changes since v1:
+ use msleep(1) instead of mdelay(1), per Peter Hurley
+ move msleep(1) out of for loop - only msleep once, leave udelay(1)
+   inside for loop
+ use spec sec title instead of number, per Don Skidmore
 
-Thanks!
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
->
-> Also normally it isn't a good idea to reference a section number in the data sheet as they do seem to change with updates.  We are most likely a bit more safe here as it is one of the first of a list of register descriptions' and thus less like to move.
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo at vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
+index 4e75843..02cfa1e 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
+@@ -111,6 +111,13 @@ mac_reset_top:
+ 	IXGBE_WRITE_REG(hw, IXGBE_CTRL, ctrl);
+ 	IXGBE_WRITE_FLUSH(hw);
+ 
++	/* From the spec "General Control Registers - Device Control Register":
++	 * "...programmers must wait approximately 1 ms after setting before
++	 *  attempting to check if the bit has cleared or to access (read
++	 *  or write) any other device register."
++	 */
++	msleep(1);
++
+ 	/* Poll for reset bit to self-clear indicating reset is complete */
+ 	for (i = 0; i < 10; i++) {
+ 		udelay(1);
+-- 
+2.5.0
+
