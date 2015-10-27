@@ -1,30 +1,42 @@
-From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Tue, 27 Oct 2015 19:51:37 +0000
-Subject: [Intel-wired-lan] [next-queue v5 08/17] fm10k: add statistics
- for	actual DWORD count of mbmem mailbox
-In-Reply-To: <1445018231-3196-8-git-send-email-jacob.e.keller@intel.com>
-References: <1445018231-3196-1-git-send-email-jacob.e.keller@intel.com>
- <1445018231-3196-8-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E27221649@ORSMSX103.amr.corp.intel.com>
+From: Catherine Sullivan <catherine.sullivan@intel.com>
+Date: Tue, 27 Oct 2015 16:15:05 -0400
+Subject: [Intel-wired-lan] [next PATCH S20 00/15 v2] i40e/i40evf updates
+Message-ID: <1445976906-161903-1-git-send-email-catherine.sullivan@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Anjali fixes the RS bit update in Tx path and disables the force WB
+workaround.
 
+Carolyn updates the fw version error messaging.
 
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Jacob Keller
-Sent: Friday, October 16, 2015 10:57 AM
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Subject: [Intel-wired-lan] [next-queue v5 08/17] fm10k: add statistics for actual DWORD count of mbmem mailbox
+Helin adds new fields to store user configuration, renames rss_size to
+alloc_rss_size in i40e_pf, renames vf adapter specific rss function, creates
+a generic config rss function, creates a generic get rss function, adds new
+fields to store user configuration of RSS, and fixes a confusing message.
 
-A previous bug was uncovered by addition of a debug stat to indicate the actual number of DWORDS we pulled from the mbmem. It turned out this was not the same as the tx_dwords counter. While the previous bug fix should have corrected this in all cases, add some debug stats that count the number of DWORDs pushed or pulled from the mbmem. A future debugger may take advantage of this statistic for debugging purposes. Since we're modifying fm10k_mbx.h, update the copyright year as well.
+Jesse adds a prefetch of skb data on transmit.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- 
-Tested-by: Krishneil Singh <Krishneil.k.singh@intel.com>
+Mitch makes an  error message more useful, lets the VF give up when it gets
+ERR_PARAM from the PF, allocates queue vectors dynamically, and allocates
+ring structs dynamically.
 
+ drivers/net/ethernet/intel/i40e/i40e.h             |  10 +-
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c     |  31 +-
+ drivers/net/ethernet/intel/i40e/i40e_main.c        |  98 +++--
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c        |   3 +
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |   4 +-
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c      | 123 ++++---
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.h      |   2 +
+ drivers/net/ethernet/intel/i40evf/i40evf.h         |  16 +-
+ drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c |  79 ++--
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 403 +++++++++++++++------
+ .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |  12 +-
+ 11 files changed, 545 insertions(+), 236 deletions(-)
+
+-- 
+1.9.3
 
