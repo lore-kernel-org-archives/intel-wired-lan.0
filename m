@@ -1,64 +1,42 @@
-From: Toshiaki Makita <toshiaki.makita1@gmail.com>
-Date: Wed, 28 Oct 2015 16:40:16 +0900
-Subject: [Intel-wired-lan] [PATCH v2 net-next 0/4] Automatic adjustment
-	of max frame size
-In-Reply-To: <20151028135820.72329de4@samsung9>
-References: <1445830859-4651-1-git-send-email-makita.toshiaki@lab.ntt.co.jp>
- <20151028135820.72329de4@samsung9>
-Message-ID: <56307BE0.5080606@gmail.com>
+From: Nicholas Krause <xerofoify@gmail.com>
+Date: Tue, 27 Oct 2015 23:03:00 -0400
+Subject: [Intel-wired-lan] [PATCH] i40evf:Add missing error check in the
+	function i40evf_init_task
+Message-ID: <1446001380-27744-1-git-send-email-xerofoify@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 15/10/28 (?) 13:58, Stephen Hemminger wrote:
-> On Mon, 26 Oct 2015 12:40:55 +0900
-> Toshiaki Makita <makita.toshiaki@lab.ntt.co.jp> wrote:
-...
+This adds the missing error check in the function i40evf_init_task
+for checking the return value of the call to the function
+i40evf_map_rings_to_vectors and if this function call does indeed
+return a error code jump immediately to the goto label err_sw_init
+in order to cleanup before returning to the caller rather then
+continuing the function, i40evf_map_rings_to_vector's intended work
+after this non recoverable failed function call.
 
-Thank you for taking a look at the patch set.
-I'm not sure if I fully understand you, so please correct me if I 
-misread you.
+Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
+---
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-> The problem is that you require changing network device drivers
-> and device specific knowledge about what will work or not. Because
-> of that the modificaton can't be automated.
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index e85849b..cf1f3fd 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -2264,7 +2264,9 @@ static void i40evf_init_task(struct work_struct *work)
+ 	err = i40evf_init_interrupt_scheme(adapter);
+ 	if (err)
+ 		goto err_sw_init;
+-	i40evf_map_rings_to_vectors(adapter);
++	err = i40evf_map_rings_to_vectors(adapter);
++	if (err)
++		goto err_sw_init;
+ 	if (!RSS_AQ(adapter))
+ 		i40evf_configure_rss(adapter);
+ 	err = i40evf_request_misc_irq(adapter);
+-- 
+2.1.4
 
-I'm not sure what you mean by "device specific knowledge" and "automated"...
-Indeed, this requires change in each driver.
-But required changes in drivers should be mostly making use of 
-ndo_change_mtu implementation code and not hard. We can progressively 
-implement ndo_enc_hdr_len for each driver.
-If max frame size cannot be changed on a certain NIC, vlan driver will 
-emit a warning message and make MTU smaller, then userspace can handle 
-it (patch 3). If needed, maybe we can expose this feature via ethtool.
-
->
-> Also, this effects even more layered devices like tunnels etc.
-
-Yes, if tunnel devices start to utilize this framework. This is one of 
-purposes of my patch set.
-
-> The problem is quite large, and this patch only begins to address it.
-
-Yes, this is the first step to address the problem.
-
->
-> It seems to me that just having the vlan driver to a sane
-> auto default is the best solution.
-
-For now, this patch implementation is limited to vlan. For other 
-protocols, auto-expansion may not be suitable and may need some nob to 
-use the framework.
-
-If you mean just making MTU smaller on vlan device instead of adjusting 
-max frame size of real device, then it would not work. 802.1ad HW 
-switches, at any rate, send 1526 bytes frames so they will be dropped on 
-the real device.
-
-> It might cause a smaller MTU
-> than ideal, but at least it will still work. Then the user can
-> manually set a larger MTU if they know their hardware will work.
-
-Toshiaki Makita
