@@ -1,30 +1,158 @@
 From: Bruce Allan <bruce.w.allan@intel.com>
-Date: Wed, 28 Oct 2015 16:04:24 -0700
-Subject: [Intel-wired-lan] [next-queue PATCH] fm10k: use BIT() macro instead
- of open-coded bit-shifting
-Message-ID: <20151028230424.10576.20916.stgit@bwallan-cwp1.jf.intel.com>
+Date: Wed, 28 Oct 2015 16:04:29 -0700
+Subject: [Intel-wired-lan] [next-queue PATCH] fm10k: cleanup namespace
+	pollution
+Message-ID: <20151028230429.10576.49843.stgit@bwallan-cwp1.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Make functions that should be static.  While we're at it, fix the function
+header comment for fm10k_tlv_attr_nest_stop(), and update the copyright
+header for fm10k_pf.h, fm10k_tlv.c and fm10k_tlv.h.
+
 Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_type.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_pf.c  |    4 ++--
+ drivers/net/ethernet/intel/fm10k/fm10k_pf.h  |    4 +---
+ drivers/net/ethernet/intel/fm10k/fm10k_tlv.c |   18 +++++++++---------
+ drivers/net/ethernet/intel/fm10k/fm10k_tlv.h |    7 +------
+ 4 files changed, 13 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_type.h b/drivers/net/ethernet/intel/fm10k/fm10k_type.h
-index 2fd962f..098883d 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_type.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_type.h
-@@ -354,7 +354,7 @@ struct fm10k_hw;
- #define FM10K_VLAN_TABLE_VID_MAX		4096
- #define FM10K_VLAN_TABLE_VSI_MAX		64
- #define FM10K_VLAN_LENGTH_SHIFT			16
--#define FM10K_VLAN_CLEAR			(1 << 15)
-+#define FM10K_VLAN_CLEAR			BIT(15)
- #define FM10K_VLAN_ALL \
- 	((FM10K_VLAN_TABLE_VID_MAX - 1) << FM10K_VLAN_LENGTH_SHIFT)
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+index 7c06dbc..4172cbb 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+@@ -1687,8 +1687,8 @@ const struct fm10k_tlv_attr fm10k_update_pvid_msg_attr[] = {
+  *
+  *  This handler configures the default VLAN for the PF
+  **/
+-s32 fm10k_msg_update_pvid_pf(struct fm10k_hw *hw, u32 **results,
+-			     struct fm10k_mbx_info *mbx)
++static s32 fm10k_msg_update_pvid_pf(struct fm10k_hw *hw, u32 **results,
++				    struct fm10k_mbx_info *mbx)
+ {
+ 	u16 glort, pvid;
+ 	u32 pvid_update;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.h b/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
+index 9d77daa..a8fc512 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
+@@ -1,5 +1,5 @@
+ /* Intel Ethernet Switch Host Interface Driver
+- * Copyright(c) 2013 - 2014 Intel Corporation.
++ * Copyright(c) 2013 - 2015 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+@@ -107,8 +107,6 @@ extern const struct fm10k_tlv_attr fm10k_lport_map_msg_attr[];
+ #define FM10K_PF_MSG_LPORT_MAP_HANDLER(func) \
+ 	FM10K_MSG_HANDLER(FM10K_PF_MSG_ID_LPORT_MAP, \
+ 			  fm10k_lport_map_msg_attr, func)
+-s32 fm10k_msg_update_pvid_pf(struct fm10k_hw *, u32 **,
+-			     struct fm10k_mbx_info *);
+ extern const struct fm10k_tlv_attr fm10k_update_pvid_msg_attr[];
+ #define FM10K_PF_MSG_UPDATE_PVID_HANDLER(func) \
+ 	FM10K_MSG_HANDLER(FM10K_PF_MSG_ID_UPDATE_PVID, \
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_tlv.c b/drivers/net/ethernet/intel/fm10k/fm10k_tlv.c
+index d6ff1e8d..80f5c4b 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_tlv.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_tlv.c
+@@ -1,5 +1,5 @@
+ /* Intel Ethernet Switch Host Interface Driver
+- * Copyright(c) 2013 - 2014 Intel Corporation.
++ * Copyright(c) 2013 - 2015 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+@@ -48,8 +48,8 @@ s32 fm10k_tlv_msg_init(u32 *msg, u16 msg_id)
+  *  the attribute buffer.  It will return success if provided with a valid
+  *  pointers.
+  **/
+-s32 fm10k_tlv_attr_put_null_string(u32 *msg, u16 attr_id,
+-				   const unsigned char *string)
++static s32 fm10k_tlv_attr_put_null_string(u32 *msg, u16 attr_id,
++					  const unsigned char *string)
+ {
+ 	u32 attr_data = 0, len = 0;
+ 	u32 *attr;
+@@ -98,7 +98,7 @@ s32 fm10k_tlv_attr_put_null_string(u32 *msg, u16 attr_id,
+  *  it in the array pointed by by string.  It will return success if provided
+  *  with a valid pointers.
+  **/
+-s32 fm10k_tlv_attr_get_null_string(u32 *attr, unsigned char *string)
++static s32 fm10k_tlv_attr_get_null_string(u32 *attr, unsigned char *string)
+ {
+ 	u32 len;
  
+@@ -353,7 +353,7 @@ s32 fm10k_tlv_attr_get_le_struct(u32 *attr, void *le_struct, u32 len)
+  *  function will return NULL on failure, and a pointer to the start
+  *  of the nested attributes on success.
+  **/
+-u32 *fm10k_tlv_attr_nest_start(u32 *msg, u16 attr_id)
++static u32 *fm10k_tlv_attr_nest_start(u32 *msg, u16 attr_id)
+ {
+ 	u32 *attr;
+ 
+@@ -370,7 +370,7 @@ u32 *fm10k_tlv_attr_nest_start(u32 *msg, u16 attr_id)
+ }
+ 
+ /**
+- *  fm10k_tlv_attr_nest_start - Start a set of nested attributes
++ *  fm10k_tlv_attr_nest_stop - Stop a set of nested attributes
+  *  @msg: Pointer to message block
+  *
+  *  This function closes off an existing set of nested attributes.  The
+@@ -378,7 +378,7 @@ u32 *fm10k_tlv_attr_nest_start(u32 *msg, u16 attr_id)
+  *  the case of a nest within the nest this would be the outer nest pointer.
+  *  This function will return success provided all pointers are valid.
+  **/
+-s32 fm10k_tlv_attr_nest_stop(u32 *msg)
++static s32 fm10k_tlv_attr_nest_stop(u32 *msg)
+ {
+ 	u32 *attr;
+ 	u32 len;
+@@ -483,8 +483,8 @@ static s32 fm10k_tlv_attr_validate(u32 *attr,
+  *  FM10K_NOT_IMPLEMENTED for any attribute that is outside of the array
+  *  and 0 on success.
+  **/
+-s32 fm10k_tlv_attr_parse(u32 *attr, u32 **results,
+-			 const struct fm10k_tlv_attr *tlv_attr)
++static s32 fm10k_tlv_attr_parse(u32 *attr, u32 **results,
++				const struct fm10k_tlv_attr *tlv_attr)
+ {
+ 	u32 i, attr_id, offset = 0;
+ 	s32 err = 0;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_tlv.h b/drivers/net/ethernet/intel/fm10k/fm10k_tlv.h
+index 7e045e8..d5ad359 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_tlv.h
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_tlv.h
+@@ -1,5 +1,5 @@
+ /* Intel Ethernet Switch Host Interface Driver
+- * Copyright(c) 2013 - 2014 Intel Corporation.
++ * Copyright(c) 2013 - 2015 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+@@ -106,8 +106,6 @@ struct fm10k_msg_data {
+ #define FM10K_MSG_HANDLER(id, attr, func) { id, attr, func }
+ 
+ s32 fm10k_tlv_msg_init(u32 *, u16);
+-s32 fm10k_tlv_attr_put_null_string(u32 *, u16, const unsigned char *);
+-s32 fm10k_tlv_attr_get_null_string(u32 *, unsigned char *);
+ s32 fm10k_tlv_attr_put_mac_vlan(u32 *, u16, const u8 *, u16);
+ s32 fm10k_tlv_attr_get_mac_vlan(u32 *, u8 *, u16 *);
+ s32 fm10k_tlv_attr_put_bool(u32 *, u16);
+@@ -147,9 +145,6 @@ s32 fm10k_tlv_attr_get_value(u32 *, void *, u32);
+ 		fm10k_tlv_attr_get_value(attr, ptr, sizeof(s64))
+ s32 fm10k_tlv_attr_put_le_struct(u32 *, u16, const void *, u32);
+ s32 fm10k_tlv_attr_get_le_struct(u32 *, void *, u32);
+-u32 *fm10k_tlv_attr_nest_start(u32 *, u16);
+-s32 fm10k_tlv_attr_nest_stop(u32 *);
+-s32 fm10k_tlv_attr_parse(u32 *, u32 **, const struct fm10k_tlv_attr *);
+ s32 fm10k_tlv_msg_parse(struct fm10k_hw *, u32 *, struct fm10k_mbx_info *,
+ 			const struct fm10k_msg_data *);
+ s32 fm10k_tlv_msg_error(struct fm10k_hw *hw, u32 **results,
 
