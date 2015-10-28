@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 28 Oct 2015 21:25:39 +0000
-Subject: [Intel-wired-lan] [next PATCH S20 08/15] i40evf: add new fields
- to	store user configuration of RSS
-In-Reply-To: <1445903081-155893-9-git-send-email-catherine.sullivan@intel.com>
+Date: Wed, 28 Oct 2015 21:28:57 +0000
+Subject: [Intel-wired-lan] [next PATCH S20 09/15] i40e: Update
+	error	messaging
+In-Reply-To: <1445903081-155893-10-git-send-email-catherine.sullivan@intel.com>
 References: <1445903081-155893-1-git-send-email-catherine.sullivan@intel.com>
- <1445903081-155893-9-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060D484C@ORSMSX104.amr.corp.intel.com>
+ <1445903081-155893-10-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060D485C@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,26 +17,28 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Catherine Sullivan
 > Sent: Monday, October 26, 2015 4:45 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Zhang, Helin
-> Subject: [Intel-wired-lan] [next PATCH S20 08/15] i40evf: add new fields to
-> store user configuration of RSS
+> Subject: [Intel-wired-lan] [next PATCH S20 09/15] i40e: Update error
+> messaging
 > 
-> From: Helin Zhang <helin.zhang@intel.com>
+> From: Carolyn Wyborny <carolyn.wyborny@intel.com>
 > 
-> This patch adds new fields to i40e_vsi to store user configured RSS config
-> data and code to use it.
+> This patch fixes an issue where adminq init failures always provided a
+> message that NVM was newer than expected.  This is not always the case for
+> init_adminq failures. Without this patch, if adminq init fails for any reason,
+> newer nvm message would be given.  This problem is fixed by adding  a
+> check for that specific error condition and a different hopefully helpful
+> message otherwise.
 > 
-> Signed-off-by: Helin Zhang <helin.zhang@intel.com>
-> Change-ID: Ic5d3db8d9df52182b560248f8cdca9c5c7546879
+> Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
+> Change-ID: Iaeaebee4e398989eae40bb70f943ab66a3a521a5
 > 
 > ---
-> Testing-hints: Test ethtool -x and ethtool -X work correctly on VF.
-> After VF reset, user configured settings via ethtool -X should be restored.
->  drivers/net/ethernet/intel/i40evf/i40evf.h         |  2 ++
->  drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 31 ++++++++++--------
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 37
-> ++++++++++++++++++++--
->  3 files changed, 54 insertions(+), 16 deletions(-)
+> Testing-hints: This was only seen with SOME bricked cards. If you have one
+> that happens to work, you will see an erroneous error message that the
+> firmware is too new. If you cannot find a card that will reproduce the error, a
+> simple compile and check that the code is there is sufficient.
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 16 ++++++++++------
+>  1 file changed, 10 insertions(+), 6 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied, ethtool -x and -X work on VF, settings persist across reset.
+Patch code changes correctly applied
