@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 28 Oct 2015 21:58:23 +0000
-Subject: [Intel-wired-lan] [next PATCH S20 14/15] i40evf: allocate
-	ring	structs dynamically
-In-Reply-To: <1445903081-155893-15-git-send-email-catherine.sullivan@intel.com>
+Date: Wed, 28 Oct 2015 22:00:17 +0000
+Subject: [Intel-wired-lan] [next PATCH S20 15/15] i40e/i40evf: Bump
+	i40e	version to 1.4.4 and i40evf to 1.4.1
+In-Reply-To: <1445903081-155893-16-git-send-email-catherine.sullivan@intel.com>
 References: <1445903081-155893-1-git-send-email-catherine.sullivan@intel.com>
- <1445903081-155893-15-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060D48B3@ORSMSX104.amr.corp.intel.com>
+ <1445903081-155893-16-git-send-email-catherine.sullivan@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060D48C6@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,30 +17,17 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Catherine Sullivan
 > Sent: Monday, October 26, 2015 4:45 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S20 14/15] i40evf: allocate ring structs
-> dynamically
+> Subject: [Intel-wired-lan] [next PATCH S20 15/15] i40e/i40evf: Bump i40e
+> version to 1.4.4 and i40evf to 1.4.1
 > 
-> From: Mitch Williams <mitch.a.williams@intel.com>
+> Bump.
 > 
-> Instead of awkwardly keeping a fixed array of pointers in the adapter struct
-> and then allocating ring structs individually, just keep a single pointer and
-> allocate a single blob for the arrays. This simplifies code, shrinks the adapter
-> structure, and future-proofs the driver by not limiting the number of rings
-> we can handle.
-> 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-> Change-ID: I31334ff911a6474954232cfe4bc98ccca3c769ff
-> 
+> Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
+> Change-ID: I00ebbb2e5e5572f947502b8f6db4d94f666d6b14
 > ---
-> Testing-hints: Ensure the driver loads and passes traffic, and unloads
-> properly.
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c      |  2 +-
->  drivers/net/ethernet/intel/i40evf/i40evf.h         |  4 +-
->  drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c |  8 +--
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 57 +++++++++++--------
-> ---
->  .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    | 10 ++--
->  5 files changed, 40 insertions(+), 41 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied, driver loads and unloads properly and passes traffic.
+Patch code changes correctly applied, modinfo shows correct driver version, driver shows correct version on init.
