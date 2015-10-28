@@ -1,186 +1,96 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 28 Oct 2015 10:46:04 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 00b33fb768d95bca1098c5ccc5ed87fb49e73f21 BUILD DONE
-Message-ID: <563036ec.2Pk40XIf7a0zGwHK%fengguang.wu@intel.com>
+From: Stephen Hemminger <stephen@networkplumber.org>
+Date: Wed, 28 Oct 2015 13:58:20 +0900
+Subject: [Intel-wired-lan] [PATCH v2 net-next 0/4] Automatic adjustment
+	of max frame size
+In-Reply-To: <1445830859-4651-1-git-send-email-makita.toshiaki@lab.ntt.co.jp>
+References: <1445830859-4651-1-git-send-email-makita.toshiaki@lab.ntt.co.jp>
+Message-ID: <20151028135820.72329de4@samsung9>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-00b33fb768d95bca1098c5ccc5ed87fb49e73f21  i40e/i40evf: Bump i40e version to 1.4.4 and i40evf to 1.4.1
+On Mon, 26 Oct 2015 12:40:55 +0900
+Toshiaki Makita <makita.toshiaki@lab.ntt.co.jp> wrote:
 
-drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c:1067:12: error: implicit declaration of function 'CLOCKSOURCE_MASK' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c:1067:2: error: implicit declaration of function 'CLOCKSOURCE_MASK'
-drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c:1067:2: error: implicit declaration of function 'CLOCKSOURCE_MASK' [-Werror=implicit-function-declaration]
+> This patch set tries to resolve packet drop by oversize error on receiving
+> double tagged packets and possibly other encapsulated packets.
+> 
+> Problem description:
+> Currently most NICs have 4 bytes room of receive buffer for vlan header and
+> can receive 1522 bytes frame at maximum.
+> This is, however, not sufficient once double tagged vlan is used.
+> As MEF [1] says, maximum frame size of double tagged packets need to be at
+> least 1526 to provide transparent ethernet VPN, and along the same line,
+> HW switches send 1526 bytes double tagged packets.
+> Thus, double tagged packets are dropped by default in most cases by
+> oversize error. NICs need to accept 1526 bytes packets in this situation.
+> 
+> Approaches:
+> To satisfy this requirement, this patch set introduces a way to indicate
+> needed extra buffer space to drivers.
+> This way can be re-used by other protocols than vlan, like mpls, vxlan, etc.
+> 
+> Other possible solutions:
+> 
+> - To adjust mtu automatically when stacked vlan device is created.
+>   This is suboptimal because lower device is not necessarily used for only
+>   vlan. Sometimes tagged and untagged traffic are both used at the same time.
+>   Also, there are devices that already reserve 8 bytes room, in which case mtu
+>   adjustment is unnecessary.
+> 
+> - To reserve more room by default.
+>   This is also suboptimal because there are devices that chages behavior
+>   when max acceptable frame size gets larger. For exapmle, e1000e enters
+>   jumbo frame mode which has some additional ristrictions than normal.
+>   Also, this is vlan-specific solution and not reusable by other encapsulation
+>   protocols.
+> 
+> This patch set introduces .ndo_enc_hdr_len() and I chose e1000e as the first
+> implementation. Patch 3 makes vlan driver utilize this API and automatically
+> expand max frame size of the real device. Patch 4 makes bridge use the API
+> in similar way as vlan.
+> 
+> Challenges:
+> - Restore/shrink extra header room after vlan devices are deleted.
+>   This will need some additional memory storage.
+> - Manual modification of extra buffer size (by iproute2).
+> 
+> Note:
+> - This problem was once discussed in Netdev 0.1 [2].
+>   This patch set is based on the conclusion of the discussion.
+> 
+> Changes:
+>  v2: Fixed chackpatch warnings
+> 
+> [1] https://wiki.mef.net/display/CESG/ENNI+Frame
+> [2] https://www.netdev01.org/docs/netdev01_bof_8021ad_makita_150212.pdf
+> 
+> Toshiaki Makita (4):
+>   net: Add ndo_enc_hdr_len to notify extra header room for encapsulated
+>     frames
+>   e1000e: Add ndo_enc_hdr_len
+>   vlan: Notify real device of encap header length
+>   bridge: Notify port device of encap header length
+> 
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 82 ++++++++++++++++++++++--------
+>  include/linux/netdevice.h                  |  9 ++++
+>  net/8021q/vlan.c                           | 16 +++++-
+>  net/8021q/vlan_dev.c                       | 48 +++++++++++++++--
+>  net/bridge/br_vlan.c                       | 18 +++++++
+>  net/core/dev.c                             | 36 +++++++++++++
+>  6 files changed, 180 insertions(+), 29 deletions(-)
+> 
 
-Error ids grouped by kconfigs:
+The problem is that you require changing network device drivers
+and device specific knowledge about what will work or not. Because
+of that the modificaton can't be automated.
 
-recent_errors
-??? alpha-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
-??? ia64-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
-??? parisc-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
-??? powerpc-defconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
-??? powerpc-ppc64_defconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
-??? sparc64-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
-??? sparc-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
-??? tile-allyesconfig
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
-??? x86_64-randconfig-x008-10252017
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
-??? x86_64-randconfig-x013-201543
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
-??? x86_64-randconfig-x018-201543
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
-??? x86_64-randconfig-x019-201543
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
-??? xtensa-allyesconfig
-    ??? drivers-net-ethernet-intel-ixgbe-ixgbe_ptp.c:error:implicit-declaration-of-function-CLOCKSOURCE_MASK
+Also, this effects even more layered devices like tunnels etc.
+The problem is quite large, and this patch only begins to address it.
 
-
-i386-tinyconfig vmlinux size:
-
-+-------+-------+-------+-----+-------------------------------------------------------------------------+
-| TOTAL | TEXT  | DATA  | BSS |                                                                         |
-+-------+-------+-------+-----+-------------------------------------------------------------------------+
-| +6940 | +2820 | +4096 |   0 | ac511a690b05 i40evf: allocate queue vectors dynamically                 |
-| -6940 | -2820 | -4096 |   0 | aeda772236e3 i40evf: add new fields to store user configuration of RSS  |
-| +6940 | +2820 | +4096 |   0 | eefec150ecaa i40evf: create a generic config rss function               |
-| -6940 | -2820 | -4096 |   0 | b66584086290 i40evf: rename vf adapter specific rss function            |
-| +6940 | +2820 | +4096 |   0 | 6511ccf5c657 i40e/i40evf: prefetch skb data on transmit                 |
-| -6940 | -2820 | -4096 |   0 | 6f7db05130ee fm10k: consistently refer to VLANs and VLAN IDs            |
-| +6940 | +2820 | +4096 |   0 | 4a6f568457d0 fm10k: remove namespace pollution of fm10k_iov_msg_data_pf |
-| -6940 | -2820 | -4096 |   0 | 472c09199999 fm10k: use ether_addr_equal instead of memcmp              |
-| +6940 | +2820 | +4096 |   0 | 1540da87979e fm10k: use ether_addr_copy to copy MAC address             |
-| +6940 | +2820 | +4096 |   0 | ALL COMMITS                                                             |
-+-------+-------+-------+-----+-------------------------------------------------------------------------+
-
-elapsed time: 73m
-
-configs tested: 113
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                   randconfig-a0-10252128
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-parisc                         b180_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x015-201543
-x86_64                 randconfig-x019-201543
-x86_64                 randconfig-x014-201543
-x86_64                 randconfig-x016-201543
-x86_64                 randconfig-x018-201543
-x86_64                 randconfig-x011-201543
-x86_64                 randconfig-x013-201543
-x86_64                 randconfig-x010-201543
-x86_64                 randconfig-x017-201543
-x86_64                 randconfig-x012-201543
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201543
-i386                     randconfig-s1-201543
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201543
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                          ks8695_defconfig
-avr32                    hammerhead_defconfig
-sparc64                          alldefconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201543
-i386                     randconfig-i1-201543
-x86_64                 randconfig-b0-10280932
-x86_64                           allmodconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                   randconfig-n0-10260618
-m68k                        mvme147_defconfig
-powerpc                  storcenter_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64               randconfig-x008-10252017
-x86_64               randconfig-x007-10252017
-x86_64               randconfig-x001-10252017
-x86_64               randconfig-x005-10252017
-x86_64               randconfig-x004-10252017
-x86_64               randconfig-x000-10252017
-x86_64               randconfig-x002-10252017
-x86_64               randconfig-x006-10252017
-x86_64               randconfig-x009-10252017
-x86_64               randconfig-x003-10252017
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                   randconfig-r0-10252017
-i386                   randconfig-x000-201543
-i386                   randconfig-x001-201543
-i386                   randconfig-x002-201543
-i386                   randconfig-x003-201543
-i386                   randconfig-x004-201543
-i386                   randconfig-x005-201543
-i386                   randconfig-x006-201543
-i386                   randconfig-x007-201543
-i386                   randconfig-x008-201543
-i386                   randconfig-x009-201543
-
-Thanks,
-Fengguang
+It seems to me that just having the vlan driver to a sane
+auto default is the best solution. It might cause a smaller MTU
+than ideal, but at least it will still work. Then the user can
+manually set a larger MTU if they know their hardware will work.
