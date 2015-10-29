@@ -1,69 +1,95 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Thu, 29 Oct 2015 09:17:06 -0700
-Subject: [Intel-wired-lan] [RFC Patch 00/12] IXGBE: Add live migration
-	support for SRIOV NIC
-In-Reply-To: <5631D9C2.2040206@intel.com>
-References: <1445445464-5056-1-git-send-email-tianyu.lan@intel.com>
- <562A7E33.4080800@gmail.com> <562DBBC9.4000104@intel.com>
- <562E40BB.6040404@gmail.com> <5631B8CA.9040805@intel.com>
- <5631C3A7.2070900@gmail.com> <5631D9C2.2040206@intel.com>
-Message-ID: <56324682.5060507@gmail.com>
+From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+Date: Thu, 29 Oct 2015 19:34:30 -0400
+Subject: [Intel-wired-lan] [PATCH net] i40e: Look up MAC address in Open
+	Firmware or IDPROM
+Message-ID: <20151029233430.GB11420@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 10/29/2015 01:33 AM, Lan Tianyu wrote:
-> On 2015?10?29? 14:58, Alexander Duyck wrote:
->> Your code was having to do a bunch of shuffling in order to get things
->> set up so that you could bring the interface back up.  I would argue
->> that it may actually be faster at least on the bring-up to just drop the
->> old rings and start over since it greatly reduced the complexity and the
->> amount of device related data that has to be moved.
-> If give up the old ring after migration and keep DMA running before
-> stopping VCPU, it seems we don't need to track Tx/Rx descriptor ring and
-> just make sure that all Rx buffers delivered to stack has been migrated.
->
-> 1) Dummy write Rx buffer before checking Rx descriptor to ensure packet
-> migrated first.
 
-Don't dummy write the Rx descriptor.  You should only really need to 
-dummy write the Rx buffer and you would do so after checking the 
-descriptor, not before.  Otherwise you risk corrupting the Rx buffer 
-because it is possible for you to read the Rx buffer, DMA occurs, and 
-then you write back the Rx buffer and now you have corrupted the memory.
 
-> 2) Make a copy of Rx descriptor and then use the copied data to check
-> buffer status. Not use the original descriptor because it won't be
-> migrated and migration may happen between two access of the Rx descriptor.
+This is the i40e equivalent of commit c762dff24c06 ("ixgbe: Look up MAC
+address in Open Firmware or IDPROM").
 
-Do not just blindly copy the Rx descriptor ring.  That is a recipe for 
-disaster.  The problem is DMA has to happen in a very specific order for 
-things to function correctly.  The Rx buffer has to be written and then 
-the Rx descriptor.  The problem is you will end up getting a read-ahead 
-on the Rx descriptor ring regardless of which order you dirty things in.
+As with that fix, attempt to look up the MAC address in Open Firmware
+on systems that uspport it, and use IDPROM on SPARC if no OF address
+is found.
 
-The descriptor is only 16 bytes, you can fit 256 of them in a single 
-page.  There is a good chance you probably wouldn't be able to migrate 
-if you were under heavy network stress, however you could still have 
-several buffers written in the time it takes for you to halt the VM and 
-migrate the remaining pages.  Those buffers wouldn't be marked as dirty 
-but odds are the page the descriptors are in would be.  As such you will 
-end up with the descriptors but not the buffers.
+Reviewed-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_common.c |   36 +++++++++++++++++++++++++
+ 1 files changed, 36 insertions(+), 0 deletions(-)
 
-The only way you could possibly migrate the descriptors rings cleanly 
-would be to have enough knowledge about the layout of things to force 
-the descriptor rings to be migrated first followed by all of the 
-currently mapped Rx buffers.  In addition you would need to have some 
-means of tracking all of the Rx buffers such as an emulated IOMMU as you 
-would need to migrate all of them, not just part.  By doing it this way 
-you would get the Rx descriptor rings in the earliest state possible and 
-would be essentially emulating the Rx buffer writes occurring before the 
-Rx descriptor writes.  You would likely have several Rx buffer writes 
-that would be discarded in the process as there would be no descriptor 
-for them but at least the state of the system would be consistent.
-
-- Alex
-
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 2d74c6e..53f804a 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -24,11 +24,23 @@
+  *
+  ******************************************************************************/
+ 
++#include <linux/etherdevice.h>
++#ifdef CONFIG_OF
++#include <linux/of_net.h>
++#endif
++#include <linux/pci.h>
++#include "i40e.h"
++
+ #include "i40e_type.h"
+ #include "i40e_adminq.h"
+ #include "i40e_prototype.h"
+ #include "i40e_virtchnl.h"
+ 
++#ifdef CONFIG_SPARC
++#include <asm/idprom.h>
++#include <asm/prom.h>
++#endif
++
+ /**
+  * i40e_set_mac_type - Sets MAC type
+  * @hw: pointer to the HW structure
+@@ -1008,6 +1020,27 @@ i40e_status i40e_aq_mac_address_write(struct i40e_hw *hw,
+ 	return status;
+ }
+ 
++static int i40e_get_platform_mac_addr(struct i40e_hw *hw, u8 *mac_addr)
++{
++#ifdef CONFIG_OF
++	struct i40e_pf *pf = hw->back;
++	struct device_node *dp = pci_device_to_OF_node(pf->pdev);
++	const unsigned char *addr;
++
++	addr = of_get_mac_address(dp);
++	if (addr) {
++		ether_addr_copy(mac_addr, addr);
++		return 0;
++	}
++#endif /* CONFIG_OF */
++
++#ifdef CONFIG_SPARC
++	ether_addr_copy(mac_addr, idprom->id_ethaddr);
++	return 0;
++#endif /* CONFIG_SPARC */
++	return 1;
++}
++
+ /**
+  * i40e_get_mac_addr - get MAC address
+  * @hw: pointer to the HW structure
+@@ -1021,6 +1054,9 @@ i40e_status i40e_get_mac_addr(struct i40e_hw *hw, u8 *mac_addr)
+ 	i40e_status status;
+ 	u16 flags = 0;
+ 
++	if (!i40e_get_platform_mac_addr(hw, mac_addr))
++		return I40E_SUCCESS;
++
+ 	status = i40e_aq_mac_address_read(hw, &flags, &addrs, NULL);
+ 
+ 	if (flags & I40E_AQC_LAN_ADDR_VALID)
+-- 
+1.7.1
 
