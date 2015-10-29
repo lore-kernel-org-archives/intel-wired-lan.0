@@ -1,158 +1,178 @@
 From: Bruce Allan <bruce.w.allan@intel.com>
-Date: Wed, 28 Oct 2015 17:19:51 -0700
-Subject: [Intel-wired-lan] [next-queue PATCH v2] fm10k: cleanup namespace
-	pollution
-Message-ID: <20151029001951.19165.58910.stgit@bwallan-cwp1.jf.intel.com>
+Date: Wed, 28 Oct 2015 17:19:56 -0700
+Subject: [Intel-wired-lan] [next-queue PATCH v2] fm10k: cleanup overly long
+	lines
+Message-ID: <20151029001956.19165.81543.stgit@bwallan-cwp1.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Make functions that should be static.  While we're at it, fix the function
-header comment for fm10k_tlv_attr_nest_stop(), and update the copyright
-header for fm10k_pf.h, fm10k_tlv.c and fm10k_tlv.h.
-
 Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_pf.c  |    4 ++--
- drivers/net/ethernet/intel/fm10k/fm10k_pf.h  |    4 +---
- drivers/net/ethernet/intel/fm10k/fm10k_tlv.c |   18 +++++++++---------
- drivers/net/ethernet/intel/fm10k/fm10k_tlv.h |    7 +------
- 4 files changed, 13 insertions(+), 20 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k.h         |    2 +-
+ drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c |   12 ++++++---
+ drivers/net/ethernet/intel/fm10k/fm10k_mbx.c     |    2 +-
+ drivers/net/ethernet/intel/fm10k/fm10k_netdev.c  |    4 ++-
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c     |   29 ++++++++++++----------
+ drivers/net/ethernet/intel/fm10k/fm10k_pf.c      |    7 +++--
+ 6 files changed, 33 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-index 888ab8d..0183254 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-@@ -1688,8 +1688,8 @@ const struct fm10k_tlv_attr fm10k_update_pvid_msg_attr[] = {
-  *
-  *  This handler configures the default VLAN for the PF
-  **/
--s32 fm10k_msg_update_pvid_pf(struct fm10k_hw *hw, u32 **results,
--			     struct fm10k_mbx_info *mbx)
-+static s32 fm10k_msg_update_pvid_pf(struct fm10k_hw *hw, u32 **results,
-+				    struct fm10k_mbx_info *mbx)
- {
- 	u16 glort, pvid;
- 	u32 pvid_update;
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.h b/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
-index 9d77daa..a8fc512 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
-@@ -1,5 +1,5 @@
- /* Intel Ethernet Switch Host Interface Driver
-- * Copyright(c) 2013 - 2014 Intel Corporation.
-+ * Copyright(c) 2013 - 2015 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-@@ -107,8 +107,6 @@ extern const struct fm10k_tlv_attr fm10k_lport_map_msg_attr[];
- #define FM10K_PF_MSG_LPORT_MAP_HANDLER(func) \
- 	FM10K_MSG_HANDLER(FM10K_PF_MSG_ID_LPORT_MAP, \
- 			  fm10k_lport_map_msg_attr, func)
--s32 fm10k_msg_update_pvid_pf(struct fm10k_hw *, u32 **,
--			     struct fm10k_mbx_info *);
- extern const struct fm10k_tlv_attr fm10k_update_pvid_msg_attr[];
- #define FM10K_PF_MSG_UPDATE_PVID_HANDLER(func) \
- 	FM10K_MSG_HANDLER(FM10K_PF_MSG_ID_UPDATE_PVID, \
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_tlv.c b/drivers/net/ethernet/intel/fm10k/fm10k_tlv.c
-index d6ff1e8d..80f5c4b 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_tlv.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_tlv.c
-@@ -1,5 +1,5 @@
- /* Intel Ethernet Switch Host Interface Driver
-- * Copyright(c) 2013 - 2014 Intel Corporation.
-+ * Copyright(c) 2013 - 2015 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-@@ -48,8 +48,8 @@ s32 fm10k_tlv_msg_init(u32 *msg, u16 msg_id)
-  *  the attribute buffer.  It will return success if provided with a valid
-  *  pointers.
-  **/
--s32 fm10k_tlv_attr_put_null_string(u32 *msg, u16 attr_id,
--				   const unsigned char *string)
-+static s32 fm10k_tlv_attr_put_null_string(u32 *msg, u16 attr_id,
-+					  const unsigned char *string)
- {
- 	u32 attr_data = 0, len = 0;
- 	u32 *attr;
-@@ -98,7 +98,7 @@ s32 fm10k_tlv_attr_put_null_string(u32 *msg, u16 attr_id,
-  *  it in the array pointed by by string.  It will return success if provided
-  *  with a valid pointers.
-  **/
--s32 fm10k_tlv_attr_get_null_string(u32 *attr, unsigned char *string)
-+static s32 fm10k_tlv_attr_get_null_string(u32 *attr, unsigned char *string)
- {
- 	u32 len;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
+index 6735f7d..b34bb00 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k.h
++++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
+@@ -166,7 +166,7 @@ struct fm10k_ring_container {
+ 	unsigned int total_packets;	/* total packets processed this int */
+ 	u16 work_limit;			/* total work allowed per interrupt */
+ 	u16 itr;			/* interrupt throttle rate value */
+-	u8 itr_scale;			/* ITR adjustment scaler based on PCI speed */
++	u8 itr_scale;			/* ITR adjustment based on PCI speed */
+ 	u8 count;			/* total number of rings in vector */
+ };
  
-@@ -353,7 +353,7 @@ s32 fm10k_tlv_attr_get_le_struct(u32 *attr, void *le_struct, u32 len)
-  *  function will return NULL on failure, and a pointer to the start
-  *  of the nested attributes on success.
-  **/
--u32 *fm10k_tlv_attr_nest_start(u32 *msg, u16 attr_id)
-+static u32 *fm10k_tlv_attr_nest_start(u32 *msg, u16 attr_id)
- {
- 	u32 *attr;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+index 3b857f4..2f6a05b 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+@@ -259,7 +259,8 @@ static int fm10k_get_sset_count(struct net_device *dev, int sset)
+ 			stats_len += FM10K_DEBUG_STATS_LEN;
  
-@@ -370,7 +370,7 @@ u32 *fm10k_tlv_attr_nest_start(u32 *msg, u16 attr_id)
+ 			if (iov_data)
+-				stats_len += FM10K_MBX_STATS_LEN * iov_data->num_vfs;
++				stats_len += FM10K_MBX_STATS_LEN *
++					iov_data->num_vfs;
+ 		}
+ 
+ 		return stats_len;
+@@ -298,14 +299,16 @@ static void fm10k_get_ethtool_stats(struct net_device *netdev,
+ 
+ 	if (interface->flags & FM10K_FLAG_DEBUG_STATS) {
+ 		for (i = 0; i < FM10K_DEBUG_STATS_LEN; i++) {
+-			p = (char *)interface + fm10k_gstrings_debug_stats[i].stat_offset;
++			p = (char *)interface +
++				fm10k_gstrings_debug_stats[i].stat_offset;
+ 			*(data++) = (fm10k_gstrings_debug_stats[i].sizeof_stat ==
+ 				     sizeof(u64)) ? *(u64 *)p : *(u32 *)p;
+ 		}
+ 	}
+ 
+ 	for (i = 0; i < FM10K_MBX_STATS_LEN; i++) {
+-		p = (char *)&interface->hw.mbx + fm10k_gstrings_mbx_stats[i].stat_offset;
++		p = (char *)&interface->hw.mbx +
++			fm10k_gstrings_mbx_stats[i].stat_offset;
+ 		*(data++) = (fm10k_gstrings_mbx_stats[i].sizeof_stat ==
+ 			sizeof(u64)) ? *(u64 *)p : *(u32 *)p;
+ 	}
+@@ -332,7 +335,8 @@ static void fm10k_get_ethtool_stats(struct net_device *netdev,
+ 			}
+ 
+ 			for (j = 0; j < FM10K_MBX_STATS_LEN; j++) {
+-				p = (char *)&vf_info->mbx + fm10k_gstrings_mbx_stats[j].stat_offset;
++				p = (char *)&vf_info->mbx +
++					fm10k_gstrings_mbx_stats[j].stat_offset;
+ 				*(data++) = (fm10k_gstrings_mbx_stats[j].sizeof_stat ==
+ 					     sizeof(u64)) ? *(u64 *)p : *(u32 *)p;
+ 			}
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
+index b31bbc2..c7fea47 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
+@@ -903,7 +903,7 @@ static void fm10k_mbx_create_disconnect_hdr(struct fm10k_mbx_info *mbx)
  }
  
  /**
-- *  fm10k_tlv_attr_nest_start - Start a set of nested attributes
-+ *  fm10k_tlv_attr_nest_stop - Stop a set of nested attributes
-  *  @msg: Pointer to message block
+- *  fm10k_mbx_create_fake_disconnect_hdr - Generate a false disconnect mailbox header
++ *  fm10k_mbx_create_fake_disconnect_hdr - Generate a false disconnect mbox hdr
+  *  @mbx: pointer to mailbox
   *
-  *  This function closes off an existing set of nested attributes.  The
-@@ -378,7 +378,7 @@ u32 *fm10k_tlv_attr_nest_start(u32 *msg, u16 attr_id)
-  *  the case of a nest within the nest this would be the outer nest pointer.
-  *  This function will return success provided all pointers are valid.
-  **/
--s32 fm10k_tlv_attr_nest_stop(u32 *msg)
-+static s32 fm10k_tlv_attr_nest_stop(u32 *msg)
- {
- 	u32 *attr;
- 	u32 len;
-@@ -483,8 +483,8 @@ static s32 fm10k_tlv_attr_validate(u32 *attr,
-  *  FM10K_NOT_IMPLEMENTED for any attribute that is outside of the array
-  *  and 0 on success.
-  **/
--s32 fm10k_tlv_attr_parse(u32 *attr, u32 **results,
--			 const struct fm10k_tlv_attr *tlv_attr)
-+static s32 fm10k_tlv_attr_parse(u32 *attr, u32 **results,
-+				const struct fm10k_tlv_attr *tlv_attr)
- {
- 	u32 i, attr_id, offset = 0;
- 	s32 err = 0;
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_tlv.h b/drivers/net/ethernet/intel/fm10k/fm10k_tlv.h
-index 7e045e8..d5ad359 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_tlv.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_tlv.h
-@@ -1,5 +1,5 @@
- /* Intel Ethernet Switch Host Interface Driver
-- * Copyright(c) 2013 - 2014 Intel Corporation.
-+ * Copyright(c) 2013 - 2015 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-@@ -106,8 +106,6 @@ struct fm10k_msg_data {
- #define FM10K_MSG_HANDLER(id, attr, func) { id, attr, func }
+  *  This function creates a fake disconnect header for loading into remote
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+index 56b402b..722ac52 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+@@ -787,7 +787,9 @@ static int fm10k_update_vid(struct net_device *netdev, u16 vid, bool set)
+ 			rx_ring->vid &= ~FM10K_VLAN_CLEAR;
+ 	}
  
- s32 fm10k_tlv_msg_init(u32 *, u16);
--s32 fm10k_tlv_attr_put_null_string(u32 *, u16, const unsigned char *);
--s32 fm10k_tlv_attr_get_null_string(u32 *, unsigned char *);
- s32 fm10k_tlv_attr_put_mac_vlan(u32 *, u16, const u8 *, u16);
- s32 fm10k_tlv_attr_get_mac_vlan(u32 *, u8 *, u16 *);
- s32 fm10k_tlv_attr_put_bool(u32 *, u16);
-@@ -147,9 +145,6 @@ s32 fm10k_tlv_attr_get_value(u32 *, void *, u32);
- 		fm10k_tlv_attr_get_value(attr, ptr, sizeof(s64))
- s32 fm10k_tlv_attr_put_le_struct(u32 *, u16, const void *, u32);
- s32 fm10k_tlv_attr_get_le_struct(u32 *, void *, u32);
--u32 *fm10k_tlv_attr_nest_start(u32 *, u16);
--s32 fm10k_tlv_attr_nest_stop(u32 *);
--s32 fm10k_tlv_attr_parse(u32 *, u32 **, const struct fm10k_tlv_attr *);
- s32 fm10k_tlv_msg_parse(struct fm10k_hw *, u32 *, struct fm10k_mbx_info *,
- 			const struct fm10k_msg_data *);
- s32 fm10k_tlv_msg_error(struct fm10k_hw *hw, u32 **results,
+-	/* Do not remove default VLAN ID related entries from VLAN and MAC tables */
++	/* Do not remove default VLAN ID related entries from VLAN and MAC
++	 * tables
++	 */
+ 	if (!set && vid == hw->mac.default_vid)
+ 		return 0;
+ 
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index fd433cf..4aecf5a 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -180,7 +180,8 @@ static void fm10k_reinit(struct fm10k_intfc *interface)
+ 
+ 	err = fm10k_init_queueing_scheme(interface);
+ 	if (err) {
+-		dev_err(&interface->pdev->dev, "init_queueing_scheme failed: %d\n", err);
++		dev_err(&interface->pdev->dev,
++			"init_queueing_scheme failed: %d\n", err);
+ 		goto reinit_err;
+ 	}
+ 
+@@ -1895,17 +1896,18 @@ static void fm10k_slot_warn(struct fm10k_intfc *interface)
+ 		return;
+ 	}
+ 
+-	if (max_gts < expected_gts) {
+-		dev_warn(&interface->pdev->dev,
+-			 "This device requires %dGT/s of bandwidth for optimal performance.\n",
+-			 expected_gts);
+-		dev_warn(&interface->pdev->dev,
+-			 "A %sslot with x%d lanes is suggested.\n",
+-			 (hw->bus_caps.speed == fm10k_bus_speed_2500 ? "2.5GT/s " :
+-			  hw->bus_caps.speed == fm10k_bus_speed_5000 ? "5.0GT/s " :
+-			  hw->bus_caps.speed == fm10k_bus_speed_8000 ? "8.0GT/s " : ""),
+-			 hw->bus_caps.width);
+-	}
++	if (max_gts >= expected_gts)
++		return;
++
++	dev_warn(&interface->pdev->dev,
++		 "This device requires %dGT/s of bandwidth for optimal performance.\n",
++		 expected_gts);
++	dev_warn(&interface->pdev->dev,
++		 "A %sslot with x%d lanes is suggested.\n",
++		 (hw->bus_caps.speed == fm10k_bus_speed_2500 ? "2.5GT/s " :
++		  hw->bus_caps.speed == fm10k_bus_speed_5000 ? "5.0GT/s " :
++		  hw->bus_caps.speed == fm10k_bus_speed_8000 ? "8.0GT/s " : ""),
++		 hw->bus_caps.width);
+ }
+ 
+ /**
+@@ -2337,7 +2339,8 @@ static void fm10k_io_resume(struct pci_dev *pdev)
+ 
+ 	err = fm10k_init_queueing_scheme(interface);
+ 	if (err) {
+-		dev_err(&interface->pdev->dev, "init_queueing_scheme failed: %d\n", err);
++		dev_err(&interface->pdev->dev,
++			"init_queueing_scheme failed: %d\n", err);
+ 		return;
+ 	}
+ 
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+index 0183254..3b4bbff 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+@@ -1441,9 +1441,10 @@ static void fm10k_update_hw_stats_pf(struct fm10k_hw *hw,
+ 		xec = fm10k_read_hw_stats_32b(hw, FM10K_STATS_XEC, &stats->xec);
+ 		vlan_drop = fm10k_read_hw_stats_32b(hw, FM10K_STATS_VLAN_DROP,
+ 						    &stats->vlan_drop);
+-		loopback_drop = fm10k_read_hw_stats_32b(hw,
+-							FM10K_STATS_LOOPBACK_DROP,
+-							&stats->loopback_drop);
++		loopback_drop =
++			fm10k_read_hw_stats_32b(hw,
++						FM10K_STATS_LOOPBACK_DROP,
++						&stats->loopback_drop);
+ 		nodesc_drop = fm10k_read_hw_stats_32b(hw,
+ 						      FM10K_STATS_NODESC_DROP,
+ 						      &stats->nodesc_drop);
 
