@@ -1,188 +1,52 @@
-From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Fri, 30 Oct 2015 15:29:34 -0700
-Subject: [Intel-wired-lan] [PATCH V2] ixgbe: Save VF info and take references
-Message-ID: <20151030222934.93903.57078.stgit@mdrustad-wks.jf.intel.com>
+From: Lan Tianyu <tianyu.lan@intel.com>
+Date: Thu, 29 Oct 2015 14:12:26 +0800
+Subject: [Intel-wired-lan] [RFC Patch 00/12] IXGBE: Add live migration
+ support for SRIOV NIC
+In-Reply-To: <562E40BB.6040404@gmail.com>
+References: <1445445464-5056-1-git-send-email-tianyu.lan@intel.com>
+ <562A7E33.4080800@gmail.com> <562DBBC9.4000104@intel.com>
+ <562E40BB.6040404@gmail.com>
+Message-ID: <5631B8CA.9040805@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Save VF device pointers and take references to speed accesses used
-to monitor the device behavior to avoid slot resets. The saved
-information avoids lock contention during the search used to access
-each of the VFs.
+On 2015?10?26? 23:03, Alexander Duyck wrote:
+> No.  I think you are missing the fact that there are 256 descriptors per
+> page.  As such if you dirty just 1 you will be pulling in 255 more, of
+> which you may or may not have pulled in the receive buffer for.
+> 
+> So for example if you have the descriptor ring size set to 256 then that
+> means you are going to get whatever the descriptor ring has since you
+> will be marking the entire ring dirty with every packet processed,
+> however you cannot guarantee that you are going to get all of the
+> receive buffers unless you go through and flush the entire ring prior to
+> migrating.
 
-Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
----
-Changes in V2:
-- Added check for a status register of 0xffff as suggested by Don Dutile
-  at RedHat.
----
- drivers/net/ethernet/intel/ixgbe/ixgbe.h       |    1 
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  |   31 +++++----------
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |   50 +++++++++++++++++++++++-
- 3 files changed, 59 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index 1d2174526a4c..9e9aa9a3fde8 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -139,6 +139,7 @@ enum ixgbe_tx_flags {
- #define IXGBE_X540_VF_DEVICE_ID         0x1515
- 
- struct vf_data_storage {
-+	struct pci_dev *vfdev;
- 	unsigned char vf_mac_addresses[ETH_ALEN];
- 	u16 vf_mc_hashes[IXGBE_MAX_VF_MC_ENTRIES];
- 	u16 num_vf_mc_hashes;
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index df51d8544ec4..8bf06e312aa2 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -6613,10 +6613,8 @@ static void ixgbe_check_for_bad_vf(struct ixgbe_adapter *adapter)
- {
- 	struct ixgbe_hw *hw = &adapter->hw;
- 	struct pci_dev *pdev = adapter->pdev;
--	struct pci_dev *vfdev;
-+	unsigned int vf;
- 	u32 gpc;
--	int pos;
--	unsigned short vf_id;
- 
- 	if (!(netif_carrier_ok(adapter->netdev)))
- 		return;
-@@ -6633,26 +6631,17 @@ static void ixgbe_check_for_bad_vf(struct ixgbe_adapter *adapter)
- 	if (!pdev)
- 		return;
- 
--	pos = pci_find_ext_capability(pdev, PCI_EXT_CAP_ID_SRIOV);
--	if (!pos)
--		return;
--
--	/* get the device ID for the VF */
--	pci_read_config_word(pdev, pos + PCI_SRIOV_VF_DID, &vf_id);
--
- 	/* check status reg for all VFs owned by this PF */
--	vfdev = pci_get_device(pdev->vendor, vf_id, NULL);
--	while (vfdev) {
--		if (vfdev->is_virtfn && (vfdev->physfn == pdev)) {
--			u16 status_reg;
--
--			pci_read_config_word(vfdev, PCI_STATUS, &status_reg);
--			if (status_reg & PCI_STATUS_REC_MASTER_ABORT)
--				/* issue VFLR */
--				ixgbe_issue_vf_flr(adapter, vfdev);
--		}
-+	for (vf = 0; vf < adapter->num_vfs; ++vf) {
-+		struct pci_dev *vfdev = adapter->vfinfo[vf].vfdev;
-+		u16 status_reg;
- 
--		vfdev = pci_get_device(pdev->vendor, vf_id, vfdev);
-+		if (!vfdev)
-+			continue;
-+		pci_read_config_word(vfdev, PCI_STATUS, &status_reg);
-+		if (status_reg != IXGBE_FAILED_READ_CFG_WORD &&
-+		    status_reg & PCI_STATUS_REC_MASTER_ABORT)
-+			ixgbe_issue_vf_flr(adapter, vfdev);
- 	}
- }
- 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-index fcd8b27a0ccb..31de6cf7adb0 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-@@ -1,7 +1,7 @@
- /*******************************************************************************
- 
-   Intel 10 Gigabit PCI Express Linux driver
--  Copyright(c) 1999 - 2014 Intel Corporation.
-+  Copyright(c) 1999 - 2015 Intel Corporation.
- 
-   This program is free software; you can redistribute it and/or modify it
-   under the terms and conditions of the GNU General Public License,
-@@ -130,6 +130,38 @@ static int __ixgbe_enable_sriov(struct ixgbe_adapter *adapter)
- 	return -ENOMEM;
- }
- 
-+/**
-+ * ixgbe_get_vfs - Find and take references to all vf devices
-+ * @adapter: Pointer to adapter struct
-+ */
-+static void ixgbe_get_vfs(struct ixgbe_adapter *adapter)
-+{
-+	struct pci_dev *pdev = adapter->pdev;
-+	u16 vendor = pdev->vendor;
-+	struct pci_dev *vfdev;
-+	int vf = 0;
-+	u16 vf_id;
-+	int pos;
-+
-+	pos = pci_find_ext_capability(pdev, PCI_EXT_CAP_ID_SRIOV);
-+	if (!pos)
-+		return;
-+	pci_read_config_word(pdev, pos + PCI_SRIOV_VF_DID, &vf_id);
-+
-+	vfdev = pci_get_device(vendor, vf_id, NULL);
-+	for (; vfdev; vfdev = pci_get_device(vendor, vf_id, vfdev)) {
-+		if (!vfdev->is_virtfn)
-+			continue;
-+		if (vfdev->physfn != pdev)
-+			continue;
-+		if (vf >= adapter->num_vfs)
-+			continue;
-+		pci_dev_get(vfdev);
-+		adapter->vfinfo[vf].vfdev = vfdev;
-+		++vf;
-+	}
-+}
-+
- /* Note this function is called when the user wants to enable SR-IOV
-  * VFs using the now deprecated module parameter
-  */
-@@ -170,8 +202,10 @@ void ixgbe_enable_sriov(struct ixgbe_adapter *adapter)
- 		}
- 	}
- 
--	if (!__ixgbe_enable_sriov(adapter))
-+	if (!__ixgbe_enable_sriov(adapter)) {
-+		ixgbe_get_vfs(adapter);
- 		return;
-+	}
- 
- 	/* If we have gotten to this point then there is no memory available
- 	 * to manage the VF devices - print message and bail.
-@@ -184,6 +218,7 @@ void ixgbe_enable_sriov(struct ixgbe_adapter *adapter)
- #endif /* #ifdef CONFIG_PCI_IOV */
- int ixgbe_disable_sriov(struct ixgbe_adapter *adapter)
- {
-+	unsigned int num_vfs = adapter->num_vfs, vf;
- 	struct ixgbe_hw *hw = &adapter->hw;
- 	u32 gpie;
- 	u32 vmdctl;
-@@ -192,6 +227,16 @@ int ixgbe_disable_sriov(struct ixgbe_adapter *adapter)
- 	/* set num VFs to 0 to prevent access to vfinfo */
- 	adapter->num_vfs = 0;
- 
-+	/* put the reference to all of the vf devices */
-+	for (vf = 0; vf < num_vfs; ++vf) {
-+		struct pci_dev *vfdev = adapter->vfinfo[vf].vfdev;
-+
-+		if (!vfdev)
-+			continue;
-+		adapter->vfinfo[vf].vfdev = NULL;
-+		pci_dev_put(vfdev);
-+	}
-+
- 	/* free VF control structures */
- 	kfree(adapter->vfinfo);
- 	adapter->vfinfo = NULL;
-@@ -289,6 +334,7 @@ static int ixgbe_pci_sriov_enable(struct pci_dev *dev, int num_vfs)
- 		e_dev_warn("Failed to enable PCI sriov: %d\n", err);
- 		return err;
- 	}
-+	ixgbe_get_vfs(adapter);
- 	ixgbe_sriov_reinit(adapter);
- 
- 	return num_vfs;
+Yes, that will be a problem. How about adding tag for each Rx buffer and
+check the tag when deliver the Rx buffer to stack? If tag has been
+overwritten, this means the packet data has been migrated.
 
+
+> 
+> This is why I have said you will need to do something to force the rings
+> to be flushed such as initiating a PM suspend prior to migrating.  You
+> need to do something to stop the DMA and flush the remaining Rx buffers
+> if you want to have any hope of being able to migrate the Rx in a
+> consistent state.  Beyond that the only other thing you have to worry
+> about are the Rx buffers that have already been handed off to the
+> stack.  However those should be handled if you do a suspend and somehow
+> flag pages as dirty when they are unmapped from the DMA.
+> 
+> - Alex
+
+This will be simple and maybe our first version to enable migration. But
+we still hope to find a way not to disable DMA before stopping VCPU to
+decrease service down time.
+
+-- 
+Best regards
+Tianyu Lan
