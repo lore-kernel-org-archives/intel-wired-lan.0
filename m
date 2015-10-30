@@ -1,85 +1,37 @@
-From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-Date: Fri, 30 Oct 2015 11:03:44 -0400
-Subject: [Intel-wired-lan] [PATCH v3 net] i40e: Look up MAC address in Open
-	Firmware or IDPROM
-Message-ID: <20151030150344.GG9312@oracle.com>
+From: William Dauchy <william@gandi.net>
+Date: Fri, 30 Oct 2015 18:16:30 +0100
+Subject: [Intel-wired-lan] [PATCH] ixgbevf: Fix handling of napi budget when
+	multiple queues are enabled per vector
+Message-ID: <1446225390-19140-1-git-send-email-william@gandi.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+This is the same patch as for ixgbe but applied differently according to
+busy polling.
+see commit "ixgbe: Fix handling of napi budget when multiple queues are
+ enabled per vector"
 
-This is the i40e equivalent of commit c762dff24c06 ("ixgbe: Look up MAC
-address in Open Firmware or IDPROM").
-
-As with that fix, attempt to look up the MAC address in Open Firmware
-on systems that support it, and use IDPROM on SPARC if no OF address
-is found.
-
-Reviewed-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+Signed-off-by: William Dauchy <william@gandi.net>
 ---
-v2: andy shevchenko comments
-v3: more andy shevchenko comments
- drivers/net/ethernet/intel/i40e/i40e_common.c |   30 +++++++++++++++++++++++++
- 1 files changed, 30 insertions(+), 0 deletions(-)
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 2d74c6e..3edfe19 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -24,6 +24,14 @@
-  *
-  ******************************************************************************/
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index 149a0b4..ff6e21d 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -1014,6 +1014,8 @@ static int ixgbevf_poll(struct napi_struct *napi, int budget)
+ 	ixgbevf_for_each_ring(ring, q_vector->tx)
+ 		clean_complete &= ixgbevf_clean_tx_irq(q_vector, ring);
  
-+#include <linux/etherdevice.h>
-+#include <linux/of_net.h>
-+#include <linux/pci.h>
-+#ifdef CONFIG_SPARC
-+#include <asm/idprom.h>
-+#include <asm/prom.h>
-+#endif
-+#include "i40e.h"
- #include "i40e_type.h"
- #include "i40e_adminq.h"
- #include "i40e_prototype.h"
-@@ -1008,6 +1016,25 @@ i40e_status i40e_aq_mac_address_write(struct i40e_hw *hw,
- 	return status;
- }
- 
-+static int i40e_get_platform_mac_addr(struct i40e_hw *hw, u8 *mac_addr)
-+{
-+	struct i40e_pf *pf = hw->back;
-+	struct device_node *dp = pci_device_to_OF_node(pf->pdev);
-+	const unsigned char *addr;
-+
-+	addr = of_get_mac_address(dp);
-+	if (addr) {
-+		ether_addr_copy(mac_addr, addr);
-+		return 0;
-+	}
-+
-+#ifdef CONFIG_SPARC
-+	ether_addr_copy(mac_addr, idprom->id_ethaddr);
-+	return 0;
-+#endif /* CONFIG_SPARC */
-+	return 1;
-+}
-+
- /**
-  * i40e_get_mac_addr - get MAC address
-  * @hw: pointer to the HW structure
-@@ -1021,6 +1048,9 @@ i40e_status i40e_get_mac_addr(struct i40e_hw *hw, u8 *mac_addr)
- 	i40e_status status;
- 	u16 flags = 0;
- 
-+	if (!i40e_get_platform_mac_addr(hw, mac_addr))
-+		return I40E_SUCCESS;
-+
- 	status = i40e_aq_mac_address_read(hw, &flags, &addrs, NULL);
- 
- 	if (flags & I40E_AQC_LAN_ADDR_VALID)
++	if (budget <= 0)
++		return budget;
+ #ifdef CONFIG_NET_RX_BUSY_POLL
+ 	if (!ixgbevf_qv_lock_napi(q_vector))
+ 		return budget;
 -- 
-1.7.1
+2.6.1
 
