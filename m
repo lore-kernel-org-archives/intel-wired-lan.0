@@ -1,37 +1,35 @@
-From: William Dauchy <william@gandi.net>
-Date: Fri, 30 Oct 2015 18:16:30 +0100
-Subject: [Intel-wired-lan] [PATCH] ixgbevf: Fix handling of napi budget when
-	multiple queues are enabled per vector
-Message-ID: <1446225390-19140-1-git-send-email-william@gandi.net>
+From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+Date: Fri, 30 Oct 2015 14:12:54 -0400
+Subject: [Intel-wired-lan] [PATCH v3 net] i40e: Look up MAC address in
+ Open Firmware or IDPROM
+In-Reply-To: <CAHp75Vc-swMap+Umong1WVfL-fQNNZ9QEXvrHCJXCte1g_h_KA@mail.gmail.com>
+References: <20151030150344.GG9312@oracle.com>
+ <CAHp75Vc-swMap+Umong1WVfL-fQNNZ9QEXvrHCJXCte1g_h_KA@mail.gmail.com>
+Message-ID: <20151030181254.GC32759@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This is the same patch as for ixgbe but applied differently according to
-busy polling.
-see commit "ixgbe: Fix handling of napi budget when multiple queues are
- enabled per vector"
+On (10/30/15 20:06), Andy Shevchenko wrote:
+> 
+> > +#include "i40e.h"
+> 
+> Why do you need this one exactly?
 
-Signed-off-by: William Dauchy <william@gandi.net>
----
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 2 ++
- 1 file changed, 2 insertions(+)
+I needed it to find pf->pdev below.
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 149a0b4..ff6e21d 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -1014,6 +1014,8 @@ static int ixgbevf_poll(struct napi_struct *napi, int budget)
- 	ixgbevf_for_each_ring(ring, q_vector->tx)
- 		clean_complete &= ixgbevf_clean_tx_irq(q_vector, ring);
- 
-+	if (budget <= 0)
-+		return budget;
- #ifdef CONFIG_NET_RX_BUSY_POLL
- 	if (!ixgbevf_qv_lock_napi(q_vector))
- 		return budget;
--- 
-2.6.1
+> > +       struct device_node *dp = pci_device_to_OF_node(pf->pdev);
 
+Without it, you will get:
+              :
+     CC [M]  drivers/net/ethernet/intel/i40e/i40e_common.o
+   drivers/net/ethernet/intel/i40e/i40e_common.c: In function ?i40e_get_platform_mac_addr?:
+   drivers/net/ethernet/intel/i40e/i40e_common.c:1021: error: dereferencing pointer to incomplete type
+
+
+Unless you feel passionately about the \n nits, I'm going to pass on those. 
+Thanks for reviewing.
+
+--Sowmini
