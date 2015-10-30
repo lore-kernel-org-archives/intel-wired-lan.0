@@ -1,115 +1,89 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 30 Oct 2015 12:19:00 -0700
-Subject: [Intel-wired-lan] [PATCH v2 2/4] e1000e: Do not read icr in
-	Other interrupt
-In-Reply-To: <1446226264-29660-3-git-send-email-bpoirier@suse.com>
-References: <1446226264-29660-1-git-send-email-bpoirier@suse.com>
- <1446226264-29660-3-git-send-email-bpoirier@suse.com>
-Message-ID: <5633C2A4.90002@gmail.com>
+From: Nelson, Shannon <shannon.nelson@intel.com>
+Date: Fri, 30 Oct 2015 22:03:07 +0000
+Subject: [Intel-wired-lan] [PATCH v3 net] i40e: Look up MAC address in
+ Open Firmware or IDPROM
+In-Reply-To: <20151030192437.GE32759@oracle.com>
+References: <20151030150344.GG9312@oracle.com>
+ <FC41C24E35F18A40888AACA1A36F3E418AFACA14@fmsmsx115.amr.corp.intel.com>
+ <20151030183645.GD32759@oracle.com>
+ <FC41C24E35F18A40888AACA1A36F3E418AFACA8F@fmsmsx115.amr.corp.intel.com>
+ <20151030192437.GE32759@oracle.com>
+Message-ID: <FC41C24E35F18A40888AACA1A36F3E418AFACC2E@fmsmsx115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 10/30/2015 10:31 AM, Benjamin Poirier wrote:
-> Using eiac instead of reading icr allows us to avoid interference with
-> rx and tx interrupts in the Other interrupt handler.
->
-> According to the 82574 datasheet section 10.2.4.1, interrupt causes that
-> trigger the Other interrupt are
-> 1) Link Status Change.
-> 2) Receiver Overrun.
-> 3) MDIO Access Complete.
-> 4) Small Receive Packet Detected.
-> 5) Receive ACK Frame Detected.
-> 6) Manageability Event Detected.
->
-> Causes 3, 4, 5 are related to features which are not enabled by the
-> driver. Always assume that cause 1 is what triggered the Other interrupt
-> and set get_link_status. Cause 2 and 6 should be rare enough that the
-> extra cost of needlessly re-reading the link status is negligible.
->
-> Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
 
-You might want to instead use a write of LSC to the ICR instead of just 
-using auto-clear and not enabling LSC.  My concern is that you might no 
-longer be getting link status change events at all.  An easy test is to 
-just unplug/plug the cable a few times, or run "ethtool -r" on the link 
-partner if connected back to back.  You should see messages appear in 
-the dmesg log indicating that the link state changed.
 
-In addition you should probably clear the IAME bit in the CTRL_EXT 
-register so that you don't risk masking the interrupts on the ICR read 
-or write.
+> -----Original Message-----
+> From: Sowmini Varadhan [mailto:sowmini.varadhan at oracle.com]
+> Sent: Friday, October 30, 2015 12:25 PM
+> 
+> On (10/30/15 18:57), Nelson, Shannon wrote:
+> > > >
+> > > > Going along with this being the equivalent of the ixgbe patch, I'd
+> > > > prefer the new code to be in i40e_main.c, rather than in i40e_common.c.
+> > > > In the design of our drivers, the common file is essentially a device
+> > > > specific layer, and the OS and platform related stuff should stay in
+> > > > i40e_main.c.  That would also take care of one of the include file nits
+> > > > that Andy mentioned.
+>        :
+> > I'm not sure about any deeper wisdom, but the HW/FW model that this
+> > device uses is rather different from our previous devices, so our SW
+> > abstractions are a little different from ixgbe and igb.
+> 
+> Ok, in that case I can make i40e_main.c to do something like
+> 
+> static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+> {
+>    :
+>    if (i40e_get_platform_mac_addr(..) != I40E_SUCCESS)
+> 	i40e_get_mac_addr(..);
+>    :
+> }
+> 
+> and i agree that doing this from i40e_main will simplify a lot of the
+> other stuff around getting the pdev etc.
 
-> ---
->   drivers/net/ethernet/intel/e1000e/netdev.c | 23 ++++++++---------------
->   1 file changed, 8 insertions(+), 15 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index a228167..602fcc9 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -1905,24 +1905,16 @@ static irqreturn_t e1000_msix_other(int __always_unused irq, void *data)
->   	struct net_device *netdev = data;
->   	struct e1000_adapter *adapter = netdev_priv(netdev);
->   	struct e1000_hw *hw = &adapter->hw;
-> -	u32 icr = er32(ICR);
->
-> -	if (icr & adapter->eiac_mask)
-> -		ew32(ICS, (icr & adapter->eiac_mask));
-> +	/* Assume that the Other interrupt was triggered by LSC */
-> +	hw->mac.get_link_status = true;
->
-> -	if (icr & E1000_ICR_OTHER) {
-> -		if (!(icr & E1000_ICR_LSC))
-> -			goto no_link_interrupt;
-> -		hw->mac.get_link_status = true;
-> -		/* guard against interrupt when we're going down */
-> -		if (!test_bit(__E1000_DOWN, &adapter->state))
-> -			mod_timer(&adapter->watchdog_timer, jiffies + 1);
+The more common idiom in our driver would be
 
-You could probably just pop a write to the ICR register here to clear 
-the LSC bit since you are auto clearing the OTHER bit.
+	err = i40e_get_platform_mac_addr(..);
+	if (err) {
+		...
+	}
 
-> +	/* guard against interrupt when we're going down */
-> +	if (!test_bit(__E1000_DOWN, &adapter->state)) {
-> +		mod_timer(&adapter->watchdog_timer, jiffies + 1);
-> +		ew32(IMS, E1000_IMS_OTHER);
->   	}
->
-> -no_link_interrupt:
-> -	if (!test_bit(__E1000_DOWN, &adapter->state))
-> -		ew32(IMS, E1000_IMS_LSC | E1000_IMS_OTHER);
-> -
->   	return IRQ_HANDLED;
->   }
->
-> @@ -2019,6 +2011,7 @@ static void e1000_configure_msix(struct e1000_adapter *adapter)
->   		       hw->hw_addr + E1000_EITR_82574(vector));
->   	else
->   		writel(1, hw->hw_addr + E1000_EITR_82574(vector));
-> +	adapter->eiac_mask |= E1000_IMS_OTHER;
->
->   	/* Cause Tx interrupts on every write back */
->   	ivar |= (1 << 31);
-> @@ -2247,7 +2240,7 @@ static void e1000_irq_enable(struct e1000_adapter *adapter)
->
->   	if (adapter->msix_entries) {
->   		ew32(EIAC_82574, adapter->eiac_mask & E1000_EIAC_MASK_82574);
-> -		ew32(IMS, adapter->eiac_mask | E1000_IMS_OTHER | E1000_IMS_LSC);
-> +		ew32(IMS, adapter->eiac_mask);
+> 
+> [Discussion about ndo_set_mac_address..]
+> 
+> > In the cases in which I'm aware, the platform manufacturer normally will
+> > burn a different mac-address into the device's eeprom at manufacturing
+> > time if they want something other than what came from Intel.  I suppose a
+> > Device Tree oriented platform could have a different address in the DT,
+> > but somehow that needs to get communicated to the device driver so that
+> > it can tell the HW.
+> >
+> > My question to you remains: does this ndo_set_mac_address happen from
+> > the stack above the driver or not?
+> 
+> I'm probably even less clued in to the DT arch than you in this case,
+> so input from the intel experts would be useful here.
 
-You might want to consider adding a write to IAM here that would limit 
-the auto masking to same bits you are auto clearing.
+This worries me - if you're not clued into the DT architecture, why are you making these changes?  Have you tested this beyond a compile?  Do you have a DT model to try this against?
 
-I would probably leave E1000_IMS_LSC set in the IMS.  No need to 
-auto-mask it since the mask for other will keep it from triggering more 
-than once.
+> 
+> But both in this case, and for the ixgbe template on which I tried
+> to model this, the OF/idprom probing happens from the ->probe when the
+> driver comes up, and ndo_set_mac_address is not involved.
+> 
+> I dont know if it is easier (or even feasible to do this from ->probe)
+> to just call the i40e_set_mac to make sure all the state-bits in
+> the driver are correctly set.
+> 
+> --Sowmini
 
->   	} else if ((hw->mac.type == e1000_pch_lpt) ||
->   		   (hw->mac.type == e1000_pch_spt)) {
->   		ew32(IMS, IMS_ENABLE_MASK | E1000_IMS_ECCER);
->
+In looking at a couple other drivers, I see the difference being that they typically are writing the primary mac filter on probe (and any other reset), whereas the i40e "knows" that the default mac address is already set up as the filter and doesn't bother with a redundant write.  If you want to add this Open Filter code, you'll need to arrange for this write to happen.  You can't call i40e_set_mac() to do it, but you can see the i40e_aq_mac_address_write() code there that is involved in updating the mac address as an example.  You probably will want to look at section 4.2.1.5.3 of the XL710 data sheet in order to know how to use i40e_aq_mac_address_write() for your situation.
+
+sln
 
