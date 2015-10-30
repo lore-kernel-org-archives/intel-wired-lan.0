@@ -1,53 +1,181 @@
-From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-Date: Fri, 30 Oct 2015 14:36:45 -0400
-Subject: [Intel-wired-lan] [PATCH v3 net] i40e: Look up MAC address in
- Open Firmware or IDPROM
-In-Reply-To: <FC41C24E35F18A40888AACA1A36F3E418AFACA14@fmsmsx115.amr.corp.intel.com>
-References: <20151030150344.GG9312@oracle.com>
- <FC41C24E35F18A40888AACA1A36F3E418AFACA14@fmsmsx115.amr.corp.intel.com>
-Message-ID: <20151030183645.GD32759@oracle.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Fri, 30 Oct 2015 11:04:24 -0700
+Subject: [Intel-wired-lan] [RFC Patch 00/12] IXGBE: Add live migration
+	support for SRIOV NIC
+In-Reply-To: <5632D8C8.3010101@intel.com>
+References: <1445445464-5056-1-git-send-email-tianyu.lan@intel.com>
+ <562A7E33.4080800@gmail.com> <562DBBC9.4000104@intel.com>
+ <562E40BB.6040404@gmail.com> <5631B8CA.9040805@intel.com>
+ <5631C3A7.2070900@gmail.com> <5631D9C2.2040206@intel.com>
+ <56324682.5060507@gmail.com> <5632D8C8.3010101@intel.com>
+Message-ID: <5633B128.8010708@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On (10/30/15 18:28), Nelson, Shannon wrote:
-> 
-> Going along with this being the equivalent of the ixgbe patch, I'd
-> prefer the new code to be in i40e_main.c, rather than in i40e_common.c.
-> In the design of our drivers, the common file is essentially a device
-> specific layer, and the OS and platform related stuff should stay in
-> i40e_main.c.  That would also take care of one of the include file nits
-> that Andy mentioned.
+On 10/29/2015 07:41 PM, Lan Tianyu wrote:
+> On 2015?10?30? 00:17, Alexander Duyck wrote:
+>> On 10/29/2015 01:33 AM, Lan Tianyu wrote:
+>>> On 2015?10?29? 14:58, Alexander Duyck wrote:
+>>>> Your code was having to do a bunch of shuffling in order to get things
+>>>> set up so that you could bring the interface back up.  I would argue
+>>>> that it may actually be faster at least on the bring-up to just drop the
+>>>> old rings and start over since it greatly reduced the complexity and the
+>>>> amount of device related data that has to be moved.
+>>> If give up the old ring after migration and keep DMA running before
+>>> stopping VCPU, it seems we don't need to track Tx/Rx descriptor ring and
+>>> just make sure that all Rx buffers delivered to stack has been migrated.
+>>>
+>>> 1) Dummy write Rx buffer before checking Rx descriptor to ensure packet
+>>> migrated first.
+>> Don't dummy write the Rx descriptor.  You should only really need to
+>> dummy write the Rx buffer and you would do so after checking the
+>> descriptor, not before.  Otherwise you risk corrupting the Rx buffer
+>> because it is possible for you to read the Rx buffer, DMA occurs, and
+>> then you write back the Rx buffer and now you have corrupted the memory.
+>>
+>>> 2) Make a copy of Rx descriptor and then use the copied data to check
+>>> buffer status. Not use the original descriptor because it won't be
+>>> migrated and migration may happen between two access of the Rx
+>>> descriptor.
+>> Do not just blindly copy the Rx descriptor ring.  That is a recipe for
+>> disaster.  The problem is DMA has to happen in a very specific order for
+>> things to function correctly.  The Rx buffer has to be written and then
+>> the Rx descriptor.  The problem is you will end up getting a read-ahead
+>> on the Rx descriptor ring regardless of which order you dirty things in.
+>
+> Sorry, I didn't say clearly.
+> I meant to copy one Rx descriptor when receive rx irq and handle Rx ring.
 
-ok, and that was my initial instinct as well, except that I noticed
-that the existing i40e code tries interesting variations from the 
-typical intel driver model by calling i40e_get_mac_addr() which lives in
-(for reasons not obvious to me) i40e_common.c
+No, I understood what you are saying.  My explanation was that it will 
+not work.
 
-So I assumed there must be some other deeper wisdom at work here.
+> Current code in the ixgbevf_clean_rx_irq() checks status of the Rx
+> descriptor whether its Rx buffer has been populated data and then read
+> the packet length from Rx descriptor to handle the Rx buffer.
 
-> At the risk of flying my Device Tree ignorance for all to see, I have
-> a couple questions on how this is used.
-> 
-> Since the mac address is specific to the individual device, how does it
-> get into the device tree?  I thought the device tree was compiled ahead
-> of time for the platform it is used on.  Is this a generic DT pattern
-> just in case some platform actually has the mac-address?  Or does the
-> device mac-address get saved into the DT on the first time through this
-> path so it can be found next time?
-> 
-> If the Device Tree has a different mac address than the HW, when
-> does the kernel tell the HW to use a different mac address?  Does the
-> DT management eventually call the ndo_set_mac_address call so the HW
-> knows to use a different mac address?
+That part you have correct.  However there are very explicit rules about 
+the ordering of the reads.
 
-yes, and here I was hoping for some feedback from the intel folks as
-well. Commit c762dff24c06 sets hw->mac.perm_addr. I dont know
-if there is some similar i40e state that needs to be set.
+> My idea is to do the following three steps when receive Rx buffer in the
+> ixgbevf_clean_rx_irq().
+>
+> (1) dummy write the Rx buffer first,
 
-Please share insights.
+You cannot dummy write the Rx buffer without first being given ownership 
+of it.  In the driver this is handled in two phases. First we have to 
+read the DD bit to see if it is set.  If it is we can take ownership of 
+the buffer.  Second we have to either do a dma_sync_range_for_cpu or 
+dma_unmap_page call so that we can guarantee the data has been moved to 
+the buffer by the DMA API and that it knows it should no longer be 
+accessing it.
 
---Sowmini
+> (2) make a copy of its Rx descriptor
 
+This is not advisable.  Unless you can guarantee you are going to only 
+read the descriptor after the DD bit is set you cannot guarantee that 
+you won't race with device DMA.  The problem is you could have the 
+migration occur right in the middle of (2).  If that occurs then you 
+will have valid status bits, but the rest of the descriptor would be 
+invalid data.
+
+> (3) Check the buffer status and get length from the copy.
+
+I believe this is the assumption that is leading you down the wrong 
+path.  You would have to read the status before you could do the copy.  
+You cannot do it after.
+
+> Migration may happen every time.
+> Happen between (1) and (2). If the Rx buffer has been populated data, VF
+> driver will not know that on the new machine because the Rx descriptor
+> isn't migrated. But it's still safe.
+
+The part I think you are not getting is that DMA can occur between (1) 
+and (2).  So if for example you were doing your dummy write while DMA 
+was occurring you pull in your value, DMA occurs, you write your value 
+and now you have corrupted an Rx frame by writing stale data back into it.
+
+> Happen between (2) and (3). The copy will be migrated to new machine
+> and Rx buffer is migrated firstly. If there is data in the Rx buffer,
+> VF driver still can handle the buffer without migrating Rx descriptor.
+>
+> The next buffers will be ignored since we don't migrate Rx descriptor
+> for them. Their status will be not completed on the new machine.
+
+You have kind of lost me on this part.  Why do you believe there 
+statuses will not be completed?  How are you going to prevent the Rx 
+descriptor ring from being migrated as it will be a dirty page by the 
+virtue of the fact that it is a bidirectional DMA mapping where the Rx 
+path provides new buffers and writes those addresses in while the device 
+is writing back the status bits and length back.  This is kind of what I 
+was getting at.  The Rx descriptor ring will show up as one of the 
+dirtiest spots on the driver since it is constantly being overwritten by 
+the CPU in ixgbevf_alloc_rx_buffers.
+
+Anyway we are kind of getting side tracked and I really think the 
+solution you have proposed is kind of a dead-end.
+
+What we have to do is come up with a solution that can deal with the 
+fact that you are racing against two different entities.  You have to 
+avoid racing with the device, while at the same time you have to avoid 
+racing with the dirty page migration code.  There are essentially 2 
+problems you have to solve.
+
+1.  Rx pages handed off to the stack must be marked as dirty.  For now 
+your code seemed to address this via this snippet below from patch 12/12:
+
+> @@ -946,15 +949,17 @@ static struct sk_buff *ixgbevf_fetch_rx_buffer(struct ixgbevf_ring *rx_ring,
+>   {
+>   	struct ixgbevf_rx_buffer *rx_buffer;
+>   	struct page *page;
+> +	u8 *page_addr;
+>   
+>   	rx_buffer = &rx_ring->rx_buffer_info[rx_ring->next_to_clean];
+>   	page = rx_buffer->page;
+>   	prefetchw(page);
+>   
+> -	if (likely(!skb)) {
+> -		void *page_addr = page_address(page) +
+> -				  rx_buffer->page_offset;
+> +	/* Mark page dirty */
+> +	page_addr = page_address(page) + rx_buffer->page_offset;
+> +	*page_addr = *page_addr;
+>   
+> +	if (likely(!skb)) {
+>   		/* prefetch first cache line of first page */
+>   		prefetch(page_addr);
+>   #if L1_CACHE_BYTES < 128
+
+It will work for now as a proof of concept, but I really would prefer to 
+see a solution that is driver agnostic.  Maybe something that could take 
+care of it in the DMA API.  For example if you were to use 
+"swiotlb=force" in the guest this code wouldn't even be necessary since 
+that forces bounce buffers which would mean your DMA mappings are dirty 
+pages anyway.
+
+2.  How to deal with a device that might be in the middle of an 
+interrupt routine when you decide to migrate.  This is the bit I think 
+you might be focusing on a bit too much, and the current solutions you 
+have proposed will result in Rx data corruption in the generic case even 
+without migration.  There are essentially 2 possible solutions that you 
+could explore.
+
+2a.  Have a VF device that is aware something is taking place and have 
+it yield via something like a PCI hot-plug pause request.  I don't know 
+if the Linux kernel supports something like that now since pause support 
+in the OS is optional in the PCI hot-plug specification, but essentially 
+it would be a request to do a PM suspend.  You would issue a hot-plug 
+pause and know when it is completed by the fact that the PCI Bus Master 
+bit is cleared in the VF.  Then you complete the migration and in the 
+new guest you could issue a hot-plug event to restart operation.
+
+2b.  Come up with some sort of pseudo IOMMU interface the VF has to use 
+to map DMA, and provide an interface to quiesce the devices attached to 
+the VM so that DMA can no longer occur.  Once you have disabled bus 
+mastering on the VF you could then go through and migrate all DMA mapped 
+pages.  As far as resuming on the other side you would somehow need to 
+poke the VF to get it to realize the rings are no longer initialized and 
+the mailbox is out-of-sync.  Once that happens the VF could reset and 
+resume operation.
