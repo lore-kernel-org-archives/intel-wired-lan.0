@@ -1,66 +1,50 @@
 From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-Date: Fri, 30 Oct 2015 15:24:37 -0400
+Date: Fri, 30 Oct 2015 19:13:01 -0400
 Subject: [Intel-wired-lan] [PATCH v3 net] i40e: Look up MAC address in
  Open Firmware or IDPROM
-In-Reply-To: <FC41C24E35F18A40888AACA1A36F3E418AFACA8F@fmsmsx115.amr.corp.intel.com>
+In-Reply-To: <FC41C24E35F18A40888AACA1A36F3E418AFACC2E@fmsmsx115.amr.corp.intel.com>
 References: <20151030150344.GG9312@oracle.com>
  <FC41C24E35F18A40888AACA1A36F3E418AFACA14@fmsmsx115.amr.corp.intel.com>
  <20151030183645.GD32759@oracle.com>
  <FC41C24E35F18A40888AACA1A36F3E418AFACA8F@fmsmsx115.amr.corp.intel.com>
-Message-ID: <20151030192437.GE32759@oracle.com>
+ <20151030192437.GE32759@oracle.com>
+ <FC41C24E35F18A40888AACA1A36F3E418AFACC2E@fmsmsx115.amr.corp.intel.com>
+Message-ID: <20151030231301.GA14974@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On (10/30/15 18:57), Nelson, Shannon wrote:
-> > >
-> > > Going along with this being the equivalent of the ixgbe patch, I'd
-> > > prefer the new code to be in i40e_main.c, rather than in i40e_common.c.
-> > > In the design of our drivers, the common file is essentially a device
-> > > specific layer, and the OS and platform related stuff should stay in
-> > > i40e_main.c.  That would also take care of one of the include file nits
-> > > that Andy mentioned.
-       :
-> I'm not sure about any deeper wisdom, but the HW/FW model that this
-> device uses is rather different from our previous devices, so our SW
-> abstractions are a little different from ixgbe and igb.
-
-Ok, in that case I can make i40e_main.c to do something like
-
-static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
-{
-   :
-   if (i40e_get_platform_mac_addr(..) != I40E_SUCCESS)
-	i40e_get_mac_addr(..);
-   :
-}
-
-and i agree that doing this from i40e_main will simplify a lot of the
-other stuff around getting the pdev etc.
-
-[Discussion about ndo_set_mac_address..]
-
-> In the cases in which I'm aware, the platform manufacturer normally will
-> burn a different mac-address into the device's eeprom at manufacturing
-> time if they want something other than what came from Intel.  I suppose a
-> Device Tree oriented platform could have a different address in the DT,
-> but somehow that needs to get communicated to the device driver so that
-> it can tell the HW.
+On (10/30/15 22:03), Nelson, Shannon wrote:
+> The more common idiom in our driver would be
 > 
-> My question to you remains: does this ndo_set_mac_address happen from
-> the stack above the driver or not?
+> 	err = i40e_get_platform_mac_addr(..);
+> 	if (err) {
 
-I'm probably even less clued in to the DT arch than you in this case,
-so input from the intel experts would be useful here.
+Ok.
 
-But both in this case, and for the ixgbe template on which I tried
-to model this, the OF/idprom probing happens from the ->probe when the
-driver comes up, and ndo_set_mac_address is not involved.
+> Have you tested this beyond a compile?
+> Do you have a DT model to try this against?
 
-I dont know if it is easier (or even feasible to do this from ->probe) 
-to just call the i40e_set_mac to make sure all the state-bits in
-the driver are correctly set.
+yes.
+
+> In looking at a couple other drivers, I see the difference being that
+> they typically are writing the primary mac filter on probe (and any
+> other reset), whereas the i40e "knows" that the default mac address is
+> already set up as the filter and doesn't bother with a redundant write.
+> If you want to add this Open Filter code, you'll need to arrange for
+> this write to happen.  You can't call i40e_set_mac() to do it, but you
+> can see the i40e_aq_mac_address_write() code there that is involved in
+> updating the mac address as an example.  You probably will want to look
+> at section 4.2.1.5.3 of the XL710 data sheet in order to know how to
+> use i40e_aq_mac_address_write() for your situation.
+
+ok. I'll look into it (and also why this did not show up in my testing).
+
+fwiw, the ixgbe patch is quite clearly missing in i40e, and hopefully
+we wont be opportunistically fixing this one driver at a time in 
+the future.
 
 --Sowmini
+
