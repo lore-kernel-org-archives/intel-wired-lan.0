@@ -1,79 +1,31 @@
-From: Lan Tianyu <tianyu.lan@intel.com>
-Date: Fri, 30 Oct 2015 10:41:12 +0800
-Subject: [Intel-wired-lan] [RFC Patch 00/12] IXGBE: Add live migration
- support for SRIOV NIC
-In-Reply-To: <56324682.5060507@gmail.com>
-References: <1445445464-5056-1-git-send-email-tianyu.lan@intel.com>
- <562A7E33.4080800@gmail.com> <562DBBC9.4000104@intel.com>
- <562E40BB.6040404@gmail.com> <5631B8CA.9040805@intel.com>
- <5631C3A7.2070900@gmail.com> <5631D9C2.2040206@intel.com>
- <56324682.5060507@gmail.com>
-Message-ID: <5632D8C8.3010101@intel.com>
+From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+Date: Fri, 30 Oct 2015 07:26:37 -0400
+Subject: [Intel-wired-lan] [PATCH net] i40e: Look up MAC address in Open
+	Firmware or IDPROM
+In-Reply-To: <CAHp75VcmgsAjgqt6+JVMB6uvbbJamoBnLyEU=YNCRp=s2fAW1A@mail.gmail.com>
+References: <20151029233430.GB11420@oracle.com>
+ <CAHp75VcmgsAjgqt6+JVMB6uvbbJamoBnLyEU=YNCRp=s2fAW1A@mail.gmail.com>
+Message-ID: <20151030112637.GB9312@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 2015?10?30? 00:17, Alexander Duyck wrote:
-> On 10/29/2015 01:33 AM, Lan Tianyu wrote:
->> On 2015?10?29? 14:58, Alexander Duyck wrote:
->>> Your code was having to do a bunch of shuffling in order to get things
->>> set up so that you could bring the interface back up.  I would argue
->>> that it may actually be faster at least on the bring-up to just drop the
->>> old rings and start over since it greatly reduced the complexity and the
->>> amount of device related data that has to be moved.
->> If give up the old ring after migration and keep DMA running before
->> stopping VCPU, it seems we don't need to track Tx/Rx descriptor ring and
->> just make sure that all Rx buffers delivered to stack has been migrated.
->>
->> 1) Dummy write Rx buffer before checking Rx descriptor to ensure packet
->> migrated first.
+On (10/30/15 02:14), Andy Shevchenko wrote:
 > 
-> Don't dummy write the Rx descriptor.  You should only really need to
-> dummy write the Rx buffer and you would do so after checking the
-> descriptor, not before.  Otherwise you risk corrupting the Rx buffer
-> because it is possible for you to read the Rx buffer, DMA occurs, and
-> then you write back the Rx buffer and now you have corrupted the memory.
+> Does the following has no stubs?
 > 
->> 2) Make a copy of Rx descriptor and then use the copied data to check
->> buffer status. Not use the original descriptor because it won't be
->> migrated and migration may happen between two access of the Rx
->> descriptor.
+> > +       struct i40e_pf *pf = hw->back;
+> > +       struct device_node *dp = pci_device_to_OF_node(pf->pdev);
+> > +       const unsigned char *addr;
+> > +
+> > +       addr = of_get_mac_address(dp);
 > 
-> Do not just blindly copy the Rx descriptor ring.  That is a recipe for
-> disaster.  The problem is DMA has to happen in a very specific order for
-> things to function correctly.  The Rx buffer has to be written and then
-> the Rx descriptor.  The problem is you will end up getting a read-ahead
-> on the Rx descriptor ring regardless of which order you dirty things in.
+> ^^^
 
+I was not able to find any.
+I'm fixing up the rest and respinning V2 as a separate thread.
 
-Sorry, I didn't say clearly.
-I meant to copy one Rx descriptor when receive rx irq and handle Rx ring.
-
-Current code in the ixgbevf_clean_rx_irq() checks status of the Rx
-descriptor whether its Rx buffer has been populated data and then read
-the packet length from Rx descriptor to handle the Rx buffer.
-
-My idea is to do the following three steps when receive Rx buffer in the
-ixgbevf_clean_rx_irq().
-
-(1) dummy write the Rx buffer first,
-(2) make a copy of its Rx descriptor
-(3) Check the buffer status and get length from the copy.
-
-Migration may happen every time.
-Happen between (1) and (2). If the Rx buffer has been populated data, VF
-driver will not know that on the new machine because the Rx descriptor
-isn't migrated. But it's still safe.
-
-Happen between (2) and (3). The copy will be migrated to new machine
-and Rx buffer is migrated firstly. If there is data in the Rx buffer,
-VF driver still can handle the buffer without migrating Rx descriptor.
-
-The next buffers will be ignored since we don't migrate Rx descriptor
-for them. Their status will be not completed on the new machine.
-
--- 
-Best regards
-Tianyu Lan
+Thanks
+--Sowmini
