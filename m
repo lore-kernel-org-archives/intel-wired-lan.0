@@ -1,60 +1,240 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 30 Oct 2015 09:11:07 -0700
-Subject: [Intel-wired-lan] [net PATCH 3/3] ixgbe: Fix handling of napi
- budget when multiple queues are enabled per vector
-In-Reply-To: <CAJ75kXZx9YoD4_k7yb2aEomhxceG96D-twPqYz_-9QmY-2MXvw@mail.gmail.com>
-References: <20150922213002.2774.37924.stgit@ahduyck-vm-fedora22>
- <20150922213541.2774.70538.stgit@ahduyck-vm-fedora22>
- <CAJ75kXZx9YoD4_k7yb2aEomhxceG96D-twPqYz_-9QmY-2MXvw@mail.gmail.com>
-Message-ID: <5633969B.1050401@gmail.com>
+From: Benjamin Poirier <bpoirier@suse.com>
+Date: Fri, 30 Oct 2015 10:31:00 -0700
+Subject: [Intel-wired-lan] [PATCH v2 0/4] e1000e msi-x fixes
+Message-ID: <1446226264-29660-1-git-send-email-bpoirier@suse.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 10/30/2015 07:55 AM, William Dauchy wrote:
-> Hi Alexander,
->
-> On Tue, Sep 22, 2015 at 11:35 PM, Alexander Duyck <aduyck@mirantis.com> wrote:
->> This patch corrects an issue in which the polling routine would increase
->> the budget for Rx to at least 1 per queue if multiple queues were present.
->> This would result in Rx packets being processed when the budget was 0 which
->> is meant to indicate that no Rx can be handled.
-> We may logically have the same issue with VF, right?
->
->  From 4521374ae746543a925982d59a8ba73b6aaee59c Mon Sep 17 00:00:00 2001
-> From: William Dauchy <william@gandi.net>
-> Date: Fri, 30 Oct 2015 15:48:43 +0100
-> Subject: [PATCH] ixgbevf: Fix handling of napi budget when multiple queues are
->   enabled per vector
->
-> This is the same patch as for ixgbe but applied differently according to
-> busy polling
->
-> Signed-off-by: William Dauchy <william@gandi.net>
-> ---
->   drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 2 ++
->   1 file changed, 2 insertions(+)
->
-> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> index 149a0b4..ff6e21d 100644
-> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> @@ -1014,6 +1014,8 @@ static int ixgbevf_poll(struct napi_struct
-> *napi, int budget)
->    ixgbevf_for_each_ring(ring, q_vector->tx)
->    clean_complete &= ixgbevf_clean_tx_irq(q_vector, ring);
->
-> + if (budget <= 0)
-> + return budget;
->   #ifdef CONFIG_NET_RX_BUSY_POLL
->    if (!ixgbevf_qv_lock_napi(q_vector))
->    return budget;
+Hi,
 
-Yes the same issue applies to ixgbevf, but it looks like your patch was 
-mangled by your mail client.  Can you please resubmit with the white 
-spaces fixed?
+For this series:
 
-- Alex
+
+Benjamin Poirier (4):
+  e1000e: Remove unreachable code
+  e1000e: Do not read icr in Other interrupt
+  e1000e: Do not write lsc to ics in msi-x mode
+  e1000e: Fix msi-x interrupt automask
+
+ drivers/net/ethernet/intel/e1000e/defines.h |  3 +-
+ drivers/net/ethernet/intel/e1000e/netdev.c  | 65 +++++++++++++----------------
+ 2 files changed, 30 insertions(+), 38 deletions(-)
+
+Changes in v2:
+Address review comments from Alexander Duyck: extend cleanup of Other
+interrupt handler and use tx_ring->ims_val.
+
+
+The first three patches cleanup handling of Other interrupts and the
+last patch fixes tx and rx interrupts. Please consider reading the
+description for that patch before proceeding. I believe that the
+following simple tracing statements are helpful in detecting the problem
+fixed by the last patch.
+
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 8881256..707a525 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -1952,6 +1952,9 @@ static irqreturn_t e1000_intr_msix_rx(int __always_unused irq, void *data)
+ 	struct net_device *netdev = data;
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+ 	struct e1000_ring *rx_ring = adapter->rx_ring;
++	struct e1000_hw *hw = &adapter->hw;
++
++	trace_printk("%s: rxq0 irq ims 0x%08x\n", netdev->name, er32(IMS));
+ 
+ 	/* Write the ITR value calculated at the end of the
+ 	 * previous interrupt.
+@@ -1966,6 +1969,7 @@ static irqreturn_t e1000_intr_msix_rx(int __always_unused irq, void *data)
+ 		adapter->total_rx_bytes = 0;
+ 		adapter->total_rx_packets = 0;
+ 		__napi_schedule(&adapter->napi);
++		trace_printk("%s: scheduling napi\n", netdev->name);
+ 	}
+ 	return IRQ_HANDLED;
+ }
+@@ -2672,6 +2676,8 @@ static int e1000e_poll(struct napi_struct *napi, int weight)
+ 	struct net_device *poll_dev = adapter->netdev;
+ 	int tx_cleaned = 1, work_done = 0;
+ 
++	trace_printk("%s: poll starting ims 0x%08x\n", poll_dev->name,
++		     er32(IMS));
+ 	adapter = netdev_priv(poll_dev);
+ 
+ 	if (!adapter->msix_entries ||
+@@ -2689,6 +2695,8 @@ static int e1000e_poll(struct napi_struct *napi, int weight)
+ 			e1000_set_itr(adapter);
+ 		napi_complete_done(napi, work_done);
+ 		if (!test_bit(__E1000_DOWN, &adapter->state)) {
++			trace_printk("%s: will enable rxq0 irq\n",
++				     poll_dev->name);
+ 			if (adapter->msix_entries)
+ 				ew32(IMS, adapter->rx_ring->ims_val);
+ 			else
+
+-------- 8< --------
+
+With that patch but without the patches in this series we can see that rx irqs
+occur@unexpected times:
+
+          <idle>-0     [000] .Ns.  1986.887517: e1000e_poll: eth1: will enable rxq0 irq
+          <idle>-0     [000] d.h.  1986.896654: e1000_intr_msix_rx: eth1: rxq0 irq ims 0x01500004
+          <idle>-0     [000] d.h.  1986.896657: e1000_intr_msix_rx: eth1: scheduling napi
+          <idle>-0     [000] d.H.  1986.896662: e1000_intr_msix_rx: eth1: rxq0 irq ims 0x01500004
+          <idle>-0     [000] ..s.  1986.896667: e1000e_poll: eth1: poll starting ims 0x01500004
+Warning: many interrupts (2) before napi
+          <idle>-0     [000] ..s.  1986.896685: e1000e_poll: eth1: will enable rxq0 irq
+
+          <idle>-0     [000] d.h.  1990.688870: e1000_intr_msix_rx: eth1: scheduling napi
+          <idle>-0     [000] ..s.  1990.688875: e1000e_poll: eth1: poll starting ims 0x01500004
+          <idle>-0     [000] dNH.  1990.688913: e1000_intr_msix_rx: eth1: rxq0 irq ims 0x01500004
+Warning: interrupt inside napi
+          <idle>-0     [000] .Ns.  1990.688916: e1000e_poll: eth1: will enable rxq0 irq
+          <idle>-0     [000] d.h.  1990.729688: e1000_intr_msix_rx: eth1: rxq0 irq ims 0x01500004
+
+Here's a typical sequence after applying the patches in this series. Notice
+that ims is changed. Another printk at the end of e1000e_poll would show it to
+be 0x01500000.
+
+          <idle>-0     [000] d.h. 672874.016104: e1000_intr_msix_rx: eth1: rxq0 irq ims 0x01400000
+          <idle>-0     [000] d.h. 672874.016107: e1000_intr_msix_rx: eth1: scheduling napi
+          <idle>-0     [000] ..s. 672874.016112: e1000e_poll: eth1: poll starting ims 0x01400000
+          <idle>-0     [000] ..s. 672874.016126: e1000e_poll: eth1: will enable rxq0 irq
+
+Finally, here's the script I used to generate the warnings above:
+
+#!/usr/bin/python3
+
+import sys
+import re
+import pprint
+
+
+class NaE(Exception):
+    "Not an Event"
+    pass
+
+class Event:
+    def __init__(self, line):
+        # sample events:
+        #  <idle>-0     [000] d.h.  2025.256536: e1000_intr_msix_rx: eth1: rxq0 irq ims 0x01500004
+        #  <idle>-0     [000] d.h.  2025.256539: e1000_intr_msix_rx: eth1: scheduling napi
+        #  <idle>-0     [000] ..s.  2025.256544: e1000e_poll: eth1: poll starting ims 0x01500004
+        #  <idle>-0     [000] ..s.  2025.256558: e1000e_poll: eth1: will enable rxq0 irq
+        retval = re.match(" +<?(?P<comm>.*)>?-(?P<pid>[0-9]+) +\[(?P<cpu>.*)\] (?P<flags>[^ ]+) +(?P<time>[0-9.]+): (?P<funcname>[^:]+): (?P<ifname>[^:]+): (?P<args>.*)", line)
+        if retval:
+            self.comm = retval.group("comm")
+            self.pid = retval.group("pid")
+            self.cpu = retval.group("cpu")
+            self.flags = retval.group("flags")
+            self.time = retval.group("time")
+            self.funcname = retval.group("funcname")
+            self.ifname = retval.group("ifname")
+            self.args = retval.group("args")
+        else:
+            raise NaE
+
+
+class Machine:
+    pass
+
+class State:
+    def __init__(self, machine):
+        self.machine = machine
+
+    def entry(self, event):
+        pass
+
+    def transition(self, event):
+        "self.machine should be considered read-only in transition"
+        return State(self.machine)
+
+    def run(self, event):
+        pass
+
+    def exit(self, event):
+        pass
+
+    def advance(self, event):
+            nextState = self.transition(event)
+            if (nextState != self):
+                self.exit(event)
+                nextState.entry(event)
+            nextState.run(event)
+            return nextState
+
+# general receive processing machine
+def enteringNapi(machine, event):
+    if event.args.startswith("poll starting"):
+        return True
+    else:
+        return False
+
+def exitingNapi(machine, event):
+    if event.args.startswith("will enable"):
+        return True
+    else:
+        return False
+
+class OutsideNapi(State):
+    def entry(self, event):
+        self.machine.intr = []
+
+    def transition(self, event):
+        if enteringNapi(self.machine, event):
+            return InsideNapi(self.machine)
+        else:
+            return self
+
+    def run(self, event):
+        if event.args.startswith("rxq0 irq"):
+            self.machine.intr.append(event)
+
+    def exit(self, event):
+        if len(self.machine.intr) > 1:
+            print("Warning: many interrupts (%d) before napi at %s" % (
+                len(self.machine.intr), event.time,))
+
+class InsideNapi(State):
+    def transition(self, event):
+        if exitingNapi(self.machine, event):
+            return OutsideNapi(self.machine)
+        else:
+            return self
+
+    def run(self, event):
+        if event.args.startswith("rxq0 irq"):
+            print("Warning: interrupt inside napi")
+
+class UnknownState(State):
+    def transition(self, event):
+        if enteringNapi(self.machine, event):
+            return InsideNapi(self.machine)
+        elif exitingNapi(self.machine, event):
+            return ExitingNapi(self.machine)
+        else:
+            return self
+
+
+if __name__ == '__main__':
+    debug = False
+
+    state = UnknownState(Machine())
+
+    for line in sys.stdin:
+        print(line, end='')
+        try:
+            event = Event(line)
+        except NaE:
+            pass
+        else:
+            if debug:
+                pprinter.pprint(event)
+            state = state.advance(event)
+
+-- 
+2.6.0
+
