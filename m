@@ -1,11 +1,10 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 29 Oct 2015 21:59:28 +0000
-Subject: [Intel-wired-lan] [next PATCH S20 02/15] i40e: rename rss_size
- to	alloc_rss_size in i40e_pf
-In-Reply-To: <1445903081-155893-3-git-send-email-catherine.sullivan@intel.com>
-References: <1445903081-155893-1-git-send-email-catherine.sullivan@intel.com>
- <1445903081-155893-3-git-send-email-catherine.sullivan@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060D4BA8@ORSMSX104.amr.corp.intel.com>
+From: Allan, Bruce W <bruce.w.allan@intel.com>
+Date: Fri, 30 Oct 2015 00:13:14 +0000
+Subject: [Intel-wired-lan] [next-queue v2] fm10k: initialize xps at
+ driver	load
+In-Reply-To: <1446151420-6632-1-git-send-email-jacob.e.keller@intel.com>
+References: <1446151420-6632-1-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <804857E1F29AAC47BF68C404FC60A1847EC6FA70@ORSMSX105.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,28 +13,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Catherine Sullivan
-> Sent: Monday, October 26, 2015 4:44 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Zhang, Helin
-> Subject: [Intel-wired-lan] [next PATCH S20 02/15] i40e: rename rss_size to
-> alloc_rss_size in i40e_pf
+> Behalf Of Jacob Keller
+> Sent: Thursday, October 29, 2015 1:44 PM
+> To: Intel Wired LAN
+> Subject: [Intel-wired-lan] [next-queue v2] fm10k: initialize xps at driver load
 > 
-> From: Helin Zhang <helin.zhang@intel.com>
+> Similar to ixgbe and i40e, initialize XPS on driver load so that we can
+> take advantage of this kernel feature.
 > 
-> This patch renames rss_size to alloc_rss_size in i40e_pf, which is clearer and
-> avoids confusion. It also adds comments to the other related structure
-> members to help clarify usage.
-> 
-> Signed-off-by: Helin Zhang <helin.zhang@intel.com>
-> Change-ID: Ia90090609d006ab589cb639975bb8a0af795d16f
-> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
-> Testing-hints: Test all the RSS knobs from ethtool for X[L]710 and X722.
->  drivers/net/ethernet/intel/i40e/i40e.h      |  8 ++++----
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 31 +++++++++++++++++-----
-> -------
->  2 files changed, 22 insertions(+), 17 deletions(-)
+> 
+> - v2
+> * Fix patch application issue
+> * Put xps initialization on Tx queues (instead of Rx)
+> 
+> This patch replaces the previous version currently on the queue, in
+> place.
+> 
+>  drivers/net/ethernet/intel/fm10k/fm10k.h     |  3 +++
+>  drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 18 ++++++++++++++++--
+>  2 files changed, 19 insertions(+), 2 deletions(-)
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied, ethtool -x/X and -l/L show and set correct data, data persists across resets.
+Reviewed-by: Bruce Allan <bruce.w.allan@intel.com>
