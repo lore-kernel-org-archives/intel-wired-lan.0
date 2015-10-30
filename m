@@ -1,43 +1,66 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Fri, 30 Oct 2015 20:20:57 +0200
+From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+Date: Fri, 30 Oct 2015 15:24:37 -0400
 Subject: [Intel-wired-lan] [PATCH v3 net] i40e: Look up MAC address in
-	Open Firmware or IDPROM
-In-Reply-To: <20151030181254.GC32759@oracle.com>
+ Open Firmware or IDPROM
+In-Reply-To: <FC41C24E35F18A40888AACA1A36F3E418AFACA8F@fmsmsx115.amr.corp.intel.com>
 References: <20151030150344.GG9312@oracle.com>
- <CAHp75Vc-swMap+Umong1WVfL-fQNNZ9QEXvrHCJXCte1g_h_KA@mail.gmail.com>
- <20151030181254.GC32759@oracle.com>
-Message-ID: <CAHp75VdGHGwemwfoGHrCE5qS+ucCs02vjJNKyZP5OpQaNmOEsg@mail.gmail.com>
+ <FC41C24E35F18A40888AACA1A36F3E418AFACA14@fmsmsx115.amr.corp.intel.com>
+ <20151030183645.GD32759@oracle.com>
+ <FC41C24E35F18A40888AACA1A36F3E418AFACA8F@fmsmsx115.amr.corp.intel.com>
+Message-ID: <20151030192437.GE32759@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Oct 30, 2015 at 8:12 PM, Sowmini Varadhan
-<sowmini.varadhan@oracle.com> wrote:
-> On (10/30/15 20:06), Andy Shevchenko wrote:
->>
->> > +#include "i40e.h"
->>
->> Why do you need this one exactly?
->
-> I needed it to find pf->pdev below.
->
->> > +       struct device_node *dp = pci_device_to_OF_node(pf->pdev);
->
-> Without it, you will get:
->               :
->      CC [M]  drivers/net/ethernet/intel/i40e/i40e_common.o
->    drivers/net/ethernet/intel/i40e/i40e_common.c: In function ?i40e_get_platform_mac_addr?:
->    drivers/net/ethernet/intel/i40e/i40e_common.c:1021: error: dereferencing pointer to incomplete type
+On (10/30/15 18:57), Nelson, Shannon wrote:
+> > >
+> > > Going along with this being the equivalent of the ixgbe patch, I'd
+> > > prefer the new code to be in i40e_main.c, rather than in i40e_common.c.
+> > > In the design of our drivers, the common file is essentially a device
+> > > specific layer, and the OS and platform related stuff should stay in
+> > > i40e_main.c.  That would also take care of one of the include file nits
+> > > that Andy mentioned.
+       :
+> I'm not sure about any deeper wisdom, but the HW/FW model that this
+> device uses is rather different from our previous devices, so our SW
+> abstractions are a little different from ixgbe and igb.
 
-OK
+Ok, in that case I can make i40e_main.c to do something like
 
-> Unless you feel passionately about the \n nits, I'm going to pass on those.
-> Thanks for reviewing.
+static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+{
+   :
+   if (i40e_get_platform_mac_addr(..) != I40E_SUCCESS)
+	i40e_get_mac_addr(..);
+   :
+}
 
-I'm okay, whatever maintainer now accepts.
+and i agree that doing this from i40e_main will simplify a lot of the
+other stuff around getting the pdev etc.
 
--- 
-With Best Regards,
-Andy Shevchenko
+[Discussion about ndo_set_mac_address..]
+
+> In the cases in which I'm aware, the platform manufacturer normally will
+> burn a different mac-address into the device's eeprom at manufacturing
+> time if they want something other than what came from Intel.  I suppose a
+> Device Tree oriented platform could have a different address in the DT,
+> but somehow that needs to get communicated to the device driver so that
+> it can tell the HW.
+> 
+> My question to you remains: does this ndo_set_mac_address happen from
+> the stack above the driver or not?
+
+I'm probably even less clued in to the DT arch than you in this case,
+so input from the intel experts would be useful here.
+
+But both in this case, and for the ixgbe template on which I tried
+to model this, the OF/idprom probing happens from the ->probe when the
+driver comes up, and ndo_set_mac_address is not involved.
+
+I dont know if it is easier (or even feasible to do this from ->probe) 
+to just call the i40e_set_mac to make sure all the state-bits in
+the driver are correctly set.
+
+--Sowmini
