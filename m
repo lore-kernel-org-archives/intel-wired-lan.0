@@ -1,124 +1,66 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 30 Nov 2015 08:07:11 -0800
-Subject: [Intel-wired-lan] [RFC PATCH V2 0/3] IXGBE/VFIO: Add live
- migration support for SRIOV NIC
-In-Reply-To: <565BF285.4040507@intel.com>
-References: <1448372298-28386-1-git-send-email-tianyu.lan@intel.com>
- <5654722D.4010409@gmail.com> <56552888.90108@intel.com>
- <CAKgT0UcSrewenfM2YdVojHFFqfK2aVbBN5LH8=BFzc1p0f9hvQ@mail.gmail.com>
- <56556F98.5060507@intel.com>
- <CAKgT0UevBmRLpM1PvuuVDUW79A66RcPrfO8uGiqL1RiALW7apg@mail.gmail.com>
- <A12AC9D104E08D47BAF23C492F83C53B25CDE9E3@SHSMSX104.ccr.corp.intel.com>
- <CAKgT0Ucyq=7OSYBVvU9Z01b3f6scS+eBMLg+yphW7bwkNZosPQ@mail.gmail.com>
- <565BF285.4040507@intel.com>
-Message-ID: <CAKgT0Uc+-gFAetEfde6DmMOFK+vDE6UkgsNF8oLNqaQc4USSeg@mail.gmail.com>
+From: Nelson, Shannon <shannon.nelson@intel.com>
+Date: Sun, 1 Nov 2015 21:03:52 +0000
+Subject: [Intel-wired-lan] [PATCH v3 net] i40e: Look up MAC address in
+ Open Firmware or IDPROM
+In-Reply-To: <20151101162407.GA26373@oracle.com>
+References: <20151030150344.GG9312@oracle.com>
+ <FC41C24E35F18A40888AACA1A36F3E418AFACA14@fmsmsx115.amr.corp.intel.com>
+ <20151030183645.GD32759@oracle.com>
+ <FC41C24E35F18A40888AACA1A36F3E418AFACA8F@fmsmsx115.amr.corp.intel.com>
+ <20151030192437.GE32759@oracle.com>
+ <FC41C24E35F18A40888AACA1A36F3E418AFACC2E@fmsmsx115.amr.corp.intel.com>
+ <20151030231301.GA14974@oracle.com> <20151101162407.GA26373@oracle.com>
+Message-ID: <FC41C24E35F18A40888AACA1A36F3E418AFAD1C9@fmsmsx115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sun, Nov 29, 2015 at 10:53 PM, Lan, Tianyu <tianyu.lan@intel.com> wrote:
-> On 11/26/2015 11:56 AM, Alexander Duyck wrote:
->>
->> > I am not saying you cannot modify the drivers, however what you are
->> doing is far too invasive.  Do you seriously plan on modifying all of
->> the PCI device drivers out there in order to allow any device that
->> might be direct assigned to a port to support migration?  I certainly
->> hope not.  That is why I have said that this solution will not scale.
->
->
-> Current drivers are not migration friendly. If the driver wants to
-> support migration, it's necessary to be changed.
+> -----Original Message-----
+> From: Sowmini Varadhan [mailto:sowmini.varadhan at oracle.com]
+> Sent: Sunday, November 01, 2015 8:24 AM
+> 
 
-Modifying all of the drivers directly will not solve the issue though.
-This is why I have suggested looking at possibly implementing
-something like dma_mark_clean() which is used for ia64 architectures
-to mark pages that were DMAed in as clean.  In your case though you
-would want to mark such pages as dirty so that the page migration will
-notice them and move them over.
+[...]
 
-> RFC PATCH V1 presented our ideas about how to deal with MMIO, ring and
-> DMA tracking during migration. These are common for most drivers and
-> they maybe problematic in the previous version but can be corrected later.
+> So I figured out why it all "seemed to work" - my test env had another
+> obscure init process that was marking the link promiscuous.  I guess
+> that was having the side-effect of somehow setting the filters above.
+> 
+> But looks like there's more to getting this right than just calling
+> i40e_aq_mac_address_write() - I think it also needs a
+> i40e_aq_add_macvlan().
+> 
+> I was able to get this to work by calling a the core part of
+> i40e_set_mac just before register_netdev. In my patch (RFC patch
+> in a separate thread - please review) I now have this sequence in
+> i40e_probe
+> 
+> 	err = i40e_get_platform_mac_addr(pdev, hw->mac.addr);
+> 	if (err)
+> 		i40e_get_mac_addr(hw, hw->mac.addr);
+> 	 :
+> 	i40e_setup_pf_switch(..);
+> 
+> And the resulting i40e_vsi_setup() from i40e_setup_pf_switch()
+> will end up doing the right thing by invoking the guts of
+> i40e_set_mac(), which is basically the  sequence:
+> 	i40e_aq_mac_address_write()
+> 	i40e_aq_add_macvlan()
+> 
+> I dont know if it is necessary/possible/important to set up the
+> filters sooner in the sequence- the add_macvlan needs an "seid",
+> and I could not tell when (in the ":" code above) the right seid
+> can be found.
+> 
+> Please review the RFC patch I'll be sending shortly.
+> 
+> --Sowmini
 
-They can only be corrected if the underlying assumptions are correct
-and they aren't.  Your solution would have never worked correctly.
-The problem is you assume you can keep the device running when you are
-migrating and you simply cannot.  At some point you will always have
-to stop the device in order to complete the migration, and you cannot
-stop it before you have stopped your page tracking mechanism.  So
-unless the platform has an IOMMU that is somehow taking part in the
-dirty page tracking you will not be able to stop the guest and then
-the device, it will have to be the device and then the guest.
+Yeah, because of the underlying HW we need to manage, and the fact that we can't ask it for the filters it knows, it becomes a bit convoluted.  To manage and replay the filter lists, we use the i40e_{add,del}_filter() routines on the individual VSI filter lists.  I'm thinking you're on the right track, but we may not want to bypass the VSI's filter list.
 
-> Doing suspend and resume() may help to do migration easily but some
-> devices requires low service down time. Especially network and I got
-> that some cloud company promised less than 500ms network service downtime.
+My brain's not in gear this weekend so I'll review the patch later.  In the meantime, be sure to test what happens over a reset, such as what happens when the MTU is changed.  This will make sure that the replay of mac and vlan filters happens correctly.  You'll want to test this with and without vlans.
 
-Honestly focusing on the downtime is getting the cart ahead of the
-horse.  First you need to be able to do this without corrupting system
-memory and regardless of the state of the device.  You haven't even
-gotten to that state yet.  Last I knew the device had to be up in
-order for your migration to even work.
+sln
 
-Many devices are very state driven.  As such you cannot just freeze
-them and restore them like you would regular device memory.  That is
-where something like suspend/resume comes in because it already takes
-care of getting the device ready for halt, and then resume.  Keep in
-mind that those functions were meant to function on a device doing
-something like a suspend to RAM or disk.  This is not too far of from
-what a migration is doing since you need to halt the guest before you
-move it.
-
-As such the first step is to make it so that we can do the current
-bonding approach with one change.  Specifically we want to leave the
-device in the guest until the last portion of the migration instead of
-having to remove it first.  To that end I would suggest focusing on
-solving the DMA problem via something like a dma_mark_clean() type
-solution as that would be one issue resolved and we all would see an
-immediate gain instead of just those users of the ixgbevf driver.
-
-> So I think performance effect also should be taken into account when we
-> design the framework.
-
-What you are proposing I would call premature optimization.  You need
-to actually solve the problem before you can start optimizing things
-and I don't see anything actually solved yet since your solution is
-too unstable.
-
->>
->> What I am counter proposing seems like a very simple proposition.  It
->> can be implemented in two steps.
->>
->> 1.  Look at modifying dma_mark_clean().  It is a function called in
->> the sync and unmap paths of the lib/swiotlb.c.  If you could somehow
->> modify it to take care of marking the pages you unmap for Rx as being
->> dirty it will get you a good way towards your goal as it will allow
->> you to continue to do DMA while you are migrating the VM.
->>
->> 2.  Look at making use of the existing PCI suspend/resume calls that
->> are there to support PCI power management.  They have everything
->> needed to allow you to pause and resume DMA for the device before and
->> after the migration while retaining the driver state.  If you can
->> implement something that allows you to trigger these calls from the
->> PCI subsystem such as hot-plug then you would have a generic solution
->> that can be easily reproduced for multiple drivers beyond those
->> supported by ixgbevf.
->
->
-> Glanced at PCI hotplug code. The hotplug events are triggered by PCI hotplug
-> controller and these event are defined in the controller spec.
-> It's hard to extend more events. Otherwise, we also need to add some
-> specific codes in the PCI hotplug core since it's only add and remove
-> PCI device when it gets events. It's also a challenge to modify Windows
-> hotplug codes. So we may need to find another way.
-
-For now we can use conventional hot-plug.  Removing the device should
-be fairly quick and I suspect it would only dirty a few megs of memory
-so just using conventional hot-plug for now is probably workable.  The
-suspend/resume approach would be a follow-up in order to improve the
-speed of migration since those functions are more lightweight then a
-remove/probe.
-
-- Alex
