@@ -1,165 +1,27 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon,  2 Nov 2015 12:10:22 -0800
-Subject: [Intel-wired-lan] [next-queue v2] fm10k: consistently refer to
-	VLANs and VLAN IDs
-Message-ID: <1446495022-30852-1-git-send-email-jacob.e.keller@intel.com>
+From: Miller, Darin J <darin.j.miller@intel.com>
+Date: Mon, 2 Nov 2015 22:52:57 +0000
+Subject: [Intel-wired-lan] [PATCH V3] ixgbe: Update PTP to support
+ X550EM_x	devices
+In-Reply-To: <20151027165807.108282.20831.stgit@mdrustad-wks.jf.intel.com>
+References: <20151027165807.108282.20831.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <A91205FD8A6E14448BD4414C06E9C3D37520FAF1@fmsmsx115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Instead of using lowercase vlan, vid, or VID, always use VLAN or VLAN ID
-in comments when referring to VLANs. The original driver code was
-consistent, but recent patches have not been as consistent with this
-naming scheme.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Reviewed-by: Bruce Allan <bruce.w.allan@intel.com>
----
--v2
-* fix two forgotten instances in fm10k_pf.c
 
-This patch replaces what was on the queue in place.
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Mark D Rustad
+Sent: Tuesday, October 27, 2015 9:58 AM
+To: intel-wired-lan@lists.osuosl.org
+Subject: [Intel-wired-lan] [PATCH V3] ixgbe: Update PTP to support X550EM_x devices
 
- drivers/net/ethernet/intel/fm10k/fm10k.h        |  4 ++--
- drivers/net/ethernet/intel/fm10k/fm10k_netdev.c |  8 ++++----
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c    |  4 ++--
- drivers/net/ethernet/intel/fm10k/fm10k_pf.c     | 14 +++++++-------
- 4 files changed, 15 insertions(+), 15 deletions(-)
+The X550EM_x devices handle clocking differently, so update the PTP implementation to accommodate them. This involves signicant changes to ixgbe's PTP code to accommodate the new range of behaviors including things like non-power-of-2 clock wrapping.
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
-index 5458feefdd55..4aaaa909a6eb 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
-@@ -140,7 +140,7 @@ struct fm10k_ring {
- 					 * different for DCB and RSS modes
- 					 */
- 	u8 qos_pc;			/* priority class of queue */
--	u16 vid;			/* default vlan ID of queue */
-+	u16 vid;			/* default VLAN ID of queue */
- 	u16 count;			/* amount of descriptors */
- 
- 	u16 next_to_alloc;
-@@ -443,7 +443,7 @@ union fm10k_ftag_info {
- 	struct {
- 		/* dglort and sglort combined into a single 32bit desc read */
- 		__le32 glort;
--		/* upper 16 bits of vlan are reserved 0 for swpri_type_user */
-+		/* upper 16 bits of VLAN are reserved 0 for swpri_type_user */
- 		__le32 vlan;
- 	} d;
- 	struct {
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-index 38fe2d8c8388..4307f1808d3a 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-@@ -630,7 +630,7 @@ static netdev_tx_t fm10k_xmit_frame(struct sk_buff *skb, struct net_device *dev)
- 		if (err)
- 			return NETDEV_TX_OK;
- 
--		/* locate vlan header */
-+		/* locate VLAN header */
- 		vhdr = (struct vlan_hdr *)(skb->data + ETH_HLEN);
- 
- 		/* pull the 2 key pieces of data out of it */
-@@ -776,7 +776,7 @@ static int fm10k_update_vid(struct net_device *netdev, u16 vid, bool set)
- 	if (!set)
- 		clear_bit(vid, interface->active_vlans);
- 
--	/* disable the default VID on ring if we have an active VLAN */
-+	/* disable the default VLAN ID on ring if we have an active VLAN */
- 	for (i = 0; i < interface->num_rx_queues; i++) {
- 		struct fm10k_ring *rx_ring = interface->rx_ring[i];
- 		u16 rx_vid = rx_ring->vid & (VLAN_N_VID - 1);
-@@ -787,7 +787,7 @@ static int fm10k_update_vid(struct net_device *netdev, u16 vid, bool set)
- 			rx_ring->vid &= ~FM10K_VLAN_CLEAR;
- 	}
- 
--	/* Do not remove default VID related entries from VLAN and MAC tables */
-+	/* Do not remove default VLAN ID related entries from VLAN and MAC tables */
- 	if (!set && vid == hw->mac.default_vid)
- 		return 0;
- 
-@@ -812,7 +812,7 @@ static int fm10k_update_vid(struct net_device *netdev, u16 vid, bool set)
- 	if (err)
- 		goto err_out;
- 
--	/* set vid prior to syncing/unsyncing the VLAN */
-+	/* set VLAN ID prior to syncing/unsyncing the VLAN */
- 	interface->vid = vid + (set ? VLAN_N_VID : 0);
- 
- 	/* Update the unicast and multicast address list to add/drop VLAN */
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index e68000c35e02..3e1c65706736 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -715,7 +715,7 @@ static void fm10k_configure_rx_ring(struct fm10k_intfc *interface,
- 	/* assign default VLAN to queue */
- 	ring->vid = hw->mac.default_vid;
- 
--	/* if we have an active VLAN, disable default VID */
-+	/* if we have an active VLAN, disable default VLAN ID */
- 	if (test_bit(hw->mac.default_vid, interface->active_vlans))
- 		ring->vid |= FM10K_VLAN_CLEAR;
- 
-@@ -1299,7 +1299,7 @@ static s32 fm10k_update_pvid(struct fm10k_hw *hw, u32 **results,
- 	if (!fm10k_glort_valid_pf(hw, glort))
- 		return FM10K_ERR_PARAM;
- 
--	/* verify VID is valid */
-+	/* verify VLAN ID is valid */
- 	if (pvid >= FM10K_VLAN_TABLE_VID_MAX)
- 		return FM10K_ERR_PARAM;
- 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-index c7e09592c1f6..d5fc7034822f 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-@@ -329,7 +329,7 @@ static s32 fm10k_update_xc_addr_pf(struct fm10k_hw *hw, u16 glort,
- 	/* clear set bit from VLAN ID */
- 	vid &= ~FM10K_VLAN_CLEAR;
- 
--	/* if glort or vlan are not valid return error */
-+	/* if glort or VLAN are not valid return error */
- 	if (!fm10k_glort_valid_pf(hw, glort) || vid >= FM10K_VLAN_TABLE_VID_MAX)
- 		return FM10K_ERR_PARAM;
- 
-@@ -921,7 +921,7 @@ static s32 fm10k_iov_assign_default_mac_vlan_pf(struct fm10k_hw *hw,
- 	txqctl |= (vf_idx << FM10K_TXQCTL_TC_SHIFT) |
- 		  FM10K_TXQCTL_VF | vf_idx;
- 
--	/* assign VID */
-+	/* assign VLAN ID */
- 	for (i = 0; i < queues_per_pool; i++)
- 		fm10k_write_reg(hw, FM10K_TXQCTL(vf_q_idx + i), txqctl);
- 
-@@ -1172,12 +1172,12 @@ s32 fm10k_iov_msg_msix_pf(struct fm10k_hw *hw, u32 **results,
- }
- 
- /**
-- * fm10k_iov_select_vid - Select correct default VID
-+ * fm10k_iov_select_vid - Select correct default VLAN ID
-  * @hw: Pointer to hardware structure
-- * @vid: VID to correct
-+ * @vid: VLAN ID to correct
-  *
-- * Will report an error if VID is out of range. For VID = 0, it will return
-- * either the pf_vid or sw_vid depending on which one is set.
-+ * Will report an error if the VLAN ID is out of range. For VID = 0, it will
-+ * return either the pf_vid or sw_vid depending on which one is set.
-  */
- static inline s32 fm10k_iov_select_vid(struct fm10k_vf_info *vf_info, u16 vid)
- {
-@@ -1707,7 +1707,7 @@ s32 fm10k_msg_update_pvid_pf(struct fm10k_hw *hw, u32 **results,
- 	if (!fm10k_glort_valid_pf(hw, glort))
- 		return FM10K_ERR_PARAM;
- 
--	/* verify VID is valid */
-+	/* verify VLAN ID is valid */
- 	if (pvid >= FM10K_VLAN_TABLE_VID_MAX)
- 		return FM10K_ERR_PARAM;
- 
--- 
-2.6.1.264.gbab76a9
+Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+
+Tested-by: Darin Miller <darin.j.miller@intel.com>
 
