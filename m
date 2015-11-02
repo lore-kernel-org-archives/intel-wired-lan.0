@@ -1,170 +1,165 @@
-From: Nelson, Shannon <shannon.nelson@intel.com>
-Date: Mon, 2 Nov 2015 17:25:04 +0000
-Subject: [Intel-wired-lan] [PATCH v4 RFC net] i40e: Look up MAC address
- in Open Firmware or IDPROM
-In-Reply-To: <20151101162439.GB26373@oracle.com>
-References: <20151101162439.GB26373@oracle.com>
-Message-ID: <FC41C24E35F18A40888AACA1A36F3E418AFAD380@fmsmsx115.amr.corp.intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Mon,  2 Nov 2015 12:10:22 -0800
+Subject: [Intel-wired-lan] [next-queue v2] fm10k: consistently refer to
+	VLANs and VLAN IDs
+Message-ID: <1446495022-30852-1-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Instead of using lowercase vlan, vid, or VID, always use VLAN or VLAN ID
+in comments when referring to VLANs. The original driver code was
+consistent, but recent patches have not been as consistent with this
+naming scheme.
 
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Reviewed-by: Bruce Allan <bruce.w.allan@intel.com>
+---
+-v2
+* fix two forgotten instances in fm10k_pf.c
 
-> -----Original Message-----
-> From: Sowmini Varadhan [mailto:sowmini.varadhan at oracle.com]
-> Sent: Sunday, November 01, 2015 8:25 AM
-> 
-> This is the i40e equivalent of commit c762dff24c06 ("ixgbe: Look up MAC
-> address in Open Firmware or IDPROM").
-> 
-> As with that fix, attempt to look up the MAC address in Open Firmware
-> on systems that support it, and use IDPROM on SPARC if no OF address
-> is found.
-> 
-> In the case of the i40e there is an assumption that the default mac
-> address has already been set up as the primary mac filter on probe,
-> so if this filter is obtained from the Open Firmware or IDPROM, an
-> explicit write is needed via i40e_aq_mac_address_write() and
-> i40e_aq_add_macvlan() invocation.
-> 
-> Reviewers: please check if invoking i40e_macaddr_init() on
-> platforms that use the default mac address (i.e., when it is not from
-> OF or idprom) will cause harm, and if it is necessary/possible to
-> move this invocation to an earlier point in i40e_probe().
-> 
-> Reviewed-by: Martin K. Petersen <martin.petersen@oracle.com>
-> Signed-off-by: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-> ---
-> v2, v3: Andy Shevchenko comments
-> v4:
+This patch replaces what was on the queue in place.
 
-Thanks, Sowmini, this looks reasonable to me, aside from a few simple stylistic comments below.
+ drivers/net/ethernet/intel/fm10k/fm10k.h        |  4 ++--
+ drivers/net/ethernet/intel/fm10k/fm10k_netdev.c |  8 ++++----
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c    |  4 ++--
+ drivers/net/ethernet/intel/fm10k/fm10k_pf.c     | 14 +++++++-------
+ 4 files changed, 15 insertions(+), 15 deletions(-)
 
-sln
-
-> 
->  drivers/net/ethernet/intel/i40e/i40e_main.c |   53
-> ++++++++++++++++++++++++++-
->  1 files changed, 52 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index b825f97..3c81c0c 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -24,6 +24,15 @@
->   *
-> 
-> **************************************************************************
-> ****/
-> 
-> +#include <linux/etherdevice.h>
-> +#include <linux/of_net.h>
-> +#include <linux/pci.h>
-> +
-> +#ifdef CONFIG_SPARC
-> +#include <asm/idprom.h>
-> +#include <asm/prom.h>
-> +#endif
-> +
->  /* Local includes */
->  #include "i40e.h"
->  #include "i40e_diag.h"
-> @@ -9212,6 +9221,25 @@ static struct i40e_vsi
-> *i40e_vsi_reinit_setup(struct i40e_vsi *vsi)
->  	return NULL;
->  }
-> 
-
-Please add a function comment in the style of the rest of the code.
-
-> +static int i40e_macaddr_init( struct i40e_vsi *vsi, u8 *macaddr)
-
-No space between '(' and 'struct'
-
-> +{
-> +	int ret;
-> +	struct i40e_aqc_add_macvlan_element_data element;
-> +
-> +	ret = i40e_aq_mac_address_write(&vsi->back->hw,
-> +					I40E_AQC_WRITE_TYPE_LAA_WOL,
-> +					macaddr, NULL);
-> +	if (ret)
-> +		return -EADDRNOTAVAIL;
-
-Please report the AQ error here as we do elsewhere in the code
-
-> +
-> +	memset(&element, 0, sizeof(element));
-> +	ether_addr_copy(element.mac_addr, macaddr);
-> +	element.flags = cpu_to_le16(I40E_AQC_MACVLAN_ADD_PERFECT_MATCH);
-> +	i40e_aq_add_macvlan(&vsi->back->hw, vsi->seid, &element, 1, NULL);
-
-Please check for and report any AQ error returned from this call as we do elsewhere in the code.
-
-> +
-> +	return ret;
-> +}
-> +
->  /**
->   * i40e_vsi_setup - Set up a VSI by a given type
->   * @pf: board private structure
-> @@ -9341,6 +9369,9 @@ struct i40e_vsi *i40e_vsi_setup(struct i40e_pf *pf,
-> u8 type,
->  		ret = i40e_config_netdev(vsi);
->  		if (ret)
->  			goto err_netdev;
-> +		ret = i40e_macaddr_init(vsi, pf->hw.mac.addr);
-> +		if (ret)
-> +			goto err_netdev;
->  		ret = register_netdev(vsi->netdev);
->  		if (ret)
->  			goto err_netdev;
-> @@ -10162,6 +10193,24 @@ static void i40e_print_features(struct i40e_pf
-> *pf)
->  	kfree(string);
->  }
-> 
-
-Function comment needed
-
-> +static int i40e_get_platform_mac_addr(struct pci_dev *pdev, u8 *mac_addr)
-> +{
-> +	struct device_node *dp = pci_device_to_OF_node(pdev);
-> +	const unsigned char *addr;
-> +
-> +	addr = of_get_mac_address(dp);
-> +	if (addr) {
-> +		ether_addr_copy(mac_addr, addr);
-> +		return 0;
-> +	}
-> +#ifdef CONFIG_SPARC
-> +	ether_addr_copy(mac_addr, idprom->id_ethaddr);
-> +	return 0;
-> +#else
-> +	return -EINVAL;
-> +#endif /* CONFIG_SPARC */
-> +}
-> +
->  /**
->   * i40e_probe - Device initialization routine
->   * @pdev: PCI device information struct
-> @@ -10360,7 +10409,9 @@ static int i40e_probe(struct pci_dev *pdev, const
-> struct pci_device_id *ent)
->  		i40e_aq_stop_lldp(hw, true, NULL);
->  	}
-> 
-> -	i40e_get_mac_addr(hw, hw->mac.addr);
-> +	err = i40e_get_platform_mac_addr(pdev, hw->mac.addr);
-> +	if (err)
-> +		i40e_get_mac_addr(hw, hw->mac.addr);
->  	if (!is_valid_ether_addr(hw->mac.addr)) {
->  		dev_info(&pdev->dev, "invalid MAC address %pM\n", hw-
-> >mac.addr);
->  		err = -EIO;
-> --
-> 1.7.1
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
+index 5458feefdd55..4aaaa909a6eb 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k.h
++++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
+@@ -140,7 +140,7 @@ struct fm10k_ring {
+ 					 * different for DCB and RSS modes
+ 					 */
+ 	u8 qos_pc;			/* priority class of queue */
+-	u16 vid;			/* default vlan ID of queue */
++	u16 vid;			/* default VLAN ID of queue */
+ 	u16 count;			/* amount of descriptors */
+ 
+ 	u16 next_to_alloc;
+@@ -443,7 +443,7 @@ union fm10k_ftag_info {
+ 	struct {
+ 		/* dglort and sglort combined into a single 32bit desc read */
+ 		__le32 glort;
+-		/* upper 16 bits of vlan are reserved 0 for swpri_type_user */
++		/* upper 16 bits of VLAN are reserved 0 for swpri_type_user */
+ 		__le32 vlan;
+ 	} d;
+ 	struct {
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+index 38fe2d8c8388..4307f1808d3a 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+@@ -630,7 +630,7 @@ static netdev_tx_t fm10k_xmit_frame(struct sk_buff *skb, struct net_device *dev)
+ 		if (err)
+ 			return NETDEV_TX_OK;
+ 
+-		/* locate vlan header */
++		/* locate VLAN header */
+ 		vhdr = (struct vlan_hdr *)(skb->data + ETH_HLEN);
+ 
+ 		/* pull the 2 key pieces of data out of it */
+@@ -776,7 +776,7 @@ static int fm10k_update_vid(struct net_device *netdev, u16 vid, bool set)
+ 	if (!set)
+ 		clear_bit(vid, interface->active_vlans);
+ 
+-	/* disable the default VID on ring if we have an active VLAN */
++	/* disable the default VLAN ID on ring if we have an active VLAN */
+ 	for (i = 0; i < interface->num_rx_queues; i++) {
+ 		struct fm10k_ring *rx_ring = interface->rx_ring[i];
+ 		u16 rx_vid = rx_ring->vid & (VLAN_N_VID - 1);
+@@ -787,7 +787,7 @@ static int fm10k_update_vid(struct net_device *netdev, u16 vid, bool set)
+ 			rx_ring->vid &= ~FM10K_VLAN_CLEAR;
+ 	}
+ 
+-	/* Do not remove default VID related entries from VLAN and MAC tables */
++	/* Do not remove default VLAN ID related entries from VLAN and MAC tables */
+ 	if (!set && vid == hw->mac.default_vid)
+ 		return 0;
+ 
+@@ -812,7 +812,7 @@ static int fm10k_update_vid(struct net_device *netdev, u16 vid, bool set)
+ 	if (err)
+ 		goto err_out;
+ 
+-	/* set vid prior to syncing/unsyncing the VLAN */
++	/* set VLAN ID prior to syncing/unsyncing the VLAN */
+ 	interface->vid = vid + (set ? VLAN_N_VID : 0);
+ 
+ 	/* Update the unicast and multicast address list to add/drop VLAN */
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index e68000c35e02..3e1c65706736 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -715,7 +715,7 @@ static void fm10k_configure_rx_ring(struct fm10k_intfc *interface,
+ 	/* assign default VLAN to queue */
+ 	ring->vid = hw->mac.default_vid;
+ 
+-	/* if we have an active VLAN, disable default VID */
++	/* if we have an active VLAN, disable default VLAN ID */
+ 	if (test_bit(hw->mac.default_vid, interface->active_vlans))
+ 		ring->vid |= FM10K_VLAN_CLEAR;
+ 
+@@ -1299,7 +1299,7 @@ static s32 fm10k_update_pvid(struct fm10k_hw *hw, u32 **results,
+ 	if (!fm10k_glort_valid_pf(hw, glort))
+ 		return FM10K_ERR_PARAM;
+ 
+-	/* verify VID is valid */
++	/* verify VLAN ID is valid */
+ 	if (pvid >= FM10K_VLAN_TABLE_VID_MAX)
+ 		return FM10K_ERR_PARAM;
+ 
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+index c7e09592c1f6..d5fc7034822f 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+@@ -329,7 +329,7 @@ static s32 fm10k_update_xc_addr_pf(struct fm10k_hw *hw, u16 glort,
+ 	/* clear set bit from VLAN ID */
+ 	vid &= ~FM10K_VLAN_CLEAR;
+ 
+-	/* if glort or vlan are not valid return error */
++	/* if glort or VLAN are not valid return error */
+ 	if (!fm10k_glort_valid_pf(hw, glort) || vid >= FM10K_VLAN_TABLE_VID_MAX)
+ 		return FM10K_ERR_PARAM;
+ 
+@@ -921,7 +921,7 @@ static s32 fm10k_iov_assign_default_mac_vlan_pf(struct fm10k_hw *hw,
+ 	txqctl |= (vf_idx << FM10K_TXQCTL_TC_SHIFT) |
+ 		  FM10K_TXQCTL_VF | vf_idx;
+ 
+-	/* assign VID */
++	/* assign VLAN ID */
+ 	for (i = 0; i < queues_per_pool; i++)
+ 		fm10k_write_reg(hw, FM10K_TXQCTL(vf_q_idx + i), txqctl);
+ 
+@@ -1172,12 +1172,12 @@ s32 fm10k_iov_msg_msix_pf(struct fm10k_hw *hw, u32 **results,
+ }
+ 
+ /**
+- * fm10k_iov_select_vid - Select correct default VID
++ * fm10k_iov_select_vid - Select correct default VLAN ID
+  * @hw: Pointer to hardware structure
+- * @vid: VID to correct
++ * @vid: VLAN ID to correct
+  *
+- * Will report an error if VID is out of range. For VID = 0, it will return
+- * either the pf_vid or sw_vid depending on which one is set.
++ * Will report an error if the VLAN ID is out of range. For VID = 0, it will
++ * return either the pf_vid or sw_vid depending on which one is set.
+  */
+ static inline s32 fm10k_iov_select_vid(struct fm10k_vf_info *vf_info, u16 vid)
+ {
+@@ -1707,7 +1707,7 @@ s32 fm10k_msg_update_pvid_pf(struct fm10k_hw *hw, u32 **results,
+ 	if (!fm10k_glort_valid_pf(hw, glort))
+ 		return FM10K_ERR_PARAM;
+ 
+-	/* verify VID is valid */
++	/* verify VLAN ID is valid */
+ 	if (pvid >= FM10K_VLAN_TABLE_VID_MAX)
+ 		return FM10K_ERR_PARAM;
+ 
+-- 
+2.6.1.264.gbab76a9
 
