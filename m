@@ -1,11 +1,10 @@
 From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Tue, 3 Nov 2015 20:48:22 +0000
-Subject: [Intel-wired-lan] [next PATCH 3/5] fm10k: Cleanup exception
- handling for changing queues
-In-Reply-To: <20151027235924.30048.24399.stgit@localhost.localdomain>
-References: <20151027235341.30048.46286.stgit@localhost.localdomain>
- <20151027235924.30048.24399.stgit@localhost.localdomain>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E27225E83@ORSMSX103.amr.corp.intel.com>
+Date: Tue, 3 Nov 2015 20:51:34 +0000
+Subject: [Intel-wired-lan] [next-queue v3 01/17] fm10k:
+	conditionally	compile DCB and DebugFS support
+In-Reply-To: <1444944297-9733-1-git-send-email-jacob.e.keller@intel.com>
+References: <1444944297-9733-1-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E27225E9D@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,22 +14,17 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 
 -----Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Alexander Duyck
-Sent: Tuesday, October 27, 2015 4:59 PM
-To: intel-wired-lan@lists.osuosl.org
-Subject: [Intel-wired-lan] [next PATCH 3/5] fm10k: Cleanup exception handling for changing queues
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Jacob Keller
+Sent: Thursday, October 15, 2015 2:25 PM
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Subject: [Intel-wired-lan] [next-queue v3 01/17] fm10k: conditionally compile DCB and DebugFS support
 
-This patch is meant to cleanup the exception handling for the paths where we reset the interrupts and then reconfigure them.  In all of these paths we had very different levels of exception handling.  I have updated the driver so that all of the paths should result in a similar state if we fail.
+Rather than wrapping fm10k_dcbnl.c and fm10k_debugfs.c support with  #ifdef blocks, just conditionally include the .o files in the Makefile.
+ Also, since we're modifying it, update the copyright year on the  Makefile.
 
-Specifically the driver will now unload the mailbox interrupt, free the queue vectors and MSI-X, and then detach the interface.
-
-In addition for any of the PCIe related resets I have added a check with the hw_ready function to just make sure the registers are in a readable state prior to reopening the interface.
-
-Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
 
 Tested-by: Krishneil Singh <Krishneil.k.singh@intel.com>
-
-
 
 
