@@ -1,104 +1,192 @@
 From: Alexander Duyck <aduyck@mirantis.com>
-Date: Mon, 02 Nov 2015 17:09:42 -0800
-Subject: [Intel-wired-lan] [next PATCH 03/11] ixgbe: Simplify definitions
- for regidx and bit in set_vfta
+Date: Mon, 02 Nov 2015 17:09:48 -0800
+Subject: [Intel-wired-lan] [next PATCH 04/11] ixgbe: Reduce VT code indent
+ in set_vfta by introducing jump label
 In-Reply-To: <20151103005850.28233.63113.stgit@localhost.localdomain>
 References: <20151103005850.28233.63113.stgit@localhost.localdomain>
-Message-ID: <20151103010941.28233.36303.stgit@localhost.localdomain>
+Message-ID: <20151103010948.28233.88958.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch simplifies the logic for setting the VFTA register by removing
-the number of conditional checks needed.  Instead we just use some boolean
-logic to generate vfta_delta, and if that is set then we xor the vfta by
-that value and write it back.
+In order to clear the way for upcoming work I thought it best to drop the
+level of indent in the ixgbe_set_vfta_generic function.  Most of the code
+is held in the virtualization specific section.  So the easiest approach is
+to just add a jump label and jump past the bulk of the code if it is not
+enabled.
 
 Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |   48 +++++++++--------------
- 1 file changed, 19 insertions(+), 29 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |  142 +++++++++++------------
+ 1 file changed, 70 insertions(+), 72 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-index daec6aef5dc8..027c1ad3e8cb 100644
+index 027c1ad3e8cb..f608973ae73e 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-@@ -3050,13 +3050,9 @@ static s32 ixgbe_find_vlvf_slot(struct ixgbe_hw *hw, u32 vlan)
- s32 ixgbe_set_vfta_generic(struct ixgbe_hw *hw, u32 vlan, u32 vind,
+@@ -3051,8 +3051,8 @@ s32 ixgbe_set_vfta_generic(struct ixgbe_hw *hw, u32 vlan, u32 vind,
  			   bool vlan_on)
  {
--	s32 regindex;
--	u32 bitindex;
--	u32 vfta;
-+	u32 regidx, vfta_delta, vfta;
+ 	u32 regidx, vfta_delta, vfta;
++	s32 vlvf_index;
  	u32 bits;
- 	u32 vt;
--	u32 targetbit;
--	bool vfta_changed = false;
+-	u32 vt;
  
  	if (vlan > 4095)
  		return IXGBE_ERR_PARAM;
-@@ -3073,22 +3069,16 @@ s32 ixgbe_set_vfta_generic(struct ixgbe_hw *hw, u32 vlan, u32 vind,
- 	 *    bits[11-5]: which register
- 	 *    bits[4-0]:  which bit in the register
+@@ -3088,83 +3088,81 @@ s32 ixgbe_set_vfta_generic(struct ixgbe_hw *hw, u32 vlan, u32 vind,
+ 	 *   Or !vlan_on
+ 	 *     clear the pool bit and possibly the vind
  	 */
--	regindex = (vlan >> 5) & 0x7F;
--	bitindex = vlan & 0x1F;
--	targetbit = (1 << bitindex);
--	vfta = IXGBE_READ_REG(hw, IXGBE_VFTA(regindex));
+-	vt = IXGBE_READ_REG(hw, IXGBE_VT_CTL);
+-	if (vt & IXGBE_VT_CTL_VT_ENABLE) {
+-		s32 vlvf_index;
 -
--	if (vlan_on) {
--		if (!(vfta & targetbit)) {
--			vfta |= targetbit;
--			vfta_changed = true;
--		}
--	} else {
--		if ((vfta & targetbit)) {
--			vfta &= ~targetbit;
--			vfta_changed = true;
--		}
--	}
-+	regidx = vlan / 32;
-+	vfta_delta = 1 << (vlan % 32);
-+	vfta = IXGBE_READ_REG(hw, IXGBE_VFTA(regidx));
-+
-+	/* vfta_delta represents the difference between the current value
-+	 * of vfta and the value we want in the register.  Since the diff
-+	 * is an XOR mask we can just update vfta using an XOR.
-+	 */
-+	vfta_delta &= vlan_on ? ~vfta : vfta;
-+	vfta ^= vfta_delta;
- 
- 	/* Part 2
- 	 * If VT Mode is set
-@@ -3164,19 +3154,19 @@ s32 ixgbe_set_vfta_generic(struct ixgbe_hw *hw, u32 vlan, u32 vind,
- 		if (bits) {
- 			IXGBE_WRITE_REG(hw, IXGBE_VLVF(vlvf_index),
- 					(IXGBE_VLVF_VIEN | vlan));
--			if (!vlan_on) {
--				/* someone wants to clear the vfta entry
--				 * but some pools/VFs are still using it.
--				 * Ignore it. */
--				vfta_changed = false;
+-		vlvf_index = ixgbe_find_vlvf_slot(hw, vlan);
+-		if (vlvf_index < 0)
+-			return vlvf_index;
+-
+-		if (vlan_on) {
+-			/* set the pool bit */
+-			if (vind < 32) {
+-				bits = IXGBE_READ_REG(hw,
+-						IXGBE_VLVFB(vlvf_index*2));
+-				bits |= (1 << vind);
+-				IXGBE_WRITE_REG(hw,
+-						IXGBE_VLVFB(vlvf_index*2),
+-						bits);
+-			} else {
+-				bits = IXGBE_READ_REG(hw,
+-						IXGBE_VLVFB((vlvf_index*2)+1));
+-				bits |= (1 << (vind-32));
+-				IXGBE_WRITE_REG(hw,
+-						IXGBE_VLVFB((vlvf_index*2)+1),
+-						bits);
 -			}
++	if (!(IXGBE_READ_REG(hw, IXGBE_VT_CTL) & IXGBE_VT_CTL_VT_ENABLE))
++		goto vfta_update;
 +
-+			/* if someone wants to clear the vfta entry but
-+			 * some pools/VFs are still using it.  Ignore it.
-+			 */
-+			if (!vlan_on)
-+				vfta_delta = 0;
++	vlvf_index = ixgbe_find_vlvf_slot(hw, vlan);
++	if (vlvf_index < 0)
++		return vlvf_index;
++
++	if (vlan_on) {
++		/* set the pool bit */
++		if (vind < 32) {
++			bits = IXGBE_READ_REG(hw,
++					IXGBE_VLVFB(vlvf_index*2));
++			bits |= (1 << vind);
++			IXGBE_WRITE_REG(hw,
++					IXGBE_VLVFB(vlvf_index*2),
++					bits);
  		} else {
- 			IXGBE_WRITE_REG(hw, IXGBE_VLVF(vlvf_index), 0);
+-			/* clear the pool bit */
+-			if (vind < 32) {
+-				bits = IXGBE_READ_REG(hw,
+-						IXGBE_VLVFB(vlvf_index*2));
+-				bits &= ~(1 << vind);
+-				IXGBE_WRITE_REG(hw,
+-						IXGBE_VLVFB(vlvf_index*2),
+-						bits);
+-				bits |= IXGBE_READ_REG(hw,
+-						IXGBE_VLVFB((vlvf_index*2)+1));
+-			} else {
+-				bits = IXGBE_READ_REG(hw,
+-						IXGBE_VLVFB((vlvf_index*2)+1));
+-				bits &= ~(1 << (vind-32));
+-				IXGBE_WRITE_REG(hw,
+-						IXGBE_VLVFB((vlvf_index*2)+1),
+-						bits);
+-				bits |= IXGBE_READ_REG(hw,
+-						IXGBE_VLVFB(vlvf_index*2));
+-			}
++			bits = IXGBE_READ_REG(hw,
++					IXGBE_VLVFB((vlvf_index*2)+1));
++			bits |= (1 << (vind-32));
++			IXGBE_WRITE_REG(hw,
++					IXGBE_VLVFB((vlvf_index*2)+1),
++					bits);
+ 		}
+-
+-		/*
+-		 * If there are still bits set in the VLVFB registers
+-		 * for the VLAN ID indicated we need to see if the
+-		 * caller is requesting that we clear the VFTA entry bit.
+-		 * If the caller has requested that we clear the VFTA
+-		 * entry bit but there are still pools/VFs using this VLAN
+-		 * ID entry then ignore the request.  We're not worried
+-		 * about the case where we're turning the VFTA VLAN ID
+-		 * entry bit on, only when requested to turn it off as
+-		 * there may be multiple pools and/or VFs using the
+-		 * VLAN ID entry.  In that case we cannot clear the
+-		 * VFTA bit until all pools/VFs using that VLAN ID have also
+-		 * been cleared.  This will be indicated by "bits" being
+-		 * zero.
+-		 */
+-		if (bits) {
+-			IXGBE_WRITE_REG(hw, IXGBE_VLVF(vlvf_index),
+-					(IXGBE_VLVF_VIEN | vlan));
+-
+-			/* if someone wants to clear the vfta entry but
+-			 * some pools/VFs are still using it.  Ignore it.
+-			 */
+-			if (!vlan_on)
+-				vfta_delta = 0;
++	} else {
++		/* clear the pool bit */
++		if (vind < 32) {
++			bits = IXGBE_READ_REG(hw,
++					IXGBE_VLVFB(vlvf_index*2));
++			bits &= ~(1 << vind);
++			IXGBE_WRITE_REG(hw,
++					IXGBE_VLVFB(vlvf_index*2),
++					bits);
++			bits |= IXGBE_READ_REG(hw,
++					IXGBE_VLVFB((vlvf_index*2)+1));
+ 		} else {
+-			IXGBE_WRITE_REG(hw, IXGBE_VLVF(vlvf_index), 0);
++			bits = IXGBE_READ_REG(hw,
++					IXGBE_VLVFB((vlvf_index*2)+1));
++			bits &= ~(1 << (vind-32));
++			IXGBE_WRITE_REG(hw,
++					IXGBE_VLVFB((vlvf_index*2)+1),
++					bits);
++			bits |= IXGBE_READ_REG(hw,
++					IXGBE_VLVFB(vlvf_index*2));
  		}
  	}
  
--	if (vfta_changed)
--		IXGBE_WRITE_REG(hw, IXGBE_VFTA(regindex), vfta);
-+	if (vfta_delta)
-+		IXGBE_WRITE_REG(hw, IXGBE_VFTA(regidx), vfta);
++	/* If there are still bits set in the VLVFB registers
++	 * for the VLAN ID indicated we need to see if the
++	 * caller is requesting that we clear the VFTA entry bit.
++	 * If the caller has requested that we clear the VFTA
++	 * entry bit but there are still pools/VFs using this VLAN
++	 * ID entry then ignore the request.  We're not worried
++	 * about the case where we're turning the VFTA VLAN ID
++	 * entry bit on, only when requested to turn it off as
++	 * there may be multiple pools and/or VFs using the
++	 * VLAN ID entry.  In that case we cannot clear the
++	 * VFTA bit until all pools/VFs using that VLAN ID have also
++	 * been cleared.  This will be indicated by "bits" being
++	 * zero.
++	 */
++	if (bits) {
++		IXGBE_WRITE_REG(hw, IXGBE_VLVF(vlvf_index),
++				(IXGBE_VLVF_VIEN | vlan));
++
++		/* if someone wants to clear the vfta entry but
++		 * some pools/VFs are still using it.  Ignore it.
++		 */
++		if (!vlan_on)
++			vfta_delta = 0;
++	} else {
++		IXGBE_WRITE_REG(hw, IXGBE_VLVF(vlvf_index), 0);
++	}
++
++vfta_update:
+ 	if (vfta_delta)
+ 		IXGBE_WRITE_REG(hw, IXGBE_VFTA(regidx), vfta);
  
- 	return 0;
- }
 
