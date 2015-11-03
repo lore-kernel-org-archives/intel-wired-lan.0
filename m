@@ -1,33 +1,71 @@
-From: Miller, Darin J <darin.j.miller@intel.com>
-Date: Wed, 4 Nov 2015 18:40:22 +0000
-Subject: [Intel-wired-lan] [net-next PATCH 3/3] ixgbe: Allow FDB entries
- access to more RAR filters
-In-Reply-To: <20151022232642.24612.46212.stgit@ahduyck-vm-fedora22>
-References: <20151022232228.24612.81341.stgit@ahduyck-vm-fedora22>
- <20151022232642.24612.46212.stgit@ahduyck-vm-fedora22>
-Message-ID: <A91205FD8A6E14448BD4414C06E9C3D375211201@fmsmsx115.amr.corp.intel.com>
+From: Stanton, Kevin B <kevin.b.stanton@intel.com>
+Date: Tue, 3 Nov 2015 19:18:10 +0000
+Subject: [Intel-wired-lan] [PATCH v4 1/4] Produce system time from
+	correlated clocksource
+In-Reply-To: <alpine.DEB.2.11.1510210941130.4000@nanos>
+References: <1444675522-4198-1-git-send-email-christopher.s.hall@intel.com>
+ <1444675522-4198-2-git-send-email-christopher.s.hall@intel.com>
+ <alpine.DEB.2.11.1510132116480.25029@nanos>
+ <op.x6iyd7gq1774gr@chall-mobl2.amr.corp.intel.com>
+ <alpine.DEB.2.11.1510151014330.3960@nanos>
+ <op.x6r25dza1774gr@chall-mobl2.amr.corp.intel.com>
+ <CALAqxLXu_C8sWaKyxqXJPFV+m5Zdk=4q4s7O6NoLR1B8bbyuxg@mail.gmail.com>
+ <20151020085408.GA2542@netboy> <alpine.DEB.2.11.1510201246250.3982@nanos>
+ <20151020115113.GA23428@netboy> <20151020145523.GA5207@netboy>
+ <alpine.DEB.2.11.1510202107410.8159@nanos>
+ <CALAqxLXGnzwH5OgDCyggzxbao7UvS6_SOtVVkNVmjrsrOL-YBw@mail.gmail.com>
+ <alpine.DEB.2.11.1510210941130.4000@nanos>
+Message-ID: <487620E8DE6666469C4E4133DA94A0EF31F42651@FMSMSX108.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Wed, 21 Oct 2015, Thomas Gleixner wrote:
+> On Tue, 20 Oct 2015, John Stultz wrote:
+>> Being able to have various hardware sharing a time base is quite 
+>> useful, and methods for correlating timestamps together are useful.
+>> But I don't yet really understand why its important that we can 
+>> translate a hardware timestamp from some time in the past to the 
+>> correct system time in the past without error.
 
+>If your device can only provide timestamps from the past, then
+>having access to the history is important if you want to have
+>precise correlation.
 
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Alexander Duyck
-Sent: Thursday, October 22, 2015 4:27 PM
-To: netdev@vger.kernel.org; intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
-Subject: [Intel-wired-lan] [net-next PATCH 3/3] ixgbe: Allow FDB entries access to more RAR filters
+I hope this can be solved in timekeeping. But first, a quick
+recap...
 
-This change makes it so that we allow the PF to make use of all free RAR entries for FDB use if needed.
+The timestamp pair (including the ART snapshot, as described
+previously) is captured simultaneously by the hardware
+resulting, effectively, in a (PTP,TSC) pair, or
+(AudioPosition,TSC) pair. The in-the-past-TSC value needs to be
+converted to system time so that it can be used by applications,
+without exposing the underlying ART or TSC.
 
-Previously the code limited us to 16 unicast entries, however this was shared between MACVLAN which wasn't limited and the FDB code which was.  So instead of treating the FDB code as a second class citizen I have updated it so that it has access to just as many entries as the MACVLAN filters.
+Note: ART is architectural, defined as part of Invariant
+Timekeeping in the current SDM, so this isn't a one-off
+capability.
 
-Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+To convert a past TSC timestamp to system time 'correctly' (in a
+mathematical sense), a history of monotonic rate adjustments
+since that time in the past must be maintained.
 
-Tested-by: Darin Miller <darin.j.miller@intel.com>
+Regarding the amount of history, as Chris mentioned (and
+in the context of new Intel hardware) LAN timestamp pairs are
+a few microseconds in the past (no history would be required),
+but for timestamps captured by the audio DSP, unfortunately,
+they can be a small number of *milliseconds* in the past by the
+time they're available to the audio driver (some history
+required to convert accurately). I'm told that 4ms of adjustment
+history accommodates known hardware.
+
+Getting this 'correct' in one place (timekeeping) seems a lot
+better than unnecessarily introducing inaccuracy via software
+sampling (and extrapolation) or leaving it to each driver to do
+it themselves, and to do it differently (and/or do it wrongly).
+
+Best Regards,
+Kevin
 
