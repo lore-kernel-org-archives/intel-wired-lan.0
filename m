@@ -1,30 +1,49 @@
-From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Tue, 3 Nov 2015 20:51:34 +0000
-Subject: [Intel-wired-lan] [next-queue v3 01/17] fm10k:
-	conditionally	compile DCB and DebugFS support
-In-Reply-To: <1444944297-9733-1-git-send-email-jacob.e.keller@intel.com>
-References: <1444944297-9733-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E27225E9D@ORSMSX103.amr.corp.intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Tue, 3 Nov 2015 13:47:55 -0800
+Subject: [Intel-wired-lan] [next-queue] fm10k: explain why we need
+ __packed on some TLV structures
+In-Reply-To: <1446579154-1112-1-git-send-email-jacob.e.keller@intel.com>
+References: <1446579154-1112-1-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <56392B8B.4090208@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On 11/03/2015 11:32 AM, Jacob Keller wrote:
+> Add an explanatory comment about the __packed attribute on these
+> structures due to TLV data layout requirements.
+>
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> ---
+>   drivers/net/ethernet/intel/fm10k/fm10k_pf.h | 5 +++++
+>   1 file changed, 5 insertions(+)
+>
+> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.h b/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
+> index a8fc512a2416..661a4062b756 100644
+> --- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
+> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
+> @@ -74,6 +74,11 @@ enum fm10k_pf_tlv_attr_id_v1 {
+>   #define FM10K_MSG_UPDATE_PVID_PVID_SHIFT	16
+>   #define FM10K_MSG_UPDATE_PVID_PVID_SIZE		16
+>   
+> +/* The following data structures are overlayed specifically to TLV mailbox
+> + * messages, and must not have gaps between their values. They must line up
+> + * correctly to the TLV definition.
+> + */
+> +
+>   struct fm10k_mac_update {
+>   	__le32	mac_lower;
+>   	__le16	mac_upper;
 
+Really I don't think this tells the story of why the packed attribute is 
+needed.  From what I can tell there aren't any holes in the structures 
+themselves.  It looks like the issue is the padding on the end.  From 
+what I can tell only the only message that really needs the packed 
+attribute it is the 1588 message because it uses __le64 values and as 
+such the actual size will vary by 4 bytes between 64b and 32b systems.
 
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Jacob Keller
-Sent: Thursday, October 15, 2015 2:25 PM
-To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-Subject: [Intel-wired-lan] [next-queue v3 01/17] fm10k: conditionally compile DCB and DebugFS support
-
-Rather than wrapping fm10k_dcbnl.c and fm10k_debugfs.c support with  #ifdef blocks, just conditionally include the .o files in the Makefile.
- Also, since we're modifying it, update the copyright year on the  Makefile.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
-
-Tested-by: Krishneil Singh <Krishneil.k.singh@intel.com>
+- Alex
 
 
