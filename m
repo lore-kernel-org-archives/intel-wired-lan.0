@@ -1,9 +1,9 @@
 From: Aaron Sierra <asierra@xes-inc.com>
-Date: Tue, 3 Nov 2015 12:37:40 -0600 (CST)
-Subject: [Intel-wired-lan] [PATCH 5/5] igb: Add I210 cable fault detection
-	to self test
-In-Reply-To: <1611213829.304573.1446575372067.JavaMail.zimbra@xes-inc.com>
-Message-ID: <1327466653.305871.1446575860238.JavaMail.zimbra@xes-inc.com>
+Date: Tue, 3 Nov 2015 12:37:29 -0600 (CST)
+Subject: [Intel-wired-lan] [PATCH 4/5] igb: Explicitly label self-test
+	result indices
+In-Reply-To: <1888067736.304762.1446575427308.JavaMail.zimbra@xes-inc.com>
+Message-ID: <2113406542.305783.1446575849467.JavaMail.zimbra@xes-inc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,308 +12,102 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Joe Schultz <jschultz@xes-inc.com>
 
-Add an offline diagnostic test for the I210 internal PHY which checks
-for cable faults and reports the distance along the cable where the
-fault was detected. Fault types detected include open, short, and
-cross-pair short.
+Previously, the ethtool self-test gstrings/data arrays were accessed via
+hardcoded indices, which made the code difficult to follow. This patch
+replaces the hardcoded values with enum-based labels.
 
 Signed-off-by: Joe Schultz <jschultz@xes-inc.com>
 Signed-off-by: Aaron Sierra <asierra@xes-inc.com>
 ---
- drivers/net/ethernet/intel/igb/e1000_defines.h |  13 +-
- drivers/net/ethernet/intel/igb/igb_ethtool.c   | 192 ++++++++++++++++++++++++-
- 2 files changed, 199 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/igb/igb_ethtool.c | 38 ++++++++++++++++++----------
+ 1 file changed, 24 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
-index 4ae3054..8effebf 100644
---- a/drivers/net/ethernet/intel/igb/e1000_defines.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
-@@ -931,6 +931,7 @@
- #define I347AT4_PCDL1                  0x11 /* Pair 1 PHY Cable Diagnostics Length */
- #define I347AT4_PCDL2                  0x12 /* Pair 2 PHY Cable Diagnostics Length */
- #define I347AT4_PCDL3                  0x13 /* Pair 3 PHY Cable Diagnostics Length */
-+#define I347AT4_PCDR                   0x14 /* PHY Cable Diagnostics Results */
- #define I347AT4_PCDC                   0x15 /* PHY Cable Diagnostics Control */
- #define I347AT4_PAGE_SELECT            0x16
- 
-@@ -951,7 +952,17 @@
- #define I347AT4_PSCR_DOWNSHIFT_8X     0x7000
- 
- /* i347-AT4 PHY Cable Diagnostics Control */
--#define I347AT4_PCDC_CABLE_LENGTH_UNIT 0x0400 /* 0=cm 1=meters */
-+#define I347AT4_PCDC_CABLE_LENGTH_UNIT	0x0400 /* 0=cm 1=meters */
-+#define I347AT4_PCDC_CABLE_DIAG_STATUS	0x0800
-+#define I347AT4_PCDC_DISABLE_CROSS_PAIR	0x2000
-+#define I347AT4_PCDC_RUN_AT_AUTONEG	0x4000
-+#define I347AT4_PCDC_RUN_TEST		0x8000
-+
-+/* i347-AT4 PHY Cable Diagnostics Results */
-+#define I347AT4_PCDR_CABLE_OK		0x0001 /* No faults detected on pair */
-+#define I347AT4_PCDR_CABLE_OPEN		0x0002 /* Open pair detected */
-+#define I347AT4_PCDR_CABLE_SHORT	0x0003 /* Shorted pair detected */
-+#define I347AT4_PCDR_CABLE_CROSS_SHORT	0x0004 /* Cross-pair short detected */
- 
- /* Marvell 1112 only registers */
- #define M88E1112_VCT_DSP_DISTANCE       0x001A
 diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index f5da885..96e6a20 100644
+index 7426276..f5da885 100644
 --- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
 +++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -132,7 +132,28 @@ enum igb_diagnostics_results {
- 	TEST_EEP,
- 	TEST_IRQ,
- 	TEST_LOOP,
--	TEST_LINK
-+	TEST_LINK,
-+	/* I210 superset */
-+	TEST_FAULT_A,
-+	TEST_FAULT_B,
-+	TEST_FAULT_C,
-+	TEST_FAULT_D,
-+	TEST_LENGTH_A,
-+	TEST_LENGTH_B,
-+	TEST_LENGTH_C,
-+	TEST_LENGTH_D,
-+	TEST_OPEN_A,
-+	TEST_OPEN_B,
-+	TEST_OPEN_C,
-+	TEST_OPEN_D,
-+	TEST_SHORT_A,
-+	TEST_SHORT_B,
-+	TEST_SHORT_C,
-+	TEST_SHORT_D,
-+	TEST_CROSS_A,
-+	TEST_CROSS_B,
-+	TEST_CROSS_C,
-+	TEST_CROSS_D
- };
+@@ -127,10 +127,20 @@ static const struct igb_stats igb_gstrings_net_stats[] = {
+ #define IGB_STATS_LEN \
+ 	(IGB_GLOBAL_STATS_LEN + IGB_NETDEV_STATS_LEN + IGB_QUEUE_STATS_LEN)
  
- static const char igb_gstrings_test[][ETH_GSTRING_LEN] = {
-@@ -142,7 +163,50 @@ static const char igb_gstrings_test[][ETH_GSTRING_LEN] = {
- 	[TEST_LOOP] = "Loopback test  (offline)",
- 	[TEST_LINK] = "Link test   (on/offline)"
- };
-+
-+static const char igb_i210_gstrings_test[][ETH_GSTRING_LEN] = {
-+	[TEST_REG]	= "Register test        (offline)",
-+	[TEST_EEP]	= "Eeprom test          (offline)",
-+	[TEST_IRQ]	= "Interrupt test       (offline)",
-+	[TEST_LOOP]	= "Loopback test        (offline)",
-+	[TEST_LINK]	= "Link test         (on/offline)",
-+	[TEST_FAULT_A]  = "Pair A cable fault   (offline)",
-+	[TEST_FAULT_B]  = "Pair B cable fault   (offline)",
-+	[TEST_FAULT_C]  = "Pair C cable fault   (offline)",
-+	[TEST_FAULT_D]  = "Pair D cable fault   (offline)",
-+	[TEST_LENGTH_A] = "Pair A fault distance         ",
-+	[TEST_LENGTH_B] = "Pair B fault distance         ",
-+	[TEST_LENGTH_C] = "Pair C fault distance         ",
-+	[TEST_LENGTH_D] = "Pair D fault distance         ",
-+	[TEST_OPEN_A]   = "Pair A fault open             ",
-+	[TEST_OPEN_B]   = "Pair B fault open             ",
-+	[TEST_OPEN_C]   = "Pair C fault open             ",
-+	[TEST_OPEN_D]   = "Pair D fault open             ",
-+	[TEST_SHORT_A]  = "Pair A fault intra-pair short ",
-+	[TEST_SHORT_B]  = "Pair B fault intra-pair short ",
-+	[TEST_SHORT_C]  = "Pair C fault intra-pair short ",
-+	[TEST_SHORT_D]  = "Pair D fault intra-pair short ",
-+	[TEST_CROSS_A]  = "Pair A fault inter-pair short ",
-+	[TEST_CROSS_B]  = "Pair B fault inter-pair short ",
-+	[TEST_CROSS_C]  = "Pair C fault inter-pair short ",
-+	[TEST_CROSS_D]  = "Pair D fault inter-pair short "
++enum igb_diagnostics_results {
++	TEST_REG = 0,
++	TEST_EEP,
++	TEST_IRQ,
++	TEST_LOOP,
++	TEST_LINK
 +};
 +
+ static const char igb_gstrings_test[][ETH_GSTRING_LEN] = {
+-	"Register test  (offline)", "Eeprom test    (offline)",
+-	"Interrupt test (offline)", "Loopback test  (offline)",
+-	"Link test   (on/offline)"
++	[TEST_REG]  = "Register test  (offline)",
++	[TEST_EEP]  = "Eeprom test    (offline)",
++	[TEST_IRQ]  = "Interrupt test (offline)",
++	[TEST_LOOP] = "Loopback test  (offline)",
++	[TEST_LINK] = "Link test   (on/offline)"
+ };
  #define IGB_TEST_LEN (sizeof(igb_gstrings_test) / ETH_GSTRING_LEN)
-+#define IGB_I210_TEST_LEN (sizeof(igb_i210_gstrings_test) / ETH_GSTRING_LEN)
-+
-+static inline bool igb_has_i210_cable_fault_test(struct igb_adapter *adapter)
-+{
-+	struct e1000_hw *hw = &adapter->hw;
-+
-+	if (hw->phy.media_type != e1000_media_type_copper)
-+		return false;
-+
-+	if (hw->phy.id == I210_I_PHY_ID)
-+		return true;
-+
-+	return false;
-+}
  
- static int igb_get_settings(struct net_device *netdev, struct ethtool_cmd *ecmd)
- {
-@@ -853,7 +917,8 @@ static void igb_get_drvinfo(struct net_device *netdev,
- 	strlcpy(drvinfo->bus_info, pci_name(adapter->pdev),
- 		sizeof(drvinfo->bus_info));
- 	drvinfo->n_stats = IGB_STATS_LEN;
--	drvinfo->testinfo_len = IGB_TEST_LEN;
-+	drvinfo->testinfo_len = igb_has_i210_cable_fault_test(adapter) ?
-+		IGB_I210_TEST_LEN : IGB_TEST_LEN;
- 	drvinfo->regdump_len = igb_get_regs_len(netdev);
- 	drvinfo->eedump_len = igb_get_eeprom_len(netdev);
- }
-@@ -1987,6 +2052,104 @@ static int igb_link_test(struct igb_adapter *adapter, u64 *data)
- 	return *data;
- }
- 
-+static int igb_cable_fault_test_prep(struct igb_adapter *adapter)
-+{
-+	struct e1000_hw *hw = &adapter->hw;
-+	u16 pcdc;
-+	s32 ret_val;
-+
-+	ret_val = igb_write_phy_reg(hw, I347AT4_PAGE_SELECT, 0x7);
-+	if (ret_val)
-+		goto done;
-+
-+	/* Initiate diagnostics at next auto-negotiation */
-+	pcdc = I347AT4_PCDC_CABLE_LENGTH_UNIT |
-+		I347AT4_PCDC_RUN_AT_AUTONEG;
-+
-+	ret_val = igb_write_phy_reg(hw, I347AT4_PCDC, pcdc);
-+
-+done:
-+	igb_write_phy_reg(hw, I347AT4_PAGE_SELECT, 0);
-+	return ret_val;
-+}
-+
-+static int igb_cable_fault_test(struct igb_adapter *adapter,
-+			   struct ethtool_test *eth_test, u64 *data) {
-+	struct e1000_hw *hw = &adapter->hw;
-+	u16 pcdc, pcdr;
-+	u16 error_code = 0;
-+	u32 timeout = 0;
-+	s32 ret_val;
-+	int i;
-+
-+	ret_val = igb_write_phy_reg(hw, I347AT4_PAGE_SELECT, 0x7);
-+	if (ret_val)
-+		goto done;
-+
-+	ret_val = igb_write_phy_reg(hw, I347AT4_PCDC, pcdc);
-+	if (ret_val)
-+		goto done;
-+
-+	/* Wait up to 1.5s for the results to be ready */
-+	while (pcdc & I347AT4_PCDC_CABLE_DIAG_STATUS) {
-+		ret_val = igb_read_phy_reg(hw, I347AT4_PCDC, &pcdc);
-+		if (ret_val || timeout == 1500)
-+			break;
-+		udelay(1000);
-+		timeout++;
-+	}
-+
-+	if (timeout >= 1500)
-+		dev_warn(&adapter->pdev->dev,
-+			"Cable fault test timed out. Results may be invalid");
-+
-+	ret_val = igb_read_phy_reg(hw, I347AT4_PCDR, &pcdr);
-+	if (ret_val)
-+		goto done;
-+
-+	hw->phy.ops.get_cable_length(hw);
-+
-+	/* Iterate over each cable pair */
-+	for (i = 0; i < 4; i++) {
-+		data[TEST_LENGTH_A + i] = hw->phy.pair_length[i];
-+
-+		error_code = (pcdr >> (i * 4)) & 0xf;
-+		switch (error_code) {
-+		case I347AT4_PCDR_CABLE_OK:
-+			data[TEST_FAULT_A + i] = 0;
-+			data[TEST_LENGTH_A + i] = -1;
-+			/* don't assign ret_val */
-+			break;
-+		case I347AT4_PCDR_CABLE_OPEN:
-+			data[TEST_FAULT_A + i] = 1;
-+			data[TEST_OPEN_A + i] = 1;
-+			ret_val = -1;
-+			break;
-+		case I347AT4_PCDR_CABLE_SHORT:
-+			data[TEST_FAULT_A + i] = 1;
-+			data[TEST_SHORT_A + i] = 1;
-+			ret_val = -1;
-+			break;
-+		case I347AT4_PCDR_CABLE_CROSS_SHORT:
-+			data[TEST_FAULT_A + i] = 1;
-+			data[TEST_CROSS_A + i] = 1;
-+			ret_val = -1;
-+			break;
-+		default:
-+			data[TEST_FAULT_A + i] = -1;
-+			data[TEST_LENGTH_A + i] = -1;
-+			data[TEST_OPEN_A + i] = -1;
-+			data[TEST_SHORT_A + i] = -1;
-+			data[TEST_CROSS_A + i] = -1;
-+			ret_val = -1;
-+		}
-+	}
-+
-+done:
-+	igb_write_phy_reg(hw, I347AT4_PAGE_SELECT, 0);
-+	return ret_val;
-+}
-+
- static void igb_diag_test(struct net_device *netdev,
- 			  struct ethtool_test *eth_test, u64 *data)
- {
-@@ -1997,6 +2160,11 @@ static void igb_diag_test(struct net_device *netdev,
- 
- 	set_bit(__IGB_TESTING, &adapter->state);
- 
-+	if (igb_has_i210_cable_fault_test(adapter)) {
-+		memset(&data[TEST_FAULT_A], 0x0,
-+			sizeof(u64) * (IGB_I210_TEST_LEN - IGB_TEST_LEN));
-+	}
-+
- 	/* can't do offline tests on media switching devices */
- 	if (adapter->hw.dev_spec._82575.mas_capable)
- 		eth_test->flags &= ~ETH_TEST_FL_OFFLINE;
-@@ -2013,12 +2181,21 @@ static void igb_diag_test(struct net_device *netdev,
- 		/* power up link for link test */
- 		igb_power_up_link(adapter);
- 
-+		if (igb_has_i210_cable_fault_test(adapter))
-+			igb_cable_fault_test_prep(adapter);
-+
+@@ -2006,7 +2016,7 @@ static void igb_diag_test(struct net_device *netdev,
  		/* Link test performed before hardware reset so autoneg doesn't
  		 * interfere with test result
  		 */
- 		if (igb_link_test(adapter, &data[TEST_LINK]))
+-		if (igb_link_test(adapter, &data[4]))
++		if (igb_link_test(adapter, &data[TEST_LINK]))
  			eth_test->flags |= ETH_TEST_FL_FAILED;
  
-+		/* Test for cable faults before the PHY gets shut off */
-+		if (igb_has_i210_cable_fault_test(adapter)) {
-+			if (igb_cable_fault_test(adapter, eth_test, data))
-+				eth_test->flags |= ETH_TEST_FL_FAILED;
-+		}
-+
  		if (if_running)
- 			/* indicate we're in test mode */
- 			dev_close(netdev);
-@@ -2274,7 +2451,8 @@ static int igb_get_sset_count(struct net_device *netdev, int sset)
- 	case ETH_SS_STATS:
- 		return IGB_STATS_LEN;
- 	case ETH_SS_TEST:
--		return IGB_TEST_LEN;
-+		return igb_has_i210_cable_fault_test(netdev_priv(netdev)) ?
-+			IGB_I210_TEST_LEN : IGB_TEST_LEN;
- 	default:
- 		return -ENOTSUPP;
- 	}
-@@ -2344,8 +2522,12 @@ static void igb_get_strings(struct net_device *netdev, u32 stringset, u8 *data)
+@@ -2015,21 +2025,21 @@ static void igb_diag_test(struct net_device *netdev,
+ 		else
+ 			igb_reset(adapter);
  
- 	switch (stringset) {
- 	case ETH_SS_TEST:
--		memcpy(data, *igb_gstrings_test,
--			IGB_TEST_LEN*ETH_GSTRING_LEN);
-+		if (igb_has_i210_cable_fault_test(adapter))
-+			memcpy(data, *igb_i210_gstrings_test,
-+				IGB_I210_TEST_LEN*ETH_GSTRING_LEN);
-+		else
-+			memcpy(data, *igb_gstrings_test,
-+				IGB_TEST_LEN*ETH_GSTRING_LEN);
- 		break;
- 	case ETH_SS_STATS:
- 		for (i = 0; i < IGB_GLOBAL_STATS_LEN; i++) {
+-		if (igb_reg_test(adapter, &data[0]))
++		if (igb_reg_test(adapter, &data[TEST_REG]))
+ 			eth_test->flags |= ETH_TEST_FL_FAILED;
+ 
+ 		igb_reset(adapter);
+-		if (igb_eeprom_test(adapter, &data[1]))
++		if (igb_eeprom_test(adapter, &data[TEST_EEP]))
+ 			eth_test->flags |= ETH_TEST_FL_FAILED;
+ 
+ 		igb_reset(adapter);
+-		if (igb_intr_test(adapter, &data[2]))
++		if (igb_intr_test(adapter, &data[TEST_IRQ]))
+ 			eth_test->flags |= ETH_TEST_FL_FAILED;
+ 
+ 		igb_reset(adapter);
+ 		/* power up link for loopback test */
+ 		igb_power_up_link(adapter);
+-		if (igb_loopback_test(adapter, &data[3]))
++		if (igb_loopback_test(adapter, &data[TEST_LOOP]))
+ 			eth_test->flags |= ETH_TEST_FL_FAILED;
+ 
+ 		/* restore speed, duplex, autoneg settings */
+@@ -2049,16 +2059,16 @@ static void igb_diag_test(struct net_device *netdev,
+ 		dev_info(&adapter->pdev->dev, "online testing starting\n");
+ 
+ 		/* PHY is powered down when interface is down */
+-		if (if_running && igb_link_test(adapter, &data[4]))
++		if (if_running && igb_link_test(adapter, &data[TEST_LINK]))
+ 			eth_test->flags |= ETH_TEST_FL_FAILED;
+ 		else
+-			data[4] = 0;
++			data[TEST_LINK] = 0;
+ 
+ 		/* Online tests aren't run; pass by default */
+-		data[0] = 0;
+-		data[1] = 0;
+-		data[2] = 0;
+-		data[3] = 0;
++		data[TEST_REG] = 0;
++		data[TEST_EEP] = 0;
++		data[TEST_IRQ] = 0;
++		data[TEST_LOOP] = 0;
+ 
+ 		clear_bit(__IGB_TESTING, &adapter->state);
+ 	}
 -- 
 1.9.1
 
