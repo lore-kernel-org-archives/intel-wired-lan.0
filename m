@@ -1,65 +1,189 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 03 Nov 2015 04:38:51 -0800
-Subject: [Intel-wired-lan] [next PATCH 00/11] ixgbe: Add support for
- mixed PF/VF virtualization
-In-Reply-To: <20151103005850.28233.63113.stgit@localhost.localdomain>
-References: <20151103005850.28233.63113.stgit@localhost.localdomain>
-Message-ID: <1446554331.12325.0.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 03 Nov 2015 21:33:34 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ 76663d3a6509b362a141311ae591c72e426ba2ea BUILD SUCCESS
+Message-ID: <5638b7ae.x/W7XUE4yOipFebf%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2015-11-02 at 17:09 -0800, Alexander Duyck wrote:
-> This patch series extends the abilities of the ixgbe driver so that
-> we can
-> now support VLAN trunking on top of the PF when SR-IOV is enabled. 
-> By
-> doing this we are able to extend the existing capabilities that were
-> enabled with the "bridge fdb add" support that was added some time
-> ago.  It
-> had enabled the ability to have PF and VF mixed on a flat network,
-> this
-> makes it so that it also works on a VLAN enabled network.
-> 
-> The first few patches in this series are basically just cleanup. 
-> They
-> either fix bugs found in the code, or address complexity that was
-> making it
-> hard to either read or sort out exactly how the code was supposed to
-> work.
-> 
-> The second half of the patch set is where we start adding features.
-> Specifically with this patch set the VLAN behavior changes for the PF
-> in
-> two ways.  First we do not need to use the VLVF if the VFs have not
-> already
-> set up a pool list.  As such I added functionality so that we can
-> skip that
-> step when it is not needed.  Then I added support for VLAN
-> promiscuous by
-> simply setting all of the bits in the VFTA and letting the packets
-> fall
-> through to the default pool.  In addition when in promiscuous mode we
-> set
-> the pool bit for the PF in all of the VLVF entries.  This way if
-> anyone
-> adds a new entry it will automatically have the PF enabled.
-> 
-> The last few patches address some more issues I found during testing.
->   The
-> issues were primarily related to stale entries floating around in
-> either
-> the RAR or VLVFB registers which were pointing to pools which were
-> not
-> valid for the given L2 address.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+76663d3a6509b362a141311ae591c72e426ba2ea  ixgbe: Reset interface after enabling SR-IOV
 
-I have added these patches to my queue, Dave.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151103/1fa1ab25/attachment.asc>
+elapsed time: 107m
+
+configs tested: 168
+
+arm                         ebsa110_defconfig
+sh                        sh7763rdp_defconfig
+sh                          urquell_defconfig
+i386                   randconfig-a0-11022134
+x86_64                 randconfig-a0-11032028
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+mips                           ip22_defconfig
+s390                                defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-11032022
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+arm                         mv78xx0_defconfig
+blackfin                   CM-BF548_defconfig
+ia64                             alldefconfig
+mips                           ip28_defconfig
+openrisc                            defconfig
+blackfin                   CM-BF527_defconfig
+m68k                            q40_defconfig
+mips                           ip27_defconfig
+parisc                        c8000_defconfig
+powerpc                      chrp32_defconfig
+mips                         mpc30x_defconfig
+openrisc                         allyesconfig
+powerpc                     kmp204x_defconfig
+powerpc                 mpc8315_rdb_defconfig
+x86_64               randconfig-x014-11022153
+x86_64               randconfig-x015-11022153
+x86_64               randconfig-x013-11022153
+x86_64               randconfig-x011-11022153
+x86_64               randconfig-x012-11022153
+x86_64               randconfig-x018-11022153
+x86_64               randconfig-x016-11022153
+x86_64               randconfig-x010-11022153
+x86_64               randconfig-x019-11022153
+x86_64               randconfig-x017-11022153
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201544
+i386                     randconfig-s1-201544
+x86_64                 randconfig-s0-11032014
+x86_64                 randconfig-s1-11032014
+x86_64                 randconfig-s2-11032014
+x86_64                 randconfig-s0-11032043
+x86_64                 randconfig-s1-11032043
+x86_64                 randconfig-s2-11032043
+x86_64                 randconfig-s3-11032014
+x86_64                 randconfig-s4-11032014
+x86_64                 randconfig-s5-11032014
+x86_64                 randconfig-s3-11032026
+x86_64                 randconfig-s4-11032026
+x86_64                 randconfig-s5-11032026
+x86_64                 randconfig-s3-11032045
+x86_64                 randconfig-s4-11032045
+x86_64                 randconfig-s5-11032045
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201544
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                          ep93xx_defconfig
+avr32                       favr-32_defconfig
+sh                           se7343_defconfig
+sh                           se7712_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201544
+i386                     randconfig-i1-201544
+x86_64                 randconfig-b0-11032035
+i386                               tinyconfig
+arm                       versatile_defconfig
+mips                malta_kvm_guest_defconfig
+powerpc                 mpc85xx_cds_defconfig
+powerpc64                         allnoconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201544
+i386                   randconfig-h0-11032026
+i386                   randconfig-h1-11032026
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-h0-11032043
+blackfin                  CM-BF537E_defconfig
+mips                malta_qemu_32r6_defconfig
+arm                      footbridge_defconfig
+um                               allmodconfig
+blackfin                 BlackStamp_defconfig
+s390                             alldefconfig
+x86_64                 randconfig-n0-11032035
+arm                          nuc960_defconfig
+um                                allnoconfig
+arm                         hackkit_defconfig
+arm64                            alldefconfig
+i386                  randconfig-sb0-11032021
+i386                  randconfig-sb0-11032038
+x86_64               randconfig-x000-11022122
+x86_64               randconfig-x001-11022122
+x86_64               randconfig-x002-11022122
+x86_64               randconfig-x003-11022122
+x86_64               randconfig-x004-11022122
+x86_64               randconfig-x005-11022122
+x86_64               randconfig-x006-11022122
+x86_64               randconfig-x007-11022122
+x86_64               randconfig-x008-11022122
+x86_64               randconfig-x009-11022122
+i386                   randconfig-r0-11022122
+i386                 randconfig-x003-11010709
+i386                 randconfig-x009-11010709
+i386                 randconfig-x004-11010709
+i386                 randconfig-x005-11010709
+i386                 randconfig-x007-11010709
+i386                 randconfig-x006-11010709
+i386                 randconfig-x001-11010709
+i386                 randconfig-x008-11010709
+i386                 randconfig-x002-11010709
+i386                 randconfig-x000-11010709
+i386                   randconfig-x0-11031952
+
+Thanks,
+Fengguang
