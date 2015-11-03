@@ -1,36 +1,139 @@
 From: Aaron Sierra <asierra@xes-inc.com>
-Date: Tue, 3 Nov 2015 12:37:18 -0600 (CST)
-Subject: [Intel-wired-lan] [PATCH 2/5] igb: Don't add PHY address to PCDL
-	address
-In-Reply-To: <197584129.304313.1446575155971.JavaMail.zimbra@xes-inc.com>
-Message-ID: <1064069608.305775.1446575838742.JavaMail.zimbra@xes-inc.com>
+Date: Tue, 3 Nov 2015 12:37:24 -0600 (CST)
+Subject: [Intel-wired-lan] [PATCH 3/5] igb: Improve cable length function
+	for I210, etc.
+In-Reply-To: <853516779.304421.1446575216170.JavaMail.zimbra@xes-inc.com>
+Message-ID: <1313149536.305776.1446575844476.JavaMail.zimbra@xes-inc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-There is no reason to add the PHY address into the PCDL register address.
+From: Joe Schultz <jschultz@xes-inc.com>
 
+Previously, the PHY-specific code to get the cable length for the
+I210 internal and related PHYs was reporting the cable length of a
+single pair and reporting it as the min, max, and total cable length.
+Update it so that all four pairs are checked so the true min, max,
+and average cable lengths are reported.
+
+Signed-off-by: Joe Schultz <jschultz@xes-inc.com>
 Signed-off-by: Aaron Sierra <asierra@xes-inc.com>
 ---
- drivers/net/ethernet/intel/igb/e1000_phy.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/net/ethernet/intel/igb/e1000_defines.h |  5 ++-
+ drivers/net/ethernet/intel/igb/e1000_hw.h      |  1 +
+ drivers/net/ethernet/intel/igb/e1000_phy.c     | 54 ++++++++++++++++++++++----
+ 3 files changed, 51 insertions(+), 9 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
+index b191504..4ae3054 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_defines.h
++++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
+@@ -927,7 +927,10 @@
+ 
+ /* Intel i347-AT4 Registers */
+ 
+-#define I347AT4_PCDL                   0x10 /* PHY Cable Diagnostics Length */
++#define I347AT4_PCDL0                  0x10 /* Pair 0 PHY Cable Diagnostics Length */
++#define I347AT4_PCDL1                  0x11 /* Pair 1 PHY Cable Diagnostics Length */
++#define I347AT4_PCDL2                  0x12 /* Pair 2 PHY Cable Diagnostics Length */
++#define I347AT4_PCDL3                  0x13 /* Pair 3 PHY Cable Diagnostics Length */
+ #define I347AT4_PCDC                   0x15 /* PHY Cable Diagnostics Control */
+ #define I347AT4_PAGE_SELECT            0x16
+ 
+diff --git a/drivers/net/ethernet/intel/igb/e1000_hw.h b/drivers/net/ethernet/intel/igb/e1000_hw.h
+index 2003b37..4034207 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_hw.h
++++ b/drivers/net/ethernet/intel/igb/e1000_hw.h
+@@ -441,6 +441,7 @@ struct e1000_phy_info {
+ 	u16 cable_length;
+ 	u16 max_cable_length;
+ 	u16 min_cable_length;
++	u16 pair_length[4];
+ 
+ 	u8 mdix;
+ 
 diff --git a/drivers/net/ethernet/intel/igb/e1000_phy.c b/drivers/net/ethernet/intel/igb/e1000_phy.c
-index ec1aea5..407d44a 100644
+index 407d44a..66bc308 100644
 --- a/drivers/net/ethernet/intel/igb/e1000_phy.c
 +++ b/drivers/net/ethernet/intel/igb/e1000_phy.c
-@@ -1734,8 +1734,7 @@ s32 igb_get_cable_length_m88_gen2(struct e1000_hw *hw)
- 			goto out;
+@@ -1717,6 +1717,9 @@ s32 igb_get_cable_length_m88_gen2(struct e1000_hw *hw)
+ 	struct e1000_phy_info *phy = &hw->phy;
+ 	s32 ret_val;
+ 	u16 phy_data, phy_data2, index, default_page, is_cm;
++	int len_tot = 0;
++	u16 len_min;
++	u16 len_max;
  
- 		/* Get cable length from PHY Cable Diagnostics Control Reg */
--		ret_val = phy->ops.read_reg(hw, (I347AT4_PCDL + phy->addr),
--					    &phy_data);
-+		ret_val = phy->ops.read_reg(hw, I347AT4_PCDL, &phy_data);
+ 	switch (hw->phy.id) {
+ 	case M88E1543_E_PHY_ID:
+@@ -1733,11 +1736,6 @@ s32 igb_get_cable_length_m88_gen2(struct e1000_hw *hw)
  		if (ret_val)
  			goto out;
  
+-		/* Get cable length from PHY Cable Diagnostics Control Reg */
+-		ret_val = phy->ops.read_reg(hw, I347AT4_PCDL, &phy_data);
+-		if (ret_val)
+-			goto out;
+-
+ 		/* Check if the unit of cable length is meters or cm */
+ 		ret_val = phy->ops.read_reg(hw, I347AT4_PCDC, &phy_data2);
+ 		if (ret_val)
+@@ -1745,10 +1743,50 @@ s32 igb_get_cable_length_m88_gen2(struct e1000_hw *hw)
+ 
+ 		is_cm = !(phy_data2 & I347AT4_PCDC_CABLE_LENGTH_UNIT);
+ 
++		/* Get cable length from Pair 0 length Regs */
++		ret_val = phy->ops.read_reg(hw, I347AT4_PCDL0, &phy_data);
++		if (ret_val)
++			goto out;
++
++		phy->pair_length[0] = phy_data / (is_cm ? 100 : 1);
++		len_tot = phy->pair_length[0];
++		len_min = phy->pair_length[0];
++		len_max = phy->pair_length[0];
++
++		/* Get cable length from Pair 1 length Regs */
++		ret_val = phy->ops.read_reg(hw, I347AT4_PCDL1, &phy_data);
++		if (ret_val)
++			goto out;
++
++		phy->pair_length[1] = phy_data / (is_cm ? 100 : 1);
++		len_tot += phy->pair_length[1];
++		len_min = min(len_min, phy->pair_length[1]);
++		len_max = max(len_max, phy->pair_length[1]);
++
++		/* Get cable length from Pair 2 length Regs */
++		ret_val = phy->ops.read_reg(hw, I347AT4_PCDL2, &phy_data);
++		if (ret_val)
++			goto out;
++
++		phy->pair_length[2] = phy_data / (is_cm ? 100 : 1);
++		len_tot += phy->pair_length[2];
++		len_min = min(len_min, phy->pair_length[2]);
++		len_max = max(len_max, phy->pair_length[2]);
++
++		/* Get cable length from Pair 3 length Regs */
++		ret_val = phy->ops.read_reg(hw, I347AT4_PCDL3, &phy_data);
++		if (ret_val)
++			goto out;
++
++		phy->pair_length[3] = phy_data / (is_cm ? 100 : 1);
++		len_tot += phy->pair_length[3];
++		len_min = min(len_min, phy->pair_length[3]);
++		len_max = max(len_max, phy->pair_length[3]);
++
+ 		/* Populate the phy structure with cable length in meters */
+-		phy->min_cable_length = phy_data / (is_cm ? 100 : 1);
+-		phy->max_cable_length = phy_data / (is_cm ? 100 : 1);
+-		phy->cable_length = phy_data / (is_cm ? 100 : 1);
++		phy->min_cable_length = len_min;
++		phy->max_cable_length = len_max;
++		phy->cable_length = len_tot / 4;
+ 
+ 		/* Reset the page selec to its original value */
+ 		ret_val = phy->ops.write_reg(hw, I347AT4_PAGE_SELECT,
 -- 
 1.9.1
 
