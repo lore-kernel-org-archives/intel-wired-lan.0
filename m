@@ -1,139 +1,257 @@
 From: Aaron Sierra <asierra@xes-inc.com>
-Date: Tue, 3 Nov 2015 12:37:24 -0600 (CST)
-Subject: [Intel-wired-lan] [PATCH 3/5] igb: Improve cable length function
-	for I210, etc.
-In-Reply-To: <853516779.304421.1446575216170.JavaMail.zimbra@xes-inc.com>
-Message-ID: <1313149536.305776.1446575844476.JavaMail.zimbra@xes-inc.com>
+Date: Tue, 3 Nov 2015 12:37:09 -0600 (CST)
+Subject: [Intel-wired-lan] [PATCH 1/5] igb: Remove GS40G specific
+	defines/functions
+In-Reply-To: <596383518.303713.1446574778623.JavaMail.zimbra@xes-inc.com>
+Message-ID: <624966880.305749.1446575829241.JavaMail.zimbra@xes-inc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Joe Schultz <jschultz@xes-inc.com>
+The I210 internal PHY can be accessed just as well with the access
+functions shared by 82580, I350, and I354 devices. A side effect of
+relying on the common functions, is that I210 cable length support
+is folded back into the common case which effectively reverts the
+following commit:
 
-Previously, the PHY-specific code to get the cable length for the
-I210 internal and related PHYs was reporting the cable length of a
-single pair and reporting it as the min, max, and total cable length.
-Update it so that all four pairs are checked so the true min, max,
-and average cable lengths are reported.
+    commit 59f301046b276f87483b3afa3201a4273def06a9
+    Author: Carolyn Wyborny <carolyn.wyborny@intel.com>
+    Date:   Wed Oct 10 04:42:59 2012 +0000
 
-Signed-off-by: Joe Schultz <jschultz@xes-inc.com>
+    igb: Update get cable length function for i210/i211
+
+Cc: Carolyn Wyborny <carolyn.wyborny@intel.com>
 Signed-off-by: Aaron Sierra <asierra@xes-inc.com>
 ---
- drivers/net/ethernet/intel/igb/e1000_defines.h |  5 ++-
- drivers/net/ethernet/intel/igb/e1000_hw.h      |  1 +
- drivers/net/ethernet/intel/igb/e1000_phy.c     | 54 ++++++++++++++++++++++----
- 3 files changed, 51 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/igb/e1000_82575.c | 13 ++---
+ drivers/net/ethernet/intel/igb/e1000_i210.c  |  5 +-
+ drivers/net/ethernet/intel/igb/e1000_i210.h  |  2 +-
+ drivers/net/ethernet/intel/igb/e1000_phy.c   | 82 +---------------------------
+ drivers/net/ethernet/intel/igb/e1000_phy.h   | 15 +----
+ 5 files changed, 11 insertions(+), 106 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
-index b191504..4ae3054 100644
---- a/drivers/net/ethernet/intel/igb/e1000_defines.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
-@@ -927,7 +927,10 @@
+diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
+index 7a73510..299afff 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_82575.c
++++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
+@@ -45,8 +45,6 @@ static s32  igb_get_cfg_done_82575(struct e1000_hw *);
+ static s32  igb_init_hw_82575(struct e1000_hw *);
+ static s32  igb_phy_hw_reset_sgmii_82575(struct e1000_hw *);
+ static s32  igb_read_phy_reg_sgmii_82575(struct e1000_hw *, u32, u16 *);
+-static s32  igb_read_phy_reg_82580(struct e1000_hw *, u32, u16 *);
+-static s32  igb_write_phy_reg_82580(struct e1000_hw *, u32, u16);
+ static s32  igb_reset_hw_82575(struct e1000_hw *);
+ static s32  igb_reset_hw_82580(struct e1000_hw *);
+ static s32  igb_set_d0_lplu_state_82575(struct e1000_hw *, bool);
+@@ -205,13 +203,10 @@ static s32 igb_init_phy_params_82575(struct e1000_hw *hw)
+ 		case e1000_82580:
+ 		case e1000_i350:
+ 		case e1000_i354:
+-			phy->ops.read_reg = igb_read_phy_reg_82580;
+-			phy->ops.write_reg = igb_write_phy_reg_82580;
+-			break;
+ 		case e1000_i210:
+ 		case e1000_i211:
+-			phy->ops.read_reg = igb_read_phy_reg_gs40g;
+-			phy->ops.write_reg = igb_write_phy_reg_gs40g;
++			phy->ops.read_reg = igb_read_phy_reg_82580;
++			phy->ops.write_reg = igb_write_phy_reg_82580;
+ 			break;
+ 		default:
+ 			phy->ops.read_reg = igb_read_phy_reg_igp;
+@@ -2145,7 +2140,7 @@ void igb_vmdq_set_replication_pf(struct e1000_hw *hw, bool enable)
+  *  Reads the MDI control register in the PHY at offset and stores the
+  *  information read to data.
+  **/
+-static s32 igb_read_phy_reg_82580(struct e1000_hw *hw, u32 offset, u16 *data)
++s32 igb_read_phy_reg_82580(struct e1000_hw *hw, u32 offset, u16 *data)
+ {
+ 	s32 ret_val;
  
- /* Intel i347-AT4 Registers */
+@@ -2169,7 +2164,7 @@ out:
+  *
+  *  Writes data to MDI control register in the PHY at offset.
+  **/
+-static s32 igb_write_phy_reg_82580(struct e1000_hw *hw, u32 offset, u16 data)
++s32 igb_write_phy_reg_82580(struct e1000_hw *hw, u32 offset, u16 data)
+ {
+ 	s32 ret_val;
  
--#define I347AT4_PCDL                   0x10 /* PHY Cable Diagnostics Length */
-+#define I347AT4_PCDL0                  0x10 /* Pair 0 PHY Cable Diagnostics Length */
-+#define I347AT4_PCDL1                  0x11 /* Pair 1 PHY Cable Diagnostics Length */
-+#define I347AT4_PCDL2                  0x12 /* Pair 2 PHY Cable Diagnostics Length */
-+#define I347AT4_PCDL3                  0x13 /* Pair 3 PHY Cable Diagnostics Length */
- #define I347AT4_PCDC                   0x15 /* PHY Cable Diagnostics Control */
- #define I347AT4_PAGE_SELECT            0x16
- 
-diff --git a/drivers/net/ethernet/intel/igb/e1000_hw.h b/drivers/net/ethernet/intel/igb/e1000_hw.h
-index 2003b37..4034207 100644
---- a/drivers/net/ethernet/intel/igb/e1000_hw.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_hw.h
-@@ -441,6 +441,7 @@ struct e1000_phy_info {
- 	u16 cable_length;
- 	u16 max_cable_length;
- 	u16 min_cable_length;
-+	u16 pair_length[4];
- 
- 	u8 mdix;
- 
+diff --git a/drivers/net/ethernet/intel/igb/e1000_i210.c b/drivers/net/ethernet/intel/igb/e1000_i210.c
+index 65d9316..4253f7e 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_i210.c
++++ b/drivers/net/ethernet/intel/igb/e1000_i210.c
+@@ -861,10 +861,10 @@ s32 igb_pll_workaround_i210(struct e1000_hw *hw)
+ 	if (ret_val)
+ 		nvm_word = E1000_INVM_DEFAULT_AL;
+ 	tmp_nvm = nvm_word | E1000_INVM_PLL_WO_VAL;
++	igb_write_phy_reg_82580(hw, I347AT4_PAGE_SELECT, E1000_PHY_PLL_FREQ_PAGE);
+ 	for (i = 0; i < E1000_MAX_PLL_TRIES; i++) {
+ 		/* check current state directly from internal PHY */
+-		igb_read_phy_reg_gs40g(hw, (E1000_PHY_PLL_FREQ_PAGE |
+-					 E1000_PHY_PLL_FREQ_REG), &phy_word);
++		igb_read_phy_reg_82580(hw, E1000_PHY_PLL_FREQ_REG, &phy_word);
+ 		if ((phy_word & E1000_PHY_PLL_UNCONF)
+ 		    != E1000_PHY_PLL_UNCONF) {
+ 			ret_val = 0;
+@@ -896,6 +896,7 @@ s32 igb_pll_workaround_i210(struct e1000_hw *hw)
+ 		/* restore WUC register */
+ 		wr32(E1000_WUC, wuc);
+ 	}
++	igb_write_phy_reg_82580(hw, I347AT4_PAGE_SELECT, 0);
+ 	/* restore MDICNFG setting */
+ 	wr32(E1000_MDICNFG, mdicnfg);
+ 	return ret_val;
+diff --git a/drivers/net/ethernet/intel/igb/e1000_i210.h b/drivers/net/ethernet/intel/igb/e1000_i210.h
+index 3442b63..8aef787 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_i210.h
++++ b/drivers/net/ethernet/intel/igb/e1000_i210.h
+@@ -84,7 +84,7 @@ enum E1000_INVM_STRUCTURE_TYPE {
+ #define E1000_PCI_PMCSR_D3		0x03
+ #define E1000_MAX_PLL_TRIES		5
+ #define E1000_PHY_PLL_UNCONF		0xFF
+-#define E1000_PHY_PLL_FREQ_PAGE		0xFC0000
++#define E1000_PHY_PLL_FREQ_PAGE		0xFC
+ #define E1000_PHY_PLL_FREQ_REG		0x000E
+ #define E1000_INVM_DEFAULT_AL		0x202F
+ #define E1000_INVM_AUTOLOAD		0x0A
 diff --git a/drivers/net/ethernet/intel/igb/e1000_phy.c b/drivers/net/ethernet/intel/igb/e1000_phy.c
-index 407d44a..66bc308 100644
+index 23ec28f..ec1aea5 100644
 --- a/drivers/net/ethernet/intel/igb/e1000_phy.c
 +++ b/drivers/net/ethernet/intel/igb/e1000_phy.c
-@@ -1717,6 +1717,9 @@ s32 igb_get_cable_length_m88_gen2(struct e1000_hw *hw)
- 	struct e1000_phy_info *phy = &hw->phy;
- 	s32 ret_val;
+@@ -1719,30 +1719,10 @@ s32 igb_get_cable_length_m88_gen2(struct e1000_hw *hw)
  	u16 phy_data, phy_data2, index, default_page, is_cm;
-+	int len_tot = 0;
-+	u16 len_min;
-+	u16 len_max;
  
  	switch (hw->phy.id) {
- 	case M88E1543_E_PHY_ID:
-@@ -1733,11 +1736,6 @@ s32 igb_get_cable_length_m88_gen2(struct e1000_hw *hw)
- 		if (ret_val)
- 			goto out;
- 
+-	case I210_I_PHY_ID:
 -		/* Get cable length from PHY Cable Diagnostics Control Reg */
--		ret_val = phy->ops.read_reg(hw, I347AT4_PCDL, &phy_data);
+-		ret_val = phy->ops.read_reg(hw, (0x7 << GS40G_PAGE_SHIFT) +
+-					    (I347AT4_PCDL + phy->addr),
+-					    &phy_data);
 -		if (ret_val)
--			goto out;
+-			return ret_val;
 -
- 		/* Check if the unit of cable length is meters or cm */
- 		ret_val = phy->ops.read_reg(hw, I347AT4_PCDC, &phy_data2);
- 		if (ret_val)
-@@ -1745,10 +1743,50 @@ s32 igb_get_cable_length_m88_gen2(struct e1000_hw *hw)
- 
- 		is_cm = !(phy_data2 & I347AT4_PCDC_CABLE_LENGTH_UNIT);
- 
-+		/* Get cable length from Pair 0 length Regs */
-+		ret_val = phy->ops.read_reg(hw, I347AT4_PCDL0, &phy_data);
-+		if (ret_val)
-+			goto out;
-+
-+		phy->pair_length[0] = phy_data / (is_cm ? 100 : 1);
-+		len_tot = phy->pair_length[0];
-+		len_min = phy->pair_length[0];
-+		len_max = phy->pair_length[0];
-+
-+		/* Get cable length from Pair 1 length Regs */
-+		ret_val = phy->ops.read_reg(hw, I347AT4_PCDL1, &phy_data);
-+		if (ret_val)
-+			goto out;
-+
-+		phy->pair_length[1] = phy_data / (is_cm ? 100 : 1);
-+		len_tot += phy->pair_length[1];
-+		len_min = min(len_min, phy->pair_length[1]);
-+		len_max = max(len_max, phy->pair_length[1]);
-+
-+		/* Get cable length from Pair 2 length Regs */
-+		ret_val = phy->ops.read_reg(hw, I347AT4_PCDL2, &phy_data);
-+		if (ret_val)
-+			goto out;
-+
-+		phy->pair_length[2] = phy_data / (is_cm ? 100 : 1);
-+		len_tot += phy->pair_length[2];
-+		len_min = min(len_min, phy->pair_length[2]);
-+		len_max = max(len_max, phy->pair_length[2]);
-+
-+		/* Get cable length from Pair 3 length Regs */
-+		ret_val = phy->ops.read_reg(hw, I347AT4_PCDL3, &phy_data);
-+		if (ret_val)
-+			goto out;
-+
-+		phy->pair_length[3] = phy_data / (is_cm ? 100 : 1);
-+		len_tot += phy->pair_length[3];
-+		len_min = min(len_min, phy->pair_length[3]);
-+		len_max = max(len_max, phy->pair_length[3]);
-+
- 		/* Populate the phy structure with cable length in meters */
+-		/* Check if the unit of cable length is meters or cm */
+-		ret_val = phy->ops.read_reg(hw, (0x7 << GS40G_PAGE_SHIFT) +
+-					    I347AT4_PCDC, &phy_data2);
+-		if (ret_val)
+-			return ret_val;
+-
+-		is_cm = !(phy_data2 & I347AT4_PCDC_CABLE_LENGTH_UNIT);
+-
+-		/* Populate the phy structure with cable length in meters */
 -		phy->min_cable_length = phy_data / (is_cm ? 100 : 1);
 -		phy->max_cable_length = phy_data / (is_cm ? 100 : 1);
 -		phy->cable_length = phy_data / (is_cm ? 100 : 1);
-+		phy->min_cable_length = len_min;
-+		phy->max_cable_length = len_max;
-+		phy->cable_length = len_tot / 4;
+-		break;
+ 	case M88E1543_E_PHY_ID:
+ 	case M88E1512_E_PHY_ID:
+ 	case I347AT4_E_PHY_ID:
++	case I210_I_PHY_ID:
+ 		/* Remember the original page select and set it to 7 */
+ 		ret_val = phy->ops.read_reg(hw, I347AT4_PAGE_SELECT,
+ 					    &default_page);
+@@ -2494,66 +2474,6 @@ out:
+ }
  
- 		/* Reset the page selec to its original value */
- 		ret_val = phy->ops.write_reg(hw, I347AT4_PAGE_SELECT,
+ /**
+- *  igb_write_phy_reg_gs40g - Write GS40G PHY register
+- *  @hw: pointer to the HW structure
+- *  @offset: lower half is register offset to write to
+- *     upper half is page to use.
+- *  @data: data to write at register offset
+- *
+- *  Acquires semaphore, if necessary, then writes the data to PHY register
+- *  at the offset.  Release any acquired semaphores before exiting.
+- **/
+-s32 igb_write_phy_reg_gs40g(struct e1000_hw *hw, u32 offset, u16 data)
+-{
+-	s32 ret_val;
+-	u16 page = offset >> GS40G_PAGE_SHIFT;
+-
+-	offset = offset & GS40G_OFFSET_MASK;
+-	ret_val = hw->phy.ops.acquire(hw);
+-	if (ret_val)
+-		return ret_val;
+-
+-	ret_val = igb_write_phy_reg_mdic(hw, GS40G_PAGE_SELECT, page);
+-	if (ret_val)
+-		goto release;
+-	ret_val = igb_write_phy_reg_mdic(hw, offset, data);
+-
+-release:
+-	hw->phy.ops.release(hw);
+-	return ret_val;
+-}
+-
+-/**
+- *  igb_read_phy_reg_gs40g - Read GS40G  PHY register
+- *  @hw: pointer to the HW structure
+- *  @offset: lower half is register offset to read to
+- *     upper half is page to use.
+- *  @data: data to read at register offset
+- *
+- *  Acquires semaphore, if necessary, then reads the data in the PHY register
+- *  at the offset.  Release any acquired semaphores before exiting.
+- **/
+-s32 igb_read_phy_reg_gs40g(struct e1000_hw *hw, u32 offset, u16 *data)
+-{
+-	s32 ret_val;
+-	u16 page = offset >> GS40G_PAGE_SHIFT;
+-
+-	offset = offset & GS40G_OFFSET_MASK;
+-	ret_val = hw->phy.ops.acquire(hw);
+-	if (ret_val)
+-		return ret_val;
+-
+-	ret_val = igb_write_phy_reg_mdic(hw, GS40G_PAGE_SELECT, page);
+-	if (ret_val)
+-		goto release;
+-	ret_val = igb_read_phy_reg_mdic(hw, offset, data);
+-
+-release:
+-	hw->phy.ops.release(hw);
+-	return ret_val;
+-}
+-
+-/**
+  *  igb_set_master_slave_mode - Setup PHY for Master/slave mode
+  *  @hw: pointer to the HW structure
+  *
+diff --git a/drivers/net/ethernet/intel/igb/e1000_phy.h b/drivers/net/ethernet/intel/igb/e1000_phy.h
+index 24d55ed..581172a 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_phy.h
++++ b/drivers/net/ethernet/intel/igb/e1000_phy.h
+@@ -71,8 +71,8 @@ s32  igb_copper_link_setup_82580(struct e1000_hw *hw);
+ s32  igb_get_phy_info_82580(struct e1000_hw *hw);
+ s32  igb_phy_force_speed_duplex_82580(struct e1000_hw *hw);
+ s32  igb_get_cable_length_82580(struct e1000_hw *hw);
+-s32  igb_read_phy_reg_gs40g(struct e1000_hw *hw, u32 offset, u16 *data);
+-s32  igb_write_phy_reg_gs40g(struct e1000_hw *hw, u32 offset, u16 data);
++s32  igb_read_phy_reg_82580(struct e1000_hw *hw, u32 offset, u16 *data);
++s32  igb_write_phy_reg_82580(struct e1000_hw *hw, u32 offset, u16 data);
+ s32  igb_check_polarity_m88(struct e1000_hw *hw);
+ 
+ /* IGP01E1000 Specific Registers */
+@@ -143,17 +143,6 @@ s32  igb_check_polarity_m88(struct e1000_hw *hw);
+ 
+ #define E1000_CABLE_LENGTH_UNDEFINED      0xFF
+ 
+-/* GS40G - I210 PHY defines */
+-#define GS40G_PAGE_SELECT		0x16
+-#define GS40G_PAGE_SHIFT		16
+-#define GS40G_OFFSET_MASK		0xFFFF
+-#define GS40G_PAGE_2			0x20000
+-#define GS40G_MAC_REG2			0x15
+-#define GS40G_MAC_LB			0x4140
+-#define GS40G_MAC_SPEED_1G		0X0006
+-#define GS40G_COPPER_SPEC		0x0010
+-#define GS40G_LINE_LB			0x4000
+-
+ /* SFP modules ID memory locations */
+ #define E1000_SFF_IDENTIFIER_OFFSET	0x00
+ #define E1000_SFF_IDENTIFIER_SFF	0x02
 -- 
 1.9.1
-
