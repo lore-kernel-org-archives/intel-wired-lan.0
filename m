@@ -1,10 +1,10 @@
 From: Miller, Darin J <darin.j.miller@intel.com>
-Date: Wed, 4 Nov 2015 01:30:36 +0000
-Subject: [Intel-wired-lan] [PATCH V2] ixgbe: Save VF info and take
- references
-In-Reply-To: <20151030222934.93903.57078.stgit@mdrustad-wks.jf.intel.com>
-References: <20151030222934.93903.57078.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <A91205FD8A6E14448BD4414C06E9C3D375210BDF@fmsmsx115.amr.corp.intel.com>
+Date: Wed, 4 Nov 2015 01:35:40 +0000
+Subject: [Intel-wired-lan] [PATCH 1/3] ixgbe: Use private workqueue to
+ avoid certain possible hangs
+In-Reply-To: <20151022002110.51120.4643.stgit@mdrustad-wks.jf.intel.com>
+References: <20151022002110.51120.4643.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <A91205FD8A6E14448BD4414C06E9C3D375210C02@fmsmsx115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,22 +15,15 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 -----Original Message-----
 From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Mark D Rustad
-Sent: Friday, October 30, 2015 3:30 PM
+Sent: Wednesday, October 21, 2015 5:21 PM
 To: intel-wired-lan@lists.osuosl.org
-Subject: [Intel-wired-lan] [PATCH V2] ixgbe: Save VF info and take references
+Subject: [Intel-wired-lan] [PATCH 1/3] ixgbe: Use private workqueue to avoid certain possible hangs
 
-Save VF device pointers and take references to speed accesses used to monitor the device behavior to avoid slot resets. The saved information avoids lock contention during the search used to access each of the VFs.
+Use a private workqueue to avoid hangs that were otherwise possible when performing stress tests, such as creating and destroying many vfs repeatedly.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
-Changes in V2:
-- Added check for a status register of 0xffff as suggested by Don Dutile
-  at RedHat.
----
- drivers/net/ethernet/intel/ixgbe/ixgbe.h       |    1 
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  |   31 +++++----------
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |   50 +++++++++++++++++++++++-
- 3 files changed, 59 insertions(+), 23 deletions(-)
+ 0 files changed
 
 Tested-by: Darin Miller <darin.j.miller@intel.com>
 
