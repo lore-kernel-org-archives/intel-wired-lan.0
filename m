@@ -1,11 +1,10 @@
-From: Miller, Darin J <darin.j.miller@intel.com>
-Date: Wed, 4 Nov 2015 01:36:10 +0000
-Subject: [Intel-wired-lan] [PATCH 2/3] ixgbevf: Use a private workqueue
- to avoid certain possible hangs
-In-Reply-To: <20151022002115.51120.4428.stgit@mdrustad-wks.jf.intel.com>
-References: <20151022002110.51120.4643.stgit@mdrustad-wks.jf.intel.com>
- <20151022002115.51120.4428.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <A91205FD8A6E14448BD4414C06E9C3D375210C0C@fmsmsx115.amr.corp.intel.com>
+From: Singh, Krishneil K <krishneil.k.singh@intel.com>
+Date: Wed, 4 Nov 2015 18:05:49 +0000
+Subject: [Intel-wired-lan] [next-queue v2] fm10k: consistently refer
+	to	VLANs and VLAN IDs
+In-Reply-To: <1446495022-30852-1-git-send-email-jacob.e.keller@intel.com>
+References: <1446495022-30852-1-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E27226374@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,19 +12,22 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 
-
 -----Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Mark D Rustad
-Sent: Wednesday, October 21, 2015 5:21 PM
-To: intel-wired-lan@lists.osuosl.org
-Subject: [Intel-wired-lan] [PATCH 2/3] ixgbevf: Use a private workqueue to avoid certain possible hangs
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Jacob Keller
+Sent: Monday, November 2, 2015 12:10 PM
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Subject: [Intel-wired-lan] [next-queue v2] fm10k: consistently refer to VLANs and VLAN IDs
 
-Use a private workqueue to avoid hangs that were otherwise possible when performing stress tests, such as creating and destroying many vfs repeatedly.
+Instead of using lowercase vlan, vid, or VID, always use VLAN or VLAN ID in comments when referring to VLANs. The original driver code was consistent, but recent patches have not been as consistent with this naming scheme.
 
-Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Reviewed-by: Bruce Allan <bruce.w.allan@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
+-v2
+* fix two forgotten instances in fm10k_pf.c
 
-Tested-by: Darin Miller <darin.j.miller@intel.com>
+This patch replaces what was on the queue in place.
+
+
+Tested-by: Krishneil Singh <Krishneil.k.singh@intel.com>
 
