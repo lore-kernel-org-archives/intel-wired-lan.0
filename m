@@ -1,84 +1,39 @@
-From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-Date: Wed, 4 Nov 2015 15:06:31 -0500
+From: Nelson, Shannon <shannon.nelson@intel.com>
+Date: Wed, 4 Nov 2015 22:53:05 +0000
 Subject: [Intel-wired-lan] [PATCH v5] i40e: Look up MAC address in Open
 	Firmware or IDPROM
 In-Reply-To: <CAHp75Vcrx+Rkz2mDSG+GEUW6LdO0w6On=6UoV4fhZK27Ayf1zQ@mail.gmail.com>
 References: <20151104193956.GD14575@oracle.com>
  <CAHp75Vcrx+Rkz2mDSG+GEUW6LdO0w6On=6UoV4fhZK27Ayf1zQ@mail.gmail.com>
-Message-ID: <20151104200631.GG14575@oracle.com>
+Message-ID: <FC41C24E35F18A40888AACA1A36F3E418AFAEA1A@fmsmsx115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On (11/04/15 21:59), Andy Shevchenko wrote:
+> From: Andy Shevchenko [mailto:andy.shevchenko at gmail.com]
+> Sent: Wednesday, November 04, 2015 11:59 AM
 > 
-> Usually the structure of kernel doc is something like following
-> 
-> /**
->  * func - summary
->  * @paramx: desc
->  *
->  * Description:
->  * Long description in many lines and / or paragraphs
->  *
->  * Returns:
->  * 0 on success or errno otherwise.
->  */
-> 
-> 
-> > + **/
-> 
-> No need two stars.
+> On Wed, Nov 4, 2015 at 9:39 PM, Sowmini Varadhan
+> <sowmini.varadhan@oracle.com> wrote:
+> >
+> > This is the i40e equivalent of commit c762dff24c06 ("ixgbe: Look up MAC
+> > address in Open Firmware or IDPROM").
 
-I was actually following the exact comment style of 
-the function just before i40e_macaddr_init, namely:;
+[...]
 
-/**
- * i40e_vsi_setup - Set up a VSI by a given type
- * @pf: board private structure
- * @type: VSI type
- * @uplink_seid: the switch element to link to
- * @param1: usage depends upon VSI type. For VF types, indicates VF id
- *
- * This allocates the sw VSI structure and its queue resources, then add a VSI
- * to the identified VEB.
- *
- * Returns pointer to the successfully allocated and configure VSI sw struct on
- * success, otherwise returns NULL on failure.
- **/
-struct i40e_vsi *i40e_vsi_setup(struct i40e_pf *pf, u8 type,
-                                u16 uplink_seid, u32 param1)
-
-So I'm not sure we need to really bike-shed this one?
-> > +                                       macaddr, NULL);
-> > +       if (ret) {
-> > +               dev_info(&vsi->back->pdev->dev,
-> > +                        "Addr change for VSI failed: %d\n", ret);
-> 
-> dev_err() or dev_warn() I would say.
-
-again, this was a cut/paste of code from i40e_set_mac()
-which does netdev_info.
-
-> > +       ret = i40e_aq_add_macvlan(&vsi->back->hw, vsi->seid, &element, 1, NULL);
+> > +       }
+> > +
+> > +       memset(&element, 0, sizeof(element));
+> > +       ether_addr_copy(element.mac_addr, macaddr);
+> > +       element.flags = cpu_to_le16(I40E_AQC_MACVLAN_ADD_PERFECT_MATCH);
+> > +       ret = i40e_aq_add_macvlan(&vsi->back->hw, vsi->seid, &element,
+> 1, NULL);
 > > +       aq_err = vsi->back->hw.aq.asq_last_status;
 > 
 > Do you really need a separate variable (aq_err)?
 
-That seems to be the convention used elsewhere, where ret is
-distinguished from aq_err, see i40e_sync_vsi_filters()
+These are two separate error values that we're tracking - one from the communication between the driver and the firmware (aq_err) and one from the driver activity.  Sometimes there may be an AQ error that we want to report, but it might not actually be a driver error.  Alternatively, there are times when the AQ error needs to get interpreted different ways depending on which task the driver is performing.  Lastly, the AQ error gives us more detail on whatever the transaction error may have been which gives us more useful debug info.
 
-> > +       if (aq_err != I40E_AQ_RC_OK) {
-> > +               dev_info(&vsi->back->pdev->dev,
-> > +                        "add filter failed err %s aq_err %s\n",
-> > +                        i40e_stat_str(&vsi->back->hw, ret),
-> > +                        i40e_aq_str(&vsi->back->hw, aq_err));
-> > +       }
-> > +       return ret;
-
-> Same about kernel doc.
-See earlier response.
-
---Sowmini
+sln
