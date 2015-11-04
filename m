@@ -1,113 +1,161 @@
-From: Aaron Sierra <asierra@xes-inc.com>
-Date: Tue, 3 Nov 2015 12:37:29 -0600 (CST)
-Subject: [Intel-wired-lan] [PATCH 4/5] igb: Explicitly label self-test
-	result indices
-In-Reply-To: <1888067736.304762.1446575427308.JavaMail.zimbra@xes-inc.com>
-Message-ID: <2113406542.305783.1446575849467.JavaMail.zimbra@xes-inc.com>
+From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+Date: Wed, 4 Nov 2015 14:39:56 -0500
+Subject: [Intel-wired-lan] [PATCH v5] i40e: Look up MAC address in Open
+	Firmware or IDPROM
+Message-ID: <20151104193956.GD14575@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Joe Schultz <jschultz@xes-inc.com>
 
-Previously, the ethtool self-test gstrings/data arrays were accessed via
-hardcoded indices, which made the code difficult to follow. This patch
-replaces the hardcoded values with enum-based labels.
+This is the i40e equivalent of commit c762dff24c06 ("ixgbe: Look up MAC
+address in Open Firmware or IDPROM").
 
-Signed-off-by: Joe Schultz <jschultz@xes-inc.com>
-Signed-off-by: Aaron Sierra <asierra@xes-inc.com>
+As with that fix, attempt to look up the MAC address in Open Firmware
+on systems that support it, and use IDPROM on SPARC if no OF address
+is found.
+
+In the case of the i40e there is an assumption that the default mac
+address has already been set up as the primary mac filter on probe,
+so if this filter is obtained from the Open Firmware or IDPROM, an
+explicit write is needed via i40e_aq_mac_address_write() and
+i40e_aq_add_macvlan() invocation.
+
+Reviewed-by: Martin K. Petersen <martin.petersen@oracle.com>
+Signed-off-by: Sowmini Varadhan <sowmini.varadhan@oracle.com>
 ---
- drivers/net/ethernet/intel/igb/igb_ethtool.c | 38 ++++++++++++++++++----------
- 1 file changed, 24 insertions(+), 14 deletions(-)
+v2, v3: Andy Shevchenko comments
+v4: Shannon Nelson review: explicitly set up mac filters before register_netdev
+v5: Shannon Nelson code style comments
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index 7426276..f5da885 100644
---- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -127,10 +127,20 @@ static const struct igb_stats igb_gstrings_net_stats[] = {
- #define IGB_STATS_LEN \
- 	(IGB_GLOBAL_STATS_LEN + IGB_NETDEV_STATS_LEN + IGB_QUEUE_STATS_LEN)
+ drivers/net/ethernet/intel/i40e/i40e_main.c |   84 ++++++++++++++++++++++++++-
+ 1 files changed, 83 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index b825f97..a3883cf 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -24,6 +24,15 @@
+  *
+  ******************************************************************************/
  
-+enum igb_diagnostics_results {
-+	TEST_REG = 0,
-+	TEST_EEP,
-+	TEST_IRQ,
-+	TEST_LOOP,
-+	TEST_LINK
-+};
++#include <linux/etherdevice.h>
++#include <linux/of_net.h>
++#include <linux/pci.h>
 +
- static const char igb_gstrings_test[][ETH_GSTRING_LEN] = {
--	"Register test  (offline)", "Eeprom test    (offline)",
--	"Interrupt test (offline)", "Loopback test  (offline)",
--	"Link test   (on/offline)"
-+	[TEST_REG]  = "Register test  (offline)",
-+	[TEST_EEP]  = "Eeprom test    (offline)",
-+	[TEST_IRQ]  = "Interrupt test (offline)",
-+	[TEST_LOOP] = "Loopback test  (offline)",
-+	[TEST_LINK] = "Link test   (on/offline)"
- };
- #define IGB_TEST_LEN (sizeof(igb_gstrings_test) / ETH_GSTRING_LEN)
++#ifdef CONFIG_SPARC
++#include <asm/idprom.h>
++#include <asm/prom.h>
++#endif
++
+ /* Local includes */
+ #include "i40e.h"
+ #include "i40e_diag.h"
+@@ -9213,6 +9222,44 @@ static struct i40e_vsi *i40e_vsi_reinit_setup(struct i40e_vsi *vsi)
+ }
  
-@@ -2006,7 +2016,7 @@ static void igb_diag_test(struct net_device *netdev,
- 		/* Link test performed before hardware reset so autoneg doesn't
- 		 * interfere with test result
- 		 */
--		if (igb_link_test(adapter, &data[4]))
-+		if (igb_link_test(adapter, &data[TEST_LINK]))
- 			eth_test->flags |= ETH_TEST_FL_FAILED;
+ /**
++ * i40e_macaddr_init - explicitly write the mac address filters. This
++ * is needed when the macaddr has been obtained by other means than
++ * the default, e.g., from Open Firmware or IDPROM.
++ *
++ * @vsi: pointer to the vsi.
++ * @macaddr: the MAC address
++ *
++ * Returns 0 on success, negative on failure
++ **/
++static int i40e_macaddr_init(struct i40e_vsi *vsi, u8 *macaddr)
++{
++	int ret, aq_err;
++	struct i40e_aqc_add_macvlan_element_data element;
++
++	ret = i40e_aq_mac_address_write(&vsi->back->hw,
++					I40E_AQC_WRITE_TYPE_LAA_WOL,
++					macaddr, NULL);
++	if (ret) {
++		dev_info(&vsi->back->pdev->dev,
++			 "Addr change for VSI failed: %d\n", ret);
++		return -EADDRNOTAVAIL;
++	}
++
++	memset(&element, 0, sizeof(element));
++	ether_addr_copy(element.mac_addr, macaddr);
++	element.flags = cpu_to_le16(I40E_AQC_MACVLAN_ADD_PERFECT_MATCH);
++	ret = i40e_aq_add_macvlan(&vsi->back->hw, vsi->seid, &element, 1, NULL);
++	aq_err = vsi->back->hw.aq.asq_last_status;
++	if (aq_err != I40E_AQ_RC_OK) {
++		dev_info(&vsi->back->pdev->dev,
++			 "add filter failed err %s aq_err %s\n",
++			 i40e_stat_str(&vsi->back->hw, ret),
++			 i40e_aq_str(&vsi->back->hw, aq_err));
++	}
++	return ret;
++}
++
++/**
+  * i40e_vsi_setup - Set up a VSI by a given type
+  * @pf: board private structure
+  * @type: VSI type
+@@ -9341,6 +9388,9 @@ struct i40e_vsi *i40e_vsi_setup(struct i40e_pf *pf, u8 type,
+ 		ret = i40e_config_netdev(vsi);
+ 		if (ret)
+ 			goto err_netdev;
++		ret = i40e_macaddr_init(vsi, pf->hw.mac.addr);
++		if (ret)
++			goto err_netdev;
+ 		ret = register_netdev(vsi->netdev);
+ 		if (ret)
+ 			goto err_netdev;
+@@ -10163,6 +10213,36 @@ static void i40e_print_features(struct i40e_pf *pf)
+ }
  
- 		if (if_running)
-@@ -2015,21 +2025,21 @@ static void igb_diag_test(struct net_device *netdev,
- 		else
- 			igb_reset(adapter);
- 
--		if (igb_reg_test(adapter, &data[0]))
-+		if (igb_reg_test(adapter, &data[TEST_REG]))
- 			eth_test->flags |= ETH_TEST_FL_FAILED;
- 
- 		igb_reset(adapter);
--		if (igb_eeprom_test(adapter, &data[1]))
-+		if (igb_eeprom_test(adapter, &data[TEST_EEP]))
- 			eth_test->flags |= ETH_TEST_FL_FAILED;
- 
- 		igb_reset(adapter);
--		if (igb_intr_test(adapter, &data[2]))
-+		if (igb_intr_test(adapter, &data[TEST_IRQ]))
- 			eth_test->flags |= ETH_TEST_FL_FAILED;
- 
- 		igb_reset(adapter);
- 		/* power up link for loopback test */
- 		igb_power_up_link(adapter);
--		if (igb_loopback_test(adapter, &data[3]))
-+		if (igb_loopback_test(adapter, &data[TEST_LOOP]))
- 			eth_test->flags |= ETH_TEST_FL_FAILED;
- 
- 		/* restore speed, duplex, autoneg settings */
-@@ -2049,16 +2059,16 @@ static void igb_diag_test(struct net_device *netdev,
- 		dev_info(&adapter->pdev->dev, "online testing starting\n");
- 
- 		/* PHY is powered down when interface is down */
--		if (if_running && igb_link_test(adapter, &data[4]))
-+		if (if_running && igb_link_test(adapter, &data[TEST_LINK]))
- 			eth_test->flags |= ETH_TEST_FL_FAILED;
- 		else
--			data[4] = 0;
-+			data[TEST_LINK] = 0;
- 
- 		/* Online tests aren't run; pass by default */
--		data[0] = 0;
--		data[1] = 0;
--		data[2] = 0;
--		data[3] = 0;
-+		data[TEST_REG] = 0;
-+		data[TEST_EEP] = 0;
-+		data[TEST_IRQ] = 0;
-+		data[TEST_LOOP] = 0;
- 
- 		clear_bit(__IGB_TESTING, &adapter->state);
+ /**
++ * i40e_get_platform_mac_addr - get mac address from Open Firmware
++ * or IDPROM if supported by the platform
++ *
++ * @pdev: PCI device information struct
++ * @mac_addr: the MAC address to be returned
++ *
++ * Look up the MAC address in Open Firmware  on systems that support it,
++ * and use IDPROM on SPARC if no OF address is found.
++ *
++ * Returns 0 on success, negative on failure
++ **/
++static int i40e_get_platform_mac_addr(struct pci_dev *pdev, u8 *mac_addr)
++{
++	struct device_node *dp = pci_device_to_OF_node(pdev);
++	const unsigned char *addr;
++
++	addr = of_get_mac_address(dp);
++	if (addr) {
++		ether_addr_copy(mac_addr, addr);
++		return 0;
++	}
++#ifdef CONFIG_SPARC
++	ether_addr_copy(mac_addr, idprom->id_ethaddr);
++	return 0;
++#else
++	return -EINVAL;
++#endif /* CONFIG_SPARC */
++}
++
++/**
+  * i40e_probe - Device initialization routine
+  * @pdev: PCI device information struct
+  * @ent: entry in i40e_pci_tbl
+@@ -10360,7 +10440,9 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		i40e_aq_stop_lldp(hw, true, NULL);
  	}
+ 
+-	i40e_get_mac_addr(hw, hw->mac.addr);
++	err = i40e_get_platform_mac_addr(pdev, hw->mac.addr);
++	if (err)
++		i40e_get_mac_addr(hw, hw->mac.addr);
+ 	if (!is_valid_ether_addr(hw->mac.addr)) {
+ 		dev_info(&pdev->dev, "invalid MAC address %pM\n", hw->mac.addr);
+ 		err = -EIO;
 -- 
-1.9.1
+1.7.1
 
