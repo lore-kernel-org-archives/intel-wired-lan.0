@@ -1,8 +1,8 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu,  5 Nov 2015 13:37:38 -0800
-Subject: [Intel-wired-lan] [PATCH v2] fm10k: correctly pack TLV structures
+Date: Thu,  5 Nov 2015 14:13:26 -0800
+Subject: [Intel-wired-lan] [PATCH v3] fm10k: correctly pack TLV structures
 	and explain reasoning
-Message-ID: <1446759458-2873-1-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1446761606-9864-1-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,20 +10,20 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 Use of __packed for the TLV structures is not correct, as we actually
-need them to be 4byte aligned and packed, so use __attribute__(packed,
-aligned(4)). Also add an explanatory comment as to why this is
+need them to be 4byte aligned and packed, so use __attribute__((packed,
+aligned(4))). Also add an explanatory comment as to why this is
 necessary to prevent issues with the mailbox API.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
-- v2
-* Use packed, aligned(4)
+- v3
+* Correctly use __attribute__ to pack with 4byte alignment
 
  drivers/net/ethernet/intel/fm10k/fm10k_pf.h | 13 +++++++++----
  1 file changed, 9 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.h b/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
-index a8fc512a2416..2bc69b4bbbee 100644
+index a8fc512a2416..9f745d94fc82 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
 @@ -74,6 +74,11 @@ enum fm10k_pf_tlv_attr_id_v1 {
@@ -43,13 +43,13 @@ index a8fc512a2416..2bc69b4bbbee 100644
  	u8	flags;
  	u8	action;
 -} __packed;
-+} __attritbute__((packed, aligned(4));
++} __attribute__((packed, aligned(4)));
  
  struct fm10k_global_table_data {
  	__le32	used;
  	__le32	avail;
 -} __packed;
-+} __attritbute__((packed, aligned(4));
++} __attribute__((packed, aligned(4)));
  
  struct fm10k_swapi_error {
  	__le32				status;
@@ -57,7 +57,7 @@ index a8fc512a2416..2bc69b4bbbee 100644
  	struct fm10k_global_table_data	nexthop;
  	struct fm10k_global_table_data	ffu;
 -} __packed;
-+} __attritbute__((packed, aligned(4));
++} __attribute__((packed, aligned(4)));
  
  struct fm10k_swapi_1588_timestamp {
  	__le64 egress;
@@ -65,7 +65,7 @@ index a8fc512a2416..2bc69b4bbbee 100644
  	__le16 dglort;
  	__le16 sglort;
 -} __packed;
-+} __attritbute__((packed, aligned(4));
++} __attribute__((packed, aligned(4)));
  
  s32 fm10k_msg_lport_map_pf(struct fm10k_hw *, u32 **, struct fm10k_mbx_info *);
  extern const struct fm10k_tlv_attr fm10k_lport_map_msg_attr[];
