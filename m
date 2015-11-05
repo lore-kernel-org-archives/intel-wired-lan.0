@@ -1,42 +1,123 @@
 From: David Miller <davem@davemloft.net>
-Date: Thu, 05 Nov 2015 10:31:26 -0500 (EST)
+Date: Thu, 05 Nov 2015 11:05:06 -0500 (EST)
 Subject: [Intel-wired-lan] [PATCH v6] i40e: Look up MAC address in Open
 	Firmware or IDPROM
-In-Reply-To: <20151104232100.GJ14575@oracle.com>
+In-Reply-To: <20151105.103126.148818796422971143.davem@davemloft.net>
 References: <20151104232100.GJ14575@oracle.com>
-Message-ID: <20151105.103126.148818796422971143.davem@davemloft.net>
+ <20151105.103126.148818796422971143.davem@davemloft.net>
+Message-ID: <20151105.110506.1901401372160830603.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-Date: Wed, 4 Nov 2015 18:21:00 -0500
+From: David Miller <davem@davemloft.net>
+Date: Thu, 05 Nov 2015 10:31:26 -0500 (EST)
 
-> This is the i40e equivalent of commit c762dff24c06 ("ixgbe: Look up MAC
-> address in Open Firmware or IDPROM").
-> 
-> As with that fix, attempt to look up the MAC address in Open Firmware
-> on systems that support it, and use IDPROM on SPARC if no OF address
-> is found.
-> 
-> In the case of the i40e there is an assumption that the default mac
-> address has already been set up as the primary mac filter on probe,
-> so if this filter is obtained from the Open Firmware or IDPROM, an
-> explicit write is needed via i40e_aq_mac_address_write() and
-> i40e_aq_add_macvlan() invocation.
-> 
-> Reviewed-by: Martin K. Petersen <martin.petersen@oracle.com>
-> Signed-off-by: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+> I'll see if I can cook something up.
 
-Thanks for doing this.
+How does this look?
 
-Longer term we really need an abstract interface by which
-architectures can provide a "system" or "firmware" MAC address
-which applies to a given 'dev'.
+====================
+net: Add eth_platform_get_mac_address() helper.
 
-Because these SPARC ifdef'y things really should propagate to
-driver after driver after driver.
+A repeating pattern in drivers has become to use OF node information
+and, if not found, platform specific host information to extract the
+ethernet address for a given device.
 
-I'll see if I can cook something up.
+Currently this is done with a call to of_get_mac_mac_address() and
+then some ifdef'd stuff for SPARC.
+
+Consolidate this into a portable routine, and provide the
+arch_get_platform_mac_address() weak function hook for all
+architectures to implement if they want.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/arch/sparc/kernel/idprom.c b/arch/sparc/kernel/idprom.c
+index 6bd7501..f95dd11 100644
+--- a/arch/sparc/kernel/idprom.c
++++ b/arch/sparc/kernel/idprom.c
+@@ -9,6 +9,7 @@
+ #include <linux/types.h>
+ #include <linux/init.h>
+ #include <linux/export.h>
++#include <linux/etherdevice.h>
+ 
+ #include <asm/oplib.h>
+ #include <asm/idprom.h>
+@@ -60,6 +61,12 @@ static void __init display_system_type(unsigned char machtype)
+ {
+ }
+ #endif
++
++unsigned char *arch_get_platform_mac_address(void)
++{
++	return idprom->id_ethaddr;
++}
++
+ /* Calculate the IDPROM checksum (xor of the data bytes). */
+ static unsigned char __init calc_idprom_cksum(struct idprom *idprom)
+ {
+diff --git a/include/linux/etherdevice.h b/include/linux/etherdevice.h
+index eb049c6..37ff4a6 100644
+--- a/include/linux/etherdevice.h
++++ b/include/linux/etherdevice.h
+@@ -29,6 +29,9 @@
+ #include <asm/bitsperlong.h>
+ 
+ #ifdef __KERNEL__
++struct device;
++int eth_platform_get_mac_address(struct device *dev, u8 *mac_addr);
++unsigned char *arch_get_platform_get_mac_address(void);
+ u32 eth_get_headlen(void *data, unsigned int max_len);
+ __be16 eth_type_trans(struct sk_buff *skb, struct net_device *dev);
+ extern const struct header_ops eth_header_ops;
+diff --git a/net/ethernet/eth.c b/net/ethernet/eth.c
+index 9e63f25..1cb9204f 100644
+--- a/net/ethernet/eth.c
++++ b/net/ethernet/eth.c
+@@ -52,6 +52,8 @@
+ #include <linux/errno.h>
+ #include <linux/init.h>
+ #include <linux/if_ether.h>
++#include <linux/of_net.h>
++#include <linux/pci.h>
+ #include <net/dst.h>
+ #include <net/arp.h>
+ #include <net/sock.h>
+@@ -485,3 +487,33 @@ static int __init eth_offload_init(void)
+ }
+ 
+ fs_initcall(eth_offload_init);
++
++unsigned char * __weak arch_get_platform_mac_address(void)
++{
++	return NULL;
++}
++
++int eth_platform_get_mac_address(struct device *dev, u8 *mac_addr)
++{
++	const unsigned char *addr;
++	struct device_node *dp;
++
++	if (dev_is_pci(dev))
++		dp = pci_device_to_OF_node(to_pci_dev(dev));
++	else
++		dp = dev->of_node;
++
++	addr = NULL;
++	if (dp)
++		addr = of_get_mac_address(dp);
++	if (!addr)
++		addr = arch_get_platform_mac_address();
++
++	if (addr) {
++		ether_addr_copy(mac_addr, addr);
++		return 0;
++	}
++
++	return -ENODEV;
++}
++EXPORT_SYMBOL(eth_platform_get_mac_address);
