@@ -1,156 +1,126 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Thu,  5 Nov 2015 17:01:02 -0800
-Subject: [Intel-wired-lan] [next PATCH 2/2] i40e: remove unused argument
-In-Reply-To: <1446771662-36705-1-git-send-email-jesse.brandeburg@intel.com>
-References: <1446771662-36705-1-git-send-email-jesse.brandeburg@intel.com>
-Message-ID: <1446771662-36705-2-git-send-email-jesse.brandeburg@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 06 Nov 2015 15:39:20 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 6133121b568bb8c260207d6ec87b44dae6aa4cea BUILD SUCCESS
+Message-ID: <563c5928.P9VEr1+7LE3PSRZ2%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-With the final edition of the patches to remove sleeps from
-the driver's entry points, the grab_rtnl argument is no
-longer needed, so partially revert the commit that added it.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+6133121b568bb8c260207d6ec87b44dae6aa4cea  ixgbe: Clean stale VLANs when changing port vlan or resetting
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Change-ID: Ib9778476242586cc9e58b670f5f48d415cb59003
+elapsed time: 48m
 
----
-Testing Hints (required if no HSD): add and remove vlan, over and under
-bonding and teaming driver, add and delete mac address, run debug kernel
-with lock validator.  The test that originally failed was with vlan
-add/remove while running a vlan as part of a bridge with dhclient over
-the top of it.
----
- drivers/net/ethernet/intel/i40e/i40e.h             |  2 +-
- drivers/net/ethernet/intel/i40e/i40e_debugfs.c     |  4 ++--
- drivers/net/ethernet/intel/i40e/i40e_main.c        | 16 +++++++++++-----
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  8 ++++----
- 4 files changed, 18 insertions(+), 12 deletions(-)
+configs tested: 105
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index d854a46..0b9537b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -697,7 +697,7 @@ struct i40e_mac_filter *i40e_add_filter(struct i40e_vsi *vsi,
- 					bool is_vf, bool is_netdev);
- void i40e_del_filter(struct i40e_vsi *vsi, u8 *macaddr, s16 vlan,
- 		     bool is_vf, bool is_netdev);
--int i40e_sync_vsi_filters(struct i40e_vsi *vsi, bool grab_rtnl);
-+int i40e_sync_vsi_filters(struct i40e_vsi *vsi);
- struct i40e_vsi *i40e_vsi_setup(struct i40e_pf *pf, u8 type,
- 				u16 uplink, u32 param1);
- int i40e_vsi_release(struct i40e_vsi *vsi);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-index d1a91c8..10744a6 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-@@ -1138,7 +1138,7 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
- 		spin_lock_bh(&vsi->mac_filter_list_lock);
- 		f = i40e_add_filter(vsi, ma, vlan, false, false);
- 		spin_unlock_bh(&vsi->mac_filter_list_lock);
--		ret = i40e_sync_vsi_filters(vsi, true);
-+		ret = i40e_sync_vsi_filters(vsi);
- 		if (f && !ret)
- 			dev_info(&pf->pdev->dev,
- 				 "add macaddr: %pM vlan=%d added to VSI %d\n",
-@@ -1177,7 +1177,7 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
- 		spin_lock_bh(&vsi->mac_filter_list_lock);
- 		i40e_del_filter(vsi, ma, vlan, false, false);
- 		spin_unlock_bh(&vsi->mac_filter_list_lock);
--		ret = i40e_sync_vsi_filters(vsi, true);
-+		ret = i40e_sync_vsi_filters(vsi);
- 		if (!ret)
- 			dev_info(&pf->pdev->dev,
- 				 "del macaddr: %pM vlan=%d removed from VSI %d\n",
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 3119ee4..9e6268b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1859,13 +1859,12 @@ static void i40e_cleanup_add_list(struct list_head *add_list)
- /**
-  * i40e_sync_vsi_filters - Update the VSI filter list to the HW
-  * @vsi: ptr to the VSI
-- * @grab_rtnl: whether RTNL needs to be grabbed
-  *
-  * Push any outstanding VSI filter changes through the AdminQ.
-  *
-  * Returns 0 or error value
-  **/
--int i40e_sync_vsi_filters(struct i40e_vsi *vsi, bool grab_rtnl)
-+int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- {
- 	struct list_head tmp_del_list, tmp_add_list;
- 	struct i40e_mac_filter *f, *ftmp, *fclone;
-@@ -2169,8 +2168,15 @@ static void i40e_sync_filters_subtask(struct i40e_pf *pf)
- 
- 	for (v = 0; v < pf->num_alloc_vsi; v++) {
- 		if (pf->vsi[v] &&
--		    (pf->vsi[v]->flags & I40E_VSI_FLAG_FILTER_CHANGED))
--			i40e_sync_vsi_filters(pf->vsi[v], true);
-+		    (pf->vsi[v]->flags & I40E_VSI_FLAG_FILTER_CHANGED)) {
-+			int ret = i40e_sync_vsi_filters(pf->vsi[v]);
-+
-+			if (ret) {
-+				/* come back and try again later */
-+				pf->flags |= I40E_FLAG_FILTER_SYNC;
-+				break;
-+			}
-+		}
- 	}
- }
- 
-@@ -9219,7 +9225,7 @@ int i40e_vsi_release(struct i40e_vsi *vsi)
- 				f->is_vf, f->is_netdev);
- 	spin_unlock_bh(&vsi->mac_filter_list_lock);
- 
--	i40e_sync_vsi_filters(vsi, false);
-+	i40e_sync_vsi_filters(vsi);
- 
- 	i40e_vsi_delete(vsi);
- 	i40e_vsi_free_q_vectors(vsi);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 26f247d..819803c8 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -565,7 +565,7 @@ static int i40e_alloc_vsi_res(struct i40e_vf *vf, enum i40e_vsi_type type)
- 	}
- 
- 	/* program mac filter */
--	ret = i40e_sync_vsi_filters(vsi, false);
-+	ret = i40e_sync_vsi_filters(vsi);
- 	if (ret)
- 		dev_err(&pf->pdev->dev, "Unable to program ucast filters\n");
- 
-@@ -1633,7 +1633,7 @@ static int i40e_vc_add_mac_addr_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
- 	spin_unlock_bh(&vsi->mac_filter_list_lock);
- 
- 	/* program the updated filter list */
--	if (i40e_sync_vsi_filters(vsi, false))
-+	if (i40e_sync_vsi_filters(vsi))
- 		dev_err(&pf->pdev->dev, "Unable to program VF %d MAC filters\n",
- 			vf->vf_id);
- 
-@@ -1687,7 +1687,7 @@ static int i40e_vc_del_mac_addr_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
- 	spin_unlock_bh(&vsi->mac_filter_list_lock);
- 
- 	/* program the updated filter list */
--	if (i40e_sync_vsi_filters(vsi, false))
-+	if (i40e_sync_vsi_filters(vsi))
- 		dev_err(&pf->pdev->dev, "Unable to program VF %d MAC filters\n",
- 			vf->vf_id);
- 
-@@ -2102,7 +2102,7 @@ int i40e_ndo_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
- 
- 	dev_info(&pf->pdev->dev, "Setting MAC %pM on VF %d\n", mac, vf_id);
- 	/* program mac filter */
--	if (i40e_sync_vsi_filters(vsi, false)) {
-+	if (i40e_sync_vsi_filters(vsi)) {
- 		dev_err(&pf->pdev->dev, "Unable to program ucast filters\n");
- 		ret = -EIO;
- 		goto error_param;
--- 
-1.8.3.1
+i386                     randconfig-a0-201544
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64               randconfig-x018-11051832
+x86_64               randconfig-x019-11051832
+x86_64               randconfig-x016-11051832
+x86_64               randconfig-x010-11051832
+x86_64               randconfig-x012-11051832
+x86_64               randconfig-x017-11051832
+x86_64               randconfig-x014-11051832
+x86_64               randconfig-x013-11051832
+x86_64               randconfig-x015-11051832
+x86_64               randconfig-x011-11051832
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201544
+i386                     randconfig-s1-201544
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201544
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201544
+i386                     randconfig-i1-201544
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                             allmodconfig
+x86_64                                   rhel
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64               randconfig-x000-11051802
+x86_64               randconfig-x009-11051802
+x86_64               randconfig-x002-11051802
+x86_64               randconfig-x007-11051802
+x86_64               randconfig-x001-11051802
+x86_64               randconfig-x006-11051802
+x86_64               randconfig-x004-11051802
+x86_64               randconfig-x003-11051802
+x86_64               randconfig-x005-11051802
+x86_64               randconfig-x008-11051802
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201544
+i386                 randconfig-x003-11051803
+i386                 randconfig-x009-11051803
+i386                 randconfig-x000-11051803
+i386                 randconfig-x008-11051803
+i386                 randconfig-x001-11051803
+i386                 randconfig-x005-11051803
+i386                 randconfig-x006-11051803
+i386                 randconfig-x007-11051803
+i386                 randconfig-x002-11051803
+i386                 randconfig-x004-11051803
 
+Thanks,
+Fengguang
