@@ -1,53 +1,39 @@
 From: Joshua Hay <joshua.a.hay@intel.com>
-Date: Fri,  6 Nov 2015 15:26:12 -0800
-Subject: [Intel-wired-lan] [next PATCH S21 14/14] i40e/i40evf: Bump version
-	to 1.4.7 for i40e and 1.4.3 for i40evf
+Date: Fri,  6 Nov 2015 15:26:06 -0800
+Subject: [Intel-wired-lan] [next PATCH S21 08/14] i40evf: use correct types
 In-Reply-To: <1446852372-25480-1-git-send-email-joshua.a.hay@intel.com>
 References: <1446852372-25480-1-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <1446852372-25480-15-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <1446852372-25480-9-git-send-email-joshua.a.hay@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Catherine Sullivan <catherine.sullivan@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-Bump.
+Don't use uint32_t type the kernel. Use u32 instead. No functional
+change.
 
-Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-Change-ID: Id8c83c64c973349a722bab40d285ad8ded8c28f7
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-ID: I77bbf3b6464edaef747c7104b43534032a4dba63
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index af0566c..c59d146 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -39,7 +39,7 @@ static const char i40e_driver_string[] =
- 
- #define DRV_VERSION_MAJOR 1
- #define DRV_VERSION_MINOR 4
--#define DRV_VERSION_BUILD 4
-+#define DRV_VERSION_BUILD 7
- #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
- 	     __stringify(DRV_VERSION_MINOR) "." \
- 	     __stringify(DRV_VERSION_BUILD)    DRV_KERN
 diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index fb170b3..7e207ed 100644
+index 9f845fe..fb170b3 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
 +++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -34,7 +34,7 @@ char i40evf_driver_name[] = "i40evf";
- static const char i40evf_driver_string[] =
- 	"Intel(R) XL710/X710 Virtual Function Network Driver";
+@@ -259,7 +259,7 @@ static void i40evf_fire_sw_int(struct i40evf_adapter *adapter, u32 mask)
+ {
+ 	struct i40e_hw *hw = &adapter->hw;
+ 	int i;
+-	uint32_t dyn_ctl;
++	u32 dyn_ctl;
  
--#define DRV_VERSION "1.4.1"
-+#define DRV_VERSION "1.4.3"
- const char i40evf_driver_version[] = DRV_VERSION;
- static const char i40evf_copyright[] =
- 	"Copyright (c) 2013 - 2015 Intel Corporation.";
+ 	if (mask & 1) {
+ 		dyn_ctl = rd32(hw, I40E_VFINT_DYN_CTL01);
 -- 
 2.1.0
 
