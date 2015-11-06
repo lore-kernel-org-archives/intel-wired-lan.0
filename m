@@ -1,135 +1,136 @@
 From: Joshua Hay <joshua.a.hay@intel.com>
-Date: Fri,  6 Nov 2015 15:26:08 -0800
-Subject: [Intel-wired-lan] [next PATCH S21 10/14] i40e: remove
-	CONFIG_I40E_VXLAN
+Date: Fri,  6 Nov 2015 15:26:09 -0800
+Subject: [Intel-wired-lan] [next PATCH S21 11/14] i40e: Remove separate
+	functions gathering XOFF Rx stats
 In-Reply-To: <1446852372-25480-1-git-send-email-joshua.a.hay@intel.com>
 References: <1446852372-25480-1-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <1446852372-25480-11-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <1446852372-25480-12-git-send-email-joshua.a.hay@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Neerav Parikh <neerav.parikh@intel.com>
 
-Instead of having our own custom symbol, we can just rely
-on whether or not the kernel has the feature enabled.
+The separate functions to gather Flow control Rx XOFF stats was to
+determine if the Tx for a queue was paused due to Link Flow Control(LFC)
+or Priority Flow Control(PFC).
 
-In this case use IS_ENABLED(CONFIG_VXLAN) in order to handle
-built-in or module in the current BKM way.
+But, with recent change in the i40e driver the logic for checking th Tx
+hang has been removed and these functions don't do anything meaningful.
+Hence, there is no need to keep these separate functions to gather Rx
+XOFF stats for LFC or PFC.
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Change-ID: I5890fbb518ff8ed6bb07c3362fb0a8a829f9b241
+This patch removes these functions and moves the stat collection for
+XOFF Rx to the i40e_update_pf_stats() that collects all the PF stats.
+
+Signed-off-by: Neerav Parikh <neerav.parikh@intel.com>
+Change-ID: Iec1452dac3a6766f0d968e754cb407530d7c60cd
 ---
- drivers/net/ethernet/intel/Kconfig          | 11 -----------
- drivers/net/ethernet/intel/i40e/i40e.h      |  4 +---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 12 ++++++------
- 3 files changed, 7 insertions(+), 20 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 77 +++--------------------------
+ 1 file changed, 7 insertions(+), 70 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-index 4163b16..061e4e0 100644
---- a/drivers/net/ethernet/intel/Kconfig
-+++ b/drivers/net/ethernet/intel/Kconfig
-@@ -269,17 +269,6 @@ config I40E
- 	  To compile this driver as a module, choose M here. The module
- 	  will be called i40e.
- 
--config I40E_VXLAN
--	bool "Virtual eXtensible Local Area Network Support"
--	default n
--	depends on I40E && VXLAN && !(I40E=y && VXLAN=m)
--	---help---
--	  This allows one to create VXLAN virtual interfaces that provide
--	  Layer 2 Networks over Layer 3 Networks. VXLAN is often used
--	  to tunnel virtual network infrastructure in virtualized environments.
--	  Say Y here if you want to use Virtual eXtensible Local Area Network
--	  (VXLAN) in the driver.
--
- config I40E_DCB
- 	bool "Data Center Bridging (DCB) Support"
- 	default n
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 050fc0f..adfc450 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -282,7 +282,7 @@ struct i40e_pf {
- 	u32 fd_atr_cnt;
- 	u32 fd_tcp_rule;
- 
--#ifdef CONFIG_I40E_VXLAN
-+#if IS_ENABLED(CONFIG_VXLAN)
- 	__be16  vxlan_ports[I40E_MAX_PF_UDP_OFFLOAD_PORTS];
- 	u16 pending_vxlan_bitmap;
- 
-@@ -323,9 +323,7 @@ struct i40e_pf {
- #define I40E_FLAG_FD_ATR_ENABLED		BIT_ULL(22)
- #define I40E_FLAG_PTP				BIT_ULL(25)
- #define I40E_FLAG_MFP_ENABLED			BIT_ULL(26)
--#ifdef CONFIG_I40E_VXLAN
- #define I40E_FLAG_VXLAN_FILTER_SYNC		BIT_ULL(27)
--#endif
- #define I40E_FLAG_PORT_ID_VALID			BIT_ULL(28)
- #define I40E_FLAG_DCB_CAPABLE			BIT_ULL(29)
- #define I40E_FLAG_RSS_AQ_CAPABLE		BIT_ULL(31)
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index c6d4da4..4db7966 100644
+index 4db7966..af0566c 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -27,7 +27,7 @@
- /* Local includes */
- #include "i40e.h"
- #include "i40e_diag.h"
--#ifdef CONFIG_I40E_VXLAN
-+#if IS_ENABLED(CONFIG_VXLAN)
- #include <net/vxlan.h>
+@@ -792,75 +792,6 @@ static void i40e_update_fcoe_stats(struct i40e_vsi *vsi)
+ 
  #endif
- 
-@@ -5357,7 +5357,7 @@ int i40e_open(struct net_device *netdev)
- 						       TCP_FLAG_CWR) >> 16);
- 	wr32(&pf->hw, I40E_GLLAN_TSOMSK_L, be32_to_cpu(TCP_FLAG_CWR) >> 16);
- 
--#ifdef CONFIG_I40E_VXLAN
-+#if IS_ENABLED(CONFIG_VXLAN)
- 	vxlan_get_rx_port(netdev);
- #endif
- 
-@@ -7053,7 +7053,7 @@ static void i40e_handle_mdd_event(struct i40e_pf *pf)
- 	i40e_flush(hw);
- }
- 
--#ifdef CONFIG_I40E_VXLAN
-+#if IS_ENABLED(CONFIG_VXLAN)
  /**
-  * i40e_sync_vxlan_filters_subtask - Sync the VSI filter list with HW
-  * @pf: board private structure
-@@ -7120,7 +7120,7 @@ static void i40e_service_task(struct work_struct *work)
- 	i40e_watchdog_subtask(pf);
- 	i40e_fdir_reinit_subtask(pf);
- 	i40e_sync_filters_subtask(pf);
--#ifdef CONFIG_I40E_VXLAN
-+#if IS_ENABLED(CONFIG_VXLAN)
- 	i40e_sync_vxlan_filters_subtask(pf);
- #endif
- 	i40e_clean_adminq_subtask(pf);
-@@ -8496,7 +8496,7 @@ static int i40e_set_features(struct net_device *netdev,
- 	return 0;
- }
+- * i40e_update_link_xoff_rx - Update XOFF received in link flow control mode
+- * @pf: the corresponding PF
+- *
+- * Update the Rx XOFF counter (PAUSE frames) in link flow control mode
+- **/
+-static void i40e_update_link_xoff_rx(struct i40e_pf *pf)
+-{
+-	struct i40e_hw_port_stats *osd = &pf->stats_offsets;
+-	struct i40e_hw_port_stats *nsd = &pf->stats;
+-	struct i40e_hw *hw = &pf->hw;
+-	u64 xoff = 0;
+-
+-	if ((hw->fc.current_mode != I40E_FC_FULL) &&
+-	    (hw->fc.current_mode != I40E_FC_RX_PAUSE))
+-		return;
+-
+-	xoff = nsd->link_xoff_rx;
+-	i40e_stat_update32(hw, I40E_GLPRT_LXOFFRXC(hw->port),
+-			   pf->stat_offsets_loaded,
+-			   &osd->link_xoff_rx, &nsd->link_xoff_rx);
+-
+-	/* No new LFC xoff rx */
+-	if (!(nsd->link_xoff_rx - xoff))
+-		return;
+-
+-}
+-
+-/**
+- * i40e_update_prio_xoff_rx - Update XOFF received in PFC mode
+- * @pf: the corresponding PF
+- *
+- * Update the Rx XOFF counter (PAUSE frames) in PFC mode
+- **/
+-static void i40e_update_prio_xoff_rx(struct i40e_pf *pf)
+-{
+-	struct i40e_hw_port_stats *osd = &pf->stats_offsets;
+-	struct i40e_hw_port_stats *nsd = &pf->stats;
+-	bool xoff[I40E_MAX_TRAFFIC_CLASS] = {false};
+-	struct i40e_dcbx_config *dcb_cfg;
+-	struct i40e_hw *hw = &pf->hw;
+-	u16 i;
+-	u8 tc;
+-
+-	dcb_cfg = &hw->local_dcbx_config;
+-
+-	/* Collect Link XOFF stats when PFC is disabled */
+-	if (!dcb_cfg->pfc.pfcenable) {
+-		i40e_update_link_xoff_rx(pf);
+-		return;
+-	}
+-
+-	for (i = 0; i < I40E_MAX_USER_PRIORITY; i++) {
+-		u64 prio_xoff = nsd->priority_xoff_rx[i];
+-
+-		i40e_stat_update32(hw, I40E_GLPRT_PXOFFRXC(hw->port, i),
+-				   pf->stat_offsets_loaded,
+-				   &osd->priority_xoff_rx[i],
+-				   &nsd->priority_xoff_rx[i]);
+-
+-		/* No new PFC xoff rx */
+-		if (!(nsd->priority_xoff_rx[i] - prio_xoff))
+-			continue;
+-		/* Get the TC for given priority */
+-		tc = dcb_cfg->etscfg.prioritytable[i];
+-		xoff[tc] = true;
+-	}
+-}
+-
+-/**
+  * i40e_update_vsi_stats - Update the vsi statistics counters.
+  * @vsi: the VSI to be updated
+  *
+@@ -1054,12 +985,18 @@ static void i40e_update_pf_stats(struct i40e_pf *pf)
+ 	i40e_stat_update32(hw, I40E_GLPRT_LXONTXC(hw->port),
+ 			   pf->stat_offsets_loaded,
+ 			   &osd->link_xon_tx, &nsd->link_xon_tx);
+-	i40e_update_prio_xoff_rx(pf);  /* handles I40E_GLPRT_LXOFFRXC */
++	i40e_stat_update32(hw, I40E_GLPRT_LXOFFRXC(hw->port),
++			   pf->stat_offsets_loaded,
++			   &osd->link_xoff_rx, &nsd->link_xoff_rx);
+ 	i40e_stat_update32(hw, I40E_GLPRT_LXOFFTXC(hw->port),
+ 			   pf->stat_offsets_loaded,
+ 			   &osd->link_xoff_tx, &nsd->link_xoff_tx);
  
--#ifdef CONFIG_I40E_VXLAN
-+#if IS_ENABLED(CONFIG_VXLAN)
- /**
-  * i40e_get_vxlan_port_idx - Lookup a possibly offloaded for Rx UDP port
-  * @pf: board private structure
-@@ -8816,7 +8816,7 @@ static const struct net_device_ops i40e_netdev_ops = {
- 	.ndo_get_vf_config	= i40e_ndo_get_vf_config,
- 	.ndo_set_vf_link_state	= i40e_ndo_set_vf_link_state,
- 	.ndo_set_vf_spoofchk	= i40e_ndo_set_vf_spoofchk,
--#ifdef CONFIG_I40E_VXLAN
-+#if IS_ENABLED(CONFIG_VXLAN)
- 	.ndo_add_vxlan_port	= i40e_add_vxlan_port,
- 	.ndo_del_vxlan_port	= i40e_del_vxlan_port,
- #endif
+ 	for (i = 0; i < 8; i++) {
++		i40e_stat_update32(hw, I40E_GLPRT_PXOFFRXC(hw->port, i),
++				   pf->stat_offsets_loaded,
++				   &osd->priority_xoff_rx[i],
++				   &nsd->priority_xoff_rx[i]);
+ 		i40e_stat_update32(hw, I40E_GLPRT_PXONRXC(hw->port, i),
+ 				   pf->stat_offsets_loaded,
+ 				   &osd->priority_xon_rx[i],
 -- 
 2.1.0
 
