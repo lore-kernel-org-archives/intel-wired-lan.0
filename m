@@ -1,83 +1,52 @@
-From: Christopher Hall <christopher.s.hall@intel.com>
-Date: Fri, 06 Nov 2015 18:15:21 -0800
-Subject: [Intel-wired-lan] [PATCH v4 3/4] Add PTP_SYS_OFFSET_PRECISE for
- driver crosstimestamping
-In-Reply-To: <20151013135925.GB5422@localhost.localdomain>
-References: <1444675522-4198-1-git-send-email-christopher.s.hall@intel.com>
- <1444675522-4198-4-git-send-email-christopher.s.hall@intel.com>
- <20151013135925.GB5422@localhost.localdomain>
-Message-ID: <op.x7pkjvdk1774gr@chall-mobl2.amr.corp.intel.com>
+From: Aaron Sierra <asierra@xes-inc.com>
+Date: Fri, 6 Nov 2015 12:45:40 -0600 (CST)
+Subject: [Intel-wired-lan] [PATCH 1/5] igb: Remove GS40G specific
+	defines/functions
+In-Reply-To: <1446797097.3515.5.camel@intel.com>
+References: <624966880.305749.1446575829241.JavaMail.zimbra@xes-inc.com>
+ <1446797097.3515.5.camel@intel.com>
+Message-ID: <745006060.48564.1446835540714.JavaMail.zimbra@xes-inc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Richard/Thomas:
+----- Original Message -----
+> From: "Jeff Kirsher" <jeffrey.t.kirsher@intel.com>
+> Sent: Friday, November 6, 2015 2:04:57 AM
+> 
+> On Tue, 2015-11-03 at 12:37 -0600, Aaron Sierra wrote:
+> > The I210 internal PHY can be accessed just as well with the access
+> > functions shared by 82580, I350, and I354 devices. A side effect of
+> > relying on the common functions, is that I210 cable length support
+> > is folded back into the common case which effectively reverts the
+> > following commit:
+> > 
+> > ??? commit 59f301046b276f87483b3afa3201a4273def06a9
+> > ??? Author: Carolyn Wyborny <carolyn.wyborny@intel.com>
+> > ??? Date:?? Wed Oct 10 04:42:59 2012 +0000
+> > 
+> > ??? igb: Update get cable length function for i210/i211
+> > 
+> > Cc: Carolyn Wyborny <carolyn.wyborny@intel.com>
+> > Signed-off-by: Aaron Sierra <asierra@xes-inc.com>
+> > ---
+> > ?drivers/net/ethernet/intel/igb/e1000_82575.c | 13 ++---
+> > ?drivers/net/ethernet/intel/igb/e1000_i210.c? |? 5 +-
+> > ?drivers/net/ethernet/intel/igb/e1000_i210.h? |? 2 +-
+> > ?drivers/net/ethernet/intel/igb/e1000_phy.c?? | 82 +-----------------
+> > ----------
+> > ?drivers/net/ethernet/intel/igb/e1000_phy.h?? | 15 +----
+> > ?5 files changed, 11 insertions(+), 106 deletions(-)
+> 
+> Other than patch 4 of your series, the rest of the series touch code
+> which we "share" with our various other drivers. ?We would need you to
+> assign copyright back to Intel for patches 1, 2, 3 & 5 so that would
+> retain copyright on the changes so that we can re-license the changes
+> for our other drivers.
 
-On Tue, 13 Oct 2015 06:59:26 -0700, Richard Cochran  
-<richardcochran@gmail.com> wrote:
-> On Mon, Oct 12, 2015 at 11:45:21AM -0700, Christopher S. Hall wrote:
->>
->> +struct ptp_sys_offset_precise {
->> +	unsigned int rsv[4];    /* Reserved for future use. */
->> +	struct ptp_clock_time dev;
->> +	struct ptp_clock_time sys;
->> +};
->> +
->
-> Please put the reserved field at the bottom.  Also, since we reading
-> the raw monotonic time under the hood, we might as well return it in
-> this struct too.  It costs us almost nothing, and having that value
-> can be useful for characterizing the system oscillator.
+That isn't a problem. Do you need a statement any more explicit or
+official than that?
 
-Below is my proposal to implement your suggested changes adding monotonic  
-raw to the PTP_SYS_OFFSET_PRECISE ioctl:
-
-Move the reserved field to the end and add monotonic raw to
-ptp_sys_offset_precise:
-
-struct ptp_sys_offset_precise {
-          struct ptp_clock_time dev;
-          struct ptp_clock_time sys_real;
-          struct ptp_clock_time sys_raw;
-          unsigned int rsv[4];    /* Reserved for future use. */
-};
-
-In my previous patch, the getsynctime() prototype is:
-
-int (*getsynctime64)(struct ptp_clock_info *ptp, struct timespec64 *dev,
-struct timespec64 *sys);
-
-To simplify the PTP callback arguments (not add an additional raw
-argument), it seems better to replace all of the arguments with a single
-argument:
-
-int (*getsynctime)(struct ptp_clock_info *ptp, struct correlated_ts *cts);
-
-This requires adding a device time field to the correlated timestamp
-struct:
-
-struct correlated_ts {
-          int                     (*get_ts)(struct correlated_ts *ts);
-          u64                     system_ts;
-          u64                     device_ts;
-          ktime_t                 system_real;
-          ktime_t                 system_raw;
-+       ktime_t                 device;
-          void                    *private;
-};
-
-The device time field is filled out by the driver "on the way back"
-(following completion of get_correlated_timestamp()) to the PTP driver.
-
-The call flow:
-
-PTP driver-> get_synctime() (Ethernet driver)-> get_correlated_timestamp()
-(Timekeeping)->get_ts (Ethernet driver)
-
-The timestamp argument is the same (type struct correlated_ts *) for all
-of these calls.
-
-Thanks,
-Chris
+-Aaron
