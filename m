@@ -1,74 +1,121 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu,  5 Nov 2015 14:13:26 -0800
-Subject: [Intel-wired-lan] [PATCH v3] fm10k: correctly pack TLV structures
-	and explain reasoning
-Message-ID: <1446761606-9864-1-git-send-email-jacob.e.keller@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Thu,  5 Nov 2015 17:01:01 -0800
+Subject: [Intel-wired-lan] [next PATCH 1/2] i40e: fix: do not sleep in
+	netdev_ops
+Message-ID: <1446771662-36705-1-git-send-email-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Use of __packed for the TLV structures is not correct, as we actually
-need them to be 4byte aligned and packed, so use __attribute__((packed,
-aligned(4))). Also add an explanatory comment as to why this is
-necessary to prevent issues with the mailbox API.
+The driver was being called by vlan, bonding, teaming operations
+that expected to be able to hold locks like rcu_read_lock().
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+This causes the driver to be held to the requirement to not sleep,
+and was found by the kernel debug options for checking sleep
+inside critical section, and the locking validator.
+
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Change-ID: Ibc68c835f5ffa8ffe0638ffe910a66fc5649a7f7
+
 ---
-- v3
-* Correctly use __attribute__ to pack with 4byte alignment
 
- drivers/net/ethernet/intel/fm10k/fm10k_pf.h | 13 +++++++++----
- 1 file changed, 9 insertions(+), 4 deletions(-)
+Testing Hints (required if no HSD): add and remove vlan, over and under
+bonding and teaming driver, add and delete mac address, run debug kernel
+with lock validator.
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 44 +++++++++++++----------------
+ 1 file changed, 20 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.h b/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
-index a8fc512a2416..9f745d94fc82 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
-@@ -74,6 +74,11 @@ enum fm10k_pf_tlv_attr_id_v1 {
- #define FM10K_MSG_UPDATE_PVID_PVID_SHIFT	16
- #define FM10K_MSG_UPDATE_PVID_PVID_SIZE		16
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 7759703..3119ee4 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -1552,9 +1552,11 @@ static int i40e_set_mac(struct net_device *netdev, void *p)
+ 		spin_unlock_bh(&vsi->mac_filter_list_lock);
+ 	}
  
-+/* The following data structures are overlayed directly onto TLV mailbox
-+ * messages, and must not break 4 byte alignment. Ensure the structures line
-+ * up correctly as per their TLV definition.
-+ */
+-	i40e_sync_vsi_filters(vsi, false);
+ 	ether_addr_copy(netdev->dev_addr, addr->sa_data);
+-
++	/* schedule our worker thread which will take care of
++	 * applying the new filter changes
++	 */
++	i40e_service_event_schedule(vsi->back);
+ 	return 0;
+ }
+ 
+@@ -2118,12 +2120,7 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi, bool grab_rtnl)
+ 			 */
+ 			if (pf->cur_promisc != cur_promisc) {
+ 				pf->cur_promisc = cur_promisc;
+-				if (grab_rtnl)
+-					i40e_do_reset_safe(pf,
+-						BIT(__I40E_PF_RESET_REQUESTED));
+-				else
+-					i40e_do_reset(pf,
+-						BIT(__I40E_PF_RESET_REQUESTED));
++				set_bit(__I40E_PF_RESET_REQUESTED, &pf->state);
+ 			}
+ 		} else {
+ 			ret = i40e_aq_set_vsi_unicast_promiscuous(
+@@ -2383,16 +2380,13 @@ int i40e_vsi_add_vlan(struct i40e_vsi *vsi, s16 vid)
+ 		}
+ 	}
+ 
+-	/* Make sure to release before sync_vsi_filter because that
+-	 * function will lock/unlock as necessary
+-	 */
+ 	spin_unlock_bh(&vsi->mac_filter_list_lock);
+ 
+-	if (test_bit(__I40E_DOWN, &vsi->back->state) ||
+-	    test_bit(__I40E_RESET_RECOVERY_PENDING, &vsi->back->state))
+-		return 0;
+-
+-	return i40e_sync_vsi_filters(vsi, false);
++	/* schedule our worker thread which will take care of
++	 * applying the new filter changes
++	 */
++	i40e_service_event_schedule(vsi->back);
++	return 0;
+ }
+ 
+ /**
+@@ -2465,16 +2459,13 @@ int i40e_vsi_kill_vlan(struct i40e_vsi *vsi, s16 vid)
+ 		}
+ 	}
+ 
+-	/* Make sure to release before sync_vsi_filter because that
+-	 * function with lock/unlock as necessary
+-	 */
+ 	spin_unlock_bh(&vsi->mac_filter_list_lock);
+ 
+-	if (test_bit(__I40E_DOWN, &vsi->back->state) ||
+-	    test_bit(__I40E_RESET_RECOVERY_PENDING, &vsi->back->state))
+-		return 0;
+-
+-	return i40e_sync_vsi_filters(vsi, false);
++	/* schedule our worker thread which will take care of
++	 * applying the new filter changes
++	 */
++	i40e_service_event_schedule(vsi->back);
++	return 0;
+ }
+ 
+ /**
+@@ -2717,6 +2708,11 @@ static void i40e_config_xps_tx_ring(struct i40e_ring *ring)
+ 		netif_set_xps_queue(ring->netdev, mask, ring->queue_index);
+ 		free_cpumask_var(mask);
+ 	}
 +
- struct fm10k_mac_update {
- 	__le32	mac_lower;
- 	__le16	mac_upper;
-@@ -81,26 +86,26 @@ struct fm10k_mac_update {
- 	__le16	glort;
- 	u8	flags;
- 	u8	action;
--} __packed;
-+} __attribute__((packed, aligned(4)));
++	/* schedule our worker thread which will take care of
++	 * applying the new filter changes
++	 */
++	i40e_service_event_schedule(vsi->back);
+ }
  
- struct fm10k_global_table_data {
- 	__le32	used;
- 	__le32	avail;
--} __packed;
-+} __attribute__((packed, aligned(4)));
- 
- struct fm10k_swapi_error {
- 	__le32				status;
- 	struct fm10k_global_table_data	mac;
- 	struct fm10k_global_table_data	nexthop;
- 	struct fm10k_global_table_data	ffu;
--} __packed;
-+} __attribute__((packed, aligned(4)));
- 
- struct fm10k_swapi_1588_timestamp {
- 	__le64 egress;
- 	__le64 ingress;
- 	__le16 dglort;
- 	__le16 sglort;
--} __packed;
-+} __attribute__((packed, aligned(4)));
- 
- s32 fm10k_msg_lport_map_pf(struct fm10k_hw *, u32 **, struct fm10k_mbx_info *);
- extern const struct fm10k_tlv_attr fm10k_lport_map_msg_attr[];
+ /**
 -- 
-2.6.1.264.gbab76a9
+1.8.3.1
 
