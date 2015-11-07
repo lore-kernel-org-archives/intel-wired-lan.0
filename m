@@ -1,62 +1,42 @@
-From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Fri, 06 Nov 2015 16:36:22 -0800
-Subject: [Intel-wired-lan] [PATCH] ixgbevf: Handle extended IPv6 headers in
-	tx path
-Message-ID: <20151107003621.85794.6437.stgit@mdrustad-wks.jf.intel.com>
+From: Emil Tantilov <emil.s.tantilov@intel.com>
+Date: Fri, 06 Nov 2015 16:34:33 -0800
+Subject: [Intel-wired-lan] [PATCH] ixgbe: do not report 2.5 Gbps as supported
+Message-ID: <20151107003433.20895.67529.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Check for and handle IPv6 extended headers so that tx checksum
-offload can be done. Thanks to Tom Herbert for noticing this
-problem. Note that the goto back to process the final protocol
-value can never result in a loop, because it cannot be yet
-another extended header. Handling them in this manner avoids
-adding further checks to the non-extended header hot path.
+Some X550 devices can connect at 2.5Gbps during fail-over, but only
+with certain link partners. Also setting the advertised speed will
+not work so we do not report it as supported to avoid confusion.
 
-Reported-by: Tom Herbert <tom@herbertland.com>
-Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   19 ++++++++++++++++++-
- 1 file changed, 18 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |    4 ----
+ 1 file changed, 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 3d257279e770..06d29e11aaf4 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -3367,6 +3367,7 @@ static void ixgbevf_tx_csum(struct ixgbevf_ring *tx_ring,
- 			break;
- 		}
- 
-+again:
- 		switch (l4_hdr) {
- 		case IPPROTO_TCP:
- 			type_tucmd |= IXGBE_ADVTXD_TUCMD_L4T_TCP;
-@@ -3383,7 +3384,23 @@ static void ixgbevf_tx_csum(struct ixgbevf_ring *tx_ring,
- 					IXGBE_ADVTXD_L4LEN_SHIFT;
- 			break;
- 		default:
--			if (unlikely(net_ratelimit())) {
-+			if (first->protocol == htons(ETH_P_IPV6) &&
-+			    ipv6_ext_hdr(l4_hdr)) {
-+				unsigned int offset = 0;
-+				int ret;
-+
-+				ret = ipv6_find_hdr(skb, &offset, -1, NULL,
-+						    NULL);
-+				if (ret > 0) {
-+					l4_hdr = ret;
-+					goto again;
-+				}
-+				if (unlikely(net_ratelimit())) {
-+					dev_warn(tx_ring->dev,
-+						 "ipv6_find_hdr returned %d\n",
-+						 ret);
-+				}
-+			} else if (unlikely(net_ratelimit())) {
- 				dev_warn(tx_ring->dev,
- 					 "partial checksum but l4 proto=%x!\n",
- 					 l4_hdr);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+index d681273..1ed4c9a 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+@@ -166,8 +166,6 @@ static int ixgbe_get_settings(struct net_device *netdev,
+ 	/* set the supported link speeds */
+ 	if (supported_link & IXGBE_LINK_SPEED_10GB_FULL)
+ 		ecmd->supported |= SUPPORTED_10000baseT_Full;
+-	if (supported_link & IXGBE_LINK_SPEED_2_5GB_FULL)
+-		ecmd->supported |= SUPPORTED_2500baseX_Full;
+ 	if (supported_link & IXGBE_LINK_SPEED_1GB_FULL)
+ 		ecmd->supported |= SUPPORTED_1000baseT_Full;
+ 	if (supported_link & IXGBE_LINK_SPEED_100_FULL)
+@@ -179,8 +177,6 @@ static int ixgbe_get_settings(struct net_device *netdev,
+ 			ecmd->advertising |= ADVERTISED_100baseT_Full;
+ 		if (hw->phy.autoneg_advertised & IXGBE_LINK_SPEED_10GB_FULL)
+ 			ecmd->advertising |= ADVERTISED_10000baseT_Full;
+-		if (hw->phy.autoneg_advertised & IXGBE_LINK_SPEED_2_5GB_FULL)
+-			ecmd->advertising |= ADVERTISED_2500baseX_Full;
+ 		if (hw->phy.autoneg_advertised & IXGBE_LINK_SPEED_1GB_FULL)
+ 			ecmd->advertising |= ADVERTISED_1000baseT_Full;
+ 	} else {
 
