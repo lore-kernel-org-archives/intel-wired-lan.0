@@ -1,303 +1,245 @@
-From: Joshua Hay <joshua.a.hay@intel.com>
-Date: Mon,  9 Nov 2015 15:35:50 -0800
-Subject: [Intel-wired-lan] [next PATCH S21 v2 07/14] i40e: propagate properly
-Message-ID: <1447112150-10713-1-git-send-email-joshua.a.hay@intel.com>
+From: Benjamin Poirier <bpoirier@suse.com>
+Date: Mon,  9 Nov 2015 15:50:17 -0800
+Subject: [Intel-wired-lan] [PATCH v3 0/4] e1000e msi-x fixes
+Message-ID: <1447113021-1611-1-git-send-email-bpoirier@suse.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+Hi,
 
-i40e_sync_vsi_filters() is the surly teenager of this driver. It says
-it's going to report errors, but it doesn't actually do that most of the
-time. And when it does, it leaves a mess.
+For this series:
 
-Change this function to have a common exit point so it will properly
-release the busy lock on the VSI. Propagate errors to the callers.
-Finally, adjust a few callers to check for and deal with errors from
-this function.
 
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Change-ID: Ic6af4956491e72402ebb3c538a3c31a0ad7f8667
----
- drivers/net/ethernet/intel/i40e/i40e_main.c        | 113 +++++++++++++--------
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  14 +--
- 2 files changed, 76 insertions(+), 51 deletions(-)
+Benjamin Poirier (4):
+  e1000e: Remove unreachable code
+  e1000e: Do not read icr in Other interrupt
+  e1000e: Do not write lsc to ics in msi-x mode
+  e1000e: Fix msi-x interrupt automask
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index e19a579..c5a24fe 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1553,11 +1553,8 @@ static int i40e_set_mac(struct net_device *netdev, void *p)
- 	}
- 
- 	ether_addr_copy(netdev->dev_addr, addr->sa_data);
--	/* schedule our worker thread which will take care of
--	 * applying the new filter changes
--	 */
--	i40e_service_event_schedule(vsi->back);
--	return 0;
+ drivers/net/ethernet/intel/e1000e/defines.h |  3 +-
+ drivers/net/ethernet/intel/e1000e/netdev.c  | 66 ++++++++++++-----------------
+ 2 files changed, 30 insertions(+), 39 deletions(-)
+
+Changes in v3:
+Preserve LSC in IMS, LSC events are not delivered otherwise.
+Disable CTRL_EXT.IAME to prevent IMC write on ICR read from external
+program.
+
+Changes in v2:
+Address review comments from Alexander Duyck: extend cleanup of Other
+interrupt handler and use tx_ring->ims_val.
+
+
+The first three patches cleanup handling of Other interrupts and the
+last patch fixes tx and rx interrupts. Please consider reading the
+description for that patch before proceeding. I believe that the
+following simple tracing statements are helpful in detecting the problem
+fixed by the last patch.
+
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index a09d1e4..29b8c6e 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -1942,6 +1942,9 @@ static irqreturn_t e1000_intr_msix_rx(int __always_unused irq, void *data)
+ 	struct net_device *netdev = data;
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+ 	struct e1000_ring *rx_ring = adapter->rx_ring;
++	struct e1000_hw *hw = &adapter->hw;
 +
-+	return i40e_sync_vsi_filters(vsi);
++	trace_printk("%s: rxq0 irq ims 0x%08x\n", netdev->name, er32(IMS));
+ 
+ 	/* Write the ITR value calculated at the end of the
+ 	 * previous interrupt.
+@@ -1956,6 +1959,7 @@ static irqreturn_t e1000_intr_msix_rx(int __always_unused irq, void *data)
+ 		adapter->total_rx_bytes = 0;
+ 		adapter->total_rx_packets = 0;
+ 		__napi_schedule(&adapter->napi);
++		trace_printk("%s: scheduling napi\n", netdev->name);
+ 	}
+ 	return IRQ_HANDLED;
  }
+@@ -2663,6 +2667,8 @@ static int e1000e_poll(struct napi_struct *napi, int weight)
+ 	struct net_device *poll_dev = adapter->netdev;
+ 	int tx_cleaned = 1, work_done = 0;
  
- /**
-@@ -1872,8 +1869,9 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 	bool add_happened = false;
- 	int filter_list_len = 0;
- 	u32 changed_flags = 0;
-+	i40e_status aq_ret = 0;
- 	bool err_cond = false;
--	i40e_status ret = 0;
-+	int retval = 0;
- 	struct i40e_pf *pf;
- 	int num_add = 0;
- 	int num_del = 0;
-@@ -1936,8 +1934,11 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 		}
- 		spin_unlock_bh(&vsi->mac_filter_list_lock);
++	trace_printk("%s: poll starting ims 0x%08x\n", poll_dev->name,
++		     er32(IMS));
+ 	adapter = netdev_priv(poll_dev);
  
--		if (err_cond)
-+		if (err_cond) {
- 			i40e_cleanup_add_list(&tmp_add_list);
-+			retval = -ENOMEM;
-+			goto out;
-+		}
- 	}
- 
- 	/* Now process 'del_list' outside the lock */
-@@ -1955,7 +1956,8 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 			i40e_undo_del_filter_entries(vsi, &tmp_del_list);
- 			i40e_undo_add_filter_entries(vsi);
- 			spin_unlock_bh(&vsi->mac_filter_list_lock);
--			return -ENOMEM;
-+			retval = -ENOMEM;
-+			goto out;
- 		}
- 
- 		list_for_each_entry_safe(f, ftmp, &tmp_del_list, list) {
-@@ -1973,18 +1975,22 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 
- 			/* flush a full buffer */
- 			if (num_del == filter_list_len) {
--				ret = i40e_aq_remove_macvlan(&pf->hw,
--						  vsi->seid, del_list, num_del,
--						  NULL);
-+				aq_ret = i40e_aq_remove_macvlan(&pf->hw,
-+								vsi->seid,
-+								del_list,
-+								num_del,
-+								NULL);
- 				aq_err = pf->hw.aq.asq_last_status;
- 				num_del = 0;
- 				memset(del_list, 0, sizeof(*del_list));
- 
--				if (ret && aq_err != I40E_AQ_RC_ENOENT)
-+				if (aq_ret && aq_err != I40E_AQ_RC_ENOENT) {
-+					retval = -EIO;
- 					dev_err(&pf->pdev->dev,
- 						"ignoring delete macvlan error, err %s, aq_err %s while flushing a full buffer\n",
--						i40e_stat_str(&pf->hw, ret),
-+						i40e_stat_str(&pf->hw, aq_ret),
- 						i40e_aq_str(&pf->hw, aq_err));
-+				}
- 			}
- 			/* Release memory for MAC filter entries which were
- 			 * synced up with HW.
-@@ -1994,15 +2000,16 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 		}
- 
- 		if (num_del) {
--			ret = i40e_aq_remove_macvlan(&pf->hw, vsi->seid,
--						     del_list, num_del, NULL);
-+			aq_ret = i40e_aq_remove_macvlan(&pf->hw, vsi->seid,
-+							del_list, num_del,
-+							NULL);
- 			aq_err = pf->hw.aq.asq_last_status;
- 			num_del = 0;
- 
--			if (ret && aq_err != I40E_AQ_RC_ENOENT)
-+			if (aq_ret && aq_err != I40E_AQ_RC_ENOENT)
- 				dev_info(&pf->pdev->dev,
- 					 "ignoring delete macvlan error, err %s aq_err %s\n",
--					 i40e_stat_str(&pf->hw, ret),
-+					 i40e_stat_str(&pf->hw, aq_ret),
- 					 i40e_aq_str(&pf->hw, aq_err));
- 		}
- 
-@@ -2026,7 +2033,8 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 			spin_lock_bh(&vsi->mac_filter_list_lock);
- 			i40e_undo_add_filter_entries(vsi);
- 			spin_unlock_bh(&vsi->mac_filter_list_lock);
--			return -ENOMEM;
-+			retval = -ENOMEM;
-+			goto out;
- 		}
- 
- 		list_for_each_entry_safe(f, ftmp, &tmp_add_list, list) {
-@@ -2047,13 +2055,13 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 
- 			/* flush a full buffer */
- 			if (num_add == filter_list_len) {
--				ret = i40e_aq_add_macvlan(&pf->hw, vsi->seid,
--							  add_list, num_add,
--							  NULL);
-+				aq_ret = i40e_aq_add_macvlan(&pf->hw, vsi->seid,
-+							     add_list, num_add,
-+							     NULL);
- 				aq_err = pf->hw.aq.asq_last_status;
- 				num_add = 0;
- 
--				if (ret)
-+				if (aq_ret)
- 					break;
- 				memset(add_list, 0, sizeof(*add_list));
- 			}
-@@ -2065,18 +2073,19 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 		}
- 
- 		if (num_add) {
--			ret = i40e_aq_add_macvlan(&pf->hw, vsi->seid,
--						  add_list, num_add, NULL);
-+			aq_ret = i40e_aq_add_macvlan(&pf->hw, vsi->seid,
-+						     add_list, num_add, NULL);
- 			aq_err = pf->hw.aq.asq_last_status;
- 			num_add = 0;
- 		}
- 		kfree(add_list);
- 		add_list = NULL;
- 
--		if (add_happened && ret && aq_err != I40E_AQ_RC_EINVAL) {
-+		if (add_happened && aq_ret && aq_err != I40E_AQ_RC_EINVAL) {
-+			retval = i40e_aq_rc_to_posix(aq_ret, aq_err);
- 			dev_info(&pf->pdev->dev,
- 				 "add filter failed, err %s aq_err %s\n",
--				 i40e_stat_str(&pf->hw, ret),
-+				 i40e_stat_str(&pf->hw, aq_ret),
- 				 i40e_aq_str(&pf->hw, aq_err));
- 			if ((pf->hw.aq.asq_last_status == I40E_AQ_RC_ENOSPC) &&
- 			    !test_bit(__I40E_FILTER_OVERFLOW_PROMISC,
-@@ -2094,16 +2103,19 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 		bool cur_multipromisc;
- 
- 		cur_multipromisc = !!(vsi->current_netdev_flags & IFF_ALLMULTI);
--		ret = i40e_aq_set_vsi_multicast_promiscuous(&vsi->back->hw,
--							    vsi->seid,
--							    cur_multipromisc,
--							    NULL);
--		if (ret)
-+		aq_ret = i40e_aq_set_vsi_multicast_promiscuous(&vsi->back->hw,
-+							       vsi->seid,
-+							       cur_multipromisc,
-+							       NULL);
-+		if (aq_ret) {
-+			retval = i40e_aq_rc_to_posix(aq_ret,
-+						     pf->hw.aq.asq_last_status);
- 			dev_info(&pf->pdev->dev,
- 				 "set multi promisc failed, err %s aq_err %s\n",
--				 i40e_stat_str(&pf->hw, ret),
-+				 i40e_stat_str(&pf->hw, aq_ret),
- 				 i40e_aq_str(&pf->hw,
- 					     pf->hw.aq.asq_last_status));
-+		}
- 	}
- 	if ((changed_flags & IFF_PROMISC) || promisc_forced_on) {
- 		bool cur_promisc;
-@@ -2122,36 +2134,47 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 				set_bit(__I40E_PF_RESET_REQUESTED, &pf->state);
- 			}
- 		} else {
--			ret = i40e_aq_set_vsi_unicast_promiscuous(
-+			aq_ret = i40e_aq_set_vsi_unicast_promiscuous(
- 							  &vsi->back->hw,
- 							  vsi->seid,
- 							  cur_promisc, NULL);
--			if (ret)
-+			if (aq_ret) {
-+				retval =
-+				i40e_aq_rc_to_posix(aq_ret,
-+						    pf->hw.aq.asq_last_status);
- 				dev_info(&pf->pdev->dev,
- 					 "set unicast promisc failed, err %d, aq_err %d\n",
--					 ret, pf->hw.aq.asq_last_status);
--			ret = i40e_aq_set_vsi_multicast_promiscuous(
-+					 aq_ret, pf->hw.aq.asq_last_status);
-+			}
-+			aq_ret = i40e_aq_set_vsi_multicast_promiscuous(
- 							  &vsi->back->hw,
- 							  vsi->seid,
- 							  cur_promisc, NULL);
--			if (ret)
-+			if (aq_ret) {
-+				retval =
-+				i40e_aq_rc_to_posix(aq_ret,
-+						    pf->hw.aq.asq_last_status);
- 				dev_info(&pf->pdev->dev,
- 					 "set multicast promisc failed, err %d, aq_err %d\n",
--					 ret, pf->hw.aq.asq_last_status);
-+					 aq_ret, pf->hw.aq.asq_last_status);
-+			}
- 		}
--		ret = i40e_aq_set_vsi_broadcast(&vsi->back->hw,
--						vsi->seid,
--						cur_promisc, NULL);
--		if (ret)
-+		aq_ret = i40e_aq_set_vsi_broadcast(&vsi->back->hw,
-+						   vsi->seid,
-+						   cur_promisc, NULL);
-+		if (aq_ret) {
-+			retval = i40e_aq_rc_to_posix(aq_ret,
-+						     pf->hw.aq.asq_last_status);
- 			dev_info(&pf->pdev->dev,
- 				 "set brdcast promisc failed, err %s, aq_err %s\n",
--				 i40e_stat_str(&pf->hw, ret),
-+				 i40e_stat_str(&pf->hw, aq_ret),
- 				 i40e_aq_str(&pf->hw,
- 					     pf->hw.aq.asq_last_status));
-+		}
- 	}
--
-+out:
- 	clear_bit(__I40E_CONFIG_BUSY, &vsi->state);
--	return 0;
-+	return retval;
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 819803c8..30a1d30 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1633,9 +1633,10 @@ static int i40e_vc_add_mac_addr_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
- 	spin_unlock_bh(&vsi->mac_filter_list_lock);
- 
- 	/* program the updated filter list */
--	if (i40e_sync_vsi_filters(vsi))
--		dev_err(&pf->pdev->dev, "Unable to program VF %d MAC filters\n",
--			vf->vf_id);
-+	ret = i40e_sync_vsi_filters(vsi);
-+	if (ret)
-+		dev_err(&pf->pdev->dev, "Unable to program VF %d MAC filters, error %d\n",
-+			vf->vf_id, ret);
- 
- error_param:
- 	/* send the response to the VF */
-@@ -1687,9 +1688,10 @@ static int i40e_vc_del_mac_addr_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
- 	spin_unlock_bh(&vsi->mac_filter_list_lock);
- 
- 	/* program the updated filter list */
--	if (i40e_sync_vsi_filters(vsi))
--		dev_err(&pf->pdev->dev, "Unable to program VF %d MAC filters\n",
--			vf->vf_id);
-+	ret = i40e_sync_vsi_filters(vsi);
-+	if (ret)
-+		dev_err(&pf->pdev->dev, "Unable to program VF %d MAC filters, error %d\n",
-+			vf->vf_id, ret);
- 
- error_param:
- 	/* send the response to the VF */
+ 	if (!adapter->msix_entries ||
+@@ -2680,6 +2686,8 @@ static int e1000e_poll(struct napi_struct *napi, int weight)
+ 			e1000_set_itr(adapter);
+ 		napi_complete_done(napi, work_done);
+ 		if (!test_bit(__E1000_DOWN, &adapter->state)) {
++			trace_printk("%s: will enable rxq0 irq\n",
++				     poll_dev->name);
+ 			if (adapter->msix_entries)
+ 				ew32(IMS, adapter->rx_ring->ims_val);
+ 			else
+
+-------- 8< --------
+
+With that patch but without the patches in this series we can see that rx irqs
+occur@unexpected times:
+
+          <idle>-0     [000] .Ns.  1986.887517: e1000e_poll: eth1: will enable rxq0 irq
+          <idle>-0     [000] d.h.  1986.896654: e1000_intr_msix_rx: eth1: rxq0 irq ims 0x01500004
+          <idle>-0     [000] d.h.  1986.896657: e1000_intr_msix_rx: eth1: scheduling napi
+          <idle>-0     [000] d.H.  1986.896662: e1000_intr_msix_rx: eth1: rxq0 irq ims 0x01500004
+          <idle>-0     [000] ..s.  1986.896667: e1000e_poll: eth1: poll starting ims 0x01500004
+Warning: many interrupts (2) before napi
+          <idle>-0     [000] ..s.  1986.896685: e1000e_poll: eth1: will enable rxq0 irq
+
+          <idle>-0     [000] d.h.  1990.688870: e1000_intr_msix_rx: eth1: scheduling napi
+          <idle>-0     [000] ..s.  1990.688875: e1000e_poll: eth1: poll starting ims 0x01500004
+          <idle>-0     [000] dNH.  1990.688913: e1000_intr_msix_rx: eth1: rxq0 irq ims 0x01500004
+Warning: interrupt inside napi
+          <idle>-0     [000] .Ns.  1990.688916: e1000e_poll: eth1: will enable rxq0 irq
+          <idle>-0     [000] d.h.  1990.729688: e1000_intr_msix_rx: eth1: rxq0 irq ims 0x01500004
+
+Here's a typical sequence after applying the patches in this series. Notice
+that ims is changed. Another printk at the end of e1000e_poll would show it to
+be 0x01500004.
+
+          <idle>-0     [000] d.h. 23547.977917: e1000_intr_msix_rx: eth1: rxq0 irq ims 0x01400004
+          <idle>-0     [000] d.h. 23547.977922: e1000_intr_msix_rx: eth1: scheduling napi
+          <idle>-0     [000] ..s. 23547.977928: e1000e_poll: eth1: poll starting ims 0x01400004
+          <idle>-0     [000] ..s. 23547.977961: e1000e_poll: eth1: will enable rxq0 irq
+
+Finally, here's the script I used to generate the warnings above:
+
+#!/usr/bin/python3
+
+import sys
+import re
+import pprint
+
+
+class NaE(Exception):
+    "Not an Event"
+    pass
+
+class Event:
+    def __init__(self, line):
+        # sample events:
+        #  <idle>-0     [000] d.h.  2025.256536: e1000_intr_msix_rx: eth1: rxq0 irq ims 0x01500004
+        #  <idle>-0     [000] d.h.  2025.256539: e1000_intr_msix_rx: eth1: scheduling napi
+        #  <idle>-0     [000] ..s.  2025.256544: e1000e_poll: eth1: poll starting ims 0x01500004
+        #  <idle>-0     [000] ..s.  2025.256558: e1000e_poll: eth1: will enable rxq0 irq
+        retval = re.match(" +<?(?P<comm>.*)>?-(?P<pid>[0-9]+) +\[(?P<cpu>.*)\] (?P<flags>[^ ]+) +(?P<time>[0-9.]+): (?P<funcname>[^:]+): (?P<ifname>[^:]+): (?P<args>.*)", line)
+        if retval:
+            self.comm = retval.group("comm")
+            self.pid = retval.group("pid")
+            self.cpu = retval.group("cpu")
+            self.flags = retval.group("flags")
+            self.time = retval.group("time")
+            self.funcname = retval.group("funcname")
+            self.ifname = retval.group("ifname")
+            self.args = retval.group("args")
+        else:
+            raise NaE
+
+
+class Machine:
+    pass
+
+class State:
+    def __init__(self, machine):
+        self.machine = machine
+
+    def entry(self, event):
+        pass
+
+    def transition(self, event):
+        "self.machine should be considered read-only in transition"
+        return State(self.machine)
+
+    def run(self, event):
+        pass
+
+    def exit(self, event):
+        pass
+
+    def advance(self, event):
+            nextState = self.transition(event)
+            if (nextState != self):
+                self.exit(event)
+                nextState.entry(event)
+            nextState.run(event)
+            return nextState
+
+# general receive processing machine
+def enteringNapi(machine, event):
+    if event.args.startswith("poll starting"):
+        return True
+    else:
+        return False
+
+def exitingNapi(machine, event):
+    if event.args.startswith("will enable"):
+        return True
+    else:
+        return False
+
+class OutsideNapi(State):
+    def entry(self, event):
+        self.machine.intr = []
+
+    def transition(self, event):
+        if enteringNapi(self.machine, event):
+            return InsideNapi(self.machine)
+        else:
+            return self
+
+    def run(self, event):
+        if event.args.startswith("rxq0 irq"):
+            self.machine.intr.append(event)
+
+    def exit(self, event):
+        if len(self.machine.intr) > 1:
+            print("Warning: many interrupts (%d) before napi at %s" % (
+                len(self.machine.intr), event.time,))
+
+class InsideNapi(State):
+    def transition(self, event):
+        if exitingNapi(self.machine, event):
+            return OutsideNapi(self.machine)
+        else:
+            return self
+
+    def run(self, event):
+        if event.args.startswith("rxq0 irq"):
+            print("Warning: interrupt inside napi")
+
+class UnknownState(State):
+    def transition(self, event):
+        if enteringNapi(self.machine, event):
+            return InsideNapi(self.machine)
+        elif exitingNapi(self.machine, event):
+            return ExitingNapi(self.machine)
+        else:
+            return self
+
+
+if __name__ == '__main__':
+    debug = False
+
+    state = UnknownState(Machine())
+
+    for line in sys.stdin:
+        print(line, end='')
+        try:
+            event = Event(line)
+        except NaE:
+            pass
+        else:
+            if debug:
+                pprinter.pprint(event)
+            state = state.advance(event)
+
 -- 
-2.1.0
+2.6.2
 
