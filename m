@@ -1,8 +1,8 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Mon,  9 Nov 2015 05:01:23 -0800
-Subject: [Intel-wired-lan] [net 2/2] e100.txt: Cleanup license info in
-	kernel doc
-Message-ID: <1447074083-102246-1-git-send-email-jeffrey.t.kirsher@intel.com>
+Date: Mon,  9 Nov 2015 05:03:47 -0800
+Subject: [Intel-wired-lan] [net v2] e100.txt: Cleanup license info in kernel
+	doc
+Message-ID: <1447074227-102307-1-git-send-email-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,6 +16,8 @@ documentation.  So clean it up..
 CC: John Ronciak <john.ronciak@intel.com>
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 ---
+v2: fixed subject, since this was not patch 2 of a 2 patch series :-)
+
  Documentation/networking/e100.txt | 14 --------------
  1 file changed, 14 deletions(-)
 
