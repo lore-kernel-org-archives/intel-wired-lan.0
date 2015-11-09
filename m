@@ -1,81 +1,27 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon,  9 Nov 2015 14:04:08 -0800
-Subject: [Intel-wired-lan] [next-queue PATCH v3] fm10k: correctly pack TLV
-	structures and explain reasoning
-Message-ID: <1447106648-5591-1-git-send-email-jacob.e.keller@intel.com>
+From: Singh, Krishneil K <krishneil.k.singh@intel.com>
+Date: Mon, 9 Nov 2015 22:37:07 +0000
+Subject: [Intel-wired-lan] [next-queue PATCH] fm10k: do not
+	inline	fm10k_iov_select_vid()
+In-Reply-To: <20151028230440.10576.56731.stgit@bwallan-cwp1.jf.intel.com>
+References: <20151028230440.10576.56731.stgit@bwallan-cwp1.jf.intel.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E27232BDC@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The TLV format for little endian structures is actually 4 byte aligned
-copy. To this end, we need to add an additional __aligned(4) marker
-along with __packed to ensure that these structures are actually 4 byte
-aligned and packed correctly. Use of just __packed will not work as this
-will result in 1byte alignment which is incorrect. Add a comment
-explaining the reasoning behind why these structures need the special
-treatment.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Bruce Allan
+Sent: Wednesday, October 28, 2015 4:05 PM
+To: intel-wired-lan@lists.osuosl.org
+Subject: [Intel-wired-lan] [next-queue PATCH] fm10k: do not inline fm10k_iov_select_vid()
+
+The function declaration does not need to be 'inline'd here.
+
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 ---
-- v3
-* use __aligned(4) instead of __attribute__(aligned(4))
-
-Note: this patch replaces both TLV patches currently on the queue as it
-looks like Jeff had forgotten to remove the earlier one when the subject
-changed.
-
- drivers/net/ethernet/intel/fm10k/fm10k_pf.h | 13 +++++++++----
- 1 file changed, 9 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.h b/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
-index a8fc512a2416..337859260b9b 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
-@@ -74,6 +74,11 @@ enum fm10k_pf_tlv_attr_id_v1 {
- #define FM10K_MSG_UPDATE_PVID_PVID_SHIFT	16
- #define FM10K_MSG_UPDATE_PVID_PVID_SIZE		16
  
-+/* The following data structures are overlayed directly onto TLV mailbox
-+ * messages, and must not break 4 byte alignment. Ensure the structures line
-+ * up correctly as per their TLV definition.
-+ */
-+
- struct fm10k_mac_update {
- 	__le32	mac_lower;
- 	__le16	mac_upper;
-@@ -81,26 +86,26 @@ struct fm10k_mac_update {
- 	__le16	glort;
- 	u8	flags;
- 	u8	action;
--} __packed;
-+} __aligned(4) __packed;
- 
- struct fm10k_global_table_data {
- 	__le32	used;
- 	__le32	avail;
--} __packed;
-+} __aligned(4) __packed;
- 
- struct fm10k_swapi_error {
- 	__le32				status;
- 	struct fm10k_global_table_data	mac;
- 	struct fm10k_global_table_data	nexthop;
- 	struct fm10k_global_table_data	ffu;
--} __packed;
-+} __aligned(4) __packed;
- 
- struct fm10k_swapi_1588_timestamp {
- 	__le64 egress;
- 	__le64 ingress;
- 	__le16 dglort;
- 	__le16 sglort;
--} __packed;
-+} __aligned(4) __packed;
- 
- s32 fm10k_msg_lport_map_pf(struct fm10k_hw *, u32 **, struct fm10k_mbx_info *);
- extern const struct fm10k_tlv_attr fm10k_lport_map_msg_attr[];
--- 
-2.6.1.264.gbab76a9
+Tested-by: Krishneil Singh <Krishneil.k.singh@intel.com>
 
