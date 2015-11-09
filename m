@@ -1,48 +1,133 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Mon,  9 Nov 2015 05:03:47 -0800
-Subject: [Intel-wired-lan] [net v2] e100.txt: Cleanup license info in kernel
-	doc
-Message-ID: <1447074227-102307-1-git-send-email-jeffrey.t.kirsher@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Mon, 09 Nov 2015 23:09:12 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ 5151249180985a0317c5805687c4c0826496fe7b BUILD SUCCESS
+Message-ID: <5640b718.AvXTMc5SMhg2mx6L%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Apparently the e100.txt document contained a "License" section left
-over from days of old, which does not need to be in the kernel
-documentation.  So clean it up..
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+5151249180985a0317c5805687c4c0826496fe7b  ixgbe: Reset interface after enabling SR-IOV
 
-CC: John Ronciak <john.ronciak@intel.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
----
-v2: fixed subject, since this was not patch 2 of a 2 patch series :-)
+elapsed time: 134m
 
- Documentation/networking/e100.txt | 14 --------------
- 1 file changed, 14 deletions(-)
+configs tested: 112
 
-diff --git a/Documentation/networking/e100.txt b/Documentation/networking/e100.txt
-index f862cf3..42ddbd4 100644
---- a/Documentation/networking/e100.txt
-+++ b/Documentation/networking/e100.txt
-@@ -181,17 +181,3 @@ For general information, go to the Intel support website at:
- If an issue is identified with the released source code on the supported
- kernel with a supported adapter, email the specific information related to the
- issue to e1000-devel at lists.sourceforge.net.
--
--
--License
--=======
--
--This software program is released under the terms of a license agreement
--between you ('Licensee') and Intel. Do not use or load this software or any
--associated materials (collectively, the 'Software') until you have carefully
--read the full terms and conditions of the file COPYING located in this software
--package. By loading or using the Software, you agree to the terms of this
--Agreement. If you do not agree with the terms of this Agreement, do not install
--or use the Software.
--
--* Other names and brands may be claimed as the property of others.
--- 
-2.5.0
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201545
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+parisc                         b180_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x019-201545
+x86_64                 randconfig-x015-201545
+x86_64                 randconfig-x018-201545
+x86_64                 randconfig-x016-201545
+x86_64                 randconfig-x014-201545
+x86_64                 randconfig-x011-201545
+x86_64                 randconfig-x013-201545
+x86_64                 randconfig-x010-201545
+x86_64                 randconfig-x017-201545
+x86_64                 randconfig-x012-201545
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201545
+i386                     randconfig-s1-201545
+i386         randconfig-s1-201545+CONFIG_DEBUG_INFO_REDUCED
+x86_64                 randconfig-s3-11092123
+x86_64                 randconfig-s4-11092123
+x86_64                 randconfig-s5-11092123
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201545
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201545
+i386                     randconfig-i1-201545
+x86_64                 randconfig-b0-11092125
+i386                               tinyconfig
+i386                     randconfig-n0-201545
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                   rhel
+arm                          nuc960_defconfig
+blackfin                   CM-BF527_defconfig
+x86_64                 randconfig-x000-201545
+x86_64                 randconfig-x001-201545
+x86_64                 randconfig-x002-201545
+x86_64                 randconfig-x003-201545
+x86_64                 randconfig-x004-201545
+x86_64                 randconfig-x005-201545
+x86_64                 randconfig-x006-201545
+x86_64                 randconfig-x007-201545
+x86_64                 randconfig-x008-201545
+x86_64                 randconfig-x009-201545
+i386                   randconfig-x000-201545
+i386                   randconfig-x001-201545
+i386                   randconfig-x002-201545
+i386                   randconfig-x003-201545
+i386                   randconfig-x004-201545
+i386                   randconfig-x005-201545
+i386                   randconfig-x006-201545
+i386                   randconfig-x007-201545
+i386                   randconfig-x008-201545
+i386                   randconfig-x009-201545
 
+Thanks,
+Fengguang
