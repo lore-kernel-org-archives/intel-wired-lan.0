@@ -1,93 +1,81 @@
-From: John Stultz <john.stultz@linaro.org>
-Date: Mon, 9 Nov 2015 13:17:38 -0800
-Subject: [Intel-wired-lan] [PATCH v4 1/4] Produce system time from
-	correlated clocksource
-In-Reply-To: <487620E8DE6666469C4E4133DA94A0EF31F42651@FMSMSX108.amr.corp.intel.com>
-References: <1444675522-4198-1-git-send-email-christopher.s.hall@intel.com>
- <1444675522-4198-2-git-send-email-christopher.s.hall@intel.com>
- <alpine.DEB.2.11.1510132116480.25029@nanos>
- <op.x6iyd7gq1774gr@chall-mobl2.amr.corp.intel.com>
- <alpine.DEB.2.11.1510151014330.3960@nanos>
- <op.x6r25dza1774gr@chall-mobl2.amr.corp.intel.com>
- <CALAqxLXu_C8sWaKyxqXJPFV+m5Zdk=4q4s7O6NoLR1B8bbyuxg@mail.gmail.com>
- <20151020085408.GA2542@netboy>
- <alpine.DEB.2.11.1510201246250.3982@nanos>
- <20151020115113.GA23428@netboy> <20151020145523.GA5207@netboy>
- <alpine.DEB.2.11.1510202107410.8159@nanos>
- <CALAqxLXGnzwH5OgDCyggzxbao7UvS6_SOtVVkNVmjrsrOL-YBw@mail.gmail.com>
- <alpine.DEB.2.11.1510210941130.4000@nanos>
- <487620E8DE6666469C4E4133DA94A0EF31F42651@FMSMSX108.amr.corp.intel.com>
-Message-ID: <CALAqxLWi-qGH8nXV75eunSArqMdiib0Q7kVdZTD6q-uDNp6q0w@mail.gmail.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Mon,  9 Nov 2015 14:04:08 -0800
+Subject: [Intel-wired-lan] [next-queue PATCH v3] fm10k: correctly pack TLV
+	structures and explain reasoning
+Message-ID: <1447106648-5591-1-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Nov 3, 2015 at 11:18 AM, Stanton, Kevin B
-<kevin.b.stanton@intel.com> wrote:
-> On Wed, 21 Oct 2015, Thomas Gleixner wrote:
->> On Tue, 20 Oct 2015, John Stultz wrote:
->>> Being able to have various hardware sharing a time base is quite
->>> useful, and methods for correlating timestamps together are useful.
->>> But I don't yet really understand why its important that we can
->>> translate a hardware timestamp from some time in the past to the
->>> correct system time in the past without error.
->
->>If your device can only provide timestamps from the past, then
->>having access to the history is important if you want to have
->>precise correlation.
->
-> I hope this can be solved in timekeeping. But first, a quick
-> recap...
->
-> The timestamp pair (including the ART snapshot, as described
-> previously) is captured simultaneously by the hardware
-> resulting, effectively, in a (PTP,TSC) pair, or
-> (AudioPosition,TSC) pair. The in-the-past-TSC value needs to be
-> converted to system time so that it can be used by applications,
-> without exposing the underlying ART or TSC.
->
-> Note: ART is architectural, defined as part of Invariant
-> Timekeeping in the current SDM, so this isn't a one-off
-> capability.
->
-> To convert a past TSC timestamp to system time 'correctly' (in a
-> mathematical sense), a history of monotonic rate adjustments
-> since that time in the past must be maintained.
+The TLV format for little endian structures is actually 4 byte aligned
+copy. To this end, we need to add an additional __aligned(4) marker
+along with __packed to ensure that these structures are actually 4 byte
+aligned and packed correctly. Use of just __packed will not work as this
+will result in 1byte alignment which is incorrect. Add a comment
+explaining the reasoning behind why these structures need the special
+treatment.
 
-But again, my main problem is that I'm not totally understanding the rational.
-Here you're providing the *what*, not really the *why*.
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+- v3
+* use __aligned(4) instead of __attribute__(aligned(4))
 
-As I mentioned earlier, there are possibly simpler (at least for the
-kernel) ways to generate similar data using CLOCK_MONOTONIC_RAW, which
-has potentially a 500ppm error. *Why* is it important to add more
-complexity to the timekeeping core in order to avoid that error?
+Note: this patch replaces both TLV patches currently on the queue as it
+looks like Jeff had forgotten to remove the earlier one when the subject
+changed.
 
-> Regarding the amount of history, as Chris mentioned (and
-> in the context of new Intel hardware) LAN timestamp pairs are
-> a few microseconds in the past (no history would be required),
-> but for timestamps captured by the audio DSP, unfortunately,
-> they can be a small number of *milliseconds* in the past by the
-> time they're available to the audio driver (some history
-> required to convert accurately). I'm told that 4ms of adjustment
-> history accommodates known hardware.
+ drivers/net/ethernet/intel/fm10k/fm10k_pf.h | 13 +++++++++----
+ 1 file changed, 9 insertions(+), 4 deletions(-)
 
-For a timestamp recorded 4ms ago, 500ppm of error is 2us. Why is 2us
-problematic for audio? That seems quite below the human threshold to
-notice.
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.h b/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
+index a8fc512a2416..337859260b9b 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
+@@ -74,6 +74,11 @@ enum fm10k_pf_tlv_attr_id_v1 {
+ #define FM10K_MSG_UPDATE_PVID_PVID_SHIFT	16
+ #define FM10K_MSG_UPDATE_PVID_PVID_SIZE		16
+ 
++/* The following data structures are overlayed directly onto TLV mailbox
++ * messages, and must not break 4 byte alignment. Ensure the structures line
++ * up correctly as per their TLV definition.
++ */
++
+ struct fm10k_mac_update {
+ 	__le32	mac_lower;
+ 	__le16	mac_upper;
+@@ -81,26 +86,26 @@ struct fm10k_mac_update {
+ 	__le16	glort;
+ 	u8	flags;
+ 	u8	action;
+-} __packed;
++} __aligned(4) __packed;
+ 
+ struct fm10k_global_table_data {
+ 	__le32	used;
+ 	__le32	avail;
+-} __packed;
++} __aligned(4) __packed;
+ 
+ struct fm10k_swapi_error {
+ 	__le32				status;
+ 	struct fm10k_global_table_data	mac;
+ 	struct fm10k_global_table_data	nexthop;
+ 	struct fm10k_global_table_data	ffu;
+-} __packed;
++} __aligned(4) __packed;
+ 
+ struct fm10k_swapi_1588_timestamp {
+ 	__le64 egress;
+ 	__le64 ingress;
+ 	__le16 dglort;
+ 	__le16 sglort;
+-} __packed;
++} __aligned(4) __packed;
+ 
+ s32 fm10k_msg_lport_map_pf(struct fm10k_hw *, u32 **, struct fm10k_mbx_info *);
+ extern const struct fm10k_tlv_attr fm10k_lport_map_msg_attr[];
+-- 
+2.6.1.264.gbab76a9
 
-> Getting this 'correct' in one place (timekeeping) seems a lot
-> better than unnecessarily introducing inaccuracy via software
-> sampling (and extrapolation) or leaving it to each driver to do
-> it themselves, and to do it differently (and/or do it wrongly).
-
-Having a common infrastructure for extrapolating the data isn't
-something I'm objecting to.  Its just that the shadow-timekeeper has
-been problematic enough in recent times bug wise, so I'm just hesitant
-to expand the complexity there. That said, I'm open to ideas, but
-would really like a better understanding of why other solutions would
-be insufficient, and why this one is the best solution.
-
-thanks
--john
