@@ -1,11 +1,10 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 10 Nov 2015 21:37:23 +0000
-Subject: [Intel-wired-lan] [PATCH v4 5/6] i40e:Add geneve tunnel
-	offload	support
-In-Reply-To: <1447178205-99510-5-git-send-email-anjali.singhai@intel.com>
-References: <1447178205-99510-1-git-send-email-anjali.singhai@intel.com>
- <1447178205-99510-5-git-send-email-anjali.singhai@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A060E1FD3@ORSMSX104.amr.corp.intel.com>
+From: Allan, Bruce W <bruce.w.allan@intel.com>
+Date: Tue, 10 Nov 2015 22:23:39 +0000
+Subject: [Intel-wired-lan] [next PATCH v2 3/5] fm10k: Cleanup
+	exception	handling for changing queues
+In-Reply-To: <1447177230-21312-1-git-send-email-jeffrey.t.kirsher@intel.com>
+References: <1447177230-21312-1-git-send-email-jeffrey.t.kirsher@intel.com>
+Message-ID: <804857E1F29AAC47BF68C404FC60A1847EC96F71@ORSMSX105.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,29 +13,36 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Anjali Singhai Jain
-> Sent: Tuesday, November 10, 2015 9:57 AM
+> Behalf Of Jeff Kirsher
+> Sent: Tuesday, November 10, 2015 9:41 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v4 5/6] i40e:Add geneve tunnel offload
-> support
+> Cc: Alexander Duyck
+> Subject: [Intel-wired-lan] [next PATCH v2 3/5] fm10k: Cleanup exception
+> handling for changing queues
 > 
-> This patch adds driver hooks to implement ndo_ops to add/del udp port in
-> the HW to identify GENEVE tunnels.
+> From: Alexander Duyck <aduyck@mirantis.com>
 > 
-> Also cleans up the features_check path now that we support multiple udp
-> based tunnels.
+> This patch is meant to cleanup the exception handling for the paths where
+> we reset the interrupts and then reconfigure them.  In all of these paths
+> we had very different levels of exception handling.  I have updated the
+> driver so that all of the paths should result in a similar state if we
+> fail.
 > 
-> Add a spin_lock to guard the common data structure for the udp based
-> tunnels.
+> Specifically the driver will now unload the mailbox interrupt, free the
+> queue vectors and MSI-X, and then detach the interface.
 > 
-> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
+> In addition for any of the PCIe related resets I have added a check with
+> the hw_ready function to just make sure the registers are in a readable
+> state prior to reopening the interface.
+> 
+> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e.h      |  2 +
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 61
-> ++++++++++++++++++++++-------
-> drivers/net/ethernet/intel/i40e/i40e_txrx.c |  2 +-
->  3 files changed, 50 insertions(+), 15 deletions(-)
+> v2: cleaned up trailing whitespace
+> 
+>  drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 17 ++++++--
+>  drivers/net/ethernet/intel/fm10k/fm10k_pci.c    | 53
+> +++++++++++++++++++------
+>  2 files changed, 54 insertions(+), 16 deletions(-)
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied
+Reviewed-by: Bruce Allan <bruce.w.allan@intel.com>
+
