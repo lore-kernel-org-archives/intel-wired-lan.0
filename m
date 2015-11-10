@@ -1,70 +1,158 @@
-From: Benjamin Poirier <bpoirier@suse.com>
-Date: Mon,  9 Nov 2015 15:50:21 -0800
-Subject: [Intel-wired-lan] [PATCH v3 4/4] e1000e: Fix msi-x interrupt
-	automask
-In-Reply-To: <1447113021-1611-1-git-send-email-bpoirier@suse.com>
-References: <1447113021-1611-1-git-send-email-bpoirier@suse.com>
-Message-ID: <1447113021-1611-5-git-send-email-bpoirier@suse.com>
+From: Anjali Singhai Jain <anjali.singhai@intel.com>
+Date: Mon,  9 Nov 2015 16:45:22 -0800
+Subject: [Intel-wired-lan] [PATCH v2 1/6] i40e: Remove CONFIG_I40E_VXLAN
+Message-ID: <1447116327-161962-1-git-send-email-anjali.singhai@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Since the introduction of 82574 support in e1000e, the driver has worked
-on the assumption that msi-x interrupt generation is automatically
-disabled after each irq. As it turns out, this is not the case.
-Currently, rx interrupts can fire multiple times before and during napi
-processing. This can be a problem for users because frames that arrive
-in a certain window (after adapter->clean_rx() but before
-napi_complete_done() has cleared NAPI_STATE_SCHED) generate an interrupt
-which does not lead to napi_schedule(). These frames sit in the rx queue
-until another frame arrives (a tcp retransmit for example).
+If the kernel flag CONFIG_VXLAN is true or CONFIG_VXLAN_MODULE is true,
+enable VXLAN offload in the driver.
 
-While the EIAC and CTRL_EXT registers are properly configured for irq
-automask, the modification of IAM in e1000_configure_msix() is what
-prevents automask from working as intended.
-
-This patch removes that erroneous write and fixes interrupt rearming for
-tx interrupts. It also clears IAME from CTRL_EXT. This is not strictly
-necessary for operation of the driver but it is to avoid disruption from
-potential programs that access the registers directly, like `ethregs -c`.
-
-Reported-by: Frank Steiner <steiner-reg@bio.ifi.lmu.de>
-Signed-off-by: Benjamin Poirier <bpoirier@suse.com>
+Signed-off-by: Kiran Patil <kiran.patil@intel.com>
+Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
 ---
- drivers/net/ethernet/intel/e1000e/netdev.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/Kconfig          | 11 -----------
+ drivers/net/ethernet/intel/i40e/i40e.h      |  4 ----
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 14 +++-----------
+ 3 files changed, 3 insertions(+), 26 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index ed7cc8e..2a22ed7 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -1931,6 +1931,9 @@ static irqreturn_t e1000_intr_msix_tx(int __always_unused irq, void *data)
- 		/* Ring was not completely cleaned, so fire another interrupt */
- 		ew32(ICS, tx_ring->ims_val);
+diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
+index 4163b16..061e4e0 100644
+--- a/drivers/net/ethernet/intel/Kconfig
++++ b/drivers/net/ethernet/intel/Kconfig
+@@ -269,17 +269,6 @@ config I40E
+ 	  To compile this driver as a module, choose M here. The module
+ 	  will be called i40e.
  
-+	if (!test_bit(__E1000_DOWN, &adapter->state))
-+		ew32(IMS, adapter->tx_ring->ims_val);
-+
- 	return IRQ_HANDLED;
- }
- 
-@@ -2018,12 +2021,8 @@ static void e1000_configure_msix(struct e1000_adapter *adapter)
- 	ew32(IVAR, ivar);
- 
- 	/* enable MSI-X PBA support */
--	ctrl_ext = er32(CTRL_EXT);
--	ctrl_ext |= E1000_CTRL_EXT_PBA_CLR;
+-config I40E_VXLAN
+-	bool "Virtual eXtensible Local Area Network Support"
+-	default n
+-	depends on I40E && VXLAN && !(I40E=y && VXLAN=m)
+-	---help---
+-	  This allows one to create VXLAN virtual interfaces that provide
+-	  Layer 2 Networks over Layer 3 Networks. VXLAN is often used
+-	  to tunnel virtual network infrastructure in virtualized environments.
+-	  Say Y here if you want to use Virtual eXtensible Local Area Network
+-	  (VXLAN) in the driver.
 -
--	/* Auto-Mask Other interrupts upon ICR read */
--	ew32(IAM, ~E1000_EIAC_MASK_82574 | E1000_IMS_OTHER);
--	ctrl_ext |= E1000_CTRL_EXT_EIAME;
-+	ctrl_ext = er32(CTRL_EXT) & ~E1000_CTRL_EXT_IAME;
-+	ctrl_ext |= E1000_CTRL_EXT_PBA_CLR | E1000_CTRL_EXT_EIAME;
- 	ew32(CTRL_EXT, ctrl_ext);
- 	e1e_flush();
+ config I40E_DCB
+ 	bool "Data Center Bridging (DCB) Support"
+ 	default n
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index dde7ae7..ae0cf17 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -281,11 +281,9 @@ struct i40e_pf {
+ 	u32 fd_atr_cnt;
+ 	u32 fd_tcp_rule;
+ 
+-#ifdef CONFIG_I40E_VXLAN
+ 	__be16  vxlan_ports[I40E_MAX_PF_UDP_OFFLOAD_PORTS];
+ 	u16 pending_vxlan_bitmap;
+ 
+-#endif
+ 	enum i40e_interrupt_policy int_policy;
+ 	u16 rx_itr_default;
+ 	u16 tx_itr_default;
+@@ -322,9 +320,7 @@ struct i40e_pf {
+ #define I40E_FLAG_FD_ATR_ENABLED		BIT_ULL(22)
+ #define I40E_FLAG_PTP				BIT_ULL(25)
+ #define I40E_FLAG_MFP_ENABLED			BIT_ULL(26)
+-#ifdef CONFIG_I40E_VXLAN
+ #define I40E_FLAG_VXLAN_FILTER_SYNC		BIT_ULL(27)
+-#endif
+ #define I40E_FLAG_PORT_ID_VALID			BIT_ULL(28)
+ #define I40E_FLAG_DCB_CAPABLE			BIT_ULL(29)
+ #define I40E_FLAG_RSS_AQ_CAPABLE		BIT_ULL(31)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index e19a579..042ba80 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -27,7 +27,7 @@
+ /* Local includes */
+ #include "i40e.h"
+ #include "i40e_diag.h"
+-#ifdef CONFIG_I40E_VXLAN
++#if IS_ENABLED(CONFIG_VXLAN)
+ #include <net/vxlan.h>
+ #endif
+ 
+@@ -5334,9 +5334,7 @@ int i40e_open(struct net_device *netdev)
+ 						       TCP_FLAG_CWR) >> 16);
+ 	wr32(&pf->hw, I40E_GLLAN_TSOMSK_L, be32_to_cpu(TCP_FLAG_CWR) >> 16);
+ 
+-#ifdef CONFIG_I40E_VXLAN
+ 	vxlan_get_rx_port(netdev);
+-#endif
+ 
+ 	return 0;
  }
+@@ -7030,13 +7028,13 @@ static void i40e_handle_mdd_event(struct i40e_pf *pf)
+ 	i40e_flush(hw);
+ }
+ 
+-#ifdef CONFIG_I40E_VXLAN
+ /**
+  * i40e_sync_vxlan_filters_subtask - Sync the VSI filter list with HW
+  * @pf: board private structure
+  **/
+ static void i40e_sync_vxlan_filters_subtask(struct i40e_pf *pf)
+ {
++#if IS_ENABLED(CONFIG_VXLAN)
+ 	struct i40e_hw *hw = &pf->hw;
+ 	i40e_status ret;
+ 	__be16 port;
+@@ -7070,9 +7068,9 @@ static void i40e_sync_vxlan_filters_subtask(struct i40e_pf *pf)
+ 			}
+ 		}
+ 	}
++#endif
+ }
+ 
+-#endif
+ /**
+  * i40e_service_task - Run the driver's async subtasks
+  * @work: pointer to work_struct containing our data
+@@ -7097,9 +7095,7 @@ static void i40e_service_task(struct work_struct *work)
+ 	i40e_watchdog_subtask(pf);
+ 	i40e_fdir_reinit_subtask(pf);
+ 	i40e_sync_filters_subtask(pf);
+-#ifdef CONFIG_I40E_VXLAN
+ 	i40e_sync_vxlan_filters_subtask(pf);
+-#endif
+ 	i40e_clean_adminq_subtask(pf);
+ 
+ 	i40e_service_event_complete(pf);
+@@ -8473,7 +8469,6 @@ static int i40e_set_features(struct net_device *netdev,
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_I40E_VXLAN
+ /**
+  * i40e_get_vxlan_port_idx - Lookup a possibly offloaded for Rx UDP port
+  * @pf: board private structure
+@@ -8568,7 +8563,6 @@ static void i40e_del_vxlan_port(struct net_device *netdev,
+ 	}
+ }
+ 
+-#endif
+ static int i40e_get_phys_port_id(struct net_device *netdev,
+ 				 struct netdev_phys_item_id *ppid)
+ {
+@@ -8793,10 +8787,8 @@ static const struct net_device_ops i40e_netdev_ops = {
+ 	.ndo_get_vf_config	= i40e_ndo_get_vf_config,
+ 	.ndo_set_vf_link_state	= i40e_ndo_set_vf_link_state,
+ 	.ndo_set_vf_spoofchk	= i40e_ndo_set_vf_spoofchk,
+-#ifdef CONFIG_I40E_VXLAN
+ 	.ndo_add_vxlan_port	= i40e_add_vxlan_port,
+ 	.ndo_del_vxlan_port	= i40e_del_vxlan_port,
+-#endif
+ 	.ndo_get_phys_port_id	= i40e_get_phys_port_id,
+ 	.ndo_fdb_add		= i40e_ndo_fdb_add,
+ 	.ndo_features_check	= i40e_features_check,
 -- 
-2.6.2
+1.8.1.4
 
