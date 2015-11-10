@@ -1,108 +1,77 @@
 From: Anjali Singhai Jain <anjali.singhai@intel.com>
-Date: Tue, 10 Nov 2015 09:56:40 -0800
-Subject: [Intel-wired-lan] [PATCH v4 1/6] i40e: Remove CONFIG_I40E_VXLAN
-Message-ID: <1447178205-99510-1-git-send-email-anjali.singhai@intel.com>
+Date: Tue, 10 Nov 2015 09:56:43 -0800
+Subject: [Intel-wired-lan] [PATCH v4 4/6] geneve: Add geneve udp port
+	offload for ethernet
+In-Reply-To: <1447178205-99510-1-git-send-email-anjali.singhai@intel.com>
+References: <1447178205-99510-1-git-send-email-anjali.singhai@intel.com>
+Message-ID: <1447178205-99510-4-git-send-email-anjali.singhai@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-If the kernel flag CONFIG_VXLAN is true or CONFIG_VXLAN_MODULE is true,
-enable VXLAN offload in the driver.
-
-v2: Fix bisection error for this patch series.
+Call ndo_ops to add/del UDP ports to a device that supports geneve
+offload.
 
 Signed-off-by: Kiran Patil <kiran.patil@intel.com>
 Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h      |  2 --
- drivers/net/ethernet/intel/i40e/i40e_main.c | 10 ++--------
- 2 files changed, 2 insertions(+), 10 deletions(-)
+ drivers/net/geneve.c | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 8ed759e..6c4d154 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -282,11 +282,9 @@ struct i40e_pf {
- 	u32 fd_atr_cnt;
- 	u32 fd_tcp_rule;
+diff --git a/drivers/net/geneve.c b/drivers/net/geneve.c
+index de5c30c..f77db6ab 100644
+--- a/drivers/net/geneve.c
++++ b/drivers/net/geneve.c
+@@ -371,8 +371,11 @@ static struct socket *geneve_create_sock(struct net *net, bool ipv6,
  
--#if IS_ENABLED(CONFIG_VXLAN)
- 	__be16  vxlan_ports[I40E_MAX_PF_UDP_OFFLOAD_PORTS];
- 	u16 pending_vxlan_bitmap;
- 
--#endif
- 	enum i40e_interrupt_policy int_policy;
- 	u16 rx_itr_default;
- 	u16 tx_itr_default;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index b447af6..0235a8a 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -6990,13 +6990,13 @@ static void i40e_handle_mdd_event(struct i40e_pf *pf)
- 	i40e_flush(hw);
- }
- 
--#if IS_ENABLED(CONFIG_VXLAN)
- /**
-  * i40e_sync_vxlan_filters_subtask - Sync the VSI filter list with HW
-  * @pf: board private structure
-  **/
- static void i40e_sync_vxlan_filters_subtask(struct i40e_pf *pf)
+ static void geneve_notify_add_rx_port(struct geneve_sock *gs)
  {
-+#if IS_ENABLED(CONFIG_VXLAN)
- 	struct i40e_hw *hw = &pf->hw;
- 	i40e_status ret;
- 	__be16 port;
-@@ -7030,9 +7030,9 @@ static void i40e_sync_vxlan_filters_subtask(struct i40e_pf *pf)
- 			}
- 		}
++	struct net_device *dev;
+ 	struct sock *sk = gs->sock->sk;
++	struct net *net = sock_net(sk);
+ 	sa_family_t sa_family = sk->sk_family;
++	__be16 port = inet_sk(sk)->inet_sport;
+ 	int err;
+ 
+ 	if (sa_family == AF_INET) {
+@@ -381,6 +384,14 @@ static void geneve_notify_add_rx_port(struct geneve_sock *gs)
+ 			pr_warn("geneve: udp_add_offload failed with status %d\n",
+ 				err);
  	}
-+#endif
++	rcu_read_lock();
++	for_each_netdev_rcu(net, dev) {
++		if (dev->netdev_ops->ndo_add_udp_tunnel_port)
++			dev->netdev_ops->ndo_add_udp_tunnel_port(dev,
++					       sa_family,
++					       port, UDP_TUNNEL_GENEVE);
++	}
++	rcu_read_unlock();
  }
  
--#endif
- /**
-  * i40e_service_task - Run the driver's async subtasks
-  * @work: pointer to work_struct containing our data
-@@ -7057,9 +7057,7 @@ static void i40e_service_task(struct work_struct *work)
- 	i40e_watchdog_subtask(pf);
- 	i40e_fdir_reinit_subtask(pf);
- 	i40e_sync_filters_subtask(pf);
--#if IS_ENABLED(CONFIG_VXLAN)
- 	i40e_sync_vxlan_filters_subtask(pf);
--#endif
- 	i40e_clean_adminq_subtask(pf);
+ static int geneve_hlen(struct genevehdr *gh)
+@@ -521,8 +532,20 @@ static struct geneve_sock *geneve_socket_create(struct net *net, __be16 port,
  
- 	i40e_service_event_complete(pf);
-@@ -8433,7 +8431,6 @@ static int i40e_set_features(struct net_device *netdev,
- 	return 0;
- }
- 
--#if IS_ENABLED(CONFIG_VXLAN)
- /**
-  * i40e_get_vxlan_port_idx - Lookup a possibly offloaded for Rx UDP port
-  * @pf: board private structure
-@@ -8528,7 +8525,6 @@ static void i40e_del_vxlan_port(struct net_device *netdev,
- 	}
- }
- 
--#endif
- static int i40e_get_phys_port_id(struct net_device *netdev,
- 				 struct netdev_phys_item_id *ppid)
+ static void geneve_notify_del_rx_port(struct geneve_sock *gs)
  {
-@@ -8753,10 +8749,8 @@ static const struct net_device_ops i40e_netdev_ops = {
- 	.ndo_get_vf_config	= i40e_ndo_get_vf_config,
- 	.ndo_set_vf_link_state	= i40e_ndo_set_vf_link_state,
- 	.ndo_set_vf_spoofchk	= i40e_ndo_set_vf_spoofchk,
--#if IS_ENABLED(CONFIG_VXLAN)
- 	.ndo_add_vxlan_port	= i40e_add_vxlan_port,
- 	.ndo_del_vxlan_port	= i40e_del_vxlan_port,
--#endif
- 	.ndo_get_phys_port_id	= i40e_get_phys_port_id,
- 	.ndo_fdb_add		= i40e_ndo_fdb_add,
- 	.ndo_features_check	= i40e_features_check,
++	struct net_device *dev;
+ 	struct sock *sk = gs->sock->sk;
++	struct net *net = sock_net(sk);
+ 	sa_family_t sa_family = sk->sk_family;
++	__be16 port = inet_sk(sk)->inet_sport;
++
++	rcu_read_lock();
++	for_each_netdev_rcu(net, dev) {
++		if (dev->netdev_ops->ndo_del_udp_tunnel_port)
++			dev->netdev_ops->ndo_del_udp_tunnel_port(dev,
++					       sa_family,
++					       port, UDP_TUNNEL_GENEVE);
++	}
++	rcu_read_unlock();
+ 
+ 	if (sa_family == AF_INET)
+ 		udp_del_offload(&gs->udp_offloads);
 -- 
 1.8.1.4
 
