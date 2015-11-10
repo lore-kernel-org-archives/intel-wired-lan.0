@@ -1,166 +1,139 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 10 Nov 2015 09:40:30 -0800
-Subject: [Intel-wired-lan] [next PATCH v2 3/5] fm10k: Cleanup exception
-	handling for changing queues
-Message-ID: <1447177230-21312-1-git-send-email-jeffrey.t.kirsher@intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Tue, 10 Nov 2015 18:01:09 +0000
+Subject: [Intel-wired-lan] [PATCH v4 1/6] i40e: Remove CONFIG_I40E_VXLAN
+In-Reply-To: <1447178205-99510-1-git-send-email-anjali.singhai@intel.com>
+References: <1447178205-99510-1-git-send-email-anjali.singhai@intel.com>
+Message-ID: <1447178469.6967.4.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Duyck <aduyck@mirantis.com>
+Hi Anjali,
 
-This patch is meant to cleanup the exception handling for the paths where
-we reset the interrupts and then reconfigure them.  In all of these paths
-we had very different levels of exception handling.  I have updated the
-driver so that all of the paths should result in a similar state if we
-fail.
+On Tue, 2015-11-10 at 09:56 -0800, Anjali Singhai Jain wrote:
+> If the kernel flag CONFIG_VXLAN is true or CONFIG_VXLAN_MODULE is
+> true,
+> enable VXLAN offload in the driver.
+> 
+> v2: Fix bisection error for this patch series.
+> 
+> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
+> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+> ---
+> ?drivers/net/ethernet/intel/i40e/i40e.h??????|??2 --
+> ?drivers/net/ethernet/intel/i40e/i40e_main.c | 10 ++--------
+> ?2 files changed, 2 insertions(+), 10 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e.h
+> b/drivers/net/ethernet/intel/i40e/i40e.h
+> index 8ed759e..6c4d154 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e.h
+> +++ b/drivers/net/ethernet/intel/i40e/i40e.h
+> @@ -282,11 +282,9 @@ struct i40e_pf {
+> ?	u32 fd_atr_cnt;
+> ?	u32 fd_tcp_rule;
+> ?
+> -#if IS_ENABLED(CONFIG_VXLAN)
+> ?	__be16??vxlan_ports[I40E_MAX_PF_UDP_OFFLOAD_PORTS];
+> ?	u16 pending_vxlan_bitmap;
+> ?
+> -#endif
+> ?	enum i40e_interrupt_policy int_policy;
+> ?	u16 rx_itr_default;
+> ?	u16 tx_itr_default;
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index b447af6..0235a8a 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -6990,13 +6990,13 @@ static void i40e_handle_mdd_event(struct
+> i40e_pf *pf)
+> ?	i40e_flush(hw);
+> ?}
+> ?
+> -#if IS_ENABLED(CONFIG_VXLAN)
+> ?/**
+> ? * i40e_sync_vxlan_filters_subtask - Sync the VSI filter list with
+> HW
+> ? * @pf: board private structure
+> ? **/
+> ?static void i40e_sync_vxlan_filters_subtask(struct i40e_pf *pf)
+> ?{
+> +#if IS_ENABLED(CONFIG_VXLAN)
 
-Specifically the driver will now unload the mailbox interrupt, free the
-queue vectors and MSI-X, and then detach the interface.
+Direct use of CONFIG_VXLAN is not going to work. What happens in the
+case where CONFIG_VXLAN=m and CONFIG_I40E=y?
 
-In addition for any of the PCIe related resets I have added a check with
-the hw_ready function to just make sure the registers are in a readable
-state prior to reopening the interface.
+The kernel will load i40e as it loads itself at boot and vxlan module
+will not get included (because i40e isn't a module so it doesn't run
+depmod etc) and then it will run and try to call vxlan code and fail
+because of an unknown symbol since vxlan won't have been started yet.
 
-Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
----
-v2: cleaned up trailing whitespace
+This is the entire reason why CONFIG_XXX_VXLAN exists. The alternative
+is to use select VXLAN and force VXLAN on when we enable I40E.
 
- drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 17 ++++++--
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c    | 53 +++++++++++++++++++------
- 2 files changed, 54 insertions(+), 16 deletions(-)
+That's the primary reason why we can't directly use CONFIG_VXLAN as a
+check in driver code.
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-index 4307f18..1be8083 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-@@ -1176,19 +1176,28 @@ int fm10k_setup_tc(struct net_device *dev, u8 tc)
- 
- 	err = fm10k_init_queueing_scheme(interface);
- 	if (err)
--		return err;
-+		goto err_queueing_scheme;
- 
- 	err = fm10k_mbx_request_irq(interface);
- 	if (err)
--		return err;
-+		goto err_mbx_irq;
- 
--	if (netif_running(dev))
--		fm10k_open(dev);
-+	err = netif_running(dev) ? fm10k_open(dev) : 0;
-+	if (err)
-+		goto err_open;
- 
- 	/* flag to indicate SWPRI has yet to be updated */
- 	interface->flags |= FM10K_FLAG_SWPRI_CONFIG;
- 
- 	return 0;
-+err_open:
-+	fm10k_mbx_free_irq(interface);
-+err_mbx_irq:
-+	fm10k_clear_queueing_scheme(interface);
-+err_queueing_scheme:
-+	netif_device_detach(dev);
-+
-+	return err;
- }
- 
- static int fm10k_ioctl(struct net_device *netdev, struct ifreq *ifr, int cmd)
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index 464a64d..72f782c 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -185,7 +185,13 @@ static void fm10k_reinit(struct fm10k_intfc *interface)
- 	}
- 
- 	/* reassociate interrupts */
--	fm10k_mbx_request_irq(interface);
-+	err = fm10k_mbx_request_irq(interface);
-+	if (err)
-+		goto err_mbx_irq;
-+
-+	err = fm10k_hw_ready(interface);
-+	if (err)
-+		goto err_open;
- 
- 	/* update hardware address for VFs if perm_addr has changed */
- 	if (hw->mac.type == fm10k_mac_vf) {
-@@ -205,14 +211,23 @@ static void fm10k_reinit(struct fm10k_intfc *interface)
- 	/* reset clock */
- 	fm10k_ts_reset(interface);
- 
--	if (netif_running(netdev))
--		fm10k_open(netdev);
-+	err = netif_running(netdev) ? fm10k_open(netdev) : 0;
-+	if (err)
-+		goto err_open;
- 
- 	fm10k_iov_resume(interface->pdev);
- 
-+	rtnl_unlock();
-+
-+	clear_bit(__FM10K_RESETTING, &interface->state);
-+
-+	return;
-+err_open:
-+	fm10k_mbx_free_irq(interface);
-+err_mbx_irq:
-+	fm10k_clear_queueing_scheme(interface);
- reinit_err:
--	if (err)
--		netif_device_detach(netdev);
-+	netif_device_detach(netdev);
- 
- 	rtnl_unlock();
- 
-@@ -2116,16 +2131,22 @@ static int fm10k_resume(struct pci_dev *pdev)
- 	rtnl_lock();
- 
- 	err = fm10k_init_queueing_scheme(interface);
--	if (!err) {
--		fm10k_mbx_request_irq(interface);
--		if (netif_running(netdev))
--			err = fm10k_open(netdev);
--	}
-+	if (err)
-+		goto err_queueing_scheme;
- 
--	rtnl_unlock();
-+	err = fm10k_mbx_request_irq(interface);
-+	if (err)
-+		goto err_mbx_irq;
- 
-+	err = fm10k_hw_ready(interface);
- 	if (err)
--		return err;
-+		goto err_open;
-+
-+	err = netif_running(netdev) ? fm10k_open(netdev) : 0;
-+	if (err)
-+		goto err_open;
-+
-+	rtnl_unlock();
- 
- 	/* assume host is not ready, to prevent race with watchdog in case we
- 	 * actually don't have connection to the switch
-@@ -2143,6 +2164,14 @@ static int fm10k_resume(struct pci_dev *pdev)
- 	netif_device_attach(netdev);
- 
- 	return 0;
-+err_open:
-+	fm10k_mbx_free_irq(interface);
-+err_mbx_irq:
-+	fm10k_clear_queueing_scheme(interface);
-+err_queueing_scheme:
-+	rtnl_unlock();
-+
-+	return err;
- }
- 
- /**
--- 
-2.5.0
+Regards,
+Jake
 
+> ?	struct i40e_hw *hw = &pf->hw;
+> ?	i40e_status ret;
+> ?	__be16 port;
+> @@ -7030,9 +7030,9 @@ static void
+> i40e_sync_vxlan_filters_subtask(struct i40e_pf *pf)
+> ?			}
+> ?		}
+> ?	}
+> +#endif
+> ?}
+> ?
+> -#endif
+> ?/**
+> ? * i40e_service_task - Run the driver's async subtasks
+> ? * @work: pointer to work_struct containing our data
+> @@ -7057,9 +7057,7 @@ static void i40e_service_task(struct
+> work_struct *work)
+> ?	i40e_watchdog_subtask(pf);
+> ?	i40e_fdir_reinit_subtask(pf);
+> ?	i40e_sync_filters_subtask(pf);
+> -#if IS_ENABLED(CONFIG_VXLAN)
+> ?	i40e_sync_vxlan_filters_subtask(pf);
+> -#endif
+> ?	i40e_clean_adminq_subtask(pf);
+> ?
+> ?	i40e_service_event_complete(pf);
+> @@ -8433,7 +8431,6 @@ static int i40e_set_features(struct net_device
+> *netdev,
+> ?	return 0;
+> ?}
+> ?
+> -#if IS_ENABLED(CONFIG_VXLAN)
+> ?/**
+> ? * i40e_get_vxlan_port_idx - Lookup a possibly offloaded for Rx UDP
+> port
+> ? * @pf: board private structure
+> @@ -8528,7 +8525,6 @@ static void i40e_del_vxlan_port(struct
+> net_device *netdev,
+> ?	}
+> ?}
+> ?
+> -#endif
+> ?static int i40e_get_phys_port_id(struct net_device *netdev,
+> ?				?struct netdev_phys_item_id *ppid)
+> ?{
+> @@ -8753,10 +8749,8 @@ static const struct net_device_ops
+> i40e_netdev_ops = {
+> ?	.ndo_get_vf_config	= i40e_ndo_get_vf_config,
+> ?	.ndo_set_vf_link_state	= i40e_ndo_set_vf_link_state,
+> ?	.ndo_set_vf_spoofchk	= i40e_ndo_set_vf_spoofchk,
+> -#if IS_ENABLED(CONFIG_VXLAN)
+> ?	.ndo_add_vxlan_port	= i40e_add_vxlan_port,
+> ?	.ndo_del_vxlan_port	= i40e_del_vxlan_port,
+> -#endif
+> ?	.ndo_get_phys_port_id	= i40e_get_phys_port_id,
+> ?	.ndo_fdb_add		= i40e_ndo_fdb_add,
+> ?	.ndo_features_check	= i40e_features_check,
