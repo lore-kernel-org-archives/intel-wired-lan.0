@@ -1,135 +1,183 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 11 Nov 2015 03:17:35 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 82f01ec231fe8d784a547f76e2f2a3ad3064345f BUILD SUCCESS
-Message-ID: <564242cf.tL0kVU7Ndcz+oOBm%fengguang.wu@intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Tue, 10 Nov 2015 19:23:24 +0000
+Subject: [Intel-wired-lan] [PATCH v4 1/6] i40e: Remove CONFIG_I40E_VXLAN
+In-Reply-To: <C40BE8378EF49C44B9184714DBC8EF2992FC9472@ORSMSX110.amr.corp.intel.com>
+References: <1447178205-99510-1-git-send-email-anjali.singhai@intel.com>
+ <1447178469.6967.4.camel@intel.com>
+ <C40BE8378EF49C44B9184714DBC8EF2992FC9472@ORSMSX110.amr.corp.intel.com>
+Message-ID: <1447183403.6967.13.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-82f01ec231fe8d784a547f76e2f2a3ad3064345f  net: Add a generic udp_offload_get_port function
+Ok. That should work, but a quick check would be helpful.
 
-elapsed time: 67m
+Regards,
+Jake
 
-configs tested: 114
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201545
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                               tinyconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                             allmodconfig
-powerpc                  gef_sbc610_defconfig
-powerpc                     pq2fads_defconfig
-powerpc                     pseries_defconfig
-sh                           cayman_defconfig
-sh                           se7206_defconfig
-x86_64                 randconfig-x019-201545
-x86_64                 randconfig-x015-201545
-x86_64                 randconfig-x018-201545
-x86_64                 randconfig-x016-201545
-x86_64                 randconfig-x014-201545
-x86_64                 randconfig-x011-201545
-x86_64                 randconfig-x013-201545
-x86_64                 randconfig-x010-201545
-x86_64                 randconfig-x017-201545
-x86_64                 randconfig-x012-201545
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s1-201545
-i386                     randconfig-s0-201545
-x86_64                 randconfig-s0-11110220
-x86_64                 randconfig-s1-11110220
-x86_64                 randconfig-s2-11110220
-x86_64                           allmodconfig
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                   randconfig-i0-201545
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201545
-i386                     randconfig-i1-201545
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201545
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                 randconfig-x002-201545
-x86_64                 randconfig-x000-201545
-x86_64                 randconfig-x003-201545
-x86_64                 randconfig-x009-201545
-x86_64                 randconfig-x004-201545
-x86_64                 randconfig-x001-201545
-x86_64                 randconfig-x006-201545
-x86_64                 randconfig-x008-201545
-x86_64                 randconfig-x005-201545
-x86_64                 randconfig-x007-201545
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-r0-201545
-i386                   randconfig-x004-201545
-i386                   randconfig-x009-201545
-i386                   randconfig-x003-201545
-i386                   randconfig-x007-201545
-i386                   randconfig-x005-201545
-i386                   randconfig-x006-201545
-i386                   randconfig-x008-201545
-i386                   randconfig-x000-201545
-i386                   randconfig-x001-201545
-i386                   randconfig-x002-201545
-
-Thanks,
-Fengguang
+On Tue, 2015-11-10 at 19:08 +0000, Singhai, Anjali wrote:
+> Jake this patch doesn't change the use of CONFIG_VXLAN in our driver
+> to guard against a potential issue that you pointed out.
+> Our driver had already changed to using CONFIG_VXLAN in a previous
+> patch.
+> 
+> But I believe that we will still be okay in the scenario that VXLAN
+> module is not loaded because of two reasons
+> 1) We check a flag in sync_vsi_filters if a filter was added or
+> deleted before proceeding to do anything and that will return very
+> quickly from the function when VXLAN or GENEVE module is not loaded.
+> 2) udp_offload_get_port function has empty definitions in the base
+> kernel that will always exist even when the module is not loaded.
+> 
+> Having said that, I am still going to make sure that it's not an
+> issue with a previous patch for our driver. Although the shift to
+> using udp_offload_get_port with this patch series will help alleviate
+> that issue.
+> 
+> Anjali
+> 
+> > -----Original Message-----
+> > From: Keller, Jacob E
+> > Sent: Tuesday, November 10, 2015 10:01 AM
+> > To: intel-wired-lan at lists.osuosl.org; Singhai, Anjali
+> > Subject: Re: [Intel-wired-lan] [PATCH v4 1/6] i40e: Remove
+> > CONFIG_I40E_VXLAN
+> > 
+> > Hi Anjali,
+> > 
+> > On Tue, 2015-11-10 at 09:56 -0800, Anjali Singhai Jain wrote:
+> > > If the kernel flag CONFIG_VXLAN is true or CONFIG_VXLAN_MODULE is
+> > > true, enable VXLAN offload in the driver.
+> > > 
+> > > v2: Fix bisection error for this patch series.
+> > > 
+> > > Signed-off-by: Kiran Patil <kiran.patil@intel.com>
+> > > Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+> > > ---
+> > > ?drivers/net/ethernet/intel/i40e/i40e.h??????|??2 --
+> > > ?drivers/net/ethernet/intel/i40e/i40e_main.c | 10 ++--------
+> > > ?2 files changed, 2 insertions(+), 10 deletions(-)
+> > > 
+> > > diff --git a/drivers/net/ethernet/intel/i40e/i40e.h
+> > > b/drivers/net/ethernet/intel/i40e/i40e.h
+> > > index 8ed759e..6c4d154 100644
+> > > --- a/drivers/net/ethernet/intel/i40e/i40e.h
+> > > +++ b/drivers/net/ethernet/intel/i40e/i40e.h
+> > > @@ -282,11 +282,9 @@ struct i40e_pf {
+> > > ?	u32 fd_atr_cnt;
+> > > ?	u32 fd_tcp_rule;
+> > > 
+> > > -#if IS_ENABLED(CONFIG_VXLAN)
+> > > ?	__be16??vxlan_ports[I40E_MAX_PF_UDP_OFFLOAD_PORTS];
+> > > ?	u16 pending_vxlan_bitmap;
+> > > 
+> > > -#endif
+> > > ?	enum i40e_interrupt_policy int_policy;
+> > > ?	u16 rx_itr_default;
+> > > ?	u16 tx_itr_default;
+> > > diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> > > b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> > > index b447af6..0235a8a 100644
+> > > --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> > > +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> > > @@ -6990,13 +6990,13 @@ static void i40e_handle_mdd_event(struct
+> > > i40e_pf *pf)
+> > > ?	i40e_flush(hw);
+> > > ?}
+> > > 
+> > > -#if IS_ENABLED(CONFIG_VXLAN)
+> > > ?/**
+> > > ? * i40e_sync_vxlan_filters_subtask - Sync the VSI filter list
+> > > with HW
+> > > ? * @pf: board private structure
+> > > ? **/
+> > > ?static void i40e_sync_vxlan_filters_subtask(struct i40e_pf *pf)
+> > > ?{
+> > > +#if IS_ENABLED(CONFIG_VXLAN)
+> > 
+> > Direct use of CONFIG_VXLAN is not going to work. What happens in
+> > the case
+> > where CONFIG_VXLAN=m and CONFIG_I40E=y?
+> > 
+> > The kernel will load i40e as it loads itself at boot and vxlan
+> > module will not get
+> > included (because i40e isn't a module so it doesn't run depmod etc)
+> > and then
+> > it will run and try to call vxlan code and fail because of an
+> > unknown symbol
+> > since vxlan won't have been started yet.
+> > 
+> > This is the entire reason why CONFIG_XXX_VXLAN exists. The
+> > alternative is
+> > to use select VXLAN and force VXLAN on when we enable I40E.
+> > 
+> > That's the primary reason why we can't directly use CONFIG_VXLAN as
+> > a
+> > check in driver code.
+> > 
+> > Regards,
+> > Jake
+> > 
+> > > ?	struct i40e_hw *hw = &pf->hw;
+> > > ?	i40e_status ret;
+> > > ?	__be16 port;
+> > > @@ -7030,9 +7030,9 @@ static void
+> > > i40e_sync_vxlan_filters_subtask(struct i40e_pf *pf)
+> > > ?			}
+> > > ?		}
+> > > ?	}
+> > > +#endif
+> > > ?}
+> > > 
+> > > -#endif
+> > > ?/**
+> > > ? * i40e_service_task - Run the driver's async subtasks
+> > > ? * @work: pointer to work_struct containing our data @@ -7057,9
+> > > +7057,7 @@ static void i40e_service_task(struct work_struct
+> > > *work)
+> > > ?	i40e_watchdog_subtask(pf);
+> > > ?	i40e_fdir_reinit_subtask(pf);
+> > > ?	i40e_sync_filters_subtask(pf);
+> > > -#if IS_ENABLED(CONFIG_VXLAN)
+> > > ?	i40e_sync_vxlan_filters_subtask(pf);
+> > > -#endif
+> > > ?	i40e_clean_adminq_subtask(pf);
+> > > 
+> > > ?	i40e_service_event_complete(pf);
+> > > @@ -8433,7 +8431,6 @@ static int i40e_set_features(struct
+> > > net_device
+> > > *netdev,
+> > > ?	return 0;
+> > > ?}
+> > > 
+> > > -#if IS_ENABLED(CONFIG_VXLAN)
+> > > ?/**
+> > > ? * i40e_get_vxlan_port_idx - Lookup a possibly offloaded for Rx
+> > > UDP
+> > > port
+> > > ? * @pf: board private structure
+> > > @@ -8528,7 +8525,6 @@ static void i40e_del_vxlan_port(struct
+> > > net_device *netdev,
+> > > ?	}
+> > > ?}
+> > > 
+> > > -#endif
+> > > ?static int i40e_get_phys_port_id(struct net_device *netdev,
+> > > ?				?struct netdev_phys_item_id
+> > > *ppid)
+> > > ?{
+> > > @@ -8753,10 +8749,8 @@ static const struct net_device_ops
+> > > i40e_netdev_ops = {
+> > > ?	.ndo_get_vf_config	= i40e_ndo_get_vf_config,
+> > > ?	.ndo_set_vf_link_state	=
+> > > i40e_ndo_set_vf_link_state,
+> > > ?	.ndo_set_vf_spoofchk	= i40e_ndo_set_vf_spoofchk,
+> > > -#if IS_ENABLED(CONFIG_VXLAN)
+> > > ?	.ndo_add_vxlan_port	= i40e_add_vxlan_port,
+> > > ?	.ndo_del_vxlan_port	= i40e_del_vxlan_port,
+> > > -#endif
+> > > ?	.ndo_get_phys_port_id	= i40e_get_phys_port_id,
+> > > ?	.ndo_fdb_add		= i40e_ndo_fdb_add,
+> > > ?	.ndo_features_check	= i40e_features_check,
