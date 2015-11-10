@@ -1,47 +1,168 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 10 Nov 2015 08:27:49 -0800
-Subject: [Intel-wired-lan] [next-queue PATCH v3] fm10k: correctly pack
- TLV structures and explain reasoning
-In-Reply-To: <1447106648-5591-1-git-send-email-jacob.e.keller@intel.com>
-References: <1447106648-5591-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1447172869.4094.25.camel@intel.com>
+From: Allan, Bruce W <bruce.w.allan@intel.com>
+Date: Tue, 10 Nov 2015 16:46:10 +0000
+Subject: [Intel-wired-lan] [next PATCH 3/5] fm10k: Cleanup exception
+ handling for changing queues
+In-Reply-To: <804857E1F29AAC47BF68C404FC60A1847EC765C4@ORSMSX105.amr.corp.intel.com>
+References: <20151027235341.30048.46286.stgit@localhost.localdomain>
+ <20151027235924.30048.24399.stgit@localhost.localdomain>
+ <804857E1F29AAC47BF68C404FC60A1847EC6F428@ORSMSX105.amr.corp.intel.com>
+ <563275D8.60909@gmail.com>
+ <804857E1F29AAC47BF68C404FC60A1847EC765C4@ORSMSX105.amr.corp.intel.com>
+Message-ID: <804857E1F29AAC47BF68C404FC60A1847EC95658@ORSMSX105.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2015-11-09 at 14:04 -0800, Jacob Keller wrote:
-> The TLV format for little endian structures is actually 4 byte
-> aligned
-> copy. To this end, we need to add an additional __aligned(4) marker
-> along with __packed to ensure that these structures are actually 4
-> byte
-> aligned and packed correctly. Use of just __packed will not work as
-> this
-> will result in 1byte alignment which is incorrect. Add a comment
-> explaining the reasoning behind why these structures need the special
-> treatment.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
-> - v3
-> * use __aligned(4) instead of __attribute__(aligned(4))
-> 
-> Note: this patch replaces both TLV patches currently on the queue as
-> it
-> looks like Jeff had forgotten to remove the earlier one when the
-> subject
-> changed.
+Jeff?  Ping!
 
-Nope, I just applied the last submitted version of this patch. ?Might
-be helpful if the version actually incremented when you re-submit a
-patch. ?This is the third version of "v3", so techincally this should
-have been v5. :-)
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151110/7cf5337d/attachment.asc>
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Allan, Bruce W
+> Sent: Tuesday, November 03, 2015 3:20 PM
+> To: Alexander Duyck; Kirsher, Jeffrey T; Alexander Duyck; intel-wired-
+> lan at lists.osuosl.org
+> Subject: Re: [Intel-wired-lan] [next PATCH 3/5] fm10k: Cleanup exception
+> handling for changing queues
+> 
+> > -----Original Message-----
+> > From: Alexander Duyck [mailto:alexander.duyck at gmail.com]
+> > Sent: Thursday, October 29, 2015 12:39 PM
+> > To: Allan, Bruce W; Kirsher, Jeffrey T; Alexander Duyck; intel-wired-
+> > lan at lists.osuosl.org
+> > Subject: Re: [Intel-wired-lan] [next PATCH 3/5] fm10k: Cleanup exception
+> > handling for changing queues
+> >
+> > On 10/29/2015 12:12 PM, Allan, Bruce W wrote:
+> > >> -----Original Message-----
+> > >> From: Intel-wired-lan [mailto:intel-wired-lan-
+> bounces at lists.osuosl.org]
+> > On
+> > >> Behalf Of Alexander Duyck
+> > >> Sent: Tuesday, October 27, 2015 4:59 PM
+> > >> To: intel-wired-lan at lists.osuosl.org
+> > >> Subject: [Intel-wired-lan] [next PATCH 3/5] fm10k: Cleanup exception
+> > >> handling for changing queues
+> > >>
+> > >> This patch is meant to cleanup the exception handling for the paths
+> > where
+> > >> we reset the interrupts and then reconfigure them.  In all of these
+> paths
+> > >> we had very different levels of exception handling.  I have updated the
+> > >> driver so that all of the paths should result in a similar state if we
+> > >> fail.
+> > >>
+> > >> Specifically the driver will now unload the mailbox interrupt, free the
+> > >> queue vectors and MSI-X, and then detach the interface.
+> > >>
+> > >> In addition for any of the PCIe related resets I have added a check with
+> > >> the hw_ready function to just make sure the registers are in a readable
+> > >> state prior to reopening the interface.
+> > >>
+> > >> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+> > >> ---
+> > >>   drivers/net/ethernet/intel/fm10k/fm10k_netdev.c |   17 +++++--
+> > >>   drivers/net/ethernet/intel/fm10k/fm10k_pci.c    |   55
+> > >> ++++++++++++++++++-----
+> > >>   2 files changed, 55 insertions(+), 17 deletions(-)
+> > >>
+> > >> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+> > >> b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+> > >> index 38fe2d8c8388..4855686d2b4e 100644
+> > >> --- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+> > >> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+> > >> @@ -1176,19 +1176,28 @@ int fm10k_setup_tc(struct net_device
+> *dev,
+> > u8
+> > >> tc)
+> > >>
+> > >>   	err = fm10k_init_queueing_scheme(interface);
+> > >>   	if (err)
+> > >> -		return err;
+> > >> +		goto err_queueing_scheme;
+> > >>
+> > >>   	err = fm10k_mbx_request_irq(interface);
+> > >>   	if (err)
+> > >> -		return err;
+> > >> +		goto err_mbx_irq;
+> > >>
+> > >> -	if (netif_running(dev))
+> > >> -		fm10k_open(dev);
+> > >> +	err = netif_running(dev) ? fm10k_open(dev) : 0;
+> > >> +	if (err)
+> > >> +		goto err_open;
+> > >>
+> > >>   	/* flag to indicate SWPRI has yet to be updated */
+> > >>   	interface->flags |= FM10K_FLAG_SWPRI_CONFIG;
+> > >>
+> > >>   	return 0;
+> > >> +err_open:
+> > >> +	fm10k_mbx_free_irq(interface);
+> > >> +err_mbx_irq:
+> > >> +	fm10k_clear_queueing_scheme(interface);
+> > >> +err_queueing_scheme:
+> > >> +	netif_device_detach(dev);
+> > >> +
+> > >> +	return err;
+> > >>   }
+> > >>
+> > >>   static int fm10k_ioctl(struct net_device *netdev, struct ifreq *ifr, int
+> > cmd)
+> > >> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> > >> b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> > >> index 15327d274d72..7b33cddfc6be 100644
+> > >> --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> > >> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> > >> @@ -185,7 +185,13 @@ static void fm10k_reinit(struct fm10k_intfc
+> > >> *interface)
+> > >>   	}
+> > >>
+> > >>   	/* reassociate interrupts */
+> > >> -	fm10k_mbx_request_irq(interface);
+> > >> +	err = fm10k_mbx_request_irq(interface);
+> > >> +	if (err)
+> > >> +		goto err_mbx_irq;
+> > >> +
+> > >> +	err = fm10k_hw_ready(interface);
+> > >> +	if (err)
+> > >> +		goto err_open;
+> > >>
+> > >>   	/* update hardware address for VFs if perm_addr has changed */
+> > >>   	if (hw->mac.type == fm10k_mac_vf) {
+> > >> @@ -205,14 +211,23 @@ static void fm10k_reinit(struct fm10k_intfc
+> > >> *interface)
+> > >>   	/* reset clock */
+> > >>   	fm10k_ts_reset(interface);
+> > >>
+> > >> -	if (netif_running(netdev))
+> > >> -		fm10k_open(netdev);
+> > >> -
+> > >> +	err = netif_running(netdev) ? fm10k_open(netdev) : 0;
+> > >> +	if (err)
+> > >> +		goto err_open;
+> > >> +
+> > > Jeff, the above blank-line separator line in Alex' original submission looks
+> > fine here but
+> > > in your next-queue tree dev-queue branch there is additional
+> whitespace
+> > (2 tabs).
+> > > How did that happen?
+> >
+> > I just went back and checked and it looks like I had included some
+> > trailing white space in my original patch.  Jeff do you need me to
+> > resubmit this patch or can you clean up the two spots where it added
+> > trailing white space in the blank lines?
+> >
+> > - Alex
+> 
+> Jeff, are you going to fix the whitespace issues in this patch?
+> 
+> Thanks,
+> Bruce.
+> 
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at lists.osuosl.org
+> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
