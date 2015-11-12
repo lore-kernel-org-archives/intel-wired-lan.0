@@ -1,32 +1,27 @@
-From: Miller, Darin J <darin.j.miller@intel.com>
-Date: Wed, 11 Nov 2015 23:41:31 +0000
-Subject: [Intel-wired-lan] [PATCH 2/2] ixgbe: Wait for master disable to
- be	set
-In-Reply-To: <20151027202323.87452.79685.stgit@mdrustad-wks.jf.intel.com>
-References: <20151027202314.87452.46904.stgit@mdrustad-wks.jf.intel.com>
- <20151027202323.87452.79685.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <A91205FD8A6E14448BD4414C06E9C3D3752218D8@fmsmsx115.amr.corp.intel.com>
+From: Stephen Hemminger <stephen@networkplumber.org>
+Date: Wed, 11 Nov 2015 17:35:57 -0800
+Subject: [Intel-wired-lan] [net-next PATCH 2/3] ixgbe: Use __dev_uc_sync
+ and __dev_uc_unsync for unicast addresses
+In-Reply-To: <20151022232636.24612.12045.stgit@ahduyck-vm-fedora22>
+References: <20151022232228.24612.81341.stgit@ahduyck-vm-fedora22>
+ <20151022232636.24612.12045.stgit@ahduyck-vm-fedora22>
+Message-ID: <20151111173557.6eb25df5@xeon-e3>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Thu, 22 Oct 2015 16:26:36 -0700
+Alexander Duyck <aduyck@mirantis.com> wrote:
 
+> +static int ixgbe_uc_unsync(struct net_device *netdev, const unsigned char *addr)
+> +{
+> +	struct ixgbe_adapter *adapter = netdev_priv(netdev);
+> +
+> +	ixgbe_del_mac_filter(adapter, addr, VMDQ_P(0));
+> +
+> +	return 0;
 
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Mark D Rustad
-Sent: Tuesday, October 27, 2015 1:23 PM
-To: intel-wired-lan@lists.osuosl.org
-Subject: [Intel-wired-lan] [PATCH 2/2] ixgbe: Wait for master disable to be set
-
-According to the datasheets, the driver should wait for the master disable bit to read as being set before checking the status register for master disable.
-
-Reported-by: Dan Streetman <dan.streetman@canonical.com>
-Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |   14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
-
-Tested-by: Darin Miller <darin.j.miller@intel.com>
-
+Why add an internal function that always returns 0?
+Rather than making it void.
