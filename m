@@ -1,10 +1,10 @@
 From: Schmitt, Phillip J <phillip.j.schmitt@intel.com>
-Date: Fri, 13 Nov 2015 20:54:43 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbevf: Handle extended IPv6 headers
- in	tx path
-In-Reply-To: <20151107003621.85794.6437.stgit@mdrustad-wks.jf.intel.com>
-References: <20151107003621.85794.6437.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E180C17A4E@ORSMSX108.amr.corp.intel.com>
+Date: Fri, 13 Nov 2015 20:55:00 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Handle extended IPv6 headers
+ in tx	path
+In-Reply-To: <20151105010227.984.84717.stgit@mdrustad-wks.jf.intel.com>
+References: <20151105010227.984.84717.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E180C17A68@ORSMSX108.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,9 +16,9 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
 > Behalf Of Mark D Rustad
-> Sent: Friday, November 06, 2015 4:36 PM
+> Sent: Wednesday, November 04, 2015 5:02 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] ixgbevf: Handle extended IPv6 headers in tx
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: Handle extended IPv6 headers in tx
 > path
 > 
 > Check for and handle IPv6 extended headers so that tx checksum offload can be
