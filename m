@@ -1,151 +1,134 @@
 From: Deepthi Kavalur <deepthi.kavalur@intel.com>
-Date: Fri, 13 Nov 2015 15:47:02 -0800
-Subject: [Intel-wired-lan] [next PATCH S22 02/14] i40e: chomp the BIT(_ULL)
+Date: Fri, 13 Nov 2015 15:47:08 -0800
+Subject: [Intel-wired-lan] [next PATCH S22 08/14] i40e: Opcode and
+	structures required by OEM Post Update AQ command and add new
+	NVM arq message
 In-Reply-To: <1447458434-4555-1-git-send-email-deepthi.kavalur@intel.com>
 References: <1447458434-4555-1-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <1447458434-4555-3-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <1447458434-4555-9-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Michal Kosiarz <michal.kosiarz@intel.com>
 
-BIT_ULL was used on a u32 or less where it can simply be BIT. This
-fixes some trivial static analyzer warnings. Chomp, chomp.
+This is a part of implementation which contains data structures and
+opcode for new AQ command. There's a new ARQ message that gets sent
+near the end of the NVM update process that the driver should recognize
+and ignore, rather than printing an Unknown Event error.
 
-Tested with objdump of binary before and after, no changes to code.
+Signed-off-by: Michal Kosiarz <michal.kosiarz@intel.com>
+Acked-by: Shannon Nelson <shannon.nelson@intel.com>
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Change-ID: I04830a5bcae14823e16b9424cc4165e169336c1f
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Change-ID: I6245e9abd447192dbde1669c747aeb2878126c7d
+Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+Change-ID: Ic73b0a4e10e0b6895d1f2435125f1e789f3756dd
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 30 ++++++++++++++---------------
- 1 file changed, 15 insertions(+), 15 deletions(-)
+Testing Hints :
+	Do an nvmupdate with the current version of nvmupdate tool before and
+	after this patch is applied and watch the kernel log for the message
+		"ARQ Error: Unknown event 0x0720 received"
+	Using "nvmupdate -f" will allow you to "update" your NVM with the same
+	version NVM, over and over; useful for this kind of testing.
 
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h   | 21 +++++++++++++++++++++
+ drivers/net/ethernet/intel/i40e/i40e_main.c         |  1 +
+ drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h | 21 +++++++++++++++++++++
+ 3 files changed, 43 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+index 61a4979..b22012a 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+@@ -227,6 +227,7 @@ enum i40e_admin_queue_opc {
+ 	i40e_aqc_opc_nvm_update			= 0x0703,
+ 	i40e_aqc_opc_nvm_config_read		= 0x0704,
+ 	i40e_aqc_opc_nvm_config_write		= 0x0705,
++	i40e_aqc_opc_oem_post_update		= 0x0720,
+ 
+ 	/* virtualization commands */
+ 	i40e_aqc_opc_send_msg_to_pf		= 0x0801,
+@@ -1891,6 +1892,26 @@ struct i40e_aqc_nvm_config_data_immediate_field {
+ 
+ I40E_CHECK_STRUCT_LEN(0xc, i40e_aqc_nvm_config_data_immediate_field);
+ 
++/* OEM Post Update (indirect 0x0720)
++ * no command data struct used
++ */
++struct i40e_aqc_nvm_oem_post_update {
++#define I40E_AQ_NVM_OEM_POST_UPDATE_EXTERNAL_DATA	0x01
++	u8 sel_data;
++	u8 reserved[7];
++};
++
++I40E_CHECK_STRUCT_LEN(0x8, i40e_aqc_nvm_oem_post_update);
++
++struct i40e_aqc_nvm_oem_post_update_buffer {
++	u8 str_len;
++	u8 dev_addr;
++	__le16 eeprom_addr;
++	u8 data[36];
++};
++
++I40E_CHECK_STRUCT_LEN(0x28, i40e_aqc_nvm_oem_post_update_buffer);
++
+ /* Send to PF command (indirect 0x0801) id is only used by PF
+  * Send to VF command (indirect 0x0802) id is only used by PF
+  * Send to Peer PF command (indirect 0x0803)
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index af0566c..01cb7df 100644
+index 3f91e8f..bef08f1 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1531,7 +1531,7 @@ static void i40e_vsi_setup_queue_map(struct i40e_vsi *vsi,
- 	if (enabled_tc && (vsi->back->flags & I40E_FLAG_DCB_ENABLED)) {
- 		/* Find numtc from enabled TC bitmap */
- 		for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++) {
--			if (enabled_tc & BIT_ULL(i)) /* TC is enabled */
-+			if (enabled_tc & BIT(i)) /* TC is enabled */
- 				numtc++;
- 		}
- 		if (!numtc) {
-@@ -1560,7 +1560,7 @@ static void i40e_vsi_setup_queue_map(struct i40e_vsi *vsi,
- 	/* Setup queue offset/count for all TCs for given VSI */
- 	for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++) {
- 		/* See if the given TC is enabled for the given VSI */
--		if (vsi->tc_config.enabled_tc & BIT_ULL(i)) {
-+		if (vsi->tc_config.enabled_tc & BIT(i)) {
- 			/* TC is enabled */
- 			int pow, num_qps;
- 
-@@ -4433,7 +4433,7 @@ static u8 i40e_get_iscsi_tc_map(struct i40e_pf *pf)
- 		if (app.selector == I40E_APP_SEL_TCPIP &&
- 		    app.protocolid == I40E_APP_PROTOID_ISCSI) {
- 			tc = dcbcfg->etscfg.prioritytable[app.priority];
--			enabled_tc |= BIT_ULL(tc);
-+			enabled_tc |= BIT(tc);
+@@ -6295,6 +6295,7 @@ static void i40e_clean_adminq_subtask(struct i40e_pf *pf)
  			break;
- 		}
- 	}
-@@ -4517,7 +4517,7 @@ static u8 i40e_pf_get_num_tc(struct i40e_pf *pf)
- 	/* At least have TC0 */
- 	enabled_tc = (enabled_tc ? enabled_tc : 0x1);
- 	for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++) {
--		if (enabled_tc & BIT_ULL(i))
-+		if (enabled_tc & BIT(i))
- 			num_tc++;
- 	}
- 	return num_tc;
-@@ -4539,7 +4539,7 @@ static u8 i40e_pf_get_default_tc(struct i40e_pf *pf)
- 
- 	/* Find the first enabled TC */
- 	for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++) {
--		if (enabled_tc & BIT_ULL(i))
-+		if (enabled_tc & BIT(i))
+ 		case i40e_aqc_opc_nvm_erase:
+ 		case i40e_aqc_opc_nvm_update:
++		case i40e_aqc_opc_oem_post_update:
+ 			i40e_debug(&pf->hw, I40E_DEBUG_NVM, "ARQ NVM operation completed\n");
  			break;
- 	}
+ 		default:
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+index 1c76389..f5b2b36 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+@@ -227,6 +227,7 @@ enum i40e_admin_queue_opc {
+ 	i40e_aqc_opc_nvm_update			= 0x0703,
+ 	i40e_aqc_opc_nvm_config_read		= 0x0704,
+ 	i40e_aqc_opc_nvm_config_write		= 0x0705,
++	i40e_aqc_opc_oem_post_update		= 0x0720,
  
-@@ -4699,7 +4699,7 @@ static void i40e_vsi_config_netdev_tc(struct i40e_vsi *vsi, u8 enabled_tc)
- 		 * will set the numtc for netdev as 2 that will be
- 		 * referenced by the netdev layer as TC 0 and 1.
- 		 */
--		if (vsi->tc_config.enabled_tc & BIT_ULL(i))
-+		if (vsi->tc_config.enabled_tc & BIT(i))
- 			netdev_set_tc_queue(netdev,
- 					vsi->tc_config.tc_info[i].netdev_tc,
- 					vsi->tc_config.tc_info[i].qcount,
-@@ -4761,7 +4761,7 @@ static int i40e_vsi_config_tc(struct i40e_vsi *vsi, u8 enabled_tc)
+ 	/* virtualization commands */
+ 	i40e_aqc_opc_send_msg_to_pf		= 0x0801,
+@@ -1888,6 +1889,26 @@ struct i40e_aqc_nvm_config_data_immediate_field {
  
- 	/* Enable ETS TCs with equal BW Share for now across all VSIs */
- 	for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++) {
--		if (enabled_tc & BIT_ULL(i))
-+		if (enabled_tc & BIT(i))
- 			bw_share[i] = 1;
- 	}
+ I40E_CHECK_STRUCT_LEN(0xc, i40e_aqc_nvm_config_data_immediate_field);
  
-@@ -4835,7 +4835,7 @@ int i40e_veb_config_tc(struct i40e_veb *veb, u8 enabled_tc)
- 
- 	/* Enable ETS TCs with equal BW Share for now */
- 	for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++) {
--		if (enabled_tc & BIT_ULL(i))
-+		if (enabled_tc & BIT(i))
- 			bw_data.tc_bw_share_credits[i] = 1;
- 	}
- 
-@@ -5232,7 +5232,7 @@ static int i40e_setup_tc(struct net_device *netdev, u8 tc)
- 
- 	/* Generate TC map for number of tc requested */
- 	for (i = 0; i < tc; i++)
--		enabled_tc |= BIT_ULL(i);
-+		enabled_tc |= BIT(i);
- 
- 	/* Requesting same TC configuration as already enabled */
- 	if (enabled_tc == vsi->tc_config.enabled_tc)
-@@ -6096,23 +6096,23 @@ static void i40e_reset_subtask(struct i40e_pf *pf)
- 
- 	rtnl_lock();
- 	if (test_bit(__I40E_REINIT_REQUESTED, &pf->state)) {
--		reset_flags |= BIT_ULL(__I40E_REINIT_REQUESTED);
-+		reset_flags |= BIT(__I40E_REINIT_REQUESTED);
- 		clear_bit(__I40E_REINIT_REQUESTED, &pf->state);
- 	}
- 	if (test_bit(__I40E_PF_RESET_REQUESTED, &pf->state)) {
--		reset_flags |= BIT_ULL(__I40E_PF_RESET_REQUESTED);
-+		reset_flags |= BIT(__I40E_PF_RESET_REQUESTED);
- 		clear_bit(__I40E_PF_RESET_REQUESTED, &pf->state);
- 	}
- 	if (test_bit(__I40E_CORE_RESET_REQUESTED, &pf->state)) {
--		reset_flags |= BIT_ULL(__I40E_CORE_RESET_REQUESTED);
-+		reset_flags |= BIT(__I40E_CORE_RESET_REQUESTED);
- 		clear_bit(__I40E_CORE_RESET_REQUESTED, &pf->state);
- 	}
- 	if (test_bit(__I40E_GLOBAL_RESET_REQUESTED, &pf->state)) {
--		reset_flags |= BIT_ULL(__I40E_GLOBAL_RESET_REQUESTED);
-+		reset_flags |= BIT(__I40E_GLOBAL_RESET_REQUESTED);
- 		clear_bit(__I40E_GLOBAL_RESET_REQUESTED, &pf->state);
- 	}
- 	if (test_bit(__I40E_DOWN_REQUESTED, &pf->state)) {
--		reset_flags |= BIT_ULL(__I40E_DOWN_REQUESTED);
-+		reset_flags |= BIT(__I40E_DOWN_REQUESTED);
- 		clear_bit(__I40E_DOWN_REQUESTED, &pf->state);
- 	}
- 
-@@ -10571,7 +10571,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	/* NVM bit on means WoL disabled for the port */
- 	i40e_read_nvm_word(hw, I40E_SR_NVM_WAKE_ON_LAN, &wol_nvm_bits);
--	if ((1 << hw->port) & wol_nvm_bits || hw->partition_id != 1)
-+	if (BIT (hw->port) & wol_nvm_bits || hw->partition_id != 1)
- 		pf->wol_en = false;
- 	else
- 		pf->wol_en = true;
++/* OEM Post Update (indirect 0x0720)
++ * no command data struct used
++ */
++ struct i40e_aqc_nvm_oem_post_update {
++#define I40E_AQ_NVM_OEM_POST_UPDATE_EXTERNAL_DATA	0x01
++	u8 sel_data;
++	u8 reserved[7];
++};
++
++I40E_CHECK_STRUCT_LEN(0x8, i40e_aqc_nvm_oem_post_update);
++
++struct i40e_aqc_nvm_oem_post_update_buffer {
++	u8 str_len;
++	u8 dev_addr;
++	__le16 eeprom_addr;
++	u8 data[36];
++};
++
++I40E_CHECK_STRUCT_LEN(0x28, i40e_aqc_nvm_oem_post_update_buffer);
++
+ /* Send to PF command (indirect 0x0801) id is only used by PF
+  * Send to VF command (indirect 0x0802) id is only used by PF
+  * Send to Peer PF command (indirect 0x0803)
 -- 
 2.1.0
 
