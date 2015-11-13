@@ -1,128 +1,33 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 14 Nov 2015 03:36:18 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 5f5e15692e0bca68a67f2448e7e0420e5fe2ecf2 BUILD SUCCESS
-Message-ID: <56463bb2.Gde6KFRZ8RmJdDVW%fengguang.wu@intel.com>
+From: Schmitt, Phillip J <phillip.j.schmitt@intel.com>
+Date: Fri, 13 Nov 2015 20:54:43 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbevf: Handle extended IPv6 headers
+ in	tx path
+In-Reply-To: <20151107003621.85794.6437.stgit@mdrustad-wks.jf.intel.com>
+References: <20151107003621.85794.6437.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E180C17A4E@ORSMSX108.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-5f5e15692e0bca68a67f2448e7e0420e5fe2ecf2  net: Add a generic udp_offload_get_port function
 
-elapsed time: 41m
 
-configs tested: 107
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Mark D Rustad
+> Sent: Friday, November 06, 2015 4:36 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH] ixgbevf: Handle extended IPv6 headers in tx
+> path
+> 
+> Check for and handle IPv6 extended headers so that tx checksum offload can be
+> done. Thanks to Tom Herbert for noticing this problem. Note that the goto back
+> to process the final protocol value can never result in a loop, because it cannot
+> be yet another extended header. Handling them in this manner avoids adding
+> further checks to the non-extended header hot path.
+> 
+> Reported-by: Tom Herbert <tom@herbertland.com>
+> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201545
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64       allyesdebian+CONFIG_DEBUG_INFO_REDUCED
-x86_64                                nfsroot
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                             allyesconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-parisc                         b180_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                             allmodconfig
-x86_64               randconfig-x017-11131844
-x86_64               randconfig-x010-11131844
-x86_64               randconfig-x015-11131844
-x86_64               randconfig-x012-11131844
-x86_64               randconfig-x011-11131844
-x86_64               randconfig-x014-11131844
-x86_64               randconfig-x018-11131844
-x86_64               randconfig-x013-11131844
-x86_64               randconfig-x019-11131844
-x86_64               randconfig-x016-11131844
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201545
-i386                     randconfig-s1-201545
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                   randconfig-i0-201545
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201545
-i386                     randconfig-i1-201545
-x86_64                                   rhel
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-x86_64                           allmodconfig
-x86_64                 randconfig-x002-201545
-x86_64                 randconfig-x000-201545
-x86_64                 randconfig-x003-201545
-x86_64                 randconfig-x009-201545
-x86_64                 randconfig-x004-201545
-x86_64                 randconfig-x001-201545
-x86_64                 randconfig-x006-201545
-x86_64                 randconfig-x008-201545
-x86_64                 randconfig-x005-201545
-x86_64                 randconfig-x007-201545
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-r0-201545
-i386                   randconfig-x004-201545
-i386                   randconfig-x009-201545
-i386                   randconfig-x003-201545
-i386                   randconfig-x007-201545
-i386                   randconfig-x005-201545
-i386                   randconfig-x006-201545
-i386                   randconfig-x008-201545
-i386                   randconfig-x000-201545
-i386                   randconfig-x001-201545
-i386                   randconfig-x002-201545
-
-Thanks,
-Fengguang
+Tested-by: Phil Schmitt <phillip.j.schmitt@intel.com>
