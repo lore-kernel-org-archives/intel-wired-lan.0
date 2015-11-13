@@ -1,58 +1,41 @@
 From: Deepthi Kavalur <deepthi.kavalur@intel.com>
-Date: Fri, 13 Nov 2015 15:47:05 -0800
-Subject: [Intel-wired-lan] [next PATCH S22 05/14] i40e: don't add zero MAC
-	filter
+Date: Fri, 13 Nov 2015 15:47:07 -0800
+Subject: [Intel-wired-lan] [next PATCH S22 07/14] i40e: use explicit cast
+	from u16 to u8
 In-Reply-To: <1447458434-4555-1-git-send-email-deepthi.kavalur@intel.com>
 References: <1447458434-4555-1-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <1447458434-4555-6-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <1447458434-4555-8-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+From: Kamil Krawczyk <kamil.krawczyk@intel.com>
 
-When VFs are created, the MAC address defaults to all zeros, indicating
-to the VF driver that it should use a random MAC address. However, the
-PF driver was incorrectly adding this zero MAC to the filter table,
-along with the VF's randomly generated MAC address.
+Current implementation generates compilation warnings.
 
-Check for a good address before adding the default filter. While we're
-at it, make the error message a bit more useful.
-
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Change-ID: Ia100947d68140e0f73a19ba755cbffc3e79a8fcf
+Signed-off-by: Kamil Krawczyk <kamil.krawczyk@intel.com>
+Acked-by: Shannon Nelson <shannon.nelson@intel.com>
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Change-ID: Icceefb50fe62aefaf90a64afb7192e08355a4ec5
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index c04e3b7..b6be4a5 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -549,12 +549,15 @@ static int i40e_alloc_vsi_res(struct i40e_vf *vf, enum i40e_vsi_type type)
- 			i40e_vsi_add_pvid(vsi, vf->port_vlan_id);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c b/drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c
+index 79ae7be..daa9204 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c
+@@ -762,7 +762,7 @@ static void i40e_write_byte(u8 *hmc_bits,
  
- 		spin_lock_bh(&vsi->mac_filter_list_lock);
--		f = i40e_add_filter(vsi, vf->default_lan_addr.addr,
--				    vf->port_vlan_id ? vf->port_vlan_id : -1,
--				    true, false);
--		if (!f)
--			dev_info(&pf->pdev->dev,
--				 "Could not allocate VF MAC addr\n");
-+		if (is_valid_ether_addr(vf->default_lan_addr.addr)) {
-+			f = i40e_add_filter(vsi, vf->default_lan_addr.addr,
-+				       vf->port_vlan_id ? vf->port_vlan_id : -1,
-+				       true, false);
-+			if (!f)
-+				dev_info(&pf->pdev->dev,
-+					 "Could not add MAC filter %pM for VF %d\n",
-+					vf->default_lan_addr.addr, vf->vf_id);
-+		}
- 		f = i40e_add_filter(vsi, brdcast,
- 				    vf->port_vlan_id ? vf->port_vlan_id : -1,
- 				    true, false);
+ 	/* prepare the bits and mask */
+ 	shift_width = ce_info->lsb % 8;
+-	mask = BIT(ce_info->width) - 1;
++	mask = (u8)(BIT(ce_info->width) - 1);
+ 
+ 	src_byte = *from;
+ 	src_byte &= mask;
 -- 
 2.1.0
 
