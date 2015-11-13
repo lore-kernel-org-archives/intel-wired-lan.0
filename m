@@ -1,42 +1,79 @@
 From: Deepthi Kavalur <deepthi.kavalur@intel.com>
-Date: Fri, 13 Nov 2015 15:47:00 -0800
-Subject: [Intel-wired-lan] [next PATCH S22 00/15] i40e/i40evf updates
-Message-ID: <1447458434-4555-1-git-send-email-deepthi.kavalur@intel.com>
+Date: Fri, 13 Nov 2015 15:47:09 -0800
+Subject: [Intel-wired-lan] [next PATCH S22 09/14] i40e: hush little warnings
+In-Reply-To: <1447458434-4555-1-git-send-email-deepthi.kavalur@intel.com>
+References: <1447458434-4555-1-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <1447458434-4555-10-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Anjali Singhai Jain adds a Virtchnl offload for RSS PCTYPE V2, and a new
-offload for RSS PCTYPE V2. 
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-Jesse Brandeburg chomps the BIT(_ULL), fixes mismatched declaration, and also
-fixes W=1 warning.
+These messages seem big and scary, but they're really not. The driver
+can fully recover from any of these. The overflow error in particular
+can happen when enabling a bunch of VFs and the VF driver is not
+blacklisted.
 
-Kamil Krawczyk adds 'use explicit cast from u16 to u8'.
+Since these messages are really for debugging purposes, reclassify
+them as such.
 
-Michal Kosiarz adds opcode and structures required by OEM Post Update AQ
-command and a new NVM arq message.
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-ID: I628d0f5e135e7063450ba05393a50b7af23aa6d7
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
 
-Mitch Williams adds proper deletion of VF MAC filters, and removes zero MAC
-filter. Also checks rings before freeing resources, changes version string 
-generation, and adds hush little warnings.
-
-Shannon Nelson cleans whole mac filter list.
-
- drivers/net/ethernet/intel/i40e/i40e.h             |   4 +-
- drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |  21 +++++
- drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c     |   2 +-
- drivers/net/ethernet/intel/i40e/i40e_main.c        | 105 +++++++++++++++------
- drivers/net/ethernet/intel/i40e/i40e_virtchnl.h    |   1 +
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  23 +++--
- .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    |  21 +++++
- drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h  |   1 +
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  27 ++++--
- .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |   4 +-
- 10 files changed, 162 insertions(+), 47 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index bef08f1..7a6ce89 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -6219,15 +6219,18 @@ static void i40e_clean_adminq_subtask(struct i40e_pf *pf)
+ 	val = rd32(&pf->hw, pf->hw.aq.arq.len);
+ 	oldval = val;
+ 	if (val & I40E_PF_ARQLEN_ARQVFE_MASK) {
+-		dev_info(&pf->pdev->dev, "ARQ VF Error detected\n");
++		if (hw->debug_mask & I40E_DEBUG_AQ)
++			dev_info(&pf->pdev->dev, "ARQ VF Error detected\n");
+ 		val &= ~I40E_PF_ARQLEN_ARQVFE_MASK;
+ 	}
+ 	if (val & I40E_PF_ARQLEN_ARQOVFL_MASK) {
+-		dev_info(&pf->pdev->dev, "ARQ Overflow Error detected\n");
++		if (hw->debug_mask & I40E_DEBUG_AQ)
++			dev_info(&pf->pdev->dev, "ARQ Overflow Error detected\n");
+ 		val &= ~I40E_PF_ARQLEN_ARQOVFL_MASK;
+ 	}
+ 	if (val & I40E_PF_ARQLEN_ARQCRIT_MASK) {
+-		dev_info(&pf->pdev->dev, "ARQ Critical Error detected\n");
++		if (hw->debug_mask & I40E_DEBUG_AQ)
++			dev_info(&pf->pdev->dev, "ARQ Critical Error detected\n");
+ 		val &= ~I40E_PF_ARQLEN_ARQCRIT_MASK;
+ 	}
+ 	if (oldval != val)
+@@ -6236,15 +6239,18 @@ static void i40e_clean_adminq_subtask(struct i40e_pf *pf)
+ 	val = rd32(&pf->hw, pf->hw.aq.asq.len);
+ 	oldval = val;
+ 	if (val & I40E_PF_ATQLEN_ATQVFE_MASK) {
+-		dev_info(&pf->pdev->dev, "ASQ VF Error detected\n");
++		if (pf->hw.debug_mask & I40E_DEBUG_AQ)
++			dev_info(&pf->pdev->dev, "ASQ VF Error detected\n");
+ 		val &= ~I40E_PF_ATQLEN_ATQVFE_MASK;
+ 	}
+ 	if (val & I40E_PF_ATQLEN_ATQOVFL_MASK) {
+-		dev_info(&pf->pdev->dev, "ASQ Overflow Error detected\n");
++		if (pf->hw.debug_mask & I40E_DEBUG_AQ)
++			dev_info(&pf->pdev->dev, "ASQ Overflow Error detected\n");
+ 		val &= ~I40E_PF_ATQLEN_ATQOVFL_MASK;
+ 	}
+ 	if (val & I40E_PF_ATQLEN_ATQCRIT_MASK) {
+-		dev_info(&pf->pdev->dev, "ASQ Critical Error detected\n");
++		if (pf->hw.debug_mask & I40E_DEBUG_AQ)
++			dev_info(&pf->pdev->dev, "ASQ Critical Error detected\n");
+ 		val &= ~I40E_PF_ATQLEN_ATQCRIT_MASK;
+ 	}
+ 	if (oldval != val)
 -- 
 2.1.0
 
