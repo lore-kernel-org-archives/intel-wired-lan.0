@@ -1,91 +1,53 @@
 From: Deepthi Kavalur <deepthi.kavalur@intel.com>
-Date: Fri, 13 Nov 2015 15:47:11 -0800
-Subject: [Intel-wired-lan] [next PATCH S22 11/14] i40e: clean whole mac
-	filter list
+Date: Fri, 13 Nov 2015 15:47:14 -0800
+Subject: [Intel-wired-lan] [next PATCH S22 14/14] i40e/i40evf: Bump version
+	to 1.4.7 for i40e and 1.4.3 for i40evf
 In-Reply-To: <1447458434-4555-1-git-send-email-deepthi.kavalur@intel.com>
 References: <1447458434-4555-1-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <1447458434-4555-12-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <1447458434-4555-15-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Shannon Nelson <shannon.nelson@intel.com>
+From: Catherine Sullivan <catherine.sullivan@intel.com>
 
-Clean the whole mac filter list when resetting after an intermediate
-add or delete push to the firmware.  The code had evolved from using
-a list from the stack to a heap allocation, but the memset() didn't
-follow the change correctly.  This now cleans the whole list rather
-that just part of the first element.
+Bump.
 
-Reported-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-Change-ID: I4cd03d5a103b7407dd8556a3a231e800f2d6f2d5
+Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
+Change-ID: Id8c83c64c973349a722bab40d285ad8ded8c28f7
 ---
-Testing Hints :
-Compile and run the driver with basic ping tests. Also add and remove
-additional address filters and make sure they work as expected.
-
- drivers/net/ethernet/intel/i40e/i40e_main.c | 18 ++++++++++--------
- 1 file changed, 10 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 7a6ce89..e8b5821 100644
+index e8b5821..c22167b 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1917,11 +1917,12 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi, bool grab_rtnl)
+@@ -39,7 +39,7 @@ static const char i40e_driver_string[] =
  
- 	/* Now process 'del_list' outside the lock */
- 	if (!list_empty(&tmp_del_list)) {
-+		int del_list_size;
- 		filter_list_len = pf->hw.aq.asq_buf_size /
- 			    sizeof(struct i40e_aqc_remove_macvlan_element_data);
--		del_list = kcalloc(filter_list_len,
--			    sizeof(struct i40e_aqc_remove_macvlan_element_data),
--			    GFP_KERNEL);
-+		del_list_size = filter_list_len *
-+			    sizeof(struct i40e_aqc_remove_macvlan_element_data);
-+		del_list = kzalloc(del_list_size, GFP_KERNEL);
- 		if (!del_list) {
- 			i40e_cleanup_add_list(&tmp_add_list);
+ #define DRV_VERSION_MAJOR 1
+ #define DRV_VERSION_MINOR 4
+-#define DRV_VERSION_BUILD 4
++#define DRV_VERSION_BUILD 7
+ #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
+ 	     __stringify(DRV_VERSION_MINOR) "." \
+ 	     __stringify(DRV_VERSION_BUILD)    DRV_KERN
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 2d03d02..debabd3 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -38,7 +38,7 @@ static const char i40evf_driver_string[] =
  
-@@ -1956,7 +1957,7 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi, bool grab_rtnl)
- 								NULL);
- 				aq_err = pf->hw.aq.asq_last_status;
- 				num_del = 0;
--				memset(del_list, 0, sizeof(*del_list));
-+				memset(del_list, 0, del_list_size);
- 
- 				if (aq_ret && aq_err != I40E_AQ_RC_ENOENT) {
- 					retval = -EIO;
-@@ -1992,13 +1993,14 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi, bool grab_rtnl)
- 	}
- 
- 	if (!list_empty(&tmp_add_list)) {
-+		int add_list_size;
- 
- 		/* do all the adds now */
- 		filter_list_len = pf->hw.aq.asq_buf_size /
- 			       sizeof(struct i40e_aqc_add_macvlan_element_data),
--		add_list = kcalloc(filter_list_len,
--			       sizeof(struct i40e_aqc_add_macvlan_element_data),
--			       GFP_KERNEL);
-+		add_list_size = filter_list_len *
-+			       sizeof(struct i40e_aqc_add_macvlan_element_data);
-+		add_list = kzalloc(add_list_size, GFP_KERNEL);
- 		if (!add_list) {
- 			/* Purge element from temporary lists */
- 			i40e_cleanup_add_list(&tmp_add_list);
-@@ -2037,7 +2039,7 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi, bool grab_rtnl)
- 
- 				if (aq_ret)
- 					break;
--				memset(add_list, 0, sizeof(*add_list));
-+				memset(add_list, 0, add_list_size);
- 			}
- 			/* Entries from tmp_add_list were cloned from MAC
- 			 * filter list, hence clean those cloned entries
+ #define DRV_VERSION_MAJOR 1
+ #define DRV_VERSION_MINOR 4
+-#define DRV_VERSION_BUILD 1
++#define DRV_VERSION_BUILD 3
+ #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
+ 	     __stringify(DRV_VERSION_MINOR) "." \
+ 	     __stringify(DRV_VERSION_BUILD) \
 -- 
 2.1.0
 
