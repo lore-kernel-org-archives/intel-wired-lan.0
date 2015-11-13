@@ -1,148 +1,66 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 14 Nov 2015 05:40:48 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 7c2cae61768b0da68519e4c45a86aafab84dda28 BUILD DONE
-Message-ID: <564658e0.GGczFCsGivDQF0dR%fengguang.wu@intel.com>
+Date: Sat, 14 Nov 2015 06:10:40 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 156/160]
+ drivers/net/ethernet/intel/i40e/i40e_main.c:8774:2: error: unknown field
+ 'ndo_add_vxlan_port' specified in initializer
+Message-ID: <201511140634.gOiRX11H%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-7c2cae61768b0da68519e4c45a86aafab84dda28  net: Add a generic udp_offload_get_port function
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   7c2cae61768b0da68519e4c45a86aafab84dda28
+commit: b38838432894149338100207df9c2b0b6b38a536 [156/160] net: Generalize udp based tunnel offload
+config: i386-allmodconfig (attached as .config)
+reproduce:
+        git checkout b38838432894149338100207df9c2b0b6b38a536
+        # save the attached .config to linux build tree
+        make ARCH=i386 
 
-drivers/net/ethernet/intel/i40e/i40e_main.c:8477:14: error: 'UDP_TUNNEL_VXLAN' undeclared (first use in this function)
-drivers/net/ethernet/intel/i40e/i40e_main.c:8579:2: sparse: unmatched #endif in stream
-include/net/udp_tunnel.h:111:9: error: implicit declaration of function 'iptunnel_handle_offloads' [-Werror=implicit-function-declaration]
-include/net/udp_tunnel.h:111:9: warning: return makes pointer from integer without a cast [-Wint-conversion]
+All errors (new ones prefixed by >>):
 
-Error ids grouped by kconfigs:
+>> drivers/net/ethernet/intel/i40e/i40e_main.c:8774:2: error: unknown field 'ndo_add_vxlan_port' specified in initializer
+     .ndo_add_vxlan_port = i40e_add_vxlan_port,
+     ^
+>> drivers/net/ethernet/intel/i40e/i40e_main.c:8774:24: error: 'i40e_add_vxlan_port' undeclared here (not in a function)
+     .ndo_add_vxlan_port = i40e_add_vxlan_port,
+                           ^
+>> drivers/net/ethernet/intel/i40e/i40e_main.c:8775:2: error: unknown field 'ndo_del_vxlan_port' specified in initializer
+     .ndo_del_vxlan_port = i40e_del_vxlan_port,
+     ^
+>> drivers/net/ethernet/intel/i40e/i40e_main.c:8775:24: error: 'i40e_del_vxlan_port' undeclared here (not in a function)
+     .ndo_del_vxlan_port = i40e_del_vxlan_port,
+                           ^
 
-recent_errors
-??? x86_64-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:sparse:unmatched-endif-in-stream
-??? x86_64-randconfig-s3-11140431
-??? ??? include-net-udp_tunnel.h:error:implicit-declaration-of-function-iptunnel_handle_offloads
-??? ??? include-net-udp_tunnel.h:warning:return-makes-pointer-from-integer-without-a-cast
-??? x86_64-rhel
-    ??? drivers-net-ethernet-intel-i40e-i40e_main.c:error:UDP_TUNNEL_VXLAN-undeclared-(first-use-in-this-function)
+vim +/ndo_add_vxlan_port +8774 drivers/net/ethernet/intel/i40e/i40e_main.c
 
-elapsed time: 57m
+41c445ff Jesse Brandeburg    2013-09-11  8768  	.ndo_set_vf_vlan	= i40e_ndo_set_vf_port_vlan,
+ed616689 Sucheta Chakraborty 2014-05-22  8769  	.ndo_set_vf_rate	= i40e_ndo_set_vf_bw,
+41c445ff Jesse Brandeburg    2013-09-11  8770  	.ndo_get_vf_config	= i40e_ndo_get_vf_config,
+588aefa0 Mitch Williams      2014-02-11  8771  	.ndo_set_vf_link_state	= i40e_ndo_set_vf_link_state,
+e6d9004d Serey Kong          2014-07-12  8772  	.ndo_set_vf_spoofchk	= i40e_ndo_set_vf_spoofchk,
+a1c9a9d9 Jeff Kirsher        2013-12-28  8773  #ifdef CONFIG_I40E_VXLAN
+a1c9a9d9 Jeff Kirsher        2013-12-28 @8774  	.ndo_add_vxlan_port	= i40e_add_vxlan_port,
+a1c9a9d9 Jeff Kirsher        2013-12-28 @8775  	.ndo_del_vxlan_port	= i40e_del_vxlan_port,
+a1c9a9d9 Jeff Kirsher        2013-12-28  8776  #endif
+b3883843 Anjali Singhai      2015-11-13  8777  	.ndo_add_udp_tunnel_port	= i40e_add_tunnel_port,
+b3883843 Anjali Singhai      2015-11-13  8778  	.ndo_del_udp_tunnel_port	= i40e_del_tunnel_port,
 
-configs tested: 111
+:::::: The code at line 8774 was first introduced by commit
+:::::: a1c9a9d9984d9acf276089525b43a6528feab29b i40e: Implementation of VXLAN ndo's
 
-i386                     randconfig-a0-201545
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-x86_64               randconfig-x017-11131844
-x86_64               randconfig-x010-11131844
-x86_64               randconfig-x015-11131844
-x86_64               randconfig-x012-11131844
-x86_64               randconfig-x011-11131844
-x86_64               randconfig-x014-11131844
-x86_64               randconfig-x018-11131844
-x86_64               randconfig-x013-11131844
-x86_64               randconfig-x019-11131844
-x86_64               randconfig-x016-11131844
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s1-201545
-i386                     randconfig-s0-201545
-x86_64                           allmodconfig
-x86_64                 randconfig-s3-11140431
-x86_64                 randconfig-s4-11140431
-x86_64                 randconfig-s5-11140431
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201545
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201545
-i386                     randconfig-i1-201545
-i386                     randconfig-n0-201545
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                   rhel
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                 randconfig-n0-11140426
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-x86_64                 randconfig-x002-201545
-x86_64                 randconfig-x000-201545
-x86_64                 randconfig-x003-201545
-x86_64                 randconfig-x009-201545
-x86_64                 randconfig-x004-201545
-x86_64                 randconfig-x001-201545
-x86_64                 randconfig-x006-201545
-x86_64                 randconfig-x008-201545
-x86_64                 randconfig-x005-201545
-x86_64                 randconfig-x007-201545
-x86_64                                    lkp
-i386                     randconfig-r0-201545
-i386                   randconfig-x004-201545
-i386                   randconfig-x009-201545
-i386                   randconfig-x003-201545
-i386                   randconfig-x007-201545
-i386                   randconfig-x005-201545
-i386                   randconfig-x006-201545
-i386                   randconfig-x008-201545
-i386                   randconfig-x000-201545
-i386                   randconfig-x001-201545
-i386                   randconfig-x002-201545
+:::::: TO: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+:::::: CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 
-Thanks,
-Fengguang
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/octet-stream
+Size: 52523 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151114/88baac22/attachment-0001.obj>
