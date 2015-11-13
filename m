@@ -1,39 +1,43 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 14 Nov 2015 03:24:58 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
- 57c0cb6b01b11074af80e55efb01a4a933fcba54 BUILD SUCCESS
-Message-ID: <5646390a.kKiLO/J/9aWKXM+A%fengguang.wu@intel.com>
+Date: Sat, 14 Nov 2015 03:36:18 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 5f5e15692e0bca68a67f2448e7e0420e5fe2ecf2 BUILD SUCCESS
+Message-ID: <56463bb2.Gde6KFRZ8RmJdDVW%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-57c0cb6b01b11074af80e55efb01a4a933fcba54  MAINTAINERS: Update Intel Wired LAN reviewers
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+5f5e15692e0bca68a67f2448e7e0420e5fe2ecf2  net: Add a generic udp_offload_get_port function
 
-elapsed time: 32m
+elapsed time: 41m
 
 configs tested: 107
 
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
 i386                     randconfig-a0-201545
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64       allyesdebian+CONFIG_DEBUG_INFO_REDUCED
+x86_64                                nfsroot
 i386                               tinyconfig
 sh                                allnoconfig
 sh                          rsk7269_defconfig
 sh                  sh7785lcr_32bit_defconfig
 sh                            titan_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
 i386                             allyesconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-alpha                               defconfig
-parisc                            allnoconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
 parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
 blackfin                BF526-EZBRD_defconfig
 blackfin                BF533-EZKIT_defconfig
 blackfin            BF561-EZKIT-SMP_defconfig
@@ -58,7 +62,6 @@ m68k                          multi_defconfig
 m68k                           sun3_defconfig
 i386                     randconfig-s0-201545
 i386                     randconfig-s1-201545
-x86_64                           allmodconfig
 avr32                      atngw100_defconfig
 avr32                     atstk1006_defconfig
 frv                                 defconfig
@@ -67,22 +70,22 @@ openrisc                    or1ksim_defconfig
 tile                         tilegx_defconfig
 um                             i386_defconfig
 um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201545
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
 microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
 i386                     randconfig-i0-201545
 i386                     randconfig-i1-201545
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
 x86_64                                   rhel
-arm                          simpad_defconfig
-openrisc                          allnoconfig
 arm                               allnoconfig
 arm                         at91_dt_defconfig
 arm                                  at_hdmac
@@ -95,6 +98,7 @@ arm                                    sa1100
 arm                                   samsung
 arm                                        sh
 arm                       spear13xx_defconfig
+x86_64                           allmodconfig
 x86_64                 randconfig-x002-201545
 x86_64                 randconfig-x000-201545
 x86_64                 randconfig-x003-201545
@@ -119,10 +123,6 @@ i386                   randconfig-x008-201545
 i386                   randconfig-x000-201545
 i386                   randconfig-x001-201545
 i386                   randconfig-x002-201545
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
 
 Thanks,
 Fengguang
