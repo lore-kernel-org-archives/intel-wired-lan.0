@@ -1,40 +1,48 @@
 From: Deepthi Kavalur <deepthi.kavalur@intel.com>
-Date: Fri, 13 Nov 2015 15:47:03 -0800
-Subject: [Intel-wired-lan] [next PATCH S22 03/14] i40e: fix mismatched
-	declaration
-In-Reply-To: <1447458434-4555-1-git-send-email-deepthi.kavalur@intel.com>
-References: <1447458434-4555-1-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <1447458434-4555-4-git-send-email-deepthi.kavalur@intel.com>
+Date: Fri, 13 Nov 2015 16:55:22 -0800
+Subject: [Intel-wired-lan] [next PATCH S22 13/14] i40evf: change version
+	string generation
+Message-ID: <1447462522-5407-1-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-i40e_vsi_add_pvid() was declared in the i40e.h file as a different
-return type than the function implementation.
+Generate version strings like the PF driver does. This gives us more
+flexibility to add suffixes to the version string at build time.
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Change-ID: I22ea1f05e1d3c79d1b198dd375a766d839ea4706
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-ID: I0a5ca0783dd8fb849516bfc1e37ea070127847bd
 ---
- drivers/net/ethernet/intel/i40e/i40e.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+V2: Only description change in the above section. No code change.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index adfc450..04a3e87 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -717,7 +717,7 @@ struct i40e_veb *i40e_veb_setup(struct i40e_pf *pf, u16 flags, u16 uplink_seid,
- void i40e_veb_release(struct i40e_veb *veb);
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 451c5f0..2d03d02 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -34,7 +34,15 @@ char i40evf_driver_name[] = "i40evf";
+ static const char i40evf_driver_string[] =
+ 	"Intel(R) XL710/X710 Virtual Function Network Driver";
  
- int i40e_veb_config_tc(struct i40e_veb *veb, u8 enabled_tc);
--i40e_status i40e_vsi_add_pvid(struct i40e_vsi *vsi, u16 vid);
-+int i40e_vsi_add_pvid(struct i40e_vsi *vsi, u16 vid);
- void i40e_vsi_remove_pvid(struct i40e_vsi *vsi);
- void i40e_vsi_reset_stats(struct i40e_vsi *vsi);
- void i40e_pf_reset_stats(struct i40e_pf *pf);
+-#define DRV_VERSION "1.4.1"
++#define DRV_KERN "-k"
++
++#define DRV_VERSION_MAJOR 1
++#define DRV_VERSION_MINOR 4
++#define DRV_VERSION_BUILD 1
++#define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
++	     __stringify(DRV_VERSION_MINOR) "." \
++	     __stringify(DRV_VERSION_BUILD) \
++	     DRV_KERN
+ const char i40evf_driver_version[] = DRV_VERSION;
+ static const char i40evf_copyright[] =
+ 	"Copyright (c) 2013 - 2015 Intel Corporation.";
 -- 
 2.1.0
 
