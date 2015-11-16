@@ -1,11 +1,11 @@
 From: Jesse Gross <jesse@kernel.org>
-Date: Sun, 15 Nov 2015 20:12:11 -0800
-Subject: [Intel-wired-lan] [PATCH v5 2/7] net: Add a generic
- udp_offload_get_port function
-In-Reply-To: <1447632175-9477-2-git-send-email-anjali.singhai@intel.com>
+Date: Sun, 15 Nov 2015 20:12:19 -0800
+Subject: [Intel-wired-lan] [PATCH v5 6/7] net: Add geneve port offload
+ support and refactor udp_offload
+In-Reply-To: <1447632175-9477-6-git-send-email-anjali.singhai@intel.com>
 References: <1447632175-9477-1-git-send-email-anjali.singhai@intel.com>
- <1447632175-9477-2-git-send-email-anjali.singhai@intel.com>
-Message-ID: <CAEh+42h4-m3e4mtn+DrPGrrG_tnGnRrTTQdms7rETGgWCMX4Ew@mail.gmail.com>
+ <1447632175-9477-6-git-send-email-anjali.singhai@intel.com>
+Message-ID: <CAEh+42j9gTifDKqo896xQt=54=UwgzVgr2pfnDUO3uE447P9VA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,23 +14,30 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 On Sun, Nov 15, 2015 at 4:02 PM, Anjali Singhai Jain
 <anjali.singhai@intel.com> wrote:
-> The new function udp_offload_get_port replaces vxlan_get_rx_port().
-> This is a generic function that will help replay all udp tunnel ports
-> irrespective of tunnel type.
-> This way when new udp tunnels get added this function need not change.
+> This patch moves the calls to ndo_add/del ops for vxlan tunnel
+> into udp_add/del_offload call. This way the ndo_add/del ops get called
+> for not only vxlan tunnels but for any udp based tunnel.
 >
-> Note: Drivers besides i40e are compile tested with this change.
+> Note: The patch needs an AF_INET check somewhere in the GRO ops to
+> make it complete.
 >
-> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
 > Signed-off-by: Kiran Patil <kiran.patil@intel.com>
+> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
 
-I think you probably need to move this patch later in the series -
-otherwise it won't compile on its own since it references
-UDP_TUNNEL_VXLAN, which isn't defined until patch 4.
+This looks great! Thanks a lot of doing this. I have just a couple
+comments in this and the other patches but I think they are all really
+minor.
 
-I somewhat wonder if udp_offload_lock should be converted to a mutex
-instead of spinlock since we could potentially hold it while talking
-to hardware, which might take a little while. However, this isn't a
-new issue - the previous VXLAN lock held while doing this operation
-was a spinlock and there shouldn't be too much contention on this
-anyways.
+I think we need to initialize the offload structure with IPv4/v6 for
+both Geneve and FOU and the tunnel type for at least Geneve. I might
+have missed it but it looks like we are doing this only for VXLAN (in
+a previous patch). I think once we do that, it should be pretty easy
+to have the check for AF_INET when we add or remove the port to the
+GRO list.
+
+One last thing that I noticed is that the UDP tunnel GRO registration
+is not namespace aware but the callers in the various tunnel
+implementations are per-namespace, potentially resulting in duplicate
+entries in the list. This is not a new problem but it appears a bit
+more pronounced because the interfaces to the UDP offload functions
+now take the namespace as a parameter.
