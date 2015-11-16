@@ -1,11 +1,11 @@
 From: Jesse Gross <jesse@kernel.org>
-Date: Sun, 15 Nov 2015 20:12:24 -0800
-Subject: [Intel-wired-lan] [PATCH v5 7/7] i40e:Add geneve tunnel offload
-	support
-In-Reply-To: <1447632175-9477-7-git-send-email-anjali.singhai@intel.com>
+Date: Sun, 15 Nov 2015 20:12:11 -0800
+Subject: [Intel-wired-lan] [PATCH v5 2/7] net: Add a generic
+ udp_offload_get_port function
+In-Reply-To: <1447632175-9477-2-git-send-email-anjali.singhai@intel.com>
 References: <1447632175-9477-1-git-send-email-anjali.singhai@intel.com>
- <1447632175-9477-7-git-send-email-anjali.singhai@intel.com>
-Message-ID: <CAEh+42g94=wNb7wUrG49d1kBJEyVqHv_BOPurPq9rP1oPnL_fA@mail.gmail.com>
+ <1447632175-9477-2-git-send-email-anjali.singhai@intel.com>
+Message-ID: <CAEh+42h4-m3e4mtn+DrPGrrG_tnGnRrTTQdms7rETGgWCMX4Ew@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,16 +14,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 On Sun, Nov 15, 2015 at 4:02 PM, Anjali Singhai Jain
 <anjali.singhai@intel.com> wrote:
-> From: Anjali Singhai <anjali.singhai@intel.com>
+> The new function udp_offload_get_port replaces vxlan_get_rx_port().
+> This is a generic function that will help replay all udp tunnel ports
+> irrespective of tunnel type.
+> This way when new udp tunnels get added this function need not change.
 >
-> This patch adds driver hooks to implement ndo_ops to add/del udp
-> port in the HW to identify GENEVE tunnels.
+> Note: Drivers besides i40e are compile tested with this change.
 >
-> Also cleans up the features_check path now that we support
-> multiple udp based tunnels.
->
-> Add a spin_lock to guard the common data structure for the
-> udp based tunnels.
+> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
 
-This is really minor but I think we're no longer adding a new spin
-lock here so we can remove the reference from the commit message.
+I think you probably need to move this patch later in the series -
+otherwise it won't compile on its own since it references
+UDP_TUNNEL_VXLAN, which isn't defined until patch 4.
+
+I somewhat wonder if udp_offload_lock should be converted to a mutex
+instead of spinlock since we could potentially hold it while talking
+to hardware, which might take a little while. However, this isn't a
+new issue - the previous VXLAN lock held while doing this operation
+was a spinlock and there shouldn't be too much contention on this
+anyways.
