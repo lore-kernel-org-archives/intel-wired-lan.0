@@ -1,133 +1,127 @@
-From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-Date: Sun, 1 Nov 2015 11:24:39 -0500
-Subject: [Intel-wired-lan] [PATCH v4 RFC net] i40e: Look up MAC address in
- Open Firmware or IDPROM
-Message-ID: <20151101162439.GB26373@oracle.com>
+From: Anjali Singhai Jain <anjali.singhai@intel.com>
+Date: Sun, 15 Nov 2015 16:02:49 -0800
+Subject: [Intel-wired-lan] [PATCH v5 1/7] Revert "i40e: remove
+	CONFIG_I40E_VXLAN"
+Message-ID: <1447632175-9477-1-git-send-email-anjali.singhai@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This is the i40e equivalent of commit c762dff24c06 ("ixgbe: Look up MAC
-address in Open Firmware or IDPROM").
+This patch breaks compile when I40E is compiled in the kernel
+and VXLAN is a module.
 
-As with that fix, attempt to look up the MAC address in Open Firmware
-on systems that support it, and use IDPROM on SPARC if no OF address
-is found.
-
-In the case of the i40e there is an assumption that the default mac
-address has already been set up as the primary mac filter on probe,
-so if this filter is obtained from the Open Firmware or IDPROM, an
-explicit write is needed via i40e_aq_mac_address_write() and
-i40e_aq_add_macvlan() invocation.
-
-Reviewers: please check if invoking i40e_macaddr_init() on 
-platforms that use the default mac address (i.e., when it is not from
-OF or idprom) will cause harm, and if it is necessary/possible to
-move this invocation to an earlier point in i40e_probe().
-
-Reviewed-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+This reverts commit f59b488df98da2db2d05385fe1ff948d36acce67.
 ---
-v2, v3: Andy Shevchenko comments
-v4: 
+ drivers/net/ethernet/intel/Kconfig          | 11 +++++++++++
+ drivers/net/ethernet/intel/i40e/i40e.h      |  4 +++-
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 12 ++++++------
+ 3 files changed, 20 insertions(+), 7 deletions(-)
 
- drivers/net/ethernet/intel/i40e/i40e_main.c |   53 ++++++++++++++++++++++++++-
- 1 files changed, 52 insertions(+), 1 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
+index 061e4e0..4163b16 100644
+--- a/drivers/net/ethernet/intel/Kconfig
++++ b/drivers/net/ethernet/intel/Kconfig
+@@ -269,6 +269,17 @@ config I40E
+ 	  To compile this driver as a module, choose M here. The module
+ 	  will be called i40e.
+ 
++config I40E_VXLAN
++	bool "Virtual eXtensible Local Area Network Support"
++	default n
++	depends on I40E && VXLAN && !(I40E=y && VXLAN=m)
++	---help---
++	  This allows one to create VXLAN virtual interfaces that provide
++	  Layer 2 Networks over Layer 3 Networks. VXLAN is often used
++	  to tunnel virtual network infrastructure in virtualized environments.
++	  Say Y here if you want to use Virtual eXtensible Local Area Network
++	  (VXLAN) in the driver.
++
+ config I40E_DCB
+ 	bool "Data Center Bridging (DCB) Support"
+ 	default n
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 8ed759e..4ca85d5 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -282,7 +282,7 @@ struct i40e_pf {
+ 	u32 fd_atr_cnt;
+ 	u32 fd_tcp_rule;
+ 
+-#if IS_ENABLED(CONFIG_VXLAN)
++#ifdef CONFIG_I40E_VXLAN
+ 	__be16  vxlan_ports[I40E_MAX_PF_UDP_OFFLOAD_PORTS];
+ 	u16 pending_vxlan_bitmap;
+ 
+@@ -323,7 +323,9 @@ struct i40e_pf {
+ #define I40E_FLAG_FD_ATR_ENABLED		BIT_ULL(22)
+ #define I40E_FLAG_PTP				BIT_ULL(25)
+ #define I40E_FLAG_MFP_ENABLED			BIT_ULL(26)
++#ifdef CONFIG_I40E_VXLAN
+ #define I40E_FLAG_VXLAN_FILTER_SYNC		BIT_ULL(27)
++#endif
+ #define I40E_FLAG_PORT_ID_VALID			BIT_ULL(28)
+ #define I40E_FLAG_DCB_CAPABLE			BIT_ULL(29)
+ #define I40E_FLAG_RSS_AQ_CAPABLE		BIT_ULL(31)
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index b825f97..3c81c0c 100644
+index b447af6..36645828 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -24,6 +24,15 @@
-  *
-  ******************************************************************************/
- 
-+#include <linux/etherdevice.h>
-+#include <linux/of_net.h>
-+#include <linux/pci.h>
-+
-+#ifdef CONFIG_SPARC
-+#include <asm/idprom.h>
-+#include <asm/prom.h>
-+#endif
-+
+@@ -27,7 +27,7 @@
  /* Local includes */
  #include "i40e.h"
  #include "i40e_diag.h"
-@@ -9212,6 +9221,25 @@ static struct i40e_vsi *i40e_vsi_reinit_setup(struct i40e_vsi *vsi)
- 	return NULL;
+-#if IS_ENABLED(CONFIG_VXLAN)
++#ifdef CONFIG_I40E_VXLAN
+ #include <net/vxlan.h>
+ #endif
+ 
+@@ -5294,7 +5294,7 @@ int i40e_open(struct net_device *netdev)
+ 						       TCP_FLAG_CWR) >> 16);
+ 	wr32(&pf->hw, I40E_GLLAN_TSOMSK_L, be32_to_cpu(TCP_FLAG_CWR) >> 16);
+ 
+-#if IS_ENABLED(CONFIG_VXLAN)
++#ifdef CONFIG_I40E_VXLAN
+ 	vxlan_get_rx_port(netdev);
+ #endif
+ 
+@@ -6990,7 +6990,7 @@ static void i40e_handle_mdd_event(struct i40e_pf *pf)
+ 	i40e_flush(hw);
  }
  
-+static int i40e_macaddr_init( struct i40e_vsi *vsi, u8 *macaddr)
-+{
-+	int ret; 
-+	struct i40e_aqc_add_macvlan_element_data element;
-+
-+	ret = i40e_aq_mac_address_write(&vsi->back->hw,
-+					I40E_AQC_WRITE_TYPE_LAA_WOL,
-+					macaddr, NULL);
-+	if (ret)
-+		return -EADDRNOTAVAIL;
-+
-+	memset(&element, 0, sizeof(element));
-+	ether_addr_copy(element.mac_addr, macaddr);
-+	element.flags = cpu_to_le16(I40E_AQC_MACVLAN_ADD_PERFECT_MATCH);
-+	i40e_aq_add_macvlan(&vsi->back->hw, vsi->seid, &element, 1, NULL);
-+
-+	return ret;
-+}
-+
+-#if IS_ENABLED(CONFIG_VXLAN)
++#ifdef CONFIG_I40E_VXLAN
  /**
-  * i40e_vsi_setup - Set up a VSI by a given type
+  * i40e_sync_vxlan_filters_subtask - Sync the VSI filter list with HW
   * @pf: board private structure
-@@ -9341,6 +9369,9 @@ struct i40e_vsi *i40e_vsi_setup(struct i40e_pf *pf, u8 type,
- 		ret = i40e_config_netdev(vsi);
- 		if (ret)
- 			goto err_netdev;
-+		ret = i40e_macaddr_init(vsi, pf->hw.mac.addr); 
-+		if (ret)
-+			goto err_netdev;
- 		ret = register_netdev(vsi->netdev);
- 		if (ret)
- 			goto err_netdev;
-@@ -10162,6 +10193,24 @@ static void i40e_print_features(struct i40e_pf *pf)
- 	kfree(string);
+@@ -7057,7 +7057,7 @@ static void i40e_service_task(struct work_struct *work)
+ 	i40e_watchdog_subtask(pf);
+ 	i40e_fdir_reinit_subtask(pf);
+ 	i40e_sync_filters_subtask(pf);
+-#if IS_ENABLED(CONFIG_VXLAN)
++#ifdef CONFIG_I40E_VXLAN
+ 	i40e_sync_vxlan_filters_subtask(pf);
+ #endif
+ 	i40e_clean_adminq_subtask(pf);
+@@ -8433,7 +8433,7 @@ static int i40e_set_features(struct net_device *netdev,
+ 	return 0;
  }
  
-+static int i40e_get_platform_mac_addr(struct pci_dev *pdev, u8 *mac_addr)
-+{
-+	struct device_node *dp = pci_device_to_OF_node(pdev);
-+	const unsigned char *addr;
-+
-+	addr = of_get_mac_address(dp);
-+	if (addr) {
-+		ether_addr_copy(mac_addr, addr);
-+		return 0;
-+	}
-+#ifdef CONFIG_SPARC
-+	ether_addr_copy(mac_addr, idprom->id_ethaddr);
-+	return 0;
-+#else
-+	return -EINVAL;
-+#endif /* CONFIG_SPARC */
-+}
-+
+-#if IS_ENABLED(CONFIG_VXLAN)
++#ifdef CONFIG_I40E_VXLAN
  /**
-  * i40e_probe - Device initialization routine
-  * @pdev: PCI device information struct
-@@ -10360,7 +10409,9 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		i40e_aq_stop_lldp(hw, true, NULL);
- 	}
- 
--	i40e_get_mac_addr(hw, hw->mac.addr);
-+	err = i40e_get_platform_mac_addr(pdev, hw->mac.addr);
-+	if (err)
-+		i40e_get_mac_addr(hw, hw->mac.addr);
- 	if (!is_valid_ether_addr(hw->mac.addr)) {
- 		dev_info(&pdev->dev, "invalid MAC address %pM\n", hw->mac.addr);
- 		err = -EIO;
+  * i40e_get_vxlan_port_idx - Lookup a possibly offloaded for Rx UDP port
+  * @pf: board private structure
+@@ -8753,7 +8753,7 @@ static const struct net_device_ops i40e_netdev_ops = {
+ 	.ndo_get_vf_config	= i40e_ndo_get_vf_config,
+ 	.ndo_set_vf_link_state	= i40e_ndo_set_vf_link_state,
+ 	.ndo_set_vf_spoofchk	= i40e_ndo_set_vf_spoofchk,
+-#if IS_ENABLED(CONFIG_VXLAN)
++#ifdef CONFIG_I40E_VXLAN
+ 	.ndo_add_vxlan_port	= i40e_add_vxlan_port,
+ 	.ndo_del_vxlan_port	= i40e_del_vxlan_port,
+ #endif
 -- 
-1.7.1
+1.8.1.4
 
