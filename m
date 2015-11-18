@@ -1,94 +1,89 @@
-From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Wed, 18 Nov 2015 09:21:28 -0800
-Subject: [Intel-wired-lan] [PATCH V4] ixgbe: Handle extended IPv6 headers in
-	tx path
-Message-ID: <20151118172128.114143.22844.stgit@mdrustad-wks.jf.intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Wed, 18 Nov 2015 10:01:41 -0800
+Subject: [Intel-wired-lan] [net PATCH] i40e/i40evf: avoid mutex re-init
+Message-ID: <1447869701-3883-1-git-send-email-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Check for and handle IPv6 extended headers so that tx checksum
-offload can be done. Also use skb_checksum_help for unexpected
-cases. Thanks to Tom Herbert for noticing these problems. Thanks
-to Alexander Duyck for recognizing problems with the first version
-of this patch and recognizing how to coalesce error conditions
-into a single location.
+If the driver were to happen to have a mutex held while
+the i40e_init_adminq call was called, the init_adminq might
+inadvertently call mutex_init on a lock that was held
+which is a violation of the calling semantics.
 
-Reported-by: Tom Herbert <tom@herbertland.com>
-Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
----
-Changed in V2:
-- Use ipv6_skip_exthdr instead of ipv6_find_hdr
-- Move code into L3 processing and avoid any possible loop
-- Handle encapsulated IPv6 extended headers correctly
-Changed in V3:
-- Call skb_checksum_help for unexpected cases
-- Move unlikely() calls to more appropriate places
-- Reaarange terms in call to ipv6_skip_exthdr to reduce line count
-- Combined 2 unlikely error cases into one
-Changed in V4:
-- Coalesce error conditions into one location
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   23 +++++++++++++++--------
- 1 file changed, 15 insertions(+), 8 deletions(-)
+Fix this by avoiding adminq.c code allocating/freeing this memory, and
+then do the same work only once in probe/remove.
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 1ffbe85eab7b..4ef5b63b2543 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -7229,6 +7229,7 @@ static void ixgbe_tx_csum(struct ixgbe_ring *tx_ring,
- 			struct tcphdr *tcphdr;
- 			u8 *raw;
- 		} transport_hdr;
-+		__be16 frag_off;
+Testing Hints (Required if no HSD): for VF, load i40evf in bare metal
+and echo 32 > sriov_numvfs; echo 0 > sriov_numvfs in a loop.  Yes this
+is a horrible thing to do.
+
+Reported-by: Stefan Assmann <sassmann@redhat.com>
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Change-ID: Ida263c51b34e195252179e7e5e400d73a99be7a2
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c     | 10 ++++++++++
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 10 ++++++++++
+ 2 files changed, 20 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 36645828..67cc0a8 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -10457,6 +10457,12 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	/* set up a default setting for link flow control */
+ 	pf->hw.fc.requested_mode = I40E_FC_NONE;
  
- 		if (skb->encapsulation) {
- 			network_hdr.raw = skb_inner_network_header(skb);
-@@ -7252,13 +7253,17 @@ static void ixgbe_tx_csum(struct ixgbe_ring *tx_ring,
- 		case 6:
- 			vlan_macip_lens |= transport_hdr.raw - network_hdr.raw;
- 			l4_hdr = network_hdr.ipv6->nexthdr;
-+			if (likely((transport_hdr.raw - network_hdr.raw) ==
-+				   sizeof(struct ipv6hdr)))
-+				break;
-+			ipv6_skip_exthdr(skb, network_hdr.raw - skb->data +
-+					      sizeof(struct ipv6hdr),
-+					 &l4_hdr, &frag_off);
-+			if (unlikely(frag_off))
-+				l4_hdr = NEXTHDR_FRAGMENT;
- 			break;
- 		default:
--			if (unlikely(net_ratelimit())) {
--				dev_warn(tx_ring->dev,
--					 "partial checksum but version=%d\n",
--					 network_hdr.ipv4->version);
--			}
-+			break;
- 		}
++	/* set up the locks for the AQ, do this only once in probe
++	 * and destroy them only once in remove
++	 */
++	mutex_init(&hw->aq.asq_mutex);
++	mutex_init(&hw->aq.arq_mutex);
++
+ 	err = i40e_init_adminq(hw);
+ 	if (err) {
+ 		if (err == I40E_ERR_FIRMWARE_API_VERSION)
+@@ -10917,6 +10923,10 @@ static void i40e_remove(struct pci_dev *pdev)
+ 			 "Failed to destroy the Admin Queue resources: %d\n",
+ 			 ret_code);
  
- 		switch (l4_hdr) {
-@@ -7279,16 +7284,18 @@ static void ixgbe_tx_csum(struct ixgbe_ring *tx_ring,
- 		default:
- 			if (unlikely(net_ratelimit())) {
- 				dev_warn(tx_ring->dev,
--				 "partial checksum but l4 proto=%x!\n",
--				 l4_hdr);
-+					 "partial checksum, version=%d, l4 proto=%x\n",
-+					 network_hdr.ipv4->version, l4_hdr);
- 			}
--			break;
-+			skb_checksum_help(skb);
-+			goto no_csum;
- 		}
++	/* destroy the locks only once, here */
++	mutex_destroy(&hw->aq.arq_mutex);
++	mutex_destroy(&hw->aq.asq_mutex);
++
+ 	/* Clear all dynamic memory lists of rings, q_vectors, and VSIs */
+ 	i40e_clear_interrupt_scheme(pf);
+ 	for (i = 0; i < pf->num_alloc_vsi; i++) {
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 7e207ed..6da6cd7 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -2652,6 +2652,12 @@ static int i40evf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	hw->bus.device = PCI_SLOT(pdev->devfn);
+ 	hw->bus.func = PCI_FUNC(pdev->devfn);
  
- 		/* update TX checksum flag */
- 		first->tx_flags |= IXGBE_TX_FLAGS_CSUM;
- 	}
++	/* set up the locks for the AQ, do this only once in probe
++	 * and destroy them only once in remove
++	 */
++	mutex_init(&hw->aq.asq_mutex);
++	mutex_init(&hw->aq.arq_mutex);
++
+ 	INIT_LIST_HEAD(&adapter->mac_filter_list);
+ 	INIT_LIST_HEAD(&adapter->vlan_filter_list);
  
-+no_csum:
- 	/* vlan_macip_lens: MACLEN, VLAN tag */
- 	vlan_macip_lens |= first->tx_flags & IXGBE_TX_FLAGS_VLAN_MASK;
+@@ -2808,6 +2814,10 @@ static void i40evf_remove(struct pci_dev *pdev)
+ 	if (hw->aq.asq.count)
+ 		i40evf_shutdown_adminq(hw);
  
++	/* destroy the locks only once, here */
++	mutex_destroy(&hw->aq.arq_mutex);
++	mutex_destroy(&hw->aq.asq_mutex);
++
+ 	iounmap(hw->hw_addr);
+ 	pci_release_regions(pdev);
+ 
+-- 
+1.8.3.1
 
