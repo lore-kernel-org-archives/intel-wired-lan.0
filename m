@@ -1,49 +1,32 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 18 Nov 2015 14:57:20 -0800
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Clean up redundancy in
-	hw_enc_features
-In-Reply-To: <20151118211020.124539.53305.stgit@mdrustad-wks.jf.intel.com>
-References: <20151118211020.124539.53305.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <CAKgT0UfeGNiO0WjfKaHYz+_P+9Gg2is5w1QT7HwSdoTbk-Ezdw@mail.gmail.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Wed, 18 Nov 2015 15:12:47 -0800
+Subject: [Intel-wired-lan] [net PATCH] i40e/i40evf: avoid mutex re-init
+In-Reply-To: <1447869701-3883-1-git-send-email-jesse.brandeburg@intel.com>
+References: <1447869701-3883-1-git-send-email-jesse.brandeburg@intel.com>
+Message-ID: <20151118151247.00002b0d@unknown>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Nov 18, 2015 at 1:10 PM, Mark D Rustad <mark.d.rustad@intel.com> wrote:
-> Clean up minor redundancy in the setting of hw_enc_features that
-> makes it appears that X550 uniquely has more encapsulation features
-> than other devices. The driver only supports one more feature, so
-> make it look that way. Also change the initial assignment to
-> hw_enc_features to be a simple assignment, just to be clearer about
-> that as well. Thanks to Alex Duyck for noticing this slight confusion.
->
-> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    8 +++-----
->  1 file changed, 3 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> index 4ef5b63b2543..66701ec96359 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> @@ -9015,8 +9015,8 @@ skip_sriov:
->         netdev->vlan_features |= NETIF_F_IPV6_CSUM;
->         netdev->vlan_features |= NETIF_F_SG;
->
-> -       netdev->hw_enc_features |= NETIF_F_SG | NETIF_F_IP_CSUM |
-> -                                  NETIF_F_IPV6_CSUM;
-> +       netdev->hw_enc_features = NETIF_F_SG | NETIF_F_IP_CSUM |
-> +                                 NETIF_F_IPV6_CSUM;
+On Wed, 18 Nov 2015 10:01:41 -0800
+Jesse Brandeburg <jesse.brandeburg@intel.com> wrote:
 
-This can probably be left as an "|=" instead of just being an "=".
-That way if a flag is set in the future as a part of allocating the
-netdev or anything like that you are adding your flags instead of
-overwriting any existing ones.  In addition there is no need to set
-the NETIF_F_SG bit as that gets set by register_netdevice via the
-register_netdev call.
+> If the driver were to happen to have a mutex held while
+> the i40e_init_adminq call was called, the init_adminq might
+> inadvertently call mutex_init on a lock that was held
+> which is a violation of the calling semantics.
+> 
+> Fix this by avoiding adminq.c code allocating/freeing this memory, and
+> then do the same work only once in probe/remove.
+> 
+> Testing Hints (Required if no HSD): for VF, load i40evf in bare metal
+> and echo 32 > sriov_numvfs; echo 0 > sriov_numvfs in a loop.  Yes this
+> is a horrible thing to do.
+> 
+> Reported-by: Stefan Assmann <sassmann@redhat.com>
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Change-ID: Ida263c51b34e195252179e7e5e400d73a99be7a2
 
-Thanks.
-
-- Alex
+This patch has a bug, v2 will be sent.
