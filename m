@@ -1,163 +1,51 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Wed, 18 Nov 2015 17:35:42 -0800
-Subject: [Intel-wired-lan] [next PATCH] i40e: trivial fixes
-Message-ID: <1447896942-10644-1-git-send-email-jesse.brandeburg@intel.com>
+From: Jacob Pan <jacob.jun.pan@intel.com>
+Date: Wed, 18 Nov 2015 15:53:53 -0800
+Subject: [Intel-wired-lan] [PATCH v4 2/4] Always running timer
+	correlated clocksource
+In-Reply-To: <1444675522-4198-3-git-send-email-christopher.s.hall@intel.com>
+References: <1444675522-4198-1-git-send-email-christopher.s.hall@intel.com>
+ <1444675522-4198-3-git-send-email-christopher.s.hall@intel.com>
+Message-ID: <20151118155353.4b37a06f@yairi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-1) remove duplicate include of tcp.h
-2) put an ampersand at the end of a line instead of the beginning
-3) remove a useless dev_info
-4) match declaration of function to the implementation
-5) repair incorrect comment
-6) correct whitespace
-7) remove unused define
+On Mon, 12 Oct 2015 11:45:20 -0700
+"Hall, Christopher S" <christopher.s.hall@intel.com> wrote:
+took a while to read the code, i have a few comments/questions
+>
+> diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+> index c3f7602..c3f098c 100644
+> --- a/arch/x86/kernel/tsc.c
+> +++ b/arch/x86/kernel/tsc.c
+> @@ -820,7 +820,7 @@ int recalibrate_cpu_khz(void)
+>  #ifndef CONFIG_SMP
+This code is used by old p4/k7 clock modulation driver, why do we care?
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e.h        |  7 +++----
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   |  6 +-----
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 15 ++++-----------
- 3 files changed, 8 insertions(+), 20 deletions(-)
+>         unsigned long cpu_khz_old = cpu_khz;
+> 
+> -       if (cpu_has_tsc) {
+> +       if (boot_cpu_has(X86_FEATURE_ART)) {
+>                 tsc_khz = x86_platform.calibrate_tsc();
+>                 cpu_khz = tsc_khz;
+>                 cpu_data(0).loops_per_jiffy =
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 4ca85d5..bd6d9c0 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -42,7 +42,6 @@
- #include <linux/string.h>
- #include <linux/in.h>
- #include <linux/ip.h>
--#include <linux/tcp.h>
- #include <linux/sctp.h>
- #include <linux/pkt_sched.h>
- #include <linux/ipv6.h>
-@@ -610,8 +609,8 @@ static inline char *i40e_nvm_version_str(struct i40e_hw *hw)
- 
- 	full_ver = hw->nvm.oem_ver;
- 	ver = (u8)(full_ver >> I40E_OEM_VER_SHIFT);
--	build = (u16)((full_ver >> I40E_OEM_VER_BUILD_SHIFT)
--		 & I40E_OEM_VER_BUILD_MASK);
-+	build = (u16)((full_ver >> I40E_OEM_VER_BUILD_SHIFT) &
-+		 I40E_OEM_VER_BUILD_MASK);
- 	patch = (u8)(full_ver & I40E_OEM_VER_PATCH_MASK);
- 
- 	snprintf(buf, sizeof(buf),
-@@ -719,7 +718,7 @@ struct i40e_veb *i40e_veb_setup(struct i40e_pf *pf, u16 flags, u16 uplink_seid,
- void i40e_veb_release(struct i40e_veb *veb);
- 
- int i40e_veb_config_tc(struct i40e_veb *veb, u8 enabled_tc);
--i40e_status i40e_vsi_add_pvid(struct i40e_vsi *vsi, u16 vid);
-+int i40e_vsi_add_pvid(struct i40e_vsi *vsi, u16 vid);
- void i40e_vsi_remove_pvid(struct i40e_vsi *vsi);
- void i40e_vsi_reset_stats(struct i40e_vsi *vsi);
- void i40e_pf_reset_stats(struct i40e_pf *pf);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index d67ac85..c21481c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -328,7 +328,7 @@ static int i40e_add_del_fdir_tcpv4(struct i40e_vsi *vsi,
-  * @fd_data: the flow director data required for the FDir descriptor
-  * @add: true adds a filter, false removes it
-  *
-- * Always returns -EOPNOTSUPP
-+ * Returns 0 if the filters were successfully added or removed
-  **/
- static int i40e_add_del_fdir_sctpv4(struct i40e_vsi *vsi,
- 				    struct i40e_fdir_filter *fd_data,
-@@ -515,9 +515,6 @@ static void i40e_fd_handle_status(struct i40e_ring *rx_ring,
- 				pf->auto_disable_flags |=
- 							I40E_FLAG_FD_SB_ENABLED;
- 			}
--		} else {
--			dev_info(&pdev->dev,
--				"FD filter programming failed due to incorrect filter parameters\n");
- 		}
- 	} else if (error == BIT(I40E_RX_PROG_STATUS_DESC_NO_FD_ENTRY_SHIFT)) {
- 		if (I40E_DEBUG_FD & pf->hw.debug_mask)
-@@ -1873,7 +1870,6 @@ enable_int:
- 		q_vector->itr_countdown--;
- 	else
- 		q_vector->itr_countdown = ITR_COUNTDOWN_START;
--
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index 9a51ec1..1be1da1 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -411,7 +411,7 @@ static bool i40e_set_new_dynamic_itr(struct i40e_ring_container *rc)
- 	return false;
- }
- 
--/*
-+/**
-  * i40evf_setup_tx_descriptors - Allocate the Tx descriptors
-  * @tx_ring: the tx ring to set up
-  *
-@@ -1260,10 +1260,12 @@ static inline void i40e_update_enable_itr(struct i40e_vsi *vsi,
- 		rx = i40e_set_new_dynamic_itr(&q_vector->rx);
- 		rxval = i40e_buildreg_itr(I40E_RX_ITR, q_vector->rx.itr);
- 	}
-+
- 	if (ITR_IS_DYNAMIC(vsi->tx_itr_setting)) {
- 		tx = i40e_set_new_dynamic_itr(&q_vector->tx);
- 		txval = i40e_buildreg_itr(I40E_TX_ITR, q_vector->tx.itr);
- 	}
-+
- 	if (rx || tx) {
- 		/* get the higher of the two ITR adjustments and
- 		 * use the same value for both ITR registers
-@@ -1299,7 +1301,6 @@ enable_int:
- 		q_vector->itr_countdown--;
- 	else
- 		q_vector->itr_countdown = ITR_COUNTDOWN_START;
--
- }
- 
- /**
-@@ -1553,7 +1554,6 @@ static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
- 			*tx_flags |= I40E_TX_FLAGS_IPV6;
- 		}
- 
--
- 		if ((tx_ring->flags & I40E_TXR_FLAGS_OUTER_UDP_CSUM) &&
- 		    (l4_tunnel == I40E_TXD_CTX_UDP_TUNNELING)        &&
- 		    (*cd_tunneling & I40E_TXD_CTX_QW0_EXT_IP_MASK)) {
-@@ -1652,7 +1652,7 @@ static void i40e_create_tx_ctx(struct i40e_ring *tx_ring,
- 	context_desc->type_cmd_tso_mss = cpu_to_le64(cd_type_cmd_tso_mss);
- }
- 
-- /**
-+/**
-  * i40e_chk_linearize - Check if there are more than 8 fragments per packet
-  * @skb:      send buffer
-  * @tx_flags: collected send information
-@@ -1848,7 +1848,6 @@ static inline void i40evf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 		tx_bi = &tx_ring->tx_bi[i];
- 	}
- 
--#define WB_STRIDE 0x3
- 	/* set next_to_watch value indicating a packet is present */
- 	first->next_to_watch = tx_desc;
- 
-@@ -1875,12 +1874,6 @@ static inline void i40evf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 	 *			update tail and set RS bit on every packet.
- 	 *	if xmit_more is false and last_xmit_more was true
- 	 *		update tail and set RS bit.
--	 * else (kernel < 3.18)
--	 *	if every packet spanned less than 4 desc
--	 *		then set RS bit on 4th packet and update tail
--	 *		on every packet
--	 *	else
--	 *		set RS bit on EOP for every packet and update tail
- 	 *
- 	 * Optimization: wmb to be issued only in case of tail update.
- 	 * Also optimize the Descriptor WB path for RS bit with the same
--- 
-1.8.3.1
 
+> 
+> +/*
+> + * Convert ART to TSC given numerator/denominator found in
+> detect_art()
+> + */
+> +static u64 convert_art_to_tsc(struct correlated_cs *cs, u64 cycles)
+> +{
+> +       u64 tmp, res;
+> +
+> +       res = (cycles / art_to_tsc_denominator) *
+> art_to_tsc_numerator;
+> +       tmp = (cycles % art_to_tsc_denominator) *
+> art_to_tsc_numerator;
+> +       res += tmp / art_to_tsc_denominator;
+> +
+iirc there are some issues with 32bit, better use div64_u64()
