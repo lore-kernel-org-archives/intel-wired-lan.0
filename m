@@ -1,10 +1,10 @@
 From: Deepthi Kavalur <deepthi.kavalur@intel.com>
-Date: Thu, 19 Nov 2015 11:34:16 -0800
-Subject: [Intel-wired-lan] [V3: next PATCH S22 03/12] i40e: properly delete
-	VF MAC filters
+Date: Thu, 19 Nov 2015 11:34:24 -0800
+Subject: [Intel-wired-lan] [V3: next PATCH S22 11/12] i40evf: change version
+	string generation
 In-Reply-To: <1447961665-12344-1-git-send-email-deepthi.kavalur@intel.com>
 References: <1447961665-12344-1-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <1447961665-12344-4-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <1447961665-12344-12-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,99 +13,36 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Mitch Williams <mitch.a.williams@intel.com>
 
-The virtual channel interface was using incorrect semantics to remove
-MAC addresses, which would leave incorrect filters active when using
-VLANs. To correct this, add a new function that unconditionally removes
-MAC addresses from all VLANs, and call this function when the VF
-requests a MAC filter removal.
+Generate version strings like the PF driver does. This gives us more
+flexibility to add suffixes to the version string at build time.
 
 Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Change-ID: I69826908ae4f6c847f5bf9b32f11faa760189c74
+Change-ID: I0a5ca0783dd8fb849516bfc1e37ea070127847bd
 ---
- drivers/net/ethernet/intel/i40e/i40e.h             |  2 ++
- drivers/net/ethernet/intel/i40e/i40e_main.c        | 36 ++++++++++++++++++++++
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  8 +++--
- 3 files changed, 44 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 04a3e87..33fa3d9 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -775,6 +775,8 @@ int i40e_vsi_add_vlan(struct i40e_vsi *vsi, s16 vid);
- int i40e_vsi_kill_vlan(struct i40e_vsi *vsi, s16 vid);
- struct i40e_mac_filter *i40e_put_mac_in_vlan(struct i40e_vsi *vsi, u8 *macaddr,
- 					     bool is_vf, bool is_netdev);
-+int i40e_del_mac_all_vlan(struct i40e_vsi *vsi, u8 *macaddr,
-+			  bool is_vf, bool is_netdev);
- bool i40e_is_vsi_in_vlan(struct i40e_vsi *vsi);
- struct i40e_mac_filter *i40e_find_mac(struct i40e_vsi *vsi, u8 *macaddr,
- 				      bool is_vf, bool is_netdev);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 925654d..7147404 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1259,6 +1259,42 @@ struct i40e_mac_filter *i40e_put_mac_in_vlan(struct i40e_vsi *vsi, u8 *macaddr,
- }
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 8a3ed2c..debabd3 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -34,7 +34,15 @@ char i40evf_driver_name[] = "i40evf";
+ static const char i40evf_driver_string[] =
+ 	"Intel(R) XL710/X710 Virtual Function Network Driver";
  
- /**
-+ * i40e_del_mac_all_vlan - Remove a MAC filter from all VLANS
-+ * @vsi: the VSI to be searched
-+ * @macaddr: the mac address to be removed
-+ * @is_vf: true if it is a VF
-+ * @is_netdev: true if it is a netdev
-+ *
-+ * Removes a given MAC address from a VSI, regardless of VLAN
-+ *
-+ * Returns 0 for success, or error
-+ **/
-+int i40e_del_mac_all_vlan(struct i40e_vsi *vsi, u8 *macaddr,
-+			  bool is_vf, bool is_netdev)
-+{
-+	struct i40e_mac_filter *f = NULL;
-+	int changed = 0;
+-#define DRV_VERSION "1.4.3"
++#define DRV_KERN "-k"
 +
-+	WARN(!spin_is_locked(&vsi->mac_filter_list_lock),
-+	     "Missing mac_filter_list_lock\n");
-+	list_for_each_entry(f, &vsi->mac_filter_list, list) {
-+		if ((ether_addr_equal(macaddr, f->macaddr)) &&
-+		    (is_vf == f->is_vf) &&
-+		    (is_netdev == f->is_netdev)) {
-+			f->counter--;
-+			f->changed = true;
-+			changed = 1;
-+		}
-+	}
-+	if (changed) {
-+		vsi->flags |= I40E_VSI_FLAG_FILTER_CHANGED;
-+		vsi->back->flags |= I40E_FLAG_FILTER_SYNC;
-+		return 0;
-+	}
-+	return -ENOENT;
-+}
-+
-+/**
-  * i40e_rm_default_mac_filter - Remove the default MAC filter set by NVM
-  * @vsi: the PF Main VSI - inappropriate for any other VSI
-  * @macaddr: the MAC address
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 0606ee1..c04e3b7 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1683,8 +1683,12 @@ static int i40e_vc_del_mac_addr_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
- 	spin_lock_bh(&vsi->mac_filter_list_lock);
- 	/* delete addresses from the list */
- 	for (i = 0; i < al->num_elements; i++)
--		i40e_del_filter(vsi, al->list[i].addr,
--				I40E_VLAN_ANY, true, false);
-+		if (i40e_del_mac_all_vlan(vsi, al->list[i].addr, true, false)) {
-+			ret = I40E_ERR_INVALID_MAC_ADDR;
-+			spin_unlock_bh(&vsi->mac_filter_list_lock);
-+			goto error_param;
-+		}
-+
- 	spin_unlock_bh(&vsi->mac_filter_list_lock);
- 
- 	/* program the updated filter list */
++#define DRV_VERSION_MAJOR 1
++#define DRV_VERSION_MINOR 4
++#define DRV_VERSION_BUILD 3
++#define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
++	     __stringify(DRV_VERSION_MINOR) "." \
++	     __stringify(DRV_VERSION_BUILD) \
++	     DRV_KERN
+ const char i40evf_driver_version[] = DRV_VERSION;
+ static const char i40evf_copyright[] =
+ 	"Copyright (c) 2013 - 2015 Intel Corporation.";
 -- 
 2.1.0
 
