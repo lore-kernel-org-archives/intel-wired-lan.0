@@ -1,40 +1,58 @@
 From: Deepthi Kavalur <deepthi.kavalur@intel.com>
-Date: Thu, 19 Nov 2015 11:34:13 -0800
-Subject: [Intel-wired-lan] [V3: next PATCH S22 00/12]  i40e/i40evf updates
-Message-ID: <1447961665-12344-1-git-send-email-deepthi.kavalur@intel.com>
+Date: Thu, 19 Nov 2015 11:34:17 -0800
+Subject: [Intel-wired-lan] [V3: next PATCH S22 04/12] i40e: don't add zero
+	MAC filter
+In-Reply-To: <1447961665-12344-1-git-send-email-deepthi.kavalur@intel.com>
+References: <1447961665-12344-1-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <1447961665-12344-5-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Anjali Singhai Jain adds a new offload for RSS PCTYPE V2. 
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-Jesse Brandeburg chomps the BIT(_ULL), fixes mismatched declaration.
+When VFs are created, the MAC address defaults to all zeros, indicating
+to the VF driver that it should use a random MAC address. However, the
+PF driver was incorrectly adding this zero MAC to the filter table,
+along with the VF's randomly generated MAC address.
 
-Kamil Krawczyk adds 'use explicit cast from u16 to u8'.
+Check for a good address before adding the default filter. While we're
+at it, make the error message a bit more useful.
 
-Michal Kosiarz adds opcode and structures required by OEM Post Update AQ
-command and a new NVM arq message.
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-ID: Ia100947d68140e0f73a19ba755cbffc3e79a8fcf
+---
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
 
-Mitch Williams adds proper deletion of VF MAC filters, and removes zero MAC
-filter. Also checks rings before freeing resources, changes version string 
-generation, and adds hush little warnings.
-
-Shannon Nelson cleans whole mac filter list.
-
- drivers/net/ethernet/intel/i40e/i40e.h             |   4 +-
- drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |  21 +++++
- drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c     |   2 +-
- drivers/net/ethernet/intel/i40e/i40e_main.c        | 105 +++++++++++++++------
- drivers/net/ethernet/intel/i40e/i40e_virtchnl.h    |   1 +
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  23 +++--
- .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    |  21 +++++
- drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h  |   1 +
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  16 +++-
- .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |   4 +-
- 10 files changed, 156 insertions(+), 42 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index c04e3b7..b6be4a5 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -549,12 +549,15 @@ static int i40e_alloc_vsi_res(struct i40e_vf *vf, enum i40e_vsi_type type)
+ 			i40e_vsi_add_pvid(vsi, vf->port_vlan_id);
+ 
+ 		spin_lock_bh(&vsi->mac_filter_list_lock);
+-		f = i40e_add_filter(vsi, vf->default_lan_addr.addr,
+-				    vf->port_vlan_id ? vf->port_vlan_id : -1,
+-				    true, false);
+-		if (!f)
+-			dev_info(&pf->pdev->dev,
+-				 "Could not allocate VF MAC addr\n");
++		if (is_valid_ether_addr(vf->default_lan_addr.addr)) {
++			f = i40e_add_filter(vsi, vf->default_lan_addr.addr,
++				       vf->port_vlan_id ? vf->port_vlan_id : -1,
++				       true, false);
++			if (!f)
++				dev_info(&pf->pdev->dev,
++					 "Could not add MAC filter %pM for VF %d\n",
++					vf->default_lan_addr.addr, vf->vf_id);
++		}
+ 		f = i40e_add_filter(vsi, brdcast,
+ 				    vf->port_vlan_id ? vf->port_vlan_id : -1,
+ 				    true, false);
 -- 
 2.1.0
 
