@@ -1,134 +1,91 @@
 From: Deepthi Kavalur <deepthi.kavalur@intel.com>
-Date: Thu, 19 Nov 2015 11:34:20 -0800
-Subject: [Intel-wired-lan] [V3: next PATCH S22 07/12] i40e: Opcode and
-	structures required by OEM Post Update AQ command and add new
-	NVM arq message
+Date: Thu, 19 Nov 2015 11:34:23 -0800
+Subject: [Intel-wired-lan] [V3: next PATCH S22 10/12] i40e: clean whole mac
+	filter list
 In-Reply-To: <1447961665-12344-1-git-send-email-deepthi.kavalur@intel.com>
 References: <1447961665-12344-1-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <1447961665-12344-8-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <1447961665-12344-11-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Michal Kosiarz <michal.kosiarz@intel.com>
+From: Shannon Nelson <shannon.nelson@intel.com>
 
-This is a part of implementation which contains data structures and
-opcode for new AQ command. There's a new ARQ message that gets sent
-near the end of the NVM update process that the driver should recognize
-and ignore, rather than printing an Unknown Event error.
+Clean the whole mac filter list when resetting after an intermediate
+add or delete push to the firmware.  The code had evolved from using
+a list from the stack to a heap allocation, but the memset() didn't
+follow the change correctly.  This now cleans the whole list rather
+that just part of the first element.
 
-Signed-off-by: Michal Kosiarz <michal.kosiarz@intel.com>
-Acked-by: Shannon Nelson <shannon.nelson@intel.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Change-ID: I04830a5bcae14823e16b9424cc4165e169336c1f
-
+Reported-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-Change-ID: Ic73b0a4e10e0b6895d1f2435125f1e789f3756dd
+Change-ID: I4cd03d5a103b7407dd8556a3a231e800f2d6f2d5
 ---
 Testing Hints :
-	Do an nvmupdate with the current version of nvmupdate tool before and
-	after this patch is applied and watch the kernel log for the message
-		"ARQ Error: Unknown event 0x0720 received"
-	Using "nvmupdate -f" will allow you to "update" your NVM with the same
-	version NVM, over and over; useful for this kind of testing.
+Compile and run the driver with basic ping tests. Also add and remove
+additional address filters and make sure they work as expected.
 
- drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h   | 21 +++++++++++++++++++++
- drivers/net/ethernet/intel/i40e/i40e_main.c         |  1 +
- drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h | 21 +++++++++++++++++++++
- 3 files changed, 43 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 18 ++++++++++--------
+ 1 file changed, 10 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-index 61a4979..b22012a 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-@@ -227,6 +227,7 @@ enum i40e_admin_queue_opc {
- 	i40e_aqc_opc_nvm_update			= 0x0703,
- 	i40e_aqc_opc_nvm_config_read		= 0x0704,
- 	i40e_aqc_opc_nvm_config_write		= 0x0705,
-+	i40e_aqc_opc_oem_post_update		= 0x0720,
- 
- 	/* virtualization commands */
- 	i40e_aqc_opc_send_msg_to_pf		= 0x0801,
-@@ -1891,6 +1892,26 @@ struct i40e_aqc_nvm_config_data_immediate_field {
- 
- I40E_CHECK_STRUCT_LEN(0xc, i40e_aqc_nvm_config_data_immediate_field);
- 
-+/* OEM Post Update (indirect 0x0720)
-+ * no command data struct used
-+ */
-+struct i40e_aqc_nvm_oem_post_update {
-+#define I40E_AQ_NVM_OEM_POST_UPDATE_EXTERNAL_DATA	0x01
-+	u8 sel_data;
-+	u8 reserved[7];
-+};
-+
-+I40E_CHECK_STRUCT_LEN(0x8, i40e_aqc_nvm_oem_post_update);
-+
-+struct i40e_aqc_nvm_oem_post_update_buffer {
-+	u8 str_len;
-+	u8 dev_addr;
-+	__le16 eeprom_addr;
-+	u8 data[36];
-+};
-+
-+I40E_CHECK_STRUCT_LEN(0x28, i40e_aqc_nvm_oem_post_update_buffer);
-+
- /* Send to PF command (indirect 0x0801) id is only used by PF
-  * Send to VF command (indirect 0x0802) id is only used by PF
-  * Send to Peer PF command (indirect 0x0803)
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 7147404..7ded5e5 100644
+index c03bb72..c22167b 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -6295,6 +6295,7 @@ static void i40e_clean_adminq_subtask(struct i40e_pf *pf)
- 			break;
- 		case i40e_aqc_opc_nvm_erase:
- 		case i40e_aqc_opc_nvm_update:
-+		case i40e_aqc_opc_oem_post_update:
- 			i40e_debug(&pf->hw, I40E_DEBUG_NVM, "ARQ NVM operation completed\n");
- 			break;
- 		default:
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-index 1c76389..f5b2b36 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-@@ -227,6 +227,7 @@ enum i40e_admin_queue_opc {
- 	i40e_aqc_opc_nvm_update			= 0x0703,
- 	i40e_aqc_opc_nvm_config_read		= 0x0704,
- 	i40e_aqc_opc_nvm_config_write		= 0x0705,
-+	i40e_aqc_opc_oem_post_update		= 0x0720,
+@@ -1917,11 +1917,12 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi, bool grab_rtnl)
  
- 	/* virtualization commands */
- 	i40e_aqc_opc_send_msg_to_pf		= 0x0801,
-@@ -1888,6 +1889,26 @@ struct i40e_aqc_nvm_config_data_immediate_field {
+ 	/* Now process 'del_list' outside the lock */
+ 	if (!list_empty(&tmp_del_list)) {
++		int del_list_size;
+ 		filter_list_len = pf->hw.aq.asq_buf_size /
+ 			    sizeof(struct i40e_aqc_remove_macvlan_element_data);
+-		del_list = kcalloc(filter_list_len,
+-			    sizeof(struct i40e_aqc_remove_macvlan_element_data),
+-			    GFP_KERNEL);
++		del_list_size = filter_list_len *
++			    sizeof(struct i40e_aqc_remove_macvlan_element_data);
++		del_list = kzalloc(del_list_size, GFP_KERNEL);
+ 		if (!del_list) {
+ 			i40e_cleanup_add_list(&tmp_add_list);
  
- I40E_CHECK_STRUCT_LEN(0xc, i40e_aqc_nvm_config_data_immediate_field);
+@@ -1956,7 +1957,7 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi, bool grab_rtnl)
+ 								NULL);
+ 				aq_err = pf->hw.aq.asq_last_status;
+ 				num_del = 0;
+-				memset(del_list, 0, sizeof(*del_list));
++				memset(del_list, 0, del_list_size);
  
-+/* OEM Post Update (indirect 0x0720)
-+ * no command data struct used
-+ */
-+ struct i40e_aqc_nvm_oem_post_update {
-+#define I40E_AQ_NVM_OEM_POST_UPDATE_EXTERNAL_DATA	0x01
-+	u8 sel_data;
-+	u8 reserved[7];
-+};
-+
-+I40E_CHECK_STRUCT_LEN(0x8, i40e_aqc_nvm_oem_post_update);
-+
-+struct i40e_aqc_nvm_oem_post_update_buffer {
-+	u8 str_len;
-+	u8 dev_addr;
-+	__le16 eeprom_addr;
-+	u8 data[36];
-+};
-+
-+I40E_CHECK_STRUCT_LEN(0x28, i40e_aqc_nvm_oem_post_update_buffer);
-+
- /* Send to PF command (indirect 0x0801) id is only used by PF
-  * Send to VF command (indirect 0x0802) id is only used by PF
-  * Send to Peer PF command (indirect 0x0803)
+ 				if (aq_ret && aq_err != I40E_AQ_RC_ENOENT) {
+ 					retval = -EIO;
+@@ -1992,13 +1993,14 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi, bool grab_rtnl)
+ 	}
+ 
+ 	if (!list_empty(&tmp_add_list)) {
++		int add_list_size;
+ 
+ 		/* do all the adds now */
+ 		filter_list_len = pf->hw.aq.asq_buf_size /
+ 			       sizeof(struct i40e_aqc_add_macvlan_element_data),
+-		add_list = kcalloc(filter_list_len,
+-			       sizeof(struct i40e_aqc_add_macvlan_element_data),
+-			       GFP_KERNEL);
++		add_list_size = filter_list_len *
++			       sizeof(struct i40e_aqc_add_macvlan_element_data);
++		add_list = kzalloc(add_list_size, GFP_KERNEL);
+ 		if (!add_list) {
+ 			/* Purge element from temporary lists */
+ 			i40e_cleanup_add_list(&tmp_add_list);
+@@ -2037,7 +2039,7 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi, bool grab_rtnl)
+ 
+ 				if (aq_ret)
+ 					break;
+-				memset(add_list, 0, sizeof(*add_list));
++				memset(add_list, 0, add_list_size);
+ 			}
+ 			/* Entries from tmp_add_list were cloned from MAC
+ 			 * filter list, hence clean those cloned entries
 -- 
 2.1.0
 
