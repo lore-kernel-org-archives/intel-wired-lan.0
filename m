@@ -1,152 +1,41 @@
 From: Deepthi Kavalur <deepthi.kavalur@intel.com>
-Date: Thu, 19 Nov 2015 11:34:14 -0800
-Subject: [Intel-wired-lan] [V3: next PATCH S22 01/12] i40e: chomp the
-	BIT(_ULL)
+Date: Thu, 19 Nov 2015 11:34:19 -0800
+Subject: [Intel-wired-lan] [V3: next PATCH S22 06/12] i40e: use explicit
+	cast from u16 to u8
 In-Reply-To: <1447961665-12344-1-git-send-email-deepthi.kavalur@intel.com>
 References: <1447961665-12344-1-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <1447961665-12344-2-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <1447961665-12344-7-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Kamil Krawczyk <kamil.krawczyk@intel.com>
 
-BIT_ULL was used on a u32 or less where it can simply be BIT. This
-fixes some trivial static analyzer warnings. Chomp, chomp.
+Current implementation generates compilation warnings.
 
-Tested with objdump of binary before and after, no changes to code.
-
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Change-ID: I6245e9abd447192dbde1669c747aeb2878126c7d
+Signed-off-by: Kamil Krawczyk <kamil.krawczyk@intel.com>
+Acked-by: Shannon Nelson <shannon.nelson@intel.com>
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Change-ID: Icceefb50fe62aefaf90a64afb7192e08355a4ec5
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 30 ++++++++++++++---------------
- 1 file changed, 15 insertions(+), 15 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index c59d146..925654d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1531,7 +1531,7 @@ static void i40e_vsi_setup_queue_map(struct i40e_vsi *vsi,
- 	if (enabled_tc && (vsi->back->flags & I40E_FLAG_DCB_ENABLED)) {
- 		/* Find numtc from enabled TC bitmap */
- 		for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++) {
--			if (enabled_tc & BIT_ULL(i)) /* TC is enabled */
-+			if (enabled_tc & BIT(i)) /* TC is enabled */
- 				numtc++;
- 		}
- 		if (!numtc) {
-@@ -1560,7 +1560,7 @@ static void i40e_vsi_setup_queue_map(struct i40e_vsi *vsi,
- 	/* Setup queue offset/count for all TCs for given VSI */
- 	for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++) {
- 		/* See if the given TC is enabled for the given VSI */
--		if (vsi->tc_config.enabled_tc & BIT_ULL(i)) {
-+		if (vsi->tc_config.enabled_tc & BIT(i)) {
- 			/* TC is enabled */
- 			int pow, num_qps;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c b/drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c
+index 79ae7be..daa9204 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c
+@@ -762,7 +762,7 @@ static void i40e_write_byte(u8 *hmc_bits,
  
-@@ -4433,7 +4433,7 @@ static u8 i40e_get_iscsi_tc_map(struct i40e_pf *pf)
- 		if (app.selector == I40E_APP_SEL_TCPIP &&
- 		    app.protocolid == I40E_APP_PROTOID_ISCSI) {
- 			tc = dcbcfg->etscfg.prioritytable[app.priority];
--			enabled_tc |= BIT_ULL(tc);
-+			enabled_tc |= BIT(tc);
- 			break;
- 		}
- 	}
-@@ -4517,7 +4517,7 @@ static u8 i40e_pf_get_num_tc(struct i40e_pf *pf)
- 	/* At least have TC0 */
- 	enabled_tc = (enabled_tc ? enabled_tc : 0x1);
- 	for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++) {
--		if (enabled_tc & BIT_ULL(i))
-+		if (enabled_tc & BIT(i))
- 			num_tc++;
- 	}
- 	return num_tc;
-@@ -4539,7 +4539,7 @@ static u8 i40e_pf_get_default_tc(struct i40e_pf *pf)
+ 	/* prepare the bits and mask */
+ 	shift_width = ce_info->lsb % 8;
+-	mask = BIT(ce_info->width) - 1;
++	mask = (u8)(BIT(ce_info->width) - 1);
  
- 	/* Find the first enabled TC */
- 	for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++) {
--		if (enabled_tc & BIT_ULL(i))
-+		if (enabled_tc & BIT(i))
- 			break;
- 	}
- 
-@@ -4699,7 +4699,7 @@ static void i40e_vsi_config_netdev_tc(struct i40e_vsi *vsi, u8 enabled_tc)
- 		 * will set the numtc for netdev as 2 that will be
- 		 * referenced by the netdev layer as TC 0 and 1.
- 		 */
--		if (vsi->tc_config.enabled_tc & BIT_ULL(i))
-+		if (vsi->tc_config.enabled_tc & BIT(i))
- 			netdev_set_tc_queue(netdev,
- 					vsi->tc_config.tc_info[i].netdev_tc,
- 					vsi->tc_config.tc_info[i].qcount,
-@@ -4761,7 +4761,7 @@ static int i40e_vsi_config_tc(struct i40e_vsi *vsi, u8 enabled_tc)
- 
- 	/* Enable ETS TCs with equal BW Share for now across all VSIs */
- 	for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++) {
--		if (enabled_tc & BIT_ULL(i))
-+		if (enabled_tc & BIT(i))
- 			bw_share[i] = 1;
- 	}
- 
-@@ -4835,7 +4835,7 @@ int i40e_veb_config_tc(struct i40e_veb *veb, u8 enabled_tc)
- 
- 	/* Enable ETS TCs with equal BW Share for now */
- 	for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++) {
--		if (enabled_tc & BIT_ULL(i))
-+		if (enabled_tc & BIT(i))
- 			bw_data.tc_bw_share_credits[i] = 1;
- 	}
- 
-@@ -5232,7 +5232,7 @@ static int i40e_setup_tc(struct net_device *netdev, u8 tc)
- 
- 	/* Generate TC map for number of tc requested */
- 	for (i = 0; i < tc; i++)
--		enabled_tc |= BIT_ULL(i);
-+		enabled_tc |= BIT(i);
- 
- 	/* Requesting same TC configuration as already enabled */
- 	if (enabled_tc == vsi->tc_config.enabled_tc)
-@@ -6096,23 +6096,23 @@ static void i40e_reset_subtask(struct i40e_pf *pf)
- 
- 	rtnl_lock();
- 	if (test_bit(__I40E_REINIT_REQUESTED, &pf->state)) {
--		reset_flags |= BIT_ULL(__I40E_REINIT_REQUESTED);
-+		reset_flags |= BIT(__I40E_REINIT_REQUESTED);
- 		clear_bit(__I40E_REINIT_REQUESTED, &pf->state);
- 	}
- 	if (test_bit(__I40E_PF_RESET_REQUESTED, &pf->state)) {
--		reset_flags |= BIT_ULL(__I40E_PF_RESET_REQUESTED);
-+		reset_flags |= BIT(__I40E_PF_RESET_REQUESTED);
- 		clear_bit(__I40E_PF_RESET_REQUESTED, &pf->state);
- 	}
- 	if (test_bit(__I40E_CORE_RESET_REQUESTED, &pf->state)) {
--		reset_flags |= BIT_ULL(__I40E_CORE_RESET_REQUESTED);
-+		reset_flags |= BIT(__I40E_CORE_RESET_REQUESTED);
- 		clear_bit(__I40E_CORE_RESET_REQUESTED, &pf->state);
- 	}
- 	if (test_bit(__I40E_GLOBAL_RESET_REQUESTED, &pf->state)) {
--		reset_flags |= BIT_ULL(__I40E_GLOBAL_RESET_REQUESTED);
-+		reset_flags |= BIT(__I40E_GLOBAL_RESET_REQUESTED);
- 		clear_bit(__I40E_GLOBAL_RESET_REQUESTED, &pf->state);
- 	}
- 	if (test_bit(__I40E_DOWN_REQUESTED, &pf->state)) {
--		reset_flags |= BIT_ULL(__I40E_DOWN_REQUESTED);
-+		reset_flags |= BIT(__I40E_DOWN_REQUESTED);
- 		clear_bit(__I40E_DOWN_REQUESTED, &pf->state);
- 	}
- 
-@@ -10571,7 +10571,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 
- 	/* NVM bit on means WoL disabled for the port */
- 	i40e_read_nvm_word(hw, I40E_SR_NVM_WAKE_ON_LAN, &wol_nvm_bits);
--	if ((1 << hw->port) & wol_nvm_bits || hw->partition_id != 1)
-+	if (BIT (hw->port) & wol_nvm_bits || hw->partition_id != 1)
- 		pf->wol_en = false;
- 	else
- 		pf->wol_en = true;
+ 	src_byte = *from;
+ 	src_byte &= mask;
 -- 
 2.1.0
 
