@@ -1,51 +1,40 @@
-From: Jacob Pan <jacob.jun.pan@intel.com>
-Date: Wed, 18 Nov 2015 15:53:53 -0800
-Subject: [Intel-wired-lan] [PATCH v4 2/4] Always running timer
-	correlated clocksource
-In-Reply-To: <1444675522-4198-3-git-send-email-christopher.s.hall@intel.com>
-References: <1444675522-4198-1-git-send-email-christopher.s.hall@intel.com>
- <1444675522-4198-3-git-send-email-christopher.s.hall@intel.com>
-Message-ID: <20151118155353.4b37a06f@yairi>
+From: Deepthi Kavalur <deepthi.kavalur@intel.com>
+Date: Thu, 19 Nov 2015 11:34:13 -0800
+Subject: [Intel-wired-lan] [V3: next PATCH S22 00/12]  i40e/i40evf updates
+Message-ID: <1447961665-12344-1-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 12 Oct 2015 11:45:20 -0700
-"Hall, Christopher S" <christopher.s.hall@intel.com> wrote:
-took a while to read the code, i have a few comments/questions
->
-> diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-> index c3f7602..c3f098c 100644
-> --- a/arch/x86/kernel/tsc.c
-> +++ b/arch/x86/kernel/tsc.c
-> @@ -820,7 +820,7 @@ int recalibrate_cpu_khz(void)
->  #ifndef CONFIG_SMP
-This code is used by old p4/k7 clock modulation driver, why do we care?
+Anjali Singhai Jain adds a new offload for RSS PCTYPE V2. 
 
->         unsigned long cpu_khz_old = cpu_khz;
-> 
-> -       if (cpu_has_tsc) {
-> +       if (boot_cpu_has(X86_FEATURE_ART)) {
->                 tsc_khz = x86_platform.calibrate_tsc();
->                 cpu_khz = tsc_khz;
->                 cpu_data(0).loops_per_jiffy =
+Jesse Brandeburg chomps the BIT(_ULL), fixes mismatched declaration.
 
+Kamil Krawczyk adds 'use explicit cast from u16 to u8'.
 
-> 
-> +/*
-> + * Convert ART to TSC given numerator/denominator found in
-> detect_art()
-> + */
-> +static u64 convert_art_to_tsc(struct correlated_cs *cs, u64 cycles)
-> +{
-> +       u64 tmp, res;
-> +
-> +       res = (cycles / art_to_tsc_denominator) *
-> art_to_tsc_numerator;
-> +       tmp = (cycles % art_to_tsc_denominator) *
-> art_to_tsc_numerator;
-> +       res += tmp / art_to_tsc_denominator;
-> +
-iirc there are some issues with 32bit, better use div64_u64()
+Michal Kosiarz adds opcode and structures required by OEM Post Update AQ
+command and a new NVM arq message.
+
+Mitch Williams adds proper deletion of VF MAC filters, and removes zero MAC
+filter. Also checks rings before freeing resources, changes version string 
+generation, and adds hush little warnings.
+
+Shannon Nelson cleans whole mac filter list.
+
+ drivers/net/ethernet/intel/i40e/i40e.h             |   4 +-
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |  21 +++++
+ drivers/net/ethernet/intel/i40e/i40e_lan_hmc.c     |   2 +-
+ drivers/net/ethernet/intel/i40e/i40e_main.c        | 105 +++++++++++++++------
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl.h    |   1 +
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  23 +++--
+ .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    |  21 +++++
+ drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h  |   1 +
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  16 +++-
+ .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |   4 +-
+ 10 files changed, 156 insertions(+), 42 deletions(-)
+
+-- 
+2.1.0
+
