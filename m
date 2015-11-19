@@ -1,40 +1,54 @@
 From: Deepthi Kavalur <deepthi.kavalur@intel.com>
-Date: Thu, 19 Nov 2015 11:34:15 -0800
-Subject: [Intel-wired-lan] [V3: next PATCH S22 02/12] i40e: fix mismatched
-	declaration
+Date: Thu, 19 Nov 2015 11:34:18 -0800
+Subject: [Intel-wired-lan] [V3: next PATCH S22 05/12] i40evf: check rings
+	before freeing resources
 In-Reply-To: <1447961665-12344-1-git-send-email-deepthi.kavalur@intel.com>
 References: <1447961665-12344-1-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <1447961665-12344-3-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <1447961665-12344-6-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-i40e_vsi_add_pvid() was declared in the i40e.h file as a different
-return type than the function implementation.
+If the driver gets unloaded during reset recovery, it's possible
+that it will attempt to free resources when they're already free.
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Change-ID: I22ea1f05e1d3c79d1b198dd375a766d839ea4706
+Add a check to make sure that the tx and rx rings actually exist
+before dereferencing them to free resources.
+
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-ID: I4d2b7e9ede49f634d421a4c5deaa5446bc755eee
 ---
- drivers/net/ethernet/intel/i40e/i40e.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index adfc450..04a3e87 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -717,7 +717,7 @@ struct i40e_veb *i40e_veb_setup(struct i40e_pf *pf, u16 flags, u16 uplink_seid,
- void i40e_veb_release(struct i40e_veb *veb);
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 7e207ed..8a3ed2c 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -2034,6 +2034,9 @@ void i40evf_free_all_tx_resources(struct i40evf_adapter *adapter)
+ {
+ 	int i;
  
- int i40e_veb_config_tc(struct i40e_veb *veb, u8 enabled_tc);
--i40e_status i40e_vsi_add_pvid(struct i40e_vsi *vsi, u16 vid);
-+int i40e_vsi_add_pvid(struct i40e_vsi *vsi, u16 vid);
- void i40e_vsi_remove_pvid(struct i40e_vsi *vsi);
- void i40e_vsi_reset_stats(struct i40e_vsi *vsi);
- void i40e_pf_reset_stats(struct i40e_pf *pf);
++	if (!adapter->tx_rings)
++		return;
++
+ 	for (i = 0; i < adapter->num_active_queues; i++)
+ 		if (adapter->tx_rings[i].desc)
+ 			i40evf_free_tx_resources(&adapter->tx_rings[i]);
+@@ -2102,6 +2105,9 @@ void i40evf_free_all_rx_resources(struct i40evf_adapter *adapter)
+ {
+ 	int i;
+ 
++	if (!adapter->rx_rings)
++		return;
++
+ 	for (i = 0; i < adapter->num_active_queues; i++)
+ 		if (adapter->rx_rings[i].desc)
+ 			i40evf_free_rx_resources(&adapter->rx_rings[i]);
 -- 
 2.1.0
 
