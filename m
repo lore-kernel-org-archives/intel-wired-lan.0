@@ -1,83 +1,38 @@
-From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Thu, 19 Nov 2015 13:56:30 -0800
-Subject: [Intel-wired-lan] [PATCH V2] ixgbevf: Handle extended IPv6 headers
-	in tx path
-Message-ID: <20151119215630.87646.72574.stgit@mdrustad-wks.jf.intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Thu, 19 Nov 2015 22:08:42 +0000
+Subject: [Intel-wired-lan] [next-queue, v2,
+ 1/8] e1000: clean up the checking logic
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81D3D735@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Check for and handle IPv6 extended headers so that tx checksum
-offload can be done. Also use skb_checksum_help for unexpected
-cases. Thanks to Tom Herbert for noticing these problems. Thanks
-to Alexander Duyck for seeing how to coalesce the error handling
-into one location.
+Resending with subject line (hopefully) de-corrupted so patchwork will pick it up.
 
-Reported-by: Tom Herbert <tom@herbertland.com>
-Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
----
-Changes in V2:
-- Reworked to be like the ixgbe version
----
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   22 +++++++++++++--------
- 1 file changed, 14 insertions(+), 8 deletions(-)
+> The checking logic needed some clean-up work, so we rewrite it by
+> checking for break first. With that change in place, we can even move
+> the second check for goto statement outside of the loop.
+>
+> As this is merely a cleanup, no functional change is involved. The
+> questionable 'tmp != 0xFF' is intentionally left alone.
+>
+> Mark Rustad and Alexander Duyck contributed to this patch.
+>
+> Signed-off-by: Jean Sacren <sakiwit@gmail.com>
+> Cc: "Rustad, Mark D" <mark.d.rustad@intel.com>
+> Cc: Alexander Duyck <alexander.duyck@gmail.com>
+> ---
+> v2:
+>
+> 1) Update the changelog to reflect the rewrite of the checking logic and
+>    others' contributions;
+> 2) Update the changelog title accordingly;
+> 3) Add credits and cc the pertinent parties.
+> 
+>  drivers/net/ethernet/intel/e1000/e1000_main.c | 10 +++++-----
+> 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 3d257279e770..2a3576502682 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -3347,6 +3347,7 @@ static void ixgbevf_tx_csum(struct ixgbevf_ring *tx_ring,
- 
- 	if (skb->ip_summed == CHECKSUM_PARTIAL) {
- 		u8 l4_hdr = 0;
-+		__be16 frag_off;
- 
- 		switch (first->protocol) {
- 		case htons(ETH_P_IP):
-@@ -3357,13 +3358,16 @@ static void ixgbevf_tx_csum(struct ixgbevf_ring *tx_ring,
- 		case htons(ETH_P_IPV6):
- 			vlan_macip_lens |= skb_network_header_len(skb);
- 			l4_hdr = ipv6_hdr(skb)->nexthdr;
-+			if (likely(skb_network_header_len(skb) ==
-+				   sizeof(struct ipv6hdr)))
-+				break;
-+			ipv6_skip_exthdr(skb, skb_network_offset(skb) +
-+					      sizeof(struct ipv6hdr),
-+					 &l4_hdr, &frag_off);
-+			if (unlikely(frag_off))
-+				l4_hdr = NEXTHDR_FRAGMENT;
- 			break;
- 		default:
--			if (unlikely(net_ratelimit())) {
--				dev_warn(tx_ring->dev,
--					 "partial checksum but proto=%x!\n",
--					 first->protocol);
--			}
- 			break;
- 		}
- 
-@@ -3385,16 +3389,18 @@ static void ixgbevf_tx_csum(struct ixgbevf_ring *tx_ring,
- 		default:
- 			if (unlikely(net_ratelimit())) {
- 				dev_warn(tx_ring->dev,
--					 "partial checksum but l4 proto=%x!\n",
--					 l4_hdr);
-+					 "partial checksum, l3 proto=%x, l4 proto=%x\n",
-+					 first->protocol, l4_hdr);
- 			}
--			break;
-+			skb_checksum_help(skb);
-+			goto no_csum;
- 		}
- 
- 		/* update TX checksum flag */
- 		first->tx_flags |= IXGBE_TX_FLAGS_CSUM;
- 	}
- 
-+no_csum:
- 	/* vlan_macip_lens: MACLEN, VLAN tag */
- 	vlan_macip_lens |= skb_network_offset(skb) << IXGBE_ADVTXD_MACLEN_SHIFT;
- 	vlan_macip_lens |= first->tx_flags & IXGBE_TX_FLAGS_VLAN_MASK;
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
 
