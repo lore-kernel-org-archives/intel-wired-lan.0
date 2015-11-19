@@ -1,58 +1,152 @@
 From: Deepthi Kavalur <deepthi.kavalur@intel.com>
-Date: Thu, 19 Nov 2015 11:34:17 -0800
-Subject: [Intel-wired-lan] [V3: next PATCH S22 04/12] i40e: don't add zero
-	MAC filter
+Date: Thu, 19 Nov 2015 11:34:14 -0800
+Subject: [Intel-wired-lan] [V3: next PATCH S22 01/12] i40e: chomp the
+	BIT(_ULL)
 In-Reply-To: <1447961665-12344-1-git-send-email-deepthi.kavalur@intel.com>
 References: <1447961665-12344-1-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <1447961665-12344-5-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <1447961665-12344-2-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-When VFs are created, the MAC address defaults to all zeros, indicating
-to the VF driver that it should use a random MAC address. However, the
-PF driver was incorrectly adding this zero MAC to the filter table,
-along with the VF's randomly generated MAC address.
+BIT_ULL was used on a u32 or less where it can simply be BIT. This
+fixes some trivial static analyzer warnings. Chomp, chomp.
 
-Check for a good address before adding the default filter. While we're
-at it, make the error message a bit more useful.
+Tested with objdump of binary before and after, no changes to code.
 
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Change-ID: Ia100947d68140e0f73a19ba755cbffc3e79a8fcf
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Change-ID: I6245e9abd447192dbde1669c747aeb2878126c7d
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 30 ++++++++++++++---------------
+ 1 file changed, 15 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index c04e3b7..b6be4a5 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -549,12 +549,15 @@ static int i40e_alloc_vsi_res(struct i40e_vf *vf, enum i40e_vsi_type type)
- 			i40e_vsi_add_pvid(vsi, vf->port_vlan_id);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index c59d146..925654d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -1531,7 +1531,7 @@ static void i40e_vsi_setup_queue_map(struct i40e_vsi *vsi,
+ 	if (enabled_tc && (vsi->back->flags & I40E_FLAG_DCB_ENABLED)) {
+ 		/* Find numtc from enabled TC bitmap */
+ 		for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++) {
+-			if (enabled_tc & BIT_ULL(i)) /* TC is enabled */
++			if (enabled_tc & BIT(i)) /* TC is enabled */
+ 				numtc++;
+ 		}
+ 		if (!numtc) {
+@@ -1560,7 +1560,7 @@ static void i40e_vsi_setup_queue_map(struct i40e_vsi *vsi,
+ 	/* Setup queue offset/count for all TCs for given VSI */
+ 	for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++) {
+ 		/* See if the given TC is enabled for the given VSI */
+-		if (vsi->tc_config.enabled_tc & BIT_ULL(i)) {
++		if (vsi->tc_config.enabled_tc & BIT(i)) {
+ 			/* TC is enabled */
+ 			int pow, num_qps;
  
- 		spin_lock_bh(&vsi->mac_filter_list_lock);
--		f = i40e_add_filter(vsi, vf->default_lan_addr.addr,
--				    vf->port_vlan_id ? vf->port_vlan_id : -1,
--				    true, false);
--		if (!f)
--			dev_info(&pf->pdev->dev,
--				 "Could not allocate VF MAC addr\n");
-+		if (is_valid_ether_addr(vf->default_lan_addr.addr)) {
-+			f = i40e_add_filter(vsi, vf->default_lan_addr.addr,
-+				       vf->port_vlan_id ? vf->port_vlan_id : -1,
-+				       true, false);
-+			if (!f)
-+				dev_info(&pf->pdev->dev,
-+					 "Could not add MAC filter %pM for VF %d\n",
-+					vf->default_lan_addr.addr, vf->vf_id);
-+		}
- 		f = i40e_add_filter(vsi, brdcast,
- 				    vf->port_vlan_id ? vf->port_vlan_id : -1,
- 				    true, false);
+@@ -4433,7 +4433,7 @@ static u8 i40e_get_iscsi_tc_map(struct i40e_pf *pf)
+ 		if (app.selector == I40E_APP_SEL_TCPIP &&
+ 		    app.protocolid == I40E_APP_PROTOID_ISCSI) {
+ 			tc = dcbcfg->etscfg.prioritytable[app.priority];
+-			enabled_tc |= BIT_ULL(tc);
++			enabled_tc |= BIT(tc);
+ 			break;
+ 		}
+ 	}
+@@ -4517,7 +4517,7 @@ static u8 i40e_pf_get_num_tc(struct i40e_pf *pf)
+ 	/* At least have TC0 */
+ 	enabled_tc = (enabled_tc ? enabled_tc : 0x1);
+ 	for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++) {
+-		if (enabled_tc & BIT_ULL(i))
++		if (enabled_tc & BIT(i))
+ 			num_tc++;
+ 	}
+ 	return num_tc;
+@@ -4539,7 +4539,7 @@ static u8 i40e_pf_get_default_tc(struct i40e_pf *pf)
+ 
+ 	/* Find the first enabled TC */
+ 	for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++) {
+-		if (enabled_tc & BIT_ULL(i))
++		if (enabled_tc & BIT(i))
+ 			break;
+ 	}
+ 
+@@ -4699,7 +4699,7 @@ static void i40e_vsi_config_netdev_tc(struct i40e_vsi *vsi, u8 enabled_tc)
+ 		 * will set the numtc for netdev as 2 that will be
+ 		 * referenced by the netdev layer as TC 0 and 1.
+ 		 */
+-		if (vsi->tc_config.enabled_tc & BIT_ULL(i))
++		if (vsi->tc_config.enabled_tc & BIT(i))
+ 			netdev_set_tc_queue(netdev,
+ 					vsi->tc_config.tc_info[i].netdev_tc,
+ 					vsi->tc_config.tc_info[i].qcount,
+@@ -4761,7 +4761,7 @@ static int i40e_vsi_config_tc(struct i40e_vsi *vsi, u8 enabled_tc)
+ 
+ 	/* Enable ETS TCs with equal BW Share for now across all VSIs */
+ 	for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++) {
+-		if (enabled_tc & BIT_ULL(i))
++		if (enabled_tc & BIT(i))
+ 			bw_share[i] = 1;
+ 	}
+ 
+@@ -4835,7 +4835,7 @@ int i40e_veb_config_tc(struct i40e_veb *veb, u8 enabled_tc)
+ 
+ 	/* Enable ETS TCs with equal BW Share for now */
+ 	for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++) {
+-		if (enabled_tc & BIT_ULL(i))
++		if (enabled_tc & BIT(i))
+ 			bw_data.tc_bw_share_credits[i] = 1;
+ 	}
+ 
+@@ -5232,7 +5232,7 @@ static int i40e_setup_tc(struct net_device *netdev, u8 tc)
+ 
+ 	/* Generate TC map for number of tc requested */
+ 	for (i = 0; i < tc; i++)
+-		enabled_tc |= BIT_ULL(i);
++		enabled_tc |= BIT(i);
+ 
+ 	/* Requesting same TC configuration as already enabled */
+ 	if (enabled_tc == vsi->tc_config.enabled_tc)
+@@ -6096,23 +6096,23 @@ static void i40e_reset_subtask(struct i40e_pf *pf)
+ 
+ 	rtnl_lock();
+ 	if (test_bit(__I40E_REINIT_REQUESTED, &pf->state)) {
+-		reset_flags |= BIT_ULL(__I40E_REINIT_REQUESTED);
++		reset_flags |= BIT(__I40E_REINIT_REQUESTED);
+ 		clear_bit(__I40E_REINIT_REQUESTED, &pf->state);
+ 	}
+ 	if (test_bit(__I40E_PF_RESET_REQUESTED, &pf->state)) {
+-		reset_flags |= BIT_ULL(__I40E_PF_RESET_REQUESTED);
++		reset_flags |= BIT(__I40E_PF_RESET_REQUESTED);
+ 		clear_bit(__I40E_PF_RESET_REQUESTED, &pf->state);
+ 	}
+ 	if (test_bit(__I40E_CORE_RESET_REQUESTED, &pf->state)) {
+-		reset_flags |= BIT_ULL(__I40E_CORE_RESET_REQUESTED);
++		reset_flags |= BIT(__I40E_CORE_RESET_REQUESTED);
+ 		clear_bit(__I40E_CORE_RESET_REQUESTED, &pf->state);
+ 	}
+ 	if (test_bit(__I40E_GLOBAL_RESET_REQUESTED, &pf->state)) {
+-		reset_flags |= BIT_ULL(__I40E_GLOBAL_RESET_REQUESTED);
++		reset_flags |= BIT(__I40E_GLOBAL_RESET_REQUESTED);
+ 		clear_bit(__I40E_GLOBAL_RESET_REQUESTED, &pf->state);
+ 	}
+ 	if (test_bit(__I40E_DOWN_REQUESTED, &pf->state)) {
+-		reset_flags |= BIT_ULL(__I40E_DOWN_REQUESTED);
++		reset_flags |= BIT(__I40E_DOWN_REQUESTED);
+ 		clear_bit(__I40E_DOWN_REQUESTED, &pf->state);
+ 	}
+ 
+@@ -10571,7 +10571,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 
+ 	/* NVM bit on means WoL disabled for the port */
+ 	i40e_read_nvm_word(hw, I40E_SR_NVM_WAKE_ON_LAN, &wol_nvm_bits);
+-	if ((1 << hw->port) & wol_nvm_bits || hw->partition_id != 1)
++	if (BIT (hw->port) & wol_nvm_bits || hw->partition_id != 1)
+ 		pf->wol_en = false;
+ 	else
+ 		pf->wol_en = true;
 -- 
 2.1.0
 
