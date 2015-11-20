@@ -1,166 +1,22 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 20 Nov 2015 06:37:42 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 56a9412ba95e4125131e73a7e95e5729c76d4163 BUILD SUCCESS
-Message-ID: <564e4f36.kB6cd4eaVpk3u2LA%fengguang.wu@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Fri, 20 Nov 2015 04:04:52 +0000
+Subject: [Intel-wired-lan] [Next PATCH] e1000: make eeprom read/write
+ scheduler friendly
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81D3D9CE@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-56a9412ba95e4125131e73a7e95e5729c76d4163  e1000e: Fix msi-x interrupt automask
+> From: Joern Engel <joern@logfs.org>
+>
+> Code was responsible for ~150ms scheduler latencies.
+>
+> Signed-off-by: Joern Engel <joern@logfs.org>
+> Signed-off-by: Spencer Baugh <sbaugh@catern.com>
+> ---
+>  drivers/net/ethernet/intel/e1000/e1000_hw.c | 13 ++++++++-----
+>  1 file changed, 8 insertions(+), 5 deletions(-)
 
-elapsed time: 120m
-
-configs tested: 145
-
-i386                     randconfig-a0-201546
-powerpc                 canyonlands_defconfig
-sh                  sh7785lcr_32bit_defconfig
-xtensa                          iss_defconfig
-arm                  colibri_pxa270_defconfig
-m68k                           sun3_defconfig
-sh                          sdk7780_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                            titan_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-i386                             allyesconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                             allmodconfig
-arm                          ks8695_defconfig
-arm                             rpc_defconfig
-mips                           ls1b_defconfig
-powerpc                      ppc44x_defconfig
-powerpc                    sam440ep_defconfig
-x86_64               randconfig-x011-11191819
-x86_64               randconfig-x010-11191819
-x86_64               randconfig-x018-11191819
-x86_64               randconfig-x012-11191819
-x86_64               randconfig-x016-11191819
-x86_64               randconfig-x013-11191819
-x86_64               randconfig-x015-11191819
-x86_64               randconfig-x017-11191819
-x86_64               randconfig-x014-11191819
-x86_64               randconfig-x019-11191819
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-i386                     randconfig-s0-201546
-i386                     randconfig-s1-201546
-x86_64                 randconfig-s0-11200449
-x86_64                 randconfig-s1-11200449
-x86_64                 randconfig-s2-11200449
-x86_64                 randconfig-s0-11200540
-x86_64                 randconfig-s1-11200540
-x86_64                 randconfig-s2-11200540
-x86_64                 randconfig-s3-11200445
-x86_64                 randconfig-s4-11200445
-x86_64                 randconfig-s5-11200445
-x86_64                 randconfig-s3-11200539
-x86_64                 randconfig-s4-11200539
-x86_64                 randconfig-s5-11200539
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201546
-i386                   randconfig-b0-11200432
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-m32r                       m32104ut_defconfig
-mips                      malta_kvm_defconfig
-mips                        xilfpga_defconfig
-xtensa                           allmodconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201546
-i386                     randconfig-i1-201546
-x86_64                 randconfig-b0-11200424
-x86_64                           allmodconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-arm                                 defconfig
-sh                           se7712_defconfig
-i386                     randconfig-n0-201546
-i386                   randconfig-h0-11200430
-i386                   randconfig-h1-11200430
-i386                   randconfig-h0-11200515
-i386                   randconfig-h1-11200515
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                   rhel
-x86_64                 randconfig-n0-11200447
-powerpc                      virtex_defconfig
-sparc                       sparc32_defconfig
-xtensa                  audio_kc705_defconfig
-x86_64               randconfig-x000-11191805
-x86_64               randconfig-x001-11191805
-x86_64               randconfig-x002-11191805
-x86_64               randconfig-x003-11191805
-x86_64               randconfig-x004-11191805
-x86_64               randconfig-x005-11191805
-x86_64               randconfig-x006-11191805
-x86_64               randconfig-x007-11191805
-x86_64               randconfig-x008-11191805
-x86_64               randconfig-x009-11191805
-x86_64                                    lkp
-i386                     randconfig-r0-201546
-i386                 randconfig-x009-11191810
-i386                 randconfig-x006-11191810
-i386                 randconfig-x003-11191810
-i386                 randconfig-x008-11191810
-i386                 randconfig-x000-11191810
-i386                 randconfig-x007-11191810
-i386                 randconfig-x002-11191810
-i386                 randconfig-x005-11191810
-i386                 randconfig-x001-11191810
-i386                 randconfig-x004-11191810
-i386                   randconfig-x0-11200429
-i386                   randconfig-x0-11200514
-
-Thanks,
-Fengguang
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
