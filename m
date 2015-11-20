@@ -1,11 +1,11 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 20 Nov 2015 04:48:20 +0000
-Subject: [Intel-wired-lan] [next PATCH 4/5] e1000e: Switch e1000e_up to
- void, drop code checking for error result
-In-Reply-To: <20151027235931.30048.548.stgit@localhost.localdomain>
+Date: Fri, 20 Nov 2015 04:50:12 +0000
+Subject: [Intel-wired-lan] [next PATCH 5/5] igb: Fix unused variable
+ warning
+In-Reply-To: <20151027235937.30048.88092.stgit@localhost.localdomain>
 References: <20151027235341.30048.46286.stgit@localhost.localdomain>
- <20151027235931.30048.548.stgit@localhost.localdomain>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81D3DAC8@ORSMSX101.amr.corp.intel.com>
+ <20151027235937.30048.88092.stgit@localhost.localdomain>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81D3DADB@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,18 +16,18 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Alexander Duyck
 > Sent: Tuesday, October 27, 2015 5:00 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH 4/5] e1000e: Switch e1000e_up to
-> void, drop code checking for error result
+> Subject: [Intel-wired-lan] [next PATCH 5/5] igb: Fix unused variable warning
 > 
-> The function e1000e_up always returns 0.  As such we can convert it to a
-> void and just ignore the results.  This allows us to drop some code in a
-> couple spots as we no longer need to worry about non-zero return values.
+> I ran into an unused variable warning when building dev-queue.  It turns
+> out that hw isn't used anymore when setting up the q_vectors since we
+> switch from hw->hw_addr to adapter->io_addr in igb_request_irq.  As such
+> the variable can be dropped.
 > 
+> Fixes: 0b3659ca297fc ("igb: improve handling of disconnected adapters")
 > Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 > ---
->  drivers/net/ethernet/intel/e1000e/e1000.h  |    2 +-
->  drivers/net/ethernet/intel/e1000e/netdev.c |   15 ++++-----------
->  2 files changed, 5 insertions(+), 12 deletions(-)
+>  drivers/net/ethernet/intel/igb/igb_main.c |    1 -
+>  1 file changed, 1 deletion(-)
 > 
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
