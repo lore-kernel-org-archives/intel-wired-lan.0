@@ -1,33 +1,31 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 20 Nov 2015 04:50:12 +0000
-Subject: [Intel-wired-lan] [next PATCH 5/5] igb: Fix unused variable
- warning
-In-Reply-To: <20151027235937.30048.88092.stgit@localhost.localdomain>
-References: <20151027235341.30048.46286.stgit@localhost.localdomain>
- <20151027235937.30048.88092.stgit@localhost.localdomain>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81D3DADB@ORSMSX101.amr.corp.intel.com>
+From: Schmitt, Phillip J <phillip.j.schmitt@intel.com>
+Date: Fri, 20 Nov 2015 19:35:06 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Always turn phy power on
+	when	requested
+In-Reply-To: <20151105190214.4418.67222.stgit@mdrustad-wks.jf.intel.com>
+References: <20151105190214.4418.67222.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E180C1CA4D@ORSMSX108.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Alexander Duyck
-> Sent: Tuesday, October 27, 2015 5:00 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH 5/5] igb: Fix unused variable warning
-> 
-> I ran into an unused variable warning when building dev-queue.  It turns
-> out that hw isn't used anymore when setting up the q_vectors since we
-> switch from hw->hw_addr to adapter->io_addr in igb_request_irq.  As such
-> the variable can be dropped.
-> 
-> Fixes: 0b3659ca297fc ("igb: improve handling of disconnected adapters")
-> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
-> ---
->  drivers/net/ethernet/intel/igb/igb_main.c |    1 -
->  1 file changed, 1 deletion(-)
-> 
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Mark D Rustad
+> Sent: Thursday, November 05, 2015 11:02 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: Always turn phy power on when
+> requested
+> 
+> Instead of inhibiting phy power control when manageability is present, only
+> inhibit turning phy power off when manageability is present. Consequently, phy
+> power will always be turned on when requested. Without this patch, some
+> systems with X540 or X550 devices in some conditions will never get link.
+> 
+> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+
+Tested-by: Phil Schmitt <phillip.j.schmitt@intel.com>
