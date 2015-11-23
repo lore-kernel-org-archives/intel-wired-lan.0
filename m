@@ -1,32 +1,48 @@
-From: Jesse Gross <jesse@kernel.org>
-Date: Mon, 23 Nov 2015 10:11:57 -0800
-Subject: [Intel-wired-lan] [PATCH 0/6] Generalize udp based tunnels and
- add geneve offload
-In-Reply-To: <1448262224-71480-1-git-send-email-anjali.singhai@intel.com>
-References: <anjali.singhai@intel.com>
- <1448262224-71480-1-git-send-email-anjali.singhai@intel.com>
-Message-ID: <CAEh+42j1dxdBydV6NLn8o_VdfnWZC69Z6+6F4razcrY8CsFLiQ@mail.gmail.com>
+From: Vasu Dev <vasu.dev@intel.com>
+Date: Mon, 23 Nov 2015 10:30:51 -0800
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Fill at least min credits to a TC
+	credit refills
+Message-ID: <20151123183051.17677.32713.stgit@lin-nd1-054.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sun, Nov 22, 2015 at 11:03 PM, Anjali Singhai Jain
-<anjali.singhai@intel.com> wrote:
-> This patch series generalizes the flow for udp_based tunnels for
-> offload hooks. So that much of the frame work can remain common
-> for any driver adding support for geneve or any other
-> udp_based tunnel in future.
->
-> This patch series also makes the driver calls to/from the stack
-> independent of the tunnel modules. So it would be easier to remove
-> module config parameters from the respective drivers for tunnel
-> support. One such example is in i40e driver.
->
-> This patch series also adds support for geneve offload in i40e driver.
->
-> Much thanks to Jesse Gross for his valuable feedback in getting this
-> done the right way.
+Currently credit_refill and credit_max could be zero for a TC and that
+is causing Tx hang for CEE mode configuration, so to fix that have at
+min credit assigned to a TC and that is as what IEEE mode already does.
 
-This series looks nice to me. Thanks a lot for all your work!
+Signed-off-by: Vasu Dev <vasu.dev@intel.com>
+Change-ID: If652c133093a21e530f4e9eab09097976f57fb12
+---
+
+ drivers/net/ethernet/intel/ixgbe/ixgbe_dcb.c |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_dcb.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_dcb.c
+index a507a6f..02c7333 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_dcb.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_dcb.c
+@@ -139,6 +139,11 @@ s32 ixgbe_dcb_calculate_tc_credits(struct ixgbe_hw *hw,
+ 		/* Calculate credit refill ratio using multiplier */
+ 		credit_refill = min(link_percentage * min_multiplier,
+ 				    MAX_CREDIT_REFILL);
++
++		/* Refill at least minimum credit */
++		if (credit_refill < min_credit)
++			credit_refill = min_credit;
++
+ 		p->data_credits_refill = (u16)credit_refill;
+ 
+ 		/* Calculate maximum credit for the TC */
+@@ -149,7 +154,7 @@ s32 ixgbe_dcb_calculate_tc_credits(struct ixgbe_hw *hw,
+ 		 * of a TC is too small, the maximum credit may not be
+ 		 * enough to send out a jumbo frame in data plane arbitration.
+ 		 */
+-		if (credit_max && (credit_max < min_credit))
++		if (credit_max < min_credit)
+ 			credit_max = min_credit;
+ 
+ 		if (direction == DCB_TX_CONFIG) {
+
