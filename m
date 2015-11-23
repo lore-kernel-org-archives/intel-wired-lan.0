@@ -1,183 +1,376 @@
 From: Anjali Singhai Jain <anjali.singhai@intel.com>
-Date: Sun, 22 Nov 2015 23:03:44 -0800
-Subject: [Intel-wired-lan] [PATCH v6 6/6] i40e:Add geneve tunnel offload
-	support
+Date: Sun, 22 Nov 2015 23:03:40 -0800
+Subject: [Intel-wired-lan] [PATCH v6 2/6] net: Add a generic
+	udp_offload_get_port function
 In-Reply-To: <1448262224-71480-1-git-send-email-anjali.singhai@intel.com>
 References: <anjali.singhai@intel.com>
  <1448262224-71480-1-git-send-email-anjali.singhai@intel.com>
-Message-ID: <1448262224-71480-7-git-send-email-anjali.singhai@intel.com>
+Message-ID: <1448262224-71480-3-git-send-email-anjali.singhai@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch adds driver hooks to implement ndo_ops to add/del udp
-port in the HW to identify GENEVE tunnels.
+The new function udp_offload_get_port replaces vxlan_get_rx_port().
+This is a generic function that will help replay all udp tunnel ports
+irrespective of tunnel type.
+This way when new udp tunnels get added this function need not change.
 
-Also cleans up the features_check path now that we support
-multiple udp based tunnels.
+Note: Drivers besides i40e are compile tested with this change.
 
 Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
 Signed-off-by: Kiran Patil <kiran.patil@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h      |  1 +
- drivers/net/ethernet/intel/i40e/i40e_main.c | 35 +++++++++++++++++++++--------
- drivers/net/ethernet/intel/i40e/i40e_txrx.c |  2 +-
- 3 files changed, 28 insertions(+), 10 deletions(-)
+ drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c |  5 ++--
+ drivers/net/ethernet/broadcom/bnxt/bnxt.c        |  4 +++-
+ drivers/net/ethernet/emulex/benet/be_main.c      |  4 +++-
+ drivers/net/ethernet/intel/fm10k/fm10k_netdev.c  |  3 ++-
+ drivers/net/ethernet/intel/i40e/i40e_main.c      |  5 ++--
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |  5 ++--
+ drivers/net/ethernet/mellanox/mlx4/en_netdev.c   |  3 ++-
+ drivers/net/ethernet/qlogic/qlcnic/qlcnic_main.c |  3 ++-
+ drivers/net/vxlan.c                              | 29 ++----------------------
+ include/linux/netdevice.h                        |  2 ++
+ include/net/protocol.h                           |  2 ++
+ include/net/vxlan.h                              |  8 -------
+ net/ipv4/udp_offload.c                           | 27 ++++++++++++++++++++++
+ 13 files changed, 53 insertions(+), 47 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index c24008f..93f1083 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -338,6 +338,7 @@ struct i40e_pf {
- #define I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE	BIT_ULL(38)
- #define I40E_FLAG_LINK_POLLING_ENABLED		BIT_ULL(39)
- #define I40E_FLAG_VEB_MODE_ENABLED		BIT_ULL(40)
-+#define I40E_FLAG_GENEVE_OFFLOAD_CAPABLE	BIT_ULL(41)
- #define I40E_FLAG_NO_PCI_LINK_CHECK		BIT_ULL(42)
+diff --git a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c
+index 3a863dc..299dca7 100644
+--- a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c
++++ b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c
+@@ -60,6 +60,7 @@
+ #include <linux/semaphore.h>
+ #include <linux/stringify.h>
+ #include <linux/vmalloc.h>
++#include <net/protocol.h>
  
- 	/* tracks features that get auto disabled by errors */
+ #include "bnx2x.h"
+ #include "bnx2x_init.h"
+@@ -10293,7 +10294,7 @@ sp_rtnl_not_reset:
+ 			netdev_info(bp->dev,
+ 				    "Deleted vxlan dest port %d", port);
+ 			bp->vxlan_dst_port = 0;
+-			vxlan_get_rx_port(bp->dev);
++			udp_offload_get_port(bp->dev);
+ 		}
+ 	}
+ #endif
+@@ -12499,7 +12500,7 @@ static int bnx2x_open(struct net_device *dev)
+ 
+ #ifdef CONFIG_BNX2X_VXLAN
+ 	if (IS_PF(bp))
+-		vxlan_get_rx_port(dev);
++		udp_offload_get_port(dev);
+ #endif
+ 
+ 	return 0;
+diff --git a/drivers/net/ethernet/broadcom/bnxt/bnxt.c b/drivers/net/ethernet/broadcom/bnxt/bnxt.c
+index 94584fa..3e93c39 100644
+--- a/drivers/net/ethernet/broadcom/bnxt/bnxt.c
++++ b/drivers/net/ethernet/broadcom/bnxt/bnxt.c
+@@ -39,6 +39,7 @@
+ #include <net/ip6_checksum.h>
+ #if defined(CONFIG_VXLAN) || defined(CONFIG_VXLAN_MODULE)
+ #include <net/vxlan.h>
++#include <net/protocol.h>
+ #endif
+ #ifdef CONFIG_NET_RX_BUSY_POLL
+ #include <net/busy_poll.h>
+@@ -4591,7 +4592,7 @@ static int __bnxt_open_nic(struct bnxt *bp, bool irq_re_init, bool link_re_init)
+ 
+ 	if (irq_re_init) {
+ #if defined(CONFIG_VXLAN) || defined(CONFIG_VXLAN_MODULE)
+-		vxlan_get_rx_port(bp->dev);
++		udp_offload_get_port(bp->dev);
+ #endif
+ 		if (!bnxt_hwrm_tunnel_dst_port_alloc(
+ 				bp, htons(0x17c1),
+@@ -5460,6 +5461,7 @@ static void bnxt_del_vxlan_port(struct net_device *dev, sa_family_t sa_family,
+ 
+ 	if (type != UDP_TUNNEL_VXLAN)
+ 		return;
++
+ 	if (bp->vxlan_port_cnt && bp->vxlan_port == port) {
+ 		bp->vxlan_port_cnt--;
+ 
+diff --git a/drivers/net/ethernet/emulex/benet/be_main.c b/drivers/net/ethernet/emulex/benet/be_main.c
+index c43f2de..5d579eb 100644
+--- a/drivers/net/ethernet/emulex/benet/be_main.c
++++ b/drivers/net/ethernet/emulex/benet/be_main.c
+@@ -25,6 +25,7 @@
+ #include <net/busy_poll.h>
+ #include <net/udp_tunnel.h>
+ #include <net/vxlan.h>
++#include <net/protocol.h>
+ 
+ MODULE_VERSION(DRV_VER);
+ MODULE_DESCRIPTION(DRV_DESC " " DRV_VER);
+@@ -3606,7 +3607,7 @@ static int be_open(struct net_device *netdev)
+ 
+ #ifdef CONFIG_BE2NET_VXLAN
+ 	if (skyhawk_chip(adapter))
+-		vxlan_get_rx_port(netdev);
++		udp_offload_get_port(netdev);
+ #endif
+ 
+ 	return 0;
+@@ -5241,6 +5242,7 @@ static void be_del_vxlan_port(struct net_device *netdev, sa_family_t sa_family,
+ 
+ 	if (type != UDP_TUNNEL_VXLAN)
+ 		return;
++
+ 	if (lancer_chip(adapter) || BEx_chip(adapter) || be_is_mc(adapter))
+ 		return;
+ 
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+index bf7af95..cefa5ab 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+@@ -23,6 +23,7 @@
+ #if IS_ENABLED(CONFIG_FM10K_VXLAN)
+ #include <net/udp_tunnel.h>
+ #include <net/vxlan.h>
++#include <net/protocol.h>
+ #endif /* CONFIG_FM10K_VXLAN */
+ 
+ /**
+@@ -573,7 +574,7 @@ int fm10k_open(struct net_device *netdev)
+ 
+ #if IS_ENABLED(CONFIG_FM10K_VXLAN)
+ 	/* update VXLAN port configuration */
+-	vxlan_get_rx_port(netdev);
++	udp_offload_get_port(netdev);
+ 
+ #endif
+ 	fm10k_up(interface);
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 21b6285..f8aff2b 100644
+index 314139b..04d8745 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -30,6 +30,9 @@
- #if IS_ENABLED(CONFIG_VXLAN)
+@@ -31,6 +31,7 @@
  #include <net/vxlan.h>
  #endif
-+#if IS_ENABLED(CONFIG_GENEVE)
-+#include <net/geneve.h>
-+#endif
  #include <net/udp_tunnel.h>
- #include <net/protocol.h>
++#include <net/protocol.h>
  
-@@ -6996,7 +6999,7 @@ static void i40e_handle_mdd_event(struct i40e_pf *pf)
-  **/
- static void i40e_sync_udp_filters_subtask(struct i40e_pf *pf)
- {
--#if IS_ENABLED(CONFIG_VXLAN)
-+#if IS_ENABLED(CONFIG_VXLAN) || IS_ENABLED(CONFIG_GENEVE)
- 	struct i40e_hw *hw = &pf->hw;
- 	i40e_status ret;
- 	__be16 port;
-@@ -8332,7 +8335,8 @@ static int i40e_sw_init(struct i40e_pf *pf)
- 			     I40E_FLAG_HW_ATR_EVICT_CAPABLE |
- 			     I40E_FLAG_OUTER_UDP_CSUM_CAPABLE |
- 			     I40E_FLAG_WB_ON_ITR_CAPABLE |
--			     I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE;
-+			     I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE |
-+			     I40E_FLAG_GENEVE_OFFLOAD_CAPABLE;
- 	}
- 	pf->eeprom_version = 0xDEAD;
- 	pf->lan_veb = I40E_NO_VEB;
-@@ -8431,7 +8435,7 @@ static int i40e_set_features(struct net_device *netdev,
+ const char i40e_driver_name[] = "i40e";
+ static const char i40e_driver_string[] =
+@@ -5295,9 +5296,7 @@ int i40e_open(struct net_device *netdev)
+ 						       TCP_FLAG_CWR) >> 16);
+ 	wr32(&pf->hw, I40E_GLLAN_TSOMSK_L, be32_to_cpu(TCP_FLAG_CWR) >> 16);
+ 
+-#ifdef CONFIG_I40E_VXLAN
+-	vxlan_get_rx_port(netdev);
+-#endif
++	udp_offload_get_port(netdev);
+ 
  	return 0;
  }
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index d7ad9d9..137a637 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -52,6 +52,7 @@
+ #include <scsi/fc/fc_fcoe.h>
+ #include <net/udp_tunnel.h>
+ #include <net/vxlan.h>
++#include <net/protocol.h>
  
--#if IS_ENABLED(CONFIG_VXLAN)
-+#if IS_ENABLED(CONFIG_VXLAN) || IS_ENABLED(CONFIG_GENEVE)
- /**
-  * i40e_get_udp_port_idx - Lookup a possibly offloaded for Rx UDP port
-  * @pf: board private structure
-@@ -8466,14 +8470,18 @@ static void i40e_add_tunnel_port(struct net_device *netdev,
- 				 sa_family_t sa_family, __be16 port,
- 				 u32 type)
+ #ifdef CONFIG_OF
+ #include <linux/of_net.h>
+@@ -6039,7 +6040,7 @@ static int ixgbe_open(struct net_device *netdev)
+ 
+ 	ixgbe_clear_vxlan_port(adapter);
+ #ifdef CONFIG_IXGBE_VXLAN
+-	vxlan_get_rx_port(netdev);
++	udp_offload_get_port(netdev);
+ #endif
+ 
+ 	return 0;
+@@ -7118,7 +7119,7 @@ static void ixgbe_service_task(struct work_struct *work)
+ #ifdef CONFIG_IXGBE_VXLAN
+ 	if (adapter->flags2 & IXGBE_FLAG2_VXLAN_REREG_NEEDED) {
+ 		adapter->flags2 &= ~IXGBE_FLAG2_VXLAN_REREG_NEEDED;
+-		vxlan_get_rx_port(adapter->netdev);
++		udp_offload_get_port(adapter->netdev);
+ 	}
+ #endif /* CONFIG_IXGBE_VXLAN */
+ 	ixgbe_reset_subtask(adapter);
+diff --git a/drivers/net/ethernet/mellanox/mlx4/en_netdev.c b/drivers/net/ethernet/mellanox/mlx4/en_netdev.c
+index bd8f240..ffc43bb 100644
+--- a/drivers/net/ethernet/mellanox/mlx4/en_netdev.c
++++ b/drivers/net/ethernet/mellanox/mlx4/en_netdev.c
+@@ -41,6 +41,7 @@
+ #include <net/busy_poll.h>
+ #include <net/udp_tunnel.h>
+ #include <net/vxlan.h>
++#include <net/protocol.h>
+ 
+ #include <linux/mlx4/driver.h>
+ #include <linux/mlx4/device.h>
+@@ -1714,7 +1715,7 @@ int mlx4_en_start_port(struct net_device *dev)
+ 
+ #ifdef CONFIG_MLX4_EN_VXLAN
+ 	if (priv->mdev->dev->caps.tunnel_offload_mode == MLX4_TUNNEL_OFFLOAD_MODE_VXLAN)
+-		vxlan_get_rx_port(dev);
++		udp_offload_get_port(dev);
+ #endif
+ 	priv->port_up = true;
+ 	netif_tx_start_all_queues(dev);
+diff --git a/drivers/net/ethernet/qlogic/qlcnic/qlcnic_main.c b/drivers/net/ethernet/qlogic/qlcnic/qlcnic_main.c
+index aa38dbb..a640872 100644
+--- a/drivers/net/ethernet/qlogic/qlcnic/qlcnic_main.c
++++ b/drivers/net/ethernet/qlogic/qlcnic/qlcnic_main.c
+@@ -19,6 +19,7 @@
+ #ifdef CONFIG_QLCNIC_VXLAN
+ #include <net/udp_tunnel.h>
+ #include <net/vxlan.h>
++#include <net/protocol.h>
+ #endif
+ 
+ #include "qlcnic.h"
+@@ -2026,7 +2027,7 @@ qlcnic_attach(struct qlcnic_adapter *adapter)
+ 
+ #ifdef CONFIG_QLCNIC_VXLAN
+ 	if (qlcnic_encap_rx_offload(adapter))
+-		vxlan_get_rx_port(netdev);
++		udp_offload_get_port(netdev);
+ #endif
+ 
+ 	adapter->is_up = QLCNIC_ADAPTER_UP_MAGIC;
+diff --git a/drivers/net/vxlan.c b/drivers/net/vxlan.c
+index 5490629..702f9be 100644
+--- a/drivers/net/vxlan.c
++++ b/drivers/net/vxlan.c
+@@ -2424,33 +2424,6 @@ static struct device_type vxlan_type = {
+ 	.name = "vxlan",
+ };
+ 
+-/* Calls the ndo_add_udp_tunnel_port of the caller in order to
+- * supply the listening VXLAN udp ports. Callers are expected
+- * to implement the ndo_add_tunnel_port.
+- */
+-void vxlan_get_rx_port(struct net_device *dev)
+-{
+-	struct vxlan_sock *vs;
+-	struct net *net = dev_net(dev);
+-	struct vxlan_net *vn = net_generic(net, vxlan_net_id);
+-	sa_family_t sa_family;
+-	__be16 port;
+-	unsigned int i;
+-
+-	spin_lock(&vn->sock_lock);
+-	for (i = 0; i < PORT_HASH_SIZE; ++i) {
+-		hlist_for_each_entry_rcu(vs, &vn->sock_list[i], hlist) {
+-			port = inet_sk(vs->sock->sk)->inet_sport;
+-			sa_family = vxlan_get_sk_family(vs);
+-			dev->netdev_ops->ndo_add_udp_tunnel_port(dev, sa_family,
+-							      port,
+-							      UDP_TUNNEL_VXLAN);
+-		}
+-	}
+-	spin_unlock(&vn->sock_lock);
+-}
+-EXPORT_SYMBOL_GPL(vxlan_get_rx_port);
+-
+ /* Initialize the device structure. */
+ static void vxlan_setup(struct net_device *dev)
  {
--#if IS_ENABLED(CONFIG_VXLAN)
-+#if IS_ENABLED(CONFIG_VXLAN) || IS_ENABLED(CONFIG_GENEVE)
- 	struct i40e_netdev_priv *np = netdev_priv(netdev);
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct i40e_pf *pf = vsi->back;
- 	u8 next_idx;
- 	u8 idx;
+@@ -2639,6 +2612,8 @@ static struct vxlan_sock *vxlan_socket_create(struct net *net, bool ipv6,
  
--	if (type != UDP_TUNNEL_VXLAN)
-+	if (!(type == UDP_TUNNEL_VXLAN || type == UDP_TUNNEL_GENEVE))
+ 	/* Initialize the vxlan udp offloads structure */
+ 	vs->udp_offloads.port = port;
++	vs->udp_offloads.tunnel_type = UDP_TUNNEL_VXLAN;
++	vs->udp_offloads.family = ipv6 ? AF_INET6 : AF_INET;
+ 	vs->udp_offloads.callbacks.gro_receive  = vxlan_gro_receive;
+ 	vs->udp_offloads.callbacks.gro_complete = vxlan_gro_complete;
+ 
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index 90bd26b..f78f37b 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -2055,6 +2055,8 @@ struct udp_offload_callbacks {
+ 
+ struct udp_offload {
+ 	__be16			 port;
++	u8			 tunnel_type;
++	u8			 family;
+ 	u8			 ipproto;
+ 	struct udp_offload_callbacks callbacks;
+ };
+diff --git a/include/net/protocol.h b/include/net/protocol.h
+index d6fcc1f..738bfc6 100644
+--- a/include/net/protocol.h
++++ b/include/net/protocol.h
+@@ -110,6 +110,8 @@ void inet_unregister_protosw(struct inet_protosw *p);
+ int  udp_add_offload(struct udp_offload *prot);
+ void udp_del_offload(struct udp_offload *prot);
+ 
++void udp_offload_get_port(struct net_device *dev);
++
+ #if IS_ENABLED(CONFIG_IPV6)
+ int inet6_add_protocol(const struct inet6_protocol *prot, unsigned char num);
+ int inet6_del_protocol(const struct inet6_protocol *prot, unsigned char num);
+diff --git a/include/net/vxlan.h b/include/net/vxlan.h
+index c1c899c..926455e 100644
+--- a/include/net/vxlan.h
++++ b/include/net/vxlan.h
+@@ -242,14 +242,6 @@ static inline netdev_features_t vxlan_features_check(struct sk_buff *skb,
+ /* IPv6 header + UDP + VXLAN + Ethernet header */
+ #define VXLAN6_HEADROOM (40 + 8 + 8 + 14)
+ 
+-#if IS_ENABLED(CONFIG_VXLAN)
+-void vxlan_get_rx_port(struct net_device *netdev);
+-#else
+-static inline void vxlan_get_rx_port(struct net_device *netdev)
+-{
+-}
+-#endif
+-
+ static inline unsigned short vxlan_get_sk_family(struct vxlan_sock *vs)
+ {
+ 	return vs->sock->sk->sk_family;
+diff --git a/net/ipv4/udp_offload.c b/net/ipv4/udp_offload.c
+index f938616..8597020 100644
+--- a/net/ipv4/udp_offload.c
++++ b/net/ipv4/udp_offload.c
+@@ -290,6 +290,33 @@ unlock:
+ }
+ EXPORT_SYMBOL(udp_del_offload);
+ 
++void udp_offload_get_port(struct net_device *dev)
++{
++	struct udp_offload_priv __rcu **head;
++	struct udp_offload_priv *uo_priv;
++	struct udp_offload *uo;
++
++	if (udp_offload_base)
++		head = &udp_offload_base;
++	else
 +		return;
 +
-+	if ((type == UDP_TUNNEL_GENEVE) &&
-+	    (!(pf->flags & I40E_FLAG_GENEVE_OFFLOAD_CAPABLE)))
- 		return;
- 
- 	if (sa_family == AF_INET6)
-@@ -8501,6 +8509,8 @@ static void i40e_add_tunnel_port(struct net_device *netdev,
- 	pf->udp_ports[next_idx].index = port;
- 	if (type == UDP_TUNNEL_VXLAN)
- 		pf->udp_ports[next_idx].type = I40E_AQC_TUNNEL_TYPE_VXLAN;
-+	else if (type == UDP_TUNNEL_GENEVE)
-+		pf->udp_ports[next_idx].type = I40E_AQC_TUNNEL_TYPE_NGE;
- 
- 	pf->pending_udp_bitmap |= BIT_ULL(next_idx);
- 	pf->flags |= I40E_FLAG_UDP_FILTER_SYNC;
-@@ -8521,13 +8531,13 @@ static void i40e_del_tunnel_port(struct net_device *netdev,
- 				 sa_family_t sa_family, __be16 port,
- 				 u32 type)
++	spin_lock(&udp_offload_lock);
++	uo_priv = udp_deref_protected(*head);
++	for (; uo_priv != NULL; uo_priv = udp_deref_protected(*head)) {
++		/* call the right add port */
++		uo = uo_priv->offload;
++		if (uo && dev->netdev_ops->ndo_add_udp_tunnel_port)
++			dev->netdev_ops->ndo_add_udp_tunnel_port(dev,
++							uo->family,
++							uo->port,
++							uo->tunnel_type);
++		head = &uo_priv->next;
++	}
++	spin_unlock(&udp_offload_lock);
++}
++EXPORT_SYMBOL(udp_offload_get_port);
++
+ struct sk_buff **udp_gro_receive(struct sk_buff **head, struct sk_buff *skb,
+ 				 struct udphdr *uh)
  {
--#if IS_ENABLED(CONFIG_VXLAN)
-+#if IS_ENABLED(CONFIG_VXLAN) || IS_ENABLED(CONFIG_GENEVE)
- 	struct i40e_netdev_priv *np = netdev_priv(netdev);
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct i40e_pf *pf = vsi->back;
- 	u8 idx;
- 
--	if (type != UDP_TUNNEL_VXLAN)
-+	if (!(type == UDP_TUNNEL_VXLAN || type == UDP_TUNNEL_GENEVE))
- 		return;
- 
- 	if (sa_family == AF_INET6)
-@@ -8727,7 +8737,10 @@ static int i40e_ndo_bridge_getlink(struct sk_buff *skb, u32 pid, u32 seq,
- 				       nlflags, 0, 0, filter_mask, NULL);
- }
- 
--#define I40E_MAX_TUNNEL_HDR_LEN 80
-+/* Hardware supports L4 tunnel length of 128B (=2^7) which includes
-+ * inner mac plus all inner ethertypes.
-+ */
-+#define I40E_MAX_TUNNEL_HDR_LEN 128
- /**
-  * i40e_features_check - Validate encapsulated packet conforms to limits
-  * @skb: skb buff
-@@ -8739,7 +8752,7 @@ static netdev_features_t i40e_features_check(struct sk_buff *skb,
- 					     netdev_features_t features)
- {
- 	if (skb->encapsulation &&
--	    (skb_inner_mac_header(skb) - skb_transport_header(skb) >
-+	    ((skb_inner_network_header(skb) - skb_transport_header(skb)) >
- 	     I40E_MAX_TUNNEL_HDR_LEN))
- 		return features & ~(NETIF_F_ALL_CSUM | NETIF_F_GSO_MASK);
- 
-@@ -8809,6 +8822,7 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
- 	np->vsi = vsi;
- 
- 	netdev->hw_enc_features |= NETIF_F_IP_CSUM	 |
-+				  NETIF_F_RXCSUM	 |
- 				  NETIF_F_GSO_UDP_TUNNEL |
- 				  NETIF_F_GSO_GRE	 |
- 				  NETIF_F_TSO;
-@@ -10326,6 +10340,9 @@ static void i40e_print_features(struct i40e_pf *pf)
- #if IS_ENABLED(CONFIG_VXLAN)
- 	i += snprintf(&buf[i], REMAIN(i), "VxLAN ");
- #endif
-+#if IS_ENABLED(CONFIG_GENVE)
-+	i += snprintf(&buf[i], REMAIN(i), "Geneve ");
-+#endif
- 	if (pf->flags & I40E_FLAG_PTP)
- 		i += snprintf(&buf[i], REMAIN(i), "PTP ");
- #ifdef I40E_FCOE
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 2729a48..5dfe15c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1383,7 +1383,7 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
- 	if (rx_error & BIT(I40E_RX_DESC_ERROR_PPRS_SHIFT))
- 		return;
- 
--	/* If VXLAN traffic has an outer UDPv4 checksum we need to check
-+	/* If VXLAN/GENEVE traffic has an outer UDPv4 checksum we need to check
- 	 * it in the driver, hardware does not do it for us.
- 	 * Since L3L4P bit was set we assume a valid IHL value (>=5)
- 	 * so the total length of IPv4 header is IHL*4 bytes
 -- 
 1.8.1.4
 
