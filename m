@@ -1,42 +1,41 @@
 From: Vasu Dev <vasu.dev@intel.com>
-Date: Mon, 23 Nov 2015 10:31:01 -0800
-Subject: [Intel-wired-lan] [PATCH] ixgbe: use correct fcoe ddp max check
-Message-ID: <20151123183101.18641.30146.stgit@lin-nd1-054.jf.intel.com>
+Date: Mon, 23 Nov 2015 10:31:25 -0800
+Subject: [Intel-wired-lan] [PATCH] ixgbe: fix broken PFC with X550
+Message-ID: <20151123183125.20877.67227.stgit@lin-nd1-054.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Use fcoe_ddp_xid from netdev as this is correctly set for different
-device IDs to avoid DDP skip error on X550 as "xid=0x20b out-of-range"
+PFC is configuration is skipped for X550 devices due to a incorrect
+device id check, fixing that to include X550 PFC configuration.
 
 Signed-off-by: Vasu Dev <vasu.dev@intel.com>
 ---
 
- drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_dcb_82599.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
-index 631c603..83ccb7b 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
-@@ -77,7 +77,7 @@ int ixgbe_fcoe_ddp_put(struct net_device *netdev, u16 xid)
- 	if (!netdev)
- 		return 0;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_dcb_82599.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_dcb_82599.c
+index 3b932fe..07d2b1e 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_dcb_82599.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_dcb_82599.c
+@@ -223,13 +223,13 @@ s32 ixgbe_dcb_config_pfc_82599(struct ixgbe_hw *hw, u8 pfc_en, u8 *prio_tc)
+ 	reg |= IXGBE_MFLCN_DPF;
  
--	if (xid >= IXGBE_FCOE_DDP_MAX)
-+	if (xid >= netdev->fcoe_ddp_xid)
- 		return 0;
+ 	/*
+-	 * X540 supports per TC Rx priority flow control.  So
+-	 * clear all TCs and only enable those that should be
++	 * X540 & X550 supports per TC Rx priority flow control.
++	 * So clear all TCs and only enable those that should be
+ 	 * enabled.
+ 	 */
+ 	reg &= ~(IXGBE_MFLCN_RPFCE_MASK | IXGBE_MFLCN_RFCE);
  
- 	adapter = netdev_priv(netdev);
-@@ -177,7 +177,7 @@ static int ixgbe_fcoe_ddp_setup(struct net_device *netdev, u16 xid,
- 		return 0;
+-	if (hw->mac.type == ixgbe_mac_X540)
++	if (hw->mac.type >= ixgbe_mac_X540)
+ 		reg |= pfc_en << IXGBE_MFLCN_RPFCE_SHIFT;
  
- 	adapter = netdev_priv(netdev);
--	if (xid >= IXGBE_FCOE_DDP_MAX) {
-+	if (xid >= netdev->fcoe_ddp_xid) {
- 		e_warn(drv, "xid=0x%x out-of-range\n", xid);
- 		return 0;
- 	}
+ 	if (pfc_en)
 
