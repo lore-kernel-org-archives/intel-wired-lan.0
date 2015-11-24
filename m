@@ -1,128 +1,39 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 25 Nov 2015 05:18:24 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 34a7faaf91e1c5c57f3bbda4c940453bc2d62b6c BUILD SUCCESS
-Message-ID: <5654d420.pR7Ol+cWiQYk8Ywr%fengguang.wu@intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Tue, 24 Nov 2015 13:49:01 -0800
+Subject: [Intel-wired-lan] [PATCH 5/5] igb: Add I210 cable fault
+	detection to self test
+In-Reply-To: <1327466653.305871.1446575860238.JavaMail.zimbra@xes-inc.com>
+References: <1327466653.305871.1446575860238.JavaMail.zimbra@xes-inc.com>
+Message-ID: <1448401741.3154.9.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-34a7faaf91e1c5c57f3bbda4c940453bc2d62b6c  i40e: clean whole mac filter list
+On Tue, 2015-11-03 at 12:37 -0600, Aaron Sierra wrote:
+> From: Joe Schultz <jschultz@xes-inc.com>
+> 
+> Add an offline diagnostic test for the I210 internal PHY which checks
+> for cable faults and reports the distance along the cable where the
+> fault was detected. Fault types detected include open, short, and
+> cross-pair short.
+> 
+> Signed-off-by: Joe Schultz <jschultz@xes-inc.com>
+> Signed-off-by: Aaron Sierra <asierra@xes-inc.com>
+> ---
+> ?drivers/net/ethernet/intel/igb/e1000_defines.h |? 13 +-
+> ?drivers/net/ethernet/intel/igb/igb_ethtool.c?? | 192
+> ++++++++++++++++++++++++-
+> ?2 files changed, 199 insertions(+), 6 deletions(-)
 
-elapsed time: 48m
-
-configs tested: 107
-
-i386                     randconfig-a0-201547
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64               randconfig-x014-11241713
-x86_64               randconfig-x016-11241713
-x86_64               randconfig-x019-11241713
-x86_64               randconfig-x010-11241713
-x86_64               randconfig-x015-11241713
-x86_64               randconfig-x011-11241713
-x86_64               randconfig-x012-11241713
-x86_64               randconfig-x013-11241713
-x86_64               randconfig-x017-11241713
-x86_64               randconfig-x018-11241713
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201547
-i386                     randconfig-s1-201547
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                   randconfig-i0-201547
-i386                     randconfig-i0-201547
-i386                     randconfig-i1-201547
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                               tinyconfig
-x86_64                                    lkp
-x86_64                                   rhel
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201547
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-x86_64                           allmodconfig
-x86_64               randconfig-x007-11230704
-x86_64               randconfig-x001-11230704
-x86_64               randconfig-x006-11230704
-x86_64               randconfig-x008-11230704
-x86_64               randconfig-x003-11230704
-x86_64               randconfig-x002-11230704
-x86_64               randconfig-x005-11230704
-x86_64               randconfig-x000-11230704
-x86_64               randconfig-x009-11230704
-x86_64               randconfig-x004-11230704
-i386                     randconfig-r0-201547
-i386                 randconfig-x008-11230317
-i386                 randconfig-x006-11230317
-i386                 randconfig-x001-11230317
-i386                 randconfig-x000-11230317
-i386                 randconfig-x002-11230317
-i386                 randconfig-x003-11230317
-i386                 randconfig-x009-11230317
-i386                 randconfig-x004-11230317
-i386                 randconfig-x007-11230317
-i386                 randconfig-x005-11230317
-
-Thanks,
-Fengguang
+This patch does not apply cleanly due to changes to igb_ethtool.c.
+?Please update this patch with my current next-queue tree (dev-queue
+branch) and resubmit just this patch.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151124/601f712e/attachment.asc>
