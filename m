@@ -1,258 +1,131 @@
-From: Michael S. Tsirkin <mst@redhat.com>
-Date: Tue, 24 Nov 2015 23:20:04 +0200
-Subject: [Intel-wired-lan] [RFC PATCH V2 3/3] Ixgbevf: Add migration
- support for ixgbevf driver
-In-Reply-To: <1448372298-28386-4-git-send-email-tianyu.lan@intel.com>
-References: <1448372298-28386-1-git-send-email-tianyu.lan@intel.com>
- <1448372298-28386-4-git-send-email-tianyu.lan@intel.com>
-Message-ID: <20151124230551-mutt-send-email-mst@redhat.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 25 Nov 2015 06:29:05 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ de488387c5eaf38967265081cf76994aaa873f6e BUILD SUCCESS
+Message-ID: <5654e4b1.LfFsOhY+tDI4WzML%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Nov 24, 2015 at 09:38:18PM +0800, Lan Tianyu wrote:
-> This patch is to add migration support for ixgbevf driver. Using
-> faked PCI migration capability table communicates with Qemu to
-> share migration status and mailbox irq vector index.
-> 
-> Qemu will notify VF via sending MSIX msg to trigger mailbox
-> vector during migration and store migration status in the
-> PCI_VF_MIGRATION_VMM_STATUS regs in the new capability table.
-> The mailbox irq will be triggered just befoe stop-and-copy stage
-> and after migration on the target machine.
-> 
-> VF driver will put down net when detect migration and tell
-> Qemu it's ready for migration via writing PCI_VF_MIGRATION_VF_STATUS
-> reg. After migration, put up net again.
-> 
-> Qemu will in charge of migrating PCI config space regs and MSIX config.
-> 
-> The patch is to dedicate on the normal case that net traffic works
-> when mailbox irq is enabled. For other cases(such as the driver
-> isn't loaded, adapter is suspended or closed), mailbox irq won't be
-> triggered and VF driver will disable it via PCI_VF_MIGRATION_CAP
-> reg. These case will be resolved later.
-> 
-> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+de488387c5eaf38967265081cf76994aaa873f6e  igb: Explicitly label self-test result indices
 
-I have to say, I was much more interested in the idea
-of tracking dirty memory. I have some thoughts about
-that one - did you give up on it then?
+elapsed time: 71m
 
+configs tested: 110
 
+i386                     randconfig-a0-201547
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-11250501
+x86_64                           allmodconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+x86_64               randconfig-x014-11241713
+x86_64               randconfig-x016-11241713
+x86_64               randconfig-x019-11241713
+x86_64               randconfig-x010-11241713
+x86_64               randconfig-x015-11241713
+x86_64               randconfig-x011-11241713
+x86_64               randconfig-x012-11241713
+x86_64               randconfig-x013-11241713
+x86_64               randconfig-x017-11241713
+x86_64               randconfig-x018-11241713
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201547
+i386                     randconfig-s1-201547
+x86_64                 randconfig-s0-11250513
+x86_64                 randconfig-s1-11250513
+x86_64                 randconfig-s2-11250513
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201547
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201547
+i386                     randconfig-i1-201547
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                     randconfig-n0-201547
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                   rhel
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+x86_64               randconfig-x007-11230704
+x86_64               randconfig-x001-11230704
+x86_64               randconfig-x006-11230704
+x86_64               randconfig-x008-11230704
+x86_64               randconfig-x003-11230704
+x86_64               randconfig-x002-11230704
+x86_64               randconfig-x005-11230704
+x86_64               randconfig-x000-11230704
+x86_64               randconfig-x009-11230704
+x86_64               randconfig-x004-11230704
+i386                     randconfig-r0-201547
+i386                 randconfig-x008-11230317
+i386                 randconfig-x006-11230317
+i386                 randconfig-x001-11230317
+i386                 randconfig-x000-11230317
+i386                 randconfig-x002-11230317
+i386                 randconfig-x003-11230317
+i386                 randconfig-x009-11230317
+i386                 randconfig-x004-11230317
+i386                 randconfig-x007-11230317
+i386                 randconfig-x005-11230317
 
-> ---
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |   5 ++
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 102 ++++++++++++++++++++++
->  2 files changed, 107 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-> index 775d089..4b8ba2f 100644
-> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-> @@ -438,6 +438,11 @@ struct ixgbevf_adapter {
->  	u64 bp_tx_missed;
->  #endif
->  
-> +	u8 migration_cap;
-> +	u8 last_migration_reg;
-> +	unsigned long migration_status;
-> +	struct work_struct migration_task;
-> +
->  	u8 __iomem *io_addr; /* Mainly for iounmap use */
->  	u32 link_speed;
->  	bool link_up;
-> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> index a16d267..95860c2 100644
-> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> @@ -96,6 +96,8 @@ static int debug = -1;
->  module_param(debug, int, 0);
->  MODULE_PARM_DESC(debug, "Debug level (0=none,...,16=all)");
->  
-> +#define MIGRATION_IN_PROGRESS		0
-> +
->  static void ixgbevf_service_event_schedule(struct ixgbevf_adapter *adapter)
->  {
->  	if (!test_bit(__IXGBEVF_DOWN, &adapter->state) &&
-> @@ -1262,6 +1264,22 @@ static void ixgbevf_set_itr(struct ixgbevf_q_vector *q_vector)
->  	}
->  }
->  
-> +static void ixgbevf_migration_check(struct ixgbevf_adapter *adapter) 
-> +{
-> +	struct pci_dev *pdev = adapter->pdev;
-> +	u8 val;
-> +
-> +	pci_read_config_byte(pdev,
-> +		     adapter->migration_cap + PCI_VF_MIGRATION_VMM_STATUS,
-> +		     &val);
-> +
-> +	if (val != adapter->last_migration_reg) {
-> +		schedule_work(&adapter->migration_task);
-> +		adapter->last_migration_reg = val;
-> +	}
-> +
-> +}
-> +
->  static irqreturn_t ixgbevf_msix_other(int irq, void *data)
->  {
->  	struct ixgbevf_adapter *adapter = data;
-> @@ -1269,6 +1287,7 @@ static irqreturn_t ixgbevf_msix_other(int irq, void *data)
->  
->  	hw->mac.get_link_status = 1;
->  
-> +	ixgbevf_migration_check(adapter);
->  	ixgbevf_service_event_schedule(adapter);
->  
->  	IXGBE_WRITE_REG(hw, IXGBE_VTEIMS, adapter->eims_other);
-> @@ -1383,6 +1402,7 @@ out:
->  static int ixgbevf_request_msix_irqs(struct ixgbevf_adapter *adapter)
->  {
->  	struct net_device *netdev = adapter->netdev;
-> +	struct pci_dev *pdev = adapter->pdev;
->  	int q_vectors = adapter->num_msix_vectors - NON_Q_VECTORS;
->  	int vector, err;
->  	int ri = 0, ti = 0;
-> @@ -1423,6 +1443,12 @@ static int ixgbevf_request_msix_irqs(struct ixgbevf_adapter *adapter)
->  		goto free_queue_irqs;
->  	}
->  
-> +	if (adapter->migration_cap) {
-> +		pci_write_config_byte(pdev,
-> +			adapter->migration_cap + PCI_VF_MIGRATION_IRQ,
-> +			vector);
-> +	}
-> +
->  	return 0;
->  
->  free_queue_irqs:
-> @@ -2891,6 +2917,59 @@ static void ixgbevf_watchdog_subtask(struct ixgbevf_adapter *adapter)
->  	ixgbevf_update_stats(adapter);
->  }
->  
-> +static void ixgbevf_migration_task(struct work_struct *work)
-> +{
-> +	struct ixgbevf_adapter *adapter = container_of(work,
-> +			struct ixgbevf_adapter,
-> +			migration_task);
-> +	struct pci_dev *pdev = adapter->pdev;
-> +	struct net_device *netdev = adapter->netdev;
-> +	u8 val;
-> +
-> +	if (!test_bit(MIGRATION_IN_PROGRESS, &adapter->migration_status)) {
-> +		pci_read_config_byte(pdev,
-> +		     adapter->migration_cap + PCI_VF_MIGRATION_VMM_STATUS,
-> +		     &val);
-> +		if (val != VMM_MIGRATION_START)
-> +			return;
-> +
-> +		pr_info("migration start\n");
-> +		set_bit(MIGRATION_IN_PROGRESS, &adapter->migration_status);
-> +		netif_device_detach(netdev);
-> +
-> +		if (netif_running(netdev)) {
-> +			rtnl_lock();
-> +			ixgbevf_down(adapter);
-> +			rtnl_unlock();
-> +		}
-> +		pci_save_state(pdev);
-> +
-> +		/* Tell Qemu VF is ready for migration. */
-> +		pci_write_config_byte(pdev,
-> +			     adapter->migration_cap + PCI_VF_MIGRATION_VF_STATUS,
-> +			     PCI_VF_READY_FOR_MIGRATION);
-> +	} else {
-> +		pci_read_config_byte(pdev,
-> +		     adapter->migration_cap + PCI_VF_MIGRATION_VMM_STATUS,
-> +		     &val);
-> +		if (val != VMM_MIGRATION_END)
-> +			return;
-> +
-> +		pci_restore_state(pdev);
-> +
-> +		if (netif_running(netdev)) {
-> +			ixgbevf_reset(adapter);
-> +			ixgbevf_up(adapter);
-> +		}
-> +
-> +		netif_device_attach(netdev);
-> +
-> +		clear_bit(MIGRATION_IN_PROGRESS, &adapter->migration_status);
-> +		pr_info("migration end\n");
-> +	}
-> +
-> +}
-> +
->  /**
->   * ixgbevf_service_task - manages and runs subtasks
->   * @work: pointer to work_struct containing our data
-> @@ -3122,6 +3201,7 @@ static int ixgbevf_open(struct net_device *netdev)
->  {
->  	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
->  	struct ixgbe_hw *hw = &adapter->hw;
-> +	struct pci_dev *pdev = adapter->pdev;
->  	int err;
->  
->  	/* A previous failure to open the device because of a lack of
-> @@ -3175,6 +3255,13 @@ static int ixgbevf_open(struct net_device *netdev)
->  
->  	ixgbevf_up_complete(adapter);
->  
-> +	if (adapter->migration_cap) {
-> +		pci_write_config_byte(pdev,
-> +			     adapter->migration_cap + PCI_VF_MIGRATION_CAP,
-> +			     PCI_VF_MIGRATION_ENABLE);
-> +		adapter->last_migration_reg = 0;
-> +	}
-> +
->  	return 0;
->  
->  err_req_irq:
-> @@ -3204,6 +3291,13 @@ err_setup_reset:
->  static int ixgbevf_close(struct net_device *netdev)
->  {
->  	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
-> +	struct pci_dev *pdev = adapter->pdev;
-> +	
-> +	if (adapter->migration_cap) {
-> +		pci_write_config_byte(pdev,
-> +			     adapter->migration_cap + PCI_VF_MIGRATION_CAP,
-> +			     PCI_VF_MIGRATION_DISABLE);
-> +	}
->  
->  	ixgbevf_down(adapter);
->  	ixgbevf_free_irq(adapter);
-> @@ -3764,6 +3858,12 @@ static int ixgbevf_suspend(struct pci_dev *pdev, pm_message_t state)
->  	int retval = 0;
->  #endif
->  
-> +	if (adapter->migration_cap) {
-> +		pci_write_config_byte(pdev,
-> +			     adapter->migration_cap + PCI_VF_MIGRATION_CAP,
-> +			     PCI_VF_MIGRATION_DISABLE);
-> +	}
-> +
->  	netif_device_detach(netdev);
->  
->  	if (netif_running(netdev)) {
-> @@ -4029,6 +4129,7 @@ static int ixgbevf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
->  		    (unsigned long)adapter);
->  
->  	INIT_WORK(&adapter->service_task, ixgbevf_service_task);
-> +	INIT_WORK(&adapter->migration_task, ixgbevf_migration_task);
->  	set_bit(__IXGBEVF_SERVICE_INITED, &adapter->state);
->  	clear_bit(__IXGBEVF_SERVICE_SCHED, &adapter->state);
->  
-> @@ -4064,6 +4165,7 @@ static int ixgbevf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
->  		break;
->  	}
->  
-> +	adapter->migration_cap = pci_find_capability(pdev, PCI_CAP_ID_MIGRATION);
->  	return 0;
->  
->  err_register:
-> -- 
-> 1.8.4.rc0.1.g8f6a3e5.dirty
+Thanks,
+Fengguang
