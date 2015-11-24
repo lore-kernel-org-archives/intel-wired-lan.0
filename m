@@ -1,54 +1,128 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 24 Nov 2015 06:20:29 -0800
-Subject: [Intel-wired-lan] [RFC PATCH V2 0/3] IXGBE/VFIO: Add live
- migration support for SRIOV NIC
-In-Reply-To: <1448372298-28386-1-git-send-email-tianyu.lan@intel.com>
-References: <1448372298-28386-1-git-send-email-tianyu.lan@intel.com>
-Message-ID: <5654722D.4010409@gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 25 Nov 2015 02:38:14 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ 3b47901c0741d4ac3c08d945db3d61df2baf1f47 BUILD SUCCESS
+Message-ID: <5654ae96.Ln1Y+eRQv2RJDSMX%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 11/24/2015 05:38 AM, Lan Tianyu wrote:
-> This patchset is to propose a solution of adding live migration
-> support for SRIOV NIC.
->
-> During migration, Qemu needs to let VF driver in the VM to know
-> migration start and end. Qemu adds faked PCI migration capability
-> to help to sync status between two sides during migration.
->
-> Qemu triggers VF's mailbox irq via sending MSIX msg when migration
-> status is changed. VF driver tells Qemu its mailbox vector index
-> via the new PCI capability. In some cases(NIC is suspended or closed),
-> VF mailbox irq is freed and VF driver can disable irq injecting via
-> new capability.
->
-> VF driver will put down nic before migration and put up again on
-> the target machine.
->
-> Lan Tianyu (3):
->    VFIO: Add new ioctl cmd VFIO_GET_PCI_CAP_INFO
->    PCI: Add macros for faked PCI migration capability
->    Ixgbevf: Add migration support for ixgbevf driver
->
->   drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |   5 ++
->   drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 102 ++++++++++++++++++++++
->   drivers/vfio/pci/vfio_pci.c                       |  21 +++++
->   drivers/vfio/pci/vfio_pci_config.c                |  38 ++++++--
->   drivers/vfio/pci/vfio_pci_private.h               |   5 ++
->   include/uapi/linux/pci_regs.h                     |  18 +++-
->   include/uapi/linux/vfio.h                         |  12 +++
->   7 files changed, 194 insertions(+), 7 deletions(-)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+3b47901c0741d4ac3c08d945db3d61df2baf1f47  MAINTAINERS: Update Intel Wired LAN reviewers
 
-I'm still not a fan of this approach.  I really feel like this is 
-something that should be resolved by extending the existing PCI hot-plug 
-rather than trying to instrument this per driver.  Then you will get the 
-goodness for multiple drivers and multiple OSes instead of just one.  An 
-added advantage to dealing with this in the PCI hot-plug environment 
-would be that you could then still do a hot-plug even if the guest 
-didn't load a driver for the VF since you would be working with the PCI 
-slot instead of the device itself.
+elapsed time: 41m
 
-- Alex
+configs tested: 107
+
+i386                     randconfig-a0-201547
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64               randconfig-x014-11241713
+x86_64               randconfig-x016-11241713
+x86_64               randconfig-x019-11241713
+x86_64               randconfig-x010-11241713
+x86_64               randconfig-x015-11241713
+x86_64               randconfig-x011-11241713
+x86_64               randconfig-x012-11241713
+x86_64               randconfig-x013-11241713
+x86_64               randconfig-x017-11241713
+x86_64               randconfig-x018-11241713
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                     randconfig-s0-201547
+i386                     randconfig-s1-201547
+x86_64                           allmodconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201547
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                     randconfig-i0-201547
+i386                     randconfig-i1-201547
+i386                               tinyconfig
+x86_64                                    lkp
+x86_64                                   rhel
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201547
+i386                             allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64               randconfig-x007-11230704
+x86_64               randconfig-x001-11230704
+x86_64               randconfig-x006-11230704
+x86_64               randconfig-x008-11230704
+x86_64               randconfig-x003-11230704
+x86_64               randconfig-x002-11230704
+x86_64               randconfig-x005-11230704
+x86_64               randconfig-x000-11230704
+x86_64               randconfig-x009-11230704
+x86_64               randconfig-x004-11230704
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201547
+i386                 randconfig-x008-11230317
+i386                 randconfig-x006-11230317
+i386                 randconfig-x001-11230317
+i386                 randconfig-x000-11230317
+i386                 randconfig-x002-11230317
+i386                 randconfig-x003-11230317
+i386                 randconfig-x009-11230317
+i386                 randconfig-x004-11230317
+i386                 randconfig-x007-11230317
+i386                 randconfig-x005-11230317
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+
+Thanks,
+Fengguang
