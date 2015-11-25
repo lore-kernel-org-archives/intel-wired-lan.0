@@ -1,79 +1,140 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 25 Nov 2015 09:24:51 -0800
-Subject: [Intel-wired-lan] [RFC PATCH V2 3/3] Ixgbevf: Add migration
-	support for ixgbevf driver
-In-Reply-To: <20151125183435-mutt-send-email-mst@redhat.com>
-References: <1448372298-28386-1-git-send-email-tianyu.lan@intel.com>
- <1448372298-28386-4-git-send-email-tianyu.lan@intel.com>
- <20151124230551-mutt-send-email-mst@redhat.com>
- <56554994.1090305@intel.com>
- <20151125142437-mutt-send-email-mst@redhat.com>
- <5655DB99.3040007@intel.com>
- <CAKgT0UdM5NGOARoiCNvh3Hu0xyvfJ-VoRqDu8bg6RyupSCEYHw@mail.gmail.com>
- <20151125183435-mutt-send-email-mst@redhat.com>
-Message-ID: <CAKgT0UcGQoFUy8Y973sfkXZSvCA_wThtuJgmdxeebMsfSjf8Og@mail.gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 26 Nov 2015 03:14:31 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
+ 1c2df9e5a763d6d88f9aea8ca76d0ca75753fbd5 BUILD SUCCESS
+Message-ID: <56560897.8E7vhy63gqs3cmP6%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Nov 25, 2015 at 8:39 AM, Michael S. Tsirkin <mst@redhat.com> wrote:
-> On Wed, Nov 25, 2015 at 08:24:38AM -0800, Alexander Duyck wrote:
->> >> Also, assuming you just want to do ifdown/ifup for some reason, it's
->> >> easy enough to do using a guest agent, in a completely generic way.
->> >>
->> >
->> > Just ifdown/ifup is not enough for migration. It needs to restore some PCI
->> > settings before doing ifup on the target machine
->>
->> That is why I have been suggesting making use of suspend/resume logic
->> that is already in place for PCI power management.  In the case of a
->> suspend/resume we already have to deal with the fact that the device
->> will go through a D0->D3->D0 reset so we have to restore all of the
->> existing state.  It would take a significant load off of Qemu since
->> the guest would be restoring its own state instead of making Qemu have
->> to do all of the device migration work.
->
-> That can work, though again, the issue is you need guest
-> cooperation to migrate.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
+1c2df9e5a763d6d88f9aea8ca76d0ca75753fbd5  i40e: Bump version to 1.4.2
 
-Right now the problem is you need to have guest cooperation anyway as
-you need to have some way of tracking the dirty pages.  If the IOMMU
-on the host were to provide some sort of dirty page tracking then we
-could exclude the guest from the equation, but until then we need the
-guest to notify us of what pages it is letting the device dirty.  I'm
-still of the opinion that the best way to go there is to just modify
-the DMA API that is used in the guest so that it supports some sort of
-page flag modification or something along those lines so we can track
-all of the pages that might be written to by the device.
+elapsed time: 52m
 
-> If you reset device on destination instead of restoring state,
-> then that issue goes away, but maybe the downtime
-> will be increased.
+configs tested: 119
 
-Yes, the downtime will be increased, but it shouldn't be by much.
-Depending on the setup a VF with a single queue can have about 3MB of
-data outstanding when you move the driver over.  After that it is just
-a matter of bringing the interface back up which should take only a
-few hundred milliseconds assuming the PF is fairly responsive.
+i386                     randconfig-a0-201547
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+arm                        cerfcube_defconfig
+mips                malta_qemu_32r6_defconfig
+mips                        nlm_xlp_defconfig
+powerpc                      tqm8xx_defconfig
+xtensa                           allmodconfig
+x86_64               randconfig-x014-11241713
+x86_64               randconfig-x016-11241713
+x86_64               randconfig-x019-11241713
+x86_64               randconfig-x010-11241713
+x86_64               randconfig-x015-11241713
+x86_64               randconfig-x011-11241713
+x86_64               randconfig-x012-11241713
+x86_64               randconfig-x013-11241713
+x86_64               randconfig-x017-11241713
+x86_64               randconfig-x018-11241713
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201547
+i386                     randconfig-s1-201547
+x86_64                 randconfig-s0-11260146
+x86_64                 randconfig-s1-11260146
+x86_64                 randconfig-s2-11260146
+x86_64                           allmodconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201547
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201547
+i386                     randconfig-i1-201547
+i386                               tinyconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201547
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+x86_64               randconfig-x007-11230704
+x86_64               randconfig-x001-11230704
+x86_64               randconfig-x006-11230704
+x86_64               randconfig-x008-11230704
+x86_64               randconfig-x003-11230704
+x86_64               randconfig-x002-11230704
+x86_64               randconfig-x005-11230704
+x86_64               randconfig-x000-11230704
+x86_64               randconfig-x009-11230704
+x86_64               randconfig-x004-11230704
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201547
+arm                         hackkit_defconfig
+blackfin                BF538-EZKIT_defconfig
+sh                        sh7757lcr_defconfig
+i386                 randconfig-x003-11251907
+i386                 randconfig-x001-11251907
+i386                 randconfig-x005-11251907
+i386                 randconfig-x004-11251907
+i386                 randconfig-x002-11251907
+i386                 randconfig-x000-11251907
+i386                 randconfig-x007-11251907
+i386                 randconfig-x008-11251907
+i386                 randconfig-x006-11251907
+i386                 randconfig-x009-11251907
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                   randconfig-x0-11260129
 
-> Will it really? I think it's worth it to start with the
-> simplest solution (reset on destination) and see
-> what the effect is, then add optimizations.
-
-Agreed.  My thought would be to start with something like
-dma_mark_clean() that could be used to take care of marking the pages
-for migration when they are unmapped or synced.
-
-> One thing that I've been thinking about for a while, is saving (some)
-> state speculatively.  For example, notify guest a bit before migration
-> is done, so it can save device state. If guest responds quickly, you
-> have state that can be restored.  If it doesn't, still migrate, and it
-> will have to reset on destination.
-
-I'm not sure how much more device state we really need to save.  The
-driver in the guest has to have enough state to recover in the event
-of a device failure resulting in a slot reset.  To top it off the
-driver is able to reconfigure things probably as quick as we could if
-we were restoring the state.
+Thanks,
+Fengguang
