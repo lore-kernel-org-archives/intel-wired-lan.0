@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 30 Nov 2015 19:20:15 +0000
-Subject: [Intel-wired-lan] [V3: next PATCH S22 10/12] i40e: clean whole
- mac	filter list
-In-Reply-To: <1447961665-12344-11-git-send-email-deepthi.kavalur@intel.com>
+Date: Mon, 30 Nov 2015 19:47:07 +0000
+Subject: [Intel-wired-lan] [V3: next PATCH S22 09/12] i40e/i40evf: Add a
+ new	offload for RSS PCTYPE V2 for X722
+In-Reply-To: <1447961665-12344-10-git-send-email-deepthi.kavalur@intel.com>
 References: <1447961665-12344-1-git-send-email-deepthi.kavalur@intel.com>
- <1447961665-12344-11-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F966BF1@ORSMSX104.amr.corp.intel.com>
+ <1447961665-12344-10-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F966C0F@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,27 +17,27 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Deepthi Kavalur
 > Sent: Thursday, November 19, 2015 11:34 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [V3: next PATCH S22 10/12] i40e: clean whole mac
-> filter list
+> Subject: [Intel-wired-lan] [V3: next PATCH S22 09/12] i40e/i40evf: Add a new
+> offload for RSS PCTYPE V2 for X722
 > 
-> From: Shannon Nelson <shannon.nelson@intel.com>
+> From: Anjali Singhai Jain <anjali.singhai@intel.com>
 > 
-> Clean the whole mac filter list when resetting after an intermediate add or
-> delete push to the firmware.  The code had evolved from using a list from
-> the stack to a heap allocation, but the memset() didn't follow the change
-> correctly.  This now cleans the whole list rather that just part of the first
-> element.
+> X722 supports Expanded version of TCP, UDP PCTYPES for RSS.
+> Add a Virtchnl offload to support this.
 > 
-> Reported-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-> Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-> Change-ID: I4cd03d5a103b7407dd8556a3a231e800f2d6f2d5
+> Without this patch with X722 devices, driver will set wrong PCTYPES for VF
+> and UDP flows will not fan out.
+> 
+> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+> Change-ID: I04fe4988253b7cd108c9179a643c969764efcb76
 > ---
-> Testing Hints :
-> Compile and run the driver with basic ping tests. Also add and remove
-> additional address filters and make sure they work as expected.
+> Testing-Hints:
+> Try multiple UDP flows on VF driver to see they get spread out by RSS.
 > 
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 18 ++++++++++--------
->  1 file changed, 10 insertions(+), 8 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl.h     | 1 +
+>  drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h   | 1 +
+>  drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c | 4 +++-
+>  3 files changed, 5 insertions(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied, adding/removing MAC filters works properly.
+Patch code changes correctly applied, VF on X722, incoming UDP flows fan out properly.
