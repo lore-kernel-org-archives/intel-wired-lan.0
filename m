@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 30 Nov 2015 18:59:18 +0000
-Subject: [Intel-wired-lan] [V3: next PATCH S22 08/12] i40e: hush
-	little	warnings
-In-Reply-To: <1447961665-12344-9-git-send-email-deepthi.kavalur@intel.com>
+Date: Mon, 30 Nov 2015 19:20:15 +0000
+Subject: [Intel-wired-lan] [V3: next PATCH S22 10/12] i40e: clean whole
+ mac	filter list
+In-Reply-To: <1447961665-12344-11-git-send-email-deepthi.kavalur@intel.com>
 References: <1447961665-12344-1-git-send-email-deepthi.kavalur@intel.com>
- <1447961665-12344-9-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F966BDA@ORSMSX104.amr.corp.intel.com>
+ <1447961665-12344-11-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F966BF1@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,23 +17,27 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Deepthi Kavalur
 > Sent: Thursday, November 19, 2015 11:34 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [V3: next PATCH S22 08/12] i40e: hush little
-> warnings
+> Subject: [Intel-wired-lan] [V3: next PATCH S22 10/12] i40e: clean whole mac
+> filter list
 > 
-> From: Mitch Williams <mitch.a.williams@intel.com>
+> From: Shannon Nelson <shannon.nelson@intel.com>
 > 
-> These messages seem big and scary, but they're really not. The driver can
-> fully recover from any of these. The overflow error in particular can happen
-> when enabling a bunch of VFs and the VF driver is not blacklisted.
+> Clean the whole mac filter list when resetting after an intermediate add or
+> delete push to the firmware.  The code had evolved from using a list from
+> the stack to a heap allocation, but the memset() didn't follow the change
+> correctly.  This now cleans the whole list rather that just part of the first
+> element.
 > 
-> Since these messages are really for debugging purposes, reclassify them as
-> such.
-> 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-> Change-ID: I628d0f5e135e7063450ba05393a50b7af23aa6d7
+> Reported-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+> Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+> Change-ID: I4cd03d5a103b7407dd8556a3a231e800f2d6f2d5
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 18 ++++++++++++------
->  1 file changed, 12 insertions(+), 6 deletions(-)
+> Testing Hints :
+> Compile and run the driver with basic ping tests. Also add and remove
+> additional address filters and make sure they work as expected.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 18 ++++++++++--------
+>  1 file changed, 10 insertions(+), 8 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied
+Patch code changes correctly applied, adding/removing MAC filters works properly.
