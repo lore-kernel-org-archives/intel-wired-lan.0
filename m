@@ -1,35 +1,56 @@
-From: Chris Friesen <chris.friesen@windriver.com>
-Date: Tue, 1 Dec 2015 10:19:01 -0600
-Subject: [Intel-wired-lan] PCI ACS quirk for X710/XL710?
-In-Reply-To: <565DC5D4.70300@windriver.com>
-References: <565DC5D4.70300@windriver.com>
-Message-ID: <565DC875.1020902@windriver.com>
+From: Lan, Tianyu <tianyu.lan@intel.com>
+Date: Tue, 1 Dec 2015 23:04:31 +0800
+Subject: [Intel-wired-lan] [RFC PATCH V2 0/3] IXGBE/VFIO: Add live
+ migration support for SRIOV NIC
+In-Reply-To: <CAKgT0Uc+-gFAetEfde6DmMOFK+vDE6UkgsNF8oLNqaQc4USSeg@mail.gmail.com>
+References: <1448372298-28386-1-git-send-email-tianyu.lan@intel.com>
+ <5654722D.4010409@gmail.com> <56552888.90108@intel.com>
+ <CAKgT0UcSrewenfM2YdVojHFFqfK2aVbBN5LH8=BFzc1p0f9hvQ@mail.gmail.com>
+ <56556F98.5060507@intel.com>
+ <CAKgT0UevBmRLpM1PvuuVDUW79A66RcPrfO8uGiqL1RiALW7apg@mail.gmail.com>
+ <A12AC9D104E08D47BAF23C492F83C53B25CDE9E3@SHSMSX104.ccr.corp.intel.com>
+ <CAKgT0Ucyq=7OSYBVvU9Z01b3f6scS+eBMLg+yphW7bwkNZosPQ@mail.gmail.com>
+ <565BF285.4040507@intel.com>
+ <CAKgT0Uc+-gFAetEfde6DmMOFK+vDE6UkgsNF8oLNqaQc4USSeg@mail.gmail.com>
+Message-ID: <565DB6FF.1050602@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 12/01/2015 10:07 AM, Chris Friesen wrote:
-> Hi all,
->
-> The three of you in the "to" list were involved with adding commits d748804 and
-> 100ebb2 to address the fact that these multi-port NICs will not do peer-to-peer
-> between functions, but do not report this via ACS.
->
-> We've got an X710 device (PCI device 0x1572, driver version 1.3.1-k, firmware
-> 4.40) and we're seeing all the ports being assigned to the same IOMMU group.
->
-> I'm guessing that this is due to a lack of ACS, and that it would be valid to
-> add the X710/XL710 PCI IDs to the pci_dev_acs_enabled table.  Could someone from
-> Intel confirm this?
 
-Looking at the datasheet (I suppose I should have done that first, sorry) it 
-looks like this device supports ACS.  However, we're still seeing all the ports 
-being placed into the same IOMMU group.
 
-Is there a way to prevent/disable this behaviour?  We want to be able to assign 
-each port to a separate VM, and thus for our purposes they need to be in 
-separate IOMMU groups.
+On 12/1/2015 12:07 AM, Alexander Duyck wrote:
+> They can only be corrected if the underlying assumptions are correct
+> and they aren't.  Your solution would have never worked correctly.
+> The problem is you assume you can keep the device running when you are
+> migrating and you simply cannot.  At some point you will always have
+> to stop the device in order to complete the migration, and you cannot
+> stop it before you have stopped your page tracking mechanism.  So
+> unless the platform has an IOMMU that is somehow taking part in the
+> dirty page tracking you will not be able to stop the guest and then
+> the device, it will have to be the device and then the guest.
+>
+>> >Doing suspend and resume() may help to do migration easily but some
+>> >devices requires low service down time. Especially network and I got
+>> >that some cloud company promised less than 500ms network service downtime.
+> Honestly focusing on the downtime is getting the cart ahead of the
+> horse.  First you need to be able to do this without corrupting system
+> memory and regardless of the state of the device.  You haven't even
+> gotten to that state yet.  Last I knew the device had to be up in
+> order for your migration to even work.
 
-Chris
+I think the issue is that the content of rx package delivered to stack 
+maybe changed during migration because the piece of memory won't be 
+migrated to new machine. This may confuse applications or stack. Current 
+dummy write solution can ensure the content of package won't change 
+after doing dummy write while the content maybe not received data if 
+migration happens before that point. We can recheck the content via 
+checksum or crc in the protocol after dummy write to ensure the content 
+is what VF received. I think stack has already done such checks and the 
+package will be abandoned if failed to pass through the check.
+
+Another way is to tell all memory driver are using to Qemu and let Qemu 
+to migrate these memory after stopping VCPU and the device. This seems 
+safe but implementation maybe complex.
