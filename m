@@ -1,138 +1,131 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 1 Dec 2015 10:36:33 -0800
-Subject: [Intel-wired-lan] [RFC PATCH V2 0/3] IXGBE/VFIO: Add live
- migration support for SRIOV NIC
-In-Reply-To: <20151201193026-mutt-send-email-mst@redhat.com>
-References: <CAKgT0UcSrewenfM2YdVojHFFqfK2aVbBN5LH8=BFzc1p0f9hvQ@mail.gmail.com>
- <56556F98.5060507@intel.com>
- <CAKgT0UevBmRLpM1PvuuVDUW79A66RcPrfO8uGiqL1RiALW7apg@mail.gmail.com>
- <A12AC9D104E08D47BAF23C492F83C53B25CDE9E3@SHSMSX104.ccr.corp.intel.com>
- <CAKgT0Ucyq=7OSYBVvU9Z01b3f6scS+eBMLg+yphW7bwkNZosPQ@mail.gmail.com>
- <565BF285.4040507@intel.com>
- <CAKgT0Uc+-gFAetEfde6DmMOFK+vDE6UkgsNF8oLNqaQc4USSeg@mail.gmail.com>
- <565DB6FF.1050602@intel.com>
- <20151201171140-mutt-send-email-mst@redhat.com>
- <CAKgT0UfLEJpV-KdqRGfzBeas8bdqfHCmT5Xc8iVVP03g_pQO8A@mail.gmail.com>
- <20151201193026-mutt-send-email-mst@redhat.com>
-Message-ID: <CAKgT0UfJ7w6yYcZcF2YZyDKEwvE7Gh3P-jfGQGKLfPH2crVBzw@mail.gmail.com>
+From: kan.liang@intel.com <kan.liang@intel.com>
+Date: Tue,  1 Dec 2015 08:01:29 +0000
+Subject: [Intel-wired-lan] [RFC 1/4] net: support per queue tx_usecs in sysfs
+Message-ID: <1448956892-15509-1-git-send-email-kan.liang@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Dec 1, 2015 at 9:37 AM, Michael S. Tsirkin <mst@redhat.com> wrote:
-> On Tue, Dec 01, 2015 at 09:04:32AM -0800, Alexander Duyck wrote:
->> On Tue, Dec 1, 2015 at 7:28 AM, Michael S. Tsirkin <mst@redhat.com> wrote:
+From: Kan Liang <kan.liang@intel.com>
 
->> > There are several components to this:
->> > - dma_map_* needs to prevent page from
->> >   being migrated while device is running.
->> >   For example, expose some kind of bitmap from guest
->> >   to host, set bit there while page is mapped.
->> >   What happens if we stop the guest and some
->> >   bits are still set? See dma_alloc_coherent below
->> >   for some ideas.
->>
->> Yeah, I could see something like this working.  Maybe we could do
->> something like what was done for the NX bit and make use of the upper
->> order bits beyond the limits of the memory range to mark pages as
->> non-migratable?
->>
->> I'm curious.  What we have with a DMA mapped region is essentially
->> shared memory between the guest and the device.  How would we resolve
->> something like this with IVSHMEM, or are we blocked there as well in
->> terms of migration?
->
-> I have some ideas. Will post later.
+Network devices usually have many queues. Each queue has its own
+tx_usecs options. Currently, we can only set all the queues with same
+value by ethtool. This patch expose the tx_usecs in sysfs. So the user
+can set/get per queue coalesce parameter tx_usecs by sysfs.
 
-I look forward to it.
+Signed-off-by: Kan Liang <kan.liang@intel.com>
+---
+ Documentation/networking/scaling.txt | 12 ++++++++++++
+ include/linux/netdevice.h            |  8 ++++++++
+ net/core/net-sysfs.c                 | 38 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 58 insertions(+)
 
->> > - dma_unmap_* needs to mark page as dirty
->> >   This can be done by writing into a page.
->> >
->> > - dma_sync_* needs to mark page as dirty
->> >   This is trickier as we can not change the data.
->> >   One solution is using atomics.
->> >   For example:
->> >         int x = ACCESS_ONCE(*p);
->> >         cmpxchg(p, x, x);
->> >   Seems to do a write without changing page
->> >   contents.
->>
->> Like I said we can probably kill 2 birds with one stone by just
->> implementing our own dma_mark_clean() for x86 virtualized
->> environments.
->>
->> I'd say we could take your solution one step further and just use 0
->> instead of bothering to read the value.  After all it won't write the
->> area if the value at the offset is not 0.
->
-> Really almost any atomic that has no side effect will do.
-> atomic or with 0
-> atomic and with ffffffff
->
-> It's just that cmpxchg already happens to have a portable
-> wrapper.
+diff --git a/Documentation/networking/scaling.txt b/Documentation/networking/scaling.txt
+index 59f4db2..636192d 100644
+--- a/Documentation/networking/scaling.txt
++++ b/Documentation/networking/scaling.txt
+@@ -431,6 +431,18 @@ a max-rate attribute is supported, by setting a Mbps value to
+ 
+ A value of zero means disabled, and this is the default.
+ 
++Per Queue interrupt moderation:
++=============================
++
++The interrupt moderation mechanism, which implemented by HW, employs
++a series of timers to limit the number of interrupts it generates.
++TX queue absolute delay timer can be set to a microseconds value with
++
++/sys/class/net/<dev>/queues/tx-<n>/tx_usecs
++
++For the device which doesn't support per queue interrupt moderation,
++it shows "N/A".
++
+ Further Information
+ ===================
+ RPS and RFS were introduced in kernel 2.6.35. XPS was incorporated into
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index 7d2d1d7..9db5c57 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -1059,6 +1059,10 @@ typedef u16 (*select_queue_fallback_t)(struct net_device *dev,
+  *	This function is used to get egress tunnel information for given skb.
+  *	This is useful for retrieving outer tunnel header parameters while
+  *	sampling packet.
++ * void (*ndo_set_per_queue_tx_usecs)(struct net_device *dev,
++ * 				      int index, u32 val);
++ * void (*ndo_get_per_queue_tx_usecs)(struct net_device *dev, int index);
++ * 	This function is used to set/get per queue coalesce parameter tx_usecs.
+  *
+  */
+ struct net_device_ops {
+@@ -1236,6 +1240,10 @@ struct net_device_ops {
+ 							 bool proto_down);
+ 	int			(*ndo_fill_metadata_dst)(struct net_device *dev,
+ 						       struct sk_buff *skb);
++	void			(*ndo_set_per_queue_tx_usecs)(struct net_device *dev,
++							      int index, u32 val);
++	u32			(*ndo_get_per_queue_tx_usecs)(struct net_device *dev,
++							      int index);
+ };
+ 
+ /**
+diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
+index f88a62a..48016b8 100644
+--- a/net/core/net-sysfs.c
++++ b/net/core/net-sysfs.c
+@@ -1239,12 +1239,50 @@ static struct netdev_queue_attribute xps_cpus_attribute =
+     __ATTR(xps_cpus, S_IRUGO | S_IWUSR, show_xps_map, store_xps_map);
+ #endif /* CONFIG_XPS */
+ 
++static ssize_t tx_usecs_show(struct netdev_queue *queue,
++			     struct netdev_queue_attribute *attr,
++			     char *buf)
++{
++	struct net_device *dev = queue->dev;
++	int index = queue - dev->_tx;
++	u32 val;
++
++	if (dev->netdev_ops->ndo_get_per_queue_tx_usecs) {
++		val = dev->netdev_ops->ndo_get_per_queue_tx_usecs(dev, index);
++		return sprintf(buf, "%u\n", val);
++	}
++
++	return sprintf(buf, "N/A\n");
++}
++
++static ssize_t tx_usecs_store(struct netdev_queue *queue,
++			      struct netdev_queue_attribute *attr,
++			      const char *buf, size_t len)
++{
++	struct net_device *dev = queue->dev;
++	int index = queue - dev->_tx;
++	u32 val, ret;
++
++	ret = kstrtouint(buf, 0, &val);
++	if (ret < 0)
++		return -EINVAL;
++
++	if (dev->netdev_ops->ndo_set_per_queue_tx_usecs)
++		dev->netdev_ops->ndo_set_per_queue_tx_usecs(dev, index, val);
++
++	return len;
++}
++
++static struct netdev_queue_attribute tx_usecs_attribute =
++    __ATTR(tx_usecs, S_IRUGO | S_IWUSR, tx_usecs_show, tx_usecs_store);
++
+ static struct attribute *netdev_queue_default_attrs[] = {
+ 	&queue_trans_timeout.attr,
+ #ifdef CONFIG_XPS
+ 	&xps_cpus_attribute.attr,
+ 	&queue_tx_maxrate.attr,
+ #endif
++	&tx_usecs_attribute.attr,
+ 	NULL
+ };
+ 
+-- 
+1.7.11.7
 
-I was originally thinking maybe an atomic_add with 0 would be the way
-to go.  Either way though we still are using a locked prefix and
-having to dirty a cache line per page which is going to come at some
-cost.
-
->> > - dma_alloc_coherent memory (e.g. device rings)
->> >   must be migrated after device stopped modifying it.
->> >   Just stopping the VCPU is not enough:
->> >   you must make sure device is not changing it.
->> >
->> >   Or maybe the device has some kind of ring flush operation,
->> >   if there was a reasonably portable way to do this
->> >   (e.g. a flush capability could maybe be added to SRIOV)
->> >   then hypervisor could do this.
->>
->> This is where things start to get messy. I was suggesting the
->> suspend/resume to resolve this bit, but it might be possible to also
->> deal with this via something like this via clearing the bus master
->> enable bit for the VF.  If I am not mistaken that should disable MSI-X
->> interrupts and halt any DMA.  That should work as long as you have
->> some mechanism that is tracking the pages in use for DMA.
->
-> A bigger issue is recovering afterwards.
-
-Agreed.
-
->> >   In case you need to resume on source, you
->> >   really need to follow the same path
->> >   as on destination, preferably detecting
->> >   device reset and restoring the device
->> >   state.
->>
->> The problem with detecting the reset is that you would likely have to
->> be polling to do something like that.
->
-> We could some event to guest to notify it about this event
-> through a new or existing channel.
->
-> Or we could make it possible for userspace to trigger this,
-> then notify guest through the guest agent.
-
-The first thing that comes to mind would be to use something like PCIe
-Advanced Error Reporting, however I don't know if we can put a
-requirement on the system supporting the q35 machine type or not in
-order to support migration.
-
->>  I believe the fm10k driver
->> already has code like that in place where it will detect a reset as a
->> part of its watchdog, however the response time is something like 2
->> seconds for that.  That was one of the reasons I preferred something
->> like hot-plug as that should be functioning as soon as the guest is up
->> and it is a mechanism that operates outside of the VF drivers.
->
-> That's pretty minor.
-> A bigger issue is making sure guest does not crash
-> when device is suddenly reset under it's legs.
-
-I know the ixgbevf driver should already have logic to address some of
-that.  If you look through the code there should be logic there for a
-surprise removal support in ixgbevf.  The only issue is that unlike
-fm10k it will not restore itself after a resume or slot_reset call.
