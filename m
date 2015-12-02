@@ -1,59 +1,58 @@
-From: Chris Friesen <chris.friesen@windriver.com>
-Date: Wed, 2 Dec 2015 09:37:43 -0600
-Subject: [Intel-wired-lan] PCI ACS quirk for X710/XL710?
-In-Reply-To: <1449069694.15753.31.camel@redhat.com>
-References: <565DC5D4.70300@windriver.com> <565DC875.1020902@windriver.com>	
- <1448992637.15753.8.camel@redhat.com> <565DF592.7090606@windriver.com>
- <1449069694.15753.31.camel@redhat.com>
-Message-ID: <565F1047.1090405@windriver.com>
+From: John Greene <jogreene@redhat.com>
+Date: Wed,  2 Dec 2015 15:25:39 -0500
+Subject: [Intel-wired-lan] ixgbevf: fix atomicity off
+	IXGBEVF_FLAG_QUEUE_RESET_REQUESTED flag
+Message-ID: <1449087939-5081-1-git-send-email-jogreene@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 12/02/2015 09:21 AM, Alex Williamson wrote:
-> On Tue, 2015-12-01 at 13:31 -0600, Chris Friesen wrote:
->> On 12/01/2015 11:57 AM, Alex Williamson wrote:
->>> On Tue, 2015-12-01 at 10:19 -0600, Chris Friesen wrote:
->>>> On 12/01/2015 10:07 AM, Chris Friesen wrote:
->>>>> Hi all,
->>>>> We've got an X710 device (PCI device 0x1572, driver version 1.3.1-k, firmware
->>>>> 4.40) and we're seeing all the ports being assigned to the same IOMMU group.
- >>>>
->>>> Looking at the datasheet (I suppose I should have done that first, sorry) it
->>>> looks like this device supports ACS.  However, we're still seeing all the ports
->>>> being placed into the same IOMMU group.
->>>
->>> Are you sure the grouping isn't caused by the root port and not the X710
->>> endpoints?  Please provide:
->>>
->>> $ find /sys/kernel/iommu_groups/ -type l
->>>
->>> $ sudo lspci -vvv
->>>
->>
->> Now that you mention it, no I'm not sure it's not caused by the root port.
->> Can you describe what to look for?
->>
->> I've got the data that you asked for.  The raw results are quite large,
->> so I trimmed the lspci output somewhat.  IOMMU groups 11 and 13 correspond
->> to the 0x1572 devices.
->>
->> I should mention that this is a 3.10-based kernel.
+When doing a 'reboot' of a VM, the "ip link set ethX down" of an interface
+using the ixgbevf.ko driver may hang indefinitely blocking the complete
+boot down of the OS.    The "ip" command is executed from an rc6.d script.
+The driver in performing the ioctl() was stuck in ixgbevf_down() looping
+at this line forever:
 
-<data snipped>
+while (adapter->flags & IXGBE_FLAG_IN_WATCHDOG_TASK)
+                msleep(1);
 
-> The root ports support ACS and so does the endpoint.  I believe this
-> empty ACS capability on the endpoint should be all we need per the spec
-> to indicate no internal peer-to-peer is possible.  What 3.10-based
-> kernel are you using?  RHEL?  Can you see what happens with an upstream
-> kernel?  Thanks,
+While this issue has been fixed already by other upstream patches, it's noted
+that IXGBEVF_FLAG_QUEUE_RESET_REQUESTED flag should likewise be changed.
 
-This is our own custom kernel (Wind River Linux) based off of 
-linux-stable/linux-3.10.y with additional patches applied.
+Signed-off-by: Scott Otto <otts62@yahoo.com>
+Signed-off-by: John Greene <jogreene@redhat.com>
+---
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-I'll see about trying an upstream kernel.
-
-Chris
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index 592ff23..826b04f 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -1983,7 +1983,7 @@ static int ixgbevf_configure_dcb(struct ixgbevf_adapter *adapter)
+ 		hw->mbx.timeout = 0;
+ 
+ 		/* wait for watchdog to come around and bail us out */
+-		adapter->flags |= IXGBEVF_FLAG_QUEUE_RESET_REQUESTED;
++		set_bit(IXGBEVF_FLAG_QUEUE_RESET_REQUESTED, &adapter->flags);
+ 	}
+ 
+ 	return 0;
+@@ -3230,10 +3230,10 @@ static void ixgbevf_queue_reset_subtask(struct ixgbevf_adapter *adapter)
+ {
+ 	struct net_device *dev = adapter->netdev;
+ 
+-	if (!(adapter->flags & IXGBEVF_FLAG_QUEUE_RESET_REQUESTED))
++	if (!(test_bit(IXGBEVF_FLAG_QUEUE_RESET_REQUESTED, &adapter->flags)))
+ 		return;
+ 
+-	adapter->flags &= ~IXGBEVF_FLAG_QUEUE_RESET_REQUESTED;
++	clear_bit(IXGBEVF_FLAG_QUEUE_RESET_REQUESTED, &adapter->flags);
+ 
+ 	/* if interface is down do nothing */
+ 	if (test_bit(__IXGBEVF_DOWN, &adapter->state) ||
+-- 
+1.9.3
 
