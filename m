@@ -1,10 +1,10 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 2 Dec 2015 13:13:34 -0800
+Date: Wed, 2 Dec 2015 13:32:29 -0800
 Subject: [Intel-wired-lan] ixgbevf: fix atomicity off
  IXGBEVF_FLAG_QUEUE_RESET_REQUESTED flag
 In-Reply-To: <1449087939-5081-1-git-send-email-jogreene@redhat.com>
 References: <1449087939-5081-1-git-send-email-jogreene@redhat.com>
-Message-ID: <565F5EFE.9000104@gmail.com>
+Message-ID: <565F636D.8070107@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -57,8 +57,12 @@ On 12/02/2015 12:25 PM, John Greene wrote:
 >   	/* if interface is down do nothing */
 >   	if (test_bit(__IXGBEVF_DOWN, &adapter->state) ||
 
-If you are going to change how you handle them you should also change 
-their values.  The test_bit and clear_bit functions are expecting a bit 
-offset, not a bit mask.
+Actually looking through this I realized this should also be throwing 
+type errors since state is a u32 and last I knew the test/set/clear_bit 
+calls expect to be pointing at unsigned longs.
+
+My advice is if you want to go forward with this patch you might look at 
+just removing adapter->flags entirely and look at moving RESET_REQUESTED 
+and QUEUE_RESET_REQUESTED over into adapter->state as a couple more bits.
 
 - Alex
