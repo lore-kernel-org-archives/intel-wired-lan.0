@@ -1,46 +1,46 @@
-From: Aaron Sierra <asierra@xes-inc.com>
-Date: Wed, 2 Dec 2015 14:42:42 -0600 (CST)
-Subject: [Intel-wired-lan] [PATCH 5/5] igb: Add I210 cable fault
-	detection to self test
-In-Reply-To: <1448401741.3154.9.camel@intel.com>
-References: <1327466653.305871.1446575860238.JavaMail.zimbra@xes-inc.com>
- <1448401741.3154.9.camel@intel.com>
-Message-ID: <1639917347.80701.1449088962946.JavaMail.zimbra@xes-inc.com>
+From: David Miller <davem@davemloft.net>
+Date: Wed, 02 Dec 2015 15:48:00 -0500 (EST)
+Subject: [Intel-wired-lan] [PATCH] i40e: Fix i40e_print_features() VEB
+	mode output
+In-Reply-To: <1449051149.3716.20.camel@perches.com>
+References: <1449045535.3716.10.camel@perches.com>
+ <1449050215.3224.29.camel@intel.com>
+ <1449051149.3716.20.camel@perches.com>
+Message-ID: <20151202.154800.1567031979226825020.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
------ Original Message -----
-> From: "Jeff Kirsher" <jeffrey.t.kirsher@intel.com>
-> To: "Aaron Sierra" <asierra@xes-inc.com>, intel-wired-lan at lists.osuosl.org
-> Cc: "Carolyn Wyborny" <carolyn.wyborny@intel.com>, "Joe Schultz" <jschultz@xes-inc.com>
-> Sent: Tuesday, November 24, 2015 3:49:01 PM
-> Subject: Re: [PATCH 5/5] igb: Add I210 cable fault detection to self test
-> 
-> On Tue, 2015-11-03 at 12:37 -0600, Aaron Sierra wrote:
-> > From: Joe Schultz <jschultz@xes-inc.com>
-> > 
-> > Add an offline diagnostic test for the I210 internal PHY which checks
-> > for cable faults and reports the distance along the cable where the
-> > fault was detected. Fault types detected include open, short, and
-> > cross-pair short.
-> > 
-> > Signed-off-by: Joe Schultz <jschultz@xes-inc.com>
-> > Signed-off-by: Aaron Sierra <asierra@xes-inc.com>
-> > ---
-> > ?drivers/net/ethernet/intel/igb/e1000_defines.h |? 13 +-
-> > ?drivers/net/ethernet/intel/igb/igb_ethtool.c?? | 192
-> > ++++++++++++++++++++++++-
-> > ?2 files changed, 199 insertions(+), 6 deletions(-)
-> 
-> This patch does not apply cleanly due to changes to igb_ethtool.c.
-> ?Please update this patch with my current next-queue tree (dev-queue
-> branch) and resubmit just this patch.
+From: Joe Perches <joe@perches.com>
+Date: Wed, 02 Dec 2015 02:12:29 -0800
 
-Jeff,
-Sorry, I was out of the office last week. I'll look into getting you an
-updated version of this patch soon.
+> On Wed, 2015-12-02 at 01:56 -0800, Jeff Kirsher wrote:
+>> On Wed, 2015-12-02 at 00:38 -0800, Joe Perches wrote:
+>> > Commit 7fd89545f337 ("i40e: remove BUG_ON from feature string
+>> > building")
+>> > added defective output when I40E_FLAG_VEB_MODE_ENABLED was set in
+>> > function i40e_print_features.
+>> > 
+>> > Fix it.
+>> > 
+>> > Miscellanea:
+>> > 
+>> > o Remove unnecessary string variable
+>> > o Add space before not after fixed strings
+>> > o Use kmalloc not kzalloc
+>> > o Don't initialize i to 0, use result of first snprintf
+>> > 
+>> > Noticed-by: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+>> 
+>> Don't you mean Reported-by? ?I am not aware of Noticed-by as being a
+>> recognized signature.
+> 
+> At least for the get_maintainer script, "<anything>-by:" is a signature
 
--Aaron S.
+Is patchwork using the same regexp?  If not, for the time being don't
+user non-standard tags, and furthermore please ask the patchwork folks
+to use something similar to getmaintainer.pl
+
+Thanks.
