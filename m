@@ -1,46 +1,74 @@
-From: David Miller <davem@davemloft.net>
-Date: Wed, 02 Dec 2015 15:48:00 -0500 (EST)
-Subject: [Intel-wired-lan] [PATCH] i40e: Fix i40e_print_features() VEB
-	mode output
-In-Reply-To: <1449051149.3716.20.camel@perches.com>
-References: <1449045535.3716.10.camel@perches.com>
- <1449050215.3224.29.camel@intel.com>
- <1449051149.3716.20.camel@perches.com>
-Message-ID: <20151202.154800.1567031979226825020.davem@davemloft.net>
+From: Owen Wells <owen.wells@adiengineering.com>
+Date: Wed, 2 Dec 2015 09:57:59 -0500
+Subject: [Intel-wired-lan] IGB driver load resets NC-SI interface on
+	Rangeley C2000
+Message-ID: <002501d12d11$d5c1b1f0$814515d0$@adiengineering.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Joe Perches <joe@perches.com>
-Date: Wed, 02 Dec 2015 02:12:29 -0800
+Hi,
 
-> On Wed, 2015-12-02 at 01:56 -0800, Jeff Kirsher wrote:
->> On Wed, 2015-12-02 at 00:38 -0800, Joe Perches wrote:
->> > Commit 7fd89545f337 ("i40e: remove BUG_ON from feature string
->> > building")
->> > added defective output when I40E_FLAG_VEB_MODE_ENABLED was set in
->> > function i40e_print_features.
->> > 
->> > Fix it.
->> > 
->> > Miscellanea:
->> > 
->> > o Remove unnecessary string variable
->> > o Add space before not after fixed strings
->> > o Use kmalloc not kzalloc
->> > o Don't initialize i to 0, use result of first snprintf
->> > 
->> > Noticed-by: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
->> 
->> Don't you mean Reported-by? ?I am not aware of Noticed-by as being a
->> recognized signature.
-> 
-> At least for the get_maintainer script, "<anything>-by:" is a signature
+ 
 
-Is patchwork using the same regexp?  If not, for the time being don't
-user non-standard tags, and furthermore please ask the patchwork folks
-to use something similar to getmaintainer.pl
+I was referred to this email address by Juan Nu?ez Quesada, the application
+support engineer assigned to our IPS case. 
 
-Thanks.
+ 
+
+We have a BMC connected to Rangeley (Atom C2000) via the NC-SI interface. We
+are able to get to the LAN to/from the BMC, so that works. The issue is that
+while Linux is booting, the IGB driver loads and resets the NC-SI interface,
+causing us to lose connection with the BMC. We can reconnect after the
+reset, but that is not acceptable to the customer
+. They need a solid
+connection.
+
+ 
+
+We would like to understand how and why the IGB driver is resetting the
+NC-SI interface. That technically should not happen
+ the NC-SI interface
+should be up at all times so that the BMC can stay on the network even when
+Rangeley is shut down.
+
+ 
+
+As an experiment, I did try modifying some EEPROM settings to prevent the
+IGB driver from resetting the interface. Specifically, I cleared bit 0 of
+the Initialization Control 4 word in the EEPROM (LAN base address + Offset
+0x13) to disable software reset. This does not appear to have an effect.
+
+ 
+
+Please assist. Thanks!
+
+ 
+
+ 
+
+Owen Wells
+
+Senior Staff Hardware Engineer
+
+ADI Engineering, A Division of Silicom
+
+Cell +1-434-760-0289
+
+Skype owen.wells
+
+owen.wells at adiengineering.com
+
+www.adiengineering.com <http://www.adiengineering.com/> 
+
+ 
+
+ 
+
+ 
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151202/be107484/attachment-0001.html>
