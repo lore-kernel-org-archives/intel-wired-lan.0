@@ -1,68 +1,134 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 2 Dec 2015 13:32:29 -0800
-Subject: [Intel-wired-lan] ixgbevf: fix atomicity off
- IXGBEVF_FLAG_QUEUE_RESET_REQUESTED flag
-In-Reply-To: <1449087939-5081-1-git-send-email-jogreene@redhat.com>
-References: <1449087939-5081-1-git-send-email-jogreene@redhat.com>
-Message-ID: <565F636D.8070107@gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 03 Dec 2015 06:39:26 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 42c836edf65ba7b3235f2e51965b51dcf45dd030 BUILD SUCCESS
+Message-ID: <565f731e.+v3NVt90QXVYTQzW%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 12/02/2015 12:25 PM, John Greene wrote:
-> When doing a 'reboot' of a VM, the "ip link set ethX down" of an interface
-> using the ixgbevf.ko driver may hang indefinitely blocking the complete
-> boot down of the OS.    The "ip" command is executed from an rc6.d script.
-> The driver in performing the ioctl() was stuck in ixgbevf_down() looping
-> at this line forever:
->
-> while (adapter->flags & IXGBE_FLAG_IN_WATCHDOG_TASK)
->                  msleep(1);
->
-> While this issue has been fixed already by other upstream patches, it's noted
-> that IXGBEVF_FLAG_QUEUE_RESET_REQUESTED flag should likewise be changed.
->
-> Signed-off-by: Scott Otto <otts62@yahoo.com>
-> Signed-off-by: John Greene <jogreene@redhat.com>
-> ---
->   drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 6 +++---
->   1 file changed, 3 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> index 592ff23..826b04f 100644
-> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> @@ -1983,7 +1983,7 @@ static int ixgbevf_configure_dcb(struct ixgbevf_adapter *adapter)
->   		hw->mbx.timeout = 0;
->   
->   		/* wait for watchdog to come around and bail us out */
-> -		adapter->flags |= IXGBEVF_FLAG_QUEUE_RESET_REQUESTED;
-> +		set_bit(IXGBEVF_FLAG_QUEUE_RESET_REQUESTED, &adapter->flags);
->   	}
->   
->   	return 0;
-> @@ -3230,10 +3230,10 @@ static void ixgbevf_queue_reset_subtask(struct ixgbevf_adapter *adapter)
->   {
->   	struct net_device *dev = adapter->netdev;
->   
-> -	if (!(adapter->flags & IXGBEVF_FLAG_QUEUE_RESET_REQUESTED))
-> +	if (!(test_bit(IXGBEVF_FLAG_QUEUE_RESET_REQUESTED, &adapter->flags)))
->   		return;
->   
-> -	adapter->flags &= ~IXGBEVF_FLAG_QUEUE_RESET_REQUESTED;
-> +	clear_bit(IXGBEVF_FLAG_QUEUE_RESET_REQUESTED, &adapter->flags);
->   
->   	/* if interface is down do nothing */
->   	if (test_bit(__IXGBEVF_DOWN, &adapter->state) ||
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+42c836edf65ba7b3235f2e51965b51dcf45dd030  i40e: Look up MAC address in Open Firmware or IDPROM
 
-Actually looking through this I realized this should also be throwing 
-type errors since state is a u32 and last I knew the test/set/clear_bit 
-calls expect to be pointing at unsigned longs.
+elapsed time: 55m
 
-My advice is if you want to go forward with this patch you might look at 
-just removing adapter->flags entirely and look at moving RESET_REQUESTED 
-and QUEUE_RESET_REQUESTED over into adapter->state as a couple more bits.
+configs tested: 114
 
-- Alex
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201548
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+parisc                         b180_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x014-201548
+x86_64                 randconfig-x018-201548
+x86_64                 randconfig-x016-201548
+x86_64                 randconfig-x015-201548
+x86_64                 randconfig-x019-201548
+x86_64                 randconfig-x011-201548
+x86_64                 randconfig-x017-201548
+x86_64                 randconfig-x010-201548
+x86_64                 randconfig-x013-201548
+x86_64                 randconfig-x012-201548
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                     randconfig-s0-201548
+i386                     randconfig-s1-201548
+x86_64                           allmodconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201548
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201548
+i386                     randconfig-i1-201548
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                               tinyconfig
+i386                     randconfig-n0-201548
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+mn10300                     asb2364_defconfig
+arm                          ixp4xx_defconfig
+sh                     sh7710voipgw_defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+arm                          pcm027_defconfig
+mips                           ip32_defconfig
+powerpc                 mpc8540_ads_defconfig
+x86_64               randconfig-x001-12021806
+x86_64               randconfig-x000-12021806
+x86_64               randconfig-x002-12021806
+x86_64               randconfig-x003-12021806
+x86_64               randconfig-x005-12021806
+x86_64               randconfig-x004-12021806
+x86_64               randconfig-x007-12021806
+x86_64               randconfig-x006-12021806
+x86_64               randconfig-x009-12021806
+x86_64               randconfig-x008-12021806
+x86_64                                    lkp
+x86_64                                   rhel
+i386                   randconfig-r0-12021806
+x86_64                 randconfig-r0-12030524
+i386                 randconfig-x000-12020835
+i386                 randconfig-x003-12020835
+i386                 randconfig-x002-12020835
+i386                 randconfig-x006-12020835
+i386                 randconfig-x007-12020835
+i386                 randconfig-x001-12020835
+i386                 randconfig-x008-12020835
+i386                 randconfig-x005-12020835
+i386                 randconfig-x009-12020835
+i386                 randconfig-x004-12020835
+
+Thanks,
+Fengguang
