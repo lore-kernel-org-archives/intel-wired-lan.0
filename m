@@ -1,141 +1,71 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 02 Dec 2015 14:06:47 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
- c0c8665a12d2dcaee340e2726df7a934675d3153 BUILD SUCCESS
-Message-ID: <565e8a77.Ybr36LygTr8TzBq9%fengguang.wu@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Tue, 1 Dec 2015 17:57:45 -0800
+Subject: [Intel-wired-lan] [RFC 1/4] net: support per queue tx_usecs in
+	sysfs
+In-Reply-To: <20151201154454.000041a3@unknown>
+References: <1448956892-15509-1-git-send-email-kan.liang@intel.com>
+ <565E1B8E.4040603@gmail.com> <20151201154454.000041a3@unknown>
+Message-ID: <CAKgT0Udmm9UbQjC3Zcikykcd7e_yvoPayFXA6Kq+TZ_hbqi-4Q@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-c0c8665a12d2dcaee340e2726df7a934675d3153  i40e/i40evf: avoid mutex re-init
+On Tue, Dec 1, 2015 at 3:44 PM, Jesse Brandeburg
+<jesse.brandeburg@intel.com> wrote:
+> On Tue, 1 Dec 2015 14:13:34 -0800
+> Florian Fainelli <f.fainelli@gmail.com> wrote:
+>
+>> On 01/12/15 00:01, kan.liang at intel.com wrote:
+>> > From: Kan Liang <kan.liang@intel.com>
+>> >
+>> > Network devices usually have many queues. Each queue has its own
+>> > tx_usecs options. Currently, we can only set all the queues with same
+>> > value by ethtool. This patch expose the tx_usecs in sysfs. So the user
+>> > can set/get per queue coalesce parameter tx_usecs by sysfs.
+>>
+>> The new interface you propose makes things inconsistent, since we have
+>> two separate configuration paths (sysfs and ethtool), and it would seem
+>> better to have per-queue awareness in ethtool, since there is a whole
+>> bunch of other parameters that could be configured on a per-queue basis.
+>>
+>> Have you tried to extend existing ethtool interfaces to cover the need
+>> for multiple queues?
+>
+> While I agree that ethtool provides a similar functionality, ethtool
+> was designed (particularly the ethtool -C/c commands) around one queue
+> NICs.  We can't change the output or functionality of the user
+> interface without breaking a bunch of user's scripts and stuff.
 
-elapsed time: 53m
+Actually it seems like it should be fairly easy to extend the existing
+interface.  If for example you were to add a couple new keywords such
+as rx-queue or tx-queue what you could do is make it so that you would
+then specifically overwrite or access the values of a given Tx queue
+or Rx queue instead of doing it generically for the entire device.
 
-configs tested: 121
+> With this effort, Kan is laying groundwork for making further kernel
+> changes, and having the kernel call back in to drivers via ethtool
+> mechanisms that were designed before multiple queue adapters.
+>
+> We can also next migrate the legacy ethtool interfaces to use these
+> new .ndo_ops should we wish.
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-microblaze                        allnoconfig
-powerpc                mpc8610_hpcd_defconfig
-powerpc                      pmac32_defconfig
-i386                     randconfig-a0-201548
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-12021353
-x86_64                           allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-parisc                         b180_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x014-201548
-x86_64                 randconfig-x018-201548
-x86_64                 randconfig-x016-201548
-x86_64                 randconfig-x015-201548
-x86_64                 randconfig-x019-201548
-x86_64                 randconfig-x011-201548
-x86_64                 randconfig-x017-201548
-x86_64                 randconfig-x010-201548
-x86_64                 randconfig-x013-201548
-x86_64                 randconfig-x012-201548
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201548
-i386                     randconfig-s1-201548
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201548
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                           stm32_defconfig
-powerpc                          allyesconfig
-powerpc                        cell_defconfig
-powerpc                     tqm5200_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201548
-i386                     randconfig-i1-201548
-i386                             allyesconfig
-i386                               tinyconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201548
-x86_64                 randconfig-n0-12021347
-powerpc                     mpc512x_defconfig
-um                                allnoconfig
-blackfin                BF609-EZKIT_defconfig
-powerpc                    mvme5100_defconfig
-x86_64                 randconfig-x002-201548
-x86_64                 randconfig-x004-201548
-x86_64                 randconfig-x009-201548
-x86_64                 randconfig-x003-201548
-x86_64                 randconfig-x000-201548
-x86_64                 randconfig-x001-201548
-x86_64                 randconfig-x007-201548
-x86_64                 randconfig-x008-201548
-x86_64                 randconfig-x005-201548
-x86_64                 randconfig-x006-201548
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-r0-201548
-i386                 randconfig-x000-12020835
-i386                 randconfig-x003-12020835
-i386                 randconfig-x002-12020835
-i386                 randconfig-x006-12020835
-i386                 randconfig-x007-12020835
-i386                 randconfig-x001-12020835
-i386                 randconfig-x008-12020835
-i386                 randconfig-x005-12020835
-i386                 randconfig-x009-12020835
-i386                 randconfig-x004-12020835
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
+Maybe that is the path this should start taking now.  Another thing to
+keep in mind is that not all drivers make use of the rx-usecs value
+the way the Intel drivers do.  As such we need to be able to still
+support all the various interrupt moderation types that are supported
+by any NICs that might make use of this feature.
 
-Thanks,
-Fengguang
+> These patches were provided with the intent of getting some feedback
+> about going down this path of making a *consistent* user interface that
+> is driver agnostic in sysfs, and supports multiple queue adapters.
+
+If you are truly going for something that is driver agnostic you need
+to start looking at other drivers.  For example I don't see how this
+current implementation deals with the tx/rx_frames values provided in
+the mlx4 drivers for their interrupt moderation.  Also it seems like
+the assumption here is that you are going to want to run all of the
+queues statically without allowing dynamic interrupt moderation.  I
+would think that this might be something that could be managed per
+queue as well.
