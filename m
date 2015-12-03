@@ -1,166 +1,65 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 04 Dec 2015 07:29:42 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:master]
- 8ddb33268902c80ecd9a0e1bc766a2dc4bc9fede BUILD SUCCESS
-Message-ID: <5660d066.+83Xlq14kTynUnp8%fengguang.wu@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Thu, 3 Dec 2015 23:36:20 +0000
+Subject: [Intel-wired-lan] [PATCH] igb: fix NULL derefs due to
+	skipped	SR-IOV enabling
+In-Reply-To: <5624E0C102000078000AC476@prv-mh.provo.novell.com>
+References: <5624E0C102000078000AC476@prv-mh.provo.novell.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81E277D0@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
-8ddb33268902c80ecd9a0e1bc766a2dc4bc9fede  i40e/i40evf: avoid mutex re-init
+> From: Intel-wired-lan [intel-wired-lan-bounces at lists.osuosl.org] on behalf of Jan Beulich [JBeulich at suse.com]
+> Sent: Monday, October 19, 2015 3:23 AM
+> To: Kirsher, Jeffrey T
+> Cc: sassmann at kpanic.de; intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH] igb: fix NULL derefs due to skipped  SR-IOV enabling
+> 
+> The combined effect of commits 6423fc3416 ("igb: do not re-init SR-IOV
+> during probe") and ceee3450b3 ("igb: make sure SR-IOV init uses the
+> right number of queues") causes VFs no longer getting set up, leading
+> to NULL pointer dereferences due to the adapter's ->vf_data being NULL
+> while ->vfs_allocated_count is non-zero. The first commit not only
+> neglected the side effect of igb_sriov_reinit() that the second commit
+> tried to account for, but also that of setting IGB_FLAG_HAS_MSIX,
+> without which igb_enable_sriov() is effectively a no-op. Calling
+> igb_{,re}set_interrupt_capability() as done here seems to address this,
+> but I'm not sure whether this is better than sinply reverting the other
+> two commits.
 
-elapsed time: 91m
+> Signed-off-by: Jan Beulich <jbeulich@suse.com>
+> Cc: Stefan Assmann <sassmann@kpanic.de>
+> Cc: Todd Fujinaka <todd.fujinaka@intel.com>
+> Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Cc: Shannon Nelson <shannon.nelson@intel.com>
+> Cc: Carolyn Wyborny <carolyn.wyborny@intel.com>
+> Cc: Don Skidmore <donald.c.skidmore@intel.com>
+> Cc: Matthew Vick <matthew.vick@intel.com>
+> Cc: John Ronciak <john.ronciak@intel.com>
+> Cc: Mitch Williams <mitch.a.williams@intel.com>
+> ---
+> As a side note, while looking at all the interactions here it seems
+> suspicious to me that igb_request_msix() failure does not lead to
+> SR-IOV being disabled on the device, despite IGB_FLAG_HAS_MSIX being
+> set being a prereq to it as explained above.
+> ---
+>  drivers/net/ethernet/intel/igb/igb_main.c |    8 ++++++++
+>  1 file changed, 8 insertions(+)
 
-configs tested: 145
+Checkpatch complains about using an empty /* line starting the comment:
+---------------------------------------------------------------------------------------------------------------
+WARNING: networking block comments don't use an empty /* line, use /* Comment...
+#32: FILE: drivers/net/ethernet/intel/igb/igb_main.c:2862:
++       /*
++        * Of the below we really only want the effect of getting
 
-i386                     randconfig-a0-201548
-x86_64                 randconfig-a0-12040655
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-12040651
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-arm                        mini2440_defconfig
-openrisc                          allnoconfig
-powerpc                       eiger_defconfig
-powerpc                 mpc8540_ads_defconfig
-powerpc                  storcenter_defconfig
-arm                            mps2_defconfig
-mips                        xilfpga_defconfig
-parisc                           allmodconfig
-powerpc                     kilauea_defconfig
-sh                        apsh4ad0a_defconfig
-x86_64               randconfig-x011-12031005
-x86_64               randconfig-x019-12031005
-x86_64               randconfig-x013-12031005
-x86_64               randconfig-x017-12031005
-x86_64               randconfig-x010-12031005
-x86_64               randconfig-x018-12031005
-x86_64               randconfig-x012-12031005
-x86_64               randconfig-x014-12031005
-x86_64               randconfig-x016-12031005
-x86_64               randconfig-x015-12031005
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                     randconfig-s0-201548
-i386                     randconfig-s1-201548
-x86_64                 randconfig-s0-12040550
-x86_64                 randconfig-s1-12040550
-x86_64                 randconfig-s2-12040550
-x86_64                 randconfig-s0-12040651
-x86_64                 randconfig-s1-12040651
-x86_64                 randconfig-s2-12040651
-x86_64                 randconfig-s3-12040549
-x86_64                 randconfig-s4-12040549
-x86_64                 randconfig-s5-12040549
-x86_64                 randconfig-s3-12040647
-x86_64                 randconfig-s4-12040647
-x86_64                 randconfig-s5-12040647
-x86_64                 randconfig-s3-12040705
-x86_64                 randconfig-s4-12040705
-x86_64                 randconfig-s5-12040705
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201548
-i386                   randconfig-b0-12040649
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201548
-i386                     randconfig-i1-201548
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-blackfin                BF609-EZKIT_defconfig
-m68k                        m5272c3_defconfig
-powerpc                   motionpro_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201548
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-avr32                     atstk1004_defconfig
-avr32        atngw100mkii_evklcd101_defconfig
-xtensa                generic_kc705_defconfig
-arm                          iop33x_defconfig
-arm                        spear6xx_defconfig
-mn10300                           allnoconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                  randconfig-sb0-12040658
-x86_64                           allmodconfig
-x86_64               randconfig-x000-12030948
-x86_64               randconfig-x008-12030948
-x86_64               randconfig-x005-12030948
-x86_64               randconfig-x003-12030948
-x86_64               randconfig-x009-12030948
-x86_64               randconfig-x007-12030948
-x86_64               randconfig-x006-12030948
-x86_64               randconfig-x002-12030948
-x86_64               randconfig-x004-12030948
-x86_64               randconfig-x001-12030948
-i386                     randconfig-r0-201548
-i386                 randconfig-x007-12030946
-i386                 randconfig-x008-12030946
-i386                 randconfig-x005-12030946
-i386                 randconfig-x002-12030946
-i386                 randconfig-x004-12030946
-i386                 randconfig-x001-12030946
-i386                 randconfig-x006-12030946
-i386                 randconfig-x000-12030946
-i386                 randconfig-x009-12030946
-i386                 randconfig-x003-12030946
+total: 0 errors, 1 warnings, 0 checks, 14 lines checked
+---------------------------------------------------------------------------------------------------------------
 
-Thanks,
-Fengguang
+But otherwise this seems fine.  Given other comments in the file also abuse the style warning I will not hold the patch up for that, but feel free to change it and I'll get to the testing much quicker next time.
+
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+
+
