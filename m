@@ -1,115 +1,127 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu,  3 Dec 2015 04:20:57 -0800
-Subject: [Intel-wired-lan] [net-next v2] i40e: Fix i40e_print_features() VEB
-	mode output
-Message-ID: <1449145257-110262-1-git-send-email-jeffrey.t.kirsher@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 03 Dec 2015 21:30:05 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ b0f9bdb335eaa7b11da6f37fb3647b646dd24529 BUILD SUCCESS
+Message-ID: <566043dd.2UxR1zymnMPnR8VM%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Joe Perches <joe@perches.com>
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+b0f9bdb335eaa7b11da6f37fb3647b646dd24529  i40e: Fix i40e_print_features() VEB mode output
 
-Commit 7fd89545f337 ("i40e: remove BUG_ON from feature string building")
-added defective output when I40E_FLAG_VEB_MODE_ENABLED was set in
-function i40e_print_features.
+elapsed time: 39m
 
-Fix it.
+configs tested: 107
 
-Miscellanea:
+i386                     randconfig-a0-201548
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64               randconfig-x011-12031005
+x86_64               randconfig-x019-12031005
+x86_64               randconfig-x013-12031005
+x86_64               randconfig-x017-12031005
+x86_64               randconfig-x010-12031005
+x86_64               randconfig-x018-12031005
+x86_64               randconfig-x012-12031005
+x86_64               randconfig-x014-12031005
+x86_64               randconfig-x016-12031005
+x86_64               randconfig-x015-12031005
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201548
+i386                     randconfig-s1-201548
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+i386                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201548
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                     randconfig-i0-201548
+i386                     randconfig-i1-201548
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201548
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64               randconfig-x000-12030948
+x86_64               randconfig-x008-12030948
+x86_64               randconfig-x005-12030948
+x86_64               randconfig-x003-12030948
+x86_64               randconfig-x009-12030948
+x86_64               randconfig-x007-12030948
+x86_64               randconfig-x006-12030948
+x86_64               randconfig-x002-12030948
+x86_64               randconfig-x004-12030948
+x86_64               randconfig-x001-12030948
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-r0-201548
+i386                 randconfig-x007-12030946
+i386                 randconfig-x008-12030946
+i386                 randconfig-x005-12030946
+i386                 randconfig-x002-12030946
+i386                 randconfig-x004-12030946
+i386                 randconfig-x001-12030946
+i386                 randconfig-x006-12030946
+i386                 randconfig-x000-12030946
+i386                 randconfig-x009-12030946
+i386                 randconfig-x003-12030946
 
-- Remove unnecessary string variable
-- Add space before not after fixed strings
-- Use kmalloc not kzalloc
-- Don't initialize i to 0, use result of first snprintf
-
-Reported-by: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-Signed-off-by: Joe Perches <joe@perches.com>
----
-v2: fixed patch conflicts when trying to apply to my next-queue tree
-    (dev-queue branch), also fixed "Noticed-by" to the more acceptable
-    "Reported-by"
-
- drivers/net/ethernet/intel/i40e/i40e_main.c | 42 +++++++++++++----------------
- 1 file changed, 19 insertions(+), 23 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 70a61bc..ad8cc14 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -10369,52 +10369,48 @@ static int i40e_setup_pf_filter_control(struct i40e_pf *pf)
- static void i40e_print_features(struct i40e_pf *pf)
- {
- 	struct i40e_hw *hw = &pf->hw;
--	char *buf, *string;
--	int i = 0;
-+	char *buf;
-+	int i;
- 
--	string = kzalloc(INFO_STRING_LEN, GFP_KERNEL);
--	if (!string) {
--		dev_err(&pf->pdev->dev, "Features string allocation failed\n");
-+	buf = kmalloc(INFO_STRING_LEN, GFP_KERNEL);
-+	if (!buf)
- 		return;
--	}
--
--	buf = string;
- 
--	i += snprintf(&buf[i], REMAIN(i), "Features: PF-id[%d] ", hw->pf_id);
-+	i = snprintf(buf, INFO_STRING_LEN, "Features: PF-id[%d]", hw->pf_id);
- #ifdef CONFIG_PCI_IOV
--	i += snprintf(&buf[i], REMAIN(i), "VFs: %d ", pf->num_req_vfs);
-+	i += snprintf(&buf[i], REMAIN(i), " VFs: %d", pf->num_req_vfs);
- #endif
--	i += snprintf(&buf[i], REMAIN(i), "VSIs: %d QP: %d RX: %s ",
-+	i += snprintf(&buf[i], REMAIN(i), " VSIs: %d QP: %d RX: %s",
- 		      pf->hw.func_caps.num_vsis,
- 		      pf->vsi[pf->lan_vsi]->num_queue_pairs,
- 		      pf->flags & I40E_FLAG_RX_PS_ENABLED ? "PS" : "1BUF");
- 
- 	if (pf->flags & I40E_FLAG_RSS_ENABLED)
--		i += snprintf(&buf[i], REMAIN(i), "RSS ");
-+		i += snprintf(&buf[i], REMAIN(i), " RSS");
- 	if (pf->flags & I40E_FLAG_FD_ATR_ENABLED)
--		i += snprintf(&buf[i], REMAIN(i), "FD_ATR ");
-+		i += snprintf(&buf[i], REMAIN(i), " FD_ATR");
- 	if (pf->flags & I40E_FLAG_FD_SB_ENABLED) {
--		i += snprintf(&buf[i], REMAIN(i), "FD_SB ");
--		i += snprintf(&buf[i], REMAIN(i), "NTUPLE ");
-+		i += snprintf(&buf[i], REMAIN(i), " FD_SB");
-+		i += snprintf(&buf[i], REMAIN(i), " NTUPLE");
- 	}
- 	if (pf->flags & I40E_FLAG_DCB_CAPABLE)
--		i += snprintf(&buf[i], REMAIN(i), "DCB ");
-+		i += snprintf(&buf[i], REMAIN(i), " DCB");
- #if IS_ENABLED(CONFIG_VXLAN)
--	i += snprintf(&buf[i], REMAIN(i), "VxLAN ");
-+	i += snprintf(&buf[i], REMAIN(i), " VxLAN");
- #endif
- 	if (pf->flags & I40E_FLAG_PTP)
--		i += snprintf(&buf[i], REMAIN(i), "PTP ");
-+		i += snprintf(&buf[i], REMAIN(i), " PTP");
- #ifdef I40E_FCOE
- 	if (pf->flags & I40E_FLAG_FCOE_ENABLED)
--		i += snprintf(&buf[i], REMAIN(i), "FCOE ");
-+		i += snprintf(&buf[i], REMAIN(i), " FCOE");
- #endif
- 	if (pf->flags & I40E_FLAG_VEB_MODE_ENABLED)
--		i += snprintf(&buf[i], REMAIN(i), "VEPA ");
-+		i += snprintf(&buf[i], REMAIN(i), " VEB");
- 	else
--		buf += sprintf(buf, "VEPA ");
-+		i += snprintf(&buf[i], REMAIN(i), " VEPA");
- 
--	dev_info(&pf->pdev->dev, "%s\n", string);
--	kfree(string);
-+	dev_info(&pf->pdev->dev, "%s\n", buf);
-+	kfree(buf);
- 	WARN_ON(i > INFO_STRING_LEN);
- }
- 
--- 
-2.5.0
-
+Thanks,
+Fengguang
