@@ -1,63 +1,31 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 3 Dec 2015 16:53:04 +0000
-Subject: [Intel-wired-lan] [PATCH v6] i40e: Look up MAC address in
-	Open	Firmware or IDPROM
-In-Reply-To: <CAHp75Ve2sLrNZGjD=1LHbyzQEuB2GMhXJxmBgQo1Y4eCHzPk+A@mail.gmail.com>
-References: <20151105.103126.148818796422971143.davem@davemloft.net>
- <20151105.110506.1901401372160830603.davem@davemloft.net>
- <CAHp75VfiV6DVb-2piCxmEWFP4Gi-+n0qNhhscvd=UsqXrivVYg@mail.gmail.com>
- <20151105.133131.1900833527415923596.davem@davemloft.net>
- <CAHp75Ve2sLrNZGjD=1LHbyzQEuB2GMhXJxmBgQo1Y4eCHzPk+A@mail.gmail.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F96CBB6@ORSMSX104.amr.corp.intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Thu, 3 Dec 2015 23:10:16 +0000
+Subject: [Intel-wired-lan] [net] MAINTAINERS: Update Intel Wired
+	LAN	reviewers
+In-Reply-To: <1447182546-88258-1-git-send-email-jeffrey.t.kirsher@intel.com>
+References: <1447182546-88258-1-git-send-email-jeffrey.t.kirsher@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81E277AC@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-I get an error -11 on driver init with this patch applied, I can revert it and everything works normally. Dmesg screenshot is attached, can supply complete dmesg log if needed.
---Andrew
+> From: Intel-wired-lan [intel-wired-lan-bounces at lists.osuosl.org] on behalf of Jeff Kirsher [jeffrey.t.kirsher at intel.com]
+> Sent: Tuesday, November 10, 2015 11:09 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [net] MAINTAINERS: Update Intel Wired LAN    reviewers
+> 
+> Since Matthew has moved on to other pastures and no longer works
+> for Intel, remove him from the list of reviewers and add Bruce
+> Allan as his replacement.
+> 
+> CC: Bruce Allan <bruce.w.allan@intel.com>
+> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> ---
+>  MAINTAINERS | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+ 
+I'm not sure "Tested-by:" fits exactly, but I did confirm the change is in the tree and _did_ run test other stuff with this on the tree, so...
 
-
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Andy Shevchenko
-> Sent: Thursday, November 05, 2015 11:33 AM
-> To: David Miller <davem@davemloft.net>
-> Cc: Sowmini Varadhan <sowmini.varadhan@oracle.com>; linux-
-> kernel at vger.kernel.org; intel-wired-lan at lists.osuosl.org; netdev
-> <netdev@vger.kernel.org>
-> Subject: Re: [Intel-wired-lan] [PATCH v6] i40e: Look up MAC address in Open
-> Firmware or IDPROM
-> 
-> On Thu, Nov 5, 2015 at 8:31 PM, David Miller <davem@davemloft.net>
-> wrote:
-> > From: Andy Shevchenko <andy.shevchenko@gmail.com>
-> > Date: Thu, 5 Nov 2015 20:13:21 +0200
-> >
-> >> What about
-> >>
-> >> if (!addr)
-> >>  return -ENODATA;
-> >
-> > I totally disagree.  of_get_phy_mode() and other similar attribute
-> > probing mechanisms use -ENODEV.
-> 
-> Okay, then just
-> if (!addr)
->  return -ENODEV;
-> 
-> --
-> With Best Regards,
-> Andy Shevchenko
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at lists.osuosl.org
-> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: dmesgerror.jpg
-Type: image/jpeg
-Size: 170030 bytes
-Desc: dmesgerror.jpg
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151203/f96452e4/attachment-0001.jpg>
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
