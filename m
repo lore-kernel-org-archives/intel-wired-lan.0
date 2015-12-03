@@ -1,31 +1,51 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Thu, 3 Dec 2015 23:10:16 +0000
-Subject: [Intel-wired-lan] [net] MAINTAINERS: Update Intel Wired
-	LAN	reviewers
-In-Reply-To: <1447182546-88258-1-git-send-email-jeffrey.t.kirsher@intel.com>
-References: <1447182546-88258-1-git-send-email-jeffrey.t.kirsher@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81E277AC@ORSMSX101.amr.corp.intel.com>
+From: Emil Tantilov <emil.s.tantilov@intel.com>
+Date: Thu, 03 Dec 2015 15:20:06 -0800
+Subject: [Intel-wired-lan] [PATCH] ixgbe: do not call check_link for ethtool
+ in ixgbe_get_settings()
+Message-ID: <20151203232006.23658.24160.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [intel-wired-lan-bounces at lists.osuosl.org] on behalf of Jeff Kirsher [jeffrey.t.kirsher at intel.com]
-> Sent: Tuesday, November 10, 2015 11:09 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [net] MAINTAINERS: Update Intel Wired LAN    reviewers
-> 
-> Since Matthew has moved on to other pastures and no longer works
-> for Intel, remove him from the list of reviewers and add Bruce
-> Allan as his replacement.
-> 
-> CC: Bruce Allan <bruce.w.allan@intel.com>
-> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> ---
->  MAINTAINERS | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
- 
-I'm not sure "Tested-by:" fits exactly, but I did confirm the change is in the tree and _did_ run test other stuff with this on the tree, so...
+In ixgbe_get_settings() the link status and speed of the interface
+are determined based on a read from the LINKS register via the call
+to mac.ops.check.link(). This can cause issues where external drivers
+may end up with unknown speed when calling ethtool_get_setings().
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Instead of calling the mac.ops.check_link() we can report the speed
+from the adapter structure which is populated by the driver.
+
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |    7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+index 2c5696a..6ddb2e6 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+@@ -185,9 +185,7 @@ static int ixgbe_get_settings(struct net_device *netdev,
+ 	struct ixgbe_adapter *adapter = netdev_priv(netdev);
+ 	struct ixgbe_hw *hw = &adapter->hw;
+ 	ixgbe_link_speed supported_link;
+-	u32 link_speed = 0;
+ 	bool autoneg = false;
+-	bool link_up;
+ 
+ 	hw->mac.ops.get_link_capabilities(hw, &supported_link, &autoneg);
+ 
+@@ -313,9 +311,8 @@ static int ixgbe_get_settings(struct net_device *netdev,
+ 		break;
+ 	}
+ 
+-	hw->mac.ops.check_link(hw, &link_speed, &link_up, false);
+-	if (link_up) {
+-		switch (link_speed) {
++	if (netif_carrier_ok(netdev)) {
++		switch (adapter->link_speed) {
+ 		case IXGBE_LINK_SPEED_10GB_FULL:
+ 			ethtool_cmd_speed_set(ecmd, SPEED_10000);
+ 			break;
+
