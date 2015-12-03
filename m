@@ -1,127 +1,48 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 03 Dec 2015 21:30:05 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- b0f9bdb335eaa7b11da6f37fb3647b646dd24529 BUILD SUCCESS
-Message-ID: <566043dd.2UxR1zymnMPnR8VM%fengguang.wu@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 3 Dec 2015 15:30:10 +0000
+Subject: [Intel-wired-lan] [net PATCH v2] i40e/i40evf: avoid mutex
+ re-init
+In-Reply-To: <1447890426-15471-1-git-send-email-jesse.brandeburg@intel.com>
+References: <1447890426-15471-1-git-send-email-jesse.brandeburg@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F96CB61@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-b0f9bdb335eaa7b11da6f37fb3647b646dd24529  i40e: Fix i40e_print_features() VEB mode output
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Jesse Brandeburg
+> Sent: Wednesday, November 18, 2015 3:47 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [net PATCH v2] i40e/i40evf: avoid mutex re-init
+> 
+> If the driver were to happen to have a mutex held while the
+> i40e_init_adminq call was called, the init_adminq might inadvertently call
+> mutex_init on a lock that was held which is a violation of the calling
+> semantics.
+> 
+> Fix this by avoiding adminq.c code allocating/freeing this memory, and then
+> do the same work only once in probe/remove.
+> 
+> Testing Hints (Required if no HSD): for VF, load i40evf in bare metal and echo
+> 32 > sriov_numvfs; echo 0 > sriov_numvfs in a loop.  Yes this is a horrible
+> thing to do.
+> 
+> Reported-by: Stefan Assmann <sassmann@redhat.com>
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Change-ID: Ida263c51b34e195252179e7e5e400d73a99be7a2
+> 
+> ---
+> 
+> v2: removed old calls to mutex_init that are no longer necessary
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_adminq.c   |  6 ------
+>  drivers/net/ethernet/intel/i40e/i40e_main.c     | 11 ++++++++++-
+>  drivers/net/ethernet/intel/i40evf/i40e_adminq.c |  6 ------
+> drivers/net/ethernet/intel/i40evf/i40evf_main.c | 10 ++++++++++
+>  4 files changed, 20 insertions(+), 13 deletions(-)
 
-elapsed time: 39m
-
-configs tested: 107
-
-i386                     randconfig-a0-201548
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                           allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64               randconfig-x011-12031005
-x86_64               randconfig-x019-12031005
-x86_64               randconfig-x013-12031005
-x86_64               randconfig-x017-12031005
-x86_64               randconfig-x010-12031005
-x86_64               randconfig-x018-12031005
-x86_64               randconfig-x012-12031005
-x86_64               randconfig-x014-12031005
-x86_64               randconfig-x016-12031005
-x86_64               randconfig-x015-12031005
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201548
-i386                     randconfig-s1-201548
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-i386                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201548
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i0-201548
-i386                     randconfig-i1-201548
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201548
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64               randconfig-x000-12030948
-x86_64               randconfig-x008-12030948
-x86_64               randconfig-x005-12030948
-x86_64               randconfig-x003-12030948
-x86_64               randconfig-x009-12030948
-x86_64               randconfig-x007-12030948
-x86_64               randconfig-x006-12030948
-x86_64               randconfig-x002-12030948
-x86_64               randconfig-x004-12030948
-x86_64               randconfig-x001-12030948
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-r0-201548
-i386                 randconfig-x007-12030946
-i386                 randconfig-x008-12030946
-i386                 randconfig-x005-12030946
-i386                 randconfig-x002-12030946
-i386                 randconfig-x004-12030946
-i386                 randconfig-x001-12030946
-i386                 randconfig-x006-12030946
-i386                 randconfig-x000-12030946
-i386                 randconfig-x009-12030946
-i386                 randconfig-x003-12030946
-
-Thanks,
-Fengguang
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Patch code changes correctly applied, echoing 0, 32, repeat in a loop does not crash driver/cause unexpected behavior
