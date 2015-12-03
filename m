@@ -1,51 +1,166 @@
-From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Thu, 03 Dec 2015 15:20:06 -0800
-Subject: [Intel-wired-lan] [PATCH] ixgbe: do not call check_link for ethtool
- in ixgbe_get_settings()
-Message-ID: <20151203232006.23658.24160.stgit@localhost6.localdomain6>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 04 Dec 2015 07:29:42 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:master]
+ 8ddb33268902c80ecd9a0e1bc766a2dc4bc9fede BUILD SUCCESS
+Message-ID: <5660d066.+83Xlq14kTynUnp8%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-In ixgbe_get_settings() the link status and speed of the interface
-are determined based on a read from the LINKS register via the call
-to mac.ops.check.link(). This can cause issues where external drivers
-may end up with unknown speed when calling ethtool_get_setings().
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
+8ddb33268902c80ecd9a0e1bc766a2dc4bc9fede  i40e/i40evf: avoid mutex re-init
 
-Instead of calling the mac.ops.check_link() we can report the speed
-from the adapter structure which is populated by the driver.
+elapsed time: 91m
 
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |    7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+configs tested: 145
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-index 2c5696a..6ddb2e6 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-@@ -185,9 +185,7 @@ static int ixgbe_get_settings(struct net_device *netdev,
- 	struct ixgbe_adapter *adapter = netdev_priv(netdev);
- 	struct ixgbe_hw *hw = &adapter->hw;
- 	ixgbe_link_speed supported_link;
--	u32 link_speed = 0;
- 	bool autoneg = false;
--	bool link_up;
- 
- 	hw->mac.ops.get_link_capabilities(hw, &supported_link, &autoneg);
- 
-@@ -313,9 +311,8 @@ static int ixgbe_get_settings(struct net_device *netdev,
- 		break;
- 	}
- 
--	hw->mac.ops.check_link(hw, &link_speed, &link_up, false);
--	if (link_up) {
--		switch (link_speed) {
-+	if (netif_carrier_ok(netdev)) {
-+		switch (adapter->link_speed) {
- 		case IXGBE_LINK_SPEED_10GB_FULL:
- 			ethtool_cmd_speed_set(ecmd, SPEED_10000);
- 			break;
+i386                     randconfig-a0-201548
+x86_64                 randconfig-a0-12040655
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-12040651
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                             allmodconfig
+arm                        mini2440_defconfig
+openrisc                          allnoconfig
+powerpc                       eiger_defconfig
+powerpc                 mpc8540_ads_defconfig
+powerpc                  storcenter_defconfig
+arm                            mps2_defconfig
+mips                        xilfpga_defconfig
+parisc                           allmodconfig
+powerpc                     kilauea_defconfig
+sh                        apsh4ad0a_defconfig
+x86_64               randconfig-x011-12031005
+x86_64               randconfig-x019-12031005
+x86_64               randconfig-x013-12031005
+x86_64               randconfig-x017-12031005
+x86_64               randconfig-x010-12031005
+x86_64               randconfig-x018-12031005
+x86_64               randconfig-x012-12031005
+x86_64               randconfig-x014-12031005
+x86_64               randconfig-x016-12031005
+x86_64               randconfig-x015-12031005
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                     randconfig-s0-201548
+i386                     randconfig-s1-201548
+x86_64                 randconfig-s0-12040550
+x86_64                 randconfig-s1-12040550
+x86_64                 randconfig-s2-12040550
+x86_64                 randconfig-s0-12040651
+x86_64                 randconfig-s1-12040651
+x86_64                 randconfig-s2-12040651
+x86_64                 randconfig-s3-12040549
+x86_64                 randconfig-s4-12040549
+x86_64                 randconfig-s5-12040549
+x86_64                 randconfig-s3-12040647
+x86_64                 randconfig-s4-12040647
+x86_64                 randconfig-s5-12040647
+x86_64                 randconfig-s3-12040705
+x86_64                 randconfig-s4-12040705
+x86_64                 randconfig-s5-12040705
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201548
+i386                   randconfig-b0-12040649
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201548
+i386                     randconfig-i1-201548
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+blackfin                BF609-EZKIT_defconfig
+m68k                        m5272c3_defconfig
+powerpc                   motionpro_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201548
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+avr32                     atstk1004_defconfig
+avr32        atngw100mkii_evklcd101_defconfig
+xtensa                generic_kc705_defconfig
+arm                          iop33x_defconfig
+arm                        spear6xx_defconfig
+mn10300                           allnoconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                  randconfig-sb0-12040658
+x86_64                           allmodconfig
+x86_64               randconfig-x000-12030948
+x86_64               randconfig-x008-12030948
+x86_64               randconfig-x005-12030948
+x86_64               randconfig-x003-12030948
+x86_64               randconfig-x009-12030948
+x86_64               randconfig-x007-12030948
+x86_64               randconfig-x006-12030948
+x86_64               randconfig-x002-12030948
+x86_64               randconfig-x004-12030948
+x86_64               randconfig-x001-12030948
+i386                     randconfig-r0-201548
+i386                 randconfig-x007-12030946
+i386                 randconfig-x008-12030946
+i386                 randconfig-x005-12030946
+i386                 randconfig-x002-12030946
+i386                 randconfig-x004-12030946
+i386                 randconfig-x001-12030946
+i386                 randconfig-x006-12030946
+i386                 randconfig-x000-12030946
+i386                 randconfig-x009-12030946
+i386                 randconfig-x003-12030946
 
+Thanks,
+Fengguang
