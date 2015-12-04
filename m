@@ -1,13 +1,16 @@
 From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-Date: Fri, 4 Dec 2015 11:19:18 -0500
-Subject: [Intel-wired-lan] bar
-Message-ID: <20151204161918.GL26633@oracle.com>
+Date: Fri, 4 Dec 2015 11:24:07 -0500
+Subject: [Intel-wired-lan] [PATCH RESEND v7] i40e: Look up MAC address in
+ Open Firmware or IDPROM
+Message-ID: <20151204162407.GM26633@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+
+[Apologies for fat-fingering subject in the other attempt]
 
 This is the i40e equivalent of commit c762dff24c06 ("ixgbe: Look up MAC
 address in Open Firmware or IDPROM").
@@ -183,5 +186,4 @@ index 9e6268b..40a5d53 100644
  		err = -EIO;
 -- 
 1.7.1
-
 
