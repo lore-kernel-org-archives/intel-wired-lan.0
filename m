@@ -1,67 +1,128 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 4 Dec 2015 09:07:57 -0800
-Subject: [Intel-wired-lan] [RFC PATCH V2 0/3] IXGBE/VFIO: Add live
- migration support for SRIOV NIC
-In-Reply-To: <5661C000.8070201@intel.com>
-References: <CAKgT0UevBmRLpM1PvuuVDUW79A66RcPrfO8uGiqL1RiALW7apg@mail.gmail.com>
- <A12AC9D104E08D47BAF23C492F83C53B25CDE9E3@SHSMSX104.ccr.corp.intel.com>
- <CAKgT0Ucyq=7OSYBVvU9Z01b3f6scS+eBMLg+yphW7bwkNZosPQ@mail.gmail.com>
- <565BF285.4040507@intel.com>
- <CAKgT0Uc+-gFAetEfde6DmMOFK+vDE6UkgsNF8oLNqaQc4USSeg@mail.gmail.com>
- <565DB6FF.1050602@intel.com> <20151201171140-mutt-send-email-mst@redhat.com>
- <CAKgT0UfLEJpV-KdqRGfzBeas8bdqfHCmT5Xc8iVVP03g_pQO8A@mail.gmail.com>
- <20151201193026-mutt-send-email-mst@redhat.com>
- <CAKgT0UfJ7w6yYcZcF2YZyDKEwvE7Gh3P-jfGQGKLfPH2crVBzw@mail.gmail.com>
- <20151202105955-mutt-send-email-mst@redhat.com> <5661C000.8070201@intel.com>
-Message-ID: <5661C86D.3010904@gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 05 Dec 2015 06:50:26 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ d171ba78041274644ac275b1c38c0e7a9e316af0 BUILD SUCCESS
+Message-ID: <566218b2.71ighRLYECUYUrC+%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 12/04/2015 08:32 AM, Lan, Tianyu wrote:
-> Hi Michael & Alexander:
-> Thanks a lot for your comments and suggestions.
->
-> We still need to support Windows guest for migration and this is why our
-> patches keep all changes in the driver since it's impossible to change
-> Windows kernel.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+d171ba78041274644ac275b1c38c0e7a9e316af0  ixgbe: Correct handling of any outer UDP checksum setting
 
-That is a poor argument.  I highly doubt Microsoft is interested in 
-having to modify all of the drivers that will support direct assignment 
-in order to support migration.  They would likely request something 
-similar to what I have in that they will want a way to do DMA tracking 
-with minimal modification required to the drivers.
+elapsed time: 65m
 
-> Following is my idea to do DMA tracking.
->
-> Inject event to VF driver after memory iterate stage
-> and before stop VCPU and then VF driver marks dirty all
-> using DMA memory. The new allocated pages also need to
-> be marked dirty before stopping VCPU. All dirty memory
-> in this time slot will be migrated until stop-and-copy
-> stage. We also need to make sure to disable VF via clearing the
-> bus master enable bit for VF before migrating these memory.
+configs tested: 107
 
-The ordering of your explanation here doesn't quite work.  What needs to 
-happen is that you have to disable DMA and then mark the pages as dirty. 
-  What the disabling of the BME does is signal to the hypervisor that 
-the device is now stopped.  The ixgbevf_suspend call already supported 
-by the driver is almost exactly what is needed to take care of something 
-like this.
+i386                     randconfig-a0-201548
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64               randconfig-x015-12041303
+x86_64               randconfig-x016-12041303
+x86_64               randconfig-x013-12041303
+x86_64               randconfig-x019-12041303
+x86_64               randconfig-x014-12041303
+x86_64               randconfig-x017-12041303
+x86_64               randconfig-x010-12041303
+x86_64               randconfig-x018-12041303
+x86_64               randconfig-x011-12041303
+x86_64               randconfig-x012-12041303
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201548
+i386                     randconfig-s1-201548
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+i386                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201548
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201548
+i386                     randconfig-i1-201548
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201548
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                           allmodconfig
+x86_64               randconfig-x004-12041230
+x86_64               randconfig-x006-12041230
+x86_64               randconfig-x005-12041230
+x86_64               randconfig-x007-12041230
+x86_64               randconfig-x003-12041230
+x86_64               randconfig-x002-12041230
+x86_64               randconfig-x001-12041230
+x86_64               randconfig-x000-12041230
+x86_64               randconfig-x009-12041230
+x86_64               randconfig-x008-12041230
+i386                     randconfig-r0-201548
+i386                 randconfig-x002-12041200
+i386                 randconfig-x006-12041200
+i386                 randconfig-x009-12041200
+i386                 randconfig-x007-12041200
+i386                 randconfig-x004-12041200
+i386                 randconfig-x008-12041200
+i386                 randconfig-x005-12041200
+i386                 randconfig-x000-12041200
+i386                 randconfig-x001-12041200
+i386                 randconfig-x003-12041200
 
-The question is how we would go about triggering it.  I really don't 
-think the PCI configuration space approach is the right idea.  I wonder 
-if we couldn't get away with some sort of ACPI event instead.  We 
-already require ACPI support in order to shut down the system 
-gracefully, I wonder if we couldn't get away with something similar in 
-order to suspend/resume the direct assigned devices gracefully.
-
-> The dma page allocated by VF driver also needs to reserve space
-> to do dummy write.
-
-No, this will not work.  If for example you have a VF driver allocating 
-memory for a 9K receive how will that work?  It isn't as if you can poke 
-a hole in the contiguous memory.
-
+Thanks,
+Fengguang
