@@ -1,52 +1,39 @@
-From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-Date: Sat, 5 Dec 2015 15:38:25 -0500
-Subject: [Intel-wired-lan] [PATCH RESEND v7] i40e: Look up MAC address
- in Open Firmware or IDPROM
-In-Reply-To: <CAP-MU4NdnTH1gj++ZH34NcHvjLjeRFy2=qchORSqP=+G4TjHQg@mail.gmail.com>
-References: <20151204162407.GM26633@oracle.com>
- <CAP-MU4NdnTH1gj++ZH34NcHvjLjeRFy2=qchORSqP=+G4TjHQg@mail.gmail.com>
-Message-ID: <20151205203825.GA8283@oracle.com>
+From: David Miller <davem@davemloft.net>
+Date: Sat, 05 Dec 2015 23:12:53 -0500 (EST)
+Subject: [Intel-wired-lan] [PATCH v8] i40e: Look up MAC address in Open
+	Firmware or IDPROM
+In-Reply-To: <20151205203300.GA8863@oracle.com>
+References: <20151205203300.GA8863@oracle.com>
+Message-ID: <20151205.231253.1057553137456534699.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On (12/04/15 17:40), Shannon Nelson wrote:
-> 
-> I'd write this just a little differently to match the rest of the driver:
-> 
->       ret = i40e_aq_add_macvlan(&vsi->back->hw, vsi->seid, &element, 1, NULL);
->       if (!ret) {
+From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+Date: Sat, 5 Dec 2015 15:33:00 -0500
 
-You mean if (ret), right? (i.e., ret == 0 is success)
+> +static void i40e_get_platform_mac_addr(struct pci_dev *pdev, struct i40e_pf *pf)
+> +{
+> +	struct device_node *dp = pci_device_to_OF_node(pdev);
+> +	const unsigned char *addr;
+> +	u8 *mac_addr = pf->hw.mac.addr;
+> +
+> +	pf->flags &= ~I40E_FLAG_PF_MAC;
+> +	addr = of_get_mac_address(dp);
+> +	if (addr) {
+> +		ether_addr_copy(mac_addr, addr);
+> +		pf->flags |= I40E_FLAG_PF_MAC;
+> +	}
+> +#ifdef CONFIG_SPARC
+> +	ether_addr_copy(mac_addr, idprom->id_ethaddr);
+> +	pf->flags |= I40E_FLAG_PF_MAC;
+> +#endif /* CONFIG_SPARC */
+> +}
 
->               dev_info(&vsi->back->pdev->dev,
->                        "add filter failed err %s aq_err %s\n",
+This logic doesn't look right.
 
-BTW, there are some other places in that file where the return
-status form i40e_aq_add_macvlan() is ignored, which makes this a bit
-confusing ..
-  :
-  :
-
-> > +{
-> > +       struct device_node *dp = pci_device_to_OF_node(pdev);
-> 
-> This gives me a compile warning, probably because I don't have
-> CONFIG_OF enabled.
-
-Odd, what sort of compile warning? I dont see that on my x86 
-machine (and I dont have CONFIG_OF either), and kbuild-test-robot
-did not catch that either, afaict. Perhaps you are missing some 
-include files?
-
-Without the dp definition, of_get_mac_address() further below
-will not find a "dp".
-
-Rest of the comments are addressed in v8 that I just sent out.
-
---Sowmini
-
-
-
+If we find an address via of_get_mac_address() we should not use the
+IDPROM address.  But here you are, since the IDPROM code runs
+unconditionally.
