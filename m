@@ -1,41 +1,104 @@
-From: David Miller <davem@davemloft.net>
-Date: Mon, 07 Dec 2015 16:28:02 -0500 (EST)
-Subject: [Intel-wired-lan] [PATCH v9] i40e: Look up MAC address in Open
-	Firmware or IDPROM
-In-Reply-To: <20151207200634.GA4415@oracle.com>
-References: <20151207200634.GA4415@oracle.com>
-Message-ID: <20151207.162802.462148155042537146.davem@davemloft.net>
+From: Neerav Parikh <neerav.parikh@intel.com>
+Date: Mon, 07 Dec 2015 13:43:55 -0800
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix MDD events generated when
+	FCoE+SRIOV are enabled
+Message-ID: <20151207214354.7597.22257.stgit@neerav-dbg1.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-Date: Mon, 7 Dec 2015 15:06:34 -0500
+When FCoE is enabled with SR-IOV on the X550 NIC the hardware
+generates MDD events.
 
-> This is the i40e equivalent of commit c762dff24c06 ("ixgbe: Look up MAC
-> address in Open Firmware or IDPROM").
-> 
-> As with that fix, attempt to look up the MAC address in Open Firmware
-> on systems that support it, and use IDPROM on SPARC if no OF address
-> is found.
-> 
-> In the case of the i40e there is an assumption that the default mac
-> address has already been set up as the primary mac filter on probe,
-> so if this filter is obtained from the Open Firmware or IDPROM, an
-> explicit write is needed via i40e_aq_mac_address_write() and
-> i40e_aq_add_macvlan() invocation.
-> 
-> The I40E_FLAG_PF_MAC flag in the platform-private i40e_pf structure
-> tracks whether a platform-specific mac address was found, in which
-> case calls to i40e_aq_mac_address_write() and i40e_aq_add_macvlan()
-> will be triggered.
-> 
-> Reviewed-by: Martin K. Petersen <martin.petersen@oracle.com>
-> Signed-off-by: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+This patch fixes these by setting the expected values in the
+Tx context descriptors for FCoE/FIP frames and adding a flush
+after writing the RDLEN register.
 
-This looks good to me.
+Signed-off-by: Neerav Parikh <neerav.parikh@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c |    5 ++++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   18 ++++++++++++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |    1 +
+ 3 files changed, 23 insertions(+), 1 deletion(-)
 
-Once this goes in I'll add my generic MAC stuff to net-next and then
-we can convert the various Intel drivers to use it.
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
+index 5f98870..78ffef4 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
+@@ -517,6 +517,7 @@ int ixgbe_fso(struct ixgbe_ring *tx_ring,
+ 	u32 vlan_macip_lens;
+ 	u32 fcoe_sof_eof = 0;
+ 	u32 mss_l4len_idx;
++	u32 type_tucmd = IXGBE_ADVTXT_TUCMD_FCOE;
+ 	u8 sof, eof;
+ 
+ 	if (skb_is_gso(skb) && (skb_shinfo(skb)->gso_type != SKB_GSO_FCOE)) {
+@@ -593,6 +594,8 @@ int ixgbe_fso(struct ixgbe_ring *tx_ring,
+ 					       skb_shinfo(skb)->gso_size);
+ 		first->bytecount += (first->gso_segs - 1) * *hdr_len;
+ 		first->tx_flags |= IXGBE_TX_FLAGS_TSO;
++		/* Hardware expects L4T to be RSV for FCoE TSO */
++		type_tucmd |= IXGBE_ADVTXD_TUCMD_L4T_RSV;
+ 	}
+ 
+ 	/* set flag indicating FCOE to ixgbe_tx_map call */
+@@ -610,7 +613,7 @@ int ixgbe_fso(struct ixgbe_ring *tx_ring,
+ 
+ 	/* write context desc */
+ 	ixgbe_tx_ctxtdesc(tx_ring, vlan_macip_lens, fcoe_sof_eof,
+-			  IXGBE_ADVTXT_TUCMD_FCOE, mss_l4len_idx);
++			  type_tucmd, mss_l4len_idx);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index ebd4522..c31ed4c 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -3619,6 +3619,9 @@ void ixgbe_configure_rx_ring(struct ixgbe_adapter *adapter,
+ 	IXGBE_WRITE_REG(hw, IXGBE_RDBAH(reg_idx), (rdba >> 32));
+ 	IXGBE_WRITE_REG(hw, IXGBE_RDLEN(reg_idx),
+ 			ring->count * sizeof(union ixgbe_adv_rx_desc));
++	/* Force flushing of IXGBE_RDLEN to prevent MDD */
++	IXGBE_WRITE_FLUSH(hw);
++
+ 	IXGBE_WRITE_REG(hw, IXGBE_RDH(reg_idx), 0);
+ 	IXGBE_WRITE_REG(hw, IXGBE_RDT(reg_idx), 0);
+ 	ring->tail = adapter->io_addr + IXGBE_RDT(reg_idx);
+@@ -7641,6 +7644,21 @@ netdev_tx_t ixgbe_xmit_frame_ring(struct sk_buff *skb,
+ 			goto out_drop;
+ 
+ 		goto xmit_fcoe;
++	} else if (protocol ==  htons(ETH_P_FIP)) {
++		/* A zero as offset will result in HW generating malicious event
++		 * when trying to Tx a FIP frame. So, set a valid header length
++		 * to prevent such an event.
++		 */
++		if (!skb_network_offset(skb)) {
++			if (tx_flags & (IXGBE_TX_FLAGS_HW_VLAN |
++			    IXGBE_TX_FLAGS_SW_VLAN))
++				skb_set_network_header(skb,
++						       sizeof(struct ethhdr) +
++						       sizeof(struct vlan_hdr));
++			else
++				skb_set_network_header(skb,
++						       sizeof(struct ethhdr));
++		}
+ 	}
+ 
+ #endif /* IXGBE_FCOE */
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index 1329edd..e93c264 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -2780,6 +2780,7 @@ struct ixgbe_adv_tx_context_desc {
+ #define IXGBE_ADVTXD_TUCMD_L4T_UDP   0x00000000  /* L4 Packet TYPE of UDP */
+ #define IXGBE_ADVTXD_TUCMD_L4T_TCP   0x00000800  /* L4 Packet TYPE of TCP */
+ #define IXGBE_ADVTXD_TUCMD_L4T_SCTP  0x00001000  /* L4 Packet TYPE of SCTP */
++#define IXGBE_ADVTXD_TUCMD_L4T_RSV     0x00001800 /* RSV L4 Packet TYPE */
+ #define IXGBE_ADVTXD_TUCMD_MKRREQ    0x00002000 /*Req requires Markers and CRC*/
+ #define IXGBE_ADVTXD_POPTS_IPSEC      0x00000400 /* IPSec offload request */
+ #define IXGBE_ADVTXD_TUCMD_IPSEC_TYPE_ESP 0x00002000 /* IPSec Type ESP */
+
