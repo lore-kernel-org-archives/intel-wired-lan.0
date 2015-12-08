@@ -1,168 +1,70 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 7 Dec 2015 10:42:06 -0800
-Subject: [Intel-wired-lan] [RFC PATCH V2 0/3] IXGBE/VFIO: Add live
- migration support for SRIOV NIC
-In-Reply-To: <20151207191418-mutt-send-email-mst@redhat.com>
-References: <565DB6FF.1050602@intel.com>
- <20151201171140-mutt-send-email-mst@redhat.com>
- <CAKgT0UfLEJpV-KdqRGfzBeas8bdqfHCmT5Xc8iVVP03g_pQO8A@mail.gmail.com>
- <20151201193026-mutt-send-email-mst@redhat.com>
- <CAKgT0UfJ7w6yYcZcF2YZyDKEwvE7Gh3P-jfGQGKLfPH2crVBzw@mail.gmail.com>
- <20151202105955-mutt-send-email-mst@redhat.com>
- <5661C000.8070201@intel.com> <5661C86D.3010904@gmail.com>
- <5665A884.2020102@intel.com>
- <CAKgT0UeFzW_tpdSr=Ck6X6w2XnAUJquW46mo2H0Ag=Z=q0tgtg@mail.gmail.com>
- <20151207191418-mutt-send-email-mst@redhat.com>
-Message-ID: <CAKgT0UceN-xA9ZcFmFPbCeTC1ZCjE3ELFQMsRwGMzZ3Req8jiQ@mail.gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 8 Dec 2015 17:07:50 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 35/88]
+ drivers/net/ethernet/intel/fm10k/fm10k_netdev.c:1182:2: error: 'err'
+ undeclared
+Message-ID: <201512081749.3vqh0Mib%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Dec 7, 2015 at 9:39 AM, Michael S. Tsirkin <mst@redhat.com> wrote:
-> On Mon, Dec 07, 2015 at 09:12:08AM -0800, Alexander Duyck wrote:
->> On Mon, Dec 7, 2015 at 7:40 AM, Lan, Tianyu <tianyu.lan@intel.com> wrote:
->> > On 12/5/2015 1:07 AM, Alexander Duyck wrote:
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   0d8cf8f0fb3baeb46c9019e8d3ff0057e1516fb2
+commit: 89e14e905885490b878299e441b261eaa2afd789 [35/88] fm10k: Cleanup exception handling for changing queues
+config: x86_64-randconfig-x009-12070929 (attached as .config)
+reproduce:
+        git checkout 89e14e905885490b878299e441b261eaa2afd789
+        # save the attached .config to linux build tree
+        make ARCH=x86_64 
 
->> > If can't do that, we have to stop DMA in a short time to mark all dma
->> > pages dirty and then reenable it. I am not sure how much we can get by
->> > this way to track all DMA memory with device running during migration. I
->> > need to do some tests and compare results with stop DMA diretly at last
->> > stage during migration.
->>
->> We have to halt the DMA before we can complete the migration.  So
->> please feel free to test this.
->>
->> In addition I still feel you would be better off taking this in
->> smaller steps.  I still say your first step would be to come up with a
->> generic solution for the dirty page tracking like the dma_mark_clean()
->> approach I had mentioned earlier.  If I get time I might try to take
->> care of it myself later this week since you don't seem to agree with
->> that approach.
->
-> Or even try to look at the dirty bit in the VT-D PTEs
-> on the host. See the mail I have just sent.
-> Might be slower, or might be faster, but is completely
-> transparent.
+All error/warnings (new ones prefixed by >>):
 
-I just saw it and I am looking over the VTd spec now.  It looks like
-there might be some performance impacts if software is changing the
-PTEs since then the VTd harwdare cannot cache them.  I still have to
-do some more reading though so I can fully understand the impacts.
+   drivers/net/ethernet/intel/fm10k/fm10k_netdev.c: In function 'fm10k_setup_tc':
+>> drivers/net/ethernet/intel/fm10k/fm10k_netdev.c:1182:2: error: 'err' undeclared (first use in this function)
+     err = netif_running(dev) ? fm10k_open(dev) : 0;
+     ^
+   drivers/net/ethernet/intel/fm10k/fm10k_netdev.c:1182:2: note: each undeclared identifier is reported only once for each function it appears in
+>> drivers/net/ethernet/intel/fm10k/fm10k_netdev.c:1194:1: warning: label 'err_queueing_scheme' defined but not used [-Wunused-label]
+    err_queueing_scheme:
+    ^
+>> drivers/net/ethernet/intel/fm10k/fm10k_netdev.c:1192:1: warning: label 'err_mbx_irq' defined but not used [-Wunused-label]
+    err_mbx_irq:
+    ^
 
->> >>
->> >> The question is how we would go about triggering it.  I really don't
->> >> think the PCI configuration space approach is the right idea.
->> >>  I wonder
->> >> if we couldn't get away with some sort of ACPI event instead.  We
->> >> already require ACPI support in order to shut down the system
->> >> gracefully, I wonder if we couldn't get away with something similar in
->> >> order to suspend/resume the direct assigned devices gracefully.
->> >>
->> >
->> > I don't think there is such events in the current spec.
->> > Otherwise, There are two kinds of suspend/resume callbacks.
->> > 1) System suspend/resume called during S2RAM and S2DISK.
->> > 2) Runtime suspend/resume called by pm core when device is idle.
->> > If you want to do what you mentioned, you have to change PM core and
->> > ACPI spec.
->>
->> The thought I had was to somehow try to move the direct assigned
->> devices into their own power domain and then simulate a AC power event
->> where that domain is switched off.  However I don't know if there are
->> ACPI events to support that since the power domain code currently only
->> appears to be in use for runtime power management.
->>
->> That had also given me the thought to look at something like runtime
->> power management for the VFs.  We would need to do a runtime
->> suspend/resume.  The only problem is I don't know if there is any way
->> to get the VFs to do a quick wakeup.  It might be worthwhile looking
->> at trying to check with the ACPI experts out there to see if there is
->> anything we can do as bypassing having to use the configuration space
->> mechanism to signal this would definitely be worth it.
->
-> I don't much like this idea because it relies on the
-> device being exactly the same across source/destination.
-> After all, this is always true for suspend/resume.
-> Most users do not have control over this, and you would
-> often get sightly different versions of firmware,
-> etc without noticing.
+vim +/err +1182 drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
 
-The original code was operating on that assumption as well.  That is
-kind of why I suggested suspend/resume rather than reinventing the
-wheel.
+  1176		netdev_set_num_tc(dev, tc);
+  1177	
+  1178		fm10k_init_queueing_scheme(interface);
+  1179	
+  1180		fm10k_mbx_request_irq(interface);
+  1181	
+> 1182		err = netif_running(dev) ? fm10k_open(dev) : 0;
+  1183		if (err)
+  1184			goto err_open;
+  1185	
+  1186		/* flag to indicate SWPRI has yet to be updated */
+  1187		interface->flags |= FM10K_FLAG_SWPRI_CONFIG;
+  1188	
+  1189		return 0;
+  1190	err_open:
+  1191		fm10k_mbx_free_irq(interface);
+> 1192	err_mbx_irq:
+  1193		fm10k_clear_queueing_scheme(interface);
+> 1194	err_queueing_scheme:
+  1195		netif_device_detach(dev);
+  1196	
+  1197		return err;
 
-> I think we should first see how far along we can get
-> by doing a full device reset, and only carrying over
-> high level state such as IP, MAC, ARP cache etc.
-
-One advantage of the suspend/resume approach is that it is compatible
-with a full reset.  The suspend/resume approach assumes the device
-goes through a D0->D3->D0 reset as a part of transitioning between the
-system states.
-
-I do admit though that the PCI spec says you aren't supposed to be
-hot-swapping devices while the system is in a sleep state so odds are
-you would encounter issues if the device changed in any significant
-way.
-
->> >>> The dma page allocated by VF driver also needs to reserve space
->> >>> to do dummy write.
->> >>
->> >>
->> >> No, this will not work.  If for example you have a VF driver allocating
->> >> memory for a 9K receive how will that work?  It isn't as if you can poke
->> >> a hole in the contiguous memory.
->>
->> This is the bit that makes your "poke a hole" solution not portable to
->> other drivers.  I don't know if you overlooked it but for many NICs
->> jumbo frames means using large memory allocations to receive the data.
->> That is the way ixgbevf was up until about a year ago so you cannot
->> expect all the drivers that will want migration support to allow a
->> space for you to write to.  In addition some storage drivers have to
->> map an entire page, that means there is no room for a hole there.
->>
->> - Alex
->
-> I think we could start with the atomic idea.
-> cmpxchg(ptr, X, X)
-> for any value of X will never corrupt any memory.
-
-Right pretty much any atomic operation that will not result in the
-value being changed will do.
-
-> Then DMA API could gain a flag that says there actually is a hole to
-> write into, so you can do
->
-> ACESS_ONCE(*ptr)=0;
->
-> or where there is no concurrent access so you can do
->
-> ACESS_ONCE(*ptr)=ACCESS_ONCE(*ptr);
->
-> A driver that sets one of these flags will gain a bit of performance.
-
-I don't see the memory hole thing working out very well.  It isn't
-very portable and will just make a mess of things in general.  I tend
-to prefer the cmpxchg(ptr, 0, 0) approach.  Yes it adds a locked
-operation but the fact is we are probably going to be taking a fairly
-heavy hit anyway as the cache line is likely not stored in the L1
-cache.
-
-The part I am wondering about is if there is some way for us to switch
-this on/off.  Having to always dirty a cache line in each DMA page
-isn't exactly desirable and obviously we don't need it if we are not
-KVM/Xen and we are not in the middle of a migration.  For tests where
-you are running just netperf and the like the performance effect won't
-even show up.  It will increase CPU utilization by a fraction of a
-percent.  It isn't till you start focusing on small packets or
-40/100Gbs that something like this would be an issue.
-
-If we can get VTd on the host to take care of the dirty page tracking
-for us then that would likely work out even better because we could
-probably bulk the accesses.  So each time we go out and check the
-guest for dirty pages we could do it in two passes, one for the pages
-the guest dirtied and then one for the pages the device dirtied.
-
-- Alex
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/octet-stream
+Size: 25406 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151208/35075e30/attachment-0001.obj>
