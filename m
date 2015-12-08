@@ -1,54 +1,64 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Tue, 8 Dec 2015 22:42:03 +0300
-Subject: [Intel-wired-lan] i40evf: create a generic config RSS function
-Message-ID: <20151208194203.GA1469@mwanda>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 8 Dec 2015 19:46:38 +0000
+Subject: [Intel-wired-lan] [PATCH v9] i40e: Look up MAC address in
+	Open	Firmware or IDPROM
+In-Reply-To: <20151207200634.GA4415@oracle.com>
+References: <20151207200634.GA4415@oracle.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F96D2C3@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello Helin Zhang,
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Sowmini Varadhan
+> Sent: Monday, December 07, 2015 12:07 PM
+> To: sowmini.varadhan at oracle.com; intel-wired-lan at lists.osuosl.org;
+> netdev at vger.kernel.org; linux-kernel at vger.kernel.org
+> Cc: andy.shevchenko at gmail.com; matthew.vick at intel.com;
+> davem at davemloft.net
+> Subject: [Intel-wired-lan] [PATCH v9] i40e: Look up MAC address in Open
+> Firmware or IDPROM
+> 
+> 
+> This is the i40e equivalent of commit c762dff24c06 ("ixgbe: Look up MAC
+> address in Open Firmware or IDPROM").
+> 
+> As with that fix, attempt to look up the MAC address in Open Firmware on
+> systems that support it, and use IDPROM on SPARC if no OF address is found.
+> 
+> In the case of the i40e there is an assumption that the default mac address
+> has already been set up as the primary mac filter on probe, so if this filter is
+> obtained from the Open Firmware or IDPROM, an explicit write is needed via
+> i40e_aq_mac_address_write() and
+> i40e_aq_add_macvlan() invocation.
+> 
+> The I40E_FLAG_PF_MAC flag in the platform-private i40e_pf structure tracks
+> whether a platform-specific mac address was found, in which case calls to
+> i40e_aq_mac_address_write() and i40e_aq_add_macvlan() will be triggered.
+> 
+> Reviewed-by: Martin K. Petersen <martin.petersen@oracle.com>
+> Signed-off-by: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+> ---
+> v2, v3: Andy Shevchenko comments
+> v4: Shannon Nelson review: explicitly set up mac filters before
+> register_netdev
+> v5: Shannon Nelson code style comments
+> v6: Shannon Nelson code style comments
+> v7: Ensure that i40e_macaddr_init() is called only for VSI_MAIN, and only
+>     if the mac address is not the default. Some additional code-refactoring
+>     based on comments from Shannon Nelson
+> v8: use pf->flags instead of bit value to track if we found a platform-specific
+>     macaddr. Other code-style comments from Shannon Nelson
+> v9: David Miller, Shannon Nelson comments for
+> i40e_get_platform_mac_addr
+> 
+>  drivers/net/ethernet/intel/i40e/i40e.h      |    1 +
+>  drivers/net/ethernet/intel/i40e/i40e_main.c |   90
+> +++++++++++++++++++++++++++
+>  2 files changed, 91 insertions(+), 0 deletions(-)
 
-The patch 2c86ac3c7079: "i40evf: create a generic config RSS
-function" from Oct 27, 2015, leads to the following static checker
-warning:
-
-	drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c:691 i40evf_set_rxfh()
-	warn: we tested 'key' before and it was 'false'
-
-drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-   676  static int i40evf_set_rxfh(struct net_device *netdev, const u32 *indir,
-   677                             const u8 *key, const u8 hfunc)
-   678  {
-   679          struct i40evf_adapter *adapter = netdev_priv(netdev);
-   680          struct i40e_vsi *vsi = &adapter->vsi;
-   681          u8 *seed = NULL;
-   682          u16 i;
-   683  
-   684          /* We do not allow change in unsupported parameters */
-   685          if (key ||
-                    ^^^
-If key is non-NULL then we return.  Maybe this is a || vs && typo?
-
-   686              (hfunc != ETH_RSS_HASH_NO_CHANGE && hfunc != ETH_RSS_HASH_TOP))
-   687                  return -EOPNOTSUPP;
-   688          if (!indir)
-   689                  return 0;
-   690  
-   691          if (key) {
-
-Since we know key is NULL that means this is dead code.
-
-   692                  if (!vsi->rss_hkey_user) {
-   693                          vsi->rss_hkey_user = kzalloc(I40EVF_HKEY_ARRAY_SIZE,
-   694                                                       GFP_KERNEL);
-   695                          if (!vsi->rss_hkey_user)
-   696                                  return -ENOMEM;
-   697                  }
-   698                  memcpy(vsi->rss_hkey_user, key, I40EVF_HKEY_ARRAY_SIZE);
-   699                  seed = vsi->rss_hkey_user;
-   700          }
-
-regards,
-dan carpenter
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Patch code changes correctly applied, driver displays correct MAC address, no more -11 error on driver init.
