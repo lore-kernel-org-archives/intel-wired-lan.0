@@ -1,121 +1,54 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 09 Dec 2015 03:07:36 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
- e370abd95675cb19f10a1594415cbf71d96a181c BUILD SUCCESS
-Message-ID: <56672a78.riIB8FQ6rDYyi8EH%fengguang.wu@intel.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Tue, 8 Dec 2015 22:42:03 +0300
+Subject: [Intel-wired-lan] i40evf: create a generic config RSS function
+Message-ID: <20151208194203.GA1469@mwanda>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
-e370abd95675cb19f10a1594415cbf71d96a181c  Merge tag 'wireless-drivers-next-for-davem-2015-12-07' of git://git.kernel.org/pub/scm/linux/kernel/git/kvalo/wireless-drivers-next
+Hello Helin Zhang,
 
-i386-tinyconfig vmlinux size:
+The patch 2c86ac3c7079: "i40evf: create a generic config RSS
+function" from Oct 27, 2015, leads to the following static checker
+warning:
 
-+-------+------+------+-----+----------------------------------------------------------------------------+
-| TOTAL | TEXT | DATA | BSS |                                                                            |
-+-------+------+------+-----+----------------------------------------------------------------------------+
-|  +128 | +128 |    0 |   0 | f188b951f33a Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net |
-|  +128 | +128 |    0 |   0 | ALL COMMITS                                                                |
-+-------+------+------+-----+----------------------------------------------------------------------------+
+	drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c:691 i40evf_set_rxfh()
+	warn: we tested 'key' before and it was 'false'
 
-elapsed time: 59m
+drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
+   676  static int i40evf_set_rxfh(struct net_device *netdev, const u32 *indir,
+   677                             const u8 *key, const u8 hfunc)
+   678  {
+   679          struct i40evf_adapter *adapter = netdev_priv(netdev);
+   680          struct i40e_vsi *vsi = &adapter->vsi;
+   681          u8 *seed = NULL;
+   682          u16 i;
+   683  
+   684          /* We do not allow change in unsupported parameters */
+   685          if (key ||
+                    ^^^
+If key is non-NULL then we return.  Maybe this is a || vs && typo?
 
-configs tested: 91
+   686              (hfunc != ETH_RSS_HASH_NO_CHANGE && hfunc != ETH_RSS_HASH_TOP))
+   687                  return -EOPNOTSUPP;
+   688          if (!indir)
+   689                  return 0;
+   690  
+   691          if (key) {
 
-i386                     randconfig-a0-201549
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x014-201549
-x86_64                 randconfig-x018-201549
-x86_64                 randconfig-x016-201549
-x86_64                 randconfig-x015-201549
-x86_64                 randconfig-x019-201549
-x86_64                 randconfig-x011-201549
-x86_64                 randconfig-x017-201549
-x86_64                 randconfig-x013-201549
-x86_64                 randconfig-x010-201549
-x86_64                 randconfig-x012-201549
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201549
-i386                     randconfig-s1-201549
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                   randconfig-i0-201549
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201549
-i386                     randconfig-i1-201549
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                     randconfig-n0-201549
-arm                     davinci_all_defconfig
-mips                          rm200_defconfig
-x86_64               randconfig-x008-12070929
-x86_64               randconfig-x001-12070929
-x86_64               randconfig-x006-12070929
-x86_64               randconfig-x002-12070929
-x86_64               randconfig-x000-12070929
-x86_64               randconfig-x005-12070929
-x86_64               randconfig-x007-12070929
-x86_64               randconfig-x003-12070929
-x86_64               randconfig-x004-12070929
-x86_64               randconfig-x009-12070929
-i386                     randconfig-r0-201549
-i386                 randconfig-x000-12070758
-i386                 randconfig-x001-12070758
-i386                 randconfig-x002-12070758
-i386                 randconfig-x003-12070758
-i386                 randconfig-x004-12070758
-i386                 randconfig-x005-12070758
-i386                 randconfig-x006-12070758
-i386                 randconfig-x007-12070758
-i386                 randconfig-x008-12070758
-i386                 randconfig-x009-12070758
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
+Since we know key is NULL that means this is dead code.
 
-Thanks,
-Fengguang
+   692                  if (!vsi->rss_hkey_user) {
+   693                          vsi->rss_hkey_user = kzalloc(I40EVF_HKEY_ARRAY_SIZE,
+   694                                                       GFP_KERNEL);
+   695                          if (!vsi->rss_hkey_user)
+   696                                  return -ENOMEM;
+   697                  }
+   698                  memcpy(vsi->rss_hkey_user, key, I40EVF_HKEY_ARRAY_SIZE);
+   699                  seed = vsi->rss_hkey_user;
+   700          }
+
+regards,
+dan carpenter
