@@ -1,7 +1,8 @@
 From: Bruce Allan <bruce.w.allan@intel.com>
-Date: Tue, 08 Dec 2015 15:51:04 -0800
-Subject: [Intel-wired-lan] [PATCH] fm10k: remove unused struct element
-Message-ID: <20151208235104.125805.8704.stgit@bwallan-cwp1.jf.intel.com>
+Date: Tue, 08 Dec 2015 15:51:11 -0800
+Subject: [Intel-wired-lan] [PATCH] fm10k: use true/false for boolean
+	get_host_state
+Message-ID: <20151208235111.125830.76769.stgit@bwallan-cwp1.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,19 +11,38 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_type.h |    1 -
- 1 file changed, 1 deletion(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_type.h b/drivers/net/ethernet/intel/fm10k/fm10k_type.h
-index bc27c75..854ebb1 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_type.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_type.h
-@@ -550,7 +550,6 @@ struct fm10k_mac_ops {
- 				    struct fm10k_dglort_cfg *);
- 	void (*set_dma_mask)(struct fm10k_hw *, u64);
- 	s32 (*get_fault)(struct fm10k_hw *, int, struct fm10k_fault *);
--	void (*request_lport_map)(struct fm10k_hw *);
- 	s32 (*adjust_systime)(struct fm10k_hw *, s32 ppb);
- 	u64 (*read_systime)(struct fm10k_hw *);
- };
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index 9c6ed88..4eb7a6f 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -912,7 +912,7 @@ static irqreturn_t fm10k_msix_mbx_vf(int __always_unused irq, void *data)
+ 		fm10k_mbx_unlock(interface);
+ 	}
+ 
+-	hw->mac.get_host_state = 1;
++	hw->mac.get_host_state = true;
+ 	fm10k_service_event_schedule(interface);
+ 
+ 	return IRQ_HANDLED;
+@@ -1128,7 +1128,7 @@ static irqreturn_t fm10k_msix_mbx_pf(int __always_unused irq, void *data)
+ 	}
+ 
+ 	/* we should validate host state after interrupt event */
+-	hw->mac.get_host_state = 1;
++	hw->mac.get_host_state = true;
+ 
+ 	/* validate host state, and handle VF mailboxes in the service task */
+ 	fm10k_service_event_schedule(interface);
+@@ -1635,7 +1635,7 @@ void fm10k_up(struct fm10k_intfc *interface)
+ 	netif_tx_start_all_queues(interface->netdev);
+ 
+ 	/* kick off the service timer now */
+-	hw->mac.get_host_state = 1;
++	hw->mac.get_host_state = true;
+ 	mod_timer(&interface->service_timer, jiffies);
+ }
+ 
 
