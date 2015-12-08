@@ -1,194 +1,153 @@
-From: Allan, Bruce W <bruce.w.allan@intel.com>
-Date: Tue, 8 Dec 2015 23:11:23 +0000
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 95cb5886d6feb2a3306f13d0abc21f189db01c14 BUILD DONE
-In-Reply-To: <566739c2.BnoOzyybhgXGWvMc%fengguang.wu@intel.com>
-References: <566739c2.BnoOzyybhgXGWvMc%fengguang.wu@intel.com>
-Message-ID: <804857E1F29AAC47BF68C404FC60A1847EDABEA5@ORSMSX105.amr.corp.intel.com>
+From: Bruce Allan <bruce.w.allan@intel.com>
+Date: Tue, 08 Dec 2015 15:50:34 -0800
+Subject: [Intel-wired-lan] [PATCH 1/2] fm10k: address operator not needed
+ when declaring function pointers
+Message-ID: <20151208235034.125723.15232.stgit@bwallan-cwp1.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Jeff,
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+---
+ drivers/net/ethernet/intel/fm10k/fm10k_pf.c |   58 ++++++++++++++-------------
+ drivers/net/ethernet/intel/fm10k/fm10k_vf.c |   38 +++++++++---------
+ 2 files changed, 48 insertions(+), 48 deletions(-)
 
-It looks like when you dropped Nicholas Krause's recent patches to fm10k you broke
-Alex' v2 patch titled "fm10k: Cleanup exception handling for changing queues" which
-now results in the warnings below.
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+index 7dd7ca8..606c0f1 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+@@ -1867,38 +1867,38 @@ static const struct fm10k_msg_data fm10k_msg_data_pf[] = {
+ };
+ 
+ static struct fm10k_mac_ops mac_ops_pf = {
+-	.get_bus_info		= &fm10k_get_bus_info_generic,
+-	.reset_hw		= &fm10k_reset_hw_pf,
+-	.init_hw		= &fm10k_init_hw_pf,
+-	.start_hw		= &fm10k_start_hw_generic,
+-	.stop_hw		= &fm10k_stop_hw_generic,
+-	.update_vlan		= &fm10k_update_vlan_pf,
+-	.read_mac_addr		= &fm10k_read_mac_addr_pf,
+-	.update_uc_addr		= &fm10k_update_uc_addr_pf,
+-	.update_mc_addr		= &fm10k_update_mc_addr_pf,
+-	.update_xcast_mode	= &fm10k_update_xcast_mode_pf,
+-	.update_int_moderator	= &fm10k_update_int_moderator_pf,
+-	.update_lport_state	= &fm10k_update_lport_state_pf,
+-	.update_hw_stats	= &fm10k_update_hw_stats_pf,
+-	.rebind_hw_stats	= &fm10k_rebind_hw_stats_pf,
+-	.configure_dglort_map	= &fm10k_configure_dglort_map_pf,
+-	.set_dma_mask		= &fm10k_set_dma_mask_pf,
+-	.get_fault		= &fm10k_get_fault_pf,
+-	.get_host_state		= &fm10k_get_host_state_pf,
+-	.adjust_systime		= &fm10k_adjust_systime_pf,
+-	.read_systime		= &fm10k_read_systime_pf,
++	.get_bus_info		= fm10k_get_bus_info_generic,
++	.reset_hw		= fm10k_reset_hw_pf,
++	.init_hw		= fm10k_init_hw_pf,
++	.start_hw		= fm10k_start_hw_generic,
++	.stop_hw		= fm10k_stop_hw_generic,
++	.update_vlan		= fm10k_update_vlan_pf,
++	.read_mac_addr		= fm10k_read_mac_addr_pf,
++	.update_uc_addr		= fm10k_update_uc_addr_pf,
++	.update_mc_addr		= fm10k_update_mc_addr_pf,
++	.update_xcast_mode	= fm10k_update_xcast_mode_pf,
++	.update_int_moderator	= fm10k_update_int_moderator_pf,
++	.update_lport_state	= fm10k_update_lport_state_pf,
++	.update_hw_stats	= fm10k_update_hw_stats_pf,
++	.rebind_hw_stats	= fm10k_rebind_hw_stats_pf,
++	.configure_dglort_map	= fm10k_configure_dglort_map_pf,
++	.set_dma_mask		= fm10k_set_dma_mask_pf,
++	.get_fault		= fm10k_get_fault_pf,
++	.get_host_state		= fm10k_get_host_state_pf,
++	.adjust_systime		= fm10k_adjust_systime_pf,
++	.read_systime		= fm10k_read_systime_pf,
+ };
+ 
+ static struct fm10k_iov_ops iov_ops_pf = {
+-	.assign_resources		= &fm10k_iov_assign_resources_pf,
+-	.configure_tc			= &fm10k_iov_configure_tc_pf,
+-	.assign_int_moderator		= &fm10k_iov_assign_int_moderator_pf,
++	.assign_resources		= fm10k_iov_assign_resources_pf,
++	.configure_tc			= fm10k_iov_configure_tc_pf,
++	.assign_int_moderator		= fm10k_iov_assign_int_moderator_pf,
+ 	.assign_default_mac_vlan	= fm10k_iov_assign_default_mac_vlan_pf,
+-	.reset_resources		= &fm10k_iov_reset_resources_pf,
+-	.set_lport			= &fm10k_iov_set_lport_pf,
+-	.reset_lport			= &fm10k_iov_reset_lport_pf,
+-	.update_stats			= &fm10k_iov_update_stats_pf,
+-	.report_timestamp		= &fm10k_iov_report_timestamp_pf,
++	.reset_resources		= fm10k_iov_reset_resources_pf,
++	.set_lport			= fm10k_iov_set_lport_pf,
++	.reset_lport			= fm10k_iov_reset_lport_pf,
++	.update_stats			= fm10k_iov_update_stats_pf,
++	.report_timestamp		= fm10k_iov_report_timestamp_pf,
+ };
+ 
+ static s32 fm10k_get_invariants_pf(struct fm10k_hw *hw)
+@@ -1910,7 +1910,7 @@ static s32 fm10k_get_invariants_pf(struct fm10k_hw *hw)
+ 
+ struct fm10k_info fm10k_pf_info = {
+ 	.mac		= fm10k_mac_pf,
+-	.get_invariants	= &fm10k_get_invariants_pf,
++	.get_invariants	= fm10k_get_invariants_pf,
+ 	.mac_ops	= &mac_ops_pf,
+ 	.iov_ops	= &iov_ops_pf,
+ };
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_vf.c b/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
+index f1dc6e8..38219f5 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
+@@ -563,24 +563,24 @@ static const struct fm10k_msg_data fm10k_msg_data_vf[] = {
+ };
+ 
+ static struct fm10k_mac_ops mac_ops_vf = {
+-	.get_bus_info		= &fm10k_get_bus_info_generic,
+-	.reset_hw		= &fm10k_reset_hw_vf,
+-	.init_hw		= &fm10k_init_hw_vf,
+-	.start_hw		= &fm10k_start_hw_generic,
+-	.stop_hw		= &fm10k_stop_hw_vf,
+-	.update_vlan		= &fm10k_update_vlan_vf,
+-	.read_mac_addr		= &fm10k_read_mac_addr_vf,
+-	.update_uc_addr		= &fm10k_update_uc_addr_vf,
+-	.update_mc_addr		= &fm10k_update_mc_addr_vf,
+-	.update_xcast_mode	= &fm10k_update_xcast_mode_vf,
+-	.update_int_moderator	= &fm10k_update_int_moderator_vf,
+-	.update_lport_state	= &fm10k_update_lport_state_vf,
+-	.update_hw_stats	= &fm10k_update_hw_stats_vf,
+-	.rebind_hw_stats	= &fm10k_rebind_hw_stats_vf,
+-	.configure_dglort_map	= &fm10k_configure_dglort_map_vf,
+-	.get_host_state		= &fm10k_get_host_state_generic,
+-	.adjust_systime		= &fm10k_adjust_systime_vf,
+-	.read_systime		= &fm10k_read_systime_vf,
++	.get_bus_info		= fm10k_get_bus_info_generic,
++	.reset_hw		= fm10k_reset_hw_vf,
++	.init_hw		= fm10k_init_hw_vf,
++	.start_hw		= fm10k_start_hw_generic,
++	.stop_hw		= fm10k_stop_hw_vf,
++	.update_vlan		= fm10k_update_vlan_vf,
++	.read_mac_addr		= fm10k_read_mac_addr_vf,
++	.update_uc_addr		= fm10k_update_uc_addr_vf,
++	.update_mc_addr		= fm10k_update_mc_addr_vf,
++	.update_xcast_mode	= fm10k_update_xcast_mode_vf,
++	.update_int_moderator	= fm10k_update_int_moderator_vf,
++	.update_lport_state	= fm10k_update_lport_state_vf,
++	.update_hw_stats	= fm10k_update_hw_stats_vf,
++	.rebind_hw_stats	= fm10k_rebind_hw_stats_vf,
++	.configure_dglort_map	= fm10k_configure_dglort_map_vf,
++	.get_host_state		= fm10k_get_host_state_generic,
++	.adjust_systime		= fm10k_adjust_systime_vf,
++	.read_systime		= fm10k_read_systime_vf,
+ };
+ 
+ static s32 fm10k_get_invariants_vf(struct fm10k_hw *hw)
+@@ -592,6 +592,6 @@ static s32 fm10k_get_invariants_vf(struct fm10k_hw *hw)
+ 
+ struct fm10k_info fm10k_vf_info = {
+ 	.mac		= fm10k_mac_vf,
+-	.get_invariants	= &fm10k_get_invariants_vf,
++	.get_invariants	= fm10k_get_invariants_vf,
+ 	.mac_ops	= &mac_ops_vf,
+ };
 
-Please fix it up or let me know if you would like me to send a patch.
-
-Thanks,
-Bruce.
-
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of kbuild test robot
-> Sent: Tuesday, December 08, 2015 12:13 PM
-> To: Intel Wired LAN
-> Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
-> 95cb5886d6feb2a3306f13d0abc21f189db01c14 BUILD DONE
-> 
-> https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
-> dev-queue
-> 95cb5886d6feb2a3306f13d0abc21f189db01c14  i40e: Look up MAC address in
-> Open Firmware or IDPROM
-> 
-> drivers/net/ethernet/intel/fm10k/fm10k_netdev.c:1195:1: warning: label
-> 'err_mbx_irq' defined but not used [-Wunused-label]
-> drivers/net/ethernet/intel/fm10k/fm10k_netdev.c:1197:1: warning: label
-> 'err_queueing_scheme' defined but not used [-Wunused-label]
-> 
-> Error ids grouped by kconfigs:
-> 
-> recent_errors
-> ??? i386-allmodconfig
-> ??? ??? drivers-net-ethernet-intel-fm10k-fm10k_netdev.c:warning:label-
-> err_mbx_irq-defined-but-not-used
-> ??? ??? drivers-net-ethernet-intel-fm10k-fm10k_netdev.c:warning:label-
-> err_queueing_scheme-defined-but-not-used
-> ??? i386-allyesconfig
-> ??? ??? drivers-net-ethernet-intel-fm10k-fm10k_netdev.c:warning:label-
-> err_mbx_irq-defined-but-not-used
-> ??? ??? drivers-net-ethernet-intel-fm10k-fm10k_netdev.c:warning:label-
-> err_queueing_scheme-defined-but-not-used
-> ??? x86_64-allmodconfig
-> ??? ??? drivers-net-ethernet-intel-fm10k-fm10k_netdev.c:warning:label-
-> err_mbx_irq-defined-but-not-used
-> ??? ??? drivers-net-ethernet-intel-fm10k-fm10k_netdev.c:warning:label-
-> err_queueing_scheme-defined-but-not-used
-> ??? x86_64-allyesconfig
-> ??? ??? drivers-net-ethernet-intel-fm10k-fm10k_netdev.c:warning:label-
-> err_mbx_irq-defined-but-not-used
-> ??? ??? drivers-net-ethernet-intel-fm10k-fm10k_netdev.c:warning:label-
-> err_queueing_scheme-defined-but-not-used
-> ??? x86_64-randconfig-x009-12070929
->     ??? drivers-net-ethernet-intel-fm10k-fm10k_netdev.c:warning:label-
-> err_mbx_irq-defined-but-not-used
->     ??? drivers-net-ethernet-intel-fm10k-fm10k_netdev.c:warning:label-
-> err_queueing_scheme-defined-but-not-used
-> 
-> elapsed time: 94m
-> 
-> configs tested: 112
-> 
-> alpha                               defconfig
-> parisc                            allnoconfig
-> parisc                        c3000_defconfig
-> parisc                              defconfig
-> i386                     randconfig-a0-201549
-> x86_64                             acpi-redef
-> x86_64                           allyesdebian
-> x86_64                                nfsroot
-> blackfin                BF526-EZBRD_defconfig
-> blackfin                BF533-EZKIT_defconfig
-> blackfin            BF561-EZKIT-SMP_defconfig
-> blackfin                  TCM-BF537_defconfig
-> cris                 etrax-100lx_v2_defconfig
-> i386                               tinyconfig
-> sh                                allnoconfig
-> sh                          rsk7269_defconfig
-> sh                  sh7785lcr_32bit_defconfig
-> sh                            titan_defconfig
-> x86_64                           allmodconfig
-> powerpc                           allnoconfig
-> powerpc                             defconfig
-> powerpc                       ppc64_defconfig
-> parisc                         b180_defconfig
-> i386                             allmodconfig
-> x86_64                 randconfig-x014-201549
-> x86_64                 randconfig-x018-201549
-> x86_64                 randconfig-x016-201549
-> x86_64                 randconfig-x015-201549
-> x86_64                 randconfig-x019-201549
-> x86_64                 randconfig-x011-201549
-> x86_64                 randconfig-x017-201549
-> x86_64                 randconfig-x013-201549
-> x86_64                 randconfig-x010-201549
-> x86_64                 randconfig-x012-201549
-> i386                             alldefconfig
-> i386                              allnoconfig
-> i386                                defconfig
-> m68k                       m5475evb_defconfig
-> m68k                          multi_defconfig
-> m68k                           sun3_defconfig
-> i386                     randconfig-s0-201549
-> i386                     randconfig-s1-201549
-> avr32                      atngw100_defconfig
-> avr32                     atstk1006_defconfig
-> frv                                 defconfig
-> mn10300                     asb2364_defconfig
-> openrisc                    or1ksim_defconfig
-> tile                         tilegx_defconfig
-> um                             i386_defconfig
-> um                           x86_64_defconfig
-> arm                        neponset_defconfig
-> m32r                   mappi2.vdec2_defconfig
-> s390                       zfcpdump_defconfig
-> sh                           se7206_defconfig
-> mips                              allnoconfig
-> mips                      fuloong2e_defconfig
-> mips                                   jz4740
-> mips                                     txx9
-> x86_64                   randconfig-i0-201549
-> sparc                               defconfig
-> sparc64                           allnoconfig
-> sparc64                             defconfig
-> microblaze                      mmu_defconfig
-> microblaze                    nommu_defconfig
-> i386                     randconfig-i0-201549
-> i386                     randconfig-i1-201549
-> i386                             allyesconfig
-> m32r                       m32104ut_defconfig
-> m32r                     mappi3.smp_defconfig
-> m32r                         opsput_defconfig
-> m32r                           usrv_defconfig
-> xtensa                       common_defconfig
-> xtensa                          iss_defconfig
-> x86_64                                    lkp
-> x86_64                                   rhel
-> i386                     randconfig-n0-201549
-> ia64                             alldefconfig
-> ia64                              allnoconfig
-> ia64                                defconfig
-> arm                               allnoconfig
-> arm                         at91_dt_defconfig
-> arm                                  at_hdmac
-> arm                                    ep93xx
-> arm                       imx_v6_v7_defconfig
-> arm                                  iop-adma
-> arm                          marzen_defconfig
-> arm                          prima2_defconfig
-> arm                                    sa1100
-> arm                                   samsung
-> arm                                        sh
-> arm                       spear13xx_defconfig
-> x86_64               randconfig-x008-12070929
-> x86_64               randconfig-x001-12070929
-> x86_64               randconfig-x006-12070929
-> x86_64               randconfig-x002-12070929
-> x86_64               randconfig-x000-12070929
-> x86_64               randconfig-x005-12070929
-> x86_64               randconfig-x007-12070929
-> x86_64               randconfig-x003-12070929
-> x86_64               randconfig-x004-12070929
-> x86_64               randconfig-x009-12070929
-> i386                     randconfig-r0-201549
-> i386                 randconfig-x008-12070758
-> i386                 randconfig-x006-12070758
-> i386                 randconfig-x002-12070758
-> i386                 randconfig-x001-12070758
-> i386                 randconfig-x000-12070758
-> i386                 randconfig-x009-12070758
-> i386                 randconfig-x004-12070758
-> i386                 randconfig-x003-12070758
-> i386                 randconfig-x007-12070758
-> i386                 randconfig-x005-12070758
-> 
-> Thanks,
-> Fengguang
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at lists.osuosl.org
-> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
