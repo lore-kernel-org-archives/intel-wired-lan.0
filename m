@@ -1,64 +1,155 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 8 Dec 2015 19:46:38 +0000
-Subject: [Intel-wired-lan] [PATCH v9] i40e: Look up MAC address in
-	Open	Firmware or IDPROM
-In-Reply-To: <20151207200634.GA4415@oracle.com>
-References: <20151207200634.GA4415@oracle.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F96D2C3@ORSMSX104.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 09 Dec 2015 04:12:50 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 95cb5886d6feb2a3306f13d0abc21f189db01c14 BUILD DONE
+Message-ID: <566739c2.BnoOzyybhgXGWvMc%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Sowmini Varadhan
-> Sent: Monday, December 07, 2015 12:07 PM
-> To: sowmini.varadhan at oracle.com; intel-wired-lan at lists.osuosl.org;
-> netdev at vger.kernel.org; linux-kernel at vger.kernel.org
-> Cc: andy.shevchenko at gmail.com; matthew.vick at intel.com;
-> davem at davemloft.net
-> Subject: [Intel-wired-lan] [PATCH v9] i40e: Look up MAC address in Open
-> Firmware or IDPROM
-> 
-> 
-> This is the i40e equivalent of commit c762dff24c06 ("ixgbe: Look up MAC
-> address in Open Firmware or IDPROM").
-> 
-> As with that fix, attempt to look up the MAC address in Open Firmware on
-> systems that support it, and use IDPROM on SPARC if no OF address is found.
-> 
-> In the case of the i40e there is an assumption that the default mac address
-> has already been set up as the primary mac filter on probe, so if this filter is
-> obtained from the Open Firmware or IDPROM, an explicit write is needed via
-> i40e_aq_mac_address_write() and
-> i40e_aq_add_macvlan() invocation.
-> 
-> The I40E_FLAG_PF_MAC flag in the platform-private i40e_pf structure tracks
-> whether a platform-specific mac address was found, in which case calls to
-> i40e_aq_mac_address_write() and i40e_aq_add_macvlan() will be triggered.
-> 
-> Reviewed-by: Martin K. Petersen <martin.petersen@oracle.com>
-> Signed-off-by: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-> ---
-> v2, v3: Andy Shevchenko comments
-> v4: Shannon Nelson review: explicitly set up mac filters before
-> register_netdev
-> v5: Shannon Nelson code style comments
-> v6: Shannon Nelson code style comments
-> v7: Ensure that i40e_macaddr_init() is called only for VSI_MAIN, and only
->     if the mac address is not the default. Some additional code-refactoring
->     based on comments from Shannon Nelson
-> v8: use pf->flags instead of bit value to track if we found a platform-specific
->     macaddr. Other code-style comments from Shannon Nelson
-> v9: David Miller, Shannon Nelson comments for
-> i40e_get_platform_mac_addr
-> 
->  drivers/net/ethernet/intel/i40e/i40e.h      |    1 +
->  drivers/net/ethernet/intel/i40e/i40e_main.c |   90
-> +++++++++++++++++++++++++++
->  2 files changed, 91 insertions(+), 0 deletions(-)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+95cb5886d6feb2a3306f13d0abc21f189db01c14  i40e: Look up MAC address in Open Firmware or IDPROM
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied, driver displays correct MAC address, no more -11 error on driver init.
+drivers/net/ethernet/intel/fm10k/fm10k_netdev.c:1195:1: warning: label 'err_mbx_irq' defined but not used [-Wunused-label]
+drivers/net/ethernet/intel/fm10k/fm10k_netdev.c:1197:1: warning: label 'err_queueing_scheme' defined but not used [-Wunused-label]
+
+Error ids grouped by kconfigs:
+
+recent_errors
+??? i386-allmodconfig
+??? ??? drivers-net-ethernet-intel-fm10k-fm10k_netdev.c:warning:label-err_mbx_irq-defined-but-not-used
+??? ??? drivers-net-ethernet-intel-fm10k-fm10k_netdev.c:warning:label-err_queueing_scheme-defined-but-not-used
+??? i386-allyesconfig
+??? ??? drivers-net-ethernet-intel-fm10k-fm10k_netdev.c:warning:label-err_mbx_irq-defined-but-not-used
+??? ??? drivers-net-ethernet-intel-fm10k-fm10k_netdev.c:warning:label-err_queueing_scheme-defined-but-not-used
+??? x86_64-allmodconfig
+??? ??? drivers-net-ethernet-intel-fm10k-fm10k_netdev.c:warning:label-err_mbx_irq-defined-but-not-used
+??? ??? drivers-net-ethernet-intel-fm10k-fm10k_netdev.c:warning:label-err_queueing_scheme-defined-but-not-used
+??? x86_64-allyesconfig
+??? ??? drivers-net-ethernet-intel-fm10k-fm10k_netdev.c:warning:label-err_mbx_irq-defined-but-not-used
+??? ??? drivers-net-ethernet-intel-fm10k-fm10k_netdev.c:warning:label-err_queueing_scheme-defined-but-not-used
+??? x86_64-randconfig-x009-12070929
+    ??? drivers-net-ethernet-intel-fm10k-fm10k_netdev.c:warning:label-err_mbx_irq-defined-but-not-used
+    ??? drivers-net-ethernet-intel-fm10k-fm10k_netdev.c:warning:label-err_queueing_scheme-defined-but-not-used
+
+elapsed time: 94m
+
+configs tested: 112
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201549
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+parisc                         b180_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x014-201549
+x86_64                 randconfig-x018-201549
+x86_64                 randconfig-x016-201549
+x86_64                 randconfig-x015-201549
+x86_64                 randconfig-x019-201549
+x86_64                 randconfig-x011-201549
+x86_64                 randconfig-x017-201549
+x86_64                 randconfig-x013-201549
+x86_64                 randconfig-x010-201549
+x86_64                 randconfig-x012-201549
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201549
+i386                     randconfig-s1-201549
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+arm                        neponset_defconfig
+m32r                   mappi2.vdec2_defconfig
+s390                       zfcpdump_defconfig
+sh                           se7206_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201549
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201549
+i386                     randconfig-i1-201549
+i386                             allyesconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201549
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+x86_64               randconfig-x008-12070929
+x86_64               randconfig-x001-12070929
+x86_64               randconfig-x006-12070929
+x86_64               randconfig-x002-12070929
+x86_64               randconfig-x000-12070929
+x86_64               randconfig-x005-12070929
+x86_64               randconfig-x007-12070929
+x86_64               randconfig-x003-12070929
+x86_64               randconfig-x004-12070929
+x86_64               randconfig-x009-12070929
+i386                     randconfig-r0-201549
+i386                 randconfig-x008-12070758
+i386                 randconfig-x006-12070758
+i386                 randconfig-x002-12070758
+i386                 randconfig-x001-12070758
+i386                 randconfig-x000-12070758
+i386                 randconfig-x009-12070758
+i386                 randconfig-x004-12070758
+i386                 randconfig-x003-12070758
+i386                 randconfig-x007-12070758
+i386                 randconfig-x005-12070758
+
+Thanks,
+Fengguang
