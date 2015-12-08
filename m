@@ -1,70 +1,160 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 8 Dec 2015 17:07:50 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 35/88]
- drivers/net/ethernet/intel/fm10k/fm10k_netdev.c:1182:2: error: 'err'
- undeclared
-Message-ID: <201512081749.3vqh0Mib%fengguang.wu@intel.com>
+Date: Tue, 08 Dec 2015 18:09:19 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ a3442cfc7f0244dd08295747ae5dbbe5f1e68db6 BUILD DONE
+Message-ID: <5666ac4f.jnf4BuH5b8Lds1i5%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   0d8cf8f0fb3baeb46c9019e8d3ff0057e1516fb2
-commit: 89e14e905885490b878299e441b261eaa2afd789 [35/88] fm10k: Cleanup exception handling for changing queues
-config: x86_64-randconfig-x009-12070929 (attached as .config)
-reproduce:
-        git checkout 89e14e905885490b878299e441b261eaa2afd789
-        # save the attached .config to linux build tree
-        make ARCH=x86_64 
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+a3442cfc7f0244dd08295747ae5dbbe5f1e68db6  i40e: Look up MAC address in Open Firmware or IDPROM
 
-All error/warnings (new ones prefixed by >>):
+drivers/net/ethernet/intel/fm10k/fm10k_netdev.c:1195:1: warning: label 'err_mbx_irq' defined but not used [-Wunused-label]
+drivers/net/ethernet/intel/fm10k/fm10k_netdev.c:1197:1: warning: label 'err_queueing_scheme' defined but not used [-Wunused-label]
 
-   drivers/net/ethernet/intel/fm10k/fm10k_netdev.c: In function 'fm10k_setup_tc':
->> drivers/net/ethernet/intel/fm10k/fm10k_netdev.c:1182:2: error: 'err' undeclared (first use in this function)
-     err = netif_running(dev) ? fm10k_open(dev) : 0;
-     ^
-   drivers/net/ethernet/intel/fm10k/fm10k_netdev.c:1182:2: note: each undeclared identifier is reported only once for each function it appears in
->> drivers/net/ethernet/intel/fm10k/fm10k_netdev.c:1194:1: warning: label 'err_queueing_scheme' defined but not used [-Wunused-label]
-    err_queueing_scheme:
-    ^
->> drivers/net/ethernet/intel/fm10k/fm10k_netdev.c:1192:1: warning: label 'err_mbx_irq' defined but not used [-Wunused-label]
-    err_mbx_irq:
-    ^
+Error ids grouped by kconfigs:
 
-vim +/err +1182 drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+recent_errors
+??? i386-allmodconfig
+??? ??? drivers-net-ethernet-intel-fm10k-fm10k_netdev.c:warning:label-err_mbx_irq-defined-but-not-used
+??? ??? drivers-net-ethernet-intel-fm10k-fm10k_netdev.c:warning:label-err_queueing_scheme-defined-but-not-used
+??? x86_64-allmodconfig
+??? ??? drivers-net-ethernet-intel-fm10k-fm10k_netdev.c:warning:label-err_mbx_irq-defined-but-not-used
+??? ??? drivers-net-ethernet-intel-fm10k-fm10k_netdev.c:warning:label-err_queueing_scheme-defined-but-not-used
+??? x86_64-allyesconfig
+??? ??? drivers-net-ethernet-intel-fm10k-fm10k_netdev.c:warning:label-err_mbx_irq-defined-but-not-used
+??? ??? drivers-net-ethernet-intel-fm10k-fm10k_netdev.c:warning:label-err_queueing_scheme-defined-but-not-used
+??? x86_64-randconfig-x009-12070929
+    ??? drivers-net-ethernet-intel-fm10k-fm10k_netdev.c:warning:label-err_mbx_irq-defined-but-not-used
+    ??? drivers-net-ethernet-intel-fm10k-fm10k_netdev.c:warning:label-err_queueing_scheme-defined-but-not-used
 
-  1176		netdev_set_num_tc(dev, tc);
-  1177	
-  1178		fm10k_init_queueing_scheme(interface);
-  1179	
-  1180		fm10k_mbx_request_irq(interface);
-  1181	
-> 1182		err = netif_running(dev) ? fm10k_open(dev) : 0;
-  1183		if (err)
-  1184			goto err_open;
-  1185	
-  1186		/* flag to indicate SWPRI has yet to be updated */
-  1187		interface->flags |= FM10K_FLAG_SWPRI_CONFIG;
-  1188	
-  1189		return 0;
-  1190	err_open:
-  1191		fm10k_mbx_free_irq(interface);
-> 1192	err_mbx_irq:
-  1193		fm10k_clear_queueing_scheme(interface);
-> 1194	err_queueing_scheme:
-  1195		netif_device_detach(dev);
-  1196	
-  1197		return err;
+elapsed time: 41m
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/octet-stream
-Size: 25406 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151208/35075e30/attachment-0001.obj>
+configs tested: 120
+
+i386                     randconfig-a0-201549
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                             allmodconfig
+alpha                            allyesconfig
+arm                         bcm2835_defconfig
+mips                           jazz_defconfig
+mips                  mips_paravirt_defconfig
+powerpc                    ge_imp3a_defconfig
+x86_64                 randconfig-x014-201549
+x86_64                 randconfig-x018-201549
+x86_64                 randconfig-x016-201549
+x86_64                 randconfig-x015-201549
+x86_64                 randconfig-x019-201549
+x86_64                 randconfig-x011-201549
+x86_64                 randconfig-x017-201549
+x86_64                 randconfig-x013-201549
+x86_64                 randconfig-x010-201549
+x86_64                 randconfig-x012-201549
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201549
+i386                     randconfig-s1-201549
+x86_64                 randconfig-s0-12081728
+x86_64                 randconfig-s1-12081728
+x86_64                 randconfig-s2-12081728
+x86_64                 randconfig-s3-12081728
+x86_64                 randconfig-s4-12081728
+x86_64                 randconfig-s5-12081728
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201549
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201549
+i386                     randconfig-i1-201549
+x86_64                           allmodconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201549
+arm                      acs5k_tiny_defconfig
+arm                         nhk8815_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+x86_64               randconfig-x008-12070929
+x86_64               randconfig-x001-12070929
+x86_64               randconfig-x006-12070929
+x86_64               randconfig-x002-12070929
+x86_64               randconfig-x000-12070929
+x86_64               randconfig-x005-12070929
+x86_64               randconfig-x007-12070929
+x86_64               randconfig-x003-12070929
+x86_64               randconfig-x004-12070929
+x86_64               randconfig-x009-12070929
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201549
+i386                 randconfig-x008-12070758
+i386                 randconfig-x006-12070758
+i386                 randconfig-x002-12070758
+i386                 randconfig-x001-12070758
+i386                 randconfig-x000-12070758
+i386                 randconfig-x009-12070758
+i386                 randconfig-x004-12070758
+i386                 randconfig-x003-12070758
+i386                 randconfig-x007-12070758
+i386                 randconfig-x005-12070758
+
+Thanks,
+Fengguang
