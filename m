@@ -1,85 +1,220 @@
-From: Neerav Parikh <neerav.parikh@intel.com>
-Date: Tue, 08 Dec 2015 22:13:58 -0800
-Subject: [Intel-wired-lan] [PATCH v2] ixgbe: Fix MDD events generated when
- FCoE+SRIOV are enabled
-Message-ID: <20151209061358.17965.8368.stgit@neerav-dbg1.jf.intel.com>
+From: Lan, Tianyu <tianyu.lan@intel.com>
+Date: Wed, 9 Dec 2015 17:28:10 +0800
+Subject: [Intel-wired-lan] [RFC PATCH V2 0/3] IXGBE/VFIO: Add live
+ migration support for SRIOV NIC
+In-Reply-To: <CAKgT0UeFzW_tpdSr=Ck6X6w2XnAUJquW46mo2H0Ag=Z=q0tgtg@mail.gmail.com>
+References: <CAKgT0UevBmRLpM1PvuuVDUW79A66RcPrfO8uGiqL1RiALW7apg@mail.gmail.com>
+ <A12AC9D104E08D47BAF23C492F83C53B25CDE9E3@SHSMSX104.ccr.corp.intel.com>
+ <CAKgT0Ucyq=7OSYBVvU9Z01b3f6scS+eBMLg+yphW7bwkNZosPQ@mail.gmail.com>
+ <565BF285.4040507@intel.com>
+ <CAKgT0Uc+-gFAetEfde6DmMOFK+vDE6UkgsNF8oLNqaQc4USSeg@mail.gmail.com>
+ <565DB6FF.1050602@intel.com> <20151201171140-mutt-send-email-mst@redhat.com>
+ <CAKgT0UfLEJpV-KdqRGfzBeas8bdqfHCmT5Xc8iVVP03g_pQO8A@mail.gmail.com>
+ <20151201193026-mutt-send-email-mst@redhat.com>
+ <CAKgT0UfJ7w6yYcZcF2YZyDKEwvE7Gh3P-jfGQGKLfPH2crVBzw@mail.gmail.com>
+ <20151202105955-mutt-send-email-mst@redhat.com> <5661C000.8070201@intel.com>
+ <5661C86D.3010904@gmail.com> <5665A884.2020102@intel.com>
+ <CAKgT0UeFzW_tpdSr=Ck6X6w2XnAUJquW46mo2H0Ag=Z=q0tgtg@mail.gmail.com>
+Message-ID: <5667F42A.9050804@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When FCoE is enabled with SR-IOV on the X550 NIC the hardware
-generates MDD events.
 
-This patch fixes these by setting the expected values in the
-Tx context descriptors for FCoE/FIP frames and adding a flush
-after writing the RDLEN register.
 
-Changes in v2:
-- Removed updating the skb network header for FIP frames
+On 12/8/2015 1:12 AM, Alexander Duyck wrote:
+> On Mon, Dec 7, 2015 at 7:40 AM, Lan, Tianyu <tianyu.lan@intel.com> wrote:
+>> On 12/5/2015 1:07 AM, Alexander Duyck wrote:
+>>>>
+>>>>
+>>>> We still need to support Windows guest for migration and this is why our
+>>>> patches keep all changes in the driver since it's impossible to change
+>>>> Windows kernel.
+>>>
+>>>
+>>> That is a poor argument.  I highly doubt Microsoft is interested in
+>>> having to modify all of the drivers that will support direct assignment
+>>> in order to support migration.  They would likely request something
+>>> similar to what I have in that they will want a way to do DMA tracking
+>>> with minimal modification required to the drivers.
+>>
+>>
+>> This totally depends on the NIC or other devices' vendors and they
+>> should make decision to support migration or not. If yes, they would
+>> modify driver.
+>
+> Having to modify every driver that wants to support live migration is
+> a bit much.  In addition I don't see this being limited only to NIC
+> devices.  You can direct assign a number of different devices, your
+> solution cannot be specific to NICs.
 
-Signed-off-by: Neerav Parikh <neerav.parikh@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c |    5 ++++-
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    3 +++
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |    1 +
- 3 files changed, 8 insertions(+), 1 deletion(-)
+We are also adding such migration support for QAT device and so our
+solution will not just be limit to NIC. Now just is the beginning.
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
-index 5f98870..78ffef4 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c
-@@ -517,6 +517,7 @@ int ixgbe_fso(struct ixgbe_ring *tx_ring,
- 	u32 vlan_macip_lens;
- 	u32 fcoe_sof_eof = 0;
- 	u32 mss_l4len_idx;
-+	u32 type_tucmd = IXGBE_ADVTXT_TUCMD_FCOE;
- 	u8 sof, eof;
- 
- 	if (skb_is_gso(skb) && (skb_shinfo(skb)->gso_type != SKB_GSO_FCOE)) {
-@@ -593,6 +594,8 @@ int ixgbe_fso(struct ixgbe_ring *tx_ring,
- 					       skb_shinfo(skb)->gso_size);
- 		first->bytecount += (first->gso_segs - 1) * *hdr_len;
- 		first->tx_flags |= IXGBE_TX_FLAGS_TSO;
-+		/* Hardware expects L4T to be RSV for FCoE TSO */
-+		type_tucmd |= IXGBE_ADVTXD_TUCMD_L4T_RSV;
- 	}
- 
- 	/* set flag indicating FCOE to ixgbe_tx_map call */
-@@ -610,7 +613,7 @@ int ixgbe_fso(struct ixgbe_ring *tx_ring,
- 
- 	/* write context desc */
- 	ixgbe_tx_ctxtdesc(tx_ring, vlan_macip_lens, fcoe_sof_eof,
--			  IXGBE_ADVTXT_TUCMD_FCOE, mss_l4len_idx);
-+			  type_tucmd, mss_l4len_idx);
- 
- 	return 0;
- }
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index ebd4522..ed566e4 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -3619,6 +3619,9 @@ void ixgbe_configure_rx_ring(struct ixgbe_adapter *adapter,
- 	IXGBE_WRITE_REG(hw, IXGBE_RDBAH(reg_idx), (rdba >> 32));
- 	IXGBE_WRITE_REG(hw, IXGBE_RDLEN(reg_idx),
- 			ring->count * sizeof(union ixgbe_adv_rx_desc));
-+	/* Force flushing of IXGBE_RDLEN to prevent MDD */
-+	IXGBE_WRITE_FLUSH(hw);
-+
- 	IXGBE_WRITE_REG(hw, IXGBE_RDH(reg_idx), 0);
- 	IXGBE_WRITE_REG(hw, IXGBE_RDT(reg_idx), 0);
- 	ring->tail = adapter->io_addr + IXGBE_RDT(reg_idx);
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-index 1329edd..e93c264 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-@@ -2780,6 +2780,7 @@ struct ixgbe_adv_tx_context_desc {
- #define IXGBE_ADVTXD_TUCMD_L4T_UDP   0x00000000  /* L4 Packet TYPE of UDP */
- #define IXGBE_ADVTXD_TUCMD_L4T_TCP   0x00000800  /* L4 Packet TYPE of TCP */
- #define IXGBE_ADVTXD_TUCMD_L4T_SCTP  0x00001000  /* L4 Packet TYPE of SCTP */
-+#define IXGBE_ADVTXD_TUCMD_L4T_RSV     0x00001800 /* RSV L4 Packet TYPE */
- #define IXGBE_ADVTXD_TUCMD_MKRREQ    0x00002000 /*Req requires Markers and CRC*/
- #define IXGBE_ADVTXD_POPTS_IPSEC      0x00000400 /* IPSec offload request */
- #define IXGBE_ADVTXD_TUCMD_IPSEC_TYPE_ESP 0x00002000 /* IPSec Type ESP */
+We can't limit user to only use Linux guest. So the migration feature
+should work for both Windows and Linux guest.
 
+>
+>> If just target to call suspend/resume during migration, the feature will
+>> be meaningless. Most cases don't want to affect user during migration
+>> a lot and so the service down time is vital. Our target is to apply
+>> SRIOV NIC passthough to cloud service and NFV(network functions
+>> virtualization) projects which are sensitive to network performance
+>> and stability. From my opinion, We should give a change for device
+>> driver to implement itself migration job. Call suspend and resume
+>> callback in the driver if it doesn't care the performance during migration.
+>
+> The suspend/resume callback should be efficient in terms of time.
+> After all we don't want the system to stall for a long period of time
+> when it should be either running or asleep.  Having it burn cycles in
+> a power state limbo doesn't do anyone any good.  If nothing else maybe
+> it will help to push the vendors to speed up those functions which
+> then benefit migration and the system sleep states.
+
+If we can benefit both migration and suspend, that would be wonderful.
+But migration and system pm is still different. Just for example,
+driver doesn't need to put device into deep D-status during migration
+and host can do this after migration while it's essential for
+system sleep. PCI configure space and interrupt config is emulated by
+Qemu and Qemu can migrate these configures to new machine. Driver
+doesn't need to deal with such thing. So I think migration still needs a
+different callback or different code path than device suspend/resume.
+
+Another concern is that we have to rework PM core ore PCI bus driver
+to call suspend/resume for passthrough devices during migration. This
+also blocks new feature works on the Windows.
+
+>
+> Also you keep assuming you can keep the device running while you do
+> the migration and you can't.  You are going to corrupt the memory if
+> you do, and you have yet to provide any means to explain how you are
+> going to solve that.
+
+
+The main problem is tracking DMA issue. I will repose my solution in the
+new thread for discussion. If not way to mark DMA page dirty when
+DMA is enabled, we have to stop DMA for a small time to do that at the
+last stage.
+
+>
+>>
+>>>
+>>>> Following is my idea to do DMA tracking.
+>>>>
+>>>> Inject event to VF driver after memory iterate stage
+>>>> and before stop VCPU and then VF driver marks dirty all
+>>>> using DMA memory. The new allocated pages also need to
+>>>> be marked dirty before stopping VCPU. All dirty memory
+>>>> in this time slot will be migrated until stop-and-copy
+>>>> stage. We also need to make sure to disable VF via clearing the
+>>>> bus master enable bit for VF before migrating these memory.
+>>>
+>>>
+>>> The ordering of your explanation here doesn't quite work.  What needs to
+>>> happen is that you have to disable DMA and then mark the pages as dirty.
+>>>    What the disabling of the BME does is signal to the hypervisor that
+>>> the device is now stopped.  The ixgbevf_suspend call already supported
+>>> by the driver is almost exactly what is needed to take care of something
+>>> like this.
+>>
+>>
+>> This is why I hope to reserve a piece of space in the dma page to do dummy
+>> write. This can help to mark page dirty while not require to stop DMA and
+>> not race with DMA data.
+>
+> You can't and it will still race.  What concerns me is that your
+> patches and the document you referenced earlier show a considerable
+> lack of understanding about how DMA and device drivers work.  There is
+> a reason why device drivers have so many memory barriers and the like
+> in them.  The fact is when you have CPU and a device both accessing
+> memory things have to be done in a very specific order and you cannot
+> violate that.
+>
+> If you have a contiguous block of memory you expect the device to
+> write into you cannot just poke a hole in it.  Such a situation is not
+> supported by any hardware that I am aware of.
+>
+> As far as writing to dirty the pages it only works so long as you halt
+> the DMA and then mark the pages dirty.  It has to be in that order.
+> Any other order will result in data corruption and I am sure the NFV
+> customers definitely don't want that.
+>
+>> If can't do that, we have to stop DMA in a short time to mark all dma
+>> pages dirty and then reenable it. I am not sure how much we can get by
+>> this way to track all DMA memory with device running during migration. I
+>> need to do some tests and compare results with stop DMA diretly at last
+>> stage during migration.
+>
+> We have to halt the DMA before we can complete the migration.  So
+> please feel free to test this.
+
+If we can inject interrupt to notify driver just before stopping VCPU
+and then stop DMA, it will not affect service down time a lot since the
+network still will be down when stop VCPU.
+
+So the question will be converted to how and when notify device driver 
+about migration status.
+
+>
+> In addition I still feel you would be better off taking this in
+> smaller steps.  I still say your first step would be to come up with a
+> generic solution for the dirty page tracking like the dma_mark_clean()
+> approach I had mentioned earlier.  If I get time I might try to take
+> care of it myself later this week since you don't seem to agree with
+> that approach.
+
+No, doing dummy write in the generic function is a good idea. This
+will benefit for all passthough devices. Dummy write is essential
+regardless of stopping DMA or not during migration unless hardware
+supports the DMA tracking.
+
+>
+>>>
+>>> The question is how we would go about triggering it.  I really don't
+>>> think the PCI configuration space approach is the right idea.
+>>>   I wonder
+>>> if we couldn't get away with some sort of ACPI event instead.  We
+>>> already require ACPI support in order to shut down the system
+>>> gracefully, I wonder if we couldn't get away with something similar in
+>>> order to suspend/resume the direct assigned devices gracefully.
+>>>
+>>
+>> I don't think there is such events in the current spec.
+>> Otherwise, There are two kinds of suspend/resume callbacks.
+>> 1) System suspend/resume called during S2RAM and S2DISK.
+>> 2) Runtime suspend/resume called by pm core when device is idle.
+>> If you want to do what you mentioned, you have to change PM core and
+>> ACPI spec.
+>
+> The thought I had was to somehow try to move the direct assigned
+> devices into their own power domain and then simulate a AC power event
+> where that domain is switched off.  However I don't know if there are
+> ACPI events to support that since the power domain code currently only
+> appears to be in use for runtime power management.
+
+This is my concern that how to suspend the passthough device. PM
+callback only works during system pm(S3, S4) and runtime pm. You
+have to add some codes in the PM core and PCI bus driver to do something
+like force suspend when get migration event.
+
+So far, I know GFX device will register callback on the AC power event 
+and change backlight when AC is plugged or unplugged.
+
+>
+> That had also given me the thought to look at something like runtime
+> power management for the VFs.  We would need to do a runtime
+> suspend/resume.  The only problem is I don't know if there is any way
+> to get the VFs to do a quick wakeup.  It might be worthwhile looking
+> at trying to check with the ACPI experts out there to see if there is
+> anything we can do as bypassing having to use the configuration space
+> mechanism to signal this would definitely be worth it.
+>
+
+Currently the PCI configuration space is to share migration status and 
+device information. Notify is done by injecting device irq. If we can't 
+safely find free PCI configure space, need to find other place to store 
+these info.
+
+If you just need to wake up a PCI device, PME maybe help.
