@@ -1,220 +1,111 @@
 From: Joshua Hay <joshua.a.hay@intel.com>
-Date: Wed,  9 Dec 2015 15:50:21 -0800
-Subject: [Intel-wired-lan] [next PATCH S23 01/13] i40e: Fix Rx hash reported
-	to the stack by our driver
+Date: Wed,  9 Dec 2015 15:50:26 -0800
+Subject: [Intel-wired-lan] [next PATCH S23 06/13] i40e/i40evf: tunnels can
+	be generic
 In-Reply-To: <1449705033-4968-1-git-send-email-joshua.a.hay@intel.com>
 References: <1449705033-4968-1-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <1449705033-4968-2-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <1449705033-4968-7-git-send-email-joshua.a.hay@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Anjali Singhai Jain <anjali.singhai@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-If the driver calls skb_set_hash even with a zero hash, that
-indicates to the stack that the hash calculation is offloaded
-in hardware. So the Stack doesn't do a SW hash which is required
-for load balancing if the user decides to turn of rx-hashing
-on our device.
+Since the i40e driver now supports VxLAN, GRE, and soon
+to be Geneve tunnels, the driver can just note that an skb
+contains a tunneled packet generically, instead of calling
+out VXLAN specifically.  The tunnel set up we do for hardware
+is almost always the same for all tunnel types.
 
-This patch fixes the path so that we do not call skb_set_hash
-if the feature is disabled.
+This specifically enables ATR/Flow Director on GRE packets
+which increases performance/scaling.  Without this patch
+GRE RX packets end up on a random RSS assigned queue.
 
-Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-Change-ID: Ic4debfa4ff91b5a72e447348a75768ed7a2d3e1b
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Change-ID: Ie8e205603654910d2f718592cbef8132ae0719e4
 ---
-Testing Hints:Test interrupt overload x710 Apart from the
-interrupt overload, the user sees a problem where the stack
-is not calculating the hash when rx-hasing is turned off which
-is resulting in tpacket_v3 not balancing the load across
-multiple threads.
-
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 54 ++++++++++++++-------------
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 54 ++++++++++++++-------------
- 2 files changed, 58 insertions(+), 50 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 7 ++++---
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h   | 2 +-
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 2 +-
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.h | 2 +-
+ 4 files changed, 7 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index e2ab7a6..28d2943 100644
+index 28d2943..ba79f67 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1422,31 +1422,12 @@ checksum_fail:
- }
+@@ -2005,7 +2005,7 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 	if (!(tx_flags & (I40E_TX_FLAGS_IPV4 | I40E_TX_FLAGS_IPV6)))
+ 		return;
  
- /**
-- * i40e_rx_hash - returns the hash value from the Rx descriptor
-- * @ring: descriptor ring
-- * @rx_desc: specific descriptor
-- **/
--static inline u32 i40e_rx_hash(struct i40e_ring *ring,
--			       union i40e_rx_desc *rx_desc)
--{
--	const __le64 rss_mask =
--		cpu_to_le64((u64)I40E_RX_DESC_FLTSTAT_RSS_HASH <<
--			    I40E_RX_DESC_STATUS_FLTSTAT_SHIFT);
--
--	if ((ring->netdev->features & NETIF_F_RXHASH) &&
--	    (rx_desc->wb.qword1.status_error_len & rss_mask) == rss_mask)
--		return le32_to_cpu(rx_desc->wb.qword0.hi_dword.rss);
--	else
--		return 0;
--}
--
--/**
-- * i40e_ptype_to_hash - get a hash type
-+ * i40e_ptype_to_htype - get a hash type
-  * @ptype: the ptype value from the descriptor
-  *
-  * Returns a hash type to be used by skb_set_hash
-  **/
--static inline enum pkt_hash_types i40e_ptype_to_hash(u8 ptype)
-+static inline enum pkt_hash_types i40e_ptype_to_htype(u8 ptype)
- {
- 	struct i40e_rx_ptype_decoded decoded = decode_rx_desc_ptype(ptype);
+-	if (!(tx_flags & I40E_TX_FLAGS_VXLAN_TUNNEL)) {
++	if ((tx_flags & I40E_TX_FLAGS_TUNNEL)) {
+ 		/* snag network header to get L4 type and address */
+ 		hdr.network = skb_network_header(skb);
  
-@@ -1464,6 +1445,30 @@ static inline enum pkt_hash_types i40e_ptype_to_hash(u8 ptype)
- }
+@@ -2090,7 +2090,7 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 		     I40E_TXD_FLTR_QW1_FD_STATUS_SHIFT;
  
- /**
-+ * i40e_rx_hash - set the hash value in the skb
-+ * @ring: descriptor ring
-+ * @rx_desc: specific descriptor
-+ **/
-+static inline void i40e_rx_hash(struct i40e_ring *ring,
-+				union i40e_rx_desc *rx_desc,
-+				struct sk_buff *skb,
-+				u8 rx_ptype)
-+{
-+	u32 hash;
-+	const __le64 rss_mask  =
-+		cpu_to_le64((u64)I40E_RX_DESC_FLTSTAT_RSS_HASH <<
-+			    I40E_RX_DESC_STATUS_FLTSTAT_SHIFT);
-+
-+	if (ring->netdev->features & NETIF_F_RXHASH)
-+		return;
-+
-+	if ((rx_desc->wb.qword1.status_error_len & rss_mask) == rss_mask) {
-+		hash = le32_to_cpu(rx_desc->wb.qword0.hi_dword.rss);
-+		skb_set_hash(skb, hash, i40e_ptype_to_htype(rx_ptype));
-+	}
-+}
-+
-+/**
-  * i40e_clean_rx_irq_ps - Reclaim resources after receive; packet split
-  * @rx_ring:  rx ring to clean
-  * @budget:   how many cleans we're allowed
-@@ -1612,8 +1617,8 @@ static int i40e_clean_rx_irq_ps(struct i40e_ring *rx_ring, int budget)
- 			continue;
- 		}
- 
--		skb_set_hash(skb, i40e_rx_hash(rx_ring, rx_desc),
--			     i40e_ptype_to_hash(rx_ptype));
-+		i40e_rx_hash(rx_ring, rx_desc, skb, rx_ptype);
-+
- 		if (unlikely(rx_status & I40E_RXD_QW1_STATUS_TSYNVALID_MASK)) {
- 			i40e_ptp_rx_hwtstamp(vsi->back, skb, (rx_status &
- 					   I40E_RXD_QW1_STATUS_TSYNINDX_MASK) >>
-@@ -1741,8 +1746,7 @@ static int i40e_clean_rx_irq_1buf(struct i40e_ring *rx_ring, int budget)
- 			continue;
- 		}
- 
--		skb_set_hash(skb, i40e_rx_hash(rx_ring, rx_desc),
--			     i40e_ptype_to_hash(rx_ptype));
-+		i40e_rx_hash(rx_ring, rx_desc, skb, rx_ptype);
- 		if (unlikely(rx_status & I40E_RXD_QW1_STATUS_TSYNVALID_MASK)) {
- 			i40e_ptp_rx_hwtstamp(vsi->back, skb, (rx_status &
- 					   I40E_RXD_QW1_STATUS_TSYNINDX_MASK) >>
+ 	dtype_cmd |= I40E_TXD_FLTR_QW1_CNT_ENA_MASK;
+-	if (!(tx_flags & I40E_TX_FLAGS_VXLAN_TUNNEL))
++	if (!(tx_flags & I40E_TX_FLAGS_TUNNEL))
+ 		dtype_cmd |=
+ 			((u32)I40E_FD_ATR_STAT_IDX(pf->hw.pf_id) <<
+ 			I40E_TXD_FLTR_QW1_CNTINDEX_SHIFT) &
+@@ -2323,10 +2323,11 @@ static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
+ 			oudph = udp_hdr(skb);
+ 			oiph = ip_hdr(skb);
+ 			l4_tunnel = I40E_TXD_CTX_UDP_TUNNELING;
+-			*tx_flags |= I40E_TX_FLAGS_VXLAN_TUNNEL;
++			*tx_flags |= I40E_TX_FLAGS_TUNNEL;
+ 			break;
+ 		case IPPROTO_GRE:
+ 			l4_tunnel = I40E_TXD_CTX_GRE_TUNNELING;
++			*tx_flags |= I40E_TX_FLAGS_TUNNEL;
+ 			break;
+ 		default:
+ 			return;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+index dccc1eb..1d167b6 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+@@ -163,7 +163,7 @@ enum i40e_dyn_idx_t {
+ #define I40E_TX_FLAGS_FSO		BIT(7)
+ #define I40E_TX_FLAGS_TSYN		BIT(8)
+ #define I40E_TX_FLAGS_FD_SB		BIT(9)
+-#define I40E_TX_FLAGS_VXLAN_TUNNEL	BIT(10)
++#define I40E_TX_FLAGS_TUNNEL		BIT(10)
+ #define I40E_TX_FLAGS_VLAN_MASK		0xffff0000
+ #define I40E_TX_FLAGS_VLAN_PRIO_MASK	0xe0000000
+ #define I40E_TX_FLAGS_VLAN_PRIO_SHIFT	29
 diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index 4ca4065..7a00657 100644
+index 7a00657..ed4934a 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
 +++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -886,31 +886,12 @@ checksum_fail:
- }
- 
- /**
-- * i40e_rx_hash - returns the hash value from the Rx descriptor
-- * @ring: descriptor ring
-- * @rx_desc: specific descriptor
-- **/
--static inline u32 i40e_rx_hash(struct i40e_ring *ring,
--			       union i40e_rx_desc *rx_desc)
--{
--	const __le64 rss_mask =
--		cpu_to_le64((u64)I40E_RX_DESC_FLTSTAT_RSS_HASH <<
--			    I40E_RX_DESC_STATUS_FLTSTAT_SHIFT);
--
--	if ((ring->netdev->features & NETIF_F_RXHASH) &&
--	    (rx_desc->wb.qword1.status_error_len & rss_mask) == rss_mask)
--		return le32_to_cpu(rx_desc->wb.qword0.hi_dword.rss);
--	else
--		return 0;
--}
--
--/**
-- * i40e_ptype_to_hash - get a hash type
-+ * i40e_ptype_to_htype - get a hash type
-  * @ptype: the ptype value from the descriptor
-  *
-  * Returns a hash type to be used by skb_set_hash
-  **/
--static inline enum pkt_hash_types i40e_ptype_to_hash(u8 ptype)
-+static inline enum pkt_hash_types i40e_ptype_to_htype(u8 ptype)
- {
- 	struct i40e_rx_ptype_decoded decoded = decode_rx_desc_ptype(ptype);
- 
-@@ -928,6 +909,30 @@ static inline enum pkt_hash_types i40e_ptype_to_hash(u8 ptype)
- }
- 
- /**
-+ * i40e_rx_hash - set the hash value in the skb
-+ * @ring: descriptor ring
-+ * @rx_desc: specific descriptor
-+ **/
-+static inline void i40e_rx_hash(struct i40e_ring *ring,
-+				union i40e_rx_desc *rx_desc,
-+				struct sk_buff *skb,
-+				u8 rx_ptype)
-+{
-+	u32 hash;
-+	const __le64 rss_mask  =
-+		cpu_to_le64((u64)I40E_RX_DESC_FLTSTAT_RSS_HASH <<
-+			    I40E_RX_DESC_STATUS_FLTSTAT_SHIFT);
-+
-+	if (ring->netdev->features & NETIF_F_RXHASH)
-+		return;
-+
-+	if ((rx_desc->wb.qword1.status_error_len & rss_mask) == rss_mask) {
-+		hash = le32_to_cpu(rx_desc->wb.qword0.hi_dword.rss);
-+		skb_set_hash(skb, hash, i40e_ptype_to_htype(rx_ptype));
-+	}
-+}
-+
-+/**
-  * i40e_clean_rx_irq_ps - Reclaim resources after receive; packet split
-  * @rx_ring:  rx ring to clean
-  * @budget:   how many cleans we're allowed
-@@ -1068,8 +1073,8 @@ static int i40e_clean_rx_irq_ps(struct i40e_ring *rx_ring, int budget)
- 			continue;
- 		}
- 
--		skb_set_hash(skb, i40e_rx_hash(rx_ring, rx_desc),
--			     i40e_ptype_to_hash(rx_ptype));
-+		i40e_rx_hash(rx_ring, rx_desc, skb, rx_ptype);
-+
- 		/* probably a little skewed due to removing CRC */
- 		total_rx_bytes += skb->len;
- 		total_rx_packets++;
-@@ -1185,8 +1190,7 @@ static int i40e_clean_rx_irq_1buf(struct i40e_ring *rx_ring, int budget)
- 			continue;
- 		}
- 
--		skb_set_hash(skb, i40e_rx_hash(rx_ring, rx_desc),
--			     i40e_ptype_to_hash(rx_ptype));
-+		i40e_rx_hash(rx_ring, rx_desc, skb, rx_ptype);
- 		/* probably a little skewed due to removing CRC */
- 		total_rx_bytes += skb->len;
- 		total_rx_packets++;
+@@ -1521,7 +1521,7 @@ static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
+ 			oudph = udp_hdr(skb);
+ 			oiph = ip_hdr(skb);
+ 			l4_tunnel = I40E_TXD_CTX_UDP_TUNNELING;
+-			*tx_flags |= I40E_TX_FLAGS_VXLAN_TUNNEL;
++			*tx_flags |= I40E_TX_FLAGS_TUNNEL;
+ 			break;
+ 		default:
+ 			return;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
+index e29bb3e..d7950b1 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
+@@ -162,7 +162,7 @@ enum i40e_dyn_idx_t {
+ #define I40E_TX_FLAGS_FCCRC		BIT(6)
+ #define I40E_TX_FLAGS_FSO		BIT(7)
+ #define I40E_TX_FLAGS_FD_SB		BIT(9)
+-#define I40E_TX_FLAGS_VXLAN_TUNNEL	BIT(10)
++#define I40E_TX_FLAGS_TUNNEL		BIT(10)
+ #define I40E_TX_FLAGS_VLAN_MASK		0xffff0000
+ #define I40E_TX_FLAGS_VLAN_PRIO_MASK	0xe0000000
+ #define I40E_TX_FLAGS_VLAN_PRIO_SHIFT	29
 -- 
 2.1.0
 
