@@ -1,58 +1,175 @@
 From: Joshua Hay <joshua.a.hay@intel.com>
-Date: Wed,  9 Dec 2015 15:50:25 -0800
-Subject: [Intel-wired-lan] [next PATCH S23 05/13] i40e: Replace X722 mac
-	check in ethtool get_settings
+Date: Wed,  9 Dec 2015 15:50:29 -0800
+Subject: [Intel-wired-lan] [next PATCH S23 09/13] i40e: Make some changes in
+	the nvm read code
 In-Reply-To: <1449705033-4968-1-git-send-email-joshua.a.hay@intel.com>
 References: <1449705033-4968-1-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <1449705033-4968-6-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <1449705033-4968-10-git-send-email-joshua.a.hay@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Catherine Sullivan <catherine.sullivan@intel.com>
+From: Anjali Singhai Jain <anjali.singhai@intel.com>
 
-100M SGMII is only supported on X722.  Replace the mac check with
-a feature flag check that is only set for the X722 device.
+In X722, NVM reads can't be done through SRCTL registers.
+And require AQ calls, which require grabbing the NVM lock.
+Unfortunately some paths need the lock to be acquired once
+and do a whole bunch of stuff and then release it.
+This patch creates an unsafe version of the read calls, so
+that it can be called from the paths that need the bulk access.
 
-Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-Change-ID: I53452d9af6af8cd9dca8500215fbc6ce93418f52
+Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+Acked-by: Shannon Nelson <shannon.nelson@intel.com>
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Change-ID: Ia9076e9100c5cf61206a856bd279059d3a052024
 ---
-Testing Hints: Check that 100M SGMII is not listed as supported on X710
-devices and is listed as supported on X722 devices.
+Testing Hints: Also make sure LAN driver
+sees the correct NVM version and does not fail verify checksum
+during init and during reset.
 
- drivers/net/ethernet/intel/i40e/i40e.h         | 3 ++-
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 2 +-
- 2 files changed, 3 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_nvm.c | 70 +++++++++++++++++++++++++-----
+ 1 file changed, 59 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 3d0269b..4747219 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -334,7 +334,8 @@ struct i40e_pf {
- #define I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE	BIT_ULL(38)
- #define I40E_FLAG_LINK_POLLING_ENABLED		BIT_ULL(39)
- #define I40E_FLAG_VEB_MODE_ENABLED		BIT_ULL(40)
--#define I40E_FLAG_NO_PCI_LINK_CHECK		BIT_ULL(42)
-+#define I40E_FLAG_NO_PCI_LINK_CHECK		BIT_ULL(41)
-+#define I40E_FLAG_100M_SGMII_CAPABLE		BIT_ULL(42)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
+index 6100cdd..79c0053 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
+@@ -212,6 +212,24 @@ read_nvm_exit:
+ }
  
- 	/* tracks features that get auto disabled by errors */
- 	u64 auto_disable_flags;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index c8b9dca..252a9dd 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -340,7 +340,7 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
- 				  SUPPORTED_1000baseT_Full;
- 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_1GB)
- 			ecmd->advertising |= ADVERTISED_1000baseT_Full;
--		if (pf->hw.mac.type == I40E_MAC_X722) {
-+		if (pf->flags & I40E_FLAG_100M_SGMII_CAPABLE) {
- 			ecmd->supported |= SUPPORTED_100baseT_Full;
- 			if (hw_link_info->requested_speeds &
- 			    I40E_LINK_SPEED_100MB)
+ /**
++ * __i40e_read_nvm_word - Reads nvm word, assumes caller does the locking
++ * @hw: pointer to the HW structure
++ * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF)
++ * @data: word read from the Shadow RAM
++ *
++ * Reads one 16 bit word from the Shadow RAM using the GLNVM_SRCTL register.
++ **/
++static i40e_status __i40e_read_nvm_word(struct i40e_hw *hw,
++					u16 offset,
++					u16 *data)
++{
++	i40e_status ret_code = 0;
++
++	ret_code = i40e_read_nvm_word_srctl(hw, offset, data);
++	return ret_code;
++}
++
++/**
+  * i40e_read_nvm_aq - Read Shadow RAM.
+  * @hw: pointer to the HW structure.
+  * @module_pointer: module pointer location in words from the NVM beginning
+@@ -280,7 +298,7 @@ static i40e_status i40e_read_nvm_word_aq(struct i40e_hw *hw, u16 offset,
+ }
+ 
+ /**
+- * i40e_read_nvm_word - Reads Shadow RAM
++ * i40e_read_nvm_word - Reads nvm word and acquire lock if necessary
+  * @hw: pointer to the HW structure
+  * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF)
+  * @data: word read from the Shadow RAM
+@@ -393,7 +411,28 @@ read_nvm_buffer_aq_exit:
+ }
+ 
+ /**
+- * i40e_read_nvm_buffer - Reads Shadow RAM buffer
++ * __i40e_read_nvm_buffer - Reads nvm buffer, caller must acquire lock
++ * @hw: pointer to the HW structure
++ * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF).
++ * @words: (in) number of words to read; (out) number of words actually read
++ * @data: words read from the Shadow RAM
++ *
++ * Reads 16 bit words (data buffer) from the SR using the i40e_read_nvm_srrd()
++ * method. The buffer read is preceded by the NVM ownership take
++ * and followed by the release.
++ **/
++static i40e_status __i40e_read_nvm_buffer(struct i40e_hw *hw,
++					  u16 offset,
++					  u16 *words, u16 *data)
++{
++	i40e_status ret_code = 0;
++
++	ret_code = i40e_read_nvm_buffer_srctl(hw, offset, words, data);
++	return ret_code;
++}
++
++/**
++ * i40e_read_nvm_buffer - Reads Shadow RAM buffer and acuire lock if necessary
+  * @hw: pointer to the HW structure
+  * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF).
+  * @words: (in) number of words to read; (out) number of words actually read
+@@ -499,15 +538,17 @@ static i40e_status i40e_calc_nvm_checksum(struct i40e_hw *hw,
+ 	data = (u16 *)vmem.va;
+ 
+ 	/* read pointer to VPD area */
+-	ret_code = i40e_read_nvm_word(hw, I40E_SR_VPD_PTR, &vpd_module);
++	ret_code = __i40e_read_nvm_word(hw, I40E_SR_VPD_PTR,
++					&vpd_module);
+ 	if (ret_code) {
+ 		ret_code = I40E_ERR_NVM_CHECKSUM;
+ 		goto i40e_calc_nvm_checksum_exit;
+ 	}
+ 
+ 	/* read pointer to PCIe Alt Auto-load module */
+-	ret_code = i40e_read_nvm_word(hw, I40E_SR_PCIE_ALT_AUTO_LOAD_PTR,
+-				      &pcie_alt_module);
++	ret_code = __i40e_read_nvm_word(hw,
++					I40E_SR_PCIE_ALT_AUTO_LOAD_PTR,
++					&pcie_alt_module);
+ 	if (ret_code) {
+ 		ret_code = I40E_ERR_NVM_CHECKSUM;
+ 		goto i40e_calc_nvm_checksum_exit;
+@@ -521,7 +562,7 @@ static i40e_status i40e_calc_nvm_checksum(struct i40e_hw *hw,
+ 		if ((i % I40E_SR_SECTOR_SIZE_IN_WORDS) == 0) {
+ 			u16 words = I40E_SR_SECTOR_SIZE_IN_WORDS;
+ 
+-			ret_code = i40e_read_nvm_buffer(hw, i, &words, data);
++			ret_code = __i40e_read_nvm_buffer(hw, i, &words, data);
+ 			if (ret_code) {
+ 				ret_code = I40E_ERR_NVM_CHECKSUM;
+ 				goto i40e_calc_nvm_checksum_exit;
+@@ -593,13 +634,18 @@ i40e_status i40e_validate_nvm_checksum(struct i40e_hw *hw,
+ 	u16 checksum_sr = 0;
+ 	u16 checksum_local = 0;
+ 
+-	ret_code = i40e_calc_nvm_checksum(hw, &checksum_local);
+-	if (ret_code)
++	if (hw->flags & I40E_HW_FLAG_AQ_SRCTL_ACCESS_ENABLE)
++		ret_code = i40e_acquire_nvm(hw, I40E_RESOURCE_READ);
++	if (!ret_code) {
++		ret_code = i40e_calc_nvm_checksum(hw, &checksum_local);
++		if (hw->flags & I40E_HW_FLAG_AQ_SRCTL_ACCESS_ENABLE)
++			i40e_release_nvm(hw);
++		if (ret_code)
++			goto i40e_validate_nvm_checksum_exit;
++	} else {
+ 		goto i40e_validate_nvm_checksum_exit;
++	}
+ 
+-	/* Do not use i40e_read_nvm_word() because we do not want to take
+-	 * the synchronization semaphores twice here.
+-	 */
+ 	i40e_read_nvm_word(hw, I40E_SR_SW_CHECKSUM_WORD, &checksum_sr);
+ 
+ 	/* Verify read checksum from EEPROM is the same as
+@@ -958,6 +1004,7 @@ retry:
+ 		break;
+ 
+ 	case I40E_NVMUPD_CSUM_CON:
++		/* Assumes the caller has acquired the nvm */
+ 		status = i40e_update_nvm_checksum(hw);
+ 		if (status) {
+ 			*perrno = hw->aq.asq_last_status ?
+@@ -971,6 +1018,7 @@ retry:
+ 		break;
+ 
+ 	case I40E_NVMUPD_CSUM_LCB:
++		/* Assumes the caller has acquired the nvm */
+ 		status = i40e_update_nvm_checksum(hw);
+ 		if (status) {
+ 			*perrno = hw->aq.asq_last_status ?
 -- 
 2.1.0
 
