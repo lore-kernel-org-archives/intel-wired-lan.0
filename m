@@ -1,107 +1,50 @@
-From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Wed, 09 Dec 2015 14:55:37 -0800
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Make ATR recognize IPv6 extended
-	headers
-Message-ID: <20151209225537.130683.66320.stgit@mdrustad-wks.jf.intel.com>
+From: Joshua Hay <joshua.a.hay@intel.com>
+Date: Wed,  9 Dec 2015 15:50:20 -0800
+Subject: [Intel-wired-lan] [next PATCH S23 00/13] i40e/i40evf updates
+Message-ID: <1449705033-4968-1-git-send-email-joshua.a.hay@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Right now ATR is not handling IPv6 extended headers, so ATR is not
-being performed on such packets. Fix that by skipping extended
-headers when they are present. This also fixes a problem where
-the ATR code was not checking that the inner protocol was actually
-TCP before setting up the signature rules. Since the protocol check
-is intimately involved with the extended header processing as well,
-this all gets fixed together.
+Anjali fixes Rx hash reported to the stack by our driver,
+adds fix for recursive RTNL lock during PROMISC change,
+fixes RSS rx-flow-hash configuration through ethtool,
+makes some changes in the nvm read code, and
+cleans up the code with respect to restarting autoneg.
 
-Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   47 ++++++++++++++++++++-----
- 1 file changed, 37 insertions(+), 10 deletions(-)
+Catherine replaces X722 mac check in ethtool get_settings.
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 986fc6eb135c..dc95a6547edd 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -7570,7 +7570,9 @@ static void ixgbe_atr(struct ixgbe_ring *ring,
- 	/* snag network header to get L4 type and address */
- 	skb = first->skb;
- 	hdr.network = skb_network_header(skb);
--	if (skb->encapsulation) {
-+	if (!skb->encapsulation) {
-+		th = tcp_hdr(skb);
-+	} else {
- #ifdef CONFIG_IXGBE_VXLAN
- 		struct ixgbe_adapter *adapter = q_vector->adapter;
- 
-@@ -7589,14 +7591,34 @@ static void ixgbe_atr(struct ixgbe_ring *ring,
- #else
- 		return;
- #endif /* CONFIG_IXGBE_VXLAN */
--	} else {
--		/* Currently only IPv4/IPv6 with TCP is supported */
--		if ((first->protocol != htons(ETH_P_IPV6) ||
--		     hdr.ipv6->nexthdr != IPPROTO_TCP) &&
--		    (first->protocol != htons(ETH_P_IP) ||
--		     hdr.ipv4->protocol != IPPROTO_TCP))
-+	}
-+
-+	/* Currently only IPv4/IPv6 with TCP is supported */
-+	switch (hdr.ipv4->version) {
-+	case IPVERSION:
-+		if (hdr.ipv4->protocol != IPPROTO_TCP)
- 			return;
--		th = tcp_hdr(skb);
-+		break;
-+	case 6:
-+		if (likely((unsigned char *)th - hdr.network ==
-+			   sizeof(struct ipv6hdr))) {
-+			if (hdr.ipv6->nexthdr != IPPROTO_TCP)
-+				return;
-+		} else {
-+			__be16 frag_off;
-+			u8 l4_hdr;
-+
-+			ipv6_skip_exthdr(skb, hdr.network - skb->data +
-+					      sizeof(struct ipv6hdr),
-+					 &l4_hdr, &frag_off);
-+			if (unlikely(frag_off))
-+				return;
-+			if (l4_hdr != IPPROTO_TCP)
-+				return;
-+		}
-+		break;
-+	default:
-+		return;
- 	}
- 
- 	/* skip this packet since it is invalid or the socket is closing */
-@@ -7631,10 +7653,12 @@ static void ixgbe_atr(struct ixgbe_ring *ring,
- 		common.port.src ^= th->dest ^ first->protocol;
- 	common.port.dst ^= th->source;
- 
--	if (first->protocol == htons(ETH_P_IP)) {
-+	switch (hdr.ipv4->version) {
-+	case IPVERSION:
- 		input.formatted.flow_type = IXGBE_ATR_FLOW_TYPE_TCPV4;
- 		common.ip ^= hdr.ipv4->saddr ^ hdr.ipv4->daddr;
--	} else {
-+		break;
-+	case 6:
- 		input.formatted.flow_type = IXGBE_ATR_FLOW_TYPE_TCPV6;
- 		common.ip ^= hdr.ipv6->saddr.s6_addr32[0] ^
- 			     hdr.ipv6->saddr.s6_addr32[1] ^
-@@ -7644,6 +7668,9 @@ static void ixgbe_atr(struct ixgbe_ring *ring,
- 			     hdr.ipv6->daddr.s6_addr32[1] ^
- 			     hdr.ipv6->daddr.s6_addr32[2] ^
- 			     hdr.ipv6->daddr.s6_addr32[3];
-+		break;
-+	default:
-+		break;
- 	}
- 
- #ifdef CONFIG_IXGBE_VXLAN
+Jesse removes forever unused ID, makes tunnels generic, and
+updates features with right offload.
+
+Kiran adds mac_filter_element at the end of the list instead of HEAD.
+
+Mitch allows channel bonding of VFs, and nulls out ring pointers on free.
+
+Shannon defines function capabilities in only one place.
+
+ drivers/net/ethernet/intel/i40e/i40e.h             |  4 +-
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |  1 +
+ drivers/net/ethernet/intel/i40e/i40e_common.c      | 86 +++++++---------------
+ drivers/net/ethernet/intel/i40e/i40e_devids.h      |  1 -
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 16 ++--
+ drivers/net/ethernet/intel/i40e/i40e_main.c        | 27 ++++---
+ drivers/net/ethernet/intel/i40e/i40e_nvm.c         | 70 +++++++++++++++---
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c        | 61 ++++++++-------
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h        |  2 +-
+ .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    |  1 +
+ drivers/net/ethernet/intel/i40evf/i40e_common.c    |  1 -
+ drivers/net/ethernet/intel/i40evf/i40e_devids.h    |  1 -
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c      | 56 +++++++-------
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.h      |  2 +-
+ drivers/net/ethernet/intel/i40evf/i40evf.h         |  1 +
+ drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 40 ++--------
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 11 ++-
+ .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |  2 +
+ 18 files changed, 196 insertions(+), 187 deletions(-)
+
+-- 
+2.1.0
 
