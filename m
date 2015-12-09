@@ -1,111 +1,78 @@
 From: Joshua Hay <joshua.a.hay@intel.com>
-Date: Wed,  9 Dec 2015 15:50:26 -0800
-Subject: [Intel-wired-lan] [next PATCH S23 06/13] i40e/i40evf: tunnels can
-	be generic
+Date: Wed,  9 Dec 2015 15:50:31 -0800
+Subject: [Intel-wired-lan] [next PATCH S23 11/13] i40e: Cleanup the code
+	with respect to restarting autoneg
 In-Reply-To: <1449705033-4968-1-git-send-email-joshua.a.hay@intel.com>
 References: <1449705033-4968-1-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <1449705033-4968-7-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <1449705033-4968-12-git-send-email-joshua.a.hay@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Anjali Singhai Jain <anjali.singhai@intel.com>
 
-Since the i40e driver now supports VxLAN, GRE, and soon
-to be Geneve tunnels, the driver can just note that an skb
-contains a tunneled packet generically, instead of calling
-out VXLAN specifically.  The tunnel set up we do for hardware
-is almost always the same for all tunnel types.
+The restart-autoneg work around does not apply to X722.
+Added a flag to set it only for the right MAC and right FW version
+where the work around should be applied.
 
-This specifically enables ATR/Flow Director on GRE packets
-which increases performance/scaling.  Without this patch
-GRE RX packets end up on a random RSS assigned queue.
-
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Change-ID: Ie8e205603654910d2f718592cbef8132ae0719e4
+Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+Change-ID: I942c3ff40cccd1e56f424b1da776b020fe3c9d2a
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 7 ++++---
- drivers/net/ethernet/intel/i40e/i40e_txrx.h   | 2 +-
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 2 +-
- drivers/net/ethernet/intel/i40evf/i40e_txrx.h | 2 +-
- 4 files changed, 7 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h      |  1 +
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 12 ++++++++----
+ 2 files changed, 9 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 28d2943..ba79f67 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2005,7 +2005,7 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 	if (!(tx_flags & (I40E_TX_FLAGS_IPV4 | I40E_TX_FLAGS_IPV6)))
- 		return;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 4747219..bf3776f 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -336,6 +336,7 @@ struct i40e_pf {
+ #define I40E_FLAG_VEB_MODE_ENABLED		BIT_ULL(40)
+ #define I40E_FLAG_NO_PCI_LINK_CHECK		BIT_ULL(41)
+ #define I40E_FLAG_100M_SGMII_CAPABLE		BIT_ULL(42)
++#define I40E_FLAG_RESTART_AUTONEG	        BIT_ULL(43)
  
--	if (!(tx_flags & I40E_TX_FLAGS_VXLAN_TUNNEL)) {
-+	if ((tx_flags & I40E_TX_FLAGS_TUNNEL)) {
- 		/* snag network header to get L4 type and address */
- 		hdr.network = skb_network_header(skb);
+ 	/* tracks features that get auto disabled by errors */
+ 	u64 auto_disable_flags;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 44bbfd8..747387f 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -6882,8 +6882,7 @@ static void i40e_reset_and_rebuild(struct i40e_pf *pf, bool reinit)
+ 		wr32(hw, I40E_REG_MSS, val);
+ 	}
  
-@@ -2090,7 +2090,7 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 		     I40E_TXD_FLTR_QW1_FD_STATUS_SHIFT;
+-	if (((pf->hw.aq.fw_maj_ver == 4) && (pf->hw.aq.fw_min_ver < 33)) ||
+-	    (pf->hw.aq.fw_maj_ver < 4)) {
++	if (pf->flags & I40E_FLAG_RESTART_AUTONEG) {
+ 		msleep(75);
+ 		ret = i40e_aq_set_link_restart_an(&pf->hw, true, NULL);
+ 		if (ret)
+@@ -8362,6 +8361,12 @@ static int i40e_sw_init(struct i40e_pf *pf)
+ 				 pf->hw.func_caps.fd_filters_best_effort;
+ 	}
  
- 	dtype_cmd |= I40E_TXD_FLTR_QW1_CNT_ENA_MASK;
--	if (!(tx_flags & I40E_TX_FLAGS_VXLAN_TUNNEL))
-+	if (!(tx_flags & I40E_TX_FLAGS_TUNNEL))
- 		dtype_cmd |=
- 			((u32)I40E_FD_ATR_STAT_IDX(pf->hw.pf_id) <<
- 			I40E_TXD_FLTR_QW1_CNTINDEX_SHIFT) &
-@@ -2323,10 +2323,11 @@ static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
- 			oudph = udp_hdr(skb);
- 			oiph = ip_hdr(skb);
- 			l4_tunnel = I40E_TXD_CTX_UDP_TUNNELING;
--			*tx_flags |= I40E_TX_FLAGS_VXLAN_TUNNEL;
-+			*tx_flags |= I40E_TX_FLAGS_TUNNEL;
- 			break;
- 		case IPPROTO_GRE:
- 			l4_tunnel = I40E_TXD_CTX_GRE_TUNNELING;
-+			*tx_flags |= I40E_TX_FLAGS_TUNNEL;
- 			break;
- 		default:
- 			return;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-index dccc1eb..1d167b6 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-@@ -163,7 +163,7 @@ enum i40e_dyn_idx_t {
- #define I40E_TX_FLAGS_FSO		BIT(7)
- #define I40E_TX_FLAGS_TSYN		BIT(8)
- #define I40E_TX_FLAGS_FD_SB		BIT(9)
--#define I40E_TX_FLAGS_VXLAN_TUNNEL	BIT(10)
-+#define I40E_TX_FLAGS_TUNNEL		BIT(10)
- #define I40E_TX_FLAGS_VLAN_MASK		0xffff0000
- #define I40E_TX_FLAGS_VLAN_PRIO_MASK	0xe0000000
- #define I40E_TX_FLAGS_VLAN_PRIO_SHIFT	29
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index 7a00657..ed4934a 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -1521,7 +1521,7 @@ static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
- 			oudph = udp_hdr(skb);
- 			oiph = ip_hdr(skb);
- 			l4_tunnel = I40E_TXD_CTX_UDP_TUNNELING;
--			*tx_flags |= I40E_TX_FLAGS_VXLAN_TUNNEL;
-+			*tx_flags |= I40E_TX_FLAGS_TUNNEL;
- 			break;
- 		default:
- 			return;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-index e29bb3e..d7950b1 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-@@ -162,7 +162,7 @@ enum i40e_dyn_idx_t {
- #define I40E_TX_FLAGS_FCCRC		BIT(6)
- #define I40E_TX_FLAGS_FSO		BIT(7)
- #define I40E_TX_FLAGS_FD_SB		BIT(9)
--#define I40E_TX_FLAGS_VXLAN_TUNNEL	BIT(10)
-+#define I40E_TX_FLAGS_TUNNEL		BIT(10)
- #define I40E_TX_FLAGS_VLAN_MASK		0xffff0000
- #define I40E_TX_FLAGS_VLAN_PRIO_MASK	0xe0000000
- #define I40E_TX_FLAGS_VLAN_PRIO_SHIFT	29
++	if (((pf->hw.mac.type == I40E_MAC_X710) ||
++	     (pf->hw.mac.type == I40E_MAC_XL710)) &&
++	    (((pf->hw.aq.fw_maj_ver == 4) && (pf->hw.aq.fw_min_ver < 33)) ||
++	    (pf->hw.aq.fw_maj_ver < 4)))
++		pf->flags |= I40E_FLAG_RESTART_AUTONEG;
++
+ 	if (pf->hw.func_caps.vmdq) {
+ 		pf->num_vmdq_vsis = I40E_DEFAULT_NUM_VMDQ_VSI;
+ 		pf->flags |= I40E_FLAG_VMDQ_ENABLED;
+@@ -10791,8 +10796,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		wr32(hw, I40E_REG_MSS, val);
+ 	}
+ 
+-	if (((pf->hw.aq.fw_maj_ver == 4) && (pf->hw.aq.fw_min_ver < 33)) ||
+-	    (pf->hw.aq.fw_maj_ver < 4)) {
++	if (pf->flags & I40E_FLAG_RESTART_AUTONEG) {
+ 		msleep(75);
+ 		err = i40e_aq_set_link_restart_an(&pf->hw, true, NULL);
+ 		if (err)
 -- 
 2.1.0
 
