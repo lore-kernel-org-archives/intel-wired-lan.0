@@ -1,244 +1,53 @@
 From: Joshua Hay <joshua.a.hay@intel.com>
-Date: Thu, 10 Dec 2015 11:38:49 -0800
-Subject: [Intel-wired-lan] [v2 next PATCH S23 08/13] i40e: define function
-	capabilities in only one place
-Message-ID: <1449776331-8330-1-git-send-email-joshua.a.hay@intel.com>
+Date: Thu, 10 Dec 2015 11:38:50 -0800
+Subject: [Intel-wired-lan] [v2 next PATCH S23 12/13] i40e: update features
+	with right offload
+In-Reply-To: <1449776331-8330-1-git-send-email-joshua.a.hay@intel.com>
+References: <1449776331-8330-1-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <1449776331-8330-2-git-send-email-joshua.a.hay@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Shannon Nelson <shannon.nelson@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-The device capabilities were defined in two places, and neither had all
-the definitions.  It really belongs with the AQ API definition, so this
-patch removes the other set of definitions and fills out the missing item.
+Synchronize code bases and add SCTP offload support.
 
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-Acked-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Change-ID: I273ba7d79a476cd11d2e0ca5825fec1716740de2
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Change-ID: I9f99071f7176225479026930c387bf681a47494e
 ---
-V2: remove second signed-off-by
+V2: remove reviewed-by
 
-Testing Hints: Apply and compile cleanly
+Testing Hints: Test SCTP in a tunnel like vxlan and make sure
+TSO is still working.  Test GRE tunnels and make sure they
+work.  See already applied GRE upstream commit for instructions.
 
- drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |  1 +
- drivers/net/ethernet/intel/i40e/i40e_common.c      | 85 +++++++---------------
- .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    |  1 +
- 3 files changed, 30 insertions(+), 57 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-index b22012a..256ce65 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-@@ -422,6 +422,7 @@ struct i40e_aqc_list_capabilities_element_resp {
- #define I40E_AQ_CAP_ID_LED		0x0061
- #define I40E_AQ_CAP_ID_SDP		0x0062
- #define I40E_AQ_CAP_ID_MDIO		0x0063
-+#define I40E_AQ_CAP_ID_WSR_PROT		0x0064
- #define I40E_AQ_CAP_ID_FLEX10		0x00F1
- #define I40E_AQ_CAP_ID_CEM		0x00F2
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 747387f..cc83332 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -8847,10 +8847,12 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
+ 	np = netdev_priv(netdev);
+ 	np->vsi = vsi;
  
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 6a034dd..4bdb08b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -2765,35 +2765,6 @@ i40e_aq_erase_nvm_exit:
- 	return status;
- }
+-	netdev->hw_enc_features |= NETIF_F_IP_CSUM	 |
+-				  NETIF_F_GSO_UDP_TUNNEL |
+-				  NETIF_F_GSO_GRE	 |
+-				  NETIF_F_TSO;
++	netdev->hw_enc_features |= NETIF_F_IP_CSUM	  |
++				   NETIF_F_SCTP_CSUM	  |
++				   NETIF_F_GSO_UDP_TUNNEL |
++				   NETIF_F_GSO_GRE        |
++				   NETIF_F_TSO		  |
++				   0;
  
--#define I40E_DEV_FUNC_CAP_SWITCH_MODE	0x01
--#define I40E_DEV_FUNC_CAP_MGMT_MODE	0x02
--#define I40E_DEV_FUNC_CAP_NPAR		0x03
--#define I40E_DEV_FUNC_CAP_OS2BMC	0x04
--#define I40E_DEV_FUNC_CAP_VALID_FUNC	0x05
--#define I40E_DEV_FUNC_CAP_SRIOV_1_1	0x12
--#define I40E_DEV_FUNC_CAP_VF		0x13
--#define I40E_DEV_FUNC_CAP_VMDQ		0x14
--#define I40E_DEV_FUNC_CAP_802_1_QBG	0x15
--#define I40E_DEV_FUNC_CAP_802_1_QBH	0x16
--#define I40E_DEV_FUNC_CAP_VSI		0x17
--#define I40E_DEV_FUNC_CAP_DCB		0x18
--#define I40E_DEV_FUNC_CAP_FCOE		0x21
--#define I40E_DEV_FUNC_CAP_ISCSI		0x22
--#define I40E_DEV_FUNC_CAP_RSS		0x40
--#define I40E_DEV_FUNC_CAP_RX_QUEUES	0x41
--#define I40E_DEV_FUNC_CAP_TX_QUEUES	0x42
--#define I40E_DEV_FUNC_CAP_MSIX		0x43
--#define I40E_DEV_FUNC_CAP_MSIX_VF	0x44
--#define I40E_DEV_FUNC_CAP_FLOW_DIRECTOR	0x45
--#define I40E_DEV_FUNC_CAP_IEEE_1588	0x46
--#define I40E_DEV_FUNC_CAP_FLEX10	0xF1
--#define I40E_DEV_FUNC_CAP_CEM		0xF2
--#define I40E_DEV_FUNC_CAP_IWARP		0x51
--#define I40E_DEV_FUNC_CAP_LED		0x61
--#define I40E_DEV_FUNC_CAP_SDP		0x62
--#define I40E_DEV_FUNC_CAP_MDIO		0x63
--#define I40E_DEV_FUNC_CAP_WR_CSR_PROT	0x64
--
- /**
-  * i40e_parse_discover_capabilities
-  * @hw: pointer to the hw struct
-@@ -2832,79 +2803,79 @@ static void i40e_parse_discover_capabilities(struct i40e_hw *hw, void *buff,
- 		major_rev = cap->major_rev;
- 
- 		switch (id) {
--		case I40E_DEV_FUNC_CAP_SWITCH_MODE:
-+		case I40E_AQ_CAP_ID_SWITCH_MODE:
- 			p->switch_mode = number;
- 			break;
--		case I40E_DEV_FUNC_CAP_MGMT_MODE:
-+		case I40E_AQ_CAP_ID_MNG_MODE:
- 			p->management_mode = number;
- 			break;
--		case I40E_DEV_FUNC_CAP_NPAR:
-+		case I40E_AQ_CAP_ID_NPAR_ACTIVE:
- 			p->npar_enable = number;
- 			break;
--		case I40E_DEV_FUNC_CAP_OS2BMC:
-+		case I40E_AQ_CAP_ID_OS2BMC_CAP:
- 			p->os2bmc = number;
- 			break;
--		case I40E_DEV_FUNC_CAP_VALID_FUNC:
-+		case I40E_AQ_CAP_ID_FUNCTIONS_VALID:
- 			p->valid_functions = number;
- 			break;
--		case I40E_DEV_FUNC_CAP_SRIOV_1_1:
-+		case I40E_AQ_CAP_ID_SRIOV:
- 			if (number == 1)
- 				p->sr_iov_1_1 = true;
- 			break;
--		case I40E_DEV_FUNC_CAP_VF:
-+		case I40E_AQ_CAP_ID_VF:
- 			p->num_vfs = number;
- 			p->vf_base_id = logical_id;
- 			break;
--		case I40E_DEV_FUNC_CAP_VMDQ:
-+		case I40E_AQ_CAP_ID_VMDQ:
- 			if (number == 1)
- 				p->vmdq = true;
- 			break;
--		case I40E_DEV_FUNC_CAP_802_1_QBG:
-+		case I40E_AQ_CAP_ID_8021QBG:
- 			if (number == 1)
- 				p->evb_802_1_qbg = true;
- 			break;
--		case I40E_DEV_FUNC_CAP_802_1_QBH:
-+		case I40E_AQ_CAP_ID_8021QBR:
- 			if (number == 1)
- 				p->evb_802_1_qbh = true;
- 			break;
--		case I40E_DEV_FUNC_CAP_VSI:
-+		case I40E_AQ_CAP_ID_VSI:
- 			p->num_vsis = number;
- 			break;
--		case I40E_DEV_FUNC_CAP_DCB:
-+		case I40E_AQ_CAP_ID_DCB:
- 			if (number == 1) {
- 				p->dcb = true;
- 				p->enabled_tcmap = logical_id;
- 				p->maxtc = phys_id;
- 			}
- 			break;
--		case I40E_DEV_FUNC_CAP_FCOE:
-+		case I40E_AQ_CAP_ID_FCOE:
- 			if (number == 1)
- 				p->fcoe = true;
- 			break;
--		case I40E_DEV_FUNC_CAP_ISCSI:
-+		case I40E_AQ_CAP_ID_ISCSI:
- 			if (number == 1)
- 				p->iscsi = true;
- 			break;
--		case I40E_DEV_FUNC_CAP_RSS:
-+		case I40E_AQ_CAP_ID_RSS:
- 			p->rss = true;
- 			p->rss_table_size = number;
- 			p->rss_table_entry_width = logical_id;
- 			break;
--		case I40E_DEV_FUNC_CAP_RX_QUEUES:
-+		case I40E_AQ_CAP_ID_RXQ:
- 			p->num_rx_qp = number;
- 			p->base_queue = phys_id;
- 			break;
--		case I40E_DEV_FUNC_CAP_TX_QUEUES:
-+		case I40E_AQ_CAP_ID_TXQ:
- 			p->num_tx_qp = number;
- 			p->base_queue = phys_id;
- 			break;
--		case I40E_DEV_FUNC_CAP_MSIX:
-+		case I40E_AQ_CAP_ID_MSIX:
- 			p->num_msix_vectors = number;
- 			break;
--		case I40E_DEV_FUNC_CAP_MSIX_VF:
-+		case I40E_AQ_CAP_ID_VF_MSIX:
- 			p->num_msix_vectors_vf = number;
- 			break;
--		case I40E_DEV_FUNC_CAP_FLEX10:
-+		case I40E_AQ_CAP_ID_FLEX10:
- 			if (major_rev == 1) {
- 				if (number == 1) {
- 					p->flex10_enable = true;
-@@ -2920,38 +2891,38 @@ static void i40e_parse_discover_capabilities(struct i40e_hw *hw, void *buff,
- 			p->flex10_mode = logical_id;
- 			p->flex10_status = phys_id;
- 			break;
--		case I40E_DEV_FUNC_CAP_CEM:
-+		case I40E_AQ_CAP_ID_CEM:
- 			if (number == 1)
- 				p->mgmt_cem = true;
- 			break;
--		case I40E_DEV_FUNC_CAP_IWARP:
-+		case I40E_AQ_CAP_ID_IWARP:
- 			if (number == 1)
- 				p->iwarp = true;
- 			break;
--		case I40E_DEV_FUNC_CAP_LED:
-+		case I40E_AQ_CAP_ID_LED:
- 			if (phys_id < I40E_HW_CAP_MAX_GPIO)
- 				p->led[phys_id] = true;
- 			break;
--		case I40E_DEV_FUNC_CAP_SDP:
-+		case I40E_AQ_CAP_ID_SDP:
- 			if (phys_id < I40E_HW_CAP_MAX_GPIO)
- 				p->sdp[phys_id] = true;
- 			break;
--		case I40E_DEV_FUNC_CAP_MDIO:
-+		case I40E_AQ_CAP_ID_MDIO:
- 			if (number == 1) {
- 				p->mdio_port_num = phys_id;
- 				p->mdio_port_mode = logical_id;
- 			}
- 			break;
--		case I40E_DEV_FUNC_CAP_IEEE_1588:
-+		case I40E_AQ_CAP_ID_1588:
- 			if (number == 1)
- 				p->ieee_1588 = true;
- 			break;
--		case I40E_DEV_FUNC_CAP_FLOW_DIRECTOR:
-+		case I40E_AQ_CAP_ID_FLOW_DIRECTOR:
- 			p->fd = true;
- 			p->fd_filters_guaranteed = number;
- 			p->fd_filters_best_effort = logical_id;
- 			break;
--		case I40E_DEV_FUNC_CAP_WR_CSR_PROT:
-+		case I40E_AQ_CAP_ID_WSR_PROT:
- 			p->wr_csr_prot = (u64)number;
- 			p->wr_csr_prot |= (u64)logical_id << 32;
- 			break;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-index f5b2b36..0d3bc3b 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-@@ -419,6 +419,7 @@ struct i40e_aqc_list_capabilities_element_resp {
- #define I40E_AQ_CAP_ID_LED		0x0061
- #define I40E_AQ_CAP_ID_SDP		0x0062
- #define I40E_AQ_CAP_ID_MDIO		0x0063
-+#define I40E_AQ_CAP_ID_WSR_PROT		0x0064
- #define I40E_AQ_CAP_ID_FLEX10		0x00F1
- #define I40E_AQ_CAP_ID_CEM		0x00F2
- 
+ 	netdev->features = NETIF_F_SG		       |
+ 			   NETIF_F_IP_CSUM	       |
 -- 
 2.1.0
 
