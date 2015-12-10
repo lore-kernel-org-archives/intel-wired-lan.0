@@ -1,11 +1,11 @@
 From: Schmitt, Phillip J <phillip.j.schmitt@intel.com>
-Date: Thu, 10 Dec 2015 22:52:43 +0000
-Subject: [Intel-wired-lan] [next PATCH 05/11] ixgbe: Simplify
- configuration of setting VLVF and VLVFB
-In-Reply-To: <20151103010954.28233.65503.stgit@localhost.localdomain>
+Date: Thu, 10 Dec 2015 22:53:10 +0000
+Subject: [Intel-wired-lan] [next PATCH 07/11] ixgbe: Reorder search to
+ work from the top down instead of bottom up
+In-Reply-To: <20151103011007.28233.6659.stgit@localhost.localdomain>
 References: <20151103005850.28233.63113.stgit@localhost.localdomain>
- <20151103010954.28233.65503.stgit@localhost.localdomain>
-Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E180CF618F@ORSMSX108.amr.corp.intel.com>
+ <20151103011007.28233.6659.stgit@localhost.localdomain>
+Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E180CF61B0@ORSMSX108.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,21 +19,17 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Alexander Duyck
 > Sent: Monday, November 02, 2015 5:10 PM
 > To: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH 05/11] ixgbe: Simplify configuration of
-> setting VLVF and VLVFB
+> Subject: [Intel-wired-lan] [next PATCH 07/11] ixgbe: Reorder search to work
+> from the top down instead of bottom up
 > 
-> This patch addresses several issues within the VLVF and VLVFB configuration
+> This patch is meant to reduce the complexity of the search function used for
+> finding a VLVF entry associated with a given VLAN ID.  The previous code was
+> searching from bottom to top.  I reordered it to search from top to bottom.  In
+> addition I pulled an AND statement out of the loop and instead replaced it with
+> an OR statement outside the loop.  This should help to reduce the overall size
+> and complexity of the function.
 > 
-> First was the fact that code was overly complicated with multiple conditional
-> paths depending on if we adding or removing and which bit we were going to
-> add or remove.  Instead of messing with all that I have simplified it by using (vid /
-> 32) and (1 - vid / 32) to identify our register and the other vlvfb register.
-> 
-> Second was the fact that we were likely leaking a few packets into the PF in
-> cases where we were deleting an entry and the VFTA filter for that entry as the
-> ordering was such that we deleted the pool and then the VLAN filter instead of
-> the other way around.  I have updated that by adding a check for no bits being
-> set and if that occurs we clear things up in the proper order.
+> There was also some formatting I cleaned up in regards to whitespace and such.
 > 
 > Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 
