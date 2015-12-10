@@ -1,53 +1,32 @@
-From: Joshua Hay <joshua.a.hay@intel.com>
-Date: Thu, 10 Dec 2015 11:38:50 -0800
-Subject: [Intel-wired-lan] [v2 next PATCH S23 12/13] i40e: update features
-	with right offload
-In-Reply-To: <1449776331-8330-1-git-send-email-joshua.a.hay@intel.com>
-References: <1449776331-8330-1-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <1449776331-8330-2-git-send-email-joshua.a.hay@intel.com>
+From: Schmitt, Phillip J <phillip.j.schmitt@intel.com>
+Date: Thu, 10 Dec 2015 22:51:49 +0000
+Subject: [Intel-wired-lan] [next PATCH 01/11] ixgbe: Return error on
+ failure to allocate mac_table
+In-Reply-To: <20151103010929.28233.47017.stgit@localhost.localdomain>
+References: <20151103005850.28233.63113.stgit@localhost.localdomain>
+ <20151103010929.28233.47017.stgit@localhost.localdomain>
+Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E180CF612A@ORSMSX108.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-Synchronize code bases and add SCTP offload support.
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Change-ID: I9f99071f7176225479026930c387bf681a47494e
----
-V2: remove reviewed-by
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Alexander Duyck
+> Sent: Monday, November 02, 2015 5:09 PM
+> To: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH 01/11] ixgbe: Return error on failure to
+> allocate mac_table
+> 
+> Add a check to make certain mac_table was actually allocated and is not NULL.
+> If it is NULL return -ENOMEM and allow the probe routine to fail rather then
+> causing a NULL pointer dereference further down the line.
+> 
+> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 
-Testing Hints: Test SCTP in a tunnel like vxlan and make sure
-TSO is still working.  Test GRE tunnels and make sure they
-work.  See already applied GRE upstream commit for instructions.
-
- drivers/net/ethernet/intel/i40e/i40e_main.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 747387f..cc83332 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -8847,10 +8847,12 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
- 	np = netdev_priv(netdev);
- 	np->vsi = vsi;
- 
--	netdev->hw_enc_features |= NETIF_F_IP_CSUM	 |
--				  NETIF_F_GSO_UDP_TUNNEL |
--				  NETIF_F_GSO_GRE	 |
--				  NETIF_F_TSO;
-+	netdev->hw_enc_features |= NETIF_F_IP_CSUM	  |
-+				   NETIF_F_SCTP_CSUM	  |
-+				   NETIF_F_GSO_UDP_TUNNEL |
-+				   NETIF_F_GSO_GRE        |
-+				   NETIF_F_TSO		  |
-+				   0;
- 
- 	netdev->features = NETIF_F_SG		       |
- 			   NETIF_F_IP_CSUM	       |
--- 
-2.1.0
+Tested-by: Phil Schmitt <phillip.j.schmitt@intel.com>
 
