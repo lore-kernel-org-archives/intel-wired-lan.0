@@ -1,43 +1,47 @@
-From: Shota Suzuki <suzuki_shota_t3@lab.ntt.co.jp>
-Date: Fri, 11 Dec 2015 18:44:00 +0900
-Subject: [Intel-wired-lan] [PATCH net-next 2/2] igb: Unpair the queues when
-	changing the number of queues
-In-Reply-To: <1449827040-1806-1-git-send-email-suzuki_shota_t3@lab.ntt.co.jp>
-References: <1449827040-1806-1-git-send-email-suzuki_shota_t3@lab.ntt.co.jp>
-Message-ID: <1449827040-1806-2-git-send-email-suzuki_shota_t3@lab.ntt.co.jp>
+From: Pavel Tikhomirov <ptikhomirov@virtuozzo.com>
+Date: Fri, 11 Dec 2015 17:05:14 +0300
+Subject: [Intel-wired-lan] [PATCH v2] ixgbe: on recv increment
+	rx.ring->stats.yields
+In-Reply-To: <566AD3F5.9050502@cogentembedded.com>
+References: <566AD3F5.9050502@cogentembedded.com>
+Message-ID: <1449842714-10284-1-git-send-email-ptikhomirov@virtuozzo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-By the commit 72ddef0506da ("igb: Fix oops caused by missing queue
-pairing"), the IGB_FLAG_QUEUE_PAIRS flag can now be set when changing the
-number of queues by "ethtool -L", but it is never cleared unless the igb
-driver is reloaded.
-This patch clears it if queue pairing becomes unnecessary as a result of
-"ethtool -L".
+It seem to be non intentionaly changed to tx in
+commit adc810900a70 ("ixgbe: Refactor busy poll socket code to address
+multiple issues")
 
-Signed-off-by: Shota Suzuki <suzuki_shota_t3@lab.ntt.co.jp>
+Lock is taken from ixgbe_low_latency_recv, and there under this
+lock we use ixgbe_clean_rx_irq so it looks wrong for me to increment
+tx counter.
+
+Yield stats can be shown through ethtool:
+ethtool -S enp129s0 | grep yield
+
+v2: follow commit citing style
+
+Signed-off-by: Pavel Tikhomirov <ptikhomirov@virtuozzo.com>
 ---
- drivers/net/ethernet/intel/igb/igb_main.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 340ba4fb..75ee25e 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -2932,6 +2932,8 @@ void igb_set_flag_queue_pairs(struct igb_adapter *adapter,
- 		 */
- 		if (adapter->rss_queues > (max_rss_queues / 2))
- 			adapter->flags |= IGB_FLAG_QUEUE_PAIRS;
-+		else
-+			adapter->flags &= ~IGB_FLAG_QUEUE_PAIRS;
- 		break;
- 	}
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index 1d21745..7656d46 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -451,7 +451,7 @@ static inline bool ixgbe_qv_lock_poll(struct ixgbe_q_vector *q_vector)
+ 				IXGBE_QV_STATE_POLL);
+ #ifdef BP_EXTENDED_STATS
+ 	if (rc != IXGBE_QV_STATE_IDLE)
+-		q_vector->tx.ring->stats.yields++;
++		q_vector->rx.ring->stats.yields++;
+ #endif
+ 	return rc == IXGBE_QV_STATE_IDLE;
  }
 -- 
-1.8.3.1
-
-
+1.9.3
 
