@@ -1,89 +1,43 @@
-From: Mitch Williams <mitch.a.williams@intel.com>
-Date: Fri, 11 Dec 2015 16:45:38 -0800
-Subject: [Intel-wired-lan] [next PATCH] igb/igbvf: don't give up
-Message-ID: <1449881138-19985-1-git-send-email-mitch.a.williams@intel.com>
+From: Pavel Tikhomirov <ptikhomirov@virtuozzo.com>
+Date: Fri, 11 Dec 2015 10:24:06 +0300
+Subject: [Intel-wired-lan] [PATCH] ixgbe: on recv increment
+	rx.ring->stats.yields instead of tx
+Message-ID: <1449818646-29348-1-git-send-email-ptikhomirov@virtuozzo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The driver shouldn't just give up if it fails to get the hardware
-mailbox lock. This can happen in a situation where the PF-VF
-communication channel is heavily loaded and causes complete
-communications failure between the PF and VF drivers.
+It seem to be non intentionaly changed to tx in
+ms commit: adc810900a703ee78fe88fd65e086d359fec04b2
+ixgbe: Refactor busy poll socket code to address multiple issues
 
-Add a counter and a delay. The driver will now retry ten times, waiting
-one millsecond between retries.
+Lock is taken from ixgbe_low_latency_recv, and there under this
+lock we use ixgbe_clean_rx_irq so it looks wrong for me to increment
+tx counter.
 
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Yield stats can be shown through ethtool:
+ethtool -S enp129s0 | grep yield
+
+Signed-off-by: Pavel Tikhomirov <ptikhomirov@virtuozzo.com>
 ---
- drivers/net/ethernet/intel/igb/e1000_mbx.c | 18 ++++++++++++------
- drivers/net/ethernet/intel/igbvf/mbx.c     | 20 +++++++++++++-------
- 2 files changed, 25 insertions(+), 13 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/e1000_mbx.c b/drivers/net/ethernet/intel/igb/e1000_mbx.c
-index 162cc49..10f5c9e 100644
---- a/drivers/net/ethernet/intel/igb/e1000_mbx.c
-+++ b/drivers/net/ethernet/intel/igb/e1000_mbx.c
-@@ -322,14 +322,20 @@ static s32 igb_obtain_mbx_lock_pf(struct e1000_hw *hw, u16 vf_number)
- {
- 	s32 ret_val = -E1000_ERR_MBX;
- 	u32 p2v_mailbox;
-+	int count = 10;
- 
--	/* Take ownership of the buffer */
--	wr32(E1000_P2VMAILBOX(vf_number), E1000_P2VMAILBOX_PFU);
-+	do {
-+		/* Take ownership of the buffer */
-+		wr32(E1000_P2VMAILBOX(vf_number), E1000_P2VMAILBOX_PFU);
- 
--	/* reserve mailbox for vf use */
--	p2v_mailbox = rd32(E1000_P2VMAILBOX(vf_number));
--	if (p2v_mailbox & E1000_P2VMAILBOX_PFU)
--		ret_val = 0;
-+		/* reserve mailbox for vf use */
-+		p2v_mailbox = rd32(E1000_P2VMAILBOX(vf_number));
-+		if (p2v_mailbox & E1000_P2VMAILBOX_PFU) {
-+			ret_val = 0;
-+			break;
-+		}
-+		udelay(1000);
-+	} while (count-- > 0);
- 
- 	return ret_val;
- }
-diff --git a/drivers/net/ethernet/intel/igbvf/mbx.c b/drivers/net/ethernet/intel/igbvf/mbx.c
-index 7b6cb4c..01752f4 100644
---- a/drivers/net/ethernet/intel/igbvf/mbx.c
-+++ b/drivers/net/ethernet/intel/igbvf/mbx.c
-@@ -234,13 +234,19 @@ static s32 e1000_check_for_rst_vf(struct e1000_hw *hw)
- static s32 e1000_obtain_mbx_lock_vf(struct e1000_hw *hw)
- {
- 	s32 ret_val = -E1000_ERR_MBX;
--
--	/* Take ownership of the buffer */
--	ew32(V2PMAILBOX(0), E1000_V2PMAILBOX_VFU);
--
--	/* reserve mailbox for VF use */
--	if (e1000_read_v2p_mailbox(hw) & E1000_V2PMAILBOX_VFU)
--		ret_val = E1000_SUCCESS;
-+	int count = 10;
-+
-+	do {
-+		/* Take ownership of the buffer */
-+		ew32(V2PMAILBOX(0), E1000_V2PMAILBOX_VFU);
-+
-+		/* reserve mailbox for VF use */
-+		if (e1000_read_v2p_mailbox(hw) & E1000_V2PMAILBOX_VFU) {
-+			ret_val = 0;
-+			break;
-+		}
-+		udelay(1000);
-+	} while (count-- > 0);
- 
- 	return ret_val;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index 1d21745..7656d46 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -451,7 +451,7 @@ static inline bool ixgbe_qv_lock_poll(struct ixgbe_q_vector *q_vector)
+ 				IXGBE_QV_STATE_POLL);
+ #ifdef BP_EXTENDED_STATS
+ 	if (rc != IXGBE_QV_STATE_IDLE)
+-		q_vector->tx.ring->stats.yields++;
++		q_vector->rx.ring->stats.yields++;
+ #endif
+ 	return rc == IXGBE_QV_STATE_IDLE;
  }
 -- 
-2.5.0
+1.9.3
 
