@@ -1,81 +1,89 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 11 Dec 2015 22:32:58 +0000
-Subject: [Intel-wired-lan] [PATCH v2] igb: Add I210 cable fault
- detection to	self test
-In-Reply-To: <52350642.317695.1449862744982.JavaMail.zimbra@xes-inc.com>
-References: <494008248.99336.1449171467578.JavaMail.zimbra@xes-inc.com>
- <27181503.100057.1449171821628.JavaMail.zimbra@xes-inc.com>
- <309B89C4C689E141A5FF6A0C5FB2118B81E2CB69@ORSMSX101.amr.corp.intel.com>,
- <52350642.317695.1449862744982.JavaMail.zimbra@xes-inc.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81E2D0BF@ORSMSX101.amr.corp.intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
+Date: Fri, 11 Dec 2015 16:45:38 -0800
+Subject: [Intel-wired-lan] [next PATCH] igb/igbvf: don't give up
+Message-ID: <1449881138-19985-1-git-send-email-mitch.a.williams@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Aaron Sierra [asierra at xes-inc.com]
-> Sent: Friday, December 11, 2015 11:39 AM
-> To: Brown, Aaron F
-> Cc: Kirsher, Jeffrey T; intel-wired-lan at lists.osuosl.org; Matthew Vick; Joe Schultz
-> Subject: Re: [Intel-wired-lan] [PATCH v2] igb: Add I210 cable fault detection to        self test
-> 
-> > From: "Aaron F Brown" <aaron.f.brown@intel.com>
-> > Sent: Thursday, December 10, 2015 9:21:27 PM
-> >
-> > > From: Intel-wired-lan [intel-wired-lan-bounces at lists.osuosl.org] on behalf
-> > > of Aaron Sierra [asierra at xes-inc.com]
-> > > Sent: Thursday, December 03, 2015 11:43 AM
-> > > To: Kirsher, Jeffrey T; intel-wired-lan at lists.osuosl.org
-> > > Cc: Matthew Vick; Joe Schultz
-> > > Subject: [Intel-wired-lan] [PATCH v2] igb: Add I210 cable fault detection
-> > > to    self test
-> > >
-> > > From: Joe Schultz <jschultz@xes-inc.com>
-> > >
-> > > Add an offline diagnostic test for the I210 internal PHY which checks
-> > > ...
-> > > ...
-> > I'm also wondering if the fault distance checks are getting run with diags in
-> > the offline mode and a cable is connected.  Whenever I run "ethtool -t ethX
-> > offline" while I have a valid link I get a "-1", which I believe is the
-> > default value, for the results on each pair.
-> > --------------------------------------------------------------------------------------------------------------------------------
-> > ...
-> > Pair D cable fault   (offline)   0
-> > Pair A fault distance            -1
-> > Pair B fault distance            -1
-> > Pair C fault distance            -1
-> > Pair D fault distance            -1
-> > Pair A fault open                0
-> > ...
-> --------------------------------------------------------------------------------------------------------------------------------
-> > This is true with an i210 and i211 (other parts I have tried do not show the
-> > fault checks, as expected.
-> 
-> Aaron,
-> The test will not report real values unless the port is "up" when testing is
-> done. Perhaps, we need to modify the test to ensure that it is in the
-> necessary state via igb_power_up_link()?
+The driver shouldn't just give up if it fails to get the hardware
+mailbox lock. This can happen in a situation where the PF-VF
+communication channel is heavily loaded and causes complete
+communications failure between the PF and VF drivers.
 
-Ah, that makes sense, even if the port is up when the test starts, the diags offline mode brings it down.  Yes, I could by into some way of bringing the link up so the test will get run properly.  Alternatively I guess you could bypass the test when in offline mode and throw a message stating the port needs to be up (run in online mode) for this set of checks.  I prefer bringing the link up and running it as offline is supposed to be a more inclusive set of tests than online.
+Add a counter and a delay. The driver will now retry ten times, waiting
+one millsecond between retries.
 
-> > > ...
-> > > ...
-> > > +       if (timeout >= 1500)
-> > > +               dev_warn(&adapter->pdev->dev,
-> > > +                       "Cable fault test timed out. Results may be
-> > > invalid");
-> >
-> > How did you come up with this (1.5) second value?  I'm getting this message
-> > fair amount of the time with what I thought are good cables plugged into
-> > both ancient and modern switches.
-> 
-> The timeout value was chosen through testing. We don't know of any documented
-> value that defines the typical runtime.
-> 
-> -Aaron S.
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+---
+ drivers/net/ethernet/intel/igb/e1000_mbx.c | 18 ++++++++++++------
+ drivers/net/ethernet/intel/igbvf/mbx.c     | 20 +++++++++++++-------
+ 2 files changed, 25 insertions(+), 13 deletions(-)
 
-Nor do I.  Would the test being run with link down (offline mode) make the difference?  I only noticed the message when I was running in offline mode (but I also ran it a lot more often with offline as I was chasing those "-1"s.
+diff --git a/drivers/net/ethernet/intel/igb/e1000_mbx.c b/drivers/net/ethernet/intel/igb/e1000_mbx.c
+index 162cc49..10f5c9e 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_mbx.c
++++ b/drivers/net/ethernet/intel/igb/e1000_mbx.c
+@@ -322,14 +322,20 @@ static s32 igb_obtain_mbx_lock_pf(struct e1000_hw *hw, u16 vf_number)
+ {
+ 	s32 ret_val = -E1000_ERR_MBX;
+ 	u32 p2v_mailbox;
++	int count = 10;
+ 
+-	/* Take ownership of the buffer */
+-	wr32(E1000_P2VMAILBOX(vf_number), E1000_P2VMAILBOX_PFU);
++	do {
++		/* Take ownership of the buffer */
++		wr32(E1000_P2VMAILBOX(vf_number), E1000_P2VMAILBOX_PFU);
+ 
+-	/* reserve mailbox for vf use */
+-	p2v_mailbox = rd32(E1000_P2VMAILBOX(vf_number));
+-	if (p2v_mailbox & E1000_P2VMAILBOX_PFU)
+-		ret_val = 0;
++		/* reserve mailbox for vf use */
++		p2v_mailbox = rd32(E1000_P2VMAILBOX(vf_number));
++		if (p2v_mailbox & E1000_P2VMAILBOX_PFU) {
++			ret_val = 0;
++			break;
++		}
++		udelay(1000);
++	} while (count-- > 0);
+ 
+ 	return ret_val;
+ }
+diff --git a/drivers/net/ethernet/intel/igbvf/mbx.c b/drivers/net/ethernet/intel/igbvf/mbx.c
+index 7b6cb4c..01752f4 100644
+--- a/drivers/net/ethernet/intel/igbvf/mbx.c
++++ b/drivers/net/ethernet/intel/igbvf/mbx.c
+@@ -234,13 +234,19 @@ static s32 e1000_check_for_rst_vf(struct e1000_hw *hw)
+ static s32 e1000_obtain_mbx_lock_vf(struct e1000_hw *hw)
+ {
+ 	s32 ret_val = -E1000_ERR_MBX;
+-
+-	/* Take ownership of the buffer */
+-	ew32(V2PMAILBOX(0), E1000_V2PMAILBOX_VFU);
+-
+-	/* reserve mailbox for VF use */
+-	if (e1000_read_v2p_mailbox(hw) & E1000_V2PMAILBOX_VFU)
+-		ret_val = E1000_SUCCESS;
++	int count = 10;
++
++	do {
++		/* Take ownership of the buffer */
++		ew32(V2PMAILBOX(0), E1000_V2PMAILBOX_VFU);
++
++		/* reserve mailbox for VF use */
++		if (e1000_read_v2p_mailbox(hw) & E1000_V2PMAILBOX_VFU) {
++			ret_val = 0;
++			break;
++		}
++		udelay(1000);
++	} while (count-- > 0);
+ 
+ 	return ret_val;
+ }
+-- 
+2.5.0
 
-Thanks, Aaron B.
