@@ -1,8 +1,8 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 16 Dec 2015 21:49:01 +0800
+Date: Wed, 16 Dec 2015 22:10:43 +0800
 Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- fff9f50d6dd1b9f5d8658b744024247fecd10421 BUILD DONE
-Message-ID: <56716bcd.y/G8vIqVKwGm0XiL%fengguang.wu@intel.com>
+ 1b199aae065ea037744367add7a9613916e41fbd BUILD DONE
+Message-ID: <567170e3.bF6+ncZcwZtuCs+B%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,62 +10,36 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-fff9f50d6dd1b9f5d8658b744024247fecd10421  ixgbevf: Fix handling of napi budget when multiple queues are enabled per vector
+1b199aae065ea037744367add7a9613916e41fbd  igb: fix compare_const_fl.cocci warnings
 
-drivers/net/ethernet/intel/i40e/i40e_main.c:8852:8: error: 'NETIF_F_SCTP_CSUM' undeclared (first use in this function)
 drivers/net/ethernet/intel/igb/igb_cdev.c:150:2: error: implicit declaration of function 'set_pages_uc' [-Werror=implicit-function-declaration]
 drivers/net/ethernet/intel/igb/igb_cdev.c:275:2: error: implicit declaration of function 'set_pages_wb' [-Werror=implicit-function-declaration]
 
 Error ids grouped by kconfigs:
 
 recent_errors
-??? alpha-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:error:NETIF_F_SCTP_CSUM-undeclared-(first-use-in-this-function)
-??? i386-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:error:NETIF_F_SCTP_CSUM-undeclared-(first-use-in-this-function)
-??? i386-randconfig-a0-201550
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:error:NETIF_F_SCTP_CSUM-undeclared-(first-use-in-this-function)
-??? ia64-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:error:NETIF_F_SCTP_CSUM-undeclared-(first-use-in-this-function)
 ??? ia64-defconfig
-??? ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_uc
-??? ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_wb
-??? parisc-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:error:NETIF_F_SCTP_CSUM-undeclared-(first-use-in-this-function)
-??? powerpc-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:error:NETIF_F_SCTP_CSUM-undeclared-(first-use-in-this-function)
-??? s390-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:error:NETIF_F_SCTP_CSUM-undeclared-(first-use-in-this-function)
-??? sparc64-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:error:NETIF_F_SCTP_CSUM-undeclared-(first-use-in-this-function)
-??? sparc-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:error:NETIF_F_SCTP_CSUM-undeclared-(first-use-in-this-function)
-??? tile-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:error:NETIF_F_SCTP_CSUM-undeclared-(first-use-in-this-function)
-??? x86_64-allmodconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:error:NETIF_F_SCTP_CSUM-undeclared-(first-use-in-this-function)
-??? x86_64-allyesconfig
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:error:NETIF_F_SCTP_CSUM-undeclared-(first-use-in-this-function)
-??? x86_64-randconfig-x017-12141150
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:error:NETIF_F_SCTP_CSUM-undeclared-(first-use-in-this-function)
-??? x86_64-rhel
-??? ??? drivers-net-ethernet-intel-i40e-i40e_main.c:error:NETIF_F_SCTP_CSUM-undeclared-(first-use-in-this-function)
-??? xtensa-allyesconfig
-    ??? drivers-net-ethernet-intel-i40e-i40e_main.c:error:NETIF_F_SCTP_CSUM-undeclared-(first-use-in-this-function)
+    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_uc
+    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_wb
 
-elapsed time: 29m
+elapsed time: 21m
 
-configs tested: 112
+configs tested: 104
 
 i386                     randconfig-a0-201550
-i386                               tinyconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
 sh                                allnoconfig
 sh                          rsk7269_defconfig
 sh                  sh7785lcr_32bit_defconfig
 sh                            titan_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
 alpha                               defconfig
 parisc                            allnoconfig
 parisc                         b180_defconfig
@@ -95,9 +69,6 @@ m68k                          multi_defconfig
 m68k                           sun3_defconfig
 i386                     randconfig-s0-201550
 i386                     randconfig-s1-201550
-x86_64                 randconfig-s0-12162121
-x86_64                 randconfig-s1-12162121
-x86_64                 randconfig-s2-12162121
 x86_64                           allmodconfig
 avr32                      atngw100_defconfig
 avr32                     atstk1006_defconfig
@@ -107,6 +78,7 @@ openrisc                    or1ksim_defconfig
 tile                         tilegx_defconfig
 um                             i386_defconfig
 um                           x86_64_defconfig
+i386                               tinyconfig
 mips                              allnoconfig
 mips                      fuloong2e_defconfig
 mips                                   jz4740
@@ -120,17 +92,7 @@ sparc64                           allnoconfig
 sparc64                             defconfig
 microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
-i386                     randconfig-i0-201550
-i386                     randconfig-i1-201550
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
 i386                     randconfig-n0-201550
-mn10300                          allmodconfig
-powerpc                   gef_ppc9a_defconfig
 arm                               allnoconfig
 arm                         at91_dt_defconfig
 arm                                  at_hdmac
@@ -158,7 +120,6 @@ ia64                              allnoconfig
 ia64                                defconfig
 x86_64                                    lkp
 x86_64                                   rhel
-i386                     randconfig-r0-201550
 i386                 randconfig-x000-12141102
 i386                 randconfig-x007-12141102
 i386                 randconfig-x009-12141102
