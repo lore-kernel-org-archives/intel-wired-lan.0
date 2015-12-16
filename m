@@ -1,125 +1,52 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 15 Dec 2015 15:24:48 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 8b20d4866b488b517ed9a24eaa17782709b82f33 BUILD SUCCESS
-Message-ID: <566fc040.EiZMBzLE9FmaeuWP%fengguang.wu@intel.com>
+Date: Wed, 16 Dec 2015 08:08:06 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 40/48]
+ drivers/net/ethernet/intel/i40e/i40e_main.c:8852:8: error:
+ 'NETIF_F_SCTP_CSUM' undeclared
+Message-ID: <201512160803.JGEOB3vi%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-8b20d4866b488b517ed9a24eaa17782709b82f33  ixgbevf: Fix handling of napi budget when multiple queues are enabled per vector
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   63cbb805810e49b86b8e460e52f39625e20a2873
+commit: 55a6cf2bbcb895183030a7020f67b7ada0bea4c0 [40/48] i40e: update features with right offload
+config: x86_64-randconfig-x017-12141150 (attached as .config)
+reproduce:
+        git checkout 55a6cf2bbcb895183030a7020f67b7ada0bea4c0
+        # save the attached .config to linux build tree
+        make ARCH=x86_64 
 
-elapsed time: 66m
+All errors (new ones prefixed by >>):
 
-configs tested: 104
+   drivers/net/ethernet/intel/i40e/i40e_main.c: In function 'i40e_config_netdev':
+>> drivers/net/ethernet/intel/i40e/i40e_main.c:8852:8: error: 'NETIF_F_SCTP_CSUM' undeclared (first use in this function)
+           NETIF_F_SCTP_CSUM   |
+           ^
+   drivers/net/ethernet/intel/i40e/i40e_main.c:8852:8: note: each undeclared identifier is reported only once for each function it appears in
 
-i386                     randconfig-a0-201550
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                             allmodconfig
-x86_64               randconfig-x011-12141150
-x86_64               randconfig-x016-12141150
-x86_64               randconfig-x013-12141150
-x86_64               randconfig-x019-12141150
-x86_64               randconfig-x017-12141150
-x86_64               randconfig-x012-12141150
-x86_64               randconfig-x014-12141150
-x86_64               randconfig-x010-12141150
-x86_64               randconfig-x018-12141150
-x86_64               randconfig-x015-12141150
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                     randconfig-s0-201550
-i386                     randconfig-s1-201550
-x86_64                           allmodconfig
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201550
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-n0-201550
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                   rhel
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64               randconfig-x005-12141102
-x86_64               randconfig-x003-12141102
-x86_64               randconfig-x000-12141102
-x86_64               randconfig-x001-12141102
-x86_64               randconfig-x007-12141102
-x86_64               randconfig-x004-12141102
-x86_64               randconfig-x009-12141102
-x86_64               randconfig-x006-12141102
-x86_64               randconfig-x002-12141102
-x86_64               randconfig-x008-12141102
-i386                     randconfig-r0-201550
-i386                 randconfig-x000-12141102
-i386                 randconfig-x007-12141102
-i386                 randconfig-x009-12141102
-i386                 randconfig-x004-12141102
-i386                 randconfig-x003-12141102
-i386                 randconfig-x006-12141102
-i386                 randconfig-x005-12141102
-i386                 randconfig-x002-12141102
-i386                 randconfig-x008-12141102
-i386                 randconfig-x001-12141102
+vim +/NETIF_F_SCTP_CSUM +8852 drivers/net/ethernet/intel/i40e/i40e_main.c
 
-Thanks,
-Fengguang
+  8846	
+  8847		vsi->netdev = netdev;
+  8848		np = netdev_priv(netdev);
+  8849		np->vsi = vsi;
+  8850	
+  8851		netdev->hw_enc_features |= NETIF_F_IP_CSUM	  |
+> 8852					   NETIF_F_SCTP_CSUM	  |
+  8853					   NETIF_F_GSO_UDP_TUNNEL |
+  8854					   NETIF_F_GSO_GRE	  |
+  8855					   NETIF_F_TSO		  |
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/octet-stream
+Size: 24868 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151216/68123bab/attachment-0001.obj>
