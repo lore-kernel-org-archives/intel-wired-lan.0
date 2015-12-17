@@ -1,66 +1,60 @@
-From: Vlad Zolotarov <vladz@cloudius-systems.com>
-Date: Thu, 17 Dec 2015 19:56:16 +0200
-Subject: [Intel-wired-lan] Your RETA patches to ixgbe/ixgbevf
-In-Reply-To: <F6FB0E698C9B3143BDF729DF2228664691E59E08@ORSMSX116.amr.corp.intel.com>
-References: <F6FB0E698C9B3143BDF729DF2228664691E59DB8@ORSMSX116.amr.corp.intel.com>
- <5672F2AB.1010909@cloudius-systems.com>
- <F6FB0E698C9B3143BDF729DF2228664691E59E08@ORSMSX116.amr.corp.intel.com>
-Message-ID: <5672F740.6090300@cloudius-systems.com>
+From: Fujinaka, Todd <todd.fujinaka@intel.com>
+Date: Thu, 17 Dec 2015 18:37:44 +0000
+Subject: [Intel-wired-lan] [PATCH] igb: Enable RSS for i211 adapter
+In-Reply-To: <20151216193058.5383.11943.stgit@localhost.localdomain>
+References: <20151216193058.5383.11943.stgit@localhost.localdomain>
+Message-ID: <9B4A1B1917080E46B64F07F2989DADD65AAE7871@ORSMSX114.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+I've spent too much time looking into this. I think this was added when someone looked for the register value and it was the same as E1000_MRQC_ENABLE_RSS_8Q and disabled i211 because it doesn't have 8 queues.
+
+I've been asked if you could spin this to add a comment that the two values are the same (E1000_MRQC_ENABLE_RSS_8Q and E1000_MRQC_ENABLE_RSS_4Q).
+
+Thanks.
+
+Todd Fujinaka
+Software Application Engineer
+Networking Division (ND)
+Intel Corporation
+todd.fujinaka at intel.com
+(503) 712-4565
 
 
-On 12/17/2015 07:41 PM, Skidmore, Donald C wrote:
-> Thanks a lot Vlad.
->
-> We really appreciate this and your patches. :)
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Alexander Duyck
+Sent: Wednesday, December 16, 2015 11:31 AM
+To: intel-wired-lan@lists.osuosl.org; alexander.duyck at gmail.com
+Cc: Tal Abudi
+Subject: [Intel-wired-lan] [PATCH] igb: Enable RSS for i211 adapter
 
-Was glad to help. ;)
-It seemed that your DPDK guys were kinda intimidated either from your 
-Linux kernel team or from netdev in general, so I helped them a bit when 
-I had some free time. :)
-I'll get back to the relevant DPDK VF part hopefully soon...
+It appears that when the i211 was introduced it was never actually enabling RSS.  This change makes it so that we enable RSS by setting the appropriate bit in the MRQC register.
 
->
-> -Don Skidmore <donald.c.skidmore@intel.com>
->
->> -----Original Message-----
->> From: Vlad Zolotarov [mailto:vladz at cloudius-systems.com]
->> Sent: Thursday, December 17, 2015 9:37 AM
->> To: Skidmore, Donald C
->> Cc: intel-wired-lan at lists.osuosl.org
->> Subject: Re: Your RETA patches to ixgbe/ixgbevf
->>
->> I assign copyright back to Intel for the changes in
->> <4ce37a4c05cfb5bfd445419d5b880a91bb19228f> <ixgbe: Add a RETA query
->> command to VF-PF channel API>
->>
->> I assign copyright back to Intel for the changes in
->> <94cf66f87064b8e4b24412f042b98e7cba4ebce2> <ixgbevf: Add a RETA
->> query code>
->>
->>
->> On 12/17/2015 07:14 PM, Skidmore, Donald C wrote:
->>> Hi Vlad,
->>>
->>> Here is the canned email I send out when asking for copyright back to Intel
->> (which needs to be done for each patch):
->>> Some or most of your patch(es) make changes to code that we share
->> among our other drivers so we retain copyright on certain files so that we
->> are able to re-license the code.  With that, I ask if you can assign copyright of
->> your changes to Intel so that we can maintain copyright on the changes.  You
->> will still be the author, just Intel would retain copyright on the changes.
->>> All we need is a reply, stating "I assign copyright back to Intel for the
->> changes in < 4ce37a4c05cfb5bfd445419d5b880a91bb19228f> < ixgbe: Add a
->> RETA query command to VF-PF channel API>"
->>> All we need is a reply, stating "I assign copyright back to Intel for the
->> changes in < 94cf66f87064b8e4b24412f042b98e7cba4ebce2> < ixgbevf: Add
->> a RETA query code>"
->>> Sorry we should have asked you earlier.
->>> Thanks,
->>> -Don Skidmore <donald.c.skidmore@intel.com>
+Reported-by: Tal Abudi <talabudi@gmail.com>
+Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+---
+ drivers/net/ethernet/intel/igb/igb_main.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 7afde455326d..c803da0aa883 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -3464,8 +3464,7 @@ static void igb_setup_mrqc(struct igb_adapter *adapter)
+ 		else
+ 			mrqc |= E1000_MRQC_ENABLE_VMDQ;
+ 	} else {
+-		if (hw->mac.type != e1000_i211)
+-			mrqc |= E1000_MRQC_ENABLE_RSS_4Q;
++		mrqc |= E1000_MRQC_ENABLE_RSS_4Q;
+ 	}
+ 	igb_vmm_control(adapter);
+ 
+
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan at lists.osuosl.org
+http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
