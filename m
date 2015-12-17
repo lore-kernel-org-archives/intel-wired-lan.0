@@ -1,38 +1,20 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 17 Dec 2015 17:09:09 +0000
-Subject: [Intel-wired-lan] [next PATCH S23 13/13] i40e: bump version
-	to	1.4.10
-In-Reply-To: <1449705033-4968-14-git-send-email-joshua.a.hay@intel.com>
-References: <1449705033-4968-1-git-send-email-joshua.a.hay@intel.com>
- <1449705033-4968-14-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F96F11C@ORSMSX104.amr.corp.intel.com>
+From: Skidmore, Donald C <donald.c.skidmore@intel.com>
+Date: Thu, 17 Dec 2015 17:09:52 +0000
+Subject: [Intel-wired-lan] your patch 'ixgbe,
+	ixgbevf: Add new mbox API xcast mode'
+Message-ID: <F6FB0E698C9B3143BDF729DF2228664691E59DA2@ORSMSX116.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Joshua Hay
-> Sent: Wednesday, December 09, 2015 3:51 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S23 13/13] i40e: bump version to
-> 1.4.10
-> 
-> From: Catherine Sullivan <catherine.sullivan@intel.com>
-> 
-> Bump.
-> 
-> Change-Id: I81c407a988a8ff3c0b3ae64b4330800c95e6c31b
-> 
-> Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-> Change-ID: Ic9a495feb9ab0606f953c3848b0acf67169d3930
-> ---
-> Testing Hints: check version
-> 
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+Hi Hiroshi,
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied, modinfo/ethtool show correct version
+Some or most of your patch(es) make changes to code that we share among our other drivers so we retain copyright on certain files so that we are able to re-license the code.  With that, I ask if you can assign copyright of your changes to Intel so that we can maintain copyright on the changes.  You will still be the author, just Intel would retain copyright on the changes.
+
+All we need is a reply, stating "I assign copyright back to Intel for the changes in 8443c1a4b192089e62642d847ebac3e4d15134c3  ixgbe, ixgbevf: Add new mbox API xcast mode"
+
+Sorry we should have asked you earlier.
+Thanks,
+-Don Skidmore <donald.c.skidmore@intel.com>
