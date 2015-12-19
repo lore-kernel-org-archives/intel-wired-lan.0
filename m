@@ -1,44 +1,33 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Sat, 19 Dec 2015 03:17:33 +0000
-Subject: [Intel-wired-lan] [next PATCH] igb/igbvf: don't give up
-In-Reply-To: <AAEA33E297BCAC4B9BB20A7C2DF0AB8D7848200E@FMSMSX113.amr.corp.intel.com>
-References: <1449881138-19985-1-git-send-email-mitch.a.williams@intel.com>
- <309B89C4C689E141A5FF6A0C5FB2118B81E30D1D@ORSMSX101.amr.corp.intel.com>
- <8FF04C88-EEDB-4234-A368-CED5C387348B@intel.com>,
- <AAEA33E297BCAC4B9BB20A7C2DF0AB8D7848200E@FMSMSX113.amr.corp.intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81E3131A@ORSMSX101.amr.corp.intel.com>
+Date: Sat, 19 Dec 2015 03:24:15 +0000
+Subject: [Intel-wired-lan] [PATCH net-next 1/2] igb: Remove unnecessary
+ flag setting in igb_set_flag_queue_pairs()
+In-Reply-To: <1449827040-1806-1-git-send-email-suzuki_shota_t3@lab.ntt.co.jp>
+References: <1449827040-1806-1-git-send-email-suzuki_shota_t3@lab.ntt.co.jp>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81E3134E@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Williams, Mitch A
-> Sent: Friday, December 18, 2015 8:42 AM
-> To: Rustad, Mark D; Brown, Aaron F
-> Cc: intel-wired-lan at lists.osuosl.org
-> Subject: RE: [Intel-wired-lan] [next PATCH] igb/igbvf: don't give up
+> From: netdev-owner at vger.kernel.org [netdev-owner at vger.kernel.org] on behalf of Shota Suzuki 
+> [suzuki_shota_t3 at lab.ntt.co.jp]
+> Sent: Friday, December 11, 2015 1:43 AM
+> To: Kirsher, Jeffrey T; Brandeburg, Jesse; Nelson, Shannon; Wyborny, Carolyn; Skidmore, Donald C; 
+> Ronciak, John; Williams, Mitch A; intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org
+> Cc: suzuki_shota_t3 at lab.ntt.co.jp
+> Subject: [PATCH net-next 1/2] igb: Remove unnecessary flag setting in igb_set_flag_queue_pairs()
 > 
-> Yes, these are called from interrupt context. So they can't sleep, no matter how tired they get.
-> -Mitch
+> If VFs are enabled (max_vfs >= 1), both max_rss_queues and
+> adapter->rss_queues are set to 2 in the case of e1000_82576.
+> In this case, IGB_FLAG_QUEUE_PAIRS is always set in the default block as a
+> result of fall-through, thus setting it in the e1000_82576 block is not
+> necessary.
 
-No matter HOW tired, bummer!  Cause for me, sometimes I just can't stay awake another millisecond :)
+> Signed-off-by: Shota Suzuki <suzuki_shota_t3@lab.ntt.co.jp>
+> ---
+>  drivers/net/ethernet/intel/igb/igb_main.c | 8 --------
+>  1 file changed, 8 deletions(-)
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
-
-> > -----Original Message-----
-> > From: Rustad, Mark D
-> > Sent: Thursday, December 17, 2015 5:57 PM
-> > To: Brown, Aaron F
-> > Cc: Williams, Mitch A; intel-wired-lan at lists.osuosl.org
-> > Subject: Re: [Intel-wired-lan] [next PATCH] igb/igbvf: don't give up
-> >
-> > Aaron F <aaron.f.brown@intel.com> wrote:
-> >
-> > > Is there any reason not to use usleep_range here?
-> >
-> > Can the routines ever be called from any atomic context, such as an
-> > interrupt or while a lock is held? If so, you can't use any form of sleep.
-> >
-> > --
-> > Mark Rustad, Networking Division, Intel Corporation
