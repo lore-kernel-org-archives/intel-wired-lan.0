@@ -1,34 +1,30 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Sat, 19 Dec 2015 03:25:41 +0000
-Subject: [Intel-wired-lan] [PATCH net-next 2/2] igb: Unpair the queues
- when	changing the number of queues
-In-Reply-To: <1449827040-1806-2-git-send-email-suzuki_shota_t3@lab.ntt.co.jp>
-References: <1449827040-1806-1-git-send-email-suzuki_shota_t3@lab.ntt.co.jp>,
- <1449827040-1806-2-git-send-email-suzuki_shota_t3@lab.ntt.co.jp>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81E3136B@ORSMSX101.amr.corp.intel.com>
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Date: Mon, 21 Dec 2015 01:42:16 +0000
+Subject: [Intel-wired-lan] your patch 'ixgbe,
+	ixgbevf: Add new mbox API xcast mode'
+In-Reply-To: <F6FB0E698C9B3143BDF729DF2228664691E59DA2@ORSMSX116.amr.corp.intel.com>
+References: <F6FB0E698C9B3143BDF729DF2228664691E59DA2@ORSMSX116.amr.corp.intel.com>
+Message-ID: <7F861DC0615E0C47A872E6F3C5FCDDBD05F87207@BPXM14GP.gisp.nec.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [intel-wired-lan-bounces at lists.osuosl.org] on behalf of Shota Suzuki 
-> [suzuki_shota_t3 at lab.ntt.co.jp]
-> Sent: Friday, December 11, 2015 1:44 AM
-> To: Kirsher, Jeffrey T; Brandeburg, Jesse; Nelson, Shannon; Wyborny, Carolyn; Skidmore, Donald C; 
-> Ronciak, John; Williams, Mitch A; intel-wired-lan at lists.osuosl.org; > netdev at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH net-next 2/2] igb: Unpair the queues when     changing the number of queues
-> 
-> By the commit 72ddef0506da ("igb: Fix oops caused by missing queue
-> pairing"), the IGB_FLAG_QUEUE_PAIRS flag can now be set when changing the
-> number of queues by "ethtool -L", but it is never cleared unless the igb
-> driver is reloaded.
-> This patch clears it if queue pairing becomes unnecessary as a result of
-> "ethtool -L".
-> 
-> Signed-off-by: Shota Suzuki <suzuki_shota_t3@lab.ntt.co.jp>
-> ---
->  drivers/net/ethernet/intel/igb/igb_main.c | 2 ++
->  1 file changed, 2 insertions(+)
+I assign copyright back to Intel for the changes in 8443c1a4b192089e62642d847ebac3e4d15134c3  ixgbe, ixgbevf: Add new mbox API xcast mode
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+> Subject: re: your patch 'ixgbe, ixgbevf: Add new mbox API xcast mode'
+> 
+> Hi Hiroshi,
+> 
+> Some or most of your patch(es) make changes to code that we share among our other drivers so we retain copyright on certain
+> files so that we are able to re-license the code.  With that, I ask if you can assign copyright of your changes to Intel
+> so that we can maintain copyright on the changes.  You will still be the author, just Intel would retain copyright on
+> the changes.
+> 
+> All we need is a reply, stating "I assign copyright back to Intel for the changes in 8443c1a4b192089e62642d847ebac3e4d15134c3
+> ixgbe, ixgbevf: Add new mbox API xcast mode"
+> 
+> Sorry we should have asked you earlier.
+> Thanks,
+> -Don Skidmore <donald.c.skidmore@intel.com>
