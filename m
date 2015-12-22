@@ -1,68 +1,61 @@
 From: Deepthi Kavalur <deepthi.kavalur@intel.com>
-Date: Tue, 22 Dec 2015 14:25:13 -0800
-Subject: [Intel-wired-lan] [next PATCH S24 11/12] i40e: AQ Add external
-	power class to get link status
+Date: Tue, 22 Dec 2015 14:25:14 -0800
+Subject: [Intel-wired-lan] [next PATCH S24 12/12] i40e: add 100Mb ethtool
+	reporting
 In-Reply-To: <1450823114-29514-1-git-send-email-deepthi.kavalur@intel.com>
 References: <1450823114-29514-1-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <1450823114-29514-12-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <1450823114-29514-13-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Shannon Nelson <shannon.nelson@intel.com>
+From: Catherine Sullivan <catherine.sullivan@intel.com>
 
-Add the new External Device Power Ability field to the get_link_status data
-structure, using space from the reserved field at the end of the struct.
+Add some missing reporting/advertisement of 100Mb capability
+for adapters that support it.
 
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-Acked-by: Kevin Scott <kevin.c.scott@intel.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
+Change-ID: I8b8523fbdc99517bec29d90c71b3744db11542ac
 ---
 Testing-Hints:
-Apply and compile cleanly.
+Check that 100M SGMII is not listed as supported on X710
+devices and is listed as supported on X722 devices.
 
- drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h   | 7 ++++++-
- drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h | 7 ++++++-
- 2 files changed, 12 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 4 ++++
+ drivers/net/ethernet/intel/i40e/i40e_main.c    | 3 ++-
+ 2 files changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-index eab55ea..0e608d2 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-@@ -1758,7 +1758,12 @@ struct i40e_aqc_get_link_status {
- 	u8	config;
- #define I40E_AQ_CONFIG_CRC_ENA		0x04
- #define I40E_AQ_CONFIG_PACING_MASK	0x78
--	u8	reserved[5];
-+	u8	external_power_ability;
-+#define I40E_AQ_LINK_POWER_CLASS_1	0x00
-+#define I40E_AQ_LINK_POWER_CLASS_2	0x01
-+#define I40E_AQ_LINK_POWER_CLASS_3	0x02
-+#define I40E_AQ_LINK_POWER_CLASS_4	0x03
-+	u8	reserved[4];
- };
- 
- I40E_CHECK_CMD_LENGTH(i40e_aqc_get_link_status);
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-index 30b5a33..578b178 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-@@ -1755,7 +1755,12 @@ struct i40e_aqc_get_link_status {
- 	u8	config;
- #define I40E_AQ_CONFIG_CRC_ENA		0x04
- #define I40E_AQ_CONFIG_PACING_MASK	0x78
--	u8	reserved[5];
-+	u8	external_power_ability;
-+#define I40E_AQ_LINK_POWER_CLASS_1	0x00
-+#define I40E_AQ_LINK_POWER_CLASS_2	0x01
-+#define I40E_AQ_LINK_POWER_CLASS_3	0x02
-+#define I40E_AQ_LINK_POWER_CLASS_4	0x03
-+	u8	reserved[4];
- };
- 
- I40E_CHECK_CMD_LENGTH(i40e_aqc_get_link_status);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 29eb718..e13ee93 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -412,6 +412,10 @@ static void i40e_get_settings_link_down(struct i40e_hw *hw,
+ 		if (pf->hw.mac.type == I40E_MAC_X722) {
+ 			ecmd->supported |= SUPPORTED_100baseT_Full;
+ 			ecmd->advertising |= ADVERTISED_100baseT_Full;
++			if (pf->flags & I40E_FLAG_100M_SGMII_CAPABLE) {
++				ecmd->supported |= SUPPORTED_100baseT_Full;
++				ecmd->advertising |= ADVERTISED_100baseT_Full;
++			}
+ 		}
+ 	}
+ 	if (phy_types & I40E_CAP_PHY_TYPE_XAUI ||
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 5bb1eae..66cc702 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -8448,7 +8448,8 @@ static int i40e_sw_init(struct i40e_pf *pf)
+ 			     I40E_FLAG_HW_ATR_EVICT_CAPABLE |
+ 			     I40E_FLAG_OUTER_UDP_CSUM_CAPABLE |
+ 			     I40E_FLAG_WB_ON_ITR_CAPABLE |
+-			     I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE;
++			     I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE |
++			     I40E_FLAG_100M_SGMII_CAPABLE;
+ 	} else {
+ 		pf->auto_disable_flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
+ 	}
 -- 
 2.1.0
 
