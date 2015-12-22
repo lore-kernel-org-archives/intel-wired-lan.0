@@ -1,56 +1,55 @@
 From: Raanan Avargil <raanan.avargil@intel.com>
-Date: Tue, 22 Dec 2015 15:35:04 +0200
-Subject: [Intel-wired-lan] [PATCH 4/5] e1000e: Clear ULP configuration
-	register on ULP exit
+Date: Tue, 22 Dec 2015 15:35:05 +0200
+Subject: [Intel-wired-lan] [PATCH 5/5] e1000e: Initial support for KabeLake
 In-Reply-To: <1450791305-11285-1-git-send-email-raanan.avargil@intel.com>
 References: <1450791305-11285-1-git-send-email-raanan.avargil@intel.com>
-Message-ID: <1450791305-11285-4-git-send-email-raanan.avargil@intel.com>
+Message-ID: <1450791305-11285-5-git-send-email-raanan.avargil@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-There have been bugs caused by HW ULP configuration settings not being
-properly cleared after cable connect in V-Pro capable systems.
-This caused HW to get out of sync occasionally.
-The fix ensures that ULP settings are cleared in HW after
-LAN cable re-connect.
+i219 (4) and i219 (5) are the next LOM generations that will be
+available on the next Intel platform (KabeLake).
+This patch provides the initial support for the devices.
 
 Signed-off-by: Raanan Avargil <raanan.avargil@intel.com>
 ---
- drivers/net/ethernet/intel/e1000e/ich8lan.c | 2 ++
- drivers/net/ethernet/intel/e1000e/ich8lan.h | 4 ++++
- 2 files changed, 6 insertions(+)
+ drivers/net/ethernet/intel/e1000e/hw.h     | 4 ++++
+ drivers/net/ethernet/intel/e1000e/netdev.c | 4 ++++
+ 2 files changed, 8 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-index e7ccf5f..c0f4887 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-@@ -1328,6 +1328,8 @@ static s32 e1000_disable_ulp_lpt_lp(struct e1000_hw *hw, bool force)
- 		     I218_ULP_CONFIG1_RESET_TO_SMBUS |
- 		     I218_ULP_CONFIG1_WOL_HOST |
- 		     I218_ULP_CONFIG1_INBAND_EXIT |
-+		     I218_ULP_CONFIG1_EN_ULP_LANPHYPC |
-+		     I218_ULP_CONFIG1_DIS_CLR_STICKY_ON_PERST |
- 		     I218_ULP_CONFIG1_DISABLE_SMB_PERST);
- 	e1000_write_phy_reg_hv_locked(hw, I218_ULP_CONFIG1, phy_reg);
+diff --git a/drivers/net/ethernet/intel/e1000e/hw.h b/drivers/net/ethernet/intel/e1000e/hw.h
+index b3949d5..4e733bf 100644
+--- a/drivers/net/ethernet/intel/e1000e/hw.h
++++ b/drivers/net/ethernet/intel/e1000e/hw.h
+@@ -92,6 +92,10 @@ struct e1000_hw;
+ #define E1000_DEV_ID_PCH_SPT_I219_LM2		0x15B7	/* SPT-H PCH */
+ #define E1000_DEV_ID_PCH_SPT_I219_V2		0x15B8	/* SPT-H PCH */
+ #define E1000_DEV_ID_PCH_LBG_I219_LM3		0x15B9	/* LBG PCH */
++#define E1000_DEV_ID_PCH_SPT_I219_LM4		0x15D7
++#define E1000_DEV_ID_PCH_SPT_I219_V4		0x15D8
++#define E1000_DEV_ID_PCH_SPT_I219_LM5		0x15E3
++#define E1000_DEV_ID_PCH_SPT_I219_V5		0x15D6
  
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.h b/drivers/net/ethernet/intel/e1000e/ich8lan.h
-index 7d85f00..2311f60 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.h
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.h
-@@ -188,6 +188,10 @@
- #define I218_ULP_CONFIG1_INBAND_EXIT	0x0020	/* Inband on ULP exit */
- #define I218_ULP_CONFIG1_WOL_HOST	0x0040	/* WoL Host on ULP exit */
- #define I218_ULP_CONFIG1_RESET_TO_SMBUS	0x0100	/* Reset to SMBus mode */
-+/* enable ULP even if when phy powered down via lanphypc */
-+#define I218_ULP_CONFIG1_EN_ULP_LANPHYPC	0x0400
-+/* disable clear of sticky ULP on PERST */
-+#define I218_ULP_CONFIG1_DIS_CLR_STICKY_ON_PERST	0x0800
- #define I218_ULP_CONFIG1_DISABLE_SMB_PERST	0x1000	/* Disable on PERST# */
+ #define E1000_REVISION_4	4
  
- /* SMBus Address Phy Register */
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index c71ba1b..9b4ec13 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -7452,6 +7452,10 @@ static const struct pci_device_id e1000_pci_tbl[] = {
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_LM2), board_pch_spt },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_V2), board_pch_spt },
+ 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LBG_I219_LM3), board_pch_spt },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_LM4), board_pch_spt },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_V4), board_pch_spt },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_LM5), board_pch_spt },
++	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_V5), board_pch_spt },
+ 
+ 	{ 0, 0, 0, 0, 0, 0, 0 }	/* terminate list */
+ };
 -- 
 2.1.0
 
