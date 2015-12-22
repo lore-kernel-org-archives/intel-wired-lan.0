@@ -1,57 +1,33 @@
-From: Deepthi Kavalur <deepthi.kavalur@intel.com>
-Date: Tue, 22 Dec 2015 14:25:10 -0800
-Subject: [Intel-wired-lan] [next PATCH S24 08/12] i40e: Limit DCB FW version
-	checks to X710/XL710 devices
-In-Reply-To: <1450823114-29514-1-git-send-email-deepthi.kavalur@intel.com>
-References: <1450823114-29514-1-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <1450823114-29514-9-git-send-email-deepthi.kavalur@intel.com>
+From: Bruce Allan <bruce.w.allan@intel.com>
+Date: Tue, 22 Dec 2015 14:55:20 -0800
+Subject: [Intel-wired-lan] [next-queue PATCH] fm10k: demote BUG_ON() to
+ WARN_ON() where appropriate
+Message-ID: <20151222225520.141575.84032.stgit@bwallan-cwp1.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Greg Bowers <gregory.j.bowers@intel.com>
+We don't need to crash the kernel in this instance so just warn about the
+condition and play on.
 
-X710/XL710 devices require FW version checks to properly handle DCB
-configurations from the FW.  Newer devices do not, so limit these checks
-to X710/XL710.
-
-Signed-off-by: Greg Bowers <gregory.j.bowers@intel.com>
-Acked-by: Shannon Nelson <shannon.nelson@intel.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 ---
-Testing-Hints:
-Test that X710/XL710 and X722 devices support CEE and IEEE DCBX.
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- drivers/net/ethernet/intel/i40e/i40e_dcb.c | 12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_dcb.c b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
-index 2691277..582daa7 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_dcb.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
-@@ -814,13 +814,15 @@ i40e_status i40e_get_dcb_config(struct i40e_hw *hw)
- 	struct i40e_aqc_get_cee_dcb_cfg_resp cee_cfg;
- 	struct i40e_aqc_get_cee_dcb_cfg_v1_resp cee_v1_cfg;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index c9324c7..60a70e9 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -99,7 +99,7 @@ void fm10k_service_event_schedule(struct fm10k_intfc *interface)
  
--	/* If Firmware version < v4.33 IEEE only */
--	if (((hw->aq.fw_maj_ver == 4) && (hw->aq.fw_min_ver < 33)) ||
--	    (hw->aq.fw_maj_ver < 4))
-+	/* If Firmware version < v4.33 on X710/XL710, IEEE only */
-+	if ((hw->mac.type == I40E_MAC_XL710) &&
-+	    (((hw->aq.fw_maj_ver == 4) && (hw->aq.fw_min_ver < 33)) ||
-+	      (hw->aq.fw_maj_ver < 4)))
- 		return i40e_get_ieee_dcb_config(hw);
+ static void fm10k_service_event_complete(struct fm10k_intfc *interface)
+ {
+-	BUG_ON(!test_bit(__FM10K_SERVICE_SCHED, &interface->state));
++	WARN_ON(!test_bit(__FM10K_SERVICE_SCHED, &interface->state));
  
--	/* If Firmware version == v4.33 use old CEE struct */
--	if ((hw->aq.fw_maj_ver == 4) && (hw->aq.fw_min_ver == 33)) {
-+	/* If Firmware version == v4.33 on X710/XL710, use old CEE struct */
-+	if ((hw->mac.type == I40E_MAC_XL710) &&
-+	    ((hw->aq.fw_maj_ver == 4) && (hw->aq.fw_min_ver == 33))) {
- 		ret = i40e_aq_get_cee_dcb_config(hw, &cee_v1_cfg,
- 						 sizeof(cee_v1_cfg), NULL);
- 		if (!ret) {
--- 
-2.1.0
+ 	/* flush memory to make sure state is correct before next watchog */
+ 	smp_mb__before_atomic();
 
