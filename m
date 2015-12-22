@@ -1,10 +1,10 @@
 From: Deepthi Kavalur <deepthi.kavalur@intel.com>
-Date: Tue, 22 Dec 2015 14:25:11 -0800
-Subject: [Intel-wired-lan] [next PATCH S24 09/12] i40e: AQ Add Run PHY
-	Activity struct
+Date: Tue, 22 Dec 2015 14:25:13 -0800
+Subject: [Intel-wired-lan] [next PATCH S24 11/12] i40e: AQ Add external
+	power class to get link status
 In-Reply-To: <1450823114-29514-1-git-send-email-deepthi.kavalur@intel.com>
 References: <1450823114-29514-1-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <1450823114-29514-10-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <1450823114-29514-12-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,7 +13,8 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Shannon Nelson <shannon.nelson@intel.com>
 
-Add the AQ opcode and struct definitions for the Run PHY Activity command
+Add the new External Device Power Ability field to the get_link_status data
+structure, using space from the reserved field at the end of the struct.
 
 Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
 Acked-by: Kevin Scott <kevin.c.scott@intel.com>
@@ -22,72 +23,46 @@ Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 Testing-Hints:
 Apply and compile cleanly.
 
- drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h   | 13 +++++++++++++
- drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h | 13 +++++++++++++
- 2 files changed, 26 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h   | 7 ++++++-
+ drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h | 7 ++++++-
+ 2 files changed, 12 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-index bff0995..9e340ca 100644
+index eab55ea..0e608d2 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-@@ -220,6 +220,7 @@ enum i40e_admin_queue_opc {
- 	i40e_aqc_opc_get_phy_wol_caps		= 0x0621,
- 	i40e_aqc_opc_set_phy_debug		= 0x0622,
- 	i40e_aqc_opc_upload_ext_phy_fm		= 0x0625,
-+	i40e_aqc_opc_run_phy_activity		= 0x0626,
- 
- 	/* NVM commands */
- 	i40e_aqc_opc_nvm_read			= 0x0701,
-@@ -1825,6 +1826,18 @@ enum i40e_aq_phy_reg_type {
- 	I40E_AQC_PHY_REG_EXERNAL_MODULE	= 0x3
+@@ -1758,7 +1758,12 @@ struct i40e_aqc_get_link_status {
+ 	u8	config;
+ #define I40E_AQ_CONFIG_CRC_ENA		0x04
+ #define I40E_AQ_CONFIG_PACING_MASK	0x78
+-	u8	reserved[5];
++	u8	external_power_ability;
++#define I40E_AQ_LINK_POWER_CLASS_1	0x00
++#define I40E_AQ_LINK_POWER_CLASS_2	0x01
++#define I40E_AQ_LINK_POWER_CLASS_3	0x02
++#define I40E_AQ_LINK_POWER_CLASS_4	0x03
++	u8	reserved[4];
  };
  
-+/* Run PHY Activity (0x0626) */
-+struct i40e_aqc_run_phy_activity {
-+	__le16  activity_id;
-+	u8      flags;
-+	u8      reserved1;
-+	__le32  control;
-+	__le32  data;
-+	u8      reserved2[4];
-+};
-+
-+I40E_CHECK_CMD_LENGTH(i40e_aqc_run_phy_activity);
-+
- /* NVM Read command (indirect 0x0701)
-  * NVM Erase commands (direct 0x0702)
-  * NVM Update commands (indirect 0x0703)
+ I40E_CHECK_CMD_LENGTH(i40e_aqc_get_link_status);
 diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-index 365a7d6..51d83c6 100644
+index 30b5a33..578b178 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
 +++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-@@ -220,6 +220,7 @@ enum i40e_admin_queue_opc {
- 	i40e_aqc_opc_get_phy_wol_caps		= 0x0621,
- 	i40e_aqc_opc_set_phy_debug		= 0x0622,
- 	i40e_aqc_opc_upload_ext_phy_fm		= 0x0625,
-+	i40e_aqc_opc_run_phy_activity		= 0x0626,
- 
- 	/* NVM commands */
- 	i40e_aqc_opc_nvm_read			= 0x0701,
-@@ -1822,6 +1823,18 @@ enum i40e_aq_phy_reg_type {
- 	I40E_AQC_PHY_REG_EXERNAL_MODULE	= 0x3
+@@ -1755,7 +1755,12 @@ struct i40e_aqc_get_link_status {
+ 	u8	config;
+ #define I40E_AQ_CONFIG_CRC_ENA		0x04
+ #define I40E_AQ_CONFIG_PACING_MASK	0x78
+-	u8	reserved[5];
++	u8	external_power_ability;
++#define I40E_AQ_LINK_POWER_CLASS_1	0x00
++#define I40E_AQ_LINK_POWER_CLASS_2	0x01
++#define I40E_AQ_LINK_POWER_CLASS_3	0x02
++#define I40E_AQ_LINK_POWER_CLASS_4	0x03
++	u8	reserved[4];
  };
  
-+/* Run PHY Activity (0x0626) */
-+struct i40e_aqc_run_phy_activity {
-+	__le16  activity_id;
-+	u8      flags;
-+	u8      reserved1;
-+	__le32  control;
-+	__le32  data;
-+	u8      reserved2[4];
-+};
-+
-+I40E_CHECK_CMD_LENGTH(i40e_aqc_run_phy_activity);
-+
- /* NVM Read command (indirect 0x0701)
-  * NVM Erase commands (direct 0x0702)
-  * NVM Update commands (indirect 0x0703)
+ I40E_CHECK_CMD_LENGTH(i40e_aqc_get_link_status);
 -- 
 2.1.0
 
