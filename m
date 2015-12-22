@@ -1,30 +1,90 @@
-From: Schmitt, Phillip J <phillip.j.schmitt@intel.com>
-Date: Tue, 22 Dec 2015 23:19:16 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: report correct media type for
- KR, KX and KX4 interfaces
-In-Reply-To: <20151111232259.4471.80984.stgit@larettin-mobl2.amr.corp.intel.com>
-References: <20151111232259.4471.80984.stgit@larettin-mobl2.amr.corp.intel.com>
-Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E180CFAEA9@ORSMSX108.amr.corp.intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
+Date: Tue, 22 Dec 2015 15:34:42 -0800
+Subject: [Intel-wired-lan] [next PATCH 1/2] i40e: change log messages and
+	error returns
+Message-ID: <1450827283-34667-1-git-send-email-mitch.a.williams@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+When VFs are being reset, there is a brief window of time when they
+cannot be configured because they don't have a VSI to configure. If
+a script is quick, it can fall through that window. To avoid
+defenestration, log a useful error message and return -EAGAIN.
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Veola
-> Sent: Wednesday, November 11, 2015 3:23 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] ixgbe: report correct media type for KR, KX
-> and KX4 interfaces
-> 
-> ethtool reports backplane type interfaces as 1000/10000baseT link modes.
-> This has been corrected to report the media as KR, KX or KX4 based on the
-> backplane interface present.
-> 
-> Signed-off-by: Veola <veola.nazareth@intel.com>
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 27 ++++++++++++++--------
+ 1 file changed, 18 insertions(+), 9 deletions(-)
 
-Tested-by: Phil Schmitt <phillip.j.schmitt@intel.com>
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index aa58a49..b8deb50 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -2078,9 +2078,9 @@ int i40e_ndo_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
+ 	vf = &(pf->vf[vf_id]);
+ 	vsi = pf->vsi[vf->lan_vsi_idx];
+ 	if (!test_bit(I40E_VF_STAT_INIT, &vf->vf_states)) {
+-		dev_err(&pf->pdev->dev,
+-			"Uninitialized VF %d\n", vf_id);
+-		ret = -EINVAL;
++		dev_err(&pf->pdev->dev, "VF %d still in reset. Try again.\n",
++			vf_id);
++		ret = -EAGAIN;
+ 		goto error_param;
+ 	}
+ 
+@@ -2162,8 +2162,9 @@ int i40e_ndo_set_vf_port_vlan(struct net_device *netdev,
+ 	vf = &(pf->vf[vf_id]);
+ 	vsi = pf->vsi[vf->lan_vsi_idx];
+ 	if (!test_bit(I40E_VF_STAT_INIT, &vf->vf_states)) {
+-		dev_err(&pf->pdev->dev, "Uninitialized VF %d\n", vf_id);
+-		ret = -EINVAL;
++		dev_err(&pf->pdev->dev, "VF %d still in reset. Try again.\n",
++			vf_id);
++		ret = -EAGAIN;
+ 		goto error_pvid;
+ 	}
+ 
+@@ -2282,8 +2283,9 @@ int i40e_ndo_set_vf_bw(struct net_device *netdev, int vf_id, int min_tx_rate,
+ 	vf = &(pf->vf[vf_id]);
+ 	vsi = pf->vsi[vf->lan_vsi_idx];
+ 	if (!test_bit(I40E_VF_STAT_INIT, &vf->vf_states)) {
+-		dev_err(&pf->pdev->dev, "Uninitialized VF %d.\n", vf_id);
+-		ret = -EINVAL;
++		dev_err(&pf->pdev->dev, "VF %d still in reset. Try again.\n",
++			vf_id);
++		ret = -EAGAIN;
+ 		goto error;
+ 	}
+ 
+@@ -2356,8 +2358,9 @@ int i40e_ndo_get_vf_config(struct net_device *netdev,
+ 	/* first vsi is always the LAN vsi */
+ 	vsi = pf->vsi[vf->lan_vsi_idx];
+ 	if (!test_bit(I40E_VF_STAT_INIT, &vf->vf_states)) {
+-		dev_err(&pf->pdev->dev, "Uninitialized VF %d\n", vf_id);
+-		ret = -EINVAL;
++		dev_err(&pf->pdev->dev, "VF %d still in reset. Try again.\n",
++			vf_id);
++		ret = -EAGAIN;
+ 		goto error_param;
+ 	}
+ 
+@@ -2472,6 +2475,12 @@ int i40e_ndo_set_vf_spoofchk(struct net_device *netdev, int vf_id, bool enable)
+ 	}
+ 
+ 	vf = &(pf->vf[vf_id]);
++	if (!test_bit(I40E_VF_STAT_INIT, &vf->vf_states)) {
++		dev_err(&pf->pdev->dev, "VF %d still in reset. Try again.\n",
++			vf_id);
++		ret = -EAGAIN;
++		goto out;
++	}
+ 
+ 	if (enable == vf->spoofchk)
+ 		goto out;
+-- 
+2.5.0
 
