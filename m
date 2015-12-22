@@ -1,10 +1,10 @@
 From: Deepthi Kavalur <deepthi.kavalur@intel.com>
-Date: Tue, 22 Dec 2015 14:25:04 -0800
-Subject: [Intel-wired-lan] [next PATCH S24 02/12] i40e: Extend ethtool RSS
-	hooks for X722
+Date: Tue, 22 Dec 2015 14:25:06 -0800
+Subject: [Intel-wired-lan] [next PATCH S24 04/12] i40e: X722 changes to
+	access nvm
 In-Reply-To: <1450823114-29514-1-git-send-email-deepthi.kavalur@intel.com>
 References: <1450823114-29514-1-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <1450823114-29514-3-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <1450823114-29514-5-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,85 +13,88 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Anjali Singhai Jain <anjali.singhai@intel.com>
 
-This patch adds another way to access the RSS keys and lut using the AQ
-for X722 devices.
+X722 does not have access to SRCTL registers, it has to do this through
+the AQ.
 
 Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 53 ++++++++++++++++++++++++++++-
- 1 file changed, 52 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/i40e/i40e_nvm.c | 49 ++++++++++++++++++------------
+ 1 file changed, 30 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 58da2f1..d7c3fd4 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -7933,6 +7933,52 @@ static int i40e_vsi_config_rss(struct i40e_vsi *vsi)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
+index 79c0053..59edd33 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
+@@ -212,24 +212,6 @@ read_nvm_exit:
  }
  
  /**
-+ * i40e_get_rss_aq - Get RSS keys and lut by using AQ commands
-+ * @vsi: Pointer to vsi structure
-+ * @seed: Buffter to store the hash keys
-+ * @lut: Buffer to store the lookup table entries
-+ * @lut_size: Size of buffer to store the lookup table entries
+- * __i40e_read_nvm_word - Reads nvm word, assumes caller does the locking
+- * @hw: pointer to the HW structure
+- * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF)
+- * @data: word read from the Shadow RAM
+- *
+- * Reads one 16 bit word from the Shadow RAM using the GLNVM_SRCTL register.
+- **/
+-static i40e_status __i40e_read_nvm_word(struct i40e_hw *hw,
+-					u16 offset,
+-					u16 *data)
+-{
+-	i40e_status ret_code = 0;
+-
+-	ret_code = i40e_read_nvm_word_srctl(hw, offset, data);
+-	return ret_code;
+-}
+-
+-/**
+  * i40e_read_nvm_aq - Read Shadow RAM.
+  * @hw: pointer to the HW structure.
+  * @module_pointer: module pointer location in words from the NVM beginning
+@@ -298,6 +280,32 @@ static i40e_status i40e_read_nvm_word_aq(struct i40e_hw *hw, u16 offset,
+ }
+ 
+ /**
++ * __i40e_read_nvm_word - Reads nvm word, assumes caller does the locking
++ * @hw: pointer to the HW structure
++ * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF)
++ * @data: word read from the Shadow RAM
 + *
-+ * Return 0 on success, negative on failure
-+ */
-+static int i40e_get_rss_aq(struct i40e_vsi *vsi, const u8 *seed,
-+			   u8 *lut, u16 lut_size)
++ * Reads one 16 bit word from the Shadow RAM using the GLNVM_SRCTL register.
++ **/
++static i40e_status __i40e_read_nvm_word(struct i40e_hw *hw,
++					u16 offset,
++					u16 *data)
 +{
-+	struct i40e_pf *pf = vsi->back;
-+	struct i40e_hw *hw = &pf->hw;
-+	int ret = 0;
++	i40e_status ret_code = 0;
 +
-+	if (seed) {
-+		ret = i40e_aq_get_rss_key(hw, vsi->id,
-+			(struct i40e_aqc_get_set_rss_key_data *)seed);
-+		if (ret) {
-+			dev_info(&pf->pdev->dev,
-+				 "Cannot get RSS key, err %s aq_err %s\n",
-+				 i40e_stat_str(&pf->hw, ret),
-+				 i40e_aq_str(&pf->hw,
-+					     pf->hw.aq.asq_last_status));
-+			return ret;
++	if (hw->flags & I40E_HW_FLAG_AQ_SRCTL_ACCESS_ENABLE) {
++		ret_code = i40e_acquire_nvm(hw, I40E_RESOURCE_READ);
++		if (!ret_code) {
++			ret_code = i40e_read_nvm_word_aq(hw, offset, data);
++			i40e_release_nvm(hw);
 +		}
++	} else {
++			ret_code = i40e_read_nvm_word_srctl(hw, offset, data);
 +	}
-+
-+	if (lut) {
-+		bool pf_lut = vsi->type == I40E_VSI_MAIN ? true : false;
-+
-+		ret = i40e_aq_get_rss_lut(hw, vsi->id, pf_lut, lut, lut_size);
-+		if (ret) {
-+			dev_info(&pf->pdev->dev,
-+				 "Cannot get RSS lut, err %s aq_err %s\n",
-+				 i40e_stat_str(&pf->hw, ret),
-+				 i40e_aq_str(&pf->hw,
-+					     pf->hw.aq.asq_last_status));
-+			return ret;
-+		}
-+	}
-+
-+	return ret;
++	return ret_code;
 +}
 +
 +/**
-  * i40e_config_rss_reg - Configure RSS keys and lut by writing registers
-  * @vsi: Pointer to vsi structure
-  * @seed: RSS hash seed
-@@ -8034,7 +8080,12 @@ int i40e_config_rss(struct i40e_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size)
-  */
- int i40e_get_rss(struct i40e_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size)
+  * i40e_read_nvm_word - Reads nvm word and acquire lock if necessary
+  * @hw: pointer to the HW structure
+  * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF)
+@@ -427,7 +435,10 @@ static i40e_status __i40e_read_nvm_buffer(struct i40e_hw *hw,
  {
--	return i40e_get_rss_reg(vsi, seed, lut, lut_size);
-+	struct i40e_pf *pf = vsi->back;
-+
-+	if (pf->flags & I40E_FLAG_RSS_AQ_CAPABLE)
-+		return i40e_get_rss_aq(vsi, seed, lut, lut_size);
+ 	i40e_status ret_code = 0;
+ 
+-	ret_code = i40e_read_nvm_buffer_srctl(hw, offset, words, data);
++	if (hw->flags & I40E_HW_FLAG_AQ_SRCTL_ACCESS_ENABLE)
++		ret_code = i40e_read_nvm_buffer_aq(hw, offset, words, data);
 +	else
-+		return i40e_get_rss_reg(vsi, seed, lut, lut_size);
++		ret_code = i40e_read_nvm_buffer_srctl(hw, offset, words, data);
+ 	return ret_code;
  }
  
- /**
 -- 
 2.1.0
 
