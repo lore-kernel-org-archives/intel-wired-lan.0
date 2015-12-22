@@ -1,100 +1,118 @@
 From: Deepthi Kavalur <deepthi.kavalur@intel.com>
-Date: Tue, 22 Dec 2015 14:25:06 -0800
-Subject: [Intel-wired-lan] [next PATCH S24 04/12] i40e: X722 changes to
-	access nvm
+Date: Tue, 22 Dec 2015 14:25:08 -0800
+Subject: [Intel-wired-lan] [next PATCH S24 06/12] i40e/i40evf: Use private
+	workqueue
 In-Reply-To: <1450823114-29514-1-git-send-email-deepthi.kavalur@intel.com>
 References: <1450823114-29514-1-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <1450823114-29514-5-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <1450823114-29514-7-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Anjali Singhai Jain <anjali.singhai@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-X722 does not have access to SRCTL registers, it has to do this through
-the AQ.
+As done per ixgbe, use a private workqueue to avoid blocking the
+system workqueue.  This avoids some strange side effects when
+some other entity is depending on the system work queue.
 
-Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Change-ID: Ic8ba08f5b03696cf638b21afd25fbae7738d55ee
 ---
- drivers/net/ethernet/intel/i40e/i40e_nvm.c | 49 ++++++++++++++++++------------
- 1 file changed, 30 insertions(+), 19 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c     | 15 ++++++++++++++-
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 10 +++++++++-
+ 2 files changed, 23 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-index 79c0053..59edd33 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-@@ -212,24 +212,6 @@ read_nvm_exit:
- }
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index d7c3fd4..5bb1eae 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -109,6 +109,8 @@ MODULE_DESCRIPTION("Intel(R) Ethernet Connection XL710 Network Driver");
+ MODULE_LICENSE("GPL");
+ MODULE_VERSION(DRV_VERSION);
  
- /**
-- * __i40e_read_nvm_word - Reads nvm word, assumes caller does the locking
-- * @hw: pointer to the HW structure
-- * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF)
-- * @data: word read from the Shadow RAM
-- *
-- * Reads one 16 bit word from the Shadow RAM using the GLNVM_SRCTL register.
-- **/
--static i40e_status __i40e_read_nvm_word(struct i40e_hw *hw,
--					u16 offset,
--					u16 *data)
--{
--	i40e_status ret_code = 0;
--
--	ret_code = i40e_read_nvm_word_srctl(hw, offset, data);
--	return ret_code;
--}
--
--/**
-  * i40e_read_nvm_aq - Read Shadow RAM.
-  * @hw: pointer to the HW structure.
-  * @module_pointer: module pointer location in words from the NVM beginning
-@@ -298,6 +280,32 @@ static i40e_status i40e_read_nvm_word_aq(struct i40e_hw *hw, u16 offset,
- }
- 
- /**
-+ * __i40e_read_nvm_word - Reads nvm word, assumes caller does the locking
-+ * @hw: pointer to the HW structure
-+ * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF)
-+ * @data: word read from the Shadow RAM
-+ *
-+ * Reads one 16 bit word from the Shadow RAM using the GLNVM_SRCTL register.
-+ **/
-+static i40e_status __i40e_read_nvm_word(struct i40e_hw *hw,
-+					u16 offset,
-+					u16 *data)
-+{
-+	i40e_status ret_code = 0;
++static struct workqueue_struct *i40e_wq;
 +
-+	if (hw->flags & I40E_HW_FLAG_AQ_SRCTL_ACCESS_ENABLE) {
-+		ret_code = i40e_acquire_nvm(hw, I40E_RESOURCE_READ);
-+		if (!ret_code) {
-+			ret_code = i40e_read_nvm_word_aq(hw, offset, data);
-+			i40e_release_nvm(hw);
-+		}
-+	} else {
-+			ret_code = i40e_read_nvm_word_srctl(hw, offset, data);
+ /**
+  * i40e_allocate_dma_mem_d - OS specific memory alloc for shared code
+  * @hw:   pointer to the HW structure
+@@ -294,7 +296,7 @@ static void i40e_service_event_schedule(struct i40e_pf *pf)
+ 	if (!test_bit(__I40E_DOWN, &pf->state) &&
+ 	    !test_bit(__I40E_RESET_RECOVERY_PENDING, &pf->state) &&
+ 	    !test_and_set_bit(__I40E_SERVICE_SCHED, &pf->state))
+-		schedule_work(&pf->service_task);
++		queue_work(i40e_wq, &pf->service_task);
+ }
+ 
+ /**
+@@ -11362,6 +11364,16 @@ static int __init i40e_init_module(void)
+ 		i40e_driver_string, i40e_driver_version_str);
+ 	pr_info("%s: %s\n", i40e_driver_name, i40e_copyright);
+ 
++	/* we will see if single thread per module is enough for now,
++	 * it can't be any worse than using the system workqueue which
++	 * was already single threaded
++	 */
++	i40e_wq = create_singlethread_workqueue(i40e_driver_name);
++	if (!i40e_wq) {
++		pr_err("%s: Failed to create workqueue\n", i40e_driver_name);
++		return -ENOMEM;
 +	}
-+	return ret_code;
-+}
 +
-+/**
-  * i40e_read_nvm_word - Reads nvm word and acquire lock if necessary
-  * @hw: pointer to the HW structure
-  * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF)
-@@ -427,7 +435,10 @@ static i40e_status __i40e_read_nvm_buffer(struct i40e_hw *hw,
+ 	i40e_dbg_init();
+ 	return pci_register_driver(&i40e_driver);
+ }
+@@ -11376,6 +11388,7 @@ module_init(i40e_init_module);
+ static void __exit i40e_exit_module(void)
  {
- 	i40e_status ret_code = 0;
+ 	pci_unregister_driver(&i40e_driver);
++	destroy_workqueue(i40e_wq);
+ 	i40e_dbg_exit();
+ }
+ module_exit(i40e_exit_module);
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index ab77e20..5b88123 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -69,6 +69,8 @@ MODULE_DESCRIPTION("Intel(R) XL710 X710 Virtual Function Network Driver");
+ MODULE_LICENSE("GPL");
+ MODULE_VERSION(DRV_VERSION);
  
--	ret_code = i40e_read_nvm_buffer_srctl(hw, offset, words, data);
-+	if (hw->flags & I40E_HW_FLAG_AQ_SRCTL_ACCESS_ENABLE)
-+		ret_code = i40e_read_nvm_buffer_aq(hw, offset, words, data);
-+	else
-+		ret_code = i40e_read_nvm_buffer_srctl(hw, offset, words, data);
- 	return ret_code;
++static struct workqueue_struct *i40evf_wq;
++
+ /**
+  * i40evf_allocate_dma_mem_d - OS specific memory alloc for shared code
+  * @hw:   pointer to the HW structure
+@@ -182,7 +184,7 @@ static void i40evf_tx_timeout(struct net_device *netdev)
+ 	if (!(adapter->flags & (I40EVF_FLAG_RESET_PENDING |
+ 				I40EVF_FLAG_RESET_NEEDED))) {
+ 		adapter->flags |= I40EVF_FLAG_RESET_NEEDED;
+-		schedule_work(&adapter->reset_task);
++		queue_work(i40evf_wq, &adapter->reset_task);
+ 	}
  }
  
+@@ -2885,6 +2887,11 @@ static int __init i40evf_init_module(void)
+ 
+ 	pr_info("%s\n", i40evf_copyright);
+ 
++	i40evf_wq = create_singlethread_workqueue(i40evf_driver_name);
++	if (!i40evf_wq) {
++		pr_err("%s: Failed to create workqueue\n", i40evf_driver_name);
++		return -ENOMEM;
++	}
+ 	ret = pci_register_driver(&i40evf_driver);
+ 	return ret;
+ }
+@@ -2900,6 +2907,7 @@ module_init(i40evf_init_module);
+ static void __exit i40evf_exit_module(void)
+ {
+ 	pci_unregister_driver(&i40evf_driver);
++	destroy_workqueue(i40evf_wq);
+ }
+ 
+ module_exit(i40evf_exit_module);
 -- 
 2.1.0
 
