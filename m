@@ -1,10 +1,10 @@
 From: Deepthi Kavalur <deepthi.kavalur@intel.com>
-Date: Tue, 22 Dec 2015 14:25:12 -0800
-Subject: [Intel-wired-lan] [next PATCH S24 10/12] i40e: AQ Geneve cloud
-	tunnel type
+Date: Tue, 22 Dec 2015 14:25:11 -0800
+Subject: [Intel-wired-lan] [next PATCH S24 09/12] i40e: AQ Add Run PHY
+	Activity struct
 In-Reply-To: <1450823114-29514-1-git-send-email-deepthi.kavalur@intel.com>
 References: <1450823114-29514-1-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <1450823114-29514-11-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <1450823114-29514-10-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,8 +13,7 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Shannon Nelson <shannon.nelson@intel.com>
 
-Fix the name of the new cloud tunnel type from the place-holder NGE
-name to the official Geneve.  Also fix the spelling of the VXLAN type.
+Add the AQ opcode and struct definitions for the Run PHY Activity command
 
 Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
 Acked-by: Kevin Scott <kevin.c.scott@intel.com>
@@ -23,42 +22,72 @@ Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 Testing-Hints:
 Apply and compile cleanly.
 
- drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h   | 4 ++--
- drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h   | 13 +++++++++++++
+ drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h | 13 +++++++++++++
+ 2 files changed, 26 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-index 9e340ca..eab55ea 100644
+index bff0995..9e340ca 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-@@ -1260,9 +1260,9 @@ struct i40e_aqc_add_remove_cloud_filters_element_data {
+@@ -220,6 +220,7 @@ enum i40e_admin_queue_opc {
+ 	i40e_aqc_opc_get_phy_wol_caps		= 0x0621,
+ 	i40e_aqc_opc_set_phy_debug		= 0x0622,
+ 	i40e_aqc_opc_upload_ext_phy_fm		= 0x0625,
++	i40e_aqc_opc_run_phy_activity		= 0x0626,
  
- #define I40E_AQC_ADD_CLOUD_TNL_TYPE_SHIFT		9
- #define I40E_AQC_ADD_CLOUD_TNL_TYPE_MASK		0x1E00
--#define I40E_AQC_ADD_CLOUD_TNL_TYPE_XVLAN		0
-+#define I40E_AQC_ADD_CLOUD_TNL_TYPE_VXLAN		0
- #define I40E_AQC_ADD_CLOUD_TNL_TYPE_NVGRE_OMAC		1
--#define I40E_AQC_ADD_CLOUD_TNL_TYPE_NGE			2
-+#define I40E_AQC_ADD_CLOUD_TNL_TYPE_GENEVE		2
- #define I40E_AQC_ADD_CLOUD_TNL_TYPE_IP			3
+ 	/* NVM commands */
+ 	i40e_aqc_opc_nvm_read			= 0x0701,
+@@ -1825,6 +1826,18 @@ enum i40e_aq_phy_reg_type {
+ 	I40E_AQC_PHY_REG_EXERNAL_MODULE	= 0x3
+ };
  
- 	__le32	tenant_id;
++/* Run PHY Activity (0x0626) */
++struct i40e_aqc_run_phy_activity {
++	__le16  activity_id;
++	u8      flags;
++	u8      reserved1;
++	__le32  control;
++	__le32  data;
++	u8      reserved2[4];
++};
++
++I40E_CHECK_CMD_LENGTH(i40e_aqc_run_phy_activity);
++
+ /* NVM Read command (indirect 0x0701)
+  * NVM Erase commands (direct 0x0702)
+  * NVM Update commands (indirect 0x0703)
 diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-index 51d83c6..30b5a33 100644
+index 365a7d6..51d83c6 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
 +++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-@@ -1257,9 +1257,9 @@ struct i40e_aqc_add_remove_cloud_filters_element_data {
+@@ -220,6 +220,7 @@ enum i40e_admin_queue_opc {
+ 	i40e_aqc_opc_get_phy_wol_caps		= 0x0621,
+ 	i40e_aqc_opc_set_phy_debug		= 0x0622,
+ 	i40e_aqc_opc_upload_ext_phy_fm		= 0x0625,
++	i40e_aqc_opc_run_phy_activity		= 0x0626,
  
- #define I40E_AQC_ADD_CLOUD_TNL_TYPE_SHIFT		9
- #define I40E_AQC_ADD_CLOUD_TNL_TYPE_MASK		0x1E00
--#define I40E_AQC_ADD_CLOUD_TNL_TYPE_XVLAN		0
-+#define I40E_AQC_ADD_CLOUD_TNL_TYPE_VXLAN		0
- #define I40E_AQC_ADD_CLOUD_TNL_TYPE_NVGRE_OMAC		1
--#define I40E_AQC_ADD_CLOUD_TNL_TYPE_NGE			2
-+#define I40E_AQC_ADD_CLOUD_TNL_TYPE_GENEVE		2
- #define I40E_AQC_ADD_CLOUD_TNL_TYPE_IP			3
+ 	/* NVM commands */
+ 	i40e_aqc_opc_nvm_read			= 0x0701,
+@@ -1822,6 +1823,18 @@ enum i40e_aq_phy_reg_type {
+ 	I40E_AQC_PHY_REG_EXERNAL_MODULE	= 0x3
+ };
  
- 	__le32	tenant_id;
++/* Run PHY Activity (0x0626) */
++struct i40e_aqc_run_phy_activity {
++	__le16  activity_id;
++	u8      flags;
++	u8      reserved1;
++	__le32  control;
++	__le32  data;
++	u8      reserved2[4];
++};
++
++I40E_CHECK_CMD_LENGTH(i40e_aqc_run_phy_activity);
++
+ /* NVM Read command (indirect 0x0701)
+  * NVM Erase commands (direct 0x0702)
+  * NVM Update commands (indirect 0x0703)
 -- 
 2.1.0
 
