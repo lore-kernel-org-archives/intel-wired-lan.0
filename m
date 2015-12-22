@@ -1,61 +1,88 @@
 From: Deepthi Kavalur <deepthi.kavalur@intel.com>
-Date: Tue, 22 Dec 2015 14:25:14 -0800
-Subject: [Intel-wired-lan] [next PATCH S24 12/12] i40e: add 100Mb ethtool
-	reporting
+Date: Tue, 22 Dec 2015 14:25:07 -0800
+Subject: [Intel-wired-lan] [next PATCH S24 05/12] i40evf: add new write-back
+	mode
 In-Reply-To: <1450823114-29514-1-git-send-email-deepthi.kavalur@intel.com>
 References: <1450823114-29514-1-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <1450823114-29514-13-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <1450823114-29514-6-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Catherine Sullivan <catherine.sullivan@intel.com>
+From: Anjali Singhai Jain <anjali.singhai@intel.com>
 
-Add some missing reporting/advertisement of 100Mb capability
-for adapters that support it.
+Add write-back on interrupt throttle rate timer expiration support
+for the i40evf driver, when running on X722 devices.
 
-Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-Change-ID: I8b8523fbdc99517bec29d90c71b3744db11542ac
+Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
 ---
-Testing-Hints:
-Check that 100M SGMII is not listed as supported on X710
-devices and is listed as supported on X722 devices.
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  6 ++++++
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c      | 16 ++++++++++++++++
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  5 +++++
+ 3 files changed, 27 insertions(+)
 
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 4 ++++
- drivers/net/ethernet/intel/i40e/i40e_main.c    | 3 ++-
- 2 files changed, 6 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 29eb718..e13ee93 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -412,6 +412,10 @@ static void i40e_get_settings_link_down(struct i40e_hw *hw,
- 		if (pf->hw.mac.type == I40E_MAC_X722) {
- 			ecmd->supported |= SUPPORTED_100baseT_Full;
- 			ecmd->advertising |= ADVERTISED_100baseT_Full;
-+			if (pf->flags & I40E_FLAG_100M_SGMII_CAPABLE) {
-+				ecmd->supported |= SUPPORTED_100baseT_Full;
-+				ecmd->advertising |= ADVERTISED_100baseT_Full;
-+			}
- 		}
- 	}
- 	if (phy_types & I40E_CAP_PHY_TYPE_XAUI ||
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 5bb1eae..66cc702 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -8448,7 +8448,8 @@ static int i40e_sw_init(struct i40e_pf *pf)
- 			     I40E_FLAG_HW_ATR_EVICT_CAPABLE |
- 			     I40E_FLAG_OUTER_UDP_CSUM_CAPABLE |
- 			     I40E_FLAG_WB_ON_ITR_CAPABLE |
--			     I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE;
-+			     I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE |
-+			     I40E_FLAG_100M_SGMII_CAPABLE;
- 	} else {
- 		pf->auto_disable_flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
- 	}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 3cc98b0..8c02fa9 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -1222,6 +1222,12 @@ static int i40e_vc_get_vf_resources_msg(struct i40e_vf *vf, u8 *msg)
+ 	if (vf->driver_caps & I40E_VIRTCHNL_VF_OFFLOAD_RX_POLLING)
+ 		vfres->vf_offload_flags |= I40E_VIRTCHNL_VF_OFFLOAD_RX_POLLING;
+ 
++	if (pf->flags & I40E_FLAG_WB_ON_ITR_CAPABLE) {
++		if (vf->driver_caps & I40E_VIRTCHNL_VF_OFFLOAD_WB_ON_ITR)
++			vfres->vf_offload_flags |=
++					I40E_VIRTCHNL_VF_OFFLOAD_WB_ON_ITR;
++	}
++
+ 	vfres->num_vsis = num_vsis;
+ 	vfres->num_queue_pairs = vf->num_queue_pairs;
+ 	vfres->max_vectors = pf->hw.func_caps.num_msix_vectors_vf;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index ed4934a..0e2c627 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -252,6 +252,22 @@ static bool i40e_clean_tx_irq(struct i40e_ring *tx_ring, int budget)
+ 	tx_ring->q_vector->tx.total_bytes += total_bytes;
+ 	tx_ring->q_vector->tx.total_packets += total_packets;
+ 
++	if (tx_ring->flags & I40E_TXR_FLAGS_WB_ON_ITR) {
++		unsigned int j = 0;
++		/* check to see if there are < 4 descriptors
++		 * waiting to be written back, then kick the hardware to force
++		 * them to be written back in case we stay in NAPI.
++		 * In this mode on X722 we do not enable Interrupt.
++		 */
++		j = i40evf_get_tx_pending(tx_ring);
++
++		if (budget &&
++		    ((j / (WB_STRIDE + 1)) == 0) && (j > 0) &&
++		    !test_bit(__I40E_DOWN, &tx_ring->vsi->state) &&
++		    (I40E_DESC_UNUSED(tx_ring) != tx_ring->count))
++			tx_ring->arm_wb = true;
++	}
++
+ 	netdev_tx_completed_queue(netdev_get_tx_queue(tx_ring->netdev,
+ 						      tx_ring->queue_index),
+ 				  total_packets, total_bytes);
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 7bdb9f9..ab77e20 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -2511,6 +2511,11 @@ static void i40evf_init_task(struct work_struct *work)
+ 	if (adapter->vf_res->vf_offload_flags &
+ 		    I40E_VIRTCHNL_VF_OFFLOAD_WB_ON_ITR)
+ 		adapter->flags |= I40EVF_FLAG_WB_ON_ITR_CAPABLE;
++
++	if (adapter->vf_res->vf_offload_flags &
++	    I40E_VIRTCHNL_VF_OFFLOAD_WB_ON_ITR)
++		adapter->flags |= I40EVF_FLAG_WB_ON_ITR_CAPABLE;
++
+ 	err = i40evf_request_misc_irq(adapter);
+ 	if (err)
+ 		goto err_sw_init;
 -- 
 2.1.0
 
