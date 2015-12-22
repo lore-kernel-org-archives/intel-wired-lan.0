@@ -1,63 +1,127 @@
-From: Raanan Avargil <raanan.avargil@intel.com>
-Date: Tue, 22 Dec 2015 15:35:05 +0200
-Subject: [Intel-wired-lan] [PATCH 5/5] e1000e: Initial support for KabeLake
-In-Reply-To: <1450791305-11285-1-git-send-email-raanan.avargil@intel.com>
-References: <1450791305-11285-1-git-send-email-raanan.avargil@intel.com>
-Message-ID: <1450791305-11285-5-git-send-email-raanan.avargil@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 22 Dec 2015 23:00:53 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE]
+ 0d722ec8bf46cb6547d10e8c5d9b8b6498bc7f97 BUILD SUCCESS
+Message-ID: <567965a5.cdvHfyepIoOQJb5i%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-i219 (4) and i219 (5) are the next LOM generations that will be
-available on the next Intel platform (KabeLake).
-This patch provides the initial support for the devices.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
+0d722ec8bf46cb6547d10e8c5d9b8b6498bc7f97  fm10k: IS_ENABLED() is not appropriate for boolean kconfig option
 
-Signed-off-by: Raanan Avargil <raanan.avargil@intel.com>
----
- drivers/net/ethernet/intel/e1000e/hw.h     | 4 ++++
- drivers/net/ethernet/intel/e1000e/netdev.c | 4 ++++
- 2 files changed, 8 insertions(+)
+elapsed time: 57m
 
-diff --git a/drivers/net/ethernet/intel/e1000e/hw.h b/drivers/net/ethernet/intel/e1000e/hw.h
-index b3949d5..4e733bf 100644
---- a/drivers/net/ethernet/intel/e1000e/hw.h
-+++ b/drivers/net/ethernet/intel/e1000e/hw.h
-@@ -92,6 +92,10 @@ struct e1000_hw;
- #define E1000_DEV_ID_PCH_SPT_I219_LM2		0x15B7	/* SPT-H PCH */
- #define E1000_DEV_ID_PCH_SPT_I219_V2		0x15B8	/* SPT-H PCH */
- #define E1000_DEV_ID_PCH_LBG_I219_LM3		0x15B9	/* LBG PCH */
-+#define E1000_DEV_ID_PCH_SPT_I219_LM4		0x15D7
-+#define E1000_DEV_ID_PCH_SPT_I219_V4		0x15D8
-+#define E1000_DEV_ID_PCH_SPT_I219_LM5		0x15E3
-+#define E1000_DEV_ID_PCH_SPT_I219_V5		0x15D6
- 
- #define E1000_REVISION_4	4
- 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index c71ba1b..9b4ec13 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -7452,6 +7452,10 @@ static const struct pci_device_id e1000_pci_tbl[] = {
- 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_LM2), board_pch_spt },
- 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_V2), board_pch_spt },
- 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_LBG_I219_LM3), board_pch_spt },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_LM4), board_pch_spt },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_V4), board_pch_spt },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_LM5), board_pch_spt },
-+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_PCH_SPT_I219_V5), board_pch_spt },
- 
- 	{ 0, 0, 0, 0, 0, 0, 0 }	/* terminate list */
- };
--- 
-2.1.0
+configs tested: 106
 
----------------------------------------------------------------------
-Intel Israel (74) Limited
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+blackfin                         alldefconfig
+powerpc                 mpc832x_mds_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x015-201551
+x86_64                 randconfig-x019-201551
+x86_64                 randconfig-x010-201551
+x86_64                 randconfig-x016-201551
+x86_64                 randconfig-x012-201551
+x86_64                 randconfig-x011-201551
+x86_64                 randconfig-x013-201551
+x86_64                 randconfig-x017-201551
+x86_64                 randconfig-x014-201551
+x86_64                 randconfig-x018-201551
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201551
+i386                     randconfig-s1-201551
+x86_64                 randconfig-s0-12222211
+x86_64                 randconfig-s1-12222211
+x86_64                 randconfig-s2-12222211
+x86_64                 randconfig-s3-12222212
+x86_64                 randconfig-s4-12222212
+x86_64                 randconfig-s5-12222212
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201551
+avr32                     atstk1004_defconfig
+blackfin                    PNAV-10_defconfig
+powerpc                 mpc834x_itx_defconfig
+um                               allmodconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                 randconfig-b0-12222123
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                      acs5k_tiny_defconfig
+arm                          collie_defconfig
+avr32                            alldefconfig
+i386                   randconfig-n0-12222029
+powerpc                          alldefconfig
+powerpc                     kmeter1_defconfig
+sh                ecovec24-romimage_defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+mips                                defconfig
+arm                      tct_hammer_defconfig
+mips                        nlm_xlp_defconfig
+powerpc                  iss476-smp_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                 randconfig-x006-201551
+x86_64                 randconfig-x009-201551
+x86_64                 randconfig-x003-201551
+x86_64                 randconfig-x008-201551
+x86_64                 randconfig-x005-201551
+x86_64                 randconfig-x001-201551
+x86_64                 randconfig-x002-201551
+x86_64                 randconfig-x000-201551
+x86_64                 randconfig-x004-201551
+x86_64                 randconfig-x007-201551
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-r0-201551
+mips                           ip22_defconfig
+sh                            migor_defconfig
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+Thanks,
+Fengguang
