@@ -1,56 +1,66 @@
 From: Deepthi Kavalur <deepthi.kavalur@intel.com>
-Date: Tue, 22 Dec 2015 14:25:09 -0800
-Subject: [Intel-wired-lan] [next PATCH S24 07/12] i40e: add new proxy-wol
-	bit for X722
+Date: Tue, 22 Dec 2015 14:25:03 -0800
+Subject: [Intel-wired-lan] [next PATCH S24 01/12] i40e: add new device IDs
+	for X722
 In-Reply-To: <1450823114-29514-1-git-send-email-deepthi.kavalur@intel.com>
 References: <1450823114-29514-1-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <1450823114-29514-8-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <1450823114-29514-2-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Shannon Nelson <shannon.nelson@intel.com>
+From: Anjali Singhai Jain <anjali.singhai@intel.com>
 
-Add the new proxy-wake-on-lan capability bit available with the
-new X722 device.
+Add the KX and QSFP device IDs for X722.
 
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-Acked-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
 ---
-Testing-Hints:
-Apply and compile cleanly.
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 2 ++
+ drivers/net/ethernet/intel/i40e/i40e_devids.h | 2 ++
+ drivers/net/ethernet/intel/i40e/i40e_main.c   | 2 ++
+ 3 files changed, 6 insertions(+)
 
- drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h   | 1 +
- drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h | 1 +
- 2 files changed, 2 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-index 256ce65..bff0995 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-@@ -402,6 +402,7 @@ struct i40e_aqc_list_capabilities_element_resp {
- #define I40E_AQ_CAP_ID_OS2BMC_CAP	0x0004
- #define I40E_AQ_CAP_ID_FUNCTIONS_VALID	0x0005
- #define I40E_AQ_CAP_ID_ALTERNATE_RAM	0x0006
-+#define I40E_AQ_CAP_ID_WOL_AND_PROXY	0x0008
- #define I40E_AQ_CAP_ID_SRIOV		0x0012
- #define I40E_AQ_CAP_ID_VF		0x0013
- #define I40E_AQ_CAP_ID_VMDQ		0x0014
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-index 0d3bc3b..365a7d6 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-@@ -399,6 +399,7 @@ struct i40e_aqc_list_capabilities_element_resp {
- #define I40E_AQ_CAP_ID_OS2BMC_CAP	0x0004
- #define I40E_AQ_CAP_ID_FUNCTIONS_VALID	0x0005
- #define I40E_AQ_CAP_ID_ALTERNATE_RAM	0x0006
-+#define I40E_AQ_CAP_ID_WOL_AND_PROXY	0x0008
- #define I40E_AQ_CAP_ID_SRIOV		0x0012
- #define I40E_AQ_CAP_ID_VF		0x0013
- #define I40E_AQ_CAP_ID_VMDQ		0x0014
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 4bdb08b..3b03a31 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -55,6 +55,8 @@ static i40e_status i40e_set_mac_type(struct i40e_hw *hw)
+ 		case I40E_DEV_ID_20G_KR2_A:
+ 			hw->mac.type = I40E_MAC_XL710;
+ 			break;
++		case I40E_DEV_ID_KX_X722:
++		case I40E_DEV_ID_QSFP_X722:
+ 		case I40E_DEV_ID_SFP_X722:
+ 		case I40E_DEV_ID_1G_BASE_T_X722:
+ 		case I40E_DEV_ID_10G_BASE_T_X722:
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_devids.h b/drivers/net/ethernet/intel/i40e/i40e_devids.h
+index 448ef4c..f7ce5c7 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_devids.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_devids.h
+@@ -41,6 +41,8 @@
+ #define I40E_DEV_ID_10G_BASE_T4		0x1589
+ #define I40E_DEV_ID_VF			0x154C
+ #define I40E_DEV_ID_VF_HV		0x1571
++#define I40E_DEV_ID_KX_X722		0x37CE
++#define I40E_DEV_ID_QSFP_X722		0x37CF
+ #define I40E_DEV_ID_SFP_X722		0x37D0
+ #define I40E_DEV_ID_1G_BASE_T_X722	0x37D1
+ #define I40E_DEV_ID_10G_BASE_T_X722	0x37D2
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 86ad1ab..58da2f1 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -87,6 +87,8 @@ static const struct pci_device_id i40e_pci_tbl[] = {
+ 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_10G_BASE_T), 0},
+ 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_10G_BASE_T4), 0},
+ 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_20G_KR2), 0},
++	{PCI_VDEVICE(INTEL, I40E_DEV_ID_KX_X722), 0},
++	{PCI_VDEVICE(INTEL, I40E_DEV_ID_QSFP_X722), 0},
+ 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_SFP_X722), 0},
+ 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_1G_BASE_T_X722), 0},
+ 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_10G_BASE_T_X722), 0},
 -- 
 2.1.0
 
