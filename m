@@ -1,357 +1,275 @@
-From: Bruce Allan <bruce.w.allan@intel.com>
-Date: Tue, 22 Dec 2015 13:43:49 -0800
-Subject: [Intel-wired-lan] [next-queue PATCH 2/2] fm10k: cleanup remaining
-	right-bit-shifted 1
-In-Reply-To: <20151222214344.42447.71576.stgit@bwallan-cwp1.jf.intel.com>
-References: <20151222214344.42447.71576.stgit@bwallan-cwp1.jf.intel.com>
-Message-ID: <20151222214349.42447.44013.stgit@bwallan-cwp1.jf.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 23 Dec 2015 05:46:46 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 549017961178c82c69a7f157b88a7a26d9a7783e BUILD INCOMPLETE
+Message-ID: <5679c4c6.s2wZLtDaCkN2rw3q%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Use BIT() macro instead.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+549017961178c82c69a7f157b88a7a26d9a7783e  ixgbevf: use bit operations for setting and checking resets
 
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
----
- drivers/net/ethernet/intel/fm10k/fm10k.h         |   12 ++++++-----
- drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c |   20 ++++++++----------
- drivers/net/ethernet/intel/fm10k/fm10k_main.c    |   20 +++++++++---------
- drivers/net/ethernet/intel/fm10k/fm10k_netdev.c  |    2 +-
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c     |    8 ++++---
- drivers/net/ethernet/intel/fm10k/fm10k_pf.c      |   12 ++++++-----
- drivers/net/ethernet/intel/fm10k/fm10k_tlv.c     |   24 +++++++++++-----------
- drivers/net/ethernet/intel/fm10k/fm10k_type.h    |    8 ++++---
- 8 files changed, 52 insertions(+), 54 deletions(-)
+drivers/net/ethernet/intel/igb/igb_cdev.c:150:2: error: implicit declaration of function 'set_pages_uc' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/intel/igb/igb_cdev.c:275:2: error: implicit declaration of function 'set_pages_wb' [-Werror=implicit-function-declaration]
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
-index b34bb00..83f3867 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
-@@ -262,12 +262,12 @@ struct fm10k_intfc {
- 	unsigned long state;
- 
- 	u32 flags;
--#define FM10K_FLAG_RESET_REQUESTED		(u32)(1 << 0)
--#define FM10K_FLAG_RSS_FIELD_IPV4_UDP		(u32)(1 << 1)
--#define FM10K_FLAG_RSS_FIELD_IPV6_UDP		(u32)(1 << 2)
--#define FM10K_FLAG_RX_TS_ENABLED		(u32)(1 << 3)
--#define FM10K_FLAG_SWPRI_CONFIG			(u32)(1 << 4)
--#define FM10K_FLAG_DEBUG_STATS			(u32)(1 << 5)
-+#define FM10K_FLAG_RESET_REQUESTED		(u32)(BIT(0))
-+#define FM10K_FLAG_RSS_FIELD_IPV4_UDP		(u32)(BIT(1))
-+#define FM10K_FLAG_RSS_FIELD_IPV6_UDP		(u32)(BIT(2))
-+#define FM10K_FLAG_RX_TS_ENABLED		(u32)(BIT(3))
-+#define FM10K_FLAG_SWPRI_CONFIG			(u32)(BIT(4))
-+#define FM10K_FLAG_DEBUG_STATS			(u32)(BIT(5))
- 	int xcast_mode;
- 
- 	/* Tx fast path data */
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-index 2f6a05b..28837ae 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-@@ -425,7 +425,7 @@ static void fm10k_get_regs(struct net_device *netdev,
- 	u32 *buff = p;
- 	u16 i;
- 
--	regs->version = (1 << 24) | (hw->revision_id << 16) | hw->device_id;
-+	regs->version = BIT(24) | (hw->revision_id << 16) | hw->device_id;
- 
- 	switch (hw->mac.type) {
- 	case fm10k_mac_pf:
-@@ -942,8 +942,8 @@ static int fm10k_mbx_test(struct fm10k_intfc *interface, u64 *data)
- 		return 0;
- 
- 	/* loop through both nested and unnested attribute types */
--	for (attr_flag = (1 << FM10K_TEST_MSG_UNSET);
--	     attr_flag < (1 << (2 * FM10K_TEST_MSG_NESTED));
-+	for (attr_flag = BIT(FM10K_TEST_MSG_UNSET);
-+	     attr_flag < BIT(2 * FM10K_TEST_MSG_NESTED);
- 	     attr_flag += attr_flag) {
- 		/* generate message to be tested */
- 		fm10k_tlv_msg_test_create(test_msg, attr_flag);
-@@ -1005,7 +1005,7 @@ static u32 fm10k_get_priv_flags(struct net_device *netdev)
- 	u32 priv_flags = 0;
- 
- 	if (interface->flags & FM10K_FLAG_DEBUG_STATS)
--		priv_flags |= 1 << FM10K_PRV_FLAG_DEBUG_STATS;
-+		priv_flags |= BIT(FM10K_PRV_FLAG_DEBUG_STATS);
- 
- 	return priv_flags;
- }
-@@ -1014,10 +1014,10 @@ static int fm10k_set_priv_flags(struct net_device *netdev, u32 priv_flags)
- {
- 	struct fm10k_intfc *interface = netdev_priv(netdev);
- 
--	if (priv_flags >= (1 << FM10K_PRV_FLAG_LEN))
-+	if (priv_flags >= BIT(FM10K_PRV_FLAG_LEN))
- 		return -EINVAL;
- 
--	if (priv_flags & (1 << FM10K_PRV_FLAG_DEBUG_STATS))
-+	if (priv_flags & BIT(FM10K_PRV_FLAG_DEBUG_STATS))
- 		interface->flags |= FM10K_FLAG_DEBUG_STATS;
- 	else
- 		interface->flags &= ~FM10K_FLAG_DEBUG_STATS;
-@@ -1145,7 +1145,7 @@ static unsigned int fm10k_max_channels(struct net_device *dev)
- 
- 	/* For QoS report channels per traffic class */
- 	if (tcs > 1)
--		max_combined = 1 << (fls(max_combined / tcs) - 1);
-+		max_combined = BIT((fls(max_combined / tcs) - 1));
- 
- 	return max_combined;
- }
-@@ -1210,11 +1210,9 @@ static int fm10k_get_ts_info(struct net_device *dev,
- 	else
- 		info->phc_index = -1;
- 
--	info->tx_types = (1 << HWTSTAMP_TX_OFF) |
--			 (1 << HWTSTAMP_TX_ON);
-+	info->tx_types = BIT(HWTSTAMP_TX_OFF) | BIT(HWTSTAMP_TX_ON);
- 
--	info->rx_filters = (1 << HWTSTAMP_FILTER_NONE) |
--			   (1 << HWTSTAMP_FILTER_ALL);
-+	info->rx_filters = BIT(HWTSTAMP_FILTER_NONE) | BIT(HWTSTAMP_FILTER_ALL);
- 
- 	return 0;
- }
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index d74d42a..ba469db 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -401,10 +401,10 @@ static inline void fm10k_rx_checksum(struct fm10k_ring *ring,
- }
- 
- #define FM10K_RSS_L4_TYPES_MASK \
--	((1ul << FM10K_RSSTYPE_IPV4_TCP) | \
--	 (1ul << FM10K_RSSTYPE_IPV4_UDP) | \
--	 (1ul << FM10K_RSSTYPE_IPV6_TCP) | \
--	 (1ul << FM10K_RSSTYPE_IPV6_UDP))
-+	(BIT(FM10K_RSSTYPE_IPV4_TCP) | \
-+	 BIT(FM10K_RSSTYPE_IPV4_UDP) | \
-+	 BIT(FM10K_RSSTYPE_IPV6_TCP) | \
-+	 BIT(FM10K_RSSTYPE_IPV6_UDP))
- 
- static inline void fm10k_rx_hash(struct fm10k_ring *ring,
- 				 union fm10k_rx_desc *rx_desc,
-@@ -420,7 +420,7 @@ static inline void fm10k_rx_hash(struct fm10k_ring *ring,
- 		return;
- 
- 	skb_set_hash(skb, le32_to_cpu(rx_desc->d.rss),
--		     ((1ul << rss_type) & FM10K_RSS_L4_TYPES_MASK) ?
-+		     (BIT(rss_type) & FM10K_RSS_L4_TYPES_MASK) ?
- 		     PKT_HASH_TYPE_L4 : PKT_HASH_TYPE_L3);
- }
- 
-@@ -1413,7 +1413,7 @@ static void fm10k_update_itr(struct fm10k_ring_container *ring_container)
- 	 * accounts for changes in the ITR due to PCIe link speed.
- 	 */
- 	itr_round = ACCESS_ONCE(ring_container->itr_scale) + 8;
--	avg_wire_size += (1 << itr_round) - 1;
-+	avg_wire_size += BIT(itr_round) - 1;
- 	avg_wire_size >>= itr_round;
- 
- 	/* write back value and retain adaptive flag */
-@@ -1515,17 +1515,17 @@ static bool fm10k_set_qos_queues(struct fm10k_intfc *interface)
- 	/* set QoS mask and indices */
- 	f = &interface->ring_feature[RING_F_QOS];
- 	f->indices = pcs;
--	f->mask = (1 << fls(pcs - 1)) - 1;
-+	f->mask = BIT(fls(pcs - 1)) - 1;
- 
- 	/* determine the upper limit for our current DCB mode */
- 	rss_i = interface->hw.mac.max_queues / pcs;
--	rss_i = 1 << (fls(rss_i) - 1);
-+	rss_i = BIT(fls(rss_i) - 1);
- 
- 	/* set RSS mask and indices */
- 	f = &interface->ring_feature[RING_F_RSS];
- 	rss_i = min_t(u16, rss_i, f->limit);
- 	f->indices = rss_i;
--	f->mask = (1 << fls(rss_i - 1)) - 1;
-+	f->mask = BIT(fls(rss_i - 1)) - 1;
- 
- 	/* configure pause class to queue mapping */
- 	for (i = 0; i < pcs; i++)
-@@ -1555,7 +1555,7 @@ static bool fm10k_set_rss_queues(struct fm10k_intfc *interface)
- 
- 	/* record indices and power of 2 mask for RSS */
- 	f->indices = rss_i;
--	f->mask = (1 << fls(rss_i - 1)) - 1;
-+	f->mask = BIT(fls(rss_i - 1)) - 1;
- 
- 	interface->num_rx_queues = rss_i;
- 	interface->num_tx_queues = rss_i;
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-index 662569d..aa53a6e 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-@@ -1420,7 +1420,7 @@ struct net_device *fm10k_alloc_netdev(const struct fm10k_info *info)
- 
- 	/* configure default debug level */
- 	interface = netdev_priv(dev);
--	interface->msg_enable = (1 << DEFAULT_DEBUG_LEVEL_SHIFT) - 1;
-+	interface->msg_enable = BIT(DEFAULT_DEBUG_LEVEL_SHIFT) - 1;
- 
- 	/* configure default features */
- 	dev->features |= NETIF_F_IP_CSUM |
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index 86700a4..c9324c7 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -579,7 +579,7 @@ static void fm10k_configure_tx_ring(struct fm10k_intfc *interface,
- 	u64 tdba = ring->dma;
- 	u32 size = ring->count * sizeof(struct fm10k_tx_desc);
- 	u32 txint = FM10K_INT_MAP_DISABLE;
--	u32 txdctl = (1 << FM10K_TXDCTL_MAX_TIME_SHIFT) | FM10K_TXDCTL_ENABLE;
-+	u32 txdctl = BIT(FM10K_TXDCTL_MAX_TIME_SHIFT) | FM10K_TXDCTL_ENABLE;
- 	u8 reg_idx = ring->reg_idx;
- 
- 	/* disable queue to avoid issues while updating state */
-@@ -730,7 +730,7 @@ static void fm10k_configure_rx_ring(struct fm10k_intfc *interface,
- 	if (interface->pfc_en)
- 		rx_pause = interface->pfc_en;
- #endif
--	if (!(rx_pause & (1 << ring->qos_pc)))
-+	if (!(rx_pause & BIT(ring->qos_pc)))
- 		rxdctl |= FM10K_RXDCTL_DROP_ON_EMPTY;
- 
- 	fm10k_write_reg(hw, FM10K_RXDCTL(reg_idx), rxdctl);
-@@ -779,7 +779,7 @@ void fm10k_update_rx_drop_en(struct fm10k_intfc *interface)
- 		u32 rxdctl = FM10K_RXDCTL_WRITE_BACK_MIN_DELAY;
- 		u8 reg_idx = ring->reg_idx;
- 
--		if (!(rx_pause & (1 << ring->qos_pc)))
-+		if (!(rx_pause & BIT(ring->qos_pc)))
- 			rxdctl |= FM10K_RXDCTL_DROP_ON_EMPTY;
- 
- 		fm10k_write_reg(hw, FM10K_RXDCTL(reg_idx), rxdctl);
-@@ -1065,7 +1065,7 @@ static void fm10k_reset_drop_on_empty(struct fm10k_intfc *interface, u32 eicr)
- 	if (maxholdq)
- 		fm10k_write_reg(hw, FM10K_MAXHOLDQ(7), maxholdq);
- 	for (q = 255;;) {
--		if (maxholdq & (1 << 31)) {
-+		if (maxholdq & BIT(31)) {
- 			if (q < FM10K_MAX_QUEUES_PF) {
- 				interface->rx_overrun_pf++;
- 				fm10k_write_reg(hw, FM10K_RXDCTL(q), rxdctl);
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-index 34a0b03..23de956 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-@@ -527,8 +527,8 @@ static s32 fm10k_configure_dglort_map_pf(struct fm10k_hw *hw,
- 		return FM10K_ERR_PARAM;
- 
- 	/* determine count of VSIs and queues */
--	queue_count = 1 << (dglort->rss_l + dglort->pc_l);
--	vsi_count = 1 << (dglort->vsi_l + dglort->queue_l);
-+	queue_count = BIT(dglort->rss_l + dglort->pc_l);
-+	vsi_count = BIT(dglort->vsi_l + dglort->queue_l);
- 	glort = dglort->glort;
- 	q_idx = dglort->queue_b;
- 
-@@ -544,8 +544,8 @@ static s32 fm10k_configure_dglort_map_pf(struct fm10k_hw *hw,
- 	}
- 
- 	/* determine count of PCs and queues */
--	queue_count = 1 << (dglort->queue_l + dglort->rss_l + dglort->vsi_l);
--	pc_count = 1 << dglort->pc_l;
-+	queue_count = BIT(dglort->queue_l + dglort->rss_l + dglort->vsi_l);
-+	pc_count = BIT(dglort->pc_l);
- 
- 	/* configure PC for Tx queues */
- 	for (pc = 0; pc < pc_count; pc++) {
-@@ -952,7 +952,7 @@ static s32 fm10k_iov_reset_resources_pf(struct fm10k_hw *hw,
- 		return FM10K_ERR_PARAM;
- 
- 	/* clear event notification of VF FLR */
--	fm10k_write_reg(hw, FM10K_PFVFLREC(vf_idx / 32), 1 << (vf_idx % 32));
-+	fm10k_write_reg(hw, FM10K_PFVFLREC(vf_idx / 32), BIT(vf_idx % 32));
- 
- 	/* force timeout and then disconnect the mailbox */
- 	vf_info->mbx.timeout = 0;
-@@ -1370,7 +1370,7 @@ s32 fm10k_iov_msg_lport_state_pf(struct fm10k_hw *hw, u32 **results,
- 		mode = fm10k_iov_supported_xcast_mode_pf(vf_info, mode);
- 
- 		/* if mode is not currently enabled, enable it */
--		if (!(FM10K_VF_FLAG_ENABLED(vf_info) & (1 << mode)))
-+		if (!(FM10K_VF_FLAG_ENABLED(vf_info) & BIT(mode)))
- 			fm10k_update_xcast_mode_pf(hw, vf_info->glort, mode);
- 
- 		/* swap mode back to a bit flag */
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_tlv.c b/drivers/net/ethernet/intel/fm10k/fm10k_tlv.c
-index ab01bb3..b999897 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_tlv.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_tlv.c
-@@ -222,7 +222,7 @@ s32 fm10k_tlv_attr_put_value(u32 *msg, u16 attr_id, s64 value, u32 len)
- 	attr = &msg[FM10K_TLV_DWORD_LEN(*msg)];
- 
- 	if (len < 4) {
--		attr[1] = (u32)value & ((0x1ul << (8 * len)) - 1);
-+		attr[1] = (u32)value & (BIT(8 * len) - 1);
- 	} else {
- 		attr[1] = (u32)value;
- 		if (len > 4)
-@@ -652,29 +652,29 @@ const struct fm10k_tlv_attr fm10k_tlv_msg_test_attr[] = {
-  **/
- static void fm10k_tlv_msg_test_generate_data(u32 *msg, u32 attr_flags)
- {
--	if (attr_flags & (1 << FM10K_TEST_MSG_STRING))
-+	if (attr_flags & BIT(FM10K_TEST_MSG_STRING))
- 		fm10k_tlv_attr_put_null_string(msg, FM10K_TEST_MSG_STRING,
- 					       test_str);
--	if (attr_flags & (1 << FM10K_TEST_MSG_MAC_ADDR))
-+	if (attr_flags & BIT(FM10K_TEST_MSG_MAC_ADDR))
- 		fm10k_tlv_attr_put_mac_vlan(msg, FM10K_TEST_MSG_MAC_ADDR,
- 					    test_mac, test_vlan);
--	if (attr_flags & (1 << FM10K_TEST_MSG_U8))
-+	if (attr_flags & BIT(FM10K_TEST_MSG_U8))
- 		fm10k_tlv_attr_put_u8(msg, FM10K_TEST_MSG_U8,  test_u8);
--	if (attr_flags & (1 << FM10K_TEST_MSG_U16))
-+	if (attr_flags & BIT(FM10K_TEST_MSG_U16))
- 		fm10k_tlv_attr_put_u16(msg, FM10K_TEST_MSG_U16, test_u16);
--	if (attr_flags & (1 << FM10K_TEST_MSG_U32))
-+	if (attr_flags & BIT(FM10K_TEST_MSG_U32))
- 		fm10k_tlv_attr_put_u32(msg, FM10K_TEST_MSG_U32, test_u32);
--	if (attr_flags & (1 << FM10K_TEST_MSG_U64))
-+	if (attr_flags & BIT(FM10K_TEST_MSG_U64))
- 		fm10k_tlv_attr_put_u64(msg, FM10K_TEST_MSG_U64, test_u64);
--	if (attr_flags & (1 << FM10K_TEST_MSG_S8))
-+	if (attr_flags & BIT(FM10K_TEST_MSG_S8))
- 		fm10k_tlv_attr_put_s8(msg, FM10K_TEST_MSG_S8,  test_s8);
--	if (attr_flags & (1 << FM10K_TEST_MSG_S16))
-+	if (attr_flags & BIT(FM10K_TEST_MSG_S16))
- 		fm10k_tlv_attr_put_s16(msg, FM10K_TEST_MSG_S16, test_s16);
--	if (attr_flags & (1 << FM10K_TEST_MSG_S32))
-+	if (attr_flags & BIT(FM10K_TEST_MSG_S32))
- 		fm10k_tlv_attr_put_s32(msg, FM10K_TEST_MSG_S32, test_s32);
--	if (attr_flags & (1 << FM10K_TEST_MSG_S64))
-+	if (attr_flags & BIT(FM10K_TEST_MSG_S64))
- 		fm10k_tlv_attr_put_s64(msg, FM10K_TEST_MSG_S64, test_s64);
--	if (attr_flags & (1 << FM10K_TEST_MSG_LE_STRUCT))
-+	if (attr_flags & BIT(FM10K_TEST_MSG_LE_STRUCT))
- 		fm10k_tlv_attr_put_le_struct(msg, FM10K_TEST_MSG_LE_STRUCT,
- 					     test_le, 8);
- }
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_type.h b/drivers/net/ethernet/intel/fm10k/fm10k_type.h
-index 854ebb1..5c05330 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_type.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_type.h
-@@ -617,10 +617,10 @@ struct fm10k_vf_info {
- 						 */
- };
- 
--#define FM10K_VF_FLAG_ALLMULTI_CAPABLE	((u8)1 << FM10K_XCAST_MODE_ALLMULTI)
--#define FM10K_VF_FLAG_MULTI_CAPABLE	((u8)1 << FM10K_XCAST_MODE_MULTI)
--#define FM10K_VF_FLAG_PROMISC_CAPABLE	((u8)1 << FM10K_XCAST_MODE_PROMISC)
--#define FM10K_VF_FLAG_NONE_CAPABLE	((u8)1 << FM10K_XCAST_MODE_NONE)
-+#define FM10K_VF_FLAG_ALLMULTI_CAPABLE	(u8)(BIT(FM10K_XCAST_MODE_ALLMULTI))
-+#define FM10K_VF_FLAG_MULTI_CAPABLE	(u8)(BIT(FM10K_XCAST_MODE_MULTI))
-+#define FM10K_VF_FLAG_PROMISC_CAPABLE	(u8)(BIT(FM10K_XCAST_MODE_PROMISC))
-+#define FM10K_VF_FLAG_NONE_CAPABLE	(u8)(BIT(FM10K_XCAST_MODE_NONE))
- #define FM10K_VF_FLAG_CAPABLE(vf_info)	((vf_info)->vf_flags & (u8)0xF)
- #define FM10K_VF_FLAG_ENABLED(vf_info)	((vf_info)->vf_flags >> 4)
- #define FM10K_VF_FLAG_SET_MODE(mode)	((u8)0x10 << (mode))
+Error ids grouped by kconfigs:
 
+recent_errors
+??? alpha-allmodconfig
+??? ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_uc
+??? ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_wb
+??? ia64-allmodconfig
+??? ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_uc
+??? ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_wb
+??? ia64-defconfig
+??? ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_uc
+??? ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_wb
+??? s390-allyesconfig
+    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_uc
+    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_wb
+
+TIMEOUT after 604m
+
+
+Sorry we cannot finish the testset for your branch within a reasonable time.
+It's our fault -- either some build server is down or some build worker is busy
+doing bisects for _other_ trees. The branch will get more complete coverage and
+possible error reports when our build infrastructure is restored or catches up.
+There will be no more build success notification for this branch head, but you
+can expect reasonably good test coverage after waiting for 1 day.
+
+configs timed out: 14
+
+alpha                            allyesconfig
+blackfin                         allyesconfig
+cris                             allyesconfig
+ia64                             allyesconfig
+m68k                             allyesconfig
+mips                             allyesconfig
+parisc                           allyesconfig
+powerpc                          allyesconfig
+sh                               allyesconfig
+sparc64                          allyesconfig
+sparc                            allyesconfig
+tile                             allyesconfig
+x86_64                           allyesconfig
+xtensa                           allyesconfig
+
+configs tested: 210
+
+blackfin                            defconfig
+ia64                                defconfig
+mips                                defconfig
+m68k                             allmodconfig
+mips                        qi_lb60_defconfig
+i386                   randconfig-a0-12222034
+x86_64                 randconfig-a0-12222338
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-12222229
+i386                   randconfig-c0-12230005
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+blackfin                BF548-EZKIT_defconfig
+mn10300                     asb2303_defconfig
+um                             i386_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+i386                             allyesconfig
+x86_64                 randconfig-v0-12222338
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                             allmodconfig
+microblaze                      mmu_defconfig
+powerpc                   gef_ppc9a_defconfig
+powerpc                         wii_defconfig
+sh                             shx3_defconfig
+alpha                            allmodconfig
+arm                         mv78xx0_defconfig
+ia64                         bigsur_defconfig
+mips                          lasat_defconfig
+sh                            shmin_defconfig
+x86_64                 randconfig-x015-201551
+x86_64                 randconfig-x019-201551
+x86_64                 randconfig-x010-201551
+x86_64                 randconfig-x016-201551
+x86_64                 randconfig-x012-201551
+x86_64                 randconfig-x011-201551
+x86_64                 randconfig-x013-201551
+x86_64                 randconfig-x017-201551
+x86_64                 randconfig-x014-201551
+x86_64                 randconfig-x018-201551
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201551
+i386                     randconfig-s1-201551
+x86_64                 randconfig-s0-12222020
+x86_64                 randconfig-s1-12222020
+x86_64                 randconfig-s2-12222020
+x86_64                 randconfig-s0-12222211
+x86_64                 randconfig-s1-12222211
+x86_64                 randconfig-s2-12222211
+x86_64                 randconfig-s0-12222255
+x86_64                 randconfig-s1-12222255
+x86_64                 randconfig-s2-12222255
+x86_64                 randconfig-s0-12222332
+x86_64                 randconfig-s1-12222332
+x86_64                 randconfig-s2-12222332
+x86_64                 randconfig-s0-12230007
+x86_64                 randconfig-s1-12230007
+x86_64                 randconfig-s2-12230007
+x86_64                 randconfig-s3-12222018
+x86_64                 randconfig-s4-12222018
+x86_64                 randconfig-s5-12222018
+x86_64                 randconfig-s3-12222212
+x86_64                 randconfig-s4-12222212
+x86_64                 randconfig-s5-12222212
+x86_64                 randconfig-s3-12222306
+x86_64                 randconfig-s4-12222306
+x86_64                 randconfig-s5-12222306
+x86_64                 randconfig-s3-12222351
+x86_64                 randconfig-s4-12222351
+x86_64                 randconfig-s5-12222351
+x86_64                 randconfig-s3-12230020
+x86_64                 randconfig-s4-12230020
+x86_64                 randconfig-s5-12230020
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201551
+i386                   randconfig-b0-12222226
+i386                   randconfig-b0-12222333
+i386                   randconfig-b0-12230005
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                         cm_x300_defconfig
+arm                       cns3420vb_defconfig
+m32r                    mappi.nommu_defconfig
+openrisc                          allnoconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201551
+i386                     randconfig-i1-201551
+i386                   randconfig-i0-12222055
+i386                   randconfig-i1-12222055
+x86_64                 randconfig-b0-12222301
+x86_64                 randconfig-b0-12222333
+x86_64                 randconfig-b0-12230002
+arm                         hackkit_defconfig
+arm                      integrator_defconfig
+ia64                             allmodconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                   randconfig-n0-12222029
+i386                   randconfig-h0-12222318
+i386                   randconfig-h1-12222318
+i386                   randconfig-h0-12230003
+i386                   randconfig-h1-12230003
+arm                      jornada720_defconfig
+mips                      pic32mzda_defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+x86_64                 randconfig-h0-12222352
+m68k                         apollo_defconfig
+x86_64                 randconfig-n0-12222230
+x86_64                 randconfig-n0-12222330
+x86_64                 randconfig-n0-12230017
+powerpc                     tqm8560_defconfig
+tile                              allnoconfig
+i386                  randconfig-sb0-12222229
+i386                  randconfig-sb0-12222333
+i386                  randconfig-sb0-12230018
+arm                  colibri_pxa300_defconfig
+powerpc                         ps3_defconfig
+s390                             allyesconfig
+x86_64                 randconfig-x000-201551
+x86_64                 randconfig-x001-201551
+x86_64                 randconfig-x002-201551
+x86_64                 randconfig-x003-201551
+x86_64                 randconfig-x004-201551
+x86_64                 randconfig-x005-201551
+x86_64                 randconfig-x006-201551
+x86_64                 randconfig-x007-201551
+x86_64                 randconfig-x008-201551
+x86_64                 randconfig-x009-201551
+i386                     randconfig-r0-201551
+x86_64                 randconfig-r0-12222037
+x86_64                 randconfig-r0-12222210
+x86_64                 randconfig-r0-12222312
+x86_64                 randconfig-r0-12222346
+arm                      acs5k_tiny_defconfig
+powerpc                       maple_defconfig
+sh                          sdk7780_defconfig
+i386                   randconfig-x008-201551
+i386                   randconfig-x009-201551
+i386                   randconfig-x003-201551
+i386                   randconfig-x006-201551
+i386                   randconfig-x001-201551
+i386                   randconfig-x002-201551
+i386                   randconfig-x000-201551
+i386                   randconfig-x004-201551
+i386                   randconfig-x007-201551
+i386                   randconfig-x005-201551
+i386                 randconfig-x000-12222106
+i386                 randconfig-x001-12222106
+i386                 randconfig-x002-12222106
+i386                 randconfig-x003-12222106
+i386                 randconfig-x004-12222106
+i386                 randconfig-x005-12222106
+i386                 randconfig-x006-12222106
+i386                 randconfig-x007-12222106
+i386                 randconfig-x008-12222106
+i386                 randconfig-x009-12222106
+i386                   randconfig-x0-12222158
+i386                   randconfig-x0-12222338
+i386                   randconfig-x0-12230013
+
+Thanks,
+Fengguang
