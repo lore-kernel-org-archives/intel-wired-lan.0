@@ -1,90 +1,55 @@
 From: Mitch Williams <mitch.a.williams@intel.com>
-Date: Tue, 22 Dec 2015 15:34:42 -0800
-Subject: [Intel-wired-lan] [next PATCH 1/2] i40e: change log messages and
-	error returns
-Message-ID: <1450827283-34667-1-git-send-email-mitch.a.williams@intel.com>
+Date: Tue, 22 Dec 2015 15:34:43 -0800
+Subject: [Intel-wired-lan] [next PATCH 2/2] i40e: allow zero MAC address for
+	VFs
+In-Reply-To: <1450827283-34667-1-git-send-email-mitch.a.williams@intel.com>
+References: <1450827283-34667-1-git-send-email-mitch.a.williams@intel.com>
+Message-ID: <1450827283-34667-2-git-send-email-mitch.a.williams@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When VFs are being reset, there is a brief window of time when they
-cannot be configured because they don't have a VSI to configure. If
-a script is quick, it can fall through that window. To avoid
-defenestration, log a useful error message and return -EAGAIN.
+Allow the user to specify a zero MAC address for VFs. This removes the
+existing MAC address and allows the VF to use a random address. Libvirt
+does this normally when removing a VF from a VM.
 
 Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 27 ++++++++++++++--------
- 1 file changed, 18 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index aa58a49..b8deb50 100644
+index b8deb50..63e62f9 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -2078,9 +2078,9 @@ int i40e_ndo_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
- 	vf = &(pf->vf[vf_id]);
- 	vsi = pf->vsi[vf->lan_vsi_idx];
- 	if (!test_bit(I40E_VF_STAT_INIT, &vf->vf_states)) {
--		dev_err(&pf->pdev->dev,
--			"Uninitialized VF %d\n", vf_id);
--		ret = -EINVAL;
-+		dev_err(&pf->pdev->dev, "VF %d still in reset. Try again.\n",
-+			vf_id);
-+		ret = -EAGAIN;
+@@ -2084,9 +2084,9 @@ int i40e_ndo_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
  		goto error_param;
  	}
  
-@@ -2162,8 +2162,9 @@ int i40e_ndo_set_vf_port_vlan(struct net_device *netdev,
- 	vf = &(pf->vf[vf_id]);
- 	vsi = pf->vsi[vf->lan_vsi_idx];
- 	if (!test_bit(I40E_VF_STAT_INIT, &vf->vf_states)) {
--		dev_err(&pf->pdev->dev, "Uninitialized VF %d\n", vf_id);
--		ret = -EINVAL;
-+		dev_err(&pf->pdev->dev, "VF %d still in reset. Try again.\n",
-+			vf_id);
-+		ret = -EAGAIN;
- 		goto error_pvid;
- 	}
- 
-@@ -2282,8 +2283,9 @@ int i40e_ndo_set_vf_bw(struct net_device *netdev, int vf_id, int min_tx_rate,
- 	vf = &(pf->vf[vf_id]);
- 	vsi = pf->vsi[vf->lan_vsi_idx];
- 	if (!test_bit(I40E_VF_STAT_INIT, &vf->vf_states)) {
--		dev_err(&pf->pdev->dev, "Uninitialized VF %d.\n", vf_id);
--		ret = -EINVAL;
-+		dev_err(&pf->pdev->dev, "VF %d still in reset. Try again.\n",
-+			vf_id);
-+		ret = -EAGAIN;
- 		goto error;
- 	}
- 
-@@ -2356,8 +2358,9 @@ int i40e_ndo_get_vf_config(struct net_device *netdev,
- 	/* first vsi is always the LAN vsi */
- 	vsi = pf->vsi[vf->lan_vsi_idx];
- 	if (!test_bit(I40E_VF_STAT_INIT, &vf->vf_states)) {
--		dev_err(&pf->pdev->dev, "Uninitialized VF %d\n", vf_id);
--		ret = -EINVAL;
-+		dev_err(&pf->pdev->dev, "VF %d still in reset. Try again.\n",
-+			vf_id);
-+		ret = -EAGAIN;
+-	if (!is_valid_ether_addr(mac)) {
++	if (is_multicast_ether_addr(mac)) {
+ 		dev_err(&pf->pdev->dev,
+-			"Invalid VF ethernet address\n");
++			"Invalid Ethernet address %pM for VF %d\n", mac, vf_id);
+ 		ret = -EINVAL;
  		goto error_param;
  	}
+@@ -2097,9 +2097,10 @@ int i40e_ndo_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
+ 	spin_lock_bh(&vsi->mac_filter_list_lock);
  
-@@ -2472,6 +2475,12 @@ int i40e_ndo_set_vf_spoofchk(struct net_device *netdev, int vf_id, bool enable)
- 	}
+ 	/* delete the temporary mac address */
+-	i40e_del_filter(vsi, vf->default_lan_addr.addr,
+-			vf->port_vlan_id ? vf->port_vlan_id : -1,
+-			true, false);
++	if (!is_zero_ether_addr(vf->default_lan_addr.addr))
++		i40e_del_filter(vsi, vf->default_lan_addr.addr,
++				vf->port_vlan_id ? vf->port_vlan_id : -1,
++				true, false);
  
- 	vf = &(pf->vf[vf_id]);
-+	if (!test_bit(I40E_VF_STAT_INIT, &vf->vf_states)) {
-+		dev_err(&pf->pdev->dev, "VF %d still in reset. Try again.\n",
-+			vf_id);
-+		ret = -EAGAIN;
-+		goto out;
-+	}
- 
- 	if (enable == vf->spoofchk)
- 		goto out;
+ 	/* Delete all the filters for this VSI - we're going to kill it
+ 	 * anyway.
 -- 
 2.5.0
 
