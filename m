@@ -1,41 +1,97 @@
 From: Deepthi Kavalur <deepthi.kavalur@intel.com>
-Date: Tue, 22 Dec 2015 14:25:02 -0800
-Subject: [Intel-wired-lan] [next PATCH S24 00/12] i40e/i40evf updates
-Message-ID: <1450823114-29514-1-git-send-email-deepthi.kavalur@intel.com>
+Date: Tue, 22 Dec 2015 14:25:04 -0800
+Subject: [Intel-wired-lan] [next PATCH S24 02/12] i40e: Extend ethtool RSS
+	hooks for X722
+In-Reply-To: <1450823114-29514-1-git-send-email-deepthi.kavalur@intel.com>
+References: <1450823114-29514-1-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <1450823114-29514-3-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Anjali Singhai Jain adds new device IDs for X722, extends ethtool RSS hooks 
-for X722, adds a fix for UDP/TCP RSS for X722, X722 changes to access nvm, 
-and new write-back mode.
+From: Anjali Singhai Jain <anjali.singhai@intel.com>
 
-Catherine Sullivan adds 100Mb ethtool reporting.
+This patch adds another way to access the RSS keys and lut using the AQ
+for X722 devices.
 
-Greg Bowers limits DCB FW version checks to X710/XL710 devices.
+Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 53 ++++++++++++++++++++++++++++-
+ 1 file changed, 52 insertions(+), 1 deletion(-)
 
-Jesse Brandeburg adds use of private workqueue.
-
-Shannon Nelson adds new proxy-wol bits for X722_SUPPORT, implements
-'AQ add Run PHY Activity struct', 'AQ Geneve cloud tunnel type', and
-'AQ add external power class to get link status'.
-
- drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  | 25 +++++++-
- drivers/net/ethernet/intel/i40e/i40e_common.c      |  2 +
- drivers/net/ethernet/intel/i40e/i40e_dcb.c         | 12 ++--
- drivers/net/ethernet/intel/i40e/i40e_devids.h      |  2 +
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 22 +++++++
- drivers/net/ethernet/intel/i40e/i40e_main.c        | 73 +++++++++++++++++++++-
- drivers/net/ethernet/intel/i40e/i40e_nvm.c         | 49 +++++++++------
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 12 ++++
- .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    | 25 +++++++-
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c      | 16 +++++
- drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 29 +++++++--
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 23 +++++--
- 12 files changed, 249 insertions(+), 41 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 58da2f1..d7c3fd4 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -7933,6 +7933,52 @@ static int i40e_vsi_config_rss(struct i40e_vsi *vsi)
+ }
+ 
+ /**
++ * i40e_get_rss_aq - Get RSS keys and lut by using AQ commands
++ * @vsi: Pointer to vsi structure
++ * @seed: Buffter to store the hash keys
++ * @lut: Buffer to store the lookup table entries
++ * @lut_size: Size of buffer to store the lookup table entries
++ *
++ * Return 0 on success, negative on failure
++ */
++static int i40e_get_rss_aq(struct i40e_vsi *vsi, const u8 *seed,
++			   u8 *lut, u16 lut_size)
++{
++	struct i40e_pf *pf = vsi->back;
++	struct i40e_hw *hw = &pf->hw;
++	int ret = 0;
++
++	if (seed) {
++		ret = i40e_aq_get_rss_key(hw, vsi->id,
++			(struct i40e_aqc_get_set_rss_key_data *)seed);
++		if (ret) {
++			dev_info(&pf->pdev->dev,
++				 "Cannot get RSS key, err %s aq_err %s\n",
++				 i40e_stat_str(&pf->hw, ret),
++				 i40e_aq_str(&pf->hw,
++					     pf->hw.aq.asq_last_status));
++			return ret;
++		}
++	}
++
++	if (lut) {
++		bool pf_lut = vsi->type == I40E_VSI_MAIN ? true : false;
++
++		ret = i40e_aq_get_rss_lut(hw, vsi->id, pf_lut, lut, lut_size);
++		if (ret) {
++			dev_info(&pf->pdev->dev,
++				 "Cannot get RSS lut, err %s aq_err %s\n",
++				 i40e_stat_str(&pf->hw, ret),
++				 i40e_aq_str(&pf->hw,
++					     pf->hw.aq.asq_last_status));
++			return ret;
++		}
++	}
++
++	return ret;
++}
++
++/**
+  * i40e_config_rss_reg - Configure RSS keys and lut by writing registers
+  * @vsi: Pointer to vsi structure
+  * @seed: RSS hash seed
+@@ -8034,7 +8080,12 @@ int i40e_config_rss(struct i40e_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size)
+  */
+ int i40e_get_rss(struct i40e_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size)
+ {
+-	return i40e_get_rss_reg(vsi, seed, lut, lut_size);
++	struct i40e_pf *pf = vsi->back;
++
++	if (pf->flags & I40E_FLAG_RSS_AQ_CAPABLE)
++		return i40e_get_rss_aq(vsi, seed, lut, lut_size);
++	else
++		return i40e_get_rss_reg(vsi, seed, lut, lut_size);
+ }
+ 
+ /**
 -- 
 2.1.0
 
