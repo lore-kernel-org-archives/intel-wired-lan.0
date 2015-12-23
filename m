@@ -1,98 +1,69 @@
 From: Deepthi Kavalur <deepthi.kavalur@intel.com>
-Date: Wed, 23 Dec 2015 12:05:44 -0800
-Subject: [Intel-wired-lan] [next PATCH S25 04/16] i40e: AQ thermal sensor
-	control struct
+Date: Wed, 23 Dec 2015 12:05:48 -0800
+Subject: [Intel-wired-lan] [next PATCH S25 08/16] i40e: add counter for arq
+	overflows
 In-Reply-To: <1450901156-30904-1-git-send-email-deepthi.kavalur@intel.com>
 References: <1450901156-30904-1-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <1450901156-30904-5-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <1450901156-30904-9-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Shannon Nelson <shannon.nelson@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-Add the new AQ command and struct for managing a thermal sensor.
+Sometimes, ARQ overflows are a big deal and tell us that the
+firmware/hardware/driver/something is having problems. But normally
+they're no big deal. To assist in assessing this, add a counter to
+our Ethtool stats. A handful of ARQ overflows during VF init is no
+problem. A large, ever-growing number indicates that Something Bad is
+happening.
 
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Change-ID: I6f5631839a0f3dca352a6c222f1269a960e2310a
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-ID: Ie5348bfbc8a54a890559cb00279c28d976a55096
 ---
- drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h   | 17 +++++++++++++++++
- drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h | 17 +++++++++++++++++
- 2 files changed, 34 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e.h         | 1 +
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 1 +
+ drivers/net/ethernet/intel/i40e/i40e_main.c    | 1 +
+ 3 files changed, 3 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-index 5effb91..9684572 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-@@ -230,6 +230,7 @@ enum i40e_admin_queue_opc {
- 	i40e_aqc_opc_nvm_config_read		= 0x0704,
- 	i40e_aqc_opc_nvm_config_write		= 0x0705,
- 	i40e_aqc_opc_oem_post_update		= 0x0720,
-+	i40e_aqc_opc_thermal_sensor		= 0x0721,
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 7ec304c..9ad2f37 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -392,6 +392,7 @@ struct i40e_pf {
+ 	struct i40e_vf *vf;
+ 	int num_alloc_vfs;	/* actual number of VFs allocated */
+ 	u32 vf_aq_requests;
++	u32 arq_overflows;	/* Not fatal, possibly indicative of problems */
  
- 	/* virtualization commands */
- 	i40e_aqc_opc_send_msg_to_pf		= 0x0801,
-@@ -1952,6 +1953,22 @@ struct i40e_aqc_nvm_oem_post_update_buffer {
- 
- I40E_CHECK_STRUCT_LEN(0x28, i40e_aqc_nvm_oem_post_update_buffer);
- 
-+/* Thermal Sensor (indirect 0x0721)
-+ *     read or set thermal sensor configs and values
-+ *     takes a sensor and command specific data buffer, not detailed here
-+ */
-+struct i40e_aqc_thermal_sensor {
-+	u8 sensor_action;
-+#define I40E_AQ_THERMAL_SENSOR_READ_CONFIG	0
-+#define I40E_AQ_THERMAL_SENSOR_SET_CONFIG	1
-+#define I40E_AQ_THERMAL_SENSOR_READ_TEMP	2
-+	u8 reserved[7];
-+	__le32	addr_high;
-+	__le32	addr_low;
-+};
-+
-+I40E_CHECK_CMD_LENGTH(i40e_aqc_thermal_sensor);
-+
- /* Send to PF command (indirect 0x0801) id is only used by PF
-  * Send to VF command (indirect 0x0802) id is only used by PF
-  * Send to Peer PF command (indirect 0x0803)
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-index bdb18f6..6468537 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-@@ -230,6 +230,7 @@ enum i40e_admin_queue_opc {
- 	i40e_aqc_opc_nvm_config_read		= 0x0704,
- 	i40e_aqc_opc_nvm_config_write		= 0x0705,
- 	i40e_aqc_opc_oem_post_update		= 0x0720,
-+	i40e_aqc_opc_thermal_sensor		= 0x0721,
- 
- 	/* virtualization commands */
- 	i40e_aqc_opc_send_msg_to_pf		= 0x0801,
-@@ -1949,6 +1950,22 @@ struct i40e_aqc_nvm_oem_post_update_buffer {
- 
- I40E_CHECK_STRUCT_LEN(0x28, i40e_aqc_nvm_oem_post_update_buffer);
- 
-+/* Thermal Sensor (indirect 0x0721)
-+ *     read or set thermal sensor configs and values
-+ *     takes a sensor and command specific data buffer, not detailed here
-+ */
-+struct i40e_aqc_thermal_sensor {
-+	u8 sensor_action;
-+#define I40E_AQ_THERMAL_SENSOR_READ_CONFIG	0
-+#define I40E_AQ_THERMAL_SENSOR_SET_CONFIG	1
-+#define I40E_AQ_THERMAL_SENSOR_READ_TEMP	2
-+	u8 reserved[7];
-+	__le32	addr_high;
-+	__le32	addr_low;
-+};
-+
-+I40E_CHECK_CMD_LENGTH(i40e_aqc_thermal_sensor);
-+
- /* Send to PF command (indirect 0x0801) id is only used by PF
-  * Send to VF command (indirect 0x0802) id is only used by PF
-  * Send to Peer PF command (indirect 0x0803)
+ 	/* DCBx/DCBNL capability for PF that indicates
+ 	 * whether DCBx is managed by firmware or host
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index e13ee93..691939d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -143,6 +143,7 @@ static struct i40e_stats i40e_gstrings_stats[] = {
+ 	I40E_PF_STAT("rx_oversize", stats.rx_oversize),
+ 	I40E_PF_STAT("rx_jabber", stats.rx_jabber),
+ 	I40E_PF_STAT("VF_admin_queue_requests", vf_aq_requests),
++	I40E_PF_STAT("arq_overflows", arq_overflows),
+ 	I40E_PF_STAT("rx_hwtstamp_cleared", rx_hwtstamp_cleared),
+ 	I40E_PF_STAT("fdir_flush_cnt", fd_flush_cnt),
+ 	I40E_PF_STAT("fdir_atr_match", stats.fd_atr_match),
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 66cc702..f751a80 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -6242,6 +6242,7 @@ static void i40e_clean_adminq_subtask(struct i40e_pf *pf)
+ 		if (hw->debug_mask & I40E_DEBUG_AQ)
+ 			dev_info(&pf->pdev->dev, "ARQ Overflow Error detected\n");
+ 		val &= ~I40E_PF_ARQLEN_ARQOVFL_MASK;
++		pf->arq_overflows++;
+ 	}
+ 	if (val & I40E_PF_ARQLEN_ARQCRIT_MASK) {
+ 		if (hw->debug_mask & I40E_DEBUG_AQ)
 -- 
 2.1.0
 
