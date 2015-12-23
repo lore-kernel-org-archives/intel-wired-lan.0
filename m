@@ -1,260 +1,137 @@
-From: Gangfeng Huang <gangfeng.huang@ni.com>
-Date: Wed, 23 Dec 2015 15:07:35 +0800
-Subject: [Intel-wired-lan] [PATCH net-next 2/3] igb: add support of
-	ethertype RX filters
-In-Reply-To: <1450854456-24382-1-git-send-email-gangfeng.huang@ni.com>
-References: <1450854456-24382-1-git-send-email-gangfeng.huang@ni.com>
-Message-ID: <1450854456-24382-3-git-send-email-gangfeng.huang@ni.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 23 Dec 2015 16:20:54 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 860d4b27cb20aa7bba90638cc3558ae6cb950112 BUILD DONE
+Message-ID: <567a5966.A8m2D4+Dx0weTzcG%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch is meant to allow for nfc to insert and remove ethertype filter
-by ethtool
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+860d4b27cb20aa7bba90638cc3558ae6cb950112  fm10k: Move constants to the right of binary operators
 
-Example:
-Add an ethertype filter:
-$ ethtool -N eth0 flow-type ether proto 0x88F8 action 2
+drivers/net/ethernet/intel/igb/igb_cdev.c:150:2: error: implicit declaration of function 'set_pages_uc' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/intel/igb/igb_cdev.c:275:2: error: implicit declaration of function 'set_pages_wb' [-Werror=implicit-function-declaration]
 
-Show all filters:
-$ ethtool -n eth0
-4 RX rings available
-Total 1 rules
+Error ids grouped by kconfigs:
 
-Filter: 15
-	Flow Type: Raw Ethernet
-	Src MAC addr: 00:00:00:00:00:00 mask: FF:FF:FF:FF:FF:FF
-	Dest MAC addr: 00:00:00:00:00:00 mask: FF:FF:FF:FF:FF:FF
-	Ethertype: 0x88F8 mask: 0x0
-	Action: Direct to queue 2
+recent_errors
+??? ia64-defconfig
+    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_uc
+    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_wb
 
-Delete the filter by location:
-$ ethtool -N delete 15
+elapsed time: 97m
 
-Signed-off-by: Ruhao Gao <ruhao.gao@ni.com>
-Signed-off-by: Gangfeng Huang <gangfeng.huang@ni.com>
----
- drivers/net/ethernet/intel/igb/e1000_82575.h |    5 ++
- drivers/net/ethernet/intel/igb/igb.h         |   20 ++++++-
- drivers/net/ethernet/intel/igb/igb_ethtool.c |   77 +++++++++++++++++++++++++-
- drivers/net/ethernet/intel/igb/igb_ptp.c     |    4 +-
- 4 files changed, 102 insertions(+), 4 deletions(-)
+configs tested: 106
 
-diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.h b/drivers/net/ethernet/intel/igb/e1000_82575.h
-index 2154aea..c4a34e1 100644
---- a/drivers/net/ethernet/intel/igb/e1000_82575.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_82575.h
-@@ -187,7 +187,12 @@ struct e1000_adv_tx_context_desc {
- 
- /* ETQF register bit definitions */
- #define E1000_ETQF_FILTER_ENABLE   (1 << 26)
-+#define E1000_ETQF_IMM_INT         (1 << 29)
- #define E1000_ETQF_1588            (1 << 30)
-+#define E1000_ETQF_QUEUE_ENABLE    (1 << 31)
-+#define E1000_ETQF_QUEUE_SHIFT     16
-+#define E1000_ETQF_QUEUE_MASK      0x00070000
-+#define E1000_ETQF_ETYPE_MASK      0x0000FFFF
- 
- /* FTQF register bit definitions */
- #define E1000_FTQF_VF_BP               0x00008000
-diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index 7bcdf94..950eed5 100644
---- a/drivers/net/ethernet/intel/igb/igb.h
-+++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -343,13 +343,27 @@ struct hwmon_buff {
- 	};
- #endif
- 
-+/* The number of L2 ether-type filter registers, Index 3 is reserved
-+ * for PTP 1588 timestamp
-+ */
-+#define MAX_ETYPE_FILTER  (4 - 1)
-+
-+/* ETQF filter list: one static filter per filter consumer. This is
-+ *                   to avoid filter collisions later. Add new filters
-+ *                   here!!
-+ *
-+ * Current filters:
-+ *    1588 (0x88f7):         Filter 3
-+ */
-+#define IGB_ETQF_FILTER_1588   3
-+
- #define IGB_N_EXTTS	2
- #define IGB_N_PEROUT	2
- #define IGB_N_SDP	4
- #define IGB_RETA_SIZE	128
- 
- enum igb_filter_match_flags {
--	IGB_FILTER_FLAG_NONE        = 0x0,
-+	IGB_FILTER_FLAG_ETHER_TYPE  = 0x1,
- };
- 
- #define IGB_MAX_RXNFC_FILTERS 16
-@@ -357,8 +371,10 @@ enum igb_filter_match_flags {
- struct igb_nfc_input {
- 	/* Byte layout in order, all values with MSB first:
- 	* match_flags - 1 byte
-+	* etype       - 2 bytes
- 	*/
- 	u8     match_flags;
-+	__be16 etype;
- };
- 
- /* board specific private data structure */
-@@ -484,11 +500,13 @@ struct igb_adapter {
- 	unsigned int nfc_filter_count;
- 	/* lock for nfc filter */
- 	spinlock_t nfc_lock;
-+	bool etype_bitmap[MAX_ETYPE_FILTER];
- };
- 
- struct igb_nfc_filter {
- 	struct hlist_node nfc_node;
- 	struct igb_nfc_input filter;
-+	u16 etype_reg_index;
- 	u16 sw_idx;
- 	u16 action;
- };
-diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index 5847daf..4d887eb 100644
---- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -2431,6 +2431,7 @@ static int igb_get_ts_info(struct net_device *dev,
- 	}
- }
- 
-+#define ETHER_TYPE_FULL_MASK ((__force __be16)~0)
- static int igb_get_ethtool_nfc_entry(struct igb_adapter *adapter,
- 				     struct ethtool_rxnfc *cmd)
- {
-@@ -2448,6 +2449,13 @@ static int igb_get_ethtool_nfc_entry(struct igb_adapter *adapter,
- 	if (!rule || fsp->location != rule->sw_idx)
- 		return -EINVAL;
- 
-+	if (rule->filter.match_flags & IGB_FILTER_FLAG_ETHER_TYPE) {
-+		fsp->flow_type = ETHER_FLOW;
-+		fsp->ring_cookie = rule->action;
-+		fsp->h_u.ether_spec.h_proto = rule->filter.etype;
-+		fsp->m_u.ether_spec.h_proto = ETHER_TYPE_FULL_MASK;
-+		return 0;
-+	}
- 	return -EINVAL;
- }
- 
-@@ -2650,13 +2658,75 @@ static int igb_set_rss_hash_opt(struct igb_adapter *adapter,
- 	return 0;
- }
- 
-+static int igb_rxnfc_write_etype_filter(struct igb_adapter *adapter,
-+					struct igb_nfc_filter *input)
-+{
-+	struct e1000_hw *hw = &adapter->hw;
-+	u8 i;
-+	u32 etqf;
-+	u16 etype;
-+
-+	/* find an empty etype filter register */
-+	for (i = 0; i < MAX_ETYPE_FILTER; ++i) {
-+		if (!adapter->etype_bitmap[i])
-+			break;
-+	}
-+	if (i == MAX_ETYPE_FILTER) {
-+		dev_err(&adapter->pdev->dev, "ethtool -N: etype filters are all used.\n");
-+		return -EINVAL;
-+	}
-+
-+	adapter->etype_bitmap[i] = true;
-+
-+	etqf = rd32(E1000_ETQF(i));
-+	etype = ntohs(input->filter.etype & ETHER_TYPE_FULL_MASK);
-+
-+	etqf |= E1000_ETQF_FILTER_ENABLE;
-+	etqf &= ~E1000_ETQF_ETYPE_MASK;
-+	etqf |= (etype & E1000_ETQF_ETYPE_MASK);
-+
-+	etqf &= ~E1000_ETQF_QUEUE_MASK;
-+	etqf |= ((input->action << E1000_ETQF_QUEUE_SHIFT)
-+		& E1000_ETQF_QUEUE_MASK);
-+	etqf |= E1000_ETQF_QUEUE_ENABLE;
-+
-+	wr32(E1000_ETQF(i), etqf);
-+
-+	input->etype_reg_index = i;
-+
-+	return 0;
-+}
-+
- int igb_add_filter(struct igb_adapter *adapter, struct igb_nfc_filter *input)
- {
--	return -EINVAL;
-+	int err = -EINVAL;
-+
-+	if (input->filter.match_flags & IGB_FILTER_FLAG_ETHER_TYPE) {
-+		err = igb_rxnfc_write_etype_filter(adapter, input);
-+
-+	return err;
-+}
-+
-+static void igb_clear_etype_filter_regs(struct igb_adapter *adapter,
-+					u16 reg_index)
-+{
-+	struct e1000_hw *hw = &adapter->hw;
-+	u32 etqf = rd32(E1000_ETQF(reg_index));
-+
-+	etqf &= ~E1000_ETQF_QUEUE_ENABLE;
-+	etqf &= ~E1000_ETQF_QUEUE_MASK;
-+	etqf &= ~E1000_ETQF_FILTER_ENABLE;
-+
-+	wr32(E1000_ETQF(reg_index), etqf);
-+
-+	adapter->etype_bitmap[reg_index] = false;
- }
- 
- int igb_erase_filter(struct igb_adapter *adapter, struct igb_nfc_filter *input)
- {
-+	if (input->filter.match_flags & IGB_FILTER_FLAG_ETHER_TYPE)
-+		igb_clear_etype_filter_regs(adapter,
-+					    input->etype_reg_index);
- 	return 0;
- }
- 
-@@ -2738,10 +2808,15 @@ static int igb_add_ethtool_nfc_entry(struct igb_adapter *adapter,
- 	if ((fsp->flow_type & ~FLOW_EXT) != ETHER_FLOW)
- 		return -EINVAL;
- 
-+	if (fsp->m_u.ether_spec.h_proto != ETHER_TYPE_FULL_MASK)
-+		return -EINVAL;
-+
- 	input = kzalloc(sizeof(*input), GFP_KERNEL);
- 	if (!input)
- 		return -ENOMEM;
- 
-+	input->filter.etype = fsp->h_u.ether_spec.h_proto;
-+	input->filter.match_flags = IGB_FILTER_FLAG_ETHER_TYPE;
- 	input->action = fsp->ring_cookie;
- 	input->sw_idx = fsp->location;
- 
-diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
-index c44df87..84c4943 100644
---- a/drivers/net/ethernet/intel/igb/igb_ptp.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
-@@ -940,12 +940,12 @@ static int igb_ptp_set_timestamp_mode(struct igb_adapter *adapter,
- 
- 	/* define ethertype filter for timestamped packets */
- 	if (is_l2)
--		wr32(E1000_ETQF(3),
-+		wr32(E1000_ETQF(IGB_ETQF_FILTER_1588),
- 		     (E1000_ETQF_FILTER_ENABLE | /* enable filter */
- 		      E1000_ETQF_1588 | /* enable timestamping */
- 		      ETH_P_1588));     /* 1588 eth protocol type */
- 	else
--		wr32(E1000_ETQF(3), 0);
-+		wr32(E1000_ETQF(IGB_ETQF_FILTER_1588), 0);
- 
- 	/* L4 Queue Filter[3]: filter by destination port and protocol */
- 	if (is_l4) {
--- 
-1.7.9.5
+i386                   randconfig-a0-12222034
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                 randconfig-x015-201551
+x86_64                 randconfig-x019-201551
+x86_64                 randconfig-x010-201551
+x86_64                 randconfig-x016-201551
+x86_64                 randconfig-x012-201551
+x86_64                 randconfig-x011-201551
+x86_64                 randconfig-x013-201551
+x86_64                 randconfig-x017-201551
+x86_64                 randconfig-x014-201551
+x86_64                 randconfig-x018-201551
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201551
+i386                     randconfig-s1-201551
+i386                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201551
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201551
+i386                     randconfig-i1-201551
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                     randconfig-n0-201551
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                 randconfig-x006-201551
+x86_64                 randconfig-x009-201551
+x86_64                 randconfig-x003-201551
+x86_64                 randconfig-x008-201551
+x86_64                 randconfig-x005-201551
+x86_64                 randconfig-x001-201551
+x86_64                 randconfig-x002-201551
+x86_64                 randconfig-x000-201551
+x86_64                 randconfig-x004-201551
+x86_64                 randconfig-x007-201551
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                 randconfig-x005-12222106
+i386                 randconfig-x004-12222106
+i386                 randconfig-x002-12222106
+i386                 randconfig-x006-12222106
+i386                 randconfig-x007-12222106
+i386                 randconfig-x003-12222106
+i386                 randconfig-x009-12222106
+i386                 randconfig-x008-12222106
+i386                 randconfig-x001-12222106
+i386                 randconfig-x000-12222106
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
 
+Thanks,
+Fengguang
