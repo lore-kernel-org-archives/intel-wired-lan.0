@@ -1,8 +1,8 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 24 Dec 2015 06:06:30 +0800
+Date: Thu, 24 Dec 2015 06:10:22 +0800
 Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 4c0a582fc9fbffae56e7c3d246120a5fdc6356fd BUILD DONE
-Message-ID: <567b1ae6.dygQK5AofyO1kM1O%fengguang.wu@intel.com>
+ ddf5359dd0fbf363966de3afc1857537da86f8ec BUILD SUCCESS
+Message-ID: <567b1bce.Tm6SYAT1X3ltQxye%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,31 +10,13 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-4c0a582fc9fbffae56e7c3d246120a5fdc6356fd  ixgbe: fix write to VLVFB in ixgbe_clear_vf_vlans()
+ddf5359dd0fbf363966de3afc1857537da86f8ec  ixgbe: fix write to VLVFB in ixgbe_clear_vf_vlans()
 
-drivers/net/ethernet/intel/igb/igb_cdev.c:150:2: error: implicit declaration of function 'set_pages_uc' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/igb/igb_cdev.c:275:2: error: implicit declaration of function 'set_pages_wb' [-Werror=implicit-function-declaration]
+elapsed time: 21m
 
-Error ids grouped by kconfigs:
+configs tested: 78
 
-recent_errors
-??? ia64-defconfig
-    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_uc
-    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_wb
-
-elapsed time: 57m
-
-configs tested: 106
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
 i386                     randconfig-a0-201551
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
 x86_64                             acpi-redef
 x86_64                           allyesdebian
 x86_64                                nfsroot
@@ -43,7 +25,6 @@ blackfin                BF533-EZKIT_defconfig
 blackfin            BF561-EZKIT-SMP_defconfig
 blackfin                  TCM-BF537_defconfig
 cris                 etrax-100lx_v2_defconfig
-i386                             allmodconfig
 x86_64                 randconfig-x015-201551
 x86_64                 randconfig-x019-201551
 x86_64                 randconfig-x010-201551
@@ -59,7 +40,6 @@ m68k                          multi_defconfig
 m68k                           sun3_defconfig
 i386                     randconfig-s0-201551
 i386                     randconfig-s1-201551
-x86_64                           allmodconfig
 avr32                      atngw100_defconfig
 avr32                     atstk1006_defconfig
 frv                                 defconfig
@@ -75,14 +55,10 @@ mips                                     txx9
 powerpc                           allnoconfig
 powerpc                             defconfig
 powerpc                       ppc64_defconfig
-x86_64                   randconfig-i0-201551
 microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
 i386                     randconfig-i0-201551
 i386                     randconfig-i1-201551
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
 m32r                       m32104ut_defconfig
 m32r                     mappi3.smp_defconfig
 m32r                         opsput_defconfig
@@ -93,18 +69,8 @@ i386                               tinyconfig
 x86_64                                    lkp
 x86_64                                   rhel
 i386                     randconfig-n0-201551
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
+blackfin                   CM-BF533_defconfig
+powerpc                      cm5200_defconfig
 x86_64                 randconfig-x006-201551
 x86_64                 randconfig-x009-201551
 x86_64                 randconfig-x003-201551
@@ -115,10 +81,6 @@ x86_64                 randconfig-x002-201551
 x86_64                 randconfig-x000-201551
 x86_64                 randconfig-x004-201551
 x86_64                 randconfig-x007-201551
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-r0-201551
 i386                 randconfig-x005-12222106
 i386                 randconfig-x004-12222106
 i386                 randconfig-x002-12222106
