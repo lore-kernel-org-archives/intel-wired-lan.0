@@ -1,55 +1,39 @@
-From: Mitch Williams <mitch.a.williams@intel.com>
-Date: Tue, 22 Dec 2015 15:34:43 -0800
-Subject: [Intel-wired-lan] [next PATCH 2/2] i40e: allow zero MAC address for
-	VFs
-In-Reply-To: <1450827283-34667-1-git-send-email-mitch.a.williams@intel.com>
-References: <1450827283-34667-1-git-send-email-mitch.a.williams@intel.com>
-Message-ID: <1450827283-34667-2-git-send-email-mitch.a.williams@intel.com>
+From: Emil Tantilov <emil.s.tantilov@intel.com>
+Date: Tue, 22 Dec 2015 17:09:57 -0800
+Subject: [Intel-wired-lan] [PATCH] ixgbe: fix write to VLVFB in
+	ixgbe_clear_vf_vlans()
+Message-ID: <20151223010957.27315.28321.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Allow the user to specify a zero MAC address for VFs. This removes the
-existing MAC address and allows the VF to use a random address. Libvirt
-does this normally when removing a VF from a VM.
+Fix the write to the VLVFB register in ixgbe_clear_vf_vlans() where
+word is the actual offset of the register and not the index for the
+IXGBE_VLVFB macro.
 
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+This was causing PCI AER errors on my system.
+
+Fixes: 4c7f35f679f592804736f9303051257de2c9f021
+("ixgbe: Clean stale VLANs when changing port VLAN or resetting")
+
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index b8deb50..63e62f9 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -2084,9 +2084,9 @@ int i40e_ndo_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
- 		goto error_param;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+index eeff3d0..fd918da 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+@@ -640,7 +640,7 @@ update_vlvf:
+ 		IXGBE_WRITE_REG(hw, IXGBE_VLVF(i), 0);
+ update_vlvfb:
+ 		/* clear pool bits */
+-		IXGBE_WRITE_REG(hw, IXGBE_VLVFB(word), vlvfb);
++		IXGBE_WRITE_REG(hw, word, vlvfb);
  	}
+ }
  
--	if (!is_valid_ether_addr(mac)) {
-+	if (is_multicast_ether_addr(mac)) {
- 		dev_err(&pf->pdev->dev,
--			"Invalid VF ethernet address\n");
-+			"Invalid Ethernet address %pM for VF %d\n", mac, vf_id);
- 		ret = -EINVAL;
- 		goto error_param;
- 	}
-@@ -2097,9 +2097,10 @@ int i40e_ndo_set_vf_mac(struct net_device *netdev, int vf_id, u8 *mac)
- 	spin_lock_bh(&vsi->mac_filter_list_lock);
- 
- 	/* delete the temporary mac address */
--	i40e_del_filter(vsi, vf->default_lan_addr.addr,
--			vf->port_vlan_id ? vf->port_vlan_id : -1,
--			true, false);
-+	if (!is_zero_ether_addr(vf->default_lan_addr.addr))
-+		i40e_del_filter(vsi, vf->default_lan_addr.addr,
-+				vf->port_vlan_id ? vf->port_vlan_id : -1,
-+				true, false);
- 
- 	/* Delete all the filters for this VSI - we're going to kill it
- 	 * anyway.
--- 
-2.5.0
 
