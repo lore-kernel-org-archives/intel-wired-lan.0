@@ -1,139 +1,53 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 23 Dec 2015 21:38:22 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- ecad073a9509dfd6301d20eebdf61e51912b2ea9 BUILD DONE
-Message-ID: <567aa3ce.xXynlDX5/fF844EM%fengguang.wu@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 23 Dec 2015 08:22:43 -0800
+Subject: [Intel-wired-lan] [next-queue PATCH] fm10k: Avoid crashing the
+	kernel
+In-Reply-To: <20151222221012.91665.98612.stgit@bwallan-cwp1.jf.intel.com>
+References: <20151222221012.91665.98612.stgit@bwallan-cwp1.jf.intel.com>
+Message-ID: <CAKgT0Uc7ezCCqYa_n_SpOkm0P9TpEs3m3pOjb9o_Rx8hD_L0pg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-ecad073a9509dfd6301d20eebdf61e51912b2ea9  ixgbe: Use core to device locality interface
+On Tue, Dec 22, 2015 at 2:10 PM, Bruce Allan <bruce.w.allan@intel.com> wrote:
+> Use BUILD_BUG_ON() instead of BUG_ON() where appropriate to get a compile
+> error rather than crash the kernel.
+>
+> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+> ---
+>  drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+> index 28837ae..6a9f988 100644
+> --- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+> @@ -398,7 +398,7 @@ static void fm10k_get_reg_q(struct fm10k_hw *hw, u32 *buff, int i)
+>         buff[idx++] = fm10k_read_reg(hw, FM10K_TX_SGLORT(i));
+>         buff[idx++] = fm10k_read_reg(hw, FM10K_PFVTCTL(i));
+>
+> -       BUG_ON(idx != FM10K_REGS_LEN_Q);
+> +       BUILD_BUG_ON(idx != FM10K_REGS_LEN_Q);
+>  }
+>
+>  /* If function above adds more registers this define needs to be updated */
+> @@ -414,7 +414,7 @@ static void fm10k_get_reg_vsi(struct fm10k_hw *hw, u32 *buff, int i)
+>         for (j = 0; j < 32; j++)
+>                 buff[idx++] = fm10k_read_reg(hw, FM10K_RETA(i, j));
+>
+> -       BUG_ON(idx != FM10K_REGS_LEN_VSI);
+> +       BUILD_BUG_ON(idx != FM10K_REGS_LEN_VSI);
+>  }
+>
+>  static void fm10k_get_regs(struct net_device *netdev,
 
-drivers/net/ethernet/intel/igb/igb_cdev.c:150:2: error: implicit declaration of function 'set_pages_uc' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/igb/igb_cdev.c:275:2: error: implicit declaration of function 'set_pages_wb' [-Werror=implicit-function-declaration]
+I'm not sure that is entirely valid.  It seems like BUILD_BUG_ON
+should be given an expression that can be tested at build time, but
+the way this code is written I would suspect idx is likely not going
+to be a fixed value unless you are compiling with -03 which would
+likely unfold most of the loops, so I don't see how BUILD_BUG_ON will
+do anything other than be compiled out.
 
-Error ids grouped by kconfigs:
-
-recent_errors
-??? ia64-defconfig
-    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_uc
-    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_wb
-
-elapsed time: 95m
-
-configs tested: 108
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                   randconfig-a0-12222034
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-parisc                         b180_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x015-201551
-x86_64                 randconfig-x019-201551
-x86_64                 randconfig-x010-201551
-x86_64                 randconfig-x016-201551
-x86_64                 randconfig-x012-201551
-x86_64                 randconfig-x011-201551
-x86_64                 randconfig-x013-201551
-x86_64                 randconfig-x017-201551
-x86_64                 randconfig-x014-201551
-x86_64                 randconfig-x018-201551
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201551
-i386                     randconfig-s1-201551
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201551
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201551
-i386                     randconfig-i1-201551
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                     randconfig-n0-201551
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                   rhel
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-x86_64                 randconfig-x006-201551
-x86_64                 randconfig-x009-201551
-x86_64                 randconfig-x003-201551
-x86_64                 randconfig-x008-201551
-x86_64                 randconfig-x005-201551
-x86_64                 randconfig-x001-201551
-x86_64                 randconfig-x002-201551
-x86_64                 randconfig-x000-201551
-x86_64                 randconfig-x004-201551
-x86_64                 randconfig-x007-201551
-x86_64                                    lkp
-i386                     randconfig-r0-201551
-i386                 randconfig-x005-12222106
-i386                 randconfig-x004-12222106
-i386                 randconfig-x002-12222106
-i386                 randconfig-x006-12222106
-i386                 randconfig-x007-12222106
-i386                 randconfig-x003-12222106
-i386                 randconfig-x009-12222106
-i386                 randconfig-x008-12222106
-i386                 randconfig-x001-12222106
-i386                 randconfig-x000-12222106
-i386                   randconfig-x0-12231948
-
-Thanks,
-Fengguang
+- Alex
