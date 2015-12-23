@@ -1,44 +1,55 @@
 From: Deepthi Kavalur <deepthi.kavalur@intel.com>
-Date: Wed, 23 Dec 2015 12:05:52 -0800
-Subject: [Intel-wired-lan] [next PATCH S25 12/16] i40evf: enable bus master
-	after reset
+Date: Wed, 23 Dec 2015 12:05:56 -0800
+Subject: [Intel-wired-lan] [next PATCH S25 16/16] i40e/i40evf: Bump i40e to
+	1.4.11 and i40evf to 1.4.7
 In-Reply-To: <1450901156-30904-1-git-send-email-deepthi.kavalur@intel.com>
 References: <1450901156-30904-1-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <1450901156-30904-13-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <1450901156-30904-17-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+From: Catherine Sullivan <catherine.sullivan@intel.com>
 
-If the VF is reset via VFLR, the device will be knocked out of bus
-master mode, and the driver will fail to recover from the reset. Fix
-this by enabling bus mastering after every reset. In a non-VFLR case,
-the bus master bit will not be disabled, and this call will have no effect.
+Bump.
 
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Change-ID: Id515859ac7a691db478222228add6d149e96801a
+Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
+Change-ID: I21aa520a3c8c5f4f562a98019bf8b76b3706c480
 ---
-Testing-Hints:
-Initiate a VFLR using "setpci -s <pci location of VF> CAP_EXP+8.W=8000"
+Testing-Hints: check version
 
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index eeaa794..ad5b961 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -48,7 +48,7 @@ static const char i40e_driver_string[] =
+ 
+ #define DRV_VERSION_MAJOR 1
+ #define DRV_VERSION_MINOR 4
+-#define DRV_VERSION_BUILD 10
++#define DRV_VERSION_BUILD 11
+ #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
+ 	     __stringify(DRV_VERSION_MINOR) "." \
+ 	     __stringify(DRV_VERSION_BUILD)    DRV_KERN
 diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 5b88123..9b38051 100644
+index 9b38051..da33d0e 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
 +++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -1837,6 +1837,7 @@ static void i40evf_reset_task(struct work_struct *work)
- 			break;
- 		msleep(I40EVF_RESET_WAIT_MS);
- 	}
-+	pci_set_master(adapter->pdev);
- 	/* extra wait to make sure minimum wait is met */
- 	msleep(I40EVF_RESET_WAIT_MS);
- 	if (i == I40EVF_RESET_WAIT_COUNT) {
+@@ -38,7 +38,7 @@ static const char i40evf_driver_string[] =
+ 
+ #define DRV_VERSION_MAJOR 1
+ #define DRV_VERSION_MINOR 4
+-#define DRV_VERSION_BUILD 4
++#define DRV_VERSION_BUILD 7
+ #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
+ 	     __stringify(DRV_VERSION_MINOR) "." \
+ 	     __stringify(DRV_VERSION_BUILD) \
 -- 
 2.1.0
 
