@@ -1,63 +1,89 @@
-From: Daniel J Blueman <daniel@numascale.com>
-Date: Wed, 23 Dec 2015 18:01:41 +0800
-Subject: [Intel-wired-lan] [PATCH 2/2] ixgbe: Use core to device locality
-	interface
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 23 Dec 2015 18:35:05 +0800
+Subject: [Intel-wired-lan] [PATCH 1/2] PCI: Add mechanism to find
+	topologically near cores
 In-Reply-To: <1450864901-16712-1-git-send-email-daniel@numascale.com>
-References: <1450864901-16712-1-git-send-email-daniel@numascale.com>
-Message-ID: <1450864901-16712-2-git-send-email-daniel@numascale.com>
+Message-ID: <201512231825.hxgFRM0V%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Rather than assuming cores starting from 0 are local to the ethernet
-device, use the introduced interface to find near cores.
+Hi Daniel,
 
-Not only does this improve performance due to spreading interrupts via near
-NUMA nodes, it prevents assigning cores on distant NUMA nodes, which aren't
-reachable by device interrupts due to the 8-bit APIC ID limitation.
+[auto build test WARNING on pci/next]
+[also build test WARNING on v4.4-rc6 next-20151223]
 
-With Numascale NumaConnect2 systems with Intel ixgbe cards on
-non-primary PCI domains, all ixgbe NICs would previously revector
-interrupts to cores 0 to 63 (cores 0 to 47 would be considered
-near the primary PCI domain). Now, cores 48 to 95 are used, increasing
-performance and addressing interrupt delivery issues:
+url:    https://github.com/0day-ci/linux/commits/Daniel-J-Blueman/PCI-Add-mechanism-to-find-topologically-near-cores/20151223-181947
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/helgaas/pci.git next
+config: s390-allyesconfig (attached as .config)
+reproduce:
+        wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # save the attached .config to linux build tree
+        make.cross ARCH=s390 
 
-do_IRQ: 79.180 No irq handler for vector (irq -1)
-do_IRQ: 78.42 No irq handler for vector (irq -1)
-do_IRQ: 71.172 No irq handler for vector (irq -1)
-do_IRQ: 70.236 No irq handler for vector (irq -1)
-do_IRQ: 69.109 No irq handler for vector (irq -1)
-do_IRQ: 68.189 No irq handler for vector (irq -1)
-do_IRQ: 72.92 No irq handler for vector (irq -1)
-do_IRQ: 73.235 No irq handler for vector (irq -1)
-do_IRQ: 66.185 No irq handler for vector (irq -1)
-do_IRQ: 67.62 No irq handler for vector (irq -1)
-do_IRQ: 197 callbacks suppressed
+Note: it may well be a FALSE warning. FWIW you are at least aware of it now.
 
-Signed-off-by: Daniel J Blueman <daniel@numascale.com>
+All warnings (new ones prefixed by >>):
+
+   In file included from include/linux/smp.h:12:0,
+                    from arch/s390/include/asm/spinlock.h:12,
+                    from include/linux/spinlock.h:87,
+                    from include/linux/rcupdate.h:38,
+                    from include/linux/idr.h:18,
+                    from include/linux/kernfs.h:14,
+                    from include/linux/sysfs.h:15,
+                    from include/linux/kobject.h:21,
+                    from include/linux/of.h:21,
+                    from drivers/pci/pci.c:13:
+   drivers/pci/pci.c: In function 'cpu_near_dev':
+>> include/linux/cpumask.h:174:9: warning: array subscript is below array bounds [-Warray-bounds]
+     return find_first_bit(cpumask_bits(srcp), nr_cpumask_bits);
+            ^
+
+vim +174 include/linux/cpumask.h
+
+da91309e Amir Vadai       2014-06-09  158  
+2d3854a3 Rusty Russell    2008-11-05  159  #define for_each_cpu(cpu, mask)			\
+2d3854a3 Rusty Russell    2008-11-05  160  	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)
+8bd93a2c Paul E. McKenney 2010-02-22  161  #define for_each_cpu_not(cpu, mask)		\
+8bd93a2c Paul E. McKenney 2010-02-22  162  	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)
+2d3854a3 Rusty Russell    2008-11-05  163  #define for_each_cpu_and(cpu, mask, and)	\
+2d3854a3 Rusty Russell    2008-11-05  164  	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask, (void)and)
+2d3854a3 Rusty Russell    2008-11-05  165  #else
+2d3854a3 Rusty Russell    2008-11-05  166  /**
+2d3854a3 Rusty Russell    2008-11-05  167   * cpumask_first - get the first cpu in a cpumask
+2d3854a3 Rusty Russell    2008-11-05  168   * @srcp: the cpumask pointer
+2d3854a3 Rusty Russell    2008-11-05  169   *
+2d3854a3 Rusty Russell    2008-11-05  170   * Returns >= nr_cpu_ids if no cpus set.
+2d3854a3 Rusty Russell    2008-11-05  171   */
+2d3854a3 Rusty Russell    2008-11-05  172  static inline unsigned int cpumask_first(const struct cpumask *srcp)
+2d3854a3 Rusty Russell    2008-11-05  173  {
+2d3854a3 Rusty Russell    2008-11-05 @174  	return find_first_bit(cpumask_bits(srcp), nr_cpumask_bits);
+2d3854a3 Rusty Russell    2008-11-05  175  }
+2d3854a3 Rusty Russell    2008-11-05  176  
+2d3854a3 Rusty Russell    2008-11-05  177  /**
+2d3854a3 Rusty Russell    2008-11-05  178   * cpumask_next - get the next cpu in a cpumask
+2d3854a3 Rusty Russell    2008-11-05  179   * @n: the cpu prior to the place to search (ie. return will be > @n)
+2d3854a3 Rusty Russell    2008-11-05  180   * @srcp: the cpumask pointer
+2d3854a3 Rusty Russell    2008-11-05  181   *
+2d3854a3 Rusty Russell    2008-11-05  182   * Returns >= nr_cpu_ids if no further cpus set.
+
+:::::: The code at line 174 was first introduced by commit
+:::::: 2d3854a37e8b767a51aba38ed6d22817b0631e33 cpumask: introduce new API, without changing anything
+
+:::::: TO: Rusty Russell <rusty@rustcorp.com.au>
+:::::: CC: Ingo Molnar <mingo@elte.hu>
+
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-index f3168bc..12c4ce1 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-@@ -817,10 +817,8 @@ static int ixgbe_alloc_q_vector(struct ixgbe_adapter *adapter,
- 	if ((tcs <= 1) && !(adapter->flags & IXGBE_FLAG_SRIOV_ENABLED)) {
- 		u16 rss_i = adapter->ring_feature[RING_F_RSS].indices;
- 		if (rss_i > 1 && adapter->atr_sample_rate) {
--			if (cpu_online(v_idx)) {
--				cpu = v_idx;
--				node = cpu_to_node(cpu);
--			}
-+			cpu = cpu_near_dev(adapter->pdev, v_idx);
-+			node = cpu_to_node(cpu);
- 		}
- 	}
-
---
-2.5.0
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/octet-stream
+Size: 39398 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151223/58a0bb3e/attachment-0001.obj>
