@@ -1,84 +1,141 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 23 Dec 2015 02:54:06 -0800
-Subject: [Intel-wired-lan] [PATCH 1/1] ixgbe: force to synchronize
- reporting "link on" and getting speed and duplex
-In-Reply-To: <1450853205-27133-1-git-send-email-zyjzyj2000@gmail.com>
-References: <1450853205-27133-1-git-send-email-zyjzyj2000@gmail.com>
-Message-ID: <1450868046.3316.11.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 23 Dec 2015 19:32:50 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 562cce035de653a978fe9581395eb42def8a1072 BUILD DONE
+Message-ID: <567a8662.wjVGyFN4T5R2S6oC%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2015-12-23 at 14:46 +0800, zyjzyj2000 at gmail.com wrote:
-> From: Zhu Yanjun <zyjzyj2000@gmail.com>
-> 
-> In X540 NIC, there is a time span between reporting "link on" and
-> getting the speed and duplex. To a bonding driver in 802.3ad mode,
-> this time span will make it not work well if the time span is big
-> enough. The big time span will make bonding driver change the state
-> of
-> the slave device to up while the speed and duplex of the slave device
-> can not be gotten. Later the bonding driver will not have change to
-> get the speed and duplex of the slave device. The speed and duplex of
-> the slave device are important to a bonding driver in 802.3ad mode.
-> 
-> To 82599_SFP NIC and other kinds of NICs, this problem does
-> not exist. As such, it is necessary for X540 to report"link on" when
-> the link speed is not IXGBE_LINK_SPEED_UNKNOWN.
-> 
-> Signed-off-by: Zhu Yanjun <zyjzyj2000@gmail.com>
-> ---
-> ?drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |???16
-> +++++++++++++++-
-> ?1 file changed, 15 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> index aed8d02..cb9d310 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> @@ -6479,7 +6479,21 @@ static void ixgbe_watchdog_link_is_up(struct
-> ixgbe_adapter *adapter)
-> ?	???????(flow_rx ? "RX" :
-> ?	???????(flow_tx ? "TX" : "None"))));
-> ?
-> -	netif_carrier_on(netdev);
-> +	/*
-> +	?* In X540 NIC, there is a time span between reporting "link
-> on"
-> +	?* and getting the speed and duplex. To a bonding driver in
-> 802.3ad
-> +	?* mode, this time span will make it not work well if the
-> time span
-> +	?* is big enough. To 82599_SFP NIC and other kinds of NICs,
-> this
-> +	?* problem does not exist. As such, it is better for X540 to
-> report
-> +	?* "link on" when the link speed is not
-> IXGBE_LINK_SPEED_UNKNOWN.
-> +	?*/
-> +	if ((hw->mac.type == ixgbe_mac_X540) &&
-> +	????(link_speed != IXGBE_LINK_SPEED_UNKNOWN)) {
-> +		netif_carrier_on(netdev);
-> +	} else {
-> +		netif_carrier_on(netdev);
-> +	}
-> +
-> ?	ixgbe_check_vf_rate_limit(adapter);
-> ?
-> ?	/* enable transmits */
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+562cce035de653a978fe9581395eb42def8a1072  ixgbe: fix write to VLVFB in ixgbe_clear_vf_vlans()
 
-This patch only adds a needless test before
-calling?netif_carrier_on(netdev), since the call happens no matter the
-branch you take, it appears your running into a timing issue. ?So
-adding a wait() before calling?netif_carrier_on(netdev) will accomplish
-the same result and you do not have to add a useless test.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151223/f955f020/attachment.asc>
+drivers/net/ethernet/intel/igb/igb_cdev.c:150:2: error: implicit declaration of function 'set_pages_uc' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/intel/igb/igb_cdev.c:275:2: error: implicit declaration of function 'set_pages_wb' [-Werror=implicit-function-declaration]
+
+Error ids grouped by kconfigs:
+
+recent_errors
+??? ia64-defconfig
+    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_uc
+    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_wb
+
+elapsed time: 52m
+
+configs tested: 110
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                   randconfig-a0-12222034
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+parisc                         b180_defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x015-201551
+x86_64                 randconfig-x019-201551
+x86_64                 randconfig-x010-201551
+x86_64                 randconfig-x016-201551
+x86_64                 randconfig-x012-201551
+x86_64                 randconfig-x011-201551
+x86_64                 randconfig-x013-201551
+x86_64                 randconfig-x017-201551
+x86_64                 randconfig-x014-201551
+x86_64                 randconfig-x018-201551
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201551
+i386                     randconfig-s1-201551
+x86_64                           allmodconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201551
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201551
+i386                     randconfig-i1-201551
+i386                               tinyconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201551
+i386                   randconfig-h0-12231753
+i386                   randconfig-h1-12231753
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-x000-201551
+x86_64                 randconfig-x001-201551
+x86_64                 randconfig-x002-201551
+x86_64                 randconfig-x003-201551
+x86_64                 randconfig-x004-201551
+x86_64                 randconfig-x005-201551
+x86_64                 randconfig-x006-201551
+x86_64                 randconfig-x007-201551
+x86_64                 randconfig-x008-201551
+x86_64                 randconfig-x009-201551
+i386                     randconfig-r0-201551
+i386                 randconfig-x005-12222106
+i386                 randconfig-x004-12222106
+i386                 randconfig-x002-12222106
+i386                 randconfig-x006-12222106
+i386                 randconfig-x007-12222106
+i386                 randconfig-x003-12222106
+i386                 randconfig-x009-12222106
+i386                 randconfig-x008-12222106
+i386                 randconfig-x001-12222106
+i386                 randconfig-x000-12222106
+i386                   randconfig-x0-12231709
+
+Thanks,
+Fengguang
