@@ -1,14 +1,25 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 23 Dec 2015 14:03:21 +0800
+From: Gangfeng Huang <gangfeng.huang@ni.com>
+Date: Wed, 23 Dec 2015 09:16:32 +0000
 Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 41/41]
  drivers/net/ethernet/intel/igb/igb_ethtool.c:2886:13: error: invalid
  storage class for function 'igb_clear_etype_filter_regs'
-Message-ID: <201512231419.cX6v8GuD%fengguang.wu@intel.com>
+In-Reply-To: <201512231419.cX6v8GuD%fengguang.wu@intel.com>
+References: <201512231419.cX6v8GuD%fengguang.wu@intel.com>
+Message-ID: <DM2PR0401MB0990A08A0ADD5988400C13B4ECE60@DM2PR0401MB0990.namprd04.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
+
+It seem I create the patches based a wrong tree (net-next), I will do the test on the tree next-queue.git dev-queue as soon as possible. 
+
+-----Original Message-----
+From: kbuild test robot [mailto:fengguang.wu at intel.com] 
+Sent: 2015?12?23? 14:03
+To: Gangfeng Huang <gangfeng.huang@ni.com>
+Cc: kbuild-all at 01.org; intel-wired-lan at lists.osuosl.org; Jeff Kirsher <jeffrey.t.kirsher@intel.com>; Ruhao Gao <ruhao.gao@ni.com>
+Subject: [jkirsher-next-queue:dev-queue 41/41] drivers/net/ethernet/intel/igb/igb_ethtool.c:2886:13: error: invalid storage class for function 'igb_clear_etype_filter_regs'
 
 tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
 head:   eeb92201d0b92914bc95b0cf033d9f112ff3219a
@@ -322,10 +333,3 @@ vim +/igb_clear_etype_filter_regs +2886 drivers/net/ethernet/intel/igb/igb_ethto
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
 https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/octet-stream
-Size: 21008 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151223/7adffb9b/attachment-0001.obj>
