@@ -1,74 +1,51 @@
 From: Deepthi Kavalur <deepthi.kavalur@intel.com>
-Date: Wed, 23 Dec 2015 12:05:47 -0800
-Subject: [Intel-wired-lan] [next PATCH S25 07/16] i40e: fix
-	write-back-on-itr to work with legacy itr
+Date: Wed, 23 Dec 2015 12:05:51 -0800
+Subject: [Intel-wired-lan] [next PATCH S25 11/16] i40e: add a little more to
+	an NVM update debug message
 In-Reply-To: <1450901156-30904-1-git-send-email-deepthi.kavalur@intel.com>
 References: <1450901156-30904-1-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <1450901156-30904-8-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <1450901156-30904-12-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Anjali Singhai Jain <anjali.singhai@intel.com>
+From: Shannon Nelson <shannon.nelson@intel.com>
 
-We were not doing write-back on interrupt throttle for Legacy case in X722.
-This patch fixes that, so we do WB_ON_ITR for Legacy as well. Plus the issue
-that we should still be setting NO_ITR if we are touching the DYN_CTLN register
-since we do not want to change ITR setting here.
+Add a little more detail to an NVM update debug message in order to
+see the full ethtool request data.
 
-Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-Change-ID: I5db8491ee1544118a389db839cecc93e1bbc480e
+Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+Acked-by: Kevin Scott <kevin.c.scott@intel.com>
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Change-ID: Iab10437cb32d6fddc67ee347e7c0b42511e152cd
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 18 +++++++++++++-----
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c |  3 ++-
- 2 files changed, 15 insertions(+), 6 deletions(-)
+Testing-Hints:
+Turn on NVM update debug and see the new data in the logfile
+ethtool -s eth0 msglvl 0xf000008f
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 94dbeb3..b15d0fa 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -789,12 +789,20 @@ void i40e_force_wb(struct i40e_vsi *vsi, struct i40e_q_vector *q_vector)
- 		if (q_vector->arm_wb_state)
- 			return;
+ drivers/net/ethernet/intel/i40e/i40e_nvm.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
+index 59edd33..042feca 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
+@@ -750,10 +750,11 @@ i40e_status i40e_nvmupd_command(struct i40e_hw *hw,
+ 	/* early check for status command and debug msgs */
+ 	upd_cmd = i40e_nvmupd_validate_command(hw, cmd, perrno);
  
--		val = I40E_PFINT_DYN_CTLN_WB_ON_ITR_MASK;
-+		if (vsi->back->flags & I40E_FLAG_MSIX_ENABLED) {
-+			val = I40E_PFINT_DYN_CTLN_WB_ON_ITR_MASK |
-+			      I40E_PFINT_DYN_CTLN_ITR_INDX_MASK; /* set noitr */
-+
-+			wr32(&vsi->back->hw,
-+			     I40E_PFINT_DYN_CTLN(q_vector->v_idx +
-+						 vsi->base_vector - 1),
-+			     val);
-+		} else {
-+			val = I40E_PFINT_DYN_CTL0_WB_ON_ITR_MASK |
-+			      I40E_PFINT_DYN_CTL0_ITR_INDX_MASK; /* set noitr */
+-	i40e_debug(hw, I40E_DEBUG_NVM, "%s state %d nvm_release_on_hold %d\n",
++	i40e_debug(hw, I40E_DEBUG_NVM, "%s state %d nvm_release_on_hold %d cmd 0x%08x config 0x%08x offset 0x%08x data_size 0x%08x\n",
+ 		   i40e_nvm_update_state_str[upd_cmd],
+ 		   hw->nvmupd_state,
+-		   hw->aq.nvm_release_on_done);
++		   hw->aq.nvm_release_on_done,
++		   cmd->command, cmd->config, cmd->offset, cmd->data_size);
  
--		wr32(&vsi->back->hw,
--		     I40E_PFINT_DYN_CTLN(q_vector->v_idx +
--					 vsi->base_vector - 1),
--		     val);
-+			wr32(&vsi->back->hw, I40E_PFINT_DYN_CTL0, val);
-+		}
- 		q_vector->arm_wb_state = true;
- 	} else if (vsi->back->flags & I40E_FLAG_MSIX_ENABLED) {
- 		u32 val = I40E_PFINT_DYN_CTLN_INTENA_MASK |
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index 0e2c627..6a4da0a 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -307,7 +307,8 @@ static void i40evf_force_wb(struct i40e_vsi *vsi, struct i40e_q_vector *q_vector
- 		if (q_vector->arm_wb_state)
- 			return;
- 
--		val = I40E_VFINT_DYN_CTLN1_WB_ON_ITR_MASK;
-+		val = I40E_VFINT_DYN_CTLN1_WB_ON_ITR_MASK |
-+		      I40E_VFINT_DYN_CTLN1_ITR_INDX_MASK; /* set noitr */
- 
- 		wr32(&vsi->back->hw,
- 		     I40E_VFINT_DYN_CTLN1(q_vector->v_idx +
+ 	if (upd_cmd == I40E_NVMUPD_INVALID) {
+ 		*perrno = -EFAULT;
 -- 
 2.1.0
 
