@@ -1,30 +1,30 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 24 Dec 2015 06:07:47 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
- 2e4c8baa66b3d3272ff82dfb5c8585cf1be88685 BUILD SUCCESS
-Message-ID: <567b1b33.gnijjSn7Nk1orw8a%fengguang.wu@intel.com>
+Date: Thu, 24 Dec 2015 06:06:30 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 4c0a582fc9fbffae56e7c3d246120a5fdc6356fd BUILD DONE
+Message-ID: <567b1ae6.dygQK5AofyO1kM1O%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
-2e4c8baa66b3d3272ff82dfb5c8585cf1be88685  Merge branch 'cxgb4-next'
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+4c0a582fc9fbffae56e7c3d246120a5fdc6356fd  ixgbe: fix write to VLVFB in ixgbe_clear_vf_vlans()
 
-i386-tinyconfig vmlinux size:
+drivers/net/ethernet/intel/igb/igb_cdev.c:150:2: error: implicit declaration of function 'set_pages_uc' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/intel/igb/igb_cdev.c:275:2: error: implicit declaration of function 'set_pages_wb' [-Werror=implicit-function-declaration]
 
-+-------+------+-------+-----+----------------------------------------------------------------------------+
-| TOTAL | TEXT | DATA  | BSS |                                                                            |
-+-------+------+-------+-----+----------------------------------------------------------------------------+
-| +4372 | +256 | +4096 |   0 | b3e0d3d7bab1 Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net |
-|  +128 | +128 |     0 |   0 | f188b951f33a Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net |
-| +4500 | +384 | +4096 |   0 | ALL COMMITS                                                                |
-+-------+------+-------+-----+----------------------------------------------------------------------------+
+Error ids grouped by kconfigs:
 
-elapsed time: 60m
+recent_errors
+??? ia64-defconfig
+    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_uc
+    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_wb
 
-configs tested: 105
+elapsed time: 57m
+
+configs tested: 106
 
 alpha                               defconfig
 parisc                            allnoconfig
@@ -89,6 +89,7 @@ m32r                         opsput_defconfig
 m32r                           usrv_defconfig
 xtensa                       common_defconfig
 xtensa                          iss_defconfig
+i386                               tinyconfig
 x86_64                                    lkp
 x86_64                                   rhel
 i386                     randconfig-n0-201551
