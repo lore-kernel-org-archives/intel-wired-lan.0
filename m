@@ -1,247 +1,260 @@
 From: Gangfeng Huang <gangfeng.huang@ni.com>
-Date: Wed, 23 Dec 2015 15:07:36 +0800
-Subject: [Intel-wired-lan] [PATCH net-next 3/3] igb: add support of Rx VLAN
-	priority filters
+Date: Wed, 23 Dec 2015 15:07:35 +0800
+Subject: [Intel-wired-lan] [PATCH net-next 2/3] igb: add support of
+	ethertype RX filters
 In-Reply-To: <1450854456-24382-1-git-send-email-gangfeng.huang@ni.com>
 References: <1450854456-24382-1-git-send-email-gangfeng.huang@ni.com>
-Message-ID: <1450854456-24382-4-git-send-email-gangfeng.huang@ni.com>
+Message-ID: <1450854456-24382-3-git-send-email-gangfeng.huang@ni.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch is meant to allow for nfc to insert and remove VLAN priority
-filter by ethtool
+This patch is meant to allow for nfc to insert and remove ethertype filter
+by ethtool
 
 Example:
-Add an VLAN priority filter:
-$ ethtool -N eth0 flow-type ether vlan 0x6000 vlan-mask 0x1FFF action 2 loc 1
+Add an ethertype filter:
+$ ethtool -N eth0 flow-type ether proto 0x88F8 action 2
 
 Show all filters:
 $ ethtool -n eth0
 4 RX rings available
 Total 1 rules
 
-Filter: 1
+Filter: 15
 	Flow Type: Raw Ethernet
 	Src MAC addr: 00:00:00:00:00:00 mask: FF:FF:FF:FF:FF:FF
 	Dest MAC addr: 00:00:00:00:00:00 mask: FF:FF:FF:FF:FF:FF
-	Ethertype: 0x0 mask: 0xFFFF
-	VLAN EtherType: 0x0 mask: 0xffff
-	VLAN: 0x6000 mask: 0x1fff
-	User-defined: 0x0 mask: 0xffffffffffffffff
+	Ethertype: 0x88F8 mask: 0x0
 	Action: Direct to queue 2
 
 Delete the filter by location:
-$ ethtool -N delete 1
+$ ethtool -N delete 15
 
 Signed-off-by: Ruhao Gao <ruhao.gao@ni.com>
 Signed-off-by: Gangfeng Huang <gangfeng.huang@ni.com>
 ---
- drivers/net/ethernet/intel/igb/e1000_defines.h |    5 ++
- drivers/net/ethernet/intel/igb/e1000_regs.h    |    1 +
- drivers/net/ethernet/intel/igb/igb.h           |    3 +
- drivers/net/ethernet/intel/igb/igb_ethtool.c   |   89 ++++++++++++++++++++++--
- 4 files changed, 92 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/igb/e1000_82575.h |    5 ++
+ drivers/net/ethernet/intel/igb/igb.h         |   20 ++++++-
+ drivers/net/ethernet/intel/igb/igb_ethtool.c |   77 +++++++++++++++++++++++++-
+ drivers/net/ethernet/intel/igb/igb_ptp.c     |    4 +-
+ 4 files changed, 102 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
-index c3c598c..aed8664 100644
---- a/drivers/net/ethernet/intel/igb/e1000_defines.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
-@@ -1023,4 +1023,9 @@
- #define E1000_RTTBCNRC_RF_INT_MASK	\
- 	(E1000_RTTBCNRC_RF_DEC_MASK << E1000_RTTBCNRC_RF_INT_SHIFT)
+diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.h b/drivers/net/ethernet/intel/igb/e1000_82575.h
+index 2154aea..c4a34e1 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_82575.h
++++ b/drivers/net/ethernet/intel/igb/e1000_82575.h
+@@ -187,7 +187,12 @@ struct e1000_adv_tx_context_desc {
  
-+/* VLAN Priority Filter */
-+#define E1000_VLAPQF_QUEUE_SEL(_n, q_idx) (q_idx << ((_n) * 4))
-+#define E1000_VLAPQF_P_VALID(_n)          (0x1 << (3 + (_n) * 4))
-+#define E1000_VLAPQF_QUEUE_MASK           0x03
-+
- #endif
-diff --git a/drivers/net/ethernet/intel/igb/e1000_regs.h b/drivers/net/ethernet/intel/igb/e1000_regs.h
-index 21d9d02..9b66b6f 100644
---- a/drivers/net/ethernet/intel/igb/e1000_regs.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_regs.h
-@@ -309,6 +309,7 @@
- 					(0x054E0 + ((_i - 16) * 8)))
- #define E1000_RAH(_i)  (((_i) <= 15) ? (0x05404 + ((_i) * 8)) : \
- 					(0x054E4 + ((_i - 16) * 8)))
-+#define E1000_VLAPQF   0x055B0  /* VLAN Priority Queue Filter VLAPQF */
- #define E1000_IP4AT_REG(_i)     (0x05840 + ((_i) * 8))
- #define E1000_IP6AT_REG(_i)     (0x05880 + ((_i) * 4))
- #define E1000_WUPM_REG(_i)      (0x05A00 + ((_i) * 4))
+ /* ETQF register bit definitions */
+ #define E1000_ETQF_FILTER_ENABLE   (1 << 26)
++#define E1000_ETQF_IMM_INT         (1 << 29)
+ #define E1000_ETQF_1588            (1 << 30)
++#define E1000_ETQF_QUEUE_ENABLE    (1 << 31)
++#define E1000_ETQF_QUEUE_SHIFT     16
++#define E1000_ETQF_QUEUE_MASK      0x00070000
++#define E1000_ETQF_ETYPE_MASK      0x0000FFFF
+ 
+ /* FTQF register bit definitions */
+ #define E1000_FTQF_VF_BP               0x00008000
 diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index 950eed5..8622ed9 100644
+index 7bcdf94..950eed5 100644
 --- a/drivers/net/ethernet/intel/igb/igb.h
 +++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -364,6 +364,7 @@ struct hwmon_buff {
+@@ -343,13 +343,27 @@ struct hwmon_buff {
+ 	};
+ #endif
+ 
++/* The number of L2 ether-type filter registers, Index 3 is reserved
++ * for PTP 1588 timestamp
++ */
++#define MAX_ETYPE_FILTER  (4 - 1)
++
++/* ETQF filter list: one static filter per filter consumer. This is
++ *                   to avoid filter collisions later. Add new filters
++ *                   here!!
++ *
++ * Current filters:
++ *    1588 (0x88f7):         Filter 3
++ */
++#define IGB_ETQF_FILTER_1588   3
++
+ #define IGB_N_EXTTS	2
+ #define IGB_N_PEROUT	2
+ #define IGB_N_SDP	4
+ #define IGB_RETA_SIZE	128
  
  enum igb_filter_match_flags {
- 	IGB_FILTER_FLAG_ETHER_TYPE  = 0x1,
-+	IGB_FILTER_FLAG_VLAN_TCI    = 0x2,
+-	IGB_FILTER_FLAG_NONE        = 0x0,
++	IGB_FILTER_FLAG_ETHER_TYPE  = 0x1,
  };
  
  #define IGB_MAX_RXNFC_FILTERS 16
-@@ -372,9 +373,11 @@ struct igb_nfc_input {
+@@ -357,8 +371,10 @@ enum igb_filter_match_flags {
+ struct igb_nfc_input {
  	/* Byte layout in order, all values with MSB first:
  	* match_flags - 1 byte
- 	* etype       - 2 bytes
-+	* vlan_tci    - 2 bytes
++	* etype       - 2 bytes
  	*/
  	u8     match_flags;
- 	__be16 etype;
-+	__be16 vlan_tci;
++	__be16 etype;
  };
  
  /* board specific private data structure */
+@@ -484,11 +500,13 @@ struct igb_adapter {
+ 	unsigned int nfc_filter_count;
+ 	/* lock for nfc filter */
+ 	spinlock_t nfc_lock;
++	bool etype_bitmap[MAX_ETYPE_FILTER];
+ };
+ 
+ struct igb_nfc_filter {
+ 	struct hlist_node nfc_node;
+ 	struct igb_nfc_input filter;
++	u16 etype_reg_index;
+ 	u16 sw_idx;
+ 	u16 action;
+ };
 diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index 4d887eb..e4420ab 100644
+index 5847daf..4d887eb 100644
 --- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
 +++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -2449,11 +2449,18 @@ static int igb_get_ethtool_nfc_entry(struct igb_adapter *adapter,
+@@ -2431,6 +2431,7 @@ static int igb_get_ts_info(struct net_device *dev,
+ 	}
+ }
+ 
++#define ETHER_TYPE_FULL_MASK ((__force __be16)~0)
+ static int igb_get_ethtool_nfc_entry(struct igb_adapter *adapter,
+ 				     struct ethtool_rxnfc *cmd)
+ {
+@@ -2448,6 +2449,13 @@ static int igb_get_ethtool_nfc_entry(struct igb_adapter *adapter,
  	if (!rule || fsp->location != rule->sw_idx)
  		return -EINVAL;
  
--	if (rule->filter.match_flags & IGB_FILTER_FLAG_ETHER_TYPE) {
-+	if (rule->filter.match_flags) {
- 		fsp->flow_type = ETHER_FLOW;
- 		fsp->ring_cookie = rule->action;
--		fsp->h_u.ether_spec.h_proto = rule->filter.etype;
--		fsp->m_u.ether_spec.h_proto = ETHER_TYPE_FULL_MASK;
-+		if (rule->filter.match_flags & IGB_FILTER_FLAG_ETHER_TYPE) {
-+			fsp->h_u.ether_spec.h_proto = rule->filter.etype;
-+			fsp->m_u.ether_spec.h_proto = ETHER_TYPE_FULL_MASK;
-+		}
-+		if (rule->filter.match_flags & IGB_FILTER_FLAG_VLAN_TCI) {
-+			fsp->flow_type |= FLOW_EXT;
-+			fsp->h_ext.vlan_tci = rule->filter.vlan_tci;
-+			fsp->m_ext.vlan_tci = htons(VLAN_PRIO_MASK);
-+		}
- 		return 0;
- 	}
++	if (rule->filter.match_flags & IGB_FILTER_FLAG_ETHER_TYPE) {
++		fsp->flow_type = ETHER_FLOW;
++		fsp->ring_cookie = rule->action;
++		fsp->h_u.ether_spec.h_proto = rule->filter.etype;
++		fsp->m_u.ether_spec.h_proto = ETHER_TYPE_FULL_MASK;
++		return 0;
++	}
  	return -EINVAL;
-@@ -2697,12 +2704,46 @@ static int igb_rxnfc_write_etype_filter(struct igb_adapter *adapter,
+ }
+ 
+@@ -2650,13 +2658,75 @@ static int igb_set_rss_hash_opt(struct igb_adapter *adapter,
  	return 0;
  }
  
-+int igb_rxnfc_write_vlan_prio_filter(struct igb_adapter *adapter,
-+				     struct igb_nfc_filter *input)
++static int igb_rxnfc_write_etype_filter(struct igb_adapter *adapter,
++					struct igb_nfc_filter *input)
 +{
 +	struct e1000_hw *hw = &adapter->hw;
-+	u32 vlapqf;
-+	u8 vlan_priority;
-+	u16 queue_index;
++	u8 i;
++	u32 etqf;
++	u16 etype;
 +
-+	vlapqf = rd32(E1000_VLAPQF);
-+	vlan_priority = (ntohs(input->filter.vlan_tci) & VLAN_PRIO_MASK)
-+				>> VLAN_PRIO_SHIFT;
-+	queue_index = (vlapqf >> (vlan_priority * 4)) & E1000_VLAPQF_QUEUE_MASK;
-+
-+	/* check whether this vlan prio is already set */
-+	if ((vlapqf & E1000_VLAPQF_P_VALID(vlan_priority)) &&
-+	    (queue_index != input->action)) {
-+		dev_err(&adapter->pdev->dev, "ethtool rxnfc set vlan prio filter failed.\n");
-+		return -EEXIST;
++	/* find an empty etype filter register */
++	for (i = 0; i < MAX_ETYPE_FILTER; ++i) {
++		if (!adapter->etype_bitmap[i])
++			break;
++	}
++	if (i == MAX_ETYPE_FILTER) {
++		dev_err(&adapter->pdev->dev, "ethtool -N: etype filters are all used.\n");
++		return -EINVAL;
 +	}
 +
-+	vlapqf |= E1000_VLAPQF_P_VALID(vlan_priority);
-+	vlapqf |= E1000_VLAPQF_QUEUE_SEL(vlan_priority, input->action);
++	adapter->etype_bitmap[i] = true;
 +
-+	wr32(E1000_VLAPQF, vlapqf);
++	etqf = rd32(E1000_ETQF(i));
++	etype = ntohs(input->filter.etype & ETHER_TYPE_FULL_MASK);
++
++	etqf |= E1000_ETQF_FILTER_ENABLE;
++	etqf &= ~E1000_ETQF_ETYPE_MASK;
++	etqf |= (etype & E1000_ETQF_ETYPE_MASK);
++
++	etqf &= ~E1000_ETQF_QUEUE_MASK;
++	etqf |= ((input->action << E1000_ETQF_QUEUE_SHIFT)
++		& E1000_ETQF_QUEUE_MASK);
++	etqf |= E1000_ETQF_QUEUE_ENABLE;
++
++	wr32(E1000_ETQF(i), etqf);
++
++	input->etype_reg_index = i;
 +
 +	return 0;
 +}
 +
  int igb_add_filter(struct igb_adapter *adapter, struct igb_nfc_filter *input)
  {
- 	int err = -EINVAL;
- 
- 	if (input->filter.match_flags & IGB_FILTER_FLAG_ETHER_TYPE) {
- 		err = igb_rxnfc_write_etype_filter(adapter, input);
-+		if (err)
-+			return err;
-+	}
+-	return -EINVAL;
++	int err = -EINVAL;
 +
-+	if (input->filter.match_flags & IGB_FILTER_FLAG_VLAN_TCI)
-+		err = igb_rxnfc_write_vlan_prio_filter(adapter, input);
- 
- 	return err;
- }
-@@ -2722,11 +2763,33 @@ static void igb_clear_etype_filter_regs(struct igb_adapter *adapter,
- 	adapter->etype_bitmap[reg_index] = false;
- }
- 
-+static void igb_clear_vlan_prio_filter(struct igb_adapter *adapter,
-+				       u16 vlan_tci)
-+{
-+	struct e1000_hw *hw = &adapter->hw;
-+	u32 vlapqf;
-+	u8 vlan_priority;
++	if (input->filter.match_flags & IGB_FILTER_FLAG_ETHER_TYPE) {
++		err = igb_rxnfc_write_etype_filter(adapter, input);
 +
-+	vlan_priority = (vlan_tci & VLAN_PRIO_MASK) >> VLAN_PRIO_SHIFT;
-+
-+	vlapqf = rd32(E1000_VLAPQF);
-+	vlapqf &= ~E1000_VLAPQF_P_VALID(vlan_priority);
-+	vlapqf &= ~E1000_VLAPQF_QUEUE_SEL(vlan_priority,
-+						E1000_VLAPQF_QUEUE_MASK);
-+
-+	wr32(E1000_VLAPQF, vlapqf);
++	return err;
 +}
 +
++static void igb_clear_etype_filter_regs(struct igb_adapter *adapter,
++					u16 reg_index)
++{
++	struct e1000_hw *hw = &adapter->hw;
++	u32 etqf = rd32(E1000_ETQF(reg_index));
++
++	etqf &= ~E1000_ETQF_QUEUE_ENABLE;
++	etqf &= ~E1000_ETQF_QUEUE_MASK;
++	etqf &= ~E1000_ETQF_FILTER_ENABLE;
++
++	wr32(E1000_ETQF(reg_index), etqf);
++
++	adapter->etype_bitmap[reg_index] = false;
+ }
+ 
  int igb_erase_filter(struct igb_adapter *adapter, struct igb_nfc_filter *input)
  {
- 	if (input->filter.match_flags & IGB_FILTER_FLAG_ETHER_TYPE)
- 		igb_clear_etype_filter_regs(adapter,
- 					    input->etype_reg_index);
-+
-+	if (input->filter.match_flags & IGB_FILTER_FLAG_VLAN_TCI)
-+		igb_clear_vlan_prio_filter(adapter,
-+					   ntohs(input->filter.vlan_tci));
-+
++	if (input->filter.match_flags & IGB_FILTER_FLAG_ETHER_TYPE)
++		igb_clear_etype_filter_regs(adapter,
++					    input->etype_reg_index);
  	return 0;
  }
  
-@@ -2808,15 +2871,28 @@ static int igb_add_ethtool_nfc_entry(struct igb_adapter *adapter,
+@@ -2738,10 +2808,15 @@ static int igb_add_ethtool_nfc_entry(struct igb_adapter *adapter,
  	if ((fsp->flow_type & ~FLOW_EXT) != ETHER_FLOW)
  		return -EINVAL;
  
--	if (fsp->m_u.ether_spec.h_proto != ETHER_TYPE_FULL_MASK)
-+	if (fsp->m_u.ether_spec.h_proto != ETHER_TYPE_FULL_MASK &&
-+	    fsp->m_ext.vlan_tci != htons(VLAN_PRIO_MASK))
- 		return -EINVAL;
- 
++	if (fsp->m_u.ether_spec.h_proto != ETHER_TYPE_FULL_MASK)
++		return -EINVAL;
++
  	input = kzalloc(sizeof(*input), GFP_KERNEL);
  	if (!input)
  		return -ENOMEM;
  
--	input->filter.etype = fsp->h_u.ether_spec.h_proto;
--	input->filter.match_flags = IGB_FILTER_FLAG_ETHER_TYPE;
-+	if (fsp->m_u.ether_spec.h_proto == ETHER_TYPE_FULL_MASK) {
-+		input->filter.etype = fsp->h_u.ether_spec.h_proto;
-+		input->filter.match_flags = IGB_FILTER_FLAG_ETHER_TYPE;
-+	}
-+
-+	if ((fsp->flow_type & FLOW_EXT) && fsp->m_ext.vlan_tci) {
-+		if (fsp->m_ext.vlan_tci != htons(VLAN_PRIO_MASK)) {
-+			err = -EINVAL;
-+			goto err_out;
-+		}
-+		input->filter.vlan_tci = fsp->h_ext.vlan_tci;
-+		input->filter.match_flags |= IGB_FILTER_FLAG_VLAN_TCI;
-+	}
-+
++	input->filter.etype = fsp->h_u.ether_spec.h_proto;
++	input->filter.match_flags = IGB_FILTER_FLAG_ETHER_TYPE;
  	input->action = fsp->ring_cookie;
  	input->sw_idx = fsp->location;
  
-@@ -2843,6 +2919,7 @@ static int igb_add_ethtool_nfc_entry(struct igb_adapter *adapter,
+diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
+index c44df87..84c4943 100644
+--- a/drivers/net/ethernet/intel/igb/igb_ptp.c
++++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
+@@ -940,12 +940,12 @@ static int igb_ptp_set_timestamp_mode(struct igb_adapter *adapter,
  
- err_out_w_lock:
- 	spin_unlock(&adapter->nfc_lock);
-+err_out:
- 	kfree(input);
- 	return err;
- }
+ 	/* define ethertype filter for timestamped packets */
+ 	if (is_l2)
+-		wr32(E1000_ETQF(3),
++		wr32(E1000_ETQF(IGB_ETQF_FILTER_1588),
+ 		     (E1000_ETQF_FILTER_ENABLE | /* enable filter */
+ 		      E1000_ETQF_1588 | /* enable timestamping */
+ 		      ETH_P_1588));     /* 1588 eth protocol type */
+ 	else
+-		wr32(E1000_ETQF(3), 0);
++		wr32(E1000_ETQF(IGB_ETQF_FILTER_1588), 0);
+ 
+ 	/* L4 Queue Filter[3]: filter by destination port and protocol */
+ 	if (is_l4) {
 -- 
 1.7.9.5
 
