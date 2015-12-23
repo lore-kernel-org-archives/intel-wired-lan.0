@@ -1,8 +1,8 @@
 From: Alexander Duyck <aduyck@mirantis.com>
-Date: Wed, 23 Dec 2015 08:47:38 -0800
-Subject: [Intel-wired-lan] [PATCH next] ixgbe: Fix misuse of word as
- register offset instead of offset in register array
-Message-ID: <20151223164640.30102.45304.stgit@localhost.localdomain>
+Date: Wed, 23 Dec 2015 09:00:35 -0800
+Subject: [Intel-wired-lan] [next PATCH v2] ixgbe: Fix bugs in
+	ixgbe_clear_vf_vlans()
+Message-ID: <20151223165946.30452.68020.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,22 +15,31 @@ word as a register offset.  As a result I honestly don't see how the code
 was working before other than the fact that resetting the VLANs on the VF
 like didn't do much to clear them.
 
+Another issue found is that the mask was using a divide instead of a
+modulus.  As a result the mask bit was incorrectly being set to either bit
+0 or 1 based on the value of the VF being tested.  As a result the wrong
+VFs were having their VLANs cleared if they were enabled.
+
 I have updated the code so that word represents the offset in the array.
 This way we can use the modulus and xor operations and they will make sense
 instead of being performed on a 4 byte aligned value.
 
 I replaced the statement "(word % 2) ^ 1" with "~word % 2" in order to
 reduce the line length as the line exceeded 80 characters with the register
-name inserted.  The two should be equivalent so the change should be safe.
+name inserted.  The two should be equivilent so the change should be safe.
 
 Reported-by: Emil Tantilov <emil.s.tantilov@intel.com>
 Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+
+v2: Fixed incorrect configuration for mask that used division instead of
+    modulus.
+
+ drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-index eeff3d075bf8..009ba2e21687 100644
+index eeff3d075bf8..8025a3f93598 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
 @@ -593,11 +593,11 @@ static void ixgbe_clear_vf_vlans(struct ixgbe_adapter *adapter, u32 vf)
@@ -39,8 +48,9 @@ index eeff3d075bf8..009ba2e21687 100644
  	for (i = IXGBE_VLVF_ENTRIES; i--;) {
 -		u32 word = IXGBE_VLVFB(i * 2 + vf / 32);
  		u32 bits[2], vlvfb, vid, vfta, vlvf;
+-		u32 mask = 1 << (vf / 32);
 +		u32 word = i * 2 + vf / 32;
- 		u32 mask = 1 << (vf / 32);
++		u32 mask = 1 << (vf % 32);
  
 -		vlvfb = IXGBE_READ_REG(hw, word);
 +		vlvfb = IXGBE_READ_REG(hw, IXGBE_VLVFB(word));
