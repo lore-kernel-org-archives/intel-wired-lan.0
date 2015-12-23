@@ -1,141 +1,38 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 23 Dec 2015 19:32:50 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 562cce035de653a978fe9581395eb42def8a1072 BUILD DONE
-Message-ID: <567a8662.wjVGyFN4T5R2S6oC%fengguang.wu@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Wed, 23 Dec 2015 19:15:43 +0800
+Subject: [Intel-wired-lan] [PATCH 2/2] ixgbe: Use core to device
+	locality interface
+In-Reply-To: <1450864901-16712-2-git-send-email-daniel@numascale.com>
+Message-ID: <201512231925.OCKKXQ6k%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-562cce035de653a978fe9581395eb42def8a1072  ixgbe: fix write to VLVFB in ixgbe_clear_vf_vlans()
+Hi Daniel,
 
-drivers/net/ethernet/intel/igb/igb_cdev.c:150:2: error: implicit declaration of function 'set_pages_uc' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/igb/igb_cdev.c:275:2: error: implicit declaration of function 'set_pages_wb' [-Werror=implicit-function-declaration]
+[auto build test ERROR on pci/next]
+[also build test ERROR on v4.4-rc6 next-20151223]
 
-Error ids grouped by kconfigs:
+url:    https://github.com/0day-ci/linux/commits/Daniel-J-Blueman/PCI-Add-mechanism-to-find-topologically-near-cores/20151223-181947
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/helgaas/pci.git next
+config: i386-randconfig-a0-12222034 (attached as .config)
+reproduce:
+        # save the attached .config to linux build tree
+        make ARCH=i386 
 
-recent_errors
-??? ia64-defconfig
-    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_uc
-    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_wb
+All errors (new ones prefixed by >>):
 
-elapsed time: 52m
+>> ERROR: "cpu_near_dev" [drivers/net/ethernet/intel/ixgbe/ixgbe.ko] undefined!
 
-configs tested: 110
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                   randconfig-a0-12222034
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-parisc                         b180_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x015-201551
-x86_64                 randconfig-x019-201551
-x86_64                 randconfig-x010-201551
-x86_64                 randconfig-x016-201551
-x86_64                 randconfig-x012-201551
-x86_64                 randconfig-x011-201551
-x86_64                 randconfig-x013-201551
-x86_64                 randconfig-x017-201551
-x86_64                 randconfig-x014-201551
-x86_64                 randconfig-x018-201551
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201551
-i386                     randconfig-s1-201551
-x86_64                           allmodconfig
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201551
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201551
-i386                     randconfig-i1-201551
-i386                               tinyconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201551
-i386                   randconfig-h0-12231753
-i386                   randconfig-h1-12231753
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-x000-201551
-x86_64                 randconfig-x001-201551
-x86_64                 randconfig-x002-201551
-x86_64                 randconfig-x003-201551
-x86_64                 randconfig-x004-201551
-x86_64                 randconfig-x005-201551
-x86_64                 randconfig-x006-201551
-x86_64                 randconfig-x007-201551
-x86_64                 randconfig-x008-201551
-x86_64                 randconfig-x009-201551
-i386                     randconfig-r0-201551
-i386                 randconfig-x005-12222106
-i386                 randconfig-x004-12222106
-i386                 randconfig-x002-12222106
-i386                 randconfig-x006-12222106
-i386                 randconfig-x007-12222106
-i386                 randconfig-x003-12222106
-i386                 randconfig-x009-12222106
-i386                 randconfig-x008-12222106
-i386                 randconfig-x001-12222106
-i386                 randconfig-x000-12222106
-i386                   randconfig-x0-12231709
-
-Thanks,
-Fengguang
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/octet-stream
+Size: 25593 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151223/47038d47/attachment-0001.obj>
