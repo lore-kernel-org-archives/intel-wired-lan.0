@@ -1,75 +1,74 @@
 From: Deepthi Kavalur <deepthi.kavalur@intel.com>
-Date: Wed, 23 Dec 2015 12:05:53 -0800
-Subject: [Intel-wired-lan] [next PATCH S25 13/16] i40e: add netdev info to
-	vsi dump
+Date: Wed, 23 Dec 2015 12:05:47 -0800
+Subject: [Intel-wired-lan] [next PATCH S25 07/16] i40e: fix
+	write-back-on-itr to work with legacy itr
 In-Reply-To: <1450901156-30904-1-git-send-email-deepthi.kavalur@intel.com>
 References: <1450901156-30904-1-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <1450901156-30904-14-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <1450901156-30904-8-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Shannon Nelson <shannon.nelson@intel.com>
+From: Anjali Singhai Jain <anjali.singhai@intel.com>
 
-Add a few more bits of netdev data into the debugfs output for dump vsi.
-For now, we'll add the features, hw_features, vlan_features, and flags
-bitflags and the state. More could be added later if needed.
+We were not doing write-back on interrupt throttle for Legacy case in X722.
+This patch fixes that, so we do WB_ON_ITR for Legacy as well. Plus the issue
+that we should still be setting NO_ITR if we are touching the DYN_CTLN register
+since we do not want to change ITR setting here.
 
-Also, tweak a couple nearby output lines for output readability.
-
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-Reviewed-by: Brandeburg, Jesse <jesse.brandeburg@intel.com>
-Reviewed-by: Wyborny, Carolyn <carolyn.wyborny@intel.com>
-Change-ID: I9fb5a9da75c9ad7679498ce9ac3ba24d065ddd2e
+Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+Change-ID: I5db8491ee1544118a389db839cecc93e1bbc480e
 ---
-Testing-Hints:
-Do a "dump vsi" in debugfs and see the new prints in the output.
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 18 +++++++++++++-----
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c |  3 ++-
+ 2 files changed, 15 insertions(+), 6 deletions(-)
 
- drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 24 ++++++++++++++++--------
- 1 file changed, 16 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-index 10744a6..7aae056 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-@@ -379,19 +379,27 @@ static void i40e_dbg_dump_vsi_seid(struct i40e_pf *pf, int seid)
- 		return;
- 	}
- 	dev_info(&pf->pdev->dev, "vsi seid %d\n", seid);
--	if (vsi->netdev)
--		dev_info(&pf->pdev->dev,
--			 "    netdev: name = %s\n",
--			 vsi->netdev->name);
-+	if (vsi->netdev) {
-+		struct net_device *nd = vsi->netdev;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 94dbeb3..b15d0fa 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -789,12 +789,20 @@ void i40e_force_wb(struct i40e_vsi *vsi, struct i40e_q_vector *q_vector)
+ 		if (q_vector->arm_wb_state)
+ 			return;
+ 
+-		val = I40E_PFINT_DYN_CTLN_WB_ON_ITR_MASK;
++		if (vsi->back->flags & I40E_FLAG_MSIX_ENABLED) {
++			val = I40E_PFINT_DYN_CTLN_WB_ON_ITR_MASK |
++			      I40E_PFINT_DYN_CTLN_ITR_INDX_MASK; /* set noitr */
 +
-+		dev_info(&pf->pdev->dev, "    netdev: name = %s, state = %lu, flags = 0x%08x\n",
-+			 nd->name, nd->state, nd->flags);
-+		dev_info(&pf->pdev->dev, "        features      = 0x%08lx\n",
-+			 (unsigned long int)nd->features);
-+		dev_info(&pf->pdev->dev, "        hw_features   = 0x%08lx\n",
-+			 (unsigned long int)nd->hw_features);
-+		dev_info(&pf->pdev->dev, "        vlan_features = 0x%08lx\n",
-+			 (unsigned long int)nd->vlan_features);
-+	}
- 	if (vsi->active_vlans)
- 		dev_info(&pf->pdev->dev,
- 			 "    vlgrp: & = %p\n", vsi->active_vlans);
- 	dev_info(&pf->pdev->dev,
--		 "    netdev_registered = %i, current_netdev_flags = 0x%04x, state = %li flags = 0x%08lx\n",
--		 vsi->netdev_registered,
--		 vsi->current_netdev_flags, vsi->state, vsi->flags);
-+		 "    state = %li flags = 0x%08lx, netdev_registered = %i, current_netdev_flags = 0x%04x\n",
-+		 vsi->state, vsi->flags,
-+		 vsi->netdev_registered, vsi->current_netdev_flags);
- 	if (vsi == pf->vsi[pf->lan_vsi])
--		dev_info(&pf->pdev->dev, "MAC address: %pM SAN MAC: %pM Port MAC: %pM\n",
-+		dev_info(&pf->pdev->dev, "    MAC address: %pM SAN MAC: %pM Port MAC: %pM\n",
- 			 pf->hw.mac.addr,
- 			 pf->hw.mac.san_addr,
- 			 pf->hw.mac.port_addr);
++			wr32(&vsi->back->hw,
++			     I40E_PFINT_DYN_CTLN(q_vector->v_idx +
++						 vsi->base_vector - 1),
++			     val);
++		} else {
++			val = I40E_PFINT_DYN_CTL0_WB_ON_ITR_MASK |
++			      I40E_PFINT_DYN_CTL0_ITR_INDX_MASK; /* set noitr */
+ 
+-		wr32(&vsi->back->hw,
+-		     I40E_PFINT_DYN_CTLN(q_vector->v_idx +
+-					 vsi->base_vector - 1),
+-		     val);
++			wr32(&vsi->back->hw, I40E_PFINT_DYN_CTL0, val);
++		}
+ 		q_vector->arm_wb_state = true;
+ 	} else if (vsi->back->flags & I40E_FLAG_MSIX_ENABLED) {
+ 		u32 val = I40E_PFINT_DYN_CTLN_INTENA_MASK |
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index 0e2c627..6a4da0a 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -307,7 +307,8 @@ static void i40evf_force_wb(struct i40e_vsi *vsi, struct i40e_q_vector *q_vector
+ 		if (q_vector->arm_wb_state)
+ 			return;
+ 
+-		val = I40E_VFINT_DYN_CTLN1_WB_ON_ITR_MASK;
++		val = I40E_VFINT_DYN_CTLN1_WB_ON_ITR_MASK |
++		      I40E_VFINT_DYN_CTLN1_ITR_INDX_MASK; /* set noitr */
+ 
+ 		wr32(&vsi->back->hw,
+ 		     I40E_VFINT_DYN_CTLN1(q_vector->v_idx +
 -- 
 2.1.0
 
