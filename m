@@ -1,49 +1,65 @@
 From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 23 Dec 2015 08:30:19 -0800
-Subject: [Intel-wired-lan] [PATCH] ixgbe: fix write to VLVFB in
-	ixgbe_clear_vf_vlans()
-In-Reply-To: <20151223010957.27315.28321.stgit@localhost6.localdomain6>
-References: <20151223010957.27315.28321.stgit@localhost6.localdomain6>
-Message-ID: <CAKgT0Ud-EbTZmNN1667xNjLyQiYBnrq6RdrKaU0vpGaRwdym8w@mail.gmail.com>
+Date: Wed, 23 Dec 2015 08:53:44 -0800
+Subject: [Intel-wired-lan] [PATCH next] ixgbe: Fix misuse of word as
+ register offset instead of offset in register array
+In-Reply-To: <20151223164640.30102.45304.stgit@localhost.localdomain>
+References: <20151223164640.30102.45304.stgit@localhost.localdomain>
+Message-ID: <CAKgT0UfXqEPobd_WJzSkf2xLiqxjbq0wmb=9rEqaNm_9j5ZuZw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Dec 22, 2015 at 5:09 PM, Emil Tantilov
-<emil.s.tantilov@intel.com> wrote:
-> Fix the write to the VLVFB register in ixgbe_clear_vf_vlans() where
-> word is the actual offset of the register and not the index for the
-> IXGBE_VLVFB macro.
+On Wed, Dec 23, 2015 at 8:47 AM, Alexander Duyck <aduyck@mirantis.com> wrote:
+> When I had rewritten the code for ixgbe_clear_vf_vlans() it looks like I
+> had transitioned back and forth between using word as an offset and using
+> word as a register offset.  As a result I honestly don't see how the code
+> was working before other than the fact that resetting the VLANs on the VF
+> like didn't do much to clear them.
 >
-> This was causing PCI AER errors on my system.
+> I have updated the code so that word represents the offset in the array.
+> This way we can use the modulus and xor operations and they will make sense
+> instead of being performed on a 4 byte aligned value.
 >
-> Fixes: 4c7f35f679f592804736f9303051257de2c9f021
-> ("ixgbe: Clean stale VLANs when changing port VLAN or resetting")
+> I replaced the statement "(word % 2) ^ 1" with "~word % 2" in order to
+> reduce the line length as the line exceeded 80 characters with the register
+> name inserted.  The two should be equivalent so the change should be safe.
 >
-> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+> Reported-by: Emil Tantilov <emil.s.tantilov@intel.com>
+> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |    6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
 >
 > diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-> index eeff3d0..fd918da 100644
+> index eeff3d075bf8..009ba2e21687 100644
 > --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
 > +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-> @@ -640,7 +640,7 @@ update_vlvf:
->                 IXGBE_WRITE_REG(hw, IXGBE_VLVF(i), 0);
->  update_vlvfb:
->                 /* clear pool bits */
-> -               IXGBE_WRITE_REG(hw, IXGBE_VLVFB(word), vlvfb);
-> +               IXGBE_WRITE_REG(hw, word, vlvfb);
->         }
->  }
+> @@ -593,11 +593,11 @@ static void ixgbe_clear_vf_vlans(struct ixgbe_adapter *adapter, u32 vf)
 >
+>         /* post increment loop, covers VLVF_ENTRIES - 1 to 0 */
+>         for (i = IXGBE_VLVF_ENTRIES; i--;) {
+> -               u32 word = IXGBE_VLVFB(i * 2 + vf / 32);
+>                 u32 bits[2], vlvfb, vid, vfta, vlvf;
+> +               u32 word = i * 2 + vf / 32;
+>                 u32 mask = 1 << (vf / 32);
 
-Actually it looks like there is some other bugs here too.
-Specifically the register offset used for word is a 4 byte aligned
-value and it looks like I had a number of assumptions that it was the
-offset inside the VLVFB array.
+I'll need to submit a v2 for this.  It turns out the mask is wrong as
+well.  That should be a % 32, not a / 32 used.
 
-- Alex
+> -               vlvfb = IXGBE_READ_REG(hw, word);
+> +               vlvfb = IXGBE_READ_REG(hw, IXGBE_VLVFB(word));
+>
+>                 /* if our bit isn't set we can skip it */
+>                 if (!(vlvfb & mask))
+> @@ -608,7 +608,7 @@ static void ixgbe_clear_vf_vlans(struct ixgbe_adapter *adapter, u32 vf)
+>
+>                 /* create 64b mask to chedk to see if we should clear VLVF */
+>                 bits[word % 2] = vlvfb;
+> -               bits[(word % 2) ^ 1] = IXGBE_READ_REG(hw, word ^ 1);
+> +               bits[~word % 2] = IXGBE_READ_REG(hw, IXGBE_VLVFB(word ^ 1));
+>
+>                 /* if promisc is enabled, PF will be present, leave VFTA */
+>                 if (adapter->flags2 & IXGBE_FLAG2_VLAN_PROMISC) {
+>
