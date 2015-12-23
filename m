@@ -1,69 +1,40 @@
-From: Alexander Duyck <aduyck@mirantis.com>
-Date: Wed, 23 Dec 2015 09:00:35 -0800
-Subject: [Intel-wired-lan] [next PATCH v2] ixgbe: Fix bugs in
-	ixgbe_clear_vf_vlans()
-Message-ID: <20151223165946.30452.68020.stgit@localhost.localdomain>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 23 Dec 2015 19:13:37 +0000
+Subject: [Intel-wired-lan] [v2 next PATCH S23 12/13] i40e: update
+ features	with right offload
+In-Reply-To: <1449776331-8330-2-git-send-email-joshua.a.hay@intel.com>
+References: <1449776331-8330-1-git-send-email-joshua.a.hay@intel.com>
+ <1449776331-8330-2-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F96F8BF@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When I had rewritten the code for ixgbe_clear_vf_vlans() it looks like I
-had transitioned back and forth between using word as an offset and using
-word as a register offset.  As a result I honestly don't see how the code
-was working before other than the fact that resetting the VLANs on the VF
-like didn't do much to clear them.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Joshua Hay
+> Sent: Thursday, December 10, 2015 11:39 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [v2 next PATCH S23 12/13] i40e: update features
+> with right offload
+> 
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> 
+> Synchronize code bases and add SCTP offload support.
+> 
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Change-ID: I9f99071f7176225479026930c387bf681a47494e
+> ---
+> V2: remove reviewed-by
+> 
+> Testing Hints: Test SCTP in a tunnel like vxlan and make sure TSO is still
+> working.  Test GRE tunnels and make sure they work.  See already applied
+> GRE upstream commit for instructions.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 10 ++++++----
+>  1 file changed, 6 insertions(+), 4 deletions(-)
 
-Another issue found is that the mask was using a divide instead of a
-modulus.  As a result the mask bit was incorrectly being set to either bit
-0 or 1 based on the value of the VF being tested.  As a result the wrong
-VFs were having their VLANs cleared if they were enabled.
-
-I have updated the code so that word represents the offset in the array.
-This way we can use the modulus and xor operations and they will make sense
-instead of being performed on a 4 byte aligned value.
-
-I replaced the statement "(word % 2) ^ 1" with "~word % 2" in order to
-reduce the line length as the line exceeded 80 characters with the register
-name inserted.  The two should be equivilent so the change should be safe.
-
-Reported-by: Emil Tantilov <emil.s.tantilov@intel.com>
-Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
----
-
-v2: Fixed incorrect configuration for mask that used division instead of
-    modulus.
-
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-index eeff3d075bf8..8025a3f93598 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-@@ -593,11 +593,11 @@ static void ixgbe_clear_vf_vlans(struct ixgbe_adapter *adapter, u32 vf)
- 
- 	/* post increment loop, covers VLVF_ENTRIES - 1 to 0 */
- 	for (i = IXGBE_VLVF_ENTRIES; i--;) {
--		u32 word = IXGBE_VLVFB(i * 2 + vf / 32);
- 		u32 bits[2], vlvfb, vid, vfta, vlvf;
--		u32 mask = 1 << (vf / 32);
-+		u32 word = i * 2 + vf / 32;
-+		u32 mask = 1 << (vf % 32);
- 
--		vlvfb = IXGBE_READ_REG(hw, word);
-+		vlvfb = IXGBE_READ_REG(hw, IXGBE_VLVFB(word));
- 
- 		/* if our bit isn't set we can skip it */
- 		if (!(vlvfb & mask))
-@@ -608,7 +608,7 @@ static void ixgbe_clear_vf_vlans(struct ixgbe_adapter *adapter, u32 vf)
- 
- 		/* create 64b mask to chedk to see if we should clear VLVF */
- 		bits[word % 2] = vlvfb;
--		bits[(word % 2) ^ 1] = IXGBE_READ_REG(hw, word ^ 1);
-+		bits[~word % 2] = IXGBE_READ_REG(hw, IXGBE_VLVFB(word ^ 1));
- 
- 		/* if promisc is enabled, PF will be present, leave VFTA */
- 		if (adapter->flags2 & IXGBE_FLAG2_VLAN_PROMISC) {
-
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Patch code changes correctly applied, GRE tunnels work, SCTP over VxLAN works
