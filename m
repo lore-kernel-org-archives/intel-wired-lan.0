@@ -1,10 +1,10 @@
 From: Schmitt, Phillip J <phillip.j.schmitt@intel.com>
-Date: Wed, 23 Dec 2015 23:06:48 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: fix write to VLVFB
+Date: Wed, 23 Dec 2015 23:09:33 +0000
+Subject: [Intel-wired-lan] [next PATCH v2] ixgbe: Fix bugs
 	in	ixgbe_clear_vf_vlans()
-In-Reply-To: <20151223010957.27315.28321.stgit@localhost6.localdomain6>
-References: <20151223010957.27315.28321.stgit@localhost6.localdomain6>
-Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E180CFBAD6@ORSMSX108.amr.corp.intel.com>
+In-Reply-To: <20151223165946.30452.68020.stgit@localhost.localdomain>
+References: <20151223165946.30452.68020.stgit@localhost.localdomain>
+Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E180CFBAF3@ORSMSX108.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,20 +15,32 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Emil Tantilov
-> Sent: Tuesday, December 22, 2015 5:10 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] ixgbe: fix write to VLVFB in
+> Behalf Of Alexander Duyck
+> Sent: Wednesday, December 23, 2015 9:01 AM
+> To: intel-wired-lan at lists.osuosl.org; alexander.duyck at gmail.com
+> Subject: [Intel-wired-lan] [next PATCH v2] ixgbe: Fix bugs in
 > ixgbe_clear_vf_vlans()
 > 
-> Fix the write to the VLVFB register in ixgbe_clear_vf_vlans() where word is the
-> actual offset of the register and not the index for the IXGBE_VLVFB macro.
+> When I had rewritten the code for ixgbe_clear_vf_vlans() it looks like I had
+> transitioned back and forth between using word as an offset and using word as a
+> register offset.  As a result I honestly don't see how the code was working
+> before other than the fact that resetting the VLANs on the VF like didn't do much
+> to clear them.
 > 
-> This was causing PCI AER errors on my system.
+> Another issue found is that the mask was using a divide instead of a modulus.  As
+> a result the mask bit was incorrectly being set to either bit
+> 0 or 1 based on the value of the VF being tested.  As a result the wrong VFs were
+> having their VLANs cleared if they were enabled.
 > 
-> Fixes: 4c7f35f679f592804736f9303051257de2c9f021
-> ("ixgbe: Clean stale VLANs when changing port VLAN or resetting")
+> I have updated the code so that word represents the offset in the array.
+> This way we can use the modulus and xor operations and they will make sense
+> instead of being performed on a 4 byte aligned value.
 > 
-> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+> I replaced the statement "(word % 2) ^ 1" with "~word % 2" in order to reduce
+> the line length as the line exceeded 80 characters with the register name
+> inserted.  The two should be equivilent so the change should be safe.
+> 
+> Reported-by: Emil Tantilov <emil.s.tantilov@intel.com>
+> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 
 Tested-by: Phil Schmitt <phillip.j.schmitt@intel.com>
