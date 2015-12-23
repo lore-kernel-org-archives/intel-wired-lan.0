@@ -1,51 +1,78 @@
 From: Deepthi Kavalur <deepthi.kavalur@intel.com>
-Date: Wed, 23 Dec 2015 12:05:51 -0800
-Subject: [Intel-wired-lan] [next PATCH S25 11/16] i40e: add a little more to
-	an NVM update debug message
+Date: Wed, 23 Dec 2015 12:05:50 -0800
+Subject: [Intel-wired-lan] [next PATCH S25 10/16] i40e: refactor dcb function
 In-Reply-To: <1450901156-30904-1-git-send-email-deepthi.kavalur@intel.com>
 References: <1450901156-30904-1-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <1450901156-30904-12-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <1450901156-30904-11-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Shannon Nelson <shannon.nelson@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-Add a little more detail to an NVM update debug message in order to
-see the full ethtool request data.
+This is a simple refactor suggested by the community
+to change a multi-level if statement into a switch.
 
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-Acked-by: Kevin Scott <kevin.c.scott@intel.com>
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Acked-by: Shannon Nelson <shannon.nelson@intel.com>
 Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Change-ID: Iab10437cb32d6fddc67ee347e7c0b42511e152cd
+Change-ID: I831cf3c40426022220aa9b43990022d22dfd50db
 ---
 Testing-Hints:
-Turn on NVM update debug and see the new data in the logfile
-ethtool -s eth0 msglvl 0xf000008f
+Verify if function still works.
 
- drivers/net/ethernet/intel/i40e/i40e_nvm.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_dcb.c | 15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-index 59edd33..042feca 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-@@ -750,10 +750,11 @@ i40e_status i40e_nvmupd_command(struct i40e_hw *hw,
- 	/* early check for status command and debug msgs */
- 	upd_cmd = i40e_nvmupd_validate_command(hw, cmd, perrno);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_dcb.c b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
+index 582daa7..0fab3a9 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_dcb.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_dcb.c
+@@ -380,17 +380,20 @@ static void i40e_parse_cee_app_tlv(struct i40e_cee_feat_tlv *tlv,
+ {
+ 	u16 length, typelength, offset = 0;
+ 	struct i40e_cee_app_prio *app;
+-	u8 i, up, selector;
++	u8 i;
  
--	i40e_debug(hw, I40E_DEBUG_NVM, "%s state %d nvm_release_on_hold %d\n",
-+	i40e_debug(hw, I40E_DEBUG_NVM, "%s state %d nvm_release_on_hold %d cmd 0x%08x config 0x%08x offset 0x%08x data_size 0x%08x\n",
- 		   i40e_nvm_update_state_str[upd_cmd],
- 		   hw->nvmupd_state,
--		   hw->aq.nvm_release_on_done);
-+		   hw->aq.nvm_release_on_done,
-+		   cmd->command, cmd->config, cmd->offset, cmd->data_size);
+ 	typelength = ntohs(tlv->hdr.typelen);
+ 	length = (u16)((typelength & I40E_LLDP_TLV_LEN_MASK) >>
+ 		       I40E_LLDP_TLV_LEN_SHIFT);
  
- 	if (upd_cmd == I40E_NVMUPD_INVALID) {
- 		*perrno = -EFAULT;
+ 	dcbcfg->numapps = length / sizeof(*app);
++
+ 	if (!dcbcfg->numapps)
+ 		return;
+ 
+ 	for (i = 0; i < dcbcfg->numapps; i++) {
++		u8 up, selector;
++
+ 		app = (struct i40e_cee_app_prio *)(tlv->tlvinfo + offset);
+ 		for (up = 0; up < I40E_MAX_USER_PRIORITY; up++) {
+ 			if (app->prio_map & BIT(up))
+@@ -400,13 +403,17 @@ static void i40e_parse_cee_app_tlv(struct i40e_cee_feat_tlv *tlv,
+ 
+ 		/* Get Selector from lower 2 bits, and convert to IEEE */
+ 		selector = (app->upper_oui_sel & I40E_CEE_APP_SELECTOR_MASK);
+-		if (selector == I40E_CEE_APP_SEL_ETHTYPE)
++		switch (selector) {
++		case I40E_CEE_APP_SEL_ETHTYPE:
+ 			dcbcfg->app[i].selector = I40E_APP_SEL_ETHTYPE;
+-		else if (selector == I40E_CEE_APP_SEL_TCPIP)
++			break;
++		case I40E_CEE_APP_SEL_TCPIP:
+ 			dcbcfg->app[i].selector = I40E_APP_SEL_TCPIP;
+-		else
++			break;
++		default:
+ 			/* Keep selector as it is for unknown types */
+ 			dcbcfg->app[i].selector = selector;
++		}
+ 
+ 		dcbcfg->app[i].protocolid = ntohs(app->protocol);
+ 		/* Move to next app */
 -- 
 2.1.0
 
