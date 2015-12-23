@@ -1,89 +1,84 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 23 Dec 2015 18:35:05 +0800
-Subject: [Intel-wired-lan] [PATCH 1/2] PCI: Add mechanism to find
-	topologically near cores
-In-Reply-To: <1450864901-16712-1-git-send-email-daniel@numascale.com>
-Message-ID: <201512231825.hxgFRM0V%fengguang.wu@intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed, 23 Dec 2015 02:54:06 -0800
+Subject: [Intel-wired-lan] [PATCH 1/1] ixgbe: force to synchronize
+ reporting "link on" and getting speed and duplex
+In-Reply-To: <1450853205-27133-1-git-send-email-zyjzyj2000@gmail.com>
+References: <1450853205-27133-1-git-send-email-zyjzyj2000@gmail.com>
+Message-ID: <1450868046.3316.11.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Daniel,
+On Wed, 2015-12-23 at 14:46 +0800, zyjzyj2000 at gmail.com wrote:
+> From: Zhu Yanjun <zyjzyj2000@gmail.com>
+> 
+> In X540 NIC, there is a time span between reporting "link on" and
+> getting the speed and duplex. To a bonding driver in 802.3ad mode,
+> this time span will make it not work well if the time span is big
+> enough. The big time span will make bonding driver change the state
+> of
+> the slave device to up while the speed and duplex of the slave device
+> can not be gotten. Later the bonding driver will not have change to
+> get the speed and duplex of the slave device. The speed and duplex of
+> the slave device are important to a bonding driver in 802.3ad mode.
+> 
+> To 82599_SFP NIC and other kinds of NICs, this problem does
+> not exist. As such, it is necessary for X540 to report"link on" when
+> the link speed is not IXGBE_LINK_SPEED_UNKNOWN.
+> 
+> Signed-off-by: Zhu Yanjun <zyjzyj2000@gmail.com>
+> ---
+> ?drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |???16
+> +++++++++++++++-
+> ?1 file changed, 15 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> index aed8d02..cb9d310 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> @@ -6479,7 +6479,21 @@ static void ixgbe_watchdog_link_is_up(struct
+> ixgbe_adapter *adapter)
+> ?	???????(flow_rx ? "RX" :
+> ?	???????(flow_tx ? "TX" : "None"))));
+> ?
+> -	netif_carrier_on(netdev);
+> +	/*
+> +	?* In X540 NIC, there is a time span between reporting "link
+> on"
+> +	?* and getting the speed and duplex. To a bonding driver in
+> 802.3ad
+> +	?* mode, this time span will make it not work well if the
+> time span
+> +	?* is big enough. To 82599_SFP NIC and other kinds of NICs,
+> this
+> +	?* problem does not exist. As such, it is better for X540 to
+> report
+> +	?* "link on" when the link speed is not
+> IXGBE_LINK_SPEED_UNKNOWN.
+> +	?*/
+> +	if ((hw->mac.type == ixgbe_mac_X540) &&
+> +	????(link_speed != IXGBE_LINK_SPEED_UNKNOWN)) {
+> +		netif_carrier_on(netdev);
+> +	} else {
+> +		netif_carrier_on(netdev);
+> +	}
+> +
+> ?	ixgbe_check_vf_rate_limit(adapter);
+> ?
+> ?	/* enable transmits */
 
-[auto build test WARNING on pci/next]
-[also build test WARNING on v4.4-rc6 next-20151223]
-
-url:    https://github.com/0day-ci/linux/commits/Daniel-J-Blueman/PCI-Add-mechanism-to-find-topologically-near-cores/20151223-181947
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/helgaas/pci.git next
-config: s390-allyesconfig (attached as .config)
-reproduce:
-        wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # save the attached .config to linux build tree
-        make.cross ARCH=s390 
-
-Note: it may well be a FALSE warning. FWIW you are at least aware of it now.
-
-All warnings (new ones prefixed by >>):
-
-   In file included from include/linux/smp.h:12:0,
-                    from arch/s390/include/asm/spinlock.h:12,
-                    from include/linux/spinlock.h:87,
-                    from include/linux/rcupdate.h:38,
-                    from include/linux/idr.h:18,
-                    from include/linux/kernfs.h:14,
-                    from include/linux/sysfs.h:15,
-                    from include/linux/kobject.h:21,
-                    from include/linux/of.h:21,
-                    from drivers/pci/pci.c:13:
-   drivers/pci/pci.c: In function 'cpu_near_dev':
->> include/linux/cpumask.h:174:9: warning: array subscript is below array bounds [-Warray-bounds]
-     return find_first_bit(cpumask_bits(srcp), nr_cpumask_bits);
-            ^
-
-vim +174 include/linux/cpumask.h
-
-da91309e Amir Vadai       2014-06-09  158  
-2d3854a3 Rusty Russell    2008-11-05  159  #define for_each_cpu(cpu, mask)			\
-2d3854a3 Rusty Russell    2008-11-05  160  	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)
-8bd93a2c Paul E. McKenney 2010-02-22  161  #define for_each_cpu_not(cpu, mask)		\
-8bd93a2c Paul E. McKenney 2010-02-22  162  	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)
-2d3854a3 Rusty Russell    2008-11-05  163  #define for_each_cpu_and(cpu, mask, and)	\
-2d3854a3 Rusty Russell    2008-11-05  164  	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask, (void)and)
-2d3854a3 Rusty Russell    2008-11-05  165  #else
-2d3854a3 Rusty Russell    2008-11-05  166  /**
-2d3854a3 Rusty Russell    2008-11-05  167   * cpumask_first - get the first cpu in a cpumask
-2d3854a3 Rusty Russell    2008-11-05  168   * @srcp: the cpumask pointer
-2d3854a3 Rusty Russell    2008-11-05  169   *
-2d3854a3 Rusty Russell    2008-11-05  170   * Returns >= nr_cpu_ids if no cpus set.
-2d3854a3 Rusty Russell    2008-11-05  171   */
-2d3854a3 Rusty Russell    2008-11-05  172  static inline unsigned int cpumask_first(const struct cpumask *srcp)
-2d3854a3 Rusty Russell    2008-11-05  173  {
-2d3854a3 Rusty Russell    2008-11-05 @174  	return find_first_bit(cpumask_bits(srcp), nr_cpumask_bits);
-2d3854a3 Rusty Russell    2008-11-05  175  }
-2d3854a3 Rusty Russell    2008-11-05  176  
-2d3854a3 Rusty Russell    2008-11-05  177  /**
-2d3854a3 Rusty Russell    2008-11-05  178   * cpumask_next - get the next cpu in a cpumask
-2d3854a3 Rusty Russell    2008-11-05  179   * @n: the cpu prior to the place to search (ie. return will be > @n)
-2d3854a3 Rusty Russell    2008-11-05  180   * @srcp: the cpumask pointer
-2d3854a3 Rusty Russell    2008-11-05  181   *
-2d3854a3 Rusty Russell    2008-11-05  182   * Returns >= nr_cpu_ids if no further cpus set.
-
-:::::: The code at line 174 was first introduced by commit
-:::::: 2d3854a37e8b767a51aba38ed6d22817b0631e33 cpumask: introduce new API, without changing anything
-
-:::::: TO: Rusty Russell <rusty@rustcorp.com.au>
-:::::: CC: Ingo Molnar <mingo@elte.hu>
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+This patch only adds a needless test before
+calling?netif_carrier_on(netdev), since the call happens no matter the
+branch you take, it appears your running into a timing issue. ?So
+adding a wait() before calling?netif_carrier_on(netdev) will accomplish
+the same result and you do not have to add a useless test.
 -------------- next part --------------
 A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/octet-stream
-Size: 39398 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151223/58a0bb3e/attachment-0001.obj>
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151223/f955f020/attachment.asc>
