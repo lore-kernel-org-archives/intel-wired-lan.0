@@ -1,188 +1,136 @@
-From: zhuyj <zyjzyj2000@gmail.com>
-Date: Thu, 24 Dec 2015 13:10:57 +0800
-Subject: [Intel-wired-lan] [V2 PATCH 1/1] ixgbe: force to synchronize
- reporting "link on" and
-In-Reply-To: <1450926752-11392-1-git-send-email-zyjzyj2000@gmail.com>
-References: <1450868046.3316.11.camel@intel.com>
- <1450926752-11392-1-git-send-email-zyjzyj2000@gmail.com>
-Message-ID: <567B7E61.3070207@gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 24 Dec 2015 06:07:47 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
+ 2e4c8baa66b3d3272ff82dfb5c8585cf1be88685 BUILD SUCCESS
+Message-ID: <567b1b33.gnijjSn7Nk1orw8a%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 12/24/2015 11:12 AM, zyjzyj2000 at gmail.com wrote:
-> Hi, Jeff
->
-> Thanks for your reply.
->
-> Changes:
-> Since there is a time span between link_up and link_speed to X540 NIC, it is not appropriate to continue in the function ixgbe_watchdog_link_is_up if only link_up is ready.
->
-> Best Regards!
-> Zhu Yanjun
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo at vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
-Hi, Jeff
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
+2e4c8baa66b3d3272ff82dfb5c8585cf1be88685  Merge branch 'cxgb4-next'
 
-The following logs are from the customer.  From these logs, there is a 
-time span between link_up and link_speed.
-This time span sometimes will make bonding in 802.3ad mode not work well.
+i386-tinyconfig vmlinux size:
 
-What I have done in the patch is to prevent this time span in the ixgbe 
-driver.
++-------+------+-------+-----+----------------------------------------------------------------------------+
+| TOTAL | TEXT | DATA  | BSS |                                                                            |
++-------+------+-------+-----+----------------------------------------------------------------------------+
+| +4372 | +256 | +4096 |   0 | b3e0d3d7bab1 Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net |
+|  +128 | +128 |     0 |   0 | f188b951f33a Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net |
+| +4500 | +384 | +4096 |   0 | ALL COMMITS                                                                |
++-------+------+-------+-----+----------------------------------------------------------------------------+
 
-Best Regards!
-Zhu Yanjun
+elapsed time: 60m
 
-Settings for eth0:
-     Supported ports: [ TP ]
-     Supported link modes:   100baseT/Full
-                             1000baseT/Full
-                             10000baseT/Full
-     Supported pause frame use: No
-     Supports auto-negotiation: Yes
-     Advertised link modes:  100baseT/Full
-                             1000baseT/Full
-                             10000baseT/Full
-     Advertised pause frame use: No
-     Advertised auto-negotiation: Yes
-     Speed: Unknown!
-     Duplex: Unknown! (255)
-     Port: Twisted Pair
-     PHYAD: 0
-     Transceiver: external
-     Auto-negotiation: on
-     MDI-X: Unknown
-     Supports Wake-on: d
-     Wake-on: d
-     Current message level: 0x00000007 (7)
-                    drv probe link
-     Link detected: no
-Settings for eth0:
-     Supported ports: [ TP ]
-     Supported link modes:   100baseT/Full
-                             1000baseT/Full
-                             10000baseT/Full
-     Supported pause frame use: No
-     Supports auto-negotiation: Yes
-     Advertised link modes:  100baseT/Full
-                             1000baseT/Full
-                             10000baseT/Full
-     Advertised pause frame use: No
-     Advertised auto-negotiation: Yes
-     Speed: Unknown!
-     Duplex: Unknown! (255)
-     Port: Twisted Pair
-     PHYAD: 0
-     Transceiver: external
-     Auto-negotiation: on
-     MDI-X: Unknown
-     Supports Wake-on: d
-     Wake-on: d
-     Current message level: 0x00000007 (7)
-                    drv probe link
-     Link detected: yes
-Settings for eth0:
-     Supported ports: [ TP ]
-     Supported link modes:   100baseT/Full
-                             1000baseT/Full
-                             10000baseT/Full
-     Supported pause frame use: No
-     Supports auto-negotiation: Yes
-     Advertised link modes:  100baseT/Full
-                             1000baseT/Full
-                             10000baseT/Full
-     Advertised pause frame use: No
-     Advertised auto-negotiation: Yes
-     Speed: Unknown!
-     Duplex: Unknown! (255)
-     Port: Twisted Pair
-     PHYAD: 0
-     Transceiver: external
-     Auto-negotiation: on
-     MDI-X: Unknown
-     Supports Wake-on: d
-     Wake-on: d
-     Current message level: 0x00000007 (7)
-                    drv probe link
-     Link detected: yes
-Settings for eth0:
-     Supported ports: [ TP ]
-     Supported link modes:   100baseT/Full
-                             1000baseT/Full
-                             10000baseT/Full
-     Supported pause frame use: No
-     Supports auto-negotiation: Yes
-     Advertised link modes:  100baseT/Full
-                             1000baseT/Full
-                             10000baseT/Full
-     Advertised pause frame use: No
-     Advertised auto-negotiation: Yes
-     Speed: Unknown!
-     Duplex: Unknown! (255)
-     Port: Twisted Pair
-     PHYAD: 0
-     Transceiver: external
-     Auto-negotiation: on
-     MDI-X: Unknown
-     Supports Wake-on: d
-     Wake-on: d
-     Current message level: 0x00000007 (7)
-                    drv probe link
-     Link detected: yes
-Settings for eth0:
-     Supported ports: [ TP ]
-     Supported link modes:   100baseT/Full
-                             1000baseT/Full
-                             10000baseT/Full
-     Supported pause frame use: No
-     Supports auto-negotiation: Yes
-     Advertised link modes:  100baseT/Full
-                             1000baseT/Full
-                             10000baseT/Full
-     Advertised pause frame use: No
-     Advertised auto-negotiation: Yes
-     Speed: Unknown!
-     Duplex: Unknown! (255)
-     Port: Twisted Pair
-     PHYAD: 0
-     Transceiver: external
-     Auto-negotiation: on
-     MDI-X: Unknown
-     Supports Wake-on: d
-     Wake-on: d
-     Current message level: 0x00000007 (7)
-                    drv probe link
-     Link detected: yes
-Settings for eth0:
-     Supported ports: [ TP ]
-     Supported link modes:   100baseT/Full
-                             1000baseT/Full
-                             10000baseT/Full
-     Supported pause frame use: No
-     Supports auto-negotiation: Yes
-     Advertised link modes:  100baseT/Full
-                             1000baseT/Full
-                             10000baseT/Full
-     Advertised pause frame use: No
-     Advertised auto-negotiation: Yes
-     Speed: 10000Mb/s
-     Duplex: Full
-     Port: Twisted Pair
-     PHYAD: 0
-     Transceiver: external
-     Auto-negotiation: on
-     MDI-X: Unknown
-     Supports Wake-on: d
-     Wake-on: d
-     Current message level: 0x00000007 (7)
-                    drv probe link
-     Link detected: yes
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151224/ca9d7c56/attachment.html>
+configs tested: 105
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201551
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x015-201551
+x86_64                 randconfig-x019-201551
+x86_64                 randconfig-x010-201551
+x86_64                 randconfig-x016-201551
+x86_64                 randconfig-x012-201551
+x86_64                 randconfig-x011-201551
+x86_64                 randconfig-x013-201551
+x86_64                 randconfig-x017-201551
+x86_64                 randconfig-x014-201551
+x86_64                 randconfig-x018-201551
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201551
+i386                     randconfig-s1-201551
+x86_64                           allmodconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201551
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201551
+i386                     randconfig-i1-201551
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201551
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+x86_64                 randconfig-x006-201551
+x86_64                 randconfig-x009-201551
+x86_64                 randconfig-x003-201551
+x86_64                 randconfig-x008-201551
+x86_64                 randconfig-x005-201551
+x86_64                 randconfig-x001-201551
+x86_64                 randconfig-x002-201551
+x86_64                 randconfig-x000-201551
+x86_64                 randconfig-x004-201551
+x86_64                 randconfig-x007-201551
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201551
+i386                 randconfig-x005-12222106
+i386                 randconfig-x004-12222106
+i386                 randconfig-x002-12222106
+i386                 randconfig-x006-12222106
+i386                 randconfig-x007-12222106
+i386                 randconfig-x003-12222106
+i386                 randconfig-x009-12222106
+i386                 randconfig-x008-12222106
+i386                 randconfig-x001-12222106
+i386                 randconfig-x000-12222106
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+
+Thanks,
+Fengguang
