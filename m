@@ -1,107 +1,96 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Date: Wed, 23 Dec 2015 09:46:33 -0600
-Subject: [Intel-wired-lan] [PATCH 1/2] PCI: Add mechanism to find
-	topologically near cores
-In-Reply-To: <1450864901-16712-1-git-send-email-daniel@numascale.com>
-References: <1450864901-16712-1-git-send-email-daniel@numascale.com>
-Message-ID: <20151223154633.GA18018@localhost>
+From: Tantilov, Emil S <emil.s.tantilov@intel.com>
+Date: Wed, 23 Dec 2015 15:59:24 +0000
+Subject: [Intel-wired-lan] [PATCH 1/1] ixgbe: force to synchronize
+ reporting	"link on" and getting speed and duplex
+In-Reply-To: <1450853205-27133-1-git-send-email-zyjzyj2000@gmail.com>
+References: <1450853205-27133-1-git-send-email-zyjzyj2000@gmail.com>
+Message-ID: <87618083B2453E4A8714035B62D67992504EB551@FMSMSX105.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Daniel,
+>-----Original Message-----
+>From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+>Behalf Of zyjzyj2000 at gmail.com
+>Sent: Tuesday, December 22, 2015 10:47 PM
+>To: Kirsher, Jeffrey T; Brandeburg, Jesse; Nelson, Shannon; Wyborny,
+>Carolyn; Skidmore, Donald C; Allan, Bruce W; Ronciak, John; Williams, Mitch
+>A; intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; e1000-
+>devel at lists.sourceforge.net
+>Cc: Viswanathan, Ven (Wind River); Shteinbock, Boris (Wind River); Bourg,
+>Vincent (Wind River)
+>Subject: [Intel-wired-lan] [PATCH 1/1] ixgbe: force to synchronize
+>reporting "link on" and getting speed and duplex
+>
+>From: Zhu Yanjun <zyjzyj2000@gmail.com>
+>
+>In X540 NIC, there is a time span between reporting "link on" and
+>getting the speed and duplex. To a bonding driver in 802.3ad mode,
+>this time span will make it not work well if the time span is big
+>enough. The big time span will make bonding driver change the state of
+>the slave device to up while the speed and duplex of the slave device
+>can not be gotten. Later the bonding driver will not have change to
+>get the speed and duplex of the slave device. The speed and duplex of
+>the slave device are important to a bonding driver in 802.3ad mode.
+>
+>To 82599_SFP NIC and other kinds of NICs, this problem does
+>not exist. As such, it is necessary for X540 to report"link on" when
+>the link speed is not IXGBE_LINK_SPEED_UNKNOWN.
+>
+>Signed-off-by: Zhu Yanjun <zyjzyj2000@gmail.com>
+>---
+> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   16 +++++++++++++++-
+> 1 file changed, 15 insertions(+), 1 deletion(-)
+>
+>diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>index aed8d02..cb9d310 100644
+>--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>@@ -6479,7 +6479,21 @@ static void ixgbe_watchdog_link_is_up(struct
+>ixgbe_adapter *adapter)
+> 	       (flow_rx ? "RX" :
+> 	       (flow_tx ? "TX" : "None"))));
+>
+>-	netif_carrier_on(netdev);
+>+	/*
+>+	 * In X540 NIC, there is a time span between reporting "link on"
+>+	 * and getting the speed and duplex. To a bonding driver in 802.3ad
+>+	 * mode, this time span will make it not work well if the time span
+>+	 * is big enough. To 82599_SFP NIC and other kinds of NICs, this
+>+	 * problem does not exist. As such, it is better for X540 to report
+>+	 * "link on" when the link speed is not IXGBE_LINK_SPEED_UNKNOWN.
+>+	 */
+>+	if ((hw->mac.type == ixgbe_mac_X540) &&
+>+	    (link_speed != IXGBE_LINK_SPEED_UNKNOWN)) {
+>+		netif_carrier_on(netdev);
+>+	} else {
+>+		netif_carrier_on(netdev);
+>+	}
+>+
+> 	ixgbe_check_vf_rate_limit(adapter);
+>
+> 	/* enable transmits */
+>--
+>1.7.9.5
 
-On Wed, Dec 23, 2015 at 06:01:40PM +0800, Daniel J Blueman wrote:
-> Some devices (eg ixgbe) make assumptions about device to core locality when
-> specifying interrupts locality hints and allocate starting from core 0.
-> Moreover, interrupts may not be routable to distant NUMA nodes due to the
-> 8-bit APIC ID space limitations.
+NAK
 
-The APIC ID issue is the primary problem you're trying to solve, but
-this patch doesn't solve it directly because it doesn't look at
-anything related to the APIC ID domain.  Anything you do here is a
-guess that might work better, but it still won't necessarily work in
-all cases.
+I have already submitted a patch that will address the issue with bonding reporting
+unknown speed (in /proc/bonding/bondX) after the link is established due to link flaps:
+http://patchwork.ozlabs.org/patch/552485/
 
-Also, can you add a note about how this relates to the "call driver
-probe function on node where device is attached" functionality in
-pci_call_probe()?  It seems like that should be enough to keep us from
-always allocating interrupts on core 0.  Maybe that's broken, or maybe
-ixgbe isn't taking advantage of that?
+The bonding driver gets the speed from ethtool and this is where the reporting needs
+to be fixed. The issue is that the bonding driver polls for netif_carrier_ok() at a 
+certain rate and as such will not be able to detect rapid link changes.
 
-> Provide a mechanism drivers can use to find cores with reasonable locality
-> to a device; use the existing precendent of RECLAIM_DISTANCE (30), wrapping
-> the offset.
+If there is a case where link_speed is unknown when entering this function it's probably
+better to just bail rather than have this hack around the netif_carrier_on() especially
+after the driver already reported link status change. Rapid link changes can occur between
+link partners and not just for X540.
 
-I don't think it's a benefit to reuse RECLAIM_DISTANCE, because that
-is a different concept that doesn't seem directly related to what
-you're doing.  The name and the existing uses are related to memory
-zone reclaiming, so I know I would be confused to see it also used for
-IRQ assignment.
+Thanks,
+Emil
 
-> Signed-off-by: Daniel J Blueman <daniel@numascale.com>
-> ---
->  drivers/pci/pci.c   | 15 +++++++++++++++
->  include/linux/pci.h |  1 +
->  2 files changed, 16 insertions(+)
-> 
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index 314db8c..d5535d1 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -4833,6 +4833,22 @@ void __weak pci_fixup_cardbus(struct pci_bus *bus)
->  }
->  EXPORT_SYMBOL(pci_fixup_cardbus);
-> 
-> +int cpu_near_dev(const struct pci_dev *pdev, unsigned offset)
-
-If this becomes a PCI interface, please add a "pci_" prefix to the
-name.
-
-The distance concept also applies to non-PCI devices, so ideally I
-think a "pci_nearby_cpu()" or similar interface would be a wrapper
-around a more generic interface that takes a "struct device *".
-
-I don't really understand what the "offset" parameter is for.  It
-looks like you're using it to spread across CPUs on a node, but that
-seems like something that should be done internally to this interface.
-
-> +{
-> +	/* Start search from node device is on for optimal locality */
-> +	int localnode = pcibus_to_node(pdev->bus);
-> +	int cpu = cpumask_first(cpumask_of_node(localnode));
-> +
-> +	while (offset--) {
-> +		do {
-> +			cpu = (cpu + 1) % nr_cpu_ids;
-> +		} while (!cpu_online(cpu) || node_distance(cpu_to_node(cpu),
-> +			localnode) > RECLAIM_DISTANCE);
-> +	}
-> +
-> +	return cpu;
-> +}
-> +
->  static int __init pci_setup(char *str)
->  {
->  	while (str) {
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index 6ae25aa..f7491bd 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -842,6 +842,7 @@ void pci_stop_root_bus(struct pci_bus *bus);
->  void pci_remove_root_bus(struct pci_bus *bus);
->  void pci_setup_cardbus(struct pci_bus *bus);
->  void pci_sort_breadthfirst(void);
-> +int cpu_near_dev(const struct pci_dev *pdev, unsigned offset);
->  #define dev_is_pci(d) ((d)->bus == &pci_bus_type)
->  #define dev_is_pf(d) ((dev_is_pci(d) ? to_pci_dev(d)->is_physfn : false))
->  #define dev_num_vf(d) ((dev_is_pci(d) ? pci_num_vf(to_pci_dev(d)) : 0))
-> --
-> 2.5.0
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo at vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
