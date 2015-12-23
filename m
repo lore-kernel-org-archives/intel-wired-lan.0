@@ -1,61 +1,47 @@
 From: Deepthi Kavalur <deepthi.kavalur@intel.com>
-Date: Wed, 23 Dec 2015 12:05:45 -0800
-Subject: [Intel-wired-lan] [next PATCH S25 05/16] i40e: Bump AQ minor
-	version to 1.5 for new FW features
+Date: Wed, 23 Dec 2015 12:05:49 -0800
+Subject: [Intel-wired-lan] [next PATCH S25 09/16] i40e: add 20G speed for tx
+	bandwidth calculations
 In-Reply-To: <1450901156-30904-1-git-send-email-deepthi.kavalur@intel.com>
 References: <1450901156-30904-1-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <1450901156-30904-6-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <1450901156-30904-10-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Shannon Nelson <shannon.nelson@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-Bump AQ minor version to 1.5 for new FW features.
+When calculating TX bandwidth for VFs, we need to know the link speed to
+make sure we don't allocate more bandwidth than is available. Add 20G
+link speed to the switch statement so we can support devices that link
+at that speed.
 
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-Acked-by: Kevin Scott <kevin.c.scott@intel.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Change-ID: I5a790f7f519a2a8921aaa1c5663727dd1897ffec
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-ID: I5409f6139d549e5832777db9c22ca0664e0c5f8b
 ---
 Testing-Hints:
-Apply and compile cleanly on driver load with old NVMs, should
-see log message: 
-The driver for the device detected an older version of the NVM 
-image than expected. Please update the NVM image.
+Find a device that links at 20G and make sure you can set VF tx bandwidth
+on that device.
 
- drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h   | 2 +-
- drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-index 9684572..5699299 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-@@ -34,7 +34,7 @@
-  */
- 
- #define I40E_FW_API_VERSION_MAJOR	0x0001
--#define I40E_FW_API_VERSION_MINOR	0x0004
-+#define I40E_FW_API_VERSION_MINOR	0x0005
- 
- struct i40e_aq_desc {
- 	__le16 flags;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-index 6468537..ed963bc 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-@@ -34,7 +34,7 @@
-  */
- 
- #define I40E_FW_API_VERSION_MAJOR	0x0001
--#define I40E_FW_API_VERSION_MINOR	0x0004
-+#define I40E_FW_API_VERSION_MINOR	0x0005
- 
- struct i40e_aq_desc {
- 	__le16 flags;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 8c02fa9..8996627 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -2303,6 +2303,9 @@ int i40e_ndo_set_vf_bw(struct net_device *netdev, int vf_id, int min_tx_rate,
+ 	case I40E_LINK_SPEED_40GB:
+ 		speed = 40000;
+ 		break;
++	case I40E_LINK_SPEED_20GB:
++		speed = 20000;
++		break;
+ 	case I40E_LINK_SPEED_10GB:
+ 		speed = 10000;
+ 		break;
 -- 
 2.1.0
 
