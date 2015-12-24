@@ -1,73 +1,134 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu, 24 Dec 2015 14:02:43 -0800
-Subject: [Intel-wired-lan] [next PATCH 1/3] igb: Enable the ethtool
- interface fo Rx filter
-In-Reply-To: <1450925102-28992-2-git-send-email-gangfeng.huang@ni.com>
-References: <1450925102-28992-1-git-send-email-gangfeng.huang@ni.com>
- <1450925102-28992-2-git-send-email-gangfeng.huang@ni.com>
-Message-ID: <1450994563.3316.42.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 25 Dec 2015 07:39:58 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 411de0913914ea96a19eb6def2171b1c2eb8411f BUILD DONE
+Message-ID: <567c824e.+crY5qAMGCksGzh2%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 2015-12-24 at 10:45 +0800, Gangfeng wrote:
-> From: Gangfeng Huang <gangfeng.huang@ni.com>
-> 
-> This patch is meant to allow for nfc to insert and remove Rx filter
-> by ethtool. Ethtool interface has it's own rules manager
-> 
-> Show all filters:
-> $ ethtool -n eth0
-> 4 RX rings available
-> Total 2 rules
-> 
-> Signed-off-by: Ruhao Gao <ruhao.gao@ni.com>
-> Signed-off-by: Gangfeng Huang <gangfeng.huang@ni.com>
-> ---
-> ?drivers/net/ethernet/intel/igb/igb.h???????? |?? 31 +++++
-> ?drivers/net/ethernet/intel/igb/igb_ethtool.c |? 193
-> ++++++++++++++++++++++++++
-> ?drivers/net/ethernet/intel/igb/igb_main.c??? |?? 57 ++++++++
-> ?3 files changed, 281 insertions(+)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+411de0913914ea96a19eb6def2171b1c2eb8411f  i40e/i40evf: Bump i40e to 1.4.11 and i40evf to 1.4.7
 
-Still does not apply cleanly, are you sure you are using the dev-queue
-branch of mt next-queue tree?
+drivers/net/ethernet/intel/igb/igb_cdev.c:150:2: error: implicit declaration of function 'set_pages_uc' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/intel/igb/igb_cdev.c:275:2: error: implicit declaration of function 'set_pages_wb' [-Werror=implicit-function-declaration]
 
-Here is what I get when I try to apply it by hand:
-[13:53:24 @jtkirshe-linux:next-queue]$ patch -p1 <.apply/next-1-3-igb-
-Enable-the-ethtool-interface-fo-Rx-filter.patch?
-patching file drivers/net/ethernet/intel/igb/igb.h
-Hunk #1 succeeded at 353 (offset 5 lines).
-Hunk #2 FAILED at 476.
-Hunk #3 succeeded at 612 (offset 17 lines).
-1 out of 3 hunks FAILED -- saving rejects to file
-drivers/net/ethernet/intel/igb/igb.h.rej
-patching file drivers/net/ethernet/intel/igb/igb_ethtool.c
-Hunk #1 succeeded at 2607 (offset 186 lines).
-Hunk #2 succeeded at 2702 (offset 186 lines).
-Hunk #3 succeeded at 2826 (offset 186 lines).
-Hunk #4 succeeded at 2971 (offset 186 lines).
-patching file drivers/net/ethernet/intel/igb/igb_main.c
-Hunk #1 succeeded at 188 with fuzz 2 (offset 12 lines).
-Hunk #2 succeeded at 1636 (offset 23 lines).
-Hunk #3 succeeded at 2085 (offset 26 lines).
-Hunk #4 succeeded at 2448 with fuzz 1 (offset 47 lines).
-Hunk #5 FAILED at 2996.
-Hunk #6 succeeded at 3259 (offset 77 lines).
-Hunk #7 FAILED@8135.
-2 out of 7 hunks FAILED -- saving rejects to file
-drivers/net/ethernet/intel/igb/igb_main.c.rej
+Error ids grouped by kconfigs:
 
-Make sure you are running `git branch -b origin/dev-queue` after
-cloning my next-queue tree.
+recent_errors
+??? ia64-defconfig
+    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_uc
+    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_wb
 
-Dropping this series and will await an updated series.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151224/22b20ffa/attachment-0001.asc>
+elapsed time: 87m
+
+configs tested: 103
+
+i386                     randconfig-a0-201551
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+arm                          imote2_defconfig
+arm                    realview-smp_defconfig
+mips                             allyesconfig
+powerpc                     mpc86xx_defconfig
+powerpc                     taishan_defconfig
+x86_64               randconfig-x019-12250254
+x86_64               randconfig-x017-12250254
+x86_64               randconfig-x015-12250254
+x86_64               randconfig-x013-12250254
+x86_64               randconfig-x010-12250254
+x86_64               randconfig-x016-12250254
+x86_64               randconfig-x011-12250254
+x86_64               randconfig-x012-12250254
+x86_64               randconfig-x018-12250254
+x86_64               randconfig-x014-12250254
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201551
+i386                     randconfig-s1-201551
+x86_64                           allmodconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                 randconfig-i0-12250240
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                     randconfig-i0-201551
+i386                     randconfig-i1-201551
+i386                             allyesconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201551
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+i386                   randconfig-r0-12250244
+i386                 randconfig-x005-12222106
+i386                 randconfig-x004-12222106
+i386                 randconfig-x002-12222106
+i386                 randconfig-x006-12222106
+i386                 randconfig-x007-12222106
+i386                 randconfig-x003-12222106
+i386                 randconfig-x009-12222106
+i386                 randconfig-x008-12222106
+i386                 randconfig-x001-12222106
+i386                 randconfig-x000-12222106
+
+Thanks,
+Fengguang
