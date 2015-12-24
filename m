@@ -1,30 +1,73 @@
-From: Schmitt, Phillip J <phillip.j.schmitt@intel.com>
-Date: Thu, 24 Dec 2015 20:45:38 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbevf: minor cleanups
-	for	ixgbevf_set_itr()
-In-Reply-To: <20151105000221.27372.83040.stgit@localhost6.localdomain6>
-References: <20151105000221.27372.83040.stgit@localhost6.localdomain6>
-Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E180CFBFB4@ORSMSX108.amr.corp.intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Thu, 24 Dec 2015 14:02:43 -0800
+Subject: [Intel-wired-lan] [next PATCH 1/3] igb: Enable the ethtool
+ interface fo Rx filter
+In-Reply-To: <1450925102-28992-2-git-send-email-gangfeng.huang@ni.com>
+References: <1450925102-28992-1-git-send-email-gangfeng.huang@ni.com>
+ <1450925102-28992-2-git-send-email-gangfeng.huang@ni.com>
+Message-ID: <1450994563.3316.42.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Emil Tantilov
-> Sent: Wednesday, November 04, 2015 4:02 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] ixgbevf: minor cleanups for ixgbevf_set_itr()
+On Thu, 2015-12-24 at 10:45 +0800, Gangfeng wrote:
+> From: Gangfeng Huang <gangfeng.huang@ni.com>
 > 
-> adapter->rx_itr_setting is not a mask so check it with == instead of &
-> do not default to 12K interrupts in ixgbevf_set_itr()
+> This patch is meant to allow for nfc to insert and remove Rx filter
+> by ethtool. Ethtool interface has it's own rules manager
 > 
-> There should be no functional effect from these changes.
+> Show all filters:
+> $ ethtool -n eth0
+> 4 RX rings available
+> Total 2 rules
 > 
-> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+> Signed-off-by: Ruhao Gao <ruhao.gao@ni.com>
+> Signed-off-by: Gangfeng Huang <gangfeng.huang@ni.com>
+> ---
+> ?drivers/net/ethernet/intel/igb/igb.h???????? |?? 31 +++++
+> ?drivers/net/ethernet/intel/igb/igb_ethtool.c |? 193
+> ++++++++++++++++++++++++++
+> ?drivers/net/ethernet/intel/igb/igb_main.c??? |?? 57 ++++++++
+> ?3 files changed, 281 insertions(+)
 
-Tested-by: Phil Schmitt <phillip.j.schmitt@intel.com>
+Still does not apply cleanly, are you sure you are using the dev-queue
+branch of mt next-queue tree?
+
+Here is what I get when I try to apply it by hand:
+[13:53:24 @jtkirshe-linux:next-queue]$ patch -p1 <.apply/next-1-3-igb-
+Enable-the-ethtool-interface-fo-Rx-filter.patch?
+patching file drivers/net/ethernet/intel/igb/igb.h
+Hunk #1 succeeded at 353 (offset 5 lines).
+Hunk #2 FAILED at 476.
+Hunk #3 succeeded at 612 (offset 17 lines).
+1 out of 3 hunks FAILED -- saving rejects to file
+drivers/net/ethernet/intel/igb/igb.h.rej
+patching file drivers/net/ethernet/intel/igb/igb_ethtool.c
+Hunk #1 succeeded at 2607 (offset 186 lines).
+Hunk #2 succeeded at 2702 (offset 186 lines).
+Hunk #3 succeeded at 2826 (offset 186 lines).
+Hunk #4 succeeded at 2971 (offset 186 lines).
+patching file drivers/net/ethernet/intel/igb/igb_main.c
+Hunk #1 succeeded at 188 with fuzz 2 (offset 12 lines).
+Hunk #2 succeeded at 1636 (offset 23 lines).
+Hunk #3 succeeded at 2085 (offset 26 lines).
+Hunk #4 succeeded at 2448 with fuzz 1 (offset 47 lines).
+Hunk #5 FAILED at 2996.
+Hunk #6 succeeded at 3259 (offset 77 lines).
+Hunk #7 FAILED@8135.
+2 out of 7 hunks FAILED -- saving rejects to file
+drivers/net/ethernet/intel/igb/igb_main.c.rej
+
+Make sure you are running `git branch -b origin/dev-queue` after
+cloning my next-queue tree.
+
+Dropping this series and will await an updated series.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151224/22b20ffa/attachment-0001.asc>
