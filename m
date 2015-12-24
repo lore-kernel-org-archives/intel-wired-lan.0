@@ -1,46 +1,30 @@
-From: Schmitt, Phillip J <phillip.j.schmitt@intel.com>
-Date: Wed, 23 Dec 2015 23:09:33 +0000
-Subject: [Intel-wired-lan] [next PATCH v2] ixgbe: Fix bugs
-	in	ixgbe_clear_vf_vlans()
-In-Reply-To: <20151223165946.30452.68020.stgit@localhost.localdomain>
-References: <20151223165946.30452.68020.stgit@localhost.localdomain>
-Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E180CFBAF3@ORSMSX108.amr.corp.intel.com>
+From: Gangfeng <gangfeng.huang@ni.com>
+Date: Thu, 24 Dec 2015 10:44:59 +0800
+Subject: [Intel-wired-lan] [next PATCH 0/3] igb: add Rx ethertype filter and
+	VLAN priority filter
+Message-ID: <1450925102-28992-1-git-send-email-gangfeng.huang@ni.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Rebase the patch on the next-queue tree
 
+Gangfeng Huang (3):
+  igb: Enable the ethtool interface fo Rx filter
+  igb: add support of ethertype RX filters
+  igb: add support of Rx VLAN priority filters
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Alexander Duyck
-> Sent: Wednesday, December 23, 2015 9:01 AM
-> To: intel-wired-lan at lists.osuosl.org; alexander.duyck at gmail.com
-> Subject: [Intel-wired-lan] [next PATCH v2] ixgbe: Fix bugs in
-> ixgbe_clear_vf_vlans()
-> 
-> When I had rewritten the code for ixgbe_clear_vf_vlans() it looks like I had
-> transitioned back and forth between using word as an offset and using word as a
-> register offset.  As a result I honestly don't see how the code was working
-> before other than the fact that resetting the VLANs on the VF like didn't do much
-> to clear them.
-> 
-> Another issue found is that the mask was using a divide instead of a modulus.  As
-> a result the mask bit was incorrectly being set to either bit
-> 0 or 1 based on the value of the VF being tested.  As a result the wrong VFs were
-> having their VLANs cleared if they were enabled.
-> 
-> I have updated the code so that word represents the offset in the array.
-> This way we can use the modulus and xor operations and they will make sense
-> instead of being performed on a 4 byte aligned value.
-> 
-> I replaced the statement "(word % 2) ^ 1" with "~word % 2" in order to reduce
-> the line length as the line exceeded 80 characters with the register name
-> inserted.  The two should be equivilent so the change should be safe.
-> 
-> Reported-by: Emil Tantilov <emil.s.tantilov@intel.com>
-> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+ drivers/net/ethernet/intel/igb/e1000_82575.h   |    5 +
+ drivers/net/ethernet/intel/igb/e1000_defines.h |    5 +
+ drivers/net/ethernet/intel/igb/e1000_regs.h    |    1 +
+ drivers/net/ethernet/intel/igb/igb.h           |   52 ++++
+ drivers/net/ethernet/intel/igb/igb_ethtool.c   |  345 ++++++++++++++++++++++++
+ drivers/net/ethernet/intel/igb/igb_main.c      |   57 ++++
+ drivers/net/ethernet/intel/igb/igb_ptp.c       |    4 +-
+ 7 files changed, 467 insertions(+), 2 deletions(-)
 
-Tested-by: Phil Schmitt <phillip.j.schmitt@intel.com>
+-- 
+1.7.9.5
+
