@@ -1,262 +1,86 @@
-From: Gangfeng <gangfeng.huang@ni.com>
-Date: Fri, 25 Dec 2015 15:39:33 +0800
-Subject: [Intel-wired-lan] [PATCH next-queue 2/3] igb: add support of
-	ethertype RX filters
-In-Reply-To: <1451029174-32312-1-git-send-email-gangfeng.huang@ni.com>
-References: <1451029174-32312-1-git-send-email-gangfeng.huang@ni.com>
-Message-ID: <1451029174-32312-3-git-send-email-gangfeng.huang@ni.com>
+From: Tantilov, Emil S <emil.s.tantilov@intel.com>
+Date: Fri, 25 Dec 2015 15:57:40 +0000
+Subject: [Intel-wired-lan] [next PATCH v2] ixgbe: Fix bugs in
+	ixgbe_clear_vf_vlans()
+In-Reply-To: <20151223165946.30452.68020.stgit@localhost.localdomain>
+References: <20151223165946.30452.68020.stgit@localhost.localdomain>
+Message-ID: <87618083B2453E4A8714035B62D67992504F4017@FMSMSX105.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Gangfeng Huang <gangfeng.huang@ni.com>
+>-----Original Message-----
+>From: Alexander Duyck [mailto:aduyck at mirantis.com]
+>Sent: Wednesday, December 23, 2015 9:01 AM
+To: intel-wired-lan@lists.osuosl.org; alexander.duyck at gmail.com
+>Cc: Tantilov, Emil S; Kirsher, Jeffrey T
+>Subject: [next PATCH v2] ixgbe: Fix bugs in ixgbe_clear_vf_vlans()
+>
+>When I had rewritten the code for ixgbe_clear_vf_vlans() it looks like I
+>had transitioned back and forth between using word as an offset and using
+>word as a register offset.  As a result I honestly don't see how the code
+>was working before other than the fact that resetting the VLANs on the VF
+>like didn't do much to clear them.
+>
+>Another issue found is that the mask was using a divide instead of a
+>modulus.  As a result the mask bit was incorrectly being set to either bit
+>0 or 1 based on the value of the VF being tested.  As a result the wrong
+>VFs were having their VLANs cleared if they were enabled.
+>
+>I have updated the code so that word represents the offset in the array.
+>This way we can use the modulus and xor operations and they will make sense
+>instead of being performed on a 4 byte aligned value.
+>
+>I replaced the statement "(word % 2) ^ 1" with "~word % 2" in order to
+>reduce the line length as the line exceeded 80 characters with the register
+>name inserted.  The two should be equivilent so the change should be safe.
+>
+>Reported-by: Emil Tantilov <emil.s.tantilov@intel.com>
+>Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+>---
+>
+>v2: Fixed incorrect configuration for mask that used division instead of
+>    modulus.
+>
+> drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |    8 ++++----
+> 1 file changed, 4 insertions(+), 4 deletions(-)
+>
+>diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+>b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+>index eeff3d075bf8..8025a3f93598 100644
+>--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+>+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+>@@ -593,11 +593,11 @@ static void ixgbe_clear_vf_vlans(struct ixgbe_adapter
+>*adapter, u32 vf)
+>
+> 	/* post increment loop, covers VLVF_ENTRIES - 1 to 0 */
+> 	for (i = IXGBE_VLVF_ENTRIES; i--;) {
+>-		u32 word = IXGBE_VLVFB(i * 2 + vf / 32);
+> 		u32 bits[2], vlvfb, vid, vfta, vlvf;
+>-		u32 mask = 1 << (vf / 32);
+>+		u32 word = i * 2 + vf / 32;
+>+		u32 mask = 1 << (vf % 32);
+>
+>-		vlvfb = IXGBE_READ_REG(hw, word);
+>+		vlvfb = IXGBE_READ_REG(hw, IXGBE_VLVFB(word));
+>
+> 		/* if our bit isn't set we can skip it */
+> 		if (!(vlvfb & mask))
+>@@ -608,7 +608,7 @@ static void ixgbe_clear_vf_vlans(struct ixgbe_adapter
+>*adapter, u32 vf)
+>
+> 		/* create 64b mask to chedk to see if we should clear VLVF */
+> 		bits[word % 2] = vlvfb;
+>-		bits[(word % 2) ^ 1] = IXGBE_READ_REG(hw, word ^ 1);
+>+		bits[~word % 2] = IXGBE_READ_REG(hw, IXGBE_VLVFB(word ^ 1));
+>
+> 		/* if promisc is enabled, PF will be present, leave VFTA */
+> 		if (adapter->flags2 & IXGBE_FLAG2_VLAN_PROMISC) {
 
-This patch is meant to allow for nfc to insert and remove ethertype filter
-by ethtool
+This looks good. Thanks Alex!
 
-Example:
-Add an ethertype filter:
-$ ethtool -N eth0 flow-type ether proto 0x88F8 action 2
+Acked-by: Emil Tantilov <emil.s.tantilov@intel.com>
 
-Show all filters:
-$ ethtool -n eth0
-4 RX rings available
-Total 1 rules
-
-Filter: 15
-	Flow Type: Raw Ethernet
-	Src MAC addr: 00:00:00:00:00:00 mask: FF:FF:FF:FF:FF:FF
-	Dest MAC addr: 00:00:00:00:00:00 mask: FF:FF:FF:FF:FF:FF
-	Ethertype: 0x88F8 mask: 0x0
-	Action: Direct to queue 2
-
-Delete the filter by location:
-$ ethtool -N delete 15
-
-Signed-off-by: Ruhao Gao <ruhao.gao@ni.com>
-Signed-off-by: Gangfeng Huang <gangfeng.huang@ni.com>
----
- drivers/net/ethernet/intel/igb/e1000_82575.h |    5 ++
- drivers/net/ethernet/intel/igb/igb.h         |   20 ++++++-
- drivers/net/ethernet/intel/igb/igb_ethtool.c |   77 +++++++++++++++++++++++++-
- drivers/net/ethernet/intel/igb/igb_ptp.c     |    4 +-
- 4 files changed, 102 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.h b/drivers/net/ethernet/intel/igb/e1000_82575.h
-index 2154aea..c4a34e1 100644
---- a/drivers/net/ethernet/intel/igb/e1000_82575.h
-+++ b/drivers/net/ethernet/intel/igb/e1000_82575.h
-@@ -187,7 +187,12 @@ struct e1000_adv_tx_context_desc {
- 
- /* ETQF register bit definitions */
- #define E1000_ETQF_FILTER_ENABLE   (1 << 26)
-+#define E1000_ETQF_IMM_INT         (1 << 29)
- #define E1000_ETQF_1588            (1 << 30)
-+#define E1000_ETQF_QUEUE_ENABLE    (1 << 31)
-+#define E1000_ETQF_QUEUE_SHIFT     16
-+#define E1000_ETQF_QUEUE_MASK      0x00070000
-+#define E1000_ETQF_ETYPE_MASK      0x0000FFFF
- 
- /* FTQF register bit definitions */
- #define E1000_FTQF_VF_BP               0x00008000
-diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index 7bcdf94..950eed5 100644
---- a/drivers/net/ethernet/intel/igb/igb.h
-+++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -343,13 +343,27 @@ struct hwmon_buff {
- 	};
- #endif
- 
-+/* The number of L2 ether-type filter registers, Index 3 is reserved
-+ * for PTP 1588 timestamp
-+ */
-+#define MAX_ETYPE_FILTER  (4 - 1)
-+
-+/* ETQF filter list: one static filter per filter consumer. This is
-+ *                   to avoid filter collisions later. Add new filters
-+ *                   here!!
-+ *
-+ * Current filters:
-+ *    1588 (0x88f7):         Filter 3
-+ */
-+#define IGB_ETQF_FILTER_1588   3
-+
- #define IGB_N_EXTTS	2
- #define IGB_N_PEROUT	2
- #define IGB_N_SDP	4
- #define IGB_RETA_SIZE	128
- 
- enum igb_filter_match_flags {
--	IGB_FILTER_FLAG_NONE        = 0x0,
-+	IGB_FILTER_FLAG_ETHER_TYPE  = 0x1,
- };
- 
- #define IGB_MAX_RXNFC_FILTERS 16
-@@ -357,8 +371,10 @@ enum igb_filter_match_flags {
- struct igb_nfc_input {
- 	/* Byte layout in order, all values with MSB first:
- 	* match_flags - 1 byte
-+	* etype       - 2 bytes
- 	*/
- 	u8     match_flags;
-+	__be16 etype;
- };
- 
- /* board specific private data structure */
-@@ -484,11 +500,13 @@ struct igb_adapter {
- 	unsigned int nfc_filter_count;
- 	/* lock for nfc filter */
- 	spinlock_t nfc_lock;
-+	bool etype_bitmap[MAX_ETYPE_FILTER];
- };
- 
- struct igb_nfc_filter {
- 	struct hlist_node nfc_node;
- 	struct igb_nfc_input filter;
-+	u16 etype_reg_index;
- 	u16 sw_idx;
- 	u16 action;
- };
-diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index 5847daf..3b70475 100644
---- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -2431,6 +2431,7 @@ static int igb_get_ts_info(struct net_device *dev,
- 	}
- }
- 
-+#define ETHER_TYPE_FULL_MASK ((__force __be16)~0)
- static int igb_get_ethtool_nfc_entry(struct igb_adapter *adapter,
- 				     struct ethtool_rxnfc *cmd)
- {
-@@ -2448,6 +2449,13 @@ static int igb_get_ethtool_nfc_entry(struct igb_adapter *adapter,
- 	if (!rule || fsp->location != rule->sw_idx)
- 		return -EINVAL;
- 
-+	if (rule->filter.match_flags & IGB_FILTER_FLAG_ETHER_TYPE) {
-+		fsp->flow_type = ETHER_FLOW;
-+		fsp->ring_cookie = rule->action;
-+		fsp->h_u.ether_spec.h_proto = rule->filter.etype;
-+		fsp->m_u.ether_spec.h_proto = ETHER_TYPE_FULL_MASK;
-+		return 0;
-+	}
- 	return -EINVAL;
- }
- 
-@@ -2650,13 +2658,75 @@ static int igb_set_rss_hash_opt(struct igb_adapter *adapter,
- 	return 0;
- }
- 
-+static int igb_rxnfc_write_etype_filter(struct igb_adapter *adapter,
-+					struct igb_nfc_filter *input)
-+{
-+	struct e1000_hw *hw = &adapter->hw;
-+	u8 i;
-+	u32 etqf;
-+	u16 etype;
-+
-+	/* find an empty etype filter register */
-+	for (i = 0; i < MAX_ETYPE_FILTER; ++i) {
-+		if (!adapter->etype_bitmap[i])
-+			break;
-+	}
-+	if (i == MAX_ETYPE_FILTER) {
-+		dev_err(&adapter->pdev->dev, "ethtool -N: etype filters are all used.\n");
-+		return -EINVAL;
-+	}
-+
-+	adapter->etype_bitmap[i] = true;
-+
-+	etqf = rd32(E1000_ETQF(i));
-+	etype = ntohs(input->filter.etype & ETHER_TYPE_FULL_MASK);
-+
-+	etqf |= E1000_ETQF_FILTER_ENABLE;
-+	etqf &= ~E1000_ETQF_ETYPE_MASK;
-+	etqf |= (etype & E1000_ETQF_ETYPE_MASK);
-+
-+	etqf &= ~E1000_ETQF_QUEUE_MASK;
-+	etqf |= ((input->action << E1000_ETQF_QUEUE_SHIFT)
-+		& E1000_ETQF_QUEUE_MASK);
-+	etqf |= E1000_ETQF_QUEUE_ENABLE;
-+
-+	wr32(E1000_ETQF(i), etqf);
-+
-+	input->etype_reg_index = i;
-+
-+	return 0;
-+}
-+
- int igb_add_filter(struct igb_adapter *adapter, struct igb_nfc_filter *input)
- {
--	return -EINVAL;
-+	int err = -EINVAL;
-+
-+	if (input->filter.match_flags & IGB_FILTER_FLAG_ETHER_TYPE)
-+		err = igb_rxnfc_write_etype_filter(adapter, input);
-+
-+	return err;
-+}
-+
-+static void igb_clear_etype_filter_regs(struct igb_adapter *adapter,
-+					u16 reg_index)
-+{
-+	struct e1000_hw *hw = &adapter->hw;
-+	u32 etqf = rd32(E1000_ETQF(reg_index));
-+
-+	etqf &= ~E1000_ETQF_QUEUE_ENABLE;
-+	etqf &= ~E1000_ETQF_QUEUE_MASK;
-+	etqf &= ~E1000_ETQF_FILTER_ENABLE;
-+
-+	wr32(E1000_ETQF(reg_index), etqf);
-+
-+	adapter->etype_bitmap[reg_index] = false;
- }
- 
- int igb_erase_filter(struct igb_adapter *adapter, struct igb_nfc_filter *input)
- {
-+	if (input->filter.match_flags & IGB_FILTER_FLAG_ETHER_TYPE)
-+		igb_clear_etype_filter_regs(adapter,
-+					    input->etype_reg_index);
- 	return 0;
- }
- 
-@@ -2738,10 +2808,15 @@ static int igb_add_ethtool_nfc_entry(struct igb_adapter *adapter,
- 	if ((fsp->flow_type & ~FLOW_EXT) != ETHER_FLOW)
- 		return -EINVAL;
- 
-+	if (fsp->m_u.ether_spec.h_proto != ETHER_TYPE_FULL_MASK)
-+		return -EINVAL;
-+
- 	input = kzalloc(sizeof(*input), GFP_KERNEL);
- 	if (!input)
- 		return -ENOMEM;
- 
-+	input->filter.etype = fsp->h_u.ether_spec.h_proto;
-+	input->filter.match_flags = IGB_FILTER_FLAG_ETHER_TYPE;
- 	input->action = fsp->ring_cookie;
- 	input->sw_idx = fsp->location;
- 
-diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
-index c44df87..84c4943 100644
---- a/drivers/net/ethernet/intel/igb/igb_ptp.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
-@@ -940,12 +940,12 @@ static int igb_ptp_set_timestamp_mode(struct igb_adapter *adapter,
- 
- 	/* define ethertype filter for timestamped packets */
- 	if (is_l2)
--		wr32(E1000_ETQF(3),
-+		wr32(E1000_ETQF(IGB_ETQF_FILTER_1588),
- 		     (E1000_ETQF_FILTER_ENABLE | /* enable filter */
- 		      E1000_ETQF_1588 | /* enable timestamping */
- 		      ETH_P_1588));     /* 1588 eth protocol type */
- 	else
--		wr32(E1000_ETQF(3), 0);
-+		wr32(E1000_ETQF(IGB_ETQF_FILTER_1588), 0);
- 
- 	/* L4 Queue Filter[3]: filter by destination port and protocol */
- 	if (is_l4) {
--- 
-1.7.9.5
 
