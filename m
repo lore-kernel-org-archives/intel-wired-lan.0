@@ -1,10 +1,10 @@
 From: Gangfeng <gangfeng.huang@ni.com>
-Date: Fri, 25 Dec 2015 15:39:32 +0800
-Subject: [Intel-wired-lan] [PATCH next-queue 1/3] igb: Enable the ethtool
-	interface fo Rx filter
+Date: Fri, 25 Dec 2015 15:39:34 +0800
+Subject: [Intel-wired-lan] [PATCH next-queue 3/3] igb: add support of Rx
+	VLAN priority filters
 In-Reply-To: <1451029174-32312-1-git-send-email-gangfeng.huang@ni.com>
 References: <1451029174-32312-1-git-send-email-gangfeng.huang@ni.com>
-Message-ID: <1451029174-32312-2-git-send-email-gangfeng.huang@ni.com>
+Message-ID: <1451029174-32312-4-git-send-email-gangfeng.huang@ni.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,409 +13,238 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Gangfeng Huang <gangfeng.huang@ni.com>
 
-This patch is meant to allow for nfc to insert and remove Rx filter
-by ethtool. Ethtool interface has it's own rules manager
+This patch is meant to allow for nfc to insert and remove VLAN priority
+filter by ethtool
+
+Example:
+Add an VLAN priority filter:
+$ ethtool -N eth0 flow-type ether vlan 0x6000 vlan-mask 0x1FFF action 2 loc 1
 
 Show all filters:
 $ ethtool -n eth0
 4 RX rings available
-Total 2 rules
+Total 1 rules
+
+Filter: 1
+	Flow Type: Raw Ethernet
+	Src MAC addr: 00:00:00:00:00:00 mask: FF:FF:FF:FF:FF:FF
+	Dest MAC addr: 00:00:00:00:00:00 mask: FF:FF:FF:FF:FF:FF
+	Ethertype: 0x0 mask: 0xFFFF
+	VLAN EtherType: 0x0 mask: 0xffff
+	VLAN: 0x6000 mask: 0x1fff
+	User-defined: 0x0 mask: 0xffffffffffffffff
+	Action: Direct to queue 2
+
+Delete the filter by location:
+$ ethtool -N delete 1
 
 Signed-off-by: Ruhao Gao <ruhao.gao@ni.com>
 Signed-off-by: Gangfeng Huang <gangfeng.huang@ni.com>
 ---
- drivers/net/ethernet/intel/igb/igb.h         |   31 +++++
- drivers/net/ethernet/intel/igb/igb_ethtool.c |  193 ++++++++++++++++++++++++++
- drivers/net/ethernet/intel/igb/igb_main.c    |   57 ++++++++
- 3 files changed, 281 insertions(+)
+ drivers/net/ethernet/intel/igb/e1000_defines.h |    5 ++
+ drivers/net/ethernet/intel/igb/e1000_regs.h    |    1 +
+ drivers/net/ethernet/intel/igb/igb.h           |    3 +
+ drivers/net/ethernet/intel/igb/igb_ethtool.c   |   91 ++++++++++++++++++++++--
+ 4 files changed, 93 insertions(+), 7 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/igb/e1000_defines.h b/drivers/net/ethernet/intel/igb/e1000_defines.h
+index c3c598c..aed8664 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_defines.h
++++ b/drivers/net/ethernet/intel/igb/e1000_defines.h
+@@ -1023,4 +1023,9 @@
+ #define E1000_RTTBCNRC_RF_INT_MASK	\
+ 	(E1000_RTTBCNRC_RF_DEC_MASK << E1000_RTTBCNRC_RF_INT_SHIFT)
+ 
++/* VLAN Priority Filter */
++#define E1000_VLAPQF_QUEUE_SEL(_n, q_idx) (q_idx << ((_n) * 4))
++#define E1000_VLAPQF_P_VALID(_n)          (0x1 << (3 + (_n) * 4))
++#define E1000_VLAPQF_QUEUE_MASK           0x03
++
+ #endif
+diff --git a/drivers/net/ethernet/intel/igb/e1000_regs.h b/drivers/net/ethernet/intel/igb/e1000_regs.h
+index 21d9d02..9b66b6f 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_regs.h
++++ b/drivers/net/ethernet/intel/igb/e1000_regs.h
+@@ -309,6 +309,7 @@
+ 					(0x054E0 + ((_i - 16) * 8)))
+ #define E1000_RAH(_i)  (((_i) <= 15) ? (0x05404 + ((_i) * 8)) : \
+ 					(0x054E4 + ((_i - 16) * 8)))
++#define E1000_VLAPQF   0x055B0  /* VLAN Priority Queue Filter VLAPQF */
+ #define E1000_IP4AT_REG(_i)     (0x05840 + ((_i) * 8))
+ #define E1000_IP6AT_REG(_i)     (0x05880 + ((_i) * 4))
+ #define E1000_WUPM_REG(_i)      (0x05A00 + ((_i) * 4))
 diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index e3cb93b..7bcdf94 100644
+index 950eed5..8622ed9 100644
 --- a/drivers/net/ethernet/intel/igb/igb.h
 +++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -348,6 +348,19 @@ struct hwmon_buff {
- #define IGB_N_SDP	4
- #define IGB_RETA_SIZE	128
+@@ -364,6 +364,7 @@ struct hwmon_buff {
  
-+enum igb_filter_match_flags {
-+	IGB_FILTER_FLAG_NONE        = 0x0,
-+};
-+
-+#define IGB_MAX_RXNFC_FILTERS 16
-+
-+struct igb_nfc_input {
-+	/* Byte layout in order, all values with MSB first:
-+	* match_flags - 1 byte
-+	*/
-+	u8     match_flags;
-+};
-+
- /* board specific private data structure */
- struct igb_adapter {
- 	unsigned long active_vlans[BITS_TO_LONGS(VLAN_N_VID)];
-@@ -465,6 +478,19 @@ struct igb_adapter {
- 	int copper_tries;
- 	struct e1000_info ei;
- 	u16 eee_advert;
-+
-+	/* rxnfc support */
-+	struct hlist_head nfc_filter_list;
-+	unsigned int nfc_filter_count;
-+	/* lock for nfc filter */
-+	spinlock_t nfc_lock;
-+};
-+
-+struct igb_nfc_filter {
-+	struct hlist_node nfc_node;
-+	struct igb_nfc_input filter;
-+	u16 sw_idx;
-+	u16 action;
+ enum igb_filter_match_flags {
+ 	IGB_FILTER_FLAG_ETHER_TYPE  = 0x1,
++	IGB_FILTER_FLAG_VLAN_TCI    = 0x2,
  };
  
- #define IGB_FLAG_HAS_MSI		(1 << 0)
-@@ -584,4 +610,9 @@ static inline struct netdev_queue *txring_txq(const struct igb_ring *tx_ring)
- 	return netdev_get_tx_queue(tx_ring->netdev, tx_ring->queue_index);
- }
+ #define IGB_MAX_RXNFC_FILTERS 16
+@@ -372,9 +373,11 @@ struct igb_nfc_input {
+ 	/* Byte layout in order, all values with MSB first:
+ 	* match_flags - 1 byte
+ 	* etype       - 2 bytes
++	* vlan_tci    - 2 bytes
+ 	*/
+ 	u8     match_flags;
+ 	__be16 etype;
++	__be16 vlan_tci;
+ };
  
-+int igb_add_filter(struct igb_adapter *adapter,
-+		   struct igb_nfc_filter *input);
-+int igb_erase_filter(struct igb_adapter *adapter,
-+		     struct igb_nfc_filter *input);
-+
- #endif /* _IGB_H_ */
+ /* board specific private data structure */
 diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index 1d329f1..5847daf 100644
+index 3b70475..e4420ab 100644
 --- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
 +++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -2431,6 +2431,48 @@ static int igb_get_ts_info(struct net_device *dev,
- 	}
- }
+@@ -2449,11 +2449,18 @@ static int igb_get_ethtool_nfc_entry(struct igb_adapter *adapter,
+ 	if (!rule || fsp->location != rule->sw_idx)
+ 		return -EINVAL;
  
-+static int igb_get_ethtool_nfc_entry(struct igb_adapter *adapter,
-+				     struct ethtool_rxnfc *cmd)
-+{
-+	struct ethtool_rx_flow_spec *fsp = &cmd->fs;
-+	struct igb_nfc_filter *rule = NULL;
-+
-+	/* report total rule count */
-+	cmd->data = IGB_MAX_RXNFC_FILTERS;
-+
-+	hlist_for_each_entry(rule, &adapter->nfc_filter_list, nfc_node) {
-+		if (fsp->location <= rule->sw_idx)
-+			break;
-+	}
-+
-+	if (!rule || fsp->location != rule->sw_idx)
-+		return -EINVAL;
-+
-+	return -EINVAL;
-+}
-+
-+static int igb_get_ethtool_nfc_all(struct igb_adapter *adapter,
-+				   struct ethtool_rxnfc *cmd,
-+				   u32 *rule_locs)
-+{
-+	struct igb_nfc_filter *rule;
-+	int cnt = 0;
-+
-+	/* report total rule count */
-+	cmd->data = IGB_MAX_RXNFC_FILTERS;
-+
-+	hlist_for_each_entry(rule, &adapter->nfc_filter_list, nfc_node) {
-+		if (cnt == cmd->rule_cnt)
-+			return -EMSGSIZE;
-+		rule_locs[cnt] = rule->sw_idx;
-+		cnt++;
-+	}
-+
-+	cmd->rule_cnt = cnt;
-+
-+	return 0;
-+}
-+
- static int igb_get_rss_hash_opts(struct igb_adapter *adapter,
- 				 struct ethtool_rxnfc *cmd)
- {
-@@ -2484,6 +2526,16 @@ static int igb_get_rxnfc(struct net_device *dev, struct ethtool_rxnfc *cmd,
- 		cmd->data = adapter->num_rx_queues;
- 		ret = 0;
- 		break;
-+	case ETHTOOL_GRXCLSRLCNT:
-+		cmd->rule_cnt = adapter->nfc_filter_count;
-+		ret = 0;
-+		break;
-+	case ETHTOOL_GRXCLSRULE:
-+		ret = igb_get_ethtool_nfc_entry(adapter, cmd);
-+		break;
-+	case ETHTOOL_GRXCLSRLALL:
-+		ret = igb_get_ethtool_nfc_all(adapter, cmd, rule_locs);
-+		break;
- 	case ETHTOOL_GRXFH:
- 		ret = igb_get_rss_hash_opts(adapter, cmd);
- 		break;
-@@ -2598,6 +2650,142 @@ static int igb_set_rss_hash_opt(struct igb_adapter *adapter,
+-	if (rule->filter.match_flags & IGB_FILTER_FLAG_ETHER_TYPE) {
++	if (rule->filter.match_flags) {
+ 		fsp->flow_type = ETHER_FLOW;
+ 		fsp->ring_cookie = rule->action;
+-		fsp->h_u.ether_spec.h_proto = rule->filter.etype;
+-		fsp->m_u.ether_spec.h_proto = ETHER_TYPE_FULL_MASK;
++		if (rule->filter.match_flags & IGB_FILTER_FLAG_ETHER_TYPE) {
++			fsp->h_u.ether_spec.h_proto = rule->filter.etype;
++			fsp->m_u.ether_spec.h_proto = ETHER_TYPE_FULL_MASK;
++		}
++		if (rule->filter.match_flags & IGB_FILTER_FLAG_VLAN_TCI) {
++			fsp->flow_type |= FLOW_EXT;
++			fsp->h_ext.vlan_tci = rule->filter.vlan_tci;
++			fsp->m_ext.vlan_tci = htons(VLAN_PRIO_MASK);
++		}
+ 		return 0;
+ 	}
+ 	return -EINVAL;
+@@ -2697,12 +2704,46 @@ static int igb_rxnfc_write_etype_filter(struct igb_adapter *adapter,
  	return 0;
  }
  
-+int igb_add_filter(struct igb_adapter *adapter, struct igb_nfc_filter *input)
++int igb_rxnfc_write_vlan_prio_filter(struct igb_adapter *adapter,
++				     struct igb_nfc_filter *input)
 +{
-+	return -EINVAL;
-+}
++	struct e1000_hw *hw = &adapter->hw;
++	u32 vlapqf;
++	u8 vlan_priority;
++	u16 queue_index;
 +
-+int igb_erase_filter(struct igb_adapter *adapter, struct igb_nfc_filter *input)
-+{
-+	return 0;
-+}
++	vlapqf = rd32(E1000_VLAPQF);
++	vlan_priority = (ntohs(input->filter.vlan_tci) & VLAN_PRIO_MASK)
++				>> VLAN_PRIO_SHIFT;
++	queue_index = (vlapqf >> (vlan_priority * 4)) & E1000_VLAPQF_QUEUE_MASK;
 +
-+static int igb_update_ethtool_nfc_entry(struct igb_adapter *adapter,
-+					struct igb_nfc_filter *input,
-+					u16 sw_idx)
-+{
-+	struct igb_nfc_filter *rule, *parent;
-+	int err = -EINVAL;
-+
-+	parent = NULL;
-+	rule = NULL;
-+
-+	hlist_for_each_entry(rule, &adapter->nfc_filter_list, nfc_node) {
-+		/* hash found, or no matching entry */
-+		if (rule->sw_idx >= sw_idx)
-+			break;
-+		parent = rule;
++	/* check whether this vlan prio is already set */
++	if ((vlapqf & E1000_VLAPQF_P_VALID(vlan_priority)) &&
++	    (queue_index != input->action)) {
++		dev_err(&adapter->pdev->dev, "ethtool rxnfc set vlan prio filter failed.\n");
++		return -EEXIST;
 +	}
 +
-+	/* if there is an old rule occupying our place remove it */
-+	if (rule && (rule->sw_idx == sw_idx)) {
-+		if (!input)
-+			err = igb_erase_filter(adapter, rule);
++	vlapqf |= E1000_VLAPQF_P_VALID(vlan_priority);
++	vlapqf |= E1000_VLAPQF_QUEUE_SEL(vlan_priority, input->action);
 +
-+		hlist_del(&rule->nfc_node);
-+		kfree(rule);
-+		adapter->nfc_filter_count--;
-+	}
-+
-+	/* If no input this was a delete, err should be 0 if a rule was
-+	 * successfully found and removed from the list else -EINVAL
-+	 */
-+	if (!input)
-+		return err;
-+
-+	/* initialize node */
-+	INIT_HLIST_NODE(&input->nfc_node);
-+
-+	/* add filter to the list */
-+	if (parent)
-+		hlist_add_behind(&parent->nfc_node, &input->nfc_node);
-+	else
-+		hlist_add_head(&input->nfc_node, &adapter->nfc_filter_list);
-+
-+	/* update counts */
-+	adapter->nfc_filter_count++;
++	wr32(E1000_VLAPQF, vlapqf);
 +
 +	return 0;
 +}
 +
-+static int igb_add_ethtool_nfc_entry(struct igb_adapter *adapter,
-+				     struct ethtool_rxnfc *cmd)
-+{
-+	struct net_device *netdev = adapter->netdev;
-+	struct ethtool_rx_flow_spec *fsp =
-+		(struct ethtool_rx_flow_spec *)&cmd->fs;
-+	struct igb_nfc_filter *input, *rule;
-+	int err = 0;
-+
-+	if (!(netdev->hw_features & NETIF_F_NTUPLE))
-+		return -ENOTSUPP;
-+
-+	/* Don't allow programming if the action is a queue greater than
-+	 * the number of online Rx queues.
-+	 */
-+	if ((fsp->ring_cookie == RX_CLS_FLOW_DISC) ||
-+	    (fsp->ring_cookie >= adapter->num_rx_queues)) {
-+		dev_err(&adapter->pdev->dev, "ethtool -N: The specified action is invalid\n");
-+		return -EINVAL;
-+	}
-+
-+	/* Don't allow indexes to exist outside of available space */
-+	if (fsp->location >= IGB_MAX_RXNFC_FILTERS) {
-+		dev_err(&adapter->pdev->dev, "Location out of range\n");
-+		return -EINVAL;
-+	}
-+
-+	if ((fsp->flow_type & ~FLOW_EXT) != ETHER_FLOW)
-+		return -EINVAL;
-+
-+	input = kzalloc(sizeof(*input), GFP_KERNEL);
-+	if (!input)
-+		return -ENOMEM;
-+
-+	input->action = fsp->ring_cookie;
-+	input->sw_idx = fsp->location;
-+
-+	spin_lock(&adapter->nfc_lock);
-+
-+	hlist_for_each_entry(rule, &adapter->nfc_filter_list, nfc_node) {
-+		if (!memcmp(&input->filter, &rule->filter,
-+			    sizeof(input->filter))) {
-+			err = -EEXIST;
-+			dev_err(&adapter->pdev->dev,
-+				"ethtool: this filter is already set\n");
-+			goto err_out_w_lock;
-+		}
-+	}
-+
-+	err = igb_add_filter(adapter, input);
-+	if (err)
-+		goto err_out_w_lock;
-+
-+	igb_update_ethtool_nfc_entry(adapter, input, input->sw_idx);
-+
-+	spin_unlock(&adapter->nfc_lock);
-+	return 0;
-+
-+err_out_w_lock:
-+	spin_unlock(&adapter->nfc_lock);
-+	kfree(input);
-+	return err;
-+}
-+
-+static int igb_del_ethtool_nfc_entry(struct igb_adapter *adapter,
-+				     struct ethtool_rxnfc *cmd)
-+{
-+	struct ethtool_rx_flow_spec *fsp =
-+		(struct ethtool_rx_flow_spec *)&cmd->fs;
-+	int err;
-+
-+	spin_lock(&adapter->nfc_lock);
-+	err = igb_update_ethtool_nfc_entry(adapter, NULL, fsp->location);
-+	spin_unlock(&adapter->nfc_lock);
-+
-+	return err;
-+}
-+
- static int igb_set_rxnfc(struct net_device *dev, struct ethtool_rxnfc *cmd)
+ int igb_add_filter(struct igb_adapter *adapter, struct igb_nfc_filter *input)
  {
- 	struct igb_adapter *adapter = netdev_priv(dev);
-@@ -2607,6 +2795,11 @@ static int igb_set_rxnfc(struct net_device *dev, struct ethtool_rxnfc *cmd)
- 	case ETHTOOL_SRXFH:
- 		ret = igb_set_rss_hash_opt(adapter, cmd);
- 		break;
-+	case ETHTOOL_SRXCLSRLINS:
-+		ret = igb_add_ethtool_nfc_entry(adapter, cmd);
-+		break;
-+	case ETHTOOL_SRXCLSRLDEL:
-+		ret = igb_del_ethtool_nfc_entry(adapter, cmd);
- 	default:
- 		break;
- 	}
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 31e5f39..e7a18c0 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -176,6 +176,9 @@ static int igb_ndo_get_vf_config(struct net_device *netdev, int vf,
- 				 struct ifla_vf_info *ivi);
- static void igb_check_vf_rate_limit(struct igb_adapter *);
+ 	int err = -EINVAL;
  
-+static void igb_nfc_filter_exit(struct igb_adapter *adapter);
-+static void igb_nfc_filter_restore(struct igb_adapter *adapter);
-+
- #ifdef CONFIG_PCI_IOV
- static int igb_vf_configure(struct igb_adapter *adapter, int vf);
- static int igb_pci_enable_sriov(struct pci_dev *dev, int num_vfs);
-@@ -1609,6 +1612,7 @@ static void igb_configure(struct igb_adapter *adapter)
- 	igb_setup_mrqc(adapter);
- 	igb_setup_rctl(adapter);
- 
-+	igb_nfc_filter_restore(adapter);
- 	igb_configure_tx(adapter);
- 	igb_configure_rx(adapter);
- 
-@@ -2054,6 +2058,21 @@ static int igb_set_features(struct net_device *netdev,
- 	if (!(changed & NETIF_F_RXALL))
- 		return 0;
- 
-+	if (!(features & NETIF_F_NTUPLE)) {
-+		struct hlist_node *node2;
-+		struct igb_nfc_filter *rule;
-+
-+		spin_lock(&adapter->nfc_lock);
-+		hlist_for_each_entry_safe(rule, node2,
-+					  &adapter->nfc_filter_list, nfc_node) {
-+			igb_erase_filter(adapter, rule);
-+			hlist_del(&rule->nfc_node);
-+			kfree(rule);
-+		}
-+		spin_unlock(&adapter->nfc_lock);
-+		adapter->nfc_filter_count = 0;
+-	if (input->filter.match_flags & IGB_FILTER_FLAG_ETHER_TYPE)
++	if (input->filter.match_flags & IGB_FILTER_FLAG_ETHER_TYPE) {
+ 		err = igb_rxnfc_write_etype_filter(adapter, input);
++		if (err)
++			return err;
 +	}
 +
- 	netdev->features = features;
- 
- 	if (netif_running(netdev))
-@@ -2371,6 +2390,16 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 				 NETIF_F_IPV6_CSUM |
- 				 NETIF_F_SG;
- 
-+	switch (hw->mac.type) {
-+	case e1000_i210:
-+	case e1000_i211:
-+	case e1000_i350:
-+		netdev->hw_features |= NETIF_F_NTUPLE;
-+		break;
-+	default:
-+		break;
-+	}
-+
- 	netdev->priv_flags |= IFF_SUPP_NOFCS;
- 
- 	if (pci_using_dac) {
-@@ -2975,6 +3004,8 @@ static int igb_sw_init(struct igb_adapter *adapter)
- 	adapter->min_frame_size = ETH_ZLEN + ETH_FCS_LEN;
- 
- 	spin_lock_init(&adapter->stats64_lock);
-+	spin_lock_init(&adapter->nfc_lock);
-+
- #ifdef CONFIG_PCI_IOV
- 	switch (hw->mac.type) {
- 	case e1000_82576:
-@@ -3161,6 +3192,8 @@ static int __igb_close(struct net_device *netdev, bool suspending)
- 	igb_down(adapter);
- 	igb_free_irq(adapter);
- 
-+	igb_nfc_filter_exit(adapter);
-+
- 	igb_free_all_tx_resources(adapter);
- 	igb_free_all_rx_resources(adapter);
- 
-@@ -8112,4 +8145,28 @@ int igb_reinit_queues(struct igb_adapter *adapter)
++	if (input->filter.match_flags & IGB_FILTER_FLAG_VLAN_TCI)
++		err = igb_rxnfc_write_vlan_prio_filter(adapter, input);
  
  	return err;
  }
-+
-+static void igb_nfc_filter_exit(struct igb_adapter *adapter)
+@@ -2722,11 +2763,33 @@ static void igb_clear_etype_filter_regs(struct igb_adapter *adapter,
+ 	adapter->etype_bitmap[reg_index] = false;
+ }
+ 
++static void igb_clear_vlan_prio_filter(struct igb_adapter *adapter,
++				       u16 vlan_tci)
 +{
-+	struct igb_nfc_filter *rule;
++	struct e1000_hw *hw = &adapter->hw;
++	u32 vlapqf;
++	u8 vlan_priority;
 +
-+	spin_lock(&adapter->nfc_lock);
++	vlan_priority = (vlan_tci & VLAN_PRIO_MASK) >> VLAN_PRIO_SHIFT;
 +
-+	hlist_for_each_entry(rule, &adapter->nfc_filter_list, nfc_node)
-+		igb_erase_filter(adapter, rule);
++	vlapqf = rd32(E1000_VLAPQF);
++	vlapqf &= ~E1000_VLAPQF_P_VALID(vlan_priority);
++	vlapqf &= ~E1000_VLAPQF_QUEUE_SEL(vlan_priority,
++						E1000_VLAPQF_QUEUE_MASK);
 +
-+	spin_unlock(&adapter->nfc_lock);
++	wr32(E1000_VLAPQF, vlapqf);
 +}
 +
-+static void igb_nfc_filter_restore(struct igb_adapter *adapter)
-+{
-+	struct igb_nfc_filter *rule;
+ int igb_erase_filter(struct igb_adapter *adapter, struct igb_nfc_filter *input)
+ {
+ 	if (input->filter.match_flags & IGB_FILTER_FLAG_ETHER_TYPE)
+ 		igb_clear_etype_filter_regs(adapter,
+ 					    input->etype_reg_index);
 +
-+	spin_lock(&adapter->nfc_lock);
++	if (input->filter.match_flags & IGB_FILTER_FLAG_VLAN_TCI)
++		igb_clear_vlan_prio_filter(adapter,
++					   ntohs(input->filter.vlan_tci));
 +
-+	hlist_for_each_entry(rule, &adapter->nfc_filter_list, nfc_node)
-+		igb_add_filter(adapter, rule);
+ 	return 0;
+ }
+ 
+@@ -2808,15 +2871,28 @@ static int igb_add_ethtool_nfc_entry(struct igb_adapter *adapter,
+ 	if ((fsp->flow_type & ~FLOW_EXT) != ETHER_FLOW)
+ 		return -EINVAL;
+ 
+-	if (fsp->m_u.ether_spec.h_proto != ETHER_TYPE_FULL_MASK)
++	if (fsp->m_u.ether_spec.h_proto != ETHER_TYPE_FULL_MASK &&
++	    fsp->m_ext.vlan_tci != htons(VLAN_PRIO_MASK))
+ 		return -EINVAL;
+ 
+ 	input = kzalloc(sizeof(*input), GFP_KERNEL);
+ 	if (!input)
+ 		return -ENOMEM;
+ 
+-	input->filter.etype = fsp->h_u.ether_spec.h_proto;
+-	input->filter.match_flags = IGB_FILTER_FLAG_ETHER_TYPE;
++	if (fsp->m_u.ether_spec.h_proto == ETHER_TYPE_FULL_MASK) {
++		input->filter.etype = fsp->h_u.ether_spec.h_proto;
++		input->filter.match_flags = IGB_FILTER_FLAG_ETHER_TYPE;
++	}
 +
-+	spin_unlock(&adapter->nfc_lock);
-+}
- /* igb_main.c */
++	if ((fsp->flow_type & FLOW_EXT) && fsp->m_ext.vlan_tci) {
++		if (fsp->m_ext.vlan_tci != htons(VLAN_PRIO_MASK)) {
++			err = -EINVAL;
++			goto err_out;
++		}
++		input->filter.vlan_tci = fsp->h_ext.vlan_tci;
++		input->filter.match_flags |= IGB_FILTER_FLAG_VLAN_TCI;
++	}
++
+ 	input->action = fsp->ring_cookie;
+ 	input->sw_idx = fsp->location;
+ 
+@@ -2843,6 +2919,7 @@ static int igb_add_ethtool_nfc_entry(struct igb_adapter *adapter,
+ 
+ err_out_w_lock:
+ 	spin_unlock(&adapter->nfc_lock);
++err_out:
+ 	kfree(input);
+ 	return err;
+ }
 -- 
 1.7.9.5
 
