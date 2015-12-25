@@ -1,86 +1,53 @@
-From: Tantilov, Emil S <emil.s.tantilov@intel.com>
-Date: Fri, 25 Dec 2015 15:57:40 +0000
-Subject: [Intel-wired-lan] [next PATCH v2] ixgbe: Fix bugs in
-	ixgbe_clear_vf_vlans()
-In-Reply-To: <20151223165946.30452.68020.stgit@localhost.localdomain>
-References: <20151223165946.30452.68020.stgit@localhost.localdomain>
-Message-ID: <87618083B2453E4A8714035B62D67992504F4017@FMSMSX105.amr.corp.intel.com>
+From: Pavel Tikhomirov <ptikhomirov@virtuozzo.com>
+Date: Fri, 25 Dec 2015 19:26:12 +0300
+Subject: [Intel-wired-lan] [PATCH v2] ixgbe: on recv increment
+	rx.ring->stats.yields
+In-Reply-To: <1449842714-10284-1-git-send-email-ptikhomirov@virtuozzo.com>
+References: <566AD3F5.9050502@cogentembedded.com>
+ <1449842714-10284-1-git-send-email-ptikhomirov@virtuozzo.com>
+Message-ID: <567D6E24.3030302@virtuozzo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
->-----Original Message-----
->From: Alexander Duyck [mailto:aduyck at mirantis.com]
->Sent: Wednesday, December 23, 2015 9:01 AM
-To: intel-wired-lan@lists.osuosl.org; alexander.duyck at gmail.com
->Cc: Tantilov, Emil S; Kirsher, Jeffrey T
->Subject: [next PATCH v2] ixgbe: Fix bugs in ixgbe_clear_vf_vlans()
->
->When I had rewritten the code for ixgbe_clear_vf_vlans() it looks like I
->had transitioned back and forth between using word as an offset and using
->word as a register offset.  As a result I honestly don't see how the code
->was working before other than the fact that resetting the VLANs on the VF
->like didn't do much to clear them.
->
->Another issue found is that the mask was using a divide instead of a
->modulus.  As a result the mask bit was incorrectly being set to either bit
->0 or 1 based on the value of the VF being tested.  As a result the wrong
->VFs were having their VLANs cleared if they were enabled.
->
->I have updated the code so that word represents the offset in the array.
->This way we can use the modulus and xor operations and they will make sense
->instead of being performed on a 4 byte aligned value.
->
->I replaced the statement "(word % 2) ^ 1" with "~word % 2" in order to
->reduce the line length as the line exceeded 80 characters with the register
->name inserted.  The two should be equivilent so the change should be safe.
->
->Reported-by: Emil Tantilov <emil.s.tantilov@intel.com>
->Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
->---
->
->v2: Fixed incorrect configuration for mask that used division instead of
->    modulus.
->
-> drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |    8 ++++----
-> 1 file changed, 4 insertions(+), 4 deletions(-)
->
->diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
->b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
->index eeff3d075bf8..8025a3f93598 100644
->--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
->+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
->@@ -593,11 +593,11 @@ static void ixgbe_clear_vf_vlans(struct ixgbe_adapter
->*adapter, u32 vf)
->
-> 	/* post increment loop, covers VLVF_ENTRIES - 1 to 0 */
-> 	for (i = IXGBE_VLVF_ENTRIES; i--;) {
->-		u32 word = IXGBE_VLVFB(i * 2 + vf / 32);
-> 		u32 bits[2], vlvfb, vid, vfta, vlvf;
->-		u32 mask = 1 << (vf / 32);
->+		u32 word = i * 2 + vf / 32;
->+		u32 mask = 1 << (vf % 32);
->
->-		vlvfb = IXGBE_READ_REG(hw, word);
->+		vlvfb = IXGBE_READ_REG(hw, IXGBE_VLVFB(word));
->
-> 		/* if our bit isn't set we can skip it */
-> 		if (!(vlvfb & mask))
->@@ -608,7 +608,7 @@ static void ixgbe_clear_vf_vlans(struct ixgbe_adapter
->*adapter, u32 vf)
->
-> 		/* create 64b mask to chedk to see if we should clear VLVF */
-> 		bits[word % 2] = vlvfb;
->-		bits[(word % 2) ^ 1] = IXGBE_READ_REG(hw, word ^ 1);
->+		bits[~word % 2] = IXGBE_READ_REG(hw, IXGBE_VLVFB(word ^ 1));
->
-> 		/* if promisc is enabled, PF will be present, leave VFTA */
-> 		if (adapter->flags2 & IXGBE_FLAG2_VLAN_PROMISC) {
+Hi, please, let me know if I need to fix something else here.
 
-This looks good. Thanks Alex!
+On 12/11/2015 05:05 PM, Pavel Tikhomirov wrote:
+> It seem to be non intentionaly changed to tx in
+> commit adc810900a70 ("ixgbe: Refactor busy poll socket code to address
+> multiple issues")
+>
+> Lock is taken from ixgbe_low_latency_recv, and there under this
+> lock we use ixgbe_clean_rx_irq so it looks wrong for me to increment
+> tx counter.
+>
+> Yield stats can be shown through ethtool:
+> ethtool -S enp129s0 | grep yield
+>
+> v2: follow commit citing style
+>
+> Signed-off-by: Pavel Tikhomirov <ptikhomirov@virtuozzo.com>
+> ---
+>   drivers/net/ethernet/intel/ixgbe/ixgbe.h | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+> index 1d21745..7656d46 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+> @@ -451,7 +451,7 @@ static inline bool ixgbe_qv_lock_poll(struct ixgbe_q_vector *q_vector)
+>   				IXGBE_QV_STATE_POLL);
+>   #ifdef BP_EXTENDED_STATS
+>   	if (rc != IXGBE_QV_STATE_IDLE)
+> -		q_vector->tx.ring->stats.yields++;
+> +		q_vector->rx.ring->stats.yields++;
+>   #endif
+>   	return rc == IXGBE_QV_STATE_IDLE;
+>   }
+>
 
-Acked-by: Emil Tantilov <emil.s.tantilov@intel.com>
-
-
+-- 
+Best regards, Tikhomirov Pavel
+Software Developer, Virtuozzo.
