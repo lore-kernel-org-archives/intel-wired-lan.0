@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 28 Dec 2015 17:55:40 +0000
-Subject: [Intel-wired-lan] [next PATCH S25 12/16] i40evf: enable bus
- master	after reset
-In-Reply-To: <1450901156-30904-13-git-send-email-deepthi.kavalur@intel.com>
+Date: Mon, 28 Dec 2015 18:00:57 +0000
+Subject: [Intel-wired-lan] [next PATCH S25 13/16] i40e: add netdev info
+ to	vsi dump
+In-Reply-To: <1450901156-30904-14-git-send-email-deepthi.kavalur@intel.com>
 References: <1450901156-30904-1-git-send-email-deepthi.kavalur@intel.com>
- <1450901156-30904-13-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F97B5A8@ORSMSX104.amr.corp.intel.com>
+ <1450901156-30904-14-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F97B5B8@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,24 +17,28 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Deepthi Kavalur
 > Sent: Wednesday, December 23, 2015 12:06 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S25 12/16] i40evf: enable bus master
-> after reset
+> Subject: [Intel-wired-lan] [next PATCH S25 13/16] i40e: add netdev info to vsi
+> dump
 > 
-> From: Mitch Williams <mitch.a.williams@intel.com>
+> From: Shannon Nelson <shannon.nelson@intel.com>
 > 
-> If the VF is reset via VFLR, the device will be knocked out of bus master
-> mode, and the driver will fail to recover from the reset. Fix this by enabling
-> bus mastering after every reset. In a non-VFLR case, the bus master bit will
-> not be disabled, and this call will have no effect.
+> Add a few more bits of netdev data into the debugfs output for dump vsi.
+> For now, we'll add the features, hw_features, vlan_features, and flags
+> bitflags and the state. More could be added later if needed.
 > 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-> Change-ID: Id515859ac7a691db478222228add6d149e96801a
+> Also, tweak a couple nearby output lines for output readability.
+> 
+> Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+> Reviewed-by: Brandeburg, Jesse <jesse.brandeburg@intel.com>
+> Reviewed-by: Wyborny, Carolyn <carolyn.wyborny@intel.com>
+> Change-ID: I9fb5a9da75c9ad7679498ce9ac3ba24d065ddd2e
 > ---
 > Testing-Hints:
-> Initiate a VFLR using "setpci -s <pci location of VF> CAP_EXP+8.W=8000"
+> Do a "dump vsi" in debugfs and see the new prints in the output.
 > 
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 1 +
->  1 file changed, 1 insertion(+)
+>  drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 24 ++++++++++++++++---
+> -----
+>  1 file changed, 16 insertions(+), 8 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied, driver properly recovers from reset
+Patch code changes correctly applied, vsi dump shows new info
