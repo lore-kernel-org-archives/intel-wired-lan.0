@@ -1,138 +1,55 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 30 Dec 2015 18:37:22 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 6b066d2f79cb8ca51cf855d3c6054405f70552a3 BUILD DONE
-Message-ID: <5683b3e2.DB8Al3dpu9pvNliw%fengguang.wu@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 30 Dec 2015 16:12:45 +0000
+Subject: [Intel-wired-lan] [next PATCH S23 08/13] i40e:
+	define	function	capabilities in only one place
+In-Reply-To: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F96F0D0@ORSMSX104.amr.corp.intel.com>
+References: <1449705033-4968-1-git-send-email-joshua.a.hay@intel.com>
+ <1449705033-4968-9-git-send-email-joshua.a.hay@intel.com>
+ <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F96F0D0@ORSMSX104.amr.corp.intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F97C977@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-6b066d2f79cb8ca51cf855d3c6054405f70552a3  igb: add support of Rx VLAN priority filters
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Bowers, AndrewX
+> Sent: Thursday, December 17, 2015 8:54 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: Re: [Intel-wired-lan] [next PATCH S23 08/13] i40e: define function
+> capabilities in only one place
+> 
+> > -----Original Message-----
+> > From: Intel-wired-lan
+> > [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Joshua
+> > Hay
+> > Sent: Wednesday, December 09, 2015 3:50 PM
+> > To: intel-wired-lan at lists.osuosl.org
+> > Subject: [Intel-wired-lan] [next PATCH S23 08/13] i40e: define
+> > function capabilities in only one place
+> >
+> > From: Shannon Nelson <shannon.nelson@intel.com>
+> >
+> > The device capabilities were defined in two places, and neither had
+> > all the definitions.  It really belongs with the AQ API definition, so
+> > this patch removes the other set of definitions and fills out the missing
+> item.
+> >
+> > Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+> > Acked-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> > Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> > Change-ID: I273ba7d79a476cd11d2e0ca5825fec1716740de2
+> > ---
+> > Testing Hints: Apply and compile cleanly
+> >
+> >  drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |  1 +
+> >  drivers/net/ethernet/intel/i40e/i40e_common.c      | 85 +++++++-----------
+> --
+> > --
+> >  .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    |  1 +
+> >  3 files changed, 30 insertions(+), 57 deletions(-)
 
-drivers/net/ethernet/intel/igb/igb_cdev.c:150:2: error: implicit declaration of function 'set_pages_uc' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/igb/igb_cdev.c:275:2: error: implicit declaration of function 'set_pages_wb' [-Werror=implicit-function-declaration]
-
-Error ids grouped by kconfigs:
-
-recent_errors
-??? ia64-defconfig
-    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_uc
-    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_wb
-
-elapsed time: 51m
-
-configs tested: 107
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                   randconfig-a0-12301114
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-parisc                         b180_defconfig
-i386                             allmodconfig
-x86_64               randconfig-x017-12300436
-x86_64               randconfig-x011-12300436
-x86_64               randconfig-x010-12300436
-x86_64               randconfig-x019-12300436
-x86_64               randconfig-x012-12300436
-x86_64               randconfig-x013-12300436
-x86_64               randconfig-x014-12300436
-x86_64               randconfig-x015-12300436
-x86_64               randconfig-x016-12300436
-x86_64               randconfig-x018-12300436
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201552
-i386                     randconfig-s1-201552
-x86_64                           allmodconfig
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-x86_64                 randconfig-i0-12301613
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                   randconfig-i0-12301306
-i386                   randconfig-i1-12301306
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-n0-12292007
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64               randconfig-x007-12291635
-x86_64               randconfig-x005-12291635
-x86_64               randconfig-x008-12291635
-x86_64               randconfig-x006-12291635
-x86_64               randconfig-x001-12291635
-x86_64               randconfig-x000-12291635
-x86_64               randconfig-x004-12291635
-x86_64               randconfig-x002-12291635
-x86_64               randconfig-x009-12291635
-x86_64               randconfig-x003-12291635
-i386                     randconfig-r0-201552
-i386                 randconfig-x004-12300610
-i386                 randconfig-x005-12300610
-i386                 randconfig-x003-12300610
-i386                 randconfig-x007-12300610
-i386                 randconfig-x001-12300610
-i386                 randconfig-x008-12300610
-i386                 randconfig-x000-12300610
-i386                 randconfig-x009-12300610
-i386                 randconfig-x002-12300610
-i386                 randconfig-x006-12300610
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-
-Thanks,
-Fengguang
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+ Patch code changes correctly applied
