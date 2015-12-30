@@ -1,49 +1,138 @@
-From: zyjzyj2000@gmail.com <zyjzyj2000@gmail.com>
-Date: Wed, 30 Dec 2015 17:16:35 +0800
-Subject: [Intel-wired-lan] [PATCH 3/3] ixgbe: synchronize the link_speed and
-	link_up of a slave interface
-In-Reply-To: <1451466995-19015-1-git-send-email-zyjzyj2000@gmail.com>
-References: <53C6554C-8692-4EF3-BF5D-7217D2C9FDA0@intel.com>
- <1451466995-19015-1-git-send-email-zyjzyj2000@gmail.com>
-Message-ID: <1451466995-19015-4-git-send-email-zyjzyj2000@gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 30 Dec 2015 18:37:22 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 6b066d2f79cb8ca51cf855d3c6054405f70552a3 BUILD DONE
+Message-ID: <5683b3e2.DB8Al3dpu9pvNliw%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Zhu Yanjun <yanjun.zhu@windriver.com>
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+6b066d2f79cb8ca51cf855d3c6054405f70552a3  igb: add support of Rx VLAN priority filters
 
-According to the suggestion from Rustad, Mark D, this behavior perhaps
-is more related to the copper phy. But to make fiber phy more robust,
-to all the interfaces as a slave interface, the link_speed and link_up
-is synchronized.
+drivers/net/ethernet/intel/igb/igb_cdev.c:150:2: error: implicit declaration of function 'set_pages_uc' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/intel/igb/igb_cdev.c:275:2: error: implicit declaration of function 'set_pages_wb' [-Werror=implicit-function-declaration]
 
-Signed-off-by: Zhu Yanjun <yanjun.zhu@windriver.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+Error ids grouped by kconfigs:
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 1bb6056..ce47639 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -6441,10 +6441,12 @@ static void ixgbe_watchdog_link_is_up(struct ixgbe_adapter *adapter)
- 	 * a bonding driver in 802.3ad mode. When X540 NIC acts as an
- 	 * independent interface, it is not necessary to synchronize link_up
- 	 * and link_speed.
--	 * In the end, not continue if (X540 NIC && SLAVE && link_speed UNKNOWN)
-+	 * According to the suggestion from Rustad, Mark D, this behavior
-+	 * perhaps is related to the copper phy. To make fiber phy more robust,
-+	 * To all the interfaces as a slave, the link_speed is checked.
-+	 * In the end, not continue if (SLAVE && link_speed UNKNOWN)
- 	 */
--	if ((hw->mac.type == ixgbe_mac_X540) &&
--	    (netdev->flags & IFF_SLAVE))
-+	if (netdev->flags & IFF_SLAVE)
- 		if (link_speed == IXGBE_LINK_SPEED_UNKNOWN)
- 			return;
- 
--- 
-1.7.9.5
+recent_errors
+??? ia64-defconfig
+    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_uc
+    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_wb
 
+elapsed time: 51m
+
+configs tested: 107
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                   randconfig-a0-12301114
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+parisc                         b180_defconfig
+i386                             allmodconfig
+x86_64               randconfig-x017-12300436
+x86_64               randconfig-x011-12300436
+x86_64               randconfig-x010-12300436
+x86_64               randconfig-x019-12300436
+x86_64               randconfig-x012-12300436
+x86_64               randconfig-x013-12300436
+x86_64               randconfig-x014-12300436
+x86_64               randconfig-x015-12300436
+x86_64               randconfig-x016-12300436
+x86_64               randconfig-x018-12300436
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201552
+i386                     randconfig-s1-201552
+x86_64                           allmodconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+x86_64                 randconfig-i0-12301613
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                   randconfig-i0-12301306
+i386                   randconfig-i1-12301306
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-n0-12292007
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64               randconfig-x007-12291635
+x86_64               randconfig-x005-12291635
+x86_64               randconfig-x008-12291635
+x86_64               randconfig-x006-12291635
+x86_64               randconfig-x001-12291635
+x86_64               randconfig-x000-12291635
+x86_64               randconfig-x004-12291635
+x86_64               randconfig-x002-12291635
+x86_64               randconfig-x009-12291635
+x86_64               randconfig-x003-12291635
+i386                     randconfig-r0-201552
+i386                 randconfig-x004-12300610
+i386                 randconfig-x005-12300610
+i386                 randconfig-x003-12300610
+i386                 randconfig-x007-12300610
+i386                 randconfig-x001-12300610
+i386                 randconfig-x008-12300610
+i386                 randconfig-x000-12300610
+i386                 randconfig-x009-12300610
+i386                 randconfig-x002-12300610
+i386                 randconfig-x006-12300610
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+
+Thanks,
+Fengguang
