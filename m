@@ -1,56 +1,126 @@
-From: zhuyj <zyjzyj2000@gmail.com>
-Date: Wed, 30 Dec 2015 11:06:54 +0800
-Subject: [Intel-wired-lan] [PATCH 2/2] ixgbe: restrict synchronization
- of link_up and speed
-In-Reply-To: <53C6554C-8692-4EF3-BF5D-7217D2C9FDA0@intel.com>
-References: <1450926752-11392-1-git-send-email-zyjzyj2000@gmail.com>
- <1451356326-2919-1-git-send-email-zyjzyj2000@gmail.com>
- <1451356326-2919-3-git-send-email-zyjzyj2000@gmail.com>
- <87618083B2453E4A8714035B62D67992504FB5FF@FMSMSX105.amr.corp.intel.com>
- <53C6554C-8692-4EF3-BF5D-7217D2C9FDA0@intel.com>
-Message-ID: <56834A4E.2090007@gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 30 Dec 2015 12:11:39 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:10GbE]
+ ab3a3b7b0cf88021376d565c526aa27b1e105148 BUILD SUCCESS
+Message-ID: <5683597b.yJU30GzS+CnafZdZ%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 12/30/2015 03:17 AM, Rustad, Mark D wrote:
-> Emil S <emil.s.tantilov@intel.com> wrote:
->
->>>   */
->>> -	if (hw->mac.type == ixgbe_mac_X540)
->>> +	if ((hw->mac.type == ixgbe_mac_X540) &&
->>> +	    (netdev->flags & IFF_SLAVE))
->>> 		if (link_speed == IXGBE_LINK_SPEED_UNKNOWN)
->>> 			return;
->> If you were to enter ixgbe_watchdog_link_is_up() with unknown speed, then I would
->> assume that you also have a dmesg that shows:
->> "NIC Link is Up unknown speed"
->>
->> by the interface you use in the bond?
-> It seems odd to be checking the MAC type for this. Is this behavior perhaps more related to the copper phy? If so, then the check should be changed. Or would the check for unknown link speed be sufficient? It seems like an interface as a slave would not work with an unknown link speed, so it may as well wait in all cases, not just for X540.
->
-> --
-> Mark Rustad, Networking Division, Intel Corporation
-Hi, Mark
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  10GbE
+ab3a3b7b0cf88021376d565c526aa27b1e105148  ixgbe: Fix bugs in ixgbe_clear_vf_vlans()
 
-Thanks for your suggestions.
-The following is the feedback from the customer.
-"
-...
-We observing this issue on x540T interfaces (8086:1528), but not on 
-82599_SFP (8086:10FB).
-...
-"
-To narrow this problem, I restrict mac.type to ixgbe_mac_X540. I agree 
-with you. Maybe this problem is
-related with the copper phy. But I only have X540 NIC to test. So it is 
-difficult for me to confirm whether this
-problem occurs on other mac type or not, such as X550.
+elapsed time: 47m
 
-I will consider your suggestions in the latest patch.
+configs tested: 105
 
-Thanks again.
+i386                   randconfig-a0-12301114
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                             allmodconfig
+x86_64               randconfig-x017-12300436
+x86_64               randconfig-x011-12300436
+x86_64               randconfig-x010-12300436
+x86_64               randconfig-x019-12300436
+x86_64               randconfig-x012-12300436
+x86_64               randconfig-x013-12300436
+x86_64               randconfig-x014-12300436
+x86_64               randconfig-x015-12300436
+x86_64               randconfig-x016-12300436
+x86_64               randconfig-x018-12300436
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                     randconfig-s0-201552
+i386                     randconfig-s1-201552
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                     randconfig-i0-201552
+i386                     randconfig-i1-201552
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-n0-12292007
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                   rhel
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                           allmodconfig
+x86_64               randconfig-x007-12291635
+x86_64               randconfig-x005-12291635
+x86_64               randconfig-x008-12291635
+x86_64               randconfig-x006-12291635
+x86_64               randconfig-x001-12291635
+x86_64               randconfig-x000-12291635
+x86_64               randconfig-x004-12291635
+x86_64               randconfig-x002-12291635
+x86_64               randconfig-x009-12291635
+x86_64               randconfig-x003-12291635
+i386                     randconfig-r0-201552
+i386                 randconfig-x004-12300610
+i386                 randconfig-x005-12300610
+i386                 randconfig-x003-12300610
+i386                 randconfig-x007-12300610
+i386                 randconfig-x001-12300610
+i386                 randconfig-x008-12300610
+i386                 randconfig-x000-12300610
+i386                 randconfig-x009-12300610
+i386                 randconfig-x002-12300610
+i386                 randconfig-x006-12300610
 
-Zhu Yanjun
+Thanks,
+Fengguang
