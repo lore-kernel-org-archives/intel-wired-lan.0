@@ -1,151 +1,106 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 30 Dec 2015 11:12:05 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 478650c5603a868a341a17fc35024ce4e374cf56 BUILD DONE
-Message-ID: <56834b85.I58taFqYURqIAEL6%fengguang.wu@intel.com>
+From: zhuyj <zyjzyj2000@gmail.com>
+Date: Wed, 30 Dec 2015 10:49:16 +0800
+Subject: [Intel-wired-lan] [PATCH 2/2] ixgbe: restrict synchronization
+ of link_up and speed
+In-Reply-To: <87618083B2453E4A8714035B62D67992504FB5FF@FMSMSX105.amr.corp.intel.com>
+References: <1450926752-11392-1-git-send-email-zyjzyj2000@gmail.com>
+ <1451356326-2919-1-git-send-email-zyjzyj2000@gmail.com>
+ <1451356326-2919-3-git-send-email-zyjzyj2000@gmail.com>
+ <87618083B2453E4A8714035B62D67992504FB5FF@FMSMSX105.amr.corp.intel.com>
+Message-ID: <5683462C.3020801@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-478650c5603a868a341a17fc35024ce4e374cf56  i40e/i40evf: Bump i40e to 1.4.11 and i40evf to 1.4.7
+On 12/30/2015 12:18 AM, Tantilov, Emil S wrote:
+>> -----Original Message-----
+>> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+>> Behalf Of zyjzyj2000 at gmail.com
+>> Sent: Monday, December 28, 2015 6:32 PM
+>> To: Kirsher, Jeffrey T; Brandeburg, Jesse; Nelson, Shannon; Wyborny,
+>> Carolyn; Skidmore, Donald C; Allan, Bruce W; Ronciak, John; Williams, Mitch
+>> A; intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; e1000-
+>> devel at lists.sourceforge.net
+>> Cc: Viswanathan, Ven (Wind River); Shteinbock, Boris (Wind River); Bourg,
+>> Vincent (Wind River)
+>> Subject: [Intel-wired-lan] [PATCH 2/2] ixgbe: restrict synchronization of
+>> link_up and speed
+>>
+>> From: Zhu Yanjun <yanjun.zhu@windriver.com>
+>>
+>> When the X540 NIC acts as a slave of some virtual NICs, it is very
+>> important to synchronize link_up and link_speed, such as a bonding
+>> driver in 802.3ad mode. When X540 NIC acts as an independent interface,
+>> it is not necessary to synchronize link_up and link_speed. That is,
+>> the time span between link_up and link_speed is acceptable.
+> What exactly do you mean by "time span between link_up and link_speed"?
 
-drivers/net/ethernet/intel/igb/igb_cdev.c:150:2: error: implicit declaration of function 'set_pages_uc' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/igb/igb_cdev.c:186:20-24: ERROR: adapter is NULL but dereferenced.
-drivers/net/ethernet/intel/igb/igb_cdev.c:275:2: error: implicit declaration of function 'set_pages_wb' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/igb/igb_cdev.c:364:2-3: Unneeded semicolon
-drivers/net/ethernet/intel/igb/igb_cdev.c:414:7-15: ERROR: iterator variable bound on line 412 cannot be NULL
-drivers/net/ethernet/intel/igb/igb_cdev.c:95:5-9: Move constant to right.
-drivers/net/ethernet/intel/igb/igb_main.c:8276:5-9: Move constant to right.
-drivers/net/ethernet/intel/igb/igb_main.c:8277:20-24: ERROR: adapter is NULL but dereferenced.
+In the previous mail, I show you some ethtool logs. In these logs, there 
+is some
+time with NIC up while speed is unknown. I think this "some time" is 
+time span between
+link_up and link_speed. Please see the previous mail for details.
 
-Error ids grouped by kconfigs:
+> Where is it you think the de-synchronization occurs?
 
-recent_errors
-??? i386-allmodconfig
-??? ??? drivers-net-ethernet-intel-igb-igb_cdev.c:ERROR:adapter-is-NULL-but-dereferenced.
-??? ??? drivers-net-ethernet-intel-igb-igb_cdev.c:ERROR:iterator-variable-bound-on-line-cannot-be-NULL
-??? ??? drivers-net-ethernet-intel-igb-igb_cdev.c:Move-constant-to-right.
-??? ??? drivers-net-ethernet-intel-igb-igb_cdev.c:Unneeded-semicolon
-??? ??? drivers-net-ethernet-intel-igb-igb_main.c:ERROR:adapter-is-NULL-but-dereferenced.
-??? ??? drivers-net-ethernet-intel-igb-igb_main.c:Move-constant-to-right.
-??? ia64-defconfig
-    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_uc
-    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_wb
+When a NIC interface acts as a slave, a flag "IFF_SLAVE" is set in 
+netdevice struct.
+Before we enter this function, we check IFF_SLAVE flag. If this flag is 
+set, we continue to check
+link_speed. If not, this function is executed whether this link_speed is 
+unknown or not.
 
-elapsed time: 68m
+>
+>> Signed-off-by: Zhu Yanjun <yanjun.zhu@windriver.com>
+>> ---
+>> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    9 ++++++++-
+>> 1 file changed, 8 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>> b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>> index ace21b9..1bb6056 100644
+>> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+>> @@ -6436,8 +6436,15 @@ static void ixgbe_watchdog_link_is_up(struct
+>> ixgbe_adapter *adapter)
+>> 	 * time. To X540 NIC, there is a time span between link_up and
+>> 	 * link_speed. As such, only continue if link_up and link_speed are
+>> 	 * ready to X540 NIC.
+>> +	 * The time span between link_up and link_speed is very important
+>> +	 * when the X540 NIC acts as a slave in some virtual NICs, such as
+>> +	 * a bonding driver in 802.3ad mode. When X540 NIC acts as an
+>> +	 * independent interface, it is not necessary to synchronize link_up
+>> +	 * and link_speed.
+>> +	 * In the end, not continue if (X540 NIC && SLAVE && link_speed
+>> UNKNOWN)
+> This is a patch on top of your previous patch which I don't think was applied,
+> so this is not going to apply cleanly.
+>
+>> 	 */
+>> -	if (hw->mac.type == ixgbe_mac_X540)
+>> +	if ((hw->mac.type == ixgbe_mac_X540) &&
+>> +	    (netdev->flags & IFF_SLAVE))
+>> 		if (link_speed == IXGBE_LINK_SPEED_UNKNOWN)
+>> 			return;
+> If you were to enter ixgbe_watchdog_link_is_up() with unknown speed, then I would
+> assume that you also have a dmesg that shows:
+> "NIC Link is Up unknown speed"
+>
+> by the interface you use in the bond?
+Sure. There is a dmesg log from the customer.
+"
+...
+2015-10-05T06:14:34.350 controller-0 kernel: info bonding: bond0: link 
+status definitely up for interface eth0, 0 Mbps full duplex.
+...
+"
 
-configs tested: 107
+Thanks a lot.
+Zhu Yanjun
+>
+> Thanks,
+> Emil
+>
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-parisc                         b180_defconfig
-i386                             allmodconfig
-x86_64               randconfig-x017-12300436
-x86_64               randconfig-x011-12300436
-x86_64               randconfig-x010-12300436
-x86_64               randconfig-x019-12300436
-x86_64               randconfig-x012-12300436
-x86_64               randconfig-x013-12300436
-x86_64               randconfig-x014-12300436
-x86_64               randconfig-x015-12300436
-x86_64               randconfig-x016-12300436
-x86_64               randconfig-x018-12300436
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201552
-i386                     randconfig-s1-201552
-x86_64                           allmodconfig
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                 randconfig-i0-12300010
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201552
-i386                     randconfig-i1-201552
-i386                             allyesconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                   randconfig-n0-12292007
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                   rhel
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64               randconfig-x007-12291635
-x86_64               randconfig-x005-12291635
-x86_64               randconfig-x008-12291635
-x86_64               randconfig-x006-12291635
-x86_64               randconfig-x001-12291635
-x86_64               randconfig-x000-12291635
-x86_64               randconfig-x004-12291635
-x86_64               randconfig-x002-12291635
-x86_64               randconfig-x009-12291635
-x86_64               randconfig-x003-12291635
-x86_64                                    lkp
-i386                     randconfig-r0-201552
-i386                 randconfig-x000-12300610
-i386                 randconfig-x001-12300610
-i386                 randconfig-x002-12300610
-i386                 randconfig-x003-12300610
-i386                 randconfig-x004-12300610
-i386                 randconfig-x005-12300610
-i386                 randconfig-x006-12300610
-i386                 randconfig-x007-12300610
-i386                 randconfig-x008-12300610
-i386                 randconfig-x009-12300610
-
-Thanks,
-Fengguang
