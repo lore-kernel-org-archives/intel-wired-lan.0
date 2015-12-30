@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 30 Dec 2015 16:13:52 +0000
-Subject: [Intel-wired-lan] [v2 next PATCH S23 13/13] i40e: bump version
- to	1.4.10
-In-Reply-To: <1449776331-8330-3-git-send-email-joshua.a.hay@intel.com>
-References: <1449776331-8330-1-git-send-email-joshua.a.hay@intel.com>
- <1449776331-8330-3-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F97C988@ORSMSX104.amr.corp.intel.com>
+Date: Wed, 30 Dec 2015 16:16:58 +0000
+Subject: [Intel-wired-lan] [next PATCH S25 08/16] i40e: add counter for
+ arq	overflows
+In-Reply-To: <1450901156-30904-9-git-send-email-deepthi.kavalur@intel.com>
+References: <1450901156-30904-1-git-send-email-deepthi.kavalur@intel.com>
+ <1450901156-30904-9-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F97C99B@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,25 +14,27 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Joshua Hay
-> Sent: Thursday, December 10, 2015 11:39 AM
+> Behalf Of Deepthi Kavalur
+> Sent: Wednesday, December 23, 2015 12:06 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [v2 next PATCH S23 13/13] i40e: bump version to
-> 1.4.10
+> Subject: [Intel-wired-lan] [next PATCH S25 08/16] i40e: add counter for arq
+> overflows
 > 
-> From: Catherine Sullivan <catherine.sullivan@intel.com>
+> From: Mitch Williams <mitch.a.williams@intel.com>
 > 
-> Bump.
+> Sometimes, ARQ overflows are a big deal and tell us that the
+> firmware/hardware/driver/something is having problems. But normally
+> they're no big deal. To assist in assessing this, add a counter to our Ethtool
+> stats. A handful of ARQ overflows during VF init is no problem. A large, ever-
+> growing number indicates that Something Bad is happening.
 > 
-> Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-> Change-ID: Ic9a495feb9ab0606f953c3848b0acf67169d3930
+> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+> Change-ID: Ie5348bfbc8a54a890559cb00279c28d976a55096
 > ---
-> V2: remove second change-id
-> 
-> Testing Hints: check version
-> 
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/i40e/i40e.h         | 1 +
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 1 +
+>  drivers/net/ethernet/intel/i40e/i40e_main.c    | 1 +
+>  3 files changed, 3 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied, driver reports correct version
+Patch code changes correctly applied, ethtool -S [devx] shows port.arq_overflows stat, stat counts correctly
