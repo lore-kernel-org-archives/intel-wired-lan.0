@@ -1,40 +1,111 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 30 Dec 2015 16:21:38 +0000
-Subject: [Intel-wired-lan] [next PATCH S25 14/16] i40e: remove VF device
- IDs	from PF
-In-Reply-To: <1450901156-30904-15-git-send-email-deepthi.kavalur@intel.com>
-References: <1450901156-30904-1-git-send-email-deepthi.kavalur@intel.com>
- <1450901156-30904-15-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F97C9C7@ORSMSX104.amr.corp.intel.com>
+From: Tantilov, Emil S <emil.s.tantilov@intel.com>
+Date: Wed, 30 Dec 2015 16:37:58 +0000
+Subject: [Intel-wired-lan] [PATCH 2/2] ixgbe: restrict synchronization
+ of link_up and speed
+In-Reply-To: <568393C6.1060105@gmail.com>
+References: <1450926752-11392-1-git-send-email-zyjzyj2000@gmail.com>
+ <1451356326-2919-1-git-send-email-zyjzyj2000@gmail.com>
+ <1451356326-2919-3-git-send-email-zyjzyj2000@gmail.com>
+ <87618083B2453E4A8714035B62D67992504FB5FF@FMSMSX105.amr.corp.intel.com>
+ <5683462C.3020801@gmail.com>
+ <87618083B2453E4A8714035B62D67992504FD7FB@FMSMSX105.amr.corp.intel.com>
+ <568393C6.1060105@gmail.com>
+Message-ID: <87618083B2453E4A8714035B62D67992504FD8D5@FMSMSX105.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Deepthi Kavalur
-> Sent: Wednesday, December 23, 2015 12:06 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S25 14/16] i40e: remove VF device IDs
-> from PF
-> 
-> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> 
-> The PF doesn't need to know about the VF's device IDs, so remove them.
-> 
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> Acked-by: Shannon Nelson <shannon.nelson@intel.com>
-> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> Change-ID: I62cf0e0fffa1ace586e58e00bc271b10ae440f05
-> ---
-> Testing-Hints:
-> Build only change.
-> 
->  drivers/net/ethernet/intel/i40e/i40e_common.c | 8 --------
-> drivers/net/ethernet/intel/i40e/i40e_devids.h | 4 ----
->  2 files changed, 12 deletions(-)
+>-----Original Message-----
+>From: zhuyj [mailto:zyjzyj2000 at gmail.com]
+>Sent: Wednesday, December 30, 2015 12:20 AM
+>To: Tantilov, Emil S; Kirsher, Jeffrey T; Brandeburg, Jesse; Nelson,
+>Shannon; Wyborny, Carolyn; Skidmore, Donald C; Allan, Bruce W; Ronciak,
+>John; Williams, Mitch A; intel-wired-lan at lists.osuosl.org;
+>netdev at vger.kernel.org; e1000-devel at lists.sourceforge.net
+>Cc: Viswanathan, Ven (Wind River); Shteinbock, Boris (Wind River); Bourg,
+>Vincent (Wind River)
+>Subject: Re: [Intel-wired-lan] [PATCH 2/2] ixgbe: restrict synchronization
+>of link_up and speed
+>
+>On 12/30/2015 02:55 PM, Tantilov, Emil S wrote:
+>>> -----Original Message-----
+>>> From: zhuyj [mailto:zyjzyj2000 at gmail.com]
+>>> Sent: Tuesday, December 29, 2015 6:49 PM
+>>> To: Tantilov, Emil S; Kirsher, Jeffrey T; Brandeburg, Jesse; Nelson,
+>>> Shannon; Wyborny, Carolyn; Skidmore, Donald C; Allan, Bruce W; Ronciak,
+>>> John; Williams, Mitch A; intel-wired-lan at lists.osuosl.org;
+>>> netdev at vger.kernel.org; e1000-devel at lists.sourceforge.net
+>>> Cc: Viswanathan, Ven (Wind River); Shteinbock, Boris (Wind River);
+>Bourg,
+>>> Vincent (Wind River)
+>>> Subject: Re: [Intel-wired-lan] [PATCH 2/2] ixgbe: restrict
+>synchronization
+>>> of link_up and speed
+>>>
+>>> On 12/30/2015 12:18 AM, Tantilov, Emil S wrote:
+>>>>> -----Original Message-----
+>>>>> From: Intel-wired-lan [mailto:intel-wired-lan-
+>bounces at lists.osuosl.org]
+>>> On
+>>>>> Behalf Of zyjzyj2000 at gmail.com
+>>>>> Sent: Monday, December 28, 2015 6:32 PM
+>>>>> To: Kirsher, Jeffrey T; Brandeburg, Jesse; Nelson, Shannon; Wyborny,
+>>>>> Carolyn; Skidmore, Donald C; Allan, Bruce W; Ronciak, John; Williams,
+>>> Mitch
+>>>>> A; intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; e1000-
+>>>>> devel at lists.sourceforge.net
+>>>>> Cc: Viswanathan, Ven (Wind River); Shteinbock, Boris (Wind River);
+>>> Bourg,
+>>>>> Vincent (Wind River)
+>>>>> Subject: [Intel-wired-lan] [PATCH 2/2] ixgbe: restrict synchronization
+>>> of
+>>>>> link_up and speed
+>>>>>
+>>>>> From: Zhu Yanjun <yanjun.zhu@windriver.com>
+>>>>>
+>>>>> When the X540 NIC acts as a slave of some virtual NICs, it is very
+>>>>> important to synchronize link_up and link_speed, such as a bonding
+>>>>> driver in 802.3ad mode. When X540 NIC acts as an independent
+>interface,
+>>>>> it is not necessary to synchronize link_up and link_speed. That is,
+>>>>> the time span between link_up and link_speed is acceptable.
+>>>> What exactly do you mean by "time span between link_up and link_speed"?
+>>> In the previous mail, I show you some ethtool logs. In these logs, there
+>>> is some
+>>> time with NIC up while speed is unknown. I think this "some time" is
+>>> time span between
+>>> link_up and link_speed. Please see the previous mail for details.
+>> Was this when reporting the link state from check_link() (reading the
+>LINKS
+>> register) or reporting the adapter->link_speed?
+>>
+>>>> Where is it you think the de-synchronization occurs?
+>>> When a NIC interface acts as a slave, a flag "IFF_SLAVE" is set in
+>>> netdevice struct.
+>>> Before we enter this function, we check IFF_SLAVE flag. If this flag is
+>>> set, we continue to check
+>>> link_speed. If not, this function is executed whether this link_speed is
+>>> unknown or not.
+>> I can already see this in your patch. I was asking about the reason why
+>>your change is needed.
+>
+>an extreme example, let us assume this scenario:
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied
+Is this the scenario you are trying to fix?
+
+>An ixgbe NIC directly connects to another NIC (let us call it NIC-a).
+>And auto-negotiate is off while no static speed is set in the 2 NICs.
+
+The ixgbe driver does not support disabling auto-negotiation directly.
+The only time this is true is when the advertised speed is restricted,
+so the above scenario is not possible (you either have autoneg or 
+advertised speed set) with the current driver.
+
+Is this example in theory or do you have your interface configured this
+way somehow? 
+
+Thanks,
+Emil
+
