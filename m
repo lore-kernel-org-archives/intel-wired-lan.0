@@ -1,50 +1,138 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 30 Dec 2015 21:37:48 -0800
-Subject: [Intel-wired-lan] [PATCH 1/1] ixgbe: synchronize link_up and
- link_speed of a slave interface
-In-Reply-To: <1451538295-15823-2-git-send-email-zyjzyj2000@gmail.com>
-References: <7EED4F91-2DE5-407F-BA6A-681ED57650E4@intel.com>
- <1451538295-15823-1-git-send-email-zyjzyj2000@gmail.com>
- <1451538295-15823-2-git-send-email-zyjzyj2000@gmail.com>
-Message-ID: <1451540268.3348.108.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 31 Dec 2015 14:41:44 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 2d9a87edf4b9f610e606188197a8929d23f3c471 BUILD DONE
+Message-ID: <5684ce28.x/50ikb8u7Dqft9W%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 2015-12-31 at 13:04 +0800, zyjzyj2000 at gmail.com wrote:
-> From: Zhu Yanjun <yanjun.zhu@windriver.com>
-> 
-> According to the suggestions from Rustad, Mark D, to all the slave?
-> interfaces, the link_speed and link_up should be synchronized since
-> the time span between link_up and link_speed will make some virtual
-> NICs not work well, such as a bonding driver in 802.3ad mode.
-> 
-> Signed-off-by: Zhu Yanjun <yanjun.zhu@windriver.com>
-> ---
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+2d9a87edf4b9f610e606188197a8929d23f3c471  igb: add support of Rx VLAN priority filters
 
-Since this is version 5 of your original patch, you should be putting
-the change log of this patch here, so that we can follow how you got to
-this point. ?This helpful for the reviewers (and me, the maintainer).
-?For example:
-v2: dropped the "else" case of "if" statement, based on feedback from
-? ? Jeff Kirsher
-v3: changed the if statement to simply return when the link speed is
-? ? unknown on X540 parts based on feedback from Emil Tantilov
-v4: updated code comment and if statement to test for IFF_SLAVE flag
-V5: simplified code comment and if statement to only test for IFF_SLAVE
-? ? flag and unknown link speed.
+drivers/net/ethernet/intel/igb/igb_cdev.c:150:2: error: implicit declaration of function 'set_pages_uc' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/intel/igb/igb_cdev.c:275:2: error: implicit declaration of function 'set_pages_wb' [-Werror=implicit-function-declaration]
 
-Of course, you can expand on what I have above, I just did a quick
-summary of the changes as an example of a change log.?
+Error ids grouped by kconfigs:
 
-> ?drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 5 +++++
-> ?1 file changed, 5 insertions(+)
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151230/dd49f916/attachment-0001.asc>
+recent_errors
+??? ia64-defconfig
+    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_uc
+    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_wb
+
+elapsed time: 113m
+
+configs tested: 107
+
+i386                   randconfig-a0-12301114
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64               randconfig-x017-12300436
+x86_64               randconfig-x011-12300436
+x86_64               randconfig-x010-12300436
+x86_64               randconfig-x019-12300436
+x86_64               randconfig-x012-12300436
+x86_64               randconfig-x013-12300436
+x86_64               randconfig-x014-12300436
+x86_64               randconfig-x015-12300436
+x86_64               randconfig-x016-12300436
+x86_64               randconfig-x018-12300436
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201552
+i386                     randconfig-s1-201552
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+i386                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                 randconfig-i0-12301613
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-i0-12301306
+i386                   randconfig-i1-12301306
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201552
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                           allmodconfig
+x86_64               randconfig-x007-12291635
+x86_64               randconfig-x005-12291635
+x86_64               randconfig-x008-12291635
+x86_64               randconfig-x006-12291635
+x86_64               randconfig-x001-12291635
+x86_64               randconfig-x000-12291635
+x86_64               randconfig-x004-12291635
+x86_64               randconfig-x002-12291635
+x86_64               randconfig-x009-12291635
+x86_64               randconfig-x003-12291635
+i386                     randconfig-r0-201552
+i386                 randconfig-x004-12300610
+i386                 randconfig-x005-12300610
+i386                 randconfig-x003-12300610
+i386                 randconfig-x007-12300610
+i386                 randconfig-x001-12300610
+i386                 randconfig-x008-12300610
+i386                 randconfig-x000-12300610
+i386                 randconfig-x009-12300610
+i386                 randconfig-x002-12300610
+i386                 randconfig-x006-12300610
+
+Thanks,
+Fengguang
