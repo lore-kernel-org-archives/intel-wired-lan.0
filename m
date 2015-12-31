@@ -1,78 +1,38 @@
-From: Takuma Ueba <t.ueba11@gmail.com>
-Date: Thu, 31 Dec 2015 14:58:14 +0900
-Subject: [Intel-wired-lan] [PATCH] igb: When GbE link up,
-	wait for Remote receiver status condition.
-Message-ID: <1451541494-64693-1-git-send-email-t.ueba11@gmail.com>
+From: zyjzyj2000@gmail.com <zyjzyj2000@gmail.com>
+Date: Thu, 31 Dec 2015 15:11:38 +0800
+Subject: [Intel-wired-lan] [PATCH V6] ixgbe: synchronize link_up and
+	link_speed of a slave
+In-Reply-To: <1451540268.3348.108.camel@intel.com>
+References: <1451540268.3348.108.camel@intel.com>
+Message-ID: <1451545899-16584-1-git-send-email-zyjzyj2000@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-I210 device IPv6 autoconf test sometimes fails,
-because DAD NS for link-local is not transmitted.
-This packet is silently dropped.
-This problem is seen only GbE environment.
 
-igb_watchdog_task link up detection continues to the following process.
-The following cases are observed:
-1.PHY 1000BASE-T Status Register Remote receiver status bit is NG.
-(NG status becomes OK after about 200 - 700ms)
-2.In this case, the transfer packet is silently dropped.
+Hi, all
 
-1000BASE-T Status register
-[Expected]: 0x3800 or 0x7800
-[problem occurred]: 0x2800 or 0x6800
-Frequency of occurrence: approx 1/10 - 1/40 observed
+Thanks for the reply from Jeff.
 
-In order to avoid this problem,
-wait until 1000BASE-T Status register "Remote receiver status OK"
+V2: Based on feedback from Jeff Kirsher, it is not appropriate to continue
+    in the function ixgbe_watchdog_link_is_up without link_speed since this will
+    make some virtual NICs not work well.
 
-After applying this patch, at least 400 runs succeed with no problems.
+V3: Based on feedback from Emil Tantilov, the time span between link_up 
+    and link_speed is not important when the X540 NIC acts as an independent 
+    interface. 
 
-Signed-off-by: Takuma Ueba <t.ueba11@gmail.com>
----
- drivers/net/ethernet/intel/igb/igb_main.c | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+V4: According to Rustad, Mark D, maybe it is related with copper phy. To make
+    fiber phy more robust, synchronize both the link_up and link_speed of a slave
+    interface in ixgbe driver.
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 31e5f39..bc1e83d 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -4227,6 +4227,7 @@ static void igb_watchdog_task(struct work_struct *work)
- 	u32 link;
- 	int i;
- 	u32 connsw;
-+	u16 phy_data, retry_count = 20;
- 
- 	link = igb_has_link(adapter);
- 
-@@ -4305,6 +4306,25 @@ static void igb_watchdog_task(struct work_struct *work)
- 				break;
- 			}
- 
-+			if (adapter->link_speed != SPEED_1000)
-+				goto no_wait;
-+
-+			/* wait for Remote receiver status OK */
-+retry_read_status:
-+			if (!igb_read_phy_reg(hw, PHY_1000T_STATUS,
-+					      &phy_data)) {
-+				if (!(phy_data & SR_1000T_REMOTE_RX_STATUS) &&
-+				    retry_count) {
-+					msleep(100);
-+					retry_count--;
-+					goto retry_read_status;
-+				} else if (!retry_count) {
-+					dev_err(&adapter->pdev->dev, "exceed max 2 second\n");
-+				}
-+			} else {
-+				dev_err(&adapter->pdev->dev, "read 1000Base-T Status Reg\n");
-+			}
-+no_wait:
- 			netif_carrier_on(netdev);
- 
- 			igb_ping_all_vfs(adapter);
--- 
-1.9.1
+V5: Based on feedback from Rustad, Mark D, simplify code comment and if statement 
+    to only test for IFF_SLAVE flag and unknown link speed.
 
+V6: Based on feedback from Jeff Kirsher, the patch format is adjusted 
+    and change log of this patch are added.
+
+Best Regards!
+Zhu Yanjun
