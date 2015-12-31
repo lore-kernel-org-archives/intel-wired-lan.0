@@ -1,138 +1,35 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 31 Dec 2015 14:41:44 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 2d9a87edf4b9f610e606188197a8929d23f3c471 BUILD DONE
-Message-ID: <5684ce28.x/50ikb8u7Dqft9W%fengguang.wu@intel.com>
+From: David Yang <david_yang@accton.com>
+Date: Thu, 31 Dec 2015 05:46:43 +0000
+Subject: [Intel-wired-lan] [PATCH] patch for Intel igb driver to support
+	broadcom phys
+Message-ID: <1831EC2B04379B47B6D129255B9BF2212D34A8D1@SRV-EXMBX2.accton.com.tw>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-2d9a87edf4b9f610e606188197a8929d23f3c471  igb: add support of Rx VLAN priority filters
 
-drivers/net/ethernet/intel/igb/igb_cdev.c:150:2: error: implicit declaration of function 'set_pages_uc' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/igb/igb_cdev.c:275:2: error: implicit declaration of function 'set_pages_wb' [-Werror=implicit-function-declaration]
 
-Error ids grouped by kconfigs:
+Howdy,
 
-recent_errors
-??? ia64-defconfig
-    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_uc
-    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_wb
+We are bare metal network switch developers who contribute codes
+for OCP ONIE (https://github.com/opencomputeproject/onie).
 
-elapsed time: 113m
+Up to now, many switches have Intel CPU module with Ethernet 
+controller (i354) which connects to external Broadcom PHY (bcm54616s).
+We revised linux igb driver for making the PHY work.
 
-configs tested: 107
+The patch is for linux-4.1.12.  Please help to review the 
+patch for upstream to the igb driver.
 
-i386                   randconfig-a0-12301114
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64               randconfig-x017-12300436
-x86_64               randconfig-x011-12300436
-x86_64               randconfig-x010-12300436
-x86_64               randconfig-x019-12300436
-x86_64               randconfig-x012-12300436
-x86_64               randconfig-x013-12300436
-x86_64               randconfig-x014-12300436
-x86_64               randconfig-x015-12300436
-x86_64               randconfig-x016-12300436
-x86_64               randconfig-x018-12300436
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201552
-i386                     randconfig-s1-201552
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-i386                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                 randconfig-i0-12301613
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-i0-12301306
-i386                   randconfig-i1-12301306
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201552
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                           allmodconfig
-x86_64               randconfig-x007-12291635
-x86_64               randconfig-x005-12291635
-x86_64               randconfig-x008-12291635
-x86_64               randconfig-x006-12291635
-x86_64               randconfig-x001-12291635
-x86_64               randconfig-x000-12291635
-x86_64               randconfig-x004-12291635
-x86_64               randconfig-x002-12291635
-x86_64               randconfig-x009-12291635
-x86_64               randconfig-x003-12291635
-i386                     randconfig-r0-201552
-i386                 randconfig-x004-12300610
-i386                 randconfig-x005-12300610
-i386                 randconfig-x003-12300610
-i386                 randconfig-x007-12300610
-i386                 randconfig-x001-12300610
-i386                 randconfig-x008-12300610
-i386                 randconfig-x000-12300610
-i386                 randconfig-x009-12300610
-i386                 randconfig-x002-12300610
-i386                 randconfig-x006-12300610
+Many thanks.
+David
 
-Thanks,
-Fengguang
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: 0001-patch-for-Intel-igb-driver-to-support-broadcom-phys.patch
+Type: application/octet-stream
+Size: 2340 bytes
+Desc: 0001-patch-for-Intel-igb-driver-to-support-broadcom-phys.patch
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151231/a1491aca/attachment-0001.obj>
