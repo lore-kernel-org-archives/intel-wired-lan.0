@@ -1,35 +1,78 @@
-From: David Yang <david_yang@accton.com>
-Date: Thu, 31 Dec 2015 05:46:43 +0000
-Subject: [Intel-wired-lan] [PATCH] patch for Intel igb driver to support
-	broadcom phys
-Message-ID: <1831EC2B04379B47B6D129255B9BF2212D34A8D1@SRV-EXMBX2.accton.com.tw>
+From: Takuma Ueba <t.ueba11@gmail.com>
+Date: Thu, 31 Dec 2015 14:58:14 +0900
+Subject: [Intel-wired-lan] [PATCH] igb: When GbE link up,
+	wait for Remote receiver status condition.
+Message-ID: <1451541494-64693-1-git-send-email-t.ueba11@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+I210 device IPv6 autoconf test sometimes fails,
+because DAD NS for link-local is not transmitted.
+This packet is silently dropped.
+This problem is seen only GbE environment.
 
+igb_watchdog_task link up detection continues to the following process.
+The following cases are observed:
+1.PHY 1000BASE-T Status Register Remote receiver status bit is NG.
+(NG status becomes OK after about 200 - 700ms)
+2.In this case, the transfer packet is silently dropped.
 
-Howdy,
+1000BASE-T Status register
+[Expected]: 0x3800 or 0x7800
+[problem occurred]: 0x2800 or 0x6800
+Frequency of occurrence: approx 1/10 - 1/40 observed
 
-We are bare metal network switch developers who contribute codes
-for OCP ONIE (https://github.com/opencomputeproject/onie).
+In order to avoid this problem,
+wait until 1000BASE-T Status register "Remote receiver status OK"
 
-Up to now, many switches have Intel CPU module with Ethernet 
-controller (i354) which connects to external Broadcom PHY (bcm54616s).
-We revised linux igb driver for making the PHY work.
+After applying this patch, at least 400 runs succeed with no problems.
 
-The patch is for linux-4.1.12.  Please help to review the 
-patch for upstream to the igb driver.
+Signed-off-by: Takuma Ueba <t.ueba11@gmail.com>
+---
+ drivers/net/ethernet/intel/igb/igb_main.c | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-Many thanks.
-David
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 31e5f39..bc1e83d 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -4227,6 +4227,7 @@ static void igb_watchdog_task(struct work_struct *work)
+ 	u32 link;
+ 	int i;
+ 	u32 connsw;
++	u16 phy_data, retry_count = 20;
+ 
+ 	link = igb_has_link(adapter);
+ 
+@@ -4305,6 +4306,25 @@ static void igb_watchdog_task(struct work_struct *work)
+ 				break;
+ 			}
+ 
++			if (adapter->link_speed != SPEED_1000)
++				goto no_wait;
++
++			/* wait for Remote receiver status OK */
++retry_read_status:
++			if (!igb_read_phy_reg(hw, PHY_1000T_STATUS,
++					      &phy_data)) {
++				if (!(phy_data & SR_1000T_REMOTE_RX_STATUS) &&
++				    retry_count) {
++					msleep(100);
++					retry_count--;
++					goto retry_read_status;
++				} else if (!retry_count) {
++					dev_err(&adapter->pdev->dev, "exceed max 2 second\n");
++				}
++			} else {
++				dev_err(&adapter->pdev->dev, "read 1000Base-T Status Reg\n");
++			}
++no_wait:
+ 			netif_carrier_on(netdev);
+ 
+ 			igb_ping_all_vfs(adapter);
+-- 
+1.9.1
 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: 0001-patch-for-Intel-igb-driver-to-support-broadcom-phys.patch
-Type: application/octet-stream
-Size: 2340 bytes
-Desc: 0001-patch-for-Intel-igb-driver-to-support-broadcom-phys.patch
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20151231/a1491aca/attachment-0001.obj>
