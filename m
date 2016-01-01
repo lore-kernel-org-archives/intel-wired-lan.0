@@ -1,43 +1,73 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Sun, 31 Jan 2016 16:00:30 +0100
-Subject: [Intel-wired-lan] [PATCH] net: i40e: prevent access to
-	uninitilized variables in i40e_tx_enable_csum()
-In-Reply-To: <56ACE928.3080108@virtuozzo.com>
-References: <56ACD7C6.1010808@virtuozzo.com> <56ACE928.3080108@virtuozzo.com>
-Message-ID: <2765946.QCanWNG0gi@wuerfel>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Fri, 1 Jan 2016 15:32:43 +0100
+Subject: [Intel-wired-lan] [PATCH] net-i40e: Replace variable
+ initialisations by assignments in i40e_vc_get_vf_resources_msg()
+In-Reply-To: <566ABCD9.1060404@users.sourceforge.net>
+References: <566ABCD9.1060404@users.sourceforge.net>
+Message-ID: <56868E0B.5040602@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Saturday 30 January 2016 19:47:36 Vasily Averin wrote:
-> Patch makes safe an access to 'oiph' and 'oudph' variables
-> if they was not initilized.
-> 
-> Signed-off-by: Vasily Averin <vvs@virtuozzo.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-> index 47bd8b3..779f77e 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-> @@ -2363,7 +2363,8 @@ static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
->                 }
->                 if ((tx_ring->flags & I40E_TXR_FLAGS_OUTER_UDP_CSUM) &&
->                     (l4_tunnel == I40E_TXD_CTX_UDP_TUNNELING)        &&
-> -                   (*cd_tunneling & I40E_TXD_CTX_QW0_EXT_IP_MASK)) {
-> +                   (*cd_tunneling & I40E_TXD_CTX_QW0_EXT_IP_MASK)   &&
-> +                   oudph && oiph) {
->                         oudph->check = ~csum_tcpudp_magic(oiph->saddr,
->                                         oiph->daddr,
->                                         (skb->len - skb_transport_offset(skb)),
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Fri, 1 Jan 2016 15:11:09 +0100
 
-If we can actually get here with oudph==NULL or oiph==NULL, we should back
-my patch instead and fix it another way.
+Replace explicit initialisations for four local variables at the beginning
+by assignments that will only be performed if the corresponding code
+will really be executed.
 
-In the version we have in net-next, that is not possible.
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
 
-	Arnd
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index aa58a49..e0874f5 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -1172,16 +1172,18 @@ static int i40e_vc_get_version_msg(struct i40e_vf *vf, u8 *msg)
+  **/
+ static int i40e_vc_get_vf_resources_msg(struct i40e_vf *vf, u8 *msg)
+ {
+-	struct i40e_virtchnl_vf_resource *vfres = NULL;
+-	struct i40e_pf *pf = vf->pf;
+-	i40e_status aq_ret = 0;
++	struct i40e_virtchnl_vf_resource *vfres;
++	struct i40e_pf *pf;
++	i40e_status aq_ret;
+ 	struct i40e_vsi *vsi;
+-	int i = 0, len = 0;
++	int i = 0;
+ 	int num_vsis = 1;
+-	int ret;
++	int len, ret;
+ 
+ 	if (!test_bit(I40E_VF_STAT_INIT, &vf->vf_states)) {
+ 		aq_ret = I40E_ERR_PARAM;
++		vfres = NULL;
++		len = 0;
+ 		goto err;
+ 	}
+ 
+@@ -1202,6 +1204,7 @@ static int i40e_vc_get_vf_resources_msg(struct i40e_vf *vf, u8 *msg)
+ 				  I40E_VIRTCHNL_VF_OFFLOAD_VLAN;
+ 
+ 	vfres->vf_offload_flags = I40E_VIRTCHNL_VF_OFFLOAD_L2;
++	pf = vf->pf;
+ 	vsi = pf->vsi[vf->lan_vsi_idx];
+ 	if (!vsi->info.pvid)
+ 		vfres->vf_offload_flags |= I40E_VIRTCHNL_VF_OFFLOAD_VLAN;
+@@ -1231,7 +1234,7 @@ static int i40e_vc_get_vf_resources_msg(struct i40e_vf *vf, u8 *msg)
+ 		i++;
+ 	}
+ 	set_bit(I40E_VF_STAT_ACTIVE, &vf->vf_states);
+-
++	aq_ret = 0;
+ err:
+ 	/* send the response back to the VF */
+ 	ret = i40e_vc_send_msg_to_vf(vf, I40E_VIRTCHNL_OP_GET_VF_RESOURCES,
+-- 
+2.6.3
+
