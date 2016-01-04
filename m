@@ -1,53 +1,36 @@
-From: Pavel Tikhomirov <ptikhomirov@virtuozzo.com>
-Date: Fri, 25 Dec 2015 19:26:12 +0300
-Subject: [Intel-wired-lan] [PATCH v2] ixgbe: on recv increment
-	rx.ring->stats.yields
-In-Reply-To: <1449842714-10284-1-git-send-email-ptikhomirov@virtuozzo.com>
-References: <566AD3F5.9050502@cogentembedded.com>
- <1449842714-10284-1-git-send-email-ptikhomirov@virtuozzo.com>
-Message-ID: <567D6E24.3030302@virtuozzo.com>
+From: Deepthi Kavalur <deepthi.kavalur@intel.com>
+Date: Mon,  4 Jan 2016 10:33:00 -0800
+Subject: [Intel-wired-lan] [next PATCH S26 00/12] i40e/i40evf updates
+Message-ID: <1451932392-15538-1-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi, please, let me know if I need to fix something else here.
+Jacob Keller avoids large memcpy by assigning struct.
 
-On 12/11/2015 05:05 PM, Pavel Tikhomirov wrote:
-> It seem to be non intentionaly changed to tx in
-> commit adc810900a70 ("ixgbe: Refactor busy poll socket code to address
-> multiple issues")
->
-> Lock is taken from ixgbe_low_latency_recv, and there under this
-> lock we use ixgbe_clean_rx_irq so it looks wrong for me to increment
-> tx counter.
->
-> Yield stats can be shown through ethtool:
-> ethtool -S enp129s0 | grep yield
->
-> v2: follow commit citing style
->
-> Signed-off-by: Pavel Tikhomirov <ptikhomirov@virtuozzo.com>
-> ---
->   drivers/net/ethernet/intel/ixgbe/ixgbe.h | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-> index 1d21745..7656d46 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-> @@ -451,7 +451,7 @@ static inline bool ixgbe_qv_lock_poll(struct ixgbe_q_vector *q_vector)
->   				IXGBE_QV_STATE_POLL);
->   #ifdef BP_EXTENDED_STATS
->   	if (rc != IXGBE_QV_STATE_IDLE)
-> -		q_vector->tx.ring->stats.yields++;
-> +		q_vector->rx.ring->stats.yields++;
->   #endif
->   	return rc == IXGBE_QV_STATE_IDLE;
->   }
->
+Jesse Brandeburg drops duplicate definition, fixes
+missing space, fixes bug in dma sync, allocates
+memory safely, fixes do not sleep in netdev_ops,
+drops unused function, and counts allocation errors.
+
+Kiran Patil adds APIs to add/remove port mirroring rules.
+
+Shannon Nelson does TSO only if CHECKSUM_PARTIAL is set, and
+negates phy int mask bits.
+
+ drivers/net/ethernet/intel/i40e/i40e.h           |   1 -
+ drivers/net/ethernet/intel/i40e/i40e_common.c    | 162 +++++++++++++++++++++++
+ drivers/net/ethernet/intel/i40e/i40e_debugfs.c   |   8 +-
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c   |   2 +
+ drivers/net/ethernet/intel/i40e/i40e_main.c      |  53 +++-----
+ drivers/net/ethernet/intel/i40e/i40e_prototype.h |  12 ++
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c      |  11 +-
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c    |  11 +-
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c  |   2 +-
+ 9 files changed, 218 insertions(+), 44 deletions(-)
 
 -- 
-Best regards, Tikhomirov Pavel
-Software Developer, Virtuozzo.
+2.1.0
+
