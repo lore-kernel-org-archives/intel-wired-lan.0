@@ -1,62 +1,36 @@
-From: Christopher S. Hall <christopher.s.hall@intel.com>
-Date: Mon,  4 Jan 2016 04:45:21 -0800
-Subject: [Intel-wired-lan] [RFC v5 4/6] Remove duplicate code from
-	ktime_get_raw_and_real code
-In-Reply-To: <1451911523-8534-1-git-send-email-christopher.s.hall@intel.com>
-References: <1451911523-8534-1-git-send-email-christopher.s.hall@intel.com>
-Message-ID: <1451911523-8534-5-git-send-email-christopher.s.hall@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Mon, 4 Jan 2016 12:02:05 -0800
+Subject: [Intel-wired-lan] [next PATCH S26 06/12] i40e: fix: do not
+	sleep in netdev_ops
+In-Reply-To: <1451932392-15538-7-git-send-email-deepthi.kavalur@intel.com>
+References: <1451932392-15538-1-git-send-email-deepthi.kavalur@intel.com>
+ <1451932392-15538-7-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <20160104120205.00000b51@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The code in ktime_get_snapshot() is a superset of the code in
-ktime_get_raw_and_real() code. Changes the latter to call the former. A
-side effect of this is that ktime_get_raw_and_real() returns two clock
-times corresponding to the *exact* same clock tick. Previously, this
-code read the underlying counter twice.
+On Mon, 4 Jan 2016 10:33:06 -0800
+Deepthi Kavalur <deepthi.kavalur@intel.com> wrote:
 
-Signed-off-by: Christopher S. Hall <christopher.s.hall@intel.com>
----
- kernel/time/timekeeping.c | 20 ++++----------------
- 1 file changed, 4 insertions(+), 16 deletions(-)
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> 
+> The driver was being called by vlan, bonding, teaming operations
+> that expected to be able to hold locks like rcu_read_lock().
+> 
+> This causes the driver to be held to the requirement to not sleep,
+> and was found by the kernel debug options for checking sleep
+> inside critical section, and the locking validator.
+> 
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Reviewed-by: Nelson, Shannon <shannon.nelson@intel.com>
+> Change-ID: Ibc68c835f5ffa8ffe0638ffe910a66fc5649a7f7
 
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index 5a7f784..a0f096c 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -910,26 +910,14 @@ EXPORT_SYMBOL_GPL(ktime_get_snapshot);
-  */
- void ktime_get_raw_and_real_ts64(struct timespec64 *ts_raw, struct timespec64 *ts_real)
- {
--	struct timekeeper *tk = &tk_core.timekeeper;
--	unsigned long seq;
--	s64 nsecs_raw, nsecs_real;
-+	struct system_time_snapshot snap;
- 
- 	WARN_ON_ONCE(timekeeping_suspended);
- 
--	do {
--		seq = read_seqcount_begin(&tk_core.seq);
--
--		*ts_raw = tk->raw_time;
--		ts_real->tv_sec = tk->xtime_sec;
--		ts_real->tv_nsec = 0;
--
--		nsecs_raw  = timekeeping_get_ns(&tk->tkr_raw);
--		nsecs_real = timekeeping_get_ns(&tk->tkr_mono);
--
--	} while (read_seqcount_retry(&tk_core.seq, seq));
-+	ktime_get_snapshot(&snap);
- 
--	timespec64_add_ns(ts_raw, nsecs_raw);
--	timespec64_add_ns(ts_real, nsecs_real);
-+	*ts_raw = ktime_to_timespec64(snap.raw);
-+	*ts_real = ktime_to_timespec64(snap.real);
- }
- EXPORT_SYMBOL(ktime_get_raw_and_real_ts64);
- 
--- 
-2.1.4
+I don't understand how you ever applied this in your testing and built
+a kernel, as this change (the complete version) was already applied in
+Jeff's tree back on 2-Dec:
+https://git.kernel.org/cgit/linux/kernel/git/jkirsher/next-queue.git/commit/drivers/net/ethernet/intel/i40e?id=0e4425ed641f3eef67c892bc541949cd745a9ba9
 
+Likely this patch can just be dropped, but we need a process check here.
