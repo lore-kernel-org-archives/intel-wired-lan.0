@@ -1,259 +1,140 @@
 From: Christopher S. Hall <christopher.s.hall@intel.com>
-Date: Mon,  4 Jan 2016 04:45:18 -0800
-Subject: [Intel-wired-lan] [RFC v5 1/6] Timekeeping cross timestamp
-	interface for device drivers
+Date: Mon,  4 Jan 2016 04:45:19 -0800
+Subject: [Intel-wired-lan] [RFC v5 2/6] Always Running Timer (ART)
+	correlated clocksource
 In-Reply-To: <1451911523-8534-1-git-send-email-christopher.s.hall@intel.com>
 References: <1451911523-8534-1-git-send-email-christopher.s.hall@intel.com>
-Message-ID: <1451911523-8534-2-git-send-email-christopher.s.hall@intel.com>
+Message-ID: <1451911523-8534-3-git-send-email-christopher.s.hall@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-ACKNOWLEDGMENT: The original correlated clock source and cross
-timestamp code was developed by Thomas Gleixner
-<tglx@linutronix.de>. It has changed considerably and any mistakes are
-mine.
+On modern Intel systems TSC is derived from the new Always Running Timer
+(ART). ART can be captured simultaneous to the capture of
+audio and network device clocks, allowing a correlation between timebases
+to be constructed. Upon capture, the driver converts the captured ART
+value to the appropriate system clock using the correlated clocksource
+mechanism.
 
-The precision with which events on multiple networked systems can be
-synchronized using, as an example, PTP (IEEE 1588, 802.1AS) is limited
-by the precision of the cross timestamps between the system clock and
-the device (timestamp) clock. Precision here is the degree of
-simultaneity when capturing the cross timestamp.
+On systems that support ART a new CPUID leaf (0x15) returns parameters
+?m? and ?n? such that:
 
-Currently the PTP cross timestamp is captured in software using the
-PTP device driver ioctl PTP_SYS_OFFSET. Reads of the device clock are
-interleaved with reads of the realtime clock. At best, the precision
-of this cross timestamp is on the order of several microseconds due to
-software latencies. Sub-microsecond precision is required for
-industrial control and some media applications. To achieve this level
-of precision hardware supported cross timestamping is needed.
+TSC_value = (ART_value * m) / n + k [n >= 2]
 
-Hardware cross timestamps are derived from simultaneously capturing
-the device clock and the system clock. Applications use timestamps in
-nanoseconds rather than clock ticks. The device driver can scale
-device clock ticks to device time in nanoseconds, but cannot transform
-system clock ticks. Only the kernel timekeeping code can do this. The
-function get_device_system_crosststamp() allows device drivers to
-return a cross timestamp with system time properly scaled to
-nanoseconds.
-
-The cross timestamps contain the realtime and monotonic raw clock
-times. The realtime value is needed to discipline that clock using PTP
-and the monotonic raw value is used for applications that don't
-require a "real" time, but need an unadjusted clock time.
-
-The get_device_system_crosststamp() code calls back into the driver
-to ensure that the system counter is within the current timekeeping
-update interval. Because of possible NTP/PTP frequency adjustments,
-extrapolating a realtime clock time outside the current interval with
-a potentially different scaling factor can result in a small amount of
-error.
-
-Modern Intel hardware provides an Always Running Timer (ART) which is
-exactly related to TSC through a known frequency ratio. The ART is
-routed to devices on the system and is used to precisely and
-simultaneously capture the device clock with the ART. The kernel
-timekeeping code requires a system clock value from the current clock
-source to calculate the system time. The correlated clocksource adds a
-means to transform a clock (in this case ART) exactly to the system
-clock (TSC clocksource) that is used to calculate system time.
+[k is an offset that can adjusted by a privileged agent. The
+IA32_TSC_ADJUST MSR is an example of an interface to adjust k.
+See 17.14.4 of the Intel SDM for more details]
 
 Signed-off-by: Christopher S. Hall <christopher.s.hall@intel.com>
 ---
- include/linux/clocksource.h | 27 ++++++++++++++++
- include/linux/timekeeping.h | 35 +++++++++++++++++++++
- kernel/time/timekeeping.c   | 77 ++++++++++++++++++++++++++++++++++++++++++---
- 3 files changed, 135 insertions(+), 4 deletions(-)
+ arch/x86/include/asm/cpufeature.h |  2 +-
+ arch/x86/include/asm/tsc.h        |  2 ++
+ arch/x86/kernel/tsc.c             | 46 +++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 49 insertions(+), 1 deletion(-)
 
-diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
-index 7784b59..4b7973d 100644
---- a/include/linux/clocksource.h
-+++ b/include/linux/clocksource.h
-@@ -255,4 +255,31 @@ static inline void clocksource_probe(void) {}
- #define CLOCKSOURCE_ACPI_DECLARE(name, table_id, fn)		\
- 	ACPI_DECLARE_PROBE_ENTRY(clksrc, name, table_id, 0, NULL, 0, fn)
- 
-+/*
-+ * struct correlated_cs - Descriptor for a clocksource correlated to another
-+ *	clocksource
-+ * @related_cs:		Pointer to the related timekeeping clocksource
-+ * @convert:		Conversion function to convert a timestamp from
-+ *			the correlated clocksource to cycles of the related
-+ *			timekeeping clocksource
-+ */
-+struct correlated_cs {
-+	struct clocksource	*related_cs;
-+	cycle_t			(*convert)(struct correlated_cs *cs,
-+					   cycle_t cycles);
-+};
-+
-+/*
-+ * struct raw_system_counterval - system counter value captured in device
-+ *	driver used to produce system/device cross-timestamp
-+ * @system:	System counter value
-+ * @cs:		Clocksource related to system counter value. This is used by
-+ *		timekeeping code to verify validity of counter for system time
-+ *		conversion
-+ */
-+struct raw_system_counterval {
-+	cycle_t			cycles;
-+	struct clocksource	*cs;
-+};
-+
- #endif /* _LINUX_CLOCKSOURCE_H */
-diff --git a/include/linux/timekeeping.h b/include/linux/timekeeping.h
-index ec89d84..2209943 100644
---- a/include/linux/timekeeping.h
-+++ b/include/linux/timekeeping.h
-@@ -266,6 +266,41 @@ extern void timekeeping_inject_sleeptime64(struct timespec64 *delta);
- extern void ktime_get_raw_and_real_ts64(struct timespec64 *ts_raw,
- 				        struct timespec64 *ts_real);
- 
-+
-+/*
-+ * struct system_device_crosststamp - system/device cross-timestamp
-+ *	(syncronized capture)
-+ * @device:	Device time
-+ * @realtime:	Realtime simultaneous with device time
-+ * @monoraw:	Monotonic raw simultaneous with device time
-+ */
-+struct system_device_crosststamp {
-+	ktime_t device;
-+	ktime_t sys_realtime;
-+	ktime_t sys_monoraw;
-+};
-+
-+struct raw_system_counterval;
-+/*
-+ * struct get_sync_device_time - Provides method to capture device time
-+ *	synchronized with raw system counter value
-+ * @get_time:	Callback providing synchronized capture of device time
-+ *		and system counter. Returns 0 on success, < 0 on failure
-+ * @ctx:	Context provided to callback function
-+ */
-+struct get_sync_device_time {
-+	int	(*get_time)(ktime_t *device,
-+			    struct raw_system_counterval *system,
-+			    void *ctx);
-+	void	 *ctx;
-+};
-+
-+/*
-+ * Get cross timestamp between system clock and device clock
-+ */
-+extern int get_device_system_crosststamp(struct system_device_crosststamp *ct,
-+					 struct get_sync_device_time *dt);
-+
- /*
-  * Persistent clock related interfaces
-  */
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index d563c19..9c1ddc3 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -298,13 +298,11 @@ u32 (*arch_gettimeoffset)(void) = default_arch_gettimeoffset;
- static inline u32 arch_gettimeoffset(void) { return 0; }
- #endif
- 
--static inline s64 timekeeping_get_ns(struct tk_read_base *tkr)
-+static inline s64 timekeeping_delta_to_ns(struct tk_read_base *tkr,
-+					  cycle_t delta)
- {
--	cycle_t delta;
- 	s64 nsec;
- 
--	delta = timekeeping_get_delta(tkr);
--
- 	nsec = delta * tkr->mult + tkr->xtime_nsec;
- 	nsec >>= tkr->shift;
- 
-@@ -312,6 +310,24 @@ static inline s64 timekeeping_get_ns(struct tk_read_base *tkr)
- 	return nsec + arch_gettimeoffset();
+diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
+index e4f8010..58c799e 100644
+--- a/arch/x86/include/asm/cpufeature.h
++++ b/arch/x86/include/asm/cpufeature.h
+@@ -85,7 +85,7 @@
+ #define X86_FEATURE_P4		( 3*32+ 7) /* "" P4 */
+ #define X86_FEATURE_CONSTANT_TSC ( 3*32+ 8) /* TSC ticks at a constant rate */
+ #define X86_FEATURE_UP		( 3*32+ 9) /* smp kernel running on up */
+-/* free, was #define X86_FEATURE_FXSAVE_LEAK ( 3*32+10) * "" FXSAVE leaks FOP/FIP/FOP */
++#define X86_FEATURE_ART		(3*32+10) /* Platform has always running timer (ART) */
+ #define X86_FEATURE_ARCH_PERFMON ( 3*32+11) /* Intel Architectural PerfMon */
+ #define X86_FEATURE_PEBS	( 3*32+12) /* Precise-Event Based Sampling */
+ #define X86_FEATURE_BTS		( 3*32+13) /* Branch Trace Store */
+diff --git a/arch/x86/include/asm/tsc.h b/arch/x86/include/asm/tsc.h
+index 6d7c547..9474c9c 100644
+--- a/arch/x86/include/asm/tsc.h
++++ b/arch/x86/include/asm/tsc.h
+@@ -29,6 +29,8 @@ static inline cycles_t get_cycles(void)
+ 	return rdtsc();
  }
  
-+static inline s64 timekeeping_get_ns(struct tk_read_base *tkr)
-+{
-+	cycle_t delta;
++extern struct correlated_cs art_timestamper;
 +
-+	delta = timekeeping_get_delta(tkr);
-+	return timekeeping_delta_to_ns(tkr, delta);
-+}
-+
-+static inline s64 timekeeping_cycles_to_ns(struct tk_read_base *tkr,
-+					    cycle_t cycles)
-+{
-+	cycle_t delta;
-+
-+	/* calculate the delta since the last update_wall_time */
-+	delta = clocksource_delta(cycles, tkr->cycle_last, tkr->mask);
-+	return timekeeping_delta_to_ns(tkr, delta);
-+}
-+
- /**
-  * update_fast_timekeeper - Update the fast and NMI safe monotonic timekeeper.
-  * @tkr: Timekeeping readout base from which we take the update
-@@ -885,6 +901,59 @@ EXPORT_SYMBOL(ktime_get_raw_and_real_ts64);
- #endif /* CONFIG_NTP_PPS */
+ extern void tsc_init(void);
+ extern void mark_tsc_unstable(char *reason);
+ extern int unsynchronized_tsc(void);
+diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+index c7c4d9c..26dcf63 100644
+--- a/arch/x86/kernel/tsc.c
++++ b/arch/x86/kernel/tsc.c
+@@ -949,10 +949,36 @@ static struct notifier_block time_cpufreq_notifier_block = {
+ 	.notifier_call  = time_cpufreq_notifier
+ };
  
- /**
-+ * get_device_system_crosststamp - Synchronously capture system/device timestamp
-+ * @xtstamp:		Receives simultaneously captured system and device time
-+ * @sync_devicetime:	Callback to get simultaneous device time and
-+ *	system counter from the device driver
-+ *
-+ * Reads a timestamp from a device and correlates it to system time
++#define ART_CPUID_LEAF (0x15)
++/* The denominator will never be less that 2 */
++#define ART_MIN_DENOMINATOR (2)
++
++static u32 art_to_tsc_numerator;
++static u32 art_to_tsc_denominator;
++
++/*
++ * If ART is present detect the numerator:denominator to convert to TSC
 + */
-+int get_device_system_crosststamp(struct system_device_crosststamp *xtstamp,
-+				  struct get_sync_device_time *sync_devicetime)
++static void detect_art(void)
 +{
-+	struct timekeeper *tk = &tk_core.timekeeper;
-+	unsigned long seq;
-+	struct raw_system_counterval raw_sys;
-+	ktime_t base_raw;
-+	ktime_t base_real;
-+	s64 nsec_raw;
-+	s64 nsec_real;
-+	int ret;
++	unsigned int unused[2];
 +
-+	do {
-+		seq = read_seqcount_begin(&tk_core.seq);
-+		/*
-+		 * Try to get a timestamp from the device driver.
-+		 */
-+		ret = sync_devicetime->get_time(&xtstamp->device, &raw_sys,
-+						sync_devicetime->ctx);
-+		if (ret)
-+			return ret;
++	if (boot_cpu_data.cpuid_level >= ART_CPUID_LEAF) {
++		cpuid(ART_CPUID_LEAF, &art_to_tsc_denominator,
++		      &art_to_tsc_numerator, unused, unused+1);
 +
-+		/*
-+		 * Verify that the correlated clocksource is related to
-+		 * the currently installed timekeeper clocksource
-+		 */
-+		if (tk->tkr_mono.clock != raw_sys.cs)
-+			return -ENODEV;
-+
-+		base_real = ktime_add(tk->tkr_mono.base,
-+				      tk_core.timekeeper.offs_real);
-+		base_raw = tk->tkr_raw.base;
-+
-+		nsec_real = timekeeping_cycles_to_ns(&tk->tkr_mono,
-+						     raw_sys.cycles);
-+		nsec_raw = timekeeping_cycles_to_ns(&tk->tkr_raw,
-+						    raw_sys.cycles);
-+	} while (read_seqcount_retry(&tk_core.seq, seq));
-+
-+	xtstamp->sys_realtime = ktime_add_ns(base_real, nsec_real);
-+	xtstamp->sys_monoraw = ktime_add_ns(base_raw, nsec_raw);
-+	return 0;
++		if (art_to_tsc_denominator >= ART_MIN_DENOMINATOR)
++			set_cpu_cap(&boot_cpu_data, X86_FEATURE_ART);
++	}
 +}
-+EXPORT_SYMBOL_GPL(get_device_system_crosststamp);
 +
-+/**
-  * do_gettimeofday - Returns the time of day in a timeval
-  * @tv:		pointer to the timeval to be set
-  *
+ static int __init cpufreq_tsc(void)
+ {
+ 	if (!cpu_has_tsc)
+ 		return 0;
++
++	detect_art();
++
+ 	if (boot_cpu_has(X86_FEATURE_CONSTANT_TSC))
+ 		return 0;
+ 	cpufreq_register_notifier(&time_cpufreq_notifier_block,
+@@ -1071,6 +1097,24 @@ int unsynchronized_tsc(void)
+ 	return 0;
+ }
+ 
++/*
++ * Convert ART to TSC given numerator/denominator found in detect_art()
++ */
++static u64 convert_art_to_tsc(struct correlated_cs *cs, u64 cycles)
++{
++	u64 tmp, res;
++
++	res = (cycles / art_to_tsc_denominator) * art_to_tsc_numerator;
++	tmp = (cycles % art_to_tsc_denominator) * art_to_tsc_numerator;
++	res += tmp / art_to_tsc_denominator;
++
++	return res;
++}
++
++struct correlated_cs art_timestamper = {
++	.convert	= convert_art_to_tsc,
++};
++EXPORT_SYMBOL(art_timestamper);
+ 
+ static void tsc_refine_calibration_work(struct work_struct *work);
+ static DECLARE_DELAYED_WORK(tsc_irqwork, tsc_refine_calibration_work);
+@@ -1142,6 +1186,8 @@ static void tsc_refine_calibration_work(struct work_struct *work)
+ 		(unsigned long)tsc_khz % 1000);
+ 
+ out:
++	if (boot_cpu_has(X86_FEATURE_ART))
++		art_timestamper.related_cs = &clocksource_tsc;
+ 	clocksource_register_khz(&clocksource_tsc, tsc_khz);
+ }
+ 
 -- 
 2.1.4
 
