@@ -1,86 +1,69 @@
 From: Deepthi Kavalur <deepthi.kavalur@intel.com>
-Date: Mon,  4 Jan 2016 10:33:03 -0800
-Subject: [Intel-wired-lan] [next PATCH S26 03/12] i40e: fix bug in dma sync
+Date: Mon,  4 Jan 2016 10:33:08 -0800
+Subject: [Intel-wired-lan] [next PATCH S26 08/12] i40e: negate phy int mask
+	bits
 In-Reply-To: <1451932392-15538-1-git-send-email-deepthi.kavalur@intel.com>
 References: <1451932392-15538-1-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <1451932392-15538-4-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <1451932392-15538-9-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Shannon Nelson <shannon.nelson@intel.com>
 
-Driver was using an offset based off a dma handle while mapping and
-unmapping using sync_single_range_for[cpu|device], where it should
-be using dma handle (returned from alloc_coherent) and the offset of the
-memory to be sync'd.
+The phy interrupt mask bits mask out the events we don't want,
+so we need to negate the bitmask of events we want.
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Reviewed-by: Nelson, Shannon <shannon.nelson@intel.com>
-Reviewed-by: Williams, Mitch A <mitch.a.williams@intel.com>
-Change-ID: I208256565b1595ff0e9171ab852de06b997917c6
+Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+Change-ID: I273244da5a8d285b6abc84fd68a90f1e6fa0393e
 ---
-Testing-Hints:
-Test traffic, test with DMA API debugging enabled.
+Testing Hints:
+The software will not be notified that an empty module has been
+placed into the cage, and link has not been established.
 
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 8 ++++----
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 8 ++++----
- 2 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 7ea2689..7d81c1f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1218,8 +1218,8 @@ void i40e_alloc_rx_buffers_ps(struct i40e_ring *rx_ring, u16 cleaned_count)
- 		}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 37d6979..2939ce8 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -6816,12 +6816,12 @@ static void i40e_reset_and_rebuild(struct i40e_pf *pf, bool reinit)
+ 	if (ret)
+ 		goto end_core_reset;
  
- 		dma_sync_single_range_for_device(rx_ring->dev,
--						 bi->dma,
--						 0,
-+						 rx_ring->rx_bi[0].dma,
-+						 i * rx_ring->rx_hdr_len,
- 						 rx_ring->rx_hdr_len,
- 						 DMA_FROM_DEVICE);
- 		/* Refresh the desc even if buffer_addrs didn't change
-@@ -1534,8 +1534,8 @@ static int i40e_clean_rx_irq_ps(struct i40e_ring *rx_ring, int budget)
- 			skb_record_rx_queue(skb, rx_ring->queue_index);
- 			/* we are reusing so sync this buffer for CPU use */
- 			dma_sync_single_range_for_cpu(rx_ring->dev,
--						      rx_bi->dma,
--						      0,
-+						      rx_ring->rx_bi[0].dma,
-+						      i * rx_ring->rx_hdr_len,
- 						      rx_ring->rx_hdr_len,
- 						      DMA_FROM_DEVICE);
+-	/* driver is only interested in link up/down and module qualification
+-	 * reports from firmware
++	/* The driver only wants link up/down and module qualification
++	 * reports from firmware.  Note the negative logic.
+ 	 */
+ 	ret = i40e_aq_set_phy_int_mask(&pf->hw,
+-				       I40E_AQ_EVENT_LINK_UPDOWN |
+-				       I40E_AQ_EVENT_MODULE_QUAL_FAIL, NULL);
++				       ~(I40E_AQ_EVENT_LINK_UPDOWN |
++					 I40E_AQ_EVENT_MODULE_QUAL_FAIL), NULL);
+ 	if (ret)
+ 		dev_info(&pf->pdev->dev, "set phy mask fail, err %s aq_err %s\n",
+ 			 i40e_stat_str(&pf->hw, ret),
+@@ -10959,12 +10959,12 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
  		}
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index 0e2c627..a1d907c 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -699,8 +699,8 @@ void i40evf_alloc_rx_buffers_ps(struct i40e_ring *rx_ring, u16 cleaned_count)
- 		}
+ 	}
  
- 		dma_sync_single_range_for_device(rx_ring->dev,
--						 bi->dma,
--						 0,
-+						 rx_ring->rx_bi[0].dma,
-+						 i * rx_ring->rx_hdr_len,
- 						 rx_ring->rx_hdr_len,
- 						 DMA_FROM_DEVICE);
- 		/* Refresh the desc even if buffer_addrs didn't change
-@@ -1006,8 +1006,8 @@ static int i40e_clean_rx_irq_ps(struct i40e_ring *rx_ring, int budget)
- 			skb_record_rx_queue(skb, rx_ring->queue_index);
- 			/* we are reusing so sync this buffer for CPU use */
- 			dma_sync_single_range_for_cpu(rx_ring->dev,
--						      rx_bi->dma,
--						      0,
-+						      rx_ring->rx_bi[0].dma,
-+						      i * rx_ring->rx_hdr_len,
- 						      rx_ring->rx_hdr_len,
- 						      DMA_FROM_DEVICE);
- 		}
+-	/* driver is only interested in link up/down and module qualification
+-	 * reports from firmware
++	/* The driver only wants link up/down and module qualification
++	 * reports from firmware.  Note the negative logic.
+ 	 */
+ 	err = i40e_aq_set_phy_int_mask(&pf->hw,
+-				       I40E_AQ_EVENT_LINK_UPDOWN |
+-				       I40E_AQ_EVENT_MODULE_QUAL_FAIL, NULL);
++				       ~(I40E_AQ_EVENT_LINK_UPDOWN |
++					 I40E_AQ_EVENT_MODULE_QUAL_FAIL), NULL);
+ 	if (err)
+ 		dev_info(&pf->pdev->dev, "set phy mask fail, err %s aq_err %s\n",
+ 			 i40e_stat_str(&pf->hw, err),
 -- 
 2.1.0
 
