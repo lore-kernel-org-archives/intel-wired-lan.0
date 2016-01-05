@@ -1,89 +1,126 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Mon, 4 Jan 2016 23:56:31 +0000
-Subject: [Intel-wired-lan] Add I210 cable fault detection to self test
-In-Reply-To: <1481105116.578767.1450304180215.JavaMail.zimbra@xes-inc.com>
-References: <907278953.561265.1450303005823.JavaMail.zimbra@xes-inc.com>,
- <1481105116.578767.1450304180215.JavaMail.zimbra@xes-inc.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81E48F04@ORSMSX101.amr.corp.intel.com>
+From: Deepthi Kavalur <deepthi.kavalur@intel.com>
+Date: Mon,  4 Jan 2016 18:03:13 -0800
+Subject: [Intel-wired-lan] [next PATCH] i40e: add priv flag for automatic
+	rule eviction
+Message-ID: <1451959393-4771-1-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Aaron Sierra [asierra at xes-inc.com]
-> Sent: Wednesday, December 16, 2015 2:16 PM
-> To: Kirsher, Jeffrey T; intel-wired-lan at lists.osuosl.org
-> Cc: Wyborny, Carolyn; Brandeburg, Jesse; Williams, Mitch A; Brown, Aaron F; Joe Schultz
-> Subject: [PATCH v3] igb: Add I210 cable fault detection to self test
-> 
-> From: Joe Schultz <jschultz@xes-inc.com>
->
-> Add an offline diagnostic test for the I210 internal PHY which checks
-> for cable faults and reports the distance along the cable where the
-> fault was detected. Fault types detected include open, short, and
-> cross-pair short.
-> 
-> Signed-off-by: Joe Schultz <jschultz@xes-inc.com>
-> Signed-off-by: Aaron Sierra <asierra@xes-inc.com>
-> ---
->  v2 - account for changes made by this patch in dev-queue:
->    drivers/net: get rid of unnecessary initializations in .get_drvinfo()
->  v3 - fix uninitialized variable compile warning
->     - remove unneeded igb_cable_fault_test_prep() function
->     - don't add unused define to e1000_defines.h
->     - only run cable diagnostic if link test fails
-> 
->  drivers/net/ethernet/intel/igb/e1000_defines.h |  12 +-
->  drivers/net/ethernet/intel/igb/igb_ethtool.c   | 186 ++++++++++++++++++++++++-
->  2 files changed, 192 insertions(+), 6 deletions(-)
+From: Anjali Singhai Jain <anjali.singhai@intel.com>
 
-A question and a bug.  Question first since it's short:
+The X722 can support automatic rule eviction for automatically added
+flow director rules.  Feature is (should be) disabled by default.
 
-Q. Was this version supposed to suppress running the cable diagnostics if the system has link?  I am still seeing the cable fault output (complete with -1 for the fault distances) when I run ethtool -t against an i210 or i211.
+Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e.h         | 1 +
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 9 +++++++++
+ drivers/net/ethernet/intel/i40e/i40e_main.c    | 2 ++
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c    | 6 ++++--
+ drivers/net/ethernet/intel/i40e/i40e_type.h    | 4 ++++
+ 5 files changed, 20 insertions(+), 2 deletions(-)
 
-When I run diagnostics against a number of parts I get a "Bug:  This version of the patch is causing (or exposing) a "BUG: unable to handle kernel paging request at ffffffffffffffff" followed by a Call Trace.  It does not seem to occur with i210 or i211, but I consistently get the trace on 82575EB, 82576, i350 and i354. 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 5dfe33b..7ec304c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -104,6 +104,7 @@
+ #define I40E_PRIV_FLAGS_FD_ATR		BIT(2)
+ #define I40E_PRIV_FLAGS_VEB_STATS	BIT(3)
+ #define I40E_PRIV_FLAGS_PS		BIT(4)
++#define I40E_PRIV_FLAGS_HW_ATR_EVICT    BIT(5)
  
- It does not occur every time I run the diagnostics, but pretty frequently.  Generally if it shows up it does so within 5 or 6 iterations (though sometimes it takes many more.)  The system hangs and becomes unusable, but the trace is captured to /var/log/messages.  Here is a sample of the trace, in this case from an the 82575EB, the other traces look pretty similar:
------------------------------------------------------------------------------------------------------------------------------------
-Jan  4 13:07:19 u1485 kernel: BUG: unable to handle kernel paging request at ffffffffffffffff
-Jan  4 13:07:19 u1485 kernel: IP: [<ffffffff81181998>] unlink_anon_vmas+0x78/0x190
-Jan  4 13:07:19 u1485 kernel: PGD 1a0b067 PUD 1a0d067 PMD 0
-Jan  4 13:07:19 u1485 kernel: Oops: 0000 [#1] SMP
-Jan  4 13:07:19 u1485 kernel: Modules linked in: igb dca ptp pps_core ip6table_filter ip6_tables ebtable_nat ebtables nf_conntrack_ipv4 nf_defrag_ipv4 xt_state nf_conntrack ipt_REJECT nf_reject_ipv4 xt_CHECKSUM iptable_mangle iptable_filter ip_tables bridge stp llc nfsd lockd grace nfs_acl exportfs auth_rpcgss sunrpc autofs4 ipv6 dm_mirror dm_region_hash dm_log vhost_net macvtap macvlan vhost tun uinput joydev sg e100 mii serio_raw iTCO_wdt iTCO_vendor_support kvm_intel kvm irqbypass i2c_i801 lpc_ich mfd_core i5400_edac edac_core i5k_amb shpchp dm_mod(E) ext4(E) jbd2(E) mbcache(E) sd_mod(E) sr_mod(E) cdrom(E) pata_acpi(E) ata_generic(E) ata_piix(E) radeon(E) ttm(E) drm_kms_helper(E) drm(E) fb_sys_fops(E) sysimgblt(E) sysfillrect(E) syscopyarea(E) i2c_algo_bit(E) i2c_core(E)
-Jan  4 13:07:19 u1485 kernel: CPU: 3 PID: 9351 Comm: ethtool Tainted: G            E   4.4.0-rc5_next_dev_2d9a87e-01243-g2d9a87e #13
-Jan  4 13:07:19 u1485 kernel: Hardware name: Supermicro X7DW3/X7DWN+, BIOS  1.1 04/30/2008
-Jan  4 13:07:19 u1485 kernel: task: ffff88005df5e280 ti: ffff88005df60000 task.ti: ffff88005df60000
-Jan  4 13:07:19 u1485 kernel: RIP: 0010:[<ffffffff81181998>]  [<ffffffff81181998>] unlink_anon_vmas+0x78/0x190
-Jan  4 13:07:19 u1485 kernel: RSP: 0018:ffff88005df63c98  EFLAGS: 00010246
-Jan  4 13:07:19 u1485 kernel: RAX: 0000000000000000 RBX: ffffffffffffffff RCX: 000000000000018e
-Jan  4 13:07:19 u1485 kernel: RDX: 000000359f18f000 RSI: ffff88007c3b7240 RDI: ffff88007b631970
-Jan  4 13:07:19 u1485 kernel: RBP: ffff88005df63ce8 R08: 000000359f18f000 R09: ffff88007a80d408
-Jan  4 13:07:19 u1485 kernel: R10: 0000000000000000 R11: ffff88007aecce18 R12: 0000000000000000
-Jan  4 13:07:19 u1485 kernel: R13: ffffffffffffffef R14: ffff88007acfbd00 R15: ffff88007b6319e8
-Jan  4 13:07:19 u1485 kernel: FS:  0000000000000000(0000) GS:ffff88007fcc0000(0000) knlGS:0000000000000000
-Jan  4 13:07:19 u1485 kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-Jan  4 13:07:19 u1485 kernel: CR2: ffffffffffffffff CR3: 000000007a978000 CR4: 00000000000006e0
-Jan  4 13:07:19 u1485 kernel: Stack:
-Jan  4 13:07:19 u1485 kernel: ffff88005df63cb8 ffffffff815ba8c6 ffff88007b631970 ffff88007acfbd10
-Jan  4 13:07:19 u1485 kernel: ffff88005df63ce8 ffff88007b631468 0000000000000000 ffff88005df63d58
-Jan  4 13:07:19 u1485 kernel: 0000000000000000 000000359e600000 ffff88005df63d38 ffffffff811735e4
-Jan  4 13:07:19 u1485 kernel: Call Trace:
-Jan  4 13:07:19 u1485 kernel: [<ffffffff815ba8c6>] ? down_write+0x16/0x50
-Jan  4 13:07:19 u1485 kernel: [<ffffffff811735e4>] free_pgtables+0x84/0x100
-Jan  4 13:07:19 u1485 kernel: [<ffffffff8117aa81>] exit_mmap+0xd1/0x140
-Jan  4 13:07:19 u1485 kernel: [<ffffffff813766d5>] ? do_tty_write+0x125/0x1d0
-Jan  4 13:07:19 u1485 kernel: [<ffffffff8105b86a>] mmput+0x6a/0x100
-Jan  4 13:07:19 u1485 kernel: [<ffffffff8105ec54>] exit_mm+0x134/0x1c0
-Jan  4 13:07:19 u1485 kernel: [<ffffffff815ba916>] ? down_read+0x16/0x30
-Jan  4 13:07:19 u1485 kernel: [<ffffffff81060517>] do_exit+0x147/0x460
-Jan  4 13:07:19 u1485 kernel: [<ffffffff81050271>] ? __do_page_fault+0x1a1/0x440
-Jan  4 13:07:19 u1485 kernel: [<ffffffff81060881>] do_group_exit+0x51/0xb0
-Jan  4 13:07:19 u1485 kernel: [<ffffffff810608f7>] SyS_exit_group+0x17/0x20
-Jan  4 13:07:19 u1485 kernel: [<ffffffff815bc1d7>] entry_SYSCALL_64_fastpath+0x12/0x6a
-Jan  4 13:07:19 u1485 kernel: Code: 7f 9a d1 00 4c 89 f6 e8 57 b6 01 00 49 8d 45 10 49 8b 55 10 4c 39 f8 48 89 45 c8 74 46 4d 89 ee 4c 8d 6a f0 4c 89 e0 49 8b 5e 08 <4c> 8b 23 4c 39 e0 74 13 48 85 c0 0f 85 ca 00 00 00 49 8d 7c 24
-Jan  4 13:07:19 u1485 kernel: RIP  [<ffffffff81181998>] unlink_anon_vmas+0x78/0x190
-Jan  4 13:07:19 u1485 kernel: RSP <ffff88005df63c98>
-Jan  4 13:07:19 u1485 kernel: CR2: ffffffffffffffff
-Jan  4 13:07:19 u1485 kernel: ---[ end trace 720ddd6818910144 ]---
-Jan  4 13:07:19 u1485 kernel: Fixing recursive fault but reboot is needed!
+ #define I40E_NVM_VERSION_LO_SHIFT  0
+ #define I40E_NVM_VERSION_LO_MASK   (0xff << I40E_NVM_VERSION_LO_SHIFT)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 252a9dd..80c3f20 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -232,6 +232,7 @@ static const char i40e_priv_flags_strings[][ETH_GSTRING_LEN] = {
+ 	"flow-director-atr",
+ 	"veb-stats",
+ 	"packet-split",
++	"hw-atr-eviction",
+ };
+ 
+ #define I40E_PRIV_FLAGS_STR_LEN ARRAY_SIZE(i40e_priv_flags_strings)
+@@ -2706,6 +2707,8 @@ static u32 i40e_get_priv_flags(struct net_device *dev)
+ 		I40E_PRIV_FLAGS_VEB_STATS : 0;
+ 	ret_flags |= pf->flags & I40E_FLAG_RX_PS_ENABLED ?
+ 		I40E_PRIV_FLAGS_PS : 0;
++	ret_flags |= pf->auto_disable_flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE ?
++		0 : I40E_PRIV_FLAGS_HW_ATR_EVICT;
+ 
+ 	return ret_flags;
+ }
+@@ -2762,6 +2765,12 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 	else
+ 		pf->flags &= ~I40E_FLAG_VEB_STATS_ENABLED;
+ 
++	if ((flags & I40E_PRIV_FLAGS_HW_ATR_EVICT) &&
++				   (pf->flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE))
++		pf->auto_disable_flags &= ~I40E_FLAG_HW_ATR_EVICT_CAPABLE;
++	else
++		pf->auto_disable_flags |= I40E_FLAG_HW_ATR_EVICT_CAPABLE;
++
+ 	/* if needed, issue reset to cause things to take effect */
+ 	if (reset_required)
+ 		i40e_do_reset(pf, BIT(__I40E_PF_RESET_REQUESTED));
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index c9393d2..58da2f1 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -8396,6 +8396,8 @@ static int i40e_sw_init(struct i40e_pf *pf)
+ 			     I40E_FLAG_OUTER_UDP_CSUM_CAPABLE |
+ 			     I40E_FLAG_WB_ON_ITR_CAPABLE |
+ 			     I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE;
++	} else {
++		pf->auto_disable_flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
+ 	}
+ 	pf->eeprom_version = 0xDEAD;
+ 	pf->lan_veb = I40E_NO_VEB;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index ba79f67..94dbeb3 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -2039,7 +2039,8 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 	/* Due to lack of space, no more new filters can be programmed */
+ 	if (th->syn && (pf->auto_disable_flags & I40E_FLAG_FD_ATR_ENABLED))
+ 		return;
+-	if (pf->flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE) {
++	if ((pf->flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE) &&
++	    (!(pf->auto_disable_flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE))) {
+ 		/* HW ATR eviction will take care of removing filters on FIN
+ 		 * and RST packets.
+ 		 */
+@@ -2101,7 +2102,8 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 			I40E_TXD_FLTR_QW1_CNTINDEX_SHIFT) &
+ 			I40E_TXD_FLTR_QW1_CNTINDEX_MASK;
+ 
+-	if (pf->flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE)
++	if ((pf->flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE) &&
++	    (!(pf->auto_disable_flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE)))
+ 		dtype_cmd |= I40E_TXD_FLTR_QW1_ATR_MASK;
+ 
+ 	fdir_desc->qindex_flex_ptype_vsi = cpu_to_le32(flex_ptype);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
+index dd2da35..b59a021 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
+@@ -1098,6 +1098,10 @@ enum i40e_filter_program_desc_pcmd {
+ 					 I40E_TXD_FLTR_QW1_CMD_SHIFT)
+ #define I40E_TXD_FLTR_QW1_ATR_MASK	BIT_ULL(I40E_TXD_FLTR_QW1_ATR_SHIFT)
+ 
++#define I40E_TXD_FLTR_QW1_ATR_SHIFT	(0xEULL + \
++					 I40E_TXD_FLTR_QW1_CMD_SHIFT)
++#define I40E_TXD_FLTR_QW1_ATR_MASK	BIT_ULL(I40E_TXD_FLTR_QW1_ATR_SHIFT)
++
+ #define I40E_TXD_FLTR_QW1_CNTINDEX_SHIFT 20
+ #define I40E_TXD_FLTR_QW1_CNTINDEX_MASK	(0x1FFUL << \
+ 					 I40E_TXD_FLTR_QW1_CNTINDEX_SHIFT)
+-- 
+2.1.0
+
