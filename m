@@ -1,68 +1,115 @@
-From: John Stultz <john.stultz@linaro.org>
-Date: Wed, 6 Jan 2016 11:42:58 -0800
-Subject: [Intel-wired-lan] [RFC v5 4/6] Remove duplicate code from
-	ktime_get_raw_and_real code
-In-Reply-To: <1451911523-8534-5-git-send-email-christopher.s.hall@intel.com>
-References: <1451911523-8534-1-git-send-email-christopher.s.hall@intel.com>
- <1451911523-8534-5-git-send-email-christopher.s.hall@intel.com>
-Message-ID: <CALAqxLVmQEXLGoq1k7S-Y97gLb_FSMbxzkZ6bFmnPH_sKt5X1A@mail.gmail.com>
+From: zhuyj <zyjzyj2000@gmail.com>
+Date: Wed, 6 Jan 2016 13:41:39 +0800
+Subject: [Intel-wired-lan] [PATCH 2/2] ixgbe: restrict synchronization
+ of link_up and speed
+In-Reply-To: <87618083B2453E4A8714035B62D67992504FD8D5@FMSMSX105.amr.corp.intel.com>
+References: <1450926752-11392-1-git-send-email-zyjzyj2000@gmail.com>
+ <1451356326-2919-1-git-send-email-zyjzyj2000@gmail.com>
+ <1451356326-2919-3-git-send-email-zyjzyj2000@gmail.com>
+ <87618083B2453E4A8714035B62D67992504FB5FF@FMSMSX105.amr.corp.intel.com>
+ <5683462C.3020801@gmail.com>
+ <87618083B2453E4A8714035B62D67992504FD7FB@FMSMSX105.amr.corp.intel.com>
+ <568393C6.1060105@gmail.com>
+ <87618083B2453E4A8714035B62D67992504FD8D5@FMSMSX105.amr.corp.intel.com>
+Message-ID: <568CA913.3030901@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Jan 4, 2016 at 4:45 AM, Christopher S. Hall
-<christopher.s.hall@intel.com> wrote:
-> The code in ktime_get_snapshot() is a superset of the code in
-> ktime_get_raw_and_real() code. Changes the latter to call the former. A
-> side effect of this is that ktime_get_raw_and_real() returns two clock
-> times corresponding to the *exact* same clock tick. Previously, this
-> code read the underlying counter twice.
->
-> Signed-off-by: Christopher S. Hall <christopher.s.hall@intel.com>
-> ---
->  kernel/time/timekeeping.c | 20 ++++----------------
->  1 file changed, 4 insertions(+), 16 deletions(-)
->
-> diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-> index 5a7f784..a0f096c 100644
-> --- a/kernel/time/timekeeping.c
-> +++ b/kernel/time/timekeeping.c
-> @@ -910,26 +910,14 @@ EXPORT_SYMBOL_GPL(ktime_get_snapshot);
->   */
->  void ktime_get_raw_and_real_ts64(struct timespec64 *ts_raw, struct timespec64 *ts_real)
->  {
-> -       struct timekeeper *tk = &tk_core.timekeeper;
-> -       unsigned long seq;
-> -       s64 nsecs_raw, nsecs_real;
-> +       struct system_time_snapshot snap;
->
->         WARN_ON_ONCE(timekeeping_suspended);
->
-> -       do {
-> -               seq = read_seqcount_begin(&tk_core.seq);
-> -
-> -               *ts_raw = tk->raw_time;
-> -               ts_real->tv_sec = tk->xtime_sec;
-> -               ts_real->tv_nsec = 0;
-> -
-> -               nsecs_raw  = timekeeping_get_ns(&tk->tkr_raw);
-> -               nsecs_real = timekeeping_get_ns(&tk->tkr_mono);
-> -
-> -       } while (read_seqcount_retry(&tk_core.seq, seq));
-> +       ktime_get_snapshot(&snap);
->
-> -       timespec64_add_ns(ts_raw, nsecs_raw);
-> -       timespec64_add_ns(ts_real, nsecs_real);
-> +       *ts_raw = ktime_to_timespec64(snap.raw);
-> +       *ts_real = ktime_to_timespec64(snap.real);
->  }
->  EXPORT_SYMBOL(ktime_get_raw_and_real_ts64);
+On 12/31/2015 12:37 AM, Tantilov, Emil S wrote:
+>> -----Original Message-----
+>> From: zhuyj [mailto:zyjzyj2000 at gmail.com]
+>> Sent: Wednesday, December 30, 2015 12:20 AM
+>> To: Tantilov, Emil S; Kirsher, Jeffrey T; Brandeburg, Jesse; Nelson,
+>> Shannon; Wyborny, Carolyn; Skidmore, Donald C; Allan, Bruce W; Ronciak,
+>> John; Williams, Mitch A; intel-wired-lan at lists.osuosl.org;
+>> netdev at vger.kernel.org; e1000-devel at lists.sourceforge.net
+>> Cc: Viswanathan, Ven (Wind River); Shteinbock, Boris (Wind River); Bourg,
+>> Vincent (Wind River)
+>> Subject: Re: [Intel-wired-lan] [PATCH 2/2] ixgbe: restrict synchronization
+>> of link_up and speed
+>>
+>> On 12/30/2015 02:55 PM, Tantilov, Emil S wrote:
+>>>> -----Original Message-----
+>>>> From: zhuyj [mailto:zyjzyj2000 at gmail.com]
+>>>> Sent: Tuesday, December 29, 2015 6:49 PM
+>>>> To: Tantilov, Emil S; Kirsher, Jeffrey T; Brandeburg, Jesse; Nelson,
+>>>> Shannon; Wyborny, Carolyn; Skidmore, Donald C; Allan, Bruce W; Ronciak,
+>>>> John; Williams, Mitch A; intel-wired-lan at lists.osuosl.org;
+>>>> netdev at vger.kernel.org; e1000-devel at lists.sourceforge.net
+>>>> Cc: Viswanathan, Ven (Wind River); Shteinbock, Boris (Wind River);
+>> Bourg,
+>>>> Vincent (Wind River)
+>>>> Subject: Re: [Intel-wired-lan] [PATCH 2/2] ixgbe: restrict
+>> synchronization
+>>>> of link_up and speed
+>>>>
+>>>> On 12/30/2015 12:18 AM, Tantilov, Emil S wrote:
+>>>>>> -----Original Message-----
+>>>>>> From: Intel-wired-lan [mailto:intel-wired-lan-
+>> bounces at lists.osuosl.org]
+>>>> On
+>>>>>> Behalf Of zyjzyj2000 at gmail.com
+>>>>>> Sent: Monday, December 28, 2015 6:32 PM
+>>>>>> To: Kirsher, Jeffrey T; Brandeburg, Jesse; Nelson, Shannon; Wyborny,
+>>>>>> Carolyn; Skidmore, Donald C; Allan, Bruce W; Ronciak, John; Williams,
+>>>> Mitch
+>>>>>> A; intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; e1000-
+>>>>>> devel at lists.sourceforge.net
+>>>>>> Cc: Viswanathan, Ven (Wind River); Shteinbock, Boris (Wind River);
+>>>> Bourg,
+>>>>>> Vincent (Wind River)
+>>>>>> Subject: [Intel-wired-lan] [PATCH 2/2] ixgbe: restrict synchronization
+>>>> of
+>>>>>> link_up and speed
+>>>>>>
+>>>>>> From: Zhu Yanjun <yanjun.zhu@windriver.com>
+>>>>>>
+>>>>>> When the X540 NIC acts as a slave of some virtual NICs, it is very
+>>>>>> important to synchronize link_up and link_speed, such as a bonding
+>>>>>> driver in 802.3ad mode. When X540 NIC acts as an independent
+>> interface,
+>>>>>> it is not necessary to synchronize link_up and link_speed. That is,
+>>>>>> the time span between link_up and link_speed is acceptable.
+>>>>> What exactly do you mean by "time span between link_up and link_speed"?
+>>>> In the previous mail, I show you some ethtool logs. In these logs, there
+>>>> is some
+>>>> time with NIC up while speed is unknown. I think this "some time" is
+>>>> time span between
+>>>> link_up and link_speed. Please see the previous mail for details.
+>>> Was this when reporting the link state from check_link() (reading the
+>> LINKS
+>>> register) or reporting the adapter->link_speed?
+>>>
+>>>>> Where is it you think the de-synchronization occurs?
+>>>> When a NIC interface acts as a slave, a flag "IFF_SLAVE" is set in
+>>>> netdevice struct.
+>>>> Before we enter this function, we check IFF_SLAVE flag. If this flag is
+>>>> set, we continue to check
+>>>> link_speed. If not, this function is executed whether this link_speed is
+>>>> unknown or not.
+>>> I can already see this in your patch. I was asking about the reason why
+>>> your change is needed.
+>> an extreme example, let us assume this scenario:
+> Is this the scenario you are trying to fix?
+Sure. If IFF_SLAVE is checked, this scenario will not happen.
 
-Looks sane, but you might even be able to get rid of this function
-entirely and modify the one user (pps_get_ts()) to use
-ktime_get_snapshot().
+Zhu Yanjun
+>
+>> An ixgbe NIC directly connects to another NIC (let us call it NIC-a).
+>> And auto-negotiate is off while no static speed is set in the 2 NICs.
+> The ixgbe driver does not support disabling auto-negotiation directly.
+> The only time this is true is when the advertised speed is restricted,
+> so the above scenario is not possible (you either have autoneg or
+> advertised speed set) with the current driver.
+>
+> Is this example in theory or do you have your interface configured this
+> way somehow?
+>
+> Thanks,
+> Emil
+>
+>
 
-thanks
--john
