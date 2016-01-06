@@ -1,26 +1,34 @@
-From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-Date: Wed, 6 Jan 2016 15:48:46 -0500
-Subject: [Intel-wired-lan] [PATCH net-next] ixgbe: Fix for RAR0 not
- being set to default MAC addr
-In-Reply-To: <1452110729-15659-1-git-send-email-tushar.n.dave@oracle.com>
-References: <1452110729-15659-1-git-send-email-tushar.n.dave@oracle.com>
-Message-ID: <20160106204846.GE23622@oracle.com>
+From: Schmitt, Phillip J <phillip.j.schmitt@intel.com>
+Date: Wed, 6 Jan 2016 21:09:33 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Fill at least min credits to a
+ TC	credit refills
+In-Reply-To: <20151123183051.17677.32713.stgit@lin-nd1-054.jf.intel.com>
+References: <20151123183051.17677.32713.stgit@lin-nd1-054.jf.intel.com>
+Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E180D132A7@ORSMSX108.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On (01/06/16 12:05), Tushar Dave wrote:
 
-> commit c9f53e63c208 ("ixgbe: Refactor MAC address configuration code")
-> introduced code that doesn't set HW register RAR0 to default mac address
-> but FF:FF:FF:FF:FF:FF. Due to this, ixgbe HW discards all incoming packets
-> that doesn't have destination mac address equals to FF:FF:FF:FF:FF:FF.
-> 
-> This commit sets RAR0 correctly to default HW mac address.
-> 
-> Signed-off-by: Tushar Dave <tushar.n.dave@oracle.com>
 
-Tested-by: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Vasu Dev
+> Sent: Monday, November 23, 2015 10:31 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: Fill at least min credits to a TC credit
+> refills
+> 
+> Currently credit_refill and credit_max could be zero for a TC and that is causing
+> Tx hang for CEE mode configuration, so to fix that have at min credit assigned to
+> a TC and that is as what IEEE mode already does.
+> 
+> Signed-off-by: Vasu Dev <vasu.dev@intel.com>
+> Change-ID: If652c133093a21e530f4e9eab09097976f57fb12
+> ---
+
+Tested-by: Phil Schmitt <phillip.j.schmitt@intel.com>
+The scope of my testing was limited to trying to find any issues that this patch might cause with standard (non-DCB) networking traffic.
 
