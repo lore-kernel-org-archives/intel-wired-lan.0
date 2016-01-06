@@ -1,9 +1,9 @@
 From: Schmitt, Phillip J <phillip.j.schmitt@intel.com>
-Date: Wed, 6 Jan 2016 21:10:07 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: use correct fcoe ddp max check
-In-Reply-To: <20151123183101.18641.30146.stgit@lin-nd1-054.jf.intel.com>
-References: <20151123183101.18641.30146.stgit@lin-nd1-054.jf.intel.com>
-Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E180D132C4@ORSMSX108.amr.corp.intel.com>
+Date: Wed, 6 Jan 2016 21:10:20 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: fix broken PFC with X550
+In-Reply-To: <20151123183125.20877.67227.stgit@lin-nd1-054.jf.intel.com>
+References: <20151123183125.20877.67227.stgit@lin-nd1-054.jf.intel.com>
+Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E180D132D8@ORSMSX108.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,10 +17,10 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Vasu Dev
 > Sent: Monday, November 23, 2015 10:31 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] ixgbe: use correct fcoe ddp max check
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: fix broken PFC with X550
 > 
-> Use fcoe_ddp_xid from netdev as this is correctly set for different device IDs to
-> avoid DDP skip error on X550 as "xid=0x20b out-of-range"
+> PFC is configuration is skipped for X550 devices due to a incorrect device id
+> check, fixing that to include X550 PFC configuration.
 > 
 > Signed-off-by: Vasu Dev <vasu.dev@intel.com>
 > ---
