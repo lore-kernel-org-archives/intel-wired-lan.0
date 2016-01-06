@@ -1,133 +1,26 @@
-From: Tantilov, Emil S <emil.s.tantilov@intel.com>
-Date: Wed, 6 Jan 2016 15:30:36 +0000
-Subject: [Intel-wired-lan] [PATCH 2/2] ixgbe: restrict synchronization
- of link_up and speed
-In-Reply-To: <568CA913.3030901@gmail.com>
-References: <1450926752-11392-1-git-send-email-zyjzyj2000@gmail.com>
- <1451356326-2919-1-git-send-email-zyjzyj2000@gmail.com>
- <1451356326-2919-3-git-send-email-zyjzyj2000@gmail.com>
- <87618083B2453E4A8714035B62D67992504FB5FF@FMSMSX105.amr.corp.intel.com>
- <5683462C.3020801@gmail.com>
- <87618083B2453E4A8714035B62D67992504FD7FB@FMSMSX105.amr.corp.intel.com>
- <568393C6.1060105@gmail.com>
- <87618083B2453E4A8714035B62D67992504FD8D5@FMSMSX105.amr.corp.intel.com>
- <568CA913.3030901@gmail.com>
-Message-ID: <87618083B2453E4A8714035B62D6799250503F00@FMSMSX105.amr.corp.intel.com>
+From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+Date: Wed, 6 Jan 2016 15:48:46 -0500
+Subject: [Intel-wired-lan] [PATCH net-next] ixgbe: Fix for RAR0 not
+ being set to default MAC addr
+In-Reply-To: <1452110729-15659-1-git-send-email-tushar.n.dave@oracle.com>
+References: <1452110729-15659-1-git-send-email-tushar.n.dave@oracle.com>
+Message-ID: <20160106204846.GE23622@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
->-----Original Message-----
->From: zhuyj [mailto:zyjzyj2000 at gmail.com]
->Sent: Tuesday, January 05, 2016 9:42 PM
->To: Tantilov, Emil S; Kirsher, Jeffrey T; Brandeburg, Jesse; Nelson,
->Shannon; Wyborny, Carolyn; Skidmore, Donald C; Allan, Bruce W; Ronciak,
->John; Williams, Mitch A; intel-wired-lan at lists.osuosl.org;
->netdev at vger.kernel.org; e1000-devel at lists.sourceforge.net
->Cc: Viswanathan, Ven (Wind River); Shteinbock, Boris (Wind River); Bourg,
->Vincent (Wind River)
->Subject: Re: [Intel-wired-lan] [PATCH 2/2] ixgbe: restrict synchronization
->of link_up and speed
->
->On 12/31/2015 12:37 AM, Tantilov, Emil S wrote:
->>> -----Original Message-----
->>> From: zhuyj [mailto:zyjzyj2000 at gmail.com]
->>> Sent: Wednesday, December 30, 2015 12:20 AM
->>> To: Tantilov, Emil S; Kirsher, Jeffrey T; Brandeburg, Jesse; Nelson,
->>> Shannon; Wyborny, Carolyn; Skidmore, Donald C; Allan, Bruce W; Ronciak,
->>> John; Williams, Mitch A; intel-wired-lan at lists.osuosl.org;
->>> netdev at vger.kernel.org; e1000-devel at lists.sourceforge.net
->>> Cc: Viswanathan, Ven (Wind River); Shteinbock, Boris (Wind River);
->Bourg,
->>> Vincent (Wind River)
->>> Subject: Re: [Intel-wired-lan] [PATCH 2/2] ixgbe: restrict
->synchronization
->>> of link_up and speed
->>>
->>> On 12/30/2015 02:55 PM, Tantilov, Emil S wrote:
->>>>> -----Original Message-----
->>>>> From: zhuyj [mailto:zyjzyj2000 at gmail.com]
->>>>> Sent: Tuesday, December 29, 2015 6:49 PM
->>>>> To: Tantilov, Emil S; Kirsher, Jeffrey T; Brandeburg, Jesse; Nelson,
->>>>> Shannon; Wyborny, Carolyn; Skidmore, Donald C; Allan, Bruce W;
->Ronciak,
->>>>> John; Williams, Mitch A; intel-wired-lan at lists.osuosl.org;
->>>>> netdev at vger.kernel.org; e1000-devel at lists.sourceforge.net
->>>>> Cc: Viswanathan, Ven (Wind River); Shteinbock, Boris (Wind River);
->>> Bourg,
->>>>> Vincent (Wind River)
->>>>> Subject: Re: [Intel-wired-lan] [PATCH 2/2] ixgbe: restrict
->>> synchronization
->>>>> of link_up and speed
->>>>>
->>>>> On 12/30/2015 12:18 AM, Tantilov, Emil S wrote:
->>>>>>> -----Original Message-----
->>>>>>> From: Intel-wired-lan [mailto:intel-wired-lan-
->>> bounces at lists.osuosl.org]
->>>>> On
->>>>>>> Behalf Of zyjzyj2000 at gmail.com
->>>>>>> Sent: Monday, December 28, 2015 6:32 PM
->>>>>>> To: Kirsher, Jeffrey T; Brandeburg, Jesse; Nelson, Shannon; Wyborny,
->>>>>>> Carolyn; Skidmore, Donald C; Allan, Bruce W; Ronciak, John;
->Williams,
->>>>> Mitch
->>>>>>> A; intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; e1000-
->>>>>>> devel at lists.sourceforge.net
->>>>>>> Cc: Viswanathan, Ven (Wind River); Shteinbock, Boris (Wind River);
->>>>> Bourg,
->>>>>>> Vincent (Wind River)
->>>>>>> Subject: [Intel-wired-lan] [PATCH 2/2] ixgbe: restrict
->synchronization
->>>>> of
->>>>>>> link_up and speed
->>>>>>>
->>>>>>> From: Zhu Yanjun <yanjun.zhu@windriver.com>
->>>>>>>
->>>>>>> When the X540 NIC acts as a slave of some virtual NICs, it is very
->>>>>>> important to synchronize link_up and link_speed, such as a bonding
->>>>>>> driver in 802.3ad mode. When X540 NIC acts as an independent
->>> interface,
->>>>>>> it is not necessary to synchronize link_up and link_speed. That is,
->>>>>>> the time span between link_up and link_speed is acceptable.
->>>>>> What exactly do you mean by "time span between link_up and
->link_speed"?
->>>>> In the previous mail, I show you some ethtool logs. In these logs,
->there
->>>>> is some
->>>>> time with NIC up while speed is unknown. I think this "some time" is
->>>>> time span between
->>>>> link_up and link_speed. Please see the previous mail for details.
->>>> Was this when reporting the link state from check_link() (reading the
->>> LINKS
->>>> register) or reporting the adapter->link_speed?
->>>>
->>>>>> Where is it you think the de-synchronization occurs?
->>>>> When a NIC interface acts as a slave, a flag "IFF_SLAVE" is set in
->>>>> netdevice struct.
->>>>> Before we enter this function, we check IFF_SLAVE flag. If this flag
->is
->>>>> set, we continue to check
->>>>> link_speed. If not, this function is executed whether this link_speed
->is
->>>>> unknown or not.
->>>> I can already see this in your patch. I was asking about the reason why
->>>> your change is needed.
->>> an extreme example, let us assume this scenario:
->> Is this the scenario you are trying to fix?
->Sure. If IFF_SLAVE is checked, this scenario will not happen.
+On (01/06/16 12:05), Tushar Dave wrote:
 
-I already explained why this is not a valid scenario, but if you were able
-to set it up somehow I'd like to know how you did it
+> commit c9f53e63c208 ("ixgbe: Refactor MAC address configuration code")
+> introduced code that doesn't set HW register RAR0 to default mac address
+> but FF:FF:FF:FF:FF:FF. Due to this, ixgbe HW discards all incoming packets
+> that doesn't have destination mac address equals to FF:FF:FF:FF:FF:FF.
+> 
+> This commit sets RAR0 correctly to default HW mac address.
+> 
+> Signed-off-by: Tushar Dave <tushar.n.dave@oracle.com>
 
-If we are to enter ixgbe_watchdog_link_is_up() with unknown link this would
-be an issue regardless of whether the interface is a part of a bond or not, 
-but you haven't provided any proof that this is the case. Do you have a
-dmesg log that shows ixgbe reporting unknown speed?
-
-Was your patch tested by the customer that reported this issue?
-
-Thanks,
-Emil
+Tested-by: Sowmini Varadhan <sowmini.varadhan@oracle.com>
 
