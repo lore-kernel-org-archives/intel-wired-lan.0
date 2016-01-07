@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 7 Jan 2016 19:30:24 +0000
-Subject: [Intel-wired-lan] [next PATCH S26 11/12] i40e: avoid large
- memcpy	by assigning struct
-In-Reply-To: <1451932392-15538-12-git-send-email-deepthi.kavalur@intel.com>
+Date: Thu, 7 Jan 2016 19:31:33 +0000
+Subject: [Intel-wired-lan] [next PATCH S26 12/12] i40e/i40evf: bump
+ version	to 1.4.12/1.4.8
+In-Reply-To: <1451932392-15538-13-git-send-email-deepthi.kavalur@intel.com>
 References: <1451932392-15538-1-git-send-email-deepthi.kavalur@intel.com>
- <1451932392-15538-12-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F97E4C5@ORSMSX104.amr.corp.intel.com>
+ <1451932392-15538-13-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F97E4D5@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,21 +17,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Deepthi Kavalur
 > Sent: Monday, January 04, 2016 10:33 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S26 11/12] i40e: avoid large memcpy
-> by assigning struct
+> Subject: [Intel-wired-lan] [next PATCH S26 12/12] i40e/i40evf: bump version
+> to 1.4.12/1.4.8
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > 
-> Assign the i40e_pf structure directly instead of using a large memcpy, which
-> avoids a sparse warning and lets the compiler optimize the copy since it
-> knows the size of the structure in advance.
+> Bump driver versions to i40e-1.4.12 and i40evf-1.4.8
 > 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Reviewed-by: Brandeburg, Jesse <jesse.brandeburg@intel.com>
-> Change-ID: I17604e23be2616521eb760290befcb767b52b3f7
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Change-ID: I0ad82668c4ded04250391fda396ce191a42ab754
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 8 +++++---
->  1 file changed, 5 insertions(+), 3 deletions(-)
+> Testing-Hints: Check version.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied
+Patch code changes correctly applied, drivers reports correct version
