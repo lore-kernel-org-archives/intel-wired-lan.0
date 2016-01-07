@@ -1,5 +1,5 @@
 From: zhuyj <zyjzyj2000@gmail.com>
-Date: Thu, 7 Jan 2016 10:08:40 +0800
+Date: Thu, 7 Jan 2016 10:38:47 +0800
 Subject: [Intel-wired-lan] [PATCH 2/2] ixgbe: restrict synchronization
  of link_up and speed
 In-Reply-To: <87618083B2453E4A8714035B62D6799250503F00@FMSMSX105.amr.corp.intel.com>
@@ -13,7 +13,7 @@ References: <1450926752-11392-1-git-send-email-zyjzyj2000@gmail.com>
  <87618083B2453E4A8714035B62D67992504FD8D5@FMSMSX105.amr.corp.intel.com>
  <568CA913.3030901@gmail.com>
  <87618083B2453E4A8714035B62D6799250503F00@FMSMSX105.amr.corp.intel.com>
-Message-ID: <568DC8A8.5050008@gmail.com>
+Message-ID: <568DCFB7.7020307@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -121,12 +121,12 @@ On 01/06/2016 11:30 PM, Tantilov, Emil S wrote:
 >> Sure. If IFF_SLAVE is checked, this scenario will not happen.
 > I already explained why this is not a valid scenario, but if you were able
 > to set it up somehow I'd like to know how you did it
-If it is not a valid scenario, maybe there is something wrong with NIC 
-driver/hardware.
-We should pay attention to it.
+Sorry. Why can we not disable auto-negotiate on ixgbe NIC ? To be 
+honest, I am interested in it.
+This is related with hardware or driver?
 
+Thanks a lot.
 Zhu Yanjun
-
 >
 > If we are to enter ixgbe_watchdog_link_is_up() with unknown link this would
 > be an issue regardless of whether the interface is a part of a bond or not,
@@ -137,5 +137,6 @@ Zhu Yanjun
 >
 > Thanks,
 > Emil
+>
 >
 
