@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 7 Jan 2016 22:37:58 +0000
-Subject: [Intel-wired-lan] [next PATCH S26 03/12] i40e: fix bug in dma
- sync
-In-Reply-To: <1451932392-15538-4-git-send-email-deepthi.kavalur@intel.com>
+Date: Thu, 7 Jan 2016 22:40:34 +0000
+Subject: [Intel-wired-lan] [next PATCH S26 05/12] i40e: allocate memory
+ safer
+In-Reply-To: <1451932392-15538-6-git-send-email-deepthi.kavalur@intel.com>
 References: <1451932392-15538-1-git-send-email-deepthi.kavalur@intel.com>
- <1451932392-15538-4-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F97E5F6@ORSMSX104.amr.corp.intel.com>
+ <1451932392-15538-6-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F97E602@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,26 +17,32 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Deepthi Kavalur
 > Sent: Monday, January 04, 2016 10:33 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S26 03/12] i40e: fix bug in dma sync
+> Subject: [Intel-wired-lan] [next PATCH S26 05/12] i40e: allocate memory
+> safer
 > 
 > From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > 
-> Driver was using an offset based off a dma handle while mapping and
-> unmapping using sync_single_range_for[cpu|device], where it should be
-> using dma handle (returned from alloc_coherent) and the offset of the
-> memory to be sync'd.
+> The sync_vsi_filter function was allocating memory in such a way that it could
+> sleep (GFP_KERNEL) which was causing a problem when called by the team
+> driver under rcu_read_lock(), which cannot be held while sleeping.  Found
+> with lockdep.
 > 
 > Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> Reviewed-by: Nelson, Shannon <shannon.nelson@intel.com>
-> Reviewed-by: Williams, Mitch A <mitch.a.williams@intel.com>
-> Change-ID: I208256565b1595ff0e9171ab852de06b997917c6
+> Change-ID: I4e59053cb5eedcf3d0ca151715be3dc42a94bdd5
 > ---
 > Testing-Hints:
-> Test traffic, test with DMA API debugging enabled.
+> Run lockdep enabled kernel and try these steps:
+>   teamd -t team0 -rd -c '{"runner":{"name":"activebackup"}}'
+>   teamdctl team0 port add ens3f0
+>   teamdctl team0 port add ens3f0
+>   teamdctl team0 port add ens3f1
+>   ip link set team0 up
+>   ip link add link team0 name team0.3 type vlan id 3
+>   ip l set team0.3 up
+>   ip link del team0.3
 > 
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 8 ++++----
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 8 ++++----
->  2 files changed, 8 insertions(+), 8 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied, no dma errors recorded
+Patch code changes correctly applied, no lock errors reported with lock validator
