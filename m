@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 7 Jan 2016 18:31:15 +0000
-Subject: [Intel-wired-lan] [next PATCH S26 04/12] i40e: do TSO only
-	if	CHECKSUM_PARTIAL is set
-In-Reply-To: <1451932392-15538-5-git-send-email-deepthi.kavalur@intel.com>
+Date: Thu, 7 Jan 2016 19:03:41 +0000
+Subject: [Intel-wired-lan] [next PATCH S26 07/12] i40e: APIs to
+ Add/remove	port mirroring rules
+In-Reply-To: <1451932392-15538-8-git-send-email-deepthi.kavalur@intel.com>
 References: <1451932392-15538-1-git-send-email-deepthi.kavalur@intel.com>
- <1451932392-15538-5-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F97E453@ORSMSX104.amr.corp.intel.com>
+ <1451932392-15538-8-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F97E479@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,25 +17,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Deepthi Kavalur
 > Sent: Monday, January 04, 2016 10:33 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S26 04/12] i40e: do TSO only if
-> CHECKSUM_PARTIAL is set
+> Subject: [Intel-wired-lan] [next PATCH S26 07/12] i40e: APIs to Add/remove
+> port mirroring rules
 > 
-> From: Shannon Nelson <shannon.nelson@intel.com>
+> From: Kiran Patil <kiran.patil@intel.com>
 > 
-> Don't bother trying to set up a TSO if the skb->ip_summed is not set to
-> CHECKSUM_PARTIAL.
+> This patch implements necessary functions related to port mirroring features
+> such as add/delete mirror rule, function to set promiscuous VLAN mode for
+> VSI if mirror rule_type is "VLAN Mirroring".
 > 
-> Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-> Change-ID: I6495b3568e404907a2965b48cf3e2effa7c9ab55
+> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
+> Change-ID: Iaf513fd5f188f99dcb977b48f99e73185dfddc40
 > ---
 > Testing-Hints:
-> I'm sure there's a better test available, but I found this by inspection and
-> then adding a debug printk to see what was happening.
-> For now, just verify that the code is inserted and compiles.
+> These APIs will be tested as part of testing 'Cisco CSX - Port Mirroring)'.
+> Hooks to test this APIs will be exposed via. debugfs.
 > 
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 3 +++
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 3 +++
->  2 files changed, 6 insertions(+)
+>  drivers/net/ethernet/intel/i40e/i40e_common.c    | 162
+> +++++++++++++++++++++++
+>  drivers/net/ethernet/intel/i40e/i40e_prototype.h |  12 ++
+>  2 files changed, 174 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 Patch code changes correctly applied
