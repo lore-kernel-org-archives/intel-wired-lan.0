@@ -1,132 +1,263 @@
 From: Alexander Duyck <aduyck@mirantis.com>
-Date: Wed, 06 Jan 2016 23:11:43 -0800
-Subject: [Intel-wired-lan] [next PATCH 11/11] igb: Add workaround for VLAN
- tag stripping on 82576
+Date: Wed, 06 Jan 2016 23:10:30 -0800
+Subject: [Intel-wired-lan] [next PATCH 02/11] igb: Refactor VFTA
+	configuration
 In-Reply-To: <20160107070850.13648.21033.stgit@localhost.localdomain>
 References: <20160107070850.13648.21033.stgit@localhost.localdomain>
-Message-ID: <20160107071143.13648.51160.stgit@localhost.localdomain>
+Message-ID: <20160107071030.13648.82290.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-There was a workaround partially implemented for the 82576 that is needed
-in order for VLAN tag stripping to function correctly.  The original code
-had side effects that would make it so the workaround was active on all
-MACs.  I have updated the code so that the workaround is enabled, but
-limited to the 82576, or activated if we exceed the available unicast
-addresses.
-
-The workaround has a side effect of mirroring all of the traffic outgoing
-from the VFs back to the PF.  As such it is not recommended to use the
-82576 in promiscuous mode as it will take a performance hit, though this is
-now consistent with the performance as seen on the out-of-tree igb driver.
-
-I also limited the scope of the UTA bits all being set to only when the
-VMOLR register is enabled.  This should limit the effects of the UTA
-register so that we don't pick up any excess traffic unless promiscuous mode
-has been enabled on the PF, whereas before the PF would have ended up in
-something equivalent to unicast promiscuous mode with VLAN filtering
-otherwise.
+This patch starts the clean-up process on the VFTA configuration.
+Specifically in this patch I attempt to address and simplify several items
+while also updating the code to bring it more inline with what is already
+in ixgbe.
 
 Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 ---
- drivers/net/ethernet/intel/igb/e1000_82575.c |    2 ++
- drivers/net/ethernet/intel/igb/igb_main.c    |   26 ++++++++++++++------------
- 2 files changed, 16 insertions(+), 12 deletions(-)
+ drivers/net/ethernet/intel/igb/e1000_82575.c |   37 ++++++++-
+ drivers/net/ethernet/intel/igb/e1000_hw.h    |    2 -
+ drivers/net/ethernet/intel/igb/e1000_mac.c   |  102 ++++++++------------------
+ drivers/net/ethernet/intel/igb/e1000_mac.h   |    2 -
+ 4 files changed, 67 insertions(+), 76 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet/intel/igb/e1000_82575.c
-index fff50523b440..9a1a9c7b0748 100644
+index adb33e2a0137..fff50523b440 100644
 --- a/drivers/net/ethernet/intel/igb/e1000_82575.c
 +++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
-@@ -425,6 +425,8 @@ static s32 igb_init_mac_params_82575(struct e1000_hw *hw)
+@@ -34,6 +34,7 @@
+ #include "e1000_mac.h"
+ #include "e1000_82575.h"
+ #include "e1000_i210.h"
++#include "igb.h"
  
- 	/* Set mta register count */
- 	mac->mta_reg_count = 128;
-+	/* Set uta register count */
-+	mac->uta_reg_count = (hw->mac.type == e1000_82575) ? 0 : 128;
- 	/* Set rar entry count */
- 	switch (mac->type) {
- 	case e1000_82576:
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 06b8b1e0362b..ade8dee55fb8 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -141,7 +141,7 @@ static struct rtnl_link_stats64 *igb_get_stats64(struct net_device *dev,
- 					  struct rtnl_link_stats64 *stats);
- static int igb_change_mtu(struct net_device *, int);
- static int igb_set_mac(struct net_device *, void *);
--static void igb_set_uta(struct igb_adapter *adapter);
-+static void igb_set_uta(struct igb_adapter *adapter, bool set);
- static irqreturn_t igb_intr(int irq, void *);
- static irqreturn_t igb_intr_msi(int irq, void *);
- static irqreturn_t igb_msix_other(int irq, void *);
-@@ -3790,9 +3790,6 @@ static void igb_configure_rx(struct igb_adapter *adapter)
- {
- 	int i;
+ static s32  igb_get_invariants_82575(struct e1000_hw *);
+ static s32  igb_acquire_phy_82575(struct e1000_hw *);
+@@ -71,6 +72,32 @@ static s32 igb_update_nvm_checksum_i350(struct e1000_hw *hw);
+ static const u16 e1000_82580_rxpbs_table[] = {
+ 	36, 72, 144, 1, 2, 4, 8, 16, 35, 70, 140 };
  
--	/* set UTA to appropriate mode */
--	igb_set_uta(adapter);
--
- 	/* set the correct pool for the PF default MAC address in entry 0 */
- 	igb_rar_set_qsel(adapter, adapter->hw.mac.addr, 0,
- 			 adapter->vfs_allocated_count);
-@@ -4258,7 +4255,11 @@ static void igb_set_rx_mode(struct net_device *netdev)
- 	/* Check for Promiscuous and All Multicast modes */
- 	if (netdev->flags & IFF_PROMISC) {
- 		rctl |= E1000_RCTL_UPE | E1000_RCTL_MPE;
--		vmolr |= E1000_VMOLR_ROPE | E1000_VMOLR_MPME;
-+		vmolr |= E1000_VMOLR_MPME;
++/* Due to a hw errata, if the host tries to  configure the VFTA register
++ * while performing queries from the BMC or DMA, then the VFTA in some
++ * cases won't be written.
++ */
 +
-+		/* enable use of UTA filter to force packets to default pool */
-+		if (hw->mac.type == e1000_82576)
-+			vmolr |= E1000_VMOLR_ROPE;
- 	} else {
- 		if (netdev->flags & IFF_ALLMULTI) {
- 			rctl |= E1000_RCTL_MPE;
-@@ -4314,6 +4315,9 @@ static void igb_set_rx_mode(struct net_device *netdev)
- 	if ((hw->mac.type < e1000_82576) || (hw->mac.type > e1000_i350))
- 		return;
- 
-+	/* set UTA to appropriate mode */
-+	igb_set_uta(adapter, !!(vmolr & E1000_VMOLR_ROPE));
++/**
++ *  igb_write_vfta_i350 - Write value to VLAN filter table
++ *  @hw: pointer to the HW structure
++ *  @offset: register offset in VLAN filter table
++ *  @value: register value written to VLAN filter table
++ *
++ *  Writes value at the given offset in the register array which stores
++ *  the VLAN filter table.
++ **/
++static void igb_write_vfta_i350(struct e1000_hw *hw, u32 offset, u32 value)
++{
++	struct igb_adapter *adapter = hw->back;
++	int i;
 +
- 	vmolr |= rd32(E1000_VMOLR(vfn)) &
- 		 ~(E1000_VMOLR_ROPE | E1000_VMOLR_MPME | E1000_VMOLR_ROMPE);
- 
-@@ -6451,6 +6455,7 @@ static void igb_msg_task(struct igb_adapter *adapter)
++	for (i = 10; i--;)
++		array_wr32(E1000_VFTA, offset, value);
++
++	wrfl();
++	adapter->shadow_vfta[offset] = value;
++}
++
  /**
-  *  igb_set_uta - Set unicast filter table address
-  *  @adapter: board private structure
-+ *  @set: boolean indicating if we are setting or clearing bits
-  *
-  *  The unicast table address is a register array of 32-bit registers.
-  *  The table is meant to be used in a way similar to how the MTA is used
-@@ -6458,21 +6463,18 @@ static void igb_msg_task(struct igb_adapter *adapter)
-  *  set all the hash bits to 1 and use the VMOLR ROPE bit as a promiscuous
-  *  enable bit to allow vlan tag stripping when promiscuous mode is enabled
-  **/
--static void igb_set_uta(struct igb_adapter *adapter)
-+static void igb_set_uta(struct igb_adapter *adapter, bool set)
- {
- 	struct e1000_hw *hw = &adapter->hw;
-+	u32 uta = set ? ~0 : 0;
- 	int i;
+  *  igb_sgmii_uses_mdio_82575 - Determine if I2C pins are for external MDIO
+  *  @hw: pointer to the HW structure
+@@ -429,6 +456,11 @@ static s32 igb_init_mac_params_82575(struct e1000_hw *hw)
+ 		mac->ops.release_swfw_sync = igb_release_swfw_sync_82575;
+ 	}
  
--	/* The UTA table only exists on 82576 hardware and newer */
--	if (hw->mac.type < e1000_82576)
--		return;
++	if ((hw->mac.type == e1000_i350) || (hw->mac.type == e1000_i354))
++		mac->ops.write_vfta = igb_write_vfta_i350;
++	else
++		mac->ops.write_vfta = igb_write_vfta;
++
+ 	/* Set if part includes ASF firmware */
+ 	mac->asf_firmware_present = true;
+ 	/* Set if manageability features are enabled. */
+@@ -1517,10 +1549,7 @@ static s32 igb_init_hw_82575(struct e1000_hw *hw)
+ 
+ 	/* Disabling VLAN filtering */
+ 	hw_dbg("Initializing the IEEE VLAN\n");
+-	if ((hw->mac.type == e1000_i350) || (hw->mac.type == e1000_i354))
+-		igb_clear_vfta_i350(hw);
+-	else
+-		igb_clear_vfta(hw);
++	igb_clear_vfta(hw);
+ 
+ 	/* Setup the receive address */
+ 	igb_init_rx_addrs(hw, rar_count);
+diff --git a/drivers/net/ethernet/intel/igb/e1000_hw.h b/drivers/net/ethernet/intel/igb/e1000_hw.h
+index 4034207eb5cc..f0c416e21d2c 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_hw.h
++++ b/drivers/net/ethernet/intel/igb/e1000_hw.h
+@@ -325,7 +325,7 @@ struct e1000_mac_operations {
+ 	s32 (*get_thermal_sensor_data)(struct e1000_hw *);
+ 	s32 (*init_thermal_sensor_thresh)(struct e1000_hw *);
+ #endif
 -
- 	/* we only need to do this if VMDq is enabled */
- 	if (!adapter->vfs_allocated_count)
- 		return;
++	void (*write_vfta)(struct e1000_hw *, u32, u32);
+ };
  
--	for (i = 0; i < hw->mac.uta_reg_count; i++)
--		array_wr32(E1000_UTA, i, ~0);
-+	for (i = hw->mac.uta_reg_count; i--;)
-+		array_wr32(E1000_UTA, i, uta);
+ struct e1000_phy_operations {
+diff --git a/drivers/net/ethernet/intel/igb/e1000_mac.c b/drivers/net/ethernet/intel/igb/e1000_mac.c
+index 2a88595f956c..97f6fae48d1d 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_mac.c
++++ b/drivers/net/ethernet/intel/igb/e1000_mac.c
+@@ -92,10 +92,8 @@ void igb_clear_vfta(struct e1000_hw *hw)
+ {
+ 	u32 offset;
+ 
+-	for (offset = 0; offset < E1000_VLAN_FILTER_TBL_SIZE; offset++) {
+-		array_wr32(E1000_VFTA, offset, 0);
+-		wrfl();
+-	}
++	for (offset = E1000_VLAN_FILTER_TBL_SIZE; offset--;)
++		hw->mac.ops.write_vfta(hw, offset, 0);
  }
  
  /**
+@@ -107,54 +105,14 @@ void igb_clear_vfta(struct e1000_hw *hw)
+  *  Writes value at the given offset in the register array which stores
+  *  the VLAN filter table.
+  **/
+-static void igb_write_vfta(struct e1000_hw *hw, u32 offset, u32 value)
++void igb_write_vfta(struct e1000_hw *hw, u32 offset, u32 value)
+ {
++	struct igb_adapter *adapter = hw->back;
++
+ 	array_wr32(E1000_VFTA, offset, value);
+ 	wrfl();
+-}
+-
+-/* Due to a hw errata, if the host tries to  configure the VFTA register
+- * while performing queries from the BMC or DMA, then the VFTA in some
+- * cases won't be written.
+- */
+-
+-/**
+- *  igb_clear_vfta_i350 - Clear VLAN filter table
+- *  @hw: pointer to the HW structure
+- *
+- *  Clears the register array which contains the VLAN filter table by
+- *  setting all the values to 0.
+- **/
+-void igb_clear_vfta_i350(struct e1000_hw *hw)
+-{
+-	u32 offset;
+-	int i;
+-
+-	for (offset = 0; offset < E1000_VLAN_FILTER_TBL_SIZE; offset++) {
+-		for (i = 0; i < 10; i++)
+-			array_wr32(E1000_VFTA, offset, 0);
+-
+-		wrfl();
+-	}
+-}
+-
+-/**
+- *  igb_write_vfta_i350 - Write value to VLAN filter table
+- *  @hw: pointer to the HW structure
+- *  @offset: register offset in VLAN filter table
+- *  @value: register value written to VLAN filter table
+- *
+- *  Writes value@the given offset in the register array which stores
+- *  the VLAN filter table.
+- **/
+-static void igb_write_vfta_i350(struct e1000_hw *hw, u32 offset, u32 value)
+-{
+-	int i;
+ 
+-	for (i = 0; i < 10; i++)
+-		array_wr32(E1000_VFTA, offset, value);
+-
+-	wrfl();
++	adapter->shadow_vfta[offset] = value;
+ }
+ 
+ /**
+@@ -185,38 +143,42 @@ void igb_init_rx_addrs(struct e1000_hw *hw, u16 rar_count)
+ /**
+  *  igb_vfta_set - enable or disable vlan in VLAN filter table
+  *  @hw: pointer to the HW structure
+- *  @vid: VLAN id to add or remove
+- *  @add: if true add filter, if false remove
++ *  @vlan: VLAN id to add or remove
++ *  @vlan_on: if true add filter, if false remove
+  *
+  *  Sets or clears a bit in the VLAN filter table array based on VLAN id
+  *  and if we are adding or removing the filter
+  **/
+-s32 igb_vfta_set(struct e1000_hw *hw, u32 vid, bool add)
++s32 igb_vfta_set(struct e1000_hw *hw, u32 vlan, bool vlan_on)
+ {
+-	u32 index = (vid >> E1000_VFTA_ENTRY_SHIFT) & E1000_VFTA_ENTRY_MASK;
+-	u32 mask = 1 << (vid & E1000_VFTA_ENTRY_BIT_SHIFT_MASK);
+-	u32 vfta;
+ 	struct igb_adapter *adapter = hw->back;
+-	s32 ret_val = 0;
++	u32 regidx, vfta_delta, vfta;
++
++	if (vlan > 4095)
++		return E1000_ERR_PARAM;
++
++	/* Part 1
++	 * The VFTA is a bitstring made up of 128 32-bit registers
++	 * that enable the particular VLAN id, much like the MTA:
++	 *    bits[11-5]: which register
++	 *    bits[4-0]:  which bit in the register
++	 */
++	regidx = vlan / 32;
++	vfta_delta = 1 << (vlan % 32);
++	vfta = adapter->shadow_vfta[regidx];
+ 
+-	vfta = adapter->shadow_vfta[index];
++	/* vfta_delta represents the difference between the current value
++	 * of vfta and the value we want in the register.  Since the diff
++	 * is an XOR mask we can just update vfta using an XOR.
++	 */
++	vfta_delta &= vlan_on ? ~vfta : vfta;
++	vfta ^= vfta_delta;
+ 
+ 	/* bit was set/cleared before we started */
+-	if ((!!(vfta & mask)) == add) {
+-		ret_val = -E1000_ERR_CONFIG;
+-	} else {
+-		if (add)
+-			vfta |= mask;
+-		else
+-			vfta &= ~mask;
+-	}
+-	if ((hw->mac.type == e1000_i350) || (hw->mac.type == e1000_i354))
+-		igb_write_vfta_i350(hw, index, vfta);
+-	else
+-		igb_write_vfta(hw, index, vfta);
+-	adapter->shadow_vfta[index] = vfta;
++	if (vfta_delta)
++		hw->mac.ops.write_vfta(hw, regidx, vfta);
+ 
+-	return ret_val;
++	return 0;
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/igb/e1000_mac.h b/drivers/net/ethernet/intel/igb/e1000_mac.h
+index ea24961b0d70..4fbb953012d0 100644
+--- a/drivers/net/ethernet/intel/igb/e1000_mac.h
++++ b/drivers/net/ethernet/intel/igb/e1000_mac.h
+@@ -56,7 +56,7 @@ s32  igb_write_8bit_ctrl_reg(struct e1000_hw *hw, u32 reg,
+ 
+ void igb_clear_hw_cntrs_base(struct e1000_hw *hw);
+ void igb_clear_vfta(struct e1000_hw *hw);
+-void igb_clear_vfta_i350(struct e1000_hw *hw);
++void igb_write_vfta(struct e1000_hw *hw, u32 offset, u32 value);
+ s32  igb_vfta_set(struct e1000_hw *hw, u32 vid, bool add);
+ void igb_config_collision_dist(struct e1000_hw *hw);
+ void igb_init_rx_addrs(struct e1000_hw *hw, u16 rar_count);
 
