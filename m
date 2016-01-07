@@ -1,121 +1,41 @@
 From: Alexander Duyck <aduyck@mirantis.com>
-Date: Wed, 06 Jan 2016 22:48:44 -0800
-Subject: [Intel-wired-lan] [next PATCH 1/2] ixgbe: Do not allow PF to add
- VLVF entry unless it actually needs it
+Date: Wed, 06 Jan 2016 22:48:50 -0800
+Subject: [Intel-wired-lan] [next PATCH 2/2] ixgbe: Avoid adding VLAN 0 twice
+	to VLVF and VFTA
 In-Reply-To: <20160107064516.12239.98349.stgit@localhost.localdomain>
 References: <20160107064516.12239.98349.stgit@localhost.localdomain>
-Message-ID: <20160107064844.12239.87981.stgit@localhost.localdomain>
+Message-ID: <20160107064850.12239.83914.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-While doing the work on igb I realized there were a few cases where we were
-still adding VLANs to the VLVF entries for the PF when they were not
-needed.  This patch cleans that up so that the only time we add a PF entry
-to the VLVF is either for VLAN 0 or if the PF has requested a VLAN that a VF
-is already using.
+We were adding VLAN 0 twice each time we restored the VLAN configuration.
+Instead of doing it twice we can just start working through the active
+VLANs from ID 1 on and skip the double write.
 
 Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  |    8 +++---
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |   31 +++++++++++++-----------
- 2 files changed, 21 insertions(+), 18 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 202691793b38..1f2b039e71bd 100644
+index 1f2b039e71bd..77cdaed6de90 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -3905,7 +3905,9 @@ static int ixgbe_vlan_rx_add_vid(struct net_device *netdev,
- 	struct ixgbe_hw *hw = &adapter->hw;
+@@ -4169,11 +4169,11 @@ static void ixgbe_vlan_promisc_disable(struct ixgbe_adapter *adapter)
  
- 	/* add VID to filter table */
--	hw->mac.ops.set_vfta(&adapter->hw, vid, VMDQ_P(0), true, true);
-+	if (!vid || !(adapter->flags2 & IXGBE_FLAG2_VLAN_PROMISC))
-+		hw->mac.ops.set_vfta(&adapter->hw, vid, VMDQ_P(0), true, !!vid);
-+
- 	set_bit(vid, adapter->active_vlans);
- 
- 	return 0;
-@@ -3962,9 +3964,7 @@ static int ixgbe_vlan_rx_kill_vid(struct net_device *netdev,
- 	struct ixgbe_hw *hw = &adapter->hw;
- 
- 	/* remove VID from filter table */
--	if (adapter->flags2 & IXGBE_FLAG2_VLAN_PROMISC)
--		ixgbe_update_pf_promisc_vlvf(adapter, vid);
--	else
-+	if (vid && !(adapter->flags2 & IXGBE_FLAG2_VLAN_PROMISC))
- 		hw->mac.ops.set_vfta(hw, vid, VMDQ_P(0), false, true);
- 
- 	clear_bit(vid, adapter->active_vlans);
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-index 8025a3f93598..5edf85990a8a 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-@@ -589,40 +589,40 @@ static void ixgbe_clear_vmvir(struct ixgbe_adapter *adapter, u32 vf)
- static void ixgbe_clear_vf_vlans(struct ixgbe_adapter *adapter, u32 vf)
+ static void ixgbe_restore_vlan(struct ixgbe_adapter *adapter)
  {
- 	struct ixgbe_hw *hw = &adapter->hw;
--	u32 i;
-+	u32 vlvfb_mask, pool_mask, i;
-+
-+	/* create mask for VF and other pools */
-+	pool_mask = ~(1 << (VMDQ_P(0) % 32));
-+	vlvfb_mask = 1 << (vf % 32);
+-	u16 vid;
++	u16 vid = 1;
  
- 	/* post increment loop, covers VLVF_ENTRIES - 1 to 0 */
- 	for (i = IXGBE_VLVF_ENTRIES; i--;) {
- 		u32 bits[2], vlvfb, vid, vfta, vlvf;
- 		u32 word = i * 2 + vf / 32;
--		u32 mask = 1 << (vf % 32);
-+		u32 mask;
+ 	ixgbe_vlan_rx_add_vid(adapter->netdev, htons(ETH_P_8021Q), 0);
  
- 		vlvfb = IXGBE_READ_REG(hw, IXGBE_VLVFB(word));
+-	for_each_set_bit(vid, adapter->active_vlans, VLAN_N_VID)
++	for_each_set_bit_from(vid, adapter->active_vlans, VLAN_N_VID)
+ 		ixgbe_vlan_rx_add_vid(adapter->netdev, htons(ETH_P_8021Q), vid);
+ }
  
- 		/* if our bit isn't set we can skip it */
--		if (!(vlvfb & mask))
-+		if (!(vlvfb & vlvfb_mask))
- 			continue;
- 
- 		/* clear our bit from vlvfb */
--		vlvfb ^= mask;
-+		vlvfb ^= vlvfb_mask;
- 
- 		/* create 64b mask to chedk to see if we should clear VLVF */
- 		bits[word % 2] = vlvfb;
- 		bits[~word % 2] = IXGBE_READ_REG(hw, IXGBE_VLVFB(word ^ 1));
- 
--		/* if promisc is enabled, PF will be present, leave VFTA */
--		if (adapter->flags2 & IXGBE_FLAG2_VLAN_PROMISC) {
--			bits[VMDQ_P(0) / 32] &= ~(1 << (VMDQ_P(0) % 32));
--
--			if (bits[0] || bits[1])
--				goto update_vlvfb;
--			goto update_vlvf;
--		}
--
- 		/* if other pools are present, just remove ourselves */
--		if (bits[0] || bits[1])
-+		if (bits[(VMDQ_P(0) / 32) ^ 1] ||
-+		    (bits[VMDQ_P(0) / 32] & pool_mask))
- 			goto update_vlvfb;
- 
-+		/* if PF is present, leave VFTA */
-+		if (bits[0] || bits[1])
-+			goto update_vlvf;
-+
- 		/* if we cannot determine VLAN just remove ourselves */
- 		vlvf = IXGBE_READ_REG(hw, IXGBE_VLVF(i));
- 		if (!vlvf)
-@@ -638,6 +638,9 @@ static void ixgbe_clear_vf_vlans(struct ixgbe_adapter *adapter, u32 vf)
- update_vlvf:
- 		/* clear POOL selection enable */
- 		IXGBE_WRITE_REG(hw, IXGBE_VLVF(i), 0);
-+
-+		if (!(adapter->flags2 & IXGBE_FLAG2_VLAN_PROMISC))
-+			vlvfb = 0;
- update_vlvfb:
- 		/* clear pool bits */
- 		IXGBE_WRITE_REG(hw, IXGBE_VLVFB(word), vlvfb);
 
