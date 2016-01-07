@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 7 Jan 2016 19:03:41 +0000
-Subject: [Intel-wired-lan] [next PATCH S26 07/12] i40e: APIs to
- Add/remove	port mirroring rules
-In-Reply-To: <1451932392-15538-8-git-send-email-deepthi.kavalur@intel.com>
+Date: Thu, 7 Jan 2016 19:20:15 +0000
+Subject: [Intel-wired-lan] [next PATCH S26 08/12] i40e: negate phy int
+ mask	bits
+In-Reply-To: <1451932392-15538-9-git-send-email-deepthi.kavalur@intel.com>
 References: <1451932392-15538-1-git-send-email-deepthi.kavalur@intel.com>
- <1451932392-15538-8-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F97E479@ORSMSX104.amr.corp.intel.com>
+ <1451932392-15538-9-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F97E491@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,26 +17,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Deepthi Kavalur
 > Sent: Monday, January 04, 2016 10:33 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S26 07/12] i40e: APIs to Add/remove
-> port mirroring rules
+> Subject: [Intel-wired-lan] [next PATCH S26 08/12] i40e: negate phy int mask
+> bits
 > 
-> From: Kiran Patil <kiran.patil@intel.com>
+> From: Shannon Nelson <shannon.nelson@intel.com>
 > 
-> This patch implements necessary functions related to port mirroring features
-> such as add/delete mirror rule, function to set promiscuous VLAN mode for
-> VSI if mirror rule_type is "VLAN Mirroring".
+> The phy interrupt mask bits mask out the events we don't want, so we need
+> to negate the bitmask of events we want.
 > 
-> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
-> Change-ID: Iaf513fd5f188f99dcb977b48f99e73185dfddc40
+> Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+> Change-ID: I273244da5a8d285b6abc84fd68a90f1e6fa0393e
 > ---
-> Testing-Hints:
-> These APIs will be tested as part of testing 'Cisco CSX - Port Mirroring)'.
-> Hooks to test this APIs will be exposed via. debugfs.
+> Testing Hints:
+> The software will not be notified that an empty module has been placed into
+> the cage, and link has not been established.
 > 
->  drivers/net/ethernet/intel/i40e/i40e_common.c    | 162
-> +++++++++++++++++++++++
->  drivers/net/ethernet/intel/i40e/i40e_prototype.h |  12 ++
->  2 files changed, 174 insertions(+)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 16 ++++++++--------
+>  1 file changed, 8 insertions(+), 8 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied
+Patch code changes correctly applied, driver not notified when empty module inserted
