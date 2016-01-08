@@ -1,127 +1,37 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 08 Jan 2016 15:33:20 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 3e59237e16f2ff107f60f69a978065839842c314 BUILD DONE
-Message-ID: <568f6640.t/9hVIYpY7L1euEz%fengguang.wu@intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Fri, 08 Jan 2016 00:25:42 -0800
+Subject: [Intel-wired-lan] [PATCH] ixgbe: constify ixgbe_mbx_operations
+	structure
+In-Reply-To: <1451804129-32213-1-git-send-email-Julia.Lawall@lip6.fr>
+References: <1451804129-32213-1-git-send-email-Julia.Lawall@lip6.fr>
+Message-ID: <1452241542.19358.30.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-3e59237e16f2ff107f60f69a978065839842c314  igb: enable WoL for OEM devices regardless of EEPROM setting
+On Sun, 2016-01-03 at 07:55 +0100, Julia Lawall wrote:
+> This ixgbe_mbx_operations structure is never modified, so declare it
+> as
+> const.? The other structure of this type is already const.
+> 
+> Done with the help of Coccinelle.
+> 
+> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+> 
+> ---
+> ?drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.c? |??? 2 +-
+> ?drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h? |??? 2 +-
+> ?drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |??? 2 +-
+> ?3 files changed, 3 insertions(+), 3 deletions(-)
 
-drivers/net/ethernet/intel/igb/igb_cdev.c:150:2: error: implicit declaration of function 'set_pages_uc' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/igb/igb_cdev.c:275:2: error: implicit declaration of function 'set_pages_wb' [-Werror=implicit-function-declaration]
-
-Error ids grouped by kconfigs:
-
-recent_errors
-??? ia64-defconfig
-    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_uc
-    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_wb
-
-elapsed time: 33m
-
-configs tested: 96
-
-i386                     randconfig-a0-201601
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-x86_64               randconfig-x017-01041832
-x86_64               randconfig-x011-01041832
-x86_64               randconfig-x015-01041832
-x86_64               randconfig-x010-01041832
-x86_64               randconfig-x016-01041832
-x86_64               randconfig-x013-01041832
-x86_64               randconfig-x018-01041832
-x86_64               randconfig-x019-01041832
-x86_64               randconfig-x012-01041832
-x86_64               randconfig-x014-01041832
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201601
-i386                     randconfig-s1-201601
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                   randconfig-i0-201601
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201601
-i386                     randconfig-i1-201601
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-x86_64               randconfig-x006-01060743
-x86_64               randconfig-x001-01060743
-x86_64               randconfig-x009-01060743
-x86_64               randconfig-x002-01060743
-x86_64               randconfig-x007-01060743
-x86_64               randconfig-x000-01060743
-x86_64               randconfig-x005-01060743
-x86_64               randconfig-x008-01060743
-x86_64               randconfig-x003-01060743
-x86_64               randconfig-x004-01060743
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-r0-201601
-
-Thanks,
-Fengguang
+Dropping this patch since Mark has provided a more in-depth patch to
+fix the entire driver.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160108/ea425693/attachment-0001.asc>
