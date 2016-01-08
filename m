@@ -1,74 +1,129 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri, 08 Jan 2016 03:39:00 -0800
-Subject: [Intel-wired-lan] igb: enable WoL for OEM devices regardless of
-	EEPROM setting
-In-Reply-To: <20160105180828.14555.93037.stgit@htfujina-fc.jf.intel.com>
-References: <20160105180828.14555.93037.stgit@htfujina-fc.jf.intel.com>
-Message-ID: <1452253140.19358.41.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 08 Jan 2016 21:55:57 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:10GbE]
+ e19dcdeb3527e996a96ea49d86cccce768b1079a BUILD SUCCESS
+Message-ID: <568fbfed.4P9nHqzbCJ+b3FAO%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2016-01-05 at 10:08 -0800, Fujinaka, Todd wrote:
-> Override EEPROM settings for specific OEM devices.
-> 
-> Signed-off-by: Todd Fujinaka <todd.fujinaka@intel.com>
-> ---
-> ?drivers/net/ethernet/intel/igb/igb_main.c |???20
-> ++++++++++++++++++++
-> ?1 file changed, 20 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c
-> b/drivers/net/ethernet/intel/igb/igb_main.c
-> index 637135e..f413ce1 100644
-> --- a/drivers/net/ethernet/intel/igb/igb_main.c
-> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-> @@ -2590,6 +2590,26 @@ static int igb_probe(struct pci_dev *pdev,
-> const struct pci_device_id *ent)
-> ?		adapter->wol = 0;
-> ?	}
-> ?
-> +	/* Some vendors want the ability to Use the EEPROM setting
-> as
-> +	?* enable/disable only, and not for capability
-> +	?*/
-> +	if ((((hw->mac.type == e1000_i350) ||
-> +	??????(hw->mac.type == e1000_i354))) &&
-> +			((pdev->subsystem_vendor ==
-> PCI_VENDOR_ID_DELL))) {
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  10GbE
+e19dcdeb3527e996a96ea49d86cccce768b1079a  ixgbe: Make ATR recognize IPv6 extended headers
 
-Looks like someone got a little overzealous with parenthesis's and the
-line is not indented correctly (specifically the third line is indented
-too much)
+elapsed time: 54m
 
-> +		adapter->flags |= IGB_FLAG_WOL_SUPPORTED;
-> +		adapter->wol = 0;
-> +	}
-> +	if (hw->mac.type == e1000_i350) {
-> +		if (((pdev->subsystem_device == 0x5001) ||
-> +		?????(pdev->subsystem_device == 0x5002)) &&
-> +				(hw->bus.func == 0)) {
+configs tested: 108
 
-Indentation is incorrect for the third wrapped line above, too many
-tabs. ?It should have 2 tabs and 4 spaces.
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201601
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+parisc                         b180_defconfig
+i386                             allmodconfig
+x86_64               randconfig-x010-01041832
+x86_64               randconfig-x011-01041832
+x86_64               randconfig-x012-01041832
+x86_64               randconfig-x013-01041832
+x86_64               randconfig-x014-01041832
+x86_64               randconfig-x015-01041832
+x86_64               randconfig-x016-01041832
+x86_64               randconfig-x017-01041832
+x86_64               randconfig-x018-01041832
+x86_64               randconfig-x019-01041832
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201601
+i386                     randconfig-s1-201601
+x86_64                           allmodconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201601
+i386                   randconfig-b0-01082041
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201601
+i386                     randconfig-i1-201601
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201601
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+x86_64               randconfig-x006-01060743
+x86_64               randconfig-x001-01060743
+x86_64               randconfig-x009-01060743
+x86_64               randconfig-x002-01060743
+x86_64               randconfig-x007-01060743
+x86_64               randconfig-x000-01060743
+x86_64               randconfig-x005-01060743
+x86_64               randconfig-x008-01060743
+x86_64               randconfig-x003-01060743
+x86_64               randconfig-x004-01060743
+i386                     randconfig-r0-201601
+i386                 randconfig-x005-01040616
+i386                 randconfig-x003-01040616
+i386                 randconfig-x002-01040616
+i386                 randconfig-x001-01040616
+i386                 randconfig-x008-01040616
+i386                 randconfig-x000-01040616
+i386                 randconfig-x009-01040616
+i386                 randconfig-x006-01040616
+i386                 randconfig-x004-01040616
+i386                 randconfig-x007-01040616
 
-> +			adapter->flags |= IGB_FLAG_WOL_SUPPORTED;
-> +			adapter->wol = 0;
-> +		}
-> +		if (pdev->subsystem_device == 0x1F52)
-> +			adapter->flags |= IGB_FLAG_WOL_SUPPORTED;
-> +	}
-> +
-> ?	device_set_wakeup_enable(&adapter->pdev->dev,
-> ?				?adapter->flags &
-> IGB_FLAG_WOL_SUPPORTED);
-> ?
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160108/b96d3a6c/attachment-0001.asc>
+Thanks,
+Fengguang
