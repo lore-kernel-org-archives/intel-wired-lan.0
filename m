@@ -1,41 +1,33 @@
-From: Julia Lawall <julia.lawall@lip6.fr>
-Date: Fri, 8 Jan 2016 20:10:57 +0100 (CET)
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Make all unchanging ops
- structures const
-In-Reply-To: <1452276538.26830.2.camel@intel.com>
-References: <20160107181303.82798.52945.stgit@mdrustad-wks.jf.intel.com>
- <1452276538.26830.2.camel@intel.com>
-Message-ID: <alpine.DEB.2.02.1601082010070.2046@localhost6.localdomain6>
+From: Nelson, Shannon <shannon.nelson@intel.com>
+Date: Fri, 8 Jan 2016 20:51:40 +0000
+Subject: [Intel-wired-lan] net-i40e: Reconsider further usage of
+ variable "i" in i40e_vc_get_vf_resources_msg()
+In-Reply-To: <5686925F.5020508@users.sourceforge.net>
+References: <566ABCD9.1060404@users.sourceforge.net>
+ <56868E0B.5040602@users.sourceforge.net>
+ <5686925F.5020508@users.sourceforge.net>
+Message-ID: <FC41C24E35F18A40888AACA1A36F3E418AFE3115@fmsmsx115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
-On Fri, 8 Jan 2016, Jeff Kirsher wrote:
-
-> On Thu, 2016-01-07 at 10:13 -0800, Mark D Rustad wrote:
-> > The source for the ops structure contents are const, so make them
-> > so. Copy them in place with structure assignments instead of memcpys.
-> > Make the mbx_ops accessed by reference instead of making a copy of
-> > the source structure. Update copyright date on the touched files.
-> > 
-> > Reported-by: Julia Lawall <Julia.Lawall@lip6.fr>
-> > Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+> From: SF Markus Elfring [mailto:elfring at users.sourceforge.net]
 > 
-> Acked-by: Julia Lawall <julia.lawall@lip6.fr>
-> > ---
-> > Changes in V2:
-> > - Access mbx_ops by reference instead of copying the structure. Saves
-> > a
-> > ? little bloat.
+> Hello,
 > 
-> Julia- Please reply to the mailing list when responding with and
-> feedback or ACK's so that they are properly captured. ?Replying
-> privately is generally frowned upon.
+> I have taken another look at the implementation of the
+> function "i40e_vc_get_vf_resources_msg". I find the use of the variable
+> "i"
+> strange there. It seems that the value from the increment operation in
+> an
+> if branch is not reused so far.
+> 
+> I would appreciate a further clarification.
+> Can this variable be eventually deleted?
 
-OK, sorry.  Probably it was a mistake on my part.
+Thanks for pointing this out.  We've got an internal patch coming that will address this.
 
-julia
+Cheers,
+sln
