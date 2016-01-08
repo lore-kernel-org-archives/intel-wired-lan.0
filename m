@@ -1,8 +1,8 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 08 Jan 2016 15:33:11 +0800
+Date: Fri, 08 Jan 2016 15:33:20 +0800
 Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 537168ca99446c73f1158ad573622263a54b8d67 BUILD DONE
-Message-ID: <568f6637.7HHB61u5+aEyVKp0%fengguang.wu@intel.com>
+ 3e59237e16f2ff107f60f69a978065839842c314 BUILD DONE
+Message-ID: <568f6640.t/9hVIYpY7L1euEz%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,7 +10,7 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-537168ca99446c73f1158ad573622263a54b8d67  i40e: Enable Geneve offload for FW API ver > 1.4 for XL710/X710 devices
+3e59237e16f2ff107f60f69a978065839842c314  igb: enable WoL for OEM devices regardless of EEPROM setting
 
 drivers/net/ethernet/intel/igb/igb_cdev.c:150:2: error: implicit declaration of function 'set_pages_uc' [-Werror=implicit-function-declaration]
 drivers/net/ethernet/intel/igb/igb_cdev.c:275:2: error: implicit declaration of function 'set_pages_wb' [-Werror=implicit-function-declaration]
@@ -22,33 +22,41 @@ recent_errors
     ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_uc
     ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_wb
 
-elapsed time: 44m
+elapsed time: 33m
 
-configs tested: 84
+configs tested: 96
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
 i386                     randconfig-a0-201601
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
 x86_64                             acpi-redef
 x86_64                           allyesdebian
 x86_64                                nfsroot
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
 blackfin                BF526-EZBRD_defconfig
 blackfin                BF533-EZKIT_defconfig
 blackfin            BF561-EZKIT-SMP_defconfig
 blackfin                  TCM-BF537_defconfig
 cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
 i386                             allmodconfig
+x86_64               randconfig-x017-01041832
+x86_64               randconfig-x011-01041832
+x86_64               randconfig-x015-01041832
+x86_64               randconfig-x010-01041832
+x86_64               randconfig-x016-01041832
+x86_64               randconfig-x013-01041832
+x86_64               randconfig-x018-01041832
+x86_64               randconfig-x019-01041832
+x86_64               randconfig-x012-01041832
+x86_64               randconfig-x014-01041832
 i386                             alldefconfig
 i386                              allnoconfig
 i386                                defconfig
@@ -69,6 +77,9 @@ mips                              allnoconfig
 mips                      fuloong2e_defconfig
 mips                                   jz4740
 mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
 x86_64                   randconfig-i0-201601
 sparc                               defconfig
 sparc64                           allnoconfig
@@ -77,12 +88,12 @@ microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
 i386                     randconfig-i0-201601
 i386                     randconfig-i1-201601
-x86_64                           allmodconfig
-i386                     randconfig-n0-201601
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                   rhel
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
 arm                               allnoconfig
 arm                         at91_dt_defconfig
 arm                                  at_hdmac
@@ -95,10 +106,6 @@ arm                                    sa1100
 arm                                   samsung
 arm                                        sh
 arm                       spear13xx_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
 x86_64               randconfig-x006-01060743
 x86_64               randconfig-x001-01060743
 x86_64               randconfig-x009-01060743
@@ -109,6 +116,11 @@ x86_64               randconfig-x005-01060743
 x86_64               randconfig-x008-01060743
 x86_64               randconfig-x003-01060743
 x86_64               randconfig-x004-01060743
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                    lkp
+x86_64                                   rhel
 i386                     randconfig-r0-201601
 
 Thanks,
