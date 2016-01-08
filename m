@@ -1,40 +1,39 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Fri, 8 Jan 2016 15:04:28 +0100 (CET)
-Subject: [Intel-wired-lan] [RFC v5 3/6] Add history to cross timestamp
- interface supporting slower devices
-In-Reply-To: <op.yawaqe0i1774gr@chall-mobl2.amr.corp.intel.com>
-References: <1451911523-8534-1-git-send-email-christopher.s.hall@intel.com>
- <1451911523-8534-4-git-send-email-christopher.s.hall@intel.com>
- <CALAqxLVACLP1_PGWh5Ha9P6DT+HfDu9vg-B5NCShuFvNu21WUQ@mail.gmail.com>
- <op.yawaqe0i1774gr@chall-mobl2.amr.corp.intel.com>
-Message-ID: <alpine.DEB.2.11.1601081503210.3575@nanos>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Fri, 08 Jan 2016 10:08:58 -0800
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Make all unchanging ops
+ structures const
+In-Reply-To: <20160107181303.82798.52945.stgit@mdrustad-wks.jf.intel.com>
+References: <20160107181303.82798.52945.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <1452276538.26830.2.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 7 Jan 2016, Christopher Hall wrote:
-> On Wed, 06 Jan 2016 11:37:23 -0800, John Stultz <john.stultz@linaro.org>
-> wrote:
-> > I've not done a super close reading here. But is it very likely the
-> > the history_ref->cs_seq is the same as the captured seq? I thought
-> > this history_ref was to allow old cross stamps to be used to improve
-> > the back-calculation of the time at the given cycle value. So throwing
-> > them out if they are older then the last tick seems strange.
+On Thu, 2016-01-07 at 10:13 -0800, Mark D Rustad wrote:
+> The source for the ops structure contents are const, so make them
+> so. Copy them in place with structure assignments instead of memcpys.
+> Make the mbx_ops accessed by reference instead of making a copy of
+> the source structure. Update copyright date on the touched files.
 > 
-> Maybe this needs more explanation. The clocksource sequence (cs_seq) is
-> incremented for each change in clocksource. I use this to detect a rare corner
-> case where the clocksource is changed from (on x86 anyway) TSC and then back.
-> If the history crosses one of these changes then interpolation shouldn't be
-> attempted (return error). It's not really enough when using the history to
-> just check that the current clocksource is equal to the one used at the start
-> of the history. The clocksource must not have changed at all. To answer your
-> question, it's not at all likely that this would occur.
+> Reported-by: Julia Lawall <Julia.Lawall@lip6.fr>
+> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 
-You can flush the history when a clocksource change happens. No need to add
-extra data to the core structures.
+Acked-by: Julia Lawall <julia.lawall@lip6.fr>
+> ---
+> Changes in V2:
+> - Access mbx_ops by reference instead of copying the structure. Saves
+> a
+> ? little bloat.
 
-Thanks,
-
-	tglx
+Julia- Please reply to the mailing list when responding with and
+feedback or ACK's so that they are properly captured. ?Replying
+privately is generally frowned upon.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160108/679750b5/attachment.asc>
