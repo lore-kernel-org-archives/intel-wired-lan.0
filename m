@@ -1,8 +1,8 @@
 From: Deepthi Kavalur <deepthi.kavalur@intel.com>
-Date: Fri,  8 Jan 2016 15:58:26 -0800
-Subject: [Intel-wired-lan] [v2 next PATCH S23 9/13] i40e: Make some changes
-	in the nvm read code
-Message-ID: <1452297506-1115-1-git-send-email-deepthi.kavalur@intel.com>
+Date: Fri,  8 Jan 2016 17:50:21 -0800
+Subject: [Intel-wired-lan] [v2 next PATCH] i40e: add priv flag for automatic
+	rule eviction
+Message-ID: <1452304221-8276-1-git-send-email-deepthi.kavalur@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,157 +11,117 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Anjali Singhai Jain <anjali.singhai@intel.com>
 
-In X722, NVM reads can't be done through SRCTL registers.
-And require AQ calls, which require grabbing the NVM lock.
-Unfortunately some paths need the lock to be acquired once
-and do a whole bunch of stuff and then release it.
-This patch creates an unsafe version of the read calls, so
-that it can be called from the paths that need the bulk access.
+The X722 can support automatic rule eviction for automatically added
+flow director rules.  Feature is (should be) disabled by default.
 
 Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-Acked-by: Shannon Nelson <shannon.nelson@intel.com>
-Change-ID: Ia9076e9100c5cf61206a856bd279059d3a052024
 ---
- drivers/net/ethernet/intel/i40e/i40e_nvm.c | 76 +++++++++++++++++++++++++-----
- 1 file changed, 65 insertions(+), 11 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h         | 1 +
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 9 +++++++++
+ drivers/net/ethernet/intel/i40e/i40e_main.c    | 3 +++
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c    | 6 ++++--
+ drivers/net/ethernet/intel/i40e/i40e_type.h    | 4 ++++
+ 5 files changed, 21 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-index 6100cdd..cdc17c5 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-@@ -280,7 +280,28 @@ static i40e_status i40e_read_nvm_word_aq(struct i40e_hw *hw, u16 offset,
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 47f6c0a..0b71611 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -104,6 +104,7 @@
+ #define I40E_PRIV_FLAGS_FD_ATR		BIT(2)
+ #define I40E_PRIV_FLAGS_VEB_STATS	BIT(3)
+ #define I40E_PRIV_FLAGS_PS		BIT(4)
++#define I40E_PRIV_FLAGS_HW_ATR_EVICT    BIT(5)
+ 
+ #define I40E_NVM_VERSION_LO_SHIFT  0
+ #define I40E_NVM_VERSION_LO_MASK   (0xff << I40E_NVM_VERSION_LO_SHIFT)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 252a9dd..80c3f20 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -232,6 +232,7 @@ static const char i40e_priv_flags_strings[][ETH_GSTRING_LEN] = {
+ 	"flow-director-atr",
+ 	"veb-stats",
+ 	"packet-split",
++	"hw-atr-eviction",
+ };
+ 
+ #define I40E_PRIV_FLAGS_STR_LEN ARRAY_SIZE(i40e_priv_flags_strings)
+@@ -2706,6 +2707,8 @@ static u32 i40e_get_priv_flags(struct net_device *dev)
+ 		I40E_PRIV_FLAGS_VEB_STATS : 0;
+ 	ret_flags |= pf->flags & I40E_FLAG_RX_PS_ENABLED ?
+ 		I40E_PRIV_FLAGS_PS : 0;
++	ret_flags |= pf->auto_disable_flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE ?
++		0 : I40E_PRIV_FLAGS_HW_ATR_EVICT;
+ 
+ 	return ret_flags;
  }
+@@ -2762,6 +2765,12 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 	else
+ 		pf->flags &= ~I40E_FLAG_VEB_STATS_ENABLED;
  
- /**
-- * i40e_read_nvm_word - Reads Shadow RAM
-+ * __i40e_read_nvm_word - Reads nvm word, assumes caller does the locking
-+ * @hw: pointer to the HW structure
-+ * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF)
-+ * @data: word read from the Shadow RAM
-+ *
-+ * Reads one 16 bit word from the Shadow RAM using the GLNVM_SRCTL register.
-+ **/
-+static i40e_status __i40e_read_nvm_word(struct i40e_hw *hw,
-+					u16 offset,
-+					u16 *data)
-+{
-+	i40e_status ret_code = 0;
-+
-+	if (hw->flags & I40E_HW_FLAG_AQ_SRCTL_ACCESS_ENABLE)
-+		ret_code = i40e_read_nvm_word_aq(hw, offset, data);
++	if ((flags & I40E_PRIV_FLAGS_HW_ATR_EVICT) &&
++				   (pf->flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE))
++		pf->auto_disable_flags &= ~I40E_FLAG_HW_ATR_EVICT_CAPABLE;
 +	else
-+		ret_code = i40e_read_nvm_word_srctl(hw, offset, data);
-+	return ret_code;
-+}
++		pf->auto_disable_flags |= I40E_FLAG_HW_ATR_EVICT_CAPABLE;
 +
-+/**
-+ * i40e_read_nvm_word - Reads nvm word and acquire lock if necessary
-  * @hw: pointer to the HW structure
-  * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF)
-  * @data: word read from the Shadow RAM
-@@ -393,7 +414,31 @@ read_nvm_buffer_aq_exit:
- }
- 
- /**
-- * i40e_read_nvm_buffer - Reads Shadow RAM buffer
-+ * __i40e_read_nvm_buffer - Reads nvm buffer, caller must acquire lock
-+ * @hw: pointer to the HW structure
-+ * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF).
-+ * @words: (in) number of words to read; (out) number of words actually read
-+ * @data: words read from the Shadow RAM
-+ *
-+ * Reads 16 bit words (data buffer) from the SR using the i40e_read_nvm_srrd()
-+ * method. The buffer read is preceded by the NVM ownership take
-+ * and followed by the release.
-+ **/
-+static i40e_status __i40e_read_nvm_buffer(struct i40e_hw *hw,
-+					  u16 offset,
-+					  u16 *words, u16 *data)
-+{
-+	i40e_status ret_code = 0;
-+
-+	if (hw->flags & I40E_HW_FLAG_AQ_SRCTL_ACCESS_ENABLE)
-+		ret_code = i40e_read_nvm_buffer_aq(hw, offset, words, data);
-+	else
-+		ret_code = i40e_read_nvm_buffer_srctl(hw, offset, words, data);
-+	return ret_code;
-+}
-+
-+/**
-+ * i40e_read_nvm_buffer - Reads Shadow RAM buffer and acuire lock if necessary
-  * @hw: pointer to the HW structure
-  * @offset: offset of the Shadow RAM word to read (0x000000 - 0x001FFF).
-  * @words: (in) number of words to read; (out) number of words actually read
-@@ -499,15 +544,17 @@ static i40e_status i40e_calc_nvm_checksum(struct i40e_hw *hw,
- 	data = (u16 *)vmem.va;
- 
- 	/* read pointer to VPD area */
--	ret_code = i40e_read_nvm_word(hw, I40E_SR_VPD_PTR, &vpd_module);
-+	ret_code = __i40e_read_nvm_word(hw, I40E_SR_VPD_PTR,
-+					&vpd_module);
- 	if (ret_code) {
- 		ret_code = I40E_ERR_NVM_CHECKSUM;
- 		goto i40e_calc_nvm_checksum_exit;
+ 	/* if needed, issue reset to cause things to take effect */
+ 	if (reset_required)
+ 		i40e_do_reset(pf, BIT(__I40E_PF_RESET_REQUESTED));
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 93a29d7..37297ce 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -8402,6 +8402,9 @@ static int i40e_sw_init(struct i40e_pf *pf)
+ 		    (pf->hw.aq.api_min_ver > 4))) {
+ 		/* Supported in FW API version higher than 1.4 */
+ 		pf->flags |= I40E_FLAG_GENEVE_OFFLOAD_CAPABLE;
++		pf->auto_disable_flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
++	} else {
++		pf->auto_disable_flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
  	}
  
- 	/* read pointer to PCIe Alt Auto-load module */
--	ret_code = i40e_read_nvm_word(hw, I40E_SR_PCIE_ALT_AUTO_LOAD_PTR,
--				      &pcie_alt_module);
-+	ret_code = __i40e_read_nvm_word(hw,
-+					I40E_SR_PCIE_ALT_AUTO_LOAD_PTR,
-+					&pcie_alt_module);
- 	if (ret_code) {
- 		ret_code = I40E_ERR_NVM_CHECKSUM;
- 		goto i40e_calc_nvm_checksum_exit;
-@@ -521,7 +568,7 @@ static i40e_status i40e_calc_nvm_checksum(struct i40e_hw *hw,
- 		if ((i % I40E_SR_SECTOR_SIZE_IN_WORDS) == 0) {
- 			u16 words = I40E_SR_SECTOR_SIZE_IN_WORDS;
+ 	pf->eeprom_version = 0xDEAD;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 7ea2689..6694c4d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -2039,7 +2039,8 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 	/* Due to lack of space, no more new filters can be programmed */
+ 	if (th->syn && (pf->auto_disable_flags & I40E_FLAG_FD_ATR_ENABLED))
+ 		return;
+-	if (pf->flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE) {
++	if ((pf->flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE) &&
++	    (!(pf->auto_disable_flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE))) {
+ 		/* HW ATR eviction will take care of removing filters on FIN
+ 		 * and RST packets.
+ 		 */
+@@ -2101,7 +2102,8 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 			I40E_TXD_FLTR_QW1_CNTINDEX_SHIFT) &
+ 			I40E_TXD_FLTR_QW1_CNTINDEX_MASK;
  
--			ret_code = i40e_read_nvm_buffer(hw, i, &words, data);
-+			ret_code = __i40e_read_nvm_buffer(hw, i, &words, data);
- 			if (ret_code) {
- 				ret_code = I40E_ERR_NVM_CHECKSUM;
- 				goto i40e_calc_nvm_checksum_exit;
-@@ -593,13 +640,18 @@ i40e_status i40e_validate_nvm_checksum(struct i40e_hw *hw,
- 	u16 checksum_sr = 0;
- 	u16 checksum_local = 0;
+-	if (pf->flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE)
++	if ((pf->flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE) &&
++	    (!(pf->auto_disable_flags & I40E_FLAG_HW_ATR_EVICT_CAPABLE)))
+ 		dtype_cmd |= I40E_TXD_FLTR_QW1_ATR_MASK;
  
--	ret_code = i40e_calc_nvm_checksum(hw, &checksum_local);
--	if (ret_code)
-+	if (hw->flags & I40E_HW_FLAG_AQ_SRCTL_ACCESS_ENABLE)
-+		ret_code = i40e_acquire_nvm(hw, I40E_RESOURCE_READ);
-+	if (!ret_code) {
-+		ret_code = i40e_calc_nvm_checksum(hw, &checksum_local);
-+		if (hw->flags & I40E_HW_FLAG_AQ_SRCTL_ACCESS_ENABLE)
-+			i40e_release_nvm(hw);
-+		if (ret_code)
-+			goto i40e_validate_nvm_checksum_exit;
-+	} else {
- 		goto i40e_validate_nvm_checksum_exit;
-+	}
+ 	fdir_desc->qindex_flex_ptype_vsi = cpu_to_le32(flex_ptype);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
+index dd2da35..b59a021 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
+@@ -1098,6 +1098,10 @@ enum i40e_filter_program_desc_pcmd {
+ 					 I40E_TXD_FLTR_QW1_CMD_SHIFT)
+ #define I40E_TXD_FLTR_QW1_ATR_MASK	BIT_ULL(I40E_TXD_FLTR_QW1_ATR_SHIFT)
  
--	/* Do not use i40e_read_nvm_word() because we do not want to take
--	 * the synchronization semaphores twice here.
--	 */
- 	i40e_read_nvm_word(hw, I40E_SR_SW_CHECKSUM_WORD, &checksum_sr);
- 
- 	/* Verify read checksum from EEPROM is the same as
-@@ -958,6 +1010,7 @@ retry:
- 		break;
- 
- 	case I40E_NVMUPD_CSUM_CON:
-+		/* Assumes the caller has acquired the nvm */
- 		status = i40e_update_nvm_checksum(hw);
- 		if (status) {
- 			*perrno = hw->aq.asq_last_status ?
-@@ -971,6 +1024,7 @@ retry:
- 		break;
- 
- 	case I40E_NVMUPD_CSUM_LCB:
-+		/* Assumes the caller has acquired the nvm */
- 		status = i40e_update_nvm_checksum(hw);
- 		if (status) {
- 			*perrno = hw->aq.asq_last_status ?
++#define I40E_TXD_FLTR_QW1_ATR_SHIFT	(0xEULL + \
++					 I40E_TXD_FLTR_QW1_CMD_SHIFT)
++#define I40E_TXD_FLTR_QW1_ATR_MASK	BIT_ULL(I40E_TXD_FLTR_QW1_ATR_SHIFT)
++
+ #define I40E_TXD_FLTR_QW1_CNTINDEX_SHIFT 20
+ #define I40E_TXD_FLTR_QW1_CNTINDEX_MASK	(0x1FFUL << \
+ 					 I40E_TXD_FLTR_QW1_CNTINDEX_SHIFT)
 -- 
 2.1.0
 
