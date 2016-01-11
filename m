@@ -1,77 +1,91 @@
 From: Joshua Hay <joshua.a.hay@intel.com>
-Date: Mon, 11 Jan 2016 15:18:25 -0800
-Subject: [Intel-wired-lan] [next PATCH S27 13/15] i40e/i40evf: use logical
-	operators, not bitwise
+Date: Mon, 11 Jan 2016 15:18:23 -0800
+Subject: [Intel-wired-lan] [next PATCH S27 11/15] i40e/i40evf: use
+	__GFP_NOWARN
 In-Reply-To: <1452554307-20937-1-git-send-email-joshua.a.hay@intel.com>
 References: <1452554307-20937-1-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <1452554307-20937-14-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <1452554307-20937-12-git-send-email-joshua.a.hay@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-Mr. Spock would certainly raise an eyebrow to see us using bitwise
-operaters, when we should clearly be relying on logic. Fascinating.
+The i40e and i40evf drivers now cleanly handle allocation
+failures and can avoid kernel log spew from the memory allocator
+when allocations fail, so set __GFP_NOWARN on rx buffer alloc.
 
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Change-ID: Ie338010c016f93e9faa2002c07c90b15134b7477
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Change-ID: Ic9e1b83c495e2a3ef6b069ba7fb6e52ce134cd23
 ---
-Testing Hints: No functional change, but the code is more correct.
-Make sure it compiles and passes traffic properly.
+Testing Hints: compile everywhere
 
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 5 +++--
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 5 +++--
- 2 files changed, 6 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 12 ++++++++----
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 12 ++++++++----
+ 2 files changed, 16 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 1a82118..1751f4e 100644
+index cbedc2b..5f43237 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1996,7 +1996,8 @@ int i40e_napi_poll(struct napi_struct *napi, int budget)
- 	 * budget and be more aggressive about cleaning up the Tx descriptors.
- 	 */
- 	i40e_for_each_ring(ring, q_vector->tx) {
--		clean_complete &= i40e_clean_tx_irq(ring, vsi->work_limit);
-+		clean_complete = clean_complete &&
-+				 i40e_clean_tx_irq(ring, vsi->work_limit);
- 		arm_wb = arm_wb || ring->arm_wb;
- 		ring->arm_wb = false;
- 	}
-@@ -2020,7 +2021,7 @@ int i40e_napi_poll(struct napi_struct *napi, int budget)
+@@ -1292,8 +1292,10 @@ bool i40e_alloc_rx_buffers_1buf(struct i40e_ring *rx_ring, u16 cleaned_count)
+ 		skb = bi->skb;
  
- 		work_done += cleaned;
- 		/* if we didn't clean as many as budgeted, we must be done */
--		clean_complete &= (budget_per_ring != cleaned);
-+		clean_complete = clean_complete && (budget_per_ring > cleaned);
- 	}
- 
- 	/* If work not completed, return budget and polling will return */
+ 		if (!skb) {
+-			skb = netdev_alloc_skb_ip_align(rx_ring->netdev,
+-							rx_ring->rx_buf_len);
++			skb = __netdev_alloc_skb_ip_align(rx_ring->netdev,
++							  rx_ring->rx_buf_len,
++							  GFP_ATOMIC |
++							  __GFP_NOWARN);
+ 			if (!skb) {
+ 				rx_ring->rx_stats.alloc_buff_failed++;
+ 				goto no_buffers;
+@@ -1571,8 +1573,10 @@ static int i40e_clean_rx_irq_ps(struct i40e_ring *rx_ring, const int budget)
+ 		rx_bi = &rx_ring->rx_bi[i];
+ 		skb = rx_bi->skb;
+ 		if (likely(!skb)) {
+-			skb = netdev_alloc_skb_ip_align(rx_ring->netdev,
+-							rx_ring->rx_hdr_len);
++			skb = __netdev_alloc_skb_ip_align(rx_ring->netdev,
++							  rx_ring->rx_hdr_len,
++							  GFP_ATOMIC |
++							  __GFP_NOWARN);
+ 			if (!skb) {
+ 				rx_ring->rx_stats.alloc_buff_failed++;
+ 				failure = true;
 diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index f971018..620cb97 100644
+index 0f9442e..d3ec3b2 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
 +++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -1432,7 +1432,8 @@ int i40evf_napi_poll(struct napi_struct *napi, int budget)
- 	 * budget and be more aggressive about cleaning up the Tx descriptors.
- 	 */
- 	i40e_for_each_ring(ring, q_vector->tx) {
--		clean_complete &= i40e_clean_tx_irq(ring, vsi->work_limit);
-+		clean_complete = clean_complete &&
-+				 i40e_clean_tx_irq(ring, vsi->work_limit);
- 		arm_wb = arm_wb || ring->arm_wb;
- 		ring->arm_wb = false;
- 	}
-@@ -1456,7 +1457,7 @@ int i40evf_napi_poll(struct napi_struct *napi, int budget)
+@@ -764,8 +764,10 @@ bool i40evf_alloc_rx_buffers_1buf(struct i40e_ring *rx_ring, u16 cleaned_count)
+ 		skb = bi->skb;
  
- 		work_done += cleaned;
- 		/* if we didn't clean as many as budgeted, we must be done */
--		clean_complete &= (budget_per_ring != cleaned);
-+		clean_complete = clean_complete && (budget_per_ring > cleaned);
- 	}
- 
- 	/* If work not completed, return budget and polling will return */
+ 		if (!skb) {
+-			skb = netdev_alloc_skb_ip_align(rx_ring->netdev,
+-							rx_ring->rx_buf_len);
++			skb = __netdev_alloc_skb_ip_align(rx_ring->netdev,
++							  rx_ring->rx_buf_len,
++							  GFP_ATOMIC |
++							  __GFP_NOWARN);
+ 			if (!skb) {
+ 				rx_ring->rx_stats.alloc_buff_failed++;
+ 				goto no_buffers;
+@@ -1034,8 +1036,10 @@ static int i40e_clean_rx_irq_ps(struct i40e_ring *rx_ring, const int budget)
+ 		rx_bi = &rx_ring->rx_bi[i];
+ 		skb = rx_bi->skb;
+ 		if (likely(!skb)) {
+-			skb = netdev_alloc_skb_ip_align(rx_ring->netdev,
+-							rx_ring->rx_hdr_len);
++			skb = __netdev_alloc_skb_ip_align(rx_ring->netdev,
++							  rx_ring->rx_hdr_len,
++							  GFP_ATOMIC |
++							  __GFP_NOWARN);
+ 			if (!skb) {
+ 				rx_ring->rx_stats.alloc_buff_failed++;
+ 				failure = true;
 -- 
 2.1.0
 
