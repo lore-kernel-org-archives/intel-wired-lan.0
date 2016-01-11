@@ -1,10 +1,10 @@
 From: Joshua Hay <joshua.a.hay@intel.com>
-Date: Mon, 11 Jan 2016 15:18:16 -0800
-Subject: [Intel-wired-lan] [next PATCH S27 04/15] i40e: add VEB stat control
-	and remove L2 cloud filter
+Date: Mon, 11 Jan 2016 15:18:17 -0800
+Subject: [Intel-wired-lan] [next PATCH S27 05/15] i40e: use new add_veb
+	calling with veb stats control
 In-Reply-To: <1452554307-20937-1-git-send-email-joshua.a.hay@intel.com>
 References: <1452554307-20937-1-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <1452554307-20937-5-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <1452554307-20937-6-git-send-email-joshua.a.hay@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,84 +13,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Shannon Nelson <shannon.nelson@intel.com>
 
-With the latest firmware, statistics gathering can now be enabled and
-disabled in the HW switch, so we need to add a parameter to allow the
-driver to set it as desired.  At the same time, the L2 cloud filtering
-parameter has been removed as it was never used.
-
-Older drivers working with the newer firmware and newer drivers working
-with older firmware will not run into problems with these bits as the
-defaults are reasonable and there is no overlap in the bit definitions.
-Also, newer drivers will be forced to update because of the change in
-function call parameters, a reminder that the functionality exists.
+The new parameters for add_veb allow us to enable and disable VEB stats,
+so let's use them.
 
 Also update copyright year.
 
 Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-Change-ID: I9acb9160b892ca3146f2f11a88fdcd86be3cadcc
+Change-ID: Ie6e68c68e2d1d459e42168eda661051b56bf0a65
 ---
-Testing Hints: Testing hints will be driver dependent, see the related
-base driver changes.
+Testing Hints: These commands should now do something useful:
+	ethtool --set-priv-flags eth0 veb-stats on
+	ethtool --set-priv-flags eth0 veb-stats off
 
- drivers/net/ethernet/intel/i40e/i40e_common.c    | 11 ++++++-----
- drivers/net/ethernet/intel/i40e/i40e_main.c      |  2 +-
- drivers/net/ethernet/intel/i40e/i40e_prototype.h |  6 +++---
- 3 files changed, 10 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 11 ++++++++---
+ drivers/net/ethernet/intel/i40e/i40e_main.c    |  4 ++--
+ 2 files changed, 10 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index b103a92..99f6216 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -2336,8 +2336,8 @@ i40e_status i40e_update_link_info(struct i40e_hw *hw)
-  * @downlink_seid: the VSI SEID
-  * @enabled_tc: bitmap of TCs to be enabled
-  * @default_port: true for default port VSI, false for control port
-- * @enable_l2_filtering: true to add L2 filter table rules to regular forwarding rules for cloud support
-  * @veb_seid: pointer to where to put the resulting VEB SEID
-+ * @enable_stats: true to turn on VEB stats
-  * @cmd_details: pointer to command details structure or NULL
-  *
-  * This asks the FW to add a VEB between the uplink and downlink
-@@ -2345,8 +2345,8 @@ i40e_status i40e_update_link_info(struct i40e_hw *hw)
-  **/
- i40e_status i40e_aq_add_veb(struct i40e_hw *hw, u16 uplink_seid,
- 				u16 downlink_seid, u8 enabled_tc,
--				bool default_port, bool enable_l2_filtering,
--				u16 *veb_seid,
-+				bool default_port, u16 *veb_seid,
-+				bool enable_stats,
- 				struct i40e_asq_cmd_details *cmd_details)
- {
- 	struct i40e_aq_desc desc;
-@@ -2373,8 +2373,9 @@ i40e_status i40e_aq_add_veb(struct i40e_hw *hw, u16 uplink_seid,
- 	else
- 		veb_flags |= I40E_AQC_ADD_VEB_PORT_TYPE_DATA;
- 
--	if (enable_l2_filtering)
--		veb_flags |= I40E_AQC_ADD_VEB_ENABLE_L2_FILTER;
-+	/* reverse logic here: set the bitflag to disable the stats */
-+	if (!enable_stats)
-+		veb_flags |= I40E_AQC_ADD_VEB_ENABLE_DISABLE_STATS;
- 
- 	cmd->veb_flags = cpu_to_le16(veb_flags);
- 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 0d59028..383ce63 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -10062,7 +10062,7 @@ static int i40e_add_veb(struct i40e_veb *veb, struct i40e_vsi *vsi)
- 	/* get a VEB from the hardware */
- 	ret = i40e_aq_add_veb(&pf->hw, veb->uplink_seid, vsi->seid,
- 			      veb->enabled_tc, is_default,
--			      is_cloud, &veb->seid, NULL);
-+			      &veb->seid, is_cloud, NULL);
- 	if (ret) {
- 		dev_info(&pf->pdev->dev,
- 			 "couldn't add VEB, err %s aq_err %s\n",
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-index 459ec52..0c5d45c51 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 9dcdf34..e241fc0 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
 @@ -1,7 +1,7 @@
  /*******************************************************************************
   *
@@ -100,17 +42,44 @@ index 459ec52..0c5d45c51 100644
   *
   * This program is free software; you can redistribute it and/or modify it
   * under the terms and conditions of the GNU General Public License,
-@@ -138,8 +138,8 @@ i40e_status i40e_aq_update_vsi_params(struct i40e_hw *hw,
- 				struct i40e_asq_cmd_details *cmd_details);
- i40e_status i40e_aq_add_veb(struct i40e_hw *hw, u16 uplink_seid,
- 				u16 downlink_seid, u8 enabled_tc,
--				bool default_port, bool enable_l2_filtering,
--				u16 *pveb_seid,
-+				bool default_port, u16 *pveb_seid,
-+				bool enable_stats,
- 				struct i40e_asq_cmd_details *cmd_details);
- i40e_status i40e_aq_get_veb_parameters(struct i40e_hw *hw,
- 				u16 veb_seid, u16 *switch_id, bool *floating,
+@@ -2782,10 +2782,15 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
+ 		pf->auto_disable_flags |= I40E_FLAG_FD_ATR_ENABLED;
+ 	}
+ 
+-	if (flags & I40E_PRIV_FLAGS_VEB_STATS)
++	if ((flags & I40E_PRIV_FLAGS_VEB_STATS) &&
++	    !(pf->flags & I40E_FLAG_VEB_STATS_ENABLED)) {
+ 		pf->flags |= I40E_FLAG_VEB_STATS_ENABLED;
+-	else
++		reset_required = true;
++	} else if (!(flags & I40E_PRIV_FLAGS_VEB_STATS) &&
++		   (pf->flags & I40E_FLAG_VEB_STATS_ENABLED)) {
+ 		pf->flags &= ~I40E_FLAG_VEB_STATS_ENABLED;
++		reset_required = true;
++	}
+ 
+ 	/* if needed, issue reset to cause things to take effect */
+ 	if (reset_required)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 383ce63..25cf075 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -10056,13 +10056,13 @@ static int i40e_add_veb(struct i40e_veb *veb, struct i40e_vsi *vsi)
+ {
+ 	struct i40e_pf *pf = veb->pf;
+ 	bool is_default = veb->pf->cur_promisc;
+-	bool is_cloud = false;
++	bool enable_stats = !!(pf->flags & I40E_FLAG_VEB_STATS_ENABLED);
+ 	int ret;
+ 
+ 	/* get a VEB from the hardware */
+ 	ret = i40e_aq_add_veb(&pf->hw, veb->uplink_seid, vsi->seid,
+ 			      veb->enabled_tc, is_default,
+-			      &veb->seid, is_cloud, NULL);
++			      &veb->seid, enable_stats, NULL);
+ 	if (ret) {
+ 		dev_info(&pf->pdev->dev,
+ 			 "couldn't add VEB, err %s aq_err %s\n",
 -- 
 2.1.0
 
