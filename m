@@ -1,33 +1,50 @@
-From: David Miller <davem@davemloft.net>
-Date: Mon, 11 Jan 2016 23:43:54 -0500 (EST)
-Subject: [Intel-wired-lan] [next PATCH 0/4] Add support for generic Tx
- checksums to igb, ixgbe, igbvf, ixgbevf
-In-Reply-To: <20160111173724.4101.35798.stgit@localhost.localdomain>
-References: <20160111173724.4101.35798.stgit@localhost.localdomain>
-Message-ID: <20160111.234354.379572319999796564.davem@davemloft.net>
+From: Roland Hii <roland.king.guan.hii@intel.com>
+Date: Mon, 11 Jan 2016 15:34:18 +0800
+Subject: [Intel-wired-lan] [PATCH] igb: add conditions for I210 to generate
+	periodic clock output
+Message-ID: <1452497658-20050-1-git-send-email-roland.king.guan.hii@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Duyck <aduyck@mirantis.com>
-Date: Mon, 11 Jan 2016 09:53:50 -0800
+In general case the maximum supported half cycle time of the synchronized
+output clock is 70msec. Slower half cycle time than 70msec can be
+programmed also as long as the output clock is synchronized to whole
+seconds, useful specifically for generating a 1Hz clock.
 
-> It turns out we were doing far more than we needed to in the Tx checksum
-> functions for the drivers.  As a result it hid the fact that the hardware
-> is actually much more capable of handling generic offloads then previously
-> realized.
-> 
-> This patch series enables generic Tx checksum support for igb and ixgbe
-> based Intel server adapters.  In addition it adds a number of other items
-> such as:
->   Inner checksum support for MPLS
->   Encapsulated checksum support for igb, igbvf, and ixgbevf
->   SCTP CRC offload support for VLAN tunnels, and VFs
->   IPv6 extension header support for igb and igbvf
+Permitted values for the clock half cycle time are: 125,000,000 decimal,
+250,000,000 decimal and 500,000,000 decimal (equals to 125msec, 250msec
+and 500msec respectively).
 
-I like this series, nice work!
+Before this patch, only the half cycle time of less than or equal to 70msec
+uses the I210 clock output function. This patch adds additional conditions
+when half cycle time is equal to 125msec or 250msec or 500msec to use
+clock output function.
 
-This can go in when net-next opens back up, and I assume I'll get
-it via Jeff K.
+Under other conditions, interrupt driven target time output events method
+is still used to generate the desired clock output.
+
+Signed-off-by: Roland Hii <roland.king.guan.hii@intel.com>
+---
+ drivers/net/ethernet/intel/igb/igb_ptp.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
+index c44df87..22a8a29 100644
+--- a/drivers/net/ethernet/intel/igb/igb_ptp.c
++++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
+@@ -525,7 +525,8 @@ static int igb_ptp_feature_enable_i210(struct ptp_clock_info *ptp,
+ 		ts.tv_nsec = rq->perout.period.nsec;
+ 		ns = timespec64_to_ns(&ts);
+ 		ns = ns >> 1;
+-		if (on && ns <= 70000000LL) {
++		if (on && ((ns <= 70000000LL) || (ns == 125000000LL) ||
++			   (ns == 250000000LL) || (ns == 500000000LL))) {
+ 			if (ns < 8LL)
+ 				return -EINVAL;
+ 			use_freq = 1;
+-- 
+1.9.1
+
