@@ -1,85 +1,81 @@
 From: Joshua Hay <joshua.a.hay@intel.com>
-Date: Mon, 11 Jan 2016 15:18:17 -0800
-Subject: [Intel-wired-lan] [next PATCH S27 05/15] i40e: use new add_veb
-	calling with veb stats control
+Date: Mon, 11 Jan 2016 15:18:26 -0800
+Subject: [Intel-wired-lan] [next PATCH S27 14/15] i40e: properly show packet
+	split status in debugfs
 In-Reply-To: <1452554307-20937-1-git-send-email-joshua.a.hay@intel.com>
 References: <1452554307-20937-1-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <1452554307-20937-6-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <1452554307-20937-15-git-send-email-joshua.a.hay@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Shannon Nelson <shannon.nelson@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-The new parameters for add_veb allow us to enable and disable VEB stats,
-so let's use them.
+Get rid of the unused hsplit field in the ring struct and use the
+existing macro to detect packet split enablement. This allows debugfs
+dumps of the VSI to properly show which rx routine is in use.
 
-Also update copyright year.
-
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-Change-ID: Ie6e68c68e2d1d459e42168eda661051b56bf0a65
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-ID: Ic4e9589e6a788ab196ed0850703f704e30c03781
 ---
-Testing Hints: These commands should now do something useful:
-	ethtool --set-priv-flags eth0 veb-stats on
-	ethtool --set-priv-flags eth0 veb-stats off
+Testing Hints: Enable/disable  packet split and
+dump the VSI through debugfs. Note the output.
 
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 11 ++++++++---
- drivers/net/ethernet/intel/i40e/i40e_main.c    |  4 ++--
- 2 files changed, 10 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 6 +++---
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h    | 1 -
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.h  | 1 -
+ 3 files changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 9dcdf34..e241fc0 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -1,7 +1,7 @@
- /*******************************************************************************
-  *
-  * Intel Ethernet Controller XL710 Family Linux Driver
-- * Copyright(c) 2013 - 2015 Intel Corporation.
-+ * Copyright(c) 2013 - 2016 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-@@ -2782,10 +2782,15 @@ static int i40e_set_priv_flags(struct net_device *dev, u32 flags)
- 		pf->auto_disable_flags |= I40E_FLAG_FD_ATR_ENABLED;
- 	}
- 
--	if (flags & I40E_PRIV_FLAGS_VEB_STATS)
-+	if ((flags & I40E_PRIV_FLAGS_VEB_STATS) &&
-+	    !(pf->flags & I40E_FLAG_VEB_STATS_ENABLED)) {
- 		pf->flags |= I40E_FLAG_VEB_STATS_ENABLED;
--	else
-+		reset_required = true;
-+	} else if (!(flags & I40E_PRIV_FLAGS_VEB_STATS) &&
-+		   (pf->flags & I40E_FLAG_VEB_STATS_ENABLED)) {
- 		pf->flags &= ~I40E_FLAG_VEB_STATS_ENABLED;
-+		reset_required = true;
-+	}
- 
- 	/* if needed, issue reset to cause things to take effect */
- 	if (reset_required)
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 383ce63..25cf075 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -10056,13 +10056,13 @@ static int i40e_add_veb(struct i40e_veb *veb, struct i40e_vsi *vsi)
- {
- 	struct i40e_pf *pf = veb->pf;
- 	bool is_default = veb->pf->cur_promisc;
--	bool is_cloud = false;
-+	bool enable_stats = !!(pf->flags & I40E_FLAG_VEB_STATS_ENABLED);
- 	int ret;
- 
- 	/* get a VEB from the hardware */
- 	ret = i40e_aq_add_veb(&pf->hw, veb->uplink_seid, vsi->seid,
- 			      veb->enabled_tc, is_default,
--			      &veb->seid, is_cloud, NULL);
-+			      &veb->seid, enable_stats, NULL);
- 	if (ret) {
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+index bdac691..34da53b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+@@ -521,7 +521,7 @@ static void i40e_dbg_dump_vsi_seid(struct i40e_pf *pf, int seid)
+ 			 rx_ring->dtype);
  		dev_info(&pf->pdev->dev,
- 			 "couldn't add VEB, err %s aq_err %s\n",
+ 			 "    rx_rings[%i]: hsplit = %d, next_to_use = %d, next_to_clean = %d, ring_active = %i\n",
+-			 i, rx_ring->hsplit,
++			 i, ring_is_ps_enabled(rx_ring),
+ 			 rx_ring->next_to_use,
+ 			 rx_ring->next_to_clean,
+ 			 rx_ring->ring_active);
+@@ -572,8 +572,8 @@ static void i40e_dbg_dump_vsi_seid(struct i40e_pf *pf, int seid)
+ 			 "    tx_rings[%i]: dtype = %d\n",
+ 			 i, tx_ring->dtype);
+ 		dev_info(&pf->pdev->dev,
+-			 "    tx_rings[%i]: hsplit = %d, next_to_use = %d, next_to_clean = %d, ring_active = %i\n",
+-			 i, tx_ring->hsplit,
++			 "    tx_rings[%i]: next_to_use = %d, next_to_clean = %d, ring_active = %i\n",
++			 i,
+ 			 tx_ring->next_to_use,
+ 			 tx_ring->next_to_clean,
+ 			 tx_ring->ring_active);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+index e538b40..fd72182 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+@@ -256,7 +256,6 @@ struct i40e_ring {
+ #define I40E_RX_DTYPE_NO_SPLIT      0
+ #define I40E_RX_DTYPE_HEADER_SPLIT  1
+ #define I40E_RX_DTYPE_SPLIT_ALWAYS  2
+-	u8  hsplit;
+ #define I40E_RX_SPLIT_L2      0x1
+ #define I40E_RX_SPLIT_IP      0x2
+ #define I40E_RX_SPLIT_TCP_UDP 0x4
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
+index 595cd8b..062bd0c 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
+@@ -255,7 +255,6 @@ struct i40e_ring {
+ #define I40E_RX_DTYPE_NO_SPLIT      0
+ #define I40E_RX_DTYPE_HEADER_SPLIT  1
+ #define I40E_RX_DTYPE_SPLIT_ALWAYS  2
+-	u8  hsplit;
+ #define I40E_RX_SPLIT_L2      0x1
+ #define I40E_RX_SPLIT_IP      0x2
+ #define I40E_RX_SPLIT_TCP_UDP 0x4
 -- 
 2.1.0
 
