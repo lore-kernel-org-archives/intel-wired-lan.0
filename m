@@ -1,86 +1,157 @@
-From: Gangfeng Huang <gangfeng.huang@ni.com>
-Date: Tue, 12 Jan 2016 08:32:32 +0000
-Subject: [Intel-wired-lan] [PATCH next-queue 1/3] igb: Enable the
-	ethtool	interface fo Rx filter
-In-Reply-To: <309B89C4C689E141A5FF6A0C5FB2118B81E4D36B@ORSMSX101.amr.corp.intel.com>
-References: <1451456399-13353-1-git-send-email-gangfeng.huang@ni.com>
- <309B89C4C689E141A5FF6A0C5FB2118B81E4D36B@ORSMSX101.amr.corp.intel.com>
-Message-ID: <DM2PR0401MB09907A74230900BB8820D802ECCA0@DM2PR0401MB0990.namprd04.prod.outlook.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 12 Jan 2016 19:12:48 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ a87f7a60f94049fbcd0c6f19206f2f163e04d476 BUILD DONE
+Message-ID: <5694dfb0.FTqIepnQYiGi4Ddb%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-About these patches, I only do the test on I210 because I do not have other adapters in this series, 
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+a87f7a60f94049fbcd0c6f19206f2f163e04d476  igbvf: Add support for generic Tx checksums
 
------Original Message-----
-From: Brown, Aaron F [mailto:aaron.f.brown at intel.com] 
-Sent: 2016?1?12? 10:08
-To: Gangfeng Huang <gangfeng.huang@ni.com>; intel-wired-lan at lists.osuosl.org
-Cc: Ruhao Gao <ruhao.gao@ni.com>
-Subject: RE: [Intel-wired-lan] [PATCH next-queue 1/3] igb: Enable the ethtool interface fo Rx filter
+drivers/net/ethernet/intel/igb/igb_cdev.c:150:2: error: implicit declaration of function 'set_pages_uc'
+drivers/net/ethernet/intel/igb/igb_cdev.c:150:2: error: implicit declaration of function 'set_pages_uc' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/intel/igb/igb_cdev.c:275:2: error: implicit declaration of function 'set_pages_wb'
+drivers/net/ethernet/intel/igb/igb_cdev.c:275:2: error: implicit declaration of function 'set_pages_wb' [-Werror=implicit-function-declaration]
 
-> From: Intel-wired-lan [intel-wired-lan-bounces at lists.osuosl.org] on 
-> behalf of Gangfeng [gangfeng.huang at ni.com]
-> Sent: Tuesday, December 29, 2015 10:19 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Gangfeng Huang; Ruhao Gao
-> Subject: [Intel-wired-lan] [PATCH next-queue 1/3] igb: Enable the ethtool       interface fo Rx filter
-> 
-> From: Gangfeng Huang <gangfeng.huang@ni.com>
-> 
-> This patch is meant to allow for nfc to insert and remove Rx filter by 
-> ethtool. Ethtool interface has it's own rules manager
-> 
-> Show all filters:
-> $ ethtool -n eth0
-> 4 RX rings available
-> Total 2 rules
-> 
-> Signed-off-by: Ruhao Gao <ruhao.gao@ni.com>
-> Signed-off-by: Gangfeng Huang <gangfeng.huang@ni.com>
-> ---
->  drivers/net/ethernet/intel/igb/igb.h         |   31 +++++
->  drivers/net/ethernet/intel/igb/igb_ethtool.c |  193 ++++++++++++++++++++++++++
->  drivers/net/ethernet/intel/igb/igb_main.c    |   55 ++++++++
->  3 files changed, 279 insertions(+)
+Error ids grouped by kconfigs:
 
-> From: Intel-wired-lan [intel-wired-lan-bounces at lists.osuosl.org] on 
-> behalf of Gangfeng [gangfeng.huang at ni.com]
-> Sent: Tuesday, December 29, 2015 10:19 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Gangfeng Huang; Ruhao Gao
-> Subject: [Intel-wired-lan] [PATCH next-queue 1/3] igb: Enable the ethtool       interface fo Rx filter
-> 
-> From: Gangfeng Huang <gangfeng.huang@ni.com>
-> 
-> This patch is meant to allow for nfc to insert and remove Rx filter by 
-> ethtool. Ethtool interface has it's own rules manager
-> 
-> Show all filters:
-> $ ethtool -n eth0
-> 4 RX rings available
-> Total 2 rules
-> 
-> Signed-off-by: Ruhao Gao <ruhao.gao@ni.com>
-> Signed-off-by: Gangfeng Huang <gangfeng.huang@ni.com>
-> ---
->  drivers/net/ethernet/intel/igb/igb.h         |   31 +++++
->  drivers/net/ethernet/intel/igb/igb_ethtool.c |  193 ++++++++++++++++++++++++++
->  drivers/net/ethernet/intel/igb/igb_main.c    |   55 ++++++++
->  3 files changed, 279 insertions(+)
+recent_errors
+??? ia64-defconfig
+??? ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_uc
+??? ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_wb
+??? tile-allyesconfig
+    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_uc
+    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_wb
 
-This series seems to be fine for i210 and i350, but all the other parts I have tried fail to insert a rule with either an "Invalid argument" message, for i211,  or "Unknown error 524".  The message is the same whether I try to apply an ethertype RX filter or a VLAN priority filter, my examples here are just using the ethertype filter.
+elapsed time: 57m
 
-For the i210:
-u1458:[0]/root> ethtool -N eth1 flow-type ether proto 0x88F8 action 2
-rmgr: Cannot insert RX class rule: Invalid argument u1458:[0]/root>
+configs tested: 121
 
-For an 82575EB, 82576, 82580 and i354:
-u1458:[0]/root> ethtool -N eth3 flow-type ether proto 0x88F8 action 2
-rmgr: Cannot insert RX class rule: Unknown error 524 u1458:[0]/root>
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                   randconfig-a0-01120106
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+parisc                         b180_defconfig
+i386                             allmodconfig
+avr32        atngw100mkii_evklcd100_defconfig
+mips                      pistachio_defconfig
+powerpc                      katmai_defconfig
+s390                           gcov_defconfig
+tile                             allyesconfig
+x86_64               randconfig-x013-01110856
+x86_64               randconfig-x011-01110856
+x86_64               randconfig-x012-01110856
+x86_64               randconfig-x010-01110856
+x86_64               randconfig-x017-01110856
+x86_64               randconfig-x015-01110856
+x86_64               randconfig-x019-01110856
+x86_64               randconfig-x018-01110856
+x86_64               randconfig-x016-01110856
+x86_64               randconfig-x014-01110856
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201602
+i386                     randconfig-s1-201602
+x86_64                 randconfig-s0-01121803
+x86_64                 randconfig-s1-01121803
+x86_64                 randconfig-s2-01121803
+x86_64                           allmodconfig
+x86_64                 randconfig-s3-01121754
+x86_64                 randconfig-s4-01121754
+x86_64                 randconfig-s5-01121754
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201602
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201602
+i386                     randconfig-i1-201602
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201602
+sh                   rts7751r2dplus_defconfig
+arm                         iop13xx_defconfig
+powerpc64                           defconfig
+x86_64                 randconfig-x002-201602
+x86_64                 randconfig-x004-201602
+x86_64                 randconfig-x000-201602
+x86_64                 randconfig-x009-201602
+x86_64                 randconfig-x003-201602
+x86_64                 randconfig-x005-201602
+x86_64                 randconfig-x006-201602
+x86_64                 randconfig-x001-201602
+x86_64                 randconfig-x008-201602
+x86_64                 randconfig-x007-201602
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201602
+i386                   randconfig-x007-201602
+i386                   randconfig-x001-201602
+i386                   randconfig-x004-201602
+i386                   randconfig-x008-201602
+i386                   randconfig-x002-201602
+i386                   randconfig-x006-201602
+i386                   randconfig-x003-201602
+i386                   randconfig-x005-201602
+i386                   randconfig-x000-201602
+i386                   randconfig-x009-201602
 
-In all cases the pre-patch behaviour was:
-u1485:[0]/root> ethtool -N eth3 flow-type ether proto 0x88F8 action 2
-rxclass: Cannot get RX class rule count: Operation not supported Cannot insert classification rule u1485:[0]/root>
+Thanks,
+Fengguang
