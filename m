@@ -1,50 +1,137 @@
-From: Roland Hii <roland.king.guan.hii@intel.com>
-Date: Mon, 11 Jan 2016 15:34:18 +0800
-Subject: [Intel-wired-lan] [PATCH] igb: add conditions for I210 to generate
-	periodic clock output
-Message-ID: <1452497658-20050-1-git-send-email-roland.king.guan.hii@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 12 Jan 2016 16:07:43 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ fbb765dc7118fc4ed567fe50f2352d08a3d168a3 BUILD DONE
+Message-ID: <5694b44f.BmiXka91xwKkHElL%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-In general case the maximum supported half cycle time of the synchronized
-output clock is 70msec. Slower half cycle time than 70msec can be
-programmed also as long as the output clock is synchronized to whole
-seconds, useful specifically for generating a 1Hz clock.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+fbb765dc7118fc4ed567fe50f2352d08a3d168a3  i40e: add priv flag for automatic rule eviction
 
-Permitted values for the clock half cycle time are: 125,000,000 decimal,
-250,000,000 decimal and 500,000,000 decimal (equals to 125msec, 250msec
-and 500msec respectively).
+drivers/net/ethernet/intel/igb/igb_cdev.c:150:2: error: implicit declaration of function 'set_pages_uc' [-Werror=implicit-function-declaration]
+drivers/net/ethernet/intel/igb/igb_cdev.c:275:2: error: implicit declaration of function 'set_pages_wb' [-Werror=implicit-function-declaration]
 
-Before this patch, only the half cycle time of less than or equal to 70msec
-uses the I210 clock output function. This patch adds additional conditions
-when half cycle time is equal to 125msec or 250msec or 500msec to use
-clock output function.
+Error ids grouped by kconfigs:
 
-Under other conditions, interrupt driven target time output events method
-is still used to generate the desired clock output.
+recent_errors
+??? ia64-defconfig
+    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_uc
+    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:error:implicit-declaration-of-function-set_pages_wb
 
-Signed-off-by: Roland Hii <roland.king.guan.hii@intel.com>
----
- drivers/net/ethernet/intel/igb/igb_ptp.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+elapsed time: 39m
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
-index c44df87..22a8a29 100644
---- a/drivers/net/ethernet/intel/igb/igb_ptp.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
-@@ -525,7 +525,8 @@ static int igb_ptp_feature_enable_i210(struct ptp_clock_info *ptp,
- 		ts.tv_nsec = rq->perout.period.nsec;
- 		ns = timespec64_to_ns(&ts);
- 		ns = ns >> 1;
--		if (on && ns <= 70000000LL) {
-+		if (on && ((ns <= 70000000LL) || (ns == 125000000LL) ||
-+			   (ns == 250000000LL) || (ns == 500000000LL))) {
- 			if (ns < 8LL)
- 				return -EINVAL;
- 			use_freq = 1;
--- 
-1.9.1
+configs tested: 106
 
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                   randconfig-a0-01120106
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+x86_64               randconfig-x013-01110856
+x86_64               randconfig-x011-01110856
+x86_64               randconfig-x012-01110856
+x86_64               randconfig-x010-01110856
+x86_64               randconfig-x017-01110856
+x86_64               randconfig-x015-01110856
+x86_64               randconfig-x019-01110856
+x86_64               randconfig-x018-01110856
+x86_64               randconfig-x016-01110856
+x86_64               randconfig-x014-01110856
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201602
+i386                     randconfig-s1-201602
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201602
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                     randconfig-i0-201602
+i386                     randconfig-i1-201602
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                               tinyconfig
+x86_64                                    lkp
+x86_64                                   rhel
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201602
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+x86_64                 randconfig-x002-201602
+x86_64                 randconfig-x004-201602
+x86_64                 randconfig-x000-201602
+x86_64                 randconfig-x009-201602
+x86_64                 randconfig-x003-201602
+x86_64                 randconfig-x005-201602
+x86_64                 randconfig-x006-201602
+x86_64                 randconfig-x001-201602
+x86_64                 randconfig-x008-201602
+x86_64                 randconfig-x007-201602
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201602
+i386                   randconfig-x007-201602
+i386                   randconfig-x001-201602
+i386                   randconfig-x004-201602
+i386                   randconfig-x008-201602
+i386                   randconfig-x002-201602
+i386                   randconfig-x006-201602
+i386                   randconfig-x003-201602
+i386                   randconfig-x005-201602
+i386                   randconfig-x000-201602
+i386                   randconfig-x009-201602
+
+Thanks,
+Fengguang
