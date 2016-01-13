@@ -1,35 +1,29 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 13 Jan 2016 17:53:50 +0000
-Subject: [Intel-wired-lan] [next PATCH S24 04/12] i40e: X722 changes
-	to	access nvm
-In-Reply-To: <1450823114-29514-5-git-send-email-deepthi.kavalur@intel.com>
-References: <1450823114-29514-1-git-send-email-deepthi.kavalur@intel.com>
- <1450823114-29514-5-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F980104@ORSMSX104.amr.corp.intel.com>
+From: Nelson, Shannon <shannon.nelson@intel.com>
+Date: Wed, 13 Jan 2016 18:02:44 +0000
+Subject: [Intel-wired-lan] [PATCH 2/2] i40e: use
+	eth_platform_get_mac_address()
+In-Reply-To: <2da591718f08ebe8285b6bf9376893ec73ac98bb.1452655484.git.sowmini.varadhan@oracle.com>
+References: <cover.1452655483.git.sowmini.varadhan@oracle.com>
+ <2da591718f08ebe8285b6bf9376893ec73ac98bb.1452655484.git.sowmini.varadhan@oracle.com>
+Message-ID: <FC41C24E35F18A40888AACA1A36F3E418AFE4BE2@fmsmsx115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Deepthi Kavalur
-> Sent: Tuesday, December 22, 2015 2:25 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S24 04/12] i40e: X722 changes to
-> access nvm
+> From: Sowmini Varadhan [mailto:sowmini.varadhan at oracle.com]
 > 
-> From: Anjali Singhai Jain <anjali.singhai@intel.com>
+> This commit converts commit b499ffb0a22c ("i40e: Look up MAC address in
+> Open Firmware or IDPROM") to use eth_platform_get_mac_address()
+> added by commit c7f5d105495a ("net: Add eth_platform_get_mac_address()
+> helper.")
 > 
-> X722 does not have access to SRCTL registers, it has to do this through the
-> AQ.
-> 
-> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+> Signed-off-by: Sowmini Varadhan <sowmini.varadhan@oracle.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_nvm.c | 49 ++++++++++++++++++----
-> --------
->  1 file changed, 30 insertions(+), 19 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c |   19 +------------------
+>  1 files changed, 1 insertions(+), 18 deletions(-)
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied, nvm accessible
+Much nicer - thanks Dave and Sowmini!
+sln
+
