@@ -1,31 +1,44 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Wed, 13 Jan 2016 04:24:10 +0000
-Subject: [Intel-wired-lan] [PATCH] igb: rename igb define to be more
- generic
-In-Reply-To: <20160111173450.19024.84504.stgit@htfujina-fc.jf.intel.com>
-References: <20160111173450.19024.84504.stgit@htfujina-fc.jf.intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81E4DCB6@ORSMSX101.amr.corp.intel.com>
+From: Alexander Duyck <aduyck@mirantis.com>
+Date: Wed, 13 Jan 2016 07:31:04 -0800
+Subject: [Intel-wired-lan] [next PATCH v2 0/4] Add support for generic Tx
+ checksums to igb, ixgbe, igbvf, ixgbevf
+Message-ID: <20160113153001.4527.91152.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [intel-wired-lan-bounces at lists.osuosl.org] on behalf of Todd Fujinaka [todd.fujinaka at intel.com]
-> Sent: Monday, January 11, 2016 9:34 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] igb: rename igb define to be more generic
-> 
-> E1000_MRQC_ENABLE_RSS_4Q enables 4 and 8 queues depending on the part
-> so rename to be generic.
-> 
-> Similarly, E1000_MRQC_ENABLE_VMDQ_RSS_2Q has no numeric meaning so
-> rename to be more generic.
-> 
-> Signed-off-by: Todd Fujinaka <todd.fujinaka@intel.com>
-> ---
->  drivers/net/ethernet/intel/igb/e1000_82575.h |    4 ++--
->  drivers/net/ethernet/intel/igb/igb_main.c    |    4 ++--
->  2 files changed, 4 insertions(+), 4 deletions(-)
+It turns out we were doing far more than we needed to in the Tx checksum
+functions for the drivers.  As a result it hid the fact that the hardware
+is actually much more capable of handling generic offloads then previously
+realized.
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+This patch series enables generic Tx checksum support for igb and ixgbe
+based Intel server adapters.  In addition it adds a number of other items
+such as:
+  Inner checksum support for MPLS
+  Encapsulated checksum support for igb, igbvf, and ixgbevf
+  SCTP CRC offload support for VLAN tunnels, and VFs
+  IPv6 extension header support for igb and igbvf
+
+v2: Fixed whitespace errors in igbvf patch.
+    Updated patch descriptions to wrap lines at 75 characters.
+
+---
+
+Alexander Duyck (4):
+      ixgbe: Add support for generic Tx checksums
+      ixgbevf: Add support for generic Tx checksums
+      igb: Add support for generic Tx checksums
+      igbvf: Add support for generic Tx checksums
+
+
+ drivers/net/ethernet/intel/igb/igb_main.c         |  114 ++++++---------
+ drivers/net/ethernet/intel/igbvf/netdev.c         |  142 ++++++++++--------
+ drivers/net/ethernet/intel/igbvf/vf.h             |    1 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |  163 ++++++++-------------
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |  104 ++++++-------
+ 5 files changed, 231 insertions(+), 293 deletions(-)
+
+--
