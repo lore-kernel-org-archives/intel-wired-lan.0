@@ -1,46 +1,29 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Wed, 13 Jan 2016 01:58:53 +0000
-Subject: [Intel-wired-lan] [PATCH] igb: When GbE link up,
- wait for Remote receiver status condition.
-In-Reply-To: <1451541494-64693-1-git-send-email-t.ueba11@gmail.com>
-References: <1451541494-64693-1-git-send-email-t.ueba11@gmail.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81E4DBB9@ORSMSX101.amr.corp.intel.com>
+Date: Wed, 13 Jan 2016 03:27:02 +0000
+Subject: [Intel-wired-lan] [PATCH next-queue 1/3] igb: Enable the
+ ethtool	interface fo Rx filter
+In-Reply-To: <DM2PR0401MB09907A74230900BB8820D802ECCA0@DM2PR0401MB0990.namprd04.prod.outlook.com>
+References: <1451456399-13353-1-git-send-email-gangfeng.huang@ni.com>
+ <309B89C4C689E141A5FF6A0C5FB2118B81E4D36B@ORSMSX101.amr.corp.intel.com>,
+ <DM2PR0401MB09907A74230900BB8820D802ECCA0@DM2PR0401MB0990.namprd04.prod.outlook.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81E4DC10@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [intel-wired-lan-bounces at lists.osuosl.org] on behalf of Takuma Ueba [t.ueba11 at gmail.com]
-> Sent: Wednesday, December 30, 2015 9:58 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Takuma Ueba
-> Subject: [Intel-wired-lan] [PATCH] igb: When GbE link up,       wait for Remote receiver status condition.
-> 
-> I210 device IPv6 autoconf test sometimes fails,
-> because DAD NS for link-local is not transmitted.
-> This packet is silently dropped.
-> This problem is seen only GbE environment.
-> 
-> igb_watchdog_task link up detection continues to the following process.
-> The following cases are observed:
-> 1.PHY 1000BASE-T Status Register Remote receiver status bit is NG.
-> (NG status becomes OK after about 200 - 700ms)
-> 2.In this case, the transfer packet is silently dropped.
-> 
-> 1000BASE-T Status register
-> [Expected]: 0x3800 or 0x7800
-> [problem occurred]: 0x2800 or 0x6800
-> Frequency of occurrence: approx 1/10 - 1/40 observed
-> 
-> In order to avoid this problem,
-> wait until 1000BASE-T Status register "Remote receiver status OK"
-> 
-> After applying this patch, at least 400 runs succeed with no problems.
-> 
-> Signed-off-by: Takuma Ueba <t.ueba11@gmail.com>
-> ---
->  drivers/net/ethernet/intel/igb/igb_main.c | 20 ++++++++++++++++++++
->  1 file changed, 20 insertions(+)
+> From: Gangfeng Huang [gangfeng.huang at ni.com]
+> Sent: Tuesday, January 12, 2016 12:32 AM
+> To: Brown, Aaron F; intel-wired-lan at lists.osuosl.org
+> Cc: Ruhao Gao
+> Subject: RE: [Intel-wired-lan] [PATCH next-queue 1/3] igb: Enable the ethtool   interface fo Rx filter
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+> About these patches, I only do the test on I210 because I do not have other adapters in this series,
+
+That's one of the reasons I test it here, can't expect everyone to have access to all the SKUs.  It can be hard enough for me to locate a suitable sampling of each part one of our drivers supports :)
+
+If you have an idea of how to address it go ahead and submit another patch, I have the systems in a dedicated regression rack and the check for this is pretty easy so it should not take me too long to come back with a result.
+
+Thanks,
+Aaron
