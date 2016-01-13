@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 13 Jan 2016 18:15:46 +0000
-Subject: [Intel-wired-lan] [next PATCH S24 08/12] i40e: Limit DCB FW
- version	checks to X710/XL710 devices
-In-Reply-To: <1450823114-29514-9-git-send-email-deepthi.kavalur@intel.com>
-References: <1450823114-29514-1-git-send-email-deepthi.kavalur@intel.com>
- <1450823114-29514-9-git-send-email-deepthi.kavalur@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F98012A@ORSMSX104.amr.corp.intel.com>
+Date: Wed, 13 Jan 2016 18:21:15 +0000
+Subject: [Intel-wired-lan] [next PATCH S25 09/16] i40e: add 20G speed
+ for tx	bandwidth calculations
+In-Reply-To: <1450901156-30904-10-git-send-email-deepthi.kavalur@intel.com>
+References: <1450901156-30904-1-git-send-email-deepthi.kavalur@intel.com>
+ <1450901156-30904-10-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F98013D@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,27 +15,27 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
 > Behalf Of Deepthi Kavalur
-> Sent: Tuesday, December 22, 2015 2:25 PM
+> Sent: Wednesday, December 23, 2015 12:06 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Bowers, Gregory J <gregory.j.bowers@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH S24 08/12] i40e: Limit DCB FW version
-> checks to X710/XL710 devices
+> Subject: [Intel-wired-lan] [next PATCH S25 09/16] i40e: add 20G speed for tx
+> bandwidth calculations
 > 
-> From: Greg Bowers <gregory.j.bowers@intel.com>
+> From: Mitch Williams <mitch.a.williams@intel.com>
 > 
-> X710/XL710 devices require FW version checks to properly handle DCB
-> configurations from the FW.  Newer devices do not, so limit these checks to
-> X710/XL710.
+> When calculating TX bandwidth for VFs, we need to know the link speed to
+> make sure we don't allocate more bandwidth than is available. Add 20G link
+> speed to the switch statement so we can support devices that link at that
+> speed.
 > 
-> Signed-off-by: Greg Bowers <gregory.j.bowers@intel.com>
-> Acked-by: Shannon Nelson <shannon.nelson@intel.com>
-> Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+> Change-ID: I5409f6139d549e5832777db9c22ca0664e0c5f8b
 > ---
 > Testing-Hints:
-> Test that X710/XL710 and X722 devices support CEE and IEEE DCBX.
+> Find a device that links at 20G and make sure you can set VF tx bandwidth on
+> that device.
 > 
->  drivers/net/ethernet/intel/i40e/i40e_dcb.c | 12 +++++++-----
->  1 file changed, 7 insertions(+), 5 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 3 +++
+>  1 file changed, 3 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-FCoE/DCB - Patch code changes correctly applied, does not break base driver
+Patch code changes correctly applied, able to correctly set Tx bandwidth on 20G device.
