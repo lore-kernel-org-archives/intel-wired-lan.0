@@ -1,105 +1,75 @@
 From: Christopher S. Hall <christopher.s.hall@intel.com>
-Date: Wed, 13 Jan 2016 04:12:20 -0800
-Subject: [Intel-wired-lan] [PATCH v6 0/9] Patchset enabling hardware based
-	cross-timestamps for next gen Intel platforms
-Message-ID: <1452687149-11281-1-git-send-email-christopher.s.hall@intel.com>
+Date: Wed, 13 Jan 2016 04:12:21 -0800
+Subject: [Intel-wired-lan] [PATCH v6 1/9] Add cycles to nanoseconds
+	translation
+In-Reply-To: <1452687149-11281-1-git-send-email-christopher.s.hall@intel.com>
+References: <1452687149-11281-1-git-send-email-christopher.s.hall@intel.com>
+Message-ID: <1452687149-11281-2-git-send-email-christopher.s.hall@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Modern Intel hardware adds an Always Running Timer (ART) that allows the
-network and audio device clocks to precisely cross timestamp the device
-clock with the system clock. This allows a precise correlation of the
-device time and system time.
+The timekeeping code does not currently provide a way to translate
+externally provided clocksource cycles to system time. The cycle count
+is always provided by the result clocksource read() method internal to
+the timekeeping code. The added function timekeeping_cycles_to_ns()
+calculated a nanosecond value from a cycle count that can be added to
+tk_read_base.base value yielding the current system time. This allows
+clocksource cycle values external to the timekeeping code to provide a
+cycle count that can be transformed to system time.
 
-This patchset adds interfaces to the timekeeping code allowing drivers
-to translate ART time to system time.
+Signed-off-by: Christopher S. Hall <christopher.s.hall@intel.com>
+---
+ kernel/time/timekeeping.c | 24 ++++++++++++++++++++----
+ 1 file changed, 20 insertions(+), 4 deletions(-)
 
-Changelog:
-
-Changes from v5 to v6:
-
-*	Pulled supporting code for snapshotting, correlated
-	clocksource, and cycles to nanoseconds translation to separate
-	patches. Added patches are marked as NEW below. There is,
-	however, very little *actually* new code, just reorganized
-	code
-*	Renamed and moved clocksource change sequence to timekeeper
-	struct (out of tk_read_base)
-*	Renamed structs for system counter and synced device time
-	callback to system_counterval_t and sync_device_time_cb,
-	respectively
-*	Changed PTP cross-timestamp callback name to getcrosststamp
-	for consistency with the timekeeping code - corresponding
-	function name changes in e1000e driver
-*	Simplified PTP time calculations making use of ktime_to_* code
-
-Changes from v4 to v5:
-
-*	Changes the history mechanism to interpolate system time using
-	a single historic system time pair (monotonic raw, realtime)
-	rather than implementing a precise history using shadow
-	timekeeper (see v4 changes). The advantage of this approach is
-	that the history can be arbitrarily long. This approach may
-	also be simpler in terms of coding. The major disadvantage is
-	that the realtime clock can be adjusted.  When adjusted, the
-	realtime clock time (when interpolating from history) is
-	always approximate. In general, the longer the interpolation
-	period the larger the potential error. There isn't any error
-	interpolating the monotonic raw clock time.
-*	This patchset also addresses objections to the previous
-	patchsets overly complex correlated timestamp structure. This
-	patchset splits that structure into several smaller
-	structures.  The correlated timestamp interface is renamed
-	cross timestamp to avoid any confusion with the correlated
-	clocksource.
-*	The correlated clocksource is separated from the cross
-	timestamp mechanism.
-*	Add monotonic raw to the PTP user interface
-*	Add e1000e driver configuration option that wraps Intel PCH
-	specific code
-
-Changes v3 to v4: 
-
-*	Adds a history mechanism to accomodate slower devices. In this
-	case the response time for timestamp reads to the Intel DSP
-	are too slow to be accomodated by the original correlated time
-	mechanism. The history mechanism turns shadow timekeeper into
-	an array where the history is stored.
-
-Christopher S. Hall (9):
-  Add cycles to nanoseconds translation (NEW)
-  Add driver cross timestamp interface for higher precision time
-    synchronization
-  Add correlated clocksource relating aliased auxiliary and system
-    clocks (NEW)
-  Always Running Timer (ART) correlated clocksource
-  Add timekeeping snapshot code capturing system time and counter (NEW)
-  Add history to cross timestamp interface supporting slower devices
-  Remove duplicated code in ktime_get_raw_and_real()
-  Add PTP_SYS_OFFSET_PRECISE for driver crosstimestamping
-  Adds hardware supported cross timestamp
-
- Documentation/ptp/testptp.c                 |   6 +-
- arch/x86/include/asm/cpufeature.h           |   2 +-
- arch/x86/include/asm/tsc.h                  |   2 +
- arch/x86/kernel/tsc.c                       |  46 ++++++
- drivers/net/ethernet/intel/Kconfig          |   9 +
- drivers/net/ethernet/intel/e1000e/defines.h |   5 +
- drivers/net/ethernet/intel/e1000e/ptp.c     |  88 ++++++++++
- drivers/net/ethernet/intel/e1000e/regs.h    |   4 +
- drivers/ptp/ptp_chardev.c                   |  27 +++
- include/linux/clocksource.h                 |  43 +++++
- include/linux/pps_kernel.h                  |  17 +-
- include/linux/ptp_clock_kernel.h            |   8 +
- include/linux/timekeeper_internal.h         |   2 +
- include/linux/timekeeping.h                 |  42 +++++
- include/uapi/linux/ptp_clock.h              |  13 +-
- kernel/time/timekeeping.c                   | 247 +++++++++++++++++++++++++---
- 16 files changed, 521 insertions(+), 40 deletions(-)
-
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index d563c19..3f127dd 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -298,13 +298,11 @@ u32 (*arch_gettimeoffset)(void) = default_arch_gettimeoffset;
+ static inline u32 arch_gettimeoffset(void) { return 0; }
+ #endif
+ 
+-static inline s64 timekeeping_get_ns(struct tk_read_base *tkr)
++static inline s64 timekeeping_delta_to_ns(struct tk_read_base *tkr,
++					  cycle_t delta)
+ {
+-	cycle_t delta;
+ 	s64 nsec;
+ 
+-	delta = timekeeping_get_delta(tkr);
+-
+ 	nsec = delta * tkr->mult + tkr->xtime_nsec;
+ 	nsec >>= tkr->shift;
+ 
+@@ -312,6 +310,24 @@ static inline s64 timekeeping_get_ns(struct tk_read_base *tkr)
+ 	return nsec + arch_gettimeoffset();
+ }
+ 
++static inline s64 timekeeping_get_ns(struct tk_read_base *tkr)
++{
++	cycle_t delta;
++
++	delta = timekeeping_get_delta(tkr);
++	return timekeeping_delta_to_ns(tkr, delta);
++}
++
++static inline s64 timekeeping_cycles_to_ns(struct tk_read_base *tkr,
++					    cycle_t cycles)
++{
++	cycle_t delta;
++
++	/* calculate the delta since the last update_wall_time */
++	delta = clocksource_delta(cycles, tkr->cycle_last, tkr->mask);
++	return timekeeping_delta_to_ns(tkr, delta);
++}
++
+ /**
+  * update_fast_timekeeper - Update the fast and NMI safe monotonic timekeeper.
+  * @tkr: Timekeeping readout base from which we take the update
 -- 
 2.1.4
 
