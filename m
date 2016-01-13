@@ -1,29 +1,65 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Wed, 13 Jan 2016 03:27:02 +0000
-Subject: [Intel-wired-lan] [PATCH next-queue 1/3] igb: Enable the
- ethtool	interface fo Rx filter
-In-Reply-To: <DM2PR0401MB09907A74230900BB8820D802ECCA0@DM2PR0401MB0990.namprd04.prod.outlook.com>
-References: <1451456399-13353-1-git-send-email-gangfeng.huang@ni.com>
- <309B89C4C689E141A5FF6A0C5FB2118B81E4D36B@ORSMSX101.amr.corp.intel.com>,
- <DM2PR0401MB09907A74230900BB8820D802ECCA0@DM2PR0401MB0990.namprd04.prod.outlook.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81E4DC10@ORSMSX101.amr.corp.intel.com>
+From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+Date: Tue, 12 Jan 2016 19:32:31 -0800
+Subject: [Intel-wired-lan] [PATCH 2/2] i40e: use
+	eth_platform_get_mac_address()
+In-Reply-To: <cover.1452655483.git.sowmini.varadhan@oracle.com>
+References: <cover.1452655483.git.sowmini.varadhan@oracle.com>
+Message-ID: <2da591718f08ebe8285b6bf9376893ec73ac98bb.1452655484.git.sowmini.varadhan@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Gangfeng Huang [gangfeng.huang at ni.com]
-> Sent: Tuesday, January 12, 2016 12:32 AM
-> To: Brown, Aaron F; intel-wired-lan at lists.osuosl.org
-> Cc: Ruhao Gao
-> Subject: RE: [Intel-wired-lan] [PATCH next-queue 1/3] igb: Enable the ethtool   interface fo Rx filter
+This commit converts commit b499ffb0a22c ("i40e: Look up MAC address in
+Open Firmware or IDPROM") to use eth_platform_get_mac_address()
+added by commit c7f5d105495a ("net: Add eth_platform_get_mac_address()
+helper.")
 
-> About these patches, I only do the test on I210 because I do not have other adapters in this series,
+Signed-off-by: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c |   19 +------------------
+ 1 files changed, 1 insertions(+), 18 deletions(-)
 
-That's one of the reasons I test it here, can't expect everyone to have access to all the SKUs.  It can be hard enough for me to locate a suitable sampling of each part one of our drivers supports :)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index bb4612c..65220aa 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -28,11 +28,6 @@
+ #include <linux/of_net.h>
+ #include <linux/pci.h>
+ 
+-#ifdef CONFIG_SPARC
+-#include <asm/idprom.h>
+-#include <asm/prom.h>
+-#endif
+-
+ /* Local includes */
+ #include "i40e.h"
+ #include "i40e_diag.h"
+@@ -10543,21 +10538,9 @@ static void i40e_print_features(struct i40e_pf *pf)
+  **/
+ static void i40e_get_platform_mac_addr(struct pci_dev *pdev, struct i40e_pf *pf)
+ {
+-	struct device_node *dp = pci_device_to_OF_node(pdev);
+-	const unsigned char *addr;
+-	u8 *mac_addr = pf->hw.mac.addr;
+-
+ 	pf->flags &= ~I40E_FLAG_PF_MAC;
+-	addr = of_get_mac_address(dp);
+-	if (addr) {
+-		ether_addr_copy(mac_addr, addr);
++	if (!eth_platform_get_mac_address(&pdev->dev, pf->hw.mac.addr))
+ 		pf->flags |= I40E_FLAG_PF_MAC;
+-#ifdef CONFIG_SPARC
+-	} else {
+-		ether_addr_copy(mac_addr, idprom->id_ethaddr);
+-		pf->flags |= I40E_FLAG_PF_MAC;
+-#endif /* CONFIG_SPARC */
+-	}
+ }
+ 
+ /**
+-- 
+1.7.1
 
-If you have an idea of how to address it go ahead and submit another patch, I have the systems in a dedicated regression rack and the check for this is pretty easy so it should not take me too long to come back with a result.
-
-Thanks,
-Aaron
