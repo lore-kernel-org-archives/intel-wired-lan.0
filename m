@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 13 Jan 2016 19:25:43 +0000
-Subject: [Intel-wired-lan] [next PATCH S23 04/13] i40e/i40evf: Fix
-	RSS	rx-flow-hash configuration through ethtool
-In-Reply-To: <1449705033-4968-5-git-send-email-joshua.a.hay@intel.com>
-References: <1449705033-4968-1-git-send-email-joshua.a.hay@intel.com>
- <1449705033-4968-5-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F980211@ORSMSX104.amr.corp.intel.com>
+Date: Wed, 13 Jan 2016 19:28:57 +0000
+Subject: [Intel-wired-lan] [PATCH 2/2] i40e:
+	use	eth_platform_get_mac_address()
+In-Reply-To: <2da591718f08ebe8285b6bf9376893ec73ac98bb.1452655484.git.sowmini.varadhan@oracle.com>
+References: <cover.1452655483.git.sowmini.varadhan@oracle.com>
+ <2da591718f08ebe8285b6bf9376893ec73ac98bb.1452655484.git.sowmini.varadhan@oracle.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F980226@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,31 +14,28 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Joshua Hay
-> Sent: Wednesday, December 09, 2015 3:50 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S23 04/13] i40e/i40evf: Fix RSS rx-
-> flow-hash configuration through ethtool
+> Behalf Of Sowmini Varadhan
+> Sent: Tuesday, January 12, 2016 7:33 PM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; Brandeburg, Jesse
+> <jesse.brandeburg@intel.com>; Nelson, Shannon
+> <shannon.nelson@intel.com>; Wyborny, Carolyn
+> <carolyn.wyborny@intel.com>; Skidmore, Donald C
+> <donald.c.skidmore@intel.com>; Allan, Bruce W <bruce.w.allan@intel.com>;
+> Ronciak, John <john.ronciak@intel.com>; Williams, Mitch A
+> <mitch.a.williams@intel.com>; intel-wired-lan at lists.osuosl.org
+> Cc: sowmini.varadhan at oracle.com; davem at davemloft.net
+> Subject: [Intel-wired-lan] [PATCH 2/2] i40e: use
+> eth_platform_get_mac_address()
 > 
-> From: Anjali Singhai Jain <anjali.singhai@intel.com>
+> This commit converts commit b499ffb0a22c ("i40e: Look up MAC address in
+> Open Firmware or IDPROM") to use eth_platform_get_mac_address()
+> added by commit c7f5d105495a ("net: Add eth_platform_get_mac_address()
+> helper.")
 > 
-> This patch fixes the Hash PCTYPE enable for X722 since it supports a broader
-> selection of PCTYPES for TCP and UDP.
-> 
-> This patch also fixes a bug in XL710, X710, X722 support for RSS, as of now we
-> cannot reduce the (4)tuple for RSS for TCP/IPv4/IPV6 or
-> UDP/IPv4/IPv6 packets since this requires a product feature change that
-> comes in a later release.
-> 
-> A VF should never be allowed to change the tuples for RSS for any PCTYPE
-> since that's a global setting for the device in case of i40e devices.
-> 
-> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-> Change-ID: I0ee7203c9b24813260f58f3220798bc9d9ac4a12
+> Signed-off-by: Sowmini Varadhan <sowmini.varadhan@oracle.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 14 +++-----
->  drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 40 +++++-----------------
->  2 files changed, 12 insertions(+), 42 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c |   19 +------------------
+>  1 files changed, 1 insertions(+), 18 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied, RSS works correctly on PF and VF with UDP and TCP traffic
+Patch code changes correctly applied, MAC address lookup works correctly
