@@ -1,42 +1,41 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Thu, 14 Jan 2016 03:22:17 +0000
-Subject: [Intel-wired-lan] [PATCH] igb: add conditions for I210 to
- generate periodic clock output
-In-Reply-To: <1452497658-20050-1-git-send-email-roland.king.guan.hii@intel.com>
-References: <1452497658-20050-1-git-send-email-roland.king.guan.hii@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81E4F1D6@ORSMSX101.amr.corp.intel.com>
+Date: Thu, 14 Jan 2016 03:46:14 +0000
+Subject: [Intel-wired-lan] [PATCH next-queue 1/3] igb: Enable the
+ ethtool	interface fo Rx filter
+In-Reply-To: <DM2PR0401MB0990C5C5A689DC9B0F1E0973ECCC0@DM2PR0401MB0990.namprd04.prod.outlook.com>
+References: <1451456399-13353-1-git-send-email-gangfeng.huang@ni.com>
+ <309B89C4C689E141A5FF6A0C5FB2118B81E4D36B@ORSMSX101.amr.corp.intel.com>,
+ <DM2PR0401MB09907A74230900BB8820D802ECCA0@DM2PR0401MB0990.namprd04.prod.outlook.com>
+ <309B89C4C689E141A5FF6A0C5FB2118B81E4DC10@ORSMSX101.amr.corp.intel.com>,
+ <DM2PR0401MB0990C5C5A689DC9B0F1E0973ECCC0@DM2PR0401MB0990.namprd04.prod.outlook.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81E4F1FF@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: netdev-owner at vger.kernel.org [netdev-owner at vger.kernel.org] on behalf of Roland Hii [roland.king.guan.hii at intel.com]
-> Sent: Sunday, January 10, 2016 11:34 PM
-> To: Kirsher, Jeffrey T
-> Cc: intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; linux-kernel at vger.kernel.org
-> Subject: [PATCH] igb: add conditions for I210 to generate periodic clock output
+> From: Gangfeng Huang [gangfeng.huang at ni.com]
+> Sent: Wednesday, January 13, 2016 6:40 PM
+> To: Brown, Aaron F; intel-wired-lan at lists.osuosl.org
+> Cc: Ruhao Gao
+> Subject: RE: [Intel-wired-lan] [PATCH next-queue 1/3] igb: Enable the ethtool   interface fo Rx filter
 > 
-> In general case the maximum supported half cycle time of the synchronized
-> output clock is 70msec. Slower half cycle time than 70msec can be
-> programmed also as long as the output clock is synchronized to whole
-> seconds, useful specifically for generating a 1Hz clock.
+> Hi Brown,
 > 
-> Permitted values for the clock half cycle time are: 125,000,000 decimal,
-> 250,000,000 decimal and 500,000,000 decimal (equals to 125msec, 250msec
-> and 500msec respectively).
-> 
-> Before this patch, only the half cycle time of less than or equal to 70msec
-> uses the I210 clock output function. This patch adds additional conditions
-> when half cycle time is equal to 125msec or 250msec or 500msec to use
-> clock output function.
-> 
-> Under other conditions, interrupt driven target time output events method
-> is still used to generate the desired clock output.
-> 
-> Signed-off-by: Roland Hii <roland.king.guan.hii@intel.com>
-> ---
->  drivers/net/ethernet/intel/igb/igb_ptp.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+> 1. According to datasheet, only i210/i211/350 support Rx queue assignment. In my patch, other adapters will return the error -ENOTSUPP;
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Thanks for looking that up.  I had pulled down the datasheets to check if something like that was the case but got sidetracked with some other work.
+
+So the patch is returning -ENOTSUPP, but when I run ethtool on the unsupported parts or non existent queues I get  "rmgr: Cannot insert RX class rule: Unknown error 524", do you know how we would go about making that error message a little more meaningful?
+
+> 
+> 2. For I211, it only have 2 HW queues(queue 0 and queue 1), you cannot assign the packets to queue 2.
+> 
+> I211:
+> ethtool -N eth1 flow-type ether proto 0x88F8 action 1
+
+Ok, that works, for both this and the VLAN example rule from your other patch.  Again, do you know if we can get the error that comes out of ethtool to be a little more meaningful?  
+
+Thanks,
+Aaron
