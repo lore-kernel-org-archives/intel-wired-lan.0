@@ -1,46 +1,96 @@
 From: Joshua Hay <joshua.a.hay@intel.com>
-Date: Wed, 13 Jan 2016 16:51:38 -0800
-Subject: [Intel-wired-lan] [v2 next PATCH S27 01/15] i40e: move
-	sync_vsi_filters up in service_task
+Date: Wed, 13 Jan 2016 16:51:41 -0800
+Subject: [Intel-wired-lan] [v2 next PATCH S27 04/15] i40e: add VEB stat
+	control and remove L2 cloud filter
 In-Reply-To: <1452732712-12248-1-git-send-email-joshua.a.hay@intel.com>
 References: <1452732712-12248-1-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <1452732712-12248-2-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <1452732712-12248-5-git-send-email-joshua.a.hay@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Shannon Nelson <shannon.nelson@intel.com>
 
-The sync_vsi_filters function is moved up in the service_task because
-it may need to request a reset, and we don't want to wait another round
-of service task time.
+With the latest firmware, statistics gathering can now be enabled and
+disabled in the HW switch, so we need to add a parameter to allow the
+driver to set it as desired.  At the same time, the L2 cloud filtering
+parameter has been removed as it was never used.
 
-NOTE: Filters will be replayed by sync_vsi_filters including broadcast
-and promiscuous settings.
-
-Also, added some error handling in this space in case any of these
-fail the driver will retry correctly.
+Older drivers working with the newer firmware and newer drivers working
+with older firmware will not run into problems with these bits as the
+defaults are reasonable and there is no overlap in the bit definitions.
+Also, newer drivers will be forced to update because of the change in
+function call parameters, a reminder that the functionality exists.
 
 Also update copyright year.
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Change-ID: I23f3d552100baecea69466339f738f27614efd47
+Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+Change-ID: I9acb9160b892ca3146f2f11a88fdcd86be3cadcc
 ---
-Testing Hints: This bug hits a sensitive area of the driver that is used in
-many different paths such as reset (PFR/CORER/GLOBR) and multicast address
-add/remove, vlan add/remove, MAC address add/remove.  As much testing as
-possible should be done in the areas of filter add/remove, maximum filter
-add, etc.
+Testing Hints: Testing hints will be driver dependent, see the related
+base driver changes.
 
- drivers/net/ethernet/intel/i40e/i40e_main.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/i40e/i40e_common.c    | 11 ++++++-----
+ drivers/net/ethernet/intel/i40e/i40e_main.c      |  2 +-
+ drivers/net/ethernet/intel/i40e/i40e_prototype.h |  6 +++---
+ 3 files changed, 10 insertions(+), 9 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index e41c8af..a9302d3 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -2308,8 +2308,8 @@ i40e_status i40e_update_link_info(struct i40e_hw *hw)
+  * @downlink_seid: the VSI SEID
+  * @enabled_tc: bitmap of TCs to be enabled
+  * @default_port: true for default port VSI, false for control port
+- * @enable_l2_filtering: true to add L2 filter table rules to regular forwarding rules for cloud support
+  * @veb_seid: pointer to where to put the resulting VEB SEID
++ * @enable_stats: true to turn on VEB stats
+  * @cmd_details: pointer to command details structure or NULL
+  *
+  * This asks the FW to add a VEB between the uplink and downlink
+@@ -2317,8 +2317,8 @@ i40e_status i40e_update_link_info(struct i40e_hw *hw)
+  **/
+ i40e_status i40e_aq_add_veb(struct i40e_hw *hw, u16 uplink_seid,
+ 				u16 downlink_seid, u8 enabled_tc,
+-				bool default_port, bool enable_l2_filtering,
+-				u16 *veb_seid,
++				bool default_port, u16 *veb_seid,
++				bool enable_stats,
+ 				struct i40e_asq_cmd_details *cmd_details)
+ {
+ 	struct i40e_aq_desc desc;
+@@ -2345,8 +2345,9 @@ i40e_status i40e_aq_add_veb(struct i40e_hw *hw, u16 uplink_seid,
+ 	else
+ 		veb_flags |= I40E_AQC_ADD_VEB_PORT_TYPE_DATA;
+ 
+-	if (enable_l2_filtering)
+-		veb_flags |= I40E_AQC_ADD_VEB_ENABLE_L2_FILTER;
++	/* reverse logic here: set the bitflag to disable the stats */
++	if (!enable_stats)
++		veb_flags |= I40E_AQC_ADD_VEB_ENABLE_DISABLE_STATS;
+ 
+ 	cmd->veb_flags = cpu_to_le16(veb_flags);
+ 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 1f6ce52..2838ae0 100644
+index f29c3bc..ce8651a 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -10073,7 +10073,7 @@ static int i40e_add_veb(struct i40e_veb *veb, struct i40e_vsi *vsi)
+ 	/* get a VEB from the hardware */
+ 	ret = i40e_aq_add_veb(&pf->hw, veb->uplink_seid, vsi->seid,
+ 			      veb->enabled_tc, is_default,
+-			      is_cloud, &veb->seid, NULL);
++			      &veb->seid, is_cloud, NULL);
+ 	if (ret) {
+ 		dev_info(&pf->pdev->dev,
+ 			 "couldn't add VEB, err %s aq_err %s\n",
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+index 45af29b..e8deabd 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
 @@ -1,7 +1,7 @@
  /*******************************************************************************
   *
@@ -50,25 +100,17 @@ index 1f6ce52..2838ae0 100644
   *
   * This program is free software; you can redistribute it and/or modify it
   * under the terms and conditions of the GNU General Public License,
-@@ -2168,6 +2168,10 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 		}
- 	}
- out:
-+	/* if something went wrong then set the changed flag so we try again */
-+	if (retval)
-+		vsi->flags |= I40E_VSI_FLAG_FILTER_CHANGED;
-+
- 	clear_bit(__I40E_CONFIG_BUSY, &vsi->state);
- 	return retval;
- }
-@@ -7104,6 +7108,7 @@ static void i40e_service_task(struct work_struct *work)
- 	}
- 
- 	i40e_detect_recover_hung(pf);
-+	i40e_sync_filters_subtask(pf);
- 	i40e_reset_subtask(pf);
- 	i40e_handle_mdd_event(pf);
- 	i40e_vc_process_vflr_event(pf);
+@@ -138,8 +138,8 @@ i40e_status i40e_aq_update_vsi_params(struct i40e_hw *hw,
+ 				struct i40e_asq_cmd_details *cmd_details);
+ i40e_status i40e_aq_add_veb(struct i40e_hw *hw, u16 uplink_seid,
+ 				u16 downlink_seid, u8 enabled_tc,
+-				bool default_port, bool enable_l2_filtering,
+-				u16 *pveb_seid,
++				bool default_port, u16 *pveb_seid,
++				bool enable_stats,
+ 				struct i40e_asq_cmd_details *cmd_details);
+ i40e_status i40e_aq_get_veb_parameters(struct i40e_hw *hw,
+ 				u16 veb_seid, u16 *switch_id, bool *floating,
 -- 
 2.1.0
 
