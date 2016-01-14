@@ -1,254 +1,77 @@
 From: Joshua Hay <joshua.a.hay@intel.com>
-Date: Wed, 13 Jan 2016 16:51:43 -0800
-Subject: [Intel-wired-lan] [v2 next PATCH S27 06/15] i40e: Refactor force_wb
-	and WB_ON_ITR functionality code
+Date: Wed, 13 Jan 2016 16:51:50 -0800
+Subject: [Intel-wired-lan] [v2 next PATCH S27 13/15] i40e/i40evf: use
+	logical operators, not bitwise
 In-Reply-To: <1452732712-12248-1-git-send-email-joshua.a.hay@intel.com>
 References: <1452732712-12248-1-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <1452732712-12248-7-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <1452732712-12248-14-git-send-email-joshua.a.hay@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Anjali Singhai Jain <anjali.singhai@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-Now that the Force-WriteBack functionality in X710/XL710 devices
-has been moved out of the clean routine and into the service task,
-we need to make sure WriteBack-On-ITR is separated out since it
-is still called from clean.
+Mr. Spock would certainly raise an eyebrow to see us using bitwise
+operaters, when we should clearly be relying on logic. Fascinating.
 
-In the X722 devices, Force-WriteBack implies WriteBack-On-ITR but
-without the interrupt, which put the driver into a missed
-interrupt scenario and a potential tx-timeout report.
-
-With this patch, we break the two functions out, and call the
-appropriate ones at the right place. This will avoid creating missed
-interrupt like scenarios for X722 devices.
-
-Also update copyright year in file headers.
-
-Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-Change-ID: Iacbde39f95f332f82be8736864675052c3583a40
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-ID: Ie338010c016f93e9faa2002c07c90b15134b7477
 ---
-Testing Hints: Stress test X722 devices for tx_timeout, see that the
-tx_lost_interrupt stat count goes down with the patch applied.
+Testing Hints: No functional change, but the code is more correct.
+Make sure it compiles and passes traffic properly.
 
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 57 ++++++++++++++----------
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 63 +++++++++++++++------------
- drivers/net/ethernet/intel/i40evf/i40e_txrx.h |  3 +-
- 3 files changed, 72 insertions(+), 51 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 5 +++--
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 5 +++--
+ 2 files changed, 6 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 214effc..85561f6 100644
+index 1ce572e..37104bf 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1,7 +1,7 @@
- /*******************************************************************************
-  *
-  * Intel Ethernet Controller XL710 Family Linux Driver
-- * Copyright(c) 2013 - 2014 Intel Corporation.
-+ * Copyright(c) 2013 - 2016 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-@@ -774,37 +774,48 @@ static bool i40e_clean_tx_irq(struct i40e_ring *tx_ring, int budget)
- }
- 
- /**
-- * i40e_force_wb - Arm hardware to do a wb on noncache aligned descriptors
-+ * i40e_enable_wb_on_itr - Arm hardware to do a wb, interrupts are not enabled
-  * @vsi: the VSI we care about
-- * @q_vector: the vector  on which to force writeback
-+ * @q_vector: the vector on which to enable writeback
-  *
-  **/
--void i40e_force_wb(struct i40e_vsi *vsi, struct i40e_q_vector *q_vector)
-+static void i40e_enable_wb_on_itr(struct i40e_vsi *vsi,
-+				  struct i40e_q_vector *q_vector)
- {
- 	u16 flags = q_vector->tx.ring[0].flags;
-+	u32 val;
- 
--	if (flags & I40E_TXR_FLAGS_WB_ON_ITR) {
--		u32 val;
-+	if (!(flags & I40E_TXR_FLAGS_WB_ON_ITR))
-+		return;
- 
--		if (q_vector->arm_wb_state)
--			return;
-+	if (q_vector->arm_wb_state)
-+		return;
- 
--		if (vsi->back->flags & I40E_FLAG_MSIX_ENABLED) {
--			val = I40E_PFINT_DYN_CTLN_WB_ON_ITR_MASK |
--			      I40E_PFINT_DYN_CTLN_ITR_INDX_MASK; /* set noitr */
-+	if (vsi->back->flags & I40E_FLAG_MSIX_ENABLED) {
-+		val = I40E_PFINT_DYN_CTLN_WB_ON_ITR_MASK |
-+		      I40E_PFINT_DYN_CTLN_ITR_INDX_MASK; /* set noitr */
- 
--			wr32(&vsi->back->hw,
--			     I40E_PFINT_DYN_CTLN(q_vector->v_idx +
--						 vsi->base_vector - 1),
--			     val);
--		} else {
--			val = I40E_PFINT_DYN_CTL0_WB_ON_ITR_MASK |
--			      I40E_PFINT_DYN_CTL0_ITR_INDX_MASK; /* set noitr */
-+		wr32(&vsi->back->hw,
-+		     I40E_PFINT_DYN_CTLN(q_vector->v_idx + vsi->base_vector - 1),
-+		     val);
-+	} else {
-+		val = I40E_PFINT_DYN_CTL0_WB_ON_ITR_MASK |
-+		      I40E_PFINT_DYN_CTL0_ITR_INDX_MASK; /* set noitr */
- 
--			wr32(&vsi->back->hw, I40E_PFINT_DYN_CTL0, val);
--		}
--		q_vector->arm_wb_state = true;
--	} else if (vsi->back->flags & I40E_FLAG_MSIX_ENABLED) {
-+		wr32(&vsi->back->hw, I40E_PFINT_DYN_CTL0, val);
-+	}
-+	q_vector->arm_wb_state = true;
-+}
-+
-+/**
-+ * i40e_force_wb - Issue SW Interrupt so HW does a wb
-+ * @vsi: the VSI we care about
-+ * @q_vector: the vector  on which to force writeback
-+ *
-+ **/
-+void i40e_force_wb(struct i40e_vsi *vsi, struct i40e_q_vector *q_vector)
-+{
-+	if (vsi->back->flags & I40E_FLAG_MSIX_ENABLED) {
- 		u32 val = I40E_PFINT_DYN_CTLN_INTENA_MASK |
- 			  I40E_PFINT_DYN_CTLN_ITR_INDX_MASK | /* set noitr */
- 			  I40E_PFINT_DYN_CTLN_SWINT_TRIG_MASK |
-@@ -1946,7 +1957,7 @@ int i40e_napi_poll(struct napi_struct *napi, int budget)
- tx_only:
- 		if (arm_wb) {
- 			q_vector->tx.ring[0].tx_stats.tx_force_wb++;
--			i40e_force_wb(vsi, q_vector);
-+			i40e_enable_wb_on_itr(vsi, q_vector);
- 		}
- 		return budget;
+@@ -1996,7 +1996,8 @@ int i40e_napi_poll(struct napi_struct *napi, int budget)
+ 	 * budget and be more aggressive about cleaning up the Tx descriptors.
+ 	 */
+ 	i40e_for_each_ring(ring, q_vector->tx) {
+-		clean_complete &= i40e_clean_tx_irq(ring, vsi->work_limit);
++		clean_complete = clean_complete &&
++				 i40e_clean_tx_irq(ring, vsi->work_limit);
+ 		arm_wb = arm_wb || ring->arm_wb;
+ 		ring->arm_wb = false;
  	}
+@@ -2020,7 +2021,7 @@ int i40e_napi_poll(struct napi_struct *napi, int budget)
+ 
+ 		work_done += cleaned;
+ 		/* if we didn't clean as many as budgeted, we must be done */
+-		clean_complete &= (budget_per_ring != cleaned);
++		clean_complete = clean_complete && (budget_per_ring > cleaned);
+ 	}
+ 
+ 	/* If work not completed, return budget and polling will return */
 diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index 722ed25..6a0d190 100644
+index f971018..620cb97 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
 +++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -1,7 +1,7 @@
- /*******************************************************************************
-  *
-  * Intel Ethernet Controller XL710 Family Linux Virtual Function Driver
-- * Copyright(c) 2013 - 2014 Intel Corporation.
-+ * Copyright(c) 2013 - 2016 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-@@ -292,40 +292,49 @@ static bool i40e_clean_tx_irq(struct i40e_ring *tx_ring, int budget)
- }
- 
- /**
-- * i40evf_force_wb -Arm hardware to do a wb on noncache aligned descriptors
-+ * i40evf_enable_wb_on_itr - Arm hardware to do a wb, interrupts are not enabled
-  * @vsi: the VSI we care about
-- * @q_vector: the vector  on which to force writeback
-+ * @q_vector: the vector on which to enable writeback
-  *
-  **/
--static void i40evf_force_wb(struct i40e_vsi *vsi, struct i40e_q_vector *q_vector)
-+static void i40e_enable_wb_on_itr(struct i40e_vsi *vsi,
-+				  struct i40e_q_vector *q_vector)
- {
- 	u16 flags = q_vector->tx.ring[0].flags;
-+	u32 val;
- 
--	if (flags & I40E_TXR_FLAGS_WB_ON_ITR) {
--		u32 val;
-+	if (!(flags & I40E_TXR_FLAGS_WB_ON_ITR))
-+		return;
- 
--		if (q_vector->arm_wb_state)
--			return;
-+	if (q_vector->arm_wb_state)
-+		return;
- 
--		val = I40E_VFINT_DYN_CTLN1_WB_ON_ITR_MASK |
--		      I40E_VFINT_DYN_CTLN1_ITR_INDX_MASK; /* set noitr */
-+	val = I40E_VFINT_DYN_CTLN1_WB_ON_ITR_MASK |
-+	      I40E_VFINT_DYN_CTLN1_ITR_INDX_MASK; /* set noitr */
- 
--		wr32(&vsi->back->hw,
--		     I40E_VFINT_DYN_CTLN1(q_vector->v_idx +
--					  vsi->base_vector - 1),
--		     val);
--		q_vector->arm_wb_state = true;
--	} else {
--		u32 val = I40E_VFINT_DYN_CTLN1_INTENA_MASK |
--			  I40E_VFINT_DYN_CTLN1_ITR_INDX_MASK | /* set noitr */
--			  I40E_VFINT_DYN_CTLN1_SWINT_TRIG_MASK |
--			  I40E_VFINT_DYN_CTLN1_SW_ITR_INDX_ENA_MASK;
--			  /* allow 00 to be written to the index */
--
--		wr32(&vsi->back->hw,
--		     I40E_VFINT_DYN_CTLN1(q_vector->v_idx +
--					  vsi->base_vector - 1), val);
--	}
-+	wr32(&vsi->back->hw,
-+	     I40E_VFINT_DYN_CTLN1(q_vector->v_idx +
-+				  vsi->base_vector - 1), val);
-+	q_vector->arm_wb_state = true;
-+}
-+
-+/**
-+ * i40evf_force_wb - Issue SW Interrupt so HW does a wb
-+ * @vsi: the VSI we care about
-+ * @q_vector: the vector  on which to force writeback
-+ *
-+ **/
-+void i40evf_force_wb(struct i40e_vsi *vsi, struct i40e_q_vector *q_vector)
-+{
-+	u32 val = I40E_VFINT_DYN_CTLN1_INTENA_MASK |
-+		  I40E_VFINT_DYN_CTLN1_ITR_INDX_MASK | /* set noitr */
-+		  I40E_VFINT_DYN_CTLN1_SWINT_TRIG_MASK |
-+		  I40E_VFINT_DYN_CTLN1_SW_ITR_INDX_ENA_MASK
-+		  /* allow 00 to be written to the index */;
-+
-+	wr32(&vsi->back->hw,
-+	     I40E_VFINT_DYN_CTLN1(q_vector->v_idx + vsi->base_vector - 1),
-+	     val);
- }
- 
- /**
-@@ -1384,7 +1393,7 @@ int i40evf_napi_poll(struct napi_struct *napi, int budget)
- tx_only:
- 		if (arm_wb) {
- 			q_vector->tx.ring[0].tx_stats.tx_force_wb++;
--			i40evf_force_wb(vsi, q_vector);
-+			i40e_enable_wb_on_itr(vsi, q_vector);
- 		}
- 		return budget;
+@@ -1432,7 +1432,8 @@ int i40evf_napi_poll(struct napi_struct *napi, int budget)
+ 	 * budget and be more aggressive about cleaning up the Tx descriptors.
+ 	 */
+ 	i40e_for_each_ring(ring, q_vector->tx) {
+-		clean_complete &= i40e_clean_tx_irq(ring, vsi->work_limit);
++		clean_complete = clean_complete &&
++				 i40e_clean_tx_irq(ring, vsi->work_limit);
+ 		arm_wb = arm_wb || ring->arm_wb;
+ 		ring->arm_wb = false;
  	}
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-index d7950b1..a565e6f 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-@@ -1,7 +1,7 @@
- /*******************************************************************************
-  *
-  * Intel Ethernet Controller XL710 Family Linux Virtual Function Driver
-- * Copyright(c) 2013 - 2014 Intel Corporation.
-+ * Copyright(c) 2013 - 2016 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-@@ -324,6 +324,7 @@ int i40evf_setup_rx_descriptors(struct i40e_ring *rx_ring);
- void i40evf_free_tx_resources(struct i40e_ring *tx_ring);
- void i40evf_free_rx_resources(struct i40e_ring *rx_ring);
- int i40evf_napi_poll(struct napi_struct *napi, int budget);
-+void i40evf_force_wb(struct i40e_vsi *vsi, struct i40e_q_vector *q_vector);
- u32 i40evf_get_tx_pending(struct i40e_ring *ring);
+@@ -1456,7 +1457,7 @@ int i40evf_napi_poll(struct napi_struct *napi, int budget)
  
- /**
+ 		work_done += cleaned;
+ 		/* if we didn't clean as many as budgeted, we must be done */
+-		clean_complete &= (budget_per_ring != cleaned);
++		clean_complete = clean_complete && (budget_per_ring > cleaned);
+ 	}
+ 
+ 	/* If work not completed, return budget and polling will return */
 -- 
 2.1.0
 
