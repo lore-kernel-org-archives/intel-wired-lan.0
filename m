@@ -1,10 +1,10 @@
 From: Joshua Hay <joshua.a.hay@intel.com>
-Date: Wed, 13 Jan 2016 16:51:49 -0800
-Subject: [Intel-wired-lan] [v2 next PATCH S27 12/15] i40e/i40evf: use pages
-	correctly in rx
+Date: Wed, 13 Jan 2016 16:51:51 -0800
+Subject: [Intel-wired-lan] [v2 next PATCH S27 14/15] i40e: properly show
+	packet split status in debugfs
 In-Reply-To: <1452732712-12248-1-git-send-email-joshua.a.hay@intel.com>
 References: <1452732712-12248-1-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <1452732712-12248-13-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <1452732712-12248-15-git-send-email-joshua.a.hay@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,481 +13,69 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Mitch Williams <mitch.a.williams@intel.com>
 
-Refactor the packet split rx code to properly use half-pages for
-receives. The previous code was doing way more mapping and unmapping
-than it needed to, and wasn't properly using half-pages.
-
-Increment the page use count each time we give a half-page to an skb,
-knowing that the stack will probably process and release the page before
-we need it again. Only free and reallocate pages if the count shows that
-both half-pages are in use. Add counters to track reallocations and page
-reuse.
+Get rid of the unused hsplit field in the ring struct and use the
+existing macro to detect packet split enablement. This allows debugfs
+dumps of the VSI to properly show which rx routine is in use.
 
 Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Change-ID: I534b299196036b64be82b4861a0a4036310a8f22
+Change-ID: Ic4e9589e6a788ab196ed0850703f704e30c03781
 ---
-Testing Hints: Hammer the receive path and make
-sure it a) works and b) doesn't leak memory.
+Testing Hints: Enable/disable  packet split and
+dump the VSI through debugfs. Note the output.
 
- drivers/net/ethernet/intel/i40e/i40e_debugfs.c |   5 ++
- drivers/net/ethernet/intel/i40e/i40e_txrx.c    | 118 ++++++++++++++++---------
- drivers/net/ethernet/intel/i40e/i40e_txrx.h    |   2 +
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c  | 118 ++++++++++++++++---------
- drivers/net/ethernet/intel/i40evf/i40e_txrx.h  |   2 +
- 5 files changed, 159 insertions(+), 86 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 6 +++---
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h    | 1 -
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.h  | 1 -
+ 3 files changed, 3 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-index fcae3c8..bdac691 100644
+index bdac691..34da53b 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-@@ -536,6 +536,11 @@ static void i40e_dbg_dump_vsi_seid(struct i40e_pf *pf, int seid)
- 			 rx_ring->rx_stats.alloc_page_failed,
- 			 rx_ring->rx_stats.alloc_buff_failed);
+@@ -521,7 +521,7 @@ static void i40e_dbg_dump_vsi_seid(struct i40e_pf *pf, int seid)
+ 			 rx_ring->dtype);
  		dev_info(&pf->pdev->dev,
-+			 "    rx_rings[%i]: rx_stats: realloc_count = %lld, page_reuse_count = %lld\n",
+ 			 "    rx_rings[%i]: hsplit = %d, next_to_use = %d, next_to_clean = %d, ring_active = %i\n",
+-			 i, rx_ring->hsplit,
++			 i, ring_is_ps_enabled(rx_ring),
+ 			 rx_ring->next_to_use,
+ 			 rx_ring->next_to_clean,
+ 			 rx_ring->ring_active);
+@@ -572,8 +572,8 @@ static void i40e_dbg_dump_vsi_seid(struct i40e_pf *pf, int seid)
+ 			 "    tx_rings[%i]: dtype = %d\n",
+ 			 i, tx_ring->dtype);
+ 		dev_info(&pf->pdev->dev,
+-			 "    tx_rings[%i]: hsplit = %d, next_to_use = %d, next_to_clean = %d, ring_active = %i\n",
+-			 i, tx_ring->hsplit,
++			 "    tx_rings[%i]: next_to_use = %d, next_to_clean = %d, ring_active = %i\n",
 +			 i,
-+			 rx_ring->rx_stats.realloc_count,
-+			 rx_ring->rx_stats.page_reuse_count);
-+		dev_info(&pf->pdev->dev,
- 			 "    rx_rings[%i]: size = %i, dma = 0x%08lx\n",
- 			 i, rx_ring->size,
- 			 (unsigned long int)rx_ring->dma);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 9efd988..1ce572e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1060,7 +1060,7 @@ void i40e_clean_rx_ring(struct i40e_ring *rx_ring)
- 			if (rx_bi->page_dma) {
- 				dma_unmap_page(dev,
- 					       rx_bi->page_dma,
--					       PAGE_SIZE / 2,
-+					       PAGE_SIZE,
- 					       DMA_FROM_DEVICE);
- 				rx_bi->page_dma = 0;
- 			}
-@@ -1203,6 +1203,7 @@ bool i40e_alloc_rx_buffers_ps(struct i40e_ring *rx_ring, u16 cleaned_count)
- 	u16 i = rx_ring->next_to_use;
- 	union i40e_rx_desc *rx_desc;
- 	struct i40e_rx_buffer *bi;
-+	const int current_node = numa_node_id();
- 
- 	/* do nothing if no valid netdev defined */
- 	if (!rx_ring->netdev || !cleaned_count)
-@@ -1214,39 +1215,50 @@ bool i40e_alloc_rx_buffers_ps(struct i40e_ring *rx_ring, u16 cleaned_count)
- 
- 		if (bi->skb) /* desc is in use */
- 			goto no_buffers;
-+
-+	/* If we've been moved to a different NUMA node, release the
-+	 * page so we can get a new one on the current node.
-+	 */
-+		if (bi->page &&  page_to_nid(bi->page) != current_node) {
-+			dma_unmap_page(rx_ring->dev,
-+				       bi->page_dma,
-+				       PAGE_SIZE,
-+				       DMA_FROM_DEVICE);
-+			__free_page(bi->page);
-+			bi->page = NULL;
-+			bi->page_dma = 0;
-+			rx_ring->rx_stats.realloc_count++;
-+		} else if (bi->page) {
-+			rx_ring->rx_stats.page_reuse_count++;
-+		}
-+
- 		if (!bi->page) {
- 			bi->page = alloc_page(GFP_ATOMIC);
- 			if (!bi->page) {
- 				rx_ring->rx_stats.alloc_page_failed++;
- 				goto no_buffers;
- 			}
--		}
--
--		if (!bi->page_dma) {
--			/* use a half page if we're re-using */
--			bi->page_offset ^= PAGE_SIZE / 2;
- 			bi->page_dma = dma_map_page(rx_ring->dev,
- 						    bi->page,
--						    bi->page_offset,
--						    PAGE_SIZE / 2,
-+						    0,
-+						    PAGE_SIZE,
- 						    DMA_FROM_DEVICE);
--			if (dma_mapping_error(rx_ring->dev,
--					      bi->page_dma)) {
-+			if (dma_mapping_error(rx_ring->dev, bi->page_dma)) {
- 				rx_ring->rx_stats.alloc_page_failed++;
-+				__free_page(bi->page);
-+				bi->page = NULL;
- 				bi->page_dma = 0;
-+				bi->page_offset = 0;
- 				goto no_buffers;
- 			}
-+			bi->page_offset = 0;
- 		}
- 
--		dma_sync_single_range_for_device(rx_ring->dev,
--						 rx_ring->rx_bi[0].dma,
--						 i * rx_ring->rx_hdr_len,
--						 rx_ring->rx_hdr_len,
--						 DMA_FROM_DEVICE);
- 		/* Refresh the desc even if buffer_addrs didn't change
- 		 * because each write-back erases this info.
- 		 */
--		rx_desc->read.pkt_addr = cpu_to_le64(bi->page_dma);
-+		rx_desc->read.pkt_addr =
-+				cpu_to_le64(bi->page_dma + bi->page_offset);
- 		rx_desc->read.hdr_addr = cpu_to_le64(bi->dma);
- 		i++;
- 		if (i == rx_ring->count)
-@@ -1527,7 +1539,6 @@ static int i40e_clean_rx_irq_ps(struct i40e_ring *rx_ring, const int budget)
- 	unsigned int total_rx_bytes = 0, total_rx_packets = 0;
- 	u16 rx_packet_len, rx_header_len, rx_sph, rx_hbo;
- 	u16 cleaned_count = I40E_DESC_UNUSED(rx_ring);
--	const int current_node = numa_mem_id();
- 	struct i40e_vsi *vsi = rx_ring->vsi;
- 	u16 i = rx_ring->next_to_clean;
- 	union i40e_rx_desc *rx_desc;
-@@ -1535,6 +1546,7 @@ static int i40e_clean_rx_irq_ps(struct i40e_ring *rx_ring, const int budget)
- 	bool failure = false;
- 	u8 rx_ptype;
- 	u64 qword;
-+	u32 copysize;
- 
- 	if (budget <= 0)
- 		return 0;
-@@ -1565,6 +1577,12 @@ static int i40e_clean_rx_irq_ps(struct i40e_ring *rx_ring, const int budget)
- 		 * DD bit is set.
- 		 */
- 		dma_rmb();
-+		/* sync header buffer for reading */
-+		dma_sync_single_range_for_cpu(rx_ring->dev,
-+					      rx_ring->rx_bi[0].dma,
-+					      i * rx_ring->rx_hdr_len,
-+					      rx_ring->rx_hdr_len,
-+					      DMA_FROM_DEVICE);
- 		if (i40e_rx_is_programming_status(qword)) {
- 			i40e_clean_programming_status(rx_ring, rx_desc);
- 			I40E_RX_INCREMENT(rx_ring, i);
-@@ -1606,9 +1624,16 @@ static int i40e_clean_rx_irq_ps(struct i40e_ring *rx_ring, const int budget)
- 
- 		rx_ptype = (qword & I40E_RXD_QW1_PTYPE_MASK) >>
- 			   I40E_RXD_QW1_PTYPE_SHIFT;
--		prefetch(rx_bi->page);
-+		/* sync half-page for reading */
-+		dma_sync_single_range_for_cpu(rx_ring->dev,
-+					      rx_bi->page_dma,
-+					      rx_bi->page_offset,
-+					      PAGE_SIZE / 2,
-+					      DMA_FROM_DEVICE);
-+		prefetch(page_address(rx_bi->page) + rx_bi->page_offset);
- 		rx_bi->skb = NULL;
- 		cleaned_count++;
-+		copysize = 0;
- 		if (rx_hbo || rx_sph) {
- 			int len;
- 
-@@ -1619,38 +1644,45 @@ static int i40e_clean_rx_irq_ps(struct i40e_ring *rx_ring, const int budget)
- 			memcpy(__skb_put(skb, len), rx_bi->hdr_buf, len);
- 		} else if (skb->len == 0) {
- 			int len;
-+			unsigned char *va = page_address(rx_bi->page) +
-+					    rx_bi->page_offset;
- 
--			len = (rx_packet_len > skb_headlen(skb) ?
--				skb_headlen(skb) : rx_packet_len);
--			memcpy(__skb_put(skb, len),
--			       rx_bi->page + rx_bi->page_offset,
--			       len);
--			rx_bi->page_offset += len;
-+			len = min(rx_packet_len, rx_ring->rx_hdr_len);
-+			memcpy(__skb_put(skb, len), va, len);
-+			copysize = len;
- 			rx_packet_len -= len;
- 		}
--
- 		/* Get the rest of the data if this was a header split */
- 		if (rx_packet_len) {
--			skb_fill_page_desc(skb, skb_shinfo(skb)->nr_frags,
--					   rx_bi->page,
--					   rx_bi->page_offset,
--					   rx_packet_len);
--
--			skb->len += rx_packet_len;
--			skb->data_len += rx_packet_len;
--			skb->truesize += rx_packet_len;
--
--			if ((page_count(rx_bi->page) == 1) &&
--			    (page_to_nid(rx_bi->page) == current_node))
--				get_page(rx_bi->page);
--			else
-+			skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags,
-+					rx_bi->page,
-+					rx_bi->page_offset + copysize,
-+					rx_packet_len, I40E_RXBUFFER_2048);
-+
-+			get_page(rx_bi->page);
-+			/* switch to the other half-page here; the allocation
-+			 * code programs the right addr into HW. If we haven't
-+			 * used this half-page, the address won't be changed,
-+			 * and HW can just use it next time through.
-+			 */
-+			rx_bi->page_offset ^= PAGE_SIZE / 2;
-+			/* If the page count is more than 2, then both halves
-+			 * of the page are used and we need to free it. Do it
-+			 * here instead of in the alloc code. Otherwise one
-+			 * of the half-pages might be released between now and
-+			 * then, and we wouldn't know which one to use.
-+			 */
-+			if (page_count(rx_bi->page) > 2) {
-+				dma_unmap_page(rx_ring->dev,
-+					       rx_bi->page_dma,
-+					       PAGE_SIZE,
-+					       DMA_FROM_DEVICE);
-+				__free_page(rx_bi->page);
- 				rx_bi->page = NULL;
-+				rx_bi->page_dma = 0;
-+				rx_ring->rx_stats.realloc_count++;
-+			}
- 
--			dma_unmap_page(rx_ring->dev,
--				       rx_bi->page_dma,
--				       PAGE_SIZE / 2,
--				       DMA_FROM_DEVICE);
--			rx_bi->page_dma = 0;
- 		}
- 		I40E_RX_INCREMENT(rx_ring, i);
- 
+ 			 tx_ring->next_to_use,
+ 			 tx_ring->next_to_clean,
+ 			 tx_ring->ring_active);
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-index 2e52889..e538b40 100644
+index e538b40..fd72182 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-@@ -209,6 +209,8 @@ struct i40e_rx_queue_stats {
- 	u64 non_eop_descs;
- 	u64 alloc_page_failed;
- 	u64 alloc_buff_failed;
-+	u64 page_reuse_count;
-+	u64 realloc_count;
- };
- 
- enum i40e_ring_state_t {
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index d3ec3b2..f971018 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -532,7 +532,7 @@ void i40evf_clean_rx_ring(struct i40e_ring *rx_ring)
- 			if (rx_bi->page_dma) {
- 				dma_unmap_page(dev,
- 					       rx_bi->page_dma,
--					       PAGE_SIZE / 2,
-+					       PAGE_SIZE,
- 					       DMA_FROM_DEVICE);
- 				rx_bi->page_dma = 0;
- 			}
-@@ -675,6 +675,7 @@ bool i40evf_alloc_rx_buffers_ps(struct i40e_ring *rx_ring, u16 cleaned_count)
- 	u16 i = rx_ring->next_to_use;
- 	union i40e_rx_desc *rx_desc;
- 	struct i40e_rx_buffer *bi;
-+	const int current_node = numa_node_id();
- 
- 	/* do nothing if no valid netdev defined */
- 	if (!rx_ring->netdev || !cleaned_count)
-@@ -686,39 +687,50 @@ bool i40evf_alloc_rx_buffers_ps(struct i40e_ring *rx_ring, u16 cleaned_count)
- 
- 		if (bi->skb) /* desc is in use */
- 			goto no_buffers;
-+
-+	/* If we've been moved to a different NUMA node, release the
-+	 * page so we can get a new one on the current node.
-+	 */
-+		if (bi->page &&  page_to_nid(bi->page) != current_node) {
-+			dma_unmap_page(rx_ring->dev,
-+				       bi->page_dma,
-+				       PAGE_SIZE,
-+				       DMA_FROM_DEVICE);
-+			__free_page(bi->page);
-+			bi->page = NULL;
-+			bi->page_dma = 0;
-+			rx_ring->rx_stats.realloc_count++;
-+		} else if (bi->page) {
-+			rx_ring->rx_stats.page_reuse_count++;
-+		}
-+
- 		if (!bi->page) {
- 			bi->page = alloc_page(GFP_ATOMIC);
- 			if (!bi->page) {
- 				rx_ring->rx_stats.alloc_page_failed++;
- 				goto no_buffers;
- 			}
--		}
--
--		if (!bi->page_dma) {
--			/* use a half page if we're re-using */
--			bi->page_offset ^= PAGE_SIZE / 2;
- 			bi->page_dma = dma_map_page(rx_ring->dev,
- 						    bi->page,
--						    bi->page_offset,
--						    PAGE_SIZE / 2,
-+						    0,
-+						    PAGE_SIZE,
- 						    DMA_FROM_DEVICE);
--			if (dma_mapping_error(rx_ring->dev,
--					      bi->page_dma)) {
-+			if (dma_mapping_error(rx_ring->dev, bi->page_dma)) {
- 				rx_ring->rx_stats.alloc_page_failed++;
-+				__free_page(bi->page);
-+				bi->page = NULL;
- 				bi->page_dma = 0;
-+				bi->page_offset = 0;
- 				goto no_buffers;
- 			}
-+			bi->page_offset = 0;
- 		}
- 
--		dma_sync_single_range_for_device(rx_ring->dev,
--						 rx_ring->rx_bi[0].dma,
--						 i * rx_ring->rx_hdr_len,
--						 rx_ring->rx_hdr_len,
--						 DMA_FROM_DEVICE);
- 		/* Refresh the desc even if buffer_addrs didn't change
- 		 * because each write-back erases this info.
- 		 */
--		rx_desc->read.pkt_addr = cpu_to_le64(bi->page_dma);
-+		rx_desc->read.pkt_addr =
-+				cpu_to_le64(bi->page_dma + bi->page_offset);
- 		rx_desc->read.hdr_addr = cpu_to_le64(bi->dma);
- 		i++;
- 		if (i == rx_ring->count)
-@@ -998,7 +1010,6 @@ static int i40e_clean_rx_irq_ps(struct i40e_ring *rx_ring, const int budget)
- 	unsigned int total_rx_bytes = 0, total_rx_packets = 0;
- 	u16 rx_packet_len, rx_header_len, rx_sph, rx_hbo;
- 	u16 cleaned_count = I40E_DESC_UNUSED(rx_ring);
--	const int current_node = numa_mem_id();
- 	struct i40e_vsi *vsi = rx_ring->vsi;
- 	u16 i = rx_ring->next_to_clean;
- 	union i40e_rx_desc *rx_desc;
-@@ -1006,6 +1017,7 @@ static int i40e_clean_rx_irq_ps(struct i40e_ring *rx_ring, const int budget)
- 	bool failure = false;
- 	u8 rx_ptype;
- 	u64 qword;
-+	u32 copysize;
- 
- 	do {
- 		struct i40e_rx_buffer *rx_bi;
-@@ -1033,6 +1045,12 @@ static int i40e_clean_rx_irq_ps(struct i40e_ring *rx_ring, const int budget)
- 		 * DD bit is set.
- 		 */
- 		dma_rmb();
-+		/* sync header buffer for reading */
-+		dma_sync_single_range_for_cpu(rx_ring->dev,
-+					      rx_ring->rx_bi[0].dma,
-+					      i * rx_ring->rx_hdr_len,
-+					      rx_ring->rx_hdr_len,
-+					      DMA_FROM_DEVICE);
- 		rx_bi = &rx_ring->rx_bi[i];
- 		skb = rx_bi->skb;
- 		if (likely(!skb)) {
-@@ -1069,9 +1087,16 @@ static int i40e_clean_rx_irq_ps(struct i40e_ring *rx_ring, const int budget)
- 
- 		rx_ptype = (qword & I40E_RXD_QW1_PTYPE_MASK) >>
- 			   I40E_RXD_QW1_PTYPE_SHIFT;
--		prefetch(rx_bi->page);
-+		/* sync half-page for reading */
-+		dma_sync_single_range_for_cpu(rx_ring->dev,
-+					      rx_bi->page_dma,
-+					      rx_bi->page_offset,
-+					      PAGE_SIZE / 2,
-+					      DMA_FROM_DEVICE);
-+		prefetch(page_address(rx_bi->page) + rx_bi->page_offset);
- 		rx_bi->skb = NULL;
- 		cleaned_count++;
-+		copysize = 0;
- 		if (rx_hbo || rx_sph) {
- 			int len;
- 
-@@ -1082,38 +1107,45 @@ static int i40e_clean_rx_irq_ps(struct i40e_ring *rx_ring, const int budget)
- 			memcpy(__skb_put(skb, len), rx_bi->hdr_buf, len);
- 		} else if (skb->len == 0) {
- 			int len;
-+			unsigned char *va = page_address(rx_bi->page) +
-+					    rx_bi->page_offset;
- 
--			len = (rx_packet_len > skb_headlen(skb) ?
--				skb_headlen(skb) : rx_packet_len);
--			memcpy(__skb_put(skb, len),
--			       rx_bi->page + rx_bi->page_offset,
--			       len);
--			rx_bi->page_offset += len;
-+			len = min(rx_packet_len, rx_ring->rx_hdr_len);
-+			memcpy(__skb_put(skb, len), va, len);
-+			copysize = len;
- 			rx_packet_len -= len;
- 		}
--
- 		/* Get the rest of the data if this was a header split */
- 		if (rx_packet_len) {
--			skb_fill_page_desc(skb, skb_shinfo(skb)->nr_frags,
--					   rx_bi->page,
--					   rx_bi->page_offset,
--					   rx_packet_len);
--
--			skb->len += rx_packet_len;
--			skb->data_len += rx_packet_len;
--			skb->truesize += rx_packet_len;
--
--			if ((page_count(rx_bi->page) == 1) &&
--			    (page_to_nid(rx_bi->page) == current_node))
--				get_page(rx_bi->page);
--			else
-+			skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags,
-+					rx_bi->page,
-+					rx_bi->page_offset + copysize,
-+					rx_packet_len, I40E_RXBUFFER_2048);
-+
-+			get_page(rx_bi->page);
-+			/* switch to the other half-page here; the allocation
-+			 * code programs the right addr into HW. If we haven't
-+			 * used this half-page, the address won't be changed,
-+			 * and HW can just use it next time through.
-+			 */
-+			rx_bi->page_offset ^= PAGE_SIZE / 2;
-+			/* If the page count is more than 2, then both halves
-+			 * of the page are used and we need to free it. Do it
-+			 * here instead of in the alloc code. Otherwise one
-+			 * of the half-pages might be released between now and
-+			 * then, and we wouldn't know which one to use.
-+			 */
-+			if (page_count(rx_bi->page) > 2) {
-+				dma_unmap_page(rx_ring->dev,
-+					       rx_bi->page_dma,
-+					       PAGE_SIZE,
-+					       DMA_FROM_DEVICE);
-+				__free_page(rx_bi->page);
- 				rx_bi->page = NULL;
-+				rx_bi->page_dma = 0;
-+				rx_ring->rx_stats.realloc_count++;
-+			}
- 
--			dma_unmap_page(rx_ring->dev,
--				       rx_bi->page_dma,
--				       PAGE_SIZE / 2,
--				       DMA_FROM_DEVICE);
--			rx_bi->page_dma = 0;
- 		}
- 		I40E_RX_INCREMENT(rx_ring, i);
- 
+@@ -256,7 +256,6 @@ struct i40e_ring {
+ #define I40E_RX_DTYPE_NO_SPLIT      0
+ #define I40E_RX_DTYPE_HEADER_SPLIT  1
+ #define I40E_RX_DTYPE_SPLIT_ALWAYS  2
+-	u8  hsplit;
+ #define I40E_RX_SPLIT_L2      0x1
+ #define I40E_RX_SPLIT_IP      0x2
+ #define I40E_RX_SPLIT_TCP_UDP 0x4
 diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-index 1438017..595cd8b 100644
+index 595cd8b..062bd0c 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
 +++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-@@ -208,6 +208,8 @@ struct i40e_rx_queue_stats {
- 	u64 non_eop_descs;
- 	u64 alloc_page_failed;
- 	u64 alloc_buff_failed;
-+	u64 page_reuse_count;
-+	u64 realloc_count;
- };
- 
- enum i40e_ring_state_t {
+@@ -255,7 +255,6 @@ struct i40e_ring {
+ #define I40E_RX_DTYPE_NO_SPLIT      0
+ #define I40E_RX_DTYPE_HEADER_SPLIT  1
+ #define I40E_RX_DTYPE_SPLIT_ALWAYS  2
+-	u8  hsplit;
+ #define I40E_RX_SPLIT_L2      0x1
+ #define I40E_RX_SPLIT_IP      0x2
+ #define I40E_RX_SPLIT_TCP_UDP 0x4
 -- 
 2.1.0
 
