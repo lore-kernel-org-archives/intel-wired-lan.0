@@ -1,41 +1,64 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Thu, 14 Jan 2016 03:46:14 +0000
-Subject: [Intel-wired-lan] [PATCH next-queue 1/3] igb: Enable the
- ethtool	interface fo Rx filter
-In-Reply-To: <DM2PR0401MB0990C5C5A689DC9B0F1E0973ECCC0@DM2PR0401MB0990.namprd04.prod.outlook.com>
-References: <1451456399-13353-1-git-send-email-gangfeng.huang@ni.com>
- <309B89C4C689E141A5FF6A0C5FB2118B81E4D36B@ORSMSX101.amr.corp.intel.com>,
- <DM2PR0401MB09907A74230900BB8820D802ECCA0@DM2PR0401MB0990.namprd04.prod.outlook.com>
- <309B89C4C689E141A5FF6A0C5FB2118B81E4DC10@ORSMSX101.amr.corp.intel.com>,
- <DM2PR0401MB0990C5C5A689DC9B0F1E0973ECCC0@DM2PR0401MB0990.namprd04.prod.outlook.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81E4F1FF@ORSMSX101.amr.corp.intel.com>
+From: John Stultz <john.stultz@linaro.org>
+Date: Thu, 14 Jan 2016 14:00:18 -0800
+Subject: [Intel-wired-lan] [PATCH v6 4/9] Always Running Timer (ART)
+	correlated clocksource
+In-Reply-To: <1452687149-11281-5-git-send-email-christopher.s.hall@intel.com>
+References: <1452687149-11281-1-git-send-email-christopher.s.hall@intel.com>
+ <1452687149-11281-5-git-send-email-christopher.s.hall@intel.com>
+Message-ID: <CALAqxLXaRwbmPLcWgxuDxY6MaQw_65nDzP_ELZ=5GeHm8cgEBw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Gangfeng Huang [gangfeng.huang at ni.com]
-> Sent: Wednesday, January 13, 2016 6:40 PM
-> To: Brown, Aaron F; intel-wired-lan at lists.osuosl.org
-> Cc: Ruhao Gao
-> Subject: RE: [Intel-wired-lan] [PATCH next-queue 1/3] igb: Enable the ethtool   interface fo Rx filter
-> 
-> Hi Brown,
-> 
-> 1. According to datasheet, only i210/i211/350 support Rx queue assignment. In my patch, other adapters will return the error -ENOTSUPP;
+On Wed, Jan 13, 2016 at 4:12 AM, Christopher S. Hall
+<christopher.s.hall@intel.com> wrote:
+> diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+> index c7c4d9c..26dcf63 100644
+> --- a/arch/x86/kernel/tsc.c
+> +++ b/arch/x86/kernel/tsc.c
+> @@ -949,10 +949,36 @@ static struct notifier_block time_cpufreq_notifier_block = {
+>         .notifier_call  = time_cpufreq_notifier
+>  };
+>
+> +#define ART_CPUID_LEAF (0x15)
+> +/* The denominator will never be less that 2 */
+> +#define ART_MIN_DENOMINATOR (2)
+> +
+> +static u32 art_to_tsc_numerator;
+> +static u32 art_to_tsc_denominator;
 
-Thanks for looking that up.  I had pulled down the datasheets to check if something like that was the case but got sidetracked with some other work.
+This is declared in a #ifdef CONFIG_CPU_FREQ
 
-So the patch is returning -ENOTSUPP, but when I run ethtool on the unsupported parts or non existent queues I get  "rmgr: Cannot insert RX class rule: Unknown error 524", do you know how we would go about making that error message a little more meaningful?
 
-> 
-> 2. For I211, it only have 2 HW queues(queue 0 and queue 1), you cannot assign the packets to queue 2.
-> 
-> I211:
-> ethtool -N eth1 flow-type ether proto 0x88F8 action 1
+> @@ -1071,6 +1097,24 @@ int unsynchronized_tsc(void)
+>         return 0;
+>  }
+>
+> +/*
+> + * Convert ART to TSC given numerator/denominator found in detect_art()
+> + */
+> +static u64 convert_art_to_tsc(struct correlated_cs *cs, u64 cycles)
+> +{
+> +       u64 tmp, res;
+> +
+> +       res = (cycles / art_to_tsc_denominator) * art_to_tsc_numerator;
+> +       tmp = (cycles % art_to_tsc_denominator) * art_to_tsc_numerator;
+> +       res += tmp / art_to_tsc_denominator;
 
-Ok, that works, for both this and the VLAN example rule from your other patch.  Again, do you know if we can get the error that comes out of ethtool to be a little more meaningful?  
+Then used outside of that block.
 
-Thanks,
-Aaron
+So this won't build if CPU_FREQ is disabled.
+
+But don't bother to fix that, as I've already done so and I've got a
+bunch of tweaks I'm making to the code (I figured I'd done enough
+nit-picking reviews, and probably should just roll my sleeves up and
+take a swing at how I'd prefer the code look - including Richard's
+suggestions as well).
+
+I'll send you my revisions here shortly and hopefully you can let me
+know if anything goes too far and hopefully do some testing with it.
+
+thanks
+-john
