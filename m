@@ -1,45 +1,42 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Thu, 14 Jan 2016 03:17:56 +0000
-Subject: [Intel-wired-lan] [next PATCH 11/11] igb: Add workaround for
- VLAN tag stripping on 82576
-In-Reply-To: <20160107071143.13648.51160.stgit@localhost.localdomain>
-References: <20160107070850.13648.21033.stgit@localhost.localdomain>,
- <20160107071143.13648.51160.stgit@localhost.localdomain>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81E4F1BE@ORSMSX101.amr.corp.intel.com>
+Date: Thu, 14 Jan 2016 03:22:17 +0000
+Subject: [Intel-wired-lan] [PATCH] igb: add conditions for I210 to
+ generate periodic clock output
+In-Reply-To: <1452497658-20050-1-git-send-email-roland.king.guan.hii@intel.com>
+References: <1452497658-20050-1-git-send-email-roland.king.guan.hii@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81E4F1D6@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [intel-wired-lan-bounces at lists.osuosl.org] on behalf of Alexander Duyck [aduyck at mirantis.com]
-> Sent: Wednesday, January 06, 2016 11:11 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH 11/11] igb: Add workaround for VLAN tag stripping on 82576
+> From: netdev-owner at vger.kernel.org [netdev-owner at vger.kernel.org] on behalf of Roland Hii [roland.king.guan.hii at intel.com]
+> Sent: Sunday, January 10, 2016 11:34 PM
+> To: Kirsher, Jeffrey T
+> Cc: intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; linux-kernel at vger.kernel.org
+> Subject: [PATCH] igb: add conditions for I210 to generate periodic clock output
 > 
-> There was a workaround partially implemented for the 82576 that is needed
-> in order for VLAN tag stripping to function correctly.  The original code
-> had side effects that would make it so the workaround was active on all
-> MACs.  I have updated the code so that the workaround is enabled, but
-> limited to the 82576, or activated if we exceed the available unicast
-> addresses.
+> In general case the maximum supported half cycle time of the synchronized
+> output clock is 70msec. Slower half cycle time than 70msec can be
+> programmed also as long as the output clock is synchronized to whole
+> seconds, useful specifically for generating a 1Hz clock.
 > 
-> The workaround has a side effect of mirroring all of the traffic outgoing
-> from the VFs back to the PF.  As such it is not recommended to use the
-> 82576 in promiscuous mode as it will take a performance hit, though this is
-> now consistent with the performance as seen on the out-of-tree igb driver.
+> Permitted values for the clock half cycle time are: 125,000,000 decimal,
+> 250,000,000 decimal and 500,000,000 decimal (equals to 125msec, 250msec
+> and 500msec respectively).
 > 
-> I also limited the scope of the UTA bits all being set to only when the
-> VMOLR register is enabled.  This should limit the effects of the UTA
-> register so that we don't pick up any excess traffic unless promiscuous mode
-> has been enabled on the PF, whereas before the PF would have ended up in
-> something equivalent to unicast promiscuous mode with VLAN filtering
-> otherwise.
+> Before this patch, only the half cycle time of less than or equal to 70msec
+> uses the I210 clock output function. This patch adds additional conditions
+> when half cycle time is equal to 125msec or 250msec or 500msec to use
+> clock output function.
 > 
-> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+> Under other conditions, interrupt driven target time output events method
+> is still used to generate the desired clock output.
+> 
+> Signed-off-by: Roland Hii <roland.king.guan.hii@intel.com>
 > ---
->  drivers/net/ethernet/intel/igb/e1000_82575.c |    2 ++
->  drivers/net/ethernet/intel/igb/igb_main.c    |   26 ++++++++++++++------------
->  2 files changed, 16 insertions(+), 12 deletions(-)
+>  drivers/net/ethernet/intel/igb/igb_ptp.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
