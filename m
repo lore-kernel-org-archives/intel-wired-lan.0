@@ -1,10 +1,10 @@
 From: Joshua Hay <joshua.a.hay@intel.com>
-Date: Wed, 13 Jan 2016 16:51:48 -0800
-Subject: [Intel-wired-lan] [v2 next PATCH S27 11/15] i40e/i40evf: use
-	__GFP_NOWARN
+Date: Wed, 13 Jan 2016 16:51:47 -0800
+Subject: [Intel-wired-lan] [v2 next PATCH S27 10/15] i40e: dump descriptor
+	indexes in hex
 In-Reply-To: <1452732712-12248-1-git-send-email-joshua.a.hay@intel.com>
 References: <1452732712-12248-1-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <1452732712-12248-12-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <1452732712-12248-11-git-send-email-joshua.a.hay@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,79 +13,82 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-The i40e and i40evf drivers now cleanly handle allocation
-failures and can avoid kernel log spew from the memory allocator
-when allocations fail, so set __GFP_NOWARN on rx buffer alloc.
+The debugging helpers for showing descriptor rings were
+dumping the indexes in decimal and the offsets in hex.
+
+Put everything in hex and at least be consistent.
+
+Also update copyright year in file header.
 
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Change-ID: Ic9e1b83c495e2a3ef6b069ba7fb6e52ce134cd23
+Change-ID: Ia35a21411a2ddb713772dffb4e8718889fcfc895
 ---
-Testing Hints: compile everywhere
+Testing Hints: echo dump desc rx <vsi> 0 > command
 
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 12 ++++++++----
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 12 ++++++++----
- 2 files changed, 16 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 692e723..9efd988 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1292,8 +1292,10 @@ bool i40e_alloc_rx_buffers_1buf(struct i40e_ring *rx_ring, u16 cleaned_count)
- 		skb = bi->skb;
- 
- 		if (!skb) {
--			skb = netdev_alloc_skb_ip_align(rx_ring->netdev,
--							rx_ring->rx_buf_len);
-+			skb = __netdev_alloc_skb_ip_align(rx_ring->netdev,
-+							  rx_ring->rx_buf_len,
-+							  GFP_ATOMIC |
-+							  __GFP_NOWARN);
- 			if (!skb) {
- 				rx_ring->rx_stats.alloc_buff_failed++;
- 				goto no_buffers;
-@@ -1571,8 +1573,10 @@ static int i40e_clean_rx_irq_ps(struct i40e_ring *rx_ring, const int budget)
- 		rx_bi = &rx_ring->rx_bi[i];
- 		skb = rx_bi->skb;
- 		if (likely(!skb)) {
--			skb = netdev_alloc_skb_ip_align(rx_ring->netdev,
--							rx_ring->rx_hdr_len);
-+			skb = __netdev_alloc_skb_ip_align(rx_ring->netdev,
-+							  rx_ring->rx_hdr_len,
-+							  GFP_ATOMIC |
-+							  __GFP_NOWARN);
- 			if (!skb) {
- 				rx_ring->rx_stats.alloc_buff_failed++;
- 				failure = true;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index 0f9442e..d3ec3b2 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -764,8 +764,10 @@ bool i40evf_alloc_rx_buffers_1buf(struct i40e_ring *rx_ring, u16 cleaned_count)
- 		skb = bi->skb;
- 
- 		if (!skb) {
--			skb = netdev_alloc_skb_ip_align(rx_ring->netdev,
--							rx_ring->rx_buf_len);
-+			skb = __netdev_alloc_skb_ip_align(rx_ring->netdev,
-+							  rx_ring->rx_buf_len,
-+							  GFP_ATOMIC |
-+							  __GFP_NOWARN);
- 			if (!skb) {
- 				rx_ring->rx_stats.alloc_buff_failed++;
- 				goto no_buffers;
-@@ -1034,8 +1036,10 @@ static int i40e_clean_rx_irq_ps(struct i40e_ring *rx_ring, const int budget)
- 		rx_bi = &rx_ring->rx_bi[i];
- 		skb = rx_bi->skb;
- 		if (likely(!skb)) {
--			skb = netdev_alloc_skb_ip_align(rx_ring->netdev,
--							rx_ring->rx_hdr_len);
-+			skb = __netdev_alloc_skb_ip_align(rx_ring->netdev,
-+							  rx_ring->rx_hdr_len,
-+							  GFP_ATOMIC |
-+							  __GFP_NOWARN);
- 			if (!skb) {
- 				rx_ring->rx_stats.alloc_buff_failed++;
- 				failure = true;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+index 3948587..fcae3c8 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+@@ -1,7 +1,7 @@
+ /*******************************************************************************
+  *
+  * Intel Ethernet Controller XL710 Family Linux Driver
+- * Copyright(c) 2013 - 2014 Intel Corporation.
++ * Copyright(c) 2013 - 2016 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+@@ -825,20 +825,20 @@ static void i40e_dbg_dump_desc(int cnt, int vsi_seid, int ring_id, int desc_n,
+ 			if (!is_rx_ring) {
+ 				txd = I40E_TX_DESC(ring, i);
+ 				dev_info(&pf->pdev->dev,
+-					 "   d[%03i] = 0x%016llx 0x%016llx\n",
++					 "   d[%03x] = 0x%016llx 0x%016llx\n",
+ 					 i, txd->buffer_addr,
+ 					 txd->cmd_type_offset_bsz);
+ 			} else if (sizeof(union i40e_rx_desc) ==
+ 				   sizeof(union i40e_16byte_rx_desc)) {
+ 				rxd = I40E_RX_DESC(ring, i);
+ 				dev_info(&pf->pdev->dev,
+-					 "   d[%03i] = 0x%016llx 0x%016llx\n",
++					 "   d[%03x] = 0x%016llx 0x%016llx\n",
+ 					 i, rxd->read.pkt_addr,
+ 					 rxd->read.hdr_addr);
+ 			} else {
+ 				rxd = I40E_RX_DESC(ring, i);
+ 				dev_info(&pf->pdev->dev,
+-					 "   d[%03i] = 0x%016llx 0x%016llx 0x%016llx 0x%016llx\n",
++					 "   d[%03x] = 0x%016llx 0x%016llx 0x%016llx 0x%016llx\n",
+ 					 i, rxd->read.pkt_addr,
+ 					 rxd->read.hdr_addr,
+ 					 rxd->read.rsvd1, rxd->read.rsvd2);
+@@ -853,20 +853,20 @@ static void i40e_dbg_dump_desc(int cnt, int vsi_seid, int ring_id, int desc_n,
+ 		if (!is_rx_ring) {
+ 			txd = I40E_TX_DESC(ring, desc_n);
+ 			dev_info(&pf->pdev->dev,
+-				 "vsi = %02i tx ring = %02i d[%03i] = 0x%016llx 0x%016llx\n",
++				 "vsi = %02i tx ring = %02i d[%03x] = 0x%016llx 0x%016llx\n",
+ 				 vsi_seid, ring_id, desc_n,
+ 				 txd->buffer_addr, txd->cmd_type_offset_bsz);
+ 		} else if (sizeof(union i40e_rx_desc) ==
+ 			   sizeof(union i40e_16byte_rx_desc)) {
+ 			rxd = I40E_RX_DESC(ring, desc_n);
+ 			dev_info(&pf->pdev->dev,
+-				 "vsi = %02i rx ring = %02i d[%03i] = 0x%016llx 0x%016llx\n",
++				 "vsi = %02i rx ring = %02i d[%03x] = 0x%016llx 0x%016llx\n",
+ 				 vsi_seid, ring_id, desc_n,
+ 				 rxd->read.pkt_addr, rxd->read.hdr_addr);
+ 		} else {
+ 			rxd = I40E_RX_DESC(ring, desc_n);
+ 			dev_info(&pf->pdev->dev,
+-				 "vsi = %02i rx ring = %02i d[%03i] = 0x%016llx 0x%016llx 0x%016llx 0x%016llx\n",
++				 "vsi = %02i rx ring = %02i d[%03x] = 0x%016llx 0x%016llx 0x%016llx 0x%016llx\n",
+ 				 vsi_seid, ring_id, desc_n,
+ 				 rxd->read.pkt_addr, rxd->read.hdr_addr,
+ 				 rxd->read.rsvd1, rxd->read.rsvd2);
 -- 
 2.1.0
 
