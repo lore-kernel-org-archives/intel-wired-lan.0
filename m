@@ -1,47 +1,30 @@
-From: Gangfeng Huang <gangfeng.huang@ni.com>
-Date: Thu, 14 Jan 2016 02:40:48 +0000
-Subject: [Intel-wired-lan] [PATCH next-queue 1/3] igb: Enable the
-	ethtool	interface fo Rx filter
-In-Reply-To: <309B89C4C689E141A5FF6A0C5FB2118B81E4DC10@ORSMSX101.amr.corp.intel.com>
-References: <1451456399-13353-1-git-send-email-gangfeng.huang@ni.com>
- <309B89C4C689E141A5FF6A0C5FB2118B81E4D36B@ORSMSX101.amr.corp.intel.com>,
- <DM2PR0401MB09907A74230900BB8820D802ECCA0@DM2PR0401MB0990.namprd04.prod.outlook.com>
- <309B89C4C689E141A5FF6A0C5FB2118B81E4DC10@ORSMSX101.amr.corp.intel.com>
-Message-ID: <DM2PR0401MB0990C5C5A689DC9B0F1E0973ECCC0@DM2PR0401MB0990.namprd04.prod.outlook.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Thu, 14 Jan 2016 03:06:18 +0000
+Subject: [Intel-wired-lan] [next PATCH 01/11] igb: clean up code for
+ setting	MAC address
+In-Reply-To: <20160107071023.13648.94040.stgit@localhost.localdomain>
+References: <20160107070850.13648.21033.stgit@localhost.localdomain>,
+ <20160107071023.13648.94040.stgit@localhost.localdomain>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81E4F133@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Brown,
+> From: Intel-wired-lan [intel-wired-lan-bounces at lists.osuosl.org] on behalf of Alexander Duyck [aduyck at mirantis.com]
+> Sent: Wednesday, January 06, 2016 11:10 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH 01/11] igb: clean up code for setting    MAC address
+> 
+> Drop a bunch of hand written byte swapping code in favor of just doing the
+> byte swapping ourselves.  The registers are little endian registers storing
+> a big endian value so if we read the MAC address array as little endian
+> then we will get the CPU registers into the proper layout.
+> 
+> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+> ---
+>  drivers/net/ethernet/intel/igb/igb_main.c |    9 ++++-----
+>  1 file changed, 4 insertions(+), 5 deletions(-)
 
-1. According to datasheet, only i210/i211/350 support Rx queue assignment. In my patch, other adapters will return the error -ENOTSUPP;  
-
-2. For I211, it only have 2 HW queues(queue 0 and queue 1), you cannot assign the packets to queue 2. 
-
-I211: 
-ethtool -N eth1 flow-type ether proto 0x88F8 action 1
-
- 
------Original Message-----
-From: Brown, Aaron F [mailto:aaron.f.brown at intel.com] 
-Sent: 2016?1?13? 11:27
-To: Gangfeng Huang <gangfeng.huang@ni.com>; intel-wired-lan at lists.osuosl.org
-Cc: Ruhao Gao <ruhao.gao@ni.com>
-Subject: RE: [Intel-wired-lan] [PATCH next-queue 1/3] igb: Enable the ethtool interface fo Rx filter
-
-> From: Gangfeng Huang [gangfeng.huang at ni.com]
-> Sent: Tuesday, January 12, 2016 12:32 AM
-> To: Brown, Aaron F; intel-wired-lan at lists.osuosl.org
-> Cc: Ruhao Gao
-> Subject: RE: [Intel-wired-lan] [PATCH next-queue 1/3] igb: Enable the ethtool   interface fo Rx filter
-
-> About these patches, I only do the test on I210 because I do not have other adapters in this series,
-
-That's one of the reasons I test it here, can't expect everyone to have access to all the SKUs.  It can be hard enough for me to locate a suitable sampling of each part one of our drivers supports :)
-
-If you have an idea of how to address it go ahead and submit another patch, I have the systems in a dedicated regression rack and the check for this is pretty easy so it should not take me too long to come back with a result.
-
-Thanks,
-Aaron
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
