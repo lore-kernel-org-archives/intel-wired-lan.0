@@ -1,140 +1,91 @@
 From: Joshua Hay <joshua.a.hay@intel.com>
-Date: Wed, 13 Jan 2016 16:51:39 -0800
-Subject: [Intel-wired-lan] [v2 next PATCH S27 02/15] i40e: Make the DCB
-	firmware checks for X710/XL710 only
+Date: Wed, 13 Jan 2016 16:51:48 -0800
+Subject: [Intel-wired-lan] [v2 next PATCH S27 11/15] i40e/i40evf: use
+	__GFP_NOWARN
 In-Reply-To: <1452732712-12248-1-git-send-email-joshua.a.hay@intel.com>
 References: <1452732712-12248-1-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <1452732712-12248-3-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <1452732712-12248-12-git-send-email-joshua.a.hay@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Neerav Parikh <neerav.parikh@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-Make the DCB firmware version related checks specific to
-X710 and XL710 only. These checks are not required for
-X722 family of devices.
+The i40e and i40evf drivers now cleanly handle allocation
+failures and can avoid kernel log spew from the memory allocator
+when allocations fail, so set __GFP_NOWARN on rx buffer alloc.
 
-Introduced an inline routine to help determine if the
-MAC type is X710/XL710 or not.
-
-Moved the firmware version related checks in i40e_sw_init()
-and defined flags for different cases
-
-Fix the version check to allow using "Set LLDP MIB" AQ
-for beyond FVL4 FW releases.
-
-Signed-off-by: Neerav Parikh <neerav.parikh@intel.com>
-Change-ID: Ib78288343de983aa0354fc28aa36e99b073662c0
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Change-ID: Ic9e1b83c495e2a3ef6b069ba7fb6e52ce134cd23
 ---
-Testing Hints:
-- LLDP should get disabled on FVL with FVLSW1/2 NVM
-and no DCB/DCBX functionality should be available
-- DCB capability should be enabled for FVL3/4 NVM images
-- Once DCB is enabled for FPK builds SW functionally should
-be same as FVL DCB
+Testing Hints: compile everywhere
 
- drivers/net/ethernet/intel/i40e/i40e.h      | 16 ++++++++++++++++
- drivers/net/ethernet/intel/i40e/i40e_main.c | 27 ++++++++++++++++++++-------
- 2 files changed, 36 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 12 ++++++++----
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 12 ++++++++----
+ 2 files changed, 16 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index cb550bf..bb07e05 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -138,6 +138,19 @@
- /* default to trying for four seconds */
- #define I40E_TRY_LINK_TIMEOUT (4 * HZ)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 692e723..9efd988 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -1292,8 +1292,10 @@ bool i40e_alloc_rx_buffers_1buf(struct i40e_ring *rx_ring, u16 cleaned_count)
+ 		skb = bi->skb;
  
-+/**
-+ * i40e_is_mac_710 - Return true if MAC is X710/XL710
-+ * @hw: ptr to the hardware info
-+ **/
-+static inline bool i40e_is_mac_710(struct i40e_hw *hw)
-+{
-+	if ((hw->mac.type == I40E_MAC_X710) ||
-+	    (hw->mac.type == I40E_MAC_XL710))
-+		return true;
-+
-+	return false;
-+}
-+
- /* driver state flags */
- enum i40e_state_t {
- 	__I40E_TESTING,
-@@ -342,6 +355,9 @@ struct i40e_pf {
- #define I40E_FLAG_NO_PCI_LINK_CHECK		BIT_ULL(42)
- #define I40E_FLAG_100M_SGMII_CAPABLE		BIT_ULL(43)
- #define I40E_FLAG_RESTART_AUTONEG		BIT_ULL(44)
-+#define I40E_FLAG_NO_DCB_SUPPORT		BIT_ULL(45)
-+#define I40E_FLAG_USE_SET_LLDP_MIB		BIT_ULL(46)
-+#define I40E_FLAG_STOP_FW_LLDP			BIT_ULL(47)
- #define I40E_FLAG_PF_MAC			BIT_ULL(50)
+ 		if (!skb) {
+-			skb = netdev_alloc_skb_ip_align(rx_ring->netdev,
+-							rx_ring->rx_buf_len);
++			skb = __netdev_alloc_skb_ip_align(rx_ring->netdev,
++							  rx_ring->rx_buf_len,
++							  GFP_ATOMIC |
++							  __GFP_NOWARN);
+ 			if (!skb) {
+ 				rx_ring->rx_stats.alloc_buff_failed++;
+ 				goto no_buffers;
+@@ -1571,8 +1573,10 @@ static int i40e_clean_rx_irq_ps(struct i40e_ring *rx_ring, const int budget)
+ 		rx_bi = &rx_ring->rx_bi[i];
+ 		skb = rx_bi->skb;
+ 		if (likely(!skb)) {
+-			skb = netdev_alloc_skb_ip_align(rx_ring->netdev,
+-							rx_ring->rx_hdr_len);
++			skb = __netdev_alloc_skb_ip_align(rx_ring->netdev,
++							  rx_ring->rx_hdr_len,
++							  GFP_ATOMIC |
++							  __GFP_NOWARN);
+ 			if (!skb) {
+ 				rx_ring->rx_stats.alloc_buff_failed++;
+ 				failure = true;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index 0f9442e..d3ec3b2 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -764,8 +764,10 @@ bool i40evf_alloc_rx_buffers_1buf(struct i40e_ring *rx_ring, u16 cleaned_count)
+ 		skb = bi->skb;
  
- 	/* tracks features that get auto disabled by errors */
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 2838ae0..f29c3bc 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -5012,8 +5012,7 @@ static int i40e_init_pf_dcb(struct i40e_pf *pf)
- 	int err = 0;
- 
- 	/* Do not enable DCB for SW1 and SW2 images even if the FW is capable */
--	if (((pf->hw.aq.fw_maj_ver == 4) && (pf->hw.aq.fw_min_ver < 33)) ||
--	    (pf->hw.aq.fw_maj_ver < 4))
-+	if (pf->flags & I40E_FLAG_NO_DCB_SUPPORT)
- 		goto out;
- 
- 	/* Get the initial DCB configuration */
-@@ -8418,11 +8417,25 @@ static int i40e_sw_init(struct i40e_pf *pf)
- 				 pf->hw.func_caps.fd_filters_best_effort;
- 	}
- 
--	if (((pf->hw.mac.type == I40E_MAC_X710) ||
--	     (pf->hw.mac.type == I40E_MAC_XL710)) &&
-+	if (i40e_is_mac_710(&pf->hw) &&
- 	    (((pf->hw.aq.fw_maj_ver == 4) && (pf->hw.aq.fw_min_ver < 33)) ||
--	    (pf->hw.aq.fw_maj_ver < 4)))
-+	    (pf->hw.aq.fw_maj_ver < 4))) {
- 		pf->flags |= I40E_FLAG_RESTART_AUTONEG;
-+		/* No DCB support  for FW < v4.33 */
-+		pf->flags |= I40E_FLAG_NO_DCB_SUPPORT;
-+	}
-+
-+	/* Disable FW LLDP if FW < v4.3 */
-+	if (i40e_is_mac_710(&pf->hw) &&
-+	    (((pf->hw.aq.fw_maj_ver == 4) && (pf->hw.aq.fw_min_ver < 3)) ||
-+	    (pf->hw.aq.fw_maj_ver < 4)))
-+		pf->flags |= I40E_FLAG_STOP_FW_LLDP;
-+
-+	/* Use the FW Set LLDP MIB API if FW > v4.40 */
-+	if (i40e_is_mac_710(&pf->hw) &&
-+	    (((pf->hw.aq.fw_maj_ver == 4) && (pf->hw.aq.fw_min_ver >= 40)) ||
-+	    (pf->hw.aq.fw_maj_ver >= 5)))
-+		pf->flags |= I40E_FLAG_USE_SET_LLDP_MIB;
- 
- 	if (pf->hw.func_caps.vmdq) {
- 		pf->num_vmdq_vsis = I40E_DEFAULT_NUM_VMDQ_VSI;
-@@ -8451,6 +8464,7 @@ static int i40e_sw_init(struct i40e_pf *pf)
- 			     I40E_FLAG_WB_ON_ITR_CAPABLE |
- 			     I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE |
- 			     I40E_FLAG_100M_SGMII_CAPABLE |
-+			     I40E_FLAG_USE_SET_LLDP_MIB |
- 			     I40E_FLAG_GENEVE_OFFLOAD_CAPABLE;
- 	} else if ((pf->hw.aq.api_maj_ver > 1) ||
- 		   ((pf->hw.aq.api_maj_ver == 1) &&
-@@ -10823,8 +10837,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	 * Ignore error return codes because if it was already disabled via
- 	 * hardware settings this will fail
- 	 */
--	if (((pf->hw.aq.fw_maj_ver == 4) && (pf->hw.aq.fw_min_ver < 3)) ||
--	    (pf->hw.aq.fw_maj_ver < 4)) {
-+	if (pf->flags & I40E_FLAG_STOP_FW_LLDP) {
- 		dev_info(&pdev->dev, "Stopping firmware LLDP agent.\n");
- 		i40e_aq_stop_lldp(hw, true, NULL);
- 	}
+ 		if (!skb) {
+-			skb = netdev_alloc_skb_ip_align(rx_ring->netdev,
+-							rx_ring->rx_buf_len);
++			skb = __netdev_alloc_skb_ip_align(rx_ring->netdev,
++							  rx_ring->rx_buf_len,
++							  GFP_ATOMIC |
++							  __GFP_NOWARN);
+ 			if (!skb) {
+ 				rx_ring->rx_stats.alloc_buff_failed++;
+ 				goto no_buffers;
+@@ -1034,8 +1036,10 @@ static int i40e_clean_rx_irq_ps(struct i40e_ring *rx_ring, const int budget)
+ 		rx_bi = &rx_ring->rx_bi[i];
+ 		skb = rx_bi->skb;
+ 		if (likely(!skb)) {
+-			skb = netdev_alloc_skb_ip_align(rx_ring->netdev,
+-							rx_ring->rx_hdr_len);
++			skb = __netdev_alloc_skb_ip_align(rx_ring->netdev,
++							  rx_ring->rx_hdr_len,
++							  GFP_ATOMIC |
++							  __GFP_NOWARN);
+ 			if (!skb) {
+ 				rx_ring->rx_stats.alloc_buff_failed++;
+ 				failure = true;
 -- 
 2.1.0
 
