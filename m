@@ -1,120 +1,87 @@
 From: Joshua Hay <joshua.a.hay@intel.com>
-Date: Fri, 15 Jan 2016 14:33:18 -0800
-Subject: [Intel-wired-lan] [next PATCH S28 11/15] i40e: better error
-	reporting for nvmupdate
+Date: Fri, 15 Jan 2016 14:33:16 -0800
+Subject: [Intel-wired-lan] [next PATCH S28 09/15] i40e: Do not disable
+	queues in the Legacy/MSI Interrupt handler
 In-Reply-To: <1452897202-15204-1-git-send-email-joshua.a.hay@intel.com>
 References: <1452897202-15204-1-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <1452897202-15204-12-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <1452897202-15204-10-git-send-email-joshua.a.hay@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Shannon Nelson <shannon.nelson@intel.com>
+From: Anjali Singhai Jain <anjali.singhai@intel.com>
 
-Make sure we return EBUSY while finishing up a reset, and add a few bits
-for better debug messages.
+The queues should never be enabled/disabled in the interrupt handler,
+ICR0 interrupt enable should be the only thing that needs to be
+dynamically changed in the handler.
 
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-Change-ID: I23f6c28a8d96d7aa171abcc265737cec7826c292
+This patch fixes that. Without this patch X722 platforms were
+seeing weird ping timings when in Legacy mode since it takes
+a whole lot of time for the HW/FW to re-enable queues.
+
+Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+Change-ID: If065afc45d81c5a19d4a94a00cd5b8f61cefc40c
 ---
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 39 +++++++++++++-------------
- drivers/net/ethernet/intel/i40e/i40e_main.c    |  5 +++-
- 2 files changed, 24 insertions(+), 20 deletions(-)
+Testing Hints (Required if no HSD): Test with legacy mode
+enabled.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index d2010290..54d63a6 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -1005,16 +1005,19 @@ static int i40e_get_eeprom(struct net_device *netdev,
- 	/* check for NVMUpdate access method */
- 	magic = hw->vendor_id | (hw->device_id << 16);
- 	if (eeprom->magic && eeprom->magic != magic) {
--		struct i40e_nvm_access *cmd;
--		int errno;
-+		struct i40e_nvm_access *cmd = (struct i40e_nvm_access *)eeprom;
-+		int errno = 0;
- 
- 		/* make sure it is the right magic for NVMUpdate */
- 		if ((eeprom->magic >> 16) != hw->device_id)
--			return -EINVAL;
-+			errno = -EINVAL;
-+		else if (test_bit(__I40E_RESET_RECOVERY_PENDING, &pf->state) ||
-+			 test_bit(__I40E_RESET_INTR_RECEIVED, &pf->state))
-+			errno = -EBUSY;
-+		else
-+			ret_val = i40e_nvmupd_command(hw, cmd, bytes, &errno);
- 
--		cmd = (struct i40e_nvm_access *)eeprom;
--		ret_val = i40e_nvmupd_command(hw, cmd, bytes, &errno);
--		if (ret_val && (hw->debug_mask & I40E_DEBUG_NVM))
-+		if ((errno || ret_val) && (hw->debug_mask & I40E_DEBUG_NVM))
- 			dev_info(&pf->pdev->dev,
- 				 "NVMUpdate read failed err=%d status=0x%x errno=%d module=%d offset=0x%x size=%d\n",
- 				 ret_val, hw->aq.asq_last_status, errno,
-@@ -1098,27 +1101,25 @@ static int i40e_set_eeprom(struct net_device *netdev,
- 	struct i40e_netdev_priv *np = netdev_priv(netdev);
- 	struct i40e_hw *hw = &np->vsi->back->hw;
- 	struct i40e_pf *pf = np->vsi->back;
--	struct i40e_nvm_access *cmd;
-+	struct i40e_nvm_access *cmd = (struct i40e_nvm_access *)eeprom;
- 	int ret_val = 0;
--	int errno;
-+	int errno = 0;
- 	u32 magic;
- 
- 	/* normal ethtool set_eeprom is not supported */
- 	magic = hw->vendor_id | (hw->device_id << 16);
- 	if (eeprom->magic == magic)
--		return -EOPNOTSUPP;
--
-+		errno = -EOPNOTSUPP;
- 	/* check for NVMUpdate access method */
--	if (!eeprom->magic || (eeprom->magic >> 16) != hw->device_id)
--		return -EINVAL;
--
--	if (test_bit(__I40E_RESET_RECOVERY_PENDING, &pf->state) ||
--	    test_bit(__I40E_RESET_INTR_RECEIVED, &pf->state))
--		return -EBUSY;
-+	else if (!eeprom->magic || (eeprom->magic >> 16) != hw->device_id)
-+		errno = -EINVAL;
-+	else if (test_bit(__I40E_RESET_RECOVERY_PENDING, &pf->state) ||
-+		 test_bit(__I40E_RESET_INTR_RECEIVED, &pf->state))
-+		errno = -EBUSY;
-+	else
-+		ret_val = i40e_nvmupd_command(hw, cmd, bytes, &errno);
- 
--	cmd = (struct i40e_nvm_access *)eeprom;
--	ret_val = i40e_nvmupd_command(hw, cmd, bytes, &errno);
--	if (ret_val && (hw->debug_mask & I40E_DEBUG_NVM))
-+	if ((errno || ret_val) && (hw->debug_mask & I40E_DEBUG_NVM))
- 		dev_info(&pf->pdev->dev,
- 			 "NVMUpdate write failed err=%d status=0x%x errno=%d module=%d offset=0x%x size=%d\n",
- 			 ret_val, hw->aq.asq_last_status, errno,
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 16 ++++++----------
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c | 13 -------------
+ 2 files changed, 6 insertions(+), 23 deletions(-)
+
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 5e7a7a1..98cbc90 100644
+index 90e37f4..5e7a7a1 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -3475,6 +3475,7 @@ static irqreturn_t i40e_intr(int irq, void *data)
- 	if (icr0 & I40E_PFINT_ICR0_ADMINQ_MASK) {
- 		ena_mask &= ~I40E_PFINT_ICR0_ENA_ADMINQ_MASK;
- 		set_bit(__I40E_ADMINQ_EVENT_PENDING, &pf->state);
-+		i40e_debug(&pf->hw, I40E_DEBUG_NVM, "AdminQ event\n");
- 	}
+@@ -3462,16 +3462,12 @@ static irqreturn_t i40e_intr(int irq, void *data)
+ 		struct i40e_vsi *vsi = pf->vsi[pf->lan_vsi];
+ 		struct i40e_q_vector *q_vector = vsi->q_vectors[0];
  
- 	if (icr0 & I40E_PFINT_ICR0_MAL_DETECT_MASK) {
-@@ -6323,7 +6324,9 @@ static void i40e_clean_adminq_subtask(struct i40e_pf *pf)
- 		case i40e_aqc_opc_nvm_erase:
- 		case i40e_aqc_opc_nvm_update:
- 		case i40e_aqc_opc_oem_post_update:
--			i40e_debug(&pf->hw, I40E_DEBUG_NVM, "ARQ NVM operation completed\n");
-+			i40e_debug(&pf->hw, I40E_DEBUG_NVM,
-+				   "ARQ NVM operation 0x%04x completed\n",
-+				   opcode);
- 			break;
- 		default:
- 			dev_info(&pf->pdev->dev,
+-		/* temporarily disable queue cause for NAPI processing */
+-		u32 qval = rd32(hw, I40E_QINT_RQCTL(0));
+-
+-		qval &= ~I40E_QINT_RQCTL_CAUSE_ENA_MASK;
+-		wr32(hw, I40E_QINT_RQCTL(0), qval);
+-
+-		qval = rd32(hw, I40E_QINT_TQCTL(0));
+-		qval &= ~I40E_QINT_TQCTL_CAUSE_ENA_MASK;
+-		wr32(hw, I40E_QINT_TQCTL(0), qval);
+-
++		/* We do not have a way to disarm Queue causes while leaving
++		 * interrupt enabled for all other causes, ideally
++		 * interrupt should be disabled while we are in NAPI but
++		 * this is not a performance path and napi_schedule()
++		 * can deal with rescheduling.
++		 */
+ 		if (!test_bit(__I40E_DOWN, &pf->state))
+ 			napi_schedule_irqoff(&q_vector->napi);
+ 	}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index cd9bb7f..61e98f5 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -2051,19 +2051,6 @@ tx_only:
+ 	if (vsi->back->flags & I40E_FLAG_MSIX_ENABLED) {
+ 		i40e_update_enable_itr(vsi, q_vector);
+ 	} else { /* Legacy mode */
+-		struct i40e_hw *hw = &vsi->back->hw;
+-		/* We re-enable the queue 0 cause, but
+-		 * don't worry about dynamic_enable
+-		 * because we left it on for the other
+-		 * possible interrupts during napi
+-		 */
+-		u32 qval = rd32(hw, I40E_QINT_RQCTL(0)) |
+-			   I40E_QINT_RQCTL_CAUSE_ENA_MASK;
+-
+-		wr32(hw, I40E_QINT_RQCTL(0), qval);
+-		qval = rd32(hw, I40E_QINT_TQCTL(0)) |
+-		       I40E_QINT_TQCTL_CAUSE_ENA_MASK;
+-		wr32(hw, I40E_QINT_TQCTL(0), qval);
+ 		i40e_irq_dynamic_enable_icr0(vsi->back, false);
+ 	}
+ 	return 0;
 -- 
 2.1.0
 
