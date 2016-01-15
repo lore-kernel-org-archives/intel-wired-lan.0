@@ -1,60 +1,33 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Fri, 15 Jan 2016 11:29:19 +0100 (CET)
-Subject: [Intel-wired-lan] [PATCH v6 3/9] Add correlated clocksource
- relating aliased auxiliary and system clocks
-In-Reply-To: <CALAqxLXZhpGUv2UAPLmSboW=nhyW+eXvrMaUkZCy7JQh=WgkLQ@mail.gmail.com>
-References: <1452687149-11281-1-git-send-email-christopher.s.hall@intel.com>
- <1452687149-11281-4-git-send-email-christopher.s.hall@intel.com>
- <CALAqxLXZhpGUv2UAPLmSboW=nhyW+eXvrMaUkZCy7JQh=WgkLQ@mail.gmail.com>
-Message-ID: <alpine.DEB.2.11.1601151108110.3575@nanos>
+From: Schmitt, Phillip J <phillip.j.schmitt@intel.com>
+Date: Fri, 15 Jan 2016 16:20:21 +0000
+Subject: [Intel-wired-lan] [next PATCH 1/2] ixgbe: Do not allow PF to
+ add VLVF entry unless it actually needs it
+In-Reply-To: <20160107064844.12239.87981.stgit@localhost.localdomain>
+References: <20160107064516.12239.98349.stgit@localhost.localdomain>
+ <20160107064844.12239.87981.stgit@localhost.localdomain>
+Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E180D17549@ORSMSX108.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 14 Jan 2016, John Stultz wrote:
-> On Wed, Jan 13, 2016 at 4:12 AM, Christopher S. Hall
-> <christopher.s.hall@intel.com> wrote:
-> > +/*
-> > + * struct correlated_cs - Descriptor for a clocksource correlated to another
-> > + *     clocksource
-> > + * @related_cs:                Pointer to the related timekeeping clocksource
-> > + * @convert:           Conversion function to convert a timestamp from
-> > + *                     the correlated clocksource to cycles of the related
-> > + *                     timekeeping clocksource
-> > + */
-> > +struct correlated_cs {
-> > +       struct clocksource      *related_cs;
-> > +       cycle_t                 (*convert)(struct correlated_cs *cs,
-> > +                                          cycle_t cycles);
-> > +};
-> > +
+
+
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Alexander Duyck
+> Sent: Wednesday, January 06, 2016 10:49 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH 1/2] ixgbe: Do not allow PF to add VLVF
+> entry unless it actually needs it
 > 
-> So.. In reworking your patch set, I've preserved this, but I'm still
-> not totally convinced. Its a generic structure, but not used by any
-> generic code and its only used by hardware specific implementations
-> (ie: the tsc and e1000e_hwts logic). It seems like this could be a
-> tsc.h specific structure w/o a real issue.
+> While doing the work on igb I realized there were a few cases where we were
+> still adding VLANs to the VLVF entries for the PF when they were not needed.
+> This patch cleans that up so that the only time we add a PF entry to the VLVF is
+> either for VLAN 0 or if the PF has requested a VLAN that a VF is already using.
+> 
+> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+> ---
 
-That correlated_cs is my fault. I invented that when I had that first stab on
-the cross time stamp thing.
- 
-> And really this doesn't seem to be a generic thing. The e1000e hwts is
-> always the ART based. Its not likely these sorts of cross hardware
-> timestamps are going to be completely abstract and interchangeable,
-> is it?
-
-They might be in future. I guess other archs will provide similar means to
-distribute an always on timer to PCIe for timestamping purposes.
-
-So the question is whether we should expose that timestamp reference via a
-generic mechanism, e.g. store it somewhere in the pci root complex or wherever
-the appropriate point for it is.
-
-Though for now, we certainly can make that x86 private and deal with it when
-others come along.
-
-Thanks,
-
-	tglx
+Tested-by: Phil Schmitt <phillip.j.schmitt@intel.com>
