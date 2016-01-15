@@ -1,106 +1,106 @@
 From: Joshua Hay <joshua.a.hay@intel.com>
-Date: Fri, 15 Jan 2016 14:33:14 -0800
-Subject: [Intel-wired-lan] [next PATCH S28 07/15] i40e: Removal of code
-	which relies on BASE VEB SEID
+Date: Fri, 15 Jan 2016 14:33:21 -0800
+Subject: [Intel-wired-lan] [next PATCH S28 14/15] i40e: When in promisc mode
+	apply promisc mode to Tx Traffic as well
 In-Reply-To: <1452897202-15204-1-git-send-email-joshua.a.hay@intel.com>
 References: <1452897202-15204-1-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <1452897202-15204-8-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <1452897202-15204-15-git-send-email-joshua.a.hay@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Kiran Patil <kiran.patil@intel.com>
+From: Anjali Singhai Jain <anjali.singhai@intel.com>
 
-Fixed mapping of SEID is removed from specification. Hence
-this patch removes code which was using hardcoded base VEB SEID.
+In MFP mode particularly when we were setting the PF VSI in limited
+promiscuous, the HW switch was still mirroring the outgoing packets
+from other VSIs (VF/VMdq) onto the PF VSI.
 
-Changed FCoE code to use "hw->pf_id" to obtain correct "idx"
-and verified.
+With this new bit set, the mirroring doesn't happen any more and so
+we are in limited promiscuous on the PF VSI in MFP which is similar
+to defport.
 
-Removed defines for BASE VSI/VEB SEID and BASE_PF_SEID since it
-is not used anymore.
+An API check is not required, since this bit is reserved for FW API
+version < 1.5
 
-Signed-off-by: Kiran Patil <kiran.patil@intel.com>
-Change-ID: Id507cf4b1fae1c0145e3f08ae9ea5846ea5840de
+Also update copyright year in file headers.
+
+Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+Change-ID: I9840cb95f11dde733d943cb03ce84f68b9611bc8
 ---
-Testing Hints:
-	Please test using debugfs hook for "dump veb <seid>".
-		echo "dump veb [seid]" > command
-	Here "seid" is VEB seid and it is optional argument. If "seid"
-	is not specified, it dumps all VEBs.
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h   | 3 ++-
+ drivers/net/ethernet/intel/i40e/i40e_common.c       | 9 ++++++++-
+ drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h | 3 ++-
+ 3 files changed, 12 insertions(+), 3 deletions(-)
 
-	After this patch, user shall see output in dmesg. Without this patch,
-	if SEID is not in range, user will see error like
-		"<seid>: bad seid"
-
- drivers/net/ethernet/intel/i40e/i40e.h         |  3 ---
- drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 16 +++-------------
- drivers/net/ethernet/intel/i40e/i40e_main.c    |  2 +-
- 3 files changed, 4 insertions(+), 17 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index e37af29..ceb72d8 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -64,9 +64,6 @@
- #include "i40e_dcb.h"
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+index 5699299..bb7ecbb 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+@@ -1,7 +1,7 @@
+ /*******************************************************************************
+  *
+  * Intel Ethernet Controller XL710 Family Linux Driver
+- * Copyright(c) 2013 - 2014 Intel Corporation.
++ * Copyright(c) 2013 - 2016 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+@@ -1087,6 +1087,7 @@ struct i40e_aqc_set_vsi_promiscuous_modes {
+ #define I40E_AQC_SET_VSI_PROMISC_BROADCAST	0x04
+ #define I40E_AQC_SET_VSI_DEFAULT		0x08
+ #define I40E_AQC_SET_VSI_PROMISC_VLAN		0x10
++#define I40E_AQC_SET_VSI_PROMISC_TX		0x8000
+ 	__le16	seid;
+ #define I40E_AQC_VSI_PROM_CMD_SEID_MASK		0x3FF
+ 	__le16	vlan_tag;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index a9302d3..d86c7a3 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -1952,12 +1952,19 @@ i40e_status i40e_aq_set_vsi_unicast_promiscuous(struct i40e_hw *hw,
+ 	i40e_fill_default_direct_cmd_desc(&desc,
+ 					i40e_aqc_opc_set_vsi_promiscuous_modes);
  
- /* Useful i40e defaults */
--#define I40E_BASE_PF_SEID     16
--#define I40E_BASE_VSI_SEID    512
--#define I40E_BASE_VEB_SEID    288
- #define I40E_MAX_VEB          16
+-	if (set)
++	if (set) {
+ 		flags |= I40E_AQC_SET_VSI_PROMISC_UNICAST;
++		if (((hw->aq.api_maj_ver == 1) && (hw->aq.api_min_ver >= 5)) ||
++		    (hw->aq.api_maj_ver > 1))
++			flags |= I40E_AQC_SET_VSI_PROMISC_TX;
++	}
  
- #define I40E_MAX_NUM_DESCRIPTORS      4096
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-index 631c2d6..2a44f2e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-@@ -61,13 +61,9 @@ static struct i40e_veb *i40e_dbg_find_veb(struct i40e_pf *pf, int seid)
- {
- 	int i;
+ 	cmd->promiscuous_flags = cpu_to_le16(flags);
  
--	if ((seid < I40E_BASE_VEB_SEID) ||
--	    (seid > (I40E_BASE_VEB_SEID + I40E_MAX_VEB)))
--		dev_info(&pf->pdev->dev, "%d: bad seid\n", seid);
--	else
--		for (i = 0; i < I40E_MAX_VEB; i++)
--			if (pf->veb[i] && pf->veb[i]->seid == seid)
--				return pf->veb[i];
-+	for (i = 0; i < I40E_MAX_VEB; i++)
-+		if (pf->veb[i] && pf->veb[i]->seid == seid)
-+			return pf->veb[i];
- 	return NULL;
- }
+ 	cmd->valid_flags = cpu_to_le16(I40E_AQC_SET_VSI_PROMISC_UNICAST);
++	if (((hw->aq.api_maj_ver >= 1) && (hw->aq.api_min_ver >= 5)) ||
++	    (hw->aq.api_maj_ver > 1))
++		cmd->valid_flags |= cpu_to_le16(I40E_AQC_SET_VSI_PROMISC_TX);
  
-@@ -691,12 +687,6 @@ static void i40e_dbg_dump_veb_seid(struct i40e_pf *pf, int seid)
- {
- 	struct i40e_veb *veb;
- 
--	if ((seid < I40E_BASE_VEB_SEID) ||
--	    (seid >= (I40E_MAX_VEB + I40E_BASE_VEB_SEID))) {
--		dev_info(&pf->pdev->dev, "%d: bad seid\n", seid);
--		return;
--	}
--
- 	veb = i40e_dbg_find_veb(pf, seid);
- 	if (!veb) {
- 		dev_info(&pf->pdev->dev, "can't find veb %d\n", seid);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 4f4262e..90e37f4 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -768,7 +768,7 @@ static void i40e_update_fcoe_stats(struct i40e_vsi *vsi)
- 	if (vsi->type != I40E_VSI_FCOE)
- 		return;
- 
--	idx = (pf->pf_seid - I40E_BASE_PF_SEID) + I40E_FCOE_PF_STAT_OFFSET;
-+	idx = hw->pf_id + I40E_FCOE_PF_STAT_OFFSET;
- 	fs = &vsi->fcoe_stats;
- 	ofs = &vsi->fcoe_stats_offsets;
- 
+ 	cmd->seid = cpu_to_le16(seid);
+ 	status = i40e_asq_send_command(hw, &desc, NULL, 0, cmd_details);
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+index ed963bc..815e481 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+@@ -1,7 +1,7 @@
+ /*******************************************************************************
+  *
+  * Intel Ethernet Controller XL710 Family Linux Virtual Function Driver
+- * Copyright(c) 2013 - 2014 Intel Corporation.
++ * Copyright(c) 2013 - 2016 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+@@ -1084,6 +1084,7 @@ struct i40e_aqc_set_vsi_promiscuous_modes {
+ #define I40E_AQC_SET_VSI_PROMISC_BROADCAST	0x04
+ #define I40E_AQC_SET_VSI_DEFAULT		0x08
+ #define I40E_AQC_SET_VSI_PROMISC_VLAN		0x10
++#define I40E_AQC_SET_VSI_PROMISC_TX		0x8000
+ 	__le16	seid;
+ #define I40E_AQC_VSI_PROM_CMD_SEID_MASK		0x3FF
+ 	__le16	vlan_tag;
 -- 
 2.1.0
 
