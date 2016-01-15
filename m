@@ -1,68 +1,60 @@
-From: Alexander Duyck <aduyck@mirantis.com>
-Date: Thu, 14 Jan 2016 20:42:09 -0800
-Subject: [Intel-wired-lan] [next PATCH 3/3] i40e: Fix build warnings when
-	geneve is not enabled
-In-Reply-To: <20160115043921.24270.62791.stgit@localhost.localdomain>
-References: <20160115043921.24270.62791.stgit@localhost.localdomain>
-Message-ID: <20160115044209.24270.5939.stgit@localhost.localdomain>
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Fri, 15 Jan 2016 11:29:19 +0100 (CET)
+Subject: [Intel-wired-lan] [PATCH v6 3/9] Add correlated clocksource
+ relating aliased auxiliary and system clocks
+In-Reply-To: <CALAqxLXZhpGUv2UAPLmSboW=nhyW+eXvrMaUkZCy7JQh=WgkLQ@mail.gmail.com>
+References: <1452687149-11281-1-git-send-email-christopher.s.hall@intel.com>
+ <1452687149-11281-4-git-send-email-christopher.s.hall@intel.com>
+ <CALAqxLXZhpGUv2UAPLmSboW=nhyW+eXvrMaUkZCy7JQh=WgkLQ@mail.gmail.com>
+Message-ID: <alpine.DEB.2.11.1601151108110.3575@nanos>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-My default config didn't have geneve enabled.  As a result I was getting
-warnings about the port functions being defined but not used.
+On Thu, 14 Jan 2016, John Stultz wrote:
+> On Wed, Jan 13, 2016 at 4:12 AM, Christopher S. Hall
+> <christopher.s.hall@intel.com> wrote:
+> > +/*
+> > + * struct correlated_cs - Descriptor for a clocksource correlated to another
+> > + *     clocksource
+> > + * @related_cs:                Pointer to the related timekeeping clocksource
+> > + * @convert:           Conversion function to convert a timestamp from
+> > + *                     the correlated clocksource to cycles of the related
+> > + *                     timekeeping clocksource
+> > + */
+> > +struct correlated_cs {
+> > +       struct clocksource      *related_cs;
+> > +       cycle_t                 (*convert)(struct correlated_cs *cs,
+> > +                                          cycle_t cycles);
+> > +};
+> > +
+> 
+> So.. In reworking your patch set, I've preserved this, but I'm still
+> not totally convinced. Its a generic structure, but not used by any
+> generic code and its only used by hardware specific implementations
+> (ie: the tsc and e1000e_hwts logic). It seems like this could be a
+> tsc.h specific structure w/o a real issue.
 
-Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
----
- drivers/net/ethernet/intel/i40e/i40e_main.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+That correlated_cs is my fault. I invented that when I had that first stab on
+the cross time stamp thing.
+ 
+> And really this doesn't seem to be a generic thing. The e1000e hwts is
+> always the ART based. Its not likely these sorts of cross hardware
+> timestamps are going to be completely abstract and interchangeable,
+> is it?
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index a15ab5fd3bd7..d35e6d62f659 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -8664,6 +8664,7 @@ static void i40e_del_vxlan_port(struct net_device *netdev,
- #endif
- }
- 
-+#if IS_ENABLED(CONFIG_GENEVE)
- /**
-  * i40e_add_geneve_port - Get notifications about GENEVE ports that come up
-  * @netdev: This physical port's netdev
-@@ -8673,7 +8674,6 @@ static void i40e_del_vxlan_port(struct net_device *netdev,
- static void i40e_add_geneve_port(struct net_device *netdev,
- 				 sa_family_t sa_family, __be16 port)
- {
--#if IS_ENABLED(CONFIG_GENEVE)
- 	struct i40e_netdev_priv *np = netdev_priv(netdev);
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct i40e_pf *pf = vsi->back;
-@@ -8708,7 +8708,6 @@ static void i40e_add_geneve_port(struct net_device *netdev,
- 	pf->flags |= I40E_FLAG_UDP_FILTER_SYNC;
- 
- 	dev_info(&pf->pdev->dev, "adding geneve port %d\n", ntohs(port));
--#endif
- }
- 
- /**
-@@ -8720,7 +8719,6 @@ static void i40e_add_geneve_port(struct net_device *netdev,
- static void i40e_del_geneve_port(struct net_device *netdev,
- 				 sa_family_t sa_family, __be16 port)
- {
--#if IS_ENABLED(CONFIG_GENEVE)
- 	struct i40e_netdev_priv *np = netdev_priv(netdev);
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct i40e_pf *pf = vsi->back;
-@@ -8746,8 +8744,8 @@ static void i40e_del_geneve_port(struct net_device *netdev,
- 		netdev_warn(netdev, "geneve port %d was not found, not deleting\n",
- 			    ntohs(port));
- 	}
--#endif
- }
-+#endif
- 
- static int i40e_get_phys_port_id(struct net_device *netdev,
- 				 struct netdev_phys_item_id *ppid)
+They might be in future. I guess other archs will provide similar means to
+distribute an always on timer to PCIe for timestamping purposes.
 
+So the question is whether we should expose that timestamp reference via a
+generic mechanism, e.g. store it somewhere in the pci root complex or wherever
+the appropriate point for it is.
+
+Though for now, we certainly can make that x86 private and deal with it when
+others come along.
+
+Thanks,
+
+	tglx
