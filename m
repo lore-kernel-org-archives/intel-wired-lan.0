@@ -1,50 +1,120 @@
 From: Joshua Hay <joshua.a.hay@intel.com>
-Date: Fri, 15 Jan 2016 14:33:07 -0800
-Subject: [Intel-wired-lan] [next PATCH S28 00/15] i40e/i40evf updates
-Message-ID: <1452897202-15204-1-git-send-email-joshua.a.hay@intel.com>
+Date: Fri, 15 Jan 2016 14:33:18 -0800
+Subject: [Intel-wired-lan] [next PATCH S28 11/15] i40e: better error
+	reporting for nvmupdate
+In-Reply-To: <1452897202-15204-1-git-send-email-joshua.a.hay@intel.com>
+References: <1452897202-15204-1-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <1452897202-15204-12-git-send-email-joshua.a.hay@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Anjali Singhai Jain adds a SW workaround for lost Interrupts, fixes 
-PROMISC mode for Multi-function per port (MFP) devices, does not 
-disable queues in the Legacy/MSI Interrupt handler,  applies 
-promisc mode to Tx Traffic when in promisc mode as well.
+From: Shannon Nelson <shannon.nelson@intel.com>
 
-Jesse Brandeburg drops unused debugfs file "dump", cleans up use 
-of pf->hw.
+Make sure we return EBUSY while finishing up a reset, and add a few bits
+for better debug messages.
 
-Kiran Patil removes code which relies on BASE VEB SEID.
+Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+Change-ID: I23f6c28a8d96d7aa171abcc265737cec7826c292
+---
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 39 +++++++++++++-------------
+ drivers/net/ethernet/intel/i40e/i40e_main.c    |  5 +++-
+ 2 files changed, 24 insertions(+), 20 deletions(-)
 
-Mitch Williams gets rid of magic number, supports packet split
-receive, avoids atomics, expands comment, sets adapter state on
-reset failure.
-
-Shannon Nelson adds better error reporting for nvmupdate, cleans 
-event descriptor before use.
-
- drivers/net/ethernet/intel/i40e/i40e.h             |   4 +-
- drivers/net/ethernet/intel/i40e/i40e_adminq.c      |  20 +-
- drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |   3 +-
- drivers/net/ethernet/intel/i40e/i40e_common.c      |   9 +-
- drivers/net/ethernet/intel/i40e/i40e_debugfs.c     | 266 +--------------------
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c     |  40 ++--
- drivers/net/ethernet/intel/i40e/i40e_main.c        |  69 +++---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c        |  44 ++--
- drivers/net/ethernet/intel/i40e/i40e_txrx.h        |   3 +-
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |   8 +-
- drivers/net/ethernet/intel/i40evf/i40e_adminq.c    |   5 +-
- .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    |   3 +-
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c      |  31 ++-
- drivers/net/ethernet/intel/i40evf/i40e_txrx.h      |   3 +-
- drivers/net/ethernet/intel/i40evf/i40evf.h         |   6 +-
- drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c |  67 +++++-
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  67 +++---
- .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |   4 +
- 18 files changed, 253 insertions(+), 399 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index d2010290..54d63a6 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -1005,16 +1005,19 @@ static int i40e_get_eeprom(struct net_device *netdev,
+ 	/* check for NVMUpdate access method */
+ 	magic = hw->vendor_id | (hw->device_id << 16);
+ 	if (eeprom->magic && eeprom->magic != magic) {
+-		struct i40e_nvm_access *cmd;
+-		int errno;
++		struct i40e_nvm_access *cmd = (struct i40e_nvm_access *)eeprom;
++		int errno = 0;
+ 
+ 		/* make sure it is the right magic for NVMUpdate */
+ 		if ((eeprom->magic >> 16) != hw->device_id)
+-			return -EINVAL;
++			errno = -EINVAL;
++		else if (test_bit(__I40E_RESET_RECOVERY_PENDING, &pf->state) ||
++			 test_bit(__I40E_RESET_INTR_RECEIVED, &pf->state))
++			errno = -EBUSY;
++		else
++			ret_val = i40e_nvmupd_command(hw, cmd, bytes, &errno);
+ 
+-		cmd = (struct i40e_nvm_access *)eeprom;
+-		ret_val = i40e_nvmupd_command(hw, cmd, bytes, &errno);
+-		if (ret_val && (hw->debug_mask & I40E_DEBUG_NVM))
++		if ((errno || ret_val) && (hw->debug_mask & I40E_DEBUG_NVM))
+ 			dev_info(&pf->pdev->dev,
+ 				 "NVMUpdate read failed err=%d status=0x%x errno=%d module=%d offset=0x%x size=%d\n",
+ 				 ret_val, hw->aq.asq_last_status, errno,
+@@ -1098,27 +1101,25 @@ static int i40e_set_eeprom(struct net_device *netdev,
+ 	struct i40e_netdev_priv *np = netdev_priv(netdev);
+ 	struct i40e_hw *hw = &np->vsi->back->hw;
+ 	struct i40e_pf *pf = np->vsi->back;
+-	struct i40e_nvm_access *cmd;
++	struct i40e_nvm_access *cmd = (struct i40e_nvm_access *)eeprom;
+ 	int ret_val = 0;
+-	int errno;
++	int errno = 0;
+ 	u32 magic;
+ 
+ 	/* normal ethtool set_eeprom is not supported */
+ 	magic = hw->vendor_id | (hw->device_id << 16);
+ 	if (eeprom->magic == magic)
+-		return -EOPNOTSUPP;
+-
++		errno = -EOPNOTSUPP;
+ 	/* check for NVMUpdate access method */
+-	if (!eeprom->magic || (eeprom->magic >> 16) != hw->device_id)
+-		return -EINVAL;
+-
+-	if (test_bit(__I40E_RESET_RECOVERY_PENDING, &pf->state) ||
+-	    test_bit(__I40E_RESET_INTR_RECEIVED, &pf->state))
+-		return -EBUSY;
++	else if (!eeprom->magic || (eeprom->magic >> 16) != hw->device_id)
++		errno = -EINVAL;
++	else if (test_bit(__I40E_RESET_RECOVERY_PENDING, &pf->state) ||
++		 test_bit(__I40E_RESET_INTR_RECEIVED, &pf->state))
++		errno = -EBUSY;
++	else
++		ret_val = i40e_nvmupd_command(hw, cmd, bytes, &errno);
+ 
+-	cmd = (struct i40e_nvm_access *)eeprom;
+-	ret_val = i40e_nvmupd_command(hw, cmd, bytes, &errno);
+-	if (ret_val && (hw->debug_mask & I40E_DEBUG_NVM))
++	if ((errno || ret_val) && (hw->debug_mask & I40E_DEBUG_NVM))
+ 		dev_info(&pf->pdev->dev,
+ 			 "NVMUpdate write failed err=%d status=0x%x errno=%d module=%d offset=0x%x size=%d\n",
+ 			 ret_val, hw->aq.asq_last_status, errno,
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 5e7a7a1..98cbc90 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -3475,6 +3475,7 @@ static irqreturn_t i40e_intr(int irq, void *data)
+ 	if (icr0 & I40E_PFINT_ICR0_ADMINQ_MASK) {
+ 		ena_mask &= ~I40E_PFINT_ICR0_ENA_ADMINQ_MASK;
+ 		set_bit(__I40E_ADMINQ_EVENT_PENDING, &pf->state);
++		i40e_debug(&pf->hw, I40E_DEBUG_NVM, "AdminQ event\n");
+ 	}
+ 
+ 	if (icr0 & I40E_PFINT_ICR0_MAL_DETECT_MASK) {
+@@ -6323,7 +6324,9 @@ static void i40e_clean_adminq_subtask(struct i40e_pf *pf)
+ 		case i40e_aqc_opc_nvm_erase:
+ 		case i40e_aqc_opc_nvm_update:
+ 		case i40e_aqc_opc_oem_post_update:
+-			i40e_debug(&pf->hw, I40E_DEBUG_NVM, "ARQ NVM operation completed\n");
++			i40e_debug(&pf->hw, I40E_DEBUG_NVM,
++				   "ARQ NVM operation 0x%04x completed\n",
++				   opcode);
+ 			break;
+ 		default:
+ 			dev_info(&pf->pdev->dev,
 -- 
 2.1.0
 
