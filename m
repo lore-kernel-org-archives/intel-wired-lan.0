@@ -1,11 +1,11 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 15 Jan 2016 03:22:11 +0000
-Subject: [Intel-wired-lan] [next PATCH v2 3/4] igb: Add support for
- generic	Tx checksums
-In-Reply-To: <20160113153123.4527.81111.stgit@localhost.localdomain>
+Date: Fri, 15 Jan 2016 03:26:31 +0000
+Subject: [Intel-wired-lan] [next PATCH v2 4/4] igbvf: Add support
+	for	generic Tx checksums
+In-Reply-To: <20160113153130.4527.9429.stgit@localhost.localdomain>
 References: <20160113153001.4527.91152.stgit@localhost.localdomain>,
- <20160113153123.4527.81111.stgit@localhost.localdomain>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81E4F920@ORSMSX101.amr.corp.intel.com>
+ <20160113153130.4527.9429.stgit@localhost.localdomain>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81E4F931@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,9 +15,9 @@ List-ID: <intel-wired-lan.osuosl.org>
 > From: Intel-wired-lan [intel-wired-lan-bounces at lists.osuosl.org] on behalf of Alexander Duyck [aduyck at mirantis.com]
 > Sent: Wednesday, January 13, 2016 7:31 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH v2 3/4] igb: Add support for generic     Tx checksums
+> Subject: [Intel-wired-lan] [next PATCH v2 4/4] igbvf: Add support for   generic Tx checksums
 > 
-> This patch adds support for generic Tx checksums to the igb driver.  It
+> This patch adds support for generic Tx checksums to the igbvf driver.  It
 > turns out this is actually pretty easy after going over the datasheet as we
 > were doing a number of steps we didn't need to.
 > 
@@ -35,11 +35,14 @@ List-ID: <intel-wired-lan.osuosl.org>
 > insert VLAN tags.
 > 
 > I also took the opportunity to clean-up many of the feature flag
-> configuration bits to make them a bit more consistent between drivers.
+> configuration bits to make them a bit more consistent between drivers.  In
+> the case of the VF drivers this meant adding support for SCTP CRCs, and
+> inner checksum offloads for MPLS and various tunnel types.
 > 
 > Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 > ---
->  drivers/net/ethernet/intel/igb/igb_main.c |  114 ++++++++++++-----------------
->  1 file changed, 47 insertions(+), 67 deletions(-)
+>  drivers/net/ethernet/intel/igbvf/netdev.c |  142 +++++++++++++++++------------
+>  drivers/net/ethernet/intel/igbvf/vf.h     |    1
+>  2 files changed, 82 insertions(+), 61 deletions(-)
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
