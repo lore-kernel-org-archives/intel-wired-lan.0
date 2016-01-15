@@ -1,11 +1,10 @@
 From: John Stultz <john.stultz@linaro.org>
-Date: Thu, 14 Jan 2016 16:24:18 -0800
-Subject: [Intel-wired-lan] [PATCH v6 3/9] Add correlated clocksource
- relating aliased auxiliary and system clocks
-In-Reply-To: <1452687149-11281-4-git-send-email-christopher.s.hall@intel.com>
+Date: Thu, 14 Jan 2016 16:49:24 -0800
+Subject: [Intel-wired-lan] [PATCH v6 0/9] Patchset enabling hardware
+ based cross-timestamps for next gen Intel platforms
+In-Reply-To: <1452687149-11281-1-git-send-email-christopher.s.hall@intel.com>
 References: <1452687149-11281-1-git-send-email-christopher.s.hall@intel.com>
- <1452687149-11281-4-git-send-email-christopher.s.hall@intel.com>
-Message-ID: <CALAqxLXZhpGUv2UAPLmSboW=nhyW+eXvrMaUkZCy7JQh=WgkLQ@mail.gmail.com>
+Message-ID: <CALAqxLUJLu=0A1CsyMywE0GNjTmYrM5Z1SHJp=ahLkn_XLWsdQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,57 +13,56 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 On Wed, Jan 13, 2016 at 4:12 AM, Christopher S. Hall
 <christopher.s.hall@intel.com> wrote:
-> ACKNOWLEDGMENT: The original correlated clock source and cross
-> timestamp code was developed by Thomas Gleixner
-> <tglx@linutronix.de>. It has changed considerably and any mistakes are
-> mine.
+> Modern Intel hardware adds an Always Running Timer (ART) that allows the
+> network and audio device clocks to precisely cross timestamp the device
+> clock with the system clock. This allows a precise correlation of the
+> device time and system time.
 >
-> The timekeeping and clocksource code don't currently comprehend two
-> clocks that are aliases of one another. That is clocks that are
-> *exactly* related. The correlated_cs struct encapsulated this
-> relationship between a clocksource and its alias clock. Modern Intel
-> hardware provides an Always Running Timer (ART) which is exactly
-> related to TSC through a known frequency ratio. The ART is an example
-> of a correlated clocksource.
->
-> Signed-off-by: Christopher S. Hall <christopher.s.hall@intel.com>
-> ---
->  include/linux/clocksource.h | 14 ++++++++++++++
->  1 file changed, 14 insertions(+)
->
-> diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
-> index 4542293..726ca68 100644
-> --- a/include/linux/clocksource.h
-> +++ b/include/linux/clocksource.h
-> @@ -267,4 +267,18 @@ struct system_counterval_t {
->         struct clocksource      *cs;
->  };
->
-> +/*
-> + * struct correlated_cs - Descriptor for a clocksource correlated to another
-> + *     clocksource
-> + * @related_cs:                Pointer to the related timekeeping clocksource
-> + * @convert:           Conversion function to convert a timestamp from
-> + *                     the correlated clocksource to cycles of the related
-> + *                     timekeeping clocksource
-> + */
-> +struct correlated_cs {
-> +       struct clocksource      *related_cs;
-> +       cycle_t                 (*convert)(struct correlated_cs *cs,
-> +                                          cycle_t cycles);
-> +};
-> +
+> This patchset adds interfaces to the timekeeping code allowing drivers
+> to translate ART time to system time.
 
-So.. In reworking your patch set, I've preserved this, but I'm still
-not totally convinced. Its a generic structure, but not used by any
-generic code and its only used by hardware specific implementations
-(ie: the tsc and e1000e_hwts logic). It seems like this could be a
-tsc.h specific structure w/o a real issue.
+So thanks again for sending this out. Instead of sending you a bunch
+of nitpicky changes as I've done in the past, I figured I'd try to
+more directly help out and try to rework some of the patches to be
+more to my own liking.
 
-And really this doesn't seem to be a generic thing. The e1000e hwts is
-always the ART based. Its not likely these sorts of cross hardware
-timestamps are going to be completely abstract and interchangeable,
-is it?
+I've pushed them here:
+   https://git.linaro.org/people/john.stultz/linux.git dev/xtimestamp
+
+My main changes have been:
+* Reordered the patches, putting all the timekeeping core changes
+first, then the usage of those interfaces last.
+
+* Implemented Richard's suggestion to drop one of the helper
+structures that didn't provide much value
+
+* Moved structures defined in clocksource.h but only used in
+timekeeping.h to timekeeping.h
+
+* Fixed a few build issues I caught (as well as some of the ones
+kbuild bot found)
+
+* Reworked the tsc logic to avoid 64bit divisions (which don't build
+on 32bit systems)
+
+I still have not:
+* Done *any* testing at all with this. Please verify I didn't break anything. :)
+
+* Fixed the 64bit div on 32bit systems build issue in
+get_device_system_crosststamp()/adjust_historical_crosststamp()
+
+* Done another review/edit pass on the commit messages, as they've
+gotten a bit long (I know, I know.. "be verbose" I said!), but they
+can probably be tweaked to be better and more contextual to the
+patches.
+
+Still on the fence:
+* Probably should zap the correlated_cs structure or move it to tsc.h,
+as mentioned in my other email
+
+Anyway, I'll let you take a look at this and feel free to integrate
+and adapt these ideas as you please into your patchset. Look forward
+to your next revision!
 
 thanks
 -john
