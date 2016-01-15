@@ -1,10 +1,10 @@
 From: Joshua Hay <joshua.a.hay@intel.com>
-Date: Fri, 15 Jan 2016 14:33:16 -0800
-Subject: [Intel-wired-lan] [next PATCH S28 09/15] i40e: Do not disable
-	queues in the Legacy/MSI Interrupt handler
+Date: Fri, 15 Jan 2016 14:33:13 -0800
+Subject: [Intel-wired-lan] [next PATCH S28 06/15] i40e: Fix PROMISC mode for
+	Multi-function per port (MFP) devices
 In-Reply-To: <1452897202-15204-1-git-send-email-joshua.a.hay@intel.com>
 References: <1452897202-15204-1-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <1452897202-15204-10-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <1452897202-15204-7-git-send-email-joshua.a.hay@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,75 +13,45 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Anjali Singhai Jain <anjali.singhai@intel.com>
 
-The queues should never be enabled/disabled in the interrupt handler,
-ICR0 interrupt enable should be the only thing that needs to be
-dynamically changed in the handler.
+This patch falls back to enabling unicast, multicast and
+broadcast promiscuous mode when the driver must disable it's use
+of "default port" aka defport mode (which is mornally used to
+provide a promiscuous mode), due to internal incompatibility
+with Multiple Function per Port (aka MFP).
 
-This patch fixes that. Without this patch X722 platforms were
-seeing weird ping timings when in Legacy mode since it takes
-a whole lot of time for the HW/FW to re-enable queues.
+The situation that requires this patch is when Physical
+Function 0 is the device being used, and it can support SR-IOV
+when MFP is enabled, via the driver creating a VEB on an MFP
+enabled adapter.
 
 Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-Change-ID: If065afc45d81c5a19d4a94a00cd5b8f61cefc40c
+Change-ID: Ie90b00d0d58782a5dfcf2c3c9725a2eb90bd63d8
 ---
-Testing Hints (Required if no HSD): Test with legacy mode
-enabled.
+Testing Hints:
+With our driver defaulting to set_switch_config with Promisc except
+when L2 filters match, we do not expect to see any mirroring of VF
+traffic in the PF since the DCR doesn't make an exception for MFP
+case. If we see mirroring than we need to file a separate issue
+with the HW team.
 
- drivers/net/ethernet/intel/i40e/i40e_main.c | 16 ++++++----------
- drivers/net/ethernet/intel/i40e/i40e_txrx.c | 13 -------------
- 2 files changed, 6 insertions(+), 23 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 90e37f4..5e7a7a1 100644
+index ac71ba2..4f4262e 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -3462,16 +3462,12 @@ static irqreturn_t i40e_intr(int irq, void *data)
- 		struct i40e_vsi *vsi = pf->vsi[pf->lan_vsi];
- 		struct i40e_q_vector *q_vector = vsi->q_vectors[0];
- 
--		/* temporarily disable queue cause for NAPI processing */
--		u32 qval = rd32(hw, I40E_QINT_RQCTL(0));
--
--		qval &= ~I40E_QINT_RQCTL_CAUSE_ENA_MASK;
--		wr32(hw, I40E_QINT_RQCTL(0), qval);
--
--		qval = rd32(hw, I40E_QINT_TQCTL(0));
--		qval &= ~I40E_QINT_TQCTL_CAUSE_ENA_MASK;
--		wr32(hw, I40E_QINT_TQCTL(0), qval);
--
-+		/* We do not have a way to disarm Queue causes while leaving
-+		 * interrupt enabled for all other causes, ideally
-+		 * interrupt should be disabled while we are in NAPI but
-+		 * this is not a performance path and napi_schedule()
-+		 * can deal with rescheduling.
-+		 */
- 		if (!test_bit(__I40E_DOWN, &pf->state))
- 			napi_schedule_irqoff(&q_vector->napi);
- 	}
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index cd9bb7f..61e98f5 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2051,19 +2051,6 @@ tx_only:
- 	if (vsi->back->flags & I40E_FLAG_MSIX_ENABLED) {
- 		i40e_update_enable_itr(vsi, q_vector);
- 	} else { /* Legacy mode */
--		struct i40e_hw *hw = &vsi->back->hw;
--		/* We re-enable the queue 0 cause, but
--		 * don't worry about dynamic_enable
--		 * because we left it on for the other
--		 * possible interrupts during napi
--		 */
--		u32 qval = rd32(hw, I40E_QINT_RQCTL(0)) |
--			   I40E_QINT_RQCTL_CAUSE_ENA_MASK;
--
--		wr32(hw, I40E_QINT_RQCTL(0), qval);
--		qval = rd32(hw, I40E_QINT_TQCTL(0)) |
--		       I40E_QINT_TQCTL_CAUSE_ENA_MASK;
--		wr32(hw, I40E_QINT_TQCTL(0), qval);
- 		i40e_irq_dynamic_enable_icr0(vsi->back, false);
- 	}
- 	return 0;
+@@ -2122,7 +2122,9 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
+ 		cur_promisc = (!!(vsi->current_netdev_flags & IFF_PROMISC) ||
+ 			       test_bit(__I40E_FILTER_OVERFLOW_PROMISC,
+ 					&vsi->state));
+-		if (vsi->type == I40E_VSI_MAIN && pf->lan_veb != I40E_NO_VEB) {
++		if ((vsi->type == I40E_VSI_MAIN) &&
++		    (pf->lan_veb != I40E_NO_VEB) &&
++		    !(pf->flags & I40E_FLAG_MFP_ENABLED)) {
+ 			/* set defport ON for Main VSI instead of true promisc
+ 			 * this way we will get all unicast/multicast and VLAN
+ 			 * promisc behavior but will not get VF or VMDq traffic
 -- 
 2.1.0
 
