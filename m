@@ -1,11 +1,11 @@
 From: John Stultz <john.stultz@linaro.org>
-Date: Thu, 14 Jan 2016 14:00:18 -0800
-Subject: [Intel-wired-lan] [PATCH v6 4/9] Always Running Timer (ART)
-	correlated clocksource
-In-Reply-To: <1452687149-11281-5-git-send-email-christopher.s.hall@intel.com>
+Date: Thu, 14 Jan 2016 16:24:18 -0800
+Subject: [Intel-wired-lan] [PATCH v6 3/9] Add correlated clocksource
+ relating aliased auxiliary and system clocks
+In-Reply-To: <1452687149-11281-4-git-send-email-christopher.s.hall@intel.com>
 References: <1452687149-11281-1-git-send-email-christopher.s.hall@intel.com>
- <1452687149-11281-5-git-send-email-christopher.s.hall@intel.com>
-Message-ID: <CALAqxLXaRwbmPLcWgxuDxY6MaQw_65nDzP_ELZ=5GeHm8cgEBw@mail.gmail.com>
+ <1452687149-11281-4-git-send-email-christopher.s.hall@intel.com>
+Message-ID: <CALAqxLXZhpGUv2UAPLmSboW=nhyW+eXvrMaUkZCy7JQh=WgkLQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,51 +14,57 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 On Wed, Jan 13, 2016 at 4:12 AM, Christopher S. Hall
 <christopher.s.hall@intel.com> wrote:
-> diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-> index c7c4d9c..26dcf63 100644
-> --- a/arch/x86/kernel/tsc.c
-> +++ b/arch/x86/kernel/tsc.c
-> @@ -949,10 +949,36 @@ static struct notifier_block time_cpufreq_notifier_block = {
->         .notifier_call  = time_cpufreq_notifier
+> ACKNOWLEDGMENT: The original correlated clock source and cross
+> timestamp code was developed by Thomas Gleixner
+> <tglx@linutronix.de>. It has changed considerably and any mistakes are
+> mine.
+>
+> The timekeeping and clocksource code don't currently comprehend two
+> clocks that are aliases of one another. That is clocks that are
+> *exactly* related. The correlated_cs struct encapsulated this
+> relationship between a clocksource and its alias clock. Modern Intel
+> hardware provides an Always Running Timer (ART) which is exactly
+> related to TSC through a known frequency ratio. The ART is an example
+> of a correlated clocksource.
+>
+> Signed-off-by: Christopher S. Hall <christopher.s.hall@intel.com>
+> ---
+>  include/linux/clocksource.h | 14 ++++++++++++++
+>  1 file changed, 14 insertions(+)
+>
+> diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
+> index 4542293..726ca68 100644
+> --- a/include/linux/clocksource.h
+> +++ b/include/linux/clocksource.h
+> @@ -267,4 +267,18 @@ struct system_counterval_t {
+>         struct clocksource      *cs;
 >  };
 >
-> +#define ART_CPUID_LEAF (0x15)
-> +/* The denominator will never be less that 2 */
-> +#define ART_MIN_DENOMINATOR (2)
-> +
-> +static u32 art_to_tsc_numerator;
-> +static u32 art_to_tsc_denominator;
-
-This is declared in a #ifdef CONFIG_CPU_FREQ
-
-
-> @@ -1071,6 +1097,24 @@ int unsynchronized_tsc(void)
->         return 0;
->  }
->
 > +/*
-> + * Convert ART to TSC given numerator/denominator found in detect_art()
+> + * struct correlated_cs - Descriptor for a clocksource correlated to another
+> + *     clocksource
+> + * @related_cs:                Pointer to the related timekeeping clocksource
+> + * @convert:           Conversion function to convert a timestamp from
+> + *                     the correlated clocksource to cycles of the related
+> + *                     timekeeping clocksource
 > + */
-> +static u64 convert_art_to_tsc(struct correlated_cs *cs, u64 cycles)
-> +{
-> +       u64 tmp, res;
+> +struct correlated_cs {
+> +       struct clocksource      *related_cs;
+> +       cycle_t                 (*convert)(struct correlated_cs *cs,
+> +                                          cycle_t cycles);
+> +};
 > +
-> +       res = (cycles / art_to_tsc_denominator) * art_to_tsc_numerator;
-> +       tmp = (cycles % art_to_tsc_denominator) * art_to_tsc_numerator;
-> +       res += tmp / art_to_tsc_denominator;
 
-Then used outside of that block.
+So.. In reworking your patch set, I've preserved this, but I'm still
+not totally convinced. Its a generic structure, but not used by any
+generic code and its only used by hardware specific implementations
+(ie: the tsc and e1000e_hwts logic). It seems like this could be a
+tsc.h specific structure w/o a real issue.
 
-So this won't build if CPU_FREQ is disabled.
-
-But don't bother to fix that, as I've already done so and I've got a
-bunch of tweaks I'm making to the code (I figured I'd done enough
-nit-picking reviews, and probably should just roll my sleeves up and
-take a swing at how I'd prefer the code look - including Richard's
-suggestions as well).
-
-I'll send you my revisions here shortly and hopefully you can let me
-know if anything goes too far and hopefully do some testing with it.
+And really this doesn't seem to be a generic thing. The e1000e hwts is
+always the ART based. Its not likely these sorts of cross hardware
+timestamps are going to be completely abstract and interchangeable,
+is it?
 
 thanks
 -john
