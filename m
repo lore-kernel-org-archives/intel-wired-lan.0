@@ -1,48 +1,46 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 15 Jan 2016 03:26:31 +0000
-Subject: [Intel-wired-lan] [next PATCH v2 4/4] igbvf: Add support
-	for	generic Tx checksums
-In-Reply-To: <20160113153130.4527.9429.stgit@localhost.localdomain>
-References: <20160113153001.4527.91152.stgit@localhost.localdomain>,
- <20160113153130.4527.9429.stgit@localhost.localdomain>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81E4F931@ORSMSX101.amr.corp.intel.com>
+From: Alexander Duyck <aduyck@mirantis.com>
+Date: Thu, 14 Jan 2016 20:41:50 -0800
+Subject: [Intel-wired-lan] [next PATCH 0/3] TSO and checksum fixes for i40e
+Message-ID: <20160115043921.24270.62791.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [intel-wired-lan-bounces at lists.osuosl.org] on behalf of Alexander Duyck [aduyck at mirantis.com]
-> Sent: Wednesday, January 13, 2016 7:31 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH v2 4/4] igbvf: Add support for   generic Tx checksums
-> 
-> This patch adds support for generic Tx checksums to the igbvf driver.  It
-> turns out this is actually pretty easy after going over the datasheet as we
-> were doing a number of steps we didn't need to.
-> 
-> In order to perform a Tx checksum for an L4 header we need to fill in the
-> following fields in the Tx descriptor:
->   MACLEN (maximum of 127), retrieved from:
->                 skb_network_offset()
->   IPLEN  (maximum of 511), retrieved from:
->                 skb_checksum_start_offset() - skb_network_offset()
->   TUCMD.L4T indicates offset and if checksum or crc32c, based on:
->                 skb->csum_offset
-> 
-> The added advantage to doing this is that we can support inner checksum
-> offloads for tunnels and MPLS while still being able to transparently
-> insert VLAN tags.
-> 
-> I also took the opportunity to clean-up many of the feature flag
-> configuration bits to make them a bit more consistent between drivers.  In
-> the case of the VF drivers this meant adding support for SCTP CRCs, and
-> inner checksum offloads for MPLS and various tunnel types.
-> 
-> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
-> ---
->  drivers/net/ethernet/intel/igbvf/netdev.c |  142 +++++++++++++++++------------
->  drivers/net/ethernet/intel/igbvf/vf.h     |    1
->  2 files changed, 82 insertions(+), 61 deletions(-)
+This patch set is meant to improve the performance and reliability of i40e
+when it comes to performing TSO and Tx checksum offloads related to tunnels.
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+I have tested it with a number of combinations of v4 over v6 and v6 over v4
+for VXLANs.  With this patch set I resolved a number of issues and I am now
+able to perform TSO for any of them as long as the outer UDP checksum is 0.
+It should also now be supported if the outer checksum is enabled in the
+case of the XL722, though I cannot test it.
+
+I was able to verify IPv6 TSO is working correctly, however it seems like
+if I use VXLAN over IPv6 I am not seeing any receive checksum offloads.
+I'm still trying to work out that bit but as far as I can tell I haven't
+configured anything incorrectly as the receiving end is getting the frames
+in the proper format.
+
+I'll be out on vacation for the next several days so if anything comes up I
+will address it on Tuesday.
+
+Thanks.
+
+-Alex
+
+---
+
+Alexander Duyck (3):
+      i40e: Refactor TSO to resolve unwanted behaviors
+      i40e: Refactor Tx checksum offload
+      i40e: Fix build warnings when geneve is not enabled
+
+
+ drivers/net/ethernet/intel/i40e/i40e_main.c |   24 +-
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c |  284 ++++++++++++++++-----------
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h |    1 
+ 3 files changed, 178 insertions(+), 131 deletions(-)
+
+--
