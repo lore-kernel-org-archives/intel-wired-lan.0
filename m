@@ -1,304 +1,126 @@
 From: Joshua Hay <joshua.a.hay@intel.com>
-Date: Fri, 15 Jan 2016 14:33:09 -0800
-Subject: [Intel-wired-lan] [next PATCH S28 02/15] i40e: drop unused debugfs
-	file "dump"
+Date: Fri, 15 Jan 2016 14:33:15 -0800
+Subject: [Intel-wired-lan] [next PATCH S28 08/15] i40e/i40evf: avoid atomics
 In-Reply-To: <1452897202-15204-1-git-send-email-joshua.a.hay@intel.com>
 References: <1452897202-15204-1-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <1452897202-15204-3-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <1452897202-15204-9-git-send-email-joshua.a.hay@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-There was a completely unused file "dump" in debugfs that
-never panned out to be useful.
+In the case where we have a page fully used by receive data, we need to
+release the page fully to the stack. Instead of calling get_page (which
+increments the page count) followed by free_page (which decrements the
+page count), just donate our reference to the stack. Although this
+donation is not tax deductable, it does allow us to avoid two very
+expensive atomic operations that reverse each other.
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Change-ID: I12bb9e37b5a83299725dda815a8746157baf6562
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-ID: If70739792d5748995fc175ec92ac2171ed4ad8fc
 ---
-Testing Hints: check debugfs, dump entry should be gone.
+Testing Hints: make sure receive traffic is stable under heavy load with
+packet split enabled, and that no data corruption is seen.
 
- drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 250 -------------------------
- 1 file changed, 250 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 21 +++++++++++++--------
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 21 +++++++++++++--------
+ 2 files changed, 26 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-index 34da53b..631c2d6 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-@@ -72,248 +72,6 @@ static struct i40e_veb *i40e_dbg_find_veb(struct i40e_pf *pf, int seid)
- }
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 60e993e..cd9bb7f 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -1663,28 +1663,33 @@ static int i40e_clean_rx_irq_ps(struct i40e_ring *rx_ring, const int budget)
+ 					rx_bi->page_offset + copysize,
+ 					rx_packet_len, I40E_RXBUFFER_2048);
  
- /**************************************************************
-- * dump
-- * The dump entry in debugfs is for getting a data snapshow of
-- * the driver's current configuration and runtime details.
-- * When the filesystem entry is written, a snapshot is taken.
-- * When the entry is read, the most recent snapshot data is dumped.
-- **************************************************************/
--static char *i40e_dbg_dump_buf;
--static ssize_t i40e_dbg_dump_data_len;
--static ssize_t i40e_dbg_dump_buffer_len;
--
--/**
-- * i40e_dbg_dump_read - read the dump data
-- * @filp: the opened file
-- * @buffer: where to write the data for the user to read
-- * @count: the size of the user's buffer
-- * @ppos: file position offset
-- **/
--static ssize_t i40e_dbg_dump_read(struct file *filp, char __user *buffer,
--				  size_t count, loff_t *ppos)
--{
--	int bytes_not_copied;
--	int len;
--
--	/* is *ppos bigger than the available data? */
--	if (*ppos >= i40e_dbg_dump_data_len || !i40e_dbg_dump_buf)
--		return 0;
--
--	/* be sure to not read beyond the end of available data */
--	len = min_t(int, count, (i40e_dbg_dump_data_len - *ppos));
--
--	bytes_not_copied = copy_to_user(buffer, &i40e_dbg_dump_buf[*ppos], len);
--	if (bytes_not_copied)
--		return -EFAULT;
--
--	*ppos += len;
--	return len;
--}
--
--/**
-- * i40e_dbg_prep_dump_buf
-- * @pf: the PF we're working with
-- * @buflen: the desired buffer length
-- *
-- * Return positive if success, 0 if failed
-- **/
--static int i40e_dbg_prep_dump_buf(struct i40e_pf *pf, int buflen)
--{
--	/* if not already big enough, prep for re alloc */
--	if (i40e_dbg_dump_buffer_len && i40e_dbg_dump_buffer_len < buflen) {
--		kfree(i40e_dbg_dump_buf);
--		i40e_dbg_dump_buffer_len = 0;
--		i40e_dbg_dump_buf = NULL;
--	}
--
--	/* get a new buffer if needed */
--	if (!i40e_dbg_dump_buf) {
--		i40e_dbg_dump_buf = kzalloc(buflen, GFP_KERNEL);
--		if (i40e_dbg_dump_buf != NULL)
--			i40e_dbg_dump_buffer_len = buflen;
--	}
--
--	return i40e_dbg_dump_buffer_len;
--}
--
--/**
-- * i40e_dbg_dump_write - trigger a datadump snapshot
-- * @filp: the opened file
-- * @buffer: where to find the user's data
-- * @count: the length of the user's data
-- * @ppos: file position offset
-- *
-- * Any write clears the stats
-- **/
--static ssize_t i40e_dbg_dump_write(struct file *filp,
--				   const char __user *buffer,
--				   size_t count, loff_t *ppos)
--{
--	struct i40e_pf *pf = filp->private_data;
--	bool seid_found = false;
--	long seid = -1;
--	int buflen = 0;
--	int i, ret;
--	int len;
--	u8 *p;
--
--	/* don't allow partial writes */
--	if (*ppos != 0)
--		return 0;
--
--	/* decode the SEID given to be dumped */
--	ret = kstrtol_from_user(buffer, count, 0, &seid);
--
--	if (ret) {
--		dev_info(&pf->pdev->dev, "bad seid value\n");
--	} else if (seid == 0) {
--		seid_found = true;
--
--		kfree(i40e_dbg_dump_buf);
--		i40e_dbg_dump_buffer_len = 0;
--		i40e_dbg_dump_data_len = 0;
--		i40e_dbg_dump_buf = NULL;
--		dev_info(&pf->pdev->dev, "debug buffer freed\n");
--
--	} else if (seid == pf->pf_seid || seid == 1) {
--		seid_found = true;
--
--		buflen = sizeof(struct i40e_pf);
--		buflen += (sizeof(struct i40e_aq_desc)
--		     * (pf->hw.aq.num_arq_entries + pf->hw.aq.num_asq_entries));
--
--		if (i40e_dbg_prep_dump_buf(pf, buflen)) {
--			p = i40e_dbg_dump_buf;
--
--			/* avoid use of memcpy here due to sparse warning
--			 * about copy size.
+-			get_page(rx_bi->page);
+-			/* switch to the other half-page here; the allocation
+-			 * code programs the right addr into HW. If we haven't
+-			 * used this half-page, the address won't be changed,
+-			 * and HW can just use it next time through.
 -			 */
--			*((struct i40e_pf *)p) = *pf;
--			p += sizeof(struct i40e_pf);
--
--			len = (sizeof(struct i40e_aq_desc)
--					* pf->hw.aq.num_asq_entries);
--			memcpy(p, pf->hw.aq.asq.desc_buf.va, len);
--			p += len;
--
--			len = (sizeof(struct i40e_aq_desc)
--					* pf->hw.aq.num_arq_entries);
--			memcpy(p, pf->hw.aq.arq.desc_buf.va, len);
--			p += len;
--
--			i40e_dbg_dump_data_len = buflen;
--			dev_info(&pf->pdev->dev,
--				 "PF seid %ld dumped %d bytes\n",
--				 seid, (int)i40e_dbg_dump_data_len);
--		}
--	} else if (seid >= I40E_BASE_VSI_SEID) {
--		struct i40e_vsi *vsi = NULL;
--		struct i40e_mac_filter *f;
--		int filter_count = 0;
--
--		mutex_lock(&pf->switch_mutex);
--		vsi = i40e_dbg_find_vsi(pf, seid);
--		if (!vsi) {
--			mutex_unlock(&pf->switch_mutex);
--			goto write_exit;
--		}
--
--		buflen = sizeof(struct i40e_vsi);
--		buflen += sizeof(struct i40e_q_vector) * vsi->num_q_vectors;
--		buflen += sizeof(struct i40e_ring) * 2 * vsi->num_queue_pairs;
--		buflen += sizeof(struct i40e_tx_buffer) * vsi->num_queue_pairs;
--		buflen += sizeof(struct i40e_rx_buffer) * vsi->num_queue_pairs;
--		list_for_each_entry(f, &vsi->mac_filter_list, list)
--			filter_count++;
--		buflen += sizeof(struct i40e_mac_filter) * filter_count;
--
--		if (i40e_dbg_prep_dump_buf(pf, buflen)) {
--			p = i40e_dbg_dump_buf;
--			seid_found = true;
--
--			len = sizeof(struct i40e_vsi);
--			memcpy(p, vsi, len);
--			p += len;
--
--			if (vsi->num_q_vectors) {
--				len = (sizeof(struct i40e_q_vector)
--					* vsi->num_q_vectors);
--				memcpy(p, vsi->q_vectors, len);
--				p += len;
--			}
--
--			if (vsi->num_queue_pairs) {
--				len = (sizeof(struct i40e_ring) *
--				      vsi->num_queue_pairs);
--				memcpy(p, vsi->tx_rings, len);
--				p += len;
--				memcpy(p, vsi->rx_rings, len);
--				p += len;
--			}
--
--			if (vsi->tx_rings[0]) {
--				len = sizeof(struct i40e_tx_buffer);
--				for (i = 0; i < vsi->num_queue_pairs; i++) {
--					memcpy(p, vsi->tx_rings[i]->tx_bi, len);
--					p += len;
--				}
--				len = sizeof(struct i40e_rx_buffer);
--				for (i = 0; i < vsi->num_queue_pairs; i++) {
--					memcpy(p, vsi->rx_rings[i]->rx_bi, len);
--					p += len;
--				}
--			}
--
--			/* macvlan filter list */
--			len = sizeof(struct i40e_mac_filter);
--			list_for_each_entry(f, &vsi->mac_filter_list, list) {
--				memcpy(p, f, len);
--				p += len;
--			}
--
--			i40e_dbg_dump_data_len = buflen;
--			dev_info(&pf->pdev->dev,
--				 "VSI seid %ld dumped %d bytes\n",
--				 seid, (int)i40e_dbg_dump_data_len);
--		}
--		mutex_unlock(&pf->switch_mutex);
--	} else if (seid >= I40E_BASE_VEB_SEID) {
--		struct i40e_veb *veb = NULL;
--
--		mutex_lock(&pf->switch_mutex);
--		veb = i40e_dbg_find_veb(pf, seid);
--		if (!veb) {
--			mutex_unlock(&pf->switch_mutex);
--			goto write_exit;
--		}
--
--		buflen = sizeof(struct i40e_veb);
--		if (i40e_dbg_prep_dump_buf(pf, buflen)) {
--			seid_found = true;
--			memcpy(i40e_dbg_dump_buf, veb, buflen);
--			i40e_dbg_dump_data_len = buflen;
--			dev_info(&pf->pdev->dev,
--				 "VEB seid %ld dumped %d bytes\n",
--				 seid, (int)i40e_dbg_dump_data_len);
--		}
--		mutex_unlock(&pf->switch_mutex);
--	}
--
--write_exit:
--	if (!seid_found)
--		dev_info(&pf->pdev->dev, "unknown seid %ld\n", seid);
--
--	return count;
--}
--
--static const struct file_operations i40e_dbg_dump_fops = {
--	.owner = THIS_MODULE,
--	.open =  simple_open,
--	.read =  i40e_dbg_dump_read,
--	.write = i40e_dbg_dump_write,
--};
--
--/**************************************************************
-  * command
-  * The command entry in debugfs is for giving the driver commands
-  * to be executed - these may be for changing the internal switch
-@@ -2217,11 +1975,6 @@ void i40e_dbg_pf_init(struct i40e_pf *pf)
- 	if (!pfile)
- 		goto create_failed;
+-			rx_bi->page_offset ^= PAGE_SIZE / 2;
+ 			/* If the page count is more than 2, then both halves
+ 			 * of the page are used and we need to free it. Do it
+ 			 * here instead of in the alloc code. Otherwise one
+ 			 * of the half-pages might be released between now and
+ 			 * then, and we wouldn't know which one to use.
++			 * Don't call get_page and free_page since those are
++			 * both expensive atomic operations that just change
++			 * the refcount in opposite directions. Just give the
++			 * page to the stack; he can have our refcount.
+ 			 */
+ 			if (page_count(rx_bi->page) > 2) {
+ 				dma_unmap_page(rx_ring->dev,
+ 					       rx_bi->page_dma,
+ 					       PAGE_SIZE,
+ 					       DMA_FROM_DEVICE);
+-				__free_page(rx_bi->page);
+ 				rx_bi->page = NULL;
+ 				rx_bi->page_dma = 0;
+ 				rx_ring->rx_stats.realloc_count++;
++			} else {
++				get_page(rx_bi->page);
++				/* switch to the other half-page here; the
++				 * allocation code programs the right addr
++				 * into HW. If we haven't used this half-page,
++				 * the address won't be changed, and HW can
++				 * just use it next time through.
++				 */
++				rx_bi->page_offset ^= PAGE_SIZE / 2;
+ 			}
  
--	pfile = debugfs_create_file("dump", 0600, pf->i40e_dbg_pf, pf,
--				    &i40e_dbg_dump_fops);
--	if (!pfile)
--		goto create_failed;
--
- 	pfile = debugfs_create_file("netdev_ops", 0600, pf->i40e_dbg_pf, pf,
- 				    &i40e_dbg_netdev_ops_fops);
- 	if (!pfile)
-@@ -2242,9 +1995,6 @@ void i40e_dbg_pf_exit(struct i40e_pf *pf)
- {
- 	debugfs_remove_recursive(pf->i40e_dbg_pf);
- 	pf->i40e_dbg_pf = NULL;
--
--	kfree(i40e_dbg_dump_buf);
--	i40e_dbg_dump_buf = NULL;
- }
+ 		}
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index c1ea819..ecd2df2 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -1126,28 +1126,33 @@ static int i40e_clean_rx_irq_ps(struct i40e_ring *rx_ring, const int budget)
+ 					rx_bi->page_offset + copysize,
+ 					rx_packet_len, I40E_RXBUFFER_2048);
  
- /**
+-			get_page(rx_bi->page);
+-			/* switch to the other half-page here; the allocation
+-			 * code programs the right addr into HW. If we haven't
+-			 * used this half-page, the address won't be changed,
+-			 * and HW can just use it next time through.
+-			 */
+-			rx_bi->page_offset ^= PAGE_SIZE / 2;
+ 			/* If the page count is more than 2, then both halves
+ 			 * of the page are used and we need to free it. Do it
+ 			 * here instead of in the alloc code. Otherwise one
+ 			 * of the half-pages might be released between now and
+ 			 * then, and we wouldn't know which one to use.
++			 * Don't call get_page and free_page since those are
++			 * both expensive atomic operations that just change
++			 * the refcount in opposite directions. Just give the
++			 * page to the stack; he can have our refcount.
+ 			 */
+ 			if (page_count(rx_bi->page) > 2) {
+ 				dma_unmap_page(rx_ring->dev,
+ 					       rx_bi->page_dma,
+ 					       PAGE_SIZE,
+ 					       DMA_FROM_DEVICE);
+-				__free_page(rx_bi->page);
+ 				rx_bi->page = NULL;
+ 				rx_bi->page_dma = 0;
+ 				rx_ring->rx_stats.realloc_count++;
++			} else {
++				get_page(rx_bi->page);
++				/* switch to the other half-page here; the
++				 * allocation code programs the right addr
++				 * into HW. If we haven't used this half-page,
++				 * the address won't be changed, and HW can
++				 * just use it next time through.
++				 */
++				rx_bi->page_offset ^= PAGE_SIZE / 2;
+ 			}
+ 
+ 		}
 -- 
 2.1.0
 
