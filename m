@@ -1,57 +1,128 @@
-From: Joshua Hay <joshua.a.hay@intel.com>
-Date: Fri, 15 Jan 2016 14:33:13 -0800
-Subject: [Intel-wired-lan] [next PATCH S28 06/15] i40e: Fix PROMISC mode for
-	Multi-function per port (MFP) devices
-In-Reply-To: <1452897202-15204-1-git-send-email-joshua.a.hay@intel.com>
-References: <1452897202-15204-1-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <1452897202-15204-7-git-send-email-joshua.a.hay@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 16 Jan 2016 09:11:11 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 92b79fd06838260944571e3cb6f0b900577b545c BUILD SUCCESS
+Message-ID: <569998af.bHGJQePj1Fl6TfBs%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Anjali Singhai Jain <anjali.singhai@intel.com>
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+92b79fd06838260944571e3cb6f0b900577b545c  i40e/i40evf: use pages correctly in rx
 
-This patch falls back to enabling unicast, multicast and
-broadcast promiscuous mode when the driver must disable it's use
-of "default port" aka defport mode (which is mornally used to
-provide a promiscuous mode), due to internal incompatibility
-with Multiple Function per Port (aka MFP).
+elapsed time: 30m
 
-The situation that requires this patch is when Physical
-Function 0 is the device being used, and it can support SR-IOV
-when MFP is enabled, via the driver creating a VEB on an MFP
-enabled adapter.
+configs tested: 107
 
-Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-Change-ID: Ie90b00d0d58782a5dfcf2c3c9725a2eb90bd63d8
----
-Testing Hints:
-With our driver defaulting to set_switch_config with Promisc except
-when L2 filters match, we do not expect to see any mirroring of VF
-traffic in the PF since the DCR doesn't make an exception for MFP
-case. If we see mirroring than we need to file a separate issue
-with the HW team.
+i386                     randconfig-a0-201602
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+x86_64               randconfig-x011-01151613
+x86_64               randconfig-x013-01151613
+x86_64               randconfig-x017-01151613
+x86_64               randconfig-x019-01151613
+x86_64               randconfig-x015-01151613
+x86_64               randconfig-x018-01151613
+x86_64               randconfig-x014-01151613
+x86_64               randconfig-x012-01151613
+x86_64               randconfig-x016-01151613
+x86_64               randconfig-x010-01151613
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201602
+i386                     randconfig-s1-201602
+x86_64                           allmodconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                   randconfig-i0-201602
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201602
+i386                     randconfig-i1-201602
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201602
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64               randconfig-x009-01151702
+x86_64               randconfig-x008-01151702
+x86_64               randconfig-x000-01151702
+x86_64               randconfig-x004-01151702
+x86_64               randconfig-x002-01151702
+x86_64               randconfig-x007-01151702
+x86_64               randconfig-x003-01151702
+x86_64               randconfig-x006-01151702
+x86_64               randconfig-x001-01151702
+x86_64               randconfig-x005-01151702
+i386                     randconfig-r0-201602
+i386                 randconfig-x006-01151732
+i386                 randconfig-x005-01151732
+i386                 randconfig-x001-01151732
+i386                 randconfig-x008-01151732
+i386                 randconfig-x000-01151732
+i386                 randconfig-x009-01151732
+i386                 randconfig-x003-01151732
+i386                 randconfig-x007-01151732
+i386                 randconfig-x002-01151732
+i386                 randconfig-x004-01151732
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
 
- drivers/net/ethernet/intel/i40e/i40e_main.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index ac71ba2..4f4262e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -2122,7 +2122,9 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 		cur_promisc = (!!(vsi->current_netdev_flags & IFF_PROMISC) ||
- 			       test_bit(__I40E_FILTER_OVERFLOW_PROMISC,
- 					&vsi->state));
--		if (vsi->type == I40E_VSI_MAIN && pf->lan_veb != I40E_NO_VEB) {
-+		if ((vsi->type == I40E_VSI_MAIN) &&
-+		    (pf->lan_veb != I40E_NO_VEB) &&
-+		    !(pf->flags & I40E_FLAG_MFP_ENABLED)) {
- 			/* set defport ON for Main VSI instead of true promisc
- 			 * this way we will get all unicast/multicast and VLAN
- 			 * promisc behavior but will not get VF or VMDq traffic
--- 
-2.1.0
-
+Thanks,
+Fengguang
