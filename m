@@ -1,660 +1,288 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 16 Jan 2016 16:53:29 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 98d524d6d840a8691ce3e5a248e6fe8025d5ab7d BUILD SUCCESS
-Message-ID: <569a0509.e5F2LYgKkw2AhZuL%fengguang.wu@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Sat, 16 Jan 2016 07:53:33 -0800
+Subject: [Intel-wired-lan] [next PATCH 1/3] i40e: Refactor TSO to
+	resolve unwanted behaviors
+In-Reply-To: <20160115182014.00000764@unknown>
+References: <20160115043921.24270.62791.stgit@localhost.localdomain>
+ <20160115044156.24270.72533.stgit@localhost.localdomain>
+ <20160115182014.00000764@unknown>
+Message-ID: <F5954798-8FC8-47B4-A5A8-E02FA39D040B@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-98d524d6d840a8691ce3e5a248e6fe8025d5ab7d  i40e: Refactor Tx checksum offload
+I'll probably submit a v2 with the cheksum adjustment bits split out into a separate function since there are multiple drivers that need to make similar adjustments to checksums.  That way I only have to have one function doing all the casting between bitwise types.
 
-elapsed time: 463m
+-Alex
 
-configs tested: 640
+Sent from my iPad
 
-arm                       cns3420vb_defconfig
-arm                        magician_defconfig
-arm                            pleb_defconfig
-arm                       netwinder_defconfig
-powerpc                          g5_defconfig
-sh                           se7619_defconfig
-m32r                   m32700ut.smp_defconfig
-mips                           mtx1_defconfig
-powerpc                 mpc836x_rdk_defconfig
-microblaze                        allnoconfig
-mips                      bmips_stb_defconfig
-powerpc                      ep88xc_defconfig
-m68k                        mvme147_defconfig
-mips                      maltaaprp_defconfig
-powerpc                    adder875_defconfig
-blackfin                            defconfig
-ia64                                defconfig
-mips                                defconfig
-ia64                              allnoconfig
-powerpc                  iss476-smp_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-a0-01161117
-x86_64                 randconfig-a0-01161149
-x86_64                 randconfig-a0-01161250
-x86_64                 randconfig-a0-01161337
-x86_64                 randconfig-a0-01161415
-x86_64                 randconfig-a0-01161509
-alpha                            allmodconfig
-sh                           se7722_defconfig
-sh                        sh7785lcr_defconfig
-arm                         hackkit_defconfig
-blackfin                          allnoconfig
-powerpc                  gef_sbc610_defconfig
-arm                           acs5k_defconfig
-blackfin                  CM-BF537U_defconfig
-mips                        nlm_xlr_defconfig
-arm                       spear13xx_defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-arm                          iop33x_defconfig
-powerpc                      acadia_defconfig
-powerpc                     kmeter1_defconfig
-powerpc                mpc8610_hpcd_defconfig
-xtensa                  nommu_kc705_defconfig
-x86_64                              defconfig
-arm                     davinci_all_defconfig
-arm                         vf610m4_defconfig
-arm64                               defconfig
-mips                      fuloong2e_defconfig
-m68k                             alldefconfig
-mips                            ar7_defconfig
-sh                          rsk7203_defconfig
-mips                malta_kvm_guest_defconfig
-parisc                      default_defconfig
-powerpc                      makalu_defconfig
-ia64                            sim_defconfig
-powerpc                    gamecube_defconfig
-powerpc                      ppc64e_defconfig
-arm                         lpc18xx_defconfig
-sh                   secureedge5410_defconfig
-sh                   sh7770_generic_defconfig
-i386                   randconfig-c0-01161106
-i386                   randconfig-c0-01161203
-i386                   randconfig-c0-01161218
-i386                   randconfig-c0-01161235
-i386                   randconfig-c0-01161310
-i386                   randconfig-c0-01161331
-i386                   randconfig-c0-01161357
-i386                   randconfig-c0-01161437
-i386                   randconfig-c0-01161456
-i386                   randconfig-c0-01161533
-i386                   randconfig-c0-01161551
-i386                   randconfig-c0-01161605
-powerpc                      ppc40x_defconfig
-powerpc                        warp_defconfig
-powerpc64                         allnoconfig
-arm                        keystone_defconfig
-powerpc                      pasemi_defconfig
-s390                              allnoconfig
-arm                         cm_x2xx_defconfig
-mips                     sead3micro_defconfig
-mn10300                     asb2303_defconfig
-blackfin                BF526-EZBRD_defconfig
-mips                       markeins_defconfig
-i386                             allyesconfig
-arm                           sunxi_defconfig
-m68k                        m5407c3_defconfig
-arm64                             allnoconfig
-mips                        maltaup_defconfig
-x86_64                 randconfig-v0-01161108
-x86_64                 randconfig-v0-01161148
-x86_64                 randconfig-v0-01161232
-x86_64                 randconfig-v0-01161339
-x86_64                 randconfig-v0-01161403
-x86_64                 randconfig-v0-01161423
-x86_64                 randconfig-v0-01161515
-x86_64                 randconfig-v0-01161551
-alpha                               defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-blackfin              BF561-ACVILON_defconfig
-powerpc                 mpc8315_rdb_defconfig
-sh                      rts7751r2d1_defconfig
-sh                           sh2007_defconfig
-arm                        realview_defconfig
-mips                  cavium_octeon_defconfig
-powerpc                      chrp32_defconfig
-sh                          lboxre2_defconfig
-um                               alldefconfig
-arm64                            alldefconfig
-mips                              allnoconfig
-powerpc                 linkstation_defconfig
-powerpc64                           defconfig
-arm                         lpc32xx_defconfig
-avr32                     atstk1006_defconfig
-ia64                            zx1_defconfig
-m68k                          sun3x_defconfig
-powerpc                 mpc8313_rdb_defconfig
-powerpc                     pq2fads_defconfig
-arm                        neponset_defconfig
-arm                            qcom_defconfig
-powerpc                 mpc832x_mds_defconfig
-sparc64                          allyesconfig
-avr32                     atstk1002_defconfig
-blackfin                       SRV1_defconfig
-m32r                      mappi.smp_defconfig
-s390                                defconfig
-tile                             alldefconfig
-i386                             alldefconfig
-arm                      acs5k_tiny_defconfig
-powerpc                  mpc885_ads_defconfig
-sh                           se7750_defconfig
-avr32        atngw100mkii_evklcd101_defconfig
-mips                 pnx8335_stb225_defconfig
-sh                               alldefconfig
-arm                           h3600_defconfig
-arm                       imx_v4_v5_defconfig
-powerpc                     ep8248e_defconfig
-powerpc                     sbc8548_defconfig
-sparc64                          alldefconfig
-arm                        mvebu_v7_defconfig
-powerpc                         c2k_defconfig
-arm                         lubbock_defconfig
-arm                         nhk8815_defconfig
-arm                          simpad_defconfig
-powerpc                    ge_imp3a_defconfig
-tile                             allmodconfig
-i386                              allnoconfig
-arm                  colibri_pxa270_defconfig
-ia64                             allyesconfig
-sh                         microdev_defconfig
-sh                          polaris_defconfig
-arm                              alldefconfig
-arm                          ep93xx_defconfig
-blackfin                   CM-BF533_defconfig
-frv                               allnoconfig
-sh                          rsk7269_defconfig
-arm                                 defconfig
-avr32            atngw100_evklcd101_defconfig
-powerpc               corenet_basic_defconfig
-powerpc                     mpc86xx_defconfig
-sh                        edosk7760_defconfig
-arm                        mini2440_defconfig
-avr32        atngw100mkii_evklcd100_defconfig
-avr32                        merisc_defconfig
-blackfin                      H8606_defconfig
-m68k                         apollo_defconfig
-arm                         bcm2835_defconfig
-arm                        raumfeld_defconfig
-blackfin                       IP0X_defconfig
-microblaze                       allyesconfig
-m68k                          atari_defconfig
-mips                    maltaup_xpa_defconfig
-mn10300                           allnoconfig
-sh                               allmodconfig
-sparc64                           allnoconfig
-m68k                             allmodconfig
-powerpc                     akebono_defconfig
-sh                          r7780mp_defconfig
-tile                              allnoconfig
-avr32                 atngw100_mrmt_defconfig
-blackfin                   CM-BF548_defconfig
-mips                             allyesconfig
-mips                         rt305x_defconfig
-powerpc                      arches_defconfig
-arm                          ixp4xx_defconfig
-arm                          nuc950_defconfig
-parisc                        c8000_defconfig
-arm                  colibri_pxa300_defconfig
-mips                         tb0226_defconfig
-s390                           gcov_defconfig
-blackfin                BF533-STAMP_defconfig
-powerpc                     tqm8555_defconfig
-arm                         s5pv210_defconfig
-blackfin                   CM-BF527_defconfig
-powerpc                             defconfig
-sh                          sdk7780_defconfig
-xtensa                  audio_kc705_defconfig
-mips                      loongson3_defconfig
-sh                               allyesconfig
-sh                  sh7785lcr_32bit_defconfig
-arm                            hisi_defconfig
-mips                      maltasmvp_defconfig
-powerpc                       eiger_defconfig
-arm                      jornada720_defconfig
-arm                        multi_v7_defconfig
-avr32                            alldefconfig
-sh                           se7712_defconfig
-blackfin                   CM-BF561_defconfig
-blackfin                    DNP5370_defconfig
-mips                          malta_defconfig
-powerpc                    sbc8641d_defconfig
-s390                             allyesconfig
-alpha                            allyesconfig
-arm                       versatile_defconfig
-powerpc                      ppc6xx_defconfig
-arm                     am200epdkit_defconfig
-avr32                  atngw100mkii_defconfig
-avr32            atngw100_evklcd100_defconfig
-m68k                        m5272c3_defconfig
-mn10300                          alldefconfig
-parisc                generic-64bit_defconfig
-powerpc                 mpc834x_itx_defconfig
-x86_64               randconfig-x011-01151613
-x86_64               randconfig-x013-01151613
-x86_64               randconfig-x017-01151613
-x86_64               randconfig-x019-01151613
-x86_64               randconfig-x015-01151613
-x86_64               randconfig-x018-01151613
-x86_64               randconfig-x014-01151613
-x86_64               randconfig-x012-01151613
-x86_64               randconfig-x016-01151613
-x86_64               randconfig-x010-01151613
-i386                                defconfig
-i386                     randconfig-s0-201602
-i386                     randconfig-s1-201602
-x86_64                 randconfig-s0-01161109
-x86_64                 randconfig-s1-01161109
-x86_64                 randconfig-s2-01161109
-x86_64                 randconfig-s0-01161125
-x86_64                 randconfig-s1-01161125
-x86_64                 randconfig-s2-01161125
-x86_64                 randconfig-s0-01161139
-x86_64                 randconfig-s1-01161139
-x86_64                 randconfig-s2-01161139
-x86_64                 randconfig-s0-01161152
-x86_64                 randconfig-s1-01161152
-x86_64                 randconfig-s2-01161152
-x86_64                 randconfig-s0-01161210
-x86_64                 randconfig-s1-01161210
-x86_64                 randconfig-s2-01161210
-x86_64                 randconfig-s0-01161226
-x86_64                 randconfig-s1-01161226
-x86_64                 randconfig-s2-01161226
-x86_64                 randconfig-s0-01161246
-x86_64                 randconfig-s1-01161246
-x86_64                 randconfig-s2-01161246
-x86_64                 randconfig-s0-01161300
-x86_64                 randconfig-s1-01161300
-x86_64                 randconfig-s2-01161300
-x86_64                 randconfig-s0-01161311
-x86_64                 randconfig-s1-01161311
-x86_64                 randconfig-s2-01161311
-x86_64                 randconfig-s0-01161326
-x86_64                 randconfig-s1-01161326
-x86_64                 randconfig-s2-01161326
-x86_64                 randconfig-s0-01161343
-x86_64                 randconfig-s1-01161343
-x86_64                 randconfig-s2-01161343
-x86_64                 randconfig-s0-01161356
-x86_64                 randconfig-s1-01161356
-x86_64                 randconfig-s2-01161356
-x86_64                 randconfig-s0-01161414
-x86_64                 randconfig-s1-01161414
-x86_64                 randconfig-s2-01161414
-x86_64                 randconfig-s0-01161427
-x86_64                 randconfig-s1-01161427
-x86_64                 randconfig-s2-01161427
-x86_64                 randconfig-s0-01161446
-x86_64                 randconfig-s1-01161446
-x86_64                 randconfig-s2-01161446
-x86_64                 randconfig-s0-01161458
-x86_64                 randconfig-s1-01161458
-x86_64                 randconfig-s2-01161458
-x86_64                 randconfig-s0-01161511
-x86_64                 randconfig-s1-01161511
-x86_64                 randconfig-s2-01161511
-x86_64                 randconfig-s0-01161533
-x86_64                 randconfig-s1-01161533
-x86_64                 randconfig-s2-01161533
-x86_64                 randconfig-s0-01161545
-x86_64                 randconfig-s1-01161545
-x86_64                 randconfig-s2-01161545
-x86_64                 randconfig-s0-01161603
-x86_64                 randconfig-s1-01161603
-x86_64                 randconfig-s2-01161603
-x86_64                 randconfig-s0-01161620
-x86_64                 randconfig-s1-01161620
-x86_64                 randconfig-s2-01161620
-x86_64                 randconfig-s3-01161111
-x86_64                 randconfig-s4-01161111
-x86_64                 randconfig-s5-01161111
-x86_64                 randconfig-s3-01161131
-x86_64                 randconfig-s4-01161131
-x86_64                 randconfig-s5-01161131
-x86_64                 randconfig-s3-01161146
-x86_64                 randconfig-s4-01161146
-x86_64                 randconfig-s5-01161146
-x86_64                 randconfig-s3-01161158
-x86_64                 randconfig-s4-01161158
-x86_64                 randconfig-s5-01161158
-x86_64                 randconfig-s3-01161218
-x86_64                 randconfig-s4-01161218
-x86_64                 randconfig-s5-01161218
-x86_64                 randconfig-s3-01161239
-x86_64                 randconfig-s4-01161239
-x86_64                 randconfig-s5-01161239
-x86_64                 randconfig-s3-01161252
-x86_64                 randconfig-s4-01161252
-x86_64                 randconfig-s5-01161252
-x86_64                 randconfig-s3-01161307
-x86_64                 randconfig-s4-01161307
-x86_64                 randconfig-s5-01161307
-x86_64                 randconfig-s3-01161326
-x86_64                 randconfig-s4-01161326
-x86_64                 randconfig-s5-01161326
-x86_64                 randconfig-s3-01161353
-x86_64                 randconfig-s4-01161353
-x86_64                 randconfig-s5-01161353
-x86_64                 randconfig-s3-01161408
-x86_64                 randconfig-s4-01161408
-x86_64                 randconfig-s5-01161408
-x86_64                 randconfig-s3-01161422
-x86_64                 randconfig-s4-01161422
-x86_64                 randconfig-s5-01161422
-x86_64                 randconfig-s3-01161435
-x86_64                 randconfig-s4-01161435
-x86_64                 randconfig-s5-01161435
-x86_64                 randconfig-s3-01161447
-x86_64                 randconfig-s4-01161447
-x86_64                 randconfig-s5-01161447
-x86_64                 randconfig-s3-01161506
-x86_64                 randconfig-s4-01161506
-x86_64                 randconfig-s5-01161506
-x86_64                 randconfig-s3-01161533
-x86_64                 randconfig-s4-01161533
-x86_64                 randconfig-s5-01161533
-x86_64                 randconfig-s3-01161547
-x86_64                 randconfig-s4-01161547
-x86_64                 randconfig-s5-01161547
-x86_64                 randconfig-s3-01161601
-x86_64                 randconfig-s4-01161601
-x86_64                 randconfig-s5-01161601
-x86_64                 randconfig-s3-01161614
-x86_64                 randconfig-s4-01161614
-x86_64                 randconfig-s5-01161614
-x86_64                 randconfig-s3-01161631
-x86_64                 randconfig-s4-01161631
-x86_64                 randconfig-s5-01161631
-avr32                      atngw100_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-openrisc                          allnoconfig
-powerpc                          allmodconfig
-alpha                             allnoconfig
-arm                            zeus_defconfig
-mips                        qi_lb60_defconfig
-powerpc                      virtex_defconfig
-arm                          pcm027_defconfig
-arm                        trizeps4_defconfig
-mips                           ip27_defconfig
-powerpc                       ebony_defconfig
-m32r                       mappi.up_defconfig
-sh                        edosk7705_defconfig
-sh                 kfr2r09-romimage_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                       ppc64_defconfig
-x86_64                   randconfig-i0-201602
-i386                   randconfig-b0-01161144
-i386                   randconfig-b0-01161202
-i386                   randconfig-b0-01161241
-i386                   randconfig-b0-01161303
-i386                   randconfig-b0-01161328
-i386                   randconfig-b0-01161350
-i386                   randconfig-b0-01161405
-i386                   randconfig-b0-01161420
-i386                   randconfig-b0-01161440
-i386                   randconfig-b0-01161456
-i386                   randconfig-b0-01161513
-i386                   randconfig-b0-01161532
-i386                   randconfig-b0-01161600
-sparc                               defconfig
-sparc64                             defconfig
-arm                          exynos_defconfig
-avr32                     atstk1003_defconfig
-sparc64                          allmodconfig
-x86_64                            allnoconfig
-powerpc                 mpc836x_mds_defconfig
-powerpc                   bluestone_defconfig
-sh                           se7705_defconfig
-s390                    performance_defconfig
-sparc                       sparc32_defconfig
-powerpc                     taishan_defconfig
-powerpc                     tqm5200_defconfig
-s390                       zfcpdump_defconfig
-arm                         iop13xx_defconfig
-sh                   sh7724_generic_defconfig
-mips                       bmips_be_defconfig
-mips                            gpr_defconfig
-powerpc                   currituck_defconfig
-arm64                            allyesconfig
-mips                      pistachio_defconfig
-mn10300                             defconfig
-mips                       capcella_defconfig
-powerpc64                        alldefconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201602
-i386                     randconfig-i1-201602
-x86_64                 randconfig-b0-01161105
-x86_64                 randconfig-b0-01161152
-x86_64                 randconfig-b0-01161226
-x86_64                 randconfig-b0-01161238
-x86_64                 randconfig-b0-01161305
-x86_64                 randconfig-b0-01161327
-x86_64                 randconfig-b0-01161337
-x86_64                 randconfig-b0-01161401
-x86_64                 randconfig-b0-01161420
-x86_64                 randconfig-b0-01161439
-x86_64                 randconfig-b0-01161454
-x86_64                 randconfig-b0-01161554
-x86_64                 randconfig-b0-01161614
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                               tinyconfig
-arm                         axm55xx_defconfig
-blackfin          BF527-AD7160-EVAL_defconfig
-sh                ecovec24-romimage_defconfig
-openrisc                         allmodconfig
-xtensa                              defconfig
-powerpc                   lite5200b_defconfig
-mips                          ath79_defconfig
-mips                  maltasmvp_eva_defconfig
-powerpc                          alldefconfig
-powerpc                     mpc512x_defconfig
-arm                      tct_hammer_defconfig
-m68k                       m5249evb_defconfig
-mips                           ci20_defconfig
-powerpc                       holly_defconfig
-mips                         cobalt_defconfig
-powerpc                     tqm8541_defconfig
-ia64                        generic_defconfig
-mips                      malta_kvm_defconfig
-xtensa                           allyesconfig
-arm                    vt8500_v6_v7_defconfig
-parisc                           allmodconfig
-m32r                        oaks32r_defconfig
-sh                   rts7751r2dplus_defconfig
-arm                           viper_defconfig
-mips                         tb0219_defconfig
-tile                                defconfig
-arm                             ezx_defconfig
-arm                          pxa910_defconfig
-powerpc                     sbc834x_defconfig
-arm                                      arm5
-arm                                     arm67
-arm                                       mmp
-arm                       omap2plus_defconfig
-arm                         s3c2410_defconfig
-arm                           tegra_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201602
-i386                   randconfig-h0-01161137
-i386                   randconfig-h1-01161137
-i386                   randconfig-h0-01161213
-i386                   randconfig-h1-01161213
-i386                   randconfig-h0-01161234
-i386                   randconfig-h1-01161234
-i386                   randconfig-h0-01161256
-i386                   randconfig-h1-01161256
-i386                   randconfig-h0-01161335
-i386                   randconfig-h1-01161335
-i386                   randconfig-h0-01161354
-i386                   randconfig-h1-01161354
-i386                   randconfig-h0-01161435
-i386                   randconfig-h1-01161435
-i386                   randconfig-h0-01161534
-i386                   randconfig-h1-01161534
-i386                   randconfig-h0-01161603
-i386                   randconfig-h1-01161603
-i386                   randconfig-h0-01161627
-i386                   randconfig-h1-01161627
-i386                             allmodconfig
-openrisc                            defconfig
-sh                          r7785rp_defconfig
-powerpc                     kmp204x_defconfig
-powerpc                 mpc834x_mds_defconfig
-powerpc                     mpc5200_defconfig
-s390                             alldefconfig
-mips                          lasat_defconfig
-sh                                allnoconfig
-sh                          sdk7786_defconfig
-m32r                    m32700ut.up_defconfig
-arm                        multi_v5_defconfig
-powerpc                     asp8347_defconfig
-s390                             allmodconfig
-xtensa                    smp_lx200_defconfig
-x86_64                 randconfig-h0-01161144
-x86_64                 randconfig-h0-01161207
-x86_64                 randconfig-h0-01161250
-x86_64                 randconfig-h0-01161305
-x86_64                 randconfig-h0-01161342
-x86_64                 randconfig-h0-01161414
-x86_64                 randconfig-h0-01161508
-x86_64                 randconfig-h0-01161543
-x86_64                 randconfig-h0-01161559
-sh                           se7206_defconfig
-arm                         palmz72_defconfig
-powerpc                   gef_ppc9a_defconfig
-arm                          pxa168_defconfig
-powerpc                  mpc866_ads_defconfig
-arm                          lpd270_defconfig
-ia64                             allmodconfig
-x86_64                 randconfig-n0-01161139
-x86_64                 randconfig-n0-01161207
-x86_64                 randconfig-n0-01161235
-x86_64                 randconfig-n0-01161327
-x86_64                 randconfig-n0-01161350
-x86_64                 randconfig-n0-01161415
-x86_64                 randconfig-n0-01161437
-x86_64                 randconfig-n0-01161500
-x86_64                 randconfig-n0-01161533
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                         shannon_defconfig
-blackfin                 BlackStamp_defconfig
-powerpc                     stx_gp3_defconfig
-um                               allmodconfig
-frv                              allmodconfig
-sh                        apsh4ad0a_defconfig
-avr32                    hammerhead_defconfig
-arm                            u300_defconfig
-sparc                            alldefconfig
-arm                             rpc_defconfig
-powerpc                 mpc85xx_cds_defconfig
-arm                         s3c6400_defconfig
-arm                         assabet_defconfig
-m32r                    mappi.nommu_defconfig
-mips                             alldefconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-sh                            titan_defconfig
-i386                  randconfig-sb0-01161128
-i386                  randconfig-sb0-01161202
-i386                  randconfig-sb0-01161232
-i386                  randconfig-sb0-01161308
-i386                  randconfig-sb0-01161341
-i386                  randconfig-sb0-01161422
-i386                  randconfig-sb0-01161452
-i386                  randconfig-sb0-01161510
-i386                  randconfig-sb0-01161536
-i386                  randconfig-sb0-01161610
-x86_64                           allmodconfig
-powerpc                 mpc8560_ads_defconfig
-blackfin                  CM-BF537E_defconfig
-powerpc                         wii_defconfig
-x86_64               randconfig-x009-01151702
-x86_64               randconfig-x008-01151702
-x86_64               randconfig-x000-01151702
-x86_64               randconfig-x004-01151702
-x86_64               randconfig-x002-01151702
-x86_64               randconfig-x007-01151702
-x86_64               randconfig-x003-01151702
-x86_64               randconfig-x006-01151702
-x86_64               randconfig-x001-01151702
-x86_64               randconfig-x005-01151702
-ia64                             alldefconfig
-i386                     randconfig-r0-201602
-x86_64                 randconfig-r0-01161110
-x86_64                 randconfig-r0-01161315
-x86_64                 randconfig-r0-01161412
-arm                     eseries_pxa_defconfig
-mips                             allmodconfig
-arm                          collie_defconfig
-arm                        vexpress_defconfig
-m68k                       bvme6000_defconfig
-arm                        clps711x_defconfig
-frv                              alldefconfig
-mips                           ip22_defconfig
-powerpc                      pcm030_defconfig
-sh                            migor_defconfig
-arm                          badge4_defconfig
-powerpc                     tqm8540_defconfig
-arm                          imote2_defconfig
-powerpc                     pseries_defconfig
-i386                 randconfig-x006-01151732
-i386                 randconfig-x005-01151732
-i386                 randconfig-x001-01151732
-i386                 randconfig-x008-01151732
-i386                 randconfig-x000-01151732
-i386                 randconfig-x009-01151732
-i386                 randconfig-x003-01151732
-i386                 randconfig-x007-01151732
-i386                 randconfig-x002-01151732
-i386                 randconfig-x004-01151732
-i386                   randconfig-x0-01161135
-i386                   randconfig-x0-01161244
-i386                   randconfig-x0-01161320
-i386                   randconfig-x0-01161344
-i386                   randconfig-x0-01161436
-i386                   randconfig-x0-01161453
-i386                   randconfig-x0-01161513
-i386                   randconfig-x0-01161539
-i386                   randconfig-x0-01161614
-
-Thanks,
-Fengguang
+> On Jan 15, 2016, at 6:20 PM, Jesse Brandeburg <jesse.brandeburg@intel.com> wrote:
+> 
+> First, thanks Alex!
+> 
+> Series looks pretty good, I'm applying it and doing some testing and our
+> testers will get to it soon.
+> 
+> One issue I noted below.
+> 
+> On Thu, 14 Jan 2016 20:41:56 -0800
+> Alexander Duyck <aduyck@mirantis.com> wrote:
+> 
+>> This patch is meant to be a general clean-up of tso.  There were a number
+>> of spots where redundant actions were being taken in regards to the TSO
+>> function and the checksum function, or in some cases frames were
+>> technically being corrupted with checksums that were never requested.
+>> 
+>> So first of this patch goes through and takes all the spots that were
+>> writing the outer IP header checksum to zero and moves them all into the
+>> TSO function.  (This includes the spot in IPv6 where this was occurring).
+>> 
+>> The second big change I made was to rework the outer checksum functionality
+>> so that it would be used when requested via GSO instead of just inserting
+>> it on all of the headers.  This way we should be able to control if it is
+>> enabled or not via the "udpcsum" flag when creating a VXLANn tunnel.  The
+>> functionality will likely not be needed for non-segmented frames as we will
+>> be able to just compute the checksum via local checksum offload.
+>> 
+>> I also dropped some useless flags from the hw_enc_features.  Specifically
+>> SCTP offload and RX_CSUM don't have any impact on the actual offloads
+>> provided.  Specifically a tunnel doesn't advertise SCTP support, mainly
+>> because it is a CRC offload and there is no support for doing it via a
+>> software offload.  The RX_CSUM feature doesn't provide any value add due to
+>> the fact that it doesn't really do anything for the tunnel.  It either
+>> receives checksum offloaded frames or not.  If it chooses to ignore them is
+>> entirely up to it.
+>> 
+>> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+>> ---
+>> drivers/net/ethernet/intel/i40e/i40e_main.c |   16 ++---
+>> drivers/net/ethernet/intel/i40e/i40e_txrx.c |   93 ++++++++++++++++-----------
+>> drivers/net/ethernet/intel/i40e/i40e_txrx.h |    1 
+>> 3 files changed, 62 insertions(+), 48 deletions(-)
+>> 
+>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+>> index 2cfdd85f50fb..c21ad853d72f 100644
+>> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+>> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+>> @@ -7473,8 +7473,6 @@ static int i40e_alloc_rings(struct i40e_vsi *vsi)
+>>        tx_ring->dcb_tc = 0;
+>>        if (vsi->back->flags & I40E_FLAG_WB_ON_ITR_CAPABLE)
+>>            tx_ring->flags = I40E_TXR_FLAGS_WB_ON_ITR;
+>> -        if (vsi->back->flags & I40E_FLAG_OUTER_UDP_CSUM_CAPABLE)
+>> -            tx_ring->flags |= I40E_TXR_FLAGS_OUTER_UDP_CSUM;
+>>        vsi->tx_rings[i] = tx_ring;
+>> 
+>>        rx_ring = &tx_ring[1];
+>> @@ -9018,12 +9016,12 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
+>>    np = netdev_priv(netdev);
+>>    np->vsi = vsi;
+>> 
+>> -    netdev->hw_enc_features |= NETIF_F_IP_CSUM      |
+>> -                   NETIF_F_RXCSUM      |
+>> -                   NETIF_F_SCTP_CRC      |
+>> -                   NETIF_F_GSO_UDP_TUNNEL |
+>> -                   NETIF_F_GSO_GRE      |
+>> -                   NETIF_F_TSO          |
+>> +    netdev->hw_enc_features |= NETIF_F_IP_CSUM           |
+>> +                   NETIF_F_TSO               |
+>> +                   NETIF_F_TSO_ECN           |
+>> +                   NETIF_F_GSO_GRE           |
+>> +                   NETIF_F_GSO_UDP_TUNNEL      |
+>> +                   NETIF_F_GSO_UDP_TUNNEL_CSUM |
+>>                   0;
+>> 
+>>    netdev->features = NETIF_F_SG               |
+>> @@ -9045,6 +9043,8 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
+>> 
+>>    if (!(pf->flags & I40E_FLAG_MFP_ENABLED))
+>>        netdev->features |= NETIF_F_NTUPLE;
+>> +    if (pf->flags & I40E_FLAG_OUTER_UDP_CSUM_CAPABLE)
+>> +        netdev->features |= NETIF_F_GSO_UDP_TUNNEL_CSUM;
+>> 
+>>    /* copy netdev features into list of user selectable features */
+>>    netdev->hw_features |= netdev->features;
+>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+>> index ca5f0881a5bf..ac2fa7b02e94 100644
+>> --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+>> +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+>> @@ -2214,11 +2214,18 @@ out:
+>> static int i40e_tso(struct i40e_ring *tx_ring, struct sk_buff *skb,
+>>            u8 *hdr_len, u64 *cd_type_cmd_tso_mss)
+>> {
+>> -    u32 cd_cmd, cd_tso_len, cd_mss;
+>> -    struct ipv6hdr *ipv6h;
+>> -    struct tcphdr *tcph;
+>> -    struct iphdr *iph;
+>> -    u32 l4len;
+>> +    u64 cd_cmd, cd_tso_len, cd_mss;
+>> +    union {
+>> +        struct iphdr *v4;
+>> +        struct ipv6hdr *v6;
+>> +        unsigned char *hdr;
+>> +    } ip;
+>> +    union {
+>> +        struct tcphdr *tcp;
+>> +        struct udphdr *udp;
+>> +        unsigned char *hdr;
+>> +    } l4;
+>> +    u32 paylen, l4_offset;
+>>    int err;
+>> 
+>>    if (skb->ip_summed != CHECKSUM_PARTIAL)
+>> @@ -2231,35 +2238,51 @@ static int i40e_tso(struct i40e_ring *tx_ring, struct sk_buff *skb,
+>>    if (err < 0)
+>>        return err;
+>> 
+>> -    iph = skb->encapsulation ? inner_ip_hdr(skb) : ip_hdr(skb);
+>> -    ipv6h = skb->encapsulation ? inner_ipv6_hdr(skb) : ipv6_hdr(skb);
+>> -
+>> -    if (iph->version == 4) {
+>> -        tcph = skb->encapsulation ? inner_tcp_hdr(skb) : tcp_hdr(skb);
+>> -        iph->tot_len = 0;
+>> -        iph->check = 0;
+>> -        tcph->check = ~csum_tcpudp_magic(iph->saddr, iph->daddr,
+>> -                         0, IPPROTO_TCP, 0);
+>> -    } else if (ipv6h->version == 6) {
+>> -        tcph = skb->encapsulation ? inner_tcp_hdr(skb) : tcp_hdr(skb);
+>> -        ipv6h->payload_len = 0;
+>> -        tcph->check = ~csum_ipv6_magic(&ipv6h->saddr, &ipv6h->daddr,
+>> -                           0, IPPROTO_TCP, 0);
+>> +    ip.hdr = skb_network_header(skb);
+>> +    l4.hdr = skb_transport_header(skb);
+>> +
+>> +    if (skb->encapsulation) {
+>> +        if (ip.v4->version == 4) {
+>> +            ip.v4->check = 0;
+>> +            ip.v4->tot_len = 0;
+>> +        } else {
+>> +            ip.v6->payload_len = 0;
+>> +        }
+>> +
+>> +        /* if we end up needing to do any changes such as update
+>> +         * the pseudo header checksum on the outer header we
+>> +         * should do it here.
+>> +         */
+>> +
+>> +        ip.hdr = skb_inner_network_header(skb);
+>> +        l4.hdr = skb_inner_transport_header(skb);
+>>    }
+>> 
+>> -    l4len = skb->encapsulation ? inner_tcp_hdrlen(skb) : tcp_hdrlen(skb);
+>> -    *hdr_len = (skb->encapsulation
+>> -            ? (skb_inner_transport_header(skb) - skb->data)
+>> -            : skb_transport_offset(skb)) + l4len;
+>> +    /* initialize IP header fields */
+>> +    if (ip.v4->version == 4) {
+>> +        ip.v4->check = 0;
+>> +        ip.v4->tot_len = 0;
+>> +    } else {
+>> +        ip.v6->payload_len = 0;
+>> +    }
+>> +
+>> +    /* determine offset of transport header */
+>> +    l4_offset = l4.hdr - skb->data;
+>> +
+>> +    /* remove payload length from checksum */
+>> +    paylen = ntohs(1) * (u16)~(skb->len - l4_offset);
+>> +    l4.tcp->check = ~csum_fold((__force __wsum)paylen + l4.tcp->check);
+> 
+> introduces sparse errors
+>  CHECK   /home/jbrandeb/git/lad/i40e_linux_master/src/i40e/i40e_txrx.c
+> /home/jbrandeb/git/lad/i40e_linux_master/src/i40e/i40e_txrx.c:2520:18: warning: cast to restricted __be16
+> /home/jbrandeb/git/lad/i40e_linux_master/src/i40e/i40e_txrx.c:2520:18: warning: cast to restricted __be16
+> /home/jbrandeb/git/lad/i40e_linux_master/src/i40e/i40e_txrx.c:2520:18: warning: cast to restricted __be16
+> /home/jbrandeb/git/lad/i40e_linux_master/src/i40e/i40e_txrx.c:2520:18: warning: cast to restricted __be16
+> /home/jbrandeb/git/lad/i40e_linux_master/src/i40e/i40e_txrx.c:2521:37: warning: restricted __wsum degrades to integer
+> /home/jbrandeb/git/lad/i40e_linux_master/src/i40e/i40e_txrx.c:2521:67: warning: restricted __sum16 degrades to integer
+> /home/jbrandeb/git/lad/i40e_linux_master/src/i40e/i40e_txrx.c:2521:59: warning: incorrect type in argument 1 (different base types)
+> /home/jbrandeb/git/lad/i40e_linux_master/src/i40e/i40e_txrx.c:2521:59:    expected restricted __wsum [usertype] sum
+> /home/jbrandeb/git/lad/i40e_linux_master/src/i40e/i40e_txrx.c:2521:59:    got unsigned int
+> 
+> 
+>> +
+>> +    /* compute length of segmentation header */
+>> +    *hdr_len = (l4.tcp->doff * 4) + l4_offset;
+>> 
+>>    /* find the field values */
+>>    cd_cmd = I40E_TX_CTX_DESC_TSO;
+>>    cd_tso_len = skb->len - *hdr_len;
+>>    cd_mss = skb_shinfo(skb)->gso_size;
+>> -    *cd_type_cmd_tso_mss |= ((u64)cd_cmd << I40E_TXD_CTX_QW1_CMD_SHIFT) |
+>> -                ((u64)cd_tso_len <<
+>> -                 I40E_TXD_CTX_QW1_TSO_LEN_SHIFT) |
+>> -                ((u64)cd_mss << I40E_TXD_CTX_QW1_MSS_SHIFT);
+>> +    *cd_type_cmd_tso_mss |= (cd_cmd << I40E_TXD_CTX_QW1_CMD_SHIFT) |
+>> +                (cd_tso_len << I40E_TXD_CTX_QW1_TSO_LEN_SHIFT) |
+>> +                (cd_mss << I40E_TXD_CTX_QW1_MSS_SHIFT);
+>>    return 1;
+>> }
+>> 
+>> @@ -2351,15 +2374,12 @@ static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
+>>        if (*tx_flags & I40E_TX_FLAGS_IPV4) {
+>>            if (*tx_flags & I40E_TX_FLAGS_TSO) {
+>>                *cd_tunneling |= I40E_TX_CTX_EXT_IP_IPV4;
+>> -                ip_hdr(skb)->check = 0;
+>>            } else {
+>>                *cd_tunneling |=
+>>                     I40E_TX_CTX_EXT_IP_IPV4_NO_CSUM;
+>>            }
+>>        } else if (*tx_flags & I40E_TX_FLAGS_IPV6) {
+>>            *cd_tunneling |= I40E_TX_CTX_EXT_IP_IPV6;
+>> -            if (*tx_flags & I40E_TX_FLAGS_TSO)
+>> -                ip_hdr(skb)->check = 0;
+>>        }
+>> 
+>>        /* Now set the ctx descriptor fields */
+>> @@ -2373,15 +2393,11 @@ static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
+>>            *tx_flags &= ~I40E_TX_FLAGS_IPV4;
+>>            *tx_flags |= I40E_TX_FLAGS_IPV6;
+>>        }
+>> -        if ((tx_ring->flags & I40E_TXR_FLAGS_OUTER_UDP_CSUM) &&
+>> -            (l4_tunnel == I40E_TXD_CTX_UDP_TUNNELING)        &&
+>> -            (*cd_tunneling & I40E_TXD_CTX_QW0_EXT_IP_MASK)) {
+>> -            oudph->check = ~csum_tcpudp_magic(oiph->saddr,
+>> -                    oiph->daddr,
+>> -                    (skb->len - skb_transport_offset(skb)),
+>> -                    IPPROTO_UDP, 0);
+>> +        /* indicate if we need to offload outer UDP header */
+>> +        if ((*tx_flags & I40E_TX_FLAGS_TSO) &&
+>> +            (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_TUNNEL_CSUM))
+>>            *cd_tunneling |= I40E_TXD_CTX_QW0_L4T_CS_MASK;
+>> -        }
+>> +
+>>    } else {
+>>        network_hdr_len = skb_network_header_len(skb);
+>>        this_ip_hdr = ip_hdr(skb);
+>> @@ -2397,7 +2413,6 @@ static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
+>>         */
+>>        if (*tx_flags & I40E_TX_FLAGS_TSO) {
+>>            *td_cmd |= I40E_TX_DESC_CMD_IIPT_IPV4_CSUM;
+>> -            this_ip_hdr->check = 0;
+>>        } else {
+>>            *td_cmd |= I40E_TX_DESC_CMD_IIPT_IPV4;
+>>        }
+>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+>> index 1d167b646193..fc77a271aba8 100644
+>> --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+>> +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+>> @@ -275,7 +275,6 @@ struct i40e_ring {
+>> 
+>>    u16 flags;
+>> #define I40E_TXR_FLAGS_WB_ON_ITR    BIT(0)
+>> -#define I40E_TXR_FLAGS_OUTER_UDP_CSUM    BIT(1)
+>> #define I40E_TXR_FLAGS_LAST_XMIT_MORE_SET BIT(2)
+>> 
+>>    /* stats structs */
+>> 
+>> _______________________________________________
+>> Intel-wired-lan mailing list
+>> Intel-wired-lan at lists.osuosl.org
+>> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at lists.osuosl.org
+> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
