@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 19 Jan 2016 23:41:39 +0000
-Subject: [Intel-wired-lan] [v2 next PATCH S27 06/15] i40e: Refactor
- force_wb	and WB_ON_ITR functionality code
-In-Reply-To: <1452732712-12248-7-git-send-email-joshua.a.hay@intel.com>
+Date: Tue, 19 Jan 2016 23:44:12 +0000
+Subject: [Intel-wired-lan] [v2 next PATCH S27 07/15] i40evf: Change
+	vf	driver string to reflect all products i40evf supports
+In-Reply-To: <1452732712-12248-8-git-send-email-joshua.a.hay@intel.com>
 References: <1452732712-12248-1-git-send-email-joshua.a.hay@intel.com>
- <1452732712-12248-7-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F98097B@ORSMSX104.amr.corp.intel.com>
+ <1452732712-12248-8-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F98098B@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,36 +17,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Joshua Hay
 > Sent: Wednesday, January 13, 2016 4:52 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [v2 next PATCH S27 06/15] i40e: Refactor force_wb
-> and WB_ON_ITR functionality code
+> Subject: [Intel-wired-lan] [v2 next PATCH S27 07/15] i40evf: Change vf driver
+> string to reflect all products i40evf supports
 > 
-> From: Anjali Singhai Jain <anjali.singhai@intel.com>
+> From: Catherine Sullivan <catherine.sullivan@intel.com>
 > 
-> Now that the Force-WriteBack functionality in X710/XL710 devices has been
-> moved out of the clean routine and into the service task, we need to make
-> sure WriteBack-On-ITR is separated out since it is still called from clean.
+> Change the driver string to 40-10 Gigabit instead of XL710/X710 for X722 and
+> all future products.
 > 
-> In the X722 devices, Force-WriteBack implies WriteBack-On-ITR but without
-> the interrupt, which put the driver into a missed interrupt scenario and a
-> potential tx-timeout report.
+> Also update copyright year in file header.
 > 
-> With this patch, we break the two functions out, and call the appropriate
-> ones at the right place. This will avoid creating missed interrupt like scenarios
-> for X722 devices.
-> 
-> Also update copyright year in file headers.
-> 
-> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-> Change-ID: Iacbde39f95f332f82be8736864675052c3583a40
+> Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
+> Change-ID: I57fae656b36dc4eb682b2b7a054f8f48f3589149
 > ---
-> Testing Hints: Stress test X722 devices for tx_timeout, see that the
-> tx_lost_interrupt stat count goes down with the patch applied.
+> Testing Hints: Make sure the new driver string is in dmesg upon driver load.
 > 
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 57 ++++++++++++++----------
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 63 +++++++++++++++-------
-> -----  drivers/net/ethernet/intel/i40evf/i40e_txrx.h |  3 +-
->  3 files changed, 72 insertions(+), 51 deletions(-)
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-[v2 next PATCH S27 06/15] i40e: Refactor force_wb and WB_ON_ITR functionality code
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied, stats decrease with patch applied
+Patch code changes correctly applied, driver shows updated information on load
