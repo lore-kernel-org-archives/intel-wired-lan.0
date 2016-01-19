@@ -1,128 +1,50 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 19 Jan 2016 20:54:24 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 08d0b0d82b7dbe4f5914c3e3ec8b6363cb1a062a BUILD SUCCESS
-Message-ID: <569e3200.pC8DB43Lruyec02s%fengguang.wu@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 19 Jan 2016 21:22:59 +0000
+Subject: [Intel-wired-lan] [v2 next PATCH S27 01/15] i40e:
+	move	sync_vsi_filters up in service_task
+In-Reply-To: <1452732712-12248-2-git-send-email-joshua.a.hay@intel.com>
+References: <1452732712-12248-1-git-send-email-joshua.a.hay@intel.com>
+ <1452732712-12248-2-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9808DB@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-08d0b0d82b7dbe4f5914c3e3ec8b6363cb1a062a  i40e/i40evf: Bump i40e to 1.4.15 and i40evf to 1.4.11.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Joshua Hay
+> Sent: Wednesday, January 13, 2016 4:52 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [v2 next PATCH S27 01/15] i40e: move
+> sync_vsi_filters up in service_task
+> 
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> 
+> The sync_vsi_filters function is moved up in the service_task because it may
+> need to request a reset, and we don't want to wait another round of service
+> task time.
+> 
+> NOTE: Filters will be replayed by sync_vsi_filters including broadcast and
+> promiscuous settings.
+> 
+> Also, added some error handling in this space in case any of these fail the
+> driver will retry correctly.
+> 
+> Also update copyright year.
+> 
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Change-ID: I23f3d552100baecea69466339f738f27614efd47
+> ---
+> Testing Hints: This bug hits a sensitive area of the driver that is used in many
+> different paths such as reset (PFR/CORER/GLOBR) and multicast address
+> add/remove, vlan add/remove, MAC address add/remove.  As much testing
+> as possible should be done in the areas of filter add/remove, maximum filter
+> add, etc.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
 
-elapsed time: 67m
-
-configs tested: 107
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201603
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-parisc                         b180_defconfig
-i386                             allmodconfig
-x86_64               randconfig-x013-01180513
-x86_64               randconfig-x014-01180513
-x86_64               randconfig-x012-01180513
-x86_64               randconfig-x019-01180513
-x86_64               randconfig-x011-01180513
-x86_64               randconfig-x015-01180513
-x86_64               randconfig-x017-01180513
-x86_64               randconfig-x018-01180513
-x86_64               randconfig-x016-01180513
-x86_64               randconfig-x010-01180513
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201603
-i386                     randconfig-s1-201603
-x86_64                           allmodconfig
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201603
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201603
-i386                     randconfig-i1-201603
-i386                               tinyconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201603
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-x002-201603
-x86_64                 randconfig-x004-201603
-x86_64                 randconfig-x000-201603
-x86_64                 randconfig-x009-201603
-x86_64                 randconfig-x003-201603
-x86_64                 randconfig-x005-201603
-x86_64                 randconfig-x006-201603
-x86_64                 randconfig-x001-201603
-x86_64                 randconfig-x008-201603
-x86_64                 randconfig-x007-201603
-i386                     randconfig-r0-201603
-i386                 randconfig-x002-01181631
-i386                 randconfig-x005-01181631
-i386                 randconfig-x006-01181631
-i386                 randconfig-x003-01181631
-i386                 randconfig-x007-01181631
-i386                 randconfig-x009-01181631
-i386                 randconfig-x008-01181631
-i386                 randconfig-x004-01181631
-i386                 randconfig-x001-01181631
-i386                 randconfig-x000-01181631
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-
-Thanks,
-Fengguang
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Patch code changes correctly applied, driver correctly recovers from errors in reset/filter paths
