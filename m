@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 19 Jan 2016 21:22:59 +0000
-Subject: [Intel-wired-lan] [v2 next PATCH S27 01/15] i40e:
-	move	sync_vsi_filters up in service_task
-In-Reply-To: <1452732712-12248-2-git-send-email-joshua.a.hay@intel.com>
+Date: Tue, 19 Jan 2016 21:31:29 +0000
+Subject: [Intel-wired-lan] [v2 next PATCH S27 02/15] i40e: Make the
+	DCB	firmware checks for X710/XL710 only
+In-Reply-To: <1452732712-12248-3-git-send-email-joshua.a.hay@intel.com>
 References: <1452732712-12248-1-git-send-email-joshua.a.hay@intel.com>
- <1452732712-12248-2-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9808DB@ORSMSX104.amr.corp.intel.com>
+ <1452732712-12248-3-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9808EC@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,34 +17,38 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Joshua Hay
 > Sent: Wednesday, January 13, 2016 4:52 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [v2 next PATCH S27 01/15] i40e: move
-> sync_vsi_filters up in service_task
+> Subject: [Intel-wired-lan] [v2 next PATCH S27 02/15] i40e: Make the DCB
+> firmware checks for X710/XL710 only
 > 
-> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> From: Neerav Parikh <neerav.parikh@intel.com>
 > 
-> The sync_vsi_filters function is moved up in the service_task because it may
-> need to request a reset, and we don't want to wait another round of service
-> task time.
+> Make the DCB firmware version related checks specific to
+> X710 and XL710 only. These checks are not required for
+> X722 family of devices.
 > 
-> NOTE: Filters will be replayed by sync_vsi_filters including broadcast and
-> promiscuous settings.
+> Introduced an inline routine to help determine if the MAC type is X710/XL710
+> or not.
 > 
-> Also, added some error handling in this space in case any of these fail the
-> driver will retry correctly.
+> Moved the firmware version related checks in i40e_sw_init() and defined
+> flags for different cases
 > 
-> Also update copyright year.
+> Fix the version check to allow using "Set LLDP MIB" AQ for beyond FVL4 FW
+> releases.
 > 
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> Change-ID: I23f3d552100baecea69466339f738f27614efd47
+> Signed-off-by: Neerav Parikh <neerav.parikh@intel.com>
+> Change-ID: Ib78288343de983aa0354fc28aa36e99b073662c0
 > ---
-> Testing Hints: This bug hits a sensitive area of the driver that is used in many
-> different paths such as reset (PFR/CORER/GLOBR) and multicast address
-> add/remove, vlan add/remove, MAC address add/remove.  As much testing
-> as possible should be done in the areas of filter add/remove, maximum filter
-> add, etc.
+> Testing Hints:
+> - LLDP should get disabled on FVL with FVLSW1/2 NVM and no DCB/DCBX
+> functionality should be available
+> - DCB capability should be enabled for FVL3/4 NVM images
+> - Once DCB is enabled for FPK builds SW functionally should be same as FVL
+> DCB
 > 
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/i40e/i40e.h      | 16 ++++++++++++++++
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 27
+> ++++++++++++++++++++-------
+>  2 files changed, 36 insertions(+), 7 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied, driver correctly recovers from errors in reset/filter paths
+Patch code changes correctly applied, DCB/FCoE patch - Does not break base driver, compiles cleanly
