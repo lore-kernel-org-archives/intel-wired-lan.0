@@ -1,96 +1,130 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 20 Jan 2016 14:44:45 -0800
-Subject: [Intel-wired-lan] [PATCH] net: i40e: avoid unused function
-	warnings
-In-Reply-To: <8814508.SjLecHrQqA@wuerfel>
-References: <2806620.EpZqDlZTO3@wuerfel>
- <1453328245.2958.28.camel@intel.com> <8814508.SjLecHrQqA@wuerfel>
-Message-ID: <1453329885.2958.32.camel@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Wed, 20 Jan 2016 14:43:44 -0800
+Subject: [Intel-wired-lan] [next, S23,
+	06/13 v2] i40e/i40evf: tunnels can be generic
+Message-ID: <1453329824-9465-1-git-send-email-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2016-01-20 at 23:28 +0100, Arnd Bergmann wrote:
-> On Wednesday 20 January 2016 14:17:25 Jeff Kirsher wrote:
-> > On Wed, 2016-01-20 at 11:42 +0100, Arnd Bergmann wrote:
-> > > The addition of the geneve tunnel offload code left a couple
-> > > of functions unconditionally defined but empty whenever
-> CONFIG_VXLAN
-> > > and CONFIG_GENEVE are disabled. gcc warns about this:
-> > >?
-> > > i40e_main.c:7049:13: warning: 'i40e_sync_udp_filters_subtask'
-> defined
-> > > but not used [-Wunused-function]
-> > > i40e_main.c:8516:13: warning: 'i40e_add_vxlan_port' defined but
-> not
-> > > used [-Wunused-function]
-> > > i40e_main.c:8561:13: warning: 'i40e_del_vxlan_port' defined but
-> not
-> > > used [-Wunused-function]
-> > > i40e_main.c:8596:13: warning: 'i40e_add_geneve_port' defined but
-> not
-> > > used [-Wunused-function]
-> > > i40e_main.c:8643:13: warning: 'i40e_del_geneve_port' defined but
-> not
-> > > used [-Wunused-function]
-> > >?
-> > > This moves the #ifdef statements to the outside of the affected
-> > > functions, which avoids the warnings.
-> > >?
-> > > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> > > Fixes: 6a899024058d ("i40e: geneve tunnel offload support")
-> > > ---
-> > > This is a harmless regression against v4.4, found on ARM
-> randconfig
-> > > builds
-> >?
-> > Thanks Arnd, I already have a patch from Eric Dumazet and Alex
-> Duyck to
-> > resolve this issue.
-> >?
-> > Dave- I plan on pushing the fix later today to net.
-> 
-> Ok, thanks.
-> 
-> FWIW, I have another patch for this driver that I did not yet submit
-> because it's not a regression and I haven't written a proper
-> changelog
-> for it (it's in a set of 15 patches for netdev that fix harmless
-> warnings).
-> 
-> Do you have one for the warning below as well? I could not come up
-> with a better way than adding a bogus initialization, but maybe
-> there is one.
-> 
-> ????????Arnd
-> 
-> From d89be3f0f932a71dfb5480ee396db514879097c4 Mon Sep 17 00:00:00
-> 2001
-> From: Arnd Bergmann <arnd@arndb.de>
-> Date: Fri, 15 Jan 2016 17:31:07 +0100
-> Subject: [PATCH] net: i40e: shut up uninitialized variable warnings
-> 
-> intel/i40e/i40e_txrx.c: In function 'i40e_xmit_frame_ring':
-> intel/i40e/i40e_txrx.c:2367:20: error: 'oiph' may be used
-> uninitialized in this function [-Werror=maybe-uninitialized]
-> intel/i40e/i40e_txrx.c:2317:16: note: 'oiph' was declared here
-> intel/i40e/i40e_txrx.c:2367:17: error: 'oudph' may be used
-> uninitialized in this function [-Werror=maybe-uninitialized]
-> intel/i40e/i40e_txrx.c:2316:17: note: 'oudph' was declared here
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Since the i40e driver now supports VxLAN, GRE, and soon
+to be Geneve tunnels, the driver can just note that an skb
+contains a tunneled packet generically, instead of calling
+out VXLAN specifically.  The tunnel set up we do for hardware
+is almost always the same for all tunnel types.
 
-Yeah, I have a fix for that as well.
+This specifically enables ATR/Flow Director on GRE packets
+which increases performance/scaling.  Without this patch
+GRE RX packets end up on a random RSS assigned queue.
 
-You can confirm by pulling my next-queue tree (dev-queue branch).
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git?d
-ev-queue
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160120/1999289a/attachment.asc>
+v2: Fix code error found by Alex, by repairing if/else clause
+    for tunnel.
+
+Reported-by: Alexander Duyck <alexander.duyck@gmail.com>
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Change-ID: Ie8e205603654910d2f718592cbef8132ae0719e4
+
+---
+Testing Hints:
+Test tunnelled traffic, specifically also test VxLAN and other tunnel
+types to make sure that ATR counters are still counting when doing
+IPv4/TCP traffic over the tunnel.
+---
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 13 +++++++------
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h   |  2 +-
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c |  2 +-
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.h |  2 +-
+ 4 files changed, 10 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 720516b..757bfb6 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -2005,7 +2005,10 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 	if (!(tx_flags & (I40E_TX_FLAGS_IPV4 | I40E_TX_FLAGS_IPV6)))
+ 		return;
+ 
+-	if (!(tx_flags & I40E_TX_FLAGS_UDP_TUNNEL)) {
++	if ((tx_flags & I40E_TX_FLAGS_TUNNEL)) {
++		hdr.network = skb_inner_network_header(skb);
++		hlen = skb_inner_network_header_len(skb);
++	} else {
+ 		/* snag network header to get L4 type and address */
+ 		hdr.network = skb_network_header(skb);
+ 
+@@ -2018,9 +2021,6 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 			hlen = sizeof(struct ipv6hdr);
+ 		else
+ 			return;
+-	} else {
+-		hdr.network = skb_inner_network_header(skb);
+-		hlen = skb_inner_network_header_len(skb);
+ 	}
+ 
+ 	/* Currently only IPv4/IPv6 with TCP is supported
+@@ -2090,7 +2090,7 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 		     I40E_TXD_FLTR_QW1_FD_STATUS_SHIFT;
+ 
+ 	dtype_cmd |= I40E_TXD_FLTR_QW1_CNT_ENA_MASK;
+-	if (!(tx_flags & I40E_TX_FLAGS_UDP_TUNNEL))
++	if (!(tx_flags & I40E_TX_FLAGS_TUNNEL))
+ 		dtype_cmd |=
+ 			((u32)I40E_FD_ATR_STAT_IDX(pf->hw.pf_id) <<
+ 			I40E_TXD_FLTR_QW1_CNTINDEX_SHIFT) &
+@@ -2323,10 +2323,11 @@ static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
+ 			oudph = udp_hdr(skb);
+ 			oiph = ip_hdr(skb);
+ 			l4_tunnel = I40E_TXD_CTX_UDP_TUNNELING;
+-			*tx_flags |= I40E_TX_FLAGS_UDP_TUNNEL;
++			*tx_flags |= I40E_TX_FLAGS_TUNNEL;
+ 			break;
+ 		case IPPROTO_GRE:
+ 			l4_tunnel = I40E_TXD_CTX_GRE_TUNNELING;
++			*tx_flags |= I40E_TX_FLAGS_TUNNEL;
+ 			break;
+ 		default:
+ 			return;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+index 3f081e2..1d167b6 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+@@ -163,7 +163,7 @@ enum i40e_dyn_idx_t {
+ #define I40E_TX_FLAGS_FSO		BIT(7)
+ #define I40E_TX_FLAGS_TSYN		BIT(8)
+ #define I40E_TX_FLAGS_FD_SB		BIT(9)
+-#define I40E_TX_FLAGS_UDP_TUNNEL	BIT(10)
++#define I40E_TX_FLAGS_TUNNEL		BIT(10)
+ #define I40E_TX_FLAGS_VLAN_MASK		0xffff0000
+ #define I40E_TX_FLAGS_VLAN_PRIO_MASK	0xe0000000
+ #define I40E_TX_FLAGS_VLAN_PRIO_SHIFT	29
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index 7a00657..ed4934a 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -1521,7 +1521,7 @@ static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
+ 			oudph = udp_hdr(skb);
+ 			oiph = ip_hdr(skb);
+ 			l4_tunnel = I40E_TXD_CTX_UDP_TUNNELING;
+-			*tx_flags |= I40E_TX_FLAGS_VXLAN_TUNNEL;
++			*tx_flags |= I40E_TX_FLAGS_TUNNEL;
+ 			break;
+ 		default:
+ 			return;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
+index e29bb3e..d7950b1 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
+@@ -162,7 +162,7 @@ enum i40e_dyn_idx_t {
+ #define I40E_TX_FLAGS_FCCRC		BIT(6)
+ #define I40E_TX_FLAGS_FSO		BIT(7)
+ #define I40E_TX_FLAGS_FD_SB		BIT(9)
+-#define I40E_TX_FLAGS_VXLAN_TUNNEL	BIT(10)
++#define I40E_TX_FLAGS_TUNNEL		BIT(10)
+ #define I40E_TX_FLAGS_VLAN_MASK		0xffff0000
+ #define I40E_TX_FLAGS_VLAN_PRIO_MASK	0xe0000000
+ #define I40E_TX_FLAGS_VLAN_PRIO_SHIFT	29
+-- 
+1.8.3.1
+
