@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 20 Jan 2016 19:17:36 +0000
-Subject: [Intel-wired-lan] [v2 next PATCH S27 14/15] i40e: properly
-	show	packet split status in debugfs
-In-Reply-To: <1452732712-12248-15-git-send-email-joshua.a.hay@intel.com>
+Date: Wed, 20 Jan 2016 19:18:26 +0000
+Subject: [Intel-wired-lan] [v2 next PATCH S27 10/15] i40e: dump
+ descriptor	indexes in hex
+In-Reply-To: <1452732712-12248-11-git-send-email-joshua.a.hay@intel.com>
 References: <1452732712-12248-1-git-send-email-joshua.a.hay@intel.com>
- <1452732712-12248-15-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F988B74@ORSMSX104.amr.corp.intel.com>
+ <1452732712-12248-11-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F988B85@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,25 +17,25 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Joshua Hay
 > Sent: Wednesday, January 13, 2016 4:52 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [v2 next PATCH S27 14/15] i40e: properly show
-> packet split status in debugfs
+> Subject: [Intel-wired-lan] [v2 next PATCH S27 10/15] i40e: dump descriptor
+> indexes in hex
 > 
-> From: Mitch Williams <mitch.a.williams@intel.com>
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > 
-> Get rid of the unused hsplit field in the ring struct and use the existing macro
-> to detect packet split enablement. This allows debugfs dumps of the VSI to
-> properly show which rx routine is in use.
+> The debugging helpers for showing descriptor rings were dumping the
+> indexes in decimal and the offsets in hex.
 > 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-> Change-ID: Ic4e9589e6a788ab196ed0850703f704e30c03781
+> Put everything in hex and at least be consistent.
+> 
+> Also update copyright year in file header.
+> 
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Change-ID: Ia35a21411a2ddb713772dffb4e8718889fcfc895
 > ---
-> Testing Hints: Enable/disable  packet split and dump the VSI through
-> debugfs. Note the output.
+> Testing Hints: echo dump desc rx <vsi> 0 > command
 > 
->  drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 6 +++---
->  drivers/net/ethernet/intel/i40e/i40e_txrx.h    | 1 -
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.h  | 1 -
->  3 files changed, 3 insertions(+), 5 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 14 +++++++-------
+>  1 file changed, 7 insertions(+), 7 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied, packet split shown correctly in debugfs output
+Patch code changes correctly applied, dump is entirely in hexadecimal
