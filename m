@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 20 Jan 2016 19:28:04 +0000
-Subject: [Intel-wired-lan] [next PATCH S28 01/15] i40e: get rid of
-	magic	number
-In-Reply-To: <1452897202-15204-2-git-send-email-joshua.a.hay@intel.com>
+Date: Wed, 20 Jan 2016 19:31:38 +0000
+Subject: [Intel-wired-lan] [next PATCH S28 02/15] i40e: drop unused
+ debugfs	file "dump"
+In-Reply-To: <1452897202-15204-3-git-send-email-joshua.a.hay@intel.com>
 References: <1452897202-15204-1-git-send-email-joshua.a.hay@intel.com>
- <1452897202-15204-2-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F988BBD@ORSMSX104.amr.corp.intel.com>
+ <1452897202-15204-3-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F988BCE@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,20 +17,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Joshua Hay
 > Sent: Friday, January 15, 2016 2:33 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S28 01/15] i40e: get rid of magic
-> number
+> Subject: [Intel-wired-lan] [next PATCH S28 02/15] i40e: drop unused debugfs
+> file "dump"
 > 
-> From: Mitch Williams <mitch.a.williams@intel.com>
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > 
-> We have a define for this, use it. No functional change.
+> There was a completely unused file "dump" in debugfs that never panned
+> out to be useful.
 > 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-> Change-ID: Ic0e3ea4f562e46de63b2a8de07f291ccc10205fd
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Change-ID: I12bb9e37b5a83299725dda815a8746157baf6562
 > ---
-> Testing Hints: No functional change. Just make sure it compiles.
+> Testing Hints: check debugfs, dump entry should be gone.
 > 
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 250 -------------------------
+>  1 file changed, 250 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied, compiles correctly
+Patch code changes correctly applied, no file dump option in debugfs
