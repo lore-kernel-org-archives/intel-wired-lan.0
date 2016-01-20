@@ -1,60 +1,37 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 20 Jan 2016 15:36:03 -0800
-Subject: [Intel-wired-lan] [PATCH] net: i40e: avoid unused function
-	warnings
-In-Reply-To: <6894276.2dlRmisKUo@wuerfel>
-References: <2806620.EpZqDlZTO3@wuerfel> <8814508.SjLecHrQqA@wuerfel>
- <1453329885.2958.32.camel@intel.com> <6894276.2dlRmisKUo@wuerfel>
-Message-ID: <1453332963.2958.39.camel@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 20 Jan 2016 23:45:10 +0000
+Subject: [Intel-wired-lan] [next PATCH S28 15/15] i40e/i40evf: Bump i40e
+ to	1.4.15 and i40evf to 1.4.11.
+In-Reply-To: <1452897202-15204-16-git-send-email-joshua.a.hay@intel.com>
+References: <1452897202-15204-1-git-send-email-joshua.a.hay@intel.com>
+ <1452897202-15204-16-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F989D23@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2016-01-20 at 23:54 +0100, Arnd Bergmann wrote:
-> On Wednesday 20 January 2016 14:44:45 Jeff Kirsher wrote:
-> > Yeah, I have a fix for that as well.
-> >?
-> > You can confirm by pulling my next-queue tree (dev-queue branch).
-> > git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-
-> queue.git d
-> > ev-queue
-> >?
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Joshua Hay
+> Sent: Friday, January 15, 2016 2:33 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S28 15/15] i40e/i40evf: Bump i40e to
+> 1.4.15 and i40evf to 1.4.11.
 > 
-> I checked out that branch, but still see both warnings in that one,
-> plus
-> a new build error in igb, which I don't see in linux-next:
+> From: Catherine Sullivan <catherine.sullivan@intel.com>
 > 
-> drivers/net/ethernet/intel/igb/igb_cdev.c: In function 'igb_mapring':
-> drivers/net/ethernet/intel/igb/igb_cdev.c:150:2: error: implicit
-> declaration of function 'set_pages_uc' [-Werror=implicit-function-
-> declaration]
-> ? set_pages_uc(virt_to_page(ring->desc), ring->size >> PAGE_SHIFT);
-> ? ^
-> drivers/net/ethernet/intel/igb/igb_cdev.c: In function
-> 'igb_unmapring':
-> drivers/net/ethernet/intel/igb/igb_cdev.c:275:2: error: implicit
-> declaration of function 'set_pages_wb' [-Werror=implicit-function-
-> declaration]
-> ? set_pages_wb(virt_to_page(ring->desc), ring->size >> PAGE_SHIFT);
+> Bump.
+> 
+> Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
+> Change-ID: Ie280dc67e37a1cf667c3469499a4fb90f4177b75
+> ---
+> Testing Hints: Check version.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 
-Oops, I just realized I had not pushed my latest tree to kernel.org.
-
-The igb issue still remains, I am working with the developer who
-introduced the issue. ?Looks like the i40e issue about possible
-uninitialized variables still exists. ?I thought we had resolved that
-issue, but apparently not.
-
-You should see Eric Dumazet's patch on the tree to resolve the other
-i40e build warnings.
-
-I can add your second patch to resolve the uninitialized variables to
-my tree.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160120/448ae8f2/attachment.asc>
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Patch code changes correctly applied, driver reports correct version information
