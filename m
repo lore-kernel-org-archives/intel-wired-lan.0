@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 20 Jan 2016 19:19:04 +0000
-Subject: [Intel-wired-lan] [v2 next PATCH S27 08/15] i40e/i40evf: don't
- lose	interrupts
-In-Reply-To: <1452732712-12248-9-git-send-email-joshua.a.hay@intel.com>
+Date: Wed, 20 Jan 2016 19:20:42 +0000
+Subject: [Intel-wired-lan] [v2 next PATCH S27 15/15] i40e/i40evf:
+	Bump	version
+In-Reply-To: <1452732712-12248-16-git-send-email-joshua.a.hay@intel.com>
 References: <1452732712-12248-1-git-send-email-joshua.a.hay@intel.com>
- <1452732712-12248-9-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F988B91@ORSMSX104.amr.corp.intel.com>
+ <1452732712-12248-16-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F988BA5@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,34 +17,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Joshua Hay
 > Sent: Wednesday, January 13, 2016 4:52 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [v2 next PATCH S27 08/15] i40e/i40evf: don't lose
-> interrupts
+> Subject: [Intel-wired-lan] [v2 next PATCH S27 15/15] i40e/i40evf: Bump
+> version
 > 
 > From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > 
-> While re-enabling interrupts the driver would clear all pending causes. This
-> meant that if an interrupt was generated while the driver was cleaning or
-> polling with interrupts disabled, then that interrupt was lost.  This could cause
-> a queue to become dead, especially for receive.  Refactored the enable_icr0
-> function in order to allow it to be decided by the caller whether the
-> CLEARPBA (clear pending
-> events) bit will be set while re-enabling the interrupt.
-> 
-> Also update copyright year in file headers.
+> Bump version to i40e-1.4.13 and i40evf-1.4.9
 > 
 > Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> Change-ID: Ic1db100a05e13c98919057696db147a258ca365a
+> Change-ID: I9db37f9d4899141c3e5455dfb456d45465b8c035
 > ---
-> Testing Hints: use pktgen or a traffic generator to send packets to the device
-> and force it to enter polling.  If all queues are in use, usually a few of the
-> queues will quit receiving.
-> 
->  drivers/net/ethernet/intel/i40e/i40e.h             |  7 +++++--
->  drivers/net/ethernet/intel/i40e/i40e_main.c        | 11 ++++++-----
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c        |  6 ++++--
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  4 ++--
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c      |  4 +++-
->  5 files changed, 20 insertions(+), 12 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied, queues don't drop when hammered with traffic
+Superseded by subsequent version bump
