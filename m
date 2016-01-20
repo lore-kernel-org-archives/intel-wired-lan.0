@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 20 Jan 2016 23:45:10 +0000
-Subject: [Intel-wired-lan] [next PATCH S28 15/15] i40e/i40evf: Bump i40e
- to	1.4.15 and i40evf to 1.4.11.
-In-Reply-To: <1452897202-15204-16-git-send-email-joshua.a.hay@intel.com>
+Date: Wed, 20 Jan 2016 23:58:51 +0000
+Subject: [Intel-wired-lan] [next PATCH S28 11/15] i40e: better
+	error	reporting for nvmupdate
+In-Reply-To: <1452897202-15204-12-git-send-email-joshua.a.hay@intel.com>
 References: <1452897202-15204-1-git-send-email-joshua.a.hay@intel.com>
- <1452897202-15204-16-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F989D23@ORSMSX104.amr.corp.intel.com>
+ <1452897202-15204-12-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F989D66@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,21 +17,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Joshua Hay
 > Sent: Friday, January 15, 2016 2:33 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S28 15/15] i40e/i40evf: Bump i40e to
-> 1.4.15 and i40evf to 1.4.11.
+> Subject: [Intel-wired-lan] [next PATCH S28 11/15] i40e: better error reporting
+> for nvmupdate
 > 
-> From: Catherine Sullivan <catherine.sullivan@intel.com>
+> From: Shannon Nelson <shannon.nelson@intel.com>
 > 
-> Bump.
+> Make sure we return EBUSY while finishing up a reset, and add a few bits for
+> better debug messages.
 > 
-> Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-> Change-ID: Ie280dc67e37a1cf667c3469499a4fb90f4177b75
+> Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+> Change-ID: I23f6c28a8d96d7aa171abcc265737cec7826c292
 > ---
-> Testing Hints: Check version.
-> 
->  drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 39 +++++++++++++---------
+> ----
+>  drivers/net/ethernet/intel/i40e/i40e_main.c    |  5 +++-
+>  2 files changed, 24 insertions(+), 20 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied, driver reports correct version information
+Patch code changes correctly applied, errors updated as expected
