@@ -1,49 +1,32 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 20 Jan 2016 14:17:25 -0800
-Subject: [Intel-wired-lan] [PATCH] net: i40e: avoid unused function
-	warnings
-In-Reply-To: <2806620.EpZqDlZTO3@wuerfel>
-References: <2806620.EpZqDlZTO3@wuerfel>
-Message-ID: <1453328245.2958.28.camel@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 20 Jan 2016 14:18:06 -0800
+Subject: [Intel-wired-lan] [next PATCH 0/3] TSO and checksum fixes for
+	i40e
+In-Reply-To: <1453327950.2958.25.camel@intel.com>
+References: <20160115043921.24270.62791.stgit@localhost.localdomain>
+ <CAKgT0Udrbsi_bdC4hidjnY34c92E8+ezLahOk3Rtjqei89avjA@mail.gmail.com>
+ <1453327950.2958.25.camel@intel.com>
+Message-ID: <CAKgT0UdQeVa7c1vp3ZXvej30w3_29JoZFX35cWWyLvFpayJcfw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2016-01-20 at 11:42 +0100, Arnd Bergmann wrote:
-> The addition of the geneve tunnel offload code left a couple
-> of functions unconditionally defined but empty whenever CONFIG_VXLAN
-> and CONFIG_GENEVE are disabled. gcc warns about this:
-> 
-> i40e_main.c:7049:13: warning: 'i40e_sync_udp_filters_subtask' defined
-> but not used [-Wunused-function]
-> i40e_main.c:8516:13: warning: 'i40e_add_vxlan_port' defined but not
-> used [-Wunused-function]
-> i40e_main.c:8561:13: warning: 'i40e_del_vxlan_port' defined but not
-> used [-Wunused-function]
-> i40e_main.c:8596:13: warning: 'i40e_add_geneve_port' defined but not
-> used [-Wunused-function]
-> i40e_main.c:8643:13: warning: 'i40e_del_geneve_port' defined but not
-> used [-Wunused-function]
-> 
-> This moves the #ifdef statements to the outside of the affected
-> functions, which avoids the warnings.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> Fixes: 6a899024058d ("i40e: geneve tunnel offload support")
-> ---
-> This is a harmless regression against v4.4, found on ARM randconfig
-> builds
+On Wed, Jan 20, 2016 at 2:12 PM, Jeff Kirsher
+<jeffrey.t.kirsher@intel.com> wrote:
+> On Wed, 2016-01-20 at 08:24 -0800, Alexander Duyck wrote:
+>>
+>> Between the fix from Arnd for the build issue and the sparse warnings
+>> I will be submitting a v2 of my patches.  Could you please drop the
+>> existing set from the tree?
+>
+> Yeah, I will drop it.  Are you wanting me to pick up Arnd's fix?  or
+> Eric D's fix?  or neither and take your v2 build fix?
 
-Thanks Arnd, I already have a patch from Eric Dumazet and Alex Duyck to
-resolve this issue.
+I was thinking Arnd's fix, I haven't seen Eric D's.  I just know that
+mine was only partial compared to the patch Arnd provided.
 
-Dave- I plan on pushing the fix later today to net.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160120/2a220f92/attachment.asc>
+Thanks.
+
+- Alex
