@@ -1,53 +1,32 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 20 Jan 2016 21:16:59 +0000
-Subject: [Intel-wired-lan] [next PATCH S28 05/15] i40e: Add a SW
- workaround	for lost Interrupts
-In-Reply-To: <1452897202-15204-6-git-send-email-joshua.a.hay@intel.com>
-References: <1452897202-15204-1-git-send-email-joshua.a.hay@intel.com>
- <1452897202-15204-6-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F988C05@ORSMSX104.amr.corp.intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed, 20 Jan 2016 14:12:30 -0800
+Subject: [Intel-wired-lan] [next PATCH 0/3] TSO and checksum fixes for
+	i40e
+In-Reply-To: <CAKgT0Udrbsi_bdC4hidjnY34c92E8+ezLahOk3Rtjqei89avjA@mail.gmail.com>
+References: <20160115043921.24270.62791.stgit@localhost.localdomain>
+ <CAKgT0Udrbsi_bdC4hidjnY34c92E8+ezLahOk3Rtjqei89avjA@mail.gmail.com>
+Message-ID: <1453327950.2958.25.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Joshua Hay
-> Sent: Friday, January 15, 2016 2:33 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S28 05/15] i40e: Add a SW
-> workaround for lost Interrupts
+On Wed, 2016-01-20 at 08:24 -0800, Alexander Duyck wrote:
 > 
-> From: Anjali Singhai Jain <anjali.singhai@intel.com>
-> 
-> This patch adds a workaround for cases where we might have interrupts that
-> got lost but WB happened.
-> If that happens without this patch we will see a tx_timeout.
-> To work around it, this patch goes ahead and reschedules napi in that
-> situation, if napi is not already scheduled.
-> We also add a counter in ethtool to keep track of when we detect a case of
-> tx_lost_interrupt.
-> 
-> Note: napi_reschedule() can be safely called from process/service_task
-> context and is done in other drivers as well without an issue.
-> 
-> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-> Change-ID: I00f98f1ce3774524d9421227652bef20fcbd0d20
-> ---
-> Testing Hints: See if some more cases of tx_timeout go away from X722 and
-> even fortville. Particulary the case where HWB=TAIL as seen in the dmesg
-> logs when the tx_timeout happens.
-> 
->  drivers/net/ethernet/intel/i40e/i40e.h         |  1 +
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  1 +
->  drivers/net/ethernet/intel/i40e/i40e_main.c    | 32 ++++++++++++++++-----
-> -----
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c    | 10 +++++---
->  drivers/net/ethernet/intel/i40e/i40e_txrx.h    |  3 ++-
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c  | 10 +++++---
-> drivers/net/ethernet/intel/i40evf/i40e_txrx.h  |  3 ++-
->  7 files changed, 40 insertions(+), 20 deletions(-)
+> Between the fix from Arnd for the build issue and the sparse warnings
+> I will be submitting a v2 of my patches.? Could you please drop the
+> existing set from the tree?
 
-Patch code changes correctly applied, hammered cards with traffic, observed no tx_timout and a handful of lost_interrupts with ~1hr of traffic on fortville, no timeouts/lost interrupts on X722
+Yeah, I will drop it. ?Are you wanting me to pick up Arnd's fix? ?or
+Eric D's fix? ?or neither and take your v2 build fix?
+
+I want to get that build fix pushed later today if possible so that I
+won't get any more "fixes" for the same issue.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160120/eb58ec46/attachment.asc>
