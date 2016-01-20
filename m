@@ -1,51 +1,96 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 20 Jan 2016 14:44:14 -0800
-Subject: [Intel-wired-lan] [next, S23,
-	06/13] i40e/i40evf: tunnels can be generic
-In-Reply-To: <20160120143950.00002ba0@unknown>
-References: <1449705033-4968-7-git-send-email-joshua.a.hay@intel.com>
- <569F04DF.7070102@gmail.com> <20160120143950.00002ba0@unknown>
-Message-ID: <CAKgT0Uda_KG-fcodwJ8D+yhN_e737kbJOSKD0A9WzBs+vXrr6Q@mail.gmail.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed, 20 Jan 2016 14:44:45 -0800
+Subject: [Intel-wired-lan] [PATCH] net: i40e: avoid unused function
+	warnings
+In-Reply-To: <8814508.SjLecHrQqA@wuerfel>
+References: <2806620.EpZqDlZTO3@wuerfel>
+ <1453328245.2958.28.camel@intel.com> <8814508.SjLecHrQqA@wuerfel>
+Message-ID: <1453329885.2958.32.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Jan 20, 2016 at 2:39 PM, Jesse Brandeburg
-<jesse.brandeburg@intel.com> wrote:
-> On Tue, 19 Jan 2016 19:54:07 -0800
-> Alexander Duyck <alexander.duyck@gmail.com> wrote:
->
->> On 12/09/2015 03:50 PM, Hay, Joshua A wrote:
->> > From: Jesse Brandeburg <jesse.brandeburg@intel.com>
->> > -   if (!(tx_flags & I40E_TX_FLAGS_VXLAN_TUNNEL)) {
->> > +   if ((tx_flags & I40E_TX_FLAGS_TUNNEL)) {
->> >             /* snag network header to get L4 type and address */
->> >             hdr.network = skb_network_header(skb);
->> >
->>
->> So this patch has a major bug right here.  Specifically it is disabling
->> ATR for everything since the logic got flipped an you are checking the
->> outer headers for tunneled frames, and the inner headers for
->> non-tunneled frames.
->
-> I've got a patch ready that fixes the "major bug" part, which appears
-> to be due to be a combination of several factors leading to this point
-> where the code was broken.  Thank you VERY much for catching this.
->
->> There is another bug a bit further down from here where the variable
->> protocol is used which means it is outer header only and as such breaks
->> any cases where you have v4 over v6 or v6 over v4.
->
-> Since this issue was not introduced in this patch, I'm going to punt to
-> a separate patch to fix the "protocol".
->
+On Wed, 2016-01-20 at 23:28 +0100, Arnd Bergmann wrote:
+> On Wednesday 20 January 2016 14:17:25 Jeff Kirsher wrote:
+> > On Wed, 2016-01-20 at 11:42 +0100, Arnd Bergmann wrote:
+> > > The addition of the geneve tunnel offload code left a couple
+> > > of functions unconditionally defined but empty whenever
+> CONFIG_VXLAN
+> > > and CONFIG_GENEVE are disabled. gcc warns about this:
+> > >?
+> > > i40e_main.c:7049:13: warning: 'i40e_sync_udp_filters_subtask'
+> defined
+> > > but not used [-Wunused-function]
+> > > i40e_main.c:8516:13: warning: 'i40e_add_vxlan_port' defined but
+> not
+> > > used [-Wunused-function]
+> > > i40e_main.c:8561:13: warning: 'i40e_del_vxlan_port' defined but
+> not
+> > > used [-Wunused-function]
+> > > i40e_main.c:8596:13: warning: 'i40e_add_geneve_port' defined but
+> not
+> > > used [-Wunused-function]
+> > > i40e_main.c:8643:13: warning: 'i40e_del_geneve_port' defined but
+> not
+> > > used [-Wunused-function]
+> > >?
+> > > This moves the #ifdef statements to the outside of the affected
+> > > functions, which avoids the warnings.
+> > >?
+> > > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> > > Fixes: 6a899024058d ("i40e: geneve tunnel offload support")
+> > > ---
+> > > This is a harmless regression against v4.4, found on ARM
+> randconfig
+> > > builds
+> >?
+> > Thanks Arnd, I already have a patch from Eric Dumazet and Alex
+> Duyck to
+> > resolve this issue.
+> >?
+> > Dave- I plan on pushing the fix later today to net.
+> 
+> Ok, thanks.
+> 
+> FWIW, I have another patch for this driver that I did not yet submit
+> because it's not a regression and I haven't written a proper
+> changelog
+> for it (it's in a set of 15 patches for netdev that fix harmless
+> warnings).
+> 
+> Do you have one for the warning below as well? I could not come up
+> with a better way than adding a bogus initialization, but maybe
+> there is one.
+> 
+> ????????Arnd
+> 
+> From d89be3f0f932a71dfb5480ee396db514879097c4 Mon Sep 17 00:00:00
+> 2001
+> From: Arnd Bergmann <arnd@arndb.de>
+> Date: Fri, 15 Jan 2016 17:31:07 +0100
+> Subject: [PATCH] net: i40e: shut up uninitialized variable warnings
+> 
+> intel/i40e/i40e_txrx.c: In function 'i40e_xmit_frame_ring':
+> intel/i40e/i40e_txrx.c:2367:20: error: 'oiph' may be used
+> uninitialized in this function [-Werror=maybe-uninitialized]
+> intel/i40e/i40e_txrx.c:2317:16: note: 'oiph' was declared here
+> intel/i40e/i40e_txrx.c:2367:17: error: 'oudph' may be used
+> uninitialized in this function [-Werror=maybe-uninitialized]
+> intel/i40e/i40e_txrx.c:2316:17: note: 'oudph' was declared here
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-That's fine with me.  I actually have a patch already put together to
-address the protocol bug.  I just have to finish up sorting out the
-ATA issues I am having with the current net-next and once I have that
-resolved I will hopefully be able to work on splitting up the patches
-a bit more and will submit my v2 either tonight or early tomorrow.
+Yeah, I have a fix for that as well.
 
-- Alex
+You can confirm by pulling my next-queue tree (dev-queue branch).
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git?d
+ev-queue
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160120/1999289a/attachment.asc>
