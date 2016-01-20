@@ -1,139 +1,42 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 20 Jan 2016 11:42:26 +0100
-Subject: [Intel-wired-lan] [PATCH] net: i40e: avoid unused function warnings
-Message-ID: <2806620.EpZqDlZTO3@wuerfel>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 20 Jan 2016 08:24:17 -0800
+Subject: [Intel-wired-lan] [next PATCH 0/3] TSO and checksum fixes for
+	i40e
+In-Reply-To: <20160115043921.24270.62791.stgit@localhost.localdomain>
+References: <20160115043921.24270.62791.stgit@localhost.localdomain>
+Message-ID: <CAKgT0Udrbsi_bdC4hidjnY34c92E8+ezLahOk3Rtjqei89avjA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The addition of the geneve tunnel offload code left a couple
-of functions unconditionally defined but empty whenever CONFIG_VXLAN
-and CONFIG_GENEVE are disabled. gcc warns about this:
+On Thu, Jan 14, 2016 at 8:41 PM, Alexander Duyck <aduyck@mirantis.com> wrote:
+> This patch set is meant to improve the performance and reliability of i40e
+> when it comes to performing TSO and Tx checksum offloads related to tunnels.
+>
+> I have tested it with a number of combinations of v4 over v6 and v6 over v4
+> for VXLANs.  With this patch set I resolved a number of issues and I am now
+> able to perform TSO for any of them as long as the outer UDP checksum is 0.
+> It should also now be supported if the outer checksum is enabled in the
+> case of the XL722, though I cannot test it.
+>
+> I was able to verify IPv6 TSO is working correctly, however it seems like
+> if I use VXLAN over IPv6 I am not seeing any receive checksum offloads.
+> I'm still trying to work out that bit but as far as I can tell I haven't
+> configured anything incorrectly as the receiving end is getting the frames
+> in the proper format.
+>
+> I'll be out on vacation for the next several days so if anything comes up I
+> will address it on Tuesday.
+>
 
-i40e_main.c:7049:13: warning: 'i40e_sync_udp_filters_subtask' defined but not used [-Wunused-function]
-i40e_main.c:8516:13: warning: 'i40e_add_vxlan_port' defined but not used [-Wunused-function]
-i40e_main.c:8561:13: warning: 'i40e_del_vxlan_port' defined but not used [-Wunused-function]
-i40e_main.c:8596:13: warning: 'i40e_add_geneve_port' defined but not used [-Wunused-function]
-i40e_main.c:8643:13: warning: 'i40e_del_geneve_port' defined but not used [-Wunused-function]
+Jeff,
 
-This moves the #ifdef statements to the outside of the affected
-functions, which avoids the warnings.
+Between the fix from Arnd for the build issue and the sparse warnings
+I will be submitting a v2 of my patches.  Could you please drop the
+existing set from the tree?
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Fixes: 6a899024058d ("i40e: geneve tunnel offload support")
----
-This is a harmless regression against v4.4, found on ARM randconfig builds
+Thanks.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index bb4612c159fd..49ab0426b773 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -7056,7 +7056,6 @@ static void i40e_handle_mdd_event(struct i40e_pf *pf)
-  **/
- static void i40e_sync_udp_filters_subtask(struct i40e_pf *pf)
- {
--#if IS_ENABLED(CONFIG_VXLAN) || IS_ENABLED(CONFIG_GENEVE)
- 	struct i40e_hw *hw = &pf->hw;
- 	i40e_status ret;
- 	__be16 port;
-@@ -7090,7 +7089,6 @@ static void i40e_sync_udp_filters_subtask(struct i40e_pf *pf)
- 			}
- 		}
- 	}
--#endif
- }
- 
- /**
-@@ -7117,9 +7115,8 @@ static void i40e_service_task(struct work_struct *work)
- 	i40e_watchdog_subtask(pf);
- 	i40e_fdir_reinit_subtask(pf);
- 	i40e_sync_filters_subtask(pf);
--#if IS_ENABLED(CONFIG_VXLAN) || IS_ENABLED(CONFIG_GENEVE)
--	i40e_sync_udp_filters_subtask(pf);
--#endif
-+	if (IS_ENABLED(CONFIG_VXLAN) || IS_ENABLED(CONFIG_GENEVE))
-+		i40e_sync_udp_filters_subtask(pf);
- 	i40e_clean_adminq_subtask(pf);
- 
- 	i40e_service_event_complete(pf);
-@@ -8515,6 +8512,7 @@ static u8 i40e_get_udp_port_idx(struct i40e_pf *pf, __be16 port)
- }
- 
- #endif
-+#if IS_ENABLED(CONFIG_VXLAN)
- /**
-  * i40e_add_vxlan_port - Get notifications about VXLAN ports that come up
-  * @netdev: This physical port's netdev
-@@ -8524,7 +8522,6 @@ static u8 i40e_get_udp_port_idx(struct i40e_pf *pf, __be16 port)
- static void i40e_add_vxlan_port(struct net_device *netdev,
- 				sa_family_t sa_family, __be16 port)
- {
--#if IS_ENABLED(CONFIG_VXLAN)
- 	struct i40e_netdev_priv *np = netdev_priv(netdev);
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct i40e_pf *pf = vsi->back;
-@@ -8557,7 +8554,6 @@ static void i40e_add_vxlan_port(struct net_device *netdev,
- 	pf->udp_ports[next_idx].type = I40E_AQC_TUNNEL_TYPE_VXLAN;
- 	pf->pending_udp_bitmap |= BIT_ULL(next_idx);
- 	pf->flags |= I40E_FLAG_UDP_FILTER_SYNC;
--#endif
- }
- 
- /**
-@@ -8569,7 +8565,6 @@ static void i40e_add_vxlan_port(struct net_device *netdev,
- static void i40e_del_vxlan_port(struct net_device *netdev,
- 				sa_family_t sa_family, __be16 port)
- {
--#if IS_ENABLED(CONFIG_VXLAN)
- 	struct i40e_netdev_priv *np = netdev_priv(netdev);
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct i40e_pf *pf = vsi->back;
-@@ -8592,9 +8587,10 @@ static void i40e_del_vxlan_port(struct net_device *netdev,
- 		netdev_warn(netdev, "vxlan port %d was not found, not deleting\n",
- 			    ntohs(port));
- 	}
--#endif
- }
-+#endif
- 
-+#if IS_ENABLED(CONFIG_GENEVE)
- /**
-  * i40e_add_geneve_port - Get notifications about GENEVE ports that come up
-  * @netdev: This physical port's netdev
-@@ -8604,7 +8600,6 @@ static void i40e_del_vxlan_port(struct net_device *netdev,
- static void i40e_add_geneve_port(struct net_device *netdev,
- 				 sa_family_t sa_family, __be16 port)
- {
--#if IS_ENABLED(CONFIG_GENEVE)
- 	struct i40e_netdev_priv *np = netdev_priv(netdev);
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct i40e_pf *pf = vsi->back;
-@@ -8639,7 +8634,6 @@ static void i40e_add_geneve_port(struct net_device *netdev,
- 	pf->flags |= I40E_FLAG_UDP_FILTER_SYNC;
- 
- 	dev_info(&pf->pdev->dev, "adding geneve port %d\n", ntohs(port));
--#endif
- }
- 
- /**
-@@ -8651,7 +8645,6 @@ static void i40e_add_geneve_port(struct net_device *netdev,
- static void i40e_del_geneve_port(struct net_device *netdev,
- 				 sa_family_t sa_family, __be16 port)
- {
--#if IS_ENABLED(CONFIG_GENEVE)
- 	struct i40e_netdev_priv *np = netdev_priv(netdev);
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct i40e_pf *pf = vsi->back;
-@@ -8677,8 +8670,8 @@ static void i40e_del_geneve_port(struct net_device *netdev,
- 		netdev_warn(netdev, "geneve port %d was not found, not deleting\n",
- 			    ntohs(port));
- 	}
--#endif
- }
-+#endif
- 
- static int i40e_get_phys_port_id(struct net_device *netdev,
- 				 struct netdev_phys_item_id *ppid)
-
+-Alex
