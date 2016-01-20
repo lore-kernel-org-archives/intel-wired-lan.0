@@ -1,32 +1,85 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 20 Jan 2016 14:18:06 -0800
-Subject: [Intel-wired-lan] [next PATCH 0/3] TSO and checksum fixes for
-	i40e
-In-Reply-To: <1453327950.2958.25.camel@intel.com>
-References: <20160115043921.24270.62791.stgit@localhost.localdomain>
- <CAKgT0Udrbsi_bdC4hidjnY34c92E8+ezLahOk3Rtjqei89avjA@mail.gmail.com>
- <1453327950.2958.25.camel@intel.com>
-Message-ID: <CAKgT0UdQeVa7c1vp3ZXvej30w3_29JoZFX35cWWyLvFpayJcfw@mail.gmail.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Wed, 20 Jan 2016 23:28:34 +0100
+Subject: [Intel-wired-lan] [PATCH] net: i40e: avoid unused function
+	warnings
+In-Reply-To: <1453328245.2958.28.camel@intel.com>
+References: <2806620.EpZqDlZTO3@wuerfel> <1453328245.2958.28.camel@intel.com>
+Message-ID: <8814508.SjLecHrQqA@wuerfel>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Jan 20, 2016 at 2:12 PM, Jeff Kirsher
-<jeffrey.t.kirsher@intel.com> wrote:
-> On Wed, 2016-01-20 at 08:24 -0800, Alexander Duyck wrote:
->>
->> Between the fix from Arnd for the build issue and the sparse warnings
->> I will be submitting a v2 of my patches.  Could you please drop the
->> existing set from the tree?
->
-> Yeah, I will drop it.  Are you wanting me to pick up Arnd's fix?  or
-> Eric D's fix?  or neither and take your v2 build fix?
+On Wednesday 20 January 2016 14:17:25 Jeff Kirsher wrote:
+> On Wed, 2016-01-20 at 11:42 +0100, Arnd Bergmann wrote:
+> > The addition of the geneve tunnel offload code left a couple
+> > of functions unconditionally defined but empty whenever CONFIG_VXLAN
+> > and CONFIG_GENEVE are disabled. gcc warns about this:
+> > 
+> > i40e_main.c:7049:13: warning: 'i40e_sync_udp_filters_subtask' defined
+> > but not used [-Wunused-function]
+> > i40e_main.c:8516:13: warning: 'i40e_add_vxlan_port' defined but not
+> > used [-Wunused-function]
+> > i40e_main.c:8561:13: warning: 'i40e_del_vxlan_port' defined but not
+> > used [-Wunused-function]
+> > i40e_main.c:8596:13: warning: 'i40e_add_geneve_port' defined but not
+> > used [-Wunused-function]
+> > i40e_main.c:8643:13: warning: 'i40e_del_geneve_port' defined but not
+> > used [-Wunused-function]
+> > 
+> > This moves the #ifdef statements to the outside of the affected
+> > functions, which avoids the warnings.
+> > 
+> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> > Fixes: 6a899024058d ("i40e: geneve tunnel offload support")
+> > ---
+> > This is a harmless regression against v4.4, found on ARM randconfig
+> > builds
+> 
+> Thanks Arnd, I already have a patch from Eric Dumazet and Alex Duyck to
+> resolve this issue.
+> 
+> Dave- I plan on pushing the fix later today to net.
 
-I was thinking Arnd's fix, I haven't seen Eric D's.  I just know that
-mine was only partial compared to the patch Arnd provided.
+Ok, thanks.
 
-Thanks.
+FWIW, I have another patch for this driver that I did not yet submit
+because it's not a regression and I haven't written a proper changelog
+for it (it's in a set of 15 patches for netdev that fix harmless warnings).
 
-- Alex
+Do you have one for the warning below as well? I could not come up
+with a better way than adding a bogus initialization, but maybe
+there is one.
+
+	Arnd
+
+From d89be3f0f932a71dfb5480ee396db514879097c4 Mon Sep 17 00:00:00 2001
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 15 Jan 2016 17:31:07 +0100
+Subject: [PATCH] net: i40e: shut up uninitialized variable warnings
+
+intel/i40e/i40e_txrx.c: In function 'i40e_xmit_frame_ring':
+intel/i40e/i40e_txrx.c:2367:20: error: 'oiph' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+intel/i40e/i40e_txrx.c:2317:16: note: 'oiph' was declared here
+intel/i40e/i40e_txrx.c:2367:17: error: 'oudph' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+intel/i40e/i40e_txrx.c:2316:17: note: 'oudph' was declared here
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 720516b0e8ee..47bd8b3145a7 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -2313,8 +2313,8 @@ static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
+ 	struct iphdr *this_ip_hdr;
+ 	u32 network_hdr_len;
+ 	u8 l4_hdr = 0;
+-	struct udphdr *oudph;
+-	struct iphdr *oiph;
++	struct udphdr *oudph = NULL;
++	struct iphdr *oiph = NULL;
+ 	u32 l4_tunnel = 0;
+ 
+ 	if (skb->encapsulation) {
+
