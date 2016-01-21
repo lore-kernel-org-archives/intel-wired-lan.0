@@ -1,136 +1,59 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 21 Jan 2016 12:51:45 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 0d95452148d97989d1d06958c1aa7f24e35b8177 BUILD DONE
-Message-ID: <56a063e1.zEcCpW92hu4wZL4X%fengguang.wu@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 20 Jan 2016 23:25:28 -0800
+Subject: [Intel-wired-lan] [next, S23,
+ 06/13 v2] i40e/i40evf: tunnels can be generic
+In-Reply-To: <1453329824-9465-1-git-send-email-jesse.brandeburg@intel.com>
+References: <1453329824-9465-1-git-send-email-jesse.brandeburg@intel.com>
+Message-ID: <CAKgT0Ueubf1ex4C2=avpPHgPVUAnRY4F6JZJyecvXqufHA2Etg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-0d95452148d97989d1d06958c1aa7f24e35b8177  net: i40e: shut up uninitialized variable warnings
+On Wed, Jan 20, 2016 at 2:43 PM, Jesse Brandeburg
+<jesse.brandeburg@intel.com> wrote:
+> Since the i40e driver now supports VxLAN, GRE, and soon
+> to be Geneve tunnels, the driver can just note that an skb
+> contains a tunneled packet generically, instead of calling
+> out VXLAN specifically.  The tunnel set up we do for hardware
+> is almost always the same for all tunnel types.
+>
+> This specifically enables ATR/Flow Director on GRE packets
+> which increases performance/scaling.  Without this patch
+> GRE RX packets end up on a random RSS assigned queue.
+>
+> v2: Fix code error found by Alex, by repairing if/else clause
+>     for tunnel.
+>
+> Reported-by: Alexander Duyck <alexander.duyck@gmail.com>
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Change-ID: Ie8e205603654910d2f718592cbef8132ae0719e4
+>
+> ---
+> Testing Hints:
+> Test tunnelled traffic, specifically also test VxLAN and other tunnel
+> types to make sure that ATR counters are still counting when doing
+> IPv4/TCP traffic over the tunnel.
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 13 +++++++------
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.h   |  2 +-
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c |  2 +-
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.h |  2 +-
+>  4 files changed, 10 insertions(+), 9 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+> index 720516b..757bfb6 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+> @@ -2005,7 +2005,10 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
+>         if (!(tx_flags & (I40E_TX_FLAGS_IPV4 | I40E_TX_FLAGS_IPV6)))
+>                 return;
+>
+> -       if (!(tx_flags & I40E_TX_FLAGS_UDP_TUNNEL)) {
+> +       if ((tx_flags & I40E_TX_FLAGS_TUNNEL)) {
 
-drivers/net/ethernet/intel/igb/igb_cdev.c:186:20-24: ERROR: adapter is NULL but dereferenced.
+You only need one set of parenthesis here instead of two since you
+have flipped the logic.  Otherwise the rest of the patch looks fine.
 
-Error ids grouped by kconfigs:
-
-recent_errors
-??? i386-allmodconfig
-    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:ERROR:adapter-is-NULL-but-dereferenced.
-
-elapsed time: 68m
-
-configs tested: 107
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201603
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-parisc                         b180_defconfig
-i386                             allmodconfig
-x86_64               randconfig-x019-01201142
-x86_64               randconfig-x016-01201142
-x86_64               randconfig-x012-01201142
-x86_64               randconfig-x014-01201142
-x86_64               randconfig-x018-01201142
-x86_64               randconfig-x013-01201142
-x86_64               randconfig-x015-01201142
-x86_64               randconfig-x011-01201142
-x86_64               randconfig-x010-01201142
-x86_64               randconfig-x017-01201142
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201603
-i386                     randconfig-s1-201603
-x86_64                           allmodconfig
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                   randconfig-i0-201603
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201603
-i386                     randconfig-i1-201603
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201603
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                 randconfig-x002-201603
-x86_64                 randconfig-x004-201603
-x86_64                 randconfig-x000-201603
-x86_64                 randconfig-x009-201603
-x86_64                 randconfig-x003-201603
-x86_64                 randconfig-x005-201603
-x86_64                 randconfig-x006-201603
-x86_64                 randconfig-x001-201603
-x86_64                 randconfig-x008-201603
-x86_64                 randconfig-x007-201603
-i386                     randconfig-r0-201603
-i386                 randconfig-x002-01181631
-i386                 randconfig-x005-01181631
-i386                 randconfig-x006-01181631
-i386                 randconfig-x003-01181631
-i386                 randconfig-x007-01181631
-i386                 randconfig-x009-01181631
-i386                 randconfig-x008-01181631
-i386                 randconfig-x004-01181631
-i386                 randconfig-x001-01181631
-i386                 randconfig-x000-01181631
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-
-Thanks,
-Fengguang
+- Alex
