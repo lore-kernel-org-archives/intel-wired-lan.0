@@ -1,10 +1,9 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 21 Jan 2016 17:31:08 +0000
-Subject: [Intel-wired-lan] [PATCH] net: i40e: shut up uninitialized
- variable	warnings
-In-Reply-To: <1453348397-79917-1-git-send-email-jeffrey.t.kirsher@intel.com>
-References: <1453348397-79917-1-git-send-email-jeffrey.t.kirsher@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F98BEB1@ORSMSX104.amr.corp.intel.com>
+Date: Thu, 21 Jan 2016 17:30:46 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: fix build warnings
+In-Reply-To: <1453348382-79870-1-git-send-email-jeffrey.t.kirsher@intel.com>
+References: <1453348382-79870-1-git-send-email-jeffrey.t.kirsher@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F98BEA5@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,24 +15,29 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Jeff Kirsher
 > Sent: Wednesday, January 20, 2016 7:53 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Subject: [Intel-wired-lan] [PATCH] net: i40e: shut up uninitialized variable
-> warnings
+> Cc: Eric Dumazet <edumazet@google.com>
+> Subject: [Intel-wired-lan] [PATCH] i40e: fix build warnings
 > 
-> From: Arnd Bergmann <arnd@arndb.de>
+> From: Eric Dumazet <edumazet@google.com>
 > 
-> intel/i40e/i40e_txrx.c: In function 'i40e_xmit_frame_ring':
-> intel/i40e/i40e_txrx.c:2367:20: error: 'oiph' may be used uninitialized in this
-> function [-Werror=maybe-uninitialized]
-> intel/i40e/i40e_txrx.c:2317:16: note: 'oiph' was declared here
-> intel/i40e/i40e_txrx.c:2367:17: error: 'oudph' may be used uninitialized in this
-> function [-Werror=maybe-uninitialized]
-> intel/i40e/i40e_txrx.c:2316:17: note: 'oudph' was declared here
+> Fixes following build warnings :
 > 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> drivers/net/ethernet/intel/i40e/i40e_main.c:7057:13: warning:
+> 'i40e_sync_udp_filters_subtask' defined but not used [-Wunused-function]
+> drivers/net/ethernet/intel/i40e/i40e_main.c:8524:13: warning:
+> 'i40e_add_vxlan_port' defined but not used [-Wunused-function]
+> drivers/net/ethernet/intel/i40e/i40e_main.c:8569:13: warning:
+> 'i40e_del_vxlan_port' defined but not used [-Wunused-function]
+> drivers/net/ethernet/intel/i40e/i40e_main.c:8604:13: warning:
+> 'i40e_add_geneve_port' defined but not used [-Wunused-function]
+> drivers/net/ethernet/intel/i40e/i40e_main.c:8651:13: warning:
+> 'i40e_del_geneve_port' defined but not used [-Wunused-function]
+> 
+> Fixes: 6a899024058d ("i40e: geneve tunnel offload support")
+> Signed-off-by: Eric Dumazet <edumazet@google.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 15 +++++----------
+>  1 file changed, 5 insertions(+), 10 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 Patch code changes correctly applied, no build warnings
