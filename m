@@ -1,42 +1,26 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 20 Jan 2016 19:53:17 -0800
-Subject: [Intel-wired-lan] [PATCH] net: i40e: shut up uninitialized variable
-	warnings
-Message-ID: <1453348397-79917-1-git-send-email-jeffrey.t.kirsher@intel.com>
+From: Pavel Tikhomirov <ptikhomirov@virtuozzo.com>
+Date: Thu, 21 Jan 2016 07:17:03 +0300
+Subject: [Intel-wired-lan] [PATCH RESEND v2] ixgbe: on recv increment
+ rx.ring->stats.yields
+In-Reply-To: <1453347139.3312.2.camel@intel.com>
+References: <1453277324-6180-1-git-send-email-ptikhomirov@virtuozzo.com>
+ <1453347139.3312.2.camel@intel.com>
+Message-ID: <1phi081e475o0aa0sbrunq23.1453348980693@email.android.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Arnd Bergmann <arnd@arndb.de>
+----???????????? Jeff Kirsher ??????? ----
+> Why are you re-sending this patch? ?I already have it queued up for
+> testing in my tree. ?This just causes problems and extra work for me.
 
-intel/i40e/i40e_txrx.c: In function 'i40e_xmit_frame_ring':
-intel/i40e/i40e_txrx.c:2367:20: error: 'oiph' may be used uninitialized in this function [-Werror=maybe-uninitialized]
-intel/i40e/i40e_txrx.c:2317:16: note: 'oiph' was declared here
-intel/i40e/i40e_txrx.c:2367:17: error: 'oudph' may be used uninitialized in this function [-Werror=maybe-uninitialized]
-intel/i40e/i40e_txrx.c:2316:17: note: 'oudph' was declared here
+Jeff, I'm very sorry for the inconveniences caused, I'm quite new to sending patches upstream, and was worrying about lack of review/response to my patch. Actually I thought the patch was lost.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- drivers/net/ethernet/intel/i40e/i40e_txrx.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+I hugely appreciate your work, I re-sent patch for no other reason,  so please ignore the "RESENT" copy.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 16d6758..cffe519 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2405,8 +2405,8 @@ static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
- 	struct iphdr *this_ip_hdr;
- 	u32 network_hdr_len;
- 	u8 l4_hdr = 0;
--	struct udphdr *oudph;
--	struct iphdr *oiph;
-+	struct udphdr *oudph = NULL;
-+	struct iphdr *oiph = NULL;
- 	u32 l4_tunnel = 0;
- 
- 	if (skb->encapsulation) {
--- 
-2.5.0
-
+Sorry again, Pavel.
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160121/64107c02/attachment.html>
