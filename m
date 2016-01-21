@@ -1,8 +1,8 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 21 Jan 2016 12:36:08 +0800
+Date: Thu, 21 Jan 2016 12:51:45 +0800
 Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 6f48bb328204ed450c590181cf4431661edb0d5c BUILD SUCCESS
-Message-ID: <56a06038.LZ/wI9L1lK8xtp5A%fengguang.wu@intel.com>
+ 0d95452148d97989d1d06958c1aa7f24e35b8177 BUILD DONE
+Message-ID: <56a063e1.zEcCpW92hu4wZL4X%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,45 +10,42 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-6f48bb328204ed450c590181cf4431661edb0d5c  i40e: fix build warnings
+0d95452148d97989d1d06958c1aa7f24e35b8177  net: i40e: shut up uninitialized variable warnings
 
-elapsed time: 64m
+drivers/net/ethernet/intel/igb/igb_cdev.c:186:20-24: ERROR: adapter is NULL but dereferenced.
 
-configs tested: 105
+Error ids grouped by kconfigs:
 
-i386                     randconfig-a0-201603
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
+recent_errors
+??? i386-allmodconfig
+    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:ERROR:adapter-is-NULL-but-dereferenced.
+
+elapsed time: 68m
+
+configs tested: 107
+
 alpha                               defconfig
 parisc                            allnoconfig
-parisc                         b180_defconfig
 parisc                        c3000_defconfig
 parisc                              defconfig
+i386                     randconfig-a0-201603
 blackfin                BF526-EZBRD_defconfig
 blackfin                BF533-EZKIT_defconfig
 blackfin            BF561-EZKIT-SMP_defconfig
 blackfin                  TCM-BF537_defconfig
 cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+parisc                         b180_defconfig
+i386                             allmodconfig
 x86_64               randconfig-x019-01201142
 x86_64               randconfig-x016-01201142
 x86_64               randconfig-x012-01201142
@@ -64,6 +61,7 @@ m68k                          multi_defconfig
 m68k                           sun3_defconfig
 i386                     randconfig-s0-201603
 i386                     randconfig-s1-201603
+x86_64                           allmodconfig
 avr32                      atngw100_defconfig
 avr32                     atstk1006_defconfig
 frv                                 defconfig
@@ -76,6 +74,10 @@ mips                              allnoconfig
 mips                      fuloong2e_defconfig
 mips                                   jz4740
 mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201603
 sparc                               defconfig
 sparc64                           allnoconfig
 sparc64                             defconfig
@@ -83,17 +85,28 @@ microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
 i386                     randconfig-i0-201603
 i386                     randconfig-i1-201603
-x86_64                           allmodconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                               tinyconfig
 x86_64                                    lkp
 x86_64                                   rhel
 i386                     randconfig-n0-201603
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
 x86_64                 randconfig-x002-201603
 x86_64                 randconfig-x004-201603
 x86_64                 randconfig-x000-201603
@@ -104,10 +117,7 @@ x86_64                 randconfig-x006-201603
 x86_64                 randconfig-x001-201603
 x86_64                 randconfig-x008-201603
 x86_64                 randconfig-x007-201603
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                             allmodconfig
+i386                     randconfig-r0-201603
 i386                 randconfig-x002-01181631
 i386                 randconfig-x005-01181631
 i386                 randconfig-x006-01181631
