@@ -1,81 +1,86 @@
-From: Singhai, Anjali <anjali.singhai@intel.com>
-Date: Fri, 22 Jan 2016 21:28:33 +0000
-Subject: [Intel-wired-lan] [next PATCH v2 08/15] i40e/i40evf: Do not
- write to descriptor unless we complete
-In-Reply-To: <CAKgT0UdjhGGPwSpz8gSMeTFL=H2C1V7ESyP9xyF2VHXAhV-xHw@mail.gmail.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Fri, 22 Jan 2016 13:34:44 -0800
+Subject: [Intel-wired-lan] [next PATCH v2 14/15] i40e: Update feature
+ flags to reflect newly enabled features
+In-Reply-To: <56A29C01.4010209@intel.com>
 References: <20160122002407.18278.95721.stgit@localhost.localdomain>
- <20160122002746.18278.34462.stgit@localhost.localdomain>
- <56A29DE7.80707@intel.com>
- <CAKgT0UdjhGGPwSpz8gSMeTFL=H2C1V7ESyP9xyF2VHXAhV-xHw@mail.gmail.com>
-Message-ID: <C40BE8378EF49C44B9184714DBC8EF2993AB56E9@ORSMSX115.amr.corp.intel.com>
+ <20160122002823.18278.12177.stgit@localhost.localdomain>
+ <56A29C01.4010209@intel.com>
+Message-ID: <CAKgT0UdNn5UVsugyOHhFvBTTOv9SCCM+G78i8JGMrd9AfYOM5A@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Thanks a lot Alex for the series! Much cleaner and you caught a lot of IPv6 issues.
+On Fri, Jan 22, 2016 at 1:15 PM, Singhai, Anjali
+<anjali.singhai@intel.com> wrote:
+>
+>
+> On 1/21/2016 4:28 PM, Alexander Duyck wrote:
+>>
+>> Recent changes should have enabled support for IPv6 based tunnels and
+>> support for TSO with outer UDP checksums.  As such we can update the
+>> feature flags to reflect that.
+>>
+>> In addition we can clean-up the flags that aren't needed such as SCTP and
+>> RXCSUM since having the bits there doesn't add any value.
+>>
+>> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+>> ---
+>>   drivers/net/ethernet/intel/i40e/i40e_main.c |   16 ++++++++++------
+>>   1 file changed, 10 insertions(+), 6 deletions(-)
+>>
+>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
+>> b/drivers/net/ethernet/intel/i40e/i40e_main.c
+>> index e3a903f01d73..1d969acf9517 100644
+>> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+>> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+>> @@ -9023,12 +9023,14 @@ static int i40e_config_netdev(struct i40e_vsi
+>> *vsi)
+>>         np = netdev_priv(netdev);
+>>         np->vsi = vsi;
+>>   -     netdev->hw_enc_features |= NETIF_F_IP_CSUM        |
+>> -                                  NETIF_F_RXCSUM         |
+>> -                                  NETIF_F_SCTP_CRC       |
+>> -                                  NETIF_F_GSO_UDP_TUNNEL |
+>> -                                  NETIF_F_GSO_GRE        |
+>> -                                  NETIF_F_TSO            |
+>> +       netdev->hw_enc_features |= NETIF_F_IP_CSUM             |
+>> +                                  NETIF_F_IPV6_CSUM           |
+>> +                                  NETIF_F_TSO                 |
+>> +                                  NETIF_F_TSO6                |
+>> +                                  NETIF_F_TSO_ECN             |
+>> +                                  NETIF_F_GSO_GRE             |
+>> +                                  NETIF_F_GSO_UDP_TUNNEL      |
+>> +                                  NETIF_F_GSO_UDP_TUNNEL_CSUM |
+>>                                    0;
+>
+>
+> TUNNEL_CSUM in this case requires the PF_FLAG check for OUTER_UDP_CSUM as
+> well
 
-Anjali
+Actually it doesn't.  The hw_enc_features is just a mask.  So if the
+device cannot enable TUNNEL_CSUM via the check below, then the feature
+will never be exposed to the tunnel anyway.  For hw_features it
+matters, but for hw_enc_features it doesn't.
 
-> -----Original Message-----
-> From: Alexander Duyck [mailto:alexander.duyck at gmail.com]
-> Sent: Friday, January 22, 2016 1:27 PM
-> To: Singhai, Anjali
-> Cc: Alexander Duyck; intel-wired-lan; Kirsher, Jeffrey T
-> Subject: Re: [Intel-wired-lan] [next PATCH v2 08/15] i40e/i40evf: Do not write
-> to descriptor unless we complete
-> 
-> On Fri, Jan 22, 2016 at 1:23 PM, Singhai, Anjali
-> <anjali.singhai@intel.com> wrote:
-> >
-> >
-> > On 1/21/2016 4:27 PM, Alexander Duyck wrote:
-> >>
-> >>         __be16 frag_off;
-> >>         u8 l4_proto = 0;
-> >>         ip.hdr = skb_network_header(skb);
-> >>         l4.hdr = skb_transport_header(skb);
-> >>   +     /* words in MACLEN + dwords in IPLEN + dwords in L4Len */
-> >
-> >
-> > May be the comment should say words in MACLEN and as the other fields
-> get
-> > added later, build upon it...
-> 
-> You are right, this is just MACLEN.  I can update the comment for a v3.
-> 
-> >
-> >> +       offset = ((ip.hdr - skb->data) / 2) <<
-> >> +                I40E_TX_DESC_LENGTH_MACLEN_SHIFT;
-> >> +
-> >
-> >
-> >>                 exthdr = ip.hdr + sizeof(*ip.v6);
-> >>                 l4_proto = ip.v6->nexthdr;
-> >> @@ -2487,34 +2492,33 @@ static void i40e_tx_enable_csum(struct
-> sk_buff
-> >> *skb, u32 *tx_flags,
-> >>         }
-> >>         /* Now set the td_offset for IP header length */
-> >
-> >
-> > Comment needs to be fixed
-> 
-> Will update for v3.
-> 
-> >
-> >> -       *td_offset = ((l4.hdr - ip.hdr) / 4) <<
-> >> I40E_TX_DESC_LENGTH_IPLEN_SHIFT;
-> >> -       /* words in MACLEN + dwords in IPLEN + dwords in L4Len */
-> >> -       *td_offset |= (skb_network_offset(skb) >> 1) <<
-> >> -                      I40E_TX_DESC_LENGTH_MACLEN_SHIFT;
-> >> +       offset |= ((l4.hdr - ip.hdr) / 4) <<
-> >> I40E_TX_DESC_LENGTH_IPLEN_SHIFT;
-> >>
-> >
-> >
-> > _______________________________________________
-> > Intel-wired-lan mailing list
-> > Intel-wired-lan at lists.osuosl.org
-> > http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+>>         netdev->features = NETIF_F_SG                  |
+>> @@ -9050,6 +9052,8 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
+>>         if (!(pf->flags & I40E_FLAG_MFP_ENABLED))
+>>                 netdev->features |= NETIF_F_NTUPLE;
+>> +       if (pf->flags & I40E_FLAG_OUTER_UDP_CSUM_CAPABLE)
+>> +               netdev->features |= NETIF_F_GSO_UDP_TUNNEL_CSUM;
+>>         /* copy netdev features into list of user selectable features */
+>>         netdev->hw_features |= netdev->features;
+>>
+>> _______________________________________________
+>> Intel-wired-lan mailing list
+>> Intel-wired-lan at lists.osuosl.org
+>> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+>
+>
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at lists.osuosl.org
+> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
