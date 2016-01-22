@@ -1,112 +1,85 @@
 From: Alexander Duyck <aduyck@mirantis.com>
-Date: Thu, 21 Jan 2016 16:28:05 -0800
-Subject: [Intel-wired-lan] [next PATCH v2 11/15] i40e/i40evf: Enable support
- for SKB_GSO_UDP_TUNNEL_CSUM
+Date: Thu, 21 Jan 2016 16:28:11 -0800
+Subject: [Intel-wired-lan] [next PATCH v2 12/15] i40e: Fix ATR in relation
+	to tunnels
 In-Reply-To: <20160122002407.18278.95721.stgit@localhost.localdomain>
 References: <20160122002407.18278.95721.stgit@localhost.localdomain>
-Message-ID: <20160122002805.18278.7581.stgit@localhost.localdomain>
+Message-ID: <20160122002811.18278.62265.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The XL722 has support for providing the outer UDP tunnel checksum on
-transmits.  Make use of this feature to support segmenting UDP tunnels with
-outer checksums enabled.
+This patch contains a number of fixes to make certain that we are using
+the correct protocols when parsing both the inner and outer headers of a
+frame that is mixed between IPv4 and IPv6 for inner and outer.
 
 Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   |   19 ++++++++++++++++++-
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c |   19 ++++++++++++++++++-
- 2 files changed, 36 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c |   23 +++++++++--------------
+ 1 file changed, 9 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 40a4fca627d5..34dfa79e76db 100644
+index 34dfa79e76db..5a8db8de7675 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2272,6 +2272,7 @@ static int i40e_tso(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 	} ip;
- 	union {
- 		struct tcphdr *tcp;
-+		struct udphdr *udp;
- 		unsigned char *hdr;
- 	} l4;
- 	u32 paylen, l4_offset;
-@@ -2298,7 +2299,18 @@ static int i40e_tso(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 		ip.v6->payload_len = 0;
+@@ -2045,6 +2045,7 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 	struct tcphdr *th;
+ 	unsigned int hlen;
+ 	u32 flex_ptype, dtype_cmd;
++	u8 l4_proto;
+ 	u16 i;
+ 
+ 	/* make sure ATR is enabled */
+@@ -2058,6 +2059,7 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 	if (!tx_ring->atr_sample_rate)
+ 		return;
+ 
++	/* Currently only IPv4/IPv6 with TCP is supported */
+ 	if (!(tx_flags & (I40E_TX_FLAGS_IPV4 | I40E_TX_FLAGS_IPV6)))
+ 		return;
+ 
+@@ -2068,26 +2070,19 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 		/* snag network header to get L4 type and address */
+ 		hdr.network = skb_network_header(skb);
+ 
+-		/* Currently only IPv4/IPv6 with TCP is supported
+-		 * access ihl as u8 to avoid unaligned access on ia64
+-		 */
++		/* access ihl as u8 to avoid unaligned access on ia64 */
+ 		if (tx_flags & I40E_TX_FLAGS_IPV4)
+ 			hlen = (hdr.network[0] & 0x0F) << 2;
+-		else if (protocol == htons(ETH_P_IPV6))
+-			hlen = sizeof(struct ipv6hdr);
+ 		else
+-			return;
++			hlen = sizeof(struct ipv6hdr);
  	}
  
--	if (skb_shinfo(skb)->gso_type & (SKB_GSO_UDP_TUNNEL | SKB_GSO_GRE)) {
-+	if (skb_shinfo(skb)->gso_type & (SKB_GSO_UDP_TUNNEL | SKB_GSO_GRE |
-+					 SKB_GSO_UDP_TUNNEL_CSUM)) {
-+		if (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_TUNNEL_CSUM) {
-+			/* determine offset of outer transport header */
-+			l4_offset = l4.hdr - skb->data;
-+
-+			/* remove payload length from outer checksum */
-+			paylen = (__force u16)l4.udp->check;
-+			paylen += ntohs(1) * (u16)~(skb->len - l4_offset);
-+			l4.udp->check = ~csum_fold((__force __wsum)paylen);
-+		}
-+
- 		/* reset pointers to inner headers */
- 		ip.hdr = skb_inner_network_header(skb);
- 		l4.hdr = skb_inner_transport_header(skb);
-@@ -2458,6 +2470,11 @@ static int i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
- 		tunnel |= ((ip.hdr - l4.hdr) / 2) <<
- 			  I40E_TXD_CTX_QW0_NATLEN_SHIFT;
+-	/* Currently only IPv4/IPv6 with TCP is supported
+-	 * Note: tx_flags gets modified to reflect inner protocols in
++	/* Note: tx_flags gets modified to reflect inner protocols in
+ 	 * tx_enable_csum function if encap is enabled.
+ 	 */
+-	if ((tx_flags & I40E_TX_FLAGS_IPV4) &&
+-	    (hdr.ipv4->protocol != IPPROTO_TCP))
+-		return;
+-	else if ((tx_flags & I40E_TX_FLAGS_IPV6) &&
+-		 (hdr.ipv6->nexthdr != IPPROTO_TCP))
++	l4_proto = (tx_flags & I40E_TX_FLAGS_IPV4) ? hdr.ipv4->protocol :
++						     hdr.ipv6->nexthdr;
++	if (l4_proto != IPPROTO_TCP)
+ 		return;
  
-+		/* indicate if we need to offload outer UDP header */
-+		if ((*tx_flags & I40E_TX_FLAGS_TSO) &&
-+		    (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_TUNNEL_CSUM))
-+			tunnel |= I40E_TXD_CTX_QW0_L4T_CS_MASK;
-+
- 		/* record tunnel offload values */
- 		*cd_tunneling |= tunnel;
+ 	th = (struct tcphdr *)(hdr.network + hlen);
+@@ -2124,7 +2119,7 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
  
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index f1036845072b..ec4e008c7529 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -1532,6 +1532,7 @@ static int i40e_tso(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 	} ip;
- 	union {
- 		struct tcphdr *tcp;
-+		struct udphdr *udp;
- 		unsigned char *hdr;
- 	} l4;
- 	u32 paylen, l4_offset;
-@@ -1558,7 +1559,18 @@ static int i40e_tso(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 		ip.v6->payload_len = 0;
- 	}
- 
--	if (skb_shinfo(skb)->gso_type & (SKB_GSO_UDP_TUNNEL | SKB_GSO_GRE)) {
-+	if (skb_shinfo(skb)->gso_type & (SKB_GSO_UDP_TUNNEL | SKB_GSO_GRE |
-+					 SKB_GSO_UDP_TUNNEL_CSUM)) {
-+		if (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_TUNNEL_CSUM) {
-+			/* determine offset of outer transport header */
-+			l4_offset = l4.hdr - skb->data;
-+
-+			/* remove payload length from outer checksum */
-+			paylen = (__force u16)l4.udp->check;
-+			paylen += ntohs(1) * (u16)~(skb->len - l4_offset);
-+			l4.udp->check = ~csum_fold((__force __wsum)paylen);
-+		}
-+
- 		/* reset pointers to inner headers */
- 		ip.hdr = skb_inner_network_header(skb);
- 		l4.hdr = skb_inner_transport_header(skb);
-@@ -1676,6 +1688,11 @@ static int i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
- 		tunnel |= ((ip.hdr - l4.hdr) / 2) <<
- 			  I40E_TXD_CTX_QW0_NATLEN_SHIFT;
- 
-+		/* indicate if we need to offload outer UDP header */
-+		if ((*tx_flags & I40E_TX_FLAGS_TSO) &&
-+		    (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_TUNNEL_CSUM))
-+			tunnel |= I40E_TXD_CTX_QW0_L4T_CS_MASK;
-+
- 		/* record tunnel offload values */
- 		*cd_tunneling |= tunnel;
- 
+ 	flex_ptype = (tx_ring->queue_index << I40E_TXD_FLTR_QW0_QINDEX_SHIFT) &
+ 		      I40E_TXD_FLTR_QW0_QINDEX_MASK;
+-	flex_ptype |= (protocol == htons(ETH_P_IP)) ?
++	flex_ptype |= (tx_flags & I40E_TX_FLAGS_IPV4) ?
+ 		      (I40E_FILTER_PCTYPE_NONF_IPV4_TCP <<
+ 		       I40E_TXD_FLTR_QW0_PCTYPE_SHIFT) :
+ 		      (I40E_FILTER_PCTYPE_NONF_IPV6_TCP <<
 
