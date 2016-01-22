@@ -1,161 +1,119 @@
 From: Alexander Duyck <aduyck@mirantis.com>
-Date: Thu, 21 Jan 2016 16:27:52 -0800
-Subject: [Intel-wired-lan] [next PATCH v2 09/15] i40e/i40evf: Add exception
- handling for Tx checksum
+Date: Thu, 21 Jan 2016 16:27:58 -0800
+Subject: [Intel-wired-lan] [next PATCH v2 10/15] i40e/i40evf: Clean-up Rx
+ packet checksum handling
 In-Reply-To: <20160122002407.18278.95721.stgit@localhost.localdomain>
 References: <20160122002407.18278.95721.stgit@localhost.localdomain>
-Message-ID: <20160122002752.18278.51171.stgit@localhost.localdomain>
+Message-ID: <20160122002758.18278.71582.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add exception handling to the Tx checksum path so that we can handle cases
-of TSO where the frame is bad, or Tx checksum where we didn't recognize a
-protocol
+This is mostly a minor clean-up for the Rx checksum path in order to avoid
+some of the unnecessary conditional checks that were being applied.
 
 Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   |   31 ++++++++++++++++--------
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c |   32 +++++++++++++++++--------
- 2 files changed, 43 insertions(+), 20 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   |   23 ++++++++++-------------
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c |   23 ++++++++++-------------
+ 2 files changed, 20 insertions(+), 26 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index a7f5df3c3c79..b13b637b97fe 100644
+index b13b637b97fe..40a4fca627d5 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2387,10 +2387,10 @@ static int i40e_tsyn(struct i40e_ring *tx_ring, struct sk_buff *skb,
-  * @tx_ring: Tx descriptor ring
-  * @cd_tunneling: ptr to context desc bits
-  **/
--static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
--				u32 *td_cmd, u32 *td_offset,
--				struct i40e_ring *tx_ring,
--				u32 *cd_tunneling)
-+static int i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
-+			       u32 *td_cmd, u32 *td_offset,
-+			       struct i40e_ring *tx_ring,
-+			       u32 *cd_tunneling)
+@@ -1389,13 +1389,7 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
+ 				    u16 rx_ptype)
  {
- 	union {
- 		struct iphdr *v4;
-@@ -2450,7 +2450,11 @@ static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
- 			*tx_flags |= I40E_TX_FLAGS_TUNNEL;
- 			break;
- 		default:
--			return;
-+			if (*tx_flags & I40E_TX_FLAGS_TSO)
-+				return -1;
-+
-+			skb_checksum_help(skb);
-+			return 0;
- 		}
- 
- 		/* compute tunnel header size */
-@@ -2514,11 +2518,16 @@ static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
- 			  I40E_TX_DESC_LENGTH_L4_FC_LEN_SHIFT;
- 		break;
- 	default:
--		break;
-+		if (*tx_flags & I40E_TX_FLAGS_TSO)
-+			return -1;
-+		skb_checksum_help(skb);
-+		return 0;
- 	}
- 
- 	*td_cmd |= cmd;
- 	*td_offset |= offset;
-+
-+	return 1;
- }
- 
- /**
-@@ -2956,10 +2965,12 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
- 
- 	/* Always offload the checksum, since it's in the data descriptor */
- 	if (skb->ip_summed == CHECKSUM_PARTIAL) {
--		tx_flags |= I40E_TX_FLAGS_CSUM;
+ 	struct i40e_rx_ptype_decoded decoded = decode_rx_desc_ptype(rx_ptype);
+-	bool ipv4 = false, ipv6 = false;
+-	bool ipv4_tunnel, ipv6_tunnel;
 -
--		i40e_tx_enable_csum(skb, &tx_flags, &td_cmd, &td_offset,
--				    tx_ring, &cd_tunneling);
-+		tso = i40e_tx_enable_csum(skb, &tx_flags, &td_cmd, &td_offset,
-+					  tx_ring, &cd_tunneling);
-+		if (tso < 0)
-+			goto out_drop;
-+		else if (tso)
-+			tx_flags |= I40E_TX_FLAGS_CSUM;
- 	}
+-	ipv4_tunnel = (rx_ptype >= I40E_RX_PTYPE_GRENAT4_MAC_PAY3) &&
+-		     (rx_ptype <= I40E_RX_PTYPE_GRENAT4_MACVLAN_IPV6_ICMP_PAY4);
+-	ipv6_tunnel = (rx_ptype >= I40E_RX_PTYPE_GRENAT6_MAC_PAY3) &&
+-		     (rx_ptype <= I40E_RX_PTYPE_GRENAT6_MACVLAN_IPV6_ICMP_PAY4);
++	bool ipv4, ipv6, ipv4_tunnel, ipv6_tunnel;
  
- 	i40e_create_tx_ctx(tx_ring, cd_type_cmd_tso_mss,
+ 	skb->ip_summed = CHECKSUM_NONE;
+ 
+@@ -1411,12 +1405,10 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
+ 	if (!(decoded.known && decoded.outer_ip))
+ 		return;
+ 
+-	if (decoded.outer_ip == I40E_RX_PTYPE_OUTER_IP &&
+-	    decoded.outer_ip_ver == I40E_RX_PTYPE_OUTER_IPV4)
+-		ipv4 = true;
+-	else if (decoded.outer_ip == I40E_RX_PTYPE_OUTER_IP &&
+-		 decoded.outer_ip_ver == I40E_RX_PTYPE_OUTER_IPV6)
+-		ipv6 = true;
++	ipv4 = (decoded.outer_ip == I40E_RX_PTYPE_OUTER_IP) &&
++	       (decoded.outer_ip_ver == I40E_RX_PTYPE_OUTER_IPV4);
++	ipv6 = (decoded.outer_ip == I40E_RX_PTYPE_OUTER_IP) &&
++	       (decoded.outer_ip_ver == I40E_RX_PTYPE_OUTER_IPV6);
+ 
+ 	if (ipv4 &&
+ 	    (rx_error & (BIT(I40E_RX_DESC_ERROR_IPE_SHIFT) |
+@@ -1447,6 +1439,11 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
+ 	 * inner checksum report CHECKSUM_UNNECESSARY.
+ 	 */
+ 
++	ipv4_tunnel = (rx_ptype >= I40E_RX_PTYPE_GRENAT4_MAC_PAY3) &&
++		     (rx_ptype <= I40E_RX_PTYPE_GRENAT4_MACVLAN_IPV6_ICMP_PAY4);
++	ipv6_tunnel = (rx_ptype >= I40E_RX_PTYPE_GRENAT6_MAC_PAY3) &&
++		     (rx_ptype <= I40E_RX_PTYPE_GRENAT6_MACVLAN_IPV6_ICMP_PAY4);
++
+ 	skb->ip_summed = CHECKSUM_UNNECESSARY;
+ 	skb->csum_level = ipv4_tunnel || ipv6_tunnel;
+ 
 diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index bd990dc5b7c6..b9272234959b 100644
+index b9272234959b..f1036845072b 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
 +++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -1602,12 +1602,13 @@ static int i40e_tso(struct i40e_ring *tx_ring, struct sk_buff *skb,
-  * @tx_flags: pointer to Tx flags currently set
-  * @td_cmd: Tx descriptor command bits to set
-  * @td_offset: Tx descriptor header offsets to set
-+ * @tx_ring: Tx descriptor ring
-  * @cd_tunneling: ptr to context desc bits
-  **/
--static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
--				u32 *td_cmd, u32 *td_offset,
--				struct i40e_ring *tx_ring,
--				u32 *cd_tunneling)
-+static int i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
-+			       u32 *td_cmd, u32 *td_offset,
-+			       struct i40e_ring *tx_ring,
-+			       u32 *cd_tunneling)
+@@ -861,13 +861,7 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
+ 				    u16 rx_ptype)
  {
- 	union {
- 		struct iphdr *v4;
-@@ -1667,7 +1668,11 @@ static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
- 			*tx_flags |= I40E_TX_FLAGS_TUNNEL;
- 			break;
- 		default:
--			return;
-+			if (*tx_flags & I40E_TX_FLAGS_TSO)
-+				return -1;
-+
-+			skb_checksum_help(skb);
-+			return 0;
- 		}
- 
- 		/* compute tunnel header size */
-@@ -1731,11 +1736,16 @@ static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
- 			  I40E_TX_DESC_LENGTH_L4_FC_LEN_SHIFT;
- 		break;
- 	default:
--		break;
-+		if (*tx_flags & I40E_TX_FLAGS_TSO)
-+			return -1;
-+		skb_checksum_help(skb);
-+		return 0;
- 	}
- 
- 	*td_cmd |= cmd;
- 	*td_offset |= offset;
-+
-+	return 1;
- }
- 
- /**
-@@ -2152,10 +2162,12 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
- 
- 	/* Always offload the checksum, since it's in the data descriptor */
- 	if (skb->ip_summed == CHECKSUM_PARTIAL) {
--		tx_flags |= I40E_TX_FLAGS_CSUM;
+ 	struct i40e_rx_ptype_decoded decoded = decode_rx_desc_ptype(rx_ptype);
+-	bool ipv4 = false, ipv6 = false;
+-	bool ipv4_tunnel, ipv6_tunnel;
 -
--		i40e_tx_enable_csum(skb, &tx_flags, &td_cmd, &td_offset,
--				    tx_ring, &cd_tunneling);
-+		tso = i40e_tx_enable_csum(skb, &tx_flags, &td_cmd, &td_offset,
-+					  tx_ring, &cd_tunneling);
-+		if (tso < 0)
-+			goto out_drop;
-+		else if (tso)
-+			tx_flags |= I40E_TX_FLAGS_CSUM;
- 	}
+-	ipv4_tunnel = (rx_ptype >= I40E_RX_PTYPE_GRENAT4_MAC_PAY3) &&
+-		     (rx_ptype <= I40E_RX_PTYPE_GRENAT4_MACVLAN_IPV6_ICMP_PAY4);
+-	ipv6_tunnel = (rx_ptype >= I40E_RX_PTYPE_GRENAT6_MAC_PAY3) &&
+-		     (rx_ptype <= I40E_RX_PTYPE_GRENAT6_MACVLAN_IPV6_ICMP_PAY4);
++	bool ipv4, ipv6, ipv4_tunnel, ipv6_tunnel;
  
- 	i40e_create_tx_ctx(tx_ring, cd_type_cmd_tso_mss,
+ 	skb->ip_summed = CHECKSUM_NONE;
+ 
+@@ -883,12 +877,10 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
+ 	if (!(decoded.known && decoded.outer_ip))
+ 		return;
+ 
+-	if (decoded.outer_ip == I40E_RX_PTYPE_OUTER_IP &&
+-	    decoded.outer_ip_ver == I40E_RX_PTYPE_OUTER_IPV4)
+-		ipv4 = true;
+-	else if (decoded.outer_ip == I40E_RX_PTYPE_OUTER_IP &&
+-		 decoded.outer_ip_ver == I40E_RX_PTYPE_OUTER_IPV6)
+-		ipv6 = true;
++	ipv4 = (decoded.outer_ip == I40E_RX_PTYPE_OUTER_IP) &&
++	       (decoded.outer_ip_ver == I40E_RX_PTYPE_OUTER_IPV4);
++	ipv6 = (decoded.outer_ip == I40E_RX_PTYPE_OUTER_IP) &&
++	       (decoded.outer_ip_ver == I40E_RX_PTYPE_OUTER_IPV6);
+ 
+ 	if (ipv4 &&
+ 	    (rx_error & (BIT(I40E_RX_DESC_ERROR_IPE_SHIFT) |
+@@ -919,6 +911,11 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
+ 	 * inner checksum report CHECKSUM_UNNECESSARY.
+ 	 */
+ 
++	ipv4_tunnel = (rx_ptype >= I40E_RX_PTYPE_GRENAT4_MAC_PAY3) &&
++		     (rx_ptype <= I40E_RX_PTYPE_GRENAT4_MACVLAN_IPV6_ICMP_PAY4);
++	ipv6_tunnel = (rx_ptype >= I40E_RX_PTYPE_GRENAT6_MAC_PAY3) &&
++		     (rx_ptype <= I40E_RX_PTYPE_GRENAT6_MACVLAN_IPV6_ICMP_PAY4);
++
+ 	skb->ip_summed = CHECKSUM_UNNECESSARY;
+ 	skb->csum_level = ipv4_tunnel || ipv6_tunnel;
+ 
 
