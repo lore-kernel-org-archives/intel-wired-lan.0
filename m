@@ -1,66 +1,91 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 22 Jan 2016 13:26:41 -0800
-Subject: [Intel-wired-lan] [next PATCH v2 08/15] i40e/i40evf: Do not
- write to descriptor unless we complete
-In-Reply-To: <56A29DE7.80707@intel.com>
+From: Singhai, Anjali <anjali.singhai@intel.com>
+Date: Fri, 22 Jan 2016 13:27:13 -0800
+Subject: [Intel-wired-lan] [next PATCH v2 15/15] i40evf: Update feature
+ flags to reflect newly enabled features
+In-Reply-To: <20160122002829.18278.45002.stgit@localhost.localdomain>
 References: <20160122002407.18278.95721.stgit@localhost.localdomain>
- <20160122002746.18278.34462.stgit@localhost.localdomain>
- <56A29DE7.80707@intel.com>
-Message-ID: <CAKgT0UdjhGGPwSpz8gSMeTFL=H2C1V7ESyP9xyF2VHXAhV-xHw@mail.gmail.com>
+ <20160122002829.18278.45002.stgit@localhost.localdomain>
+Message-ID: <56A29EB1.8030107@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Jan 22, 2016 at 1:23 PM, Singhai, Anjali
-<anjali.singhai@intel.com> wrote:
->
->
-> On 1/21/2016 4:27 PM, Alexander Duyck wrote:
->>
->>         __be16 frag_off;
->>         u8 l4_proto = 0;
->>         ip.hdr = skb_network_header(skb);
->>         l4.hdr = skb_transport_header(skb);
->>   +     /* words in MACLEN + dwords in IPLEN + dwords in L4Len */
->
->
-> May be the comment should say words in MACLEN and as the other fields get
-> added later, build upon it...
+We haven't SVed any of the tunnel offloads in the VF, I am assuming you 
+tried this.
 
-You are right, this is just MACLEN.  I can update the comment for a v3.
-
+On 1/21/2016 4:28 PM, Alexander Duyck wrote:
+> Recent changes should have enabled support for IPv6 based tunnels and
+> support for TSO with outer UDP checksums.  As such we can update the
+> feature flags to reflect that.
 >
->> +       offset = ((ip.hdr - skb->data) / 2) <<
->> +                I40E_TX_DESC_LENGTH_MACLEN_SHIFT;
->> +
+> In addition we can clean-up the flags that aren't needed such as SCTP and
+> RXCSUM since having the bits there doesn't add any value.
 >
+> I also found one spot where we were setting the same flag twice.  It looks
+> like it was probably a git merge error that resulted in the line being
+> duplicated.  As such I have dropped it in this patch.
 >
->>                 exthdr = ip.hdr + sizeof(*ip.v6);
->>                 l4_proto = ip.v6->nexthdr;
->> @@ -2487,34 +2492,33 @@ static void i40e_tx_enable_csum(struct sk_buff
->> *skb, u32 *tx_flags,
->>         }
->>         /* Now set the td_offset for IP header length */
+> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+> ---
+>   drivers/net/ethernet/intel/i40evf/i40evf_main.c |   23 +++++++++++++++++++----
+>   1 file changed, 19 insertions(+), 4 deletions(-)
 >
->
-> Comment needs to be fixed
-
-Will update for v3.
-
->
->> -       *td_offset = ((l4.hdr - ip.hdr) / 4) <<
->> I40E_TX_DESC_LENGTH_IPLEN_SHIFT;
->> -       /* words in MACLEN + dwords in IPLEN + dwords in L4Len */
->> -       *td_offset |= (skb_network_offset(skb) >> 1) <<
->> -                      I40E_TX_DESC_LENGTH_MACLEN_SHIFT;
->> +       offset |= ((l4.hdr - ip.hdr) / 4) <<
->> I40E_TX_DESC_LENGTH_IPLEN_SHIFT;
->>
->
+> diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+> index 41369a30dfb8..3396fe32cc6d 100644
+> --- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+> +++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+> @@ -2337,9 +2337,24 @@ int i40evf_process_config(struct i40evf_adapter *adapter)
+>   			    NETIF_F_IPV6_CSUM |
+>   			    NETIF_F_TSO |
+>   			    NETIF_F_TSO6 |
+> +			    NETIF_F_TSO_ECN |
+> +			    NETIF_F_GSO_GRE	       |
+> +			    NETIF_F_GSO_UDP_TUNNEL |
+>   			    NETIF_F_RXCSUM |
+>   			    NETIF_F_GRO;
+>   
+> +	netdev->hw_enc_features |= NETIF_F_IP_CSUM	       |
+> +				   NETIF_F_IPV6_CSUM	       |
+> +				   NETIF_F_TSO		       |
+> +				   NETIF_F_TSO6		       |
+> +				   NETIF_F_TSO_ECN	       |
+> +				   NETIF_F_GSO_GRE	       |
+> +				   NETIF_F_GSO_UDP_TUNNEL      |
+> +				   NETIF_F_GSO_UDP_TUNNEL_CSUM;
+> +
+> +	if (adapter->flags & I40EVF_FLAG_OUTER_UDP_CSUM_CAPABLE)
+> +		netdev->features |= NETIF_F_GSO_UDP_TUNNEL_CSUM;
+> +
+>   	/* copy netdev features into list of user selectable features */
+>   	netdev->hw_features |= netdev->features;
+>   	netdev->hw_features &= ~NETIF_F_RXCSUM;
+> @@ -2478,6 +2493,10 @@ static void i40evf_init_task(struct work_struct *work)
+>   	default:
+>   		goto err_alloc;
+>   	}
+> +
+> +	if (hw->mac.type == I40E_MAC_X722_VF)
+> +		adapter->flags |= I40EVF_FLAG_OUTER_UDP_CSUM_CAPABLE;
+> +
+>   	if (i40evf_process_config(adapter))
+>   		goto err_alloc;
+>   	adapter->current_op = I40E_VIRTCHNL_OP_UNKNOWN;
+> @@ -2519,10 +2538,6 @@ static void i40evf_init_task(struct work_struct *work)
+>   		goto err_sw_init;
+>   	i40evf_map_rings_to_vectors(adapter);
+>   	if (adapter->vf_res->vf_offload_flags &
+> -		    I40E_VIRTCHNL_VF_OFFLOAD_WB_ON_ITR)
+> -		adapter->flags |= I40EVF_FLAG_WB_ON_ITR_CAPABLE;
+> -
+> -	if (adapter->vf_res->vf_offload_flags &
+>   	    I40E_VIRTCHNL_VF_OFFLOAD_WB_ON_ITR)
+>   		adapter->flags |= I40EVF_FLAG_WB_ON_ITR_CAPABLE;
+>   
 >
 > _______________________________________________
 > Intel-wired-lan mailing list
 > Intel-wired-lan at lists.osuosl.org
 > http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
