@@ -1,81 +1,135 @@
-From: Alexander Duyck <aduyck@mirantis.com>
-Date: Thu, 21 Jan 2016 16:28:29 -0800
-Subject: [Intel-wired-lan] [next PATCH v2 15/15] i40evf: Update feature
- flags to reflect newly enabled features
-In-Reply-To: <20160122002407.18278.95721.stgit@localhost.localdomain>
-References: <20160122002407.18278.95721.stgit@localhost.localdomain>
-Message-ID: <20160122002829.18278.45002.stgit@localhost.localdomain>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 22 Jan 2016 18:25:06 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ bfd0e518491a194ab53593932152fe8afeb52f0f BUILD DONE
+Message-ID: <56a20382.E+T87GAKnyqnc+dZ%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Recent changes should have enabled support for IPv6 based tunnels and
-support for TSO with outer UDP checksums.  As such we can update the
-feature flags to reflect that.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+bfd0e518491a194ab53593932152fe8afeb52f0f  net: i40e: shut up uninitialized variable warnings
 
-In addition we can clean-up the flags that aren't needed such as SCTP and
-RXCSUM since having the bits there doesn't add any value.
+drivers/net/ethernet/intel/igb/igb_cdev.c:186:20-24: ERROR: adapter is NULL but dereferenced.
 
-I also found one spot where we were setting the same flag twice.  It looks
-like it was probably a git merge error that resulted in the line being
-duplicated.  As such I have dropped it in this patch.
+Error ids grouped by kconfigs:
 
-Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
----
- drivers/net/ethernet/intel/i40evf/i40evf_main.c |   23 +++++++++++++++++++----
- 1 file changed, 19 insertions(+), 4 deletions(-)
+recent_errors
+??? i386-allmodconfig
+    ??? drivers-net-ethernet-intel-igb-igb_cdev.c:ERROR:adapter-is-NULL-but-dereferenced.
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 41369a30dfb8..3396fe32cc6d 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -2337,9 +2337,24 @@ int i40evf_process_config(struct i40evf_adapter *adapter)
- 			    NETIF_F_IPV6_CSUM |
- 			    NETIF_F_TSO |
- 			    NETIF_F_TSO6 |
-+			    NETIF_F_TSO_ECN |
-+			    NETIF_F_GSO_GRE	       |
-+			    NETIF_F_GSO_UDP_TUNNEL |
- 			    NETIF_F_RXCSUM |
- 			    NETIF_F_GRO;
- 
-+	netdev->hw_enc_features |= NETIF_F_IP_CSUM	       |
-+				   NETIF_F_IPV6_CSUM	       |
-+				   NETIF_F_TSO		       |
-+				   NETIF_F_TSO6		       |
-+				   NETIF_F_TSO_ECN	       |
-+				   NETIF_F_GSO_GRE	       |
-+				   NETIF_F_GSO_UDP_TUNNEL      |
-+				   NETIF_F_GSO_UDP_TUNNEL_CSUM;
-+
-+	if (adapter->flags & I40EVF_FLAG_OUTER_UDP_CSUM_CAPABLE)
-+		netdev->features |= NETIF_F_GSO_UDP_TUNNEL_CSUM;
-+
- 	/* copy netdev features into list of user selectable features */
- 	netdev->hw_features |= netdev->features;
- 	netdev->hw_features &= ~NETIF_F_RXCSUM;
-@@ -2478,6 +2493,10 @@ static void i40evf_init_task(struct work_struct *work)
- 	default:
- 		goto err_alloc;
- 	}
-+
-+	if (hw->mac.type == I40E_MAC_X722_VF)
-+		adapter->flags |= I40EVF_FLAG_OUTER_UDP_CSUM_CAPABLE;
-+
- 	if (i40evf_process_config(adapter))
- 		goto err_alloc;
- 	adapter->current_op = I40E_VIRTCHNL_OP_UNKNOWN;
-@@ -2519,10 +2538,6 @@ static void i40evf_init_task(struct work_struct *work)
- 		goto err_sw_init;
- 	i40evf_map_rings_to_vectors(adapter);
- 	if (adapter->vf_res->vf_offload_flags &
--		    I40E_VIRTCHNL_VF_OFFLOAD_WB_ON_ITR)
--		adapter->flags |= I40EVF_FLAG_WB_ON_ITR_CAPABLE;
--
--	if (adapter->vf_res->vf_offload_flags &
- 	    I40E_VIRTCHNL_VF_OFFLOAD_WB_ON_ITR)
- 		adapter->flags |= I40EVF_FLAG_WB_ON_ITR_CAPABLE;
- 
+elapsed time: 95m
 
+configs tested: 106
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201603
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                             allmodconfig
+x86_64               randconfig-x019-01201142
+x86_64               randconfig-x016-01201142
+x86_64               randconfig-x012-01201142
+x86_64               randconfig-x014-01201142
+x86_64               randconfig-x018-01201142
+x86_64               randconfig-x013-01201142
+x86_64               randconfig-x015-01201142
+x86_64               randconfig-x011-01201142
+x86_64               randconfig-x010-01201142
+x86_64               randconfig-x017-01201142
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201603
+i386                     randconfig-s1-201603
+x86_64                           allmodconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201603
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i1-201603
+i386                     randconfig-i0-201603
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201603
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+x86_64                 randconfig-x002-201603
+x86_64                 randconfig-x004-201603
+x86_64                 randconfig-x000-201603
+x86_64                 randconfig-x009-201603
+x86_64                 randconfig-x003-201603
+x86_64                 randconfig-x005-201603
+x86_64                 randconfig-x006-201603
+x86_64                 randconfig-x001-201603
+x86_64                 randconfig-x008-201603
+x86_64                 randconfig-x007-201603
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201603
+i386                 randconfig-x002-01181631
+i386                 randconfig-x005-01181631
+i386                 randconfig-x006-01181631
+i386                 randconfig-x003-01181631
+i386                 randconfig-x007-01181631
+i386                 randconfig-x009-01181631
+i386                 randconfig-x008-01181631
+i386                 randconfig-x004-01181631
+i386                 randconfig-x001-01181631
+i386                 randconfig-x000-01181631
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+
+Thanks,
+Fengguang
