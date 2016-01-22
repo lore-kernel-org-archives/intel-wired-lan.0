@@ -1,223 +1,78 @@
 From: Alexander Duyck <aduyck@mirantis.com>
-Date: Thu, 21 Jan 2016 16:27:02 -0800
-Subject: [Intel-wired-lan] [next PATCH v2 01/15] i40e/i40evf: Drop outer
- checksum offload that was not requested
+Date: Thu, 21 Jan 2016 16:27:08 -0800
+Subject: [Intel-wired-lan] [next PATCH v2 02/15] i40e/i40evf: Use u64 values
+ instead of casting them in TSO function
 In-Reply-To: <20160122002407.18278.95721.stgit@localhost.localdomain>
 References: <20160122002407.18278.95721.stgit@localhost.localdomain>
-Message-ID: <20160122002702.18278.59149.stgit@localhost.localdomain>
+Message-ID: <20160122002708.18278.3907.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The i40e and i40evf drivers contained code for inserting an outer checksum
-on UDP tunnels.  The issue however is that the upper levels of the stack
-never requested such an offload and it results in possible errors.
-
-In addition the same logic was being applied to the Rx side where it was
-attempting to validate the outer checksum, but the logic there was
-incorrect in that it was testing for the resultant sum to be equal to the
-header checksum instead of being equal to 0.
-
-Since this code is so massively flawed, and doing things that we didn't ask
-for it to do I am just dropping it, and will bring it back later to use as
-an offload for SKB_GSO_UDP_TUNNEL_CSUM which can make use of such a
-feature.
-
-As far as the Rx feature I am dropping it completely since it would need to
-be massively expanded and applied to IPv4 and IPv6 checksums for all parts,
-not just the one that supports Tx checksum offload for the outer.
+Instead of casing u32 values to u64 it makes more sense to just start out
+with u64 values in the first place.  This way we don't need to create a
+mess with all of the casts needed to populate a 64b value.
 
 Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c   |    2 -
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   |   47 +++----------------------
- drivers/net/ethernet/intel/i40e/i40e_txrx.h   |    1 -
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c |   46 +++---------------------
- drivers/net/ethernet/intel/i40evf/i40e_txrx.h |    1 -
- 5 files changed, 10 insertions(+), 87 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   |    9 ++++-----
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c |    9 ++++-----
+ 2 files changed, 8 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 06b2204860a9..1316b9958e7e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -7465,8 +7465,6 @@ static int i40e_alloc_rings(struct i40e_vsi *vsi)
- 		tx_ring->dcb_tc = 0;
- 		if (vsi->back->flags & I40E_FLAG_WB_ON_ITR_CAPABLE)
- 			tx_ring->flags = I40E_TXR_FLAGS_WB_ON_ITR;
--		if (vsi->back->flags & I40E_FLAG_OUTER_UDP_CSUM_CAPABLE)
--			tx_ring->flags |= I40E_TXR_FLAGS_OUTER_UDP_CSUM;
- 		vsi->tx_rings[i] = tx_ring;
- 
- 		rx_ring = &tx_ring[1];
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 7702e5faf609..c92198e7f5bc 100644
+index c92198e7f5bc..d201bedaca27 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1391,9 +1391,6 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
- 	struct i40e_rx_ptype_decoded decoded = decode_rx_desc_ptype(rx_ptype);
- 	bool ipv4 = false, ipv6 = false;
- 	bool ipv4_tunnel, ipv6_tunnel;
--	__wsum rx_udp_csum;
--	struct iphdr *iph;
--	__sum16 csum;
+@@ -2267,7 +2267,7 @@ out:
+ static int i40e_tso(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 		    u8 *hdr_len, u64 *cd_type_cmd_tso_mss)
+ {
+-	u32 cd_cmd, cd_tso_len, cd_mss;
++	u64 cd_cmd, cd_tso_len, cd_mss;
+ 	struct ipv6hdr *ipv6h;
+ 	struct tcphdr *tcph;
+ 	struct iphdr *iph;
+@@ -2309,10 +2309,9 @@ static int i40e_tso(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 	cd_cmd = I40E_TX_CTX_DESC_TSO;
+ 	cd_tso_len = skb->len - *hdr_len;
+ 	cd_mss = skb_shinfo(skb)->gso_size;
+-	*cd_type_cmd_tso_mss |= ((u64)cd_cmd << I40E_TXD_CTX_QW1_CMD_SHIFT) |
+-				((u64)cd_tso_len <<
+-				 I40E_TXD_CTX_QW1_TSO_LEN_SHIFT) |
+-				((u64)cd_mss << I40E_TXD_CTX_QW1_MSS_SHIFT);
++	*cd_type_cmd_tso_mss |= (cd_cmd << I40E_TXD_CTX_QW1_CMD_SHIFT) |
++				(cd_tso_len << I40E_TXD_CTX_QW1_TSO_LEN_SHIFT) |
++				(cd_mss << I40E_TXD_CTX_QW1_MSS_SHIFT);
+ 	return 1;
+ }
  
- 	ipv4_tunnel = (rx_ptype >= I40E_RX_PTYPE_GRENAT4_MAC_PAY3) &&
- 		     (rx_ptype <= I40E_RX_PTYPE_GRENAT4_MACVLAN_IPV6_ICMP_PAY4);
-@@ -1443,37 +1440,12 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
- 	if (rx_error & BIT(I40E_RX_DESC_ERROR_PPRS_SHIFT))
- 		return;
- 
--	/* If VXLAN/GENEVE traffic has an outer UDPv4 checksum we need to check
--	 * it in the driver, hardware does not do it for us.
--	 * Since L3L4P bit was set we assume a valid IHL value (>=5)
--	 * so the total length of IPv4 header is IHL*4 bytes
--	 * The UDP_0 bit *may* bet set if the *inner* header is UDP
-+	/* The hardware supported by this driver does not validate outer
-+	 * checksums for tunneled VXLAN or GENEVE frames.  I don't agree
-+	 * with it but the specification states that you "MAY validate", it
-+	 * doesn't make it a hard requirement so if we have validated the
-+	 * inner checksum report CHECKSUM_UNNECESSARY.
- 	 */
--	if (!(vsi->back->flags & I40E_FLAG_OUTER_UDP_CSUM_CAPABLE) &&
--	    (ipv4_tunnel)) {
--		skb->transport_header = skb->mac_header +
--					sizeof(struct ethhdr) +
--					(ip_hdr(skb)->ihl * 4);
--
--		/* Add 4 bytes for VLAN tagged packets */
--		skb->transport_header += (skb->protocol == htons(ETH_P_8021Q) ||
--					  skb->protocol == htons(ETH_P_8021AD))
--					  ? VLAN_HLEN : 0;
--
--		if ((ip_hdr(skb)->protocol == IPPROTO_UDP) &&
--		    (udp_hdr(skb)->check != 0)) {
--			rx_udp_csum = udp_csum(skb);
--			iph = ip_hdr(skb);
--			csum = csum_tcpudp_magic(
--					iph->saddr, iph->daddr,
--					(skb->len - skb_transport_offset(skb)),
--					IPPROTO_UDP, rx_udp_csum);
--
--			if (udp_hdr(skb)->check != csum)
--				goto checksum_fail;
--
--		} /* else its GRE and so no outer UDP header */
--	}
- 
- 	skb->ip_summed = CHECKSUM_UNNECESSARY;
- 	skb->csum_level = ipv4_tunnel || ipv6_tunnel;
-@@ -2454,15 +2426,6 @@ static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
- 			*tx_flags &= ~I40E_TX_FLAGS_IPV4;
- 			*tx_flags |= I40E_TX_FLAGS_IPV6;
- 		}
--		if ((tx_ring->flags & I40E_TXR_FLAGS_OUTER_UDP_CSUM) &&
--		    (l4_tunnel == I40E_TXD_CTX_UDP_TUNNELING)        &&
--		    (*cd_tunneling & I40E_TXD_CTX_QW0_EXT_IP_MASK)) {
--			oudph->check = ~csum_tcpudp_magic(oiph->saddr,
--					oiph->daddr,
--					(skb->len - skb_transport_offset(skb)),
--					IPPROTO_UDP, 0);
--			*cd_tunneling |= I40E_TXD_CTX_QW0_L4T_CS_MASK;
--		}
- 	} else {
- 		network_hdr_len = skb_network_header_len(skb);
- 		this_ip_hdr = ip_hdr(skb);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-index 45496dfa5fd7..e1f4dedf6754 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-@@ -277,7 +277,6 @@ struct i40e_ring {
- 
- 	u16 flags;
- #define I40E_TXR_FLAGS_WB_ON_ITR	BIT(0)
--#define I40E_TXR_FLAGS_OUTER_UDP_CSUM	BIT(1)
- #define I40E_TXR_FLAGS_LAST_XMIT_MORE_SET BIT(2)
- 
- 	/* stats structs */
 diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index ecd2df28d8b8..f7ac254b79f0 100644
+index f7ac254b79f0..07d6b5d5a2ae 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
 +++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -863,9 +863,6 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
- 	struct i40e_rx_ptype_decoded decoded = decode_rx_desc_ptype(rx_ptype);
- 	bool ipv4 = false, ipv6 = false;
- 	bool ipv4_tunnel, ipv6_tunnel;
--	__wsum rx_udp_csum;
--	struct iphdr *iph;
--	__sum16 csum;
+@@ -1527,7 +1527,7 @@ out:
+ static int i40e_tso(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 		    u8 *hdr_len, u64 *cd_type_cmd_tso_mss)
+ {
+-	u32 cd_cmd, cd_tso_len, cd_mss;
++	u64 cd_cmd, cd_tso_len, cd_mss;
+ 	struct ipv6hdr *ipv6h;
+ 	struct tcphdr *tcph;
+ 	struct iphdr *iph;
+@@ -1569,10 +1569,9 @@ static int i40e_tso(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 	cd_cmd = I40E_TX_CTX_DESC_TSO;
+ 	cd_tso_len = skb->len - *hdr_len;
+ 	cd_mss = skb_shinfo(skb)->gso_size;
+-	*cd_type_cmd_tso_mss |= ((u64)cd_cmd << I40E_TXD_CTX_QW1_CMD_SHIFT) |
+-				((u64)cd_tso_len <<
+-				 I40E_TXD_CTX_QW1_TSO_LEN_SHIFT) |
+-				((u64)cd_mss << I40E_TXD_CTX_QW1_MSS_SHIFT);
++	*cd_type_cmd_tso_mss |= (cd_cmd << I40E_TXD_CTX_QW1_CMD_SHIFT) |
++				(cd_tso_len << I40E_TXD_CTX_QW1_TSO_LEN_SHIFT) |
++				(cd_mss << I40E_TXD_CTX_QW1_MSS_SHIFT);
+ 	return 1;
+ }
  
- 	ipv4_tunnel = (rx_ptype >= I40E_RX_PTYPE_GRENAT4_MAC_PAY3) &&
- 		     (rx_ptype <= I40E_RX_PTYPE_GRENAT4_MACVLAN_IPV6_ICMP_PAY4);
-@@ -915,36 +912,12 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
- 	if (rx_error & BIT(I40E_RX_DESC_ERROR_PPRS_SHIFT))
- 		return;
- 
--	/* If VXLAN traffic has an outer UDPv4 checksum we need to check
--	 * it in the driver, hardware does not do it for us.
--	 * Since L3L4P bit was set we assume a valid IHL value (>=5)
--	 * so the total length of IPv4 header is IHL*4 bytes
--	 * The UDP_0 bit *may* bet set if the *inner* header is UDP
-+	/* The hardware supported by this driver does not validate outer
-+	 * checksums for tunneled VXLAN or GENEVE frames.  I don't agree
-+	 * with it but the specification states that you "MAY validate", it
-+	 * doesn't make it a hard requirement so if we have validated the
-+	 * inner checksum report CHECKSUM_UNNECESSARY.
- 	 */
--	if (ipv4_tunnel) {
--		skb->transport_header = skb->mac_header +
--					sizeof(struct ethhdr) +
--					(ip_hdr(skb)->ihl * 4);
--
--		/* Add 4 bytes for VLAN tagged packets */
--		skb->transport_header += (skb->protocol == htons(ETH_P_8021Q) ||
--					  skb->protocol == htons(ETH_P_8021AD))
--					  ? VLAN_HLEN : 0;
--
--		if ((ip_hdr(skb)->protocol == IPPROTO_UDP) &&
--		    (udp_hdr(skb)->check != 0)) {
--			rx_udp_csum = udp_csum(skb);
--			iph = ip_hdr(skb);
--			csum = csum_tcpudp_magic(iph->saddr, iph->daddr,
--						 (skb->len -
--						  skb_transport_offset(skb)),
--						 IPPROTO_UDP, rx_udp_csum);
--
--			if (udp_hdr(skb)->check != csum)
--				goto checksum_fail;
--
--		} /* else its GRE and so no outer UDP header */
--	}
- 
- 	skb->ip_summed = CHECKSUM_UNNECESSARY;
- 	skb->csum_level = ipv4_tunnel || ipv6_tunnel;
-@@ -1667,15 +1640,6 @@ static void i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
- 			*tx_flags |= I40E_TX_FLAGS_IPV6;
- 		}
- 
--		if ((tx_ring->flags & I40E_TXR_FLAGS_OUTER_UDP_CSUM) &&
--		    (l4_tunnel == I40E_TXD_CTX_UDP_TUNNELING)        &&
--		    (*cd_tunneling & I40E_TXD_CTX_QW0_EXT_IP_MASK)) {
--			oudph->check = ~csum_tcpudp_magic(oiph->saddr,
--					oiph->daddr,
--					(skb->len - skb_transport_offset(skb)),
--					IPPROTO_UDP, 0);
--			*cd_tunneling |= I40E_TXD_CTX_QW0_L4T_CS_MASK;
--		}
- 	} else {
- 		network_hdr_len = skb_network_header_len(skb);
- 		this_ip_hdr = ip_hdr(skb);
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-index bbd98b785ae0..ce1898fe4094 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-@@ -275,7 +275,6 @@ struct i40e_ring {
- 
- 	u16 flags;
- #define I40E_TXR_FLAGS_WB_ON_ITR	BIT(0)
--#define I40E_TXR_FLAGS_OUTER_UDP_CSUM	BIT(1)
- 
- 	/* stats structs */
- 	struct i40e_queue_stats	stats;
 
