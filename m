@@ -1,46 +1,74 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 25 Jan 2016 22:21:56 +0000
-Subject: [Intel-wired-lan] [next PATCH S28 14/15] i40e: When in promisc
- mode	apply promisc mode to Tx Traffic as well
-In-Reply-To: <1452897202-15204-15-git-send-email-joshua.a.hay@intel.com>
-References: <1452897202-15204-1-git-send-email-joshua.a.hay@intel.com>
- <1452897202-15204-15-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F98C4C9@ORSMSX104.amr.corp.intel.com>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Mon, 25 Jan 2016 11:40:51 +0530
+Subject: [Intel-wired-lan] [PATCH 1/3] i40e: fix build warning
+Message-ID: <1453702251-464-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Joshua Hay
-> Sent: Friday, January 15, 2016 2:33 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S28 14/15] i40e: When in promisc
-> mode apply promisc mode to Tx Traffic as well
-> 
-> From: Anjali Singhai Jain <anjali.singhai@intel.com>
-> 
-> In MFP mode particularly when we were setting the PF VSI in limited
-> promiscuous, the HW switch was still mirroring the outgoing packets from
-> other VSIs (VF/VMdq) onto the PF VSI.
-> 
-> With this new bit set, the mirroring doesn't happen any more and so we are
-> in limited promiscuous on the PF VSI in MFP which is similar to defport.
-> 
-> An API check is not required, since this bit is reserved for FW API version <
-> 1.5
-> 
-> Also update copyright year in file headers.
-> 
-> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-> Change-ID: I9840cb95f11dde733d943cb03ce84f68b9611bc8
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h   | 3 ++-
->  drivers/net/ethernet/intel/i40e/i40e_common.c       | 9 ++++++++-
->  drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h | 3 ++-
->  3 files changed, 12 insertions(+), 3 deletions(-)
+While building we are getting warning about:
+i40e_main.c:8604:13: warning: 'i40e_add_geneve_port' defined but not used
+and
+i40e_main.c:8651:13: warning: 'i40e_del_geneve_port' defined but not used
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied, no mirroring of VF traffic in PF observed.
+The contents of these functions are defined under CONFIG_GENEVE, so if
+CONFIG_GENEVE is not defined then we are having unused empty functions.
+Lets have these functions under CONFIG_GENEVE as the callback is already
+defined under CONFIG_GENEVE there is no chance of any failure.
+
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index bb4612c..c258697 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -8595,6 +8595,7 @@ static void i40e_del_vxlan_port(struct net_device *netdev,
+ #endif
+ }
+ 
++#if IS_ENABLED(CONFIG_GENEVE)
+ /**
+  * i40e_add_geneve_port - Get notifications about GENEVE ports that come up
+  * @netdev: This physical port's netdev
+@@ -8604,7 +8605,6 @@ static void i40e_del_vxlan_port(struct net_device *netdev,
+ static void i40e_add_geneve_port(struct net_device *netdev,
+ 				 sa_family_t sa_family, __be16 port)
+ {
+-#if IS_ENABLED(CONFIG_GENEVE)
+ 	struct i40e_netdev_priv *np = netdev_priv(netdev);
+ 	struct i40e_vsi *vsi = np->vsi;
+ 	struct i40e_pf *pf = vsi->back;
+@@ -8639,7 +8639,6 @@ static void i40e_add_geneve_port(struct net_device *netdev,
+ 	pf->flags |= I40E_FLAG_UDP_FILTER_SYNC;
+ 
+ 	dev_info(&pf->pdev->dev, "adding geneve port %d\n", ntohs(port));
+-#endif
+ }
+ 
+ /**
+@@ -8651,7 +8650,6 @@ static void i40e_add_geneve_port(struct net_device *netdev,
+ static void i40e_del_geneve_port(struct net_device *netdev,
+ 				 sa_family_t sa_family, __be16 port)
+ {
+-#if IS_ENABLED(CONFIG_GENEVE)
+ 	struct i40e_netdev_priv *np = netdev_priv(netdev);
+ 	struct i40e_vsi *vsi = np->vsi;
+ 	struct i40e_pf *pf = vsi->back;
+@@ -8677,8 +8675,8 @@ static void i40e_del_geneve_port(struct net_device *netdev,
+ 		netdev_warn(netdev, "geneve port %d was not found, not deleting\n",
+ 			    ntohs(port));
+ 	}
+-#endif
+ }
++#endif
+ 
+ static int i40e_get_phys_port_id(struct net_device *netdev,
+ 				 struct netdev_phys_item_id *ppid)
+-- 
+1.9.1
+
