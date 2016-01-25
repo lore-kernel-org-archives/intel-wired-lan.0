@@ -1,47 +1,160 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 25 Jan 2016 22:19:08 +0000
-Subject: [Intel-wired-lan] [next PATCH S28 06/15] i40e: Fix PROMISC mode
- for	Multi-function per port (MFP) devices
-In-Reply-To: <1452897202-15204-7-git-send-email-joshua.a.hay@intel.com>
-References: <1452897202-15204-1-git-send-email-joshua.a.hay@intel.com>
- <1452897202-15204-7-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F98C4B3@ORSMSX104.amr.corp.intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Mon, 25 Jan 2016 14:21:32 -0800
+Subject: [Intel-wired-lan] [next PATCH v3 12/15] i40e: Fix ATR in
+ relation to tunnels
+In-Reply-To: <56A67734.7050007@intel.com>
+References: <20160125050602.12004.38884.stgit@localhost.localdomain>
+ <20160125051736.12004.13420.stgit@localhost.localdomain>
+ <56A67734.7050007@intel.com>
+Message-ID: <CAKgT0UeS_wFUYqa2_6Hb3BZda+OjXeJ2hY4wwGS99TC6s28jeA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Joshua Hay
-> Sent: Friday, January 15, 2016 2:33 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S28 06/15] i40e: Fix PROMISC mode
-> for Multi-function per port (MFP) devices
-> 
-> From: Anjali Singhai Jain <anjali.singhai@intel.com>
-> 
-> This patch falls back to enabling unicast, multicast and broadcast promiscuous
-> mode when the driver must disable it's use of "default port" aka defport
-> mode (which is mornally used to provide a promiscuous mode), due to
-> internal incompatibility with Multiple Function per Port (aka MFP).
-> 
-> The situation that requires this patch is when Physical Function 0 is the device
-> being used, and it can support SR-IOV when MFP is enabled, via the driver
-> creating a VEB on an MFP enabled adapter.
-> 
-> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-> Change-ID: Ie90b00d0d58782a5dfcf2c3c9725a2eb90bd63d8
-> ---
-> Testing Hints:
-> With our driver defaulting to set_switch_config with Promisc except when L2
-> filters match, we do not expect to see any mirroring of VF traffic in the PF
-> since the DCR doesn't make an exception for MFP case. If we see mirroring
-> than we need to file a separate issue with the HW team.
-> 
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
+On Mon, Jan 25, 2016 at 11:27 AM, Patil, Kiran <kiran.patil@intel.com> wrote:
+>
+>
+> Thanks Alex for fixing it. Please see in-line comments/suggestion.
+>
+> -- Kiran P.
+>
+>
+> On 1/24/2016 9:17 PM, Alexander Duyck wrote:
+>>
+>> This patch contains a number of fixes to make certain that we are using
+>> the correct protocols when parsing both the inner and outer headers of a
+>> frame that is mixed between IPv4 and IPv6 for inner and outer.
+>>
+>> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+>> ---
+>>   drivers/net/ethernet/intel/i40e/i40e_txrx.c |   28
+>> +++++++++++----------------
+>>   1 file changed, 11 insertions(+), 17 deletions(-)
+>>
+>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+>> b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+>> index 6a76c169c07e..ed8d13637c15 100644
+>> --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+>> +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+>> @@ -2030,10 +2030,9 @@ tx_only:
+>>    * @tx_ring:  ring to add programming descriptor to
+>>    * @skb:      send buffer
+>>    * @tx_flags: send tx flags
+>> - * @protocol: wire protocol
+>>    **/
+>>   static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
+>> -                    u32 tx_flags, __be16 protocol)
+>> +                    u32 tx_flags)
+>>   {
+>>         struct i40e_filter_program_desc *fdir_desc;
+>>         struct i40e_pf *pf = tx_ring->vsi->back;
+>> @@ -2045,6 +2044,7 @@ static void i40e_atr(struct i40e_ring *tx_ring,
+>> struct sk_buff *skb,
+>>         struct tcphdr *th;
+>>         unsigned int hlen;
+>>         u32 flex_ptype, dtype_cmd;
+>> +       u8 l4_proto;
+>>         u16 i;
+>>         /* make sure ATR is enabled */
+>> @@ -2058,6 +2058,7 @@ static void i40e_atr(struct i40e_ring *tx_ring,
+>> struct sk_buff *skb,
+>>         if (!tx_ring->atr_sample_rate)
+>>                 return;
+>>   +     /* Currently only IPv4/IPv6 with TCP is supported */
+>>         if (!(tx_flags & (I40E_TX_FLAGS_IPV4 | I40E_TX_FLAGS_IPV6)))
+>>                 return;
+>>   @@ -2068,26 +2069,19 @@ static void i40e_atr(struct i40e_ring *tx_ring,
+>> struct sk_buff *skb,
+>
+>                       union {
+>                               unsigned char *transport;
+>                               struct tcphdr *th; /* if needed */
+>                               struct udphdr *uh; /* if needed */
+>                      } l4_hdr;
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied, no mirroring of VF traffic in PF observed.
+I'm not sure what the point of this is.  See the comment above which I
+moved from a few lines below about "Currently only IPv4/IPv6 with TCP
+is supported".  There is only TCP header, the transport header is okay
+to have but that is essentially what we compute via network + hlen
+anyway.
+
+>                     /* Obtain start of transport */
+>                      if ((tx_flags & I40E_TX_FLAGS_TUNNEL))
+>                                 l4_hdr.transport =
+> skb_inner_transport_header(skb);
+>                     else
+>                                 l4_hdr.transport =
+> skb_transport_header(skb);
+
+If an offload is not requested there is no guarantee that the
+transport header will be populated.  For example if someone is pumping
+out raw frames with no offloads the only header offsets that will be
+set are for network(L3) and MAC(L2).
+
+>>                 /* snag network header to get L4 type and address */
+>>                 hdr.network = skb_network_header(skb);
+>>   -             /* Currently only IPv4/IPv6 with TCP is supported
+>> -                * access ihl as u8 to avoid unaligned access on ia64
+>> -                */
+>> +               /* access ihl as u8 to avoid unaligned access on ia64 */
+>>                 if (tx_flags & I40E_TX_FLAGS_IPV4)
+>>                         hlen = (hdr.network[0] & 0x0F) << 2;
+>> -               else if (protocol == htons(ETH_P_IPV6))
+>> -                       hlen = sizeof(struct ipv6hdr);
+>>                 else
+>> -                       return;
+>> +                       hlen = sizeof(struct ipv6hdr);
+>>         }
+>>   -     /* Currently only IPv4/IPv6 with TCP is supported
+>> -        * Note: tx_flags gets modified to reflect inner protocols in
+>> +       /* Note: tx_flags gets modified to reflect inner protocols in
+>>          * tx_enable_csum function if encap is enabled.
+>>          */
+>> -       if ((tx_flags & I40E_TX_FLAGS_IPV4) &&
+>> -           (hdr.ipv4->protocol != IPPROTO_TCP))
+>> -               return;
+>> -       else if ((tx_flags & I40E_TX_FLAGS_IPV6) &&
+>> -                (hdr.ipv6->nexthdr != IPPROTO_TCP))
+>> +       l4_proto = (tx_flags & I40E_TX_FLAGS_IPV4) ? hdr.ipv4->protocol :
+>> +                                                    hdr.ipv6->nexthdr;
+>
+>                     We need to skip extended IPV6 header as well and obtain
+> correct value for
+>                     l4_proto & hlen (may be something like this):
+>
+>                     {
+>                             __be16 frag_off;
+>                             u8 next_hdr;
+>                             l4_proto = hdr.ipv6->nexthdr;
+>                             if (unlikely((l4_hdr.transport - hdr.network) ==
+> sizeof(struct ipv6hdr))) {
+>                                     off = ipv6_skip_exthdr(skb, hdr.network
+> - skb->data + sizeof(struct ipv6hdr),
+> &l4_proto,&frag_off);
+>                                     if (unlikely(off < 0))
+>                                                     return; /* Unexpected */
+>                                     if (unlikely(frag_off))
+>                                             l4_proto= NEXTHDR_FRAGMENT;
+>
+>                                     /* Update 'hlen' for the code below to
+> work properly */
+>                                     hlen = l4_hdr.transport - hdr.network;
+>                             }
+>                     }
+
+Once again.  See the comment about IPv4/v6 and TCP only.  Your code as
+suggested breaks that.
+
+Also instead of using ipv6_skip_exthdr we would be better off in this
+case using ipv6_find_hdr since we know we are looking for TCP, but we
+don't know where the TCP header actually is as we aren't guaranteed
+skb_transport_header will exist.
+
+For now I think it would be better to leave this patch as is since it
+is fixing a number of bugs that were in the code without introducing
+any new ones.  I will submit a follow-on patch that can add support
+for ATR in the case of IPv6 extension headers being present.
+
+- Alex
