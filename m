@@ -1,119 +1,112 @@
 From: Alexander Duyck <aduyck@mirantis.com>
-Date: Sun, 24 Jan 2016 21:17:22 -0800
-Subject: [Intel-wired-lan] [next PATCH v3 10/15] i40e/i40evf: Clean-up Rx
- packet checksum handling
+Date: Sun, 24 Jan 2016 21:17:29 -0800
+Subject: [Intel-wired-lan] [next PATCH v3 11/15] i40e/i40evf: Enable support
+ for SKB_GSO_UDP_TUNNEL_CSUM
 In-Reply-To: <20160125050602.12004.38884.stgit@localhost.localdomain>
 References: <20160125050602.12004.38884.stgit@localhost.localdomain>
-Message-ID: <20160125051722.12004.2954.stgit@localhost.localdomain>
+Message-ID: <20160125051729.12004.54009.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This is mostly a minor clean-up for the Rx checksum path in order to avoid
-some of the unnecessary conditional checks that were being applied.
+The XL722 has support for providing the outer UDP tunnel checksum on
+transmits.  Make use of this feature to support segmenting UDP tunnels with
+outer checksums enabled.
 
 Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   |   23 ++++++++++-------------
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c |   23 ++++++++++-------------
- 2 files changed, 20 insertions(+), 26 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   |   19 ++++++++++++++++++-
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c |   19 ++++++++++++++++++-
+ 2 files changed, 36 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 094e0153c7c6..890d2f580434 100644
+index 890d2f580434..6a76c169c07e 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1389,13 +1389,7 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
- 				    u16 rx_ptype)
- {
- 	struct i40e_rx_ptype_decoded decoded = decode_rx_desc_ptype(rx_ptype);
--	bool ipv4 = false, ipv6 = false;
--	bool ipv4_tunnel, ipv6_tunnel;
--
--	ipv4_tunnel = (rx_ptype >= I40E_RX_PTYPE_GRENAT4_MAC_PAY3) &&
--		     (rx_ptype <= I40E_RX_PTYPE_GRENAT4_MACVLAN_IPV6_ICMP_PAY4);
--	ipv6_tunnel = (rx_ptype >= I40E_RX_PTYPE_GRENAT6_MAC_PAY3) &&
--		     (rx_ptype <= I40E_RX_PTYPE_GRENAT6_MACVLAN_IPV6_ICMP_PAY4);
-+	bool ipv4, ipv6, ipv4_tunnel, ipv6_tunnel;
+@@ -2272,6 +2272,7 @@ static int i40e_tso(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 	} ip;
+ 	union {
+ 		struct tcphdr *tcp;
++		struct udphdr *udp;
+ 		unsigned char *hdr;
+ 	} l4;
+ 	u32 paylen, l4_offset;
+@@ -2298,7 +2299,18 @@ static int i40e_tso(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 		ip.v6->payload_len = 0;
+ 	}
  
- 	skb->ip_summed = CHECKSUM_NONE;
- 
-@@ -1411,12 +1405,10 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
- 	if (!(decoded.known && decoded.outer_ip))
- 		return;
- 
--	if (decoded.outer_ip == I40E_RX_PTYPE_OUTER_IP &&
--	    decoded.outer_ip_ver == I40E_RX_PTYPE_OUTER_IPV4)
--		ipv4 = true;
--	else if (decoded.outer_ip == I40E_RX_PTYPE_OUTER_IP &&
--		 decoded.outer_ip_ver == I40E_RX_PTYPE_OUTER_IPV6)
--		ipv6 = true;
-+	ipv4 = (decoded.outer_ip == I40E_RX_PTYPE_OUTER_IP) &&
-+	       (decoded.outer_ip_ver == I40E_RX_PTYPE_OUTER_IPV4);
-+	ipv6 = (decoded.outer_ip == I40E_RX_PTYPE_OUTER_IP) &&
-+	       (decoded.outer_ip_ver == I40E_RX_PTYPE_OUTER_IPV6);
- 
- 	if (ipv4 &&
- 	    (rx_error & (BIT(I40E_RX_DESC_ERROR_IPE_SHIFT) |
-@@ -1447,6 +1439,11 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
- 	 * inner checksum report CHECKSUM_UNNECESSARY.
- 	 */
- 
-+	ipv4_tunnel = (rx_ptype >= I40E_RX_PTYPE_GRENAT4_MAC_PAY3) &&
-+		     (rx_ptype <= I40E_RX_PTYPE_GRENAT4_MACVLAN_IPV6_ICMP_PAY4);
-+	ipv6_tunnel = (rx_ptype >= I40E_RX_PTYPE_GRENAT6_MAC_PAY3) &&
-+		     (rx_ptype <= I40E_RX_PTYPE_GRENAT6_MACVLAN_IPV6_ICMP_PAY4);
+-	if (skb_shinfo(skb)->gso_type & (SKB_GSO_UDP_TUNNEL | SKB_GSO_GRE)) {
++	if (skb_shinfo(skb)->gso_type & (SKB_GSO_UDP_TUNNEL | SKB_GSO_GRE |
++					 SKB_GSO_UDP_TUNNEL_CSUM)) {
++		if (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_TUNNEL_CSUM) {
++			/* determine offset of outer transport header */
++			l4_offset = l4.hdr - skb->data;
 +
- 	skb->ip_summed = CHECKSUM_UNNECESSARY;
- 	skb->csum_level = ipv4_tunnel || ipv6_tunnel;
++			/* remove payload length from outer checksum */
++			paylen = (__force u16)l4.udp->check;
++			paylen += ntohs(1) * (u16)~(skb->len - l4_offset);
++			l4.udp->check = ~csum_fold((__force __wsum)paylen);
++		}
++
+ 		/* reset pointers to inner headers */
+ 		ip.hdr = skb_inner_network_header(skb);
+ 		l4.hdr = skb_inner_transport_header(skb);
+@@ -2460,6 +2472,11 @@ static int i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
+ 		tunnel |= ((ip.hdr - l4.hdr) / 2) <<
+ 			  I40E_TXD_CTX_QW0_NATLEN_SHIFT;
+ 
++		/* indicate if we need to offload outer UDP header */
++		if ((*tx_flags & I40E_TX_FLAGS_TSO) &&
++		    (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_TUNNEL_CSUM))
++			tunnel |= I40E_TXD_CTX_QW0_L4T_CS_MASK;
++
+ 		/* record tunnel offload values */
+ 		*cd_tunneling |= tunnel;
  
 diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index b8d7c7a29070..126b748c0ff1 100644
+index 126b748c0ff1..a4f03f6752cc 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
 +++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -861,13 +861,7 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
- 				    u16 rx_ptype)
- {
- 	struct i40e_rx_ptype_decoded decoded = decode_rx_desc_ptype(rx_ptype);
--	bool ipv4 = false, ipv6 = false;
--	bool ipv4_tunnel, ipv6_tunnel;
--
--	ipv4_tunnel = (rx_ptype >= I40E_RX_PTYPE_GRENAT4_MAC_PAY3) &&
--		     (rx_ptype <= I40E_RX_PTYPE_GRENAT4_MACVLAN_IPV6_ICMP_PAY4);
--	ipv6_tunnel = (rx_ptype >= I40E_RX_PTYPE_GRENAT6_MAC_PAY3) &&
--		     (rx_ptype <= I40E_RX_PTYPE_GRENAT6_MACVLAN_IPV6_ICMP_PAY4);
-+	bool ipv4, ipv6, ipv4_tunnel, ipv6_tunnel;
+@@ -1532,6 +1532,7 @@ static int i40e_tso(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 	} ip;
+ 	union {
+ 		struct tcphdr *tcp;
++		struct udphdr *udp;
+ 		unsigned char *hdr;
+ 	} l4;
+ 	u32 paylen, l4_offset;
+@@ -1558,7 +1559,18 @@ static int i40e_tso(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 		ip.v6->payload_len = 0;
+ 	}
  
- 	skb->ip_summed = CHECKSUM_NONE;
- 
-@@ -883,12 +877,10 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
- 	if (!(decoded.known && decoded.outer_ip))
- 		return;
- 
--	if (decoded.outer_ip == I40E_RX_PTYPE_OUTER_IP &&
--	    decoded.outer_ip_ver == I40E_RX_PTYPE_OUTER_IPV4)
--		ipv4 = true;
--	else if (decoded.outer_ip == I40E_RX_PTYPE_OUTER_IP &&
--		 decoded.outer_ip_ver == I40E_RX_PTYPE_OUTER_IPV6)
--		ipv6 = true;
-+	ipv4 = (decoded.outer_ip == I40E_RX_PTYPE_OUTER_IP) &&
-+	       (decoded.outer_ip_ver == I40E_RX_PTYPE_OUTER_IPV4);
-+	ipv6 = (decoded.outer_ip == I40E_RX_PTYPE_OUTER_IP) &&
-+	       (decoded.outer_ip_ver == I40E_RX_PTYPE_OUTER_IPV6);
- 
- 	if (ipv4 &&
- 	    (rx_error & (BIT(I40E_RX_DESC_ERROR_IPE_SHIFT) |
-@@ -919,6 +911,11 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
- 	 * inner checksum report CHECKSUM_UNNECESSARY.
- 	 */
- 
-+	ipv4_tunnel = (rx_ptype >= I40E_RX_PTYPE_GRENAT4_MAC_PAY3) &&
-+		     (rx_ptype <= I40E_RX_PTYPE_GRENAT4_MACVLAN_IPV6_ICMP_PAY4);
-+	ipv6_tunnel = (rx_ptype >= I40E_RX_PTYPE_GRENAT6_MAC_PAY3) &&
-+		     (rx_ptype <= I40E_RX_PTYPE_GRENAT6_MACVLAN_IPV6_ICMP_PAY4);
+-	if (skb_shinfo(skb)->gso_type & (SKB_GSO_UDP_TUNNEL | SKB_GSO_GRE)) {
++	if (skb_shinfo(skb)->gso_type & (SKB_GSO_UDP_TUNNEL | SKB_GSO_GRE |
++					 SKB_GSO_UDP_TUNNEL_CSUM)) {
++		if (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_TUNNEL_CSUM) {
++			/* determine offset of outer transport header */
++			l4_offset = l4.hdr - skb->data;
 +
- 	skb->ip_summed = CHECKSUM_UNNECESSARY;
- 	skb->csum_level = ipv4_tunnel || ipv6_tunnel;
++			/* remove payload length from outer checksum */
++			paylen = (__force u16)l4.udp->check;
++			paylen += ntohs(1) * (u16)~(skb->len - l4_offset);
++			l4.udp->check = ~csum_fold((__force __wsum)paylen);
++		}
++
+ 		/* reset pointers to inner headers */
+ 		ip.hdr = skb_inner_network_header(skb);
+ 		l4.hdr = skb_inner_transport_header(skb);
+@@ -1678,6 +1690,11 @@ static int i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
+ 		tunnel |= ((ip.hdr - l4.hdr) / 2) <<
+ 			  I40E_TXD_CTX_QW0_NATLEN_SHIFT;
+ 
++		/* indicate if we need to offload outer UDP header */
++		if ((*tx_flags & I40E_TX_FLAGS_TSO) &&
++		    (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_TUNNEL_CSUM))
++			tunnel |= I40E_TXD_CTX_QW0_L4T_CS_MASK;
++
+ 		/* record tunnel offload values */
+ 		*cd_tunneling |= tunnel;
  
 
