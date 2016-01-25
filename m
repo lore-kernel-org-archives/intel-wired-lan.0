@@ -1,90 +1,36 @@
-From: Singhai, Anjali <anjali.singhai@intel.com>
-Date: Mon, 25 Jan 2016 11:43:19 -0800
-Subject: [Intel-wired-lan] [next PATCH v3 15/15] i40evf: Update feature
- flags to reflect newly enabled features
-In-Reply-To: <20160125051757.12004.45770.stgit@localhost.localdomain>
-References: <20160125050602.12004.38884.stgit@localhost.localdomain>
- <20160125051757.12004.45770.stgit@localhost.localdomain>
-Message-ID: <56A67AD7.2090009@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Mon, 25 Jan 2016 20:44:28 +0000
+Subject: [Intel-wired-lan] [next PATCH S24 05/12] i40evf: add new
+ write-back	mode
+In-Reply-To: <1450823114-29514-6-git-send-email-deepthi.kavalur@intel.com>
+References: <1450823114-29514-1-git-send-email-deepthi.kavalur@intel.com>
+ <1450823114-29514-6-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F98C465@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Acked-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-
-On 1/24/2016 9:17 PM, Alexander Duyck wrote:
-> Recent changes should have enabled support for IPv6 based tunnels and
-> support for TSO with outer UDP checksums.  As such we can update the
-> feature flags to reflect that.
->
-> In addition we can clean-up the flags that aren't needed such as SCTP and
-> RXCSUM since having the bits there doesn't add any value.
->
-> I also found one spot where we were setting the same flag twice.  It looks
-> like it was probably a git merge error that resulted in the line being
-> duplicated.  As such I have dropped it in this patch.
->
-> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Deepthi Kavalur
+> Sent: Tuesday, December 22, 2015 2:25 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S24 05/12] i40evf: add new write-back
+> mode
+> 
+> From: Anjali Singhai Jain <anjali.singhai@intel.com>
+> 
+> Add write-back on interrupt throttle rate timer expiration support for the
+> i40evf driver, when running on X722 devices.
+> 
+> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
 > ---
->   drivers/net/ethernet/intel/i40evf/i40evf_main.c |   23 +++++++++++++++++++----
->   1 file changed, 19 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-> index 41369a30dfb8..3396fe32cc6d 100644
-> --- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-> +++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-> @@ -2337,9 +2337,24 @@ int i40evf_process_config(struct i40evf_adapter *adapter)
->   			    NETIF_F_IPV6_CSUM |
->   			    NETIF_F_TSO |
->   			    NETIF_F_TSO6 |
-> +			    NETIF_F_TSO_ECN |
-> +			    NETIF_F_GSO_GRE	       |
-> +			    NETIF_F_GSO_UDP_TUNNEL |
->   			    NETIF_F_RXCSUM |
->   			    NETIF_F_GRO;
->   
-> +	netdev->hw_enc_features |= NETIF_F_IP_CSUM	       |
-> +				   NETIF_F_IPV6_CSUM	       |
-> +				   NETIF_F_TSO		       |
-> +				   NETIF_F_TSO6		       |
-> +				   NETIF_F_TSO_ECN	       |
-> +				   NETIF_F_GSO_GRE	       |
-> +				   NETIF_F_GSO_UDP_TUNNEL      |
-> +				   NETIF_F_GSO_UDP_TUNNEL_CSUM;
-> +
-> +	if (adapter->flags & I40EVF_FLAG_OUTER_UDP_CSUM_CAPABLE)
-> +		netdev->features |= NETIF_F_GSO_UDP_TUNNEL_CSUM;
-> +
->   	/* copy netdev features into list of user selectable features */
->   	netdev->hw_features |= netdev->features;
->   	netdev->hw_features &= ~NETIF_F_RXCSUM;
-> @@ -2478,6 +2493,10 @@ static void i40evf_init_task(struct work_struct *work)
->   	default:
->   		goto err_alloc;
->   	}
-> +
-> +	if (hw->mac.type == I40E_MAC_X722_VF)
-> +		adapter->flags |= I40EVF_FLAG_OUTER_UDP_CSUM_CAPABLE;
-> +
->   	if (i40evf_process_config(adapter))
->   		goto err_alloc;
->   	adapter->current_op = I40E_VIRTCHNL_OP_UNKNOWN;
-> @@ -2519,10 +2538,6 @@ static void i40evf_init_task(struct work_struct *work)
->   		goto err_sw_init;
->   	i40evf_map_rings_to_vectors(adapter);
->   	if (adapter->vf_res->vf_offload_flags &
-> -		    I40E_VIRTCHNL_VF_OFFLOAD_WB_ON_ITR)
-> -		adapter->flags |= I40EVF_FLAG_WB_ON_ITR_CAPABLE;
-> -
-> -	if (adapter->vf_res->vf_offload_flags &
->   	    I40E_VIRTCHNL_VF_OFFLOAD_WB_ON_ITR)
->   		adapter->flags |= I40EVF_FLAG_WB_ON_ITR_CAPABLE;
->   
->
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at lists.osuosl.org
-> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  6 ++++++
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c      | 16 ++++++++++++++++
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  5 +++++
+>  3 files changed, 27 insertions(+)
 
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Patch code changes correctly applied, no tx_timeout/tx hangs noted with stress traffic
