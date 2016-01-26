@@ -1,80 +1,216 @@
 From: Alexander Duyck <aduyck@mirantis.com>
-Date: Mon, 25 Jan 2016 19:32:54 -0800
-Subject: [Intel-wired-lan] [next PATCH 1/3] i40e: Add support for ATR w/
-	IPv6 extension headers
+Date: Mon, 25 Jan 2016 19:36:29 -0800
+Subject: [Intel-wired-lan] [next PATCH 2/3] ixgbe: Store VXLAN port number
+	in network order
 In-Reply-To: <20160126032616.16387.86351.stgit@localhost.localdomain>
 References: <20160126032616.16387.86351.stgit@localhost.localdomain>
-Message-ID: <20160126033124.16387.6402.stgit@localhost.localdomain>
+Message-ID: <20160126033300.16387.35470.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch updates the code for determining the L4 protocol and L3 header
-length so that when IPv6 extension headers are being used we can determine
-the offset and type of the L4 protocol.
+The VXLAN port number should be stored in network order instead of in host
+order as it is accessed from the hot-path in ATR.  This way we can avoid
+having to do any byte swaps in order to validate the port number.
+
+I moved the vxlan_port value into a hole in the read-mostly region of the
+adapter struct.  This way it should be in a warm cache-line instead of in
+some isolated region in memory when it needs to be accessed.
+
+In addition I went through and stripped a bunch of unneeded ifdef flags
+since having an extra variable present doesn't really hurt anything and
+makes the code easier to read.  I also went through and dropped the
+NETIF_F_RXCSUM flag which was being set in hw_encap_features but provides
+no value as the flag is not evaluated in the Rx path.
 
 Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 ---
 
 Testing Hints:
-Test with mix of tunnel and non-tunnel headers to verify that frames
-containing IPv6 extension headers are properly triggering ATR match events.
+Test with X550 to verify that VXLAN offloads are still occurring as they should.
 
- drivers/net/ethernet/intel/i40e/i40e_txrx.c |   30 +++++++++++++--------------
- 1 file changed, 14 insertions(+), 16 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h      |    8 +--
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   61 +++++++------------------
+ 2 files changed, 20 insertions(+), 49 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index ed8d13637c15..1616a85fd25a 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2044,7 +2044,7 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 	struct tcphdr *th;
- 	unsigned int hlen;
- 	u32 flex_ptype, dtype_cmd;
--	u8 l4_proto;
-+	int l4_proto;
- 	u16 i;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index 75dfbc36e138..12ae5963af64 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -661,9 +661,7 @@ struct ixgbe_adapter {
+ #define IXGBE_FLAG2_RSS_FIELD_IPV6_UDP		(u32)(1 << 9)
+ #define IXGBE_FLAG2_PTP_PPS_ENABLED		(u32)(1 << 10)
+ #define IXGBE_FLAG2_PHY_INTERRUPT		(u32)(1 << 11)
+-#ifdef CONFIG_IXGBE_VXLAN
+ #define IXGBE_FLAG2_VXLAN_REREG_NEEDED		BIT(12)
+-#endif
+ #define IXGBE_FLAG2_VLAN_PROMISC		BIT(13)
  
- 	/* make sure ATR is enabled */
-@@ -2062,25 +2062,23 @@ static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 	if (!(tx_flags & (I40E_TX_FLAGS_IPV4 | I40E_TX_FLAGS_IPV6)))
- 		return;
+ 	/* Tx fast path data */
+@@ -675,6 +673,9 @@ struct ixgbe_adapter {
+ 	int num_rx_queues;
+ 	u16 rx_itr_setting;
  
--	if (tx_flags & I40E_TX_FLAGS_TUNNEL) {
--		hdr.network = skb_inner_network_header(skb);
--		hlen = skb_inner_network_header_len(skb);
--	} else {
--		/* snag network header to get L4 type and address */
--		hdr.network = skb_network_header(skb);
--
--		/* access ihl as u8 to avoid unaligned access on ia64 */
--		if (tx_flags & I40E_TX_FLAGS_IPV4)
--			hlen = (hdr.network[0] & 0x0F) << 2;
--		else
--			hlen = sizeof(struct ipv6hdr);
--	}
-+	/* snag network header to get L4 type and address */
-+	hdr.network = (tx_flags & I40E_TX_FLAGS_TUNNEL) ?
-+		      skb_inner_network_header(skb) : skb_network_header(skb);
- 
- 	/* Note: tx_flags gets modified to reflect inner protocols in
- 	 * tx_enable_csum function if encap is enabled.
- 	 */
--	l4_proto = (tx_flags & I40E_TX_FLAGS_IPV4) ? hdr.ipv4->protocol :
--						     hdr.ipv6->nexthdr;
-+	if (tx_flags & I40E_TX_FLAGS_IPV4) {
-+		/* access ihl as u8 to avoid unaligned access on ia64 */
-+		hlen = (hdr.network[0] & 0x0F) << 2;
-+		l4_proto = hdr.ipv4->protocol;
-+	} else {
-+		hlen = hdr.network - skb->data;
-+		l4_proto = ipv6_find_hdr(skb, &hlen, IPPROTO_TCP, NULL, NULL);
-+		hlen -= hdr.network - skb->data;
-+	}
++	/* Port number used to identify VXLAN traffic */
++	__be16 vxlan_port;
 +
- 	if (l4_proto != IPPROTO_TCP)
+ 	/* TX */
+ 	struct ixgbe_ring *tx_ring[MAX_TX_QUEUES] ____cacheline_aligned_in_smp;
+ 
+@@ -782,9 +783,6 @@ struct ixgbe_adapter {
+ 	u32 timer_event_accumulator;
+ 	u32 vferr_refcount;
+ 	struct ixgbe_mac_addr *mac_table;
+-#ifdef CONFIG_IXGBE_VXLAN
+-	u16 vxlan_port;
+-#endif
+ 	struct kobject *info_kobj;
+ #ifdef CONFIG_IXGBE_HWMON
+ 	struct hwmon_buff *ixgbe_hwmon_buff;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 41bd7c4cecc1..88368d2f7e1a 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -4519,9 +4519,7 @@ static void ixgbe_clear_vxlan_port(struct ixgbe_adapter *adapter)
+ 	case ixgbe_mac_X550:
+ 	case ixgbe_mac_X550EM_x:
+ 		IXGBE_WRITE_REG(&adapter->hw, IXGBE_VXLANCTRL, 0);
+-#ifdef CONFIG_IXGBE_VXLAN
+ 		adapter->vxlan_port = 0;
+-#endif
+ 		break;
+ 	default:
+ 		break;
+@@ -7504,9 +7502,6 @@ static void ixgbe_atr(struct ixgbe_ring *ring,
+ 	} hdr;
+ 	struct tcphdr *th;
+ 	struct sk_buff *skb;
+-#ifdef CONFIG_IXGBE_VXLAN
+-	u8 encap = false;
+-#endif /* CONFIG_IXGBE_VXLAN */
+ 	__be16 vlan_id;
+ 
+ 	/* if ring doesn't have a interrupt vector, cannot perform ATR */
+@@ -7522,28 +7517,21 @@ static void ixgbe_atr(struct ixgbe_ring *ring,
+ 	/* snag network header to get L4 type and address */
+ 	skb = first->skb;
+ 	hdr.network = skb_network_header(skb);
+-	if (!skb->encapsulation) {
+-		th = tcp_hdr(skb);
+-	} else {
++	th = tcp_hdr(skb);
+ #ifdef CONFIG_IXGBE_VXLAN
++	if (skb->encapsulation &&
++	    first->protocol == htons(ETH_P_IP) &&
++	    hdr.ipv4->protocol != IPPROTO_UDP) {
+ 		struct ixgbe_adapter *adapter = q_vector->adapter;
+ 
+-		if (!adapter->vxlan_port)
+-			return;
+-		if (first->protocol != htons(ETH_P_IP) ||
+-		    hdr.ipv4->version != IPVERSION ||
+-		    hdr.ipv4->protocol != IPPROTO_UDP) {
+-			return;
++		/* verify the port is recognized as VXLAN */
++		if (adapter->vxlan_port &&
++		    udp_hdr(skb)->dest == adapter->vxlan_port) {
++			hdr.network = skb_inner_network_header(skb);
++			th = inner_tcp_hdr(skb);
+ 		}
+-		if (ntohs(udp_hdr(skb)->dest) != adapter->vxlan_port)
+-			return;
+-		encap = true;
+-		hdr.network = skb_inner_network_header(skb);
+-		th = inner_tcp_hdr(skb);
+-#else
+-		return;
+-#endif /* CONFIG_IXGBE_VXLAN */
+ 	}
++#endif /* CONFIG_IXGBE_VXLAN */
+ 
+ 	/* Currently only IPv4/IPv6 with TCP is supported */
+ 	switch (hdr.ipv4->version) {
+@@ -7625,10 +7613,8 @@ static void ixgbe_atr(struct ixgbe_ring *ring,
+ 		break;
+ 	}
+ 
+-#ifdef CONFIG_IXGBE_VXLAN
+-	if (encap)
++	if (hdr.network != skb_network_header(skb))
+ 		input.formatted.flow_type |= IXGBE_ATR_L4TYPE_TUNNEL_MASK;
+-#endif /* CONFIG_IXGBE_VXLAN */
+ 
+ 	/* This assumes the Rx queue and Tx queue are bound to the same CPU */
+ 	ixgbe_fdir_add_signature_filter_82599(&q_vector->adapter->hw,
+@@ -8287,7 +8273,6 @@ static void ixgbe_add_vxlan_port(struct net_device *dev, sa_family_t sa_family,
+ {
+ 	struct ixgbe_adapter *adapter = netdev_priv(dev);
+ 	struct ixgbe_hw *hw = &adapter->hw;
+-	u16 new_port = ntohs(port);
+ 
+ 	if (!(adapter->flags & IXGBE_FLAG_VXLAN_OFFLOAD_CAPABLE))
+ 		return;
+@@ -8295,18 +8280,18 @@ static void ixgbe_add_vxlan_port(struct net_device *dev, sa_family_t sa_family,
+ 	if (sa_family == AF_INET6)
  		return;
  
+-	if (adapter->vxlan_port == new_port)
++	if (adapter->vxlan_port == port)
+ 		return;
+ 
+ 	if (adapter->vxlan_port) {
+ 		netdev_info(dev,
+ 			    "Hit Max num of VXLAN ports, not adding port %d\n",
+-			    new_port);
++			    ntohs(port));
+ 		return;
+ 	}
+ 
+-	adapter->vxlan_port = new_port;
+-	IXGBE_WRITE_REG(hw, IXGBE_VXLANCTRL, new_port);
++	adapter->vxlan_port = port;
++	IXGBE_WRITE_REG(hw, IXGBE_VXLANCTRL, ntohs(port));
+ }
+ 
+ /**
+@@ -8319,7 +8304,6 @@ static void ixgbe_del_vxlan_port(struct net_device *dev, sa_family_t sa_family,
+ 				 __be16 port)
+ {
+ 	struct ixgbe_adapter *adapter = netdev_priv(dev);
+-	u16 new_port = ntohs(port);
+ 
+ 	if (!(adapter->flags & IXGBE_FLAG_VXLAN_OFFLOAD_CAPABLE))
+ 		return;
+@@ -8327,9 +8311,9 @@ static void ixgbe_del_vxlan_port(struct net_device *dev, sa_family_t sa_family,
+ 	if (sa_family == AF_INET6)
+ 		return;
+ 
+-	if (adapter->vxlan_port != new_port) {
++	if (adapter->vxlan_port != port) {
+ 		netdev_info(dev, "Port %d was not found, not deleting\n",
+-			    new_port);
++			    ntohs(port));
+ 		return;
+ 	}
+ 
+@@ -8973,17 +8957,6 @@ skip_sriov:
+ 	netdev->priv_flags |= IFF_UNICAST_FLT;
+ 	netdev->priv_flags |= IFF_SUPP_NOFCS;
+ 
+-#ifdef CONFIG_IXGBE_VXLAN
+-	switch (adapter->hw.mac.type) {
+-	case ixgbe_mac_X550:
+-	case ixgbe_mac_X550EM_x:
+-		netdev->hw_enc_features |= NETIF_F_RXCSUM;
+-		break;
+-	default:
+-		break;
+-	}
+-#endif /* CONFIG_IXGBE_VXLAN */
+-
+ #ifdef CONFIG_IXGBE_DCB
+ 	netdev->dcbnl_ops = &dcbnl_ops;
+ #endif
 
