@@ -1,171 +1,297 @@
-From: Patil, Kiran <kiran.patil@intel.com>
-Date: Mon, 25 Jan 2016 16:16:58 -0800
-Subject: [Intel-wired-lan] [next PATCH v3 12/15] i40e: Fix ATR in
- relation to tunnels
-In-Reply-To: <CAKgT0UeS_wFUYqa2_6Hb3BZda+OjXeJ2hY4wwGS99TC6s28jeA@mail.gmail.com>
-References: <20160125050602.12004.38884.stgit@localhost.localdomain>
- <20160125051736.12004.13420.stgit@localhost.localdomain>
- <56A67734.7050007@intel.com>
- <CAKgT0UeS_wFUYqa2_6Hb3BZda+OjXeJ2hY4wwGS99TC6s28jeA@mail.gmail.com>
-Message-ID: <56A6BAFA.7010602@intel.com>
+From: Mark D Rustad <mark.d.rustad@intel.com>
+Date: Mon, 25 Jan 2016 16:32:10 -0800
+Subject: [Intel-wired-lan] [PATCH V3] ixgbe: Fix flow control for Xeon D KR
+	backplane
+Message-ID: <20160126003210.115571.29526.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Acked-by: Kiran Patil <kiran.patil@intel.com>
+Xeon D KR backplane is different from other backplanes,
+in that we can't use auto-negotiation to determine the
+mode. Instead, use whatever the user configured.
 
+Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+---
+Changes in V2:
+- Only apply new fc setup function for BDX-DE KR backplane
+Changes in V3:
+- Don't use product codename
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c  |    1 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c  |    1 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |    8 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.h |    3 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h   |    5 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c   |    1 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c   |   86 ++++++++++++++++++++++-
+ 7 files changed, 98 insertions(+), 7 deletions(-)
 
-On 1/25/2016 2:21 PM, Alexander Duyck wrote:
-> On Mon, Jan 25, 2016 at 11:27 AM, Patil, Kiran <kiran.patil@intel.com> wrote:
->>
->> Thanks Alex for fixing it. Please see in-line comments/suggestion.
->>
->> -- Kiran P.
->>
->>
->> On 1/24/2016 9:17 PM, Alexander Duyck wrote:
->>> This patch contains a number of fixes to make certain that we are using
->>> the correct protocols when parsing both the inner and outer headers of a
->>> frame that is mixed between IPv4 and IPv6 for inner and outer.
->>>
->>> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
->>> ---
->>>    drivers/net/ethernet/intel/i40e/i40e_txrx.c |   28
->>> +++++++++++----------------
->>>    1 file changed, 11 insertions(+), 17 deletions(-)
->>>
->>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
->>> b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
->>> index 6a76c169c07e..ed8d13637c15 100644
->>> --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
->>> +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
->>> @@ -2030,10 +2030,9 @@ tx_only:
->>>     * @tx_ring:  ring to add programming descriptor to
->>>     * @skb:      send buffer
->>>     * @tx_flags: send tx flags
->>> - * @protocol: wire protocol
->>>     **/
->>>    static void i40e_atr(struct i40e_ring *tx_ring, struct sk_buff *skb,
->>> -                    u32 tx_flags, __be16 protocol)
->>> +                    u32 tx_flags)
->>>    {
->>>          struct i40e_filter_program_desc *fdir_desc;
->>>          struct i40e_pf *pf = tx_ring->vsi->back;
->>> @@ -2045,6 +2044,7 @@ static void i40e_atr(struct i40e_ring *tx_ring,
->>> struct sk_buff *skb,
->>>          struct tcphdr *th;
->>>          unsigned int hlen;
->>>          u32 flex_ptype, dtype_cmd;
->>> +       u8 l4_proto;
->>>          u16 i;
->>>          /* make sure ATR is enabled */
->>> @@ -2058,6 +2058,7 @@ static void i40e_atr(struct i40e_ring *tx_ring,
->>> struct sk_buff *skb,
->>>          if (!tx_ring->atr_sample_rate)
->>>                  return;
->>>    +     /* Currently only IPv4/IPv6 with TCP is supported */
->>>          if (!(tx_flags & (I40E_TX_FLAGS_IPV4 | I40E_TX_FLAGS_IPV6)))
->>>                  return;
->>>    @@ -2068,26 +2069,19 @@ static void i40e_atr(struct i40e_ring *tx_ring,
->>> struct sk_buff *skb,
->>                        union {
->>                                unsigned char *transport;
->>                                struct tcphdr *th; /* if needed */
->>                                struct udphdr *uh; /* if needed */
->>                       } l4_hdr;
-> I'm not sure what the point of this is.  See the comment above which I
-> moved from a few lines below about "Currently only IPv4/IPv6 with TCP
-> is supported".  There is only TCP header, the transport header is okay
-> to have but that is essentially what we compute via network + hlen
-> anyway.
-Agree. For now, looks like we support IPv4/IPv6 with TCP, hence it is 
-not needed.
->>                      /* Obtain start of transport */
->>                       if ((tx_flags & I40E_TX_FLAGS_TUNNEL))
->>                                  l4_hdr.transport =
->> skb_inner_transport_header(skb);
->>                      else
->>                                  l4_hdr.transport =
->> skb_transport_header(skb);
-> If an offload is not requested there is no guarantee that the
-> transport header will be populated.  For example if someone is pumping
-> out raw frames with no offloads the only header offsets that will be
-> set are for network(L3) and MAC(L2).
-Thanks for good info. I didn't knew about it.
->
->>>                  /* snag network header to get L4 type and address */
->>>                  hdr.network = skb_network_header(skb);
->>>    -             /* Currently only IPv4/IPv6 with TCP is supported
->>> -                * access ihl as u8 to avoid unaligned access on ia64
->>> -                */
->>> +               /* access ihl as u8 to avoid unaligned access on ia64 */
->>>                  if (tx_flags & I40E_TX_FLAGS_IPV4)
->>>                          hlen = (hdr.network[0] & 0x0F) << 2;
->>> -               else if (protocol == htons(ETH_P_IPV6))
->>> -                       hlen = sizeof(struct ipv6hdr);
->>>                  else
->>> -                       return;
->>> +                       hlen = sizeof(struct ipv6hdr);
->>>          }
->>>    -     /* Currently only IPv4/IPv6 with TCP is supported
->>> -        * Note: tx_flags gets modified to reflect inner protocols in
->>> +       /* Note: tx_flags gets modified to reflect inner protocols in
->>>           * tx_enable_csum function if encap is enabled.
->>>           */
->>> -       if ((tx_flags & I40E_TX_FLAGS_IPV4) &&
->>> -           (hdr.ipv4->protocol != IPPROTO_TCP))
->>> -               return;
->>> -       else if ((tx_flags & I40E_TX_FLAGS_IPV6) &&
->>> -                (hdr.ipv6->nexthdr != IPPROTO_TCP))
->>> +       l4_proto = (tx_flags & I40E_TX_FLAGS_IPV4) ? hdr.ipv4->protocol :
->>> +                                                    hdr.ipv6->nexthdr;
->>                      We need to skip extended IPV6 header as well and obtain
->> correct value for
->>                      l4_proto & hlen (may be something like this):
->>
->>                      {
->>                              __be16 frag_off;
->>                              u8 next_hdr;
->>                              l4_proto = hdr.ipv6->nexthdr;
->>                              if (unlikely((l4_hdr.transport - hdr.network) ==
->> sizeof(struct ipv6hdr))) {
->>                                      off = ipv6_skip_exthdr(skb, hdr.network
->> - skb->data + sizeof(struct ipv6hdr),
->> &l4_proto,&frag_off);
->>                                      if (unlikely(off < 0))
->>                                                      return; /* Unexpected */
->>                                      if (unlikely(frag_off))
->>                                              l4_proto= NEXTHDR_FRAGMENT;
->>
->>                                      /* Update 'hlen' for the code below to
->> work properly */
->>                                      hlen = l4_hdr.transport - hdr.network;
->>                              }
->>                      }
-> Once again.  See the comment about IPv4/v6 and TCP only.  Your code as
-> suggested breaks that.
->
-> Also instead of using ipv6_skip_exthdr we would be better off in this
-> case using ipv6_find_hdr since we know we are looking for TCP, but we
-> don't know where the TCP header actually is as we aren't guaranteed
-> skb_transport_header will exist.
-Agree that we can use ipv6_find_hdr since we know what we are looking 
-forward, that will solve the problem of what is the value for 
-'next_protocol'. Certainly this patch make sense and follow-on patch can 
-address extended IPv6 header support.
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
+index 9790d0274f7f..f47eb12a9c50 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
+@@ -1192,6 +1192,7 @@ static const struct ixgbe_mac_operations mac_ops_82598 = {
+ 	.clear_vfta		= &ixgbe_clear_vfta_82598,
+ 	.set_vfta		= &ixgbe_set_vfta_82598,
+ 	.fc_enable		= &ixgbe_fc_enable_82598,
++	.setup_fc		= ixgbe_setup_fc_generic,
+ 	.set_fw_drv_ver         = NULL,
+ 	.acquire_swfw_sync      = &ixgbe_acquire_swfw_sync,
+ 	.release_swfw_sync      = &ixgbe_release_swfw_sync,
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
+index b276fe0bc665..c3ae5a701d43 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
+@@ -2220,6 +2220,7 @@ static const struct ixgbe_mac_operations mac_ops_82599 = {
+ 	.clear_vfta             = &ixgbe_clear_vfta_generic,
+ 	.set_vfta               = &ixgbe_set_vfta_generic,
+ 	.fc_enable              = &ixgbe_fc_enable_generic,
++	.setup_fc		= ixgbe_setup_fc_generic,
+ 	.set_fw_drv_ver         = &ixgbe_set_fw_drv_ver_generic,
+ 	.init_uta_tables        = &ixgbe_init_uta_tables_generic,
+ 	.setup_sfp              = &ixgbe_setup_sfp_modules_82599,
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+index 64045053e874..8c7e78b21c4e 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+@@ -1,7 +1,7 @@
+ /*******************************************************************************
+ 
+   Intel 10 Gigabit PCI Express Linux driver
+-  Copyright(c) 1999 - 2015 Intel Corporation.
++  Copyright(c) 1999 - 2016 Intel Corporation.
+ 
+   This program is free software; you can redistribute it and/or modify it
+   under the terms and conditions of the GNU General Public License,
+@@ -111,12 +111,12 @@ bool ixgbe_device_supports_autoneg_fc(struct ixgbe_hw *hw)
+ }
+ 
+ /**
+- *  ixgbe_setup_fc - Set up flow control
++ *  ixgbe_setup_fc_generic - Set up flow control
+  *  @hw: pointer to hardware structure
+  *
+  *  Called at init time to set up flow control.
+  **/
+-static s32 ixgbe_setup_fc(struct ixgbe_hw *hw)
++s32 ixgbe_setup_fc_generic(struct ixgbe_hw *hw)
+ {
+ 	s32 ret_val = 0;
+ 	u32 reg = 0, reg_bp = 0;
+@@ -296,7 +296,7 @@ s32 ixgbe_start_hw_generic(struct ixgbe_hw *hw)
+ 	IXGBE_WRITE_FLUSH(hw);
+ 
+ 	/* Setup flow control */
+-	ret_val = ixgbe_setup_fc(hw);
++	ret_val = hw->mac.ops.setup_fc(hw);
+ 	if (ret_val)
+ 		return ret_val;
+ 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
+index 2b9563137fd8..2e290150ab54 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
+@@ -1,7 +1,7 @@
+ /*******************************************************************************
+ 
+   Intel 10 Gigabit PCI Express Linux driver
+-  Copyright(c) 1999 - 2014 Intel Corporation.
++  Copyright(c) 1999 - 2016 Intel Corporation.
+ 
+   This program is free software; you can redistribute it and/or modify it
+   under the terms and conditions of the GNU General Public License,
+@@ -81,6 +81,7 @@ s32 ixgbe_disable_rx_buff_generic(struct ixgbe_hw *hw);
+ s32 ixgbe_enable_rx_buff_generic(struct ixgbe_hw *hw);
+ s32 ixgbe_enable_rx_dma_generic(struct ixgbe_hw *hw, u32 regval);
+ s32 ixgbe_fc_enable_generic(struct ixgbe_hw *hw);
++s32 ixgbe_setup_fc_generic(struct ixgbe_hw *);
+ bool ixgbe_device_supports_autoneg_fc(struct ixgbe_hw *hw);
+ void ixgbe_fc_autoneg(struct ixgbe_hw *hw);
+ 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index 29e0b0e1cb67..787d2b21465e 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -3308,6 +3308,7 @@ struct ixgbe_mac_operations {
+ 
+ 	/* Flow Control */
+ 	s32 (*fc_enable)(struct ixgbe_hw *);
++	s32 (*setup_fc)(struct ixgbe_hw *);
+ 
+ 	/* Manageability interface */
+ 	s32 (*set_fw_drv_ver)(struct ixgbe_hw *, u8, u8, u8, u8);
+@@ -3525,6 +3526,7 @@ struct ixgbe_info {
+ 
+ #define IXGBE_KRM_PORT_CAR_GEN_CTRL(P)	((P) ? 0x8010 : 0x4010)
+ #define IXGBE_KRM_LINK_CTRL_1(P)	((P) ? 0x820C : 0x420C)
++#define IXGBE_KRM_AN_CNTL_1(P)		((P) ? 0x822C : 0x422C)
+ #define IXGBE_KRM_DSP_TXFFE_STATE_4(P)	((P) ? 0x8634 : 0x4634)
+ #define IXGBE_KRM_DSP_TXFFE_STATE_5(P)	((P) ? 0x8638 : 0x4638)
+ #define IXGBE_KRM_RX_TRN_LINKUP_CTRL(P)	((P) ? 0x8B00 : 0x4B00)
+@@ -3547,6 +3549,9 @@ struct ixgbe_info {
+ #define IXGBE_KRM_LINK_CTRL_1_TETH_AN_ENABLE		(1 << 29)
+ #define IXGBE_KRM_LINK_CTRL_1_TETH_AN_RESTART		(1 << 31)
+ 
++#define IXGBE_KRM_AN_CNTL_1_SYM_PAUSE			(1 << 28)
++#define IXGBE_KRM_AN_CNTL_1_ASM_PAUSE			(1 << 29)
++
+ #define IXGBE_KRM_DSP_TXFFE_STATE_C0_EN			(1 << 6)
+ #define IXGBE_KRM_DSP_TXFFE_STATE_CP1_CN1_EN		(1 << 15)
+ #define IXGBE_KRM_DSP_TXFFE_STATE_CO_ADAPT_EN		(1 << 16)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
+index 0d69564f3a1b..c00b67b4c1dc 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
+@@ -846,6 +846,7 @@ static const struct ixgbe_mac_operations mac_ops_X540 = {
+ 	.clear_vfta             = &ixgbe_clear_vfta_generic,
+ 	.set_vfta               = &ixgbe_set_vfta_generic,
+ 	.fc_enable              = &ixgbe_fc_enable_generic,
++	.setup_fc		= ixgbe_setup_fc_generic,
+ 	.set_fw_drv_ver         = &ixgbe_set_fw_drv_ver_generic,
+ 	.init_uta_tables        = &ixgbe_init_uta_tables_generic,
+ 	.setup_sfp              = NULL,
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index eae344fcfe7a..0985a39e7268 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -27,6 +27,7 @@
+ #include "ixgbe_phy.h"
+ 
+ static s32 ixgbe_setup_kr_speed_x550em(struct ixgbe_hw *, ixgbe_link_speed);
++static s32 ixgbe_setup_fc_x550em(struct ixgbe_hw *);
+ 
+ static s32 ixgbe_get_invariants_X550_x(struct ixgbe_hw *hw)
+ {
+@@ -1342,15 +1343,18 @@ static void ixgbe_init_mac_link_ops_X550em(struct ixgbe_hw *hw)
+ 		mac->ops.enable_tx_laser = NULL;
+ 		mac->ops.flap_tx_laser = NULL;
+ 		mac->ops.setup_link = ixgbe_setup_mac_link_multispeed_fiber;
++		mac->ops.setup_fc = ixgbe_setup_fc_x550em;
+ 		mac->ops.setup_mac_link = ixgbe_setup_mac_link_sfp_x550em;
+ 		mac->ops.set_rate_select_speed =
+ 					ixgbe_set_soft_rate_select_speed;
+ 		break;
+ 	case ixgbe_media_type_copper:
+ 		mac->ops.setup_link = ixgbe_setup_mac_link_t_X550em;
++		mac->ops.setup_fc = ixgbe_setup_fc_generic;
+ 		mac->ops.check_link = ixgbe_check_link_t_X550em;
+ 		break;
+ 	default:
++		mac->ops.setup_fc = ixgbe_setup_fc_x550em;
+ 		break;
+ 	}
+ }
+@@ -1842,6 +1846,82 @@ static s32 ixgbe_get_lcd_t_x550em(struct ixgbe_hw *hw,
+ 	return status;
+ }
+ 
++/**
++ * ixgbe_setup_fc_x550em - Set up flow control
++ * @hw: pointer to hardware structure
++ */
++static s32 ixgbe_setup_fc_x550em(struct ixgbe_hw *hw)
++{
++	bool pause, asm_dir;
++	u32 reg_val;
++	s32 rc;
++
++	/* Validate the requested mode */
++	if (hw->fc.strict_ieee && hw->fc.requested_mode == ixgbe_fc_rx_pause) {
++		hw_err(hw, "ixgbe_fc_rx_pause not valid in strict IEEE mode\n");
++		return IXGBE_ERR_INVALID_LINK_SETTINGS;
++	}
++
++	/* 10gig parts do not have a word in the EEPROM to determine the
++	 * default flow control setting, so we explicitly set it to full.
++	 */
++	if (hw->fc.requested_mode == ixgbe_fc_default)
++		hw->fc.requested_mode = ixgbe_fc_full;
++
++	/* Determine PAUSE and ASM_DIR bits. */
++	switch (hw->fc.requested_mode) {
++	case ixgbe_fc_none:
++		pause = false;
++		asm_dir = false;
++		break;
++	case ixgbe_fc_tx_pause:
++		pause = false;
++		asm_dir = true;
++		break;
++	case ixgbe_fc_rx_pause:
++		/* Rx Flow control is enabled and Tx Flow control is
++		 * disabled by software override. Since there really
++		 * isn't a way to advertise that we are capable of RX
++		 * Pause ONLY, we will advertise that we support both
++		 * symmetric and asymmetric Rx PAUSE, as such we fall
++		 * through to the fc_full statement.  Later, we will
++		 * disable the adapter's ability to send PAUSE frames.
++		 */
++		/* Fallthrough */
++	case ixgbe_fc_full:
++		pause = true;
++		asm_dir = true;
++		break;
++	default:
++		hw_err(hw, "Flow control param set incorrectly\n");
++		return IXGBE_ERR_CONFIG;
++	}
++
++	if (hw->device_id != IXGBE_DEV_ID_X550EM_X_KR)
++		return 0;
++
++	rc = ixgbe_read_iosf_sb_reg_x550(hw,
++					 IXGBE_KRM_AN_CNTL_1(hw->bus.lan_id),
++					 IXGBE_SB_IOSF_TARGET_KR_PHY, &reg_val);
++	if (rc)
++		return rc;
++
++	reg_val &= ~(IXGBE_KRM_AN_CNTL_1_SYM_PAUSE |
++		     IXGBE_KRM_AN_CNTL_1_ASM_PAUSE);
++	if (pause)
++		reg_val |= IXGBE_KRM_AN_CNTL_1_SYM_PAUSE;
++	if (asm_dir)
++		reg_val |= IXGBE_KRM_AN_CNTL_1_ASM_PAUSE;
++	rc = ixgbe_write_iosf_sb_reg_x550(hw,
++					  IXGBE_KRM_AN_CNTL_1(hw->bus.lan_id),
++					  IXGBE_SB_IOSF_TARGET_KR_PHY, reg_val);
++
++	/* This device does not fully support AN. */
++	hw->fc.disable_fc_autoneg = true;
++
++	return rc;
++}
++
+ /** ixgbe_enter_lplu_x550em - Transition to low power states
+  *  @hw: pointer to hardware structure
+  *
+@@ -2337,8 +2417,6 @@ static void ixgbe_release_swfw_sync_X550em(struct ixgbe_hw *hw, u32 mask)
+ 	.enable_rx_buff			= &ixgbe_enable_rx_buff_generic, \
+ 	.get_thermal_sensor_data	= NULL, \
+ 	.init_thermal_sensor_thresh	= NULL, \
+-	.prot_autoc_read		= &prot_autoc_read_generic, \
+-	.prot_autoc_write		= &prot_autoc_write_generic, \
+ 	.enable_rx			= &ixgbe_enable_rx_generic, \
+ 	.disable_rx			= &ixgbe_disable_rx_x550, \
+ 
+@@ -2354,6 +2432,9 @@ static const struct ixgbe_mac_operations mac_ops_X550 = {
+ 	.setup_sfp		= NULL,
+ 	.acquire_swfw_sync	= &ixgbe_acquire_swfw_sync_X540,
+ 	.release_swfw_sync	= &ixgbe_release_swfw_sync_X540,
++	.prot_autoc_read	= prot_autoc_read_generic,
++	.prot_autoc_write	= prot_autoc_write_generic,
++	.setup_fc		= ixgbe_setup_fc_generic,
+ };
+ 
+ static const struct ixgbe_mac_operations mac_ops_X550EM_x = {
+@@ -2368,6 +2449,7 @@ static const struct ixgbe_mac_operations mac_ops_X550EM_x = {
+ 	.setup_sfp		= ixgbe_setup_sfp_modules_X550em,
+ 	.acquire_swfw_sync	= &ixgbe_acquire_swfw_sync_X550em,
+ 	.release_swfw_sync	= &ixgbe_release_swfw_sync_X550em,
++	.setup_fc		= NULL, /* defined later */
+ };
+ 
+ #define X550_COMMON_EEP \
 
->
-> For now I think it would be better to leave this patch as is since it
-> is fixing a number of bugs that were in the code without introducing
-> any new ones.  I will submit a follow-on patch that can add support
-> for ATR in the case of IPv6 extension headers being present.
->
-> - Alex
-
-Thanks,
--- Kiran P.
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160125/6984ba8f/attachment-0001.html>
