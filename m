@@ -1,43 +1,205 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 26 Jan 2016 01:11:48 +0000
-Subject: [Intel-wired-lan] [next PATCH S28 13/15] i40e: clean
-	event	descriptor before use
-In-Reply-To: <1452897202-15204-14-git-send-email-joshua.a.hay@intel.com>
-References: <1452897202-15204-1-git-send-email-joshua.a.hay@intel.com>
- <1452897202-15204-14-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F98C568@ORSMSX104.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 26 Jan 2016 09:37:10 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ af5619ce20c1a396e1fb158d185cf95412af0ba3 BUILD SUCCESS
+Message-ID: <56a6cdc6.hD+CrP8e9uWb1ZxO%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Joshua Hay
-> Sent: Friday, January 15, 2016 2:33 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S28 13/15] i40e: clean event
-> descriptor before use
-> 
-> From: Shannon Nelson <shannon.nelson@intel.com>
-> 
-> In one obscure corner case, it was possible to clear the NVM update wait flag
-> when no update_done message was actually received.  This patch cleans the
-> event descriptor before use, and moves the opcode check to where it won't
-> get done if there was no event to clean.
-> 
-> Also update copyright year in file headers.
-> 
-> Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-> Change-ID: I68bbc41965e93f4adf07cbe98b9dfd63d41509a4
-> ---
-> Testing Hints:
-> Do an NVM update on that specific customer's platform.
-> 
->  drivers/net/ethernet/intel/i40e/i40e_adminq.c   | 20 +++++++++++---------
->  drivers/net/ethernet/intel/i40evf/i40e_adminq.c |  5 ++++-
->  2 files changed, 15 insertions(+), 10 deletions(-)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+af5619ce20c1a396e1fb158d185cf95412af0ba3  i40e: fix build warnings
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied, updated successfully
+elapsed time: 119m
+
+configs tested: 184
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-a0-01260824
+x86_64                 randconfig-a0-01260926
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+arm                         bcm2835_defconfig
+mips                           ip28_defconfig
+um                           x86_64_defconfig
+arm                         hackkit_defconfig
+powerpc                 mpc834x_mds_defconfig
+sh                           se7722_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-01260836
+arm                          collie_defconfig
+blackfin                    PNAV-10_defconfig
+powerpc                         ps3_defconfig
+mips                             allyesconfig
+mips                            gpr_defconfig
+mips                         rt305x_defconfig
+mips                        msp71xx_defconfig
+powerpc                      pmac32_defconfig
+tile                                defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+parisc                         b180_defconfig
+arm                         lubbock_defconfig
+arm                        multi_v7_defconfig
+m68k                        m5307c3_defconfig
+mn10300                           allnoconfig
+powerpc                     tqm8555_defconfig
+avr32                               defconfig
+blackfin                    DNP5370_defconfig
+microblaze                    nommu_defconfig
+openrisc                            defconfig
+blackfin                            defconfig
+ia64                                defconfig
+mips                                defconfig
+sh                                  defconfig
+mips                       lemote2f_defconfig
+mips                     sead3micro_defconfig
+powerpc                 linkstation_defconfig
+powerpc                     mpc83xx_defconfig
+sh                            migor_defconfig
+x86_64               randconfig-x010-01250526
+x86_64               randconfig-x019-01250526
+x86_64               randconfig-x016-01250526
+x86_64               randconfig-x015-01250526
+x86_64               randconfig-x012-01250526
+x86_64               randconfig-x018-01250526
+x86_64               randconfig-x017-01250526
+x86_64               randconfig-x013-01250526
+x86_64               randconfig-x011-01250526
+x86_64               randconfig-x014-01250526
+x86_64               randconfig-x010-01260845
+x86_64               randconfig-x011-01260845
+x86_64               randconfig-x012-01260845
+x86_64               randconfig-x013-01260845
+x86_64               randconfig-x014-01260845
+x86_64               randconfig-x015-01260845
+x86_64               randconfig-x016-01260845
+x86_64               randconfig-x017-01260845
+x86_64               randconfig-x018-01260845
+x86_64               randconfig-x019-01260845
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201604
+i386                     randconfig-s1-201604
+i386                   randconfig-s0-01260845
+i386                   randconfig-s1-01260845
+x86_64                 randconfig-s0-01260804
+x86_64                 randconfig-s1-01260804
+x86_64                 randconfig-s2-01260804
+x86_64                 randconfig-s0-01260845
+x86_64                 randconfig-s1-01260845
+x86_64                 randconfig-s2-01260845
+x86_64                 randconfig-s0-01260926
+x86_64                 randconfig-s1-01260926
+x86_64                 randconfig-s2-01260926
+x86_64                 randconfig-s3-01260908
+x86_64                 randconfig-s4-01260908
+x86_64                 randconfig-s5-01260908
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+i386                               tinyconfig
+arm                          iop32x_defconfig
+mips                         tb0219_defconfig
+powerpc                   lite5200b_defconfig
+avr32                       favr-32_defconfig
+blackfin                      H8606_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201604
+i386                   randconfig-b0-01260818
+i386                   randconfig-b0-01260856
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+m32r                    mappi2.opsp_defconfig
+mn10300                          allmodconfig
+powerpc                 mpc832x_mds_defconfig
+powerpc                  mpc885_ads_defconfig
+microblaze                      mmu_defconfig
+i386                   randconfig-i1-01251419
+x86_64                 randconfig-b0-01260827
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201604
+i386                   randconfig-h0-01260743
+i386                   randconfig-h1-01260743
+arm                      footbridge_defconfig
+arm64                            alldefconfig
+mips                      pic32mzda_defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+x86_64                 randconfig-h0-01260807
+mips                    maltaup_xpa_defconfig
+powerpc64                        allyesconfig
+powerpc                     sbc8548_defconfig
+arm                         em_x270_defconfig
+x86_64                 randconfig-n0-01260839
+blackfin                BF561-EZKIT_defconfig
+powerpc               corenet_basic_defconfig
+sh                               alldefconfig
+i386                  randconfig-sb0-01260806
+i386                  randconfig-sb0-01260852
+mips                           mtx1_defconfig
+mn10300                          alldefconfig
+sh                          sdk7786_defconfig
+x86_64               randconfig-x005-01250410
+x86_64               randconfig-x000-01250410
+x86_64               randconfig-x006-01250410
+x86_64               randconfig-x009-01250410
+x86_64               randconfig-x003-01250410
+x86_64               randconfig-x002-01250410
+x86_64               randconfig-x004-01250410
+x86_64               randconfig-x007-01250410
+x86_64               randconfig-x001-01250410
+x86_64               randconfig-x008-01250410
+i386                     randconfig-r0-201604
+x86_64                 randconfig-r0-01260837
+powerpc                   gef_ppc9a_defconfig
+mips                  cavium_octeon_defconfig
+s390                             allyesconfig
+i386                 randconfig-x002-01251232
+i386                 randconfig-x008-01251232
+i386                 randconfig-x006-01251232
+i386                 randconfig-x000-01251232
+i386                 randconfig-x004-01251232
+i386                 randconfig-x001-01251232
+i386                 randconfig-x005-01251232
+i386                 randconfig-x009-01251232
+i386                 randconfig-x003-01251232
+i386                 randconfig-x007-01251232
+i386                   randconfig-x0-01260745
+
+Thanks,
+Fengguang
