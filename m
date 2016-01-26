@@ -1,143 +1,359 @@
-From: Alexander Duyck <aduyck@mirantis.com>
-Date: Mon, 25 Jan 2016 19:39:40 -0800
-Subject: [Intel-wired-lan] [next PATCH 3/3] ixgbe: Fix ATR so that it
- correctly handles IPv6 extension headers
-In-Reply-To: <20160126032616.16387.86351.stgit@localhost.localdomain>
-References: <20160126032616.16387.86351.stgit@localhost.localdomain>
-Message-ID: <20160126033635.16387.56585.stgit@localhost.localdomain>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 26 Jan 2016 13:16:13 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 74e300df9d59524847464cc8655f55b56fe17914 BUILD SUCCESS
+Message-ID: <56a7011d.2sw/kD3CC6h79+dt%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The ATR code was assuming that it would be able to use tcp_hdr for
-every TCP frame that came through.  However this isn't the case as it
-is possible for a frame to arrive that is TCP but sent through something
-like a raw socket.  As a result the driver was setting up bad filters in
-which tcp_hdr was really pointing to the network header so the data was
-all invalid.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+74e300df9d59524847464cc8655f55b56fe17914  i40evf: Update feature flags to reflect newly enabled features
 
-In order to correct this I have added a bit of parsing logic that will
-determine the TCP header location based off of the network header and
-either the offset in the case of the IPv4 header, or a walk through the
-IPv6 extension headers until it encounters the header that indicates
-IPPROTO_TCP.  In addition I have added checks to verify that the lowest
-protocol provided is recognized as IPv4 or IPv6 to help mitigate raw
-sockets using ETH_P_ALL from having ATR applied to them.
+elapsed time: 272m
 
-Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+configs tested: 339
 
----
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                              allnoconfig
+blackfin                          allnoconfig
+sparc                       sparc64_defconfig
+i386                   randconfig-a0-01260824
+x86_64                 randconfig-a0-01260824
+x86_64                 randconfig-a0-01260946
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+arm                         hackkit_defconfig
+powerpc                 mpc834x_mds_defconfig
+sh                           se7722_defconfig
+blackfin                   CM-BF548_defconfig
+m32r                       m32104ut_defconfig
+s390                             allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-01260942
+i386                   randconfig-c0-01261017
+i386                   randconfig-c0-01261106
+i386                   randconfig-c0-01261226
+arm                      pxa255-idp_defconfig
+ia64                      gensparse_defconfig
+s390                           gcov_defconfig
+arm                          exynos_defconfig
+blackfin                  CM-BF537U_defconfig
+powerpc               mpc834x_itxgp_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                 randconfig-v0-01260929
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+parisc                         b180_defconfig
+i386                             allmodconfig
+mips                            gpr_defconfig
+mips                         tb0219_defconfig
+mn10300                     asb2364_defconfig
+arm                            pleb_defconfig
+avr32                       mimc200_defconfig
+powerpc                      acadia_defconfig
+powerpc                 mpc832x_rdb_defconfig
+arm                           corgi_defconfig
+mips                        workpad_defconfig
+sh                           se7705_defconfig
+arm                     am200epdkit_defconfig
+arm                         nhk8815_defconfig
+avr32                      atngw100_defconfig
+avr32        atngw100mkii_evklcd100_defconfig
+mips                            e55_defconfig
+mn10300                             defconfig
+sparc64                          alldefconfig
+m68k                          multi_defconfig
+powerpc                       eiger_defconfig
+powerpc                      pcm030_defconfig
+powerpc                     taishan_defconfig
+arm                          badge4_defconfig
+arm                          lpd270_defconfig
+avr32                               defconfig
+mn10300                          alldefconfig
+sparc                             allnoconfig
+blackfin             BF527-TLL6527M_defconfig
+mips                         rt305x_defconfig
+powerpc                mpc7448_hpc2_defconfig
+powerpc                mpc8610_hpcd_defconfig
+xtensa                            allnoconfig
+i386                                defconfig
+arm64                               defconfig
+powerpc                      virtex_defconfig
+s390                                defconfig
+sparc64                           allnoconfig
+arm                              alldefconfig
+arm                         s3c2410_defconfig
+blackfin                            defconfig
+mips                malta_kvm_guest_defconfig
+powerpc                    ge_imp3a_defconfig
+powerpc                     tqm8540_defconfig
+sh                          rsk7203_defconfig
+sh                           se7780_defconfig
+avr32                     atstk1003_defconfig
+mips                           ls1b_defconfig
+powerpc                 mpc85xx_cds_defconfig
+powerpc                      ppc64e_defconfig
+sh                               allyesconfig
+arm                        vexpress_defconfig
+mips                         db1xxx_defconfig
+mips                          rm200_defconfig
+powerpc                     asp8347_defconfig
+tile                             allmodconfig
+x86_64               randconfig-x010-01260845
+x86_64               randconfig-x012-01260845
+x86_64               randconfig-x018-01260845
+x86_64               randconfig-x014-01260845
+x86_64               randconfig-x016-01260845
+x86_64               randconfig-x017-01260845
+x86_64               randconfig-x019-01260845
+x86_64               randconfig-x013-01260845
+x86_64               randconfig-x011-01260845
+x86_64               randconfig-x015-01260845
+i386                             alldefconfig
+m68k                       m5475evb_defconfig
+m68k                           sun3_defconfig
+i386                   randconfig-s1-01260845
+i386                   randconfig-s0-01260845
+i386                     randconfig-s0-201604
+i386                     randconfig-s1-201604
+x86_64                 randconfig-s0-01260945
+x86_64                 randconfig-s1-01260945
+x86_64                 randconfig-s2-01260945
+x86_64                 randconfig-s0-01260955
+x86_64                 randconfig-s1-01260955
+x86_64                 randconfig-s2-01260955
+x86_64                 randconfig-s0-01261019
+x86_64                 randconfig-s1-01261019
+x86_64                 randconfig-s2-01261019
+x86_64                 randconfig-s0-01261043
+x86_64                 randconfig-s1-01261043
+x86_64                 randconfig-s2-01261043
+x86_64                 randconfig-s0-01261101
+x86_64                 randconfig-s1-01261101
+x86_64                 randconfig-s2-01261101
+x86_64                 randconfig-s0-01261131
+x86_64                 randconfig-s1-01261131
+x86_64                 randconfig-s2-01261131
+x86_64                 randconfig-s0-01261158
+x86_64                 randconfig-s1-01261158
+x86_64                 randconfig-s2-01261158
+x86_64                 randconfig-s0-01261224
+x86_64                 randconfig-s1-01261224
+x86_64                 randconfig-s2-01261224
+x86_64                 randconfig-s0-01261246
+x86_64                 randconfig-s1-01261246
+x86_64                 randconfig-s2-01261246
+x86_64                           allmodconfig
+x86_64                 randconfig-s3-01260939
+x86_64                 randconfig-s4-01260939
+x86_64                 randconfig-s5-01260939
+x86_64                 randconfig-s3-01260957
+x86_64                 randconfig-s4-01260957
+x86_64                 randconfig-s5-01260957
+x86_64                 randconfig-s3-01261022
+x86_64                 randconfig-s4-01261022
+x86_64                 randconfig-s5-01261022
+x86_64                 randconfig-s3-01261051
+x86_64                 randconfig-s4-01261051
+x86_64                 randconfig-s5-01261051
+x86_64                 randconfig-s3-01261112
+x86_64                 randconfig-s4-01261112
+x86_64                 randconfig-s5-01261112
+x86_64                 randconfig-s3-01261138
+x86_64                 randconfig-s4-01261138
+x86_64                 randconfig-s5-01261138
+x86_64                 randconfig-s3-01261158
+x86_64                 randconfig-s4-01261158
+x86_64                 randconfig-s5-01261158
+x86_64                 randconfig-s3-01261223
+x86_64                 randconfig-s4-01261223
+x86_64                 randconfig-s5-01261223
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+m68k                            q40_defconfig
+powerpc                    gamecube_defconfig
+powerpc                   motionpro_defconfig
+sh                          kfr2r09_defconfig
+arm                           spitz_defconfig
+powerpc                      walnut_defconfig
+sh                          lboxre2_defconfig
+sh                           se7619_defconfig
+arm                           efm32_defconfig
+arm                          iop33x_defconfig
+mips                           ip22_defconfig
+powerpc                      chrp32_defconfig
+m68k                        mvme16x_defconfig
+powerpc                          alldefconfig
+blackfin                BF527-EZKIT_defconfig
+m68k                       m5249evb_defconfig
+tile                              allnoconfig
+blackfin                BF538-EZKIT_defconfig
+mips                         cobalt_defconfig
+powerpc                  storcenter_defconfig
+arm                               allnoconfig
+arm                        clps711x_defconfig
+frv                              alldefconfig
+parisc                      default_defconfig
+arm                             ezx_defconfig
+mips                           ip27_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201604
+i386                   randconfig-b0-01260955
+i386                   randconfig-b0-01261023
+i386                   randconfig-b0-01261103
+i386                   randconfig-b0-01261143
+i386                   randconfig-b0-01261235
+sparc                               defconfig
+sparc64                             defconfig
+arm                            qcom_defconfig
+s390                        default_defconfig
+sparc                            alldefconfig
+avr32                            alldefconfig
+arm                          simpad_defconfig
+mips                 pnx8335_stb225_defconfig
+powerpc                     virtex5_defconfig
+um                               allmodconfig
+arm                             pxa_defconfig
+arm64                            alldefconfig
+blackfin                BF609-EZKIT_defconfig
+sh                          r7780mp_defconfig
+arm                        raumfeld_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-i1-01260827
+i386                   randconfig-i0-01260827
+x86_64                 randconfig-b0-01260929
+x86_64                 randconfig-b0-01260959
+x86_64                 randconfig-b0-01261022
+x86_64                 randconfig-b0-01261044
+x86_64                 randconfig-b0-01261116
+x86_64                 randconfig-b0-01261212
+ia64                                defconfig
+m68k                        m5272c3_defconfig
+openrisc                          allnoconfig
+arm                            mmp2_defconfig
+powerpc                    adder875_defconfig
+sh                               allmodconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201604
+i386                   randconfig-h0-01261037
+i386                   randconfig-h1-01261037
+powerpc                  iss476-smp_defconfig
+xtensa                  nommu_kc705_defconfig
+arm                         cm_x2xx_defconfig
+blackfin                  TCM-BF518_defconfig
+sh                        sh7785lcr_defconfig
+arm                      integrator_defconfig
+powerpc               corenet_basic_defconfig
+arm                             bcm_defconfig
+powerpc64                        alldefconfig
+sparc                       sparc32_defconfig
+arm                      acs5k_tiny_defconfig
+arm                      tct_hammer_defconfig
+sh                        edosk7705_defconfig
+ia64                              allnoconfig
+ia64                             alldefconfig
+x86_64                 randconfig-h0-01261053
+x86_64                 randconfig-h0-01261143
+arm                         em_x270_defconfig
+blackfin          BF527-AD7160-EVAL_defconfig
+m68k                          atari_defconfig
+mips                           ip32_defconfig
+powerpc                     mpc86xx_defconfig
+arm                        neponset_defconfig
+powerpc                 mpc837x_mds_defconfig
+m32r                    m32700ut.up_defconfig
+powerpc                     ppa8548_defconfig
+mips                        msp71xx_defconfig
+x86_64                 randconfig-n0-01261007
+x86_64                 randconfig-n0-01261045
+x86_64                 randconfig-n0-01261128
+x86_64                 randconfig-n0-01261206
+arm                                    sa1100
+arm                          prima2_defconfig
+arm                         at91_dt_defconfig
+arm                                   samsung
+arm                       spear13xx_defconfig
+arm                                  iop-adma
+arm                       imx_v6_v7_defconfig
+arm                          marzen_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                                        sh
+mips                      loongson3_defconfig
+powerpc                        icon_defconfig
+powerpc                     kmeter1_defconfig
+powerpc                     tqm8548_defconfig
+xtensa                           alldefconfig
+arm                         bcm2835_defconfig
+blackfin                    DNP5370_defconfig
+i386                  randconfig-sb0-01260937
+i386                  randconfig-sb0-01261057
+i386                  randconfig-sb0-01261131
+mips                           mtx1_defconfig
+sh                          sdk7786_defconfig
+mips                        bcm47xx_defconfig
+sh                          rsk7264_defconfig
+arm                       mainstone_defconfig
+powerpc                    klondike_defconfig
+powerpc                      ppc40x_defconfig
+x86_64               randconfig-x000-01250410
+x86_64               randconfig-x001-01250410
+x86_64               randconfig-x002-01250410
+x86_64               randconfig-x003-01250410
+x86_64               randconfig-x004-01250410
+x86_64               randconfig-x005-01250410
+x86_64               randconfig-x006-01250410
+x86_64               randconfig-x007-01250410
+x86_64               randconfig-x008-01250410
+x86_64               randconfig-x009-01250410
+x86_64         rhel+CONFIG_DEBUG_INFO_REDUCED
+i386                     randconfig-r0-201604
+x86_64                 randconfig-r0-01261026
+blackfin                BF548-EZKIT_defconfig
+powerpc                   currituck_defconfig
+i386                 randconfig-x002-01251232
+i386                 randconfig-x008-01251232
+i386                 randconfig-x006-01251232
+i386                 randconfig-x000-01251232
+i386                 randconfig-x004-01251232
+i386                 randconfig-x001-01251232
+i386                 randconfig-x005-01251232
+i386                 randconfig-x009-01251232
+i386                 randconfig-x003-01251232
+i386                 randconfig-x007-01251232
+i386                   randconfig-x0-01260745
+i386                   randconfig-x0-01261041
+i386                   randconfig-x0-01261154
 
-Testing Hints:
-In order for me to verify the bug was there I ended up having to use tools
-such as tcpreplay and some raw socket apps to send TCP frames.  Without
-instrumenting the driver this can be hard to see.  One approach might be to
-enable 9K jumbo frames between two hosts and then start using TCP replay or
-something similar to start walking through the same port and IP numbers,
-but sending larger and larger packets.  On a system without this patch you
-should see the following behavior:
-  1.  IP total length is interpreted as destination port
-  2.  Second octet of IP source address is interpreted as TCP flags.
-      - Fin resides at bit 0, so odd values will not cause issue.
-      - Syn is in second bit, so it is 20X more likely to cause issue
-        - In other words test with 190.2.100.X, not 190.1.100.X
-
-Testing with a range of frame sizes should start triggering table resets
-without any flow director matches due to how the headers are being
-misread.
-
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   45 ++++++++++++-------------
- 1 file changed, 21 insertions(+), 24 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 88368d2f7e1a..f3191b574dd3 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -7501,8 +7501,10 @@ static void ixgbe_atr(struct ixgbe_ring *ring,
- 		struct ipv6hdr *ipv6;
- 	} hdr;
- 	struct tcphdr *th;
-+	unsigned int hlen;
- 	struct sk_buff *skb;
- 	__be16 vlan_id;
-+	int l4_proto;
- 
- 	/* if ring doesn't have a interrupt vector, cannot perform ATR */
- 	if (!q_vector)
-@@ -7514,10 +7516,14 @@ static void ixgbe_atr(struct ixgbe_ring *ring,
- 
- 	ring->atr_count++;
- 
-+	/* currently only IPv4/IPv6 with TCP is supported */
-+	if ((first->protocol != htons(ETH_P_IP)) &&
-+	    (first->protocol != htons(ETH_P_IPV6)))
-+		return;
-+
- 	/* snag network header to get L4 type and address */
- 	skb = first->skb;
- 	hdr.network = skb_network_header(skb);
--	th = tcp_hdr(skb);
- #ifdef CONFIG_IXGBE_VXLAN
- 	if (skb->encapsulation &&
- 	    first->protocol == htons(ETH_P_IP) &&
-@@ -7526,43 +7532,34 @@ static void ixgbe_atr(struct ixgbe_ring *ring,
- 
- 		/* verify the port is recognized as VXLAN */
- 		if (adapter->vxlan_port &&
--		    udp_hdr(skb)->dest == adapter->vxlan_port) {
-+		    udp_hdr(skb)->dest == adapter->vxlan_port)
- 			hdr.network = skb_inner_network_header(skb);
--			th = inner_tcp_hdr(skb);
--		}
- 	}
- #endif /* CONFIG_IXGBE_VXLAN */
- 
- 	/* Currently only IPv4/IPv6 with TCP is supported */
- 	switch (hdr.ipv4->version) {
- 	case IPVERSION:
--		if (hdr.ipv4->protocol != IPPROTO_TCP)
--			return;
-+		/* access ihl as u8 to avoid unaligned access on ia64 */
-+		hlen = (hdr.network[0] & 0x0F) << 2;
-+		l4_proto = hdr.ipv4->protocol;
- 		break;
- 	case 6:
--		if (likely((unsigned char *)th - hdr.network ==
--			   sizeof(struct ipv6hdr))) {
--			if (hdr.ipv6->nexthdr != IPPROTO_TCP)
--				return;
--		} else {
--			__be16 frag_off;
--			u8 l4_hdr;
--
--			ipv6_skip_exthdr(skb, hdr.network - skb->data +
--					      sizeof(struct ipv6hdr),
--					 &l4_hdr, &frag_off);
--			if (unlikely(frag_off))
--				return;
--			if (l4_hdr != IPPROTO_TCP)
--				return;
--		}
-+		hlen = hdr.network - skb->data;
-+		l4_proto = ipv6_find_hdr(skb, &hlen, IPPROTO_TCP, NULL, NULL);
-+		hlen -= hdr.network - skb->data;
- 		break;
- 	default:
- 		return;
- 	}
- 
--	/* skip this packet since it is invalid or the socket is closing */
--	if (!th || th->fin)
-+	if (l4_proto != IPPROTO_TCP)
-+		return;
-+
-+	th = (struct tcphdr *)(hdr.network + hlen);
-+
-+	/* skip this packet since the socket is closing */
-+	if (th->fin)
- 		return;
- 
- 	/* sample on all syn packets or once every atr sample count */
-
+Thanks,
+Fengguang
