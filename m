@@ -1,43 +1,138 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 27 Jan 2016 20:29:46 +0000
-Subject: [Intel-wired-lan] [next PATCH S28 09/15] i40e: Do not
-	disable	queues in the Legacy/MSI Interrupt handler
-In-Reply-To: <1452897202-15204-10-git-send-email-joshua.a.hay@intel.com>
-References: <1452897202-15204-1-git-send-email-joshua.a.hay@intel.com>
- <1452897202-15204-10-git-send-email-joshua.a.hay@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F98C903@ORSMSX104.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 28 Jan 2016 04:30:49 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ a211d5dabda1ef2e0eda9612893c34bdf7119fc5 BUILD SUCCESS
+Message-ID: <56a928f9.DB5OaJ21pf03TG8u%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Joshua Hay
-> Sent: Friday, January 15, 2016 2:33 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S28 09/15] i40e: Do not disable
-> queues in the Legacy/MSI Interrupt handler
-> 
-> From: Anjali Singhai Jain <anjali.singhai@intel.com>
-> 
-> The queues should never be enabled/disabled in the interrupt handler,
-> ICR0 interrupt enable should be the only thing that needs to be dynamically
-> changed in the handler.
-> 
-> This patch fixes that. Without this patch X722 platforms were seeing weird
-> ping timings when in Legacy mode since it takes a whole lot of time for the
-> HW/FW to re-enable queues.
-> 
-> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-> Change-ID: If065afc45d81c5a19d4a94a00cd5b8f61cefc40c
-> ---
-> Testing Hints (Required if no HSD): Test with legacy mode enabled.
-> 
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 16 ++++++----------
-> drivers/net/ethernet/intel/i40e/i40e_txrx.c | 13 -------------
->  2 files changed, 6 insertions(+), 23 deletions(-)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+a211d5dabda1ef2e0eda9612893c34bdf7119fc5  ixgbe: add a callback to set the maximum transmit bitrate
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch code changes correctly applied, ping times normal/consistent on X722 in Legacy mode
+elapsed time: 88m
+
+configs tested: 117
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                   randconfig-a0-01271607
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-01280335
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+parisc                         b180_defconfig
+i386                             allmodconfig
+arm                          collie_defconfig
+arm                           efm32_defconfig
+blackfin               BF518F-EZBRD_defconfig
+powerpc                      pasemi_defconfig
+powerpc                      pmac32_defconfig
+x86_64               randconfig-x015-01270835
+x86_64               randconfig-x011-01270835
+x86_64               randconfig-x016-01270835
+x86_64               randconfig-x012-01270835
+x86_64               randconfig-x019-01270835
+x86_64               randconfig-x018-01270835
+x86_64               randconfig-x017-01270835
+x86_64               randconfig-x010-01270835
+x86_64               randconfig-x014-01270835
+x86_64               randconfig-x013-01270835
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201604
+i386                     randconfig-s1-201604
+x86_64                 randconfig-s0-01280343
+x86_64                 randconfig-s1-01280343
+x86_64                 randconfig-s2-01280343
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                 randconfig-i0-01270829
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i1-201604
+i386                     randconfig-i0-201604
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201604
+x86_64                 randconfig-n0-01280349
+x86_64               randconfig-x004-01270829
+x86_64               randconfig-x003-01270829
+x86_64               randconfig-x005-01270829
+x86_64               randconfig-x000-01270829
+x86_64               randconfig-x001-01270829
+x86_64               randconfig-x006-01270829
+x86_64               randconfig-x009-01270829
+x86_64               randconfig-x002-01270829
+x86_64               randconfig-x007-01270829
+x86_64               randconfig-x008-01270829
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201604
+i386                 randconfig-x008-01261041
+i386                 randconfig-x005-01261041
+i386                 randconfig-x004-01261041
+i386                 randconfig-x001-01261041
+i386                 randconfig-x006-01261041
+i386                 randconfig-x009-01261041
+i386                 randconfig-x003-01261041
+i386                 randconfig-x000-01261041
+i386                 randconfig-x002-01261041
+i386                 randconfig-x007-01261041
+
+Thanks,
+Fengguang
