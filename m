@@ -1,103 +1,37 @@
-From: Rostislav Pehlivanov <atomnuker@gmail.com>
-Date: Wed, 27 Jan 2016 18:33:30 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: add a callback to set the maximum
-	transmit bitrate
-Message-ID: <1453919610-8197-1-git-send-email-atomnuker@gmail.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 27 Jan 2016 18:44:25 +0000
+Subject: [Intel-wired-lan] [next PATCH v3 14/15] i40e: Update feature
+ flags to reflect newly enabled features
+In-Reply-To: <20160125051750.12004.24225.stgit@localhost.localdomain>
+References: <20160125050602.12004.38884.stgit@localhost.localdomain>
+ <20160125051750.12004.24225.stgit@localhost.localdomain>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F98C826@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This commit adds a callback which allows to adjust the maximum transmit
-bitrate the card can output. This makes it possible to get a smooth
-traffic instead of the default burst-y behaviour when trying to output
-e.g. a video stream.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Alexander Duyck
+> Sent: Sunday, January 24, 2016 9:18 PM
+> To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
+> <jeffrey.t.kirsher@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH v3 14/15] i40e: Update feature flags to
+> reflect newly enabled features
+> 
+> Recent changes should have enabled support for IPv6 based tunnels and
+> support for TSO with outer UDP checksums.  As such we can update the
+> feature flags to reflect that.
+> 
+> In addition we can clean-up the flags that aren't needed such as SCTP and
+> RXCSUM since having the bits there doesn't add any value.
+> 
+> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c |   16 ++++++++++------
+>  1 file changed, 10 insertions(+), 6 deletions(-)
 
-Much of the logic needed to get a correct bcnrc_val was taken from the
-ixgbe_set_vf_rate_limit() function.
-
-Signed-off-by: Rostislav Pehlivanov <atomnuker@gmail.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  | 31 ++++++++++++++++++++++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |  2 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h |  1 +
- 3 files changed, 33 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index c4003a8..d05455c 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -1084,6 +1084,36 @@ static void ixgbe_tx_timeout_reset(struct ixgbe_adapter *adapter)
- }
- 
- /**
-+ * ixgbe_tx_maxrate - callback to set the maximum per-queue bitrate
-+ **/
-+static int ixgbe_tx_maxrate(struct net_device *netdev,
-+			    int queue_index, u32 maxrate)
-+{
-+	struct ixgbe_adapter *adapter = netdev_priv(netdev);
-+	struct ixgbe_hw *hw = &adapter->hw;
-+	u32 bcnrc_val = ixgbe_link_mbps(adapter);
-+
-+	if (!maxrate)
-+		return 0;
-+
-+	/* Calculate the rate factor values to set */
-+	bcnrc_val <<= IXGBE_RTTBCNRC_RF_INT_SHIFT;
-+	bcnrc_val /= maxrate;
-+
-+	/* clear everything but the rate factor */
-+	bcnrc_val &= IXGBE_RTTBCNRC_RF_INT_MASK |
-+	IXGBE_RTTBCNRC_RF_DEC_MASK;
-+
-+	/* enable the rate scheduler */
-+	bcnrc_val |= IXGBE_RTTBCNRC_RS_ENA;
-+
-+	IXGBE_WRITE_REG(hw, IXGBE_RTTDQSEL, queue_index);
-+	IXGBE_WRITE_REG(hw, IXGBE_RTTBCNRC, bcnrc_val);
-+
-+	return 0;
-+}
-+
-+/**
-  * ixgbe_clean_tx_irq - Reclaim resources after transmit completes
-  * @q_vector: structure containing interrupt and ring information
-  * @tx_ring: tx ring to clean
-@@ -8646,6 +8676,7 @@ static const struct net_device_ops ixgbe_netdev_ops = {
- 	.ndo_set_mac_address	= ixgbe_set_mac,
- 	.ndo_change_mtu		= ixgbe_change_mtu,
- 	.ndo_tx_timeout		= ixgbe_tx_timeout,
-+	.ndo_set_tx_maxrate	= ixgbe_tx_maxrate,
- 	.ndo_vlan_rx_add_vid	= ixgbe_vlan_rx_add_vid,
- 	.ndo_vlan_rx_kill_vid	= ixgbe_vlan_rx_kill_vid,
- 	.ndo_do_ioctl		= ixgbe_ioctl,
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-index 8025a3f..f9ca7d5 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-@@ -1395,7 +1395,7 @@ out:
- 	return err;
- }
- 
--static int ixgbe_link_mbps(struct ixgbe_adapter *adapter)
-+int ixgbe_link_mbps(struct ixgbe_adapter *adapter)
- {
- 	switch (adapter->link_speed) {
- 	case IXGBE_LINK_SPEED_100_FULL:
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h
-index dad9257..47e65e2 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.h
-@@ -44,6 +44,7 @@ void ixgbe_ping_all_vfs(struct ixgbe_adapter *adapter);
- int ixgbe_ndo_set_vf_mac(struct net_device *netdev, int queue, u8 *mac);
- int ixgbe_ndo_set_vf_vlan(struct net_device *netdev, int queue, u16 vlan,
- 			   u8 qos);
-+int ixgbe_link_mbps(struct ixgbe_adapter *adapter);
- int ixgbe_ndo_set_vf_bw(struct net_device *netdev, int vf, int min_tx_rate,
- 			int max_tx_rate);
- int ixgbe_ndo_set_vf_spoofchk(struct net_device *netdev, int vf, bool setting);
--- 
-2.7.0
-
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+ethtool shows proper flags, code changes present
