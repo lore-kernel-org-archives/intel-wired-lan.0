@@ -1,138 +1,152 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 27 Jan 2016 07:59:41 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 71cbb3018b4656f3df3b2a797d667a3943c3a626 BUILD SUCCESS
-Message-ID: <56a8086d.34WMiNt07VxFhNLF%fengguang.wu@intel.com>
+From: Corinna Vinschen <vinschen@redhat.com>
+Date: Wed, 27 Jan 2016 14:28:04 +0100
+Subject: [Intel-wired-lan] [PATCH] igb: Fix VLAN tag stripping on Intel i350
+Message-ID: <1453901284-32628-1-git-send-email-vinschen@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-71cbb3018b4656f3df3b2a797d667a3943c3a626  ixgbe: Fix ATR so that it correctly handles IPv6 extension headers
+Problem: When switching off VLAN offloading on an i350, the VLAN
+interface gets unusable.  For testing, set up a VLAN on an i350
+and some remote machine, e.g.:
 
-elapsed time: 99m
+  $ ip link add link eth0 name eth0.42 type vlan id 42
+  $ ip addr add 192.168.42.1/24 dev eth0.42
+  $ ip link set dev eth0.42 up
 
-configs tested: 117
+Offloading is switched on by default:
 
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-01270627
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                             allmodconfig
-powerpc                        cell_defconfig
-powerpc                 mpc8272_ads_defconfig
-powerpc                    sbc8641d_defconfig
-sh                ecovec24-romimage_defconfig
-x86_64               randconfig-x010-01260845
-x86_64               randconfig-x012-01260845
-x86_64               randconfig-x018-01260845
-x86_64               randconfig-x014-01260845
-x86_64               randconfig-x016-01260845
-x86_64               randconfig-x017-01260845
-x86_64               randconfig-x019-01260845
-x86_64               randconfig-x013-01260845
-x86_64               randconfig-x011-01260845
-x86_64               randconfig-x015-01260845
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201604
-i386                     randconfig-s1-201604
-x86_64                 randconfig-s0-01270629
-x86_64                 randconfig-s1-01270629
-x86_64                 randconfig-s2-01270629
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201604
-mips                         db1xxx_defconfig
-powerpc                 mpc836x_rdk_defconfig
-powerpc                 xes_mpc85xx_defconfig
-sh                           sh2007_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201604
-i386                     randconfig-i1-201604
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201604
-m68k                        mvme147_defconfig
-parisc                      default_defconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-arm                        multi_v5_defconfig
-powerpc                    sam440ep_defconfig
-arm                    realview-smp_defconfig
-sh                            shmin_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                                  at_hdmac
-arm                                    ep93xx
-arm                       imx_v6_v7_defconfig
-arm                                  iop-adma
-arm                          marzen_defconfig
-arm                          prima2_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                       spear13xx_defconfig
-i386                     randconfig-r0-201604
-arm                        spear6xx_defconfig
-mips                        qi_lb60_defconfig
-sh                           se7750_defconfig
-i386                 randconfig-x008-01261041
-i386                 randconfig-x005-01261041
-i386                 randconfig-x004-01261041
-i386                 randconfig-x001-01261041
-i386                 randconfig-x006-01261041
-i386                 randconfig-x009-01261041
-i386                 randconfig-x003-01261041
-i386                 randconfig-x000-01261041
-i386                 randconfig-x002-01261041
-i386                 randconfig-x007-01261041
+  $ ethtool -k eth0 | grep vlan-offload
+  rx-vlan-offload: on
+  tx-vlan-offload: on
 
-Thanks,
-Fengguang
+  $ ping -c 3 -I eth0.42 192.168.42.2
+  [...works as usual...]
+
+Now switch off VLAN offloading and try again:
+
+  $ ethtool -K eth0 rxvlan off
+  Actual changes:
+  rx-vlan-offload: off
+  tx-vlan-offload: off [requested on]
+  $ ping -c 3 -I eth0.42 192.168.42.2
+  PING 192.168.42.2 (192.168.42.2) from 192.168.42.1 eth0.42: 56(84) bytes of data.
+
+  --- 192.168.42.2 ping statistics ---
+  3 packets transmitted, 0 received, 100% packet loss, time 1999ms
+
+I can only reproduce it on an i350, the above works fine on a 82580.
+
+While inspecting the igb source, I came across the code in igb_set_vmolr
+which sets the E1000_VMOLR_STRVLAN/E1000_DVMOLR_STRVLAN flags once and
+for all, and in all of the igb code there's no other place where the
+STRVLAN is set or cleared.  Thus, VLAN stripping is enabled in igb
+unconditionally, independently of the offloading setting.
+
+I compared that to the latest Intel igb-5.3.3.5 driver from
+http://sourceforge.net/projects/e1000/ which in fact sets and clears the
+STRVLAN flag independently from igb_set_vmolr in its own function
+igb_set_vf_vlan_strip, depending on the vlan settings.
+
+So I included the STRVLAN handling from the igb-5.3.3.5 driver into our
+current igb driver and tested the above scenario again.  This time ping
+still works after switching off VLAN offloading.
+
+Tested on i350, with and without addtional VFs, as well as on 82580
+successfully.
+
+Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
+---
+ drivers/net/ethernet/intel/igb/igb_main.c | 39 ++++++++++++++++++++++++-------
+ 1 file changed, 31 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
+index 31e5f39..afd3990 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -3580,6 +3580,28 @@ static void igb_rlpml_set(struct igb_adapter *adapter)
+ 	wr32(E1000_RLPML, max_frame_size);
+ }
+ 
++static inline void igb_set_vf_vlan_strip(struct igb_adapter *adapter,
++					 int vfn, bool enable)
++{
++	struct e1000_hw *hw = &adapter->hw;
++	u32 val, reg;
++
++	if (hw->mac.type < e1000_82576)
++		return;
++
++	if (hw->mac.type == e1000_i350)
++		reg = E1000_DVMOLR(vfn);
++	else
++		reg = E1000_VMOLR(vfn);
++
++	val = rd32(reg);
++	if (enable)
++		val |= E1000_VMOLR_STRVLAN;
++	else
++		val &= ~(E1000_VMOLR_STRVLAN);
++	wr32(reg, val);
++}
++
+ static inline void igb_set_vmolr(struct igb_adapter *adapter,
+ 				 int vfn, bool aupe)
+ {
+@@ -3593,14 +3615,6 @@ static inline void igb_set_vmolr(struct igb_adapter *adapter,
+ 		return;
+ 
+ 	vmolr = rd32(E1000_VMOLR(vfn));
+-	vmolr |= E1000_VMOLR_STRVLAN; /* Strip vlan tags */
+-	if (hw->mac.type == e1000_i350) {
+-		u32 dvmolr;
+-
+-		dvmolr = rd32(E1000_DVMOLR(vfn));
+-		dvmolr |= E1000_DVMOLR_STRVLAN;
+-		wr32(E1000_DVMOLR(vfn), dvmolr);
+-	}
+ 	if (aupe)
+ 		vmolr |= E1000_VMOLR_AUPE; /* Accept untagged packets */
+ 	else
+@@ -5937,6 +5951,7 @@ static int igb_ndo_set_vf_vlan(struct net_device *netdev,
+ 			goto out;
+ 		igb_set_vmvir(adapter, vlan | (qos << VLAN_PRIO_SHIFT), vf);
+ 		igb_set_vmolr(adapter, vf, !vlan);
++		igb_set_vf_vlan_strip(adapter, vf, true);
+ 		adapter->vf_data[vf].pf_vlan = vlan;
+ 		adapter->vf_data[vf].pf_qos = qos;
+ 		dev_info(&adapter->pdev->dev,
+@@ -5952,6 +5967,7 @@ static int igb_ndo_set_vf_vlan(struct net_device *netdev,
+ 			     false, vf);
+ 		igb_set_vmvir(adapter, vlan, vf);
+ 		igb_set_vmolr(adapter, vf, true);
++		igb_set_vf_vlan_strip(adapter, vf, false);
+ 		adapter->vf_data[vf].pf_vlan = 0;
+ 		adapter->vf_data[vf].pf_qos = 0;
+ 	}
+@@ -5986,6 +6002,11 @@ static int igb_set_vf_vlan(struct igb_adapter *adapter, u32 *msgbuf, u32 vf)
+ 	int vid = (msgbuf[1] & E1000_VLVF_VLANID_MASK);
+ 	int err = 0;
+ 
++	if (vid)
++		igb_set_vf_vlan_strip(adapter, vf, true);
++	else
++		igb_set_vf_vlan_strip(adapter, vf, false);
++
+ 	/* If in promiscuous mode we need to make sure the PF also has
+ 	 * the VLAN filter set.
+ 	 */
+@@ -7202,6 +7223,8 @@ static void igb_vlan_mode(struct net_device *netdev, netdev_features_t features)
+ 		wr32(E1000_CTRL, ctrl);
+ 	}
+ 
++	igb_set_vf_vlan_strip(adapter, adapter->vfs_allocated_count, enable);
++
+ 	igb_rlpml_set(adapter);
+ }
+ 
+-- 
+2.5.0
+
