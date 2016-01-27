@@ -1,152 +1,51 @@
-From: Corinna Vinschen <vinschen@redhat.com>
-Date: Wed, 27 Jan 2016 14:28:04 +0100
-Subject: [Intel-wired-lan] [PATCH] igb: Fix VLAN tag stripping on Intel i350
-Message-ID: <1453901284-32628-1-git-send-email-vinschen@redhat.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 27 Jan 2016 16:00:01 +0000
+Subject: [Intel-wired-lan] [next PATCH v3 01/15] i40e/i40evf: Drop outer
+ checksum offload that was not requested
+In-Reply-To: <20160125051612.12004.32828.stgit@localhost.localdomain>
+References: <20160125050602.12004.38884.stgit@localhost.localdomain>
+ <20160125051612.12004.32828.stgit@localhost.localdomain>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F98C731@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Problem: When switching off VLAN offloading on an i350, the VLAN
-interface gets unusable.  For testing, set up a VLAN on an i350
-and some remote machine, e.g.:
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Alexander Duyck
+> Sent: Sunday, January 24, 2016 9:16 PM
+> To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
+> <jeffrey.t.kirsher@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH v3 01/15] i40e/i40evf: Drop outer
+> checksum offload that was not requested
+> 
+> The i40e and i40evf drivers contained code for inserting an outer checksum
+> on UDP tunnels.  The issue however is that the upper levels of the stack
+> never requested such an offload and it results in possible errors.
+> 
+> In addition the same logic was being applied to the Rx side where it was
+> attempting to validate the outer checksum, but the logic there was incorrect
+> in that it was testing for the resultant sum to be equal to the header
+> checksum instead of being equal to 0.
+> 
+> Since this code is so massively flawed, and doing things that we didn't ask for
+> it to do I am just dropping it, and will bring it back later to use as an offload for
+> SKB_GSO_UDP_TUNNEL_CSUM which can make use of such a feature.
+> 
+> As far as the Rx feature I am dropping it completely since it would need to be
+> massively expanded and applied to IPv4 and IPv6 checksums for all parts, not
+> just the one that supports Tx checksum offload for the outer.
+> 
+> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c   |    2 -
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c   |   47 +++----------------------
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.h   |    1 -
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c |   46 +++---------------------
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.h |    1 -
+>  5 files changed, 10 insertions(+), 87 deletions(-)
 
-  $ ip link add link eth0 name eth0.42 type vlan id 42
-  $ ip addr add 192.168.42.1/24 dev eth0.42
-  $ ip link set dev eth0.42 up
-
-Offloading is switched on by default:
-
-  $ ethtool -k eth0 | grep vlan-offload
-  rx-vlan-offload: on
-  tx-vlan-offload: on
-
-  $ ping -c 3 -I eth0.42 192.168.42.2
-  [...works as usual...]
-
-Now switch off VLAN offloading and try again:
-
-  $ ethtool -K eth0 rxvlan off
-  Actual changes:
-  rx-vlan-offload: off
-  tx-vlan-offload: off [requested on]
-  $ ping -c 3 -I eth0.42 192.168.42.2
-  PING 192.168.42.2 (192.168.42.2) from 192.168.42.1 eth0.42: 56(84) bytes of data.
-
-  --- 192.168.42.2 ping statistics ---
-  3 packets transmitted, 0 received, 100% packet loss, time 1999ms
-
-I can only reproduce it on an i350, the above works fine on a 82580.
-
-While inspecting the igb source, I came across the code in igb_set_vmolr
-which sets the E1000_VMOLR_STRVLAN/E1000_DVMOLR_STRVLAN flags once and
-for all, and in all of the igb code there's no other place where the
-STRVLAN is set or cleared.  Thus, VLAN stripping is enabled in igb
-unconditionally, independently of the offloading setting.
-
-I compared that to the latest Intel igb-5.3.3.5 driver from
-http://sourceforge.net/projects/e1000/ which in fact sets and clears the
-STRVLAN flag independently from igb_set_vmolr in its own function
-igb_set_vf_vlan_strip, depending on the vlan settings.
-
-So I included the STRVLAN handling from the igb-5.3.3.5 driver into our
-current igb driver and tested the above scenario again.  This time ping
-still works after switching off VLAN offloading.
-
-Tested on i350, with and without addtional VFs, as well as on 82580
-successfully.
-
-Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
----
- drivers/net/ethernet/intel/igb/igb_main.c | 39 ++++++++++++++++++++++++-------
- 1 file changed, 31 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 31e5f39..afd3990 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -3580,6 +3580,28 @@ static void igb_rlpml_set(struct igb_adapter *adapter)
- 	wr32(E1000_RLPML, max_frame_size);
- }
- 
-+static inline void igb_set_vf_vlan_strip(struct igb_adapter *adapter,
-+					 int vfn, bool enable)
-+{
-+	struct e1000_hw *hw = &adapter->hw;
-+	u32 val, reg;
-+
-+	if (hw->mac.type < e1000_82576)
-+		return;
-+
-+	if (hw->mac.type == e1000_i350)
-+		reg = E1000_DVMOLR(vfn);
-+	else
-+		reg = E1000_VMOLR(vfn);
-+
-+	val = rd32(reg);
-+	if (enable)
-+		val |= E1000_VMOLR_STRVLAN;
-+	else
-+		val &= ~(E1000_VMOLR_STRVLAN);
-+	wr32(reg, val);
-+}
-+
- static inline void igb_set_vmolr(struct igb_adapter *adapter,
- 				 int vfn, bool aupe)
- {
-@@ -3593,14 +3615,6 @@ static inline void igb_set_vmolr(struct igb_adapter *adapter,
- 		return;
- 
- 	vmolr = rd32(E1000_VMOLR(vfn));
--	vmolr |= E1000_VMOLR_STRVLAN; /* Strip vlan tags */
--	if (hw->mac.type == e1000_i350) {
--		u32 dvmolr;
--
--		dvmolr = rd32(E1000_DVMOLR(vfn));
--		dvmolr |= E1000_DVMOLR_STRVLAN;
--		wr32(E1000_DVMOLR(vfn), dvmolr);
--	}
- 	if (aupe)
- 		vmolr |= E1000_VMOLR_AUPE; /* Accept untagged packets */
- 	else
-@@ -5937,6 +5951,7 @@ static int igb_ndo_set_vf_vlan(struct net_device *netdev,
- 			goto out;
- 		igb_set_vmvir(adapter, vlan | (qos << VLAN_PRIO_SHIFT), vf);
- 		igb_set_vmolr(adapter, vf, !vlan);
-+		igb_set_vf_vlan_strip(adapter, vf, true);
- 		adapter->vf_data[vf].pf_vlan = vlan;
- 		adapter->vf_data[vf].pf_qos = qos;
- 		dev_info(&adapter->pdev->dev,
-@@ -5952,6 +5967,7 @@ static int igb_ndo_set_vf_vlan(struct net_device *netdev,
- 			     false, vf);
- 		igb_set_vmvir(adapter, vlan, vf);
- 		igb_set_vmolr(adapter, vf, true);
-+		igb_set_vf_vlan_strip(adapter, vf, false);
- 		adapter->vf_data[vf].pf_vlan = 0;
- 		adapter->vf_data[vf].pf_qos = 0;
- 	}
-@@ -5986,6 +6002,11 @@ static int igb_set_vf_vlan(struct igb_adapter *adapter, u32 *msgbuf, u32 vf)
- 	int vid = (msgbuf[1] & E1000_VLVF_VLANID_MASK);
- 	int err = 0;
- 
-+	if (vid)
-+		igb_set_vf_vlan_strip(adapter, vf, true);
-+	else
-+		igb_set_vf_vlan_strip(adapter, vf, false);
-+
- 	/* If in promiscuous mode we need to make sure the PF also has
- 	 * the VLAN filter set.
- 	 */
-@@ -7202,6 +7223,8 @@ static void igb_vlan_mode(struct net_device *netdev, netdev_features_t features)
- 		wr32(E1000_CTRL, ctrl);
- 	}
- 
-+	igb_set_vf_vlan_strip(adapter, adapter->vfs_allocated_count, enable);
-+
- 	igb_rlpml_set(adapter);
- }
- 
--- 
-2.5.0
-
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Outer checksum not present on UDP tunnel traffic.
