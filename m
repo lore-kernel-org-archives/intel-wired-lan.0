@@ -1,40 +1,91 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 27 Jan 2016 18:49:59 +0000
-Subject: [Intel-wired-lan] [next PATCH 1/3] i40e: Add support for ATR
-	w/	IPv6 extension headers
-In-Reply-To: <20160126033124.16387.6402.stgit@localhost.localdomain>
-References: <20160126032616.16387.86351.stgit@localhost.localdomain>
- <20160126033124.16387.6402.stgit@localhost.localdomain>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F98C849@ORSMSX104.amr.corp.intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed, 27 Jan 2016 11:25:22 -0800
+Subject: [Intel-wired-lan] [PATCH] igb: Fix VLAN tag stripping on Intel
+	i350
+In-Reply-To: <1453901284-32628-1-git-send-email-vinschen@redhat.com>
+References: <1453901284-32628-1-git-send-email-vinschen@redhat.com>
+Message-ID: <1453922722.3014.29.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Alexander Duyck
-> Sent: Monday, January 25, 2016 7:33 PM
-> To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
-> <jeffrey.t.kirsher@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH 1/3] i40e: Add support for ATR w/ IPv6
-> extension headers
+On Wed, 2016-01-27 at 14:28 +0100, Corinna Vinschen wrote:
+> Problem: When switching off VLAN offloading on an i350, the VLAN
+> interface gets unusable.? For testing, set up a VLAN on an i350
+> and some remote machine, e.g.:
 > 
-> This patch updates the code for determining the L4 protocol and L3 header
-> length so that when IPv6 extension headers are being used we can
-> determine the offset and type of the L4 protocol.
+> ? $ ip link add link eth0 name eth0.42 type vlan id 42
+> ? $ ip addr add 192.168.42.1/24 dev eth0.42
+> ? $ ip link set dev eth0.42 up
 > 
-> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+> Offloading is switched on by default:
+> 
+> ? $ ethtool -k eth0 | grep vlan-offload
+> ? rx-vlan-offload: on
+> ? tx-vlan-offload: on
+> 
+> ? $ ping -c 3 -I eth0.42 192.168.42.2
+> ? [...works as usual...]
+> 
+> Now switch off VLAN offloading and try again:
+> 
+> ? $ ethtool -K eth0 rxvlan off
+> ? Actual changes:
+> ? rx-vlan-offload: off
+> ? tx-vlan-offload: off [requested on]
+> ? $ ping -c 3 -I eth0.42 192.168.42.2
+> ? PING 192.168.42.2 (192.168.42.2) from 192.168.42.1 eth0.42: 56(84)
+> bytes of data.
+> 
+> ? --- 192.168.42.2 ping statistics ---
+> ? 3 packets transmitted, 0 received, 100% packet loss, time 1999ms
+> 
+> I can only reproduce it on an i350, the above works fine on a 82580.
+> 
+> While inspecting the igb source, I came across the code in
+> igb_set_vmolr
+> which sets the E1000_VMOLR_STRVLAN/E1000_DVMOLR_STRVLAN flags once
+> and
+> for all, and in all of the igb code there's no other place where the
+> STRVLAN is set or cleared.? Thus, VLAN stripping is enabled in igb
+> unconditionally, independently of the offloading setting.
+> 
+> I compared that to the latest Intel igb-5.3.3.5 driver from
+> http://sourceforge.net/projects/e1000/?which in fact sets and clears
+> the
+> STRVLAN flag independently from igb_set_vmolr in its own function
+> igb_set_vf_vlan_strip, depending on the vlan settings.
+> 
+> So I included the STRVLAN handling from the igb-5.3.3.5 driver into
+> our
+> current igb driver and tested the above scenario again.? This time
+> ping
+> still works after switching off VLAN offloading.
+> 
+> Tested on i350, with and without addtional VFs, as well as on 82580
+> successfully.
+> 
+> Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
 > ---
-> 
-> Testing Hints:
-> Test with mix of tunnel and non-tunnel headers to verify that frames
-> containing IPv6 extension headers are properly triggering ATR match events.
-> 
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c |   30 +++++++++++++------------
-> --
->  1 file changed, 14 insertions(+), 16 deletions(-)
+> ?drivers/net/ethernet/intel/igb/igb_main.c | 39
+> ++++++++++++++++++++++++-------
+> ?1 file changed, 31 insertions(+), 8 deletions(-)
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-ATR events properly triggered with IPv6 tunnel and non-tunnel traffic, counters increment as expected
+I tried applying your patch to my tree for review and validation, but
+due to patches already applied against the igb driver in my tree, your
+patch does not apply cleanly.
+
+Can you please update your patch to apply cleanly to my tree?
+git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
+dev-queue
+
+(next-queue tree and dev-queue branch)
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160127/25bfcc6e/attachment-0001.asc>
