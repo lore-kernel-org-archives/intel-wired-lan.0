@@ -1,91 +1,43 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 27 Jan 2016 11:25:22 -0800
-Subject: [Intel-wired-lan] [PATCH] igb: Fix VLAN tag stripping on Intel
-	i350
-In-Reply-To: <1453901284-32628-1-git-send-email-vinschen@redhat.com>
-References: <1453901284-32628-1-git-send-email-vinschen@redhat.com>
-Message-ID: <1453922722.3014.29.camel@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 27 Jan 2016 20:29:46 +0000
+Subject: [Intel-wired-lan] [next PATCH S28 09/15] i40e: Do not
+	disable	queues in the Legacy/MSI Interrupt handler
+In-Reply-To: <1452897202-15204-10-git-send-email-joshua.a.hay@intel.com>
+References: <1452897202-15204-1-git-send-email-joshua.a.hay@intel.com>
+ <1452897202-15204-10-git-send-email-joshua.a.hay@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F98C903@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2016-01-27 at 14:28 +0100, Corinna Vinschen wrote:
-> Problem: When switching off VLAN offloading on an i350, the VLAN
-> interface gets unusable.? For testing, set up a VLAN on an i350
-> and some remote machine, e.g.:
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Joshua Hay
+> Sent: Friday, January 15, 2016 2:33 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S28 09/15] i40e: Do not disable
+> queues in the Legacy/MSI Interrupt handler
 > 
-> ? $ ip link add link eth0 name eth0.42 type vlan id 42
-> ? $ ip addr add 192.168.42.1/24 dev eth0.42
-> ? $ ip link set dev eth0.42 up
+> From: Anjali Singhai Jain <anjali.singhai@intel.com>
 > 
-> Offloading is switched on by default:
+> The queues should never be enabled/disabled in the interrupt handler,
+> ICR0 interrupt enable should be the only thing that needs to be dynamically
+> changed in the handler.
 > 
-> ? $ ethtool -k eth0 | grep vlan-offload
-> ? rx-vlan-offload: on
-> ? tx-vlan-offload: on
+> This patch fixes that. Without this patch X722 platforms were seeing weird
+> ping timings when in Legacy mode since it takes a whole lot of time for the
+> HW/FW to re-enable queues.
 > 
-> ? $ ping -c 3 -I eth0.42 192.168.42.2
-> ? [...works as usual...]
-> 
-> Now switch off VLAN offloading and try again:
-> 
-> ? $ ethtool -K eth0 rxvlan off
-> ? Actual changes:
-> ? rx-vlan-offload: off
-> ? tx-vlan-offload: off [requested on]
-> ? $ ping -c 3 -I eth0.42 192.168.42.2
-> ? PING 192.168.42.2 (192.168.42.2) from 192.168.42.1 eth0.42: 56(84)
-> bytes of data.
-> 
-> ? --- 192.168.42.2 ping statistics ---
-> ? 3 packets transmitted, 0 received, 100% packet loss, time 1999ms
-> 
-> I can only reproduce it on an i350, the above works fine on a 82580.
-> 
-> While inspecting the igb source, I came across the code in
-> igb_set_vmolr
-> which sets the E1000_VMOLR_STRVLAN/E1000_DVMOLR_STRVLAN flags once
-> and
-> for all, and in all of the igb code there's no other place where the
-> STRVLAN is set or cleared.? Thus, VLAN stripping is enabled in igb
-> unconditionally, independently of the offloading setting.
-> 
-> I compared that to the latest Intel igb-5.3.3.5 driver from
-> http://sourceforge.net/projects/e1000/?which in fact sets and clears
-> the
-> STRVLAN flag independently from igb_set_vmolr in its own function
-> igb_set_vf_vlan_strip, depending on the vlan settings.
-> 
-> So I included the STRVLAN handling from the igb-5.3.3.5 driver into
-> our
-> current igb driver and tested the above scenario again.? This time
-> ping
-> still works after switching off VLAN offloading.
-> 
-> Tested on i350, with and without addtional VFs, as well as on 82580
-> successfully.
-> 
-> Signed-off-by: Corinna Vinschen <vinschen@redhat.com>
+> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+> Change-ID: If065afc45d81c5a19d4a94a00cd5b8f61cefc40c
 > ---
-> ?drivers/net/ethernet/intel/igb/igb_main.c | 39
-> ++++++++++++++++++++++++-------
-> ?1 file changed, 31 insertions(+), 8 deletions(-)
+> Testing Hints (Required if no HSD): Test with legacy mode enabled.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 16 ++++++----------
+> drivers/net/ethernet/intel/i40e/i40e_txrx.c | 13 -------------
+>  2 files changed, 6 insertions(+), 23 deletions(-)
 
-I tried applying your patch to my tree for review and validation, but
-due to patches already applied against the igb driver in my tree, your
-patch does not apply cleanly.
-
-Can you please update your patch to apply cleanly to my tree?
-git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
-dev-queue
-
-(next-queue tree and dev-queue branch)
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160127/25bfcc6e/attachment-0001.asc>
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Patch code changes correctly applied, ping times normal/consistent on X722 in Legacy mode
