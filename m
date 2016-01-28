@@ -1,16 +1,36 @@
 From: Fujinaka, Todd <todd.fujinaka@intel.com>
-Date: Thu, 28 Jan 2016 21:08:10 +0000
+Date: Thu, 28 Jan 2016 21:39:48 +0000
 Subject: [Intel-wired-lan] i210 backplane link (link-mode 1000BASE-KX)
-In-Reply-To: <CAJ+vNU3Ntana61AvGy-P7tq0pJt15eK=4rQ6=jiX4NpauTJniQ@mail.gmail.com>
+In-Reply-To: <9B4A1B1917080E46B64F07F2989DADD65AB28C76@ORSMSX114.amr.corp.intel.com>
 References: <CAJ+vNU1YjyY=BgGPFpMU8wk9hWOKrHXSiffW-HntcNUAubRtDw@mail.gmail.com>
  <9B4A1B1917080E46B64F07F2989DADD65AB28C27@ORSMSX114.amr.corp.intel.com>
  <CAJ+vNU3Ntana61AvGy-P7tq0pJt15eK=4rQ6=jiX4NpauTJniQ@mail.gmail.com>
-Message-ID: <9B4A1B1917080E46B64F07F2989DADD65AB28C76@ORSMSX114.amr.corp.intel.com>
+ <9B4A1B1917080E46B64F07F2989DADD65AB28C76@ORSMSX114.amr.corp.intel.com>
+Message-ID: <9B4A1B1917080E46B64F07F2989DADD65AB28CFE@ORSMSX114.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
+
+Ah, this is waiting for approval, as the IPS says. I'm officially in the same boat (as are the other Intel people on the list) so we'll have to wait on that.
+
+Thanks.
+
+Todd Fujinaka
+Software Application Engineer
+Networking Division (ND)
+Intel Corporation
+todd.fujinaka at intel.com
+(503) 712-4565
+
+
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Fujinaka, Todd
+Sent: Thursday, January 28, 2016 1:08 PM
+To: Tim Harvey
+Cc: Marek Va?ut; intel-wired-lan at lists.osuosl.org
+Subject: Re: [Intel-wired-lan] i210 backplane link (link-mode 1000BASE-KX)
 
 I'll go see if I can find where it's stuck in IPS.
 
@@ -44,3 +64,7 @@ Ultimately what I am trying to do is interconnect an i210 to a OptixCom BIDI Mod
 Regards,
 
 Tim
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan at lists.osuosl.org
+http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
