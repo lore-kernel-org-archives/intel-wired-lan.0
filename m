@@ -1,35 +1,31 @@
-From: Chris Friesen <chris.friesen@windriver.com>
-Date: Thu, 28 Jan 2016 13:50:00 -0600
-Subject: [Intel-wired-lan] anyone aware of problem with 82599ES stuck
- sending TX pause frames?
-In-Reply-To: <F6FB0E698C9B3143BDF729DF2228664691E709B9@ORSMSX116.amr.corp.intel.com>
-References: <56AA60A1.7060408@windriver.com>
- <F6FB0E698C9B3143BDF729DF2228664691E709B9@ORSMSX116.amr.corp.intel.com>
-Message-ID: <56AA70E8.3070302@windriver.com>
+From: Tim Harvey <tharvey@gateworks.com>
+Date: Thu, 28 Jan 2016 12:28:18 -0800
+Subject: [Intel-wired-lan] i210 backplane link (link-mode 1000BASE-KX)
+Message-ID: <CAJ+vNU1YjyY=BgGPFpMU8wk9hWOKrHXSiffW-HntcNUAubRtDw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 01/28/2016 01:13 PM, Skidmore, Donald C wrote:
-> Hey Chris,
->
-> I've seen issues that seemed similar to this caused by a switches not playing
-> well with the NIC.  Are you going through a switch and if so could you see if
-> you can recreate back to back with a different switch?
+Greetings,
 
-Yes, we're going through a switch.  It's been pretty intermittent, so 
-reproducing on demand is difficult.
+I have two i210's from separate boards connected together via SERDES
+and am unable to get packets across the interfaces. The interconnect
+has board1's TXP/TXN (pin 52/53) connected to board2's RXP/RXN (pin
+50/49) and visa-versa via nothing but 0.1uf de-coupling caps (AC
+coupled). The SERDS_SIG_DET pin (54) is pulled-up indicating a link
+present.
 
-> Likewise it might be interesting to try the OoT driver, just to see if a
-> later fix addressed what you're seeing.  I can't think of anything off the
-> top of my head, but trying the newer driver might help identify if we have.
+The internal NVM is configured such that the link-mode is 1000BASE-KX
+and when I bring up both NIC's they appear to sense a 1000mbps
+full-duplex connection but then shortly after trying to send a packet
+they both hit a netdev timeout on the NIC.
 
-Right, I'll bring it up.
+Any ideas what I might be doing wrong here? Should the Linux 4.4 igb
+driver be able to handle a 1000BASE-KX link mode without driver
+modification?
 
-> Also are you seeing anything interesting on the system log?
+Regards,
 
-No, pretty boring.
-
-Chris
+Tim
