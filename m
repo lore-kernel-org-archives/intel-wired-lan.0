@@ -1,70 +1,38 @@
-From: Fujinaka, Todd <todd.fujinaka@intel.com>
-Date: Thu, 28 Jan 2016 21:39:48 +0000
-Subject: [Intel-wired-lan] i210 backplane link (link-mode 1000BASE-KX)
-In-Reply-To: <9B4A1B1917080E46B64F07F2989DADD65AB28C76@ORSMSX114.amr.corp.intel.com>
-References: <CAJ+vNU1YjyY=BgGPFpMU8wk9hWOKrHXSiffW-HntcNUAubRtDw@mail.gmail.com>
- <9B4A1B1917080E46B64F07F2989DADD65AB28C27@ORSMSX114.amr.corp.intel.com>
- <CAJ+vNU3Ntana61AvGy-P7tq0pJt15eK=4rQ6=jiX4NpauTJniQ@mail.gmail.com>
- <9B4A1B1917080E46B64F07F2989DADD65AB28C76@ORSMSX114.amr.corp.intel.com>
-Message-ID: <9B4A1B1917080E46B64F07F2989DADD65AB28CFE@ORSMSX114.amr.corp.intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 28 Jan 2016 22:34:47 +0000
+Subject: [Intel-wired-lan] [next PATCH S25 07/16] i40e:
+	fix	write-back-on-itr to work with legacy itr
+In-Reply-To: <1450901156-30904-8-git-send-email-deepthi.kavalur@intel.com>
+References: <1450901156-30904-1-git-send-email-deepthi.kavalur@intel.com>
+ <1450901156-30904-8-git-send-email-deepthi.kavalur@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F98CAB5@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Ah, this is waiting for approval, as the IPS says. I'm officially in the same boat (as are the other Intel people on the list) so we'll have to wait on that.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Deepthi Kavalur
+> Sent: Wednesday, December 23, 2015 12:06 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S25 07/16] i40e: fix write-back-on-itr
+> to work with legacy itr
+> 
+> From: Anjali Singhai Jain <anjali.singhai@intel.com>
+> 
+> We were not doing write-back on interrupt throttle for Legacy case in X722.
+> This patch fixes that, so we do WB_ON_ITR for Legacy as well. Plus the issue
+> that we should still be setting NO_ITR if we are touching the DYN_CTLN
+> register since we do not want to change ITR setting here.
+> 
+> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+> Change-ID: I5db8491ee1544118a389db839cecc93e1bbc480e
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 18 +++++++++++++-----
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c |  3 ++-
+>  2 files changed, 15 insertions(+), 6 deletions(-)
 
-Thanks.
-
-Todd Fujinaka
-Software Application Engineer
-Networking Division (ND)
-Intel Corporation
-todd.fujinaka at intel.com
-(503) 712-4565
-
-
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Fujinaka, Todd
-Sent: Thursday, January 28, 2016 1:08 PM
-To: Tim Harvey
-Cc: Marek Va?ut; intel-wired-lan at lists.osuosl.org
-Subject: Re: [Intel-wired-lan] i210 backplane link (link-mode 1000BASE-KX)
-
-I'll go see if I can find where it's stuck in IPS.
-
-However, asking the same question in several venues, especially questions that aren't simple and are outside the normal use of the device, aren't going to get you official answers any quicker.
-
-Todd Fujinaka
-Software Application Engineer
-Networking Division (ND)
-Intel Corporation
-todd.fujinaka at intel.com
-(503) 712-4565
-
-
------Original Message-----
-From: Tim Harvey [mailto:tharvey at gateworks.com] 
-Sent: Thursday, January 28, 2016 12:50 PM
-To: Fujinaka, Todd
-Cc: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T; Marek Va?ut
-Subject: Re: [Intel-wired-lan] i210 backplane link (link-mode 1000BASE-KX)
-
-On Thu, Jan 28, 2016 at 12:44 PM, Fujinaka, Todd <todd.fujinaka@intel.com> wrote:
-> Can you file this through IPS or through your FAE? I think we should probably have more tracking/focus on this than we can provide through this mailing list.
->
-
-Todd,
-
-I've filed it via IPS as well as our FAE and have waited over a week without any proper response. I figured I would reach out to the community and see if anyone else was using an i210 with 1000BASE-KX and could verify my interconnect and if current igb driver even properly supports this mode.
-
-Ultimately what I am trying to do is interconnect an i210 to a OptixCom BIDI Module (BD9-1250T3R3 DC coupled SerDes to Fiber transceiver). Failing to get anywhere with that I figured I would try something hopefully simpler and just interconnect two i210's and prove out the concept and driver.
-
-Regards,
-
-Tim
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan at lists.osuosl.org
-http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+4 tx_timeouts observed with ~10hr of stress traffic, driver properly recovered, continued to pass traffic normally. tx_force_wb at 5 million
