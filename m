@@ -1,40 +1,33 @@
-From: Schmitt, Phillip J <phillip.j.schmitt@intel.com>
-Date: Fri, 29 Jan 2016 18:24:19 +0000
-Subject: [Intel-wired-lan] [PATCH 1/2] ixgbe:
-	use	eth_platform_get_mac_address()
-In-Reply-To: <1328c02108145ebd083cc6f1480dc90147f068f0.1452655483.git.sowmini.varadhan@oracle.com>
-References: <cover.1452655483.git.sowmini.varadhan@oracle.com>
- <1328c02108145ebd083cc6f1480dc90147f068f0.1452655483.git.sowmini.varadhan@oracle.com>
-Message-ID: <305E19FFAC908240AB6DEBD1E2D8C1E180D2962F@ORSMSX108.amr.corp.intel.com>
+From: Mark D Rustad <mark.d.rustad@intel.com>
+Date: Fri, 29 Jan 2016 14:44:29 -0800
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Use udelay to avoid sleeping while
+	atomic
+Message-ID: <20160129224429.97444.23897.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Use udelay instead of usleep_range because this can be called while
+a lock is held.
 
+Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Sowmini Varadhan
-> Sent: Tuesday, January 12, 2016 7:32 PM
-> To: Kirsher, Jeffrey T; Brandeburg, Jesse; Nelson, Shannon; Wyborny, Carolyn;
-> Skidmore, Donald C; Allan, Bruce W; Ronciak, John; Williams, Mitch A; intel-
-> wired-lan at lists.osuosl.org
-> Cc: sowmini.varadhan at oracle.com; davem at davemloft.net
-> Subject: [Intel-wired-lan] [PATCH 1/2] ixgbe: use
-> eth_platform_get_mac_address()
-> 
-> This commit converts commit c762dff24c06 ("ixgbe: Look up MAC address in
-> Open Firmware or IDPROM") to use eth_platform_get_mac_address() added by
-> commit c7f5d105495a ("net: Add eth_platform_get_mac_address()
-> helper.")
-> 
-> Signed-off-by: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-
-I don't have any SPARC systems to test this on.
-I've tested to check that this patch doesn't seem to break anything on X86_64 systems.
-Tested-by: Phil Schmitt <phillip.j.schmitt@intel.com>
-
-
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index 0985a39e7268..972c9aa17503 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -356,7 +356,7 @@ static s32 ixgbe_iosf_wait(struct ixgbe_hw *hw, u32 *ctrl)
+ 		command = IXGBE_READ_REG(hw, IXGBE_SB_IOSF_INDIRECT_CTRL);
+ 		if (!(command & IXGBE_SB_IOSF_CTRL_BUSY))
+ 			break;
+-		usleep_range(10, 20);
++		udelay(10);
+ 	}
+ 	if (ctrl)
+ 		*ctrl = command;
 
