@@ -1,33 +1,53 @@
-From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Fri, 29 Jan 2016 14:44:29 -0800
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Use udelay to avoid sleeping while
-	atomic
-Message-ID: <20160129224429.97444.23897.stgit@mdrustad-wks.jf.intel.com>
+From: tndave <tushar.n.dave@oracle.com>
+Date: Fri, 29 Jan 2016 14:47:27 -0800
+Subject: [Intel-wired-lan] i40e: Kernel unaligned access due to 'struct
+ i40e_dma_mem' being 'packed'
+In-Reply-To: <20160128.015643.125847430094859447.davem@davemloft.net>
+References: <56A973D6.4060202@oracle.com>
+ <20160128.015643.125847430094859447.davem@davemloft.net>
+Message-ID: <56ABEBFF.6030004@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Use udelay instead of usleep_range because this can be called while
-a lock is held.
 
-Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index 0985a39e7268..972c9aa17503 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -356,7 +356,7 @@ static s32 ixgbe_iosf_wait(struct ixgbe_hw *hw, u32 *ctrl)
- 		command = IXGBE_READ_REG(hw, IXGBE_SB_IOSF_INDIRECT_CTRL);
- 		if (!(command & IXGBE_SB_IOSF_CTRL_BUSY))
- 			break;
--		usleep_range(10, 20);
-+		udelay(10);
- 	}
- 	if (ctrl)
- 		*ctrl = command;
+On 01/27/2016 10:56 PM, David Miller wrote:
+> From: tndave <tushar.n.dave@oracle.com>
+> Date: Wed, 27 Jan 2016 17:50:14 -0800
+>
+>> Hi,
+>>
+>> i40e driver has 'struct i40e_dma_mem' defined with 'packed' directive
+>> causing kernel unaligned errors on sparc (when
+>> 40e_allocate_dma_mem_d()
+>> is being called)
+>>
+>> log_unaligned: 1031 callbacks suppressed
+>> Kernel unaligned access at TPC[448ae8]
+>> dma_4v_alloc_coherent+0x188/0x2e0
+>> Kernel unaligned access at TPC[448ae8]
+>> dma_4v_alloc_coherent+0x188/0x2e0
+>> Kernel unaligned access at TPC[448ae8]
+>> dma_4v_alloc_coherent+0x188/0x2e0
+>> Kernel unaligned access at TPC[448ae8]
+>> dma_4v_alloc_coherent+0x188/0x2e0
+>>
+>> This can be fixed with get_unaligned/put_unaligned(). However I don't
+>> see 'struct i40e_dma_mem' is being directly shoved into NIC hardware.
+>> But instead fields of the struct are being read and used for hardware
+>> (e.g. dma_addr_t pa). For the test, I remove __packed, and i40e driver
+>> and HW works fine. (of course kernel unaligned errors are gone too).
+>> My question is, does 'struct i40e_dma_mem' required to be __packed?
+>
+> People get overzealoud with __packed.
+>
+> And even if it doesn't cause unaligned accesses like this, it generates
+> terrible code (byte at a time accesses to words) on several architectures.
+True. For the same reason I want to clarify if __packed is actually 
+needed? instead of fixing it with get_unaligned/put_unaligned()!
 
+-Tushar
+>
