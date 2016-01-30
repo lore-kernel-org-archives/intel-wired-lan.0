@@ -1,82 +1,131 @@
-From: John Holland <jotihojr@gmail.com>
-Date: Fri, 29 Jan 2016 23:11:52 +0100
-Subject: [Intel-wired-lan] [next] igb: allow setting MAC address on i211
- using a device tree blob
-Message-ID: <56ABE3A8.4010602@gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 30 Jan 2016 19:27:53 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ c7df7589270254c0b74fb41fb60a36f9a3aebeef BUILD SUCCESS
+Message-ID: <56ac9e39.m91dW0ANxn8TEF+l%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The Intel i211 LOM pcie ethernet controllers' iNVM operates as an OTP 
-and has no externel EEPROM interface [1]. The following allows the 
-driver to pickup the MAC address from a device tree blob when CONFIG_OF 
-has been enabled.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+c7df7589270254c0b74fb41fb60a36f9a3aebeef  ixgbe: Use udelay to avoid sleeping while atomic
 
-[1] 
-http://www.intel.com/content/www/us/en/embedded/products/networking/i211-ethernet-controller-datasheet.html
+elapsed time: 59m
 
-Signed-off-by: John Holland <jotihojr@gmail.com>
----
-  drivers/net/ethernet/intel/igb/igb_main.c | 30 
-++++++++++++++++++++++++++++++
-  1 file changed, 30 insertions(+)
+configs tested: 110
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c 
-b/drivers/net/ethernet/intel/igb/igb_main.c
-index 31e5f39..9c92443 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -56,6 +56,11 @@
-  #include <linux/i2c.h>
-  #include "igb.h"
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201604
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-01301741
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                             allmodconfig
+x86_64               randconfig-x015-01270835
+x86_64               randconfig-x011-01270835
+x86_64               randconfig-x016-01270835
+x86_64               randconfig-x012-01270835
+x86_64               randconfig-x019-01270835
+x86_64               randconfig-x018-01270835
+x86_64               randconfig-x017-01270835
+x86_64               randconfig-x010-01270835
+x86_64               randconfig-x014-01270835
+x86_64               randconfig-x013-01270835
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201604
+i386                     randconfig-s1-201604
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                 randconfig-i0-01270829
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-i0-01281320
+i386                   randconfig-i1-01281320
+x86_64                 randconfig-b0-01301806
+i386                     randconfig-n0-201604
+x86_64                                   rhel
+arm                              allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                                  at_hdmac
+arm                                    ep93xx
+arm                       imx_v6_v7_defconfig
+arm                                  iop-adma
+arm                          marzen_defconfig
+arm                        multi_v7_defconfig
+arm                        multi_v8_defconfig
+arm                          prima2_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                       spear13xx_defconfig
+x86_64                           allmodconfig
+x86_64               randconfig-x004-01270829
+x86_64               randconfig-x003-01270829
+x86_64               randconfig-x005-01270829
+x86_64               randconfig-x000-01270829
+x86_64               randconfig-x001-01270829
+x86_64               randconfig-x006-01270829
+x86_64               randconfig-x009-01270829
+x86_64               randconfig-x002-01270829
+x86_64               randconfig-x007-01270829
+x86_64               randconfig-x008-01270829
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201604
+i386                 randconfig-x008-01282132
+i386                 randconfig-x005-01282132
+i386                 randconfig-x007-01282132
+i386                 randconfig-x006-01282132
+i386                 randconfig-x004-01282132
+i386                 randconfig-x000-01282132
+i386                 randconfig-x009-01282132
+i386                 randconfig-x003-01282132
+i386                 randconfig-x002-01282132
+i386                 randconfig-x001-01282132
 
-+#ifdef defined(CONFIG_OF)
-+#include <linux/of_net.h>
-+#include <linux/etherdevice.h>
-+#endif
-+
-  #define MAJ 5
-  #define MIN 3
-  #define BUILD 0
-@@ -2217,6 +2222,26 @@ static s32 igb_init_i2c(struct igb_adapter *adapter)
-  }
-
-  /**
-+ *  igb_read_mac_addr_dts - Read mac addres from the device tree blob.
-+ *  @hw: pointer to the e1000 hardware structure
-+ **/
-+#ifdef defined(CONFIG_OF)
-+static void igb_read_mac_addr_dts(struct e1000_hw *hw)
-+{
-+       const u8 *mac;
-+       struct device_node *dn;
-+
-+       dn = of_find_compatible_node(NULL, NULL, "intel,i211");
-+       if (!dn)
-+               return;
-+
-+       mac = of_get_mac_address(dn);
-+       if (mac)
-+               ether_addr_copy(hw->mac.addr, mac);
-+}
-+#endif
-+
-+/**
-   *  igb_probe - Device Initialization Routine
-   *  @pdev: PCI device information struct
-   *  @ent: entry in igb_pci_tbl
-@@ -2420,6 +2445,11 @@ static int igb_probe(struct pci_dev *pdev, const 
-struct pci_device_id *ent)
-         if (hw->mac.ops.read_mac_addr(hw))
-                 dev_err(&pdev->dev, "NVM Read Error\n");
-
-+#ifdef defined(CONFIG_OF)
-+       if (!is_valid_ether_addr(hw->mac.addr))
-+               igb_read_mac_addr_dts(hw);
-+#endif
-+
-         memcpy(netdev->dev_addr, hw->mac.addr, netdev->addr_len);
-
-         if (!is_valid_ether_addr(netdev->dev_addr)) {
+Thanks,
+Fengguang
