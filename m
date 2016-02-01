@@ -1,51 +1,42 @@
-From: Jon Maxwell <jmaxwell37@gmail.com>
-Date: Mon, 25 Jan 2016 10:22:52 +1100
-Subject: [Intel-wired-lan] [net] igbvf: remove "link is Up" message when
-	registering mcast address
-Message-ID: <1453677772-27075-1-git-send-email-jmaxwell37@gmail.com>
+From: Chris Friesen <chris.friesen@windriver.com>
+Date: Mon, 1 Feb 2016 09:05:47 -0600
+Subject: [Intel-wired-lan] anyone aware of problem with 82599ES stuck
+ sending TX pause frames?
+In-Reply-To: <F6FB0E698C9B3143BDF729DF2228664691E709B9@ORSMSX116.amr.corp.intel.com>
+References: <56AA60A1.7060408@windriver.com>
+ <F6FB0E698C9B3143BDF729DF2228664691E709B9@ORSMSX116.amr.corp.intel.com>
+Message-ID: <56AF744B.1000403@windriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-A similar issue was addressed a few years ago in the following thread:
+On 01/28/2016 01:13 PM, Skidmore, Donald C wrote:
+> Hey Chris,
+>
+> I've seen issues that seemed similar to this caused by a switches not playing
+> well with the NIC.  Are you going through a switch and if so could you see if
+> you can recreate back to back with a different switch?
 
-http://www.spinics.net/lists/netdev/msg245877.html
+Got some more information on this from one of our guys.  Here's what he says:
 
-At that time there were concerns that removing this statement may cause other
-side effects. However the submitter addressed those concerns. But the dialogue
-went cold. We have a new case where a customers application is registering and 
-un-registering multicast addresses every few seconds. This is leading to many 
-"Link is Up" messages in the logs as a result of the 
-"netif_carrier_off(netdev)" statement called by igbvf_msix_other(). Also on
-some kernels it is interfering with the bonding driver causing it to failover 
-and subsequently affecting connectivity.
 
-The Sourgeforge driver does not make this call and is therefore not affected.
-If there were any side effects I would expect that driver to also be affected.
-I have tested re-loading the igbvf driver and downing the adapter with the PF
-entity on the host where the VM has this patch. When I bring it back up again 
-connectivity is restored as expected. Therefore I request that this patch gets 
-submitted. 
+"This has been seen at least 3 times recently... on 3 different switches (1 of 
+which is a Cisco Nexus 5K).  I would be willing to believe that our Quanta 
+switches did something suspect, but not the Cisco.   I also find it hard to 
+believe that something the switch could do would cause the device to send out 
+pause frames.  As far as I understand it is only supposed to do that in response 
+to running out of rx buffers while receiving packets.  It is then supposed to 
+send XON frames once more rx buffers are available.
 
-Signed-off-by: Jon Maxwell <jmaxwell37@gmail.com>
----
- drivers/net/ethernet/intel/igbvf/netdev.c | 1 -
- 1 file changed, 1 deletion(-)
+I checked the switch ports connected to both systems that were affected today. 
+Neither of them have flow control enabled which means this was the Intel device 
+doing something suspect all on its own."
 
-diff --git a/drivers/net/ethernet/intel/igbvf/netdev.c b/drivers/net/ethernet/intel/igbvf/netdev.c
-index 297af80..c2dfc22 100644
---- a/drivers/net/ethernet/intel/igbvf/netdev.c
-+++ b/drivers/net/ethernet/intel/igbvf/netdev.c
-@@ -876,7 +876,6 @@ static irqreturn_t igbvf_msix_other(int irq, void *data)
- 
- 	adapter->int_counter1++;
- 
--	netif_carrier_off(netdev);
- 	hw->mac.get_link_status = 1;
- 	if (!test_bit(__IGBVF_DOWN, &adapter->state))
- 		mod_timer(&adapter->watchdog_timer, jiffies + 1);
--- 
-1.8.3.1
 
+
+I'll see about trying the out-of-tree driver, but without a straightforward way 
+to reproduce it'll be hard to tell if it fixes things.
+
+Chris
