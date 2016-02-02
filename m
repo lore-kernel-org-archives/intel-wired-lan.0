@@ -1,30 +1,48 @@
-From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Tue, 2 Feb 2016 22:27:55 +0000
-Subject: [Intel-wired-lan] [next-queue PATCH] fm10k: use ether_addr_copy
- to	copy MAC address
-In-Reply-To: <20151229020030.2327.78167.stgit@bwallan-smackover2.jf.intel.com>
-References: <20151229020030.2327.78167.stgit@bwallan-smackover2.jf.intel.com>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E27339DAA@ORSMSX103.amr.corp.intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Tue, 2 Feb 2016 14:49:24 -0800
+Subject: [Intel-wired-lan] [next PATCH v3 11/15] i40e/i40evf: Enable
+ support for SKB_GSO_UDP_TUNNEL_CSUM
+In-Reply-To: <20160125051729.12004.54009.stgit@localhost.localdomain>
+References: <20160125050602.12004.38884.stgit@localhost.localdomain>
+ <20160125051729.12004.54009.stgit@localhost.localdomain>
+Message-ID: <20160202144924.0000795d@unknown>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Sun, 24 Jan 2016 21:17:29 -0800
+Alexander Duyck <aduyck@mirantis.com> wrote:
 
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Bruce Allan
-Sent: Monday, December 28, 2015 6:01 PM
-To: intel-wired-lan@lists.osuosl.org
-Subject: [Intel-wired-lan] [next-queue PATCH] fm10k: use ether_addr_copy to copy MAC address
+> The XL722 has support for providing the outer UDP tunnel checksum on
 
-Cleanup the remaining instances of using memcpy() instead of the preferred ether_addr_copy().
+X722, not XL722
 
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
----
+> transmits.  Make use of this feature to support segmenting UDP tunnels with
+> outer checksums enabled.
+> 
+> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+> ---
 
+...
 
-Tested-by: Krishneil Singh <Krishneil.k.singh@intel.com>
+> +		if (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_TUNNEL_CSUM) {
+> +			/* determine offset of outer transport header */
+> +			l4_offset = l4.hdr - skb->data;
+> +
+> +			/* remove payload length from outer checksum */
+> +			paylen = (__force u16)l4.udp->check;
+> +			paylen += ntohs(1) * (u16)~(skb->len - l4_offset);
 
+Can we get a comment about how this is supposed to work?  Doesn't it
+have endian problems?  I understand these lines are removing the payload
+length from the checksum by getting the length of the payload,
+inverting it and removing it from the checksum, and then below,
+updating the checksum, but it is really hard to follow why you use
+ntohs(1) without some explanation.
 
+> +			l4.udp->check = ~csum_fold((__force __wsum)paylen);
+> +		}
+> +
 
