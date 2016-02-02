@@ -1,10 +1,8 @@
 From: Stefan Assmann <sassmann@kpanic.de>
-Date: Tue,  2 Feb 2016 11:13:44 +0100
-Subject: [Intel-wired-lan] [PATCH net-next 2/6] ixgbe: call ndo_stop()
+Date: Tue,  2 Feb 2016 11:13:42 +0100
+Subject: [Intel-wired-lan] [PATCH net-next 0/6] net/intel: call ndo_stop()
 	instead of dev_close() when running offline selftest
-In-Reply-To: <1454408028-16986-1-git-send-email-sassmann@kpanic.de>
-References: <1454408028-16986-1-git-send-email-sassmann@kpanic.de>
-Message-ID: <1454408028-16986-3-git-send-email-sassmann@kpanic.de>
+Message-ID: <1454408028-16986-1-git-send-email-sassmann@kpanic.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,70 +17,43 @@ behaviour is inconsistent.
 Instead call the net_device_ops ndo_stop function directly and avoid
 touching IFF_UP at all.
 
-Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe.h         | 2 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c | 4 ++--
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    | 4 ++--
- 3 files changed, 6 insertions(+), 4 deletions(-)
+Tested this with igb, e1000e, ixgbe and i40e. All drivers now are able to
+resume operation without restoring the IP address, gateway or such.
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index 4b9156c..6cf1ac7 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -875,6 +875,8 @@ extern const char ixgbe_driver_version[];
- extern char ixgbe_default_device_descr[];
- #endif /* IXGBE_FCOE */
- 
-+int ixgbe_open(struct net_device *netdev);
-+int ixgbe_close(struct net_device *netdev);
- void ixgbe_up(struct ixgbe_adapter *adapter);
- void ixgbe_down(struct ixgbe_adapter *adapter);
- void ixgbe_reinit_locked(struct ixgbe_adapter *adapter);
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-index bea96b3..2f05937 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-@@ -2053,7 +2053,7 @@ static void ixgbe_diag_test(struct net_device *netdev,
- 
- 		if (if_running)
- 			/* indicate we're in test mode */
--			dev_close(netdev);
-+			ixgbe_close(netdev);
- 		else
- 			ixgbe_reset(adapter);
- 
-@@ -2091,7 +2091,7 @@ skip_loopback:
- 		/* clear testing bit and return adapter to previous state */
- 		clear_bit(__IXGBE_TESTING, &adapter->state);
- 		if (if_running)
--			dev_open(netdev);
-+			ixgbe_open(netdev);
- 		else if (hw->mac.ops.disable_tx_laser)
- 			hw->mac.ops.disable_tx_laser(hw);
- 	} else {
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index c4003a8..354be34 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -5988,7 +5988,7 @@ static int ixgbe_change_mtu(struct net_device *netdev, int new_mtu)
-  * handler is registered with the OS, the watchdog timer is started,
-  * and the stack is notified that the interface is ready.
-  **/
--static int ixgbe_open(struct net_device *netdev)
-+int ixgbe_open(struct net_device *netdev)
- {
- 	struct ixgbe_adapter *adapter = netdev_priv(netdev);
- 	struct ixgbe_hw *hw = &adapter->hw;
-@@ -6090,7 +6090,7 @@ static void ixgbe_close_suspend(struct ixgbe_adapter *adapter)
-  * needs to be disabled.  A global MAC reset is issued to stop the
-  * hardware, and all transmit and receive resources are freed.
-  **/
--static int ixgbe_close(struct net_device *netdev)
-+int ixgbe_close(struct net_device *netdev)
- {
- 	struct ixgbe_adapter *adapter = netdev_priv(netdev);
- 
+Stefan Assmann (6):
+  i40e: call ndo_stop() instead of dev_close() when running offline
+    selftest
+  ixgbe: call ndo_stop() instead of dev_close() when running offline
+    selftest
+  ixgbevf: call ndo_stop() instead of dev_close() when running offline
+    selftest
+  igb: call ndo_stop() instead of dev_close() when running offline
+    selftest
+  e1000: call ndo_stop() instead of dev_close() when running offline
+    selftest
+  e1000e: call ndo_stop() instead of dev_close() when running offline
+    selftest
+
+ drivers/net/ethernet/intel/e1000/e1000.h          | 2 ++
+ drivers/net/ethernet/intel/e1000/e1000_ethtool.c  | 4 ++--
+ drivers/net/ethernet/intel/e1000/e1000_main.c     | 8 ++++----
+ drivers/net/ethernet/intel/e1000e/e1000.h         | 2 ++
+ drivers/net/ethernet/intel/e1000e/ethtool.c       | 4 ++--
+ drivers/net/ethernet/intel/e1000e/netdev.c        | 4 ++--
+ drivers/net/ethernet/intel/i40e/i40e.h            | 2 +-
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c    | 4 ++--
+ drivers/net/ethernet/intel/i40e/i40e_main.c       | 4 ----
+ drivers/net/ethernet/intel/igb/igb.h              | 2 ++
+ drivers/net/ethernet/intel/igb/igb_ethtool.c      | 4 ++--
+ drivers/net/ethernet/intel/igb/igb_main.c         | 8 ++++----
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h          | 2 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c  | 4 ++--
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     | 4 ++--
+ drivers/net/ethernet/intel/ixgbevf/ethtool.c      | 4 ++--
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      | 2 ++
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 4 ++--
+ 18 files changed, 37 insertions(+), 31 deletions(-)
+
 -- 
 2.5.0
 
