@@ -1,59 +1,28 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Tue, 2 Feb 2016 15:10:00 -0800
+Date: Tue, 2 Feb 2016 15:18:07 -0800
 Subject: [Intel-wired-lan] [next PATCH v3 11/15] i40e/i40evf: Enable
  support for SKB_GSO_UDP_TUNNEL_CSUM
-In-Reply-To: <20160202144924.0000795d@unknown>
+In-Reply-To: <20160202151000.00004aee@unknown>
 References: <20160125050602.12004.38884.stgit@localhost.localdomain>
  <20160125051729.12004.54009.stgit@localhost.localdomain>
- <20160202144924.0000795d@unknown>
-Message-ID: <20160202151000.00004aee@unknown>
+ <20160202144924.0000795d@unknown> <20160202151000.00004aee@unknown>
+Message-ID: <20160202151807.0000708b@unknown>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2 Feb 2016 14:49:24 -0800
+On Tue, 2 Feb 2016 15:10:00 -0800
 Jesse Brandeburg <jesse.brandeburg@intel.com> wrote:
 
-> On Sun, 24 Jan 2016 21:17:29 -0800
-> Alexander Duyck <aduyck@mirantis.com> wrote:
+> On Tue, 2 Feb 2016 14:49:24 -0800
+> Jesse Brandeburg <jesse.brandeburg@intel.com> wrote:
 > 
-> > The XL722 has support for providing the outer UDP tunnel checksum on
+> And, isn't this patch missing the check that enables outer UDP only in
+> the case of X722?
 > 
-> X722, not XL722
-> 
-> > transmits.  Make use of this feature to support segmenting UDP tunnels with
-> > outer checksums enabled.
-> > 
-> > Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
-> > ---
-> 
-> ...
-> 
-> > +		if (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_TUNNEL_CSUM) {
-> > +			/* determine offset of outer transport header */
-> > +			l4_offset = l4.hdr - skb->data;
-> > +
-> > +			/* remove payload length from outer checksum */
-> > +			paylen = (__force u16)l4.udp->check;
-> > +			paylen += ntohs(1) * (u16)~(skb->len - l4_offset);
-> 
-> Can we get a comment about how this is supposed to work?  Doesn't it
-> have endian problems?  I understand these lines are removing the payload
-> length from the checksum by getting the length of the payload,
-> inverting it and removing it from the checksum, and then below,
-> updating the checksum, but it is really hard to follow why you use
-> ntohs(1) without some explanation.
-> 
-> > +			l4.udp->check = ~csum_fold((__force __wsum)paylen);
-> > +		}
-> > +
-> 
+> I expected to see an i40e_main.c change to tell the stack we support
+> UDP_TUNNEL_CSUM only on X722.
 
-And, isn't this patch missing the check that enables outer UDP only in
-the case of X722?
-
-I expected to see an i40e_main.c change to tell the stack we support
-UDP_TUNNEL_CSUM only on X722.
-
+Doh, I see it now in patch 13/15.
