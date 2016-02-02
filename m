@@ -1,80 +1,89 @@
-From: Skidmore, Donald C <donald.c.skidmore@intel.com>
-Date: Tue, 2 Feb 2016 03:01:02 +0000
-Subject: [Intel-wired-lan] anyone aware of problem with 82599ES stuck
- sending TX pause frames?
-In-Reply-To: <56AFF0BB.1030309@windriver.com>
-References: <56AA60A1.7060408@windriver.com>
- <F6FB0E698C9B3143BDF729DF2228664691E709B9@ORSMSX116.amr.corp.intel.com>
- <56AF744B.1000403@windriver.com>
- <F6FB0E698C9B3143BDF729DF2228664691E71472@ORSMSX116.amr.corp.intel.com>
- <56AFF0BB.1030309@windriver.com>
-Message-ID: <F6FB0E698C9B3143BDF729DF2228664691E71713@ORSMSX116.amr.corp.intel.com>
+From: Stefan Assmann <sassmann@kpanic.de>
+Date: Tue,  2 Feb 2016 11:13:43 +0100
+Subject: [Intel-wired-lan] [PATCH net-next 1/6] i40e: call ndo_stop()
+	instead of dev_close() when running offline selftest
+In-Reply-To: <1454408028-16986-1-git-send-email-sassmann@kpanic.de>
+References: <1454408028-16986-1-git-send-email-sassmann@kpanic.de>
+Message-ID: <1454408028-16986-2-git-send-email-sassmann@kpanic.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hey Chris,
+Calling dev_close() causes IFF_UP to be cleared which will remove the
+interfaces routes and some addresses. That's probably not what the user
+intended when running the offline selftest. Besides this does not happen
+if the interface is brought down before the test, so the current
+behaviour is inconsistent.
+Instead call the net_device_ops ndo_stop function directly and avoid
+touching IFF_UP at all.
 
-A colleague of mind reminded me of an issue we had years ago with a similar failure symptoms.  It had to do with an erratum related to receiving an Rx packet at the wrong time while we were initializing the flow director table.  The driver in the 3.10 kernel, even though old should have had this fix.  But I am wondering if you could seeing if you could recreate the problem with flow director disabled?
+Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
+---
+ drivers/net/ethernet/intel/i40e/i40e.h         | 2 +-
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 4 ++--
+ drivers/net/ethernet/intel/i40e/i40e_main.c    | 4 ----
+ 3 files changed, 3 insertions(+), 7 deletions(-)
 
-One other quick question.  Since the switch isn't honoring the pause frames can I assume you enabled TxFC on the adapter manually?
-
-Also I'll take a look at the registers to see if anything jumps out at me.
-
-Thanks,
--Don
-
-> -----Original Message-----
-> From: Chris Friesen [mailto:chris.friesen at windriver.com]
-> Sent: Monday, February 01, 2016 3:57 PM
-> To: Skidmore, Donald C; intel-wired-lan at lists.osuosl.org; Legacy, Allain
-> (Wind River)
-> Subject: Re: [Intel-wired-lan] anyone aware of problem with 82599ES stuck
-> sending TX pause frames?
-> 
-> On 02/01/2016 11:54 AM, Skidmore, Donald C wrote:
-> > Hey Chris,
-> >
-> > Like I mentioned earlier the only issue I was aware of anything close to this
-> was root caused to switch capability.  If you are seeing the same behavior
-> across multiple switch that pretty much rules that out.  Since you don't see
-> anything in the system log we may need to get a register dump (with
-> something like ethregs) both before the failure occurs and while in the error
-> state.  This is assuming once the system enters the error state it remains
-> indefinitely.   Couple other things I'm wondering:
-> >
-> > - Is traffic being received/transmit while in the error state and if so how
-> much?
-> > - does a reset correct the problem or do you have to do something more
-> aggressive (i.e. reload the driver, cycle power)?
-> > - Anything else that might have been occurring around the time the system
-> enters the error state.
-> 
-> Adding my coworker to the receiver list so he can chime in directly.
-> 
-> The device does report a small number of received packets before it locks up.
-> Once it gets into the bad state the rx missed packet count increases but no
-> packets appear to be processed by the driver.
-> 
-> The neighbouring switch does not have flow control enabled at all, and it is
-> ignoring the XOFF packets coming from the device and continuing to send
-> packets
-> towards the device. The device is dropping those packets. When we disable
-> the
-> switch port (and drop carrier) the device does not exit the error state, when
-> we
-> re-enable the switch port the device still does not exit the error state. The
-> issue was resolved by resetting the device via ifdown/ifup.
-> 
-> We don't have ethregs installed, but I've included below an ethtool dump
-> from a
-> device in the "stuck" state, followed by an ethtool register-only dump from
-> the
-> same device during "normal" operation.
-> 
-> Thanks,
-> Chris
-> 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 68f2204..7e16c55 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -773,6 +773,7 @@ int i40e_vlan_rx_kill_vid(struct net_device *netdev,
+ 			  __always_unused __be16 proto, u16 vid);
+ #endif
+ int i40e_open(struct net_device *netdev);
++int i40e_close(struct net_device *netdev);
+ int i40e_vsi_open(struct i40e_vsi *vsi);
+ void i40e_vlan_stripping_disable(struct i40e_vsi *vsi);
+ int i40e_vsi_add_vlan(struct i40e_vsi *vsi, s16 vid);
+@@ -785,7 +786,6 @@ bool i40e_is_vsi_in_vlan(struct i40e_vsi *vsi);
+ struct i40e_mac_filter *i40e_find_mac(struct i40e_vsi *vsi, u8 *macaddr,
+ 				      bool is_vf, bool is_netdev);
+ #ifdef I40E_FCOE
+-int i40e_close(struct net_device *netdev);
+ int i40e_setup_tc(struct net_device *netdev, u8 tc);
+ void i40e_netpoll(struct net_device *netdev);
+ int i40e_fcoe_enable(struct net_device *netdev);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 29d5833..eeca530 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -1704,7 +1704,7 @@ static void i40e_diag_test(struct net_device *netdev,
+ 		/* If the device is online then take it offline */
+ 		if (if_running)
+ 			/* indicate we're in test mode */
+-			dev_close(netdev);
++			i40e_close(netdev);
+ 		else
+ 			/* This reset does not affect link - if it is
+ 			 * changed to a type of reset that does affect
+@@ -1733,7 +1733,7 @@ static void i40e_diag_test(struct net_device *netdev,
+ 		i40e_do_reset(pf, BIT(__I40E_PF_RESET_REQUESTED));
+ 
+ 		if (if_running)
+-			dev_open(netdev);
++			i40e_open(netdev);
+ 	} else {
+ 		/* Online tests */
+ 		netif_info(pf, drv, netdev, "online testing starting\n");
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index bb4612c..9792961 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -5459,11 +5459,7 @@ static void i40e_fdir_filter_exit(struct i40e_pf *pf)
+  *
+  * Returns 0, this is not allowed to fail
+  **/
+-#ifdef I40E_FCOE
+ int i40e_close(struct net_device *netdev)
+-#else
+-static int i40e_close(struct net_device *netdev)
+-#endif
+ {
+ 	struct i40e_netdev_priv *np = netdev_priv(netdev);
+ 	struct i40e_vsi *vsi = np->vsi;
+-- 
+2.5.0
 
