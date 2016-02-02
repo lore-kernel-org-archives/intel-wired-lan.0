@@ -1,8 +1,10 @@
 From: Stefan Assmann <sassmann@kpanic.de>
-Date: Tue,  2 Feb 2016 11:13:42 +0100
-Subject: [Intel-wired-lan] [PATCH net-next 0/6] net/intel: call ndo_stop()
+Date: Tue,  2 Feb 2016 11:13:47 +0100
+Subject: [Intel-wired-lan] [PATCH net-next 5/6] e1000: call ndo_stop()
 	instead of dev_close() when running offline selftest
-Message-ID: <1454408028-16986-1-git-send-email-sassmann@kpanic.de>
+In-Reply-To: <1454408028-16986-1-git-send-email-sassmann@kpanic.de>
+References: <1454408028-16986-1-git-send-email-sassmann@kpanic.de>
+Message-ID: <1454408028-16986-6-git-send-email-sassmann@kpanic.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,43 +19,81 @@ behaviour is inconsistent.
 Instead call the net_device_ops ndo_stop function directly and avoid
 touching IFF_UP at all.
 
-Tested this with igb, e1000e, ixgbe and i40e. All drivers now are able to
-resume operation without restoring the IP address, gateway or such.
+Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
+---
+ drivers/net/ethernet/intel/e1000/e1000.h         | 2 ++
+ drivers/net/ethernet/intel/e1000/e1000_ethtool.c | 4 ++--
+ drivers/net/ethernet/intel/e1000/e1000_main.c    | 8 ++++----
+ 3 files changed, 8 insertions(+), 6 deletions(-)
 
-Stefan Assmann (6):
-  i40e: call ndo_stop() instead of dev_close() when running offline
-    selftest
-  ixgbe: call ndo_stop() instead of dev_close() when running offline
-    selftest
-  ixgbevf: call ndo_stop() instead of dev_close() when running offline
-    selftest
-  igb: call ndo_stop() instead of dev_close() when running offline
-    selftest
-  e1000: call ndo_stop() instead of dev_close() when running offline
-    selftest
-  e1000e: call ndo_stop() instead of dev_close() when running offline
-    selftest
-
- drivers/net/ethernet/intel/e1000/e1000.h          | 2 ++
- drivers/net/ethernet/intel/e1000/e1000_ethtool.c  | 4 ++--
- drivers/net/ethernet/intel/e1000/e1000_main.c     | 8 ++++----
- drivers/net/ethernet/intel/e1000e/e1000.h         | 2 ++
- drivers/net/ethernet/intel/e1000e/ethtool.c       | 4 ++--
- drivers/net/ethernet/intel/e1000e/netdev.c        | 4 ++--
- drivers/net/ethernet/intel/i40e/i40e.h            | 2 +-
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c    | 4 ++--
- drivers/net/ethernet/intel/i40e/i40e_main.c       | 4 ----
- drivers/net/ethernet/intel/igb/igb.h              | 2 ++
- drivers/net/ethernet/intel/igb/igb_ethtool.c      | 4 ++--
- drivers/net/ethernet/intel/igb/igb_main.c         | 8 ++++----
- drivers/net/ethernet/intel/ixgbe/ixgbe.h          | 2 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c  | 4 ++--
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     | 4 ++--
- drivers/net/ethernet/intel/ixgbevf/ethtool.c      | 4 ++--
- drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      | 2 ++
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 4 ++--
- 18 files changed, 37 insertions(+), 31 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/e1000/e1000.h b/drivers/net/ethernet/intel/e1000/e1000.h
+index 98fe5a2..d7bdea7 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000.h
++++ b/drivers/net/ethernet/intel/e1000/e1000.h
+@@ -358,6 +358,8 @@ struct net_device *e1000_get_hw_dev(struct e1000_hw *hw);
+ extern char e1000_driver_name[];
+ extern const char e1000_driver_version[];
+ 
++int e1000_open(struct net_device *netdev);
++int e1000_close(struct net_device *netdev);
+ int e1000_up(struct e1000_adapter *adapter);
+ void e1000_down(struct e1000_adapter *adapter);
+ void e1000_reinit_locked(struct e1000_adapter *adapter);
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_ethtool.c b/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
+index 83e557c..975eeb8 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_ethtool.c
+@@ -1553,7 +1553,7 @@ static void e1000_diag_test(struct net_device *netdev,
+ 
+ 		if (if_running)
+ 			/* indicate we're in test mode */
+-			dev_close(netdev);
++			e1000_close(netdev);
+ 		else
+ 			e1000_reset(adapter);
+ 
+@@ -1582,7 +1582,7 @@ static void e1000_diag_test(struct net_device *netdev,
+ 		e1000_reset(adapter);
+ 		clear_bit(__E1000_TESTING, &adapter->flags);
+ 		if (if_running)
+-			dev_open(netdev);
++			e1000_open(netdev);
+ 	} else {
+ 		e_info(hw, "online testing starting\n");
+ 		/* Online tests */
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
+index 3fc7bde..6de0c7d 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_main.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+@@ -114,8 +114,8 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent);
+ static void e1000_remove(struct pci_dev *pdev);
+ static int e1000_alloc_queues(struct e1000_adapter *adapter);
+ static int e1000_sw_init(struct e1000_adapter *adapter);
+-static int e1000_open(struct net_device *netdev);
+-static int e1000_close(struct net_device *netdev);
++int e1000_open(struct net_device *netdev);
++int e1000_close(struct net_device *netdev);
+ static void e1000_configure_tx(struct e1000_adapter *adapter);
+ static void e1000_configure_rx(struct e1000_adapter *adapter);
+ static void e1000_setup_rctl(struct e1000_adapter *adapter);
+@@ -1360,7 +1360,7 @@ static int e1000_alloc_queues(struct e1000_adapter *adapter)
+  * handler is registered with the OS, the watchdog task is started,
+  * and the stack is notified that the interface is ready.
+  **/
+-static int e1000_open(struct net_device *netdev)
++int e1000_open(struct net_device *netdev)
+ {
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+ 	struct e1000_hw *hw = &adapter->hw;
+@@ -1437,7 +1437,7 @@ err_setup_tx:
+  * needs to be disabled.  A global MAC reset is issued to stop the
+  * hardware, and all transmit and receive resources are freed.
+  **/
+-static int e1000_close(struct net_device *netdev)
++int e1000_close(struct net_device *netdev)
+ {
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+ 	struct e1000_hw *hw = &adapter->hw;
 -- 
 2.5.0
 
