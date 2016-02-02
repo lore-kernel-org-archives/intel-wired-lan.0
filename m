@@ -1,88 +1,41 @@
-From: Stefan Assmann <sassmann@kpanic.de>
-Date: Tue,  2 Feb 2016 11:13:45 +0100
-Subject: [Intel-wired-lan] [PATCH net-next 3/6] ixgbevf: call ndo_stop()
-	instead of dev_close() when running offline selftest
-In-Reply-To: <1454408028-16986-1-git-send-email-sassmann@kpanic.de>
-References: <1454408028-16986-1-git-send-email-sassmann@kpanic.de>
-Message-ID: <1454408028-16986-4-git-send-email-sassmann@kpanic.de>
+From: kbuild test robot <lkp@intel.com>
+Date: Tue, 2 Feb 2016 19:09:01 +0800
+Subject: [Intel-wired-lan] [PATCH net-next 6/6] e1000e: call ndo_stop()
+ instead of dev_close() when running offline selftest
+In-Reply-To: <1454408028-16986-7-git-send-email-sassmann@kpanic.de>
+Message-ID: <201602021913.dM8IZesl%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Calling dev_close() causes IFF_UP to be cleared which will remove the
-interfaces routes and some addresses. That's probably not what the user
-intended when running the offline selftest. Besides this does not happen
-if the interface is brought down before the test, so the current
-behaviour is inconsistent.
-Instead call the net_device_ops ndo_stop function directly and avoid
-touching IFF_UP at all.
+Hi Stefan,
 
-Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
+[auto build test ERROR on net-next/master]
+
+url:    https://github.com/0day-ci/linux/commits/Stefan-Assmann/net-intel-call-ndo_stop-instead-of-dev_close-when-running-offline-selftest/20160202-182015
+config: i386-defconfig (attached as .config)
+reproduce:
+        # save the attached .config to linux build tree
+        make ARCH=i386 
+
+All errors (new ones prefixed by >>):
+
+   drivers/net/ethernet/intel/e1000e/built-in.o: In function `e1000_close':
+>> (.text+0x1c1a0): multiple definition of `e1000_close'
+   drivers/net/ethernet/intel/e1000/built-in.o:(.text+0x5290): first defined here
+   drivers/net/ethernet/intel/e1000e/built-in.o: In function `e1000_open':
+>> (.text+0x1a950): multiple definition of `e1000_open'
+   drivers/net/ethernet/intel/e1000/built-in.o:(.text+0x7b70): first defined here
+
 ---
- drivers/net/ethernet/intel/ixgbevf/ethtool.c      | 4 ++--
- drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      | 2 ++
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 4 ++--
- 3 files changed, 6 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ethtool.c b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
-index c48aef6..d7aa4b2 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
-@@ -680,7 +680,7 @@ static void ixgbevf_diag_test(struct net_device *netdev,
- 
- 		if (if_running)
- 			/* indicate we're in test mode */
--			dev_close(netdev);
-+			ixgbevf_close(netdev);
- 		else
- 			ixgbevf_reset(adapter);
- 
-@@ -692,7 +692,7 @@ static void ixgbevf_diag_test(struct net_device *netdev,
- 
- 		clear_bit(__IXGBEVF_TESTING, &adapter->state);
- 		if (if_running)
--			dev_open(netdev);
-+			ixgbevf_open(netdev);
- 	} else {
- 		hw_dbg(&adapter->hw, "online testing starting\n");
- 		/* Online tests */
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-index 68ec7daa..991eeae 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-@@ -486,6 +486,8 @@ extern const struct ixgbe_mbx_operations ixgbevf_mbx_ops;
- extern const char ixgbevf_driver_name[];
- extern const char ixgbevf_driver_version[];
- 
-+int ixgbevf_open(struct net_device *netdev);
-+int ixgbevf_close(struct net_device *netdev);
- void ixgbevf_up(struct ixgbevf_adapter *adapter);
- void ixgbevf_down(struct ixgbevf_adapter *adapter);
- void ixgbevf_reinit_locked(struct ixgbevf_adapter *adapter);
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 3558f01..01f79fa 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -3122,7 +3122,7 @@ static void ixgbevf_free_all_rx_resources(struct ixgbevf_adapter *adapter)
-  * handler is registered with the OS, the watchdog timer is started,
-  * and the stack is notified that the interface is ready.
-  **/
--static int ixgbevf_open(struct net_device *netdev)
-+int ixgbevf_open(struct net_device *netdev)
- {
- 	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
- 	struct ixgbe_hw *hw = &adapter->hw;
-@@ -3205,7 +3205,7 @@ err_setup_reset:
-  * needs to be disabled.  A global MAC reset is issued to stop the
-  * hardware, and all transmit and receive resources are freed.
-  **/
--static int ixgbevf_close(struct net_device *netdev)
-+int ixgbevf_close(struct net_device *netdev)
- {
- 	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
- 
--- 
-2.5.0
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/octet-stream
+Size: 24323 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160202/f4c5b3ad/attachment-0001.obj>
