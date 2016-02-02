@@ -1,12 +1,10 @@
-From: David Miller <davem@davemloft.net>
-Date: Tue, 02 Feb 2016 16:28:30 -0500 (EST)
-Subject: [Intel-wired-lan] [PATCH net-next 6/6] e1000e: call ndo_stop()
- instead of dev_close() when running offline selftest
-In-Reply-To: <56B0A843.9060703@kpanic.de>
-References: <1454408028-16986-1-git-send-email-sassmann@kpanic.de>
- <1454408028-16986-7-git-send-email-sassmann@kpanic.de>
- <56B0A843.9060703@kpanic.de>
-Message-ID: <20160202.162830.131864881309085395.davem@davemloft.net>
+From: Singh, Krishneil K <krishneil.k.singh@intel.com>
+Date: Tue, 2 Feb 2016 22:27:55 +0000
+Subject: [Intel-wired-lan] [next-queue PATCH] fm10k: use ether_addr_copy
+ to	copy MAC address
+In-Reply-To: <20151229020030.2327.78167.stgit@bwallan-smackover2.jf.intel.com>
+References: <20151229020030.2327.78167.stgit@bwallan-smackover2.jf.intel.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E27339DAA@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,8 +12,19 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 
-Always, when sending an updated version of a patch which is part of a
-series, always resubmit the entire series rather than just the patch
-which is changing.
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Bruce Allan
+Sent: Monday, December 28, 2015 6:01 PM
+To: intel-wired-lan@lists.osuosl.org
+Subject: [Intel-wired-lan] [next-queue PATCH] fm10k: use ether_addr_copy to copy MAC address
 
-Thanks.
+Cleanup the remaining instances of using memcpy() instead of the preferred ether_addr_copy().
+
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+---
+
+
+Tested-by: Krishneil Singh <Krishneil.k.singh@intel.com>
+
+
+
