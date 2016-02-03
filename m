@@ -1,59 +1,63 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 2 Feb 2016 16:06:56 -0800
-Subject: [Intel-wired-lan] [next PATCH v3 11/15] i40e/i40evf: Enable
- support for SKB_GSO_UDP_TUNNEL_CSUM
-In-Reply-To: <20160202144924.0000795d@unknown>
-References: <20160125050602.12004.38884.stgit@localhost.localdomain>
- <20160125051729.12004.54009.stgit@localhost.localdomain>
- <20160202144924.0000795d@unknown>
-Message-ID: <CAKgT0UfXKTyxaf35aO-eyizhsNyDVLMTLNi3KB7XpPeQ8k44KA@mail.gmail.com>
+From: Stefan Assmann <sassmann@kpanic.de>
+Date: Wed,  3 Feb 2016 09:20:46 +0100
+Subject: [Intel-wired-lan] [PATCH net-next V2 0/6] net/intel: call
+	ndo_stop() instead of dev_close() when running offline selftest
+Message-ID: <1454487652-1545-1-git-send-email-sassmann@kpanic.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Feb 2, 2016 at 2:49 PM, Jesse Brandeburg
-<jesse.brandeburg@intel.com> wrote:
-> On Sun, 24 Jan 2016 21:17:29 -0800
-> Alexander Duyck <aduyck@mirantis.com> wrote:
->
->> The XL722 has support for providing the outer UDP tunnel checksum on
->
-> X722, not XL722
->
->> transmits.  Make use of this feature to support segmenting UDP tunnels with
->> outer checksums enabled.
->>
->> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
->> ---
->
-> ...
->
->> +             if (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_TUNNEL_CSUM) {
->> +                     /* determine offset of outer transport header */
->> +                     l4_offset = l4.hdr - skb->data;
->> +
->> +                     /* remove payload length from outer checksum */
->> +                     paylen = (__force u16)l4.udp->check;
->> +                     paylen += ntohs(1) * (u16)~(skb->len - l4_offset);
->
-> Can we get a comment about how this is supposed to work?  Doesn't it
-> have endian problems?  I understand these lines are removing the payload
-> length from the checksum by getting the length of the payload,
-> inverting it and removing it from the checksum, and then below,
-> updating the checksum, but it is really hard to follow why you use
-> ntohs(1) without some explanation.
+Calling dev_close() causes IFF_UP to be cleared which will remove the
+interfaces routes and some addresses. That's probably not what the user
+intended when running the offline selftest. Besides this does not happen
+if the interface is brought down before the test, so the current
+behaviour is inconsistent.
+Instead call the net_device_ops ndo_stop function directly and avoid
+touching IFF_UP at all.
 
-The logic is actually based off of
-csum_tcpudp_nofold(http://lxr.free-electrons.com/source/lib/checksum.c#L193).
-The byte swapping is taken care of via a combination of the ntohs
-which converts to a shift, and the csum_fold call below.  What happens
-is that by shifting by 8 we push the lower byte into the upper slot,
-and the upper slot into the next 16 bits.  Then when csum_fold is run
-it shifts the upper 16 bits down by 16 and adds them to the lower 16
-which takes care of the other half of the rotation.
+Tested this with igb, e1000e, ixgbe and i40e. All drivers now are able to
+resume operation without restoring the IP address, gateway or such.
 
->> +                     l4.udp->check = ~csum_fold((__force __wsum)paylen);
->> +             }
->> +
+V2: rename e1000_open(), e1000_close() to e1000e_open(), e1000e_close()
+to avoid name clash with e1000.
+
+
+Stefan Assmann (6):
+  i40e: call ndo_stop() instead of dev_close() when running offline
+    selftest
+  ixgbe: call ndo_stop() instead of dev_close() when running offline
+    selftest
+  ixgbevf: call ndo_stop() instead of dev_close() when running offline
+    selftest
+  igb: call ndo_stop() instead of dev_close() when running offline
+    selftest
+  e1000: call ndo_stop() instead of dev_close() when running offline
+    selftest
+  e1000e: call ndo_stop() instead of dev_close() when running offline
+    selftest
+
+ drivers/net/ethernet/intel/e1000/e1000.h          |  2 ++
+ drivers/net/ethernet/intel/e1000/e1000_ethtool.c  |  4 ++--
+ drivers/net/ethernet/intel/e1000/e1000_main.c     |  8 ++++----
+ drivers/net/ethernet/intel/e1000e/e1000.h         |  2 ++
+ drivers/net/ethernet/intel/e1000e/ethtool.c       |  4 ++--
+ drivers/net/ethernet/intel/e1000e/netdev.c        | 12 ++++++------
+ drivers/net/ethernet/intel/i40e/i40e.h            |  2 +-
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c    |  4 ++--
+ drivers/net/ethernet/intel/i40e/i40e_main.c       |  4 ----
+ drivers/net/ethernet/intel/igb/igb.h              |  2 ++
+ drivers/net/ethernet/intel/igb/igb_ethtool.c      |  4 ++--
+ drivers/net/ethernet/intel/igb/igb_main.c         |  8 ++++----
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h          |  2 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c  |  4 ++--
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |  4 ++--
+ drivers/net/ethernet/intel/ixgbevf/ethtool.c      |  4 ++--
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |  2 ++
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |  4 ++--
+ 18 files changed, 41 insertions(+), 35 deletions(-)
+
+-- 
+2.5.0
+
