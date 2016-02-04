@@ -1,46 +1,51 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu,  4 Feb 2016 10:47:54 -0800
-Subject: [Intel-wired-lan] [PATCH 1/6] fm10k: prevent null pointer
-	dereference of msix_entries table
-Message-ID: <1454611679-17424-1-git-send-email-jacob.e.keller@intel.com>
+Date: Thu,  4 Feb 2016 10:47:57 -0800
+Subject: [Intel-wired-lan] [PATCH 4/6] fm10k: print error message when
+	stop_hw fails
+In-Reply-To: <1454611679-17424-1-git-send-email-jacob.e.keller@intel.com>
+References: <1454611679-17424-1-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1454611679-17424-4-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-According to the C standard dereferencing a variable before it is
-checked invokes undefined behavior, and thus compilers are free to
-assume the check for NULL isn't necessary. Prevent this by re-ordering
-the NULL check of msix_entries in fm10k_free_mbx_irq.
+fm10k_stop_hw_generic calls fm10k_disable_queues_generic, which may
+return an error code indicating that the queues were not stopped within
+the time limit. Notify the user by displaying a message in the kernel
+message ring, in a similar way to how we notify the user when reset_hw
+fails. There isn't much we can do to recover from this error, so
+currently nothing else is done.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index 6190a81b7c32..8c23fb3df572 100644
+index ed1f8cf39508..3c7c819ac8d9 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -1143,14 +1143,16 @@ static irqreturn_t fm10k_msix_mbx_pf(int __always_unused irq, void *data)
- 
- void fm10k_mbx_free_irq(struct fm10k_intfc *interface)
+@@ -1656,6 +1656,7 @@ void fm10k_down(struct fm10k_intfc *interface)
  {
--	struct msix_entry *entry = &interface->msix_entries[FM10K_MBX_VECTOR];
+ 	struct net_device *netdev = interface->netdev;
  	struct fm10k_hw *hw = &interface->hw;
-+	struct msix_entry *entry;
- 	int itr_reg;
++	int err;
  
- 	/* no mailbox IRQ to free if MSI-X is not enabled */
- 	if (!interface->msix_entries)
- 		return;
+ 	/* signal that we are down to the interrupt handler and service task */
+ 	set_bit(__FM10K_DOWN, &interface->state);
+@@ -1680,7 +1681,9 @@ void fm10k_down(struct fm10k_intfc *interface)
+ 	fm10k_update_stats(interface);
  
-+	entry = &interface->msix_entries[FM10K_MBX_VECTOR];
-+
- 	/* disconnect the mailbox */
- 	hw->mbx.ops.disconnect(hw, &hw->mbx);
+ 	/* Disable DMA engine for Tx/Rx */
+-	hw->mac.ops.stop_hw(hw);
++	err = hw->mac.ops.stop_hw(hw);
++	if (err)
++		dev_err(&interface->pdev->dev, "stop_hw failed: %d\n", err);
  
+ 	/* free any buffers still on the rings */
+ 	fm10k_clean_all_tx_rings(interface);
 -- 
 2.7.0.236.gda096a0.dirty
 
