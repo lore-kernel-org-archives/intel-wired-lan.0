@@ -1,149 +1,40 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 09 Feb 2016 00:44:41 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 0c1ba8565dd9e05a1116870bbe3ff8c4529d8f36 BUILD SUCCESS
-Message-ID: <56b8c5f9.+9z211zVpCXiAadz%fengguang.wu@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Mon, 8 Feb 2016 16:55:34 +0000
+Subject: [Intel-wired-lan] [PATCH net-next V2 1/6] i40e: call
+	ndo_stop()	instead of dev_close() when running offline selftest
+In-Reply-To: <1454487652-1545-2-git-send-email-sassmann@kpanic.de>
+References: <1454487652-1545-1-git-send-email-sassmann@kpanic.de>
+ <1454487652-1545-2-git-send-email-sassmann@kpanic.de>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F98E6BB@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-0c1ba8565dd9e05a1116870bbe3ff8c4529d8f36  e1000e: call ndo_stop() instead of dev_close() when running offline selftest
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Stefan Assmann
+> Sent: Wednesday, February 03, 2016 12:21 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: netdev at vger.kernel.org; davem at davemloft.net; sassmann at kpanic.de
+> Subject: [Intel-wired-lan] [PATCH net-next V2 1/6] i40e: call ndo_stop()
+> instead of dev_close() when running offline selftest
+> 
+> Calling dev_close() causes IFF_UP to be cleared which will remove the
+> interfaces routes and some addresses. That's probably not what the user
+> intended when running the offline selftest. Besides this does not happen if
+> the interface is brought down before the test, so the current behaviour is
+> inconsistent.
+> Instead call the net_device_ops ndo_stop function directly and avoid
+> touching IFF_UP at all.
+> 
+> Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e.h         | 2 +-
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 4 ++--
+>  drivers/net/ethernet/intel/i40e/i40e_main.c    | 4 ----
+>  3 files changed, 3 insertions(+), 7 deletions(-)
 
-elapsed time: 47m
-
-configs tested: 128
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                   randconfig-a0-02081837
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-microblaze                      mmu_defconfig
-parisc                      default_defconfig
-sh                          r7780mp_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-parisc                         b180_defconfig
-i386                             allyesconfig
-arm                        spear6xx_defconfig
-mips                              allnoconfig
-mips                  mips_paravirt_defconfig
-sh                ecovec24-romimage_defconfig
-x86_64                 randconfig-x012-201606
-x86_64                 randconfig-x014-201606
-x86_64                 randconfig-x017-201606
-x86_64                 randconfig-x011-201606
-x86_64                 randconfig-x013-201606
-x86_64                 randconfig-x019-201606
-x86_64                 randconfig-x015-201606
-x86_64                 randconfig-x010-201606
-x86_64                 randconfig-x016-201606
-x86_64                 randconfig-x018-201606
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                     randconfig-s0-201606
-i386         randconfig-s0-201606+CONFIG_DEBUG_INFO_REDUCED
-i386                     randconfig-s1-201606
-x86_64                 randconfig-s0-02082319
-x86_64                 randconfig-s1-02082319
-x86_64                 randconfig-s2-02082319
-x86_64                 randconfig-s0-02090013
-x86_64                 randconfig-s1-02090013
-x86_64                 randconfig-s2-02090013
-x86_64                           allmodconfig
-x86_64                 randconfig-s3-02082354
-x86_64                 randconfig-s4-02082354
-x86_64                 randconfig-s5-02082354
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201606
-i386                   randconfig-b0-02082318
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i0-201606
-i386                     randconfig-i1-201606
-x86_64                 randconfig-b0-02082318
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                               tinyconfig
-x86_64                                    lkp
-x86_64                                   rhel
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201606
-i386                   randconfig-h0-02082322
-i386                   randconfig-h1-02082322
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-mips                      maltaaprp_defconfig
-sparc                            alldefconfig
-m68k                          atari_defconfig
-sh                         ecovec24_defconfig
-x86_64                 randconfig-n0-02082354
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                 randconfig-x004-201606
-x86_64                 randconfig-x002-201606
-x86_64                 randconfig-x000-201606
-x86_64                 randconfig-x009-201606
-x86_64                 randconfig-x006-201606
-x86_64                 randconfig-x003-201606
-x86_64                 randconfig-x005-201606
-x86_64                 randconfig-x001-201606
-x86_64                 randconfig-x007-201606
-x86_64                 randconfig-x008-201606
-i386                     randconfig-r0-201606
-i386                   randconfig-x001-201606
-i386                   randconfig-x007-201606
-i386                   randconfig-x004-201606
-i386                   randconfig-x002-201606
-i386                   randconfig-x008-201606
-i386                   randconfig-x003-201606
-i386                   randconfig-x006-201606
-i386                   randconfig-x005-201606
-i386                   randconfig-x009-201606
-i386                   randconfig-x000-201606
-
-Thanks,
-Fengguang
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Interface did not drop addresses/routes during offline ethtool self-test.
