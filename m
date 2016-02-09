@@ -1,34 +1,30 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 09 Feb 2016 19:25:26 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 868a40764e401f7c4ac1e7b1e81538fa716d7942 BUILD SUCCESS
-Message-ID: <56b9cca6.CL8X4ulzyLd5jLG1%fengguang.wu@intel.com>
+Date: Tue, 09 Feb 2016 19:38:37 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
+ 5ee14e6d336f1daacf5ba73e831029c5ab7ae329 BUILD SUCCESS
+Message-ID: <56b9cfbd.5ZIM6ntxL+JfTCN1%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-868a40764e401f7c4ac1e7b1e81538fa716d7942  igb: Add I210 cable fault detection to self test
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
+5ee14e6d336f1daacf5ba73e831029c5ab7ae329  bonding: 3ad: apply ad_actor settings changes immediately
 
-elapsed time: 44m
+elapsed time: 57m
 
-configs tested: 112
+configs tested: 122
 
 alpha                               defconfig
 parisc                            allnoconfig
 parisc                        c3000_defconfig
 parisc                              defconfig
 i386                     randconfig-a0-201606
+x86_64                 randconfig-a0-02091737
 x86_64                             acpi-redef
 x86_64                           allyesdebian
 x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
 m68k                                defconfig
 powerpc                     sbc8548_defconfig
 powerpc                     tqm5200_defconfig
@@ -37,6 +33,14 @@ sh                          rsk7269_defconfig
 sh                  sh7785lcr_32bit_defconfig
 sh                            titan_defconfig
 x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
 m32r                       m32104ut_defconfig
 m32r                     mappi3.smp_defconfig
 m32r                         opsput_defconfig
@@ -44,6 +48,11 @@ m32r                           usrv_defconfig
 xtensa                       common_defconfig
 xtensa                          iss_defconfig
 parisc                         b180_defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
 i386                             allmodconfig
 x86_64                 randconfig-x012-201606
 x86_64                 randconfig-x014-201606
@@ -84,17 +93,18 @@ x86_64                   randconfig-i0-201606
 sparc                               defconfig
 sparc64                           allnoconfig
 sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
 i386                     randconfig-i0-201606
 i386                     randconfig-i1-201606
 x86_64                 randconfig-b0-02091801
+i386                               tinyconfig
 arm                          pxa168_defconfig
 mips                        maltaup_defconfig
 powerpc                      pmac32_defconfig
 s390                              allnoconfig
 x86_64                                    lkp
 x86_64                                   rhel
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
 i386                     randconfig-n0-201606
 i386                   randconfig-h0-02091655
 i386                   randconfig-h1-02091655
@@ -102,27 +112,27 @@ ia64                             alldefconfig
 ia64                              allnoconfig
 ia64                                defconfig
 x86_64                 randconfig-n0-02091828
-x86_64                 randconfig-x000-201606
-x86_64                 randconfig-x001-201606
-x86_64                 randconfig-x002-201606
-x86_64                 randconfig-x003-201606
 x86_64                 randconfig-x004-201606
-x86_64                 randconfig-x005-201606
+x86_64                 randconfig-x002-201606
+x86_64                 randconfig-x000-201606
+x86_64                 randconfig-x009-201606
 x86_64                 randconfig-x006-201606
+x86_64                 randconfig-x003-201606
+x86_64                 randconfig-x005-201606
+x86_64                 randconfig-x001-201606
 x86_64                 randconfig-x007-201606
 x86_64                 randconfig-x008-201606
-x86_64                 randconfig-x009-201606
 i386                     randconfig-r0-201606
-i386                   randconfig-x000-201606
 i386                   randconfig-x001-201606
-i386                   randconfig-x002-201606
-i386                   randconfig-x003-201606
-i386                   randconfig-x004-201606
-i386                   randconfig-x005-201606
-i386                   randconfig-x006-201606
 i386                   randconfig-x007-201606
+i386                   randconfig-x004-201606
+i386                   randconfig-x002-201606
 i386                   randconfig-x008-201606
+i386                   randconfig-x003-201606
+i386                   randconfig-x006-201606
+i386                   randconfig-x005-201606
 i386                   randconfig-x009-201606
+i386                   randconfig-x000-201606
 mips                              allnoconfig
 mips                      fuloong2e_defconfig
 mips                                   jz4740
