@@ -1,109 +1,133 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 09 Feb 2016 12:02:24 +0100
-Subject: [Intel-wired-lan] [next] igb: allow setting MAC address on i211
- using a device tree blob
-In-Reply-To: <56ABE3A8.4010602@gmail.com>
-References: <56ABE3A8.4010602@gmail.com>
-Message-ID: <1455015744.3592.46.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 09 Feb 2016 19:25:26 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 868a40764e401f7c4ac1e7b1e81538fa716d7942 BUILD SUCCESS
+Message-ID: <56b9cca6.CL8X4ulzyLd5jLG1%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2016-01-29 at 23:11 +0100, John Holland wrote:
-> The Intel i211 LOM pcie ethernet controllers' iNVM operates as an
-> OTP?
-> and has no externel EEPROM interface [1]. The following allows the?
-> driver to pickup the MAC address from a device tree blob when
-> CONFIG_OF?
-> has been enabled.
-> 
-> [1]?
-> http://www.intel.com/content/www/us/en/embedded/products/networking/i
-> 211-ethernet-controller-datasheet.html
-> 
-> Signed-off-by: John Holland <jotihojr@gmail.com>
-> ---
-> ? drivers/net/ethernet/intel/igb/igb_main.c | 30?
-> ++++++++++++++++++++++++++++++
-> ? 1 file changed, 30 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c?
-> b/drivers/net/ethernet/intel/igb/igb_main.c
-> index 31e5f39..9c92443 100644
-> --- a/drivers/net/ethernet/intel/igb/igb_main.c
-> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-> @@ -56,6 +56,11 @@
-> ? #include <linux/i2c.h>
-> ? #include "igb.h"
-> 
-> +#ifdef defined(CONFIG_OF)
-> +#include <linux/of_net.h>
-> +#include <linux/etherdevice.h>
-> +#endif
-> +
-> ? #define MAJ 5
-> ? #define MIN 3
-> ? #define BUILD 0
-> @@ -2217,6 +2222,26 @@ static s32 igb_init_i2c(struct igb_adapter
-> *adapter)
-> ? }
-> 
-> ? /**
-> + *??igb_read_mac_addr_dts - Read mac addres from the device tree
-> blob.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+868a40764e401f7c4ac1e7b1e81538fa716d7942  igb: Add I210 cable fault detection to self test
 
-Address is mis-spelled above
+elapsed time: 44m
 
-> + *??@hw: pointer to the e1000 hardware structure
-> + **/
-> +#ifdef defined(CONFIG_OF)
+configs tested: 112
 
-Minor nitpick, you should have the function comment header wrapped in
-the #ifdef as well.
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201606
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+m68k                                defconfig
+powerpc                     sbc8548_defconfig
+powerpc                     tqm5200_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+parisc                         b180_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x012-201606
+x86_64                 randconfig-x014-201606
+x86_64                 randconfig-x017-201606
+x86_64                 randconfig-x011-201606
+x86_64                 randconfig-x013-201606
+x86_64                 randconfig-x019-201606
+x86_64                 randconfig-x015-201606
+x86_64                 randconfig-x010-201606
+x86_64                 randconfig-x016-201606
+x86_64                 randconfig-x018-201606
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201606
+i386                     randconfig-s1-201606
+x86_64                 randconfig-s0-02091816
+x86_64                 randconfig-s1-02091816
+x86_64                 randconfig-s2-02091816
+x86_64                 randconfig-s3-02091814
+x86_64                 randconfig-s4-02091814
+x86_64                 randconfig-s5-02091814
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201606
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201606
+i386                     randconfig-i1-201606
+x86_64                 randconfig-b0-02091801
+arm                          pxa168_defconfig
+mips                        maltaup_defconfig
+powerpc                      pmac32_defconfig
+s390                              allnoconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201606
+i386                   randconfig-h0-02091655
+i386                   randconfig-h1-02091655
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-n0-02091828
+x86_64                 randconfig-x000-201606
+x86_64                 randconfig-x001-201606
+x86_64                 randconfig-x002-201606
+x86_64                 randconfig-x003-201606
+x86_64                 randconfig-x004-201606
+x86_64                 randconfig-x005-201606
+x86_64                 randconfig-x006-201606
+x86_64                 randconfig-x007-201606
+x86_64                 randconfig-x008-201606
+x86_64                 randconfig-x009-201606
+i386                     randconfig-r0-201606
+i386                   randconfig-x000-201606
+i386                   randconfig-x001-201606
+i386                   randconfig-x002-201606
+i386                   randconfig-x003-201606
+i386                   randconfig-x004-201606
+i386                   randconfig-x005-201606
+i386                   randconfig-x006-201606
+i386                   randconfig-x007-201606
+i386                   randconfig-x008-201606
+i386                   randconfig-x009-201606
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+i386                   randconfig-x0-02091804
 
-> +static void igb_read_mac_addr_dts(struct e1000_hw *hw)
-> +{
-> +???????const u8 *mac;
-> +???????struct device_node *dn;
-> +
-> +???????dn = of_find_compatible_node(NULL, NULL, "intel,i211");
-> +???????if (!dn)
-> +???????????????return;
-> +
-> +???????mac = of_get_mac_address(dn);
-> +???????if (mac)
-> +???????????????ether_addr_copy(hw->mac.addr, mac);
-> +}
-> +#endif
-> +
-> +/**
-> ???*??igb_probe - Device Initialization Routine
-> ???*??@pdev: PCI device information struct
-> ???*??@ent: entry in igb_pci_tbl
-> @@ -2420,6 +2445,11 @@ static int igb_probe(struct pci_dev *pdev,
-> const?
-> struct pci_device_id *ent)
-> ?????????if (hw->mac.ops.read_mac_addr(hw))
-> ?????????????????dev_err(&pdev->dev, "NVM Read Error\n");
-> 
-> +#ifdef defined(CONFIG_OF)
-> +???????if (!is_valid_ether_addr(hw->mac.addr))
-> +???????????????igb_read_mac_addr_dts(hw);
-> +#endif
-> +
-> ?????????memcpy(netdev->dev_addr, hw->mac.addr, netdev->addr_len);
-> 
-> ?????????if (!is_valid_ether_addr(netdev->dev_addr)) {
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at lists.osuosl.org
-> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160209/9680d9a7/attachment.asc>
+Thanks,
+Fengguang
