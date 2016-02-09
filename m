@@ -1,54 +1,109 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 09 Feb 2016 11:47:02 +0100
-Subject: [Intel-wired-lan] [PATCH v4] igb: Add I210 cable fault
-	detection to self test
-In-Reply-To: <520205889.412690.1454977910808.JavaMail.zimbra@xes-inc.com>
-References: <520205889.412690.1454977910808.JavaMail.zimbra@xes-inc.com>
-Message-ID: <1455014822.3592.42.camel@intel.com>
+Date: Tue, 09 Feb 2016 12:02:24 +0100
+Subject: [Intel-wired-lan] [next] igb: allow setting MAC address on i211
+ using a device tree blob
+In-Reply-To: <56ABE3A8.4010602@gmail.com>
+References: <56ABE3A8.4010602@gmail.com>
+Message-ID: <1455015744.3592.46.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2016-02-08 at 18:31 -0600, Aaron Sierra wrote:
-> From: Joe Schultz <jschultz@xes-inc.com>
+On Fri, 2016-01-29 at 23:11 +0100, John Holland wrote:
+> The Intel i211 LOM pcie ethernet controllers' iNVM operates as an
+> OTP?
+> and has no externel EEPROM interface [1]. The following allows the?
+> driver to pickup the MAC address from a device tree blob when
+> CONFIG_OF?
+> has been enabled.
 > 
-> Add an offline diagnostic test for the I210 internal PHY which checks
-> for cable faults and reports the distance along the cable where the
-> fault was detected. Fault types detected include open, short, and
-> cross-pair short.
+> [1]?
+> http://www.intel.com/content/www/us/en/embedded/products/networking/i
+> 211-ethernet-controller-datasheet.html
 > 
-> Signed-off-by: Joe Schultz <jschultz@xes-inc.com>
-> Signed-off-by: Aaron Sierra <asierra@xes-inc.com>
+> Signed-off-by: John Holland <jotihojr@gmail.com>
 > ---
-> ?v2 - account for changes made by this patch in dev-queue:
-> ?? drivers/net: get rid of unnecessary initializations in
-> .get_drvinfo()
-> ?v3 - fix uninitialized variable compile warning
-> ??? - remove unneeded igb_cable_fault_test_prep() function
-> ??? - don't add unused define to e1000_defines.h
-> ??? - only run cable diagnostic if link test fails
-> ?v4 - only set no-fault, link-present cable distance for I210
+> ? drivers/net/ethernet/intel/igb/igb_main.c | 30?
+> ++++++++++++++++++++++++++++++
+> ? 1 file changed, 30 insertions(+)
 > 
-> ?drivers/net/ethernet/intel/igb/e1000_defines.h |? 12 +-
-> ?drivers/net/ethernet/intel/igb/igb_ethtool.c?? | 186
-> ++++++++++++++++++++++++-
-> ?2 files changed, 192 insertions(+), 6 deletions(-)
+> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c?
+> b/drivers/net/ethernet/intel/igb/igb_main.c
+> index 31e5f39..9c92443 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> @@ -56,6 +56,11 @@
+> ? #include <linux/i2c.h>
+> ? #include "igb.h"
+> 
+> +#ifdef defined(CONFIG_OF)
+> +#include <linux/of_net.h>
+> +#include <linux/etherdevice.h>
+> +#endif
+> +
+> ? #define MAJ 5
+> ? #define MIN 3
+> ? #define BUILD 0
+> @@ -2217,6 +2222,26 @@ static s32 igb_init_i2c(struct igb_adapter
+> *adapter)
+> ? }
+> 
+> ? /**
+> + *??igb_read_mac_addr_dts - Read mac addres from the device tree
+> blob.
 
-I try not to be a checkpatch.pl stickler, but your patch clearly has
-some style issues that checkpatch.pl complains about and need to be
-fixed. ?I have gone ahead and applied your patch to my next-queue tree
-(dev-queue branch) so that Aaron can test the functional changes of
-your patch.
+Address is mis-spelled above
 
-So I will require a v5 to fix the coding style issues that
-checkpatch.pl whines about, but before re-spinning your patch, lets
-wait to see if Aaron finds any other issues with your patch.
+> + *??@hw: pointer to the e1000 hardware structure
+> + **/
+> +#ifdef defined(CONFIG_OF)
+
+Minor nitpick, you should have the function comment header wrapped in
+the #ifdef as well.
+
+> +static void igb_read_mac_addr_dts(struct e1000_hw *hw)
+> +{
+> +???????const u8 *mac;
+> +???????struct device_node *dn;
+> +
+> +???????dn = of_find_compatible_node(NULL, NULL, "intel,i211");
+> +???????if (!dn)
+> +???????????????return;
+> +
+> +???????mac = of_get_mac_address(dn);
+> +???????if (mac)
+> +???????????????ether_addr_copy(hw->mac.addr, mac);
+> +}
+> +#endif
+> +
+> +/**
+> ???*??igb_probe - Device Initialization Routine
+> ???*??@pdev: PCI device information struct
+> ???*??@ent: entry in igb_pci_tbl
+> @@ -2420,6 +2445,11 @@ static int igb_probe(struct pci_dev *pdev,
+> const?
+> struct pci_device_id *ent)
+> ?????????if (hw->mac.ops.read_mac_addr(hw))
+> ?????????????????dev_err(&pdev->dev, "NVM Read Error\n");
+> 
+> +#ifdef defined(CONFIG_OF)
+> +???????if (!is_valid_ether_addr(hw->mac.addr))
+> +???????????????igb_read_mac_addr_dts(hw);
+> +#endif
+> +
+> ?????????memcpy(netdev->dev_addr, hw->mac.addr, netdev->addr_len);
+> 
+> ?????????if (!is_valid_ether_addr(netdev->dev_addr)) {
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at lists.osuosl.org
+> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 819 bytes
 Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160209/b85b7fab/attachment-0001.asc>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160209/9680d9a7/attachment.asc>
