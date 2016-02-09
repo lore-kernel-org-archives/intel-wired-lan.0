@@ -1,143 +1,131 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 09 Feb 2016 19:38:37 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
- 5ee14e6d336f1daacf5ba73e831029c5ab7ae329 BUILD SUCCESS
-Message-ID: <56b9cfbd.5ZIM6ntxL+JfTCN1%fengguang.wu@intel.com>
+From: Avargil, Raanan <raanan.avargil@intel.com>
+Date: Tue, 9 Feb 2016 12:30:38 +0000
+Subject: [Intel-wired-lan] [PATCH net-next V2 6/6] e1000e: call
+ ndo_stop()	instead of dev_close() when running offline selftest
+In-Reply-To: <1454487652-1545-7-git-send-email-sassmann@kpanic.de>
+References: <1454487652-1545-1-git-send-email-sassmann@kpanic.de>
+ <1454487652-1545-7-git-send-email-sassmann@kpanic.de>
+Message-ID: <8F4C390AFA9F4444A4AA77F4A3BEC78A18FFCF13@HASMSX110.ger.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
-5ee14e6d336f1daacf5ba73e831029c5ab7ae329  bonding: 3ad: apply ad_actor settings changes immediately
+Acked-by: Raanan Avargil <Raanan.avargil@intel.com>
 
-elapsed time: 57m
+--
+Regards,
+Raanan
 
-configs tested: 122
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201606
-x86_64                 randconfig-a0-02091737
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-m68k                                defconfig
-powerpc                     sbc8548_defconfig
-powerpc                     tqm5200_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-parisc                         b180_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x012-201606
-x86_64                 randconfig-x014-201606
-x86_64                 randconfig-x017-201606
-x86_64                 randconfig-x011-201606
-x86_64                 randconfig-x013-201606
-x86_64                 randconfig-x019-201606
-x86_64                 randconfig-x015-201606
-x86_64                 randconfig-x010-201606
-x86_64                 randconfig-x016-201606
-x86_64                 randconfig-x018-201606
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201606
-i386                     randconfig-s1-201606
-x86_64                 randconfig-s0-02091816
-x86_64                 randconfig-s1-02091816
-x86_64                 randconfig-s2-02091816
-x86_64                 randconfig-s3-02091814
-x86_64                 randconfig-s4-02091814
-x86_64                 randconfig-s5-02091814
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                   randconfig-i0-201606
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i0-201606
-i386                     randconfig-i1-201606
-x86_64                 randconfig-b0-02091801
-i386                               tinyconfig
-arm                          pxa168_defconfig
-mips                        maltaup_defconfig
-powerpc                      pmac32_defconfig
-s390                              allnoconfig
-x86_64                                    lkp
-x86_64                                   rhel
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201606
-i386                   randconfig-h0-02091655
-i386                   randconfig-h1-02091655
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-n0-02091828
-x86_64                 randconfig-x004-201606
-x86_64                 randconfig-x002-201606
-x86_64                 randconfig-x000-201606
-x86_64                 randconfig-x009-201606
-x86_64                 randconfig-x006-201606
-x86_64                 randconfig-x003-201606
-x86_64                 randconfig-x005-201606
-x86_64                 randconfig-x001-201606
-x86_64                 randconfig-x007-201606
-x86_64                 randconfig-x008-201606
-i386                     randconfig-r0-201606
-i386                   randconfig-x001-201606
-i386                   randconfig-x007-201606
-i386                   randconfig-x004-201606
-i386                   randconfig-x002-201606
-i386                   randconfig-x008-201606
-i386                   randconfig-x003-201606
-i386                   randconfig-x006-201606
-i386                   randconfig-x005-201606
-i386                   randconfig-x009-201606
-i386                   randconfig-x000-201606
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-i386                   randconfig-x0-02091804
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Stefan Assmann
+Sent: Wednesday, February 03, 2016 10:21
+To: intel-wired-lan@lists.osuosl.org
+Cc: netdev at vger.kernel.org; davem at davemloft.net; sassmann at kpanic.de
+Subject: [Intel-wired-lan] [PATCH net-next V2 6/6] e1000e: call ndo_stop() instead of dev_close() when running offline selftest
+Importance: High
 
-Thanks,
-Fengguang
+Calling dev_close() causes IFF_UP to be cleared which will remove the interfaces routes and some addresses. That's probably not what the user intended when running the offline selftest. Besides this does not happen if the interface is brought down before the test, so the current behaviour is inconsistent.
+Instead call the net_device_ops ndo_stop function directly and avoid touching IFF_UP at all.
+
+V2: rename e1000_open(), e1000_close() to e1000e_open(), e1000e_close() to avoid name clash with e1000.
+
+Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
+---
+ drivers/net/ethernet/intel/e1000e/e1000.h   |  2 ++
+ drivers/net/ethernet/intel/e1000e/ethtool.c |  4 ++--  drivers/net/ethernet/intel/e1000e/netdev.c  | 12 ++++++------
+ 3 files changed, 10 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h b/drivers/net/ethernet/intel/e1000e/e1000.h
+index 1dc293b..52eb641 100644
+--- a/drivers/net/ethernet/intel/e1000e/e1000.h
++++ b/drivers/net/ethernet/intel/e1000e/e1000.h
+@@ -480,6 +480,8 @@ extern const char e1000e_driver_version[];  void e1000e_check_options(struct e1000_adapter *adapter);  void e1000e_set_ethtool_ops(struct net_device *netdev);
+ 
++int e1000e_open(struct net_device *netdev); int e1000e_close(struct 
++net_device *netdev);
+ void e1000e_up(struct e1000_adapter *adapter);  void e1000e_down(struct e1000_adapter *adapter, bool reset);  void e1000e_reinit_locked(struct e1000_adapter *adapter); diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
+index 6cab1f3..1e3973a 100644
+--- a/drivers/net/ethernet/intel/e1000e/ethtool.c
++++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
+@@ -1816,7 +1816,7 @@ static void e1000_diag_test(struct net_device *netdev,
+ 
+ 		if (if_running)
+ 			/* indicate we're in test mode */
+-			dev_close(netdev);
++			e1000e_close(netdev);
+ 
+ 		if (e1000_reg_test(adapter, &data[0]))
+ 			eth_test->flags |= ETH_TEST_FL_FAILED; @@ -1849,7 +1849,7 @@ static void e1000_diag_test(struct net_device *netdev,
+ 
+ 		clear_bit(__E1000_TESTING, &adapter->state);
+ 		if (if_running)
+-			dev_open(netdev);
++			e1000e_open(netdev);
+ 	} else {
+ 		/* Online tests */
+ 
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index c71ba1b..02449a0 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -4495,7 +4495,7 @@ static int e1000_test_msi(struct e1000_adapter *adapter)  }
+ 
+ /**
+- * e1000_open - Called when a network interface is made active
++ * e1000e_open - Called when a network interface is made active
+  * @netdev: network interface device structure
+  *
+  * Returns 0 on success, negative value on failure @@ -4506,7 +4506,7 @@ static int e1000_test_msi(struct e1000_adapter *adapter)
+  * handler is registered with the OS, the watchdog timer is started,
+  * and the stack is notified that the interface is ready.
+  **/
+-static int e1000_open(struct net_device *netdev)
++int e1000e_open(struct net_device *netdev)
+ {
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+ 	struct e1000_hw *hw = &adapter->hw;
+@@ -4604,7 +4604,7 @@ err_setup_tx:
+ }
+ 
+ /**
+- * e1000_close - Disables a network interface
++ * e1000e_close - Disables a network interface
+  * @netdev: network interface device structure
+  *
+  * Returns 0, this is not allowed to fail @@ -4614,7 +4614,7 @@ err_setup_tx:
+  * needs to be disabled.  A global MAC reset is issued to stop the
+  * hardware, and all transmit and receive resources are freed.
+  **/
+-static int e1000_close(struct net_device *netdev)
++int e1000e_close(struct net_device *netdev)
+ {
+ 	struct e1000_adapter *adapter = netdev_priv(netdev);
+ 	struct pci_dev *pdev = adapter->pdev;
+@@ -6920,8 +6920,8 @@ static int e1000_set_features(struct net_device *netdev,  }
+ 
+ static const struct net_device_ops e1000e_netdev_ops = {
+-	.ndo_open		= e1000_open,
+-	.ndo_stop		= e1000_close,
++	.ndo_open		= e1000e_open,
++	.ndo_stop		= e1000e_close,
+ 	.ndo_start_xmit		= e1000_xmit_frame,
+ 	.ndo_get_stats64	= e1000e_get_stats64,
+ 	.ndo_set_rx_mode	= e1000e_set_rx_mode,
+--
+2.5.0
+
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan at lists.osuosl.org
+http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+---------------------------------------------------------------------
+Intel Israel (74) Limited
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
+
