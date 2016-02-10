@@ -1,42 +1,115 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 10 Feb 2016 14:45:47 -0800
-Subject: [Intel-wired-lan] [PATCH 2/6] fm10k: prevent possibly uninitialized
-	variable
+Date: Wed, 10 Feb 2016 14:45:51 -0800
+Subject: [Intel-wired-lan] [PATCH 6/6] fm10k: fix a minor typo in some
+	comments
 In-Reply-To: <1455144351-14758-1-git-send-email-jacob.e.keller@intel.com>
 References: <1455144351-14758-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1455144351-14758-2-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1455144351-14758-6-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bruce Allan <bruce.w.allan@intel.com>
+s/funciton/function to resolve a typo, and cleanup grammar on a few
+comments regarding processing the VF mailboxes.
 
-If 'attr_flag < (1 << (2 * FM10K_TEST_MSG_NESTED))' is ever false, err
-will be used uninitialized.
-
-Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
-This is a direct copy of a patch authored by Bruce from our out of
-tree driver, hence the authorship and signed-off-by.
+ drivers/net/ethernet/intel/fm10k/fm10k_iov.c    | 4 ++--
+ drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 4 ++--
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c    | 6 +++---
+ drivers/net/ethernet/intel/fm10k/fm10k_pf.c     | 2 +-
+ 4 files changed, 8 insertions(+), 8 deletions(-)
 
- drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-index 7a959713daa3..0168ca6fcdff 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-@@ -1005,7 +1005,7 @@ static int fm10k_mbx_test(struct fm10k_intfc *interface, u64 *data)
- 	struct fm10k_mbx_info *mbx = &hw->mbx;
- 	u32 attr_flag, test_msg[6];
- 	unsigned long timeout;
--	int err;
-+	int err = -EINVAL;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_iov.c b/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
+index acfb8b1f88a7..bbf7c4bac303 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
+@@ -50,7 +50,7 @@ s32 fm10k_iov_event(struct fm10k_intfc *interface)
+ 	s64 vflre;
+ 	int i;
  
- 	/* For now this is a VF only feature */
- 	if (hw->mac.type != fm10k_mac_vf)
+-	/* if there is no iov_data then there is no mailboxes to process */
++	/* if there is no iov_data then there is no mailbox to process */
+ 	if (!ACCESS_ONCE(interface->iov_data))
+ 		return 0;
+ 
+@@ -98,7 +98,7 @@ s32 fm10k_iov_mbx(struct fm10k_intfc *interface)
+ 	struct fm10k_iov_data *iov_data;
+ 	int i;
+ 
+-	/* if there is no iov_data then there is no mailboxes to process */
++	/* if there is no iov_data then there is no mailbox to process */
+ 	if (!ACCESS_ONCE(interface->iov_data))
+ 		return 0;
+ 
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+index aa53a6e0c10d..d8524aa995fd 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+@@ -440,7 +440,7 @@ static void fm10k_restore_vxlan_port(struct fm10k_intfc *interface)
+  * @sa_family: Address family of new port
+  * @port: port number used for VXLAN
+  *
+- * This funciton is called when a new VXLAN interface has added a new port
++ * This function is called when a new VXLAN interface has added a new port
+  * number to the range that is currently in use for VXLAN.  The new port
+  * number is always added to the tail so that the port number list should
+  * match the order in which the ports were allocated.  The head of the list
+@@ -484,7 +484,7 @@ static void fm10k_add_vxlan_port(struct net_device *dev,
+  * @sa_family: Address family of freed port
+  * @port: port number used for VXLAN
+  *
+- * This funciton is called when a new VXLAN interface has freed a port
++ * This function is called when a new VXLAN interface has freed a port
+  * number from the range that is currently in use for VXLAN.  The freed
+  * port is removed from the list and the new head is used to determine
+  * the port number for offloads.
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index a10b98025c69..5b74eac75201 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -1379,7 +1379,7 @@ static s32 fm10k_1588_msg_pf(struct fm10k_hw *hw, u32 **results,
+ 		return 0;
+ 	}
+ 
+-	/* if there is no iov_data then there is no mailboxes to process */
++	/* if there is no iov_data then there is no mailbox to process */
+ 	if (!ACCESS_ONCE(interface->iov_data))
+ 		return FM10K_ERR_PARAM;
+ 
+@@ -2398,7 +2398,7 @@ static struct pci_driver fm10k_driver = {
+ /**
+  * fm10k_register_pci_driver - register driver interface
+  *
+- * This funciton is called on module load in order to register the driver.
++ * This function is called on module load in order to register the driver.
+  **/
+ int fm10k_register_pci_driver(void)
+ {
+@@ -2408,7 +2408,7 @@ int fm10k_register_pci_driver(void)
+ /**
+  * fm10k_unregister_pci_driver - unregister driver interface
+  *
+- * This funciton is called on module unload in order to remove the driver.
++ * This function is called on module unload in order to remove the driver.
+  **/
+ void fm10k_unregister_pci_driver(void)
+ {
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+index 23de956d1acc..ecc99f9d2cce 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+@@ -1604,7 +1604,7 @@ static s32 fm10k_request_lport_map_pf(struct fm10k_hw *hw)
+  *  @hw: pointer to hardware structure
+  *  @switch_ready: pointer to boolean value that will record switch state
+  *
+- *  This funciton will check the DMA_CTRL2 register and mailbox in order
++ *  This function will check the DMA_CTRL2 register and mailbox in order
+  *  to determine if the switch is ready for the PF to begin requesting
+  *  addresses and mapping traffic to the local interface.
+  **/
 -- 
 2.7.0.236.gda096a0.dirty
 
