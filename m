@@ -1,125 +1,41 @@
-From: Stefan Assmann <sassmann@kpanic.de>
-Date: Wed, 10 Feb 2016 11:26:52 +0100
-Subject: [Intel-wired-lan] [net-next] igb: assume MSI-X interrupts
-	during initialization
-In-Reply-To: <56B52C7C.3000500@kpanic.de>
-References: <1442493970-20073-1-git-send-email-sassmann@kpanic.de>
- <56B5131D.1070505@redhat.com> <56B52C7C.3000500@kpanic.de>
-Message-ID: <56BB106C.40106@kpanic.de>
+From: Andrew Lunn <andrew@lunn.ch>
+Date: Wed, 10 Feb 2016 17:59:25 +0100
+Subject: [Intel-wired-lan] [next] igb: allow setting MAC address on i211
+ using a device tree blob
+In-Reply-To: <0362A89D-78DF-4F09-A8B6-5A87FAA74AB9@gmail.com>
+References: <56ABE3A8.4010602@gmail.com> <1455015744.3592.46.camel@intel.com>
+ <20160209115430.GD18781@lunn.ch>
+ <0362A89D-78DF-4F09-A8B6-5A87FAA74AB9@gmail.com>
+Message-ID: <20160210165925.GA9492@lunn.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 06.02.2016 00:13, Stefan Assmann wrote:
-> On 02/05/2016 10:24 PM, Laine Stump wrote:
->> Stefan,
->>
->> I have an AMD 990FX system with an Intel 82576 card that could not
->> successfully boot with any kernel starting somewhere prior to 4.2, but
->> does boot properly in 4.4+. After a lot of time bisecting, I found that
->> this patch, when applied to kernel 4.3.0, solves the problem (applying
->> to 4.2.0 has no effect, so there's some other patch/patches in the
->> interim that were also part of the fix).
->>
->> Since I don't know the details of proposing this patch for 4.3 stable,
->> would it be possible for you to do that?
->>
->> Thanks!
+On Wed, Feb 10, 2016 at 10:13:56AM +0100, John Holland wrote:
 > 
-> Hi Laine,
 > 
-> I took a quick look at 4.3 and the patch you mention should be
-> sufficient. For 4.2 I'll have to take a closer look. I'm currently
-> traveling but going to get back to you early next week.
 > 
-> I'd like double check things before taking any action.
-
-I've tried to reproduce your issue on several systems, mostly Intel
-though, without success running 4.2 or 4.3. As I know you mostly care
-for 4.3 (current fedora) I'd suggest to queue commit
-
-cbfe360a1541a32e9e28f8f8ac925d2b7979d767 igb: assume MSI-X interrupts
-during initialization
-
-to 4.3-stable as it's a follow-up fix to
-
-ceee3450b3a85db05a107d54fbea031c77d30401 igb: make sure SR-IOV init uses
-the right number of queues
-
-Dave, if you agree with that please queue the patch for 4.3-stable.
-Thanks!
-
-  Stefan
-
-
+> Sent from my iPad
+> On Feb 9, 2016, at 12:54, Andrew Lunn <andrew@lunn.ch> wrote:
 > 
-> Thanks!
-> 
->    Stefan
-> 
->> The full saga of my problem and investigaton is here:
->>
->> https://www.mail-archive.com/iommu at lists.linux-foundation.org/msg10687.html
->>
->>
->> On 09/17/2015 08:46 AM, Stefan Assmann wrote:
->>> In igb_sw_init() the sequence of calls was changed from
->>> igb_init_queue_configuration()
->>> igb_init_interrupt_scheme()
->>> igb_probe_vfs()
->>> to
->>> igb_probe_vfs()
->>> igb_init_queue_configuration()
->>> igb_init_interrupt_scheme()
->>>
->>> This results in adapter->flags not having the IGB_FLAG_HAS_MSIX bit set
->>> during igb_probe_vfs()->igb_enable_sriov(). Therefore SR-IOV does not
->>> get enabled properly and we run into a NULL pointer if the max_vfs
->>> module parameter is specified (adapter->vf_data does not get allocated,
->>> crash on accessing the structure).
->>>
->>> [    7.419348] BUG: unable to handle kernel NULL pointer dereference
->>> at 0000000000000048
->>> [    7.419367] IP: [<ffffffffa02161c6>] igb_reset+0xe6/0x5d0 [igb]
->>> [    7.419370] PGD 0
->>> [    7.419373] Oops: 0002 [#1] SMP
->>> [    7.419381] Modules linked in: ahci(+) libahci igb(+) i40e(+) vxlan
->>> ip6_udp_tunnel udp_tunnel megaraid_sas(+) ixgbe(+) mdio
->>> [    7.419385] CPU: 0 PID: 4 Comm: kworker/0:0 Not tainted 4.2.0+ #153
->>> [    7.419387] Hardware name: Dell Inc. PowerEdge R720/0C4Y3R, BIOS
->>> 1.6.0 03/07/2013
->>> [...]
->>> [    7.419431] Call Trace:
->>> [    7.419442]  [<ffffffffa0217236>] igb_probe+0x8b6/0x1340 [igb]
->>> [    7.419447]  [<ffffffff814c7f15>] local_pci_probe+0x45/0xa0
->>>
->>> Prevent this by setting the IGB_FLAG_HAS_MSIX bit before calling
->>> igb_probe_vfs(). The real interrupt capabilities will be checked during
->>> igb_init_interrupt_scheme() so this is safe to do.
->>>
->>> Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
->>> ---
->>>   drivers/net/ethernet/intel/igb/igb_main.c | 3 +++
->>>   1 file changed, 3 insertions(+)
->>>
->>> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c
->>> b/drivers/net/ethernet/intel/igb/igb_main.c
->>> index e174fbb..ba019fc 100644
->>> --- a/drivers/net/ethernet/intel/igb/igb_main.c
->>> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
->>> @@ -2986,6 +2986,9 @@ static int igb_sw_init(struct igb_adapter *adapter)
->>>       }
->>>   #endif /* CONFIG_PCI_IOV */
->>>
->>> +    /* Assume MSI-X interrupts, will be checked during IRQ allocation */
->>> +    adapter->flags |= IGB_FLAG_HAS_MSIX;
->>> +
->>>       igb_probe_vfs(adapter);
->>>
->>>       igb_init_queue_configuration(adapter);
->>>
->>
+> >>> +static void igb_read_mac_addr_dts(struct e1000_hw *hw)
+> >>> +{
+> >>> +       const u8 *mac;
+> >>> +       struct device_node *dn;
+> >>> +
+> >>> +       dn = of_find_compatible_node(NULL, NULL, "intel,i211");
+> > 
+> > Hi John
+> > 
+> > Would this also work for the i210?
 > 
 
+> The usability scenario of i210 and i211 seem similar
+> enough. Although, I will not be able to test the i210, I will use it
+> as the compatible keyword.
+
+I can test on i210.
+
+  Andrew
