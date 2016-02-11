@@ -1,71 +1,42 @@
-From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Wed, 10 Feb 2016 15:16:30 -0800
-Subject: [Intel-wired-lan] [PATCH] ixgbevf: fix error code path when setting
-	MAC address
-Message-ID: <20160210231630.9713.65406.stgit@localhost6.localdomain6>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Thu, 11 Feb 2016 03:59:37 +0000
+Subject: [Intel-wired-lan] [PATCH] igb: Fix VLAN tag stripping on
+	Intel	i350
+In-Reply-To: <20160128125323.GA17357@calimero.vinschen.de>
+References: <1453901284-32628-1-git-send-email-vinschen@redhat.com>
+ <1453922722.3014.29.camel@intel.com>,
+ <20160128125323.GA17357@calimero.vinschen.de>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81E88113@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Return error when a MAC address change is rejected by the PF.
+> From: Intel-wired-lan [intel-wired-lan-bounces at lists.osuosl.org] on behalf of Corinna Vinschen [vinschen at redhat.com]
+> Sent: Thursday, January 28, 2016 4:53 AM
+> To: Kirsher, Jeffrey T
+> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
+> Subject: Re: [Intel-wired-lan] [PATCH] igb: Fix VLAN tag stripping on Intel     i350
+> 
+> Hi Jeff,
 
-This will prevent the user from modifying the MAC address when
-that operation is not permitted.
+On Jan 27 11:25, Jeff Kirsher wrote:
+> On Wed, 2016-01-27 at 14:28 +0100, Corinna Vinschen wrote:
+> > Problem: When switching off VLAN offloading on an i350, the VLAN
+> > interface gets unusable.  For testing, set up a VLAN on an i350
+> > and some remote machine, e.g.:
+> > [...]
+> I tried applying your patch to my tree for review and validation, but
+> due to patches already applied against the igb driver in my tree, your
+> patch does not apply cleanly.
+>
+> Can you please update your patch to apply cleanly to my tree?
+> git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
+> dev-queue
+>
+> (next-queue tree and dev-queue branch)
+> 
+> The attached patch is against the dev-queue branch of your next-queue tree.
 
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
----
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   12 ++++++++----
- drivers/net/ethernet/intel/ixgbevf/vf.c           |    4 +++-
- 2 files changed, 11 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 11d6d7e..98dca80 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -3668,19 +3668,23 @@ static int ixgbevf_set_mac(struct net_device *netdev, void *p)
- 	struct ixgbevf_adapter *adapter = netdev_priv(netdev);
- 	struct ixgbe_hw *hw = &adapter->hw;
- 	struct sockaddr *addr = p;
-+	int err;
- 
- 	if (!is_valid_ether_addr(addr->sa_data))
- 		return -EADDRNOTAVAIL;
- 
--	ether_addr_copy(netdev->dev_addr, addr->sa_data);
--	ether_addr_copy(hw->mac.addr, addr->sa_data);
--
- 	spin_lock_bh(&adapter->mbx_lock);
- 
--	hw->mac.ops.set_rar(hw, 0, hw->mac.addr, 0);
-+	err = hw->mac.ops.set_rar(hw, 0, addr->sa_data, 0);
- 
- 	spin_unlock_bh(&adapter->mbx_lock);
- 
-+	if (err)
-+		return -EPERM;
-+
-+	ether_addr_copy(hw->mac.addr, addr->sa_data);
-+	ether_addr_copy(netdev->dev_addr, addr->sa_data);
-+
- 	return 0;
- }
- 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.c b/drivers/net/ethernet/intel/ixgbevf/vf.c
-index 61a98f4..4d613a4 100644
---- a/drivers/net/ethernet/intel/ixgbevf/vf.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/vf.c
-@@ -408,8 +408,10 @@ static s32 ixgbevf_set_rar_vf(struct ixgbe_hw *hw, u32 index, u8 *addr,
- 
- 	/* if nacked the address was rejected, use "perm_addr" */
- 	if (!ret_val &&
--	    (msgbuf[0] == (IXGBE_VF_SET_MAC_ADDR | IXGBE_VT_MSGTYPE_NACK)))
-+	    (msgbuf[0] == (IXGBE_VF_SET_MAC_ADDR | IXGBE_VT_MSGTYPE_NACK))) {
- 		ixgbevf_get_mac_addr_vf(hw, hw->mac.addr);
-+		return IXGBE_ERR_MBX;
-+	}
- 
- 	return ret_val;
- }
-
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
