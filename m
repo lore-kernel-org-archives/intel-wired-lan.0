@@ -1,48 +1,39 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Thu, 11 Feb 2016 21:09:30 +0000
-Subject: [Intel-wired-lan] [PATCH] fm10k: add helper functions to set
- strings and data for ethtool stats
-In-Reply-To: <1455224042-3366-1-git-send-email-jacob.e.keller@intel.com>
-References: <1455224042-3366-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <02874ECE860811409154E81DA85FBB585799D0CF@ORSMSX115.amr.corp.intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Fri, 12 Feb 2016 23:17:09 +0000
+Subject: [Intel-wired-lan] [PATCH net-next V2 6/6] e1000e: call
+ ndo_stop()	instead of dev_close() when running offline selftest
+In-Reply-To: <1454487652-1545-7-git-send-email-sassmann@kpanic.de>
+References: <1454487652-1545-1-git-send-email-sassmann@kpanic.de>,
+ <1454487652-1545-7-git-send-email-sassmann@kpanic.de>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81E89BCE@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Keller, Jacob E
-> Sent: Thursday, February 11, 2016 12:54 PM
-> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Cc: Keller, Jacob E <jacob.e.keller@intel.com>
-> Subject: [PATCH] fm10k: add helper functions to set strings and data for
-> ethtool stats
+> From: Intel-wired-lan [intel-wired-lan-bounces at lists.osuosl.org] on behalf of Stefan Assmann [sassmann at kpanic.de]
+> Sent: Wednesday, February 03, 2016 12:20 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: netdev at vger.kernel.org; davem at davemloft.net; sassmann at kpanic.de
+> Subject: [Intel-wired-lan] [PATCH net-next V2 6/6] e1000e: call ndo_stop()      instead of dev_close() when running offline selftest
 > 
-> Reduce duplicate code and the amount of indentation by adding
-> fm10k_add_stat_strings and fm10k_add_ethtool_stats functions which help
-> add fm10k_stat structures to the ethtool stats callbacks. This helps
-> increase ease of use for future stat additions, and increases code
-> readability. Skip handling of the per-queue stats as these will be
-> reworked in a following patch.
+> Calling dev_close() causes IFF_UP to be cleared which will remove the
+> interfaces routes and some addresses. That's probably not what the user
+> intended when running the offline selftest. Besides this does not happen
+> if the interface is brought down before the test, so the current
+> behaviour is inconsistent.
+> Instead call the net_device_ops ndo_stop function directly and avoid
+> touching IFF_UP at all.
 > 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> V2: rename e1000_open(), e1000_close() to e1000e_open(), e1000e_close()
+> to avoid name clash with e1000.
+> 
+> Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
 > ---
-> 
-> This is a resend of the patch directly on the point where the previous
-> version applied in Jeff's queue. Fixes a possible null pointer
-> deference.
-> 
-> Notes:
->     - v2
->     * Restore previous NULL pointer check
+>  drivers/net/ethernet/intel/e1000e/e1000.h   |  2 ++
+>  drivers/net/ethernet/intel/e1000e/ethtool.c |  4 ++--
+>  drivers/net/ethernet/intel/e1000e/netdev.c  | 12 ++++++------
+>  3 files changed, 10 insertions(+), 8 deletions(-)
 
-Ignore this version please, the change I made is actually not necessary as the original NULL pointer check is invalid.
-
-vf_info is a [0] length array at the end of iov_data which is already checked for NULL, so there is no way to actually get a NULL pointer out of this.
-
-Please do not apply this version and keep the original in the queue.
-
-Regards,
-Jake
-
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
