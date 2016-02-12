@@ -1,39 +1,74 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 12 Feb 2016 23:22:24 +0000
-Subject: [Intel-wired-lan] [PATCH net-next V2 4/6] igb: call
-	ndo_stop()	instead of dev_close() when running offline selftest
-In-Reply-To: <1454487652-1545-5-git-send-email-sassmann@kpanic.de>
-References: <1454487652-1545-1-git-send-email-sassmann@kpanic.de>,
- <1454487652-1545-5-git-send-email-sassmann@kpanic.de>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81E89BFE@ORSMSX101.amr.corp.intel.com>
+From: Christopher S. Hall <christopher.s.hall@intel.com>
+Date: Fri, 12 Feb 2016 12:25:22 -0800
+Subject: [Intel-wired-lan] [PATCH v7 1/8] time: Add cycles to nanoseconds
+	translation
+In-Reply-To: <1455308729-6280-1-git-send-email-christopher.s.hall@intel.com>
+References: <1455308729-6280-1-git-send-email-christopher.s.hall@intel.com>
+Message-ID: <1455308729-6280-2-git-send-email-christopher.s.hall@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+The timekeeping code does not currently provide a way to translate
+externally provided clocksource cycles to system time. The cycle count
+is always provided by the result clocksource read() method internal to
+the timekeeping code. The added function timekeeping_cycles_to_ns()
+calculated a nanosecond value from a cycle count that can be added to
+tk_read_base.base value yielding the current system time. This allows
+clocksource cycle values external to the timekeeping code to provide a
+cycle count that can be transformed to system time.
 
-> From: Intel-wired-lan [intel-wired-lan-bounces at lists.osuosl.org] on behalf of Stefan Assmann [sassmann at kpanic.de]
-> Sent: Wednesday, February 03, 2016 12:20 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org; davem at davemloft.net; sassmann at kpanic.de
-> Subject: [Intel-wired-lan] [PATCH net-next V2 4/6] igb: call ndo_stop() instead of dev_close() when running offline selftest
-> 
-> Calling dev_close() causes IFF_UP to be cleared which will remove the
-> interfaces routes and some addresses. That's probably not what the user
-> intended when running the offline selftest. Besides this does not happen
-> if the interface is brought down before the test, so the current
-> behaviour is inconsistent.
-> Instead call the net_device_ops ndo_stop function directly and avoid
-> touching IFF_UP at all.
-> 
-> Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
-> ---
->  drivers/net/ethernet/intel/igb/igb.h         | 2 ++
->  drivers/net/ethernet/intel/igb/igb_ethtool.c | 4 ++--
->  drivers/net/ethernet/intel/igb/igb_main.c    | 8 ++++----
->  3 files changed, 8 insertions(+), 6 deletions(-)
+Signed-off-by: Christopher S. Hall <christopher.s.hall@intel.com>
+Signed-off-by: John Stultz <john.stultz@linaro.org>
+---
+ kernel/time/timekeeping.c | 25 +++++++++++++++++++++----
+ 1 file changed, 21 insertions(+), 4 deletions(-)
 
-Checkpatch warns that externs should be avoided in .c files, but they pre-existed and are just being flagged due to the name changing, so...
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index 34b4ced..4243d28 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -298,17 +298,34 @@ u32 (*arch_gettimeoffset)(void) = default_arch_gettimeoffset;
+ static inline u32 arch_gettimeoffset(void) { return 0; }
+ #endif
+ 
++static inline s64 timekeeping_delta_to_ns(struct tk_read_base *tkr,
++					  cycle_t delta)
++{
++	s64 nsec;
++
++	nsec = delta * tkr->mult + tkr->xtime_nsec;
++	nsec >>= tkr->shift;
++
++	/* If arch requires, add in get_arch_timeoffset() */
++	return nsec + arch_gettimeoffset();
++}
++
+ static inline s64 timekeeping_get_ns(struct tk_read_base *tkr)
+ {
+ 	cycle_t delta;
+-	s64 nsec;
+ 
+ 	delta = timekeeping_get_delta(tkr);
++	return timekeeping_delta_to_ns(tkr, delta);
++}
+ 
+-	nsec = (delta * tkr->mult + tkr->xtime_nsec) >> tkr->shift;
++static inline s64 timekeeping_cycles_to_ns(struct tk_read_base *tkr,
++					    cycle_t cycles)
++{
++	cycle_t delta;
+ 
+-	/* If arch requires, add in get_arch_timeoffset() */
+-	return nsec + arch_gettimeoffset();
++	/* calculate the delta since the last update_wall_time */
++	delta = clocksource_delta(cycles, tkr->cycle_last, tkr->mask);
++	return timekeeping_delta_to_ns(tkr, delta);
+ }
+ 
+ /**
+-- 
+2.1.4
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com> 
