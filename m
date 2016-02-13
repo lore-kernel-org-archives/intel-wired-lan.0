@@ -1,62 +1,46 @@
-From: tndave <tushar.n.dave@oracle.com>
-Date: Sun, 14 Feb 2016 05:52:40 +0530
-Subject: [Intel-wired-lan] i40e: Kernel unaligned access due to 'struct
- i40e_dma_mem' being 'packed'
-In-Reply-To: <56ABEBFF.6030004@oracle.com>
-References: <56A973D6.4060202@oracle.com>
- <20160128.015643.125847430094859447.davem@davemloft.net>
- <56ABEBFF.6030004@oracle.com>
-Message-ID: <56BFC8D0.8030509@oracle.com>
+From: Colin King <colin.king@canonical.com>
+Date: Sat, 13 Feb 2016 23:57:16 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: remove redundant check on
+	vsi->active_vlans
+Message-ID: <1455407836-7188-1-git-send-email-colin.king@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+From: Colin Ian King <colin.king@canonical.com>
 
+active_vlans is an unsigned long array, hence a null check on this
+array is superfluous and can be removed.
 
-On 01/30/2016 04:17 AM, tndave wrote:
->
->
-> On 01/27/2016 10:56 PM, David Miller wrote:
->> From: tndave <tushar.n.dave@oracle.com>
->> Date: Wed, 27 Jan 2016 17:50:14 -0800
->>
->>> Hi,
->>>
->>> i40e driver has 'struct i40e_dma_mem' defined with 'packed' directive
->>> causing kernel unaligned errors on sparc (when
->>> 40e_allocate_dma_mem_d()
->>> is being called)
->>>
->>> log_unaligned: 1031 callbacks suppressed
->>> Kernel unaligned access at TPC[448ae8]
->>> dma_4v_alloc_coherent+0x188/0x2e0
->>> Kernel unaligned access at TPC[448ae8]
->>> dma_4v_alloc_coherent+0x188/0x2e0
->>> Kernel unaligned access at TPC[448ae8]
->>> dma_4v_alloc_coherent+0x188/0x2e0
->>> Kernel unaligned access at TPC[448ae8]
->>> dma_4v_alloc_coherent+0x188/0x2e0
->>>
->>> This can be fixed with get_unaligned/put_unaligned(). However I don't
->>> see 'struct i40e_dma_mem' is being directly shoved into NIC hardware.
->>> But instead fields of the struct are being read and used for hardware
->>> (e.g. dma_addr_t pa). For the test, I remove __packed, and i40e driver
->>> and HW works fine. (of course kernel unaligned errors are gone too).
->>> My question is, does 'struct i40e_dma_mem' required to be __packed?
->>
->> People get overzealoud with __packed.
->>
->> And even if it doesn't cause unaligned accesses like this, it generates
->> terrible code (byte at a time accesses to words) on several
->> architectures.
-> True. For the same reason I want to clarify if __packed is actually
-> needed? instead of fixing it with get_unaligned/put_unaligned()!
+Detected with static analysis by smatch:
 
-We are having this issue on multiple sparc servers. It would be really
-helpful to have feedback from i40e driver folks.
+drivers/net/ethernet/intel/i40e/i40e_debugfs.c:386
+  i40e_dbg_dump_vsi_seid() warn: this array is probably
+  non-NULL. 'vsi->active_vlans'
 
-Thanks.
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
--Tushar
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+index 10744a6..aba28be 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+@@ -383,9 +383,8 @@ static void i40e_dbg_dump_vsi_seid(struct i40e_pf *pf, int seid)
+ 		dev_info(&pf->pdev->dev,
+ 			 "    netdev: name = %s\n",
+ 			 vsi->netdev->name);
+-	if (vsi->active_vlans)
+-		dev_info(&pf->pdev->dev,
+-			 "    vlgrp: & = %p\n", vsi->active_vlans);
++	dev_info(&pf->pdev->dev,
++		 "    vlgrp: & = %p\n", vsi->active_vlans);
+ 	dev_info(&pf->pdev->dev,
+ 		 "    netdev_registered = %i, current_netdev_flags = 0x%04x, state = %li flags = 0x%08lx\n",
+ 		 vsi->netdev_registered,
+-- 
+2.7.0
+
