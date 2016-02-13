@@ -1,68 +1,89 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Sat, 13 Feb 2016 06:27:19 +0000
-Subject: [Intel-wired-lan] [PATCH v4] igb: Add I210 cable fault
-	detection to self test
-In-Reply-To: <1455014822.3592.42.camel@intel.com>
-References: <520205889.412690.1454977910808.JavaMail.zimbra@xes-inc.com>,
- <1455014822.3592.42.camel@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81E89FBB@ORSMSX101.amr.corp.intel.com>
+From: John Holland <jotihojr@gmail.com>
+Date: Sat, 13 Feb 2016 23:04:45 +0100
+Subject: [Intel-wired-lan] [next] igb: allow setting MAC address on i211
+ using a device tree blob V2
+Message-ID: <56BFA87D.1010609@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Kirsher, Jeffrey T
-> Sent: Tuesday, February 09, 2016 2:47 AM
-> To: Aaron Sierra; intel-wired-lan at lists.osuosl.org
-> Cc: Wyborny, Carolyn; Brown, Aaron F; Joe Schultz
-> Subject: Re: [PATCH v4] igb: Add I210 cable fault detection to self test
-> 
-> On Mon, 2016-02-08 at 18:31 -0600, Aaron Sierra wrote:
->>  From: Joe Schultz <jschultz@xes-inc.com>
-> >
-> >  Add an offline diagnostic test for the I210 internal PHY which checks
-> > for cable faults and reports the distance along the cable where the
-> > fault was detected. Fault types detected include open, short, and
-> > cross-pair short.
-> >
-> > Signed-off-by: Joe Schultz <jschultz@xes-inc.com>
-> > Signed-off-by: Aaron Sierra <asierra@xes-inc.com>
-> > ---
-> >  v2 - account for changes made by this patch in dev-queue:
-> >    drivers/net: get rid of unnecessary initializations in> 
-> > .get_drvinfo()
-> >  v3 - fix uninitialized variable compile warning
-> >     - remove unneeded igb_cable_fault_test_prep() function
-> >     - don't add unused define to e1000_defines.h
-> >     - only run cable diagnostic if link test fails
-> >  v4 - only set no-fault, link-present cable distance for I210
-> >
-> >  drivers/net/ethernet/intel/igb/e1000_defines.h |? 12 +-
-> >  drivers/net/ethernet/intel/igb/igb_ethtool.c   | 186
-> > ++++++++++++++++++++++++-
-> >  2 files changed, 192 insertions(+), 6 deletions(-)
-> 
-> I try not to be a checkpatch.pl stickler, but your patch clearly has
-> some style issues that checkpatch.pl complains about and need to be
-> fixed.  I have gone ahead and applied your patch to my next-queue tree
-> (dev-queue branch) so that Aaron can test the functional changes of
-> your patch.
+Hello,
 
-> So I will require a v5 to fix the coding style issues that
-> checkpatch.pl whines about, but before re-spinning your patch, lets
-> wait to see if Aaron finds any other issues with your patch.
+The Intel i211 LOM pcie ethernet controllers' iNVM operates as an OTP 
+and has no externel EEPROM interface [1]. The following allows the 
+driver to pickup the MAC address from a device tree blob when CONFIG_OF 
+has been enabled.
 
-I no longer see the kernel panics on other parts with this patch, and functionally it seems good on all the parts I have scrounged up.  Thanks.
+[1] 
+http://www.intel.com/content/www/us/en/embedded/products/networking/i211-ethernet-controller-datasheet.html
 
-But I still see "-1" for the Pair fault distance's when a good cable is connected and diags are run offline:
-...
-Pair D cable fault   (offline)   0
-Pair A fault distance            -1
-Pair B fault distance            -1
-Pair C fault distance            -1
-Pair D fault distance            -1
-Pair A fault open                0
-...
+Changes V2
+- Restrict searching for compatible devices to current pci device.
 
-I'm not sure the intent here, but having something other than 0 looks / feels like an error to me,  It's also confusing as those values come up as 0 if the diags are run with the online keyword with a valid cable connection.  The diag session itself (ethtool -t ethX offline) returns 0 so the test as a whole is registering as passing.
+Signed-off-by: John Holland <jotihojr@gmail.com>
+---
+
+  drivers/net/ethernet/intel/igb/igb_main.c | 30 
+++++++++++++++++++++++++++++++
+  1 file changed, 30 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/igb/igb_main.c 
+b/drivers/net/ethernet/intel/igb/igb_main.c
+index 31e5f39..f7788fa 100644
+--- a/drivers/net/ethernet/intel/igb/igb_main.c
++++ b/drivers/net/ethernet/intel/igb/igb_main.c
+@@ -56,6 +56,11 @@
+  #include <linux/i2c.h>
+  #include "igb.h"
+
++#ifdef CONFIG_OF
++#include <linux/of_net.h>
++#include <linux/etherdevice.h>
++#endif
++
+  #define MAJ 5
+  #define MIN 3
+  #define BUILD 0
+@@ -2216,6 +2221,26 @@ static s32 igb_init_i2c(struct igb_adapter *adapter)
+         return status;
+  }
+
++#ifdef CONFIG_OF
++/**
++ *  igb_read_mac_addr_dts - Read mac address from the device tree blob
++ *  @dev: pointer to device structure
++ *  @mac_addr: pointer to found mac address
++ **/
++static void igb_read_mac_addr_dts(const struct device *dev, u8 *mac_addr)
++{
++       const u8 *mac;
++       struct device_node *dn;
++
++       dn = of_find_compatible_node(dev->of_node, NULL, "intel,i210");
++       if (dn) {
++               mac = of_get_mac_address(dn);
++               if (mac)
++                       ether_addr_copy(mac_addr, mac);
++       }
++}
++#endif
++
+  /**
+   *  igb_probe - Device Initialization Routine
+   *  @pdev: PCI device information struct
+@@ -2420,6 +2445,11 @@ static int igb_probe(struct pci_dev *pdev, const 
+struct pci_device_id *ent)
+         if (hw->mac.ops.read_mac_addr(hw))
+                 dev_err(&pdev->dev, "NVM Read Error\n");
+
++#ifdef CONFIG_OF
++       if (!is_valid_ether_addr(hw->mac.addr))
++               igb_read_mac_addr_dts(&pdev->dev, hw->mac.addr);
++#endif
++
+         memcpy(netdev->dev_addr, hw->mac.addr, netdev->addr_len);
+
+         if (!is_valid_ether_addr(netdev->dev_addr)) {
+
