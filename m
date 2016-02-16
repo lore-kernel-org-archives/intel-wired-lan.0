@@ -1,78 +1,37 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 16 Feb 2016 11:57:13 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 149/154]
- include/linux/compiler.h:501:38: error: call to '__compiletime_assert_487'
- declared with attribute error: BUILD_BUG_ON failed: idx !=
- FM10K_REGS_LEN_VSI
-Message-ID: <201602161109.SwD9qJJG%fengguang.wu@intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Mon, 15 Feb 2016 19:57:42 -0800
+Subject: [Intel-wired-lan] [PATCH 1/6] fm10k: Avoid crashing the kernel
+In-Reply-To: <1455144351-14758-1-git-send-email-jacob.e.keller@intel.com>
+References: <1455144351-14758-1-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1455595062.7797.1.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   c72b5dfa8ce58dc105ed3b31fc7a44664cbbb62f
-commit: cd2e5fc0d28f3c00900de884b3abafc68df49ca7 [149/154] fm10k: Avoid crashing the kernel
-config: x86_64-allyesconfig (attached as .config)
-reproduce:
-        git checkout cd2e5fc0d28f3c00900de884b3abafc68df49ca7
-        # save the attached .config to linux build tree
-        make ARCH=x86_64 
+On Wed, 2016-02-10 at 14:45 -0800, Jacob Keller wrote:
+> From: Bruce Allan <bruce.w.allan@intel.com>
+> 
+> Use BUILD_BUG_ON() instead of BUG_ON() where appropriate to get a
+> compile
+> error rather than crash the kernel.
+> 
+> Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+> ---
+> This is a direct copy of a patch from our out-of-tree driver written
+> by Bruce, hence the authorship and signed-off-by line.
+> 
+> ?drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 4 ++--
+> ?1 file changed, 2 insertions(+), 2 deletions(-)
 
-All errors (new ones prefixed by >>):
-
-   In file included from include/linux/linkage.h:4:0,
-                    from include/linux/preempt.h:9,
-                    from include/linux/spinlock.h:50,
-                    from include/linux/vmalloc.h:4,
-                    from drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c:21:
-   drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c: In function 'fm10k_get_reg_vsi':
->> include/linux/compiler.h:501:38: error: call to '__compiletime_assert_487' declared with attribute error: BUILD_BUG_ON failed: idx != FM10K_REGS_LEN_VSI
-     _compiletime_assert(condition, msg, __compiletime_assert_, __LINE__)
-                                         ^
-   include/linux/compiler.h:484:4: note: in definition of macro '__compiletime_assert'
-       prefix ## suffix();    \
-       ^
-   include/linux/compiler.h:501:2: note: in expansion of macro '_compiletime_assert'
-     _compiletime_assert(condition, msg, __compiletime_assert_, __LINE__)
-     ^
-   include/linux/bug.h:50:37: note: in expansion of macro 'compiletime_assert'
-    #define BUILD_BUG_ON_MSG(cond, msg) compiletime_assert(!(cond), msg)
-                                        ^
-   include/linux/bug.h:74:2: note: in expansion of macro 'BUILD_BUG_ON_MSG'
-     BUILD_BUG_ON_MSG(condition, "BUILD_BUG_ON failed: " #condition)
-     ^
-   drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c:487:2: note: in expansion of macro 'BUILD_BUG_ON'
-     BUILD_BUG_ON(idx != FM10K_REGS_LEN_VSI);
-     ^
-
-vim +/__compiletime_assert_487 +501 include/linux/compiler.h
-
-9a8ab1c3 Daniel Santos  2013-02-21  495   *
-9a8ab1c3 Daniel Santos  2013-02-21  496   * In tradition of POSIX assert, this macro will break the build if the
-9a8ab1c3 Daniel Santos  2013-02-21  497   * supplied condition is *false*, emitting the supplied error message if the
-9a8ab1c3 Daniel Santos  2013-02-21  498   * compiler has support to do so.
-9a8ab1c3 Daniel Santos  2013-02-21  499   */
-9a8ab1c3 Daniel Santos  2013-02-21  500  #define compiletime_assert(condition, msg) \
-9a8ab1c3 Daniel Santos  2013-02-21 @501  	_compiletime_assert(condition, msg, __compiletime_assert_, __LINE__)
-9a8ab1c3 Daniel Santos  2013-02-21  502  
-47933ad4 Peter Zijlstra 2013-11-06  503  #define compiletime_assert_atomic_type(t)				\
-47933ad4 Peter Zijlstra 2013-11-06  504  	compiletime_assert(__native_word(t),				\
-
-:::::: The code at line 501 was first introduced by commit
-:::::: 9a8ab1c39970a4938a72d94e6fd13be88a797590 bug.h, compiler.h: introduce compiletime_assert & BUILD_BUG_ON_MSG
-
-:::::: TO: Daniel Santos <daniel.santos@pobox.com>
-:::::: CC: Linus Torvalds <torvalds@linux-foundation.org>
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+Guess you did not bother to compile test this, because it still causes
+the same compile errors it did the first time Bruce submitted it.
+?Dropping this patch, like I did the first time it was submitted.
 -------------- next part --------------
 A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/octet-stream
-Size: 52453 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160216/7d224e01/attachment-0001.obj>
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160215/755d8d67/attachment.asc>
