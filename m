@@ -1,54 +1,123 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 16 Feb 2016 12:10:29 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 151/154]
- drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c:1119:3: error: implicit
- declaration of function 'FM10K_WRITE_REG'
-Message-ID: <201602161227.R20yga4r%fengguang.wu@intel.com>
+Date: Tue, 16 Feb 2016 12:37:09 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:1GbE]
+ bf456abb9b82d5376e7189cca00b528dd86d1559 BUILD SUCCESS
+Message-ID: <56c2a775.FPxbEdslqtFgTfQs%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   c72b5dfa8ce58dc105ed3b31fc7a44664cbbb62f
-commit: 63b8ecfecdb2e7222cd3e99f169b68f6b5d00b62 [151/154] fm10k: use ethtool_rxfh_indir_default for default redirection table
-config: xtensa-allyesconfig (attached as .config)
-reproduce:
-        wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        git checkout 63b8ecfecdb2e7222cd3e99f169b68f6b5d00b62
-        # save the attached .config to linux build tree
-        make.cross ARCH=xtensa 
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  1GbE
+bf456abb9b82d5376e7189cca00b528dd86d1559  igb: Add workaround for VLAN tag stripping on 82576
 
-All errors (new ones prefixed by >>):
+elapsed time: 73m
 
-   drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c: In function 'fm10k_write_reta':
->> drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c:1119:3: error: implicit declaration of function 'FM10K_WRITE_REG' [-Werror=implicit-function-declaration]
-      FM10K_WRITE_REG(hw, FM10K_RETA(0, i), reta);
-      ^
-   cc1: some warnings being treated as errors
+configs tested: 102
 
-vim +/FM10K_WRITE_REG +1119 drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+i386                     randconfig-a0-201607
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x012-201607
+x86_64                 randconfig-x014-201607
+x86_64                 randconfig-x017-201607
+x86_64                 randconfig-x011-201607
+x86_64                 randconfig-x013-201607
+x86_64                 randconfig-x019-201607
+x86_64                 randconfig-x015-201607
+x86_64                 randconfig-x010-201607
+x86_64                 randconfig-x016-201607
+x86_64                 randconfig-x018-201607
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201607
+i386                     randconfig-s1-201607
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201607
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201607
+i386                     randconfig-i1-201607
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                     randconfig-n0-201607
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                   rhel
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+x86_64                 randconfig-x004-201607
+x86_64                 randconfig-x002-201607
+x86_64                 randconfig-x000-201607
+x86_64                 randconfig-x009-201607
+x86_64                 randconfig-x006-201607
+x86_64                 randconfig-x003-201607
+x86_64                 randconfig-x005-201607
+x86_64                 randconfig-x001-201607
+x86_64                 randconfig-x007-201607
+x86_64                 randconfig-x008-201607
+i386                     randconfig-r0-201607
+i386                   randconfig-x001-201607
+i386                   randconfig-x007-201607
+i386                   randconfig-x004-201607
+i386                   randconfig-x002-201607
+i386                   randconfig-x008-201607
+i386                   randconfig-x003-201607
+i386                   randconfig-x006-201607
+i386                   randconfig-x005-201607
+i386                   randconfig-x009-201607
+i386                   randconfig-x000-201607
 
-  1113				   (indir[3] << 24);
-  1114	
-  1115			if (interface->reta[i] == reta)
-  1116				continue;
-  1117	
-  1118			interface->reta[i] = reta;
-> 1119			FM10K_WRITE_REG(hw, FM10K_RETA(0, i), reta);
-  1120		}
-  1121	}
-  1122	
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/octet-stream
-Size: 44070 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160216/9fa3e52d/attachment-0001.obj>
+Thanks,
+Fengguang
