@@ -1,39 +1,57 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Date: Tue, 16 Feb 2016 17:58:50 +0100
-Subject: [Intel-wired-lan] [next] igb: allow setting MAC address on i211
- using a device tree blob V2
-In-Reply-To: <56BFA87D.1010609@gmail.com>
-References: <56BFA87D.1010609@gmail.com>
-Message-ID: <20160216165850.GF29482@lunn.ch>
+From: Rustad, Mark D <mark.d.rustad@intel.com>
+Date: Tue, 16 Feb 2016 17:23:05 +0000
+Subject: [Intel-wired-lan] [PATCH net-next V2 5/6] e1000: call
+ ndo_stop()	instead of dev_close() when running offline selftest
+In-Reply-To: <309B89C4C689E141A5FF6A0C5FB2118B81E89BE2@ORSMSX101.amr.corp.intel.com>
+References: <1454487652-1545-1-git-send-email-sassmann@kpanic.de>
+ <1454487652-1545-6-git-send-email-sassmann@kpanic.de>
+ <309B89C4C689E141A5FF6A0C5FB2118B81E89BE2@ORSMSX101.amr.corp.intel.com>
+Message-ID: <D922F8B9-0F84-45C5-8BD6-6D57ABFAF01D@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sat, Feb 13, 2016 at 11:04:45PM +0100, John Holland wrote:
-> Hello,
-> 
-> The Intel i211 LOM pcie ethernet controllers' iNVM operates as an
-> OTP and has no externel EEPROM interface [1]. The following allows
-> the driver to pickup the MAC address from a device tree blob when
-> CONFIG_OF has been enabled.
-> 
-> [1] http://www.intel.com/content/www/us/en/embedded/products/networking/i211-ethernet-controller-datasheet.html
-> 
-> Changes V2
-> - Restrict searching for compatible devices to current pci device.
-> 
-> Signed-off-by: John Holland <jotihojr@gmail.com>
+Aaron F <aaron.f.brown@intel.com> wrote:
 
-Hi John
+>> From: Intel-wired-lan [intel-wired-lan-bounces at lists.osuosl.org] on  
+>> behalf of Stefan Assmann [sassmann at kpanic.de]
+>> Sent: Wednesday, February 03, 2016 12:20 AM
+>> To: intel-wired-lan at lists.osuosl.org
+>> Cc: netdev at vger.kernel.org; davem at davemloft.net; sassmann at kpanic.de
+>> Subject: [Intel-wired-lan] [PATCH net-next V2 5/6] e1000: call  
+>> ndo_stop()       instead of dev_close() when running offline selftest
+>>
+>> Calling dev_close() causes IFF_UP to be cleared which will remove the
+>> interfaces routes and some addresses. That's probably not what the user
+>> intended when running the offline selftest. Besides this does not happen
+>> if the interface is brought down before the test, so the current
+>> behaviour is inconsistent.
+>> Instead call the net_device_ops ndo_stop function directly and avoid
+>> touching IFF_UP at all.
+>>
+>> Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
+>> ---
+>>  drivers/net/ethernet/intel/e1000/e1000.h         | 2 ++
+>>  drivers/net/ethernet/intel/e1000/e1000_ethtool.c | 4 ++--
+>>  drivers/net/ethernet/intel/e1000/e1000_main.c    | 8 ++++----
+>>  3 files changed, 8 insertions(+), 6 deletions(-)
+>
+> Checkpatch warns that externs should be avoided in .c files, but they  
+> pre-existed and are just being flagged due to the name changing, so...
+>
+> Tested-by: Aaron Brown <aaron.f.brown@intel.com>
 
-Thanks for fixing multiple device support.
+Actually, it is the forward declarations in the .c that should be deleted.  
+The prototypes should only exist in the .h file.
 
-Please could you add documentation in
-Documentation/devicetree/bindings/net. I know these are standard
-properties, but it is somewhat unusual to attach them to a PCI node,
-so having an example would be good.
-
-   Thanks
-	Andrew
+--
+Mark Rustad, Networking Division, Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 841 bytes
+Desc: Message signed with OpenPGP using GPGMail
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160216/1434b2f9/attachment.asc>
