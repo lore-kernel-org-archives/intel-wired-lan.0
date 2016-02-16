@@ -1,25 +1,38 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Tue, 16 Feb 2016 18:20:31 +0000
-Subject: [Intel-wired-lan] [PATCH 1/6] fm10k: Avoid crashing the kernel
-In-Reply-To: <1455595062.7797.1.camel@intel.com>
-References: <1455144351-14758-1-git-send-email-jacob.e.keller@intel.com>
- <1455595062.7797.1.camel@intel.com>
-Message-ID: <1455646831.23620.11.camel@intel.com>
+From: Christopher Hall <christopher.s.hall@intel.com>
+Date: Tue, 16 Feb 2016 10:23:01 -0800
+Subject: [Intel-wired-lan] [PATCH v7 3/8] time: Remove duplicated code
+ in ktime_get_raw_and_real()
+In-Reply-To: <20160216075210.GA2461@localhost.localdomain>
+References: <1455308729-6280-1-git-send-email-christopher.s.hall@intel.com>
+ <1455308729-6280-4-git-send-email-christopher.s.hall@intel.com>
+ <20160216075210.GA2461@localhost.localdomain>
+Message-ID: <op.ycxuonx01774gr@chall-mobl2.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2016-02-15 at 19:57 -0800, Jeff Kirsher wrote:
-> Guess you did not bother to compile test this, because it still
-> causes
-> the same compile errors it did the first time Bruce submitted it.
-> ?Dropping this patch, like I did the first time it was submitted.
+On Mon, 15 Feb 2016 23:52:10 -0800, Richard Cochran  
+<richardcochran@gmail.com> wrote:
+>> @@ -888,6 +888,8 @@ void ktime_get_snapshot(struct system_time_snapshot  
+>> *systime_snapshot)
+>>  	s64 nsec_real;
+>>  	cycle_t now;
+>>
+>> +	WARN_ON(timekeeping_suspended);
+> ...
+>> -	WARN_ON_ONCE(timekeeping_suspended);
+>
+> Is this change intentional?
 
-Woops sorry, I thought I ran it through a test. :(
+Yes it is. The code I replaced in pps_kernel.h (pps_get_ts()) has two call  
+paths depending on whether CONFIG_NTP_PPS is set. On one call path  
+(realtime only, config unset) WARN_ON(), from getnstimeofday64, is used,  
+on the other WARN_ON_ONCE(), from ktime_get_raw_and_real_ts64(), is used.  
+I opted for the greater verbosity of the two when I combined the code.
 
-I'll submit a v2 shortly.
+Is WARN_ON_ONCE() better here?
 
-Regards,
-Jake
+Thanks,
+Chris
