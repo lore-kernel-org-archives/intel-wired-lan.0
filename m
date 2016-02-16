@@ -1,124 +1,38 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 16 Feb 2016 13:48:21 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 50c25dfe8dda245eaf53fa6d5ce1867a0d9ba3c2 BUILD SUCCESS
-Message-ID: <56c2b825.zdDxnFhxVGcU0p2+%fengguang.wu@intel.com>
+From: Richard Cochran <richardcochran@gmail.com>
+Date: Tue, 16 Feb 2016 08:52:10 +0100
+Subject: [Intel-wired-lan] [PATCH v7 3/8] time: Remove duplicated code
+ in ktime_get_raw_and_real()
+In-Reply-To: <1455308729-6280-4-git-send-email-christopher.s.hall@intel.com>
+References: <1455308729-6280-1-git-send-email-christopher.s.hall@intel.com>
+ <1455308729-6280-4-git-send-email-christopher.s.hall@intel.com>
+Message-ID: <20160216075210.GA2461@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-50c25dfe8dda245eaf53fa6d5ce1867a0d9ba3c2  fm10k: fix a minor typo in some comments
+On Fri, Feb 12, 2016 at 12:25:24PM -0800, Christopher S. Hall wrote:
+> The code in ktime_get_snapshot() is a superset of the code in
+> ktime_get_raw_and_real() code. Further, ktime_get_raw_and_real() is
+> called only by the PPS code, pps_get_ts(). Consolidate the
+> pps_get_ts() code into a single function calling ktime_get_snapshot()
+> and eliminate ktime_get_raw_and_real(). A side effect of this is that
+> the raw and real results of pps_get_ts() correspond to exactly the
+> same clock cycle. Previously these values represented separate reads
+> of the system clock.
 
-elapsed time: 64m
+Nice improvement.
 
-configs tested: 103
+> @@ -888,6 +888,8 @@ void ktime_get_snapshot(struct system_time_snapshot *systime_snapshot)
+>  	s64 nsec_real;
+>  	cycle_t now;
+>  
+> +	WARN_ON(timekeeping_suspended);
+...
+> -	WARN_ON_ONCE(timekeeping_suspended);
 
-i386                     randconfig-a0-201607
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x012-201607
-x86_64                 randconfig-x014-201607
-x86_64                 randconfig-x017-201607
-x86_64                 randconfig-x011-201607
-x86_64                 randconfig-x013-201607
-x86_64                 randconfig-x019-201607
-x86_64                 randconfig-x015-201607
-x86_64                 randconfig-x010-201607
-x86_64                 randconfig-x016-201607
-x86_64                 randconfig-x018-201607
-i386                     randconfig-s0-201607
-i386                     randconfig-s1-201607
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                   randconfig-i0-201607
-i386                     randconfig-i0-201607
-i386                     randconfig-i1-201607
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-x86_64                                    lkp
-x86_64                                   rhel
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201607
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                 randconfig-x004-201607
-x86_64                 randconfig-x002-201607
-x86_64                 randconfig-x000-201607
-x86_64                 randconfig-x009-201607
-x86_64                 randconfig-x006-201607
-x86_64                 randconfig-x003-201607
-x86_64                 randconfig-x005-201607
-x86_64                 randconfig-x001-201607
-x86_64                 randconfig-x007-201607
-x86_64                 randconfig-x008-201607
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-r0-201607
-i386                   randconfig-x001-201607
-i386                   randconfig-x007-201607
-i386                   randconfig-x004-201607
-i386                   randconfig-x002-201607
-i386                   randconfig-x008-201607
-i386                   randconfig-x003-201607
-i386                   randconfig-x006-201607
-i386                   randconfig-x005-201607
-i386                   randconfig-x009-201607
-i386                   randconfig-x000-201607
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
+Is this change intentional?
 
 Thanks,
-Fengguang
+Richard
