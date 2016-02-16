@@ -1,28 +1,39 @@
-From: Richard Cochran <richardcochran@gmail.com>
-Date: Tue, 16 Feb 2016 08:56:38 +0100
-Subject: [Intel-wired-lan] [PATCH v7 4/8] time: Add driver cross
- timestamp interface for higher precision time synchronization
-In-Reply-To: <1455308729-6280-5-git-send-email-christopher.s.hall@intel.com>
-References: <1455308729-6280-1-git-send-email-christopher.s.hall@intel.com>
- <1455308729-6280-5-git-send-email-christopher.s.hall@intel.com>
-Message-ID: <20160216075638.GB2461@localhost.localdomain>
+From: Andrew Lunn <andrew@lunn.ch>
+Date: Tue, 16 Feb 2016 17:58:50 +0100
+Subject: [Intel-wired-lan] [next] igb: allow setting MAC address on i211
+ using a device tree blob V2
+In-Reply-To: <56BFA87D.1010609@gmail.com>
+References: <56BFA87D.1010609@gmail.com>
+Message-ID: <20160216165850.GF29482@lunn.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Feb 12, 2016 at 12:25:25PM -0800, Christopher S. Hall wrote:
->  /**
-> + * get_device_system_crosststamp - Synchronously capture system/device timestamp
-> + * @sync_devicetime:	Callback to get simultaneous device time and
-> + *	system counter from the device driver
-> + * @xtstamp:		Receives simultaneously captured system and device time
-      @ctx:             Private context passed to the 'get_time_fn' callback.
+On Sat, Feb 13, 2016 at 11:04:45PM +0100, John Holland wrote:
+> Hello,
+> 
+> The Intel i211 LOM pcie ethernet controllers' iNVM operates as an
+> OTP and has no externel EEPROM interface [1]. The following allows
+> the driver to pickup the MAC address from a device tree blob when
+> CONFIG_OF has been enabled.
+> 
+> [1] http://www.intel.com/content/www/us/en/embedded/products/networking/i211-ethernet-controller-datasheet.html
+> 
+> Changes V2
+> - Restrict searching for compatible devices to current pci device.
+> 
+> Signed-off-by: John Holland <jotihojr@gmail.com>
 
-> + *
-> + * Reads a timestamp from a device and correlates it to system time
-> + */
+Hi John
 
-Thanks,
-Richard
+Thanks for fixing multiple device support.
+
+Please could you add documentation in
+Documentation/devicetree/bindings/net. I know these are standard
+properties, but it is somewhat unusual to attach them to a PCI node,
+so having an example would be good.
+
+   Thanks
+	Andrew
