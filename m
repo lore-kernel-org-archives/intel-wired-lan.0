@@ -1,21 +1,38 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 18 Feb 2016 05:52:51 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 46c23d8fb0d806fd54cbb803a2d5213cf053e8c0 BUILD SUCCESS
-Message-ID: <56c4ebb3.TE7RsNycC/RiTGBw%fengguang.wu@intel.com>
+Date: Thu, 18 Feb 2016 05:52:57 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
+ bd4508e8507cbeee3c0fd96a1f96327b07c490b9 BUILD DONE
+Message-ID: <56c4ebb9.8Nifr3VfFwXanZJk%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-46c23d8fb0d806fd54cbb803a2d5213cf053e8c0  fm10k: fix a minor typo in some comments
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
+bd4508e8507cbeee3c0fd96a1f96327b07c490b9  core: remove unneded headers for net cgroup controllers.
 
-elapsed time: 74m
+drivers/net/ethernet/broadcom/bnx2x/bnx2x_dcb.c:223:39: error: 'DCBX_APP_SF_DEFAULT' undeclared (first use in this function)
 
-configs tested: 81
+Error ids grouped by kconfigs:
 
+recent_errors
+??? powerpc-defconfig
+??? ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_dcb.c:error:DCBX_APP_SF_DEFAULT-undeclared-(first-use-in-this-function)
+??? powerpc-ppc64_defconfig
+    ??? drivers-net-ethernet-broadcom-bnx2x-bnx2x_dcb.c:error:DCBX_APP_SF_DEFAULT-undeclared-(first-use-in-this-function)
+
+elapsed time: 80m
+
+configs tested: 103
+
+i386                     randconfig-a0-201607
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
 sh                                allnoconfig
 sh                          rsk7269_defconfig
 sh                  sh7785lcr_32bit_defconfig
@@ -46,11 +63,6 @@ parisc                            allnoconfig
 parisc                         b180_defconfig
 parisc                        c3000_defconfig
 parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
 x86_64                 randconfig-x012-201607
 x86_64                 randconfig-x014-201607
 x86_64                 randconfig-x017-201607
@@ -91,8 +103,28 @@ i386                     randconfig-n0-201607
 ia64                             alldefconfig
 ia64                              allnoconfig
 ia64                                defconfig
+x86_64                 randconfig-x004-201607
+x86_64                 randconfig-x002-201607
+x86_64                 randconfig-x000-201607
+x86_64                 randconfig-x009-201607
+x86_64                 randconfig-x006-201607
+x86_64                 randconfig-x003-201607
+x86_64                 randconfig-x005-201607
+x86_64                 randconfig-x001-201607
+x86_64                 randconfig-x007-201607
+x86_64                 randconfig-x008-201607
 i386                     randconfig-r0-201607
 i386                             allmodconfig
+i386                   randconfig-x001-201607
+i386                   randconfig-x007-201607
+i386                   randconfig-x004-201607
+i386                   randconfig-x002-201607
+i386                   randconfig-x008-201607
+i386                   randconfig-x003-201607
+i386                   randconfig-x006-201607
+i386                   randconfig-x005-201607
+i386                   randconfig-x009-201607
+i386                   randconfig-x000-201607
 mips                              allnoconfig
 mips                      fuloong2e_defconfig
 mips                                   jz4740
