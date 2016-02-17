@@ -1,93 +1,102 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 17 Feb 2016 13:38:28 -0800
-Subject: [Intel-wired-lan] [next PATCH 4/4] i40e/i40evf: Allow up to 12K
- bytes of data per Tx descriptor instead of 8K
-In-Reply-To: <20160217190302.10339.18783.stgit@localhost.localdomain>
-References: <20160217185838.10339.68543.stgit@localhost.localdomain>
- <20160217190302.10339.18783.stgit@localhost.localdomain>
-Message-ID: <1455745108.2958.16.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 18 Feb 2016 05:52:51 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 46c23d8fb0d806fd54cbb803a2d5213cf053e8c0 BUILD SUCCESS
+Message-ID: <56c4ebb3.TE7RsNycC/RiTGBw%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2016-02-17 at 11:03 -0800, Alexander Duyck wrote:
-> >From what I can tell the practial limitation on the size of the Tx
-> data
-> buffer is the fact that the Tx descriptor is limited to 14 bits.? As
-> such
-> we cannot use 16K as is typically used on the other Intel drivers.?
-> However
-> artificially limiting ourselves to 8K can be expensive as this means
-> that
-> we will consume up to 10 descriptors (1 context, 1 for header, and 9
-> for
-> an payload, non-8K aligned) in a single send.
-> 
-> I propose that we can reduce this by increasing the maximum data for
-> a 4K
-> aligned block to 12K.? We can reduce the descriptors used for a 32K
-> aligned
-> block by 1 by increasing the size like this.? In addition we still
-> have the
-> 4K - 1 of space that is still unused.? We can use this as a bit of
-> extra
-> padding when dealing with data that is not aligned to 4K.
-> 
-> By aligning the descriptors after the first to 4K we can improve the
-> effiency of PCIe accesses as we can avoid using byte enables and can
-> fetch
-> full TLP transactions after the first fetch of the buffer.? This
-> helps to
-> improve PCIe efficiency.? Below is the results of testing before and
-> after
-> with this patch:
-> 
-> Recv?? Send?? Send???????????????????????? Utilization????? Service
-> Demand
-> Socket Socket Message? Elapsed???????????? Send???? Recv??? Send???
-> Recv
-> Size?? Size?? Size???? Time??? Throughput? local??? remote? local??
-> remote
-> bytes? bytes? bytes??? secs.?? 10^6bits/s? % S????? % U???? us/KB??
-> us/KB
-> Before:
-> 87380? 16384? 16384??? 10.00???? 33682.24? 20.27??? -1.00?? 0.592??
-> -1.00
-> After:
-> 87380? 16384? 16384??? 10.00???? 34204.08? 20.54??? -1.00?? 0.590??
-> -1.00
-> 
-> So the net result of this patch is that we have a small gain in
-> throughput
-> due to a reduction in overhead for putting together the frame.
-> 
-> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
-> ---
-> ?drivers/net/ethernet/intel/i40e/i40e_txrx.c?? |?? 13 ++++++---
-> ?drivers/net/ethernet/intel/i40e/i40e_txrx.h?? |?? 35
-> +++++++++++++++++++++++--
-> ?drivers/net/ethernet/intel/i40evf/i40e_txrx.c |?? 13 ++++++---
-> ?drivers/net/ethernet/intel/i40evf/i40e_txrx.h |?? 35
-> +++++++++++++++++++++++--
-> ?4 files changed, 82 insertions(+), 14 deletions(-)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+46c23d8fb0d806fd54cbb803a2d5213cf053e8c0  fm10k: fix a minor typo in some comments
 
-Getting a compile error after applying this patch to my tree, here is
-what I am getting:
+elapsed time: 74m
 
-drivers/net/ethernet/intel/i40e/i40e_fcoe.c: In function
-?i40e_fcoe_xmit_frame?:
-drivers/net/ethernet/intel/i40e/i40e_fcoe.c:1374:11: error: implicit
-declaration of function ?TXD_USE_COUNT? [-Werror=implicit-function-
-declaration]
-???count = TXD_USE_COUNT(skb->len);
-???????????^
-cc1: some warnings being treated as errors
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160217/63bd49de/attachment.asc>
+configs tested: 81
+
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                 randconfig-x012-201607
+x86_64                 randconfig-x014-201607
+x86_64                 randconfig-x017-201607
+x86_64                 randconfig-x011-201607
+x86_64                 randconfig-x013-201607
+x86_64                 randconfig-x019-201607
+x86_64                 randconfig-x015-201607
+x86_64                 randconfig-x010-201607
+x86_64                 randconfig-x016-201607
+x86_64                 randconfig-x018-201607
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201607
+i386                     randconfig-s1-201607
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                   randconfig-i0-201607
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                     randconfig-i0-201607
+i386                     randconfig-i1-201607
+x86_64                                    lkp
+x86_64                                   rhel
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201607
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201607
+i386                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+
+Thanks,
+Fengguang
