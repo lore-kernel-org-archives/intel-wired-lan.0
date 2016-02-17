@@ -1,135 +1,42 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 18 Feb 2016 07:17:48 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 9672b898d3dced62a23c122bdcb5dc6755543913 BUILD SUCCESS
-Message-ID: <56c4ff9c.5sCaxAh5599WM/CU%fengguang.wu@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 17 Feb 2016 23:21:44 +0000
+Subject: [Intel-wired-lan] [next PATCH 1/4] i40e/i40evf: Break up
+ xmit_descriptor_count from maybe_stop_tx
+In-Reply-To: <20160217190243.10339.65965.stgit@localhost.localdomain>
+References: <20160217185838.10339.68543.stgit@localhost.localdomain>
+ <20160217190243.10339.65965.stgit@localhost.localdomain>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F98F081@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-9672b898d3dced62a23c122bdcb5dc6755543913  i40e/i40evf: Move Tx checksum closer to TSO
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Alexander Duyck
+> Sent: Wednesday, February 17, 2016 11:03 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH 1/4] i40e/i40evf: Break up
+> xmit_descriptor_count from maybe_stop_tx
+> 
+> In an upcoming patch I would like to have access to the descriptor count used
+> for the data portion of the frame.  For this reason I am splitting up the
+> descriptor count function from the function that stops the ring.
+> 
+> Also in order to try and reduce unnecessary duplication of code I am moving
+> the slow-path portions of the code out of being inline calls so that we can just
+> jump to them and process them instead of having to build them into each
+> function that calls them.
+> 
+> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_fcoe.c   |   14 ++++-
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c   |   71 +++++--------------------
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.h   |   44 +++++++++++++++
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c |   64 +++++------------------
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.h |   42 +++++++++++++++
+>  5 files changed, 123 insertions(+), 112 deletions(-)
 
-elapsed time: 96m
-
-configs tested: 114
-
-i386                     randconfig-a0-201607
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x012-201607
-x86_64                 randconfig-x014-201607
-x86_64                 randconfig-x017-201607
-x86_64                 randconfig-x011-201607
-x86_64                 randconfig-x013-201607
-x86_64                 randconfig-x019-201607
-x86_64                 randconfig-x015-201607
-x86_64                 randconfig-x010-201607
-x86_64                 randconfig-x016-201607
-x86_64                 randconfig-x018-201607
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201607
-i386                     randconfig-s1-201607
-x86_64                 randconfig-s0-02180522
-x86_64                 randconfig-s1-02180522
-x86_64                 randconfig-s2-02180522
-x86_64                           allmodconfig
-x86_64                 randconfig-s3-02180502
-x86_64                 randconfig-s4-02180502
-x86_64                 randconfig-s5-02180502
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201607
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                             mxs_defconfig
-sh                               alldefconfig
-sh                          sdk7786_defconfig
-sh                             shx3_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201607
-i386                     randconfig-i1-201607
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64         rhel+CONFIG_DEBUG_INFO_REDUCED
-i386                     randconfig-n0-201607
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-x86_64                 randconfig-x004-201607
-x86_64                 randconfig-x002-201607
-x86_64                 randconfig-x000-201607
-x86_64                 randconfig-x009-201607
-x86_64                 randconfig-x006-201607
-x86_64                 randconfig-x003-201607
-x86_64                 randconfig-x005-201607
-x86_64                 randconfig-x001-201607
-x86_64                 randconfig-x007-201607
-x86_64                 randconfig-x008-201607
-i386                     randconfig-r0-201607
-i386                   randconfig-x001-201607
-i386                   randconfig-x007-201607
-i386                   randconfig-x004-201607
-i386                   randconfig-x002-201607
-i386                   randconfig-x008-201607
-i386                   randconfig-x003-201607
-i386                   randconfig-x006-201607
-i386                   randconfig-x005-201607
-i386                   randconfig-x009-201607
-i386                   randconfig-x000-201607
-
-Thanks,
-Fengguang
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Patch code changes correctly applied
