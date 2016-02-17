@@ -1,42 +1,123 @@
-From: Doron Shikmoni <doron.shikmoni@gmail.com>
-Date: Wed, 17 Feb 2016 09:34:25 +0200
-Subject: [Intel-wired-lan] [PATCH] igb: Garbled output for "ethtool -m"
-Message-ID: <1455694465-1226-1-git-send-email-doron.shikmoni@gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 18 Feb 2016 02:28:26 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ b10c84e93b19f0e450ba30d1235b12a92a881369 BUILD SUCCESS
+Message-ID: <56c4bbca.825bZqrDEN5bLs/6%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello,
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+b10c84e93b19f0e450ba30d1235b12a92a881369  fm10k: fix a minor typo in some comments
 
-Garbled output for "ethtool -m ethX", in igb-driven NICs with module /
-plugin EEPROM (i.e. SFP information). Each output data byte appears
-duplicated.
+elapsed time: 62m
 
-In igb_ethtool.c, igb_get_module_eeprom() is reading the EEPROM via i2c;
-the eeprom offset for each word that's read via igb_read_phy_reg_i2c()
-was passed in #words, whereas it needs to be a byte offset.
-This patches fixes the bug.
+configs tested: 102
 
-Signed-off-by: Doron Shikmoni <doron.shikmoni@gmail.com>
----
- drivers/net/ethernet/intel/igb/igb_ethtool.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201607
+i386                               tinyconfig
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                 randconfig-x012-201607
+x86_64                 randconfig-x014-201607
+x86_64                 randconfig-x017-201607
+x86_64                 randconfig-x011-201607
+x86_64                 randconfig-x013-201607
+x86_64                 randconfig-x019-201607
+x86_64                 randconfig-x015-201607
+x86_64                 randconfig-x010-201607
+x86_64                 randconfig-x016-201607
+x86_64                 randconfig-x018-201607
+i386                     randconfig-s0-201607
+i386                     randconfig-s1-201607
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201607
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201607
+i386                     randconfig-i1-201607
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201607
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                 randconfig-x004-201607
+x86_64                 randconfig-x002-201607
+x86_64                 randconfig-x000-201607
+x86_64                 randconfig-x009-201607
+x86_64                 randconfig-x006-201607
+x86_64                 randconfig-x003-201607
+x86_64                 randconfig-x005-201607
+x86_64                 randconfig-x001-201607
+x86_64                 randconfig-x007-201607
+x86_64                 randconfig-x008-201607
+i386                     randconfig-r0-201607
+i386                             allmodconfig
+i386                   randconfig-x001-201607
+i386                   randconfig-x007-201607
+i386                   randconfig-x004-201607
+i386                   randconfig-x002-201607
+i386                   randconfig-x008-201607
+i386                   randconfig-x003-201607
+i386                   randconfig-x006-201607
+i386                   randconfig-x005-201607
+i386                   randconfig-x009-201607
+i386                   randconfig-x000-201607
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index 1d329f1..7bcc0e1e 100644
---- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -2831,7 +2831,7 @@ static int igb_get_module_eeprom(struct net_device *netdev,
- 
- 	/* Read EEPROM block, SFF-8079/SFF-8472, word at a time */
- 	for (i = 0; i < last_word - first_word + 1; i++) {
--		status = igb_read_phy_reg_i2c(hw, first_word + i, &dataword[i]);
-+		status = igb_read_phy_reg_i2c(hw, (first_word + i) * 2, &dataword[i]);
- 		if (status) {
- 			/* Error occurred while reading module */
- 			kfree(dataword);
--- 
-1.7.10.4
-
+Thanks,
+Fengguang
