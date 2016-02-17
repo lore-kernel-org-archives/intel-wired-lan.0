@@ -1,139 +1,35 @@
-From: John Holland <jotihojr@gmail.com>
-Date: Thu, 18 Feb 2016 00:49:17 +0100
-Subject: [Intel-wired-lan] [next] igb: allow setting MAC address on i211
- using a device tree blob V4
-Message-ID: <56C506FD.5040408@gmail.com>
+From: Emil Tantilov <emil.s.tantilov@intel.com>
+Date: Wed, 17 Feb 2016 15:55:06 -0800
+Subject: [Intel-wired-lan] [PATCH] ixgbe: make __ixgbe_setup_tc static
+Message-ID: <20160217235506.31327.63137.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello,
+This function is only used in ixgbe_main.c
+Resolves a "missing prototype" warning when building the driver with W=1
 
-The Intel i211 LOM pcie ethernet controllers' iNVM operates as an OTP
-and has no externel EEPROM interface [1]. The following allows the
-driver to pickup the MAC address from a device tree blob when CONFIG_OF
-has been enabled.
-
-[1]http://www.intel.com/content/www/us/en/embedded/products/networking/i211-ethernet-controller-datasheet.html
-
-Changes V2
-- Restrict searching for compatible devices to current pci device.
-
-Changes V3
-- Add device tree binding documentation.
-
-Changes V4
-- Rebase patch.
-
-Signed-off-by: John Holland<jotihojr@gmail.com>
+Reported-by: Phil Schmitt <phillip.j.schmitt@intel.com>
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 ---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-  Documentation/devicetree/bindings/net/intel,i210.txt         | 36 
-++++++++++++++++++++++
-  drivers/net/ethernet/intel/igb/igb_main.c                    | 31 
-+++++++++++++++++++
-  2 files changed, 67 insertions(+)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 46b0ac5..e8e0818 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -8355,8 +8355,8 @@ err_out:
+ 	return -EINVAL;
+ }
+ 
+-int __ixgbe_setup_tc(struct net_device *dev, u32 handle, __be16 proto,
+-		     struct tc_to_netdev *tc)
++static int __ixgbe_setup_tc(struct net_device *dev, u32 handle, __be16 proto,
++			    struct tc_to_netdev *tc)
+ {
+ 	struct ixgbe_adapter *adapter = netdev_priv(dev);
+ 
 
-diff --git a/Documentation/devicetree/bindings/net/intel,i210.txt 
-b/Documentation/devicetree/bindings/net/intel,i210.txt
-new file mode 100644
-index 0000000..d6ac8d3
---- /dev/null
-+++ b/Documentation/devicetree/bindings/net/intel,i210.txt
-@@ -0,0 +1,36 @@
-+* Intel I210, I211 PCIe bus controller
-+
-+Required properties:
-+- compatible: must be "intel,i210" as described in
-+  Documentation/devicetree/bindings/net/phy.txt;
-+
-+Optional properties:
-+- local-mac-address: as described in
-+  Documentation/devicetree/bindings/net/ethernet.txt;
-+- mac-address: as described in
-+  Documentation/devicetree/bindings/net/ethernet.txt;
-+
-+Child nodes of this PCIe bus controller node are a subset
-+of the standard Ethernet PHY device nodes.
-+
-+Example:
-+
-+/*
-+ * Set a valid MAC address from the u-boot environment variable eth1addr.
-+ * The resulting value may be viewed under
-+ * <sysfs>/firmware/devicetree/base/soc/pcie at 0x01000000/i211 at bus1/
-+ */
-+
-+#include "imx6q.dtsi";
-+
-+/ {
-+	aliases {
-+		ethernet1 = &eth1;
-+	};
-+};
-+
-+&pcie {
-+	eth1: i211 at bus1 {
-+		compatible = "intel,i210";
-+	};
-+};
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c 
-b/drivers/net/ethernet/intel/igb/igb_main.c
-index a98f418..a3203ec 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -57,6 +57,11 @@
-  #include "igb.h"
-  #include "igb_cdev.h"
-
-+#ifdef CONFIG_OF
-+#include <linux/of_net.h>
-+#include <linux/etherdevice.h>
-+#endif
-+
-  #define MAJ 5
-  #define MIN 3
-  #define BUILD 0
-@@ -2299,6 +2304,27 @@ static s32 igb_init_i2c(struct igb_adapter *adapter)
-  	return status;
-  }
-
-+#ifdef CONFIG_OF
-+/**
-+ *  igb_read_mac_addr_dts - Read mac address from the device tree blob
-+ *  @dev: pointer to device structure
-+ *  @mac_addr: pointer to found mac address
-+ **/
-+static void igb_read_mac_addr_dts(const struct device *dev, u8 *mac_addr)
-+{
-+	const u8 *mac;
-+	struct device_node *dn;
-+
-+	dn = of_find_compatible_node(dev->of_node, NULL, "intel,i210");
-+	if (dn) {
-+		mac = of_get_mac_address(dn);
-+		if (mac)
-+			ether_addr_copy(mac_addr, mac);
-+	}
-+}
-+#endif
-+
-+
-  /**
-   *  igb_probe - Device Initialization Routine
-   *  @pdev: PCI device information struct
-@@ -2511,6 +2537,11 @@ static int igb_probe(struct pci_dev *pdev, const 
-struct pci_device_id *ent)
-  	if (hw->mac.ops.read_mac_addr(hw))
-  		dev_err(&pdev->dev, "NVM Read Error\n");
-
-+#ifdef CONFIG_OF
-+	if (!is_valid_ether_addr(hw->mac.addr))
-+		igb_read_mac_addr_dts(&pdev->dev, hw->mac.addr);
-+#endif
-+
-  	memcpy(netdev->dev_addr, hw->mac.addr, netdev->addr_len);
-
-  	if (!is_valid_ether_addr(netdev->dev_addr)) {
