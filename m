@@ -1,128 +1,51 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 17 Feb 2016 07:46:45 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 98f24190488d837227f6f199988f9727ee740263 BUILD SUCCESS
-Message-ID: <56c3b4e5.gf79kFQgNSL9FnXq%fengguang.wu@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Tue, 16 Feb 2016 16:19:25 -0800
+Subject: [Intel-wired-lan] [PATCH 2/2] fm10k: Avoid crashing the kernel
+In-Reply-To: <1455668365-30782-1-git-send-email-jacob.e.keller@intel.com>
+References: <1455668365-30782-1-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1455668365-30782-2-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-98f24190488d837227f6f199988f9727ee740263  fm10k: fix a minor typo in some comments
+Use BUILD_BUG_ON() instead of BUG_ON() where appropriate to get a compile
+error rather than crash the kernel.
 
-elapsed time: 103m
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+I checked this works against allmodconfig, and defconfig. Note that
+only allmodconfig seems to break the use of BUILD_BUG_ON in the latter
+case, so I added a comment to indicate this. Sorry for the failures
+earlier.
 
-configs tested: 107
+ drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-i386                     randconfig-a0-201607
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x012-201607
-x86_64                 randconfig-x014-201607
-x86_64                 randconfig-x017-201607
-x86_64                 randconfig-x011-201607
-x86_64                 randconfig-x013-201607
-x86_64                 randconfig-x019-201607
-x86_64                 randconfig-x015-201607
-x86_64                 randconfig-x010-201607
-x86_64                 randconfig-x016-201607
-x86_64                 randconfig-x018-201607
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201607
-i386                     randconfig-s1-201607
-x86_64                           allmodconfig
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                   randconfig-i0-201607
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201607
-i386                     randconfig-i1-201607
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                               tinyconfig
-avr32        atngw100mkii_evklcd100_defconfig
-mips                                defconfig
-powerpc                     ppa8548_defconfig
-sh                ecovec24-romimage_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201607
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-x004-201607
-x86_64                 randconfig-x002-201607
-x86_64                 randconfig-x000-201607
-x86_64                 randconfig-x009-201607
-x86_64                 randconfig-x006-201607
-x86_64                 randconfig-x003-201607
-x86_64                 randconfig-x005-201607
-x86_64                 randconfig-x001-201607
-x86_64                 randconfig-x007-201607
-x86_64                 randconfig-x008-201607
-i386                     randconfig-r0-201607
-i386                   randconfig-x001-201607
-i386                   randconfig-x007-201607
-i386                   randconfig-x004-201607
-i386                   randconfig-x002-201607
-i386                   randconfig-x008-201607
-i386                   randconfig-x003-201607
-i386                   randconfig-x006-201607
-i386                   randconfig-x005-201607
-i386                   randconfig-x009-201607
-i386                   randconfig-x000-201607
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+index a1342be34be4..0b0531417835 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+@@ -468,7 +468,7 @@ static void fm10k_get_reg_q(struct fm10k_hw *hw, u32 *buff, int i)
+ 	buff[idx++] = fm10k_read_reg(hw, FM10K_TX_SGLORT(i));
+ 	buff[idx++] = fm10k_read_reg(hw, FM10K_PFVTCTL(i));
+ 
+-	BUG_ON(idx != FM10K_REGS_LEN_Q);
++	BUILD_BUG_ON(idx != FM10K_REGS_LEN_Q);
+ }
+ 
+ /* If function above adds more registers this define needs to be updated */
+@@ -484,6 +484,9 @@ static void fm10k_get_reg_vsi(struct fm10k_hw *hw, u32 *buff, int i)
+ 	for (j = 0; j < 32; j++)
+ 		buff[idx++] = fm10k_read_reg(hw, FM10K_RETA(i, j));
+ 
++	/* Unfortunately some kernel configurations prevent us from using
++	 * BUILD_BUG_ON here, notably allmodconfig.
++	 */
+ 	BUG_ON(idx != FM10K_REGS_LEN_VSI);
+ }
+ 
+-- 
+2.7.0.236.gda096a0.dirty
 
-Thanks,
-Fengguang
