@@ -1,94 +1,92 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 17 Feb 2016 13:56:17 -0800
-Subject: [Intel-wired-lan] [next PATCH 4/4] i40e/i40evf: Allow up to 12K
- bytes of data per Tx descriptor instead of 8K
-In-Reply-To: <1455745108.2958.16.camel@intel.com>
-References: <20160217185838.10339.68543.stgit@localhost.localdomain>
- <20160217190302.10339.18783.stgit@localhost.localdomain>
- <1455745108.2958.16.camel@intel.com>
-Message-ID: <CAKgT0UcXER+e+H0xTMGoXoejzgJu_w6k=Nxas4z4bOu5y5Traw@mail.gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 18 Feb 2016 06:25:23 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
+ 36b6f2cf7edd841c0b0eb7a5ec09c22bd6b5018c BUILD SUCCESS
+Message-ID: <56c4f353.oCdqkfFTEbYaXGdq%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Feb 17, 2016 at 1:38 PM, Jeff Kirsher
-<jeffrey.t.kirsher@intel.com> wrote:
-> On Wed, 2016-02-17 at 11:03 -0800, Alexander Duyck wrote:
->> >From what I can tell the practial limitation on the size of the Tx
->> data
->> buffer is the fact that the Tx descriptor is limited to 14 bits.  As
->> such
->> we cannot use 16K as is typically used on the other Intel drivers.
->> However
->> artificially limiting ourselves to 8K can be expensive as this means
->> that
->> we will consume up to 10 descriptors (1 context, 1 for header, and 9
->> for
->> an payload, non-8K aligned) in a single send.
->>
->> I propose that we can reduce this by increasing the maximum data for
->> a 4K
->> aligned block to 12K.  We can reduce the descriptors used for a 32K
->> aligned
->> block by 1 by increasing the size like this.  In addition we still
->> have the
->> 4K - 1 of space that is still unused.  We can use this as a bit of
->> extra
->> padding when dealing with data that is not aligned to 4K.
->>
->> By aligning the descriptors after the first to 4K we can improve the
->> effiency of PCIe accesses as we can avoid using byte enables and can
->> fetch
->> full TLP transactions after the first fetch of the buffer.  This
->> helps to
->> improve PCIe efficiency.  Below is the results of testing before and
->> after
->> with this patch:
->>
->> Recv   Send   Send                         Utilization      Service
->> Demand
->> Socket Socket Message  Elapsed             Send     Recv    Send
->> Recv
->> Size   Size   Size     Time    Throughput  local    remote  local
->> remote
->> bytes  bytes  bytes    secs.   10^6bits/s  % S      % U     us/KB
->> us/KB
->> Before:
->> 87380  16384  16384    10.00     33682.24  20.27    -1.00   0.592
->> -1.00
->> After:
->> 87380  16384  16384    10.00     34204.08  20.54    -1.00   0.590
->> -1.00
->>
->> So the net result of this patch is that we have a small gain in
->> throughput
->> due to a reduction in overhead for putting together the frame.
->>
->> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
->> ---
->>  drivers/net/ethernet/intel/i40e/i40e_txrx.c   |   13 ++++++---
->>  drivers/net/ethernet/intel/i40e/i40e_txrx.h   |   35
->> +++++++++++++++++++++++--
->>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c |   13 ++++++---
->>  drivers/net/ethernet/intel/i40evf/i40e_txrx.h |   35
->> +++++++++++++++++++++++--
->>  4 files changed, 82 insertions(+), 14 deletions(-)
->
-> Getting a compile error after applying this patch to my tree, here is
-> what I am getting:
->
-> drivers/net/ethernet/intel/i40e/i40e_fcoe.c: In function
-> ?i40e_fcoe_xmit_frame?:
-> drivers/net/ethernet/intel/i40e/i40e_fcoe.c:1374:11: error: implicit
-> declaration of function ?TXD_USE_COUNT? [-Werror=implicit-function-
-> declaration]
->    count = TXD_USE_COUNT(skb->len);
->            ^
-> cc1: some warnings being treated as errors
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
+36b6f2cf7edd841c0b0eb7a5ec09c22bd6b5018c  Merge branch 'inet_lro-remove'
 
-Sorry about that.  I don't think I was testing with FCoE enabled.
-I'll fix it up and resubmit.
+elapsed time: 63m
 
-- Alex
+configs tested: 71
+
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x012-201607
+x86_64                 randconfig-x014-201607
+x86_64                 randconfig-x017-201607
+x86_64                 randconfig-x011-201607
+x86_64                 randconfig-x013-201607
+x86_64                 randconfig-x019-201607
+x86_64                 randconfig-x015-201607
+x86_64                 randconfig-x010-201607
+x86_64                 randconfig-x016-201607
+x86_64                 randconfig-x018-201607
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201607
+i386                     randconfig-s1-201607
+x86_64                 randconfig-s0-02180522
+x86_64                 randconfig-s1-02180522
+x86_64                 randconfig-s2-02180522
+x86_64                 randconfig-s3-02180502
+x86_64                 randconfig-s4-02180502
+x86_64                 randconfig-s5-02180502
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                   randconfig-i0-201607
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201607
+i386                     randconfig-i1-201607
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64         rhel+CONFIG_DEBUG_INFO_REDUCED
+i386                     randconfig-n0-201607
+x86_64                 randconfig-x000-201607
+x86_64                 randconfig-x001-201607
+x86_64                 randconfig-x002-201607
+x86_64                 randconfig-x003-201607
+x86_64                 randconfig-x004-201607
+x86_64                 randconfig-x005-201607
+x86_64                 randconfig-x006-201607
+x86_64                 randconfig-x007-201607
+x86_64                 randconfig-x008-201607
+x86_64                 randconfig-x009-201607
+
+Thanks,
+Fengguang
