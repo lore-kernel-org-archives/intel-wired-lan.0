@@ -1,49 +1,93 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 17 Feb 2016 13:24:01 -0800
-Subject: [Intel-wired-lan] [next] igb: allow setting MAC address on i211
- using a device tree blob V3
-In-Reply-To: <56C4167B.7080705@gmail.com>
-References: <56C4167B.7080705@gmail.com>
-Message-ID: <1455744241.2958.14.camel@intel.com>
+Date: Wed, 17 Feb 2016 13:38:28 -0800
+Subject: [Intel-wired-lan] [next PATCH 4/4] i40e/i40evf: Allow up to 12K
+ bytes of data per Tx descriptor instead of 8K
+In-Reply-To: <20160217190302.10339.18783.stgit@localhost.localdomain>
+References: <20160217185838.10339.68543.stgit@localhost.localdomain>
+ <20160217190302.10339.18783.stgit@localhost.localdomain>
+Message-ID: <1455745108.2958.16.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2016-02-17 at 07:43 +0100, John Holland wrote:
-> Hello,
+On Wed, 2016-02-17 at 11:03 -0800, Alexander Duyck wrote:
+> >From what I can tell the practial limitation on the size of the Tx
+> data
+> buffer is the fact that the Tx descriptor is limited to 14 bits.? As
+> such
+> we cannot use 16K as is typically used on the other Intel drivers.?
+> However
+> artificially limiting ourselves to 8K can be expensive as this means
+> that
+> we will consume up to 10 descriptors (1 context, 1 for header, and 9
+> for
+> an payload, non-8K aligned) in a single send.
 > 
-> The Intel i211 LOM pcie ethernet controllers' iNVM operates as an OTP
-> and has no externel EEPROM interface [1]. The following allows the
-> driver to pickup the MAC address from a device tree blob when
-> CONFIG_OF
-> has been enabled.
+> I propose that we can reduce this by increasing the maximum data for
+> a 4K
+> aligned block to 12K.? We can reduce the descriptors used for a 32K
+> aligned
+> block by 1 by increasing the size like this.? In addition we still
+> have the
+> 4K - 1 of space that is still unused.? We can use this as a bit of
+> extra
+> padding when dealing with data that is not aligned to 4K.
 > 
-> [1]http://www.intel.com/content/www/us/en/embedded/products/networkin
-> g/i211-ethernet-controller-datasheet.html
+> By aligning the descriptors after the first to 4K we can improve the
+> effiency of PCIe accesses as we can avoid using byte enables and can
+> fetch
+> full TLP transactions after the first fetch of the buffer.? This
+> helps to
+> improve PCIe efficiency.? Below is the results of testing before and
+> after
+> with this patch:
 > 
-> Changes V2
-> - Restrict searching for compatible devices to current pci device.
+> Recv?? Send?? Send???????????????????????? Utilization????? Service
+> Demand
+> Socket Socket Message? Elapsed???????????? Send???? Recv??? Send???
+> Recv
+> Size?? Size?? Size???? Time??? Throughput? local??? remote? local??
+> remote
+> bytes? bytes? bytes??? secs.?? 10^6bits/s? % S????? % U???? us/KB??
+> us/KB
+> Before:
+> 87380? 16384? 16384??? 10.00???? 33682.24? 20.27??? -1.00?? 0.592??
+> -1.00
+> After:
+> 87380? 16384? 16384??? 10.00???? 34204.08? 20.54??? -1.00?? 0.590??
+> -1.00
 > 
-> Changes V3
-> - Add device tree binding documentation.
+> So the net result of this patch is that we have a small gain in
+> throughput
+> due to a reduction in overhead for putting together the frame.
 > 
-> Signed-off-by: John Holland<jotihojr@gmail.com>
+> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 > ---
-> 
-> ? Documentation/devicetree/bindings/net/intel,i210.txt | 36
-> ++++++++++++++++++++++++++++++++++++
-> ? drivers/net/ethernet/intel/igb/igb_main.c??????????? | 30
-> ++++++++++++++++++++++++++++++
-> ? 2 files changed, 66 insertions(+)
+> ?drivers/net/ethernet/intel/i40e/i40e_txrx.c?? |?? 13 ++++++---
+> ?drivers/net/ethernet/intel/i40e/i40e_txrx.h?? |?? 35
+> +++++++++++++++++++++++--
+> ?drivers/net/ethernet/intel/i40evf/i40e_txrx.c |?? 13 ++++++---
+> ?drivers/net/ethernet/intel/i40evf/i40e_txrx.h |?? 35
+> +++++++++++++++++++++++--
+> ?4 files changed, 82 insertions(+), 14 deletions(-)
 
-Does not apply cleanly to my tree, please make sure you rebase your
-patches based off my dev-queue branch on my next-queue tree.
+Getting a compile error after applying this patch to my tree, here is
+what I am getting:
+
+drivers/net/ethernet/intel/i40e/i40e_fcoe.c: In function
+?i40e_fcoe_xmit_frame?:
+drivers/net/ethernet/intel/i40e/i40e_fcoe.c:1374:11: error: implicit
+declaration of function ?TXD_USE_COUNT? [-Werror=implicit-function-
+declaration]
+???count = TXD_USE_COUNT(skb->len);
+???????????^
+cc1: some warnings being treated as errors
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 819 bytes
 Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160217/c1f86a7c/attachment.asc>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160217/63bd49de/attachment.asc>
