@@ -1,30 +1,39 @@
-From: John Holland <jotihojr@gmail.com>
-Date: Thu, 18 Feb 2016 16:47:31 +0100
-Subject: [Intel-wired-lan] [next] igb: allow setting MAC address on i211
-	using a device tree blob V4
-In-Reply-To: <20160218.102237.2040974178950445305.davem@davemloft.net>
-References: <56C506FD.5040408@gmail.com>
- <20160217.212910.1758016077144502307.davem@davemloft.net>
- <97579B9E-E7C6-4DBE-B1A2-027C2EA7F754@gmail.com>
- <20160218.102237.2040974178950445305.davem@davemloft.net>
-Message-ID: <CC80C810-63DC-48F0-9DA8-5B9ACFC6205A@gmail.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 18 Feb 2016 17:18:32 +0000
+Subject: [Intel-wired-lan] [next PATCH S29 01/14] i40e: Add functions
+	to	blink led on 10GBaseT PHY
+In-Reply-To: <1455754344-6372-2-git-send-email-avinash.dayanand@intel.com>
+References: <1455754344-6372-1-git-send-email-avinash.dayanand@intel.com>
+ <1455754344-6372-2-git-send-email-avinash.dayanand@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F98F1DD@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Avinash Dayanand
+> Sent: Wednesday, February 17, 2016 4:12 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S29 01/14] i40e: Add functions to blink
+> led on 10GBaseT PHY
+> 
+> From: Carolyn Wyborny <carolyn.wyborny@intel.com>
+> 
+> This patch adds functions to blink led on devices using 10GBaseT PHY since
+> MAC registers used in other designs do not work in this device configuration.
+> 
+> Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
+> Change-ID: Id4b88c93c649fd2b88073a00b42867a77c761ca3
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_common.c      | 329
+> +++++++++++++++++++++
+>  drivers/net/ethernet/intel/i40e/i40e_prototype.h   |  13 +
+>  drivers/net/ethernet/intel/i40e/i40e_type.h        |  16 +
+>  drivers/net/ethernet/intel/i40evf/i40e_prototype.h |   7 +
+>  4 files changed, 365 insertions(+)
 
-> On Feb 18, 2016, at 16:22, David Miller <davem@davemloft.net> wrote:
-> 
-> From: John Holland <jotihojr@gmail.com>
-> Date: Thu, 18 Feb 2016 08:53:07 +0100
-> 
->> The PCI path in eth_platform_get_mac_address() didn't return a devicetree node...
-> 
-> Then fix your platform such that pci_device_to_OF_node() works
-> properly instead of adding localized hacks to device drivers.
-> 
-> Jeff, do not apply this patch.
-
-Please take a look at V5.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Adaptor LED blink functionality works properly on 10GBaseT PHY
