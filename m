@@ -1,30 +1,25 @@
-From: Brandeburg, Jesse <jesse.brandeburg@intel.com>
-Date: Thu, 18 Feb 2016 00:36:18 +0000
-Subject: [Intel-wired-lan] [next PATCH S29 12/14] i40e: Fix for the
-	NPAR	PSOD issue
-In-Reply-To: <1455754344-6372-13-git-send-email-avinash.dayanand@intel.com>
-References: <1455754344-6372-1-git-send-email-avinash.dayanand@intel.com>
- <1455754344-6372-13-git-send-email-avinash.dayanand@intel.com>
-Message-ID: <253CF818969A9240AB2054BF91F2C2BC37734421@ORSMSX114.amr.corp.intel.com>
+From: David Miller <davem@davemloft.net>
+Date: Wed, 17 Feb 2016 21:29:10 -0500 (EST)
+Subject: [Intel-wired-lan] [next] igb: allow setting MAC address on i211
+ using a device tree blob V4
+In-Reply-To: <56C506FD.5040408@gmail.com>
+References: <56C506FD.5040408@gmail.com>
+Message-ID: <20160217.212910.1758016077144502307.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The title of this patch must be fixed.
+From: John Holland <jotihojr@gmail.com>
+Date: Thu, 18 Feb 2016 00:49:17 +0100
 
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Avinash Dayanand
-Sent: Wednesday, February 17, 2016 4:12 PM
-To: intel-wired-lan@lists.osuosl.org
-Subject: [Intel-wired-lan] [next PATCH S29 12/14] i40e: Fix for the NPAR PSOD issue
+> The Intel i211 LOM pcie ethernet controllers' iNVM operates as an OTP
+> and has no externel EEPROM interface [1]. The following allows the
+> driver to pickup the MAC address from a device tree blob when
+> CONFIG_OF
+> has been enabled.
 
-From: Pandi Kumar Maharajan <pandi.maharajan@intel.com>
-
-We need to suspend scheduling or any pending service task during driver
-unload process, so that new task will not be scheduled. This patch sets
-the suspend flag bit during reload which avoids service task execution.
-
-Signed-off-by: Pandi Kumar Maharajan <pandi.maharajan@intel.com>
-Change-ID: I017c57b5d6656564556e3c5387da671369a572ac
+Please use the generic eth_platform_get_mac_address(), or
+alternatively structure your code like the ixgbe and other cases so
+that SPARC and other OF platforms get this support as well.
