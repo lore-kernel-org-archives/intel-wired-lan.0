@@ -1,49 +1,124 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu, 18 Feb 2016 01:15:01 -0800
-Subject: [Intel-wired-lan] [next] igb: allow setting MAC address on i211
- using a device tree blob V4
-In-Reply-To: <97579B9E-E7C6-4DBE-B1A2-027C2EA7F754@gmail.com>
-References: <56C506FD.5040408@gmail.com>
- <20160217.212910.1758016077144502307.davem@davemloft.net>
- <97579B9E-E7C6-4DBE-B1A2-027C2EA7F754@gmail.com>
-Message-ID: <1455786901.3128.13.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 18 Feb 2016 18:03:10 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE]
+ 8888fd8843ed501a26d9b74de0975b1ace663231 BUILD SUCCESS
+Message-ID: <56c596de.uyFx2wO2UaT0GMbZ%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 2016-02-18 at 08:53 +0100, John Holland wrote:
-> 
-> > On Feb 18, 2016, at 03:29, David Miller <davem@davemloft.net>
-> wrote:
-> >?
-> > From: John Holland <jotihojr@gmail.com>
-> > Date: Thu, 18 Feb 2016 00:49:17 +0100
-> >?
-> >> The Intel i211 LOM pcie ethernet controllers' iNVM operates as an
-> OTP
-> >> and has no externel EEPROM interface [1]. The following allows the
-> >> driver to pickup the MAC address from a device tree blob when
-> >> CONFIG_OF
-> >> has been enabled.
-> >?
-> > Please use the generic eth_platform_get_mac_address(), or
-> > alternatively structure your code like the ixgbe and other cases so
-> > that SPARC and other OF platforms get this support as well.
-> 
-> Don't know what you mean. The PCI path in
-> eth_platform_get_mac_address() didn't return a devicetree node and I
-> can find no instance of of_<function> use in ixgbe.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
+8888fd8843ed501a26d9b74de0975b1ace663231  i40e/i40evf: Bump i40e to 1.4.15 and i40evf to 1.4.11.
 
-See commit?e1be080f292eba2ef96af999057d1603cd50b473 in my dev-queue
-branch. ?Sowmini Varadhan provided a patch to
-use?eth_platform_get_mac_address() instead of the "CONFIG_SPARC"
-solution.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160218/9f38b301/attachment.asc>
+elapsed time: 57m
+
+configs tested: 103
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201607
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+parisc                         b180_defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x012-201607
+x86_64                 randconfig-x014-201607
+x86_64                 randconfig-x017-201607
+x86_64                 randconfig-x011-201607
+x86_64                 randconfig-x013-201607
+x86_64                 randconfig-x019-201607
+x86_64                 randconfig-x015-201607
+x86_64                 randconfig-x010-201607
+x86_64                 randconfig-x016-201607
+x86_64                 randconfig-x018-201607
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201607
+i386                     randconfig-s1-201607
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201607
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201607
+i386                     randconfig-i1-201607
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201607
+x86_64                           allmodconfig
+x86_64                 randconfig-x004-201607
+x86_64                 randconfig-x002-201607
+x86_64                 randconfig-x000-201607
+x86_64                 randconfig-x009-201607
+x86_64                 randconfig-x006-201607
+x86_64                 randconfig-x003-201607
+x86_64                 randconfig-x005-201607
+x86_64                 randconfig-x001-201607
+x86_64                 randconfig-x007-201607
+x86_64                 randconfig-x008-201607
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201607
+i386                   randconfig-x001-201607
+i386                   randconfig-x007-201607
+i386                   randconfig-x004-201607
+i386                   randconfig-x002-201607
+i386                   randconfig-x008-201607
+i386                   randconfig-x003-201607
+i386                   randconfig-x006-201607
+i386                   randconfig-x005-201607
+i386                   randconfig-x009-201607
+i386                   randconfig-x000-201607
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+
+Thanks,
+Fengguang
