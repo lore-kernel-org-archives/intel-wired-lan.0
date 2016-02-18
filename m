@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 18 Feb 2016 19:00:26 +0000
-Subject: [Intel-wired-lan] [next PATCH S29 05/14] i40e: Do not wait for
- Rx	queue disable in DCB reconfig
-In-Reply-To: <1455754344-6372-6-git-send-email-avinash.dayanand@intel.com>
+Date: Thu, 18 Feb 2016 19:04:58 +0000
+Subject: [Intel-wired-lan] [next PATCH S29 06/14] i40e: Fix for
+ unexpected	messaging
+In-Reply-To: <1455754344-6372-7-git-send-email-avinash.dayanand@intel.com>
 References: <1455754344-6372-1-git-send-email-avinash.dayanand@intel.com>
- <1455754344-6372-6-git-send-email-avinash.dayanand@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F98F265@ORSMSX104.amr.corp.intel.com>
+ <1455754344-6372-7-git-send-email-avinash.dayanand@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F98F275@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,25 +17,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Avinash Dayanand
 > Sent: Wednesday, February 17, 2016 4:12 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S29 05/14] i40e: Do not wait for Rx
-> queue disable in DCB reconfig
+> Subject: [Intel-wired-lan] [next PATCH S29 06/14] i40e: Fix for unexpected
+> messaging
 > 
-> From: Neerav Parikh <neerav.parikh@intel.com>
+> From: Carolyn Wyborny <carolyn.wyborny@intel.com>
 > 
-> Just like Tx queues don't wait for Rx queues to be disabled before DCB has
-> been reconfigured.
-> Check the queues are disabled only after the DCB configuration has been
-> applied to the VSI(s) managed by the PF driver.
+> This fixes an issue where a previously removed message has returned.
+> Changing the message type to dev_dbg leaves the info, if desired, but takes
+> it out of normal everyday usage. Also changed call to only provide port data
+> when its valid and not when its not (delete case).
 > 
-> In case of any timeout issue a PF reset to recover.
-> 
-> Signed-off-by: Neerav Parikh <neerav.parikh@intel.com>
-> Change-ID: Ic51e94c25baf9a5480cee983f35d15575a88642c
+> Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
+> Change-ID: Ief6f33b915f6364c24fa8e5789c2fc3168b5e2ed
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 33
-> +++++++++++++++++++++--------
->  1 file changed, 24 insertions(+), 9 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 13 +++++++------
+>  1 file changed, 7 insertions(+), 6 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Code changes properly applied, does not break base driver.
-
+Code changes properly applied
