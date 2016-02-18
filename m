@@ -1,10 +1,10 @@
 From: Avinash Dayanand <avinash.dayanand@intel.com>
-Date: Wed, 17 Feb 2016 16:12:12 -0800
-Subject: [Intel-wired-lan] [next PATCH S29 02/14] i40e: Fix led blink
-	capability for 10GBaseT PHY
+Date: Wed, 17 Feb 2016 16:12:16 -0800
+Subject: [Intel-wired-lan] [next PATCH S29 06/14] i40e: Fix for unexpected
+	messaging
 In-Reply-To: <1455754344-6372-1-git-send-email-avinash.dayanand@intel.com>
 References: <1455754344-6372-1-git-send-email-avinash.dayanand@intel.com>
-Message-ID: <1455754344-6372-3-git-send-email-avinash.dayanand@intel.com>
+Message-ID: <1455754344-6372-7-git-send-email-avinash.dayanand@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,164 +13,42 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Carolyn Wyborny <carolyn.wyborny@intel.com>
 
-This patch fixes a problem where the ethtool identify adapter
-functionality did not work for some copper PHY's.  Without this
-patch, the blink led functionality fails on some parts.  This
-patch adds PHY write code to blink led's on parts where this
-functionality is contained in the PHY rather than the MAC.
+This fixes an issue where a previously removed message
+has returned.  Changing the message type to dev_dbg
+leaves the info, if desired, but takes it out of normal
+everyday usage. Also changed call to only provide port
+data when its valid and not when its not (delete case).
 
 Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
-Change-ID: Iee7b3453f61d5ffd0b3d03f720ee4f17f919fcc2
+Change-ID: Ief6f33b915f6364c24fa8e5789c2fc3168b5e2ed
 ---
- drivers/net/ethernet/intel/i40e/i40e.h         |  3 +++
- drivers/net/ethernet/intel/i40e/i40e_common.c  | 26 +++++++++++++++++++
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 36 +++++++++++++++++++++-----
- drivers/net/ethernet/intel/i40e/i40e_main.c    |  4 +++
- 4 files changed, 63 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index a0ca94d..e7fcb81 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -111,6 +111,7 @@
- #define I40E_OEM_VER_PATCH_MASK    0xff
- #define I40E_OEM_VER_BUILD_SHIFT   8
- #define I40E_OEM_VER_SHIFT         24
-+#define I40E_PHY_DEBUG_PORT        BIT(4)
- 
- /* The values in here are decimal coded as hex as is the case in the NVM map*/
- #define I40E_CURRENT_NVM_VERSION_HI 0x2
-@@ -355,6 +356,7 @@ struct i40e_pf {
- #define I40E_FLAG_NO_DCB_SUPPORT		BIT_ULL(45)
- #define I40E_FLAG_USE_SET_LLDP_MIB		BIT_ULL(46)
- #define I40E_FLAG_STOP_FW_LLDP			BIT_ULL(47)
-+#define I40E_FLAG_HAVE_10GBASET_PHY		BIT_ULL(48)
- #define I40E_FLAG_PF_MAC			BIT_ULL(50)
- 
- 	/* tracks features that get auto disabled by errors */
-@@ -440,6 +442,7 @@ struct i40e_pf {
- 
- 	u32 ioremap_len;
- 	u32 fd_inv;
-+	u16 phy_led_val;
- };
- 
- struct i40e_mac_filter {
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 447729f..d417193 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -1888,6 +1888,32 @@ i40e_status i40e_aq_set_phy_int_mask(struct i40e_hw *hw,
- }
- 
- /**
-+ * i40e_aq_set_phy_debug
-+ * @hw: pointer to the hw struct
-+ * @cmd_flags: debug command flags
-+ * @cmd_details: pointer to command details structure or NULL
-+ *
-+ * Reset the external PHY.
-+ **/
-+enum i40e_status_code i40e_aq_set_phy_debug(struct i40e_hw *hw, u8 cmd_flags,
-+					struct i40e_asq_cmd_details *cmd_details)
-+{
-+	struct i40e_aq_desc desc;
-+	struct i40e_aqc_set_phy_debug *cmd =
-+		(struct i40e_aqc_set_phy_debug *)&desc.params.raw;
-+	enum i40e_status_code status;
-+
-+	i40e_fill_default_direct_cmd_desc(&desc,
-+					  i40e_aqc_opc_set_phy_debug);
-+
-+	cmd->command_flags = cmd_flags;
-+
-+	status = i40e_asq_send_command(hw, &desc, NULL, 0, cmd_details);
-+
-+	return status;
-+}
-+
-+/**
-  * i40e_aq_add_vsi
-  * @hw: pointer to the hw struct
-  * @vsi_ctx: pointer to a vsi context struct
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 58a23d9..86765d4 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -1826,28 +1826,52 @@ static int i40e_set_phys_id(struct net_device *netdev,
- 			    enum ethtool_phys_id_state state)
- {
- 	struct i40e_netdev_priv *np = netdev_priv(netdev);
-+	i40e_status ret = 0;
- 	struct i40e_pf *pf = np->vsi->back;
- 	struct i40e_hw *hw = &pf->hw;
- 	int blink_freq = 2;
-+	u16 temp_status;
- 
- 	switch (state) {
- 	case ETHTOOL_ID_ACTIVE:
--		pf->led_status = i40e_led_get(hw);
-+		if (!(pf->flags & I40E_FLAG_HAVE_10GBASET_PHY)) {
-+			pf->led_status = i40e_led_get(hw);
-+		} else {
-+			i40e_aq_set_phy_debug(hw, I40E_PHY_DEBUG_PORT, NULL);
-+			ret = i40e_led_get_phy(hw, &temp_status,
-+					       &pf->phy_led_val);
-+			pf->led_status = temp_status;
-+		}
- 		return blink_freq;
- 	case ETHTOOL_ID_ON:
--		i40e_led_set(hw, 0xF, false);
-+		if (!(pf->flags & I40E_FLAG_HAVE_10GBASET_PHY))
-+			i40e_led_set(hw, 0xf, false);
-+		else
-+			ret = i40e_led_set_phy(hw, true, pf->led_status, 0);
- 		break;
- 	case ETHTOOL_ID_OFF:
--		i40e_led_set(hw, 0x0, false);
-+		if (!(pf->flags & I40E_FLAG_HAVE_10GBASET_PHY))
-+			i40e_led_set(hw, 0x0, false);
-+		else
-+			ret = i40e_led_set_phy(hw, false, pf->led_status, 0);
- 		break;
- 	case ETHTOOL_ID_INACTIVE:
--		i40e_led_set(hw, pf->led_status, false);
-+		if (!(pf->flags & I40E_FLAG_HAVE_10GBASET_PHY)) {
-+			i40e_led_set(hw, false, pf->led_status);
-+		} else {
-+			ret = i40e_led_set_phy(hw, false, pf->led_status,
-+					       (pf->phy_led_val |
-+					       I40E_PHY_LED_MODE_ORIG));
-+			i40e_aq_set_phy_debug(hw, 0, NULL);
-+		}
- 		break;
- 	default:
- 		break;
- 	}
--
--	return 0;
-+		if (ret)
-+			return -ENOENT;
-+		else
-+			return 0;
- }
- 
- /* NOTE: i40e hardware uses a conversion factor of 2 for Interrupt
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index fcef5cb..8919dc7 100644
+index 3c658a29..2a02f93 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -11126,6 +11126,10 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	i40e_add_filter_to_drop_tx_flow_control_frames(&pf->hw,
- 						       pf->main_vsi_seid);
+@@ -7105,12 +7105,13 @@ static void i40e_sync_udp_filters_subtask(struct i40e_pf *pf)
+ 				ret = i40e_aq_del_udp_tunnel(hw, i, NULL);
  
-+	if ((pf->hw.device_id == I40E_DEV_ID_10G_BASE_T) ||
-+	    (pf->hw.device_id == I40E_DEV_ID_10G_BASE_T4))
-+		pf->flags |= I40E_FLAG_HAVE_10GBASET_PHY;
-+
- 	/* print a string summarizing features */
- 	i40e_print_features(pf);
- 
+ 			if (ret) {
+-				dev_info(&pf->pdev->dev,
+-					 "%s vxlan port %d, index %d failed, err %s aq_err %s\n",
+-					 port ? "add" : "delete",
+-					 ntohs(port), i,
+-					 i40e_stat_str(&pf->hw, ret),
+-					 i40e_aq_str(&pf->hw,
++				dev_dbg(&pf->pdev->dev,
++					"%s %s port %d, index %d failed, err %s aq_err %s\n",
++					pf->udp_ports[i].type ? "vxlan" : "geneve",
++					port ? "add" : "delete",
++					ntohs(port), i,
++					i40e_stat_str(&pf->hw, ret),
++					i40e_aq_str(&pf->hw,
+ 						    pf->hw.aq.asq_last_status));
+ 				pf->udp_ports[i].index = 0;
+ 			}
 -- 
 2.1.0
 
