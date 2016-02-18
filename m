@@ -1,53 +1,361 @@
 From: Avinash Dayanand <avinash.dayanand@intel.com>
-Date: Wed, 17 Feb 2016 16:12:24 -0800
-Subject: [Intel-wired-lan] [next PATCH S29 14/14] i40e/i40evf: Bump i40e to
-	1.4.25 and i40evf to 1.4.15
+Date: Wed, 17 Feb 2016 16:12:20 -0800
+Subject: [Intel-wired-lan] [next PATCH S29 10/14] i40e: implement and use rx
+	ctl helper functions
 In-Reply-To: <1455754344-6372-1-git-send-email-avinash.dayanand@intel.com>
 References: <1455754344-6372-1-git-send-email-avinash.dayanand@intel.com>
-Message-ID: <1455754344-6372-15-git-send-email-avinash.dayanand@intel.com>
+Message-ID: <1455754344-6372-11-git-send-email-avinash.dayanand@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Shannon Nelson <shannon.nelson@intel.com>
 
-Bump.
+Use the new AdminQ functions for safely accessing the Rx control
+registers that may be affected by heavy small packet traffic.
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Change-ID: Ifa19aadaa892ad103f1b96fe2361fa690912c6a3
+Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+Change-ID: Ibb00983e8dcba71f4b760222a609a5fcaa726f18
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_common.c      | 128 ++++++++++++++++++++-
+ drivers/net/ethernet/intel/i40e/i40e_prototype.h   |   8 ++
+ drivers/net/ethernet/intel/i40evf/i40e_common.c    | 125 ++++++++++++++++++++
+ drivers/net/ethernet/intel/i40evf/i40e_prototype.h |   8 ++
+ 4 files changed, 266 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 50c2c71..beeaaa9 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -46,7 +46,7 @@ static const char i40e_driver_string[] =
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 3a57e59..74d9599 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -1328,7 +1328,7 @@ void i40e_clear_hw(struct i40e_hw *hw)
+ 	num_vf_int = (val & I40E_GLPCI_CNF2_MSI_X_VF_N_MASK) >>
+ 		     I40E_GLPCI_CNF2_MSI_X_VF_N_SHIFT;
  
- #define DRV_VERSION_MAJOR 1
- #define DRV_VERSION_MINOR 4
--#define DRV_VERSION_BUILD 15
-+#define DRV_VERSION_BUILD 25
- #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
- 	     __stringify(DRV_VERSION_MINOR) "." \
- 	     __stringify(DRV_VERSION_BUILD)    DRV_KERN
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 3396fe3..4b70aae 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -38,7 +38,7 @@ static const char i40evf_driver_string[] =
+-	val = rd32(hw, I40E_PFLAN_QALLOC);
++	val = i40e_read_rx_ctl(hw, I40E_PFLAN_QALLOC);
+ 	base_queue = (val & I40E_PFLAN_QALLOC_FIRSTQ_MASK) >>
+ 		     I40E_PFLAN_QALLOC_FIRSTQ_SHIFT;
+ 	j = (val & I40E_PFLAN_QALLOC_LASTQ_MASK) >>
+@@ -3882,7 +3882,7 @@ i40e_status i40e_set_filter_control(struct i40e_hw *hw,
+ 		return ret;
  
- #define DRV_VERSION_MAJOR 1
- #define DRV_VERSION_MINOR 4
--#define DRV_VERSION_BUILD 11
-+#define DRV_VERSION_BUILD 15
- #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
- 	     __stringify(DRV_VERSION_MINOR) "." \
- 	     __stringify(DRV_VERSION_BUILD) \
+ 	/* Read the PF Queue Filter control register */
+-	val = rd32(hw, I40E_PFQF_CTL_0);
++	val = i40e_read_rx_ctl(hw, I40E_PFQF_CTL_0);
+ 
+ 	/* Program required PE hash buckets for the PF */
+ 	val &= ~I40E_PFQF_CTL_0_PEHSIZE_MASK;
+@@ -3919,7 +3919,7 @@ i40e_status i40e_set_filter_control(struct i40e_hw *hw,
+ 	if (settings->enable_macvlan)
+ 		val |= I40E_PFQF_CTL_0_MACVLAN_ENA_MASK;
+ 
+-	wr32(hw, I40E_PFQF_CTL_0, val);
++	i40e_write_rx_ctl(hw, I40E_PFQF_CTL_0, val);
+ 
+ 	return 0;
+ }
+@@ -4575,3 +4575,125 @@ restore_config:
+ 					 phy_addr, led_ctl);
+ 	return status;
+ }
++
++/**
++ * i40e_aq_rx_ctl_read_register - use FW to read from an Rx control register
++ * @hw: pointer to the hw struct
++ * @reg_addr: register address
++ * @reg_val: ptr to register value
++ * @cmd_details: pointer to command details structure or NULL
++ *
++ * Use the firmware to read the Rx control register,
++ * especially useful if the Rx unit is under heavy pressure
++ **/
++i40e_status i40e_aq_rx_ctl_read_register(struct i40e_hw *hw,
++				u32 reg_addr, u32 *reg_val,
++				struct i40e_asq_cmd_details *cmd_details)
++{
++	struct i40e_aq_desc desc;
++	struct i40e_aqc_rx_ctl_reg_read_write *cmd_resp =
++		(struct i40e_aqc_rx_ctl_reg_read_write *)&desc.params.raw;
++	i40e_status status;
++
++	if (!reg_val)
++		return I40E_ERR_PARAM;
++
++	i40e_fill_default_direct_cmd_desc(&desc, i40e_aqc_opc_rx_ctl_reg_read);
++
++	cmd_resp->address = cpu_to_le32(reg_addr);
++
++	status = i40e_asq_send_command(hw, &desc, NULL, 0, cmd_details);
++
++	if (status == 0)
++		*reg_val = le32_to_cpu(cmd_resp->value);
++
++	return status;
++}
++
++/**
++ * i40e_read_rx_ctl - read from an Rx control register
++ * @hw: pointer to the hw struct
++ * @reg_addr: register address
++ **/
++u32 i40e_read_rx_ctl(struct i40e_hw *hw, u32 reg_addr)
++{
++	i40e_status status = 0;
++	bool use_register;
++	int retry = 5;
++	u32 val = 0;
++
++	use_register = (hw->aq.api_maj_ver == 1) && (hw->aq.api_min_ver < 5);
++	if (!use_register) {
++do_retry:
++		status = i40e_aq_rx_ctl_read_register(hw, reg_addr, &val, NULL);
++		if (hw->aq.asq_last_status == I40E_AQ_RC_EAGAIN && retry) {
++			usleep_range(1000, 2000);
++			retry--;
++			goto do_retry;
++		}
++	}
++
++	/* if the AQ access failed, try the old-fashioned way */
++	if (status || use_register)
++		val = rd32(hw, reg_addr);
++
++	return val;
++}
++
++/**
++ * i40e_aq_rx_ctl_write_register
++ * @hw: pointer to the hw struct
++ * @reg_addr: register address
++ * @reg_val: register value
++ * @cmd_details: pointer to command details structure or NULL
++ *
++ * Use the firmware to write to an Rx control register,
++ * especially useful if the Rx unit is under heavy pressure
++ **/
++i40e_status i40e_aq_rx_ctl_write_register(struct i40e_hw *hw,
++				u32 reg_addr, u32 reg_val,
++				struct i40e_asq_cmd_details *cmd_details)
++{
++	struct i40e_aq_desc desc;
++	struct i40e_aqc_rx_ctl_reg_read_write *cmd =
++		(struct i40e_aqc_rx_ctl_reg_read_write *)&desc.params.raw;
++	i40e_status status;
++
++	i40e_fill_default_direct_cmd_desc(&desc, i40e_aqc_opc_rx_ctl_reg_write);
++
++	cmd->address = cpu_to_le32(reg_addr);
++	cmd->value = cpu_to_le32(reg_val);
++
++	status = i40e_asq_send_command(hw, &desc, NULL, 0, cmd_details);
++
++	return status;
++}
++
++/**
++ * i40e_write_rx_ctl - write to an Rx control register
++ * @hw: pointer to the hw struct
++ * @reg_addr: register address
++ * @reg_val: register value
++ **/
++void i40e_write_rx_ctl(struct i40e_hw *hw, u32 reg_addr, u32 reg_val)
++{
++	i40e_status status = 0;
++	bool use_register;
++	int retry = 5;
++
++	use_register = (hw->aq.api_maj_ver == 1) && (hw->aq.api_min_ver < 5);
++	if (!use_register) {
++do_retry:
++		status = i40e_aq_rx_ctl_write_register(hw, reg_addr,
++						       reg_val, NULL);
++		if (hw->aq.asq_last_status == I40E_AQ_RC_EAGAIN && retry) {
++			usleep_range(1000, 2000);
++			retry--;
++			goto do_retry;
++		}
++	}
++
++	/* if the AQ access failed, try the old-fashioned way */
++	if (status || use_register)
++		wr32(hw, reg_addr, reg_val);
++}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+index ca2f7ac..d51eee5 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+@@ -342,6 +342,14 @@ i40e_status i40e_aq_debug_dump(struct i40e_hw *hw, u8 cluster_id,
+ 			       struct i40e_asq_cmd_details *cmd_details);
+ void i40e_add_filter_to_drop_tx_flow_control_frames(struct i40e_hw *hw,
+ 						    u16 vsi_seid);
++i40e_status i40e_aq_rx_ctl_read_register(struct i40e_hw *hw,
++				u32 reg_addr, u32 *reg_val,
++				struct i40e_asq_cmd_details *cmd_details);
++u32 i40e_read_rx_ctl(struct i40e_hw *hw, u32 reg_addr);
++i40e_status i40e_aq_rx_ctl_write_register(struct i40e_hw *hw,
++				u32 reg_addr, u32 reg_val,
++				struct i40e_asq_cmd_details *cmd_details);
++void i40e_write_rx_ctl(struct i40e_hw *hw, u32 reg_addr, u32 reg_val);
+ i40e_status i40e_read_phy_register(struct i40e_hw *hw, u8 page,
+ 				   u16 reg, u8 phy_addr, u16 *value);
+ i40e_status i40e_write_phy_register(struct i40e_hw *hw, u8 page,
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_common.c b/drivers/net/ethernet/intel/i40evf/i40e_common.c
+index 938783e..771ac6a 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_common.c
+@@ -904,6 +904,131 @@ struct i40e_rx_ptype_decoded i40evf_ptype_lookup[] = {
+ };
+ 
+ /**
++ * i40evf_aq_rx_ctl_read_register - use FW to read from an Rx control register
++ * @hw: pointer to the hw struct
++ * @reg_addr: register address
++ * @reg_val: ptr to register value
++ * @cmd_details: pointer to command details structure or NULL
++ *
++ * Use the firmware to read the Rx control register,
++ * especially useful if the Rx unit is under heavy pressure
++ **/
++i40e_status i40evf_aq_rx_ctl_read_register(struct i40e_hw *hw,
++				u32 reg_addr, u32 *reg_val,
++				struct i40e_asq_cmd_details *cmd_details)
++{
++	struct i40e_aq_desc desc;
++	struct i40e_aqc_rx_ctl_reg_read_write *cmd_resp =
++		(struct i40e_aqc_rx_ctl_reg_read_write *)&desc.params.raw;
++	i40e_status status;
++
++	if (!reg_val)
++		return I40E_ERR_PARAM;
++
++	i40evf_fill_default_direct_cmd_desc(&desc,
++					    i40e_aqc_opc_rx_ctl_reg_read);
++
++	cmd_resp->address = cpu_to_le32(reg_addr);
++
++	status = i40evf_asq_send_command(hw, &desc, NULL, 0, cmd_details);
++
++	if (status == 0)
++		*reg_val = le32_to_cpu(cmd_resp->value);
++
++	return status;
++}
++
++/**
++ * i40evf_read_rx_ctl - read from an Rx control register
++ * @hw: pointer to the hw struct
++ * @reg_addr: register address
++ **/
++u32 i40evf_read_rx_ctl(struct i40e_hw *hw, u32 reg_addr)
++{
++	i40e_status status = 0;
++	bool use_register;
++	int retry = 5;
++	u32 val = 0;
++
++	use_register = (hw->aq.api_maj_ver == 1) && (hw->aq.api_min_ver < 5);
++	if (!use_register) {
++do_retry:
++		status = i40evf_aq_rx_ctl_read_register(hw, reg_addr,
++							&val, NULL);
++		if (hw->aq.asq_last_status == I40E_AQ_RC_EAGAIN && retry) {
++			usleep_range(1000, 2000);
++			retry--;
++			goto do_retry;
++		}
++	}
++
++	/* if the AQ access failed, try the old-fashioned way */
++	if (status || use_register)
++		val = rd32(hw, reg_addr);
++
++	return val;
++}
++
++/**
++ * i40evf_aq_rx_ctl_write_register
++ * @hw: pointer to the hw struct
++ * @reg_addr: register address
++ * @reg_val: register value
++ * @cmd_details: pointer to command details structure or NULL
++ *
++ * Use the firmware to write to an Rx control register,
++ * especially useful if the Rx unit is under heavy pressure
++ **/
++i40e_status i40evf_aq_rx_ctl_write_register(struct i40e_hw *hw,
++				u32 reg_addr, u32 reg_val,
++				struct i40e_asq_cmd_details *cmd_details)
++{
++	struct i40e_aq_desc desc;
++	struct i40e_aqc_rx_ctl_reg_read_write *cmd =
++		(struct i40e_aqc_rx_ctl_reg_read_write *)&desc.params.raw;
++	i40e_status status;
++
++	i40evf_fill_default_direct_cmd_desc(&desc,
++					    i40e_aqc_opc_rx_ctl_reg_write);
++
++	cmd->address = cpu_to_le32(reg_addr);
++	cmd->value = cpu_to_le32(reg_val);
++
++	status = i40evf_asq_send_command(hw, &desc, NULL, 0, cmd_details);
++
++	return status;
++}
++
++/**
++ * i40evf_write_rx_ctl - write to an Rx control register
++ * @hw: pointer to the hw struct
++ * @reg_addr: register address
++ * @reg_val: register value
++ **/
++void i40evf_write_rx_ctl(struct i40e_hw *hw, u32 reg_addr, u32 reg_val)
++{
++	i40e_status status = 0;
++	bool use_register;
++	int retry = 5;
++
++	use_register = (hw->aq.api_maj_ver == 1) && (hw->aq.api_min_ver < 5);
++	if (!use_register) {
++do_retry:
++		status = i40evf_aq_rx_ctl_write_register(hw, reg_addr,
++							 reg_val, NULL);
++		if (hw->aq.asq_last_status == I40E_AQ_RC_EAGAIN && retry) {
++			usleep_range(1000, 2000);
++			retry--;
++			goto do_retry;
++		}
++	}
++
++	/* if the AQ access failed, try the old-fashioned way */
++	if (status || use_register)
++		wr32(hw, reg_addr, reg_val);
++}
++
++/**
+  * i40e_aq_send_msg_to_pf
+  * @hw: pointer to the hardware structure
+  * @v_opcode: opcodes for VF-PF communication
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_prototype.h b/drivers/net/ethernet/intel/i40evf/i40e_prototype.h
+index fa34d85..d89d521 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_prototype.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_prototype.h
+@@ -103,6 +103,14 @@ i40e_status i40e_aq_add_rem_control_packet_filter(struct i40e_hw *hw,
+ 				struct i40e_asq_cmd_details *cmd_details);
+ void i40e_add_filter_to_drop_tx_flow_control_frames(struct i40e_hw *hw,
+ 						    u16 vsi_seid);
++i40e_status i40evf_aq_rx_ctl_read_register(struct i40e_hw *hw,
++				u32 reg_addr, u32 *reg_val,
++				struct i40e_asq_cmd_details *cmd_details);
++u32 i40evf_read_rx_ctl(struct i40e_hw *hw, u32 reg_addr);
++i40e_status i40evf_aq_rx_ctl_write_register(struct i40e_hw *hw,
++				u32 reg_addr, u32 reg_val,
++				struct i40e_asq_cmd_details *cmd_details);
++void i40evf_write_rx_ctl(struct i40e_hw *hw, u32 reg_addr, u32 reg_val);
+ i40e_status i40e_read_phy_register(struct i40e_hw *hw, u8 page,
+ 				   u16 reg, u8 phy_addr, u16 *value);
+ i40e_status i40e_write_phy_register(struct i40e_hw *hw, u8 page,
 -- 
 2.1.0
 
