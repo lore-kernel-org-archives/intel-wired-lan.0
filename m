@@ -1,45 +1,100 @@
 From: Avinash Dayanand <avinash.dayanand@intel.com>
-Date: Wed, 17 Feb 2016 16:12:14 -0800
-Subject: [Intel-wired-lan] [next PATCH S29 04/14] i40e: Add a client
-	definition of I40E_MAX_USER_PRIORITY
+Date: Wed, 17 Feb 2016 16:12:17 -0800
+Subject: [Intel-wired-lan] [next PATCH S29 07/14] i40e: Expose some
+	registers to program parser, FD and RSS logic
 In-Reply-To: <1455754344-6372-1-git-send-email-avinash.dayanand@intel.com>
 References: <1455754344-6372-1-git-send-email-avinash.dayanand@intel.com>
-Message-ID: <1455754344-6372-5-git-send-email-avinash.dayanand@intel.com>
+Message-ID: <1455754344-6372-8-git-send-email-avinash.dayanand@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Catherine Sullivan <catherine.sullivan@intel.com>
+From: Anjali Singhai Jain <anjali.singhai@intel.com>
 
-IWARP uses I40E_MAX_USER_PRIORITY in i40e_client.h but it is not defined
-there so add a I40E_CLIENT_MAX_USER_PRIORITY definition to i40e_client.h
-and a comment to i40e.h that we need to keep the two definitions synced.
+This patch adds 7 new register definitions for programming the
+parser, flow director and RSS blocks in the HW.
 
-
-Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-Change-ID: I0fc8868c2b090f54914ab738ec52b48ae4f523e2
+Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+Change-ID: I31e76673125275f3c69a14c646361919d04dc987
 ---
-Testing Hints: Make sure it compiles.
+ drivers/net/ethernet/intel/i40e/i40e_register.h | 48 +++++++++++++++++++++++++
+ 1 file changed, 48 insertions(+)
 
- drivers/net/ethernet/intel/i40e/i40e.h | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index e7fcb81..44ec1f7 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -90,6 +90,9 @@
- #define I40E_MAX_AQ_BUF_SIZE          4096
- #define I40E_AQ_LEN                   256
- #define I40E_AQ_WORK_LIMIT            66 /* max number of VFs + a little */
-+/* If I40E_MAX_USER_PRIORITY is updated please also update
-+ * I40E_CLIENT_MAX_USER_PRIORITY in i40e_client.h
-+ */
- #define I40E_MAX_USER_PRIORITY        8
- #define I40E_DEFAULT_MSG_ENABLE       4
- #define I40E_QUEUE_WAIT_RETRY_LIMIT   10
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_register.h b/drivers/net/ethernet/intel/i40e/i40e_register.h
+index dc0402f..86ca27f 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_register.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_register.h
+@@ -2045,6 +2045,14 @@
+ #define I40E_PRTPM_TLPIC 0x001E43C0 /* Reset: GLOBR */
+ #define I40E_PRTPM_TLPIC_ETLPIC_SHIFT 0
+ #define I40E_PRTPM_TLPIC_ETLPIC_MASK I40E_MASK(0xFFFFFFFF, I40E_PRTPM_TLPIC_ETLPIC_SHIFT)
++#define I40E_GL_PRS_FVBM(_i) (0x00269760 + ((_i) * 4)) /* _i=0...3 */ /* Reset: CORER */
++#define I40E_GL_PRS_FVBM_MAX_INDEX 3
++#define I40E_GL_PRS_FVBM_FV_BYTE_INDX_SHIFT 0
++#define I40E_GL_PRS_FVBM_FV_BYTE_INDX_MASK I40E_MASK(0x7F, I40E_GL_PRS_FVBM_FV_BYTE_INDX_SHIFT)
++#define I40E_GL_PRS_FVBM_RULE_BUS_INDX_SHIFT 8
++#define I40E_GL_PRS_FVBM_RULE_BUS_INDX_MASK I40E_MASK(0x3F, I40E_GL_PRS_FVBM_RULE_BUS_INDX_SHIFT)
++#define I40E_GL_PRS_FVBM_MSK_ENA_SHIFT 31
++#define I40E_GL_PRS_FVBM_MSK_ENA_MASK I40E_MASK(0x1, I40E_GL_PRS_FVBM_MSK_ENA_SHIFT)
+ #define I40E_GLRPB_DPSS 0x000AC828 /* Reset: CORER */
+ #define I40E_GLRPB_DPSS_DPS_TCN_SHIFT 0
+ #define I40E_GLRPB_DPSS_DPS_TCN_MASK I40E_MASK(0xFFFFF, I40E_GLRPB_DPSS_DPS_TCN_SHIFT)
+@@ -2216,6 +2224,14 @@
+ #define I40E_PRTQF_FD_FLXINSET_MAX_INDEX 63
+ #define I40E_PRTQF_FD_FLXINSET_INSET_SHIFT 0
+ #define I40E_PRTQF_FD_FLXINSET_INSET_MASK I40E_MASK(0xFF, I40E_PRTQF_FD_FLXINSET_INSET_SHIFT)
++#define I40E_PRTQF_FD_INSET(_i, _j) (0x00250000 + ((_i) * 64 + (_j) * 32)) /* _i=0...63, _j=0...1 */ /* Reset: CORER */
++#define I40E_PRTQF_FD_INSET_MAX_INDEX 63
++#define I40E_PRTQF_FD_INSET_INSET_SHIFT 0
++#define I40E_PRTQF_FD_INSET_INSET_MASK I40E_MASK(0xFFFFFFFF, I40E_PRTQF_FD_INSET_INSET_SHIFT)
++#define I40E_PRTQF_FD_INSET(_i, _j) (0x00250000 + ((_i) * 64 + (_j) * 32)) /* _i=0...63, _j=0...1 */ /* Reset: CORER */
++#define I40E_PRTQF_FD_INSET_MAX_INDEX 63
++#define I40E_PRTQF_FD_INSET_INSET_SHIFT 0
++#define I40E_PRTQF_FD_INSET_INSET_MASK I40E_MASK(0xFFFFFFFF, I40E_PRTQF_FD_INSET_INSET_SHIFT)
+ #define I40E_PRTQF_FD_MSK(_i, _j) (0x00252000 + ((_i) * 64 + (_j) * 32)) /* _i=0...63, _j=0...1 */ /* Reset: CORER */
+ #define I40E_PRTQF_FD_MSK_MAX_INDEX 63
+ #define I40E_PRTQF_FD_MSK_MASK_SHIFT 0
+@@ -5155,6 +5171,38 @@
+ #define I40E_GLQF_FD_PCTYPES_MAX_INDEX 63
+ #define I40E_GLQF_FD_PCTYPES_FD_PCTYPE_SHIFT 0
+ #define I40E_GLQF_FD_PCTYPES_FD_PCTYPE_MASK I40E_MASK(0x3F, I40E_GLQF_FD_PCTYPES_FD_PCTYPE_SHIFT)
++#define I40E_GLQF_FD_MSK(_i, _j) (0x00267200 + ((_i) * 4 + (_j) * 8)) /* _i=0...1, _j=0...63 */ /* Reset: CORER */
++#define I40E_GLQF_FD_MSK_MAX_INDEX 1
++#define I40E_GLQF_FD_MSK_MASK_SHIFT 0
++#define I40E_GLQF_FD_MSK_MASK_MASK I40E_MASK(0xFFFF, I40E_GLQF_FD_MSK_MASK_SHIFT)
++#define I40E_GLQF_FD_MSK_OFFSET_SHIFT 16
++#define I40E_GLQF_FD_MSK_OFFSET_MASK I40E_MASK(0x3F, I40E_GLQF_FD_MSK_OFFSET_SHIFT)
++#define I40E_GLQF_HASH_INSET(_i, _j) (0x00267600 + ((_i) * 4 + (_j) * 8)) /* _i=0...1, _j=0...63 */ /* Reset: CORER */
++#define I40E_GLQF_HASH_INSET_MAX_INDEX 1
++#define I40E_GLQF_HASH_INSET_INSET_SHIFT 0
++#define I40E_GLQF_HASH_INSET_INSET_MASK I40E_MASK(0xFFFFFFFF, I40E_GLQF_HASH_INSET_INSET_SHIFT)
++#define I40E_GLQF_HASH_MSK(_i, _j) (0x00267A00 + ((_i) * 4 + (_j) * 8)) /* _i=0...1, _j=0...63 */ /* Reset: CORER */
++#define I40E_GLQF_HASH_MSK_MAX_INDEX 1
++#define I40E_GLQF_HASH_MSK_MASK_SHIFT 0
++#define I40E_GLQF_HASH_MSK_MASK_MASK I40E_MASK(0xFFFF, I40E_GLQF_HASH_MSK_MASK_SHIFT)
++#define I40E_GLQF_HASH_MSK_OFFSET_SHIFT 16
++#define I40E_GLQF_HASH_MSK_OFFSET_MASK I40E_MASK(0x3F, I40E_GLQF_HASH_MSK_OFFSET_SHIFT)
++#define I40E_GLQF_ORT(_i) (0x00268900 + ((_i) * 4)) /* _i=0...63 */ /* Reset: CORER */
++#define I40E_GLQF_ORT_MAX_INDEX 63
++#define I40E_GLQF_ORT_PIT_INDX_SHIFT 0
++#define I40E_GLQF_ORT_PIT_INDX_MASK I40E_MASK(0x1F, I40E_GLQF_ORT_PIT_INDX_SHIFT)
++#define I40E_GLQF_ORT_FIELD_CNT_SHIFT 5
++#define I40E_GLQF_ORT_FIELD_CNT_MASK I40E_MASK(0x3, I40E_GLQF_ORT_FIELD_CNT_SHIFT)
++#define I40E_GLQF_ORT_FLX_PAYLOAD_SHIFT 7
++#define I40E_GLQF_ORT_FLX_PAYLOAD_MASK I40E_MASK(0x1, I40E_GLQF_ORT_FLX_PAYLOAD_SHIFT)
++#define I40E_GLQF_PIT(_i) (0x00268C80 + ((_i) * 4)) /* _i=0...23 */ /* Reset: CORER */
++#define I40E_GLQF_PIT_MAX_INDEX 23
++#define I40E_GLQF_PIT_SOURCE_OFF_SHIFT 0
++#define I40E_GLQF_PIT_SOURCE_OFF_MASK I40E_MASK(0x1F, I40E_GLQF_PIT_SOURCE_OFF_SHIFT)
++#define I40E_GLQF_PIT_FSIZE_SHIFT 5
++#define I40E_GLQF_PIT_FSIZE_MASK I40E_MASK(0x1F, I40E_GLQF_PIT_FSIZE_SHIFT)
++#define I40E_GLQF_PIT_DEST_OFF_SHIFT 10
++#define I40E_GLQF_PIT_DEST_OFF_MASK I40E_MASK(0x3F, I40E_GLQF_PIT_DEST_OFF_SHIFT)
+ #define I40E_GLQF_FDEVICTENA(_i) (0x00270384 + ((_i) * 4)) /* _i=0...1 */ /* Reset: CORER */
+ #define I40E_GLQF_FDEVICTENA_MAX_INDEX 1
+ #define I40E_GLQF_FDEVICTENA_GLQF_FDEVICTENA_SHIFT 0
 -- 
 2.1.0
 
