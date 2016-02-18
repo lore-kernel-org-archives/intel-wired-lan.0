@@ -1,69 +1,61 @@
 From: John Holland <jotihojr@gmail.com>
-Date: Thu, 18 Feb 2016 12:10:52 +0100
+Date: Thu, 18 Feb 2016 14:43:59 +0100
 Subject: [Intel-wired-lan] [next] igb: allow setting MAC address on i211
  using a device tree blob V5
-Message-ID: <56C5A6BC.6030708@gmail.com>
+In-Reply-To: <56C5A6BC.6030708@gmail.com>
+References: <56C5A6BC.6030708@gmail.com>
+Message-ID: <56C5CA9F.3000102@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello,
 
-The Intel i211 LOM PCIe Ethernet controllers' iNVM operates as an OTP
-and has no external EEPROM interface [1]. The following allows the
-driver to pickup the MAC address from a device tree blob when CONFIG_OF
-has been enabled.
 
-[1] 
-http://www.intel.com/content/www/us/en/embedded/products/networking/i211-ethernet-controller-datasheet.html
+On 02/18/2016 12:10 PM, John Holland wrote:
+> Hello,
+>
+> The Intel i211 LOM PCIe Ethernet controllers' iNVM operates as an OTP
+> and has no external EEPROM interface [1]. The following allows the
+> driver to pickup the MAC address from a device tree blob when CONFIG_OF
+> has been enabled.
+>
+> +       if (eth_platform_get_mac_address(&pdev->dev, hw->mac.addr)) {
 
-Changes V2
-- Restrict searching for compatible devices to current pci device.
+For later reference, putting all necessary information in one place.
 
-Changes V3
-- Add device tree binding documentation.
+This requires the dtb for the mac address routing to be properly 
+positioned. On an imx6q using U-Boot, that required setting the U-Boot 
+environment variable eth1addr and reworking the PCIe tree and allocating 
+an alias as such:
 
-Changes V4
-- Rebase patch.
+1) Set intel,i211 MAC address.
 
-Changes V5
-- Use eth_platform_get_mac_address() to resolve MAC specified in a dtb.
-- Remove now invalid device tree binding documentation specified in V3
-   und V4.
+# env set eth1addr <valid-mac-address>
 
-Signed-off-by: John Holland<jotihojr@gmail.com>
----
-  drivers/net/ethernet/intel/igb/igb_main.c | 9 ++++++---
-  1 file changed, 6 insertions(+), 3 deletions(-)
+2) Add an alias to pick up the MAC address from U-Boot and route it to 
+the intel,i211 PCIe endpoint for an imx6qdl derivative.
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c 
-b/drivers/net/ethernet/intel/igb/igb_main.c
-index a98f418..d3e8228 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -50,6 +50,7 @@
-  #include <linux/aer.h>
-  #include <linux/prefetch.h>
-  #include <linux/pm_runtime.h>
-+#include <linux/etherdevice.h>
-  #ifdef CONFIG_IGB_DCA
-  #include <linux/dca.h>
-  #endif
-@@ -2507,9 +2508,11 @@ static int igb_probe(struct pci_dev *pdev, const 
-struct pci_device_id *ent)
-                 break;
-         }
+/ {
+         aliases {
+                 ethernet1 = &eth1;
+         };
 
--       /* copy the MAC address out of the NVM */
--       if (hw->mac.ops.read_mac_addr(hw))
--               dev_err(&pdev->dev, "NVM Read Error\n");
-+       if (eth_platform_get_mac_address(&pdev->dev, hw->mac.addr)) {
-+               /* copy the MAC address out of the NVM */
-+               if (hw->mac.ops.read_mac_addr(hw))
-+                       dev_err(&pdev->dev, "NVM Read Error\n");
-+       }
+};
 
-         memcpy(netdev->dev_addr, hw->mac.addr, netdev->addr_len);
+&pcie {
+         /* soc pcie bridge 00:00.0 */
+         pcie at 0,0 {
+                 reg = <0x000000 0 0 0 0>;
+                 #address-cells = <3>;
+                 #size-cells = <2>;
 
+                 /* pcie endpoint 01:00.0 */
+                 eth1: intel,i211 at pcie0,0 {
+                         reg = <0x010000 0 0 0 0>;
+                 };
+         };
+};
+
+John
