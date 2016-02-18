@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 18 Feb 2016 18:22:18 +0000
-Subject: [Intel-wired-lan] [next PATCH S29 03/14] i40e: Increase
-	timeout	when checking GLGEN_RSTAT_DEVSTATE bit
-In-Reply-To: <1455754344-6372-4-git-send-email-avinash.dayanand@intel.com>
+Date: Thu, 18 Feb 2016 18:24:11 +0000
+Subject: [Intel-wired-lan] [next PATCH S29 04/14] i40e: Add a
+	client	definition of I40E_MAX_USER_PRIORITY
+In-Reply-To: <1455754344-6372-5-git-send-email-avinash.dayanand@intel.com>
 References: <1455754344-6372-1-git-send-email-avinash.dayanand@intel.com>
- <1455754344-6372-4-git-send-email-avinash.dayanand@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F98F216@ORSMSX104.amr.corp.intel.com>
+ <1455754344-6372-5-git-send-email-avinash.dayanand@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F98F227@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,20 +17,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Avinash Dayanand
 > Sent: Wednesday, February 17, 2016 4:12 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S29 03/14] i40e: Increase timeout
-> when checking GLGEN_RSTAT_DEVSTATE bit
+> Subject: [Intel-wired-lan] [next PATCH S29 04/14] i40e: Add a client definition
+> of I40E_MAX_USER_PRIORITY
 > 
-> From: Kevin Scott <kevin.c.scott@intel.com>
+> From: Catherine Sullivan <catherine.sullivan@intel.com>
 > 
-> When linking with particular PHY types (ex: copper PHY), the amount of time
-> it takes for the GLGEN_RSTAT_DEVSTATE to be set increases greatly, which
-> can lead to a timeout and failure to load the driver.
+> IWARP uses I40E_MAX_USER_PRIORITY in i40e_client.h but it is not defined
+> there so add a I40E_CLIENT_MAX_USER_PRIORITY definition to i40e_client.h
+> and a comment to i40e.h that we need to keep the two definitions synced.
 > 
-> Signed-off-by: Kevin Scott <kevin.c.scott@intel.com>
-> Change-ID: If02be0dfcd7c57fdde2d5c81cd63651260cd2029
+> 
+> Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
+> Change-ID: I0fc8868c2b090f54914ab738ec52b48ae4f523e2
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_common.c | 8 +++++++-
->  1 file changed, 7 insertions(+), 1 deletion(-)
+> Testing Hints: Make sure it compiles.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e.h | 3 +++
+>  1 file changed, 3 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Driver loads correctly, driver and device properly recover from resets with link
+Code changes properly applied
