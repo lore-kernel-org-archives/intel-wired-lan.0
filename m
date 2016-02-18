@@ -1,113 +1,196 @@
 From: Avinash Dayanand <avinash.dayanand@intel.com>
-Date: Wed, 17 Feb 2016 16:12:15 -0800
-Subject: [Intel-wired-lan] [next PATCH S29 05/14] i40e: Do not wait for Rx
-	queue disable in DCB reconfig
+Date: Wed, 17 Feb 2016 16:12:21 -0800
+Subject: [Intel-wired-lan] [next PATCH S29 11/14] i40e: Use the new rx ctl
+	register helpers. Don't use AQ calls from clear_hw.
 In-Reply-To: <1455754344-6372-1-git-send-email-avinash.dayanand@intel.com>
 References: <1455754344-6372-1-git-send-email-avinash.dayanand@intel.com>
-Message-ID: <1455754344-6372-6-git-send-email-avinash.dayanand@intel.com>
+Message-ID: <1455754344-6372-12-git-send-email-avinash.dayanand@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Neerav Parikh <neerav.parikh@intel.com>
+From: Shannon Nelson <shannon.nelson@intel.com>
 
-Just like Tx queues don't wait for Rx queues to be disabled before
-DCB has been reconfigured.
-Check the queues are disabled only after the DCB configuration has
-been applied to the VSI(s) managed by the PF driver.
+Use the new AdminQ functions for safely accessing the Rx control
+registers that may be affected by heavy small packet traffic.
 
-In case of any timeout issue a PF reset to recover.
+We can't use AdminQ calls in i40e_clear_hw() because the HW is being
+initialized and the AdminQ is not alive.  We recently added an AQ
+related replacement for reading PFLAN_QALLOC, and this patch puts
+back the original register read.
 
-Signed-off-by: Neerav Parikh <neerav.parikh@intel.com>
-Change-ID: Ic51e94c25baf9a5480cee983f35d15575a88642c
+Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+Change-ID: Ib027168c954a5733299aa3a4ce5f8218c6bb5636
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 33 +++++++++++++++++++++--------
- 1 file changed, 24 insertions(+), 9 deletions(-)
+Testing Hints:
+	Please be sure that flow director and RSS configuration changes
+	work as expected both with and without stress traffic.
+	Make sure the driver Loads.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 8919dc7..3c658a29 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -3929,6 +3929,9 @@ static int i40e_vsi_control_rx(struct i40e_vsi *vsi, bool enable)
- 		else
- 			rx_reg &= ~I40E_QRX_ENA_QENA_REQ_MASK;
- 		wr32(hw, I40E_QRX_ENA(pf_q), rx_reg);
-+		/* No waiting for the Tx queue to disable */
-+		if (!enable && test_bit(__I40E_PORT_TX_SUSPENDED, &pf->state))
-+			continue;
+ drivers/net/ethernet/intel/i40e/i40e_common.c      |  2 +-
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c     |  8 ++++----
+ drivers/net/ethernet/intel/i40e/i40e_fcoe.c        |  8 ++++----
+ drivers/net/ethernet/intel/i40e/i40e_main.c        | 20 ++++++++++----------
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  7 ++++---
+ 5 files changed, 23 insertions(+), 22 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 74d9599..4596294 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -1328,7 +1328,7 @@ void i40e_clear_hw(struct i40e_hw *hw)
+ 	num_vf_int = (val & I40E_GLPCI_CNF2_MSI_X_VF_N_MASK) >>
+ 		     I40E_GLPCI_CNF2_MSI_X_VF_N_SHIFT;
  
- 		/* wait for the change to finish */
- 		ret = i40e_pf_rxq_wait(pf, pf_q, enable);
-@@ -4287,12 +4290,12 @@ static void i40e_pf_unquiesce_all_vsi(struct i40e_pf *pf)
- 
- #ifdef CONFIG_I40E_DCB
- /**
-- * i40e_vsi_wait_txq_disabled - Wait for VSI's queues to be disabled
-+ * i40e_vsi_wait_queues_disabled - Wait for VSI's queues to be disabled
-  * @vsi: the VSI being configured
-  *
-- * This function waits for the given VSI's Tx queues to be disabled.
-+ * This function waits for the given VSI's queues to be disabled.
-  **/
--static int i40e_vsi_wait_txq_disabled(struct i40e_vsi *vsi)
-+static int i40e_vsi_wait_queues_disabled(struct i40e_vsi *vsi)
+-	val = i40e_read_rx_ctl(hw, I40E_PFLAN_QALLOC);
++	val = rd32(hw, I40E_PFLAN_QALLOC);
+ 	base_queue = (val & I40E_PFLAN_QALLOC_FIRSTQ_MASK) >>
+ 		     I40E_PFLAN_QALLOC_FIRSTQ_SHIFT;
+ 	j = (val & I40E_PFLAN_QALLOC_LASTQ_MASK) >>
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 86765d4..8705702 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -2181,8 +2181,8 @@ static int i40e_get_rxnfc(struct net_device *netdev, struct ethtool_rxnfc *cmd,
+ static int i40e_set_rss_hash_opt(struct i40e_pf *pf, struct ethtool_rxnfc *nfc)
  {
- 	struct i40e_pf *pf = vsi->back;
- 	int i, pf_q, ret;
-@@ -4309,24 +4312,36 @@ static int i40e_vsi_wait_txq_disabled(struct i40e_vsi *vsi)
- 		}
+ 	struct i40e_hw *hw = &pf->hw;
+-	u64 hena = (u64)rd32(hw, I40E_PFQF_HENA(0)) |
+-		   ((u64)rd32(hw, I40E_PFQF_HENA(1)) << 32);
++	u64 hena = (u64)i40e_read_rx_ctl(hw, I40E_PFQF_HENA(0)) |
++		   ((u64)i40e_read_rx_ctl(hw, I40E_PFQF_HENA(1)) << 32);
+ 
+ 	/* RSS does not support anything other than hashing
+ 	 * to queues on src and dst IPs and ports
+@@ -2291,8 +2291,8 @@ static int i40e_set_rss_hash_opt(struct i40e_pf *pf, struct ethtool_rxnfc *nfc)
+ 		return -EINVAL;
  	}
  
-+	pf_q = vsi->base_queue;
-+	for (i = 0; i < vsi->num_queue_pairs; i++, pf_q++) {
-+		/* Check and wait for the disable status of the queue */
-+		ret = i40e_pf_rxq_wait(pf, pf_q, false);
-+		if (ret) {
-+			dev_info(&pf->pdev->dev,
-+				 "VSI seid %d Rx ring %d disable timeout\n",
-+				 vsi->seid, pf_q);
-+			return ret;
-+		}
-+	}
-+
- 	return 0;
+-	wr32(hw, I40E_PFQF_HENA(0), (u32)hena);
+-	wr32(hw, I40E_PFQF_HENA(1), (u32)(hena >> 32));
++	i40e_write_rx_ctl(hw, I40E_PFQF_HENA(0), (u32)hena);
++	i40e_write_rx_ctl(hw, I40E_PFQF_HENA(1), (u32)(hena >> 32));
+ 	i40e_flush(hw);
+ 
+ 	/* Save setting for future output/update */
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_fcoe.c b/drivers/net/ethernet/intel/i40e/i40e_fcoe.c
+index 052df93..8ad162c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_fcoe.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_fcoe.c
+@@ -295,11 +295,11 @@ void i40e_init_pf_fcoe(struct i40e_pf *pf)
+ 	}
+ 
+ 	/* enable FCoE hash filter */
+-	val = rd32(hw, I40E_PFQF_HENA(1));
++	val = i40e_read_rx_ctl(hw, I40E_PFQF_HENA(1));
+ 	val |= BIT(I40E_FILTER_PCTYPE_FCOE_OX - 32);
+ 	val |= BIT(I40E_FILTER_PCTYPE_FCOE_RX - 32);
+ 	val &= I40E_PFQF_HENA_PTYPE_ENA_MASK;
+-	wr32(hw, I40E_PFQF_HENA(1), val);
++	i40e_write_rx_ctl(hw, I40E_PFQF_HENA(1), val);
+ 
+ 	/* enable flag */
+ 	pf->flags |= I40E_FLAG_FCOE_ENABLED;
+@@ -317,11 +317,11 @@ void i40e_init_pf_fcoe(struct i40e_pf *pf)
+ 	pf->filter_settings.fcoe_cntx_num = I40E_DMA_CNTX_SIZE_4K;
+ 
+ 	/* Setup max frame with FCoE_MTU plus L2 overheads */
+-	val = rd32(hw, I40E_GLFCOE_RCTL);
++	val = i40e_read_rx_ctl(hw, I40E_GLFCOE_RCTL);
+ 	val &= ~I40E_GLFCOE_RCTL_MAX_SIZE_MASK;
+ 	val |= ((FCOE_MTU + ETH_HLEN + VLAN_HLEN + ETH_FCS_LEN)
+ 		 << I40E_GLFCOE_RCTL_MAX_SIZE_SHIFT);
+-	wr32(hw, I40E_GLFCOE_RCTL, val);
++	i40e_write_rx_ctl(hw, I40E_GLFCOE_RCTL, val);
+ 
+ 	dev_info(&pf->pdev->dev, "FCoE is supported.\n");
  }
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 3c910ef..7388c1a 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -8028,7 +8028,7 @@ static int i40e_config_rss_reg(struct i40e_vsi *vsi, const u8 *seed,
+ 		u32 *seed_dw = (u32 *)seed;
  
- /**
-- * i40e_pf_wait_txq_disabled - Wait for all queues of PF VSIs to be disabled
-+ * i40e_pf_wait_queues_disabled - Wait for all queues of PF VSIs to be disabled
-  * @pf: the PF
-  *
-- * This function waits for the Tx queues to be in disabled state for all the
-+ * This function waits for the queues to be in disabled state for all the
-  * VSIs that are managed by this PF.
-  **/
--static int i40e_pf_wait_txq_disabled(struct i40e_pf *pf)
-+static int i40e_pf_wait_queues_disabled(struct i40e_pf *pf)
- {
- 	int v, ret = 0;
+ 		for (i = 0; i <= I40E_PFQF_HKEY_MAX_INDEX; i++)
+-			wr32(hw, I40E_PFQF_HKEY(i), seed_dw[i]);
++			i40e_write_rx_ctl(hw, I40E_PFQF_HKEY(i), seed_dw[i]);
+ 	}
  
- 	for (v = 0; v < pf->hw.func_caps.num_vsis; v++) {
- 		/* No need to wait for FCoE VSI queues */
- 		if (pf->vsi[v] && pf->vsi[v]->type != I40E_VSI_FCOE) {
--			ret = i40e_vsi_wait_txq_disabled(pf->vsi[v]);
-+			ret = i40e_vsi_wait_queues_disabled(pf->vsi[v]);
- 			if (ret)
- 				break;
+ 	if (lut) {
+@@ -8065,7 +8065,7 @@ static int i40e_get_rss_reg(struct i40e_vsi *vsi, u8 *seed,
+ 		u32 *seed_dw = (u32 *)seed;
+ 
+ 		for (i = 0; i <= I40E_PFQF_HKEY_MAX_INDEX; i++)
+-			seed_dw[i] = rd32(hw, I40E_PFQF_HKEY(i));
++			seed_dw[i] = i40e_read_rx_ctl(hw, I40E_PFQF_HKEY(i));
+ 	}
+ 	if (lut) {
+ 		u32 *lut_dw = (u32 *)lut;
+@@ -8148,19 +8148,19 @@ static int i40e_pf_config_rss(struct i40e_pf *pf)
+ 	int ret;
+ 
+ 	/* By default we enable TCP/UDP with IPv4/IPv6 ptypes */
+-	hena = (u64)rd32(hw, I40E_PFQF_HENA(0)) |
+-		((u64)rd32(hw, I40E_PFQF_HENA(1)) << 32);
++	hena = (u64)i40e_read_rx_ctl(hw, I40E_PFQF_HENA(0)) |
++		((u64)i40e_read_rx_ctl(hw, I40E_PFQF_HENA(1)) << 32);
+ 	hena |= i40e_pf_get_default_rss_hena(pf);
+ 
+-	wr32(hw, I40E_PFQF_HENA(0), (u32)hena);
+-	wr32(hw, I40E_PFQF_HENA(1), (u32)(hena >> 32));
++	i40e_write_rx_ctl(hw, I40E_PFQF_HENA(0), (u32)hena);
++	i40e_write_rx_ctl(hw, I40E_PFQF_HENA(1), (u32)(hena >> 32));
+ 
+ 	/* Determine the RSS table size based on the hardware capabilities */
+-	reg_val = rd32(hw, I40E_PFQF_CTL_0);
++	reg_val = i40e_read_rx_ctl(hw, I40E_PFQF_CTL_0);
+ 	reg_val = (pf->rss_table_size == 512) ?
+ 			(reg_val | I40E_PFQF_CTL_0_HASHLUTSIZE_512) :
+ 			(reg_val & ~I40E_PFQF_CTL_0_HASHLUTSIZE_512);
+-	wr32(hw, I40E_PFQF_CTL_0, reg_val);
++	i40e_write_rx_ctl(hw, I40E_PFQF_CTL_0, reg_val);
+ 
+ 	/* Determine the RSS size of the VSI */
+ 	if (!vsi->rss_size)
+@@ -11207,8 +11207,8 @@ static void i40e_remove(struct pci_dev *pdev)
+ 	i40e_ptp_stop(pf);
+ 
+ 	/* Disable RSS in hw */
+-	wr32(hw, I40E_PFQF_HENA(0), 0);
+-	wr32(hw, I40E_PFQF_HENA(1), 0);
++	i40e_write_rx_ctl(hw, I40E_PFQF_HENA(0), 0);
++	i40e_write_rx_ctl(hw, I40E_PFQF_HENA(1), 0);
+ 
+ 	/* no more scheduling of any task */
+ 	set_bit(__I40E_DOWN, &pf->state);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 5dcd198..93d8d98 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -602,8 +602,8 @@ static void i40e_enable_vf_mappings(struct i40e_vf *vf)
+ 	 * that VF queues be mapped using this method, even when they are
+ 	 * contiguous in real life
+ 	 */
+-	wr32(hw, I40E_VSILAN_QBASE(vf->lan_vsi_id),
+-	     I40E_VSILAN_QBASE_VSIQTABLE_ENA_MASK);
++	i40e_write_rx_ctl(hw, I40E_VSILAN_QBASE(vf->lan_vsi_id),
++			  I40E_VSILAN_QBASE_VSIQTABLE_ENA_MASK);
+ 
+ 	/* enable VF vplan_qtable mappings */
+ 	reg = I40E_VPLAN_MAPENA_TXRX_ENA_MASK;
+@@ -630,7 +630,8 @@ static void i40e_enable_vf_mappings(struct i40e_vf *vf)
+ 						      (j * 2) + 1);
+ 			reg |= qid << 16;
  		}
-@@ -5722,8 +5737,8 @@ static int i40e_handle_lldp_event(struct i40e_pf *pf,
- 	if (ret)
- 		goto exit;
+-		wr32(hw, I40E_VSILAN_QTABLE(j, vf->lan_vsi_id), reg);
++		i40e_write_rx_ctl(hw, I40E_VSILAN_QTABLE(j, vf->lan_vsi_id),
++				  reg);
+ 	}
  
--	/* Wait for the PF's Tx queues to be disabled */
--	ret = i40e_pf_wait_txq_disabled(pf);
-+	/* Wait for the PF's queues to be disabled */
-+	ret = i40e_pf_wait_queues_disabled(pf);
- 	if (ret) {
- 		/* Schedule PF reset to recover */
- 		set_bit(__I40E_PF_RESET_REQUESTED, &pf->state);
+ 	i40e_flush(hw);
 -- 
 2.1.0
 
