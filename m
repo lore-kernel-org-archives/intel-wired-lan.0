@@ -1,49 +1,47 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 19 Feb 2016 00:40:48 +0000
-Subject: [Intel-wired-lan] [next PATCH S29 11/14] i40e: Use the new rx
- ctl	register helpers. Don't use AQ calls from clear_hw.
-In-Reply-To: <1455754344-6372-12-git-send-email-avinash.dayanand@intel.com>
-References: <1455754344-6372-1-git-send-email-avinash.dayanand@intel.com>
- <1455754344-6372-12-git-send-email-avinash.dayanand@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F98F431@ORSMSX104.amr.corp.intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Thu, 18 Feb 2016 16:43:23 -0800
+Subject: [Intel-wired-lan] [PATCH v7 8/8] net: e1000e: Adds hardware
+ supported cross timestamp on e1000e nic
+In-Reply-To: <1455308729-6280-9-git-send-email-christopher.s.hall@intel.com>
+References: <1455308729-6280-1-git-send-email-christopher.s.hall@intel.com>
+ <1455308729-6280-9-git-send-email-christopher.s.hall@intel.com>
+Message-ID: <1455842603.3128.61.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Avinash Dayanand
-> Sent: Wednesday, February 17, 2016 4:12 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S29 11/14] i40e: Use the new rx ctl
-> register helpers. Don't use AQ calls from clear_hw.
+On Fri, 2016-02-12 at 12:25 -0800, Christopher S. Hall wrote:
+> Modern Intel systems supports cross timestamping of the network
+> device
+> clock and Always Running Timer (ART) in hardware.? This allows the
+> device time and system time to be precisely correlated. The timestamp
+> pair is returned through e1000e_phc_get_syncdevicetime() used by
+> get_system_device_crosststamp().? The hardware cross-timestamp result
+> is made available to applications through the PTP_SYS_OFFSET_PRECISE
+> ioctl which calls e1000e_phc_getcrosststamp().
 > 
-> From: Shannon Nelson <shannon.nelson@intel.com>
-> 
-> Use the new AdminQ functions for safely accessing the Rx control registers
-> that may be affected by heavy small packet traffic.
-> 
-> We can't use AdminQ calls in i40e_clear_hw() because the HW is being
-> initialized and the AdminQ is not alive.  We recently added an AQ related
-> replacement for reading PFLAN_QALLOC, and this patch puts back the
-> original register read.
-> 
-> Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-> Change-ID: Ib027168c954a5733299aa3a4ce5f8218c6bb5636
+> Signed-off-by: Christopher S. Hall <christopher.s.hall@intel.com>
+> [jstultz: Reworked to use new interface, commit message tweaks]
+> Signed-off-by: John Stultz <john.stultz@linaro.org>
 > ---
-> Testing Hints:
-> 	Please be sure that flow director and RSS configuration changes
-> 	work as expected both with and without stress traffic.
-> 	Make sure the driver Loads.
-> 
->  drivers/net/ethernet/intel/i40e/i40e_common.c      |  2 +-
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c     |  8 ++++----
->  drivers/net/ethernet/intel/i40e/i40e_fcoe.c        |  8 ++++----
->  drivers/net/ethernet/intel/i40e/i40e_main.c        | 20 ++++++++++----------
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  7 ++++---
->  5 files changed, 23 insertions(+), 22 deletions(-)
+> ?drivers/net/ethernet/intel/Kconfig????????? |? 9 +++
+> ?drivers/net/ethernet/intel/e1000e/defines.h |? 5 ++
+> ?drivers/net/ethernet/intel/e1000e/ptp.c???? | 85
+> +++++++++++++++++++++++++++++
+> ?drivers/net/ethernet/intel/e1000e/regs.h??? |? 4 ++
+> ?4 files changed, 103 insertions(+)
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-AQ-RSS functions work properly and change under load without error
+Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+
+I am fine with Christopher's changes, so when the issues with the other
+patches in the series gets ironed out, your good to apply this patch as
+well John.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160218/680a0772/attachment.asc>
