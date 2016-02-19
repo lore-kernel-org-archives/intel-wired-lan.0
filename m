@@ -1,47 +1,128 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Thu, 18 Feb 2016 16:43:23 -0800
-Subject: [Intel-wired-lan] [PATCH v7 8/8] net: e1000e: Adds hardware
- supported cross timestamp on e1000e nic
-In-Reply-To: <1455308729-6280-9-git-send-email-christopher.s.hall@intel.com>
-References: <1455308729-6280-1-git-send-email-christopher.s.hall@intel.com>
- <1455308729-6280-9-git-send-email-christopher.s.hall@intel.com>
-Message-ID: <1455842603.3128.61.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 19 Feb 2016 09:36:37 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE]
+ ffcc55c0c2a85835a4ac080bc1053c3a277b88e2 BUILD SUCCESS
+Message-ID: <56c671a5.U5ZEMn//gJTEfvqO%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2016-02-12 at 12:25 -0800, Christopher S. Hall wrote:
-> Modern Intel systems supports cross timestamping of the network
-> device
-> clock and Always Running Timer (ART) in hardware.? This allows the
-> device time and system time to be precisely correlated. The timestamp
-> pair is returned through e1000e_phc_get_syncdevicetime() used by
-> get_system_device_crosststamp().? The hardware cross-timestamp result
-> is made available to applications through the PTP_SYS_OFFSET_PRECISE
-> ioctl which calls e1000e_phc_getcrosststamp().
-> 
-> Signed-off-by: Christopher S. Hall <christopher.s.hall@intel.com>
-> [jstultz: Reworked to use new interface, commit message tweaks]
-> Signed-off-by: John Stultz <john.stultz@linaro.org>
-> ---
-> ?drivers/net/ethernet/intel/Kconfig????????? |? 9 +++
-> ?drivers/net/ethernet/intel/e1000e/defines.h |? 5 ++
-> ?drivers/net/ethernet/intel/e1000e/ptp.c???? | 85
-> +++++++++++++++++++++++++++++
-> ?drivers/net/ethernet/intel/e1000e/regs.h??? |? 4 ++
-> ?4 files changed, 103 insertions(+)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
+ffcc55c0c2a85835a4ac080bc1053c3a277b88e2  i40e: Add support for ATR w/ IPv6 extension headers
 
-Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+elapsed time: 64m
 
-I am fine with Christopher's changes, so when the issues with the other
-patches in the series gets ironed out, your good to apply this patch as
-well John.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160218/680a0772/attachment.asc>
+configs tested: 107
+
+i386                     randconfig-a0-201607
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                             allmodconfig
+arm                     davinci_all_defconfig
+arm                           stm32_defconfig
+arm                           viper_defconfig
+frv                               allnoconfig
+powerpc                     sbc834x_defconfig
+x86_64                 randconfig-x012-201607
+x86_64                 randconfig-x014-201607
+x86_64                 randconfig-x017-201607
+x86_64                 randconfig-x011-201607
+x86_64                 randconfig-x013-201607
+x86_64                 randconfig-x019-201607
+x86_64                 randconfig-x015-201607
+x86_64                 randconfig-x010-201607
+x86_64                 randconfig-x016-201607
+x86_64                 randconfig-x018-201607
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201607
+i386                     randconfig-s1-201607
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201607
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201607
+i386                     randconfig-i1-201607
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+i386                     randconfig-n0-201607
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                   rhel
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+x86_64                 randconfig-x004-201607
+x86_64                 randconfig-x002-201607
+x86_64                 randconfig-x000-201607
+x86_64                 randconfig-x009-201607
+x86_64                 randconfig-x006-201607
+x86_64                 randconfig-x003-201607
+x86_64                 randconfig-x005-201607
+x86_64                 randconfig-x001-201607
+x86_64                 randconfig-x007-201607
+x86_64                 randconfig-x008-201607
+i386                     randconfig-r0-201607
+i386                   randconfig-x001-201607
+i386                   randconfig-x007-201607
+i386                   randconfig-x004-201607
+i386                   randconfig-x002-201607
+i386                   randconfig-x008-201607
+i386                   randconfig-x003-201607
+i386                   randconfig-x006-201607
+i386                   randconfig-x005-201607
+i386                   randconfig-x009-201607
+i386                   randconfig-x000-201607
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+
+Thanks,
+Fengguang
