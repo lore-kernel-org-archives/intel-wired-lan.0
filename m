@@ -1,124 +1,288 @@
-From: Aaron Sierra <asierra@xes-inc.com>
-Date: Fri, 19 Feb 2016 12:04:55 -0600 (CST)
-Subject: [Intel-wired-lan] [PATCH v4] igb: Add I210 cable fault
-	detection to self test
-In-Reply-To: <309B89C4C689E141A5FF6A0C5FB2118B81E89FBB@ORSMSX101.amr.corp.intel.com>
-References: <520205889.412690.1454977910808.JavaMail.zimbra@xes-inc.com>
- <1455014822.3592.42.camel@intel.com>
- <309B89C4C689E141A5FF6A0C5FB2118B81E89FBB@ORSMSX101.amr.corp.intel.com>
-Message-ID: <1005410641.144149.1455905095795.JavaMail.zimbra@xes-inc.com>
+From: Alexander Duyck <aduyck@mirantis.com>
+Date: Fri, 19 Feb 2016 12:17:08 -0800
+Subject: [Intel-wired-lan] [next PATCH v2] i40e/i40evf: Allow up to 12K
+ bytes of data per Tx descriptor instead of 8K
+Message-ID: <20160219201130.16927.24329.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
------ Original Message -----
-> From: "Aaron F Brown" <aaron.f.brown@intel.com>
-> Sent: Saturday, February 13, 2016 12:27:19 AM
-> 
-> > From: Kirsher, Jeffrey T
-> > Sent: Tuesday, February 09, 2016 2:47 AM
-> > To: Aaron Sierra; intel-wired-lan at lists.osuosl.org
-> > Cc: Wyborny, Carolyn; Brown, Aaron F; Joe Schultz
-> > Subject: Re: [PATCH v4] igb: Add I210 cable fault detection to self test
-> > 
-> > On Mon, 2016-02-08 at 18:31 -0600, Aaron Sierra wrote:
-> >>  From: Joe Schultz <jschultz@xes-inc.com>
-> > >
-> > >  Add an offline diagnostic test for the I210 internal PHY which checks
-> > > for cable faults and reports the distance along the cable where the
-> > > fault was detected. Fault types detected include open, short, and
-> > > cross-pair short.
-> > >
-> > > Signed-off-by: Joe Schultz <jschultz@xes-inc.com>
-> > > Signed-off-by: Aaron Sierra <asierra@xes-inc.com>
-> > > ---
-> > >  v2 - account for changes made by this patch in dev-queue:
-> > >    drivers/net: get rid of unnecessary initializations in>
-> > > .get_drvinfo()
-> > >  v3 - fix uninitialized variable compile warning
-> > >     - remove unneeded igb_cable_fault_test_prep() function
-> > >     - don't add unused define to e1000_defines.h
-> > >     - only run cable diagnostic if link test fails
-> > >  v4 - only set no-fault, link-present cable distance for I210
-> > >
-> > >  drivers/net/ethernet/intel/igb/e1000_defines.h |? 12 +-
-> > >  drivers/net/ethernet/intel/igb/igb_ethtool.c   | 186
-> > > ++++++++++++++++++++++++-
-> > >  2 files changed, 192 insertions(+), 6 deletions(-)
-> > 
-> > I try not to be a checkpatch.pl stickler, but your patch clearly has
-> > some style issues that checkpatch.pl complains about and need to be
-> > fixed.  I have gone ahead and applied your patch to my next-queue tree
-> > (dev-queue branch) so that Aaron can test the functional changes of
-> > your patch.
-> 
-> > So I will require a v5 to fix the coding style issues that
-> > checkpatch.pl whines about, but before re-spinning your patch, lets
-> > wait to see if Aaron finds any other issues with your patch.
-> 
-> I no longer see the kernel panics on other parts with this patch, and
-> functionally it seems good on all the parts I have scrounged up.  Thanks.
-> 
-> But I still see "-1" for the Pair fault distance's when a good cable is
-> connected and diags are run offline:
-> ...
-> Pair D cable fault   (offline)   0
-> Pair A fault distance            -1
-> Pair B fault distance            -1
-> Pair C fault distance            -1
-> Pair D fault distance            -1
-> Pair A fault open                0
-> ...
-> 
-> I'm not sure the intent here, but having something other than 0 looks / feels
-> like an error to me,
+From what I can tell the practical limitation on the size of the Tx data
+buffer is the fact that the Tx descriptor is limited to 14 bits.  As such
+we cannot use 16K as is typically used on the other Intel drivers.  However
+artificially limiting ourselves to 8K can be expensive as this means that
+we will consume up to 10 descriptors (1 context, 1 for header, and 9 for
+payload, non-8K aligned) in a single send.
 
-I wanted to avoid using values for the fault distance that could reasonably
-be misinterpreted as presence of a fault. For instance, if no cable is
-connected, open faults should be detected on all pairs. The distance to those
-faults will be 0 because the trace lengths to the connector are almost
-certainly shorter than 1 meter. If link is present, fault distance should
-really be undefined, but is displayed as a signed integer.
+I propose that we can reduce this by increasing the maximum data for a 4K
+aligned block to 12K.  We can reduce the descriptors used for a 32K aligned
+block by 1 by increasing the size like this.  In addition we still have the
+4K - 1 of space that is still unused.  We can use this as a bit of extra
+padding when dealing with data that is not aligned to 4K.
 
-> It's also confusing as those values come up as 0 if the diags are run with
-> the online keyword with a valid cable connection.
-> The diag session itself (ethtool -t ethX offline) returns 0 so the test as
-> a whole is registering as passing.
+By aligning the descriptors after the first to 4K we can improve the
+efficiency of PCIe accesses as we can avoid using byte enables and can fetch
+full TLP transactions after the first fetch of the buffer.  This helps to
+improve PCIe efficiency.  Below is the results of testing before and after
+with this patch:
 
-I can see this either way and defaulting to zero would be easier.
+Recv   Send   Send                         Utilization      Service Demand
+Socket Socket Message  Elapsed             Send     Recv    Send    Recv
+Size   Size   Size     Time    Throughput  local    remote  local   remote
+bytes  bytes  bytes    secs.   10^6bits/s  % S      % U     us/KB   us/KB
+Before:
+87380  16384  16384    10.00     33682.24  20.27    -1.00   0.592   -1.00
+After:
+87380  16384  16384    10.00     34204.08  20.54    -1.00   0.590   -1.00
 
-This difference in result output is unintentional, but this leads me to
-wonder what reasonable output for the online case should look like, since
-none of the fault tests will be run in that case. I think these strings
-should include an (offline) tag, like the original tests.
+So the net result of this patch is that we have a small gain in throughput
+due to a reduction in overhead for putting together the frame.
 
-In order to do that I'm inclined to merge inter and intra pair shorts
-into a single short output, like this:
+Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+---
 
-Register test         (offline)
-Eeprom test           (offline)
-Interrupt test        (offline)
-Loopback test         (offline)
-Link test          (on/offline)
-Pair A cable fault    (offline)
-Pair B cable fault    (offline)
-Pair C cable fault    (offline)
-Pair D cable fault    (offline)
-Pair A fault distance (offline)
-Pair B fault distance (offline)
-Pair C fault distance (offline)
-Pair D fault distance (offline)
-Pair A fault open     (offline)
-Pair B fault open     (offline)
-Pair C fault open     (offline)
-Pair D fault open     (offline)
-Pair A fault short    (offline)
-Pair B fault short    (offline)
-Pair C fault short    (offline)
-Pair D fault short    (offline)
+v2: Fixed build issue when FCoE was enabled for i40e.
 
-Please let me know what you think.
+Testing-hints:
+This primarily requires just basic throughput testing for regression.
 
--Aaron S.
+The performance improvement can be difficult to see.  In order for me to
+be able to reproduce the results above it was necessary to manually adjust
+the ITR value down to something on the order of about 25us as otherwise
+other items such as the socket buffer would limit the throughput.
+
+ drivers/net/ethernet/intel/i40e/i40e_fcoe.c   |    2 +
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   |   13 ++++++---
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h   |   35 +++++++++++++++++++++++--
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c |   13 ++++++---
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.h |   35 +++++++++++++++++++++++--
+ 5 files changed, 83 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_fcoe.c b/drivers/net/ethernet/intel/i40e/i40e_fcoe.c
+index 8ad162c16f61..92d2208d13c7 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_fcoe.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_fcoe.c
+@@ -1371,7 +1371,7 @@ static netdev_tx_t i40e_fcoe_xmit_frame(struct sk_buff *skb,
+ 	if (i40e_chk_linearize(skb, count)) {
+ 		if (__skb_linearize(skb))
+ 			goto out_drop;
+-		count = TXD_USE_COUNT(skb->len);
++		count = i40e_txd_use_count(skb->len);
+ 		tx_ring->tx_stats.tx_linearize++;
+ 	}
+ 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index cb52f39d514a..f870b8da4551 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -2716,6 +2716,8 @@ static inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 	tx_bi = first;
+ 
+ 	for (frag = &skb_shinfo(skb)->frags[0];; frag++) {
++		unsigned int max_data = I40E_MAX_DATA_PER_TXD_ALIGNED;
++
+ 		if (dma_mapping_error(tx_ring->dev, dma))
+ 			goto dma_error;
+ 
+@@ -2723,12 +2725,14 @@ static inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 		dma_unmap_len_set(tx_bi, len, size);
+ 		dma_unmap_addr_set(tx_bi, dma, dma);
+ 
++		/* align size to end of page */
++		max_data += -dma & (I40E_MAX_READ_REQ_SIZE - 1);
+ 		tx_desc->buffer_addr = cpu_to_le64(dma);
+ 
+ 		while (unlikely(size > I40E_MAX_DATA_PER_TXD)) {
+ 			tx_desc->cmd_type_offset_bsz =
+ 				build_ctob(td_cmd, td_offset,
+-					   I40E_MAX_DATA_PER_TXD, td_tag);
++					   max_data, td_tag);
+ 
+ 			tx_desc++;
+ 			i++;
+@@ -2739,9 +2743,10 @@ static inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 				i = 0;
+ 			}
+ 
+-			dma += I40E_MAX_DATA_PER_TXD;
+-			size -= I40E_MAX_DATA_PER_TXD;
++			dma += max_data;
++			size -= max_data;
+ 
++			max_data = I40E_MAX_DATA_PER_TXD_ALIGNED;
+ 			tx_desc->buffer_addr = cpu_to_le64(dma);
+ 		}
+ 
+@@ -2891,7 +2896,7 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
+ 	if (i40e_chk_linearize(skb, count)) {
+ 		if (__skb_linearize(skb))
+ 			goto out_drop;
+-		count = TXD_USE_COUNT(skb->len);
++		count = i40e_txd_use_count(skb->len);
+ 		tx_ring->tx_stats.tx_linearize++;
+ 	}
+ 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+index 8a3a163cc475..8b049cd77064 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+@@ -146,10 +146,39 @@ enum i40e_dyn_idx_t {
+ 
+ #define I40E_MAX_BUFFER_TXD	8
+ #define I40E_MIN_TX_LEN		17
+-#define I40E_MAX_DATA_PER_TXD	8192
++
++/* The size limit for a transmit buffer in a descriptor is (16K - 1).
++ * In order to align with the read requests we will align the value to
++ * the nearest 4K which represents our maximum read request size.
++ */
++#define I40E_MAX_READ_REQ_SIZE		4096
++#define I40E_MAX_DATA_PER_TXD		(16 * 1024 - 1)
++#define I40E_MAX_DATA_PER_TXD_ALIGNED \
++	(I40E_MAX_DATA_PER_TXD & ~(I40E_MAX_READ_REQ_SIZE - 1))
++
++/* This ugly bit of math is equivilent to DIV_ROUNDUP(size, X) where X is
++ * the value I40E_MAX_DATA_PER_TXD_ALIGNED.  It is needed due to the fact
++ * that 12K is not a power of 2 and division is expensive.  It is used to
++ * approximate the number of descriptors used per linear buffer.  Note
++ * that this will overestimate in some cases as it doesn't account for the
++ * fact that we will add up to 4K - 1 in aligning the 12K buffer, however
++ * the error should not impact things much as large buffers usually mean
++ * we will use fewer descriptors then there are frags in an skb.
++ */
++static inline unsigned int i40e_txd_use_count(unsigned int size)
++{
++	const unsigned int max = I40E_MAX_DATA_PER_TXD_ALIGNED;
++	const unsigned int reciprocal = ((1ull << 32) - 1 + (max / 2)) / max;
++	unsigned int adjust = ~(u32)0;
++
++	/* if we rounded up on the reciprprocal pull down the adjustment */
++	if ((max * reciprocal) > adjust)
++		adjust = ~(u32)(reciprocal - 1);
++
++	return (u32)((((u64)size * reciprocal) + adjust) >> 32);
++}
+ 
+ /* Tx Descriptors needed, worst case */
+-#define TXD_USE_COUNT(S) DIV_ROUND_UP((S), I40E_MAX_DATA_PER_TXD)
+ #define DESC_NEEDED (MAX_SKB_FRAGS + 4)
+ #define I40E_MIN_DESC_PENDING	4
+ 
+@@ -369,7 +398,7 @@ static inline int i40e_xmit_descriptor_count(struct sk_buff *skb)
+ 	int count = 0, size = skb_headlen(skb);
+ 
+ 	for (;;) {
+-		count += TXD_USE_COUNT(size);
++		count += i40e_txd_use_count(size);
+ 
+ 		if (!nr_frags--)
+ 			break;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index ebcc25c05796..5f9c1bbab1fa 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -1936,6 +1936,8 @@ static inline void i40evf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 	tx_bi = first;
+ 
+ 	for (frag = &skb_shinfo(skb)->frags[0];; frag++) {
++		unsigned int max_data = I40E_MAX_DATA_PER_TXD_ALIGNED;
++
+ 		if (dma_mapping_error(tx_ring->dev, dma))
+ 			goto dma_error;
+ 
+@@ -1943,12 +1945,14 @@ static inline void i40evf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 		dma_unmap_len_set(tx_bi, len, size);
+ 		dma_unmap_addr_set(tx_bi, dma, dma);
+ 
++		/* align size to end of page */
++		max_data += -dma & (I40E_MAX_READ_REQ_SIZE - 1);
+ 		tx_desc->buffer_addr = cpu_to_le64(dma);
+ 
+ 		while (unlikely(size > I40E_MAX_DATA_PER_TXD)) {
+ 			tx_desc->cmd_type_offset_bsz =
+ 				build_ctob(td_cmd, td_offset,
+-					   I40E_MAX_DATA_PER_TXD, td_tag);
++					   max_data, td_tag);
+ 
+ 			tx_desc++;
+ 			i++;
+@@ -1959,9 +1963,10 @@ static inline void i40evf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 				i = 0;
+ 			}
+ 
+-			dma += I40E_MAX_DATA_PER_TXD;
+-			size -= I40E_MAX_DATA_PER_TXD;
++			dma += max_data;
++			size -= max_data;
+ 
++			max_data = I40E_MAX_DATA_PER_TXD_ALIGNED;
+ 			tx_desc->buffer_addr = cpu_to_le64(dma);
+ 		}
+ 
+@@ -2110,7 +2115,7 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
+ 	if (i40e_chk_linearize(skb, count)) {
+ 		if (__skb_linearize(skb))
+ 			goto out_drop;
+-		count = TXD_USE_COUNT(skb->len);
++		count = i40e_txd_use_count(skb->len);
+ 		tx_ring->tx_stats.tx_linearize++;
+ 	}
+ 
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
+index 8c5da4f89fd0..34096b1e4782 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
+@@ -146,10 +146,39 @@ enum i40e_dyn_idx_t {
+ 
+ #define I40E_MAX_BUFFER_TXD	8
+ #define I40E_MIN_TX_LEN		17
+-#define I40E_MAX_DATA_PER_TXD	8192
++
++/* The size limit for a transmit buffer in a descriptor is (16K - 1).
++ * In order to align with the read requests we will align the value to
++ * the nearest 4K which represents our maximum read request size.
++ */
++#define I40E_MAX_READ_REQ_SIZE		4096
++#define I40E_MAX_DATA_PER_TXD		(16 * 1024 - 1)
++#define I40E_MAX_DATA_PER_TXD_ALIGNED \
++	(I40E_MAX_DATA_PER_TXD & ~(I40E_MAX_READ_REQ_SIZE - 1))
++
++/* This ugly bit of math is equivilent to DIV_ROUNDUP(size, X) where X is
++ * the value I40E_MAX_DATA_PER_TXD_ALIGNED.  It is needed due to the fact
++ * that 12K is not a power of 2 and division is expensive.  It is used to
++ * approximate the number of descriptors used per linear buffer.  Note
++ * that this will overestimate in some cases as it doesn't account for the
++ * fact that we will add up to 4K - 1 in aligning the 12K buffer, however
++ * the error should not impact things much as large buffers usually mean
++ * we will use fewer descriptors then there are frags in an skb.
++ */
++static inline unsigned int i40e_txd_use_count(unsigned int size)
++{
++	const unsigned int max = I40E_MAX_DATA_PER_TXD_ALIGNED;
++	const unsigned int reciprocal = ((1ull << 32) - 1 + (max / 2)) / max;
++	unsigned int adjust = ~(u32)0;
++
++	/* if we rounded up on the reciprprocal pull down the adjustment */
++	if ((max * reciprocal) > adjust)
++		adjust = ~(u32)(reciprocal - 1);
++
++	return (u32)((((u64)size * reciprocal) + adjust) >> 32);
++}
+ 
+ /* Tx Descriptors needed, worst case */
+-#define TXD_USE_COUNT(S) DIV_ROUND_UP((S), I40E_MAX_DATA_PER_TXD)
+ #define DESC_NEEDED (MAX_SKB_FRAGS + 4)
+ #define I40E_MIN_DESC_PENDING	4
+ 
+@@ -359,7 +388,7 @@ static inline int i40e_xmit_descriptor_count(struct sk_buff *skb)
+ 	int count = 0, size = skb_headlen(skb);
+ 
+ 	for (;;) {
+-		count += TXD_USE_COUNT(size);
++		count += i40e_txd_use_count(size);
+ 
+ 		if (!nr_frags--)
+ 			break;
+
