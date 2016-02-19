@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 19 Feb 2016 00:39:54 +0000
-Subject: [Intel-wired-lan] [next PATCH S29 09/14] i40e: add adminq
- commands	for rx ctl registers
-In-Reply-To: <1455754344-6372-10-git-send-email-avinash.dayanand@intel.com>
+Date: Fri, 19 Feb 2016 00:40:27 +0000
+Subject: [Intel-wired-lan] [next PATCH S29 10/14] i40e: implement and
+ use rx	ctl helper functions
+In-Reply-To: <1455754344-6372-11-git-send-email-avinash.dayanand@intel.com>
 References: <1455754344-6372-1-git-send-email-avinash.dayanand@intel.com>
- <1455754344-6372-10-git-send-email-avinash.dayanand@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F98F411@ORSMSX104.amr.corp.intel.com>
+ <1455754344-6372-11-git-send-email-avinash.dayanand@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F98F420@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,55 +17,24 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Avinash Dayanand
 > Sent: Wednesday, February 17, 2016 4:12 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S29 09/14] i40e: add adminq
-> commands for rx ctl registers
+> Subject: [Intel-wired-lan] [next PATCH S29 10/14] i40e: implement and use rx
+> ctl helper functions
 > 
 > From: Shannon Nelson <shannon.nelson@intel.com>
 > 
-> Add the new opcodes and struct used for asking the firmware to update Rx
-> control registers that need extra care when being accessed while under
-> heavy traffic - e.g. sustained 64byte packets at line rate on all ports.
-> The firmware will take extra steps to be sure the register accesses are
-> successful.
-> 
-> The registers involved are:
-> 	PFQF_CTL_0
-> 	PFQF_HENA
-> 	PFQF_FDALLOC
-> 	PFQF_HREGION
-> 	PFLAN_QALLOC
-> 	VPQF_CTL
-> 	VFQF_HENA
-> 	VFQF_HREGION
-> 	VSIQF_CTL
-> 	VSILAN_QBASE
-> 	VSILAN_QTABLE
-> 	VSIQF_TCREGION
-> 	PFQF_HKEY
-> 	VFQF_HKEY
-> 	PRTQF_CTL_0
-> 	GLFCOE_RCTL
-> 	GLFCOE_RSOF
-> 	GLQF_CTL
-> 	GLQF_SWAP
-> 	GLQF_HASH_MSK
-> 	GLQF_HASH_INSET
-> 	GLQF_HSYM
-> 	GLQF_FC_MSK
-> 	GLQF_FC_INSET
-> 	GLQF_FD_MSK
-> 	PRTQF_FD_INSET
-> 	PRTQF_FD_FLXINSET
-> 	PRTQF_FD_MSK
+> Use the new AdminQ functions for safely accessing the Rx control registers
+> that may be affected by heavy small packet traffic.
 > 
 > Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-> Change-ID: I56c8144000da66ad99f68948d8a184b2ec2aeb3e
+> Change-ID: Ibb00983e8dcba71f4b760222a609a5fcaa726f18
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h   | 16
-> ++++++++++++++++
->  drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h | 16
-> ++++++++++++++++
->  2 files changed, 32 insertions(+)
+>  drivers/net/ethernet/intel/i40e/i40e_common.c      | 128
+> ++++++++++++++++++++-
+>  drivers/net/ethernet/intel/i40e/i40e_prototype.h   |   8 ++
+>  drivers/net/ethernet/intel/i40evf/i40e_common.c    | 125
+> ++++++++++++++++++++
+>  drivers/net/ethernet/intel/i40evf/i40e_prototype.h |   8 ++
+>  4 files changed, 266 insertions(+), 3 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 AQ-RSS functions work properly and change under load without error
