@@ -1,20 +1,20 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 20 Feb 2016 11:46:56 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 91c62882275e5fea3bfaf5d9b14d0e413cc1d87c BUILD SUCCESS
-Message-ID: <56c7e1b0.QMpLrM9SCDvOYyt5%fengguang.wu@intel.com>
+Date: Sat, 20 Feb 2016 11:47:06 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
+ dfa2eb8634bc3893756057c76ea46b94fb1049f1 BUILD SUCCESS
+Message-ID: <56c7e1ba.Q7um6Ht2EeW7nNPq%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-91c62882275e5fea3bfaf5d9b14d0e413cc1d87c  i40e/i40evf: Allow up to 12K bytes of data per Tx descriptor instead of 8K
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
+dfa2eb8634bc3893756057c76ea46b94fb1049f1  Merge branch '40GbE' of git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue
 
-elapsed time: 106m
+elapsed time: 107m
 
-configs tested: 100
+configs tested: 99
 
 i386                     randconfig-a0-201607
 x86_64                             acpi-redef
@@ -88,7 +88,6 @@ m32r                         opsput_defconfig
 m32r                           usrv_defconfig
 xtensa                       common_defconfig
 xtensa                          iss_defconfig
-i386                               tinyconfig
 x86_64                                    lkp
 x86_64                                   rhel
 microblaze                      mmu_defconfig
