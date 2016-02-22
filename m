@@ -1,18 +1,18 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Mon, 22 Feb 2016 12:33:16 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 7579ef1647625a424921fa3a458958157a953742 BUILD SUCCESS
-Message-ID: <56ca8f8c.uy8MCLvS8EuLPThX%fengguang.wu@intel.com>
+Date: Mon, 22 Feb 2016 12:33:38 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
+ e817af27e01f9294055a441d1034bbc353ee39d2 BUILD SUCCESS
+Message-ID: <56ca8fa2.nBTvIknrg63i6aBU%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-7579ef1647625a424921fa3a458958157a953742  i40e/i40evf: Allow up to 12K bytes of data per Tx descriptor instead of 8K
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
+e817af27e01f9294055a441d1034bbc353ee39d2  vlan: turn on unicast filtering on vlan device
 
-elapsed time: 88m
+elapsed time: 97m
 
 configs tested: 102
 
@@ -29,7 +29,6 @@ blackfin                BF533-EZKIT_defconfig
 blackfin            BF561-EZKIT-SMP_defconfig
 blackfin                  TCM-BF537_defconfig
 cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
 sh                                allnoconfig
 sh                          rsk7269_defconfig
 sh                  sh7785lcr_32bit_defconfig
@@ -64,6 +63,7 @@ m68k                          multi_defconfig
 m68k                           sun3_defconfig
 i386                     randconfig-s0-201608
 i386                     randconfig-s1-201608
+i386                               tinyconfig
 mips                              allnoconfig
 mips                      fuloong2e_defconfig
 mips                                   jz4740
