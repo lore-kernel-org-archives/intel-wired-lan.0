@@ -1,123 +1,74 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Mon, 22 Feb 2016 12:33:38 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
- e817af27e01f9294055a441d1034bbc353ee39d2 BUILD SUCCESS
-Message-ID: <56ca8fa2.nBTvIknrg63i6aBU%fengguang.wu@intel.com>
+From: Christopher S. Hall <christopher.s.hall@intel.com>
+Date: Mon, 22 Feb 2016 03:15:19 -0800
+Subject: [Intel-wired-lan] [PATCH v8 1/8] time: Add cycles to nanoseconds
+	translation
+In-Reply-To: <1456139726-3327-1-git-send-email-christopher.s.hall@intel.com>
+References: <1456139726-3327-1-git-send-email-christopher.s.hall@intel.com>
+Message-ID: <1456139726-3327-2-git-send-email-christopher.s.hall@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
-e817af27e01f9294055a441d1034bbc353ee39d2  vlan: turn on unicast filtering on vlan device
+The timekeeping code does not currently provide a way to translate
+externally provided clocksource cycles to system time. The cycle count
+is always provided by the result clocksource read() method internal to
+the timekeeping code. The added function timekeeping_cycles_to_ns()
+calculated a nanosecond value from a cycle count that can be added to
+tk_read_base.base value yielding the current system time. This allows
+clocksource cycle values external to the timekeeping code to provide a
+cycle count that can be transformed to system time.
 
-elapsed time: 97m
+Signed-off-by: Christopher S. Hall <christopher.s.hall@intel.com>
+Signed-off-by: John Stultz <john.stultz@linaro.org>
+---
+ kernel/time/timekeeping.c | 25 +++++++++++++++++++++----
+ 1 file changed, 21 insertions(+), 4 deletions(-)
 
-configs tested: 102
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index 34b4ced..4243d28 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -298,17 +298,34 @@ u32 (*arch_gettimeoffset)(void) = default_arch_gettimeoffset;
+ static inline u32 arch_gettimeoffset(void) { return 0; }
+ #endif
+ 
++static inline s64 timekeeping_delta_to_ns(struct tk_read_base *tkr,
++					  cycle_t delta)
++{
++	s64 nsec;
++
++	nsec = delta * tkr->mult + tkr->xtime_nsec;
++	nsec >>= tkr->shift;
++
++	/* If arch requires, add in get_arch_timeoffset() */
++	return nsec + arch_gettimeoffset();
++}
++
+ static inline s64 timekeeping_get_ns(struct tk_read_base *tkr)
+ {
+ 	cycle_t delta;
+-	s64 nsec;
+ 
+ 	delta = timekeeping_get_delta(tkr);
++	return timekeeping_delta_to_ns(tkr, delta);
++}
+ 
+-	nsec = (delta * tkr->mult + tkr->xtime_nsec) >> tkr->shift;
++static inline s64 timekeeping_cycles_to_ns(struct tk_read_base *tkr,
++					    cycle_t cycles)
++{
++	cycle_t delta;
+ 
+-	/* If arch requires, add in get_arch_timeoffset() */
+-	return nsec + arch_gettimeoffset();
++	/* calculate the delta since the last update_wall_time */
++	delta = clocksource_delta(cycles, tkr->cycle_last, tkr->mask);
++	return timekeeping_delta_to_ns(tkr, delta);
+ }
+ 
+ /**
+-- 
+2.1.4
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                   randconfig-a0-02220022
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-x014-201608
-x86_64                 randconfig-x012-201608
-x86_64                 randconfig-x011-201608
-x86_64                 randconfig-x017-201608
-x86_64                 randconfig-x019-201608
-x86_64                 randconfig-x013-201608
-x86_64                 randconfig-x018-201608
-x86_64                 randconfig-x016-201608
-x86_64                 randconfig-x010-201608
-x86_64                 randconfig-x015-201608
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201608
-i386                     randconfig-s1-201608
-i386                               tinyconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                   randconfig-i0-201608
-i386                     randconfig-i0-201608
-i386                     randconfig-i1-201608
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201608
-i386                             allmodconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                 randconfig-x002-201608
-x86_64                 randconfig-x004-201608
-x86_64                 randconfig-x009-201608
-x86_64                 randconfig-x000-201608
-x86_64                 randconfig-x005-201608
-x86_64                 randconfig-x003-201608
-x86_64                 randconfig-x006-201608
-x86_64                 randconfig-x008-201608
-x86_64                 randconfig-x007-201608
-x86_64                 randconfig-x001-201608
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-r0-201608
-i386                   randconfig-x004-201608
-i386                   randconfig-x007-201608
-i386                   randconfig-x001-201608
-i386                   randconfig-x006-201608
-i386                   randconfig-x003-201608
-i386                   randconfig-x008-201608
-i386                   randconfig-x002-201608
-i386                   randconfig-x005-201608
-i386                   randconfig-x000-201608
-i386                   randconfig-x009-201608
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-
-Thanks,
-Fengguang
