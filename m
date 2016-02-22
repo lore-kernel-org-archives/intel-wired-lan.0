@@ -1,85 +1,123 @@
-From: Laine Stump <laine@redhat.com>
-Date: Fri, 5 Feb 2016 16:24:45 -0500
-Subject: [Intel-wired-lan] [net-next] igb: assume MSI-X interrupts
-	during initialization
-In-Reply-To: <1442493970-20073-1-git-send-email-sassmann@kpanic.de>
-References: <1442493970-20073-1-git-send-email-sassmann@kpanic.de>
-Message-ID: <56B5131D.1070505@redhat.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Mon, 22 Feb 2016 12:33:16 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 7579ef1647625a424921fa3a458958157a953742 BUILD SUCCESS
+Message-ID: <56ca8f8c.uy8MCLvS8EuLPThX%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Stefan,
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+7579ef1647625a424921fa3a458958157a953742  i40e/i40evf: Allow up to 12K bytes of data per Tx descriptor instead of 8K
 
-I have an AMD 990FX system with an Intel 82576 card that could not 
-successfully boot with any kernel starting somewhere prior to 4.2, but 
-does boot properly in 4.4+. After a lot of time bisecting, I found that 
-this patch, when applied to kernel 4.3.0, solves the problem (applying 
-to 4.2.0 has no effect, so there's some other patch/patches in the 
-interim that were also part of the fix).
+elapsed time: 88m
 
-Since I don't know the details of proposing this patch for 4.3 stable, 
-would it be possible for you to do that?
+configs tested: 102
 
-Thanks!
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                   randconfig-a0-02220022
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                 randconfig-x014-201608
+x86_64                 randconfig-x012-201608
+x86_64                 randconfig-x011-201608
+x86_64                 randconfig-x017-201608
+x86_64                 randconfig-x019-201608
+x86_64                 randconfig-x013-201608
+x86_64                 randconfig-x018-201608
+x86_64                 randconfig-x016-201608
+x86_64                 randconfig-x010-201608
+x86_64                 randconfig-x015-201608
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201608
+i386                     randconfig-s1-201608
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201608
+i386                     randconfig-i0-201608
+i386                     randconfig-i1-201608
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201608
+i386                             allmodconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                 randconfig-x002-201608
+x86_64                 randconfig-x004-201608
+x86_64                 randconfig-x009-201608
+x86_64                 randconfig-x000-201608
+x86_64                 randconfig-x005-201608
+x86_64                 randconfig-x003-201608
+x86_64                 randconfig-x006-201608
+x86_64                 randconfig-x008-201608
+x86_64                 randconfig-x007-201608
+x86_64                 randconfig-x001-201608
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-r0-201608
+i386                   randconfig-x004-201608
+i386                   randconfig-x007-201608
+i386                   randconfig-x001-201608
+i386                   randconfig-x006-201608
+i386                   randconfig-x003-201608
+i386                   randconfig-x008-201608
+i386                   randconfig-x002-201608
+i386                   randconfig-x005-201608
+i386                   randconfig-x000-201608
+i386                   randconfig-x009-201608
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
 
-The full saga of my problem and investigaton is here:
-
-https://www.mail-archive.com/iommu at lists.linux-foundation.org/msg10687.html
-
-
-On 09/17/2015 08:46 AM, Stefan Assmann wrote:
-> In igb_sw_init() the sequence of calls was changed from
-> igb_init_queue_configuration()
-> igb_init_interrupt_scheme()
-> igb_probe_vfs()
-> to
-> igb_probe_vfs()
-> igb_init_queue_configuration()
-> igb_init_interrupt_scheme()
->
-> This results in adapter->flags not having the IGB_FLAG_HAS_MSIX bit set
-> during igb_probe_vfs()->igb_enable_sriov(). Therefore SR-IOV does not
-> get enabled properly and we run into a NULL pointer if the max_vfs
-> module parameter is specified (adapter->vf_data does not get allocated,
-> crash on accessing the structure).
->
-> [    7.419348] BUG: unable to handle kernel NULL pointer dereference at 0000000000000048
-> [    7.419367] IP: [<ffffffffa02161c6>] igb_reset+0xe6/0x5d0 [igb]
-> [    7.419370] PGD 0
-> [    7.419373] Oops: 0002 [#1] SMP
-> [    7.419381] Modules linked in: ahci(+) libahci igb(+) i40e(+) vxlan ip6_udp_tunnel udp_tunnel megaraid_sas(+) ixgbe(+) mdio
-> [    7.419385] CPU: 0 PID: 4 Comm: kworker/0:0 Not tainted 4.2.0+ #153
-> [    7.419387] Hardware name: Dell Inc. PowerEdge R720/0C4Y3R, BIOS 1.6.0 03/07/2013
-> [...]
-> [    7.419431] Call Trace:
-> [    7.419442]  [<ffffffffa0217236>] igb_probe+0x8b6/0x1340 [igb]
-> [    7.419447]  [<ffffffff814c7f15>] local_pci_probe+0x45/0xa0
->
-> Prevent this by setting the IGB_FLAG_HAS_MSIX bit before calling
-> igb_probe_vfs(). The real interrupt capabilities will be checked during
-> igb_init_interrupt_scheme() so this is safe to do.
->
-> Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
-> ---
->   drivers/net/ethernet/intel/igb/igb_main.c | 3 +++
->   1 file changed, 3 insertions(+)
->
-> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-> index e174fbb..ba019fc 100644
-> --- a/drivers/net/ethernet/intel/igb/igb_main.c
-> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-> @@ -2986,6 +2986,9 @@ static int igb_sw_init(struct igb_adapter *adapter)
->   	}
->   #endif /* CONFIG_PCI_IOV */
->
-> +	/* Assume MSI-X interrupts, will be checked during IRQ allocation */
-> +	adapter->flags |= IGB_FLAG_HAS_MSIX;
-> +
->   	igb_probe_vfs(adapter);
->
->   	igb_init_queue_configuration(adapter);
->
-
+Thanks,
+Fengguang
