@@ -1,29 +1,53 @@
-From: John Stultz <john.stultz@linaro.org>
-Date: Mon, 22 Feb 2016 10:49:46 -0800
-Subject: [Intel-wired-lan] [PATCH v7 0/8] Patchset enabling hardware
- based cross-timestamps for next gen Intel platforms
-In-Reply-To: <op.yc8y6lni1774gr@chall-mobl2.amr.corp.intel.com>
+From: Christopher Hall <christopher.s.hall@intel.com>
+Date: Mon, 22 Feb 2016 18:38:11 -0800
+Subject: [Intel-wired-lan] [PATCH v7 6/8] x86: tsc: Always Running Timer
+ (ART) correlated clocksource
+In-Reply-To: <56C63385.9050703@kernel.org>
 References: <1455308729-6280-1-git-send-email-christopher.s.hall@intel.com>
- <CALAqxLXFVSrGD75gw7FbDtJV_cua9oowit8y=nKGS-YG5cYXAw@mail.gmail.com>
- <op.yc8y6lni1774gr@chall-mobl2.amr.corp.intel.com>
-Message-ID: <CALAqxLUD+-_AxXX7hbCsbe2jpytFeDJQQSAr0EHy3dX1V+GoxA@mail.gmail.com>
+ <1455308729-6280-7-git-send-email-christopher.s.hall@intel.com>
+ <56C63385.9050703@kernel.org>
+Message-ID: <op.yc9llxxf1774gr@chall-mobl2.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Feb 22, 2016 at 10:33 AM, Christopher Hall
-<christopher.s.hall@intel.com> wrote:
-> I just sent another patchset (v8). I corrected the comment problems pointed
-> out by Richard Cochran. I also changed the arch/x86 code to use "non-stop"
-> TSC rather than "invariant" TSC. They are *exactly* the same thing (i.e.
-> read from the same bit of the CPUID leaf). The former exists already and
-> should be used instead.  Patch 6/8 is the only patch that is changed apart
-> from comments.
+On Thu, 18 Feb 2016 13:11:33 -0800, Andy Lutomirski <luto@kernel.org>  
+wrote:
+>> +#define X86_FEATURE_INVARIANT_TSC (7*32+4) /* Intel Invariant TSC */
 
-Ok. So I see you addressed some of Andy's feedback, but did you answer
-the bit about the k offset?
+This is removed. It was basically an alias for NONSTOP_TSC and not needed.
 
-thanks
--john
+>
+>> +/*
+>> + * Convert ART to TSC given numerator/denominator found in detect_art()
+>> + */
+>> +struct system_counterval_t convert_art_to_tsc(cycle_t art)
+>> +{
+>> +	u64 tmp, res, rem;
+>> +
+>> +	rem = do_div(art, art_to_tsc_denominator);
+>> +
+>> +	res = art * art_to_tsc_numerator;
+>> +	tmp = rem * art_to_tsc_numerator;
+>> +
+>> +	do_div(tmp, art_to_tsc_denominator);
+>> +	res += tmp;
+>> +
+>> +	return (struct system_counterval_t) {.cs = art_related_clocksource,
+>> +			.cycles = res};
+>
+> The SDM and the patch description both mention an offset "k".  Shouldn't  
+> this code at least have a comment about how it deals with the k != 0  
+> case?
+
+I don't deal with the k != 0 case. I assume that IA32 TSC adjust MSR is 0  
+because it's almost always a *bad idea* to change it. I've discussed this  
+with a few other developers and there is some consensus agreeing. From an  
+earlier related thread Peter Zijlstra asserts that TSC adjust "had
+better" be 0.(http://lkml.iu.edu/hypermail/linux/kernel/1507.3/03734.html).
+
+Do we really need to accommodate BIOS's that do this?
+
+Chris
