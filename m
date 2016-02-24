@@ -1,59 +1,115 @@
-From: John Stultz <john.stultz@linaro.org>
-Date: Wed, 24 Feb 2016 15:07:36 -0800
-Subject: [Intel-wired-lan] [PATCH v8 5/8] time: Add history to cross
- timestamp interface supporting slower devices
-In-Reply-To: <alpine.DEB.2.11.1602241155340.3670@nanos>
-References: <1456139726-3327-1-git-send-email-christopher.s.hall@intel.com>
- <1456139726-3327-6-git-send-email-christopher.s.hall@intel.com>
- <alpine.DEB.2.11.1602241155340.3670@nanos>
-Message-ID: <CALAqxLVAJDK7fSPpCVQYjZfnZDbJ+NT53zPE0uCy_kuwcoNh4w@mail.gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 25 Feb 2016 07:21:31 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
+ 5aba8186856981672447d78a634ada8155b86eb6 BUILD SUCCESS
+Message-ID: <56ce3afb.UX60qh+/i+AdZrqM%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Feb 24, 2016 at 2:56 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Mon, 22 Feb 2016, Christopher S. Hall wrote:
->> +{
->> +     struct timekeeper *tk = &tk_core.timekeeper;
->> +     bool interp_forward;
->> +     u64 corr_raw, corr_real;
->> +     int ret;
->
-> Once more:
->
->         struct timekeeper *tk = &tk_core.timekeeper;
->         u64 corr_raw, corr_real;
->         bool interp_forward;
->         int ret;
->
-> Is way simpler to parse fast.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
+5aba8186856981672447d78a634ada8155b86eb6  Merge branch 'gianfar-xmit-improvements'
 
-So I just went through and addressed these formatting issues in my tree.
+elapsed time: 84m
 
-but....
+configs tested: 94
 
->> @@ -929,6 +1046,12 @@ int get_device_system_crosststamp(int (*get_time_fn)
->>       ktime_t base_real;
->>       s64 nsec_raw;
->>       s64 nsec_real;
->> +     cycles_t cycles;
->> +     cycle_t now;
+i386                     randconfig-a0-201608
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x014-201608
+x86_64                 randconfig-x012-201608
+x86_64                 randconfig-x011-201608
+x86_64                 randconfig-x017-201608
+x86_64                 randconfig-x019-201608
+x86_64                 randconfig-x013-201608
+x86_64                 randconfig-x018-201608
+x86_64                 randconfig-x016-201608
+x86_64                 randconfig-x010-201608
+x86_64                 randconfig-x015-201608
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201608
+i386                     randconfig-s1-201608
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201608
+i386                   randconfig-b0-02250524
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                     randconfig-i1-201608
+i386                     randconfig-i0-201608
+i386                               tinyconfig
+x86_64                                    lkp
+x86_64                                   rhel
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201608
+arm                          badge4_defconfig
+mips                           ip32_defconfig
+x86_64                 randconfig-x002-201608
+x86_64                 randconfig-x004-201608
+x86_64                 randconfig-x009-201608
+x86_64                 randconfig-x000-201608
+x86_64                 randconfig-x005-201608
+x86_64                 randconfig-x003-201608
+x86_64                 randconfig-x006-201608
+x86_64                 randconfig-x008-201608
+x86_64                 randconfig-x007-201608
+x86_64                 randconfig-x001-201608
+i386                     randconfig-r0-201608
+i386                   randconfig-x004-201608
+i386                   randconfig-x007-201608
+i386                   randconfig-x001-201608
+i386                   randconfig-x006-201608
+i386                   randconfig-x003-201608
+i386                   randconfig-x008-201608
+i386                   randconfig-x002-201608
+i386                   randconfig-x005-201608
+i386                   randconfig-x000-201608
+i386                   randconfig-x009-201608
 
-I just noticed this train-wreck: cycles_t and cycle_t are obnoxiously
-different types. (One is an int on some arches and the other is a
-u64).
-
-You very much want to use cycle_t here. And I think that goes for the
-introduced cycle_between() function.
-
-So I'm fixing that up as well in this patch, but there's a few other
-spots in this series too.
-
-Sigh. Going to have to find some time to go through and try to zap
-cycles_t in the kernel  because having both is just asking for
-trouble.  :P
-
-thanks
--john
+Thanks,
+Fengguang
