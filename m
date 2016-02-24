@@ -1,38 +1,43 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Wed, 24 Feb 2016 12:00:31 +0100 (CET)
-Subject: [Intel-wired-lan] [PATCH v8 6/8] x86: tsc: Always Running Timer
- (ART) correlated clocksource
-In-Reply-To: <1456139726-3327-7-git-send-email-christopher.s.hall@intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed, 24 Feb 2016 12:22:44 -0800
+Subject: [Intel-wired-lan] [PATCH v8 8/8] net: e1000e: Adds hardware
+ supported cross timestamp on e1000e nic
+In-Reply-To: <1456139726-3327-9-git-send-email-christopher.s.hall@intel.com>
 References: <1456139726-3327-1-git-send-email-christopher.s.hall@intel.com>
- <1456139726-3327-7-git-send-email-christopher.s.hall@intel.com>
-Message-ID: <alpine.DEB.2.11.1602241200020.3670@nanos>
+ <1456139726-3327-9-git-send-email-christopher.s.hall@intel.com>
+Message-ID: <1456345364.2808.1.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 22 Feb 2016, Christopher S. Hall wrote:
-
-> On modern Intel systems TSC is derived from the new Always Running Timer
-> (ART). ART can be captured simultaneous to the capture of
-> audio and network device clocks, allowing a correlation between timebases
-> to be constructed. Upon capture, the driver converts the captured ART
-> value to the appropriate system clock using the correlated clocksource
-> mechanism.
-> 
-> On systems that support ART a new CPUID leaf (0x15) returns parameters
-> ?m? and ?n? such that:
-> 
-> TSC_value = (ART_value * m) / n + k [n >= 2]
-> 
-> [k is an offset that can adjusted by a privileged agent. The
-> IA32_TSC_ADJUST MSR is an example of an interface to adjust k.
-> See 17.14.4 of the Intel SDM for more details]
+On Mon, 2016-02-22 at 03:15 -0800, Christopher S. Hall wrote:
+> Modern Intel systems supports cross timestamping of the network
+> device
+> clock and Always Running Timer (ART) in hardware.? This allows the
+> device time and system time to be precisely correlated. The timestamp
+> pair is returned through e1000e_phc_get_syncdevicetime() used by
+> get_system_device_crosststamp().? The hardware cross-timestamp result
+> is made available to applications through the PTP_SYS_OFFSET_PRECISE
+> ioctl which calls e1000e_phc_getcrosststamp().
 > 
 > Signed-off-by: Christopher S. Hall <christopher.s.hall@intel.com>
-> [jstultz: Tweaked to fix build issue, also reworked math for
-> 64bit division on 32bit systems]
+> [jstultz: Reworked to use new interface, commit message tweaks]
 > Signed-off-by: John Stultz <john.stultz@linaro.org>
+> ---
+> ?drivers/net/ethernet/intel/Kconfig????????? |? 9 +++
+> ?drivers/net/ethernet/intel/e1000e/defines.h |? 5 ++
+> ?drivers/net/ethernet/intel/e1000e/ptp.c???? | 85
+> +++++++++++++++++++++++++++++
+> ?drivers/net/ethernet/intel/e1000e/regs.h??? |? 4 ++
+> ?4 files changed, 103 insertions(+)
 
-Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
+Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160224/170bdcbc/attachment.asc>
