@@ -1,113 +1,50 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 25 Feb 2016 08:04:09 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- b39b8c970f024c27c4be8045595766a3bb8ffb8b BUILD SUCCESS
-Message-ID: <56ce44f9.2j3HUgSJonK/7Yxg%fengguang.wu@intel.com>
+From: Gangfeng Huang <gangfeng.huang@ni.com>
+Date: Thu, 25 Feb 2016 02:52:12 +0000
+Subject: [Intel-wired-lan] [PATCH 1/3] igb: Enable the ethtool interface
+ fo Rx filter
+In-Reply-To: <1456345773.2808.8.camel@intel.com>
+References: <1456304783-15019-1-git-send-email-gangfeng.huang@ni.com>
+ <1456345773.2808.8.camel@intel.com>
+Message-ID: <DM2PR0401MB099012CEA70D5EF0B98A5969ECA60@DM2PR0401MB0990.namprd04.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-b39b8c970f024c27c4be8045595766a3bb8ffb8b  i40e/i40evf: Allow up to 12K bytes of data per Tx descriptor instead of 8K
+Hi Jeff,
 
-elapsed time: 91m
+Thank you very for the comments and suggestion,  Because I am not vary clear about the process of submit commit,  I directly fix arron's comments in my yesterday's patch.  I will recreate this patches to update the description and  fix aaron's comments in a separate patch.
 
-configs tested: 92
+-----Original Message-----
+From: Jeff Kirsher [mailto:jeffrey.t.kirsher at intel.com] 
+Sent: 2016?2?25? 4:30
+To: Gangfeng Huang <gangfeng.huang@ni.com>; intel-wired-lan at lists.osuosl.org
+Cc: Ruhao Gao <ruhao.gao@ni.com>; John Ronciak <john.ronciak@intel.com>
+Subject: Re: [Intel-wired-lan] [PATCH 1/3] igb: Enable the ethtool interface fo Rx filter
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201608
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-parisc                         b180_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                 randconfig-x014-201608
-x86_64                 randconfig-x012-201608
-x86_64                 randconfig-x011-201608
-x86_64                 randconfig-x017-201608
-x86_64                 randconfig-x019-201608
-x86_64                 randconfig-x013-201608
-x86_64                 randconfig-x018-201608
-x86_64                 randconfig-x016-201608
-x86_64                 randconfig-x010-201608
-x86_64                 randconfig-x015-201608
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201608
-i386                     randconfig-s1-201608
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                   randconfig-i0-201608
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i0-201608
-i386                     randconfig-i1-201608
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201608
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-x86_64                           allmodconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                   randconfig-x004-201608
-i386                   randconfig-x007-201608
-i386                   randconfig-x001-201608
-i386                   randconfig-x006-201608
-i386                   randconfig-x003-201608
-i386                   randconfig-x008-201608
-i386                   randconfig-x002-201608
-i386                   randconfig-x005-201608
-i386                   randconfig-x000-201608
-i386                   randconfig-x009-201608
+On Wed, 2016-02-24 at 17:06 +0800, Gangfeng wrote:
+> From: Gangfeng Huang <gangfeng.huang@ni.com>
+> 
+> This patch is meant to allow for nfc to insert and remove Rx filter by 
+> ethtool. Ethtool interface has it's own rules manager
+> 
+> Show all filters:
+> $ ethtool -n eth0
+> 4 RX rings available
+> Total 2 rules
+> 
+> Signed-off-by: Ruhao Gao <ruhao.gao@ni.com>
+> Signed-off-by: Gangfeng Huang <gangfeng.huang@ni.com>
+> ---
+> ?drivers/net/ethernet/intel/igb/igb.h???????? |?? 31 +++++
+> ?drivers/net/ethernet/intel/igb/igb_ethtool.c |? 193
+> ++++++++++++++++++++++++++
+> ?drivers/net/ethernet/intel/igb/igb_main.c??? |?? 45 ++++++
+> ?3 files changed, 269 insertions(+)
 
-Thanks,
-Fengguang
+What does NFC mean? ?It is proper etiquette to spell out all acronyms before using them, especially when they are not universally known.
+
+Did you address Aaron Brown questions and concerns? ?I do not see any change log to this series of patches, so I do not think you changed anything from the first time you submitted it. ?I rejected this the first time around because of the questions and concerns Aaron brought up, so if you are going to ignore Aaron, you might as well forget about getting these changes into the kernel.
+
+Also for the amount of changes you are making to the igb, we will need a clearly defined justification as to why this is needed. ?Your sparse patch description needs more information to help us understand why we need these changes.
