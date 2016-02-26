@@ -1,67 +1,124 @@
-From: Todd Fujinaka <todd.fujinaka@intel.com>
-Date: Fri, 26 Feb 2016 13:57:08 -0800
-Subject: [Intel-wired-lan] [PATCH] igb: simplify check for all F for
-	surprise removal
-Message-ID: <20160226215708.15005.5114.stgit@htfujina-fc.jf.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 27 Feb 2016 06:11:12 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ d52ab28fa0f763ecbff8a2a5df7f428bdca917f7 BUILD SUCCESS
+Message-ID: <56d0cd80.OybYBcnO9ezO8gvC%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The previous check appears to be delaying problems by doing multiple
-reads. Also, we've found that having igbvf in the host and vm and using
-direct-assign returns all F's on the STATUS register and we can't use
-that as an error condition. Since the VLAN Ether Type register
-(E1000_VET) has a hard-coded return value of 0x8100, check that register
-for all Fs instead.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+d52ab28fa0f763ecbff8a2a5df7f428bdca917f7  i40e/i40evf: Allow up to 12K bytes of data per Tx descriptor instead of 8K
 
-Signed-off-by: Todd Fujinaka <todd.fujinaka@intel.com>
----
- drivers/net/ethernet/intel/igb/igb_main.c |   23 ++++++++++++++++-------
- 1 file changed, 16 insertions(+), 7 deletions(-)
+elapsed time: 98m
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index a1d9b05..e932763 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -763,9 +763,22 @@ static void igb_cache_ring_register(struct igb_adapter *adapter)
- 	}
- }
- 
--u32 igb_rd32(struct e1000_hw *hw, u32 reg)
-+static void igb_check_remove(struct e1000_hw *hw, u32 reg, u8 __iomem *hw_addr)
- {
- 	struct igb_adapter *igb = container_of(hw, struct igb_adapter, hw);
-+
-+	/* E1000_VET is always 0x8100 and can't be all F's */
-+	if ((reg == E1000_VET) || (!(~readl(&hw_addr[E1000_VET])))) {
-+		struct net_device *netdev = igb->netdev;
-+
-+		hw->hw_addr = NULL;
-+		netif_device_detach(netdev);
-+		netdev_err(netdev, "PCIe link lost, device now detached\n");
-+	}
-+}
-+
-+u32 igb_rd32(struct e1000_hw *hw, u32 reg)
-+{
- 	u8 __iomem *hw_addr = ACCESS_ONCE(hw->hw_addr);
- 	u32 value = 0;
- 
-@@ -775,12 +788,8 @@ u32 igb_rd32(struct e1000_hw *hw, u32 reg)
- 	value = readl(&hw_addr[reg]);
- 
- 	/* reads should not return all F's */
--	if (!(~value) && (!reg || !(~readl(hw_addr)))) {
--		struct net_device *netdev = igb->netdev;
--		hw->hw_addr = NULL;
--		netif_device_detach(netdev);
--		netdev_err(netdev, "PCIe link lost, device now detached\n");
--	}
-+	if (unlikely(!(~value)))
-+		igb_check_remove(hw, reg, hw_addr);
- 
- 	return value;
- }
+configs tested: 103
 
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201608
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+parisc                         b180_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x014-201608
+x86_64                 randconfig-x012-201608
+x86_64                 randconfig-x011-201608
+x86_64                 randconfig-x017-201608
+x86_64                 randconfig-x019-201608
+x86_64                 randconfig-x013-201608
+x86_64                 randconfig-x018-201608
+x86_64                 randconfig-x016-201608
+x86_64                 randconfig-x010-201608
+x86_64                 randconfig-x015-201608
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201608
+i386                     randconfig-s1-201608
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201608
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201608
+i386                     randconfig-i1-201608
+i386                     randconfig-n0-201608
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+x86_64                           allmodconfig
+x86_64                 randconfig-x002-201608
+x86_64                 randconfig-x004-201608
+x86_64                 randconfig-x009-201608
+x86_64                 randconfig-x000-201608
+x86_64                 randconfig-x005-201608
+x86_64                 randconfig-x003-201608
+x86_64                 randconfig-x006-201608
+x86_64                 randconfig-x008-201608
+x86_64                 randconfig-x007-201608
+x86_64                 randconfig-x001-201608
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-r0-201608
+i386                   randconfig-x004-201608
+i386                   randconfig-x007-201608
+i386                   randconfig-x001-201608
+i386                   randconfig-x006-201608
+i386                   randconfig-x003-201608
+i386                   randconfig-x008-201608
+i386                   randconfig-x002-201608
+i386                   randconfig-x005-201608
+i386                   randconfig-x000-201608
+i386                   randconfig-x009-201608
+
+Thanks,
+Fengguang
