@@ -1,95 +1,94 @@
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Date: Fri, 26 Feb 2016 02:40:18 +0000
-Subject: [Intel-wired-lan] [PATCH iproute2 v2] iplink: Support VF Trust
-Message-ID: <7F861DC0615E0C47A872E6F3C5FCDDBD05FB353F@BPXM14GP.gisp.nec.co.jp>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Fri, 26 Feb 2016 16:33:36 +0000
+Subject: [Intel-wired-lan] [PATCH v3] fm10k: remove duplication of the
+ driver summary
+In-Reply-To: <804857E1F29AAC47BF68C404FC60A18490D712B7@ORSMSX104.amr.corp.intel.com>
+References: <1456448905-16882-1-git-send-email-jacob.e.keller@intel.com>
+ <804857E1F29AAC47BF68C404FC60A18490D712B7@ORSMSX104.amr.corp.intel.com>
+Message-ID: <1456504415.28839.1.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+On Fri, 2016-02-26 at 01:22 +0000, Allan, Bruce W wrote:
+> > 
+> > -----Original Message-----
+> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.
+> > org] On
+> > Behalf Of Jacob Keller
+> > Sent: Thursday, February 25, 2016 5:08 PM
+> > To: Intel Wired LAN
+> > Subject: [Intel-wired-lan] [PATCH v3] fm10k: remove duplication of
+> > the
+> > driver summary
+> > 
+> > Use DRV_SUMMARY, similar to DRV_VERSION so that we don't have
+> > duplicate
+> > copies of the summary left in the driver.
+> > 
+> > Also update the file copyright string and the ethtool copyright
+> > string
+> What do you mean "the ethtool copyright string"???Typo?
+> 
 
-Add IFLA_VF_TRUST message to trust the VF.
-PF can accept some privileged operation from the trusted VF.
-For example, ixgbe PF doesn't allow to enable VF promiscuous mode until
-the VF is trusted because it may hurt performance.
+Brain cramp. I meant the string we display in the module info, and for
+some reason I went to the ethtool -i output, obviously incorrect. I can
+fix that up.
 
-To trust VF.
- # ip link set dev eth0 vf 1 trust on
+Thanks,
+Jake
 
-To untrust VF.
- # ip link set dev eth0 vf 1 trust off
-
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
-
-v1 -> v2: rebase to the latest code of iproute2.
-
-The VF trust patch has been in kernel and the IFLA_VF_TRUST netlink attribute
-has been included iproute2, but no actual handler for this.
-This patch add the functionality to trust vf from ip command.
-
- ip/iplink.c           | 13 +++++++++++++
- man/man8/ip-link.8.in |  7 ++++++-
- 2 files changed, 19 insertions(+), 1 deletion(-)
-
-diff --git a/ip/iplink.c b/ip/iplink.c
-index 5ab9d61..69f5057 100644
---- a/ip/iplink.c
-+++ b/ip/iplink.c
-@@ -82,6 +82,7 @@ void iplink_usage(void)
- 	fprintf(stderr, "				   [ spoofchk { on | off} ] ]\n");
- 	fprintf(stderr, "				   [ query_rss { on | off} ] ]\n");
- 	fprintf(stderr, "				   [ state { auto | enable | disable} ] ]\n");
-+	fprintf(stderr, "				   [ trust { on | off} ] ]\n");
- 	fprintf(stderr, "			  [ master DEVICE ]\n");
- 	fprintf(stderr, "			  [ nomaster ]\n");
- 	fprintf(stderr, "			  [ addrgenmode { eui64 | none | stable_secret | random } ]\n");
-@@ -356,6 +357,18 @@ static int iplink_parse_vf(int vf, int *argcp, char ***argvp,
- 			ivs.vf = vf;
- 			addattr_l(&req->n, sizeof(*req), IFLA_VF_RSS_QUERY_EN, &ivs, sizeof(ivs));
- 
-+		} else if (matches(*argv, "trust") == 0) {
-+			struct ifla_vf_trust ivt;
-+			NEXT_ARG();
-+			if (matches(*argv, "on") == 0)
-+				ivt.setting = 1;
-+			else if (matches(*argv, "off") == 0)
-+				ivt.setting = 0;
-+			else
-+				invarg("Invalid \"trust\" value\n", *argv);
-+			ivt.vf = vf;
-+			addattr_l(&req->n, sizeof(*req), IFLA_VF_TRUST, &ivt, sizeof(ivt));
-+
- 		} else if (matches(*argv, "state") == 0) {
- 			struct ifla_vf_link_state ivl;
- 
-diff --git a/man/man8/ip-link.8.in b/man/man8/ip-link.8.in
-index 4d32343..7dd7a90 100644
---- a/man/man8/ip-link.8.in
-+++ b/man/man8/ip-link.8.in
-@@ -142,7 +142,8 @@ ip-link \- network device configuration
- .B min_tx_rate
- .IR TXRATE " ] ["
- .B spoofchk { on | off } ] [
--.B state { auto | enable | disable}
-+.B state { auto | enable | disable} ] [
-+.B trust { on | off }
- ] |
- .br
- .B master
-@@ -1019,6 +1020,10 @@ parameter must be specified.
- reflection of the PF link state, enable lets the VF to communicate with other VFs on
- this host even if the PF link state is down, disable causes the HW to drop any packets
- sent by the VF.
-+.sp
-+.BI trust " on|off"
-+- trust the specified VF user. This enables that VF user can set a specific feature
-+which may impact security and/or performance. (e.g. VF multicast promiscuous mode)
- .in -8
- 
- .TP
--- 
-1.8.3.1
-
+> > 
+> > while we are here.
+> > 
+> > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> > ---
+> > ?drivers/net/ethernet/intel/fm10k/fm10k_main.c | 10 +++++-----
+> > ?1 file changed, 5 insertions(+), 5 deletions(-)
+> > 
+> > diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+> > b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+> > index 3a81c1451624..98166e8b0789 100644
+> > --- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+> > +++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+> > @@ -1,5 +1,5 @@
+> > ?/* Intel Ethernet Switch Host Interface Driver
+> > - * Copyright(c) 2013 - 2014 Intel Corporation.
+> > + * Copyright(c) 2013 - 2016 Intel Corporation.
+> > ? *
+> > ? * This program is free software; you can redistribute it and/or
+> > modify it
+> > ? * under the terms and conditions of the GNU General Public
+> > License,
+> > @@ -29,15 +29,15 @@
+> > ?#include "fm10k.h"
+> > 
+> > ?#define DRV_VERSION	"0.19.3-k"
+> > +#define DRV_SUMMARY	"Intel(R) Ethernet Switch Host
+> > Interface
+> > Driver"
+> > ?const char fm10k_driver_version[] = DRV_VERSION;
+> > ?char fm10k_driver_name[] = "fm10k";
+> > -static const char fm10k_driver_string[] =
+> > -	"Intel(R) Ethernet Switch Host Interface Driver";
+> > +static const char fm10k_driver_string[] = DRV_SUMMARY;
+> > ?static const char fm10k_copyright[] =
+> > -	"Copyright (c) 2013 Intel Corporation.";
+> > +	"Copyright (c) 2013 - 2016 Intel Corporation.";
+> > 
+> > ?MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
+> > -MODULE_DESCRIPTION("Intel(R) Ethernet Switch Host Interface
+> > Driver");
+> > +MODULE_DESCRIPTION(DRV_SUMMARY);
+> > ?MODULE_LICENSE("GPL");
+> > ?MODULE_VERSION(DRV_VERSION);
+> > 
+> > --
+> > 2.7.1.429.g45cd78e
+> > 
+> > _______________________________________________
+> > Intel-wired-lan mailing list
+> > Intel-wired-lan at lists.osuosl.org
+> > http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
