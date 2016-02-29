@@ -1,124 +1,147 @@
-From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Fri, 11 Mar 2016 17:07:50 -0800
-Subject: [Intel-wired-lan] [PATCH 5/5] ixgbe: Take manageability semaphore
- for firmware commands
-In-Reply-To: <20160312010538.130154.49237.stgit@mdrustad-wks.jf.intel.com>
-References: <20160312010538.130154.49237.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <20160312010750.130154.18202.stgit@mdrustad-wks.jf.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 01 Mar 2016 07:45:19 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 1ee6f6952cce4c6b4e74a31ca162bd86c4d1cf86 BUILD SUCCESS
+Message-ID: <56d4d80f.ImiYsRwOWfng1bu9%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-We need to take the manageability semaphore when issuing firmware
-commands to avoid problems. With this in place, the semaphore is
-no longer taken in the ixgbe_set_fw_drv_ver_generic function, since
-it will now always be taken by the ixgbe_host_interface_command
-function.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+1ee6f6952cce4c6b4e74a31ca162bd86c4d1cf86  igb: simplify check for all F for surprise removal
 
-Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |   30 +++++++++++++++--------
- 1 file changed, 19 insertions(+), 11 deletions(-)
+elapsed time: 62m
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-index bbce1ff0f6da..ae1b288d60e9 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-@@ -3494,11 +3494,16 @@ s32 ixgbe_host_interface_command(struct ixgbe_hw *hw, void *buffer,
- 		struct ixgbe_hic_hdr hdr;
- 		u32 u32arr[1];
- 	} *bp = buffer;
-+	s32 status;
- 
- 	if (!length || length > IXGBE_HI_MAX_BLOCK_BYTE_LENGTH) {
- 		hw_dbg(hw, "Buffer length failure buffersize-%d.\n", length);
- 		return IXGBE_ERR_HOST_INTERFACE_COMMAND;
- 	}
-+	/* Take management host interface semaphore */
-+	status = hw->mac.ops.acquire_swfw_sync(hw, IXGBE_GSSR_SW_MNG_SM);
-+	if (status)
-+		return status;
- 
- 	/* Set bit 9 of FWSTS clearing FW reset indication */
- 	fwsts = IXGBE_READ_REG(hw, IXGBE_FWSTS);
-@@ -3508,13 +3513,15 @@ s32 ixgbe_host_interface_command(struct ixgbe_hw *hw, void *buffer,
- 	hicr = IXGBE_READ_REG(hw, IXGBE_HICR);
- 	if (!(hicr & IXGBE_HICR_EN)) {
- 		hw_dbg(hw, "IXGBE_HOST_EN bit disabled.\n");
--		return IXGBE_ERR_HOST_INTERFACE_COMMAND;
-+		status = IXGBE_ERR_HOST_INTERFACE_COMMAND;
-+		goto rel_out;
- 	}
- 
- 	/* Calculate length in DWORDs. We must be DWORD aligned */
- 	if (length % sizeof(u32)) {
- 		hw_dbg(hw, "Buffer length failure, not aligned to dword");
--		return IXGBE_ERR_INVALID_ARGUMENT;
-+		status = IXGBE_ERR_INVALID_ARGUMENT;
-+		goto rel_out;
- 	}
- 
- 	dword_len = length >> 2;
-@@ -3540,11 +3547,12 @@ s32 ixgbe_host_interface_command(struct ixgbe_hw *hw, void *buffer,
- 	if ((timeout && i == timeout) ||
- 	    !(IXGBE_READ_REG(hw, IXGBE_HICR) & IXGBE_HICR_SV)) {
- 		hw_dbg(hw, "Command has failed with no status valid.\n");
--		return IXGBE_ERR_HOST_INTERFACE_COMMAND;
-+		status = IXGBE_ERR_HOST_INTERFACE_COMMAND;
-+		goto rel_out;
- 	}
- 
- 	if (!return_data)
--		return 0;
-+		goto rel_out;
- 
- 	/* Calculate length in DWORDs */
- 	dword_len = hdr_size >> 2;
-@@ -3558,11 +3566,12 @@ s32 ixgbe_host_interface_command(struct ixgbe_hw *hw, void *buffer,
- 	/* If there is any thing in data position pull it in */
- 	buf_len = bp->hdr.buf_len;
- 	if (!buf_len)
--		return 0;
-+		goto rel_out;
- 
- 	if (length < ((buf_len + 3) & ~3) + hdr_size) {
- 		hw_dbg(hw, "Buffer not large enough for reply message.\n");
--		return IXGBE_ERR_HOST_INTERFACE_COMMAND;
-+		status = IXGBE_ERR_HOST_INTERFACE_COMMAND;
-+		goto rel_out;
- 	}
- 
- 	/* Calculate length in DWORDs, add 3 for odd lengths */
-@@ -3574,7 +3583,10 @@ s32 ixgbe_host_interface_command(struct ixgbe_hw *hw, void *buffer,
- 		le32_to_cpus(&bp->u32arr[bi]);
- 	}
- 
--	return 0;
-+rel_out:
-+	hw->mac.ops.release_swfw_sync(hw, IXGBE_GSSR_SW_MNG_SM);
-+
-+	return status;
- }
- 
- /**
-@@ -3597,9 +3609,6 @@ s32 ixgbe_set_fw_drv_ver_generic(struct ixgbe_hw *hw, u8 maj, u8 min,
- 	int i;
- 	s32 ret_val;
- 
--	if (hw->mac.ops.acquire_swfw_sync(hw, IXGBE_GSSR_SW_MNG_SM))
--		return IXGBE_ERR_SWFW_SYNC;
--
- 	fw_cmd.hdr.cmd = FW_CEM_CMD_DRIVER_INFO;
- 	fw_cmd.hdr.buf_len = FW_CEM_CMD_DRIVER_INFO_LEN;
- 	fw_cmd.hdr.cmd_or_resp.cmd_resv = FW_CEM_CMD_RESERVED;
-@@ -3631,7 +3640,6 @@ s32 ixgbe_set_fw_drv_ver_generic(struct ixgbe_hw *hw, u8 maj, u8 min,
- 		break;
- 	}
- 
--	hw->mac.ops.release_swfw_sync(hw, IXGBE_GSSR_SW_MNG_SM);
- 	return ret_val;
- }
- 
+configs tested: 126
 
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201609
+i386         randconfig-a0-201609+CONFIG_DEBUG_INFO_REDUCED
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                 randconfig-v0-03010536
+parisc                         b180_defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+arm                           h5000_defconfig
+arm                         orion5x_defconfig
+openrisc                    or1ksim_defconfig
+sh                               alldefconfig
+um                             i386_defconfig
+x86_64                 randconfig-x014-201609
+x86_64                 randconfig-x012-201609
+x86_64                 randconfig-x011-201609
+x86_64                 randconfig-x017-201609
+x86_64                 randconfig-x019-201609
+x86_64                 randconfig-x013-201609
+x86_64                 randconfig-x018-201609
+x86_64                 randconfig-x016-201609
+x86_64                 randconfig-x010-201609
+x86_64                 randconfig-x015-201609
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201609
+i386                     randconfig-s1-201609
+x86_64                 randconfig-s0-03010628
+x86_64                 randconfig-s1-03010628
+x86_64                 randconfig-s2-03010628
+x86_64                           allmodconfig
+x86_64                 randconfig-s3-03010623
+x86_64                 randconfig-s4-03010623
+x86_64                 randconfig-s5-03010623
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+tile                         tilegx_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201609
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201609
+i386                     randconfig-i1-201609
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                   randconfig-x011-201609
+i386                   randconfig-x014-201609
+i386                   randconfig-x019-201609
+i386                   randconfig-x015-201609
+i386                   randconfig-x012-201609
+i386                   randconfig-x017-201609
+i386                   randconfig-x018-201609
+i386                   randconfig-x013-201609
+i386                   randconfig-x010-201609
+i386                   randconfig-x016-201609
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201609
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                  randconfig-sb0-03010447
+x86_64                 randconfig-x002-201609
+x86_64                 randconfig-x004-201609
+x86_64                 randconfig-x009-201609
+x86_64                 randconfig-x000-201609
+x86_64                 randconfig-x005-201609
+x86_64                 randconfig-x003-201609
+x86_64                 randconfig-x006-201609
+x86_64                 randconfig-x008-201609
+x86_64                 randconfig-x007-201609
+x86_64                 randconfig-x001-201609
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201609
+i386                   randconfig-x004-201609
+i386                   randconfig-x007-201609
+i386                   randconfig-x001-201609
+i386                   randconfig-x006-201609
+i386                   randconfig-x003-201609
+i386                   randconfig-x008-201609
+i386                   randconfig-x002-201609
+i386                   randconfig-x005-201609
+i386                   randconfig-x000-201609
+i386                   randconfig-x009-201609
+i386                   randconfig-x0-03010617
+
+Thanks,
+Fengguang
