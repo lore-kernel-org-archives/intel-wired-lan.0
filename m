@@ -1,39 +1,155 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Mon, 29 Feb 2016 11:00:24 -0800
-Subject: [Intel-wired-lan] [PATCH net] i40e: fix errant PCIe bandwidth
-	message
-Message-ID: <1456772424-6146-1-git-send-email-jesse.brandeburg@intel.com>
+From: John Fastabend <john.fastabend@gmail.com>
+Date: Mon, 29 Feb 2016 11:26:13 -0800
+Subject: [Intel-wired-lan] [net-next PATCH] net: relax setup_tc ndo op
+	handle restriction
+Message-ID: <20160229192613.24163.31830.stgit@john-Precision-Tower-5810>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-There was an error introduced with commit 3fced535079a ("i40e: X722 is
-on the IOSF bus and does not report the PCI bus info"), where code was
-added but the enabling flag is never set.
+I added this check in setup_tc to multiple drivers,
 
-Reported-by: Steve Best <sbest@redhat.com>
-Fixes: 3fced535079a ("i40e: X722 is on the IOSF bus ...")
-CC: Anjali Singhai Jain <anjali.singhai@intel.com>
-CC: Stefan Assman <sassman@redhat.com>
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+ if (handle != TC_H_ROOT || tc->type != TC_SETUP_MQPRIO)
+
+Unfortunately restricting to TC_H_ROOT like this breaks the old
+instantiation of mqprio to setup a hardware qdisc. This patch
+relaxes the test to only check the type to make it equivalent
+to the check before I broke it. With this the old instantiation
+continues to work.
+
+A good smoke test is to setup mqprio with,
+
+# tc qdisc add dev eth4 root mqprio num_tc 8 \
+  map 0 1 2 3 4 5 6 7 \
+  queues 0 at 0 1 at 1 2 at 2 3 at 3 4 at 4 5 at 5 6 at 6 7 at 7
+
+Fixes: e4c6734eaab9 ("net: rework ndo tc op to consume additional qdisc handle paramete")
+Reported-by: Singh Krishneil <krishneil.k.singh@intel.com>
+Reported-by: Jake Keller <jacob.e.keller@intel.com>
+CC: Murali Karicheri <m-karicheri2@ti.com>
+CC: Shradha Shah <sshah@solarflare.com>
+CC: Or Gerlitz <ogerlitz@mellanox.com>
+CC: Ariel Elior <ariel.elior@qlogic.com>
+CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+CC: Bruce Allan <bruce.w.allan@intel.com>
+CC: Jesse Brandeburg <jesse.brandeburg@intel.com>
+CC: Don Skidmore <donald.c.skidmore@intel.com>
+Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/net/ethernet/amd/xgbe/xgbe-drv.c        |    2 +-
+ drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.c |    2 +-
+ drivers/net/ethernet/broadcom/bnxt/bnxt.c       |    2 +-
+ drivers/net/ethernet/intel/fm10k/fm10k_netdev.c |    2 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c   |    2 +-
+ drivers/net/ethernet/mellanox/mlx4/en_netdev.c  |    2 +-
+ drivers/net/ethernet/sfc/tx.c                   |    2 +-
+ drivers/net/ethernet/ti/netcp_core.c            |    2 +-
+ 8 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 8f3b53e..4461b55 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -8393,6 +8393,7 @@ static int i40e_sw_init(struct i40e_pf *pf)
- 			     I40E_FLAG_OUTER_UDP_CSUM_CAPABLE |
- 			     I40E_FLAG_WB_ON_ITR_CAPABLE |
- 			     I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE |
-+			     I40E_FLAG_NO_PCI_LINK_CHECK |
- 			     I40E_FLAG_GENEVE_OFFLOAD_CAPABLE;
+diff --git a/drivers/net/ethernet/amd/xgbe/xgbe-drv.c b/drivers/net/ethernet/amd/xgbe/xgbe-drv.c
+index 3360684..ebf9224 100644
+--- a/drivers/net/ethernet/amd/xgbe/xgbe-drv.c
++++ b/drivers/net/ethernet/amd/xgbe/xgbe-drv.c
+@@ -1632,7 +1632,7 @@ static int xgbe_setup_tc(struct net_device *netdev, u32 handle, __be16 proto,
+ 	struct xgbe_prv_data *pdata = netdev_priv(netdev);
+ 	u8 tc;
+ 
+-	if (handle != TC_H_ROOT || tc_to_netdev->type != TC_SETUP_MQPRIO)
++	if (tc_to_netdev->type != TC_SETUP_MQPRIO)
+ 		return -EINVAL;
+ 
+ 	tc = tc_to_netdev->tc;
+diff --git a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.c b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.c
+index 45843d1..a949783 100644
+--- a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.c
++++ b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.c
+@@ -4275,7 +4275,7 @@ int bnx2x_setup_tc(struct net_device *dev, u8 num_tc)
+ int __bnx2x_setup_tc(struct net_device *dev, u32 handle, __be16 proto,
+ 		     struct tc_to_netdev *tc)
+ {
+-	if (handle != TC_H_ROOT || tc->type != TC_SETUP_MQPRIO)
++	if (tc->type != TC_SETUP_MQPRIO)
+ 		return -EINVAL;
+ 	return bnx2x_setup_tc(dev, tc->tc);
+ }
+diff --git a/drivers/net/ethernet/broadcom/bnxt/bnxt.c b/drivers/net/ethernet/broadcom/bnxt/bnxt.c
+index ff1507f..f1a0a73 100644
+--- a/drivers/net/ethernet/broadcom/bnxt/bnxt.c
++++ b/drivers/net/ethernet/broadcom/bnxt/bnxt.c
+@@ -5383,7 +5383,7 @@ static int bnxt_setup_tc(struct net_device *dev, u32 handle, __be16 proto,
+ 	struct bnxt *bp = netdev_priv(dev);
+ 	u8 tc;
+ 
+-	if (handle != TC_H_ROOT || ntc->type != TC_SETUP_MQPRIO)
++	if (ntc->type != TC_SETUP_MQPRIO)
+ 		return -EINVAL;
+ 
+ 	tc = ntc->tc;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+index dc1a821..d09a8dd 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+@@ -1207,7 +1207,7 @@ err_queueing_scheme:
+ static int __fm10k_setup_tc(struct net_device *dev, u32 handle, __be16 proto,
+ 			    struct tc_to_netdev *tc)
+ {
+-	if (handle != TC_H_ROOT || tc->type != TC_SETUP_MQPRIO)
++	if (tc->type != TC_SETUP_MQPRIO)
+ 		return -EINVAL;
+ 
+ 	return fm10k_setup_tc(dev, tc->tc);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index cf4b729..02139f3 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -8422,7 +8422,7 @@ int __ixgbe_setup_tc(struct net_device *dev, u32 handle, __be16 proto,
+ 		}
  	}
- 	pf->eeprom_version = 0xDEAD;
--- 
-1.8.3.1
+ 
+-	if (handle != TC_H_ROOT || tc->type != TC_SETUP_MQPRIO)
++	if (tc->type != TC_SETUP_MQPRIO)
+ 		return -EINVAL;
+ 
+ 	return ixgbe_setup_tc(dev, tc->tc);
+diff --git a/drivers/net/ethernet/mellanox/mlx4/en_netdev.c b/drivers/net/ethernet/mellanox/mlx4/en_netdev.c
+index 96d95cb..a2d560a 100644
+--- a/drivers/net/ethernet/mellanox/mlx4/en_netdev.c
++++ b/drivers/net/ethernet/mellanox/mlx4/en_netdev.c
+@@ -72,7 +72,7 @@ int mlx4_en_setup_tc(struct net_device *dev, u8 up)
+ static int __mlx4_en_setup_tc(struct net_device *dev, u32 handle, __be16 proto,
+ 			      struct tc_to_netdev *tc)
+ {
+-	if (handle != TC_H_ROOT || tc->type != TC_SETUP_MQPRIO)
++	if (tc->type != TC_SETUP_MQPRIO)
+ 		return -EINVAL;
+ 
+ 	return mlx4_en_setup_tc(dev, tc->tc);
+diff --git a/drivers/net/ethernet/sfc/tx.c b/drivers/net/ethernet/sfc/tx.c
+index 2cdb571..2337789 100644
+--- a/drivers/net/ethernet/sfc/tx.c
++++ b/drivers/net/ethernet/sfc/tx.c
+@@ -571,7 +571,7 @@ int efx_setup_tc(struct net_device *net_dev, u32 handle, __be16 proto,
+ 	unsigned tc, num_tc;
+ 	int rc;
+ 
+-	if (handle != TC_H_ROOT || ntc->type != TC_SETUP_MQPRIO)
++	if (ntc->type != TC_SETUP_MQPRIO)
+ 		return -EINVAL;
+ 
+ 	num_tc = ntc->tc;
+diff --git a/drivers/net/ethernet/ti/netcp_core.c b/drivers/net/ethernet/ti/netcp_core.c
+index ed0c30f..1d0942c 100644
+--- a/drivers/net/ethernet/ti/netcp_core.c
++++ b/drivers/net/ethernet/ti/netcp_core.c
+@@ -1860,7 +1860,7 @@ static int netcp_setup_tc(struct net_device *dev, u32 handle, __be16 proto,
+ 	/* setup tc must be called under rtnl lock */
+ 	ASSERT_RTNL();
+ 
+-	if (handle != TC_H_ROOT || tc->type != TC_SETUP_MQPRIO)
++	if (tc->type != TC_SETUP_MQPRIO)
+ 		return -EINVAL;
+ 
+ 	/* Sanity-check the number of traffic classes requested */
 
