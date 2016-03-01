@@ -1,41 +1,46 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 1 Mar 2016 19:36:38 +0000
-Subject: [Intel-wired-lan] [PATCH net-next 3/6] ixgbevf: call
-	ndo_stop()	instead of dev_close() when running offline selftest
-In-Reply-To: <1454408028-16986-4-git-send-email-sassmann@kpanic.de>
-References: <1454408028-16986-1-git-send-email-sassmann@kpanic.de>
- <1454408028-16986-4-git-send-email-sassmann@kpanic.de>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F99C1C3@ORSMSX104.amr.corp.intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Tue, 1 Mar 2016 23:23:23 +0000
+Subject: [Intel-wired-lan] [next] igb: allow setting MAC address on i211
+ using a device tree blob V5
+In-Reply-To: <DC20A3D2-95E2-420B-911D-C6AC02338227@gmail.com>
+References: <56C5A6BC.6030708@gmail.com>
+ <309B89C4C689E141A5FF6A0C5FB2118B81EA731A@ORSMSX101.amr.corp.intel.com>
+ <DC20A3D2-95E2-420B-911D-C6AC02338227@gmail.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81EA7AB2@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Stefan Assmann
-> Sent: Tuesday, February 02, 2016 2:14 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org; davem at davemloft.net; sassmann at kpanic.de
-> Subject: [Intel-wired-lan] [PATCH net-next 3/6] ixgbevf: call ndo_stop()
-> instead of dev_close() when running offline selftest
+> From: John Holland [mailto:jotihojr at gmail.com]
+> Sent: Monday, February 29, 2016 10:56 PM
+> To: Brown, Aaron F <aaron.f.brown@intel.com>
+> Cc: intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org
+> Subject: Re: [Intel-wired-lan] [next] igb: allow setting MAC address on i211
+> using a device tree blob V5
 > 
-> Calling dev_close() causes IFF_UP to be cleared which will remove the
-> interfaces routes and some addresses. That's probably not what the user
-> intended when running the offline selftest. Besides this does not happen if
-> the interface is brought down before the test, so the current behaviour is
-> inconsistent.
-> Instead call the net_device_ops ndo_stop function directly and avoid
-> touching IFF_UP at all.
+> On Mar 1, 2016, at 03:52, Brown, Aaron F <aaron.f.brown@intel.com>
+> wrote:
 > 
-> Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
-> ---
->  drivers/net/ethernet/intel/ixgbevf/ethtool.c      | 4 ++--
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      | 2 ++
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 4 ++--
->  3 files changed, 6 insertions(+), 4 deletions(-)
+> > This throws a few checkpatch warnings, but I won't withhold my tested by
+> for these:
+> >
+> > total: 0 errors, 2 warnings, 0 checks, 21 lines checked
+> >
+> > Your patch has style problems, please review.
+> >
+> > NOTE: If any of the errors are false positives, please report
+> >      them to the maintainer, see CHECKPATCH in MAINTAINERS.
+> > u1463:[0]/usr/src/kernels/next-queue>
+> 
+> Thanks for testing...
+> 
+> Do you require me to reformat the patch text? And won't that break the link?
 
+Unless Jeff Kirsher wants you to resubmit it for the space between your name and email address I don't think resubmitting should be necessary.  Yes, breaking the URL up would break the URL and for that reason I think it is appropriate to ignore that (Possible unwrapped commit description) warning.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-ethtool offline selftest does not wipe information from interface (route, etc...)
+Thanks,
+Aaron
+> 
+> John
