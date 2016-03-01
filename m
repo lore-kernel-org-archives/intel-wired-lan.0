@@ -1,31 +1,47 @@
-From: John Holland <jotihojr@gmail.com>
-Date: Tue, 1 Mar 2016 07:56:23 +0100
-Subject: [Intel-wired-lan] [next] igb: allow setting MAC address on i211
-	using a device tree blob V5
-In-Reply-To: <309B89C4C689E141A5FF6A0C5FB2118B81EA731A@ORSMSX101.amr.corp.intel.com>
-References: <56C5A6BC.6030708@gmail.com>
- <309B89C4C689E141A5FF6A0C5FB2118B81EA731A@ORSMSX101.amr.corp.intel.com>
-Message-ID: <DC20A3D2-95E2-420B-911D-C6AC02338227@gmail.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 1 Mar 2016 17:14:33 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Make all unchanging ops
+ structures	const
+In-Reply-To: <20160107181303.82798.52945.stgit@mdrustad-wks.jf.intel.com>
+References: <20160107181303.82798.52945.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F99B0D4@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mar 1, 2016, at 03:52, Brown, Aaron F <aaron.f.brown@intel.com> wrote:
-
-> This throws a few checkpatch warnings, but I won't withhold my tested by for these:
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Mark D Rustad
+> Sent: Thursday, January 07, 2016 10:13 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: Make all unchanging ops structures
+> const
 > 
-> total: 0 errors, 2 warnings, 0 checks, 21 lines checked
+> The source for the ops structure contents are const, so make them so. Copy
+> them in place with structure assignments instead of memcpys.
+> Make the mbx_ops accessed by reference instead of making a copy of the
+> source structure. Update copyright date on the touched files.
 > 
-> Your patch has style problems, please review.
-> 
-> NOTE: If any of the errors are false positives, please report
->      them to the maintainer, see CHECKPATCH in MAINTAINERS.
-> u1463:[0]/usr/src/kernels/next-queue>
+> Reported-by: Julia Lawall <Julia.Lawall@lip6.fr>
+> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+> ---
+> Changes in V2:
+> - Access mbx_ops by reference instead of copying the structure. Saves a
+>   little bloat.
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe.h       |   12 ++++---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c |   10 +++---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c |   10 +++---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  |   10 +++---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.c   |   40 ++++++++++++--------
+> ----
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.h   |    4 +-
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_type.h  |   12 ++++---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c  |   10 +++---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c  |   18 +++++------
+>  9 files changed, 63 insertions(+), 63 deletions(-)
 
-Thanks for testing...
-
-Do you require me to reformat the patch text? And won't that break the link?
-
-John
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Code changes correctly applied
