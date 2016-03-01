@@ -1,144 +1,53 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 01 Mar 2016 07:58:23 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
- a049d16d5d6e0d578e60602b3d427d05ec7b9d32 BUILD SUCCESS
-Message-ID: <56d4db1f.Rnf/2ezFuiWKuots%fengguang.wu@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Tue, 1 Mar 2016 01:32:33 +0000
+Subject: [Intel-wired-lan] [PATCH] igb: Garbled output for "ethtool -m"
+In-Reply-To: <1455694465-1226-1-git-send-email-doron.shikmoni@gmail.com>
+References: <1455694465-1226-1-git-send-email-doron.shikmoni@gmail.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81EA72A7@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-a049d16d5d6e0d578e60602b3d427d05ec7b9d32  i40e: fix errant PCIe bandwidth message
+> From: Intel-wired-lan [intel-wired-lan-bounces at lists.osuosl.org] on behalf of Doron Shikmoni [doron.shikmoni at gmail.com]
+> Sent: Tuesday, February 16, 2016 11:34 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: netdev at vger.kernel.org
+> Subject: [Intel-wired-lan] [PATCH] igb: Garbled output for "ethtool -m"
+> 
+> Hello,
+> 
+> Garbled output for "ethtool -m ethX", in igb-driven NICs with module /
+> plugin EEPROM (i.e. SFP information). Each output data byte appears
+> duplicated.
+> 
+> In igb_ethtool.c, igb_get_module_eeprom() is reading the EEPROM via i2c;
+> the eeprom offset for each word that's read via igb_read_phy_reg_i2c()
+> was passed in #words, whereas it needs to be a byte offset.
+> This patches fixes the bug.
+>
+> Signed-off-by: Doron Shikmoni <doron.shikmoni@gmail.com>
+> ---
+>  drivers/net/ethernet/intel/igb/igb_ethtool.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-elapsed time: 82m
+Checkpatch complains that you pushed the line over 80 characters:
+------------------------
+u1463:[0]/usr/src/kernels/next-queue> git format-patch $item -1 --stdout|./scripts/checkpatch.pl -
+WARNING: line over 80 characters
+#29: FILE: drivers/net/ethernet/intel/igb/igb_ethtool.c:3010:
++               status = igb_read_phy_reg_i2c(hw, (first_word + i) * 2, &dataword[i]);
 
-configs tested: 123
+total: 0 errors, 1 warnings, 0 checks, 8 lines checked
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201609
-i386         randconfig-a0-201609+CONFIG_DEBUG_INFO_REDUCED
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-parisc                         b180_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                 randconfig-x014-201609
-x86_64                 randconfig-x012-201609
-x86_64                 randconfig-x011-201609
-x86_64                 randconfig-x017-201609
-x86_64                 randconfig-x019-201609
-x86_64                 randconfig-x013-201609
-x86_64                 randconfig-x018-201609
-x86_64                 randconfig-x016-201609
-x86_64                 randconfig-x010-201609
-x86_64                 randconfig-x015-201609
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201609
-i386                     randconfig-s1-201609
-x86_64                 randconfig-s0-03010628
-x86_64                 randconfig-s1-03010628
-x86_64                 randconfig-s2-03010628
-x86_64                 randconfig-s3-03010623
-x86_64                 randconfig-s4-03010623
-x86_64                 randconfig-s5-03010623
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                   randconfig-i0-201609
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201609
-i386                     randconfig-i1-201609
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                               tinyconfig
-i386                   randconfig-x011-201609
-i386                   randconfig-x014-201609
-i386                   randconfig-x019-201609
-i386                   randconfig-x015-201609
-i386                   randconfig-x012-201609
-i386                   randconfig-x017-201609
-i386                   randconfig-x018-201609
-i386                   randconfig-x013-201609
-i386                   randconfig-x010-201609
-i386                   randconfig-x016-201609
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201609
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-n0-03010641
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-i386                  randconfig-sb0-03010447
-x86_64                 randconfig-x002-201609
-x86_64                 randconfig-x004-201609
-x86_64                 randconfig-x009-201609
-x86_64                 randconfig-x000-201609
-x86_64                 randconfig-x005-201609
-x86_64                 randconfig-x003-201609
-x86_64                 randconfig-x006-201609
-x86_64                 randconfig-x008-201609
-x86_64                 randconfig-x007-201609
-x86_64                 randconfig-x001-201609
-i386                     randconfig-r0-201609
-i386                             allmodconfig
-i386                   randconfig-x004-201609
-i386                   randconfig-x007-201609
-i386                   randconfig-x001-201609
-i386                   randconfig-x006-201609
-i386                   randconfig-x003-201609
-i386                   randconfig-x008-201609
-i386                   randconfig-x002-201609
-i386                   randconfig-x005-201609
-i386                   randconfig-x000-201609
-i386                   randconfig-x009-201609
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-i386                   randconfig-x0-03010617
+Your patch has style problems, please review.
 
-Thanks,
-Fengguang
+NOTE: If any of the errors are false positives, please report
+      them to the maintainer, see CHECKPATCH in MAINTAINERS.
+u1463:[0]/usr/src/kernels/next-queue> 
+------------------------
+
+But functionally seems good.  I'll let Jeff choose whether to be a stickler for the warning or not, so...
+
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
