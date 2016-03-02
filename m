@@ -1,66 +1,56 @@
-From: Alexander Duyck <aduyck@mirantis.com>
-Date: Wed, 02 Mar 2016 16:16:08 -0500
-Subject: [Intel-wired-lan] [net PATCH 2/2] e1000: Double Tx descriptors
-	needed check for 82544
-In-Reply-To: <20160302205129.2124.67042.stgit@localhost.localdomain>
-References: <20160302205129.2124.67042.stgit@localhost.localdomain>
-Message-ID: <20160302211608.2124.80148.stgit@localhost.localdomain>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed, 02 Mar 2016 14:48:14 -0800
+Subject: [Intel-wired-lan] [PATCH v3] fm10k: cleanup fm10k stats and
+ remove debug-statistics
+In-Reply-To: <1456951531-15783-1-git-send-email-jacob.e.keller@intel.com>
+References: <1456951531-15783-1-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1456958894.2822.17.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The 82544 has code that adds one additional descriptor per data buffer.
-However we weren't taking that into acount when determining the descriptors
-needed for the next transmit at the end of the xmit_frame path.
+On Wed, 2016-03-02 at 12:45 -0800, Jacob Keller wrote:
+> This change fixes up subtle issues with the current fm10k ethtool
+> stats.
+> Primarily, support of debug-statistics and per-queue length
+> statistics
+> is not something the current API can handle. Due to the way that
+> ethtool
+> works, the number of statistics needs to be static for the life time
+> of
+> a given device. Our use of debug-statistics does not really allow for
+> this, so this patch drops its use.
+> 
+> Finish this cleanup by reworking the per-queue stats to use the new
+> helper functions which reduce the duplicate and error prone code.
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> ---
+> 
+> Notes:
+> ??? - v3
+> ??? * based on comments upstream, make queues static
+> ??? * remove debug-statistics support since this can break the
+> ethtool API
+> ????
+> ??? - v4
+> ??? * remove extra debug stats strings forgotten in previous rework
+> 
+> This is based on the fact that the ethtool API cannot really support
+> variable statistics lengths.
+> 
+> ?drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 127 ++++++-------
+> ----------
+> ?1 file changed, 33 insertions(+), 94 deletions(-)
 
-This change takes that into account by doubling the number of descriptors
-needed for the 82544 so that we can avoid a potential issue where we could
-hang the Tx ring by loading frames with xmit_more enabled and then stopping
-the ring without writing the tail.
-
-In addition it adds a few more descriptors to account for some additional
-workarounds that have been added over time.
-
-Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
----
- drivers/net/ethernet/intel/e1000/e1000_main.c |   19 ++++++++++++++++++-
- 1 file changed, 18 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
-index d213fb4..ae90d4f 100644
---- a/drivers/net/ethernet/intel/e1000/e1000_main.c
-+++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
-@@ -3256,12 +3256,29 @@ static netdev_tx_t e1000_xmit_frame(struct sk_buff *skb,
- 			     nr_frags, mss);
- 
- 	if (count) {
-+		/* The descriptors needed is higher than other Intel drivers
-+		 * due to a number of workarounds.  The breakdown is below:
-+		 * Data descriptors: MAX_SKB_FRAGS + 1
-+		 * Context Descriptor: 1
-+		 * Keep head from touching tail: 2
-+		 * Workarounds: 3
-+		 */
-+		int desc_needed = MAX_SKB_FRAGS + 7;
-+
- 		netdev_sent_queue(netdev, skb->len);
- 		skb_tx_timestamp(skb);
- 
- 		e1000_tx_queue(adapter, tx_ring, tx_flags, count);
-+
-+		/* 82544 potentially requires twice as many data descriptors
-+		 * in order to guarantee buffers don't end on evenly-aligned
-+		 * dwords
-+		 */
-+		if (adapter->pcix_82544)
-+			desc_needed += MAX_SKB_FRAGS + 1;
-+
- 		/* Make sure there is space in the ring for the next send. */
--		e1000_maybe_stop_tx(netdev, tx_ring, MAX_SKB_FRAGS + 2);
-+		e1000_maybe_stop_tx(netdev, tx_ring, desc_needed);
- 
- 		if (!skb->xmit_more ||
- 		    netif_xmit_stopped(netdev_get_tx_queue(netdev, 0))) {
-
+So is this really v4? ?So much fun when I see multiple patches with the
+same version number. :-(
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160302/8dab42b6/attachment.asc>
