@@ -1,44 +1,137 @@
-From: John Holland <jotihojr@gmail.com>
-Date: Wed, 2 Mar 2016 04:48:28 +0100
-Subject: [Intel-wired-lan] [next] igb: allow setting MAC address on i211
-	using a device tree blob V5
-In-Reply-To: <1456876509.3039.10.camel@intel.com>
-References: <56C5A6BC.6030708@gmail.com>
- <309B89C4C689E141A5FF6A0C5FB2118B81EA731A@ORSMSX101.amr.corp.intel.com>
- <DC20A3D2-95E2-420B-911D-C6AC02338227@gmail.com>
- <1456876509.3039.10.camel@intel.com>
-Message-ID: <63942260-AF46-475D-9963-8A7A10484906@gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 02 Mar 2016 13:56:49 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 47cc53cf260863ed1dc4e1a109caedb1ef5c9225 BUILD SUCCESS
+Message-ID: <56d680a1.xwAPpWHwH/6nAvBg%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+47cc53cf260863ed1dc4e1a109caedb1ef5c9225  net: relax setup_tc ndo op handle restriction
 
-> On 02.03.2016, at 00:55, Jeff Kirsher <jeffrey.t.kirsher@intel.com> wrote:
-> 
->> On Tue, 2016-03-01 at 07:56 +0100, John Holland wrote:
->> On Mar 1, 2016, at 03:52, Brown, Aaron F <aaron.f.brown@intel.com>
->> wrote:
->> 
->>> This throws a few checkpatch warnings, but I won't withhold my
->> tested by for these:
->>>  
->>> total: 0 errors, 2 warnings, 0 checks, 21 lines checked
->>>  
->>> Your patch has style problems, please review.
->>>  
->>> NOTE: If any of the errors are false positives, please report
->>>       them to the maintainer, see CHECKPATCH in MAINTAINERS.
->>> u1463:[0]/usr/src/kernels/next-queue>
->> 
->> Thanks for testing...
->> 
->> Do you require me to reformat the patch text? And won't that break
->> the link?
-> 
-> No, that checkpatch.pl warning on the link you provided is fine,
-> although I will clean up your signed-off-by when I go to push it
-> upstream. :-)
+elapsed time: 78m
 
-Thank you very much!
+configs tested: 116
+
+i386                     randconfig-a0-201609
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x014-201609
+x86_64                 randconfig-x012-201609
+x86_64                 randconfig-x011-201609
+x86_64                 randconfig-x017-201609
+x86_64                 randconfig-x019-201609
+x86_64                 randconfig-x013-201609
+x86_64                 randconfig-x018-201609
+x86_64                 randconfig-x016-201609
+x86_64                 randconfig-x010-201609
+x86_64                 randconfig-x015-201609
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201609
+i386                     randconfig-s1-201609
+x86_64                 randconfig-s0-03021325
+x86_64                 randconfig-s1-03021325
+x86_64                 randconfig-s2-03021325
+x86_64                           allmodconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                   randconfig-i0-201609
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201609
+i386                     randconfig-i1-201609
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                               tinyconfig
+i386                   randconfig-x011-201609
+i386                   randconfig-x014-201609
+i386                   randconfig-x019-201609
+i386                   randconfig-x015-201609
+i386                   randconfig-x012-201609
+i386                   randconfig-x017-201609
+i386                   randconfig-x018-201609
+i386                   randconfig-x013-201609
+i386                   randconfig-x010-201609
+i386                   randconfig-x016-201609
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201609
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                 randconfig-x002-201609
+x86_64                 randconfig-x004-201609
+x86_64                 randconfig-x009-201609
+x86_64                 randconfig-x000-201609
+x86_64                 randconfig-x005-201609
+x86_64                 randconfig-x003-201609
+x86_64                 randconfig-x006-201609
+x86_64                 randconfig-x008-201609
+x86_64                 randconfig-x007-201609
+x86_64                 randconfig-x001-201609
+i386                     randconfig-r0-201609
+i386                   randconfig-x004-201609
+i386                   randconfig-x007-201609
+i386                   randconfig-x001-201609
+i386                   randconfig-x006-201609
+i386                   randconfig-x003-201609
+i386                   randconfig-x008-201609
+i386                   randconfig-x002-201609
+i386                   randconfig-x005-201609
+i386                   randconfig-x000-201609
+i386                   randconfig-x009-201609
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+
+Thanks,
+Fengguang
