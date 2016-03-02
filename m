@@ -1,69 +1,44 @@
-From: Allan, Bruce W <bruce.w.allan@intel.com>
-Date: Wed, 2 Mar 2016 02:09:42 +0000
-Subject: [Intel-wired-lan] [net-next PATCH] net: relax setup_tc ndo
-	op	handle restriction
-In-Reply-To: <20160229192613.24163.31830.stgit@john-Precision-Tower-5810>
-References: <20160229192613.24163.31830.stgit@john-Precision-Tower-5810>
-Message-ID: <804857E1F29AAC47BF68C404FC60A18490D77AEA@ORSMSX104.amr.corp.intel.com>
+From: John Holland <jotihojr@gmail.com>
+Date: Wed, 2 Mar 2016 04:48:28 +0100
+Subject: [Intel-wired-lan] [next] igb: allow setting MAC address on i211
+	using a device tree blob V5
+In-Reply-To: <1456876509.3039.10.camel@intel.com>
+References: <56C5A6BC.6030708@gmail.com>
+ <309B89C4C689E141A5FF6A0C5FB2118B81EA731A@ORSMSX101.amr.corp.intel.com>
+ <DC20A3D2-95E2-420B-911D-C6AC02338227@gmail.com>
+ <1456876509.3039.10.camel@intel.com>
+Message-ID: <63942260-AF46-475D-9963-8A7A10484906@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of John Fastabend
-> Sent: Monday, February 29, 2016 11:26 AM
-> To: intel-wired-lan at lists.osuosl.org; john.fastabend at gmail.com; Kirsher,
-> Jeffrey T
-> Cc: netdev at vger.kernel.org
-> Subject: [Intel-wired-lan] [net-next PATCH] net: relax setup_tc ndo op
-> handle restriction
-> 
-> I added this check in setup_tc to multiple drivers,
-> 
->  if (handle != TC_H_ROOT || tc->type != TC_SETUP_MQPRIO)
-> 
-> Unfortunately restricting to TC_H_ROOT like this breaks the old
-> instantiation of mqprio to setup a hardware qdisc. This patch
-> relaxes the test to only check the type to make it equivalent
-> to the check before I broke it. With this the old instantiation
-> continues to work.
-> 
-> A good smoke test is to setup mqprio with,
-> 
-> # tc qdisc add dev eth4 root mqprio num_tc 8 \
->   map 0 1 2 3 4 5 6 7 \
->   queues 0 at 0 1 at 1 2 at 2 3 at 3 4 at 4 5 at 5 6 at 6 7 at 7
-> 
-> Fixes: e4c6734eaab9 ("net: rework ndo tc op to consume additional qdisc
-> handle paramete")
-> Reported-by: Singh Krishneil <krishneil.k.singh@intel.com>
-> Reported-by: Jake Keller <jacob.e.keller@intel.com>
-> CC: Murali Karicheri <m-karicheri2@ti.com>
-> CC: Shradha Shah <sshah@solarflare.com>
-> CC: Or Gerlitz <ogerlitz@mellanox.com>
-> CC: Ariel Elior <ariel.elior@qlogic.com>
-> CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> CC: Bruce Allan <bruce.w.allan@intel.com>
-> CC: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> CC: Don Skidmore <donald.c.skidmore@intel.com>
-> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
-> ---
->  drivers/net/ethernet/amd/xgbe/xgbe-drv.c        |    2 +-
->  drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.c |    2 +-
->  drivers/net/ethernet/broadcom/bnxt/bnxt.c       |    2 +-
->  drivers/net/ethernet/intel/fm10k/fm10k_netdev.c |    2 +-
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c   |    2 +-
->  drivers/net/ethernet/mellanox/mlx4/en_netdev.c  |    2 +-
->  drivers/net/ethernet/sfc/tx.c                   |    2 +-
->  drivers/net/ethernet/ti/netcp_core.c            |    2 +-
->  8 files changed, 8 insertions(+), 8 deletions(-)
 
-Jeff, please apply this to your next-queue tree/dev-queue branch ASAP as it is
-blocking the testing of another patch already in that queue.
+> On 02.03.2016, at 00:55, Jeff Kirsher <jeffrey.t.kirsher@intel.com> wrote:
+> 
+>> On Tue, 2016-03-01 at 07:56 +0100, John Holland wrote:
+>> On Mar 1, 2016, at 03:52, Brown, Aaron F <aaron.f.brown@intel.com>
+>> wrote:
+>> 
+>>> This throws a few checkpatch warnings, but I won't withhold my
+>> tested by for these:
+>>>  
+>>> total: 0 errors, 2 warnings, 0 checks, 21 lines checked
+>>>  
+>>> Your patch has style problems, please review.
+>>>  
+>>> NOTE: If any of the errors are false positives, please report
+>>>       them to the maintainer, see CHECKPATCH in MAINTAINERS.
+>>> u1463:[0]/usr/src/kernels/next-queue>
+>> 
+>> Thanks for testing...
+>> 
+>> Do you require me to reformat the patch text? And won't that break
+>> the link?
+> 
+> No, that checkpatch.pl warning on the link you provided is fine,
+> although I will clean up your signed-off-by when I go to push it
+> upstream. :-)
 
-Thanks,
-Bruce.
-
+Thank you very much!
