@@ -1,34 +1,31 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 2 Mar 2016 21:28:48 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbevf: fix error code path when
- setting	MAC address
-In-Reply-To: <20160210231630.9713.65406.stgit@localhost6.localdomain6>
-References: <20160210231630.9713.65406.stgit@localhost6.localdomain6>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F99C373@ORSMSX104.amr.corp.intel.com>
+From: Stephen Hemminger <stephen@networkplumber.org>
+Date: Wed, 2 Mar 2016 09:20:17 -0800
+Subject: [Intel-wired-lan] [PATCH iproute2 v2] iplink: Support VF Trust
+In-Reply-To: <7F861DC0615E0C47A872E6F3C5FCDDBD05FB353F@BPXM14GP.gisp.nec.co.jp>
+References: <7F861DC0615E0C47A872E6F3C5FCDDBD05FB353F@BPXM14GP.gisp.nec.co.jp>
+Message-ID: <20160302092017.44982621@xeon-e3>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Emil Tantilov
-> Sent: Wednesday, February 10, 2016 3:17 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] ixgbevf: fix error code path when setting
-> MAC address
-> 
-> Return error when a MAC address change is rejected by the PF.
-> 
-> This will prevent the user from modifying the MAC address when that
-> operation is not permitted.
-> 
-> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
-> ---
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   12 ++++++++----
->  drivers/net/ethernet/intel/ixgbevf/vf.c           |    4 +++-
->  2 files changed, 11 insertions(+), 5 deletions(-)
+On Fri, 26 Feb 2016 02:40:18 +0000
+Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Unable to set invalid MAC on PF or VF
+> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> 
+> Add IFLA_VF_TRUST message to trust the VF.
+> PF can accept some privileged operation from the trusted VF.
+> For example, ixgbe PF doesn't allow to enable VF promiscuous mode until
+> the VF is trusted because it may hurt performance.
+> 
+> To trust VF.
+>  # ip link set dev eth0 vf 1 trust on
+> 
+> To untrust VF.
+>  # ip link set dev eth0 vf 1 trust off
+> 
+> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+
+Applied.
