@@ -1,135 +1,69 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 02 Mar 2016 10:01:29 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- d2f5cd674a0b7b1f71922135da03f1bd68ee3a52 BUILD SUCCESS
-Message-ID: <56d64979.bBtOQOK4sgS4qJ4H%fengguang.wu@intel.com>
+From: Allan, Bruce W <bruce.w.allan@intel.com>
+Date: Wed, 2 Mar 2016 02:09:42 +0000
+Subject: [Intel-wired-lan] [net-next PATCH] net: relax setup_tc ndo
+	op	handle restriction
+In-Reply-To: <20160229192613.24163.31830.stgit@john-Precision-Tower-5810>
+References: <20160229192613.24163.31830.stgit@john-Precision-Tower-5810>
+Message-ID: <804857E1F29AAC47BF68C404FC60A18490D77AEA@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-d2f5cd674a0b7b1f71922135da03f1bd68ee3a52  i40evf: remove dead code
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of John Fastabend
+> Sent: Monday, February 29, 2016 11:26 AM
+> To: intel-wired-lan at lists.osuosl.org; john.fastabend at gmail.com; Kirsher,
+> Jeffrey T
+> Cc: netdev at vger.kernel.org
+> Subject: [Intel-wired-lan] [net-next PATCH] net: relax setup_tc ndo op
+> handle restriction
+> 
+> I added this check in setup_tc to multiple drivers,
+> 
+>  if (handle != TC_H_ROOT || tc->type != TC_SETUP_MQPRIO)
+> 
+> Unfortunately restricting to TC_H_ROOT like this breaks the old
+> instantiation of mqprio to setup a hardware qdisc. This patch
+> relaxes the test to only check the type to make it equivalent
+> to the check before I broke it. With this the old instantiation
+> continues to work.
+> 
+> A good smoke test is to setup mqprio with,
+> 
+> # tc qdisc add dev eth4 root mqprio num_tc 8 \
+>   map 0 1 2 3 4 5 6 7 \
+>   queues 0 at 0 1 at 1 2 at 2 3 at 3 4 at 4 5 at 5 6 at 6 7 at 7
+> 
+> Fixes: e4c6734eaab9 ("net: rework ndo tc op to consume additional qdisc
+> handle paramete")
+> Reported-by: Singh Krishneil <krishneil.k.singh@intel.com>
+> Reported-by: Jake Keller <jacob.e.keller@intel.com>
+> CC: Murali Karicheri <m-karicheri2@ti.com>
+> CC: Shradha Shah <sshah@solarflare.com>
+> CC: Or Gerlitz <ogerlitz@mellanox.com>
+> CC: Ariel Elior <ariel.elior@qlogic.com>
+> CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> CC: Bruce Allan <bruce.w.allan@intel.com>
+> CC: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> CC: Don Skidmore <donald.c.skidmore@intel.com>
+> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
+> ---
+>  drivers/net/ethernet/amd/xgbe/xgbe-drv.c        |    2 +-
+>  drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.c |    2 +-
+>  drivers/net/ethernet/broadcom/bnxt/bnxt.c       |    2 +-
+>  drivers/net/ethernet/intel/fm10k/fm10k_netdev.c |    2 +-
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c   |    2 +-
+>  drivers/net/ethernet/mellanox/mlx4/en_netdev.c  |    2 +-
+>  drivers/net/ethernet/sfc/tx.c                   |    2 +-
+>  drivers/net/ethernet/ti/netcp_core.c            |    2 +-
+>  8 files changed, 8 insertions(+), 8 deletions(-)
 
-elapsed time: 89m
-
-configs tested: 114
-
-i386                     randconfig-a0-201609
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                 randconfig-x014-201609
-x86_64                 randconfig-x012-201609
-x86_64                 randconfig-x011-201609
-x86_64                 randconfig-x017-201609
-x86_64                 randconfig-x019-201609
-x86_64                 randconfig-x013-201609
-x86_64                 randconfig-x018-201609
-x86_64                 randconfig-x016-201609
-x86_64                 randconfig-x010-201609
-x86_64                 randconfig-x015-201609
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201609
-i386         randconfig-s0-201609+CONFIG_DEBUG_INFO_REDUCED
-i386                     randconfig-s1-201609
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-x86_64                   randconfig-i0-201609
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201609
-i386                     randconfig-i1-201609
-i386                   randconfig-x011-201609
-i386                   randconfig-x014-201609
-i386                   randconfig-x019-201609
-i386                   randconfig-x015-201609
-i386                   randconfig-x012-201609
-i386                   randconfig-x017-201609
-i386                   randconfig-x018-201609
-i386                   randconfig-x013-201609
-i386                   randconfig-x010-201609
-i386                   randconfig-x016-201609
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201609
-i386                             allmodconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-x86_64                           allmodconfig
-x86_64                 randconfig-x002-201609
-x86_64                 randconfig-x004-201609
-x86_64                 randconfig-x009-201609
-x86_64                 randconfig-x000-201609
-x86_64                 randconfig-x005-201609
-x86_64                 randconfig-x003-201609
-x86_64                 randconfig-x006-201609
-x86_64                 randconfig-x008-201609
-x86_64                 randconfig-x007-201609
-x86_64                 randconfig-x001-201609
-i386                     randconfig-r0-201609
-i386                   randconfig-x000-201609
-i386                   randconfig-x001-201609
-i386                   randconfig-x002-201609
-i386                   randconfig-x003-201609
-i386                   randconfig-x004-201609
-i386                   randconfig-x005-201609
-i386                   randconfig-x006-201609
-i386                   randconfig-x007-201609
-i386                   randconfig-x008-201609
-i386                   randconfig-x009-201609
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
+Jeff, please apply this to your next-queue tree/dev-queue branch ASAP as it is
+blocking the testing of another patch already in that queue.
 
 Thanks,
-Fengguang
+Bruce.
+
