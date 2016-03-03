@@ -1,9 +1,8 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 3 Mar 2016 20:05:00 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: make __ixgbe_setup_tc static
-In-Reply-To: <20160217235506.31327.63137.stgit@localhost6.localdomain6>
-References: <20160217235506.31327.63137.stgit@localhost6.localdomain6>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F99C44D@ORSMSX104.amr.corp.intel.com>
+Date: Thu, 3 Mar 2016 20:07:38 +0000
+Subject: [Intel-wired-lan] [v2] ixgbe: on recv increment
+ rx.ring->stats.yields
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F99C45D@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,19 +11,30 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Emil Tantilov
-> Sent: Wednesday, February 17, 2016 3:55 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] ixgbe: make __ixgbe_setup_tc static
+> Behalf Of Pavel Tikhomirov
+> Sent: Wednesday, January 20, 2016 12:09 AM
+> To: intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; Kirsher,
+> Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: devel at openvz.org; Andrew Vagin <avagin@parallels.com>; Konstantin
+> Khorenko <khorenko@virtuozzo.com>
+> Subject: [Intel-wired-lan] [PATCH RESEND v2] ixgbe: on recv increment
+> rx.ring->stats.yields
 > 
-> This function is only used in ixgbe_main.c Resolves a "missing prototype"
-> warning when building the driver with W=1
+> It seem to be non intentionaly changed to tx in commit adc810900a70
+> ("ixgbe: Refactor busy poll socket code to address multiple issues")
 > 
-> Reported-by: Phil Schmitt <phillip.j.schmitt@intel.com>
-> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+> Lock is taken from ixgbe_low_latency_recv, and there under this lock we use
+> ixgbe_clean_rx_irq so it looks wrong for me to increment tx counter.
+> 
+> Yield stats can be shown through ethtool:
+> ethtool -S enp129s0 | grep yield
+> 
+> v2: follow commit citing style
+> 
+> Signed-off-by: Pavel Tikhomirov <ptikhomirov@virtuozzo.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-No "missing prototype" warning at compile time
+Code change present, yield counters increment as expected with busy polling enabled.
