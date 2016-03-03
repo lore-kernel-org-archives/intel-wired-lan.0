@@ -1,40 +1,44 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 3 Mar 2016 20:10:38 +0000
-Subject: [Intel-wired-lan] [PATCH net-next V2 3/6] ixgbevf: call
- ndo_stop()	instead of dev_close() when running offline selftest
-In-Reply-To: <1454487652-1545-4-git-send-email-sassmann@kpanic.de>
-References: <1454487652-1545-1-git-send-email-sassmann@kpanic.de>
- <1454487652-1545-4-git-send-email-sassmann@kpanic.de>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F99C471@ORSMSX104.amr.corp.intel.com>
+From: Bruce Allan <bruce.w.allan@intel.com>
+Date: Thu, 03 Mar 2016 12:57:37 -0800
+Subject: [Intel-wired-lan] [next-queue PATCH] fm10k: enable Intel Ethernet
+ SDI Adapter FM10420 device ids
+Message-ID: <20160303205737.6701.97855.stgit@bwallan-cwp1.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Stefan Assmann
-> Sent: Wednesday, February 03, 2016 12:21 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org; davem at davemloft.net; sassmann at kpanic.de
-> Subject: [Intel-wired-lan] [PATCH net-next V2 3/6] ixgbevf: call ndo_stop()
-> instead of dev_close() when running offline selftest
-> 
-> Calling dev_close() causes IFF_UP to be cleared which will remove the
-> interfaces routes and some addresses. That's probably not what the user
-> intended when running the offline selftest. Besides this does not happen if
-> the interface is brought down before the test, so the current behaviour is
-> inconsistent.
-> Instead call the net_device_ops ndo_stop function directly and avoid
-> touching IFF_UP at all.
-> 
-> Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
-> ---
->  drivers/net/ethernet/intel/ixgbevf/ethtool.c      | 4 ++--
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      | 2 ++
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 4 ++--
->  3 files changed, 6 insertions(+), 4 deletions(-)
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
+---
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c  |    2 ++
+ drivers/net/ethernet/intel/fm10k/fm10k_type.h |    2 ++
+ 2 files changed, 4 insertions(+)
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-ethtool offline selftest does not wipe information from interface (route, etc...)
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index 5b74eac..c3b9945 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -39,6 +39,8 @@ static const struct fm10k_info *fm10k_info_tbl[] = {
+  */
+ static const struct pci_device_id fm10k_pci_tbl[] = {
+ 	{ PCI_VDEVICE(INTEL, FM10K_DEV_ID_PF), fm10k_device_pf },
++	{ PCI_VDEVICE(INTEL, FM10K_DEV_ID_SDI_FM10420_QDA2), fm10k_device_pf },
++	{ PCI_VDEVICE(INTEL, FM10K_DEV_ID_SDI_FM10420_DA2), fm10k_device_pf },
+ 	{ PCI_VDEVICE(INTEL, FM10K_DEV_ID_VF), fm10k_device_vf },
+ 	/* required last entry */
+ 	{ 0, }
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_type.h b/drivers/net/ethernet/intel/fm10k/fm10k_type.h
+index 5c05330..e24515f 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_type.h
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_type.h
+@@ -32,6 +32,8 @@ struct fm10k_hw;
+ 
+ #define FM10K_DEV_ID_PF			0x15A4
+ #define FM10K_DEV_ID_VF			0x15A5
++#define FM10K_DEV_ID_SDI_FM10420_QDA2	0x15D0
++#define FM10K_DEV_ID_SDI_FM10420_DA2	0x15D5
+ 
+ #define FM10K_MAX_QUEUES		256
+ #define FM10K_MAX_QUEUES_PF		128
+
