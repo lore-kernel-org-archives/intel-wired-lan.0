@@ -1,8 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 3 Mar 2016 20:07:38 +0000
-Subject: [Intel-wired-lan] [v2] ixgbe: on recv increment
- rx.ring->stats.yields
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F99C45D@ORSMSX104.amr.corp.intel.com>
+Date: Thu, 3 Mar 2016 20:10:38 +0000
+Subject: [Intel-wired-lan] [PATCH net-next V2 3/6] ixgbevf: call
+ ndo_stop()	instead of dev_close() when running offline selftest
+In-Reply-To: <1454487652-1545-4-git-send-email-sassmann@kpanic.de>
+References: <1454487652-1545-1-git-send-email-sassmann@kpanic.de>
+ <1454487652-1545-4-git-send-email-sassmann@kpanic.de>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F99C471@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,30 +14,27 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Pavel Tikhomirov
-> Sent: Wednesday, January 20, 2016 12:09 AM
-> To: intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org; Kirsher,
-> Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Cc: devel at openvz.org; Andrew Vagin <avagin@parallels.com>; Konstantin
-> Khorenko <khorenko@virtuozzo.com>
-> Subject: [Intel-wired-lan] [PATCH RESEND v2] ixgbe: on recv increment
-> rx.ring->stats.yields
+> Behalf Of Stefan Assmann
+> Sent: Wednesday, February 03, 2016 12:21 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: netdev at vger.kernel.org; davem at davemloft.net; sassmann at kpanic.de
+> Subject: [Intel-wired-lan] [PATCH net-next V2 3/6] ixgbevf: call ndo_stop()
+> instead of dev_close() when running offline selftest
 > 
-> It seem to be non intentionaly changed to tx in commit adc810900a70
-> ("ixgbe: Refactor busy poll socket code to address multiple issues")
+> Calling dev_close() causes IFF_UP to be cleared which will remove the
+> interfaces routes and some addresses. That's probably not what the user
+> intended when running the offline selftest. Besides this does not happen if
+> the interface is brought down before the test, so the current behaviour is
+> inconsistent.
+> Instead call the net_device_ops ndo_stop function directly and avoid
+> touching IFF_UP at all.
 > 
-> Lock is taken from ixgbe_low_latency_recv, and there under this lock we use
-> ixgbe_clean_rx_irq so it looks wrong for me to increment tx counter.
-> 
-> Yield stats can be shown through ethtool:
-> ethtool -S enp129s0 | grep yield
-> 
-> v2: follow commit citing style
-> 
-> Signed-off-by: Pavel Tikhomirov <ptikhomirov@virtuozzo.com>
+> Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ixgbevf/ethtool.c      | 4 ++--
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      | 2 ++
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 4 ++--
+>  3 files changed, 6 insertions(+), 4 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Code change present, yield counters increment as expected with busy polling enabled.
+ethtool offline selftest does not wipe information from interface (route, etc...)
