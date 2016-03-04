@@ -1,107 +1,64 @@
-From: John Fastabend <john.fastabend@gmail.com>
-Date: Fri, 04 Mar 2016 15:09:08 -0800
-Subject: [Intel-wired-lan] [PATCH net-next] net: ixgbe: Fix cls_u32
- offload support for ports and fields with masks.
-In-Reply-To: <56DA1517.7020307@intel.com>
-References: <1457120869-3489-1-git-send-email-sridhar.samudrala@intel.com>
- <56D9F311.7060402@gmail.com> <56D9FDAC.6060607@intel.com>
- <56DA0AB5.9030602@gmail.com> <56DA1517.7020307@intel.com>
-Message-ID: <56DA1594.4050406@gmail.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Fri,  4 Mar 2016 15:37:46 -0800
+Subject: [Intel-wired-lan] [PATCH v6 0/2] fix ethtool statistics patches
+Message-ID: <1457134668-19142-1-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 16-03-04 03:07 PM, Samudrala, Sridhar wrote:
-> 
-> 
-> On 3/4/2016 2:22 PM, John Fastabend wrote:
->> On 16-03-04 01:27 PM, Samudrala, Sridhar wrote:
->>> On 3/4/2016 12:41 PM, John Fastabend wrote:
->>>> On 16-03-04 11:47 AM, Sridhar Samudrala wrote:
->>>>> Fix support for 16 bit source/dest port matches in ixgbe model.
->>>>> u32 uses a single 32-bit key value for both source and destination
->>>>> ports
->>>>> starting at offset 0. So replace the 2 functions with a single
->>>>> function
->>>>> that takes this key value/mask to program both source and dest ports.
->>>>>
->>>>> Remove the incorrect check for mask in ixgbe_configure_clsu32()
->>>>>
->>>>> Tested with the following filters:
->>>>>
->>>>>    #tc qdisc add dev p4p1 ingress
->>>>>    #tc filter add dev p4p1 parent ffff: protocol ip prio 99 \
->>>>>      handle 800:0:1 u32 ht 800: \
->>>>>      match ip dst 11.0.0.1/24 match ip src 11.0.0.2/24 action drop
->>>>>
->>>>>    #tc filter del dev p4p1 parent ffff: protocol ip prio 99 \
->>>>>      handle 800:0:1 u32
->>>>>    #tc filter add dev p4p1 parent ffff: protocol ip prio 99 \
->>>>>      handle 1: u32 divisor 1
->>>>>    #tc filter add dev p4p1 parent ffff: protocol ip prio 99 \
->>>>>      handle 800:0:10 u32 ht 800: link 1: \
->>>>>      offset at 0 mask 0f00 shift 6 plus 0 eat match ip protocol 6 ff
->>>>>    #tc filter add dev p4p1 parent ffff: protocol ip prio 99 \
->>>>>      handle 1:0:10 u32 ht 1: \
->>>>>      match tcp src 1024 ffff match tcp dst 80 ffff action drop
->>>>>
->>>>> Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
->>>>> ---
->>>> But this will break setting only dst port or only src port.
->>> No. This will not break specifying only src or dst port. The value/mask
->>> for the
->>> unspecified port will be set to zero. So it should be fine.
->>>
->>> For ex:
->>>      match tcp src 1024 ffff match tcp dst 80 ffff
->>>          => match 04000050/ffffffff at nexthdr+0
->>>      match tcp src 1024 ffff
->>>          => match 04000000/ffff0000 at nexthdr+0
->>>      match tcp dst 80 ffff
->>>          => match 00000050/0000ffff at nexthdr+0
->>>
->>>
->>>>    Do we
->>>> actually need three signatures to match? Something like,
->>>>
->>>>     static struct ixgbe_mat_field ixgbe_tcp_fields[] = {
->>>>      {.off = 0, .mask = 0xffffffff, .val = ixgbe_mat_prgm_ports,
->>>>          .type = IXGBE_ATR_FLOW_TYPE_TCPV4},
->>>>      {.off = 0, .mask = 0xffff0000, .val = ixgbe_mat_prgm_dport,
->>>>          .type = IXGBE_ATR_FLOW_TYPE_TCPV4},
->>>>      {.off = 0, .mask = 0x0000ffff, .val = ixgbe_mat_prgm_sport,
->>>>          .type = IXGBE_ATR_FLOW_TYPE_TCPV4},
->>>>         { .val = NULL } /* terminal node */
->>>>     };
->>>>
->>>> Also just a reminder if we get multiple fields in a ixgbe_mat_field
->>>> struct we need to abort out of the for loop in the cls_u32 configure
->>>> function. Actually we can probably just push that as its own patch
->>>> to make the core function more versatile/usable.
->>>>
->>>> Thanks,
->>>> John
->> Dropped netdev no reason to push mail to netdev that has to do with our
->> driver internals.
->>
->> OK I see so you dropped the .mask check in fact you actually put it
->> there in the commit message I just missed the detail/implication.
->>
->> I think this is fine and it allows supporting mask entries now which
->> I blocked in the initial submission. But with this is there any reason
->> to have a mask field in ixgbe_mat_field? We could probably do this with
->> two patches, one to drop the 'mask' field and check and another to fix
->> the ixgbe_tcp_fields patch?
-> 
-> OK. will remove the 'mask' field and resubmit as 2 patches.
-> 
-> Thanks
-> Sridhar
+This series fixes the ethtool patches on Jeff's next-queue. First, I
+fixed a bug in the fm10k ethtool stat helpers which had assumed the
+allocated memory was already zeroed. The new code assumes it is not, and
+always rights 0s. In addition, I fixed Bruce's comment about the
+newline. Since I had to change the first patch, I rebased them both
+against the top of Jeff's queue and merged some of the code. The first
+patch in this series now handles the per-queue stats, while the second
+patch does the work to remove the incorrect support for
+debug-statistics.
 
-Great nice catch / improvements. By the way my goal here is to get
-to the point where we can share this across drivers and just change
-the *model.h file.
+The first patch is a direct replacement for 1256b40cb7b4 ("fm10k: add
+helper functions to set strings and data for ethtool stats", 2016-03-04)
 
-.John
+The second patch is a direct replacement for 2d6c14d75442 ("fm10k:
+cleanup fm10k stats and remove debug-statistics", 2016-03-04)
+
+The interdiff between the previous version of these patches and the
+current version of the patches (to help with review) is:
+
+diff --git c/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c w/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+index 3941b80ab2d2..a41a35082ddb 100644
+--- c/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
++++ w/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+@@ -130,7 +130,6 @@ static const struct fm10k_stats fm10k_gstrings_queue_stats[] = {
+ 				FM10K_NETDEV_STATS_LEN + \
+ 				FM10K_MBX_STATS_LEN)
+ 
+-
+ static const char fm10k_gstrings_test[][ETH_GSTRING_LEN] = {
+ 	"Mailbox test (on/offline)"
+ };
+@@ -246,9 +245,10 @@ static void fm10k_add_ethtool_stats(u64 **data, void *pointer,
+ 	unsigned int i;
+ 	char *p;
+ 
+-	/* simply skip forward if we were not given a valid pointer */
+ 	if (!pointer) {
+-		*data += size;
++		/* memory is not zero allocated so we have to clear it */
++		for (i = 0; i < size; i++)
++			*((*data)++) = 0;
+ 		return;
+ 	}
+ 
+Jacob Keller (2):
+  fm10k: add helper functions to set strings and data for ethtool stats
+  fm10k: remove remove debug-statistics support
+
+ drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 259 +++++++++--------------
+ 1 file changed, 100 insertions(+), 159 deletions(-)
+
+-- 
+2.7.1.429.g45cd78e
+
