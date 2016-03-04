@@ -1,100 +1,149 @@
-From: Samudrala, Sridhar <sridhar.samudrala@intel.com>
-Date: Thu, 03 Mar 2016 16:59:01 -0800
-Subject: [Intel-wired-lan] [net-next] ixgbe: fix error handling in tc
- cls_u32 offload routines
-In-Reply-To: <56D8D728.3050304@gmail.com>
-References: <1457047192-17092-1-git-send-email-sridhar.samudrala@intel.com>
- <56D8D6DA.7080702@gmail.com> <56D8D728.3050304@gmail.com>
-Message-ID: <56D8DDD5.1020503@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 04 Mar 2016 14:45:24 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 2337b28b99b3c010024aac4df9339af640a83473 BUILD SUCCESS
+Message-ID: <56d92f04.c0UujLs9w79Y5ZBq%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+2337b28b99b3c010024aac4df9339af640a83473  ixgbe: fix error handling in tc cls_u32 offload routines
 
+elapsed time: 120m
 
-On 3/3/2016 4:30 PM, John Fastabend wrote:
-> On 16-03-03 04:29 PM, John Fastabend wrote:
->> On 16-03-03 03:42 PM, Jeff Kirsher wrote:
->>> From: "Samudrala, Sridhar" <sridhar.samudrala@intel.com>
->>>
->>> Check for handle ids when adding/deleting hash nodes OR adding/deleting
->>> filter entries and limit them to max number of links or header nodes
->>> supported(IXGBE_MAX_LINK_HANDLE).
->>>
->>> Start from bit 0 when setting hash table bit-map.(adapter->tables)
->>>
->>> Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
->>> ---
->>>
->>> Sending this to the correct mailing list (get_maintainer.pl is your
->>> friend, please use it in the future)
->>>
->>>   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 52 +++++++++++++++++----------
->>>   1 file changed, 34 insertions(+), 18 deletions(-)
->>>
->>
->> Looks like a good cleanup to me.
->>
->> Acked-by: John Fastabend <john.r.fastabend@intel.com>
->>
-> Also just checking Sridhar you tested both the adding just to
-> the first list e.g. matching ip address for example and doing
-> matches deeper in the stack ala match on sport/dport?
+configs tested: 128
 
-Yes.
+i386                     randconfig-a0-201609
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                             allmodconfig
+arm                         ebsa110_defconfig
+blackfin                   CM-BF527_defconfig
+mips                          rm200_defconfig
+mn10300                          alldefconfig
+sh                        sh7757lcr_defconfig
+x86_64               randconfig-x010-03041052
+x86_64               randconfig-x011-03041052
+x86_64               randconfig-x012-03041052
+x86_64               randconfig-x013-03041052
+x86_64               randconfig-x014-03041052
+x86_64               randconfig-x015-03041052
+x86_64               randconfig-x016-03041052
+x86_64               randconfig-x017-03041052
+x86_64               randconfig-x018-03041052
+x86_64               randconfig-x019-03041052
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                   randconfig-s0-03041052
+i386                   randconfig-s1-03041052
+x86_64                 randconfig-s0-03041342
+x86_64                 randconfig-s1-03041342
+x86_64                 randconfig-s2-03041342
+x86_64                           allmodconfig
+x86_64                 randconfig-s3-03041151
+x86_64                 randconfig-s4-03041151
+x86_64                 randconfig-s5-03041151
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201609
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201609
+i386                     randconfig-i1-201609
+i386                   randconfig-x010-201609
+i386                   randconfig-x011-201609
+i386                   randconfig-x012-201609
+i386                   randconfig-x013-201609
+i386                   randconfig-x014-201609
+i386                   randconfig-x015-201609
+i386                   randconfig-x016-201609
+i386                   randconfig-x017-201609
+i386                   randconfig-x018-201609
+i386                   randconfig-x019-201609
+i386                     randconfig-n0-201609
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                      jornada720_defconfig
+powerpc                      cm5200_defconfig
+x86_64                 randconfig-n0-03041345
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                  randconfig-sb0-03041041
+x86_64                 randconfig-x002-201609
+x86_64                 randconfig-x004-201609
+x86_64                 randconfig-x009-201609
+x86_64                 randconfig-x000-201609
+x86_64                 randconfig-x005-201609
+x86_64                 randconfig-x003-201609
+x86_64                 randconfig-x006-201609
+x86_64                 randconfig-x008-201609
+x86_64                 randconfig-x007-201609
+x86_64                 randconfig-x001-201609
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-r0-201609
+i386                   randconfig-x000-201609
+i386                   randconfig-x001-201609
+i386                   randconfig-x002-201609
+i386                   randconfig-x003-201609
+i386                   randconfig-x004-201609
+i386                   randconfig-x005-201609
+i386                   randconfig-x006-201609
+i386                   randconfig-x007-201609
+i386                   randconfig-x008-201609
+i386                   randconfig-x009-201609
 
-I tested adding matches on src/dst ip on the root hash table and matches 
-on tcp src port on the link hash table.
-
-tc filter add dev p4p1 parent ffff: protocol ip prio 99 handle 800:0:1 
-u32 ht 800: match ip dst 15.0.0.1/32 match ip src 15.0.0.2/32 action drop
-
-This creates the following flow director rule as seen via ethtool
-
-Filter: 1
-     Rule Type: Raw IPv4
-     Src IP addr: 15.0.0.2 mask: 0.0.0.0
-     Dest IP addr: 15.0.0.1 mask: 0.0.0.0
-     TOS: 0x0 mask: 0xff
-     Protocol: 0 mask: 0xff
-     L4 bytes: 0x0 mask: 0xffffffff
-     VLAN EtherType: 0x0 mask: 0xffff
-     VLAN: 0x0 mask: 0xffff
-     User-defined: 0x0 mask: 0xffffffffffffffff
-     Action: Drop
-
-To do tcp matches,  i had to delete ip match rule in the root hash 
-table,  create a new hash table linked to the root and add a filter 
-entry to that table.
-
-c filter del dev p4p1 parent ffff: protocol ip prio 99 handle 800:0:1 u32
-tc filter add dev p4p1 parent ffff: protocol ip prio 99 handle 1: u32 
-divisor 1
-tc filter add dev p4p1 protocol ip parent ffff: prio 99 u32 ht 800: 
-order 2 link 1: offset at 0 mask 0f00 shift 6 plus 0 eat match ip 
-protocol 6 ff
-tc filter add dev p4p1 parent ffff: protocol ip prio 99 u32 ht 1: order 
-3 match tcp src 23 ffff action drop
-
-This creates the following  flow director rule
-Filter: 3
-     Rule Type: TCP over IPv4
-     Src IP addr: 0.0.0.0 mask: 255.255.255.255
-     Dest IP addr: 0.0.0.0 mask: 255.255.255.255
-     TOS: 0x0 mask: 0xff
-     Src port: 23 mask: 0x0
-     Dest port: 0 mask: 0xffff
-     VLAN EtherType: 0x0 mask: 0xffff
-     VLAN: 0x0 mask: 0xffff
-     User-defined: 0x0 mask: 0xffffffffffffffff
-     Action: Drop
-
-Looks like we cannot have both these rules at the same time.
-
-Also, more work is required to support matches on both ip as well as tcp 
-headers in the same rule.
-
-Thanks
-Sridhar
+Thanks,
+Fengguang
