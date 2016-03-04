@@ -1,12 +1,12 @@
 From: John Fastabend <john.fastabend@gmail.com>
-Date: Fri, 04 Mar 2016 15:07:46 -0800
+Date: Fri, 04 Mar 2016 15:09:08 -0800
 Subject: [Intel-wired-lan] [PATCH net-next] net: ixgbe: Fix cls_u32
  offload support for ports and fields with masks.
 In-Reply-To: <56DA1517.7020307@intel.com>
 References: <1457120869-3489-1-git-send-email-sridhar.samudrala@intel.com>
  <56D9F311.7060402@gmail.com> <56D9FDAC.6060607@intel.com>
  <56DA0AB5.9030602@gmail.com> <56DA1517.7020307@intel.com>
-Message-ID: <56DA1542.1000108@gmail.com>
+Message-ID: <56DA1594.4050406@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -100,4 +100,8 @@ On 16-03-04 03:07 PM, Samudrala, Sridhar wrote:
 > Thanks
 > Sridhar
 
-Great thanks nice catch / improvements.
+Great nice catch / improvements. By the way my goal here is to get
+to the point where we can share this across drivers and just change
+the *model.h file.
+
+.John
