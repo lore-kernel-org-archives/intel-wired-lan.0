@@ -1,40 +1,148 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Fri, 4 Mar 2016 23:38:47 +0000
-Subject: [Intel-wired-lan] [PATCH v6 0/2] fix ethtool statistics patches
-In-Reply-To: <1457134668-19142-1-git-send-email-jacob.e.keller@intel.com>
-References: <1457134668-19142-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1457134727.7791.4.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 05 Mar 2016 08:24:24 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ b417099629a63d7b573a175b77b6b6534657a860 BUILD SUCCESS
+Message-ID: <56da2738.oQ8q7CPEmg+5ooS3%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2016-03-04 at 15:37 -0800, Jacob Keller wrote:
-> This series fixes the ethtool patches on Jeff's next-queue. First, I
-> fixed a bug in the fm10k ethtool stat helpers which had assumed the
-> allocated memory was already zeroed. The new code assumes it is not,
-> and
-> always rights 0s. In addition, I fixed Bruce's comment about the
-> newline. Since I had to change the first patch, I rebased them both
-> against the top of Jeff's queue and merged some of the code. The
-> first
-> patch in this series now handles the per-queue stats, while the
-> second
-> patch does the work to remove the incorrect support for
-> debug-statistics.
-> 
-> The first patch is a direct replacement for 1256b40cb7b4 ("fm10k: add
-> helper functions to set strings and data for ethtool stats", 2016-03-
-> 04)
-> 
-> The second patch is a direct replacement for 2d6c14d75442 ("fm10k:
-> cleanup fm10k stats and remove debug-statistics", 2016-03-04)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+b417099629a63d7b573a175b77b6b6534657a860  ixgbe: Fix cls_u32 offload support for ports and fields with masks
 
-This series fixes Krishniel's issue, and resolves the extra blank line.
-It also is a bit easier to follow each patch, since they are more
-clearly separated. Both patches listed above need to be dropped and
-then this series applied in order.
+elapsed time: 123m
+
+configs tested: 127
+
+i386                     randconfig-a0-201609
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+powerpc                       ep405_defconfig
+powerpc                      pasemi_defconfig
+powerpc                     sequoia_defconfig
+powerpc                     tqm8540_defconfig
+sh                           se7721_defconfig
+x86_64                 randconfig-x014-201609
+x86_64                 randconfig-x012-201609
+x86_64                 randconfig-x011-201609
+x86_64                 randconfig-x017-201609
+x86_64                 randconfig-x019-201609
+x86_64                 randconfig-x013-201609
+x86_64                 randconfig-x018-201609
+x86_64                 randconfig-x016-201609
+x86_64                 randconfig-x010-201609
+x86_64                 randconfig-x015-201609
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                   randconfig-s0-03050321
+i386                   randconfig-s1-03050321
+x86_64                 randconfig-s0-03050621
+x86_64                 randconfig-s1-03050621
+x86_64                 randconfig-s2-03050621
+x86_64                           allmodconfig
+x86_64                 randconfig-s3-03050619
+x86_64                 randconfig-s4-03050619
+x86_64                 randconfig-s5-03050619
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201609
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201609
+i386                     randconfig-i1-201609
+i386                               tinyconfig
+i386                   randconfig-x011-201609
+i386                   randconfig-x014-201609
+i386                   randconfig-x019-201609
+i386                   randconfig-x015-201609
+i386                   randconfig-x012-201609
+i386                   randconfig-x017-201609
+i386                   randconfig-x018-201609
+i386                   randconfig-x013-201609
+i386                   randconfig-x010-201609
+i386                   randconfig-x016-201609
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201609
+mips                      maltaaprp_defconfig
+powerpc                       maple_defconfig
+x86_64                 randconfig-n0-03050656
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                 randconfig-x002-201609
+x86_64                 randconfig-x004-201609
+x86_64                 randconfig-x009-201609
+x86_64                 randconfig-x000-201609
+x86_64                 randconfig-x005-201609
+x86_64                 randconfig-x003-201609
+x86_64                 randconfig-x006-201609
+x86_64                 randconfig-x008-201609
+x86_64                 randconfig-x007-201609
+x86_64                 randconfig-x001-201609
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201609
+i386                   randconfig-x004-201609
+i386                   randconfig-x007-201609
+i386                   randconfig-x001-201609
+i386                   randconfig-x006-201609
+i386                   randconfig-x003-201609
+i386                   randconfig-x008-201609
+i386                   randconfig-x002-201609
+i386                   randconfig-x005-201609
+i386                   randconfig-x000-201609
+i386                   randconfig-x009-201609
 
 Thanks,
-Jake
+Fengguang
