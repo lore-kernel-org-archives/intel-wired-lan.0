@@ -1,107 +1,71 @@
 From: Alexander Duyck <aduyck@mirantis.com>
-Date: Mon, 07 Mar 2016 09:30:09 -0800
-Subject: [Intel-wired-lan] [PATCH 3/5] ixgbe/ixgbevf: Add support for bulk
- free in Tx cleanup & cleanup boolean logic
+Date: Mon, 07 Mar 2016 09:30:15 -0800
+Subject: [Intel-wired-lan] [PATCH 4/5] fm10k: Add support for bulk Tx
+ cleanup & cleanup boolean logic
 In-Reply-To: <20160307172722.5682.38580.stgit@localhost.localdomain>
 References: <20160307172722.5682.38580.stgit@localhost.localdomain>
-Message-ID: <20160307173009.5682.9616.stgit@localhost.localdomain>
+Message-ID: <20160307173015.5682.15247.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch enables bulk free in Tx cleanup for ixgbevf and cleans up the
-boolean logic in the polling routines for ixgbe and ixgbevf in the hopes of
-avoiding any mix-ups similar to what occurred with i40e and i40evf.
+This patch enables bulk free in Tx cleanup for fm10k and cleans up the
+boolean logic in the polling routines for fm10k in the hopes of avoiding
+any mix-ups similar to what occurred with i40e and i40evf.
 
 Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |   10 +++++++---
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   14 +++++++++-----
- 2 files changed, 16 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c |   14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 9f8d7626075a..1b490d1c27ce 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -1111,6 +1111,7 @@ static int ixgbe_tx_maxrate(struct net_device *netdev,
-  * ixgbe_clean_tx_irq - Reclaim resources after transmit completes
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+index 43f3674501cc..de406dca8f06 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+@@ -1198,9 +1198,10 @@ void fm10k_tx_timeout_reset(struct fm10k_intfc *interface)
+  * fm10k_clean_tx_irq - Reclaim resources after transmit completes
   * @q_vector: structure containing interrupt and ring information
   * @tx_ring: tx ring to clean
 + * @napi_budget: Used to determine if we are in netpoll
   **/
- static bool ixgbe_clean_tx_irq(struct ixgbe_q_vector *q_vector,
- 			       struct ixgbe_ring *tx_ring, int napi_budget)
-@@ -2807,8 +2808,10 @@ int ixgbe_poll(struct napi_struct *napi, int budget)
- 		ixgbe_update_dca(q_vector);
- #endif
- 
--	ixgbe_for_each_ring(ring, q_vector->tx)
--		clean_complete &= !!ixgbe_clean_tx_irq(q_vector, ring, budget);
-+	ixgbe_for_each_ring(ring, q_vector->tx) {
-+		if (!ixgbe_clean_tx_irq(q_vector, ring, budget))
-+			clean_complete = false;
-+	}
- 
- 	/* Exit if we are called by netpoll or busy polling is active */
- 	if ((budget <= 0) || !ixgbe_qv_lock_napi(q_vector))
-@@ -2826,7 +2829,8 @@ int ixgbe_poll(struct napi_struct *napi, int budget)
- 						 per_ring_budget);
- 
- 		work_done += cleaned;
--		clean_complete &= (cleaned < per_ring_budget);
-+		if (cleaned >= per_ring_budget)
-+			clean_complete = false;
- 	}
- 
- 	ixgbe_qv_unlock_napi(q_vector);
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 98dca8050f3a..0c3e29b55b45 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -288,9 +288,10 @@ static void ixgbevf_tx_timeout(struct net_device *netdev)
-  * ixgbevf_clean_tx_irq - Reclaim resources after transmit completes
-  * @q_vector: board private structure
-  * @tx_ring: tx ring to clean
-+ * @napi_budget: Used to determine if we are in netpoll
-  **/
- static bool ixgbevf_clean_tx_irq(struct ixgbevf_q_vector *q_vector,
--				 struct ixgbevf_ring *tx_ring)
-+				 struct ixgbevf_ring *tx_ring, int napi_budget)
+ static bool fm10k_clean_tx_irq(struct fm10k_q_vector *q_vector,
+-			       struct fm10k_ring *tx_ring)
++			       struct fm10k_ring *tx_ring, int napi_budget)
  {
- 	struct ixgbevf_adapter *adapter = q_vector->adapter;
- 	struct ixgbevf_tx_buffer *tx_buffer;
-@@ -328,7 +329,7 @@ static bool ixgbevf_clean_tx_irq(struct ixgbevf_q_vector *q_vector,
+ 	struct fm10k_intfc *interface = q_vector->interface;
+ 	struct fm10k_tx_buffer *tx_buffer;
+@@ -1238,7 +1239,7 @@ static bool fm10k_clean_tx_irq(struct fm10k_q_vector *q_vector,
  		total_packets += tx_buffer->gso_segs;
  
  		/* free the skb */
--		dev_kfree_skb_any(tx_buffer->skb);
+-		dev_consume_skb_any(tx_buffer->skb);
 +		napi_consume_skb(tx_buffer->skb, napi_budget);
  
  		/* unmap skb header data */
  		dma_unmap_single(tx_ring->dev,
-@@ -1013,8 +1014,10 @@ static int ixgbevf_poll(struct napi_struct *napi, int budget)
+@@ -1449,8 +1450,10 @@ static int fm10k_poll(struct napi_struct *napi, int budget)
  	int per_ring_budget, work_done = 0;
  	bool clean_complete = true;
  
--	ixgbevf_for_each_ring(ring, q_vector->tx)
--		clean_complete &= ixgbevf_clean_tx_irq(q_vector, ring);
-+	ixgbevf_for_each_ring(ring, q_vector->tx) {
-+		if (!ixgbevf_clean_tx_irq(q_vector, ring, budget))
+-	fm10k_for_each_ring(ring, q_vector->tx)
+-		clean_complete &= fm10k_clean_tx_irq(q_vector, ring);
++	fm10k_for_each_ring(ring, q_vector->tx) {
++		if (!fm10k_clean_tx_irq(q_vector, ring, budget))
 +			clean_complete = false;
 +	}
  
+ 	/* Handle case where we are called by netpoll with a budget of 0 */
  	if (budget <= 0)
- 		return budget;
-@@ -1035,7 +1038,8 @@ static int ixgbevf_poll(struct napi_struct *napi, int budget)
- 		int cleaned = ixgbevf_clean_rx_irq(q_vector, ring,
- 						   per_ring_budget);
- 		work_done += cleaned;
--		clean_complete &= (cleaned < per_ring_budget);
-+		if (cleaned >= per_ring_budget)
+@@ -1468,7 +1471,8 @@ static int fm10k_poll(struct napi_struct *napi, int budget)
+ 		int work = fm10k_clean_rx_irq(q_vector, ring, per_ring_budget);
+ 
+ 		work_done += work;
+-		clean_complete &= !!(work < per_ring_budget);
++		if (work >= per_ring_budget)
 +			clean_complete = false;
  	}
  
- #ifdef CONFIG_NET_RX_BUSY_POLL
+ 	/* If all work not completed, return budget and keep polling */
 
