@@ -1,46 +1,40 @@
-From: John Fastabend <john.fastabend@gmail.com>
-Date: Mon, 07 Mar 2016 11:31:07 -0800
-Subject: [Intel-wired-lan] [PATCH v2 net-next 3/3] net: ixgbe: Fix
- cls_u32 offload support for L4 ports.
-In-Reply-To: <1457372509-3135-3-git-send-email-sridhar.samudrala@intel.com>
-References: <1457372509-3135-1-git-send-email-sridhar.samudrala@intel.com>
- <1457372509-3135-3-git-send-email-sridhar.samudrala@intel.com>
-Message-ID: <56DDD6FB.6090408@gmail.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Tue, 8 Mar 2016 11:39:19 -0800
+Subject: [Intel-wired-lan] [PATCH 2/5] i40e/i40evf: Add support for bulk
+ free in Tx cleanup
+In-Reply-To: <20160307173003.5682.90872.stgit@localhost.localdomain>
+References: <20160307172722.5682.38580.stgit@localhost.localdomain>
+ <20160307173003.5682.90872.stgit@localhost.localdomain>
+Message-ID: <20160308113919.000012c8@unknown>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 16-03-07 09:41 AM, Sridhar Samudrala wrote:
-> Fix support for 16 bit source/dest port matches in ixgbe model.
-> u32 uses a single 32-bit key value for both source and destination ports
-> starting at offset 0. So replace the 2 functions with a single function
-> that takes this key value/mask to program both source and dest ports.
-> 
-> Verified with the following filter:
-> 
->  #tc qdisc add dev p4p1 ingress
->  #tc filter add dev p4p1 parent ffff: protocol ip prio 99 \
-> 	handle 1: u32 divisor 1
->  #tc filter add dev p4p1 parent ffff: protocol ip prio 99 \
-> 	handle 800:0:10 u32 ht 800: link 1: \
-> 	offset at 0 mask 0f00 shift 6 plus 0 eat match ip protocol 6 ff
->  #tc filter add dev p4p1 parent ffff: protocol ip prio 99 \
-> 	handle 1:0:10 u32 ht 1: \
-> 	match tcp src 1024 ffff match tcp dst 80 ffff action drop
->  #tc filter add dev p4p1 parent ffff: protocol ip prio 99 \
-> 	handle 1:0:11 u32 ht 1: \
-> 	match tcp src 1025 ffff action drop
->  #tc filter add dev p4p1 parent ffff: protocol ip prio 99 \
-> 	handle 1:0:12 u32 ht 1: \
-> 	match tcp dst 81 ffff action drop
-> 
-> Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
-> ---
+Thanks Alex, one comment below.
 
+On Mon, 7 Mar 2016 09:30:03 -0800
+Alexander Duyck <aduyck@mirantis.com> wrote:
+> @@ -1975,7 +1977,7 @@ int i40e_napi_poll(struct napi_struct *napi, int budget)
+>  	 * budget and be more aggressive about cleaning up the Tx descriptors.
+>  	 */
+>  	i40e_for_each_ring(ring, q_vector->tx) {
+> -		if (!i40e_clean_tx_irq(ring, vsi->work_limit)) {
+> +		if (!i40e_clean_tx_irq(vsi, ring, budget)) {
+>  			clean_complete = false;
+>  			continue;
+>  		}
 
-Thanks nice looking series.
+I'm not sure if this was a search/replace miss or if you intended it,
+but I believe that limiting our transmit cleanup work in i40e_napi_poll
+to budget is wrong, as transmit cleanup is so cheap compared to rx,
+that we typically don't need to limit it to 64 skbs cleaned.  We can't
+just have it clean unlimited numbers, so we put in a work limit that is
+adjustable via ethtool and defaults to half the ring size.
 
-Acked-by: John Fastabend <john.r.fastabend@intel.com>
+So this change 
+1) breaks the ethtool adjustment of tx work_limit, and
+2) significantly decreases the number of transmits we will clean per
+poll loop.
 
