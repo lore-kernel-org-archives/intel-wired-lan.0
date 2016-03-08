@@ -1,67 +1,54 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Tue, 8 Mar 2016 11:47:17 -0800
-Subject: [Intel-wired-lan] [next PATCH v2] i40e/i40evf: Allow up to 12K
- bytes of data per Tx descriptor instead of 8K
-In-Reply-To: <20160219201130.16927.24329.stgit@localhost.localdomain>
-References: <20160219201130.16927.24329.stgit@localhost.localdomain>
-Message-ID: <20160308114717.000053d3@unknown>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Tue, 8 Mar 2016 11:58:37 -0800
+Subject: [Intel-wired-lan] [PATCH 2/5] i40e/i40evf: Add support for bulk
+ free in Tx cleanup
+In-Reply-To: <20160308113919.000012c8@unknown>
+References: <20160307172722.5682.38580.stgit@localhost.localdomain>
+ <20160307173003.5682.90872.stgit@localhost.localdomain>
+ <20160308113919.000012c8@unknown>
+Message-ID: <CAKgT0UfBw4mOan8oaKiWatUs_WtmxCjKKOJeMLEGBoAXg0ca3w@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Thanks Alex, a couple minor comments.
+On Tue, Mar 8, 2016 at 11:39 AM, Jesse Brandeburg
+<jesse.brandeburg@intel.com> wrote:
+> Thanks Alex, one comment below.
+>
+> On Mon, 7 Mar 2016 09:30:03 -0800
+> Alexander Duyck <aduyck@mirantis.com> wrote:
+>> @@ -1975,7 +1977,7 @@ int i40e_napi_poll(struct napi_struct *napi, int budget)
+>>        * budget and be more aggressive about cleaning up the Tx descriptors.
+>>        */
+>>       i40e_for_each_ring(ring, q_vector->tx) {
+>> -             if (!i40e_clean_tx_irq(ring, vsi->work_limit)) {
+>> +             if (!i40e_clean_tx_irq(vsi, ring, budget)) {
+>>                       clean_complete = false;
+>>                       continue;
+>>               }
+>
+> I'm not sure if this was a search/replace miss or if you intended it,
+> but I believe that limiting our transmit cleanup work in i40e_napi_poll
+> to budget is wrong, as transmit cleanup is so cheap compared to rx,
+> that we typically don't need to limit it to 64 skbs cleaned.  We can't
+> just have it clean unlimited numbers, so we put in a work limit that is
+> adjustable via ethtool and defaults to half the ring size.
+>
+> So this change
+> 1) breaks the ethtool adjustment of tx work_limit, and
+> 2) significantly decreases the number of transmits we will clean per
+> poll loop.
 
-As an aside, it would be interesting to know if there is a way to get
-25us tx-ITR single stream performance while not using so much CPU when
-multiple threads get involved.
+Please re-read the patch.  You notice I am passing the VSI as the
+first argument.  That is how I am still acquiring the budget as it is
+pulled from the vsi.
 
-On Fri, 19 Feb 2016 12:17:08 -0800
-Alexander Duyck <aduyck@mirantis.com> wrote:
+The value passed in the last parameter is the NAPI budget.  The NAPI
+budget value is being passed as it is needed by the napi_consume_skb
+call in order to determine if we were called with a budget of 0 or
+not.  If we were that indicates this is actually a netpoll call, if it
+is non-zero then it indicates we are a standard NAPI call.
 
-> >From what I can tell the practical limitation on the size of the Tx data
-extra >
-
-> buffer is the fact that the Tx descriptor is limited to 14 bits.  As such
-> we cannot use 16K as is typically used on the other Intel drivers.  However
-> artificially limiting ourselves to 8K can be expensive as this means that
-> we will consume up to 10 descriptors (1 context, 1 for header, and 9 for
-> payload, non-8K aligned) in a single send.
-
-...
-
-
-> +static inline unsigned int i40e_txd_use_count(unsigned int size)
-> +{
-> +	const unsigned int max = I40E_MAX_DATA_PER_TXD_ALIGNED;
-> +	const unsigned int reciprocal = ((1ull << 32) - 1 + (max / 2)) / max;
-> +	unsigned int adjust = ~(u32)0;
-> +
-> +	/* if we rounded up on the reciprprocal pull down the adjustment */
-
-spelling of reciprocal...
-
-> +	if ((max * reciprocal) > adjust)
-> +		adjust = ~(u32)(reciprocal - 1);
-> +
-> +	return (u32)((((u64)size * reciprocal) + adjust) >> 32);
-> +}
-
-...
-
-> +static inline unsigned int i40e_txd_use_count(unsigned int size)
-> +{
-> +	const unsigned int max = I40E_MAX_DATA_PER_TXD_ALIGNED;
-> +	const unsigned int reciprocal = ((1ull << 32) - 1 + (max / 2)) / max;
-> +	unsigned int adjust = ~(u32)0;
-> +
-> +	/* if we rounded up on the reciprprocal pull down the adjustment */
-
-Spelling of reciprocal
-
-> +	if ((max * reciprocal) > adjust)
-> +		adjust = ~(u32)(reciprocal - 1);
-> +
-> +	return (u32)((((u64)size * reciprocal) + adjust) >> 32);
-> +}
+- Alex
