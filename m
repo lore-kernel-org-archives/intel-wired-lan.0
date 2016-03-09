@@ -1,85 +1,72 @@
-From: Fujinaka, Todd <todd.fujinaka@intel.com>
-Date: Wed, 9 Mar 2016 18:56:10 +0000
-Subject: [Intel-wired-lan] [PATCH] igb: simplify check for all F
-	for	surprise removal
-In-Reply-To: <20160226215708.15005.5114.stgit@htfujina-fc.jf.intel.com>
-References: <20160226215708.15005.5114.stgit@htfujina-fc.jf.intel.com>
-Message-ID: <9B4A1B1917080E46B64F07F2989DADD65AB570A9@ORSMSX114.amr.corp.intel.com>
+From: Bruce Allan <bruce.w.allan@intel.com>
+Date: Wed, 09 Mar 2016 12:26:18 -0800
+Subject: [Intel-wired-lan] [next-queue PATCH v3] fm10k: Avoid crashing the
+	kernel
+Message-ID: <20160309202557.137597.51678.stgit@bwallan-cwp1.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-I've confirmed this is broken for some parts. Please drop this patch.
+Use BUILD_BUG_ON() instead of BUG_ON() where appropriate to get a compile
+error rather than crash the kernel.
 
-Todd Fujinaka
-Software Application Engineer
-Networking Division (ND)
-Intel Corporation
-todd.fujinaka at intel.com
-(503) 712-4565
+Unfortunately, BUILD_BUG_ON() cannot be used to replace the second instance
+of BUG_ON() as it will generate a compiletime assert when the compiler flag
+-fsanitize=signed-integer-overflow is used (e.g. when UBSAN is enabled).
+Instead, put in additional checks to prevent buffer overflow from occuring
+and WARN if the code is ever mistakenly changed to get additional register
+values without also updating the value of FM10K_REGS_LEN_VSI.
 
+Also, replace associated magic numbers with existing defined constants and
+correct an applicable comment.
 
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Todd Fujinaka
-Sent: Friday, February 26, 2016 1:57 PM
-To: intel-wired-lan@lists.osuosl.org
-Subject: [Intel-wired-lan] [PATCH] igb: simplify check for all F for surprise removal
-
-The previous check appears to be delaying problems by doing multiple reads. Also, we've found that having igbvf in the host and vm and using direct-assign returns all F's on the STATUS register and we can't use that as an error condition. Since the VLAN Ether Type register
-(E1000_VET) has a hard-coded return value of 0x8100, check that register for all Fs instead.
-
-Signed-off-by: Todd Fujinaka <todd.fujinaka@intel.com>
+Signed-off-by: Bruce Allan <bruce.w.allan@intel.com>
 ---
- drivers/net/ethernet/intel/igb/igb_main.c |   23 ++++++++++++++++-------
- 1 file changed, 16 insertions(+), 7 deletions(-)
+v3: changes described in 2nd and 3rd paragraphs in updated description
+ drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c |   22 +++++++++++++---------
+ 1 file changed, 13 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index a1d9b05..e932763 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -763,9 +763,22 @@ static void igb_cache_ring_register(struct igb_adapter *adapter)
- 	}
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+index c8ee3b5..6952ce2 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+@@ -352,23 +352,27 @@ static void fm10k_get_reg_q(struct fm10k_hw *hw, u32 *buff, int i)
+ 	buff[idx++] = fm10k_read_reg(hw, FM10K_TX_SGLORT(i));
+ 	buff[idx++] = fm10k_read_reg(hw, FM10K_PFVTCTL(i));
+ 
+-	BUG_ON(idx != FM10K_REGS_LEN_Q);
++	BUILD_BUG_ON(idx != FM10K_REGS_LEN_Q);
  }
  
--u32 igb_rd32(struct e1000_hw *hw, u32 reg)
-+static void igb_check_remove(struct e1000_hw *hw, u32 reg, u8 __iomem 
-+*hw_addr)
+-/* If function above adds more registers this define needs to be updated */
+-#define FM10K_REGS_LEN_VSI 43
++/* If function below adds more registers this define needs to be updated */
++#define FM10K_REGS_LEN_VSI (1 + FM10K_RSSRK_SIZE + FM10K_RETA_SIZE)
+ 
+ static void fm10k_get_reg_vsi(struct fm10k_hw *hw, u32 *buff, int i)
  {
- 	struct igb_adapter *igb = container_of(hw, struct igb_adapter, hw);
-+
-+	/* E1000_VET is always 0x8100 and can't be all F's */
-+	if ((reg == E1000_VET) || (!(~readl(&hw_addr[E1000_VET])))) {
-+		struct net_device *netdev = igb->netdev;
-+
-+		hw->hw_addr = NULL;
-+		netif_device_detach(netdev);
-+		netdev_err(netdev, "PCIe link lost, device now detached\n");
-+	}
-+}
-+
-+u32 igb_rd32(struct e1000_hw *hw, u32 reg) {
- 	u8 __iomem *hw_addr = ACCESS_ONCE(hw->hw_addr);
- 	u32 value = 0;
+ 	int idx = 0, j;
  
-@@ -775,12 +788,8 @@ u32 igb_rd32(struct e1000_hw *hw, u32 reg)
- 	value = readl(&hw_addr[reg]);
- 
- 	/* reads should not return all F's */
--	if (!(~value) && (!reg || !(~readl(hw_addr)))) {
--		struct net_device *netdev = igb->netdev;
--		hw->hw_addr = NULL;
--		netif_device_detach(netdev);
--		netdev_err(netdev, "PCIe link lost, device now detached\n");
--	}
-+	if (unlikely(!(~value)))
-+		igb_check_remove(hw, reg, hw_addr);
- 
- 	return value;
+ 	buff[idx++] = fm10k_read_reg(hw, FM10K_MRQC(i));
+-	for (j = 0; j < 10; j++)
+-		buff[idx++] = fm10k_read_reg(hw, FM10K_RSSRK(i, j));
+-	for (j = 0; j < 32; j++)
+-		buff[idx++] = fm10k_read_reg(hw, FM10K_RETA(i, j));
+-
+-	BUG_ON(idx != FM10K_REGS_LEN_VSI);
++	for (j = 0; j < FM10K_RSSRK_SIZE; j++, idx++)
++		if (idx < FM10K_REGS_LEN_VSI)
++			buff[idx] = fm10k_read_reg(hw, FM10K_RSSRK(i, j));
++	for (j = 0; j < FM10K_RETA_SIZE; j++, idx++)
++		if (idx < FM10K_REGS_LEN_VSI)
++			buff[idx] = fm10k_read_reg(hw, FM10K_RETA(i, j));
++
++	WARN_ONCE(idx != FM10K_REGS_LEN_VSI,
++		  "Incorrect value for FM10K_REGS_LEN_VSI (expected %d, got %d)\n",
++		  idx, FM10K_REGS_LEN_VSI);
  }
+ 
+ static void fm10k_get_regs(struct net_device *netdev,
 
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan at lists.osuosl.org
-http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
