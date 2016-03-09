@@ -1,153 +1,101 @@
-From: Donald C Skidmore <donald.c.skidmore@intel.com>
-Date: Wed,  9 Mar 2016 16:45:00 -0500
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Place SWFW semaphore in known
-	valid state at probe
-Message-ID: <1457559900-7031-1-git-send-email-donald.c.skidmore@intel.com>
+From: Amritha Nambiar <amritha.nambiar@intel.com>
+Date: Wed, 09 Mar 2016 18:32:16 -0500
+Subject: [Intel-wired-lan] [PATCH] [net-next] net: ixgbe: Extend cls_u32
+ offload to support UDP headers.
+Message-ID: <20160309233215.32377.54007.stgit@sdncamp.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Don Skidmore <donald.c.skidmore@intel.com>
+Added support to match on UDP fields in the transport layer.
+Extended core logic to support multiple headers.
 
-It is possible on some HW that a system reset could occur when we are
-holding the SWFW semaphore lock.  So next time the driver was loaded we
-would see it incorrectly as locked. This patch will recover from that state
-by: Attempting to aquire the semaphore and then regardless of whether or
-not it was aquire we immediately release it. This will force us into
-a known good state.
+Verified with the following filters :
 
-Signed-off-by: Donald C Skidmore <donald.c.skidmore@intel.com>
+# tc qdisc add dev enp2s0f0 ingress
+# tc filter add dev enp2s0f0 parent ffff: protocol ip prio 99 \
+	handle 1: u32 divisor 1
+# tc filter add dev enp2s0f0 protocol ip parent ffff: prio 99 \
+	u32 ht 800: order 1 link 1: \
+	offset at 0 mask 0f00 shift 6 plus 0 eat match ip protocol 6 ff
+# tc filter add dev enp2s0f0 parent ffff: protocol ip \
+	u32 ht 1: order 2 \
+	match tcp src 1024 ffff match tcp dst 23 ffff action drop
+# tc filter add dev enp2s0f0 parent ffff: protocol ip prio 99 \
+	handle 2: u32 divisor 1
+# tc filter add dev enp2s0f0 protocol ip parent ffff: prio 99 \
+	u32 ht 800: order 3 link 2: \
+	offset at 0 mask 0f00 shift 6 plus 0 eat match ip protocol 17 ff
+# tc filter add dev enp2s0f0 parent ffff: protocol ip \
+	u32 ht 2: order 4 \
+	match udp src 1025 ffff match udp dst 24 ffff action drop
+
+Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c |  1 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c |  1 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  |  4 ++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h  |  1 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c  | 20 ++++++++++++++++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_x540.h  |  1 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c  |  2 ++
- 7 files changed, 30 insertions(+)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  |   19 ++++++++++---------
+ drivers/net/ethernet/intel/ixgbe/ixgbe_model.h |    8 ++++++++
+ 2 files changed, 18 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
-index f47eb12..6ecd598 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
-@@ -1196,6 +1196,7 @@ static const struct ixgbe_mac_operations mac_ops_82598 = {
- 	.set_fw_drv_ver         = NULL,
- 	.acquire_swfw_sync      = &ixgbe_acquire_swfw_sync,
- 	.release_swfw_sync      = &ixgbe_release_swfw_sync,
-+	.init_swfw_sync		= NULL,
- 	.get_thermal_sensor_data = NULL,
- 	.init_thermal_sensor_thresh = NULL,
- 	.prot_autoc_read	= &prot_autoc_read_generic,
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
-index c3ae5a7..4bb6b68 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
-@@ -2228,6 +2228,7 @@ static const struct ixgbe_mac_operations mac_ops_82599 = {
- 	.set_vlan_anti_spoofing = &ixgbe_set_vlan_anti_spoofing,
- 	.acquire_swfw_sync      = &ixgbe_acquire_swfw_sync,
- 	.release_swfw_sync      = &ixgbe_release_swfw_sync,
-+	.init_swfw_sync		= NULL,
- 	.get_thermal_sensor_data = &ixgbe_get_thermal_sensor_data_generic,
- 	.init_thermal_sensor_thresh = &ixgbe_init_thermal_sensor_thresh_generic,
- 	.prot_autoc_read	= &prot_autoc_read_82599,
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 9f8d762..813b29f 100644
+index 7a60142..25b81a4 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -9126,6 +9126,10 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	if (err)
- 		goto err_sw_init;
+@@ -8295,19 +8295,20 @@ static int ixgbe_configure_clsu32(struct ixgbe_adapter *adapter,
+ 			return -EINVAL;
  
-+	/* Make sure the SWFW semaphore is in a valid state */
-+	if (hw->mac.ops.init_swfw_sync)
-+		hw->mac.ops.init_swfw_sync(hw);
-+
- 	/* Make it possible the adapter to be woken up via WOL */
- 	switch (adapter->hw.mac.type) {
- 	case ixgbe_mac_82599EB:
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-index 787d2b2..bc012ab 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-@@ -3266,6 +3266,7 @@ struct ixgbe_mac_operations {
- 	s32 (*enable_rx_dma)(struct ixgbe_hw *, u32);
- 	s32 (*acquire_swfw_sync)(struct ixgbe_hw *, u32);
- 	void (*release_swfw_sync)(struct ixgbe_hw *, u32);
-+	void (*init_swfw_sync)(struct ixgbe_hw *);
- 	s32 (*prot_autoc_read)(struct ixgbe_hw *, bool *, u32 *);
- 	s32 (*prot_autoc_write)(struct ixgbe_hw *, u32, bool);
+ 		for (i = 0; nexthdr[i].jump; i++) {
+-			if (nexthdr->o != cls->knode.sel->offoff ||
+-			    nexthdr->s != cls->knode.sel->offshift ||
+-			    nexthdr->m != cls->knode.sel->offmask ||
++			if (nexthdr[i].o != cls->knode.sel->offoff ||
++			    nexthdr[i].s != cls->knode.sel->offshift ||
++			    nexthdr[i].m != cls->knode.sel->offmask ||
+ 			    /* do not support multiple key jumps its just mad */
+ 			    cls->knode.sel->nkeys > 1)
+ 				return -EINVAL;
  
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
-index c00b67b..40824d8 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
-@@ -747,6 +747,25 @@ static void ixgbe_release_swfw_sync_semaphore(struct ixgbe_hw *hw)
- }
- 
- /**
-+ *  ixgbe_init_swfw_sync_X540 - Release hardware semaphore
-+ *  @hw: pointer to hardware structure
-+ *
-+ *  This function reset hardware semaphore bits for a semaphore that may
-+ *  have be left locked due to a catastrophic failure.
-+ **/
-+void ixgbe_init_swfw_sync_X540(struct ixgbe_hw *hw)
-+{
-+	/* First try to grab the semaphore but we don't need to bother
-+	 * looking to see whether we got the lock or not since we do
-+	 * the same thing regardless of whether we got the lock or not.
-+	 * We got the lock - we release it.
-+	 * We timeout trying to get the lock - we force its release.
-+	 */
-+	ixgbe_get_swfw_sync_semaphore(hw);
-+	ixgbe_release_swfw_sync_semaphore(hw);
-+}
-+
-+/**
-  * ixgbe_blink_led_start_X540 - Blink LED based on index.
-  * @hw: pointer to hardware structure
-  * @index: led number to blink
-@@ -854,6 +873,7 @@ static const struct ixgbe_mac_operations mac_ops_X540 = {
- 	.set_vlan_anti_spoofing = &ixgbe_set_vlan_anti_spoofing,
- 	.acquire_swfw_sync      = &ixgbe_acquire_swfw_sync_X540,
- 	.release_swfw_sync      = &ixgbe_release_swfw_sync_X540,
-+	.init_swfw_sync		= &ixgbe_init_swfw_sync_X540,
- 	.disable_rx_buff	= &ixgbe_disable_rx_buff_generic,
- 	.enable_rx_buff		= &ixgbe_enable_rx_buff_generic,
- 	.get_thermal_sensor_data = NULL,
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.h
-index a1468b1..e21cd48 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.h
-@@ -36,4 +36,5 @@ s32 ixgbe_blink_led_start_X540(struct ixgbe_hw *hw, u32 index);
- s32 ixgbe_blink_led_stop_X540(struct ixgbe_hw *hw, u32 index);
- s32 ixgbe_acquire_swfw_sync_X540(struct ixgbe_hw *hw, u32 mask);
- void ixgbe_release_swfw_sync_X540(struct ixgbe_hw *hw, u32 mask);
-+void ixgbe_init_swfw_sync_X540(struct ixgbe_hw *hw);
- s32 ixgbe_init_eeprom_params_X540(struct ixgbe_hw *hw);
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index 972c9aa..9d3f765 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -2432,6 +2432,7 @@ static const struct ixgbe_mac_operations mac_ops_X550 = {
- 	.setup_sfp		= NULL,
- 	.acquire_swfw_sync	= &ixgbe_acquire_swfw_sync_X540,
- 	.release_swfw_sync	= &ixgbe_release_swfw_sync_X540,
-+	.init_swfw_sync		= &ixgbe_init_swfw_sync_X540,
- 	.prot_autoc_read	= prot_autoc_read_generic,
- 	.prot_autoc_write	= prot_autoc_write_generic,
- 	.setup_fc		= ixgbe_setup_fc_generic,
-@@ -2449,6 +2450,7 @@ static const struct ixgbe_mac_operations mac_ops_X550EM_x = {
- 	.setup_sfp		= ixgbe_setup_sfp_modules_X550em,
- 	.acquire_swfw_sync	= &ixgbe_acquire_swfw_sync_X550em,
- 	.release_swfw_sync	= &ixgbe_release_swfw_sync_X550em,
-+	.init_swfw_sync		= &ixgbe_init_swfw_sync_X540,
- 	.setup_fc		= NULL, /* defined later */
+-			if (nexthdr->off != cls->knode.sel->keys[0].off ||
+-			    nexthdr->val != cls->knode.sel->keys[0].val ||
+-			    nexthdr->mask != cls->knode.sel->keys[0].mask)
+-				return -EINVAL;
+-
+-			adapter->jump_tables[link_uhtid] = nexthdr->jump;
++			if (nexthdr[i].off == cls->knode.sel->keys[0].off &&
++			    nexthdr[i].val == cls->knode.sel->keys[0].val &&
++			    nexthdr[i].mask == cls->knode.sel->keys[0].mask) {
++				adapter->jump_tables[link_uhtid] =
++								nexthdr[i].jump;
++				break;
++			}
+ 		}
+ 		return 0;
+ 	}
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_model.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_model.h
+index 74c53ad..60adde5 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_model.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_model.h
+@@ -82,6 +82,12 @@ static struct ixgbe_mat_field ixgbe_tcp_fields[] = {
+ 	{ .val = NULL } /* terminal node */
  };
  
--- 
-2.4.3
++static struct ixgbe_mat_field ixgbe_udp_fields[] = {
++	{.off = 0, .val = ixgbe_mat_prgm_ports,
++	 .type = IXGBE_ATR_FLOW_TYPE_UDPV4},
++	{ .val = NULL } /* terminal node */
++};
++
+ struct ixgbe_nexthdr {
+ 	/* offset, shift, and mask of position to next header */
+ 	unsigned int o;
+@@ -98,6 +104,8 @@ struct ixgbe_nexthdr {
+ static struct ixgbe_nexthdr ixgbe_ipv4_jumps[] = {
+ 	{ .o = 0, .s = 6, .m = 0xf,
+ 	  .off = 8, .val = 0x600, .mask = 0xff00, .jump = ixgbe_tcp_fields},
++	{ .o = 0, .s = 6, .m = 0xf,
++	  .off = 8, .val = 0x1100, .mask = 0xff00, .jump = ixgbe_udp_fields},
+ 	{ .jump = NULL } /* terminal node */
+ };
+ #endif /* _IXGBE_MODEL_H_ */
 
