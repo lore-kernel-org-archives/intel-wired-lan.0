@@ -1,41 +1,60 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Wed, 9 Mar 2016 23:50:20 +0000
-Subject: [Intel-wired-lan] [net PATCH 1/2] e1000: Do not overestimate
- descriptor counts in Tx pre-check
-In-Reply-To: <20160302211601.2124.64160.stgit@localhost.localdomain>
-References: <20160302205129.2124.67042.stgit@localhost.localdomain>
- <20160302211601.2124.64160.stgit@localhost.localdomain>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81EABCD0@ORSMSX101.amr.corp.intel.com>
+From: Allan, Bruce W <bruce.w.allan@intel.com>
+Date: Wed, 9 Mar 2016 23:51:38 +0000
+Subject: [Intel-wired-lan] [PATCH 4/6] fm10k: update
+	driver	summary	and	reduce code duplication
+In-Reply-To: <804857E1F29AAC47BF68C404FC60A18490D70BA6@ORSMSX104.amr.corp.intel.com>
+References: <1455144351-14758-1-git-send-email-jacob.e.keller@intel.com>
+ <1455144351-14758-4-git-send-email-jacob.e.keller@intel.com>
+ <EF50CC0C76A53A44BAD798C58E0A157E2734A972@ORSMSX103.amr.corp.intel.com>
+ <804857E1F29AAC47BF68C404FC60A18490D70BA6@ORSMSX104.amr.corp.intel.com>
+Message-ID: <804857E1F29AAC47BF68C404FC60A18490D8B06D@ORSMSX105.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: netdev-owner at vger.kernel.org [mailto:netdev-
-> owner at vger.kernel.org] On Behalf Of Alexander Duyck
-> Sent: Wednesday, March 2, 2016 1:16 PM
-> To: netdev at vger.kernel.org; jogreene at redhat.com; intel-wired-
-> lan at lists.osuosl.org; Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>;
-> sassmann at redhat.com
-> Subject: [net PATCH 1/2] e1000: Do not overestimate descriptor counts in Tx
-> pre-check
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Allan, Bruce W
+> Sent: Thursday, February 25, 2016 1:46 PM
+> To: Singh, Krishneil K <krishneil.k.singh@intel.com>; Keller, Jacob E
+> <jacob.e.keller@intel.com>; Intel Wired LAN <intel-wired-
+> lan at lists.osuosl.org>
+> Subject: Re: [Intel-wired-lan] [PATCH 4/6] fm10k: update driver summary
+> and reduce code duplication
 > 
-> The current code path is capable of grossly overestimating the number of
-> descriptors needed to transmit a new frame.  This specifically occurs if
-> the skb contains a number of 4K pages.  The issue is that the logic for
-> determining the descriptors needed is ((S) >> (X)) + 1.  When X is 12 it
-> means that we were indicating that we required 2 descriptors for each 4K
-> page when we only needed one.
+> > -----Original Message-----
+> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org]
+> On
+> > Behalf Of Singh, Krishneil K
+> > Sent: Thursday, February 25, 2016 12:30 PM
+> > To: Keller, Jacob E; Intel Wired LAN
+> > Subject: Re: [Intel-wired-lan] [PATCH 4/6] fm10k: update driver summary
+> > and reduce code duplication
+> >
+> > -----Original Message-----
+> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org]
+> On
+> > Behalf Of Jacob Keller
+> > Sent: Wednesday, February 10, 2016 2:46 PM
+> > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+> > Subject: [Intel-wired-lan] [PATCH 4/6] fm10k: update driver summary and
+> > reduce code duplication
+> >
+> > Use DRV_SUMMARY, similar to DRV_VERSION so that we don't have to
+> > duplicate the driver summary. Also update summary to more accurately
+> > describe the driver.
+> >
+> > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> > ---
+> > Tested-by: Krishneil Singh <Krishneil.k.singh@intel.com>
 > 
-> This change corrects this by instead adding (1 << (X)) - 1 to the S value
-> instead of adding 1 after the fact.  This way we get an accurate descriptor
-> needed count as we are essentially doing a DIV_ROUNDUP().
-> 
-> Reported-by: Ivan Suzdal <isuzdal@mirantis.com>
-> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
-> ---
->  drivers/net/ethernet/intel/e1000/e1000_main.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> Please hold off on submitting this patch to netdev...the driver summary
+> might not be
+> correct based on recent events.
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+The driver summary/module description should not be changed to what is in this
+patch.  Expect a v2 from Jake.
+
+Bruce.
