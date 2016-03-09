@@ -1,42 +1,41 @@
-From: John Fastabend <john.fastabend@gmail.com>
-Date: Wed, 9 Mar 2016 15:36:20 -0800
-Subject: [Intel-wired-lan] [PATCH] [net-next] net: ixgbe: Extend cls_u32
- offload to support UDP headers.
-In-Reply-To: <20160309233215.32377.54007.stgit@sdncamp.jf.intel.com>
-References: <20160309233215.32377.54007.stgit@sdncamp.jf.intel.com>
-Message-ID: <56E0B374.4050507@gmail.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Wed, 9 Mar 2016 23:50:20 +0000
+Subject: [Intel-wired-lan] [net PATCH 1/2] e1000: Do not overestimate
+ descriptor counts in Tx pre-check
+In-Reply-To: <20160302211601.2124.64160.stgit@localhost.localdomain>
+References: <20160302205129.2124.67042.stgit@localhost.localdomain>
+ <20160302211601.2124.64160.stgit@localhost.localdomain>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81EABCD0@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 16-03-09 03:32 PM, Amritha Nambiar wrote:
-> Added support to match on UDP fields in the transport layer.
-> Extended core logic to support multiple headers.
+> From: netdev-owner at vger.kernel.org [mailto:netdev-
+> owner at vger.kernel.org] On Behalf Of Alexander Duyck
+> Sent: Wednesday, March 2, 2016 1:16 PM
+> To: netdev at vger.kernel.org; jogreene at redhat.com; intel-wired-
+> lan at lists.osuosl.org; Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>;
+> sassmann at redhat.com
+> Subject: [net PATCH 1/2] e1000: Do not overestimate descriptor counts in Tx
+> pre-check
 > 
-> Verified with the following filters :
+> The current code path is capable of grossly overestimating the number of
+> descriptors needed to transmit a new frame.  This specifically occurs if
+> the skb contains a number of 4K pages.  The issue is that the logic for
+> determining the descriptors needed is ((S) >> (X)) + 1.  When X is 12 it
+> means that we were indicating that we required 2 descriptors for each 4K
+> page when we only needed one.
 > 
-> # tc qdisc add dev enp2s0f0 ingress
-> # tc filter add dev enp2s0f0 parent ffff: protocol ip prio 99 \
-> 	handle 1: u32 divisor 1
-> # tc filter add dev enp2s0f0 protocol ip parent ffff: prio 99 \
-> 	u32 ht 800: order 1 link 1: \
-> 	offset at 0 mask 0f00 shift 6 plus 0 eat match ip protocol 6 ff
-> # tc filter add dev enp2s0f0 parent ffff: protocol ip \
-> 	u32 ht 1: order 2 \
-> 	match tcp src 1024 ffff match tcp dst 23 ffff action drop
-> # tc filter add dev enp2s0f0 parent ffff: protocol ip prio 99 \
-> 	handle 2: u32 divisor 1
-> # tc filter add dev enp2s0f0 protocol ip parent ffff: prio 99 \
-> 	u32 ht 800: order 3 link 2: \
-> 	offset at 0 mask 0f00 shift 6 plus 0 eat match ip protocol 17 ff
-> # tc filter add dev enp2s0f0 parent ffff: protocol ip \
-> 	u32 ht 2: order 4 \
-> 	match udp src 1025 ffff match udp dst 24 ffff action drop
+> This change corrects this by instead adding (1 << (X)) - 1 to the S value
+> instead of adding 1 after the fact.  This way we get an accurate descriptor
+> needed count as we are essentially doing a DIV_ROUNDUP().
 > 
-> Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
+> Reported-by: Ivan Suzdal <isuzdal@mirantis.com>
+> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 > ---
+>  drivers/net/ethernet/intel/e1000/e1000_main.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Acked-by: John Fastabend <john.r.fastabend@intel.com>
-
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
