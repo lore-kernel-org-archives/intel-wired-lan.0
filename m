@@ -1,41 +1,40 @@
 From: ajdayana <avinash.dayanand@intel.com>
-Date: Thu, 10 Mar 2016 14:59:38 -0800
-Subject: [Intel-wired-lan] [next PATCH S30 v3 00/13] i40e/i40evf updates
-Message-ID: <1457650791-100229-1-git-send-email-avinash.dayanand@intel.com>
+Date: Thu, 10 Mar 2016 14:59:40 -0800
+Subject: [Intel-wired-lan] [next PATCH S30 v3 02/13] i40e/i40evf: Remove
+	I40E_MAX_USER_PRIORITY define
+In-Reply-To: <1457650791-100229-1-git-send-email-avinash.dayanand@intel.com>
+References: <1457650791-100229-1-git-send-email-avinash.dayanand@intel.com>
+Message-ID: <1457650791-100229-3-git-send-email-avinash.dayanand@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Avinash Dayanand <avinash.dayanand@intel.com>
+From: Catherine Sullivan <catherine.sullivan@intel.com>
 
-Catherine Sullivan has removed I40E_MAX_USER_PRIORITY define.
+This patch removes the duplicate definition of I40E_MAX_USER_PRIORITY
+in i40e.h that is not needed.
 
-Jesse Brandeburg has fixed up the return code and added code
-to fix casting in transmit code.
+Testing Hints: Make sure everything compiles.
 
-Kevin Scott has added code to save off VSI resource count when updating VSI.
+Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e.h | 1 -
+ 1 file changed, 1 deletion(-)
 
-Mitch Williams has added code to notify VFs of all resets.
-Added code to prevent double resets. Adds additional check for reset.
-Changed the comment to reflect correct function name.
-
-Shannon Nelson has added code to remove msix only if created.
-Added code to assure that adminq is alive in debug mode.
-Added code to remove timer and task only if created.
-Added code to change unknown event error msg to ignore message.
-
- drivers/net/ethernet/intel/i40e/i40e.h             |  1 -
- drivers/net/ethernet/intel/i40e/i40e_common.c      | 12 ++++++---
- drivers/net/ethernet/intel/i40e/i40e_main.c        | 31 +++++++++++-----------
- drivers/net/ethernet/intel/i40e/i40e_txrx.c        |  5 ++--
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 13 +++++----
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c      |  5 ++--
- drivers/net/ethernet/intel/i40evf/i40e_type.h      | 16 +++++++++++
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  6 +++--
- 8 files changed, 59 insertions(+), 30 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 774a72a..fff184a 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -242,7 +242,6 @@ struct i40e_fdir_filter {
+ #define I40E_DCB_PRIO_TYPE_STRICT	0
+ #define I40E_DCB_PRIO_TYPE_ETS		1
+ #define I40E_DCB_STRICT_PRIO_CREDITS	127
+-#define I40E_MAX_USER_PRIORITY	8
+ /* DCB per TC information data structure */
+ struct i40e_tc_info {
+ 	u16	qoffset;	/* Queue offset from base queue */
 -- 
 2.4.3
 
