@@ -1,56 +1,135 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed,  9 Mar 2016 16:36:08 -0800
-Subject: [Intel-wired-lan] [PATCH v2] fm10k: use DRV_SUMMARY to reduce code
-	duplication
-In-Reply-To: <1457570168-30798-1-git-send-email-jacob.e.keller@intel.com>
-References: <1457570168-30798-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1457570168-30798-2-git-send-email-jacob.e.keller@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 10 Mar 2016 09:58:29 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ a56bd6c79072bcf096febe05e5064fea24ac8074 BUILD SUCCESS
+Message-ID: <56e0d4c5.NuPYHcUt//zvC7So%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Use DRV_SUMMARY, similar to DRV_VERSION so that we don't have to
-duplicate the driver summary in multiple places.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+a56bd6c79072bcf096febe05e5064fea24ac8074  net: ixgbe: fix error handling in tc cls_u32 offload routines.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
+elapsed time: 228m
 
-As per the summary this is a complete replacement for 2a7b5dd0e752
-("fm10k: update driver summary and reduce code duplication", 2016-03-09)
-and should thus replace that patch in the queue.
+configs tested: 114
 
-Notes:
-    - v2
-    * Don't change the driver summary
+i386                   randconfig-a0-03080431
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+parisc                        c3000_defconfig
+parisc                         b180_defconfig
+parisc                              defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x010-201610
+x86_64                 randconfig-x018-201610
+x86_64                 randconfig-x011-201610
+x86_64                 randconfig-x012-201610
+x86_64                 randconfig-x019-201610
+x86_64                 randconfig-x013-201610
+x86_64                 randconfig-x014-201610
+x86_64                 randconfig-x016-201610
+x86_64                 randconfig-x015-201610
+x86_64                 randconfig-x017-201610
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+i386                     randconfig-s1-201610
+i386                     randconfig-s0-201610
+x86_64                           allmodconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+um                           x86_64_defconfig
+um                             i386_defconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+avr32                     atstk1006_defconfig
+tile                         tilegx_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                 randconfig-i0-03091236
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-i0-03100316
+i386                   randconfig-i1-03100316
+xtensa                       common_defconfig
+m32r                       m32104ut_defconfig
+xtensa                          iss_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+m32r                     mappi3.smp_defconfig
+powerpc                     kilauea_defconfig
+i386                               tinyconfig
+i386                   randconfig-x013-201610
+i386                   randconfig-x012-201610
+i386                   randconfig-x019-201610
+i386                   randconfig-x015-201610
+i386                   randconfig-x011-201610
+i386                   randconfig-x018-201610
+i386                   randconfig-x010-201610
+i386                   randconfig-x016-201610
+i386                   randconfig-x017-201610
+i386                   randconfig-x014-201610
+i386                   randconfig-n0-03091648
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
+sh                            titan_defconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                                allnoconfig
+x86_64                 randconfig-x001-201610
+x86_64                 randconfig-x000-201610
+x86_64                 randconfig-x007-201610
+x86_64                 randconfig-x005-201610
+x86_64                 randconfig-x006-201610
+x86_64                 randconfig-x004-201610
+x86_64                 randconfig-x009-201610
+x86_64                 randconfig-x008-201610
+x86_64                 randconfig-x003-201610
+x86_64                 randconfig-x002-201610
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-r0-201610
+i386                   randconfig-x000-201610
+i386                   randconfig-x003-201610
+i386                   randconfig-x009-201610
+i386                   randconfig-x004-201610
+i386                   randconfig-x005-201610
+i386                   randconfig-x002-201610
+i386                   randconfig-x006-201610
+i386                   randconfig-x007-201610
+i386                   randconfig-x001-201610
+i386                   randconfig-x008-201610
 
- drivers/net/ethernet/intel/fm10k/fm10k_main.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index 3a81c1451624..7832f9cdf743 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -29,15 +29,15 @@
- #include "fm10k.h"
- 
- #define DRV_VERSION	"0.19.3-k"
-+#define DRV_SUMMARY	"Intel(R) Ethernet Switch Host Interface Driver"
- const char fm10k_driver_version[] = DRV_VERSION;
- char fm10k_driver_name[] = "fm10k";
--static const char fm10k_driver_string[] =
--	"Intel(R) Ethernet Switch Host Interface Driver";
-+static const char fm10k_driver_string[] = DRV_SUMMARY;
- static const char fm10k_copyright[] =
- 	"Copyright (c) 2013 Intel Corporation.";
- 
- MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
--MODULE_DESCRIPTION("Intel(R) Ethernet Switch Host Interface Driver");
-+MODULE_DESCRIPTION(DRV_SUMMARY);
- MODULE_LICENSE("GPL");
- MODULE_VERSION(DRV_VERSION);
- 
--- 
-2.8.0.rc1.177.g5628860
-
+Thanks,
+Fengguang
