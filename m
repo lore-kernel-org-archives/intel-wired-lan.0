@@ -1,133 +1,124 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 10 Mar 2016 16:11:19 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 6bf161f8e77a38b5a1a0c4a1ed585d67e5978de2 BUILD SUCCESS
-Message-ID: <56e12c27.YRUmBVEKeiOIz/Pd%fengguang.wu@intel.com>
+From: Alexander Duyck <aduyck@mirantis.com>
+Date: Thu, 10 Mar 2016 10:01:10 -0800
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Add support for toggling VLAN
+ filtering flag via ethtool
+Message-ID: <20160310175824.12438.85762.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-6bf161f8e77a38b5a1a0c4a1ed585d67e5978de2  ixgbe: Place SWFW semaphore in known valid state at probe
+This change makes it so that we can use the ethtool rx-vlan-filter flag to
+toggle Rx VLAN filtering on and off.  This is basically just an extension
+of the existing VLAN promisc work in that it just adds support for the
+additional ethtool flag.
 
-elapsed time: 188m
+Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+---
 
-configs tested: 112
+Testing-hints: The register changes can be viewed via ethregs or using a
+	       traffic generator that can be configured such that you can
+	       verify the VLAN traffic is filtered when the filter is
+	       enabled and can be received when it is not.
 
-i386                   randconfig-a0-03080431
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-parisc                        c3000_defconfig
-parisc                         b180_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-x86_64                 randconfig-x010-201610
-x86_64                 randconfig-x018-201610
-x86_64                 randconfig-x011-201610
-x86_64                 randconfig-x012-201610
-x86_64                 randconfig-x019-201610
-x86_64                 randconfig-x013-201610
-x86_64                 randconfig-x014-201610
-x86_64                 randconfig-x016-201610
-x86_64                 randconfig-x015-201610
-x86_64                 randconfig-x017-201610
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                     randconfig-s1-201610
-i386                     randconfig-s0-201610
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-i386                             allmodconfig
-mips                                   jz4740
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-x86_64                 randconfig-i0-03091236
-i386                   randconfig-i0-03100316
-i386                   randconfig-i1-03100316
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                               tinyconfig
-i386                   randconfig-x013-201610
-i386                   randconfig-x012-201610
-i386                   randconfig-x019-201610
-i386                   randconfig-x015-201610
-i386                   randconfig-x011-201610
-i386                   randconfig-x018-201610
-i386                   randconfig-x010-201610
-i386                   randconfig-x016-201610
-i386                   randconfig-x017-201610
-i386                   randconfig-x014-201610
-x86_64                                    lkp
-x86_64                                   rhel
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-n0-03091648
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-x86_64                 randconfig-x001-201610
-x86_64                 randconfig-x000-201610
-x86_64                 randconfig-x007-201610
-x86_64                 randconfig-x005-201610
-x86_64                 randconfig-x006-201610
-x86_64                 randconfig-x004-201610
-x86_64                 randconfig-x009-201610
-x86_64                 randconfig-x008-201610
-x86_64                 randconfig-x003-201610
-x86_64                 randconfig-x002-201610
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-i386                     randconfig-r0-201610
-i386                   randconfig-x000-201610
-i386                   randconfig-x003-201610
-i386                   randconfig-x009-201610
-i386                   randconfig-x004-201610
-i386                   randconfig-x005-201610
-i386                   randconfig-x002-201610
-i386                   randconfig-x006-201610
-i386                   randconfig-x007-201610
-i386                   randconfig-x001-201610
-i386                   randconfig-x008-201610
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   27 +++++++++++++------------
+ 1 file changed, 14 insertions(+), 13 deletions(-)
 
-Thanks,
-Fengguang
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 1b490d1c27ce..3c5276f62805 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -4451,6 +4451,7 @@ void ixgbe_set_rx_mode(struct net_device *netdev)
+ 	struct ixgbe_adapter *adapter = netdev_priv(netdev);
+ 	struct ixgbe_hw *hw = &adapter->hw;
+ 	u32 fctrl, vmolr = IXGBE_VMOLR_BAM | IXGBE_VMOLR_AUPE;
++	netdev_features_t features = netdev->features;
+ 	int count;
+ 
+ 	/* Check for Promiscuous and All Multicast modes */
+@@ -4468,14 +4469,13 @@ void ixgbe_set_rx_mode(struct net_device *netdev)
+ 		hw->addr_ctrl.user_set_promisc = true;
+ 		fctrl |= (IXGBE_FCTRL_UPE | IXGBE_FCTRL_MPE);
+ 		vmolr |= IXGBE_VMOLR_MPE;
+-		ixgbe_vlan_promisc_enable(adapter);
++		features &= ~NETIF_F_HW_VLAN_CTAG_FILTER;
+ 	} else {
+ 		if (netdev->flags & IFF_ALLMULTI) {
+ 			fctrl |= IXGBE_FCTRL_MPE;
+ 			vmolr |= IXGBE_VMOLR_MPE;
+ 		}
+ 		hw->addr_ctrl.user_set_promisc = false;
+-		ixgbe_vlan_promisc_disable(adapter);
+ 	}
+ 
+ 	/*
+@@ -4508,7 +4508,7 @@ void ixgbe_set_rx_mode(struct net_device *netdev)
+ 	}
+ 
+ 	/* This is useful for sniffing bad packets. */
+-	if (adapter->netdev->features & NETIF_F_RXALL) {
++	if (features & NETIF_F_RXALL) {
+ 		/* UPE and MPE will be handled by normal PROMISC logic
+ 		 * in e1000e_set_rx_mode */
+ 		fctrl |= (IXGBE_FCTRL_SBP | /* Receive bad packets */
+@@ -4521,10 +4521,15 @@ void ixgbe_set_rx_mode(struct net_device *netdev)
+ 
+ 	IXGBE_WRITE_REG(hw, IXGBE_FCTRL, fctrl);
+ 
+-	if (netdev->features & NETIF_F_HW_VLAN_CTAG_RX)
++	if (features & NETIF_F_HW_VLAN_CTAG_RX)
+ 		ixgbe_vlan_strip_enable(adapter);
+ 	else
+ 		ixgbe_vlan_strip_disable(adapter);
++
++	if (features & NETIF_F_HW_VLAN_CTAG_FILTER)
++		ixgbe_vlan_promisc_disable(adapter);
++	else
++		ixgbe_vlan_promisc_enable(adapter);
+ }
+ 
+ static void ixgbe_napi_enable_all(struct ixgbe_adapter *adapter)
+@@ -8498,11 +8503,6 @@ static int ixgbe_set_features(struct net_device *netdev,
+ 			adapter->flags |= IXGBE_FLAG_FDIR_HASH_CAPABLE;
+ 	}
+ 
+-	if (features & NETIF_F_HW_VLAN_CTAG_RX)
+-		ixgbe_vlan_strip_enable(adapter);
+-	else
+-		ixgbe_vlan_strip_disable(adapter);
+-
+ 	if (changed & NETIF_F_RXALL)
+ 		need_reset = true;
+ 
+@@ -8519,6 +8519,9 @@ static int ixgbe_set_features(struct net_device *netdev,
+ 
+ 	if (need_reset)
+ 		ixgbe_do_reset(netdev);
++	else if (changed & (NETIF_F_HW_VLAN_CTAG_RX |
++			    NETIF_F_HW_VLAN_CTAG_FILTER))
++		ixgbe_set_rx_mode(netdev);
+ 
+ 	return 0;
+ }
+@@ -9190,7 +9193,8 @@ skip_sriov:
+ 			   NETIF_F_HW_CSUM |
+ 			   NETIF_F_SCTP_CRC |
+ 			   NETIF_F_HW_VLAN_CTAG_TX |
+-			   NETIF_F_HW_VLAN_CTAG_RX;
++			   NETIF_F_HW_VLAN_CTAG_RX |
++			   NETIF_F_HW_VLAN_CTAG_FILTER;
+ 
+ 	if (hw->mac.type >= ixgbe_mac_82599EB)
+ 		netdev->features |= NETIF_F_SCTP_CRC;
+@@ -9203,9 +9207,6 @@ skip_sriov:
+ 	if (hw->mac.type >= ixgbe_mac_82599EB)
+ 		netdev->hw_features |= NETIF_F_NTUPLE;
+ 
+-	/* set this bit last since it cannot be part of hw_features */
+-	netdev->features |= NETIF_F_HW_VLAN_CTAG_FILTER;
+-
+ 	netdev->vlan_features |= NETIF_F_SG |
+ 				 NETIF_F_TSO |
+ 				 NETIF_F_TSO6 |
+
