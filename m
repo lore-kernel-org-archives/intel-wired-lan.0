@@ -1,54 +1,46 @@
 From: ajdayana <avinash.dayanand@intel.com>
-Date: Thu, 10 Mar 2016 14:59:51 -0800
-Subject: [Intel-wired-lan] [next PATCH S30 v3 13/13] i40e/i40evf: Bump patch
-	from 1.4.25 to 1.5.1
+Date: Thu, 10 Mar 2016 14:59:43 -0800
+Subject: [Intel-wired-lan] [next PATCH S30 v3 05/13] i40e: Remove msix only
+	if created
 In-Reply-To: <1457650791-100229-1-git-send-email-avinash.dayanand@intel.com>
 References: <1457650791-100229-1-git-send-email-avinash.dayanand@intel.com>
-Message-ID: <1457650791-100229-14-git-send-email-avinash.dayanand@intel.com>
+Message-ID: <1457650791-100229-6-git-send-email-avinash.dayanand@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Catherine Sullivan <catherine.sullivan@intel.com>
+From: Shannon Nelson <shannon.nelson@intel.com>
 
-Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
+When cleaning up the interrupt handling, clean up the irqs only if
+we actually got them set up.  There are a couple of error recovery
+paths that were violating this and causing the kernel a bit of
+indigestion.
+
+Testing Hints:
+Inject an error om the i40e_probe() that puts the driver into the
+debug mode, then remove the driver.  Often this causes a NULL pointer
+warning from the i40e_remove trace.
+
+Reviewed-by: Williams, Mitch A <mitch.a.williams@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c     | 4 ++--
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 20c03a8..39b0009 100644
+index 59e911f..260abd8 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -45,8 +45,8 @@ static const char i40e_driver_string[] =
- #define DRV_KERN "-k"
+@@ -4164,7 +4164,7 @@ static void i40e_clear_interrupt_scheme(struct i40e_pf *pf)
+ 	int i;
  
- #define DRV_VERSION_MAJOR 1
--#define DRV_VERSION_MINOR 4
--#define DRV_VERSION_BUILD 25
-+#define DRV_VERSION_MINOR 5
-+#define DRV_VERSION_BUILD 1
- #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
- 	     __stringify(DRV_VERSION_MINOR) "." \
- 	     __stringify(DRV_VERSION_BUILD)    DRV_KERN
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index d783c1b..e397368 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -37,8 +37,8 @@ static const char i40evf_driver_string[] =
- #define DRV_KERN "-k"
- 
- #define DRV_VERSION_MAJOR 1
--#define DRV_VERSION_MINOR 4
--#define DRV_VERSION_BUILD 15
-+#define DRV_VERSION_MINOR 5
-+#define DRV_VERSION_BUILD 1
- #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
- 	     __stringify(DRV_VERSION_MINOR) "." \
- 	     __stringify(DRV_VERSION_BUILD) \
+ 	i40e_stop_misc_vector(pf);
+-	if (pf->flags & I40E_FLAG_MSIX_ENABLED) {
++	if (pf->flags & I40E_FLAG_MSIX_ENABLED && pf->msix_entries) {
+ 		synchronize_irq(pf->msix_entries[0].vector);
+ 		free_irq(pf->msix_entries[0].vector, pf);
+ 	}
 -- 
 2.4.3
 
