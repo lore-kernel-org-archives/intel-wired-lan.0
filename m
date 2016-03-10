@@ -1,73 +1,68 @@
 From: ajdayana <avinash.dayanand@intel.com>
-Date: Thu, 10 Mar 2016 14:59:44 -0800
-Subject: [Intel-wired-lan] [next PATCH S30 v3 06/13] i40e: Assure that
-	adminq is alive in debug mode
+Date: Thu, 10 Mar 2016 14:59:47 -0800
+Subject: [Intel-wired-lan] [next PATCH S30 v3 09/13] i40e: Added code to
+	prevent double resets
 In-Reply-To: <1457650791-100229-1-git-send-email-avinash.dayanand@intel.com>
 References: <1457650791-100229-1-git-send-email-avinash.dayanand@intel.com>
-Message-ID: <1457650791-100229-7-git-send-email-avinash.dayanand@intel.com>
+Message-ID: <1457650791-100229-10-git-send-email-avinash.dayanand@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Shannon Nelson <shannon.nelson@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-When dropping into debug mode in a failed probe, make sure that
-the AdminQ is left alive for possible hand debug of driver and
-firmware states.
+Clear the VFLR bit after reset processing, instead of before. This
+prevents double resets on VF init.
 
-Move the mutex_init calls earlier in probe so that if init fails,
-the admin queue interface is still available for debugging purposes.
+Testing Hints: Should be no functional change but a large number
+of VFs will initialize more quickly. Mostly look for no
+loss of functionality.
 
-Testing Hints:
-Inject an error into the i40e_probe logic that puts the driver
-into debug mode and try some debugfs commands that query the
-firmware, such as "dump switch".
-
-Signed-off-by: Nelson, Shannon <shannon.nelson@intel.com>
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 260abd8..5d2dba2 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -10744,6 +10744,12 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	hw->bus.func = PCI_FUNC(pdev->devfn);
- 	pf->instance = pfs_found;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index acd2693..6a6fc28 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -787,9 +787,9 @@ void i40e_reset_vf(struct i40e_vf *vf, bool flr)
+ {
+ 	struct i40e_pf *pf = vf->pf;
+ 	struct i40e_hw *hw = &pf->hw;
++	u32 reg, reg_idx, bit_idx;
+ 	bool rsd = false;
+ 	int i;
+-	u32 reg;
  
-+	/* set up the locks for the AQ, do this only once in probe
-+	 * and destroy them only once in remove
-+	 */
-+	mutex_init(&hw->aq.asq_mutex);
-+	mutex_init(&hw->aq.arq_mutex);
+ 	if (test_and_set_bit(__I40E_VF_DISABLE, &pf->state))
+ 		return;
+@@ -856,6 +856,11 @@ complete_reset:
+ 	}
+ 	/* tell the VF the reset is done */
+ 	wr32(hw, I40E_VFGEN_RSTAT1(vf->vf_id), I40E_VFR_VFACTIVE);
 +
- 	if (debug != -1) {
- 		pf->msg_enable = pf->hw.debug_mask;
- 		pf->msg_enable = debug;
-@@ -10789,12 +10795,6 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	/* set up a default setting for link flow control */
- 	pf->hw.fc.requested_mode = I40E_FC_NONE;
- 
--	/* set up the locks for the AQ, do this only once in probe
--	 * and destroy them only once in remove
--	 */
--	mutex_init(&hw->aq.asq_mutex);
--	mutex_init(&hw->aq.arq_mutex);
++	/* clear the VFLR bit in GLGEN_VFLRSTAT */
++	reg_idx = (hw->func_caps.vf_base_id + vf->vf_id) / 32;
++	bit_idx = (hw->func_caps.vf_base_id + vf->vf_id) % 32;
++	wr32(hw, I40E_GLGEN_VFLRSTAT(reg_idx), BIT(bit_idx));
+ 	i40e_flush(hw);
+ 	clear_bit(__I40E_VF_DISABLE, &pf->state);
+ }
+@@ -2056,9 +2061,7 @@ int i40e_vc_process_vflr_event(struct i40e_pf *pf)
+ 		vf = &pf->vf[vf_id];
+ 		reg = rd32(hw, I40E_GLGEN_VFLRSTAT(reg_idx));
+ 		if (reg & BIT(bit_idx)) {
+-			/* clear the bit in GLGEN_VFLRSTAT */
+-			wr32(hw, I40E_GLGEN_VFLRSTAT(reg_idx), BIT(bit_idx));
 -
- 	err = i40e_init_adminq(hw);
- 	if (err) {
- 		if (err == I40E_ERR_FIRMWARE_API_VERSION)
-@@ -11171,7 +11171,6 @@ err_init_lan_hmc:
- 	kfree(pf->qp_pile);
- err_sw_init:
- err_adminq_setup:
--	(void)i40e_shutdown_adminq(hw);
- err_pf_reset:
- 	iounmap(hw->hw_addr);
- err_ioremap:
++			/* i40e_reset_vf will clear the bit in GLGEN_VFLRSTAT */
+ 			if (!test_bit(__I40E_DOWN, &pf->state))
+ 				i40e_reset_vf(vf, true);
+ 		}
 -- 
 2.4.3
 
