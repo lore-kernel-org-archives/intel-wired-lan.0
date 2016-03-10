@@ -1,80 +1,40 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Thu, 10 Mar 2016 00:19:45 +0000
-Subject: [Intel-wired-lan] [PATCH 4/6] fm10k: update driver	summary	and
- reduce code duplication
-In-Reply-To: <804857E1F29AAC47BF68C404FC60A18490D8B06D@ORSMSX105.amr.corp.intel.com>
-References: <1455144351-14758-1-git-send-email-jacob.e.keller@intel.com>
- <1455144351-14758-4-git-send-email-jacob.e.keller@intel.com>
- <EF50CC0C76A53A44BAD798C58E0A157E2734A972@ORSMSX103.amr.corp.intel.com>
- <804857E1F29AAC47BF68C404FC60A18490D70BA6@ORSMSX104.amr.corp.intel.com>
- <804857E1F29AAC47BF68C404FC60A18490D8B06D@ORSMSX105.amr.corp.intel.com>
-Message-ID: <1457569185.5545.7.camel@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Wed,  9 Mar 2016 16:36:07 -0800
+Subject: [Intel-wired-lan] [PATCH v2] fm10k:update driver summary and reduce
+	code duplication
+Message-ID: <1457570168-30798-1-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2016-03-09 at 23:51 +0000, Allan, Bruce W wrote:
-> > 
-> > -----Original Message-----
-> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.
-> > org] On
-> > Behalf Of Allan, Bruce W
-> > Sent: Thursday, February 25, 2016 1:46 PM
-> > To: Singh, Krishneil K <krishneil.k.singh@intel.com>; Keller, Jacob
-> > E
-> > <jacob.e.keller@intel.com>; Intel Wired LAN <intel-wired-
-> > lan at lists.osuosl.org>
-> > Subject: Re: [Intel-wired-lan] [PATCH 4/6] fm10k: update driver
-> > summary
-> > and reduce code duplication
-> > 
-> > > 
-> > > -----Original Message-----
-> > > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuos
-> > > l.org]
-> > On
-> > > 
-> > > Behalf Of Singh, Krishneil K
-> > > Sent: Thursday, February 25, 2016 12:30 PM
-> > > To: Keller, Jacob E; Intel Wired LAN
-> > > Subject: Re: [Intel-wired-lan] [PATCH 4/6] fm10k: update driver
-> > > summary
-> > > and reduce code duplication
-> > > 
-> > > -----Original Message-----
-> > > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuos
-> > > l.org]
-> > On
-> > > 
-> > > Behalf Of Jacob Keller
-> > > Sent: Wednesday, February 10, 2016 2:46 PM
-> > > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> > > Subject: [Intel-wired-lan] [PATCH 4/6] fm10k: update driver
-> > > summary and
-> > > reduce code duplication
-> > > 
-> > > Use DRV_SUMMARY, similar to DRV_VERSION so that we don't have to
-> > > duplicate the driver summary. Also update summary to more
-> > > accurately
-> > > describe the driver.
-> > > 
-> > > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> > > ---
-> > > Tested-by: Krishneil Singh <Krishneil.k.singh@intel.com>
-> > Please hold off on submitting this patch to netdev...the driver
-> > summary
-> > might not be
-> > correct based on recent events.
-> The driver summary/module description should not be changed to what
-> is in this
-> patch.??Expect a v2 from Jake.
-> 
-> Bruce.
+The following patch is a complete replacement for 2a7b5dd0e752 ("fm10k:
+update driver summary and reduce code duplication", 2016-03-09) and the
+old version above should be dropped from the queue before applying this
+one. For reviewers convenience I have shown an interdiff of the two
+patches below.
 
-Isn't there a replacement in the queue already? I'll rework this if so,
-but I was pretty sure I already did.
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+index c87613f1c7be..7832f9cdf743 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+@@ -29,7 +29,7 @@
+ #include "fm10k.h"
+ 
+ #define DRV_VERSION	"0.19.3-k"
+-#define DRV_SUMMARY	"Intel(R) Ethernet Multi-host Controller Driver"
++#define DRV_SUMMARY	"Intel(R) Ethernet Switch Host Interface Driver"
+ const char fm10k_driver_version[] = DRV_VERSION;
+ char fm10k_driver_name[] = "fm10k";
+ static const char fm10k_driver_string[] = DRV_SUMMARY;
 
-Thanks,
-Jake
+Jacob Keller (1):
+  fm10k: use DRV_SUMMARY to reduce code duplication
+
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+-- 
+2.8.0.rc1.177.g5628860
+
