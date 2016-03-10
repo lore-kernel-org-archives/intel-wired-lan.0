@@ -1,44 +1,80 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Wed, 9 Mar 2016 23:51:47 +0000
-Subject: [Intel-wired-lan] [net PATCH 2/2] e1000: Double Tx
-	descriptors	needed check for 82544
-In-Reply-To: <20160302211608.2124.80148.stgit@localhost.localdomain>
-References: <20160302205129.2124.67042.stgit@localhost.localdomain>
- <20160302211608.2124.80148.stgit@localhost.localdomain>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81EABCE4@ORSMSX101.amr.corp.intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Thu, 10 Mar 2016 00:19:45 +0000
+Subject: [Intel-wired-lan] [PATCH 4/6] fm10k: update driver	summary	and
+ reduce code duplication
+In-Reply-To: <804857E1F29AAC47BF68C404FC60A18490D8B06D@ORSMSX105.amr.corp.intel.com>
+References: <1455144351-14758-1-git-send-email-jacob.e.keller@intel.com>
+ <1455144351-14758-4-git-send-email-jacob.e.keller@intel.com>
+ <EF50CC0C76A53A44BAD798C58E0A157E2734A972@ORSMSX103.amr.corp.intel.com>
+ <804857E1F29AAC47BF68C404FC60A18490D70BA6@ORSMSX104.amr.corp.intel.com>
+ <804857E1F29AAC47BF68C404FC60A18490D8B06D@ORSMSX105.amr.corp.intel.com>
+Message-ID: <1457569185.5545.7.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Alexander Duyck
-> Sent: Wednesday, March 2, 2016 1:16 PM
-> To: netdev at vger.kernel.org; jogreene at redhat.com; intel-wired-
-> lan at lists.osuosl.org; Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>;
-> sassmann at redhat.com
-> Subject: [Intel-wired-lan] [net PATCH 2/2] e1000: Double Tx descriptors
-> needed check for 82544
+On Wed, 2016-03-09 at 23:51 +0000, Allan, Bruce W wrote:
+> > 
+> > -----Original Message-----
+> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.
+> > org] On
+> > Behalf Of Allan, Bruce W
+> > Sent: Thursday, February 25, 2016 1:46 PM
+> > To: Singh, Krishneil K <krishneil.k.singh@intel.com>; Keller, Jacob
+> > E
+> > <jacob.e.keller@intel.com>; Intel Wired LAN <intel-wired-
+> > lan at lists.osuosl.org>
+> > Subject: Re: [Intel-wired-lan] [PATCH 4/6] fm10k: update driver
+> > summary
+> > and reduce code duplication
+> > 
+> > > 
+> > > -----Original Message-----
+> > > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuos
+> > > l.org]
+> > On
+> > > 
+> > > Behalf Of Singh, Krishneil K
+> > > Sent: Thursday, February 25, 2016 12:30 PM
+> > > To: Keller, Jacob E; Intel Wired LAN
+> > > Subject: Re: [Intel-wired-lan] [PATCH 4/6] fm10k: update driver
+> > > summary
+> > > and reduce code duplication
+> > > 
+> > > -----Original Message-----
+> > > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuos
+> > > l.org]
+> > On
+> > > 
+> > > Behalf Of Jacob Keller
+> > > Sent: Wednesday, February 10, 2016 2:46 PM
+> > > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+> > > Subject: [Intel-wired-lan] [PATCH 4/6] fm10k: update driver
+> > > summary and
+> > > reduce code duplication
+> > > 
+> > > Use DRV_SUMMARY, similar to DRV_VERSION so that we don't have to
+> > > duplicate the driver summary. Also update summary to more
+> > > accurately
+> > > describe the driver.
+> > > 
+> > > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> > > ---
+> > > Tested-by: Krishneil Singh <Krishneil.k.singh@intel.com>
+> > Please hold off on submitting this patch to netdev...the driver
+> > summary
+> > might not be
+> > correct based on recent events.
+> The driver summary/module description should not be changed to what
+> is in this
+> patch.??Expect a v2 from Jake.
 > 
-> The 82544 has code that adds one additional descriptor per data buffer.
-> However we weren't taking that into acount when determining the
-> descriptors
-> needed for the next transmit at the end of the xmit_frame path.
-> 
-> This change takes that into account by doubling the number of descriptors
-> needed for the 82544 so that we can avoid a potential issue where we could
-> hang the Tx ring by loading frames with xmit_more enabled and then
-> stopping
-> the ring without writing the tail.
-> 
-> In addition it adds a few more descriptors to account for some additional
-> workarounds that have been added over time.
-> 
-> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
-> ---
->  drivers/net/ethernet/intel/e1000/e1000_main.c |   19
-> ++++++++++++++++++-
->  1 file changed, 18 insertions(+), 1 deletion(-)
+> Bruce.
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Isn't there a replacement in the queue already? I'll rework this if so,
+but I was pretty sure I already did.
+
+Thanks,
+Jake
