@@ -1,32 +1,57 @@
-From: Allan, Bruce W <bruce.w.allan@intel.com>
-Date: Fri, 11 Mar 2016 00:01:15 +0000
-Subject: [Intel-wired-lan] [next-queue PATCH v3] fm10k: Avoid crashing
- the	kernel
-In-Reply-To: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F99CCBD@ORSMSX104.amr.corp.intel.com>
-References: <20160309202557.137597.51678.stgit@bwallan-cwp1.jf.intel.com>
- <804857E1F29AAC47BF68C404FC60A18490D8AC61@ORSMSX105.amr.corp.intel.com>
- <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F99CCBD@ORSMSX104.amr.corp.intel.com>
-Message-ID: <804857E1F29AAC47BF68C404FC60A18490D8C86B@ORSMSX105.amr.corp.intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Fri, 11 Mar 2016 09:52:31 -0800
+Subject: [Intel-wired-lan] [PATCH v2] rework of "fm10k: prevent RCU issues
+	during AER events
+Message-ID: <1457718752-8678-1-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Bowers, AndrewX
-> Sent: Thursday, March 10, 2016 10:35 AM
-> To: Allan, Bruce W <bruce.w.allan@intel.com>; intel-wired-
-> lan at lists.osuosl.org
-> Subject: RE: [Intel-wired-lan] [next-queue PATCH v3] fm10k: Avoid crashing
-> the kernel
-> 
-> 
-> No idea why this is the case, but with this patch applied I can't pass traffic
-> over i40e devices. Revert the patch and I can pass traffic just fine.
-> 
-> I don't know why it'd affect it though, I don't even have any fm10k devices
-> in my system (I do have an ixgbe card)
+This is a rework of the original patch 308f3d5aad0e ("fm10k: prevent RCU
+issues during AER events", 2016-03-09), and the following email is a
+direct rework which replaces it in the queue. Thus, the previously
+mentioned version should be dropped from the queue.
 
-Issue with i40e cannot be related to this patch...there must be another explanation.
+Patch interdiff for review:
+
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index a10b98025c69..7dc8292546e1 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -2353,11 +2353,13 @@ static void fm10k_io_resume(struct pci_dev *pdev)
+ 	/* reset statistics starting values */
+ 	hw->mac.ops.rebind_hw_stats(hw, &interface->stats);
+ 
++	rtnl_lock();
++
+ 	err = fm10k_init_queueing_scheme(interface);
+ 	if (err) {
+ 		dev_err(&interface->pdev->dev,
+ 			"init_queueing_scheme failed: %d\n", err);
+-		return;
++		goto unlock;
+ 	}
+ 
+ 	/* reassociate interrupts */
+@@ -2374,6 +2376,9 @@ static void fm10k_io_resume(struct pci_dev *pdev)
+ 
+ 	if (!err)
+ 		netif_device_attach(netdev);
++
++unlock:
++	rtnl_unlock();
+ }
+ 
+ static const struct pci_error_handlers fm10k_err_handler = {
+
+Jacob Keller (1):
+  fm10k: prevent RCU issues during AER events
+
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+-- 
+2.8.0.rc1.177.g5628860
 
