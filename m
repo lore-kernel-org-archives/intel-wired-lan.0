@@ -1,32 +1,35 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Sat, 12 Mar 2016 00:44:42 +0000
-Subject: [Intel-wired-lan] [PATCH 5/5] igb: Add support for bulk Tx
- cleanup & cleanup boolean logic
-In-Reply-To: <20160307173021.5682.83995.stgit@localhost.localdomain>
-References: <20160307172722.5682.38580.stgit@localhost.localdomain>
- <20160307173021.5682.83995.stgit@localhost.localdomain>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81EACFFE@ORSMSX101.amr.corp.intel.com>
+From: Mark D Rustad <mark.d.rustad@intel.com>
+Date: Fri, 11 Mar 2016 17:07:23 -0800
+Subject: [Intel-wired-lan] [PATCH 0/5] ixgbe: An assortment of fixes and
+	cleanups
+Message-ID: <20160312010538.130154.49237.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Alexander Duyck
-> Sent: Monday, March 7, 2016 9:30 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 5/5] igb: Add support for bulk Tx cleanup &
-> cleanup boolean logic
-> 
-> This patch enables bulk free in Tx cleanup for igb and cleans up the
-> boolean logic in the polling routines for igb in the hopes of avoiding
-> any mix-ups similar to what occurred with i40e and i40evf.
-> 
-> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
-> ---
->  drivers/net/ethernet/intel/igb/igb_main.c |   12 +++++++-----
->  1 file changed, 7 insertions(+), 5 deletions(-)
-> 
+The following patches fix a length checking problem, correct the
+failure to take a needed semaphore in all uses of firmware commands,
+and do some other cleanups.
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+
+---
+
+Mark D Rustad (5):
+      ixgbe: Delete some unused register definitions
+      ixgbe: Change the lan_id and func fields to a u8 to avoid casts
+      ixgbe: Correct length check for round up
+      ixgbe: Clean up interface for firmware commands
+      ixgbe: Take manageability semaphore for firmware commands
+
+
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |   73 +++++++++++++----------
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.h |    4 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h   |   12 +---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c   |   15 ++---
+ 4 files changed, 52 insertions(+), 52 deletions(-)
+
+-- 
+Mark Rustad, Network Division, Intel Corporation
