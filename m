@@ -1,35 +1,48 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Fri, 11 Mar 2016 17:07:23 -0800
-Subject: [Intel-wired-lan] [PATCH 0/5] ixgbe: An assortment of fixes and
-	cleanups
-Message-ID: <20160312010538.130154.49237.stgit@mdrustad-wks.jf.intel.com>
+Date: Fri, 11 Mar 2016 17:07:28 -0800
+Subject: [Intel-wired-lan] [PATCH 1/5] ixgbe: Delete some unused register
+	definitions
+In-Reply-To: <20160312010538.130154.49237.stgit@mdrustad-wks.jf.intel.com>
+References: <20160312010538.130154.49237.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <20160312010728.130154.58487.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The following patches fix a length checking problem, correct the
-failure to take a needed semaphore in all uses of firmware commands,
-and do some other cleanups.
+I noticed the SRAMREL registers are not referenced for any device,
+so delete the definitions.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
-
 ---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |    8 --------
+ 1 file changed, 8 deletions(-)
 
-Mark D Rustad (5):
-      ixgbe: Delete some unused register definitions
-      ixgbe: Change the lan_id and func fields to a u8 to avoid casts
-      ixgbe: Correct length check for round up
-      ixgbe: Clean up interface for firmware commands
-      ixgbe: Take manageability semaphore for firmware commands
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index bc012ab48475..d02a0a3fa1d8 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -143,13 +143,6 @@
+ #define IXGBE_GRC_X550EM_a	0x15F64
+ #define IXGBE_GRC(_hw)		IXGBE_BY_MAC((_hw), GRC)
+ 
+-#define IXGBE_SRAMREL_8259X	0x10210
+-#define IXGBE_SRAMREL_X540	IXGBE_SRAMREL_8259X
+-#define IXGBE_SRAMREL_X550	IXGBE_SRAMREL_8259X
+-#define IXGBE_SRAMREL_X550EM_x	IXGBE_SRAMREL_8259X
+-#define IXGBE_SRAMREL_X550EM_a	0x15F6C
+-#define IXGBE_SRAMREL(_hw)	IXGBE_BY_MAC((_hw), SRAMREL)
+-
+ /* General Receive Control */
+ #define IXGBE_GRC_MNG  0x00000001 /* Manageability Enable */
+ #define IXGBE_GRC_APME 0x00000002 /* APM enabled in EEPROM */
+@@ -2948,7 +2941,6 @@ union ixgbe_atr_hash_dword {
+ 	IXGBE_CAT(EEC, m),		\
+ 	IXGBE_CAT(FLA, m),		\
+ 	IXGBE_CAT(GRC, m),		\
+-	IXGBE_CAT(SRAMREL, m),		\
+ 	IXGBE_CAT(FACTPS, m),		\
+ 	IXGBE_CAT(SWSM, m),		\
+ 	IXGBE_CAT(SWFW_SYNC, m),	\
 
-
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |   73 +++++++++++++----------
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.h |    4 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h   |   12 +---
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c   |   15 ++---
- 4 files changed, 52 insertions(+), 52 deletions(-)
-
--- 
-Mark Rustad, Network Division, Intel Corporation
