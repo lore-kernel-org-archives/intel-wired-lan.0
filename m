@@ -1,53 +1,133 @@
-From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-Date: Mon, 14 Mar 2016 17:43:33 -0400
-Subject: [Intel-wired-lan] i40e card Tx resets
-Message-ID: <20160314214333.GP5084@oracle.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 15 Mar 2016 06:08:49 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 21e6dd5cb1990535e204d0d300fef8c9f934645e BUILD SUCCESS
+Message-ID: <56e73671.PfUx8PzCS9IfuKle%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+21e6dd5cb1990535e204d0d300fef8c9f934645e  i40e/i40evf: Fix casting in transmit code
 
-Hi,
+elapsed time: 63m
 
-I am trying out some DB stress tests on both i40e and ixgbe. The 
-stress test that I use is rds-stress (http://linux.die.net/man/1/rds-stress),
-and I can list out the entire set of steps and parameters that I
-am using to run this if that info is  interesting.
+configs tested: 112
 
-My test bed is a pair of X5-2 (Haswell) servers, each with a
-Niantic (X540-AT2) card and a Fortville card. The Niantic/fortville
-cards are connected back-to-back, so I essentially have a 10G
-connection and a 40G connection.
+i386                     randconfig-a0-201611
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-x010-201611
+x86_64                 randconfig-x018-201611
+x86_64                 randconfig-x011-201611
+x86_64                 randconfig-x019-201611
+x86_64                 randconfig-x012-201611
+x86_64                 randconfig-x013-201611
+x86_64                 randconfig-x014-201611
+x86_64                 randconfig-x016-201611
+x86_64                 randconfig-x015-201611
+x86_64                 randconfig-x017-201611
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201611
+i386                     randconfig-s1-201611
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                   randconfig-i0-201611
+i386                     randconfig-i0-201611
+i386                     randconfig-i1-201611
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+i386                   randconfig-x013-201611
+i386                   randconfig-x012-201611
+i386                   randconfig-x019-201611
+i386                   randconfig-x015-201611
+i386                   randconfig-x011-201611
+i386                   randconfig-x018-201611
+i386                   randconfig-x010-201611
+i386                   randconfig-x016-201611
+i386                   randconfig-x017-201611
+i386                   randconfig-x014-201611
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201611
+i386                             allmodconfig
+x86_64                                   rhel
+x86_64                 randconfig-x001-201611
+x86_64                 randconfig-x000-201611
+x86_64                 randconfig-x007-201611
+x86_64                 randconfig-x005-201611
+x86_64                 randconfig-x006-201611
+x86_64                 randconfig-x004-201611
+x86_64                 randconfig-x009-201611
+x86_64                 randconfig-x008-201611
+x86_64                 randconfig-x003-201611
+x86_64                 randconfig-x002-201611
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201611
+i386                   randconfig-x000-201611
+i386                   randconfig-x003-201611
+i386                   randconfig-x009-201611
+i386                   randconfig-x004-201611
+i386                   randconfig-x005-201611
+i386                   randconfig-x002-201611
+i386                   randconfig-x006-201611
+i386                   randconfig-x007-201611
+i386                   randconfig-x001-201611
+i386                   randconfig-x008-201611
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
 
-Everything else (kernel, RDS modules, stress test and parameters)
-remaining the same, I get  the expected throughput on the 10G
-connection, but the i40e connection goes through a lot of TX
-errors that result in console messages like this:
-
-  i40e 0000:81:00.0: TX driver issue detected, PF reset issued
-  i40e 0000:81:00.0 eth2: adding 68:05:ca:30:db:30 vid=0
-  i40e 0000:81:00.0: TX driver issue detected, PF reset issued
-  i40e 0000:81:00.0 eth2: VSI_seid 390, Hung TX queue 32, tx_pending: 82, NTC:0xeb, HWB: 0xeb, NTU: 0x13d, TAIL: 0x13d
-  i40e 0000:81:00.0 eth2: VSI_seid 390, Issuing force_wb for TX queue 32, Interrupt Reg
-
-I understand these are "mdd errors", but how can I find out what 
-triggered these errors, any hints?
-
-The other data-point here is that if I disable tso, and fall back
-to gso, there are no tx errors, and throughput matches the 10G 
-connection (for the same set of test parameters).
-
-Please let me know if there is any other info that would help.
-The kernel is a 4.5.0-rc2 kernel. Info for the i40e card is
-
-    # ethtool -i eth3
-    driver: i40e
-    version: 1.4.8-k
-    firmware-version: 5.02 0x80002285 0.0.0
-    bus-info: 0000:81:00.1 
-       :
-
-Thanks in advance,
---Sowmini
+Thanks,
+Fengguang
