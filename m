@@ -1,57 +1,50 @@
-From: Daniel Walker <danielwa@cisco.com>
-Date: Fri, 25 Mar 2016 14:58:46 -0700
-Subject: [Intel-wired-lan] [PATCH-RFC] drivers: net: ethernet: intel:
-	e1000e: fix ethtool autoneg off for fiber
-Message-ID: <1458943126-32258-1-git-send-email-danielwa@cisco.com>
+From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+Date: Mon, 14 Mar 2016 11:32:16 -0400
+Subject: [Intel-wired-lan] [PATCH net-next] ixgbe: Avoid unaligned access in
+ ixgbe_atr() for LLC packets
+Message-ID: <20160314153216.GF5084@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Steve Shih <sshih@cisco.com>
 
-This patch fixes the issues for disabling auto-negotiation and forcing
-speed and duplex settings for the fiber media.
+For LLC based protocols like lldp, stp etc., the ethernet header
+is an 802.3 header with a h_proto that is not 0x800, 0x86dd, or
+even 0x806.  In this world, the skb_network_header() points at
+the DSAP/SSAP/..  and is not likely to be NET_IP_ALIGNed in
+ixgbe_atr().
 
-For fiber media, e1000_get_settings should return ETH_TP_MDI_INVALID for
-eth_tp_mdix_ctrl instead of ETH_TP_MDI_AUTO so subsequent e1000_set_settings
-call would not fail with -EOPNOTSUPP.
+With LLC, drivers are not likely to correctly find IPVERSION,
+or "6", at hdr.ipv4->version, but will instead just needlessly
+trigger an unaligned access. (IPv4/IPv6 over LLC is almost never
+implemented).
 
-e1000_set_spd_dplx should not automatically turn autoneg back on for forced
-1000 Mbps full duplex settings.
+The unaligned access is thus avoidable: bail out quickly after
+examining skb->protocol.
 
-Cc: danielwa at fifo99.com
-Cc: xe-kernel at external.cisco.com
-Signed-off-by: Steve Shih <sshih@cisco.com>
+Signed-off-by: Sowmini Varadhan <sowmini.varadhan@oracle.com>
 ---
- drivers/net/ethernet/intel/e1000e/ethtool.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
-index 6cab1f3..cd03dcd 100644
---- a/drivers/net/ethernet/intel/e1000e/ethtool.c
-+++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
-@@ -201,6 +201,9 @@ static int e1000_get_settings(struct net_device *netdev,
- 	else
- 		ecmd->eth_tp_mdix_ctrl = hw->phy.mdix;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 4d6223d..c3885a8 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -7602,6 +7602,11 @@ static void ixgbe_atr(struct ixgbe_ring *ring,
+ #endif /* CONFIG_IXGBE_VXLAN */
+ 	}
  
-+	if (hw->phy.media_type != e1000_media_type_copper)
-+		ecmd->eth_tp_mdix_ctrl = ETH_TP_MDI_INVALID;
++	if (skb->protocol != htons(ETH_P_IP) &&
++	    skb->protocol != htons(ETH_P_IPV6) &&
++	    skb->protocol != htons(ETH_P_ARP))
++		return;
 +
- 	return 0;
- }
- 
-@@ -236,8 +239,7 @@ static int e1000_set_spd_dplx(struct e1000_adapter *adapter, u32 spd, u8 dplx)
- 		mac->forced_speed_duplex = ADVERTISE_100_FULL;
- 		break;
- 	case SPEED_1000 + DUPLEX_FULL:
--		mac->autoneg = 1;
--		adapter->hw.phy.autoneg_advertised = ADVERTISE_1000_FULL;
-+		mac->forced_speed_duplex = ADVERTISE_1000_FULL;
- 		break;
- 	case SPEED_1000 + DUPLEX_HALF:	/* not supported */
- 	default:
+ 	/* Currently only IPv4/IPv6 with TCP is supported */
+ 	switch (hdr.ipv4->version) {
+ 	case IPVERSION:
 -- 
-2.5.0
+1.7.1
 
