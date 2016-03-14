@@ -1,8 +1,8 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 15 Mar 2016 06:08:49 +0800
+Date: Tue, 15 Mar 2016 07:11:21 +0800
 Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 21e6dd5cb1990535e204d0d300fef8c9f934645e BUILD SUCCESS
-Message-ID: <56e73671.PfUx8PzCS9IfuKle%fengguang.wu@intel.com>
+ d799c447ab9a2e3942b282fd70c1ce17df3a151c BUILD SUCCESS
+Message-ID: <56e74519.2885uQedPGo74dhY%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,11 +10,11 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-21e6dd5cb1990535e204d0d300fef8c9f934645e  i40e/i40evf: Fix casting in transmit code
+d799c447ab9a2e3942b282fd70c1ce17df3a151c  i40e: Change comment to reflect correct function name
 
-elapsed time: 63m
+elapsed time: 54m
 
-configs tested: 112
+configs tested: 120
 
 i386                     randconfig-a0-201611
 x86_64                             acpi-redef
@@ -25,7 +25,9 @@ blackfin                BF533-EZKIT_defconfig
 blackfin            BF561-EZKIT-SMP_defconfig
 blackfin                  TCM-BF537_defconfig
 cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
+arm                        cerfcube_defconfig
+arm                          ks8695_defconfig
+m32r                      mappi.smp_defconfig
 sh                                allnoconfig
 sh                          rsk7269_defconfig
 sh                  sh7785lcr_32bit_defconfig
@@ -52,6 +54,7 @@ parisc                            allnoconfig
 parisc                         b180_defconfig
 parisc                        c3000_defconfig
 parisc                              defconfig
+i386                             allmodconfig
 x86_64                 randconfig-x010-201611
 x86_64                 randconfig-x018-201611
 x86_64                 randconfig-x011-201611
@@ -70,6 +73,7 @@ m68k                          multi_defconfig
 m68k                           sun3_defconfig
 i386                     randconfig-s0-201611
 i386                     randconfig-s1-201611
+x86_64                           allmodconfig
 avr32                      atngw100_defconfig
 avr32                     atstk1006_defconfig
 frv                                 defconfig
@@ -78,13 +82,17 @@ openrisc                    or1ksim_defconfig
 tile                         tilegx_defconfig
 um                             i386_defconfig
 um                           x86_64_defconfig
+i386                               tinyconfig
 x86_64                   randconfig-i0-201611
-i386                     randconfig-i0-201611
-i386                     randconfig-i1-201611
 sparc                               defconfig
 sparc64                           allnoconfig
 sparc64                             defconfig
-x86_64                           allmodconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201611
+i386                     randconfig-i1-201611
+ia64                            sim_defconfig
+mips                              allnoconfig
 i386                   randconfig-x013-201611
 i386                   randconfig-x012-201611
 i386                   randconfig-x019-201611
@@ -95,11 +103,15 @@ i386                   randconfig-x010-201611
 i386                   randconfig-x016-201611
 i386                   randconfig-x017-201611
 i386                   randconfig-x014-201611
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201611
-i386                             allmodconfig
+x86_64                                    lkp
 x86_64                                   rhel
+i386                     randconfig-n0-201611
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+avr32                 atngw100_mrmt_defconfig
+mips                        jmr3927_defconfig
+x86_64                 randconfig-n0-03150638
 x86_64                 randconfig-x001-201611
 x86_64                 randconfig-x000-201611
 x86_64                 randconfig-x007-201611
@@ -110,9 +122,6 @@ x86_64                 randconfig-x009-201611
 x86_64                 randconfig-x008-201611
 x86_64                 randconfig-x003-201611
 x86_64                 randconfig-x002-201611
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
 i386                     randconfig-r0-201611
 i386                   randconfig-x000-201611
 i386                   randconfig-x003-201611
@@ -124,7 +133,6 @@ i386                   randconfig-x006-201611
 i386                   randconfig-x007-201611
 i386                   randconfig-x001-201611
 i386                   randconfig-x008-201611
-mips                              allnoconfig
 mips                      fuloong2e_defconfig
 mips                                   jz4740
 mips                                     txx9
