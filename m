@@ -1,43 +1,53 @@
-From: Rustad, Mark D <mark.d.rustad@intel.com>
-Date: Mon, 14 Mar 2016 21:11:15 +0000
-Subject: [Intel-wired-lan] [PATCH V2 5/5] ixgbe: Take manageability
- semaphore for firmware commands
-In-Reply-To: <20160314180602.8397.1350.stgit@mdrustad-wks.jf.intel.com>
-References: <20160314180316.8397.65394.stgit@mdrustad-wks.jf.intel.com>
- <20160314180602.8397.1350.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <8511E145-FC8F-483B-9ED1-276997F3DB44@intel.com>
+From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+Date: Mon, 14 Mar 2016 17:43:33 -0400
+Subject: [Intel-wired-lan] i40e card Tx resets
+Message-ID: <20160314214333.GP5084@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Mark D Rustad <mark.d.rustad@intel.com> wrote:
 
-> We need to take the manageability semaphore when issuing firmware
-> commands to avoid problems. With this in place, the semaphore is
-> no longer taken in the ixgbe_set_fw_drv_ver_generic function, since
-> it will now always be taken by the ixgbe_host_interface_command
-> function.
->
-> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |   30 +++++++++++++++--------
->  1 file changed, 19 insertions(+), 11 deletions(-)
+Hi,
 
-<snip>
+I am trying out some DB stress tests on both i40e and ixgbe. The 
+stress test that I use is rds-stress (http://linux.die.net/man/1/rds-stress),
+and I can list out the entire set of steps and parameters that I
+am using to run this if that info is  interesting.
 
-I would like this patch considered for -net since it is a spec violation on  
-all X550 devices and can result in NVM checksum errors, bad MAC addresses  
-or other unpredictable behavior. It could also be usefully backported to  
-any version that includes the ixgbe_x550.c file.
+My test bed is a pair of X5-2 (Haswell) servers, each with a
+Niantic (X540-AT2) card and a Fortville card. The Niantic/fortville
+cards are connected back-to-back, so I essentially have a 10G
+connection and a 40G connection.
 
---
-Mark Rustad, Networking Division, Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 841 bytes
-Desc: Message signed with OpenPGP using GPGMail
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160314/ad254f96/attachment.asc>
+Everything else (kernel, RDS modules, stress test and parameters)
+remaining the same, I get  the expected throughput on the 10G
+connection, but the i40e connection goes through a lot of TX
+errors that result in console messages like this:
+
+  i40e 0000:81:00.0: TX driver issue detected, PF reset issued
+  i40e 0000:81:00.0 eth2: adding 68:05:ca:30:db:30 vid=0
+  i40e 0000:81:00.0: TX driver issue detected, PF reset issued
+  i40e 0000:81:00.0 eth2: VSI_seid 390, Hung TX queue 32, tx_pending: 82, NTC:0xeb, HWB: 0xeb, NTU: 0x13d, TAIL: 0x13d
+  i40e 0000:81:00.0 eth2: VSI_seid 390, Issuing force_wb for TX queue 32, Interrupt Reg
+
+I understand these are "mdd errors", but how can I find out what 
+triggered these errors, any hints?
+
+The other data-point here is that if I disable tso, and fall back
+to gso, there are no tx errors, and throughput matches the 10G 
+connection (for the same set of test parameters).
+
+Please let me know if there is any other info that would help.
+The kernel is a 4.5.0-rc2 kernel. Info for the i40e card is
+
+    # ethtool -i eth3
+    driver: i40e
+    version: 1.4.8-k
+    firmware-version: 5.02 0x80002285 0.0.0
+    bus-info: 0000:81:00.1 
+       :
+
+Thanks in advance,
+--Sowmini
