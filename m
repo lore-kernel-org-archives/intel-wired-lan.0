@@ -1,38 +1,141 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 15 Mar 2016 18:37:31 +0000
-Subject: [Intel-wired-lan] [next PATCH S30 v3 07/13] i40e: Remove timer
- and	task only if created
-In-Reply-To: <1457650791-100229-8-git-send-email-avinash.dayanand@intel.com>
-References: <1457650791-100229-1-git-send-email-avinash.dayanand@intel.com>
- <1457650791-100229-8-git-send-email-avinash.dayanand@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F99D40C@ORSMSX104.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 16 Mar 2016 07:27:17 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 017d1bf7b3b1da9e444993b26f7e7f0c7428892e BUILD SUCCESS
+Message-ID: <56e89a55.K2Xtxrw0NDdhVIfV%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of ajdayana
-> Sent: Thursday, March 10, 2016 3:00 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S30 v3 07/13] i40e: Remove timer and
-> task only if created
-> 
-> From: Shannon Nelson <shannon.nelson@intel.com>
-> 
-> In some error scenarios, we may find ourselves trying to remove a non-
-> existent timer or worktask.  This causes the kernel some bit of consternation,
-> so don't do it.
-> 
-> Testing Hints: Inject an error into the i40e_probe before these are created
-> and see if you can get a clean remove.
-> 
-> Signed-off-by: Nelson, Shannon <shannon.nelson@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+017d1bf7b3b1da9e444993b26f7e7f0c7428892e  ixgbe: Delete some unused register definitions
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Driver will remove cleanly in error state
+elapsed time: 57m
+
+configs tested: 120
+
+i386                     randconfig-a0-201611
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x010-201611
+x86_64                 randconfig-x018-201611
+x86_64                 randconfig-x011-201611
+x86_64                 randconfig-x019-201611
+x86_64                 randconfig-x012-201611
+x86_64                 randconfig-x013-201611
+x86_64                 randconfig-x014-201611
+x86_64                 randconfig-x016-201611
+x86_64                 randconfig-x015-201611
+x86_64                 randconfig-x017-201611
+i386                   randconfig-s0-03160305
+i386                   randconfig-s1-03160305
+x86_64                 randconfig-s0-03160649
+x86_64                 randconfig-s1-03160649
+x86_64                 randconfig-s2-03160649
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201611
+i386                   randconfig-b0-03160452
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                     randconfig-i0-201611
+i386                     randconfig-i1-201611
+powerpc                      ep88xc_defconfig
+powerpc                 mpc836x_rdk_defconfig
+x86_64                 randconfig-n0-03160621
+i386                   randconfig-x013-201611
+i386                   randconfig-x012-201611
+i386                   randconfig-x019-201611
+i386                   randconfig-x015-201611
+i386                   randconfig-x011-201611
+i386                   randconfig-x018-201611
+i386                   randconfig-x010-201611
+i386                   randconfig-x016-201611
+i386                   randconfig-x017-201611
+i386                   randconfig-x014-201611
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201611
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+x86_64                 randconfig-x001-201611
+x86_64                 randconfig-x000-201611
+x86_64                 randconfig-x007-201611
+x86_64                 randconfig-x005-201611
+x86_64                 randconfig-x006-201611
+x86_64                 randconfig-x004-201611
+x86_64                 randconfig-x009-201611
+x86_64                 randconfig-x008-201611
+x86_64                 randconfig-x003-201611
+x86_64                 randconfig-x002-201611
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-r0-201611
+i386                   randconfig-x000-201611
+i386                   randconfig-x001-201611
+i386                   randconfig-x002-201611
+i386                   randconfig-x003-201611
+i386                   randconfig-x004-201611
+i386                   randconfig-x005-201611
+i386                   randconfig-x006-201611
+i386                   randconfig-x007-201611
+i386                   randconfig-x008-201611
+i386                   randconfig-x009-201611
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+
+Thanks,
+Fengguang
