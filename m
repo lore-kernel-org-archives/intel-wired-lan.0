@@ -1,95 +1,58 @@
-From: zhuyj <zyjzyj2000@gmail.com>
-Date: Tue, 15 Mar 2016 16:55:52 +0800
+From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+Date: Tue, 15 Mar 2016 06:54:33 -0400
 Subject: [Intel-wired-lan] [E1000-devel] i40e card Tx resets
-In-Reply-To: <56E7A7B6.5030209@gmail.com>
+In-Reply-To: <56E7CE18.9020004@gmail.com>
 References: <20160314214333.GP5084@oracle.com> <56E7A7B6.5030209@gmail.com>
-Message-ID: <56E7CE18.9020004@gmail.com>
+ <56E7CE18.9020004@gmail.com>
+Message-ID: <20160315105433.GC11063@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 03/15/2016 02:12 PM, zhuyj wrote:
-> Hi,
->
-> I have the similar problem. Would you like to make tests with pktgen 
-> tools?
-> Maybe the test result is not related with tso.
+On (03/15/16 16:55), zhuyj wrote:
+> Sorry. I explain this in details.
+> I have an similar problem. At first, I think it is related with tso.
+> Then I made tests with pktgen tools and found that this similar
+> problem still occurred whether
+> tso is enabled or not.
+> 
+> So I suggest to make tests with pktgen tools to exclude tso.
+> 
 
-Sorry. I explain this in details.
-I have an similar problem. At first, I think it is related with tso.
-Then I made tests with pktgen tools and found that this similar problem 
-still occurred whether
-tso is enabled or not.
+I realize that TSO might not be the root cause (Tushar also
+pointed that out) but might just be triggering the issue...
 
-So I suggest to make tests with pktgen tools to exclude tso.
+I dont think we need pktgen at this point- it's quite easy
+to reproduce this on commodity Haswell servers, and by installing
+the rds-stress from the rpm below:
 
-Best Regards!
-Zhu Yanjun
+http://public-yum.oracle.com/repo/OracleLinux/OL6/ofed_UEK/x86_64//getPackageSource/rds-tools-2.0.7-1.12.el6.src.rpm
 
->
-> Zhu Yanjun
->
-> On 03/15/2016 05:43 AM, Sowmini Varadhan wrote:
->> Hi,
->>
->> I am trying out some DB stress tests on both i40e and ixgbe. The
->> stress test that I use is rds-stress 
->> (http://linux.die.net/man/1/rds-stress),
->> and I can list out the entire set of steps and parameters that I
->> am using to run this if that info is  interesting.
->>
->> My test bed is a pair of X5-2 (Haswell) servers, each with a
->> Niantic (X540-AT2) card and a Fortville card. The Niantic/fortville
->> cards are connected back-to-back, so I essentially have a 10G
->> connection and a 40G connection.
->>
->> Everything else (kernel, RDS modules, stress test and parameters)
->> remaining the same, I get  the expected throughput on the 10G
->> connection, but the i40e connection goes through a lot of TX
->> errors that result in console messages like this:
->>
->>    i40e 0000:81:00.0: TX driver issue detected, PF reset issued
->>    i40e 0000:81:00.0 eth2: adding 68:05:ca:30:db:30 vid=0
->>    i40e 0000:81:00.0: TX driver issue detected, PF reset issued
->>    i40e 0000:81:00.0 eth2: VSI_seid 390, Hung TX queue 32, 
->> tx_pending: 82, NTC:0xeb, HWB: 0xeb, NTU: 0x13d, TAIL: 0x13d
->>    i40e 0000:81:00.0 eth2: VSI_seid 390, Issuing force_wb for TX 
->> queue 32, Interrupt Reg
->>
->> I understand these are "mdd errors", but how can I find out what
->> triggered these errors, any hints?
->>
->> The other data-point here is that if I disable tso, and fall back
->> to gso, there are no tx errors, and throughput matches the 10G
->> connection (for the same set of test parameters).
->>
->> Please let me know if there is any other info that would help.
->> The kernel is a 4.5.0-rc2 kernel. Info for the i40e card is
->>
->>      # ethtool -i eth3
->>      driver: i40e
->>      version: 1.4.8-k
->>      firmware-version: 5.02 0x80002285 0.0.0
->>      bus-info: 0000:81:00.1
->>         :
->>
->> Thanks in advance,
->> --Sowmini
->>
->> ------------------------------------------------------------------------------ 
->>
->> Transform Data into Opportunity.
->> Accelerate data analysis in your applications with
->> Intel Data Analytics Acceleration Library.
->> Click to learn more.
->> http://pubads.g.doubleclick.net/gampad/clk?id=278785231&iu=/4140
->> _______________________________________________
->> E1000-devel mailing list
->> E1000-devel at lists.sourceforge.net
->> https://lists.sourceforge.net/lists/listinfo/e1000-devel
->> To learn more about Intel&#174; Ethernet, visit 
->> http://communities.intel.com/community/wired
->
+To run it, set up 2 nodes  connected on i40e. I shall call them
+"client" and "server" though both will send traffic in the test
 
+Start the listener:
+ server# modprobe rds-tcp
+ server# rds-stress -r <server addr>
+
+Start the test:
+
+ client# modprobe rds-tcp
+ client# rds-stress -r <client addr> -s <server-addr> -q 256 -a 8192 -d16 -t16 -T30 
+
+(all params are explained in the rds-stress man page)
+
+If you do this on ixgbe, you will see that the column for "tx+rx K/s"
+shows a steady throughput, whereas i40e numbers are bursty and low.
+
+Also, for i40e, you will see messages about TX hang on on the console.
+
+I think that, to find the root-cause, we need to see what is
+triggering the mdd error.
+
+Would be good if someone from Intel could provide some hints on
+how to do that (or try the above tests!)
+
+--Sowmini
