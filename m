@@ -1,122 +1,75 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 15 Mar 2016 11:31:37 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 295e6373e73d8ed8fbb021591e499cffeee64c5e BUILD SUCCESS
-Message-ID: <56e78219.tXzEFP2x7mmTQ9h2%fengguang.wu@intel.com>
+From: zhuyj <zyjzyj2000@gmail.com>
+Date: Tue, 15 Mar 2016 14:12:06 +0800
+Subject: [Intel-wired-lan] [E1000-devel] i40e card Tx resets
+In-Reply-To: <20160314214333.GP5084@oracle.com>
+References: <20160314214333.GP5084@oracle.com>
+Message-ID: <56E7A7B6.5030209@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-295e6373e73d8ed8fbb021591e499cffeee64c5e  i40e/i40evf: Bump patch from 1.4.25 to 1.5.1
+Hi,
 
-elapsed time: 136m
+I have the similar problem. Would you like to make tests with pktgen tools?
+Maybe the test result is not related with tso.
 
-configs tested: 101
+Zhu Yanjun
 
-i386                     randconfig-a0-201611
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                 randconfig-x010-201611
-x86_64                 randconfig-x018-201611
-x86_64                 randconfig-x011-201611
-x86_64                 randconfig-x019-201611
-x86_64                 randconfig-x012-201611
-x86_64                 randconfig-x013-201611
-x86_64                 randconfig-x014-201611
-x86_64                 randconfig-x016-201611
-x86_64                 randconfig-x015-201611
-x86_64                 randconfig-x017-201611
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                     randconfig-s0-201611
-i386                     randconfig-s1-201611
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201611
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i0-201611
-i386                     randconfig-i1-201611
-i386                   randconfig-x013-201611
-i386                   randconfig-x012-201611
-i386                   randconfig-x019-201611
-i386                   randconfig-x015-201611
-i386                   randconfig-x011-201611
-i386                   randconfig-x018-201611
-i386                   randconfig-x010-201611
-i386                   randconfig-x016-201611
-i386                   randconfig-x017-201611
-i386                   randconfig-x014-201611
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201611
-x86_64                                   rhel
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                           allmodconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                   randconfig-x000-201611
-i386                   randconfig-x003-201611
-i386                   randconfig-x009-201611
-i386                   randconfig-x004-201611
-i386                   randconfig-x005-201611
-i386                   randconfig-x002-201611
-i386                   randconfig-x006-201611
-i386                   randconfig-x007-201611
-i386                   randconfig-x001-201611
-i386                   randconfig-x008-201611
+On 03/15/2016 05:43 AM, Sowmini Varadhan wrote:
+> Hi,
+>
+> I am trying out some DB stress tests on both i40e and ixgbe. The
+> stress test that I use is rds-stress (http://linux.die.net/man/1/rds-stress),
+> and I can list out the entire set of steps and parameters that I
+> am using to run this if that info is  interesting.
+>
+> My test bed is a pair of X5-2 (Haswell) servers, each with a
+> Niantic (X540-AT2) card and a Fortville card. The Niantic/fortville
+> cards are connected back-to-back, so I essentially have a 10G
+> connection and a 40G connection.
+>
+> Everything else (kernel, RDS modules, stress test and parameters)
+> remaining the same, I get  the expected throughput on the 10G
+> connection, but the i40e connection goes through a lot of TX
+> errors that result in console messages like this:
+>
+>    i40e 0000:81:00.0: TX driver issue detected, PF reset issued
+>    i40e 0000:81:00.0 eth2: adding 68:05:ca:30:db:30 vid=0
+>    i40e 0000:81:00.0: TX driver issue detected, PF reset issued
+>    i40e 0000:81:00.0 eth2: VSI_seid 390, Hung TX queue 32, tx_pending: 82, NTC:0xeb, HWB: 0xeb, NTU: 0x13d, TAIL: 0x13d
+>    i40e 0000:81:00.0 eth2: VSI_seid 390, Issuing force_wb for TX queue 32, Interrupt Reg
+>
+> I understand these are "mdd errors", but how can I find out what
+> triggered these errors, any hints?
+>
+> The other data-point here is that if I disable tso, and fall back
+> to gso, there are no tx errors, and throughput matches the 10G
+> connection (for the same set of test parameters).
+>
+> Please let me know if there is any other info that would help.
+> The kernel is a 4.5.0-rc2 kernel. Info for the i40e card is
+>
+>      # ethtool -i eth3
+>      driver: i40e
+>      version: 1.4.8-k
+>      firmware-version: 5.02 0x80002285 0.0.0
+>      bus-info: 0000:81:00.1
+>         :
+>
+> Thanks in advance,
+> --Sowmini
+>
+> ------------------------------------------------------------------------------
+> Transform Data into Opportunity.
+> Accelerate data analysis in your applications with
+> Intel Data Analytics Acceleration Library.
+> Click to learn more.
+> http://pubads.g.doubleclick.net/gampad/clk?id=278785231&iu=/4140
+> _______________________________________________
+> E1000-devel mailing list
+> E1000-devel at lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/e1000-devel
+> To learn more about Intel&#174; Ethernet, visit http://communities.intel.com/community/wired
 
-Thanks,
-Fengguang
