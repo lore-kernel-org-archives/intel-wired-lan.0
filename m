@@ -1,77 +1,82 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 16 Mar 2016 14:01:03 -0700
-Subject: [Intel-wired-lan] Latest dev-queue pull has i40e VFs reporting
- "Device still in reset"
-In-Reply-To: <CAKgT0UffsuRkqLb6iMZbsHQm14_UpyqFZBZJ8bq7jS706oiSCw@mail.gmail.com>
-References: <CAKgT0Ue=36RUVBkDJ0scqCwFEph8JOJmBqaD2MiY+CDvj3mpuQ@mail.gmail.com>
- <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F99D5B1@ORSMSX104.amr.corp.intel.com>
- <CAKgT0UffsuRkqLb6iMZbsHQm14_UpyqFZBZJ8bq7jS706oiSCw@mail.gmail.com>
-Message-ID: <CAKgT0UcjLtV8Xgco2KJ6aNPNOEEezNA+2axnT-uSH0Jx3kc+Ew@mail.gmail.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed, 16 Mar 2016 15:58:52 -0700
+Subject: [Intel-wired-lan] [PATCH V3 net-next] ixgbe: Avoid unaligned
+ access in ixgbe_atr() for LLC packets
+In-Reply-To: <20160314194716.GM5084@oracle.com>
+References: <20160314194716.GM5084@oracle.com>
+Message-ID: <1458169132.2878.25.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-So I updated to the latest firmware:
-firmware-version: 5.02 0x80002284 0.0.0
+On Mon, 2016-03-14 at 15:47 -0400, Sowmini Varadhan wrote:
+> 
+> For LLC based protocols like lldp, stp etc., the ethernet header
+> is an 802.3 header with a h_proto that is not 0x800, 0x86dd, or
+> even 0x806.? In this world, the skb_network_header() points at
+> the DSAP/SSAP/..? and is not likely to be NET_IP_ALIGNed in
+> ixgbe_atr().
+> 
+> With LLC, drivers are not likely to correctly find IPVERSION,
+> or "6", at hdr.ipv4->version, but will instead just needlessly
+> trigger an unaligned access. (IPv4/IPv6 over LLC is almost never
+> implemented).
+> 
+> The unaligned access is thus avoidable: bail out quickly after
+> examining skb->protocol. The only Ethernet II protocols handled
+> are IPv4 and IPv6
+> 
+> Signed-off-by: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+> ---
+> v2: Alexander Duyck comments
+> v3: filter out all ethertypes? except for Ethernet II and (IPv4 or
+> IPv6)
+> 
+> ?drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |??? 5 +++++
+> ?1 files changed, 5 insertions(+), 0 deletions(-)
 
-Same result.  I can reload the driver and I get different VFs failing
-to come up.
+This does not apply since Alex Duyck beat you to the fix. ?Here is the
+patch he submitted on 3/15 which corrects the issue. ?So I am dropping
+your patch from the queue.
 
-- Alex
+commit 04b8b51c34837765cf6250f69d419c439dc393bf
+Author: Alexander Duyck <aduyck@mirantis.com>
+Date:???Tue Mar 15 15:10:22 2016 -0700
 
-On Wed, Mar 16, 2016 at 11:26 AM, Alexander Duyck
-<alexander.duyck@gmail.com> wrote:
-> Well what I am seeing seems to be an intermittent issue, though I am
-> having no problem spawning 7 VFs which is my default environment.
->
-> My setup is just loading the PF driver, enabling SR-IOV, reloading the
-> VF driver, and bringing up the PFs and VFs in separate namespaces.
-> Sometimes it is working without any errors, but the majority of the
-> time I am seeing the messages about "Device is still in reset"
-> repeating and eventually scrolling of the screen.
->
-> I'm not completely sure if my firmware is current.  Output from
-> "ethtool -i" is included below just in case this might be a firmware
-> thing and I need to update:
-> driver: i40e
-> version: 1.5.1-k
-> firmware-version: 4.26 0x8000152d 0.0.0
-> bus-info: 0000:02:00.0
-> supports-statistics: yes
-> supports-test: yes
-> supports-eeprom-access: yes
-> supports-register-dump: yes
-> supports-priv-flags: yes
->
-> - Alex
->
-> On Wed, Mar 16, 2016 at 11:12 AM, Bowers, AndrewX
-> <andrewx.bowers@intel.com> wrote:
->> I'm not seeing the reset, but I get a permission denied error trying to echo 4 to /sys/class/net/[device]/device/sriov_numvfs and an ls of the directory shows no sriov_numvfs file present... I can do it with my ixgbe device, but not my i40e device.  I went back to a few different kernels from earlier this week, last week, and the week before with the same results. Since I know it WAS working earlier, I tried the stock kernel and get "no such file or directory"... I'm thinking it's an issue with my card, although I wonder if yours is related. I'll try a few things with mine and see if I get anywhere.
->>
->>> -----Original Message-----
->>> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
->>> Behalf Of Alexander Duyck
->>> Sent: Wednesday, March 16, 2016 10:21 AM
->>> To: e1000-devel at lists.sourceforge.net; intel-wired-lan <intel-wired-
->>> lan at lists.osuosl.org>
->>> Subject: [Intel-wired-lan] Latest dev-queue pull has i40e VFs reporting
->>> "Device still in reset"
->>>
->>> So my system with the latest pull of the dev-queue branch is stuck reporting
->>> "Device is still in reset (-16), retrying" for one or more VFs after I reload the
->>> drivers.  I've been trying to bisect the issue but haven't been having much
->>> luck.
->>>
->>> Just wanted to see if anyone in Intel was aware of the issue, otherwise I will
->>> probably re-run my bisection with a full system reset between patches as I
->>> suspect I may be having issues reproducing it due to stray data being left in
->>> from earlier driver loads.
->>>
->>> - Alex
->>> _______________________________________________
->>> Intel-wired-lan mailing list
->>> Intel-wired-lan at lists.osuosl.org
->>> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+????ixgbe: Fix ATR so that it correctly handles IPv6 extension headers
+????
+????The ATR code was assuming that it would be able to use tcp_hdr for
+????every TCP frame that came through.??However this isn't the case as
+it
+????is possible for a frame to arrive that is TCP but sent through
+something
+????like a raw socket.??As a result the driver was setting up bad
+filters in
+????which tcp_hdr was really pointing to the network header so the data
+was
+????all invalid.
+????
+????In order to correct this I have added a bit of parsing logic that
+will
+????determine the TCP header location based off of the network header
+and
+????either the offset in the case of the IPv4 header, or a walk through
+the
+????IPv6 extension headers until it encounters the header that
+indicates
+????IPPROTO_TCP.??In addition I have added checks to verify that the
+lowest
+????protocol provided is recognized as IPv4 or IPv6 to help mitigate
+raw
+????sockets using ETH_P_ALL from having ATR applied to them.
+????
+????Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160316/05758d47/attachment.asc>
