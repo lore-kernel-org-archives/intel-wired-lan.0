@@ -1,57 +1,122 @@
-From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-Date: Thu, 17 Mar 2016 14:56:14 -0400
-Subject: [Intel-wired-lan] [E1000-devel] i40e card Tx resets
-In-Reply-To: <56EA1481.80600@gmail.com>
-References: <20160314214333.GP5084@oracle.com> <56E7A7B6.5030209@gmail.com>
- <56E7CE18.9020004@gmail.com> <20160315105433.GC11063@oracle.com>
- <56E8D0C5.307@gmail.com> <20160316032523.GC19052@oracle.com>
- <56E94786.9090701@gmail.com> <20160316143654.GD21307@oracle.com>
- <56EA1481.80600@gmail.com>
-Message-ID: <20160317185614.GA14078@oracle.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Thu, 17 Mar 2016 12:19:14 -0700
+Subject: [Intel-wired-lan] Latest dev-queue pull has i40e VFs reporting
+ "Device still in reset"
+In-Reply-To: <AAEA33E297BCAC4B9BB20A7C2DF0AB8D78567E7E@FMSMSX113.amr.corp.intel.com>
+References: <CAKgT0Ue=36RUVBkDJ0scqCwFEph8JOJmBqaD2MiY+CDvj3mpuQ@mail.gmail.com>
+ <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F99D5B1@ORSMSX104.amr.corp.intel.com>
+ <CAKgT0UffsuRkqLb6iMZbsHQm14_UpyqFZBZJ8bq7jS706oiSCw@mail.gmail.com>
+ <CAKgT0UcjLtV8Xgco2KJ6aNPNOEEezNA+2axnT-uSH0Jx3kc+Ew@mail.gmail.com>
+ <AAEA33E297BCAC4B9BB20A7C2DF0AB8D78567E7E@FMSMSX113.amr.corp.intel.com>
+Message-ID: <CAKgT0UeQHZm8zVS_NiQRY+yTyVQ6siv6PbSoQ3n-KSX7eKgSRA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On (03/17/16 10:20), zhuyj wrote:
-> 1. modprobe NET_PKTGEN
-> 
-> 2. download the tar file and uncompress to any directory.
-> This tar file is from kernel. It is in samples/pktgen/
-> 
-> 3. cd pktgen
-> 
-> 4. pktgen_sample02_multiqueue.sh -i ethx -s size -t cpu_number
+I reverted https://git.kernel.org/cgit/linux/kernel/git/jkirsher/next-queue.git/commit/?h=dev-queue&id=950b80a22d989bea5e4ed016d1e1160f2de08d57
+as Andrew had suggested trying and it did resolve my issue.
 
-Indeed, I see the same thing as you, and it was very easy to 
-reproduce. It was very interesting that the problem can happen with
-as few as 3 threads, at which point I see the TX hang at exactly
--s 12305 
+I look forward to the official fix.
 
-I see:
-i40e 0000:82:00.0: TX driver issue detected, PF reset issued
-i40e 0000:82:00.0 eth2: VSI_seid 390, Hung TX queue 0, tx_pending: 492, NTC:0x140, HWB: 0x140, NTU: 0x12c, TAIL: 0x12c
+Thanks.
 
-I think the common factor in both our test cases is that we have some
-kernel thread that can efficiently send packets without any context
-switches. 
+- Alex
 
-Has anyone here seen this before? I'll see if I can find some cycles
-to figure this out, if not, maybe its worth bringing up on netdev,
-to see if others have seen this, and to draw some patterns.
-
-> 
-> If size is set to a big number, the similar defect will occur.
-> Adjust this size to a appropriate number, my defect will not occur.
-> 
-> In the test, I found some types igb nic, such as i210, will work
-> well no matter the size is a big number.
-> some nic, such as 82580, it will not work well if the size is too big.
-> 
-> As such, I think my problem results from the hardware and the big
-> size triggers this problem.
-> 
-> I hope this can help us all.
-> 
-> Zhu Yanjun
+On Thu, Mar 17, 2016 at 10:36 AM, Williams, Mitch A
+<mitch.a.williams@intel.com> wrote:
+> We should have patches to fix this problem coming out today.
+> -Mitch
+>
+>> -----Original Message-----
+>> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+>> Behalf Of Alexander Duyck
+>> Sent: Wednesday, March 16, 2016 2:01 PM
+>> To: Bowers, AndrewX <andrewx.bowers@intel.com>
+>> Cc: e1000-devel at lists.sourceforge.net; intel-wired-lan <intel-wired-
+>> lan at lists.osuosl.org>
+>> Subject: Re: [Intel-wired-lan] Latest dev-queue pull has i40e VFs reporting
+>> "Device still in reset"
+>>
+>> So I updated to the latest firmware:
+>> firmware-version: 5.02 0x80002284 0.0.0
+>>
+>> Same result.  I can reload the driver and I get different VFs failing
+>> to come up.
+>>
+>> - Alex
+>>
+>> On Wed, Mar 16, 2016 at 11:26 AM, Alexander Duyck
+>> <alexander.duyck@gmail.com> wrote:
+>> > Well what I am seeing seems to be an intermittent issue, though I am
+>> > having no problem spawning 7 VFs which is my default environment.
+>> >
+>> > My setup is just loading the PF driver, enabling SR-IOV, reloading the
+>> > VF driver, and bringing up the PFs and VFs in separate namespaces.
+>> > Sometimes it is working without any errors, but the majority of the
+>> > time I am seeing the messages about "Device is still in reset"
+>> > repeating and eventually scrolling of the screen.
+>> >
+>> > I'm not completely sure if my firmware is current.  Output from
+>> > "ethtool -i" is included below just in case this might be a firmware
+>> > thing and I need to update:
+>> > driver: i40e
+>> > version: 1.5.1-k
+>> > firmware-version: 4.26 0x8000152d 0.0.0
+>> > bus-info: 0000:02:00.0
+>> > supports-statistics: yes
+>> > supports-test: yes
+>> > supports-eeprom-access: yes
+>> > supports-register-dump: yes
+>> > supports-priv-flags: yes
+>> >
+>> > - Alex
+>> >
+>> > On Wed, Mar 16, 2016 at 11:12 AM, Bowers, AndrewX
+>> > <andrewx.bowers@intel.com> wrote:
+>> >> I'm not seeing the reset, but I get a permission denied error trying to
+>> echo 4 to /sys/class/net/[device]/device/sriov_numvfs and an ls of the
+>> directory shows no sriov_numvfs file present... I can do it with my ixgbe
+>> device, but not my i40e device.  I went back to a few different kernels from
+>> earlier this week, last week, and the week before with the same results.
+>> Since I know it WAS working earlier, I tried the stock kernel and get "no
+>> such file or directory"... I'm thinking it's an issue with my card, although
+>> I wonder if yours is related. I'll try a few things with mine and see if I
+>> get anywhere.
+>> >>
+>> >>> -----Original Message-----
+>> >>> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org]
+>> On
+>> >>> Behalf Of Alexander Duyck
+>> >>> Sent: Wednesday, March 16, 2016 10:21 AM
+>> >>> To: e1000-devel at lists.sourceforge.net; intel-wired-lan <intel-wired-
+>> >>> lan at lists.osuosl.org>
+>> >>> Subject: [Intel-wired-lan] Latest dev-queue pull has i40e VFs reporting
+>> >>> "Device still in reset"
+>> >>>
+>> >>> So my system with the latest pull of the dev-queue branch is stuck
+>> reporting
+>> >>> "Device is still in reset (-16), retrying" for one or more VFs after I
+>> reload the
+>> >>> drivers.  I've been trying to bisect the issue but haven't been having
+>> much
+>> >>> luck.
+>> >>>
+>> >>> Just wanted to see if anyone in Intel was aware of the issue, otherwise
+>> I will
+>> >>> probably re-run my bisection with a full system reset between patches as
+>> I
+>> >>> suspect I may be having issues reproducing it due to stray data being
+>> left in
+>> >>> from earlier driver loads.
+>> >>>
+>> >>> - Alex
+>> >>> _______________________________________________
+>> >>> Intel-wired-lan mailing list
+>> >>> Intel-wired-lan at lists.osuosl.org
+>> >>> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+>> _______________________________________________
+>> Intel-wired-lan mailing list
+>> Intel-wired-lan at lists.osuosl.org
+>> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
