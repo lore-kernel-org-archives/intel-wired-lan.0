@@ -1,110 +1,63 @@
-From: Williams, Mitch A <mitch.a.williams@intel.com>
-Date: Thu, 17 Mar 2016 17:36:34 +0000
-Subject: [Intel-wired-lan] Latest dev-queue pull has i40e VFs reporting
- "Device still in reset"
-In-Reply-To: <CAKgT0UcjLtV8Xgco2KJ6aNPNOEEezNA+2axnT-uSH0Jx3kc+Ew@mail.gmail.com>
-References: <CAKgT0Ue=36RUVBkDJ0scqCwFEph8JOJmBqaD2MiY+CDvj3mpuQ@mail.gmail.com>
- <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F99D5B1@ORSMSX104.amr.corp.intel.com>
- <CAKgT0UffsuRkqLb6iMZbsHQm14_UpyqFZBZJ8bq7jS706oiSCw@mail.gmail.com>
- <CAKgT0UcjLtV8Xgco2KJ6aNPNOEEezNA+2axnT-uSH0Jx3kc+Ew@mail.gmail.com>
-Message-ID: <AAEA33E297BCAC4B9BB20A7C2DF0AB8D78567E7E@FMSMSX113.amr.corp.intel.com>
+From: Avinash Dayanand <avinash.dayanand@intel.com>
+Date: Thu, 17 Mar 2016 09:41:20 -0700
+Subject: [Intel-wired-lan] [next PATCH S31 v3 02/12] i40e: Remove unused
+	variable
+In-Reply-To: <1458232890-110933-1-git-send-email-avinash.dayanand@intel.com>
+References: <1458232890-110933-1-git-send-email-avinash.dayanand@intel.com>
+Message-ID: <1458232890-110933-3-git-send-email-avinash.dayanand@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-We should have patches to fix this problem coming out today.
--Mitch
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Alexander Duyck
-> Sent: Wednesday, March 16, 2016 2:01 PM
-> To: Bowers, AndrewX <andrewx.bowers@intel.com>
-> Cc: e1000-devel at lists.sourceforge.net; intel-wired-lan <intel-wired-
-> lan at lists.osuosl.org>
-> Subject: Re: [Intel-wired-lan] Latest dev-queue pull has i40e VFs reporting
-> "Device still in reset"
-> 
-> So I updated to the latest firmware:
-> firmware-version: 5.02 0x80002284 0.0.0
-> 
-> Same result.  I can reload the driver and I get different VFs failing
-> to come up.
-> 
-> - Alex
-> 
-> On Wed, Mar 16, 2016 at 11:26 AM, Alexander Duyck
-> <alexander.duyck@gmail.com> wrote:
-> > Well what I am seeing seems to be an intermittent issue, though I am
-> > having no problem spawning 7 VFs which is my default environment.
-> >
-> > My setup is just loading the PF driver, enabling SR-IOV, reloading the
-> > VF driver, and bringing up the PFs and VFs in separate namespaces.
-> > Sometimes it is working without any errors, but the majority of the
-> > time I am seeing the messages about "Device is still in reset"
-> > repeating and eventually scrolling of the screen.
-> >
-> > I'm not completely sure if my firmware is current.  Output from
-> > "ethtool -i" is included below just in case this might be a firmware
-> > thing and I need to update:
-> > driver: i40e
-> > version: 1.5.1-k
-> > firmware-version: 4.26 0x8000152d 0.0.0
-> > bus-info: 0000:02:00.0
-> > supports-statistics: yes
-> > supports-test: yes
-> > supports-eeprom-access: yes
-> > supports-register-dump: yes
-> > supports-priv-flags: yes
-> >
-> > - Alex
-> >
-> > On Wed, Mar 16, 2016 at 11:12 AM, Bowers, AndrewX
-> > <andrewx.bowers@intel.com> wrote:
-> >> I'm not seeing the reset, but I get a permission denied error trying to
-> echo 4 to /sys/class/net/[device]/device/sriov_numvfs and an ls of the
-> directory shows no sriov_numvfs file present... I can do it with my ixgbe
-> device, but not my i40e device.  I went back to a few different kernels from
-> earlier this week, last week, and the week before with the same results.
-> Since I know it WAS working earlier, I tried the stock kernel and get "no
-> such file or directory"... I'm thinking it's an issue with my card, although
-> I wonder if yours is related. I'll try a few things with mine and see if I
-> get anywhere.
-> >>
-> >>> -----Original Message-----
-> >>> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org]
-> On
-> >>> Behalf Of Alexander Duyck
-> >>> Sent: Wednesday, March 16, 2016 10:21 AM
-> >>> To: e1000-devel at lists.sourceforge.net; intel-wired-lan <intel-wired-
-> >>> lan at lists.osuosl.org>
-> >>> Subject: [Intel-wired-lan] Latest dev-queue pull has i40e VFs reporting
-> >>> "Device still in reset"
-> >>>
-> >>> So my system with the latest pull of the dev-queue branch is stuck
-> reporting
-> >>> "Device is still in reset (-16), retrying" for one or more VFs after I
-> reload the
-> >>> drivers.  I've been trying to bisect the issue but haven't been having
-> much
-> >>> luck.
-> >>>
-> >>> Just wanted to see if anyone in Intel was aware of the issue, otherwise
-> I will
-> >>> probably re-run my bisection with a full system reset between patches as
-> I
-> >>> suspect I may be having issues reproducing it due to stray data being
-> left in
-> >>> from earlier driver loads.
-> >>>
-> >>> - Alex
-> >>> _______________________________________________
-> >>> Intel-wired-lan mailing list
-> >>> Intel-wired-lan at lists.osuosl.org
-> >>> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at lists.osuosl.org
-> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+This variable is vestigial, a remnant of the primordial code from which
+this driver spawned. We can safely remove it.
+
+Testing Hints: VFs initialize and pass traffic.
+
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 2bde41b..80174de 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -1182,8 +1182,8 @@ static int i40e_vc_get_vf_resources_msg(struct i40e_vf *vf, u8 *msg)
+ 	struct i40e_pf *pf = vf->pf;
+ 	i40e_status aq_ret = 0;
+ 	struct i40e_vsi *vsi;
+-	int i = 0, len = 0;
+ 	int num_vsis = 1;
++	int len = 0;
+ 	int ret;
+ 
+ 	if (!test_bit(I40E_VF_STAT_INIT, &vf->vf_states)) {
+@@ -1238,15 +1238,14 @@ static int i40e_vc_get_vf_resources_msg(struct i40e_vf *vf, u8 *msg)
+ 	vfres->num_queue_pairs = vf->num_queue_pairs;
+ 	vfres->max_vectors = pf->hw.func_caps.num_msix_vectors_vf;
+ 	if (vf->lan_vsi_idx) {
+-		vfres->vsi_res[i].vsi_id = vf->lan_vsi_id;
+-		vfres->vsi_res[i].vsi_type = I40E_VSI_SRIOV;
+-		vfres->vsi_res[i].num_queue_pairs = vsi->alloc_queue_pairs;
++		vfres->vsi_res[0].vsi_id = vf->lan_vsi_id;
++		vfres->vsi_res[0].vsi_type = I40E_VSI_SRIOV;
++		vfres->vsi_res[0].num_queue_pairs = vsi->alloc_queue_pairs;
+ 		/* VFs only use TC 0 */
+-		vfres->vsi_res[i].qset_handle
++		vfres->vsi_res[0].qset_handle
+ 					  = le16_to_cpu(vsi->info.qs_handle[0]);
+-		ether_addr_copy(vfres->vsi_res[i].default_mac_addr,
++		ether_addr_copy(vfres->vsi_res[0].default_mac_addr,
+ 				vf->default_lan_addr.addr);
+-		i++;
+ 	}
+ 	set_bit(I40E_VF_STAT_ACTIVE, &vf->vf_states);
+ 
+-- 
+2.4.3
+
