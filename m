@@ -1,73 +1,45 @@
 From: Avinash Dayanand <avinash.dayanand@intel.com>
-Date: Thu, 17 Mar 2016 09:41:21 -0700
-Subject: [Intel-wired-lan] [next PATCH S31 v3 03/12] i40evf: Fix VLAN
-	features
+Date: Thu, 17 Mar 2016 09:41:19 -0700
+Subject: [Intel-wired-lan] [next PATCH S31 v3 01/12] i40e: Enable Geneve
+	offload for FW API ver > 1.4 for XL710/X710 devices
 In-Reply-To: <1458232890-110933-1-git-send-email-avinash.dayanand@intel.com>
 References: <1458232890-110933-1-git-send-email-avinash.dayanand@intel.com>
-Message-ID: <1458232890-110933-4-git-send-email-avinash.dayanand@intel.com>
+Message-ID: <1458232890-110933-2-git-send-email-avinash.dayanand@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+From: Anjali Singhai Jain <anjali.singhai@intel.com>
 
-Users of ethtool were being given the mistaken impression that this
-driver was able to change its VLAN tagging features, and were
-disappointed that this was not actually the case. Implement
-ndo_fix_features method so that we can adjust these flags as needed to
-avoid false impressions.
+This patch enables the Capability for XL710/X710 devices with FW API
+version higher than 1.4 to do geneve Rx offload.
 
-Testing Hints: Use 'ethtool -K rxvlan off' to attempt
-to change the VLAN tagging.
+Testing Hints: Test it on XL710 device with FW API version 1.5 and lower.
 
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
 ---
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 23 +++++++++++++++++++++++
- 1 file changed, 23 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index e397368..0c99974 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -2252,6 +2252,28 @@ static int i40evf_change_mtu(struct net_device *netdev, int new_mtu)
- 	return 0;
- }
- 
-+#define I40EVF_VLAN_FEATURES (NETIF_F_HW_VLAN_CTAG_TX |\
-+                              NETIF_F_HW_VLAN_CTAG_RX |\
-+                              NETIF_F_HW_VLAN_CTAG_FILTER)
-+
-+/**
-+ * i40evf_fix_features - fix up the netdev feature bits
-+ * @netdev: our net device
-+ * @features: desired feature bits
-+ *
-+ * Returns fixed-up features bits
-+ **/
-+static netdev_features_t i40evf_fix_features(struct net_device *netdev,
-+					     netdev_features_t features)
-+{
-+	struct i40evf_adapter *adapter = netdev_priv(netdev);
-+
-+	features &= ~I40EVF_VLAN_FEATURES;
-+	if (adapter->vf_res->vf_offload_flags & I40E_VIRTCHNL_VF_OFFLOAD_VLAN)
-+		features |= I40EVF_VLAN_FEATURES;
-+	return features;
-+}
-+
- static const struct net_device_ops i40evf_netdev_ops = {
- 	.ndo_open		= i40evf_open,
- 	.ndo_stop		= i40evf_close,
-@@ -2264,6 +2286,7 @@ static const struct net_device_ops i40evf_netdev_ops = {
- 	.ndo_tx_timeout		= i40evf_tx_timeout,
- 	.ndo_vlan_rx_add_vid	= i40evf_vlan_rx_add_vid,
- 	.ndo_vlan_rx_kill_vid	= i40evf_vlan_rx_kill_vid,
-+	.ndo_fix_features	= i40evf_fix_features,
- #ifdef CONFIG_NET_POLL_CONTROLLER
- 	.ndo_poll_controller	= i40evf_netpoll,
- #endif
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 39b0009..31f6ee1 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -9093,6 +9093,12 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
+ 					I40E_VLAN_ANY, false, true);
+ 			spin_unlock_bh(&vsi->mac_filter_list_lock);
+ 		}
++	} else if ((pf->hw.aq.api_maj_ver > 1) ||
++		   ((pf->hw.aq.api_maj_ver == 1) &&
++		    (pf->hw.aq.api_min_ver > 4))) {
++		/* Supported in FW API version higher than 1.4 */
++		pf->flags |= I40E_FLAG_GENEVE_OFFLOAD_CAPABLE;
++		pf->auto_disable_flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
+ 	} else {
+ 		/* relate the VSI_VMDQ name to the VSI_MAIN name */
+ 		snprintf(netdev->name, IFNAMSIZ, "%sv%%d",
 -- 
 2.4.3
 
