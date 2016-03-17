@@ -1,45 +1,50 @@
 From: Avinash Dayanand <avinash.dayanand@intel.com>
-Date: Thu, 17 Mar 2016 09:41:19 -0700
-Subject: [Intel-wired-lan] [next PATCH S31 v3 01/12] i40e: Enable Geneve
-	offload for FW API ver > 1.4 for XL710/X710 devices
+Date: Thu, 17 Mar 2016 09:41:29 -0700
+Subject: [Intel-wired-lan] [next PATCH S31 v3 11/12] i40e: Request phy media
+	event at reset time
 In-Reply-To: <1458232890-110933-1-git-send-email-avinash.dayanand@intel.com>
 References: <1458232890-110933-1-git-send-email-avinash.dayanand@intel.com>
-Message-ID: <1458232890-110933-2-git-send-email-avinash.dayanand@intel.com>
+Message-ID: <1458232890-110933-12-git-send-email-avinash.dayanand@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Anjali Singhai Jain <anjali.singhai@intel.com>
+From: Shannon Nelson <shannon.nelson@intel.com>
 
-This patch enables the Capability for XL710/X710 devices with FW API
-version higher than 1.4 to do geneve Rx offload.
+As we did at driver startup, be sure to ask for the Media Not Available
+flag in the link event mask.
 
-Testing Hints: Test it on XL710 device with FW API version 1.5 and lower.
+Testing Hints:
+	Do some link tests, removing and reinserting the wire, etc.
+	after a reset.
 
-Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 39b0009..31f6ee1 100644
+index 18877f0..ba9d0cc 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -9093,6 +9093,12 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
- 					I40E_VLAN_ANY, false, true);
- 			spin_unlock_bh(&vsi->mac_filter_list_lock);
- 		}
-+	} else if ((pf->hw.aq.api_maj_ver > 1) ||
-+		   ((pf->hw.aq.api_maj_ver == 1) &&
-+		    (pf->hw.aq.api_min_ver > 4))) {
-+		/* Supported in FW API version higher than 1.4 */
-+		pf->flags |= I40E_FLAG_GENEVE_OFFLOAD_CAPABLE;
-+		pf->auto_disable_flags = I40E_FLAG_HW_ATR_EVICT_CAPABLE;
- 	} else {
- 		/* relate the VSI_VMDQ name to the VSI_MAIN name */
- 		snprintf(netdev->name, IFNAMSIZ, "%sv%%d",
+@@ -6836,6 +6836,7 @@ static void i40e_reset_and_rebuild(struct i40e_pf *pf, bool reinit)
+ 	 */
+ 	ret = i40e_aq_set_phy_int_mask(&pf->hw,
+ 				       ~(I40E_AQ_EVENT_LINK_UPDOWN |
++					 I40E_AQ_EVENT_MEDIA_NA |
+ 					 I40E_AQ_EVENT_MODULE_QUAL_FAIL), NULL);
+ 	if (ret)
+ 		dev_info(&pf->pdev->dev, "set phy mask fail, err %s aq_err %s\n",
+@@ -10992,6 +10993,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	 */
+ 	err = i40e_aq_set_phy_int_mask(&pf->hw,
+ 				       ~(I40E_AQ_EVENT_LINK_UPDOWN |
++					 I40E_AQ_EVENT_MEDIA_NA |
+ 					 I40E_AQ_EVENT_MODULE_QUAL_FAIL), NULL);
+ 	if (err)
+ 		dev_info(&pf->pdev->dev, "set phy mask fail, err %s aq_err %s\n",
 -- 
 2.4.3
 
