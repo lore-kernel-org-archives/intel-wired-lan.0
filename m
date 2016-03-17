@@ -1,49 +1,61 @@
 From: Avinash Dayanand <avinash.dayanand@intel.com>
-Date: Thu, 17 Mar 2016 09:41:24 -0700
-Subject: [Intel-wired-lan] [next PATCH S31 v3 06/12] i40evf: Add longer wait
-	after remove module
+Date: Thu, 17 Mar 2016 09:41:27 -0700
+Subject: [Intel-wired-lan] [next PATCH S31 v3 09/12] i40e: Fix for supported
+	link modes in 10GBaseT PHY's
 In-Reply-To: <1458232890-110933-1-git-send-email-avinash.dayanand@intel.com>
 References: <1458232890-110933-1-git-send-email-avinash.dayanand@intel.com>
-Message-ID: <1458232890-110933-7-git-send-email-avinash.dayanand@intel.com>
+Message-ID: <1458232890-110933-10-git-send-email-avinash.dayanand@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+100baseT/Full is now listed and supported link mode for 10GBaseT PHY's.
+This is fix for the defect i.e. PHY type changes when link mode is changed.
 
-Upon module remove, wait a little longer after requesting a reset before
-checking to see if the firmware responded. This change prevents double
-resets when the firmware is busy.
+Testing Hints: Use 'ethtool -s ethx advertise 0x008' to change supported
+	link mode. Check if 100baseT is displayed.
 
-Testing Hints: Load and unload VF driver repeatedly
-with a lot of VFs enabled and make sure it reinitializes properly each
-time.
-
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
 ---
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 0c99974..8598c5f 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -2854,11 +2854,11 @@ static void i40evf_remove(struct pci_dev *pdev)
- 	adapter->state = __I40EVF_REMOVE;
- 	adapter->aq_required = 0;
- 	i40evf_request_reset(adapter);
--	msleep(20);
-+	msleep(50);
- 	/* If the FW isn't responding, kick it once, but only once. */
- 	if (!i40evf_asq_done(hw)) {
- 		i40evf_request_reset(adapter);
--		msleep(20);
-+		msleep(50);
- 	}
- 
- 	if (adapter->msix_entries) {
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 410d237..8a83d45 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -313,6 +313,13 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
+ 			ecmd->advertising |= ADVERTISED_10000baseT_Full;
+ 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_1GB)
+ 			ecmd->advertising |= ADVERTISED_1000baseT_Full;
++		/* adding 100baseT support for 10GBASET_PHY */
++		if (pf->flags & I40E_FLAG_HAVE_10GBASET_PHY) {
++			ecmd->supported |= SUPPORTED_100baseT_Full;
++			ecmd->advertising |= ADVERTISED_100baseT_Full |
++					     ADVERTISED_1000baseT_Full |
++					     ADVERTISED_10000baseT_Full;
++		}
+ 		break;
+ 	case I40E_PHY_TYPE_1000BASE_T_OPTICAL:
+ 		ecmd->supported = SUPPORTED_Autoneg |
+@@ -325,6 +332,15 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
+ 				  SUPPORTED_100baseT_Full;
+ 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_100MB)
+ 			ecmd->advertising |= ADVERTISED_100baseT_Full;
++		/* firmware detects 10G phy as 100M phy at 100M speed */
++		if (pf->flags & I40E_FLAG_HAVE_10GBASET_PHY) {
++			ecmd->supported |= SUPPORTED_10000baseT_Full |
++					   SUPPORTED_1000baseT_Full;
++			ecmd->advertising |= ADVERTISED_Autoneg |
++					     ADVERTISED_100baseT_Full |
++					     ADVERTISED_1000baseT_Full |
++					     ADVERTISED_10000baseT_Full;
++		}
+ 		break;
+ 	case I40E_PHY_TYPE_10GBASE_CR1_CU:
+ 	case I40E_PHY_TYPE_10GBASE_CR1:
 -- 
 2.4.3
 
