@@ -1,37 +1,73 @@
 From: Avinash Dayanand <avinash.dayanand@intel.com>
-Date: Thu, 17 Mar 2016 09:41:18 -0700
-Subject: [Intel-wired-lan] [next PATCH S31 v3 00/12] i40e/i40evf updates
-Message-ID: <1458232890-110933-1-git-send-email-avinash.dayanand@intel.com>
+Date: Thu, 17 Mar 2016 09:41:21 -0700
+Subject: [Intel-wired-lan] [next PATCH S31 v3 03/12] i40evf: Fix VLAN
+	features
+In-Reply-To: <1458232890-110933-1-git-send-email-avinash.dayanand@intel.com>
+References: <1458232890-110933-1-git-send-email-avinash.dayanand@intel.com>
+Message-ID: <1458232890-110933-4-git-send-email-avinash.dayanand@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Anjali Singhai Jain has enabled Geneve offload for FW API version 1.4 and
-	above for XL710/X710 devices
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-Avinash Dayanand has provided a fix for supported link modes in
-	10GBaseT PHY's.
+Users of ethtool were being given the mistaken impression that this
+driver was able to change its VLAN tagging features, and were
+disappointed that this was not actually the case. Implement
+ndo_fix_features method so that we can adjust these flags as needed to
+avoid false impressions.
 
-Catherine Sullivan has provided a fix for get_rss_aq issue and added new
-	device ID for X722.
+Testing Hints: Use 'ethtool -K rxvlan off' to attempt
+to change the VLAN tagging.
 
-Mitch Williams has removed an unused variable, fixed VLAN features, made
-	VF resets more reliable, added longer wait after removing the
-	module and lowered some message levels
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+---
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
 
-Shannon Nelson has added code to disable link polling and added support
-	to request phy media event at reset time.
-
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 16 +++++++++
- drivers/net/ethernet/intel/i40e/i40e_main.c        | 41 ++++++++++++++++++----
- drivers/net/ethernet/intel/i40e/i40e_txrx.c        |  1 -
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 37 +++++++++----------
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c      |  1 -
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 37 ++++++++++++++++---
- 6 files changed, 101 insertions(+), 32 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index e397368..0c99974 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -2252,6 +2252,28 @@ static int i40evf_change_mtu(struct net_device *netdev, int new_mtu)
+ 	return 0;
+ }
+ 
++#define I40EVF_VLAN_FEATURES (NETIF_F_HW_VLAN_CTAG_TX |\
++                              NETIF_F_HW_VLAN_CTAG_RX |\
++                              NETIF_F_HW_VLAN_CTAG_FILTER)
++
++/**
++ * i40evf_fix_features - fix up the netdev feature bits
++ * @netdev: our net device
++ * @features: desired feature bits
++ *
++ * Returns fixed-up features bits
++ **/
++static netdev_features_t i40evf_fix_features(struct net_device *netdev,
++					     netdev_features_t features)
++{
++	struct i40evf_adapter *adapter = netdev_priv(netdev);
++
++	features &= ~I40EVF_VLAN_FEATURES;
++	if (adapter->vf_res->vf_offload_flags & I40E_VIRTCHNL_VF_OFFLOAD_VLAN)
++		features |= I40EVF_VLAN_FEATURES;
++	return features;
++}
++
+ static const struct net_device_ops i40evf_netdev_ops = {
+ 	.ndo_open		= i40evf_open,
+ 	.ndo_stop		= i40evf_close,
+@@ -2264,6 +2286,7 @@ static const struct net_device_ops i40evf_netdev_ops = {
+ 	.ndo_tx_timeout		= i40evf_tx_timeout,
+ 	.ndo_vlan_rx_add_vid	= i40evf_vlan_rx_add_vid,
+ 	.ndo_vlan_rx_kill_vid	= i40evf_vlan_rx_kill_vid,
++	.ndo_fix_features	= i40evf_fix_features,
+ #ifdef CONFIG_NET_POLL_CONTROLLER
+ 	.ndo_poll_controller	= i40evf_netpoll,
+ #endif
 -- 
 2.4.3
 
