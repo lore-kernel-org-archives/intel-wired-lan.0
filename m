@@ -1,50 +1,40 @@
 From: Avinash Dayanand <avinash.dayanand@intel.com>
-Date: Thu, 17 Mar 2016 09:41:29 -0700
-Subject: [Intel-wired-lan] [next PATCH S31 v3 11/12] i40e: Request phy media
-	event at reset time
+Date: Thu, 17 Mar 2016 09:41:26 -0700
+Subject: [Intel-wired-lan] [next PATCH S31 v3 08/12] i40evf: Fix get_rss_aq
 In-Reply-To: <1458232890-110933-1-git-send-email-avinash.dayanand@intel.com>
 References: <1458232890-110933-1-git-send-email-avinash.dayanand@intel.com>
-Message-ID: <1458232890-110933-12-git-send-email-avinash.dayanand@intel.com>
+Message-ID: <1458232890-110933-9-git-send-email-avinash.dayanand@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Shannon Nelson <shannon.nelson@intel.com>
+From: Catherine Sullivan <catherine.sullivan@intel.com>
 
-As we did at driver startup, be sure to ask for the Media Not Available
-flag in the link event mask.
+We were passing in the seed where we should just be passing false
+because we want the vsi table not the pf table.
 
-Testing Hints:
-	Do some link tests, removing and reinserting the wire, etc.
-	after a reset.
+Testing Hints: Make sure that ethtool -x gives the proper table.
 
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 18877f0..ba9d0cc 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -6836,6 +6836,7 @@ static void i40e_reset_and_rebuild(struct i40e_pf *pf, bool reinit)
- 	 */
- 	ret = i40e_aq_set_phy_int_mask(&pf->hw,
- 				       ~(I40E_AQ_EVENT_LINK_UPDOWN |
-+					 I40E_AQ_EVENT_MEDIA_NA |
- 					 I40E_AQ_EVENT_MODULE_QUAL_FAIL), NULL);
- 	if (ret)
- 		dev_info(&pf->pdev->dev, "set phy mask fail, err %s aq_err %s\n",
-@@ -10992,6 +10993,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	 */
- 	err = i40e_aq_set_phy_int_mask(&pf->hw,
- 				       ~(I40E_AQ_EVENT_LINK_UPDOWN |
-+					 I40E_AQ_EVENT_MEDIA_NA |
- 					 I40E_AQ_EVENT_MODULE_QUAL_FAIL), NULL);
- 	if (err)
- 		dev_info(&pf->pdev->dev, "set phy mask fail, err %s aq_err %s\n",
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 8598c5f..e66f47e 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -1341,7 +1341,7 @@ static int i40evf_get_rss_aq(struct i40e_vsi *vsi, const u8 *seed,
+ 	}
+ 
+ 	if (lut) {
+-		ret = i40evf_aq_get_rss_lut(hw, vsi->id, seed, lut, lut_size);
++		ret = i40evf_aq_get_rss_lut(hw, vsi->id, false, lut, lut_size);
+ 		if (ret) {
+ 			dev_err(&adapter->pdev->dev,
+ 				"Cannot get RSS lut, err %s aq_err %s\n",
 -- 
 2.4.3
 
