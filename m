@@ -1,73 +1,92 @@
 From: Avinash Dayanand <avinash.dayanand@intel.com>
-Date: Thu, 17 Mar 2016 09:41:23 -0700
-Subject: [Intel-wired-lan] [next PATCH S31 v3 05/12] i40e: Make VF resets
-	more reliable
+Date: Thu, 17 Mar 2016 09:41:22 -0700
+Subject: [Intel-wired-lan] [next PATCH S31 v3 04/12] i40e: Add new device ID
+	for X722
 In-Reply-To: <1458232890-110933-1-git-send-email-avinash.dayanand@intel.com>
 References: <1458232890-110933-1-git-send-email-avinash.dayanand@intel.com>
-Message-ID: <1458232890-110933-6-git-send-email-avinash.dayanand@intel.com>
+Message-ID: <1458232890-110933-5-git-send-email-avinash.dayanand@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+From: Catherine Sullivan 1452637417 -0500 <catherine.sullivan@intel.com>
 
-Clear the VFLR bit immediately after triggering a reset instead of
-waiting until after cleanup is complete. Make sure to trigger a reset
-every time, not just if the PF is up.
+The new device ID is 0x37D3 and it should follow the same flows and
+branding string as for 0x37D0.
 
-These changes fix a problem where VF resets would get lost by the PF,
-preventing the VF driver from initializing.
+Testing Hints: Make sure the device loads.
 
-Testing Hints: Do VF driver load/unload test with
-lots of VFs in the system.
-
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 14 ++++++--------
- 1 file changed, 6 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_common.c   | 1 +
+ drivers/net/ethernet/intel/i40e/i40e_devids.h   | 1 +
+ drivers/net/ethernet/intel/i40e/i40e_main.c     | 1 +
+ drivers/net/ethernet/intel/i40evf/i40e_common.c | 1 +
+ drivers/net/ethernet/intel/i40evf/i40e_devids.h | 1 +
+ 5 files changed, 5 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 80174de..66763c1 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -807,6 +807,10 @@ void i40e_reset_vf(struct i40e_vf *vf, bool flr)
- 		wr32(hw, I40E_VPGEN_VFRTRIG(vf->vf_id), reg);
- 		i40e_flush(hw);
- 	}
-+	/* clear the VFLR bit in GLGEN_VFLRSTAT */
-+	reg_idx = (hw->func_caps.vf_base_id + vf->vf_id) / 32;
-+	bit_idx = (hw->func_caps.vf_base_id + vf->vf_id) % 32;
-+	wr32(hw, I40E_GLGEN_VFLRSTAT(reg_idx), BIT(bit_idx));
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 8276a13..ebcc0d3 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -60,6 +60,7 @@ static i40e_status i40e_set_mac_type(struct i40e_hw *hw)
+ 		case I40E_DEV_ID_SFP_X722:
+ 		case I40E_DEV_ID_1G_BASE_T_X722:
+ 		case I40E_DEV_ID_10G_BASE_T_X722:
++		case I40E_DEV_ID_SFP_I_X722:
+ 			hw->mac.type = I40E_MAC_X722;
+ 			break;
+ 		default:
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_devids.h b/drivers/net/ethernet/intel/i40e/i40e_devids.h
+index 99257fc..dd4457d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_devids.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_devids.h
+@@ -44,6 +44,7 @@
+ #define I40E_DEV_ID_SFP_X722		0x37D0
+ #define I40E_DEV_ID_1G_BASE_T_X722	0x37D1
+ #define I40E_DEV_ID_10G_BASE_T_X722	0x37D2
++#define I40E_DEV_ID_SFP_I_X722		0x37D3
  
- 	if (i40e_quiesce_vf_pci(vf))
- 		dev_err(&pf->pdev->dev, "VF %d PCI transactions stuck\n",
-@@ -857,10 +861,6 @@ complete_reset:
- 	/* tell the VF the reset is done */
- 	wr32(hw, I40E_VFGEN_RSTAT1(vf->vf_id), I40E_VFR_VFACTIVE);
+ #define i40e_is_40G_device(d)		((d) == I40E_DEV_ID_QSFP_A  || \
+ 					 (d) == I40E_DEV_ID_QSFP_B  || \
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 31f6ee1..33b6c68 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -90,6 +90,7 @@ static const struct pci_device_id i40e_pci_tbl[] = {
+ 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_SFP_X722), 0},
+ 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_1G_BASE_T_X722), 0},
+ 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_10G_BASE_T_X722), 0},
++	{PCI_VDEVICE(INTEL, I40E_DEV_ID_SFP_I_X722), 0},
+ 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_20G_KR2), 0},
+ 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_20G_KR2_A), 0},
+ 	/* required last entry */
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_common.c b/drivers/net/ethernet/intel/i40evf/i40e_common.c
+index 771ac6a..4db0c03 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_common.c
+@@ -58,6 +58,7 @@ i40e_status i40e_set_mac_type(struct i40e_hw *hw)
+ 		case I40E_DEV_ID_SFP_X722:
+ 		case I40E_DEV_ID_1G_BASE_T_X722:
+ 		case I40E_DEV_ID_10G_BASE_T_X722:
++		case I40E_DEV_ID_SFP_I_X722:
+ 			hw->mac.type = I40E_MAC_X722;
+ 			break;
+ 		case I40E_DEV_ID_X722_VF:
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_devids.h b/drivers/net/ethernet/intel/i40evf/i40e_devids.h
+index ca8b58c..7023570 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_devids.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_devids.h
+@@ -44,6 +44,7 @@
+ #define I40E_DEV_ID_SFP_X722		0x37D0
+ #define I40E_DEV_ID_1G_BASE_T_X722	0x37D1
+ #define I40E_DEV_ID_10G_BASE_T_X722	0x37D2
++#define I40E_DEV_ID_SFP_I_X722		0x37D3
+ #define I40E_DEV_ID_X722_VF		0x37CD
+ #define I40E_DEV_ID_X722_VF_HV		0x37D9
  
--	/* clear the VFLR bit in GLGEN_VFLRSTAT */
--	reg_idx = (hw->func_caps.vf_base_id + vf->vf_id) / 32;
--	bit_idx = (hw->func_caps.vf_base_id + vf->vf_id) % 32;
--	wr32(hw, I40E_GLGEN_VFLRSTAT(reg_idx), BIT(bit_idx));
- 	i40e_flush(hw);
- 	clear_bit(__I40E_VF_DISABLE, &pf->state);
- }
-@@ -2059,11 +2059,9 @@ int i40e_vc_process_vflr_event(struct i40e_pf *pf)
- 		/* read GLGEN_VFLRSTAT register to find out the flr VFs */
- 		vf = &pf->vf[vf_id];
- 		reg = rd32(hw, I40E_GLGEN_VFLRSTAT(reg_idx));
--		if (reg & BIT(bit_idx)) {
-+		if (reg & BIT(bit_idx))
- 			/* i40e_reset_vf will clear the bit in GLGEN_VFLRSTAT */
--			if (!test_bit(__I40E_DOWN, &pf->state))
--				i40e_reset_vf(vf, true);
--		}
-+			i40e_reset_vf(vf, true);
- 	}
- 
- 	return 0;
 -- 
 2.4.3
 
