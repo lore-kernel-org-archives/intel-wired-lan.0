@@ -1,43 +1,48 @@
 From: Avinash Dayanand <avinash.dayanand@intel.com>
-Date: Thu, 17 Mar 2016 09:41:25 -0700
-Subject: [Intel-wired-lan] [next PATCH S31 v3 07/12] i40e: Disable link
-	polling
+Date: Thu, 17 Mar 2016 09:41:30 -0700
+Subject: [Intel-wired-lan] [next PATCH S31 v3 12/12] i40e/i40evf: Bump patch
+	from 1.5.1 to 1.5.2
 In-Reply-To: <1458232890-110933-1-git-send-email-avinash.dayanand@intel.com>
 References: <1458232890-110933-1-git-send-email-avinash.dayanand@intel.com>
-Message-ID: <1458232890-110933-8-git-send-email-avinash.dayanand@intel.com>
+Message-ID: <1458232890-110933-13-git-send-email-avinash.dayanand@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Shannon Nelson <shannon.nelson@intel.com>
-
-Periodic link polling was added when the link events were found not to be
-trustworthy.  This was the case early on, but was likely because the link
-event mask was being used incorrectly.  As this has been fixed in recent
-code, we can disable the link polling to lessen the AQ traffic.
-
-Testing Hints:
-	Do some link tests, removing and reinserting the wire, etc.
-
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 33b6c68..18877f0 100644
+index ba9d0cc..fe7064d 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -8389,7 +8389,6 @@ static int i40e_sw_init(struct i40e_pf *pf)
- 	/* Set default capability flags */
- 	pf->flags = I40E_FLAG_RX_CSUM_ENABLED |
- 		    I40E_FLAG_MSI_ENABLED     |
--		    I40E_FLAG_LINK_POLLING_ENABLED |
- 		    I40E_FLAG_MSIX_ENABLED;
+@@ -46,7 +46,7 @@ static const char i40e_driver_string[] =
  
- 	if (iommu_present(&pci_bus_type))
+ #define DRV_VERSION_MAJOR 1
+ #define DRV_VERSION_MINOR 5
+-#define DRV_VERSION_BUILD 1
++#define DRV_VERSION_BUILD 2
+ #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
+ 	     __stringify(DRV_VERSION_MINOR) "." \
+ 	     __stringify(DRV_VERSION_BUILD)    DRV_KERN
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index e66f47e..54aa24b 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -38,7 +38,7 @@ static const char i40evf_driver_string[] =
+ 
+ #define DRV_VERSION_MAJOR 1
+ #define DRV_VERSION_MINOR 5
+-#define DRV_VERSION_BUILD 1
++#define DRV_VERSION_BUILD 2
+ #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
+ 	     __stringify(DRV_VERSION_MINOR) "." \
+ 	     __stringify(DRV_VERSION_BUILD) \
 -- 
 2.4.3
 
