@@ -1,48 +1,37 @@
-From: Avinash Dayanand <avinash.dayanand@intel.com>
-Date: Fri, 18 Mar 2016 12:18:16 -0700
-Subject: [Intel-wired-lan] [next PATCH S31 v4 12/12] i40e/i40evf: Bump patch
-	from 1.5.1 to 1.5.2
-In-Reply-To: <1458328696-135941-1-git-send-email-avinash.dayanand@intel.com>
-References: <1458328696-135941-1-git-send-email-avinash.dayanand@intel.com>
-Message-ID: <1458328696-135941-13-git-send-email-avinash.dayanand@intel.com>
+From: Mark D Rustad <mark.d.rustad@intel.com>
+Date: Fri, 18 Mar 2016 14:07:04 -0700
+Subject: [Intel-wired-lan] [PATCH 0/6] ixgbe: Add KR and SFP+ interfaces to
+	X550EM_A
+Message-ID: <20160318210612.41255.22539.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
+The following patches add support for two more interfaces for the
+X550EM_A mac: KR backplane and SFP+ with a retimer.
+
+Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index ba9d0cc..fe7064d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -46,7 +46,7 @@ static const char i40e_driver_string[] =
- 
- #define DRV_VERSION_MAJOR 1
- #define DRV_VERSION_MINOR 5
--#define DRV_VERSION_BUILD 1
-+#define DRV_VERSION_BUILD 2
- #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
- 	     __stringify(DRV_VERSION_MINOR) "." \
- 	     __stringify(DRV_VERSION_BUILD)    DRV_KERN
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index e66f47e..54aa24b 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -38,7 +38,7 @@ static const char i40evf_driver_string[] =
- 
- #define DRV_VERSION_MAJOR 1
- #define DRV_VERSION_MINOR 5
--#define DRV_VERSION_BUILD 1
-+#define DRV_VERSION_BUILD 2
- #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
- 	     __stringify(DRV_VERSION_MINOR) "." \
- 	     __stringify(DRV_VERSION_BUILD) \
+Mark D Rustad (6):
+      ixgbe: Add KR backplane support for X550EM_A
+      ixgbe: Request token for phy accesses
+      ixgbe: Read and set instance id
+      ixgbe: Read and parse NW_MNG_IF_SEL register
+      ixgbe: Introduce function to control MDIO speed
+      ixgbe: Add support for SFPs with retimer
+
+
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |    8 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c   |    4 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c    |   34 ++--
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h    |    6 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h   |   17 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c   |  178 +++++++++++++++++++++--
+ 6 files changed, 216 insertions(+), 31 deletions(-)
+
 -- 
-2.4.3
-
+Mark Rustad, Network Division, Intel Corporation
