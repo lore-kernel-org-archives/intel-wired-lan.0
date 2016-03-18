@@ -1,133 +1,121 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Fri, 18 Mar 2016 10:35:00 -0700
-Subject: [Intel-wired-lan] [PATCH 2/7] ixgbe: Add support for phy token
-	firmware command
+Date: Fri, 18 Mar 2016 10:35:11 -0700
+Subject: [Intel-wired-lan] [PATCH 4/7] ixgbe: Use method pointer to access
+	IOSF devices
 In-Reply-To: <20160318173358.28259.83547.stgit@mdrustad-wks.jf.intel.com>
 References: <20160318173358.28259.83547.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <20160318173500.28259.48022.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <20160318173511.28259.30047.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The new mac includes a new firmware command that need to be used
-to control phy access, so add definitions and support for it.
+Provide method pointers and use them to access IOSF-attached
+devices. A new MAC will introduce a new access method.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |   19 +++++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   55 +++++++++++++++++++++++++
- 2 files changed, 74 insertions(+)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |    2 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   32 ++++++++++++++-----------
+ 2 files changed, 20 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-index fae85d1c3bf9..818e0a10d1bd 100644
+index 818e0a10d1bd..ae4b86fff9c3 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-@@ -2626,6 +2626,16 @@ enum ixgbe_fdir_pballoc_type {
- #define FW_MAX_READ_BUFFER_SIZE		1024
- #define FW_DISABLE_RXEN_CMD		0xDE
- #define FW_DISABLE_RXEN_LEN		0x1
-+#define FW_PHY_MGMT_REQ_CMD		0x20
-+#define FW_PHY_TOKEN_REQ_CMD		0x0A
-+#define FW_PHY_TOKEN_REQ_LEN		2
-+#define FW_PHY_TOKEN_REQ		0
-+#define FW_PHY_TOKEN_REL		1
-+#define FW_PHY_TOKEN_OK			1
-+#define FW_PHY_TOKEN_RETRY		0x80
-+#define FW_PHY_TOKEN_DELAY		5	/* milliseconds */
-+#define FW_PHY_TOKEN_WAIT		5	/* seconds */
-+#define FW_PHY_TOKEN_RETRIES ((FW_PHY_TOKEN_WAIT * 1000) / FW_PHY_TOKEN_DELAY)
- 
- /* Host Interface Command Structures */
- struct ixgbe_hic_hdr {
-@@ -2694,6 +2704,13 @@ struct ixgbe_hic_disable_rxen {
- 	u16 pad3;
+@@ -3348,6 +3348,8 @@ struct ixgbe_mac_operations {
+ 	s32 (*dmac_config)(struct ixgbe_hw *hw);
+ 	s32 (*dmac_update_tcs)(struct ixgbe_hw *hw);
+ 	s32 (*dmac_config_tcs)(struct ixgbe_hw *hw);
++	s32 (*read_iosf_sb_reg)(struct ixgbe_hw *, u32, u32, u32 *);
++	s32 (*write_iosf_sb_reg)(struct ixgbe_hw *, u32, u32, u32);
  };
  
-+struct ixgbe_hic_phy_token_req {
-+	struct ixgbe_hic_hdr hdr;
-+	u8 port_number;
-+	u8 command_type;
-+	u16 pad;
-+};
-+
- /* Transmit Descriptor - Advanced */
- union ixgbe_adv_tx_desc {
- 	struct {
-@@ -3525,6 +3542,8 @@ struct ixgbe_info {
- #define IXGBE_ERR_INVALID_ARGUMENT              -32
- #define IXGBE_ERR_HOST_INTERFACE_COMMAND        -33
- #define IXGBE_ERR_FDIR_CMD_INCOMPLETE		-38
-+#define IXGBE_ERR_FW_RESP_INVALID		-39
-+#define IXGBE_ERR_TOKEN_RETRY			-40
- #define IXGBE_NOT_IMPLEMENTED                   0x7FFFFFFF
- 
- #define IXGBE_FUSES0_GROUP(_i)		(0x11158 + ((_i) * 4))
+ struct ixgbe_phy_operations {
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index 65832fa30426..aaea94759d76 100644
+index 615aaea069b6..b8c10e40bc9e 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -413,6 +413,61 @@ out:
- 	return ret;
- }
+@@ -1670,7 +1670,7 @@ static s32 ixgbe_setup_kr_speed_x550em(struct ixgbe_hw *hw,
+ 	s32 status;
+ 	u32 reg_val;
  
-+/**
-+ * ixgbe_get_phy_token - Get the token for shared phy access
-+ * @hw: Pointer to hardware structure
-+ */
-+static s32 ixgbe_get_phy_token(struct ixgbe_hw *hw)
-+{
-+	struct ixgbe_hic_phy_token_req token_cmd;
-+	s32 status;
-+
-+	token_cmd.hdr.cmd = FW_PHY_TOKEN_REQ_CMD;
-+	token_cmd.hdr.buf_len = FW_PHY_TOKEN_REQ_LEN;
-+	token_cmd.hdr.cmd_or_resp.cmd_resv = 0;
-+	token_cmd.hdr.checksum = FW_DEFAULT_CHECKSUM;
-+	token_cmd.port_number = hw->bus.lan_id;
-+	token_cmd.command_type = FW_PHY_TOKEN_REQ;
-+	token_cmd.pad = 0;
-+	status = ixgbe_host_interface_command(hw, &token_cmd, sizeof(token_cmd),
-+					      IXGBE_HI_COMMAND_TIMEOUT,
-+					      true);
-+	if (status)
-+		return status;
-+	if (token_cmd.hdr.cmd_or_resp.ret_status == FW_PHY_TOKEN_OK)
-+		return 0;
-+	if (token_cmd.hdr.cmd_or_resp.ret_status != FW_PHY_TOKEN_RETRY)
-+		return IXGBE_ERR_FW_RESP_INVALID;
-+
-+	return IXGBE_ERR_TOKEN_RETRY;
-+}
-+
-+/**
-+ * ixgbe_put_phy_token - Put the token for shared phy access
-+ * @hw: Pointer to hardware structure
-+ */
-+static s32 ixgbe_put_phy_token(struct ixgbe_hw *hw)
-+{
-+	struct ixgbe_hic_phy_token_req token_cmd;
-+	s32 status;
-+
-+	token_cmd.hdr.cmd = FW_PHY_TOKEN_REQ_CMD;
-+	token_cmd.hdr.buf_len = FW_PHY_TOKEN_REQ_LEN;
-+	token_cmd.hdr.cmd_or_resp.cmd_resv = 0;
-+	token_cmd.hdr.checksum = FW_DEFAULT_CHECKSUM;
-+	token_cmd.port_number = hw->bus.lan_id;
-+	token_cmd.command_type = FW_PHY_TOKEN_REL;
-+	token_cmd.pad = 0;
-+	status = ixgbe_host_interface_command(hw, &token_cmd, sizeof(token_cmd),
-+					      IXGBE_HI_COMMAND_TIMEOUT,
-+					      true);
-+	if (status)
-+		return status;
-+	if (token_cmd.hdr.cmd_or_resp.ret_status == FW_PHY_TOKEN_OK)
-+		return 0;
-+	return IXGBE_ERR_FW_RESP_INVALID;
-+}
-+
- /** ixgbe_read_ee_hostif_data_X550 - Read EEPROM word using a host interface
-  *  command assuming that the semaphore is already obtained.
-  *  @hw: pointer to hardware structure
+-	status = ixgbe_read_iosf_sb_reg_x550(hw,
++	status = hw->mac.ops.read_iosf_sb_reg(hw,
+ 					IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
+ 					IXGBE_SB_IOSF_TARGET_KR_PHY, &reg_val);
+ 	if (status)
+@@ -1692,7 +1692,7 @@ static s32 ixgbe_setup_kr_speed_x550em(struct ixgbe_hw *hw,
+ 
+ 	/* Restart auto-negotiation. */
+ 	reg_val |= IXGBE_KRM_LINK_CTRL_1_TETH_AN_RESTART;
+-	status = ixgbe_write_iosf_sb_reg_x550(hw,
++	status = hw->mac.ops.write_iosf_sb_reg(hw,
+ 					IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
+ 					IXGBE_SB_IOSF_TARGET_KR_PHY, reg_val);
+ 
+@@ -1709,9 +1709,9 @@ static s32 ixgbe_setup_kx4_x550em(struct ixgbe_hw *hw)
+ 	s32 status;
+ 	u32 reg_val;
+ 
+-	status = ixgbe_read_iosf_sb_reg_x550(hw, IXGBE_KX4_LINK_CNTL_1,
+-					     IXGBE_SB_IOSF_TARGET_KX4_PCS0 +
+-					     hw->bus.lan_id, &reg_val);
++	status = hw->mac.ops.read_iosf_sb_reg(hw, IXGBE_KX4_LINK_CNTL_1,
++					      IXGBE_SB_IOSF_TARGET_KX4_PCS0 +
++					      hw->bus.lan_id, &reg_val);
+ 	if (status)
+ 		return status;
+ 
+@@ -1730,9 +1730,9 @@ static s32 ixgbe_setup_kx4_x550em(struct ixgbe_hw *hw)
+ 
+ 	/* Restart auto-negotiation. */
+ 	reg_val |= IXGBE_KX4_LINK_CNTL_1_TETH_AN_RESTART;
+-	status = ixgbe_write_iosf_sb_reg_x550(hw, IXGBE_KX4_LINK_CNTL_1,
+-					      IXGBE_SB_IOSF_TARGET_KX4_PCS0 +
+-					      hw->bus.lan_id, reg_val);
++	status = hw->mac.ops.write_iosf_sb_reg(hw, IXGBE_KX4_LINK_CNTL_1,
++					       IXGBE_SB_IOSF_TARGET_KX4_PCS0 +
++					       hw->bus.lan_id, reg_val);
+ 
+ 	return status;
+ }
+@@ -1952,9 +1952,10 @@ static s32 ixgbe_setup_fc_x550em(struct ixgbe_hw *hw)
+ 	if (hw->device_id != IXGBE_DEV_ID_X550EM_X_KR)
+ 		return 0;
+ 
+-	rc = ixgbe_read_iosf_sb_reg_x550(hw,
+-					 IXGBE_KRM_AN_CNTL_1(hw->bus.lan_id),
+-					 IXGBE_SB_IOSF_TARGET_KR_PHY, &reg_val);
++	rc = hw->mac.ops.read_iosf_sb_reg(hw,
++					  IXGBE_KRM_AN_CNTL_1(hw->bus.lan_id),
++					  IXGBE_SB_IOSF_TARGET_KR_PHY,
++					  &reg_val);
+ 	if (rc)
+ 		return rc;
+ 
+@@ -1964,9 +1965,10 @@ static s32 ixgbe_setup_fc_x550em(struct ixgbe_hw *hw)
+ 		reg_val |= IXGBE_KRM_AN_CNTL_1_SYM_PAUSE;
+ 	if (asm_dir)
+ 		reg_val |= IXGBE_KRM_AN_CNTL_1_ASM_PAUSE;
+-	rc = ixgbe_write_iosf_sb_reg_x550(hw,
+-					  IXGBE_KRM_AN_CNTL_1(hw->bus.lan_id),
+-					  IXGBE_SB_IOSF_TARGET_KR_PHY, reg_val);
++	rc = hw->mac.ops.write_iosf_sb_reg(hw,
++					   IXGBE_KRM_AN_CNTL_1(hw->bus.lan_id),
++					   IXGBE_SB_IOSF_TARGET_KR_PHY,
++					   reg_val);
+ 
+ 	/* This device does not fully support AN. */
+ 	hw->fc.disable_fc_autoneg = true;
+@@ -2557,6 +2559,8 @@ static const struct ixgbe_mac_operations mac_ops_X550EM_x = {
+ 	.release_swfw_sync	= &ixgbe_release_swfw_sync_X550em,
+ 	.init_swfw_sync		= &ixgbe_init_swfw_sync_X540,
+ 	.setup_fc		= NULL, /* defined later */
++	.read_iosf_sb_reg	= ixgbe_read_iosf_sb_reg_x550,
++	.write_iosf_sb_reg	= ixgbe_write_iosf_sb_reg_x550,
+ };
+ 
+ #define X550_COMMON_EEP \
 
