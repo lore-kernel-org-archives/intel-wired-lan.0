@@ -1,10 +1,10 @@
 From: Avinash Dayanand <avinash.dayanand@intel.com>
-Date: Fri, 18 Mar 2016 12:18:06 -0700
-Subject: [Intel-wired-lan] [next PATCH S31 v4 02/12] i40e: Remove unused
-	variable
+Date: Fri, 18 Mar 2016 12:18:10 -0700
+Subject: [Intel-wired-lan] [next PATCH S31 v4 06/12] i40evf: Add longer wait
+	after remove module
 In-Reply-To: <1458328696-135941-1-git-send-email-avinash.dayanand@intel.com>
 References: <1458328696-135941-1-git-send-email-avinash.dayanand@intel.com>
-Message-ID: <1458328696-135941-3-git-send-email-avinash.dayanand@intel.com>
+Message-ID: <1458328696-135941-7-git-send-email-avinash.dayanand@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,52 +13,38 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Mitch Williams <mitch.a.williams@intel.com>
 
-This variable is vestigial, a remnant of the primordial code from which
-this driver spawned. We can safely remove it.
+Upon module remove, wait a little longer after requesting a reset before
+checking to see if the firmware responded. This change prevents double
+resets when the firmware is busy.
 
-Testing Hints: VFs initialize and pass traffic.
+Testing Hints: Load and unload VF driver repeatedly
+with a lot of VFs enabled and make sure it reinitializes properly each
+time.
 
 Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Change-ID: I24e0fe338e7c7c50d27dc5515564f33caefbb93a
+Change-ID: Ieedc988ee82fac1f32a074bf4d9e4dba426bfa58
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 2bde41b..80174de 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1182,8 +1182,8 @@ static int i40e_vc_get_vf_resources_msg(struct i40e_vf *vf, u8 *msg)
- 	struct i40e_pf *pf = vf->pf;
- 	i40e_status aq_ret = 0;
- 	struct i40e_vsi *vsi;
--	int i = 0, len = 0;
- 	int num_vsis = 1;
-+	int len = 0;
- 	int ret;
- 
- 	if (!test_bit(I40E_VF_STAT_INIT, &vf->vf_states)) {
-@@ -1238,15 +1238,14 @@ static int i40e_vc_get_vf_resources_msg(struct i40e_vf *vf, u8 *msg)
- 	vfres->num_queue_pairs = vf->num_queue_pairs;
- 	vfres->max_vectors = pf->hw.func_caps.num_msix_vectors_vf;
- 	if (vf->lan_vsi_idx) {
--		vfres->vsi_res[i].vsi_id = vf->lan_vsi_id;
--		vfres->vsi_res[i].vsi_type = I40E_VSI_SRIOV;
--		vfres->vsi_res[i].num_queue_pairs = vsi->alloc_queue_pairs;
-+		vfres->vsi_res[0].vsi_id = vf->lan_vsi_id;
-+		vfres->vsi_res[0].vsi_type = I40E_VSI_SRIOV;
-+		vfres->vsi_res[0].num_queue_pairs = vsi->alloc_queue_pairs;
- 		/* VFs only use TC 0 */
--		vfres->vsi_res[i].qset_handle
-+		vfres->vsi_res[0].qset_handle
- 					  = le16_to_cpu(vsi->info.qs_handle[0]);
--		ether_addr_copy(vfres->vsi_res[i].default_mac_addr,
-+		ether_addr_copy(vfres->vsi_res[0].default_mac_addr,
- 				vf->default_lan_addr.addr);
--		i++;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 0c99974..8598c5f 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -2854,11 +2854,11 @@ static void i40evf_remove(struct pci_dev *pdev)
+ 	adapter->state = __I40EVF_REMOVE;
+ 	adapter->aq_required = 0;
+ 	i40evf_request_reset(adapter);
+-	msleep(20);
++	msleep(50);
+ 	/* If the FW isn't responding, kick it once, but only once. */
+ 	if (!i40evf_asq_done(hw)) {
+ 		i40evf_request_reset(adapter);
+-		msleep(20);
++		msleep(50);
  	}
- 	set_bit(I40E_VF_STAT_ACTIVE, &vf->vf_states);
  
+ 	if (adapter->msix_entries) {
 -- 
 2.4.3
 
