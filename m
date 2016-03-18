@@ -1,62 +1,48 @@
 From: Avinash Dayanand <avinash.dayanand@intel.com>
-Date: Fri, 18 Mar 2016 12:18:13 -0700
-Subject: [Intel-wired-lan] [next PATCH S31 v4 09/12] i40e: Fix for supported
-	link modes in 10GBaseT PHY's
+Date: Fri, 18 Mar 2016 12:18:16 -0700
+Subject: [Intel-wired-lan] [next PATCH S31 v4 12/12] i40e/i40evf: Bump patch
+	from 1.5.1 to 1.5.2
 In-Reply-To: <1458328696-135941-1-git-send-email-avinash.dayanand@intel.com>
 References: <1458328696-135941-1-git-send-email-avinash.dayanand@intel.com>
-Message-ID: <1458328696-135941-10-git-send-email-avinash.dayanand@intel.com>
+Message-ID: <1458328696-135941-13-git-send-email-avinash.dayanand@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-100baseT/Full is now listed and supported link mode for 10GBaseT PHY.
-This is a fix to list all the supported link modes of 10GBaseT PHY.
-
-Testing Hints: Use 'ethtool -s ethx advertise
-0x008' to change supported link mode. Check if 100baseT is displayed.
-
 Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
-Change-ID: If2be3212ef0fef85fd5d6e4550c7783de2f915e9
 ---
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 410d237..8a83d45 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -313,6 +313,13 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
- 			ecmd->advertising |= ADVERTISED_10000baseT_Full;
- 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_1GB)
- 			ecmd->advertising |= ADVERTISED_1000baseT_Full;
-+		/* adding 100baseT support for 10GBASET_PHY */
-+		if (pf->flags & I40E_FLAG_HAVE_10GBASET_PHY) {
-+			ecmd->supported |= SUPPORTED_100baseT_Full;
-+			ecmd->advertising |= ADVERTISED_100baseT_Full |
-+					     ADVERTISED_1000baseT_Full |
-+					     ADVERTISED_10000baseT_Full;
-+		}
- 		break;
- 	case I40E_PHY_TYPE_1000BASE_T_OPTICAL:
- 		ecmd->supported = SUPPORTED_Autoneg |
-@@ -325,6 +332,15 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
- 				  SUPPORTED_100baseT_Full;
- 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_100MB)
- 			ecmd->advertising |= ADVERTISED_100baseT_Full;
-+		/* firmware detects 10G phy as 100M phy at 100M speed */
-+		if (pf->flags & I40E_FLAG_HAVE_10GBASET_PHY) {
-+			ecmd->supported |= SUPPORTED_10000baseT_Full |
-+					   SUPPORTED_1000baseT_Full;
-+			ecmd->advertising |= ADVERTISED_Autoneg |
-+					     ADVERTISED_100baseT_Full |
-+					     ADVERTISED_1000baseT_Full |
-+					     ADVERTISED_10000baseT_Full;
-+		}
- 		break;
- 	case I40E_PHY_TYPE_10GBASE_CR1_CU:
- 	case I40E_PHY_TYPE_10GBASE_CR1:
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index ba9d0cc..fe7064d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -46,7 +46,7 @@ static const char i40e_driver_string[] =
+ 
+ #define DRV_VERSION_MAJOR 1
+ #define DRV_VERSION_MINOR 5
+-#define DRV_VERSION_BUILD 1
++#define DRV_VERSION_BUILD 2
+ #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
+ 	     __stringify(DRV_VERSION_MINOR) "." \
+ 	     __stringify(DRV_VERSION_BUILD)    DRV_KERN
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index e66f47e..54aa24b 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -38,7 +38,7 @@ static const char i40evf_driver_string[] =
+ 
+ #define DRV_VERSION_MAJOR 1
+ #define DRV_VERSION_MINOR 5
+-#define DRV_VERSION_BUILD 1
++#define DRV_VERSION_BUILD 2
+ #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
+ 	     __stringify(DRV_VERSION_MINOR) "." \
+ 	     __stringify(DRV_VERSION_BUILD) \
 -- 
 2.4.3
 
