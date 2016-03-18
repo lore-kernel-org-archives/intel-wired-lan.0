@@ -1,217 +1,121 @@
 From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Fri, 18 Mar 2016 16:11:14 -0700
-Subject: [Intel-wired-lan] [PATCH 1/2] ixgbe: consolidate the configuration
-	of spoof checking
+Date: Fri, 18 Mar 2016 16:11:19 -0700
+Subject: [Intel-wired-lan] [PATCH 2/2] ixgbe: set vlan spoof checking
+	unconditionally
 In-Reply-To: <20160318225046.25773.35723.stgit@localhost6.localdomain6>
 References: <20160318225046.25773.35723.stgit@localhost6.localdomain6>
-Message-ID: <20160318231114.25773.46384.stgit@localhost6.localdomain6>
+Message-ID: <20160318231119.25773.39536.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Consolidate the logic behind configuring spoof checking:
+Previously the PF driver would only set VLAN spoof checking if
+the VF had created vlans. This was done by setting and checking
+a counter (vlan_count) whenever a vlan was created by the VF.
+However it is possible for the vlan_count to be !=0 while there are
+no VLANs assigned to the VF due to the count incrementing every
+time a VLAN 0 is added on ifdown/up, which resulted in vlan spoofing
+always being set for those VFs.
 
-- move the setting of the MAC, VLAN and Ethertype spoof checking into
-ixgbe_ndo_set_vf_spoofchk().
+This patch cleans up the logic by unconditionally setting VLAN based on
+how the VF is configured (via ip link set ethX vf Y spoofchk on/off).
+This change also resolves an issue where the VLAN spoofing can remain
+set even after being disabled by the user due to the driver enabling
+VLAN spoof checking every time a VLAN is added to the VF, but would
+only allow changes in the setting if vlan_count != 0.
 
-- change ixgbe_set_mac_anti_spoofing() to set MAC spoofing per VF similar
-to the VLAN and Ethertype functions - this allows us to call the helper
-functions in ixgbe_ndo_set_vf_spoofchk() for all spoof check types and
-only disable MAC spoof checking when creating MACVLAN.
+Also default_vf_vlan_id and vlans_enabled were removed from the
+vf_data_storage structure since they are not being used in the driver.
 
 Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |   40 ++++++---------------
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.h |    2 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c   |   30 ++--------------
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c  |   44 +++++++++++++++--------
- 4 files changed, 43 insertions(+), 73 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h       |    3 ---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |   25 ++----------------------
+ 2 files changed, 2 insertions(+), 26 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-index ee43a38..0a49337 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-@@ -3300,43 +3300,25 @@ wwn_prefix_err:
- /**
-  *  ixgbe_set_mac_anti_spoofing - Enable/Disable MAC anti-spoofing
-  *  @hw: pointer to hardware structure
-- *  @enable: enable or disable switch for anti-spoofing
-- *  @pf: Physical Function pool - do not enable anti-spoofing for the PF
-+ *  @enable: enable or disable switch for MAC anti-spoofing
-+ *  @vf: Virtual Function pool - VF Pool to set for MAC anti-spoofing
-  *
-  **/
--void ixgbe_set_mac_anti_spoofing(struct ixgbe_hw *hw, bool enable, int pf)
-+void ixgbe_set_mac_anti_spoofing(struct ixgbe_hw *hw, bool enable, int vf)
- {
--	int j;
--	int pf_target_reg = pf >> 3;
--	int pf_target_shift = pf % 8;
--	u32 pfvfspoof = 0;
-+	int vf_target_reg = vf >> 3;
-+	int vf_target_shift = vf % 8;
-+	u32 pfvfspoof;
- 
- 	if (hw->mac.type == ixgbe_mac_82598EB)
- 		return;
- 
-+	pfvfspoof = IXGBE_READ_REG(hw, IXGBE_PFVFSPOOF(vf_target_reg));
- 	if (enable)
--		pfvfspoof = IXGBE_SPOOF_MACAS_MASK;
--
--	/*
--	 * PFVFSPOOF register array is size 8 with 8 bits assigned to
--	 * MAC anti-spoof enables in each register array element.
--	 */
--	for (j = 0; j < pf_target_reg; j++)
--		IXGBE_WRITE_REG(hw, IXGBE_PFVFSPOOF(j), pfvfspoof);
--
--	/*
--	 * The PF should be allowed to spoof so that it can support
--	 * emulation mode NICs.  Do not set the bits assigned to the PF
--	 */
--	pfvfspoof &= (1 << pf_target_shift) - 1;
--	IXGBE_WRITE_REG(hw, IXGBE_PFVFSPOOF(j), pfvfspoof);
--
--	/*
--	 * Remaining pools belong to the PF so they do not need to have
--	 * anti-spoofing enabled.
--	 */
--	for (j++; j < IXGBE_PFVFSPOOF_REG_COUNT; j++)
--		IXGBE_WRITE_REG(hw, IXGBE_PFVFSPOOF(j), 0);
-+		pfvfspoof |= BIT(vf_target_shift);
-+	else
-+		pfvfspoof &= ~BIT(vf_target_shift);
-+	IXGBE_WRITE_REG(hw, IXGBE_PFVFSPOOF(vf_target_reg), pfvfspoof);
- }
- 
- /**
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
-index 6f8e6a5..6d4c260 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
-@@ -106,7 +106,7 @@ s32 prot_autoc_write_generic(struct ixgbe_hw *hw, u32 reg_val, bool locked);
- 
- s32 ixgbe_blink_led_start_generic(struct ixgbe_hw *hw, u32 index);
- s32 ixgbe_blink_led_stop_generic(struct ixgbe_hw *hw, u32 index);
--void ixgbe_set_mac_anti_spoofing(struct ixgbe_hw *hw, bool enable, int pf);
-+void ixgbe_set_mac_anti_spoofing(struct ixgbe_hw *hw, bool enable, int vf);
- void ixgbe_set_vlan_anti_spoofing(struct ixgbe_hw *hw, bool enable, int vf);
- s32 ixgbe_get_device_caps_generic(struct ixgbe_hw *hw, u16 *device_caps);
- s32 ixgbe_set_fw_drv_ver_generic(struct ixgbe_hw *hw, u8 maj, u8 min,
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 59b43ce..2547ce2 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -3754,34 +3754,10 @@ static void ixgbe_configure_virtualization(struct ixgbe_adapter *adapter)
- 
- 	IXGBE_WRITE_REG(hw, IXGBE_GCR_EXT, gcr_ext);
- 
--
--	/* Enable MAC Anti-Spoofing */
--	hw->mac.ops.set_mac_anti_spoofing(hw, (adapter->num_vfs != 0),
--					  adapter->num_vfs);
--
--	/* Ensure LLDP and FC is set for Ethertype Antispoofing if we will be
--	 * calling set_ethertype_anti_spoofing for each VF in loop below
--	 */
--	if (hw->mac.ops.set_ethertype_anti_spoofing) {
--		IXGBE_WRITE_REG(hw, IXGBE_ETQF(IXGBE_ETQF_FILTER_LLDP),
--				(IXGBE_ETQF_FILTER_EN    |
--				 IXGBE_ETQF_TX_ANTISPOOF |
--				 IXGBE_ETH_P_LLDP));
--
--		IXGBE_WRITE_REG(hw, IXGBE_ETQF(IXGBE_ETQF_FILTER_FC),
--				(IXGBE_ETQF_FILTER_EN |
--				 IXGBE_ETQF_TX_ANTISPOOF |
--				 ETH_P_PAUSE));
--	}
--
--	/* For VFs that have spoof checking turned off */
- 	for (i = 0; i < adapter->num_vfs; i++) {
--		if (!adapter->vfinfo[i].spoofchk_enabled)
--			ixgbe_ndo_set_vf_spoofchk(adapter->netdev, i, false);
--
--		/* enable ethertype anti spoofing if hw supports it */
--		if (hw->mac.ops.set_ethertype_anti_spoofing)
--			hw->mac.ops.set_ethertype_anti_spoofing(hw, true, i);
-+		/* configure spoof checking */
-+		ixgbe_ndo_set_vf_spoofchk(adapter->netdev, i,
-+					  adapter->vfinfo[i].spoofchk_enabled);
- 
- 		/* Enable/Disable RSS query feature  */
- 		ixgbe_ndo_set_vf_rss_query_en(adapter->netdev, i,
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index 4590fab..d9b220f 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -143,14 +143,11 @@ struct vf_data_storage {
+ 	unsigned char vf_mac_addresses[ETH_ALEN];
+ 	u16 vf_mc_hashes[IXGBE_MAX_VF_MC_ENTRIES];
+ 	u16 num_vf_mc_hashes;
+-	u16 default_vf_vlan_id;
+-	u16 vlans_enabled;
+ 	bool clear_to_send;
+ 	bool pf_set_mac;
+ 	u16 pf_vlan; /* When set, guest VLAN config not allowed. */
+ 	u16 pf_qos;
+ 	u16 tx_rate;
+-	u16 vlan_count;
+ 	u8 spoofchk_enabled;
+ 	bool rss_query_enabled;
+ 	u8 trusted;
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-index adcf000..cb8b51b 100644
+index cb8b51b..e47785a 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-@@ -964,8 +964,11 @@ static int ixgbe_set_vf_macvlan_msg(struct ixgbe_adapter *adapter,
- 		 * If the VF is allowed to set MAC filters then turn off
- 		 * anti-spoofing to avoid false positives.
- 		 */
--		if (adapter->vfinfo[vf].spoofchk_enabled)
--			ixgbe_ndo_set_vf_spoofchk(adapter->netdev, vf, false);
-+		if (adapter->vfinfo[vf].spoofchk_enabled) {
-+			struct ixgbe_hw *hw = &adapter->hw;
-+
-+			hw->mac.ops.set_mac_anti_spoofing(hw, false, vf);
-+		}
- 	}
+@@ -908,8 +908,6 @@ static int ixgbe_set_vf_vlan_msg(struct ixgbe_adapter *adapter,
+ 	u32 add = (msgbuf[0] & IXGBE_VT_MSGINFO_MASK) >> IXGBE_VT_MSGINFO_SHIFT;
+ 	u32 vid = (msgbuf[1] & IXGBE_VLVF_VLANID_MASK);
+ 	u8 tcs = netdev_get_num_tc(adapter->netdev);
+-	struct ixgbe_hw *hw = &adapter->hw;
+-	int err;
  
- 	err = ixgbe_set_vf_macvlan(adapter, vf, index, new_mac);
-@@ -1525,29 +1528,38 @@ int ixgbe_ndo_set_vf_bw(struct net_device *netdev, int vf, int min_tx_rate,
- int ixgbe_ndo_set_vf_spoofchk(struct net_device *netdev, int vf, bool setting)
- {
- 	struct ixgbe_adapter *adapter = netdev_priv(netdev);
--	int vf_target_reg = vf >> 3;
--	int vf_target_shift = vf % 8;
- 	struct ixgbe_hw *hw = &adapter->hw;
--	u32 regval;
+ 	if (adapter->vfinfo[vf].pf_vlan || tcs) {
+ 		e_warn(drv,
+@@ -923,19 +921,7 @@ static int ixgbe_set_vf_vlan_msg(struct ixgbe_adapter *adapter,
+ 	if (!vid && !add)
+ 		return 0;
  
- 	if (vf >= adapter->num_vfs)
- 		return -EINVAL;
- 
- 	adapter->vfinfo[vf].spoofchk_enabled = setting;
- 
--	regval = IXGBE_READ_REG(hw, IXGBE_PFVFSPOOF(vf_target_reg));
--	regval &= ~(1 << vf_target_shift);
--	regval |= (setting << vf_target_shift);
--	IXGBE_WRITE_REG(hw, IXGBE_PFVFSPOOF(vf_target_reg), regval);
+-	err = ixgbe_set_vf_vlan(adapter, add, vid, vf);
+-	if (err)
+-		return err;
 -
--	if (adapter->vfinfo[vf].vlan_count) {
--		vf_target_shift += IXGBE_SPOOF_VLANAS_SHIFT;
--		regval = IXGBE_READ_REG(hw, IXGBE_PFVFSPOOF(vf_target_reg));
--		regval &= ~(1 << vf_target_shift);
--		regval |= (setting << vf_target_shift);
--		IXGBE_WRITE_REG(hw, IXGBE_PFVFSPOOF(vf_target_reg), regval);
-+	/* configure MAC spoofing */
-+	hw->mac.ops.set_mac_anti_spoofing(hw, setting, vf);
-+
-+	/* configure VLAN spoofing */
-+	if (adapter->vfinfo[vf].vlan_count)
-+		hw->mac.ops.set_vlan_anti_spoofing(hw, setting, vf);
-+
-+	/* Ensure LLDP and FC is set for Ethertype Antispoofing if we will be
-+	 * calling set_ethertype_anti_spoofing for each VF in loop below
-+	 */
-+	if (hw->mac.ops.set_ethertype_anti_spoofing) {
-+		IXGBE_WRITE_REG(hw, IXGBE_ETQF(IXGBE_ETQF_FILTER_LLDP),
-+				(IXGBE_ETQF_FILTER_EN    |
-+				 IXGBE_ETQF_TX_ANTISPOOF |
-+				 IXGBE_ETH_P_LLDP));
-+
-+		IXGBE_WRITE_REG(hw, IXGBE_ETQF(IXGBE_ETQF_FILTER_FC),
-+				(IXGBE_ETQF_FILTER_EN |
-+				 IXGBE_ETQF_TX_ANTISPOOF |
-+				 ETH_P_PAUSE));
-+
-+		hw->mac.ops.set_ethertype_anti_spoofing(hw, setting, vf);
- 	}
- 
-+
- 	return 0;
+-	if (adapter->vfinfo[vf].spoofchk_enabled)
+-		hw->mac.ops.set_vlan_anti_spoofing(hw, true, vf);
+-
+-	if (add)
+-		adapter->vfinfo[vf].vlan_count++;
+-	else if (adapter->vfinfo[vf].vlan_count)
+-		adapter->vfinfo[vf].vlan_count--;
+-
+-	return 0;
++	return ixgbe_set_vf_vlan(adapter, add, vid, vf);
  }
  
+ static int ixgbe_set_vf_macvlan_msg(struct ixgbe_adapter *adapter,
+@@ -1324,9 +1310,6 @@ static int ixgbe_enable_port_vlan(struct ixgbe_adapter *adapter, int vf,
+ 
+ 	ixgbe_set_vmvir(adapter, vlan, qos, vf);
+ 	ixgbe_set_vmolr(hw, vf, false);
+-	if (adapter->vfinfo[vf].spoofchk_enabled)
+-		hw->mac.ops.set_vlan_anti_spoofing(hw, true, vf);
+-	adapter->vfinfo[vf].vlan_count++;
+ 
+ 	/* enable hide vlan on X550 */
+ 	if (hw->mac.type >= ixgbe_mac_X550)
+@@ -1359,9 +1342,6 @@ static int ixgbe_disable_port_vlan(struct ixgbe_adapter *adapter, int vf)
+ 	ixgbe_set_vf_vlan(adapter, true, 0, vf);
+ 	ixgbe_clear_vmvir(adapter, vf);
+ 	ixgbe_set_vmolr(hw, vf, true);
+-	hw->mac.ops.set_vlan_anti_spoofing(hw, false, vf);
+-	if (adapter->vfinfo[vf].vlan_count)
+-		adapter->vfinfo[vf].vlan_count--;
+ 
+ 	/* disable hide VLAN on X550 */
+ 	if (hw->mac.type >= ixgbe_mac_X550)
+@@ -1539,8 +1519,7 @@ int ixgbe_ndo_set_vf_spoofchk(struct net_device *netdev, int vf, bool setting)
+ 	hw->mac.ops.set_mac_anti_spoofing(hw, setting, vf);
+ 
+ 	/* configure VLAN spoofing */
+-	if (adapter->vfinfo[vf].vlan_count)
+-		hw->mac.ops.set_vlan_anti_spoofing(hw, setting, vf);
++	hw->mac.ops.set_vlan_anti_spoofing(hw, setting, vf);
+ 
+ 	/* Ensure LLDP and FC is set for Ethertype Antispoofing if we will be
+ 	 * calling set_ethertype_anti_spoofing for each VF in loop below
 
