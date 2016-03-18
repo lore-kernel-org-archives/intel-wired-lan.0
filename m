@@ -1,100 +1,77 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Fri, 18 Mar 2016 14:07:15 -0700
-Subject: [Intel-wired-lan] [PATCH 2/6] ixgbe: Request token for phy accesses
+Date: Fri, 18 Mar 2016 14:07:20 -0700
+Subject: [Intel-wired-lan] [PATCH 3/6] ixgbe: Read and set instance id
 In-Reply-To: <20160318210612.41255.22539.stgit@mdrustad-wks.jf.intel.com>
 References: <20160318210612.41255.22539.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <20160318210715.41255.87419.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <20160318210720.41255.21870.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Set the bit to request the phy token for phy accesses.
+Read the instance number from eeprom and save it for later use.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c |   34 +++++++++++++-------------
- 1 file changed, 17 insertions(+), 17 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |    8 ++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h   |    5 +++++
+ 2 files changed, 13 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-index db0731e05401..9092b9612271 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-@@ -1,7 +1,7 @@
- /*******************************************************************************
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+index 76080310fc6b..833567cacda4 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+@@ -681,6 +681,7 @@ s32 ixgbe_get_bus_info_generic(struct ixgbe_hw *hw)
+ void ixgbe_set_lan_id_multi_port_pcie(struct ixgbe_hw *hw)
+ {
+ 	struct ixgbe_bus_info *bus = &hw->bus;
++	u16 ee_ctrl_4;
+ 	u32 reg;
  
-   Intel 10 Gigabit PCI Express Linux driver
--  Copyright(c) 1999 - 2014 Intel Corporation.
-+  Copyright(c) 1999 - 2016 Intel Corporation.
- 
-   This program is free software; you can redistribute it and/or modify it
-   under the terms and conditions of the GNU General Public License,
-@@ -570,24 +570,24 @@ s32 ixgbe_read_phy_reg_mdi(struct ixgbe_hw *hw, u32 reg_addr, u32 device_type,
+ 	reg = IXGBE_READ_REG(hw, IXGBE_STATUS);
+@@ -691,6 +692,13 @@ void ixgbe_set_lan_id_multi_port_pcie(struct ixgbe_hw *hw)
+ 	reg = IXGBE_READ_REG(hw, IXGBE_FACTPS(hw));
+ 	if (reg & IXGBE_FACTPS_LFS)
+ 		bus->func ^= 0x1;
++
++	/* Get MAC instance from EEPROM for configuring CS4227 */
++	if (hw->device_id == IXGBE_DEV_ID_X550EM_A_SFP) {
++		hw->eeprom.ops.read(hw, IXGBE_EEPROM_CTRL_4, &ee_ctrl_4);
++		bus->instance_id = (ee_ctrl_4 & IXGBE_EE_CTRL_4_INST_ID) >>
++				   IXGBE_EE_CTRL_4_INST_ID_SHIFT;
++	}
+ }
  
  /**
-  *  ixgbe_read_phy_reg_generic - Reads a value from a specified PHY register
-- *  using the SWFW lock - this function is needed in most cases
-  *  @hw: pointer to hardware structure
-  *  @reg_addr: 32 bit address of PHY register to read
-  *  @phy_data: Pointer to read data from PHY register
-+ *
-+ *  This function uses the SWFW lock which must be held for all accesses
-  **/
- s32 ixgbe_read_phy_reg_generic(struct ixgbe_hw *hw, u32 reg_addr,
- 			       u32 device_type, u16 *phy_data)
- {
-+	u32 gssr = hw->phy.phy_semaphore_mask | IXGBE_GSSR_TOKEN_SM;
- 	s32 status;
--	u32 gssr = hw->phy.phy_semaphore_mask;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index 7de93388f050..af23ea026cfd 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -83,6 +83,7 @@
+ #define IXGBE_DEV_ID_X550EM_A_KR	0x15C2
+ #define IXGBE_DEV_ID_X550EM_A_KR_L	0x15C3
+ #define IXGBE_DEV_ID_X550EM_A_SFP_N	0x15C4
++#define IXGBE_DEV_ID_X550EM_A_SFP	0x15CE
  
--	if (hw->mac.ops.acquire_swfw_sync(hw, gssr) == 0) {
--		status = ixgbe_read_phy_reg_mdi(hw, reg_addr, device_type,
--						phy_data);
--		hw->mac.ops.release_swfw_sync(hw, gssr);
--	} else {
-+	if (hw->mac.ops.acquire_swfw_sync(hw, gssr))
- 		return IXGBE_ERR_SWFW_SYNC;
--	}
-+
-+	status = hw->phy.ops.read_reg_mdi(hw, reg_addr, device_type, phy_data);
-+
-+	hw->mac.ops.release_swfw_sync(hw, gssr);
+ /* VF Device IDs */
+ #define IXGBE_DEV_ID_X550_VF_HV	0x1564
+@@ -2001,6 +2002,9 @@ enum {
+ #define IXGBE_PBANUM_PTR_GUARD		0xFAFA
+ #define IXGBE_EEPROM_CHECKSUM		0x3F
+ #define IXGBE_EEPROM_SUM		0xBABA
++#define IXGBE_EEPROM_CTRL_4		0x45
++#define IXGBE_EE_CTRL_4_INST_ID		0x10
++#define IXGBE_EE_CTRL_4_INST_ID_SHIFT	4
+ #define IXGBE_PCIE_ANALOG_PTR		0x03
+ #define IXGBE_ATLAS0_CONFIG_PTR		0x04
+ #define IXGBE_PHY_PTR			0x04
+@@ -3176,6 +3180,7 @@ struct ixgbe_bus_info {
  
- 	return status;
- }
-@@ -667,25 +667,25 @@ s32 ixgbe_write_phy_reg_mdi(struct ixgbe_hw *hw, u32 reg_addr,
+ 	u8 func;
+ 	u8 lan_id;
++	u8 instance_id;
+ };
  
- /**
-  *  ixgbe_write_phy_reg_generic - Writes a value to specified PHY register
-- *  using SWFW lock- this function is needed in most cases
-  *  @hw: pointer to hardware structure
-  *  @reg_addr: 32 bit PHY register to write
-  *  @device_type: 5 bit device type
-  *  @phy_data: Data to write to the PHY register
-+ *
-+ *  This function uses the SWFW lock which must be held for all accesses
-  **/
- s32 ixgbe_write_phy_reg_generic(struct ixgbe_hw *hw, u32 reg_addr,
- 				u32 device_type, u16 phy_data)
- {
-+	u32 gssr = hw->phy.phy_semaphore_mask | IXGBE_GSSR_TOKEN_SM;
- 	s32 status;
--	u32 gssr = hw->phy.phy_semaphore_mask;
- 
--	if (hw->mac.ops.acquire_swfw_sync(hw, gssr) == 0) {
--		status = ixgbe_write_phy_reg_mdi(hw, reg_addr, device_type,
--						 phy_data);
--		hw->mac.ops.release_swfw_sync(hw, gssr);
--	} else {
-+	if (hw->mac.ops.acquire_swfw_sync(hw, gssr))
- 		return IXGBE_ERR_SWFW_SYNC;
--	}
-+
-+	status = hw->phy.ops.write_reg_mdi(hw, reg_addr, device_type, phy_data);
-+
-+	hw->mac.ops.release_swfw_sync(hw, gssr);
- 
- 	return status;
- }
+ /* Flow control parameters */
 
