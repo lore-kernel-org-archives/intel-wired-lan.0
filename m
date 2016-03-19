@@ -1,121 +1,135 @@
-From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Fri, 18 Mar 2016 16:11:19 -0700
-Subject: [Intel-wired-lan] [PATCH 2/2] ixgbe: set vlan spoof checking
-	unconditionally
-In-Reply-To: <20160318225046.25773.35723.stgit@localhost6.localdomain6>
-References: <20160318225046.25773.35723.stgit@localhost6.localdomain6>
-Message-ID: <20160318231119.25773.39536.stgit@localhost6.localdomain6>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 19 Mar 2016 08:15:18 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
+ cc2fa619a738a052eb90ccbbbc48947a2e2aa1d3 BUILD SUCCESS
+Message-ID: <56ec9a16.0CzsDRHCbdJA+BWf%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Previously the PF driver would only set VLAN spoof checking if
-the VF had created vlans. This was done by setting and checking
-a counter (vlan_count) whenever a vlan was created by the VF.
-However it is possible for the vlan_count to be !=0 while there are
-no VLANs assigned to the VF due to the count incrementing every
-time a VLAN 0 is added on ifdown/up, which resulted in vlan spoofing
-always being set for those VFs.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
+cc2fa619a738a052eb90ccbbbc48947a2e2aa1d3  net: stmmac: Don't search for phys if mdio node is defined.
 
-This patch cleans up the logic by unconditionally setting VLAN based on
-how the VF is configured (via ip link set ethX vf Y spoofchk on/off).
-This change also resolves an issue where the VLAN spoofing can remain
-set even after being disabled by the user due to the driver enabling
-VLAN spoof checking every time a VLAN is added to the VF, but would
-only allow changes in the setting if vlan_count != 0.
+elapsed time: 101m
 
-Also default_vf_vlan_id and vlans_enabled were removed from the
-vf_data_storage structure since they are not being used in the driver.
+configs tested: 114
 
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe.h       |    3 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |   25 ++----------------------
- 2 files changed, 2 insertions(+), 26 deletions(-)
+i386                     randconfig-a0-201611
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                 randconfig-x010-201611
+x86_64                 randconfig-x018-201611
+x86_64                 randconfig-x011-201611
+x86_64                 randconfig-x019-201611
+x86_64                 randconfig-x012-201611
+x86_64                 randconfig-x013-201611
+x86_64                 randconfig-x014-201611
+x86_64                 randconfig-x016-201611
+x86_64                 randconfig-x015-201611
+x86_64                 randconfig-x017-201611
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s1-201611
+i386         randconfig-s1-201611+CONFIG_DEBUG_INFO_REDUCED
+i386                     randconfig-s0-201611
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                   randconfig-i0-201611
+i386                     randconfig-i0-201611
+i386                     randconfig-i1-201611
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                   randconfig-x013-201611
+i386                   randconfig-x012-201611
+i386                   randconfig-x019-201611
+i386                   randconfig-x015-201611
+i386                   randconfig-x011-201611
+i386                   randconfig-x018-201611
+i386                   randconfig-x010-201611
+i386                   randconfig-x016-201611
+i386                   randconfig-x017-201611
+i386                   randconfig-x014-201611
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201611
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+x86_64                 randconfig-x001-201611
+x86_64                 randconfig-x000-201611
+x86_64                 randconfig-x007-201611
+x86_64                 randconfig-x005-201611
+x86_64                 randconfig-x006-201611
+x86_64                 randconfig-x004-201611
+x86_64                 randconfig-x009-201611
+x86_64                 randconfig-x008-201611
+x86_64                 randconfig-x003-201611
+x86_64                 randconfig-x002-201611
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-r0-201611
+i386                             allmodconfig
+i386                   randconfig-x000-201611
+i386                   randconfig-x003-201611
+i386                   randconfig-x009-201611
+i386                   randconfig-x004-201611
+i386                   randconfig-x005-201611
+i386                   randconfig-x002-201611
+i386                   randconfig-x006-201611
+i386                   randconfig-x007-201611
+i386                   randconfig-x001-201611
+i386                   randconfig-x008-201611
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index 4590fab..d9b220f 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -143,14 +143,11 @@ struct vf_data_storage {
- 	unsigned char vf_mac_addresses[ETH_ALEN];
- 	u16 vf_mc_hashes[IXGBE_MAX_VF_MC_ENTRIES];
- 	u16 num_vf_mc_hashes;
--	u16 default_vf_vlan_id;
--	u16 vlans_enabled;
- 	bool clear_to_send;
- 	bool pf_set_mac;
- 	u16 pf_vlan; /* When set, guest VLAN config not allowed. */
- 	u16 pf_qos;
- 	u16 tx_rate;
--	u16 vlan_count;
- 	u8 spoofchk_enabled;
- 	bool rss_query_enabled;
- 	u8 trusted;
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-index cb8b51b..e47785a 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-@@ -908,8 +908,6 @@ static int ixgbe_set_vf_vlan_msg(struct ixgbe_adapter *adapter,
- 	u32 add = (msgbuf[0] & IXGBE_VT_MSGINFO_MASK) >> IXGBE_VT_MSGINFO_SHIFT;
- 	u32 vid = (msgbuf[1] & IXGBE_VLVF_VLANID_MASK);
- 	u8 tcs = netdev_get_num_tc(adapter->netdev);
--	struct ixgbe_hw *hw = &adapter->hw;
--	int err;
- 
- 	if (adapter->vfinfo[vf].pf_vlan || tcs) {
- 		e_warn(drv,
-@@ -923,19 +921,7 @@ static int ixgbe_set_vf_vlan_msg(struct ixgbe_adapter *adapter,
- 	if (!vid && !add)
- 		return 0;
- 
--	err = ixgbe_set_vf_vlan(adapter, add, vid, vf);
--	if (err)
--		return err;
--
--	if (adapter->vfinfo[vf].spoofchk_enabled)
--		hw->mac.ops.set_vlan_anti_spoofing(hw, true, vf);
--
--	if (add)
--		adapter->vfinfo[vf].vlan_count++;
--	else if (adapter->vfinfo[vf].vlan_count)
--		adapter->vfinfo[vf].vlan_count--;
--
--	return 0;
-+	return ixgbe_set_vf_vlan(adapter, add, vid, vf);
- }
- 
- static int ixgbe_set_vf_macvlan_msg(struct ixgbe_adapter *adapter,
-@@ -1324,9 +1310,6 @@ static int ixgbe_enable_port_vlan(struct ixgbe_adapter *adapter, int vf,
- 
- 	ixgbe_set_vmvir(adapter, vlan, qos, vf);
- 	ixgbe_set_vmolr(hw, vf, false);
--	if (adapter->vfinfo[vf].spoofchk_enabled)
--		hw->mac.ops.set_vlan_anti_spoofing(hw, true, vf);
--	adapter->vfinfo[vf].vlan_count++;
- 
- 	/* enable hide vlan on X550 */
- 	if (hw->mac.type >= ixgbe_mac_X550)
-@@ -1359,9 +1342,6 @@ static int ixgbe_disable_port_vlan(struct ixgbe_adapter *adapter, int vf)
- 	ixgbe_set_vf_vlan(adapter, true, 0, vf);
- 	ixgbe_clear_vmvir(adapter, vf);
- 	ixgbe_set_vmolr(hw, vf, true);
--	hw->mac.ops.set_vlan_anti_spoofing(hw, false, vf);
--	if (adapter->vfinfo[vf].vlan_count)
--		adapter->vfinfo[vf].vlan_count--;
- 
- 	/* disable hide VLAN on X550 */
- 	if (hw->mac.type >= ixgbe_mac_X550)
-@@ -1539,8 +1519,7 @@ int ixgbe_ndo_set_vf_spoofchk(struct net_device *netdev, int vf, bool setting)
- 	hw->mac.ops.set_mac_anti_spoofing(hw, setting, vf);
- 
- 	/* configure VLAN spoofing */
--	if (adapter->vfinfo[vf].vlan_count)
--		hw->mac.ops.set_vlan_anti_spoofing(hw, setting, vf);
-+	hw->mac.ops.set_vlan_anti_spoofing(hw, setting, vf);
- 
- 	/* Ensure LLDP and FC is set for Ethertype Antispoofing if we will be
- 	 * calling set_ethertype_anti_spoofing for each VF in loop below
-
+Thanks,
+Fengguang
