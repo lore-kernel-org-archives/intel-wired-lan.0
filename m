@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 21 Mar 2016 21:13:34 +0000
-Subject: [Intel-wired-lan] [PATCH V2 2/5] ixgbe: Change the lan_id and
- func fields to a u8 to avoid casts
-In-Reply-To: <20160314180546.8397.53488.stgit@mdrustad-wks.jf.intel.com>
+Date: Mon, 21 Mar 2016 21:16:59 +0000
+Subject: [Intel-wired-lan] [PATCH V2 3/5] ixgbe: Correct length check
+ for	round up
+In-Reply-To: <20160314180551.8397.27934.stgit@mdrustad-wks.jf.intel.com>
 References: <20160314180316.8397.65394.stgit@mdrustad-wks.jf.intel.com>
- <20160314180546.8397.53488.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F99EC14@ORSMSX104.amr.corp.intel.com>
+ <20160314180551.8397.27934.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F99EC26@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,18 +17,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Mark D Rustad
 > Sent: Monday, March 14, 2016 11:06 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH V2 2/5] ixgbe: Change the lan_id and func
-> fields to a u8 to avoid casts
+> Subject: [Intel-wired-lan] [PATCH V2 3/5] ixgbe: Correct length check for
+> round up
 > 
-> Since the lan_id and func fields only ever hold small values, make them u8 to
-> avoid casts used to silence warnings.
+> The function ixgbe_host_interface_command actually uses a multiple of
+> word sized buffer to do its business, but only checks against the actual length
+> passed in. This means that on read operations it could be possible to modify
+> locations beyond the length passed in.
+> Change the check to round up in the same way, just to avoid any possible
+> hazard.
 > 
 > Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 > ---
+> Changes in V2:
+> - Use round_up function instead of an open-coded one
+> ---
 >  drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |    2 +-
->  drivers/net/ethernet/intel/ixgbe/ixgbe_type.h   |    4 ++--
->  drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c   |    2 +-
->  3 files changed, 4 insertions(+), 4 deletions(-)
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 Code changes correctly applied.
