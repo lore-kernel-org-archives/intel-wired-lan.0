@@ -1,93 +1,135 @@
-From: Ronciak, John <john.ronciak@intel.com>
-Date: Mon, 21 Mar 2016 19:53:12 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Add support for single-port
- X550	device
-In-Reply-To: <20160321182131.33845.74687.stgit@mdrustad-wks.jf.intel.com>
-References: <20160321182131.33845.74687.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <D38E8E86660E514AB505863C19C9287C8CBD0654@ORSMSX102.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 22 Mar 2016 03:55:37 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 4b509ad846a988792ffbd8272dab7a70e15481b6 BUILD SUCCESS
+Message-ID: <56f051b9.+q01Hs7ZjdH8IAPS%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hold on.  Was the DCR for this approved?  There was some question about this earlier this morning.  If the DCR isn't approved then we can't do this yet.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+4b509ad846a988792ffbd8272dab7a70e15481b6  i40evf: Fix get_rss_aq
 
-Cheers,
-John
+elapsed time: 12m
 
+configs tested: 114
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Mark D Rustad
-> Sent: Monday, March 21, 2016 11:22 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] ixgbe: Add support for single-port X550
-> device
-> 
-> Add support for a single-port X550 device.
-> 
-> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |    1 +
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c   |    2 ++
->  drivers/net/ethernet/intel/ixgbe/ixgbe_type.h   |    1 +
->  3 files changed, 4 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-> b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-> index 833567cacda4..737443a015d5 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-> @@ -97,6 +97,7 @@ bool ixgbe_device_supports_autoneg_fc(struct
-> ixgbe_hw *hw)
->  		case IXGBE_DEV_ID_X540T:
->  		case IXGBE_DEV_ID_X540T1:
->  		case IXGBE_DEV_ID_X550T:
-> +		case IXGBE_DEV_ID_X550T1:
->  		case IXGBE_DEV_ID_X550EM_X_10G_T:
->  			supported = true;
->  			break;
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> index cef1fd98909c..320c7d4f16b8 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> @@ -126,6 +126,7 @@ static const struct pci_device_id ixgbe_pci_tbl[] = {
->  	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_SFP_SF_QP),
-> board_82599 },
->  	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X540T1), board_X540 },
->  	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550T), board_X550},
-> +	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550T1), board_X550},
->  	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_KX4),
-> board_X550EM_x},
->  	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_KR),
-> board_X550EM_x},
->  	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_10G_T),
-> board_X550EM_x}, @@ -9020,6 +9021,7 @@ int ixgbe_wol_supported(struct
-> ixgbe_adapter *adapter, u16 device_id,
->  	case IXGBE_DEV_ID_X540T:
->  	case IXGBE_DEV_ID_X540T1:
->  	case IXGBE_DEV_ID_X550T:
-> +	case IXGBE_DEV_ID_X550T1:
->  	case IXGBE_DEV_ID_X550EM_X_KX4:
->  	case IXGBE_DEV_ID_X550EM_X_KR:
->  	case IXGBE_DEV_ID_X550EM_X_10G_T:
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-> b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-> index 937abe23db6b..a1986a664306 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-> @@ -75,6 +75,7 @@
->  #define IXGBE_DEV_ID_X540T1              0x1560
-> 
->  #define IXGBE_DEV_ID_X550T		0x1563
-> +#define IXGBE_DEV_ID_X550T1		0x15D1
->  #define IXGBE_DEV_ID_X550EM_X_KX4	0x15AA
->  #define IXGBE_DEV_ID_X550EM_X_KR	0x15AB
->  #define IXGBE_DEV_ID_X550EM_X_SFP	0x15AC
-> 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at lists.osuosl.org
-> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+i386                     randconfig-a0-201612
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allyesconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x010-201612
+x86_64                 randconfig-x011-201612
+x86_64                 randconfig-x018-201612
+x86_64                 randconfig-x012-201612
+x86_64                 randconfig-x019-201612
+x86_64                 randconfig-x013-201612
+x86_64                 randconfig-x016-201612
+x86_64                 randconfig-x014-201612
+x86_64                 randconfig-x015-201612
+x86_64                 randconfig-x017-201612
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201612
+i386                     randconfig-s1-201612
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201612
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201612
+i386                     randconfig-i1-201612
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+x86_64                              rhel_gcov
+i386                   randconfig-x013-201612
+i386                   randconfig-x012-201612
+i386                   randconfig-x019-201612
+i386                   randconfig-x015-201612
+i386                   randconfig-x018-201612
+i386                   randconfig-x011-201612
+i386                   randconfig-x010-201612
+i386                   randconfig-x016-201612
+i386                   randconfig-x017-201612
+i386                   randconfig-x014-201612
+i386                     randconfig-n0-201612
+x86_64                                   rhel
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                 randconfig-x001-201612
+x86_64                 randconfig-x000-201612
+x86_64                 randconfig-x005-201612
+x86_64                 randconfig-x007-201612
+x86_64                 randconfig-x006-201612
+x86_64                 randconfig-x004-201612
+x86_64                 randconfig-x009-201612
+x86_64                 randconfig-x008-201612
+x86_64                 randconfig-x003-201612
+x86_64                 randconfig-x002-201612
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201612
+i386                   randconfig-x000-201612
+i386                   randconfig-x003-201612
+i386                   randconfig-x009-201612
+i386                   randconfig-x004-201612
+i386                   randconfig-x005-201612
+i386                   randconfig-x002-201612
+i386                   randconfig-x006-201612
+i386                   randconfig-x007-201612
+i386                   randconfig-x001-201612
+i386                   randconfig-x008-201612
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+
+Thanks,
+Fengguang
