@@ -1,39 +1,135 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 21 Mar 2016 22:58:45 +0000
-Subject: [Intel-wired-lan] [next PATCH S31 v4 06/12] i40evf: Add longer
- wait	after remove module
-In-Reply-To: <1458328696-135941-7-git-send-email-avinash.dayanand@intel.com>
-References: <1458328696-135941-1-git-send-email-avinash.dayanand@intel.com>
- <1458328696-135941-7-git-send-email-avinash.dayanand@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F99ECBE@ORSMSX104.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 22 Mar 2016 07:13:18 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 560b72c4e90cf6f7e267fc2e4bdbe348e8a979d1 BUILD SUCCESS
+Message-ID: <56f0800e.j/RuoBcnzTKJ45Sy%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Avinash Dayanand
-> Sent: Friday, March 18, 2016 12:18 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S31 v4 06/12] i40evf: Add longer wait
-> after remove module
-> 
-> From: Mitch Williams <mitch.a.williams@intel.com>
-> 
-> Upon module remove, wait a little longer after requesting a reset before
-> checking to see if the firmware responded. This change prevents double
-> resets when the firmware is busy.
-> 
-> Testing Hints: Load and unload VF driver repeatedly with a lot of VFs enabled
-> and make sure it reinitializes properly each time.
-> 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-> Change-ID: Ieedc988ee82fac1f32a074bf4d9e4dba426bfa58
-> ---
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+560b72c4e90cf6f7e267fc2e4bdbe348e8a979d1  i40e: Lower some message levels
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Multiple repeated loading and unloading of VF driver with VFs active does not result in errors
+elapsed time: 16m
+
+configs tested: 114
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201612
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+i386                             allyesconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x010-201612
+x86_64                 randconfig-x011-201612
+x86_64                 randconfig-x018-201612
+x86_64                 randconfig-x012-201612
+x86_64                 randconfig-x019-201612
+x86_64                 randconfig-x013-201612
+x86_64                 randconfig-x016-201612
+x86_64                 randconfig-x014-201612
+x86_64                 randconfig-x015-201612
+x86_64                 randconfig-x017-201612
+i386                     randconfig-s0-201612
+i386                     randconfig-s1-201612
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+x86_64                   randconfig-i0-201612
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201612
+i386                     randconfig-i1-201612
+x86_64                           allmodconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                              rhel_gcov
+i386                   randconfig-x013-201612
+i386                   randconfig-x012-201612
+i386                   randconfig-x019-201612
+i386                   randconfig-x015-201612
+i386                   randconfig-x018-201612
+i386                   randconfig-x011-201612
+i386                   randconfig-x010-201612
+i386                   randconfig-x016-201612
+i386                   randconfig-x017-201612
+i386                   randconfig-x014-201612
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201612
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                 randconfig-x001-201612
+x86_64                 randconfig-x000-201612
+x86_64                 randconfig-x005-201612
+x86_64                 randconfig-x007-201612
+x86_64                 randconfig-x006-201612
+x86_64                 randconfig-x004-201612
+x86_64                 randconfig-x009-201612
+x86_64                 randconfig-x008-201612
+x86_64                 randconfig-x003-201612
+x86_64                 randconfig-x002-201612
+i386                     randconfig-r0-201612
+i386                   randconfig-x000-201612
+i386                   randconfig-x003-201612
+i386                   randconfig-x009-201612
+i386                   randconfig-x004-201612
+i386                   randconfig-x005-201612
+i386                   randconfig-x002-201612
+i386                   randconfig-x006-201612
+i386                   randconfig-x007-201612
+i386                   randconfig-x001-201612
+i386                   randconfig-x008-201612
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+
+Thanks,
+Fengguang
