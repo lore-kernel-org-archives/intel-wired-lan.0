@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 21 Mar 2016 22:38:54 +0000
-Subject: [Intel-wired-lan] [next PATCH S31 v4 04/12] i40e: Add new
- device ID	for X722
-In-Reply-To: <1458328696-135941-5-git-send-email-avinash.dayanand@intel.com>
+Date: Mon, 21 Mar 2016 22:47:39 +0000
+Subject: [Intel-wired-lan] [next PATCH S31 v4 05/12] i40e: Make VF
+ resets	more reliable
+In-Reply-To: <1458328696-135941-6-git-send-email-avinash.dayanand@intel.com>
 References: <1458328696-135941-1-git-send-email-avinash.dayanand@intel.com>
- <1458328696-135941-5-git-send-email-avinash.dayanand@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F99EC98@ORSMSX104.amr.corp.intel.com>
+ <1458328696-135941-6-git-send-email-avinash.dayanand@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F99ECAB@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,25 +17,25 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Avinash Dayanand
 > Sent: Friday, March 18, 2016 12:18 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S31 v4 04/12] i40e: Add new device ID
-> for X722
+> Subject: [Intel-wired-lan] [next PATCH S31 v4 05/12] i40e: Make VF resets
+> more reliable
 > 
-> From: Catherine Sullivan 1452637417 -0500 <catherine.sullivan@intel.com>
+> From: Mitch Williams <mitch.a.williams@intel.com>
 > 
-> The new device ID is 0x37D3 and it should follow the same flows and
-> branding string as for 0x37D0.
+> Clear the VFLR bit immediately after triggering a reset instead of waiting until
+> after cleanup is complete. Make sure to trigger a reset every time, not just if
+> the PF is up.
 > 
-> Testing Hints: Make sure the device loads.
+> These changes fix a problem where VF resets would get lost by the PF,
+> preventing the VF driver from initializing.
 > 
-> Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-> Change-ID: Ia5ad4a1910268c4666a3fd46a7afffbec55b4fc2
+> Testing Hints: Do VF driver load/unload test with lots of VFs in the system.
+> 
+> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+> Change-ID: I5945cf2884095b7b0554867c64df8617e71d9d29
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_common.c   | 1 +
->  drivers/net/ethernet/intel/i40e/i40e_devids.h   | 1 +
->  drivers/net/ethernet/intel/i40e/i40e_main.c     | 1 +
->  drivers/net/ethernet/intel/i40evf/i40e_common.c | 1 +
-> drivers/net/ethernet/intel/i40evf/i40e_devids.h | 1 +
->  5 files changed, 5 insertions(+)
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 14 ++++++--------
+>  1 file changed, 6 insertions(+), 8 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Code changes correctly applied, device is correctly recognized with patch applied
+Code changes correctly applied, unloading and reloading VF driver with VFs created does not result in errors
