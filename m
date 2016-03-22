@@ -1,37 +1,52 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 22 Mar 2016 19:47:05 +0000
-Subject: [Intel-wired-lan] [next PATCH S31 v4 09/12] i40e: Fix for
- supported	link modes in 10GBaseT PHY's
-In-Reply-To: <1458328696-135941-10-git-send-email-avinash.dayanand@intel.com>
-References: <1458328696-135941-1-git-send-email-avinash.dayanand@intel.com>
- <1458328696-135941-10-git-send-email-avinash.dayanand@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F99EE72@ORSMSX104.amr.corp.intel.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Tue, 22 Mar 2016 23:04:32 +0300
+Subject: [Intel-wired-lan] i40e: Add support for client interface for
+	IWARP driver
+Message-ID: <20160322200432.GB27995@mwanda>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Avinash Dayanand
-> Sent: Friday, March 18, 2016 12:18 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S31 v4 09/12] i40e: Fix for supported
-> link modes in 10GBaseT PHY's
-> 
-> 100baseT/Full is now listed and supported link mode for 10GBaseT PHY.
-> This is a fix to list all the supported link modes of 10GBaseT PHY.
-> 
-> Testing Hints: Use 'ethtool -s ethx advertise 0x008' to change supported link
-> mode. Check if 100baseT is displayed.
-> 
-> Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
-> Change-ID: If2be3212ef0fef85fd5d6e4550c7783de2f915e9
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 16 ++++++++++++++++
->  1 file changed, 16 insertions(+)
+Hello Anjali Singhai Jain,
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-ethtool shows correct link mode
+The patch e3219ce6a775: "i40e: Add support for client interface for
+IWARP driver" from Jan 20, 2016, leads to the following static
+checker warning:
 
+	drivers/net/ethernet/intel/i40e/i40e_client.c:752 i40e_client_setup_qvlist()
+	error: potential null dereference 'ldev->qvlist_info'.  (kzalloc returns null)
+
+drivers/net/ethernet/intel/i40e/i40e_client.c
+   739  static int i40e_client_setup_qvlist(struct i40e_info *ldev,
+   740                                      struct i40e_client *client,
+   741                                      struct i40e_qvlist_info *qvlist_info)
+   742  {
+   743          struct i40e_pf *pf = ldev->pf;
+   744          struct i40e_hw *hw = &pf->hw;
+   745          struct i40e_qv_info *qv_info;
+   746          u32 v_idx, i, reg_idx, reg;
+   747          u32 size;
+   748  
+   749          size = sizeof(struct i40e_qvlist_info) +
+   750                 (sizeof(struct i40e_qv_info) * (qvlist_info->num_vectors - 1));
+   751          ldev->qvlist_info = kzalloc(size, GFP_KERNEL);
+
+Need a check for NULL.
+
+   752          ldev->qvlist_info->num_vectors = qvlist_info->num_vectors;
+   753  
+   754          for (i = 0; i < qvlist_info->num_vectors; i++) {
+   755                  qv_info = &qvlist_info->qv_info[i];
+   756                  if (!qv_info)
+   757                          continue;
+   758                  v_idx = qv_info->v_idx;
+
+Also:
+
+    drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:425 i40e_config_iwarp_qvlist()
+    error: potential null dereference 'vf->qvlist_info'.  (kzalloc returns null)
+
+regards,
+dan carpenter
