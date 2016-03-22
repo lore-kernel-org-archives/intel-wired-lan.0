@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 22 Mar 2016 18:23:11 +0000
-Subject: [Intel-wired-lan] [next PATCH S31 v4 08/12] i40evf: Fix
- get_rss_aq
-In-Reply-To: <1458328696-135941-9-git-send-email-avinash.dayanand@intel.com>
+Date: Tue, 22 Mar 2016 19:47:05 +0000
+Subject: [Intel-wired-lan] [next PATCH S31 v4 09/12] i40e: Fix for
+ supported	link modes in 10GBaseT PHY's
+In-Reply-To: <1458328696-135941-10-git-send-email-avinash.dayanand@intel.com>
 References: <1458328696-135941-1-git-send-email-avinash.dayanand@intel.com>
- <1458328696-135941-9-git-send-email-avinash.dayanand@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F99EE3C@ORSMSX104.amr.corp.intel.com>
+ <1458328696-135941-10-git-send-email-avinash.dayanand@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F99EE72@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,20 +17,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Avinash Dayanand
 > Sent: Friday, March 18, 2016 12:18 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S31 v4 08/12] i40evf: Fix get_rss_aq
+> Subject: [Intel-wired-lan] [next PATCH S31 v4 09/12] i40e: Fix for supported
+> link modes in 10GBaseT PHY's
 > 
-> From: Catherine Sullivan <catherine.sullivan@intel.com>
+> 100baseT/Full is now listed and supported link mode for 10GBaseT PHY.
+> This is a fix to list all the supported link modes of 10GBaseT PHY.
 > 
-> We were passing in the seed where we should just be passing false because
-> we want the vsi table not the pf table.
+> Testing Hints: Use 'ethtool -s ethx advertise 0x008' to change supported link
+> mode. Check if 100baseT is displayed.
 > 
-> Testing Hints: Make sure that ethtool -x gives the proper table.
-> 
-> Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-> Change-ID: I9b633ab06eb59468087f0c0af8539857e99f9495
+> Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
+> Change-ID: If2be3212ef0fef85fd5d6e4550c7783de2f915e9
 > ---
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 16 ++++++++++++++++
+>  1 file changed, 16 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-ethtool -x returns correct table when used on VF
+ethtool shows correct link mode
+
