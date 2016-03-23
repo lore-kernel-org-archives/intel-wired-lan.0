@@ -1,142 +1,108 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 24 Mar 2016 07:07:19 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 6117863ff11680f1305521d7ba947bf0cf340f01 BUILD SUCCESS
-Message-ID: <56f321a7.UBdpXQg2/EowRQ3y%fengguang.wu@intel.com>
+From: Williams, Mitch A <mitch.a.williams@intel.com>
+Date: Wed, 23 Mar 2016 23:30:45 +0000
+Subject: [Intel-wired-lan] [next PATCH S31 v4 03/12] i40evf: Fix
+	VLAN	features
+In-Reply-To: <CAKgT0Ufe8YJDx4PufA5Bp9rw2d00JvY74OYKN8o=6RRvyfXY5w@mail.gmail.com>
+References: <1458328696-135941-1-git-send-email-avinash.dayanand@intel.com>
+ <1458328696-135941-4-git-send-email-avinash.dayanand@intel.com>
+ <CAKgT0Ufe8YJDx4PufA5Bp9rw2d00JvY74OYKN8o=6RRvyfXY5w@mail.gmail.com>
+Message-ID: <AAEA33E297BCAC4B9BB20A7C2DF0AB8D7856A295@FMSMSX113.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-6117863ff11680f1305521d7ba947bf0cf340f01  ixgbe: Add support for single-port X550 device
+Thanks Alex. We'll drop this one for now and I'll respin.
 
-elapsed time: 153m
+-Mitch
 
-configs tested: 122
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201612
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-parisc                         b180_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x010-201612
-x86_64                 randconfig-x011-201612
-x86_64                 randconfig-x018-201612
-x86_64                 randconfig-x012-201612
-x86_64                 randconfig-x019-201612
-x86_64                 randconfig-x013-201612
-x86_64                 randconfig-x016-201612
-x86_64                 randconfig-x014-201612
-x86_64                 randconfig-x015-201612
-x86_64                 randconfig-x017-201612
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                   randconfig-s0-03232153
-i386                   randconfig-s1-03232153
-i386                   randconfig-s0-03240548
-i386                   randconfig-s1-03240548
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201612
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i0-201612
-i386                     randconfig-i1-201612
-i386                   randconfig-i0-03240550
-i386                   randconfig-i1-03240550
-x86_64                              rhel_gcov
-i386                               tinyconfig
-i386                   randconfig-x013-201612
-i386                   randconfig-x012-201612
-i386                   randconfig-x019-201612
-i386                   randconfig-x015-201612
-i386                   randconfig-x018-201612
-i386                   randconfig-x011-201612
-i386                   randconfig-x010-201612
-i386                   randconfig-x016-201612
-i386                   randconfig-x017-201612
-i386                   randconfig-x014-201612
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201612
-i386                   randconfig-h0-03240522
-i386                   randconfig-h1-03240522
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-x001-201612
-x86_64                 randconfig-x000-201612
-x86_64                 randconfig-x005-201612
-x86_64                 randconfig-x007-201612
-x86_64                 randconfig-x006-201612
-x86_64                 randconfig-x004-201612
-x86_64                 randconfig-x009-201612
-x86_64                 randconfig-x008-201612
-x86_64                 randconfig-x003-201612
-x86_64                 randconfig-x002-201612
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-r0-201612
-i386                   randconfig-x000-201612
-i386                   randconfig-x003-201612
-i386                   randconfig-x009-201612
-i386                   randconfig-x004-201612
-i386                   randconfig-x005-201612
-i386                   randconfig-x002-201612
-i386                   randconfig-x006-201612
-i386                   randconfig-x007-201612
-i386                   randconfig-x001-201612
-i386                   randconfig-x008-201612
-i386                   randconfig-x0-03240344
-
-Thanks,
-Fengguang
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Alexander Duyck
+> Sent: Wednesday, March 23, 2016 1:57 PM
+> To: Dayanand, Avinash <avinash.dayanand@intel.com>
+> Cc: intel-wired-lan <intel-wired-lan@lists.osuosl.org>
+> Subject: Re: [Intel-wired-lan] [next PATCH S31 v4 03/12] i40evf: Fix VLAN
+> features
+> 
+> On Fri, Mar 18, 2016 at 12:18 PM, Avinash Dayanand
+> <avinash.dayanand@intel.com> wrote:
+> > From: Mitch Williams <mitch.a.williams@intel.com>
+> >
+> > Users of ethtool were being given the mistaken impression that this
+> > driver was able to change its VLAN tagging features, and were
+> > disappointed that this was not actually the case. Implement
+> > ndo_fix_features method so that we can adjust these flags as needed to
+> > avoid false impressions.
+> >
+> > Testing Hints: Use 'ethtool -K rxvlan off' to attempt
+> > to change the VLAN tagging.
+> >
+> > Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+> > Change-ID: I08584f103a4fa73d6a4128d472e4ef44dcfda57f
+> > ---
+> >  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 23
+> +++++++++++++++++++++++
+> >  1 file changed, 23 insertions(+)
+> >
+> > diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+> b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+> > index e397368..0c99974 100644
+> > --- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+> > +++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+> > @@ -2252,6 +2252,28 @@ static int i40evf_change_mtu(struct net_device
+> *netdev, int new_mtu)
+> >         return 0;
+> >  }
+> >
+> > +#define I40EVF_VLAN_FEATURES (NETIF_F_HW_VLAN_CTAG_TX |\
+> > +                              NETIF_F_HW_VLAN_CTAG_RX |\
+> > +                              NETIF_F_HW_VLAN_CTAG_FILTER)
+> > +
+> > +/**
+> > + * i40evf_fix_features - fix up the netdev feature bits
+> > + * @netdev: our net device
+> > + * @features: desired feature bits
+> > + *
+> > + * Returns fixed-up features bits
+> > + **/
+> > +static netdev_features_t i40evf_fix_features(struct net_device *netdev,
+> > +                                            netdev_features_t features)
+> > +{
+> > +       struct i40evf_adapter *adapter = netdev_priv(netdev);
+> > +
+> > +       features &= ~I40EVF_VLAN_FEATURES;
+> > +       if (adapter->vf_res->vf_offload_flags &
+> I40E_VIRTCHNL_VF_OFFLOAD_VLAN)
+> > +               features |= I40EVF_VLAN_FEATURES;
+> > +       return features;
+> > +}
+> > +
+> >  static const struct net_device_ops i40evf_netdev_ops = {
+> >         .ndo_open               = i40evf_open,
+> >         .ndo_stop               = i40evf_close,
+> > @@ -2264,6 +2286,7 @@ static const struct net_device_ops i40evf_netdev_ops
+> = {
+> >         .ndo_tx_timeout         = i40evf_tx_timeout,
+> >         .ndo_vlan_rx_add_vid    = i40evf_vlan_rx_add_vid,
+> >         .ndo_vlan_rx_kill_vid   = i40evf_vlan_rx_kill_vid,
+> > +       .ndo_fix_features       = i40evf_fix_features,
+> >  #ifdef CONFIG_NET_POLL_CONTROLLER
+> >         .ndo_poll_controller    = i40evf_netpoll,
+> >  #endif
+> 
+> This fix isn't correct.  If you don't support toggling a feature you
+> should not be setting it in hw_features.  All you are doing here is
+> making more confusion since now you will just ignore the user input.
+> 
+> Just move the code that is setting these bits down further in
+> i40evf_process_config so that the netdev->features portion with the
+> VLAN bits doesn't get written until after you have set
+> netdev->hw_features.
+> 
+> - Alex
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at lists.osuosl.org
+> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
