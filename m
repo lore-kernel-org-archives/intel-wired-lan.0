@@ -1,51 +1,38 @@
-From: Rustad, Mark D <mark.d.rustad@intel.com>
-Date: Wed, 23 Mar 2016 16:08:38 +0000
-Subject: [Intel-wired-lan] [PATCH V2 0/7] ixgbe: Add initial support for
- a	new ixgbe MAC
-In-Reply-To: <20160318183203.40415.3005.stgit@mdrustad-wks.jf.intel.com>
-References: <20160318183203.40415.3005.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <600B5A94-F0F3-499C-8CDF-E8A962AC0A8D@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 23 Mar 2016 16:30:29 +0000
+Subject: [Intel-wired-lan] [next PATCH 1/2] i40e/i40evf: Fix TSO
+ checksum pseudo-header adjustment
+In-Reply-To: <20160318230647.14801.24078.stgit@localhost.localdomain>
+References: <20160318230425.14801.87895.stgit@localhost.localdomain>
+ <20160318230647.14801.24078.stgit@localhost.localdomain>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F99F02D@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Jeff,
-
-Mark D Rustad <mark.d.rustad@intel.com> wrote:
-
-> The following patches add initial support for a new ixgbe MAC type.
-> The initial interface supported is a native SFP+ interface.
->
-> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Alexander Duyck
+> Sent: Friday, March 18, 2016 4:07 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH 1/2] i40e/i40evf: Fix TSO checksum
+> pseudo-header adjustment
+> 
+> With IPv4 and IPv6 now using the same format for checksums based on the
+> length of the frame we need to update the i40e and i40evf drivers so that
+> they correctly account for lengths greater than or equal to 64K.
+> 
+> With this patch the driver should now correctly update checksums for frames
+> up to 16776960 in length which should be more than large enough for all
+> possible TSO frames in the near future.
+> 
+> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 > ---
-> Changes in V2:
-> - Added a missing check to set SFP detection interrupt mask
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c   |   11 ++++-------
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c |   11 ++++-------
+>  2 files changed, 8 insertions(+), 14 deletions(-)
 
-I wanted to let you know that I am working on a replacement patch series  
-for this series as well as the other 6-patch series. The new series will  
-incorporate the feedback you gave me, fix a crashing bug and provide more  
-interfaces all in the new single series. I have some more work to do on it,  
-but it should be ready some time this week.
-
-> ---
->
-> Mark D Rustad (7):
->       ixgbe: Add definitions for new 10G MAC
->       ixgbe: Add support for phy token firmware command
->       ixgbe: Add new semaphore method for a new MAC
->       ixgbe: Use method pointer to access IOSF devices
->       ixgbe: Provide for use of firmware to access IOSF registers
->       ixgbe: Add support for new 10G MAC type
->       ixgbe: Add some new device IDs for new 10G MAC
-
---
-Mark Rustad, Networking Division, Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 841 bytes
-Desc: Message signed with OpenPGP using GPGMail
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160323/5774cdf7/attachment.asc>
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+TSO works correctly
