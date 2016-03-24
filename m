@@ -1,48 +1,55 @@
-From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Thu, 24 Mar 2016 09:58:40 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: fix default mac->ops.setup_link
-	for X550EM
-Message-ID: <20160324165840.23586.31133.stgit@localhost6.localdomain6>
+From: Mark D Rustad <mark.d.rustad@intel.com>
+Date: Thu, 24 Mar 2016 16:22:34 -0700
+Subject: [Intel-wired-lan] [PATCH 00/11] ixgbe: Add support for x550em_a MAC
+Message-ID: <20160324231833.108409.65944.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-X550EM_a/x did not have a default value for mac->ops.setup_link which
-was causing link issues for backplane devices.
+The following patches add support for a new ixgbe MAC type,
+x550em_a. The interfaces supported are native SFP+, SFP+ with a
+retimer, SGMII backplane and KR backplane.
 
-This patch sets mac->ops.setup_link to ixgbe_setup_mac_link_X540 for
-X550EM_a/x which is also default for X550. This will result in
-mac->ops.setup_link calling the link setup function for the respective
-PHY type in case we do not need a special function to deal with it.
-
-Reported-by: Ken Cox <jkc@redhat.com>
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+This series replaces two previous series of patches:
+	ixgbe: Add initial support for a new ixgbe MAC
+	ixgbe: Add KR and SFP+ interfaces to X550EM_A
+with some reorganization, a couple bug fixes and incorporation of
+other feedback. This series also adds the SGMII backplane support
+which was not included in the previous 2 series.
+---
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index 0dadf2b..c8064a0 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -2619,7 +2619,7 @@ static const struct ixgbe_mac_operations mac_ops_X550EM_x = {
- 	.get_media_type		= &ixgbe_get_media_type_X550em,
- 	.get_san_mac_addr	= NULL,
- 	.get_wwn_prefix		= NULL,
--	.setup_link		= NULL, /* defined later */
-+	.setup_link		= &ixgbe_setup_mac_link_X540,
- 	.get_link_capabilities	= &ixgbe_get_link_capabilities_X550em,
- 	.get_bus_info		= &ixgbe_get_bus_info_X550em,
- 	.setup_sfp		= ixgbe_setup_sfp_modules_X550em,
-@@ -2637,7 +2637,7 @@ static struct ixgbe_mac_operations mac_ops_x550em_a = {
- 	.get_media_type		= ixgbe_get_media_type_X550em,
- 	.get_san_mac_addr	= NULL,
- 	.get_wwn_prefix		= NULL,
--	.setup_link		= NULL, /* defined later */
-+	.setup_link		= &ixgbe_setup_mac_link_X540,
- 	.get_link_capabilities	= ixgbe_get_link_capabilities_X550em,
- 	.get_bus_info		= ixgbe_get_bus_info_X550em,
- 	.setup_sfp		= ixgbe_setup_sfp_modules_X550em,
+Mark D Rustad (11):
+      ixgbe: Add definitions for x550em_a 10G MAC
+      ixgbe: Use method pointer to access IOSF devices
+      ixgbe: Add support for x550em_a 10G MAC type
+      ixgbe: Request token for PHY accesses
+      ixgbe: Read and set instance id
+      ixgbe: Read and parse NW_MNG_IF_SEL register
+      ixgbe: Introduce function to control MDIO speed
+      ixgbe: Add support for SFPs with retimer
+      ixgbe: Add support for SGMII backplane interface
+      ixgbe: Add KR backplane support for x550em_a
+      ixgbe: Bump version number
 
+
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h         |    3 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c   |    1 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c  |    9 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_dcb.c     |    6 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |    9 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c     |    3 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |   51 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.c     |    2 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c     |   34 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h     |    6 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c     |    6 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h    |   88 ++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c    |  506 +++++++++++++++++++++-
+ 13 files changed, 665 insertions(+), 59 deletions(-)
+
+-- 
+Mark Rustad, Network Division, Intel Corporation
