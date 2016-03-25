@@ -1,33 +1,41 @@
-From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Thu, 24 Mar 2016 16:23:32 -0700
-Subject: [Intel-wired-lan] [PATCH 11/11] ixgbe: Bump version number
-In-Reply-To: <20160324231833.108409.65944.stgit@mdrustad-wks.jf.intel.com>
-References: <20160324231833.108409.65944.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <20160324232332.108409.36283.stgit@mdrustad-wks.jf.intel.com>
+From: William Dauchy <william@gandi.net>
+Date: Fri, 25 Mar 2016 16:22:56 +0100
+Subject: [Intel-wired-lan] dynamically set number of queues for 82598
+	devices in -stable
+In-Reply-To: <20151127100557.GB21147@gandi.net>
+References: <20151127100557.GB21147@gandi.net>
+Message-ID: <20160325152256.GA20821@gandi.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Update ixgbe version number.
+Hi Jeff,
 
-Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Any chance to get an opinion on that?
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 0d5893a60e08..cf95f8098f1f 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -70,7 +70,7 @@ char ixgbe_default_device_descr[] =
- static char ixgbe_default_device_descr[] =
- 			      "Intel(R) 10 Gigabit Network Connection";
- #endif
--#define DRV_VERSION "4.2.1-k"
-+#define DRV_VERSION "4.4.0-k"
- const char ixgbe_driver_version[] = DRV_VERSION;
- static const char ixgbe_copyright[] =
- 				"Copyright (c) 1999-2016 Intel Corporation.";
+Thanks,
 
+On Nov27 11:05, William Dauchy wrote:
+> Hello Jeff,
+> 
+> I faced the problem described in commit 7e3f5c8:
+> ixgbe: fix bounds checking in ixgbe_setup_tc for 82598
+> 
+> This patch resolves an issue where users were not able to dynamically
+> set number of queues for 82598 via ethtool -L
+> 
+> 
+> I backported it for my v4.1.x build but I was wondering if this could be
+> a candidate for a backport in stable tree at least for v4.1.x.
+
+-- 
+William
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 181 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160325/0a8356b9/attachment.asc>
