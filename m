@@ -1,144 +1,57 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 26 Mar 2016 04:01:07 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- d28055a8cb510b29836ce7f24f3b118cb24bd88a BUILD SUCCESS
-Message-ID: <56f59903.OH4qfNcLkZzpm+rF%fengguang.wu@intel.com>
+From: Daniel Walker <danielwa@cisco.com>
+Date: Fri, 25 Mar 2016 14:58:46 -0700
+Subject: [Intel-wired-lan] [PATCH-RFC] drivers: net: ethernet: intel:
+	e1000e: fix ethtool autoneg off for fiber
+Message-ID: <1458943126-32258-1-git-send-email-danielwa@cisco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-d28055a8cb510b29836ce7f24f3b118cb24bd88a  ixgbe: Add support for single-port X550 device
+From: Steve Shih <sshih@cisco.com>
 
-elapsed time: 74m
+This patch fixes the issues for disabling auto-negotiation and forcing
+speed and duplex settings for the fiber media.
 
-configs tested: 123
+For fiber media, e1000_get_settings should return ETH_TP_MDI_INVALID for
+eth_tp_mdix_ctrl instead of ETH_TP_MDI_AUTO so subsequent e1000_set_settings
+call would not fail with -EOPNOTSUPP.
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201612
-x86_64                 randconfig-a0-03260143
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-x86_64                           allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-parisc                         b180_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x010-201612
-x86_64                 randconfig-x011-201612
-x86_64                 randconfig-x018-201612
-x86_64                 randconfig-x012-201612
-x86_64                 randconfig-x019-201612
-x86_64                 randconfig-x013-201612
-x86_64                 randconfig-x016-201612
-x86_64                 randconfig-x014-201612
-x86_64                 randconfig-x015-201612
-x86_64                 randconfig-x017-201612
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201612
-i386                     randconfig-s1-201612
-x86_64                 randconfig-s0-03260313
-x86_64                 randconfig-s1-03260313
-x86_64                 randconfig-s2-03260313
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201612
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201612
-i386                     randconfig-i1-201612
-x86_64                              rhel_gcov
-i386                   randconfig-x013-201612
-i386                   randconfig-x012-201612
-i386                   randconfig-x019-201612
-i386                   randconfig-x015-201612
-i386                   randconfig-x018-201612
-i386                   randconfig-x011-201612
-i386                   randconfig-x010-201612
-i386                   randconfig-x016-201612
-i386                   randconfig-x017-201612
-i386                   randconfig-x014-201612
-i386                     randconfig-n0-201612
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-powerpc                    amigaone_defconfig
-powerpc                     sbc834x_defconfig
-m68k                            q40_defconfig
-x86_64                 randconfig-n0-03260308
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                 randconfig-x001-201612
-x86_64                 randconfig-x000-201612
-x86_64                 randconfig-x005-201612
-x86_64                 randconfig-x007-201612
-x86_64                 randconfig-x006-201612
-x86_64                 randconfig-x004-201612
-x86_64                 randconfig-x009-201612
-x86_64                 randconfig-x008-201612
-x86_64                 randconfig-x003-201612
-x86_64                 randconfig-x002-201612
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-r0-201612
-x86_64                 randconfig-r0-03260203
-i386                   randconfig-x000-201612
-i386                   randconfig-x003-201612
-i386                   randconfig-x009-201612
-i386                   randconfig-x004-201612
-i386                   randconfig-x005-201612
-i386                   randconfig-x002-201612
-i386                   randconfig-x006-201612
-i386                   randconfig-x007-201612
-i386                   randconfig-x001-201612
-i386                   randconfig-x008-201612
+e1000_set_spd_dplx should not automatically turn autoneg back on for forced
+1000 Mbps full duplex settings.
 
-Thanks,
-Fengguang
+Cc: danielwa at fifo99.com
+Cc: xe-kernel at external.cisco.com
+Signed-off-by: Steve Shih <sshih@cisco.com>
+---
+ drivers/net/ethernet/intel/e1000e/ethtool.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
+index 6cab1f3..cd03dcd 100644
+--- a/drivers/net/ethernet/intel/e1000e/ethtool.c
++++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
+@@ -201,6 +201,9 @@ static int e1000_get_settings(struct net_device *netdev,
+ 	else
+ 		ecmd->eth_tp_mdix_ctrl = hw->phy.mdix;
+ 
++	if (hw->phy.media_type != e1000_media_type_copper)
++		ecmd->eth_tp_mdix_ctrl = ETH_TP_MDI_INVALID;
++
+ 	return 0;
+ }
+ 
+@@ -236,8 +239,7 @@ static int e1000_set_spd_dplx(struct e1000_adapter *adapter, u32 spd, u8 dplx)
+ 		mac->forced_speed_duplex = ADVERTISE_100_FULL;
+ 		break;
+ 	case SPEED_1000 + DUPLEX_FULL:
+-		mac->autoneg = 1;
+-		adapter->hw.phy.autoneg_advertised = ADVERTISE_1000_FULL;
++		mac->forced_speed_duplex = ADVERTISE_1000_FULL;
+ 		break;
+ 	case SPEED_1000 + DUPLEX_HALF:	/* not supported */
+ 	default:
+-- 
+2.5.0
+
