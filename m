@@ -1,106 +1,33 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Mon, 28 Mar 2016 14:18:21 -0700
-Subject: [Intel-wired-lan] [PATCH V3 10/11] ixgbe: Add KR backplane support
-	for x550em_a
+Date: Mon, 28 Mar 2016 14:18:27 -0700
+Subject: [Intel-wired-lan] [PATCH V3 11/11] ixgbe: Bump version number
 In-Reply-To: <20160328211623.68937.52252.stgit@mdrustad-wks.jf.intel.com>
 References: <20160328211623.68937.52252.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <20160328211821.68937.93129.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <20160328211826.68937.78835.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add support for x550em_a-based KR backplane devices.
+Update ixgbe version number.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
-Changes in V3:
-- Move mac type check into ixgbe_setup_kr_x550em
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    2 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |    2 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   18 ++++++++++++++----
- 3 files changed, 18 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 41bc816bbe87..0d5893a60e08 100644
+index 0d5893a60e08..cf95f8098f1f 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -130,6 +130,8 @@ static const struct pci_device_id ixgbe_pci_tbl[] = {
- 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_KR), board_X550EM_x},
- 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_10G_T), board_X550EM_x},
- 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_SFP), board_X550EM_x},
-+	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_KR), board_x550em_a },
-+	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_KR_L), board_x550em_a },
- 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_SFP_N), board_x550em_a },
- 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_SGMII), board_x550em_a },
- 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_SGMII_L), board_x550em_a },
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-index eada335c03f8..216a29dcc718 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-@@ -80,6 +80,8 @@
- #define IXGBE_DEV_ID_X550EM_X_SFP	0x15AC
- #define IXGBE_DEV_ID_X550EM_X_10G_T	0x15AD
- #define IXGBE_DEV_ID_X550EM_X_1G_T	0x15AE
-+#define IXGBE_DEV_ID_X550EM_A_KR	0x15C2
-+#define IXGBE_DEV_ID_X550EM_A_KR_L	0x15C3
- #define IXGBE_DEV_ID_X550EM_A_SFP_N	0x15C4
- #define IXGBE_DEV_ID_X550EM_A_SGMII	0x15C6
- #define IXGBE_DEV_ID_X550EM_A_SGMII_L	0x15C7
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index 1fd4f134ce49..8cf0edcae4a0 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -291,6 +291,8 @@ static s32 ixgbe_identify_phy_x550em(struct ixgbe_hw *hw)
- 		hw->phy.type = ixgbe_phy_x550em_kx4;
- 		break;
- 	case IXGBE_DEV_ID_X550EM_X_KR:
-+	case IXGBE_DEV_ID_X550EM_A_KR:
-+	case IXGBE_DEV_ID_X550EM_A_KR_L:
- 		hw->phy.type = ixgbe_phy_x550em_kr;
- 		break;
- 	case IXGBE_DEV_ID_X550EM_X_1G_T:
-@@ -1984,13 +1986,17 @@ static s32 ixgbe_setup_kx4_x550em(struct ixgbe_hw *hw)
- 	return status;
- }
- 
--/**  ixgbe_setup_kr_x550em - Configure the KR PHY.
-- *   @hw: pointer to hardware structure
-+/**
-+ * ixgbe_setup_kr_x550em - Configure the KR PHY
-+ * @hw: pointer to hardware structure
-  *
-- *   Configures the integrated KR PHY.
-+ * Configures the integrated KR PHY for X550EM_x.
-  **/
- static s32 ixgbe_setup_kr_x550em(struct ixgbe_hw *hw)
- {
-+	if (hw->mac.type != ixgbe_mac_X550EM_x)
-+		return 0;
-+
- 	return ixgbe_setup_kr_speed_x550em(hw, hw->phy.autoneg_advertised);
- }
- 
-@@ -2196,7 +2202,9 @@ static s32 ixgbe_setup_fc_x550em(struct ixgbe_hw *hw)
- 		return IXGBE_ERR_CONFIG;
- 	}
- 
--	if (hw->device_id != IXGBE_DEV_ID_X550EM_X_KR)
-+	if (hw->device_id != IXGBE_DEV_ID_X550EM_X_KR &&
-+	    hw->device_id != IXGBE_DEV_ID_X550EM_A_KR &&
-+	    hw->device_id != IXGBE_DEV_ID_X550EM_A_KR_L)
- 		return 0;
- 
- 	rc = hw->mac.ops.read_iosf_sb_reg(hw,
-@@ -2437,6 +2445,8 @@ static enum ixgbe_media_type ixgbe_get_media_type_X550em(struct ixgbe_hw *hw)
- 		/* Fallthrough */
- 	case IXGBE_DEV_ID_X550EM_X_KR:
- 	case IXGBE_DEV_ID_X550EM_X_KX4:
-+	case IXGBE_DEV_ID_X550EM_A_KR:
-+	case IXGBE_DEV_ID_X550EM_A_KR_L:
- 		media_type = ixgbe_media_type_backplane;
- 		break;
- 	case IXGBE_DEV_ID_X550EM_X_SFP:
+@@ -70,7 +70,7 @@ char ixgbe_default_device_descr[] =
+ static char ixgbe_default_device_descr[] =
+ 			      "Intel(R) 10 Gigabit Network Connection";
+ #endif
+-#define DRV_VERSION "4.2.1-k"
++#define DRV_VERSION "4.4.0-k"
+ const char ixgbe_driver_version[] = DRV_VERSION;
+ static const char ixgbe_copyright[] =
+ 				"Copyright (c) 1999-2016 Intel Corporation.";
 
