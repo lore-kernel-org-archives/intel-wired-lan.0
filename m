@@ -1,56 +1,40 @@
 From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-Date: Mon, 28 Mar 2016 04:17:11 -0700
-Subject: [Intel-wired-lan] [next PATCH S32 00/14] i40e/i40evf updates
-Message-ID: <1459163845-28035-1-git-send-email-harshitha.ramamurthy@intel.com>
+Date: Mon, 28 Mar 2016 04:17:12 -0700
+Subject: [Intel-wired-lan] [next PATCH S32 01/14] i40e: Inserting a HW
+	capability display info
+In-Reply-To: <1459163845-28035-1-git-send-email-harshitha.ramamurthy@intel.com>
+References: <1459163845-28035-1-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <1459163845-28035-2-git-send-email-harshitha.ramamurthy@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Akeem G Abodunrin moves the HW flush to avoid problems in
-pass-through routines. 
+From: Deepthi Kavalur <deepthi.kavalur@intel.com>
 
-Anjali Singhai Jain adds a hook to support trusted VF.
+Display MSIx vector count for HW capabilities.
 
-Deepthi Kavalur adds capability to display HW information.
+Signed-off-by: Deepthi Kavalur <deepthi.kavalur@intel.com>
+Change-ID: I4b41e9b50360cf660e7fbcb85b9390fedcf313b1
+---
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-Harshitha Ramamurthy bumps i40e/i40evf from 1.5.2 to 1.5.5.
-
-Jesse Brandeburg moves a stack variable deeper, drops unused 
-tx_ring arguments and makes RX faster via avoiding FCOE.
-
-Kiran Patil defines input set mask constants for RSS,
-flow director,flex bytes and renames defines for the input set
-mask.
-
-Mitch Williams adds RSS configuration to the virtual channel.
-
-Shannon Nelson ensures device capabilities do not get printed 
-when not needed, adds code to restrict VF poll mode to only 
-single function mode devices, moves NVM variable out of AQ 
-struct and moves nvm event wait check to nvm code.
-
- drivers/net/ethernet/intel/i40e/i40e_adminq.c      | 33 +-------------
- drivers/net/ethernet/intel/i40e/i40e_adminq.h      |  1 -
- drivers/net/ethernet/intel/i40e/i40e_common.c      |  3 ++
- drivers/net/ethernet/intel/i40e/i40e_main.c        |  4 +-
- drivers/net/ethernet/intel/i40e/i40e_nvm.c         | 43 +++++++++++++++---
- drivers/net/ethernet/intel/i40e/i40e_prototype.h   |  1 +
- drivers/net/ethernet/intel/i40e/i40e_txrx.c        | 17 ++++---
- drivers/net/ethernet/intel/i40e/i40e_txrx.h        | 10 ++++
- drivers/net/ethernet/intel/i40e/i40e_type.h        | 30 ++++++++++++
- drivers/net/ethernet/intel/i40e/i40e_virtchnl.h    | 45 ++++++++++++++++--
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 53 +++++++++++++++++++++-
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |  2 +
- drivers/net/ethernet/intel/i40evf/i40e_adminq.h    |  1 -
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c      | 13 +++---
- drivers/net/ethernet/intel/i40evf/i40e_txrx.h      | 10 ++++
- drivers/net/ethernet/intel/i40evf/i40e_type.h      | 30 ++++++++++++
- drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h  | 45 ++++++++++++++++--
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  2 +-
- 18 files changed, 281 insertions(+), 62 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index ebcc0d3..f3c1d88 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -3080,6 +3080,9 @@ static void i40e_parse_discover_capabilities(struct i40e_hw *hw, void *buff,
+ 			break;
+ 		case I40E_AQ_CAP_ID_MSIX:
+ 			p->num_msix_vectors = number;
++			i40e_debug(hw, I40E_DEBUG_INIT,
++				   "HW Capability: MSIX vector count = %d\n",
++				   p->num_msix_vectors);
+ 			break;
+ 		case I40E_AQ_CAP_ID_VF_MSIX:
+ 			p->num_msix_vectors_vf = number;
 -- 
 2.4.3
 
