@@ -1,114 +1,48 @@
 From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-Date: Mon, 28 Mar 2016 04:17:17 -0700
-Subject: [Intel-wired-lan] [next PATCH S32 06/14] i40e/i40evf: Faster RX via
-	avoiding fcoe
+Date: Mon, 28 Mar 2016 04:17:25 -0700
+Subject: [Intel-wired-lan] [next PATCH S32 14/14] i40e/i40evf: Bump patch
+	from 1.5.2 to 1.5.5
 In-Reply-To: <1459163845-28035-1-git-send-email-harshitha.ramamurthy@intel.com>
 References: <1459163845-28035-1-git-send-email-harshitha.ramamurthy@intel.com>
-Message-ID: <1459163845-28035-7-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <1459163845-28035-15-git-send-email-harshitha.ramamurthy@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-
-As it turns out, calling into other files from hot path hurts
-performance a lot.  In this case the majority of the time we
-call "check fcoe" and the packet is *not* fcoe, but this call
-was taking 5% of our total cycles spent on receive.
-
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Change-ID: I080552c26e7060bc7b78504dc2763f6f0b3d8c76
+Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
 ---
-Testing Hints: Make sure rx still works, and that
-perf top doesn't show i40e_handle_fcoe_status.
- 
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   |  8 ++++++--
- drivers/net/ethernet/intel/i40e/i40e_txrx.h   | 10 ++++++++++
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c |  4 +++-
- drivers/net/ethernet/intel/i40evf/i40e_txrx.h | 10 ++++++++++
- 4 files changed, 29 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index f4e4d3d..29ffed2 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1703,7 +1703,9 @@ static int i40e_clean_rx_irq_ps(struct i40e_ring *rx_ring, const int budget)
- 			 ? le16_to_cpu(rx_desc->wb.qword0.lo_dword.l2tag1)
- 			 : 0;
- #ifdef I40E_FCOE
--		if (!i40e_fcoe_handle_offload(rx_ring, rx_desc, skb)) {
-+		if (unlikely(
-+		    i40e_rx_is_fcoe(rx_ptype) &&
-+		    !i40e_fcoe_handle_offload(rx_ring, rx_desc, skb))) {
- 			dev_kfree_skb_any(skb);
- 			continue;
- 		}
-@@ -1834,7 +1836,9 @@ static int i40e_clean_rx_irq_1buf(struct i40e_ring *rx_ring, int budget)
- 			 ? le16_to_cpu(rx_desc->wb.qword0.lo_dword.l2tag1)
- 			 : 0;
- #ifdef I40E_FCOE
--		if (!i40e_fcoe_handle_offload(rx_ring, rx_desc, skb)) {
-+		if (unlikely(
-+		    i40e_rx_is_fcoe(rx_ptype) &&
-+		    !i40e_fcoe_handle_offload(rx_ring, rx_desc, skb))) {
- 			dev_kfree_skb_any(skb);
- 			continue;
- 		}
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-index 681e9bc..4b08d47 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-@@ -448,4 +448,14 @@ static inline bool i40e_chk_linearize(struct sk_buff *skb, int count)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index b7dd9ae..79dd633 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -46,7 +46,7 @@ static const char i40e_driver_string[] =
  
- 	return __i40e_chk_linearize(skb);
- }
-+
-+/**
-+ * i40e_rx_is_fcoe - returns true if the rx packet type is FCoE
-+ * @ptype: the packet type field from rx descriptor write-back
-+ **/
-+static inline bool i40e_rx_is_fcoe(u16 ptype)
-+{
-+	return (ptype >= I40E_RX_PTYPE_L2_FCOE_PAY3) &&
-+	       (ptype <= I40E_RX_PTYPE_L2_FCOE_VFT_FCOTHER);
-+}
- #endif /* _I40E_TXRX_H_ */
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index ec1f447..0c912a4 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -1160,7 +1160,9 @@ static int i40e_clean_rx_irq_ps(struct i40e_ring *rx_ring, const int budget)
- 			 ? le16_to_cpu(rx_desc->wb.qword0.lo_dword.l2tag1)
- 			 : 0;
- #ifdef I40E_FCOE
--		if (!i40e_fcoe_handle_offload(rx_ring, rx_desc, skb)) {
-+		if (unlikely(
-+		    i40e_rx_is_fcoe(rx_ptype) &&
-+		    !i40e_fcoe_handle_offload(rx_ring, rx_desc, skb))) {
- 			dev_kfree_skb_any(skb);
- 			continue;
- 		}
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-index 6cf1169..92deb97 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-@@ -430,4 +430,14 @@ static inline bool i40e_chk_linearize(struct sk_buff *skb, int count)
+ #define DRV_VERSION_MAJOR 1
+ #define DRV_VERSION_MINOR 5
+-#define DRV_VERSION_BUILD 2
++#define DRV_VERSION_BUILD 5
+ #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
+ 	     __stringify(DRV_VERSION_MINOR) "." \
+ 	     __stringify(DRV_VERSION_BUILD)    DRV_KERN
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 54aa24b..667e0eb 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -38,7 +38,7 @@ static const char i40evf_driver_string[] =
  
- 	return __i40evf_chk_linearize(skb);
- }
-+
-+/**
-+ * i40e_rx_is_fcoe - returns true if the rx packet type is FCoE
-+ * @ptype: the packet type field from rx descriptor write-back
-+ **/
-+static inline bool i40e_rx_is_fcoe(u16 ptype)
-+{
-+	return (ptype >= I40E_RX_PTYPE_L2_FCOE_PAY3) &&
-+	       (ptype <= I40E_RX_PTYPE_L2_FCOE_VFT_FCOTHER);
-+}
- #endif /* _I40E_TXRX_H_ */
+ #define DRV_VERSION_MAJOR 1
+ #define DRV_VERSION_MINOR 5
+-#define DRV_VERSION_BUILD 2
++#define DRV_VERSION_BUILD 5
+ #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
+ 	     __stringify(DRV_VERSION_MINOR) "." \
+ 	     __stringify(DRV_VERSION_BUILD) \
 -- 
 2.4.3
 
