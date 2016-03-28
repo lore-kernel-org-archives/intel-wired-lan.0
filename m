@@ -1,116 +1,39 @@
 From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-Date: Mon, 28 Mar 2016 04:17:18 -0700
-Subject: [Intel-wired-lan] [next PATCH S32 07/14] i40e: Patch to support
-	trusted VF
+Date: Mon, 28 Mar 2016 04:17:14 -0700
+Subject: [Intel-wired-lan] [next PATCH S32 03/14] i40e: Move HW flush
 In-Reply-To: <1459163845-28035-1-git-send-email-harshitha.ramamurthy@intel.com>
 References: <1459163845-28035-1-git-send-email-harshitha.ramamurthy@intel.com>
-Message-ID: <1459163845-28035-8-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <1459163845-28035-4-git-send-email-harshitha.ramamurthy@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Anjali Singhai Jain <anjali.singhai@intel.com>
+From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 
-This patch adds hook to support changing a VF from not-trusted
-to trusted and vice-versa. Fixed the wrappers and function prototype.
-Changed the dmesg to reflex the current state better. This patch also
-disables turning on/off trusted VF in MFP mode.
+This patch moves the HW flush routine to the end of the reset flow,
+after the completion of writing to the device VFLR registers- the
+benefit is to avoid problems in the passthrough routines.
 
-Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-Change-ID: Ibcd910935c01f0be1f3fdd6d427230291ee92ebe
+Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+Change-ID: Ieb56866f21895e6c1fc514b7328c3df79807a57c
 ---
-Testing Hints : Test the feature with ip link set dev eth0 vf 1 trust
-on or ip link set dev eth0 vf 1 trust off.
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 1 +
+ 1 file changed, 1 insertion(+)
 
- drivers/net/ethernet/intel/i40e/i40e_main.c        |  1 +
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 42 ++++++++++++++++++++++
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |  2 ++
- 3 files changed, 45 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 6c30b21..b7dd9ae 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -9004,6 +9004,7 @@ static const struct net_device_ops i40e_netdev_ops = {
- 	.ndo_get_vf_config	= i40e_ndo_get_vf_config,
- 	.ndo_set_vf_link_state	= i40e_ndo_set_vf_link_state,
- 	.ndo_set_vf_spoofchk	= i40e_ndo_set_vf_spoofchk,
-+	.ndo_set_vf_trust	= i40e_ndo_set_vf_trust,
- #if IS_ENABLED(CONFIG_VXLAN)
- 	.ndo_add_vxlan_port	= i40e_add_vxlan_port,
- 	.ndo_del_vxlan_port	= i40e_del_vxlan_port,
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 21dd1be..fccfc36 100644
+index f93a649..21dd1be 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -2526,3 +2526,45 @@ int i40e_ndo_set_vf_spoofchk(struct net_device *netdev, int vf_id, bool enable)
- out:
- 	return ret;
- }
-+
-+/**
-+ * i40e_ndo_set_vf_trust
-+ * @netdev: network interface device structure of the pf
-+ * @vf_id: VF identifier
-+ * @setting: trust setting
-+ *
-+ * Enable or disable VF trust setting
-+ **/
-+int i40e_ndo_set_vf_trust(struct net_device *netdev, int vf_id, bool setting)
-+{
-+	struct i40e_netdev_priv *np = netdev_priv(netdev);
-+	struct i40e_pf *pf = np->vsi->back;
-+	struct i40e_vf *vf;
-+	int ret = 0;
-+
-+	/* validate the request */
-+	if (vf_id >= pf->num_alloc_vfs) {
-+		dev_err(&pf->pdev->dev, "Invalid VF Identifier %d\n", vf_id);
-+		return -EINVAL;
-+	}
-+
-+	if (pf->flags & I40E_FLAG_MFP_ENABLED) {
-+		dev_err(&pf->pdev->dev, "Trusted VF not supported in MFP mode.\n");
-+		return -EINVAL;
-+	}
-+
-+	vf = &pf->vf[vf_id];
-+
-+	if (!vf)
-+		return -EINVAL;
-+	if (setting == vf->trusted)
-+		goto out;
-+
-+	vf->trusted = setting;
-+	i40e_vc_notify_vf_reset(vf);
-+	i40e_reset_vf(vf, false);
-+	dev_info(&pf->pdev->dev, "VF %u is now %strusted\n",
-+		 vf_id, setting ? "" : "un");
-+out:
-+	return ret;
-+}
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-index e74642a..0e0c465 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-@@ -86,6 +86,7 @@ struct i40e_vf {
- 	struct i40e_virtchnl_ether_addr default_fcoe_addr;
- 	u16 port_vlan_id;
- 	bool pf_set_mac;	/* The VMM admin set the VF MAC address */
-+	bool trusted;
+@@ -811,6 +811,7 @@ void i40e_reset_vf(struct i40e_vf *vf, bool flr)
+ 	reg_idx = (hw->func_caps.vf_base_id + vf->vf_id) / 32;
+ 	bit_idx = (hw->func_caps.vf_base_id + vf->vf_id) % 32;
+ 	wr32(hw, I40E_GLGEN_VFLRSTAT(reg_idx), BIT(bit_idx));
++	i40e_flush(hw);
  
- 	/* VSI indices - actual VSI pointers are maintained in the PF structure
- 	 * When assigned, these will be non-zero, because VSI 0 is always
-@@ -123,6 +124,7 @@ int i40e_ndo_set_vf_port_vlan(struct net_device *netdev,
- 			      int vf_id, u16 vlan_id, u8 qos);
- int i40e_ndo_set_vf_bw(struct net_device *netdev, int vf_id, int min_tx_rate,
- 		       int max_tx_rate);
-+int i40e_ndo_set_vf_trust(struct net_device *netdev, int vf_id, bool setting);
- int i40e_ndo_get_vf_config(struct net_device *netdev,
- 			   int vf_id, struct ifla_vf_info *ivi);
- int i40e_ndo_set_vf_link_state(struct net_device *netdev, int vf_id, int link);
+ 	if (i40e_quiesce_vf_pci(vf))
+ 		dev_err(&pf->pdev->dev, "VF %d PCI transactions stuck\n",
 -- 
 2.4.3
 
