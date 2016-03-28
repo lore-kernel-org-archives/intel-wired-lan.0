@@ -1,166 +1,134 @@
-From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-Date: Mon, 28 Mar 2016 04:17:20 -0700
-Subject: [Intel-wired-lan] [next PATCH S32 09/14] i40e: Move NVM variable
-	out of AQ struct
-In-Reply-To: <1459163845-28035-1-git-send-email-harshitha.ramamurthy@intel.com>
-References: <1459163845-28035-1-git-send-email-harshitha.ramamurthy@intel.com>
-Message-ID: <1459163845-28035-10-git-send-email-harshitha.ramamurthy@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 29 Mar 2016 04:05:24 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ 0213b49fbee10d491da06f0301a4c827c802bcca BUILD SUCCESS
+Message-ID: <56f98e84.yUNy+dUdjdhsQCwt%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Shannon Nelson <shannon.nelson@intel.com>
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+0213b49fbee10d491da06f0301a4c827c802bcca  e1000: Double Tx descriptors needed check for 82544
 
-The NVM update status info should stay collected together, not
-spread across different structs.
+elapsed time: 39m
 
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-Change-ID: Ic16f9e9fd79945d865bb7226184c889884585025
----
-Testing Hints :
-	Compile code and run an NVM update
+configs tested: 113
 
- drivers/net/ethernet/intel/i40e/i40e_adminq.c   |  6 +++---
- drivers/net/ethernet/intel/i40e/i40e_adminq.h   |  1 -
- drivers/net/ethernet/intel/i40e/i40e_nvm.c      | 12 ++++++------
- drivers/net/ethernet/intel/i40e/i40e_type.h     |  1 +
- drivers/net/ethernet/intel/i40evf/i40e_adminq.h |  1 -
- drivers/net/ethernet/intel/i40evf/i40e_type.h   |  1 +
- 6 files changed, 11 insertions(+), 11 deletions(-)
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201613
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                             allmodconfig
+x86_64                 randconfig-x010-201613
+x86_64                 randconfig-x011-201613
+x86_64                 randconfig-x018-201613
+x86_64                 randconfig-x019-201613
+x86_64                 randconfig-x012-201613
+x86_64                 randconfig-x013-201613
+x86_64                 randconfig-x016-201613
+x86_64                 randconfig-x014-201613
+x86_64                 randconfig-x015-201613
+x86_64                 randconfig-x017-201613
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201613
+i386                     randconfig-s1-201613
+x86_64                           allmodconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201613
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201613
+i386                     randconfig-i1-201613
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                              rhel_gcov
+i386                   randconfig-x013-201613
+i386                   randconfig-x012-201613
+i386                   randconfig-x019-201613
+i386                   randconfig-x015-201613
+i386                   randconfig-x018-201613
+i386                   randconfig-x011-201613
+i386                   randconfig-x010-201613
+i386                   randconfig-x016-201613
+i386                   randconfig-x017-201613
+i386                   randconfig-x014-201613
+i386                     randconfig-n0-201613
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                 randconfig-x001-201613
+x86_64                 randconfig-x000-201613
+x86_64                 randconfig-x005-201613
+x86_64                 randconfig-x007-201613
+x86_64                 randconfig-x006-201613
+x86_64                 randconfig-x004-201613
+x86_64                 randconfig-x009-201613
+x86_64                 randconfig-x008-201613
+x86_64                 randconfig-x003-201613
+x86_64                 randconfig-x002-201613
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-r0-201613
+i386                   randconfig-x000-201613
+i386                   randconfig-x003-201613
+i386                   randconfig-x009-201613
+i386                   randconfig-x004-201613
+i386                   randconfig-x005-201613
+i386                   randconfig-x002-201613
+i386                   randconfig-x006-201613
+i386                   randconfig-x007-201613
+i386                   randconfig-x001-201613
+i386                   randconfig-x008-201613
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-index df8e2fd..e8278e1 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-@@ -624,7 +624,7 @@ i40e_status i40e_init_adminq(struct i40e_hw *hw)
- 
- 	/* pre-emptive resource lock release */
- 	i40e_aq_release_resource(hw, I40E_NVM_RESOURCE_ID, 0, NULL);
--	hw->aq.nvm_release_on_done = false;
-+	hw->nvm_release_on_done = false;
- 	hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
- 
- 	ret_code = i40e_aq_set_hmc_resource_profile(hw,
-@@ -1024,9 +1024,9 @@ i40e_status i40e_clean_arq_element(struct i40e_hw *hw,
- 	hw->aq.arq.next_to_use = ntu;
- 
- 	if (i40e_is_nvm_update_op(&e->desc)) {
--		if (hw->aq.nvm_release_on_done) {
-+		if (hw->nvm_release_on_done) {
- 			i40e_release_nvm(hw);
--			hw->aq.nvm_release_on_done = false;
-+			hw->nvm_release_on_done = false;
- 		}
- 
- 		switch (hw->nvmupd_state) {
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.h b/drivers/net/ethernet/intel/i40e/i40e_adminq.h
-index 12fbbdd..d92aad3 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.h
-@@ -97,7 +97,6 @@ struct i40e_adminq_info {
- 	u32 fw_build;                   /* firmware build number */
- 	u16 api_maj_ver;                /* api major version */
- 	u16 api_min_ver;                /* api minor version */
--	bool nvm_release_on_done;
- 
- 	struct mutex asq_mutex; /* Send queue lock */
- 	struct mutex arq_mutex; /* Receive queue lock */
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-index 5730f80..1ae29ac 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-@@ -696,7 +696,7 @@ i40e_status i40e_nvmupd_command(struct i40e_hw *hw,
- 	i40e_debug(hw, I40E_DEBUG_NVM, "%s state %d nvm_release_on_hold %d cmd 0x%08x config 0x%08x offset 0x%08x data_size 0x%08x\n",
- 		   i40e_nvm_update_state_str[upd_cmd],
- 		   hw->nvmupd_state,
--		   hw->aq.nvm_release_on_done,
-+		   hw->nvm_release_on_done,
- 		   cmd->command, cmd->config, cmd->offset, cmd->data_size);
- 
- 	if (upd_cmd == I40E_NVMUPD_INVALID) {
-@@ -799,7 +799,7 @@ static i40e_status i40e_nvmupd_state_init(struct i40e_hw *hw,
- 			if (status) {
- 				i40e_release_nvm(hw);
- 			} else {
--				hw->aq.nvm_release_on_done = true;
-+				hw->nvm_release_on_done = true;
- 				hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
- 			}
- 		}
-@@ -815,7 +815,7 @@ static i40e_status i40e_nvmupd_state_init(struct i40e_hw *hw,
- 			if (status) {
- 				i40e_release_nvm(hw);
- 			} else {
--				hw->aq.nvm_release_on_done = true;
-+				hw->nvm_release_on_done = true;
- 				hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
- 			}
- 		}
-@@ -849,7 +849,7 @@ static i40e_status i40e_nvmupd_state_init(struct i40e_hw *hw,
- 				   -EIO;
- 				i40e_release_nvm(hw);
- 			} else {
--				hw->aq.nvm_release_on_done = true;
-+				hw->nvm_release_on_done = true;
- 				hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
- 			}
- 		}
-@@ -953,7 +953,7 @@ retry:
- 				   -EIO;
- 			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
- 		} else {
--			hw->aq.nvm_release_on_done = true;
-+			hw->nvm_release_on_done = true;
- 			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
- 		}
- 		break;
-@@ -980,7 +980,7 @@ retry:
- 				   -EIO;
- 			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
- 		} else {
--			hw->aq.nvm_release_on_done = true;
-+			hw->nvm_release_on_done = true;
- 			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
- 		}
- 		break;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-index 0a0baf7..11917e6 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-@@ -548,6 +548,7 @@ struct i40e_hw {
- 	enum i40e_nvmupd_state nvmupd_state;
- 	struct i40e_aq_desc nvm_wb_desc;
- 	struct i40e_virt_mem nvm_buff;
-+	bool nvm_release_on_done;
- 
- 	/* HMC info */
- 	struct i40e_hmc_info hmc; /* HMC info struct */
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
-index a3eae5d..1f9b3b5 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
-@@ -97,7 +97,6 @@ struct i40e_adminq_info {
- 	u32 fw_build;                   /* firmware build number */
- 	u16 api_maj_ver;                /* api major version */
- 	u16 api_min_ver;                /* api minor version */
--	bool nvm_release_on_done;
- 
- 	struct mutex asq_mutex; /* Send queue lock */
- 	struct mutex arq_mutex; /* Receive queue lock */
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-index 301fe2b..d68e017 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-@@ -522,6 +522,7 @@ struct i40e_hw {
- 	enum i40e_nvmupd_state nvmupd_state;
- 	struct i40e_aq_desc nvm_wb_desc;
- 	struct i40e_virt_mem nvm_buff;
-+	bool nvm_release_on_done;
- 
- 	/* HMC info */
- 	struct i40e_hmc_info hmc; /* HMC info struct */
--- 
-2.4.3
-
+Thanks,
+Fengguang
