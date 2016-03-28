@@ -1,101 +1,96 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Mon, 28 Mar 2016 14:17:50 -0700
-Subject: [Intel-wired-lan] [PATCH V3 04/11] ixgbe: Request token for PHY
-	accesses
+Date: Mon, 28 Mar 2016 14:18:00 -0700
+Subject: [Intel-wired-lan] [PATCH V3 06/11] ixgbe: Read and parse
+	NW_MNG_IF_SEL register
 In-Reply-To: <20160328211623.68937.52252.stgit@mdrustad-wks.jf.intel.com>
 References: <20160328211623.68937.52252.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <20160328211750.68937.58640.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <20160328211800.68937.93319.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Set the bit to request the PHY token for PHY accesses.
+Read the IXGBE_NW_MNG_IF_SEL register and use it to set interface
+attributes.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c |   34 +++++++++++++-------------
- 1 file changed, 17 insertions(+), 17 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |    5 +++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   37 ++++++++++++++++++++++---
+ 2 files changed, 37 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-index db0731e05401..9092b9612271 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-@@ -1,7 +1,7 @@
- /*******************************************************************************
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index 3fc447a7c15d..3e0dd5584d4e 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -3648,5 +3648,10 @@ struct ixgbe_info {
+ #define IXGBE_SB_IOSF_TARGET_KX4_PCS1	3
  
-   Intel 10 Gigabit PCI Express Linux driver
--  Copyright(c) 1999 - 2014 Intel Corporation.
-+  Copyright(c) 1999 - 2016 Intel Corporation.
- 
-   This program is free software; you can redistribute it and/or modify it
-   under the terms and conditions of the GNU General Public License,
-@@ -570,24 +570,24 @@ s32 ixgbe_read_phy_reg_mdi(struct ixgbe_hw *hw, u32 reg_addr, u32 device_type,
- 
- /**
-  *  ixgbe_read_phy_reg_generic - Reads a value from a specified PHY register
-- *  using the SWFW lock - this function is needed in most cases
-  *  @hw: pointer to hardware structure
-  *  @reg_addr: 32 bit address of PHY register to read
-  *  @phy_data: Pointer to read data from PHY register
-+ *
-+ *  This function uses the SWFW lock which must be held for all accesses
-  **/
- s32 ixgbe_read_phy_reg_generic(struct ixgbe_hw *hw, u32 reg_addr,
- 			       u32 device_type, u16 *phy_data)
- {
-+	u32 gssr = hw->phy.phy_semaphore_mask | IXGBE_GSSR_TOKEN_SM;
- 	s32 status;
--	u32 gssr = hw->phy.phy_semaphore_mask;
- 
--	if (hw->mac.ops.acquire_swfw_sync(hw, gssr) == 0) {
--		status = ixgbe_read_phy_reg_mdi(hw, reg_addr, device_type,
--						phy_data);
--		hw->mac.ops.release_swfw_sync(hw, gssr);
--	} else {
-+	if (hw->mac.ops.acquire_swfw_sync(hw, gssr))
- 		return IXGBE_ERR_SWFW_SYNC;
--	}
-+
-+	status = hw->phy.ops.read_reg_mdi(hw, reg_addr, device_type, phy_data);
-+
-+	hw->mac.ops.release_swfw_sync(hw, gssr);
- 
+ #define IXGBE_NW_MNG_IF_SEL		0x00011178
++#define IXGBE_NW_MNG_IF_SEL_MDIO_ACT		BIT(1)
++#define IXGBE_NW_MNG_IF_SEL_ENABLE_10_100M	BIT(23)
+ #define IXGBE_NW_MNG_IF_SEL_INT_PHY_MODE	BIT(24)
++#define IXGBE_NW_MNG_IF_SEL_MDIO_PHY_ADD_SHIFT	3
++#define IXGBE_NW_MNG_IF_SEL_MDIO_PHY_ADD	\
++				(0x1F << IXGBE_NW_MNG_IF_SEL_MDIO_PHY_ADD_SHIFT)
+ #endif /* _IXGBE_TYPE_H_ */
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index ee925854c999..846cfcd53d5b 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -2137,6 +2137,36 @@ static s32 ixgbe_enter_lplu_t_x550em(struct ixgbe_hw *hw)
  	return status;
  }
-@@ -667,25 +667,25 @@ s32 ixgbe_write_phy_reg_mdi(struct ixgbe_hw *hw, u32 reg_addr,
  
- /**
-  *  ixgbe_write_phy_reg_generic - Writes a value to specified PHY register
-- *  using SWFW lock- this function is needed in most cases
-  *  @hw: pointer to hardware structure
-  *  @reg_addr: 32 bit PHY register to write
-  *  @device_type: 5 bit device type
-  *  @phy_data: Data to write to the PHY register
++/**
++ * ixgbe_read_mng_if_sel_x550em - Read NW_MNG_IF_SEL register
++ * @hw: pointer to hardware structure
 + *
-+ *  This function uses the SWFW lock which must be held for all accesses
-  **/
- s32 ixgbe_write_phy_reg_generic(struct ixgbe_hw *hw, u32 reg_addr,
- 				u32 device_type, u16 phy_data)
- {
-+	u32 gssr = hw->phy.phy_semaphore_mask | IXGBE_GSSR_TOKEN_SM;
- 	s32 status;
--	u32 gssr = hw->phy.phy_semaphore_mask;
- 
--	if (hw->mac.ops.acquire_swfw_sync(hw, gssr) == 0) {
--		status = ixgbe_write_phy_reg_mdi(hw, reg_addr, device_type,
--						 phy_data);
--		hw->mac.ops.release_swfw_sync(hw, gssr);
--	} else {
-+	if (hw->mac.ops.acquire_swfw_sync(hw, gssr))
- 		return IXGBE_ERR_SWFW_SYNC;
--	}
++ * Read NW_MNG_IF_SEL register and save field values.
++ */
++static void ixgbe_read_mng_if_sel_x550em(struct ixgbe_hw *hw)
++{
++	/* Save NW management interface connected on board. This is used
++	 * to determine internal PHY mode.
++	 */
++	hw->phy.nw_mng_if_sel = IXGBE_READ_REG(hw, IXGBE_NW_MNG_IF_SEL);
 +
-+	status = hw->phy.ops.write_reg_mdi(hw, reg_addr, device_type, phy_data);
++	/* If X552 (X550EM_a) and MDIO is connected to external PHY, then set
++	 * PHY address. This register field was has only been used for X552.
++	 */
++	if (!hw->phy.nw_mng_if_sel) {
++		if (hw->mac.type == ixgbe_mac_x550em_a) {
++			struct ixgbe_adapter *adapter = hw->back;
 +
-+	hw->mac.ops.release_swfw_sync(hw, gssr);
++			e_warn(drv, "nw_mng_if_sel not set\n");
++		}
++		return;
++	}
++
++	hw->phy.mdio.prtad = (hw->phy.nw_mng_if_sel &
++			      IXGBE_NW_MNG_IF_SEL_MDIO_PHY_ADD) >>
++			     IXGBE_NW_MNG_IF_SEL_MDIO_PHY_ADD_SHIFT;
++}
++
+ /** ixgbe_init_phy_ops_X550em - PHY/SFP specific init
+  *  @hw: pointer to hardware structure
+  *
+@@ -2151,14 +2181,11 @@ static s32 ixgbe_init_phy_ops_X550em(struct ixgbe_hw *hw)
  
- 	return status;
- }
+ 	hw->mac.ops.set_lan_id(hw);
+ 
++	ixgbe_read_mng_if_sel_x550em(hw);
++
+ 	if (hw->mac.ops.get_media_type(hw) == ixgbe_media_type_fiber) {
+ 		phy->phy_semaphore_mask = IXGBE_GSSR_SHARED_I2C_SM;
+ 		ixgbe_setup_mux_ctl(hw);
+-
+-		/* Save NW management interface connected on board. This is used
+-		 * to determine internal PHY mode.
+-		 */
+-		phy->nw_mng_if_sel = IXGBE_READ_REG(hw, IXGBE_NW_MNG_IF_SEL);
+ 	}
+ 
+ 	/* Identify the PHY or SFP module */
 
