@@ -1,48 +1,166 @@
 From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-Date: Mon, 28 Mar 2016 04:17:25 -0700
-Subject: [Intel-wired-lan] [next PATCH S32 14/14] i40e/i40evf: Bump patch
-	from 1.5.2 to 1.5.5
+Date: Mon, 28 Mar 2016 04:17:20 -0700
+Subject: [Intel-wired-lan] [next PATCH S32 09/14] i40e: Move NVM variable
+	out of AQ struct
 In-Reply-To: <1459163845-28035-1-git-send-email-harshitha.ramamurthy@intel.com>
 References: <1459163845-28035-1-git-send-email-harshitha.ramamurthy@intel.com>
-Message-ID: <1459163845-28035-15-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <1459163845-28035-10-git-send-email-harshitha.ramamurthy@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+From: Shannon Nelson <shannon.nelson@intel.com>
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index b7dd9ae..79dd633 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -46,7 +46,7 @@ static const char i40e_driver_string[] =
+The NVM update status info should stay collected together, not
+spread across different structs.
+
+Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+Change-ID: Ic16f9e9fd79945d865bb7226184c889884585025
+---
+Testing Hints :
+	Compile code and run an NVM update
+
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c   |  6 +++---
+ drivers/net/ethernet/intel/i40e/i40e_adminq.h   |  1 -
+ drivers/net/ethernet/intel/i40e/i40e_nvm.c      | 12 ++++++------
+ drivers/net/ethernet/intel/i40e/i40e_type.h     |  1 +
+ drivers/net/ethernet/intel/i40evf/i40e_adminq.h |  1 -
+ drivers/net/ethernet/intel/i40evf/i40e_type.h   |  1 +
+ 6 files changed, 11 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+index df8e2fd..e8278e1 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+@@ -624,7 +624,7 @@ i40e_status i40e_init_adminq(struct i40e_hw *hw)
  
- #define DRV_VERSION_MAJOR 1
- #define DRV_VERSION_MINOR 5
--#define DRV_VERSION_BUILD 2
-+#define DRV_VERSION_BUILD 5
- #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
- 	     __stringify(DRV_VERSION_MINOR) "." \
- 	     __stringify(DRV_VERSION_BUILD)    DRV_KERN
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 54aa24b..667e0eb 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -38,7 +38,7 @@ static const char i40evf_driver_string[] =
+ 	/* pre-emptive resource lock release */
+ 	i40e_aq_release_resource(hw, I40E_NVM_RESOURCE_ID, 0, NULL);
+-	hw->aq.nvm_release_on_done = false;
++	hw->nvm_release_on_done = false;
+ 	hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
  
- #define DRV_VERSION_MAJOR 1
- #define DRV_VERSION_MINOR 5
--#define DRV_VERSION_BUILD 2
-+#define DRV_VERSION_BUILD 5
- #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
- 	     __stringify(DRV_VERSION_MINOR) "." \
- 	     __stringify(DRV_VERSION_BUILD) \
+ 	ret_code = i40e_aq_set_hmc_resource_profile(hw,
+@@ -1024,9 +1024,9 @@ i40e_status i40e_clean_arq_element(struct i40e_hw *hw,
+ 	hw->aq.arq.next_to_use = ntu;
+ 
+ 	if (i40e_is_nvm_update_op(&e->desc)) {
+-		if (hw->aq.nvm_release_on_done) {
++		if (hw->nvm_release_on_done) {
+ 			i40e_release_nvm(hw);
+-			hw->aq.nvm_release_on_done = false;
++			hw->nvm_release_on_done = false;
+ 		}
+ 
+ 		switch (hw->nvmupd_state) {
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.h b/drivers/net/ethernet/intel/i40e/i40e_adminq.h
+index 12fbbdd..d92aad3 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.h
+@@ -97,7 +97,6 @@ struct i40e_adminq_info {
+ 	u32 fw_build;                   /* firmware build number */
+ 	u16 api_maj_ver;                /* api major version */
+ 	u16 api_min_ver;                /* api minor version */
+-	bool nvm_release_on_done;
+ 
+ 	struct mutex asq_mutex; /* Send queue lock */
+ 	struct mutex arq_mutex; /* Receive queue lock */
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
+index 5730f80..1ae29ac 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
+@@ -696,7 +696,7 @@ i40e_status i40e_nvmupd_command(struct i40e_hw *hw,
+ 	i40e_debug(hw, I40E_DEBUG_NVM, "%s state %d nvm_release_on_hold %d cmd 0x%08x config 0x%08x offset 0x%08x data_size 0x%08x\n",
+ 		   i40e_nvm_update_state_str[upd_cmd],
+ 		   hw->nvmupd_state,
+-		   hw->aq.nvm_release_on_done,
++		   hw->nvm_release_on_done,
+ 		   cmd->command, cmd->config, cmd->offset, cmd->data_size);
+ 
+ 	if (upd_cmd == I40E_NVMUPD_INVALID) {
+@@ -799,7 +799,7 @@ static i40e_status i40e_nvmupd_state_init(struct i40e_hw *hw,
+ 			if (status) {
+ 				i40e_release_nvm(hw);
+ 			} else {
+-				hw->aq.nvm_release_on_done = true;
++				hw->nvm_release_on_done = true;
+ 				hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
+ 			}
+ 		}
+@@ -815,7 +815,7 @@ static i40e_status i40e_nvmupd_state_init(struct i40e_hw *hw,
+ 			if (status) {
+ 				i40e_release_nvm(hw);
+ 			} else {
+-				hw->aq.nvm_release_on_done = true;
++				hw->nvm_release_on_done = true;
+ 				hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
+ 			}
+ 		}
+@@ -849,7 +849,7 @@ static i40e_status i40e_nvmupd_state_init(struct i40e_hw *hw,
+ 				   -EIO;
+ 				i40e_release_nvm(hw);
+ 			} else {
+-				hw->aq.nvm_release_on_done = true;
++				hw->nvm_release_on_done = true;
+ 				hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
+ 			}
+ 		}
+@@ -953,7 +953,7 @@ retry:
+ 				   -EIO;
+ 			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
+ 		} else {
+-			hw->aq.nvm_release_on_done = true;
++			hw->nvm_release_on_done = true;
+ 			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
+ 		}
+ 		break;
+@@ -980,7 +980,7 @@ retry:
+ 				   -EIO;
+ 			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
+ 		} else {
+-			hw->aq.nvm_release_on_done = true;
++			hw->nvm_release_on_done = true;
+ 			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
+ 		}
+ 		break;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
+index 0a0baf7..11917e6 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
+@@ -548,6 +548,7 @@ struct i40e_hw {
+ 	enum i40e_nvmupd_state nvmupd_state;
+ 	struct i40e_aq_desc nvm_wb_desc;
+ 	struct i40e_virt_mem nvm_buff;
++	bool nvm_release_on_done;
+ 
+ 	/* HMC info */
+ 	struct i40e_hmc_info hmc; /* HMC info struct */
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
+index a3eae5d..1f9b3b5 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
+@@ -97,7 +97,6 @@ struct i40e_adminq_info {
+ 	u32 fw_build;                   /* firmware build number */
+ 	u16 api_maj_ver;                /* api major version */
+ 	u16 api_min_ver;                /* api minor version */
+-	bool nvm_release_on_done;
+ 
+ 	struct mutex asq_mutex; /* Send queue lock */
+ 	struct mutex arq_mutex; /* Receive queue lock */
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+index 301fe2b..d68e017 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+@@ -522,6 +522,7 @@ struct i40e_hw {
+ 	enum i40e_nvmupd_state nvmupd_state;
+ 	struct i40e_aq_desc nvm_wb_desc;
+ 	struct i40e_virt_mem nvm_buff;
++	bool nvm_release_on_done;
+ 
+ 	/* HMC info */
+ 	struct i40e_hmc_info hmc; /* HMC info struct */
 -- 
 2.4.3
 
