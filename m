@@ -1,61 +1,77 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Mon, 28 Mar 2016 14:17:29 -0700
-Subject: [Intel-wired-lan] [PATCH V3 00/11] ixgbe: Add support for x550em_a
-	MAC
-Message-ID: <20160328211623.68937.52252.stgit@mdrustad-wks.jf.intel.com>
+Date: Mon, 28 Mar 2016 14:17:55 -0700
+Subject: [Intel-wired-lan] [PATCH V3 05/11] ixgbe: Read and set instance id
+In-Reply-To: <20160328211623.68937.52252.stgit@mdrustad-wks.jf.intel.com>
+References: <20160328211623.68937.52252.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <20160328211755.68937.70690.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The following patches add support for a new ixgbe MAC type,
-x550em_a. The interfaces supported are native SFP+, SFP+ with a
-retimer, SGMII backplane and KR backplane.
+Read the instance number from EEPROM and save it for later use.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
-This series replaces two previous series of patches:
-	ixgbe: Add initial support for a new ixgbe MAC
-	ixgbe: Add KR and SFP+ interfaces to X550EM_A
-with some reorganization, a couple bug fixes and incorporation of
-other feedback. This series also adds the SGMII backplane support
-which was not included in the previous 2 series.
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |    8 ++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h   |    5 +++++
+ 2 files changed, 13 insertions(+)
 
-Changes in V2 of this series:
-- Corrected endianness of IOSF data accessed by firmware
-Changes in V3 of this series:
-- Moved a mac type check into ixgbe_setup_kr_x550em
----
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+index 76080310fc6b..833567cacda4 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+@@ -681,6 +681,7 @@ s32 ixgbe_get_bus_info_generic(struct ixgbe_hw *hw)
+ void ixgbe_set_lan_id_multi_port_pcie(struct ixgbe_hw *hw)
+ {
+ 	struct ixgbe_bus_info *bus = &hw->bus;
++	u16 ee_ctrl_4;
+ 	u32 reg;
+ 
+ 	reg = IXGBE_READ_REG(hw, IXGBE_STATUS);
+@@ -691,6 +692,13 @@ void ixgbe_set_lan_id_multi_port_pcie(struct ixgbe_hw *hw)
+ 	reg = IXGBE_READ_REG(hw, IXGBE_FACTPS(hw));
+ 	if (reg & IXGBE_FACTPS_LFS)
+ 		bus->func ^= 0x1;
++
++	/* Get MAC instance from EEPROM for configuring CS4227 */
++	if (hw->device_id == IXGBE_DEV_ID_X550EM_A_SFP) {
++		hw->eeprom.ops.read(hw, IXGBE_EEPROM_CTRL_4, &ee_ctrl_4);
++		bus->instance_id = (ee_ctrl_4 & IXGBE_EE_CTRL_4_INST_ID) >>
++				   IXGBE_EE_CTRL_4_INST_ID_SHIFT;
++	}
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index f6d02c254b6e..3fc447a7c15d 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -81,6 +81,7 @@
+ #define IXGBE_DEV_ID_X550EM_X_10G_T	0x15AD
+ #define IXGBE_DEV_ID_X550EM_X_1G_T	0x15AE
+ #define IXGBE_DEV_ID_X550EM_A_SFP_N	0x15C4
++#define IXGBE_DEV_ID_X550EM_A_SFP	0x15CE
+ 
+ /* VF Device IDs */
+ #define IXGBE_DEV_ID_X550_VF_HV	0x1564
+@@ -1999,6 +2000,9 @@ enum {
+ #define IXGBE_PBANUM_PTR_GUARD		0xFAFA
+ #define IXGBE_EEPROM_CHECKSUM		0x3F
+ #define IXGBE_EEPROM_SUM		0xBABA
++#define IXGBE_EEPROM_CTRL_4		0x45
++#define IXGBE_EE_CTRL_4_INST_ID		0x10
++#define IXGBE_EE_CTRL_4_INST_ID_SHIFT	4
+ #define IXGBE_PCIE_ANALOG_PTR		0x03
+ #define IXGBE_ATLAS0_CONFIG_PTR		0x04
+ #define IXGBE_PHY_PTR			0x04
+@@ -3174,6 +3178,7 @@ struct ixgbe_bus_info {
+ 
+ 	u8 func;
+ 	u8 lan_id;
++	u8 instance_id;
+ };
+ 
+ /* Flow control parameters */
 
-Mark D Rustad (11):
-      ixgbe: Add definitions for x550em_a 10G MAC
-      ixgbe: Use method pointer to access IOSF devices
-      ixgbe: Add support for x550em_a 10G MAC type
-      ixgbe: Request token for PHY accesses
-      ixgbe: Read and set instance id
-      ixgbe: Read and parse NW_MNG_IF_SEL register
-      ixgbe: Introduce function to control MDIO speed
-      ixgbe: Add support for SFPs with retimer
-      ixgbe: Add support for SGMII backplane interface
-      ixgbe: Add KR backplane support for x550em_a
-      ixgbe: Bump version number
-
-
- drivers/net/ethernet/intel/ixgbe/ixgbe.h         |    3 
- drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c   |    1 
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.c  |    9 
- drivers/net/ethernet/intel/ixgbe/ixgbe_dcb.c     |    6 
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |    9 
- drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c     |    3 
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |   51 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.c     |    2 
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c     |   34 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h     |    6 
- drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c     |    6 
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h    |   88 ++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c    |  511 +++++++++++++++++++++-
- 13 files changed, 668 insertions(+), 61 deletions(-)
-
--- 
-Mark Rustad, Network Division, Intel Corporation
