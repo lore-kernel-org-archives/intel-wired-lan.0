@@ -1,89 +1,187 @@
 From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-Date: Mon, 28 Mar 2016 04:17:16 -0700
-Subject: [Intel-wired-lan] [next PATCH S32 05/14] i40e/i40evf: Drop unused
-	tx_ring argument
+Date: Mon, 28 Mar 2016 04:17:24 -0700
+Subject: [Intel-wired-lan] [next PATCH S32 13/14] i40e: Rename defines for
+	input set mask
 In-Reply-To: <1459163845-28035-1-git-send-email-harshitha.ramamurthy@intel.com>
 References: <1459163845-28035-1-git-send-email-harshitha.ramamurthy@intel.com>
-Message-ID: <1459163845-28035-6-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <1459163845-28035-14-git-send-email-harshitha.ramamurthy@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Kiran Patil <kiran.patil@intel.com>
 
-Some of the tx_ring arguments can be deleted since they are not used.
+Rename defines related to INPUT set mask (which is meant to be used
+for both: RSS and flow director).
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Change-ID: I99275b0f191d7f63ec2f05061919904940c36f31
+Signed-off-by: Kiran Patil <kiran.patil@intel.com>
+Change-ID: I9e4d9947543e6cc56265873e38114f39e253d56b
 ---
-Testing Hints: Compile test, no functional change.
- 
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 6 ++----
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 6 ++----
- 2 files changed, 4 insertions(+), 8 deletions(-)
+Testing Hints : This patch applies and compiles
+cleanly.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 76a48e9..f4e4d3d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2252,15 +2252,13 @@ out:
+ drivers/net/ethernet/intel/i40e/i40e_type.h   | 69 +++++++++++----------------
+ drivers/net/ethernet/intel/i40evf/i40e_type.h | 69 +++++++++++----------------
+ 2 files changed, 56 insertions(+), 82 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
+index 3c99465..6778937 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
+@@ -1534,45 +1534,32 @@ struct i40e_lldp_variables {
+ /* RSS Hash Table Size */
+ #define I40E_PFQF_CTL_0_HASHLUTSIZE_512	0x00010000
  
- /**
-  * i40e_tso - set up the tso context descriptor
-- * @tx_ring:  ptr to the ring to send
-  * @skb:      ptr to the skb we're sending
-  * @hdr_len:  ptr to the size of the packet header
-  * @cd_type_cmd_tso_mss: Quad Word 1
-  *
-  * Returns 0 if no TSO can happen, 1 if tso is going, or error
-  **/
--static int i40e_tso(struct i40e_ring *tx_ring, struct sk_buff *skb,
--		    u8 *hdr_len, u64 *cd_type_cmd_tso_mss)
-+static int i40e_tso(struct sk_buff *skb, u8 *hdr_len, u64 *cd_type_cmd_tso_mss)
- {
- 	u64 cd_cmd, cd_tso_len, cd_mss;
- 	union {
-@@ -2932,7 +2930,7 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
- 	else if (protocol == htons(ETH_P_IPV6))
- 		tx_flags |= I40E_TX_FLAGS_IPV6;
+-/* INPUT SET MASK for RSS, flow director and flexible payload */
+-#define I40E_FD_INSET_L3_SRC_SHIFT		47
+-#define I40E_FD_INSET_L3_SRC_WORD_MASK		(0x3ULL << \
+-						 I40E_FD_INSET_L3_SRC_SHIFT)
+-#define I40E_FD_INSET_L3_DST_SHIFT		35
+-#define I40E_FD_INSET_L3_DST_WORD_MASK		(0x3ULL << \
+-						 I40E_FD_INSET_L3_DST_SHIFT)
+-#define I40E_FD_INSET_L4_SRC_SHIFT		34
+-#define I40E_FD_INSET_L4_SRC_WORD_MASK		(0x1ULL << \
+-						 I40E_FD_INSET_L4_SRC_SHIFT)
+-#define I40E_FD_INSET_L4_DST_SHIFT		33
+-#define I40E_FD_INSET_L4_DST_WORD_MASK		(0x1ULL << \
+-						 I40E_FD_INSET_L4_DST_SHIFT)
+-#define I40E_FD_INSET_VERIFY_TAG_SHIFT		31
+-#define I40E_FD_INSET_VERIFY_TAG_WORD_MASK	(0x3ULL << \
+-						 I40E_FD_INSET_VERIFY_TAG_SHIFT)
+-
+-#define I40E_FD_INSET_FLEX_WORD50_SHIFT		17
+-#define I40E_FD_INSET_FLEX_WORD50_MASK		(0x1ULL << \
+-					I40E_FD_INSET_FLEX_WORD50_SHIFT)
+-#define I40E_FD_INSET_FLEX_WORD51_SHIFT		16
+-#define I40E_FD_INSET_FLEX_WORD51_MASK		(0x1ULL << \
+-					I40E_FD_INSET_FLEX_WORD51_SHIFT)
+-#define I40E_FD_INSET_FLEX_WORD52_SHIFT		15
+-#define I40E_FD_INSET_FLEX_WORD52_MASK		(0x1ULL << \
+-					I40E_FD_INSET_FLEX_WORD52_SHIFT)
+-#define I40E_FD_INSET_FLEX_WORD53_SHIFT		14
+-#define I40E_FD_INSET_FLEX_WORD53_MASK		(0x1ULL << \
+-					I40E_FD_INSET_FLEX_WORD53_SHIFT)
+-#define I40E_FD_INSET_FLEX_WORD54_SHIFT		13
+-#define I40E_FD_INSET_FLEX_WORD54_MASK		(0x1ULL << \
+-					I40E_FD_INSET_FLEX_WORD54_SHIFT)
+-#define I40E_FD_INSET_FLEX_WORD55_SHIFT		12
+-#define I40E_FD_INSET_FLEX_WORD55_MASK		(0x1ULL << \
+-					I40E_FD_INSET_FLEX_WORD55_SHIFT)
+-#define I40E_FD_INSET_FLEX_WORD56_SHIFT		11
+-#define I40E_FD_INSET_FLEX_WORD56_MASK		(0x1ULL << \
+-					I40E_FD_INSET_FLEX_WORD56_SHIFT)
+-#define I40E_FD_INSET_FLEX_WORD57_SHIFT		10
+-#define I40E_FD_INSET_FLEX_WORD57_MASK		(0x1ULL << \
+-					I40E_FD_INSET_FLEX_WORD57_SHIFT)
++/* INPUT SET MASK for RSS, flow director, and flexible payload */
++#define I40E_L3_SRC_SHIFT		47
++#define I40E_L3_SRC_MASK		(0x3ULL << I40E_L3_SRC_SHIFT)
++#define I40E_L3_DST_SHIFT		35
++#define I40E_L3_DST_MASK		(0x3ULL << I40E_L3_DST_SHIFT)
++#define I40E_L4_SRC_SHIFT		34
++#define I40E_L4_SRC_MASK		(0x1ULL << I40E_L4_SRC_SHIFT)
++#define I40E_L4_DST_SHIFT		33
++#define I40E_L4_DST_MASK		(0x1ULL << I40E_L4_DST_SHIFT)
++#define I40E_VERIFY_TAG_SHIFT		31
++#define I40E_VERIFY_TAG_MASK		(0x3ULL << I40E_VERIFY_TAG_SHIFT)
++
++#define I40E_FLEX_50_SHIFT		17
++#define I40E_FLEX_50_MASK		(0x1ULL << I40E_FLEX_50_SHIFT)
++#define I40E_FLEX_51_SHIFT		16
++#define I40E_FLEX_51_MASK		(0x1ULL << I40E_FLEX_51_SHIFT)
++#define I40E_FLEX_52_SHIFT		15
++#define I40E_FLEX_52_MASK		(0x1ULL << I40E_FLEX_52_SHIFT)
++#define I40E_FLEX_53_SHIFT		14
++#define I40E_FLEX_53_MASK		(0x1ULL << I40E_FLEX_53_SHIFT)
++#define I40E_FLEX_54_SHIFT		13
++#define I40E_FLEX_54_MASK		(0x1ULL << I40E_FLEX_54_SHIFT)
++#define I40E_FLEX_55_SHIFT		12
++#define I40E_FLEX_55_MASK		(0x1ULL << I40E_FLEX_55_SHIFT)
++#define I40E_FLEX_56_SHIFT		11
++#define I40E_FLEX_56_MASK		(0x1ULL << I40E_FLEX_56_SHIFT)
++#define I40E_FLEX_57_SHIFT		10
++#define I40E_FLEX_57_MASK		(0x1ULL << I40E_FLEX_57_SHIFT)
+ #endif /* _I40E_TYPE_H_ */
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+index 4a78c18..c109908 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+@@ -1331,45 +1331,32 @@ enum i40e_reset_type {
+ /* RSS Hash Table Size */
+ #define I40E_PFQF_CTL_0_HASHLUTSIZE_512	0x00010000
  
--	tso = i40e_tso(tx_ring, skb, &hdr_len, &cd_type_cmd_tso_mss);
-+	tso = i40e_tso(skb, &hdr_len, &cd_type_cmd_tso_mss);
- 
- 	if (tso < 0)
- 		goto out_drop;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index d633dcf..ec1f447 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -1519,15 +1519,13 @@ out:
- 
- /**
-  * i40e_tso - set up the tso context descriptor
-- * @tx_ring:  ptr to the ring to send
-  * @skb:      ptr to the skb we're sending
-  * @hdr_len:  ptr to the size of the packet header
-  * @cd_type_cmd_tso_mss: Quad Word 1
-  *
-  * Returns 0 if no TSO can happen, 1 if tso is going, or error
-  **/
--static int i40e_tso(struct i40e_ring *tx_ring, struct sk_buff *skb,
--		    u8 *hdr_len, u64 *cd_type_cmd_tso_mss)
-+static int i40e_tso(struct sk_buff *skb, u8 *hdr_len, u64 *cd_type_cmd_tso_mss)
- {
- 	u64 cd_cmd, cd_tso_len, cd_mss;
- 	union {
-@@ -2150,7 +2148,7 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
- 	else if (protocol == htons(ETH_P_IPV6))
- 		tx_flags |= I40E_TX_FLAGS_IPV6;
- 
--	tso = i40e_tso(tx_ring, skb, &hdr_len, &cd_type_cmd_tso_mss);
-+	tso = i40e_tso(skb, &hdr_len, &cd_type_cmd_tso_mss);
- 
- 	if (tso < 0)
- 		goto out_drop;
+-/* INPUT SET MASK for RSS, flow director and flexible payload */
+-#define I40E_FD_INSET_L3_SRC_SHIFT		47
+-#define I40E_FD_INSET_L3_SRC_WORD_MASK		(0x3ULL << \
+-						 I40E_FD_INSET_L3_SRC_SHIFT)
+-#define I40E_FD_INSET_L3_DST_SHIFT		35
+-#define I40E_FD_INSET_L3_DST_WORD_MASK		(0x3ULL << \
+-						 I40E_FD_INSET_L3_DST_SHIFT)
+-#define I40E_FD_INSET_L4_SRC_SHIFT		34
+-#define I40E_FD_INSET_L4_SRC_WORD_MASK		(0x1ULL << \
+-						 I40E_FD_INSET_L4_SRC_SHIFT)
+-#define I40E_FD_INSET_L4_DST_SHIFT		33
+-#define I40E_FD_INSET_L4_DST_WORD_MASK		(0x1ULL << \
+-						 I40E_FD_INSET_L4_DST_SHIFT)
+-#define I40E_FD_INSET_VERIFY_TAG_SHIFT		31
+-#define I40E_FD_INSET_VERIFY_TAG_WORD_MASK	(0x3ULL << \
+-						 I40E_FD_INSET_VERIFY_TAG_SHIFT)
+-
+-#define I40E_FD_INSET_FLEX_WORD50_SHIFT		17
+-#define I40E_FD_INSET_FLEX_WORD50_MASK		(0x1ULL << \
+-					I40E_FD_INSET_FLEX_WORD50_SHIFT)
+-#define I40E_FD_INSET_FLEX_WORD51_SHIFT		16
+-#define I40E_FD_INSET_FLEX_WORD51_MASK		(0x1ULL << \
+-					I40E_FD_INSET_FLEX_WORD51_SHIFT)
+-#define I40E_FD_INSET_FLEX_WORD52_SHIFT		15
+-#define I40E_FD_INSET_FLEX_WORD52_MASK		(0x1ULL << \
+-					I40E_FD_INSET_FLEX_WORD52_SHIFT)
+-#define I40E_FD_INSET_FLEX_WORD53_SHIFT		14
+-#define I40E_FD_INSET_FLEX_WORD53_MASK		(0x1ULL << \
+-					I40E_FD_INSET_FLEX_WORD53_SHIFT)
+-#define I40E_FD_INSET_FLEX_WORD54_SHIFT		13
+-#define I40E_FD_INSET_FLEX_WORD54_MASK		(0x1ULL << \
+-					I40E_FD_INSET_FLEX_WORD54_SHIFT)
+-#define I40E_FD_INSET_FLEX_WORD55_SHIFT		12
+-#define I40E_FD_INSET_FLEX_WORD55_MASK		(0x1ULL << \
+-					I40E_FD_INSET_FLEX_WORD55_SHIFT)
+-#define I40E_FD_INSET_FLEX_WORD56_SHIFT		11
+-#define I40E_FD_INSET_FLEX_WORD56_MASK		(0x1ULL << \
+-					I40E_FD_INSET_FLEX_WORD56_SHIFT)
+-#define I40E_FD_INSET_FLEX_WORD57_SHIFT		10
+-#define I40E_FD_INSET_FLEX_WORD57_MASK		(0x1ULL << \
+-					I40E_FD_INSET_FLEX_WORD57_SHIFT)
++/* INPUT SET MASK for RSS, flow director, and flexible payload */
++#define I40E_L3_SRC_SHIFT		47
++#define I40E_L3_SRC_MASK		(0x3ULL << I40E_L3_SRC_SHIFT)
++#define I40E_L3_DST_SHIFT		35
++#define I40E_L3_DST_MASK		(0x3ULL << I40E_L3_DST_SHIFT)
++#define I40E_L4_SRC_SHIFT		34
++#define I40E_L4_SRC_MASK		(0x1ULL << I40E_L4_SRC_SHIFT)
++#define I40E_L4_DST_SHIFT		33
++#define I40E_L4_DST_MASK		(0x1ULL << I40E_L4_DST_SHIFT)
++#define I40E_VERIFY_TAG_SHIFT		31
++#define I40E_VERIFY_TAG_MASK		(0x3ULL << I40E_VERIFY_TAG_SHIFT)
++
++#define I40E_FLEX_50_SHIFT		17
++#define I40E_FLEX_50_MASK		(0x1ULL << I40E_FLEX_50_SHIFT)
++#define I40E_FLEX_51_SHIFT		16
++#define I40E_FLEX_51_MASK		(0x1ULL << I40E_FLEX_51_SHIFT)
++#define I40E_FLEX_52_SHIFT		15
++#define I40E_FLEX_52_MASK		(0x1ULL << I40E_FLEX_52_SHIFT)
++#define I40E_FLEX_53_SHIFT		14
++#define I40E_FLEX_53_MASK		(0x1ULL << I40E_FLEX_53_SHIFT)
++#define I40E_FLEX_54_SHIFT		13
++#define I40E_FLEX_54_MASK		(0x1ULL << I40E_FLEX_54_SHIFT)
++#define I40E_FLEX_55_SHIFT		12
++#define I40E_FLEX_55_MASK		(0x1ULL << I40E_FLEX_55_SHIFT)
++#define I40E_FLEX_56_SHIFT		11
++#define I40E_FLEX_56_MASK		(0x1ULL << I40E_FLEX_56_SHIFT)
++#define I40E_FLEX_57_SHIFT		10
++#define I40E_FLEX_57_MASK		(0x1ULL << I40E_FLEX_57_SHIFT)
+ #endif /* _I40E_TYPE_H_ */
 -- 
 2.4.3
 
