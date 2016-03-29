@@ -1,74 +1,106 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Tue, 29 Mar 2016 16:58:01 -0700
-Subject: [Intel-wired-lan] [PATCH V4 07/11] ixgbe: Introduce function to
-	control MDIO speed
+Date: Tue, 29 Mar 2016 16:58:17 -0700
+Subject: [Intel-wired-lan] [PATCH V4 10/11] ixgbe: Add KR backplane support
+	for x550em_a
 In-Reply-To: <20160329235544.68428.93935.stgit@mdrustad-wks.jf.intel.com>
 References: <20160329235544.68428.93935.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <20160329235801.68428.38557.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <20160329235817.68428.75327.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Move code that controls MDIO speed into a new function because
-there will be more MACs that need the control.
+Add support for x550em_a-based KR backplane devices.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   27 +++++++++++++++++++------
- 1 file changed, 21 insertions(+), 6 deletions(-)
+Changes in V3:
+- Move mac type check into ixgbe_setup_kr_x550em
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    2 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |    2 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   18 ++++++++++++++----
+ 3 files changed, 18 insertions(+), 4 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 41bc816bbe87..0d5893a60e08 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -130,6 +130,8 @@ static const struct pci_device_id ixgbe_pci_tbl[] = {
+ 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_KR), board_X550EM_x},
+ 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_10G_T), board_X550EM_x},
+ 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_SFP), board_X550EM_x},
++	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_KR), board_x550em_a },
++	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_KR_L), board_x550em_a },
+ 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_SFP_N), board_x550em_a },
+ 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_SGMII), board_x550em_a },
+ 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_SGMII_L), board_x550em_a },
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index eada335c03f8..216a29dcc718 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -80,6 +80,8 @@
+ #define IXGBE_DEV_ID_X550EM_X_SFP	0x15AC
+ #define IXGBE_DEV_ID_X550EM_X_10G_T	0x15AD
+ #define IXGBE_DEV_ID_X550EM_X_1G_T	0x15AE
++#define IXGBE_DEV_ID_X550EM_A_KR	0x15C2
++#define IXGBE_DEV_ID_X550EM_A_KR_L	0x15C3
+ #define IXGBE_DEV_ID_X550EM_A_SFP_N	0x15C4
+ #define IXGBE_DEV_ID_X550EM_A_SGMII	0x15C6
+ #define IXGBE_DEV_ID_X550EM_A_SGMII_L	0x15C7
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index 0ea6d0cecd66..3e7c80d98d03 100644
+index bf82a30285d6..0836252eb41a 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -2306,6 +2306,26 @@ static s32 ixgbe_init_ext_t_x550em(struct ixgbe_hw *hw)
+@@ -291,6 +291,8 @@ static s32 ixgbe_identify_phy_x550em(struct ixgbe_hw *hw)
+ 		hw->phy.type = ixgbe_phy_x550em_kx4;
+ 		break;
+ 	case IXGBE_DEV_ID_X550EM_X_KR:
++	case IXGBE_DEV_ID_X550EM_A_KR:
++	case IXGBE_DEV_ID_X550EM_A_KR_L:
+ 		hw->phy.type = ixgbe_phy_x550em_kr;
+ 		break;
+ 	case IXGBE_DEV_ID_X550EM_X_1G_T:
+@@ -1984,13 +1986,17 @@ static s32 ixgbe_setup_kx4_x550em(struct ixgbe_hw *hw)
  	return status;
  }
  
+-/**  ixgbe_setup_kr_x550em - Configure the KR PHY.
+- *   @hw: pointer to hardware structure
 +/**
-+ * ixgbe_set_mdio_speed - Set MDIO clock speed
++ * ixgbe_setup_kr_x550em - Configure the KR PHY
 + * @hw: pointer to hardware structure
-+ */
-+static void ixgbe_set_mdio_speed(struct ixgbe_hw *hw)
-+{
-+	u32 hlreg0;
+  *
+- *   Configures the integrated KR PHY.
++ * Configures the integrated KR PHY for X550EM_x.
+  **/
+ static s32 ixgbe_setup_kr_x550em(struct ixgbe_hw *hw)
+ {
++	if (hw->mac.type != ixgbe_mac_X550EM_x)
++		return 0;
 +
-+	switch (hw->device_id) {
-+	case IXGBE_DEV_ID_X550EM_X_10G_T:
-+		/* Config MDIO clock speed before the first MDIO PHY access */
-+		hlreg0 = IXGBE_READ_REG(hw, IXGBE_HLREG0);
-+		hlreg0 &= ~IXGBE_HLREG0_MDCSPD;
-+		IXGBE_WRITE_REG(hw, IXGBE_HLREG0, hlreg0);
-+		break;
-+	default:
-+		break;
-+	}
-+}
-+
- /**  ixgbe_reset_hw_X550em - Perform hardware reset
-  **  @hw: pointer to hardware structure
-  **
-@@ -2319,7 +2339,6 @@ static s32 ixgbe_reset_hw_X550em(struct ixgbe_hw *hw)
- 	s32 status;
- 	u32 ctrl = 0;
- 	u32 i;
--	u32 hlreg0;
- 	bool link_up = false;
+ 	return ixgbe_setup_kr_speed_x550em(hw, hw->phy.autoneg_advertised);
+ }
  
- 	/* Call adapter stop to disable Tx/Rx and clear interrupts */
-@@ -2405,11 +2424,7 @@ mac_reset_top:
- 	hw->mac.num_rar_entries = 128;
- 	hw->mac.ops.init_rx_addrs(hw);
+@@ -2196,7 +2202,9 @@ static s32 ixgbe_setup_fc_x550em(struct ixgbe_hw *hw)
+ 		return IXGBE_ERR_CONFIG;
+ 	}
  
--	if (hw->device_id == IXGBE_DEV_ID_X550EM_X_10G_T) {
--		hlreg0 = IXGBE_READ_REG(hw, IXGBE_HLREG0);
--		hlreg0 &= ~IXGBE_HLREG0_MDCSPD;
--		IXGBE_WRITE_REG(hw, IXGBE_HLREG0, hlreg0);
--	}
-+	ixgbe_set_mdio_speed(hw);
+-	if (hw->device_id != IXGBE_DEV_ID_X550EM_X_KR)
++	if (hw->device_id != IXGBE_DEV_ID_X550EM_X_KR &&
++	    hw->device_id != IXGBE_DEV_ID_X550EM_A_KR &&
++	    hw->device_id != IXGBE_DEV_ID_X550EM_A_KR_L)
+ 		return 0;
  
- 	if (hw->device_id == IXGBE_DEV_ID_X550EM_X_SFP)
- 		ixgbe_setup_mux_ctl(hw);
+ 	rc = hw->mac.ops.read_iosf_sb_reg(hw,
+@@ -2437,6 +2445,8 @@ static enum ixgbe_media_type ixgbe_get_media_type_X550em(struct ixgbe_hw *hw)
+ 		/* Fallthrough */
+ 	case IXGBE_DEV_ID_X550EM_X_KR:
+ 	case IXGBE_DEV_ID_X550EM_X_KX4:
++	case IXGBE_DEV_ID_X550EM_A_KR:
++	case IXGBE_DEV_ID_X550EM_A_KR_L:
+ 		media_type = ixgbe_media_type_backplane;
+ 		break;
+ 	case IXGBE_DEV_ID_X550EM_X_SFP:
 
