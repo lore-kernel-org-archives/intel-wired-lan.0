@@ -1,134 +1,51 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 29 Mar 2016 09:43:08 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 48303117fae2b56cb8797d02e6ba98b4cdb65f8f BUILD SUCCESS
-Message-ID: <56f9ddac.C6+DDDmsuSQu2d50%fengguang.wu@intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Mon, 28 Mar 2016 21:31:13 -0700
+Subject: [Intel-wired-lan] [next PATCH S32 00/14] i40e/i40evf updates
+In-Reply-To: <1459163845-28035-1-git-send-email-harshitha.ramamurthy@intel.com>
+References: <1459163845-28035-1-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <1459225873.2953.60.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-48303117fae2b56cb8797d02e6ba98b4cdb65f8f  ixgbe: fix default mac->ops.setup_link for X550EM
+On Mon, 2016-03-28 at 04:17 -0700, Harshitha Ramamurthy wrote:
+> Akeem G Abodunrin moves the HW flush to avoid problems in
+> pass-through routines.?
+> 
+> Anjali Singhai Jain adds a hook to support trusted VF.
+> 
+> Deepthi Kavalur adds capability to display HW information.
+> 
+> Harshitha Ramamurthy bumps i40e/i40evf from 1.5.2 to 1.5.5.
+> 
+> Jesse Brandeburg moves a stack variable deeper, drops unused?
+> tx_ring arguments and makes RX faster via avoiding FCOE.
+> 
+> Kiran Patil defines input set mask constants for RSS,
+> flow director,flex bytes and renames defines for the input set
+> mask.
+> 
+> Mitch Williams adds RSS configuration to the virtual channel.
+> 
+> Shannon Nelson ensures device capabilities do not get printed?
+> when not needed, adds code to restrict VF poll mode to only?
+> single function mode devices, moves NVM variable out of AQ?
+> struct and moves nvm event wait check to nvm code.
+> 
 
-elapsed time: 49m
+I am dropping this whole series for the following reasons:
 
-configs tested: 113
+patch 7 does not compile at all
+patch 10 does not apply
+you request that patch 13 be dropped from the series
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201613
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64               randconfig-x018-03290854
-x86_64               randconfig-x012-03290854
-x86_64               randconfig-x011-03290854
-x86_64               randconfig-x015-03290854
-x86_64               randconfig-x019-03290854
-x86_64               randconfig-x013-03290854
-x86_64               randconfig-x010-03290854
-x86_64               randconfig-x014-03290854
-x86_64               randconfig-x016-03290854
-x86_64               randconfig-x017-03290854
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                   randconfig-s0-03290854
-i386                   randconfig-s1-03290854
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-i386                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201613
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201613
-i386                     randconfig-i1-201613
-x86_64                              rhel_gcov
-i386                   randconfig-x013-201613
-i386                   randconfig-x012-201613
-i386                   randconfig-x019-201613
-i386                   randconfig-x015-201613
-i386                   randconfig-x018-201613
-i386                   randconfig-x011-201613
-i386                   randconfig-x010-201613
-i386                   randconfig-x016-201613
-i386                   randconfig-x017-201613
-i386                   randconfig-x014-201613
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201613
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-x86_64                 randconfig-x001-201613
-x86_64                 randconfig-x000-201613
-x86_64                 randconfig-x005-201613
-x86_64                 randconfig-x007-201613
-x86_64                 randconfig-x006-201613
-x86_64                 randconfig-x004-201613
-x86_64                 randconfig-x009-201613
-x86_64                 randconfig-x008-201613
-x86_64                 randconfig-x003-201613
-x86_64                 randconfig-x002-201613
-i386                     randconfig-r0-201613
-i386                   randconfig-x000-201613
-i386                   randconfig-x003-201613
-i386                   randconfig-x009-201613
-i386                   randconfig-x004-201613
-i386                   randconfig-x005-201613
-i386                   randconfig-x002-201613
-i386                   randconfig-x006-201613
-i386                   randconfig-x007-201613
-i386                   randconfig-x001-201613
-i386                   randconfig-x008-201613
-
-Thanks,
-Fengguang
+Please resolve the three issues above and resubmit v2 please.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160328/4be1117c/attachment.asc>
