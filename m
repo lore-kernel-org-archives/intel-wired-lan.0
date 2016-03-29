@@ -1,167 +1,96 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Tue, 29 Mar 2016 16:58:12 -0700
-Subject: [Intel-wired-lan] [PATCH V4 09/11] ixgbe: Add support for SGMII
-	backplane interface
+Date: Tue, 29 Mar 2016 16:57:56 -0700
+Subject: [Intel-wired-lan] [PATCH V4 06/11] ixgbe: Read and parse
+	NW_MNG_IF_SEL register
 In-Reply-To: <20160329235544.68428.93935.stgit@mdrustad-wks.jf.intel.com>
 References: <20160329235544.68428.93935.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <20160329235812.68428.4760.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <20160329235756.68428.38446.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add support for an SGMII backplane interface.
+Read the IXGBE_NW_MNG_IF_SEL register and use it to set interface
+attributes.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    2 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |    9 ++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   58 +++++++++++++++++++++++++
- 3 files changed, 69 insertions(+)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |    5 +++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   37 ++++++++++++++++++++++---
+ 2 files changed, 37 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 1712917cd0a3..41bc816bbe87 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -131,6 +131,8 @@ static const struct pci_device_id ixgbe_pci_tbl[] = {
- 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_10G_T), board_X550EM_x},
- 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_SFP), board_X550EM_x},
- 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_SFP_N), board_x550em_a },
-+	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_SGMII), board_x550em_a },
-+	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_SGMII_L), board_x550em_a },
- 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_SFP), board_x550em_a },
- 	/* required last entry */
- 	{0, }
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-index 40121b8b0220..eada335c03f8 100644
+index 3fc447a7c15d..3e0dd5584d4e 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-@@ -81,6 +81,8 @@
- #define IXGBE_DEV_ID_X550EM_X_10G_T	0x15AD
- #define IXGBE_DEV_ID_X550EM_X_1G_T	0x15AE
- #define IXGBE_DEV_ID_X550EM_A_SFP_N	0x15C4
-+#define IXGBE_DEV_ID_X550EM_A_SGMII	0x15C6
-+#define IXGBE_DEV_ID_X550EM_A_SGMII_L	0x15C7
- #define IXGBE_DEV_ID_X550EM_A_SFP	0x15CE
+@@ -3648,5 +3648,10 @@ struct ixgbe_info {
+ #define IXGBE_SB_IOSF_TARGET_KX4_PCS1	3
  
- /* VF Device IDs */
-@@ -3064,6 +3066,7 @@ enum ixgbe_phy_type {
- 	ixgbe_phy_qsfp_intel,
- 	ixgbe_phy_qsfp_unknown,
- 	ixgbe_phy_sfp_unsupported,
-+	ixgbe_phy_sgmii,
- 	ixgbe_phy_generic
- };
- 
-@@ -3581,6 +3584,7 @@ struct ixgbe_info {
- #define IXGBE_KRM_LINK_CTRL_1(P)	((P) ? 0x820C : 0x420C)
- #define IXGBE_KRM_AN_CNTL_1(P)		((P) ? 0x822C : 0x422C)
- #define IXGBE_KRM_AN_CNTL_8(P)		((P) ? 0x8248 : 0x4248)
-+#define IXGBE_KRM_SGMII_CTRL(P)		((P) ? 0x82A0 : 0x42A0)
- #define IXGBE_KRM_DSP_TXFFE_STATE_4(P)	((P) ? 0x8634 : 0x4634)
- #define IXGBE_KRM_DSP_TXFFE_STATE_5(P)	((P) ? 0x8638 : 0x4638)
- #define IXGBE_KRM_RX_TRN_LINKUP_CTRL(P)	((P) ? 0x8B00 : 0x4B00)
-@@ -3594,6 +3598,8 @@ struct ixgbe_info {
- #define IXGBE_KRM_LINK_CTRL_1_TETH_FORCE_SPEED_MASK	(0x7 << 8)
- #define IXGBE_KRM_LINK_CTRL_1_TETH_FORCE_SPEED_1G	(2 << 8)
- #define IXGBE_KRM_LINK_CTRL_1_TETH_FORCE_SPEED_10G	(4 << 8)
-+#define IXGBE_KRM_LINK_CTRL_1_TETH_AN_SGMII_EN		(1 << 12)
-+#define IXGBE_KRM_LINK_CTRL_1_TETH_AN_CLAUSE_37_EN	(1 << 13)
- #define IXGBE_KRM_LINK_CTRL_1_TETH_AN_FEC_REQ		(1 << 14)
- #define IXGBE_KRM_LINK_CTRL_1_TETH_AN_CAP_FEC		(1 << 15)
- #define IXGBE_KRM_LINK_CTRL_1_TETH_AN_CAP_KX		(1 << 16)
-@@ -3609,6 +3615,9 @@ struct ixgbe_info {
- #define IXGBE_KRM_AN_CNTL_8_LINEAR			BIT(0)
- #define IXGBE_KRM_AN_CNTL_8_LIMITING			BIT(1)
- 
-+#define IXGBE_KRM_SGMII_CTRL_MAC_TAR_FORCE_100_D	(1 << 12)
-+#define IXGBE_KRM_SGMII_CTRL_MAC_TAR_FORCE_10_D		(1 << 19)
-+
- #define IXGBE_KRM_DSP_TXFFE_STATE_C0_EN			(1 << 6)
- #define IXGBE_KRM_DSP_TXFFE_STATE_CP1_CN1_EN		(1 << 15)
- #define IXGBE_KRM_DSP_TXFFE_STATE_CO_ADAPT_EN		(1 << 16)
+ #define IXGBE_NW_MNG_IF_SEL		0x00011178
++#define IXGBE_NW_MNG_IF_SEL_MDIO_ACT		BIT(1)
++#define IXGBE_NW_MNG_IF_SEL_ENABLE_10_100M	BIT(23)
+ #define IXGBE_NW_MNG_IF_SEL_INT_PHY_MODE	BIT(24)
++#define IXGBE_NW_MNG_IF_SEL_MDIO_PHY_ADD_SHIFT	3
++#define IXGBE_NW_MNG_IF_SEL_MDIO_PHY_ADD	\
++				(0x1F << IXGBE_NW_MNG_IF_SEL_MDIO_PHY_ADD_SHIFT)
+ #endif /* _IXGBE_TYPE_H_ */
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index 74f76fbb56cb..bf82a30285d6 100644
+index 43681e098436..0ea6d0cecd66 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -1558,6 +1558,57 @@ static s32 ixgbe_check_link_t_X550em(struct ixgbe_hw *hw,
- 	return 0;
+@@ -2137,6 +2137,36 @@ static s32 ixgbe_enter_lplu_t_x550em(struct ixgbe_hw *hw)
+ 	return status;
  }
  
 +/**
-+ * ixgbe_setup_sgmii - Set up link for sgmii
++ * ixgbe_read_mng_if_sel_x550em - Read NW_MNG_IF_SEL register
 + * @hw: pointer to hardware structure
++ *
++ * Read NW_MNG_IF_SEL register and save field values.
 + */
-+static s32
-+ixgbe_setup_sgmii(struct ixgbe_hw *hw, __always_unused ixgbe_link_speed speed,
-+		  __always_unused bool autoneg_wait_to_complete)
++static void ixgbe_read_mng_if_sel_x550em(struct ixgbe_hw *hw)
 +{
-+	struct ixgbe_mac_info *mac = &hw->mac;
-+	u32 lval, sval;
-+	s32 rc;
++	/* Save NW management interface connected on board. This is used
++	 * to determine internal PHY mode.
++	 */
++	hw->phy.nw_mng_if_sel = IXGBE_READ_REG(hw, IXGBE_NW_MNG_IF_SEL);
 +
-+	rc = mac->ops.read_iosf_sb_reg(hw,
-+				       IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
-+				       IXGBE_SB_IOSF_TARGET_KR_PHY, &lval);
-+	if (rc)
-+		return rc;
++	/* If X552 (X550EM_a) and MDIO is connected to external PHY, then set
++	 * PHY address. This register field was has only been used for X552.
++	 */
++	if (!hw->phy.nw_mng_if_sel) {
++		if (hw->mac.type == ixgbe_mac_x550em_a) {
++			struct ixgbe_adapter *adapter = hw->back;
 +
-+	lval &= ~IXGBE_KRM_LINK_CTRL_1_TETH_AN_ENABLE;
-+	lval &= ~IXGBE_KRM_LINK_CTRL_1_TETH_FORCE_SPEED_MASK;
-+	lval |= IXGBE_KRM_LINK_CTRL_1_TETH_AN_SGMII_EN;
-+	lval |= IXGBE_KRM_LINK_CTRL_1_TETH_AN_CLAUSE_37_EN;
-+	lval |= IXGBE_KRM_LINK_CTRL_1_TETH_FORCE_SPEED_1G;
-+	rc = mac->ops.write_iosf_sb_reg(hw,
-+					IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
-+					IXGBE_SB_IOSF_TARGET_KR_PHY, lval);
-+	if (rc)
-+		return rc;
++			e_warn(drv, "nw_mng_if_sel not set\n");
++		}
++		return;
++	}
 +
-+	rc = mac->ops.read_iosf_sb_reg(hw,
-+				       IXGBE_KRM_SGMII_CTRL(hw->bus.lan_id),
-+				       IXGBE_SB_IOSF_TARGET_KR_PHY, &sval);
-+	if (rc)
-+		return rc;
-+
-+	sval |= IXGBE_KRM_SGMII_CTRL_MAC_TAR_FORCE_10_D;
-+	sval |= IXGBE_KRM_SGMII_CTRL_MAC_TAR_FORCE_100_D;
-+	rc = mac->ops.write_iosf_sb_reg(hw,
-+					IXGBE_KRM_SGMII_CTRL(hw->bus.lan_id),
-+					IXGBE_SB_IOSF_TARGET_KR_PHY, sval);
-+	if (rc)
-+		return rc;
-+
-+	lval |= IXGBE_KRM_LINK_CTRL_1_TETH_AN_RESTART;
-+	rc = mac->ops.write_iosf_sb_reg(hw,
-+					IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
-+					IXGBE_SB_IOSF_TARGET_KR_PHY, lval);
-+
-+	return rc;
++	hw->phy.mdio.prtad = (hw->phy.nw_mng_if_sel &
++			      IXGBE_NW_MNG_IF_SEL_MDIO_PHY_ADD) >>
++			     IXGBE_NW_MNG_IF_SEL_MDIO_PHY_ADD_SHIFT;
 +}
 +
- /** ixgbe_init_mac_link_ops_X550em - init mac link function pointers
+ /** ixgbe_init_phy_ops_X550em - PHY/SFP specific init
   *  @hw: pointer to hardware structure
-  **/
-@@ -1597,6 +1648,9 @@ static void ixgbe_init_mac_link_ops_X550em(struct ixgbe_hw *hw)
- 		mac->ops.check_link = ixgbe_check_link_t_X550em;
- 		return;
- 	case ixgbe_media_type_backplane:
-+		if (hw->device_id == IXGBE_DEV_ID_X550EM_A_SGMII ||
-+		    hw->device_id == IXGBE_DEV_ID_X550EM_A_SGMII_L)
-+			mac->ops.setup_link = ixgbe_setup_sgmii;
- 		break;
- 	default:
- 		mac->ops.setup_fc = ixgbe_setup_fc_x550em;
-@@ -2377,6 +2431,10 @@ static enum ixgbe_media_type ixgbe_get_media_type_X550em(struct ixgbe_hw *hw)
+  *
+@@ -2151,14 +2181,11 @@ static s32 ixgbe_init_phy_ops_X550em(struct ixgbe_hw *hw)
  
- 	/* Detect if there is a copper PHY attached. */
- 	switch (hw->device_id) {
-+	case IXGBE_DEV_ID_X550EM_A_SGMII:
-+	case IXGBE_DEV_ID_X550EM_A_SGMII_L:
-+		hw->phy.type = ixgbe_phy_sgmii;
-+		/* Fallthrough */
- 	case IXGBE_DEV_ID_X550EM_X_KR:
- 	case IXGBE_DEV_ID_X550EM_X_KX4:
- 		media_type = ixgbe_media_type_backplane;
+ 	hw->mac.ops.set_lan_id(hw);
+ 
++	ixgbe_read_mng_if_sel_x550em(hw);
++
+ 	if (hw->mac.ops.get_media_type(hw) == ixgbe_media_type_fiber) {
+ 		phy->phy_semaphore_mask = IXGBE_GSSR_SHARED_I2C_SM;
+ 		ixgbe_setup_mux_ctl(hw);
+-
+-		/* Save NW management interface connected on board. This is used
+-		 * to determine internal PHY mode.
+-		 */
+-		phy->nw_mng_if_sel = IXGBE_READ_REG(hw, IXGBE_NW_MNG_IF_SEL);
+ 	}
+ 
+ 	/* Identify the PHY or SFP module */
 
