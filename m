@@ -1,57 +1,40 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Wed, 30 Mar 2016 11:38:27 -0700
-Subject: [Intel-wired-lan] [net PATCH] i40e/i40evf: Limit TSO to 7
- descriptors for payload instead of 8 per packet
-In-Reply-To: <CAKgT0UdTgaeamyLetGPK0mqMNS-80BTc8t-WdSGJuuLDfz4JOg@mail.gmail.com>
-References: <20160330064213.12927.46852.stgit@localhost.localdomain>
- <20160330170011.GB27540@oracle.com>
- <CAKgT0UdTgaeamyLetGPK0mqMNS-80BTc8t-WdSGJuuLDfz4JOg@mail.gmail.com>
-Message-ID: <20160330113827.00002967@unknown>
+From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+Date: Wed, 30 Mar 2016 03:49:36 -0700
+Subject: [Intel-wired-lan] [v2 next PATCH S32 01/13] i40e: Inserting a HW
+	capability display info
+In-Reply-To: <1459334988-19951-1-git-send-email-harshitha.ramamurthy@intel.com>
+References: <1459334988-19951-1-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <1459334988-19951-2-git-send-email-harshitha.ramamurthy@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 30 Mar 2016 10:12:51 -0700
-Alexander Duyck <alexander.duyck@gmail.com> wrote:
+From: Deepthi Kavalur <deepthi.kavalur@intel.com>
 
-> On Wed, Mar 30, 2016 at 10:00 AM, Sowmini Varadhan
-> <sowmini.varadhan@oracle.com> wrote:
-> > On (03/29/16 23:44), Alexander Duyck wrote:
-> >> This patch has been sanity checked only.  I cannot yet guarantee it
-> >> resolves the original issue that was reported.  I'll try to get a
-> >> reproduction environment setup tomorrow but I don't know how long that
-> >> should take.
-> >
-> > I tried this out with rds-stress on my test-pair, unfortunately, I
-> > still see the Tx hang.
-> >
-> > Setting up the test is quite easy- for reference, the instructions
-> > are here:
-> >    https://sourceforge.net/p/e1000/mailman/message/34936766/
-> 
-> Yeah.  The patch was sort of a knee-jerk reaction to being told that
-> the patch referenced caused a regression.  From what I can tell that
+Display MSIx vector count for HW capabilities.
 
-Thanks for working so hard on the patch Alex, I need to apologize, as
-the original test appears to fail as well with 1.3.46-k (a previous
-driver to your patch) and I thought we had already tested that, but I
-was wrong.
+Signed-off-by: Deepthi Kavalur <deepthi.kavalur@intel.com>
+Change-ID: I4b41e9b50360cf660e7fbcb85b9390fedcf313b1
+---
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-This is not a regression, but likely just an undetected "bug" that we
-need to work out.
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index ebcc0d3..f3c1d88 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -3080,6 +3080,9 @@ static void i40e_parse_discover_capabilities(struct i40e_hw *hw, void *buff,
+ 			break;
+ 		case I40E_AQ_CAP_ID_MSIX:
+ 			p->num_msix_vectors = number;
++			i40e_debug(hw, I40E_DEBUG_INIT,
++				   "HW Capability: MSIX vector count = %d\n",
++				   p->num_msix_vectors);
+ 			break;
+ 		case I40E_AQ_CAP_ID_VF_MSIX:
+ 			p->num_msix_vectors_vf = number;
+-- 
+2.4.3
 
-> is not the case as I am also seeing the Tx hangs when I run the test
-> with the frames being linearized.
-
-That doesn't make much sense unless it is something about how we are
-setting up the offload.  I troubleshoot by disabling the PFR from the
-MDD code, then disabling tx timeout via debugfs, and using debugfs to
-dump the descriptor ring after the MDD event fires.
- 
-> I'll do some research this morning to see if I can find a root cause.
-> Unfortunately the malicious driver detection isn't very well
-> documented so I can't be certain what is causing it to be triggered.
-
-I'm still looking at this too and appreciate the help.
