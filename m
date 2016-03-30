@@ -1,65 +1,56 @@
-From: Daniel Walker <danielwa@cisco.com>
-Date: Wed, 30 Mar 2016 12:34:58 -0700
-Subject: [Intel-wired-lan] [PATCH-RFC] drivers: net: ethernet: intel:
- e1000e: fix ethtool autoneg off for fiber
-In-Reply-To: <1458943126-32258-1-git-send-email-danielwa@cisco.com>
-References: <1458943126-32258-1-git-send-email-danielwa@cisco.com>
-Message-ID: <56FC2A62.6040206@cisco.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Wed, 30 Mar 2016 12:41:35 -0700
+Subject: [Intel-wired-lan] [net PATCH] i40e/i40evf: Limit TSO to 7
+ descriptors for payload instead of 8 per packet
+In-Reply-To: <CAKgT0Ufb-_X-DD2jYkVJQwLZ-JBfWD2Biuhi6YaxWBeNy9K2fQ@mail.gmail.com>
+References: <20160330064213.12927.46852.stgit@localhost.localdomain>
+ <20160330170011.GB27540@oracle.com>
+ <CAKgT0UdTgaeamyLetGPK0mqMNS-80BTc8t-WdSGJuuLDfz4JOg@mail.gmail.com>
+ <20160330172001.GD27540@oracle.com>
+ <CAKgT0Ufb-_X-DD2jYkVJQwLZ-JBfWD2Biuhi6YaxWBeNy9K2fQ@mail.gmail.com>
+Message-ID: <20160330124135.000054c6@unknown>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Wed, 30 Mar 2016 10:35:55 -0700
+Alexander Duyck <alexander.duyck@gmail.com> wrote:
 
-So Intel maintainers (Jeff, Jesse, Shannon, Carolyn, Don, Bruce, and John)
+> On Wed, Mar 30, 2016 at 10:20 AM, Sowmini Varadhan
+> <sowmini.varadhan@oracle.com> wrote:
+> > On (03/30/16 10:12), Alexander Duyck wrote:
+> >> Yeah.  The patch was sort of a knee-jerk reaction to being told that
+> >> the patch referenced caused a regression.  From what I can tell that
+> >> is not the case as I am also seeing the Tx hangs when I run the test
+> >> with the frames being linearized.
+> >
+> > I'm not sure how important of a subtlety this is, but the actual
+> > console log after the patch is the following:
+> >
+> >  i40e 0000:82:00.0: TX driver issue detected, PF reset issued
+> >  i40e 0000:82:00.0 eth2: adding 68:05:ca:30:dd:18 vid=0
+> >  i40e 0000:82:00.0: TX driver issue detected, PF reset issued
+> >  i40e 0000:82:00.0 eth2: adding 68:05:ca:30:dd:18 vid=0
+> >  i40e 0000:82:00.0: TX driver issue detected, PF reset issued
+> >
+> > Comparing with what I'd pasted in the sourceforge thread earlier,
+> > I see that it does not say "Hung Tx queue etc."  any more, though
+> > it still resets.
+> >
+> > Not sure if that changed info is significant?
+> 
+> It might be.  Right now I am chasing down the Tx driver issue as that
+> I what I am reproducing in my environment as well.
 
-I'm assuming no comments means this patch is acceptable , and I will 
-resubmit it without the RFC. Is that acceptable ?
+This gets "Even Uglier", I've turned off all offloads at my receiver,
+enabled calling skb_linearize on *all* frames, which works fine for
+scp, but the receiver shows > MSS sized frames on the wire for
+rds-stress traffic.
 
+This implies to me we have some issue with skb_linearize, possibly in
+how the stack linearizes the data, or how the driver interprets the
+linearized packets (which should always work)
 
-On 03/25/2016 02:58 PM, Daniel Walker wrote:
-> From: Steve Shih <sshih@cisco.com>
->
-> This patch fixes the issues for disabling auto-negotiation and forcing
-> speed and duplex settings for the fiber media.
->
-> For fiber media, e1000_get_settings should return ETH_TP_MDI_INVALID for
-> eth_tp_mdix_ctrl instead of ETH_TP_MDI_AUTO so subsequent e1000_set_settings
-> call would not fail with -EOPNOTSUPP.
->
-> e1000_set_spd_dplx should not automatically turn autoneg back on for forced
-> 1000 Mbps full duplex settings.
->
-> Cc: danielwa at fifo99.com
-> Cc: xe-kernel at external.cisco.com
-> Signed-off-by: Steve Shih <sshih@cisco.com>
-> ---
->   drivers/net/ethernet/intel/e1000e/ethtool.c | 6 ++++--
->   1 file changed, 4 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
-> index 6cab1f3..cd03dcd 100644
-> --- a/drivers/net/ethernet/intel/e1000e/ethtool.c
-> +++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
-> @@ -201,6 +201,9 @@ static int e1000_get_settings(struct net_device *netdev,
->   	else
->   		ecmd->eth_tp_mdix_ctrl = hw->phy.mdix;
->   
-> +	if (hw->phy.media_type != e1000_media_type_copper)
-> +		ecmd->eth_tp_mdix_ctrl = ETH_TP_MDI_INVALID;
-> +
->   	return 0;
->   }
->   
-> @@ -236,8 +239,7 @@ static int e1000_set_spd_dplx(struct e1000_adapter *adapter, u32 spd, u8 dplx)
->   		mac->forced_speed_duplex = ADVERTISE_100_FULL;
->   		break;
->   	case SPEED_1000 + DUPLEX_FULL:
-> -		mac->autoneg = 1;
-> -		adapter->hw.phy.autoneg_advertised = ADVERTISE_1000_FULL;
-> +		mac->forced_speed_duplex = ADVERTISE_1000_FULL;
->   		break;
->   	case SPEED_1000 + DUPLEX_HALF:	/* not supported */
->   	default:
-
+Wheee......
