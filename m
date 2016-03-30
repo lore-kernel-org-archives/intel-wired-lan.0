@@ -1,149 +1,70 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 31 Mar 2016 05:18:32 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- b347e1b988bf50bb13afa28b2c16c488a7c96ff2 BUILD SUCCESS
-Message-ID: <56fc42a8.r83/jHwO3DmcMZCA%fengguang.wu@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 30 Mar 2016 14:20:40 -0700
+Subject: [Intel-wired-lan] [net PATCH] i40e/i40evf: Limit TSO to 7
+ descriptors for payload instead of 8 per packet
+In-Reply-To: <20160330124135.000054c6@unknown>
+References: <20160330064213.12927.46852.stgit@localhost.localdomain>
+ <20160330170011.GB27540@oracle.com>
+ <CAKgT0UdTgaeamyLetGPK0mqMNS-80BTc8t-WdSGJuuLDfz4JOg@mail.gmail.com>
+ <20160330172001.GD27540@oracle.com>
+ <CAKgT0Ufb-_X-DD2jYkVJQwLZ-JBfWD2Biuhi6YaxWBeNy9K2fQ@mail.gmail.com>
+ <20160330124135.000054c6@unknown>
+Message-ID: <CAKgT0Ud59j1NDHD6siPSZL24HJnPOF7m07DKf4U96Tq4dtByvg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-b347e1b988bf50bb13afa28b2c16c488a7c96ff2  ixgbe: Add KR backplane support for x550em_a
+On Wed, Mar 30, 2016 at 12:41 PM, Jesse Brandeburg
+<jesse.brandeburg@intel.com> wrote:
+> On Wed, 30 Mar 2016 10:35:55 -0700
+> Alexander Duyck <alexander.duyck@gmail.com> wrote:
+>
+>> On Wed, Mar 30, 2016 at 10:20 AM, Sowmini Varadhan
+>> <sowmini.varadhan@oracle.com> wrote:
+>> > On (03/30/16 10:12), Alexander Duyck wrote:
+>> >> Yeah.  The patch was sort of a knee-jerk reaction to being told that
+>> >> the patch referenced caused a regression.  From what I can tell that
+>> >> is not the case as I am also seeing the Tx hangs when I run the test
+>> >> with the frames being linearized.
+>> >
+>> > I'm not sure how important of a subtlety this is, but the actual
+>> > console log after the patch is the following:
+>> >
+>> >  i40e 0000:82:00.0: TX driver issue detected, PF reset issued
+>> >  i40e 0000:82:00.0 eth2: adding 68:05:ca:30:dd:18 vid=0
+>> >  i40e 0000:82:00.0: TX driver issue detected, PF reset issued
+>> >  i40e 0000:82:00.0 eth2: adding 68:05:ca:30:dd:18 vid=0
+>> >  i40e 0000:82:00.0: TX driver issue detected, PF reset issued
+>> >
+>> > Comparing with what I'd pasted in the sourceforge thread earlier,
+>> > I see that it does not say "Hung Tx queue etc."  any more, though
+>> > it still resets.
+>> >
+>> > Not sure if that changed info is significant?
+>>
+>> It might be.  Right now I am chasing down the Tx driver issue as that
+>> I what I am reproducing in my environment as well.
+>
+> This gets "Even Uglier", I've turned off all offloads at my receiver,
+> enabled calling skb_linearize on *all* frames, which works fine for
+> scp, but the receiver shows > MSS sized frames on the wire for
+> rds-stress traffic.
 
-elapsed time: 50m
+Are you sure it isn't just GRO reassembling frames on the receive
+side.  I know that one always trips me up when I am using the Rx path
+to validate Tx checksums.
 
-configs tested: 128
+> This implies to me we have some issue with skb_linearize, possibly in
+> how the stack linearizes the data, or how the driver interprets the
+> linearized packets (which should always work)
+>
+> Wheee......
 
-i386                     randconfig-a0-201613
-x86_64                 randconfig-a0-03310304
-i386                               tinyconfig
-i386                   randconfig-c0-03310430
-x86_64                           allmodconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                             allmodconfig
-mips                        qi_lb60_defconfig
-powerpc                 mpc834x_mds_defconfig
-powerpc                      ppc64e_defconfig
-powerpc                     stx_gp3_defconfig
-sh                         ap325rxa_defconfig
-x86_64                 randconfig-x010-201613
-x86_64                 randconfig-x011-201613
-x86_64                 randconfig-x018-201613
-x86_64                 randconfig-x019-201613
-x86_64                 randconfig-x012-201613
-x86_64                 randconfig-x013-201613
-x86_64                 randconfig-x016-201613
-x86_64                 randconfig-x014-201613
-x86_64                 randconfig-x015-201613
-x86_64                 randconfig-x017-201613
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                   randconfig-s0-03310059
-i386                   randconfig-s1-03310059
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-arm                        keystone_defconfig
-arm                        trizeps4_defconfig
-m68k                       m5208evb_defconfig
-mips                         tb0226_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201613
-i386                   randconfig-b0-03310404
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-i0-03302155
-i386                   randconfig-i1-03302155
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                              rhel_gcov
-i386                   randconfig-x013-201613
-i386                   randconfig-x012-201613
-i386                   randconfig-x019-201613
-i386                   randconfig-x015-201613
-i386                   randconfig-x018-201613
-i386                   randconfig-x011-201613
-i386                   randconfig-x010-201613
-i386                   randconfig-x016-201613
-i386                   randconfig-x017-201613
-i386                   randconfig-x014-201613
-i386                   randconfig-n0-03302149
-x86_64                                   rhel
-x86_64                 randconfig-h0-03310259
-x86_64                 randconfig-n0-03310436
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                 randconfig-x001-201613
-x86_64                 randconfig-x000-201613
-x86_64                 randconfig-x005-201613
-x86_64                 randconfig-x007-201613
-x86_64                 randconfig-x006-201613
-x86_64                 randconfig-x004-201613
-x86_64                 randconfig-x009-201613
-x86_64                 randconfig-x008-201613
-x86_64                 randconfig-x003-201613
-x86_64                 randconfig-x002-201613
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                   randconfig-r0-03302215
-i386                   randconfig-x000-201613
-i386                   randconfig-x003-201613
-i386                   randconfig-x009-201613
-i386                   randconfig-x004-201613
-i386                   randconfig-x005-201613
-i386                   randconfig-x002-201613
-i386                   randconfig-x006-201613
-i386                   randconfig-x007-201613
-i386                   randconfig-x001-201613
-i386                   randconfig-x008-201613
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                   randconfig-x0-03310345
+With the descriptor dump code you have you should be able to verify
+what the layout is after the descriptor is linearized.  I would think
+in most cases you would end up with at most something like 4 to maybe
+5 descriptors for a 64K frame.
 
-Thanks,
-Fengguang
+- Alex
