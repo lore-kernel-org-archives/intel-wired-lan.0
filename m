@@ -1,39 +1,149 @@
-From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-Date: Wed, 30 Mar 2016 16:40:23 -0400
-Subject: [Intel-wired-lan] [net PATCH] i40e/i40evf: Limit TSO to 7
- descriptors for payload instead of 8 per packet
-In-Reply-To: <1459368904.6473.207.camel@edumazet-glaptop3.roam.corp.google.com>
-References: <20160330064213.12927.46852.stgit@localhost.localdomain>
- <20160330170011.GB27540@oracle.com>
- <CAKgT0UdTgaeamyLetGPK0mqMNS-80BTc8t-WdSGJuuLDfz4JOg@mail.gmail.com>
- <20160330172001.GD27540@oracle.com>
- <CAKgT0Ufb-_X-DD2jYkVJQwLZ-JBfWD2Biuhi6YaxWBeNy9K2fQ@mail.gmail.com>
- <20160330124135.000054c6@unknown>
- <20160330200959.GI27540@oracle.com>
- <1459368904.6473.207.camel@edumazet-glaptop3.roam.corp.google.com>
-Message-ID: <20160330204023.GK27540@oracle.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 31 Mar 2016 04:44:59 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ c30c838ffd71a202e1ae928c9e30bb15e02bce31 BUILD SUCCESS
+Message-ID: <56fc3acb.MqB/ZXJla0f8ru2x%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On (03/30/16 13:15), Eric Dumazet wrote:
-> You might try netperf -t TCP_SENDFILE -- -m 150
-> 
-> to let netperf use sendfile() on small frags.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+c30c838ffd71a202e1ae928c9e30bb15e02bce31  ixgbe: Add support for SGMII backplane interface
 
-that still did not reproduce it but let me try beating on
-that approach with more permutations.
+elapsed time: 40m
 
-BTW, another data-point that may help debug this: even with i40e,
-if you use the "-o" option to the rds-stress invocation, there are
-no problems: the "-o" option  enforces uni-directional data
-transfer, so one side is pure-Tx, other side is pure-Rx. 
+configs tested: 128
 
-It is only when both sides simultaneously do both Tx and Rx
-on the tcp socket that you see the issue. I dont know if
-that provides any clues.
+i386                     randconfig-a0-201613
+x86_64                 randconfig-a0-03310304
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                 randconfig-v0-03310348
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+mips                      maltaaprp_defconfig
+powerpc                 linkstation_defconfig
+powerpc                 mpc837x_rdb_defconfig
+powerpc                     taishan_defconfig
+sh                               allyesconfig
+x86_64                 randconfig-x010-201613
+x86_64                 randconfig-x011-201613
+x86_64                 randconfig-x018-201613
+x86_64                 randconfig-x019-201613
+x86_64                 randconfig-x012-201613
+x86_64                 randconfig-x013-201613
+x86_64                 randconfig-x016-201613
+x86_64                 randconfig-x014-201613
+x86_64                 randconfig-x015-201613
+x86_64                 randconfig-x017-201613
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                   randconfig-s0-03310059
+i386                   randconfig-s1-03310059
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+blackfin              BF561-ACVILON_defconfig
+m68k                        mvme16x_defconfig
+mips                           mtx1_defconfig
+mips                        nlm_xlr_defconfig
+x86_64                   randconfig-i0-201613
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                   randconfig-i0-03302155
+i386                   randconfig-i1-03302155
+x86_64                           allmodconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+ia64                                defconfig
+mips                                defconfig
+x86_64                              rhel_gcov
+i386                   randconfig-x013-201613
+i386                   randconfig-x012-201613
+i386                   randconfig-x019-201613
+i386                   randconfig-x015-201613
+i386                   randconfig-x018-201613
+i386                   randconfig-x011-201613
+i386                   randconfig-x010-201613
+i386                   randconfig-x016-201613
+i386                   randconfig-x017-201613
+i386                   randconfig-x014-201613
+x86_64                                    lkp
+x86_64                                   rhel
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-n0-03302149
+mips                       markeins_defconfig
+powerpc64                        alldefconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                 randconfig-x001-201613
+x86_64                 randconfig-x000-201613
+x86_64                 randconfig-x005-201613
+x86_64                 randconfig-x007-201613
+x86_64                 randconfig-x006-201613
+x86_64                 randconfig-x004-201613
+x86_64                 randconfig-x009-201613
+x86_64                 randconfig-x008-201613
+x86_64                 randconfig-x003-201613
+x86_64                 randconfig-x002-201613
+ia64                             alldefconfig
+ia64                              allnoconfig
+i386                   randconfig-r0-03302215
+i386                   randconfig-x000-201613
+i386                   randconfig-x003-201613
+i386                   randconfig-x009-201613
+i386                   randconfig-x004-201613
+i386                   randconfig-x005-201613
+i386                   randconfig-x002-201613
+i386                   randconfig-x006-201613
+i386                   randconfig-x007-201613
+i386                   randconfig-x001-201613
+i386                   randconfig-x008-201613
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
 
---Sowmini
-
+Thanks,
+Fengguang
