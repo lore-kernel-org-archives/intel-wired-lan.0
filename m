@@ -1,47 +1,57 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 30 Mar 2016 10:35:55 -0700
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Wed, 30 Mar 2016 11:38:27 -0700
 Subject: [Intel-wired-lan] [net PATCH] i40e/i40evf: Limit TSO to 7
  descriptors for payload instead of 8 per packet
-In-Reply-To: <20160330172001.GD27540@oracle.com>
+In-Reply-To: <CAKgT0UdTgaeamyLetGPK0mqMNS-80BTc8t-WdSGJuuLDfz4JOg@mail.gmail.com>
 References: <20160330064213.12927.46852.stgit@localhost.localdomain>
  <20160330170011.GB27540@oracle.com>
  <CAKgT0UdTgaeamyLetGPK0mqMNS-80BTc8t-WdSGJuuLDfz4JOg@mail.gmail.com>
- <20160330172001.GD27540@oracle.com>
-Message-ID: <CAKgT0Ufb-_X-DD2jYkVJQwLZ-JBfWD2Biuhi6YaxWBeNy9K2fQ@mail.gmail.com>
+Message-ID: <20160330113827.00002967@unknown>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Mar 30, 2016 at 10:20 AM, Sowmini Varadhan
-<sowmini.varadhan@oracle.com> wrote:
-> On (03/30/16 10:12), Alexander Duyck wrote:
->> Yeah.  The patch was sort of a knee-jerk reaction to being told that
->> the patch referenced caused a regression.  From what I can tell that
->> is not the case as I am also seeing the Tx hangs when I run the test
->> with the frames being linearized.
->
-> I'm not sure how important of a subtlety this is, but the actual
-> console log after the patch is the following:
->
->  i40e 0000:82:00.0: TX driver issue detected, PF reset issued
->  i40e 0000:82:00.0 eth2: adding 68:05:ca:30:dd:18 vid=0
->  i40e 0000:82:00.0: TX driver issue detected, PF reset issued
->  i40e 0000:82:00.0 eth2: adding 68:05:ca:30:dd:18 vid=0
->  i40e 0000:82:00.0: TX driver issue detected, PF reset issued
->
-> Comparing with what I'd pasted in the sourceforge thread earlier,
-> I see that it does not say "Hung Tx queue etc."  any more, though
-> it still resets.
->
-> Not sure if that changed info is significant?
+On Wed, 30 Mar 2016 10:12:51 -0700
+Alexander Duyck <alexander.duyck@gmail.com> wrote:
 
-It might be.  Right now I am chasing down the Tx driver issue as that
-I what I am reproducing in my environment as well.
+> On Wed, Mar 30, 2016 at 10:00 AM, Sowmini Varadhan
+> <sowmini.varadhan@oracle.com> wrote:
+> > On (03/29/16 23:44), Alexander Duyck wrote:
+> >> This patch has been sanity checked only.  I cannot yet guarantee it
+> >> resolves the original issue that was reported.  I'll try to get a
+> >> reproduction environment setup tomorrow but I don't know how long that
+> >> should take.
+> >
+> > I tried this out with rds-stress on my test-pair, unfortunately, I
+> > still see the Tx hang.
+> >
+> > Setting up the test is quite easy- for reference, the instructions
+> > are here:
+> >    https://sourceforge.net/p/e1000/mailman/message/34936766/
+> 
+> Yeah.  The patch was sort of a knee-jerk reaction to being told that
+> the patch referenced caused a regression.  From what I can tell that
 
-From what I can tell by enabling msglvl tx_err it is reporting MDD
-event 0x2.  Unfortunately the documentation doesn't say what that is
-so I am checking a few different possibilities.
+Thanks for working so hard on the patch Alex, I need to apologize, as
+the original test appears to fail as well with 1.3.46-k (a previous
+driver to your patch) and I thought we had already tested that, but I
+was wrong.
 
-- Alex
+This is not a regression, but likely just an undetected "bug" that we
+need to work out.
+
+> is not the case as I am also seeing the Tx hangs when I run the test
+> with the frames being linearized.
+
+That doesn't make much sense unless it is something about how we are
+setting up the offload.  I troubleshoot by disabling the PFR from the
+MDD code, then disabling tx timeout via debugfs, and using debugfs to
+dump the descriptor ring after the MDD event fires.
+ 
+> I'll do some research this morning to see if I can find a root cause.
+> Unfortunately the malicious driver detection isn't very well
+> documented so I can't be certain what is causing it to be triggered.
+
+I'm still looking at this too and appreciate the help.
