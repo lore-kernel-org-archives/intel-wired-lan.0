@@ -1,48 +1,65 @@
-From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-Date: Wed, 30 Mar 2016 03:49:48 -0700
-Subject: [Intel-wired-lan] [v2 next PATCH S32 13/13] i40e/i40evf: Bump patch
-	from 1.5.2 to 1.5.5
-In-Reply-To: <1459334988-19951-1-git-send-email-harshitha.ramamurthy@intel.com>
-References: <1459334988-19951-1-git-send-email-harshitha.ramamurthy@intel.com>
-Message-ID: <1459334988-19951-14-git-send-email-harshitha.ramamurthy@intel.com>
+From: Daniel Walker <danielwa@cisco.com>
+Date: Wed, 30 Mar 2016 12:34:58 -0700
+Subject: [Intel-wired-lan] [PATCH-RFC] drivers: net: ethernet: intel:
+ e1000e: fix ethtool autoneg off for fiber
+In-Reply-To: <1458943126-32258-1-git-send-email-danielwa@cisco.com>
+References: <1458943126-32258-1-git-send-email-danielwa@cisco.com>
+Message-ID: <56FC2A62.6040206@cisco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 627acf0..dc3b393 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -46,7 +46,7 @@ static const char i40e_driver_string[] =
- 
- #define DRV_VERSION_MAJOR 1
- #define DRV_VERSION_MINOR 5
--#define DRV_VERSION_BUILD 2
-+#define DRV_VERSION_BUILD 5
- #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
- 	     __stringify(DRV_VERSION_MINOR) "." \
- 	     __stringify(DRV_VERSION_BUILD)    DRV_KERN
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 54aa24b..667e0eb 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -38,7 +38,7 @@ static const char i40evf_driver_string[] =
- 
- #define DRV_VERSION_MAJOR 1
- #define DRV_VERSION_MINOR 5
--#define DRV_VERSION_BUILD 2
-+#define DRV_VERSION_BUILD 5
- #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
- 	     __stringify(DRV_VERSION_MINOR) "." \
- 	     __stringify(DRV_VERSION_BUILD) \
--- 
-2.4.3
+So Intel maintainers (Jeff, Jesse, Shannon, Carolyn, Don, Bruce, and John)
+
+I'm assuming no comments means this patch is acceptable , and I will 
+resubmit it without the RFC. Is that acceptable ?
+
+
+On 03/25/2016 02:58 PM, Daniel Walker wrote:
+> From: Steve Shih <sshih@cisco.com>
+>
+> This patch fixes the issues for disabling auto-negotiation and forcing
+> speed and duplex settings for the fiber media.
+>
+> For fiber media, e1000_get_settings should return ETH_TP_MDI_INVALID for
+> eth_tp_mdix_ctrl instead of ETH_TP_MDI_AUTO so subsequent e1000_set_settings
+> call would not fail with -EOPNOTSUPP.
+>
+> e1000_set_spd_dplx should not automatically turn autoneg back on for forced
+> 1000 Mbps full duplex settings.
+>
+> Cc: danielwa at fifo99.com
+> Cc: xe-kernel at external.cisco.com
+> Signed-off-by: Steve Shih <sshih@cisco.com>
+> ---
+>   drivers/net/ethernet/intel/e1000e/ethtool.c | 6 ++++--
+>   1 file changed, 4 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
+> index 6cab1f3..cd03dcd 100644
+> --- a/drivers/net/ethernet/intel/e1000e/ethtool.c
+> +++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
+> @@ -201,6 +201,9 @@ static int e1000_get_settings(struct net_device *netdev,
+>   	else
+>   		ecmd->eth_tp_mdix_ctrl = hw->phy.mdix;
+>   
+> +	if (hw->phy.media_type != e1000_media_type_copper)
+> +		ecmd->eth_tp_mdix_ctrl = ETH_TP_MDI_INVALID;
+> +
+>   	return 0;
+>   }
+>   
+> @@ -236,8 +239,7 @@ static int e1000_set_spd_dplx(struct e1000_adapter *adapter, u32 spd, u8 dplx)
+>   		mac->forced_speed_duplex = ADVERTISE_100_FULL;
+>   		break;
+>   	case SPEED_1000 + DUPLEX_FULL:
+> -		mac->autoneg = 1;
+> -		adapter->hw.phy.autoneg_advertised = ADVERTISE_1000_FULL;
+> +		mac->forced_speed_duplex = ADVERTISE_1000_FULL;
+>   		break;
+>   	case SPEED_1000 + DUPLEX_HALF:	/* not supported */
+>   	default:
 
