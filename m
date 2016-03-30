@@ -1,39 +1,47 @@
-From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-Date: Wed, 30 Mar 2016 13:20:01 -0400
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 30 Mar 2016 10:35:55 -0700
 Subject: [Intel-wired-lan] [net PATCH] i40e/i40evf: Limit TSO to 7
  descriptors for payload instead of 8 per packet
-In-Reply-To: <CAKgT0UdTgaeamyLetGPK0mqMNS-80BTc8t-WdSGJuuLDfz4JOg@mail.gmail.com>
+In-Reply-To: <20160330172001.GD27540@oracle.com>
 References: <20160330064213.12927.46852.stgit@localhost.localdomain>
  <20160330170011.GB27540@oracle.com>
  <CAKgT0UdTgaeamyLetGPK0mqMNS-80BTc8t-WdSGJuuLDfz4JOg@mail.gmail.com>
-Message-ID: <20160330172001.GD27540@oracle.com>
+ <20160330172001.GD27540@oracle.com>
+Message-ID: <CAKgT0Ufb-_X-DD2jYkVJQwLZ-JBfWD2Biuhi6YaxWBeNy9K2fQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On (03/30/16 10:12), Alexander Duyck wrote:
-> Yeah.  The patch was sort of a knee-jerk reaction to being told that
-> the patch referenced caused a regression.  From what I can tell that
-> is not the case as I am also seeing the Tx hangs when I run the test
-> with the frames being linearized.
+On Wed, Mar 30, 2016 at 10:20 AM, Sowmini Varadhan
+<sowmini.varadhan@oracle.com> wrote:
+> On (03/30/16 10:12), Alexander Duyck wrote:
+>> Yeah.  The patch was sort of a knee-jerk reaction to being told that
+>> the patch referenced caused a regression.  From what I can tell that
+>> is not the case as I am also seeing the Tx hangs when I run the test
+>> with the frames being linearized.
+>
+> I'm not sure how important of a subtlety this is, but the actual
+> console log after the patch is the following:
+>
+>  i40e 0000:82:00.0: TX driver issue detected, PF reset issued
+>  i40e 0000:82:00.0 eth2: adding 68:05:ca:30:dd:18 vid=0
+>  i40e 0000:82:00.0: TX driver issue detected, PF reset issued
+>  i40e 0000:82:00.0 eth2: adding 68:05:ca:30:dd:18 vid=0
+>  i40e 0000:82:00.0: TX driver issue detected, PF reset issued
+>
+> Comparing with what I'd pasted in the sourceforge thread earlier,
+> I see that it does not say "Hung Tx queue etc."  any more, though
+> it still resets.
+>
+> Not sure if that changed info is significant?
 
-I'm not sure how important of a subtlety this is, but the actual
-console log after the patch is the following:
+It might be.  Right now I am chasing down the Tx driver issue as that
+I what I am reproducing in my environment as well.
 
- i40e 0000:82:00.0: TX driver issue detected, PF reset issued
- i40e 0000:82:00.0 eth2: adding 68:05:ca:30:dd:18 vid=0
- i40e 0000:82:00.0: TX driver issue detected, PF reset issued
- i40e 0000:82:00.0 eth2: adding 68:05:ca:30:dd:18 vid=0
- i40e 0000:82:00.0: TX driver issue detected, PF reset issued
+From what I can tell by enabling msglvl tx_err it is reporting MDD
+event 0x2.  Unfortunately the documentation doesn't say what that is
+so I am checking a few different possibilities.
 
-Comparing with what I'd pasted in the sourceforge thread earlier,
-I see that it does not say "Hung Tx queue etc."  any more, though
-it still resets.
-
-Not sure if that changed info is significant?
-
---Sowmini
-
-
+- Alex
