@@ -1,144 +1,209 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 30 Mar 2016 13:42:02 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
- f1f4b3fb83408178ea0b5f85f828d7d4ff3bd295 BUILD SUCCESS
-Message-ID: <56fb672a.ktYj9xMTI7oguK7L%fengguang.wu@intel.com>
+From: Alexander Duyck <aduyck@mirantis.com>
+Date: Tue, 29 Mar 2016 23:44:35 -0700
+Subject: [Intel-wired-lan] [net PATCH] i40e/i40evf: Limit TSO to 7
+ descriptors for payload instead of 8 per packet
+Message-ID: <20160330064213.12927.46852.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-f1f4b3fb83408178ea0b5f85f828d7d4ff3bd295  e1000: Double Tx descriptors needed check for 82544
+This patch addresses a bug introduced based on my interpretation of the
+XL710 datasheet.  Specifically section 8.4.1 states that "A single transmit
+packet may span up to 8 buffers (up to 8 data descriptors per packet
+including both the header and payload buffers)."  It then later goes on to
+say that each segment for a TSO obeys the previous rule, however it then
+refers to TSO header and the segment payload buffers.
 
-elapsed time: 39m
+I believe the actual limit for fragments with TSO and a skbuff that has
+payload data in the header portion of the buffer is actually only 7
+fragments as the skb->data portion counts as 2 buffers, one for the TSO
+header, and one for a segment payload buffer.
 
-configs tested: 123
+Fixes: 2d37490b82af ("i40e/i40evf: Rewrite logic for 8 descriptor per packet check")
+Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+---
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201613
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-x86_64                           allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-parisc                         b180_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x010-201613
-x86_64                 randconfig-x011-201613
-x86_64                 randconfig-x018-201613
-x86_64                 randconfig-x019-201613
-x86_64                 randconfig-x012-201613
-x86_64                 randconfig-x013-201613
-x86_64                 randconfig-x016-201613
-x86_64                 randconfig-x014-201613
-x86_64                 randconfig-x015-201613
-x86_64                 randconfig-x017-201613
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201613
-i386                     randconfig-s1-201613
-x86_64                 randconfig-s0-03301324
-x86_64                 randconfig-s1-03301324
-x86_64                 randconfig-s2-03301324
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201613
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                         iop13xx_defconfig
-powerpc                       ebony_defconfig
-powerpc                 mpc85xx_cds_defconfig
-powerpc                     pq2fads_defconfig
-x86_64                              rhel_gcov
-x86_64                 randconfig-n0-03301324
-i386                   randconfig-x013-201613
-i386                   randconfig-x012-201613
-i386                   randconfig-x019-201613
-i386                   randconfig-x015-201613
-i386                   randconfig-x018-201613
-i386                   randconfig-x011-201613
-i386                   randconfig-x010-201613
-i386                   randconfig-x016-201613
-i386                   randconfig-x017-201613
-i386                   randconfig-x014-201613
-x86_64                                    lkp
-x86_64                                   rhel
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201613
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                 randconfig-x001-201613
-x86_64                 randconfig-x000-201613
-x86_64                 randconfig-x005-201613
-x86_64                 randconfig-x007-201613
-x86_64                 randconfig-x006-201613
-x86_64                 randconfig-x004-201613
-x86_64                 randconfig-x009-201613
-x86_64                 randconfig-x008-201613
-x86_64                 randconfig-x003-201613
-x86_64                 randconfig-x002-201613
-i386                     randconfig-r0-201613
-arm                         axm55xx_defconfig
-arm                          badge4_defconfig
-m68k                          atari_defconfig
-i386                   randconfig-x000-201613
-i386                   randconfig-x003-201613
-i386                   randconfig-x009-201613
-i386                   randconfig-x004-201613
-i386                   randconfig-x005-201613
-i386                   randconfig-x002-201613
-i386                   randconfig-x006-201613
-i386                   randconfig-x007-201613
-i386                   randconfig-x001-201613
-i386                   randconfig-x008-201613
+This patch has been sanity checked only.  I cannot yet guarantee it
+resolves the original issue that was reported.  I'll try to get a
+reproduction environment setup tomorrow but I don't know how long that
+should take.
 
-Thanks,
-Fengguang
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   |   40 ++++++++++++++-----------
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c |   40 ++++++++++++++-----------
+ 2 files changed, 44 insertions(+), 36 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 5d5fa5359a1d..97437f04d99d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -2597,12 +2597,17 @@ int __i40e_maybe_stop_tx(struct i40e_ring *tx_ring, int size)
+ }
+ 
+ /**
+- * __i40e_chk_linearize - Check if there are more than 8 fragments per packet
++ * __i40e_chk_linearize - Check if there are more than 8 buffers per packet
+  * @skb:      send buffer
+  *
+- * Note: Our HW can't scatter-gather more than 8 fragments to build
+- * a packet on the wire and so we need to figure out the cases where we
+- * need to linearize the skb.
++ * Note: Our HW can't DMA more than 8 buffers to build a packet on the wire
++ * and so we need to figure out the cases where we need to linearize the skb.
++ *
++ * For TSO we need to count the TSO header and segment payload separately.
++ * As such we need to check cases where we have 7 fragments or more as we
++ * can potentially require 9 DMA transactions, 1 for the TSO header, 1 for
++ * the segment payload in the first descriptor, and another 7 for the
++ * fragments.
+  **/
+ bool __i40e_chk_linearize(struct sk_buff *skb)
+ {
+@@ -2614,18 +2619,17 @@ bool __i40e_chk_linearize(struct sk_buff *skb)
+ 	if (unlikely(!gso_size))
+ 		return true;
+ 
+-	/* no need to check if number of frags is less than 8 */
++	/* no need to check if number of frags is less than 7 */
+ 	nr_frags = skb_shinfo(skb)->nr_frags;
+-	if (nr_frags < I40E_MAX_BUFFER_TXD)
++	if (nr_frags < (I40E_MAX_BUFFER_TXD - 1))
+ 		return false;
+ 
+ 	/* We need to walk through the list and validate that each group
+ 	 * of 6 fragments totals@least gso_size.  However we don't need
+-	 * to perform such validation on the first or last 6 since the first
+-	 * 6 cannot inherit any data from a descriptor before them, and the
+-	 * last 6 cannot inherit any data from a descriptor after them.
++	 * to perform such validation on the last 6 since the last 6 cannot
++	 * inherit any data from a descriptor after them.
+ 	 */
+-	nr_frags -= I40E_MAX_BUFFER_TXD - 1;
++	nr_frags -= I40E_MAX_BUFFER_TXD - 2;
+ 	frag = &skb_shinfo(skb)->frags[0];
+ 
+ 	/* Initialize size to the negative value of gso_size minus 1.  We
+@@ -2636,19 +2640,19 @@ bool __i40e_chk_linearize(struct sk_buff *skb)
+ 	 */
+ 	sum = 1 - gso_size;
+ 
+-	/* Add size of frags 1 through 5 to create our initial sum */
+-	sum += skb_frag_size(++frag);
+-	sum += skb_frag_size(++frag);
+-	sum += skb_frag_size(++frag);
+-	sum += skb_frag_size(++frag);
+-	sum += skb_frag_size(++frag);
++	/* Add size of frags 0 through 4 to create our initial sum */
++	sum += skb_frag_size(frag++);
++	sum += skb_frag_size(frag++);
++	sum += skb_frag_size(frag++);
++	sum += skb_frag_size(frag++);
++	sum += skb_frag_size(frag++);
+ 
+ 	/* Walk through fragments adding latest fragment, testing it, and
+ 	 * then removing stale fragments from the sum.
+ 	 */
+ 	stale = &skb_shinfo(skb)->frags[0];
+ 	for (;;) {
+-		sum += skb_frag_size(++frag);
++		sum += skb_frag_size(frag++);
+ 
+ 		/* if sum is negative we failed to make sufficient progress */
+ 		if (sum < 0)
+@@ -2658,7 +2662,7 @@ bool __i40e_chk_linearize(struct sk_buff *skb)
+ 		if (!--nr_frags)
+ 			break;
+ 
+-		sum -= skb_frag_size(++stale);
++		sum -= skb_frag_size(stale++);
+ 	}
+ 
+ 	return false;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index 04aabc52ba0d..240e4a1b2507 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -1799,12 +1799,17 @@ static void i40e_create_tx_ctx(struct i40e_ring *tx_ring,
+ }
+ 
+ /**
+- * __i40evf_chk_linearize - Check if there are more than 8 fragments per packet
++ * __i40evf_chk_linearize - Check if there are more than 8 buffers per packet
+  * @skb:      send buffer
+  *
+- * Note: Our HW can't scatter-gather more than 8 fragments to build
+- * a packet on the wire and so we need to figure out the cases where we
+- * need to linearize the skb.
++ * Note: Our HW can't DMA more than 8 buffers to build a packet on the wire
++ * and so we need to figure out the cases where we need to linearize the skb.
++ *
++ * For TSO we need to count the TSO header and segment payload separately.
++ * As such we need to check cases where we have 7 fragments or more as we
++ * can potentially require 9 DMA transactions, 1 for the TSO header, 1 for
++ * the segment payload in the first descriptor, and another 7 for the
++ * fragments.
+  **/
+ bool __i40evf_chk_linearize(struct sk_buff *skb)
+ {
+@@ -1816,18 +1821,17 @@ bool __i40evf_chk_linearize(struct sk_buff *skb)
+ 	if (unlikely(!gso_size))
+ 		return true;
+ 
+-	/* no need to check if number of frags is less than 8 */
++	/* no need to check if number of frags is less than 7 */
+ 	nr_frags = skb_shinfo(skb)->nr_frags;
+-	if (nr_frags < I40E_MAX_BUFFER_TXD)
++	if (nr_frags < (I40E_MAX_BUFFER_TXD - 1))
+ 		return false;
+ 
+ 	/* We need to walk through the list and validate that each group
+ 	 * of 6 fragments totals@least gso_size.  However we don't need
+-	 * to perform such validation on the first or last 6 since the first
+-	 * 6 cannot inherit any data from a descriptor before them, and the
+-	 * last 6 cannot inherit any data from a descriptor after them.
++	 * to perform such validation on the last 6 since the last 6 cannot
++	 * inherit any data from a descriptor after them.
+ 	 */
+-	nr_frags -= I40E_MAX_BUFFER_TXD - 1;
++	nr_frags -= I40E_MAX_BUFFER_TXD - 2;
+ 	frag = &skb_shinfo(skb)->frags[0];
+ 
+ 	/* Initialize size to the negative value of gso_size minus 1.  We
+@@ -1838,19 +1842,19 @@ bool __i40evf_chk_linearize(struct sk_buff *skb)
+ 	 */
+ 	sum = 1 - gso_size;
+ 
+-	/* Add size of frags 1 through 5 to create our initial sum */
+-	sum += skb_frag_size(++frag);
+-	sum += skb_frag_size(++frag);
+-	sum += skb_frag_size(++frag);
+-	sum += skb_frag_size(++frag);
+-	sum += skb_frag_size(++frag);
++	/* Add size of frags 0 through 4 to create our initial sum */
++	sum += skb_frag_size(frag++);
++	sum += skb_frag_size(frag++);
++	sum += skb_frag_size(frag++);
++	sum += skb_frag_size(frag++);
++	sum += skb_frag_size(frag++);
+ 
+ 	/* Walk through fragments adding latest fragment, testing it, and
+ 	 * then removing stale fragments from the sum.
+ 	 */
+ 	stale = &skb_shinfo(skb)->frags[0];
+ 	for (;;) {
+-		sum += skb_frag_size(++frag);
++		sum += skb_frag_size(frag++);
+ 
+ 		/* if sum is negative we failed to make sufficient progress */
+ 		if (sum < 0)
+@@ -1860,7 +1864,7 @@ bool __i40evf_chk_linearize(struct sk_buff *skb)
+ 		if (!--nr_frags)
+ 			break;
+ 
+-		sum -= skb_frag_size(++stale);
++		sum -= skb_frag_size(stale++);
+ 	}
+ 
+ 	return false;
+
