@@ -1,56 +1,166 @@
 From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-Date: Wed, 30 Mar 2016 03:49:35 -0700
-Subject: [Intel-wired-lan] [v2 next PATCH S32 00/13] i40e/i40evf updates
-Message-ID: <1459334988-19951-1-git-send-email-harshitha.ramamurthy@intel.com>
+Date: Wed, 30 Mar 2016 03:49:44 -0700
+Subject: [Intel-wired-lan] [v2 next PATCH S32 09/13] i40e: Move NVM variable
+	out of AQ struct
+In-Reply-To: <1459334988-19951-1-git-send-email-harshitha.ramamurthy@intel.com>
+References: <1459334988-19951-1-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <1459334988-19951-10-git-send-email-harshitha.ramamurthy@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Akeem G Abodunrin moves the HW flush to avoid problems in
-pass-through routines. 
+From: Shannon Nelson <shannon.nelson@intel.com>
 
-Anjali Singhai Jain adds a hook to support trusted VF.
+The NVM update status info should stay collected together, not
+spread across different structs.
 
-Deepthi Kavalur adds capability to display HW information.
+Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+Change-ID: Ic16f9e9fd79945d865bb7226184c889884585025
+---
+Testing Hints :
+	Compile code and run an NVM update
 
-Harshitha Ramamurthy bumps i40e/i40evf from 1.5.2 to 1.5.5.
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c   |  6 +++---
+ drivers/net/ethernet/intel/i40e/i40e_adminq.h   |  1 -
+ drivers/net/ethernet/intel/i40e/i40e_nvm.c      | 12 ++++++------
+ drivers/net/ethernet/intel/i40e/i40e_type.h     |  1 +
+ drivers/net/ethernet/intel/i40evf/i40e_adminq.h |  1 -
+ drivers/net/ethernet/intel/i40evf/i40e_type.h   |  1 +
+ 6 files changed, 11 insertions(+), 11 deletions(-)
 
-Jesse Brandeburg moves a stack variable deeper, drops unused 
-tx_ring arguments and makes RX faster via avoiding FCOE.
-
-Kiran Patil defines input set mask constants for RSS,
-flow director and flex bytes.
-
-Mitch Williams adds RSS configuration to the virtual channel.
-
-Shannon Nelson ensures device capabilities do not get printed 
-when not needed, adds code to restrict VF poll mode to only 
-single function mode devices, moves NVM variable out of AQ 
-struct and moves nvm event wait check to nvm code.
-
- drivers/net/ethernet/intel/i40e/i40e_adminq.c      | 33 +-------------
- drivers/net/ethernet/intel/i40e/i40e_adminq.h      |  1 -
- drivers/net/ethernet/intel/i40e/i40e_common.c      |  3 ++
- drivers/net/ethernet/intel/i40e/i40e_fcoe.c        | 12 +----
- drivers/net/ethernet/intel/i40e/i40e_main.c        |  4 +-
- drivers/net/ethernet/intel/i40e/i40e_nvm.c         | 43 +++++++++++++++---
- drivers/net/ethernet/intel/i40e/i40e_prototype.h   |  1 +
- drivers/net/ethernet/intel/i40e/i40e_txrx.c        | 17 ++++---
- drivers/net/ethernet/intel/i40e/i40e_txrx.h        | 10 ++++
- drivers/net/ethernet/intel/i40e/i40e_type.h        | 43 ++++++++++++++++++
- drivers/net/ethernet/intel/i40e/i40e_virtchnl.h    | 45 ++++++++++++++++--
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 53 +++++++++++++++++++++-
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |  2 +
- drivers/net/ethernet/intel/i40evf/i40e_adminq.h    |  1 -
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c      | 13 +++---
- drivers/net/ethernet/intel/i40evf/i40e_txrx.h      | 10 ++++
- drivers/net/ethernet/intel/i40evf/i40e_type.h      | 43 ++++++++++++++++++
- drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h  | 45 ++++++++++++++++--
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  2 +-
- 19 files changed, 308 insertions(+), 73 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+index df8e2fd..e8278e1 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+@@ -624,7 +624,7 @@ i40e_status i40e_init_adminq(struct i40e_hw *hw)
+ 
+ 	/* pre-emptive resource lock release */
+ 	i40e_aq_release_resource(hw, I40E_NVM_RESOURCE_ID, 0, NULL);
+-	hw->aq.nvm_release_on_done = false;
++	hw->nvm_release_on_done = false;
+ 	hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
+ 
+ 	ret_code = i40e_aq_set_hmc_resource_profile(hw,
+@@ -1024,9 +1024,9 @@ i40e_status i40e_clean_arq_element(struct i40e_hw *hw,
+ 	hw->aq.arq.next_to_use = ntu;
+ 
+ 	if (i40e_is_nvm_update_op(&e->desc)) {
+-		if (hw->aq.nvm_release_on_done) {
++		if (hw->nvm_release_on_done) {
+ 			i40e_release_nvm(hw);
+-			hw->aq.nvm_release_on_done = false;
++			hw->nvm_release_on_done = false;
+ 		}
+ 
+ 		switch (hw->nvmupd_state) {
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.h b/drivers/net/ethernet/intel/i40e/i40e_adminq.h
+index 12fbbdd..d92aad3 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.h
+@@ -97,7 +97,6 @@ struct i40e_adminq_info {
+ 	u32 fw_build;                   /* firmware build number */
+ 	u16 api_maj_ver;                /* api major version */
+ 	u16 api_min_ver;                /* api minor version */
+-	bool nvm_release_on_done;
+ 
+ 	struct mutex asq_mutex; /* Send queue lock */
+ 	struct mutex arq_mutex; /* Receive queue lock */
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
+index 5730f80..1ae29ac 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
+@@ -696,7 +696,7 @@ i40e_status i40e_nvmupd_command(struct i40e_hw *hw,
+ 	i40e_debug(hw, I40E_DEBUG_NVM, "%s state %d nvm_release_on_hold %d cmd 0x%08x config 0x%08x offset 0x%08x data_size 0x%08x\n",
+ 		   i40e_nvm_update_state_str[upd_cmd],
+ 		   hw->nvmupd_state,
+-		   hw->aq.nvm_release_on_done,
++		   hw->nvm_release_on_done,
+ 		   cmd->command, cmd->config, cmd->offset, cmd->data_size);
+ 
+ 	if (upd_cmd == I40E_NVMUPD_INVALID) {
+@@ -799,7 +799,7 @@ static i40e_status i40e_nvmupd_state_init(struct i40e_hw *hw,
+ 			if (status) {
+ 				i40e_release_nvm(hw);
+ 			} else {
+-				hw->aq.nvm_release_on_done = true;
++				hw->nvm_release_on_done = true;
+ 				hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
+ 			}
+ 		}
+@@ -815,7 +815,7 @@ static i40e_status i40e_nvmupd_state_init(struct i40e_hw *hw,
+ 			if (status) {
+ 				i40e_release_nvm(hw);
+ 			} else {
+-				hw->aq.nvm_release_on_done = true;
++				hw->nvm_release_on_done = true;
+ 				hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
+ 			}
+ 		}
+@@ -849,7 +849,7 @@ static i40e_status i40e_nvmupd_state_init(struct i40e_hw *hw,
+ 				   -EIO;
+ 				i40e_release_nvm(hw);
+ 			} else {
+-				hw->aq.nvm_release_on_done = true;
++				hw->nvm_release_on_done = true;
+ 				hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
+ 			}
+ 		}
+@@ -953,7 +953,7 @@ retry:
+ 				   -EIO;
+ 			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
+ 		} else {
+-			hw->aq.nvm_release_on_done = true;
++			hw->nvm_release_on_done = true;
+ 			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
+ 		}
+ 		break;
+@@ -980,7 +980,7 @@ retry:
+ 				   -EIO;
+ 			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
+ 		} else {
+-			hw->aq.nvm_release_on_done = true;
++			hw->nvm_release_on_done = true;
+ 			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
+ 		}
+ 		break;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
+index 3335f9d..bf693580 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
+@@ -549,6 +549,7 @@ struct i40e_hw {
+ 	enum i40e_nvmupd_state nvmupd_state;
+ 	struct i40e_aq_desc nvm_wb_desc;
+ 	struct i40e_virt_mem nvm_buff;
++	bool nvm_release_on_done;
+ 
+ 	/* HMC info */
+ 	struct i40e_hmc_info hmc; /* HMC info struct */
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
+index a3eae5d..1f9b3b5 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
+@@ -97,7 +97,6 @@ struct i40e_adminq_info {
+ 	u32 fw_build;                   /* firmware build number */
+ 	u16 api_maj_ver;                /* api major version */
+ 	u16 api_min_ver;                /* api minor version */
+-	bool nvm_release_on_done;
+ 
+ 	struct mutex asq_mutex; /* Send queue lock */
+ 	struct mutex arq_mutex; /* Receive queue lock */
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+index 301fe2b..d68e017 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+@@ -522,6 +522,7 @@ struct i40e_hw {
+ 	enum i40e_nvmupd_state nvmupd_state;
+ 	struct i40e_aq_desc nvm_wb_desc;
+ 	struct i40e_virt_mem nvm_buff;
++	bool nvm_release_on_done;
+ 
+ 	/* HMC info */
+ 	struct i40e_hmc_info hmc; /* HMC info struct */
 -- 
 2.4.3
 
