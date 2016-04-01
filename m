@@ -1,60 +1,56 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Fri, 1 Apr 2016 18:17:34 +0000
-Subject: [Intel-wired-lan] [PATCH v7] fm10k: add helper functions for
-	ethtool stats
-In-Reply-To: <1459534509-4972-1-git-send-email-jacob.e.keller@intel.com>
-References: <1459534509-4972-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1459534654.2431.3.camel@intel.com>
+From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+Date: Fri,  1 Apr 2016 03:56:00 -0700
+Subject: [Intel-wired-lan] [v3 next PATCH S32 00/13] i40e/i40evf updates
+Message-ID: <1459508173-22777-1-git-send-email-harshitha.ramamurthy@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2016-04-01 at 11:15 -0700, Jacob Keller wrote:
-> This is a complete replacement for 74bf40286439 ("fm10k: add helper
-> functions to set strings and data for ethtool stats", 2016-03-25) on
-> Jeff's queue, and this the previous v6 patch should be dropped and
-> replaced with this one. 91daf9c6d966 ("fm10k: remove debug-statistics
-> support", 2016-03-25) likely depends on this patch.
-> 
-> This version fixes an issue with per-queue statistics due to a
-> copy-paste error in the queue stats structure.
-> 
-> inter-diff between v6 and v7:
-> 
-> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-> b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-> index e36ca3f43ae4..f331966ac9df 100644
-> --- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-> @@ -129,7 +129,7 @@ static const struct fm10k_stats
-> fm10k_gstrings_mbx_stats[] = {
-> ?
-> ?static const struct fm10k_stats fm10k_gstrings_queue_stats[] = {
-> ?	FM10K_QUEUE_STAT("packets", stats.packets),
-> -	FM10K_QUEUE_STAT("bytes", stats.packets),
-> +	FM10K_QUEUE_STAT("bytes", stats.bytes),
-> ?};
-> ?
-> ?#define FM10K_GLOBAL_STATS_LEN
-> ARRAY_SIZE(fm10k_gstrings_global_stats)
-> 
-> Jacob Keller (1):
-> ? fm10k: add helper functions to set strings and data for ethtool
-> stats
-> 
-> ?drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 219 ++++++++++++-
-> ----------
-> ?1 file changed, 115 insertions(+), 104 deletions(-)
-> 
+Akeem G Abodunrin moves the HW flush to avoid problems in
+pass-through routines. 
 
-The wiki for upstream patches says you sent this already. This email
-should have been marked 0/1 not sure why it wasn't.
+Anjali Singhai Jain adds a hook to support trusted VF.
 
-I am not 100% sure if this was sent, but if so, we need to quickly
-replace it with this version, since it fixes a bug. Otherwise I can
-send a separate fix stand alone if Dave has already merged it.
+Deepthi Kavalur adds capability to display HW information.
 
-Thanks,
-Jake
+Harshitha Ramamurthy bumps i40e/i40evf from 1.5.2 to 1.5.5.
+
+Jesse Brandeburg moves a stack variable deeper, drops unused 
+tx_ring arguments and makes RX faster via avoiding FCOE.
+
+Kiran Patil defines input set mask constants for RSS,
+flow director and flex bytes.
+
+Mitch Williams adds RSS configuration to the virtual channel.
+
+Shannon Nelson ensures device capabilities do not get printed 
+when not needed, adds code to restrict VF poll mode to only 
+single function mode devices, moves NVM variable out of AQ 
+struct and moves nvm event wait check to nvm code.
+
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c      | 33 +-------------
+ drivers/net/ethernet/intel/i40e/i40e_adminq.h      |  1 -
+ drivers/net/ethernet/intel/i40e/i40e_common.c      |  3 ++
+ drivers/net/ethernet/intel/i40e/i40e_fcoe.c        | 12 +----
+ drivers/net/ethernet/intel/i40e/i40e_main.c        |  4 +-
+ drivers/net/ethernet/intel/i40e/i40e_nvm.c         | 43 +++++++++++++++---
+ drivers/net/ethernet/intel/i40e/i40e_prototype.h   |  1 +
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c        | 17 ++++---
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h        | 10 ++++
+ drivers/net/ethernet/intel/i40e/i40e_type.h        | 34 ++++++++++++++
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl.h    | 45 ++++++++++++++++--
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 53 +++++++++++++++++++++-
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |  2 +
+ drivers/net/ethernet/intel/i40evf/i40e_adminq.h    |  1 -
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c      | 13 +++---
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.h      | 10 ++++
+ drivers/net/ethernet/intel/i40evf/i40e_type.h      | 43 ++++++++++++++++++
+ drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h  | 45 ++++++++++++++++--
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  2 +-
+ 19 files changed, 299 insertions(+), 73 deletions(-)
+
+-- 
+2.4.3
+
