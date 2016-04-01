@@ -1,89 +1,69 @@
-From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-Date: Fri,  1 Apr 2016 03:56:05 -0700
-Subject: [Intel-wired-lan] [v3 next PATCH S32 05/13] i40e/i40evf: Drop
-	unused tx_ring argument
-In-Reply-To: <1459508173-22777-1-git-send-email-harshitha.ramamurthy@intel.com>
-References: <1459508173-22777-1-git-send-email-harshitha.ramamurthy@intel.com>
-Message-ID: <1459508173-22777-6-git-send-email-harshitha.ramamurthy@intel.com>
+From: Mark D Rustad <mark.d.rustad@intel.com>
+Date: Fri, 01 Apr 2016 12:17:54 -0700
+Subject: [Intel-wired-lan] [PATCH V5 00/11] ixgbe: Add support for x550em_a
+	MAC
+Message-ID: <20160401191701.120975.34684.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+The following patches add support for a new ixgbe MAC type,
+x550em_a. The interfaces supported are native SFP+, SFP+ with a
+retimer, SGMII backplane and KR backplane.
 
-Some of the tx_ring arguments can be deleted since they are not used.
-
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Change-ID: I99275b0f191d7f63ec2f05061919904940c36f31
+Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
-Testing Hints: Compile test, no functional change.
+This series replaces two previous series of patches:
+	ixgbe: Add initial support for a new ixgbe MAC
+	ixgbe: Add KR and SFP+ interfaces to X550EM_A
+with some reorganization, a couple bug fixes and incorporation of
+other feedback. This series also adds the SGMII backplane support
+which was not included in the previous 2 series.
 
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 6 ++----
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 6 ++----
- 2 files changed, 4 insertions(+), 8 deletions(-)
+Changes in V2 of this series:
+- Corrected endianness of IOSF data accessed by firmware
+Changes in V3 of this series:
+- Moved a mac type check into ixgbe_setup_kr_x550em
+Changes in V4 of this series:
+- Patch 4 was replaced with different patch to implement a new PHY
+  access method. The previous patch resuled in a failure on other
+  MACs.
+Changes in V5:
+- Changed endianness of IOSF data accessed by firmware due to
+  firmware change
+- Removed trailing whitespace
+- Used BIT macro for new bits defined
+---
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 76a48e9..f4e4d3d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2252,15 +2252,13 @@ out:
- 
- /**
-  * i40e_tso - set up the tso context descriptor
-- * @tx_ring:  ptr to the ring to send
-  * @skb:      ptr to the skb we're sending
-  * @hdr_len:  ptr to the size of the packet header
-  * @cd_type_cmd_tso_mss: Quad Word 1
-  *
-  * Returns 0 if no TSO can happen, 1 if tso is going, or error
-  **/
--static int i40e_tso(struct i40e_ring *tx_ring, struct sk_buff *skb,
--		    u8 *hdr_len, u64 *cd_type_cmd_tso_mss)
-+static int i40e_tso(struct sk_buff *skb, u8 *hdr_len, u64 *cd_type_cmd_tso_mss)
- {
- 	u64 cd_cmd, cd_tso_len, cd_mss;
- 	union {
-@@ -2932,7 +2930,7 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
- 	else if (protocol == htons(ETH_P_IPV6))
- 		tx_flags |= I40E_TX_FLAGS_IPV6;
- 
--	tso = i40e_tso(tx_ring, skb, &hdr_len, &cd_type_cmd_tso_mss);
-+	tso = i40e_tso(skb, &hdr_len, &cd_type_cmd_tso_mss);
- 
- 	if (tso < 0)
- 		goto out_drop;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index d633dcf..ec1f447 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -1519,15 +1519,13 @@ out:
- 
- /**
-  * i40e_tso - set up the tso context descriptor
-- * @tx_ring:  ptr to the ring to send
-  * @skb:      ptr to the skb we're sending
-  * @hdr_len:  ptr to the size of the packet header
-  * @cd_type_cmd_tso_mss: Quad Word 1
-  *
-  * Returns 0 if no TSO can happen, 1 if tso is going, or error
-  **/
--static int i40e_tso(struct i40e_ring *tx_ring, struct sk_buff *skb,
--		    u8 *hdr_len, u64 *cd_type_cmd_tso_mss)
-+static int i40e_tso(struct sk_buff *skb, u8 *hdr_len, u64 *cd_type_cmd_tso_mss)
- {
- 	u64 cd_cmd, cd_tso_len, cd_mss;
- 	union {
-@@ -2150,7 +2148,7 @@ static netdev_tx_t i40e_xmit_frame_ring(struct sk_buff *skb,
- 	else if (protocol == htons(ETH_P_IPV6))
- 		tx_flags |= I40E_TX_FLAGS_IPV6;
- 
--	tso = i40e_tso(tx_ring, skb, &hdr_len, &cd_type_cmd_tso_mss);
-+	tso = i40e_tso(skb, &hdr_len, &cd_type_cmd_tso_mss);
- 
- 	if (tso < 0)
- 		goto out_drop;
+Mark D Rustad (11):
+      ixgbe: Add definitions for x550em_a 10G MAC
+      ixgbe: Use method pointer to access IOSF devices
+      ixgbe: Add support for x550em_a 10G MAC type
+      ixgbe: Use new methods for PHY access
+      ixgbe: Read and set instance id
+      ixgbe: Read and parse NW_MNG_IF_SEL register
+      ixgbe: Introduce function to control MDIO speed
+      ixgbe: Add support for SFPs with retimer
+      ixgbe: Add support for SGMII backplane interface
+      ixgbe: Add KR backplane support for x550em_a
+      ixgbe: Bump version number
+
+
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h         |    3 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c   |    1 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c  |    9 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_dcb.c     |    6 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |    9 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c     |    3 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c    |   51 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_mbx.c     |    2 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h     |    6 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ptp.c     |    6 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h    |   88 +++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c    |  576 +++++++++++++++++++++-
+ 12 files changed, 714 insertions(+), 46 deletions(-)
+
 -- 
-2.4.3
-
+Mark Rustad, Network Division, Intel Corporation
