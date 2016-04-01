@@ -1,96 +1,73 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri,  1 Apr 2016 16:17:32 -0700
-Subject: [Intel-wired-lan] [PATCH v1 2/9] fm10k: Fix multicast mode sync
-	issues
+Date: Fri,  1 Apr 2016 16:17:37 -0700
+Subject: [Intel-wired-lan] [PATCH v1 7/9] fm10k: use different name than
+	FM10K_VLAN_CLEAR for override bit
 In-Reply-To: <1459552659-22959-1-git-send-email-jacob.e.keller@intel.com>
 References: <1459552659-22959-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1459552659-22959-3-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1459552659-22959-8-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
+Use a new #define FM10K_VLAN_OVERRIDE even though we're using the exact
+same bit. The reason for this is clarity in the code, otherwise you can
+read FM10K_VLAN_CLEAR and think it should be removed. Also add a comment
+explaining why the FM10K_VLAN_OVERRIDE bit is set.
 
-Multicast mode checking is no longer a requirement to perform unicast
-and multicast address syncs. Specifically, a device operating in
-promiscuous and/or all multicast mode is not excluded. The issue occurs
-when the netdev is pre-configured to either multicast mode and is
-enabled for the first time. The multicast-group table in the Switch
-Manager will be missing obvious multicast entries associated to this
-netdev.
-
-Changes were also made to disallow unicast and multicast syncs with
-VLAN 0. The Switch Manager considers VLAN 0 to be an invalid entry.
-Requests with VLAN 0 by the netdev are only generated when the driver is
-freshly installed and the default VID is not set.
-
-Signed-off-by: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 20 +++++++-------------
- 1 file changed, 7 insertions(+), 13 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_pf.c   | 8 ++++++--
+ drivers/net/ethernet/intel/fm10k/fm10k_type.h | 1 +
+ drivers/net/ethernet/intel/fm10k/fm10k_vf.c   | 2 +-
+ 3 files changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-index 32778dda8c12..bf229d54c20c 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-@@ -877,7 +877,7 @@ static int __fm10k_uc_sync(struct net_device *dev,
- 		return -EADDRNOTAVAIL;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+index ffe98056755b..88d5acf484d0 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+@@ -864,9 +864,13 @@ static s32 fm10k_iov_assign_default_mac_vlan_pf(struct fm10k_hw *hw,
+ 	fm10k_write_reg(hw, FM10K_TQMAP(qmap_idx), 0);
+ 	fm10k_write_reg(hw, FM10K_TXDCTL(vf_q_idx), 0);
  
- 	/* update table with current entries */
--	for (vid = hw->mac.default_vid ? fm10k_find_next_vlan(interface, 0) : 0;
-+	for (vid = hw->mac.default_vid ? fm10k_find_next_vlan(interface, 0) : 1;
- 	     vid < VLAN_N_VID;
- 	     vid = fm10k_find_next_vlan(interface, vid)) {
- 		err = hw->mac.ops.update_uc_addr(hw, glort, addr,
-@@ -940,7 +940,7 @@ static int __fm10k_mc_sync(struct net_device *dev,
- 	u16 vid, glort = interface->glort;
+-	/* determine correct default VLAN ID */
++	/* Determine correct default VLAN ID. The FM10K_VLAN_OVERRIDE bit is
++	 * used here to indicate to the VF that it will not have privilege to
++	 * write VLAN_TABLE. All policy is enforced on the PF but this allows
++	 * the VF to correctly report errors to userspace rqeuests.
++	 */
+ 	if (vf_info->pf_vid)
+-		vf_vid = vf_info->pf_vid | FM10K_VLAN_CLEAR;
++		vf_vid = vf_info->pf_vid | FM10K_VLAN_OVERRIDE;
+ 	else
+ 		vf_vid = vf_info->sw_vid;
  
- 	/* update table with current entries */
--	for (vid = hw->mac.default_vid ? fm10k_find_next_vlan(interface, 0) : 0;
-+	for (vid = hw->mac.default_vid ? fm10k_find_next_vlan(interface, 0) : 1;
- 	     vid < VLAN_N_VID;
- 	     vid = fm10k_find_next_vlan(interface, vid)) {
- 		hw->mac.ops.update_mc_addr(hw, glort, addr, vid, sync);
-@@ -995,11 +995,8 @@ static void fm10k_set_rx_mode(struct net_device *dev)
- 	}
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_type.h b/drivers/net/ethernet/intel/fm10k/fm10k_type.h
+index 995dceefec25..f3f37a49806e 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_type.h
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_type.h
+@@ -350,6 +350,7 @@ struct fm10k_hw;
+ #define FM10K_VLAN_TABLE_VSI_MAX		64
+ #define FM10K_VLAN_LENGTH_SHIFT			16
+ #define FM10K_VLAN_CLEAR			BIT(15)
++#define FM10K_VLAN_OVERRIDE			FM10K_VLAN_CLEAR
+ #define FM10K_VLAN_ALL \
+ 	((FM10K_VLAN_TABLE_VID_MAX - 1) << FM10K_VLAN_LENGTH_SHIFT)
  
- 	/* synchronize all of the addresses */
--	if (xcast_mode != FM10K_XCAST_MODE_PROMISC) {
--		__dev_uc_sync(dev, fm10k_uc_sync, fm10k_uc_unsync);
--		if (xcast_mode != FM10K_XCAST_MODE_ALLMULTI)
--			__dev_mc_sync(dev, fm10k_mc_sync, fm10k_mc_unsync);
--	}
-+	__dev_uc_sync(dev, fm10k_uc_sync, fm10k_uc_unsync);
-+	__dev_mc_sync(dev, fm10k_mc_sync, fm10k_mc_unsync);
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_vf.c b/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
+index 86c358c37d3f..801238dec624 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
+@@ -228,7 +228,7 @@ s32 fm10k_msg_mac_vlan_vf(struct fm10k_hw *hw, u32 **results,
  
- 	fm10k_mbx_unlock(interface);
+ 	ether_addr_copy(hw->mac.perm_addr, perm_addr);
+ 	hw->mac.default_vid = vid & (FM10K_VLAN_TABLE_VID_MAX - 1);
+-	hw->mac.vlan_override = !!(vid & FM10K_VLAN_CLEAR);
++	hw->mac.vlan_override = !!(vid & FM10K_VLAN_OVERRIDE);
+ 
+ 	return 0;
  }
-@@ -1037,7 +1034,7 @@ void fm10k_restore_rx_state(struct fm10k_intfc *interface)
- 	hw->mac.ops.update_vlan(hw, 0, 0, true);
- 
- 	/* update table with current entries */
--	for (vid = hw->mac.default_vid ? fm10k_find_next_vlan(interface, 0) : 0;
-+	for (vid = hw->mac.default_vid ? fm10k_find_next_vlan(interface, 0) : 1;
- 	     vid < VLAN_N_VID;
- 	     vid = fm10k_find_next_vlan(interface, vid)) {
- 		hw->mac.ops.update_vlan(hw, vid, 0, true);
-@@ -1049,11 +1046,8 @@ void fm10k_restore_rx_state(struct fm10k_intfc *interface)
- 	hw->mac.ops.update_xcast_mode(hw, glort, xcast_mode);
- 
- 	/* synchronize all of the addresses */
--	if (xcast_mode != FM10K_XCAST_MODE_PROMISC) {
--		__dev_uc_sync(netdev, fm10k_uc_sync, fm10k_uc_unsync);
--		if (xcast_mode != FM10K_XCAST_MODE_ALLMULTI)
--			__dev_mc_sync(netdev, fm10k_mc_sync, fm10k_mc_unsync);
--	}
-+	__dev_uc_sync(netdev, fm10k_uc_sync, fm10k_uc_unsync);
-+	__dev_mc_sync(netdev, fm10k_mc_sync, fm10k_mc_unsync);
- 
- 	fm10k_mbx_unlock(interface);
- 
 -- 
 2.8.0.rc1.177.g5628860
 
