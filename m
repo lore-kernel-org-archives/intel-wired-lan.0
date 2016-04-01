@@ -1,66 +1,45 @@
-From: Sridhar Samudrala <sridhar.samudrala@intel.com>
-Date: Fri,  1 Apr 2016 10:34:38 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: make 'action' field in struct
-	ixgbe_fdir_filter a u64 value
-Message-ID: <1459532078-11858-1-git-send-email-sridhar.samudrala@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Fri,  1 Apr 2016 11:15:08 -0700
+Subject: [Intel-wired-lan] [PATCH v7] fm10k: add helper functions for
+	ethtool stats
+Message-ID: <1459534509-4972-1-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This field is used to record the RX queue index for a redirect action
-passed via ring_cookie field in struct ethtool_rx_flow_spec which is
-a u64 value.
+This is a complete replacement for 74bf40286439 ("fm10k: add helper
+functions to set strings and data for ethtool stats", 2016-03-25) on
+Jeff's queue, and this the previous v6 patch should be dropped and
+replaced with this one. 91daf9c6d966 ("fm10k: remove debug-statistics
+support", 2016-03-25) likely depends on this patch.
 
-For ex: after adding a filter rule to redirect to a VF using ethtool
-  # echo 4 > /sys/class/net/p4p1/device/sriov_numvfs
-  # ethtool -N p4p1 flow-type ip4 src-ip 192.168.0.1 action 0x100000000
+This version fixes an issue with per-queue statistics due to a
+copy-paste error in the queue stats structure.
 
-querying for the rule shows the Action as 'Direct to queue 0'
+inter-diff between v6 and v7:
 
-  # ethtool -n p4p1
-  4 RX rings available
-  Total 1 rules
-
-  Filter: 2045
- 	Rule Type: Raw IPv4
-	Src IP addr: 192.168.0.1 mask: 0.0.0.0
-	Dest IP addr: 0.0.0.0 mask: 255.255.255.255
-	TOS: 0x0 mask: 0xff
-	Protocol: 0 mask: 0xff
-	L4 bytes: 0x0 mask: 0xffffffff
-	VLAN EtherType: 0x0 mask: 0xffff
-	VLAN: 0x0 mask: 0xffff
-	User-defined: 0x0 mask: 0xffffffffffffffff
-	Action: Direct to queue 0
-
-With this fix, ethtool will report the right queue index even for VFs.
-	Action: Direct to queue 4294967296
-
-Here 4294967296 corresponds to 0x100000000.
-We need to update 'ethtool' to report the queue index as a Hex value so
-that it is more  user friendly and matches with the 'action' value that
-is passed when adding the rule.
-
-Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index e4949af..02ea344 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -827,7 +827,7 @@ struct ixgbe_fdir_filter {
- 	struct hlist_node fdir_node;
- 	union ixgbe_atr_input filter;
- 	u16 sw_idx;
--	u16 action;
-+	u64 action;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+index e36ca3f43ae4..f331966ac9df 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+@@ -129,7 +129,7 @@ static const struct fm10k_stats fm10k_gstrings_mbx_stats[] = {
+ 
+ static const struct fm10k_stats fm10k_gstrings_queue_stats[] = {
+ 	FM10K_QUEUE_STAT("packets", stats.packets),
+-	FM10K_QUEUE_STAT("bytes", stats.packets),
++	FM10K_QUEUE_STAT("bytes", stats.bytes),
  };
  
- enum ixgbe_state_t {
+ #define FM10K_GLOBAL_STATS_LEN ARRAY_SIZE(fm10k_gstrings_global_stats)
+
+Jacob Keller (1):
+  fm10k: add helper functions to set strings and data for ethtool stats
+
+ drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 219 ++++++++++++-----------
+ 1 file changed, 115 insertions(+), 104 deletions(-)
+
 -- 
-2.1.0
+2.8.0.rc1.177.g5628860
 
