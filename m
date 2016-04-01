@@ -1,44 +1,79 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri,  1 Apr 2016 16:17:36 -0700
-Subject: [Intel-wired-lan] [PATCH v1 6/9] fm10k: use 8bit notation instead
-	of 10bit notation for diagram
+Date: Fri,  1 Apr 2016 16:17:35 -0700
+Subject: [Intel-wired-lan] [PATCH v1 5/9] fm10k: fix documentation of
+	fm10k_tlv_parse_attr
 In-Reply-To: <1459552659-22959-1-git-send-email-jacob.e.keller@intel.com>
 References: <1459552659-22959-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1459552659-22959-7-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1459552659-22959-6-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The diagram represents bit layout of the multi-bit VLAN update message
-format. Typically these diagrams are drawn using some power of 2 as the
-base, to more easily grasp where fields split. Although the numbers
-above can make it somewhat easy to understand which bit you're looking
-at, it makes the break points not line up. Re-draw the numbers using
-base 8, and mark the bit values every 8 bits at the top. This should
-make it more easy to grasp the table quickly.
+fm10k_tlv_parse_attr is supposed to return FM10K_NOT_IMPLEMENTED for any
+TLV who's attribute id lies outside the range of results. It does not do
+this today. In addition, the documentation does not indicate that other
+attributes which are not implemented for a given TLV will be silently
+ignored. Fix this. Clean up the logic so that we don't rely on the fact
+that FM10K_NOT_IMPLEMENTED is greater than zero, as this can easily
+cause confusion.
+
+A future extension could look into some way of reporting unknown TLVs
+in order to make issues more easily discoverable. We can't just return
+FM10K_NOT_IMPLEMENTED here because we don't want to drop the entire
+message if it has an unknown TLV.
+
+While here, update the copyright year.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_pf.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_tlv.c | 18 ++++++++++--------
+ 1 file changed, 10 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-index 865f5c2da9d0..ffe98056755b 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-@@ -219,8 +219,8 @@ static s32 fm10k_update_vlan_pf(struct fm10k_hw *hw, u32 vid, u8 vsi, bool set)
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_tlv.c b/drivers/net/ethernet/intel/fm10k/fm10k_tlv.c
+index b999897e50d8..6b500a6378e0 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_tlv.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_tlv.c
+@@ -1,5 +1,5 @@
+ /* Intel Ethernet Switch Host Interface Driver
+- * Copyright(c) 2013 - 2015 Intel Corporation.
++ * Copyright(c) 2013 - 2016 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+@@ -481,7 +481,8 @@ static s32 fm10k_tlv_attr_validate(u32 *attr,
+  *  up into an array of pointers stored in results.  The function will
+  *  return FM10K_ERR_PARAM on any input or message error,
+  *  FM10K_NOT_IMPLEMENTED for any attribute that is outside of the array
+- *  and 0 on success.
++ *  and 0 on success. Any attributes not found in tlv_attr will be silently
++ *  ignored.
+  **/
+ static s32 fm10k_tlv_attr_parse(u32 *attr, u32 **results,
+ 				const struct fm10k_tlv_attr *tlv_attr)
+@@ -518,14 +519,15 @@ static s32 fm10k_tlv_attr_parse(u32 *attr, u32 **results,
+ 	while (offset < len) {
+ 		attr_id = *attr & FM10K_TLV_ID_MASK;
  
- 	/* VLAN multi-bit write:
- 	 * The multi-bit write has several parts to it.
--	 *    3			  2		      1			  0
--	 *  1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0 9 8 7 6 5 4 3 2 1 0
-+	 *               24              16               8               0
-+	 *  7 6 5 4 3 2 1 0 7 6 5 4 3 2 1 0 7 6 5 4 3 2 1 0 7 6 5 4 3 2 1 0
- 	 * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- 	 * | RSVD0 |         Length        |C|RSVD0|        VLAN ID        |
- 	 * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+-		if (attr_id < FM10K_TLV_RESULTS_MAX)
+-			err = fm10k_tlv_attr_validate(attr, tlv_attr);
+-		else
+-			err = FM10K_NOT_IMPLEMENTED;
++		if (attr_id >= FM10K_TLV_RESULTS_MAX)
++			return FM10K_NOT_IMPLEMENTED;
+ 
+-		if (err < 0)
++		err = fm10k_tlv_attr_validate(attr, tlv_attr);
++		if (err == FM10K_NOT_IMPLEMENTED)
++			; /* silently ignore non-implemented attributes */
++		else if (err)
+ 			return err;
+-		if (!err)
++		else
+ 			results[attr_id] = attr;
+ 
+ 		/* update offset */
 -- 
 2.8.0.rc1.177.g5628860
 
