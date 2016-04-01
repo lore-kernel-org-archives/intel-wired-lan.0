@@ -1,208 +1,134 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri, 01 Apr 2016 16:41:57 -0700
-Subject: [Intel-wired-lan] [next PATCH] i40evf: properly handle VLAN
- features
-In-Reply-To: <CAKgT0UdSP6qvMRweJenzfbYADQm864drEOa53Qd1n_qumiQ9ug@mail.gmail.com>
-References: <1459445708-20029-1-git-send-email-mitch.a.williams@intel.com>
- <CAKgT0UecOja5TgA365Zo_rayZ7-oh7rNvZ2trbTyW87Oh7gMZA@mail.gmail.com>
- <AAEA33E297BCAC4B9BB20A7C2DF0AB8D7856CBC9@FMSMSX113.amr.corp.intel.com>
- <CAKgT0Udro5iLhCmPUzNr0Ec5dN=ASZ4=4v8LV3LVNUbG3YGHZg@mail.gmail.com>
- <AAEA33E297BCAC4B9BB20A7C2DF0AB8D7856CDE4@FMSMSX113.amr.corp.intel.com>
- <CAKgT0UdSP6qvMRweJenzfbYADQm864drEOa53Qd1n_qumiQ9ug@mail.gmail.com>
-Message-ID: <1459554117.2920.12.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 02 Apr 2016 07:56:18 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 5e7344a36a87275cdf56b9a8622fddb785b8893b BUILD SUCCESS
+Message-ID: <56ff0aa2.ZrKOA661fmkLse92%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2016-04-01 at 13:55 -0700, Alexander Duyck wrote:
-> On Fri, Apr 1, 2016 at 1:52 PM, Williams, Mitch A
-> <mitch.a.williams@intel.com> wrote:
-> > 
-> > 
-> > 
-> > > 
-> > > -----Original Message-----
-> > > From: Alexander Duyck [mailto:alexander.duyck at gmail.com]
-> > > Sent: Friday, April 01, 2016 1:07 PM
-> > > To: Williams, Mitch A <mitch.a.williams@intel.com>
-> > > Cc: intel-wired-lan <intel-wired-lan@lists.osuosl.org>
-> > > Subject: Re: [Intel-wired-lan] [next PATCH] i40evf: properly
-> > > handle VLAN
-> > > features
-> > > 
-> > > On Fri, Apr 1, 2016 at 10:32 AM, Williams, Mitch A
-> > > <mitch.a.williams@intel.com> wrote:
-> > > > 
-> > > > 
-> > > > 
-> > > > > 
-> > > > > -----Original Message-----
-> > > > > From: Alexander Duyck [mailto:alexander.duyck at gmail.com]
-> > > > > Sent: Thursday, March 31, 2016 1:50 PM
-> > > > > To: Williams, Mitch A <mitch.a.williams@intel.com>
-> > > > > Cc: intel-wired-lan <intel-wired-lan@lists.osuosl.org>
-> > > > > Subject: Re: [Intel-wired-lan] [next PATCH] i40evf: properly
-> > > > > handle VLAN
-> > > > > features
-> > > > > 
-> > > > > On Thu, Mar 31, 2016 at 10:35 AM, Mitch Williams
-> > > > > <mitch.a.williams@intel.com> wrote:
-> > > > > > 
-> > > > > > Correctly set the VLAN feature flags after setting the rest
-> > > > > > of the
-> > > > > > netdev flags. And don't set them in hw_features, because
-> > > > > > these can't be
-> > > > > > controlled by the VF driver.
-> > > > > > 
-> > > > > > Testing Hints: Make sure VLAN offloads work correctly when
-> > > > > > not using
-> > > > > > port VLANs, and make sure they're not availble when using
-> > > > > > port VLANs.
-> > > > > > 
-> > > > > > Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-> > > > > > ---
-> > > > > > ?drivers/net/ethernet/intel/i40evf/i40evf_main.c | 21
-> > > > > > +++++++++++------
-> > > ---
-> > > > 
-> > > > > 
-> > > > > -
-> > > > > > 
-> > > > > > ?1 file changed, 11 insertions(+), 10 deletions(-)
-> > > > > > 
-> > > > > > diff --git
-> > > > > > a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-> > > > > b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-> > > > > > 
-> > > > > > index 4b70aae..039bbd2 100644
-> > > > > > --- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-> > > > > > +++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-> > > > > > @@ -2259,6 +2259,10 @@ static int i40evf_change_mtu(struct
-> > > > > > net_device
-> > > > > *netdev, int new_mtu)
-> > > > > > 
-> > > > > > ????????return 0;
-> > > > > > ?}
-> > > > > > 
-> > > > > > +#define I40EVF_VLAN_FEATURES (NETIF_F_HW_VLAN_CTAG_TX |\
-> > > > > > +??????????????????????????????NETIF_F_HW_VLAN_CTAG_RX |\
-> > > > > > +??????????????????????????????NETIF_F_HW_VLAN_CTAG_FILTER)
-> > > > > > +
-> > > > > > ?static const struct net_device_ops i40evf_netdev_ops = {
-> > > > > > ????????.ndo_open???????????????= i40evf_open,
-> > > > > > ????????.ndo_stop???????????????= i40evf_close,
-> > > > > > @@ -2320,16 +2324,6 @@ int i40evf_process_config(struct
-> > > > > > i40evf_adapter
-> > > > > *adapter)
-> > > > > > 
-> > > > > > ????????????????return -ENODEV;
-> > > > > > ????????}
-> > > > > > 
-> > > > > > -???????if (adapter->vf_res->vf_offload_flags
-> > > > > > -???????????& I40E_VIRTCHNL_VF_OFFLOAD_VLAN) {
-> > > > > > -???????????????netdev->vlan_features = netdev->features &
-> > > > > > -???????????????????????????????????????~(NETIF_F_HW_VLAN_C
-> > > > > > TAG_TX |
-> > > > > > -?????????????????????????????????????????NETIF_F_HW_VLAN_C
-> > > > > > TAG_RX |
-> > > > > > -?????????????????????????????????????????NETIF_F_HW_VLAN_C
-> > > > > > TAG_FILTER);
-> > > > > > -???????????????netdev->features |= NETIF_F_HW_VLAN_CTAG_TX
-> > > > > > |
-> > > > > > -???????????????????????????????????NETIF_F_HW_VLAN_CTAG_RX
-> > > > > > |
-> > > > > > -???????????????????????????????????NETIF_F_HW_VLAN_CTAG_FI
-> > > > > > LTER;
-> > > > > > -???????}
-> > > > > > ????????netdev->features |= NETIF_F_HIGHDMA |
-> > > > > > ????????????????????????????NETIF_F_SG |
-> > > > > > ????????????????????????????NETIF_F_IP_CSUM |
-> > > > > > @@ -2358,6 +2352,13 @@ int i40evf_process_config(struct
-> > > > > > i40evf_adapter
-> > > > > *adapter)
-> > > > > > 
-> > > > > > ????????/* copy netdev features into list of user
-> > > > > > selectable features
-> > > */
-> > > > 
-> > > > > 
-> > > > > > 
-> > > > > > ????????netdev->hw_features |= netdev->features;
-> > > > > This line here is actually a bit problematic.??I found while
-> > > > > working
-> > > > > on NETIF_F_GSO_PARTIAL that we end up calling
-> > > > > i40evf_process_config
-> > > > > multiple times.??What ends up happening is that features end
-> > > > > up
-> > > > > bleeding through into hw_features.??Same thing if you try
-> > > > > going the
-> > > > > other way.??Your best bend ends up actually being to populate
-> > > > > hw_enc_features and then feed that into features and
-> > > > > hw_features.
-> > > > > 
-> > > > > > 
-> > > > > > ????????netdev->hw_features &= ~NETIF_F_RXCSUM;
-> > > > > I never noticed before but why are you clearing the
-> > > > > NETIF_F_RXCSUM
-> > > > > flag???That is a feature you control via software isn't
-> > > > > it???You could
-> > > > > just ignore the results from the hardware.??Why lock this
-> > > > > feature for
-> > > > > a VF?
-> > > > > 
-> > > > > > 
-> > > > > > +???????netdev->hw_features &= ~(I40EVF_VLAN_FEATURES);
-> > > > > There is no need to mask hw_features if you never set it.??I
-> > > > > assume
-> > > > > this is needed to deal with the bleeding through issue I
-> > > > > referenced
-> > > > > above where you are writing hw_features from features.
-> > > > > 
-> > > > > > 
-> > > > > > +???????netdev->features &= ~(I40EVF_VLAN_FEATURES);
-> > > > > > +
-> > > > > > +???????if (vfres->vf_offload_flags &
-> > > > > > I40E_VIRTCHNL_VF_OFFLOAD_VLAN) {
-> > > > > > +???????????????netdev->vlan_features = netdev->features;
-> > > > > > +???????????????netdev->features |= I40EVF_VLAN_FEATURES;
-> > > > > > +???????}
-> > > > > > 
-> > > > > > ????????adapter->vsi.id = adapter->vsi_res->vsi_id;
-> > > > > You can probably just set vlan_features always.??As far as I
-> > > > > know the
-> > > > > i40e/i40evf hardware doesn't penalize you if you have some
-> > > > > extra data
-> > > > > like a VLAN tag in the L2 header so TSO and checksums should
-> > > > > all still
-> > > > > work.
-> > > > > 
-> > > > > - Alex
-> > > > This looks like it's causing build problems, so let's drop it
-> > > > and I'll
-> > > respin. Again.
-> > > 
-> > > If you want I can just submit a patch in a couple hours to take
-> > > care
-> > > of most of this and a few other things I have found.??I was
-> > > already
-> > > working in the area as I have the GSO partial stuff and some code
-> > > to
-> > > add IPIP and SIT tunnel support for the PF and VF drivers.
-> > > 
-> > > - Alex
-> > Thanks for the offer. Just pushed my v2.
-> > -Mitch
-> Yeah I saw that.??I'll probably wait for Jeff to apply it then I will
-> rebase my patches and submit the stuff for IPIP and SIT offload
-> support.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+5e7344a36a87275cdf56b9a8622fddb785b8893b  ixgbe: Add support for SFPs with retimer
 
-I have applied Mitch's patch to dev-queue branch in my next-queue tree.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160401/2fe95d20/attachment.asc>
+elapsed time: 44m
+
+configs tested: 113
+
+i386                     randconfig-a0-201613
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                 randconfig-x010-201613
+x86_64                 randconfig-x011-201613
+x86_64                 randconfig-x018-201613
+x86_64                 randconfig-x019-201613
+x86_64                 randconfig-x012-201613
+x86_64                 randconfig-x013-201613
+x86_64                 randconfig-x016-201613
+x86_64                 randconfig-x014-201613
+x86_64                 randconfig-x015-201613
+x86_64                 randconfig-x017-201613
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                     randconfig-s0-201613
+i386                     randconfig-s1-201613
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201613
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201613
+i386                     randconfig-i1-201613
+x86_64                           allmodconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                              rhel_gcov
+i386                               tinyconfig
+i386                   randconfig-x013-201613
+i386                   randconfig-x012-201613
+i386                   randconfig-x019-201613
+i386                   randconfig-x015-201613
+i386                   randconfig-x018-201613
+i386                   randconfig-x011-201613
+i386                   randconfig-x010-201613
+i386                   randconfig-x016-201613
+i386                   randconfig-x017-201613
+i386                   randconfig-x014-201613
+i386                   randconfig-n0-04011139
+x86_64                                   rhel
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                 randconfig-x001-201613
+x86_64                 randconfig-x000-201613
+x86_64                 randconfig-x005-201613
+x86_64                 randconfig-x007-201613
+x86_64                 randconfig-x006-201613
+x86_64                 randconfig-x004-201613
+x86_64                 randconfig-x009-201613
+x86_64                 randconfig-x008-201613
+x86_64                 randconfig-x003-201613
+x86_64                 randconfig-x002-201613
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                   randconfig-r0-04010946
+i386                   randconfig-x000-201613
+i386                   randconfig-x003-201613
+i386                   randconfig-x009-201613
+i386                   randconfig-x004-201613
+i386                   randconfig-x005-201613
+i386                   randconfig-x002-201613
+i386                   randconfig-x006-201613
+i386                   randconfig-x007-201613
+i386                   randconfig-x001-201613
+i386                   randconfig-x008-201613
+
+Thanks,
+Fengguang
