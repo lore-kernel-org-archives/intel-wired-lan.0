@@ -1,166 +1,190 @@
 From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-Date: Fri,  1 Apr 2016 03:56:09 -0700
-Subject: [Intel-wired-lan] [v3 next PATCH S32 09/13] i40e: Move NVM variable
-	out of AQ struct
+Date: Fri,  1 Apr 2016 03:56:10 -0700
+Subject: [Intel-wired-lan] [v3 next PATCH S32 10/13] i40e: Add RSS
+	configuration to virtual channel
 In-Reply-To: <1459508173-22777-1-git-send-email-harshitha.ramamurthy@intel.com>
 References: <1459508173-22777-1-git-send-email-harshitha.ramamurthy@intel.com>
-Message-ID: <1459508173-22777-10-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <1459508173-22777-11-git-send-email-harshitha.ramamurthy@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Shannon Nelson <shannon.nelson@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-The NVM update status info should stay collected together, not
-spread across different structs.
+Add opcodes and structures to support RSS configuration by PF driver on
+behalf of the VF drivers. This reduces complexity in the VF driver and
+allows us to support future hardware designs without modifying the VF
+driver.
 
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-Change-ID: Ic16f9e9fd79945d865bb7226184c889884585025
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-ID: I8c75765c630eacb71f95967f1109a198542593ac
 ---
-Testing Hints :
-	Compile code and run an NVM update
+Testing Hints : Compile code and make sure
+there are no warnings. There's no actual code here.
 
- drivers/net/ethernet/intel/i40e/i40e_adminq.c   |  6 +++---
- drivers/net/ethernet/intel/i40e/i40e_adminq.h   |  1 -
- drivers/net/ethernet/intel/i40e/i40e_nvm.c      | 12 ++++++------
- drivers/net/ethernet/intel/i40e/i40e_type.h     |  1 +
- drivers/net/ethernet/intel/i40evf/i40e_adminq.h |  1 -
- drivers/net/ethernet/intel/i40evf/i40e_type.h   |  1 +
- 6 files changed, 11 insertions(+), 11 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl.h   | 45 +++++++++++++++++++++--
+ drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h | 45 +++++++++++++++++++++--
+ 2 files changed, 84 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-index df8e2fd..e8278e1 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-@@ -624,7 +624,7 @@ i40e_status i40e_init_adminq(struct i40e_hw *hw)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl.h
+index ab866cf..ac4559e 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl.h
+@@ -80,10 +80,15 @@ enum i40e_virtchnl_ops {
+ 	I40E_VIRTCHNL_OP_CONFIG_PROMISCUOUS_MODE = 14,
+ 	I40E_VIRTCHNL_OP_GET_STATS = 15,
+ 	I40E_VIRTCHNL_OP_FCOE = 16,
+-	I40E_VIRTCHNL_OP_EVENT = 17,
++	I40E_VIRTCHNL_OP_EVENT = 17, /* must ALWAYS be 17 */
+ 	I40E_VIRTCHNL_OP_IWARP = 20,
+ 	I40E_VIRTCHNL_OP_CONFIG_IWARP_IRQ_MAP = 21,
+ 	I40E_VIRTCHNL_OP_RELEASE_IWARP_IRQ_MAP = 22,
++	I40E_VIRTCHNL_OP_CONFIG_RSS_KEY = 23,
++	I40E_VIRTCHNL_OP_CONFIG_RSS_LUT = 24,
++	I40E_VIRTCHNL_OP_GET_RSS_HENA_CAPS = 25,
++	I40E_VIRTCHNL_OP_SET_RSS_HENA = 26,
++
+ };
  
- 	/* pre-emptive resource lock release */
- 	i40e_aq_release_resource(hw, I40E_NVM_RESOURCE_ID, 0, NULL);
--	hw->aq.nvm_release_on_done = false;
-+	hw->nvm_release_on_done = false;
- 	hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
+ /* Virtual channel message descriptor. This overlays the admin queue
+@@ -157,6 +162,7 @@ struct i40e_virtchnl_vsi_resource {
+ #define I40E_VIRTCHNL_VF_OFFLOAD_VLAN		0x00010000
+ #define I40E_VIRTCHNL_VF_OFFLOAD_RX_POLLING	0x00020000
+ #define I40E_VIRTCHNL_VF_OFFLOAD_RSS_PCTYPE_V2	0x00040000
++#define I40E_VIRTCHNL_VF_OFFLOAD_RSS_PF		0X00080000
  
- 	ret_code = i40e_aq_set_hmc_resource_profile(hw,
-@@ -1024,9 +1024,9 @@ i40e_status i40e_clean_arq_element(struct i40e_hw *hw,
- 	hw->aq.arq.next_to_use = ntu;
+ struct i40e_virtchnl_vf_resource {
+ 	u16 num_vsis;
+@@ -165,8 +171,8 @@ struct i40e_virtchnl_vf_resource {
+ 	u16 max_mtu;
  
- 	if (i40e_is_nvm_update_op(&e->desc)) {
--		if (hw->aq.nvm_release_on_done) {
-+		if (hw->nvm_release_on_done) {
- 			i40e_release_nvm(hw);
--			hw->aq.nvm_release_on_done = false;
-+			hw->nvm_release_on_done = false;
- 		}
+ 	u32 vf_offload_flags;
+-	u32 max_fcoe_contexts;
+-	u32 max_fcoe_filters;
++	u32 rss_key_size;
++	u32 rss_lut_size;
  
- 		switch (hw->nvmupd_state) {
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.h b/drivers/net/ethernet/intel/i40e/i40e_adminq.h
-index 12fbbdd..d92aad3 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.h
-@@ -97,7 +97,6 @@ struct i40e_adminq_info {
- 	u32 fw_build;                   /* firmware build number */
- 	u16 api_maj_ver;                /* api major version */
- 	u16 api_min_ver;                /* api minor version */
--	bool nvm_release_on_done;
+ 	struct i40e_virtchnl_vsi_resource vsi_res[1];
+ };
+@@ -325,6 +331,39 @@ struct i40e_virtchnl_promisc_info {
+  * PF replies with struct i40e_eth_stats in an external buffer.
+  */
  
- 	struct mutex asq_mutex; /* Send queue lock */
- 	struct mutex arq_mutex; /* Receive queue lock */
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-index 5730f80..1ae29ac 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-@@ -696,7 +696,7 @@ i40e_status i40e_nvmupd_command(struct i40e_hw *hw,
- 	i40e_debug(hw, I40E_DEBUG_NVM, "%s state %d nvm_release_on_hold %d cmd 0x%08x config 0x%08x offset 0x%08x data_size 0x%08x\n",
- 		   i40e_nvm_update_state_str[upd_cmd],
- 		   hw->nvmupd_state,
--		   hw->aq.nvm_release_on_done,
-+		   hw->nvm_release_on_done,
- 		   cmd->command, cmd->config, cmd->offset, cmd->data_size);
++/* I40E_VIRTCHNL_OP_CONFIG_RSS_KEY
++ * I40E_VIRTCHNL_OP_CONFIG_RSS_LUT
++ * VF sends these messages to configure RSS. Only supported if both PF
++ * and VF drivers set the I40E_VIRTCHNL_VF_OFFLOAD_RSS_PF bit during
++ * configuration negotiation. If this is the case, then the rss fields in
++ * the vf resource struct are valid.
++ * Both the key and LUT are initialized to 0 by the PF, meaning that
++ * RSS is effectively disabled until set up by the VF.
++ */
++struct i40e_virtchnl_rss_key {
++	u16 vsi_id;
++	u16 key_len;
++	u8 key[1];         /* RSS hash key, packed bytes */
++};
++
++struct i40e_virtchnl_rss_lut {
++	u16 vsi_id;
++	u16 lut_entries;
++	u8 lut[1];        /* RSS lookup table*/
++};
++
++/* I40E_VIRTCHNL_OP_GET_RSS_HENA_CAPS
++ * I40E_VIRTCHNL_OP_SET_RSS_HENA
++ * VF sends these messages to get and set the hash filter enable bits for RSS.
++ * By default, the PF sets these to all possible traffic types that the
++ * hardware supports. The VF can query this value if it wants to change the
++ * traffic types that are hashed by the hardware.
++ * Traffic types are defined in the i40e_filter_pctype enum in i40e_type.h
++ */
++struct i40e_virtchnl_rss_hena {
++	u64 hena;
++};
++
+ /* I40E_VIRTCHNL_OP_EVENT
+  * PF sends this message to inform the VF driver of events that may affect it.
+  * No direct response is expected from the VF, though it may generate other
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h b/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h
+index 3b9d203..ce0b3f7 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h
+@@ -80,7 +80,12 @@ enum i40e_virtchnl_ops {
+ 	I40E_VIRTCHNL_OP_CONFIG_PROMISCUOUS_MODE = 14,
+ 	I40E_VIRTCHNL_OP_GET_STATS = 15,
+ 	I40E_VIRTCHNL_OP_FCOE = 16,
+-	I40E_VIRTCHNL_OP_EVENT = 17,
++	I40E_VIRTCHNL_OP_EVENT = 17, /* must ALWAYS be 17 */
++	I40E_VIRTCHNL_OP_CONFIG_RSS_KEY = 23,
++	I40E_VIRTCHNL_OP_CONFIG_RSS_LUT = 24,
++	I40E_VIRTCHNL_OP_GET_RSS_HENA_CAPS = 25,
++	I40E_VIRTCHNL_OP_SET_RSS_HENA = 26,
++
+ };
  
- 	if (upd_cmd == I40E_NVMUPD_INVALID) {
-@@ -799,7 +799,7 @@ static i40e_status i40e_nvmupd_state_init(struct i40e_hw *hw,
- 			if (status) {
- 				i40e_release_nvm(hw);
- 			} else {
--				hw->aq.nvm_release_on_done = true;
-+				hw->nvm_release_on_done = true;
- 				hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
- 			}
- 		}
-@@ -815,7 +815,7 @@ static i40e_status i40e_nvmupd_state_init(struct i40e_hw *hw,
- 			if (status) {
- 				i40e_release_nvm(hw);
- 			} else {
--				hw->aq.nvm_release_on_done = true;
-+				hw->nvm_release_on_done = true;
- 				hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
- 			}
- 		}
-@@ -849,7 +849,7 @@ static i40e_status i40e_nvmupd_state_init(struct i40e_hw *hw,
- 				   -EIO;
- 				i40e_release_nvm(hw);
- 			} else {
--				hw->aq.nvm_release_on_done = true;
-+				hw->nvm_release_on_done = true;
- 				hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
- 			}
- 		}
-@@ -953,7 +953,7 @@ retry:
- 				   -EIO;
- 			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
- 		} else {
--			hw->aq.nvm_release_on_done = true;
-+			hw->nvm_release_on_done = true;
- 			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
- 		}
- 		break;
-@@ -980,7 +980,7 @@ retry:
- 				   -EIO;
- 			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
- 		} else {
--			hw->aq.nvm_release_on_done = true;
-+			hw->nvm_release_on_done = true;
- 			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
- 		}
- 		break;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-index 3335f9d..bf693580 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-@@ -549,6 +549,7 @@ struct i40e_hw {
- 	enum i40e_nvmupd_state nvmupd_state;
- 	struct i40e_aq_desc nvm_wb_desc;
- 	struct i40e_virt_mem nvm_buff;
-+	bool nvm_release_on_done;
+ /* Virtual channel message descriptor. This overlays the admin queue
+@@ -154,6 +159,7 @@ struct i40e_virtchnl_vsi_resource {
+ #define I40E_VIRTCHNL_VF_OFFLOAD_VLAN		0x00010000
+ #define I40E_VIRTCHNL_VF_OFFLOAD_RX_POLLING	0x00020000
+ #define I40E_VIRTCHNL_VF_OFFLOAD_RSS_PCTYPE_V2	0x00040000
++#define I40E_VIRTCHNL_VF_OFFLOAD_RSS_PF		0X00080000
  
- 	/* HMC info */
- 	struct i40e_hmc_info hmc; /* HMC info struct */
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
-index a3eae5d..1f9b3b5 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
-@@ -97,7 +97,6 @@ struct i40e_adminq_info {
- 	u32 fw_build;                   /* firmware build number */
- 	u16 api_maj_ver;                /* api major version */
- 	u16 api_min_ver;                /* api minor version */
--	bool nvm_release_on_done;
+ struct i40e_virtchnl_vf_resource {
+ 	u16 num_vsis;
+@@ -162,8 +168,8 @@ struct i40e_virtchnl_vf_resource {
+ 	u16 max_mtu;
  
- 	struct mutex asq_mutex; /* Send queue lock */
- 	struct mutex arq_mutex; /* Receive queue lock */
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-index 301fe2b..d68e017 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-@@ -522,6 +522,7 @@ struct i40e_hw {
- 	enum i40e_nvmupd_state nvmupd_state;
- 	struct i40e_aq_desc nvm_wb_desc;
- 	struct i40e_virt_mem nvm_buff;
-+	bool nvm_release_on_done;
+ 	u32 vf_offload_flags;
+-	u32 max_fcoe_contexts;
+-	u32 max_fcoe_filters;
++	u32 rss_key_size;
++	u32 rss_lut_size;
  
- 	/* HMC info */
- 	struct i40e_hmc_info hmc; /* HMC info struct */
+ 	struct i40e_virtchnl_vsi_resource vsi_res[1];
+ };
+@@ -322,6 +328,39 @@ struct i40e_virtchnl_promisc_info {
+  * PF replies with struct i40e_eth_stats in an external buffer.
+  */
+ 
++/* I40E_VIRTCHNL_OP_CONFIG_RSS_KEY
++ * I40E_VIRTCHNL_OP_CONFIG_RSS_LUT
++ * VF sends these messages to configure RSS. Only supported if both PF
++ * and VF drivers set the I40E_VIRTCHNL_VF_OFFLOAD_RSS_PF bit during
++ * configuration negotiation. If this is the case, then the rss fields in
++ * the vf resource struct are valid.
++ * Both the key and LUT are initialized to 0 by the PF, meaning that
++ * RSS is effectively disabled until set up by the VF.
++ */
++struct i40e_virtchnl_rss_key {
++	u16 vsi_id;
++	u16 key_len;
++	u8 key[1];         /* RSS hash key, packed bytes */
++};
++
++struct i40e_virtchnl_rss_lut {
++	u16 vsi_id;
++	u16 lut_entries;
++	u8 lut[1];        /* RSS lookup table*/
++};
++
++/* I40E_VIRTCHNL_OP_GET_RSS_HENA_CAPS
++ * I40E_VIRTCHNL_OP_SET_RSS_HENA
++ * VF sends these messages to get and set the hash filter enable bits for RSS.
++ * By default, the PF sets these to all possible traffic types that the
++ * hardware supports. The VF can query this value if it wants to change the
++ * traffic types that are hashed by the hardware.
++ * Traffic types are defined in the i40e_filter_pctype enum in i40e_type.h
++ */
++struct i40e_virtchnl_rss_hena {
++	u64 hena;
++};
++
+ /* I40E_VIRTCHNL_OP_EVENT
+  * PF sends this message to inform the VF driver of events that may affect it.
+  * No direct response is expected from the VF, though it may generate other
 -- 
 2.4.3
 
