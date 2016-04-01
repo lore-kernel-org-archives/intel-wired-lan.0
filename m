@@ -1,45 +1,134 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri,  1 Apr 2016 16:17:39 -0700
-Subject: [Intel-wired-lan] [PATCH v1 9/9] fm10k: Reset multicast mode when
-	deleting lport
-In-Reply-To: <1459552659-22959-1-git-send-email-jacob.e.keller@intel.com>
-References: <1459552659-22959-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1459552659-22959-10-git-send-email-jacob.e.keller@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 02 Apr 2016 07:28:52 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ 39cd5f713211e16fad1a83d77a1acafab29a924d BUILD SUCCESS
+Message-ID: <56ff0434.3ksUn0IO2WlX/h8o%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+39cd5f713211e16fad1a83d77a1acafab29a924d  fm10k: fix multi-bit VLAN update requests from VF
 
-Deleting lport when multicast mode is configured to
-FM10K_XCAST_MODE_ALLMULTI or FM10K_XCAST_MODE_PROMISC will result in
-generating orphaned multicast-group entries in the switch manager.
-Before deleting the lport, reset multicast mode to FM10K_XCAST_MODE_NONE
-to flush out these multicast-group entries.
+elapsed time: 61m
 
-Signed-off-by: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/fm10k/fm10k_pf.c | 4 ++++
- 1 file changed, 4 insertions(+)
+configs tested: 113
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-index 88d5acf484d0..2105cb8d31cc 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-@@ -488,6 +488,10 @@ static s32 fm10k_update_lport_state_pf(struct fm10k_hw *hw, u16 glort,
- 	if (!fm10k_glort_valid_pf(hw, glort))
- 		return FM10K_ERR_PARAM;
- 
-+	/* reset multicast mode if deleting lport */
-+	if (!enable)
-+		fm10k_update_xcast_mode_pf(hw, glort, FM10K_XCAST_MODE_NONE);
-+
- 	/* construct the lport message from the 2 pieces of data we have */
- 	lport_msg = ((u32)count << 16) | glort;
- 
--- 
-2.8.0.rc1.177.g5628860
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201613
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x010-201613
+x86_64                 randconfig-x011-201613
+x86_64                 randconfig-x018-201613
+x86_64                 randconfig-x019-201613
+x86_64                 randconfig-x012-201613
+x86_64                 randconfig-x013-201613
+x86_64                 randconfig-x016-201613
+x86_64                 randconfig-x014-201613
+x86_64                 randconfig-x015-201613
+x86_64                 randconfig-x017-201613
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                     randconfig-s0-201613
+i386                     randconfig-s1-201613
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201613
+i386                     randconfig-i0-201613
+i386                     randconfig-i1-201613
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                              rhel_gcov
+i386                   randconfig-x013-201613
+i386                   randconfig-x012-201613
+i386                   randconfig-x019-201613
+i386                   randconfig-x015-201613
+i386                   randconfig-x018-201613
+i386                   randconfig-x011-201613
+i386                   randconfig-x010-201613
+i386                   randconfig-x016-201613
+i386                   randconfig-x017-201613
+i386                   randconfig-x014-201613
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-n0-04011139
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+x86_64                 randconfig-x001-201613
+x86_64                 randconfig-x000-201613
+x86_64                 randconfig-x005-201613
+x86_64                 randconfig-x007-201613
+x86_64                 randconfig-x006-201613
+x86_64                 randconfig-x004-201613
+x86_64                 randconfig-x009-201613
+x86_64                 randconfig-x008-201613
+x86_64                 randconfig-x003-201613
+x86_64                 randconfig-x002-201613
+x86_64                                    lkp
+x86_64                                   rhel
+i386                   randconfig-r0-04010946
+i386                   randconfig-x000-201613
+i386                   randconfig-x003-201613
+i386                   randconfig-x009-201613
+i386                   randconfig-x004-201613
+i386                   randconfig-x005-201613
+i386                   randconfig-x002-201613
+i386                   randconfig-x006-201613
+i386                   randconfig-x007-201613
+i386                   randconfig-x001-201613
+i386                   randconfig-x008-201613
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
 
+Thanks,
+Fengguang
