@@ -1,140 +1,77 @@
 From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Fri, 01 Apr 2016 12:18:14 -0700
-Subject: [Intel-wired-lan] [PATCH V5 04/11] ixgbe: Use new methods for PHY
-	access
+Date: Fri, 01 Apr 2016 12:18:20 -0700
+Subject: [Intel-wired-lan] [PATCH V5 05/11] ixgbe: Read and set instance id
 In-Reply-To: <20160401191701.120975.34684.stgit@mdrustad-wks.jf.intel.com>
 References: <20160401191701.120975.34684.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <20160401191814.120975.37572.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <20160401191819.120975.51167.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Now x550em_a devices will use a new method for PHY access that will
-get the firmware token for each access.
+Read the instance number from EEPROM and save it for later use.
 
 Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 ---
-Changes in V4:
-- This is a complete replacement of what was the 4th patch in the series
-- x550em_a requires a new phy access method, so this patch implements it
-Changes in V5:
-- Delete trailing space from a comment
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   67 ++++++++++++++++++++++++-
- 1 file changed, 64 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |    8 ++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h   |    5 +++++
+ 2 files changed, 13 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index ba161b5077eb..ad5a2d3c42ef 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -2548,6 +2548,57 @@ static void ixgbe_release_swfw_sync_x550em_a(struct ixgbe_hw *hw, u32 mask)
- 		ixgbe_release_swfw_sync_X540(hw, hmask);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+index 76080310fc6b..833567cacda4 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+@@ -681,6 +681,7 @@ s32 ixgbe_get_bus_info_generic(struct ixgbe_hw *hw)
+ void ixgbe_set_lan_id_multi_port_pcie(struct ixgbe_hw *hw)
+ {
+ 	struct ixgbe_bus_info *bus = &hw->bus;
++	u16 ee_ctrl_4;
+ 	u32 reg;
+ 
+ 	reg = IXGBE_READ_REG(hw, IXGBE_STATUS);
+@@ -691,6 +692,13 @@ void ixgbe_set_lan_id_multi_port_pcie(struct ixgbe_hw *hw)
+ 	reg = IXGBE_READ_REG(hw, IXGBE_FACTPS(hw));
+ 	if (reg & IXGBE_FACTPS_LFS)
+ 		bus->func ^= 0x1;
++
++	/* Get MAC instance from EEPROM for configuring CS4227 */
++	if (hw->device_id == IXGBE_DEV_ID_X550EM_A_SFP) {
++		hw->eeprom.ops.read(hw, IXGBE_EEPROM_CTRL_4, &ee_ctrl_4);
++		bus->instance_id = (ee_ctrl_4 & IXGBE_EE_CTRL_4_INST_ID) >>
++				   IXGBE_EE_CTRL_4_INST_ID_SHIFT;
++	}
  }
  
-+/**
-+ * ixgbe_read_phy_reg_x550a  - Reads specified PHY register
-+ * @hw: pointer to hardware structure
-+ * @reg_addr: 32 bit address of PHY register to read
-+ * @phy_data: Pointer to read data from PHY register
-+ *
-+ * Reads a value from a specified PHY register using the SWFW lock and PHY
-+ * Token. The PHY Token is needed since the MDIO is shared between to MAC
-+ * instances.
-+ */
-+static s32 ixgbe_read_phy_reg_x550a(struct ixgbe_hw *hw, u32 reg_addr,
-+				    u32 device_type, u16 *phy_data)
-+{
-+	u32 mask = hw->phy.phy_semaphore_mask | IXGBE_GSSR_TOKEN_SM;
-+	s32 status;
-+
-+	if (hw->mac.ops.acquire_swfw_sync(hw, mask))
-+		return IXGBE_ERR_SWFW_SYNC;
-+
-+	status = hw->phy.ops.read_reg_mdi(hw, reg_addr, device_type, phy_data);
-+
-+	hw->mac.ops.release_swfw_sync(hw, mask);
-+
-+	return status;
-+}
-+
-+/**
-+ * ixgbe_write_phy_reg_x550a - Writes specified PHY register
-+ * @hw: pointer to hardware structure
-+ * @reg_addr: 32 bit PHY register to write
-+ * @device_type: 5 bit device type
-+ * @phy_data: Data to write to the PHY register
-+ *
-+ * Writes a value to specified PHY register using the SWFW lock and PHY Token.
-+ * The PHY Token is needed since the MDIO is shared between to MAC instances.
-+ */
-+static s32 ixgbe_write_phy_reg_x550a(struct ixgbe_hw *hw, u32 reg_addr,
-+				     u32 device_type, u16 phy_data)
-+{
-+	u32 mask = hw->phy.phy_semaphore_mask | IXGBE_GSSR_TOKEN_SM;
-+	s32 status;
-+
-+	if (hw->mac.ops.acquire_swfw_sync(hw, mask))
-+		return IXGBE_ERR_SWFW_SYNC;
-+
-+	status = ixgbe_write_phy_reg_mdi(hw, reg_addr, device_type, phy_data);
-+	hw->mac.ops.release_swfw_sync(hw, mask);
-+
-+	return status;
-+}
-+
- #define X550_COMMON_MAC \
- 	.init_hw			= &ixgbe_init_hw_generic, \
- 	.start_hw			= &ixgbe_start_hw_X540, \
-@@ -2673,8 +2724,6 @@ static const struct ixgbe_eeprom_operations eeprom_ops_X550EM_x = {
- 	.read_i2c_sff8472	= &ixgbe_read_i2c_sff8472_generic, \
- 	.read_i2c_eeprom	= &ixgbe_read_i2c_eeprom_generic, \
- 	.write_i2c_eeprom	= &ixgbe_write_i2c_eeprom_generic, \
--	.read_reg		= &ixgbe_read_phy_reg_generic, \
--	.write_reg		= &ixgbe_write_phy_reg_generic, \
- 	.setup_link		= &ixgbe_setup_phy_link_generic, \
- 	.set_phy_power		= NULL, \
- 	.check_overtemp		= &ixgbe_tn_check_overtemp, \
-@@ -2684,12 +2733,16 @@ static const struct ixgbe_phy_operations phy_ops_X550 = {
- 	X550_COMMON_PHY
- 	.init			= NULL,
- 	.identify		= &ixgbe_identify_phy_generic,
-+	.read_reg		= &ixgbe_read_phy_reg_generic,
-+	.write_reg		= &ixgbe_write_phy_reg_generic,
+ /**
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index de02702e44c6..ec67cf06066c 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -81,6 +81,7 @@
+ #define IXGBE_DEV_ID_X550EM_X_10G_T	0x15AD
+ #define IXGBE_DEV_ID_X550EM_X_1G_T	0x15AE
+ #define IXGBE_DEV_ID_X550EM_A_SFP_N	0x15C4
++#define IXGBE_DEV_ID_X550EM_A_SFP	0x15CE
+ 
+ /* VF Device IDs */
+ #define IXGBE_DEV_ID_X550_VF_HV	0x1564
+@@ -1999,6 +2000,9 @@ enum {
+ #define IXGBE_PBANUM_PTR_GUARD		0xFAFA
+ #define IXGBE_EEPROM_CHECKSUM		0x3F
+ #define IXGBE_EEPROM_SUM		0xBABA
++#define IXGBE_EEPROM_CTRL_4		0x45
++#define IXGBE_EE_CTRL_4_INST_ID		0x10
++#define IXGBE_EE_CTRL_4_INST_ID_SHIFT	4
+ #define IXGBE_PCIE_ANALOG_PTR		0x03
+ #define IXGBE_ATLAS0_CONFIG_PTR		0x04
+ #define IXGBE_PHY_PTR			0x04
+@@ -3174,6 +3178,7 @@ struct ixgbe_bus_info {
+ 
+ 	u8 func;
+ 	u8 lan_id;
++	u8 instance_id;
  };
  
- static const struct ixgbe_phy_operations phy_ops_X550EM_x = {
- 	X550_COMMON_PHY
- 	.init			= &ixgbe_init_phy_ops_X550em,
- 	.identify		= &ixgbe_identify_phy_x550em,
-+	.read_reg		= &ixgbe_read_phy_reg_generic,
-+	.write_reg		= &ixgbe_write_phy_reg_generic,
- 	.read_i2c_combined	= &ixgbe_read_i2c_combined_generic,
- 	.write_i2c_combined	= &ixgbe_write_i2c_combined_generic,
- 	.read_i2c_combined_unlocked = &ixgbe_read_i2c_combined_generic_unlocked,
-@@ -2697,6 +2750,14 @@ static const struct ixgbe_phy_operations phy_ops_X550EM_x = {
- 				     &ixgbe_write_i2c_combined_generic_unlocked,
- };
- 
-+static const struct ixgbe_phy_operations phy_ops_x550em_a = {
-+	X550_COMMON_PHY
-+	.init			= &ixgbe_init_phy_ops_X550em,
-+	.identify		= &ixgbe_identify_phy_x550em,
-+	.read_reg		= &ixgbe_read_phy_reg_x550a,
-+	.write_reg		= &ixgbe_write_phy_reg_x550a,
-+};
-+
- static const u32 ixgbe_mvals_X550[IXGBE_MVALS_IDX_LIMIT] = {
- 	IXGBE_MVALS_INIT(X550)
- };
-@@ -2734,7 +2795,7 @@ const struct ixgbe_info ixgbe_x550em_a_info = {
- 	.get_invariants		= &ixgbe_get_invariants_X550_x,
- 	.mac_ops		= &mac_ops_x550em_a,
- 	.eeprom_ops		= &eeprom_ops_X550EM_x,
--	.phy_ops		= &phy_ops_X550EM_x,
-+	.phy_ops		= &phy_ops_x550em_a,
- 	.mbx_ops		= &mbx_ops_generic,
- 	.mvals			= ixgbe_mvals_x550em_a,
- };
+ /* Flow control parameters */
 
