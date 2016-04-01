@@ -1,45 +1,54 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri,  1 Apr 2016 16:17:30 -0700
-Subject: [Intel-wired-lan] [PATCH v1 0/9] sync upstream fm10k driver
-Message-ID: <1459552659-22959-1-git-send-email-jacob.e.keller@intel.com>
+Date: Fri,  1 Apr 2016 16:17:34 -0700
+Subject: [Intel-wired-lan] [PATCH v1 4/9] fm10k: do not disable PCI device
+	in fm10k_io_error_detected
+In-Reply-To: <1459552659-22959-1-git-send-email-jacob.e.keller@intel.com>
+References: <1459552659-22959-1-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1459552659-22959-5-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This series contains several fixes and nearly finishes the work of
-syncing upstream and out-of-tree fm10k drivers.
+fm10k_io_error_detected() does not need to call pci_disable_device(). In
+the cases where the reset needs to occur, the stack flow will result in
+calling fm10k_remove() which already disables the PCI device. If we
+leave the pci_disable_device(), we result in a warning about disabling
+an already disabled device.
 
-Jacob Keller (7):
-  fm10k: drop 1588 support
-  fm10k: correctly handle LPORT_MAP error
-  fm10k: do not disable PCI device in fm10k_io_error_detected
-  fm10k: fix documentation of fm10k_tlv_parse_attr
-  fm10k: use 8bit notation instead of 10bit notation for diagram
-  fm10k: use different name than FM10K_VLAN_CLEAR for override bit
-  fm10k: update comment regarding reserved bits check
+Many PCI drivers do call pci_disable_device() in their .error_detected()
+routines, but it does not appear to be required. In addition, these
+drivers have a check "is_pci_enabled()" call in their remove routines,
+which is how they chose to handle the duplicate device disable.
 
-Ngai-Mint Kwan (2):
-  fm10k: Fix multicast mode sync issues
-  fm10k: Reset multicast mode when deleting lport
+This seems incorrect, since the PCI device structure is reference
+counted. It is very possible that the reference count for the PCI device
+could be greater than 1. In this case, you would remove the PCI device
+within the error_detected routine, reducing count to 1, then remove it
+again in the remove function, reducing it to zero. This would result in
+yet another disable somewhere else failing. Thus, we shouldn't be using
+is_pci_enabled() to check for this issue. Instead, just remove the
+extraneous pci_device_disable() found within the error_detected routine.
 
- drivers/net/ethernet/intel/fm10k/Makefile        |   3 +-
- drivers/net/ethernet/intel/fm10k/fm10k.h         |  35 +-
- drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c |  30 +-
- drivers/net/ethernet/intel/fm10k/fm10k_main.c    |  22 +-
- drivers/net/ethernet/intel/fm10k/fm10k_netdev.c  |  42 +--
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c     | 143 ++-----
- drivers/net/ethernet/intel/fm10k/fm10k_pf.c      | 119 +-----
- drivers/net/ethernet/intel/fm10k/fm10k_pf.h      |  19 +-
- drivers/net/ethernet/intel/fm10k/fm10k_ptp.c     | 462 -----------------------
- drivers/net/ethernet/intel/fm10k/fm10k_tlv.c     |  18 +-
- drivers/net/ethernet/intel/fm10k/fm10k_type.h    |  18 +-
- drivers/net/ethernet/intel/fm10k/fm10k_vf.c      |  61 +--
- drivers/net/ethernet/intel/fm10k/fm10k_vf.h      |  12 +-
- 13 files changed, 78 insertions(+), 906 deletions(-)
- delete mode 100644 drivers/net/ethernet/intel/fm10k/fm10k_ptp.c
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 2 --
+ 1 file changed, 2 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index 9055681cf34d..1d833782d917 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -2207,8 +2207,6 @@ static pci_ers_result_t fm10k_io_error_detected(struct pci_dev *pdev,
+ 
+ 	rtnl_unlock();
+ 
+-	pci_disable_device(pdev);
+-
+ 	/* Request a slot reset. */
+ 	return PCI_ERS_RESULT_NEED_RESET;
+ }
 -- 
 2.8.0.rc1.177.g5628860
 
