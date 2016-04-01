@@ -1,54 +1,96 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri,  1 Apr 2016 16:17:34 -0700
-Subject: [Intel-wired-lan] [PATCH v1 4/9] fm10k: do not disable PCI device
-	in fm10k_io_error_detected
+Date: Fri,  1 Apr 2016 16:17:32 -0700
+Subject: [Intel-wired-lan] [PATCH v1 2/9] fm10k: Fix multicast mode sync
+	issues
 In-Reply-To: <1459552659-22959-1-git-send-email-jacob.e.keller@intel.com>
 References: <1459552659-22959-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1459552659-22959-5-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1459552659-22959-3-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-fm10k_io_error_detected() does not need to call pci_disable_device(). In
-the cases where the reset needs to occur, the stack flow will result in
-calling fm10k_remove() which already disables the PCI device. If we
-leave the pci_disable_device(), we result in a warning about disabling
-an already disabled device.
+From: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
 
-Many PCI drivers do call pci_disable_device() in their .error_detected()
-routines, but it does not appear to be required. In addition, these
-drivers have a check "is_pci_enabled()" call in their remove routines,
-which is how they chose to handle the duplicate device disable.
+Multicast mode checking is no longer a requirement to perform unicast
+and multicast address syncs. Specifically, a device operating in
+promiscuous and/or all multicast mode is not excluded. The issue occurs
+when the netdev is pre-configured to either multicast mode and is
+enabled for the first time. The multicast-group table in the Switch
+Manager will be missing obvious multicast entries associated to this
+netdev.
 
-This seems incorrect, since the PCI device structure is reference
-counted. It is very possible that the reference count for the PCI device
-could be greater than 1. In this case, you would remove the PCI device
-within the error_detected routine, reducing count to 1, then remove it
-again in the remove function, reducing it to zero. This would result in
-yet another disable somewhere else failing. Thus, we shouldn't be using
-is_pci_enabled() to check for this issue. Instead, just remove the
-extraneous pci_device_disable() found within the error_detected routine.
+Changes were also made to disallow unicast and multicast syncs with
+VLAN 0. The Switch Manager considers VLAN 0 to be an invalid entry.
+Requests with VLAN 0 by the netdev are only generated when the driver is
+freshly installed and the default VID is not set.
 
+Signed-off-by: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 2 --
- 1 file changed, 2 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 20 +++++++-------------
+ 1 file changed, 7 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index 9055681cf34d..1d833782d917 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -2207,8 +2207,6 @@ static pci_ers_result_t fm10k_io_error_detected(struct pci_dev *pdev,
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+index 32778dda8c12..bf229d54c20c 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+@@ -877,7 +877,7 @@ static int __fm10k_uc_sync(struct net_device *dev,
+ 		return -EADDRNOTAVAIL;
  
- 	rtnl_unlock();
+ 	/* update table with current entries */
+-	for (vid = hw->mac.default_vid ? fm10k_find_next_vlan(interface, 0) : 0;
++	for (vid = hw->mac.default_vid ? fm10k_find_next_vlan(interface, 0) : 1;
+ 	     vid < VLAN_N_VID;
+ 	     vid = fm10k_find_next_vlan(interface, vid)) {
+ 		err = hw->mac.ops.update_uc_addr(hw, glort, addr,
+@@ -940,7 +940,7 @@ static int __fm10k_mc_sync(struct net_device *dev,
+ 	u16 vid, glort = interface->glort;
  
--	pci_disable_device(pdev);
--
- 	/* Request a slot reset. */
- 	return PCI_ERS_RESULT_NEED_RESET;
+ 	/* update table with current entries */
+-	for (vid = hw->mac.default_vid ? fm10k_find_next_vlan(interface, 0) : 0;
++	for (vid = hw->mac.default_vid ? fm10k_find_next_vlan(interface, 0) : 1;
+ 	     vid < VLAN_N_VID;
+ 	     vid = fm10k_find_next_vlan(interface, vid)) {
+ 		hw->mac.ops.update_mc_addr(hw, glort, addr, vid, sync);
+@@ -995,11 +995,8 @@ static void fm10k_set_rx_mode(struct net_device *dev)
+ 	}
+ 
+ 	/* synchronize all of the addresses */
+-	if (xcast_mode != FM10K_XCAST_MODE_PROMISC) {
+-		__dev_uc_sync(dev, fm10k_uc_sync, fm10k_uc_unsync);
+-		if (xcast_mode != FM10K_XCAST_MODE_ALLMULTI)
+-			__dev_mc_sync(dev, fm10k_mc_sync, fm10k_mc_unsync);
+-	}
++	__dev_uc_sync(dev, fm10k_uc_sync, fm10k_uc_unsync);
++	__dev_mc_sync(dev, fm10k_mc_sync, fm10k_mc_unsync);
+ 
+ 	fm10k_mbx_unlock(interface);
  }
+@@ -1037,7 +1034,7 @@ void fm10k_restore_rx_state(struct fm10k_intfc *interface)
+ 	hw->mac.ops.update_vlan(hw, 0, 0, true);
+ 
+ 	/* update table with current entries */
+-	for (vid = hw->mac.default_vid ? fm10k_find_next_vlan(interface, 0) : 0;
++	for (vid = hw->mac.default_vid ? fm10k_find_next_vlan(interface, 0) : 1;
+ 	     vid < VLAN_N_VID;
+ 	     vid = fm10k_find_next_vlan(interface, vid)) {
+ 		hw->mac.ops.update_vlan(hw, vid, 0, true);
+@@ -1049,11 +1046,8 @@ void fm10k_restore_rx_state(struct fm10k_intfc *interface)
+ 	hw->mac.ops.update_xcast_mode(hw, glort, xcast_mode);
+ 
+ 	/* synchronize all of the addresses */
+-	if (xcast_mode != FM10K_XCAST_MODE_PROMISC) {
+-		__dev_uc_sync(netdev, fm10k_uc_sync, fm10k_uc_unsync);
+-		if (xcast_mode != FM10K_XCAST_MODE_ALLMULTI)
+-			__dev_mc_sync(netdev, fm10k_mc_sync, fm10k_mc_unsync);
+-	}
++	__dev_uc_sync(netdev, fm10k_uc_sync, fm10k_uc_unsync);
++	__dev_mc_sync(netdev, fm10k_mc_sync, fm10k_mc_unsync);
+ 
+ 	fm10k_mbx_unlock(interface);
+ 
 -- 
 2.8.0.rc1.177.g5628860
 
