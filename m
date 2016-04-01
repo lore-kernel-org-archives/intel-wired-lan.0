@@ -1,145 +1,166 @@
 From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-Date: Fri,  1 Apr 2016 03:56:06 -0700
-Subject: [Intel-wired-lan] [v3 next PATCH S32 06/13] i40e/i40evf: Faster RX
-	via avoiding fcoe
+Date: Fri,  1 Apr 2016 03:56:09 -0700
+Subject: [Intel-wired-lan] [v3 next PATCH S32 09/13] i40e: Move NVM variable
+	out of AQ struct
 In-Reply-To: <1459508173-22777-1-git-send-email-harshitha.ramamurthy@intel.com>
 References: <1459508173-22777-1-git-send-email-harshitha.ramamurthy@intel.com>
-Message-ID: <1459508173-22777-7-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <1459508173-22777-10-git-send-email-harshitha.ramamurthy@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Shannon Nelson <shannon.nelson@intel.com>
 
-As it turns out, calling into other files from hot path hurts
-performance a lot.  In this case the majority of the time we
-call "check fcoe" and the packet is *not* fcoe, but this call
-was taking 5% of our total cycles spent on receive.
+The NVM update status info should stay collected together, not
+spread across different structs.
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Change-ID: I080552c26e7060bc7b78504dc2763f6f0b3d8c76
+Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+Change-ID: Ic16f9e9fd79945d865bb7226184c889884585025
 ---
-Testing Hints: Make sure RX still works, and that
-perf top doesn't show i40e_handle_fcoe_status.
+Testing Hints :
+	Compile code and run an NVM update
 
- drivers/net/ethernet/intel/i40e/i40e_fcoe.c   | 12 +-----------
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   |  8 ++++++--
- drivers/net/ethernet/intel/i40e/i40e_txrx.h   | 10 ++++++++++
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c |  4 +++-
- drivers/net/ethernet/intel/i40evf/i40e_txrx.h | 10 ++++++++++
- 5 files changed, 30 insertions(+), 14 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c   |  6 +++---
+ drivers/net/ethernet/intel/i40e/i40e_adminq.h   |  1 -
+ drivers/net/ethernet/intel/i40e/i40e_nvm.c      | 12 ++++++------
+ drivers/net/ethernet/intel/i40e/i40e_type.h     |  1 +
+ drivers/net/ethernet/intel/i40evf/i40e_adminq.h |  1 -
+ drivers/net/ethernet/intel/i40evf/i40e_type.h   |  1 +
+ 6 files changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_fcoe.c b/drivers/net/ethernet/intel/i40e/i40e_fcoe.c
-index 92d2208..58e6c15 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_fcoe.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_fcoe.c
-@@ -1,7 +1,7 @@
- /*******************************************************************************
-  *
-  * Intel Ethernet Controller XL710 Family Linux Driver
-- * Copyright(c) 2013 - 2015 Intel Corporation.
-+ * Copyright(c) 2013 - 2016 Intel Corporation.
-  *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-@@ -38,16 +38,6 @@
- #include "i40e_fcoe.h"
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+index df8e2fd..e8278e1 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
+@@ -624,7 +624,7 @@ i40e_status i40e_init_adminq(struct i40e_hw *hw)
  
- /**
-- * i40e_rx_is_fcoe - returns true if the rx packet type is FCoE
-- * @ptype: the packet type field from rx descriptor write-back
-- **/
--static inline bool i40e_rx_is_fcoe(u16 ptype)
--{
--	return (ptype >= I40E_RX_PTYPE_L2_FCOE_PAY3) &&
--	       (ptype <= I40E_RX_PTYPE_L2_FCOE_VFT_FCOTHER);
--}
--
--/**
-  * i40e_fcoe_sof_is_class2 - returns true if this is a FC Class 2 SOF
-  * @sof: the FCoE start of frame delimiter
-  **/
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index f4e4d3d..29ffed2 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1703,7 +1703,9 @@ static int i40e_clean_rx_irq_ps(struct i40e_ring *rx_ring, const int budget)
- 			 ? le16_to_cpu(rx_desc->wb.qword0.lo_dword.l2tag1)
- 			 : 0;
- #ifdef I40E_FCOE
--		if (!i40e_fcoe_handle_offload(rx_ring, rx_desc, skb)) {
-+		if (unlikely(
-+		    i40e_rx_is_fcoe(rx_ptype) &&
-+		    !i40e_fcoe_handle_offload(rx_ring, rx_desc, skb))) {
- 			dev_kfree_skb_any(skb);
- 			continue;
- 		}
-@@ -1834,7 +1836,9 @@ static int i40e_clean_rx_irq_1buf(struct i40e_ring *rx_ring, int budget)
- 			 ? le16_to_cpu(rx_desc->wb.qword0.lo_dword.l2tag1)
- 			 : 0;
- #ifdef I40E_FCOE
--		if (!i40e_fcoe_handle_offload(rx_ring, rx_desc, skb)) {
-+		if (unlikely(
-+		    i40e_rx_is_fcoe(rx_ptype) &&
-+		    !i40e_fcoe_handle_offload(rx_ring, rx_desc, skb))) {
- 			dev_kfree_skb_any(skb);
- 			continue;
- 		}
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-index 681e9bc..4b08d47 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-@@ -448,4 +448,14 @@ static inline bool i40e_chk_linearize(struct sk_buff *skb, int count)
+ 	/* pre-emptive resource lock release */
+ 	i40e_aq_release_resource(hw, I40E_NVM_RESOURCE_ID, 0, NULL);
+-	hw->aq.nvm_release_on_done = false;
++	hw->nvm_release_on_done = false;
+ 	hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
  
- 	return __i40e_chk_linearize(skb);
- }
-+
-+/**
-+ * i40e_rx_is_fcoe - returns true if the rx packet type is FCoE
-+ * @ptype: the packet type field from rx descriptor write-back
-+ **/
-+static inline bool i40e_rx_is_fcoe(u16 ptype)
-+{
-+	return (ptype >= I40E_RX_PTYPE_L2_FCOE_PAY3) &&
-+	       (ptype <= I40E_RX_PTYPE_L2_FCOE_VFT_FCOTHER);
-+}
- #endif /* _I40E_TXRX_H_ */
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index ec1f447..0c912a4 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -1160,7 +1160,9 @@ static int i40e_clean_rx_irq_ps(struct i40e_ring *rx_ring, const int budget)
- 			 ? le16_to_cpu(rx_desc->wb.qword0.lo_dword.l2tag1)
- 			 : 0;
- #ifdef I40E_FCOE
--		if (!i40e_fcoe_handle_offload(rx_ring, rx_desc, skb)) {
-+		if (unlikely(
-+		    i40e_rx_is_fcoe(rx_ptype) &&
-+		    !i40e_fcoe_handle_offload(rx_ring, rx_desc, skb))) {
- 			dev_kfree_skb_any(skb);
- 			continue;
- 		}
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-index 6cf1169..92deb97 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-@@ -430,4 +430,14 @@ static inline bool i40e_chk_linearize(struct sk_buff *skb, int count)
+ 	ret_code = i40e_aq_set_hmc_resource_profile(hw,
+@@ -1024,9 +1024,9 @@ i40e_status i40e_clean_arq_element(struct i40e_hw *hw,
+ 	hw->aq.arq.next_to_use = ntu;
  
- 	return __i40evf_chk_linearize(skb);
- }
-+
-+/**
-+ * i40e_rx_is_fcoe - returns true if the rx packet type is FCoE
-+ * @ptype: the packet type field from rx descriptor write-back
-+ **/
-+static inline bool i40e_rx_is_fcoe(u16 ptype)
-+{
-+	return (ptype >= I40E_RX_PTYPE_L2_FCOE_PAY3) &&
-+	       (ptype <= I40E_RX_PTYPE_L2_FCOE_VFT_FCOTHER);
-+}
- #endif /* _I40E_TXRX_H_ */
+ 	if (i40e_is_nvm_update_op(&e->desc)) {
+-		if (hw->aq.nvm_release_on_done) {
++		if (hw->nvm_release_on_done) {
+ 			i40e_release_nvm(hw);
+-			hw->aq.nvm_release_on_done = false;
++			hw->nvm_release_on_done = false;
+ 		}
+ 
+ 		switch (hw->nvmupd_state) {
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.h b/drivers/net/ethernet/intel/i40e/i40e_adminq.h
+index 12fbbdd..d92aad3 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.h
+@@ -97,7 +97,6 @@ struct i40e_adminq_info {
+ 	u32 fw_build;                   /* firmware build number */
+ 	u16 api_maj_ver;                /* api major version */
+ 	u16 api_min_ver;                /* api minor version */
+-	bool nvm_release_on_done;
+ 
+ 	struct mutex asq_mutex; /* Send queue lock */
+ 	struct mutex arq_mutex; /* Receive queue lock */
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
+index 5730f80..1ae29ac 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
+@@ -696,7 +696,7 @@ i40e_status i40e_nvmupd_command(struct i40e_hw *hw,
+ 	i40e_debug(hw, I40E_DEBUG_NVM, "%s state %d nvm_release_on_hold %d cmd 0x%08x config 0x%08x offset 0x%08x data_size 0x%08x\n",
+ 		   i40e_nvm_update_state_str[upd_cmd],
+ 		   hw->nvmupd_state,
+-		   hw->aq.nvm_release_on_done,
++		   hw->nvm_release_on_done,
+ 		   cmd->command, cmd->config, cmd->offset, cmd->data_size);
+ 
+ 	if (upd_cmd == I40E_NVMUPD_INVALID) {
+@@ -799,7 +799,7 @@ static i40e_status i40e_nvmupd_state_init(struct i40e_hw *hw,
+ 			if (status) {
+ 				i40e_release_nvm(hw);
+ 			} else {
+-				hw->aq.nvm_release_on_done = true;
++				hw->nvm_release_on_done = true;
+ 				hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
+ 			}
+ 		}
+@@ -815,7 +815,7 @@ static i40e_status i40e_nvmupd_state_init(struct i40e_hw *hw,
+ 			if (status) {
+ 				i40e_release_nvm(hw);
+ 			} else {
+-				hw->aq.nvm_release_on_done = true;
++				hw->nvm_release_on_done = true;
+ 				hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
+ 			}
+ 		}
+@@ -849,7 +849,7 @@ static i40e_status i40e_nvmupd_state_init(struct i40e_hw *hw,
+ 				   -EIO;
+ 				i40e_release_nvm(hw);
+ 			} else {
+-				hw->aq.nvm_release_on_done = true;
++				hw->nvm_release_on_done = true;
+ 				hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
+ 			}
+ 		}
+@@ -953,7 +953,7 @@ retry:
+ 				   -EIO;
+ 			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
+ 		} else {
+-			hw->aq.nvm_release_on_done = true;
++			hw->nvm_release_on_done = true;
+ 			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
+ 		}
+ 		break;
+@@ -980,7 +980,7 @@ retry:
+ 				   -EIO;
+ 			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
+ 		} else {
+-			hw->aq.nvm_release_on_done = true;
++			hw->nvm_release_on_done = true;
+ 			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
+ 		}
+ 		break;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
+index 3335f9d..bf693580 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
+@@ -549,6 +549,7 @@ struct i40e_hw {
+ 	enum i40e_nvmupd_state nvmupd_state;
+ 	struct i40e_aq_desc nvm_wb_desc;
+ 	struct i40e_virt_mem nvm_buff;
++	bool nvm_release_on_done;
+ 
+ 	/* HMC info */
+ 	struct i40e_hmc_info hmc; /* HMC info struct */
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
+index a3eae5d..1f9b3b5 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq.h
+@@ -97,7 +97,6 @@ struct i40e_adminq_info {
+ 	u32 fw_build;                   /* firmware build number */
+ 	u16 api_maj_ver;                /* api major version */
+ 	u16 api_min_ver;                /* api minor version */
+-	bool nvm_release_on_done;
+ 
+ 	struct mutex asq_mutex; /* Send queue lock */
+ 	struct mutex arq_mutex; /* Receive queue lock */
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+index 301fe2b..d68e017 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+@@ -522,6 +522,7 @@ struct i40e_hw {
+ 	enum i40e_nvmupd_state nvmupd_state;
+ 	struct i40e_aq_desc nvm_wb_desc;
+ 	struct i40e_virt_mem nvm_buff;
++	bool nvm_release_on_done;
+ 
+ 	/* HMC info */
+ 	struct i40e_hmc_info hmc; /* HMC info struct */
 -- 
 2.4.3
 
