@@ -1,173 +1,214 @@
-From: Alexander Duyck <aduyck@mirantis.com>
-Date: Sat, 02 Apr 2016 00:06:56 -0700
-Subject: [Intel-wired-lan] [next PATCH 2/2] i40e/i40evf: Add support for
-	IPIP and SIT offloads
-In-Reply-To: <20160402070114.13504.22615.stgit@localhost.localdomain>
-References: <20160402070114.13504.22615.stgit@localhost.localdomain>
-Message-ID: <20160402070520.13504.3716.stgit@localhost.localdomain>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 02 Apr 2016 15:40:58 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 00d108aa2559b11a5c25579abfdcf084d6c7b5ef BUILD SUCCESS
+Message-ID: <56ff778a.lpBb41sBvTyzIwnL%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Looking over the documentation it turns out enabling IPIP and SIT offloads
-for i40e is pretty straighforward.  As such I decided to enable them with
-this patch.  In my testing I am seeing an improvement of 8 to 10 Gb/s
-for IPIP and SIT tunnels with this offload enabled.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+00d108aa2559b11a5c25579abfdcf084d6c7b5ef  ixgbe: Read and set instance id
 
-Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
----
+elapsed time: 519m
 
-Testing-hints:
-  All that should be needed is to setup a pair of systems with a tunnel and
-  pass traffic over it.  Documentation on how to setup IPIP and SIT tunnels
-  can be found at:
+configs tested: 194
 
-  http://www.linuxfoundation.org/collaborate/workgroups/networking/tunneling
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+alpha                            allyesconfig
+mips                          malta_defconfig
+mips                          sead3_defconfig
+i386                     randconfig-a0-201613
+x86_64                 randconfig-a0-04020810
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-04020824
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+i386                             allyesconfig
+x86_64                 randconfig-v0-04020818
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+arm                         assabet_defconfig
+arm                            dove_defconfig
+arm                          ks8695_defconfig
+m32r                         opsput_defconfig
+mips                         mpc30x_defconfig
+blackfin                   CM-BF527_defconfig
+mips                      bmips_stb_defconfig
+mips                                defconfig
+mips                        nlm_xlr_defconfig
+sh                           se7751_defconfig
+arm                         orion5x_defconfig
+parisc                         b180_defconfig
+powerpc                     sbc834x_defconfig
+powerpc                     tqm8560_defconfig
+sparc                       sparc32_defconfig
+arm                       mainstone_defconfig
+m32r                       mappi.up_defconfig
+mips                             allmodconfig
+mips                        nlm_xlp_defconfig
+powerpc                 mpc8540_ads_defconfig
+x86_64                 randconfig-x010-201613
+x86_64                 randconfig-x011-201613
+x86_64                 randconfig-x018-201613
+x86_64                 randconfig-x019-201613
+x86_64                 randconfig-x012-201613
+x86_64                 randconfig-x013-201613
+x86_64                 randconfig-x016-201613
+x86_64                 randconfig-x014-201613
+x86_64                 randconfig-x015-201613
+x86_64                 randconfig-x017-201613
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201613
+i386                     randconfig-s1-201613
+x86_64                 randconfig-s0-04020805
+x86_64                 randconfig-s1-04020805
+x86_64                 randconfig-s2-04020805
+x86_64                 randconfig-s0-04020824
+x86_64                 randconfig-s1-04020824
+x86_64                 randconfig-s2-04020824
+x86_64                           allmodconfig
+x86_64                 randconfig-s3-04020807
+x86_64                 randconfig-s4-04020807
+x86_64                 randconfig-s5-04020807
+x86_64                 randconfig-s3-04020824
+x86_64                 randconfig-s4-04020824
+x86_64                 randconfig-s5-04020824
+x86_64                 randconfig-s3-04021519
+x86_64                 randconfig-s4-04021519
+x86_64                 randconfig-s5-04021519
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                           allyesconfig
+mips                            e55_defconfig
+powerpc                     stx_gp3_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201613
+i386                   randconfig-b0-04020801
+i386                   randconfig-b0-04020828
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                           viper_defconfig
+m68k                             alldefconfig
+powerpc                      makalu_defconfig
+blackfin                       SRV1_defconfig
+mips                          rb532_defconfig
+powerpc                      ppc64e_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201613
+i386                     randconfig-i1-201613
+x86_64                 randconfig-b0-04020809
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+mips                           ip32_defconfig
+sh                           se7721_defconfig
+m68k                            q40_defconfig
+powerpc                     tqm8541_defconfig
+x86_64                              rhel_gcov
+x86_64                 randconfig-n0-04020807
+x86_64                 randconfig-n0-04020819
+x86_64                 randconfig-n0-04021518
+i386                   randconfig-x013-201613
+i386                   randconfig-x012-201613
+i386                   randconfig-x019-201613
+i386                   randconfig-x015-201613
+i386                   randconfig-x018-201613
+i386                   randconfig-x011-201613
+i386                   randconfig-x010-201613
+i386                   randconfig-x016-201613
+i386                   randconfig-x017-201613
+i386                   randconfig-x014-201613
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201613
+i386                             allmodconfig
+powerpc                     tqm5200_defconfig
+sh                     magicpanelr2_defconfig
+arm                          nuc950_defconfig
+x86_64                 randconfig-n0-04020818
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+powerpc                 mpc837x_mds_defconfig
+um                               allmodconfig
+blackfin                BF538-EZKIT_defconfig
+microblaze                       allmodconfig
+powerpc                     kmeter1_defconfig
+i386                  randconfig-sb0-04020813
+avr32                 atngw100_mrmt_defconfig
+avr32                    hammerhead_defconfig
+sh                              ul2_defconfig
+x86_64                 randconfig-x001-201613
+x86_64                 randconfig-x000-201613
+x86_64                 randconfig-x005-201613
+x86_64                 randconfig-x007-201613
+x86_64                 randconfig-x006-201613
+x86_64                 randconfig-x004-201613
+x86_64                 randconfig-x009-201613
+x86_64                 randconfig-x008-201613
+x86_64                 randconfig-x003-201613
+x86_64                 randconfig-x002-201613
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                   randconfig-r0-04010946
+i386                     randconfig-r0-201613
+x86_64                 randconfig-r0-04021523
+sh                           se7724_defconfig
+arm                         iop13xx_defconfig
+powerpc                 canyonlands_defconfig
+sh                             espt_defconfig
+i386                   randconfig-x000-201613
+i386                   randconfig-x003-201613
+i386                   randconfig-x009-201613
+i386                   randconfig-x004-201613
+i386                   randconfig-x005-201613
+i386                   randconfig-x002-201613
+i386                   randconfig-x006-201613
+i386                   randconfig-x007-201613
+i386                   randconfig-x001-201613
+i386                   randconfig-x008-201613
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                   randconfig-x0-04020810
 
- drivers/net/ethernet/intel/i40e/i40e_main.c     |    2 ++
- drivers/net/ethernet/intel/i40e/i40e_txrx.c     |   24 +++++++++++++++--------
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c   |   24 +++++++++++++++--------
- drivers/net/ethernet/intel/i40evf/i40evf_main.c |    2 ++
- 4 files changed, 36 insertions(+), 16 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 9100d34913a7..d5f2417c0851 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -9119,6 +9119,8 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
- 				   NETIF_F_TSO_ECN		|
- 				   NETIF_F_TSO6			|
- 				   NETIF_F_GSO_GRE		|
-+				   NETIF_F_GSO_IPIP		|
-+				   NETIF_F_GSO_SIT		|
- 				   NETIF_F_GSO_UDP_TUNNEL	|
- 				   NETIF_F_GSO_UDP_TUNNEL_CSUM	|
- 				   NETIF_F_SCTP_CRC		|
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 6bf705add321..0d2a34cec6a9 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2297,7 +2297,10 @@ static int i40e_tso(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 		ip.v6->payload_len = 0;
- 	}
- 
--	if (skb_shinfo(skb)->gso_type & (SKB_GSO_UDP_TUNNEL | SKB_GSO_GRE |
-+	if (skb_shinfo(skb)->gso_type & (SKB_GSO_GRE |
-+					 SKB_GSO_IPIP |
-+					 SKB_GSO_SIT |
-+					 SKB_GSO_UDP_TUNNEL |
- 					 SKB_GSO_UDP_TUNNEL_CSUM)) {
- 		if (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_TUNNEL_CSUM) {
- 			/* determine offset of outer transport header */
-@@ -2439,13 +2442,6 @@ static int i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
- 						 &l4_proto, &frag_off);
- 		}
- 
--		/* compute outer L3 header size */
--		tunnel |= ((l4.hdr - ip.hdr) / 4) <<
--			  I40E_TXD_CTX_QW0_EXT_IPLEN_SHIFT;
--
--		/* switch IP header pointer from outer to inner header */
--		ip.hdr = skb_inner_network_header(skb);
--
- 		/* define outer transport */
- 		switch (l4_proto) {
- 		case IPPROTO_UDP:
-@@ -2456,6 +2452,11 @@ static int i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
- 			tunnel |= I40E_TXD_CTX_GRE_TUNNELING;
- 			*tx_flags |= I40E_TX_FLAGS_UDP_TUNNEL;
- 			break;
-+		case IPPROTO_IPIP:
-+		case IPPROTO_IPV6:
-+			*tx_flags |= I40E_TX_FLAGS_UDP_TUNNEL;
-+			l4.hdr = skb_inner_network_header(skb);
-+			break;
- 		default:
- 			if (*tx_flags & I40E_TX_FLAGS_TSO)
- 				return -1;
-@@ -2464,6 +2465,13 @@ static int i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
- 			return 0;
- 		}
- 
-+		/* compute outer L3 header size */
-+		tunnel |= ((l4.hdr - ip.hdr) / 4) <<
-+			  I40E_TXD_CTX_QW0_EXT_IPLEN_SHIFT;
-+
-+		/* switch IP header pointer from outer to inner header */
-+		ip.hdr = skb_inner_network_header(skb);
-+
- 		/* compute tunnel header size */
- 		tunnel |= ((ip.hdr - l4.hdr) / 2) <<
- 			  I40E_TXD_CTX_QW0_NATLEN_SHIFT;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index 519256bb63e8..07ce8e4e35e0 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -1564,7 +1564,10 @@ static int i40e_tso(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 		ip.v6->payload_len = 0;
- 	}
- 
--	if (skb_shinfo(skb)->gso_type & (SKB_GSO_UDP_TUNNEL | SKB_GSO_GRE |
-+	if (skb_shinfo(skb)->gso_type & (SKB_GSO_GRE |
-+					 SKB_GSO_IPIP |
-+					 SKB_GSO_SIT |
-+					 SKB_GSO_UDP_TUNNEL |
- 					 SKB_GSO_UDP_TUNNEL_CSUM)) {
- 		if (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_TUNNEL_CSUM) {
- 			/* determine offset of outer transport header */
-@@ -1664,13 +1667,6 @@ static int i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
- 						 &l4_proto, &frag_off);
- 		}
- 
--		/* compute outer L3 header size */
--		tunnel |= ((l4.hdr - ip.hdr) / 4) <<
--			  I40E_TXD_CTX_QW0_EXT_IPLEN_SHIFT;
--
--		/* switch IP header pointer from outer to inner header */
--		ip.hdr = skb_inner_network_header(skb);
--
- 		/* define outer transport */
- 		switch (l4_proto) {
- 		case IPPROTO_UDP:
-@@ -1681,6 +1677,11 @@ static int i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
- 			tunnel |= I40E_TXD_CTX_GRE_TUNNELING;
- 			*tx_flags |= I40E_TX_FLAGS_VXLAN_TUNNEL;
- 			break;
-+		case IPPROTO_IPIP:
-+		case IPPROTO_IPV6:
-+			*tx_flags |= I40E_TX_FLAGS_VXLAN_TUNNEL;
-+			l4.hdr = skb_inner_network_header(skb);
-+			break;
- 		default:
- 			if (*tx_flags & I40E_TX_FLAGS_TSO)
- 				return -1;
-@@ -1689,6 +1690,13 @@ static int i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
- 			return 0;
- 		}
- 
-+		/* compute outer L3 header size */
-+		tunnel |= ((l4.hdr - ip.hdr) / 4) <<
-+			  I40E_TXD_CTX_QW0_EXT_IPLEN_SHIFT;
-+
-+		/* switch IP header pointer from outer to inner header */
-+		ip.hdr = skb_inner_network_header(skb);
-+
- 		/* compute tunnel header size */
- 		tunnel |= ((ip.hdr - l4.hdr) / 2) <<
- 			  I40E_TXD_CTX_QW0_NATLEN_SHIFT;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index a24966e4873a..1bb9d61ec171 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -2327,6 +2327,8 @@ int i40evf_process_config(struct i40evf_adapter *adapter)
- 				   NETIF_F_TSO_ECN		|
- 				   NETIF_F_TSO6			|
- 				   NETIF_F_GSO_GRE		|
-+				   NETIF_F_GSO_IPIP		|
-+				   NETIF_F_GSO_SIT		|
- 				   NETIF_F_GSO_UDP_TUNNEL	|
- 				   NETIF_F_GSO_UDP_TUNNEL_CSUM	|
- 				   NETIF_F_SCTP_CRC		|
-
+Thanks,
+Fengguang
