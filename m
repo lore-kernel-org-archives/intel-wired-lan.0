@@ -1,138 +1,100 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 02 Apr 2016 21:57:44 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 461f77a50416c1396abaf5ccc987457dec020f22 BUILD SUCCESS
-Message-ID: <56ffcfd8.pisUwxniQqJDr5I4%fengguang.wu@intel.com>
+From: Ruinskiy, Dima <dima.ruinskiy@intel.com>
+Date: Sun, 3 Apr 2016 14:23:13 +0000
+Subject: [Intel-wired-lan] [PATCH-RFC] drivers: net: ethernet: intel:
+ e1000e: fix ethtool autoneg off for fiber
+In-Reply-To: <56FC2A62.6040206@cisco.com>
+References: <1458943126-32258-1-git-send-email-danielwa@cisco.com>
+ <56FC2A62.6040206@cisco.com>
+Message-ID: <36CDDD56DDB4D44E911123902EFC26B05B440F17@HASMSX110.ger.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-461f77a50416c1396abaf5ccc987457dec020f22  ixgbe: Use method pointer to access IOSF devices
+I have a couple of comments (sorry for not getting to it a bit sooner).
 
-elapsed time: 914m
+> For fiber media, e1000_get_settings should return ETH_TP_MDI_INVALID for
+> eth_tp_mdix_ctrl instead of ETH_TP_MDI_AUTO so subsequent e1000_set_settings
+> call would not fail with -EOPNOTSUPP.
 
-configs tested: 117
+Should this be specific to fiber? Because the code just checks media != copper. There is at least other media type (e1000_media_type_internal_serdes), which will be affected by this change as well. What is the proper behavior in this case?
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                   randconfig-a0-04022055
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                   randconfig-c0-04022146
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                 randconfig-x010-201613
-x86_64                 randconfig-x011-201613
-x86_64                 randconfig-x018-201613
-x86_64                 randconfig-x019-201613
-x86_64                 randconfig-x012-201613
-x86_64                 randconfig-x013-201613
-x86_64                 randconfig-x016-201613
-x86_64                 randconfig-x014-201613
-x86_64                 randconfig-x015-201613
-x86_64                 randconfig-x017-201613
-i386                     randconfig-s0-201613
-i386                     randconfig-s1-201613
-x86_64                 randconfig-s3-04022149
-x86_64                 randconfig-s4-04022149
-x86_64                 randconfig-s5-04022149
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201613
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i0-201613
-i386                     randconfig-i1-201613
-x86_64                           allmodconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                              rhel_gcov
-i386                               tinyconfig
-i386                   randconfig-x013-201613
-i386                   randconfig-x012-201613
-i386                   randconfig-x019-201613
-i386                   randconfig-x015-201613
-i386                   randconfig-x018-201613
-i386                   randconfig-x011-201613
-i386                   randconfig-x010-201613
-i386                   randconfig-x016-201613
-i386                   randconfig-x017-201613
-i386                   randconfig-x014-201613
-x86_64                                    lkp
-x86_64                                   rhel
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201613
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                 randconfig-x001-201613
-x86_64                 randconfig-x000-201613
-x86_64                 randconfig-x005-201613
-x86_64                 randconfig-x007-201613
-x86_64                 randconfig-x006-201613
-x86_64                 randconfig-x004-201613
-x86_64                 randconfig-x009-201613
-x86_64                 randconfig-x008-201613
-x86_64                 randconfig-x003-201613
-x86_64                 randconfig-x002-201613
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-r0-201613
-i386                             allmodconfig
-i386                   randconfig-x000-201613
-i386                   randconfig-x003-201613
-i386                   randconfig-x009-201613
-i386                   randconfig-x004-201613
-i386                   randconfig-x005-201613
-i386                   randconfig-x002-201613
-i386                   randconfig-x006-201613
-i386                   randconfig-x007-201613
-i386                   randconfig-x001-201613
-i386                   randconfig-x008-201613
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
+> e1000_set_spd_dplx should not automatically turn autoneg back on for forced
+> 1000 Mbps full duplex settings.
+
+I seem to remember that this code is there because the copper-based NICs only support 1000Mbps in auto-negotiation mode, not forced (this is according to the IEEE spec, as far as I know). I believe this code is there to ensure that a user can force the speed to 1000 via the API, and still have the link resolve correctly via auto-negotiation. I am concerned that changing this code will break clients that rely on it. Maybe it is best to also limit it to fiber devices only?
 
 Thanks,
-Fengguang
+Dima (Intel e1000e maintainer).
+
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Daniel Walker
+Sent: Wednesday, 30 March, 2016 22:35
+To: Kirsher, Jeffrey T; Brandeburg, Jesse; Nelson, Shannon; Wyborny, Carolyn; Skidmore, Donald C; Allan, Bruce W; Ronciak, John; Williams, Mitch A
+Cc: netdev at vger.kernel.org; xe-kernel at external.cisco.com; danielwa at fifo99.com; linux-kernel at vger.kernel.org; Steve Shih; intel-wired-lan at lists.osuosl.org
+Subject: Re: [Intel-wired-lan] [PATCH-RFC] drivers: net: ethernet: intel: e1000e: fix ethtool autoneg off for fiber
+
+
+So Intel maintainers (Jeff, Jesse, Shannon, Carolyn, Don, Bruce, and John)
+
+I'm assuming no comments means this patch is acceptable , and I will resubmit it without the RFC. Is that acceptable ?
+
+
+On 03/25/2016 02:58 PM, Daniel Walker wrote:
+> From: Steve Shih <sshih@cisco.com>
+>
+> This patch fixes the issues for disabling auto-negotiation and forcing
+> speed and duplex settings for the fiber media.
+>
+> For fiber media, e1000_get_settings should return ETH_TP_MDI_INVALID for
+> eth_tp_mdix_ctrl instead of ETH_TP_MDI_AUTO so subsequent e1000_set_settings
+> call would not fail with -EOPNOTSUPP.
+>
+> e1000_set_spd_dplx should not automatically turn autoneg back on for forced
+> 1000 Mbps full duplex settings.
+>
+> Cc: danielwa at fifo99.com
+> Cc: xe-kernel at external.cisco.com
+> Signed-off-by: Steve Shih <sshih@cisco.com>
+> ---
+>   drivers/net/ethernet/intel/e1000e/ethtool.c | 6 ++++--
+>   1 file changed, 4 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
+> index 6cab1f3..cd03dcd 100644
+> --- a/drivers/net/ethernet/intel/e1000e/ethtool.c
+> +++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
+> @@ -201,6 +201,9 @@ static int e1000_get_settings(struct net_device *netdev,
+>   	else
+>   		ecmd->eth_tp_mdix_ctrl = hw->phy.mdix;
+>   
+> +	if (hw->phy.media_type != e1000_media_type_copper)
+> +		ecmd->eth_tp_mdix_ctrl = ETH_TP_MDI_INVALID;
+> +
+>   	return 0;
+>   }
+>   
+> @@ -236,8 +239,7 @@ static int e1000_set_spd_dplx(struct e1000_adapter *adapter, u32 spd, u8 dplx)
+>   		mac->forced_speed_duplex = ADVERTISE_100_FULL;
+>   		break;
+>   	case SPEED_1000 + DUPLEX_FULL:
+> -		mac->autoneg = 1;
+> -		adapter->hw.phy.autoneg_advertised = ADVERTISE_1000_FULL;
+> +		mac->forced_speed_duplex = ADVERTISE_1000_FULL;
+>   		break;
+>   	case SPEED_1000 + DUPLEX_HALF:	/* not supported */
+>   	default:
+
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan at lists.osuosl.org
+http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+---------------------------------------------------------------------
+Intel Israel (74) Limited
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
+
