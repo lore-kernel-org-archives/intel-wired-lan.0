@@ -1,61 +1,119 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 4 Apr 2016 19:37:28 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: make 'action' field in
-	struct	ixgbe_fdir_filter a u64 value
-In-Reply-To: <1459532078-11858-1-git-send-email-sridhar.samudrala@intel.com>
-References: <1459532078-11858-1-git-send-email-sridhar.samudrala@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9AA98C@ORSMSX106.amr.corp.intel.com>
+From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+Date: Mon,  4 Apr 2016 07:01:10 -0700
+Subject: [Intel-wired-lan] [v4 next PATCH S32 12/13] i40e: Input set mask
+	constants for RSS, flow director, and flex bytes
+Message-ID: <1459778470-26039-1-git-send-email-harshitha.ramamurthy@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Sridhar Samudrala
-> Sent: Friday, April 01, 2016 10:35 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] ixgbe: make 'action' field in struct
-> ixgbe_fdir_filter a u64 value
-> 
-> This field is used to record the RX queue index for a redirect action passed via
-> ring_cookie field in struct ethtool_rx_flow_spec which is a u64 value.
-> 
-> For ex: after adding a filter rule to redirect to a VF using ethtool
->   # echo 4 > /sys/class/net/p4p1/device/sriov_numvfs
->   # ethtool -N p4p1 flow-type ip4 src-ip 192.168.0.1 action 0x100000000
-> 
-> querying for the rule shows the Action as 'Direct to queue 0'
-> 
->   # ethtool -n p4p1
->   4 RX rings available
->   Total 1 rules
-> 
->   Filter: 2045
->  	Rule Type: Raw IPv4
-> 	Src IP addr: 192.168.0.1 mask: 0.0.0.0
-> 	Dest IP addr: 0.0.0.0 mask: 255.255.255.255
-> 	TOS: 0x0 mask: 0xff
-> 	Protocol: 0 mask: 0xff
-> 	L4 bytes: 0x0 mask: 0xffffffff
-> 	VLAN EtherType: 0x0 mask: 0xffff
-> 	VLAN: 0x0 mask: 0xffff
-> 	User-defined: 0x0 mask: 0xffffffffffffffff
-> 	Action: Direct to queue 0
-> 
-> With this fix, ethtool will report the right queue index even for VFs.
-> 	Action: Direct to queue 4294967296
-> 
-> Here 4294967296 corresponds to 0x100000000.
-> We need to update 'ethtool' to report the queue index as a Hex value so that
-> it is more  user friendly and matches with the 'action' value that is passed
-> when adding the rule.
-> 
-> Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+From: Kiran Patil <kiran.patil@intel.com>
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Ethool shows correct value with patch applied
+Add defines for input set mask (RSS, flow director, flexible payload),
+including defines specific to IPv6.
+
+Signed-off-by: Kiran Patil <kiran.patil@intel.com>
+Change-ID: Ie95ef7d0916a4d6ca011c194283f959774c8dce9
+---
+ drivers/net/ethernet/intel/i40e/i40e_type.h   | 33 +++++++++++++++++++++
+ drivers/net/ethernet/intel/i40evf/i40e_type.h | 42 +++++++++++++++++++++++++++
+ 2 files changed, 75 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
+index bf693580..793036b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
+@@ -1534,4 +1534,37 @@ struct i40e_lldp_variables {
+ 
+ /* RSS Hash Table Size */
+ #define I40E_PFQF_CTL_0_HASHLUTSIZE_512	0x00010000
++
++/* INPUT SET MASK for RSS, flow director, and flexible payload */
++#define I40E_L3_SRC_SHIFT		47
++#define I40E_L3_SRC_MASK		(0x3ULL << I40E_L3_SRC_SHIFT)
++#define I40E_L3_V6_SRC_SHIFT		43
++#define I40E_L3_V6_SRC_MASK		(0xFFULL << I40E_L3_V6_SRC_SHIFT)
++#define I40E_L3_DST_SHIFT		35
++#define I40E_L3_DST_MASK		(0x3ULL << I40E_L3_DST_SHIFT)
++#define I40E_L3_V6_DST_SHIFT		35
++#define I40E_L3_V6_DST_MASK		(0xFFULL << I40E_L3_V6_DST_SHIFT)
++#define I40E_L4_SRC_SHIFT		34
++#define I40E_L4_SRC_MASK		(0x1ULL << I40E_L4_SRC_SHIFT)
++#define I40E_L4_DST_SHIFT		33
++#define I40E_L4_DST_MASK		(0x1ULL << I40E_L4_DST_SHIFT)
++#define I40E_VERIFY_TAG_SHIFT		31
++#define I40E_VERIFY_TAG_MASK		(0x3ULL << I40E_VERIFY_TAG_SHIFT)
++
++#define I40E_FLEX_50_SHIFT		13
++#define I40E_FLEX_50_MASK		(0x1ULL << I40E_FLEX_50_SHIFT)
++#define I40E_FLEX_51_SHIFT		12
++#define I40E_FLEX_51_MASK		(0x1ULL << I40E_FLEX_51_SHIFT)
++#define I40E_FLEX_52_SHIFT		11
++#define I40E_FLEX_52_MASK		(0x1ULL << I40E_FLEX_52_SHIFT)
++#define I40E_FLEX_53_SHIFT		10
++#define I40E_FLEX_53_MASK		(0x1ULL << I40E_FLEX_53_SHIFT)
++#define I40E_FLEX_54_SHIFT		9
++#define I40E_FLEX_54_MASK		(0x1ULL << I40E_FLEX_54_SHIFT)
++#define I40E_FLEX_55_SHIFT		8
++#define I40E_FLEX_55_MASK		(0x1ULL << I40E_FLEX_55_SHIFT)
++#define I40E_FLEX_56_SHIFT		7
++#define I40E_FLEX_56_MASK		(0x1ULL << I40E_FLEX_56_SHIFT)
++#define I40E_FLEX_57_SHIFT		6
++#define I40E_FLEX_57_MASK		(0x1ULL << I40E_FLEX_57_SHIFT)
+ #endif /* _I40E_TYPE_H_ */
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+index d68e017..4a78c18 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
+@@ -1330,4 +1330,46 @@ enum i40e_reset_type {
+ 
+ /* RSS Hash Table Size */
+ #define I40E_PFQF_CTL_0_HASHLUTSIZE_512	0x00010000
++
++/* INPUT SET MASK for RSS, flow director and flexible payload */
++#define I40E_FD_INSET_L3_SRC_SHIFT		47
++#define I40E_FD_INSET_L3_SRC_WORD_MASK		(0x3ULL << \
++						 I40E_FD_INSET_L3_SRC_SHIFT)
++#define I40E_FD_INSET_L3_DST_SHIFT		35
++#define I40E_FD_INSET_L3_DST_WORD_MASK		(0x3ULL << \
++						 I40E_FD_INSET_L3_DST_SHIFT)
++#define I40E_FD_INSET_L4_SRC_SHIFT		34
++#define I40E_FD_INSET_L4_SRC_WORD_MASK		(0x1ULL << \
++						 I40E_FD_INSET_L4_SRC_SHIFT)
++#define I40E_FD_INSET_L4_DST_SHIFT		33
++#define I40E_FD_INSET_L4_DST_WORD_MASK		(0x1ULL << \
++						 I40E_FD_INSET_L4_DST_SHIFT)
++#define I40E_FD_INSET_VERIFY_TAG_SHIFT		31
++#define I40E_FD_INSET_VERIFY_TAG_WORD_MASK	(0x3ULL << \
++						 I40E_FD_INSET_VERIFY_TAG_SHIFT)
++
++#define I40E_FD_INSET_FLEX_WORD50_SHIFT		17
++#define I40E_FD_INSET_FLEX_WORD50_MASK		(0x1ULL << \
++					I40E_FD_INSET_FLEX_WORD50_SHIFT)
++#define I40E_FD_INSET_FLEX_WORD51_SHIFT		16
++#define I40E_FD_INSET_FLEX_WORD51_MASK		(0x1ULL << \
++					I40E_FD_INSET_FLEX_WORD51_SHIFT)
++#define I40E_FD_INSET_FLEX_WORD52_SHIFT		15
++#define I40E_FD_INSET_FLEX_WORD52_MASK		(0x1ULL << \
++					I40E_FD_INSET_FLEX_WORD52_SHIFT)
++#define I40E_FD_INSET_FLEX_WORD53_SHIFT		14
++#define I40E_FD_INSET_FLEX_WORD53_MASK		(0x1ULL << \
++					I40E_FD_INSET_FLEX_WORD53_SHIFT)
++#define I40E_FD_INSET_FLEX_WORD54_SHIFT		13
++#define I40E_FD_INSET_FLEX_WORD54_MASK		(0x1ULL << \
++					I40E_FD_INSET_FLEX_WORD54_SHIFT)
++#define I40E_FD_INSET_FLEX_WORD55_SHIFT		12
++#define I40E_FD_INSET_FLEX_WORD55_MASK		(0x1ULL << \
++					I40E_FD_INSET_FLEX_WORD55_SHIFT)
++#define I40E_FD_INSET_FLEX_WORD56_SHIFT		11
++#define I40E_FD_INSET_FLEX_WORD56_MASK		(0x1ULL << \
++					I40E_FD_INSET_FLEX_WORD56_SHIFT)
++#define I40E_FD_INSET_FLEX_WORD57_SHIFT		10
++#define I40E_FD_INSET_FLEX_WORD57_MASK		(0x1ULL << \
++					I40E_FD_INSET_FLEX_WORD57_SHIFT)
+ #endif /* _I40E_TYPE_H_ */
+-- 
+2.4.3
+
