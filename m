@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 5 Apr 2016 20:14:25 +0000
-Subject: [Intel-wired-lan] [v3 next PATCH S32 10/13] i40e: Add
-	RSS	configuration to virtual channel
-In-Reply-To: <1459508173-22777-11-git-send-email-harshitha.ramamurthy@intel.com>
+Date: Tue, 5 Apr 2016 20:16:45 +0000
+Subject: [Intel-wired-lan] [v3 next PATCH S32 12/13] i40e: Input set
+ mask	constants for RSS, flow director, and flex bytes
+In-Reply-To: <1459508173-22777-13-git-send-email-harshitha.ramamurthy@intel.com>
 References: <1459508173-22777-1-git-send-email-harshitha.ramamurthy@intel.com>
- <1459508173-22777-11-git-send-email-harshitha.ramamurthy@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9ACC1F@ORSMSX106.amr.corp.intel.com>
+ <1459508173-22777-13-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9ACC30@ORSMSX106.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,26 +17,28 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Harshitha Ramamurthy
 > Sent: Friday, April 01, 2016 3:56 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [v3 next PATCH S32 10/13] i40e: Add RSS
-> configuration to virtual channel
+> Subject: [Intel-wired-lan] [v3 next PATCH S32 12/13] i40e: Input set mask
+> constants for RSS, flow director, and flex bytes
 > 
-> From: Mitch Williams <mitch.a.williams@intel.com>
+> From: Kiran Patil <kiran.patil@intel.com>
 > 
-> Add opcodes and structures to support RSS configuration by PF driver on
-> behalf of the VF drivers. This reduces complexity in the VF driver and allows
-> us to support future hardware designs without modifying the VF driver.
+> Defines for input set mask (RSS, flow director, flexible payload).
+> Also renames some defines related to RSS and flow-director. This patch adds
+> defines specific to IPv6 flex mask needed to support change of RSS hash
+> input set for flows such as TCP6 and UDP6.
 > 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-> Change-ID: I8c75765c630eacb71f95967f1109a198542593ac
+> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
+> Change-ID: Ie95ef7d0916a4d6ca011c194283f959774c8dce9
 > ---
-> Testing Hints : Compile code and make sure there are no warnings. There's
-> no actual code here.
+> Testing Hints: This patch applies and compiles cleanly. Preparation patch for
+> implementing features such as changing input set mask for RSS, and flow
+> director.
 > 
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl.h   | 45
-> +++++++++++++++++++++--
->  drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h | 45
-> +++++++++++++++++++++--
->  2 files changed, 84 insertions(+), 6 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_type.h   | 33
+> +++++++++++++++++++++
+>  drivers/net/ethernet/intel/i40evf/i40e_type.h | 42
+> +++++++++++++++++++++++++++
+>  2 files changed, 75 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 Code compiles and passes traffic
