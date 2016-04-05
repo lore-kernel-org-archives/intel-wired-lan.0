@@ -1,62 +1,34 @@
-From: Daniel Walker <danielwa@cisco.com>
-Date: Tue,  5 Apr 2016 11:30:03 -0700
-Subject: [Intel-wired-lan] [PATCH -v2] drivers: net: ethernet: intel:
-	e1000e: fix ethtool autoneg off for non-copper
-Message-ID: <1459881004-13992-1-git-send-email-danielwa@cisco.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 5 Apr 2016 19:43:31 +0000
+Subject: [Intel-wired-lan] [v3 next PATCH S32 01/13] i40e: Inserting a
+ HW	capability display info
+In-Reply-To: <1459508173-22777-2-git-send-email-harshitha.ramamurthy@intel.com>
+References: <1459508173-22777-1-git-send-email-harshitha.ramamurthy@intel.com>
+ <1459508173-22777-2-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9ACB84@ORSMSX106.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Steve Shih <sshih@cisco.com>
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Harshitha Ramamurthy
+> Sent: Friday, April 01, 2016 3:56 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [v3 next PATCH S32 01/13] i40e: Inserting a HW
+> capability display info
+> 
+> From: Deepthi Kavalur <deepthi.kavalur@intel.com>
+> 
+> Display MSIx vector count for HW capabilities.
+> 
+> Signed-off-by: Deepthi Kavalur <deepthi.kavalur@intel.com>
+> Change-ID: I4b41e9b50360cf660e7fbcb85b9390fedcf313b1
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_common.c | 3 +++
+>  1 file changed, 3 insertions(+)
 
-This patch fixes the issues for disabling auto-negotiation and forcing
-speed and duplex settings for the non-copper media.
-
-For non-copper media, e1000_get_settings should return ETH_TP_MDI_INVALID for
-eth_tp_mdix_ctrl instead of ETH_TP_MDI_AUTO so subsequent e1000_set_settings
-call would not fail with -EOPNOTSUPP.
-
-e1000_set_spd_dplx should not automatically turn autoneg back on for forced
-1000 Mbps full duplex settings for non-copper media.
-
-Cc: xe-kernel at external.cisco.com
-Cc: Daniel Walker <dwalker@fifo99.com>
-Signed-off-by: Steve Shih <sshih@cisco.com>
----
- drivers/net/ethernet/intel/e1000e/ethtool.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
-index 6cab1f3..b6b8290 100644
---- a/drivers/net/ethernet/intel/e1000e/ethtool.c
-+++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
-@@ -201,6 +201,9 @@ static int e1000_get_settings(struct net_device *netdev,
- 	else
- 		ecmd->eth_tp_mdix_ctrl = hw->phy.mdix;
- 
-+	if (hw->phy.media_type != e1000_media_type_copper)
-+		ecmd->eth_tp_mdix_ctrl = ETH_TP_MDI_INVALID;
-+
- 	return 0;
- }
- 
-@@ -236,8 +239,12 @@ static int e1000_set_spd_dplx(struct e1000_adapter *adapter, u32 spd, u8 dplx)
- 		mac->forced_speed_duplex = ADVERTISE_100_FULL;
- 		break;
- 	case SPEED_1000 + DUPLEX_FULL:
--		mac->autoneg = 1;
--		adapter->hw.phy.autoneg_advertised = ADVERTISE_1000_FULL;
-+		if (adapter->hw.phy.media_type == e1000_media_type_copper) {
-+			mac->autoneg = 1;
-+			adapter->hw.phy.autoneg_advertised =
-+				ADVERTISE_1000_FULL;
-+		} else
-+			mac->forced_speed_duplex = ADVERTISE_1000_FULL;
- 		break;
- 	case SPEED_1000 + DUPLEX_HALF:	/* not supported */
- 	default:
--- 
-2.5.0
-
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+MSIX vector count message shows up with debug messages enabled
