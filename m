@@ -1,198 +1,78 @@
-From: Samudrala, Sridhar <sridhar.samudrala@intel.com>
-Date: Tue, 05 Apr 2016 11:15:49 -0700
-Subject: [Intel-wired-lan] [PATCH net-next 2/2] ixgbe: Add support for
- redirect action to cls_u32 offloads.
-In-Reply-To: <1459877947-8241-2-git-send-email-sridhar.samudrala@intel.com>
-References: <1459877947-8241-1-git-send-email-sridhar.samudrala@intel.com>
- <1459877947-8241-2-git-send-email-sridhar.samudrala@intel.com>
-Message-ID: <570400D5.7020302@intel.com>
+From: Ruinskiy, Dima <dima.ruinskiy@intel.com>
+Date: Tue, 5 Apr 2016 13:41:19 +0000
+Subject: [Intel-wired-lan] [PATCH-RFC] drivers: net: ethernet: intel:
+ e1000e: fix ethtool autoneg off for fiber
+In-Reply-To: <5702F2D6.5010105@cisco.com>
+References: <1458943126-32258-1-git-send-email-danielwa@cisco.com>
+ <56FC2A62.6040206@cisco.com>
+ <36CDDD56DDB4D44E911123902EFC26B05B440F17@HASMSX110.ger.corp.intel.com>
+ <5702F2D6.5010105@cisco.com>
+Message-ID: <36CDDD56DDB4D44E911123902EFC26B05B4413D1@HASMSX110.ger.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Sure, please send. It will be reviewed like any other patch. :)
 
+-----Original Message-----
+From: Daniel Walker [mailto:danielwa at cisco.com] 
+Sent: Tuesday, April 05, 2016 02:04
+To: Ruinskiy, Dima; Kirsher, Jeffrey T; Brandeburg, Jesse; Nelson, Shannon; Wyborny, Carolyn; Skidmore, Donald C; Allan, Bruce W; Ronciak, John; Williams, Mitch A
+Cc: netdev at vger.kernel.org; xe-kernel at external.cisco.com; danielwa at fifo99.com; linux-kernel at vger.kernel.org; Steve Shih; intel-wired-lan at lists.osuosl.org
+Subject: Re: [Intel-wired-lan] [PATCH-RFC] drivers: net: ethernet: intel: e1000e: fix ethtool autoneg off for fiber
 
-On 4/5/2016 10:39 AM, Sridhar Samudrala wrote:
-> From: Sridhar Samudrala <sridhar.samudrala@intel.com>
+On 04/03/2016 07:23 AM, Ruinskiy, Dima wrote:
+> I have a couple of comments (sorry for not getting to it a bit sooner).
 >
-> This patch enables 'redirect' to a SRIOV VF or a offloaded macvlan
-> device queue via tc 'mirred' action.
-Jeff,
-This patch has a dependency on this patch
-https://git.kernel.org/cgit/linux/kernel/git/jkirsher/next-queue.git/commit/?h=dev-queue&id=aff19cd6dd891364ba440ee0e02fe8a83a110f7c
-which is in your dev_queue branch.
+>> For fiber media, e1000_get_settings should return ETH_TP_MDI_INVALID for
+>> eth_tp_mdix_ctrl instead of ETH_TP_MDI_AUTO so subsequent e1000_set_settings
+>> call would not fail with -EOPNOTSUPP.
+> Should this be specific to fiber? Because the code just checks media != copper. There is at least other media type (e1000_media_type_internal_serdes), which will be affected by this change as well. What is the proper behavior in this case?
+Steve is shy, so here are his comments,
 
-Thanks
-Sridhar
+<Steve>
+Regarding the 1st comment. The issue affects all non-copper media. In 
+fact, we are using e1000_media_type_internal_serdes and are affected due 
+to the following check in e1000_set_settings:
+
+/* MDI setting is only allowed when autoneg enabled because
+* some hardware doesn't allow MDI setting when speed or
+* duplex is forced.
+*/
+if (ecmd->eth_tp_mdix_ctrl) {
+if (hw->phy.media_type != e1000_media_type_copper)
+return -EOPNOTSUPP;
+
+if ((ecmd->eth_tp_mdix_ctrl != ETH_TP_MDI_AUTO) &&
+(ecmd->autoneg != AUTONEG_ENABLE)) {
+e_err("forcing MDI/MDI-X state is not supported when link speed and/or 
+duplex are forced\n");
+return -EINVAL;
+}
+}
+
+</Steve>
+
+>> e1000_set_spd_dplx should not automatically turn autoneg back on for forced
+>> 1000 Mbps full duplex settings.
+> I seem to remember that this code is there because the copper-based NICs only support 1000Mbps in auto-negotiation mode, not forced (this is according to the IEEE spec, as far as I know). I believe this code is there to ensure that a user can force the speed to 1000 via the API, and still have the link resolve correctly via auto-negotiation. I am concerned that changing this code will break clients that rely on it. Maybe it is best to also limit it to fiber devices only?
 >
-> Verified with the following script that creates SRIOV VFs,  offloaded
-> macvlan and adds tc u32 filters with redirect action to the associated
-> netdevs.
->
->   # add ingress qdisc.
->   tc qdisc add dev p4p1 ingress
->
->   # enable hw tc offload.
->   ethtool -K p4p1 hw-tc-offload on
->
->   # create 4 sriov VFs and bring up the first one.
->   echo 4 > /sys/class/net/p4p1/device/sriov_numvfs
->   sleep 1
->   ip link set p4p1 up
->   ip link set p4p1_0 up
->
->   # create a offloaded macvlan device and bring it up.
->   ethtool -K p4p1 l2-fwd-offload on
->   ip link add link p4p1 name mvlan_1 type macvlan
->   ip link set mvlan_1 up
->
->   # add u32 filter with action to redirect to VF netdev
->   tc filter add dev p4p1 parent ffff: protocol ip prio 99 \
->      handle 800:0:1 u32 ht 800: \
->      match ip src 192.168.1.3/32 \
->      action mirred egress redirect dev p4p1_0
->
->   # add u32 filter with action to redirect to macvlan netdev
->   tc filter add dev p4p1 parent ffff: protocol ip prio 99 \
->      handle 800:0:2 u32 ht 800: \
->      match ip src 192.168.2.3/32 \
->      action mirred egress redirect dev mvlan_1
->
-> Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
-> ---
->   drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 96 +++++++++++++++++++++++----
->   1 file changed, 83 insertions(+), 13 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> index 19bf386..df7b10a 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> @@ -53,6 +53,7 @@
->   #include <net/vxlan.h>
->   #include <net/pkt_cls.h>
->   #include <net/tc_act/tc_gact.h>
-> +#include <net/tc_act/tc_mirred.h>
->   
->   #include "ixgbe.h"
->   #include "ixgbe_common.h"
-> @@ -8222,6 +8223,85 @@ static int ixgbe_configure_clsu32_del_hnode(struct ixgbe_adapter *adapter,
->   	return 0;
->   }
->   
-> +#ifdef CONFIG_NET_CLS_ACT
-> +static int handle_redirect_action(struct ixgbe_adapter *adapter, int ifindex,
-> +				  u8 *queue, u64 *action)
-> +{
-> +	unsigned int num_vfs = adapter->num_vfs, vf;
-> +	struct net_device *upper;
-> +	struct list_head *iter;
-> +
-> +	/* redirect to a SRIOV VF */
-> +	for (vf = 0; vf < num_vfs; ++vf) {
-> +		upper = pci_get_drvdata(adapter->vfinfo[vf].vfdev);
-> +		if (upper->ifindex == ifindex) {
-> +			if (adapter->num_rx_pools > 1)
-> +				*queue = vf * 2;
-> +			else
-> +				*queue = vf * adapter->num_rx_queues_per_pool;
-> +
-> +			*action = vf+1;
-> +			*action <<= ETHTOOL_RX_FLOW_SPEC_RING_VF_OFF;
-> +			return 0;
-> +		}
-> +	}
-> +
-> +	/* redirect to a offloaded macvlan netdev */
-> +	netdev_for_each_all_upper_dev_rcu(adapter->netdev, upper, iter) {
-> +		if (netif_is_macvlan(upper)) {
-> +			struct macvlan_dev *dfwd = netdev_priv(upper);
-> +			struct ixgbe_fwd_adapter *vadapter = dfwd->fwd_priv;
-> +
-> +			if (vadapter && vadapter->netdev->ifindex == ifindex) {
-> +				*queue = adapter->rx_ring[vadapter->rx_base_queue]->reg_idx;
-> +				*action = *queue;
-> +				return 0;
-> +			}
-> +		}
-> +	}
-> +
-> +	return -EINVAL;
-> +}
-> +
-> +static int parse_tc_actions(struct ixgbe_adapter *adapter,
-> +			    struct tcf_exts *exts, u64 *action, u8 *queue)
-> +{
-> +	const struct tc_action *a;
-> +	int err;
-> +
-> +	if (tc_no_actions(exts))
-> +		return -EINVAL;
-> +
-> +	tc_for_each_action(a, exts) {
-> +
-> +		/* Drop action */
-> +		if (is_tcf_gact_shot(a)) {
-> +			*action = IXGBE_FDIR_DROP_QUEUE;
-> +			*queue = IXGBE_FDIR_DROP_QUEUE;
-> +			return 0;
-> +		}
-> +
-> +		/* Redirect to a VF or a offloaded macvlan */
-> +		if (is_tcf_mirred_redirect(a)) {
-> +			int ifindex = tcf_mirred_ifindex(a);
-> +
-> +			err = handle_redirect_action(adapter, ifindex, queue,
-> +						     action);
-> +			if (err == 0)
-> +				return err;
-> +		}
-> +	}
-> +
-> +	return -EINVAL;
-> +}
-> +#else
-> +static int parse_tc_actions(struct ixgbe_adapter *adapter,
-> +			    struct tcf_exts *exts, u64 *action, u8 *queue)
-> +{
-> +	return -EINVAL;
-> +}
-> +#endif /* CONFIG_NET_CLS_ACT */
-> +
->   static int ixgbe_configure_clsu32(struct ixgbe_adapter *adapter,
->   				  __be16 protocol,
->   				  struct tc_cls_u32_offload *cls)
-> @@ -8231,9 +8311,6 @@ static int ixgbe_configure_clsu32(struct ixgbe_adapter *adapter,
->   	struct ixgbe_mat_field *field_ptr;
->   	struct ixgbe_fdir_filter *input;
->   	union ixgbe_atr_input mask;
-> -#ifdef CONFIG_NET_CLS_ACT
-> -	const struct tc_action *a;
-> -#endif
->   	int i, err = 0;
->   	u8 queue;
->   	u32 uhtid, link_uhtid;
-> @@ -8335,18 +8412,11 @@ static int ixgbe_configure_clsu32(struct ixgbe_adapter *adapter,
->   	if (input->filter.formatted.flow_type == IXGBE_ATR_FLOW_TYPE_IPV4)
->   		mask.formatted.flow_type &= IXGBE_ATR_L4TYPE_IPV6_MASK;
->   
-> -#ifdef CONFIG_NET_CLS_ACT
-> -	if (list_empty(&cls->knode.exts->actions))
-> +	err = parse_tc_actions(adapter, cls->knode.exts, &input->action,
-> +			       &queue);
-> +	if (err < 0)
->   		goto err_out;
->   
-> -	list_for_each_entry(a, &cls->knode.exts->actions, list) {
-> -		if (!is_tcf_gact_shot(a))
-> -			goto err_out;
-> -	}
-> -#endif
-> -
-> -	input->action = IXGBE_FDIR_DROP_QUEUE;
-> -	queue = IXGBE_FDIR_DROP_QUEUE;
->   	input->sw_idx = loc;
->   
->   	spin_lock(&adapter->fdir_perfect_lock);
+
+<Steve>
+Regarding the 2nd comment. Yes, will limit to non-copper media.
+</Steve>
+
+He supplied me with a second patch which I can send.. Can we remove the 
+RFC this time ?
+
+Daniel
+---------------------------------------------------------------------
+Intel Israel (74) Limited
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
