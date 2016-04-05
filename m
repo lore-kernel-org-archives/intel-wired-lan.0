@@ -1,78 +1,197 @@
-From: Ruinskiy, Dima <dima.ruinskiy@intel.com>
-Date: Tue, 5 Apr 2016 13:41:19 +0000
-Subject: [Intel-wired-lan] [PATCH-RFC] drivers: net: ethernet: intel:
- e1000e: fix ethtool autoneg off for fiber
-In-Reply-To: <5702F2D6.5010105@cisco.com>
-References: <1458943126-32258-1-git-send-email-danielwa@cisco.com>
- <56FC2A62.6040206@cisco.com>
- <36CDDD56DDB4D44E911123902EFC26B05B440F17@HASMSX110.ger.corp.intel.com>
- <5702F2D6.5010105@cisco.com>
-Message-ID: <36CDDD56DDB4D44E911123902EFC26B05B4413D1@HASMSX110.ger.corp.intel.com>
+From: Jiri Benc <jbenc@redhat.com>
+Date: Tue,  5 Apr 2016 16:25:07 +0200
+Subject: [Intel-wired-lan] [PATCH net-next] net: intel: remove dead links
+Message-ID: <3c9f8ea384ba033f83ec360eef17732ff0a5a8dd.1459866280.git.jbenc@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Sure, please send. It will be reviewed like any other patch. :)
+The Kconfig for Intel NICs references two different URLs for the "Adapter
+& Driver ID Guide". Neither of those two links works. The current URL seems
+to be
+http://www.intel.com/content/www/us/en/support/network-and-i-o/ethernet-products/000005584.html
+but given it's apparently constantly changing, there's no point in having it
+in the help text.
 
------Original Message-----
-From: Daniel Walker [mailto:danielwa at cisco.com] 
-Sent: Tuesday, April 05, 2016 02:04
-To: Ruinskiy, Dima; Kirsher, Jeffrey T; Brandeburg, Jesse; Nelson, Shannon; Wyborny, Carolyn; Skidmore, Donald C; Allan, Bruce W; Ronciak, John; Williams, Mitch A
-Cc: netdev at vger.kernel.org; xe-kernel at external.cisco.com; danielwa at fifo99.com; linux-kernel at vger.kernel.org; Steve Shih; intel-wired-lan at lists.osuosl.org
-Subject: Re: [Intel-wired-lan] [PATCH-RFC] drivers: net: ethernet: intel: e1000e: fix ethtool autoneg off for fiber
+Just keep a generic pointer to http://support.intel.com. Hopefully, this one
+will have a longer live. It still works, at least.
 
-On 04/03/2016 07:23 AM, Ruinskiy, Dima wrote:
-> I have a couple of comments (sorry for not getting to it a bit sooner).
->
->> For fiber media, e1000_get_settings should return ETH_TP_MDI_INVALID for
->> eth_tp_mdix_ctrl instead of ETH_TP_MDI_AUTO so subsequent e1000_set_settings
->> call would not fail with -EOPNOTSUPP.
-> Should this be specific to fiber? Because the code just checks media != copper. There is at least other media type (e1000_media_type_internal_serdes), which will be affected by this change as well. What is the proper behavior in this case?
-Steve is shy, so here are his comments,
+Futhermore, remove a link to "the latest Intel PRO/100 network driver for
+Linux", this has no place in the mainline kernel and the latest Linux driver
+it offers is from 2006, anyway.
 
-<Steve>
-Regarding the 1st comment. The issue affects all non-copper media. In 
-fact, we are using e1000_media_type_internal_serdes and are affected due 
-to the following check in e1000_set_settings:
+Signed-off-by: Jiri Benc <jbenc@redhat.com>
+---
+ drivers/net/ethernet/intel/Kconfig | 80 +++++++-------------------------------
+ 1 file changed, 14 insertions(+), 66 deletions(-)
 
-/* MDI setting is only allowed when autoneg enabled because
-* some hardware doesn't allow MDI setting when speed or
-* duplex is forced.
-*/
-if (ecmd->eth_tp_mdix_ctrl) {
-if (hw->phy.media_type != e1000_media_type_copper)
-return -EOPNOTSUPP;
-
-if ((ecmd->eth_tp_mdix_ctrl != ETH_TP_MDI_AUTO) &&
-(ecmd->autoneg != AUTONEG_ENABLE)) {
-e_err("forcing MDI/MDI-X state is not supported when link speed and/or 
-duplex are forced\n");
-return -EINVAL;
-}
-}
-
-</Steve>
-
->> e1000_set_spd_dplx should not automatically turn autoneg back on for forced
->> 1000 Mbps full duplex settings.
-> I seem to remember that this code is there because the copper-based NICs only support 1000Mbps in auto-negotiation mode, not forced (this is according to the IEEE spec, as far as I know). I believe this code is there to ensure that a user can force the speed to 1000 via the API, and still have the link resolve correctly via auto-negotiation. I am concerned that changing this code will break clients that rely on it. Maybe it is best to also limit it to fiber devices only?
->
-
-<Steve>
-Regarding the 2nd comment. Yes, will limit to non-copper media.
-</Steve>
-
-He supplied me with a second patch which I can send.. Can we remove the 
-RFC this time ?
-
-Daniel
----------------------------------------------------------------------
-Intel Israel (74) Limited
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
+index 3772f3ac956e..714bd1014ddb 100644
+--- a/drivers/net/ethernet/intel/Kconfig
++++ b/drivers/net/ethernet/intel/Kconfig
+@@ -25,16 +25,13 @@ config E100
+ 	  on the adapter. Look for a label that has a barcode and a number
+ 	  in the format 123456-001 (six digits hyphen three digits).
+ 
+-	  Use the above information and the Adapter & Driver ID Guide at:
++	  Use the above information and the Adapter & Driver ID Guide that
++	  can be located at:
+ 
+-	  <http://support.intel.com/support/network/adapter/pro100/21397.htm>
++	  <http://support.intel.com>
+ 
+ 	  to identify the adapter.
+ 
+-	  For the latest Intel PRO/100 network driver for Linux, see:
+-
+-	  <http://www.intel.com/p/en_US/support/highlights/network/pro100plus>
+-
+ 	  More specific information on configuring the driver is in
+ 	  <file:Documentation/networking/e100.txt>.
+ 
+@@ -47,12 +44,7 @@ config E1000
+ 	---help---
+ 	  This driver supports Intel(R) PRO/1000 gigabit ethernet family of
+ 	  adapters.  For more information on how to identify your adapter, go
+-	  to the Adapter & Driver ID Guide at:
+-
+-	  <http://support.intel.com/support/network/adapter/pro100/21397.htm>
+-
+-	  For general information and support, go to the Intel support
+-	  website at:
++	  to the Adapter & Driver ID Guide that can be located at:
+ 
+ 	  <http://support.intel.com>
+ 
+@@ -71,12 +63,8 @@ config E1000E
+ 	  This driver supports the PCI-Express Intel(R) PRO/1000 gigabit
+ 	  ethernet family of adapters. For PCI or PCI-X e1000 adapters,
+ 	  use the regular e1000 driver For more information on how to
+-	  identify your adapter, go to the Adapter & Driver ID Guide at:
+-
+-	  <http://support.intel.com/support/network/adapter/pro100/21397.htm>
+-
+-	  For general information and support, go to the Intel support
+-	  website at:
++	  identify your adapter, go to the Adapter & Driver ID Guide that
++	  can be located at:
+ 
+ 	  <http://support.intel.com>
+ 
+@@ -101,12 +89,7 @@ config IGB
+ 	---help---
+ 	  This driver supports Intel(R) 82575/82576 gigabit ethernet family of
+ 	  adapters.  For more information on how to identify your adapter, go
+-	  to the Adapter & Driver ID Guide at:
+-
+-	  <http://support.intel.com/support/network/adapter/pro100/21397.htm>
+-
+-	  For general information and support, go to the Intel support
+-	  website at:
++	  to the Adapter & Driver ID Guide that can be located at:
+ 
+ 	  <http://support.intel.com>
+ 
+@@ -142,12 +125,7 @@ config IGBVF
+ 	---help---
+ 	  This driver supports Intel(R) 82576 virtual functions.  For more
+ 	  information on how to identify your adapter, go to the Adapter &
+-	  Driver ID Guide at:
+-
+-	  <http://support.intel.com/support/network/adapter/pro100/21397.htm>
+-
+-	  For general information and support, go to the Intel support
+-	  website at:
++	  Driver ID Guide that can be located at:
+ 
+ 	  <http://support.intel.com>
+ 
+@@ -164,12 +142,7 @@ config IXGB
+ 	  This driver supports Intel(R) PRO/10GbE family of adapters for
+ 	  PCI-X type cards. For PCI-E type cards, use the "ixgbe" driver
+ 	  instead. For more information on how to identify your adapter, go
+-	  to the Adapter & Driver ID Guide at:
+-
+-	  <http://support.intel.com/support/network/adapter/pro100/21397.htm>
+-
+-	  For general information and support, go to the Intel support
+-	  website at:
++	  to the Adapter & Driver ID Guide that can be located at:
+ 
+ 	  <http://support.intel.com>
+ 
+@@ -187,12 +160,7 @@ config IXGBE
+ 	---help---
+ 	  This driver supports Intel(R) 10GbE PCI Express family of
+ 	  adapters.  For more information on how to identify your adapter, go
+-	  to the Adapter & Driver ID Guide at:
+-
+-	  <http://support.intel.com/support/network/adapter/pro100/21397.htm>
+-
+-	  For general information and support, go to the Intel support
+-	  website at:
++	  to the Adapter & Driver ID Guide that can be located at:
+ 
+ 	  <http://support.intel.com>
+ 
+@@ -243,12 +211,7 @@ config IXGBEVF
+ 	---help---
+ 	  This driver supports Intel(R) PCI Express virtual functions for the
+ 	  Intel(R) ixgbe driver.  For more information on how to identify your
+-	  adapter, go to the Adapter & Driver ID Guide at:
+-
+-	  <http://support.intel.com/support/network/sb/CS-008441.htm>
+-
+-	  For general information and support, go to the Intel support
+-	  website at:
++	  adapter, go to the Adapter & Driver ID Guide that can be located at:
+ 
+ 	  <http://support.intel.com>
+ 
+@@ -266,12 +229,7 @@ config I40E
+ 	---help---
+ 	  This driver supports Intel(R) Ethernet Controller XL710 Family of
+ 	  devices.  For more information on how to identify your adapter, go
+-	  to the Adapter & Driver ID Guide at:
+-
+-	  <http://support.intel.com/support/network/adapter/pro100/21397.htm>
+-
+-	  For general information and support, go to the Intel support
+-	  website at:
++	  to the Adapter & Driver ID Guide that can be located at:
+ 
+ 	  <http://support.intel.com>
+ 
+@@ -326,12 +284,7 @@ config I40EVF
+ 	---help---
+ 	  This driver supports Intel(R) XL710 and X710 virtual functions.
+ 	  For more information on how to identify your adapter, go to the
+-	  Adapter & Driver ID Guide at:
+-
+-	  <http://support.intel.com/support/network/sb/CS-008441.htm>
+-
+-	  For general information and support, go to the Intel support
+-	  website at:
++	  Adapter & Driver ID Guide that can be located at:
+ 
+ 	  <http://support.intel.com>
+ 
+@@ -347,12 +300,7 @@ config FM10K
+ 	---help---
+ 	  This driver supports Intel(R) FM10000 Ethernet Switch Host
+ 	  Interface.  For more information on how to identify your adapter,
+-	  go to the Adapter & Driver ID Guide at:
+-
+-	  <http://support.intel.com/support/network/sb/CS-008441.htm>
+-
+-	  For general information and support, go to the Intel support
+-	  website at:
++	  go to the Adapter & Driver ID Guide that can be located at:
+ 
+ 	  <http://support.intel.com>
+ 
+-- 
+1.8.3.1
 
