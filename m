@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 5 Apr 2016 20:07:18 +0000
-Subject: [Intel-wired-lan] [v3 next PATCH S32 07/13] i40e: Patch to
- support	trusted VF
-In-Reply-To: <1459508173-22777-8-git-send-email-harshitha.ramamurthy@intel.com>
+Date: Tue, 5 Apr 2016 20:14:25 +0000
+Subject: [Intel-wired-lan] [v3 next PATCH S32 10/13] i40e: Add
+	RSS	configuration to virtual channel
+In-Reply-To: <1459508173-22777-11-git-send-email-harshitha.ramamurthy@intel.com>
 References: <1459508173-22777-1-git-send-email-harshitha.ramamurthy@intel.com>
- <1459508173-22777-8-git-send-email-harshitha.ramamurthy@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9ACBFC@ORSMSX106.amr.corp.intel.com>
+ <1459508173-22777-11-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9ACC1F@ORSMSX106.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,27 +17,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Harshitha Ramamurthy
 > Sent: Friday, April 01, 2016 3:56 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [v3 next PATCH S32 07/13] i40e: Patch to support
-> trusted VF
+> Subject: [Intel-wired-lan] [v3 next PATCH S32 10/13] i40e: Add RSS
+> configuration to virtual channel
 > 
-> From: Anjali Singhai Jain <anjali.singhai@intel.com>
+> From: Mitch Williams <mitch.a.williams@intel.com>
 > 
-> This patch adds hook to support changing a VF from not-trusted to trusted
-> and vice-versa. Fixed the wrappers and function prototype.
-> Changed the dmesg to reflex the current state better. This patch also
-> disables turning on/off trusted VF in MFP mode.
+> Add opcodes and structures to support RSS configuration by PF driver on
+> behalf of the VF drivers. This reduces complexity in the VF driver and allows
+> us to support future hardware designs without modifying the VF driver.
 > 
-> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-> Change-ID: Ibcd910935c01f0be1f3fdd6d427230291ee92ebe
+> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+> Change-ID: I8c75765c630eacb71f95967f1109a198542593ac
 > ---
-> Testing Hints : Test the feature with ip link set dev eth0 vf 1 trust on or ip link
-> set dev eth0 vf 1 trust off
+> Testing Hints : Compile code and make sure there are no warnings. There's
+> no actual code here.
 > 
->  drivers/net/ethernet/intel/i40e/i40e_main.c        |  1 +
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 42
-> ++++++++++++++++++++++
-> drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |  2 ++
->  3 files changed, 45 insertions(+)
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl.h   | 45
+> +++++++++++++++++++++--
+>  drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h | 45
+> +++++++++++++++++++++--
+>  2 files changed, 84 insertions(+), 6 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-dmesg reflects VF trust status when changed
+Code compiles and passes traffic
