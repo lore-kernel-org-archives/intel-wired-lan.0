@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 5 Apr 2016 19:45:22 +0000
-Subject: [Intel-wired-lan] [v3 next PATCH S32 03/13] i40e: Move HW flush
-In-Reply-To: <1459508173-22777-4-git-send-email-harshitha.ramamurthy@intel.com>
+Date: Tue, 5 Apr 2016 19:46:22 +0000
+Subject: [Intel-wired-lan] [v3 next PATCH S32 04/13] i40e/i40evf: Move
+ stack	var deeper
+In-Reply-To: <1459508173-22777-5-git-send-email-harshitha.ramamurthy@intel.com>
 References: <1459508173-22777-1-git-send-email-harshitha.ramamurthy@intel.com>
- <1459508173-22777-4-git-send-email-harshitha.ramamurthy@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9ACBA4@ORSMSX106.amr.corp.intel.com>
+ <1459508173-22777-5-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9ACBB4@ORSMSX106.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,19 +17,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Harshitha Ramamurthy
 > Sent: Friday, April 01, 2016 3:56 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [v3 next PATCH S32 03/13] i40e: Move HW flush
+> Subject: [Intel-wired-lan] [v3 next PATCH S32 04/13] i40e/i40evf: Move stack
+> var deeper
 > 
-> From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > 
-> This patch moves the HW flush routine to the end of the reset flow, after the
-> completion of writing to the device VFLR registers- the benefit is to avoid
-> problems in the passthrough routines.
+> A local variable could move down inside the context where it is used.
 > 
-> Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
-> Change-ID: Ieb56866f21895e6c1fc514b7328c3df79807a57c
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Change-ID: I9caba9e1eacf921037077f2665cbce83fd8e95d6
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 1 +
->  1 file changed, 1 insertion(+)
+> Testing Hints : Compile test, no functional change.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 3 ++-
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 3 ++-
+>  2 files changed, 4 insertions(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Reset functions normally
+Driver compiles normally
