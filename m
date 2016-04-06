@@ -1,20 +1,20 @@
 From: kbuild test robot <fengguang.wu@intel.com>
 Date: Wed, 06 Apr 2016 09:19:56 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE]
- 50f26a507664499ccef017607a29cc1456695343 BUILD SUCCESS
-Message-ID: <5704643c.xfIws2+pWRvUkXn7%fengguang.wu@intel.com>
+Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE]
+ 0ea7fae44094b4ca06ea68105457a7dc64041bd3 BUILD SUCCESS
+Message-ID: <5704643c.bz8+21gNl1AxCum3%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
-50f26a507664499ccef017607a29cc1456695343  i40e/i40evf: Bump patch from 1.4.25 to 1.5.1
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
+0ea7fae44094b4ca06ea68105457a7dc64041bd3  fm10k: use ethtool_rxfh_indir_default for default redirection table
 
 elapsed time: 61m
 
-configs tested: 117
+configs tested: 127
 
 alpha                               defconfig
 parisc                            allnoconfig
@@ -83,7 +83,6 @@ openrisc                    or1ksim_defconfig
 tile                         tilegx_defconfig
 um                             i386_defconfig
 um                           x86_64_defconfig
-i386                               tinyconfig
 mips                              allnoconfig
 mips                      fuloong2e_defconfig
 mips                                   jz4740
@@ -97,6 +96,7 @@ sparc                               defconfig
 sparc64                           allnoconfig
 sparc64                             defconfig
 x86_64                              rhel_gcov
+i386                               tinyconfig
 i386                   randconfig-x010-201614
 i386                   randconfig-x011-201614
 i386                   randconfig-x012-201614
@@ -119,20 +119,30 @@ arm                        shmobile_defconfig
 arm                           sunxi_defconfig
 x86_64                 randconfig-x000-201614
 x86_64                 randconfig-x001-201614
-x86_64                 randconfig-x002-201614
-x86_64                 randconfig-x003-201614
-x86_64                 randconfig-x004-201614
+x86_64                 randconfig-x007-201614
 x86_64                 randconfig-x005-201614
 x86_64                 randconfig-x006-201614
-x86_64                 randconfig-x007-201614
+x86_64                 randconfig-x004-201614
 x86_64                 randconfig-x008-201614
 x86_64                 randconfig-x009-201614
+x86_64                 randconfig-x003-201614
+x86_64                 randconfig-x002-201614
 ia64                             alldefconfig
 ia64                              allnoconfig
 ia64                                defconfig
 x86_64                                    lkp
 x86_64                                   rhel
 i386                     randconfig-r0-201614
+i386                   randconfig-x000-201614
+i386                   randconfig-x003-201614
+i386                   randconfig-x009-201614
+i386                   randconfig-x005-201614
+i386                   randconfig-x004-201614
+i386                   randconfig-x002-201614
+i386                   randconfig-x006-201614
+i386                   randconfig-x007-201614
+i386                   randconfig-x008-201614
+i386                   randconfig-x001-201614
 
 Thanks,
 Fengguang
