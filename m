@@ -1,33 +1,38 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 6 Apr 2016 18:36:36 +0000
-Subject: [Intel-wired-lan] [PATCH V5 07/11] ixgbe: Introduce function
-	to	control MDIO speed
-In-Reply-To: <20160401191830.120975.11300.stgit@mdrustad-wks.jf.intel.com>
-References: <20160401191701.120975.34684.stgit@mdrustad-wks.jf.intel.com>
- <20160401191830.120975.11300.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9ACF86@ORSMSX106.amr.corp.intel.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Wed, 6 Apr 2016 21:37:03 +0300
+Subject: [Intel-wired-lan] fm10k: use ethtool_rxfh_indir_default for
+ default redirection table
+Message-ID: <20160406183703.GA27407@mwanda>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Mark D Rustad
-> Sent: Friday, April 01, 2016 12:19 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH V5 07/11] ixgbe: Introduce function to
-> control MDIO speed
-> 
-> Move code that controls MDIO speed into a new function because there will
-> be more MACs that need the control.
-> 
-> Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   27
-> +++++++++++++++++++------
->  1 file changed, 21 insertions(+), 6 deletions(-)
+Hello Jacob Keller,
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Patch applied and compiles cleanly, driver correctly communicates with device
+The patch 0ea7fae44094: "fm10k: use ethtool_rxfh_indir_default for
+default redirection table" from Feb 16, 2016, leads to the following
+static checker warning:
+
+	drivers/net/ethernet/intel/fm10k/fm10k_main.c:1977 fm10k_init_reta()
+	error: potential null dereference 'indir'.  (kcalloc returns null)
+
+drivers/net/ethernet/intel/fm10k/fm10k_main.c
+  1970  
+  1971  repopulate_reta:
+  1972          indir = kcalloc(fm10k_get_reta_size(netdev),
+  1973                          sizeof(indir[0]), GFP_KERNEL);
+  1974  
+  1975          /* generate redirection table using the default kernel policy */
+  1976          for (i = 0; i < fm10k_get_reta_size(netdev); i++)
+  1977                  indir[i] = ethtool_rxfh_indir_default(i, rss_i);
+  1978  
+  1979          fm10k_write_reta(interface, indir);
+  1980  
+  1981          kfree(indir);
+  1982  }
+
+
+regards,
+dan carpenter
