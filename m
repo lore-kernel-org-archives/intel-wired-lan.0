@@ -1,50 +1,43 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 06 Apr 2016 15:08:56 -0700
-Subject: [Intel-wired-lan] [PATCH net-next] net: intel: remove dead links
-In-Reply-To: <20160406.165451.42694079252458681.davem@davemloft.net>
-References: <3c9f8ea384ba033f83ec360eef17732ff0a5a8dd.1459866280.git.jbenc@redhat.com>
- <20160406.165451.42694079252458681.davem@davemloft.net>
-Message-ID: <1459980536.2978.18.camel@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 6 Apr 2016 22:13:51 +0000
+Subject: [Intel-wired-lan] [v3 next PATCH S32 09/13] i40e: Move NVM
+ variable	out of AQ struct
+In-Reply-To: <1459508173-22777-10-git-send-email-harshitha.ramamurthy@intel.com>
+References: <1459508173-22777-1-git-send-email-harshitha.ramamurthy@intel.com>
+ <1459508173-22777-10-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9AD015@ORSMSX106.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2016-04-06 at 16:54 -0400, David Miller wrote:
-> From: Jiri Benc <jbenc@redhat.com>
-> Date: Tue,??5 Apr 2016 16:25:07 +0200
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Harshitha Ramamurthy
+> Sent: Friday, April 01, 2016 3:56 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [v3 next PATCH S32 09/13] i40e: Move NVM
+> variable out of AQ struct
 > 
-> > 
-> > The Kconfig for Intel NICs references two different URLs for the
-> > "Adapter
-> > & Driver ID Guide". Neither of those two links works. The current
-> > URL seems
-> > to be
-> > http://www.intel.com/content/www/us/en/support/network-and-i-o/ethe
-> > rnet-products/000005584.html
-> > but given it's apparently constantly changing, there's no point in
-> > having it
-> > in the help text.
-> > 
-> > Just keep a generic pointer to http://support.intel.com. Hopefully,
-> > this one
-> > will have a longer live. It still works, at least.
-> > 
-> > Futhermore, remove a link to "the latest Intel PRO/100 network
-> > driver for
-> > Linux", this has no place in the mainline kernel and the latest
-> > Linux driver
-> > it offers is from 2006, anyway.
-> > 
-> > Signed-off-by: Jiri Benc <jbenc@redhat.com>
-> I expect Jeff to pull this into his tree, thanks.
+> From: Shannon Nelson <shannon.nelson@intel.com>
+> 
+> The NVM update status info should stay collected together, not spread
+> across different structs.
+> 
+> Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+> Change-ID: Ic16f9e9fd79945d865bb7226184c889884585025
+> ---
+> Testing Hints :
+> 	Compile code and run an NVM update
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_adminq.c   |  6 +++---
+>  drivers/net/ethernet/intel/i40e/i40e_adminq.h   |  1 -
+>  drivers/net/ethernet/intel/i40e/i40e_nvm.c      | 12 ++++++------
+>  drivers/net/ethernet/intel/i40e/i40e_type.h     |  1 +
+>  drivers/net/ethernet/intel/i40evf/i40e_adminq.h |  1 -
+>  drivers/net/ethernet/intel/i40evf/i40e_type.h   |  1 +
+>  6 files changed, 11 insertions(+), 11 deletions(-)
 
-Yep, got it queued up.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160406/bf6e2f9b/attachment.asc>
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+nvmupdate works as expected
