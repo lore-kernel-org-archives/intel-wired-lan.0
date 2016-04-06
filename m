@@ -1,20 +1,20 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 06 Apr 2016 09:19:56 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE]
- 0ea7fae44094b4ca06ea68105457a7dc64041bd3 BUILD SUCCESS
-Message-ID: <5704643c.bz8+21gNl1AxCum3%fengguang.wu@intel.com>
+Date: Wed, 06 Apr 2016 09:32:41 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ d91f283383bfa5ca4d452fe36547ac56e2e67e1b BUILD SUCCESS
+Message-ID: <57046739.EQEm5KE1im52F7zV%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
-0ea7fae44094b4ca06ea68105457a7dc64041bd3  fm10k: use ethtool_rxfh_indir_default for default redirection table
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+d91f283383bfa5ca4d452fe36547ac56e2e67e1b  fm10k: Reset multicast mode when deleting lport
 
-elapsed time: 61m
+elapsed time: 73m
 
-configs tested: 127
+configs tested: 128
 
 alpha                               defconfig
 parisc                            allnoconfig
@@ -26,10 +26,12 @@ blackfin                BF533-EZKIT_defconfig
 blackfin            BF561-EZKIT-SMP_defconfig
 blackfin                  TCM-BF537_defconfig
 cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
 sh                                allnoconfig
 sh                          rsk7269_defconfig
 sh                  sh7785lcr_32bit_defconfig
 sh                            titan_defconfig
+i386                   randconfig-c0-04060833
 x86_64                           allmodconfig
 powerpc                           allnoconfig
 powerpc                             defconfig
@@ -54,6 +56,9 @@ mips                       bmips_be_defconfig
 mips                          rm200_defconfig
 powerpc                 mpc837x_mds_defconfig
 sh                         ap325rxa_defconfig
+arm                             mxs_defconfig
+ia64                      gensparse_defconfig
+mn10300                          alldefconfig
 x86_64                 randconfig-x010-201614
 x86_64                 randconfig-x018-201614
 x86_64                 randconfig-x011-201614
@@ -72,9 +77,15 @@ m68k                          multi_defconfig
 m68k                           sun3_defconfig
 i386                     randconfig-s0-201614
 i386                     randconfig-s1-201614
+x86_64                 randconfig-s0-04060840
+x86_64                 randconfig-s1-04060840
+x86_64                 randconfig-s2-04060840
 x86_64                 randconfig-s3-04060803
 x86_64                 randconfig-s4-04060803
 x86_64                 randconfig-s5-04060803
+x86_64                 randconfig-s3-04060902
+x86_64                 randconfig-s4-04060902
+x86_64                 randconfig-s5-04060902
 avr32                      atngw100_defconfig
 avr32                     atstk1006_defconfig
 frv                                 defconfig
@@ -88,26 +99,31 @@ mips                      fuloong2e_defconfig
 mips                                   jz4740
 mips                                     txx9
 x86_64                   randconfig-i0-201614
+i386                   randconfig-b0-04060829
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
 microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
 i386                   randconfig-i0-04060616
 i386                   randconfig-i1-04060616
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
 x86_64                              rhel_gcov
-i386                               tinyconfig
-i386                   randconfig-x010-201614
-i386                   randconfig-x011-201614
 i386                   randconfig-x012-201614
 i386                   randconfig-x013-201614
-i386                   randconfig-x014-201614
 i386                   randconfig-x015-201614
+i386                   randconfig-x019-201614
+i386                   randconfig-x011-201614
+i386                   randconfig-x018-201614
+i386                   randconfig-x010-201614
 i386                   randconfig-x016-201614
 i386                   randconfig-x017-201614
-i386                   randconfig-x018-201614
-i386                   randconfig-x019-201614
+i386                   randconfig-x014-201614
+x86_64                                    lkp
+x86_64                                   rhel
 i386                     randconfig-n0-201614
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
 x86_64                 randconfig-n0-04060815
 arm                               allnoconfig
 arm                         at91_dt_defconfig
@@ -119,30 +135,15 @@ arm                        shmobile_defconfig
 arm                           sunxi_defconfig
 x86_64                 randconfig-x000-201614
 x86_64                 randconfig-x001-201614
-x86_64                 randconfig-x007-201614
+x86_64                 randconfig-x002-201614
+x86_64                 randconfig-x003-201614
+x86_64                 randconfig-x004-201614
 x86_64                 randconfig-x005-201614
 x86_64                 randconfig-x006-201614
-x86_64                 randconfig-x004-201614
+x86_64                 randconfig-x007-201614
 x86_64                 randconfig-x008-201614
 x86_64                 randconfig-x009-201614
-x86_64                 randconfig-x003-201614
-x86_64                 randconfig-x002-201614
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                    lkp
-x86_64                                   rhel
 i386                     randconfig-r0-201614
-i386                   randconfig-x000-201614
-i386                   randconfig-x003-201614
-i386                   randconfig-x009-201614
-i386                   randconfig-x005-201614
-i386                   randconfig-x004-201614
-i386                   randconfig-x002-201614
-i386                   randconfig-x006-201614
-i386                   randconfig-x007-201614
-i386                   randconfig-x008-201614
-i386                   randconfig-x001-201614
 
 Thanks,
 Fengguang
