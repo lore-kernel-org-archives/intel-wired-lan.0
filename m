@@ -1,44 +1,51 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 6 Apr 2016 21:33:28 +0000
-Subject: [Intel-wired-lan] [v3 next PATCH S32 08/13] i40e: Restrict VF
- poll	mode to only single function mode devices
-In-Reply-To: <1459508173-22777-9-git-send-email-harshitha.ramamurthy@intel.com>
-References: <1459508173-22777-1-git-send-email-harshitha.ramamurthy@intel.com>
- <1459508173-22777-9-git-send-email-harshitha.ramamurthy@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9ACFEA@ORSMSX106.amr.corp.intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Wed, 6 Apr 2016 21:57:27 +0000
+Subject: [Intel-wired-lan] fm10k: use ethtool_rxfh_indir_default for
+ default redirection table
+In-Reply-To: <20160406183703.GA27407@mwanda>
+References: <20160406183703.GA27407@mwanda>
+Message-ID: <1459979845.17828.10.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Harshitha Ramamurthy
-> Sent: Friday, April 01, 2016 3:56 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [v3 next PATCH S32 08/13] i40e: Restrict VF poll
-> mode to only single function mode devices
+On Wed, 2016-04-06 at 21:37 +0300, Dan Carpenter wrote:
+> Hello Jacob Keller,
 > 
-> From: Shannon Nelson <shannon.nelson@intel.com>
+> The patch 0ea7fae44094: "fm10k: use ethtool_rxfh_indir_default for
+> default redirection table" from Feb 16, 2016, leads to the following
+> static checker warning:
 > 
-> The VFs can request their queues to be set up into polling mode, rather than
-> interrupt mode, which works well for supporting things like DPDK, but this
-> should not be available when working in an multi-function support device.
+> 	drivers/net/ethernet/intel/fm10k/fm10k_main.c:1977
+> fm10k_init_reta()
+> 	error: potential null dereference 'indir'.??(kcalloc returns
+> null)
 > 
-> Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-> Change-ID: Id36792e4e7422db8f2033336507211f68f14ff6f
-> ---
-> Testing Hints:
->     case 1:
-> 	set up a DPDK VF in an NPAR environment
-> 	the VF polling request should be failed and a message logged
->     case 2:
-> 	set up a DPDK VF in an SFP environment
-> 	the VF polling request should succeed
+> drivers/net/ethernet/intel/fm10k/fm10k_main.c
+> ? 1970??
+> ? 1971??repopulate_reta:
+> ? 1972??????????indir = kcalloc(fm10k_get_reta_size(netdev),
+> ? 1973??????????????????????????sizeof(indir[0]), GFP_KERNEL);
+> ? 1974??
+> ? 1975??????????/* generate redirection table using the default
+> kernel policy */
+> ? 1976??????????for (i = 0; i < fm10k_get_reta_size(netdev); i++)
+> ? 1977??????????????????indir[i] = ethtool_rxfh_indir_default(i,
+> rss_i);
+> ? 1978??
+> ? 1979??????????fm10k_write_reta(interface, indir);
+> ? 1980??
+> ? 1981??????????kfree(indir);
+> ? 1982??}
 > 
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 10 +++++++++-
->  1 file changed, 9 insertions(+), 1 deletion(-)
+> 
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Builds, compiles, and passes traffic
+Oops! Will fix in a v2. Which tool is this caused by?
+
+Thanks,
+Jake
+
+> regards,
+> dan carpenter
