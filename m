@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 6 Apr 2016 18:35:42 +0000
-Subject: [Intel-wired-lan] [PATCH V5 05/11] ixgbe: Read and set instance
- id
-In-Reply-To: <20160401191819.120975.51167.stgit@mdrustad-wks.jf.intel.com>
+Date: Wed, 6 Apr 2016 18:36:16 +0000
+Subject: [Intel-wired-lan] [PATCH V5 06/11] ixgbe: Read and
+	parse	NW_MNG_IF_SEL register
+In-Reply-To: <20160401191825.120975.32732.stgit@mdrustad-wks.jf.intel.com>
 References: <20160401191701.120975.34684.stgit@mdrustad-wks.jf.intel.com>
- <20160401191819.120975.51167.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9ACF6A@ORSMSX106.amr.corp.intel.com>
+ <20160401191825.120975.32732.stgit@mdrustad-wks.jf.intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9ACF79@ORSMSX106.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,16 +17,18 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Mark D Rustad
 > Sent: Friday, April 01, 2016 12:18 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH V5 05/11] ixgbe: Read and set instance id
+> Subject: [Intel-wired-lan] [PATCH V5 06/11] ixgbe: Read and parse
+> NW_MNG_IF_SEL register
 > 
-> Read the instance number from EEPROM and save it for later use.
+> Read the IXGBE_NW_MNG_IF_SEL register and use it to set interface
+> attributes.
 > 
 > Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |    8 ++++++++
->  drivers/net/ethernet/intel/ixgbe/ixgbe_type.h   |    5 +++++
->  2 files changed, 13 insertions(+)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |    5 +++
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |   37
+> ++++++++++++++++++++++---
+>  2 files changed, 37 insertions(+), 5 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 Patch applied and compiles cleanly, driver correctly communicates with device
-
