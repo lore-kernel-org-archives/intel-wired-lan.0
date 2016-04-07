@@ -1,86 +1,94 @@
-From: Rustad, Mark D <mark.d.rustad@intel.com>
-Date: Thu, 7 Apr 2016 18:05:27 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Add register wait for slow
- links
-In-Reply-To: <201604080136.ptlU5yhO%fengguang.wu@intel.com>
-References: <201604080136.ptlU5yhO%fengguang.wu@intel.com>
-Message-ID: <04E0D5AC-F99E-489B-A62D-A0777F10E8AE@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 08 Apr 2016 06:53:49 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ b8b2dc512c80f79afb1957a751a14893ed4e6e1b BUILD SUCCESS
+Message-ID: <5706e4fd.QbJwMNDdRmD5/beb%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-lkp <lkp@intel.com> wrote:
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+b8b2dc512c80f79afb1957a751a14893ed4e6e1b  fm10k: fix multi-bit VLAN update requests from VF
 
-> Hi Mark,
->
-> [auto build test ERROR on net-next/master]
-> [also build test ERROR on v4.6-rc2 next-20160407]
-> [if your patch is applied to the wrong git tree, please drop us a note to  
-> help improving the system]
+elapsed time: 38m
 
-This particular patch needed to go on top of Jeff Kirsher's dev-queue branch.
+configs tested: 74
 
-> url:     
-> https://github.com/0day-ci/linux/commits/Mark-D-Rustad/ixgbe-Add-register-wait-for-slow-links/20160408-014717
-> config: x86_64-randconfig-x010-201614 (attached as .config)
-> reproduce:
->         # save the attached .config to linux build tree
->         make ARCH=x86_64
->
-> All errors (new ones prefixed by >>):
->
->    In file included from include/uapi/linux/stddef.h:1:0,
->                     from include/linux/stddef.h:4,
->                     from include/uapi/linux/posix_types.h:4,
->                     from include/uapi/linux/types.h:13,
->                     from include/linux/types.h:5,
->                     from drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:29:
->    drivers/net/ethernet/intel/ixgbe/ixgbe_main.c: In function 'ixgbe_read_reg':
->>> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:367:8: error:  
->>> 'IXGBE_NW_MNG_IF_SEL_ENABLE_10_100M' undeclared (first use in this  
->>> function)
->           IXGBE_NW_MNG_IF_SEL_ENABLE_10_100M)) {
->            ^
->    include/linux/compiler.h:170:42: note: in definition of macro 'unlikely'
->     # define unlikely(x) __builtin_expect(!!(x), 0)
->                                              ^
->    drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:367:8: note: each undeclared identifier is reported only once for each function it appears in
->            IXGBE_NW_MNG_IF_SEL_ENABLE_10_100M)) {
->            ^
->    include/linux/compiler.h:170:42: note: in definition of macro 'unlikely'
->     # define unlikely(x) __builtin_expect(!!(x), 0)
->                                              ^
->
-> vim +/IXGBE_NW_MNG_IF_SEL_ENABLE_10_100M +367  
-> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
->
->    361		u8 __iomem *reg_addr = ACCESS_ONCE(hw->hw_addr);
->    362		u32 value;
->    363
->    364		if (ixgbe_removed(reg_addr))
->    365			return IXGBE_FAILED_READ_REG;
->    366		if (unlikely(hw->phy.nw_mng_if_sel &
->> 367			     IXGBE_NW_MNG_IF_SEL_ENABLE_10_100M)) {
->   368			struct ixgbe_adapter *adapter;
->    369			int i;
->    370
->
-> ---
-> 0-DAY kernel test infrastructure                Open Source Technology  
-> Center
-> https://lists.01.org/pipermail/kbuild-all                   Intel  
-> Corporation
-> <.config.gz>
+i386                     randconfig-a0-201614
+sh                                allnoconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+x86_64                 randconfig-v0-04080617
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+parisc                            allnoconfig
+i386                                defconfig
+x86_64                 randconfig-x010-201614
+x86_64                 randconfig-x018-201614
+x86_64                 randconfig-x011-201614
+x86_64                 randconfig-x013-201614
+x86_64                 randconfig-x012-201614
+x86_64                 randconfig-x019-201614
+x86_64                 randconfig-x014-201614
+x86_64                 randconfig-x016-201614
+x86_64                 randconfig-x015-201614
+x86_64                 randconfig-x017-201614
+m68k                       m5475evb_defconfig
+i386                     randconfig-s0-201614
+i386                     randconfig-s1-201614
+x86_64                 randconfig-s3-04080614
+x86_64                 randconfig-s4-04080614
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+i386                               tinyconfig
+mips                              allnoconfig
+powerpc                           allnoconfig
+x86_64                   randconfig-i0-201614
+i386                   randconfig-b0-04080610
+sparc64                           allnoconfig
+i386                     randconfig-i0-201614
+i386                     randconfig-i1-201614
+x86_64                 randconfig-b0-04080550
+x86_64                              rhel_gcov
+i386                   randconfig-x012-201614
+i386                   randconfig-x013-201614
+i386                   randconfig-x015-201614
+i386                   randconfig-x019-201614
+i386                   randconfig-x011-201614
+i386                   randconfig-x018-201614
+i386                   randconfig-x010-201614
+i386                   randconfig-x016-201614
+i386                   randconfig-x017-201614
+i386                   randconfig-x014-201614
+i386                     randconfig-n0-201614
+ia64                             alldefconfig
+ia64                              allnoconfig
+x86_64                 randconfig-x000-201614
+x86_64                 randconfig-x001-201614
+x86_64                 randconfig-x007-201614
+x86_64                 randconfig-x005-201614
+x86_64                 randconfig-x006-201614
+x86_64                 randconfig-x004-201614
+x86_64                 randconfig-x008-201614
+x86_64                 randconfig-x009-201614
+x86_64                 randconfig-x003-201614
+x86_64                 randconfig-x002-201614
+i386                     randconfig-r0-201614
+i386                   randconfig-x000-201614
+i386                   randconfig-x003-201614
+i386                   randconfig-x009-201614
+i386                   randconfig-x005-201614
+i386                   randconfig-x004-201614
+i386                   randconfig-x002-201614
+i386                   randconfig-x006-201614
+i386                   randconfig-x007-201614
+i386                   randconfig-x008-201614
+i386                   randconfig-x001-201614
+i386                             alldefconfig
+i386                              allnoconfig
 
-
---
-Mark Rustad, Networking Division, Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 841 bytes
-Desc: Message signed with OpenPGP using GPGMail
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160407/cf74b5a5/attachment.asc>
+Thanks,
+Fengguang
