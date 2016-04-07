@@ -1,37 +1,48 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Thu, 7 Apr 2016 01:42:24 +0000
-Subject: [Intel-wired-lan] [PATCH] Revert "igb: Fix a deadlock
-	in	igb_sriov_reinit"
-In-Reply-To: <57047E20.1090700@huawei.com>
-References: <57047E20.1090700@huawei.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81ECB902@ORSMSX101.amr.corp.intel.com>
+Date: Thu, 7 Apr 2016 02:31:26 +0000
+Subject: [Intel-wired-lan] [PATCH net-next] net: intel: remove dead links
+In-Reply-To: <3c9f8ea384ba033f83ec360eef17732ff0a5a8dd.1459866280.git.jbenc@redhat.com>
+References: <3c9f8ea384ba033f83ec360eef17732ff0a5a8dd.1459866280.git.jbenc@redhat.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81ECB9E0@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of c00176621
-> Sent: Tuesday, April 5, 2016 8:10 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Liuyongan <liuyongan@huawei.com>; baijiaju1990 at 163.com;
-> wangyunjian <wangyunjian@huawei.com>
-> Subject: [Intel-wired-lan] [PATCH] Revert "igb: Fix a deadlock in
-> igb_sriov_reinit"
+> From: netdev-owner at vger.kernel.org [mailto:netdev-
+> owner at vger.kernel.org] On Behalf Of Jiri Benc
+> Sent: Tuesday, April 5, 2016 7:25 AM
+> To: netdev at vger.kernel.org
+> Cc: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; Brandeburg, Jesse
+> <jesse.brandeburg@intel.com>; Nelson, Shannon
+> <shannon.nelson@intel.com>; Wyborny, Carolyn
+> <carolyn.wyborny@intel.com>; Skidmore, Donald C
+> <donald.c.skidmore@intel.com>; Allan, Bruce W <bruce.w.allan@intel.com>;
+> Ronciak, John <john.ronciak@intel.com>; Williams, Mitch A
+> <mitch.a.williams@intel.com>; intel-wired-lan at lists.osuosl.org
+> Subject: [PATCH net-next] net: intel: remove dead links
 > 
-> This reverts commit 3eb14ea8d958 ("igb: Fix a deadlock in
-> igb_sriov_reinit")
-> It is the same as commit f468adc944ef ("igb: missing rtnl_unlock in
-> igb_sriov_reinit()")
-> There is no rtnl_lock() in igb_resume before, rtnl_unlock will cause a
-> deadlock.
+> The Kconfig for Intel NICs references two different URLs for the "Adapter
+> & Driver ID Guide". Neither of those two links works. The current URL seems
+> to be
+> http://www.intel.com/content/www/us/en/support/network-and-i-
+> o/ethernet-products/000005584.html
+> but given it's apparently constantly changing, there's no point in having it
+> in the help text.
 > 
-> Signed-off-by: Arika Chen <arika.chen@huawei.com>
+> Just keep a generic pointer to http://support.intel.com. Hopefully, this one
+> will have a longer live. It still works, at least.
+> 
+> Futhermore, remove a link to "the latest Intel PRO/100 network driver for
+> Linux", this has no place in the mainline kernel and the latest Linux driver
+> it offers is from 2006, anyway.
+> 
+> Signed-off-by: Jiri Benc <jbenc@redhat.com>
 > ---
->  drivers/net/ethernet/intel/igb/igb_main.c | 1 -
->  1 file changed, 1 deletion(-)
+>  drivers/net/ethernet/intel/Kconfig | 80 +++++++-------------------------------
+>  1 file changed, 14 insertions(+), 66 deletions(-)
 
-Yeah, it looks like the a rtnl_unlock got thrown into another function as a side effect of adding it to igb_sriov_reinit
+If reading through the file qualifies as tested...
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
