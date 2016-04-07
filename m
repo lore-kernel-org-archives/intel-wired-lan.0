@@ -1,98 +1,285 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu,  7 Apr 2016 08:21:23 -0700
-Subject: [Intel-wired-lan] [PATCH v1 4/4] fm10k: fix incorrect IPv6 extended
-	header checksum
+Date: Thu,  7 Apr 2016 08:21:21 -0700
+Subject: [Intel-wired-lan] [PATCH v1 2/4] fm10k: consistently use Intel(R)
+	for driver names
 In-Reply-To: <1460042483-16169-1-git-send-email-jacob.e.keller@intel.com>
 References: <1460042483-16169-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1460042483-16169-4-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1460042483-16169-2-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Bruce Allan <bruce.w.allan@intel.com>
-
-Check for and handle IPv6 extended headers so that tx checksum offload
-can be done. Also use skb_checksum_help for unexpected cases.
+Update every header file and other locations to consistently use
+Intel(R) instead of just Intel. Also update copyright year of files
+which we modified.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
 
 Notes:
     Testing-hints:
-      Use the testing tool ipv6-exth program supplied by Mark Rustad to verify that
-      ipv6 packets with extended headers get proper checksums. When using tcpdump,
-      ensure that you only check receive traffic on the link partner, as tcpdump
-      will report checksum errors for transmitted traffic if Tx checksum offloads
-      are enabled.
+      Ensure all the uses of driver summary are the same.
 
- drivers/net/ethernet/intel/fm10k/fm10k_main.c | 25 ++++++++++++++++---------
- 1 file changed, 16 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/fm10k/Makefile        | 4 ++--
+ drivers/net/ethernet/intel/fm10k/fm10k.h         | 2 +-
+ drivers/net/ethernet/intel/fm10k/fm10k_common.c  | 4 ++--
+ drivers/net/ethernet/intel/fm10k/fm10k_common.h  | 4 ++--
+ drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c   | 4 ++--
+ drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c | 4 ++--
+ drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 2 +-
+ drivers/net/ethernet/intel/fm10k/fm10k_iov.c     | 4 ++--
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c    | 4 ++--
+ drivers/net/ethernet/intel/fm10k/fm10k_mbx.c     | 4 ++--
+ drivers/net/ethernet/intel/fm10k/fm10k_mbx.h     | 4 ++--
+ drivers/net/ethernet/intel/fm10k/fm10k_netdev.c  | 2 +-
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c     | 2 +-
+ drivers/net/ethernet/intel/fm10k/fm10k_pf.c      | 2 +-
+ drivers/net/ethernet/intel/fm10k/fm10k_pf.h      | 2 +-
+ drivers/net/ethernet/intel/fm10k/fm10k_tlv.c     | 2 +-
+ drivers/net/ethernet/intel/fm10k/fm10k_tlv.h     | 4 ++--
+ drivers/net/ethernet/intel/fm10k/fm10k_type.h    | 2 +-
+ drivers/net/ethernet/intel/fm10k/fm10k_vf.c      | 2 +-
+ drivers/net/ethernet/intel/fm10k/fm10k_vf.h      | 2 +-
+ 20 files changed, 30 insertions(+), 30 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/fm10k/Makefile b/drivers/net/ethernet/intel/fm10k/Makefile
+index 2aeaa39d9a25..cac645329cea 100644
+--- a/drivers/net/ethernet/intel/fm10k/Makefile
++++ b/drivers/net/ethernet/intel/fm10k/Makefile
+@@ -1,6 +1,6 @@
+ ################################################################################
+ #
+-# Intel Ethernet Switch Host Interface Driver
++# Intel(R) Ethernet Switch Host Interface Driver
+ # Copyright(c) 2013 - 2016 Intel Corporation.
+ #
+ # This program is free software; you can redistribute it and/or modify it
+@@ -22,7 +22,7 @@
+ ################################################################################
+ 
+ #
+-# Makefile for the Intel(R) FM10000 Ethernet Switch Host Interface driver
++# Makefile for the Intel(R) Ethernet Switch Host Interface Driver
+ #
+ 
+ obj-$(CONFIG_FM10K) += fm10k.o
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
+index 5efae40698cc..fcf106e545c5 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k.h
++++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
+@@ -1,4 +1,4 @@
+-/* Intel Ethernet Switch Host Interface Driver
++/* Intel(R) Ethernet Switch Host Interface Driver
+  * Copyright(c) 2013 - 2016 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_common.c b/drivers/net/ethernet/intel/fm10k/fm10k_common.c
+index 6cfae6ac04ea..5bbf19cfe29b 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_common.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_common.c
+@@ -1,5 +1,5 @@
+-/* Intel Ethernet Switch Host Interface Driver
+- * Copyright(c) 2013 - 2014 Intel Corporation.
++/* Intel(R) Ethernet Switch Host Interface Driver
++ * Copyright(c) 2013 - 2016 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_common.h b/drivers/net/ethernet/intel/fm10k/fm10k_common.h
+index 45e4e5b1f20a..50f71e997448 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_common.h
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_common.h
+@@ -1,5 +1,5 @@
+-/* Intel Ethernet Switch Host Interface Driver
+- * Copyright(c) 2013 - 2014 Intel Corporation.
++/* Intel(R) Ethernet Switch Host Interface Driver
++ * Copyright(c) 2013 - 2016 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c b/drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c
+index 2be4361839db..db4bd8bf9722 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_dcbnl.c
+@@ -1,5 +1,5 @@
+-/* Intel Ethernet Switch Host Interface Driver
+- * Copyright(c) 2013 - 2015 Intel Corporation.
++/* Intel(R) Ethernet Switch Host Interface Driver
++ * Copyright(c) 2013 - 2016 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c b/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
+index 5d6137faf7d1..5116fd043630 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_debugfs.c
+@@ -1,5 +1,5 @@
+-/* Intel Ethernet Switch Host Interface Driver
+- * Copyright(c) 2013 - 2015 Intel Corporation.
++/* Intel(R) Ethernet Switch Host Interface Driver
++ * Copyright(c) 2013 - 2016 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+index 24700a8026ed..b4870b8ad0bd 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+@@ -1,4 +1,4 @@
+-/* Intel Ethernet Switch Host Interface Driver
++/* Intel(R) Ethernet Switch Host Interface Driver
+  * Copyright(c) 2013 - 2016 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_iov.c b/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
+index bbf7c4bac303..47f0743ec03b 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
+@@ -1,5 +1,5 @@
+-/* Intel Ethernet Switch Host Interface Driver
+- * Copyright(c) 2013 - 2015 Intel Corporation.
++/* Intel(R) Ethernet Switch Host Interface Driver
++ * Copyright(c) 2013 - 2016 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index b875f4243667..0e166e9c90c8 100644
+index aca3e4762da7..b875f4243667 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -820,6 +820,8 @@ static void fm10k_tx_csum(struct fm10k_ring *tx_ring,
- 		struct ipv6hdr *ipv6;
- 		u8 *raw;
- 	} network_hdr;
-+	u8 *transport_hdr;
-+	__be16 frag_off;
- 	__be16 protocol;
- 	u8 l4_hdr = 0;
+@@ -1,4 +1,4 @@
+-/* Intel Ethernet Switch Host Interface Driver
++/* Intel(R) Ethernet Switch Host Interface Driver
+  * Copyright(c) 2013 - 2016 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+@@ -34,7 +34,7 @@ const char fm10k_driver_version[] = DRV_VERSION;
+ char fm10k_driver_name[] = "fm10k";
+ static const char fm10k_driver_string[] = DRV_SUMMARY;
+ static const char fm10k_copyright[] =
+-	"Copyright (c) 2013 Intel Corporation.";
++	"Copyright (c) 2013 - 2016 Intel Corporation.";
  
-@@ -837,9 +839,11 @@ static void fm10k_tx_csum(struct fm10k_ring *tx_ring,
- 			goto no_csum;
- 		}
- 		network_hdr.raw = skb_inner_network_header(skb);
-+		transport_hdr = skb_inner_transport_header(skb);
- 	} else {
- 		protocol = vlan_get_protocol(skb);
- 		network_hdr.raw = skb_network_header(skb);
-+		transport_hdr = skb_transport_header(skb);
- 	}
- 
- 	switch (protocol) {
-@@ -848,15 +852,17 @@ static void fm10k_tx_csum(struct fm10k_ring *tx_ring,
- 		break;
- 	case htons(ETH_P_IPV6):
- 		l4_hdr = network_hdr.ipv6->nexthdr;
-+		if (likely((transport_hdr - network_hdr.raw) ==
-+			   sizeof(struct ipv6hdr)))
-+			break;
-+		ipv6_skip_exthdr(skb, network_hdr.raw - skb->data +
-+				      sizeof(struct ipv6hdr),
-+				 &l4_hdr, &frag_off);
-+		if (unlikely(frag_off))
-+			l4_hdr = NEXTHDR_FRAGMENT;
- 		break;
- 	default:
--		if (unlikely(net_ratelimit())) {
--			dev_warn(tx_ring->dev,
--				 "partial checksum but ip version=%x!\n",
--				 protocol);
--		}
--		tx_ring->tx_stats.csum_err++;
--		goto no_csum;
-+		break;
- 	}
- 
- 	switch (l4_hdr) {
-@@ -869,9 +875,10 @@ static void fm10k_tx_csum(struct fm10k_ring *tx_ring,
- 	default:
- 		if (unlikely(net_ratelimit())) {
- 			dev_warn(tx_ring->dev,
--				 "partial checksum but l4 proto=%x!\n",
--				 l4_hdr);
-+				 "partial checksum, version=%d l4 proto=%x\n",
-+				 protocol, l4_hdr);
- 		}
-+		skb_checksum_help(skb);
- 		tx_ring->tx_stats.csum_err++;
- 		goto no_csum;
- 	}
+ MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
+ MODULE_DESCRIPTION(DRV_SUMMARY);
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
+index 98202c3d591c..c9dfa6564fcf 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.c
+@@ -1,5 +1,5 @@
+-/* Intel Ethernet Switch Host Interface Driver
+- * Copyright(c) 2013 - 2015 Intel Corporation.
++/* Intel(R) Ethernet Switch Host Interface Driver
++ * Copyright(c) 2013 - 2016 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.h b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.h
+index 245a0a3dc32e..b7dbc8a84c05 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.h
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.h
+@@ -1,5 +1,5 @@
+-/* Intel Ethernet Switch Host Interface Driver
+- * Copyright(c) 2013 - 2015 Intel Corporation.
++/* Intel(R) Ethernet Switch Host Interface Driver
++ * Copyright(c) 2013 - 2016 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+index bf229d54c20c..2a08d3f5b6df 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+@@ -1,4 +1,4 @@
+-/* Intel Ethernet Switch Host Interface Driver
++/* Intel(R) Ethernet Switch Host Interface Driver
+  * Copyright(c) 2013 - 2016 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index 1d833782d917..404f47ae14b6 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -1,4 +1,4 @@
+-/* Intel Ethernet Switch Host Interface Driver
++/* Intel(R) Ethernet Switch Host Interface Driver
+  * Copyright(c) 2013 - 2016 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+index 2105cb8d31cc..5b0ceec361e6 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+@@ -1,4 +1,4 @@
+-/* Intel Ethernet Switch Host Interface Driver
++/* Intel(R) Ethernet Switch Host Interface Driver
+  * Copyright(c) 2013 - 2016 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.h b/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
+index d4a34657b861..3336d3c10760 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.h
+@@ -1,4 +1,4 @@
+-/* Intel Ethernet Switch Host Interface Driver
++/* Intel(R) Ethernet Switch Host Interface Driver
+  * Copyright(c) 2013 - 2016 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_tlv.c b/drivers/net/ethernet/intel/fm10k/fm10k_tlv.c
+index 6b500a6378e0..f8e87bf086b9 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_tlv.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_tlv.c
+@@ -1,4 +1,4 @@
+-/* Intel Ethernet Switch Host Interface Driver
++/* Intel(R) Ethernet Switch Host Interface Driver
+  * Copyright(c) 2013 - 2016 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_tlv.h b/drivers/net/ethernet/intel/fm10k/fm10k_tlv.h
+index e1845e0a17d8..a1f1027fe184 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_tlv.h
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_tlv.h
+@@ -1,5 +1,5 @@
+-/* Intel Ethernet Switch Host Interface Driver
+- * Copyright(c) 2013 - 2015 Intel Corporation.
++/* Intel(R) Ethernet Switch Host Interface Driver
++ * Copyright(c) 2013 - 2016 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms and conditions of the GNU General Public License,
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_type.h b/drivers/net/ethernet/intel/fm10k/fm10k_type.h
+index f3f37a49806e..b8bc06183720 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_type.h
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_type.h
+@@ -1,4 +1,4 @@
+-/* Intel Ethernet Switch Host Interface Driver
++/* Intel(R) Ethernet Switch Host Interface Driver
+  * Copyright(c) 2013 - 2016 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_vf.c b/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
+index 0440706eeb82..3b06685ea63b 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
+@@ -1,4 +1,4 @@
+-/* Intel Ethernet Switch Host Interface Driver
++/* Intel(R) Ethernet Switch Host Interface Driver
+  * Copyright(c) 2013 - 2016 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_vf.h b/drivers/net/ethernet/intel/fm10k/fm10k_vf.h
+index f0932f944793..2662f33c0c71 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_vf.h
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_vf.h
+@@ -1,4 +1,4 @@
+-/* Intel Ethernet Switch Host Interface Driver
++/* Intel(R) Ethernet Switch Host Interface Driver
+  * Copyright(c) 2013 - 2016 Intel Corporation.
+  *
+  * This program is free software; you can redistribute it and/or modify it
 -- 
 2.8.1.102.ga49ec4a
 
