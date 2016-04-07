@@ -1,50 +1,107 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu,  7 Apr 2016 08:21:22 -0700
-Subject: [Intel-wired-lan] [PATCH v1 3/4] fm10k: fix fm10k_add_ethtool_stats
-	to zero memory
-In-Reply-To: <1460042483-16169-1-git-send-email-jacob.e.keller@intel.com>
-References: <1460042483-16169-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1460042483-16169-3-git-send-email-jacob.e.keller@intel.com>
+Date: Thu,  7 Apr 2016 08:21:20 -0700
+Subject: [Intel-wired-lan] [PATCH v1 1/4] fm10k: fix possible null pointer
+	deref after kcalloc
+Message-ID: <1460042483-16169-1-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The ethtool API does not guarantee zero'd memory, so we need to zero the
-stats we skip instead of just skipping them.
+When writing a new default redirection table, we needed to populate
+a new RSS table using ethtool_rxfh_indir_default. We populated this
+table into a region of memory allocated using kcalloc, but never checked
+this for NULL. Fix this by moving the default table generation into
+fm10k_write_reta. If this function is passed a table, use it. Otherwise,
+generate the default table using ethtool_rxfh_indir_default, 4 at at
+time.
 
+Fixes: 0ea7fae44094 ("fm10k: use ethtool_rxfh_indir_default for default redirection table", 2016-02-16)
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
 
 Notes:
     Testing-hints:
-      Ensure that the queue stats don't show random memory values, but always zero
-      if they are unused.
-    
-    Unfortunately, somehow Dave Miller pulled an incorrect version of the original
-    for this patch, so this is a follow-on fixup which brings back the bug fix.
+      This is a very unlikely memory failure, but you should test changing the
+      number of queues, and the RSS table and make sure it behaves as expected.
 
- drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 26 ++++++++++++++++++------
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c    | 14 ++-----------
+ 2 files changed, 22 insertions(+), 18 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-index b4870b8ad0bd..9c0d87503977 100644
+index 27991348b659..24700a8026ed 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-@@ -243,9 +243,10 @@ static void fm10k_add_ethtool_stats(u64 **data, void *pointer,
- 	unsigned int i;
- 	char *p;
+@@ -970,15 +970,29 @@ u32 fm10k_get_reta_size(struct net_device __always_unused *netdev)
  
--	/* simply skip forward if we were not given a valid pointer */
- 	if (!pointer) {
--		*data += size;
-+		/* memory is not zero allocated so we have to clear it */
-+		for (i = 0; i < size; i++)
-+			*((*data)++) = 0;
- 		return;
+ void fm10k_write_reta(struct fm10k_intfc *interface, const u32 *indir)
+ {
++	u16 rss_i = interface->ring_feature[RING_F_RSS].indices;
+ 	struct fm10k_hw *hw = &interface->hw;
+-	int i;
++	u32 table[4];
++	int i, j;
+ 
+ 	/* record entries to reta table */
+-	for (i = 0; i < FM10K_RETA_SIZE; i++, indir += 4) {
+-		u32 reta = indir[0] |
+-			   (indir[1] << 8) |
+-			   (indir[2] << 16) |
+-			   (indir[3] << 24);
++	for (i = 0; i < FM10K_RETA_SIZE; i++) {
++		u32 reta, n;
++
++		/* generate a new table if we weren't given one */
++		for (j = 0; j < 4; j++) {
++			if (indir)
++				n = indir[i + j];
++			else
++				n = ethtool_rxfh_indir_default(i + j, rss_i);
++
++			table[j] = n;
++		}
++
++		reta = table[0] |
++			(table[1] << 8) |
++			(table[2] << 16) |
++			(table[3] << 24);
+ 
+ 		if (interface->reta[i] == reta)
+ 			continue;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+index 58092e523bbe..aca3e4762da7 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+@@ -1927,8 +1927,7 @@ static void fm10k_assign_rings(struct fm10k_intfc *interface)
+ static void fm10k_init_reta(struct fm10k_intfc *interface)
+ {
+ 	u16 i, rss_i = interface->ring_feature[RING_F_RSS].indices;
+-	struct net_device *netdev = interface->netdev;
+-	u32 reta, *indir;
++	u32 reta;
+ 
+ 	/* If the Rx flow indirection table has been configured manually, we
+ 	 * need to maintain it when possible.
+@@ -1953,16 +1952,7 @@ static void fm10k_init_reta(struct fm10k_intfc *interface)
  	}
  
+ repopulate_reta:
+-	indir = kcalloc(fm10k_get_reta_size(netdev),
+-			sizeof(indir[0]), GFP_KERNEL);
+-
+-	/* generate redirection table using the default kernel policy */
+-	for (i = 0; i < fm10k_get_reta_size(netdev); i++)
+-		indir[i] = ethtool_rxfh_indir_default(i, rss_i);
+-
+-	fm10k_write_reta(interface, indir);
+-
+-	kfree(indir);
++	fm10k_write_reta(interface, NULL);
+ }
+ 
+ /**
 -- 
 2.8.1.102.ga49ec4a
 
