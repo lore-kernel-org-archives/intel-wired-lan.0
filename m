@@ -1,107 +1,98 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu,  7 Apr 2016 08:21:20 -0700
-Subject: [Intel-wired-lan] [PATCH v1 1/4] fm10k: fix possible null pointer
-	deref after kcalloc
-Message-ID: <1460042483-16169-1-git-send-email-jacob.e.keller@intel.com>
+Date: Thu,  7 Apr 2016 08:21:23 -0700
+Subject: [Intel-wired-lan] [PATCH v1 4/4] fm10k: fix incorrect IPv6 extended
+	header checksum
+In-Reply-To: <1460042483-16169-1-git-send-email-jacob.e.keller@intel.com>
+References: <1460042483-16169-1-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1460042483-16169-4-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When writing a new default redirection table, we needed to populate
-a new RSS table using ethtool_rxfh_indir_default. We populated this
-table into a region of memory allocated using kcalloc, but never checked
-this for NULL. Fix this by moving the default table generation into
-fm10k_write_reta. If this function is passed a table, use it. Otherwise,
-generate the default table using ethtool_rxfh_indir_default, 4 at at
-time.
+From: Bruce Allan <bruce.w.allan@intel.com>
 
-Fixes: 0ea7fae44094 ("fm10k: use ethtool_rxfh_indir_default for default redirection table", 2016-02-16)
+Check for and handle IPv6 extended headers so that tx checksum offload
+can be done. Also use skb_checksum_help for unexpected cases.
+
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
 
 Notes:
     Testing-hints:
-      This is a very unlikely memory failure, but you should test changing the
-      number of queues, and the RSS table and make sure it behaves as expected.
+      Use the testing tool ipv6-exth program supplied by Mark Rustad to verify that
+      ipv6 packets with extended headers get proper checksums. When using tcpdump,
+      ensure that you only check receive traffic on the link partner, as tcpdump
+      will report checksum errors for transmitted traffic if Tx checksum offloads
+      are enabled.
 
- drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 26 ++++++++++++++++++------
- drivers/net/ethernet/intel/fm10k/fm10k_main.c    | 14 ++-----------
- 2 files changed, 22 insertions(+), 18 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c | 25 ++++++++++++++++---------
+ 1 file changed, 16 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-index 27991348b659..24700a8026ed 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-@@ -970,15 +970,29 @@ u32 fm10k_get_reta_size(struct net_device __always_unused *netdev)
- 
- void fm10k_write_reta(struct fm10k_intfc *interface, const u32 *indir)
- {
-+	u16 rss_i = interface->ring_feature[RING_F_RSS].indices;
- 	struct fm10k_hw *hw = &interface->hw;
--	int i;
-+	u32 table[4];
-+	int i, j;
- 
- 	/* record entries to reta table */
--	for (i = 0; i < FM10K_RETA_SIZE; i++, indir += 4) {
--		u32 reta = indir[0] |
--			   (indir[1] << 8) |
--			   (indir[2] << 16) |
--			   (indir[3] << 24);
-+	for (i = 0; i < FM10K_RETA_SIZE; i++) {
-+		u32 reta, n;
-+
-+		/* generate a new table if we weren't given one */
-+		for (j = 0; j < 4; j++) {
-+			if (indir)
-+				n = indir[i + j];
-+			else
-+				n = ethtool_rxfh_indir_default(i + j, rss_i);
-+
-+			table[j] = n;
-+		}
-+
-+		reta = table[0] |
-+			(table[1] << 8) |
-+			(table[2] << 16) |
-+			(table[3] << 24);
- 
- 		if (interface->reta[i] == reta)
- 			continue;
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index 58092e523bbe..aca3e4762da7 100644
+index b875f4243667..0e166e9c90c8 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -1927,8 +1927,7 @@ static void fm10k_assign_rings(struct fm10k_intfc *interface)
- static void fm10k_init_reta(struct fm10k_intfc *interface)
- {
- 	u16 i, rss_i = interface->ring_feature[RING_F_RSS].indices;
--	struct net_device *netdev = interface->netdev;
--	u32 reta, *indir;
-+	u32 reta;
+@@ -820,6 +820,8 @@ static void fm10k_tx_csum(struct fm10k_ring *tx_ring,
+ 		struct ipv6hdr *ipv6;
+ 		u8 *raw;
+ 	} network_hdr;
++	u8 *transport_hdr;
++	__be16 frag_off;
+ 	__be16 protocol;
+ 	u8 l4_hdr = 0;
  
- 	/* If the Rx flow indirection table has been configured manually, we
- 	 * need to maintain it when possible.
-@@ -1953,16 +1952,7 @@ static void fm10k_init_reta(struct fm10k_intfc *interface)
+@@ -837,9 +839,11 @@ static void fm10k_tx_csum(struct fm10k_ring *tx_ring,
+ 			goto no_csum;
+ 		}
+ 		network_hdr.raw = skb_inner_network_header(skb);
++		transport_hdr = skb_inner_transport_header(skb);
+ 	} else {
+ 		protocol = vlan_get_protocol(skb);
+ 		network_hdr.raw = skb_network_header(skb);
++		transport_hdr = skb_transport_header(skb);
  	}
  
- repopulate_reta:
--	indir = kcalloc(fm10k_get_reta_size(netdev),
--			sizeof(indir[0]), GFP_KERNEL);
--
--	/* generate redirection table using the default kernel policy */
--	for (i = 0; i < fm10k_get_reta_size(netdev); i++)
--		indir[i] = ethtool_rxfh_indir_default(i, rss_i);
--
--	fm10k_write_reta(interface, indir);
--
--	kfree(indir);
-+	fm10k_write_reta(interface, NULL);
- }
+ 	switch (protocol) {
+@@ -848,15 +852,17 @@ static void fm10k_tx_csum(struct fm10k_ring *tx_ring,
+ 		break;
+ 	case htons(ETH_P_IPV6):
+ 		l4_hdr = network_hdr.ipv6->nexthdr;
++		if (likely((transport_hdr - network_hdr.raw) ==
++			   sizeof(struct ipv6hdr)))
++			break;
++		ipv6_skip_exthdr(skb, network_hdr.raw - skb->data +
++				      sizeof(struct ipv6hdr),
++				 &l4_hdr, &frag_off);
++		if (unlikely(frag_off))
++			l4_hdr = NEXTHDR_FRAGMENT;
+ 		break;
+ 	default:
+-		if (unlikely(net_ratelimit())) {
+-			dev_warn(tx_ring->dev,
+-				 "partial checksum but ip version=%x!\n",
+-				 protocol);
+-		}
+-		tx_ring->tx_stats.csum_err++;
+-		goto no_csum;
++		break;
+ 	}
  
- /**
+ 	switch (l4_hdr) {
+@@ -869,9 +875,10 @@ static void fm10k_tx_csum(struct fm10k_ring *tx_ring,
+ 	default:
+ 		if (unlikely(net_ratelimit())) {
+ 			dev_warn(tx_ring->dev,
+-				 "partial checksum but l4 proto=%x!\n",
+-				 l4_hdr);
++				 "partial checksum, version=%d l4 proto=%x\n",
++				 protocol, l4_hdr);
+ 		}
++		skb_checksum_help(skb);
+ 		tx_ring->tx_stats.csum_err++;
+ 		goto no_csum;
+ 	}
 -- 
 2.8.1.102.ga49ec4a
 
