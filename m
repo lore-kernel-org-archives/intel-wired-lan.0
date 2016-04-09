@@ -1,149 +1,65 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 09 Apr 2016 16:23:16 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 09cc48777b05ba6c0e1d1d60349afed33a32c514 BUILD SUCCESS
-Message-ID: <5708bbf4.w5x1wzqsYF/zn0+9%fengguang.wu@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Sat, 9 Apr 2016 08:41:41 -0700
+Subject: [Intel-wired-lan] [next-queue PATCH 0/3] Add support for GSO
+	partial to Intel NIC drivers
+In-Reply-To: <1460185149.2982.6.camel@intel.com>
+References: <20160408203013.12838.63429.stgit@ahduyck-xeon-server>
+ <20160408210103.13096.77973.stgit@ahduyck-xeon-server>
+ <1460185149.2982.6.camel@intel.com>
+Message-ID: <CAKgT0UeBjhSpnpFz++0bWy8D4wFCLHE5iFSUy1WS_QHCG8BchQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-09cc48777b05ba6c0e1d1d60349afed33a32c514  ixgbe: Use correct FC setup function for x550em_a
+On Fri, Apr 8, 2016 at 11:59 PM, Jeff Kirsher
+<jeffrey.t.kirsher@intel.com> wrote:
+> On Fri, 2016-04-08 at 17:06 -0400, Alexander Duyck wrote:
+>> So these are the patches needed to enable tunnel segmentation
+>> offloads on
+>> the igb, igbvf, ixgbe, and ixgbevf drivers.  In addition this patch
+>> extends
+>> the i40e and i40evf drivers to include segmentation support for
+>> tunnels
+>> with outer checksums.
+>>
+>> The net performance gain for these patches are pretty significant.
+>> In the
+>> case of i40e a tunnel with outer checksums showed the following
+>> improvement:
+>> Throughput Throughput  Local Local   Result
+>>            Units       CPU   Service Tag
+>>                        Util  Demand
+>>                        %
+>> 14066.29   10^6bits/s  3.49  0.651   "before"
+>> 20618.16   10^6bits/s  3.09  0.393   "after"
+>>
+>> For ixgbe similar results were seen:
+>> Throughput Throughput  Local  Local   Result
+>>            Units       CPU    Service Tag
+>>                        Util   Demand
+>>                        %
+>> 12879.89   10^6bits/s  10.00  0.763   "before"
+>> 14286.77   10^6bits/s  5.74   0.395   "after"
+>>
+>> These patches all rely on the TSO_MANGLEID and GSO_PARTIAL patches so
+>> I
+>> would not recommend applying them until those patches have first been
+>> applied.
+>
+> Sorry I did not see this until after I tried applying your series. :-(
+>
+> Maybe the two dependent patches should have been in the series, so I
+> and others do not waste their time.  Or not send this until the two
+> patches were accepted.
 
-elapsed time: 67m
+Sorry I meant to send these as an RFC but sent it out with the
+next-queue tag as I had gotten a bit distracted.
 
-configs tested: 128
+I shouldn't need to resubmit these until the other patches are
+accepted so I will probably follow that route.
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201614
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-parisc                         b180_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                             allmodconfig
-mn10300                             defconfig
-powerpc                 mpc837x_mds_defconfig
-powerpc                 mpc837x_rdb_defconfig
-s390                             alldefconfig
-s390                        default_defconfig
-blackfin                       IP0X_defconfig
-mips                         tb0226_defconfig
-powerpc                      ep88xc_defconfig
-sh                        edosk7760_defconfig
-x86_64                 randconfig-x010-201614
-x86_64                 randconfig-x018-201614
-x86_64                 randconfig-x011-201614
-x86_64                 randconfig-x013-201614
-x86_64                 randconfig-x012-201614
-x86_64                 randconfig-x019-201614
-x86_64                 randconfig-x014-201614
-x86_64                 randconfig-x016-201614
-x86_64                 randconfig-x015-201614
-x86_64                 randconfig-x017-201614
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                     randconfig-s1-201614
-i386                     randconfig-s0-201614
-x86_64                 randconfig-s3-04091610
-x86_64                 randconfig-s4-04091610
-x86_64                 randconfig-s5-04091610
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-x86_64                   randconfig-i0-201614
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i1-201614
-i386                     randconfig-i0-201614
-x86_64                 randconfig-b0-04091614
-x86_64                           allmodconfig
-x86_64                              rhel_gcov
-i386                   randconfig-x012-201614
-i386                   randconfig-x013-201614
-i386                   randconfig-x015-201614
-i386                   randconfig-x019-201614
-i386                   randconfig-x011-201614
-i386                   randconfig-x018-201614
-i386                   randconfig-x010-201614
-i386                   randconfig-x016-201614
-i386                   randconfig-x017-201614
-i386                   randconfig-x014-201614
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201614
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-h0-04091609
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                 randconfig-x000-201614
-x86_64                 randconfig-x001-201614
-x86_64                 randconfig-x007-201614
-x86_64                 randconfig-x005-201614
-x86_64                 randconfig-x006-201614
-x86_64                 randconfig-x004-201614
-x86_64                 randconfig-x008-201614
-x86_64                 randconfig-x009-201614
-x86_64                 randconfig-x003-201614
-x86_64                 randconfig-x002-201614
-i386                     randconfig-r0-201614
-i386                   randconfig-x000-201614
-i386                   randconfig-x003-201614
-i386                   randconfig-x009-201614
-i386                   randconfig-x005-201614
-i386                   randconfig-x004-201614
-i386                   randconfig-x002-201614
-i386                   randconfig-x006-201614
-i386                   randconfig-x007-201614
-i386                   randconfig-x008-201614
-i386                   randconfig-x001-201614
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
+Thanks.
 
-Thanks,
-Fengguang
+- Alex
