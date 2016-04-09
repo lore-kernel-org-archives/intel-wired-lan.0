@@ -1,59 +1,133 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri, 08 Apr 2016 23:59:09 -0700
-Subject: [Intel-wired-lan] [next-queue PATCH 0/3] Add support for GSO
- partial to Intel NIC drivers
-In-Reply-To: <20160408210103.13096.77973.stgit@ahduyck-xeon-server>
-References: <20160408203013.12838.63429.stgit@ahduyck-xeon-server>
- <20160408210103.13096.77973.stgit@ahduyck-xeon-server>
-Message-ID: <1460185149.2982.6.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 09 Apr 2016 15:23:23 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ e8d17b0dad5c2300fe1f2d485a64cd056bd495f4 BUILD SUCCESS
+Message-ID: <5708adeb.tr2/PZSmc7HoxRNE%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2016-04-08 at 17:06 -0400, Alexander Duyck wrote:
-> So these are the patches needed to enable tunnel segmentation
-> offloads on
-> the igb, igbvf, ixgbe, and ixgbevf drivers.? In addition this patch
-> extends
-> the i40e and i40evf drivers to include segmentation support for
-> tunnels
-> with outer checksums.
-> 
-> The net performance gain for these patches are pretty significant.?
-> In the
-> case of i40e a tunnel with outer checksums showed the following
-> improvement:
-> Throughput Throughput? Local Local?? Result?
-> ?????????? Units?????? CPU?? Service Tag????
-> ?????????????????????? Util? Demand?????????
-> ?????????????????????? %????????????????????
-> 14066.29?? 10^6bits/s? 3.49? 0.651?? "before"?
-> 20618.16?? 10^6bits/s? 3.09? 0.393?? "after"
-> 
-> For ixgbe similar results were seen:
-> Throughput Throughput? Local? Local?? Result?
-> ?????????? Units?????? CPU??? Service Tag????
-> ?????????????????????? Util?? Demand?????????
-> ?????????????????????? %???????????????
-> 12879.89?? 10^6bits/s? 10.00? 0.763?? "before"
-> 14286.77?? 10^6bits/s? 5.74?? 0.395?? "after"?
-> 
-> These patches all rely on the TSO_MANGLEID and GSO_PARTIAL patches so
-> I
-> would not recommend applying them until those patches have first been
-> applied.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+e8d17b0dad5c2300fe1f2d485a64cd056bd495f4  ixgbevf: add support for per-queue ethtool stats
 
-Sorry I did not see this until after I tried applying your series. :-(
+elapsed time: 38m
 
-Maybe the two dependent patches should have been in the series, so I
-and others do not waste their time. ?Or not send this until the two
-patches were accepted.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160408/1e0d1721/attachment-0001.asc>
+configs tested: 113
+
+i386                     randconfig-a0-201614
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                 randconfig-x010-201614
+x86_64                 randconfig-x018-201614
+x86_64                 randconfig-x011-201614
+x86_64                 randconfig-x013-201614
+x86_64                 randconfig-x012-201614
+x86_64                 randconfig-x019-201614
+x86_64                 randconfig-x014-201614
+x86_64                 randconfig-x016-201614
+x86_64                 randconfig-x015-201614
+x86_64                 randconfig-x017-201614
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201614
+i386                     randconfig-s1-201614
+x86_64                           allmodconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                             allmodconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201614
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201614
+i386                     randconfig-i1-201614
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                              rhel_gcov
+i386                   randconfig-x012-201614
+i386                   randconfig-x013-201614
+i386                   randconfig-x015-201614
+i386                   randconfig-x019-201614
+i386                   randconfig-x011-201614
+i386                   randconfig-x018-201614
+i386                   randconfig-x010-201614
+i386                   randconfig-x016-201614
+i386                   randconfig-x017-201614
+i386                   randconfig-x014-201614
+i386                     randconfig-n0-201614
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-x000-201614
+x86_64                 randconfig-x001-201614
+x86_64                 randconfig-x007-201614
+x86_64                 randconfig-x005-201614
+x86_64                 randconfig-x006-201614
+x86_64                 randconfig-x004-201614
+x86_64                 randconfig-x008-201614
+x86_64                 randconfig-x009-201614
+x86_64                 randconfig-x003-201614
+x86_64                 randconfig-x002-201614
+i386                     randconfig-r0-201614
+i386                   randconfig-x000-201614
+i386                   randconfig-x003-201614
+i386                   randconfig-x009-201614
+i386                   randconfig-x005-201614
+i386                   randconfig-x004-201614
+i386                   randconfig-x002-201614
+i386                   randconfig-x006-201614
+i386                   randconfig-x007-201614
+i386                   randconfig-x008-201614
+i386                   randconfig-x001-201614
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+
+Thanks,
+Fengguang
