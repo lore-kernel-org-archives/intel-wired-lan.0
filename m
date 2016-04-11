@@ -1,100 +1,54 @@
-From: Ruinskiy, Dima <dima.ruinskiy@intel.com>
-Date: Sun, 3 Apr 2016 14:23:13 +0000
-Subject: [Intel-wired-lan] [PATCH-RFC] drivers: net: ethernet: intel:
- e1000e: fix ethtool autoneg off for fiber
-In-Reply-To: <56FC2A62.6040206@cisco.com>
-References: <1458943126-32258-1-git-send-email-danielwa@cisco.com>
- <56FC2A62.6040206@cisco.com>
-Message-ID: <36CDDD56DDB4D44E911123902EFC26B05B440F17@HASMSX110.ger.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 12 Apr 2016 05:42:58 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 34/34]
+ drivers/net/ethernet/intel/e1000e/netdev.c:7250:2: error: 'ret_val'
+ undeclared
+Message-ID: <201604120557.6RgRlq12%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-I have a couple of comments (sorry for not getting to it a bit sooner).
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   179719a0dde51627fdb6a73ddcd43dfb7e3547ee
+commit: 179719a0dde51627fdb6a73ddcd43dfb7e3547ee [34/34] e1000e: Fix ptp time reset on network interruption
+config: xtensa-allmodconfig (attached as .config)
+reproduce:
+        wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        git checkout 179719a0dde51627fdb6a73ddcd43dfb7e3547ee
+        # save the attached .config to linux build tree
+        make.cross ARCH=xtensa 
 
-> For fiber media, e1000_get_settings should return ETH_TP_MDI_INVALID for
-> eth_tp_mdix_ctrl instead of ETH_TP_MDI_AUTO so subsequent e1000_set_settings
-> call would not fail with -EOPNOTSUPP.
+All errors (new ones prefixed by >>):
 
-Should this be specific to fiber? Because the code just checks media != copper. There is at least other media type (e1000_media_type_internal_serdes), which will be affected by this change as well. What is the proper behavior in this case?
+   drivers/net/ethernet/intel/e1000e/netdev.c: In function 'e1000_probe':
+>> drivers/net/ethernet/intel/e1000e/netdev.c:7250:2: error: 'ret_val' undeclared (first use in this function)
+     ret_val = e1000e_get_base_timinca(adapter, &regval);
+     ^
+   drivers/net/ethernet/intel/e1000e/netdev.c:7250:2: note: each undeclared identifier is reported only once for each function it appears in
 
-> e1000_set_spd_dplx should not automatically turn autoneg back on for forced
-> 1000 Mbps full duplex settings.
+vim +/ret_val +7250 drivers/net/ethernet/intel/e1000e/netdev.c
 
-I seem to remember that this code is there because the copper-based NICs only support 1000Mbps in auto-negotiation mode, not forced (this is according to the IEEE spec, as far as I know). I believe this code is there to ensure that a user can force the speed to 1000 via the API, and still have the link resolve correctly via auto-negotiation. I am concerned that changing this code will break clients that rely on it. Maybe it is best to also limit it to fiber devices only?
+  7244			goto err_register;
+  7245	
+  7246		/* carrier off reporting is important to ethtool even BEFORE open */
+  7247		netif_carrier_off(netdev);
+  7248	
+  7249		/* Get and set the System Time Register SYSTIM base frequency */
+> 7250		ret_val = e1000e_get_base_timinca(adapter, &regval);
+  7251		if (rval)
+  7252			goto err_register;
+  7253		ew32(TIMINCA, regval);
 
-Thanks,
-Dima (Intel e1000e maintainer).
-
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Daniel Walker
-Sent: Wednesday, 30 March, 2016 22:35
-To: Kirsher, Jeffrey T; Brandeburg, Jesse; Nelson, Shannon; Wyborny, Carolyn; Skidmore, Donald C; Allan, Bruce W; Ronciak, John; Williams, Mitch A
-Cc: netdev at vger.kernel.org; xe-kernel at external.cisco.com; danielwa at fifo99.com; linux-kernel at vger.kernel.org; Steve Shih; intel-wired-lan at lists.osuosl.org
-Subject: Re: [Intel-wired-lan] [PATCH-RFC] drivers: net: ethernet: intel: e1000e: fix ethtool autoneg off for fiber
-
-
-So Intel maintainers (Jeff, Jesse, Shannon, Carolyn, Don, Bruce, and John)
-
-I'm assuming no comments means this patch is acceptable , and I will resubmit it without the RFC. Is that acceptable ?
-
-
-On 03/25/2016 02:58 PM, Daniel Walker wrote:
-> From: Steve Shih <sshih@cisco.com>
->
-> This patch fixes the issues for disabling auto-negotiation and forcing
-> speed and duplex settings for the fiber media.
->
-> For fiber media, e1000_get_settings should return ETH_TP_MDI_INVALID for
-> eth_tp_mdix_ctrl instead of ETH_TP_MDI_AUTO so subsequent e1000_set_settings
-> call would not fail with -EOPNOTSUPP.
->
-> e1000_set_spd_dplx should not automatically turn autoneg back on for forced
-> 1000 Mbps full duplex settings.
->
-> Cc: danielwa at fifo99.com
-> Cc: xe-kernel at external.cisco.com
-> Signed-off-by: Steve Shih <sshih@cisco.com>
-> ---
->   drivers/net/ethernet/intel/e1000e/ethtool.c | 6 ++++--
->   1 file changed, 4 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
-> index 6cab1f3..cd03dcd 100644
-> --- a/drivers/net/ethernet/intel/e1000e/ethtool.c
-> +++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
-> @@ -201,6 +201,9 @@ static int e1000_get_settings(struct net_device *netdev,
->   	else
->   		ecmd->eth_tp_mdix_ctrl = hw->phy.mdix;
->   
-> +	if (hw->phy.media_type != e1000_media_type_copper)
-> +		ecmd->eth_tp_mdix_ctrl = ETH_TP_MDI_INVALID;
-> +
->   	return 0;
->   }
->   
-> @@ -236,8 +239,7 @@ static int e1000_set_spd_dplx(struct e1000_adapter *adapter, u32 spd, u8 dplx)
->   		mac->forced_speed_duplex = ADVERTISE_100_FULL;
->   		break;
->   	case SPEED_1000 + DUPLEX_FULL:
-> -		mac->autoneg = 1;
-> -		adapter->hw.phy.autoneg_advertised = ADVERTISE_1000_FULL;
-> +		mac->forced_speed_duplex = ADVERTISE_1000_FULL;
->   		break;
->   	case SPEED_1000 + DUPLEX_HALF:	/* not supported */
->   	default:
-
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan at lists.osuosl.org
-http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
----------------------------------------------------------------------
-Intel Israel (74) Limited
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/octet-stream
+Size: 44821 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160412/1c812f44/attachment-0001.obj>
