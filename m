@@ -1,8 +1,8 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 12 Apr 2016 06:01:43 +0800
+Date: Tue, 12 Apr 2016 06:45:45 +0800
 Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 179719a0dde51627fdb6a73ddcd43dfb7e3547ee BUILD DONE
-Message-ID: <570c1ec7.oQi08A8MGR4Eu/Uu%fengguang.wu@intel.com>
+ 21461704e333753f78de71dd8363e61fee8af1d1 BUILD SUCCESS
+Message-ID: <570c2919.ZhoVLmrC+joZUZ93%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,36 +10,23 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-179719a0dde51627fdb6a73ddcd43dfb7e3547ee  e1000e: Fix ptp time reset on network interruption
+21461704e333753f78de71dd8363e61fee8af1d1  e1000e: Fix ptp time reset on network interruption
 
-drivers/net/ethernet/intel/e1000e/netdev.c:7250:2: error: 'ret_val' undeclared (first use in this function)
+elapsed time: 37m
 
-Error ids grouped by kconfigs:
-
-recent_errors
-??? i386-allmodconfig
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:ret_val-undeclared-(first-use-in-this-function)
-??? powerpc-defconfig
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:ret_val-undeclared-(first-use-in-this-function)
-??? powerpc-ppc64_defconfig
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:ret_val-undeclared-(first-use-in-this-function)
-??? x86_64-allmodconfig
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:ret_val-undeclared-(first-use-in-this-function)
-??? xtensa-allmodconfig
-    ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:ret_val-undeclared-(first-use-in-this-function)
-
-elapsed time: 39m
-
-configs tested: 114
+configs tested: 117
 
 i386                     randconfig-a0-201615
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
 sh                                allnoconfig
 sh                          rsk7269_defconfig
 sh                  sh7785lcr_32bit_defconfig
 sh                            titan_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
 alpha                               defconfig
 parisc                            allnoconfig
 parisc                         b180_defconfig
@@ -68,6 +55,9 @@ m68k                          multi_defconfig
 m68k                           sun3_defconfig
 i386                     randconfig-s0-201615
 i386                     randconfig-s1-201615
+x86_64                 randconfig-s3-04120605
+x86_64                 randconfig-s4-04120605
+x86_64                 randconfig-s5-04120605
 avr32                      atngw100_defconfig
 avr32                     atstk1006_defconfig
 frv                                 defconfig
@@ -81,17 +71,14 @@ mips                              allnoconfig
 mips                      fuloong2e_defconfig
 mips                                   jz4740
 mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
 x86_64                   randconfig-i0-201615
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
 microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
 i386                     randconfig-i0-201615
 i386                     randconfig-i1-201615
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
 m32r                       m32104ut_defconfig
 m32r                     mappi3.smp_defconfig
 m32r                         opsput_defconfig
@@ -113,9 +100,6 @@ i386                   randconfig-x014-201615
 x86_64                                    lkp
 x86_64                                   rhel
 i386                     randconfig-n0-201615
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
 arm                               allnoconfig
 arm                         at91_dt_defconfig
 arm                           efm32_defconfig
@@ -135,6 +119,9 @@ x86_64                 randconfig-x008-201615
 x86_64                 randconfig-x009-201615
 x86_64                 randconfig-x003-201615
 x86_64                 randconfig-x002-201615
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
 i386                     randconfig-r0-201615
 i386                   randconfig-x000-201615
 i386                   randconfig-x003-201615
