@@ -1,37 +1,122 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 12 Apr 2016 22:04:05 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: fix default
- mac->ops.setup_link	for X550EM
-In-Reply-To: <20160324165840.23586.31133.stgit@localhost6.localdomain6>
-References: <20160324165840.23586.31133.stgit@localhost6.localdomain6>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9CF4C3@ORSMSX104.amr.corp.intel.com>
+From: Donald C Skidmore <donald.c.skidmore@intel.com>
+Date: Tue, 12 Apr 2016 19:25:10 -0400
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Add work around for empty SFP+
+	cage crosstalk
+Message-ID: <1460503510-33043-1-git-send-email-donald.c.skidmore@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Emil Tantilov
-> Sent: Thursday, March 24, 2016 9:59 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] ixgbe: fix default mac->ops.setup_link for
-> X550EM
-> 
-> X550EM_a/x did not have a default value for mac->ops.setup_link which was
-> causing link issues for backplane devices.
-> 
-> This patch sets mac->ops.setup_link to ixgbe_setup_mac_link_X540 for
-> X550EM_a/x which is also default for X550. This will result in
-> mac->ops.setup_link calling the link setup function for the respective
-> PHY type in case we do not need a special function to deal with it.
-> 
-> Reported-by: Ken Cox <jkc@redhat.com>
-> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+It is possible on some systems that crosstalk could lead to link flap
+on empty SFP+ cages.  A new NVM bit was defined to let SW know it
+needs to implement the work around which consists of verifying that
+there is a module in the cage before acting on the LSC.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Link detected as expected
+Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h      |  2 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 39 +++++++++++++++++++++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |  1 +
+ 3 files changed, 42 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index 94e39c1..22cf2a9 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -803,6 +803,8 @@ struct ixgbe_adapter {
+ 
+ #define IXGBE_RSS_KEY_SIZE     40  /* size of RSS Hash Key in bytes */
+ 	u32 rss_key[IXGBE_RSS_KEY_SIZE / sizeof(u32)];
++
++	bool need_crosstalk_fix;
+ };
+ 
+ static inline u8 ixgbe_max_rss_indices(struct ixgbe_adapter *adapter)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 974aa7c..7b99c5b 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -5573,6 +5573,7 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter)
+ 	struct pci_dev *pdev = adapter->pdev;
+ 	unsigned int rss, fdir;
+ 	u32 fwsm;
++	u16 device_caps;
+ #ifdef CONFIG_IXGBE_DCB
+ 	int j;
+ 	struct tc_configuration *tc;
+@@ -5738,6 +5739,22 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter)
+ 	adapter->tx_ring_count = IXGBE_DEFAULT_TXD;
+ 	adapter->rx_ring_count = IXGBE_DEFAULT_RXD;
+ 
++	/* Cache bit indicating need for crosstalk fix */
++	switch (hw->mac.type) {
++	case ixgbe_mac_82599EB:
++	case ixgbe_mac_X550EM_x:
++	case ixgbe_mac_x550em_a:
++		hw->mac.ops.get_device_caps(hw, &device_caps);
++		if (device_caps & IXGBE_DEVICE_CAPS_NO_CROSSTALK_WR)
++			adapter->need_crosstalk_fix = false;
++		else
++			adapter->need_crosstalk_fix = true;
++		break;
++	default:
++		adapter->need_crosstalk_fix = false;
++		break;
++	}
++
+ 	/* set default work limits */
+ 	adapter->tx_work_limit = IXGBE_DEFAULT_TX_WORK;
+ 
+@@ -6660,6 +6677,18 @@ static void ixgbe_watchdog_update_link(struct ixgbe_adapter *adapter)
+ 		link_up = true;
+ 	}
+ 
++	/* If Crosstalk fix enabled do the sanity check of making sure
++	 * the SFP+ cage is empty.
++	 */
++	if (adapter->need_crosstalk_fix) {
++		u32 sfp_cage_full;
++
++		sfp_cage_full = IXGBE_READ_REG(hw, IXGBE_ESDP) &
++				IXGBE_ESDP_SDP2;
++		if (ixgbe_is_sfp(hw) && link_up && !sfp_cage_full)
++			link_up = false;
++	}
++
+ 	if (adapter->ixgbe_ieee_pfc)
+ 		pfc_en |= !!(adapter->ixgbe_ieee_pfc->pfc_en);
+ 
+@@ -7006,6 +7035,16 @@ static void ixgbe_sfp_detection_subtask(struct ixgbe_adapter *adapter)
+ 	struct ixgbe_hw *hw = &adapter->hw;
+ 	s32 err;
+ 
++	/* If crosstalk fix enabled verify the SFP+ cage is full */
++	if (adapter->need_crosstalk_fix) {
++		u32 sfp_cage_full;
++
++		sfp_cage_full = IXGBE_READ_REG(hw, IXGBE_ESDP) &
++				IXGBE_ESDP_SDP2;
++		if (!sfp_cage_full)
++			return;
++	}
++
+ 	/* not searching for SFP so there is nothing to do here */
+ 	if (!(adapter->flags2 & IXGBE_FLAG2_SEARCH_FOR_SFP) &&
+ 	    !(adapter->flags2 & IXGBE_FLAG2_SFP_NEEDS_RESET))
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index 29a1c42..8e7decb 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -2124,6 +2124,7 @@ enum {
+ #define IXGBE_SAN_MAC_ADDR_PORT1_OFFSET  0x3
+ #define IXGBE_DEVICE_CAPS_ALLOW_ANY_SFP  0x1
+ #define IXGBE_DEVICE_CAPS_FCOE_OFFLOADS  0x2
++#define IXGBE_DEVICE_CAPS_NO_CROSSTALK_WR	BIT(7)
+ #define IXGBE_FW_LESM_PARAMETERS_PTR     0x2
+ #define IXGBE_FW_LESM_STATE_1            0x1
+ #define IXGBE_FW_LESM_STATE_ENABLED      0x8000 /* LESM Enable bit */
+-- 
+2.4.3
+
