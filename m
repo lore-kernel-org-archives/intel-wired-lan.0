@@ -1,60 +1,241 @@
 From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-Date: Tue, 12 Apr 2016 08:30:49 -0700
-Subject: [Intel-wired-lan] [next PATCH S33 10/13] i40e/i40evf: Only offload
-	vlan tag if enabled
+Date: Tue, 12 Apr 2016 08:30:51 -0700
+Subject: [Intel-wired-lan] [next PATCH S33 12/13] i40e: Add VF promiscuous
+	mode driver support
 In-Reply-To: <1460475052-6348-1-git-send-email-harshitha.ramamurthy@intel.com>
 References: <1460475052-6348-1-git-send-email-harshitha.ramamurthy@intel.com>
-Message-ID: <1460475052-6348-11-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <1460475052-6348-13-git-send-email-harshitha.ramamurthy@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Anjali Singhai Jain <anjali.singhai@intel.com>
 
-The driver was offloading the vlan tag into the skb
-any time there was a vlan tag and the hardware stripping was
-enabled.  Just check to make sure it's enabled before put_tag.
+Add infrastructure for Network Function Virtualization VLAN tagged
+packet steering feature.
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Change-Id: Ife95290c06edd9a616393b38679923938b382241
+Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+Signed-off-by: Greg Rose <gregory.v.rose@intel.com>
+Change-Id: I9b873d8fcc253858e6baba65ac68ec5b9363944e
 ---
-Testing Hints : Make sure ethtool control
-over RX vlan tag insertion/removal still works.
+Testing Hints : Test the feature with
+Ip link set dev veth0 promisc on  (do this from the VF for the VF)
+Also test with adding vlan on VF plus port vlan for VF.
 
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 3 ++-
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 3 ++-
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 153 ++++++++++++++++++++-
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |   2 +
+ 2 files changed, 149 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index f4af60c..05293f6 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1370,7 +1370,8 @@ static void i40e_receive_skb(struct i40e_ring *rx_ring,
- {
- 	struct i40e_q_vector *q_vector = rx_ring->q_vector;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index c364588..33224ac 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -1427,6 +1427,25 @@ static void i40e_vc_reset_vf_msg(struct i40e_vf *vf)
+ }
  
--	if (vlan_tag & VLAN_VID_MASK)
-+	if ((rx_ring->netdev->features & NETIF_F_HW_VLAN_CTAG_RX) &&
-+	    (vlan_tag & VLAN_VID_MASK))
- 		__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q), vlan_tag);
+ /**
++ * i40e_getnum_vf_vsi_vlan_filters
++ * @vsi: pointer to the vsi
++ *
++ * called to get the number of vlans offloaded on this vf
++ **/
++static inline int i40e_getnum_vf_vsi_vlan_filters(struct i40e_vsi *vsi)
++{
++	struct i40e_mac_filter *f;
++	int num_vlans = 0;
++
++	list_for_each_entry(f, &vsi->mac_filter_list, list) {
++		if (f->vlan >= 0 && f->vlan <= I40E_MAX_VLANID)
++			num_vlans++;
++	}
++
++	return num_vlans;
++}
++
++/**
+  * i40e_vc_config_promiscuous_mode_msg
+  * @vf: pointer to the VF info
+  * @msg: pointer to the msg buffer
+@@ -1442,22 +1461,122 @@ static int i40e_vc_config_promiscuous_mode_msg(struct i40e_vf *vf,
+ 	    (struct i40e_virtchnl_promisc_info *)msg;
+ 	struct i40e_pf *pf = vf->pf;
+ 	struct i40e_hw *hw = &pf->hw;
+-	struct i40e_vsi *vsi;
++	struct i40e_mac_filter *f;
++	i40e_status aq_ret = 0;
+ 	bool allmulti = false;
+-	i40e_status aq_ret;
++	struct i40e_vsi *vsi;
++	bool alluni = false;
++	int aq_err = 0;
  
- 	napi_gro_receive(&q_vector->napi, skb);
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index 3eb39a1..e18d9d9 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -842,7 +842,8 @@ static void i40e_receive_skb(struct i40e_ring *rx_ring,
- {
- 	struct i40e_q_vector *q_vector = rx_ring->q_vector;
+ 	vsi = i40e_find_vsi_from_id(pf, info->vsi_id);
+ 	if (!test_bit(I40E_VF_STAT_ACTIVE, &vf->vf_states) ||
+ 	    !test_bit(I40E_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps) ||
+-	    !i40e_vc_isvalid_vsi_id(vf, info->vsi_id) ||
+-	    (vsi->type != I40E_VSI_FCOE)) {
++	    !i40e_vc_isvalid_vsi_id(vf, info->vsi_id)) {
++		dev_err(&pf->pdev->dev,
++			"VF %d doesn't meet requirements to enter promiscuous mode\n",
++			vf->vf_id);
+ 		aq_ret = I40E_ERR_PARAM;
+ 		goto error_param;
+ 	}
++	/* Multicast promiscuous handling*/
+ 	if (info->flags & I40E_FLAG_VF_MULTICAST_PROMISC)
+ 		allmulti = true;
+-	aq_ret = i40e_aq_set_vsi_multicast_promiscuous(hw, vsi->seid,
+-						       allmulti, NULL);
++
++	if (vf->port_vlan_id) {
++		aq_ret = i40e_aq_set_vsi_mc_promisc_on_vlan(hw, vsi->seid,
++							    allmulti,
++							    vf->port_vlan_id,
++							    NULL);
++	} else if (i40e_getnum_vf_vsi_vlan_filters(vsi)) {
++		list_for_each_entry(f, &vsi->mac_filter_list, list) {
++			if (f->vlan >= 0 && f->vlan <= I40E_MAX_VLANID)
++				aq_ret = i40e_aq_set_vsi_mc_promisc_on_vlan
++								   (hw,
++								   vsi->seid,
++								   allmulti,
++								   f->vlan,
++								   NULL);
++			aq_err = pf->hw.aq.asq_last_status;
++			if (aq_ret) {
++				dev_err(&pf->pdev->dev,
++					"Could not add VLAN %d to multicast promiscuous domain err %s aq_err %s\n",
++					f->vlan,
++					i40e_stat_str(&pf->hw, aq_ret),
++					i40e_aq_str(&pf->hw, aq_err));
++				break;
++			}
++		}
++	} else {
++		aq_ret = i40e_aq_set_vsi_multicast_promiscuous(hw, vsi->seid,
++							       allmulti, NULL);
++		aq_err = pf->hw.aq.asq_last_status;
++		if (aq_ret) {
++			dev_err(&pf->pdev->dev,
++				"VF %d failed to set multicast promiscuous mode err %s aq_err %s\n",
++				vf->vf_id,
++				i40e_stat_str(&pf->hw, aq_ret),
++				i40e_aq_str(&pf->hw, aq_err));
++			goto error_param_int;
++		}
++	}
++
++	if (!aq_ret) {
++		dev_info(&pf->pdev->dev,
++			 "VF %d successfully set multicast promiscuous mode\n",
++			 vf->vf_id);
++		if (allmulti)
++			set_bit(I40E_VF_STAT_MC_PROMISC, &vf->vf_states);
++		else
++			clear_bit(I40E_VF_STAT_MC_PROMISC, &vf->vf_states);
++	}
++
++	if (info->flags & I40E_FLAG_VF_UNICAST_PROMISC)
++		alluni = true;
++	if (vf->port_vlan_id) {
++		aq_ret = i40e_aq_set_vsi_uc_promisc_on_vlan(hw, vsi->seid,
++							    alluni,
++							    vf->port_vlan_id,
++							    NULL);
++	} else if (i40e_getnum_vf_vsi_vlan_filters(vsi)) {
++		list_for_each_entry(f, &vsi->mac_filter_list, list) {
++			aq_ret = 0;
++			if (f->vlan >= 0 && f->vlan <= I40E_MAX_VLANID)
++				aq_ret =
++				i40e_aq_set_vsi_uc_promisc_on_vlan(hw,
++								   vsi->seid,
++								   alluni,
++								   f->vlan,
++								   NULL);
++				aq_err = pf->hw.aq.asq_last_status;
++			if (aq_ret)
++				dev_err(&pf->pdev->dev,
++					"Could not add VLAN %d to Unicast promiscuous domain err %s aq_err %s\n",
++					f->vlan,
++					i40e_stat_str(&pf->hw, aq_ret),
++					i40e_aq_str(&pf->hw, aq_err));
++		}
++	} else {
++		aq_ret = i40e_aq_set_vsi_unicast_promiscuous(hw, vsi->seid,
++							     allmulti, NULL);
++		aq_err = pf->hw.aq.asq_last_status;
++		if (aq_ret)
++			dev_err(&pf->pdev->dev,
++				"VF %d failed to set unicast promiscuous mode %8.8x err %s aq_err %s\n",
++				vf->vf_id, info->flags,
++				i40e_stat_str(&pf->hw, aq_ret),
++				i40e_aq_str(&pf->hw, aq_err));
++	}
++
++error_param_int:
++	if (!aq_ret) {
++		dev_info(&pf->pdev->dev,
++			 "VF %d successfully set unicast promiscuous mode\n",
++			 vf->vf_id);
++		if (alluni)
++			set_bit(I40E_VF_STAT_UC_PROMISC, &vf->vf_states);
++		else
++			clear_bit(I40E_VF_STAT_UC_PROMISC, &vf->vf_states);
++	}
  
--	if (vlan_tag & VLAN_VID_MASK)
-+	if ((rx_ring->netdev->features & NETIF_F_HW_VLAN_CTAG_RX) &&
-+	    (vlan_tag & VLAN_VID_MASK))
- 		__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q), vlan_tag);
+ error_param:
+ 	/* send the response to the VF */
+@@ -1919,6 +2038,17 @@ static int i40e_vc_add_vlan_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
+ 		/* add new VLAN filter */
+ 		int ret = i40e_vsi_add_vlan(vsi, vfl->vlan_id[i]);
  
- 	napi_gro_receive(&q_vector->napi, skb);
++		if (test_bit(I40E_VF_STAT_UC_PROMISC, &vf->vf_states))
++			i40e_aq_set_vsi_uc_promisc_on_vlan(&pf->hw, vsi->seid,
++							   true,
++							   vfl->vlan_id[i],
++							   NULL);
++		if (test_bit(I40E_VF_STAT_MC_PROMISC, &vf->vf_states))
++			i40e_aq_set_vsi_mc_promisc_on_vlan(&pf->hw, vsi->seid,
++							   true,
++							   vfl->vlan_id[i],
++							   NULL);
++
+ 		if (ret)
+ 			dev_err(&pf->pdev->dev,
+ 				"Unable to add VLAN filter %d for VF %d, error %d\n",
+@@ -1971,6 +2101,17 @@ static int i40e_vc_remove_vlan_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
+ 	for (i = 0; i < vfl->num_elements; i++) {
+ 		int ret = i40e_vsi_kill_vlan(vsi, vfl->vlan_id[i]);
+ 
++		if (test_bit(I40E_VF_STAT_UC_PROMISC, &vf->vf_states))
++			i40e_aq_set_vsi_uc_promisc_on_vlan(&pf->hw, vsi->seid,
++							   false,
++							   vfl->vlan_id[i],
++							   NULL);
++		if (test_bit(I40E_VF_STAT_MC_PROMISC, &vf->vf_states))
++			i40e_aq_set_vsi_mc_promisc_on_vlan(&pf->hw, vsi->seid,
++							   false,
++							   vfl->vlan_id[i],
++							   NULL);
++
+ 		if (ret)
+ 			dev_err(&pf->pdev->dev,
+ 				"Unable to delete VLAN filter %d for VF %d, error %d\n",
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+index 838cbd2..8cbf579 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+@@ -61,6 +61,8 @@ enum i40e_vf_states {
+ 	I40E_VF_STAT_IWARPENA,
+ 	I40E_VF_STAT_FCOEENA,
+ 	I40E_VF_STAT_DISABLED,
++	I40E_VF_STAT_MC_PROMISC,
++	I40E_VF_STAT_UC_PROMISC,
+ };
+ 
+ /* VF capabilities */
 -- 
 2.4.3
 
