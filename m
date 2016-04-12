@@ -1,122 +1,60 @@
-From: Donald C Skidmore <donald.c.skidmore@intel.com>
-Date: Tue, 12 Apr 2016 19:25:10 -0400
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Add work around for empty SFP+
-	cage crosstalk
-Message-ID: <1460503510-33043-1-git-send-email-donald.c.skidmore@intel.com>
+From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+Date: Tue, 12 Apr 2016 08:30:49 -0700
+Subject: [Intel-wired-lan] [next PATCH S33 10/13] i40e/i40evf: Only offload
+	vlan tag if enabled
+In-Reply-To: <1460475052-6348-1-git-send-email-harshitha.ramamurthy@intel.com>
+References: <1460475052-6348-1-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <1460475052-6348-11-git-send-email-harshitha.ramamurthy@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-It is possible on some systems that crosstalk could lead to link flap
-on empty SFP+ cages.  A new NVM bit was defined to let SW know it
-needs to implement the work around which consists of verifying that
-there is a module in the cage before acting on the LSC.
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
+The driver was offloading the vlan tag into the skb
+any time there was a vlan tag and the hardware stripping was
+enabled.  Just check to make sure it's enabled before put_tag.
+
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Change-Id: Ife95290c06edd9a616393b38679923938b382241
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe.h      |  2 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 39 +++++++++++++++++++++++++++
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |  1 +
- 3 files changed, 42 insertions(+)
+Testing Hints : Make sure ethtool control
+over RX vlan tag insertion/removal still works.
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index 94e39c1..22cf2a9 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -803,6 +803,8 @@ struct ixgbe_adapter {
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 3 ++-
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 3 ++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index f4af60c..05293f6 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -1370,7 +1370,8 @@ static void i40e_receive_skb(struct i40e_ring *rx_ring,
+ {
+ 	struct i40e_q_vector *q_vector = rx_ring->q_vector;
  
- #define IXGBE_RSS_KEY_SIZE     40  /* size of RSS Hash Key in bytes */
- 	u32 rss_key[IXGBE_RSS_KEY_SIZE / sizeof(u32)];
-+
-+	bool need_crosstalk_fix;
- };
+-	if (vlan_tag & VLAN_VID_MASK)
++	if ((rx_ring->netdev->features & NETIF_F_HW_VLAN_CTAG_RX) &&
++	    (vlan_tag & VLAN_VID_MASK))
+ 		__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q), vlan_tag);
  
- static inline u8 ixgbe_max_rss_indices(struct ixgbe_adapter *adapter)
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 974aa7c..7b99c5b 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -5573,6 +5573,7 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter)
- 	struct pci_dev *pdev = adapter->pdev;
- 	unsigned int rss, fdir;
- 	u32 fwsm;
-+	u16 device_caps;
- #ifdef CONFIG_IXGBE_DCB
- 	int j;
- 	struct tc_configuration *tc;
-@@ -5738,6 +5739,22 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter)
- 	adapter->tx_ring_count = IXGBE_DEFAULT_TXD;
- 	adapter->rx_ring_count = IXGBE_DEFAULT_RXD;
+ 	napi_gro_receive(&q_vector->napi, skb);
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index 3eb39a1..e18d9d9 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -842,7 +842,8 @@ static void i40e_receive_skb(struct i40e_ring *rx_ring,
+ {
+ 	struct i40e_q_vector *q_vector = rx_ring->q_vector;
  
-+	/* Cache bit indicating need for crosstalk fix */
-+	switch (hw->mac.type) {
-+	case ixgbe_mac_82599EB:
-+	case ixgbe_mac_X550EM_x:
-+	case ixgbe_mac_x550em_a:
-+		hw->mac.ops.get_device_caps(hw, &device_caps);
-+		if (device_caps & IXGBE_DEVICE_CAPS_NO_CROSSTALK_WR)
-+			adapter->need_crosstalk_fix = false;
-+		else
-+			adapter->need_crosstalk_fix = true;
-+		break;
-+	default:
-+		adapter->need_crosstalk_fix = false;
-+		break;
-+	}
-+
- 	/* set default work limits */
- 	adapter->tx_work_limit = IXGBE_DEFAULT_TX_WORK;
+-	if (vlan_tag & VLAN_VID_MASK)
++	if ((rx_ring->netdev->features & NETIF_F_HW_VLAN_CTAG_RX) &&
++	    (vlan_tag & VLAN_VID_MASK))
+ 		__vlan_hwaccel_put_tag(skb, htons(ETH_P_8021Q), vlan_tag);
  
-@@ -6660,6 +6677,18 @@ static void ixgbe_watchdog_update_link(struct ixgbe_adapter *adapter)
- 		link_up = true;
- 	}
- 
-+	/* If Crosstalk fix enabled do the sanity check of making sure
-+	 * the SFP+ cage is empty.
-+	 */
-+	if (adapter->need_crosstalk_fix) {
-+		u32 sfp_cage_full;
-+
-+		sfp_cage_full = IXGBE_READ_REG(hw, IXGBE_ESDP) &
-+				IXGBE_ESDP_SDP2;
-+		if (ixgbe_is_sfp(hw) && link_up && !sfp_cage_full)
-+			link_up = false;
-+	}
-+
- 	if (adapter->ixgbe_ieee_pfc)
- 		pfc_en |= !!(adapter->ixgbe_ieee_pfc->pfc_en);
- 
-@@ -7006,6 +7035,16 @@ static void ixgbe_sfp_detection_subtask(struct ixgbe_adapter *adapter)
- 	struct ixgbe_hw *hw = &adapter->hw;
- 	s32 err;
- 
-+	/* If crosstalk fix enabled verify the SFP+ cage is full */
-+	if (adapter->need_crosstalk_fix) {
-+		u32 sfp_cage_full;
-+
-+		sfp_cage_full = IXGBE_READ_REG(hw, IXGBE_ESDP) &
-+				IXGBE_ESDP_SDP2;
-+		if (!sfp_cage_full)
-+			return;
-+	}
-+
- 	/* not searching for SFP so there is nothing to do here */
- 	if (!(adapter->flags2 & IXGBE_FLAG2_SEARCH_FOR_SFP) &&
- 	    !(adapter->flags2 & IXGBE_FLAG2_SFP_NEEDS_RESET))
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-index 29a1c42..8e7decb 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-@@ -2124,6 +2124,7 @@ enum {
- #define IXGBE_SAN_MAC_ADDR_PORT1_OFFSET  0x3
- #define IXGBE_DEVICE_CAPS_ALLOW_ANY_SFP  0x1
- #define IXGBE_DEVICE_CAPS_FCOE_OFFLOADS  0x2
-+#define IXGBE_DEVICE_CAPS_NO_CROSSTALK_WR	BIT(7)
- #define IXGBE_FW_LESM_PARAMETERS_PTR     0x2
- #define IXGBE_FW_LESM_STATE_1            0x1
- #define IXGBE_FW_LESM_STATE_ENABLED      0x8000 /* LESM Enable bit */
+ 	napi_gro_receive(&q_vector->napi, skb);
 -- 
 2.4.3
 
