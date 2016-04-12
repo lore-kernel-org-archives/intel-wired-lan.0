@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 12 Apr 2016 21:48:16 +0000
+Date: Tue, 12 Apr 2016 21:49:10 +0000
 Subject: [Intel-wired-lan] [PATCH] ixgbe: Use correct FC setup function
  for	x550em_a
 In-Reply-To: <20160408231929.127408.69940.stgit@mdrustad-wks.jf.intel.com>
 References: <20160408231929.127408.69940.stgit@mdrustad-wks.jf.intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9CF46D@ORSMSX104.amr.corp.intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9CF47D@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -29,4 +29,4 @@ List-ID: <intel-wired-lan.osuosl.org>
 >  1 file changed, 2 insertions(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Devices pass traffic correctly at low and normal speeds
+Device is properly recognized and will pass traffic
