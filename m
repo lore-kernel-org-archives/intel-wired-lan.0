@@ -1,228 +1,128 @@
 From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-Date: Tue, 12 Apr 2016 08:30:43 -0700
-Subject: [Intel-wired-lan] [next PATCH S33 04/13] i40e: Specify AQ event
-	opcode to wait for
+Date: Tue, 12 Apr 2016 08:30:50 -0700
+Subject: [Intel-wired-lan] [next PATCH S33 11/13] i40e: Add promiscuous on
+	VLAN support
 In-Reply-To: <1460475052-6348-1-git-send-email-harshitha.ramamurthy@intel.com>
 References: <1460475052-6348-1-git-send-email-harshitha.ramamurthy@intel.com>
-Message-ID: <1460475052-6348-5-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <1460475052-6348-12-git-send-email-harshitha.ramamurthy@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Shannon Nelson <shannon.nelson@intel.com>
+From: Greg Rose <gregory.v.rose@intel.com>
 
-To add a little flexibility to the nvmupdate facility, this code adds the
-ability to specify an AQ event opcode to wait on after the Exec_AQ request.
+NFV use cases require the ability to steer packets to VSIs by VLAN tag
+alone while being in promiscuous mode for multicast and unicast MAC
+addresses.  These two new functions support that ability.
 
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-Change-ID: Iddbfd63c3de8df3edb9d3e90678b08989bc4946e
+Signed-off-by: Greg Rose <gregory.v.rose@intel.com>
 ---
-Testing Hints (required if no HSD):
-    make use of the devel test program i40e_aq_cmd.c
-	# ethtool -s p4p1 msglvl 0xf000008f
-	    turn on nvmupdate debugging
-	# i40e_aq_cmd p4p1 aq
-	    should run with no errors
-	# i40e_aq_cmd p4p1 aq 0x0222
-	    should complain that it can't finish
-	Cannot get AQ result: Device or resource busy
-	# i40e_aq_cmd p4p1 stat
-	    should log stat info with state 3 and opc 0x0222
-	    should return non-zero
-	# i40e_aq_cmd p4p1 clear
-	    should run with no error
-	# i40e_aq_cmd p4p1 stat
-	    should log stat info with state 0 and opc 0x0000
-	# i40e_aq_cmd p4p1 aq
-	    should run with no error
+ drivers/net/ethernet/intel/i40e/i40e_common.c    | 70 ++++++++++++++++++++++++
+ drivers/net/ethernet/intel/i40e/i40e_prototype.h |  8 +++
+ 2 files changed, 78 insertions(+)
 
- drivers/net/ethernet/intel/i40e/i40e_nvm.c    | 49 +++++++++++++++++++++++----
- drivers/net/ethernet/intel/i40e/i40e_type.h   |  1 +
- drivers/net/ethernet/intel/i40evf/i40e_type.h |  1 +
- 3 files changed, 44 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-index f2cea3d..954efe3 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-@@ -693,10 +693,10 @@ i40e_status i40e_nvmupd_command(struct i40e_hw *hw,
- 	/* early check for status command and debug msgs */
- 	upd_cmd = i40e_nvmupd_validate_command(hw, cmd, perrno);
- 
--	i40e_debug(hw, I40E_DEBUG_NVM, "%s state %d nvm_release_on_hold %d cmd 0x%08x config 0x%08x offset 0x%08x data_size 0x%08x\n",
-+	i40e_debug(hw, I40E_DEBUG_NVM, "%s state %d nvm_release_on_hold %d opc 0x%04x cmd 0x%08x config 0x%08x offset 0x%08x data_size 0x%08x\n",
- 		   i40e_nvm_update_state_str[upd_cmd],
- 		   hw->nvmupd_state,
--		   hw->nvm_release_on_done,
-+		   hw->nvm_release_on_done, hw->nvm_wait_opcode,
- 		   cmd->command, cmd->config, cmd->offset, cmd->data_size);
- 
- 	if (upd_cmd == I40E_NVMUPD_INVALID) {
-@@ -710,7 +710,18 @@ i40e_status i40e_nvmupd_command(struct i40e_hw *hw,
- 	 * going into the state machine
- 	 */
- 	if (upd_cmd == I40E_NVMUPD_STATUS) {
-+		if (!cmd->data_size) {
-+			*perrno = -EFAULT;
-+			return I40E_ERR_BUF_TOO_SHORT;
-+		}
-+
- 		bytes[0] = hw->nvmupd_state;
-+
-+		if (cmd->data_size >= 4) {
-+			bytes[1] = 0;
-+			*((u16 *)&bytes[2]) = hw->nvm_wait_opcode;
-+		}
-+
- 		return 0;
- 	}
- 
-@@ -729,6 +740,14 @@ i40e_status i40e_nvmupd_command(struct i40e_hw *hw,
- 
- 	case I40E_NVMUPD_STATE_INIT_WAIT:
- 	case I40E_NVMUPD_STATE_WRITE_WAIT:
-+		/* if we need to stop waiting for an event, clear
-+		 * the wait info and return before doing anything else
-+		 */
-+		if (cmd->offset == 0xffff) {
-+			i40e_nvmupd_check_wait_event(hw, hw->nvm_wait_opcode);
-+			return 0;
-+		}
-+
- 		status = I40E_ERR_NOT_READY;
- 		*perrno = -EBUSY;
- 		break;
-@@ -800,6 +819,7 @@ static i40e_status i40e_nvmupd_state_init(struct i40e_hw *hw,
- 				i40e_release_nvm(hw);
- 			} else {
- 				hw->nvm_release_on_done = true;
-+				hw->nvm_wait_opcode = i40e_aqc_opc_nvm_erase;
- 				hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
- 			}
- 		}
-@@ -816,6 +836,7 @@ static i40e_status i40e_nvmupd_state_init(struct i40e_hw *hw,
- 				i40e_release_nvm(hw);
- 			} else {
- 				hw->nvm_release_on_done = true;
-+				hw->nvm_wait_opcode = i40e_aqc_opc_nvm_update;
- 				hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
- 			}
- 		}
-@@ -828,10 +849,12 @@ static i40e_status i40e_nvmupd_state_init(struct i40e_hw *hw,
- 						     hw->aq.asq_last_status);
- 		} else {
- 			status = i40e_nvmupd_nvm_write(hw, cmd, bytes, perrno);
--			if (status)
-+			if (status) {
- 				i40e_release_nvm(hw);
--			else
-+			} else {
-+				hw->nvm_wait_opcode = i40e_aqc_opc_nvm_update;
- 				hw->nvmupd_state = I40E_NVMUPD_STATE_WRITE_WAIT;
-+			}
- 		}
- 		break;
- 
-@@ -850,6 +873,7 @@ static i40e_status i40e_nvmupd_state_init(struct i40e_hw *hw,
- 				i40e_release_nvm(hw);
- 			} else {
- 				hw->nvm_release_on_done = true;
-+				hw->nvm_wait_opcode = i40e_aqc_opc_nvm_update;
- 				hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
- 			}
- 		}
-@@ -940,8 +964,10 @@ retry:
- 	switch (upd_cmd) {
- 	case I40E_NVMUPD_WRITE_CON:
- 		status = i40e_nvmupd_nvm_write(hw, cmd, bytes, perrno);
--		if (!status)
-+		if (!status) {
-+			hw->nvm_wait_opcode = i40e_aqc_opc_nvm_update;
- 			hw->nvmupd_state = I40E_NVMUPD_STATE_WRITE_WAIT;
-+		}
- 		break;
- 
- 	case I40E_NVMUPD_WRITE_LCB:
-@@ -954,6 +980,7 @@ retry:
- 			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
- 		} else {
- 			hw->nvm_release_on_done = true;
-+			hw->nvm_wait_opcode = i40e_aqc_opc_nvm_update;
- 			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
- 		}
- 		break;
-@@ -967,6 +994,7 @@ retry:
- 				   -EIO;
- 			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
- 		} else {
-+			hw->nvm_wait_opcode = i40e_aqc_opc_nvm_update;
- 			hw->nvmupd_state = I40E_NVMUPD_STATE_WRITE_WAIT;
- 		}
- 		break;
-@@ -981,6 +1009,7 @@ retry:
- 			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
- 		} else {
- 			hw->nvm_release_on_done = true;
-+			hw->nvm_wait_opcode = i40e_aqc_opc_nvm_update;
- 			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
- 		}
- 		break;
-@@ -1036,14 +1065,14 @@ retry:
-  **/
- void i40e_nvmupd_check_wait_event(struct i40e_hw *hw, u16 opcode)
- {
--	if (opcode == i40e_aqc_opc_nvm_erase ||
--	    opcode == i40e_aqc_opc_nvm_update) {
-+	if (opcode == hw->nvm_wait_opcode) {
- 		i40e_debug(hw, I40E_DEBUG_NVM,
- 			   "NVMUPD: clearing wait on opcode 0x%04x\n", opcode);
- 		if (hw->nvm_release_on_done) {
- 			i40e_release_nvm(hw);
- 			hw->nvm_release_on_done = false;
- 		}
-+		hw->nvm_wait_opcode = 0;
- 
- 		switch (hw->nvmupd_state) {
- 		case I40E_NVMUPD_STATE_INIT_WAIT:
-@@ -1220,6 +1249,12 @@ static i40e_status i40e_nvmupd_exec_aq(struct i40e_hw *hw,
- 		*perrno = i40e_aq_rc_to_posix(status, hw->aq.asq_last_status);
- 	}
- 
-+	/* should we wait for a followup event? */
-+	if (cmd->offset) {
-+		hw->nvm_wait_opcode = cmd->offset;
-+		hw->nvmupd_state = I40E_NVMUPD_STATE_INIT_WAIT;
-+	}
-+
- 	return status;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 25872f2..0e8552b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -2039,6 +2039,76 @@ i40e_status i40e_aq_set_vsi_multicast_promiscuous(struct i40e_hw *hw,
  }
  
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-index 793036b..bb57cd9 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-@@ -550,6 +550,7 @@ struct i40e_hw {
- 	struct i40e_aq_desc nvm_wb_desc;
- 	struct i40e_virt_mem nvm_buff;
- 	bool nvm_release_on_done;
-+	u16 nvm_wait_opcode;
- 
- 	/* HMC info */
- 	struct i40e_hmc_info hmc; /* HMC info struct */
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-index 4a78c18..b720713 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-@@ -523,6 +523,7 @@ struct i40e_hw {
- 	struct i40e_aq_desc nvm_wb_desc;
- 	struct i40e_virt_mem nvm_buff;
- 	bool nvm_release_on_done;
-+	u16 nvm_wait_opcode;
- 
- 	/* HMC info */
- 	struct i40e_hmc_info hmc; /* HMC info struct */
+ /**
++ * i40e_aq_set_vsi_mc_promisc_on_vlan
++ * @hw: pointer to the hw struct
++ * @seid: vsi number
++ * @enable: set MAC L2 layer unicast promiscuous enable/disable for a given VLAN
++ * @vid: The VLAN tag filter - capture any multicast packet with this VLAN tag
++ * @cmd_details: pointer to command details structure or NULL
++ **/
++enum i40e_status_code i40e_aq_set_vsi_mc_promisc_on_vlan(struct i40e_hw *hw,
++							 u16 seid, bool enable,
++							 u16 vid,
++				struct i40e_asq_cmd_details *cmd_details)
++{
++	struct i40e_aq_desc desc;
++	struct i40e_aqc_set_vsi_promiscuous_modes *cmd =
++		(struct i40e_aqc_set_vsi_promiscuous_modes *)&desc.params.raw;
++	enum i40e_status_code status;
++	u16 flags = 0;
++
++	i40e_fill_default_direct_cmd_desc(&desc,
++					  i40e_aqc_opc_set_vsi_promiscuous_modes);
++
++	if (enable)
++		flags |= I40E_AQC_SET_VSI_PROMISC_MULTICAST;
++
++	cmd->promiscuous_flags = cpu_to_le16(flags);
++	cmd->valid_flags = cpu_to_le16(I40E_AQC_SET_VSI_PROMISC_MULTICAST);
++	cmd->seid = cpu_to_le16(seid);
++	cmd->vlan_tag = cpu_to_le16(vid | I40E_AQC_SET_VSI_VLAN_VALID);
++
++	status = i40e_asq_send_command(hw, &desc, NULL, 0, cmd_details);
++
++	return status;
++}
++
++/**
++ * i40e_aq_set_vsi_uc_promisc_on_vlan
++ * @hw: pointer to the hw struct
++ * @seid: vsi number
++ * @enable: set MAC L2 layer unicast promiscuous enable/disable for a given VLAN
++ * @vid: The VLAN tag filter - capture any unicast packet with this VLAN tag
++ * @cmd_details: pointer to command details structure or NULL
++ **/
++enum i40e_status_code i40e_aq_set_vsi_uc_promisc_on_vlan(struct i40e_hw *hw,
++							 u16 seid, bool enable,
++							 u16 vid,
++				struct i40e_asq_cmd_details *cmd_details)
++{
++	struct i40e_aq_desc desc;
++	struct i40e_aqc_set_vsi_promiscuous_modes *cmd =
++		(struct i40e_aqc_set_vsi_promiscuous_modes *)&desc.params.raw;
++	enum i40e_status_code status;
++	u16 flags = 0;
++
++	i40e_fill_default_direct_cmd_desc(&desc,
++					  i40e_aqc_opc_set_vsi_promiscuous_modes);
++
++	if (enable)
++		flags |= I40E_AQC_SET_VSI_PROMISC_UNICAST;
++
++	cmd->promiscuous_flags = cpu_to_le16(flags);
++	cmd->valid_flags = cpu_to_le16(I40E_AQC_SET_VSI_PROMISC_UNICAST);
++	cmd->seid = cpu_to_le16(seid);
++	cmd->vlan_tag = cpu_to_le16(vid | I40E_AQC_SET_VSI_VLAN_VALID);
++
++	status = i40e_asq_send_command(hw, &desc, NULL, 0, cmd_details);
++
++	return status;
++}
++
++/**
+  * i40e_aq_set_vsi_broadcast
+  * @hw: pointer to the hw struct
+  * @seid: vsi number
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+index 134035f..8afb237 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
+@@ -133,6 +133,14 @@ i40e_status i40e_aq_set_vsi_unicast_promiscuous(struct i40e_hw *hw,
+ 		u16 vsi_id, bool set, struct i40e_asq_cmd_details *cmd_details);
+ i40e_status i40e_aq_set_vsi_multicast_promiscuous(struct i40e_hw *hw,
+ 		u16 vsi_id, bool set, struct i40e_asq_cmd_details *cmd_details);
++enum i40e_status_code i40e_aq_set_vsi_mc_promisc_on_vlan(struct i40e_hw *hw,
++							 u16 seid, bool enable,
++							 u16 vid,
++				struct i40e_asq_cmd_details *cmd_details);
++enum i40e_status_code i40e_aq_set_vsi_uc_promisc_on_vlan(struct i40e_hw *hw,
++							 u16 seid, bool enable,
++							 u16 vid,
++				struct i40e_asq_cmd_details *cmd_details);
+ i40e_status i40e_aq_set_vsi_vlan_promisc(struct i40e_hw *hw,
+ 				u16 seid, bool enable,
+ 				struct i40e_asq_cmd_details *cmd_details);
 -- 
 2.4.3
 
