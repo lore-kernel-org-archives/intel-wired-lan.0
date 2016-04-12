@@ -1,55 +1,47 @@
 From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-Date: Tue, 12 Apr 2016 08:30:39 -0700
-Subject: [Intel-wired-lan] [next PATCH S33 00/13] i40e/i40evf updates
-Message-ID: <1460475052-6348-1-git-send-email-harshitha.ramamurthy@intel.com>
+Date: Tue, 12 Apr 2016 08:30:41 -0700
+Subject: [Intel-wired-lan] [next PATCH S33 02/13] i40evf: Don't Panic
+In-Reply-To: <1460475052-6348-1-git-send-email-harshitha.ramamurthy@intel.com>
+References: <1460475052-6348-1-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <1460475052-6348-3-git-send-email-harshitha.ramamurthy@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Anjali Singhai Jain, with Greg Rose as co-author adds driver support for promiscuous mode.
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-Greg Rose removes zero check for rule ID and adds support for promiscuous mode 
-in VLAN.
+Under some circumstances the driver remove function may be called before
+the driver is fully initialized. So we can't assume that we know where
+our towel is at, or that all of the data structures are initialized.
 
-Jesse Brandeburg ensures vlan tag is offlloaded only if enabled.
+To ensure that we don't panic, check that the vsi_res pointer is valid
+before dereferencing it. Then drink beer and eat peanuts.
 
-Kamil Krawczyk adds DeviceID for X722 QSFP+.
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-ID: If697b4db57348e39f9538793e16aa755e3e1af03
+---
+ drivers/net/ethernet/intel/i40evf/i40evf.h | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-Kiran Patil allows user to change input set mask for flow director.
-
-Michal Kosiarz adds device capability which defines if update is available.
-
-Mitch Williams adds support for configuring VF RSS, checks that vsi_res pointer 
-is valid before dereferencing it and allows PF driver to configure RSS.
-
-Shannon Nelson cleans up code in preparation for future cloud work and specifies 
-AQ event opcode to wait for.
-
- drivers/net/ethernet/intel/i40e/i40e.h             |   7 +
- drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |   1 +
- drivers/net/ethernet/intel/i40e/i40e_common.c      |  82 ++++-
- drivers/net/ethernet/intel/i40e/i40e_devids.h      |   1 +
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 128 +++++++-
- drivers/net/ethernet/intel/i40e/i40e_main.c        |  35 ++-
- drivers/net/ethernet/intel/i40e/i40e_nvm.c         |  49 ++-
- drivers/net/ethernet/intel/i40e/i40e_prototype.h   |   8 +
- drivers/net/ethernet/intel/i40e/i40e_txrx.c        |   5 +-
- drivers/net/ethernet/intel/i40e/i40e_type.h        |   6 +
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 346 ++++++++++++++++++++-
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |   2 +
- .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    |   1 +
- drivers/net/ethernet/intel/i40evf/i40e_common.c    |   1 +
- drivers/net/ethernet/intel/i40evf/i40e_devids.h    |   1 +
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c      |   3 +-
- drivers/net/ethernet/intel/i40evf/i40e_type.h      |   6 +
- drivers/net/ethernet/intel/i40evf/i40evf.h         |  39 ++-
- drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 121 ++++---
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 327 +++++++------------
- .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    | 130 ++++++++
- 21 files changed, 976 insertions(+), 323 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
+index e657ecc..017c83b 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf.h
++++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
+@@ -256,8 +256,10 @@ struct i40evf_adapter {
+ 	bool netdev_registered;
+ 	bool link_up;
+ 	enum i40e_virtchnl_ops current_op;
+-#define CLIENT_ENABLED(_a) ((_a)->vf_res->vf_offload_flags & \
+-			    I40E_VIRTCHNL_VF_OFFLOAD_IWARP)
++#define CLIENT_ENABLED(_a) ((_a)->vf_res ? \
++			    (_a)->vf_res->vf_offload_flags & \
++				I40E_VIRTCHNL_VF_OFFLOAD_IWARP : \
++			    0)
+ #define RSS_AQ(_a) ((_a)->vf_res->vf_offload_flags & \
+ 		    I40E_VIRTCHNL_VF_OFFLOAD_RSS_AQ)
+ #define VLAN_ALLOWED(_a) ((_a)->vf_res->vf_offload_flags & \
 -- 
 2.4.3
 
