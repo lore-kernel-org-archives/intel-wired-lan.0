@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 13 Apr 2016 17:23:31 +0000
-Subject: [Intel-wired-lan] [next PATCH S33 02/13] i40evf: Don't Panic
-In-Reply-To: <1460475052-6348-3-git-send-email-harshitha.ramamurthy@intel.com>
+Date: Wed, 13 Apr 2016 17:43:34 +0000
+Subject: [Intel-wired-lan] [next PATCH S33 01/13] i40e: Add support
+	for	configuring VF RSS
+In-Reply-To: <1460475052-6348-2-git-send-email-harshitha.ramamurthy@intel.com>
 References: <1460475052-6348-1-git-send-email-harshitha.ramamurthy@intel.com>
- <1460475052-6348-3-git-send-email-harshitha.ramamurthy@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D06DD@ORSMSX104.amr.corp.intel.com>
+ <1460475052-6348-2-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D06F8@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,22 +17,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Harshitha Ramamurthy
 > Sent: Tuesday, April 12, 2016 8:31 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S33 02/13] i40evf: Don't Panic
+> Subject: [Intel-wired-lan] [next PATCH S33 01/13] i40e: Add support for
+> configuring VF RSS
 > 
 > From: Mitch Williams <mitch.a.williams@intel.com>
 > 
-> Under some circumstances the driver remove function may be called before
-> the driver is fully initialized. So we can't assume that we know where our
-> towel is at, or that all of the data structures are initialized.
-> 
-> To ensure that we don't panic, check that the vsi_res pointer is valid before
-> dereferencing it. Then drink beer and eat peanuts.
+> Add support for configuring RSS on behalf of the VFs. This removes the
+> burden of dealing with different hardware interfaces from the VF drivers,
+> allowing for better future compatibility.
 > 
 > Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-> Change-ID: If697b4db57348e39f9538793e16aa755e3e1af03
+> Change-ID: Icea75d3f37241ee8e447be5779e5abb53ddf04c0
 > ---
->  drivers/net/ethernet/intel/i40evf/i40evf.h | 6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
+> Testing Hints : Use ethtool to configure RSS key and LUT, test traffic spreads
+> to different queues.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e.h             |   1 +
+>  drivers/net/ethernet/intel/i40e/i40e_main.c        |  35 +++-
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 193
+> ++++++++++++++++++++-
+>  3 files changed, 217 insertions(+), 12 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Added and removed driver in rapid succession, no panics
+VF traffic spreads among queues as expected
