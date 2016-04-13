@@ -1,124 +1,135 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 13 Apr 2016 14:31:21 -0700
-Subject: [Intel-wired-lan] [PATCH v1 10/13] igbvf: use BIT() macro instead
-	of shifts
+Date: Wed, 13 Apr 2016 14:31:16 -0700
+Subject: [Intel-wired-lan] [PATCH v1 05/13] i40e: make use of BIT() macro to
+	prevent left shift of signed values
 In-Reply-To: <1460583084-16900-1-git-send-email-jacob.e.keller@intel.com>
 References: <1460583084-16900-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1460583084-16900-11-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1460583084-16900-6-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-To prevent signed bitshift issues, and improve code readability, use the
-BIT() macro.
-
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/igbvf/defines.h |  2 +-
- drivers/net/ethernet/intel/igbvf/ethtool.c |  2 +-
- drivers/net/ethernet/intel/igbvf/igbvf.h   |  4 ++--
- drivers/net/ethernet/intel/igbvf/netdev.c  | 10 +++++-----
- drivers/net/ethernet/intel/igbvf/vf.c      |  2 +-
- 5 files changed, 10 insertions(+), 10 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h | 53 +++++++++++------------
+ 1 file changed, 25 insertions(+), 28 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igbvf/defines.h b/drivers/net/ethernet/intel/igbvf/defines.h
-index ae3f28332fa0..ee1ef08d7fc4 100644
---- a/drivers/net/ethernet/intel/igbvf/defines.h
-+++ b/drivers/net/ethernet/intel/igbvf/defines.h
-@@ -113,7 +113,7 @@
- #define E1000_RXDCTL_QUEUE_ENABLE	0x02000000 /* Enable specific Rx Que */
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+index 5179b3b25acb..45436ea570cd 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+@@ -78,17 +78,17 @@ struct i40e_aq_desc {
+ #define I40E_AQ_FLAG_EI_SHIFT	14
+ #define I40E_AQ_FLAG_FE_SHIFT	15
  
- /* Direct Cache Access (DCA) definitions */
--#define E1000_DCA_TXCTRL_TX_WB_RO_EN	(1 << 11) /* Tx Desc writeback RO bit */
-+#define E1000_DCA_TXCTRL_TX_WB_RO_EN	BIT(11) /* Tx Desc writeback RO bit */
+-#define I40E_AQ_FLAG_DD		(1 << I40E_AQ_FLAG_DD_SHIFT)  /* 0x1    */
+-#define I40E_AQ_FLAG_CMP	(1 << I40E_AQ_FLAG_CMP_SHIFT) /* 0x2    */
+-#define I40E_AQ_FLAG_ERR	(1 << I40E_AQ_FLAG_ERR_SHIFT) /* 0x4    */
+-#define I40E_AQ_FLAG_VFE	(1 << I40E_AQ_FLAG_VFE_SHIFT) /* 0x8    */
+-#define I40E_AQ_FLAG_LB		(1 << I40E_AQ_FLAG_LB_SHIFT)  /* 0x200  */
+-#define I40E_AQ_FLAG_RD		(1 << I40E_AQ_FLAG_RD_SHIFT)  /* 0x400  */
+-#define I40E_AQ_FLAG_VFC	(1 << I40E_AQ_FLAG_VFC_SHIFT) /* 0x800  */
+-#define I40E_AQ_FLAG_BUF	(1 << I40E_AQ_FLAG_BUF_SHIFT) /* 0x1000 */
+-#define I40E_AQ_FLAG_SI		(1 << I40E_AQ_FLAG_SI_SHIFT)  /* 0x2000 */
+-#define I40E_AQ_FLAG_EI		(1 << I40E_AQ_FLAG_EI_SHIFT)  /* 0x4000 */
+-#define I40E_AQ_FLAG_FE		(1 << I40E_AQ_FLAG_FE_SHIFT)  /* 0x8000 */
++#define I40E_AQ_FLAG_DD		BIT(I40E_AQ_FLAG_DD_SHIFT)  /* 0x1    */
++#define I40E_AQ_FLAG_CMP	BIT(I40E_AQ_FLAG_CMP_SHIFT) /* 0x2    */
++#define I40E_AQ_FLAG_ERR	BIT(I40E_AQ_FLAG_ERR_SHIFT) /* 0x4    */
++#define I40E_AQ_FLAG_VFE	BIT(I40E_AQ_FLAG_VFE_SHIFT) /* 0x8    */
++#define I40E_AQ_FLAG_LB		BIT(I40E_AQ_FLAG_LB_SHIFT)  /* 0x200  */
++#define I40E_AQ_FLAG_RD		BIT(I40E_AQ_FLAG_RD_SHIFT)  /* 0x400  */
++#define I40E_AQ_FLAG_VFC	BIT(I40E_AQ_FLAG_VFC_SHIFT) /* 0x800  */
++#define I40E_AQ_FLAG_BUF	BIT(I40E_AQ_FLAG_BUF_SHIFT) /* 0x1000 */
++#define I40E_AQ_FLAG_SI		BIT(I40E_AQ_FLAG_SI_SHIFT)  /* 0x2000 */
++#define I40E_AQ_FLAG_EI		BIT(I40E_AQ_FLAG_EI_SHIFT)  /* 0x4000 */
++#define I40E_AQ_FLAG_FE		BIT(I40E_AQ_FLAG_FE_SHIFT)  /* 0x8000 */
  
- #define E1000_VF_INIT_TIMEOUT	200 /* Number of retries to clear RSTI */
+ /* error codes */
+ enum i40e_admin_queue_err {
+@@ -1653,11 +1653,11 @@ enum i40e_aq_phy_type {
  
-diff --git a/drivers/net/ethernet/intel/igbvf/ethtool.c b/drivers/net/ethernet/intel/igbvf/ethtool.c
-index b74ce53d7b52..77bdb5386e78 100644
---- a/drivers/net/ethernet/intel/igbvf/ethtool.c
-+++ b/drivers/net/ethernet/intel/igbvf/ethtool.c
-@@ -154,7 +154,7 @@ static void igbvf_get_regs(struct net_device *netdev,
- 
- 	memset(p, 0, IGBVF_REGS_LEN * sizeof(u32));
- 
--	regs->version = (1 << 24) | (adapter->pdev->revision << 16) |
-+	regs->version = BIT(24) | (adapter->pdev->revision << 16) |
- 			adapter->pdev->device;
- 
- 	regs_buff[0] = er32(CTRL);
-diff --git a/drivers/net/ethernet/intel/igbvf/igbvf.h b/drivers/net/ethernet/intel/igbvf/igbvf.h
-index f166baab8d7e..6f4290d6dc9f 100644
---- a/drivers/net/ethernet/intel/igbvf/igbvf.h
-+++ b/drivers/net/ethernet/intel/igbvf/igbvf.h
-@@ -287,8 +287,8 @@ struct igbvf_info {
+ enum i40e_aq_link_speed {
+ 	I40E_LINK_SPEED_UNKNOWN	= 0,
+-	I40E_LINK_SPEED_100MB	= (1 << I40E_LINK_SPEED_100MB_SHIFT),
+-	I40E_LINK_SPEED_1GB	= (1 << I40E_LINK_SPEED_1000MB_SHIFT),
+-	I40E_LINK_SPEED_10GB	= (1 << I40E_LINK_SPEED_10GB_SHIFT),
+-	I40E_LINK_SPEED_40GB	= (1 << I40E_LINK_SPEED_40GB_SHIFT),
+-	I40E_LINK_SPEED_20GB	= (1 << I40E_LINK_SPEED_20GB_SHIFT)
++	I40E_LINK_SPEED_100MB	= BIT(I40E_LINK_SPEED_100MB_SHIFT),
++	I40E_LINK_SPEED_1GB	= BIT(I40E_LINK_SPEED_1000MB_SHIFT),
++	I40E_LINK_SPEED_10GB	= BIT(I40E_LINK_SPEED_10GB_SHIFT),
++	I40E_LINK_SPEED_40GB	= BIT(I40E_LINK_SPEED_40GB_SHIFT),
++	I40E_LINK_SPEED_20GB	= BIT(I40E_LINK_SPEED_20GB_SHIFT)
  };
  
- /* hardware capability, feature, and workaround flags */
--#define IGBVF_FLAG_RX_CSUM_DISABLED	(1 << 0)
--#define IGBVF_FLAG_RX_LB_VLAN_BSWAP	(1 << 1)
-+#define IGBVF_FLAG_RX_CSUM_DISABLED	BIT(0)
-+#define IGBVF_FLAG_RX_LB_VLAN_BSWAP	BIT(1)
- #define IGBVF_RX_DESC_ADV(R, i)     \
- 	(&((((R).desc))[i].rx_desc))
- #define IGBVF_TX_DESC_ADV(R, i)     \
-diff --git a/drivers/net/ethernet/intel/igbvf/netdev.c b/drivers/net/ethernet/intel/igbvf/netdev.c
-index 78af4c7716d3..c60717c8dc37 100644
---- a/drivers/net/ethernet/intel/igbvf/netdev.c
-+++ b/drivers/net/ethernet/intel/igbvf/netdev.c
-@@ -964,7 +964,7 @@ static void igbvf_assign_vector(struct igbvf_adapter *adapter, int rx_queue,
- 			ivar = ivar & 0xFFFFFF00;
- 			ivar |= msix_vector | E1000_IVAR_VALID;
- 		}
--		adapter->rx_ring[rx_queue].eims_value = 1 << msix_vector;
-+		adapter->rx_ring[rx_queue].eims_value = BIT(msix_vector);
- 		array_ew32(IVAR0, index, ivar);
- 	}
- 	if (tx_queue > IGBVF_NO_QUEUE) {
-@@ -979,7 +979,7 @@ static void igbvf_assign_vector(struct igbvf_adapter *adapter, int rx_queue,
- 			ivar = ivar & 0xFFFF00FF;
- 			ivar |= (msix_vector | E1000_IVAR_VALID) << 8;
- 		}
--		adapter->tx_ring[tx_queue].eims_value = 1 << msix_vector;
-+		adapter->tx_ring[tx_queue].eims_value = BIT(msix_vector);
- 		array_ew32(IVAR0, index, ivar);
- 	}
- }
-@@ -1014,8 +1014,8 @@ static void igbvf_configure_msix(struct igbvf_adapter *adapter)
+ struct i40e_aqc_module_desc {
+@@ -1928,9 +1928,9 @@ I40E_CHECK_CMD_LENGTH(i40e_aqc_nvm_config_write);
+ /* Used for 0x0704 as well as for 0x0705 commands */
+ #define I40E_AQ_ANVM_FEATURE_OR_IMMEDIATE_SHIFT		1
+ #define I40E_AQ_ANVM_FEATURE_OR_IMMEDIATE_MASK \
+-				(1 << I40E_AQ_ANVM_FEATURE_OR_IMMEDIATE_SHIFT)
++				BIT(I40E_AQ_ANVM_FEATURE_OR_IMMEDIATE_SHIFT)
+ #define I40E_AQ_ANVM_FEATURE		0
+-#define I40E_AQ_ANVM_IMMEDIATE_FIELD	(1 << FEATURE_OR_IMMEDIATE_SHIFT)
++#define I40E_AQ_ANVM_IMMEDIATE_FIELD	BIT(FEATURE_OR_IMMEDIATE_SHIFT)
+ struct i40e_aqc_nvm_config_data_feature {
+ 	__le16 feature_id;
+ #define I40E_AQ_ANVM_FEATURE_OPTION_OEM_ONLY		0x01
+@@ -2227,13 +2227,11 @@ I40E_CHECK_STRUCT_LEN(0x20, i40e_aqc_get_cee_dcb_cfg_resp);
+  */
+ struct i40e_aqc_lldp_set_local_mib {
+ #define SET_LOCAL_MIB_AC_TYPE_DCBX_SHIFT	0
+-#define SET_LOCAL_MIB_AC_TYPE_DCBX_MASK	(1 << SET_LOCAL_MIB_AC_TYPE_DCBX_SHIFT)
+-#define SET_LOCAL_MIB_AC_TYPE_DCBX_MASK	(1 << \
+-					SET_LOCAL_MIB_AC_TYPE_DCBX_SHIFT)
++#define SET_LOCAL_MIB_AC_TYPE_DCBX_MASK	BIT(SET_LOCAL_MIB_AC_TYPE_DCBX_SHIFT)
+ #define SET_LOCAL_MIB_AC_TYPE_LOCAL_MIB	0x0
+ #define SET_LOCAL_MIB_AC_TYPE_NON_WILLING_APPS_SHIFT	(1)
+-#define SET_LOCAL_MIB_AC_TYPE_NON_WILLING_APPS_MASK	(1 << \
+-				SET_LOCAL_MIB_AC_TYPE_NON_WILLING_APPS_SHIFT)
++#define SET_LOCAL_MIB_AC_TYPE_NON_WILLING_APPS_MASK \
++			BIT(SET_LOCAL_MIB_AC_TYPE_NON_WILLING_APPS_SHIFT)
+ #define SET_LOCAL_MIB_AC_TYPE_NON_WILLING_APPS		0x1
+ 	u8	type;
+ 	u8	reserved0;
+@@ -2251,7 +2249,7 @@ I40E_CHECK_CMD_LENGTH(i40e_aqc_lldp_set_local_mib);
+ struct i40e_aqc_lldp_stop_start_specific_agent {
+ #define I40E_AQC_START_SPECIFIC_AGENT_SHIFT	0
+ #define I40E_AQC_START_SPECIFIC_AGENT_MASK \
+-				(1 << I40E_AQC_START_SPECIFIC_AGENT_SHIFT)
++				BIT(I40E_AQC_START_SPECIFIC_AGENT_SHIFT)
+ 	u8	command;
+ 	u8	reserved[15];
+ };
+@@ -2304,7 +2302,7 @@ struct i40e_aqc_del_udp_tunnel_completion {
+ I40E_CHECK_CMD_LENGTH(i40e_aqc_del_udp_tunnel_completion);
  
- 	ew32(IVAR_MISC, tmp);
+ struct i40e_aqc_get_set_rss_key {
+-#define I40E_AQC_SET_RSS_KEY_VSI_VALID		(0x1 << 15)
++#define I40E_AQC_SET_RSS_KEY_VSI_VALID		BIT(15)
+ #define I40E_AQC_SET_RSS_KEY_VSI_ID_SHIFT	0
+ #define I40E_AQC_SET_RSS_KEY_VSI_ID_MASK	(0x3FF << \
+ 					I40E_AQC_SET_RSS_KEY_VSI_ID_SHIFT)
+@@ -2324,14 +2322,13 @@ struct i40e_aqc_get_set_rss_key_data {
+ I40E_CHECK_STRUCT_LEN(0x34, i40e_aqc_get_set_rss_key_data);
  
--	adapter->eims_enable_mask = (1 << (vector)) - 1;
--	adapter->eims_other = 1 << (vector - 1);
-+	adapter->eims_enable_mask = BIT(vector) - 1;
-+	adapter->eims_other = BIT(vector - 1);
- 	e1e_flush();
- }
+ struct  i40e_aqc_get_set_rss_lut {
+-#define I40E_AQC_SET_RSS_LUT_VSI_VALID		(0x1 << 15)
++#define I40E_AQC_SET_RSS_LUT_VSI_VALID		BIT(15)
+ #define I40E_AQC_SET_RSS_LUT_VSI_ID_SHIFT	0
+ #define I40E_AQC_SET_RSS_LUT_VSI_ID_MASK	(0x3FF << \
+ 					I40E_AQC_SET_RSS_LUT_VSI_ID_SHIFT)
+ 	__le16	vsi_id;
+ #define I40E_AQC_SET_RSS_LUT_TABLE_TYPE_SHIFT	0
+-#define I40E_AQC_SET_RSS_LUT_TABLE_TYPE_MASK	(0x1 << \
+-					I40E_AQC_SET_RSS_LUT_TABLE_TYPE_SHIFT)
++#define I40E_AQC_SET_RSS_LUT_TABLE_TYPE_MASK	BIT(I40E_AQC_SET_RSS_LUT_TABLE_TYPE_SHIFT)
  
-@@ -2089,7 +2089,7 @@ static int igbvf_maybe_stop_tx(struct net_device *netdev, int size)
- }
- 
- #define IGBVF_MAX_TXD_PWR	16
--#define IGBVF_MAX_DATA_PER_TXD	(1 << IGBVF_MAX_TXD_PWR)
-+#define IGBVF_MAX_DATA_PER_TXD	BIT(IGBVF_MAX_TXD_PWR)
- 
- static inline int igbvf_tx_map_adv(struct igbvf_adapter *adapter,
- 				   struct igbvf_ring *tx_ring,
-diff --git a/drivers/net/ethernet/intel/igbvf/vf.c b/drivers/net/ethernet/intel/igbvf/vf.c
-index a13baa90ae20..335ba6642145 100644
---- a/drivers/net/ethernet/intel/igbvf/vf.c
-+++ b/drivers/net/ethernet/intel/igbvf/vf.c
-@@ -266,7 +266,7 @@ static s32 e1000_set_vfta_vf(struct e1000_hw *hw, u16 vid, bool set)
- 	msgbuf[1] = vid;
- 	/* Setting the 8 bit field MSG INFO to true indicates "add" */
- 	if (set)
--		msgbuf[0] |= 1 << E1000_VT_MSGINFO_SHIFT;
-+		msgbuf[0] |= BIT(E1000_VT_MSGINFO_SHIFT);
- 
- 	mbx->ops.write_posted(hw, msgbuf, 2);
- 
+ #define I40E_AQC_SET_RSS_LUT_TABLE_TYPE_VSI	0
+ #define I40E_AQC_SET_RSS_LUT_TABLE_TYPE_PF	1
 -- 
 2.8.1.102.ga49ec4a
 
