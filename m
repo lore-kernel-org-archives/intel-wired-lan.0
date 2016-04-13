@@ -1,189 +1,147 @@
 From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-Date: Wed, 13 Apr 2016 03:08:24 -0700
-Subject: [Intel-wired-lan] [next PATCH S34 04/12] i40e: Remove HMC AQ API
-	implementation
+Date: Wed, 13 Apr 2016 03:08:25 -0700
+Subject: [Intel-wired-lan] [next PATCH S34 05/12] i40e: Flow-based side-band
+	filter count and its use for input set change
 In-Reply-To: <1460542112-20166-1-git-send-email-harshitha.ramamurthy@intel.com>
 References: <1460542112-20166-1-git-send-email-harshitha.ramamurthy@intel.com>
-Message-ID: <1460542112-20166-5-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <1460542112-20166-6-git-send-email-harshitha.ramamurthy@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Neerav Parikh <neerav.parikh@intel.com>
+From: Kiran Patil <kiran.patil@intel.com>
 
-Remove the code that implements the HMC AQ APIs and call these APIs.
-This is done because these are obsolete APIs and are not supported
-by firmware.
+This patch keeps track of side-band filters based on flow-type.
+It is used to handle detection of input set mask changes per
+flow-type.
 
-Signed-off-by: Neerav Parikh <neerav.parikh@intel.com>
-Change-ID: I5d771d8f37c3e16e7b0a972ff9b27e75aa2d05d4
+Signed-off-by: Kiran Patil <kiran.patil@intel.com>
+Change-Id: I5f308dbd33d3c6ae9f5db301b5989b6089f61dce
 ---
- drivers/net/ethernet/intel/i40e/i40e_adminq.c      |  4 ---
- drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  | 25 ------------------
- drivers/net/ethernet/intel/i40e/i40e_common.c      | 30 ----------------------
- drivers/net/ethernet/intel/i40e/i40e_prototype.h   |  4 ---
- .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    | 25 ------------------
- 5 files changed, 88 deletions(-)
+Testing Hints :
+	ethtool -N p5p2 flow-type tcp4 src-ip 192.168.0.2 \
+		 dst-ip 192.168.0.1 action 40
+	ethtool -N p5p2 flow-type udp4 src-ip 192.168.0.2 \
+		 dst-ip 192.168.0.1 src-port 1000 action 41
+Made sure that, able to change input set mask independently based on
+flow-type.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-index 43bb413..738b42a 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-@@ -617,10 +617,6 @@ i40e_status i40e_init_adminq(struct i40e_hw *hw)
- 	hw->nvm_release_on_done = false;
- 	hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
+ drivers/net/ethernet/intel/i40e/i40e.h         |  9 +++++++++
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  9 +++++++--
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c    | 24 +++++++++++++++++++++---
+ 3 files changed, 37 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 1f48e10..ceb848a 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -308,6 +308,15 @@ struct i40e_pf {
+ 	u32 fd_atr_cnt;
+ 	u32 fd_tcp_rule;
  
--	ret_code = i40e_aq_set_hmc_resource_profile(hw,
--						    I40E_HMC_PROFILE_DEFAULT,
--						    0,
--						    NULL);
- 	ret_code = 0;
++	/* Book-keeping of side-band filter count per flow-type.
++	 * This is used to detect and handle input set changes for
++	 * respective flow-type.
++	 */
++	u16 fd_tcp4_filter_cnt;
++	u16 fd_udp4_filter_cnt;
++	u16 fd_sctp4_filter_cnt;
++	u16 fd_ip4_filter_cnt;
++
+ 	struct i40e_udp_port_config udp_ports[I40E_MAX_PF_UDP_OFFLOAD_PORTS];
+ 	u16 pending_udp_bitmap;
  
- 	/* success! */
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-index 5179b3b..48c0c00 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-@@ -205,10 +205,6 @@ enum i40e_admin_queue_opc {
- 	i40e_aqc_opc_resume_port_tx				= 0x041C,
- 	i40e_aqc_opc_configure_partition_bw			= 0x041D,
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index ada448b..865c8db 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -2500,6 +2500,7 @@ static int i40e_handle_input_set(struct i40e_vsi *vsi,
+ {
+ 	bool inset_mask_change = false;
+ 	struct i40e_pf *pf;
++	u16 filter_cnt;
+ 	u64 val;
+ 	u8 idx;
  
--	/* hmc */
--	i40e_aqc_opc_query_hmc_resource_profile	= 0x0500,
--	i40e_aqc_opc_set_hmc_resource_profile	= 0x0501,
--
- 	/* phy commands*/
- 	i40e_aqc_opc_get_phy_abilities		= 0x0600,
- 	i40e_aqc_opc_set_phy_config		= 0x0601,
-@@ -1586,27 +1582,6 @@ struct i40e_aqc_configure_partition_bw_data {
+@@ -2510,9 +2511,11 @@ static int i40e_handle_input_set(struct i40e_vsi *vsi,
+ 	switch (fsp->flow_type & FLOW_TYPE_MASK) {
+ 	case TCP_V4_FLOW:
+ 		idx = I40E_FILTER_PCTYPE_NONF_IPV4_TCP;
++		filter_cnt = pf->fd_tcp4_filter_cnt;
+ 		break;
+ 	case UDP_V4_FLOW:
+ 		idx = I40E_FILTER_PCTYPE_NONF_IPV4_UDP;
++		filter_cnt = pf->fd_udp4_filter_cnt;
+ 		break;
+ 	default:
+ 		/* for all other flow types */
+@@ -2578,8 +2581,10 @@ static int i40e_handle_input_set(struct i40e_vsi *vsi,
+ 			netif_err(pf, drv, vsi->netdev, "Change of input set is not supported when MFP mode is enabled\n");
+ 			return -EOPNOTSUPP;
+ 		}
+-		if (pf->fdir_pf_active_filters) {
+-			netif_err(pf, drv, vsi->netdev, "Change of input set is not supported when there are existing filters. Please delete them and re-try\n");
++
++		if (filter_cnt) {
++			netif_err(pf, drv, vsi->netdev, "Change of input set is not supported when there are existing filter(%u) for specified flow-type: %u. Please delete them and re-try\n",
++				  filter_cnt, fsp->flow_type & FLOW_TYPE_MASK);
+ 			return -EOPNOTSUPP;
+ 		}
  
- I40E_CHECK_STRUCT_LEN(0x22, i40e_aqc_configure_partition_bw_data);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 05293f6..808922b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -235,8 +235,14 @@ static int i40e_add_del_fdir_udpv4(struct i40e_vsi *vsi,
+ 				 "Filter deleted for PCTYPE %d loc = %d\n",
+ 				 fd_data->pctype, fd_data->fd_id);
+ 	}
+-	if (err)
++	if (err) {
+ 		kfree(raw_packet);
++	} else {
++		if (add)
++			pf->fd_udp4_filter_cnt++;
++		else
++			pf->fd_udp4_filter_cnt--;
++	}
  
--/* Get and set the active HMC resource profile and status.
-- * (direct 0x0500) and (direct 0x0501)
-- */
--struct i40e_aq_get_set_hmc_resource_profile {
--	u8	pm_profile;
--	u8	pe_vf_enabled;
--	u8	reserved[14];
--};
--
--I40E_CHECK_CMD_LENGTH(i40e_aq_get_set_hmc_resource_profile);
--
--enum i40e_aq_hmc_profile {
--	/* I40E_HMC_PROFILE_NO_CHANGE    = 0, reserved */
--	I40E_HMC_PROFILE_DEFAULT	= 1,
--	I40E_HMC_PROFILE_FAVOR_VF	= 2,
--	I40E_HMC_PROFILE_EQUAL		= 3,
--};
--
--#define I40E_AQ_GET_HMC_RESOURCE_PROFILE_PM_MASK	0xF
--#define I40E_AQ_GET_HMC_RESOURCE_PROFILE_COUNT_MASK	0x3F
--
- /* Get PHY Abilities (indirect 0x0600) uses the generic indirect struct */
- 
- /* set in param0 for get phy abilities to report qualified modules */
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 0e8552b..4a934e1 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -2855,36 +2855,6 @@ i40e_status i40e_aq_debug_write_register(struct i40e_hw *hw,
+ 	return err ? -EOPNOTSUPP : 0;
  }
+@@ -315,8 +321,14 @@ static int i40e_add_del_fdir_tcpv4(struct i40e_vsi *vsi,
+ 				 fd_data->pctype, fd_data->fd_id);
+ 	}
  
- /**
-- * i40e_aq_set_hmc_resource_profile
-- * @hw: pointer to the hw struct
-- * @profile: type of profile the HMC is to be set as
-- * @pe_vf_enabled_count: the number of PE enabled VFs the system has
-- * @cmd_details: pointer to command details structure or NULL
-- *
-- * set the HMC profile of the device.
-- **/
--i40e_status i40e_aq_set_hmc_resource_profile(struct i40e_hw *hw,
--				enum i40e_aq_hmc_profile profile,
--				u8 pe_vf_enabled_count,
--				struct i40e_asq_cmd_details *cmd_details)
--{
--	struct i40e_aq_desc desc;
--	struct i40e_aq_get_set_hmc_resource_profile *cmd =
--		(struct i40e_aq_get_set_hmc_resource_profile *)&desc.params.raw;
--	i40e_status status;
--
--	i40e_fill_default_direct_cmd_desc(&desc,
--					i40e_aqc_opc_set_hmc_resource_profile);
--
--	cmd->pm_profile = (u8)profile;
--	cmd->pe_vf_enabled = pe_vf_enabled_count;
--
--	status = i40e_asq_send_command(hw, &desc, NULL, 0, cmd_details);
--
--	return status;
--}
--
--/**
-  * i40e_aq_request_resource
-  * @hw: pointer to the hw struct
-  * @resource: resource id
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_prototype.h b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-index 8afb237..4c8977c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_prototype.h
-@@ -236,10 +236,6 @@ i40e_status i40e_aq_config_vsi_bw_limit(struct i40e_hw *hw,
- 				struct i40e_asq_cmd_details *cmd_details);
- i40e_status i40e_aq_dcb_updated(struct i40e_hw *hw,
- 				struct i40e_asq_cmd_details *cmd_details);
--i40e_status i40e_aq_set_hmc_resource_profile(struct i40e_hw *hw,
--				enum i40e_aq_hmc_profile profile,
--				u8 pe_vf_enabled_count,
--				struct i40e_asq_cmd_details *cmd_details);
- i40e_status i40e_aq_config_switch_comp_bw_limit(struct i40e_hw *hw,
- 				u16 seid, u16 credit, u8 max_bw,
- 				struct i40e_asq_cmd_details *cmd_details);
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-index 1bcb8cf..180ae57 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-@@ -205,10 +205,6 @@ enum i40e_admin_queue_opc {
- 	i40e_aqc_opc_resume_port_tx				= 0x041C,
- 	i40e_aqc_opc_configure_partition_bw			= 0x041D,
+-	if (err)
++	if (err) {
+ 		kfree(raw_packet);
++	} else {
++		if (add)
++			pf->fd_tcp4_filter_cnt++;
++		else
++			pf->fd_tcp4_filter_cnt--;
++	}
  
--	/* hmc */
--	i40e_aqc_opc_query_hmc_resource_profile	= 0x0500,
--	i40e_aqc_opc_set_hmc_resource_profile	= 0x0501,
--
- 	/* phy commands*/
- 	i40e_aqc_opc_get_phy_abilities		= 0x0600,
- 	i40e_aqc_opc_set_phy_config		= 0x0601,
-@@ -1583,27 +1579,6 @@ struct i40e_aqc_configure_partition_bw_data {
+ 	return err ? -EOPNOTSUPP : 0;
+ }
+@@ -393,8 +405,14 @@ static int i40e_add_del_fdir_ipv4(struct i40e_vsi *vsi,
+ 		}
+ 	}
  
- I40E_CHECK_STRUCT_LEN(0x22, i40e_aqc_configure_partition_bw_data);
+-	if (err)
++	if (err) {
+ 		kfree(raw_packet);
++	} else {
++		if (add)
++			pf->fd_ip4_filter_cnt++;
++		else
++			pf->fd_ip4_filter_cnt--;
++	}
  
--/* Get and set the active HMC resource profile and status.
-- * (direct 0x0500) and (direct 0x0501)
-- */
--struct i40e_aq_get_set_hmc_resource_profile {
--	u8	pm_profile;
--	u8	pe_vf_enabled;
--	u8	reserved[14];
--};
--
--I40E_CHECK_CMD_LENGTH(i40e_aq_get_set_hmc_resource_profile);
--
--enum i40e_aq_hmc_profile {
--	/* I40E_HMC_PROFILE_NO_CHANGE    = 0, reserved */
--	I40E_HMC_PROFILE_DEFAULT	= 1,
--	I40E_HMC_PROFILE_FAVOR_VF	= 2,
--	I40E_HMC_PROFILE_EQUAL		= 3,
--};
--
--#define I40E_AQ_GET_HMC_RESOURCE_PROFILE_PM_MASK	0xF
--#define I40E_AQ_GET_HMC_RESOURCE_PROFILE_COUNT_MASK	0x3F
--
- /* Get PHY Abilities (indirect 0x0600) uses the generic indirect struct */
- 
- /* set in param0 for get phy abilities to report qualified modules */
+ 	return err ? -EOPNOTSUPP : 0;
+ }
 -- 
 2.4.3
 
