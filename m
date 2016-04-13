@@ -1,46 +1,45 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 13 Apr 2016 16:08:30 -0700
-Subject: [Intel-wired-lan] [PATCH v2 09/13] igbvf: remove unused variable
-	and dead code
+Date: Wed, 13 Apr 2016 16:08:33 -0700
+Subject: [Intel-wired-lan] [PATCH v2 12/13] e1000e: mark shifted values as
+	unsigned
 In-Reply-To: <1460588914-20143-1-git-send-email-jacob.e.keller@intel.com>
 References: <1460588914-20143-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1460588914-20143-10-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1460588914-20143-13-git-send-email-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The variable rdlen is set but never used, and thus setting it is dead
-code. Remove it.
+The E1000_ICH_NVM_SIG_MASK value is shifted, out to the 31st bit, which
+is the signed bit for signed constants. Mark these values as unsigned to
+prevent compiler warnings and issues on platforms which a different
+signed bit implementation.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/igbvf/netdev.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/net/ethernet/intel/e1000e/ich8lan.h | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/igbvf/netdev.c b/drivers/net/ethernet/intel/igbvf/netdev.c
-index c12442252adb..78af4c7716d3 100644
---- a/drivers/net/ethernet/intel/igbvf/netdev.c
-+++ b/drivers/net/ethernet/intel/igbvf/netdev.c
-@@ -1367,7 +1367,7 @@ static void igbvf_configure_rx(struct igbvf_adapter *adapter)
- 	struct e1000_hw *hw = &adapter->hw;
- 	struct igbvf_ring *rx_ring = adapter->rx_ring;
- 	u64 rdba;
--	u32 rdlen, rxdctl;
-+	u32 rxdctl;
+diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.h b/drivers/net/ethernet/intel/e1000e/ich8lan.h
+index 2311f6003f58..67163ca898ba 100644
+--- a/drivers/net/ethernet/intel/e1000e/ich8lan.h
++++ b/drivers/net/ethernet/intel/e1000e/ich8lan.h
+@@ -73,10 +73,10 @@
+ 				 (ID_LED_OFF1_ON2  <<  4) | \
+ 				 (ID_LED_DEF1_DEF2))
  
- 	/* disable receives */
- 	rxdctl = er32(RXDCTL(0));
-@@ -1375,8 +1375,6 @@ static void igbvf_configure_rx(struct igbvf_adapter *adapter)
- 	e1e_flush();
- 	msleep(10);
+-#define E1000_ICH_NVM_SIG_WORD		0x13
+-#define E1000_ICH_NVM_SIG_MASK		0xC000
+-#define E1000_ICH_NVM_VALID_SIG_MASK	0xC0
+-#define E1000_ICH_NVM_SIG_VALUE		0x80
++#define E1000_ICH_NVM_SIG_WORD		0x13u
++#define E1000_ICH_NVM_SIG_MASK		0xC000u
++#define E1000_ICH_NVM_VALID_SIG_MASK	0xC0u
++#define E1000_ICH_NVM_SIG_VALUE		0x80u
  
--	rdlen = rx_ring->count * sizeof(union e1000_adv_rx_desc);
--
- 	/* Setup the HW Rx Head and Tail Descriptor Pointers and
- 	 * the Base and Length of the Rx Descriptor Ring
- 	 */
+ #define E1000_ICH8_LAN_INIT_TIMEOUT	1500
+ 
 -- 
 2.8.1.102.ga49ec4a
 
