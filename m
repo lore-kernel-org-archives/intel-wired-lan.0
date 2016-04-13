@@ -1,79 +1,136 @@
-From: Brian Walsh <brian@walsh.ws>
-Date: Tue, 12 Apr 2016 23:22:31 -0400
-Subject: [Intel-wired-lan] [PATCH v2 2/2] e1000e: Fix ptp time reset on
-	network interruption
-In-Reply-To: <a17942d94a295a0db7ef205060b97313289b1640.1460517387.git.brian@walsh.ws>
-References: <a17942d94a295a0db7ef205060b97313289b1640.1460517387.git.brian@walsh.ws>
-Message-ID: <e943a9f336c2dd089fdc6c1dafbf768bc0983075.1460517387.git.brian@walsh.ws>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 13 Apr 2016 12:14:35 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 11ad5bd823b3a6efd04d7c5e8cf2d08807b2729b BUILD SUCCESS
+Message-ID: <570dc7ab.3lurdlVohjZc4wdg%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Time is resetting on any interruption of network connectivity. This
-causes the clock to jump around by the leapsecond offset. It should
-only reset when the device is initialized.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+11ad5bd823b3a6efd04d7c5e8cf2d08807b2729b  i40e: Add device capability which defines if update is available
 
-Signed-off-by: Brian Walsh <brian@walsh.ws>
----
- drivers/net/ethernet/intel/e1000e/netdev.c | 22 +++++++++++-----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
+elapsed time: 86m
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 370b0dc..98f645e 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -3580,7 +3580,6 @@ static int e1000e_config_hwtstamp(struct e1000_adapter *adapter,
- 	bool is_l4 = false;
- 	bool is_l2 = false;
- 	u32 regval;
--	s32 ret_val;
- 
- 	if (!(adapter->flags & FLAG_HAS_HW_TIMESTAMP))
- 		return -EINVAL;
-@@ -3719,16 +3718,6 @@ static int e1000e_config_hwtstamp(struct e1000_adapter *adapter,
- 	er32(RXSTMPH);
- 	er32(TXSTMPH);
- 
--	/* Get and set the System Time Register SYSTIM base frequency */
--	ret_val = e1000e_get_base_timinca(adapter, &regval);
--	if (ret_val)
--		return ret_val;
--	ew32(TIMINCA, regval);
--
--	/* reset the ns time counter */
--	timecounter_init(&adapter->tc, &adapter->cc,
--			 ktime_to_ns(ktime_get_real()));
--
- 	return 0;
- }
- 
-@@ -6966,6 +6955,7 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	u16 eeprom_data = 0;
- 	u16 eeprom_apme_mask = E1000_EEPROM_APME;
- 	s32 ret_val = 0;
-+	u32 regval;
- 
- 	if (ei->flags2 & FLAG2_DISABLE_ASPM_L0S)
- 		aspm_disable_flag = PCIE_LINK_STATE_L0S;
-@@ -7256,6 +7246,16 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	/* carrier off reporting is important to ethtool even BEFORE open */
- 	netif_carrier_off(netdev);
- 
-+	/* Get and set the System Time Register SYSTIM base frequency */
-+	ret_val = e1000e_get_base_timinca(adapter, &regval);
-+	if (ret_val)
-+		goto err_register;
-+	ew32(TIMINCA, regval);
-+
-+	/* reset the ns time counter */
-+	timecounter_init(&adapter->tc, &adapter->cc,
-+			 ktime_to_ns(ktime_get_real()));
-+
- 	/* init PTP hardware clock */
- 	e1000e_ptp_init(adapter);
- 
--- 
-2.1.4
+configs tested: 115
 
+i386                     randconfig-a0-201615
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x010-201615
+x86_64                 randconfig-x018-201615
+x86_64                 randconfig-x011-201615
+x86_64                 randconfig-x013-201615
+x86_64                 randconfig-x019-201615
+x86_64                 randconfig-x012-201615
+x86_64                 randconfig-x014-201615
+x86_64                 randconfig-x016-201615
+x86_64                 randconfig-x015-201615
+x86_64                 randconfig-x017-201615
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201615
+i386                     randconfig-s1-201615
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201615
+i386                   randconfig-b0-04131031
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i1-201615
+i386                     randconfig-i0-201615
+x86_64                              rhel_gcov
+i386                   randconfig-x012-201615
+i386                   randconfig-x013-201615
+i386                   randconfig-x015-201615
+i386                   randconfig-x019-201615
+i386                   randconfig-x011-201615
+i386                   randconfig-x018-201615
+i386                   randconfig-x010-201615
+i386                   randconfig-x016-201615
+i386                   randconfig-x017-201615
+i386                   randconfig-x014-201615
+i386                     randconfig-n0-201615
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-x000-201615
+x86_64                 randconfig-x001-201615
+x86_64                 randconfig-x007-201615
+x86_64                 randconfig-x005-201615
+x86_64                 randconfig-x006-201615
+x86_64                 randconfig-x004-201615
+x86_64                 randconfig-x008-201615
+x86_64                 randconfig-x009-201615
+x86_64                 randconfig-x003-201615
+x86_64                 randconfig-x002-201615
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-r0-201615
+i386                   randconfig-x000-201615
+i386                   randconfig-x001-201615
+i386                   randconfig-x002-201615
+i386                   randconfig-x003-201615
+i386                   randconfig-x004-201615
+i386                   randconfig-x005-201615
+i386                   randconfig-x006-201615
+i386                   randconfig-x007-201615
+i386                   randconfig-x008-201615
+i386                   randconfig-x009-201615
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+
+Thanks,
+Fengguang
