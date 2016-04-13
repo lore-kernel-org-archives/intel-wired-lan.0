@@ -1,767 +1,405 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 13 Apr 2016 16:08:32 -0700
-Subject: [Intel-wired-lan] [PATCH v2 11/13] e1000e: use BIT() macro for bit
-	defines
-In-Reply-To: <1460588914-20143-1-git-send-email-jacob.e.keller@intel.com>
-References: <1460588914-20143-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1460588914-20143-12-git-send-email-jacob.e.keller@intel.com>
+From: Amritha Nambiar <amritha.nambiar@intel.com>
+Date: Wed, 13 Apr 2016 19:30:59 -0400
+Subject: [Intel-wired-lan] [PATCH] [net-next] net: ixgbe: Match on multiple
+ headers for cls_u32 offloads
+Message-ID: <20160413233059.6737.4065.stgit@sdncamp.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This prevents signed bitshift issues when the shift would overwrite the
-signed bit, and prevents making this mistake in the future when copying
-and modifying code.
+Adds support to set filters with multiple header fields (L3,L4)to match on.
+This is achieved in the following order:
+1. Create a leaf hash table for the next header.
+2. Create a link to the leaf hash table from the base hash table with
+   matches on next header type and current header fields.
+3. Add filter in leaf hash table with match on next header fields and
+   action.
 
-Use GENMASK or the unsigned postfix for cases which aren't suitable for
-BIT() macro.
+Verified with the following filters :
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Match TCP and DIP:
+
+# tc qdisc add dev enp9s0f0 ingress
+# tc filter add dev enp9s0f0 parent ffff: protocol ip prio 99 \
+	handle 1: u32 divisor 1
+# tc filter add dev enp9s0f0 protocol ip parent ffff: prio 99 \
+	u32 ht 800: order 1 link 1: \
+	offset at 0 mask 0f00 shift 6 plus 0 eat \
+	match ip protocol 6 ff match ip dst 10.0.0.1/32
+# tc filter add dev enp9s0f0 parent ffff: protocol ip u32 ht 1: order 1 \
+	match tcp src 28 ffff action drop
+
+Delete the filter:
+# tc filter del dev enp9s0f0 parent ffff: prio 99 handle 1:0:1 u32
+
+Match on DIP, SIP, UDP (SPort, DPort):
+
+# tc filter add dev enp9s0f0 parent ffff: protocol ip prio 99 \
+	handle 2: u32 divisor 1
+# tc filter add dev enp9s0f0 protocol ip parent ffff: prio 99 \
+	u32 ht 800: order 2 link 2: \
+	offset at 0 mask 0f00 shift 6 plus 0 eat \
+	match ip dst 15.0.0.2/32 match ip protocol 17 ff \
+	match ip src 15.0.0.1/32
+# tc filter add dev enp9s0f0 parent ffff: protocol ip u32 ht 2: order 2 \
+	match udp src 30 ffff match udp dst 32 ffff action drop
+
+Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
 ---
- drivers/net/ethernet/intel/e1000e/80003es2lan.c |  12 +--
- drivers/net/ethernet/intel/e1000e/82571.c       |  30 +++----
- drivers/net/ethernet/intel/e1000e/e1000.h       | 106 ++++++++++++------------
- drivers/net/ethernet/intel/e1000e/ethtool.c     |  43 +++++-----
- drivers/net/ethernet/intel/e1000e/ich8lan.c     |  44 +++++-----
- drivers/net/ethernet/intel/e1000e/mac.c         |   2 +-
- drivers/net/ethernet/intel/e1000e/netdev.c      |  28 +++----
- drivers/net/ethernet/intel/e1000e/nvm.c         |   2 +-
- drivers/net/ethernet/intel/e1000e/phy.c         |   4 +-
- drivers/net/ethernet/intel/e1000e/phy.h         |  10 +--
- 10 files changed, 141 insertions(+), 140 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h       |    2 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  |  215 +++++++++++++++++-------
+ drivers/net/ethernet/intel/ixgbe/ixgbe_model.h |    6 +
+ 3 files changed, 155 insertions(+), 68 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/80003es2lan.c b/drivers/net/ethernet/intel/e1000e/80003es2lan.c
-index 2af603f3e418..cd391376036c 100644
---- a/drivers/net/ethernet/intel/e1000e/80003es2lan.c
-+++ b/drivers/net/ethernet/intel/e1000e/80003es2lan.c
-@@ -121,7 +121,7 @@ static s32 e1000_init_nvm_params_80003es2lan(struct e1000_hw *hw)
- 	/* EEPROM access above 16k is unsupported */
- 	if (size > 14)
- 		size = 14;
--	nvm->word_size = 1 << size;
-+	nvm->word_size = BIT(size);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index 94e39c1..e7bbe69 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -792,7 +792,7 @@ struct ixgbe_adapter {
+ 	unsigned long fwd_bitmask; /* Bitmask indicating in use pools */
  
- 	return 0;
+ #define IXGBE_MAX_LINK_HANDLE 10
+-	struct ixgbe_mat_field *jump_tables[IXGBE_MAX_LINK_HANDLE];
++	struct ixgbe_jump_table *jump_tables[IXGBE_MAX_LINK_HANDLE];
+ 	unsigned long tables;
+ 
+ /* maximum number of RETA entries among all devices supported by ixgbe
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 974aa7c..ca564a6 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -5608,7 +5608,14 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter)
+ #endif /* IXGBE_FCOE */
+ 
+ 	/* initialize static ixgbe jump table entries */
+-	adapter->jump_tables[0] = ixgbe_ipv4_fields;
++	adapter->jump_tables[0] = kzalloc(sizeof(*adapter->jump_tables[0]),
++					  GFP_KERNEL);
++	if (!adapter->jump_tables[0])
++		return -ENOMEM;
++	adapter->jump_tables[0]->mat = ixgbe_ipv4_fields;
++
++	for (j = 1; j < IXGBE_MAX_LINK_HANDLE; j++)
++		adapter->jump_tables[j] = NULL;
+ 
+ 	adapter->mac_table = kzalloc(sizeof(struct ixgbe_mac_addr) *
+ 				     hw->mac.num_rar_entries,
+@@ -8343,6 +8350,55 @@ static int parse_tc_actions(struct ixgbe_adapter *adapter,
  }
-@@ -845,27 +845,27 @@ static void e1000_initialize_hw_bits_80003es2lan(struct e1000_hw *hw)
+ #endif /* CONFIG_NET_CLS_ACT */
  
- 	/* Transmit Descriptor Control 0 */
- 	reg = er32(TXDCTL(0));
--	reg |= (1 << 22);
-+	reg |= BIT(22);
- 	ew32(TXDCTL(0), reg);
++static int ixgbe_clsu32_build_input(struct ixgbe_fdir_filter *input,
++				    union ixgbe_atr_input *mask,
++				    struct tc_cls_u32_offload *cls,
++				    struct ixgbe_mat_field *field_ptr,
++				    struct ixgbe_nexthdr *nexthdr)
++{
++	int i, j, off;
++	__be32 val, m;
++	bool found_entry = false, found_jump_field = false;
++
++	for (i = 0; i < cls->knode.sel->nkeys; i++) {
++		off = cls->knode.sel->keys[i].off;
++		val = cls->knode.sel->keys[i].val;
++		m = cls->knode.sel->keys[i].mask;
++
++		for (j = 0; field_ptr[j].val; j++) {
++			if (field_ptr[j].off == off) {
++				field_ptr[j].val(input, mask, val, m);
++				input->filter.formatted.flow_type |=
++					field_ptr[j].type;
++				found_entry = true;
++				break;
++			}
++		}
++		if (nexthdr) {
++			if (nexthdr->off == cls->knode.sel->keys[i].off &&
++			    nexthdr->val == cls->knode.sel->keys[i].val &&
++			    nexthdr->mask == cls->knode.sel->keys[i].mask)
++				found_jump_field = true;
++			else
++				continue;
++		}
++	}
++
++	if (nexthdr && !found_jump_field)
++		return -EINVAL;
++
++	if (!found_entry)
++		return 0;
++
++	mask->formatted.flow_type = IXGBE_ATR_L4TYPE_IPV6_MASK |
++				   IXGBE_ATR_L4TYPE_MASK;
++
++	if (input->filter.formatted.flow_type == IXGBE_ATR_FLOW_TYPE_IPV4)
++		mask->formatted.flow_type &= IXGBE_ATR_L4TYPE_IPV6_MASK;
++
++	return 0;
++}
++
+ static int ixgbe_configure_clsu32(struct ixgbe_adapter *adapter,
+ 				  __be16 protocol,
+ 				  struct tc_cls_u32_offload *cls)
+@@ -8350,13 +8406,13 @@ static int ixgbe_configure_clsu32(struct ixgbe_adapter *adapter,
+ 	u32 loc = cls->knode.handle & 0xfffff;
+ 	struct ixgbe_hw *hw = &adapter->hw;
+ 	struct ixgbe_mat_field *field_ptr;
+-	struct ixgbe_fdir_filter *input;
+-	union ixgbe_atr_input mask;
+-	int i, err = 0;
++	struct ixgbe_fdir_filter *input = NULL;
++	union ixgbe_atr_input *mask = NULL;
++	struct ixgbe_jump_table *jump = NULL;
++	int i, err = -EINVAL;
+ 	u8 queue;
+ 	u32 uhtid, link_uhtid;
  
- 	/* Transmit Descriptor Control 1 */
- 	reg = er32(TXDCTL(1));
--	reg |= (1 << 22);
-+	reg |= BIT(22);
- 	ew32(TXDCTL(1), reg);
+-	memset(&mask, 0, sizeof(union ixgbe_atr_input));
+ 	uhtid = TC_U32_USERHTID(cls->knode.handle);
+ 	link_uhtid = TC_U32_USERHTID(cls->knode.link_handle);
  
- 	/* Transmit Arbitration Control 0 */
- 	reg = er32(TARC(0));
- 	reg &= ~(0xF << 27);	/* 30:27 */
- 	if (hw->phy.media_type != e1000_media_type_copper)
--		reg &= ~(1 << 20);
-+		reg &= ~BIT(20);
- 	ew32(TARC(0), reg);
+@@ -8368,39 +8424,11 @@ static int ixgbe_configure_clsu32(struct ixgbe_adapter *adapter,
+ 	 * headers when needed.
+ 	 */
+ 	if (protocol != htons(ETH_P_IP))
+-		return -EINVAL;
+-
+-	if (link_uhtid) {
+-		struct ixgbe_nexthdr *nexthdr = ixgbe_ipv4_jumps;
+-
+-		if (link_uhtid >= IXGBE_MAX_LINK_HANDLE)
+-			return -EINVAL;
+-
+-		if (!test_bit(link_uhtid - 1, &adapter->tables))
+-			return -EINVAL;
+-
+-		for (i = 0; nexthdr[i].jump; i++) {
+-			if (nexthdr[i].o != cls->knode.sel->offoff ||
+-			    nexthdr[i].s != cls->knode.sel->offshift ||
+-			    nexthdr[i].m != cls->knode.sel->offmask ||
+-			    /* do not support multiple key jumps its just mad */
+-			    cls->knode.sel->nkeys > 1)
+-				return -EINVAL;
+-
+-			if (nexthdr[i].off == cls->knode.sel->keys[0].off &&
+-			    nexthdr[i].val == cls->knode.sel->keys[0].val &&
+-			    nexthdr[i].mask == cls->knode.sel->keys[0].mask) {
+-				adapter->jump_tables[link_uhtid] =
+-								nexthdr[i].jump;
+-				break;
+-			}
+-		}
+-		return 0;
+-	}
++		return err;
  
- 	/* Transmit Arbitration Control 1 */
- 	reg = er32(TARC(1));
- 	if (er32(TCTL) & E1000_TCTL_MULR)
--		reg &= ~(1 << 28);
-+		reg &= ~BIT(28);
- 	else
--		reg |= (1 << 28);
-+		reg |= BIT(28);
- 	ew32(TARC(1), reg);
- 
- 	/* Disable IPv6 extension header parsing because some malformed
-diff --git a/drivers/net/ethernet/intel/e1000e/82571.c b/drivers/net/ethernet/intel/e1000e/82571.c
-index 5f7016442ec4..7fd4d54599e4 100644
---- a/drivers/net/ethernet/intel/e1000e/82571.c
-+++ b/drivers/net/ethernet/intel/e1000e/82571.c
-@@ -185,7 +185,7 @@ static s32 e1000_init_nvm_params_82571(struct e1000_hw *hw)
- 		/* EEPROM access above 16k is unsupported */
- 		if (size > 14)
- 			size = 14;
--		nvm->word_size = 1 << size;
-+		nvm->word_size = BIT(size);
- 		break;
+ 	if (loc >= ((1024 << adapter->fdir_pballoc) - 2)) {
+ 		e_err(drv, "Location out of range\n");
+-		return -EINVAL;
++		return err;
  	}
  
-@@ -1163,12 +1163,12 @@ static void e1000_initialize_hw_bits_82571(struct e1000_hw *hw)
- 
- 	/* Transmit Descriptor Control 0 */
- 	reg = er32(TXDCTL(0));
--	reg |= (1 << 22);
-+	reg |= BIT(22);
- 	ew32(TXDCTL(0), reg);
- 
- 	/* Transmit Descriptor Control 1 */
- 	reg = er32(TXDCTL(1));
--	reg |= (1 << 22);
-+	reg |= BIT(22);
- 	ew32(TXDCTL(1), reg);
- 
- 	/* Transmit Arbitration Control 0 */
-@@ -1177,11 +1177,11 @@ static void e1000_initialize_hw_bits_82571(struct e1000_hw *hw)
- 	switch (hw->mac.type) {
- 	case e1000_82571:
- 	case e1000_82572:
--		reg |= (1 << 23) | (1 << 24) | (1 << 25) | (1 << 26);
-+		reg |= BIT(23) | BIT(24) | BIT(25) | BIT(26);
- 		break;
- 	case e1000_82574:
- 	case e1000_82583:
--		reg |= (1 << 26);
-+		reg |= BIT(26);
- 		break;
- 	default:
- 		break;
-@@ -1193,12 +1193,12 @@ static void e1000_initialize_hw_bits_82571(struct e1000_hw *hw)
- 	switch (hw->mac.type) {
- 	case e1000_82571:
- 	case e1000_82572:
--		reg &= ~((1 << 29) | (1 << 30));
--		reg |= (1 << 22) | (1 << 24) | (1 << 25) | (1 << 26);
-+		reg &= ~(BIT(29) | BIT(30));
-+		reg |= BIT(22) | BIT(24) | BIT(25) | BIT(26);
- 		if (er32(TCTL) & E1000_TCTL_MULR)
--			reg &= ~(1 << 28);
-+			reg &= ~BIT(28);
- 		else
--			reg |= (1 << 28);
-+			reg |= BIT(28);
- 		ew32(TARC(1), reg);
- 		break;
- 	default:
-@@ -1211,7 +1211,7 @@ static void e1000_initialize_hw_bits_82571(struct e1000_hw *hw)
- 	case e1000_82574:
- 	case e1000_82583:
- 		reg = er32(CTRL);
--		reg &= ~(1 << 29);
-+		reg &= ~BIT(29);
- 		ew32(CTRL, reg);
- 		break;
- 	default:
-@@ -1224,8 +1224,8 @@ static void e1000_initialize_hw_bits_82571(struct e1000_hw *hw)
- 	case e1000_82574:
- 	case e1000_82583:
- 		reg = er32(CTRL_EXT);
--		reg &= ~(1 << 23);
--		reg |= (1 << 22);
-+		reg &= ~BIT(23);
-+		reg |= BIT(22);
- 		ew32(CTRL_EXT, reg);
- 		break;
- 	default:
-@@ -1261,7 +1261,7 @@ static void e1000_initialize_hw_bits_82571(struct e1000_hw *hw)
- 	case e1000_82574:
- 	case e1000_82583:
- 		reg = er32(GCR);
--		reg |= (1 << 22);
-+		reg |= BIT(22);
- 		ew32(GCR, reg);
- 
- 		/* Workaround for hardware errata.
-@@ -1308,8 +1308,8 @@ static void e1000_clear_vfta_82571(struct e1000_hw *hw)
- 				       E1000_VFTA_ENTRY_SHIFT) &
- 			    E1000_VFTA_ENTRY_MASK;
- 			vfta_bit_in_reg =
--			    1 << (hw->mng_cookie.vlan_id &
--				  E1000_VFTA_ENTRY_BIT_SHIFT_MASK);
-+			    BIT(hw->mng_cookie.vlan_id &
-+				E1000_VFTA_ENTRY_BIT_SHIFT_MASK);
- 		}
- 		break;
- 	default:
-diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h b/drivers/net/ethernet/intel/e1000e/e1000.h
-index 52eb641fc9dc..010e6d61c855 100644
---- a/drivers/net/ethernet/intel/e1000e/e1000.h
-+++ b/drivers/net/ethernet/intel/e1000e/e1000.h
-@@ -109,18 +109,18 @@ struct e1000_info;
- #define E1000_TXDCTL_DMA_BURST_ENABLE                          \
- 	(E1000_TXDCTL_GRAN | /* set descriptor granularity */  \
- 	 E1000_TXDCTL_COUNT_DESC |                             \
--	 (1 << 16) | /* wthresh must be +1 more than desired */\
--	 (1 << 8)  | /* hthresh */                             \
--	 0x1f)       /* pthresh */
-+	 (1u << 16) | /* wthresh must be +1 more than desired */\
-+	 (1u << 8)  | /* hthresh */                             \
-+	 0x1f)        /* pthresh */
- 
- #define E1000_RXDCTL_DMA_BURST_ENABLE                          \
- 	(0x01000000 | /* set descriptor granularity */         \
--	 (4 << 16)  | /* set writeback threshold    */         \
--	 (4 << 8)   | /* set prefetch threshold     */         \
-+	 (4u << 16) | /* set writeback threshold    */         \
-+	 (4u << 8)  | /* set prefetch threshold     */         \
- 	 0x20)        /* set hthresh                */
- 
--#define E1000_TIDV_FPD (1 << 31)
--#define E1000_RDTR_FPD (1 << 31)
-+#define E1000_TIDV_FPD BIT(31)
-+#define E1000_RDTR_FPD BIT(31)
- 
- enum e1000_boards {
- 	board_82571,
-@@ -404,53 +404,53 @@ s32 e1000e_get_base_timinca(struct e1000_adapter *adapter, u32 *timinca);
- #define E1000_82574_SYSTIM_EPSILON	(1ULL << 35ULL)
- 
- /* hardware capability, feature, and workaround flags */
--#define FLAG_HAS_AMT                      (1 << 0)
--#define FLAG_HAS_FLASH                    (1 << 1)
--#define FLAG_HAS_HW_VLAN_FILTER           (1 << 2)
--#define FLAG_HAS_WOL                      (1 << 3)
--/* reserved bit4 */
--#define FLAG_HAS_CTRLEXT_ON_LOAD          (1 << 5)
--#define FLAG_HAS_SWSM_ON_LOAD             (1 << 6)
--#define FLAG_HAS_JUMBO_FRAMES             (1 << 7)
--#define FLAG_READ_ONLY_NVM                (1 << 8)
--#define FLAG_IS_ICH                       (1 << 9)
--#define FLAG_HAS_MSIX                     (1 << 10)
--#define FLAG_HAS_SMART_POWER_DOWN         (1 << 11)
--#define FLAG_IS_QUAD_PORT_A               (1 << 12)
--#define FLAG_IS_QUAD_PORT                 (1 << 13)
--#define FLAG_HAS_HW_TIMESTAMP             (1 << 14)
--#define FLAG_APME_IN_WUC                  (1 << 15)
--#define FLAG_APME_IN_CTRL3                (1 << 16)
--#define FLAG_APME_CHECK_PORT_B            (1 << 17)
--#define FLAG_DISABLE_FC_PAUSE_TIME        (1 << 18)
--#define FLAG_NO_WAKE_UCAST                (1 << 19)
--#define FLAG_MNG_PT_ENABLED               (1 << 20)
--#define FLAG_RESET_OVERWRITES_LAA         (1 << 21)
--#define FLAG_TARC_SPEED_MODE_BIT          (1 << 22)
--#define FLAG_TARC_SET_BIT_ZERO            (1 << 23)
--#define FLAG_RX_NEEDS_RESTART             (1 << 24)
--#define FLAG_LSC_GIG_SPEED_DROP           (1 << 25)
--#define FLAG_SMART_POWER_DOWN             (1 << 26)
--#define FLAG_MSI_ENABLED                  (1 << 27)
--/* reserved (1 << 28) */
--#define FLAG_TSO_FORCE                    (1 << 29)
--#define FLAG_RESTART_NOW                  (1 << 30)
--#define FLAG_MSI_TEST_FAILED              (1 << 31)
-+#define FLAG_HAS_AMT                      BIT(0)
-+#define FLAG_HAS_FLASH                    BIT(1)
-+#define FLAG_HAS_HW_VLAN_FILTER           BIT(2)
-+#define FLAG_HAS_WOL                      BIT(3)
-+/* reserved BIT(4) */
-+#define FLAG_HAS_CTRLEXT_ON_LOAD          BIT(5)
-+#define FLAG_HAS_SWSM_ON_LOAD             BIT(6)
-+#define FLAG_HAS_JUMBO_FRAMES             BIT(7)
-+#define FLAG_READ_ONLY_NVM                BIT(8)
-+#define FLAG_IS_ICH                       BIT(9)
-+#define FLAG_HAS_MSIX                     BIT(10)
-+#define FLAG_HAS_SMART_POWER_DOWN         BIT(11)
-+#define FLAG_IS_QUAD_PORT_A               BIT(12)
-+#define FLAG_IS_QUAD_PORT                 BIT(13)
-+#define FLAG_HAS_HW_TIMESTAMP             BIT(14)
-+#define FLAG_APME_IN_WUC                  BIT(15)
-+#define FLAG_APME_IN_CTRL3                BIT(16)
-+#define FLAG_APME_CHECK_PORT_B            BIT(17)
-+#define FLAG_DISABLE_FC_PAUSE_TIME        BIT(18)
-+#define FLAG_NO_WAKE_UCAST                BIT(19)
-+#define FLAG_MNG_PT_ENABLED               BIT(20)
-+#define FLAG_RESET_OVERWRITES_LAA         BIT(21)
-+#define FLAG_TARC_SPEED_MODE_BIT          BIT(22)
-+#define FLAG_TARC_SET_BIT_ZERO            BIT(23)
-+#define FLAG_RX_NEEDS_RESTART             BIT(24)
-+#define FLAG_LSC_GIG_SPEED_DROP           BIT(25)
-+#define FLAG_SMART_POWER_DOWN             BIT(26)
-+#define FLAG_MSI_ENABLED                  BIT(27)
-+/* reserved BIT(28) */
-+#define FLAG_TSO_FORCE                    BIT(29)
-+#define FLAG_RESTART_NOW                  BIT(30)
-+#define FLAG_MSI_TEST_FAILED              BIT(31)
- 
--#define FLAG2_CRC_STRIPPING               (1 << 0)
--#define FLAG2_HAS_PHY_WAKEUP              (1 << 1)
--#define FLAG2_IS_DISCARDING               (1 << 2)
--#define FLAG2_DISABLE_ASPM_L1             (1 << 3)
--#define FLAG2_HAS_PHY_STATS               (1 << 4)
--#define FLAG2_HAS_EEE                     (1 << 5)
--#define FLAG2_DMA_BURST                   (1 << 6)
--#define FLAG2_DISABLE_ASPM_L0S            (1 << 7)
--#define FLAG2_DISABLE_AIM                 (1 << 8)
--#define FLAG2_CHECK_PHY_HANG              (1 << 9)
--#define FLAG2_NO_DISABLE_RX               (1 << 10)
--#define FLAG2_PCIM2PCI_ARBITER_WA         (1 << 11)
--#define FLAG2_DFLT_CRC_STRIPPING          (1 << 12)
--#define FLAG2_CHECK_RX_HWTSTAMP           (1 << 13)
-+#define FLAG2_CRC_STRIPPING               BIT(0)
-+#define FLAG2_HAS_PHY_WAKEUP              BIT(1)
-+#define FLAG2_IS_DISCARDING               BIT(2)
-+#define FLAG2_DISABLE_ASPM_L1             BIT(3)
-+#define FLAG2_HAS_PHY_STATS               BIT(4)
-+#define FLAG2_HAS_EEE                     BIT(5)
-+#define FLAG2_DMA_BURST                   BIT(6)
-+#define FLAG2_DISABLE_ASPM_L0S            BIT(7)
-+#define FLAG2_DISABLE_AIM                 BIT(8)
-+#define FLAG2_CHECK_PHY_HANG              BIT(9)
-+#define FLAG2_NO_DISABLE_RX               BIT(10)
-+#define FLAG2_PCIM2PCI_ARBITER_WA         BIT(11)
-+#define FLAG2_DFLT_CRC_STRIPPING          BIT(12)
-+#define FLAG2_CHECK_RX_HWTSTAMP           BIT(13)
- 
- #define E1000_RX_DESC_PS(R, i)	    \
- 	(&(((union e1000_rx_desc_packet_split *)((R).desc))[i]))
-diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
-index 7cc37ea0330e..2fe5bf3653e5 100644
---- a/drivers/net/ethernet/intel/e1000e/ethtool.c
-+++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
-@@ -446,8 +446,9 @@ static void e1000_get_regs(struct net_device *netdev,
- 
- 	memset(p, 0, E1000_REGS_LEN * sizeof(u32));
- 
--	regs->version = (1 << 24) | (adapter->pdev->revision << 16) |
--	    adapter->pdev->device;
-+	regs->version = (1u << 24) |
-+			(adapter->pdev->revision << 16) |
-+			adapter->pdev->device;
- 
- 	regs_buff[0] = er32(CTRL);
- 	regs_buff[1] = er32(STATUS);
-@@ -902,7 +903,7 @@ static int e1000_reg_test(struct e1000_adapter *adapter, u64 *data)
- 	case e1000_pch2lan:
- 	case e1000_pch_lpt:
- 	case e1000_pch_spt:
--		mask |= (1 << 18);
-+		mask |= BIT(18);
- 		break;
- 	default:
- 		break;
-@@ -921,9 +922,9 @@ static int e1000_reg_test(struct e1000_adapter *adapter, u64 *data)
- 
- 			/* SHRAH[9] different than the others */
- 			if (i == 10)
--				mask |= (1 << 30);
-+				mask |= BIT(30);
- 			else
--				mask &= ~(1 << 30);
-+				mask &= ~BIT(30);
- 		}
- 		if (mac->type == e1000_pch2lan) {
- 			/* SHRAH[0,1,2] different than previous */
-@@ -931,7 +932,7 @@ static int e1000_reg_test(struct e1000_adapter *adapter, u64 *data)
- 				mask &= 0xFFF4FFFF;
- 			/* SHRAH[3] different than SHRAH[0,1,2] */
- 			if (i == 4)
--				mask |= (1 << 30);
-+				mask |= BIT(30);
- 			/* RAR[1-6] owned by management engine - skipping */
- 			if (i > 0)
- 				i += 6;
-@@ -1026,7 +1027,7 @@ static int e1000_intr_test(struct e1000_adapter *adapter, u64 *data)
- 	/* Test each interrupt */
- 	for (i = 0; i < 10; i++) {
- 		/* Interrupt to test */
--		mask = 1 << i;
-+		mask = BIT(i);
- 
- 		if (adapter->flags & FLAG_IS_ICH) {
- 			switch (mask) {
-@@ -1394,7 +1395,7 @@ static int e1000_integrated_phy_loopback(struct e1000_adapter *adapter)
- 	case e1000_phy_82579:
- 		/* Disable PHY energy detect power down */
- 		e1e_rphy(hw, PHY_REG(0, 21), &phy_reg);
--		e1e_wphy(hw, PHY_REG(0, 21), phy_reg & ~(1 << 3));
-+		e1e_wphy(hw, PHY_REG(0, 21), phy_reg & ~BIT(3));
- 		/* Disable full chip energy detect */
- 		e1e_rphy(hw, PHY_REG(776, 18), &phy_reg);
- 		e1e_wphy(hw, PHY_REG(776, 18), phy_reg | 1);
-@@ -1460,7 +1461,7 @@ static int e1000_set_82571_fiber_loopback(struct e1000_adapter *adapter)
- 
- 	/* disable autoneg */
- 	ctrl = er32(TXCW);
--	ctrl &= ~(1 << 31);
-+	ctrl &= ~BIT(31);
- 	ew32(TXCW, ctrl);
- 
- 	link = (er32(STATUS) & E1000_STATUS_LU);
-@@ -2290,19 +2291,19 @@ static int e1000e_get_ts_info(struct net_device *netdev,
- 				  SOF_TIMESTAMPING_RX_HARDWARE |
- 				  SOF_TIMESTAMPING_RAW_HARDWARE);
- 
--	info->tx_types = (1 << HWTSTAMP_TX_OFF) | (1 << HWTSTAMP_TX_ON);
-+	info->tx_types = BIT(HWTSTAMP_TX_OFF) | BIT(HWTSTAMP_TX_ON);
- 
--	info->rx_filters = ((1 << HWTSTAMP_FILTER_NONE) |
--			    (1 << HWTSTAMP_FILTER_PTP_V1_L4_SYNC) |
--			    (1 << HWTSTAMP_FILTER_PTP_V1_L4_DELAY_REQ) |
--			    (1 << HWTSTAMP_FILTER_PTP_V2_L4_SYNC) |
--			    (1 << HWTSTAMP_FILTER_PTP_V2_L4_DELAY_REQ) |
--			    (1 << HWTSTAMP_FILTER_PTP_V2_L2_SYNC) |
--			    (1 << HWTSTAMP_FILTER_PTP_V2_L2_DELAY_REQ) |
--			    (1 << HWTSTAMP_FILTER_PTP_V2_EVENT) |
--			    (1 << HWTSTAMP_FILTER_PTP_V2_SYNC) |
--			    (1 << HWTSTAMP_FILTER_PTP_V2_DELAY_REQ) |
--			    (1 << HWTSTAMP_FILTER_ALL));
-+	info->rx_filters = (BIT(HWTSTAMP_FILTER_NONE) |
-+			    BIT(HWTSTAMP_FILTER_PTP_V1_L4_SYNC) |
-+			    BIT(HWTSTAMP_FILTER_PTP_V1_L4_DELAY_REQ) |
-+			    BIT(HWTSTAMP_FILTER_PTP_V2_L4_SYNC) |
-+			    BIT(HWTSTAMP_FILTER_PTP_V2_L4_DELAY_REQ) |
-+			    BIT(HWTSTAMP_FILTER_PTP_V2_L2_SYNC) |
-+			    BIT(HWTSTAMP_FILTER_PTP_V2_L2_DELAY_REQ) |
-+			    BIT(HWTSTAMP_FILTER_PTP_V2_EVENT) |
-+			    BIT(HWTSTAMP_FILTER_PTP_V2_SYNC) |
-+			    BIT(HWTSTAMP_FILTER_PTP_V2_DELAY_REQ) |
-+			    BIT(HWTSTAMP_FILTER_ALL));
- 
- 	if (adapter->ptp_clock)
- 		info->phc_index = ptp_clock_index(adapter->ptp_clock);
-diff --git a/drivers/net/ethernet/intel/e1000e/ich8lan.c b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-index c0f4887ea44d..3e11322d8d58 100644
---- a/drivers/net/ethernet/intel/e1000e/ich8lan.c
-+++ b/drivers/net/ethernet/intel/e1000e/ich8lan.c
-@@ -1048,7 +1048,7 @@ static s32 e1000_platform_pm_pch_lpt(struct e1000_hw *hw, bool link)
- 
- 		while (value > PCI_LTR_VALUE_MASK) {
- 			scale++;
--			value = DIV_ROUND_UP(value, (1 << 5));
-+			value = DIV_ROUND_UP(value, BIT(5));
- 		}
- 		if (scale > E1000_LTRV_SCALE_MAX) {
- 			e_dbg("Invalid LTR latency scale %d\n", scale);
-@@ -1573,7 +1573,7 @@ static s32 e1000_check_for_copper_link_ich8lan(struct e1000_hw *hw)
- 		phy_reg &= ~HV_KMRN_FIFO_CTRLSTA_PREAMBLE_MASK;
- 
- 		if ((er32(STATUS) & E1000_STATUS_FD) != E1000_STATUS_FD)
--			phy_reg |= (1 << HV_KMRN_FIFO_CTRLSTA_PREAMBLE_SHIFT);
-+			phy_reg |= BIT(HV_KMRN_FIFO_CTRLSTA_PREAMBLE_SHIFT);
- 
- 		e1e_wphy(hw, HV_KMRN_FIFO_CTRLSTA, phy_reg);
- 		break;
-@@ -2044,9 +2044,9 @@ static s32 e1000_write_smbus_addr(struct e1000_hw *hw)
- 		/* Restore SMBus frequency */
- 		if (freq--) {
- 			phy_data &= ~HV_SMB_ADDR_FREQ_MASK;
--			phy_data |= (freq & (1 << 0)) <<
-+			phy_data |= (freq & BIT(0)) <<
- 			    HV_SMB_ADDR_FREQ_LOW_SHIFT;
--			phy_data |= (freq & (1 << 1)) <<
-+			phy_data |= (freq & BIT(1)) <<
- 			    (HV_SMB_ADDR_FREQ_HIGH_SHIFT - 1);
- 		} else {
- 			e_dbg("Unsupported SMB frequency in PHY\n");
-@@ -2530,7 +2530,7 @@ s32 e1000_lv_jumbo_workaround_ich8lan(struct e1000_hw *hw, bool enable)
- 
- 	/* disable Rx path while enabling/disabling workaround */
- 	e1e_rphy(hw, PHY_REG(769, 20), &phy_reg);
--	ret_val = e1e_wphy(hw, PHY_REG(769, 20), phy_reg | (1 << 14));
-+	ret_val = e1e_wphy(hw, PHY_REG(769, 20), phy_reg | BIT(14));
- 	if (ret_val)
- 		return ret_val;
- 
-@@ -2561,7 +2561,7 @@ s32 e1000_lv_jumbo_workaround_ich8lan(struct e1000_hw *hw, bool enable)
- 
- 		/* Enable jumbo frame workaround in the MAC */
- 		mac_reg = er32(FFLT_DBG);
--		mac_reg &= ~(1 << 14);
-+		mac_reg &= ~BIT(14);
- 		mac_reg |= (7 << 15);
- 		ew32(FFLT_DBG, mac_reg);
- 
-@@ -2576,7 +2576,7 @@ s32 e1000_lv_jumbo_workaround_ich8lan(struct e1000_hw *hw, bool enable)
- 			return ret_val;
- 		ret_val = e1000e_write_kmrn_reg(hw,
- 						E1000_KMRNCTRLSTA_CTRL_OFFSET,
--						data | (1 << 0));
-+						data | BIT(0));
- 		if (ret_val)
- 			return ret_val;
- 		ret_val = e1000e_read_kmrn_reg(hw,
-@@ -2600,7 +2600,7 @@ s32 e1000_lv_jumbo_workaround_ich8lan(struct e1000_hw *hw, bool enable)
- 		if (ret_val)
- 			return ret_val;
- 		e1e_rphy(hw, PHY_REG(769, 16), &data);
--		data &= ~(1 << 13);
-+		data &= ~BIT(13);
- 		ret_val = e1e_wphy(hw, PHY_REG(769, 16), data);
- 		if (ret_val)
- 			return ret_val;
-@@ -2614,7 +2614,7 @@ s32 e1000_lv_jumbo_workaround_ich8lan(struct e1000_hw *hw, bool enable)
- 		if (ret_val)
- 			return ret_val;
- 		e1e_rphy(hw, HV_PM_CTRL, &data);
--		ret_val = e1e_wphy(hw, HV_PM_CTRL, data | (1 << 10));
-+		ret_val = e1e_wphy(hw, HV_PM_CTRL, data | BIT(10));
- 		if (ret_val)
- 			return ret_val;
+ 	/* cls u32 is a graph starting at root node 0x800. The driver tracks
+@@ -8411,47 +8439,85 @@ static int ixgbe_configure_clsu32(struct ixgbe_adapter *adapter,
+ 	 * this function _should_ be generic try not to hardcode values here.
+ 	 */
+ 	if (uhtid == 0x800) {
+-		field_ptr = adapter->jump_tables[0];
++		field_ptr = (adapter->jump_tables[0])->mat;
  	} else {
-@@ -2634,7 +2634,7 @@ s32 e1000_lv_jumbo_workaround_ich8lan(struct e1000_hw *hw, bool enable)
- 			return ret_val;
- 		ret_val = e1000e_write_kmrn_reg(hw,
- 						E1000_KMRNCTRLSTA_CTRL_OFFSET,
--						data & ~(1 << 0));
-+						data & ~BIT(0));
- 		if (ret_val)
- 			return ret_val;
- 		ret_val = e1000e_read_kmrn_reg(hw,
-@@ -2657,7 +2657,7 @@ s32 e1000_lv_jumbo_workaround_ich8lan(struct e1000_hw *hw, bool enable)
- 		if (ret_val)
- 			return ret_val;
- 		e1e_rphy(hw, PHY_REG(769, 16), &data);
--		data |= (1 << 13);
-+		data |= BIT(13);
- 		ret_val = e1e_wphy(hw, PHY_REG(769, 16), data);
- 		if (ret_val)
- 			return ret_val;
-@@ -2671,13 +2671,13 @@ s32 e1000_lv_jumbo_workaround_ich8lan(struct e1000_hw *hw, bool enable)
- 		if (ret_val)
- 			return ret_val;
- 		e1e_rphy(hw, HV_PM_CTRL, &data);
--		ret_val = e1e_wphy(hw, HV_PM_CTRL, data & ~(1 << 10));
-+		ret_val = e1e_wphy(hw, HV_PM_CTRL, data & ~BIT(10));
- 		if (ret_val)
- 			return ret_val;
+ 		if (uhtid >= IXGBE_MAX_LINK_HANDLE)
+-			return -EINVAL;
+-
+-		field_ptr = adapter->jump_tables[uhtid];
++			return err;
++		if (!adapter->jump_tables[uhtid])
++			return err;
++		field_ptr = (adapter->jump_tables[uhtid])->mat;
  	}
  
- 	/* re-enable Rx path after enabling/disabling workaround */
--	return e1e_wphy(hw, PHY_REG(769, 20), phy_reg & ~(1 << 14));
-+	return e1e_wphy(hw, PHY_REG(769, 20), phy_reg & ~BIT(14));
- }
+ 	if (!field_ptr)
+-		return -EINVAL;
++		return err;
  
- /**
-@@ -4841,7 +4841,7 @@ static void e1000_initialize_hw_bits_ich8lan(struct e1000_hw *hw)
+-	input = kzalloc(sizeof(*input), GFP_KERNEL);
+-	if (!input)
+-		return -ENOMEM;
++	/* At this point we know the field_ptr is valid and need to either
++	 * build cls_u32 link or attach filter. Because adding a link to
++	 * a handle that does not exist is invalid and the same for adding
++	 * rules to handles that don't exist.
++	 */
  
- 	/* Extended Device Control */
- 	reg = er32(CTRL_EXT);
--	reg |= (1 << 22);
-+	reg |= BIT(22);
- 	/* Enable PHY low-power state when MAC is@D3 w/o WoL */
- 	if (hw->mac.type >= e1000_pchlan)
- 		reg |= E1000_CTRL_EXT_PHYPDEN;
-@@ -4849,34 +4849,34 @@ static void e1000_initialize_hw_bits_ich8lan(struct e1000_hw *hw)
+-	for (i = 0; i < cls->knode.sel->nkeys; i++) {
+-		int off = cls->knode.sel->keys[i].off;
+-		__be32 val = cls->knode.sel->keys[i].val;
+-		__be32 m = cls->knode.sel->keys[i].mask;
+-		bool found_entry = false;
+-		int j;
++	if (link_uhtid) {
++		struct ixgbe_nexthdr *nexthdr = ixgbe_ipv4_jumps;
  
- 	/* Transmit Descriptor Control 0 */
- 	reg = er32(TXDCTL(0));
--	reg |= (1 << 22);
-+	reg |= BIT(22);
- 	ew32(TXDCTL(0), reg);
- 
- 	/* Transmit Descriptor Control 1 */
- 	reg = er32(TXDCTL(1));
--	reg |= (1 << 22);
-+	reg |= BIT(22);
- 	ew32(TXDCTL(1), reg);
- 
- 	/* Transmit Arbitration Control 0 */
- 	reg = er32(TARC(0));
- 	if (hw->mac.type == e1000_ich8lan)
--		reg |= (1 << 28) | (1 << 29);
--	reg |= (1 << 23) | (1 << 24) | (1 << 26) | (1 << 27);
-+		reg |= BIT(28) | BIT(29);
-+	reg |= BIT(23) | BIT(24) | BIT(26) | BIT(27);
- 	ew32(TARC(0), reg);
- 
- 	/* Transmit Arbitration Control 1 */
- 	reg = er32(TARC(1));
- 	if (er32(TCTL) & E1000_TCTL_MULR)
--		reg &= ~(1 << 28);
-+		reg &= ~BIT(28);
- 	else
--		reg |= (1 << 28);
--	reg |= (1 << 24) | (1 << 26) | (1 << 30);
-+		reg |= BIT(28);
-+	reg |= BIT(24) | BIT(26) | BIT(30);
- 	ew32(TARC(1), reg);
- 
- 	/* Device Status */
- 	if (hw->mac.type == e1000_ich8lan) {
- 		reg = er32(STATUS);
--		reg &= ~(1 << 31);
-+		reg &= ~BIT(31);
- 		ew32(STATUS, reg);
- 	}
- 
-diff --git a/drivers/net/ethernet/intel/e1000e/mac.c b/drivers/net/ethernet/intel/e1000e/mac.c
-index e59d7c283cd4..b322011ec282 100644
---- a/drivers/net/ethernet/intel/e1000e/mac.c
-+++ b/drivers/net/ethernet/intel/e1000e/mac.c
-@@ -346,7 +346,7 @@ void e1000e_update_mc_addr_list_generic(struct e1000_hw *hw,
- 		hash_reg = (hash_value >> 5) & (hw->mac.mta_reg_count - 1);
- 		hash_bit = hash_value & 0x1F;
- 
--		hw->mac.mta_shadow[hash_reg] |= (1 << hash_bit);
-+		hw->mac.mta_shadow[hash_reg] |= BIT(hash_bit);
- 		mc_addr_list += (ETH_ALEN);
- 	}
- 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 4918d5dc7385..74fe486ada67 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -317,8 +317,8 @@ static void e1000e_dump(struct e1000_adapter *adapter)
- 		else
- 			next_desc = "";
- 		pr_info("T%c[0x%03X]    %016llX %016llX %016llX %04X  %3X %016llX %p%s\n",
--			(!(le64_to_cpu(u0->b) & (1 << 29)) ? 'l' :
--			 ((le64_to_cpu(u0->b) & (1 << 20)) ? 'd' : 'c')),
-+			(!(le64_to_cpu(u0->b) & BIT(29)) ? 'l' :
-+			 ((le64_to_cpu(u0->b) & BIT(20)) ? 'd' : 'c')),
- 			i,
- 			(unsigned long long)le64_to_cpu(u0->a),
- 			(unsigned long long)le64_to_cpu(u0->b),
-@@ -2018,7 +2018,7 @@ static void e1000_configure_msix(struct e1000_adapter *adapter)
- 	adapter->eiac_mask |= E1000_IMS_OTHER;
- 
- 	/* Cause Tx interrupts on every write back */
--	ivar |= (1 << 31);
-+	ivar |= BIT(31);
- 
- 	ew32(IVAR, ivar);
- 
-@@ -2709,7 +2709,7 @@ static int e1000_vlan_rx_add_vid(struct net_device *netdev,
- 	if (adapter->flags & FLAG_HAS_HW_VLAN_FILTER) {
- 		index = (vid >> 5) & 0x7F;
- 		vfta = E1000_READ_REG_ARRAY(hw, E1000_VFTA, index);
--		vfta |= (1 << (vid & 0x1F));
-+		vfta |= BIT((vid & 0x1F));
- 		hw->mac.ops.write_vfta(hw, index, vfta);
- 	}
- 
-@@ -2737,7 +2737,7 @@ static int e1000_vlan_rx_kill_vid(struct net_device *netdev,
- 	if (adapter->flags & FLAG_HAS_HW_VLAN_FILTER) {
- 		index = (vid >> 5) & 0x7F;
- 		vfta = E1000_READ_REG_ARRAY(hw, E1000_VFTA, index);
--		vfta &= ~(1 << (vid & 0x1F));
-+		vfta &= ~BIT((vid & 0x1F));
- 		hw->mac.ops.write_vfta(hw, index, vfta);
- 	}
- 
-@@ -2878,7 +2878,7 @@ static void e1000_init_manageability_pt(struct e1000_adapter *adapter)
- 
- 			/* Enable this decision filter in MANC2H */
- 			if (mdef)
--				manc2h |= (1 << i);
-+				manc2h |= BIT(i);
- 
- 			j |= mdef;
- 		}
-@@ -2891,7 +2891,7 @@ static void e1000_init_manageability_pt(struct e1000_adapter *adapter)
- 			if (er32(MDEF(i)) == 0) {
- 				ew32(MDEF(i), (E1000_MDEF_PORT_623 |
- 					       E1000_MDEF_PORT_664));
--				manc2h |= (1 << 1);
-+				manc2h |= BIT(1);
- 				j++;
+-		for (j = 0; field_ptr[j].val; j++) {
+-			if (field_ptr[j].off == off) {
+-				field_ptr[j].val(input, &mask, val, m);
+-				input->filter.formatted.flow_type |=
+-					field_ptr[j].type;
+-				found_entry = true;
++		if (link_uhtid >= IXGBE_MAX_LINK_HANDLE)
++			return err;
++
++		if (!test_bit(link_uhtid - 1, &adapter->tables))
++			return err;
++
++		for (i = 0; nexthdr[i].jump; i++) {
++			if (nexthdr[i].o != cls->knode.sel->offoff ||
++			    nexthdr[i].s != cls->knode.sel->offshift ||
++			    nexthdr[i].m != cls->knode.sel->offmask)
++				return err;
++
++			jump = kzalloc(sizeof(*jump), GFP_KERNEL);
++			if (!jump)
++				return -ENOMEM;
++			input = kzalloc(sizeof(*input), GFP_KERNEL);
++			if (!input) {
++				err = -ENOMEM;
++				goto free_jump;
++			}
++			mask = kzalloc(sizeof(*mask), GFP_KERNEL);
++			if (!mask) {
++				err = -ENOMEM;
++				goto free_input;
++			}
++			jump->input = input;
++			jump->mask = mask;
++			err = ixgbe_clsu32_build_input(input, mask, cls,
++						       field_ptr, &nexthdr[i]);
++			if (!err) {
++				jump->mat = nexthdr[i].jump;
++				adapter->jump_tables[link_uhtid] = jump;
  				break;
  			}
-@@ -2971,7 +2971,7 @@ static void e1000_configure_tx(struct e1000_adapter *adapter)
- 		/* set the speed mode bit, we'll clear it if we're not at
- 		 * gigabit link later
- 		 */
--#define SPEED_MODE_BIT (1 << 21)
-+#define SPEED_MODE_BIT BIT(21)
- 		tarc |= SPEED_MODE_BIT;
- 		ew32(TARC(0), tarc);
- 	}
-@@ -3071,12 +3071,12 @@ static void e1000_setup_rctl(struct e1000_adapter *adapter)
- 
- 		e1e_rphy(hw, PHY_REG(770, 26), &phy_data);
- 		phy_data &= 0xfff8;
--		phy_data |= (1 << 2);
-+		phy_data |= BIT(2);
- 		e1e_wphy(hw, PHY_REG(770, 26), phy_data);
- 
- 		e1e_rphy(hw, 22, &phy_data);
- 		phy_data &= 0x0fff;
--		phy_data |= (1 << 14);
-+		phy_data |= BIT(14);
- 		e1e_wphy(hw, 0x10, 0x2823);
- 		e1e_wphy(hw, 0x11, 0x0003);
- 		e1e_wphy(hw, 22, phy_data);
-@@ -3503,8 +3503,8 @@ s32 e1000e_get_base_timinca(struct e1000_adapter *adapter, u32 *timinca)
- 	    !(er32(TSYNCRXCTL) & E1000_TSYNCRXCTL_ENABLED)) {
- 		u32 fextnvm7 = er32(FEXTNVM7);
- 
--		if (!(fextnvm7 & (1 << 0))) {
--			ew32(FEXTNVM7, fextnvm7 | (1 << 0));
-+		if (!(fextnvm7 & BIT(0))) {
-+			ew32(FEXTNVM7, fextnvm7 | BIT(0));
- 			e1e_flush();
  		}
+-
+-		if (!found_entry)
+-			goto err_out;
++		return 0;
  	}
-@@ -3828,7 +3828,7 @@ static void e1000_flush_rx_ring(struct e1000_adapter *adapter)
- 	/* update thresholds: prefetch threshold to 31, host threshold to 1
- 	 * and make sure the granularity is "descriptors" and not "cache lines"
- 	 */
--	rxdctl |= (0x1F | (1 << 8) | E1000_RXDCTL_THRESH_UNIT_DESC);
-+	rxdctl |= (0x1F | BIT(8) | E1000_RXDCTL_THRESH_UNIT_DESC);
  
- 	ew32(RXDCTL(0), rxdctl);
- 	/* momentarily enable the RX ring for the changes to take effect */
-@@ -6850,7 +6850,7 @@ static void e1000_eeprom_checks(struct e1000_adapter *adapter)
+-	mask.formatted.flow_type = IXGBE_ATR_L4TYPE_IPV6_MASK |
+-				   IXGBE_ATR_L4TYPE_MASK;
++	input = kzalloc(sizeof(*input), GFP_KERNEL);
++	if (!input)
++		return -ENOMEM;
++	mask = kzalloc(sizeof(*mask), GFP_KERNEL);
++	if (!mask) {
++		err = -ENOMEM;
++		goto free_input;
++	}
  
- 	ret_val = e1000_read_nvm(hw, NVM_INIT_CONTROL2_REG, 1, &buf);
- 	le16_to_cpus(&buf);
--	if (!ret_val && (!(buf & (1 << 0)))) {
-+	if (!ret_val && (!(buf & BIT(0)))) {
- 		/* Deep Smart Power Down (DSPD) */
- 		dev_warn(&adapter->pdev->dev,
- 			 "Warning: detected DSPD enabled in EEPROM\n");
-diff --git a/drivers/net/ethernet/intel/e1000e/nvm.c b/drivers/net/ethernet/intel/e1000e/nvm.c
-index 49f205c023bf..2efd80dfd88e 100644
---- a/drivers/net/ethernet/intel/e1000e/nvm.c
-+++ b/drivers/net/ethernet/intel/e1000e/nvm.c
-@@ -67,7 +67,7 @@ static void e1000_shift_out_eec_bits(struct e1000_hw *hw, u16 data, u16 count)
- 	u32 eecd = er32(EECD);
- 	u32 mask;
+-	if (input->filter.formatted.flow_type == IXGBE_ATR_FLOW_TYPE_IPV4)
+-		mask.formatted.flow_type &= IXGBE_ATR_L4TYPE_IPV6_MASK;
++	if ((uhtid != 0x800) && (adapter->jump_tables[uhtid])) {
++		if ((adapter->jump_tables[uhtid])->input)
++			memcpy(input, (adapter->jump_tables[uhtid])->input,
++			       sizeof(*input));
++		if ((adapter->jump_tables[uhtid])->mask)
++			memcpy(mask, (adapter->jump_tables[uhtid])->mask,
++			       sizeof(*mask));
++	}
++	err = ixgbe_clsu32_build_input(input, mask, cls, field_ptr, NULL);
++	if (err)
++		goto err_out;
  
--	mask = 0x01 << (count - 1);
-+	mask = BIT(count - 1);
- 	if (nvm->type == e1000_nvm_eeprom_spi)
- 		eecd |= E1000_EECD_DO;
+ 	err = parse_tc_actions(adapter, cls->knode.exts, &input->action,
+ 			       &queue);
+@@ -8463,28 +8529,33 @@ static int ixgbe_configure_clsu32(struct ixgbe_adapter *adapter,
+ 	spin_lock(&adapter->fdir_perfect_lock);
  
-diff --git a/drivers/net/ethernet/intel/e1000e/phy.c b/drivers/net/ethernet/intel/e1000e/phy.c
-index de13aeacae97..d78d47b41a71 100644
---- a/drivers/net/ethernet/intel/e1000e/phy.c
-+++ b/drivers/net/ethernet/intel/e1000e/phy.c
-@@ -2894,11 +2894,11 @@ static s32 __e1000_write_phy_reg_hv(struct e1000_hw *hw, u32 offset, u16 data,
- 		if ((hw->phy.type == e1000_phy_82578) &&
- 		    (hw->phy.revision >= 1) &&
- 		    (hw->phy.addr == 2) &&
--		    !(MAX_PHY_REG_ADDRESS & reg) && (data & (1 << 11))) {
-+		    !(MAX_PHY_REG_ADDRESS & reg) && (data & BIT(11))) {
- 			u16 data2 = 0x7EFF;
+ 	if (hlist_empty(&adapter->fdir_filter_list)) {
+-		memcpy(&adapter->fdir_mask, &mask, sizeof(mask));
+-		err = ixgbe_fdir_set_input_mask_82599(hw, &mask);
++		memcpy(&adapter->fdir_mask, mask, sizeof(*mask));
++		err = ixgbe_fdir_set_input_mask_82599(hw, mask);
+ 		if (err)
+ 			goto err_out_w_lock;
+-	} else if (memcmp(&adapter->fdir_mask, &mask, sizeof(mask))) {
++	} else if (memcmp(&adapter->fdir_mask, mask, sizeof(*mask))) {
+ 		err = -EINVAL;
+ 		goto err_out_w_lock;
+ 	}
  
- 			ret_val = e1000_access_phy_debug_regs_hv(hw,
--								 (1 << 6) | 0x3,
-+								 BIT(6) | 0x3,
- 								 &data2, false);
- 			if (ret_val)
- 				goto out;
-diff --git a/drivers/net/ethernet/intel/e1000e/phy.h b/drivers/net/ethernet/intel/e1000e/phy.h
-index 55bfe473514d..3027f63ee793 100644
---- a/drivers/net/ethernet/intel/e1000e/phy.h
-+++ b/drivers/net/ethernet/intel/e1000e/phy.h
-@@ -104,9 +104,9 @@ s32 e1000_get_cable_length_82577(struct e1000_hw *hw);
- #define BM_WUC_DATA_OPCODE		0x12
- #define BM_WUC_ENABLE_PAGE		BM_PORT_CTRL_PAGE
- #define BM_WUC_ENABLE_REG		17
--#define BM_WUC_ENABLE_BIT		(1 << 2)
--#define BM_WUC_HOST_WU_BIT		(1 << 4)
--#define BM_WUC_ME_WU_BIT		(1 << 5)
-+#define BM_WUC_ENABLE_BIT		BIT(2)
-+#define BM_WUC_HOST_WU_BIT		BIT(4)
-+#define BM_WUC_ME_WU_BIT		BIT(5)
+-	ixgbe_atr_compute_perfect_hash_82599(&input->filter, &mask);
++	ixgbe_atr_compute_perfect_hash_82599(&input->filter, mask);
+ 	err = ixgbe_fdir_write_perfect_filter_82599(hw, &input->filter,
+ 						    input->sw_idx, queue);
+ 	if (!err)
+ 		ixgbe_update_ethtool_fdir_entry(adapter, input, input->sw_idx);
+ 	spin_unlock(&adapter->fdir_perfect_lock);
  
- #define PHY_UPPER_SHIFT			21
- #define BM_PHY_REG(page, reg) \
-@@ -124,8 +124,8 @@ s32 e1000_get_cable_length_82577(struct e1000_hw *hw);
- #define I82578_ADDR_REG			29
- #define I82577_ADDR_REG			16
- #define I82577_CFG_REG			22
--#define I82577_CFG_ASSERT_CRS_ON_TX	(1 << 15)
--#define I82577_CFG_ENABLE_DOWNSHIFT	(3 << 10)	/* auto downshift */
-+#define I82577_CFG_ASSERT_CRS_ON_TX	BIT(15)
-+#define I82577_CFG_ENABLE_DOWNSHIFT	(3u << 10)	/* auto downshift */
- #define I82577_CTRL_REG			23
++	kfree(mask);
+ 	return err;
+ err_out_w_lock:
+ 	spin_unlock(&adapter->fdir_perfect_lock);
+ err_out:
++	kfree(mask);
++free_input:
+ 	kfree(input);
+-	return -EINVAL;
++free_jump:
++	kfree(jump);
++	return err;
+ }
  
- /* 82577 specific PHY registers */
--- 
-2.8.1.102.ga49ec4a
+ static int __ixgbe_setup_tc(struct net_device *dev, u32 handle, __be16 proto,
+@@ -9528,6 +9599,7 @@ err_sw_init:
+ 	ixgbe_disable_sriov(adapter);
+ 	adapter->flags2 &= ~IXGBE_FLAG2_SEARCH_FOR_SFP;
+ 	iounmap(adapter->io_addr);
++	kfree(adapter->jump_tables[0]);
+ 	kfree(adapter->mac_table);
+ err_ioremap:
+ 	disable_dev = !test_and_set_bit(__IXGBE_DISABLED, &adapter->state);
+@@ -9556,6 +9628,7 @@ static void ixgbe_remove(struct pci_dev *pdev)
+ 	struct ixgbe_adapter *adapter = pci_get_drvdata(pdev);
+ 	struct net_device *netdev;
+ 	bool disable_dev;
++	int i;
+ 
+ 	/* if !adapter then we already cleaned up in probe */
+ 	if (!adapter)
+@@ -9605,6 +9678,14 @@ static void ixgbe_remove(struct pci_dev *pdev)
+ 
+ 	e_dev_info("complete\n");
+ 
++	for (i = 0; i < IXGBE_MAX_LINK_HANDLE; i++) {
++		if (adapter->jump_tables[i]) {
++			kfree(adapter->jump_tables[i]->input);
++			kfree(adapter->jump_tables[i]->mask);
++		}
++		kfree(adapter->jump_tables[i]);
++	}
++
+ 	kfree(adapter->mac_table);
+ 	disable_dev = !test_and_set_bit(__IXGBE_DISABLED, &adapter->state);
+ 	free_netdev(netdev);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_model.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_model.h
+index 60adde5..a8bed3d 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_model.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_model.h
+@@ -38,6 +38,12 @@ struct ixgbe_mat_field {
+ 	unsigned int type;
+ };
+ 
++struct ixgbe_jump_table {
++	struct ixgbe_mat_field *mat;
++	struct ixgbe_fdir_filter *input;
++	union ixgbe_atr_input *mask;
++};
++
+ static inline int ixgbe_mat_prgm_sip(struct ixgbe_fdir_filter *input,
+ 				     union ixgbe_atr_input *mask,
+ 				     u32 val, u32 m)
 
