@@ -1,45 +1,44 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Wed, 13 Apr 2016 14:50:01 -0700
-Subject: [Intel-wired-lan] [PATCH v1] e1000e: fix misuse of ret_val variable
-	and error handling
-Message-ID: <1460584201-30699-1-git-send-email-jacob.e.keller@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 13 Apr 2016 14:57:52 -0700
+Subject: [Intel-wired-lan] [PATCH v1 00/13] Fix several GCC6 warnings
+In-Reply-To: <1460583084-16900-1-git-send-email-jacob.e.keller@intel.com>
+References: <1460583084-16900-1-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <CAKgT0UfDoSrRW5S_xSiireqMoXkB0B4tqjZ5gxLReMQ=4bQG4A@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-A patch introduced the use of ret_val variable but only assigned it once
-and didn't use it. e1000_probe already has a rval variable, which is
-what was checked, so remove use of ret_val in favor of rval.
+On Wed, Apr 13, 2016 at 2:31 PM, Jacob Keller <jacob.e.keller@intel.com> wrote:
+> This patch series fixes several warnings on Intel(R) drivers, including
+> for igb, igbvf, e1000e, ixgbe, ixgbevf, i40e, i40evf and fm10k.
+>
+> The primary change is to use BIT() macro where appropriate, and use the
+> unsigned postfix for various other bitshifts. While much of this change
+> doesn't prevent any current warnings, it helps ensure that future
+> additions make use of BIT() macro or the unsigned postfix and prevent
+> signed bitshift errors in the future. A few places (especially in ixgbe)
+> don't use BIT even though it's technically equivalent for style and
+> understanding the real intent of the code.
+>
+> The series also fixes some other warnings, and makes use of GENMASK in a
+> few locations.
 
-Fixes: 7739e79c2ff7 ("e1000e: Fix ptp time reset on network interruption", 2016-04-12)
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/e1000e/netdev.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+So after looking over a few patches I would say you are bit to eager
+to apply BIT to things, and there are a few places where GENMASK
+should be used that you were using bit.
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 74fe486ada67..9c4673930e8d 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -6956,7 +6956,6 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	u16 eeprom_apme_mask = E1000_EEPROM_APME;
- 	s32 rval = 0;
- 	u32 regval;
--	s32 ret_val;
- 
- 	if (ei->flags2 & FLAG2_DISABLE_ASPM_L0S)
- 		aspm_disable_flag = PCIE_LINK_STATE_L0S;
-@@ -7248,7 +7247,7 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	netif_carrier_off(netdev);
- 
- 	/* Get and set the System Time Register SYSTIM base frequency */
--	ret_val = e1000e_get_base_timinca(adapter, &regval);
-+	rval = e1000e_get_base_timinca(adapter, &regval);
- 	if (rval)
- 		goto err_register;
- 	ew32(TIMINCA, regval);
--- 
-2.8.1.102.ga49ec4a
+Specifically in the cases where we are shifting a value that just
+happens to be a 1 by some shift I would recommend not using the BIT
+macro.  Such cases are the context descriptor index value or the
+version number for ethtool.  In addition I am not sure it makes much
+sense to use BIT when we are calculating 2 to the power of a given
+value.  For example PAGE_SIZE is defined at (1 << PAGE_SHIFT), not
+BIT(PAGE_SHIFT) within the kernel.
 
+You probably need to apply GENMASK in all the cases where we have
+BIT(x) - 1 being used.  You will want to set it up as GENMASK(x - 1,
+0).
+
+- Alex
