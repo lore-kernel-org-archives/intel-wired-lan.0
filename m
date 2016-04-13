@@ -1,58 +1,35 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Wed, 13 Apr 2016 22:32:59 +0000
-Subject: [Intel-wired-lan] [PATCH v1 00/13] Fix several GCC6 warnings
-In-Reply-To: <CAKgT0UfDoSrRW5S_xSiireqMoXkB0B4tqjZ5gxLReMQ=4bQG4A@mail.gmail.com>
-References: <1460583084-16900-1-git-send-email-jacob.e.keller@intel.com>
- <CAKgT0UfDoSrRW5S_xSiireqMoXkB0B4tqjZ5gxLReMQ=4bQG4A@mail.gmail.com>
-Message-ID: <1460586779.9106.39.camel@intel.com>
+From: Singh, Krishneil K <krishneil.k.singh@intel.com>
+Date: Wed, 13 Apr 2016 22:33:35 +0000
+Subject: [Intel-wired-lan] [PATCH v1 2/9] fm10k: Fix multicast mode
+	sync	issues
+In-Reply-To: <1459552659-22959-3-git-send-email-jacob.e.keller@intel.com>
+References: <1459552659-22959-1-git-send-email-jacob.e.keller@intel.com>
+ <1459552659-22959-3-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E27371439@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2016-04-13 at 14:57 -0700, Alexander Duyck wrote:
-> On Wed, Apr 13, 2016 at 2:31 PM, Jacob Keller <jacob.e.keller@intel.c
-> om> wrote:
-> > 
-> > This patch series fixes several warnings on Intel(R) drivers,
-> > including
-> > for igb, igbvf, e1000e, ixgbe, ixgbevf, i40e, i40evf and fm10k.
-> > 
-> > The primary change is to use BIT() macro where appropriate, and use
-> > the
-> > unsigned postfix for various other bitshifts. While much of this 
-> > change
-> > doesn't prevent any current warnings, it helps ensure that future
-> > additions make use of BIT() macro or the unsigned postfix and
-> > prevent
-> > signed bitshift errors in the future. A few places (especially in
-> > ixgbe)
-> > don't use BIT even though it's technically equivalent for style and
-> > understanding the real intent of the code.
-> > 
-> > The series also fixes some other warnings, and makes use of GENMASK
-> > in a
-> > few locations.
-> So after looking over a few patches I would say you are bit to eager
-> to apply BIT to things, and there are a few places where GENMASK
-> should be used that you were using bit.
-> 
-> Specifically in the cases where we are shifting a value that just
-> happens to be a 1 by some shift I would recommend not using the BIT
-> macro.??Such cases are the context descriptor index value or the
-> version number for ethtool.??In addition I am not sure it makes much
-> sense to use BIT when we are calculating 2 to the power of a given
-> value.??For example PAGE_SIZE is defined at (1 << PAGE_SHIFT), not
-> BIT(PAGE_SHIFT) within the kernel.
-> 
-> You probably need to apply GENMASK in all the cases where we have
-> BIT(x) - 1 being used.??You will want to set it up as GENMASK(x - 1,
-> 0).
-> 
-> - Alex
 
-Yep. I'll try to clean those up.
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Jacob Keller
+Sent: Friday, April 1, 2016 4:18 PM
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Cc: Kwan, Ngai-mint <ngai-mint.kwan@intel.com>
+Subject: [Intel-wired-lan] [PATCH v1 2/9] fm10k: Fix multicast mode sync issues
 
-Thanks,
-Jake
+From: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
+
+Multicast mode checking is no longer a requirement to perform unicast and multicast address syncs. Specifically, a device operating in promiscuous and/or all multicast mode is not excluded. The issue occurs when the netdev is pre-configured to either multicast mode and is enabled for the first time. The multicast-group table in the Switch Manager will be missing obvious multicast entries associated to this netdev.
+
+Changes were also made to disallow unicast and multicast syncs with VLAN 0. The Switch Manager considers VLAN 0 to be an invalid entry.
+Requests with VLAN 0 by the netdev are only generated when the driver is freshly installed and the default VID is not set.
+
+Signed-off-by: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+
+Tested-by: Krishneil Singh <Krishneil.k.singh@intel.com>
+
