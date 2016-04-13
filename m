@@ -1,147 +1,126 @@
 From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-Date: Wed, 13 Apr 2016 03:08:25 -0700
-Subject: [Intel-wired-lan] [next PATCH S34 05/12] i40e: Flow-based side-band
-	filter count and its use for input set change
+Date: Wed, 13 Apr 2016 03:08:29 -0700
+Subject: [Intel-wired-lan] [next PATCH S34 09/12] i40e: Use consistent type
+	for vf_id
 In-Reply-To: <1460542112-20166-1-git-send-email-harshitha.ramamurthy@intel.com>
 References: <1460542112-20166-1-git-send-email-harshitha.ramamurthy@intel.com>
-Message-ID: <1460542112-20166-6-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <1460542112-20166-10-git-send-email-harshitha.ramamurthy@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Kiran Patil <kiran.patil@intel.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-This patch keeps track of side-band filters based on flow-type.
-It is used to handle detection of input set mask changes per
-flow-type.
+The driver was all over the place using signed or unsigned types
+for vf_id, when it should always be signed.
 
-Signed-off-by: Kiran Patil <kiran.patil@intel.com>
-Change-Id: I5f308dbd33d3c6ae9f5db301b5989b6089f61dce
+This fixes warnings of type unsafe comparisons from gcc with W=2.
+
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Change-Id: I2cb681f83d0f68ca124d2e4131e4ac0d9f8a6b22
 ---
-Testing Hints :
-	ethtool -N p5p2 flow-type tcp4 src-ip 192.168.0.2 \
-		 dst-ip 192.168.0.1 action 40
-	ethtool -N p5p2 flow-type udp4 src-ip 192.168.0.2 \
-		 dst-ip 192.168.0.1 src-port 1000 action 41
-Made sure that, able to change input set mask independently based on
-flow-type.
+Testing Hints : make sure virtchannel (VF) still
+works to configure MAC addresses and such from the VF.
 
- drivers/net/ethernet/intel/i40e/i40e.h         |  9 +++++++++
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  9 +++++++--
- drivers/net/ethernet/intel/i40e/i40e_txrx.c    | 24 +++++++++++++++++++++---
- 3 files changed, 37 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h             |  2 +-
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 13 +++++++------
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |  4 ++--
+ 3 files changed, 10 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 1f48e10..ceb848a 100644
+index ceb848a..618a2a8 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e.h
 +++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -308,6 +308,15 @@ struct i40e_pf {
- 	u32 fd_atr_cnt;
- 	u32 fd_tcp_rule;
+@@ -569,7 +569,7 @@ struct i40e_vsi {
+ 	u16 num_queue_pairs; /* Used tx and rx pairs */
+ 	u16 num_desc;
+ 	enum i40e_vsi_type type;  /* VSI type, e.g., LAN, FCoE, etc */
+-	u16 vf_id;		/* Virtual function ID for SRIOV VSIs */
++	s16 vf_id;		/* Virtual function ID for SRIOV VSIs */
  
-+	/* Book-keeping of side-band filter count per flow-type.
-+	 * This is used to detect and handle input set changes for
-+	 * respective flow-type.
-+	 */
-+	u16 fd_tcp4_filter_cnt;
-+	u16 fd_udp4_filter_cnt;
-+	u16 fd_sctp4_filter_cnt;
-+	u16 fd_ip4_filter_cnt;
-+
- 	struct i40e_udp_port_config udp_ports[I40E_MAX_PF_UDP_OFFLOAD_PORTS];
- 	u16 pending_udp_bitmap;
+ 	struct i40e_tc_configuration tc_config;
+ 	struct i40e_aqc_vsi_properties_data info;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 4f0214e..41be42d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -48,7 +48,7 @@ static void i40e_vc_vf_broadcast(struct i40e_pf *pf,
+ 	int i;
  
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index ada448b..865c8db 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -2500,6 +2500,7 @@ static int i40e_handle_input_set(struct i40e_vsi *vsi,
+ 	for (i = 0; i < pf->num_alloc_vfs; i++, vf++) {
+-		int abs_vf_id = vf->vf_id + hw->func_caps.vf_base_id;
++		int abs_vf_id = vf->vf_id + (int)hw->func_caps.vf_base_id;
+ 		/* Not all vfs are enabled so skip the ones that are not */
+ 		if (!test_bit(I40E_VF_STAT_INIT, &vf->vf_states) &&
+ 		    !test_bit(I40E_VF_STAT_ACTIVE, &vf->vf_states))
+@@ -74,7 +74,7 @@ static void i40e_vc_notify_vf_link_state(struct i40e_vf *vf)
+ 	struct i40e_pf *pf = vf->pf;
+ 	struct i40e_hw *hw = &pf->hw;
+ 	struct i40e_link_status *ls = &pf->hw.phy.link_info;
+-	int abs_vf_id = vf->vf_id + hw->func_caps.vf_base_id;
++	int abs_vf_id = vf->vf_id + (int)hw->func_caps.vf_base_id;
+ 
+ 	pfe.event = I40E_VIRTCHNL_EVENT_LINK_CHANGE;
+ 	pfe.severity = I40E_PF_EVENT_SEVERITY_INFO;
+@@ -141,7 +141,7 @@ void i40e_vc_notify_vf_reset(struct i40e_vf *vf)
+ 	    !test_bit(I40E_VF_STAT_ACTIVE, &vf->vf_states))
+ 		return;
+ 
+-	abs_vf_id = vf->vf_id + vf->pf->hw.func_caps.vf_base_id;
++	abs_vf_id = vf->vf_id + (int)vf->pf->hw.func_caps.vf_base_id;
+ 
+ 	pfe.event = I40E_VIRTCHNL_EVENT_RESET_IMPENDING;
+ 	pfe.severity = I40E_PF_EVENT_SEVERITY_CERTAIN_DOOM;
+@@ -2516,11 +2516,11 @@ static int i40e_vc_validate_vf_msg(struct i40e_vf *vf, u32 v_opcode,
+  * called from the common aeq/arq handler to
+  * process request from VF
+  **/
+-int i40e_vc_process_vf_msg(struct i40e_pf *pf, u16 vf_id, u32 v_opcode,
++int i40e_vc_process_vf_msg(struct i40e_pf *pf, s16 vf_id, u32 v_opcode,
+ 			   u32 v_retval, u8 *msg, u16 msglen)
  {
- 	bool inset_mask_change = false;
+ 	struct i40e_hw *hw = &pf->hw;
+-	unsigned int local_vf_id = vf_id - hw->func_caps.vf_base_id;
++	int local_vf_id = vf_id - (s16)hw->func_caps.vf_base_id;
+ 	struct i40e_vf *vf;
+ 	int ret;
+ 
+@@ -2622,9 +2622,10 @@ int i40e_vc_process_vf_msg(struct i40e_pf *pf, u16 vf_id, u32 v_opcode,
+  **/
+ int i40e_vc_process_vflr_event(struct i40e_pf *pf)
+ {
+-	u32 reg, reg_idx, bit_idx, vf_id;
+ 	struct i40e_hw *hw = &pf->hw;
++	u32 reg, reg_idx, bit_idx;
+ 	struct i40e_vf *vf;
++	int vf_id;
+ 
+ 	if (!test_bit(__I40E_VFLR_EVENT_PENDING, &pf->state))
+ 		return 0;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+index bf54873..8751741 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+@@ -77,7 +77,7 @@ struct i40e_vf {
  	struct i40e_pf *pf;
-+	u16 filter_cnt;
- 	u64 val;
- 	u8 idx;
  
-@@ -2510,9 +2511,11 @@ static int i40e_handle_input_set(struct i40e_vsi *vsi,
- 	switch (fsp->flow_type & FLOW_TYPE_MASK) {
- 	case TCP_V4_FLOW:
- 		idx = I40E_FILTER_PCTYPE_NONF_IPV4_TCP;
-+		filter_cnt = pf->fd_tcp4_filter_cnt;
- 		break;
- 	case UDP_V4_FLOW:
- 		idx = I40E_FILTER_PCTYPE_NONF_IPV4_UDP;
-+		filter_cnt = pf->fd_udp4_filter_cnt;
- 		break;
- 	default:
- 		/* for all other flow types */
-@@ -2578,8 +2581,10 @@ static int i40e_handle_input_set(struct i40e_vsi *vsi,
- 			netif_err(pf, drv, vsi->netdev, "Change of input set is not supported when MFP mode is enabled\n");
- 			return -EOPNOTSUPP;
- 		}
--		if (pf->fdir_pf_active_filters) {
--			netif_err(pf, drv, vsi->netdev, "Change of input set is not supported when there are existing filters. Please delete them and re-try\n");
-+
-+		if (filter_cnt) {
-+			netif_err(pf, drv, vsi->netdev, "Change of input set is not supported when there are existing filter(%u) for specified flow-type: %u. Please delete them and re-try\n",
-+				  filter_cnt, fsp->flow_type & FLOW_TYPE_MASK);
- 			return -EOPNOTSUPP;
- 		}
- 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 05293f6..808922b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -235,8 +235,14 @@ static int i40e_add_del_fdir_udpv4(struct i40e_vsi *vsi,
- 				 "Filter deleted for PCTYPE %d loc = %d\n",
- 				 fd_data->pctype, fd_data->fd_id);
- 	}
--	if (err)
-+	if (err) {
- 		kfree(raw_packet);
-+	} else {
-+		if (add)
-+			pf->fd_udp4_filter_cnt++;
-+		else
-+			pf->fd_udp4_filter_cnt--;
-+	}
- 
- 	return err ? -EOPNOTSUPP : 0;
- }
-@@ -315,8 +321,14 @@ static int i40e_add_del_fdir_tcpv4(struct i40e_vsi *vsi,
- 				 fd_data->pctype, fd_data->fd_id);
- 	}
- 
--	if (err)
-+	if (err) {
- 		kfree(raw_packet);
-+	} else {
-+		if (add)
-+			pf->fd_tcp4_filter_cnt++;
-+		else
-+			pf->fd_tcp4_filter_cnt--;
-+	}
- 
- 	return err ? -EOPNOTSUPP : 0;
- }
-@@ -393,8 +405,14 @@ static int i40e_add_del_fdir_ipv4(struct i40e_vsi *vsi,
- 		}
- 	}
- 
--	if (err)
-+	if (err) {
- 		kfree(raw_packet);
-+	} else {
-+		if (add)
-+			pf->fd_ip4_filter_cnt++;
-+		else
-+			pf->fd_ip4_filter_cnt--;
-+	}
- 
- 	return err ? -EOPNOTSUPP : 0;
- }
+ 	/* VF id in the PF space */
+-	u16 vf_id;
++	s16 vf_id;
+ 	/* all VF vsis connect to the same parent */
+ 	enum i40e_switch_element_types parent_type;
+ 	struct i40e_virtchnl_version_info vf_ver;
+@@ -121,7 +121,7 @@ struct i40e_vf {
+ void i40e_free_vfs(struct i40e_pf *pf);
+ int i40e_pci_sriov_configure(struct pci_dev *dev, int num_vfs);
+ int i40e_alloc_vfs(struct i40e_pf *pf, u16 num_alloc_vfs);
+-int i40e_vc_process_vf_msg(struct i40e_pf *pf, u16 vf_id, u32 v_opcode,
++int i40e_vc_process_vf_msg(struct i40e_pf *pf, s16 vf_id, u32 v_opcode,
+ 			   u32 v_retval, u8 *msg, u16 msglen);
+ int i40e_vc_process_vflr_event(struct i40e_pf *pf);
+ void i40e_reset_vf(struct i40e_vf *vf, bool flr);
 -- 
 2.4.3
 
