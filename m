@@ -1,35 +1,47 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 13 Apr 2016 18:00:13 +0000
-Subject: [Intel-wired-lan] [next PATCH S33 09/13] i40e: Remove zero check
-In-Reply-To: <1460475052-6348-10-git-send-email-harshitha.ramamurthy@intel.com>
-References: <1460475052-6348-1-git-send-email-harshitha.ramamurthy@intel.com>
- <1460475052-6348-10-git-send-email-harshitha.ramamurthy@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D0771@ORSMSX104.amr.corp.intel.com>
+From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+Date: Wed, 13 Apr 2016 03:08:20 -0700
+Subject: [Intel-wired-lan] [next PATCH S34 00/12] i40e/i40evf updates
+Message-ID: <1460542112-20166-1-git-send-email-harshitha.ramamurthy@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Harshitha Ramamurthy
-> Sent: Tuesday, April 12, 2016 8:31 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S33 09/13] i40e: Remove zero check
-> 
-> From: Greg Rose <gregory.v.rose@intel.com>
-> 
-> A mirror rule ID may be zero so do not return invalid parameter when the
-> user passes in a zero value for a rule ID.
-> 
-> Signed-off-by: Greg Rose <gregory.v.rose@intel.com>
-> Change-ID: I261b8c24725ce2c6ed32f859da81093dfcbe2970
-> ---
-> Testing Hints : Ensure code compiles correctly.
-> 
->  drivers/net/ethernet/intel/i40e/i40e_common.c | 5 +----
->  1 file changed, 1 insertion(+), 4 deletions(-)
+Anjali Singhai Jain changes the default for VFs to be not privileged,
+limits the number of mac and vlan addresses that can be added for
+VFs and prevents fall back to promiscuous mode if the VF is not trusted.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Driver compiles correctly
+Carolyn Wyborny ensures the VF can not change the RSS hash settings.
+
+Catherine Sullivan fixes an uninitialized variabl and updates a device id for
+X722.
+
+Harshitha Ramamurthy bumps i40e/i40evf from 1.5.5 to 1.5.10.
+
+Jesse Brandeburg avoids aggregate return warnings, ensures use of consistent 
+type for vf_id and drops an extra copy of a function.
+
+Kiran Patil adds code to keep track of side-band filters based on flow-type.
+
+Neerav Parikh removes HMC AQ API implementation.
+
+ drivers/net/ethernet/intel/i40e/i40e.h             |  11 +-
+ drivers/net/ethernet/intel/i40e/i40e_adminq.c      |   4 -
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  |  25 ---
+ drivers/net/ethernet/intel/i40e/i40e_common.c      |  30 ---
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c     |   9 +-
+ drivers/net/ethernet/intel/i40e/i40e_main.c        |  27 +--
+ drivers/net/ethernet/intel/i40e/i40e_prototype.h   |   4 -
+ drivers/net/ethernet/intel/i40e/i40e_ptp.c         |   3 +-
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c        |  24 ++-
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  64 ++++---
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |   7 +-
+ .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    |  25 ---
+ drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 201 +--------------------
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    |   2 +-
+ 14 files changed, 97 insertions(+), 339 deletions(-)
+
+-- 
+2.4.3
+
