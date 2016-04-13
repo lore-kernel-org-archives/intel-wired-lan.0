@@ -1,11 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 13 Apr 2016 17:59:19 +0000
-Subject: [Intel-wired-lan] [next PATCH S33 08/13] i40e: Add DeviceID
-	for	X722 QSFP+
-In-Reply-To: <1460475052-6348-9-git-send-email-harshitha.ramamurthy@intel.com>
+Date: Wed, 13 Apr 2016 18:00:13 +0000
+Subject: [Intel-wired-lan] [next PATCH S33 09/13] i40e: Remove zero check
+In-Reply-To: <1460475052-6348-10-git-send-email-harshitha.ramamurthy@intel.com>
 References: <1460475052-6348-1-git-send-email-harshitha.ramamurthy@intel.com>
- <1460475052-6348-9-git-send-email-harshitha.ramamurthy@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D0760@ORSMSX104.amr.corp.intel.com>
+ <1460475052-6348-10-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D0771@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,20 +16,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Harshitha Ramamurthy
 > Sent: Tuesday, April 12, 2016 8:31 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Krawczyk, Kamil <kamil.krawczyk@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH S33 08/13] i40e: Add DeviceID for X722
-> QSFP+
+> Subject: [Intel-wired-lan] [next PATCH S33 09/13] i40e: Remove zero check
 > 
-> From: Kamil Krawczyk <kamil.krawczyk@intel.com>
+> From: Greg Rose <gregory.v.rose@intel.com>
 > 
-> Signed-off-by: Kamil Krawczyk <kamil.krawczyk@intel.com>
-> Change-ID: I1370fbc7774e815ac1ad56561e97488e829592fc
+> A mirror rule ID may be zero so do not return invalid parameter when the
+> user passes in a zero value for a rule ID.
+> 
+> Signed-off-by: Greg Rose <gregory.v.rose@intel.com>
+> Change-ID: I261b8c24725ce2c6ed32f859da81093dfcbe2970
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_common.c   | 1 +
->  drivers/net/ethernet/intel/i40e/i40e_devids.h   | 1 +
->  drivers/net/ethernet/intel/i40evf/i40e_common.c | 1 +
-> drivers/net/ethernet/intel/i40evf/i40e_devids.h | 1 +
->  4 files changed, 4 insertions(+)
+> Testing Hints : Ensure code compiles correctly.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_common.c | 5 +----
+>  1 file changed, 1 insertion(+), 4 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Code changes applied, driver compiles correctly, hardware not available until WW24+
+Driver compiles correctly
