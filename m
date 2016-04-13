@@ -1,116 +1,89 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 13 Apr 2016 09:25:05 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- b0047f6e153f1f1a27a7fc30ade8fa497a912678 BUILD SUCCESS
-Message-ID: <570d9ff1.xSBwuQTt3AyWJiAP%fengguang.wu@intel.com>
+From: Brian Walsh <brian@walsh.ws>
+Date: Tue, 12 Apr 2016 23:22:30 -0400
+Subject: [Intel-wired-lan] [PATCH v2 1/2] e1000e: Cleanup consistency in
+	ret_val variable usage
+In-Reply-To: <1455662685-7231-1-git-send-email-brian@walsh.ws>
+References: <1455662685-7231-1-git-send-email-brian@walsh.ws>
+Message-ID: <a17942d94a295a0db7ef205060b97313289b1640.1460517387.git.brian@walsh.ws>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-b0047f6e153f1f1a27a7fc30ade8fa497a912678  i40e: Allow user to change input set mask for flow director
+Fixed the file to use a consistent ret_val for return value checking.
 
-elapsed time: 42m
+Signed-off-by: Brian Walsh <brian@walsh.ws>
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c | 22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
 
-configs tested: 95
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 9b4ec13..370b0dc 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -3368,12 +3368,12 @@ static int e1000e_write_uc_addr_list(struct net_device *netdev)
+ 		 * combining
+ 		 */
+ 		netdev_for_each_uc_addr(ha, netdev) {
+-			int rval;
++			int ret_val;
+ 
+ 			if (!rar_entries)
+ 				break;
+-			rval = hw->mac.ops.rar_set(hw, ha->addr, rar_entries--);
+-			if (rval < 0)
++			ret_val = hw->mac.ops.rar_set(hw, ha->addr, rar_entries--);
++			if (ret_val < 0)
+ 				return -ENOMEM;
+ 			count++;
+ 		}
+@@ -6965,7 +6965,7 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	int bars, i, err, pci_using_dac;
+ 	u16 eeprom_data = 0;
+ 	u16 eeprom_apme_mask = E1000_EEPROM_APME;
+-	s32 rval = 0;
++	s32 ret_val = 0;
+ 
+ 	if (ei->flags2 & FLAG2_DISABLE_ASPM_L0S)
+ 		aspm_disable_flag = PCIE_LINK_STATE_L0S;
+@@ -7200,18 +7200,18 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	} else if (adapter->flags & FLAG_APME_IN_CTRL3) {
+ 		if (adapter->flags & FLAG_APME_CHECK_PORT_B &&
+ 		    (adapter->hw.bus.func == 1))
+-			rval = e1000_read_nvm(&adapter->hw,
++			ret_val = e1000_read_nvm(&adapter->hw,
+ 					      NVM_INIT_CONTROL3_PORT_B,
+ 					      1, &eeprom_data);
+ 		else
+-			rval = e1000_read_nvm(&adapter->hw,
++			ret_val = e1000_read_nvm(&adapter->hw,
+ 					      NVM_INIT_CONTROL3_PORT_A,
+ 					      1, &eeprom_data);
+ 	}
+ 
+ 	/* fetch WoL from EEPROM */
+-	if (rval)
+-		e_dbg("NVM read error getting WoL initial values: %d\n", rval);
++	if (ret_val)
++		e_dbg("NVM read error getting WoL initial values: %d\n", ret_val);
+ 	else if (eeprom_data & eeprom_apme_mask)
+ 		adapter->eeprom_wol |= E1000_WUFC_MAG;
+ 
+@@ -7231,10 +7231,10 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		device_wakeup_enable(&pdev->dev);
+ 
+ 	/* save off EEPROM version number */
+-	rval = e1000_read_nvm(&adapter->hw, 5, 1, &adapter->eeprom_vers);
++	ret_val = e1000_read_nvm(&adapter->hw, 5, 1, &adapter->eeprom_vers);
+ 
+-	if (rval) {
+-		e_dbg("NVM read error getting EEPROM version: %d\n", rval);
++	if (ret_val) {
++		e_dbg("NVM read error getting EEPROM version: %d\n", ret_val);
+ 		adapter->eeprom_vers = 0;
+ 	}
+ 
+-- 
+2.1.4
 
-i386                     randconfig-a0-201615
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                 randconfig-x010-201615
-x86_64                 randconfig-x018-201615
-x86_64                 randconfig-x011-201615
-x86_64                 randconfig-x013-201615
-x86_64                 randconfig-x019-201615
-x86_64                 randconfig-x012-201615
-x86_64                 randconfig-x014-201615
-x86_64                 randconfig-x016-201615
-x86_64                 randconfig-x015-201615
-x86_64                 randconfig-x017-201615
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201615
-i386                     randconfig-s1-201615
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201615
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64                              rhel_gcov
-i386                   randconfig-x012-201615
-i386                   randconfig-x013-201615
-i386                   randconfig-x015-201615
-i386                   randconfig-x019-201615
-i386                   randconfig-x011-201615
-i386                   randconfig-x018-201615
-i386                   randconfig-x010-201615
-i386                   randconfig-x016-201615
-i386                   randconfig-x017-201615
-i386                   randconfig-x014-201615
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201615
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-x000-201615
-x86_64                 randconfig-x001-201615
-x86_64                 randconfig-x007-201615
-x86_64                 randconfig-x005-201615
-x86_64                 randconfig-x006-201615
-x86_64                 randconfig-x004-201615
-x86_64                 randconfig-x008-201615
-x86_64                 randconfig-x009-201615
-x86_64                 randconfig-x003-201615
-x86_64                 randconfig-x002-201615
-i386                   randconfig-x000-201615
-i386                   randconfig-x003-201615
-i386                   randconfig-x009-201615
-i386                   randconfig-x005-201615
-i386                   randconfig-x004-201615
-i386                   randconfig-x002-201615
-i386                   randconfig-x006-201615
-i386                   randconfig-x007-201615
-i386                   randconfig-x008-201615
-i386                   randconfig-x001-201615
-
-Thanks,
-Fengguang
