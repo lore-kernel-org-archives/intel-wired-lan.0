@@ -1,96 +1,72 @@
 From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-Date: Thu, 14 Apr 2016 06:19:30 -0700
-Subject: [Intel-wired-lan] [next PATCH S35 10/14] i40e/i40evf: Refactor
-	tunnel interpretation
+Date: Thu, 14 Apr 2016 06:19:29 -0700
+Subject: [Intel-wired-lan] [next PATCH S35 09/14] i40e/i40evf: Rename
+	version macro
 In-Reply-To: <1460639974-2556-1-git-send-email-harshitha.ramamurthy@intel.com>
 References: <1460639974-2556-1-git-send-email-harshitha.ramamurthy@intel.com>
-Message-ID: <1460639974-2556-11-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <1460639974-2556-10-git-send-email-harshitha.ramamurthy@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Catherine Sullivan <catherine.sullivan@intel.com>
 
-Refactor the interpretation of a tunnel.  This removes
-some code and lets us start using the hardware's parsing.
+Change the '-k' version description macro to DRV_VERSION_DESC
+to be more generic.
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
+Change-Id: I422bc6727b854f230217f04c61e750447435d183
 ---
-Testing Hints: make sure VxLAN, Geneve, GRE tunnels all still work over
-both ipv4 and ipv6 tunnel headers.
+ drivers/net/ethernet/intel/i40e/i40e_main.c     | 5 +++--
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 4 ++--
+ 2 files changed, 5 insertions(+), 4 deletions(-)
 
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 13 ++++++-------
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 13 ++++++-------
- 2 files changed, 12 insertions(+), 14 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 17ee438..ce4d94b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1410,7 +1410,7 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
- 				    u16 rx_ptype)
- {
- 	struct i40e_rx_ptype_decoded decoded = decode_rx_desc_ptype(rx_ptype);
--	bool ipv4, ipv6, ipv4_tunnel, ipv6_tunnel;
-+	bool ipv4, ipv6, tunnel = false;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 19a2d30..6308218 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -42,14 +42,15 @@ const char i40e_driver_name[] = "i40e";
+ static const char i40e_driver_string[] =
+ 			"Intel(R) Ethernet Connection XL710 Network Driver";
  
- 	skb->ip_summed = CHECKSUM_NONE;
+-#define DRV_KERN "-k"
++#define DRV_VERSION_DESC "-k"
  
-@@ -1459,14 +1459,13 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
- 	 * doesn't make it a hard requirement so if we have validated the
- 	 * inner checksum report CHECKSUM_UNNECESSARY.
- 	 */
--
--	ipv4_tunnel = (rx_ptype >= I40E_RX_PTYPE_GRENAT4_MAC_PAY3) &&
--		     (rx_ptype <= I40E_RX_PTYPE_GRENAT4_MACVLAN_IPV6_ICMP_PAY4);
--	ipv6_tunnel = (rx_ptype >= I40E_RX_PTYPE_GRENAT6_MAC_PAY3) &&
--		     (rx_ptype <= I40E_RX_PTYPE_GRENAT6_MACVLAN_IPV6_ICMP_PAY4);
-+	if (decoded.inner_prot & (I40E_RX_PTYPE_INNER_PROT_TCP |
-+				  I40E_RX_PTYPE_INNER_PROT_UDP |
-+				  I40E_RX_PTYPE_INNER_PROT_SCTP))
-+		tunnel = true;
+ #define DRV_VERSION_MAJOR 1
+ #define DRV_VERSION_MINOR 5
+ #define DRV_VERSION_BUILD 10
+ #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
+ 	     __stringify(DRV_VERSION_MINOR) "." \
+-	     __stringify(DRV_VERSION_BUILD)    DRV_KERN
++	     __stringify(DRV_VERSION_BUILD)    \
++	     DRV_VERSION_DESC
+ const char i40e_driver_version_str[] = DRV_VERSION;
+ static const char i40e_copyright[] = "Copyright (c) 2013 - 2014 Intel Corporation.";
  
- 	skb->ip_summed = CHECKSUM_UNNECESSARY;
--	skb->csum_level = ipv4_tunnel || ipv6_tunnel;
-+	skb->csum_level = tunnel ? 1 : 0;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 4c86687..1b8dc22 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -34,7 +34,7 @@ char i40evf_driver_name[] = "i40evf";
+ static const char i40evf_driver_string[] =
+ 	"Intel(R) 40-10 Gigabit Virtual Function Network Driver";
  
- 	return;
+-#define DRV_KERN "-k"
++#define DRV_VF_VERSION_DESC "-k"
  
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index 4633235..cf42f16 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -864,7 +864,7 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
- 				    u16 rx_ptype)
- {
- 	struct i40e_rx_ptype_decoded decoded = decode_rx_desc_ptype(rx_ptype);
--	bool ipv4, ipv6, ipv4_tunnel, ipv6_tunnel;
-+	bool ipv4, ipv6, tunnel = false;
- 
- 	skb->ip_summed = CHECKSUM_NONE;
- 
-@@ -913,14 +913,13 @@ static inline void i40e_rx_checksum(struct i40e_vsi *vsi,
- 	 * doesn't make it a hard requirement so if we have validated the
- 	 * inner checksum report CHECKSUM_UNNECESSARY.
- 	 */
--
--	ipv4_tunnel = (rx_ptype >= I40E_RX_PTYPE_GRENAT4_MAC_PAY3) &&
--		     (rx_ptype <= I40E_RX_PTYPE_GRENAT4_MACVLAN_IPV6_ICMP_PAY4);
--	ipv6_tunnel = (rx_ptype >= I40E_RX_PTYPE_GRENAT6_MAC_PAY3) &&
--		     (rx_ptype <= I40E_RX_PTYPE_GRENAT6_MACVLAN_IPV6_ICMP_PAY4);
-+	if (decoded.inner_prot & (I40E_RX_PTYPE_INNER_PROT_TCP |
-+				  I40E_RX_PTYPE_INNER_PROT_UDP |
-+				  I40E_RX_PTYPE_INNER_PROT_SCTP))
-+		tunnel = true;
- 
- 	skb->ip_summed = CHECKSUM_UNNECESSARY;
--	skb->csum_level = ipv4_tunnel || ipv6_tunnel;
-+	skb->csum_level = tunnel ? 1 : 0;
- 
- 	return;
- 
+ #define DRV_VERSION_MAJOR 1
+ #define DRV_VERSION_MINOR 5
+@@ -42,7 +42,7 @@ static const char i40evf_driver_string[] =
+ #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
+ 	     __stringify(DRV_VERSION_MINOR) "." \
+ 	     __stringify(DRV_VERSION_BUILD) \
+-	     DRV_KERN
++			DRV_VF_VERSION_DESC
+ const char i40evf_driver_version[] = DRV_VERSION;
+ static const char i40evf_copyright[] =
+ 	"Copyright (c) 2013 - 2015 Intel Corporation.";
 -- 
 2.4.3
 
