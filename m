@@ -1,415 +1,293 @@
-From: Amritha Nambiar <amritha.nambiar@intel.com>
-Date: Thu, 14 Apr 2016 19:08:53 -0400
-Subject: [Intel-wired-lan] [PATCH] [v3,
- next-queue] net: ixgbe: Match on multiple headers for cls_u32
- offloads
-Message-ID: <20160414230853.2148.85740.stgit@sdncamp.jf.intel.com>
+From: Rustad, Mark D <mark.d.rustad@intel.com>
+Date: Thu, 14 Apr 2016 23:10:36 +0000
+Subject: [Intel-wired-lan] Fwd: [PATCH net-next 2/2] intel: ixgbevf: Support
+ Windows hosts (Hyper-V)
+References: <5F69AC74-16B9-4EAD-8B4B-21D2EB6B3653@intel.com>
+Message-ID: <1398812D-FDB6-463B-A444-73EBD2C80839@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Adds support to set filters with multiple header fields (L3,L4)to match on.
-This is achieved in the following order:
-1. Create a leaf hash table for the next header.
-2. Create a link to the leaf hash table from the base hash table with
-   matches on next header type and current header fields.
-3. Add filter in leaf hash table with match on next header fields and
-   action.
+I am resending my comments to intel-wired-lan because the original somehow  
+trashed the address into intel-wired-lan at linuxonhyperv.com, preventing the  
+list from getting them!
 
-Verified with the following filters :
+> From: "Rustad, Mark D" <mark.d.rustad@intel.com>
+> Subject: Re: [PATCH net-next 2/2] intel: ixgbevf: Support Windows hosts  
+> (Hyper-V)
+> Date: April 14, 2016 at 4:01:16 PM PDT
+> To: "K. Y. Srinivasan" <kys@microsoft.com>
+> Cc: David Miller <davem@davemloft.net>, netdev <netdev@vger.kernel.org>,  
+> linux-kernel at vger.kernel.org, devel at linuxdriverproject.org,  
+> olaf at aepfle.de, apw at canonical.com, jasowang at redhat.com, eli at mellanox.com,  
+> jackm at mellanox.com, yevgenyp at mellanox.com, john.ronciak at intel.com,  
+> intel-wired-lan at linuxonhyperv.com
+>
+> Some comments below:
+>
+> K. Y. Srinivasan <kys@microsoft.com> wrote:
+>
+>> On Hyper-V, the VF/PF communication is a via software mediated path
+>> as opposed to the hardware mailbox. Make the necessary
+>> adjustments to support Hyper-V.
+>>
+>> Signed-off-by: K. Y. Srinivasan <kys@microsoft.com>
+>> ---
+>>  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |   11 ++
+>>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   56 ++++++---
+>>  drivers/net/ethernet/intel/ixgbevf/mbx.c          |   12 ++
+>>  drivers/net/ethernet/intel/ixgbevf/vf.c           |  138 +++++++++++++++++++++
+>>  drivers/net/ethernet/intel/ixgbevf/vf.h           |    2 +
+>>  5 files changed, 201 insertions(+), 18 deletions(-)
+>
+> <snip>
+>
+>> diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.c  
+>> b/drivers/net/ethernet/intel/ixgbevf/vf.c
+>> index 4d613a4..92397fd 100644
+>> --- a/drivers/net/ethernet/intel/ixgbevf/vf.c
+>> +++ b/drivers/net/ethernet/intel/ixgbevf/vf.c
+>
+> <snip>
+>
+>> @@ -126,6 +133,23 @@ static s32 ixgbevf_reset_hw_vf(struct ixgbe_hw *hw)
+>>  }
+>>
+>>  /**
+>> + * Hyper-V variant; the VF/PF communication is through the PCI
+>> + * config space.
+>> + */
+>> +static s32 ixgbevf_hv_reset_hw_vf(struct ixgbe_hw *hw)
+>> +{
+>> +	int i;
+>> +	struct ixgbevf_adapter *adapter = hw->back;
+>
+> The two lines above should be swapped so that the longer one is first.
+>
+>> +
+>> +	for (i = 0; i < 6; i++)
+>> +		pci_read_config_byte(adapter->pdev,
+>> +				     (i + IXGBE_HV_RESET_OFFSET),
+>> +				     &hw->mac.perm_addr[i]);
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +/**
+>>   *  ixgbevf_stop_hw_vf - Generic stop Tx/Rx units
+>>   *  @hw: pointer to hardware structure
+>>   *
+>> @@ -656,6 +680,68 @@ out:
+>>  }
+>>
+>>  /**
+>> + * Hyper-V variant; there is no mailbox communication.
+>> + */
+>> +static s32 ixgbevf_hv_check_mac_link_vf(struct ixgbe_hw *hw,
+>> +					ixgbe_link_speed *speed,
+>> +					bool *link_up,
+>> +					bool autoneg_wait_to_complete)
+>> +{
+>> +	struct ixgbe_mbx_info *mbx = &hw->mbx;
+>> +	struct ixgbe_mac_info *mac = &hw->mac;
+>> +	s32 ret_val = 0;
+>
+> ret_val here is redundant as this is the only assignment to it.
+> Please delete it and just return 0 at the end.
+>
+>> +	u32 links_reg;
+>> +
+>> +	/* If we were hit with a reset drop the link */
+>> +	if (!mbx->ops.check_for_rst(hw) || !mbx->timeout)
+>> +		mac->get_link_status = true;
+>> +
+>> +	if (!mac->get_link_status)
+>> +		goto out;
+>> +
+>> +	/* if link status is down no point in checking to see if pf is up */
+>> +	links_reg = IXGBE_READ_REG(hw, IXGBE_VFLINKS);
+>> +	if (!(links_reg & IXGBE_LINKS_UP))
+>> +		goto out;
+>> +
+>> +	/* for SFP+ modules and DA cables on 82599 it can take up to 500usecs
+>> +	 * before the link status is correct
+>> +	 */
+>> +	if (mac->type == ixgbe_mac_82599_vf) {
+>> +		int i;
+>> +
+>> +		for (i = 0; i < 5; i++) {
+>> +			udelay(100);
+>> +			links_reg = IXGBE_READ_REG(hw, IXGBE_VFLINKS);
+>> +
+>> +			if (!(links_reg & IXGBE_LINKS_UP))
+>> +				goto out;
+>> +		}
+>> +	}
+>> +
+>> +	switch (links_reg & IXGBE_LINKS_SPEED_82599) {
+>> +	case IXGBE_LINKS_SPEED_10G_82599:
+>> +		*speed = IXGBE_LINK_SPEED_10GB_FULL;
+>> +		break;
+>> +	case IXGBE_LINKS_SPEED_1G_82599:
+>> +		*speed = IXGBE_LINK_SPEED_1GB_FULL;
+>> +		break;
+>> +	case IXGBE_LINKS_SPEED_100_82599:
+>> +		*speed = IXGBE_LINK_SPEED_100_FULL;
+>> +		break;
+>> +	}
+>> +
+>> +	/* if we passed all the tests above then the link is up and we no
+>> +	 * longer need to check for link
+>> +	 */
+>> +	mac->get_link_status = false;
+>> +
+>> +out:
+>> +	*link_up = !mac->get_link_status;
+>> +	return ret_val;
+>
+> Just return 0 above.
+>
+>> +}
+>> +
+>> +/**
+>>   *  ixgbevf_rlpml_set_vf - Set the maximum receive packet length
+>>   *  @hw: pointer to the HW structure
+>>   *  @max_size: value to assign to max frame size
+>
+> <snip>
+>
+>> @@ -663,6 +749,19 @@ out:
+>>  void ixgbevf_rlpml_set_vf(struct ixgbe_hw *hw, u16 max_size)
+>>  {
+>>  	u32 msgbuf[2];
+>> +	u32 reg;
+>> +
+>> +	if (x86_hyper == &x86_hyper_ms_hyperv) {
+>> +		/*
+>> +		 * If we are on Hyper-V, we implement
+>
+> Please format the comment above netdev-style, /* If we are...
+> as you did elsewhere.
+>
+>> +		 * this functionality differently.
+>> +		 */
+>> +		reg =  IXGBE_READ_REG(hw, IXGBE_VFRXDCTL(0));
+>> +		/* CRC == 4 */
+>> +		reg |= ((max_size + 4) | IXGBE_RXDCTL_RLPML_EN);
+>> +		IXGBE_WRITE_REG(hw, IXGBE_VFRXDCTL(0), reg);
+>> +		return;
+>> +	}
+>>
+>>  	msgbuf[0] = IXGBE_VF_SET_LPE;
+>>  	msgbuf[1] = max_size;
+>> @@ -679,6 +778,16 @@ int ixgbevf_negotiate_api_version(struct ixgbe_hw  
+>> *hw, int api)
+>>  	int err;
+>>  	u32 msg[3];
+>>
+>> +	if (x86_hyper == &x86_hyper_ms_hyperv) {
+>> +		/*
+>> +		 * Hyper-V only supports api version ixgbe_mbox_api_10
+>
+> Again, please use netdev-style comment above.
+>
+>> +		 */
+>> +		if (api != ixgbe_mbox_api_10)
+>> +			return IXGBE_ERR_INVALID_ARGUMENT;
+>> +
+>> +		return 0;
+>> +	}
+>> +
+>>  	/* Negotiate the mailbox API version */
+>>  	msg[0] = IXGBE_VF_API_NEGOTIATE;
+>>  	msg[1] = api;
+>> @@ -776,22 +885,51 @@ static const struct ixgbe_mac_operations  
+>> ixgbevf_mac_ops = {
+>>  	.set_vfta		= ixgbevf_set_vfta_vf,
+>>  };
+>>
+>> +static const struct ixgbe_mac_operations ixgbevf_hv_mac_ops = {
+>> +	.init_hw		= ixgbevf_init_hw_vf,
+>> +	.reset_hw		= ixgbevf_hv_reset_hw_vf,
+>> +	.start_hw		= ixgbevf_start_hw_vf,
+>> +	.get_mac_addr		= ixgbevf_get_mac_addr_vf,
+>> +	.stop_adapter		= ixgbevf_stop_hw_vf,
+>> +	.setup_link		= ixgbevf_setup_mac_link_vf,
+>> +	.check_link		= ixgbevf_hv_check_mac_link_vf,
+>> +};
+>
+> Please add a blank line between these two structures as you have
+> done elsewhere.
+>
+>> const struct ixgbevf_info ixgbevf_82599_vf_info = {
+>>  	.mac = ixgbe_mac_82599_vf,
+>>  	.mac_ops = &ixgbevf_mac_ops,
+>>  };
+>>
+>> +const struct ixgbevf_info ixgbevf_82599_vf_hv_info = {
+>> +	.mac = ixgbe_mac_82599_vf,
+>> +	.mac_ops = &ixgbevf_hv_mac_ops,
+>> +};
+>> +
+>>  const struct ixgbevf_info ixgbevf_X540_vf_info = {
+>>  	.mac = ixgbe_mac_X540_vf,
+>>  	.mac_ops = &ixgbevf_mac_ops,
+>>  };
+>>
+>> +const struct ixgbevf_info ixgbevf_X540_vf_hv_info = {
+>> +	.mac = ixgbe_mac_X540_vf,
+>> +	.mac_ops = &ixgbevf_hv_mac_ops,
+>> +};
+>> +
+>>  const struct ixgbevf_info ixgbevf_X550_vf_info = {
+>>  	.mac = ixgbe_mac_X550_vf,
+>>  	.mac_ops = &ixgbevf_mac_ops,
+>>  };
+>>
+>> +const struct ixgbevf_info ixgbevf_X550_vf_hv_info = {
+>> +	.mac = ixgbe_mac_X550_vf,
+>> +	.mac_ops = &ixgbevf_hv_mac_ops,
+>> +};
+>> +
+>>  const struct ixgbevf_info ixgbevf_X550EM_x_vf_info = {
+>>  	.mac = ixgbe_mac_X550EM_x_vf,
+>>  	.mac_ops = &ixgbevf_mac_ops,
+>>  };
+>> +
+>> +const struct ixgbevf_info ixgbevf_X550EM_x_vf_hv_info = {
+>> +	.mac = ixgbe_mac_X550EM_x_vf,
+>> +	.mac_ops = &ixgbevf_hv_mac_ops,
+>> +};
+>> diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.h  
+>> b/drivers/net/ethernet/intel/ixgbevf/vf.h
+>> index ef9f773..7242a97 100644
+>> --- a/drivers/net/ethernet/intel/ixgbevf/vf.h
+>> +++ b/drivers/net/ethernet/intel/ixgbevf/vf.h
+>> @@ -32,7 +32,9 @@
+>>  #include <linux/interrupt.h>
+>>  #include <linux/if_ether.h>
+>>  #include <linux/netdevice.h>
+>> +#include <asm/hypervisor.h>
+>>
+>> +#include <asm/hypervisor.h>
+>
+> Surely you didn't mean to include the same file twice!
+>
+>> #include "defines.h"
+>>  #include "regs.h"
+>>  #include "mbx.h"
+>
+> --
+> Mark Rustad, Networking Division, Intel Corporation
 
-Match TCP and DIP:
-# tc qdisc add dev enp9s0f0 ingress
-# tc filter add dev enp9s0f0 parent ffff: protocol ip prio 99 \
-        handle 1: u32 divisor 1
-# tc filter add dev enp9s0f0 protocol ip parent ffff: prio 99 \
-        u32 ht 800: order 1 link 1: \
-        offset at 0 mask 0f00 shift 6 plus 0 eat \
-        match ip protocol 6 ff match ip dst 10.0.0.1/32
-# tc filter add dev enp9s0f0 parent ffff: protocol ip u32 ht 1: order 1 \
-        match tcp src 28 ffff action drop
-
-Delete the filter:
-# tc filter del dev enp9s0f0 parent ffff: prio 99 handle 1:0:1 u32
-
-Match on DIP, SIP, UDP (SPort, DPort):
-# tc filter add dev enp9s0f0 parent ffff: protocol ip prio 99 \
-        handle 2: u32 divisor 1
-# tc filter add dev enp9s0f0 protocol ip parent ffff: prio 99 \
-        u32 ht 800: order 2 link 2: \
-        offset at 0 mask 0f00 shift 6 plus 0 eat \
-        match ip dst 15.0.0.2/32 match ip protocol 17 ff \
-        match ip src 15.0.0.1/32
-# tc filter add dev enp9s0f0 parent ffff: protocol ip u32 ht 2: order 2 \
-        match udp src 30 ffff match udp dst 32 ffff action drop
-
-Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
-
-v2: Rename a loop variable to fix build error
-v3: Rebased to apply clean
----
- drivers/net/ethernet/intel/ixgbe/ixgbe.h       |    2 
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  |  216 +++++++++++++++++-------
- drivers/net/ethernet/intel/ixgbe/ixgbe_model.h |    6 +
- 3 files changed, 156 insertions(+), 68 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index 781c878..515c3dc 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -792,7 +792,7 @@ struct ixgbe_adapter {
- 	unsigned long fwd_bitmask; /* Bitmask indicating in use pools */
- 
- #define IXGBE_MAX_LINK_HANDLE 10
--	struct ixgbe_mat_field *jump_tables[IXGBE_MAX_LINK_HANDLE];
-+	struct ixgbe_jump_table *jump_tables[IXGBE_MAX_LINK_HANDLE];
- 	unsigned long tables;
- 
- /* maximum number of RETA entries among all devices supported by ixgbe
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index d70746f..59534a7 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -5574,6 +5574,7 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter)
- 	unsigned int rss, fdir;
- 	u32 fwsm;
- 	u16 device_caps;
-+	int i;
- #ifdef CONFIG_IXGBE_DCB
- 	int j;
- 	struct tc_configuration *tc;
-@@ -5609,7 +5610,14 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter)
- #endif /* IXGBE_FCOE */
- 
- 	/* initialize static ixgbe jump table entries */
--	adapter->jump_tables[0] = ixgbe_ipv4_fields;
-+	adapter->jump_tables[0] = kzalloc(sizeof(*adapter->jump_tables[0]),
-+					  GFP_KERNEL);
-+	if (!adapter->jump_tables[0])
-+		return -ENOMEM;
-+	adapter->jump_tables[0]->mat = ixgbe_ipv4_fields;
-+
-+	for (i = 1; i < IXGBE_MAX_LINK_HANDLE; i++)
-+		adapter->jump_tables[i] = NULL;
- 
- 	adapter->mac_table = kzalloc(sizeof(struct ixgbe_mac_addr) *
- 				     hw->mac.num_rar_entries,
-@@ -8382,6 +8390,55 @@ static int parse_tc_actions(struct ixgbe_adapter *adapter,
- }
- #endif /* CONFIG_NET_CLS_ACT */
- 
-+static int ixgbe_clsu32_build_input(struct ixgbe_fdir_filter *input,
-+				    union ixgbe_atr_input *mask,
-+				    struct tc_cls_u32_offload *cls,
-+				    struct ixgbe_mat_field *field_ptr,
-+				    struct ixgbe_nexthdr *nexthdr)
-+{
-+	int i, j, off;
-+	__be32 val, m;
-+	bool found_entry = false, found_jump_field = false;
-+
-+	for (i = 0; i < cls->knode.sel->nkeys; i++) {
-+		off = cls->knode.sel->keys[i].off;
-+		val = cls->knode.sel->keys[i].val;
-+		m = cls->knode.sel->keys[i].mask;
-+
-+		for (j = 0; field_ptr[j].val; j++) {
-+			if (field_ptr[j].off == off) {
-+				field_ptr[j].val(input, mask, val, m);
-+				input->filter.formatted.flow_type |=
-+					field_ptr[j].type;
-+				found_entry = true;
-+				break;
-+			}
-+		}
-+		if (nexthdr) {
-+			if (nexthdr->off == cls->knode.sel->keys[i].off &&
-+			    nexthdr->val == cls->knode.sel->keys[i].val &&
-+			    nexthdr->mask == cls->knode.sel->keys[i].mask)
-+				found_jump_field = true;
-+			else
-+				continue;
-+		}
-+	}
-+
-+	if (nexthdr && !found_jump_field)
-+		return -EINVAL;
-+
-+	if (!found_entry)
-+		return 0;
-+
-+	mask->formatted.flow_type = IXGBE_ATR_L4TYPE_IPV6_MASK |
-+				   IXGBE_ATR_L4TYPE_MASK;
-+
-+	if (input->filter.formatted.flow_type == IXGBE_ATR_FLOW_TYPE_IPV4)
-+		mask->formatted.flow_type &= IXGBE_ATR_L4TYPE_IPV6_MASK;
-+
-+	return 0;
-+}
-+
- static int ixgbe_configure_clsu32(struct ixgbe_adapter *adapter,
- 				  __be16 protocol,
- 				  struct tc_cls_u32_offload *cls)
-@@ -8389,13 +8446,13 @@ static int ixgbe_configure_clsu32(struct ixgbe_adapter *adapter,
- 	u32 loc = cls->knode.handle & 0xfffff;
- 	struct ixgbe_hw *hw = &adapter->hw;
- 	struct ixgbe_mat_field *field_ptr;
--	struct ixgbe_fdir_filter *input;
--	union ixgbe_atr_input mask;
--	int i, err = 0;
-+	struct ixgbe_fdir_filter *input = NULL;
-+	union ixgbe_atr_input *mask = NULL;
-+	struct ixgbe_jump_table *jump = NULL;
-+	int i, err = -EINVAL;
- 	u8 queue;
- 	u32 uhtid, link_uhtid;
- 
--	memset(&mask, 0, sizeof(union ixgbe_atr_input));
- 	uhtid = TC_U32_USERHTID(cls->knode.handle);
- 	link_uhtid = TC_U32_USERHTID(cls->knode.link_handle);
- 
-@@ -8407,39 +8464,11 @@ static int ixgbe_configure_clsu32(struct ixgbe_adapter *adapter,
- 	 * headers when needed.
- 	 */
- 	if (protocol != htons(ETH_P_IP))
--		return -EINVAL;
--
--	if (link_uhtid) {
--		struct ixgbe_nexthdr *nexthdr = ixgbe_ipv4_jumps;
--
--		if (link_uhtid >= IXGBE_MAX_LINK_HANDLE)
--			return -EINVAL;
--
--		if (!test_bit(link_uhtid - 1, &adapter->tables))
--			return -EINVAL;
--
--		for (i = 0; nexthdr[i].jump; i++) {
--			if (nexthdr[i].o != cls->knode.sel->offoff ||
--			    nexthdr[i].s != cls->knode.sel->offshift ||
--			    nexthdr[i].m != cls->knode.sel->offmask ||
--			    /* do not support multiple key jumps its just mad */
--			    cls->knode.sel->nkeys > 1)
--				return -EINVAL;
--
--			if (nexthdr[i].off == cls->knode.sel->keys[0].off &&
--			    nexthdr[i].val == cls->knode.sel->keys[0].val &&
--			    nexthdr[i].mask == cls->knode.sel->keys[0].mask) {
--				adapter->jump_tables[link_uhtid] =
--								nexthdr[i].jump;
--				break;
--			}
--		}
--		return 0;
--	}
-+		return err;
- 
- 	if (loc >= ((1024 << adapter->fdir_pballoc) - 2)) {
- 		e_err(drv, "Location out of range\n");
--		return -EINVAL;
-+		return err;
- 	}
- 
- 	/* cls u32 is a graph starting at root node 0x800. The driver tracks
-@@ -8450,47 +8479,85 @@ static int ixgbe_configure_clsu32(struct ixgbe_adapter *adapter,
- 	 * this function _should_ be generic try not to hardcode values here.
- 	 */
- 	if (uhtid == 0x800) {
--		field_ptr = adapter->jump_tables[0];
-+		field_ptr = (adapter->jump_tables[0])->mat;
- 	} else {
- 		if (uhtid >= IXGBE_MAX_LINK_HANDLE)
--			return -EINVAL;
--
--		field_ptr = adapter->jump_tables[uhtid];
-+			return err;
-+		if (!adapter->jump_tables[uhtid])
-+			return err;
-+		field_ptr = (adapter->jump_tables[uhtid])->mat;
- 	}
- 
- 	if (!field_ptr)
--		return -EINVAL;
-+		return err;
- 
--	input = kzalloc(sizeof(*input), GFP_KERNEL);
--	if (!input)
--		return -ENOMEM;
-+	/* At this point we know the field_ptr is valid and need to either
-+	 * build cls_u32 link or attach filter. Because adding a link to
-+	 * a handle that does not exist is invalid and the same for adding
-+	 * rules to handles that don't exist.
-+	 */
- 
--	for (i = 0; i < cls->knode.sel->nkeys; i++) {
--		int off = cls->knode.sel->keys[i].off;
--		__be32 val = cls->knode.sel->keys[i].val;
--		__be32 m = cls->knode.sel->keys[i].mask;
--		bool found_entry = false;
--		int j;
-+	if (link_uhtid) {
-+		struct ixgbe_nexthdr *nexthdr = ixgbe_ipv4_jumps;
- 
--		for (j = 0; field_ptr[j].val; j++) {
--			if (field_ptr[j].off == off) {
--				field_ptr[j].val(input, &mask, val, m);
--				input->filter.formatted.flow_type |=
--					field_ptr[j].type;
--				found_entry = true;
-+		if (link_uhtid >= IXGBE_MAX_LINK_HANDLE)
-+			return err;
-+
-+		if (!test_bit(link_uhtid - 1, &adapter->tables))
-+			return err;
-+
-+		for (i = 0; nexthdr[i].jump; i++) {
-+			if (nexthdr[i].o != cls->knode.sel->offoff ||
-+			    nexthdr[i].s != cls->knode.sel->offshift ||
-+			    nexthdr[i].m != cls->knode.sel->offmask)
-+				return err;
-+
-+			jump = kzalloc(sizeof(*jump), GFP_KERNEL);
-+			if (!jump)
-+				return -ENOMEM;
-+			input = kzalloc(sizeof(*input), GFP_KERNEL);
-+			if (!input) {
-+				err = -ENOMEM;
-+				goto free_jump;
-+			}
-+			mask = kzalloc(sizeof(*mask), GFP_KERNEL);
-+			if (!mask) {
-+				err = -ENOMEM;
-+				goto free_input;
-+			}
-+			jump->input = input;
-+			jump->mask = mask;
-+			err = ixgbe_clsu32_build_input(input, mask, cls,
-+						       field_ptr, &nexthdr[i]);
-+			if (!err) {
-+				jump->mat = nexthdr[i].jump;
-+				adapter->jump_tables[link_uhtid] = jump;
- 				break;
- 			}
- 		}
--
--		if (!found_entry)
--			goto err_out;
-+		return 0;
- 	}
- 
--	mask.formatted.flow_type = IXGBE_ATR_L4TYPE_IPV6_MASK |
--				   IXGBE_ATR_L4TYPE_MASK;
-+	input = kzalloc(sizeof(*input), GFP_KERNEL);
-+	if (!input)
-+		return -ENOMEM;
-+	mask = kzalloc(sizeof(*mask), GFP_KERNEL);
-+	if (!mask) {
-+		err = -ENOMEM;
-+		goto free_input;
-+	}
- 
--	if (input->filter.formatted.flow_type == IXGBE_ATR_FLOW_TYPE_IPV4)
--		mask.formatted.flow_type &= IXGBE_ATR_L4TYPE_IPV6_MASK;
-+	if ((uhtid != 0x800) && (adapter->jump_tables[uhtid])) {
-+		if ((adapter->jump_tables[uhtid])->input)
-+			memcpy(input, (adapter->jump_tables[uhtid])->input,
-+			       sizeof(*input));
-+		if ((adapter->jump_tables[uhtid])->mask)
-+			memcpy(mask, (adapter->jump_tables[uhtid])->mask,
-+			       sizeof(*mask));
-+	}
-+	err = ixgbe_clsu32_build_input(input, mask, cls, field_ptr, NULL);
-+	if (err)
-+		goto err_out;
- 
- 	err = parse_tc_actions(adapter, cls->knode.exts, &input->action,
- 			       &queue);
-@@ -8502,28 +8569,33 @@ static int ixgbe_configure_clsu32(struct ixgbe_adapter *adapter,
- 	spin_lock(&adapter->fdir_perfect_lock);
- 
- 	if (hlist_empty(&adapter->fdir_filter_list)) {
--		memcpy(&adapter->fdir_mask, &mask, sizeof(mask));
--		err = ixgbe_fdir_set_input_mask_82599(hw, &mask);
-+		memcpy(&adapter->fdir_mask, mask, sizeof(*mask));
-+		err = ixgbe_fdir_set_input_mask_82599(hw, mask);
- 		if (err)
- 			goto err_out_w_lock;
--	} else if (memcmp(&adapter->fdir_mask, &mask, sizeof(mask))) {
-+	} else if (memcmp(&adapter->fdir_mask, mask, sizeof(*mask))) {
- 		err = -EINVAL;
- 		goto err_out_w_lock;
- 	}
- 
--	ixgbe_atr_compute_perfect_hash_82599(&input->filter, &mask);
-+	ixgbe_atr_compute_perfect_hash_82599(&input->filter, mask);
- 	err = ixgbe_fdir_write_perfect_filter_82599(hw, &input->filter,
- 						    input->sw_idx, queue);
- 	if (!err)
- 		ixgbe_update_ethtool_fdir_entry(adapter, input, input->sw_idx);
- 	spin_unlock(&adapter->fdir_perfect_lock);
- 
-+	kfree(mask);
- 	return err;
- err_out_w_lock:
- 	spin_unlock(&adapter->fdir_perfect_lock);
- err_out:
-+	kfree(mask);
-+free_input:
- 	kfree(input);
--	return -EINVAL;
-+free_jump:
-+	kfree(jump);
-+	return err;
- }
- 
- static int __ixgbe_setup_tc(struct net_device *dev, u32 handle, __be16 proto,
-@@ -9567,6 +9639,7 @@ err_sw_init:
- 	ixgbe_disable_sriov(adapter);
- 	adapter->flags2 &= ~IXGBE_FLAG2_SEARCH_FOR_SFP;
- 	iounmap(adapter->io_addr);
-+	kfree(adapter->jump_tables[0]);
- 	kfree(adapter->mac_table);
- err_ioremap:
- 	disable_dev = !test_and_set_bit(__IXGBE_DISABLED, &adapter->state);
-@@ -9595,6 +9668,7 @@ static void ixgbe_remove(struct pci_dev *pdev)
- 	struct ixgbe_adapter *adapter = pci_get_drvdata(pdev);
- 	struct net_device *netdev;
- 	bool disable_dev;
-+	int i;
- 
- 	/* if !adapter then we already cleaned up in probe */
- 	if (!adapter)
-@@ -9644,6 +9718,14 @@ static void ixgbe_remove(struct pci_dev *pdev)
- 
- 	e_dev_info("complete\n");
- 
-+	for (i = 0; i < IXGBE_MAX_LINK_HANDLE; i++) {
-+		if (adapter->jump_tables[i]) {
-+			kfree(adapter->jump_tables[i]->input);
-+			kfree(adapter->jump_tables[i]->mask);
-+		}
-+		kfree(adapter->jump_tables[i]);
-+	}
-+
- 	kfree(adapter->mac_table);
- 	disable_dev = !test_and_set_bit(__IXGBE_DISABLED, &adapter->state);
- 	free_netdev(netdev);
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_model.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_model.h
-index 60adde5..a8bed3d 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_model.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_model.h
-@@ -38,6 +38,12 @@ struct ixgbe_mat_field {
- 	unsigned int type;
- };
- 
-+struct ixgbe_jump_table {
-+	struct ixgbe_mat_field *mat;
-+	struct ixgbe_fdir_filter *input;
-+	union ixgbe_atr_input *mask;
-+};
-+
- static inline int ixgbe_mat_prgm_sip(struct ixgbe_fdir_filter *input,
- 				     union ixgbe_atr_input *mask,
- 				     u32 val, u32 m)
-
+--
+Mark Rustad, Networking Division, Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 841 bytes
+Desc: Message signed with OpenPGP using GPGMail
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160414/ead5ee29/attachment.asc>
