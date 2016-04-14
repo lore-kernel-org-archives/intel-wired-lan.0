@@ -1,50 +1,47 @@
 From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-Date: Thu, 14 Apr 2016 06:19:23 -0700
-Subject: [Intel-wired-lan] [next PATCH S35 03/14] i40e: Add elements to fd
-	filter compare
+Date: Thu, 14 Apr 2016 06:19:25 -0700
+Subject: [Intel-wired-lan] [next PATCH S35 05/14] i40evf: Set netdev carrier
+	properly
 In-Reply-To: <1460639974-2556-1-git-send-email-harshitha.ramamurthy@intel.com>
 References: <1460639974-2556-1-git-send-email-harshitha.ramamurthy@intel.com>
-Message-ID: <1460639974-2556-4-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <1460639974-2556-6-git-send-email-harshitha.ramamurthy@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Shannon Nelson <shannon.nelson@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-Make sure we're comparing enough elements between filters to
-know whether they are really the same.
+If the link status changes, a polite driver, a well-behaved driver, a
+driver that does not want to DISAPPOINT its MOTHER, will notify the
+network layer. Good drivers know not to cross their mommy.
 
-Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
-Change-Id: Ibbf097906a4a8c4fe8d973e3092a8fcbd09ce6ff
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-Id: I1df8ab55885b0c89e6fe08938af87bb910d19da6
 ---
-Testing Hints :
-	Add a flow director filter and then print the content
-	Add the same filter, but with a different queue
-	Print the output and make sure it reflects the new queue
-	Make sure the traffic goes to the new queue
+Testing Hints : Toggle link state via cable and the
+'ip' command and make sure ethtool reports correctly.
 
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index ea8afde..3409702 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -2422,7 +2422,11 @@ static bool i40e_match_fdir_input_set(struct i40e_fdir_filter *rule,
- 	if ((rule->dst_ip[0] != input->dst_ip[0]) ||
- 	    (rule->src_ip[0] != input->src_ip[0]) ||
- 	    (rule->dst_port != input->dst_port) ||
--	    (rule->src_port != input->src_port))
-+	    (rule->src_port != input->src_port) ||
-+	    (rule->flow_type != input->flow_type) ||
-+	    (rule->ip4_proto != input->ip4_proto) ||
-+	    (rule->sctp_v_tag != input->sctp_v_tag) ||
-+	    (rule->q_index != input->q_index))
- 		return false;
- 	return true;
- }
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+index 4c0ae43..e0ea64b 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+@@ -884,7 +884,10 @@ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
+ 				adapter->link_up =
+ 					vpe->event_data.link_event.link_status;
+ 				i40evf_print_link_message(adapter);
+-				netif_tx_stop_all_queues(netdev);
++				if (adapter->link_up)
++					netif_carrier_on(netdev);
++				else
++					netif_carrier_off(netdev);
+ 			}
+ 			break;
+ 		case I40E_VIRTCHNL_EVENT_RESET_IMPENDING:
 -- 
 2.4.3
 
