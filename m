@@ -1,26 +1,33 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 14 Apr 2016 11:42:17 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
- 860de89bd9284c8a75ed2c5b54a0687365e9a5e6 BUILD SUCCESS
-Message-ID: <570f1199.xWAasA7p885Q+1M9%fengguang.wu@intel.com>
+Date: Thu, 14 Apr 2016 11:42:22 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ ce136e46db92b07b529325d9aeaea151eb59cc0c BUILD DONE
+Message-ID: <570f119e.HgSwhIsLjz6XNKmK%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-860de89bd9284c8a75ed2c5b54a0687365e9a5e6  net: intel: remove dead links Cc: intel-wired-lan at lists.osuosl.org
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+ce136e46db92b07b529325d9aeaea151eb59cc0c  i40e/i40evf : Bump driver version from 1.5.5 to 1.5.10
+
+drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:1548:4-17: code aligned with following code on line 1554
+
+Error ids grouped by kconfigs:
+
+recent_errors
+??? i386-allmodconfig
+    ??? drivers-net-ethernet-intel-i40e-i40e_virtchnl_pf.c:code-aligned-with-following-code-on-line
 
 elapsed time: 52m
 
-configs tested: 121
+configs tested: 117
 
 i386                     randconfig-a0-201615
 x86_64                             acpi-redef
 x86_64                           allyesdebian
 x86_64                                nfsroot
-i386                               tinyconfig
 sh                                allnoconfig
 sh                          rsk7269_defconfig
 sh                  sh7785lcr_32bit_defconfig
@@ -33,15 +40,6 @@ arm                        multi_v5_defconfig
 arm                        multi_v7_defconfig
 arm                        shmobile_defconfig
 arm                           sunxi_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
 alpha                               defconfig
 parisc                            allnoconfig
 parisc                         b180_defconfig
@@ -52,9 +50,6 @@ blackfin                BF533-EZKIT_defconfig
 blackfin            BF561-EZKIT-SMP_defconfig
 blackfin                  TCM-BF537_defconfig
 cris                 etrax-100lx_v2_defconfig
-arm64                               defconfig
-ia64                             allyesconfig
-sparc                             allnoconfig
 x86_64                 randconfig-x010-201615
 x86_64                 randconfig-x018-201615
 x86_64                 randconfig-x011-201615
@@ -84,11 +79,15 @@ openrisc                    or1ksim_defconfig
 tile                         tilegx_defconfig
 um                             i386_defconfig
 um                           x86_64_defconfig
+i386                               tinyconfig
 i386                             allmodconfig
 mips                              allnoconfig
 mips                      fuloong2e_defconfig
 mips                                   jz4740
 mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
 x86_64                   randconfig-i0-201615
 sparc                               defconfig
 sparc64                           allnoconfig
@@ -97,8 +96,13 @@ microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
 i386                     randconfig-i0-201615
 i386                     randconfig-i1-201615
-x86_64                 randconfig-b0-04141126
 x86_64                           allmodconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
 x86_64                              rhel_gcov
 i386                   randconfig-x012-201615
 i386                   randconfig-x013-201615
