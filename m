@@ -1,51 +1,50 @@
 From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-Date: Thu, 14 Apr 2016 06:19:22 -0700
-Subject: [Intel-wired-lan] [next PATCH S35 02/14] i40e: Fix up 32 bit
-	timespec references
+Date: Thu, 14 Apr 2016 06:19:23 -0700
+Subject: [Intel-wired-lan] [next PATCH S35 03/14] i40e: Add elements to fd
+	filter compare
 In-Reply-To: <1460639974-2556-1-git-send-email-harshitha.ramamurthy@intel.com>
 References: <1460639974-2556-1-git-send-email-harshitha.ramamurthy@intel.com>
-Message-ID: <1460639974-2556-3-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <1460639974-2556-4-git-send-email-harshitha.ramamurthy@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Shannon Nelson <shannon.nelson@intel.com>
 
-As it turns out there was only a small set of errors
-on 32 bit, and we just needed to be using the right calls
-for dealing with timespec64 variables.
+Make sure we're comparing enough elements between filters to
+know whether they are really the same.
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Change-Id: I307345bf658b34a1d573f4f4263fe9ba2fa72051
+Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+Change-Id: Ibbf097906a4a8c4fe8d973e3092a8fcbd09ce6ff
 ---
-Testing Hints : build tests, test PTP works.
+Testing Hints :
+	Add a flow director filter and then print the content
+	Add the same filter, but with a different queue
+	Print the output and make sure it reflects the new queue
+	Make sure the traffic goes to the new queue
 
- drivers/net/ethernet/intel/i40e/i40e_ptp.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-index a1b878a..a5a6d2d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
-@@ -158,14 +158,13 @@ static int i40e_ptp_adjfreq(struct ptp_clock_info *ptp, s32 ppb)
- static int i40e_ptp_adjtime(struct ptp_clock_info *ptp, s64 delta)
- {
- 	struct i40e_pf *pf = container_of(ptp, struct i40e_pf, ptp_caps);
--	struct timespec64 now, then;
-+	struct timespec64 now;
- 	unsigned long flags;
- 
--	then = ns_to_timespec64(delta);
- 	spin_lock_irqsave(&pf->tmreg_lock, flags);
- 
- 	i40e_ptp_read(pf, &now);
--	now = timespec64_add(now, then);
-+	timespec64_add_ns(&now, delta);
- 	i40e_ptp_write(pf, (const struct timespec64 *)&now);
- 
- 	spin_unlock_irqrestore(&pf->tmreg_lock, flags);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index ea8afde..3409702 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -2422,7 +2422,11 @@ static bool i40e_match_fdir_input_set(struct i40e_fdir_filter *rule,
+ 	if ((rule->dst_ip[0] != input->dst_ip[0]) ||
+ 	    (rule->src_ip[0] != input->src_ip[0]) ||
+ 	    (rule->dst_port != input->dst_port) ||
+-	    (rule->src_port != input->src_port))
++	    (rule->src_port != input->src_port) ||
++	    (rule->flow_type != input->flow_type) ||
++	    (rule->ip4_proto != input->ip4_proto) ||
++	    (rule->sctp_v_tag != input->sctp_v_tag) ||
++	    (rule->q_index != input->q_index))
+ 		return false;
+ 	return true;
+ }
 -- 
 2.4.3
 
