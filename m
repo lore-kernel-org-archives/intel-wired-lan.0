@@ -1,170 +1,433 @@
 From: Alexander Duyck <aduyck@mirantis.com>
-Date: Thu, 14 Apr 2016 17:19:25 -0400
-Subject: [Intel-wired-lan] [next-queue PATCH v2 1/3] i40e/i40evf: Add
- support for GSO partial with UDP_TUNNEL_CSUM and GRE_CSUM
+Date: Thu, 14 Apr 2016 17:19:31 -0400
+Subject: [Intel-wired-lan] [next-queue PATCH v2 2/3] ixgbe/ixgbevf: Add
+	support for GSO partial
 In-Reply-To: <20160414210725.14141.25917.stgit@ahduyck-xeon-server>
 References: <20160414210725.14141.25917.stgit@ahduyck-xeon-server>
-Message-ID: <20160414211925.14141.43481.stgit@ahduyck-xeon-server>
+Message-ID: <20160414211931.14141.18864.stgit@ahduyck-xeon-server>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch makes it so that i40e and i40evf can use GSO_PARTIAL to support
-segmentation for frames with checksums enabled in outer headers.  As a
-result we can now send data over these types of tunnels at over 20Gb/s
-versus the 12Gb/s that was previously possible on my system.
-
-The advantage with the i40e parts is that this offload is mostly
-transparent as the hardware still deals with the inner and/or outer IPv4
-headers so the IP ID is still incrementing for both when this offload is
-performed.
+This patch adds support for partial GSO segmentation in the case of
+tunnels.  Specifically with this change the driver an perform segmenation
+as long as the frame either has IPv6 inner headers, or we are allowed to
+mangle the IP IDs on the inner header.  This is needed because we will not
+be modifying any fields from the start of the start of the outer transport
+header to the start of the inner transport header as we are treating them
+like they are just a block of IP options.
 
 Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c     |   10 ++++++++--
- drivers/net/ethernet/intel/i40e/i40e_txrx.c     |    7 ++++++-
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c   |    7 ++++++-
- drivers/net/ethernet/intel/i40evf/i40evf_main.c |   10 ++++++++--
- 4 files changed, 28 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |  133 ++++++++++++++-------
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |  129 +++++++++++++++-----
+ 2 files changed, 180 insertions(+), 82 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 19a2d3033f7f..8e6c0f2487d7 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -9130,20 +9130,25 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
- 				   NETIF_F_TSO_ECN		|
- 				   NETIF_F_TSO6			|
- 				   NETIF_F_GSO_GRE		|
-+				   NETIF_F_GSO_GRE_CSUM		|
- 				   NETIF_F_GSO_IPIP		|
- 				   NETIF_F_GSO_SIT		|
- 				   NETIF_F_GSO_UDP_TUNNEL	|
- 				   NETIF_F_GSO_UDP_TUNNEL_CSUM	|
-+				   NETIF_F_GSO_PARTIAL		|
- 				   NETIF_F_SCTP_CRC		|
- 				   NETIF_F_RXHASH		|
- 				   NETIF_F_RXCSUM		|
- 				   0;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index d70746f85cab..baee3c139ad0 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -7255,9 +7255,18 @@ static int ixgbe_tso(struct ixgbe_ring *tx_ring,
+ 		     struct ixgbe_tx_buffer *first,
+ 		     u8 *hdr_len)
+ {
++	u32 vlan_macip_lens, type_tucmd, mss_l4len_idx;
+ 	struct sk_buff *skb = first->skb;
+-	u32 vlan_macip_lens, type_tucmd;
+-	u32 mss_l4len_idx, l4len;
++	union {
++		struct iphdr *v4;
++		struct ipv6hdr *v6;
++		unsigned char *hdr;
++	} ip;
++	union {
++		struct tcphdr *tcp;
++		unsigned char *hdr;
++	} l4;
++	u32 paylen, l4_offset;
+ 	int err;
  
- 	if (!(pf->flags & I40E_FLAG_OUTER_UDP_CSUM_CAPABLE))
--		netdev->hw_enc_features ^= NETIF_F_GSO_UDP_TUNNEL_CSUM;
-+		netdev->gso_partial_features |= NETIF_F_GSO_UDP_TUNNEL_CSUM;
+ 	if (skb->ip_summed != CHECKSUM_PARTIAL)
+@@ -7270,46 +7279,52 @@ static int ixgbe_tso(struct ixgbe_ring *tx_ring,
+ 	if (err < 0)
+ 		return err;
+ 
++	ip.hdr = skb_network_header(skb);
++	l4.hdr = skb_checksum_start(skb);
 +
-+	netdev->gso_partial_features |= NETIF_F_GSO_GRE_CSUM;
+ 	/* ADV DTYP TUCMD MKRLOC/ISCSIHEDLEN */
+ 	type_tucmd = IXGBE_ADVTXD_TUCMD_L4T_TCP;
  
- 	/* record features VLANs can make use of */
--	netdev->vlan_features |= netdev->hw_enc_features;
-+	netdev->vlan_features |= netdev->hw_enc_features |
-+				 NETIF_F_TSO_MANGLEID;
- 
- 	if (!(pf->flags & I40E_FLAG_MFP_ENABLED))
- 		netdev->hw_features |= NETIF_F_NTUPLE;
-@@ -9153,6 +9158,7 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
- 			       NETIF_F_HW_VLAN_CTAG_RX;
- 
- 	netdev->features |= netdev->hw_features | NETIF_F_HW_VLAN_CTAG_FILTER;
-+	netdev->hw_enc_features |= NETIF_F_TSO_MANGLEID;
- 
- 	if (vsi->type == I40E_VSI_MAIN) {
- 		SET_NETDEV_DEV(netdev, &pf->pdev->dev);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 17ee438d1e03..4e5ecc36313c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2319,11 +2319,15 @@ static int i40e_tso(struct sk_buff *skb, u8 *hdr_len, u64 *cd_type_cmd_tso_mss)
+-	if (first->protocol == htons(ETH_P_IP)) {
+-		struct iphdr *iph = ip_hdr(skb);
+-		iph->tot_len = 0;
+-		iph->check = 0;
+-		tcp_hdr(skb)->check = ~csum_tcpudp_magic(iph->saddr,
+-							 iph->daddr, 0,
+-							 IPPROTO_TCP,
+-							 0);
++	/* initialize outer IP header fields */
++	if (ip.v4->version == 4) {
++		/* IP header will have to cancel out any data that
++		 * is not a part of the outer IP header
++		 */
++		ip.v4->check = csum_fold(csum_add(lco_csum(skb),
++						  csum_unfold(l4.tcp->check)));
+ 		type_tucmd |= IXGBE_ADVTXD_TUCMD_IPV4;
++
++		ip.v4->tot_len = 0;
+ 		first->tx_flags |= IXGBE_TX_FLAGS_TSO |
+ 				   IXGBE_TX_FLAGS_CSUM |
+ 				   IXGBE_TX_FLAGS_IPV4;
+-	} else if (skb_is_gso_v6(skb)) {
+-		ipv6_hdr(skb)->payload_len = 0;
+-		tcp_hdr(skb)->check =
+-		    ~csum_ipv6_magic(&ipv6_hdr(skb)->saddr,
+-				     &ipv6_hdr(skb)->daddr,
+-				     0, IPPROTO_TCP, 0);
++	} else {
++		ip.v6->payload_len = 0;
+ 		first->tx_flags |= IXGBE_TX_FLAGS_TSO |
+ 				   IXGBE_TX_FLAGS_CSUM;
  	}
  
- 	if (skb_shinfo(skb)->gso_type & (SKB_GSO_GRE |
-+					 SKB_GSO_GRE_CSUM |
- 					 SKB_GSO_IPIP |
- 					 SKB_GSO_SIT |
- 					 SKB_GSO_UDP_TUNNEL |
- 					 SKB_GSO_UDP_TUNNEL_CSUM)) {
--		if (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_TUNNEL_CSUM) {
-+		if (!(skb_shinfo(skb)->gso_type & SKB_GSO_PARTIAL) &&
-+		    (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_TUNNEL_CSUM)) {
-+			l4.udp->len = 0;
+-	/* compute header lengths */
+-	l4len = tcp_hdrlen(skb);
+-	*hdr_len = skb_transport_offset(skb) + l4len;
++	/* determine offset of inner transport header */
++	l4_offset = l4.hdr - skb->data;
 +
- 			/* determine offset of outer transport header */
- 			l4_offset = l4.hdr - skb->data;
++	/* compute length of segmentation header */
++	*hdr_len = (l4.tcp->doff * 4) + l4_offset;
++
++	/* remove payload length from inner checksum */
++	paylen = skb->len - l4_offset;
++	csum_replace_by_diff(&l4.tcp->check, htonl(paylen));
  
-@@ -2500,6 +2504,7 @@ static int i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
+ 	/* update gso size and bytecount with header size */
+ 	first->gso_segs = skb_shinfo(skb)->gso_segs;
+ 	first->bytecount += (first->gso_segs - 1) * *hdr_len;
  
- 		/* indicate if we need to offload outer UDP header */
- 		if ((*tx_flags & I40E_TX_FLAGS_TSO) &&
-+		    !(skb_shinfo(skb)->gso_type & SKB_GSO_PARTIAL) &&
- 		    (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_TUNNEL_CSUM))
- 			tunnel |= I40E_TXD_CTX_QW0_L4T_CS_MASK;
+ 	/* mss_l4len_id: use 0 as index for TSO */
+-	mss_l4len_idx = l4len << IXGBE_ADVTXD_L4LEN_SHIFT;
++	mss_l4len_idx = (*hdr_len - l4_offset) << IXGBE_ADVTXD_L4LEN_SHIFT;
+ 	mss_l4len_idx |= skb_shinfo(skb)->gso_size << IXGBE_ADVTXD_MSS_SHIFT;
  
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index 4633235ee70b..ede8dfc189bc 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -1566,11 +1566,15 @@ static int i40e_tso(struct sk_buff *skb, u8 *hdr_len, u64 *cd_type_cmd_tso_mss)
+ 	/* vlan_macip_lens: HEADLEN, MACLEN, VLAN tag */
+-	vlan_macip_lens = skb_network_header_len(skb);
+-	vlan_macip_lens |= skb_network_offset(skb) << IXGBE_ADVTXD_MACLEN_SHIFT;
++	vlan_macip_lens = l4.hdr - ip.hdr;
++	vlan_macip_lens |= (ip.hdr - skb->data) << IXGBE_ADVTXD_MACLEN_SHIFT;
+ 	vlan_macip_lens |= first->tx_flags & IXGBE_TX_FLAGS_VLAN_MASK;
+ 
+ 	ixgbe_tx_ctxtdesc(tx_ring, vlan_macip_lens, 0, type_tucmd,
+@@ -8966,17 +8981,36 @@ static void ixgbe_fwd_del(struct net_device *pdev, void *priv)
+ 	kfree(fwd_adapter);
+ }
+ 
+-#define IXGBE_MAX_TUNNEL_HDR_LEN 80
++#define IXGBE_MAX_MAC_HDR_LEN		127
++#define IXGBE_MAX_NETWORK_HDR_LEN	511
++
+ static netdev_features_t
+ ixgbe_features_check(struct sk_buff *skb, struct net_device *dev,
+ 		     netdev_features_t features)
+ {
+-	if (!skb->encapsulation)
+-		return features;
+-
+-	if (unlikely(skb_inner_mac_header(skb) - skb_transport_header(skb) >
+-		     IXGBE_MAX_TUNNEL_HDR_LEN))
+-		return features & ~NETIF_F_CSUM_MASK;
++	unsigned int network_hdr_len, mac_hdr_len;
++
++	/* Make certain the headers can be described by a context descriptor */
++	mac_hdr_len = skb_network_header(skb) - skb->data;
++	if (unlikely(mac_hdr_len > IXGBE_MAX_MAC_HDR_LEN))
++		return features & ~(NETIF_F_HW_CSUM |
++				    NETIF_F_SCTP_CRC |
++				    NETIF_F_HW_VLAN_CTAG_TX |
++				    NETIF_F_TSO |
++				    NETIF_F_TSO6);
++
++	network_hdr_len = skb_checksum_start(skb) - skb_network_header(skb);
++	if (unlikely(network_hdr_len >  IXGBE_MAX_NETWORK_HDR_LEN))
++		return features & ~(NETIF_F_HW_CSUM |
++				    NETIF_F_SCTP_CRC |
++				    NETIF_F_TSO |
++				    NETIF_F_TSO6);
++
++	/* We can only support IPV4 TSO in tunnels if we can mangle the
++	 * inner IP ID field, so strip TSO if MANGLEID is not supported.
++	 */
++	if (skb->encapsulation && !(features & NETIF_F_TSO_MANGLEID))
++		features &= ~NETIF_F_TSO;
+ 
+ 	return features;
+ }
+@@ -9343,31 +9377,44 @@ skip_sriov:
+ 			   NETIF_F_TSO6 |
+ 			   NETIF_F_RXHASH |
+ 			   NETIF_F_RXCSUM |
+-			   NETIF_F_HW_CSUM |
+-			   NETIF_F_HW_VLAN_CTAG_TX |
+-			   NETIF_F_HW_VLAN_CTAG_RX |
+-			   NETIF_F_HW_VLAN_CTAG_FILTER;
++			   NETIF_F_HW_CSUM;
++
++#define IXGBE_GSO_PARTIAL_FEATURES (NETIF_F_GSO_GRE | \
++				    NETIF_F_GSO_GRE_CSUM | \
++				    NETIF_F_GSO_IPIP | \
++				    NETIF_F_GSO_SIT | \
++				    NETIF_F_GSO_UDP_TUNNEL | \
++				    NETIF_F_GSO_UDP_TUNNEL_CSUM)
++
++	netdev->gso_partial_features = IXGBE_GSO_PARTIAL_FEATURES;
++	netdev->features |= NETIF_F_GSO_PARTIAL |
++			    IXGBE_GSO_PARTIAL_FEATURES;
+ 
+ 	if (hw->mac.type >= ixgbe_mac_82599EB)
+ 		netdev->features |= NETIF_F_SCTP_CRC;
+ 
+ 	/* copy netdev features into list of user selectable features */
+-	netdev->hw_features |= netdev->features;
+-	netdev->hw_features |= NETIF_F_RXALL |
++	netdev->hw_features |= netdev->features |
++			       NETIF_F_HW_VLAN_CTAG_RX |
++			       NETIF_F_HW_VLAN_CTAG_TX |
++			       NETIF_F_RXALL |
+ 			       NETIF_F_HW_L2FW_DOFFLOAD;
+ 
+ 	if (hw->mac.type >= ixgbe_mac_82599EB)
+ 		netdev->hw_features |= NETIF_F_NTUPLE |
+ 				       NETIF_F_HW_TC;
+ 
+-	netdev->vlan_features |= NETIF_F_SG |
+-				 NETIF_F_TSO |
+-				 NETIF_F_TSO6 |
+-				 NETIF_F_HW_CSUM |
+-				 NETIF_F_SCTP_CRC;
++	if (pci_using_dac)
++		netdev->features |= NETIF_F_HIGHDMA;
++
++	/* set this bit last since it cannot be part of vlan_features */
++	netdev->features |= NETIF_F_HW_VLAN_CTAG_FILTER |
++			    NETIF_F_HW_VLAN_CTAG_RX |
++			    NETIF_F_HW_VLAN_CTAG_TX;
+ 
++	netdev->vlan_features |= netdev->features | NETIF_F_TSO_MANGLEID;
++	netdev->hw_enc_features |= netdev->vlan_features;
+ 	netdev->mpls_features |= NETIF_F_HW_CSUM;
+-	netdev->hw_enc_features |= NETIF_F_HW_CSUM;
+ 
+ 	netdev->priv_flags |= IFF_UNICAST_FLT;
+ 	netdev->priv_flags |= IFF_SUPP_NOFCS;
+@@ -9398,10 +9445,6 @@ skip_sriov:
+ 					 NETIF_F_FCOE_MTU;
+ 	}
+ #endif /* IXGBE_FCOE */
+-	if (pci_using_dac) {
+-		netdev->features |= NETIF_F_HIGHDMA;
+-		netdev->vlan_features |= NETIF_F_HIGHDMA;
+-	}
+ 
+ 	if (adapter->flags2 & IXGBE_FLAG2_RSC_CAPABLE)
+ 		netdev->hw_features |= NETIF_F_LRO;
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index e4e6060e6197..eb91922bcb19 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -3272,9 +3272,18 @@ static int ixgbevf_tso(struct ixgbevf_ring *tx_ring,
+ 		       struct ixgbevf_tx_buffer *first,
+ 		       u8 *hdr_len)
+ {
++	u32 vlan_macip_lens, type_tucmd, mss_l4len_idx;
+ 	struct sk_buff *skb = first->skb;
+-	u32 vlan_macip_lens, type_tucmd;
+-	u32 mss_l4len_idx, l4len;
++	union {
++		struct iphdr *v4;
++		struct ipv6hdr *v6;
++		unsigned char *hdr;
++	} ip;
++	union {
++		struct tcphdr *tcp;
++		unsigned char *hdr;
++	} l4;
++	u32 paylen, l4_offset;
+ 	int err;
+ 
+ 	if (skb->ip_summed != CHECKSUM_PARTIAL)
+@@ -3287,49 +3296,53 @@ static int ixgbevf_tso(struct ixgbevf_ring *tx_ring,
+ 	if (err < 0)
+ 		return err;
+ 
++	ip.hdr = skb_network_header(skb);
++	l4.hdr = skb_checksum_start(skb);
++
+ 	/* ADV DTYP TUCMD MKRLOC/ISCSIHEDLEN */
+ 	type_tucmd = IXGBE_ADVTXD_TUCMD_L4T_TCP;
+ 
+-	if (first->protocol == htons(ETH_P_IP)) {
+-		struct iphdr *iph = ip_hdr(skb);
+-
+-		iph->tot_len = 0;
+-		iph->check = 0;
+-		tcp_hdr(skb)->check = ~csum_tcpudp_magic(iph->saddr,
+-							 iph->daddr, 0,
+-							 IPPROTO_TCP,
+-							 0);
++	/* initialize outer IP header fields */
++	if (ip.v4->version == 4) {
++		/* IP header will have to cancel out any data that
++		 * is not a part of the outer IP header
++		 */
++		ip.v4->check = csum_fold(csum_add(lco_csum(skb),
++						  csum_unfold(l4.tcp->check)));
+ 		type_tucmd |= IXGBE_ADVTXD_TUCMD_IPV4;
++
++		ip.v4->tot_len = 0;
+ 		first->tx_flags |= IXGBE_TX_FLAGS_TSO |
+ 				   IXGBE_TX_FLAGS_CSUM |
+ 				   IXGBE_TX_FLAGS_IPV4;
+-	} else if (skb_is_gso_v6(skb)) {
+-		ipv6_hdr(skb)->payload_len = 0;
+-		tcp_hdr(skb)->check =
+-		    ~csum_ipv6_magic(&ipv6_hdr(skb)->saddr,
+-				     &ipv6_hdr(skb)->daddr,
+-				     0, IPPROTO_TCP, 0);
++	} else {
++		ip.v6->payload_len = 0;
+ 		first->tx_flags |= IXGBE_TX_FLAGS_TSO |
+ 				   IXGBE_TX_FLAGS_CSUM;
  	}
  
- 	if (skb_shinfo(skb)->gso_type & (SKB_GSO_GRE |
-+					 SKB_GSO_GRE_CSUM |
- 					 SKB_GSO_IPIP |
- 					 SKB_GSO_SIT |
- 					 SKB_GSO_UDP_TUNNEL |
- 					 SKB_GSO_UDP_TUNNEL_CSUM)) {
--		if (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_TUNNEL_CSUM) {
-+		if (!(skb_shinfo(skb)->gso_type & SKB_GSO_PARTIAL) &&
-+		    (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_TUNNEL_CSUM)) {
-+			l4.udp->len = 0;
+-	/* compute header lengths */
+-	l4len = tcp_hdrlen(skb);
+-	*hdr_len += l4len;
+-	*hdr_len = skb_transport_offset(skb) + l4len;
++	/* determine offset of inner transport header */
++	l4_offset = l4.hdr - skb->data;
 +
- 			/* determine offset of outer transport header */
- 			l4_offset = l4.hdr - skb->data;
++	/* compute length of segmentation header */
++	*hdr_len = (l4.tcp->doff * 4) + l4_offset;
  
-@@ -1705,6 +1709,7 @@ static int i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
- 
- 		/* indicate if we need to offload outer UDP header */
- 		if ((*tx_flags & I40E_TX_FLAGS_TSO) &&
-+		    !(skb_shinfo(skb)->gso_type & SKB_GSO_PARTIAL) &&
- 		    (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_TUNNEL_CSUM))
- 			tunnel |= I40E_TXD_CTX_QW0_L4T_CS_MASK;
- 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index b9b1dd831a16..9f0bd7acc22a 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -2240,20 +2240,25 @@ int i40evf_process_config(struct i40evf_adapter *adapter)
- 				   NETIF_F_TSO_ECN		|
- 				   NETIF_F_TSO6			|
- 				   NETIF_F_GSO_GRE		|
-+				   NETIF_F_GSO_GRE_CSUM		|
- 				   NETIF_F_GSO_IPIP		|
- 				   NETIF_F_GSO_SIT		|
- 				   NETIF_F_GSO_UDP_TUNNEL	|
- 				   NETIF_F_GSO_UDP_TUNNEL_CSUM	|
-+				   NETIF_F_GSO_PARTIAL		|
- 				   NETIF_F_SCTP_CRC		|
- 				   NETIF_F_RXHASH		|
- 				   NETIF_F_RXCSUM		|
- 				   0;
- 
- 	if (!(adapter->flags & I40EVF_FLAG_OUTER_UDP_CSUM_CAPABLE))
--		netdev->hw_enc_features ^= NETIF_F_GSO_UDP_TUNNEL_CSUM;
-+		netdev->gso_partial_features |= NETIF_F_GSO_UDP_TUNNEL_CSUM;
+-	/* update GSO size and bytecount with header size */
++	/* remove payload length from inner checksum */
++	paylen = skb->len - l4_offset;
++	csum_replace_by_diff(&l4.tcp->check, htonl(paylen));
 +
-+	netdev->gso_partial_features |= NETIF_F_GSO_GRE_CSUM;
++	/* update gso size and bytecount with header size */
+ 	first->gso_segs = skb_shinfo(skb)->gso_segs;
+ 	first->bytecount += (first->gso_segs - 1) * *hdr_len;
  
- 	/* record features VLANs can make use of */
--	netdev->vlan_features |= netdev->hw_enc_features;
-+	netdev->vlan_features |= netdev->hw_enc_features |
-+				 NETIF_F_TSO_MANGLEID;
+ 	/* mss_l4len_id: use 1 as index for TSO */
+-	mss_l4len_idx = l4len << IXGBE_ADVTXD_L4LEN_SHIFT;
++	mss_l4len_idx = (*hdr_len - l4_offset) << IXGBE_ADVTXD_L4LEN_SHIFT;
+ 	mss_l4len_idx |= skb_shinfo(skb)->gso_size << IXGBE_ADVTXD_MSS_SHIFT;
+ 	mss_l4len_idx |= (1u << IXGBE_ADVTXD_IDX_SHIFT);
  
- 	/* Write features and hw_features separately to avoid polluting
- 	 * with, or dropping, features that are set when we registgered.
-@@ -2261,6 +2266,7 @@ int i40evf_process_config(struct i40evf_adapter *adapter)
- 	netdev->hw_features |= netdev->hw_enc_features;
+ 	/* vlan_macip_lens: HEADLEN, MACLEN, VLAN tag */
+-	vlan_macip_lens = skb_network_header_len(skb);
+-	vlan_macip_lens |= skb_network_offset(skb) << IXGBE_ADVTXD_MACLEN_SHIFT;
++	vlan_macip_lens = l4.hdr - ip.hdr;
++	vlan_macip_lens |= (ip.hdr - skb->data) << IXGBE_ADVTXD_MACLEN_SHIFT;
+ 	vlan_macip_lens |= first->tx_flags & IXGBE_TX_FLAGS_VLAN_MASK;
  
- 	netdev->features |= netdev->hw_enc_features | I40EVF_VLAN_FEATURES;
-+	netdev->hw_enc_features |= NETIF_F_TSO_MANGLEID;
+ 	ixgbevf_tx_ctxtdesc(tx_ring, vlan_macip_lens,
+@@ -3870,6 +3883,40 @@ static struct rtnl_link_stats64 *ixgbevf_get_stats(struct net_device *netdev,
+ 	return stats;
+ }
  
- 	/* disable VLAN features if not supported */
- 	if (!(vfres->vf_offload_flags & I40E_VIRTCHNL_VF_OFFLOAD_VLAN))
++#define IXGBEVF_MAX_MAC_HDR_LEN		127
++#define IXGBEVF_MAX_NETWORK_HDR_LEN	511
++
++static netdev_features_t
++ixgbevf_features_check(struct sk_buff *skb, struct net_device *dev,
++		       netdev_features_t features)
++{
++	unsigned int network_hdr_len, mac_hdr_len;
++
++	/* Make certain the headers can be described by a context descriptor */
++	mac_hdr_len = skb_network_header(skb) - skb->data;
++	if (unlikely(mac_hdr_len > IXGBEVF_MAX_MAC_HDR_LEN))
++		return features & ~(NETIF_F_HW_CSUM |
++				    NETIF_F_SCTP_CRC |
++				    NETIF_F_HW_VLAN_CTAG_TX |
++				    NETIF_F_TSO |
++				    NETIF_F_TSO6);
++
++	network_hdr_len = skb_checksum_start(skb) - skb_network_header(skb);
++	if (unlikely(network_hdr_len >  IXGBEVF_MAX_NETWORK_HDR_LEN))
++		return features & ~(NETIF_F_HW_CSUM |
++				    NETIF_F_SCTP_CRC |
++				    NETIF_F_TSO |
++				    NETIF_F_TSO6);
++
++	/* We can only support IPV4 TSO in tunnels if we can mangle the
++	 * inner IP ID field, so strip TSO if MANGLEID is not supported.
++	 */
++	if (skb->encapsulation && !(features & NETIF_F_TSO_MANGLEID))
++		features &= ~NETIF_F_TSO;
++
++	return features;
++}
++
+ static const struct net_device_ops ixgbevf_netdev_ops = {
+ 	.ndo_open		= ixgbevf_open,
+ 	.ndo_stop		= ixgbevf_close,
+@@ -3888,7 +3935,7 @@ static const struct net_device_ops ixgbevf_netdev_ops = {
+ #ifdef CONFIG_NET_POLL_CONTROLLER
+ 	.ndo_poll_controller	= ixgbevf_netpoll,
+ #endif
+-	.ndo_features_check	= passthru_features_check,
++	.ndo_features_check	= ixgbevf_features_check,
+ };
+ 
+ static void ixgbevf_assign_netdev_ops(struct net_device *dev)
+@@ -3999,23 +4046,31 @@ static int ixgbevf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 			      NETIF_F_HW_CSUM |
+ 			      NETIF_F_SCTP_CRC;
+ 
+-	netdev->features = netdev->hw_features |
+-			   NETIF_F_HW_VLAN_CTAG_TX |
+-			   NETIF_F_HW_VLAN_CTAG_RX |
+-			   NETIF_F_HW_VLAN_CTAG_FILTER;
++#define IXGBEVF_GSO_PARTIAL_FEATURES (NETIF_F_GSO_GRE | \
++				      NETIF_F_GSO_GRE_CSUM | \
++				      NETIF_F_GSO_IPIP | \
++				      NETIF_F_GSO_SIT | \
++				      NETIF_F_GSO_UDP_TUNNEL | \
++				      NETIF_F_GSO_UDP_TUNNEL_CSUM)
+ 
+-	netdev->vlan_features |= NETIF_F_SG |
+-				 NETIF_F_TSO |
+-				 NETIF_F_TSO6 |
+-				 NETIF_F_HW_CSUM |
+-				 NETIF_F_SCTP_CRC;
++	netdev->gso_partial_features = IXGBEVF_GSO_PARTIAL_FEATURES;
++	netdev->hw_features |= NETIF_F_GSO_PARTIAL |
++			       IXGBEVF_GSO_PARTIAL_FEATURES;
+ 
+-	netdev->mpls_features |= NETIF_F_HW_CSUM;
+-	netdev->hw_enc_features |= NETIF_F_HW_CSUM;
++	netdev->features = netdev->hw_features;
+ 
+ 	if (pci_using_dac)
+ 		netdev->features |= NETIF_F_HIGHDMA;
+ 
++	netdev->vlan_features |= netdev->features | NETIF_F_TSO_MANGLEID;
++	netdev->mpls_features |= NETIF_F_HW_CSUM;
++	netdev->hw_enc_features |= netdev->vlan_features;
++
++	/* set this bit last since it cannot be part of vlan_features */
++	netdev->features |= NETIF_F_HW_VLAN_CTAG_FILTER |
++			    NETIF_F_HW_VLAN_CTAG_RX |
++			    NETIF_F_HW_VLAN_CTAG_TX;
++
+ 	netdev->priv_flags |= IFF_UNICAST_FLT;
+ 
+ 	if (IXGBE_REMOVED(hw->hw_addr)) {
 
