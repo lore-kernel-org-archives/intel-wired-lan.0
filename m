@@ -1,28 +1,32 @@
-From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Thu, 14 Apr 2016 22:50:14 +0000
-Subject: [Intel-wired-lan] [PATCH 4/5] fm10k: Add support for bulk Tx
- cleanup & cleanup boolean logic
-In-Reply-To: <20160307173015.5682.15247.stgit@localhost.localdomain>
-References: <20160307172722.5682.38580.stgit@localhost.localdomain>
- <20160307173015.5682.15247.stgit@localhost.localdomain>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E27372E43@ORSMSX103.amr.corp.intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Thu, 14 Apr 2016 23:00:01 +0000
+Subject: [Intel-wired-lan] [PATCH v2 2/2] e1000e: Fix ptp time reset on
+ network interruption
+In-Reply-To: <e943a9f336c2dd089fdc6c1dafbf768bc0983075.1460517387.git.brian@walsh.ws>
+References: <1455662685-7231-1-git-send-email-brian@walsh.ws>
+ <e943a9f336c2dd089fdc6c1dafbf768bc0983075.1460517387.git.brian@walsh.ws>
+Message-ID: <1460674801.28210.16.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Tue, 2016-04-12 at 23:22 -0400, Brian Walsh wrote:
+> Time is resetting on any interruption of network connectivity. This
+> causes the clock to jump around by the leapsecond offset. It should
+> only reset when the device is initialized.
+> 
+> Signed-off-by: Brian Walsh <brian@walsh.ws>
 
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Alexander Duyck
-Sent: Monday, March 7, 2016 9:30 AM
-To: intel-wired-lan@lists.osuosl.org
-Subject: [Intel-wired-lan] [PATCH 4/5] fm10k: Add support for bulk Tx cleanup & cleanup boolean logic
+Jeff,
 
-This patch enables bulk free in Tx cleanup for fm10k and cleans up the boolean logic in the polling routines for fm10k in the hopes of avoiding any mix-ups similar to what occurred with i40e and i40evf.
+This patch is incorrect. I have an alternative I am proposing. The
+first patch in the series is correct and can be used, but the 2nd patch
+is incorrect, and I will propose a replacement. Can we drop this patch
+from the queue?
 
-Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
----
+I'll indicate the patch as a conflict when I submit my reworked patch.
 
-Tested-by: Krishneil Singh <Krishneil.k.singh@intel.com>
-
+Regards,
+Jake
