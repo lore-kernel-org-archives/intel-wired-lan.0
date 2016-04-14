@@ -1,45 +1,51 @@
 From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-Date: Thu, 14 Apr 2016 06:19:20 -0700
-Subject: [Intel-wired-lan] [next PATCH S35 00/14] i40e/i40evf updates
-Message-ID: <1460639974-2556-1-git-send-email-harshitha.ramamurthy@intel.com>
+Date: Thu, 14 Apr 2016 06:19:22 -0700
+Subject: [Intel-wired-lan] [next PATCH S35 02/14] i40e: Fix up 32 bit
+	timespec references
+In-Reply-To: <1460639974-2556-1-git-send-email-harshitha.ramamurthy@intel.com>
+References: <1460639974-2556-1-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <1460639974-2556-3-git-send-email-harshitha.ramamurthy@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Carolyn Wyborny allows for setting RSS Hash opts using less than four parameters
-and adds message for unsupported MFP mode.
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-Catherine Sullivan renames a version macro.
+As it turns out there was only a small set of errors
+on 32 bit, and we just needed to be using the right calls
+for dealing with timespec64 variables.
 
-Jesse Brandeburg fixes up 32 bit timespec references, refactors tunnel
-interpretation and receive routine, removes unused hardware receive
-descriptor code and adds code to test memory before ethtool allocation
-succeeds. 
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Change-Id: I307345bf658b34a1d573f4f4263fe9ba2fa72051
+---
+Testing Hints : build tests, test PTP works.
 
-Mitch Williams adds code to report link speed, sets netdev carrier properly,
-clears mac filter count on reset, enables adaptive interrupt throttling
-and allocates RX buffers properly.
+ drivers/net/ethernet/intel/i40e/i40e_ptp.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-Shannon Nelson adds elements to fd filter compare.
-
- drivers/net/ethernet/intel/i40e/i40e.h             |  14 +-
- drivers/net/ethernet/intel/i40e/i40e_debugfs.c     |  30 +-
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 259 +++---
- drivers/net/ethernet/intel/i40e/i40e_main.c        |  78 +-
- drivers/net/ethernet/intel/i40e/i40e_ptp.c         |   5 +-
- drivers/net/ethernet/intel/i40e/i40e_txrx.c        | 964 ++++++++++-----------
- drivers/net/ethernet/intel/i40e/i40e_txrx.h        |  69 +-
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |   1 +
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c      | 924 ++++++++++----------
- drivers/net/ethernet/intel/i40evf/i40e_txrx.h      |  69 +-
- drivers/net/ethernet/intel/i40evf/i40evf.h         |   8 +-
- drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c |  78 +-
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  54 +-
- .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |  64 +-
- 14 files changed, 1264 insertions(+), 1353 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+index a1b878a..a5a6d2d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+@@ -158,14 +158,13 @@ static int i40e_ptp_adjfreq(struct ptp_clock_info *ptp, s32 ppb)
+ static int i40e_ptp_adjtime(struct ptp_clock_info *ptp, s64 delta)
+ {
+ 	struct i40e_pf *pf = container_of(ptp, struct i40e_pf, ptp_caps);
+-	struct timespec64 now, then;
++	struct timespec64 now;
+ 	unsigned long flags;
+ 
+-	then = ns_to_timespec64(delta);
+ 	spin_lock_irqsave(&pf->tmreg_lock, flags);
+ 
+ 	i40e_ptp_read(pf, &now);
+-	now = timespec64_add(now, then);
++	timespec64_add_ns(&now, delta);
+ 	i40e_ptp_write(pf, (const struct timespec64 *)&now);
+ 
+ 	spin_unlock_irqrestore(&pf->tmreg_lock, flags);
 -- 
 2.4.3
 
