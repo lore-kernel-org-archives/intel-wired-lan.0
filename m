@@ -1,414 +1,150 @@
-From: Amritha Nambiar <amritha.nambiar@intel.com>
-Date: Wed, 13 Apr 2016 21:12:06 -0400
-Subject: [Intel-wired-lan] [PATCH] [v2,
- next-queue] net: ixgbe: Match on multiple headers for cls_u32
- offloads
-Message-ID: <20160414011206.25187.30613.stgit@sdncamp.jf.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 14 Apr 2016 09:12:13 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 9815238950bb6c772cde26049d7ba80391ac513d BUILD SUCCESS
+Message-ID: <570eee6d.q2Nhn45EmbBO1ZTN%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Adds support to set filters with multiple header fields (L3,L4)to match on.
-This is achieved in the following order:
-1. Create a leaf hash table for the next header.
-2. Create a link to the leaf hash table from the base hash table with
-   matches on next header type and current header fields.
-3. Add filter in leaf hash table with match on next header fields and
-   action.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+9815238950bb6c772cde26049d7ba80391ac513d  e1000e: Fix ptp time reset on network interruption
 
-Verified with the following filters :
+elapsed time: 76m
 
-Match TCP and DIP:
-# tc qdisc add dev enp9s0f0 ingress
-# tc filter add dev enp9s0f0 parent ffff: protocol ip prio 99 \
-	handle 1: u32 divisor 1
-# tc filter add dev enp9s0f0 protocol ip parent ffff: prio 99 \
-	u32 ht 800: order 1 link 1: \
-	offset at 0 mask 0f00 shift 6 plus 0 eat \
-	match ip protocol 6 ff match ip dst 10.0.0.1/32
-# tc filter add dev enp9s0f0 parent ffff: protocol ip u32 ht 1: order 1 \
-	match tcp src 28 ffff action drop
+configs tested: 129
 
-Delete the filter:
-# tc filter del dev enp9s0f0 parent ffff: prio 99 handle 1:0:1 u32
+i386                     randconfig-a0-201615
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+arm                          pxa910_defconfig
+arm                         vf610m4_defconfig
+powerpc                 mpc8272_ads_defconfig
+x86_64                            allnoconfig
+arm                           h5000_defconfig
+mips                  cavium_octeon_defconfig
+mips                   sb1250_swarm_defconfig
+powerpc                    sam440ep_defconfig
+x86_64                 randconfig-x010-201615
+x86_64                 randconfig-x018-201615
+x86_64                 randconfig-x011-201615
+x86_64                 randconfig-x013-201615
+x86_64                 randconfig-x019-201615
+x86_64                 randconfig-x012-201615
+x86_64                 randconfig-x014-201615
+x86_64                 randconfig-x016-201615
+x86_64                 randconfig-x015-201615
+x86_64                 randconfig-x017-201615
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201615
+i386                     randconfig-s1-201615
+x86_64                 randconfig-s3-04140731
+x86_64                 randconfig-s4-04140731
+x86_64                 randconfig-s5-04140731
+x86_64                 randconfig-s3-04140819
+x86_64                 randconfig-s4-04140819
+x86_64                 randconfig-s5-04140819
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201615
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201615
+i386                     randconfig-i1-201615
+x86_64                              rhel_gcov
+i386                               tinyconfig
+i386                   randconfig-x012-201615
+i386                   randconfig-x013-201615
+i386                   randconfig-x015-201615
+i386                   randconfig-x019-201615
+i386                   randconfig-x011-201615
+i386                   randconfig-x018-201615
+i386                   randconfig-x010-201615
+i386                   randconfig-x016-201615
+i386                   randconfig-x017-201615
+i386                   randconfig-x014-201615
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201615
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                 randconfig-x000-201615
+x86_64                 randconfig-x001-201615
+x86_64                 randconfig-x007-201615
+x86_64                 randconfig-x005-201615
+x86_64                 randconfig-x006-201615
+x86_64                 randconfig-x004-201615
+x86_64                 randconfig-x008-201615
+x86_64                 randconfig-x009-201615
+x86_64                 randconfig-x003-201615
+x86_64                 randconfig-x002-201615
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201615
+i386                   randconfig-x000-201615
+i386                   randconfig-x003-201615
+i386                   randconfig-x009-201615
+i386                   randconfig-x005-201615
+i386                   randconfig-x004-201615
+i386                   randconfig-x002-201615
+i386                   randconfig-x006-201615
+i386                   randconfig-x007-201615
+i386                   randconfig-x008-201615
+i386                   randconfig-x001-201615
+i386                   randconfig-x0-04140653
 
-Match on DIP, SIP, UDP (SPort, DPort):
-# tc filter add dev enp9s0f0 parent ffff: protocol ip prio 99 \
-	handle 2: u32 divisor 1
-# tc filter add dev enp9s0f0 protocol ip parent ffff: prio 99 \
-	u32 ht 800: order 2 link 2: \
-	offset at 0 mask 0f00 shift 6 plus 0 eat \
-	match ip dst 15.0.0.2/32 match ip protocol 17 ff \
-	match ip src 15.0.0.1/32
-# tc filter add dev enp9s0f0 parent ffff: protocol ip u32 ht 2: order 2 \
-	match udp src 30 ffff match udp dst 32 ffff action drop
-
-Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
-
-v2: Rename a loop variable to fix build error
----
- drivers/net/ethernet/intel/ixgbe/ixgbe.h       |    2 
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c  |  216 +++++++++++++++++-------
- drivers/net/ethernet/intel/ixgbe/ixgbe_model.h |    6 +
- 3 files changed, 156 insertions(+), 68 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index 94e39c1..e7bbe69 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -792,7 +792,7 @@ struct ixgbe_adapter {
- 	unsigned long fwd_bitmask; /* Bitmask indicating in use pools */
- 
- #define IXGBE_MAX_LINK_HANDLE 10
--	struct ixgbe_mat_field *jump_tables[IXGBE_MAX_LINK_HANDLE];
-+	struct ixgbe_jump_table *jump_tables[IXGBE_MAX_LINK_HANDLE];
- 	unsigned long tables;
- 
- /* maximum number of RETA entries among all devices supported by ixgbe
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 974aa7c..40f6085 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -5573,6 +5573,7 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter)
- 	struct pci_dev *pdev = adapter->pdev;
- 	unsigned int rss, fdir;
- 	u32 fwsm;
-+	int i;
- #ifdef CONFIG_IXGBE_DCB
- 	int j;
- 	struct tc_configuration *tc;
-@@ -5608,7 +5609,14 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter)
- #endif /* IXGBE_FCOE */
- 
- 	/* initialize static ixgbe jump table entries */
--	adapter->jump_tables[0] = ixgbe_ipv4_fields;
-+	adapter->jump_tables[0] = kzalloc(sizeof(*adapter->jump_tables[0]),
-+					  GFP_KERNEL);
-+	if (!adapter->jump_tables[0])
-+		return -ENOMEM;
-+	adapter->jump_tables[0]->mat = ixgbe_ipv4_fields;
-+
-+	for (i = 1; i < IXGBE_MAX_LINK_HANDLE; i++)
-+		adapter->jump_tables[i] = NULL;
- 
- 	adapter->mac_table = kzalloc(sizeof(struct ixgbe_mac_addr) *
- 				     hw->mac.num_rar_entries,
-@@ -8343,6 +8351,55 @@ static int parse_tc_actions(struct ixgbe_adapter *adapter,
- }
- #endif /* CONFIG_NET_CLS_ACT */
- 
-+static int ixgbe_clsu32_build_input(struct ixgbe_fdir_filter *input,
-+				    union ixgbe_atr_input *mask,
-+				    struct tc_cls_u32_offload *cls,
-+				    struct ixgbe_mat_field *field_ptr,
-+				    struct ixgbe_nexthdr *nexthdr)
-+{
-+	int i, j, off;
-+	__be32 val, m;
-+	bool found_entry = false, found_jump_field = false;
-+
-+	for (i = 0; i < cls->knode.sel->nkeys; i++) {
-+		off = cls->knode.sel->keys[i].off;
-+		val = cls->knode.sel->keys[i].val;
-+		m = cls->knode.sel->keys[i].mask;
-+
-+		for (j = 0; field_ptr[j].val; j++) {
-+			if (field_ptr[j].off == off) {
-+				field_ptr[j].val(input, mask, val, m);
-+				input->filter.formatted.flow_type |=
-+					field_ptr[j].type;
-+				found_entry = true;
-+				break;
-+			}
-+		}
-+		if (nexthdr) {
-+			if (nexthdr->off == cls->knode.sel->keys[i].off &&
-+			    nexthdr->val == cls->knode.sel->keys[i].val &&
-+			    nexthdr->mask == cls->knode.sel->keys[i].mask)
-+				found_jump_field = true;
-+			else
-+				continue;
-+		}
-+	}
-+
-+	if (nexthdr && !found_jump_field)
-+		return -EINVAL;
-+
-+	if (!found_entry)
-+		return 0;
-+
-+	mask->formatted.flow_type = IXGBE_ATR_L4TYPE_IPV6_MASK |
-+				   IXGBE_ATR_L4TYPE_MASK;
-+
-+	if (input->filter.formatted.flow_type == IXGBE_ATR_FLOW_TYPE_IPV4)
-+		mask->formatted.flow_type &= IXGBE_ATR_L4TYPE_IPV6_MASK;
-+
-+	return 0;
-+}
-+
- static int ixgbe_configure_clsu32(struct ixgbe_adapter *adapter,
- 				  __be16 protocol,
- 				  struct tc_cls_u32_offload *cls)
-@@ -8350,13 +8407,13 @@ static int ixgbe_configure_clsu32(struct ixgbe_adapter *adapter,
- 	u32 loc = cls->knode.handle & 0xfffff;
- 	struct ixgbe_hw *hw = &adapter->hw;
- 	struct ixgbe_mat_field *field_ptr;
--	struct ixgbe_fdir_filter *input;
--	union ixgbe_atr_input mask;
--	int i, err = 0;
-+	struct ixgbe_fdir_filter *input = NULL;
-+	union ixgbe_atr_input *mask = NULL;
-+	struct ixgbe_jump_table *jump = NULL;
-+	int i, err = -EINVAL;
- 	u8 queue;
- 	u32 uhtid, link_uhtid;
- 
--	memset(&mask, 0, sizeof(union ixgbe_atr_input));
- 	uhtid = TC_U32_USERHTID(cls->knode.handle);
- 	link_uhtid = TC_U32_USERHTID(cls->knode.link_handle);
- 
-@@ -8368,39 +8425,11 @@ static int ixgbe_configure_clsu32(struct ixgbe_adapter *adapter,
- 	 * headers when needed.
- 	 */
- 	if (protocol != htons(ETH_P_IP))
--		return -EINVAL;
--
--	if (link_uhtid) {
--		struct ixgbe_nexthdr *nexthdr = ixgbe_ipv4_jumps;
--
--		if (link_uhtid >= IXGBE_MAX_LINK_HANDLE)
--			return -EINVAL;
--
--		if (!test_bit(link_uhtid - 1, &adapter->tables))
--			return -EINVAL;
--
--		for (i = 0; nexthdr[i].jump; i++) {
--			if (nexthdr[i].o != cls->knode.sel->offoff ||
--			    nexthdr[i].s != cls->knode.sel->offshift ||
--			    nexthdr[i].m != cls->knode.sel->offmask ||
--			    /* do not support multiple key jumps its just mad */
--			    cls->knode.sel->nkeys > 1)
--				return -EINVAL;
--
--			if (nexthdr[i].off == cls->knode.sel->keys[0].off &&
--			    nexthdr[i].val == cls->knode.sel->keys[0].val &&
--			    nexthdr[i].mask == cls->knode.sel->keys[0].mask) {
--				adapter->jump_tables[link_uhtid] =
--								nexthdr[i].jump;
--				break;
--			}
--		}
--		return 0;
--	}
-+		return err;
- 
- 	if (loc >= ((1024 << adapter->fdir_pballoc) - 2)) {
- 		e_err(drv, "Location out of range\n");
--		return -EINVAL;
-+		return err;
- 	}
- 
- 	/* cls u32 is a graph starting at root node 0x800. The driver tracks
-@@ -8411,47 +8440,85 @@ static int ixgbe_configure_clsu32(struct ixgbe_adapter *adapter,
- 	 * this function _should_ be generic try not to hardcode values here.
- 	 */
- 	if (uhtid == 0x800) {
--		field_ptr = adapter->jump_tables[0];
-+		field_ptr = (adapter->jump_tables[0])->mat;
- 	} else {
- 		if (uhtid >= IXGBE_MAX_LINK_HANDLE)
--			return -EINVAL;
--
--		field_ptr = adapter->jump_tables[uhtid];
-+			return err;
-+		if (!adapter->jump_tables[uhtid])
-+			return err;
-+		field_ptr = (adapter->jump_tables[uhtid])->mat;
- 	}
- 
- 	if (!field_ptr)
--		return -EINVAL;
-+		return err;
- 
--	input = kzalloc(sizeof(*input), GFP_KERNEL);
--	if (!input)
--		return -ENOMEM;
-+	/* At this point we know the field_ptr is valid and need to either
-+	 * build cls_u32 link or attach filter. Because adding a link to
-+	 * a handle that does not exist is invalid and the same for adding
-+	 * rules to handles that don't exist.
-+	 */
- 
--	for (i = 0; i < cls->knode.sel->nkeys; i++) {
--		int off = cls->knode.sel->keys[i].off;
--		__be32 val = cls->knode.sel->keys[i].val;
--		__be32 m = cls->knode.sel->keys[i].mask;
--		bool found_entry = false;
--		int j;
-+	if (link_uhtid) {
-+		struct ixgbe_nexthdr *nexthdr = ixgbe_ipv4_jumps;
- 
--		for (j = 0; field_ptr[j].val; j++) {
--			if (field_ptr[j].off == off) {
--				field_ptr[j].val(input, &mask, val, m);
--				input->filter.formatted.flow_type |=
--					field_ptr[j].type;
--				found_entry = true;
-+		if (link_uhtid >= IXGBE_MAX_LINK_HANDLE)
-+			return err;
-+
-+		if (!test_bit(link_uhtid - 1, &adapter->tables))
-+			return err;
-+
-+		for (i = 0; nexthdr[i].jump; i++) {
-+			if (nexthdr[i].o != cls->knode.sel->offoff ||
-+			    nexthdr[i].s != cls->knode.sel->offshift ||
-+			    nexthdr[i].m != cls->knode.sel->offmask)
-+				return err;
-+
-+			jump = kzalloc(sizeof(*jump), GFP_KERNEL);
-+			if (!jump)
-+				return -ENOMEM;
-+			input = kzalloc(sizeof(*input), GFP_KERNEL);
-+			if (!input) {
-+				err = -ENOMEM;
-+				goto free_jump;
-+			}
-+			mask = kzalloc(sizeof(*mask), GFP_KERNEL);
-+			if (!mask) {
-+				err = -ENOMEM;
-+				goto free_input;
-+			}
-+			jump->input = input;
-+			jump->mask = mask;
-+			err = ixgbe_clsu32_build_input(input, mask, cls,
-+						       field_ptr, &nexthdr[i]);
-+			if (!err) {
-+				jump->mat = nexthdr[i].jump;
-+				adapter->jump_tables[link_uhtid] = jump;
- 				break;
- 			}
- 		}
--
--		if (!found_entry)
--			goto err_out;
-+		return 0;
- 	}
- 
--	mask.formatted.flow_type = IXGBE_ATR_L4TYPE_IPV6_MASK |
--				   IXGBE_ATR_L4TYPE_MASK;
-+	input = kzalloc(sizeof(*input), GFP_KERNEL);
-+	if (!input)
-+		return -ENOMEM;
-+	mask = kzalloc(sizeof(*mask), GFP_KERNEL);
-+	if (!mask) {
-+		err = -ENOMEM;
-+		goto free_input;
-+	}
- 
--	if (input->filter.formatted.flow_type == IXGBE_ATR_FLOW_TYPE_IPV4)
--		mask.formatted.flow_type &= IXGBE_ATR_L4TYPE_IPV6_MASK;
-+	if ((uhtid != 0x800) && (adapter->jump_tables[uhtid])) {
-+		if ((adapter->jump_tables[uhtid])->input)
-+			memcpy(input, (adapter->jump_tables[uhtid])->input,
-+			       sizeof(*input));
-+		if ((adapter->jump_tables[uhtid])->mask)
-+			memcpy(mask, (adapter->jump_tables[uhtid])->mask,
-+			       sizeof(*mask));
-+	}
-+	err = ixgbe_clsu32_build_input(input, mask, cls, field_ptr, NULL);
-+	if (err)
-+		goto err_out;
- 
- 	err = parse_tc_actions(adapter, cls->knode.exts, &input->action,
- 			       &queue);
-@@ -8463,28 +8530,33 @@ static int ixgbe_configure_clsu32(struct ixgbe_adapter *adapter,
- 	spin_lock(&adapter->fdir_perfect_lock);
- 
- 	if (hlist_empty(&adapter->fdir_filter_list)) {
--		memcpy(&adapter->fdir_mask, &mask, sizeof(mask));
--		err = ixgbe_fdir_set_input_mask_82599(hw, &mask);
-+		memcpy(&adapter->fdir_mask, mask, sizeof(*mask));
-+		err = ixgbe_fdir_set_input_mask_82599(hw, mask);
- 		if (err)
- 			goto err_out_w_lock;
--	} else if (memcmp(&adapter->fdir_mask, &mask, sizeof(mask))) {
-+	} else if (memcmp(&adapter->fdir_mask, mask, sizeof(*mask))) {
- 		err = -EINVAL;
- 		goto err_out_w_lock;
- 	}
- 
--	ixgbe_atr_compute_perfect_hash_82599(&input->filter, &mask);
-+	ixgbe_atr_compute_perfect_hash_82599(&input->filter, mask);
- 	err = ixgbe_fdir_write_perfect_filter_82599(hw, &input->filter,
- 						    input->sw_idx, queue);
- 	if (!err)
- 		ixgbe_update_ethtool_fdir_entry(adapter, input, input->sw_idx);
- 	spin_unlock(&adapter->fdir_perfect_lock);
- 
-+	kfree(mask);
- 	return err;
- err_out_w_lock:
- 	spin_unlock(&adapter->fdir_perfect_lock);
- err_out:
-+	kfree(mask);
-+free_input:
- 	kfree(input);
--	return -EINVAL;
-+free_jump:
-+	kfree(jump);
-+	return err;
- }
- 
- static int __ixgbe_setup_tc(struct net_device *dev, u32 handle, __be16 proto,
-@@ -9528,6 +9600,7 @@ err_sw_init:
- 	ixgbe_disable_sriov(adapter);
- 	adapter->flags2 &= ~IXGBE_FLAG2_SEARCH_FOR_SFP;
- 	iounmap(adapter->io_addr);
-+	kfree(adapter->jump_tables[0]);
- 	kfree(adapter->mac_table);
- err_ioremap:
- 	disable_dev = !test_and_set_bit(__IXGBE_DISABLED, &adapter->state);
-@@ -9556,6 +9629,7 @@ static void ixgbe_remove(struct pci_dev *pdev)
- 	struct ixgbe_adapter *adapter = pci_get_drvdata(pdev);
- 	struct net_device *netdev;
- 	bool disable_dev;
-+	int i;
- 
- 	/* if !adapter then we already cleaned up in probe */
- 	if (!adapter)
-@@ -9605,6 +9679,14 @@ static void ixgbe_remove(struct pci_dev *pdev)
- 
- 	e_dev_info("complete\n");
- 
-+	for (i = 0; i < IXGBE_MAX_LINK_HANDLE; i++) {
-+		if (adapter->jump_tables[i]) {
-+			kfree(adapter->jump_tables[i]->input);
-+			kfree(adapter->jump_tables[i]->mask);
-+		}
-+		kfree(adapter->jump_tables[i]);
-+	}
-+
- 	kfree(adapter->mac_table);
- 	disable_dev = !test_and_set_bit(__IXGBE_DISABLED, &adapter->state);
- 	free_netdev(netdev);
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_model.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_model.h
-index 60adde5..a8bed3d 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_model.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_model.h
-@@ -38,6 +38,12 @@ struct ixgbe_mat_field {
- 	unsigned int type;
- };
- 
-+struct ixgbe_jump_table {
-+	struct ixgbe_mat_field *mat;
-+	struct ixgbe_fdir_filter *input;
-+	union ixgbe_atr_input *mask;
-+};
-+
- static inline int ixgbe_mat_prgm_sip(struct ixgbe_fdir_filter *input,
- 				     union ixgbe_atr_input *mask,
- 				     u32 val, u32 m)
-
+Thanks,
+Fengguang
