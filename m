@@ -1,76 +1,170 @@
 From: Alexander Duyck <aduyck@mirantis.com>
-Date: Thu, 14 Apr 2016 17:19:18 -0400
-Subject: [Intel-wired-lan] [next-queue PATCH v2 0/3] Add support for GSO
- partial to Intel NIC drivers
-Message-ID: <20160414210725.14141.25917.stgit@ahduyck-xeon-server>
+Date: Thu, 14 Apr 2016 17:19:25 -0400
+Subject: [Intel-wired-lan] [next-queue PATCH v2 1/3] i40e/i40evf: Add
+ support for GSO partial with UDP_TUNNEL_CSUM and GRE_CSUM
+In-Reply-To: <20160414210725.14141.25917.stgit@ahduyck-xeon-server>
+References: <20160414210725.14141.25917.stgit@ahduyck-xeon-server>
+Message-ID: <20160414211925.14141.43481.stgit@ahduyck-xeon-server>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-So these are the patches needed to enable tunnel segmentation offloads on
-the igb, igbvf, ixgbe, and ixgbevf drivers.  In addition this patch extends
-the i40e and i40evf drivers to include segmentation support for tunnels
-with outer checksums.
+This patch makes it so that i40e and i40evf can use GSO_PARTIAL to support
+segmentation for frames with checksums enabled in outer headers.  As a
+result we can now send data over these types of tunnels at over 20Gb/s
+versus the 12Gb/s that was previously possible on my system.
 
-The net performance gain for these patches are pretty significant.  In the
-case of i40e a tunnel with outer checksums showed the following
-improvement:
-Throughput Throughput  Local Local   Result
-           Units       CPU   Service Tag
-                       Util  Demand
-                       %
-14066.29   10^6bits/s  3.49  0.651   "before"
-20618.16   10^6bits/s  3.09  0.393   "after"
+The advantage with the i40e parts is that this offload is mostly
+transparent as the hardware still deals with the inner and/or outer IPv4
+headers so the IP ID is still incrementing for both when this offload is
+performed.
 
-For ixgbe similar results were seen:
-Throughput Throughput  Local  Local   Result
-           Units       CPU    Service Tag
-                       Util   Demand
-                       %
-12879.89   10^6bits/s  10.00  0.763   "before"
-14286.77   10^6bits/s  5.74   0.395   "after"
-
-These patches rely on patches that were recently added to net-next so
-please make certain to pull the latest net-next before attempting to build
-with these patches.
-
-Testing Hints:
-For the i40e(vf) driver it is just a matter of creating a set of tunnels with
-the checksum unabled.  If using the latest net-next kernel and iproute2
-build this should be the default for tunnels such as VXLAN.  Turning off
-the feature "tx-gso-partial" should also turn off
-"tx-gre-csum-segmentation" and "tx-udp_tnl-csum-segmentation".
-
-For the igb(vf) and ixgbe(vf) drivers you will need to set the feature
-"tx-tcp-mangle-id-segmentation" to "on" in ethtool to enable the segmentation
-offload for TCPv4 inside of tunnels, otherwise only TCPv6 inside the tunnel
-will be offloaded.  If "tx-gso-partial" is turned off then you should see all
-of the tunnel segmentation offloads turned off including gre, gre-csum, ipip,
-sit, udp_tnl, and udp_tnl-csum.
-
-I also have some patches I have submitted to net-next that will enable
-offloads for GRE tunnels over IPv6.  Once those are accepted you should be
-able to test all of the tunnel types traversing over IPv4 or IPv6 as the
-underlying L3.
-
+Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 ---
+ drivers/net/ethernet/intel/i40e/i40e_main.c     |   10 ++++++++--
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c     |    7 ++++++-
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c   |    7 ++++++-
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c |   10 ++++++++--
+ 4 files changed, 28 insertions(+), 6 deletions(-)
 
-Alexander Duyck (3):
-      i40e/i40evf: Add support for GSO partial with UDP_TUNNEL_CSUM and GRE_CSUM
-      ixgbe/ixgbevf: Add support for GSO partial
-      igb/igbvf: Add support for GSO partial
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 19a2d3033f7f..8e6c0f2487d7 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -9130,20 +9130,25 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
+ 				   NETIF_F_TSO_ECN		|
+ 				   NETIF_F_TSO6			|
+ 				   NETIF_F_GSO_GRE		|
++				   NETIF_F_GSO_GRE_CSUM		|
+ 				   NETIF_F_GSO_IPIP		|
+ 				   NETIF_F_GSO_SIT		|
+ 				   NETIF_F_GSO_UDP_TUNNEL	|
+ 				   NETIF_F_GSO_UDP_TUNNEL_CSUM	|
++				   NETIF_F_GSO_PARTIAL		|
+ 				   NETIF_F_SCTP_CRC		|
+ 				   NETIF_F_RXHASH		|
+ 				   NETIF_F_RXCSUM		|
+ 				   0;
+ 
+ 	if (!(pf->flags & I40E_FLAG_OUTER_UDP_CSUM_CAPABLE))
+-		netdev->hw_enc_features ^= NETIF_F_GSO_UDP_TUNNEL_CSUM;
++		netdev->gso_partial_features |= NETIF_F_GSO_UDP_TUNNEL_CSUM;
++
++	netdev->gso_partial_features |= NETIF_F_GSO_GRE_CSUM;
+ 
+ 	/* record features VLANs can make use of */
+-	netdev->vlan_features |= netdev->hw_enc_features;
++	netdev->vlan_features |= netdev->hw_enc_features |
++				 NETIF_F_TSO_MANGLEID;
+ 
+ 	if (!(pf->flags & I40E_FLAG_MFP_ENABLED))
+ 		netdev->hw_features |= NETIF_F_NTUPLE;
+@@ -9153,6 +9158,7 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
+ 			       NETIF_F_HW_VLAN_CTAG_RX;
+ 
+ 	netdev->features |= netdev->hw_features | NETIF_F_HW_VLAN_CTAG_FILTER;
++	netdev->hw_enc_features |= NETIF_F_TSO_MANGLEID;
+ 
+ 	if (vsi->type == I40E_VSI_MAIN) {
+ 		SET_NETDEV_DEV(netdev, &pf->pdev->dev);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 17ee438d1e03..4e5ecc36313c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -2319,11 +2319,15 @@ static int i40e_tso(struct sk_buff *skb, u8 *hdr_len, u64 *cd_type_cmd_tso_mss)
+ 	}
+ 
+ 	if (skb_shinfo(skb)->gso_type & (SKB_GSO_GRE |
++					 SKB_GSO_GRE_CSUM |
+ 					 SKB_GSO_IPIP |
+ 					 SKB_GSO_SIT |
+ 					 SKB_GSO_UDP_TUNNEL |
+ 					 SKB_GSO_UDP_TUNNEL_CSUM)) {
+-		if (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_TUNNEL_CSUM) {
++		if (!(skb_shinfo(skb)->gso_type & SKB_GSO_PARTIAL) &&
++		    (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_TUNNEL_CSUM)) {
++			l4.udp->len = 0;
++
+ 			/* determine offset of outer transport header */
+ 			l4_offset = l4.hdr - skb->data;
+ 
+@@ -2500,6 +2504,7 @@ static int i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
+ 
+ 		/* indicate if we need to offload outer UDP header */
+ 		if ((*tx_flags & I40E_TX_FLAGS_TSO) &&
++		    !(skb_shinfo(skb)->gso_type & SKB_GSO_PARTIAL) &&
+ 		    (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_TUNNEL_CSUM))
+ 			tunnel |= I40E_TXD_CTX_QW0_L4T_CS_MASK;
+ 
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index 4633235ee70b..ede8dfc189bc 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -1566,11 +1566,15 @@ static int i40e_tso(struct sk_buff *skb, u8 *hdr_len, u64 *cd_type_cmd_tso_mss)
+ 	}
+ 
+ 	if (skb_shinfo(skb)->gso_type & (SKB_GSO_GRE |
++					 SKB_GSO_GRE_CSUM |
+ 					 SKB_GSO_IPIP |
+ 					 SKB_GSO_SIT |
+ 					 SKB_GSO_UDP_TUNNEL |
+ 					 SKB_GSO_UDP_TUNNEL_CSUM)) {
+-		if (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_TUNNEL_CSUM) {
++		if (!(skb_shinfo(skb)->gso_type & SKB_GSO_PARTIAL) &&
++		    (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_TUNNEL_CSUM)) {
++			l4.udp->len = 0;
++
+ 			/* determine offset of outer transport header */
+ 			l4_offset = l4.hdr - skb->data;
+ 
+@@ -1705,6 +1709,7 @@ static int i40e_tx_enable_csum(struct sk_buff *skb, u32 *tx_flags,
+ 
+ 		/* indicate if we need to offload outer UDP header */
+ 		if ((*tx_flags & I40E_TX_FLAGS_TSO) &&
++		    !(skb_shinfo(skb)->gso_type & SKB_GSO_PARTIAL) &&
+ 		    (skb_shinfo(skb)->gso_type & SKB_GSO_UDP_TUNNEL_CSUM))
+ 			tunnel |= I40E_TXD_CTX_QW0_L4T_CS_MASK;
+ 
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index b9b1dd831a16..9f0bd7acc22a 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -2240,20 +2240,25 @@ int i40evf_process_config(struct i40evf_adapter *adapter)
+ 				   NETIF_F_TSO_ECN		|
+ 				   NETIF_F_TSO6			|
+ 				   NETIF_F_GSO_GRE		|
++				   NETIF_F_GSO_GRE_CSUM		|
+ 				   NETIF_F_GSO_IPIP		|
+ 				   NETIF_F_GSO_SIT		|
+ 				   NETIF_F_GSO_UDP_TUNNEL	|
+ 				   NETIF_F_GSO_UDP_TUNNEL_CSUM	|
++				   NETIF_F_GSO_PARTIAL		|
+ 				   NETIF_F_SCTP_CRC		|
+ 				   NETIF_F_RXHASH		|
+ 				   NETIF_F_RXCSUM		|
+ 				   0;
+ 
+ 	if (!(adapter->flags & I40EVF_FLAG_OUTER_UDP_CSUM_CAPABLE))
+-		netdev->hw_enc_features ^= NETIF_F_GSO_UDP_TUNNEL_CSUM;
++		netdev->gso_partial_features |= NETIF_F_GSO_UDP_TUNNEL_CSUM;
++
++	netdev->gso_partial_features |= NETIF_F_GSO_GRE_CSUM;
+ 
+ 	/* record features VLANs can make use of */
+-	netdev->vlan_features |= netdev->hw_enc_features;
++	netdev->vlan_features |= netdev->hw_enc_features |
++				 NETIF_F_TSO_MANGLEID;
+ 
+ 	/* Write features and hw_features separately to avoid polluting
+ 	 * with, or dropping, features that are set when we registgered.
+@@ -2261,6 +2266,7 @@ int i40evf_process_config(struct i40evf_adapter *adapter)
+ 	netdev->hw_features |= netdev->hw_enc_features;
+ 
+ 	netdev->features |= netdev->hw_enc_features | I40EVF_VLAN_FEATURES;
++	netdev->hw_enc_features |= NETIF_F_TSO_MANGLEID;
+ 
+ 	/* disable VLAN features if not supported */
+ 	if (!(vfres->vf_offload_flags & I40E_VIRTCHNL_VF_OFFLOAD_VLAN))
 
-
- drivers/net/ethernet/intel/i40e/i40e_main.c       |   10 +
- drivers/net/ethernet/intel/i40e/i40e_txrx.c       |    7 +
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c     |    7 +
- drivers/net/ethernet/intel/i40evf/i40evf_main.c   |   10 +
- drivers/net/ethernet/intel/igb/igb_main.c         |  137 +++++++++++-----
- drivers/net/ethernet/intel/igbvf/netdev.c         |  182 ++++++++++++---------
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |  133 ++++++++++-----
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |  129 +++++++++++----
- 8 files changed, 411 insertions(+), 204 deletions(-)
-
---
