@@ -1,142 +1,35 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 14 Apr 2016 13:17:08 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 315ef36f3472c1e1569420634e4db0a27b6e5921 BUILD SUCCESS
-Message-ID: <570f27d4.niAYjst1e0tqoqeP%fengguang.wu@intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed, 13 Apr 2016 23:41:20 -0700
+Subject: [Intel-wired-lan] [PATCH v2 13/13] e1000e: fix misuse of
+ ret_val variable and error handling
+In-Reply-To: <1460588914-20143-14-git-send-email-jacob.e.keller@intel.com>
+References: <1460588914-20143-1-git-send-email-jacob.e.keller@intel.com>
+ <1460588914-20143-14-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1460616080.2960.53.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-315ef36f3472c1e1569420634e4db0a27b6e5921  ixgbe: use BIT() macro
+On Wed, 2016-04-13 at 16:08 -0700, Jacob Keller wrote:
+> A patch introduced the use of ret_val variable but only assigned it
+> once
+> and didn't use it. e1000_probe already has a rval variable, which is
+> what was checked, so remove use of ret_val in favor of rval.
+> 
+> Fixes: 7739e79c2ff7 ("e1000e: Fix ptp time reset on network
+> interruption", 2016-04-12)
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> ---
+> ?drivers/net/ethernet/intel/e1000e/netdev.c | 3 +--
+> ?1 file changed, 1 insertion(+), 2 deletions(-)
 
-elapsed time: 77m
-
-configs tested: 121
-
-i386                     randconfig-a0-201615
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64       allyesdebian+CONFIG_DEBUG_INFO_REDUCED
-x86_64                                nfsroot
-arm                            zeus_defconfig
-powerpc                      tqm8xx_defconfig
-xtensa                           alldefconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                 randconfig-x010-201615
-x86_64                 randconfig-x018-201615
-x86_64                 randconfig-x011-201615
-x86_64                 randconfig-x013-201615
-x86_64                 randconfig-x019-201615
-x86_64                 randconfig-x012-201615
-x86_64                 randconfig-x014-201615
-x86_64                 randconfig-x016-201615
-x86_64                 randconfig-x015-201615
-x86_64                 randconfig-x017-201615
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s1-201615
-i386                     randconfig-s0-201615
-x86_64                 randconfig-s3-04141136
-x86_64                 randconfig-s4-04141136
-x86_64                 randconfig-s5-04141136
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201615
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i1-201615
-i386                     randconfig-i0-201615
-x86_64                           allmodconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                              rhel_gcov
-i386                               tinyconfig
-i386                   randconfig-x012-201615
-i386                   randconfig-x013-201615
-i386                   randconfig-x015-201615
-i386                   randconfig-x019-201615
-i386                   randconfig-x011-201615
-i386                   randconfig-x018-201615
-i386                   randconfig-x010-201615
-i386                   randconfig-x016-201615
-i386                   randconfig-x017-201615
-i386                   randconfig-x014-201615
-i386                     randconfig-n0-201615
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                   rhel
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                  randconfig-sb0-04141028
-x86_64                 randconfig-x000-201615
-x86_64                 randconfig-x001-201615
-x86_64                 randconfig-x007-201615
-x86_64                 randconfig-x005-201615
-x86_64                 randconfig-x006-201615
-x86_64                 randconfig-x004-201615
-x86_64                 randconfig-x008-201615
-x86_64                 randconfig-x009-201615
-x86_64                 randconfig-x003-201615
-x86_64                 randconfig-x002-201615
-i386                     randconfig-r0-201615
-i386                             allmodconfig
-i386                   randconfig-x000-201615
-i386                   randconfig-x003-201615
-i386                   randconfig-x009-201615
-i386                   randconfig-x005-201615
-i386                   randconfig-x004-201615
-i386                   randconfig-x002-201615
-i386                   randconfig-x006-201615
-i386                   randconfig-x007-201615
-i386                   randconfig-x008-201615
-i386                   randconfig-x001-201615
-
-Thanks,
-Fengguang
+Dropped, because it does not apply.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160413/b77723b4/attachment-0001.asc>
