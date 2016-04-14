@@ -1,28 +1,34 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 14 Apr 2016 12:25:32 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- a4645fa00c3067a0aeaee3dc6dbcb85ec6b5e781 BUILD DONE
-Message-ID: <570f1bbc.sgt7Y+NekclTnUMX%fengguang.wu@intel.com>
+Date: Thu, 14 Apr 2016 12:25:34 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
+ dfb6cbf693536937fc49a7c5822dd39ef9d1a8e5 BUILD SUCCESS
+Message-ID: <570f1bbe.DsPteaOl006W+aU2%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-a4645fa00c3067a0aeaee3dc6dbcb85ec6b5e781  i40e/i40evf : Bump driver version from 1.5.5 to 1.5.10
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
+dfb6cbf693536937fc49a7c5822dd39ef9d1a8e5  Merge branch 'sctp-delayed-wakeups'
 
-drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:1548:4-17: code aligned with following code on line 1554
+i386-tinyconfig vmlinux size:
 
-Error ids grouped by kconfigs:
++-------+--------------+---------------------------------------------------------------------------+
+| DELTA |    SYMBOL    |                                  COMMIT                                   |
++-------+--------------+---------------------------------------------------------------------------+
+|  -214 | TOTAL        | 05cf8077e54b..dfb6cbf69353 (ALL COMMITS)                                  |
+|  -200 | TOTAL        | ae95d7126104 Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/ne |
+|  -125 | TEXT         | 05cf8077e54b..dfb6cbf69353 (ALL COMMITS)                                  |
+|  -108 | TEXT         | ae95d7126104 Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/ne |
+|   -92 | DATA         | ae95d7126104 Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/ne |
+|  -117 | init.text    | ae95d7126104 Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/ne |
+|  -131 | setup_arch() | ae95d7126104 Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/ne |
++-------+--------------+---------------------------------------------------------------------------+
 
-recent_errors
-??? i386-allmodconfig
-    ??? drivers-net-ethernet-intel-i40e-i40e_virtchnl_pf.c:code-aligned-with-following-code-on-line
+elapsed time: 48m
 
-elapsed time: 47m
-
-configs tested: 92
+configs tested: 103
 
 x86_64                             acpi-redef
 x86_64                           allyesdebian
@@ -71,6 +77,7 @@ openrisc                    or1ksim_defconfig
 tile                         tilegx_defconfig
 um                             i386_defconfig
 um                           x86_64_defconfig
+i386                               tinyconfig
 i386                             allmodconfig
 x86_64                   randconfig-i0-201615
 sparc                               defconfig
@@ -81,6 +88,16 @@ microblaze                    nommu_defconfig
 i386                     randconfig-i0-201615
 i386                     randconfig-i1-201615
 x86_64                              rhel_gcov
+i386                   randconfig-x012-201615
+i386                   randconfig-x013-201615
+i386                   randconfig-x015-201615
+i386                   randconfig-x019-201615
+i386                   randconfig-x011-201615
+i386                   randconfig-x018-201615
+i386                   randconfig-x010-201615
+i386                   randconfig-x016-201615
+i386                   randconfig-x017-201615
+i386                   randconfig-x014-201615
 i386                     randconfig-n0-201615
 ia64                             alldefconfig
 ia64                              allnoconfig
