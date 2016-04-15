@@ -1,39 +1,66 @@
 From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Fri, 15 Apr 2016 22:20:53 +0000
-Subject: [Intel-wired-lan] [PATCH v1 1/4] fm10k: fix possible null
- pointer deref after kcalloc
-In-Reply-To: <1460042483-16169-1-git-send-email-jacob.e.keller@intel.com>
-References: <1460042483-16169-1-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <1460758853.13811.8.camel@intel.com>
+Date: Fri, 15 Apr 2016 22:29:12 +0000
+Subject: [Intel-wired-lan] [PATCH v2] e1000e: don't modify SYSTIM
+ registers during SIOCSHWTSTAMP ioctl
+In-Reply-To: <20160415213655.28072-1-jacob.e.keller@intel.com>
+References: <20160415213655.28072-1-jacob.e.keller@intel.com>
+Message-ID: <1460759352.13811.9.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 2016-04-07 at 08:21 -0700, Jacob Keller wrote:
-> When writing a new default redirection table, we needed to populate
-> a new RSS table using ethtool_rxfh_indir_default. We populated this
-> table into a region of memory allocated using kcalloc, but never
-> checked
-> this for NULL. Fix this by moving the default table generation into
-> fm10k_write_reta. If this function is passed a table, use it.
-> Otherwise,
-> generate the default table using ethtool_rxfh_indir_default, 4 at at
-> time.
+On Fri, 2016-04-15 at 14:36 -0700, Jacob Keller wrote:
+> The e1000e_config_hwtstamp function was incorrectly resetting the
+> SYSTIM
+> registers every time the ioctl was being run. If you happened to be
+> running ptp4l and lost the PTP connect (removing cable, or blocking
+> the
+> UDP traffic for example), then ptp4l will eventually perform a
+> restart
+> which involves re-requesting timestamp settings. In e1000e this has
+> the
+> unfortunate and incorrect result of resetting SYSTIME to the kernel
+> time. Since kernel time is usually in UTC, and PTP time is in TAI,
+> this
+> results in the leap second being re-applied.
 > 
-> Fixes: 0ea7fae44094 ("fm10k: use ethtool_rxfh_indir_default for
-> default redirection table", 2016-02-16)
+> Fix this by extracting the SYSTIME reset out into its own function,
+> e1000e_ptp_reset, which we call during reset to restore the hardware
+> registers. This function will (a) restart the timecounter based on
+> the
+> new system time, (b) restore the previous PPB setting, and (c)
+> restore
+> the previous hwtstamp settings.
+> 
+> In order to perform (b), I had to modify the adjfreq ptp function
+> pointer to store the old delta each time it is called. This also has
+> the
+> side effect of restoring the correct base timinca register correctly.
+> The driver does not need to explicitly zero the ptp_delta variable
+> since
+> the entire adapter structure comes zero-initialized.
+> 
+> Reported-by: Brian Walsh <brian@walsh.ws>
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
+> 
+> Notes:
+> ????This patch conflicts with Brian's "e1000e fix ptp time reset on
+> newtork
+> ????interruption", and that patch MUST be removed from the queue
+> before applying
+> ????this one.
+> ????
+> ????- Changes since v2
+> ????* move e1000e_init_ptp prior to reset so that PTP clock is
+> created first
+> ????* handle NULL ptp_clock_info gracefully.
 
 
-Jeff,
+This has an obvious mistake. Sorry for the thrash, I'll have a v3 soon.
+(with more testing, since I was in a hurry and it bit me)
 
-This patch has an issue I will be sending a reworked version, so please
-drop this from the queue and don't submit it to net-next yet.
-
-Thanks Krishniel for finding the issue!
-
-Thanks,
+Regards,
 Jake
