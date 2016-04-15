@@ -1,50 +1,39 @@
 From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Fri, 15 Apr 2016 22:16:25 +0000
-Subject: [Intel-wired-lan] [PATCH v2] e1000e: don't modify SYSTIM
- registers during SIOCSHWTSTAMP ioctl
-In-Reply-To: <20160415220913.GA28644@hobbes.lan20.walshnetwork.net>
-References: <20160415213655.28072-1-jacob.e.keller@intel.com>
- <20160415220913.GA28644@hobbes.lan20.walshnetwork.net>
-Message-ID: <1460758585.13811.7.camel@intel.com>
+Date: Fri, 15 Apr 2016 22:20:53 +0000
+Subject: [Intel-wired-lan] [PATCH v1 1/4] fm10k: fix possible null
+ pointer deref after kcalloc
+In-Reply-To: <1460042483-16169-1-git-send-email-jacob.e.keller@intel.com>
+References: <1460042483-16169-1-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <1460758853.13811.8.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2016-04-15 at 18:09 -0400, Brian Walsh wrote:
-> On Fri, Apr 15, 2016 at 02:36:55PM -0700, Jacob Keller wrote:
-> > 
-> > +
-> > +	if (adapter->ptp_clock_info) {
-> > +		/* restore the previous ptp frequency delta */
-> > +		ret_val = adapter-
-> > >ptp_clock_info.adjfreq(&adapter->ptp_clock_info,
-> > +							??adapter-
-> > >ptp_delta);
-> > +		if (ret_val)
-> > +			dev_warn(&adapter->pdev->dev,
-> > +				?"Failed to restore TIMINCA clock
-> > rate delta: %d\n",
-> > +				?ret_val);
-> > +	else {
-> > +		ret_val = e1000e_get_base_timinca(adapter,
-> > &timinca);
-> > +		if (ret_val)
-> > +			dev_warn(&adapter->pdev->dev,
-> > +				?"Failed to set default TIMINCA
-> > clock rate: %d\n",
-> > +				?ret_val);
-> > +		else
-> > +			ew32(TIMINCA, timinca);
-> > +	}
-> Can't do a boolean check on a struct ptp_clock_info.
+On Thu, 2016-04-07 at 08:21 -0700, Jacob Keller wrote:
+> When writing a new default redirection table, we needed to populate
+> a new RSS table using ethtool_rxfh_indir_default. We populated this
+> table into a region of memory allocated using kcalloc, but never
+> checked
+> this for NULL. Fix this by moving the default table generation into
+> fm10k_write_reta. If this function is passed a table, use it.
+> Otherwise,
+> generate the default table using ethtool_rxfh_indir_default, 4 at at
+> time.
 > 
-> Testing the patch without the handle NULL ptp_clock_info change.
-> 
+> Fixes: 0ea7fae44094 ("fm10k: use ethtool_rxfh_indir_default for
+> default redirection table", 2016-02-16)
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> ---
 
-Oops you're right it's not a pointer... Hmm I was thinking of
-ptp_clock. I'll think that through a bit more.
+
+Jeff,
+
+This patch has an issue I will be sending a reworked version, so please
+drop this from the queue and don't submit it to net-next yet.
+
+Thanks Krishniel for finding the issue!
 
 Thanks,
 Jake
