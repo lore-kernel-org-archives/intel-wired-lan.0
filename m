@@ -1,55 +1,83 @@
-From: Samudrala, Sridhar <sridhar.samudrala@intel.com>
-Date: Thu, 14 Apr 2016 16:51:40 -0700
-Subject: [Intel-wired-lan] [PATCH] [v3,
- next-queue] net: ixgbe: Match on multiple headers for cls_u32
- offloads
-In-Reply-To: <20160414230853.2148.85740.stgit@sdncamp.jf.intel.com>
-References: <20160414230853.2148.85740.stgit@sdncamp.jf.intel.com>
-Message-ID: <57102D0C.5090103@intel.com>
+From: Rustad, Mark D <mark.d.rustad@intel.com>
+Date: Fri, 15 Apr 2016 00:19:09 +0000
+Subject: [Intel-wired-lan] [PATCH net-next 2/2] intel: ixgbevf: Support
+ Windows hosts (Hyper-V)
+In-Reply-To: <SN2PR03MB19196E84DF934294DE7BB739A0680@SN2PR03MB1919.namprd03.prod.outlook.com>
+References: <1460678121-30308-1-git-send-email-kys@microsoft.com>
+ <1460678142-30353-1-git-send-email-kys@microsoft.com>
+ <1460678142-30353-2-git-send-email-kys@microsoft.com>
+ <5F69AC74-16B9-4EAD-8B4B-21D2EB6B3653@intel.com>
+ <SN2PR03MB1919133D2E9B5DDBC2AED643A0680@SN2PR03MB1919.namprd03.prod.outlook.com>
+ <DA0F5562-FC38-4037-B018-42116DD142E8@intel.com>
+ <SN2PR03MB19196E84DF934294DE7BB739A0680@SN2PR03MB1919.namprd03.prod.outlook.com>
+Message-ID: <5927A4E8-E3FF-4C79-9B5A-6656183CDCA8@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 4/14/2016 4:08 PM, Amritha Nambiar wrote:
-> Adds support to set filters with multiple header fields (L3,L4)to match on.
-> This is achieved in the following order:
-> 1. Create a leaf hash table for the next header.
-> 2. Create a link to the leaf hash table from the base hash table with
->     matches on next header type and current header fields.
-> 3. Add filter in leaf hash table with match on next header fields and
->     action.
->
-> Verified with the following filters :
->
-> Match TCP and DIP:
-> # tc qdisc add dev enp9s0f0 ingress
-> # tc filter add dev enp9s0f0 parent ffff: protocol ip prio 99 \
->          handle 1: u32 divisor 1
-> # tc filter add dev enp9s0f0 protocol ip parent ffff: prio 99 \
->          u32 ht 800: order 1 link 1: \
->          offset at 0 mask 0f00 shift 6 plus 0 eat \
->          match ip protocol 6 ff match ip dst 10.0.0.1/32
-> # tc filter add dev enp9s0f0 parent ffff: protocol ip u32 ht 1: order 1 \
->          match tcp src 28 ffff action drop
->
-> Delete the filter:
-> # tc filter del dev enp9s0f0 parent ffff: prio 99 handle 1:0:1 u32
->
-> Match on DIP, SIP, UDP (SPort, DPort):
-> # tc filter add dev enp9s0f0 parent ffff: protocol ip prio 99 \
->          handle 2: u32 divisor 1
-> # tc filter add dev enp9s0f0 protocol ip parent ffff: prio 99 \
->          u32 ht 800: order 2 link 2: \
->          offset at 0 mask 0f00 shift 6 plus 0 eat \
->          match ip dst 15.0.0.2/32 match ip protocol 17 ff \
->          match ip src 15.0.0.1/32
-> # tc filter add dev enp9s0f0 parent ffff: protocol ip u32 ht 2: order 2 \
->          match udp src 30 ffff match udp dst 32 ffff action drop
->
-> Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
+KY Srinivasan <kys@microsoft.com> wrote:
 
-Acked-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+>
+>
+>> -----Original Message-----
+>> From: Rustad, Mark D [mailto:mark.d.rustad at intel.com]
+>> Sent: Thursday, April 14, 2016 5:07 PM
+>> To: KY Srinivasan <kys@microsoft.com>
+>> Cc: David Miller <davem@davemloft.net>; netdev
+>> <netdev@vger.kernel.org>; linux-kernel at vger.kernel.org;
+>> devel at linuxdriverproject.org; olaf at aepfle.de; apw at canonical.com;
+>> jasowang at redhat.com; eli at mellanox.com; jackm at mellanox.com;
+>> yevgenyp at mellanox.com; Ronciak, John <john.ronciak@intel.com>; intel-
+>> wired-lan at linuxonhyperv.com
+>> Subject: Re: [PATCH net-next 2/2] intel: ixgbevf: Support Windows hosts
+>> (Hyper-V)
+>>
+>> KY Srinivasan <kys@microsoft.com> wrote:
+>>
+>>>> -----Original Message-----
+>>>> From: Rustad, Mark D [mailto:mark.d.rustad at intel.com]
+>>>> Sent: Thursday, April 14, 2016 4:01 PM
+>>>> To: KY Srinivasan <kys@microsoft.com>
+>>>> Cc: David Miller <davem@davemloft.net>; netdev
+>>>> <netdev@vger.kernel.org>; linux-kernel at vger.kernel.org;
+>>>> devel at linuxdriverproject.org; olaf at aepfle.de; apw at canonical.com;
+>>>> jasowang at redhat.com; eli at mellanox.com; jackm at mellanox.com;
+>>>> yevgenyp at mellanox.com; Ronciak, John <john.ronciak@intel.com>;
+>> intel-
+>>>> wired-lan at linuxonhyperv.com
+>>>> Subject: Re: [PATCH net-next 2/2] intel: ixgbevf: Support Windows hosts
+>>>> (Hyper-V)
+>>>>
+>>>> Some comments below:
+>>>
+>>> Mark,
+>>>
+>>> Thank you for the comments. I will address them and repost the patches.
+>>>
+>>> Regards,
+>>>
+>>> K. Y
+>>
+>> Please look closely at Alex's comments. I think they are much more
+>> important.
+>
+> I am looking at Alex's comments as I am writing this.
+>
+> K. Y
+>> --
+>> Mark Rustad, Networking Division, Intel Corporation
 
-<snip>
+Can you please stop putting that crazy intel-wired-lan at linuxonhyperv.com in  
+your messages? It doesn't exist.
+
+--
+Mark Rustad, Networking Division, Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 841 bytes
+Desc: Message signed with OpenPGP using GPGMail
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160415/1af23b43/attachment.asc>
