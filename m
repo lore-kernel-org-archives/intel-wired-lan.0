@@ -1,10 +1,10 @@
 From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-Date: Mon, 18 Apr 2016 01:31:54 -0700
-Subject: [Intel-wired-lan] [v2 next PATCH S35 4/9] i40e: Refactor receive
+Date: Mon, 18 Apr 2016 01:31:56 -0700
+Subject: [Intel-wired-lan] [v2 next PATCH S35 6/9] i40evf: refactor receive
 	routine
 In-Reply-To: <1460968319-18950-1-git-send-email-harshitha.ramamurthy@intel.com>
 References: <1460968319-18950-1-git-send-email-harshitha.ramamurthy@intel.com>
-Message-ID: <1460968319-18950-5-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <1460968319-18950-7-git-send-email-harshitha.ramamurthy@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,8 +13,8 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 
-This is part 1 of the rx refactor series, just including
-changes to i40e.
+This is part 2 of the rx refactor series, just including
+changes to i40evf.
 
 This refactor aligns the receive routine with the one in
 ixgbe which was highly optimized.  This reduces the code
@@ -26,148 +26,31 @@ In order to do this:
   use packet split but *does* use pages for rx buffers.
 - remove the old _1buf and _ps routines
 - consolidate several routines into helper functions
-- remove ethtool control over packet split
 - remove VF ethtool control over packet split
+- remove priv_flags interface since it is unused
 
 Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Change-ID: I5ca100721de65992aa0114f8b4bac844b84758e0
 ---
- drivers/net/ethernet/intel/i40e/i40e.h         |   1 -
- drivers/net/ethernet/intel/i40e/i40e_debugfs.c |   9 +-
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c |   1 -
- drivers/net/ethernet/intel/i40e/i40e_main.c    |  16 +-
- drivers/net/ethernet/intel/i40e/i40e_txrx.c    | 772 ++++++++++++++++---------
- drivers/net/ethernet/intel/i40e/i40e_txrx.h    |  37 +-
- 6 files changed, 532 insertions(+), 304 deletions(-)
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c      | 898 +++++++++++----------
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.h      |  37 +-
+ drivers/net/ethernet/intel/i40evf/i40evf.h         |   5 -
+ drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c |  51 --
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    |   3 +-
+ 5 files changed, 481 insertions(+), 513 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 2a3334e..581694a 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -546,7 +546,6 @@ struct i40e_vsi {
- 	u8  *rss_lut_user;  /* User configured lookup table entries */
- 
- 	u16 max_frame;
--	u16 rx_hdr_len;
- 	u16 rx_buf_len;
- 	u8  dtype;
- 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-index c0a01e0..8ae30f7 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-@@ -268,9 +268,8 @@ static void i40e_dbg_dump_vsi_seid(struct i40e_pf *pf, int seid)
- 			 rx_ring->queue_index,
- 			 rx_ring->reg_idx);
- 		dev_info(&pf->pdev->dev,
--			 "    rx_rings[%i]: rx_hdr_len = %d, rx_buf_len = %d\n",
--			 i, rx_ring->rx_hdr_len,
--			 rx_ring->rx_buf_len);
-+			 "    rx_rings[%i]: rx_buf_len = %d\n",
-+			 i, rx_ring->rx_buf_len);
- 		dev_info(&pf->pdev->dev,
- 			 "    rx_rings[%i]: next_to_use = %d, next_to_clean = %d, ring_active = %i\n",
- 			 i,
-@@ -361,8 +360,8 @@ static void i40e_dbg_dump_vsi_seid(struct i40e_pf *pf, int seid)
- 		 "    work_limit = %d\n",
- 		 vsi->work_limit);
- 	dev_info(&pf->pdev->dev,
--		 "    max_frame = %d, rx_hdr_len = %d, rx_buf_len = %d dtype = %d\n",
--		 vsi->max_frame, vsi->rx_hdr_len, vsi->rx_buf_len, vsi->dtype);
-+		 "    max_frame = %d, rx_buf_len = %d dtype = %d\n",
-+		 vsi->max_frame, vsi->rx_buf_len, vsi->dtype);
- 	dev_info(&pf->pdev->dev,
- 		 "    num_q_vectors = %i, base_vector = %i\n",
- 		 vsi->num_q_vectors, vsi->base_vector);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 7929d97..36aa186 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -235,7 +235,6 @@ static const char i40e_priv_flags_strings[][ETH_GSTRING_LEN] = {
- 	"LinkPolling",
- 	"flow-director-atr",
- 	"veb-stats",
--	"packet-split",
- 	"hw-atr-eviction",
- };
- 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 9223aec..4649433f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -2855,10 +2855,8 @@ static int i40e_configure_rx_ring(struct i40e_ring *ring)
- 	memset(&rx_ctx, 0, sizeof(rx_ctx));
- 
- 	ring->rx_buf_len = vsi->rx_buf_len;
--	ring->rx_hdr_len = vsi->rx_hdr_len;
- 
- 	rx_ctx.dbuff = ring->rx_buf_len >> I40E_RXQ_CTX_DBUFF_SHIFT;
--	rx_ctx.hbuff = ring->rx_hdr_len >> I40E_RXQ_CTX_HBUFF_SHIFT;
- 
- 	rx_ctx.base = (ring->dma / 128);
- 	rx_ctx.qlen = ring->count;
-@@ -2910,7 +2908,7 @@ static int i40e_configure_rx_ring(struct i40e_ring *ring)
- 	ring->tail = hw->hw_addr + I40E_QRX_TAIL(pf_q);
- 	writel(0, ring->tail);
- 
--	i40e_alloc_rx_buffers_1buf(ring, I40E_DESC_UNUSED(ring));
-+	i40e_alloc_rx_buffers(ring, I40E_DESC_UNUSED(ring));
- 
- 	return 0;
- }
-@@ -2949,15 +2947,13 @@ static int i40e_vsi_configure_rx(struct i40e_vsi *vsi)
- 	else
- 		vsi->max_frame = I40E_RXBUFFER_2048;
- 
--	vsi->rx_hdr_len = 0;
--	vsi->rx_buf_len = vsi->max_frame;
-+	vsi->rx_buf_len = I40E_RXBUFFER_2048;
- 	vsi->dtype = I40E_RX_DTYPE_NO_SPLIT;
- 
- #ifdef I40E_FCOE
- 	/* setup rx buffer for FCoE */
- 	if ((vsi->type == I40E_VSI_FCOE) &&
- 	    (vsi->back->flags & I40E_FLAG_FCOE_ENABLED)) {
--		vsi->rx_hdr_len = 0;
- 		vsi->rx_buf_len = I40E_RXBUFFER_3072;
- 		vsi->max_frame = I40E_RXBUFFER_3072;
- 		vsi->dtype = I40E_RX_DTYPE_NO_SPLIT;
-@@ -2965,8 +2961,6 @@ static int i40e_vsi_configure_rx(struct i40e_vsi *vsi)
- 
- #endif /* I40E_FCOE */
- 	/* round up for the chip's needs */
--	vsi->rx_hdr_len = ALIGN(vsi->rx_hdr_len,
--				BIT_ULL(I40E_RXQ_CTX_HBUFF_SHIFT));
- 	vsi->rx_buf_len = ALIGN(vsi->rx_buf_len,
- 				BIT_ULL(I40E_RXQ_CTX_DBUFF_SHIFT));
- 
-@@ -10655,11 +10649,9 @@ static void i40e_print_features(struct i40e_pf *pf)
- #ifdef CONFIG_PCI_IOV
- 	i += snprintf(&buf[i], REMAIN(i), " VFs: %d", pf->num_req_vfs);
- #endif
--	i += snprintf(&buf[i], REMAIN(i), " VSIs: %d QP: %d RX: %s",
-+	i += snprintf(&buf[i], REMAIN(i), " VSIs: %d QP: %d",
- 		      pf->hw.func_caps.num_vsis,
--		      pf->vsi[pf->lan_vsi]->num_queue_pairs,
--		      "1BUF");
--
-+		      pf->vsi[pf->lan_vsi]->num_queue_pairs);
- 	if (pf->flags & I40E_FLAG_RSS_ENABLED)
- 		i += snprintf(&buf[i], REMAIN(i), " RSS");
- 	if (pf->flags & I40E_FLAG_FD_ATR_ENABLED)
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index c4cccd6..069f766 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -1042,7 +1042,6 @@ err:
- void i40e_clean_rx_ring(struct i40e_ring *rx_ring)
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index f0a76f5..b57a54c 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -496,7 +496,6 @@ err:
+ void i40evf_clean_rx_ring(struct i40e_ring *rx_ring)
  {
  	struct device *dev = rx_ring->dev;
 -	struct i40e_rx_buffer *rx_bi;
  	unsigned long bi_size;
  	u16 i;
  
-@@ -1052,30 +1051,20 @@ void i40e_clean_rx_ring(struct i40e_ring *rx_ring)
+@@ -506,30 +505,20 @@ void i40evf_clean_rx_ring(struct i40e_ring *rx_ring)
  
  	/* Free all the Rx ring sk_buffs */
  	for (i = 0; i < rx_ring->count; i++) {
@@ -208,7 +91,7 @@ index c4cccd6..069f766 100644
  	}
  
  	bi_size = sizeof(struct i40e_rx_buffer) * rx_ring->count;
-@@ -1084,6 +1073,7 @@ void i40e_clean_rx_ring(struct i40e_ring *rx_ring)
+@@ -538,6 +527,7 @@ void i40evf_clean_rx_ring(struct i40e_ring *rx_ring)
  	/* Zero out the descriptor ring */
  	memset(rx_ring->desc, 0, rx_ring->size);
  
@@ -216,17 +99,17 @@ index c4cccd6..069f766 100644
  	rx_ring->next_to_clean = 0;
  	rx_ring->next_to_use = 0;
  }
-@@ -1108,37 +1098,6 @@ void i40e_free_rx_resources(struct i40e_ring *rx_ring)
+@@ -562,37 +552,6 @@ void i40evf_free_rx_resources(struct i40e_ring *rx_ring)
  }
  
  /**
-- * i40e_alloc_rx_headers - allocate rx header buffers
+- * i40evf_alloc_rx_headers - allocate rx header buffers
 - * @rx_ring: ring to alloc buffers
 - *
 - * Allocate rx header buffers for the entire ring. As these are static,
 - * this is only called when setting up a new ring.
 - **/
--void i40e_alloc_rx_headers(struct i40e_ring *rx_ring)
+-void i40evf_alloc_rx_headers(struct i40e_ring *rx_ring)
 -{
 -	struct device *dev = rx_ring->dev;
 -	struct i40e_rx_buffer *rx_bi;
@@ -251,10 +134,10 @@ index c4cccd6..069f766 100644
 -}
 -
 -/**
-  * i40e_setup_rx_descriptors - Allocate Rx descriptors
+  * i40evf_setup_rx_descriptors - Allocate Rx descriptors
   * @rx_ring: Rx descriptor ring (for a specific queue) to setup
   *
-@@ -1159,9 +1118,7 @@ int i40e_setup_rx_descriptors(struct i40e_ring *rx_ring)
+@@ -613,9 +572,7 @@ int i40evf_setup_rx_descriptors(struct i40e_ring *rx_ring)
  	u64_stats_init(&rx_ring->syncp);
  
  	/* Round up to nearest 4K */
@@ -265,7 +148,7 @@ index c4cccd6..069f766 100644
  	rx_ring->size = ALIGN(rx_ring->size, 4096);
  	rx_ring->desc = dma_alloc_coherent(dev, rx_ring->size,
  					   &rx_ring->dma, GFP_KERNEL);
-@@ -1172,6 +1129,7 @@ int i40e_setup_rx_descriptors(struct i40e_ring *rx_ring)
+@@ -626,6 +583,7 @@ int i40evf_setup_rx_descriptors(struct i40e_ring *rx_ring)
  		goto err;
  	}
  
@@ -273,7 +156,7 @@ index c4cccd6..069f766 100644
  	rx_ring->next_to_clean = 0;
  	rx_ring->next_to_use = 0;
  
-@@ -1190,6 +1148,10 @@ err:
+@@ -644,6 +602,10 @@ err:
  static inline void i40e_release_rx_desc(struct i40e_ring *rx_ring, u32 val)
  {
  	rx_ring->next_to_use = val;
@@ -284,11 +167,11 @@ index c4cccd6..069f766 100644
  	/* Force memory writes to complete before letting h/w
  	 * know there are new descriptors to fetch.  (Only
  	 * applicable for weak-ordered memory model archs,
-@@ -1200,160 +1162,122 @@ static inline void i40e_release_rx_desc(struct i40e_ring *rx_ring, u32 val)
+@@ -654,160 +616,122 @@ static inline void i40e_release_rx_desc(struct i40e_ring *rx_ring, u32 val)
  }
  
  /**
-- * i40e_alloc_rx_buffers_ps - Replace used receive buffers; packet split
+- * i40evf_alloc_rx_buffers_ps - Replace used receive buffers; packet split
 - * @rx_ring: ring to place buffers on
 - * @cleaned_count: number of buffers to replace
 + * i40e_alloc_mapped_page - recycle or make a new page
@@ -299,7 +182,7 @@ index c4cccd6..069f766 100644
 + * Returns true if the page was successfully allocated or
 + * reused.
   **/
--bool i40e_alloc_rx_buffers_ps(struct i40e_ring *rx_ring, u16 cleaned_count)
+-bool i40evf_alloc_rx_buffers_ps(struct i40e_ring *rx_ring, u16 cleaned_count)
 +static bool i40e_alloc_mapped_page(struct i40e_ring *rx_ring,
 +				   struct i40e_rx_buffer *bi)
  {
@@ -425,16 +308,16 @@ index c4cccd6..069f766 100644
  }
  
  /**
-- * i40e_alloc_rx_buffers_1buf - Replace used receive buffers; single buffer
-+ * i40e_alloc_rx_buffers - Replace used receive buffers
+- * i40evf_alloc_rx_buffers_1buf - Replace used receive buffers; single buffer
++ * i40evf_alloc_rx_buffers - Replace used receive buffers
   * @rx_ring: ring to place buffers on
   * @cleaned_count: number of buffers to replace
   *
 - * Returns true if any errors on allocation
 + * Returns false if all allocations were successful, true if any fail
   **/
--bool i40e_alloc_rx_buffers_1buf(struct i40e_ring *rx_ring, u16 cleaned_count)
-+bool i40e_alloc_rx_buffers(struct i40e_ring *rx_ring, u16 cleaned_count)
+-bool i40evf_alloc_rx_buffers_1buf(struct i40e_ring *rx_ring, u16 cleaned_count)
++bool i40evf_alloc_rx_buffers(struct i40e_ring *rx_ring, u16 cleaned_count)
  {
 -	u16 i = rx_ring->next_to_use;
 +	u16 ntu = rx_ring->next_to_use;
@@ -525,7 +408,7 @@ index c4cccd6..069f766 100644
  
  	/* make sure to come back via polling to try again after
  	 * allocation failure
-@@ -1362,42 +1286,35 @@ no_buffers:
+@@ -816,42 +740,35 @@ no_buffers:
  }
  
  /**
@@ -586,7 +469,7 @@ index c4cccd6..069f766 100644
  	/* Rx csum enabled and ip headers found? */
  	if (!(vsi->netdev->features & NETIF_F_RXCSUM))
  		return;
-@@ -1463,7 +1380,7 @@ checksum_fail:
+@@ -917,7 +834,7 @@ checksum_fail:
   *
   * Returns a hash type to be used by skb_set_hash
   **/
@@ -595,7 +478,7 @@ index c4cccd6..069f766 100644
  {
  	struct i40e_rx_ptype_decoded decoded = decode_rx_desc_ptype(ptype);
  
-@@ -1491,7 +1408,7 @@ static inline void i40e_rx_hash(struct i40e_ring *ring,
+@@ -945,7 +862,7 @@ static inline void i40e_rx_hash(struct i40e_ring *ring,
  				u8 rx_ptype)
  {
  	u32 hash;
@@ -604,49 +487,67 @@ index c4cccd6..069f766 100644
  		cpu_to_le64((u64)I40E_RX_DESC_FLTSTAT_RSS_HASH <<
  			    I40E_RX_DESC_STATUS_FLTSTAT_SHIFT);
  
-@@ -1505,114 +1422,419 @@ static inline void i40e_rx_hash(struct i40e_ring *ring,
+@@ -959,315 +876,411 @@ static inline void i40e_rx_hash(struct i40e_ring *ring,
  }
  
  /**
-- * i40e_clean_rx_irq_1buf - Reclaim resources after receive; single buffer
+- * i40e_clean_rx_irq_ps - Reclaim resources after receive; packet split
 - * @rx_ring:  rx ring to clean
 - * @budget:   how many cleans we're allowed
-+ * i40e_process_skb_fields - Populate skb header fields from Rx descriptor
++ * i40evf_process_skb_fields - Populate skb header fields from Rx descriptor
 + * @rx_ring: rx descriptor ring packet is being transacted on
 + * @rx_desc: pointer to the EOP Rx descriptor
 + * @skb: pointer to current skb being populated
 + * @rx_ptype: the packet type decoded by hardware
   *
-- * Returns number of packets cleaned
+- * Returns true if there's any budget left (e.g. the clean is finished)
 + * This function checks the ring, descriptor, and packet information in
 + * order to populate the hash, checksum, VLAN, protocol, and
 + * other fields within the skb.
   **/
--static int i40e_clean_rx_irq_1buf(struct i40e_ring *rx_ring, int budget)
+-static int i40e_clean_rx_irq_ps(struct i40e_ring *rx_ring, const int budget)
 +static inline
-+void i40e_process_skb_fields(struct i40e_ring *rx_ring,
-+			     union i40e_rx_desc *rx_desc, struct sk_buff *skb,
-+			     u8 rx_ptype)
-+{
-+	u64 qword = le64_to_cpu(rx_desc->wb.qword1.status_error_len);
-+	u32 rx_status = (qword & I40E_RXD_QW1_STATUS_MASK) >>
-+			I40E_RXD_QW1_STATUS_SHIFT;
-+	u32 rsyn = (rx_status & I40E_RXD_QW1_STATUS_TSYNINDX_MASK) >>
-+		   I40E_RXD_QW1_STATUS_TSYNINDX_SHIFT;
-+
-+	if (unlikely(rsyn)) {
-+		i40e_ptp_rx_hwtstamp(rx_ring->vsi->back, skb, rsyn);
-+		rx_ring->last_rx_timestamp = jiffies;
-+	}
-+
++void i40evf_process_skb_fields(struct i40e_ring *rx_ring,
++			       union i40e_rx_desc *rx_desc, struct sk_buff *skb,
++			       u8 rx_ptype)
+ {
+-	unsigned int total_rx_bytes = 0, total_rx_packets = 0;
+-	u16 rx_packet_len, rx_header_len, rx_sph, rx_hbo;
+-	u16 cleaned_count = I40E_DESC_UNUSED(rx_ring);
+-	struct i40e_vsi *vsi = rx_ring->vsi;
+-	u16 i = rx_ring->next_to_clean;
+-	union i40e_rx_desc *rx_desc;
+-	u32 rx_error, rx_status;
+-	bool failure = false;
+-	u8 rx_ptype;
+-	u64 qword;
+-	u32 copysize;
 +	i40e_rx_hash(rx_ring, rx_desc, skb, rx_ptype);
-+
+ 
+-	do {
+-		struct i40e_rx_buffer *rx_bi;
+-		struct sk_buff *skb;
+-		u16 vlan_tag;
+-		/* return some buffers to hardware, one at a time is too slow */
+-		if (cleaned_count >= I40E_RX_BUFFER_WRITE) {
+-			failure = failure ||
+-				  i40evf_alloc_rx_buffers_ps(rx_ring,
+-							     cleaned_count);
+-			cleaned_count = 0;
+-		}
 +	/* modifies the skb - consumes the enet header */
 +	skb->protocol = eth_type_trans(skb, rx_ring->netdev);
-+
+ 
+-		i = rx_ring->next_to_clean;
+-		rx_desc = I40E_RX_DESC(rx_ring, i);
+-		qword = le64_to_cpu(rx_desc->wb.qword1.status_error_len);
+-		rx_status = (qword & I40E_RXD_QW1_STATUS_MASK) >>
+-			I40E_RXD_QW1_STATUS_SHIFT;
 +	i40e_rx_checksum(rx_ring->vsi, skb, rx_desc);
 +}
-+
+ 
+-		if (!(rx_status & BIT(I40E_RX_DESC_STATUS_DD_SHIFT)))
+-			break;
 +/**
 + * i40e_pull_tail - i40e specific version of skb_pull_tail
 + * @rx_ring: rx descriptor ring packet is being transacted on
@@ -664,28 +565,141 @@ index c4cccd6..069f766 100644
 +	struct skb_frag_struct *frag = &skb_shinfo(skb)->frags[0];
 +	unsigned char *va;
 +	unsigned int pull_len;
-+
+ 
+-		/* This memory barrier is needed to keep us from reading
+-		 * any other fields out of the rx_desc until we know the
+-		 * DD bit is set.
+-		 */
+-		dma_rmb();
+-		/* sync header buffer for reading */
+-		dma_sync_single_range_for_cpu(rx_ring->dev,
+-					      rx_ring->rx_bi[0].dma,
+-					      i * rx_ring->rx_hdr_len,
+-					      rx_ring->rx_hdr_len,
+-					      DMA_FROM_DEVICE);
+-		rx_bi = &rx_ring->rx_bi[i];
+-		skb = rx_bi->skb;
+-		if (likely(!skb)) {
+-			skb = __netdev_alloc_skb_ip_align(rx_ring->netdev,
+-							  rx_ring->rx_hdr_len,
+-							  GFP_ATOMIC |
+-							  __GFP_NOWARN);
+-			if (!skb) {
+-				rx_ring->rx_stats.alloc_buff_failed++;
+-				failure = true;
+-				break;
+-			}
 +	/* it is valid to use page_address instead of kmap since we are
 +	 * working with pages allocated out of the lomem pool per
 +	 * alloc_page(GFP_ATOMIC)
 +	 */
 +	va = skb_frag_address(frag);
-+
+ 
+-			/* initialize queue mapping */
+-			skb_record_rx_queue(skb, rx_ring->queue_index);
+-			/* we are reusing so sync this buffer for CPU use */
+-			dma_sync_single_range_for_cpu(rx_ring->dev,
+-						      rx_ring->rx_bi[0].dma,
+-						      i * rx_ring->rx_hdr_len,
+-						      rx_ring->rx_hdr_len,
+-						      DMA_FROM_DEVICE);
+-		}
+-		rx_packet_len = (qword & I40E_RXD_QW1_LENGTH_PBUF_MASK) >>
+-				I40E_RXD_QW1_LENGTH_PBUF_SHIFT;
+-		rx_header_len = (qword & I40E_RXD_QW1_LENGTH_HBUF_MASK) >>
+-				I40E_RXD_QW1_LENGTH_HBUF_SHIFT;
+-		rx_sph = (qword & I40E_RXD_QW1_LENGTH_SPH_MASK) >>
+-			 I40E_RXD_QW1_LENGTH_SPH_SHIFT;
+-
+-		rx_error = (qword & I40E_RXD_QW1_ERROR_MASK) >>
+-			   I40E_RXD_QW1_ERROR_SHIFT;
+-		rx_hbo = rx_error & BIT(I40E_RX_DESC_ERROR_HBO_SHIFT);
+-		rx_error &= ~BIT(I40E_RX_DESC_ERROR_HBO_SHIFT);
 +	/* we need the header to contain the greater of either ETH_HLEN or
 +	 * 60 bytes if the skb->len is less than 60 for skb_pad.
 +	 */
 +	pull_len = eth_get_headlen(va, I40E_RX_HDR_SIZE);
-+
+ 
+-		rx_ptype = (qword & I40E_RXD_QW1_PTYPE_MASK) >>
+-			   I40E_RXD_QW1_PTYPE_SHIFT;
+-		/* sync half-page for reading */
+-		dma_sync_single_range_for_cpu(rx_ring->dev,
+-					      rx_bi->page_dma,
+-					      rx_bi->page_offset,
+-					      PAGE_SIZE / 2,
+-					      DMA_FROM_DEVICE);
+-		prefetch(page_address(rx_bi->page) + rx_bi->page_offset);
+-		rx_bi->skb = NULL;
+-		cleaned_count++;
+-		copysize = 0;
+-		if (rx_hbo || rx_sph) {
+-			int len;
+-
+-			if (rx_hbo)
+-				len = I40E_RX_HDR_SIZE;
+-			else
+-				len = rx_header_len;
+-			memcpy(__skb_put(skb, len), rx_bi->hdr_buf, len);
+-		} else if (skb->len == 0) {
+-			int len;
+-			unsigned char *va = page_address(rx_bi->page) +
+-					    rx_bi->page_offset;
+-
+-			len = min(rx_packet_len, rx_ring->rx_hdr_len);
+-			memcpy(__skb_put(skb, len), va, len);
+-			copysize = len;
+-			rx_packet_len -= len;
+-		}
+-		/* Get the rest of the data if this was a header split */
+-		if (rx_packet_len) {
+-			skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags,
+-					rx_bi->page,
+-					rx_bi->page_offset + copysize,
+-					rx_packet_len, I40E_RXBUFFER_2048);
+-
+-			/* If the page count is more than 2, then both halves
+-			 * of the page are used and we need to free it. Do it
+-			 * here instead of in the alloc code. Otherwise one
+-			 * of the half-pages might be released between now and
+-			 * then, and we wouldn't know which one to use.
+-			 * Don't call get_page and free_page since those are
+-			 * both expensive atomic operations that just change
+-			 * the refcount in opposite directions. Just give the
+-			 * page to the stack; he can have our refcount.
+-			 */
+-			if (page_count(rx_bi->page) > 2) {
+-				dma_unmap_page(rx_ring->dev,
+-					       rx_bi->page_dma,
+-					       PAGE_SIZE,
+-					       DMA_FROM_DEVICE);
+-				rx_bi->page = NULL;
+-				rx_bi->page_dma = 0;
+-				rx_ring->rx_stats.realloc_count++;
+-			} else {
+-				get_page(rx_bi->page);
+-				/* switch to the other half-page here; the
+-				 * allocation code programs the right addr
+-				 * into HW. If we haven't used this half-page,
+-				 * the address won't be changed, and HW can
+-				 * just use it next time through.
+-				 */
+-				rx_bi->page_offset ^= PAGE_SIZE / 2;
+-			}
 +	/* align pull length to size of long to optimize memcpy performance */
 +	skb_copy_to_linear_data(skb, va, ALIGN(pull_len, sizeof(long)));
-+
+ 
+-		}
+-		I40E_RX_INCREMENT(rx_ring, i);
 +	/* update all of the pointers */
 +	skb_frag_size_sub(frag, pull_len);
 +	frag->page_offset += pull_len;
 +	skb->data_len -= pull_len;
 +	skb->tail += pull_len;
 +}
-+
+ 
+-		if (unlikely(
+-		    !(rx_status & BIT(I40E_RX_DESC_STATUS_EOF_SHIFT)))) {
+-			struct i40e_rx_buffer *next_buffer;
 +/**
 + * i40e_cleanup_headers - Correct empty headers
 + * @rx_ring: rx descriptor ring packet is being transacted on
@@ -704,14 +718,25 @@ index c4cccd6..069f766 100644
 +	/* place header in linear portion of buffer */
 +	if (skb_is_nonlinear(skb))
 +		i40e_pull_tail(rx_ring, skb);
-+
+ 
+-			next_buffer = &rx_ring->rx_bi[i];
+-			next_buffer->skb = skb;
+-			rx_ring->rx_stats.non_eop_descs++;
+-			continue;
+-		}
 +	/* if eth_skb_pad returns an error the skb was freed */
 +	if (eth_skb_pad(skb))
 +		return true;
-+
+ 
+-		/* ERR_MASK will only have valid bits if EOP set */
+-		if (unlikely(rx_error & BIT(I40E_RX_DESC_ERROR_RXE_SHIFT))) {
+-			dev_kfree_skb_any(skb);
+-			continue;
+-		}
 +	return false;
 +}
-+
+ 
+-		i40e_rx_hash(rx_ring, rx_desc, skb, rx_ptype);
 +/**
 + * i40e_reuse_rx_page - page flip buffer and store it back on the ring
 + * @rx_ring: rx descriptor ring to store buffers on
@@ -724,17 +749,32 @@ index c4cccd6..069f766 100644
 +{
 +	struct i40e_rx_buffer *new_buff;
 +	u16 nta = rx_ring->next_to_alloc;
-+
+ 
+-		/* probably a little skewed due to removing CRC */
+-		total_rx_bytes += skb->len;
+-		total_rx_packets++;
 +	new_buff = &rx_ring->rx_bi[nta];
-+
+ 
+-		skb->protocol = eth_type_trans(skb, rx_ring->netdev);
 +	/* update, and store next to alloc */
 +	nta++;
 +	rx_ring->next_to_alloc = (nta < rx_ring->count) ? nta : 0;
-+
+ 
+-		i40e_rx_checksum(vsi, skb, rx_status, rx_error, rx_ptype);
 +	/* transfer page from old buffer to new buffer */
 +	*new_buff = *old_buff;
 +}
-+
+ 
+-		vlan_tag = rx_status & BIT(I40E_RX_DESC_STATUS_L2TAG1P_SHIFT)
+-			 ? le16_to_cpu(rx_desc->wb.qword0.lo_dword.l2tag1)
+-			 : 0;
+-#ifdef I40E_FCOE
+-		if (unlikely(
+-		    i40e_rx_is_fcoe(rx_ptype) &&
+-		    !i40e_fcoe_handle_offload(rx_ring, rx_desc, skb))) {
+-			dev_kfree_skb_any(skb);
+-			continue;
+-		}
 +/**
 + * i40e_page_is_reserved - check if reuse is possible
 + * @page: page struct to check
@@ -773,20 +813,30 @@ index c4cccd6..069f766 100644
 +#else
 +	unsigned int truesize = ALIGN(size, L1_CACHE_BYTES);
 +	unsigned int last_offset = PAGE_SIZE - I40E_RXBUFFER_2048;
-+#endif
-+
+ #endif
+-		i40e_receive_skb(rx_ring, skb, vlan_tag);
+ 
+-		rx_desc->wb.qword1.status_error_len = 0;
 +	/* will the data fit in the skb we allocated? if so, just
 +	 * copy it as it is pretty small anyway
 +	 */
 +	if ((size <= I40E_RX_HDR_SIZE) && !skb_is_nonlinear(skb)) {
 +		unsigned char *va = page_address(page) + rx_buffer->page_offset;
-+
+ 
+-	} while (likely(total_rx_packets < budget));
 +		memcpy(__skb_put(skb, size), va, ALIGN(size, sizeof(long)));
-+
+ 
+-	u64_stats_update_begin(&rx_ring->syncp);
+-	rx_ring->stats.packets += total_rx_packets;
+-	rx_ring->stats.bytes += total_rx_bytes;
+-	u64_stats_update_end(&rx_ring->syncp);
+-	rx_ring->q_vector->rx.total_packets += total_rx_packets;
+-	rx_ring->q_vector->rx.total_bytes += total_rx_bytes;
 +		/* page is not reserved, we can reuse buffer as-is */
 +		if (likely(!i40e_page_is_reserved(page)))
 +			return true;
-+
+ 
+-	return failure ? budget : total_rx_packets;
 +		/* this page cannot be reused so discard it */
 +		__free_pages(page, 0);
 +		return false;
@@ -820,21 +870,25 @@ index c4cccd6..069f766 100644
 +	get_page(rx_buffer->page);
 +
 +	return true;
-+}
-+
-+/**
-+ * i40e_fetch_rx_buffer - Allocate skb and populate it
+ }
+ 
+ /**
+- * i40e_clean_rx_irq_1buf - Reclaim resources after receive; single buffer
+- * @rx_ring:  rx ring to clean
+- * @budget:   how many cleans we're allowed
++ * i40evf_fetch_rx_buffer - Allocate skb and populate it
 + * @rx_ring: rx descriptor ring to transact packets on
 + * @rx_desc: descriptor containing info written by hardware
-+ *
+  *
+- * Returns number of packets cleaned
 + * This function allocates an skb on the fly, and populates it with the page
 + * data from the current receive descriptor, taking care to set up the skb
 + * correctly, as well as handling calling the page recycle function if
 + * necessary.
 + */
 +static inline
-+struct sk_buff *i40e_fetch_rx_buffer(struct i40e_ring *rx_ring,
-+				     union i40e_rx_desc *rx_desc)
++struct sk_buff *i40evf_fetch_rx_buffer(struct i40e_ring *rx_ring,
++				       union i40e_rx_desc *rx_desc)
 +{
 +	struct i40e_rx_buffer *rx_buffer;
 +	struct sk_buff *skb;
@@ -909,7 +963,8 @@ index c4cccd6..069f766 100644
 + * this function exits returning false, otherwise it will place the
 + * sk_buff in the next buffer to be chained and return true indicating
 + * that this is in fact a non-EOP buffer.
-+ **/
+  **/
+-static int i40e_clean_rx_irq_1buf(struct i40e_ring *rx_ring, int budget)
 +static bool i40e_is_non_eop(struct i40e_ring *rx_ring,
 +			    union i40e_rx_desc *rx_desc,
 +			    struct sk_buff *skb)
@@ -922,12 +977,6 @@ index c4cccd6..069f766 100644
 +
 +	prefetch(I40E_RX_DESC(rx_ring, ntc));
 +
-+#define staterrlen rx_desc->wb.qword1.status_error_len
-+	if (unlikely(i40e_rx_is_programming_status(le64_to_cpu(staterrlen)))) {
-+		i40e_clean_programming_status(rx_ring, rx_desc);
-+		rx_ring->rx_bi[ntc].skb = skb;
-+		return true;
-+	}
 +	/* if we are the last buffer then there is nothing else to do */
 +#define I40E_RXD_EOF BIT(I40E_RX_DESC_STATUS_EOF_SHIFT)
 +	if (likely(i40e_test_staterr(rx_desc, I40E_RXD_EOF)))
@@ -978,9 +1027,9 @@ index c4cccd6..069f766 100644
  		/* return some buffers to hardware, one@a time is too slow */
  		if (cleaned_count >= I40E_RX_BUFFER_WRITE) {
  			failure = failure ||
--				  i40e_alloc_rx_buffers_1buf(rx_ring,
--							     cleaned_count);
-+				  i40e_alloc_rx_buffers(rx_ring, cleaned_count);
+-				  i40evf_alloc_rx_buffers_1buf(rx_ring,
+-							       cleaned_count);
++				  i40evf_alloc_rx_buffers(rx_ring, cleaned_count);
  			cleaned_count = 0;
  		}
  
@@ -1012,11 +1061,6 @@ index c4cccd6..069f766 100644
  		 */
  		dma_rmb();
  
--		if (i40e_rx_is_programming_status(qword)) {
--			i40e_clean_programming_status(rx_ring, rx_desc);
--			I40E_RX_INCREMENT(rx_ring, i);
--			continue;
--		}
 -		rx_bi = &rx_ring->rx_bi[i];
 -		skb = rx_bi->skb;
 -		prefetch(skb->data);
@@ -1027,7 +1071,7 @@ index c4cccd6..069f766 100644
 -		rx_error = (qword & I40E_RXD_QW1_ERROR_MASK) >>
 -			   I40E_RXD_QW1_ERROR_SHIFT;
 -		rx_error &= ~BIT(I40E_RX_DESC_ERROR_HBO_SHIFT);
-+		skb = i40e_fetch_rx_buffer(rx_ring, rx_desc);
++		skb = i40evf_fetch_rx_buffer(rx_ring, rx_desc);
 +		if (!skb)
 +			break;
  
@@ -1062,41 +1106,26 @@ index c4cccd6..069f766 100644
 +		 */
 +		if (unlikely(i40e_test_staterr(rx_desc, BIT(I40E_RXD_QW1_ERROR_SHIFT)))) {
  			dev_kfree_skb_any(skb);
--			continue;
-+			return true;
+ 			continue;
  		}
  
 -		i40e_rx_hash(rx_ring, rx_desc, skb, rx_ptype);
--		if (unlikely(rx_status & I40E_RXD_QW1_STATUS_TSYNVALID_MASK)) {
--			i40e_ptp_rx_hwtstamp(vsi->back, skb, (rx_status &
--					   I40E_RXD_QW1_STATUS_TSYNINDX_MASK) >>
--					   I40E_RXD_QW1_STATUS_TSYNINDX_SHIFT);
--			rx_ring->last_rx_timestamp = jiffies;
--		}
 +		if (i40e_cleanup_headers(rx_ring, skb))
 +			continue;
- 
++
  		/* probably a little skewed due to removing CRC */
  		total_rx_bytes += skb->len;
 -		total_rx_packets++;
  
 -		skb->protocol = eth_type_trans(skb, rx_ring->netdev);
 +		/* populate checksum, VLAN, and protocol */
-+		i40e_process_skb_fields(rx_ring, rx_desc, skb, rx_ptype);
++		i40evf_process_skb_fields(rx_ring, rx_desc, skb, rx_ptype);
  
 -		i40e_rx_checksum(vsi, skb, rx_status, rx_error, rx_ptype);
--
+ 
 -		vlan_tag = rx_status & BIT(I40E_RX_DESC_STATUS_L2TAG1P_SHIFT)
 -			 ? le16_to_cpu(rx_desc->wb.qword0.lo_dword.l2tag1)
 -			 : 0;
- #ifdef I40E_FCOE
- 		if (unlikely(
- 		    i40e_rx_is_fcoe(rx_ptype) &&
-@@ -1621,10 +1843,15 @@ static int i40e_clean_rx_irq_1buf(struct i40e_ring *rx_ring, int budget)
- 			continue;
- 		}
- #endif
-+
 +		vlan_tag = (qword & BIT(I40E_RX_DESC_STATUS_L2TAG1P_SHIFT)) ?
 +			   le16_to_cpu(rx_desc->wb.qword0.lo_dword.l2tag1) : 0;
 +
@@ -1110,7 +1139,7 @@ index c4cccd6..069f766 100644
  
  	u64_stats_update_begin(&rx_ring->syncp);
  	rx_ring->stats.packets += total_rx_packets;
-@@ -1633,6 +1860,7 @@ static int i40e_clean_rx_irq_1buf(struct i40e_ring *rx_ring, int budget)
+@@ -1276,6 +1289,7 @@ static int i40e_clean_rx_irq_1buf(struct i40e_ring *rx_ring, int budget)
  	rx_ring->q_vector->rx.total_packets += total_rx_packets;
  	rx_ring->q_vector->rx.total_bytes += total_rx_bytes;
  
@@ -1118,7 +1147,7 @@ index c4cccd6..069f766 100644
  	return failure ? budget : total_rx_packets;
  }
  
-@@ -1777,9 +2005,7 @@ int i40e_napi_poll(struct napi_struct *napi, int budget)
+@@ -1417,9 +1431,7 @@ int i40evf_napi_poll(struct napi_struct *napi, int budget)
  	budget_per_ring = max(budget/q_vector->num_ringpairs, 1);
  
  	i40e_for_each_ring(ring, q_vector->rx) {
@@ -1129,10 +1158,10 @@ index c4cccd6..069f766 100644
  
  		work_done += cleaned;
  		/* if we clean as many as budgeted, we must not be done */
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-index 03e21d9..37643e6 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
+index f24a97e..4ba302e 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
 @@ -102,8 +102,8 @@ enum i40e_dyn_idx_t {
  	(((pf)->flags & I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE) ? \
  	  I40E_DEFAULT_RSS_HENA_EXPANDED : I40E_DEFAULT_RSS_HENA)
@@ -1184,7 +1213,7 @@ index 03e21d9..37643e6 100644
  #define I40E_MAX_BUFFER_TXD	8
  #define I40E_MIN_TX_LEN		17
  
-@@ -213,10 +230,8 @@ struct i40e_tx_buffer {
+@@ -212,10 +229,8 @@ struct i40e_tx_buffer {
  
  struct i40e_rx_buffer {
  	struct sk_buff *skb;
@@ -1195,7 +1224,7 @@ index 03e21d9..37643e6 100644
  	unsigned int page_offset;
  };
  
-@@ -280,7 +295,6 @@ struct i40e_ring {
+@@ -271,7 +286,6 @@ struct i40e_ring {
  
  	u16 count;			/* Number of descriptors */
  	u16 reg_idx;			/* HW register index of the ring */
@@ -1203,7 +1232,7 @@ index 03e21d9..37643e6 100644
  	u16 rx_buf_len;
  #define I40E_RX_DTYPE_NO_SPLIT      0
  #define I40E_RX_DTYPE_HEADER_SPLIT  1
-@@ -322,6 +336,7 @@ struct i40e_ring {
+@@ -311,6 +325,7 @@ struct i40e_ring {
  	struct i40e_q_vector *q_vector;	/* Backreference to associated vector */
  
  	struct rcu_head rcu;		/* to avoid race on free */
@@ -1211,17 +1240,165 @@ index 03e21d9..37643e6 100644
  } ____cacheline_internodealigned_in_smp;
  
  enum i40e_latency_range {
-@@ -345,9 +360,7 @@ struct i40e_ring_container {
+@@ -334,9 +349,7 @@ struct i40e_ring_container {
  #define i40e_for_each_ring(pos, head) \
  	for (pos = (head).ring; pos != NULL; pos = pos->next)
  
--bool i40e_alloc_rx_buffers_ps(struct i40e_ring *rxr, u16 cleaned_count);
--bool i40e_alloc_rx_buffers_1buf(struct i40e_ring *rxr, u16 cleaned_count);
--void i40e_alloc_rx_headers(struct i40e_ring *rxr);
-+bool i40e_alloc_rx_buffers(struct i40e_ring *rxr, u16 cleaned_count);
- netdev_tx_t i40e_lan_xmit_frame(struct sk_buff *skb, struct net_device *netdev);
- void i40e_clean_tx_ring(struct i40e_ring *tx_ring);
- void i40e_clean_rx_ring(struct i40e_ring *rx_ring);
+-bool i40evf_alloc_rx_buffers_ps(struct i40e_ring *rxr, u16 cleaned_count);
+-bool i40evf_alloc_rx_buffers_1buf(struct i40e_ring *rxr, u16 cleaned_count);
+-void i40evf_alloc_rx_headers(struct i40e_ring *rxr);
++bool i40evf_alloc_rx_buffers(struct i40e_ring *rxr, u16 cleaned_count);
+ netdev_tx_t i40evf_xmit_frame(struct sk_buff *skb, struct net_device *netdev);
+ void i40evf_clean_tx_ring(struct i40e_ring *tx_ring);
+ void i40evf_clean_rx_ring(struct i40e_ring *rx_ring);
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
+index b6d809e..1b93d66 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf.h
++++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
+@@ -80,9 +80,6 @@ struct i40e_vsi {
+ #define I40EVF_REQ_DESCRIPTOR_MULTIPLE  32
+ 
+ /* Supported Rx Buffer Sizes */
+-#define I40EVF_RXBUFFER_64    64     /* Used for packet split */
+-#define I40EVF_RXBUFFER_128   128    /* Used for packet split */
+-#define I40EVF_RXBUFFER_256   256    /* Used for packet split */
+ #define I40EVF_RXBUFFER_2048  2048
+ #define I40EVF_MAX_RXBUFFER   16384  /* largest size for single descriptor */
+ #define I40EVF_MAX_AQ_BUF_SIZE    4096
+@@ -208,7 +205,6 @@ struct i40evf_adapter {
+ 
+ 	u32 flags;
+ #define I40EVF_FLAG_RX_CSUM_ENABLED              BIT(0)
+-#define I40EVF_FLAG_RX_1BUF_CAPABLE              BIT(1)
+ #define I40EVF_FLAG_IMIR_ENABLED                 BIT(5)
+ #define I40EVF_FLAG_MQ_CAPABLE                   BIT(6)
+ #define I40EVF_FLAG_NEED_LINK_UPDATE             BIT(7)
+@@ -293,7 +289,6 @@ struct i40evf_adapter {
+ 
+ 
+ /* Ethtool Private Flags */
+-#define I40EVF_PRIV_FLAGS_PS		BIT(0)
+ 
+ /* needed by i40evf_ethtool.c */
+ extern char i40evf_driver_name[];
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
+index 74a94a6..34b42ad 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
+@@ -63,12 +63,6 @@ static const struct i40evf_stats i40evf_gstrings_stats[] = {
+ #define I40EVF_STATS_LEN(_dev) \
+ 	(I40EVF_GLOBAL_STATS_LEN + I40EVF_QUEUE_STATS_LEN(_dev))
+ 
+-static const char i40evf_priv_flags_strings[][ETH_GSTRING_LEN] = {
+-	"packet-split",
+-};
+-
+-#define I40EVF_PRIV_FLAGS_STR_LEN ARRAY_SIZE(i40evf_priv_flags_strings)
+-
+ /**
+  * i40evf_get_settings - Get Link Speed and Duplex settings
+  * @netdev: network interface device structure
+@@ -103,8 +97,6 @@ static int i40evf_get_sset_count(struct net_device *netdev, int sset)
+ {
+ 	if (sset == ETH_SS_STATS)
+ 		return I40EVF_STATS_LEN(netdev);
+-	else if (sset == ETH_SS_PRIV_FLAGS)
+-		return I40EVF_PRIV_FLAGS_STR_LEN;
+ 	else
+ 		return -EINVAL;
+ }
+@@ -170,12 +162,6 @@ static void i40evf_get_strings(struct net_device *netdev, u32 sset, u8 *data)
+ 			snprintf(p, ETH_GSTRING_LEN, "rx-%u.bytes", i);
+ 			p += ETH_GSTRING_LEN;
+ 		}
+-	} else if (sset == ETH_SS_PRIV_FLAGS) {
+-		for (i = 0; i < I40EVF_PRIV_FLAGS_STR_LEN; i++) {
+-			memcpy(data, i40evf_priv_flags_strings[i],
+-			       ETH_GSTRING_LEN);
+-			data += ETH_GSTRING_LEN;
+-		}
+ 	}
+ }
+ 
+@@ -225,7 +211,6 @@ static void i40evf_get_drvinfo(struct net_device *netdev,
+ 	strlcpy(drvinfo->version, i40evf_driver_version, 32);
+ 	strlcpy(drvinfo->fw_version, "N/A", 4);
+ 	strlcpy(drvinfo->bus_info, pci_name(adapter->pdev), 32);
+-	drvinfo->n_priv_flags = I40EVF_PRIV_FLAGS_STR_LEN;
+ }
+ 
+ /**
+@@ -515,40 +500,6 @@ static int i40evf_set_rxfh(struct net_device *netdev, const u32 *indir,
+ 	return i40evf_config_rss(adapter);
+ }
+ 
+-/**
+- * i40evf_get_priv_flags - report device private flags
+- * @dev: network interface device structure
+- *
+- * The get string set count and the string set should be matched for each
+- * flag returned.  Add new strings for each flag to the i40e_priv_flags_strings
+- * array.
+- *
+- * Returns a u32 bitmap of flags.
+- **/
+-static u32 i40evf_get_priv_flags(struct net_device *dev)
+-{
+-	u32 ret_flags = 0;
+-
+-	return ret_flags;
+-}
+-
+-/**
+- * i40evf_set_priv_flags - set private flags
+- * @dev: network interface device structure
+- * @flags: bit flags to be set
+- **/
+-static int i40evf_set_priv_flags(struct net_device *dev, u32 flags)
+-{
+-	struct i40evf_adapter *adapter = netdev_priv(dev);
+-	bool reset_required = false;
+-
+-	/* if needed, issue reset to cause things to take effect */
+-	if (reset_required)
+-		i40evf_schedule_reset(adapter);
+-
+-	return 0;
+-}
+-
+ static const struct ethtool_ops i40evf_ethtool_ops = {
+ 	.get_settings		= i40evf_get_settings,
+ 	.get_drvinfo		= i40evf_get_drvinfo,
+@@ -558,8 +509,6 @@ static const struct ethtool_ops i40evf_ethtool_ops = {
+ 	.get_strings		= i40evf_get_strings,
+ 	.get_ethtool_stats	= i40evf_get_ethtool_stats,
+ 	.get_sset_count		= i40evf_get_sset_count,
+-	.get_priv_flags		= i40evf_get_priv_flags,
+-	.set_priv_flags		= i40evf_set_priv_flags,
+ 	.get_msglevel		= i40evf_get_msglevel,
+ 	.set_msglevel		= i40evf_set_msglevel,
+ 	.get_coalesce		= i40evf_get_coalesce,
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 4a981e1..5576fa5 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -990,7 +990,7 @@ static void i40evf_configure(struct i40evf_adapter *adapter)
+ 	for (i = 0; i < adapter->num_active_queues; i++) {
+ 		struct i40e_ring *ring = &adapter->rx_rings[i];
+ 
+-		i40evf_alloc_rx_buffers_1buf(ring, ring->count);
++		i40evf_alloc_rx_buffers(ring, ring->count);
+ 		ring->next_to_use = ring->count - 1;
+ 		writel(ring->next_to_use, ring->tail);
+ 	}
+@@ -2395,7 +2395,6 @@ static void i40evf_init_task(struct work_struct *work)
+ 	adapter->current_op = I40E_VIRTCHNL_OP_UNKNOWN;
+ 
+ 	adapter->flags |= I40EVF_FLAG_RX_CSUM_ENABLED;
+-	adapter->flags |= I40EVF_FLAG_RX_1BUF_CAPABLE;
+ 
+ 	netdev->netdev_ops = &i40evf_netdev_ops;
+ 	i40evf_set_ethtool_ops(netdev);
 -- 
 2.4.3
 
