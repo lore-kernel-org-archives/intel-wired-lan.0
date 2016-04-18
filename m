@@ -1,48 +1,39 @@
-From: Mark D Rustad <mrustad@gmail.com>
-Date: Mon, 18 Apr 2016 15:43:27 -0500
-Subject: [Intel-wired-lan] [PATCH] ixgbe: use msleep for long delays
-In-Reply-To: <20160418.000358.1382874942962616205.davem@davemloft.net>
-References: <1460838941-1251989-1-git-send-email-arnd@arndb.de>
- <20160418.000358.1382874942962616205.davem@davemloft.net>
-Message-ID: <C87661C6-1711-4F92-B3F1-528A42C9BF98@gmail.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Mon, 18 Apr 2016 21:21:06 +0000
+Subject: [Intel-wired-lan] [next PATCH S34 01/12] i40e: Change the
+ default	for VFs to be not privileged
+In-Reply-To: <1460542112-20166-2-git-send-email-harshitha.ramamurthy@intel.com>
+References: <1460542112-20166-1-git-send-email-harshitha.ramamurthy@intel.com>
+ <1460542112-20166-2-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D202E@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-- Most others
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Harshitha Ramamurthy
+> Sent: Wednesday, April 13, 2016 3:08 AM
+> To: intel-wired-lan at osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S34 01/12] i40e: Change the default
+> for VFs to be not privileged
+> 
+> From: Anjali Singhai Jain <anjali.singhai@intel.com>
+> 
+> Make sure a VF is not trusted/privileged until its explicitly set for trust
+> through the new NDO op interface.
+> 
+> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+> Change-Id: I476385c290d2b4901d8fceb29de43546accdc499
+> ---
+> Testing Hints (Required if no HSD):
+> With this now a VF cannot add filters or enable promisc unless trusted.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 20 ++++++++++---------
+> -
+>  1 file changed, 10 insertions(+), 10 deletions(-)
 
-David Miller <davem@davemloft.net> wrote:
-
-> From: Arnd Bergmann <arnd@arndb.de>
-> Date: Sat, 16 Apr 2016 22:35:08 +0200
->
->> The newly added x550em_a support causes a link failure on ARM because of
->> an overly long time passed into udelay():
->>
->> ERROR: "__bad_udelay" [drivers/net/ethernet/intel/ixgbe/ixgbe.ko]  
->> undefined!
->>
->> There are multiple variants of the ixgbe_acquire_swfw_sync_*() function,
->> and the other ones all use msleep(), so we can safely assume that all
->> callers are allowed to sleep, which makes msleep() a better replacement
->> than mdelay().
->>
->> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
->> Fixes: 49425dfc7451 ("ixgbe: Add support for x550em_a 10G MAC type")
->
-> I'm assuming Jeff will pick this up.
-
-Actually, I'm not at all sure that any of these are safe to sleep, since I  
-think PHY accesses can be made by ethtool which holds the rtnl lock.
-
---
-Mark Rustad, MRustad at gmail.com
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 841 bytes
-Desc: Message signed with OpenPGP using GPGMail
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160418/f8efbefc/attachment-0001.asc>
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+VF not trusted until implicitly set as trusted
