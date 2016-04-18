@@ -1,43 +1,48 @@
-From: Joe Perches <joe@perches.com>
-Date: Mon, 18 Apr 2016 10:00:19 -0700
-Subject: [Intel-wired-lan] [PATCH net-next V2 2/2] intel: ixgbevf:
- Support Windows hosts (Hyper-V)
-In-Reply-To: <BL2PR03MB19081E9C9AAB13E6F608D08FA06B0@BL2PR03MB1908.namprd03.prod.outlook.com>
-References: <1460956943-17560-1-git-send-email-kys@microsoft.com>
- <1460956969-17601-1-git-send-email-kys@microsoft.com>
- <1460956969-17601-3-git-send-email-kys@microsoft.com>
- <CAKgT0UdLxSk6CKVAt232fdthMtUbn9FLru9Q9w1Qjjdv_zKA4g@mail.gmail.com>
- <BL2PR03MB19081E9C9AAB13E6F608D08FA06B0@BL2PR03MB1908.namprd03.prod.outlook.com>
-Message-ID: <1460998819.1917.10.camel@perches.com>
+From: Mark D Rustad <mrustad@gmail.com>
+Date: Mon, 18 Apr 2016 15:43:27 -0500
+Subject: [Intel-wired-lan] [PATCH] ixgbe: use msleep for long delays
+In-Reply-To: <20160418.000358.1382874942962616205.davem@davemloft.net>
+References: <1460838941-1251989-1-git-send-email-arnd@arndb.de>
+ <20160418.000358.1382874942962616205.davem@davemloft.net>
+Message-ID: <C87661C6-1711-4F92-B3F1-528A42C9BF98@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2016-04-18 at 16:52 +0000, KY Srinivasan wrote:
-[]
-> > > +bool ixgbevf_on_hyperv(struct ixgbe_hw *hw)
-> > > +{
-> > > +???????if (hw->mbx.ops.check_for_msg == NULL)
-> > > +???????????????return true;
-> > > +???????else
-> > > +???????????????return false;
-> > > +}
+- Most others
 
-trivia:
+David Miller <davem@davemloft.net> wrote:
 
-bool func(...)
-{
-	if (<bar>)
-		return true;
-	else
-		return false;
-}
+> From: Arnd Bergmann <arnd@arndb.de>
+> Date: Sat, 16 Apr 2016 22:35:08 +0200
+>
+>> The newly added x550em_a support causes a link failure on ARM because of
+>> an overly long time passed into udelay():
+>>
+>> ERROR: "__bad_udelay" [drivers/net/ethernet/intel/ixgbe/ixgbe.ko]  
+>> undefined!
+>>
+>> There are multiple variants of the ixgbe_acquire_swfw_sync_*() function,
+>> and the other ones all use msleep(), so we can safely assume that all
+>> callers are allowed to sleep, which makes msleep() a better replacement
+>> than mdelay().
+>>
+>> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+>> Fixes: 49425dfc7451 ("ixgbe: Add support for x550em_a 10G MAC type")
+>
+> I'm assuming Jeff will pick this up.
 
-can generally be written as:
+Actually, I'm not at all sure that any of these are safe to sleep, since I  
+think PHY accesses can be made by ethtool which holds the rtnl lock.
 
-bool func(...)
-{
-	return <bar>;
-}
+--
+Mark Rustad, MRustad at gmail.com
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 841 bytes
+Desc: Message signed with OpenPGP using GPGMail
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160418/f8efbefc/attachment-0001.asc>
