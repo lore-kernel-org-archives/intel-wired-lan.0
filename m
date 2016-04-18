@@ -1,229 +1,51 @@
 From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-Date: Mon, 18 Apr 2016 01:31:55 -0700
-Subject: [Intel-wired-lan] [v2 next PATCH S35 5/9] i40evf: Drop packet split
-	receive routine
+Date: Mon, 18 Apr 2016 01:31:58 -0700
+Subject: [Intel-wired-lan] [v2 next PATCH S35 8/9] i40evf: Allocate rx
+	buffers properly
 In-Reply-To: <1460968319-18950-1-git-send-email-harshitha.ramamurthy@intel.com>
 References: <1460968319-18950-1-git-send-email-harshitha.ramamurthy@intel.com>
-Message-ID: <1460968319-18950-6-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <1460968319-18950-9-git-send-email-harshitha.ramamurthy@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-As part of preparation for the rx-refactor, remove the
-packet split receive routine and ancillary code.
+Allocate the correct number of RX buffers, and don't fiddle with
+next_to_use. The common RX code handles all of this. This fixes a memory
+leak of one page each time the driver is opened.
 
-Some of the split related context set up code stays in
-i40e_virtchnl_pf.c in case an older VF driver tries to load
-and still wants to use packet split.
-
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-Id: Id06eca353086e084921f047acad28c14745684ee
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  2 +-
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c      | 21 +---------------
- drivers/net/ethernet/intel/i40evf/i40e_txrx.h      |  7 ------
- drivers/net/ethernet/intel/i40evf/i40evf.h         |  2 --
- drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 14 -----------
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    | 28 +---------------------
- .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    |  4 ----
- 7 files changed, 3 insertions(+), 75 deletions(-)
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 41be42d..651ce05 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -590,7 +590,7 @@ static int i40e_config_vsi_rx_queue(struct i40e_vf *vf, u16 vsi_id,
- 		}
- 		rx_ctx.hbuff = info->hdr_size >> I40E_RXQ_CTX_HBUFF_SHIFT;
- 
--		/* set splitalways mode 10b */
-+		/* set split mode 10b */
- 		rx_ctx.dtype = I40E_RX_DTYPE_HEADER_SPLIT;
- 	}
- 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index cf42f16..f0a76f5 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -504,22 +504,6 @@ void i40evf_clean_rx_ring(struct i40e_ring *rx_ring)
- 	if (!rx_ring->rx_bi)
- 		return;
- 
--	if (ring_is_ps_enabled(rx_ring)) {
--		int bufsz = ALIGN(rx_ring->rx_hdr_len, 256) * rx_ring->count;
--
--		rx_bi = &rx_ring->rx_bi[0];
--		if (rx_bi->hdr_buf) {
--			dma_free_coherent(dev,
--					  bufsz,
--					  rx_bi->hdr_buf,
--					  rx_bi->dma);
--			for (i = 0; i < rx_ring->count; i++) {
--				rx_bi = &rx_ring->rx_bi[i];
--				rx_bi->dma = 0;
--				rx_bi->hdr_buf = NULL;
--			}
--		}
--	}
- 	/* Free all the Rx ring sk_buffs */
- 	for (i = 0; i < rx_ring->count; i++) {
- 		rx_bi = &rx_ring->rx_bi[i];
-@@ -1435,10 +1419,7 @@ int i40evf_napi_poll(struct napi_struct *napi, int budget)
- 	i40e_for_each_ring(ring, q_vector->rx) {
- 		int cleaned;
- 
--		if (ring_is_ps_enabled(ring))
--			cleaned = i40e_clean_rx_irq_ps(ring, budget_per_ring);
--		else
--			cleaned = i40e_clean_rx_irq_1buf(ring, budget_per_ring);
-+		cleaned = i40e_clean_rx_irq_1buf(ring, budget_per_ring);
- 
- 		work_done += cleaned;
- 		/* if we clean as many as budgeted, we must not be done */
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-index 3b3f976..f24a97e 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-@@ -244,16 +244,9 @@ struct i40e_rx_queue_stats {
- enum i40e_ring_state_t {
- 	__I40E_TX_FDIR_INIT_DONE,
- 	__I40E_TX_XPS_INIT_DONE,
--	__I40E_RX_PS_ENABLED,
- 	__I40E_RX_16BYTE_DESC_ENABLED,
- };
- 
--#define ring_is_ps_enabled(ring) \
--	test_bit(__I40E_RX_PS_ENABLED, &(ring)->state)
--#define set_ring_ps_enabled(ring) \
--	set_bit(__I40E_RX_PS_ENABLED, &(ring)->state)
--#define clear_ring_ps_enabled(ring) \
--	clear_bit(__I40E_RX_PS_ENABLED, &(ring)->state)
- #define ring_is_16byte_desc_enabled(ring) \
- 	test_bit(__I40E_RX_16BYTE_DESC_ENABLED, &(ring)->state)
- #define set_ring_16byte_desc_enabled(ring) \
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
-index 3b8075f..b6d809e 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
-@@ -209,8 +209,6 @@ struct i40evf_adapter {
- 	u32 flags;
- #define I40EVF_FLAG_RX_CSUM_ENABLED              BIT(0)
- #define I40EVF_FLAG_RX_1BUF_CAPABLE              BIT(1)
--#define I40EVF_FLAG_RX_PS_CAPABLE                BIT(2)
--#define I40EVF_FLAG_RX_PS_ENABLED                BIT(3)
- #define I40EVF_FLAG_IMIR_ENABLED                 BIT(5)
- #define I40EVF_FLAG_MQ_CAPABLE                   BIT(6)
- #define I40EVF_FLAG_NEED_LINK_UPDATE             BIT(7)
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-index 3a95c7c..74a94a6 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-@@ -527,12 +527,8 @@ static int i40evf_set_rxfh(struct net_device *netdev, const u32 *indir,
-  **/
- static u32 i40evf_get_priv_flags(struct net_device *dev)
- {
--	struct i40evf_adapter *adapter = netdev_priv(dev);
- 	u32 ret_flags = 0;
- 
--	ret_flags |= adapter->flags & I40EVF_FLAG_RX_PS_ENABLED ?
--		I40EVF_PRIV_FLAGS_PS : 0;
--
- 	return ret_flags;
- }
- 
-@@ -546,16 +542,6 @@ static int i40evf_set_priv_flags(struct net_device *dev, u32 flags)
- 	struct i40evf_adapter *adapter = netdev_priv(dev);
- 	bool reset_required = false;
- 
--	if ((flags & I40EVF_PRIV_FLAGS_PS) &&
--	    !(adapter->flags & I40EVF_FLAG_RX_PS_ENABLED)) {
--		adapter->flags |= I40EVF_FLAG_RX_PS_ENABLED;
--		reset_required = true;
--	} else if (!(flags & I40EVF_PRIV_FLAGS_PS) &&
--		   (adapter->flags & I40EVF_FLAG_RX_PS_ENABLED)) {
--		adapter->flags &= ~I40EVF_FLAG_RX_PS_ENABLED;
--		reset_required = true;
--	}
--
- 	/* if needed, issue reset to cause things to take effect */
- 	if (reset_required)
- 		i40evf_schedule_reset(adapter);
 diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 88b2804..4a981e1 100644
+index 5576fa5..e2ac5b6 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
 +++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -641,28 +641,11 @@ static void i40evf_configure_tx(struct i40evf_adapter *adapter)
- static void i40evf_configure_rx(struct i40evf_adapter *adapter)
- {
- 	struct i40e_hw *hw = &adapter->hw;
--	struct net_device *netdev = adapter->netdev;
--	int max_frame = netdev->mtu + ETH_HLEN + ETH_FCS_LEN;
- 	int i;
--	int rx_buf_len;
--
--
--	/* Set the RX buffer length according to the mode */
--	if (adapter->flags & I40EVF_FLAG_RX_PS_ENABLED ||
--	    netdev->mtu <= ETH_DATA_LEN)
--		rx_buf_len = I40EVF_RXBUFFER_2048;
--	else
--		rx_buf_len = ALIGN(max_frame, 1024);
- 
- 	for (i = 0; i < adapter->num_active_queues; i++) {
- 		adapter->rx_rings[i].tail = hw->hw_addr + I40E_QRX_TAIL1(i);
--		adapter->rx_rings[i].rx_buf_len = rx_buf_len;
--		if (adapter->flags & I40EVF_FLAG_RX_PS_ENABLED) {
--			set_ring_ps_enabled(&adapter->rx_rings[i]);
--			adapter->rx_rings[i].rx_hdr_len = I40E_RX_HDR_SIZE;
--		} else {
--			clear_ring_ps_enabled(&adapter->rx_rings[i]);
--		}
-+		adapter->rx_rings[i].rx_buf_len = I40EVF_RXBUFFER_2048;
- 	}
- }
- 
-@@ -1007,12 +990,7 @@ static void i40evf_configure(struct i40evf_adapter *adapter)
+@@ -990,9 +990,7 @@ static void i40evf_configure(struct i40evf_adapter *adapter)
  	for (i = 0; i < adapter->num_active_queues; i++) {
  		struct i40e_ring *ring = &adapter->rx_rings[i];
  
--	if (adapter->flags & I40EVF_FLAG_RX_PS_ENABLED) {
--		i40evf_alloc_rx_headers(ring);
--		i40evf_alloc_rx_buffers_ps(ring, ring->count);
--	} else {
- 		i40evf_alloc_rx_buffers_1buf(ring, ring->count);
--	}
- 		ring->next_to_use = ring->count - 1;
- 		writel(ring->next_to_use, ring->tail);
+-		i40evf_alloc_rx_buffers(ring, ring->count);
+-		ring->next_to_use = ring->count - 1;
+-		writel(ring->next_to_use, ring->tail);
++		i40evf_alloc_rx_buffers(ring, I40E_DESC_UNUSED(ring));
  	}
-@@ -2418,10 +2396,6 @@ static void i40evf_init_task(struct work_struct *work)
+ }
  
- 	adapter->flags |= I40EVF_FLAG_RX_CSUM_ENABLED;
- 	adapter->flags |= I40EVF_FLAG_RX_1BUF_CAPABLE;
--	adapter->flags |= I40EVF_FLAG_RX_PS_CAPABLE;
+@@ -2762,7 +2760,6 @@ static void i40evf_remove(struct pci_dev *pdev)
+ 
+ 	iounmap(hw->hw_addr);
+ 	pci_release_regions(pdev);
 -
--	/* Default to single buffer rx, can be changed through ethtool. */
--	adapter->flags &= ~I40EVF_FLAG_RX_PS_ENABLED;
- 
- 	netdev->netdev_ops = &i40evf_netdev_ops;
- 	i40evf_set_ethtool_ops(netdev);
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-index ba7fbc0..c5d33a2 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-@@ -270,10 +270,6 @@ void i40evf_configure_queues(struct i40evf_adapter *adapter)
- 		vqpi->rxq.max_pkt_size = adapter->netdev->mtu
- 					+ ETH_HLEN + VLAN_HLEN + ETH_FCS_LEN;
- 		vqpi->rxq.databuffer_size = adapter->rx_rings[i].rx_buf_len;
--		if (adapter->flags & I40EVF_FLAG_RX_PS_ENABLED) {
--			vqpi->rxq.splithdr_enabled = true;
--			vqpi->rxq.hdr_size = I40E_RX_HDR_SIZE;
--		}
- 		vqpi++;
- 	}
- 
+ 	i40evf_free_all_tx_resources(adapter);
+ 	i40evf_free_all_rx_resources(adapter);
+ 	i40evf_free_queues(adapter);
 -- 
 2.4.3
 
