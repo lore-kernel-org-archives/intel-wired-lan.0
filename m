@@ -1,79 +1,58 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Mon, 18 Apr 2016 11:33:43 -0700
-Subject: [Intel-wired-lan] [PATCH next S35 v3 3/9] i40e/i40evf: Remove
-	reference to ring->dtype
-In-Reply-To: <1461004429-34316-3-git-send-email-jesse.brandeburg@intel.com>
+Date: Mon, 18 Apr 2016 11:33:48 -0700
+Subject: [Intel-wired-lan] [PATCH next S35 v3 8/9] i40evf: Allocate rx
+	buffers properly
+In-Reply-To: <1461004429-34316-8-git-send-email-jesse.brandeburg@intel.com>
 References: <1461004429-34316-1-git-send-email-jesse.brandeburg@intel.com>
  <1461004429-34316-2-git-send-email-jesse.brandeburg@intel.com>
  <1461004429-34316-3-git-send-email-jesse.brandeburg@intel.com>
-Message-ID: <1461004429-34316-4-git-send-email-jesse.brandeburg@intel.com>
+ <1461004429-34316-4-git-send-email-jesse.brandeburg@intel.com>
+ <1461004429-34316-5-git-send-email-jesse.brandeburg@intel.com>
+ <1461004429-34316-6-git-send-email-jesse.brandeburg@intel.com>
+ <1461004429-34316-7-git-send-email-jesse.brandeburg@intel.com>
+ <1461004429-34316-8-git-send-email-jesse.brandeburg@intel.com>
+Message-ID: <1461004429-34316-9-git-send-email-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-As part of the rx-refactor, the dtype variable in the i40e_ring
-struct is no longer used, so remove it.
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Allocate the correct number of RX buffers, and don't fiddle with
+next_to_use. The common RX code handles all of this. This fixes a memory
+leak of one page each time the driver is opened.
+
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-Id: Id06eca353086e084921f047acad28c14745684ee
 ---
- drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 8 ++------
- drivers/net/ethernet/intel/i40e/i40e_txrx.h    | 1 -
- drivers/net/ethernet/intel/i40evf/i40e_txrx.h  | 1 -
- 3 files changed, 2 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-index f119a74..c0a01e0 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-@@ -268,10 +268,9 @@ static void i40e_dbg_dump_vsi_seid(struct i40e_pf *pf, int seid)
- 			 rx_ring->queue_index,
- 			 rx_ring->reg_idx);
- 		dev_info(&pf->pdev->dev,
--			 "    rx_rings[%i]: rx_hdr_len = %d, rx_buf_len = %d, dtype = %d\n",
-+			 "    rx_rings[%i]: rx_hdr_len = %d, rx_buf_len = %d\n",
- 			 i, rx_ring->rx_hdr_len,
--			 rx_ring->rx_buf_len,
--			 rx_ring->dtype);
-+			 rx_ring->rx_buf_len);
- 		dev_info(&pf->pdev->dev,
- 			 "    rx_rings[%i]: next_to_use = %d, next_to_clean = %d, ring_active = %i\n",
- 			 i,
-@@ -326,9 +325,6 @@ static void i40e_dbg_dump_vsi_seid(struct i40e_pf *pf, int seid)
- 			 tx_ring->queue_index,
- 			 tx_ring->reg_idx);
- 		dev_info(&pf->pdev->dev,
--			 "    tx_rings[%i]: dtype = %d\n",
--			 i, tx_ring->dtype);
--		dev_info(&pf->pdev->dev,
- 			 "    tx_rings[%i]: next_to_use = %d, next_to_clean = %d, ring_active = %i\n",
- 			 i,
- 			 tx_ring->next_to_use,
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-index 5a2d0fe..03e21d9 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
-@@ -282,7 +282,6 @@ struct i40e_ring {
- 	u16 reg_idx;			/* HW register index of the ring */
- 	u16 rx_hdr_len;
- 	u16 rx_buf_len;
--	u8  dtype;
- #define I40E_RX_DTYPE_NO_SPLIT      0
- #define I40E_RX_DTYPE_HEADER_SPLIT  1
- #define I40E_RX_DTYPE_SPLIT_ALWAYS  2
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-index 54b52e8..3b3f976 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
-@@ -280,7 +280,6 @@ struct i40e_ring {
- 	u16 reg_idx;			/* HW register index of the ring */
- 	u16 rx_hdr_len;
- 	u16 rx_buf_len;
--	u8  dtype;
- #define I40E_RX_DTYPE_NO_SPLIT      0
- #define I40E_RX_DTYPE_HEADER_SPLIT  1
- #define I40E_RX_DTYPE_SPLIT_ALWAYS  2
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 8d77ad1..6609a5b 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -990,9 +990,7 @@ static void i40evf_configure(struct i40evf_adapter *adapter)
+ 	for (i = 0; i < adapter->num_active_queues; i++) {
+ 		struct i40e_ring *ring = &adapter->rx_rings[i];
+ 
+-		i40evf_alloc_rx_buffers(ring, ring->count);
+-		ring->next_to_use = ring->count - 1;
+-		writel(ring->next_to_use, ring->tail);
++		i40evf_alloc_rx_buffers(ring, I40E_DESC_UNUSED(ring));
+ 	}
+ }
+ 
+@@ -2762,7 +2760,6 @@ static void i40evf_remove(struct pci_dev *pdev)
+ 
+ 	iounmap(hw->hw_addr);
+ 	pci_release_regions(pdev);
+-
+ 	i40evf_free_all_tx_resources(adapter);
+ 	i40evf_free_all_rx_resources(adapter);
+ 	i40evf_free_queues(adapter);
 -- 
 1.8.3.1
 
