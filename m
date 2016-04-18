@@ -1,38 +1,47 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 18 Apr 2016 22:01:40 +0000
-Subject: [Intel-wired-lan] [next PATCH S34 07/12] i40e: Fix
- uninitialized	variable
-In-Reply-To: <1460542112-20166-8-git-send-email-harshitha.ramamurthy@intel.com>
-References: <1460542112-20166-1-git-send-email-harshitha.ramamurthy@intel.com>
- <1460542112-20166-8-git-send-email-harshitha.ramamurthy@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D2053@ORSMSX104.amr.corp.intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Mon, 18 Apr 2016 15:39:46 -0700
+Subject: [Intel-wired-lan] [PATCH] fm10k: fix incorrect index calculation in
+	fm10k_write_reta
+Message-ID: <20160418223946.30068-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Harshitha Ramamurthy
-> Sent: Wednesday, April 13, 2016 3:08 AM
-> To: intel-wired-lan at osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S34 07/12] i40e: Fix uninitialized
-> variable
-> 
-> From: Catherine Sullivan <catherine.sullivan@intel.com>
-> 
-> We have an uninitialized variable warning for valid_len for one case in
-> validate_vf_mesg. To fix this, just initialize it to 0 at the top of the function
-> and remove all of the now redundant assignments to 0 in the individual
-> cases.
-> 
-> Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-> Change-Id: Iacbd97f4c521ed8d662eef803a598d8707708cfd
-> ---
-> Testing Hints: Should net no functional change - make sure nothing broke.
-> 
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 6 +-----
->  1 file changed, 1 insertion(+), 5 deletions(-)
+The index calculated when looping through the indir array passed to
+fm10k_write_reta was incorrectly calculated as the first part i needs to
+be multiplied by 4.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Fixes: 0cfea7a65738 ("fm10k: fix possible null pointer deref after kcalloc", 2016-04-13)
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+
+Notes:
+    Jeff, this needs to be squashed into "[v1,1/4] fm10k: fix possible null pointer
+    deref after kcalloc", and I am sending it this way since you requested I work
+    only at the top if the queue for now. I can resend that original
+    patch as a v2 if you prefer.
+
+ drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+index 9c0d87503977..5c8788427b73 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
+@@ -983,9 +983,9 @@ void fm10k_write_reta(struct fm10k_intfc *interface, const u32 *indir)
+ 		/* generate a new table if we weren't given one */
+ 		for (j = 0; j < 4; j++) {
+ 			if (indir)
+-				n = indir[i + j];
++				n = indir[4 * i + j];
+ 			else
+-				n = ethtool_rxfh_indir_default(i + j, rss_i);
++				n = ethtool_rxfh_indir_default(4 * i + j, rss_i);
+ 
+ 			table[j] = n;
+ 		}
+-- 
+2.8.1.371.g31c5d55
+
