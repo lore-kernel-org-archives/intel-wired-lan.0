@@ -1,8 +1,8 @@
 From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Mon, 18 Apr 2016 11:33:48 -0700
-Subject: [Intel-wired-lan] [PATCH next S35 v3 8/9] i40evf: Allocate rx
-	buffers properly
-In-Reply-To: <1461004429-34316-8-git-send-email-jesse.brandeburg@intel.com>
+Date: Mon, 18 Apr 2016 11:33:49 -0700
+Subject: [Intel-wired-lan] [PATCH next S35 v3 9/9] i40e: Test memory before
+	ethtool alloc succeeds
+In-Reply-To: <1461004429-34316-9-git-send-email-jesse.brandeburg@intel.com>
 References: <1461004429-34316-1-git-send-email-jesse.brandeburg@intel.com>
  <1461004429-34316-2-git-send-email-jesse.brandeburg@intel.com>
  <1461004429-34316-3-git-send-email-jesse.brandeburg@intel.com>
@@ -11,48 +11,91 @@ References: <1461004429-34316-1-git-send-email-jesse.brandeburg@intel.com>
  <1461004429-34316-6-git-send-email-jesse.brandeburg@intel.com>
  <1461004429-34316-7-git-send-email-jesse.brandeburg@intel.com>
  <1461004429-34316-8-git-send-email-jesse.brandeburg@intel.com>
-Message-ID: <1461004429-34316-9-git-send-email-jesse.brandeburg@intel.com>
+ <1461004429-34316-9-git-send-email-jesse.brandeburg@intel.com>
+Message-ID: <1461004429-34316-10-git-send-email-jesse.brandeburg@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+When testing on systems with very limited amounts of RAM, a bug was
+found where, while changing the number of descriptors using ethtool,
+the driver didn't test the limits of system memory before permanently
+assuming it would be able to get receive buffer memory.
 
-Allocate the correct number of RX buffers, and don't fiddle with
-next_to_use. The common RX code handles all of this. This fixes a memory
-leak of one page each time the driver is opened.
+Work around this issue by pre-allocation of the receive buffer
+memory, in the "ghost" ring, which is then used during reinit
+using the new ring length.
 
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Change-Id: Id06eca353086e084921f047acad28c14745684ee
+Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Change-Id: I92d7a5fb59a6c884b2efdd1ec652845f101c3359
 ---
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 34 +++++++++++++++++++++++---
+ 1 file changed, 31 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 8d77ad1..6609a5b 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -990,9 +990,7 @@ static void i40evf_configure(struct i40evf_adapter *adapter)
- 	for (i = 0; i < adapter->num_active_queues; i++) {
- 		struct i40e_ring *ring = &adapter->rx_rings[i];
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 36aa186..0a5374e 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -1274,6 +1274,13 @@ static int i40e_set_ringparam(struct net_device *netdev,
+ 		}
  
--		i40evf_alloc_rx_buffers(ring, ring->count);
--		ring->next_to_use = ring->count - 1;
--		writel(ring->next_to_use, ring->tail);
-+		i40evf_alloc_rx_buffers(ring, I40E_DESC_UNUSED(ring));
- 	}
- }
+ 		for (i = 0; i < vsi->num_queue_pairs; i++) {
++			/* this is to allow wr32 to have something to write to
++			 * during early allocation of rx buffers
++			 */
++			u32 __iomem faketail = 0;
++			struct i40e_ring *ring;
++			u16 unused;
++
+ 			/* clone ring and setup updated count */
+ 			rx_rings[i] = *vsi->rx_rings[i];
+ 			rx_rings[i].count = new_rx_count;
+@@ -1282,12 +1289,22 @@ static int i40e_set_ringparam(struct net_device *netdev,
+ 			 */
+ 			rx_rings[i].desc = NULL;
+ 			rx_rings[i].rx_bi = NULL;
++			rx_rings[i].tail = (u8 __iomem *)&faketail;
+ 			err = i40e_setup_rx_descriptors(&rx_rings[i]);
++			if (err)
++				goto rx_unwind;
++
++			/* now allocate the rx buffers to make sure the OS
++			 * has enough memory, any failure here means abort
++			 */
++			ring = &rx_rings[i];
++			unused = I40E_DESC_UNUSED(ring);
++			err = i40e_alloc_rx_buffers(ring, unused);
++rx_unwind:
+ 			if (err) {
+-				while (i) {
+-					i--;
++				do {
+ 					i40e_free_rx_resources(&rx_rings[i]);
+-				}
++				} while (i--);
+ 				kfree(rx_rings);
+ 				rx_rings = NULL;
  
-@@ -2762,7 +2760,6 @@ static void i40evf_remove(struct pci_dev *pdev)
- 
- 	iounmap(hw->hw_addr);
- 	pci_release_regions(pdev);
--
- 	i40evf_free_all_tx_resources(adapter);
- 	i40evf_free_all_rx_resources(adapter);
- 	i40evf_free_queues(adapter);
+@@ -1313,6 +1330,17 @@ static int i40e_set_ringparam(struct net_device *netdev,
+ 	if (rx_rings) {
+ 		for (i = 0; i < vsi->num_queue_pairs; i++) {
+ 			i40e_free_rx_resources(vsi->rx_rings[i]);
++			/* get the real tail offset */
++			rx_rings[i].tail = vsi->rx_rings[i]->tail;
++			/* this is to fake out the allocation routine
++			 * into thinking it has to realloc everything
++			 * but the recycling logic will let us re-use
++			 * the buffers allocated above
++			 */
++			rx_rings[i].next_to_use = 0;
++			rx_rings[i].next_to_clean = 0;
++			rx_rings[i].next_to_alloc = 0;
++			/* do a struct copy */
+ 			*vsi->rx_rings[i] = rx_rings[i];
+ 		}
+ 		kfree(rx_rings);
 -- 
 1.8.3.1
 
