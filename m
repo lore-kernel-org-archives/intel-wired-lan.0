@@ -1,39 +1,65 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 18 Apr 2016 19:06:24 +0000
-Subject: [Intel-wired-lan] [next PATCH S34 03/12] i40e: Prevent falling
- to	promiscuous if the VF is not trusted
-In-Reply-To: <1460542112-20166-4-git-send-email-harshitha.ramamurthy@intel.com>
-References: <1460542112-20166-1-git-send-email-harshitha.ramamurthy@intel.com>
- <1460542112-20166-4-git-send-email-harshitha.ramamurthy@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D0F0B@ORSMSX104.amr.corp.intel.com>
+From: KY Srinivasan <kys@microsoft.com>
+Date: Mon, 18 Apr 2016 19:42:41 +0000
+Subject: [Intel-wired-lan] [PATCH net-next V2 2/2] intel: ixgbevf:
+ Support Windows hosts (Hyper-V)
+In-Reply-To: <1460998819.1917.10.camel@perches.com>
+References: <1460956943-17560-1-git-send-email-kys@microsoft.com>
+ <1460956969-17601-1-git-send-email-kys@microsoft.com>
+ <1460956969-17601-3-git-send-email-kys@microsoft.com>
+ <CAKgT0UdLxSk6CKVAt232fdthMtUbn9FLru9Q9w1Qjjdv_zKA4g@mail.gmail.com>
+ <BL2PR03MB19081E9C9AAB13E6F608D08FA06B0@BL2PR03MB1908.namprd03.prod.outlook.com>
+ <1460998819.1917.10.camel@perches.com>
+Message-ID: <BL2PR03MB1908C6ACA740D30D502942F0A06B0@BL2PR03MB1908.namprd03.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Harshitha Ramamurthy
-> Sent: Wednesday, April 13, 2016 3:08 AM
-> To: intel-wired-lan at osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S34 03/12] i40e: Prevent falling to
-> promiscuous if the VF is not trusted
-> 
-> From: Anjali Singhai Jain <anjali.singhai@intel.com>
-> 
-> With this change a non trusted VF can never fall to promiscuous mode when
-> there is no room for a mac/vlan filter.
-> 
-> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-> Change-Id: I8a155aa25c0bcdc6093414920c9ade4ee0bd20e8
-> ---
-> Testing Hints :
-> Try adding mac/vlan filters to multiple VFs and make sure they can no longer
-> go into promiscuous mode if the VFs are not trusted.
-> 
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 6 ++++++
->  1 file changed, 6 insertions(+)
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-untrusted VFs won't trigger promiscuous mode
+
+> -----Original Message-----
+> From: Joe Perches [mailto:joe at perches.com]
+> Sent: Monday, April 18, 2016 10:00 AM
+> To: KY Srinivasan <kys@microsoft.com>; Alexander Duyck
+> <alexander.duyck@gmail.com>
+> Cc: David Miller <davem@davemloft.net>; Netdev
+> <netdev@vger.kernel.org>; linux-kernel at vger.kernel.org;
+> devel at linuxdriverproject.org; olaf at aepfle.de; Robo Bot
+> <apw@canonical.com>; Jason Wang <jasowang@redhat.com>;
+> eli at mellanox.com; jackm at mellanox.com; yevgenyp at mellanox.com; John
+> Ronciak <john.ronciak@intel.com>; intel-wired-lan <intel-wired-
+> lan at lists.osuosl.org>
+> Subject: Re: [Intel-wired-lan] [PATCH net-next V2 2/2] intel: ixgbevf: Support
+> Windows hosts (Hyper-V)
+> 
+> On Mon, 2016-04-18 at 16:52 +0000, KY Srinivasan wrote:
+> []
+> > > > +bool ixgbevf_on_hyperv(struct ixgbe_hw *hw)
+> > > > +{
+> > > > +???????if (hw->mbx.ops.check_for_msg == NULL)
+> > > > +???????????????return true;
+> > > > +???????else
+> > > > +???????????????return false;
+> > > > +}
+> 
+> trivia:
+> 
+> bool func(...)
+> {
+> 	if (<bar>)
+> 		return true;
+> 	else
+> 		return false;
+> }
+> 
+> can generally be written as:
+> 
+> bool func(...)
+> {
+> 	return <bar>;
+> }
+
+Thanks Joe; will update.
+
+K. Y
