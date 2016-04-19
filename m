@@ -1,71 +1,36 @@
-From: Parikh, Neerav <neerav.parikh@intel.com>
-Date: Tue, 19 Apr 2016 17:53:14 +0000
-Subject: [Intel-wired-lan] i40e error handling LLDP messages
-	from	Arista	switches
-In-Reply-To: <739353123C992A4C8800D77E20942590905248DF@ORSMSX103.amr.corp.intel.com>
-References: <CAH9ADKU7DMbEoWD8Qu+=hXr2Pfhga5D_=FCz7btea2oV9=GdzA@mail.gmail.com>
- <739353123C992A4C8800D77E20942590905248DF@ORSMSX103.amr.corp.intel.com>
-Message-ID: <739353123C992A4C8800D77E2094259090524953@ORSMSX103.amr.corp.intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 19 Apr 2016 17:59:48 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Add work around for empty
+	SFP+	cage crosstalk
+In-Reply-To: <1460503510-33043-1-git-send-email-donald.c.skidmore@intel.com>
+References: <1460503510-33043-1-git-send-email-donald.c.skidmore@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D225F@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Resending as the original email was sent in HTLM format and hence my reply went in that format
-as well; which got rejected by netdev mailer.
-
 > -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Parikh, Neerav
-> Sent: Tuesday, April 19, 2016 10:45 AM
-> To: Jeremy Ashton <jeremy.ashton@shopify.com>
-> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
-> Subject: Re: [Intel-wired-lan] i40e error handling LLDP messages from Arista switches
->
-> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Jeremy Ashton
-> > Sent: Tuesday, April 19, 2016 10:26 AM
-> > Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
-> > Subject: [Intel-wired-lan] i40e error handling LLDP messages from Arista switches
-> >
-> > I have been trying to get pf_ring with zc running on ubuntu 14.04.? The thread can be found here:
-> >
-> > https://github.com/ntop/PF_RING/issues/81
-> >
-> > Unfortunately it seems there is a bug in i40e which is carried into the code base for i40e_zc.
-> >
-> > $ modinfo i40e
-> > filename: ? ? ? /lib/modules/3.19.0-58-generic/kernel/drivers/net/ethernet/intel/i40e/i40e.ko
-> > version: ? ? ? ?1.2.2-k
-> > license: ? ? ? ?GPL
-> > description: ? ?Intel(R) Ethernet Connection XL710 Network Driver
-> > author: ? ? ? ? Intel Corporation, <e1000-devel@lists.sourceforge.net>
-> > srcversion: ? ? E3DEEE00F49BBFBB8FF33A7
-> > alias: ? ? ? ? ?pci:v00008086d00001586sv*sd*bc*sc*i*
-> > alias: ? ? ? ? ?pci:v00008086d00001585sv*sd*bc*sc*i*
-> > alias: ? ? ? ? ?pci:v00008086d00001584sv*sd*bc*sc*i*
-> > alias: ? ? ? ? ?pci:v00008086d00001583sv*sd*bc*sc*i*
-> > alias: ? ? ? ? ?pci:v00008086d00001581sv*sd*bc*sc*i*
-> > alias: ? ? ? ? ?pci:v00008086d00001580sv*sd*bc*sc*i*
-> > alias: ? ? ? ? ?pci:v00008086d0000157Fsv*sd*bc*sc*i*
-> > alias: ? ? ? ? ?pci:v00008086d00001574sv*sd*bc*sc*i*
-> > alias: ? ? ? ? ?pci:v00008086d00001572sv*sd*bc*sc*i*
-> > depends: ? ? ? ?ptp,vxlan
-> > intree: ? ? ? ? Y
-> > vermagic: ? ? ? 3.19.0-58-generic SMP mod_unload modversions
-> > signer: ? ? ? ? Magrathea: Glacier signing key
-> > sig_key: ? ? ? ?DE:B3:43:0A:26:E6:7D:3D:3B:54:B9:DD:13:25:B3:3A:46:B2:F2:DD
-> > sig_hashalgo: ? sha512
-> > part: ? ? ? ? ? debug:Debug level (0=none,...,16=all) (int)
-> >
-> >
-> > I wonder if someone might offer some insight as to the next steps to debug/resolve this.
-> >
-> > Cheers.
-> >
-> > Can you send us the dmesg output after running i40e debugfs commands 
-> > viz. ?dump port?, ?llpd get local? , ?lldp get remote?, for the port that is showing
-> > this behavior? Also, do you happen to know what is the Arista side configuration?
-> > This will help us debug better.
-> >
-> > Thanks,
-> > Neerav
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Donald C Skidmore
+> Sent: Tuesday, April 12, 2016 4:25 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: Add work around for empty SFP+
+> cage crosstalk
+> 
+> It is possible on some systems that crosstalk could lead to link flap on empty
+> SFP+ cages.  A new NVM bit was defined to let SW know it needs to
+> implement the work around which consists of verifying that there is a
+> module in the cage before acting on the LSC.
+> 
+> Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe.h      |  2 ++
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 39
+> +++++++++++++++++++++++++++
+> drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |  1 +
+>  3 files changed, 42 insertions(+)
+
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+No stray link up events noted after heavy traffic on adjacent cage
