@@ -1,226 +1,127 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 19 Apr 2016 12:11:45 -0700
-Subject: [Intel-wired-lan] [PATCH net-next V4 2/2] intel: ixgbevf:
-	Support Windows hosts (Hyper-V)
-In-Reply-To: <1461096723-26471-2-git-send-email-kys@microsoft.com>
-References: <1461096698-26430-1-git-send-email-kys@microsoft.com>
- <1461096723-26471-1-git-send-email-kys@microsoft.com>
- <1461096723-26471-2-git-send-email-kys@microsoft.com>
-Message-ID: <CAKgT0UdT2SBYgTWwf5F9x+JPX8eWx_hMf7PE0MCnNDr-9oZaKw@mail.gmail.com>
+From: Jeremy Ashton <jeremy.ashton@shopify.com>
+Date: Tue, 19 Apr 2016 16:20:28 -0400
+Subject: [Intel-wired-lan] i40e error handling LLDP messages from Arista
+	switches
+In-Reply-To: <739353123C992A4C8800D77E2094259090524A59@ORSMSX103.amr.corp.intel.com>
+References: <CAH9ADKU7DMbEoWD8Qu+=hXr2Pfhga5D_=FCz7btea2oV9=GdzA@mail.gmail.com>
+ <739353123C992A4C8800D77E20942590905248DF@ORSMSX103.amr.corp.intel.com>
+ <739353123C992A4C8800D77E2094259090524953@ORSMSX103.amr.corp.intel.com>
+ <CAH9ADKW4cse2v88xwOisr__R5w-O7siTMhAa2eUAUWK1hUtt9Q@mail.gmail.com>
+ <739353123C992A4C8800D77E2094259090524A59@ORSMSX103.amr.corp.intel.com>
+Message-ID: <CAH9ADKWKYYqahQdrso3Nf556WzuF4ZnVPkz9pGO0NqDsQNbqOQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Apr 19, 2016 at 1:12 PM, K. Y. Srinivasan <kys@microsoft.com> wrote:
-> On Hyper-V, the VF/PF communication is a via software mediated path
-> as opposed to the hardware mailbox. Make the necessary
-> adjustments to support Hyper-V.
->
-> Signed-off-by: K. Y. Srinivasan <kys@microsoft.com>
-> ---
->         V2: Addressed most of the comments from
->             Alexander Duyck <alexander.duyck@gmail.com>
->             and Rustad, Mark D <mark.d.rustad@intel.com>.
->
->         V3: Addressed additional comments from
->             Alexander Duyck <alexander.duyck@gmail.com>
->
->         V4: Addressed kbuild errors reported by:
->             kbuild test robot <lkp@intel.com>
->
->
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |   12 ++
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   31 +++-
->  drivers/net/ethernet/intel/ixgbevf/mbx.c          |   12 ++
->  drivers/net/ethernet/intel/ixgbevf/vf.c           |  216 +++++++++++++++++++++
->  drivers/net/ethernet/intel/ixgbevf/vf.h           |    2 +
->  5 files changed, 266 insertions(+), 7 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-> index 5ac60ee..3296d27 100644
-> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-> @@ -460,9 +460,13 @@ enum ixbgevf_state_t {
->
->  enum ixgbevf_boards {
->         board_82599_vf,
-> +       board_82599_vf_hv,
->         board_X540_vf,
-> +       board_X540_vf_hv,
->         board_X550_vf,
-> +       board_X550_vf_hv,
->         board_X550EM_x_vf,
-> +       board_X550EM_x_vf_hv,
->  };
->
->  enum ixgbevf_xcast_modes {
-> @@ -477,6 +481,13 @@ extern const struct ixgbevf_info ixgbevf_X550_vf_info;
->  extern const struct ixgbevf_info ixgbevf_X550EM_x_vf_info;
->  extern const struct ixgbe_mbx_operations ixgbevf_mbx_ops;
->
-> +
-> +extern const struct ixgbevf_info ixgbevf_82599_vf_hv_info;
-> +extern const struct ixgbevf_info ixgbevf_X540_vf_hv_info;
-> +extern const struct ixgbevf_info ixgbevf_X550_vf_hv_info;
-> +extern const struct ixgbevf_info ixgbevf_X550EM_x_vf_hv_info;
-> +extern const struct ixgbe_mbx_operations ixgbevf_hv_mbx_ops;
-> +
->  /* needed by ethtool.c */
->  extern const char ixgbevf_driver_name[];
->  extern const char ixgbevf_driver_version[];
-> @@ -494,6 +505,7 @@ void ixgbevf_free_rx_resources(struct ixgbevf_ring *);
->  void ixgbevf_free_tx_resources(struct ixgbevf_ring *);
->  void ixgbevf_update_stats(struct ixgbevf_adapter *adapter);
->  int ethtool_ioctl(struct ifreq *ifr);
-> +bool ixgbevf_on_hyperv(struct ixgbe_hw *hw);
->
->  extern void ixgbevf_write_eitr(struct ixgbevf_q_vector *q_vector);
->
-> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> index 007cbe0..c4bb480 100644
-> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> @@ -62,10 +62,14 @@ static char ixgbevf_copyright[] =
->         "Copyright (c) 2009 - 2015 Intel Corporation.";
->
->  static const struct ixgbevf_info *ixgbevf_info_tbl[] = {
-> -       [board_82599_vf] = &ixgbevf_82599_vf_info,
-> -       [board_X540_vf]  = &ixgbevf_X540_vf_info,
-> -       [board_X550_vf]  = &ixgbevf_X550_vf_info,
-> -       [board_X550EM_x_vf] = &ixgbevf_X550EM_x_vf_info,
-> +       [board_82599_vf]        = &ixgbevf_82599_vf_info,
-> +       [board_82599_vf_hv]     = &ixgbevf_82599_vf_hv_info,
-> +       [board_X540_vf]         = &ixgbevf_X540_vf_info,
-> +       [board_X540_vf_hv]      = &ixgbevf_X540_vf_hv_info,
-> +       [board_X550_vf]         = &ixgbevf_X550_vf_info,
-> +       [board_X550_vf_hv]      = &ixgbevf_X550_vf_hv_info,
-> +       [board_X550EM_x_vf]     = &ixgbevf_X550EM_x_vf_info,
-> +       [board_X550EM_x_vf_hv]  = &ixgbevf_X550EM_x_vf_hv_info,
->  };
->
->  /* ixgbevf_pci_tbl - PCI Device ID Table
-> @@ -78,9 +82,13 @@ static const struct ixgbevf_info *ixgbevf_info_tbl[] = {
->   */
->  static const struct pci_device_id ixgbevf_pci_tbl[] = {
->         {PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_VF), board_82599_vf },
-> +       {PCI_VDEVICE(INTEL, IXGBE_DEV_ID_82599_VF_HV), board_82599_vf_hv },
->         {PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X540_VF), board_X540_vf },
-> +       {PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X540_VF_HV), board_X540_vf_hv },
->         {PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550_VF), board_X550_vf },
-> +       {PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550_VF_HV), board_X550_vf_hv },
->         {PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_VF), board_X550EM_x_vf },
-> +       {PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_VF_HV), board_X550EM_x_vf_hv},
->         /* required last entry */
->         {0, }
->  };
-> @@ -1795,7 +1803,10 @@ static void ixgbevf_configure_rx(struct ixgbevf_adapter *adapter)
->                 ixgbevf_setup_vfmrqc(adapter);
->
->         /* notify the PF of our intent to use this size of frame */
-> -       ixgbevf_rlpml_set_vf(hw, netdev->mtu + ETH_HLEN + ETH_FCS_LEN);
-> +       if (!ixgbevf_on_hyperv(hw))
-> +               ixgbevf_rlpml_set_vf(hw, netdev->mtu + ETH_HLEN + ETH_FCS_LEN);
-> +       else
-> +               ixgbevf_hv_rlpml_set_vf(hw, netdev->mtu + ETH_HLEN + ETH_FCS_LEN);
->
->         /* Setup the HW Rx Head and Tail Descriptor Pointers and
->          * the Base and Length of the Rx Descriptor Ring
-> @@ -2056,7 +2067,10 @@ static void ixgbevf_negotiate_api(struct ixgbevf_adapter *adapter)
->         spin_lock_bh(&adapter->mbx_lock);
->
->         while (api[idx] != ixgbe_mbox_api_unknown) {
-> -               err = ixgbevf_negotiate_api_version(hw, api[idx]);
-> +               if (!ixgbevf_on_hyperv(hw))
-> +                       err = ixgbevf_negotiate_api_version(hw, api[idx]);
-> +               else
-> +                       err = ixgbevf_hv_negotiate_api_version(hw, api[idx]);
->                 if (!err)
->                         break;
->                 idx++;
-> @@ -3727,7 +3741,10 @@ static int ixgbevf_change_mtu(struct net_device *netdev, int new_mtu)
->         netdev->mtu = new_mtu;
->
->         /* notify the PF of our intent to use this size of frame */
-> -       ixgbevf_rlpml_set_vf(hw, max_frame);
-> +       if (!ixgbevf_on_hyperv(hw))
-> +               ixgbevf_rlpml_set_vf(hw, max_frame);
-> +       else
-> +               ixgbevf_hv_rlpml_set_vf(hw, max_frame);
->
->         return 0;
->  }
-> diff --git a/drivers/net/ethernet/intel/ixgbevf/mbx.c b/drivers/net/ethernet/intel/ixgbevf/mbx.c
-> index dc68fea..298a0da 100644
-> --- a/drivers/net/ethernet/intel/ixgbevf/mbx.c
-> +++ b/drivers/net/ethernet/intel/ixgbevf/mbx.c
-> @@ -346,3 +346,15 @@ const struct ixgbe_mbx_operations ixgbevf_mbx_ops = {
->         .check_for_rst  = ixgbevf_check_for_rst_vf,
->  };
->
-> +/**
-> + * Mailbox operations when running on Hyper-V.
-> + * On Hyper-V, PF/VF communiction is not through the
-> + * hardware mailbox; this communication is through
-> + * a software mediated path.
-> + * Most mail box operations are noop while running on
-> + * Hyper-V.
-> + */
-> +const struct ixgbe_mbx_operations ixgbevf_hv_mbx_ops = {
-> +       .init_params    = ixgbevf_init_mbx_params_vf,
-> +       .check_for_rst  = ixgbevf_check_for_rst_vf,
-> +};
-> diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.c b/drivers/net/ethernet/intel/ixgbevf/vf.c
-> index 4d613a4..8f277b9 100644
-> --- a/drivers/net/ethernet/intel/ixgbevf/vf.c
-> +++ b/drivers/net/ethernet/intel/ixgbevf/vf.c
-> @@ -27,6 +27,13 @@
->  #include "vf.h"
->  #include "ixgbevf.h"
->
-> +/*
-> + * On Hyper-V, to reset, we need to read from this offset
-> + * from the PCI config space. This is the mechanism used on
-> + * Hyper-V to support PF/VF communication.
-> + */
-> +#define IXGBE_HV_RESET_OFFSET           0x201
-> +
->  /**
->   *  ixgbevf_start_hw_vf - Prepare hardware for Tx/Rx
->   *  @hw: pointer to hardware structure
-> @@ -126,6 +133,27 @@ static s32 ixgbevf_reset_hw_vf(struct ixgbe_hw *hw)
->  }
->
->  /**
-> + * Hyper-V variant; the VF/PF communication is through the PCI
-> + * config space.
-> + */
-> +static s32 ixgbevf_hv_reset_hw_vf(struct ixgbe_hw *hw)
-> +{
-> +#if IS_ENABLED(CONFIG_PCI_MMCONFIG)
-> +       struct ixgbevf_adapter *adapter = hw->back;
-> +       int i;
-> +
-> +       for (i = 0; i < 6; i++)
-> +               pci_read_config_byte(adapter->pdev,
-> +                                    (i + IXGBE_HV_RESET_OFFSET),
-> +                                    &hw->mac.perm_addr[i]);
-> +#else
-> +       pr_err("PCI_MMCONFIG needs to be enabled for Hyper-V\n");
-> +#endif
-> +
-> +       return 0;
-> +}
-> +
+Is there a way to disable the lldp daemon running in the firmware?
 
-You should probably just return an error here if MMCONFIG is not
-defined.  You can probably move the return into the #if/#else blocks
-so that you return 0 if MMCONFIG is supported, and you return
--EOPNOTSUPP if MMCONFIG is not defined.
-
-That way you don't have to worry about confusing the driver and having
-it think that it is running with no MAC address assigned by the
-administrator.
-
-- Alex
+On Tue, Apr 19, 2016 at 2:31 PM, Parikh, Neerav <neerav.parikh@intel.com> wrote:
+>
+>
+>> -----Original Message-----
+>> From: Jeremy Ashton [mailto:jeremy.ashton at shopify.com]
+>> Sent: Tuesday, April 19, 2016 11:10 AM
+>> To: Parikh, Neerav <neerav.parikh@intel.com>
+>> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
+>> Subject: Re: [Intel-wired-lan] i40e error handling LLDP messages from Arista
+>> switches
+>>
+>> So, what commands exactly are you looking to have run?  Would packet
+>> capture of the lldp traffic help?
+>>
+> LLDP is running in the i40e device firmware so unless you've a packet capture on
+> the wire (Xgig) you may not see that in the wireshark/tshark on the host system.
+>
+> The debugfs commands I was referring to below can help capture some
+> information; and for that you may need to mount the debugfs file system on
+> your setup. If debugfs is supported then once you've that mounted and have the
+> i40e driver loaded then you may see an entry named "i40e" under the mount point.
+> Assuming debugfs is mounted on /sys/kernel/debug the i40e directory will be under
+> /sys/kernel/debug/i40e. This directory will have entry for each PCIe device being
+> managed by the i40e driver. You can select the PCIe device that maps to the device
+> in question and can run the commands like:
+> echo "dump port" > /sys/kernel/debug/i40e/<pci-path>/command
+> echo "lldp get local" > /sys/kernel/debug/i40e/<pci-path>/command
+> echo "lldp get remote" > /sys/kernel/debug/i40e/<pci-path>/command
+>
+> The output of these commands will show up in the dmesg log.
+>
+> One another I noticed in your thread on the PF_RING bz is that you're using inbox
+> Ubuntu driver. Have you tried with current upstream and seen this issue?
+>
+> Thanks,
+> Neerav
+>
+>> On Tue, Apr 19, 2016 at 1:53 PM, Parikh, Neerav <neerav.parikh@intel.com>
+>> wrote:
+>> > Resending as the original email was sent in HTLM format and hence my reply
+>> went in that format
+>> > as well; which got rejected by netdev mailer.
+>> >
+>> >> -----Original Message-----
+>> >> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+>> Behalf Of Parikh, Neerav
+>> >> Sent: Tuesday, April 19, 2016 10:45 AM
+>> >> To: Jeremy Ashton <jeremy.ashton@shopify.com>
+>> >> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
+>> >> Subject: Re: [Intel-wired-lan] i40e error handling LLDP messages from Arista
+>> switches
+>> >>
+>> >> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+>> Behalf Of Jeremy Ashton
+>> >> > Sent: Tuesday, April 19, 2016 10:26 AM
+>> >> > Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
+>> >> > Subject: [Intel-wired-lan] i40e error handling LLDP messages from Arista
+>> switches
+>> >> >
+>> >> > I have been trying to get pf_ring with zc running on ubuntu 14.04.  The
+>> thread can be found here:
+>> >> >
+>> >> > https://github.com/ntop/PF_RING/issues/81
+>> >> >
+>> >> > Unfortunately it seems there is a bug in i40e which is carried into the code
+>> base for i40e_zc.
+>> >> >
+>> >> > $ modinfo i40e
+>> >> > filename:       /lib/modules/3.19.0-58-
+>> generic/kernel/drivers/net/ethernet/intel/i40e/i40e.ko
+>> >> > version:        1.2.2-k
+>> >> > license:        GPL
+>> >> > description:    Intel(R) Ethernet Connection XL710 Network Driver
+>> >> > author:         Intel Corporation, <e1000-devel@lists.sourceforge.net>
+>> >> > srcversion:     E3DEEE00F49BBFBB8FF33A7
+>> >> > alias:          pci:v00008086d00001586sv*sd*bc*sc*i*
+>> >> > alias:          pci:v00008086d00001585sv*sd*bc*sc*i*
+>> >> > alias:          pci:v00008086d00001584sv*sd*bc*sc*i*
+>> >> > alias:          pci:v00008086d00001583sv*sd*bc*sc*i*
+>> >> > alias:          pci:v00008086d00001581sv*sd*bc*sc*i*
+>> >> > alias:          pci:v00008086d00001580sv*sd*bc*sc*i*
+>> >> > alias:          pci:v00008086d0000157Fsv*sd*bc*sc*i*
+>> >> > alias:          pci:v00008086d00001574sv*sd*bc*sc*i*
+>> >> > alias:          pci:v00008086d00001572sv*sd*bc*sc*i*
+>> >> > depends:        ptp,vxlan
+>> >> > intree:         Y
+>> >> > vermagic:       3.19.0-58-generic SMP mod_unload modversions
+>> >> > signer:         Magrathea: Glacier signing key
+>> >> > sig_key:
+>> DE:B3:43:0A:26:E6:7D:3D:3B:54:B9:DD:13:25:B3:3A:46:B2:F2:DD
+>> >> > sig_hashalgo:   sha512
+>> >> > part:           debug:Debug level (0=none,...,16=all) (int)
+>> >> >
+>> >> >
+>> >> > I wonder if someone might offer some insight as to the next steps to
+>> debug/resolve this.
+>> >> >
+>> >> > Cheers.
+>> >> >
+>> >> > Can you send us the dmesg output after running i40e debugfs commands
+>> >> > viz. ?dump port?, ?llpd get local? , ?lldp get remote?, for the port that is
+>> showing
+>> >> > this behavior? Also, do you happen to know what is the Arista side
+>> configuration?
+>> >> > This will help us debug better.
+>> >> >
+>> >> > Thanks,
+>> >> > Neerav
