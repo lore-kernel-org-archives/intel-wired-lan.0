@@ -1,43 +1,89 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 19 Apr 2016 23:05:46 +0000
-Subject: [Intel-wired-lan] [PATCH next S35 v3 8/9] i40evf: Allocate
-	rx	buffers properly
-In-Reply-To: <1461004429-34316-9-git-send-email-jesse.brandeburg@intel.com>
-References: <1461004429-34316-1-git-send-email-jesse.brandeburg@intel.com>
- <1461004429-34316-2-git-send-email-jesse.brandeburg@intel.com>
- <1461004429-34316-3-git-send-email-jesse.brandeburg@intel.com>
- <1461004429-34316-4-git-send-email-jesse.brandeburg@intel.com>
- <1461004429-34316-5-git-send-email-jesse.brandeburg@intel.com>
- <1461004429-34316-6-git-send-email-jesse.brandeburg@intel.com>
- <1461004429-34316-7-git-send-email-jesse.brandeburg@intel.com>
- <1461004429-34316-8-git-send-email-jesse.brandeburg@intel.com>
- <1461004429-34316-9-git-send-email-jesse.brandeburg@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D2424@ORSMSX104.amr.corp.intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Tue, 19 Apr 2016 23:37:03 +0000
+Subject: [Intel-wired-lan] [PATCH v3] e1000e: don't modify SYSTIM
+ registers during SIOCSHWTSTAMP ioctl
+In-Reply-To: <20160419065257.GA4143@hobbes.lan20.walshnetwork.net>
+References: <20160415224127.4172-1-jacob.e.keller@intel.com>
+ <20160419065257.GA4143@hobbes.lan20.walshnetwork.net>
+Message-ID: <1461109023.13228.9.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Jesse Brandeburg
-> Sent: Monday, April 18, 2016 11:34 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH next S35 v3 8/9] i40evf: Allocate rx buffers
-> properly
+On Tue, 2016-04-19 at 02:52 -0400, Brian Walsh wrote:
+> On Fri, Apr 15, 2016 at 03:41:27PM -0700, Jacob Keller wrote:
+> > 
+> > The e1000e_config_hwtstamp function was incorrectly resetting the
+> > SYSTIM
+> > registers every time the ioctl was being run. If you happened to be
+> > running ptp4l and lost the PTP connect (removing cable, or blocking
+> > the
+> > UDP traffic for example), then ptp4l will eventually perform a
+> > restart
+> > which involves re-requesting timestamp settings. In e1000e this has
+> > the
+> > unfortunate and incorrect result of resetting SYSTIME to the kernel
+> > time. Since kernel time is usually in UTC, and PTP time is in TAI,
+> > this
+> > results in the leap second being re-applied.
+> > 
+> > Fix this by extracting the SYSTIME reset out into its own function,
+> > e1000e_ptp_reset, which we call during reset to restore the
+> > hardware
+> > registers. This function will (a) restart the timecounter based on
+> > the
+> > new system time, (b) restore the previous PPB setting, and (c)
+> > restore
+> > the previous hwtstamp settings.
+> > 
+> > In order to perform (b), I had to modify the adjfreq ptp function
+> > pointer to store the old delta each time it is called. This also
+> > has the
+> > side effect of restoring the correct base timinca register
+> > correctly.
+> > The driver does not need to explicitly zero the ptp_delta variable
+> > since
+> > the entire adapter structure comes zero-initialized.
+> > 
+> > Reported-by: Brian Walsh <brian@walsh.ws>
+> > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> > ---
+> > 
+> > 3rd time's a charm? This time I verified it should compile and run
+> > now,
+> > without crashes, and without compilation errors.
+> > 
+> > Notes:
+> > ????This patch conflicts with Brian's "e1000e fix ptp time reset on
+> > newtork
+> > ????interruption", and that patch MUST be removed from the queue
+> > before applying
+> > ????this one.
+> > ????
+> > ????- Changes since v1
+> > ????* move e1000e_init_ptp prior to reset so that PTP clock is
+> > created first
+> > ????* handle NULL ptp_clock_info gracefully.
+> > ????
+> > ????- Changes since v2
+> > ????* fix stupid compilation error
+> > ????* fix stupid null pointer check (who WROTE THIS CODE?!?!??!! ;)
+> > 
+> > ?drivers/net/ethernet/intel/e1000e/e1000.h??|??1 +
+> > ?drivers/net/ethernet/intel/e1000e/netdev.c | 65
+> > ++++++++++++++++++++++--------
+> > ?drivers/net/ethernet/intel/e1000e/ptp.c????|??2 +
+> > ?3 files changed, 52 insertions(+), 16 deletions(-)
+> > 
+> Fixes the leapsecond time jump I was trying to fix.
 > 
-> From: Mitch Williams <mitch.a.williams@intel.com>
-> 
-> Allocate the correct number of RX buffers, and don't fiddle with
-> next_to_use. The common RX code handles all of this. This fixes a memory
-> leak of one page each time the driver is opened.
-> 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-> Change-Id: Id06eca353086e084921f047acad28c14745684ee
-> ---
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 5 +----
->  1 file changed, 1 insertion(+), 4 deletions(-)
+> Tested-by: Brian Walsh <brian@walsh.ws>
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-KEDR leak check doesn't show any leaks when loading and unloading driver
+
+Thanks for testing this Brian, and sorry for the version thrash. I'm
+glad it resolves the issue for you.
+
+Regards,
+Jake
