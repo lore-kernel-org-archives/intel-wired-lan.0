@@ -1,29 +1,35 @@
-From: Jeremy Ashton <jeremy.ashton@shopify.com>
-Date: Tue, 19 Apr 2016 13:26:23 -0400
-Subject: [Intel-wired-lan] i40e error handling LLDP messages from Arista
-	switches
-Message-ID: <CAH9ADKU7DMbEoWD8Qu+=hXr2Pfhga5D_=FCz7btea2oV9=GdzA@mail.gmail.com>
+From: Parikh, Neerav <neerav.parikh@intel.com>
+Date: Tue, 19 Apr 2016 17:44:40 +0000
+Subject: [Intel-wired-lan] i40e error handling LLDP messages from
+	Arista	switches
+In-Reply-To: <CAH9ADKU7DMbEoWD8Qu+=hXr2Pfhga5D_=FCz7btea2oV9=GdzA@mail.gmail.com>
+References: <CAH9ADKU7DMbEoWD8Qu+=hXr2Pfhga5D_=FCz7btea2oV9=GdzA@mail.gmail.com>
+Message-ID: <739353123C992A4C8800D77E20942590905248DF@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-I have been trying to get pf_ring with zc running on ubuntu 14.04.  The
-thread can be found here:
+
+
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Jeremy Ashton
+Sent: Tuesday, April 19, 2016 10:26 AM
+Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
+Subject: [Intel-wired-lan] i40e error handling LLDP messages from Arista switches
+
+I have been trying to get pf_ring with zc running on ubuntu 14.04.  The thread can be found here:
 
 https://github.com/ntop/PF_RING/issues/81
 
-Unfortunately it seems there is a bug in i40e which is carried into the
-code base for i40e_zc.
+Unfortunately it seems there is a bug in i40e which is carried into the code base for i40e_zc.
 
 $ modinfo i40e
-filename:
-/lib/modules/3.19.0-58-generic/kernel/drivers/net/ethernet/intel/i40e/i40e.ko
+filename:       /lib/modules/3.19.0-58-generic/kernel/drivers/net/ethernet/intel/i40e/i40e.ko
 version:        1.2.2-k
 license:        GPL
 description:    Intel(R) Ethernet Connection XL710 Network Driver
-author:         Intel Corporation, <e1000-devel@lists.sourceforge.net>
+author:         Intel Corporation, <e1000-devel at lists.sourceforge.net<mailto:e1000-devel@lists.sourceforge.net>>
 srcversion:     E3DEEE00F49BBFBB8FF33A7
 alias:          pci:v00008086d00001586sv*sd*bc*sc*i*
 alias:          pci:v00008086d00001585sv*sd*bc*sc*i*
@@ -43,10 +49,17 @@ sig_hashalgo:   sha512
 part:           debug:Debug level (0=none,...,16=all) (int)
 
 
-I wonder if someone might offer some insight as to the next steps to
-debug/resolve this.
+I wonder if someone might offer some insight as to the next steps to debug/resolve this.
 
 Cheers.
+
+Can you send us the dmesg output after running i40e debugfs commands
+viz. ?dump port?, ?llpd get local? , ?lldp get remote?, for the port that is showing
+this behavior? Also, do you happen to know what is the Arista side configuration?
+This will help us debug better.
+
+Thanks,
+Neerav
 -------------- next part --------------
 An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160419/daa3e980/attachment-0001.html>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160419/ec5a6f16/attachment.html>
