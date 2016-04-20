@@ -1,58 +1,97 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Wed, 20 Apr 2016 17:56:32 +0000
-Subject: [Intel-wired-lan] [PATCH v3] e1000e: don't modify SYSTIM
- registers during SIOCSHWTSTAMP ioctl
-In-Reply-To: <20160415224127.4172-1-jacob.e.keller@intel.com>
-References: <20160415224127.4172-1-jacob.e.keller@intel.com>
-Message-ID: <1461174992.1546.22.camel@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 20 Apr 2016 11:06:34 -0700
+Subject: [Intel-wired-lan] [RFC PATCH 2/5] mlx5: Add support for UDP
+ tunnel segmentation with outer checksum offload
+In-Reply-To: <CALzJLG-8enmxxvjbVbcygVgM0VhX7Eo=6B=2pZF5jQzN9L9YEg@mail.gmail.com>
+References: <20160419185949.11723.50506.stgit@ahduyck-xeon-server>
+ <20160419190603.11723.31623.stgit@ahduyck-xeon-server>
+ <CALzJLG-8enmxxvjbVbcygVgM0VhX7Eo=6B=2pZF5jQzN9L9YEg@mail.gmail.com>
+Message-ID: <CAKgT0Uc5poLcTzkeA_8fi2jQeF08zbtj3+obTG1q0ha+ESZRCQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 2016-04-15 at 15:41 -0700, Jacob Keller wrote:
-> The e1000e_config_hwtstamp function was incorrectly resetting the
-> SYSTIM
-> registers every time the ioctl was being run. If you happened to be
-> running ptp4l and lost the PTP connect (removing cable, or blocking
-> the
-> UDP traffic for example), then ptp4l will eventually perform a
-> restart
-> which involves re-requesting timestamp settings. In e1000e this has
-> the
-> unfortunate and incorrect result of resetting SYSTIME to the kernel
-> time. Since kernel time is usually in UTC, and PTP time is in TAI,
-> this
-> results in the leap second being re-applied.
-> 
-> Fix this by extracting the SYSTIME reset out into its own function,
-> e1000e_ptp_reset, which we call during reset to restore the hardware
-> registers. This function will (a) restart the timecounter based on
-> the
-> new system time, (b) restore the previous PPB setting, and (c)
-> restore
-> the previous hwtstamp settings.
-> 
-> In order to perform (b), I had to modify the adjfreq ptp function
-> pointer to store the old delta each time it is called. This also has
-> the
-> side effect of restoring the correct base timinca register correctly.
-> The driver does not need to explicitly zero the ptp_delta variable
-> since
-> the entire adapter structure comes zero-initialized.
-> 
-> Reported-by: Brian Walsh <brian@walsh.ws>
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> 
+On Wed, Apr 20, 2016 at 10:40 AM, Saeed Mahameed
+<saeedm@dev.mellanox.co.il> wrote:
+> On Tue, Apr 19, 2016 at 10:06 PM, Alexander Duyck <aduyck@mirantis.com> wrote:
+>> This patch assumes that the mlx5 hardware will ignore existing IPv4/v6
+>> header fields for length and checksum as well as the length and checksum
+>> fields for outer UDP headers.
+>>
+>> I have no means of testing this as I do not have any mlx5 hardware but
+>> thought I would submit it as an RFC to see if anyone out there wants to
+>> test this and see if this does in fact enable this functionality allowing
+>> us to to segment UDP tunneled frames that have an outer checksum.
+>>
+>> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+>> ---
+>>  drivers/net/ethernet/mellanox/mlx5/core/en_main.c |    7 ++++++-
+>>  1 file changed, 6 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_main.c b/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
+>> index e0adb604f461..57d8da796d50 100644
+>> --- a/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
+>> +++ b/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
+>> @@ -2390,13 +2390,18 @@ static void mlx5e_build_netdev(struct net_device *netdev)
+>>         netdev->hw_features      |= NETIF_F_HW_VLAN_CTAG_FILTER;
+>>
+>>         if (mlx5e_vxlan_allowed(mdev)) {
+>> -               netdev->hw_features     |= NETIF_F_GSO_UDP_TUNNEL;
+>> +               netdev->hw_features     |= NETIF_F_GSO_UDP_TUNNEL |
+>> +                                          NETIF_F_GSO_UDP_TUNNEL_CSUM |
+>> +                                          NETIF_F_GSO_PARTIAL;
+>>                 netdev->hw_enc_features |= NETIF_F_IP_CSUM;
+>>                 netdev->hw_enc_features |= NETIF_F_RXCSUM;
+>>                 netdev->hw_enc_features |= NETIF_F_TSO;
+>>                 netdev->hw_enc_features |= NETIF_F_TSO6;
+>>                 netdev->hw_enc_features |= NETIF_F_RXHASH;
+>>                 netdev->hw_enc_features |= NETIF_F_GSO_UDP_TUNNEL;
+>> +               netdev->hw_enc_features |= NETIF_F_GSO_UDP_TUNNEL_CSUM |
+>> +                                          NETIF_F_GSO_PARTIAL;
+>> +               netdev->gso_partial_features = NETIF_F_GSO_UDP_TUNNEL_CSUM;
+>>         }
+>>
+>>         netdev->features          = netdev->hw_features;
+>>
+>
+> Hi Alex,
+>
+> Adding Matt, VxLAN feature owner from Mellanox,
+> Matt please correct me if am wrong, but We already tested GSO VxLAN
+> and we saw the TCP/IP checksum offloads for both inner and outer
+> headers handled by the hardware.
+>
+> And looking at mlx5e_sq_xmit:
+>
+> if (likely(skb->ip_summed == CHECKSUM_PARTIAL)) {
+>         eseg->cs_flags = MLX5_ETH_WQE_L3_CSUM;
+> if (skb->encapsulation) {
+>         eseg->cs_flags |= MLX5_ETH_WQE_L3_INNER_CSUM |
+> MLX5_ETH_WQE_L4_INNER_CSUM;
+>         sq->stats.csum_offload_inner++;
+> } else {
+>         eseg->cs_flags |= MLX5_ETH_WQE_L4_CSUM;
+> }
+>
+> We enable inner/outer hardware checksumming unconditionally without
+> looking at the features Alex is suggesting in this patch,
+> Alex, can you elaborate more on the meaning of those features ? and
+> why would it work for us without declaring them ?
 
+Well right now the feature list exposed by the device indicates that
+TSO is not used if a VxLAN tunnel has a checksum in an outer header.
+Since that is not exposed currently that is completely offloaded in
+software via GSO.
 
-Unfortunately, Todd Fujinaka found an issue with this patch on e1000e
-devices which do not support timestamping. I forgot to add a check to
-the HW_TIMESTAMP flag. I cleaned up a few other minor things as well in
-v4. Sorry (again) for the thrash, we'll get this worked out.
+What the GSO partial does is allow us to treat GSO for tunnels with
+checksum like it is GSO for tunnels without checksum by precomputing
+the UDP checksum as though the frame had already been segmented and
+restricts us to an even multiple of MSS bytes that are to be segmented
+between all the frames.  One side effect though is that all of the IP
+and UDP header fields are also precomputed, but from what I can tell
+it looks like the values that would be changed by a change in length
+are ignored or overwritten by the hardware and driver anyway.
 
-Jeff, can you drop this patch from the queue a v4 is incoming.
-
-Regards,
-Jake
+- Alex
