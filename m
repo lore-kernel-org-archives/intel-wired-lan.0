@@ -1,97 +1,202 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 20 Apr 2016 11:06:34 -0700
-Subject: [Intel-wired-lan] [RFC PATCH 2/5] mlx5: Add support for UDP
- tunnel segmentation with outer checksum offload
-In-Reply-To: <CALzJLG-8enmxxvjbVbcygVgM0VhX7Eo=6B=2pZF5jQzN9L9YEg@mail.gmail.com>
-References: <20160419185949.11723.50506.stgit@ahduyck-xeon-server>
- <20160419190603.11723.31623.stgit@ahduyck-xeon-server>
- <CALzJLG-8enmxxvjbVbcygVgM0VhX7Eo=6B=2pZF5jQzN9L9YEg@mail.gmail.com>
-Message-ID: <CAKgT0Uc5poLcTzkeA_8fi2jQeF08zbtj3+obTG1q0ha+ESZRCQ@mail.gmail.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Wed, 20 Apr 2016 11:36:42 -0700
+Subject: [Intel-wired-lan] [PATCH v4] e1000e: don't modify SYSTIM registers
+	during SIOCSHWTSTAMP ioctl
+Message-ID: <20160420183642.29050-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Apr 20, 2016 at 10:40 AM, Saeed Mahameed
-<saeedm@dev.mellanox.co.il> wrote:
-> On Tue, Apr 19, 2016 at 10:06 PM, Alexander Duyck <aduyck@mirantis.com> wrote:
->> This patch assumes that the mlx5 hardware will ignore existing IPv4/v6
->> header fields for length and checksum as well as the length and checksum
->> fields for outer UDP headers.
->>
->> I have no means of testing this as I do not have any mlx5 hardware but
->> thought I would submit it as an RFC to see if anyone out there wants to
->> test this and see if this does in fact enable this functionality allowing
->> us to to segment UDP tunneled frames that have an outer checksum.
->>
->> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
->> ---
->>  drivers/net/ethernet/mellanox/mlx5/core/en_main.c |    7 ++++++-
->>  1 file changed, 6 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_main.c b/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
->> index e0adb604f461..57d8da796d50 100644
->> --- a/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
->> +++ b/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
->> @@ -2390,13 +2390,18 @@ static void mlx5e_build_netdev(struct net_device *netdev)
->>         netdev->hw_features      |= NETIF_F_HW_VLAN_CTAG_FILTER;
->>
->>         if (mlx5e_vxlan_allowed(mdev)) {
->> -               netdev->hw_features     |= NETIF_F_GSO_UDP_TUNNEL;
->> +               netdev->hw_features     |= NETIF_F_GSO_UDP_TUNNEL |
->> +                                          NETIF_F_GSO_UDP_TUNNEL_CSUM |
->> +                                          NETIF_F_GSO_PARTIAL;
->>                 netdev->hw_enc_features |= NETIF_F_IP_CSUM;
->>                 netdev->hw_enc_features |= NETIF_F_RXCSUM;
->>                 netdev->hw_enc_features |= NETIF_F_TSO;
->>                 netdev->hw_enc_features |= NETIF_F_TSO6;
->>                 netdev->hw_enc_features |= NETIF_F_RXHASH;
->>                 netdev->hw_enc_features |= NETIF_F_GSO_UDP_TUNNEL;
->> +               netdev->hw_enc_features |= NETIF_F_GSO_UDP_TUNNEL_CSUM |
->> +                                          NETIF_F_GSO_PARTIAL;
->> +               netdev->gso_partial_features = NETIF_F_GSO_UDP_TUNNEL_CSUM;
->>         }
->>
->>         netdev->features          = netdev->hw_features;
->>
->
-> Hi Alex,
->
-> Adding Matt, VxLAN feature owner from Mellanox,
-> Matt please correct me if am wrong, but We already tested GSO VxLAN
-> and we saw the TCP/IP checksum offloads for both inner and outer
-> headers handled by the hardware.
->
-> And looking at mlx5e_sq_xmit:
->
-> if (likely(skb->ip_summed == CHECKSUM_PARTIAL)) {
->         eseg->cs_flags = MLX5_ETH_WQE_L3_CSUM;
-> if (skb->encapsulation) {
->         eseg->cs_flags |= MLX5_ETH_WQE_L3_INNER_CSUM |
-> MLX5_ETH_WQE_L4_INNER_CSUM;
->         sq->stats.csum_offload_inner++;
-> } else {
->         eseg->cs_flags |= MLX5_ETH_WQE_L4_CSUM;
-> }
->
-> We enable inner/outer hardware checksumming unconditionally without
-> looking at the features Alex is suggesting in this patch,
-> Alex, can you elaborate more on the meaning of those features ? and
-> why would it work for us without declaring them ?
+The e1000e_config_hwtstamp function was incorrectly resetting the SYSTIM
+registers every time the ioctl was being run. If you happened to be
+running ptp4l and lost the PTP connect (removing cable, or blocking the
+UDP traffic for example), then ptp4l will eventually perform a restart
+which involves re-requesting timestamp settings. In e1000e this has the
+unfortunate and incorrect result of resetting SYSTIME to the kernel
+time. Since kernel time is usually in UTC, and PTP time is in TAI, this
+results in the leap second being re-applied.
 
-Well right now the feature list exposed by the device indicates that
-TSO is not used if a VxLAN tunnel has a checksum in an outer header.
-Since that is not exposed currently that is completely offloaded in
-software via GSO.
+Fix this by extracting the SYSTIME reset out into its own function,
+e1000e_ptp_reset, which we call during reset to restore the hardware
+registers. This function will (a) restart the timecounter based on the
+new system time, (b) restore the previous PPB setting, and (c) restore
+the previous hwtstamp settings.
 
-What the GSO partial does is allow us to treat GSO for tunnels with
-checksum like it is GSO for tunnels without checksum by precomputing
-the UDP checksum as though the frame had already been segmented and
-restricts us to an even multiple of MSS bytes that are to be segmented
-between all the frames.  One side effect though is that all of the IP
-and UDP header fields are also precomputed, but from what I can tell
-it looks like the values that would be changed by a change in length
-are ignored or overwritten by the hardware and driver anyway.
+In order to perform (b), I had to modify the adjfreq ptp function
+pointer to store the old delta each time it is called. This also has the
+side effect of restoring the correct base timinca register correctly.
+The driver does not need to explicitly zero the ptp_delta variable since
+the entire adapter structure comes zero-initialized.
 
-- Alex
+Reported-by: Brian Walsh <brian@walsh.ws>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Tested-by: Brian Walsh <brian@walsh.ws>
+---
+
+Notes:
+    This patch conflicts with Brian's "e1000e fix ptp time reset on newtork
+    interruption", and that patch MUST be removed from the queue before applying
+    this one.
+    
+    - Changes since v1
+    * move e1000e_init_ptp prior to reset so that PTP clock is created first
+    * handle NULL ptp_clock_info gracefully.
+    
+    - Changes since v2
+    * fix stupid compilation error
+    * fix stupid null pointer check
+    
+    - Changes since v3
+    * fix issue when using part that doesn't support hw timestamping
+    * rename e1000e_ptp_reset to more apt e1000e_systim_reset
+    * refactor code a little to reduce duplicate warning and improve readability
+
+ drivers/net/ethernet/intel/e1000e/e1000.h  |  1 +
+ drivers/net/ethernet/intel/e1000e/netdev.c | 68 +++++++++++++++++++++++-------
+ drivers/net/ethernet/intel/e1000e/ptp.c    |  2 +
+ 3 files changed, 55 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h b/drivers/net/ethernet/intel/e1000e/e1000.h
+index 010e6d61c855..ef96cd11d6d2 100644
+--- a/drivers/net/ethernet/intel/e1000e/e1000.h
++++ b/drivers/net/ethernet/intel/e1000e/e1000.h
+@@ -347,6 +347,7 @@ struct e1000_adapter {
+ 	struct ptp_clock *ptp_clock;
+ 	struct ptp_clock_info ptp_clock_info;
+ 	struct pm_qos_request pm_qos_req;
++	s32 ptp_delta;
+ 
+ 	u16 eee_advert;
+ };
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 50d2684ac146..02e28581dcad 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -3580,7 +3580,6 @@ static int e1000e_config_hwtstamp(struct e1000_adapter *adapter,
+ 	bool is_l4 = false;
+ 	bool is_l2 = false;
+ 	u32 regval;
+-	s32 ret_val;
+ 
+ 	if (!(adapter->flags & FLAG_HAS_HW_TIMESTAMP))
+ 		return -EINVAL;
+@@ -3719,16 +3718,6 @@ static int e1000e_config_hwtstamp(struct e1000_adapter *adapter,
+ 	er32(RXSTMPH);
+ 	er32(TXSTMPH);
+ 
+-	/* Get and set the System Time Register SYSTIM base frequency */
+-	ret_val = e1000e_get_base_timinca(adapter, &regval);
+-	if (ret_val)
+-		return ret_val;
+-	ew32(TIMINCA, regval);
+-
+-	/* reset the ns time counter */
+-	timecounter_init(&adapter->tc, &adapter->cc,
+-			 ktime_to_ns(ktime_get_real()));
+-
+ 	return 0;
+ }
+ 
+@@ -3884,6 +3873,53 @@ static void e1000_flush_desc_rings(struct e1000_adapter *adapter)
+ 		e1000_flush_rx_ring(adapter);
+ }
+ 
++/**
++ * e1000e_systim_reset - reset the timesync registers after a hardware reset
++ * @adapter: board private structure
++ *
++ * When the MAC is reset, all hardware bits for timesync will be reset to the
++ * default values. This function will restore the settings last in place.
++ * Since the clock SYSTIME registers are reset, we will simply restore the
++ * cyclecounter to the kernel real clock time.
++ **/
++static void e1000e_systim_reset(struct e1000_adapter *adapter)
++{
++	struct ptp_clock_info *info = &adapter->ptp_clock_info;
++	struct e1000_hw *hw = &adapter->hw;
++	unsigned long flags;
++	u32 timinca;
++	s32 ret_val;
++
++	if (!(adapter->flags & FLAG_HAS_HW_TIMESTAMP))
++		return;
++
++	if (info->adjfreq) {
++		/* restore the previous ptp frequency delta */
++		ret_val = info->adjfreq(info, adapter->ptp_delta);
++	} else {
++		/* set the default base frequency if no adjustment possible */
++		ret_val = e1000e_get_base_timinca(adapter, &timinca);
++		if (!ret_val)
++			ew32(TIMINCA, timinca);
++	}
++
++	if (ret_val) {
++		dev_warn(&adapter->pdev->dev,
++			 "Failed to restore TIMINCA clock rate delta: %d\n",
++			 ret_val);
++		return;
++	}
++
++	/* reset the systim ns time counter */
++	spin_lock_irqsave(&adapter->systim_lock, flags);
++	timecounter_init(&adapter->tc, &adapter->cc,
++			 ktime_to_ns(ktime_get_real()));
++	spin_unlock_irqrestore(&adapter->systim_lock, flags);
++
++	/* restore the previous hwtstamp configuration settings */
++	e1000e_config_hwtstamp(adapter, &adapter->hwtstamp_config);
++}
++
+ /**
+  * e1000e_reset - bring the hardware into a known good state
+  *
+@@ -4063,8 +4099,8 @@ void e1000e_reset(struct e1000_adapter *adapter)
+ 
+ 	e1000e_reset_adaptive(hw);
+ 
+-	/* initialize systim and reset the ns time counter */
+-	e1000e_config_hwtstamp(adapter, &adapter->hwtstamp_config);
++	/* restore systim and hwtstamp settings */
++	e1000e_systim_reset(adapter);
+ 
+ 	/* Set EEE advertisement as appropriate */
+ 	if (adapter->flags2 & FLAG2_HAS_EEE) {
+@@ -7238,6 +7274,9 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		adapter->eeprom_vers = 0;
+ 	}
+ 
++	/* init PTP hardware clock */
++	e1000e_ptp_init(adapter);
++
+ 	/* reset the hardware with the new settings */
+ 	e1000e_reset(adapter);
+ 
+@@ -7256,9 +7295,6 @@ static int e1000_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	/* carrier off reporting is important to ethtool even BEFORE open */
+ 	netif_carrier_off(netdev);
+ 
+-	/* init PTP hardware clock */
+-	e1000e_ptp_init(adapter);
+-
+ 	e1000_print_device_info(adapter);
+ 
+ 	if (pci_dev_run_wake(pdev))
+diff --git a/drivers/net/ethernet/intel/e1000e/ptp.c b/drivers/net/ethernet/intel/e1000e/ptp.c
+index e2ff3ef75d5d..2e1b17ad52a3 100644
+--- a/drivers/net/ethernet/intel/e1000e/ptp.c
++++ b/drivers/net/ethernet/intel/e1000e/ptp.c
+@@ -79,6 +79,8 @@ static int e1000e_phc_adjfreq(struct ptp_clock_info *ptp, s32 delta)
+ 
+ 	ew32(TIMINCA, timinca);
+ 
++	adapter->ptp_delta = delta;
++
+ 	spin_unlock_irqrestore(&adapter->systim_lock, flags);
+ 
+ 	return 0;
+-- 
+2.8.1.493.g7b22612
+
