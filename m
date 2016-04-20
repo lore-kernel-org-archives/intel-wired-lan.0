@@ -1,84 +1,78 @@
-From: Denys Vlasenko <dvlasenk@redhat.com>
-Date: Wed, 20 Apr 2016 17:45:56 +0200
-Subject: [Intel-wired-lan] [PATCH 3/3] e1000e: e1000e_cyclecounter_read():
-	do overflow check only if needed
-In-Reply-To: <1461167156-6737-1-git-send-email-dvlasenk@redhat.com>
-References: <1461167156-6737-1-git-send-email-dvlasenk@redhat.com>
-Message-ID: <1461167156-6737-3-git-send-email-dvlasenk@redhat.com>
+From: Saeed Mahameed <saeedm@dev.mellanox.co.il>
+Date: Wed, 20 Apr 2016 20:40:22 +0300
+Subject: [Intel-wired-lan] [RFC PATCH 2/5] mlx5: Add support for UDP
+ tunnel segmentation with outer checksum offload
+In-Reply-To: <20160419190603.11723.31623.stgit@ahduyck-xeon-server>
+References: <20160419185949.11723.50506.stgit@ahduyck-xeon-server>
+ <20160419190603.11723.31623.stgit@ahduyck-xeon-server>
+Message-ID: <CALzJLG-8enmxxvjbVbcygVgM0VhX7Eo=6B=2pZF5jQzN9L9YEg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-SYSTIMH:SYSTIML registers are incremented by 24-bit value TIMINCA[23..0]
+On Tue, Apr 19, 2016 at 10:06 PM, Alexander Duyck <aduyck@mirantis.com> wrote:
+> This patch assumes that the mlx5 hardware will ignore existing IPv4/v6
+> header fields for length and checksum as well as the length and checksum
+> fields for outer UDP headers.
+>
+> I have no means of testing this as I do not have any mlx5 hardware but
+> thought I would submit it as an RFC to see if anyone out there wants to
+> test this and see if this does in fact enable this functionality allowing
+> us to to segment UDP tunneled frames that have an outer checksum.
+>
+> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+> ---
+>  drivers/net/ethernet/mellanox/mlx5/core/en_main.c |    7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_main.c b/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
+> index e0adb604f461..57d8da796d50 100644
+> --- a/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
+> +++ b/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
+> @@ -2390,13 +2390,18 @@ static void mlx5e_build_netdev(struct net_device *netdev)
+>         netdev->hw_features      |= NETIF_F_HW_VLAN_CTAG_FILTER;
+>
+>         if (mlx5e_vxlan_allowed(mdev)) {
+> -               netdev->hw_features     |= NETIF_F_GSO_UDP_TUNNEL;
+> +               netdev->hw_features     |= NETIF_F_GSO_UDP_TUNNEL |
+> +                                          NETIF_F_GSO_UDP_TUNNEL_CSUM |
+> +                                          NETIF_F_GSO_PARTIAL;
+>                 netdev->hw_enc_features |= NETIF_F_IP_CSUM;
+>                 netdev->hw_enc_features |= NETIF_F_RXCSUM;
+>                 netdev->hw_enc_features |= NETIF_F_TSO;
+>                 netdev->hw_enc_features |= NETIF_F_TSO6;
+>                 netdev->hw_enc_features |= NETIF_F_RXHASH;
+>                 netdev->hw_enc_features |= NETIF_F_GSO_UDP_TUNNEL;
+> +               netdev->hw_enc_features |= NETIF_F_GSO_UDP_TUNNEL_CSUM |
+> +                                          NETIF_F_GSO_PARTIAL;
+> +               netdev->gso_partial_features = NETIF_F_GSO_UDP_TUNNEL_CSUM;
+>         }
+>
+>         netdev->features          = netdev->hw_features;
+>
 
-er32(SYSTIML) are probably moderately expensive (they are pci bus reads).
-Can we avoid one of them? Yes, we can.
+Hi Alex,
 
-If the SYSTIML value we see is smaller than 0xff000000, the overflow
-into SYSTIMH would require at least two increments.
+Adding Matt, VxLAN feature owner from Mellanox,
+Matt please correct me if am wrong, but We already tested GSO VxLAN
+and we saw the TCP/IP checksum offloads for both inner and outer
+headers handled by the hardware.
 
-We do two reads, er32(SYSTIML) and er32(SYSTIMH), in this order.
+And looking at mlx5e_sq_xmit:
 
-Even if one increment happens between them, the overflow into SYSTIMH
-is impossible, and we can avoid doing another er32(SYSTIML) read
-and overflow check.
+if (likely(skb->ip_summed == CHECKSUM_PARTIAL)) {
+        eseg->cs_flags = MLX5_ETH_WQE_L3_CSUM;
+if (skb->encapsulation) {
+        eseg->cs_flags |= MLX5_ETH_WQE_L3_INNER_CSUM |
+MLX5_ETH_WQE_L4_INNER_CSUM;
+        sq->stats.csum_offload_inner++;
+} else {
+        eseg->cs_flags |= MLX5_ETH_WQE_L4_CSUM;
+}
 
-Signed-off-by: Denys Vlasenko <dvlasenk@redhat.com>
-CC: intel-wired-lan at lists.osuosl.org
----
- drivers/net/ethernet/intel/e1000e/netdev.c | 28 ++++++++++++++--------------
- 1 file changed, 14 insertions(+), 14 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 99d0e6e..6f17f89 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -4275,7 +4275,7 @@ static cycle_t e1000e_cyclecounter_read(const struct cyclecounter *cc)
- 	struct e1000_adapter *adapter = container_of(cc, struct e1000_adapter,
- 						     cc);
- 	struct e1000_hw *hw = &adapter->hw;
--	u32 systimel_1, systimel_2, systimeh;
-+	u32 systimel, systimeh;
- 	cycle_t systim, systim_next;
- 	/* SYSTIMH latching upon SYSTIML read does not work well.
- 	 * This means that if SYSTIML overflows after we read it but before
-@@ -4283,21 +4283,21 @@ static cycle_t e1000e_cyclecounter_read(const struct cyclecounter *cc)
- 	 * will experience a huge non linear increment in the systime value
- 	 * to fix that we test for overflow and if true, we re-read systime.
- 	 */
--	systimel_1 = er32(SYSTIML);
-+	systimel = er32(SYSTIML);
- 	systimeh = er32(SYSTIMH);
--	systimel_2 = er32(SYSTIML);
--	/* Check for overflow. If there was no overflow, use the values */
--	if (systimel_1 <= systimel_2) {
--		systim = (cycle_t)systimel_1;
--		systim |= (cycle_t)systimeh << 32;
--	} else {
--		/* There was an overflow, read again SYSTIMH, and use
--		 * systimel_2
--		 */
--		systimeh = er32(SYSTIMH);
--		systim = (cycle_t)systimel_2;
--		systim |= (cycle_t)systimeh << 32;
-+	/* Is systimel is so large that overflow is possible? */
-+	if (systimel >= (u32)0xffffffff - E1000_TIMINCA_INCVALUE_MASK) {
-+		u32 systimel_2 = er32(SYSTIML);
-+		if (systimel > systimel_2) {
-+			/* There was an overflow, read again SYSTIMH, and use
-+			 * systimel_2
-+			 */
-+			systimeh = er32(SYSTIMH);
-+			systimel = systimel_2;
-+		}
- 	}
-+	systim = (cycle_t)systimel;
-+	systim |= (cycle_t)systimeh << 32;
- 
- 	if ((hw->mac.type == e1000_82574) || (hw->mac.type == e1000_82583)) {
- 		u64 time_delta, rem, temp;
--- 
-1.8.1.4
-
+We enable inner/outer hardware checksumming unconditionally without
+looking at the features Alex is suggesting in this patch,
+Alex, can you elaborate more on the meaning of those features ? and
+why would it work for us without declaring them ?
