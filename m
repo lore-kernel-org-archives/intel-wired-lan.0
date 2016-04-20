@@ -1,136 +1,100 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 20 Apr 2016 16:20:49 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 5c46276cc85272267fe9daf1fa55958d73bda5d2 BUILD SUCCESS
-Message-ID: <57173be1.wl8XE4WlSXe/3h2H%fengguang.wu@intel.com>
+From: KY Srinivasan <kys@microsoft.com>
+Date: Wed, 20 Apr 2016 13:44:18 +0000
+Subject: [Intel-wired-lan] [PATCH net-next V5 2/2] intel: ixgbevf:
+ Support Windows hosts (Hyper-V)
+In-Reply-To: <1461133482.2923.28.camel@intel.com>
+References: <1461118655-28103-1-git-send-email-kys@microsoft.com>
+ <1461118677-28142-1-git-send-email-kys@microsoft.com>
+ <1461118677-28142-2-git-send-email-kys@microsoft.com>
+ <1461133482.2923.28.camel@intel.com>
+Message-ID: <BL2PR03MB19088BCE884A63A4EA188AB8A06D0@BL2PR03MB1908.namprd03.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-5c46276cc85272267fe9daf1fa55958d73bda5d2  fm10k: fix incorrect index calculation in fm10k_write_reta
 
-elapsed time: 59m
 
-configs tested: 115
+> -----Original Message-----
+> From: Jeff Kirsher [mailto:jeffrey.t.kirsher at intel.com]
+> Sent: Tuesday, April 19, 2016 11:25 PM
+> To: KY Srinivasan <kys@microsoft.com>; davem at davemloft.net;
+> netdev at vger.kernel.org; linux-kernel at vger.kernel.org;
+> devel at linuxdriverproject.org; olaf at aepfle.de; apw at canonical.com;
+> jasowang at redhat.com; eli at mellanox.com; jackm at mellanox.com;
+> yevgenyp at mellanox.com; john.ronciak at intel.com; intel-wired-
+> lan at lists.osuosl.org; alexander.duyck at gmail.com
+> Subject: Re: [Intel-wired-lan] [PATCH net-next V5 2/2] intel: ixgbevf: Support
+> Windows hosts (Hyper-V)
+> 
+> On Tue, 2016-04-19 at 19:17 -0700, K. Y. Srinivasan wrote:
+> > On Hyper-V, the VF/PF communication is a via software mediated path
+> > as opposed to the hardware mailbox. Make the necessary
+> > adjustments to support Hyper-V.
+> >
+> > Signed-off-by: K. Y. Srinivasan <kys@microsoft.com>
+> > ---
+> > ????????V2: Addressed most of the comments from
+> > ??????????? Alexander Duyck <alexander.duyck@gmail.com>
+> > ??????????? and Rustad, Mark D <mark.d.rustad@intel.com>.
+> >
+> > ????????V3: Addressed additional comments from
+> > ??????????? Alexander Duyck <alexander.duyck@gmail.com>
+> >
+> > ????????V4: Addressed kbuild errors reported by:
+> > ??????????? kbuild test robot <lkp@intel.com>
+> >
+> > ????????V5: Addressed additional comments from
+> > ??????????? Alexander Duyck <alexander.duyck@gmail.com>
+> 
+> First I commend you on actually making a proper changelog for a patch.
+> ?The only issue I have is that the changelog provides not actual
+> changes. ?Saying you reacted to comments does not summarize what the
+> actual changes were. ?I purposely did not review the earlier versions
+> because by the time I went to do a review, there was another version
+> already submitted. ?So your changelog requires that users look at all
+> the previous emails to actually see what Alex and Mark requested in
+> changes.
+> 
+> I am telling you this for future patches, it will not impact these
+> patches, just really disappointing. ?I will take the extra time to
+> track down all the previous emails and the changes requested to ensure
+> you made all the changes that were requested of you. :-( ?This will
+> just delay when I apply the patches for testing.
 
-i386                     randconfig-a0-201616
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64       allyesdebian+CONFIG_DEBUG_INFO_REDUCED
-x86_64                                nfsroot
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x010-201616
-x86_64                 randconfig-x011-201616
-x86_64                 randconfig-x018-201616
-x86_64                 randconfig-x013-201616
-x86_64                 randconfig-x012-201616
-x86_64                 randconfig-x019-201616
-x86_64                 randconfig-x016-201616
-x86_64                 randconfig-x014-201616
-x86_64                 randconfig-x015-201616
-x86_64                 randconfig-x017-201616
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201616
-i386                     randconfig-s1-201616
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                   randconfig-i0-201616
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201616
-i386                     randconfig-i1-201616
-x86_64                           allmodconfig
-x86_64                              rhel_gcov
-i386                   randconfig-x012-201616
-i386                   randconfig-x013-201616
-i386                   randconfig-x015-201616
-i386                   randconfig-x019-201616
-i386                   randconfig-x018-201616
-i386                   randconfig-x011-201616
-i386                   randconfig-x010-201616
-i386                   randconfig-x016-201616
-i386                   randconfig-x017-201616
-i386                   randconfig-x014-201616
-i386                     randconfig-n0-201616
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-x86_64                 randconfig-x000-201616
-x86_64                 randconfig-x001-201616
-x86_64                 randconfig-x005-201616
-x86_64                 randconfig-x007-201616
-x86_64                 randconfig-x006-201616
-x86_64                 randconfig-x004-201616
-x86_64                 randconfig-x008-201616
-x86_64                 randconfig-x009-201616
-x86_64                 randconfig-x003-201616
-x86_64                 randconfig-x002-201616
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-r0-201616
-i386                   randconfig-x000-201616
-i386                   randconfig-x003-201616
-i386                   randconfig-x009-201616
-i386                   randconfig-x005-201616
-i386                   randconfig-x004-201616
-i386                   randconfig-x002-201616
-i386                   randconfig-x006-201616
-i386                   randconfig-x007-201616
-i386                   randconfig-x008-201616
-i386                   randconfig-x001-201616
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
+Thank you for taking the time. Here is a brief summary of all the changes (from
+the initial version - ignoring cosmetic changes):
 
-Thanks,
-Fengguang
+1. Changed the check for running on Hyper-V to be instruction set 
+architecture independent. This is now based on device IDs (since we have
+unique device IDs when running on Hyper-V).
+
+2. Introduced a bunch of stub functions to eliminate a bunch of checks I initially
+had in ixgbev_main.c. I now fully populate the mac operations many of the entry
+points being stubs (ixgbevf_hv_mac_ops).
+
+3. Added a check to ensure that we return appropriate error if  PCI_MMCONFIG
+Is not defined - on Hyper-V we get the mac address by reading the PCI config space
+at special offset.
+
+4. Made the following functions standalone functions:
+ ixgbevf_hv_rlpml_set_vf() and
+ixgbevf_negotiate_api_version()
+These are the Hyper-V variants. We now have the check at the call sites
+in ixgbevf_main.c.
+
+Hope this helps and again I am sorry for not including the summary.
+
+Regards,
+
+K. Y
+> 
+> >
+> > ?drivers/net/ethernet/intel/ixgbevf/ixgbevf.h????? |?? 12 ++
+> > ?drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |?? 31 +++-
+> > ?drivers/net/ethernet/intel/ixgbevf/mbx.c????????? |?? 12 ++
+> > ?drivers/net/ethernet/intel/ixgbevf/vf.c?????????? |? 216
+> > +++++++++++++++++++++
+> > ?drivers/net/ethernet/intel/ixgbevf/vf.h?????????? |??? 2 +
+> > ?5 files changed, 266 insertions(+), 7 deletions(-)
