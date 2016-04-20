@@ -1,78 +1,35 @@
-From: Saeed Mahameed <saeedm@dev.mellanox.co.il>
-Date: Wed, 20 Apr 2016 20:40:22 +0300
-Subject: [Intel-wired-lan] [RFC PATCH 2/5] mlx5: Add support for UDP
- tunnel segmentation with outer checksum offload
-In-Reply-To: <20160419190603.11723.31623.stgit@ahduyck-xeon-server>
-References: <20160419185949.11723.50506.stgit@ahduyck-xeon-server>
- <20160419190603.11723.31623.stgit@ahduyck-xeon-server>
-Message-ID: <CALzJLG-8enmxxvjbVbcygVgM0VhX7Eo=6B=2pZF5jQzN9L9YEg@mail.gmail.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 20 Apr 2016 20:00:03 +0000
+Subject: [Intel-wired-lan] [PATCH v2 04/13] i40e/i40evf: fix
+	I40E_MASK	signed shift overflow warnings
+In-Reply-To: <1460588914-20143-5-git-send-email-jacob.e.keller@intel.com>
+References: <1460588914-20143-1-git-send-email-jacob.e.keller@intel.com>
+ <1460588914-20143-5-git-send-email-jacob.e.keller@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D25FC@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Apr 19, 2016 at 10:06 PM, Alexander Duyck <aduyck@mirantis.com> wrote:
-> This patch assumes that the mlx5 hardware will ignore existing IPv4/v6
-> header fields for length and checksum as well as the length and checksum
-> fields for outer UDP headers.
->
-> I have no means of testing this as I do not have any mlx5 hardware but
-> thought I would submit it as an RFC to see if anyone out there wants to
-> test this and see if this does in fact enable this functionality allowing
-> us to to segment UDP tunneled frames that have an outer checksum.
->
-> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Jacob Keller
+> Sent: Wednesday, April 13, 2016 4:08 PM
+> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+> Subject: [Intel-wired-lan] [PATCH v2 04/13] i40e/i40evf: fix I40E_MASK
+> signed shift overflow warnings
+> 
+> GCC 6 has a new warning which will display when you attempt to left shift a
+> signed value beyond the storage size of the type. I40E_MASK generates a
+> mask value for 32bit registers. Properly typecast the mask value and place
+> the values in parenthesis to prevent macro expansion issues.
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/mellanox/mlx5/core/en_main.c |    7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_main.c b/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
-> index e0adb604f461..57d8da796d50 100644
-> --- a/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
-> +++ b/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
-> @@ -2390,13 +2390,18 @@ static void mlx5e_build_netdev(struct net_device *netdev)
->         netdev->hw_features      |= NETIF_F_HW_VLAN_CTAG_FILTER;
->
->         if (mlx5e_vxlan_allowed(mdev)) {
-> -               netdev->hw_features     |= NETIF_F_GSO_UDP_TUNNEL;
-> +               netdev->hw_features     |= NETIF_F_GSO_UDP_TUNNEL |
-> +                                          NETIF_F_GSO_UDP_TUNNEL_CSUM |
-> +                                          NETIF_F_GSO_PARTIAL;
->                 netdev->hw_enc_features |= NETIF_F_IP_CSUM;
->                 netdev->hw_enc_features |= NETIF_F_RXCSUM;
->                 netdev->hw_enc_features |= NETIF_F_TSO;
->                 netdev->hw_enc_features |= NETIF_F_TSO6;
->                 netdev->hw_enc_features |= NETIF_F_RXHASH;
->                 netdev->hw_enc_features |= NETIF_F_GSO_UDP_TUNNEL;
-> +               netdev->hw_enc_features |= NETIF_F_GSO_UDP_TUNNEL_CSUM |
-> +                                          NETIF_F_GSO_PARTIAL;
-> +               netdev->gso_partial_features = NETIF_F_GSO_UDP_TUNNEL_CSUM;
->         }
->
->         netdev->features          = netdev->hw_features;
->
+>  drivers/net/ethernet/intel/i40e/i40e_type.h   | 2 +-
+>  drivers/net/ethernet/intel/i40evf/i40e_type.h | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 
-Hi Alex,
-
-Adding Matt, VxLAN feature owner from Mellanox,
-Matt please correct me if am wrong, but We already tested GSO VxLAN
-and we saw the TCP/IP checksum offloads for both inner and outer
-headers handled by the hardware.
-
-And looking at mlx5e_sq_xmit:
-
-if (likely(skb->ip_summed == CHECKSUM_PARTIAL)) {
-        eseg->cs_flags = MLX5_ETH_WQE_L3_CSUM;
-if (skb->encapsulation) {
-        eseg->cs_flags |= MLX5_ETH_WQE_L3_INNER_CSUM |
-MLX5_ETH_WQE_L4_INNER_CSUM;
-        sq->stats.csum_offload_inner++;
-} else {
-        eseg->cs_flags |= MLX5_ETH_WQE_L4_CSUM;
-}
-
-We enable inner/outer hardware checksumming unconditionally without
-looking at the features Alex is suggesting in this patch,
-Alex, can you elaborate more on the meaning of those features ? and
-why would it work for us without declaring them ?
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Driver compiles without shift warnings with gcc6
