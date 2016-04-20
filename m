@@ -1,36 +1,58 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 20 Apr 2016 17:32:51 +0000
-Subject: [Intel-wired-lan] [PATCH v2 03/13] ixgbevf: make use of BIT()
- macro	to avoid shift of signed values
-In-Reply-To: <1460588914-20143-4-git-send-email-jacob.e.keller@intel.com>
-References: <1460588914-20143-1-git-send-email-jacob.e.keller@intel.com>
- <1460588914-20143-4-git-send-email-jacob.e.keller@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D25A4@ORSMSX104.amr.corp.intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Wed, 20 Apr 2016 17:56:32 +0000
+Subject: [Intel-wired-lan] [PATCH v3] e1000e: don't modify SYSTIM
+ registers during SIOCSHWTSTAMP ioctl
+In-Reply-To: <20160415224127.4172-1-jacob.e.keller@intel.com>
+References: <20160415224127.4172-1-jacob.e.keller@intel.com>
+Message-ID: <1461174992.1546.22.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Jacob Keller
-> Sent: Wednesday, April 13, 2016 4:08 PM
-> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [PATCH v2 03/13] ixgbevf: make use of BIT() macro
-> to avoid shift of signed values
+On Fri, 2016-04-15 at 15:41 -0700, Jacob Keller wrote:
+> The e1000e_config_hwtstamp function was incorrectly resetting the
+> SYSTIM
+> registers every time the ioctl was being run. If you happened to be
+> running ptp4l and lost the PTP connect (removing cable, or blocking
+> the
+> UDP traffic for example), then ptp4l will eventually perform a
+> restart
+> which involves re-requesting timestamp settings. In e1000e this has
+> the
+> unfortunate and incorrect result of resetting SYSTIME to the kernel
+> time. Since kernel time is usually in UTC, and PTP time is in TAI,
+> this
+> results in the leap second being re-applied.
 > 
-> Also cleanup a case where we're bit shifting a value into place, and use an
-> unsigned constant. Make use of the unsigned postfix in places where
-> BIT() macro is not appropriate.
+> Fix this by extracting the SYSTIME reset out into its own function,
+> e1000e_ptp_reset, which we call during reset to restore the hardware
+> registers. This function will (a) restart the timecounter based on
+> the
+> new system time, (b) restore the previous PPB setting, and (c)
+> restore
+> the previous hwtstamp settings.
 > 
+> In order to perform (b), I had to modify the adjfreq ptp function
+> pointer to store the old delta each time it is called. This also has
+> the
+> side effect of restoring the correct base timinca register correctly.
+> The driver does not need to explicitly zero the ptp_delta variable
+> since
+> the entire adapter structure comes zero-initialized.
+> 
+> Reported-by: Brian Walsh <brian@walsh.ws>
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
->  drivers/net/ethernet/intel/ixgbevf/defines.h      | 22 +++++++++++-----------
->  drivers/net/ethernet/intel/ixgbevf/ethtool.c      |  3 ++-
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |  8 ++++----
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 18 +++++++++---------
->  4 files changed, 26 insertions(+), 25 deletions(-)
+> 
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Driver compiles without shift warnings
+
+Unfortunately, Todd Fujinaka found an issue with this patch on e1000e
+devices which do not support timestamping. I forgot to add a check to
+the HW_TIMESTAMP flag. I cleaned up a few other minor things as well in
+v4. Sorry (again) for the thrash, we'll get this worked out.
+
+Jeff, can you drop this patch from the queue a v4 is incoming.
+
+Regards,
+Jake
