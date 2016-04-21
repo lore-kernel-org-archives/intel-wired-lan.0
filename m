@@ -1,46 +1,86 @@
 From: Preethi Banala <preethi.banala@intel.com>
-Date: Thu, 21 Apr 2016 11:40:24 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Return 64 bit stats values
-Message-ID: <20160421184024.14525.87965.stgit@ixgbe-dev.jf.intel.com>
+Date: Thu, 21 Apr 2016 11:40:35 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Revise populating few registers
+	and macro definitions
+Message-ID: <20160421184035.14573.50191.stgit@ixgbe-dev.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The code was ignoring higher 32 bits of stats registers. This patch
-correctly fills out 64 bit value in two 32 bit words.
+Revise populating few registers in ixgbe_get_regs() and macro
+definitions.
+Before applying patch:
+$ du -k objs/drivers/net/ethernet/intel/ixgbe/ixgbe.ko
+8572    objs/drivers/net/ethernet/intel/ixgbe/ixgbe.ko
+After applying patch:
+$ du -k objs/drivers/net/ethernet/intel/ixgbe/ixgbe.ko
+8568    objs/drivers/net/ethernet/intel/ixgbe/ixgbe.ko
 
 Signed-off-by: Preethi Banala <preethi.banala@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |    9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   18 ++++++------------
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h    |   10 ++--------
+ 2 files changed, 8 insertions(+), 20 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-index 5d009f04e37f..b59e3057f291 100644
+index b59e3057f291..f1d2fc1f0272 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-@@ -722,8 +722,10 @@ static void ixgbe_get_regs(struct net_device *netdev,
- 	regs_buff[939] = IXGBE_GET_STAT(adapter, bprc);
- 	regs_buff[940] = IXGBE_GET_STAT(adapter, mprc);
- 	regs_buff[941] = IXGBE_GET_STAT(adapter, gptc);
--	regs_buff[942] = IXGBE_GET_STAT(adapter, gorc);
--	regs_buff[944] = IXGBE_GET_STAT(adapter, gotc);
-+	regs_buff[942] = (u32)IXGBE_GET_STAT(adapter, gorc);
-+	regs_buff[943] = (u32)(IXGBE_GET_STAT(adapter, gorc) >> 32);
-+	regs_buff[944] = (u32)IXGBE_GET_STAT(adapter, gotc);
-+	regs_buff[945] = (u32)(IXGBE_GET_STAT(adapter, gotc) >> 32);
+@@ -535,10 +535,8 @@ static void ixgbe_get_regs(struct net_device *netdev,
+ 
+ 	/* Flow Control */
+ 	regs_buff[30] = IXGBE_READ_REG(hw, IXGBE_PFCTOP);
+-	regs_buff[31] = IXGBE_READ_REG(hw, IXGBE_FCTTV(0));
+-	regs_buff[32] = IXGBE_READ_REG(hw, IXGBE_FCTTV(1));
+-	regs_buff[33] = IXGBE_READ_REG(hw, IXGBE_FCTTV(2));
+-	regs_buff[34] = IXGBE_READ_REG(hw, IXGBE_FCTTV(3));
++	for (i = 0; i < 4; i++)
++		regs_buff[31 + i] = IXGBE_READ_REG(hw, IXGBE_FCTTV(i));
+ 	for (i = 0; i < 8; i++) {
+ 		switch (hw->mac.type) {
+ 		case ixgbe_mac_82598EB:
+@@ -808,15 +806,11 @@ static void ixgbe_get_regs(struct net_device *netdev,
+ 		regs_buff[1096 + i] = IXGBE_READ_REG(hw, IXGBE_TIC_DW(i));
+ 	regs_buff[1100] = IXGBE_READ_REG(hw, IXGBE_TDPROBE);
+ 	regs_buff[1101] = IXGBE_READ_REG(hw, IXGBE_TXBUFCTRL);
+-	regs_buff[1102] = IXGBE_READ_REG(hw, IXGBE_TXBUFDATA0);
+-	regs_buff[1103] = IXGBE_READ_REG(hw, IXGBE_TXBUFDATA1);
+-	regs_buff[1104] = IXGBE_READ_REG(hw, IXGBE_TXBUFDATA2);
+-	regs_buff[1105] = IXGBE_READ_REG(hw, IXGBE_TXBUFDATA3);
++	for (i = 0; i < 4; i++)
++		regs_buff[1102 + i] = IXGBE_READ_REG(hw, IXGBE_TXBUFDATA(i));
+ 	regs_buff[1106] = IXGBE_READ_REG(hw, IXGBE_RXBUFCTRL);
+-	regs_buff[1107] = IXGBE_READ_REG(hw, IXGBE_RXBUFDATA0);
+-	regs_buff[1108] = IXGBE_READ_REG(hw, IXGBE_RXBUFDATA1);
+-	regs_buff[1109] = IXGBE_READ_REG(hw, IXGBE_RXBUFDATA2);
+-	regs_buff[1110] = IXGBE_READ_REG(hw, IXGBE_RXBUFDATA3);
++	for (i = 0; i < 4; i++)
++		regs_buff[1107 + i] = IXGBE_READ_REG(hw, IXGBE_RXBUFDATA(i));
  	for (i = 0; i < 8; i++)
- 		regs_buff[946 + i] = IXGBE_GET_STAT(adapter, rnbc[i]);
- 	regs_buff[954] = IXGBE_GET_STAT(adapter, ruc);
-@@ -733,7 +735,8 @@ static void ixgbe_get_regs(struct net_device *netdev,
- 	regs_buff[958] = IXGBE_GET_STAT(adapter, mngprc);
- 	regs_buff[959] = IXGBE_GET_STAT(adapter, mngpdc);
- 	regs_buff[960] = IXGBE_GET_STAT(adapter, mngptc);
--	regs_buff[961] = IXGBE_GET_STAT(adapter, tor);
-+	regs_buff[961] = (u32)IXGBE_GET_STAT(adapter, tor);
-+	regs_buff[962] = (u32)(IXGBE_GET_STAT(adapter, tor) >> 32);
- 	regs_buff[963] = IXGBE_GET_STAT(adapter, tpr);
- 	regs_buff[964] = IXGBE_GET_STAT(adapter, tpt);
- 	regs_buff[965] = IXGBE_GET_STAT(adapter, ptc64);
+ 		regs_buff[1111 + i] = IXGBE_READ_REG(hw, IXGBE_PCIE_DIAG(i));
+ 	regs_buff[1119] = IXGBE_READ_REG(hw, IXGBE_RFVAL);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index 97f0127ec03e..fecf594566f7 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -1056,15 +1056,9 @@ struct ixgbe_thermal_sensor_data {
+ #define IXGBE_TIC_DW2(_i) (0x082B0 + ((_i) * 4))
+ #define IXGBE_TDPROBE     0x07F20
+ #define IXGBE_TXBUFCTRL   0x0C600
+-#define IXGBE_TXBUFDATA0  0x0C610
+-#define IXGBE_TXBUFDATA1  0x0C614
+-#define IXGBE_TXBUFDATA2  0x0C618
+-#define IXGBE_TXBUFDATA3  0x0C61C
++#define IXGBE_TXBUFDATA(_i) (0x0C610 + ((_i) * 4)) /* 4 of these (0-3) */
+ #define IXGBE_RXBUFCTRL   0x03600
+-#define IXGBE_RXBUFDATA0  0x03610
+-#define IXGBE_RXBUFDATA1  0x03614
+-#define IXGBE_RXBUFDATA2  0x03618
+-#define IXGBE_RXBUFDATA3  0x0361C
++#define IXGBE_RXBUFDATA(_i) (0x03610 + ((_i) * 4)) /* 4 of these (0-3) */
+ #define IXGBE_PCIE_DIAG(_i)     (0x11090 + ((_i) * 4)) /* 8 of these */
+ #define IXGBE_RFVAL     0x050A4
+ #define IXGBE_MDFTC1    0x042B8
 
