@@ -1,67 +1,136 @@
 From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Thu, 21 Apr 2016 11:37:06 -0700
-Subject: [Intel-wired-lan] [PATCH 1/2] ixgbe: add WOL support for some 82599
-	subdevice IDs
-Message-ID: <20160421183706.21311.93388.stgit@localhost6.localdomain6>
+Date: Thu, 21 Apr 2016 11:37:12 -0700
+Subject: [Intel-wired-lan] [PATCH 2/2] ixgbe: check EEPROM for WOL support
+	for X540 and above
+In-Reply-To: <20160421183706.21311.93388.stgit@localhost6.localdomain6>
+References: <20160421183706.21311.93388.stgit@localhost6.localdomain6>
+Message-ID: <20160421183712.21311.37417.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-We had some 82599 subdevice IDs missing from the list of parts that
-support WOL.
+This change aims to simplify the logic we use to determine WOL
+support by reading the EEPROM bits for MACs X540 and newer.
 
-Reported-by: Neil Horman <nhorman@redhat.com>
+Also some cleanups in ixgbe_wol_supported() - changed return type to
+bool and removed redundant return variable by simply using return after
+the checks.
+
+
 Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    8 ++++++--
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |    6 +++++-
- 2 files changed, 11 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h      |    4 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   49 ++++++++++++-------------
+ 2 files changed, 25 insertions(+), 28 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index 515c3dc..e216a3d 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -895,8 +895,8 @@ void ixgbe_configure_tx_ring(struct ixgbe_adapter *, struct ixgbe_ring *);
+ void ixgbe_disable_rx_queue(struct ixgbe_adapter *adapter, struct ixgbe_ring *);
+ void ixgbe_update_stats(struct ixgbe_adapter *adapter);
+ int ixgbe_init_interrupt_scheme(struct ixgbe_adapter *adapter);
+-int ixgbe_wol_supported(struct ixgbe_adapter *adapter, u16 device_id,
+-			       u16 subdevice_id);
++bool ixgbe_wol_supported(struct ixgbe_adapter *adapter, u16 device_id,
++			 u16 subdevice_id);
+ #ifdef CONFIG_PCI_IOV
+ void ixgbe_full_sync_mac_table(struct ixgbe_adapter *adapter);
+ #endif
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index d52a2a8..5f621ab 100644
+index 5f621ab..2c04771 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -9202,8 +9202,10 @@ int ixgbe_wol_supported(struct ixgbe_adapter *adapter, u16 device_id,
+@@ -9183,7 +9183,7 @@ static inline int ixgbe_enumerate_functions(struct ixgbe_adapter *adapter)
+ 
+ /**
+  * ixgbe_wol_supported - Check whether device supports WoL
+- * @hw: hw specific details
++ * @adapter: the adapter private structure
+  * @device_id: the device ID
+  * @subdev_id: the subsystem device ID
+  *
+@@ -9191,13 +9191,25 @@ static inline int ixgbe_enumerate_functions(struct ixgbe_adapter *adapter)
+  * which devices have WoL support
+  *
+  **/
+-int ixgbe_wol_supported(struct ixgbe_adapter *adapter, u16 device_id,
+-			u16 subdevice_id)
++bool ixgbe_wol_supported(struct ixgbe_adapter *adapter, u16 device_id,
++			 u16 subdevice_id)
+ {
+ 	struct ixgbe_hw *hw = &adapter->hw;
+ 	u16 wol_cap = adapter->eeprom_cap & IXGBE_DEVICE_CAPS_WOL_MASK;
+-	int is_wol_supported = 0;
+ 
++	/* WOL not supported on 82598 */
++	if (hw->mac.type == ixgbe_mac_82598EB)
++		return false;
++
++	/* check eeprom to see if WOL is enabled for X540 and newer */
++	if (hw->mac.type >= ixgbe_mac_X540) {
++		if ((wol_cap == IXGBE_DEVICE_CAPS_WOL_PORT0_1) ||
++		    ((wol_cap == IXGBE_DEVICE_CAPS_WOL_PORT0) &&
++		     (hw->bus.func == 0)))
++			return true;
++	}
++
++	/* WOL is determined based on device IDs for 82599 MACs */
+ 	switch (device_id) {
  	case IXGBE_DEV_ID_82599_SFP:
  		/* Only these subdevices could supports WOL */
- 		switch (subdevice_id) {
--		case IXGBE_SUBDEV_ID_82599_SFP_WOL0:
- 		case IXGBE_SUBDEV_ID_82599_560FLR:
-+		case IXGBE_SUBDEV_ID_82599_LOM_SNAP6:
-+		case IXGBE_SUBDEV_ID_82599_SFP_WOL0:
-+		case IXGBE_SUBDEV_ID_82599_SFP_2OCP:
- 			/* only support first port */
- 			if (hw->bus.func != 0)
- 				break;
-@@ -9211,7 +9213,9 @@ int ixgbe_wol_supported(struct ixgbe_adapter *adapter, u16 device_id,
- 		case IXGBE_SUBDEV_ID_82599_SFP:
- 		case IXGBE_SUBDEV_ID_82599_RNDC:
- 		case IXGBE_SUBDEV_ID_82599_ECNA_DP:
--		case IXGBE_SUBDEV_ID_82599_LOM_SFP:
-+		case IXGBE_SUBDEV_ID_82599_SFP_1OCP:
-+		case IXGBE_SUBDEV_ID_82599_SFP_LOM_OEM1:
-+		case IXGBE_SUBDEV_ID_82599_SFP_LOM_OEM2:
- 			is_wol_supported = 1;
- 			break;
+@@ -9216,43 +9228,28 @@ int ixgbe_wol_supported(struct ixgbe_adapter *adapter, u16 device_id,
+ 		case IXGBE_SUBDEV_ID_82599_SFP_1OCP:
+ 		case IXGBE_SUBDEV_ID_82599_SFP_LOM_OEM1:
+ 		case IXGBE_SUBDEV_ID_82599_SFP_LOM_OEM2:
+-			is_wol_supported = 1;
+-			break;
++			return true;
  		}
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-index 7af4514..71082be 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-@@ -59,8 +59,12 @@
- #define IXGBE_SUBDEV_ID_82599_RNDC       0x1F72
- #define IXGBE_SUBDEV_ID_82599_560FLR     0x17D0
- #define IXGBE_SUBDEV_ID_82599_SP_560FLR  0x211B
-+#define IXGBE_SUBDEV_ID_82599_LOM_SNAP6		0x2159
-+#define IXGBE_SUBDEV_ID_82599_SFP_1OCP		0x000D
-+#define IXGBE_SUBDEV_ID_82599_SFP_2OCP		0x0008
-+#define IXGBE_SUBDEV_ID_82599_SFP_LOM_OEM1	0x8976
-+#define IXGBE_SUBDEV_ID_82599_SFP_LOM_OEM2	0x06EE
- #define IXGBE_SUBDEV_ID_82599_ECNA_DP    0x0470
--#define IXGBE_SUBDEV_ID_82599_LOM_SFP    0x8976
- #define IXGBE_DEV_ID_82599_SFP_EM        0x1507
- #define IXGBE_DEV_ID_82599_SFP_SF2       0x154D
- #define IXGBE_DEV_ID_82599EN_SFP         0x1557
+ 		break;
+ 	case IXGBE_DEV_ID_82599EN_SFP:
+-		/* Only this subdevice supports WOL */
++		/* Only these subdevices support WOL */
+ 		switch (subdevice_id) {
+ 		case IXGBE_SUBDEV_ID_82599EN_SFP_OCP1:
+-			is_wol_supported = 1;
+-			break;
++			return true;
+ 		}
+ 		break;
+ 	case IXGBE_DEV_ID_82599_COMBO_BACKPLANE:
+ 		/* All except this subdevice support WOL */
+ 		if (subdevice_id != IXGBE_SUBDEV_ID_82599_KX4_KR_MEZZ)
+-			is_wol_supported = 1;
++			return true;
+ 		break;
+ 	case IXGBE_DEV_ID_82599_KX4:
+-		is_wol_supported = 1;
+-		break;
+-	case IXGBE_DEV_ID_X540T:
+-	case IXGBE_DEV_ID_X540T1:
+-	case IXGBE_DEV_ID_X550T:
+-	case IXGBE_DEV_ID_X550T1:
+-	case IXGBE_DEV_ID_X550EM_X_KX4:
+-	case IXGBE_DEV_ID_X550EM_X_KR:
+-	case IXGBE_DEV_ID_X550EM_X_10G_T:
+-		/* check eeprom to see if enabled wol */
+-		if ((wol_cap == IXGBE_DEVICE_CAPS_WOL_PORT0_1) ||
+-		    ((wol_cap == IXGBE_DEVICE_CAPS_WOL_PORT0) &&
+-		     (hw->bus.func == 0))) {
+-			is_wol_supported = 1;
+-		}
++		return  true;
++	default:
+ 		break;
+ 	}
+ 
+-	return is_wol_supported;
++	return false;
+ }
+ 
+ /**
 
