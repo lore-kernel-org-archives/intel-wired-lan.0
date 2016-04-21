@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 21 Apr 2016 19:29:08 +0000
-Subject: [Intel-wired-lan] [next-queue PATCH] ixgbevf: Move API
- negotiation function into mac_ops
-In-Reply-To: <20160415003715.11097.60482.stgit@ahduyck-xeon-server>
-References: <20160415003715.11097.60482.stgit@ahduyck-xeon-server>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D2822@ORSMSX104.amr.corp.intel.com>
+Date: Thu, 21 Apr 2016 19:43:46 +0000
+Subject: [Intel-wired-lan] [next S35 v4 4/9] i40e: Refactor receive
+ routine
+In-Reply-To: <1461206617-105072-1-git-send-email-jeffrey.t.kirsher@intel.com>
+References: <1461206617-105072-1-git-send-email-jeffrey.t.kirsher@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D283B@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,25 +13,43 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Alexander Duyck
-> Sent: Thursday, April 14, 2016 5:37 PM
-> To: kys at microsoft.com; intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
-> <jeffrey.t.kirsher@intel.com>; alexander.duyck at gmail.com
-> Subject: [Intel-wired-lan] [next-queue PATCH] ixgbevf: Move API
-> negotiation function into mac_ops
+> Behalf Of Jeff Kirsher
+> Sent: Wednesday, April 20, 2016 7:44 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next S35 v4 4/9] i40e: Refactor receive routine
 > 
-> This patch moves API negotiation into mac_ops.  The general idea here is that
-> with HyperV on the way we need to make certain that anything that will have
-> different versions between HyperV and a standard VF needs to be
-> abstracted enough so that we can have a separate function between the two
-> so we can avoid changes in one breaking something in the other.
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
 > 
-> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+> This is part 1 of the Rx refactor series, just including changes to i40e.
+> 
+> This refactor aligns the receive routine with the one in ixgbe which was highly
+> optimized.  This reduces the code we have to maintain and allows for
+> (hopefully) more readable and maintainable RX hot path.
+> 
+> In order to do this:
+> - consolidate the receive path into a single function that doesn't
+>   use packet split but *does* use pages for Rx buffers.
+> - remove the old _1buf routine
+> - consolidate several routines into helper functions
+> - remove ethtool control over packet split
+> 
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Change-ID: I5ca100721de65992aa0114f8b4bac844b84758e0
 > ---
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |    2 +-
->  drivers/net/ethernet/intel/ixgbevf/vf.c           |    5 +++--
->  drivers/net/ethernet/intel/ixgbevf/vf.h           |    2 +-
->  3 files changed, 5 insertions(+), 4 deletions(-)
+> v4: fixed return to a continue (based on feedback from Alex Duyck)
+> v3: move dma sync into always used path
+>     move setting of rx queue into process skb fields
+> 
+> v2: code was split into more reviewable chunks
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e.h         |    1
+>  drivers/net/ethernet/intel/i40e/i40e_debugfs.c |    9
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c |    1
+>  drivers/net/ethernet/intel/i40e/i40e_main.c    |   16
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c    |  770 ++++++++++++++++----
+> ----
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.h    |   37 +
+>  6 files changed, 531 insertions(+), 303 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Able to create VFs without errors
+Changes present in debugfs dump stats, ethtool no longer shows packet split options
