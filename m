@@ -1,74 +1,85 @@
 From: Babu Moger <babu.moger@oracle.com>
-Date: Thu, 21 Apr 2016 10:21:16 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbevf: Fix relaxed order settings in VF
-	driver
-Message-ID: <1461259276-54151-1-git-send-email-babu.moger@oracle.com>
+Date: Thu, 21 Apr 2016 14:39:41 -0500
+Subject: [Intel-wired-lan] [PATCH] ixgbevf: Fix relaxed order settings
+	in VF driver
+In-Reply-To: <CAKgT0UdEP9ZMnNjSSqh-vZvaEc9N8_X_KWvykChxRv1bretYtw@mail.gmail.com>
+References: <1461259276-54151-1-git-send-email-babu.moger@oracle.com>
+ <CAKgT0UeU+Q1HDvR8pK3kxYofjEqk8jVeh5xONoUpD34MsPZCCA@mail.gmail.com>
+ <CAKgT0UdEP9ZMnNjSSqh-vZvaEc9N8_X_KWvykChxRv1bretYtw@mail.gmail.com>
+Message-ID: <57192C7D.9080507@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Current code writes the tx/rx relaxed order without reading it first.
-This can lead to unintended consequences as we are forcibly writing
-other bits.
+Hi Alex,
 
-We noticed this problem while testing VF driver on sparc. Relaxed
-order settings for rx queue were all messed up which was causing
-performance drop with VF interface.
+On 4/21/2016 2:22 PM, Alexander Duyck wrote:
+> On Thu, Apr 21, 2016 at 11:13 AM, Alexander Duyck
+> <alexander.duyck@gmail.com> wrote:
+>> On Thu, Apr 21, 2016 at 10:21 AM, Babu Moger <babu.moger@oracle.com> wrote:
+>>> Current code writes the tx/rx relaxed order without reading it first.
+>>> This can lead to unintended consequences as we are forcibly writing
+>>> other bits.
+>>
+>> The consequences were very much intended as there are situations where
+>> enabling relaxed ordering can lead to data corruption.
+>>
+>>> We noticed this problem while testing VF driver on sparc. Relaxed
+>>> order settings for rx queue were all messed up which was causing
+>>> performance drop with VF interface.
+>>
+>> What additional relaxed ordering bits are you enabling on Sparc?  I'm
+>> assuming it is just the Rx data write back but I want to verify.
+>>
+>>> Fixed it by reading the registers first and setting the specific
+>>> bit of interest. With this change we are able to match the bandwidth
+>>> equivalent to PF interface.
+>>>
+>>> Signed-off-by: Babu Moger <babu.moger@oracle.com>
+>>
+>> Fixed is a relative term here since you are only chasing performance
+>> from what I can tell.  We need to make certain that this doesn't break
+>> the driver on any other architectures by leading to things like data
+>> corruption.
+>>
+>> - Alex
+> 
+> It occurs to me that what might be easier is instead of altering the
+> configuration on all architectures you could instead wrap the write so
+> that on SPARC you include the extra bits you need and on all other
+> architectures you leave the write as-is similar to how the code in the
+> ixgbe_start_hw_gen2 only clears the bits if CONFIG_SPARC is not
+> defined.
 
-Fixed it by reading the registers first and setting the specific
-bit of interest. With this change we are able to match the bandwidth
-equivalent to PF interface.
 
-Signed-off-by: Babu Moger <babu.moger@oracle.com>
----
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
+Here are the default values that I see when testing on Sparc.
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 0ea14c0..51abff1 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -1545,6 +1545,7 @@ static inline void ixgbevf_irq_enable(struct ixgbevf_adapter *adapter)
- static void ixgbevf_configure_tx_ring(struct ixgbevf_adapter *adapter,
- 				      struct ixgbevf_ring *ring)
- {
-+	u32 regval;
- 	struct ixgbe_hw *hw = &adapter->hw;
- 	u64 tdba = ring->dma;
- 	int wait_loop = 10;
-@@ -1565,8 +1566,10 @@ static void ixgbevf_configure_tx_ring(struct ixgbevf_adapter *adapter,
- 	IXGBE_WRITE_REG(hw, IXGBE_VFTDWBAL(reg_idx), 0);
- 
- 	/* enable relaxed ordering */
-+	regval = IXGBE_READ_REG(hw, IXGBE_VFDCA_TXCTRL(reg_idx));
-+
- 	IXGBE_WRITE_REG(hw, IXGBE_VFDCA_TXCTRL(reg_idx),
--			(IXGBE_DCA_TXCTRL_DESC_RRO_EN |
-+			(regval | IXGBE_DCA_TXCTRL_DESC_RRO_EN |
- 			 IXGBE_DCA_TXCTRL_DATA_RRO_EN));
- 
- 	/* reset head and tail pointers */
-@@ -1734,6 +1737,7 @@ static void ixgbevf_setup_vfmrqc(struct ixgbevf_adapter *adapter)
- static void ixgbevf_configure_rx_ring(struct ixgbevf_adapter *adapter,
- 				      struct ixgbevf_ring *ring)
- {
-+	u32 regval;
- 	struct ixgbe_hw *hw = &adapter->hw;
- 	u64 rdba = ring->dma;
- 	u32 rxdctl;
-@@ -1749,8 +1753,9 @@ static void ixgbevf_configure_rx_ring(struct ixgbevf_adapter *adapter,
- 			ring->count * sizeof(union ixgbe_adv_rx_desc));
- 
- 	/* enable relaxed ordering */
-+	regval = IXGBE_READ_REG(hw, IXGBE_VFDCA_RXCTRL(reg_idx));
- 	IXGBE_WRITE_REG(hw, IXGBE_VFDCA_RXCTRL(reg_idx),
--			IXGBE_DCA_RXCTRL_DESC_RRO_EN);
-+			regval | IXGBE_DCA_RXCTRL_DESC_RRO_EN);
- 
- 	/* reset head and tail pointers */
- 	IXGBE_WRITE_REG(hw, IXGBE_VFRDH(reg_idx), 0);
--- 
-1.7.1
+Default tx value 0x2a00
 
+All below 3 set
+#define IXGBE_DCA_TXCTRL_DESC_RRO_EN (1 << 9) /* Tx rd Desc Relax Order */
+#define IXGBE_DCA_TXCTRL_DESC_WRO_EN (1 << 11) /* Tx Desc writeback RO bit */
+#define IXGBE_DCA_TXCTRL_DATA_RRO_EN (1 << 13) /* Tx rd data Relax Order */
+
+I am not too worried about tx values. I can keep it as it is. It did not
+seem to cause any problems right now.
+
+
+Default rx value 0xb200
+
+All below 3 set plus one more
+
+#define IXGBE_DCA_RXCTRL_DESC_RRO_EN (1 << 9) /* DCA Rx rd Desc Relax Order */
+#define IXGBE_DCA_RXCTRL_DATA_WRO_EN (1 << 13) /* Rx wr data Relax Order */
+#define IXGBE_DCA_RXCTRL_HEAD_WRO_EN (1 << 15) /* Rx wr header RO */
+
+Is there a reason to disable IXGBE_DCA_RXCTRL_DATA_WRO_EN and
+IXGBE_DCA_RXCTRL_HEAD_WRO_EN for RX? 
+
+I would think CONFIG_SPARC should be our last option. What do you think?
+
+> 
+> - Alex
+> 
