@@ -1,144 +1,63 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 21 Apr 2016 14:54:53 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:100GbE]
- dc1b4c2b88b976a7882922e55666b20e28477c57 BUILD SUCCESS
-Message-ID: <5718793d.9HFDarHBujJhe93T%fengguang.wu@intel.com>
+From: Ruinskiy, Dima <dima.ruinskiy@intel.com>
+Date: Thu, 21 Apr 2016 14:41:46 +0000
+Subject: [Intel-wired-lan] [PATCH 1/3] e1000e:
+ e1000e_cyclecounter_read():	incvalue is 32 bits, not 64
+In-Reply-To: <1461167156-6737-1-git-send-email-dvlasenk@redhat.com>
+References: <1461167156-6737-1-git-send-email-dvlasenk@redhat.com>
+Message-ID: <36CDDD56DDB4D44E911123902EFC26B05B47C73B@HASMSX110.ger.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  100GbE
-dc1b4c2b88b976a7882922e55666b20e28477c57  fm10k: fix incorrect IPv6 extended header checksum
+Probably a good idea. do_div() truncates the divisor to 32 bits anyways.
 
-elapsed time: 45m
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Denys Vlasenko
+Sent: Wednesday, 20 April, 2016 18:46
+To: intel-wired-lan@lists.osuosl.org
+Cc: Denys Vlasenko
+Subject: [Intel-wired-lan] [PATCH 1/3] e1000e: e1000e_cyclecounter_read(): incvalue is 32 bits, not 64
 
-configs tested: 123
+"incvalue" variable holds a result of "er32(TIMINCA) & E1000_TIMINCA_INCVALUE_MASK"
+and used in "do_div(temp, incvalue)" as a divisor.
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201616
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                             allmodconfig
-arm                          moxart_defconfig
-avr32            atngw100_evklcd101_defconfig
-blackfin                          allnoconfig
-mips                            ar7_defconfig
-powerpc                     mpc5200_defconfig
-x86_64                 randconfig-x010-201616
-x86_64                 randconfig-x011-201616
-x86_64                 randconfig-x018-201616
-x86_64                 randconfig-x013-201616
-x86_64                 randconfig-x012-201616
-x86_64                 randconfig-x019-201616
-x86_64                 randconfig-x016-201616
-x86_64                 randconfig-x014-201616
-x86_64                 randconfig-x015-201616
-x86_64                 randconfig-x017-201616
-i386                   randconfig-s0-04210523
-i386                     randconfig-s0-201616
-i386         randconfig-s0-201616+CONFIG_DEBUG_INFO_REDUCED
-i386                   randconfig-s1-04210523
-x86_64                 randconfig-s3-04211407
-x86_64                 randconfig-s4-04211407
-x86_64                 randconfig-s5-04211407
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201616
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201616
-i386                     randconfig-i1-201616
-x86_64                           allmodconfig
-x86_64                              rhel_gcov
-i386                   randconfig-x012-201616
-i386                   randconfig-x013-201616
-i386                   randconfig-x015-201616
-i386                   randconfig-x019-201616
-i386                   randconfig-x018-201616
-i386                   randconfig-x011-201616
-i386                   randconfig-x010-201616
-i386                   randconfig-x016-201616
-i386                   randconfig-x017-201616
-i386                   randconfig-x014-201616
-i386                     randconfig-n0-201616
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                 randconfig-x000-201616
-x86_64                 randconfig-x001-201616
-x86_64                 randconfig-x005-201616
-x86_64                 randconfig-x007-201616
-x86_64                 randconfig-x006-201616
-x86_64                 randconfig-x004-201616
-x86_64                 randconfig-x008-201616
-x86_64                 randconfig-x009-201616
-x86_64                 randconfig-x003-201616
-x86_64                 randconfig-x002-201616
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-r0-201616
-i386                   randconfig-x000-201616
-i386                   randconfig-x003-201616
-i386                   randconfig-x009-201616
-i386                   randconfig-x005-201616
-i386                   randconfig-x004-201616
-i386                   randconfig-x002-201616
-i386                   randconfig-x006-201616
-i386                   randconfig-x007-201616
-i386                   randconfig-x008-201616
-i386                   randconfig-x001-201616
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
+Thus, "u64 incvalue" declaration is probably a mistake.
+Even though it seems to be a harmless one, let's fix it.
 
-Thanks,
-Fengguang
+Signed-off-by: Denys Vlasenko <dvlasenk@redhat.com>
+CC: intel-wired-lan at lists.osuosl.org
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 9b4ec13..967311b 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -4300,7 +4300,8 @@ static cycle_t e1000e_cyclecounter_read(const struct cyclecounter *cc)
+ 	}
+ 
+ 	if ((hw->mac.type == e1000_82574) || (hw->mac.type == e1000_82583)) {
+-		u64 incvalue, time_delta, rem, temp;
++		u64 time_delta, rem, temp;
++		u32 incvalue;
+ 		int i;
+ 
+ 		/* errata for 82574/82583 possible bad bits read from SYSTIMH/L
+-- 
+1.8.1.4
+
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan at lists.osuosl.org
+http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+---------------------------------------------------------------------
+Intel Israel (74) Limited
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
+
