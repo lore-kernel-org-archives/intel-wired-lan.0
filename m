@@ -1,52 +1,62 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Thu, 21 Apr 2016 12:22:38 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbevf: Fix relaxed order settings
-	in VF driver
-In-Reply-To: <CAKgT0UeU+Q1HDvR8pK3kxYofjEqk8jVeh5xONoUpD34MsPZCCA@mail.gmail.com>
-References: <1461259276-54151-1-git-send-email-babu.moger@oracle.com>
- <CAKgT0UeU+Q1HDvR8pK3kxYofjEqk8jVeh5xONoUpD34MsPZCCA@mail.gmail.com>
-Message-ID: <CAKgT0UdEP9ZMnNjSSqh-vZvaEc9N8_X_KWvykChxRv1bretYtw@mail.gmail.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Thu, 21 Apr 2016 12:23:08 -0700
+Subject: [Intel-wired-lan] [next S35 v4 4/9] i40e: Refactor receive
+	routine
+In-Reply-To: <1461206617-105072-1-git-send-email-jeffrey.t.kirsher@intel.com>
+References: <1461206617-105072-1-git-send-email-jeffrey.t.kirsher@intel.com>
+Message-ID: <20160421122308.0000155d@unknown>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Apr 21, 2016 at 11:13 AM, Alexander Duyck
-<alexander.duyck@gmail.com> wrote:
-> On Thu, Apr 21, 2016 at 10:21 AM, Babu Moger <babu.moger@oracle.com> wrote:
->> Current code writes the tx/rx relaxed order without reading it first.
->> This can lead to unintended consequences as we are forcibly writing
->> other bits.
->
-> The consequences were very much intended as there are situations where
-> enabling relaxed ordering can lead to data corruption.
->
->> We noticed this problem while testing VF driver on sparc. Relaxed
->> order settings for rx queue were all messed up which was causing
->> performance drop with VF interface.
->
-> What additional relaxed ordering bits are you enabling on Sparc?  I'm
-> assuming it is just the Rx data write back but I want to verify.
->
->> Fixed it by reading the registers first and setting the specific
->> bit of interest. With this change we are able to match the bandwidth
->> equivalent to PF interface.
->>
->> Signed-off-by: Babu Moger <babu.moger@oracle.com>
->
-> Fixed is a relative term here since you are only chasing performance
-> from what I can tell.  We need to make certain that this doesn't break
-> the driver on any other architectures by leading to things like data
-> corruption.
->
-> - Alex
 
-It occurs to me that what might be easier is instead of altering the
-configuration on all architectures you could instead wrap the write so
-that on SPARC you include the extra bits you need and on all other
-architectures you leave the write as-is similar to how the code in the
-ixgbe_start_hw_gen2 only clears the bits if CONFIG_SPARC is not
-defined.
+On Wed, 20 Apr 2016 19:43:37 -0700
+Jeff Kirsher <jeffrey.t.kirsher@intel.com> wrote:
 
-- Alex
+> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> 
+> This is part 1 of the Rx refactor series, just including
+> changes to i40e.
+> 
+> This refactor aligns the receive routine with the one in
+> ixgbe which was highly optimized.  This reduces the code
+> we have to maintain and allows for (hopefully) more readable
+> and maintainable RX hot path.
+> 
+> In order to do this:
+> - consolidate the receive path into a single function that doesn't
+>   use packet split but *does* use pages for Rx buffers.
+> - remove the old _1buf routine
+> - consolidate several routines into helper functions
+> - remove ethtool control over packet split
+> 
+> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> Change-ID: I5ca100721de65992aa0114f8b4bac844b84758e0
+> ---
+> v4: fixed return to a continue (based on feedback from Alex Duyck)
+> v3: move dma sync into always used path
+>     move setting of rx queue into process skb fields
+> 
+> v2: code was split into more reviewable chunks
+
+Thanks Jeff for making the v4.
+
+snip...
+  
+> -		/* ERR_MASK will only have valid bits if EOP set */
+> -		if (unlikely(rx_error & BIT(I40E_RX_DESC_ERROR_RXE_SHIFT))) {
+> +		/* ERR_MASK will only have valid bits if EOP set, and
+> +		 * what we are doing here is actually checking
+> +		 * I40E_RX_DESC_ERROR_RXE_SHIFT, since it is the zeroth bit in
+> +		 * the error field
+> +		 */
+> +		if (unlikely(i40e_test_staterr(rx_desc, BIT(I40E_RXD_QW1_ERROR_SHIFT)))) {
+>  			dev_kfree_skb_any(skb);
+>  			continue;
+>  		}
+>
+
+This change should be made also, separately to i40evf/i40e_txrx.c
+
