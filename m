@@ -1,86 +1,52 @@
-From: Preethi Banala <preethi.banala@intel.com>
-Date: Thu, 21 Apr 2016 11:40:35 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Revise populating few registers
-	and macro definitions
-Message-ID: <20160421184035.14573.50191.stgit@ixgbe-dev.jf.intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Thu, 21 Apr 2016 12:22:38 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbevf: Fix relaxed order settings
+	in VF driver
+In-Reply-To: <CAKgT0UeU+Q1HDvR8pK3kxYofjEqk8jVeh5xONoUpD34MsPZCCA@mail.gmail.com>
+References: <1461259276-54151-1-git-send-email-babu.moger@oracle.com>
+ <CAKgT0UeU+Q1HDvR8pK3kxYofjEqk8jVeh5xONoUpD34MsPZCCA@mail.gmail.com>
+Message-ID: <CAKgT0UdEP9ZMnNjSSqh-vZvaEc9N8_X_KWvykChxRv1bretYtw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Revise populating few registers in ixgbe_get_regs() and macro
-definitions.
-Before applying patch:
-$ du -k objs/drivers/net/ethernet/intel/ixgbe/ixgbe.ko
-8572    objs/drivers/net/ethernet/intel/ixgbe/ixgbe.ko
-After applying patch:
-$ du -k objs/drivers/net/ethernet/intel/ixgbe/ixgbe.ko
-8568    objs/drivers/net/ethernet/intel/ixgbe/ixgbe.ko
+On Thu, Apr 21, 2016 at 11:13 AM, Alexander Duyck
+<alexander.duyck@gmail.com> wrote:
+> On Thu, Apr 21, 2016 at 10:21 AM, Babu Moger <babu.moger@oracle.com> wrote:
+>> Current code writes the tx/rx relaxed order without reading it first.
+>> This can lead to unintended consequences as we are forcibly writing
+>> other bits.
+>
+> The consequences were very much intended as there are situations where
+> enabling relaxed ordering can lead to data corruption.
+>
+>> We noticed this problem while testing VF driver on sparc. Relaxed
+>> order settings for rx queue were all messed up which was causing
+>> performance drop with VF interface.
+>
+> What additional relaxed ordering bits are you enabling on Sparc?  I'm
+> assuming it is just the Rx data write back but I want to verify.
+>
+>> Fixed it by reading the registers first and setting the specific
+>> bit of interest. With this change we are able to match the bandwidth
+>> equivalent to PF interface.
+>>
+>> Signed-off-by: Babu Moger <babu.moger@oracle.com>
+>
+> Fixed is a relative term here since you are only chasing performance
+> from what I can tell.  We need to make certain that this doesn't break
+> the driver on any other architectures by leading to things like data
+> corruption.
+>
+> - Alex
 
-Signed-off-by: Preethi Banala <preethi.banala@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |   18 ++++++------------
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h    |   10 ++--------
- 2 files changed, 8 insertions(+), 20 deletions(-)
+It occurs to me that what might be easier is instead of altering the
+configuration on all architectures you could instead wrap the write so
+that on SPARC you include the extra bits you need and on all other
+architectures you leave the write as-is similar to how the code in the
+ixgbe_start_hw_gen2 only clears the bits if CONFIG_SPARC is not
+defined.
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-index b59e3057f291..f1d2fc1f0272 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-@@ -535,10 +535,8 @@ static void ixgbe_get_regs(struct net_device *netdev,
- 
- 	/* Flow Control */
- 	regs_buff[30] = IXGBE_READ_REG(hw, IXGBE_PFCTOP);
--	regs_buff[31] = IXGBE_READ_REG(hw, IXGBE_FCTTV(0));
--	regs_buff[32] = IXGBE_READ_REG(hw, IXGBE_FCTTV(1));
--	regs_buff[33] = IXGBE_READ_REG(hw, IXGBE_FCTTV(2));
--	regs_buff[34] = IXGBE_READ_REG(hw, IXGBE_FCTTV(3));
-+	for (i = 0; i < 4; i++)
-+		regs_buff[31 + i] = IXGBE_READ_REG(hw, IXGBE_FCTTV(i));
- 	for (i = 0; i < 8; i++) {
- 		switch (hw->mac.type) {
- 		case ixgbe_mac_82598EB:
-@@ -808,15 +806,11 @@ static void ixgbe_get_regs(struct net_device *netdev,
- 		regs_buff[1096 + i] = IXGBE_READ_REG(hw, IXGBE_TIC_DW(i));
- 	regs_buff[1100] = IXGBE_READ_REG(hw, IXGBE_TDPROBE);
- 	regs_buff[1101] = IXGBE_READ_REG(hw, IXGBE_TXBUFCTRL);
--	regs_buff[1102] = IXGBE_READ_REG(hw, IXGBE_TXBUFDATA0);
--	regs_buff[1103] = IXGBE_READ_REG(hw, IXGBE_TXBUFDATA1);
--	regs_buff[1104] = IXGBE_READ_REG(hw, IXGBE_TXBUFDATA2);
--	regs_buff[1105] = IXGBE_READ_REG(hw, IXGBE_TXBUFDATA3);
-+	for (i = 0; i < 4; i++)
-+		regs_buff[1102 + i] = IXGBE_READ_REG(hw, IXGBE_TXBUFDATA(i));
- 	regs_buff[1106] = IXGBE_READ_REG(hw, IXGBE_RXBUFCTRL);
--	regs_buff[1107] = IXGBE_READ_REG(hw, IXGBE_RXBUFDATA0);
--	regs_buff[1108] = IXGBE_READ_REG(hw, IXGBE_RXBUFDATA1);
--	regs_buff[1109] = IXGBE_READ_REG(hw, IXGBE_RXBUFDATA2);
--	regs_buff[1110] = IXGBE_READ_REG(hw, IXGBE_RXBUFDATA3);
-+	for (i = 0; i < 4; i++)
-+		regs_buff[1107 + i] = IXGBE_READ_REG(hw, IXGBE_RXBUFDATA(i));
- 	for (i = 0; i < 8; i++)
- 		regs_buff[1111 + i] = IXGBE_READ_REG(hw, IXGBE_PCIE_DIAG(i));
- 	regs_buff[1119] = IXGBE_READ_REG(hw, IXGBE_RFVAL);
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-index 97f0127ec03e..fecf594566f7 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-@@ -1056,15 +1056,9 @@ struct ixgbe_thermal_sensor_data {
- #define IXGBE_TIC_DW2(_i) (0x082B0 + ((_i) * 4))
- #define IXGBE_TDPROBE     0x07F20
- #define IXGBE_TXBUFCTRL   0x0C600
--#define IXGBE_TXBUFDATA0  0x0C610
--#define IXGBE_TXBUFDATA1  0x0C614
--#define IXGBE_TXBUFDATA2  0x0C618
--#define IXGBE_TXBUFDATA3  0x0C61C
-+#define IXGBE_TXBUFDATA(_i) (0x0C610 + ((_i) * 4)) /* 4 of these (0-3) */
- #define IXGBE_RXBUFCTRL   0x03600
--#define IXGBE_RXBUFDATA0  0x03610
--#define IXGBE_RXBUFDATA1  0x03614
--#define IXGBE_RXBUFDATA2  0x03618
--#define IXGBE_RXBUFDATA3  0x0361C
-+#define IXGBE_RXBUFDATA(_i) (0x03610 + ((_i) * 4)) /* 4 of these (0-3) */
- #define IXGBE_PCIE_DIAG(_i)     (0x11090 + ((_i) * 4)) /* 8 of these */
- #define IXGBE_RFVAL     0x050A4
- #define IXGBE_MDFTC1    0x042B8
-
+- Alex
