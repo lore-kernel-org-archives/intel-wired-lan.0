@@ -1,27 +1,94 @@
 From: Preethi Banala <preethi.banala@intel.com>
-Date: Thu, 21 Apr 2016 11:28:41 -0700
-Subject: [Intel-wired-lan] [PATCH 0/3] Update ethtool utility
-Message-ID: <20160421182545.13330.59497.stgit@ixgbe-dev.jf.intel.com>
+Date: Thu, 21 Apr 2016 11:28:46 -0700
+Subject: [Intel-wired-lan] [PATCH 1/3] ethtool/ixgbe: Add device ID and
+	mac_type definitions
+In-Reply-To: <20160421182545.13330.59497.stgit@ixgbe-dev.jf.intel.com>
+References: <20160421182545.13330.59497.stgit@ixgbe-dev.jf.intel.com>
+Message-ID: <20160421182846.13330.65670.stgit@ixgbe-dev.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Made changes in ethtool register dump functionaly to support latest
-Intel 10G drivers and also addressed few inconsistencies found in the
-existing code
+Add device id macro definitions, mac_type enum definition and update
+get_mac_type() accordingly.
 
 Signed-off-by: Preethi Banala <preethi.banala@intel.com>
 ---
+ ixgbe.c |   42 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 42 insertions(+)
 
-Preethi Banala (3):
-      ethtool/ixgbe: Add device ID and mac_type definitions
-      ethtool/ixgbe: Correct offsets and support x550, x550em_x, x550em_a
-      ethtool/ixgbe: Reduce format string storage
+diff --git a/ixgbe.c b/ixgbe.c
+index 3928d77da3b9..a3757824e61a 100644
+--- a/ixgbe.c
++++ b/ixgbe.c
+@@ -63,6 +63,23 @@
+ #define IXGBE_SUBDEV_ID_82599_KX4_KR_MEZZ  0x000C
+ #define IXGBE_DEV_ID_82599_LS            0x154F
+ #define IXGBE_DEV_ID_X540T               0x1528
++#define IXGBE_DEV_ID_82599_SFP_SF_QP     0x154A
++#define IXGBE_DEV_ID_82599_QSFP_SF_QP    0x1558
++#define IXGBE_DEV_ID_X540T1              0x1560
++
++#define IXGBE_DEV_ID_X550T		0x1563
++#define IXGBE_DEV_ID_X550T1		0x15D1
++#define IXGBE_DEV_ID_X550EM_X_KX4	0x15AA
++#define IXGBE_DEV_ID_X550EM_X_KR	0x15AB
++#define IXGBE_DEV_ID_X550EM_X_SFP	0x15AC
++#define IXGBE_DEV_ID_X550EM_X_10G_T	0x15AD
++#define IXGBE_DEV_ID_X550EM_X_1G_T	0x15AE
++#define IXGBE_DEV_ID_X550EM_A_KR	0x15C2
++#define IXGBE_DEV_ID_X550EM_A_KR_L	0x15C3
++#define IXGBE_DEV_ID_X550EM_A_SFP_N	0x15C4
++#define IXGBE_DEV_ID_X550EM_A_SGMII	0x15C6
++#define IXGBE_DEV_ID_X550EM_A_SGMII_L	0x15C7
++#define IXGBE_DEV_ID_X550EM_A_SFP	0x15CE
+ 
+ /*
+  * Enumerated types specific to the ixgbe hardware
+@@ -73,6 +90,9 @@ enum ixgbe_mac_type {
+ 	ixgbe_mac_82598EB,
+ 	ixgbe_mac_82599EB,
+ 	ixgbe_mac_X540,
++	ixgbe_mac_x550,
++	ixgbe_mac_x550em_x,
++	ixgbe_mac_x550em_a,
+ 	ixgbe_num_macs
+ };
+ 
+@@ -112,11 +132,33 @@ ixgbe_get_mac_type(u16 device_id)
+ 	case IXGBE_DEV_ID_82599_COMBO_BACKPLANE:
+ 	case IXGBE_SUBDEV_ID_82599_KX4_KR_MEZZ:
+ 	case IXGBE_DEV_ID_82599_LS:
++	case IXGBE_DEV_ID_82599_SFP_SF_QP:
++	case IXGBE_DEV_ID_82599_QSFP_SF_QP:
+ 		mac_type = ixgbe_mac_82599EB;
+ 		break;
+ 	case IXGBE_DEV_ID_X540T:
++	case IXGBE_DEV_ID_X540T1:
+ 		mac_type = ixgbe_mac_X540;
+ 		break;
++	case IXGBE_DEV_ID_X550T:
++	case IXGBE_DEV_ID_X550T1:
++		mac_type = ixgbe_mac_x550;
++		break;
++	case IXGBE_DEV_ID_X550EM_X_KX4:
++	case IXGBE_DEV_ID_X550EM_X_KR:
++	case IXGBE_DEV_ID_X550EM_X_SFP:
++	case IXGBE_DEV_ID_X550EM_X_10G_T:
++	case IXGBE_DEV_ID_X550EM_X_1G_T:
++		mac_type = ixgbe_mac_x550em_x;
++		break;
++	case IXGBE_DEV_ID_X550EM_A_KR:
++	case IXGBE_DEV_ID_X550EM_A_KR_L:
++	case IXGBE_DEV_ID_X550EM_A_SFP_N:
++	case IXGBE_DEV_ID_X550EM_A_SGMII:
++	case IXGBE_DEV_ID_X550EM_A_SGMII_L:
++	case IXGBE_DEV_ID_X550EM_A_SFP:
++		mac_type = ixgbe_mac_x550em_a;
++		break;
+ 	default:
+ 		mac_type = ixgbe_mac_82598EB;
+ 		break;
 
-
- ixgbe.c |  173 +++++++++++++++++++++++++++++++++++----------------------------
- 1 file changed, 95 insertions(+), 78 deletions(-)
-
---
