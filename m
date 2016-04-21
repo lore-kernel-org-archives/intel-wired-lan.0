@@ -1,289 +1,42 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 22 Apr 2016 00:16:09 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 846d1a478acb46760723c2194b84e67259187cb4 BUILD INCOMPLETE
-Message-ID: <5718fcc9.qIiZX5YpDw2EmdJt%fengguang.wu@intel.com>
+From: Denys Vlasenko <dvlasenk@redhat.com>
+Date: Thu, 21 Apr 2016 19:23:19 +0200
+Subject: [Intel-wired-lan] [PATCH 3/3] e1000e:
+ e1000e_cyclecounter_read(): do overflow check only if needed
+In-Reply-To: <36CDDD56DDB4D44E911123902EFC26B05B47C768@HASMSX110.ger.corp.intel.com>
+References: <1461167156-6737-1-git-send-email-dvlasenk@redhat.com>
+ <1461167156-6737-3-git-send-email-dvlasenk@redhat.com>
+ <36CDDD56DDB4D44E911123902EFC26B05B47C768@HASMSX110.ger.corp.intel.com>
+Message-ID: <57190C87.7020103@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-846d1a478acb46760723c2194b84e67259187cb4  e1000e: e1000e_cyclecounter_read(): do overflow check only if needed
+On 04/21/2016 04:49 PM, Ruinskiy, Dima wrote:
+> Not sure I follow (perhaps I am missing some background).
+> Why do you assume there can be only 1 or 2 increments?
 
-TIMEOUT after 606m
+Different e1000e models have different timer cycle periods:
 
+#define INCVALUE_96MHz          125
+#define INCVALUE_SHIFT_96MHz    17
+#define INCPERIOD_SHIFT_96MHz   2
+#define INCPERIOD_96MHz         (12 >> INCPERIOD_SHIFT_96MHz)
 
-Sorry we cannot finish the testset for your branch within a reasonable time.
-It's our fault -- either some build server is down or some build worker is busy
-doing bisects for _other_ trees. The branch will get more complete coverage and
-possible error reports when our build infrastructure is restored or catches up.
-There will be no more build success notification for this branch head, but you
-can expect reasonably good test coverage after waiting for 1 day.
+#define INCVALUE_25MHz          40
+#define INCVALUE_SHIFT_25MHz    18
+#define INCPERIOD_25MHz         1
 
-configs timed out: 31
+#define INCVALUE_24MHz          125
+#define INCVALUE_SHIFT_24MHz    14
+#define INCPERIOD_24MHz         3
 
-alpha                            allyesconfig
-blackfin                         allmodconfig
-blackfin                         allyesconfig
-cris                             allmodconfig
-cris                             allyesconfig
-ia64                             allmodconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-mips                             allmodconfig
-mips                             allyesconfig
-parisc                           allmodconfig
-parisc                           allyesconfig
-powerpc                          allmodconfig
-powerpc                          allyesconfig
-s390                             allmodconfig
-s390                             allyesconfig
-sh                               allmodconfig
-sh                               allyesconfig
-sparc64                          allmodconfig
-sparc64                          allyesconfig
-sparc                            allmodconfig
-sparc                            allyesconfig
-tile                             allmodconfig
-tile                             allyesconfig
-x86_64                             acpi-redef
-x86_64                           allyesconfig
-x86_64                           allyesdebian
-x86_64                                nfsroot
-xtensa                           allmodconfig
-xtensa                           allyesconfig
+The fastest is 96MHz, ~10ns, and we update the counter every 3 periods,
+so two updates are 30ns apart.
 
-configs tested: 226
+That is.... fast. PCIe reads are in ~100ns territory.
 
-arm                            netx_defconfig
-arm                        spear3xx_defconfig
-mips                           jazz_defconfig
-i386                   randconfig-a0-04211450
-x86_64                 randconfig-a0-04211915
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-blackfin                BF561-EZKIT_defconfig
-powerpc                 mpc837x_rdb_defconfig
-powerpc                      ppc40x_defconfig
-mips                            ar7_defconfig
-mips                          lasat_defconfig
-parisc                          712_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-04211744
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-blackfin                            defconfig
-ia64                                defconfig
-mips                                defconfig
-i386                             allyesconfig
-x86_64                 randconfig-v0-04211855
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                          pxa3xx_defconfig
-powerpc                          alldefconfig
-powerpc                 canyonlands_defconfig
-powerpc                    socrates_defconfig
-xtensa                generic_kc705_defconfig
-i386                                defconfig
-mips                  mips_paravirt_defconfig
-powerpc                      chrp32_defconfig
-powerpc64                        allyesconfig
-xtensa                              defconfig
-arm                         assabet_defconfig
-arm                       netwinder_defconfig
-avr32                     atstk1003_defconfig
-powerpc                     stx_gp3_defconfig
-sh                          polaris_defconfig
-arm                           acs5k_defconfig
-arm                        cerfcube_defconfig
-arm                        realview_defconfig
-microblaze                       allyesconfig
-mips                           ip27_defconfig
-arm                            zeus_defconfig
-mips                       rbtx49xx_defconfig
-powerpc                  iss476-smp_defconfig
-sparc64                             defconfig
-xtensa                    smp_lx200_defconfig
-sh                                  defconfig
-x86_64                 randconfig-x010-201616
-x86_64                 randconfig-x011-201616
-x86_64                 randconfig-x018-201616
-x86_64                 randconfig-x013-201616
-x86_64                 randconfig-x012-201616
-x86_64                 randconfig-x019-201616
-x86_64                 randconfig-x016-201616
-x86_64                 randconfig-x014-201616
-x86_64                 randconfig-x015-201616
-x86_64                 randconfig-x017-201616
-i386                              allnoconfig
-i386                             alldefconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                   randconfig-s0-04210523
-i386                     randconfig-s0-201616
-i386         randconfig-s0-201616+CONFIG_DEBUG_INFO_REDUCED
-i386                   randconfig-s1-04210523
-x86_64                 randconfig-s0-04211703
-x86_64                 randconfig-s1-04211703
-x86_64                 randconfig-s2-04211703
-x86_64                 randconfig-s0-04211729
-x86_64                 randconfig-s1-04211729
-x86_64                 randconfig-s2-04211729
-x86_64                 randconfig-s0-04211821
-x86_64                 randconfig-s1-04211821
-x86_64                 randconfig-s2-04211821
-x86_64                 randconfig-s0-04211849
-x86_64                 randconfig-s1-04211849
-x86_64                 randconfig-s2-04211849
-x86_64                 randconfig-s0-04211939
-x86_64                 randconfig-s1-04211939
-x86_64                 randconfig-s2-04211939
-x86_64                           allmodconfig
-x86_64                 randconfig-s3-04211655
-x86_64                 randconfig-s4-04211655
-x86_64                 randconfig-s5-04211655
-x86_64                 randconfig-s3-04211729
-x86_64                 randconfig-s4-04211729
-x86_64                 randconfig-s5-04211729
-x86_64                 randconfig-s3-04211818
-x86_64                 randconfig-s4-04211818
-x86_64                 randconfig-s5-04211818
-x86_64                 randconfig-s3-04211850
-x86_64                 randconfig-s4-04211850
-x86_64                 randconfig-s5-04211850
-x86_64                 randconfig-s3-04211939
-x86_64                 randconfig-s4-04211939
-x86_64                 randconfig-s5-04211939
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
-alpha                            allmodconfig
-ia64                         bigsur_defconfig
-mn10300                           allnoconfig
-sparc                             allnoconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                   randconfig-i0-201616
-i386                   randconfig-b0-04211744
-i386                   randconfig-b0-04211925
-mips                             alldefconfig
-powerpc                      acadia_defconfig
-powerpc                     pseries_defconfig
-sparc                       sparc32_defconfig
-i386                     randconfig-i0-201616
-i386                     randconfig-i1-201616
-x86_64                 randconfig-b0-04211821
-sparc                               defconfig
-sparc64                           allnoconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                              rhel_gcov
-x86_64                 randconfig-n0-04211655
-x86_64                 randconfig-n0-04211757
-x86_64                 randconfig-n0-04211909
-arm                     davinci_all_defconfig
-blackfin                  CM-BF537E_defconfig
-powerpc                 mpc832x_rdb_defconfig
-sh                        dreamcast_defconfig
-i386                   randconfig-x012-201616
-i386                   randconfig-x013-201616
-i386                   randconfig-x015-201616
-i386                   randconfig-x019-201616
-i386                   randconfig-x018-201616
-i386                   randconfig-x011-201616
-i386                   randconfig-x010-201616
-i386                   randconfig-x016-201616
-i386                   randconfig-x017-201616
-i386                   randconfig-x014-201616
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201616
-i386                   randconfig-h0-04211718
-i386                   randconfig-h1-04211718
-i386                   randconfig-h0-04211858
-i386                   randconfig-h1-04211858
-ia64                             alldefconfig
-ia64                              allnoconfig
-x86_64                 randconfig-h0-04211851
-x86_64                 randconfig-n0-04211917
-powerpc                 linkstation_defconfig
-powerpc                 mpc836x_mds_defconfig
-sh                        edosk7760_defconfig
-arm                         shannon_defconfig
-mips                            e55_defconfig
-i386                  randconfig-sb0-04211411
-i386                  randconfig-sb0-04211721
-i386                  randconfig-sb0-04211905
-x86_64                 randconfig-x000-201616
-x86_64                 randconfig-x001-201616
-x86_64                 randconfig-x005-201616
-x86_64                 randconfig-x007-201616
-x86_64                 randconfig-x006-201616
-x86_64                 randconfig-x004-201616
-x86_64                 randconfig-x008-201616
-x86_64                 randconfig-x009-201616
-x86_64                 randconfig-x003-201616
-x86_64                 randconfig-x002-201616
-i386                     randconfig-r0-201616
-i386                   randconfig-x000-201616
-i386                   randconfig-x003-201616
-i386                   randconfig-x009-201616
-i386                   randconfig-x005-201616
-i386                   randconfig-x004-201616
-i386                   randconfig-x002-201616
-i386                   randconfig-x006-201616
-i386                   randconfig-x007-201616
-i386                   randconfig-x008-201616
-i386                   randconfig-x001-201616
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-i386                   randconfig-x0-04211815
+So yes, you seem to be right. There can be more than two updates
+between two PCIe reads.
 
-Thanks,
-Fengguang
