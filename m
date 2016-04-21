@@ -1,9 +1,9 @@
-From: Wyborny, Carolyn <carolyn.wyborny@intel.com>
-Date: Thu, 21 Apr 2016 14:51:29 +0000
+From: Ronciak, John <john.ronciak@intel.com>
+Date: Thu, 21 Apr 2016 14:54:15 +0000
 Subject: [Intel-wired-lan] [E1000-devel] i40e: Deadly GRE packet
 In-Reply-To: <CAFzSZ++22adGYpR09vpx2rTh=bu1jgBz7wpB762Ampu0eEcVxg@mail.gmail.com>
 References: <CAFzSZ++22adGYpR09vpx2rTh=bu1jgBz7wpB762Ampu0eEcVxg@mail.gmail.com>
-Message-ID: <9BBC4E0CF881AA4299206E2E1412B626501B90E5@ORSMSX102.amr.corp.intel.com>
+Message-ID: <D38E8E86660E514AB505863C19C9287C8CBF73A4@ORSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -21,20 +21,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Dear Developers,
 > 
 > I have a setup of a pair of SuperMicro-branded XL710s connected with
-> passive crossover cable, one (eth4) is using firmware 5.0, the other (eth7)
-> is using fw 4.33. When I send couple of packets with no payload in GRE over
-> IP over ETH from eth7 to eth4, the receiving card stops processing further
+> passive crossover cable, one (eth4) is using firmware 5.0, the other (eth7) is
+> using fw 4.33. When I send couple of packets with no payload in GRE over IP
+> over ETH from eth7 to eth4, the receiving card stops processing further
 > packets. It seems that 4 empty-GRE packets in succession are enough to kill
-> the card's receivers (all ports stop working), more if there are other
-> packets inbetween. Transmit direction is not affected. After reboot, the
-> card comes back, reloading the driver (or unbind/bind) is not enough to fix
-> the problem.
+> the card's receivers (all ports stop working), more if there are other packets
+> inbetween. Transmit direction is not affected. After reboot, the card comes
+> back, reloading the driver (or unbind/bind) is not enough to fix the problem.
 > 
-> 14:31:24.299203 00:00:00:00:00:00 > ff:ff:ff:ff:ff:ff, ethertype IPv4
-> (0x0800), length 60: (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto
-> GRE (47), length 24)
->     127.0.0.1 > 127.0.0.1: GREv0, Flags [none], proto unknown (0x0000),
-> length 4
+> 14:31:24.299203 00:00:00:00:00:00 > ff:ff:ff:ff:ff:ff, ethertype IPv4 (0x0800),
+> length 60: (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto GRE (47), length
+> 24)
+>     127.0.0.1 > 127.0.0.1: GREv0, Flags [none], proto unknown (0x0000), length
+> 4
 >         gre-proto-0x0
 >         0x0000:  4500 0018 0001 0000 402f 7cb4 7f00 0001  E.......@/|.....
 >         0x0010:  7f00 0001 0000 0000 0000 0000 0000 0000  ................
@@ -43,13 +42,14 @@ List-ID: <intel-wired-lan.osuosl.org>
 > scapy 2.2.0 generates this packet from: Ether()/IP()/GRE()
 > 
 > Tested on stock Debian kernel, with in-kernel driver and one from DPDK-2.2.
-> Linux lab1 3.16.0-4-amd64 #1 SMP Debian 3.16.7-ckt25-2 (2016-04-08)
-> x86_64
+> Linux lab1 3.16.0-4-amd64 #1 SMP Debian 3.16.7-ckt25-2 (2016-04-08) x86_64
 > GNU/Linux
 > 
 > Best Regards,
 > Micha? Miros?aw
+How exactly is DPDK involved?  Is it running in all instances where the issue is seen?  Have you tried the latest i40e driver from our Sourceforge site (http://e1000.sf.net)?
 
-Thanks for this Michal, we'll take a look and get back to you.
+Cheers,
+John
 
-Carolyn
+
