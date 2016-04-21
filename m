@@ -1,79 +1,289 @@
-From: Ronciak, John <john.ronciak@intel.com>
-Date: Thu, 21 Apr 2016 15:19:16 +0000
-Subject: [Intel-wired-lan] [E1000-devel] i40e: Deadly GRE packet
-In-Reply-To: <CAFzSZ+JFLN-TVRwSC5om13OUk0NvSXaETe931h0SEkkTxMfhGA@mail.gmail.com>
-References: <CAFzSZ++22adGYpR09vpx2rTh=bu1jgBz7wpB762Ampu0eEcVxg@mail.gmail.com>
- <D38E8E86660E514AB505863C19C9287C8CBF73A4@ORSMSX102.amr.corp.intel.com>
- <CAFzSZ+JFLN-TVRwSC5om13OUk0NvSXaETe931h0SEkkTxMfhGA@mail.gmail.com>
-Message-ID: <D38E8E86660E514AB505863C19C9287C8CBF7487@ORSMSX102.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 22 Apr 2016 00:16:09 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 846d1a478acb46760723c2194b84e67259187cb4 BUILD INCOMPLETE
+Message-ID: <5718fcc9.qIiZX5YpDw2EmdJt%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Thanks, Please get us the other information we have asked for.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+846d1a478acb46760723c2194b84e67259187cb4  e1000e: e1000e_cyclecounter_read(): do overflow check only if needed
 
-Cheers,
-John
-
-From: Micha? Miros?aw [mailto:michal.miroslaw at atendesoftware.pl]
-Sent: Thursday, April 21, 2016 8:04 AM
-To: Ronciak, John <john.ronciak@intel.com>
-Cc: e1000-devel at lists.sourceforge.net; intel-wired-lan at lists.osuosl.org; Pawel Malachowski <pawel.malachowski@atendesoftware.pl>; mirq-linux at rere.qmqm.pl
-Subject: Re: [E1000-devel] i40e: Deadly GRE packet
-
-Dear John,
-
-We found the problem using our DPDK application, but later on we reproduced the same issue using in-kernel drivers (even after fresh reboot).
-
-Best Regards,
-Micha? Miros?aw
-
-2016-04-21 16:54 GMT+02:00 Ronciak, John <john.ronciak at intel.com<mailto:john.ronciak@intel.com>>:
-> -----Original Message-----
-> From: Micha? Miros?aw [mailto:michal.miroslaw at atendesoftware.pl<mailto:michal.miroslaw@atendesoftware.pl>]
-> Sent: Thursday, April 21, 2016 5:45 AM
-> To: e1000-devel at lists.sourceforge.net<mailto:e1000-devel@lists.sourceforge.net>; intel-wired-lan at lists.osuosl.org<mailto:intel-wired-lan@lists.osuosl.org>
-> Cc: Pawe? Ma?achowski <pawel.malachowski at atendesoftware.pl<mailto:pawel.malachowski@atendesoftware.pl>>; mirq-
-> linux at rere.qmqm.pl<mailto:linux@rere.qmqm.pl>
-> Subject: [E1000-devel] i40e: Deadly GRE packet
->
-> Dear Developers,
->
-> I have a setup of a pair of SuperMicro-branded XL710s connected with
-> passive crossover cable, one (eth4) is using firmware 5.0, the other (eth7) is
-> using fw 4.33. When I send couple of packets with no payload in GRE over IP
-> over ETH from eth7 to eth4, the receiving card stops processing further
-> packets. It seems that 4 empty-GRE packets in succession are enough to kill
-> the card's receivers (all ports stop working), more if there are other packets
-> inbetween. Transmit direction is not affected. After reboot, the card comes
-> back, reloading the driver (or unbind/bind) is not enough to fix the problem.
->
-> 14:31:24.299203 00:00:00:00:00:00 > ff:ff:ff:ff:ff:ff, ethertype IPv4 (0x0800),
-> length 60: (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto GRE (47), length
-> 24)
->     127.0.0.1 > 127.0.0.1<http://127.0.0.1>: GREv0, Flags [none], proto unknown (0x0000), length
-> 4
->         gre-proto-0x0
->         0x0000:  4500 0018 0001 0000 402f 7cb4 7f00 0001  E.......@/|<mailto:E.......@/|>.....
->         0x0010:  7f00 0001 0000 0000 0000 0000 0000 0000  ................
->         0x0020:  0000 0000 0000 0000 0000 0000 0000       ..............
->
-> scapy 2.2.0 generates this packet from: Ether()/IP()/GRE()
->
-> Tested on stock Debian kernel, with in-kernel driver and one from DPDK-2.2.
-> Linux lab1 3.16.0-4-amd64 #1 SMP Debian 3.16.7-ckt25-2 (2016-04-08) x86_64
-> GNU/Linux
->
-> Best Regards,
-> Micha? Miros?aw
-How exactly is DPDK involved?  Is it running in all instances where the issue is seen?  Have you tried the latest i40e driver from our Sourceforge site (http://e1000.sf.net)?
-
-Cheers,
-John
+TIMEOUT after 606m
 
 
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160421/da56552b/attachment.html>
+Sorry we cannot finish the testset for your branch within a reasonable time.
+It's our fault -- either some build server is down or some build worker is busy
+doing bisects for _other_ trees. The branch will get more complete coverage and
+possible error reports when our build infrastructure is restored or catches up.
+There will be no more build success notification for this branch head, but you
+can expect reasonably good test coverage after waiting for 1 day.
+
+configs timed out: 31
+
+alpha                            allyesconfig
+blackfin                         allmodconfig
+blackfin                         allyesconfig
+cris                             allmodconfig
+cris                             allyesconfig
+ia64                             allmodconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                             allyesconfig
+mips                             allmodconfig
+mips                             allyesconfig
+parisc                           allmodconfig
+parisc                           allyesconfig
+powerpc                          allmodconfig
+powerpc                          allyesconfig
+s390                             allmodconfig
+s390                             allyesconfig
+sh                               allmodconfig
+sh                               allyesconfig
+sparc64                          allmodconfig
+sparc64                          allyesconfig
+sparc                            allmodconfig
+sparc                            allyesconfig
+tile                             allmodconfig
+tile                             allyesconfig
+x86_64                             acpi-redef
+x86_64                           allyesconfig
+x86_64                           allyesdebian
+x86_64                                nfsroot
+xtensa                           allmodconfig
+xtensa                           allyesconfig
+
+configs tested: 226
+
+arm                            netx_defconfig
+arm                        spear3xx_defconfig
+mips                           jazz_defconfig
+i386                   randconfig-a0-04211450
+x86_64                 randconfig-a0-04211915
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+blackfin                BF561-EZKIT_defconfig
+powerpc                 mpc837x_rdb_defconfig
+powerpc                      ppc40x_defconfig
+mips                            ar7_defconfig
+mips                          lasat_defconfig
+parisc                          712_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-04211744
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+blackfin                            defconfig
+ia64                                defconfig
+mips                                defconfig
+i386                             allyesconfig
+x86_64                 randconfig-v0-04211855
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                          pxa3xx_defconfig
+powerpc                          alldefconfig
+powerpc                 canyonlands_defconfig
+powerpc                    socrates_defconfig
+xtensa                generic_kc705_defconfig
+i386                                defconfig
+mips                  mips_paravirt_defconfig
+powerpc                      chrp32_defconfig
+powerpc64                        allyesconfig
+xtensa                              defconfig
+arm                         assabet_defconfig
+arm                       netwinder_defconfig
+avr32                     atstk1003_defconfig
+powerpc                     stx_gp3_defconfig
+sh                          polaris_defconfig
+arm                           acs5k_defconfig
+arm                        cerfcube_defconfig
+arm                        realview_defconfig
+microblaze                       allyesconfig
+mips                           ip27_defconfig
+arm                            zeus_defconfig
+mips                       rbtx49xx_defconfig
+powerpc                  iss476-smp_defconfig
+sparc64                             defconfig
+xtensa                    smp_lx200_defconfig
+sh                                  defconfig
+x86_64                 randconfig-x010-201616
+x86_64                 randconfig-x011-201616
+x86_64                 randconfig-x018-201616
+x86_64                 randconfig-x013-201616
+x86_64                 randconfig-x012-201616
+x86_64                 randconfig-x019-201616
+x86_64                 randconfig-x016-201616
+x86_64                 randconfig-x014-201616
+x86_64                 randconfig-x015-201616
+x86_64                 randconfig-x017-201616
+i386                              allnoconfig
+i386                             alldefconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                   randconfig-s0-04210523
+i386                     randconfig-s0-201616
+i386         randconfig-s0-201616+CONFIG_DEBUG_INFO_REDUCED
+i386                   randconfig-s1-04210523
+x86_64                 randconfig-s0-04211703
+x86_64                 randconfig-s1-04211703
+x86_64                 randconfig-s2-04211703
+x86_64                 randconfig-s0-04211729
+x86_64                 randconfig-s1-04211729
+x86_64                 randconfig-s2-04211729
+x86_64                 randconfig-s0-04211821
+x86_64                 randconfig-s1-04211821
+x86_64                 randconfig-s2-04211821
+x86_64                 randconfig-s0-04211849
+x86_64                 randconfig-s1-04211849
+x86_64                 randconfig-s2-04211849
+x86_64                 randconfig-s0-04211939
+x86_64                 randconfig-s1-04211939
+x86_64                 randconfig-s2-04211939
+x86_64                           allmodconfig
+x86_64                 randconfig-s3-04211655
+x86_64                 randconfig-s4-04211655
+x86_64                 randconfig-s5-04211655
+x86_64                 randconfig-s3-04211729
+x86_64                 randconfig-s4-04211729
+x86_64                 randconfig-s5-04211729
+x86_64                 randconfig-s3-04211818
+x86_64                 randconfig-s4-04211818
+x86_64                 randconfig-s5-04211818
+x86_64                 randconfig-s3-04211850
+x86_64                 randconfig-s4-04211850
+x86_64                 randconfig-s5-04211850
+x86_64                 randconfig-s3-04211939
+x86_64                 randconfig-s4-04211939
+x86_64                 randconfig-s5-04211939
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                             allmodconfig
+alpha                            allmodconfig
+ia64                         bigsur_defconfig
+mn10300                           allnoconfig
+sparc                             allnoconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201616
+i386                   randconfig-b0-04211744
+i386                   randconfig-b0-04211925
+mips                             alldefconfig
+powerpc                      acadia_defconfig
+powerpc                     pseries_defconfig
+sparc                       sparc32_defconfig
+i386                     randconfig-i0-201616
+i386                     randconfig-i1-201616
+x86_64                 randconfig-b0-04211821
+sparc                               defconfig
+sparc64                           allnoconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                              rhel_gcov
+x86_64                 randconfig-n0-04211655
+x86_64                 randconfig-n0-04211757
+x86_64                 randconfig-n0-04211909
+arm                     davinci_all_defconfig
+blackfin                  CM-BF537E_defconfig
+powerpc                 mpc832x_rdb_defconfig
+sh                        dreamcast_defconfig
+i386                   randconfig-x012-201616
+i386                   randconfig-x013-201616
+i386                   randconfig-x015-201616
+i386                   randconfig-x019-201616
+i386                   randconfig-x018-201616
+i386                   randconfig-x011-201616
+i386                   randconfig-x010-201616
+i386                   randconfig-x016-201616
+i386                   randconfig-x017-201616
+i386                   randconfig-x014-201616
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201616
+i386                   randconfig-h0-04211718
+i386                   randconfig-h1-04211718
+i386                   randconfig-h0-04211858
+i386                   randconfig-h1-04211858
+ia64                             alldefconfig
+ia64                              allnoconfig
+x86_64                 randconfig-h0-04211851
+x86_64                 randconfig-n0-04211917
+powerpc                 linkstation_defconfig
+powerpc                 mpc836x_mds_defconfig
+sh                        edosk7760_defconfig
+arm                         shannon_defconfig
+mips                            e55_defconfig
+i386                  randconfig-sb0-04211411
+i386                  randconfig-sb0-04211721
+i386                  randconfig-sb0-04211905
+x86_64                 randconfig-x000-201616
+x86_64                 randconfig-x001-201616
+x86_64                 randconfig-x005-201616
+x86_64                 randconfig-x007-201616
+x86_64                 randconfig-x006-201616
+x86_64                 randconfig-x004-201616
+x86_64                 randconfig-x008-201616
+x86_64                 randconfig-x009-201616
+x86_64                 randconfig-x003-201616
+x86_64                 randconfig-x002-201616
+i386                     randconfig-r0-201616
+i386                   randconfig-x000-201616
+i386                   randconfig-x003-201616
+i386                   randconfig-x009-201616
+i386                   randconfig-x005-201616
+i386                   randconfig-x004-201616
+i386                   randconfig-x002-201616
+i386                   randconfig-x006-201616
+i386                   randconfig-x007-201616
+i386                   randconfig-x008-201616
+i386                   randconfig-x001-201616
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+i386                   randconfig-x0-04211815
+
+Thanks,
+Fengguang
