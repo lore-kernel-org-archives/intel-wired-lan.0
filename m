@@ -1,169 +1,118 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 22 Apr 2016 04:45:22 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 59b75213897f0bca9c037ccf0bdf1253e4b9cb0f BUILD DONE
-Message-ID: <57193be2.hrnZ+k20IYymqKyI%fengguang.wu@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Thu, 21 Apr 2016 14:00:46 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbevf: Fix relaxed order settings
+	in VF driver
+In-Reply-To: <57192C7D.9080507@oracle.com>
+References: <1461259276-54151-1-git-send-email-babu.moger@oracle.com>
+ <CAKgT0UeU+Q1HDvR8pK3kxYofjEqk8jVeh5xONoUpD34MsPZCCA@mail.gmail.com>
+ <CAKgT0UdEP9ZMnNjSSqh-vZvaEc9N8_X_KWvykChxRv1bretYtw@mail.gmail.com>
+ <57192C7D.9080507@oracle.com>
+Message-ID: <CAKgT0UcEYva0oDX0ZOz97hrmrF=t1Lv7sqq1Ut4bQ2p7GLkeDQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-59b75213897f0bca9c037ccf0bdf1253e4b9cb0f  ixgbe: check EEPROM for WOL support for X540 and above
+On Thu, Apr 21, 2016 at 12:39 PM, Babu Moger <babu.moger@oracle.com> wrote:
+> Hi Alex,
+>
+> On 4/21/2016 2:22 PM, Alexander Duyck wrote:
+>> On Thu, Apr 21, 2016 at 11:13 AM, Alexander Duyck
+>> <alexander.duyck@gmail.com> wrote:
+>>> On Thu, Apr 21, 2016 at 10:21 AM, Babu Moger <babu.moger@oracle.com> wrote:
+>>>> Current code writes the tx/rx relaxed order without reading it first.
+>>>> This can lead to unintended consequences as we are forcibly writing
+>>>> other bits.
+>>>
+>>> The consequences were very much intended as there are situations where
+>>> enabling relaxed ordering can lead to data corruption.
+>>>
+>>>> We noticed this problem while testing VF driver on sparc. Relaxed
+>>>> order settings for rx queue were all messed up which was causing
+>>>> performance drop with VF interface.
+>>>
+>>> What additional relaxed ordering bits are you enabling on Sparc?  I'm
+>>> assuming it is just the Rx data write back but I want to verify.
+>>>
+>>>> Fixed it by reading the registers first and setting the specific
+>>>> bit of interest. With this change we are able to match the bandwidth
+>>>> equivalent to PF interface.
+>>>>
+>>>> Signed-off-by: Babu Moger <babu.moger@oracle.com>
+>>>
+>>> Fixed is a relative term here since you are only chasing performance
+>>> from what I can tell.  We need to make certain that this doesn't break
+>>> the driver on any other architectures by leading to things like data
+>>> corruption.
+>>>
+>>> - Alex
+>>
+>> It occurs to me that what might be easier is instead of altering the
+>> configuration on all architectures you could instead wrap the write so
+>> that on SPARC you include the extra bits you need and on all other
+>> architectures you leave the write as-is similar to how the code in the
+>> ixgbe_start_hw_gen2 only clears the bits if CONFIG_SPARC is not
+>> defined.
+>
+>
+> Here are the default values that I see when testing on Sparc.
+>
+> Default tx value 0x2a00
+>
+> All below 3 set
+> #define IXGBE_DCA_TXCTRL_DESC_RRO_EN (1 << 9) /* Tx rd Desc Relax Order */
+> #define IXGBE_DCA_TXCTRL_DESC_WRO_EN (1 << 11) /* Tx Desc writeback RO bit */
+> #define IXGBE_DCA_TXCTRL_DATA_RRO_EN (1 << 13) /* Tx rd data Relax Order */
+>
+> I am not too worried about tx values. I can keep it as it is. It did not
+> seem to cause any problems right now.
+>
+>
+> Default rx value 0xb200
+>
+> All below 3 set plus one more
+>
+> #define IXGBE_DCA_RXCTRL_DESC_RRO_EN (1 << 9) /* DCA Rx rd Desc Relax Order */
+> #define IXGBE_DCA_RXCTRL_DATA_WRO_EN (1 << 13) /* Rx wr data Relax Order */
+> #define IXGBE_DCA_RXCTRL_HEAD_WRO_EN (1 << 15) /* Rx wr header RO */
 
-drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:1548:4-17: code aligned with following code on line 1554
+So that looks like the register defaults.  Which based on the released
+data-sheet for 82599 are a bit off.  The "one more" bit that is set is
+supposed to be written as 0 as per the 82599 datasheet, but it
+defaults to 1 for some reason.  On the x540 data-sheet that appears to
+be a no-snoop bit that you are enabling which should not be enabled.
+It won't necessarily hurt things either though as I believe the
+no-snoop bit is not being set in the descriptors.
 
-Error ids grouped by kconfigs:
+> Is there a reason to disable IXGBE_DCA_RXCTRL_DATA_WRO_EN and
+> IXGBE_DCA_RXCTRL_HEAD_WRO_EN for RX?
 
-recent_errors
-??? i386-allmodconfig
-    ??? drivers-net-ethernet-intel-i40e-i40e_virtchnl_pf.c:code-aligned-with-following-code-on-line
+In the case of HEAD_WRO_EN it doesn't give us anything because we
+don't have packet split/replication enabled anyway.  That feature is
+broken on the 82599, and was deprecated some time ago in the ixgbe
+driver.
 
-elapsed time: 60m
+I don't have the fully history on the data writeback but I believe
+there was an issue of where some x86 chipsets had issues when the
+device enabled relaxed ordering.  That was why relaxed ordering was
+disabled on all writes for the device.  I was the one that went
+through and re-enabled relaxed ordering on reads from the device so we
+at least allowed that much on most architectures.
 
-configs tested: 140
+You would probably only need to add IXGBE_DCA_RXCTRL_DATA_WRO_EN to
+the write in the case of CONFIG_SPARC being defined.  Another approach
+might be to have a define value that you end up passing that is
+defined one way if SPARC and another if a different architecture.
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201616
-x86_64                 randconfig-a0-04212344
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-parisc                         b180_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                             allyesconfig
-arm                            lart_defconfig
-mips                        maltaup_defconfig
-powerpc                   currituck_defconfig
-powerpc                   lite5200b_defconfig
-x86_64                 randconfig-x010-201616
-x86_64                 randconfig-x011-201616
-x86_64                 randconfig-x018-201616
-x86_64                 randconfig-x013-201616
-x86_64                 randconfig-x012-201616
-x86_64                 randconfig-x019-201616
-x86_64                 randconfig-x016-201616
-x86_64                 randconfig-x014-201616
-x86_64                 randconfig-x015-201616
-x86_64                 randconfig-x017-201616
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                   randconfig-s0-04211939
-i386                   randconfig-s1-04211939
-x86_64                 randconfig-s0-04220351
-x86_64                 randconfig-s1-04220351
-x86_64                 randconfig-s2-04220351
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
-blackfin                            defconfig
-ia64                                defconfig
-mips                                defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                 randconfig-i0-04220113
-i386                   randconfig-b0-04220149
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-powerpc               mpc834x_itxgp_defconfig
-powerpc                    mvme5100_defconfig
-xtensa                            allnoconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-i0-04220109
-i386                   randconfig-i1-04220109
-x86_64                              rhel_gcov
-i386                   randconfig-x012-201616
-i386                   randconfig-x013-201616
-i386                   randconfig-x015-201616
-i386                   randconfig-x019-201616
-i386                   randconfig-x018-201616
-i386                   randconfig-x011-201616
-i386                   randconfig-x010-201616
-i386                   randconfig-x016-201616
-i386                   randconfig-x017-201616
-i386                   randconfig-x014-201616
-i386                     randconfig-n0-201616
-ia64                             alldefconfig
-ia64                              allnoconfig
-x86_64                                   rhel
-sh                             shx3_defconfig
-x86_64               randconfig-x009-04220119
-x86_64               randconfig-x006-04220119
-x86_64               randconfig-x002-04220119
-x86_64               randconfig-x004-04220119
-x86_64               randconfig-x007-04220119
-x86_64               randconfig-x008-04220119
-x86_64               randconfig-x005-04220119
-x86_64               randconfig-x000-04220119
-x86_64               randconfig-x003-04220119
-x86_64               randconfig-x001-04220119
-i386                   randconfig-r0-04220119
-x86_64                 randconfig-r0-04220119
-i386                 randconfig-x007-04220119
-i386                 randconfig-x001-04220119
-i386                 randconfig-x002-04220119
-i386                 randconfig-x009-04220119
-i386                 randconfig-x000-04220119
-i386                 randconfig-x005-04220119
-i386                 randconfig-x006-04220119
-i386                 randconfig-x003-04220119
-i386                 randconfig-x008-04220119
-i386                 randconfig-x004-04220119
-i386                   randconfig-x000-201616
-i386                   randconfig-x001-201616
-i386                   randconfig-x002-201616
-i386                   randconfig-x003-201616
-i386                   randconfig-x004-201616
-i386                   randconfig-x005-201616
-i386                   randconfig-x006-201616
-i386                   randconfig-x007-201616
-i386                   randconfig-x008-201616
-i386                   randconfig-x009-201616
+> I would think CONFIG_SPARC should be our last option. What do you think?
 
-Thanks,
-Fengguang
+I was thinking CONFIG_SPARC would allow us to have feature parity with
+the PF.  If you look that is how this issue is solved there in
+function ixgbe_start_hw_gen2().  That was why I was thinking that may
+be the approach we want to take.  Otherwise we have to write up some
+complicated setup where we would have to use the API in order to
+determine if the PF has already taken care of this for us which I
+would prefer not to have to do.
+
+- Alex
