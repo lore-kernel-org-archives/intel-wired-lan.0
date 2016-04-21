@@ -1,40 +1,67 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Thu, 21 Apr 2016 11:13:37 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbevf: Fix relaxed order settings
-	in VF driver
-In-Reply-To: <1461259276-54151-1-git-send-email-babu.moger@oracle.com>
-References: <1461259276-54151-1-git-send-email-babu.moger@oracle.com>
-Message-ID: <CAKgT0UeU+Q1HDvR8pK3kxYofjEqk8jVeh5xONoUpD34MsPZCCA@mail.gmail.com>
+From: Emil Tantilov <emil.s.tantilov@intel.com>
+Date: Thu, 21 Apr 2016 11:37:06 -0700
+Subject: [Intel-wired-lan] [PATCH 1/2] ixgbe: add WOL support for some 82599
+	subdevice IDs
+Message-ID: <20160421183706.21311.93388.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Apr 21, 2016 at 10:21 AM, Babu Moger <babu.moger@oracle.com> wrote:
-> Current code writes the tx/rx relaxed order without reading it first.
-> This can lead to unintended consequences as we are forcibly writing
-> other bits.
+We had some 82599 subdevice IDs missing from the list of parts that
+support WOL.
 
-The consequences were very much intended as there are situations where
-enabling relaxed ordering can lead to data corruption.
+Reported-by: Neil Horman <nhorman@redhat.com>
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    8 ++++++--
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |    6 +++++-
+ 2 files changed, 11 insertions(+), 3 deletions(-)
 
-> We noticed this problem while testing VF driver on sparc. Relaxed
-> order settings for rx queue were all messed up which was causing
-> performance drop with VF interface.
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index d52a2a8..5f621ab 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -9202,8 +9202,10 @@ int ixgbe_wol_supported(struct ixgbe_adapter *adapter, u16 device_id,
+ 	case IXGBE_DEV_ID_82599_SFP:
+ 		/* Only these subdevices could supports WOL */
+ 		switch (subdevice_id) {
+-		case IXGBE_SUBDEV_ID_82599_SFP_WOL0:
+ 		case IXGBE_SUBDEV_ID_82599_560FLR:
++		case IXGBE_SUBDEV_ID_82599_LOM_SNAP6:
++		case IXGBE_SUBDEV_ID_82599_SFP_WOL0:
++		case IXGBE_SUBDEV_ID_82599_SFP_2OCP:
+ 			/* only support first port */
+ 			if (hw->bus.func != 0)
+ 				break;
+@@ -9211,7 +9213,9 @@ int ixgbe_wol_supported(struct ixgbe_adapter *adapter, u16 device_id,
+ 		case IXGBE_SUBDEV_ID_82599_SFP:
+ 		case IXGBE_SUBDEV_ID_82599_RNDC:
+ 		case IXGBE_SUBDEV_ID_82599_ECNA_DP:
+-		case IXGBE_SUBDEV_ID_82599_LOM_SFP:
++		case IXGBE_SUBDEV_ID_82599_SFP_1OCP:
++		case IXGBE_SUBDEV_ID_82599_SFP_LOM_OEM1:
++		case IXGBE_SUBDEV_ID_82599_SFP_LOM_OEM2:
+ 			is_wol_supported = 1;
+ 			break;
+ 		}
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index 7af4514..71082be 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -59,8 +59,12 @@
+ #define IXGBE_SUBDEV_ID_82599_RNDC       0x1F72
+ #define IXGBE_SUBDEV_ID_82599_560FLR     0x17D0
+ #define IXGBE_SUBDEV_ID_82599_SP_560FLR  0x211B
++#define IXGBE_SUBDEV_ID_82599_LOM_SNAP6		0x2159
++#define IXGBE_SUBDEV_ID_82599_SFP_1OCP		0x000D
++#define IXGBE_SUBDEV_ID_82599_SFP_2OCP		0x0008
++#define IXGBE_SUBDEV_ID_82599_SFP_LOM_OEM1	0x8976
++#define IXGBE_SUBDEV_ID_82599_SFP_LOM_OEM2	0x06EE
+ #define IXGBE_SUBDEV_ID_82599_ECNA_DP    0x0470
+-#define IXGBE_SUBDEV_ID_82599_LOM_SFP    0x8976
+ #define IXGBE_DEV_ID_82599_SFP_EM        0x1507
+ #define IXGBE_DEV_ID_82599_SFP_SF2       0x154D
+ #define IXGBE_DEV_ID_82599EN_SFP         0x1557
 
-What additional relaxed ordering bits are you enabling on Sparc?  I'm
-assuming it is just the Rx data write back but I want to verify.
-
-> Fixed it by reading the registers first and setting the specific
-> bit of interest. With this change we are able to match the bandwidth
-> equivalent to PF interface.
->
-> Signed-off-by: Babu Moger <babu.moger@oracle.com>
-
-Fixed is a relative term here since you are only chasing performance
-from what I can tell.  We need to make certain that this doesn't break
-the driver on any other architectures by leading to things like data
-corruption.
-
-- Alex
