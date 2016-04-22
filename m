@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 22 Apr 2016 20:56:41 +0000
-Subject: [Intel-wired-lan] [PATCH 2/3] ethtool/ixgbe: Correct offsets
- and support x550, x550em_x, x550em_a
-In-Reply-To: <20160421182851.13330.71861.stgit@ixgbe-dev.jf.intel.com>
+Date: Fri, 22 Apr 2016 20:57:33 +0000
+Subject: [Intel-wired-lan] [PATCH 3/3] ethtool/ixgbe: Reduce format
+ string	storage
+In-Reply-To: <20160421182856.13330.56812.stgit@ixgbe-dev.jf.intel.com>
 References: <20160421182545.13330.59497.stgit@ixgbe-dev.jf.intel.com>
- <20160421182851.13330.71861.stgit@ixgbe-dev.jf.intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D2AB7@ORSMSX104.amr.corp.intel.com>
+ <20160421182856.13330.56812.stgit@ixgbe-dev.jf.intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D2AC7@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,18 +17,15 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Preethi Banala
 > Sent: Thursday, April 21, 2016 11:29 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 2/3] ethtool/ixgbe: Correct offsets and
-> support x550, x550em_x, x550em_a
+> Subject: [Intel-wired-lan] [PATCH 3/3] ethtool/ixgbe: Reduce format string
+> storage
 > 
-> Correct hard-coded wrong offset values and add several conditions to display
-> registers for x550, x550em_x and x550em_a based on datasheet/ EAS
-> document.
+> Reduce format string storage using for loop.
 > 
 > Signed-off-by: Preethi Banala <preethi.banala@intel.com>
 > ---
->  ixgbe.c |   74 +++++++++++++++++++++++++++++++++++---------------------
-> -------
->  1 file changed, 41 insertions(+), 33 deletions(-)
+>  ixgbe.c |   57 ++++++++++++---------------------------------------------
+>  1 file changed, 12 insertions(+), 45 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Ethtool reg dump shows added information and correct offsets
+Ethtool reg dump shows correct information
