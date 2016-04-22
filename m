@@ -1,12 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 22 Apr 2016 19:32:07 +0000
-Subject: [Intel-wired-lan] [PATCH net-next V5 2/2] intel: ixgbevf:
- Support	Windows hosts (Hyper-V)
-In-Reply-To: <1461118677-28142-2-git-send-email-kys@microsoft.com>
-References: <1461118655-28103-1-git-send-email-kys@microsoft.com>
- <1461118677-28142-1-git-send-email-kys@microsoft.com>
- <1461118677-28142-2-git-send-email-kys@microsoft.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D2A6A@ORSMSX104.amr.corp.intel.com>
+Date: Fri, 22 Apr 2016 20:21:34 +0000
+Subject: [Intel-wired-lan] [PATCH 1/3] ethtool/ixgbe: Add device ID
+	and	mac_type definitions
+In-Reply-To: <20160421182846.13330.65670.stgit@ixgbe-dev.jf.intel.com>
+References: <20160421182545.13330.59497.stgit@ixgbe-dev.jf.intel.com>
+ <20160421182846.13330.65670.stgit@ixgbe-dev.jf.intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D2A8D@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,43 +14,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of K. Y. Srinivasan
-> Sent: Tuesday, April 19, 2016 7:18 PM
-> To: davem at davemloft.net; netdev at vger.kernel.org; linux-
-> kernel at vger.kernel.org; devel at linuxdriverproject.org; olaf at aepfle.de;
-> apw at canonical.com; jasowang at redhat.com; eli at mellanox.com;
-> jackm at mellanox.com; yevgenyp at mellanox.com; Ronciak, John
-> <john.ronciak@intel.com>; intel-wired-lan at lists.osuosl.org;
-> alexander.duyck at gmail.com
-> Subject: [Intel-wired-lan] [PATCH net-next V5 2/2] intel: ixgbevf: Support
-> Windows hosts (Hyper-V)
+> Behalf Of Preethi Banala
+> Sent: Thursday, April 21, 2016 11:29 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH 1/3] ethtool/ixgbe: Add device ID and
+> mac_type definitions
 > 
-> On Hyper-V, the VF/PF communication is a via software mediated path as
-> opposed to the hardware mailbox. Make the necessary adjustments to
-> support Hyper-V.
+> Add device id macro definitions, mac_type enum definition and update
+> get_mac_type() accordingly.
 > 
-> Signed-off-by: K. Y. Srinivasan <kys@microsoft.com>
+> Signed-off-by: Preethi Banala <preethi.banala@intel.com>
 > ---
-> 	V2: Addressed most of the comments from
-> 	    Alexander Duyck <alexander.duyck@gmail.com>
-> 	    and Rustad, Mark D <mark.d.rustad@intel.com>.
-> 
-> 	V3: Addressed additional comments from
-> 	    Alexander Duyck <alexander.duyck@gmail.com>
-> 
-> 	V4: Addressed kbuild errors reported by:
-> 	    kbuild test robot <lkp@intel.com>
-> 
-> 	V5: Addressed additional comments from
-> 	    Alexander Duyck <alexander.duyck@gmail.com>
-> 
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |   12 ++
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   31 +++-
->  drivers/net/ethernet/intel/ixgbevf/mbx.c          |   12 ++
->  drivers/net/ethernet/intel/ixgbevf/vf.c           |  216
-> +++++++++++++++++++++
->  drivers/net/ethernet/intel/ixgbevf/vf.h           |    2 +
->  5 files changed, 266 insertions(+), 7 deletions(-)
+>  ixgbe.c |   42 ++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 42 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-VF driver correctly builds and changes correctly applied.
+driver correctly builds and changes correctly applied.
