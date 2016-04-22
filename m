@@ -1,8 +1,8 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 22 Apr 2016 12:16:19 +0800
+Date: Fri, 22 Apr 2016 12:28:28 +0800
 Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 488c1850af0c8f17221f66e3366ed01f4d7c2ab9 BUILD SUCCESS
-Message-ID: <5719a593.Fw5HLFWPG/KvKR3j%fengguang.wu@intel.com>
+ 7fd4e0d1bbf35bb520997a4fac2567785d15bc02 BUILD DONE
+Message-ID: <5719a86c.gUdc8U/Lzpld9WjK%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,16 +10,33 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-488c1850af0c8f17221f66e3366ed01f4d7c2ab9  ixgbe: check EEPROM for WOL support for X540 and above
+7fd4e0d1bbf35bb520997a4fac2567785d15bc02  ixgbe: Remove duplicate and unused device ID definitions
 
-elapsed time: 41m
+drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:1548:4-17: code aligned with following code on line 1554
 
-configs tested: 102
+Error ids grouped by kconfigs:
+
+recent_errors
+??? i386-allmodconfig
+    ??? drivers-net-ethernet-intel-i40e-i40e_virtchnl_pf.c:code-aligned-with-following-code-on-line
+
+elapsed time: 29m
+
+configs tested: 114
 
 i386                     randconfig-a0-201616
 x86_64                             acpi-redef
 x86_64                           allyesdebian
 x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
 m32r                       m32104ut_defconfig
 m32r                     mappi3.smp_defconfig
 m32r                         opsput_defconfig
@@ -31,11 +48,6 @@ parisc                            allnoconfig
 parisc                         b180_defconfig
 parisc                        c3000_defconfig
 parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
 i386                             allmodconfig
 x86_64                 randconfig-x010-201616
 x86_64                 randconfig-x011-201616
@@ -55,7 +67,6 @@ m68k                          multi_defconfig
 m68k                           sun3_defconfig
 i386                     randconfig-s0-201616
 i386                     randconfig-s1-201616
-x86_64                           allmodconfig
 avr32                      atngw100_defconfig
 avr32                     atstk1006_defconfig
 frv                                 defconfig
@@ -64,7 +75,6 @@ openrisc                    or1ksim_defconfig
 tile                         tilegx_defconfig
 um                             i386_defconfig
 um                           x86_64_defconfig
-i386                               tinyconfig
 mips                              allnoconfig
 mips                      fuloong2e_defconfig
 mips                                   jz4740
@@ -73,15 +83,27 @@ powerpc                           allnoconfig
 powerpc                             defconfig
 powerpc                       ppc64_defconfig
 x86_64                   randconfig-i0-201616
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-i0-04221115
+i386                   randconfig-i1-04221115
 sparc                               defconfig
 sparc64                           allnoconfig
 sparc64                             defconfig
-i386                   randconfig-i0-04221115
-i386                   randconfig-i1-04221115
+x86_64                           allmodconfig
 x86_64                              rhel_gcov
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-x86_64                                   rhel
+i386                               tinyconfig
+i386                   randconfig-x012-201616
+i386                   randconfig-x013-201616
+i386                   randconfig-x015-201616
+i386                   randconfig-x019-201616
+i386                   randconfig-x018-201616
+i386                   randconfig-x011-201616
+i386                   randconfig-x010-201616
+i386                   randconfig-x016-201616
+i386                   randconfig-x017-201616
+i386                   randconfig-x014-201616
+i386                     randconfig-n0-201616
 arm                               allnoconfig
 arm                         at91_dt_defconfig
 arm                           efm32_defconfig
@@ -90,10 +112,6 @@ arm                        multi_v5_defconfig
 arm                        multi_v7_defconfig
 arm                        shmobile_defconfig
 arm                           sunxi_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
 x86_64                 randconfig-x000-201616
 x86_64                 randconfig-x001-201616
 x86_64                 randconfig-x005-201616
@@ -107,6 +125,8 @@ x86_64                 randconfig-x002-201616
 ia64                             alldefconfig
 ia64                              allnoconfig
 ia64                                defconfig
+x86_64                                    lkp
+x86_64                                   rhel
 i386                     randconfig-r0-201616
 i386                   randconfig-x000-201616
 i386                   randconfig-x003-201616
