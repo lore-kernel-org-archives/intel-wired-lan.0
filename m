@@ -1,49 +1,123 @@
-From: Babu Moger <babu.moger@oracle.com>
-Date: Thu, 21 Apr 2016 15:56:49 -0700
-Subject: [Intel-wired-lan] [PATCH v2] ixgbevf: Change the relaxed order
-	settings in VF driver for sparc
-Message-ID: <1461279409-248697-1-git-send-email-babu.moger@oracle.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 22 Apr 2016 12:16:19 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 488c1850af0c8f17221f66e3366ed01f4d7c2ab9 BUILD SUCCESS
+Message-ID: <5719a593.Fw5HLFWPG/KvKR3j%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-We noticed performance issues with VF interface on sparc compared
-to PF. Setting the RX to IXGBE_DCA_RXCTRL_DATA_WRO_EN brings it
-on far with PF. Also this matches to the default sparc setting in
-PF driver.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+488c1850af0c8f17221f66e3366ed01f4d7c2ab9  ixgbe: check EEPROM for WOL support for X540 and above
 
-Signed-off-by: Babu Moger <babu.moger@oracle.com>
-Acked-by: Sowmini Varadhan <sowmini.varadhan@oracle.com>
----
-v2:
-  Alexander had concerns about this negativily affecting other architectures.
-  Added CONFIG_SPARC check so this should not affect other architectures.
+elapsed time: 41m
 
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+configs tested: 102
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 0ea14c0..3596e0b 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -1748,9 +1748,15 @@ static void ixgbevf_configure_rx_ring(struct ixgbevf_adapter *adapter,
- 	IXGBE_WRITE_REG(hw, IXGBE_VFRDLEN(reg_idx),
- 			ring->count * sizeof(union ixgbe_adv_rx_desc));
- 
-+#ifndef CONFIG_SPARC
- 	/* enable relaxed ordering */
- 	IXGBE_WRITE_REG(hw, IXGBE_VFDCA_RXCTRL(reg_idx),
- 			IXGBE_DCA_RXCTRL_DESC_RRO_EN);
-+#else
-+	IXGBE_WRITE_REG(hw, IXGBE_VFDCA_RXCTRL(reg_idx),
-+			IXGBE_DCA_RXCTRL_DESC_RRO_EN |
-+			IXGBE_DCA_RXCTRL_DATA_WRO_EN);
-+#endif
- 
- 	/* reset head and tail pointers */
- 	IXGBE_WRITE_REG(hw, IXGBE_VFRDH(reg_idx), 0);
--- 
-1.7.1
+i386                     randconfig-a0-201616
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x010-201616
+x86_64                 randconfig-x011-201616
+x86_64                 randconfig-x018-201616
+x86_64                 randconfig-x013-201616
+x86_64                 randconfig-x012-201616
+x86_64                 randconfig-x019-201616
+x86_64                 randconfig-x016-201616
+x86_64                 randconfig-x014-201616
+x86_64                 randconfig-x015-201616
+x86_64                 randconfig-x017-201616
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201616
+i386                     randconfig-s1-201616
+x86_64                           allmodconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201616
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                   randconfig-i0-04221115
+i386                   randconfig-i1-04221115
+x86_64                              rhel_gcov
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                                   rhel
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                 randconfig-x000-201616
+x86_64                 randconfig-x001-201616
+x86_64                 randconfig-x005-201616
+x86_64                 randconfig-x007-201616
+x86_64                 randconfig-x006-201616
+x86_64                 randconfig-x004-201616
+x86_64                 randconfig-x008-201616
+x86_64                 randconfig-x009-201616
+x86_64                 randconfig-x003-201616
+x86_64                 randconfig-x002-201616
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201616
+i386                   randconfig-x000-201616
+i386                   randconfig-x003-201616
+i386                   randconfig-x009-201616
+i386                   randconfig-x005-201616
+i386                   randconfig-x004-201616
+i386                   randconfig-x002-201616
+i386                   randconfig-x006-201616
+i386                   randconfig-x007-201616
+i386                   randconfig-x008-201616
+i386                   randconfig-x001-201616
 
+Thanks,
+Fengguang
