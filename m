@@ -1,73 +1,134 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Sat, 23 Apr 2016 01:21:09 +0000
-Subject: [Intel-wired-lan] [PATCH v4] e1000e: don't modify SYSTIM
- registers	during SIOCSHWTSTAMP ioctl
-In-Reply-To: <20160420183642.29050-1-jacob.e.keller@intel.com>
-References: <20160420183642.29050-1-jacob.e.keller@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81EF09E2@ORSMSX101.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 23 Apr 2016 09:25:02 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 2625762a948b313dfd512d981a56f0001a289524 BUILD SUCCESS
+Message-ID: <571aceee.yJJcFtUxSDj7WBpw%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Jacob Keller
-> Sent: Wednesday, April 20, 2016 11:37 AM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; Intel Wired LAN <intel-
-> wired-lan at lists.osuosl.org>
-> Subject: [Intel-wired-lan] [PATCH v4] e1000e: don't modify SYSTIM registers
-> during SIOCSHWTSTAMP ioctl
-> 
-> The e1000e_config_hwtstamp function was incorrectly resetting the SYSTIM
-> registers every time the ioctl was being run. If you happened to be
-> running ptp4l and lost the PTP connect (removing cable, or blocking the
-> UDP traffic for example), then ptp4l will eventually perform a restart
-> which involves re-requesting timestamp settings. In e1000e this has the
-> unfortunate and incorrect result of resetting SYSTIME to the kernel
-> time. Since kernel time is usually in UTC, and PTP time is in TAI, this
-> results in the leap second being re-applied.
-> 
-> Fix this by extracting the SYSTIME reset out into its own function,
-> e1000e_ptp_reset, which we call during reset to restore the hardware
-> registers. This function will (a) restart the timecounter based on the
-> new system time, (b) restore the previous PPB setting, and (c) restore
-> the previous hwtstamp settings.
-> 
-> In order to perform (b), I had to modify the adjfreq ptp function
-> pointer to store the old delta each time it is called. This also has the
-> side effect of restoring the correct base timinca register correctly.
-> The driver does not need to explicitly zero the ptp_delta variable since
-> the entire adapter structure comes zero-initialized.
-> 
-> Reported-by: Brian Walsh <brian@walsh.ws>
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Tested-by: Brian Walsh <brian@walsh.ws>
-> ---
-> 
-> Notes:
->     This patch conflicts with Brian's "e1000e fix ptp time reset on newtork
->     interruption", and that patch MUST be removed from the queue before
-> applying
->     this one.
-> 
->     - Changes since v1
->     * move e1000e_init_ptp prior to reset so that PTP clock is created first
->     * handle NULL ptp_clock_info gracefully.
-> 
->     - Changes since v2
->     * fix stupid compilation error
->     * fix stupid null pointer check
-> 
->     - Changes since v3
->     * fix issue when using part that doesn't support hw timestamping
->     * rename e1000e_ptp_reset to more apt e1000e_systim_reset
->     * refactor code a little to reduce duplicate warning and improve readability
-> 
->  drivers/net/ethernet/intel/e1000e/e1000.h  |  1 +
->  drivers/net/ethernet/intel/e1000e/netdev.c | 68
-> +++++++++++++++++++++++-------
->  drivers/net/ethernet/intel/e1000e/ptp.c    |  2 +
->  3 files changed, 55 insertions(+), 16 deletions(-)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+2625762a948b313dfd512d981a56f0001a289524  ixgbevf: Use mac_ops instead of trying to identify NIC type
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+elapsed time: 118m
+
+configs tested: 114
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201616
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+x86_64                 randconfig-x010-201616
+x86_64                 randconfig-x011-201616
+x86_64                 randconfig-x018-201616
+x86_64                 randconfig-x013-201616
+x86_64                 randconfig-x012-201616
+x86_64                 randconfig-x019-201616
+x86_64                 randconfig-x016-201616
+x86_64                 randconfig-x014-201616
+x86_64                 randconfig-x015-201616
+x86_64                 randconfig-x017-201616
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+i386                     randconfig-s1-201616
+i386         randconfig-s0-201616+CONFIG_DEBUG_INFO_REDUCED
+i386                     randconfig-s0-201616
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+x86_64                   randconfig-i0-201616
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                     randconfig-i1-201616
+i386                     randconfig-i0-201616
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                              rhel_gcov
+i386                   randconfig-x012-201616
+i386                   randconfig-x013-201616
+i386                   randconfig-x015-201616
+i386                   randconfig-x019-201616
+i386                   randconfig-x018-201616
+i386                   randconfig-x011-201616
+i386                   randconfig-x010-201616
+i386                   randconfig-x016-201616
+i386                   randconfig-x017-201616
+i386                   randconfig-x014-201616
+x86_64                                    lkp
+x86_64                                   rhel
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201616
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                 randconfig-x000-201616
+x86_64                 randconfig-x001-201616
+x86_64                 randconfig-x005-201616
+x86_64                 randconfig-x007-201616
+x86_64                 randconfig-x006-201616
+x86_64                 randconfig-x004-201616
+x86_64                 randconfig-x008-201616
+x86_64                 randconfig-x009-201616
+x86_64                 randconfig-x003-201616
+x86_64                 randconfig-x002-201616
+i386                     randconfig-r0-201616
+i386                   randconfig-x000-201616
+i386                   randconfig-x003-201616
+i386                   randconfig-x009-201616
+i386                   randconfig-x005-201616
+i386                   randconfig-x004-201616
+i386                   randconfig-x002-201616
+i386                   randconfig-x006-201616
+i386                   randconfig-x007-201616
+i386                   randconfig-x008-201616
+i386                   randconfig-x001-201616
+
+Thanks,
+Fengguang
