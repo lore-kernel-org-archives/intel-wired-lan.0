@@ -1,134 +1,39 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 23 Apr 2016 09:25:02 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 2625762a948b313dfd512d981a56f0001a289524 BUILD SUCCESS
-Message-ID: <571aceee.yJJcFtUxSDj7WBpw%fengguang.wu@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Sat, 23 Apr 2016 02:15:59 +0000
+Subject: [Intel-wired-lan] [next-queue PATCH v2 3/3] igb/igbvf: Add
+ support	for GSO partial
+In-Reply-To: <20160414211938.14141.76178.stgit@ahduyck-xeon-server>
+References: <20160414210725.14141.25917.stgit@ahduyck-xeon-server>
+ <20160414211938.14141.76178.stgit@ahduyck-xeon-server>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81EF0A65@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-2625762a948b313dfd512d981a56f0001a289524  ixgbevf: Use mac_ops instead of trying to identify NIC type
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Alexander Duyck
+> Sent: Thursday, April 14, 2016 2:20 PM
+> To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
+> <jeffrey.t.kirsher@intel.com>; alexander.duyck at gmail.com
+> Subject: [Intel-wired-lan] [next-queue PATCH v2 3/3] igb/igbvf: Add support
+> for GSO partial
+> 
+> This patch adds support for partial GSO segmentation in the case of
+> tunnels.  Specifically with this change the driver an perform segmenation
+> as long as the frame either has IPv6 inner headers, or we are allowed to
+> mangle the IP IDs on the inner header.  This is needed because we will not
+> be modifying any fields from the start of the start of the outer transport
+> header to the start of the inner transport header as we are treating them
+> like they are just a block of IP options.
+> 
+> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+> ---
+>  drivers/net/ethernet/intel/igb/igb_main.c |  137 +++++++++++++++-------
+>  drivers/net/ethernet/intel/igbvf/netdev.c |  182 +++++++++++++++++----------
+> --
+>  2 files changed, 203 insertions(+), 116 deletions(-)
+> 
 
-elapsed time: 118m
-
-configs tested: 114
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201616
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64                 randconfig-x010-201616
-x86_64                 randconfig-x011-201616
-x86_64                 randconfig-x018-201616
-x86_64                 randconfig-x013-201616
-x86_64                 randconfig-x012-201616
-x86_64                 randconfig-x019-201616
-x86_64                 randconfig-x016-201616
-x86_64                 randconfig-x014-201616
-x86_64                 randconfig-x015-201616
-x86_64                 randconfig-x017-201616
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-i386                     randconfig-s1-201616
-i386         randconfig-s0-201616+CONFIG_DEBUG_INFO_REDUCED
-i386                     randconfig-s0-201616
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-x86_64                   randconfig-i0-201616
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i1-201616
-i386                     randconfig-i0-201616
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                              rhel_gcov
-i386                   randconfig-x012-201616
-i386                   randconfig-x013-201616
-i386                   randconfig-x015-201616
-i386                   randconfig-x019-201616
-i386                   randconfig-x018-201616
-i386                   randconfig-x011-201616
-i386                   randconfig-x010-201616
-i386                   randconfig-x016-201616
-i386                   randconfig-x017-201616
-i386                   randconfig-x014-201616
-x86_64                                    lkp
-x86_64                                   rhel
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201616
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                 randconfig-x000-201616
-x86_64                 randconfig-x001-201616
-x86_64                 randconfig-x005-201616
-x86_64                 randconfig-x007-201616
-x86_64                 randconfig-x006-201616
-x86_64                 randconfig-x004-201616
-x86_64                 randconfig-x008-201616
-x86_64                 randconfig-x009-201616
-x86_64                 randconfig-x003-201616
-x86_64                 randconfig-x002-201616
-i386                     randconfig-r0-201616
-i386                   randconfig-x000-201616
-i386                   randconfig-x003-201616
-i386                   randconfig-x009-201616
-i386                   randconfig-x005-201616
-i386                   randconfig-x004-201616
-i386                   randconfig-x002-201616
-i386                   randconfig-x006-201616
-i386                   randconfig-x007-201616
-i386                   randconfig-x008-201616
-i386                   randconfig-x001-201616
-
-Thanks,
-Fengguang
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
