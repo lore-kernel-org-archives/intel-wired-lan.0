@@ -1,69 +1,160 @@
-From: Aaron Sierra <asierra@xes-inc.com>
-Date: Mon, 25 Apr 2016 12:35:48 -0500 (CDT)
-Subject: [Intel-wired-lan] issue with kernel patch
- 2a3cdead8b408351fa1e3079b220fa331480ffbc
-In-Reply-To: <1461600045.21920.10.camel@maxwell>
-References: <1461577586.24438.14.camel@maxwell>
- <9BBC4E0CF881AA4299206E2E1412B626501BC575@ORSMSX102.amr.corp.intel.com>
- <9B4A1B1917080E46B64F07F2989DADD65ABFD85F@ORSMSX114.amr.corp.intel.com>
- <1768814989.41697.1461598056358.JavaMail.zimbra@xes-inc.com>
- <1461600045.21920.10.camel@maxwell>
-Message-ID: <985237851.71212.1461605748986.JavaMail.zimbra@xes-inc.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 26 Apr 2016 05:53:19 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
+ 6a025a50b523478b7c8112643cc94f5fd3d312ce BUILD DONE
+Message-ID: <571e91cf.IleI5NgEAph9D9vD%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Jochen,
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
+6a025a50b523478b7c8112643cc94f5fd3d312ce  Merge branch 'qed-next'
 
-> I wonder if this is related to the modified register read/write
-> after the patch.
+include/net/sock.h:442: warning: No description found for parameter 'sk_rcu'
+net/ipv4/udp.c:1705:9: sparse: incompatible types in comparison expression (different address spaces)
+net/ipv6/udp.c:758:9: sparse: incompatible types in comparison expression (different address spaces)
+net/tipc/bearer.c:560:48: sparse: incompatible types in comparison expression (different base types)
 
-Possibly. The GS40G functions explicitly set the PHY page with every access. I
-suspect that your external I210 PHY was left with some other page selected (by
-your BIOS?). Try adding the following debug to your driver to see which page is
-selected:
+Error ids grouped by kconfigs:
 
-diff --git a/drivers/net/ethernet/intel/igb/e1000_82575.c b/drivers/net/ethernet
-index a23aa67..5cd9e91 100644
---- a/drivers/net/ethernet/intel/igb/e1000_82575.c
-+++ b/drivers/net/ethernet/intel/igb/e1000_82575.c
-@@ -226,6 +226,7 @@ static s32 igb_init_phy_params_82575(struct e1000_hw *hw)
-                phy->ops.read_reg = igb_read_phy_reg_sgmii_82575;
-                phy->ops.write_reg = igb_write_phy_reg_sgmii_82575;
-        } else {
-+               u16 page;
-                switch (hw->mac.type) {
-                case e1000_82580:
-                case e1000_i350:
-@@ -234,6 +235,8 @@ static s32 igb_init_phy_params_82575(struct e1000_hw *hw)
-                case e1000_i211:
-                        phy->ops.read_reg = igb_read_phy_reg_82580;
-                        phy->ops.write_reg = igb_write_phy_reg_82580;
-+                       phy->ops.read_reg(hw, I347AT4_PAGE_SELECT, &page);
-+                       pr_info("%s: default page: %x\n", __func__, page);
-                        break;
-                default:
-                        phy->ops.read_reg = igb_read_phy_reg_igp;
-@@ -251,6 +254,7 @@ static s32 igb_init_phy_params_82575(struct e1000_hw *hw)
-                return ret_val;
- 
-        /* Verify phy id and set remaining function pointers */
-+       pr_info("%s: PHY ID: %x\n", __func__, phy->id);
-        switch (phy->id) {
-        case M88E1543_E_PHY_ID:
-        case M88E1512_E_PHY_ID:
+recent_errors
+??? i386-allnoconfig
+??? ??? include-net-sock.h:warning:No-description-found-for-parameter-sk_rcu
+??? x86_64-allmodconfig
+    ??? net-ipv4-udp.c:sparse:incompatible-types-in-comparison-expression-(different-address-spaces)
+    ??? net-ipv6-udp.c:sparse:incompatible-types-in-comparison-expression-(different-address-spaces)
+    ??? net-tipc-bearer.c:sparse:incompatible-types-in-comparison-expression-(different-base-types)
 
-This is the output that I get from an external I210 device attached to a
-Bay Trail SoC:
+elapsed time: 91m
 
-igb 0000:02:00.0: added PHC on eth0
-igb 0000:02:00.0: Intel(R) Gigabit Ethernet Network Connection
-igb 0000:02:00.0: eth0: (PCIe:2.5Gb/s:Width x1) 00:17:3c:02:88:56
-igb 0000:02:00.0: eth0: PBA No: FFFFFF-0FF
-igb 0000:02:00.0: Using MSI-X interrupts. 2 rx queue(s), 2 tx queue(s)
-igb: igb_init_phy_params_82575: default page: 0
-igb: igb_init_phy_params_82575: PHY ID: 1410c00
+configs tested: 124
 
--Aaron
+i386                   randconfig-a0-04260434
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                             allmodconfig
+blackfin                            defconfig
+ia64                                defconfig
+mips                                defconfig
+sh                                  defconfig
+x86_64               randconfig-x010-04260410
+x86_64               randconfig-x011-04260410
+x86_64               randconfig-x012-04260410
+x86_64               randconfig-x013-04260410
+x86_64               randconfig-x014-04260410
+x86_64               randconfig-x015-04260410
+x86_64               randconfig-x016-04260410
+x86_64               randconfig-x017-04260410
+x86_64               randconfig-x018-04260410
+x86_64               randconfig-x019-04260410
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                   randconfig-s0-04260410
+i386                   randconfig-s1-04260410
+x86_64                 randconfig-s0-04260410
+x86_64                 randconfig-s1-04260410
+x86_64                 randconfig-s2-04260410
+x86_64                           allmodconfig
+x86_64                 randconfig-s3-04260410
+x86_64                 randconfig-s4-04260410
+x86_64                 randconfig-s5-04260410
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                 randconfig-i0-04260434
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+x86_64                              rhel_gcov
+i386                   randconfig-x012-201617
+i386                   randconfig-x013-201617
+i386                   randconfig-x015-201617
+i386                   randconfig-x019-201617
+i386                   randconfig-x018-201617
+i386                   randconfig-x011-201617
+i386                   randconfig-x010-201617
+i386                   randconfig-x016-201617
+i386                   randconfig-x017-201617
+i386                   randconfig-x014-201617
+i386                   randconfig-n0-04260436
+x86_64                                   rhel
+ia64                             alldefconfig
+ia64                              allnoconfig
+i386                   randconfig-r0-04260431
+x86_64                 randconfig-r0-04260431
+i386                 randconfig-x008-04260201
+i386                 randconfig-x007-04260201
+i386                 randconfig-x004-04260201
+i386                 randconfig-x006-04260201
+i386                 randconfig-x000-04260201
+i386                 randconfig-x005-04260201
+i386                 randconfig-x009-04260201
+i386                 randconfig-x002-04260201
+i386                 randconfig-x001-04260201
+i386                 randconfig-x003-04260201
+i386                 randconfig-x000-04260434
+i386                 randconfig-x001-04260434
+i386                 randconfig-x002-04260434
+i386                 randconfig-x003-04260434
+i386                 randconfig-x004-04260434
+i386                 randconfig-x005-04260434
+i386                 randconfig-x006-04260434
+i386                 randconfig-x007-04260434
+i386                 randconfig-x008-04260434
+i386                 randconfig-x009-04260434
+
+Thanks,
+Fengguang
