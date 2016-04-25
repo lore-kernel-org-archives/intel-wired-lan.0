@@ -1,11 +1,11 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Mon, 25 Apr 2016 23:08:00 +0000
-Subject: [Intel-wired-lan] [PATCH 2/3] e1000e:
- e1000e_cyclecounter_read():	fix er32(SYSTIML) overflow check
-In-Reply-To: <1461167156-6737-2-git-send-email-dvlasenk@redhat.com>
+Date: Mon, 25 Apr 2016 23:12:20 +0000
+Subject: [Intel-wired-lan] [PATCH 3/3] e1000e:
+ e1000e_cyclecounter_read():	do overflow check only if needed
+In-Reply-To: <1461167156-6737-3-git-send-email-dvlasenk@redhat.com>
 References: <1461167156-6737-1-git-send-email-dvlasenk@redhat.com>
- <1461167156-6737-2-git-send-email-dvlasenk@redhat.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81EF174C@ORSMSX101.amr.corp.intel.com>
+ <1461167156-6737-3-git-send-email-dvlasenk@redhat.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81EF178F@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,26 +17,35 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Sent: Wednesday, April 20, 2016 8:46 AM
 > To: intel-wired-lan at lists.osuosl.org
 > Cc: Denys Vlasenko <dvlasenk@redhat.com>
-> Subject: [Intel-wired-lan] [PATCH 2/3] e1000e: e1000e_cyclecounter_read():
-> fix er32(SYSTIML) overflow check
+> Subject: [Intel-wired-lan] [PATCH 3/3] e1000e: e1000e_cyclecounter_read():
+> do overflow check only if needed
 > 
-> If two consecutive reads of the counter are the same, it is also not an
-> overflow.
-> "systimel_1 < systimel_2" should be "systimel_1 <= systimel_2".
+> SYSTIMH:SYSTIML registers are incremented by 24-bit value TIMINCA[23..0]
 > 
-> Before the patch, we could perform an *erroneous* correction:
+> er32(SYSTIML) are probably moderately expensive (they are pci bus reads).
+> Can we avoid one of them? Yes, we can.
 > 
-> Let's say that systimel_1 == systimel_2 == 0xffffffff.
-> "systimel_1 < systimel_2" is false, we think it's an overflow,
-> we read "systimeh = er32(SYSTIMH)" which meanwhile had incremented,
-> and use "(systimeh << 32) + systimel_2" value which is 2^32 too large.
+> If the SYSTIML value we see is smaller than 0xff000000, the overflow
+> into SYSTIMH would require at least two increments.
+> 
+> We do two reads, er32(SYSTIML) and er32(SYSTIMH), in this order.
+> 
+> Even if one increment happens between them, the overflow into SYSTIMH
+> is impossible, and we can avoid doing another er32(SYSTIML) read
+> and overflow check.
 > 
 > Signed-off-by: Denys Vlasenko <dvlasenk@redhat.com>
 > CC: intel-wired-lan at lists.osuosl.org
 > ---
->  drivers/net/ethernet/intel/e1000e/netdev.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 28 ++++++++++++++--------------
+>  1 file changed, 14 insertions(+), 14 deletions(-)
 
-This patch also gives me the possible unwrapped commit description (prefer a maximum 75 chars per line) warning but otherwise seems fine.
+This one throws a different checkpatch warning:
+WARNING: Missing a blank line after declarations
+#61: FILE: drivers/net/ethernet/intel/e1000e/netdev.c:4327:
++               u32 systimel_2 = er32(SYSTIML);
++               if (systimel > systimel_2) {
+
+Still just a warning and I'm not seeing functional problems with it.
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
