@@ -1,160 +1,80 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Mon, 25 Apr 2016 22:12:40 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:10GbE]
- d4f90d9dca26efef7a1112a8f4258c90b73bb37f BUILD SUCCESS
-Message-ID: <571e25d8.VYcGWkc69DVacAhw%fengguang.wu@intel.com>
+From: Fujinaka, Todd <todd.fujinaka@intel.com>
+Date: Mon, 25 Apr 2016 15:07:30 +0000
+Subject: [Intel-wired-lan] issue with kernel patch
+	2a3cdead8b408351fa1e3079b220fa331480ffbc
+In-Reply-To: <9BBC4E0CF881AA4299206E2E1412B626501BC575@ORSMSX102.amr.corp.intel.com>
+References: <1461577586.24438.14.camel@maxwell>
+ <9BBC4E0CF881AA4299206E2E1412B626501BC575@ORSMSX102.amr.corp.intel.com>
+Message-ID: <9B4A1B1917080E46B64F07F2989DADD65ABFD85F@ORSMSX114.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  10GbE
-d4f90d9dca26efef7a1112a8f4258c90b73bb37f  ixgbe: use msleep for long delays
+Jochen,
+This change did not come from us. You should take it to the public mailing lists for discussion. This appears to have originated with Aaron Sierra.
 
-elapsed time: 87m
+Todd Fujinaka
+Software Application Engineer
+Networking Division (ND)
+Intel Corporation
+todd.fujinaka at intel.com
+(503) 712-4565
 
-configs tested: 139
 
-blackfin                            defconfig
-ia64                                defconfig
-mips                                defconfig
-i386                   randconfig-a0-04252000
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-arm                        spear3xx_defconfig
-m68k                           sun3_defconfig
-powerpc64                        allmodconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-04252002
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                             allmodconfig
-x86_64               randconfig-x019-04251951
-x86_64               randconfig-x012-04251951
-x86_64               randconfig-x018-04251951
-x86_64               randconfig-x013-04251951
-x86_64               randconfig-x014-04251951
-x86_64               randconfig-x017-04251951
-x86_64               randconfig-x011-04251951
-x86_64               randconfig-x010-04251951
-x86_64               randconfig-x016-04251951
-x86_64               randconfig-x015-04251951
-x86_64                 randconfig-x010-201617
-x86_64                 randconfig-x011-201617
-x86_64                 randconfig-x012-201617
-x86_64                 randconfig-x013-201617
-x86_64                 randconfig-x014-201617
-x86_64                 randconfig-x015-201617
-x86_64                 randconfig-x016-201617
-x86_64                 randconfig-x017-201617
-x86_64                 randconfig-x018-201617
-x86_64                 randconfig-x019-201617
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-i386                   randconfig-s0-04251951
-i386                   randconfig-s1-04251951
-x86_64                           allmodconfig
-x86_64                 randconfig-s3-04252100
-x86_64                 randconfig-s4-04252100
-x86_64                 randconfig-s5-04252100
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-i0-04251957
-i386                   randconfig-b0-04252052
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-i0-04251952
-i386                   randconfig-i1-04251952
-i386                             allyesconfig
-x86_64                              rhel_gcov
-x86_64                 randconfig-n0-04252001
-i386                   randconfig-x010-201617
-i386                   randconfig-x011-201617
-i386                   randconfig-x012-201617
-i386                   randconfig-x013-201617
-i386                   randconfig-x014-201617
-i386                   randconfig-x015-201617
-i386                   randconfig-x016-201617
-i386                   randconfig-x017-201617
-i386                   randconfig-x018-201617
-i386                   randconfig-x019-201617
-x86_64                                    lkp
-x86_64                                   rhel
-i386                   randconfig-n0-04251056
-x86_64               randconfig-x000-04251957
-x86_64               randconfig-x001-04251957
-x86_64               randconfig-x002-04251957
-x86_64               randconfig-x003-04251957
-x86_64               randconfig-x004-04251957
-x86_64               randconfig-x005-04251957
-x86_64               randconfig-x006-04251957
-x86_64               randconfig-x007-04251957
-x86_64               randconfig-x008-04251957
-x86_64               randconfig-x009-04251957
-ia64                             alldefconfig
-ia64                              allnoconfig
-i386                   randconfig-r0-04251957
-i386                 randconfig-x000-04251958
-i386                 randconfig-x001-04251958
-i386                 randconfig-x002-04251958
-i386                 randconfig-x003-04251958
-i386                 randconfig-x004-04251958
-i386                 randconfig-x006-04251958
-i386                 randconfig-x007-04251958
-i386                 randconfig-x008-04251958
-i386                 randconfig-x009-04251958
-i386                 randconfig-x005-04251958
-i386                   randconfig-x0-04251958
+-----Original Message-----
+From: Wyborny, Carolyn 
+Sent: Monday, April 25, 2016 7:50 AM
+To: Jochen Henneberg <jh@henneberg-systemdesign.com>
+Cc: Fujinaka, Todd <todd.fujinaka@intel.com>
+Subject: RE: issue with kernel patch 2a3cdead8b408351fa1e3079b220fa331480ffbc
+
+Adding Todd for i210 support.  Those phy functions were designed for that specific PHY.  If the PHY you have on your design identifies as the PHY id for the gs40g PHY, but does not work the way the functions expect, the failure makes sense. 
 
 Thanks,
-Fengguang
+
+Carolyn
+
+> -----Original Message-----
+> From: Jochen Henneberg [mailto:jh at henneberg-systemdesign.com]
+> Sent: Monday, April 25, 2016 2:46 AM
+> To: Wyborny, Carolyn <carolyn.wyborny@intel.com>
+> Subject: issue with kernel patch
+> 2a3cdead8b408351fa1e3079b220fa331480ffbc
+> 
+> Hi Carolyn,
+> 
+> I have an embedded device here which comes with a BYT SoC and a 
+> separate
+> I210 ethernet controller attached to the PCIe bus.
+> Before the mentioned patch everything worked fine, now reading phy id 
+> fails for the external chip, the one on the SoC reports the correct 
+> phy id. If I circumvent the phy id check in 
+> igb_init_phy_params_82575() everything works fine again.
+> From what I can see the phy id is not part of the NVM flash image, so 
+> I wonder why this fails now that the special gs40g register read 
+> functions have been removed.
+> Could you probably give me a hint? Or does the driver after this patch 
+> probably not cover all situations anymore?
+> The HW vendor will contact Intel with the same issue in parallel, I 
+> just wanted to know if you are aware of any corner cases where the 
+> generic register reads may fail, especially for the phy id (as I 
+> pointed out before, the other phy register like connection status and 
+> such seem to behave as expected).
+> 
+> Thanks in advance,
+> Jochen Henneberg
+> --
+> Henneberg - Systemdesign
+> Jochen Henneberg
+> Loehnfeld 26
+> 21423 Winsen (Luhe)
+> --
+> Fon: +49 4174 668 773
+> Mobile: +49 172 160 14 69
+> Fax: +49 321 210 761 64
+> www: www.henneberg-systemdesign.com
+> 
+> 
+
