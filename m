@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 25 Apr 2016 22:34:23 +0000
-Subject: [Intel-wired-lan] [next PATCH S33 10/13] i40e/i40evf: Only
- offload	vlan tag if enabled
-In-Reply-To: <1460475052-6348-11-git-send-email-harshitha.ramamurthy@intel.com>
+Date: Mon, 25 Apr 2016 22:36:30 +0000
+Subject: [Intel-wired-lan] [next PATCH S33 11/13] i40e: Add promiscuous
+ on	VLAN support
+In-Reply-To: <1460475052-6348-12-git-send-email-harshitha.ramamurthy@intel.com>
 References: <1460475052-6348-1-git-send-email-harshitha.ramamurthy@intel.com>
- <1460475052-6348-11-git-send-email-harshitha.ramamurthy@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D4DED@ORSMSX104.amr.corp.intel.com>
+ <1460475052-6348-12-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D4DFD@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,24 +17,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Harshitha Ramamurthy
 > Sent: Tuesday, April 12, 2016 8:31 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S33 10/13] i40e/i40evf: Only offload
-> vlan tag if enabled
+> Subject: [Intel-wired-lan] [next PATCH S33 11/13] i40e: Add promiscuous on
+> VLAN support
 > 
-> From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> From: Greg Rose <gregory.v.rose@intel.com>
 > 
-> The driver was offloading the vlan tag into the skb any time there was a vlan
-> tag and the hardware stripping was enabled.  Just check to make sure it's
-> enabled before put_tag.
+> NFV use cases require the ability to steer packets to VSIs by VLAN tag alone
+> while being in promiscuous mode for multicast and unicast MAC addresses.
+> These two new functions support that ability.
 > 
-> Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> Change-Id: Ife95290c06edd9a616393b38679923938b382241
+> Signed-off-by: Greg Rose <gregory.v.rose@intel.com>
 > ---
-> Testing Hints : Make sure ethtool control over RX vlan tag insertion/removal
-> still works.
-> 
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 3 ++-
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 3 ++-
->  2 files changed, 4 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_common.c    | 70
+> ++++++++++++++++++++++++
+>  drivers/net/ethernet/intel/i40e/i40e_prototype.h |  8 +++
+>  2 files changed, 78 insertions(+)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-VLAN offloading can be enabled and disabled with ethtool and works correctly.
+Promiscuous mode, packet steering works with VLAN traffic correctly
