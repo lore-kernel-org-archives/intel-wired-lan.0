@@ -1,59 +1,69 @@
-From: Aaron Sierra <asierra@xes-inc.com>
-Date: Tue, 26 Apr 2016 10:52:24 -0500 (CDT)
-Subject: [Intel-wired-lan] issue with kernel patch
- 2a3cdead8b408351fa1e3079b220fa331480ffbc
-In-Reply-To: <1461657732.9165.8.camel@maxwell>
-References: <1461577586.24438.14.camel@maxwell>
- <9BBC4E0CF881AA4299206E2E1412B626501BC575@ORSMSX102.amr.corp.intel.com>
- <9B4A1B1917080E46B64F07F2989DADD65ABFD85F@ORSMSX114.amr.corp.intel.com>
- <1768814989.41697.1461598056358.JavaMail.zimbra@xes-inc.com>
- <1461600045.21920.10.camel@maxwell>
- <985237851.71212.1461605748986.JavaMail.zimbra@xes-inc.com>
- <1461657732.9165.8.camel@maxwell>
-Message-ID: <1334573989.48186.1461685944444.JavaMail.zimbra@xes-inc.com>
+From: Denys Vlasenko <dvlasenk@redhat.com>
+Date: Tue, 26 Apr 2016 18:03:14 +0200
+Subject: [Intel-wired-lan] [PATCH 3/3] e1000e:
+ e1000e_cyclecounter_read(): do overflow check only if needed
+In-Reply-To: <309B89C4C689E141A5FF6A0C5FB2118B81EF178F@ORSMSX101.amr.corp.intel.com>
+References: <1461167156-6737-1-git-send-email-dvlasenk@redhat.com>
+ <1461167156-6737-3-git-send-email-dvlasenk@redhat.com>
+ <309B89C4C689E141A5FF6A0C5FB2118B81EF178F@ORSMSX101.amr.corp.intel.com>
+Message-ID: <571F9142.5000002@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Jochen,
-
------ Original Message -----
-> From: "Jochen Henneberg" <jh@henneberg-systemdesign.com>
-> Sent: Tuesday, April 26, 2016 3:02:12 AM
+On 04/26/2016 01:12 AM, Brown, Aaron F wrote:
+>> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+>> Behalf Of Denys Vlasenko
+>> Sent: Wednesday, April 20, 2016 8:46 AM
+>> To: intel-wired-lan at lists.osuosl.org
+>> Cc: Denys Vlasenko <dvlasenk@redhat.com>
+>> Subject: [Intel-wired-lan] [PATCH 3/3] e1000e: e1000e_cyclecounter_read():
+>> do overflow check only if needed
+>>
+>> SYSTIMH:SYSTIML registers are incremented by 24-bit value TIMINCA[23..0]
+>>
+>> er32(SYSTIML) are probably moderately expensive (they are pci bus reads).
+>> Can we avoid one of them? Yes, we can.
+>>
+>> If the SYSTIML value we see is smaller than 0xff000000, the overflow
+>> into SYSTIMH would require at least two increments.
+>>
+>> We do two reads, er32(SYSTIML) and er32(SYSTIMH), in this order.
+>>
+>> Even if one increment happens between them, the overflow into SYSTIMH
+>> is impossible, and we can avoid doing another er32(SYSTIML) read
+>> and overflow check.
+>>
+...
+> Still just a warning and I'm not seeing functional problems with it.
 > 
-> On Mo, 2016-04-25 at 12:35 -0500, Aaron Sierra wrote:
-> > This is the output that I get from an external I210 device attached to
-> > a Bay Trail SoC:
-> > 
-> > igb 0000:02:00.0: added PHC on eth0
-> > igb 0000:02:00.0: Intel(R) Gigabit Ethernet Network Connection
-> > igb 0000:02:00.0: eth0: (PCIe:2.5Gb/s:Width x1) 00:17:3c:02:88:56
-> > igb 0000:02:00.0: eth0: PBA No: FFFFFF-0FF
-> > igb 0000:02:00.0: Using MSI-X interrupts. 2 rx queue(s), 2 tx queue(s)
-> > igb: igb_init_phy_params_82575: default page: 0
-> > igb: igb_init_phy_params_82575: PHY ID: 1410c00
-> 
-> And here is mine with the patch applied:
-> 
-> igb: Intel(R) Gigabit Ethernet Network Driver - version 5.3.0-k
-> igb: Copyright (c) 2007-2014 Intel Corporation.
-> igb: igb_init_phy_params_82575: default page: fc
-> igb: igb_init_phy_params_82575: PHY ID: a0044e90
-> igb: probe of 0000:01:00.0 failed with error -2
+> Tested-by: Aaron Brown <aaron.f.brown@intel.com>
 
-[snip]
+Aaron, there were some comments from Dima Ruinskiy <dima.ruinskiy@intel.com>
+that I might be underestimating the rate how quickly this counter increments:
+that it may be in fact incrementing something like every 40ns.
 
-> The datasheet states that the page selection register should come up
-> with 0 after power on, but either somebody writes the register up-front
-> (but who) or this comes from a broken setup in the NVM?
+In this case, more than one increment may happen between these two PCIe reads:
 
-Hmm, that's the same page, E1000_PHY_PLL_FREQ_PAGE, touched by
-igb_pll_workaround_i210() in the commit that you referenced, but there's
-an explicit write to reset the page to zero at the end. Do you get into
-that function with the external I210?
+	systimel = er32(SYSTIML);
+	systimeh = er32(SYSTIMH);
 
--Aaron
- 
-> Jochen
+and my check
+
+	/* Is systimel is so large that overflow is possible? */
+	if (systimel >= (u32)0xffffffff - E1000_TIMINCA_INCVALUE_MASK) {
+
+can fail to catch an overflow.
+
+If you (Intel guys) indeed see that as possible, then either drop the 3/3
+patch, or tweak the constant so that more than one increment is needed
+for overflow. Say:
+
+	/* Is systimel is so large that overflow is possible? */
+	if (systimel >= (u32)0xf0000000) {
+
+This particular constant in comparison allows to skip overflow check
+if we are more than 16 updates away from overflow - should be ample.
+
