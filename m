@@ -1,343 +1,73 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 26 Apr 2016 13:44:29 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- c0ec62daf855c67870a7109c45b40213a17bc8c3 BUILD SUCCESS
-Message-ID: <571f003d.jE862+OBAKT7Qi3X%fengguang.wu@intel.com>
+From: Jochen Henneberg <jh@henneberg-systemdesign.com>
+Date: Tue, 26 Apr 2016 10:02:12 +0200
+Subject: [Intel-wired-lan] issue with kernel patch
+	2a3cdead8b408351fa1e3079b220fa331480ffbc
+In-Reply-To: <985237851.71212.1461605748986.JavaMail.zimbra@xes-inc.com>
+References: <1461577586.24438.14.camel@maxwell>
+ <9BBC4E0CF881AA4299206E2E1412B626501BC575@ORSMSX102.amr.corp.intel.com>
+ <9B4A1B1917080E46B64F07F2989DADD65ABFD85F@ORSMSX114.amr.corp.intel.com>
+ <1768814989.41697.1461598056358.JavaMail.zimbra@xes-inc.com>
+ <1461600045.21920.10.camel@maxwell>
+ <985237851.71212.1461605748986.JavaMail.zimbra@xes-inc.com>
+Message-ID: <1461657732.9165.8.camel@maxwell>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-c0ec62daf855c67870a7109c45b40213a17bc8c3  ixgbevf: Use mac_ops instead of trying to identify NIC type
+On Mo, 2016-04-25 at 12:35 -0500, Aaron Sierra wrote:
+> This is the output that I get from an external I210 device attached to
+> a
+> Bay Trail SoC:
+> 
+> igb 0000:02:00.0: added PHC on eth0
+> igb 0000:02:00.0: Intel(R) Gigabit Ethernet Network Connection
+> igb 0000:02:00.0: eth0: (PCIe:2.5Gb/s:Width x1) 00:17:3c:02:88:56
+> igb 0000:02:00.0: eth0: PBA No: FFFFFF-0FF
+> igb 0000:02:00.0: Using MSI-X interrupts. 2 rx queue(s), 2 tx queue(s)
+> igb: igb_init_phy_params_82575: default page: 0
+> igb: igb_init_phy_params_82575: PHY ID: 1410c00
 
-elapsed time: 555m
+And here is mine with the patch applied:
 
-configs tested: 322
+igb: Intel(R) Gigabit Ethernet Network Driver - version 5.3.0-k
+igb: Copyright (c) 2007-2014 Intel Corporation.
+igb: igb_init_phy_params_82575: default page: fc
+igb: igb_init_phy_params_82575: PHY ID: a0044e90
+igb: probe of 0000:01:00.0 failed with error -2
+igb: igb_init_phy_params_82575: default page: 0
+igb: igb_init_phy_params_82575: PHY ID: 1410c00
+pps pps0: new PPS source ptp0
+igb 0000:04:00.0: added PHC on eth0
+igb 0000:04:00.0: Intel(R) Gigabit Ethernet Network Connection
+igb 0000:04:00.0: eth0: (PCIe:2.5Gb/s:Width x1) 00:e0:4b:47:38:6f
+igb 0000:04:00.0: eth0: PBA No: FFFFFF-0FF
+igb 0000:04:00.0: Using MSI-X interrupts. 2 rx queue(s), 2 tx queue(s)
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                       imx_v6_v7_defconfig
-blackfin          BF527-AD7160-EVAL_defconfig
-powerpc               corenet_basic_defconfig
-powerpc                      bamboo_defconfig
-powerpc                        cell_defconfig
-sh                         ecovec24_defconfig
-m32r                    mappi.nommu_defconfig
-parisc                generic-32bit_defconfig
-powerpc64                         allnoconfig
-i386                   randconfig-a0-04260434
-i386                   randconfig-a0-04260736
-x86_64                 randconfig-a0-04261153
-x86_64                 randconfig-a0-04261256
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-blackfin                            defconfig
-ia64                                defconfig
-mips                                defconfig
-arm                     davinci_all_defconfig
-mips                           ip32_defconfig
-mips                      loongson3_defconfig
-arm                         lubbock_defconfig
-arm                       netwinder_defconfig
-openrisc                            defconfig
-mn10300                     asb2364_defconfig
-s390                           gcov_defconfig
-um                           x86_64_defconfig
-mips                       bmips_be_defconfig
-powerpc                 mpc837x_mds_defconfig
-powerpc               mpc85xx_basic_defconfig
-x86_64                              defconfig
-arm                          exynos_defconfig
-mips                      fuloong2e_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-04261152
-i386                   randconfig-c0-04261209
-i386                   randconfig-c0-04261231
-i386                   randconfig-c0-04261305
-i386                   randconfig-c0-04261317
-x86_64                           allmodconfig
-cris                              allnoconfig
-mips                       rbtx49xx_defconfig
-sh                         apsh4a3a_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-v0-04261226
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-parisc                         b180_defconfig
-i386                             allmodconfig
-sh                                  defconfig
-arm64                               defconfig
-m68k                        mvme16x_defconfig
-powerpc                     mpc5200_defconfig
-um                               allyesconfig
-arm                         s3c6400_defconfig
-mips                            gpr_defconfig
-sh                             sh03_defconfig
-blackfin                  CM-BF537U_defconfig
-blackfin                       IP0X_defconfig
-powerpc                     mpc83xx_defconfig
-powerpc64                           defconfig
-sh                          rsk7201_defconfig
-cris                    etrax-100lx_defconfig
-ia64                         bigsur_defconfig
-powerpc                        icon_defconfig
-sh                          sdk7786_defconfig
-arm                             rpc_defconfig
-ia64                            sim_defconfig
-mn10300                           allnoconfig
-powerpc                 canyonlands_defconfig
-powerpc64                        allyesconfig
-avr32                 atngw100_mrmt_defconfig
-blackfin                BF609-EZKIT_defconfig
-mn10300                          allmodconfig
-sh                        apsh4ad0a_defconfig
-sh                           se7705_defconfig
-arm                          nuc950_defconfig
-mn10300                          allyesconfig
-powerpc                          g5_defconfig
-sh                             espt_defconfig
-arm                        trizeps4_defconfig
-arm                        vexpress_defconfig
-blackfin                    PNAV-10_defconfig
-powerpc                     kilauea_defconfig
-powerpc                    socrates_defconfig
-arm                         assabet_defconfig
-blackfin                BF537-STAMP_defconfig
-m68k                            q40_defconfig
-arm                        shmobile_defconfig
-blackfin                   CM-BF527_defconfig
-mips                       lemote2f_defconfig
-sh                        dreamcast_defconfig
-x86_64               randconfig-x010-04260410
-x86_64               randconfig-x011-04260410
-x86_64               randconfig-x012-04260410
-x86_64               randconfig-x013-04260410
-x86_64               randconfig-x014-04260410
-x86_64               randconfig-x015-04260410
-x86_64               randconfig-x016-04260410
-x86_64               randconfig-x017-04260410
-x86_64               randconfig-x018-04260410
-x86_64               randconfig-x019-04260410
-x86_64                 randconfig-x010-201617
-x86_64                 randconfig-x011-201617
-x86_64                 randconfig-x012-201617
-x86_64                 randconfig-x013-201617
-x86_64                 randconfig-x014-201617
-x86_64                 randconfig-x015-201617
-x86_64                 randconfig-x016-201617
-x86_64                 randconfig-x017-201617
-x86_64                 randconfig-x018-201617
-x86_64                 randconfig-x019-201617
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                   randconfig-s0-04260410
-i386                   randconfig-s1-04260410
-i386                   randconfig-s0-04260625
-i386                   randconfig-s1-04260625
-x86_64                 randconfig-s0-04260410
-x86_64                 randconfig-s1-04260410
-x86_64                 randconfig-s2-04260410
-x86_64                 randconfig-s0-04260502
-x86_64                 randconfig-s1-04260502
-x86_64                 randconfig-s2-04260502
-x86_64                 randconfig-s0-04260731
-x86_64                 randconfig-s1-04260731
-x86_64                 randconfig-s2-04260731
-x86_64                 randconfig-s0-04261150
-x86_64                 randconfig-s1-04261150
-x86_64                 randconfig-s2-04261150
-x86_64                 randconfig-s0-04261248
-x86_64                 randconfig-s1-04261248
-x86_64                 randconfig-s2-04261248
-x86_64                 randconfig-s0-04261326
-x86_64                 randconfig-s1-04261326
-x86_64                 randconfig-s2-04261326
-x86_64                 randconfig-s3-04260410
-x86_64                 randconfig-s4-04260410
-x86_64                 randconfig-s5-04260410
-x86_64                 randconfig-s3-04260625
-x86_64                 randconfig-s4-04260625
-x86_64                 randconfig-s5-04260625
-x86_64                 randconfig-s3-04261200
-x86_64                 randconfig-s4-04261200
-x86_64                 randconfig-s5-04261200
-x86_64                 randconfig-s3-04261212
-x86_64                 randconfig-s4-04261212
-x86_64                 randconfig-s5-04261212
-x86_64                 randconfig-s3-04261228
-x86_64                 randconfig-s4-04261228
-x86_64                 randconfig-s5-04261228
-x86_64                 randconfig-s3-04261246
-x86_64                 randconfig-s4-04261246
-x86_64                 randconfig-s5-04261246
-x86_64                 randconfig-s3-04261302
-x86_64                 randconfig-s4-04261302
-x86_64                 randconfig-s5-04261302
-x86_64                 randconfig-s3-04261317
-x86_64                 randconfig-s4-04261317
-x86_64                 randconfig-s5-04261317
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-arm                            zeus_defconfig
-m68k                        m5307c3_defconfig
-sh                           se7751_defconfig
-powerpc                         c2k_defconfig
-powerpc                     redwood_defconfig
-mips                              allnoconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                 randconfig-i0-04260434
-x86_64                 randconfig-i0-04260738
-i386                   randconfig-b0-04261213
-i386                   randconfig-b0-04261246
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-i0-04260427
-i386                   randconfig-i1-04260427
-i386                             allyesconfig
-x86_64                 randconfig-b0-04260548
-arm                         em_x270_defconfig
-arm                          ixp4xx_defconfig
-m68k                          hp300_defconfig
-powerpc                       maple_defconfig
-m32r                             alldefconfig
-powerpc                 mpc834x_mds_defconfig
-arm                            hisi_defconfig
-mips                  cavium_octeon_defconfig
-arm                         lpc18xx_defconfig
-powerpc64                        allmodconfig
-powerpc                      katmai_defconfig
-x86_64                              rhel_gcov
-x86_64                 randconfig-n0-04260651
-x86_64                 randconfig-n0-04261206
-x86_64                 randconfig-n0-04261243
-arm                          nuc960_defconfig
-m32r                   mappi2.vdec2_defconfig
-powerpc                 mpc8315_rdb_defconfig
-um                                allnoconfig
-arm                       spear13xx_defconfig
-arm                      tct_hammer_defconfig
-powerpc                    klondike_defconfig
-sh                         microdev_defconfig
-i386                 randconfig-x010-04260436
-i386                 randconfig-x011-04260436
-i386                 randconfig-x012-04260436
-i386                 randconfig-x013-04260436
-i386                 randconfig-x014-04260436
-i386                 randconfig-x015-04260436
-i386                 randconfig-x016-04260436
-i386                 randconfig-x017-04260436
-i386                 randconfig-x018-04260436
-i386                 randconfig-x019-04260436
-i386                 randconfig-x010-04260742
-i386                 randconfig-x011-04260742
-i386                 randconfig-x012-04260742
-i386                 randconfig-x013-04260742
-i386                 randconfig-x014-04260742
-i386                 randconfig-x015-04260742
-i386                 randconfig-x016-04260742
-i386                 randconfig-x017-04260742
-i386                 randconfig-x018-04260742
-i386                 randconfig-x019-04260742
-x86_64                                    lkp
-x86_64                                   rhel
-i386                   randconfig-n0-04260436
-i386                   randconfig-n0-04260742
-i386                   randconfig-h0-04261311
-i386                   randconfig-h1-04261311
-arm                            dove_defconfig
-powerpc                   currituck_defconfig
-powerpc                  iss476-smp_defconfig
-avr32                    hammerhead_defconfig
-sh                           se7721_defconfig
-sh                        sh7785lcr_defconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-x86_64                 randconfig-h0-04261141
-x86_64                 randconfig-h0-04261256
-mips                        bcm47xx_defconfig
-sh                          r7785rp_defconfig
-mips                          lasat_defconfig
-arm                         bcm2835_defconfig
-arm                          iop33x_defconfig
-blackfin             BF527-EZKIT-V2_defconfig
-s390                    performance_defconfig
-x86_64                 randconfig-n0-04261305
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-sh                   sh7724_generic_defconfig
-i386                  randconfig-sb0-04261230
-x86_64               randconfig-x000-04260431
-x86_64               randconfig-x001-04260431
-x86_64               randconfig-x002-04260431
-x86_64               randconfig-x003-04260431
-x86_64               randconfig-x004-04260431
-x86_64               randconfig-x005-04260431
-x86_64               randconfig-x006-04260431
-x86_64               randconfig-x007-04260431
-x86_64               randconfig-x008-04260431
-x86_64               randconfig-x009-04260431
-i386                   randconfig-r0-04260431
-i386                   randconfig-r0-04260734
-x86_64                 randconfig-r0-04260431
-x86_64                 randconfig-r0-04261208
-i386                 randconfig-x009-04260434
-i386                 randconfig-x000-04260434
-i386                 randconfig-x004-04260434
-i386                 randconfig-x006-04260434
-i386                 randconfig-x005-04260434
-i386                 randconfig-x007-04260434
-i386                 randconfig-x001-04260434
-i386                 randconfig-x002-04260434
-i386                 randconfig-x003-04260434
-i386                 randconfig-x008-04260434
-i386                 randconfig-x000-04260737
-i386                 randconfig-x001-04260737
-i386                 randconfig-x002-04260737
-i386                 randconfig-x003-04260737
-i386                 randconfig-x004-04260737
-i386                 randconfig-x005-04260737
-i386                 randconfig-x006-04260737
-i386                 randconfig-x007-04260737
-i386                 randconfig-x008-04260737
-i386                 randconfig-x009-04260737
-i386                   randconfig-x0-04261251
+At PCI 0000:04:00.0 is the BYT NIC, this comes up with the correct page
+selection and phy id. Above it (0000:01:00.0) is the external NIC which
+comes up with 'anything' (but 'anything' is the same after each power
+cycle)!?
+Some explanations to the HW setup, the BYT resides on a Kontron nanoETX
+board, the external controller is on the custom base board, it is not at
+all integrated into the BIOS setup (the BIOS should only take care of
+the internal NIC).
+The datasheet states that the page selection register should come up
+with 0 after power on, but either somebody writes the register up-front
+(but who) or this comes from a broken setup in the NVM?
 
-Thanks,
-Fengguang
+Jochen
+-- 
+Henneberg - Systemdesign
+Jochen Henneberg
+Loehnfeld 26
+21423 Winsen (Luhe)
+--
+Fon: +49 4174 668 773
+Mobile: +49 172 160 14 69
+Fax: +49 321 210 761 64
+www: www.henneberg-systemdesign.com
+
+
+
