@@ -1,88 +1,220 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Tue, 26 Apr 2016 19:40:40 +0000
-Subject: [Intel-wired-lan] [PATCH 3/3] e1000e:
- e1000e_cyclecounter_read(): do overflow check only if needed
-In-Reply-To: <571F9142.5000002@redhat.com>
-References: <1461167156-6737-1-git-send-email-dvlasenk@redhat.com>
- <1461167156-6737-3-git-send-email-dvlasenk@redhat.com>
- <309B89C4C689E141A5FF6A0C5FB2118B81EF178F@ORSMSX101.amr.corp.intel.com>
- <571F9142.5000002@redhat.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81EF1D6E@ORSMSX101.amr.corp.intel.com>
+From: Bynoe, Ronald J <ronald.j.bynoe@intel.com>
+Date: Tue, 26 Apr 2016 20:53:41 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Disable DCB and FCoE for
+ X550EM_x	and x550em_a
+In-Reply-To: <20160426120026.8106.64120.stgit@ukketine.jf.intel.com>
+References: <20160426120026.8106.64120.stgit@ukketine.jf.intel.com>
+Message-ID: <3108673A8B660F4EA3D50CFD4A0EF235124E50A1@fmsmsx107.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Denys Vlasenko [mailto:dvlasenk at redhat.com]
-> Sent: Tuesday, April 26, 2016 9:03 AM
-> To: Brown, Aaron F <aaron.f.brown@intel.com>; intel-wired-
-> lan at lists.osuosl.org
-> Subject: Re: [Intel-wired-lan] [PATCH 3/3] e1000e:
-> e1000e_cyclecounter_read(): do overflow check only if needed
-> 
-> On 04/26/2016 01:12 AM, Brown, Aaron F wrote:
-> >> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org]
-> On
-> >> Behalf Of Denys Vlasenko
-> >> Sent: Wednesday, April 20, 2016 8:46 AM
-> >> To: intel-wired-lan at lists.osuosl.org
-> >> Cc: Denys Vlasenko <dvlasenk@redhat.com>
-> >> Subject: [Intel-wired-lan] [PATCH 3/3] e1000e:
-> e1000e_cyclecounter_read():
-> >> do overflow check only if needed
-> >>
-> >> SYSTIMH:SYSTIML registers are incremented by 24-bit value
-> TIMINCA[23..0]
-> >>
-> >> er32(SYSTIML) are probably moderately expensive (they are pci bus
-> reads).
-> >> Can we avoid one of them? Yes, we can.
-> >>
-> >> If the SYSTIML value we see is smaller than 0xff000000, the overflow
-> >> into SYSTIMH would require at least two increments.
-> >>
-> >> We do two reads, er32(SYSTIML) and er32(SYSTIMH), in this order.
-> >>
-> >> Even if one increment happens between them, the overflow into SYSTIMH
-> >> is impossible, and we can avoid doing another er32(SYSTIML) read
-> >> and overflow check.
-> >>
-> ...
-> > Still just a warning and I'm not seeing functional problems with it.
-> >
-> > Tested-by: Aaron Brown <aaron.f.brown@intel.com>
-> 
-> Aaron, there were some comments from Dima Ruinskiy
-> <dima.ruinskiy@intel.com>
-> that I might be underestimating the rate how quickly this counter increments:
-> that it may be in fact incrementing something like every 40ns.
+________________________________________
+From: Intel-wired-lan [intel-wired-lan-bounces at lists.osuosl.org] on behalf of Usha Ketineni [usha.k.ketineni at intel.com]
+Sent: Tuesday, April 26, 2016 5:00 AM
+To: intel-wired-lan@lists.osuosl.org
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Disable DCB and FCoE for X550EM_x     and x550em_a
 
-I did see that come through, for some reason the comment did not get captured in https://patchwork.ozlabs.org/patch/612833/ which I was reading from when I ran it through my regression rig.  Thanks for catching it.
+This patch adds IXGBE_FLAG_DCB_CAPABLE flag that is set
+for all MACs other than X550EM_x and x550em_a. DCB and
+FCoE is disabled for these MACS. DCB initialization
+code is moved to a seperate function.
 
-Yes, I guess we should hold off on this until Raanan can weigh in.  Jeff, please ignore thisTested by for now.
+Signed-off-by: Usha Ketineni <usha.k.ketineni@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h      |    1
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  111 ++++++++++++++++---------
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |    1
+ 3 files changed, 71 insertions(+), 42 deletions(-)
 
-> 
-> In this case, more than one increment may happen between these two PCIe
-> reads:
-> 
-> 	systimel = er32(SYSTIML);
-> 	systimeh = er32(SYSTIMH);
-> 
-> and my check
-> 
-> 	/* Is systimel is so large that overflow is possible? */
-> 	if (systimel >= (u32)0xffffffff - E1000_TIMINCA_INCVALUE_MASK) {
-> 
-> can fail to catch an overflow.
-> 
-> If you (Intel guys) indeed see that as possible, then either drop the 3/3
-> patch, or tweak the constant so that more than one increment is needed
-> for overflow. Say:
-> 
-> 	/* Is systimel is so large that overflow is possible? */
-> 	if (systimel >= (u32)0xf0000000) {
-> 
-> This particular constant in comparison allows to skip overflow check
-> if we are more than 16 updates away from overflow - should be ample.
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index 781c878..874e968 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -644,6 +644,7 @@ struct ixgbe_adapter {
+ #define IXGBE_FLAG_VXLAN_OFFLOAD_CAPABLE       BIT(24)
+ #define IXGBE_FLAG_RX_HWTSTAMP_ENABLED         BIT(25)
+ #define IXGBE_FLAG_RX_HWTSTAMP_IN_REGISTER     BIT(26)
++#define IXGBE_FLAG_DCB_CAPABLE                 BIT(27)
 
+        u32 flags2;
+ #define IXGBE_FLAG2_RSC_CAPABLE                        BIT(0)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 0ef4a15..6467ec0 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -5558,6 +5558,58 @@ static void ixgbe_tx_timeout(struct net_device *netdev)
+        ixgbe_tx_timeout_reset(adapter);
+ }
+
++#ifdef CONFIG_IXGBE_DCB
++static void ixgbe_init_dcb(struct ixgbe_adapter *adapter)
++{
++       struct ixgbe_hw *hw = &adapter->hw;
++       struct tc_configuration *tc;
++       int j;
++
++       switch (hw->mac.type) {
++       case ixgbe_mac_82598EB:
++       case ixgbe_mac_82599EB:
++               adapter->dcb_cfg.num_tcs.pg_tcs = MAX_TRAFFIC_CLASS;
++               adapter->dcb_cfg.num_tcs.pfc_tcs = MAX_TRAFFIC_CLASS;
++               break;
++       case ixgbe_mac_X540:
++       case ixgbe_mac_X550:
++               adapter->dcb_cfg.num_tcs.pg_tcs = X540_TRAFFIC_CLASS;
++               adapter->dcb_cfg.num_tcs.pfc_tcs = X540_TRAFFIC_CLASS;
++               break;
++       case ixgbe_mac_X550EM_x:
++       case ixgbe_mac_x550em_a:
++       default:
++               adapter->dcb_cfg.num_tcs.pg_tcs = DEF_TRAFFIC_CLASS;
++               adapter->dcb_cfg.num_tcs.pfc_tcs = DEF_TRAFFIC_CLASS;
++               break;
++       }
++
++       /* Configure DCB traffic classes */
++       for (j = 0; j < MAX_TRAFFIC_CLASS; j++) {
++               tc = &adapter->dcb_cfg.tc_config[j];
++               tc->path[DCB_TX_CONFIG].bwg_id = 0;
++               tc->path[DCB_TX_CONFIG].bwg_percent = 12 + (j & 1);
++               tc->path[DCB_RX_CONFIG].bwg_id = 0;
++               tc->path[DCB_RX_CONFIG].bwg_percent = 12 + (j & 1);
++               tc->dcb_pfc = pfc_disabled;
++       }
++
++       /* Initialize default user to priority mapping, UPx->TC0 */
++       tc = &adapter->dcb_cfg.tc_config[0];
++       tc->path[DCB_TX_CONFIG].up_to_tc_bitmap = 0xFF;
++       tc->path[DCB_RX_CONFIG].up_to_tc_bitmap = 0xFF;
++
++       adapter->dcb_cfg.bw_percentage[DCB_TX_CONFIG][0] = 100;
++       adapter->dcb_cfg.bw_percentage[DCB_RX_CONFIG][0] = 100;
++       adapter->dcb_cfg.pfc_mode_enable = false;
++       adapter->dcb_set_bitmap = 0x00;
++       if (adapter->flags & IXGBE_FLAG_DCB_CAPABLE)
++               adapter->dcbx_cap = DCB_CAP_DCBX_HOST | DCB_CAP_DCBX_VER_CEE;
++       memcpy(&adapter->temp_dcb_cfg, &adapter->dcb_cfg,
++              sizeof(adapter->temp_dcb_cfg));
++}
++#endif
++
+ /**
+  * ixgbe_sw_init - Initialize general software structures (struct ixgbe_adapter)
+  * @adapter: board private structure to initialize
+@@ -5573,10 +5625,6 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter)
+        unsigned int rss, fdir;
+        u32 fwsm;
+        u16 device_caps;
+-#ifdef CONFIG_IXGBE_DCB
+-       int j;
+-       struct tc_configuration *tc;
+-#endif
+
+        /* PCI config space info */
+
+@@ -5598,6 +5646,10 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter)
+ #ifdef CONFIG_IXGBE_DCA
+        adapter->flags |= IXGBE_FLAG_DCA_CAPABLE;
+ #endif
++#ifdef CONFIG_IXGBE_DCB
++       adapter->flags |= IXGBE_FLAG_DCB_CAPABLE;
++       adapter->flags &= ~IXGBE_FLAG_DCB_ENABLED;
++#endif
+ #ifdef IXGBE_FCOE
+        adapter->flags |= IXGBE_FLAG_FCOE_CAPABLE;
+        adapter->flags &= ~IXGBE_FLAG_FCOE_ENABLED;
+@@ -5647,6 +5699,16 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter)
+                break;
+        case ixgbe_mac_X550EM_x:
+        case ixgbe_mac_x550em_a:
++#ifdef CONFIG_IXGBE_DCB
++               adapter->flags &= ~IXGBE_FLAG_DCB_CAPABLE;
++#endif
++#ifdef IXGBE_FCOE
++               adapter->flags &= ~IXGBE_FLAG_FCOE_CAPABLE;
++#ifdef CONFIG_IXGBE_DCB
++               adapter->fcoe.up = 0;
++#endif /* IXGBE_DCB */
++#endif /* IXGBE_FCOE */
++       /* Fall Through */
+        case ixgbe_mac_X550:
+ #ifdef CONFIG_IXGBE_DCA
+                adapter->flags &= ~IXGBE_FLAG_DCA_CAPABLE;
+@@ -5668,43 +5730,7 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter)
+        spin_lock_init(&adapter->fdir_perfect_lock);
+
+ #ifdef CONFIG_IXGBE_DCB
+-       switch (hw->mac.type) {
+-       case ixgbe_mac_X540:
+-       case ixgbe_mac_X550:
+-       case ixgbe_mac_X550EM_x:
+-       case ixgbe_mac_x550em_a:
+-               adapter->dcb_cfg.num_tcs.pg_tcs = X540_TRAFFIC_CLASS;
+-               adapter->dcb_cfg.num_tcs.pfc_tcs = X540_TRAFFIC_CLASS;
+-               break;
+-       default:
+-               adapter->dcb_cfg.num_tcs.pg_tcs = MAX_TRAFFIC_CLASS;
+-               adapter->dcb_cfg.num_tcs.pfc_tcs = MAX_TRAFFIC_CLASS;
+-               break;
+-       }
+-
+-       /* Configure DCB traffic classes */
+-       for (j = 0; j < MAX_TRAFFIC_CLASS; j++) {
+-               tc = &adapter->dcb_cfg.tc_config[j];
+-               tc->path[DCB_TX_CONFIG].bwg_id = 0;
+-               tc->path[DCB_TX_CONFIG].bwg_percent = 12 + (j & 1);
+-               tc->path[DCB_RX_CONFIG].bwg_id = 0;
+-               tc->path[DCB_RX_CONFIG].bwg_percent = 12 + (j & 1);
+-               tc->dcb_pfc = pfc_disabled;
+-       }
+-
+-       /* Initialize default user to priority mapping, UPx->TC0 */
+-       tc = &adapter->dcb_cfg.tc_config[0];
+-       tc->path[DCB_TX_CONFIG].up_to_tc_bitmap = 0xFF;
+-       tc->path[DCB_RX_CONFIG].up_to_tc_bitmap = 0xFF;
+-
+-       adapter->dcb_cfg.bw_percentage[DCB_TX_CONFIG][0] = 100;
+-       adapter->dcb_cfg.bw_percentage[DCB_RX_CONFIG][0] = 100;
+-       adapter->dcb_cfg.pfc_mode_enable = false;
+-       adapter->dcb_set_bitmap = 0x00;
+-       adapter->dcbx_cap = DCB_CAP_DCBX_HOST | DCB_CAP_DCBX_VER_CEE;
+-       memcpy(&adapter->temp_dcb_cfg, &adapter->dcb_cfg,
+-              sizeof(adapter->temp_dcb_cfg));
+-
++       ixgbe_init_dcb(adapter);
+ #endif
+
+        /* default flow control settings */
+@@ -9352,7 +9378,8 @@ skip_sriov:
+        netdev->priv_flags |= IFF_SUPP_NOFCS;
+
+ #ifdef CONFIG_IXGBE_DCB
+-       netdev->dcbnl_ops = &dcbnl_ops;
++       if (adapter->flags & IXGBE_FLAG_DCB_CAPABLE)
++               netdev->dcbnl_ops = &dcbnl_ops;
+ #endif
+
+ #ifdef IXGBE_FCOE
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index 7af4514..44b256a 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -548,6 +548,7 @@ struct ixgbe_thermal_sensor_data {
+ /* DCB registers */
+ #define MAX_TRAFFIC_CLASS        8
+ #define X540_TRAFFIC_CLASS       4
++#define DEF_TRAFFIC_CLASS        1
+ #define IXGBE_RMCS      0x03D00
+ #define IXGBE_DPMCS     0x07F40
+ #define IXGBE_PDPMCS    0x0CD00
+
+Our validation found nothing wrong with this patch, works as expected, thanks Usha!
+Tested-by: Ronald Bynoe <ronald.j.bynoe@intel.com>
+
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan at lists.osuosl.org
+http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
