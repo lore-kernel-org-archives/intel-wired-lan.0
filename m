@@ -1,65 +1,103 @@
-From: Nguyen, Anthony L <anthony.l.nguyen@intel.com>
-Date: Tue, 26 Apr 2016 23:29:29 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbevf: Remove unused parameter
-Message-ID: <4C5EDC162D52824D9E7FB1446983F3EE962AF43C@ORSMSX116.amr.corp.intel.com>
+From: Jochen Henneberg <jh@henneberg-systemdesign.com>
+Date: Wed, 27 Apr 2016 13:55:12 +0200
+Subject: [Intel-wired-lan] issue with kernel patch
+	2a3cdead8b408351fa1e3079b220fa331480ffbc
+In-Reply-To: <9B4A1B1917080E46B64F07F2989DADD65ABFDF9C@ORSMSX114.amr.corp.intel.com>
+References: <1461577586.24438.14.camel@maxwell>
+ <9BBC4E0CF881AA4299206E2E1412B626501BC575@ORSMSX102.amr.corp.intel.com>
+ <9B4A1B1917080E46B64F07F2989DADD65ABFD85F@ORSMSX114.amr.corp.intel.com>
+ <1768814989.41697.1461598056358.JavaMail.zimbra@xes-inc.com>
+ <1461600045.21920.10.camel@maxwell>
+ <985237851.71212.1461605748986.JavaMail.zimbra@xes-inc.com>
+ <1461657732.9165.8.camel@maxwell>
+ <9B4A1B1917080E46B64F07F2989DADD65ABFDF9C@ORSMSX114.amr.corp.intel.com>
+Message-ID: <1461758112.972.13.camel@maxwell>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-ixgbevf_update_xcast_mode() is not using the netdev parameter; removing it since it's unnecessary.
+Hi Todd,
 
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
----
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 2 +-
- drivers/net/ethernet/intel/ixgbevf/vf.c           | 4 +---
- drivers/net/ethernet/intel/ixgbevf/vf.h           | 2 +-
- 3 files changed, 3 insertions(+), 5 deletions(-)
+I have send all background information to Kontron (FAE), they will take
+a look if the BIOS somehow communicates with the external NIC.
+The FAE told me that he does not want to join the mailing list, so I
+will exchange the information from/to Kontron off-band and push them to
+the list if I get updates.
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 007cbe0..bcbadac 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -1908,7 +1908,7 @@ static void ixgbevf_set_rx_mode(struct net_device *netdev)
- 
- 	spin_lock_bh(&adapter->mbx_lock);
- 
--	hw->mac.ops.update_xcast_mode(hw, netdev, xcast_mode);
-+	hw->mac.ops.update_xcast_mode(hw, xcast_mode);
- 
- 	/* reprogram multicast list */
- 	hw->mac.ops.update_mc_addr_list(hw, netdev); diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.c b/drivers/net/ethernet/intel/ixgbevf/vf.c
-index 4d613a4..9511da0 100644
---- a/drivers/net/ethernet/intel/ixgbevf/vf.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/vf.c
-@@ -475,13 +475,11 @@ static s32 ixgbevf_update_mc_addr_list_vf(struct ixgbe_hw *hw,
- /**
-  *  ixgbevf_update_xcast_mode - Update Multicast mode
-  *  @hw: pointer to the HW structure
-- *  @netdev: pointer to net device structure
-  *  @xcast_mode: new multicast mode
-  *
-  *  Updates the Multicast Mode of VF.
-  **/
--static s32 ixgbevf_update_xcast_mode(struct ixgbe_hw *hw,
--				     struct net_device *netdev, int xcast_mode)
-+static s32 ixgbevf_update_xcast_mode(struct ixgbe_hw *hw, int 
-+xcast_mode)
- {
- 	struct ixgbe_mbx_info *mbx = &hw->mbx;
- 	u32 msgbuf[2];
-diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.h b/drivers/net/ethernet/intel/ixgbevf/vf.h
-index ef9f773..a407c15 100644
---- a/drivers/net/ethernet/intel/ixgbevf/vf.h
-+++ b/drivers/net/ethernet/intel/ixgbevf/vf.h
-@@ -63,7 +63,7 @@ struct ixgbe_mac_operations {
- 	s32 (*set_uc_addr)(struct ixgbe_hw *, u32, u8 *);
- 	s32 (*init_rx_addrs)(struct ixgbe_hw *);
- 	s32 (*update_mc_addr_list)(struct ixgbe_hw *, struct net_device *);
--	s32 (*update_xcast_mode)(struct ixgbe_hw *, struct net_device *, int);
-+	s32 (*update_xcast_mode)(struct ixgbe_hw *, int);
- 	s32 (*enable_mc)(struct ixgbe_hw *);
- 	s32 (*disable_mc)(struct ixgbe_hw *);
- 	s32 (*clear_vfta)(struct ixgbe_hw *);
+Regards,
+Jochen
+
+On Di, 2016-04-26 at 14:47 +0000, Fujinaka, Todd wrote:
+> Have you reported this to Kontron? We may have to get them involved with this.
+> 
+> Todd Fujinaka
+> Software Application Engineer
+> Networking Division (ND)
+> Intel Corporation
+> todd.fujinaka at intel.com
+> (503) 712-4565
+> 
+> 
+> -----Original Message-----
+> From: Jochen Henneberg [mailto:jh at henneberg-systemdesign.com] 
+> Sent: Tuesday, April 26, 2016 1:02 AM
+> To: Aaron Sierra <asierra@xes-inc.com>
+> Cc: Fujinaka, Todd <todd.fujinaka@intel.com>; intel-wired-lan at lists.osuosl.org; Wyborny, Carolyn <carolyn.wyborny@intel.com>
+> Subject: Re: issue with kernel patch 2a3cdead8b408351fa1e3079b220fa331480ffbc
+> 
+> On Mo, 2016-04-25 at 12:35 -0500, Aaron Sierra wrote:
+> > This is the output that I get from an external I210 device attached to 
+> > a Bay Trail SoC:
+> > 
+> > igb 0000:02:00.0: added PHC on eth0
+> > igb 0000:02:00.0: Intel(R) Gigabit Ethernet Network Connection igb 
+> > 0000:02:00.0: eth0: (PCIe:2.5Gb/s:Width x1) 00:17:3c:02:88:56 igb 
+> > 0000:02:00.0: eth0: PBA No: FFFFFF-0FF igb 0000:02:00.0: Using MSI-X 
+> > interrupts. 2 rx queue(s), 2 tx queue(s)
+> > igb: igb_init_phy_params_82575: default page: 0
+> > igb: igb_init_phy_params_82575: PHY ID: 1410c00
+> 
+> And here is mine with the patch applied:
+> 
+> igb: Intel(R) Gigabit Ethernet Network Driver - version 5.3.0-k
+> igb: Copyright (c) 2007-2014 Intel Corporation.
+> igb: igb_init_phy_params_82575: default page: fc
+> igb: igb_init_phy_params_82575: PHY ID: a0044e90
+> igb: probe of 0000:01:00.0 failed with error -2
+> igb: igb_init_phy_params_82575: default page: 0
+> igb: igb_init_phy_params_82575: PHY ID: 1410c00 pps pps0: new PPS source ptp0 igb 0000:04:00.0: added PHC on eth0 igb 0000:04:00.0: Intel(R) Gigabit Ethernet Network Connection igb 0000:04:00.0: eth0: (PCIe:2.5Gb/s:Width x1) 00:e0:4b:47:38:6f igb 0000:04:00.0: eth0: PBA No: FFFFFF-0FF igb 0000:04:00.0: Using MSI-X interrupts. 2 rx queue(s), 2 tx queue(s)
+> 
+> At PCI 0000:04:00.0 is the BYT NIC, this comes up with the correct page selection and phy id. Above it (0000:01:00.0) is the external NIC which comes up with 'anything' (but 'anything' is the same after each power cycle)!?
+> Some explanations to the HW setup, the BYT resides on a Kontron nanoETX board, the external controller is on the custom base board, it is not at all integrated into the BIOS setup (the BIOS should only take care of the internal NIC).
+> The datasheet states that the page selection register should come up with 0 after power on, but either somebody writes the register up-front (but who) or this comes from a broken setup in the NVM?
+> 
+> Jochen
+> --
+> Henneberg - Systemdesign
+> Jochen Henneberg
+> Loehnfeld 26
+> 21423 Winsen (Luhe)
+> --
+> Fon: +49 4174 668 773
+> Mobile: +49 172 160 14 69
+> Fax: +49 321 210 761 64
+> www: www.henneberg-systemdesign.com
+> 
+> 
+> 
+
+-- 
+Henneberg - Systemdesign
+Jochen Henneberg
+Loehnfeld 26
+21423 Winsen (Luhe)
+--
+Fon: +49 4174 668 773
+Mobile: +49 172 160 14 69
+Fax: +49 321 210 761 64
+www: www.henneberg-systemdesign.com
+
+
 
