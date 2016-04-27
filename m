@@ -1,87 +1,83 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 27 Apr 2016 13:50:32 -0700
-Subject: [Intel-wired-lan] [PATCH net-next V5 2/2] intel: ixgbevf:
- Support Windows hosts (Hyper-V)
-In-Reply-To: <CH1PR03MB19153BF4C1251F8CAB3DF4CFA0640@CH1PR03MB1915.namprd03.prod.outlook.com>
-References: <1461118655-28103-1-git-send-email-kys@microsoft.com>
- <1461118677-28142-1-git-send-email-kys@microsoft.com>
- <1461118677-28142-2-git-send-email-kys@microsoft.com>
- <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D2A6A@ORSMSX104.amr.corp.intel.com>
- <CH1PR03MB19153BF4C1251F8CAB3DF4CFA0640@CH1PR03MB1915.namprd03.prod.outlook.com>
-Message-ID: <CAKgT0UcFVD6VYsH+M60OkrUVedyJSUHuEbnGY1OyoE18MU925w@mail.gmail.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed, 27 Apr 2016 14:14:14 -0700
+Subject: [Intel-wired-lan] [next-queue v2] ixgbevf: Remove unused parameter
+Message-ID: <1461791654-68864-1-git-send-email-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Apr 27, 2016 at 11:33 AM, KY Srinivasan <kys@microsoft.com> wrote:
->
->
->> -----Original Message-----
->> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
->> Behalf Of Bowers, AndrewX
->> Sent: Friday, April 22, 2016 12:32 PM
->> To: intel-wired-lan at lists.osuosl.org
->> Subject: Re: [Intel-wired-lan] [PATCH net-next V5 2/2] intel: ixgbevf: Support
->> Windows hosts (Hyper-V)
->>
->> > -----Original Message-----
->> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
->> > Behalf Of K. Y. Srinivasan
->> > Sent: Tuesday, April 19, 2016 7:18 PM
->> > To: davem at davemloft.net; netdev at vger.kernel.org; linux-
->> > kernel at vger.kernel.org; devel at linuxdriverproject.org; olaf at aepfle.de;
->> > apw at canonical.com; jasowang at redhat.com; eli at mellanox.com;
->> > jackm at mellanox.com; yevgenyp at mellanox.com; Ronciak, John
->> > <john.ronciak@intel.com>; intel-wired-lan at lists.osuosl.org;
->> > alexander.duyck at gmail.com
->> > Subject: [Intel-wired-lan] [PATCH net-next V5 2/2] intel: ixgbevf: Support
->> > Windows hosts (Hyper-V)
->> >
->> > On Hyper-V, the VF/PF communication is a via software mediated path as
->> > opposed to the hardware mailbox. Make the necessary adjustments to
->> > support Hyper-V.
->> >
->> > Signed-off-by: K. Y. Srinivasan <kys@microsoft.com>
->> > ---
->> >     V2: Addressed most of the comments from
->> >         Alexander Duyck <alexander.duyck@gmail.com>
->> >         and Rustad, Mark D <mark.d.rustad@intel.com>.
->> >
->> >     V3: Addressed additional comments from
->> >         Alexander Duyck <alexander.duyck@gmail.com>
->> >
->> >     V4: Addressed kbuild errors reported by:
->> >         kbuild test robot <lkp@intel.com>
->> >
->> >     V5: Addressed additional comments from
->> >         Alexander Duyck <alexander.duyck@gmail.com>
->> >
->> >  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |   12 ++
->> >  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   31 +++-
->> >  drivers/net/ethernet/intel/ixgbevf/mbx.c          |   12 ++
->> >  drivers/net/ethernet/intel/ixgbevf/vf.c           |  216
->> > +++++++++++++++++++++
->> >  drivers/net/ethernet/intel/ixgbevf/vf.h           |    2 +
->> >  5 files changed, 266 insertions(+), 7 deletions(-)
->>
->> Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
->> VF driver correctly builds and changes correctly applied.
->
-> Andrew,
->
-> This is the first time I am submitting a patch to Intel. What is involved in getting this into David Miller's tree.
-> Should I submit these to net-next?
->
-> K. Y
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
 
-You just need to give them some time.  Jeff Kirsher will submit it
-from his tree to Dave Miller in a few weeks.  You just need to keep an
-eye on his queue at:
-https://git.kernel.org/cgit/linux/kernel/git/jkirsher/next-queue.git/log/?h=dev-queue
+ixgbevf_update_xcast_mode() is not using the netdev parameter;
+removing it since it's unnecessary.
 
-They pull them off about 8 to 12 at time and submit them to Dave so
-that he can pull them into net-next.
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+---
+v2: original patch was not against Jeff's dev-queue branch so did not
+    take into consideration all the changes/patches that are in his queue
 
-- Alex
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 2 +-
+ drivers/net/ethernet/intel/ixgbevf/vf.c           | 7 ++-----
+ drivers/net/ethernet/intel/ixgbevf/vf.h           | 2 +-
+ 3 files changed, 4 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index ba17a61..5e348b1 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -1922,7 +1922,7 @@ static void ixgbevf_set_rx_mode(struct net_device *netdev)
+ 
+ 	spin_lock_bh(&adapter->mbx_lock);
+ 
+-	hw->mac.ops.update_xcast_mode(hw, netdev, xcast_mode);
++	hw->mac.ops.update_xcast_mode(hw, xcast_mode);
+ 
+ 	/* reprogram multicast list */
+ 	hw->mac.ops.update_mc_addr_list(hw, netdev);
+diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.c b/drivers/net/ethernet/intel/ixgbevf/vf.c
+index 362ed67..5af363c 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/vf.c
++++ b/drivers/net/ethernet/intel/ixgbevf/vf.c
+@@ -537,13 +537,11 @@ static s32 ixgbevf_hv_update_mc_addr_list_vf(struct ixgbe_hw *hw,
+ /**
+  *  ixgbevf_update_xcast_mode - Update Multicast mode
+  *  @hw: pointer to the HW structure
+- *  @netdev: pointer to net device structure
+  *  @xcast_mode: new multicast mode
+  *
+  *  Updates the Multicast Mode of VF.
+  **/
+-static s32 ixgbevf_update_xcast_mode(struct ixgbe_hw *hw,
+-				     struct net_device *netdev, int xcast_mode)
++static s32 ixgbevf_update_xcast_mode(struct ixgbe_hw *hw, int xcast_mode)
+ {
+ 	struct ixgbe_mbx_info *mbx = &hw->mbx;
+ 	u32 msgbuf[2];
+@@ -577,8 +575,7 @@ static s32 ixgbevf_update_xcast_mode(struct ixgbe_hw *hw,
+ /**
+  * Hyper-V variant - just a stub.
+  */
+-static s32 ixgbevf_hv_update_xcast_mode(struct ixgbe_hw *hw,
+-					struct net_device *netdev, int xcast_mode)
++static s32 ixgbevf_hv_update_xcast_mode(struct ixgbe_hw *hw, int xcast_mode)
+ {
+ 	return -EOPNOTSUPP;
+ }
+diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.h b/drivers/net/ethernet/intel/ixgbevf/vf.h
+index 6770f10..2cac610 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/vf.h
++++ b/drivers/net/ethernet/intel/ixgbevf/vf.h
+@@ -64,7 +64,7 @@ struct ixgbe_mac_operations {
+ 	s32 (*set_uc_addr)(struct ixgbe_hw *, u32, u8 *);
+ 	s32 (*init_rx_addrs)(struct ixgbe_hw *);
+ 	s32 (*update_mc_addr_list)(struct ixgbe_hw *, struct net_device *);
+-	s32 (*update_xcast_mode)(struct ixgbe_hw *, struct net_device *, int);
++	s32 (*update_xcast_mode)(struct ixgbe_hw *, int);
+ 	s32 (*enable_mc)(struct ixgbe_hw *);
+ 	s32 (*disable_mc)(struct ixgbe_hw *);
+ 	s32 (*clear_vfta)(struct ixgbe_hw *);
+-- 
+2.5.5
+
