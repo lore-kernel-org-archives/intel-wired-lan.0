@@ -1,83 +1,61 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 27 Apr 2016 14:14:14 -0700
-Subject: [Intel-wired-lan] [next-queue v2] ixgbevf: Remove unused parameter
-Message-ID: <1461791654-68864-1-git-send-email-jeffrey.t.kirsher@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 28 Apr 2016 05:17:50 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 74/74]
+ drivers/net/ethernet/intel/ixgbevf/vf.c:966:23: error: initialization from
+ incompatible pointer type
+Message-ID: <201604280549.vRL13PUc%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   abf735cd5344a7cd86e24fa5730bacdfef701e24
+commit: abf735cd5344a7cd86e24fa5730bacdfef701e24 [74/74] ixgbevf: Remove unused parameter
+config: powerpc-allyesconfig (attached as .config)
+compiler: 
+reproduce:
+        wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        git checkout abf735cd5344a7cd86e24fa5730bacdfef701e24
+        # save the attached .config to linux build tree
+        make.cross ARCH=powerpc 
 
-ixgbevf_update_xcast_mode() is not using the netdev parameter;
-removing it since it's unnecessary.
+All errors (new ones prefixed by >>):
 
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+>> drivers/net/ethernet/intel/ixgbevf/vf.c:966:23: error: initialization from incompatible pointer type [-Werror=incompatible-pointer-types]
+     .update_xcast_mode = ixgbevf_hv_update_xcast_mode,
+                          ^
+   drivers/net/ethernet/intel/ixgbevf/vf.c:966:23: note: (near initialization for 'ixgbevf_hv_mac_ops.update_xcast_mode')
+   cc1: some warnings being treated as errors
+
+vim +966 drivers/net/ethernet/intel/ixgbevf/vf.c
+
+37573d78 KY Srinivasan   2016-04-27  960  	.stop_adapter		= ixgbevf_stop_hw_vf,
+37573d78 KY Srinivasan   2016-04-27  961  	.setup_link		= ixgbevf_setup_mac_link_vf,
+37573d78 KY Srinivasan   2016-04-27  962  	.check_link		= ixgbevf_hv_check_mac_link_vf,
+5669e3b2 Alexander Duyck 2016-04-27  963  	.negotiate_api_version	= ixgbevf_hv_negotiate_api_version_vf,
+37573d78 KY Srinivasan   2016-04-27  964  	.set_rar		= ixgbevf_hv_set_rar_vf,
+37573d78 KY Srinivasan   2016-04-27  965  	.update_mc_addr_list	= ixgbevf_hv_update_mc_addr_list_vf,
+37573d78 KY Srinivasan   2016-04-27 @966  	.update_xcast_mode	= ixgbevf_hv_update_xcast_mode,
+37573d78 KY Srinivasan   2016-04-27  967  	.set_uc_addr		= ixgbevf_hv_set_uc_addr_vf,
+37573d78 KY Srinivasan   2016-04-27  968  	.set_vfta		= ixgbevf_hv_set_vfta_vf,
+5669e3b2 Alexander Duyck 2016-04-27  969  	.set_rlpml		= ixgbevf_hv_set_rlpml_vf,
+
+:::::: The code at line 966 was first introduced by commit
+:::::: 37573d789b32c0740f68815ea703b50cecb2e39a intel: ixgbevf: Support Windows hosts (Hyper-V)
+
+:::::: TO: KY Srinivasan <kys@microsoft.com>
+:::::: CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+
 ---
-v2: original patch was not against Jeff's dev-queue branch so did not
-    take into consideration all the changes/patches that are in his queue
-
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 2 +-
- drivers/net/ethernet/intel/ixgbevf/vf.c           | 7 ++-----
- drivers/net/ethernet/intel/ixgbevf/vf.h           | 2 +-
- 3 files changed, 4 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index ba17a61..5e348b1 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -1922,7 +1922,7 @@ static void ixgbevf_set_rx_mode(struct net_device *netdev)
- 
- 	spin_lock_bh(&adapter->mbx_lock);
- 
--	hw->mac.ops.update_xcast_mode(hw, netdev, xcast_mode);
-+	hw->mac.ops.update_xcast_mode(hw, xcast_mode);
- 
- 	/* reprogram multicast list */
- 	hw->mac.ops.update_mc_addr_list(hw, netdev);
-diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.c b/drivers/net/ethernet/intel/ixgbevf/vf.c
-index 362ed67..5af363c 100644
---- a/drivers/net/ethernet/intel/ixgbevf/vf.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/vf.c
-@@ -537,13 +537,11 @@ static s32 ixgbevf_hv_update_mc_addr_list_vf(struct ixgbe_hw *hw,
- /**
-  *  ixgbevf_update_xcast_mode - Update Multicast mode
-  *  @hw: pointer to the HW structure
-- *  @netdev: pointer to net device structure
-  *  @xcast_mode: new multicast mode
-  *
-  *  Updates the Multicast Mode of VF.
-  **/
--static s32 ixgbevf_update_xcast_mode(struct ixgbe_hw *hw,
--				     struct net_device *netdev, int xcast_mode)
-+static s32 ixgbevf_update_xcast_mode(struct ixgbe_hw *hw, int xcast_mode)
- {
- 	struct ixgbe_mbx_info *mbx = &hw->mbx;
- 	u32 msgbuf[2];
-@@ -577,8 +575,7 @@ static s32 ixgbevf_update_xcast_mode(struct ixgbe_hw *hw,
- /**
-  * Hyper-V variant - just a stub.
-  */
--static s32 ixgbevf_hv_update_xcast_mode(struct ixgbe_hw *hw,
--					struct net_device *netdev, int xcast_mode)
-+static s32 ixgbevf_hv_update_xcast_mode(struct ixgbe_hw *hw, int xcast_mode)
- {
- 	return -EOPNOTSUPP;
- }
-diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.h b/drivers/net/ethernet/intel/ixgbevf/vf.h
-index 6770f10..2cac610 100644
---- a/drivers/net/ethernet/intel/ixgbevf/vf.h
-+++ b/drivers/net/ethernet/intel/ixgbevf/vf.h
-@@ -64,7 +64,7 @@ struct ixgbe_mac_operations {
- 	s32 (*set_uc_addr)(struct ixgbe_hw *, u32, u8 *);
- 	s32 (*init_rx_addrs)(struct ixgbe_hw *);
- 	s32 (*update_mc_addr_list)(struct ixgbe_hw *, struct net_device *);
--	s32 (*update_xcast_mode)(struct ixgbe_hw *, struct net_device *, int);
-+	s32 (*update_xcast_mode)(struct ixgbe_hw *, int);
- 	s32 (*enable_mc)(struct ixgbe_hw *);
- 	s32 (*disable_mc)(struct ixgbe_hw *);
- 	s32 (*clear_vfta)(struct ixgbe_hw *);
--- 
-2.5.5
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/octet-stream
+Size: 48670 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160428/015561f5/attachment-0001.obj>
