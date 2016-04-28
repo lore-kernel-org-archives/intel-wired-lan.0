@@ -1,253 +1,40 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 28 Apr 2016 15:53:47 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 912840fd38108038d3fd8b6d124ad081073fde87 BUILD SUCCESS
-Message-ID: <5721c18b.CiogN2AUf/qZpqP0%fengguang.wu@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 28 Apr 2016 15:34:37 +0000
+Subject: [Intel-wired-lan] [next PATCH S34 04/12] i40e: Remove HMC AQ
+ API	implementation
+In-Reply-To: <1460542112-20166-5-git-send-email-harshitha.ramamurthy@intel.com>
+References: <1460542112-20166-1-git-send-email-harshitha.ramamurthy@intel.com>
+ <1460542112-20166-5-git-send-email-harshitha.ramamurthy@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D51EC@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-912840fd38108038d3fd8b6d124ad081073fde87  ixgbevf: Remove unused parameter
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Harshitha Ramamurthy
+> Sent: Wednesday, April 13, 2016 3:08 AM
+> To: intel-wired-lan at osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S34 04/12] i40e: Remove HMC AQ API
+> implementation
+> 
+> From: Neerav Parikh <neerav.parikh@intel.com>
+> 
+> Remove the code that implements the HMC AQ APIs and call these APIs.
+> This is done because these are obsolete APIs and are not supported by
+> firmware.
+> 
+> Signed-off-by: Neerav Parikh <neerav.parikh@intel.com>
+> Change-ID: I5d771d8f37c3e16e7b0a972ff9b27e75aa2d05d4
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_adminq.c      |  4 ---
+>  drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  | 25 ------------------
+>  drivers/net/ethernet/intel/i40e/i40e_common.c      | 30 ----------------------
+>  drivers/net/ethernet/intel/i40e/i40e_prototype.h   |  4 ---
+>  .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    | 25 ------------------
+>  5 files changed, 88 deletions(-)
 
-elapsed time: 283m
-
-configs tested: 233
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                   randconfig-a0-04281136
-i386                     randconfig-a0-201617
-x86_64                 randconfig-a0-04281259
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64       allyesdebian+CONFIG_DEBUG_INFO_REDUCED
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm                         s5pv210_defconfig
-m68k                        m5307c3_defconfig
-parisc                         b180_defconfig
-arm                           sunxi_defconfig
-sh                          sdk7786_defconfig
-um                             i386_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-04281230
-i386                   randconfig-c0-04281339
-x86_64                           allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-v0-04281247
-x86_64                 randconfig-v0-04281339
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                             allmodconfig
-blackfin                  TCM-BF518_defconfig
-m68k                             alldefconfig
-mn10300                           allnoconfig
-um                                  defconfig
-arm                      pxa255-idp_defconfig
-cris                             allyesconfig
-m68k                        mvme16x_defconfig
-mips                       rbtx49xx_defconfig
-sparc                             allnoconfig
-parisc                         a500_defconfig
-sh                           cayman_defconfig
-sh                   sh7770_generic_defconfig
-blackfin                BF609-EZKIT_defconfig
-powerpc                      ep88xc_defconfig
-powerpc                 mpc834x_itx_defconfig
-sh                          rsk7264_defconfig
-tile                                defconfig
-x86_64               randconfig-x010-04281231
-x86_64               randconfig-x011-04281231
-x86_64               randconfig-x012-04281231
-x86_64               randconfig-x013-04281231
-x86_64               randconfig-x014-04281231
-x86_64               randconfig-x015-04281231
-x86_64               randconfig-x016-04281231
-x86_64               randconfig-x017-04281231
-x86_64               randconfig-x018-04281231
-x86_64               randconfig-x019-04281231
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                   randconfig-s0-04281231
-i386                   randconfig-s1-04281231
-i386                     randconfig-s0-201617
-i386                     randconfig-s1-201617
-x86_64                 randconfig-s0-04281231
-x86_64                 randconfig-s1-04281231
-x86_64                 randconfig-s2-04281231
-x86_64                 randconfig-s0-04281345
-x86_64                 randconfig-s1-04281345
-x86_64                 randconfig-s2-04281345
-x86_64                 randconfig-s0-04281439
-x86_64                 randconfig-s1-04281439
-x86_64                 randconfig-s2-04281439
-x86_64                 randconfig-s0-04281517
-x86_64                 randconfig-s1-04281517
-x86_64                 randconfig-s2-04281517
-x86_64                 randconfig-s3-04281343
-x86_64                 randconfig-s4-04281343
-x86_64                 randconfig-s5-04281343
-x86_64                 randconfig-s3-04281419
-x86_64                 randconfig-s4-04281419
-x86_64                 randconfig-s5-04281419
-x86_64                 randconfig-s3-04281458
-x86_64                 randconfig-s4-04281458
-x86_64                 randconfig-s5-04281458
-x86_64                 randconfig-s3-04281528
-x86_64                 randconfig-s4-04281528
-x86_64                 randconfig-s5-04281528
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                           x86_64_defconfig
-blackfin                            defconfig
-ia64                                defconfig
-mips                                defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                 randconfig-i0-04281105
-x86_64                   randconfig-i0-201617
-i386                   randconfig-b0-04281105
-i386                   randconfig-b0-04281227
-i386                   randconfig-b0-04281339
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-i0-04281139
-i386                   randconfig-i1-04281139
-i386                             allyesconfig
-x86_64                 randconfig-b0-04281139
-blackfin                      H8606_defconfig
-m32r                    mappi.nommu_defconfig
-arm                         lpc18xx_defconfig
-arm                      acs5k_tiny_defconfig
-mips                         cobalt_defconfig
-sh                           se7751_defconfig
-x86_64                              rhel_gcov
-x86_64                 randconfig-n0-04281140
-x86_64                 randconfig-n0-04281327
-x86_64                 randconfig-n0-04281410
-i386                 randconfig-x010-04281142
-i386                 randconfig-x011-04281142
-i386                 randconfig-x012-04281142
-i386                 randconfig-x013-04281142
-i386                 randconfig-x014-04281142
-i386                 randconfig-x015-04281142
-i386                 randconfig-x016-04281142
-i386                 randconfig-x017-04281142
-i386                 randconfig-x018-04281142
-i386                 randconfig-x019-04281142
-x86_64                                    lkp
-x86_64                                   rhel
-i386                   randconfig-n0-04281142
-i386                   randconfig-h0-04281402
-i386                   randconfig-h1-04281402
-powerpc                        cell_defconfig
-powerpc                 mpc836x_mds_defconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-x86_64                 randconfig-h0-04281219
-arm                        spear3xx_defconfig
-parisc                          712_defconfig
-sh                           se7712_defconfig
-arm                           corgi_defconfig
-arm                       imx_v6_v7_defconfig
-powerpc                     tqm8555_defconfig
-arm                      jornada720_defconfig
-powerpc                      ppc40x_defconfig
-powerpc                  mpc866_ads_defconfig
-x86_64                 randconfig-n0-04281254
-x86_64                 randconfig-n0-04281337
-x86_64                 randconfig-n0-04281419
-x86_64                 randconfig-n0-04281516
-arm                         lpc32xx_defconfig
-arm                           omap1_defconfig
-m32r                             alldefconfig
-i386                  randconfig-sb0-04281316
-powerpc                     stx_gp3_defconfig
-sh                         microdev_defconfig
-sh                           se7721_defconfig
-x86_64                 randconfig-x000-201617
-x86_64                 randconfig-x001-201617
-x86_64                 randconfig-x005-201617
-x86_64                 randconfig-x007-201617
-x86_64                 randconfig-x006-201617
-x86_64                 randconfig-x004-201617
-x86_64                 randconfig-x008-201617
-x86_64                 randconfig-x009-201617
-x86_64                 randconfig-x003-201617
-x86_64                 randconfig-x002-201617
-x86_64               randconfig-x000-04281139
-x86_64               randconfig-x001-04281139
-x86_64               randconfig-x002-04281139
-x86_64               randconfig-x003-04281139
-x86_64               randconfig-x004-04281139
-x86_64               randconfig-x005-04281139
-x86_64               randconfig-x006-04281139
-x86_64               randconfig-x007-04281139
-x86_64               randconfig-x008-04281139
-x86_64               randconfig-x009-04281139
-i386                   randconfig-r0-04281139
-i386                   randconfig-x000-201617
-i386                   randconfig-x003-201617
-i386                   randconfig-x009-201617
-i386                   randconfig-x005-201617
-i386                   randconfig-x004-201617
-i386                   randconfig-x002-201617
-i386                   randconfig-x006-201617
-i386                   randconfig-x007-201617
-i386                   randconfig-x008-201617
-i386                   randconfig-x001-201617
-i386                 randconfig-x000-04281135
-i386                 randconfig-x001-04281135
-i386                 randconfig-x002-04281135
-i386                 randconfig-x003-04281135
-i386                 randconfig-x004-04281135
-i386                 randconfig-x005-04281135
-i386                 randconfig-x006-04281135
-i386                 randconfig-x007-04281135
-i386                 randconfig-x008-04281135
-i386                 randconfig-x009-04281135
-i386                   randconfig-x0-04281216
-
-Thanks,
-Fengguang
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+HMC code gone from admin queue, code compiles correctly
