@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 28 Apr 2016 16:14:22 +0000
-Subject: [Intel-wired-lan] [next-queue v2] ixgbevf: Remove unused
- parameter
-In-Reply-To: <1461791654-68864-1-git-send-email-jeffrey.t.kirsher@intel.com>
-References: <1461791654-68864-1-git-send-email-jeffrey.t.kirsher@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D521F@ORSMSX104.amr.corp.intel.com>
+Date: Thu, 28 Apr 2016 18:02:05 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbevf: Use mac_ops instead of
+ trying to	identify NIC type
+In-Reply-To: <20160422171826.11019.16994.stgit@ahduyck-xeon-server>
+References: <20160422171826.11019.16994.stgit@ahduyck-xeon-server>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D5262@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,25 +13,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Jeff Kirsher
-> Sent: Wednesday, April 27, 2016 2:14 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next-queue v2] ixgbevf: Remove unused
-> parameter
+> Behalf Of Alexander Duyck
+> Sent: Friday, April 22, 2016 10:18 AM
+> To: kys at microsoft.com; intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
+> <jeffrey.t.kirsher@intel.com>
+> Subject: [Intel-wired-lan] [PATCH] ixgbevf: Use mac_ops instead of trying to
+> identify NIC type
 > 
-> From: Tony Nguyen <anthony.l.nguyen@intel.com>
+> This change makes it so that we can just use function pointers instead of
+> having to identify if a given VF is running on a Linux or Windows PF.  By doing
+> this we can avoid having to pull too much information out of the lower layers
+> and can instead just make use of the mac_ops pointers since they should
+> differ between the two types of VFs anyway.
 > 
-> ixgbevf_update_xcast_mode() is not using the netdev parameter; removing
-> it since it's unnecessary.
-> 
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 > ---
-> v2: original patch was not against Jeff's dev-queue branch so did not
->     take into consideration all the changes/patches that are in his queue
-> 
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 2 +-
->  drivers/net/ethernet/intel/ixgbevf/vf.c           | 7 ++-----
->  drivers/net/ethernet/intel/ixgbevf/vf.h           | 2 +-
->  3 files changed, 4 insertions(+), 7 deletions(-)
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |    1 -
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |   15 +++------------
+>  drivers/net/ethernet/intel/ixgbevf/vf.c           |   20 +++++++++-----------
+>  drivers/net/ethernet/intel/ixgbevf/vf.h           |    4 +---
+>  4 files changed, 13 insertions(+), 27 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Jumbo frames/MTU can still be set on VF
