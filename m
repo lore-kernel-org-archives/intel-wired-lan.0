@@ -1,57 +1,108 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Thu, 28 Apr 2016 18:59:47 -0700
+From: Matthew Finlay <Matt@Mellanox.com>
+Date: Thu, 28 Apr 2016 21:43:04 +0000
 Subject: [Intel-wired-lan] [RFC PATCH 2/5] mlx5: Add support for UDP
  tunnel segmentation with outer checksum offload
-In-Reply-To: <49111DBA-CDD6-4D19-9D2D-D6E29675A28F@mellanox.com>
+In-Reply-To: <CAKgT0Uc5poLcTzkeA_8fi2jQeF08zbtj3+obTG1q0ha+ESZRCQ@mail.gmail.com>
 References: <20160419185949.11723.50506.stgit@ahduyck-xeon-server>
  <20160419190603.11723.31623.stgit@ahduyck-xeon-server>
  <CALzJLG-8enmxxvjbVbcygVgM0VhX7Eo=6B=2pZF5jQzN9L9YEg@mail.gmail.com>
  <CAKgT0Uc5poLcTzkeA_8fi2jQeF08zbtj3+obTG1q0ha+ESZRCQ@mail.gmail.com>
- <800B6BE4-251F-4AA5-92FC-3A9393E7981E@mellanox.com>
- <CAKgT0UfsB+CbsCjerxDYkWgdGN01vmf4=VJRLEarFO4_nf-pow@mail.gmail.com>
- <49111DBA-CDD6-4D19-9D2D-D6E29675A28F@mellanox.com>
-Message-ID: <CAKgT0UeGJY0kntN6KeXmqZEY3k=uND4RXY+RG94q0Da2Tt2rWg@mail.gmail.com>
+Message-ID: <800B6BE4-251F-4AA5-92FC-3A9393E7981E@mellanox.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Apr 28, 2016 at 6:18 PM, Matthew Finlay <Matt@mellanox.com> wrote:
->
->
->
->
->
+
+
+
+
+
+On 4/20/16, 11:06 AM, "Alexander Duyck" <alexander.duyck@gmail.com> wrote:
+
+>On Wed, Apr 20, 2016 at 10:40 AM, Saeed Mahameed
+><saeedm@dev.mellanox.co.il> wrote:
+>> On Tue, Apr 19, 2016 at 10:06 PM, Alexander Duyck <aduyck@mirantis.com> wrote:
+>>> This patch assumes that the mlx5 hardware will ignore existing IPv4/v6
+>>> header fields for length and checksum as well as the length and checksum
+>>> fields for outer UDP headers.
 >>>
->>> The mlx5 hardware requires the outer UDP checksum is not set when offloading encapsulated packets.
+>>> I have no means of testing this as I do not have any mlx5 hardware but
+>>> thought I would submit it as an RFC to see if anyone out there wants to
+>>> test this and see if this does in fact enable this functionality allowing
+>>> us to to segment UDP tunneled frames that have an outer checksum.
+>>>
+>>> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+>>> ---
+>>>  drivers/net/ethernet/mellanox/mlx5/core/en_main.c |    7 ++++++-
+>>>  1 file changed, 6 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_main.c b/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
+>>> index e0adb604f461..57d8da796d50 100644
+>>> --- a/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
+>>> +++ b/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
+>>> @@ -2390,13 +2390,18 @@ static void mlx5e_build_netdev(struct net_device *netdev)
+>>>         netdev->hw_features      |= NETIF_F_HW_VLAN_CTAG_FILTER;
+>>>
+>>>         if (mlx5e_vxlan_allowed(mdev)) {
+>>> -               netdev->hw_features     |= NETIF_F_GSO_UDP_TUNNEL;
+>>> +               netdev->hw_features     |= NETIF_F_GSO_UDP_TUNNEL |
+>>> +                                          NETIF_F_GSO_UDP_TUNNEL_CSUM |
+>>> +                                          NETIF_F_GSO_PARTIAL;
+>>>                 netdev->hw_enc_features |= NETIF_F_IP_CSUM;
+>>>                 netdev->hw_enc_features |= NETIF_F_RXCSUM;
+>>>                 netdev->hw_enc_features |= NETIF_F_TSO;
+>>>                 netdev->hw_enc_features |= NETIF_F_TSO6;
+>>>                 netdev->hw_enc_features |= NETIF_F_RXHASH;
+>>>                 netdev->hw_enc_features |= NETIF_F_GSO_UDP_TUNNEL;
+>>> +               netdev->hw_enc_features |= NETIF_F_GSO_UDP_TUNNEL_CSUM |
+>>> +                                          NETIF_F_GSO_PARTIAL;
+>>> +               netdev->gso_partial_features = NETIF_F_GSO_UDP_TUNNEL_CSUM;
+>>>         }
+>>>
+>>>         netdev->features          = netdev->hw_features;
+>>>
 >>
->>The Intel documentation said the same thing.  That was due to the fact
->>that the hardware didn't computer the outer UDP header checksum.  I
->>suspect the Mellanox hardware has the same issue.  Also I have tested
->>on a ConnectX-4 board with the latest firmware and what I am seeing is
->>that with my patches applied the outer checksum is being correctly
->>applied for segmentation offloads.
+>> Hi Alex,
 >>
->>My thought is that that the hardware appears to ignore the UDP
->>checksum so if it is non-zero you cannot guarantee the checksum would
->>be correct on the last frame if it is a different size than the rest
->>of the segments.  In the case of these patches that issue has been
->>resolved as I have precomputed the UDP checksum for the outer UDP
->>header and all of the segments will be the same length so there should
->>be no variation in the UDP checksum of the outer header.  Unless you
->>can tell my exactly the reason why we cannot provide the outer UDP
->>checksum I would assume that the reason is due to the fact that the
->>hardware doesn't compute it so you cannot handle a fragment on the end
->>which is resolved already via GSO_PARTIAL.
+>> Adding Matt, VxLAN feature owner from Mellanox,
+>> Matt please correct me if am wrong, but We already tested GSO VxLAN
+>> and we saw the TCP/IP checksum offloads for both inner and outer
+>> headers handled by the hardware.
+>>
+>> And looking at mlx5e_sq_xmit:
+>>
+>> if (likely(skb->ip_summed == CHECKSUM_PARTIAL)) {
+>>         eseg->cs_flags = MLX5_ETH_WQE_L3_CSUM;
+>> if (skb->encapsulation) {
+>>         eseg->cs_flags |= MLX5_ETH_WQE_L3_INNER_CSUM |
+>> MLX5_ETH_WQE_L4_INNER_CSUM;
+>>         sq->stats.csum_offload_inner++;
+>> } else {
+>>         eseg->cs_flags |= MLX5_ETH_WQE_L4_CSUM;
+>> }
+>>
+>> We enable inner/outer hardware checksumming unconditionally without
+>> looking at the features Alex is suggesting in this patch,
+>> Alex, can you elaborate more on the meaning of those features ? and
+>> why would it work for us without declaring them ?
 >
-> I will check internally and verify there are no unforeseen issues with setting the outer UDP checksum in this scenario.
+>Well right now the feature list exposed by the device indicates that
+>TSO is not used if a VxLAN tunnel has a checksum in an outer header.
+>Since that is not exposed currently that is completely offloaded in
+>software via GSO.
 
-Thanks.  Any idea how long it should be.  I know I was getting a
-auto-reply about people being out until May 1st due to a holiday so I
-am just wondering if we should have Dave drop this patch set and I
-submit a v2 when you can get me the feedback next week, or if we run
-with the patches as-is for now and be prepared to revert if anything
-should come up.
+The mlx5 hardware requires the outer UDP checksum is not set when offloading encapsulated packets. 
 
-- Alex
+>
+>What the GSO partial does is allow us to treat GSO for tunnels with
+>checksum like it is GSO for tunnels without checksum by precomputing
+>the UDP checksum as though the frame had already been segmented and
+>restricts us to an even multiple of MSS bytes that are to be segmented
+>between all the frames.  One side effect though is that all of the IP
+>and UDP header fields are also precomputed, but from what I can tell
+>it looks like the values that would be changed by a change in length
+>are ignored or overwritten by the hardware and driver anyway.
+>
+>- Alex
