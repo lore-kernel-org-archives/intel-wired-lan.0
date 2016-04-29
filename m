@@ -1,82 +1,46 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 29 Apr 2016 14:31:47 -0700
-Subject: [Intel-wired-lan] [RFC PATCH 4/5] bnxt: Add support for
- segmentation of tunnels with outer checksums
-In-Reply-To: <CACKFLinpYTDTxzBaijdSTE9q+5Ln4Sbo5fGxRbY+wv6bwP=vOQ@mail.gmail.com>
-References: <20160419185949.11723.50506.stgit@ahduyck-xeon-server>
- <20160419190615.11723.53966.stgit@ahduyck-xeon-server>
- <CACKFLi=2mHfOS1Rz5RbSdyhepdjBqM+dj7Nh=CzARcYSwUTcSw@mail.gmail.com>
- <CAKgT0UffVkQWWqgwYZy-AXEq=kofKiRx2D9pnu5nBQD+uSLS+g@mail.gmail.com>
- <CACKFLi=0ug=E++9prBjC7NsD67+DtLKXXwFtF-E0+trVNtMgbA@mail.gmail.com>
- <CAKgT0UeOPX22XipaSUsCgZ9oPsw1Q6KWGoEA+rpjANp6RQ+gnA@mail.gmail.com>
- <CACKFLinpYTDTxzBaijdSTE9q+5Ln4Sbo5fGxRbY+wv6bwP=vOQ@mail.gmail.com>
-Message-ID: <CAKgT0Ud3DWAB+se3nH2Ub+LB+UeMssyFkD=qaBdU3F6_E3u2-A@mail.gmail.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 29 Apr 2016 21:38:33 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: fix misleading indentation
+In-Reply-To: <1461951855-2038011-1-git-send-email-arnd@arndb.de>
+References: <1461951855-2038011-1-git-send-email-arnd@arndb.de>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D53A1@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Apr 29, 2016 at 2:29 PM, Michael Chan <michael.chan@broadcom.com> wrote:
-> On Fri, Apr 29, 2016 at 2:17 PM, Alexander Duyck
-> <alexander.duyck@gmail.com> wrote:
->> On Wed, Apr 27, 2016 at 9:32 PM, Michael Chan <michael.chan@broadcom.com> wrote:
->>> On Wed, Apr 27, 2016 at 8:21 AM, Alexander Duyck
->>> <alexander.duyck@gmail.com> wrote:
->>>> On Tue, Apr 26, 2016 at 10:55 PM, Michael Chan
->>>> <michael.chan@broadcom.com> wrote:
->>>>> On Tue, Apr 19, 2016 at 12:06 PM, Alexander Duyck <aduyck@mirantis.com> wrote:
->>>>>> This patch assumes that the bnxt hardware will ignore existing IPv4/v6
->>>>>> header fields for length and checksum as well as the length and checksum
->>>>>> fields for outer UDP and GRE headers.
->>>>>>
->>>>>> I have no means of testing this as I do not have any bnx2x hardware but
->>>>>> thought I would submit it as an RFC to see if anyone out there wants to
->>>>>> test this and see if this does in fact enable this functionality allowing
->>>>>> us to to segment tunneled frames that have an outer checksum.
->>>>>>
->>>>>> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
->>>>>
->>>>> Hi Alex, I just did a very quick test of this patch on our bnxt
->>>>> hardware and it seemed to work.
->>>>>
->>>>> I created a vxlan endpoint with udpcsum enabled and I saw TSO packets
->>>>> getting through.  I've verified that our hardware can be programmed to
->>>>> either ignore outer UDP checksum or to calculate it.  Current default
->>>>> is to ignore ipv4 UDP checksum and calculate ipv6 UDP checksum.
->>>>> Thanks.
->>>>
->>>> Are you saying you can natively support UDP tunnel with outer checksum
->>>> offload then?
->>>
->>> Yes.  Calculate or ignore the outer UDP checksum.
->>
->> I was just thinking about this.  When you say you compute the IPv6
->> checksum how is it you are specifying to the hardware that you want to
->> do that?  Is it something you can configure per packet or is it
->> something that is configured for the VXLAN flow?
->
-> In the current version of the hardware, it is a global (chip-wide)
-> setting.  1 bit to control outer ipv4 vxlan and 1 bit for outer ipv6
-> vxlan.
->
->>
->> I just want to make sure you aren't adding checksums to IPv6 tunnels
->> that specify that they don't want a checksum, or stripping them from
->> v4 tunnels that do want a checksum.
->
-> If the global setting has outer UDP checksum enabled, it will be
-> calculated no matter what.  If the setting is disabled, it will just
-> ignore it without overwriting it.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Arnd Bergmann
+> Sent: Friday, April 29, 2016 10:44 AM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: Arnd Bergmann <arnd@arndb.de>; linux-kernel at vger.kernel.org; intel-
+> wired-lan at lists.osuosl.org; netdev at vger.kernel.org
+> Subject: [Intel-wired-lan] [PATCH] i40e: fix misleading indentation
+> 
+> Newly added code in i40e_vc_config_promiscuous_mode_msg() is indented
+> in a way that gcc rightly complains about:
+> 
+> drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c: In function
+> 'i40e_vc_config_promiscuous_mode_msg':
+> drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:1543:4: error: this 'if'
+> clause does not guard... [-Werror=misleading-indentation]
+>     if (f->vlan >= 0 && f->vlan <= I40E_MAX_VLANID)
+>     ^~
+> drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:1550:5: note: ...this
+> statement, but the latter is misleadingly indented as if it is guarded by the 'if'
+>      aq_err = pf->hw.aq.asq_last_status;
+> 
+> From the context, it looks like the aq_err assignment was meant to be inside
+> of the conditional expression, so I'm adding the appropriate curly braces
+> now.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Fixes: 5676a8b9cd9a ("i40e: Add VF promiscuous mode driver support")
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 
-Okay so if that is the case we may want to make it so that we ignore
-checksum for both IPv4 and IPv6 and then we can just provide it via
-GSO_PARTIAL in the case we want it.  Otherwise you are technically
-mangling the frames by inserting a checksum on the outer header even
-though the tunnel was not configured for it.  If you can point me
-toward the point in the code where that is happening I can probably
-make it a part of this patch.
-
-Thanks.
-
-- Alex
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+No warnings at compile
