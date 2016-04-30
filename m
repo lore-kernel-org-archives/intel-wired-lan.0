@@ -1,56 +1,51 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Fri, 29 Apr 2016 16:39:15 -0700
-Subject: [Intel-wired-lan] [RFC PATCH 4/5] bnxt: Add support for
- segmentation of tunnels with outer checksums
-In-Reply-To: <CACKFLik68GedLctO9cXoBZSrFR6RnRkCprn3h=xmBwn3-uojLg@mail.gmail.com>
-References: <20160419185949.11723.50506.stgit@ahduyck-xeon-server>
- <20160419190615.11723.53966.stgit@ahduyck-xeon-server>
- <CACKFLi=2mHfOS1Rz5RbSdyhepdjBqM+dj7Nh=CzARcYSwUTcSw@mail.gmail.com>
- <CAKgT0UffVkQWWqgwYZy-AXEq=kofKiRx2D9pnu5nBQD+uSLS+g@mail.gmail.com>
- <CACKFLi=0ug=E++9prBjC7NsD67+DtLKXXwFtF-E0+trVNtMgbA@mail.gmail.com>
- <CAKgT0UeOPX22XipaSUsCgZ9oPsw1Q6KWGoEA+rpjANp6RQ+gnA@mail.gmail.com>
- <CACKFLinpYTDTxzBaijdSTE9q+5Ln4Sbo5fGxRbY+wv6bwP=vOQ@mail.gmail.com>
- <CAKgT0Ud3DWAB+se3nH2Ub+LB+UeMssyFkD=qaBdU3F6_E3u2-A@mail.gmail.com>
- <CACKFLik68GedLctO9cXoBZSrFR6RnRkCprn3h=xmBwn3-uojLg@mail.gmail.com>
-Message-ID: <CAKgT0UfN1ECtTBRq8gvYbP_7v0GZDZMNzwpnPjng5QJdcph4FA@mail.gmail.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Sat, 30 Apr 2016 13:24:55 +0300
+Subject: [Intel-wired-lan] i40e: Add VF promiscuous mode driver support
+Message-ID: <20160430102455.GA14020@mwanda>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Apr 29, 2016 at 4:29 PM, Michael Chan <michael.chan@broadcom.com> wrote:
-> On Fri, Apr 29, 2016 at 2:31 PM, Alexander Duyck
-> <alexander.duyck@gmail.com> wrote:
->
->> Okay so if that is the case we may want to make it so that we ignore
->> checksum for both IPv4 and IPv6 and then we can just provide it via
->> GSO_PARTIAL in the case we want it.  Otherwise you are technically
->> mangling the frames by inserting a checksum on the outer header even
->> though the tunnel was not configured for it.  If you can point me
->> toward the point in the code where that is happening I can probably
->> make it a part of this patch.
->>
->
-> All the chip settings are controlled by firmware.  I will check with
-> the firmware team to disable them if they are not already disabled.
-> When first developing the driver, before all the recent proposals, the
-> intention was to not advertise NETIF_F_GSO_UDP_TUNNEL_CSUM and not
-> support TSO with outer UDP checksum enabled.  Thanks.
+Hello Anjali Singhai Jain,
 
-Right.  But adding a checksum where there wasn't one could
-theoretically be problematic if there was a implementation out there
-where somebody was mandating that the tunnel checksum must be 0.  The
-i40e driver was enabling the same thing in the driver for an upcoming
-device that supported an outer checksum offload until I went in and
-fixed it.  Generally if we can match what is expected that is
-preferred so we don't have any unexpected conflicts in the event that
-a VTEP expects the packets to come in with checksums or without.
+The patch 5676a8b9cd9a: "i40e: Add VF promiscuous mode driver
+support" from Apr 12, 2016, leads to the following static checker
+warning:
 
-I have submitted the patch and when the firmware gets updated the
-behavior will be cleared up so you can have it either way depending on
-what the tunnel itself requested.
+	drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c:1550 i40e_vc_config_promiscuous_mode_msg()
+	warn: curly braces intended?
 
-Thanks.
+drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
 
-- Alex
+  1536                  aq_ret = i40e_aq_set_vsi_uc_promisc_on_vlan(hw, vsi->seid,
+  1537                                                              alluni,
+  1538                                                              vf->port_vlan_id,
+  1539                                                              NULL);
+  1540          } else if (i40e_getnum_vf_vsi_vlan_filters(vsi)) {
+  1541                  list_for_each_entry(f, &vsi->mac_filter_list, list) {
+  1542                          aq_ret = 0;
+  1543                          if (f->vlan >= 0 && f->vlan <= I40E_MAX_VLANID)
+  1544                                  aq_ret =
+  1545                                  i40e_aq_set_vsi_uc_promisc_on_vlan(hw,
+  1546                                                                     vsi->seid,
+  1547                                                                     alluni,
+  1548                                                                     f->vlan,
+  1549                                                                     NULL);
+  1550                                  aq_err = pf->hw.aq.asq_last_status;
+  1551                          if (aq_ret)
+  1552                                  dev_err(&pf->pdev->dev,
+  1553                                          "Could not add VLAN %d to Unicast promiscuous domain err %s aq_err %s\n",
+  1554                                          f->vlan,
+  1555                                          i40e_stat_str(&pf->hw, aq_ret),
+  1556                                          i40e_aq_str(&pf->hw, aq_err));
+
+Curly braces were intended, but it doesn't affect run time.  This code
+sort of convoluted and jammed up against the right side of the screen...
+
+  1557                  }
+  1558          } else {
+
+regards,
+dan carpenter
