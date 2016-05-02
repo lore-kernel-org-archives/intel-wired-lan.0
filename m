@@ -1,47 +1,31 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 2 May 2016 14:33:09 +0000
-Subject: [Intel-wired-lan] [PATCH v2] ixgbevf: Change the relaxed
-	order	settings in VF driver for sparc
-In-Reply-To: <1461279409-248697-1-git-send-email-babu.moger@oracle.com>
-References: <1461279409-248697-1-git-send-email-babu.moger@oracle.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D5596@ORSMSX104.amr.corp.intel.com>
+From: Leon Romanovsky <leon@kernel.org>
+Date: Mon, 2 May 2016 09:06:53 +0300
+Subject: [Intel-wired-lan] [PATCH] i40e: constify i40e_client_ops
+	structure
+In-Reply-To: <1462104443-30724-1-git-send-email-Julia.Lawall@lip6.fr>
+References: <1462104443-30724-1-git-send-email-Julia.Lawall@lip6.fr>
+Message-ID: <20160502060653.GD10276@leon.nu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Babu Moger
-> Sent: Thursday, April 21, 2016 3:57 PM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; Brandeburg, Jesse
-> <jesse.brandeburg@intel.com>; Nelson, Shannon
-> <shannon.nelson@intel.com>; Wyborny, Carolyn
-> <carolyn.wyborny@intel.com>; Skidmore, Donald C
-> <donald.c.skidmore@intel.com>; Allan, Bruce W <bruce.w.allan@intel.com>;
-> Ronciak, John <john.ronciak@intel.com>; Williams, Mitch A
-> <mitch.a.williams@intel.com>
-> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; linux-
-> kernel at vger.kernel.org; babu.moger at oracle.com;
-> sowmini.varadhan at oracle.com
-> Subject: [Intel-wired-lan] [PATCH v2] ixgbevf: Change the relaxed order
-> settings in VF driver for sparc
+On Sun, May 01, 2016 at 02:07:23PM +0200, Julia Lawall wrote:
+> The i40e_client_ops structure is never modified, so declare it as const.
 > 
-> We noticed performance issues with VF interface on sparc compared to PF.
-> Setting the RX to IXGBE_DCA_RXCTRL_DATA_WRO_EN brings it on far with
-> PF. Also this matches to the default sparc setting in PF driver.
+> Done with the help of Coccinelle.
 > 
-> Signed-off-by: Babu Moger <babu.moger@oracle.com>
-> Acked-by: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-> ---
-> v2:
->   Alexander had concerns about this negativily affecting other architectures.
->   Added CONFIG_SPARC check so this should not affect other architectures.
+> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 > 
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |    6 ++++++
->  1 files changed, 6 insertions(+), 0 deletions(-)
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Changes applied correctly, driver builds and passes traffic as expected
-sparc platform testing performed by patch originators, no detriment to x86_64 performance.
+Thanks Julia,
+
+Reviewed-by: Leon Romanovsky <leonro@mellanox.com>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: Digital signature
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160502/2a41ab56/attachment-0001.asc>
