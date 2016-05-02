@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 2 May 2016 14:28:16 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: constify i40e_client_ops
- structure
-In-Reply-To: <1462104443-30724-1-git-send-email-Julia.Lawall@lip6.fr>
-References: <1462104443-30724-1-git-send-email-Julia.Lawall@lip6.fr>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D5585@ORSMSX104.amr.corp.intel.com>
+Date: Mon, 2 May 2016 14:33:09 +0000
+Subject: [Intel-wired-lan] [PATCH v2] ixgbevf: Change the relaxed
+	order	settings in VF driver for sparc
+In-Reply-To: <1461279409-248697-1-git-send-email-babu.moger@oracle.com>
+References: <1461279409-248697-1-git-send-email-babu.moger@oracle.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D5596@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,28 +13,35 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Julia Lawall
-> Sent: Sunday, May 01, 2016 5:07 AM
-> To: linux-kernel at vger.kernel.org
-> Cc: Ismail, Mustafa <mustafa.ismail@intel.com>; netdev at vger.kernel.org;
-> Latif, Faisal <faisal.latif@intel.com>; linux-rdma at vger.kernel.org; Nikolova,
-> Tatyana E <tatyana.e.nikolova@intel.com>; Tung, Chien Tin
-> <chien.tin.tung@intel.com>; kernel-janitors at vger.kernel.org; Doug Ledford
-> <dledford@redhat.com>; intel-wired-lan at lists.osuosl.org; Hefty, Sean
-> <sean.hefty@intel.com>; Saleem, Shiraz <shiraz.saleem@intel.com>; Hal
-> Rosenstock <hal.rosenstock@gmail.com>
-> Subject: [Intel-wired-lan] [PATCH] i40e: constify i40e_client_ops structure
+> Behalf Of Babu Moger
+> Sent: Thursday, April 21, 2016 3:57 PM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; Brandeburg, Jesse
+> <jesse.brandeburg@intel.com>; Nelson, Shannon
+> <shannon.nelson@intel.com>; Wyborny, Carolyn
+> <carolyn.wyborny@intel.com>; Skidmore, Donald C
+> <donald.c.skidmore@intel.com>; Allan, Bruce W <bruce.w.allan@intel.com>;
+> Ronciak, John <john.ronciak@intel.com>; Williams, Mitch A
+> <mitch.a.williams@intel.com>
+> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; linux-
+> kernel at vger.kernel.org; babu.moger at oracle.com;
+> sowmini.varadhan at oracle.com
+> Subject: [Intel-wired-lan] [PATCH v2] ixgbevf: Change the relaxed order
+> settings in VF driver for sparc
 > 
-> The i40e_client_ops structure is never modified, so declare it as const.
+> We noticed performance issues with VF interface on sparc compared to PF.
+> Setting the RX to IXGBE_DCA_RXCTRL_DATA_WRO_EN brings it on far with
+> PF. Also this matches to the default sparc setting in PF driver.
 > 
-> Done with the help of Coccinelle.
-> 
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
-> 
+> Signed-off-by: Babu Moger <babu.moger@oracle.com>
+> Acked-by: Sowmini Varadhan <sowmini.varadhan@oracle.com>
 > ---
->  drivers/infiniband/hw/i40iw/i40iw_main.c      |    2 +-
->  drivers/net/ethernet/intel/i40e/i40e_client.h |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
+> v2:
+>   Alexander had concerns about this negativily affecting other architectures.
+>   Added CONFIG_SPARC check so this should not affect other architectures.
+> 
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |    6 ++++++
+>  1 files changed, 6 insertions(+), 0 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 Changes applied correctly, driver builds and passes traffic as expected
+sparc platform testing performed by patch originators, no detriment to x86_64 performance.
