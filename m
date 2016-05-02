@@ -1,40 +1,39 @@
-From: Skidmore, Donald C <donald.c.skidmore@intel.com>
-Date: Mon, 2 May 2016 21:33:26 +0000
-Subject: [Intel-wired-lan] NULL dereference on v4.1.x while enabling VF
-In-Reply-To: <CAJ75kXZV32hLzYY-dynYAj6NHm2xNoq89inmSSbqUyxPvUazEw@mail.gmail.com>
-References: <CAJ75kXZV32hLzYY-dynYAj6NHm2xNoq89inmSSbqUyxPvUazEw@mail.gmail.com>
-Message-ID: <F6FB0E698C9B3143BDF729DF2228664691EA68EC@ORSMSX116.amr.corp.intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Mon, 2 May 2016 21:37:38 +0000
+Subject: [Intel-wired-lan] [PATCH net-next V5 1/2] ethernet: intel: Add
+ the	device ID's presented while running on Hyper-V
+In-Reply-To: <1461118677-28142-1-git-send-email-kys@microsoft.com>
+References: <1461118655-28103-1-git-send-email-kys@microsoft.com>
+ <1461118677-28142-1-git-send-email-kys@microsoft.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D55FB@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of William Dauchy
-> Sent: Monday, May 02, 2016 1:26 PM
-> To: NETDEV <netdev@vger.kernel.org>; intel-wired-lan at lists.osuosl.org
-> Cc: Alex Duyck <aduyck@mirantis.com>
-> Subject: [Intel-wired-lan] NULL dereference on v4.1.x while enabling VF
+> Behalf Of K. Y. Srinivasan
+> Sent: Tuesday, April 19, 2016 7:18 PM
+> To: davem at davemloft.net; netdev at vger.kernel.org; linux-
+> kernel at vger.kernel.org; devel at linuxdriverproject.org; olaf at aepfle.de;
+> apw at canonical.com; jasowang at redhat.com; eli at mellanox.com;
+> jackm at mellanox.com; yevgenyp at mellanox.com; Ronciak, John
+> <john.ronciak@intel.com>; intel-wired-lan at lists.osuosl.org;
+> alexander.duyck at gmail.com
+> Subject: [Intel-wired-lan] [PATCH net-next V5 1/2] ethernet: intel: Add the
+> device ID's presented while running on Hyper-V
 > 
-> Hello,
+> Intel SR-IOV cards present different ID when running on Hyper-V.
+> Add the device IDs presented while running on Hyper-V.
 > 
-> I am getting a NULL dereference on v4.1.x while enabling VF on a ixgbe (
-> Intel Corporation 82599ES 10-Gigabit) card during boot.
-> It seems to be related to a race since I don't have the issue if I test it a few
-> seconds after boot. I had the same issue while testing on v4.5.x What can I
-> do to help debug the issue?
+> Signed-off-by: K. Y. Srinivasan <kys@microsoft.com>
+> ---
+> 	V5: No change from V1
 > 
-> ip link set dev eth0 up
-> echo 32 > /sys/class/net/eth0/device/sriov_numvfs
+>  drivers/net/ethernet/intel/ixgbevf/defines.h |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
 
-Hey William,
-
-Thanks for reporting the dereference.  Could you provide a little more detail on how you created this issue?  Are you just running the two commands (ip, sriov_numvfs) in some rc script and if you put a few second sleep in front of it you don't see the failure?
-
-Thanks,
--Don Skidmore <donald.c.skidmore@intel.com>
-
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+New device IDs present
