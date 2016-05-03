@@ -1,28 +1,20 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 04 May 2016 05:46:30 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
- 26879da58711aa604a1b866cbeedd7e0f78f90ad BUILD DONE
-Message-ID: <57291c36.rupuIpQMNfp/ya0A%fengguang.wu@intel.com>
+Date: Wed, 04 May 2016 05:56:02 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ cc1866d7e49972bbf56e731bd5e7e691b6478588 BUILD SUCCESS
+Message-ID: <57291e72.aV3R5N0HVzx9BRRO%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
-26879da58711aa604a1b866cbeedd7e0f78f90ad  ipv6: add new struct ipcm6_cookie
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+cc1866d7e49972bbf56e731bd5e7e691b6478588  i40e: constify i40e_client_ops structure
 
-include/net/sock.h:442: warning: No description found for parameter 'sk_rcu'
+elapsed time: 80m
 
-Error ids grouped by kconfigs:
-
-recent_errors
-??? i386-allnoconfig
-    ??? include-net-sock.h:warning:No-description-found-for-parameter-sk_rcu
-
-elapsed time: 84m
-
-configs tested: 119
+configs tested: 121
 
 i386                     randconfig-a0-201618
 x86_64                             acpi-redef
@@ -30,6 +22,10 @@ x86_64                           allyesdebian
 x86_64       allyesdebian+CONFIG_DEBUG_INFO_REDUCED
 x86_64                                nfsroot
 i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
 m32r                       m32104ut_defconfig
 m32r                     mappi3.smp_defconfig
 m32r                         opsput_defconfig
@@ -75,6 +71,7 @@ mn10300                     asb2364_defconfig
 openrisc                    or1ksim_defconfig
 tile                         tilegx_defconfig
 um                           x86_64_defconfig
+i386                             allmodconfig
 mips                              allnoconfig
 mips                      fuloong2e_defconfig
 mips                                   jz4740
@@ -118,10 +115,7 @@ arm                        shmobile_defconfig
 arm                           sunxi_defconfig
 arm64                             allnoconfig
 arm64                               defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
+x86_64                           allmodconfig
 x86_64                 randconfig-x007-201618
 x86_64                 randconfig-x005-201618
 x86_64                 randconfig-x001-201618
