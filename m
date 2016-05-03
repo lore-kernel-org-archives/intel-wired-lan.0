@@ -1,56 +1,84 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue,  3 May 2016 15:13:13 -0700
-Subject: [Intel-wired-lan] [next PATCH S36 05/12] i40e: lie to the VF
+Date: Tue,  3 May 2016 15:13:09 -0700
+Subject: [Intel-wired-lan] [next PATCH S36 01/12] i40e: Add support for
+	disabling all link and change bits needed for PHY interactions.
 In-Reply-To: <1462313600-3123-1-git-send-email-bimmy.pujari@intel.com>
 References: <1462313600-3123-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1462313600-3123-6-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1462313600-3123-2-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+From: Kevin Scott <kevin.c.scott@intel.com>
 
-If an untrusted VF attempts to configure promiscuous mode, log a message
-pointing out its naughty behavior. But then, instead of returning an
-error to the offender, just lie to it and say everything's OK. It will
-continue on its way, thinking it's in promiscuous mode, but receiving no
-packets except its own.
+Add flag to tell firmware to disable link on all ports.
 
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Change-ID: I63369215b1720f3c531eedfc06af86ff8c0e3dc8
+This patch changes the bits set for telling firmware the PHY needs
+to be modified by driver.  Without this patch, the setting will only
+set that mode for the current port on the device.  Because the
+MDIO interface is common for the copper device. The command needs to
+set the mode for all ports.
+
+Signed-off-by: Kevin Scott <kevin.c.scott@intel.com>
+Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
+Change-ID: I8baa7da91d384291ac95b41ae1a516604f8eb67f
 ---
-Testing Hints : Configure promiscuous mode on a non-trusted VF and
-observe the results. Make sure trusted VFs still work.
+Testing Hints :
+Test by blinking led on one
+or more ports on Fort Pond device and do something to interact
+with the other PHY's on the same device at the same time, like
+lanconf and Dump PHY NVM.
 
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h            | 4 +++-
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h | 3 +++
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c    | 2 +-
+ 3 files changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 8ab029d..333945c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1474,12 +1474,16 @@ static int i40e_vc_config_promiscuous_mode_msg(struct i40e_vf *vf,
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 7f52bfe..0d9038f 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -111,7 +111,9 @@
+ #define I40E_OEM_VER_PATCH_MASK    0xff
+ #define I40E_OEM_VER_BUILD_SHIFT   8
+ #define I40E_OEM_VER_SHIFT         24
+-#define I40E_PHY_DEBUG_PORT        BIT(4)
++#define I40E_PHY_DEBUG_ALL \
++	(I40E_AQ_PHY_DEBUG_DISABLE_LINK_FW | \
++	I40E_AQ_PHY_DEBUG_DISABLE_ALL_LINK_FW)
  
- 	vsi = i40e_find_vsi_from_id(pf, info->vsi_id);
- 	if (!test_bit(I40E_VF_STAT_ACTIVE, &vf->vf_states) ||
--	    !test_bit(I40E_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps) ||
- 	    !i40e_vc_isvalid_vsi_id(vf, info->vsi_id)) {
-+		aq_ret = I40E_ERR_PARAM;
-+		goto error_param;
-+	}
-+	if (!test_bit(I40E_VIRTCHNL_VF_CAP_PRIVILEGE, &vf->vf_caps)) {
- 		dev_err(&pf->pdev->dev,
--			"VF %d doesn't meet requirements to enter promiscuous mode\n",
-+			"Unprivileged VF %d is attempting to configure promiscuous mode\n",
- 			vf->vf_id);
--		aq_ret = I40E_ERR_PARAM;
-+		/* Lie to the VF on purpose. */
-+		aq_ret = 0;
- 		goto error_param;
- 	}
- 	/* Multicast promiscuous handling*/
+ /* The values in here are decimal coded as hex as is the case in the NVM map*/
+ #define I40E_CURRENT_NVM_VERSION_HI 0x2
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+index eacbe74..11cf1a5 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+@@ -1833,7 +1833,10 @@ struct i40e_aqc_set_phy_debug {
+ #define I40E_AQ_PHY_DEBUG_RESET_EXTERNAL_NONE	0x00
+ #define I40E_AQ_PHY_DEBUG_RESET_EXTERNAL_HARD	0x01
+ #define I40E_AQ_PHY_DEBUG_RESET_EXTERNAL_SOFT	0x02
++/* Disable link manageability on a single port */
+ #define I40E_AQ_PHY_DEBUG_DISABLE_LINK_FW	0x10
++/* Disable link manageability on all ports */
++#define I40E_AQ_PHY_DEBUG_DISABLE_ALL_LINK_FW	0x20
+ 	u8	reserved[15];
+ };
+ 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 0a5374e..8460723 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -1880,7 +1880,7 @@ static int i40e_set_phys_id(struct net_device *netdev,
+ 		if (!(pf->flags & I40E_FLAG_HAVE_10GBASET_PHY)) {
+ 			pf->led_status = i40e_led_get(hw);
+ 		} else {
+-			i40e_aq_set_phy_debug(hw, I40E_PHY_DEBUG_PORT, NULL);
++			i40e_aq_set_phy_debug(hw, I40E_PHY_DEBUG_ALL, NULL);
+ 			ret = i40e_led_get_phy(hw, &temp_status,
+ 					       &pf->phy_led_val);
+ 			pf->led_status = temp_status;
 -- 
 2.4.11
 
