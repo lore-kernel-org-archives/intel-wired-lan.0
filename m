@@ -1,93 +1,148 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 3 May 2016 21:13:23 +0000
-Subject: [Intel-wired-lan] ixgbe Tx Unit Hangs seen when l2-fwd-offload
- is enabled
-In-Reply-To: <1462307693.2506.6.camel@intel.com>
-References: <5728E6DA.2050909@intel.com> <1462307693.2506.6.camel@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D57D1@ORSMSX104.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 04 May 2016 05:46:30 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
+ 26879da58711aa604a1b866cbeedd7e0f78f90ad BUILD DONE
+Message-ID: <57291c36.rupuIpQMNfp/ya0A%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-It still does it even with the latest tree pulled, however if I create the macvlan, bring it up, and THEN enable l2-fwd-offload, I don't get the tx hang. If I try to create another macvlan with l2-fwd-offload enabled, I get the tx hang.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
+26879da58711aa604a1b866cbeedd7e0f78f90ad  ipv6: add new struct ipcm6_cookie
 
+include/net/sock.h:442: warning: No description found for parameter 'sk_rcu'
 
+Error ids grouped by kconfigs:
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Jeff Kirsher
-> Sent: Tuesday, May 03, 2016 1:35 PM
-> To: Samudrala, Sridhar <sridhar.samudrala@intel.com>; intel-wired-
-> lan at lists.osuosl.org
-> Subject: Re: [Intel-wired-lan] ixgbe Tx Unit Hangs seen when l2-fwd-offload
-> is enabled
-> 
-> On Tue, 2016-05-03 at 10:58 -0700, Samudrala, Sridhar wrote:
-> > With the latest davem's next-next or Jeff's dev-queue branch (4.6.0-
-> > rc5+), I am seeing Tx Unit Hangs when
-> > using offloaded macvlans.
-> >
-> > Here is a simple sequence of commands that can reproduce this issue.
-> > 	ethtool -K p4p1 l2-fwd-offload on
-> > 	ip link add link p4p1 name mvlan_1 type macvlan
-> > 	ip link set mvlan_1 up
-> >
-> > Here is the kernel log when this happens.
-> >
-> > May 03 10:45:01 sri02 kernel: ixgbe 0000:1f:00.0 p4p1: NIC Link is Up
-> > 10 Gbps, Flow Control: RX/TX
-> > May 03 10:45:01 sri02 kernel: IPv6: ADDRCONF(NETDEV_CHANGE): p4p1:
-> > link becomes ready
-> > May 03 10:45:30 sri02 kernel: ixgbe 0000:1f:00.0: removed PHC on p4p1
-> > May 03 10:45:30 sri02 kernel: ixgbe 0000:1f:00.0: Multiqueue Enabled:
-> > Rx Queue count = 2, Tx Queue count = 2 May 03 10:45:30 sri02 kernel:
-> > ixgbe 0000:1f:00.0 p4p1: Could not enable Tx Queue 0 May 03 10:45:30
-> > sri02 kernel: ixgbe 0000:1f:00.0 p4p1: Could not enable Tx Queue 2 May
-> > 03 10:45:30 sri02 kernel: ixgbe 0000:1f:00.0: registered PHC device on
-> > p4p1 May 03 10:45:30 sri02 kernel: ixgbe 0000:1f:00.0 p4p1: detected
-> > SFP+:
-> > 5
-> > May 03 10:45:31 sri02 kernel: ixgbe 0000:1f:00.0 p4p1: NIC Link is Up
-> > 10 Gbps, Flow Control: RX/TX
-> > May 03 10:45:33 sri02 kernel: ixgbe 0000:1f:00.0 p4p1: Detected Tx
-> > Unit Hang
-> > ????????????????????????????????Tx Queue?????????????<0>
-> > ????????????????????????????????TDH, TDT?????????????<0>, <4>
-> > ????????????????????????????????next_to_use??????????<4>
-> > ????????????????????????????????next_to_clean????????<0>
-> > ??????????????????????????????tx_buffer_info[next_to_clean]
-> > ????????????????????????????????time_stamp???????????<10005560a>
-> > ????????????????????????????????jiffies??????????????<100055df4> May
-> > 03 10:45:33 sri02 kernel: ixgbe 0000:1f:00.0 p4p1: tx hang 1 detected
-> > on queue 0, resetting adapter May 03 10:45:33 sri02 kernel: ixgbe
-> > 0000:1f:00.0 p4p1: initiating reset due to tx timeout May 03 10:45:33
-> > sri02 kernel: ixgbe 0000:1f:00.0 p4p1: Reset adapter May 03 10:45:35
-> > sri02 kernel: ixgbe 0000:1f:00.0 p4p1: Could not enable Tx Queue 0 May
-> > 03 10:45:35 sri02 kernel: ixgbe 0000:1f:00.0 p4p1: Could not enable Tx
-> > Queue 2 May 03 10:45:35 sri02 kernel: ixgbe 0000:1f:00.0 p4p1:
-> > detected SFP+:
-> > 5
-> > May 03 10:45:36 sri02 kernel: ixgbe 0000:1f:00.0 p4p1: NIC Link is Up
-> > 10 Gbps, Flow Control: RX/TX
-> > May 03 10:45:38 sri02 kernel: ixgbe 0000:1f:00.0 p4p1: Detected Tx
-> > Unit Hang
-> > ????????????????????????????????Tx Queue?????????????<0>
-> > ????????????????????????????????TDH, TDT?????????????<0>, <2>
-> > ????????????????????????????????next_to_use??????????<2>
-> > ????????????????????????????????next_to_clean????????<0>
-> > ??????????????????????????????tx_buffer_info[next_to_clean]
-> > ????????????????????????????????time_stamp???????????<1000569a0>
-> > ????????????????????????????????jiffies??????????????<1000571b0> May
-> > 03 10:45:38 sri02 kernel: ixgbe 0000:1f:00.0 p4p1: tx hang 2 detected
-> > on queue 0, resetting adapter May 03 10:45:38 sri02 kernel: ixgbe
-> > 0000:1f:00.0 p4p1: initiating reset due to tx timeout May 03 10:45:38
-> > sri02 kernel: ixgbe 0000:1f:00.0 p4p1: Reset adapter May 03 10:45:40
-> > sri02 kernel: Virtual device mvlan_1 asks to queue packet!
-> > May 03 10:45:40 sri02 kernel: ixgbe 0000:1f:00.0 p4p1: Could not
-> > enable Tx Queue 0 May 03 10:45:40 sri02 kernel: ixgbe 0000:1f:00.0
-> > p4p1: Could not enable Tx Queue 2
-> 
-> I just updated my tree with Dave's latest just now, so if you want to re-pull
-> and see if it still exists, please.
+recent_errors
+??? i386-allnoconfig
+    ??? include-net-sock.h:warning:No-description-found-for-parameter-sk_rcu
+
+elapsed time: 84m
+
+configs tested: 119
+
+i386                     randconfig-a0-201618
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64       allyesdebian+CONFIG_DEBUG_INFO_REDUCED
+x86_64                                nfsroot
+i386                               tinyconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+arm                          iop33x_defconfig
+arm                        multi_v5_defconfig
+sparc                            allyesconfig
+um                             i386_defconfig
+x86_64                 randconfig-x018-201618
+x86_64                 randconfig-x011-201618
+x86_64                 randconfig-x010-201618
+x86_64                 randconfig-x014-201618
+x86_64                 randconfig-x016-201618
+x86_64                 randconfig-x012-201618
+x86_64                 randconfig-x019-201618
+x86_64                 randconfig-x013-201618
+x86_64                 randconfig-x015-201618
+x86_64                 randconfig-x017-201618
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201618
+i386                     randconfig-s1-201618
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201618
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201618
+i386                     randconfig-i1-201618
+x86_64                         customconfig-0
+x86_64                         customconfig-1
+i386                   randconfig-x013-201618
+i386                   randconfig-x012-201618
+i386                   randconfig-x011-201618
+i386                   randconfig-x018-201618
+i386                   randconfig-x019-201618
+i386                   randconfig-x015-201618
+i386                   randconfig-x016-201618
+i386                   randconfig-x010-201618
+i386                   randconfig-x014-201618
+i386                   randconfig-x017-201618
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201618
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                 randconfig-x007-201618
+x86_64                 randconfig-x005-201618
+x86_64                 randconfig-x001-201618
+x86_64                 randconfig-x000-201618
+x86_64                 randconfig-x006-201618
+x86_64                 randconfig-x009-201618
+x86_64                 randconfig-x008-201618
+x86_64                 randconfig-x004-201618
+x86_64                 randconfig-x002-201618
+x86_64                 randconfig-x003-201618
+i386                     randconfig-r0-201618
+i386                   randconfig-x003-201618
+i386                   randconfig-x000-201618
+i386                   randconfig-x004-201618
+i386                   randconfig-x005-201618
+i386                   randconfig-x009-201618
+i386                   randconfig-x006-201618
+i386                   randconfig-x002-201618
+i386                   randconfig-x001-201618
+i386                   randconfig-x008-201618
+i386                   randconfig-x007-201618
+
+Thanks,
+Fengguang
