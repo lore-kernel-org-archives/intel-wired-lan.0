@@ -1,368 +1,98 @@
-From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue,  3 May 2016 15:13:14 -0700
-Subject: [Intel-wired-lan] [next PATCH S36 06/12] i40e: Refactor ethtool
-	get_settings
-In-Reply-To: <1462313600-3123-1-git-send-email-bimmy.pujari@intel.com>
-References: <1462313600-3123-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1462313600-3123-7-git-send-email-bimmy.pujari@intel.com>
+From: Samudrala, Sridhar <sridhar.samudrala@intel.com>
+Date: Tue, 03 May 2016 16:16:07 -0700
+Subject: [Intel-wired-lan] ixgbe Tx Unit Hangs seen when l2-fwd-offload
+ is enabled
+In-Reply-To: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D57D1@ORSMSX104.amr.corp.intel.com>
+References: <5728E6DA.2050909@intel.com> <1462307693.2506.6.camel@intel.com>
+ <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D57D1@ORSMSX104.amr.corp.intel.com>
+Message-ID: <57293137.3070404@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Catherine Sullivan <catherine.sullivan@intel.com>
 
-Previously we were only looking at the FW supported phy types if link
-was down, because we want to be more specific when link is up. This
-refactor changes this. When link is down, we still rely on the FW
-supported phy types, but when link is up, we select the possible
-supported link modes from what we know about the current phy type, and
-AND that with the FW supported phy types.
 
-Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-Change-ID: Ice5dad83f2a17932b0b8b59f07439696ad6aa013
----
-Testing Hints:
-Make sure that various cables and cards report the
-correct supported/advertised link settings with ethtool.
+On 5/3/2016 2:13 PM, Bowers, AndrewX wrote:
+> It still does it even with the latest tree pulled, however if I create the macvlan, bring it up, and THEN enable l2-fwd-offload, I don't get the tx hang. If I try to create another macvlan with l2-fwd-offload enabled, I get the tx hang.
 
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 258 +++++++++++++------------
- 1 file changed, 135 insertions(+), 123 deletions(-)
+Yes. I too see this issue even with the latest tree.
+I remember not seeing this issue with 4.6.0-rc1 based tree.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index a9ff781..dce812e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -262,6 +262,110 @@ static void i40e_partition_setting_complaint(struct i40e_pf *pf)
- }
- 
- /**
-+ * i40e_phy_type_to_ethtool - convert the phy_types to ethtool link modes
-+ * @phy_types: phy types to convert
-+ * @supported: pointer to the ethtool supported variable to fill in
-+ * @advertising: pointer to the ethtool advertising variable to fill in
-+ *
-+ **/
-+static void i40e_phy_type_to_ethtool(struct i40e_pf *pf, u32 *supported,
-+				     u32 *advertising)
-+{
-+	enum i40e_aq_capabilities_phy_type phy_types = pf->hw.phy.phy_types;
-+
-+	*supported = 0x0;
-+	*advertising = 0x0;
-+
-+	if (phy_types & I40E_CAP_PHY_TYPE_SGMII) {
-+		*supported |= SUPPORTED_Autoneg |
-+			     SUPPORTED_1000baseT_Full;
-+		*advertising |= ADVERTISED_Autoneg |
-+			       ADVERTISED_1000baseT_Full;
-+		if (pf->flags & I40E_FLAG_100M_SGMII_CAPABLE) {
-+			*supported |= SUPPORTED_100baseT_Full;
-+			*advertising |= ADVERTISED_100baseT_Full;
-+		}
-+	}
-+	if (phy_types & I40E_CAP_PHY_TYPE_XAUI ||
-+	    phy_types & I40E_CAP_PHY_TYPE_XFI ||
-+	    phy_types & I40E_CAP_PHY_TYPE_SFI ||
-+	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_SFPP_CU ||
-+	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_AOC)
-+		*supported |= SUPPORTED_10000baseT_Full;
-+	if (phy_types & I40E_CAP_PHY_TYPE_10GBASE_CR1_CU ||
-+	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_CR1 ||
-+	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_T ||
-+	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_SR ||
-+	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_LR) {
-+		*supported |= SUPPORTED_Autoneg |
-+			     SUPPORTED_10000baseT_Full;
-+		*advertising |= ADVERTISED_Autoneg |
-+			       ADVERTISED_10000baseT_Full;
-+	}
-+	if (phy_types & I40E_CAP_PHY_TYPE_XLAUI ||
-+	    phy_types & I40E_CAP_PHY_TYPE_XLPPI ||
-+	    phy_types & I40E_CAP_PHY_TYPE_40GBASE_AOC)
-+		*supported |= SUPPORTED_40000baseCR4_Full;
-+	if (phy_types & I40E_CAP_PHY_TYPE_40GBASE_CR4_CU ||
-+	    phy_types & I40E_CAP_PHY_TYPE_40GBASE_CR4) {
-+		*supported |= SUPPORTED_Autoneg |
-+			     SUPPORTED_40000baseCR4_Full;
-+		*advertising |= ADVERTISED_Autoneg |
-+			       ADVERTISED_40000baseCR4_Full;
-+	}
-+	if ((phy_types & I40E_CAP_PHY_TYPE_100BASE_TX) &&
-+	    !(phy_types & I40E_CAP_PHY_TYPE_1000BASE_T)) {
-+		*supported |= SUPPORTED_Autoneg |
-+			     SUPPORTED_100baseT_Full;
-+		*advertising |= ADVERTISED_Autoneg |
-+			       ADVERTISED_100baseT_Full;
-+	}
-+	if (phy_types & I40E_CAP_PHY_TYPE_1000BASE_T ||
-+	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_SX ||
-+	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_LX ||
-+	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_T_OPTICAL) {
-+		*supported |= SUPPORTED_Autoneg |
-+			     SUPPORTED_1000baseT_Full;
-+		*advertising |= ADVERTISED_Autoneg |
-+			       ADVERTISED_1000baseT_Full;
-+	}
-+	if (phy_types & I40E_CAP_PHY_TYPE_40GBASE_SR4)
-+		*supported |= SUPPORTED_40000baseSR4_Full;
-+	if (phy_types & I40E_CAP_PHY_TYPE_40GBASE_LR4)
-+		*supported |= SUPPORTED_40000baseLR4_Full;
-+	if (phy_types & I40E_CAP_PHY_TYPE_40GBASE_KR4) {
-+		*supported |= SUPPORTED_40000baseKR4_Full |
-+			     SUPPORTED_Autoneg;
-+		*advertising |= ADVERTISED_40000baseKR4_Full |
-+			       ADVERTISED_Autoneg;
-+	}
-+	if (phy_types & I40E_CAP_PHY_TYPE_20GBASE_KR2) {
-+		*supported |= SUPPORTED_20000baseKR2_Full |
-+			     SUPPORTED_Autoneg;
-+		*advertising |= ADVERTISED_20000baseKR2_Full |
-+			       ADVERTISED_Autoneg;
-+	}
-+	if (phy_types & I40E_CAP_PHY_TYPE_10GBASE_KR) {
-+		*supported |= SUPPORTED_10000baseKR_Full |
-+			     SUPPORTED_Autoneg;
-+		*advertising |= ADVERTISED_10000baseKR_Full |
-+			       ADVERTISED_Autoneg;
-+	}
-+	if (phy_types & I40E_CAP_PHY_TYPE_10GBASE_KX4) {
-+		*supported |= SUPPORTED_10000baseKX4_Full |
-+			     SUPPORTED_Autoneg;
-+		*advertising |= ADVERTISED_10000baseKX4_Full |
-+			       ADVERTISED_Autoneg;
-+	}
-+	if (phy_types & I40E_CAP_PHY_TYPE_1000BASE_KX) {
-+		*supported |= SUPPORTED_1000baseKX_Full |
-+			     SUPPORTED_Autoneg;
-+		*advertising |= ADVERTISED_1000baseKX_Full |
-+			       ADVERTISED_Autoneg;
-+	}
-+}
-+
-+/**
-  * i40e_get_settings_link_up - Get the Link settings for when link is up
-  * @hw: hw structure
-  * @ecmd: ethtool command to fill in
-@@ -275,6 +379,8 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
- {
- 	struct i40e_link_status *hw_link_info = &hw->phy.link_info;
- 	u32 link_speed = hw_link_info->link_speed;
-+	u32 e_advertising = 0x0;
-+	u32 e_supported = 0x0;
- 
- 	/* Initialize supported and advertised settings based on phy settings */
- 	switch (hw_link_info->phy_type) {
-@@ -315,21 +421,18 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
- 		break;
- 	case I40E_PHY_TYPE_10GBASE_T:
- 	case I40E_PHY_TYPE_1000BASE_T:
-+	case I40E_PHY_TYPE_100BASE_TX:
- 		ecmd->supported = SUPPORTED_Autoneg |
- 				  SUPPORTED_10000baseT_Full |
--				  SUPPORTED_1000baseT_Full;
-+				  SUPPORTED_1000baseT_Full |
-+				  SUPPORTED_100baseT_Full;
- 		ecmd->advertising = ADVERTISED_Autoneg;
- 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_10GB)
- 			ecmd->advertising |= ADVERTISED_10000baseT_Full;
- 		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_1GB)
- 			ecmd->advertising |= ADVERTISED_1000baseT_Full;
--		/* adding 100baseT support for 10GBASET_PHY */
--		if (pf->flags & I40E_FLAG_HAVE_10GBASET_PHY) {
--			ecmd->supported |= SUPPORTED_100baseT_Full;
--			ecmd->advertising |= ADVERTISED_100baseT_Full |
--					     ADVERTISED_1000baseT_Full |
--					     ADVERTISED_10000baseT_Full;
--		}
-+		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_100MB)
-+			ecmd->advertising |= ADVERTISED_100baseT_Full;
- 		break;
- 	case I40E_PHY_TYPE_1000BASE_T_OPTICAL:
- 		ecmd->supported = SUPPORTED_Autoneg |
-@@ -337,21 +440,6 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
- 		ecmd->advertising = ADVERTISED_Autoneg |
- 				    ADVERTISED_1000baseT_Full;
- 		break;
--	case I40E_PHY_TYPE_100BASE_TX:
--		ecmd->supported = SUPPORTED_Autoneg |
--				  SUPPORTED_100baseT_Full;
--		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_100MB)
--			ecmd->advertising |= ADVERTISED_100baseT_Full;
--		/* firmware detects 10G phy as 100M phy at 100M speed */
--		if (pf->flags & I40E_FLAG_HAVE_10GBASET_PHY) {
--			ecmd->supported |= SUPPORTED_10000baseT_Full |
--					   SUPPORTED_1000baseT_Full;
--			ecmd->advertising |= ADVERTISED_Autoneg |
--					     ADVERTISED_100baseT_Full |
--					     ADVERTISED_1000baseT_Full |
--					     ADVERTISED_10000baseT_Full;
--		}
--		break;
- 	case I40E_PHY_TYPE_10GBASE_CR1_CU:
- 	case I40E_PHY_TYPE_10GBASE_CR1:
- 		ecmd->supported = SUPPORTED_Autoneg |
-@@ -378,14 +466,23 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
- 				ecmd->advertising |= ADVERTISED_100baseT_Full;
- 		}
- 		break;
--	/* Backplane is set based on supported phy types in get_settings
--	 * so don't set anything here but don't warn either
--	 */
- 	case I40E_PHY_TYPE_40GBASE_KR4:
- 	case I40E_PHY_TYPE_20GBASE_KR2:
- 	case I40E_PHY_TYPE_10GBASE_KR:
- 	case I40E_PHY_TYPE_10GBASE_KX4:
- 	case I40E_PHY_TYPE_1000BASE_KX:
-+		ecmd->supported |= SUPPORTED_40000baseKR4_Full |
-+				   SUPPORTED_20000baseKR2_Full |
-+				   SUPPORTED_10000baseKR_Full |
-+				   SUPPORTED_10000baseKX4_Full |
-+				   SUPPORTED_1000baseKX_Full |
-+				   SUPPORTED_Autoneg;
-+		ecmd->advertising |= ADVERTISED_40000baseKR4_Full |
-+				     ADVERTISED_20000baseKR2_Full |
-+				     ADVERTISED_10000baseKR_Full |
-+				     ADVERTISED_10000baseKX4_Full |
-+				     ADVERTISED_1000baseKX_Full |
-+				     ADVERTISED_Autoneg;
- 		break;
- 	default:
- 		/* if we got here and link is up something bad is afoot */
-@@ -393,6 +490,16 @@ static void i40e_get_settings_link_up(struct i40e_hw *hw,
- 			    hw_link_info->phy_type);
- 	}
- 
-+	/* Now that we've worked out everything that could be supported by the
-+	 * current phy type, get what is supported by the NVM and and them to
-+	 * get what is truly supported
-+	 */
-+	i40e_phy_type_to_ethtool(pf, &e_supported,
-+				 &e_advertising);
-+
-+	ecmd->supported = ecmd->supported & e_supported;
-+	ecmd->advertising = ecmd->advertising & e_advertising;
-+
- 	/* Set speed and duplex */
- 	switch (link_speed) {
- 	case I40E_LINK_SPEED_40GB:
-@@ -427,74 +534,11 @@ static void i40e_get_settings_link_down(struct i40e_hw *hw,
- 					struct ethtool_cmd *ecmd,
- 					struct i40e_pf *pf)
- {
--	enum i40e_aq_capabilities_phy_type phy_types = hw->phy.phy_types;
--
- 	/* link is down and the driver needs to fall back on
- 	 * supported phy types to figure out what info to display
- 	 */
--	ecmd->supported = 0x0;
--	ecmd->advertising = 0x0;
--	if (phy_types & I40E_CAP_PHY_TYPE_SGMII) {
--		ecmd->supported |= SUPPORTED_Autoneg |
--				   SUPPORTED_1000baseT_Full;
--		ecmd->advertising |= ADVERTISED_Autoneg |
--				     ADVERTISED_1000baseT_Full;
--		if (pf->hw.mac.type == I40E_MAC_X722) {
--			ecmd->supported |= SUPPORTED_100baseT_Full;
--			ecmd->advertising |= ADVERTISED_100baseT_Full;
--			if (pf->flags & I40E_FLAG_100M_SGMII_CAPABLE) {
--				ecmd->supported |= SUPPORTED_100baseT_Full;
--				ecmd->advertising |= ADVERTISED_100baseT_Full;
--			}
--		}
--	}
--	if (phy_types & I40E_CAP_PHY_TYPE_XAUI ||
--	    phy_types & I40E_CAP_PHY_TYPE_XFI ||
--	    phy_types & I40E_CAP_PHY_TYPE_SFI ||
--	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_SFPP_CU ||
--	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_AOC)
--		ecmd->supported |= SUPPORTED_10000baseT_Full;
--	if (phy_types & I40E_CAP_PHY_TYPE_10GBASE_CR1_CU ||
--	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_CR1 ||
--	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_T ||
--	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_SR ||
--	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_LR) {
--		ecmd->supported |= SUPPORTED_Autoneg |
--				   SUPPORTED_10000baseT_Full;
--		ecmd->advertising |= ADVERTISED_Autoneg |
--				     ADVERTISED_10000baseT_Full;
--	}
--	if (phy_types & I40E_CAP_PHY_TYPE_XLAUI ||
--	    phy_types & I40E_CAP_PHY_TYPE_XLPPI ||
--	    phy_types & I40E_CAP_PHY_TYPE_40GBASE_AOC)
--		ecmd->supported |= SUPPORTED_40000baseCR4_Full;
--	if (phy_types & I40E_CAP_PHY_TYPE_40GBASE_CR4_CU ||
--	    phy_types & I40E_CAP_PHY_TYPE_40GBASE_CR4) {
--		ecmd->supported |= SUPPORTED_Autoneg |
--				  SUPPORTED_40000baseCR4_Full;
--		ecmd->advertising |= ADVERTISED_Autoneg |
--				    ADVERTISED_40000baseCR4_Full;
--	}
--	if ((phy_types & I40E_CAP_PHY_TYPE_100BASE_TX) &&
--	    !(phy_types & I40E_CAP_PHY_TYPE_1000BASE_T)) {
--		ecmd->supported |= SUPPORTED_Autoneg |
--				   SUPPORTED_100baseT_Full;
--		ecmd->advertising |= ADVERTISED_Autoneg |
--				     ADVERTISED_100baseT_Full;
--	}
--	if (phy_types & I40E_CAP_PHY_TYPE_1000BASE_T ||
--	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_SX ||
--	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_LX ||
--	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_T_OPTICAL) {
--		ecmd->supported |= SUPPORTED_Autoneg |
--				   SUPPORTED_1000baseT_Full;
--		ecmd->advertising |= ADVERTISED_Autoneg |
--				     ADVERTISED_1000baseT_Full;
--	}
--	if (phy_types & I40E_CAP_PHY_TYPE_40GBASE_SR4)
--		ecmd->supported |= SUPPORTED_40000baseSR4_Full;
--	if (phy_types & I40E_CAP_PHY_TYPE_40GBASE_LR4)
--		ecmd->supported |= SUPPORTED_40000baseLR4_Full;
-+	i40e_phy_type_to_ethtool(pf, &ecmd->supported,
-+				 &ecmd->advertising);
- 
- 	/* With no link speed and duplex are unknown */
- 	ethtool_cmd_speed_set(ecmd, SPEED_UNKNOWN);
-@@ -523,38 +567,6 @@ static int i40e_get_settings(struct net_device *netdev,
- 		i40e_get_settings_link_down(hw, ecmd, pf);
- 
- 	/* Now set the settings that don't rely on link being up/down */
--
--	/* For backplane, supported and advertised are only reliant on the
--	 * phy types the NVM specifies are supported.
--	 */
--	if (hw->device_id == I40E_DEV_ID_KX_B ||
--	    hw->device_id == I40E_DEV_ID_KX_C ||
--	    hw->device_id == I40E_DEV_ID_20G_KR2 ||
--	    hw->device_id ==  I40E_DEV_ID_20G_KR2_A) {
--		ecmd->supported = SUPPORTED_Autoneg;
--		ecmd->advertising = ADVERTISED_Autoneg;
--		if (hw->phy.phy_types & I40E_CAP_PHY_TYPE_40GBASE_KR4) {
--			ecmd->supported |= SUPPORTED_40000baseKR4_Full;
--			ecmd->advertising |= ADVERTISED_40000baseKR4_Full;
--		}
--		if (hw->phy.phy_types & I40E_CAP_PHY_TYPE_20GBASE_KR2) {
--			ecmd->supported |= SUPPORTED_20000baseKR2_Full;
--			ecmd->advertising |= ADVERTISED_20000baseKR2_Full;
--		}
--		if (hw->phy.phy_types & I40E_CAP_PHY_TYPE_10GBASE_KR) {
--			ecmd->supported |= SUPPORTED_10000baseKR_Full;
--			ecmd->advertising |= ADVERTISED_10000baseKR_Full;
--		}
--		if (hw->phy.phy_types & I40E_CAP_PHY_TYPE_10GBASE_KX4) {
--			ecmd->supported |= SUPPORTED_10000baseKX4_Full;
--			ecmd->advertising |= ADVERTISED_10000baseKX4_Full;
--		}
--		if (hw->phy.phy_types & I40E_CAP_PHY_TYPE_1000BASE_KX) {
--			ecmd->supported |= SUPPORTED_1000baseKX_Full;
--			ecmd->advertising |= ADVERTISED_1000baseKX_Full;
--		}
--	}
--
- 	/* Set autoneg settings */
- 	ecmd->autoneg = ((hw_link_info->an_info & I40E_AQ_AN_COMPLETED) ?
- 			  AUTONEG_ENABLE : AUTONEG_DISABLE);
--- 
-2.4.11
+>> -----Original Message-----
+>> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+>> Behalf Of Jeff Kirsher
+>> Sent: Tuesday, May 03, 2016 1:35 PM
+>> To: Samudrala, Sridhar <sridhar.samudrala@intel.com>; intel-wired-
+>> lan at lists.osuosl.org
+>> Subject: Re: [Intel-wired-lan] ixgbe Tx Unit Hangs seen when l2-fwd-offload
+>> is enabled
+>>
+>> On Tue, 2016-05-03 at 10:58 -0700, Samudrala, Sridhar wrote:
+>>> With the latest davem's next-next or Jeff's dev-queue branch (4.6.0-
+>>> rc5+), I am seeing Tx Unit Hangs when
+>>> using offloaded macvlans.
+>>>
+>>> Here is a simple sequence of commands that can reproduce this issue.
+>>> 	ethtool -K p4p1 l2-fwd-offload on
+>>> 	ip link add link p4p1 name mvlan_1 type macvlan
+>>> 	ip link set mvlan_1 up
+>>>
+>>> Here is the kernel log when this happens.
+>>>
+>>> May 03 10:45:01 sri02 kernel: ixgbe 0000:1f:00.0 p4p1: NIC Link is Up
+>>> 10 Gbps, Flow Control: RX/TX
+>>> May 03 10:45:01 sri02 kernel: IPv6: ADDRCONF(NETDEV_CHANGE): p4p1:
+>>> link becomes ready
+>>> May 03 10:45:30 sri02 kernel: ixgbe 0000:1f:00.0: removed PHC on p4p1
+>>> May 03 10:45:30 sri02 kernel: ixgbe 0000:1f:00.0: Multiqueue Enabled:
+>>> Rx Queue count = 2, Tx Queue count = 2 May 03 10:45:30 sri02 kernel:
+>>> ixgbe 0000:1f:00.0 p4p1: Could not enable Tx Queue 0 May 03 10:45:30
+>>> sri02 kernel: ixgbe 0000:1f:00.0 p4p1: Could not enable Tx Queue 2 May
+>>> 03 10:45:30 sri02 kernel: ixgbe 0000:1f:00.0: registered PHC device on
+>>> p4p1 May 03 10:45:30 sri02 kernel: ixgbe 0000:1f:00.0 p4p1: detected
+>>> SFP+:
+>>> 5
+>>> May 03 10:45:31 sri02 kernel: ixgbe 0000:1f:00.0 p4p1: NIC Link is Up
+>>> 10 Gbps, Flow Control: RX/TX
+>>> May 03 10:45:33 sri02 kernel: ixgbe 0000:1f:00.0 p4p1: Detected Tx
+>>> Unit Hang
+>>>                                  Tx Queue             <0>
+>>>                                  TDH, TDT             <0>, <4>
+>>>                                  next_to_use          <4>
+>>>                                  next_to_clean        <0>
+>>>                                tx_buffer_info[next_to_clean]
+>>>                                  time_stamp           <10005560a>
+>>>                                  jiffies              <100055df4> May
+>>> 03 10:45:33 sri02 kernel: ixgbe 0000:1f:00.0 p4p1: tx hang 1 detected
+>>> on queue 0, resetting adapter May 03 10:45:33 sri02 kernel: ixgbe
+>>> 0000:1f:00.0 p4p1: initiating reset due to tx timeout May 03 10:45:33
+>>> sri02 kernel: ixgbe 0000:1f:00.0 p4p1: Reset adapter May 03 10:45:35
+>>> sri02 kernel: ixgbe 0000:1f:00.0 p4p1: Could not enable Tx Queue 0 May
+>>> 03 10:45:35 sri02 kernel: ixgbe 0000:1f:00.0 p4p1: Could not enable Tx
+>>> Queue 2 May 03 10:45:35 sri02 kernel: ixgbe 0000:1f:00.0 p4p1:
+>>> detected SFP+:
+>>> 5
+>>> May 03 10:45:36 sri02 kernel: ixgbe 0000:1f:00.0 p4p1: NIC Link is Up
+>>> 10 Gbps, Flow Control: RX/TX
+>>> May 03 10:45:38 sri02 kernel: ixgbe 0000:1f:00.0 p4p1: Detected Tx
+>>> Unit Hang
+>>>                                  Tx Queue             <0>
+>>>                                  TDH, TDT             <0>, <2>
+>>>                                  next_to_use          <2>
+>>>                                  next_to_clean        <0>
+>>>                                tx_buffer_info[next_to_clean]
+>>>                                  time_stamp           <1000569a0>
+>>>                                  jiffies              <1000571b0> May
+>>> 03 10:45:38 sri02 kernel: ixgbe 0000:1f:00.0 p4p1: tx hang 2 detected
+>>> on queue 0, resetting adapter May 03 10:45:38 sri02 kernel: ixgbe
+>>> 0000:1f:00.0 p4p1: initiating reset due to tx timeout May 03 10:45:38
+>>> sri02 kernel: ixgbe 0000:1f:00.0 p4p1: Reset adapter May 03 10:45:40
+>>> sri02 kernel: Virtual device mvlan_1 asks to queue packet!
+>>> May 03 10:45:40 sri02 kernel: ixgbe 0000:1f:00.0 p4p1: Could not
+>>> enable Tx Queue 0 May 03 10:45:40 sri02 kernel: ixgbe 0000:1f:00.0
+>>> p4p1: Could not enable Tx Queue 2
+>> I just updated my tree with Dave's latest just now, so if you want to re-pull
+>> and see if it still exists, please.
 
