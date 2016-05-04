@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 4 May 2016 16:09:24 +0000
-Subject: [Intel-wired-lan] [next PATCH S36 06/12] i40e: Refactor
-	ethtool	get_settings
-In-Reply-To: <1462313600-3123-7-git-send-email-bimmy.pujari@intel.com>
+Date: Wed, 4 May 2016 16:33:03 +0000
+Subject: [Intel-wired-lan] [next PATCH S36 08/12] i40e: Correct UDP
+ packet	header for non_tunnel-ipv6
+In-Reply-To: <1462313600-3123-9-git-send-email-bimmy.pujari@intel.com>
 References: <1462313600-3123-1-git-send-email-bimmy.pujari@intel.com>
- <1462313600-3123-7-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D59AE@ORSMSX104.amr.corp.intel.com>
+ <1462313600-3123-9-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D59C8@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,28 +17,17 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Tuesday, May 03, 2016 3:13 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S36 06/12] i40e: Refactor ethtool
-> get_settings
+> Subject: [Intel-wired-lan] [next PATCH S36 08/12] i40e: Correct UDP packet
+> header for non_tunnel-ipv6
 > 
-> From: Catherine Sullivan <catherine.sullivan@intel.com>
+> From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 > 
-> Previously we were only looking at the FW supported phy types if link was
-> down, because we want to be more specific when link is up. This refactor
-> changes this. When link is down, we still rely on the FW supported phy types,
-> but when link is up, we select the possible supported link modes from what
-> we know about the current phy type, and AND that with the FW supported
-> phy types.
+> This patch corrects Rx ptype payload layer for non_tunneled ipv6. It should
+> be layer 4 for UDP, instead of layer 3.
 > 
-> Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-> Change-ID: Ice5dad83f2a17932b0b8b59f07439696ad6aa013
+> Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+> Change-ID: I9382e4458ab3c4e58f6d2e9f195d5d4ee513805e
 > ---
-> Testing Hints:
-> Make sure that various cables and cards report the correct
-> supported/advertised link settings with ethtool.
-> 
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 258 +++++++++++++-------
-> -----
->  1 file changed, 135 insertions(+), 123 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_common.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-various cables and cards report the correct supported/advertised link settings with ethtool
