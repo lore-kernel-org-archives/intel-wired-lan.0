@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 4 May 2016 15:20:38 +0000
-Subject: [Intel-wired-lan] [next PATCH S36 01/12] i40e: Add support
-	for	disabling all link and change bits needed for PHY interactions.
-In-Reply-To: <1462313600-3123-2-git-send-email-bimmy.pujari@intel.com>
+Date: Wed, 4 May 2016 15:31:21 +0000
+Subject: [Intel-wired-lan] [next PATCH S36 02/12] i40e: Add allmulti
+ support	for the VF
+In-Reply-To: <1462313600-3123-3-git-send-email-bimmy.pujari@intel.com>
 References: <1462313600-3123-1-git-send-email-bimmy.pujari@intel.com>
- <1462313600-3123-2-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D5926@ORSMSX104.amr.corp.intel.com>
+ <1462313600-3123-3-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D5944@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,32 +17,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Tuesday, May 03, 2016 3:13 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S36 01/12] i40e: Add support for
-> disabling all link and change bits needed for PHY interactions.
+> Subject: [Intel-wired-lan] [next PATCH S36 02/12] i40e: Add allmulti support
+> for the VF
 > 
-> From: Kevin Scott <kevin.c.scott@intel.com>
+> From: Anjali Singhai Jain <anjali.singhai@intel.com>
 > 
-> Add flag to tell firmware to disable link on all ports.
+> This patch enables a feature to enable/disable all multicast for a trusted VF.
 > 
-> This patch changes the bits set for telling firmware the PHY needs to be
-> modified by driver.  Without this patch, the setting will only set that mode for
-> the current port on the device.  Because the MDIO interface is common for
-> the copper device. The command needs to set the mode for all ports.
-> 
-> Signed-off-by: Kevin Scott <kevin.c.scott@intel.com>
-> Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
-> Change-ID: I8baa7da91d384291ac95b41ae1a516604f8eb67f
+> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+> Change-Id: I926eba7f8850c8d40f8ad7e08bbe4056bbd3985f
 > ---
-> Testing Hints :
-> Test by blinking led on one
-> or more ports on Fort Pond device and do something to interact with the
-> other PHY's on the same device at the same time, like lanconf and Dump PHY
-> NVM.
-> 
->  drivers/net/ethernet/intel/i40e/i40e.h            | 4 +++-
->  drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h | 3 +++
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c    | 2 +-
->  3 files changed, 7 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/i40evf/i40evf.h          |  3 +++
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c     | 15 ++++++++++++++-
+>  drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c | 15 +++++++++++++--
+>  3 files changed, 30 insertions(+), 3 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Able to interact with PHY on multiple ports simultaneously
+Code changes present, compiles cleanly,  feature tested with subsequent patch
