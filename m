@@ -1,42 +1,23 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 05 May 2016 06:49:25 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
- aa8a8b05adfc72e562abe7ae5c6933906e0ed2e9 BUILD DONE
-Message-ID: <572a7c75.v+EgdNZBN9hEXIz/%fengguang.wu@intel.com>
+Date: Thu, 05 May 2016 07:19:55 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ fbc47542b53d4d5f43b5fc22f0ddc348c20d1ef8 BUILD SUCCESS
+Message-ID: <572a839b.E8z4lcNp0YAeRAAZ%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
-aa8a8b05adfc72e562abe7ae5c6933906e0ed2e9  Merge branch '10GbE' of git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+fbc47542b53d4d5f43b5fc22f0ddc348c20d1ef8  Subject: MAINTAINERS: Cleanup Intel Wired LAN maintainers list
 
-include/net/sock.h:442: warning: No description found for parameter 'sk_rcu'
-net/ipv4/udp.c:1705:9: sparse: incompatible types in comparison expression (different address spaces)
-net/ipv6/udp.c:756:9: sparse: incompatible types in comparison expression (different address spaces)
-net/tipc/bearer.c:560:48: sparse: incompatible types in comparison expression (different base types)
+elapsed time: 72m
 
-Error ids grouped by kconfigs:
-
-recent_errors
-??? i386-allnoconfig
-??? ??? include-net-sock.h:warning:No-description-found-for-parameter-sk_rcu
-??? x86_64-allmodconfig
-    ??? net-ipv4-udp.c:sparse:incompatible-types-in-comparison-expression-(different-address-spaces)
-    ??? net-ipv6-udp.c:sparse:incompatible-types-in-comparison-expression-(different-address-spaces)
-    ??? net-tipc-bearer.c:sparse:incompatible-types-in-comparison-expression-(different-base-types)
-
-elapsed time: 59m
-
-configs tested: 112
+configs tested: 125
 
 i386                     randconfig-a0-201618
 i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
 x86_64                             acpi-redef
 x86_64                           allyesdebian
 x86_64                                nfsroot
@@ -50,6 +31,11 @@ blackfin                BF533-EZKIT_defconfig
 blackfin            BF561-EZKIT-SMP_defconfig
 blackfin                  TCM-BF537_defconfig
 cris                 etrax-100lx_v2_defconfig
+arm                         nhk8815_defconfig
+arm                        shmobile_defconfig
+cris                             alldefconfig
+mips                         cobalt_defconfig
+powerpc                 mpc834x_mds_defconfig
 x86_64                 randconfig-x018-201618
 x86_64                 randconfig-x011-201618
 x86_64                 randconfig-x010-201618
@@ -80,6 +66,14 @@ tile                         tilegx_defconfig
 um                             i386_defconfig
 um                           x86_64_defconfig
 i386                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
 x86_64                   randconfig-i0-201618
 sparc                               defconfig
 sparc64                           allnoconfig
@@ -94,6 +88,8 @@ m32r                         opsput_defconfig
 m32r                           usrv_defconfig
 xtensa                       common_defconfig
 xtensa                          iss_defconfig
+x86_64                         customconfig-0
+x86_64                         customconfig-1
 i386                   randconfig-x013-201618
 i386                   randconfig-x012-201618
 i386                   randconfig-x011-201618
@@ -113,10 +109,13 @@ arm                           efm32_defconfig
 arm                          exynos_defconfig
 arm                        multi_v5_defconfig
 arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
 arm                           sunxi_defconfig
 arm64                             allnoconfig
 arm64                               defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
 x86_64                           allmodconfig
 x86_64                 randconfig-x007-201618
 x86_64                 randconfig-x005-201618
@@ -128,6 +127,9 @@ x86_64                 randconfig-x008-201618
 x86_64                 randconfig-x004-201618
 x86_64                 randconfig-x002-201618
 x86_64                 randconfig-x003-201618
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
 i386                     randconfig-r0-201618
 i386                   randconfig-x003-201618
 i386                   randconfig-x000-201618
@@ -139,10 +141,6 @@ i386                   randconfig-x002-201618
 i386                   randconfig-x001-201618
 i386                   randconfig-x008-201618
 i386                   randconfig-x007-201618
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
 
 Thanks,
 Fengguang
