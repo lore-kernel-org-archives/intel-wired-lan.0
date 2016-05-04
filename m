@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 4 May 2016 16:44:21 +0000
-Subject: [Intel-wired-lan] [next PATCH S36 11/12] i40e: don't add
- broadcast	filter for VFs
-In-Reply-To: <1462313600-3123-12-git-send-email-bimmy.pujari@intel.com>
+Date: Wed, 4 May 2016 16:41:27 +0000
+Subject: [Intel-wired-lan] [next PATCH S36 09/12] i40e: set context to
+ use	VSI RSS Lut for SR-IOV
+In-Reply-To: <1462313600-3123-10-git-send-email-bimmy.pujari@intel.com>
 References: <1462313600-3123-1-git-send-email-bimmy.pujari@intel.com>
- <1462313600-3123-12-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D59FA@ORSMSX104.amr.corp.intel.com>
+ <1462313600-3123-10-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D59DA@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,22 +17,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Tuesday, May 03, 2016 3:13 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S36 11/12] i40e: don't add broadcast
-> filter for VFs
+> Subject: [Intel-wired-lan] [next PATCH S36 09/12] i40e: set context to use VSI
+> RSS Lut for SR-IOV
 > 
-> From: Mitch Williams <mitch.a.williams@intel.com>
+> From: "Ashish Shah" <ashish.n.shah@intel.com>
 > 
-> Now that all VSIs are configured to receive broadcasts as default, we don't
-> need to add a filter. This eliminates an annoying but harmless error message
-> each time VFs are created or reset.
+> For the SR-IOV VSIs, when the queue filtering section is valid, the RSS LUT
+> needs to be set to use the VSI specific lookup table (otherwise it will use the
+> PF RSS LUT table).
 > 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-> Change-ID: I4cd6339684df45b0d2722133eeb84c14fa93ea19
+> Signed-off-by: Ashish Shah <ashish.n.shah@intel.com>
+> Change-ID: Ia9377cc818078238a75c3bdeade1b593a91b3480
 > ---
-> Testing Hints : Enable VFs. Note annoying error is gone.
-> 
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 8 --------
->  1 file changed, 8 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Error message does not appear on VF create/reset
+RSS works as expected on PF and VF with correct look up table for each
