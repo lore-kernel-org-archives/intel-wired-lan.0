@@ -1,29 +1,139 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 4 May 2016 16:45:49 +0000
-Subject: [Intel-wired-lan] [next PATCH S36 12/12] i40e: Bump version
- from	1.5.10 to 1.5.16
-In-Reply-To: <1462313600-3123-13-git-send-email-bimmy.pujari@intel.com>
-References: <1462313600-3123-1-git-send-email-bimmy.pujari@intel.com>
- <1462313600-3123-13-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D5A0A@ORSMSX104.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 05 May 2016 01:09:14 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 169cb18dfe45d70ee59ddda43b53a88c9e9193b8 BUILD SUCCESS
+Message-ID: <572a2cba.Rn7YFf44bJRTuX08%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Bimmy Pujari
-> Sent: Tuesday, May 03, 2016 3:13 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S36 12/12] i40e: Bump version from
-> 1.5.10 to 1.5.16
-> 
-> Signed-off-by: Bimmy Pujari <bimmy.pujari@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+169cb18dfe45d70ee59ddda43b53a88c9e9193b8  igb: adjust ptp timestamps for tx/rx latency
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Driver reports correct version
+elapsed time: 89m
+
+configs tested: 118
+
+i386                     randconfig-a0-201618
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                 randconfig-x018-201618
+x86_64                 randconfig-x011-201618
+x86_64                 randconfig-x010-201618
+x86_64                 randconfig-x014-201618
+x86_64                 randconfig-x016-201618
+x86_64                 randconfig-x012-201618
+x86_64                 randconfig-x019-201618
+x86_64                 randconfig-x013-201618
+x86_64                 randconfig-x015-201618
+x86_64                 randconfig-x017-201618
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s1-201618
+i386                     randconfig-s0-201618
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201618
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201618
+i386                     randconfig-i1-201618
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                         customconfig-0
+x86_64                         customconfig-1
+i386                   randconfig-x013-201618
+i386                   randconfig-x012-201618
+i386                   randconfig-x011-201618
+i386                   randconfig-x018-201618
+i386                   randconfig-x019-201618
+i386                   randconfig-x015-201618
+i386                   randconfig-x016-201618
+i386                   randconfig-x010-201618
+i386                   randconfig-x014-201618
+i386                   randconfig-x017-201618
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201618
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                 randconfig-x007-201618
+x86_64                 randconfig-x005-201618
+x86_64                 randconfig-x001-201618
+x86_64                 randconfig-x000-201618
+x86_64                 randconfig-x006-201618
+x86_64                 randconfig-x009-201618
+x86_64                 randconfig-x008-201618
+x86_64                 randconfig-x004-201618
+x86_64                 randconfig-x002-201618
+x86_64                 randconfig-x003-201618
+i386                     randconfig-r0-201618
+i386                             allmodconfig
+i386                   randconfig-x003-201618
+i386                   randconfig-x000-201618
+i386                   randconfig-x004-201618
+i386                   randconfig-x005-201618
+i386                   randconfig-x009-201618
+i386                   randconfig-x006-201618
+i386                   randconfig-x002-201618
+i386                   randconfig-x001-201618
+i386                   randconfig-x008-201618
+i386                   randconfig-x007-201618
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+
+Thanks,
+Fengguang
