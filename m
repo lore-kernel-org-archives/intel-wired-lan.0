@@ -1,31 +1,37 @@
-From: Shannon Nelson <sln@onemain.com>
-Date: Wed, 4 May 2016 14:45:35 -0700
-Subject: [Intel-wired-lan] [PATCH] MAINTAINERS: Cleanup Intel Wired LAN
- maintainers list
-In-Reply-To: <20160504144125.00003a8b@unknown>
-References: <1462396116-82272-1-git-send-email-jeffrey.t.kirsher@intel.com>
- <20160504144125.00003a8b@unknown>
-Message-ID: <572A6D7F.1090000@onemain.com>
+From: Emil Tantilov <emil.s.tantilov@intel.com>
+Date: Wed, 04 May 2016 15:01:27 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: use correct mask when enabling
+	sriov
+Message-ID: <20160504220127.3998.27301.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 05/04/2016 02:41 PM, Jesse Brandeburg wrote:
-> On Wed, 4 May 2016 14:08:36 -0700
-> Jeff Kirsher <jeffrey.t.kirsher@intel.com> wrote:
->
->> With the recent "retirements" and other changes, make the maintainers
->> list a lot less confusing and a bit more straight forward.
-> I'm not retired, but I support this change to make things simpler.
->
-> Acked-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
->
+Swap the parameters in GENMASK in order to generate the correct mask.
 
-I have become "retired" and also support this.  So long, and thanks for 
-all the fish!
+This change fixes Tx hangs when enabling SRIOV.
 
-Acked-by: Shannon Nelson <sln@onemain.com>
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index c965b60..311910b 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -3767,9 +3767,9 @@ static void ixgbe_configure_virtualization(struct ixgbe_adapter *adapter)
+ 	reg_offset = (VMDQ_P(0) >= 32) ? 1 : 0;
+ 
+ 	/* Enable only the PF's pool for Tx/Rx */
+-	IXGBE_WRITE_REG(hw, IXGBE_VFRE(reg_offset), GENMASK(vf_shift, 31));
++	IXGBE_WRITE_REG(hw, IXGBE_VFRE(reg_offset), GENMASK(31, vf_shift));
+ 	IXGBE_WRITE_REG(hw, IXGBE_VFRE(reg_offset ^ 1), reg_offset - 1);
+-	IXGBE_WRITE_REG(hw, IXGBE_VFTE(reg_offset), GENMASK(vf_shift, 31));
++	IXGBE_WRITE_REG(hw, IXGBE_VFTE(reg_offset), GENMASK(31, vf_shift));
+ 	IXGBE_WRITE_REG(hw, IXGBE_VFTE(reg_offset ^ 1), reg_offset - 1);
+ 	if (adapter->bridge_mode == BRIDGE_MODE_VEB)
+ 		IXGBE_WRITE_REG(hw, IXGBE_PFDTXGSWC, IXGBE_PFDTXGSWC_VT_LBEN);
 
