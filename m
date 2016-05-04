@@ -1,11 +1,12 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 4 May 2016 15:38:50 +0000
-Subject: [Intel-wired-lan] [next PATCH S36 02/12] i40e: Add allmulti
- support	for the VF
-In-Reply-To: <1462313600-3123-3-git-send-email-bimmy.pujari@intel.com>
+From: Wyborny, Carolyn <carolyn.wyborny@intel.com>
+Date: Wed, 4 May 2016 15:55:17 +0000
+Subject: [Intel-wired-lan] [next PATCH S36 03/12] i40e: Implement the
+ API	function for aq_set_switch_config
+In-Reply-To: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D5954@ORSMSX104.amr.corp.intel.com>
 References: <1462313600-3123-1-git-send-email-bimmy.pujari@intel.com>
- <1462313600-3123-3-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D5964@ORSMSX104.amr.corp.intel.com>
+ <1462313600-3123-4-git-send-email-bimmy.pujari@intel.com>
+ <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D5954@ORSMSX104.amr.corp.intel.com>
+Message-ID: <9BBC4E0CF881AA4299206E2E1412B626501C7EFF@ORSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,23 +15,38 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Bimmy Pujari
-> Sent: Tuesday, May 03, 2016 3:13 PM
+> Behalf Of Bowers, AndrewX
+> Sent: Wednesday, May 04, 2016 8:34 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S36 02/12] i40e: Add allmulti support
-> for the VF
+> Subject: Re: [Intel-wired-lan] [next PATCH S36 03/12] i40e: Implement the API
+> function for aq_set_switch_config
 > 
-> From: Anjali Singhai Jain <anjali.singhai@intel.com>
+> > -----Original Message-----
+> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> > Behalf Of Bimmy Pujari
+> > Sent: Tuesday, May 03, 2016 3:13 PM
+> > To: intel-wired-lan at lists.osuosl.org
+> > Subject: [Intel-wired-lan] [next PATCH S36 03/12] i40e: Implement the API
+> > function for aq_set_switch_config
+> >
+> > From: Shannon Nelson <shannon.nelson@intel.com>
+> >
+> > Add the support code for calling the AdminQ API call aq_set_switch_config
+> >
+> > Signed-off-by: Shannon Nelson <shannon.nelson@intel.com>
+> > ---
+> > Testing Hints : Apply and compile cleanly
+> >
+> >  drivers/net/ethernet/intel/i40e/i40e_common.c    | 29
+> > ++++++++++++++++++++++++
+> >  drivers/net/ethernet/intel/i40e/i40e_prototype.h |  4 ++++
+> >  2 files changed, 33 insertions(+)
 > 
-> This patch enables a feature to enable/disable all multicast for a trusted VF.
-> 
-> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-> Change-Id: I926eba7f8850c8d40f8ad7e08bbe4056bbd3985f
-> ---
->  drivers/net/ethernet/intel/i40evf/i40evf.h          |  3 +++
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c     | 15 ++++++++++++++-
->  drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c | 15 +++++++++++++--
->  3 files changed, 30 insertions(+), 3 deletions(-)
+> Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+> Code changes present, compiles cleanly
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Driver correctly reports multicast promiscuous mode when enabled
+We need to make sure we have the patch that actually uses this included in the patches sent upstream.  
+
+Thanks,
+
+Carolyn
