@@ -1,110 +1,145 @@
-From: Nathan Sullivan <nathan.sullivan@ni.com>
-Date: Tue, 3 May 2016 18:10:56 -0500
-Subject: [Intel-wired-lan] [PATCH] igb: adjust ptp timestamps for tx/rx
-	latency
-Message-ID: <1462317056-28805-1-git-send-email-nathan.sullivan@ni.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 04 May 2016 18:33:54 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 3067f22c6f74488e2b5038090629575b13aee678 BUILD SUCCESS
+Message-ID: <5729d012.A5Ehi4RruVZ4D7As%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Table 7-62 on page 338 of the i210 datasheet lists TX and RX latencies
-for the various speeds the chip supports.  To give better ptp timestamp
-accuracy, adjust the timestamps by the amounts Intel gives based on
-current link speed.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+3067f22c6f74488e2b5038090629575b13aee678  i40e: Bump version from 1.5.10 to 1.5.16
 
-Signed-off-by: Nathan Sullivan <nathan.sullivan@ni.com>
----
- drivers/net/ethernet/intel/igb/igb.h     |    8 +++++++
- drivers/net/ethernet/intel/igb/igb_ptp.c |   36 ++++++++++++++++++++++++++++++
- 2 files changed, 44 insertions(+)
+elapsed time: 76m
 
-diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index 9413fa6..7cee61f9 100644
---- a/drivers/net/ethernet/intel/igb/igb.h
-+++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -91,6 +91,14 @@ struct igb_adapter;
- #define NVM_COMB_VER_OFF	0x0083
- #define NVM_COMB_VER_PTR	0x003d
- 
-+/* Transmit and receive latency (for PTP timestamps) */
-+#define IGB_I210_TX_LATENCY_10		9542
-+#define IGB_I210_TX_LATENCY_100		1024
-+#define IGB_I210_TX_LATENCY_1000	178
-+#define IGB_I210_RX_LATENCY_10		20662
-+#define IGB_I210_RX_LATENCY_100		2213
-+#define IGB_I210_RX_LATENCY_1000	448
-+
- struct vf_data_storage {
- 	unsigned char vf_mac_addresses[ETH_ALEN];
- 	u16 vf_mc_hashes[IGB_MAX_VF_MC_ENTRIES];
-diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
-index 22a8a29..76a896d 100644
---- a/drivers/net/ethernet/intel/igb/igb_ptp.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
-@@ -722,11 +722,29 @@ static void igb_ptp_tx_hwtstamp(struct igb_adapter *adapter)
- 	struct e1000_hw *hw = &adapter->hw;
- 	struct skb_shared_hwtstamps shhwtstamps;
- 	u64 regval;
-+	int adjust = 0;
- 
- 	regval = rd32(E1000_TXSTMPL);
- 	regval |= (u64)rd32(E1000_TXSTMPH) << 32;
- 
- 	igb_ptp_systim_to_hwtstamp(adapter, &shhwtstamps, regval);
-+	/* adjust timestamp for the TX latency based on link speed */
-+	if (adapter->hw.mac.type == e1000_i210) {
-+		switch (adapter->link_speed) {
-+		case SPEED_10:
-+			adjust = IGB_I210_TX_LATENCY_10;
-+			break;
-+		case SPEED_100:
-+			adjust = IGB_I210_TX_LATENCY_100;
-+			break;
-+		case SPEED_1000:
-+			adjust = IGB_I210_TX_LATENCY_1000;
-+			break;
-+		}
-+	}
-+
-+	shhwtstamps.hwtstamp = ktime_sub_ns(shhwtstamps.hwtstamp, adjust);
-+
- 	skb_tstamp_tx(adapter->ptp_tx_skb, &shhwtstamps);
- 	dev_kfree_skb_any(adapter->ptp_tx_skb);
- 	adapter->ptp_tx_skb = NULL;
-@@ -771,6 +789,7 @@ void igb_ptp_rx_rgtstamp(struct igb_q_vector *q_vector,
- 	struct igb_adapter *adapter = q_vector->adapter;
- 	struct e1000_hw *hw = &adapter->hw;
- 	u64 regval;
-+	int adjust = 0;
- 
- 	/* If this bit is set, then the RX registers contain the time stamp. No
- 	 * other packet will be time stamped until we read these registers, so
-@@ -790,6 +809,23 @@ void igb_ptp_rx_rgtstamp(struct igb_q_vector *q_vector,
- 
- 	igb_ptp_systim_to_hwtstamp(adapter, skb_hwtstamps(skb), regval);
- 
-+	/* adjust timestamp for the RX latency based on link speed */
-+	if (adapter->hw.mac.type == e1000_i210) {
-+		switch (adapter->link_speed) {
-+		case SPEED_10:
-+			adjust = IGB_I210_RX_LATENCY_10;
-+			break;
-+		case SPEED_100:
-+			adjust = IGB_I210_RX_LATENCY_100;
-+			break;
-+		case SPEED_1000:
-+			adjust = IGB_I210_RX_LATENCY_1000;
-+			break;
-+		}
-+	}
-+	skb_hwtstamps(skb)->hwtstamp =
-+		ktime_add_ns(skb_hwtstamps(skb)->hwtstamp, adjust);
-+
- 	/* Update the last_rx_timestamp timer in order to enable watchdog check
- 	 * for error case of latched timestamp on a dropped packet.
- 	 */
--- 
-1.7.10.4
+configs tested: 124
 
+i386                     randconfig-a0-201618
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-x018-201618
+x86_64                 randconfig-x011-201618
+x86_64                 randconfig-x010-201618
+x86_64                 randconfig-x014-201618
+x86_64                 randconfig-x016-201618
+x86_64                 randconfig-x012-201618
+x86_64                 randconfig-x019-201618
+x86_64                 randconfig-x013-201618
+x86_64                 randconfig-x015-201618
+x86_64                 randconfig-x017-201618
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201618
+i386                     randconfig-s1-201618
+x86_64                 randconfig-s0-05041719
+x86_64                 randconfig-s1-05041719
+x86_64                 randconfig-s2-05041719
+x86_64                 randconfig-s3-05041659
+x86_64                 randconfig-s4-05041659
+x86_64                 randconfig-s5-05041659
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201618
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201618
+i386                     randconfig-i1-201618
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                         customconfig-0
+x86_64                         customconfig-1
+i386                   randconfig-x013-201618
+i386                   randconfig-x012-201618
+i386                   randconfig-x011-201618
+i386                   randconfig-x018-201618
+i386                   randconfig-x019-201618
+i386                   randconfig-x015-201618
+i386                   randconfig-x016-201618
+i386                   randconfig-x010-201618
+i386                   randconfig-x014-201618
+i386                   randconfig-x017-201618
+i386                     randconfig-n0-201618
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                           allmodconfig
+x86_64                 randconfig-x007-201618
+x86_64                 randconfig-x005-201618
+x86_64                 randconfig-x001-201618
+x86_64                 randconfig-x000-201618
+x86_64                 randconfig-x006-201618
+x86_64                 randconfig-x009-201618
+x86_64                 randconfig-x008-201618
+x86_64                 randconfig-x004-201618
+x86_64                 randconfig-x002-201618
+x86_64                 randconfig-x003-201618
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-r0-201618
+i386                   randconfig-x003-201618
+i386                   randconfig-x000-201618
+i386                   randconfig-x004-201618
+i386                   randconfig-x005-201618
+i386                   randconfig-x009-201618
+i386                   randconfig-x006-201618
+i386                   randconfig-x002-201618
+i386                   randconfig-x001-201618
+i386                   randconfig-x008-201618
+i386                   randconfig-x007-201618
+
+Thanks,
+Fengguang
