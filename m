@@ -1,28 +1,20 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Thu, 5 May 2016 16:18:02 +0300
-Subject: [Intel-wired-lan] [patch] i40e: fix an uninitialized variable bug
-Message-ID: <20160505131802.GA3038@mwanda>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Thu, 5 May 2016 12:51:51 -0700
+Subject: [Intel-wired-lan] Need to drop duplicate patches from dev-queue
+Message-ID: <CAKgT0UcFrrPnjs0NCz36FgTZEXZcSZvWNn-P084M47AVGyZa=Q@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-We removed this initialization but it is required.  Let's put it back.
+So it looks like the tree is a bit mangled at the moment because there
+are mangled versions of the following patches still in the queue even
+though they were merged into net-next:
+"intel: ixgbevf: Support Windows hosts (Hyper-V)"
+    and
+"ixgbevf: Use mac_ops instead of trying to identify NIC type"
 
-Fixes: 895106a577c4 ('i40e: trivial fixes')
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+Thanks.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_hmc.c b/drivers/net/ethernet/intel/i40e/i40e_hmc.c
-index 5ebe12d..a7c7b1d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_hmc.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_hmc.c
-@@ -49,7 +49,7 @@ i40e_status i40e_add_sd_table_entry(struct i40e_hw *hw,
- 	struct i40e_hmc_sd_entry *sd_entry;
- 	bool dma_mem_alloc_done = false;
- 	struct i40e_dma_mem mem;
--	i40e_status ret_code;
-+	i40e_status ret_code = I40E_SUCCESS;
- 	u64 alloc_len;
- 
- 	if (NULL == hmc_info->sd_table.sd_entry) {
+- Alex
