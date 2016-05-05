@@ -1,146 +1,57 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 05 May 2016 07:19:55 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- fbc47542b53d4d5f43b5fc22f0ddc348c20d1ef8 BUILD SUCCESS
-Message-ID: <572a839b.E8z4lcNp0YAeRAAZ%fengguang.wu@intel.com>
+Date: Thu, 5 May 2016 11:10:00 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 28/49]
+ drivers/net/ethernet/intel/ixgbevf/vf.c:969:42: error: redefinition of
+ 'ixgbevf_hv_mac_ops'
+Message-ID: <201605051156.EblFSvp6%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-fbc47542b53d4d5f43b5fc22f0ddc348c20d1ef8  Subject: MAINTAINERS: Cleanup Intel Wired LAN maintainers list
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   fbc47542b53d4d5f43b5fc22f0ddc348c20d1ef8
+commit: 6e91188892aa40fe7d52df75c934cae7a02a4ee0 [28/49] intel: ixgbevf: Support Windows hosts (Hyper-V)
+config: x86_64-rhel (attached as .config)
+compiler: gcc-4.9 (Debian 4.9.3-14) 4.9.3
+reproduce:
+        git checkout 6e91188892aa40fe7d52df75c934cae7a02a4ee0
+        # save the attached .config to linux build tree
+        make ARCH=x86_64 
 
-elapsed time: 72m
+Note: the jkirsher-next-queue/dev-queue HEAD fbc47542b53d4d5f43b5fc22f0ddc348c20d1ef8 builds fine.
+      It only hurts bisectibility.
 
-configs tested: 125
+All errors (new ones prefixed by >>):
 
-i386                     randconfig-a0-201618
-i386                               tinyconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm                         nhk8815_defconfig
-arm                        shmobile_defconfig
-cris                             alldefconfig
-mips                         cobalt_defconfig
-powerpc                 mpc834x_mds_defconfig
-x86_64                 randconfig-x018-201618
-x86_64                 randconfig-x011-201618
-x86_64                 randconfig-x010-201618
-x86_64                 randconfig-x014-201618
-x86_64                 randconfig-x016-201618
-x86_64                 randconfig-x012-201618
-x86_64                 randconfig-x019-201618
-x86_64                 randconfig-x013-201618
-x86_64                 randconfig-x015-201618
-x86_64                 randconfig-x017-201618
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201618
-i386                     randconfig-s1-201618
-x86_64                 randconfig-s3-05050558
-x86_64                 randconfig-s4-05050558
-x86_64                 randconfig-s5-05050558
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201618
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201618
-i386                     randconfig-i1-201618
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                         customconfig-0
-x86_64                         customconfig-1
-i386                   randconfig-x013-201618
-i386                   randconfig-x012-201618
-i386                   randconfig-x011-201618
-i386                   randconfig-x018-201618
-i386                   randconfig-x019-201618
-i386                   randconfig-x015-201618
-i386                   randconfig-x016-201618
-i386                   randconfig-x010-201618
-i386                   randconfig-x014-201618
-i386                   randconfig-x017-201618
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201618
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-x86_64                 randconfig-x007-201618
-x86_64                 randconfig-x005-201618
-x86_64                 randconfig-x001-201618
-x86_64                 randconfig-x000-201618
-x86_64                 randconfig-x006-201618
-x86_64                 randconfig-x009-201618
-x86_64                 randconfig-x008-201618
-x86_64                 randconfig-x004-201618
-x86_64                 randconfig-x002-201618
-x86_64                 randconfig-x003-201618
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-r0-201618
-i386                   randconfig-x003-201618
-i386                   randconfig-x000-201618
-i386                   randconfig-x004-201618
-i386                   randconfig-x005-201618
-i386                   randconfig-x009-201618
-i386                   randconfig-x006-201618
-i386                   randconfig-x002-201618
-i386                   randconfig-x001-201618
-i386                   randconfig-x008-201618
-i386                   randconfig-x007-201618
+>> drivers/net/ethernet/intel/ixgbevf/vf.c:969:42: error: redefinition of 'ixgbevf_hv_mac_ops'
+    static const struct ixgbe_mac_operations ixgbevf_hv_mac_ops = {
+                                             ^
+   drivers/net/ethernet/intel/ixgbevf/vf.c:952:42: note: previous definition of 'ixgbevf_hv_mac_ops' was here
+    static const struct ixgbe_mac_operations ixgbevf_hv_mac_ops = {
+                                             ^
 
-Thanks,
-Fengguang
+vim +/ixgbevf_hv_mac_ops +969 drivers/net/ethernet/intel/ixgbevf/vf.c
+
+   963		.update_xcast_mode	= ixgbevf_hv_update_xcast_mode,
+   964		.set_uc_addr		= ixgbevf_hv_set_uc_addr_vf,
+   965		.set_vfta		= ixgbevf_hv_set_vfta_vf,
+   966		.set_rlpml		= ixgbevf_hv_set_rlpml_vf,
+   967	};
+   968	
+ > 969	static const struct ixgbe_mac_operations ixgbevf_hv_mac_ops = {
+   970		.init_hw		= ixgbevf_init_hw_vf,
+   971		.reset_hw		= ixgbevf_hv_reset_hw_vf,
+   972		.start_hw		= ixgbevf_start_hw_vf,
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/octet-stream
+Size: 36453 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160505/f1d5ac59/attachment-0001.obj>
