@@ -1,50 +1,57 @@
-From: Skidmore, Donald C <donald.c.skidmore@intel.com>
-Date: Fri, 6 May 2016 16:26:24 +0000
-Subject: [Intel-wired-lan] NULL dereference on v4.1.x while enabling VF
-In-Reply-To: <CAJ75kXY_PMK0iTyM5bbhQoAS9je5AqpW67jyZpJEUoNw0BPcqw@mail.gmail.com>
-References: <CAJ75kXZV32hLzYY-dynYAj6NHm2xNoq89inmSSbqUyxPvUazEw@mail.gmail.com>
- <F6FB0E698C9B3143BDF729DF2228664691EA68EC@ORSMSX116.amr.corp.intel.com>
- <CAJ75kXY_PMK0iTyM5bbhQoAS9je5AqpW67jyZpJEUoNw0BPcqw@mail.gmail.com>
-Message-ID: <F6FB0E698C9B3143BDF729DF2228664691EA7CAF@ORSMSX116.amr.corp.intel.com>
+From: Denys Vlasenko <dvlasenk@redhat.com>
+Date: Fri,  6 May 2016 21:41:51 +0200
+Subject: [Intel-wired-lan] [PATCH] e1000e: prevent division by zero if
+	TIMINCA is zero
+Message-ID: <1462563711-30350-1-git-send-email-dvlasenk@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hey William,
+Users report that under VMWare, er32(TIMINCA) returns zero.
+This causes division by zero at init time as follows:
 
-My validation hasn't be able to recreate the dereference on v4.1.x, v4.5.x or net_next.  Where exactly did you place the two line script in your rc scripts.  Our validation was able to run it as soon as ~14 second after the first boot message logged in dmesg.  Is this anywhere close to where you were executing it?  Likewise he has attempted running at both run level 3 and 5 in case that changed any of the times of how soon the rc scripts are executed.  So the more detail you can give of setup the more it might help us recreate what you are seeing.
+ ==>            incvalue = er32(TIMINCA) & E1000_TIMINCA_INCVALUE_MASK;
+                for (i = 0; i < E1000_MAX_82574_SYSTIM_REREADS; i++) {
+                        /* latch SYSTIMH on read of SYSTIML */
+                        systim_next = (cycle_t)er32(SYSTIML);
+                        systim_next |= (cycle_t)er32(SYSTIMH) << 32;
 
-Thanks,
--Don Skidmore <donald.c.skidmore>
+                        time_delta = systim_next - systim;
+                        temp = time_delta;
+ ====>                  rem = do_div(temp, incvalue);
 
+This change makes kernel survive this, and users report that
+NIC does work after this change.
+
+Since on real hardware incvalue is never zero, this should not affect
+real hardware use case.
+
+Signed-off-by: Denys Vlasenko <dvlasenk@redhat.com>
+CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+CC: "Ruinskiy, Dima" <dima.ruinskiy@intel.com>
+CC: intel-wired-lan at lists.osuosl.org
+CC: netdev at vger.kernel.org
+CC: LKML <linux-kernel@vger.kernel.org>
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 269087c..0626935 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -4315,7 +4315,8 @@ static cycle_t e1000e_cyclecounter_read(const struct cyclecounter *cc)
  
+ 			time_delta = systim_next - systim;
+ 			temp = time_delta;
+-			rem = do_div(temp, incvalue);
++			/* VMWare users have seen incvalue of zero, don't div / 0 */
++			rem = incvalue ? do_div(temp, incvalue) : (time_delta != 0);
+ 
+ 			systim = systim_next;
+ 
+-- 
+1.8.1.4
 
-> -----Original Message-----
-> From: William Dauchy [mailto:wdauchy at gmail.com]
-> Sent: Tuesday, May 03, 2016 5:33 AM
-> To: Skidmore, Donald C <donald.c.skidmore@intel.com>
-> Cc: NETDEV <netdev@vger.kernel.org>; intel-wired-lan at lists.osuosl.org;
-> Alex Duyck <aduyck@mirantis.com>
-> Subject: Re: [Intel-wired-lan] NULL dereference on v4.1.x while enabling VF
-> 
-> Hello Don,
-> 
-> Thank you for your reply.
-> 
-> On Mon, May 2, 2016 at 11:33 PM, Skidmore, Donald C
-> <donald.c.skidmore@intel.com> wrote:
-> > Thanks for reporting the dereference.  Could you provide a little more
-> detail on how you created this issue?  Are you just running the two
-> commands (ip, sriov_numvfs) in some rc script and if you put a few second
-> sleep in front of it you don't see the failure?
-> 
-> Your understanding is correct; a rc script is run with ip and echo in numvfs
-> commands. I tried to reduce it to the minimum. If I put a sleep
-> 20 in front of it, it does not crash. I also forgot to add I did not had the issue
-> in 3.14.x with the same script.
-> 
-> Best,
-> --
-> William
