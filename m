@@ -1,55 +1,108 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu,  5 May 2016 16:11:08 -0700
-Subject: [Intel-wired-lan] [PATCH v1] checkpatch.pl: seed camelcase from the
-	provided kernel tree root
-Message-ID: <20160505231108.1934-1-jacob.e.keller@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 06 May 2016 10:35:52 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ 4be761c17e1d413f61898d96dfbdb4498ec52f44 BUILD SUCCESS
+Message-ID: <572c0308.5f4+pyRf6CxWqa6k%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When checkpatch.pl is run without a git tree, it seeds the camelcase
-includes from the $root parameter. However, it does not use the $root
-directory when seeding for a git tree. Fix this by using "-C $root" so
-that a user may run checkpatch with the --root parameter pointing to
-a valid kernel source tree. In addition, when generating the list of
-files to check, we must also prefix each file with the $root parameter,
-in order to properly locate the file when searching.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+4be761c17e1d413f61898d96dfbdb4498ec52f44  checkpatch.pl: seed camelcase from the provided kernel tree root
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- scripts/checkpatch.pl | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+elapsed time: 68m
 
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index d574d13ba963..8ec10e8cff73 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -665,8 +665,8 @@ sub seed_camelcase_includes {
- 
- 	$camelcase_seeded = 1;
- 
--	if (-e ".git") {
--		my $git_last_include_commit = `git log --no-merges --pretty=format:"%h%n" -1 -- include`;
-+	if (-e "$root/.git") {
-+		my $git_last_include_commit = `git -C $root log --no-merges --pretty=format:"%h%n" -1 -- include`;
- 		chomp $git_last_include_commit;
- 		$camelcase_cache = ".checkpatch-camelcase.git.$git_last_include_commit";
- 	} else {
-@@ -693,9 +693,10 @@ sub seed_camelcase_includes {
- 		return;
- 	}
- 
--	if (-e ".git") {
--		$files = `git ls-files "include/*.h"`;
-+	if (-e "$root/.git") {
-+		$files = `git -C $root ls-files "include/*.h"`;
- 		@include_files = split('\n', $files);
-+		@include_files = map("$root/$_", @include_files);
- 	}
- 
- 	foreach my $file (@include_files) {
--- 
-2.8.1.493.g7b22612
+configs tested: 87
 
+i386                     randconfig-a0-201618
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                 randconfig-x010-201618
+x86_64                 randconfig-x011-201618
+x86_64                 randconfig-x012-201618
+x86_64                 randconfig-x013-201618
+x86_64                 randconfig-x014-201618
+x86_64                 randconfig-x015-201618
+x86_64                 randconfig-x016-201618
+x86_64                 randconfig-x017-201618
+x86_64                 randconfig-x018-201618
+x86_64                 randconfig-x019-201618
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201618
+i386                     randconfig-s1-201618
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201618
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201618
+i386                     randconfig-i1-201618
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                         customconfig-0
+x86_64                         customconfig-1
+i386                               tinyconfig
+i386                     randconfig-n0-201618
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                   rhel
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+i386                     randconfig-r0-201618
+
+Thanks,
+Fengguang
