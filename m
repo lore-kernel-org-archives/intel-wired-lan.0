@@ -1,76 +1,138 @@
-From: Rustad, Mark D <mark.d.rustad@intel.com>
-Date: Fri, 6 May 2016 23:43:17 +0000
-Subject: [Intel-wired-lan] [PATCH] e1000e: prevent division by zero
-	if	TIMINCA is zero
-In-Reply-To: <1462563711-30350-1-git-send-email-dvlasenk@redhat.com>
-References: <1462563711-30350-1-git-send-email-dvlasenk@redhat.com>
-Message-ID: <5E18E4A4-E10F-46B5-A2F5-FCA10FAA5030@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 07 May 2016 09:20:41 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ e948a9ebeddfa364a9a140389a05a10adc2ec62d BUILD SUCCESS
+Message-ID: <572d42e9.pIE5Y1tPoGTe7cb2%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Denys Vlasenko <dvlasenk@redhat.com> wrote:
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+e948a9ebeddfa364a9a140389a05a10adc2ec62d  checkpatch.pl: seed camelcase from the provided kernel tree root
 
-> Users report that under VMWare, er32(TIMINCA) returns zero.
-> This causes division by zero at init time as follows:
->
->  ==>            incvalue = er32(TIMINCA) & E1000_TIMINCA_INCVALUE_MASK;
->                 for (i = 0; i < E1000_MAX_82574_SYSTIM_REREADS; i++) {
->                         /* latch SYSTIMH on read of SYSTIML */
->                         systim_next = (cycle_t)er32(SYSTIML);
->                         systim_next |= (cycle_t)er32(SYSTIMH) << 32;
->
->                         time_delta = systim_next - systim;
->                         temp = time_delta;
->  ====>                  rem = do_div(temp, incvalue);
->
-> This change makes kernel survive this, and users report that
-> NIC does work after this change.
->
-> Since on real hardware incvalue is never zero, this should not affect
-> real hardware use case.
->
-> Signed-off-by: Denys Vlasenko <dvlasenk@redhat.com>
-> CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> CC: "Ruinskiy, Dima" <dima.ruinskiy@intel.com>
-> CC: intel-wired-lan at lists.osuosl.org
-> CC: netdev at vger.kernel.org
-> CC: LKML <linux-kernel@vger.kernel.org>
-> ---
->  drivers/net/ethernet/intel/e1000e/netdev.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c  
-> b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index 269087c..0626935 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -4315,7 +4315,8 @@ static cycle_t e1000e_cyclecounter_read(const  
-> struct cyclecounter *cc)
->
->  			time_delta = systim_next - systim;
->  			temp = time_delta;
-> -			rem = do_div(temp, incvalue);
-> +			/* VMWare users have seen incvalue of zero, don't div / 0 */
-> +			rem = incvalue ? do_div(temp, incvalue) : (time_delta != 0);
->
->  			systim = systim_next;
->
+elapsed time: 66m
 
-I seem to recall that this was rejected before because it really is  
-VMWare's bug and, if they fix it, any existing VMs that use this will just  
-work. Changing the driver will only fix it for vms that install a new  
-driver. I don't object to doing it, it just seems like not the most  
-effective place to address the issue.
+configs tested: 117
 
---
-Mark Rustad, Networking Division, Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 841 bytes
-Desc: Message signed with OpenPGP using GPGMail
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160506/ba2d808c/attachment.asc>
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201618
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                 randconfig-x018-201618
+x86_64                 randconfig-x011-201618
+x86_64                 randconfig-x010-201618
+x86_64                 randconfig-x014-201618
+x86_64                 randconfig-x016-201618
+x86_64                 randconfig-x012-201618
+x86_64                 randconfig-x019-201618
+x86_64                 randconfig-x013-201618
+x86_64                 randconfig-x015-201618
+x86_64                 randconfig-x017-201618
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                     randconfig-s0-201618
+i386                     randconfig-s1-201618
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201618
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201618
+i386                     randconfig-i1-201618
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                         customconfig-0
+x86_64                         customconfig-1
+i386                   randconfig-x013-201618
+i386                   randconfig-x012-201618
+i386                   randconfig-x011-201618
+i386                   randconfig-x018-201618
+i386                   randconfig-x019-201618
+i386                   randconfig-x015-201618
+i386                   randconfig-x016-201618
+i386                   randconfig-x010-201618
+i386                   randconfig-x014-201618
+i386                   randconfig-x017-201618
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201618
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                           allmodconfig
+x86_64                 randconfig-x007-201618
+x86_64                 randconfig-x005-201618
+x86_64                 randconfig-x001-201618
+x86_64                 randconfig-x000-201618
+x86_64                 randconfig-x006-201618
+x86_64                 randconfig-x009-201618
+x86_64                 randconfig-x008-201618
+x86_64                 randconfig-x004-201618
+x86_64                 randconfig-x002-201618
+x86_64                 randconfig-x003-201618
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201618
+i386                             allmodconfig
+i386                   randconfig-x003-201618
+i386                   randconfig-x000-201618
+i386                   randconfig-x004-201618
+i386                   randconfig-x005-201618
+i386                   randconfig-x009-201618
+i386                   randconfig-x006-201618
+i386                   randconfig-x002-201618
+i386                   randconfig-x001-201618
+i386                   randconfig-x008-201618
+i386                   randconfig-x007-201618
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+
+Thanks,
+Fengguang
