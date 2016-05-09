@@ -1,11 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 9 May 2016 16:53:10 +0000
-Subject: [Intel-wired-lan] [next PATCH S36 08/12] i40e: Correct UDP
- packet	header for non_tunnel-ipv6
-In-Reply-To: <1462313600-3123-9-git-send-email-bimmy.pujari@intel.com>
-References: <1462313600-3123-1-git-send-email-bimmy.pujari@intel.com>
- <1462313600-3123-9-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D5EAA@ORSMSX104.amr.corp.intel.com>
+Date: Mon, 9 May 2016 17:41:46 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: use correct mask when
+	enabling	sriov
+In-Reply-To: <20160504220127.3998.27301.stgit@localhost6.localdomain6>
+References: <20160504220127.3998.27301.stgit@localhost6.localdomain6>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D5EBE@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,22 +13,20 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Bimmy Pujari
-> Sent: Tuesday, May 03, 2016 3:13 PM
+> Behalf Of Emil Tantilov
+> Sent: Wednesday, May 04, 2016 3:01 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S36 08/12] i40e: Correct UDP packet
-> header for non_tunnel-ipv6
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: use correct mask when enabling
+> sriov
 > 
-> From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+> Swap the parameters in GENMASK in order to generate the correct mask.
 > 
-> This patch corrects Rx ptype payload layer for non_tunneled ipv6. It should
-> be layer 4 for UDP, instead of layer 3.
+> This change fixes Tx hangs when enabling SRIOV.
 > 
-> Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
-> Change-ID: I9382e4458ab3c4e58f6d2e9f195d5d4ee513805e
+> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_common.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-non-tunnel IPv6 UDP traffic works as expected with correct identification
+Enabling SR-IOV does not generate tx hang with traffic passing
