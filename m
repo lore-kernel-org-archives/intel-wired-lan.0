@@ -1,31 +1,36 @@
-From: William Dauchy <wdauchy@gmail.com>
-Date: Mon, 9 May 2016 18:08:01 +0200
-Subject: [Intel-wired-lan] NULL dereference on v4.1.x while enabling VF
-In-Reply-To: <F6FB0E698C9B3143BDF729DF2228664691EA7CAF@ORSMSX116.amr.corp.intel.com>
-References: <CAJ75kXZV32hLzYY-dynYAj6NHm2xNoq89inmSSbqUyxPvUazEw@mail.gmail.com>
- <F6FB0E698C9B3143BDF729DF2228664691EA68EC@ORSMSX116.amr.corp.intel.com>
- <CAJ75kXY_PMK0iTyM5bbhQoAS9je5AqpW67jyZpJEUoNw0BPcqw@mail.gmail.com>
- <F6FB0E698C9B3143BDF729DF2228664691EA7CAF@ORSMSX116.amr.corp.intel.com>
-Message-ID: <CAJ75kXYH+Ni5tJv1Qobvx5uaibjvmTxHOiU6wDpdbD89r0Xx_Q@mail.gmail.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Mon, 9 May 2016 16:44:56 +0000
+Subject: [Intel-wired-lan] [next PATCH S36 07/12] i40e: change Rx
+	hang	message into a WARN_ONCE
+In-Reply-To: <1462313600-3123-8-git-send-email-bimmy.pujari@intel.com>
+References: <1462313600-3123-1-git-send-email-bimmy.pujari@intel.com>
+ <1462313600-3123-8-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D5E98@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello Hello Don,
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Bimmy Pujari
+> Sent: Tuesday, May 03, 2016 3:13 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S36 07/12] i40e: change Rx hang
+> message into a WARN_ONCE
+> 
+> From: Jacob Keller <jacob.e.keller@intel.com>
+> 
+> Use WARN_ONCE in order to highlight the issue, but don't display a warning
+> every time. The user should be able to see the ethtool counter we created if
+> necessary to see how often it is occurring.
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Change-ID: I40c4ea159819b64a7d33b7f5716749089791533a
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_ptp.c | 4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
 
-Thank you for your help.
-
-On Fri, May 6, 2016 at 6:26 PM, Skidmore, Donald C
-<donald.c.skidmore@intel.com> wrote:
-> My validation hasn't be able to recreate the dereference on v4.1.x, v4.5.x or net_next.  Where exactly did you place the two line script in your rc scripts.  Our validation was able to run it as soon as ~14 second after the first boot message logged in dmesg.  Is this anywhere close to where you were executing it?  Likewise he has attempted running at both run level 3 and 5 in case that changed any of the times of how soon the rc scripts are executed.  So the more detail you can give of setup the more it might help us recreate what you are seeing.
-
-my script is called right at the beginning of "start" from
-/etc/init.d/networking in debian jessie; so before network init.
-(first trace is 40s after boot in my test)
-I can't find any other details I could gave you for now but I will let
-you know if I think about something else.
-
--- 
-William
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Driver builds, compiles, and passes traffic.
