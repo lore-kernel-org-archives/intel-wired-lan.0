@@ -1,34 +1,31 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 27 May 2016 22:25:12 +0000
-Subject: [Intel-wired-lan] [PATCH v4 5/5] igb: call igb_ptp_suspend
- during	suspend/resume cycle
-In-Reply-To: <20160524205631.21225-5-jacob.e.keller@intel.com>
-References: <20160524205631.21225-1-jacob.e.keller@intel.com>
- <20160524205631.21225-5-jacob.e.keller@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81F108C1@ORSMSX101.amr.corp.intel.com>
+From: William Dauchy <wdauchy@gmail.com>
+Date: Mon, 9 May 2016 18:08:01 +0200
+Subject: [Intel-wired-lan] NULL dereference on v4.1.x while enabling VF
+In-Reply-To: <F6FB0E698C9B3143BDF729DF2228664691EA7CAF@ORSMSX116.amr.corp.intel.com>
+References: <CAJ75kXZV32hLzYY-dynYAj6NHm2xNoq89inmSSbqUyxPvUazEw@mail.gmail.com>
+ <F6FB0E698C9B3143BDF729DF2228664691EA68EC@ORSMSX116.amr.corp.intel.com>
+ <CAJ75kXY_PMK0iTyM5bbhQoAS9je5AqpW67jyZpJEUoNw0BPcqw@mail.gmail.com>
+ <F6FB0E698C9B3143BDF729DF2228664691EA7CAF@ORSMSX116.amr.corp.intel.com>
+Message-ID: <CAJ75kXYH+Ni5tJv1Qobvx5uaibjvmTxHOiU6wDpdbD89r0Xx_Q@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Jacob Keller
-> Sent: Tuesday, May 24, 2016 1:57 PM
-> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [PATCH v4 5/5] igb: call igb_ptp_suspend during
-> suspend/resume cycle
-> 
-> Properly stop the extra workqueue items and ensure that we resume
-> cleanly. This is better than using igb_ptp_init and igb_ptp_stop since
-> these functions destroy the PHC device, which will cause other problems
-> if we do so. Since igb_ptp_reset now re-schedules the work-queue item we
-> don't need an equivalent igb_ptp_resume in the resume workflow.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
->  drivers/net/ethernet/intel/igb/igb_main.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
+Hello Hello Don,
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Thank you for your help.
+
+On Fri, May 6, 2016 at 6:26 PM, Skidmore, Donald C
+<donald.c.skidmore@intel.com> wrote:
+> My validation hasn't be able to recreate the dereference on v4.1.x, v4.5.x or net_next.  Where exactly did you place the two line script in your rc scripts.  Our validation was able to run it as soon as ~14 second after the first boot message logged in dmesg.  Is this anywhere close to where you were executing it?  Likewise he has attempted running at both run level 3 and 5 in case that changed any of the times of how soon the rc scripts are executed.  So the more detail you can give of setup the more it might help us recreate what you are seeing.
+
+my script is called right at the beginning of "start" from
+/etc/init.d/networking in debian jessie; so before network init.
+(first trace is 40s after boot in my test)
+I can't find any other details I could gave you for now but I will let
+you know if I think about something else.
+
+-- 
+William
