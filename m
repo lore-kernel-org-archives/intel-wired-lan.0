@@ -1,37 +1,135 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 11 May 2016 23:04:54 +0000
-Subject: [Intel-wired-lan] [next PATCH] ixgbe: Fix VLAN features error
-In-Reply-To: <20160511202334.6128.46021.stgit@localhost.localdomain>
-References: <20160511202334.6128.46021.stgit@localhost.localdomain>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D6190@ORSMSX104.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 12 May 2016 07:07:30 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 4d5fecf8cc90ed4902ec8fcde426545149c67812 BUILD SUCCESS
+Message-ID: <5733bb32.B4hA4zm88ZHH6ySz%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Alexander Duyck
-> Sent: Wednesday, May 11, 2016 1:24 PM
-> To: Schmitt, Phillip J <phillip.j.schmitt@intel.com>; intel-wired-
-> lan at lists.osuosl.org; alexander.duyck at gmail.com
-> Subject: [Intel-wired-lan] [next PATCH] ixgbe: Fix VLAN features error
-> 
-> It looks like at some point I somehow transposed the location of setting the
-> VLAN features in netdev->features and the configuration of the
-> vlan_features.  As a result the driver is now generating a warning about
-> vlan_features being setup incorrectly.
-> 
-> This patch corrects that by placing the update of netdev->features to include
-> the VLAN features so that it is after the point where we write
-> netdev->features into netdev->vlan_features.
-> 
-> Fixes: b83e30104bd9 ("ixgbe/ixgbevf: Add support for GSO partial")
-> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+4d5fecf8cc90ed4902ec8fcde426545149c67812  igb: support RX flow classification by VLAN priority
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-An error is no longer received when creating VLAN interfaces on ixgbe devices
+elapsed time: 62m
+
+configs tested: 114
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201619
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                 randconfig-x018-201619
+x86_64                 randconfig-x011-201619
+x86_64                 randconfig-x010-201619
+x86_64                 randconfig-x014-201619
+x86_64                 randconfig-x016-201619
+x86_64                 randconfig-x019-201619
+x86_64                 randconfig-x012-201619
+x86_64                 randconfig-x013-201619
+x86_64                 randconfig-x015-201619
+x86_64                 randconfig-x017-201619
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                     randconfig-s0-201619
+i386                     randconfig-s1-201619
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+x86_64                   randconfig-i0-201619
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201619
+i386                     randconfig-i1-201619
+x86_64                           allmodconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                   randconfig-x013-201619
+i386                   randconfig-x012-201619
+i386                   randconfig-x011-201619
+i386                   randconfig-x018-201619
+i386                   randconfig-x019-201619
+i386                   randconfig-x015-201619
+i386                   randconfig-x016-201619
+i386                   randconfig-x010-201619
+i386                   randconfig-x014-201619
+i386                   randconfig-x017-201619
+i386                             allmodconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                 randconfig-x007-201619
+x86_64                 randconfig-x005-201619
+x86_64                 randconfig-x001-201619
+x86_64                 randconfig-x000-201619
+x86_64                 randconfig-x006-201619
+x86_64                 randconfig-x009-201619
+x86_64                 randconfig-x008-201619
+x86_64                 randconfig-x004-201619
+x86_64                 randconfig-x002-201619
+x86_64                 randconfig-x003-201619
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-r0-201619
+i386                   randconfig-x003-201619
+i386                   randconfig-x000-201619
+i386                   randconfig-x004-201619
+i386                   randconfig-x005-201619
+i386                   randconfig-x009-201619
+i386                   randconfig-x006-201619
+i386                   randconfig-x002-201619
+i386                   randconfig-x001-201619
+i386                   randconfig-x008-201619
+i386                   randconfig-x007-201619
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+
+Thanks,
+Fengguang
