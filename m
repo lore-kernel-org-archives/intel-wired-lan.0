@@ -1,90 +1,136 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Wed, 11 May 2016 21:17:27 +0000
-Subject: [Intel-wired-lan] [PATCH v1] checkpatch.pl: seed camelcase from
- the	provided kernel tree root
-In-Reply-To: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D608D@ORSMSX104.amr.corp.intel.com>
-References: <20160505231108.1934-1-jacob.e.keller@intel.com>
- <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D608D@ORSMSX104.amr.corp.intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81EFC15B@ORSMSX101.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 12 May 2016 05:37:49 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ ced3261244cb3e2a621373534a79ef34d588c9a8 BUILD SUCCESS
+Message-ID: <5733a62d.GSEFrP0+2i6Owwzl%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Yup, I see it too.  I had not traced it down to the set of unique patches, but I'm seeing that when I throw a whole bunch (1000) patches into checkpatch starting from the top (via a relatively dumb check patches script.) 
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+ced3261244cb3e2a621373534a79ef34d588c9a8  checkpatch.pl: seed camelcase from the provided kernel tree root
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Bowers, AndrewX
-> Sent: Wednesday, May 11, 2016 8:08 AM
-> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: Re: [Intel-wired-lan] [PATCH v1] checkpatch.pl: seed camelcase from
-> the provided kernel tree root
-> 
-> I think I found an issue, if I run the checkpatch against bb152c3 (Refactor
-> ethtool get settings)  it
-> gives me an "unknown option: -C" error and then a bunch of Avoid
-> CamelCase checks (See attachment)
-> 
-> > -----Original Message-----
-> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> > Behalf Of Jacob Keller
-> > Sent: Thursday, May 05, 2016 4:11 PM
-> > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> > Subject: [Intel-wired-lan] [PATCH v1] checkpatch.pl: seed camelcase from
-> > the provided kernel tree root
-> >
-> > When checkpatch.pl is run without a git tree, it seeds the camelcase
-> includes
-> > from the $root parameter. However, it does not use the $root directory
-> > when seeding for a git tree. Fix this by using "-C $root" so that a user may
-> run
-> > checkpatch with the --root parameter pointing to a valid kernel source tree.
-> > In addition, when generating the list of files to check, we must also prefix
-> > each file with the $root parameter, in order to properly locate the file when
-> > searching.
-> >
-> > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> > ---
-> >  scripts/checkpatch.pl | 9 +++++----
-> >  1 file changed, 5 insertions(+), 4 deletions(-)
-> >
-> > diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl index
-> > d574d13ba963..8ec10e8cff73 100755
-> > --- a/scripts/checkpatch.pl
-> > +++ b/scripts/checkpatch.pl
-> > @@ -665,8 +665,8 @@ sub seed_camelcase_includes {
-> >
-> >  	$camelcase_seeded = 1;
-> >
-> > -	if (-e ".git") {
-> > -		my $git_last_include_commit = `git log --no-merges --
-> > pretty=format:"%h%n" -1 -- include`;
-> > +	if (-e "$root/.git") {
-> > +		my $git_last_include_commit = `git -C $root log --no-merges
-> > +--pretty=format:"%h%n" -1 -- include`;
-> >  		chomp $git_last_include_commit;
-> >  		$camelcase_cache = ".checkpatch-
-> > camelcase.git.$git_last_include_commit";
-> >  	} else {
-> > @@ -693,9 +693,10 @@ sub seed_camelcase_includes {
-> >  		return;
-> >  	}
-> >
-> > -	if (-e ".git") {
-> > -		$files = `git ls-files "include/*.h"`;
-> > +	if (-e "$root/.git") {
-> > +		$files = `git -C $root ls-files "include/*.h"`;
-> >  		@include_files = split('\n', $files);
-> > +		@include_files = map("$root/$_", @include_files);
-> >  	}
-> >
-> >  	foreach my $file (@include_files) {
-> > --
-> > 2.8.1.493.g7b22612
-> >
-> > _______________________________________________
-> > Intel-wired-lan mailing list
-> > Intel-wired-lan at lists.osuosl.org
-> > http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+elapsed time: 58m
+
+configs tested: 115
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201619
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                 randconfig-x018-201619
+x86_64                 randconfig-x011-201619
+x86_64                 randconfig-x010-201619
+x86_64                 randconfig-x014-201619
+x86_64                 randconfig-x016-201619
+x86_64                 randconfig-x019-201619
+x86_64                 randconfig-x012-201619
+x86_64                 randconfig-x013-201619
+x86_64                 randconfig-x015-201619
+x86_64                 randconfig-x017-201619
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201619
+i386                     randconfig-s1-201619
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201619
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201619
+i386                     randconfig-i1-201619
+x86_64                           allmodconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                               tinyconfig
+i386                   randconfig-x013-201619
+i386                   randconfig-x012-201619
+i386                   randconfig-x011-201619
+i386                   randconfig-x018-201619
+i386                   randconfig-x019-201619
+i386                   randconfig-x015-201619
+i386                   randconfig-x016-201619
+i386                   randconfig-x010-201619
+i386                   randconfig-x014-201619
+i386                   randconfig-x017-201619
+i386                     randconfig-n0-201619
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                 randconfig-x007-201619
+x86_64                 randconfig-x005-201619
+x86_64                 randconfig-x001-201619
+x86_64                 randconfig-x000-201619
+x86_64                 randconfig-x006-201619
+x86_64                 randconfig-x009-201619
+x86_64                 randconfig-x008-201619
+x86_64                 randconfig-x004-201619
+x86_64                 randconfig-x002-201619
+x86_64                 randconfig-x003-201619
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-r0-201619
+i386                             allmodconfig
+i386                   randconfig-x003-201619
+i386                   randconfig-x000-201619
+i386                   randconfig-x004-201619
+i386                   randconfig-x005-201619
+i386                   randconfig-x009-201619
+i386                   randconfig-x006-201619
+i386                   randconfig-x002-201619
+i386                   randconfig-x001-201619
+i386                   randconfig-x008-201619
+i386                   randconfig-x007-201619
+
+Thanks,
+Fengguang
