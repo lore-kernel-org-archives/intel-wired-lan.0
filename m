@@ -1,85 +1,83 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 11 May 2016 13:24:57 -0700
-Subject: [Intel-wired-lan] [next-queue PATCH v2 2/3] ixgbe/ixgbevf: Add
- support for GSO partial
-In-Reply-To: <305E19FFAC908240AB6DEBD1E2D8C1E180D94916@ORSMSX108.amr.corp.intel.com>
-References: <20160414210725.14141.25917.stgit@ahduyck-xeon-server>
- <20160414211931.14141.18864.stgit@ahduyck-xeon-server>
- <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D2658@ORSMSX104.amr.corp.intel.com>
- <305E19FFAC908240AB6DEBD1E2D8C1E180D94916@ORSMSX108.amr.corp.intel.com>
-Message-ID: <CAKgT0Ue=s=+N_uJ31P_bKpkKuKJ+xVVvbNf59O31izqtP9gFdQ@mail.gmail.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 11 May 2016 15:07:38 +0000
+Subject: [Intel-wired-lan] [PATCH v1] checkpatch.pl: seed camelcase from
+ the	provided kernel tree root
+In-Reply-To: <20160505231108.1934-1-jacob.e.keller@intel.com>
+References: <20160505231108.1934-1-jacob.e.keller@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D608D@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, May 11, 2016 at 11:47 AM, Schmitt, Phillip J
-<phillip.j.schmitt@intel.com> wrote:
->
->
->> -----Original Message-----
->> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
->> Behalf Of Bowers, AndrewX
->> Sent: Wednesday, April 20, 2016 2:21 PM
->> To: intel-wired-lan at lists.osuosl.org
->> Subject: Re: [Intel-wired-lan] [next-queue PATCH v2 2/3] ixgbe/ixgbevf: Add
->> support for GSO partial
->>
->> > -----Original Message-----
->> > From: Intel-wired-lan
->> > [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of
->> > Alexander Duyck
->> > Sent: Thursday, April 14, 2016 2:20 PM
->> > To: intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T
->> > <jeffrey.t.kirsher@intel.com>; alexander.duyck at gmail.com
->> > Subject: [Intel-wired-lan] [next-queue PATCH v2 2/3] ixgbe/ixgbevf:
->> > Add support for GSO partial
->> >
->> > This patch adds support for partial GSO segmentation in the case of tunnels.
->> > Specifically with this change the driver an perform segmenation as
->> > long as the frame either has IPv6 inner headers, or we are allowed to
->> > mangle the IP IDs on the inner header.  This is needed because we will
->> > not be modifying any fields from the start of the start of the outer
->> > transport header to the start of the inner transport header as we are
->> > treating them like they are just a block of IP options.
->> >
->> > Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
->> > ---
->> >  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |  133 ++++++++++++++--
->> > -----
->> >  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |  129
->> > +++++++++++++++-----
->> >  2 files changed, 180 insertions(+), 82 deletions(-)
->>
->> Tested-by: Andrew Bowers <andrewx.bowers@intel.com> GRE tunnel traffic
->> works as expected with speed increase with GSO on
->> _______________________________________________
->> Intel-wired-lan mailing list
->> Intel-wired-lan at lists.osuosl.org
->> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
->
-> Alex,
-> Turns out this patch is causing an error when attempting to create a VLAN.
-> Would you be interested in submitting a follow on patch to address this?
-> Here's repro steps:
-> 1. Install Fedora 23 and compile the next-queue kernel (v4.6-rc6) with dev-queue branch
-> 2. Reboot with kernel-4.6.0-rc6_20160506.next_queue_dev_queue.
-> 3. Created vlan 3260 interface with Spring Fountain
->
-> [root at lin-nd3-114 ~]# ip l a enp130s0f0.3260 l enp130s0f0 type vlan id 3260
-> RTNETLINK answers: Invalid argument
->
-> Expected result: vlan 3260 interface should be created.
->
-> Actual result: Can't get vlan interface.
+I think I found an issue, if I run the checkpatch against bb152c3 (Refactor ethtool get settings)  it 
+gives me an "unknown option: -C" error and then a bunch of Avoid 
+CamelCase checks (See attachment)
 
-I think I found the issue.  It looks like a few lines got swapped when
-I was working on the patch.
-
-I have submitted a patch to fix it that should be available in the
-next few minutes.
-
-Thanks.
-
-- Alex
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Jacob Keller
+> Sent: Thursday, May 05, 2016 4:11 PM
+> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+> Subject: [Intel-wired-lan] [PATCH v1] checkpatch.pl: seed camelcase from
+> the provided kernel tree root
+> 
+> When checkpatch.pl is run without a git tree, it seeds the camelcase includes
+> from the $root parameter. However, it does not use the $root directory
+> when seeding for a git tree. Fix this by using "-C $root" so that a user may run
+> checkpatch with the --root parameter pointing to a valid kernel source tree.
+> In addition, when generating the list of files to check, we must also prefix
+> each file with the $root parameter, in order to properly locate the file when
+> searching.
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> ---
+>  scripts/checkpatch.pl | 9 +++++----
+>  1 file changed, 5 insertions(+), 4 deletions(-)
+> 
+> diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl index
+> d574d13ba963..8ec10e8cff73 100755
+> --- a/scripts/checkpatch.pl
+> +++ b/scripts/checkpatch.pl
+> @@ -665,8 +665,8 @@ sub seed_camelcase_includes {
+> 
+>  	$camelcase_seeded = 1;
+> 
+> -	if (-e ".git") {
+> -		my $git_last_include_commit = `git log --no-merges --
+> pretty=format:"%h%n" -1 -- include`;
+> +	if (-e "$root/.git") {
+> +		my $git_last_include_commit = `git -C $root log --no-merges
+> +--pretty=format:"%h%n" -1 -- include`;
+>  		chomp $git_last_include_commit;
+>  		$camelcase_cache = ".checkpatch-
+> camelcase.git.$git_last_include_commit";
+>  	} else {
+> @@ -693,9 +693,10 @@ sub seed_camelcase_includes {
+>  		return;
+>  	}
+> 
+> -	if (-e ".git") {
+> -		$files = `git ls-files "include/*.h"`;
+> +	if (-e "$root/.git") {
+> +		$files = `git -C $root ls-files "include/*.h"`;
+>  		@include_files = split('\n', $files);
+> +		@include_files = map("$root/$_", @include_files);
+>  	}
+> 
+>  	foreach my $file (@include_files) {
+> --
+> 2.8.1.493.g7b22612
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at lists.osuosl.org
+> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: checkpatch output.jpg
+Type: image/jpeg
+Size: 106605 bytes
+Desc: checkpatch output.jpg
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160511/48fb237f/attachment-0001.jpg>
