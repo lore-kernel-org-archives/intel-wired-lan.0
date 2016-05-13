@@ -1,55 +1,35 @@
-From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-Date: Fri, 13 May 2016 15:52:43 +0300
-Subject: [Intel-wired-lan] [PATCH] ixgbe: take online CPU number as MQ
- max limit when alloc_etherdev_mq()
-In-Reply-To: <1463118995-31763-1-git-send-email-ethan.zhao@oracle.com>
-References: <1463118995-31763-1-git-send-email-ethan.zhao@oracle.com>
-Message-ID: <c7bd9abf-55c0-f0d6-5cb2-45fbd6358d18@cogentembedded.com>
+From: Doug Ledford <dledford@redhat.com>
+Date: Fri, 13 May 2016 12:50:02 -0400
+Subject: [Intel-wired-lan] [PATCH] i40e: constify i40e_client_ops
+	structure
+In-Reply-To: <1462104443-30724-1-git-send-email-Julia.Lawall@lip6.fr>
+References: <1462104443-30724-1-git-send-email-Julia.Lawall@lip6.fr>
+Message-ID: <0c2df9ca-64bd-ac73-9071-f4d619887df8@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello.
+On 05/01/2016 08:07 AM, Julia Lawall wrote:
+> The i40e_client_ops structure is never modified, so declare it as const.
+> 
+> Done with the help of Coccinelle.
+> 
+> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
-On 5/13/2016 8:56 AM, Ethan Zhao wrote:
+Thanks, applied.
 
-> Allocating 64 Tx/Rx as default doesn't benefit perfomrnace when less
 
-    Performance.
+-- 
+Doug Ledford <dledford@redhat.com>
+              GPG KeyID: 0E572FDD
 
-> CPUs were assigned. especially when DCB is enabled, so we should take
-> num_online_cpus() as top limit, and aslo to make sure every TC has
 
-    Also.
-
-> at least one queue, take the MAX_TRAFFIC_CLASS as bottom limit of queues
-> number.
->
-> Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 4 ++++
->  1 file changed, 4 insertions(+)
->
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> index 7df3fe2..1f9769c 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> @@ -9105,6 +9105,10 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
->  		indices = IXGBE_MAX_RSS_INDICES;
->  #endif
->  	}
-> +	/* Don't allocate too more queues than online cpus number */
-
-    "Too" not needed here. CPUs.
-
-> +	indices = min_t(int, indices, num_online_cpus());
-> +	/* To make sure TC works, allocate at least 1 queue per TC */
-> +	indices = max_t(int, indices, MAX_TRAFFIC_CLASS);
->
->  	netdev = alloc_etherdev_mq(sizeof(struct ixgbe_adapter), indices);
->  	if (!netdev) {
-
-MBR, Sergei
-
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 884 bytes
+Desc: OpenPGP digital signature
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160513/54058ad8/attachment.asc>
