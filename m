@@ -1,165 +1,36 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 13 May 2016 12:20:15 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
- 8e6d1de0e7a8d1e92388cca34f94b6108aed6167 BUILD SUCCESS
-Message-ID: <573555ff.ovIlHddr1sC29N6N%fengguang.wu@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Fri, 13 May 2016 09:46:37 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: take online CPU number as MQ
+	max limit when alloc_etherdev_mq()
+In-Reply-To: <1463118995-31763-1-git-send-email-ethan.zhao@oracle.com>
+References: <1463118995-31763-1-git-send-email-ethan.zhao@oracle.com>
+Message-ID: <CAKgT0UeiEW21E7A9fnt_BUCppopns-E2w1WbwF-8A6sCZkJ8rQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-8e6d1de0e7a8d1e92388cca34f94b6108aed6167  ixgbevf: ixgbevf_write/read_posted_mbx should use IXGBE_ERR_MBX to initialize ret_val
+On Thu, May 12, 2016 at 10:56 PM, Ethan Zhao <ethan.zhao@oracle.com> wrote:
+> Allocating 64 Tx/Rx as default doesn't benefit perfomrnace when less
+> CPUs were assigned. especially when DCB is enabled, so we should take
+> num_online_cpus() as top limit, and aslo to make sure every TC has
+> at least one queue, take the MAX_TRAFFIC_CLASS as bottom limit of queues
+> number.
+>
+> Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
 
-elapsed time: 177m
+What is the harm in allowing the user to specify up to 64 queues if
+they want to?  Also what is your opinion based on?  In the case of RSS
+traffic the upper limit is only 16 on older NICs, but last I knew the
+latest X550 can support more queues for RSS.  Have you only been
+testing on older NICs or did you test on the latest hardware as well?
 
-configs tested: 144
+If you want to control the number of queues allocated in a given
+configuration you should look at the code over in the ixgbe_lib.c, not
+ixgbe_main.c.  All you are doing with this patch is denying the user
+choice with this change as they then are not allowed to set more
+queues.  Even if they find your decision was wrong for their
+configuration.
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                   randconfig-a0-05120831
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-05131118
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-powerpc                       maple_defconfig
-powerpc                         wii_defconfig
-sh                        apsh4ad0a_defconfig
-m32r                             alldefconfig
-powerpc                  storcenter_defconfig
-powerpc                     tqm8555_defconfig
-x86_64                 randconfig-v0-05131105
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-parisc                         b180_defconfig
-avr32                      atngw100_defconfig
-blackfin                       SRV1_defconfig
-m32r                   mappi2.vdec2_defconfig
-m68k                             allyesconfig
-m68k                        m5407c3_defconfig
-x86_64                 randconfig-x018-201619
-x86_64                 randconfig-x011-201619
-x86_64                 randconfig-x010-201619
-x86_64                 randconfig-x014-201619
-x86_64                 randconfig-x016-201619
-x86_64                 randconfig-x019-201619
-x86_64                 randconfig-x012-201619
-x86_64                 randconfig-x013-201619
-x86_64                 randconfig-x015-201619
-x86_64                 randconfig-x017-201619
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                     randconfig-s1-201619
-i386                     randconfig-s0-201619
-x86_64                 randconfig-s0-05131121
-x86_64                 randconfig-s1-05131121
-x86_64                 randconfig-s2-05131121
-x86_64                 randconfig-s3-05131115
-x86_64                 randconfig-s4-05131115
-x86_64                 randconfig-s5-05131115
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-x86_64                 randconfig-i0-05121036
-i386                   randconfig-b0-05131117
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                   randconfig-i0-05121127
-i386                   randconfig-i1-05121127
-x86_64                           allmodconfig
-m68k                            mac_defconfig
-powerpc                 mpc8540_ads_defconfig
-ia64                         bigsur_defconfig
-i386                               tinyconfig
-powerpc                      tqm8xx_defconfig
-sh                 kfr2r09-romimage_defconfig
-sh                          rsk7201_defconfig
-sh                   sh7770_generic_defconfig
-i386                   randconfig-x013-201619
-i386                   randconfig-x012-201619
-i386                   randconfig-x011-201619
-i386                   randconfig-x018-201619
-i386                   randconfig-x019-201619
-i386                   randconfig-x015-201619
-i386                   randconfig-x016-201619
-i386                   randconfig-x010-201619
-i386                   randconfig-x014-201619
-i386                   randconfig-x017-201619
-x86_64                                    lkp
-x86_64                                   rhel
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201619
-x86_64                 randconfig-n0-05131130
-x86_64                 randconfig-n0-05131153
-x86_64                 randconfig-x007-201619
-x86_64                 randconfig-x005-201619
-x86_64                 randconfig-x001-201619
-x86_64                 randconfig-x000-201619
-x86_64                 randconfig-x006-201619
-x86_64                 randconfig-x009-201619
-x86_64                 randconfig-x008-201619
-x86_64                 randconfig-x004-201619
-x86_64                 randconfig-x002-201619
-x86_64                 randconfig-x003-201619
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-r0-201619
-i386                   randconfig-x003-201619
-i386                   randconfig-x000-201619
-i386                   randconfig-x004-201619
-i386                   randconfig-x005-201619
-i386                   randconfig-x009-201619
-i386                   randconfig-x006-201619
-i386                   randconfig-x002-201619
-i386                   randconfig-x001-201619
-i386                   randconfig-x008-201619
-i386                   randconfig-x007-201619
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-mips                                   jz4740
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
-i386                   randconfig-x0-05131105
-
-Thanks,
-Fengguang
+- Alex
