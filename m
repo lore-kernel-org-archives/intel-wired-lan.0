@@ -1,27 +1,26 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 13 May 2016 08:22:43 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
- e7142c341c9ce3678f3533a2cfbf8477a09a95ad BUILD SUCCESS
-Message-ID: <57351e53.oY7Uzfxx8iRq/e7O%fengguang.wu@intel.com>
+Date: Fri, 13 May 2016 11:51:22 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 4bb87a4b24f24ed59f048f5cd6b399039e54c277 BUILD SUCCESS
+Message-ID: <57354f3a.UrcYJgZVUwwPpCw1%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
-e7142c341c9ce3678f3533a2cfbf8477a09a95ad  tipc: eliminate risk of double link_up events
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+4bb87a4b24f24ed59f048f5cd6b399039e54c277  igb: call igb_ptp_suspend/igb_ptp_resume during suspend/resume cycle
 
-elapsed time: 189m
+elapsed time: 164m
 
-configs tested: 111
+configs tested: 114
 
 parisc                        c3000_defconfig
 parisc                              defconfig
 alpha                               defconfig
 parisc                            allnoconfig
 i386                   randconfig-a0-05120831
-x86_64                           allmodconfig
 x86_64                             acpi-redef
 x86_64                           allyesdebian
 x86_64                                nfsroot
@@ -31,7 +30,6 @@ xtensa                          iss_defconfig
 m32r                         opsput_defconfig
 m32r                           usrv_defconfig
 m32r                     mappi3.smp_defconfig
-parisc                         b180_defconfig
 cris                 etrax-100lx_v2_defconfig
 blackfin                  TCM-BF537_defconfig
 blackfin            BF561-EZKIT-SMP_defconfig
@@ -47,9 +45,6 @@ x86_64                 randconfig-x012-201619
 x86_64                 randconfig-x013-201619
 x86_64                 randconfig-x015-201619
 x86_64                 randconfig-x017-201619
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
 i386                     randconfig-s1-201619
 i386                     randconfig-s0-201619
 mn10300                     asb2364_defconfig
@@ -61,11 +56,6 @@ frv                                 defconfig
 avr32                     atstk1006_defconfig
 tile                         tilegx_defconfig
 i386                               tinyconfig
-i386                             allmodconfig
-mips                                   jz4740
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
 powerpc                             defconfig
 s390                        default_defconfig
 powerpc                       ppc64_defconfig
@@ -86,9 +76,14 @@ i386                   randconfig-x016-201619
 i386                   randconfig-x010-201619
 i386                   randconfig-x014-201619
 i386                   randconfig-x017-201619
+x86_64                                    lkp
+x86_64                                   rhel
 microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
 i386                     randconfig-n0-201619
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
 arm                         at91_dt_defconfig
 arm                               allnoconfig
 arm                           efm32_defconfig
@@ -117,6 +112,7 @@ x86_64                 randconfig-x004-201619
 x86_64                 randconfig-x002-201619
 x86_64                 randconfig-x003-201619
 i386                     randconfig-r0-201619
+i386                             allmodconfig
 i386                   randconfig-x003-201619
 i386                   randconfig-x000-201619
 i386                   randconfig-x004-201619
@@ -127,6 +123,13 @@ i386                   randconfig-x002-201619
 i386                   randconfig-x001-201619
 i386                   randconfig-x008-201619
 i386                   randconfig-x007-201619
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+mips                                   jz4740
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
 
 Thanks,
 Fengguang
