@@ -1,50 +1,50 @@
-From: Doug Ledford <dledford@redhat.com>
-Date: Fri, 13 May 2016 16:42:52 -0400
-Subject: [Intel-wired-lan] [PATCH] i40e: constify i40e_client_ops
-	structure
-In-Reply-To: <1463168405.2612.23.camel@intel.com>
-References: <1462104443-30724-1-git-send-email-Julia.Lawall@lip6.fr>
- <0c2df9ca-64bd-ac73-9071-f4d619887df8@redhat.com>
- <1463168405.2612.23.camel@intel.com>
-Message-ID: <7b2cd30a-77c3-4204-c2cf-df5a2870b443@redhat.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Fri, 13 May 2016 16:43:47 -0700
+Subject: [Intel-wired-lan] [net-next 06/14] e1000e:
+	e1000e_cyclecounter_read(): fix er32(SYSTIML) overflow check
+In-Reply-To: <1463183035-31888-1-git-send-email-jeffrey.t.kirsher@intel.com>
+References: <1463183035-31888-1-git-send-email-jeffrey.t.kirsher@intel.com>
+Message-ID: <1463183035-31888-7-git-send-email-jeffrey.t.kirsher@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 05/13/2016 03:40 PM, Jeff Kirsher wrote:
-> On Fri, 2016-05-13 at 12:50 -0400, Doug Ledford wrote:
->> On 05/01/2016 08:07 AM, Julia Lawall wrote:
->>> The i40e_client_ops structure is never modified, so declare it as
->> const.
->>>  
->>> Done with the help of Coccinelle.
->>>  
->>> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
->>
->> Thanks, applied.
-> 
-> I already have this patch queued up to push through David Miller's net-next 
-> tree.
-> 
-> Julia- please do not shotgun blast several maintainers and several lists,
-> it causes confusion on who is *REALLY* going to accept and apply the patch.
-> Please use scripts/get_maintainer.pl to get the correct mailing lists and
-> maintainers to add to the To: and CC: lines.
-> 
+From: Denys Vlasenko <dvlasenk@redhat.com>
 
-I've dropped it from my tree.  There won't be a conflict.
+If two consecutive reads of the counter are the same, it is also
+not an overflow.  "systimel_1 < systimel_2" should be
+"systimel_1 <= systimel_2".
 
+Before the patch, we could perform an *erroneous* correction:
+
+Let's say that systimel_1 == systimel_2 == 0xffffffff.
+"systimel_1 < systimel_2" is false, we think it's an overflow,
+we read "systimeh = er32(SYSTIMH)" which meanwhile had incremented,
+and use "(systimeh << 32) + systimel_2" value which is 2^32 too large.
+
+Signed-off-by: Denys Vlasenko <dvlasenk@redhat.com>
+CC: intel-wired-lan at lists.osuosl.org
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 4969f64..02c64bc 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -4287,7 +4287,7 @@ static cycle_t e1000e_cyclecounter_read(const struct cyclecounter *cc)
+ 	systimeh = er32(SYSTIMH);
+ 	systimel_2 = er32(SYSTIML);
+ 	/* Check for overflow. If there was no overflow, use the values */
+-	if (systimel_1 < systimel_2) {
++	if (systimel_1 <= systimel_2) {
+ 		systim = (cycle_t)systimel_1;
+ 		systim |= (cycle_t)systimeh << 32;
+ 	} else {
 -- 
-Doug Ledford <dledford@redhat.com>
-              GPG KeyID: 0E572FDD
+2.5.5
 
-
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 884 bytes
-Desc: OpenPGP digital signature
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160513/f99f027e/attachment.asc>
