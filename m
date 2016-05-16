@@ -1,55 +1,76 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Mon, 16 May 2016 22:31:53 +0000
-Subject: [Intel-wired-lan] [PATCH] e1000e: prevent division by zero
-	if	TIMINCA is zero
-In-Reply-To: <1462563711-30350-1-git-send-email-dvlasenk@redhat.com>
-References: <1462563711-30350-1-git-send-email-dvlasenk@redhat.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81EFDBA5@ORSMSX101.amr.corp.intel.com>
+From: Wyborny, Carolyn <carolyn.wyborny@intel.com>
+Date: Mon, 16 May 2016 22:43:28 +0000
+Subject: [Intel-wired-lan] [next PATCH S37 08/15] i40e: Save PCI
+	state	before suspend
+In-Reply-To: <1463419605-30746-9-git-send-email-bimmy.pujari@intel.com>
+References: <1463419605-30746-1-git-send-email-bimmy.pujari@intel.com>
+ <1463419605-30746-9-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <9BBC4E0CF881AA4299206E2E1412B626501D9F44@ORSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+ACK
+
+> -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Denys Vlasenko
-> Sent: Friday, May 6, 2016 12:42 PM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Cc: intel-wired-lan at lists.osuosl.org; Denys Vlasenko
-> <dvlasenk@redhat.com>; LKML <linux-kernel@vger.kernel.org>;
-> netdev at vger.kernel.org
-> Subject: [Intel-wired-lan] [PATCH] e1000e: prevent division by zero if
-> TIMINCA is zero
+> Behalf Of Bimmy Pujari
+> Sent: Monday, May 16, 2016 10:27 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S37 08/15] i40e: Save PCI state before
+> suspend
 > 
-> Users report that under VMWare, er32(TIMINCA) returns zero.
-> This causes division by zero at init time as follows:
+> From: Greg Rose <gregory.v.rose@intel.com>
 > 
->  ==>            incvalue = er32(TIMINCA) & E1000_TIMINCA_INCVALUE_MASK;
->                 for (i = 0; i < E1000_MAX_82574_SYSTIM_REREADS; i++) {
->                         /* latch SYSTIMH on read of SYSTIML */
->                         systim_next = (cycle_t)er32(SYSTIML);
->                         systim_next |= (cycle_t)er32(SYSTIMH) << 32;
+> The i40e_suspend() function was failing to save PCI state
+> and this would result in a kernel stack trace from a WARN_ONCE in the
+> pci_legacy_suspend() function.
 > 
->                         time_delta = systim_next - systim;
->                         temp = time_delta;
->  ====>                  rem = do_div(temp, incvalue);
+> Add a call to pci_save_state() to fix that problem.
 > 
-> This change makes kernel survive this, and users report that
-> NIC does work after this change.
-> 
-> Since on real hardware incvalue is never zero, this should not affect
-> real hardware use case.
-> 
-> Signed-off-by: Denys Vlasenko <dvlasenk@redhat.com>
-> CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> CC: "Ruinskiy, Dima" <dima.ruinskiy@intel.com>
-> CC: intel-wired-lan at lists.osuosl.org
-> CC: netdev at vger.kernel.org
-> CC: LKML <linux-kernel@vger.kernel.org>
+> Signed-off-by: Greg Rose <gregory.v.rose@intel.com>
+> Change-ID: I4736e62bb660966bd208cc8af617a14cb07fc4bd
 > ---
->  drivers/net/ethernet/intel/e1000e/netdev.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-
-As Mark Rustad pointed out I recall this was earlier rejected as something that is a VMWare error and it should be fixed there so that existing VMs will start working without installing a new driver.  Having said that, it does not seem to be causing any harm in my testing, so...
-
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index d71b6bc..ae4d089 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -11525,6 +11525,7 @@ static int i40e_suspend(struct pci_dev *pdev,
+> pm_message_t state)
+>  {
+>  	struct i40e_pf *pf = pci_get_drvdata(pdev);
+>  	struct i40e_hw *hw = &pf->hw;
+> +	int retval = 0;
+> 
+>  	set_bit(__I40E_SUSPENDED, &pf->state);
+>  	set_bit(__I40E_DOWN, &pf->state);
+> @@ -11538,10 +11539,14 @@ static int i40e_suspend(struct pci_dev *pdev,
+> pm_message_t state)
+> 
+>  	i40e_stop_misc_vector(pf);
+> 
+> +	retval = pci_save_state(pdev);
+> +	if (retval)
+> +		return retval;
+> +
+>  	pci_wake_from_d3(pdev, pf->wol_en);
+>  	pci_set_power_state(pdev, PCI_D3hot);
+> 
+> -	return 0;
+> +	return retval;
+>  }
+> 
+>  /**
+> --
+> 2.4.11
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at lists.osuosl.org
+> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
