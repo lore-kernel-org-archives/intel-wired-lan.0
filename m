@@ -1,52 +1,59 @@
-From: Dayanand, Avinash <avinash.dayanand@intel.com>
-Date: Mon, 16 May 2016 18:26:30 +0000
-Subject: [Intel-wired-lan] [next PATCH S37 10/15] i40e: Removing
- unnecessary code which caused supported link mode bug
-In-Reply-To: <1463419605-30746-11-git-send-email-bimmy.pujari@intel.com>
-References: <1463419605-30746-1-git-send-email-bimmy.pujari@intel.com>
- <1463419605-30746-11-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <475EF86EA1AC844AA3BA8EE1F912AD6903CCA105@ORSMSX111.amr.corp.intel.com>
+From: tndave <tushar.n.dave@oracle.com>
+Date: Mon, 16 May 2016 12:34:33 -0700
+Subject: [Intel-wired-lan] i40e: Errors while turning off TSO
+Message-ID: <573A20C9.90803@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-ACK, looks good.. 
+On systems with 128 CPUs, turning off TSO results in errors.
 
------Original Message-----
-From: Pujari, Bimmy 
-Sent: Monday, May 16, 2016 10:27 AM
-To: intel-wired-lan@lists.osuosl.org
-Cc: Dayanand, Avinash <avinash.dayanand@intel.com>
-Subject: [next PATCH S37 10/15] i40e: Removing unnecessary code which caused supported link mode bug
+Errors:
+i40e 0000:03:00.0: failed to get tracking for 1 vectors for VSI 400, err=-12
+i40e 0000:03:00.0: Couldn't create FDir VSI
+i40e 0000:03:00.0: i40e_ptp_init: PTP not supported on eth0
+i40e 0000:03:00.0: couldn't add VEB, err I40E_ERR_ADMIN_QUEUE_ERROR
+aq_err I40E_AQ_RC_ENOENT
+i40e 0000:03:00.0: rebuild of switch failed: -1, will try to set up
+simple PF connection
+i40e 0000:03:00.0 eth0: adding 00:10:e0:8a:24:b6 vid=0
 
-From: Avinash Dayanand <avinash.dayanand@intel.com>
 
-Removing this code which wasn't allowing 100BaseT to show up in the supported link modes for 10GBaseT PHYs.
+ From kernel log:
+i40e: Intel(R) Ethernet Connection XL710 Network Driver - version 1.4.8-k
+i40e: Copyright (c) 2013 - 2014 Intel Corporation.
+i40e 0000:03:00.0: fw 4.40.35115 api 1.4 nvm 4.53 0x80001e8c 0.0.0
+i40e 0000:03:00.0: MAC address: 00:10:e0:8a:24:b6
+i40e 0000:03:00.0: i40e_ptp_init: PTP not supported on eth0
+i40e 0000:03:00.0: PCI-Express: Speed 8.0GT/s Width x8
+i40e 0000:03:00.0: Features: PF-id[0] VFs: 32 VSIs: 34 QP: 128 RX: 1BUF
+RSS FD_ATR VxLAN VEPA
 
-Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
-Change-ID: Iada2eafa7ef6b4bac9a2a1380ff533ae5de51e1d
----
-Testing Hints: Use 'ethtool ethx' check if 100BaseT is listed as one of the supported link modes.
+As per the log above, feature FD_SB (sideband flow director)) is not
+enabled. Because there are no enough MSI-X vectors available.
+(Device function caps report 129 MSI-X vectors in this case. And driver
+reserved 1 of them for misc interrupt and rest 128 for 128 QP. So no
+vector left for FD_SB. Therefore driver disables FD_SB)
 
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+However turning off TSO invokes i40e_set_ntuple()
+that enables FD_SB and returns true, issues reset in i40e_set_features()
+i.e i40e_do_reset.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 0e80b35..0a96c5a 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -313,8 +313,7 @@ static void i40e_phy_type_to_ethtool(struct i40e_pf *pf, u32 *supported,
- 		*advertising |= ADVERTISED_Autoneg |
- 			       ADVERTISED_40000baseCR4_Full;
- 	}
--	if ((phy_types & I40E_CAP_PHY_TYPE_100BASE_TX) &&
--	    !(phy_types & I40E_CAP_PHY_TYPE_1000BASE_T)) {
-+	if (phy_types & I40E_CAP_PHY_TYPE_100BASE_TX) {
- 		*supported |= SUPPORTED_Autoneg |
- 			     SUPPORTED_100baseT_Full;
- 		*advertising |= ADVERTISED_Autoneg |
---
-2.4.11
+Later during reset, driver fails to find irq for FD_SB from irq pile
+(and it won't because there was no irq vector assigned for FD_SB).
+This results in the very first error,
+'i40e 0000:03:00.0: failed to get tracking for 1 vectors for VSI 400,
+err=-12'
 
+I believe before enabling FD_SB in i40e_set_ntuple(), driver should
+check if MSI-X vector available for FD_SB.
+
+Sending patch in separate email.
+
+(FWIW, if number of CPUs reduced to 64, I don't see the issue
+described above because in that case out of 129 MSI-X vectors only
+64 get assigned to QP. Remaining are used for features like FD_SB)
+
+-Tushar
