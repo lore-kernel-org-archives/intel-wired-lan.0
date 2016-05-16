@@ -1,410 +1,149 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Mon, 16 May 2016 17:46:09 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- f3cc7498b00c0ce291816859503fcf91fb5bc85e BUILD INCOMPLETE
-Message-ID: <573996e1.Aaim+Y0h0hTbA1vE%fengguang.wu@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Mon, 16 May 2016 09:09:02 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: take online CPU number as MQ
+	max limit when alloc_etherdev_mq()
+In-Reply-To: <573937A7.9010405@oracle.com>
+References: <1463118995-31763-1-git-send-email-ethan.zhao@oracle.com>
+ <CAKgT0UeiEW21E7A9fnt_BUCppopns-E2w1WbwF-8A6sCZkJ8rQ@mail.gmail.com>
+ <573937A7.9010405@oracle.com>
+Message-ID: <CAKgT0UfJqu5sa7U4HKLFk0h3NjqavaAY0xfsahZ32MvnePFHdg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-f3cc7498b00c0ce291816859503fcf91fb5bc85e  ixgbevf: ixgbevf_write/read_posted_mbx should use IXGBE_ERR_MBX to initialize ret_val
+On Sun, May 15, 2016 at 7:59 PM, ethan zhao <ethan.zhao@oracle.com> wrote:
+> Alexander,
+>
+> On 2016/5/14 0:46, Alexander Duyck wrote:
+>>
+>> On Thu, May 12, 2016 at 10:56 PM, Ethan Zhao <ethan.zhao@oracle.com>
+>> wrote:
+>>>
+>>> Allocating 64 Tx/Rx as default doesn't benefit perfomrnace when less
+>>> CPUs were assigned. especially when DCB is enabled, so we should take
+>>> num_online_cpus() as top limit, and aslo to make sure every TC has
+>>> at least one queue, take the MAX_TRAFFIC_CLASS as bottom limit of queues
+>>> number.
+>>>
+>>> Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
+>>
+>> What is the harm in allowing the user to specify up to 64 queues if
+>> they want to?  Also what is your opinion based on?  In the case of RSS
+>
+>
+>  There is no module parameter to specify queue number in this upstream ixgbe
+>   driver.  for what to specify more queues than num_online_cpus() via
+> ethtool ?
+>  I couldn't figure out the benefit to do that.
 
-TIMEOUT after 601m
+There are a number of benefits to being able to set the number of
+queues based on the user desire.  Just because you can't figure out
+how to use a feature is no reason to break it so that nobody else can.
 
+>  But if DCB is turned on after loading, the queues would be 64/64, that
+> doesn't
+>  make sense if only 16 CPUs assigned.
 
-Sorry we cannot finish the testset for your branch within a reasonable time.
-It's our fault -- either some build server is down or some build worker is busy
-doing bisects for _other_ trees. The branch will get more complete coverage and
-possible error reports when our build infrastructure is restored or catches up.
-There will be no more build success notification for this branch head, but you
-can expect reasonably good test coverage after waiting for 1 day.
+It makes perfect sense.  What is happening is that it is allocating an
+RSS set per TC.  So what you should have is either 4 queues per CPU
+with each one belonging to a different TC, or 4 queues per CPU with
+the first 8 CPUs covering TCs 0-3, and the last 8 CPUs covering TCs
+4-7.
 
-configs tested: 382
+I can see how the last setup might actually be a bit confusing.  To
+that end you might consider modifying ixgbe_acquire_msix_vectors uses
+the number of RSS queues instead of the number of Rx queues in the
+case of DCB.  Then you would get more consistent behavior with each
+q_vector or CPU (if num_q_vecotrs == num_online_cpus()) having one
+queue belonging to each TC.  You would end up with either 8 or 16
+q_vectors hosting 8 or 4 queues so that they can process DCB requests
+without having to worry about head of line blocking.
 
-arm                       aspeed_g4_defconfig
-arm                        keystone_defconfig
-m68k                       m5249evb_defconfig
-arm                       cns3420vb_defconfig
-arm                            zeus_defconfig
-sh                                  defconfig
-arm                         at91_dt_defconfig
-powerpc                   bluestone_defconfig
-powerpc                      ppc44x_defconfig
-parisc                           allyesconfig
-powerpc                    sam440ep_defconfig
-sh                                allnoconfig
-blackfin                            defconfig
-ia64                                defconfig
-mips                                defconfig
-avr32                            alldefconfig
-cris                        etraxfs_defconfig
-powerpc                     kmeter1_defconfig
-arm                               allnoconfig
-powerpc                      ppc6xx_defconfig
-xtensa                          iss_defconfig
-powerpc                      acadia_defconfig
-sh                           se7705_defconfig
-arm64                               defconfig
-mips                         rt305x_defconfig
-s390                           gcov_defconfig
-i386                     randconfig-a0-201620
-x86_64                 randconfig-a0-05161037
-x86_64                 randconfig-a0-05161048
-x86_64                 randconfig-a0-05161139
-x86_64                 randconfig-a0-05161220
-arm                         lpc32xx_defconfig
-cris                       artpec_3_defconfig
-powerpc                 mpc8560_ads_defconfig
-arm                           sama5_defconfig
-powerpc                      ppc40x_defconfig
-sparc                       sparc64_defconfig
-i386                   randconfig-c0-05161042
-i386                   randconfig-c0-05161056
-i386                   randconfig-c0-05161116
-i386                   randconfig-c0-05161139
-i386                   randconfig-c0-05161217
-i386                   randconfig-c0-05161233
-arm                         vf610m4_defconfig
-powerpc                             defconfig
-powerpc                     sequoia_defconfig
-arm                         cm_x300_defconfig
-sh                   secureedge5410_defconfig
-xtensa                  audio_kc705_defconfig
-m68k                             allmodconfig
-mips                        bcm63xx_defconfig
-powerpc                    socrates_defconfig
-arm                              alldefconfig
-arm                           corgi_defconfig
-blackfin                   CM-BF561_defconfig
-x86_64                 randconfig-v0-05161036
-x86_64                 randconfig-v0-05161046
-x86_64                 randconfig-v0-05161056
-x86_64                 randconfig-v0-05161106
-x86_64                 randconfig-v0-05161116
-x86_64                 randconfig-v0-05161143
-x86_64                 randconfig-v0-05161218
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                             allmodconfig
-arm                          ks8695_defconfig
-arm                          nuc910_defconfig
-frv                                 defconfig
-m32r                   m32700ut.smp_defconfig
-arm                          collie_defconfig
-mips                          lasat_defconfig
-mips                           mtx1_defconfig
-mips                        workpad_defconfig
-arm64                            alldefconfig
-m68k                         apollo_defconfig
-parisc                      default_defconfig
-sh                          rsk7203_defconfig
-tile                         tilegx_defconfig
-arm                         em_x270_defconfig
-arm                            netx_defconfig
-ia64                        generic_defconfig
-m68k                          hp300_defconfig
-arm                           tegra_defconfig
-mips                           ip27_defconfig
-parisc                           alldefconfig
-powerpc                     tqm5200_defconfig
-sh                            shmin_defconfig
-avr32        atngw100mkii_evklcd101_defconfig
-powerpc               mpc834x_itxgp_defconfig
-powerpc64                        allmodconfig
-arm                           spitz_defconfig
-arm                           stm32_defconfig
-blackfin                    DNP5370_defconfig
-m68k                       m5475evb_defconfig
-mips                        nlm_xlr_defconfig
-i386                             alldefconfig
-powerpc               corenet_basic_defconfig
-powerpc                     mpc512x_defconfig
-sh                          r7780mp_defconfig
-x86_64                           allmodconfig
-mips                        msp71xx_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201620
-i386                     randconfig-s1-201620
-x86_64                 randconfig-s0-05161030
-x86_64                 randconfig-s1-05161030
-x86_64                 randconfig-s2-05161030
-x86_64                 randconfig-s0-05161046
-x86_64                 randconfig-s1-05161046
-x86_64                 randconfig-s2-05161046
-x86_64                 randconfig-s0-05161105
-x86_64                 randconfig-s1-05161105
-x86_64                 randconfig-s2-05161105
-x86_64                 randconfig-s0-05161127
-x86_64                 randconfig-s1-05161127
-x86_64                 randconfig-s2-05161127
-x86_64                 randconfig-s0-05161142
-x86_64                 randconfig-s1-05161142
-x86_64                 randconfig-s2-05161142
-x86_64                 randconfig-s0-05161158
-x86_64                 randconfig-s1-05161158
-x86_64                 randconfig-s2-05161158
-x86_64                 randconfig-s0-05161211
-x86_64                 randconfig-s1-05161211
-x86_64                 randconfig-s2-05161211
-x86_64                 randconfig-s0-05161233
-x86_64                 randconfig-s1-05161233
-x86_64                 randconfig-s2-05161233
-x86_64                 randconfig-s3-05161040
-x86_64                 randconfig-s4-05161040
-x86_64                 randconfig-s5-05161040
-x86_64                 randconfig-s3-05161058
-x86_64                 randconfig-s4-05161058
-x86_64                 randconfig-s5-05161058
-x86_64                 randconfig-s3-05161119
-x86_64                 randconfig-s4-05161119
-x86_64                 randconfig-s5-05161119
-x86_64                 randconfig-s3-05161135
-x86_64                 randconfig-s4-05161135
-x86_64                 randconfig-s5-05161135
-x86_64                 randconfig-s3-05161152
-x86_64                 randconfig-s4-05161152
-x86_64                 randconfig-s5-05161152
-x86_64                 randconfig-s3-05161208
-x86_64                 randconfig-s4-05161208
-x86_64                 randconfig-s5-05161208
-x86_64                 randconfig-s3-05161221
-x86_64                 randconfig-s4-05161221
-x86_64                 randconfig-s5-05161221
-x86_64                 randconfig-s3-05161240
-x86_64                 randconfig-s4-05161240
-x86_64                 randconfig-s5-05161240
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-powerpc                       maple_defconfig
-powerpc               mpc86xx_basic_defconfig
-arm                        spear3xx_defconfig
-powerpc                mpc7448_hpc2_defconfig
-powerpc                     tqm8541_defconfig
-mips                         mpc30x_defconfig
-powerpc                       ep405_defconfig
-arm                          pcm027_defconfig
-arm                        raumfeld_defconfig
-avr32            atngw100_evklcd100_defconfig
-sparc                               defconfig
-powerpc                     rainier_defconfig
-sparc                            allmodconfig
-powerpc                           allnoconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201620
-i386                   randconfig-b0-05161055
-i386                   randconfig-b0-05161106
-i386                   randconfig-b0-05161118
-i386                   randconfig-b0-05161129
-i386                   randconfig-b0-05161142
-i386                   randconfig-b0-05161150
-i386                   randconfig-b0-05161206
-i386                   randconfig-b0-05161220
-i386                   randconfig-b0-05161235
-avr32            atngw100_evklcd101_defconfig
-powerpc                       ebony_defconfig
-sh                          sdk7786_defconfig
-m32r                       mappi.up_defconfig
-parisc                         a500_defconfig
-arm                         lpc18xx_defconfig
-sh                           se7619_defconfig
-sh                             sh03_defconfig
-arm                            dove_defconfig
-powerpc                  iss476-smp_defconfig
-sh                     magicpanelr2_defconfig
-alpha                            alldefconfig
-mips                         db1xxx_defconfig
-powerpc                     tqm8560_defconfig
-sh                             shx3_defconfig
-avr32                        merisc_defconfig
-blackfin              BF561-ACVILON_defconfig
-m68k                             alldefconfig
-arm                              zx_defconfig
-m68k                          atari_defconfig
-mips                        jmr3927_defconfig
-s390                       zfcpdump_defconfig
-mips                      bmips_stb_defconfig
-powerpc                      mgcoge_defconfig
-powerpc                   motionpro_defconfig
-arm                          badge4_defconfig
-cris                             alldefconfig
-sh                           se7722_defconfig
-powerpc                     pseries_defconfig
-sh                        edosk7760_defconfig
-mips                       bmips_be_defconfig
-powerpc                 mpc832x_rdb_defconfig
-blackfin                BF548-EZKIT_defconfig
-mips                 pnx8335_stb225_defconfig
-powerpc                     redwood_defconfig
-mips                       markeins_defconfig
-parisc                            allnoconfig
-powerpc                     ppa8548_defconfig
-um                               allmodconfig
-arm                         assabet_defconfig
-arm                         axm55xx_defconfig
-microblaze                        allnoconfig
-arm                       spear13xx_defconfig
-openrisc                         allyesconfig
-powerpc                 mpc834x_mds_defconfig
-arm                      tct_hammer_defconfig
-blackfin             BF527-TLL6527M_defconfig
-blackfin                   CM-BF533_defconfig
-powerpc                      virtex_defconfig
-x86_64                 randconfig-b0-05161036
-x86_64                 randconfig-b0-05161053
-x86_64                 randconfig-b0-05161113
-x86_64                 randconfig-b0-05161128
-x86_64                 randconfig-b0-05161156
-x86_64                 randconfig-b0-05161206
-x86_64                 randconfig-b0-05161223
-x86_64                 randconfig-b0-05161252
-sparc64                           allnoconfig
-sparc64                             defconfig
-mips                           xway_defconfig
-powerpc                        cell_defconfig
-powerpc                     powernv_defconfig
-arm                        mvebu_v7_defconfig
-powerpc                 mpc8272_ads_defconfig
-x86_64                              defconfig
-powerpc64                         allnoconfig
-alpha                            allmodconfig
-x86_64                 randconfig-n0-05161029
-x86_64                 randconfig-n0-05161038
-x86_64                 randconfig-n0-05161203
-x86_64                 randconfig-n0-05161227
-arm                          pxa910_defconfig
-mips                          rm200_defconfig
-sh                         ecovec24_defconfig
-arm                             pxa_defconfig
-ia64                          tiger_defconfig
-mips                        xilfpga_defconfig
-arm                         ebsa110_defconfig
-arm                            qcom_defconfig
-blackfin                         alldefconfig
-powerpc                      katmai_defconfig
-x86_64                           alldefconfig
-powerpc                     mpc83xx_defconfig
-i386                   randconfig-h0-05161044
-i386                   randconfig-h1-05161044
-i386                   randconfig-h0-05161156
-i386                   randconfig-h1-05161156
-x86_64                                   rhel
-x86_64                 randconfig-h0-05161048
-x86_64                 randconfig-h0-05161111
-x86_64                 randconfig-h0-05161155
-arm64                            allyesconfig
-powerpc                       holly_defconfig
-sh                            hp6xx_defconfig
-sh                  sh7785lcr_32bit_defconfig
-arm                         orion5x_defconfig
-mips                             alldefconfig
-x86_64                 randconfig-n0-05161015
-x86_64                 randconfig-n0-05161103
-x86_64                 randconfig-n0-05161124
-x86_64                 randconfig-n0-05161151
-x86_64                 randconfig-n0-05161216
-mips                         bigsur_defconfig
-sparc                            alldefconfig
-arm                  colibri_pxa300_defconfig
-arm                           h3600_defconfig
-um                                allnoconfig
-arm                           acs5k_defconfig
-arm                          prima2_defconfig
-powerpc                  mpc885_ads_defconfig
-m68k                        m5307c3_defconfig
-sh                        sh7757lcr_defconfig
-blackfin                       SRV1_defconfig
-m32r                             alldefconfig
-sh                               allmodconfig
-arm                          nuc950_defconfig
-m68k                                defconfig
-sh                      rts7751r2d1_defconfig
-powerpc                     ksi8560_defconfig
-arm                  colibri_pxa270_defconfig
-blackfin                          allnoconfig
-mips                              allnoconfig
-powerpc                  mpc866_ads_defconfig
-openrisc                            defconfig
-powerpc                         ps3_defconfig
-arm                           efm32_defconfig
-blackfin                  TCM-BF518_defconfig
-powerpc                 canyonlands_defconfig
-i386                              allnoconfig
-i386                                defconfig
-avr32                     atstk1004_defconfig
-powerpc                        icon_defconfig
-sh                           se7343_defconfig
-sh                        sh7785lcr_defconfig
-m32r                           usrv_defconfig
-m68k                       m5208evb_defconfig
-powerpc               mpc85xx_basic_defconfig
-x86_64                            allnoconfig
-arm                                 defconfig
-powerpc                    gamecube_defconfig
-powerpc                      makalu_defconfig
-powerpc64                           defconfig
-arm                     davinci_all_defconfig
-arm                          exynos_defconfig
-arm                       mainstone_defconfig
-arm                            pleb_defconfig
-i386                  randconfig-sb0-05161041
-i386                  randconfig-sb0-05161051
-i386                  randconfig-sb0-05161107
-i386                  randconfig-sb0-05161122
-i386                  randconfig-sb0-05161138
-i386                  randconfig-sb0-05161157
-i386                  randconfig-sb0-05161211
-i386                  randconfig-sb0-05161225
-i386                  randconfig-sb0-05161239
-powerpc64                        alldefconfig
-arm                        mvebu_v5_defconfig
-powerpc                    mvme5100_defconfig
-powerpc                      pasemi_defconfig
-m32r                         opsput_defconfig
-sh                           se7724_defconfig
-m32r                             allyesconfig
-sh                     sh7710voipgw_defconfig
-s390                    performance_defconfig
-powerpc                 mpc837x_mds_defconfig
-x86_64                 randconfig-r0-05161030
-x86_64                 randconfig-r0-05161041
-x86_64                 randconfig-r0-05161101
-x86_64                 randconfig-r0-05161139
-x86_64                 randconfig-r0-05161202
-x86_64                 randconfig-r0-05161230
-arm                      pxa255-idp_defconfig
-blackfin                BF533-STAMP_defconfig
-sh                          rsk7269_defconfig
-mips                        maltaup_defconfig
-powerpc                 mpc834x_itx_defconfig
-powerpc                         wii_defconfig
-s390                             alldefconfig
-arm                         nhk8815_defconfig
-blackfin                  CM-BF537E_defconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-i386                   randconfig-x0-05161036
-i386                   randconfig-x0-05161055
-i386                   randconfig-x0-05161109
-i386                   randconfig-x0-05161125
-i386                   randconfig-x0-05161142
-i386                   randconfig-x0-05161205
-i386                   randconfig-x0-05161230
-i386                   randconfig-x0-05161241
-i386                   randconfig-x0-05161250
-i386                   randconfig-x0-05161259
+>> traffic the upper limit is only 16 on older NICs, but last I knew the
+>> latest X550 can support more queues for RSS.  Have you only been
+>> testing on older NICs or did you test on the latest hardware as well?
+>
+>   More queues for RSS than num_online_cpus() could bring better performance
+> ?
+>   Test result shows false result.  even memory cost is not an issue for most
+> of
+>   the expensive servers, but not for all.
 
-Thanks,
-Fengguang
+The feature is called DCB.  What it allows for is the avoidance of
+head-of-line blocking.  So when you have DCB enabled you should have a
+set of queues for each possible RSS result so that if you get a higher
+priority request on one of the queues it can use the higher priority
+queue instead of having to rely on the the lower priority queue to
+receive traffic.  You cannot do that without allocating a queue for
+each TC, and reducing the number of RSS queues supported on the system
+will hurt performance.  Therefore on a 16 CPU system it is very useful
+to be able to allocate 4 queues per RSS flow as that way you get
+optimal CPU distribution and can still avoid head-of-line blocking via
+DCB.
+
+>>
+>> If you want to control the number of queues allocated in a given
+>> configuration you should look at the code over in the ixgbe_lib.c, not
+>
+>   Yes,  RSS,  RSS with SRIOV, FCoE, DCB etc uses different queues
+> calculation algorithm.
+>   But they all take the dev queues allocated in alloc_etherdev_mq() as upper
+> limit.
+>
+>  If we set 64 as default here, DCB would says "oh, there is 64 there, I
+> could use it"
+
+Right.  But the deciding factor for DCB is RSS which is already
+limited by the number of CPUs.  If it is allocating 64 queues it is
+because there are either at least 8 CPUs present and 8 TCs being
+allocated per CPU, or there are at least 16 queues present and it is
+allocating 4 TCs per CPU.
+
+>>
+>> ixgbe_main.c.  All you are doing with this patch is denying the user
+>> choice with this change as they then are not allowed to set more
+>
+>   Yes, it is purposed to deny configuration that doesn't benefit.
+
+Doesn't benefit who?  It is obvious you don't understand how DCB is
+meant to work since you are assuming the queues are throw-away.
+Anyone who makes use of the ability to prioritize their traffic would
+likely have a different opinion.
+
+>> queues.  Even if they find your decision was wrong for their
+>> configuration.
+>>
+>> - Alex
+>>
+>  Thanks,
+>  Ethan
+
+Your response clearly points out you don't understand DCB.  I suggest
+you take another look at how things are actually being configured.  I
+believe what you will find is that the current implementation is
+basing things on the number of online CPUs already based on the
+ring_feature[RING_F_RSS].limit value.  All that is happening is that
+you are getting that value multiplied by the number of TCs and the RSS
+value is reduced if the result is greater than 64 based on the maximum
+number of queues.
+
+With your code on an 8 core system you go from being able to perform
+RSS over 8 queues to only being able to perform RSS over 1 queue when
+you enable DCB.  There was a bug a long time ago where this actually
+didn't provide any gain because the interrupt allocation was binding
+all 8 RSS queues to a single q_vector, but that has long since been
+fixed and what you should be seeing is that RSS will spread traffic
+across either 8 or 16 queues when DCB is enabled in either 8 or 4 TC
+mode.
+
+My advice would be to use a netperf TCP_CRR test and watch what queues
+and what interrupts traffic is being delivered to.  Then if you have
+DCB enabled on both ends you might try changing the priority of your
+netperf session and watch what happens when you switch between TCs.
+What you should find is that you will shift between groups of queues
+and as you do so you should not have any active queues overlapping
+unless you have less interrupts than CPUs.
+
+- Alex
