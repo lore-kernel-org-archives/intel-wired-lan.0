@@ -1,18 +1,18 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Mon, 16 May 2016 17:46:13 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:master]
- f23e0f6507d9e5bcfc30a7f6be5d8df8fad9ec85 BUILD INCOMPLETE
-Message-ID: <573996e5.y300uxq+5SArC6il%fengguang.wu@intel.com>
+Date: Mon, 16 May 2016 17:46:09 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ f3cc7498b00c0ce291816859503fcf91fb5bc85e BUILD INCOMPLETE
+Message-ID: <573996e1.Aaim+Y0h0hTbA1vE%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  master
-f23e0f6507d9e5bcfc30a7f6be5d8df8fad9ec85  Merge branch '40GbE' of git://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+f3cc7498b00c0ce291816859503fcf91fb5bc85e  ixgbevf: ixgbevf_write/read_posted_mbx should use IXGBE_ERR_MBX to initialize ret_val
 
-TIMEOUT after 938m
+TIMEOUT after 601m
 
 
 Sorry we cannot finish the testset for your branch within a reasonable time.
@@ -22,7 +22,7 @@ possible error reports when our build infrastructure is restored or catches up.
 There will be no more build success notification for this branch head, but you
 can expect reasonably good test coverage after waiting for 1 day.
 
-configs tested: 393
+configs tested: 382
 
 arm                       aspeed_g4_defconfig
 arm                        keystone_defconfig
@@ -186,7 +186,6 @@ mn10300                     asb2364_defconfig
 openrisc                    or1ksim_defconfig
 um                             i386_defconfig
 um                           x86_64_defconfig
-i386                               tinyconfig
 powerpc                       maple_defconfig
 powerpc               mpc86xx_basic_defconfig
 arm                        spear3xx_defconfig
@@ -393,16 +392,6 @@ powerpc                         wii_defconfig
 s390                             alldefconfig
 arm                         nhk8815_defconfig
 blackfin                  CM-BF537E_defconfig
-i386                   randconfig-x005-201620
-i386                   randconfig-x008-201620
-i386                   randconfig-x000-201620
-i386                   randconfig-x009-201620
-i386                   randconfig-x001-201620
-i386                   randconfig-x006-201620
-i386                   randconfig-x003-201620
-i386                   randconfig-x007-201620
-i386                   randconfig-x004-201620
-i386                   randconfig-x002-201620
 mips                      fuloong2e_defconfig
 mips                                   jz4740
 mips                                     txx9
