@@ -1,124 +1,66 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Mon, 09 May 2016 04:34:41 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 155dfdac8706bc503d612008f9c2abf211c6a505 BUILD SUCCESS
-Message-ID: <572fa2e1.G/6urV8jr5efcmTn%fengguang.wu@intel.com>
+From: ethan zhao <ethan.zhao@oracle.com>
+Date: Mon, 16 May 2016 10:59:51 +0800
+Subject: [Intel-wired-lan] [PATCH] ixgbe: take online CPU number as MQ
+ max limit when alloc_etherdev_mq()
+In-Reply-To: <CAKgT0UeiEW21E7A9fnt_BUCppopns-E2w1WbwF-8A6sCZkJ8rQ@mail.gmail.com>
+References: <1463118995-31763-1-git-send-email-ethan.zhao@oracle.com>
+ <CAKgT0UeiEW21E7A9fnt_BUCppopns-E2w1WbwF-8A6sCZkJ8rQ@mail.gmail.com>
+Message-ID: <573937A7.9010405@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-155dfdac8706bc503d612008f9c2abf211c6a505  checkpatch.pl: seed camelcase from the provided kernel tree root
+Alexander,
 
-elapsed time: 56m
+On 2016/5/14 0:46, Alexander Duyck wrote:
+> On Thu, May 12, 2016 at 10:56 PM, Ethan Zhao <ethan.zhao@oracle.com> wrote:
+>> Allocating 64 Tx/Rx as default doesn't benefit perfomrnace when less
+>> CPUs were assigned. especially when DCB is enabled, so we should take
+>> num_online_cpus() as top limit, and aslo to make sure every TC has
+>> at least one queue, take the MAX_TRAFFIC_CLASS as bottom limit of queues
+>> number.
+>>
+>> Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
+> What is the harm in allowing the user to specify up to 64 queues if
+> they want to?  Also what is your opinion based on?  In the case of RSS
 
-configs tested: 103
+  There is no module parameter to specify queue number in this upstream 
+ixgbe
+   driver.  for what to specify more queues than num_online_cpus() via 
+ethtool ?
+  I couldn't figure out the benefit to do that.
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201619
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm                         cm_x300_defconfig
-avr32                       favr-32_defconfig
-m68k                        m5407c3_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                               tinyconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201619
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201619
-i386                     randconfig-i1-201619
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                   randconfig-x013-201619
-i386                   randconfig-x012-201619
-i386                   randconfig-x011-201619
-i386                   randconfig-x018-201619
-i386                   randconfig-x019-201619
-i386                   randconfig-x015-201619
-i386                   randconfig-x016-201619
-i386                   randconfig-x010-201619
-i386                   randconfig-x014-201619
-i386                   randconfig-x017-201619
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                 randconfig-x007-201619
-x86_64                 randconfig-x005-201619
-x86_64                 randconfig-x001-201619
-x86_64                 randconfig-x000-201619
-x86_64                 randconfig-x006-201619
-x86_64                 randconfig-x009-201619
-x86_64                 randconfig-x008-201619
-x86_64                 randconfig-x004-201619
-x86_64                 randconfig-x002-201619
-x86_64                 randconfig-x003-201619
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-r0-201619
-i386                   randconfig-x003-201619
-i386                   randconfig-x000-201619
-i386                   randconfig-x004-201619
-i386                   randconfig-x005-201619
-i386                   randconfig-x009-201619
-i386                   randconfig-x006-201619
-i386                   randconfig-x002-201619
-i386                   randconfig-x001-201619
-i386                   randconfig-x008-201619
-i386                   randconfig-x007-201619
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
+  But if DCB is turned on after loading, the queues would be 64/64, that 
+doesn't
+  make sense if only 16 CPUs assigned.
+> traffic the upper limit is only 16 on older NICs, but last I knew the
+> latest X550 can support more queues for RSS.  Have you only been
+> testing on older NICs or did you test on the latest hardware as well?
+   More queues for RSS than num_online_cpus() could bring better 
+performance ?
+   Test result shows false result.  even memory cost is not an issue for 
+most of
+   the expensive servers, but not for all.
 
-Thanks,
-Fengguang
+>
+> If you want to control the number of queues allocated in a given
+> configuration you should look at the code over in the ixgbe_lib.c, not
+   Yes,  RSS,  RSS with SRIOV, FCoE, DCB etc uses different queues 
+calculation algorithm.
+   But they all take the dev queues allocated in alloc_etherdev_mq() as 
+upper limit.
+
+  If we set 64 as default here, DCB would says "oh, there is 64 there, I 
+could use it"
+> ixgbe_main.c.  All you are doing with this patch is denying the user
+> choice with this change as they then are not allowed to set more
+   Yes, it is purposed to deny configuration that doesn't benefit.
+> queues.  Even if they find your decision was wrong for their
+> configuration.
+>
+> - Alex
+>
+  Thanks,
+  Ethan
