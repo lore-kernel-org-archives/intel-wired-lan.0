@@ -1,139 +1,55 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 17 May 2016 06:35:47 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 37e2084d6d7421e8b1b852e8806086f06e0cce72 BUILD SUCCESS
-Message-ID: <573a4b43.4aWWOKpxdEr+mpsz%fengguang.wu@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Mon, 16 May 2016 22:31:53 +0000
+Subject: [Intel-wired-lan] [PATCH] e1000e: prevent division by zero
+	if	TIMINCA is zero
+In-Reply-To: <1462563711-30350-1-git-send-email-dvlasenk@redhat.com>
+References: <1462563711-30350-1-git-send-email-dvlasenk@redhat.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81EFDBA5@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-37e2084d6d7421e8b1b852e8806086f06e0cce72  i40e: add functions to control default VSI
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Denys Vlasenko
+> Sent: Friday, May 6, 2016 12:42 PM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: intel-wired-lan at lists.osuosl.org; Denys Vlasenko
+> <dvlasenk@redhat.com>; LKML <linux-kernel@vger.kernel.org>;
+> netdev at vger.kernel.org
+> Subject: [Intel-wired-lan] [PATCH] e1000e: prevent division by zero if
+> TIMINCA is zero
+> 
+> Users report that under VMWare, er32(TIMINCA) returns zero.
+> This causes division by zero at init time as follows:
+> 
+>  ==>            incvalue = er32(TIMINCA) & E1000_TIMINCA_INCVALUE_MASK;
+>                 for (i = 0; i < E1000_MAX_82574_SYSTIM_REREADS; i++) {
+>                         /* latch SYSTIMH on read of SYSTIML */
+>                         systim_next = (cycle_t)er32(SYSTIML);
+>                         systim_next |= (cycle_t)er32(SYSTIMH) << 32;
+> 
+>                         time_delta = systim_next - systim;
+>                         temp = time_delta;
+>  ====>                  rem = do_div(temp, incvalue);
+> 
+> This change makes kernel survive this, and users report that
+> NIC does work after this change.
+> 
+> Since on real hardware incvalue is never zero, this should not affect
+> real hardware use case.
+> 
+> Signed-off-by: Denys Vlasenko <dvlasenk@redhat.com>
+> CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> CC: "Ruinskiy, Dima" <dima.ruinskiy@intel.com>
+> CC: intel-wired-lan at lists.osuosl.org
+> CC: netdev at vger.kernel.org
+> CC: LKML <linux-kernel@vger.kernel.org>
+> ---
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 
-elapsed time: 98m
+As Mark Rustad pointed out I recall this was earlier rejected as something that is a VMWare error and it should be fixed there so that existing VMs will start working without installing a new driver.  Having said that, it does not seem to be causing any harm in my testing, so...
 
-configs tested: 118
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                   randconfig-a0-05161856
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                             allyesconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-x018-201620
-x86_64                 randconfig-x019-201620
-x86_64                 randconfig-x014-201620
-x86_64                 randconfig-x010-201620
-x86_64                 randconfig-x015-201620
-x86_64                 randconfig-x013-201620
-x86_64                 randconfig-x016-201620
-x86_64                 randconfig-x017-201620
-x86_64                 randconfig-x011-201620
-x86_64                 randconfig-x012-201620
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                   randconfig-s0-05161922
-i386                   randconfig-s1-05161922
-x86_64                           allmodconfig
-x86_64                 randconfig-s3-05170530
-x86_64                 randconfig-s4-05170530
-x86_64                 randconfig-s5-05170530
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201620
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                 randconfig-n0-05170519
-i386                   randconfig-x017-201620
-i386                   randconfig-x018-201620
-i386                   randconfig-x016-201620
-i386                   randconfig-x011-201620
-i386                   randconfig-x014-201620
-i386                   randconfig-x010-201620
-i386                   randconfig-x013-201620
-i386                   randconfig-x019-201620
-i386                   randconfig-x015-201620
-i386                   randconfig-x012-201620
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201620
-x86_64                                   rhel
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                 randconfig-x007-201620
-x86_64                 randconfig-x003-201620
-x86_64                 randconfig-x006-201620
-x86_64                 randconfig-x000-201620
-x86_64                 randconfig-x008-201620
-x86_64                 randconfig-x005-201620
-x86_64                 randconfig-x004-201620
-x86_64                 randconfig-x002-201620
-x86_64                 randconfig-x001-201620
-x86_64                 randconfig-x009-201620
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                    lkp
-i386                     randconfig-r0-201620
-i386                             allmodconfig
-i386                   randconfig-x005-201620
-i386                   randconfig-x008-201620
-i386                   randconfig-x000-201620
-i386                   randconfig-x009-201620
-i386                   randconfig-x001-201620
-i386                   randconfig-x006-201620
-i386                   randconfig-x003-201620
-i386                   randconfig-x007-201620
-i386                   randconfig-x004-201620
-i386                   randconfig-x002-201620
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-
-Thanks,
-Fengguang
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
