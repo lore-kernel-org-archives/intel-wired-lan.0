@@ -1,49 +1,33 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Mon, 16 May 2016 12:56:56 -0700
-Subject: [Intel-wired-lan] [next PATCH S37 10/15] i40e: Removing
- unnecessary code which caused supported link mode bug
-In-Reply-To: <475EF86EA1AC844AA3BA8EE1F912AD6903CCA105@ORSMSX111.amr.corp.intel.com>
-References: <1463419605-30746-1-git-send-email-bimmy.pujari@intel.com>
- <1463419605-30746-11-git-send-email-bimmy.pujari@intel.com>
- <475EF86EA1AC844AA3BA8EE1F912AD6903CCA105@ORSMSX111.amr.corp.intel.com>
-Message-ID: <1463428616.2609.2.camel@intel.com>
+Date: Mon, 16 May 2016 13:58:42 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: take online CPU number as MQ
+ max limit when alloc_etherdev_mq()
+In-Reply-To: <1463118995-31763-1-git-send-email-ethan.zhao@oracle.com>
+References: <1463118995-31763-1-git-send-email-ethan.zhao@oracle.com>
+Message-ID: <1463432322.2609.12.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2016-05-16 at 18:26 +0000, Dayanand, Avinash wrote:
-> ACK, looks good..?
-
-Do not top-post! ?Patchwork thought you were submitting a new patch,
-instead of responding to a patch that was already in the queue.
-
-> -----Original Message-----
-> From: Pujari, Bimmy?
-> Sent: Monday, May 16, 2016 10:27 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Dayanand, Avinash <avinash.dayanand@intel.com>
-> Subject: [next PATCH S37 10/15] i40e: Removing unnecessary code which
-> caused supported link mode bug
+On Fri, 2016-05-13 at 14:56 +0900, Ethan Zhao wrote:
+> Allocating 64 Tx/Rx as default doesn't benefit perfomrnace when less
+> CPUs were assigned. especially when DCB is enabled, so we should take
+> num_online_cpus() as top limit, and aslo to make sure every TC has
+> at least one queue, take the MAX_TRAFFIC_CLASS as bottom limit of queues
+> number.
 > 
-> From: Avinash Dayanand <avinash.dayanand@intel.com>
-> 
-> Removing this code which wasn't allowing 100BaseT to show up in the
-> supported link modes for 10GBaseT PHYs.
-> 
-> Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
-> Change-ID: Iada2eafa7ef6b4bac9a2a1380ff533ae5de51e1d
+> Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
 > ---
-> Testing Hints: Use 'ethtool ethx' check if 100BaseT is listed as one of
-> the supported link modes.
-> 
-> ?drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 3 +--
-> ?1 file changed, 1 insertion(+), 2 deletions(-)
+> ?drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 4 ++++
+> ?1 file changed, 4 insertions(+)
+
+Dropping this patch based on Alex's and John's feedback.
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 819 bytes
 Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160516/f72150d5/attachment.asc>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160516/5382db22/attachment.asc>
