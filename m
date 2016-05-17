@@ -1,136 +1,72 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 17 May 2016 12:42:30 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 379c614c4f09ee6debd91a8ce65c1118cdf99f20 BUILD SUCCESS
-Message-ID: <573aa136.YMGCikqcP3GbAb6a%fengguang.wu@intel.com>
+From: Julia Lawall <julia.lawall@lip6.fr>
+Date: Tue, 17 May 2016 07:26:09 +0200 (CEST)
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 23/33]
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c:2236:7-21: duplicated
+ argument to & or | (fwd)
+Message-ID: <alpine.DEB.2.02.1605170725140.2068@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-379c614c4f09ee6debd91a8ce65c1118cdf99f20  i40e: Fix errors resulted while turning off TSO
+Lines 2236 and 2240.
 
-elapsed time: 107m
+julia
 
-configs tested: 115
+---------- Forwarded message ----------
+Date: Tue, 17 May 2016 09:03:11 +0800
+From: kbuild test robot <fengguang.wu@intel.com>
+To: kbuild@01.org
+Cc: Julia Lawall <julia.lawall@lip6.fr>
+Subject: [jkirsher-next-queue:dev-queue 23/33]
+    drivers/net/ethernet/intel/i40evf/i40evf_main.c:2236:7-21: duplicated
+    argument to & or |
 
-i386                   randconfig-a0-05161856
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                 randconfig-x018-201620
-x86_64                 randconfig-x019-201620
-x86_64                 randconfig-x014-201620
-x86_64                 randconfig-x010-201620
-x86_64                 randconfig-x015-201620
-x86_64                 randconfig-x013-201620
-x86_64                 randconfig-x016-201620
-x86_64                 randconfig-x017-201620
-x86_64                 randconfig-x011-201620
-x86_64                 randconfig-x012-201620
-i386                     randconfig-s1-201620
-i386                     randconfig-s0-201620
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201620
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201620
-i386                     randconfig-i1-201620
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                   randconfig-x017-201620
-i386                   randconfig-x018-201620
-i386                   randconfig-x016-201620
-i386                   randconfig-x011-201620
-i386                   randconfig-x014-201620
-i386                   randconfig-x010-201620
-i386                   randconfig-x013-201620
-i386                   randconfig-x019-201620
-i386                   randconfig-x015-201620
-i386                   randconfig-x012-201620
-i386                     randconfig-n0-201620
-x86_64                                   rhel
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                           allmodconfig
-x86_64                 randconfig-x007-201620
-x86_64                 randconfig-x003-201620
-x86_64                 randconfig-x006-201620
-x86_64                 randconfig-x000-201620
-x86_64                 randconfig-x008-201620
-x86_64                 randconfig-x005-201620
-x86_64                 randconfig-x004-201620
-x86_64                 randconfig-x002-201620
-x86_64                 randconfig-x001-201620
-x86_64                 randconfig-x009-201620
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-r0-201620
-i386                   randconfig-x005-201620
-i386                   randconfig-x008-201620
-i386                   randconfig-x000-201620
-i386                   randconfig-x009-201620
-i386                   randconfig-x001-201620
-i386                   randconfig-x006-201620
-i386                   randconfig-x003-201620
-i386                   randconfig-x007-201620
-i386                   randconfig-x004-201620
-i386                   randconfig-x002-201620
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
+CC: kbuild-all at 01.org
+CC: intel-wired-lan at lists.osuosl.org
+CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+CC: Mitch Williams <mitch.a.williams@intel.com>
 
-Thanks,
-Fengguang
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   023818611c465ce3e8f7f1895730bf027782c621
+commit: 7be7036b405f4eb7f425ff0fdf35251530db1533 [23/33] i40evf: report RSS hash capability to stack
+:::::: branch date: 2 hours ago
+:::::: commit date: 3 hours ago
+
+>> drivers/net/ethernet/intel/i40evf/i40evf_main.c:2236:7-21: duplicated argument to & or |
+
+git remote add jkirsher-next-queue https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
+git remote update jkirsher-next-queue
+git checkout 7be7036b405f4eb7f425ff0fdf35251530db1533
+vim +2236 drivers/net/ethernet/intel/i40evf/i40evf_main.c
+
+e6d038de Mitch Williams  2015-06-04  2220  		return -ENODEV;
+e6d038de Mitch Williams  2015-06-04  2221  	}
+e6d038de Mitch Williams  2015-06-04  2222  
+b0fe3306 Alexander Duyck 2016-04-02  2223  	netdev->hw_enc_features |= NETIF_F_SG			|
+e6d038de Mitch Williams  2015-06-04  2224  				   NETIF_F_IP_CSUM		|
+e6d038de Mitch Williams  2015-06-04  2225  				   NETIF_F_IPV6_CSUM		|
+b0fe3306 Alexander Duyck 2016-04-02  2226  				   NETIF_F_HIGHDMA		|
+b0fe3306 Alexander Duyck 2016-04-02  2227  				   NETIF_F_SOFT_FEATURES	|
+e6d038de Mitch Williams  2015-06-04  2228  				   NETIF_F_TSO			|
+f608e6a6 Alexander Duyck 2016-01-24  2229  				   NETIF_F_TSO_ECN		|
+b0fe3306 Alexander Duyck 2016-04-02  2230  				   NETIF_F_TSO6			|
+f608e6a6 Alexander Duyck 2016-01-24  2231  				   NETIF_F_GSO_GRE		|
+1c7b4a23 Alexander Duyck 2016-04-14  2232  				   NETIF_F_GSO_GRE_CSUM		|
+577389a5 Alexander Duyck 2016-04-02  2233  				   NETIF_F_GSO_IPIP		|
+577389a5 Alexander Duyck 2016-04-02  2234  				   NETIF_F_GSO_SIT		|
+f608e6a6 Alexander Duyck 2016-01-24  2235  				   NETIF_F_GSO_UDP_TUNNEL	|
+7be7036b Mitch Williams  2016-05-16 @2236  				   NETIF_F_RXHASH	        |
+b0fe3306 Alexander Duyck 2016-04-02  2237  				   NETIF_F_GSO_UDP_TUNNEL_CSUM	|
+1c7b4a23 Alexander Duyck 2016-04-14  2238  				   NETIF_F_GSO_PARTIAL		|
+b0fe3306 Alexander Duyck 2016-04-02  2239  				   NETIF_F_SCTP_CRC		|
+b0fe3306 Alexander Duyck 2016-04-02  2240  				   NETIF_F_RXHASH		|
+e6d038de Mitch Williams  2015-06-04  2241  				   NETIF_F_RXCSUM		|
+b0fe3306 Alexander Duyck 2016-04-02  2242  				   0;
+e6d038de Mitch Williams  2015-06-04  2243  
+b0fe3306 Alexander Duyck 2016-04-02  2244  	if (!(adapter->flags & I40EVF_FLAG_OUTER_UDP_CSUM_CAPABLE))
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
