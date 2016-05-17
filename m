@@ -1,38 +1,136 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 17 May 2016 00:13:42 -0700
-Subject: [Intel-wired-lan] [next PATCH S37 05/15] i40evf: report RSS
- hash capability to stack
-In-Reply-To: <1463419605-30746-6-git-send-email-bimmy.pujari@intel.com>
-References: <1463419605-30746-1-git-send-email-bimmy.pujari@intel.com>
- <1463419605-30746-6-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1463469222.2649.12.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 17 May 2016 16:57:52 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 74f3f9802f6a91d25e609b91210ae2fe0306d1ea BUILD SUCCESS
+Message-ID: <573add10.gBtyEfXSbrJqW83E%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2016-05-16 at 10:26 -0700, Bimmy Pujari wrote:
-> From: Mitch Williams <mitch.a.williams@intel.com>
-> 
-> Set the NETIF_F_RXHASH flag to tell the stack that the device hashes
-> packets.
-> 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-> Change-ID: I0394366ad8e8bf90bb2815d757a402c39628ccb2
-> ---
-> Testing Hints : Use ethtool -k to see that the device support receive
-> hashing.
-> 
-> ?drivers/net/ethernet/intel/i40evf/i40evf_main.c | 1 +
-> ?1 file changed, 1 insertion(+)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+74f3f9802f6a91d25e609b91210ae2fe0306d1ea  i40e: Fix errors resulted while turning off TSO
 
-Dropping this patch because NETIF_F_RXHASH is already set in this function,
-so this patch adds a duplicate flag.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160517/e9a6d062/attachment.asc>
+elapsed time: 90m
+
+configs tested: 115
+
+i386                     randconfig-a0-201620
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-x018-201620
+x86_64                 randconfig-x019-201620
+x86_64                 randconfig-x014-201620
+x86_64                 randconfig-x010-201620
+x86_64                 randconfig-x015-201620
+x86_64                 randconfig-x013-201620
+x86_64                 randconfig-x016-201620
+x86_64                 randconfig-x017-201620
+x86_64                 randconfig-x011-201620
+x86_64                 randconfig-x012-201620
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201620
+i386                     randconfig-s1-201620
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201620
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201620
+i386                     randconfig-i1-201620
+i386                   randconfig-x017-201620
+i386                   randconfig-x018-201620
+i386                   randconfig-x016-201620
+i386                   randconfig-x011-201620
+i386                   randconfig-x014-201620
+i386                   randconfig-x010-201620
+i386                   randconfig-x013-201620
+i386                   randconfig-x019-201620
+i386                   randconfig-x015-201620
+i386                   randconfig-x012-201620
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                   rhel
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                 randconfig-x007-201620
+x86_64                 randconfig-x003-201620
+x86_64                 randconfig-x006-201620
+x86_64                 randconfig-x000-201620
+x86_64                 randconfig-x008-201620
+x86_64                 randconfig-x005-201620
+x86_64                 randconfig-x004-201620
+x86_64                 randconfig-x002-201620
+x86_64                 randconfig-x001-201620
+x86_64                 randconfig-x009-201620
+x86_64                                    lkp
+i386                     randconfig-r0-201620
+i386                   randconfig-x005-201620
+i386                   randconfig-x008-201620
+i386                   randconfig-x000-201620
+i386                   randconfig-x009-201620
+i386                   randconfig-x001-201620
+i386                   randconfig-x006-201620
+i386                   randconfig-x003-201620
+i386                   randconfig-x007-201620
+i386                   randconfig-x004-201620
+i386                   randconfig-x002-201620
+
+Thanks,
+Fengguang
