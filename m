@@ -1,11 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 17 May 2016 17:38:36 +0000
-Subject: [Intel-wired-lan] [PATCH net] driver:
-	ixgbevf:	ixgbevf_write/read_posted_mbx should use
-	IXGBE_ERR_MBX to	initialize ret_val
-In-Reply-To: <c74ebf3e68d0207e95f71086693916fe99f10658.1463075515.git.lucien.xin@gmail.com>
-References: <c74ebf3e68d0207e95f71086693916fe99f10658.1463075515.git.lucien.xin@gmail.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D6953@ORSMSX104.amr.corp.intel.com>
+Date: Tue, 17 May 2016 17:42:12 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: Fix errors resulted while
+ turning	off TSO
+In-Reply-To: <1463427653-8148-1-git-send-email-tushar.n.dave@oracle.com>
+References: <1463427653-8148-1-git-send-email-tushar.n.dave@oracle.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D696C@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,27 +13,37 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Xin Long
-> Sent: Thursday, May 12, 2016 10:52 AM
-> To: network dev <netdev@vger.kernel.org>; intel-wired-lan at lists.osuosl.org
-> Cc: davem at davemloft.net
-> Subject: [Intel-wired-lan] [PATCH net] driver: ixgbevf:
-> ixgbevf_write/read_posted_mbx should use IXGBE_ERR_MBX to initialize
-> ret_val
+> Behalf Of Tushar Dave
+> Sent: Monday, May 16, 2016 12:41 PM
+> To: intel-wired-lan at lists.osuosl.org; Brandeburg, Jesse
+> <jesse.brandeburg@intel.com>; Nelson, Shannon
+> <shannon.nelson@intel.com>; Kirsher, Jeffrey T
+> <jeffrey.t.kirsher@intel.com>; netdev at vger.kernel.org; Wyborny, Carolyn
+> <carolyn.wyborny@intel.com>; Skidmore, Donald C
+> <donald.c.skidmore@intel.com>; Williams, Mitch A
+> <mitch.a.williams@intel.com>; Allan, Bruce W <bruce.w.allan@intel.com>;
+> Ronciak, John <john.ronciak@intel.com>
+> Cc: sowmini.varadhan at oracle.com; Tushar Dave
+> <tushar.n.dave@oracle.com>
+> Subject: [Intel-wired-lan] [PATCH] i40e: Fix errors resulted while turning off
+> TSO
 > 
-> Now ixgbevf_write/read_posted_mbx use -IXGBE_ERR_MBX as the initiative
-> return value, but it's incorrect, cause in ixgbevf_vlan_rx_add_vid(), it use err
-> == IXGBE_ERR_MBX, the err returned from mac.ops.set_vfta, and in
-> ixgbevf_set_vfta_vf, it return from write/read_posted. so we should
-> initialize err with IXGBE_ERR_MBX, instead of -IXGBE_ERR_MBX.
+> On systems with 128 CPUs, turning off TSO results in errors,
 > 
-> With this fix, the other functions that called it also can work well, cause they
-> only care about if err is 0 or not.
+> i40e 0000:03:00.0: failed to get tracking for 1 vectors for VSI 400, err=-12 i40e
+> 0000:03:00.0: Couldn't create FDir VSI i40e 0000:03:00.0: i40e_ptp_init: PTP
+> not supported on eth0 i40e 0000:03:00.0: couldn't add VEB, err
+> I40E_ERR_ADMIN_QUEUE_ERROR aq_err I40E_AQ_RC_ENOENT i40e
+> 0000:03:00.0: rebuild of switch failed: -1, will try to set up simple PF
+> connection i40e 0000:03:00.0 eth0: adding 00:10:e0:8a:24:b6 vid=0
 > 
-> Signed-off-by: Xin Long <lucien.xin@gmail.com>
+> Enabling FD_SB without checking availability of MSI-X vector is the root
+> cause. This change adds necessary check.
+> 
+> Signed-off-by: Tushar Dave <tushar.n.dave@oracle.com>
 > ---
->  drivers/net/ethernet/intel/ixgbevf/mbx.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e.h      |    1 +
+>  drivers/net/ethernet/intel/i40e/i40e_main.c |    8 ++++++--
+>  2 files changed, 7 insertions(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-
