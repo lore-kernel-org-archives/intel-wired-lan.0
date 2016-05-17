@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 17 May 2016 16:22:59 +0000
-Subject: [Intel-wired-lan] [next PATCH S37 01/15] i40e: add functions
-	to	control default VSI
-In-Reply-To: <1463419605-30746-2-git-send-email-bimmy.pujari@intel.com>
+Date: Tue, 17 May 2016 16:23:40 +0000
+Subject: [Intel-wired-lan] [next PATCH S37 02/15] i40e: add hw struct
+ local	variable
+In-Reply-To: <1463419605-30746-3-git-send-email-bimmy.pujari@intel.com>
 References: <1463419605-30746-1-git-send-email-bimmy.pujari@intel.com>
- <1463419605-30746-2-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D683C@ORSMSX104.amr.corp.intel.com>
+ <1463419605-30746-3-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D684C@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,20 +17,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Monday, May 16, 2016 10:27 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S37 01/15] i40e: add functions to
-> control default VSI
+> Subject: [Intel-wired-lan] [next PATCH S37 02/15] i40e: add hw struct local
+> variable
 > 
 > From: Mitch Williams <mitch.a.williams@intel.com>
 > 
-> Add functions to enable and disable default VSI on a VEB. This allows for
-> configuration of limited promiscuous mode specifically for bridging purposes.
+> This function uses the i40e_hw struct all over the place, so why doesn't it
+> keep a pointer to the struct? Add this pointer as a local variable and use it
+> consistently throughout the function.
 > 
 > Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-> Change-ID: I0cc5bd68b31c500fdff4d47e1f15d50d2739faf4
+> Change-ID: I10eb688fe40909433fcb8ac7ac891cef67445d72
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_common.c    | 56
-> ++++++++++++++++++++++++
->  drivers/net/ethernet/intel/i40e/i40e_prototype.h |  2 +
->  2 files changed, 58 insertions(+)
+> Testing Hints : No functionality change, just code simplification.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 79 +++++++++++++++--------
+> ------
+>  1 file changed, 41 insertions(+), 38 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
