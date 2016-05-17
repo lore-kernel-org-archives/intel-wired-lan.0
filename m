@@ -1,127 +1,45 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Tue, 17 May 2016 21:05:25 +0000
-Subject: [Intel-wired-lan] [net v2 0/5] igb: fix ptp suspend/resume issue
-In-Reply-To: <1463518008.10583.18.camel@intel.com>
-References: <20160511231824.22542-1-jacob.e.keller@intel.com>
- <309B89C4C689E141A5FF6A0C5FB2118B81EFDD0D@ORSMSX101.amr.corp.intel.com>
- <1463452142.2649.2.camel@intel.com> <1463518008.10583.18.camel@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81EFE386@ORSMSX101.amr.corp.intel.com>
+From: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Tue, 17 May 2016 22:41:33 +0200
+Subject: [Intel-wired-lan] [PATCH 1/1] net: i40e: avoid null pointer
+	dereference
+Message-ID: <1463517693-10333-1-git-send-email-xypron.glpk@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Keller, Jacob E
-> Sent: Tuesday, May 17, 2016 1:47 PM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; Brown, Aaron F
-> <aaron.f.brown@intel.com>; intel-wired-lan at lists.osuosl.org
-> Cc: sagar.tv at gmail.com
-> Subject: Re: [Intel-wired-lan] [net v2 0/5] igb: fix ptp suspend/resume issue
-> 
-> On Mon, 2016-05-16 at 19:29 -0700, Jeff Kirsher wrote:
-> > On Tue, 2016-05-17 at 01:57 +0000, Brown, Aaron F wrote:
-> > >
-> > > >
-> > > > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuos
-> > > > l.org]
-> > > On
-> > > >
-> > > > Behalf Of Jacob Keller
-> > > > Sent: Wednesday, May 11, 2016 4:18 PM
-> > > > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> > > > Cc: Vidya Sagar <sagar.tv@gmail.com>
-> > > > Subject: [Intel-wired-lan] [net v2 0/5] igb: fix ptp
-> > > > suspend/resume
-> > > issue
-> > > >
-> > > >
-> > > > This patch series (properly) fixes the issue with igb's workqueue
-> > > > item
-> > > > for overflow check from causing a surprise remove event. To do
-> > > > this,
-> > > > properly suspend the workqueue items in suspend and then resume
-> > > > them
-> > > > again during the resume flow.
-> > > >
-> > > > The patch series has a few extra steps to reduce code duplication
-> > > > and
-> > > > implement suspend and resume properly, which makes the overall
-> > > > fix a
-> > > bit
-> > > >
-> > > > more complicated, and thus review is welcome.
-> > > >
-> > > > A smaller fix would be to implement suspend and resume
-> > > > irrespective of
-> > > > the current igb_ptp_stop and igb_ptp_init but this seems more
-> > > > likely to
-> > > > introduce bugs especially if either function ever changes in the
-> > > future.
-> > > >
-> > > >
-> > > > In addition, the ptp_flags variable is added mostly to simplify
-> > > > the
-> > > work
-> > > >
-> > > > of writing several complex MAC type checks in the ptp code while
-> > > > doing
-> > > > this.
-> > > >
-> > > > Jacob Keller (5):
-> > > > ?? igb: introduce ptp_flags variable and use it to replace
-> > > > IGB_FLAG_PTP
-> > > > ?? igb: introduce IGB_PTP_OVERFLOW_CHECK flag
-> > > > ?? igb: introduce igb_ptp_resume function
-> > > > ?? igb: implement igb_ptp_suspend
-> > > > ?? igb: call igb_ptp_suspend/igb_ptp_resume during suspend/resume
-> > > > cycle
-> > > >
-> > > > ? drivers/net/ethernet/intel/igb/igb.h????? |?? 8 ++-
-> > > > ? drivers/net/ethernet/intel/igb/igb_main.c |?? 4 +-
-> > > > ? drivers/net/ethernet/intel/igb/igb_ptp.c? | 110
-> > > > ++++++++++++++++----
-> > > ---------
-> > > >
-> > > > -
-> > > > ? 3 files changed, 68 insertions(+), 54 deletions(-)
-> > > I have not isolated it to the exact patch yet, but one of the
-> > > patches in
-> > > this series is causing my systems to lock up with a call trace.? I
-> > > am
-> > > currently unable to capture the trace in any form other than a
-> > > bitmap
-> > > (which I'll send to Jacob but am not attaching here.)? The trace is
-> > > really several splats a few minutes apart.? The exact text /
-> > > procedure
-> > > calls of the first one seems to vary, but it seems to be in a
-> > > wakeup
-> > > routing with "do_page_fault", "? _raw_spin_lock_irq", "?
-> > > timecounter_read", "? _raw_spin_lock_irqsave",
-> > > "igb_ptp_gettime_82576"
-> > > and "igb_ptp_overflow_check" showing up prominently in at least a
-> > > few
-> > > instances.? Usually it moves to the next trace before I can get a
-> > > snapshot.? The follow on trace is where it usually stops with a
-> > > RIP:,
-> > > bunch of hex, stack info and a Call Trace saying "arch_cpu_idle",
-> > > "default_idle_call", "cpu_startup_entry" and "start_secondary"
-> > > called
-> > > out.
-> > Andrew thought it was with patch 3 in the series, at least that is
-> > what his
-> > initial git bisect was telling him.
-> >
-> > I am going to go ahead and drop the entire series for now, so that we
-> > can
-> > work offline to resolve the issue.
-> 
-> 
-> Yep. I'm investigating the traces. I'll focus my initial efforts at
-> patch 3.
+In function i40e_debug_aq parameter desc is assumed to be
+possibly NULL. Do not dereference it before checking the
+value.
 
-I can confirm Andrew's bisection and that the issue does not start occurring until patch 3 is included.
+Fixes: f905dd62be88 ("i40e/i40evf: add max buf len to aq debug print helper")
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+---
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-> 
-> Thanks,
-> Jake
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 422b41d..d5cb570 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -297,13 +297,15 @@ void i40e_debug_aq(struct i40e_hw *hw, enum i40e_debug_mask mask, void *desc,
+ 		   void *buffer, u16 buf_len)
+ {
+ 	struct i40e_aq_desc *aq_desc = (struct i40e_aq_desc *)desc;
+-	u16 len = le16_to_cpu(aq_desc->datalen);
++	u16 len;
+ 	u8 *buf = (u8 *)buffer;
+ 	u16 i = 0;
+ 
+ 	if ((!(mask & hw->debug_mask)) || (desc == NULL))
+ 		return;
+ 
++	len = le16_to_cpu(aq_desc->datalen);
++
+ 	i40e_debug(hw, mask,
+ 		   "AQ CMD: opcode 0x%04X, flags 0x%04X, datalen 0x%04X, retval 0x%04X\n",
+ 		   le16_to_cpu(aq_desc->opcode),
+-- 
+2.1.4
+
