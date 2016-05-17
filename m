@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 17 May 2016 17:17:40 +0000
-Subject: [Intel-wired-lan] [next PATCH S37 15/15] i40e/i40evf: Bump
- version	from 1.5.16 to 1.6.4
-In-Reply-To: <1463419605-30746-16-git-send-email-bimmy.pujari@intel.com>
-References: <1463419605-30746-1-git-send-email-bimmy.pujari@intel.com>
- <1463419605-30746-16-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D6920@ORSMSX104.amr.corp.intel.com>
+Date: Tue, 17 May 2016 17:38:36 +0000
+Subject: [Intel-wired-lan] [PATCH net] driver:
+	ixgbevf:	ixgbevf_write/read_posted_mbx should use
+	IXGBE_ERR_MBX to	initialize ret_val
+In-Reply-To: <c74ebf3e68d0207e95f71086693916fe99f10658.1463075515.git.lucien.xin@gmail.com>
+References: <c74ebf3e68d0207e95f71086693916fe99f10658.1463075515.git.lucien.xin@gmail.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D6953@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,17 +14,27 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Bimmy Pujari
-> Sent: Monday, May 16, 2016 10:27 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S37 15/15] i40e/i40evf: Bump version
-> from 1.5.16 to 1.6.4
+> Behalf Of Xin Long
+> Sent: Thursday, May 12, 2016 10:52 AM
+> To: network dev <netdev@vger.kernel.org>; intel-wired-lan at lists.osuosl.org
+> Cc: davem at davemloft.net
+> Subject: [Intel-wired-lan] [PATCH net] driver: ixgbevf:
+> ixgbevf_write/read_posted_mbx should use IXGBE_ERR_MBX to initialize
+> ret_val
 > 
-> Signed-off-by: Bimmy Pujari <bimmy.pujari@intel.com>
+> Now ixgbevf_write/read_posted_mbx use -IXGBE_ERR_MBX as the initiative
+> return value, but it's incorrect, cause in ixgbevf_vlan_rx_add_vid(), it use err
+> == IXGBE_ERR_MBX, the err returned from mac.ops.set_vfta, and in
+> ixgbevf_set_vfta_vf, it return from write/read_posted. so we should
+> initialize err with IXGBE_ERR_MBX, instead of -IXGBE_ERR_MBX.
+> 
+> With this fix, the other functions that called it also can work well, cause they
+> only care about if err is 0 or not.
+> 
+> Signed-off-by: Xin Long <lucien.xin@gmail.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c     | 4 ++--
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 4 ++--
->  2 files changed, 4 insertions(+), 4 deletions(-)
+>  drivers/net/ethernet/intel/ixgbevf/mbx.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Driver reports correct version
+
