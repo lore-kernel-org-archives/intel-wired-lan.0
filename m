@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 17 May 2016 16:25:00 +0000
-Subject: [Intel-wired-lan] [next PATCH S37 03/15] i40e: write HENA for
- VFs
-In-Reply-To: <1463419605-30746-4-git-send-email-bimmy.pujari@intel.com>
+Date: Tue, 17 May 2016 16:27:46 +0000
+Subject: [Intel-wired-lan] [next PATCH S37 04/15] i40e: Add a call to
+ set	the client interface down
+In-Reply-To: <1463419605-30746-5-git-send-email-bimmy.pujari@intel.com>
 References: <1463419605-30746-1-git-send-email-bimmy.pujari@intel.com>
- <1463419605-30746-4-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D685D@ORSMSX104.amr.corp.intel.com>
+ <1463419605-30746-5-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D686D@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,22 +17,25 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Monday, May 16, 2016 10:27 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S37 03/15] i40e: write HENA for VFs
+> Subject: [Intel-wired-lan] [next PATCH S37 04/15] i40e: Add a call to set the
+> client interface down
 > 
-> From: Mitch Williams <mitch.a.williams@intel.com>
+> From: Catherine Sullivan <catherine.sullivan@intel.com>
 > 
-> Now that VF RSS is configured by the PF driver, it needs to set the RSS Hash
-> Enable registers by default. Without this, no packets will be hashed and
-> they'll all end up on queue 0.
+> We were failing to set the client interface down when we put the vsi down.
+> Add this call so that the client doesn't get an open called with no close.
 > 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-> Change-ID: I38e425f40ddb81e3b19a951cfbb939fa5b1123f1
+> Also remove an un-needed delay. The vf should not be affected at all by
+> i40e_down.
+> 
+> Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
+> Change-ID: I1135dffef534bf84e6fed57cf51bcf590e6cfaf7
 > ---
-> Testing Hints : Send packets to the VF and observe which receive queues are
-> in use using ethtool -S.
+> Testing Hints: See HSD
+> HSD-number: 7662119
 > 
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 6 ++++++
->  1 file changed, 6 insertions(+)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 10 +++-------
+>  1 file changed, 3 insertions(+), 7 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Receive traffic properly spreads out among queues on VF
+Verified fixed per HSD
