@@ -1,65 +1,141 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Tue, 17 May 2016 01:45:05 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v5 1/4] igb: add support of
- RX	network flow classification
-In-Reply-To: <309B89C4C689E141A5FF6A0C5FB2118B81EFDB5D@ORSMSX101.amr.corp.intel.com>
-References: <1462786062-7572-1-git-send-email-gangfeng.huang@ni.com>
- <1462786062-7572-2-git-send-email-gangfeng.huang@ni.com>
- <309B89C4C689E141A5FF6A0C5FB2118B81EFDB5D@ORSMSX101.amr.corp.intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81EFDCCB@ORSMSX101.amr.corp.intel.com>
+From: Amritha Nambiar <amritha.nambiar@intel.com>
+Date: Mon, 16 May 2016 18:33:20 -0700
+Subject: [Intel-wired-lan] [PATCH] [v1,
+ next-queue] net: ixgbe: Error handler for duplicate filter
+ locations in hardware for cls_u32 offloads
+Message-ID: <20160517013320.2902.71585.stgit@terminator23.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Brown, Aaron F
-> Sent: Monday, May 16, 2016 3:09 PM
-> To: Gangfeng <gangfeng.huang@ni.com>; intel-wired-lan at lists.osuosl.org
-> Cc: Ruhao Gao <ruhao.gao@ni.com>
-> Subject: Re: [Intel-wired-lan] [PATCH net-next v5 1/4] igb: add support of RX
-> network flow classification
-> 
-> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> > Behalf Of Gangfeng
-> > Sent: Monday, May 9, 2016 2:28 AM
-> > To: intel-wired-lan at lists.osuosl.org
-> > Cc: Gangfeng Huang <gangfeng.huang@ni.com>; Ruhao Gao
-> > <ruhao.gao@ni.com>
-> > Subject: [Intel-wired-lan] [PATCH net-next v5 1/4] igb: add support of RX
-> > network flow classification
-> >
-> > From: Gangfeng Huang <gangfeng.huang@ni.com>
-> >
-> > This patch is meant to allow for RX network flow classification to insert
-> > and remove Rx filter by ethtool. Ethtool interface has it's own rules
-> > manager
-> >
-> > Show all filters:
-> > $ ethtool -n eth0
-> > 4 RX rings available
-> > Total 2 rules
-> >
-> > Signed-off-by: Ruhao Gao <ruhao.gao@ni.com>
-> > Signed-off-by: Gangfeng Huang <gangfeng.huang@ni.com>
-> > ---
-> >  drivers/net/ethernet/intel/igb/igb.h         |  32 +++++
-> >  drivers/net/ethernet/intel/igb/igb_ethtool.c | 193
-> > +++++++++++++++++++++++++++
-> >  drivers/net/ethernet/intel/igb/igb_main.c    |  44 ++++++
-> >  3 files changed, 269 insertions(+)
-> 
-> This patch is causing 3/4 of my regression systems to fail.  Driver load seems
-> normal, but applying an IP address via ifconfig causes the following splat in
+For u32 classifier filters, avoid overwriting existing filter
+in a hardware location without removing it first, to clean up
+inconsistencies due to duplicate values for filter location.
 
-<snip>
+Verified with the following filters:
 
-> The system will then seem to function normally for a few minutes more then,
-> even if left completely idle, will spew out another splat and the console
-> freezes.  A few more minutes and another splat hits the screen, but he
-> console is otherwise still locked up.  These later splats do not get captured to
-> the logs.
+# tc qdisc add dev enp5s0f1 ingress
+# ethtool -K enp5s0f1 hw-tc-offload on
 
-This second set of splats is not related to this patch or the series.  Only the splat that follows address binding seems to be caused by this patch.  A later series of patches for igb ptp seems to be the culprit for the delayed freeze trace.
+Create child hash tables:
+# tc filter add dev enp5s0f1 parent ffff: protocol ip prio 99 \
+	handle 1: u32 divisor 1
+# tc filter add dev enp5s0f1 parent ffff: protocol ip prio 99 \
+	handle 2: u32 divisor 1
+
+Link to the child hash table from parent hash table:
+# tc filter add dev enp5s0f1 protocol ip parent ffff: prio 99 \
+	handle 800:0:11 u32 ht 800: link 1: \
+	offset at 0 mask 0f00 shift 6 plus 0 eat \
+	match ip protocol 6 ff match ip dst 15.0.0.1/32
+
+# tc filter add dev enp5s0f1 protocol ip parent ffff: prio 99 \
+	handle 800:0:12 u32 ht 800: link 2: \
+	offset at 0 mask 0f00 shift 6 plus 0 eat \
+	match ip protocol 17 ff match ip dst 16.0.0.1/32
+
+Add filter into child hash table:
+# tc filter add dev enp5s0f1 parent ffff: protocol ip \
+	handle 1:0:3 u32 ht 1: \
+	match tcp src 22 ffff action drop
+
+Add another filter to the same location:
+# tc filter add dev enp5s0f1 parent ffff: protocol ip \
+	handle 2:0:3 u32 ht 2: \
+	match tcp src 33 ffff action drop
+
+Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   41 +++++++++++++++----------
+ 1 file changed, 25 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 7a893ae..a36cd60 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -8323,8 +8323,11 @@ static int ixgbe_delete_clsu32(struct ixgbe_adapter *adapter,
+ 	/* Clear this filter in the link data it is associated with */
+ 	if (uhtid != 0x800) {
+ 		jump = adapter->jump_tables[uhtid];
+-		if (jump)
+-			clear_bit(loc - 1, jump->child_loc_map);
++		if (!jump)
++			return -EINVAL;
++		if (!test_bit(loc - 1, jump->child_loc_map))
++			return -EINVAL;
++		clear_bit(loc - 1, jump->child_loc_map);
+ 	}
+ 
+ 	/* Check if the filter being deleted is a link */
+@@ -8614,7 +8617,7 @@ static int ixgbe_configure_clsu32(struct ixgbe_adapter *adapter,
+ 			mask = kzalloc(sizeof(*mask), GFP_KERNEL);
+ 			if (!mask) {
+ 				err = -ENOMEM;
+-				goto err_out;
++				goto free_input;
+ 			}
+ 			jump->input = input;
+ 			jump->mask = mask;
+@@ -8637,7 +8640,7 @@ static int ixgbe_configure_clsu32(struct ixgbe_adapter *adapter,
+ 	mask = kzalloc(sizeof(*mask), GFP_KERNEL);
+ 	if (!mask) {
+ 		err = -ENOMEM;
+-		goto err_out;
++		goto free_input;
+ 	}
+ 
+ 	if ((uhtid != 0x800) && (adapter->jump_tables[uhtid])) {
+@@ -8647,6 +8650,20 @@ static int ixgbe_configure_clsu32(struct ixgbe_adapter *adapter,
+ 		if ((adapter->jump_tables[uhtid])->mask)
+ 			memcpy(mask, (adapter->jump_tables[uhtid])->mask,
+ 			       sizeof(*mask));
++
++		/* Lookup in all child hash tables if this location is already
++		 * filled with a filter
++		 */
++		for (i = 1; i < IXGBE_MAX_LINK_HANDLE; i++) {
++			struct ixgbe_jump_table *link = adapter->jump_tables[i];
++
++			if (link && (test_bit(loc - 1, link->child_loc_map))) {
++				e_err(drv, "Filter exists in location: %x\n",
++				      loc);
++				err = -EINVAL;
++				goto err_out;
++			}
++		}
+ 	}
+ 	err = ixgbe_clsu32_build_input(input, mask, cls, field_ptr, NULL);
+ 	if (err)
+@@ -8678,25 +8695,17 @@ static int ixgbe_configure_clsu32(struct ixgbe_adapter *adapter,
+ 		ixgbe_update_ethtool_fdir_entry(adapter, input, input->sw_idx);
+ 	spin_unlock(&adapter->fdir_perfect_lock);
+ 
+-	if ((uhtid != 0x800) && (adapter->jump_tables[uhtid])) {
+-		struct ixgbe_jump_table *link = adapter->jump_tables[uhtid];
++	if ((uhtid != 0x800) && (adapter->jump_tables[uhtid]))
++		set_bit(loc - 1, (adapter->jump_tables[uhtid])->child_loc_map);
+ 
+-		if (test_bit(loc - 1, link->child_loc_map)) {
+-			e_err(drv, "Filter: %x exists in hash table: %x\n",
+-			      loc, uhtid);
+-			err = -EINVAL;
+-			goto free_mask;
+-		}
+-		set_bit(loc - 1, link->child_loc_map);
+-	}
+ 	kfree(mask);
+ 	return err;
+ err_out_w_lock:
+ 	spin_unlock(&adapter->fdir_perfect_lock);
+ err_out:
+-	kfree(input);
+-free_mask:
+ 	kfree(mask);
++free_input:
++	kfree(input);
+ free_jump:
+ 	kfree(jump);
+ 	return err;
 
