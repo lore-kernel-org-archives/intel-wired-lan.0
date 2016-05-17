@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 17 May 2016 16:47:18 +0000
-Subject: [Intel-wired-lan] [next PATCH S37 09/15] i40e: fix missing DA
- cable	check
-In-Reply-To: <1463419605-30746-10-git-send-email-bimmy.pujari@intel.com>
+Date: Tue, 17 May 2016 16:53:24 +0000
+Subject: [Intel-wired-lan] [next PATCH S37 10/15] i40e: Removing
+ unnecessary	code which caused supported link mode bug
+In-Reply-To: <1463419605-30746-11-git-send-email-bimmy.pujari@intel.com>
 References: <1463419605-30746-1-git-send-email-bimmy.pujari@intel.com>
- <1463419605-30746-10-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D68C2@ORSMSX104.amr.corp.intel.com>
+ <1463419605-30746-11-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9D68DC@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,20 +17,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Monday, May 16, 2016 10:27 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Kong, Serey <serey.kong@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH S37 09/15] i40e: fix missing DA cable
-> check
+> Subject: [Intel-wired-lan] [next PATCH S37 10/15] i40e: Removing
+> unnecessary code which caused supported link mode bug
 > 
-> From: Serey Kong <serey.kong@intel.com>
+> From: Avinash Dayanand <avinash.dayanand@intel.com>
 > 
-> When a Direct Attach (DA) cable is used, if the i40e_set_settings function is
-> called it would return an error. Add the DA type so the function won't fail.
+> Removing this code which wasn't allowing 100BaseT to show up in the
+> supported link modes for 10GBaseT PHYs.
 > 
-> Signed-off-by: Serey Kong <serey.kong@intel.com>
-> Change-ID: I2b802f27a5d91cfefa72fd1f852acb4d74647a8e
+> Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
+> Change-ID: Iada2eafa7ef6b4bac9a2a1380ff533ae5de51e1d
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 1 +
->  1 file changed, 1 insertion(+)
+> Testing Hints: Use 'ethtool ethx' check if 100BaseT is listed as one of the
+> supported link modes.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-DA cable correctly identified
+100BaseT shown as supported link mode on 10GBaseT PHY
