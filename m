@@ -1,136 +1,85 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 18 May 2016 02:42:57 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 922b7aa8c84b9e77b5178dce981ad4ae56a00ce3 BUILD SUCCESS
-Message-ID: <573b6631.VBBPZc1UqRUrpSFI%fengguang.wu@intel.com>
+From: Jarod Wilson <jarod@redhat.com>
+Date: Tue, 17 May 2016 15:03:51 -0400
+Subject: [Intel-wired-lan] [RFC PATCH net] e1000e: keep vlan interfaces
+	functional after rxvlan off
+Message-ID: <1463511831-13684-1-git-send-email-jarod@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-922b7aa8c84b9e77b5178dce981ad4ae56a00ce3  i40e: Fix errors resulted while turning off TSO
+I've got a bug report about an e1000e interface, where a vlan interface is
+set up on top of it:
 
-elapsed time: 89m
+$ ip link add link ens1f0 name ens1f0.99 type vlan id 99
+$ ip link set ens1f0 up
+$ ip link set ens1f0.99 up
+$ ip addr add 192.168.99.92 dev ens1f0.99
 
-configs tested: 115
+At this point, I can ping another host on vlan 99, ip 192.168.99.91.
+However, if I do the following:
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201620
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-parisc                         b180_defconfig
-x86_64                 randconfig-x018-201620
-x86_64                 randconfig-x019-201620
-x86_64                 randconfig-x014-201620
-x86_64                 randconfig-x010-201620
-x86_64                 randconfig-x015-201620
-x86_64                 randconfig-x013-201620
-x86_64                 randconfig-x016-201620
-x86_64                 randconfig-x017-201620
-x86_64                 randconfig-x011-201620
-x86_64                 randconfig-x012-201620
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                     randconfig-s0-201620
-i386                     randconfig-s1-201620
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-i386                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201620
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201620
-i386                     randconfig-i1-201620
-i386                   randconfig-x010-201620
-i386                   randconfig-x011-201620
-i386                   randconfig-x012-201620
-i386                   randconfig-x013-201620
-i386                   randconfig-x014-201620
-i386                   randconfig-x015-201620
-i386                   randconfig-x016-201620
-i386                   randconfig-x017-201620
-i386                   randconfig-x018-201620
-i386                   randconfig-x019-201620
-x86_64                                    lkp
-x86_64                                   rhel
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-x86_64                 randconfig-x000-201620
-x86_64                 randconfig-x001-201620
-x86_64                 randconfig-x002-201620
-x86_64                 randconfig-x003-201620
-x86_64                 randconfig-x004-201620
-x86_64                 randconfig-x005-201620
-x86_64                 randconfig-x006-201620
-x86_64                 randconfig-x007-201620
-x86_64                 randconfig-x008-201620
-x86_64                 randconfig-x009-201620
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-r0-201620
-i386                   randconfig-x000-201620
-i386                   randconfig-x001-201620
-i386                   randconfig-x002-201620
-i386                   randconfig-x003-201620
-i386                   randconfig-x004-201620
-i386                   randconfig-x005-201620
-i386                   randconfig-x006-201620
-i386                   randconfig-x007-201620
-i386                   randconfig-x008-201620
-i386                   randconfig-x009-201620
+$ ethtool -K ens1f0 rxvlan off
 
-Thanks,
-Fengguang
+Then no traffic passes on ens1f0.99. It comes back if I toggle rxvlan on
+again. I'm not sure if this is actually intended behavior, or if there's a
+lack of software vlan stripping fallback, or what, but things continue to
+work if I simply don't call e1000e_vlan_strip_disable() if there are
+active vlans (plagiarizing a function from the e1000 driver here) on the
+interface.
+
+Also slipped a related-ish fix to the kerneldoc text for
+e1000e_vlan_strip_disable here...
+
+CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+CC: intel-wired-lan at lists.osuosl.org
+CC: netdev at vger.kernel.org
+Signed-off-by: Jarod Wilson <jarod@redhat.com>
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 75e6089..73f7452 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -154,6 +154,16 @@ void __ew32(struct e1000_hw *hw, unsigned long reg, u32 val)
+ 	writel(val, hw->hw_addr + reg);
+ }
+ 
++static bool e1000e_vlan_used(struct e1000_adapter *adapter)
++{
++	u16 vid;
++
++	for_each_set_bit(vid, adapter->active_vlans, VLAN_N_VID)
++		return true;
++
++	return false;
++}
++
+ /**
+  * e1000_regdump - register printout routine
+  * @hw: pointer to the HW structure
+@@ -2789,7 +2799,7 @@ static void e1000e_vlan_filter_enable(struct e1000_adapter *adapter)
+ }
+ 
+ /**
+- * e1000e_vlan_strip_enable - helper to disable HW VLAN stripping
++ * e1000e_vlan_strip_disable - helper to disable HW VLAN stripping
+  * @adapter: board private structure to initialize
+  **/
+ static void e1000e_vlan_strip_disable(struct e1000_adapter *adapter)
+@@ -3443,7 +3453,8 @@ static void e1000e_set_rx_mode(struct net_device *netdev)
+ 
+ 	ew32(RCTL, rctl);
+ 
+-	if (netdev->features & NETIF_F_HW_VLAN_CTAG_RX)
++	if (netdev->features & NETIF_F_HW_VLAN_CTAG_RX ||
++	    e1000e_vlan_used(adapter))
+ 		e1000e_vlan_strip_enable(adapter);
+ 	else
+ 		e1000e_vlan_strip_disable(adapter);
+-- 
+1.8.3.1
+
