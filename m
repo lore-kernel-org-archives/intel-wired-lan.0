@@ -1,136 +1,192 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 17 May 2016 16:57:52 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 74f3f9802f6a91d25e609b91210ae2fe0306d1ea BUILD SUCCESS
-Message-ID: <573add10.gBtyEfXSbrJqW83E%fengguang.wu@intel.com>
+From: ethan zhao <ethan.zhao@oracle.com>
+Date: Tue, 17 May 2016 17:00:46 +0800
+Subject: [Intel-wired-lan] [PATCH] ixgbe: take online CPU number as MQ
+ max limit when alloc_etherdev_mq()
+In-Reply-To: <CAKgT0UfJqu5sa7U4HKLFk0h3NjqavaAY0xfsahZ32MvnePFHdg@mail.gmail.com>
+References: <1463118995-31763-1-git-send-email-ethan.zhao@oracle.com>
+ <CAKgT0UeiEW21E7A9fnt_BUCppopns-E2w1WbwF-8A6sCZkJ8rQ@mail.gmail.com>
+ <573937A7.9010405@oracle.com>
+ <CAKgT0UfJqu5sa7U4HKLFk0h3NjqavaAY0xfsahZ32MvnePFHdg@mail.gmail.com>
+Message-ID: <573ADDBE.8080702@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-74f3f9802f6a91d25e609b91210ae2fe0306d1ea  i40e: Fix errors resulted while turning off TSO
+Alexander,
 
-elapsed time: 90m
+On 2016/5/17 0:09, Alexander Duyck wrote:
+> On Sun, May 15, 2016 at 7:59 PM, ethan zhao <ethan.zhao@oracle.com> wrote:
+>> Alexander,
+>>
+>> On 2016/5/14 0:46, Alexander Duyck wrote:
+>>> On Thu, May 12, 2016 at 10:56 PM, Ethan Zhao <ethan.zhao@oracle.com>
+>>> wrote:
+>>>> Allocating 64 Tx/Rx as default doesn't benefit perfomrnace when less
+>>>> CPUs were assigned. especially when DCB is enabled, so we should take
+>>>> num_online_cpus() as top limit, and aslo to make sure every TC has
+>>>> at least one queue, take the MAX_TRAFFIC_CLASS as bottom limit of queues
+>>>> number.
+>>>>
+>>>> Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
+>>> What is the harm in allowing the user to specify up to 64 queues if
+>>> they want to?  Also what is your opinion based on?  In the case of RSS
+>>
+>>   There is no module parameter to specify queue number in this upstream ixgbe
+>>    driver.  for what to specify more queues than num_online_cpus() via
+>> ethtool ?
+>>   I couldn't figure out the benefit to do that.
+> There are a number of benefits to being able to set the number of
+> queues based on the user desire.  Just because you can't figure out
+> how to use a feature is no reason to break it so that nobody else can.
+>
+>>   But if DCB is turned on after loading, the queues would be 64/64, that
+>> doesn't
+>>   make sense if only 16 CPUs assigned.
+> It makes perfect sense.  What is happening is that it is allocating an
+> RSS set per TC.  So what you should have is either 4 queues per CPU
+> with each one belonging to a different TC, or 4 queues per CPU with
+> the first 8 CPUs covering TCs 0-3, and the last 8 CPUs covering TCs
+> 4-7.
+>
+> I can see how the last setup might actually be a bit confusing.  To
+> that end you might consider modifying ixgbe_acquire_msix_vectors uses
+> the number of RSS queues instead of the number of Rx queues in the
 
-configs tested: 115
 
-i386                     randconfig-a0-201620
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                 randconfig-x018-201620
-x86_64                 randconfig-x019-201620
-x86_64                 randconfig-x014-201620
-x86_64                 randconfig-x010-201620
-x86_64                 randconfig-x015-201620
-x86_64                 randconfig-x013-201620
-x86_64                 randconfig-x016-201620
-x86_64                 randconfig-x017-201620
-x86_64                 randconfig-x011-201620
-x86_64                 randconfig-x012-201620
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201620
-i386                     randconfig-s1-201620
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201620
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201620
-i386                     randconfig-i1-201620
-i386                   randconfig-x017-201620
-i386                   randconfig-x018-201620
-i386                   randconfig-x016-201620
-i386                   randconfig-x011-201620
-i386                   randconfig-x014-201620
-i386                   randconfig-x010-201620
-i386                   randconfig-x013-201620
-i386                   randconfig-x019-201620
-i386                   randconfig-x015-201620
-i386                   randconfig-x012-201620
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                   rhel
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                 randconfig-x007-201620
-x86_64                 randconfig-x003-201620
-x86_64                 randconfig-x006-201620
-x86_64                 randconfig-x000-201620
-x86_64                 randconfig-x008-201620
-x86_64                 randconfig-x005-201620
-x86_64                 randconfig-x004-201620
-x86_64                 randconfig-x002-201620
-x86_64                 randconfig-x001-201620
-x86_64                 randconfig-x009-201620
-x86_64                                    lkp
-i386                     randconfig-r0-201620
-i386                   randconfig-x005-201620
-i386                   randconfig-x008-201620
-i386                   randconfig-x000-201620
-i386                   randconfig-x009-201620
-i386                   randconfig-x001-201620
-i386                   randconfig-x006-201620
-i386                   randconfig-x003-201620
-i386                   randconfig-x007-201620
-i386                   randconfig-x004-201620
-i386                   randconfig-x002-201620
+> case of DCB.  Then you would get more consistent behavior with each
+> q_vector or CPU (if num_q_vecotrs == num_online_cpus()) having one
+> queue belonging to each TC.  You would end up with either 8 or 16
+> q_vectors hosting 8 or 4 queues so that they can process DCB requests
+> without having to worry about head of line blocking.
+>
+>>> traffic the upper limit is only 16 on older NICs, but last I knew the
+>>> latest X550 can support more queues for RSS.  Have you only been
+>>> testing on older NICs or did you test on the latest hardware as well?
+>>    More queues for RSS than num_online_cpus() could bring better performance
+>> ?
+>>    Test result shows false result.  even memory cost is not an issue for most
+>> of
+>>    the expensive servers, but not for all.
+> The feature is called DCB.  What it allows for is the avoidance of
+> head-of-line blocking.  So when you have DCB enabled you should have a
+> set of queues for each possible RSS result so that if you get a higher
+> priority request on one of the queues it can use the higher priority
+> queue instead of having to rely on the the lower priority queue to
+> receive traffic.  You cannot do that without allocating a queue for
+> each TC, and reducing the number of RSS queues supported on the system
+> will hurt performance.  Therefore on a 16 CPU system it is very useful
+> to be able to allocate 4 queues per RSS flow as that way you get
+> optimal CPU distribution and can still avoid head-of-line blocking via
+> DCB.
+>
+>>> If you want to control the number of queues allocated in a given
+>>> configuration you should look at the code over in the ixgbe_lib.c, not
+>>    Yes,  RSS,  RSS with SRIOV, FCoE, DCB etc uses different queues
+>> calculation algorithm.
+>>    But they all take the dev queues allocated in alloc_etherdev_mq() as upper
+>> limit.
+>>
+>>   If we set 64 as default here, DCB would says "oh, there is 64 there, I
+>> could use it"
+> Right.  But the deciding factor for DCB is RSS which is already
+> limited by the number of CPUs.  If it is allocating 64 queues it is
+> because there are either at least 8 CPUs present and 8 TCs being
+> allocated per CPU, or there are at least 16 queues present and it is
+> allocating 4 TCs per CPU.
+>
+>>> ixgbe_main.c.  All you are doing with this patch is denying the user
+>>> choice with this change as they then are not allowed to set more
+>>    Yes, it is purposed to deny configuration that doesn't benefit.
+> Doesn't benefit who?  It is obvious you don't understand how DCB is
+> meant to work since you are assuming the queues are throw-away.
+> Anyone who makes use of the ability to prioritize their traffic would
+> likely have a different opinion.
+>
+>>> queues.  Even if they find your decision was wrong for their
+>>> configuration.
+>>>
+>>> - Alex
+>>>
+>>   Thanks,
+>>   Ethan
+> Your response clearly points out you don't understand DCB.  I suggest
+> you take another look at how things are actually being configured.  I
+> believe what you will find is that the current implementation is
+> basing things on the number of online CPUs already based on the
+> ring_feature[RING_F_RSS].limit value.  All that is happening is that
+> you are getting that value multiplied by the number of TCs and the RSS
+> value is reduced if the result is greater than 64 based on the maximum
+> number of queues.
+>
+> With your code on an 8 core system you go from being able to perform
+> RSS over 8 queues to only being able to perform RSS over 1 queue when
+> you enable DCB.  There was a bug a long time ago where this actually
+> didn't provide any gain because the interrupt allocation was binding
+> all 8 RSS queues to a single q_vector, but that has long since been
+> fixed and what you should be seeing is that RSS will spread traffic
+> across either 8 or 16 queues when DCB is enabled in either 8 or 4 TC
+Here is my understanding of current code about the DCB mapping.
+Is it right ?
+
+If we have 8 TCs and 4 RSS queues per TC, one q_vector per queue and
+we have total 32 CPUs, the proper layout would be:
+
+App0---> Prio0 --> TC0 --> RSS_queue0 --->Q_vector0 ---->CPU0
+                                   |----> RSS_queue1 --->Q_vector1 ---->CPU1
+                                   |----> RSS_queue2 --->Q_vector2 ---->CPU2
+                                   |----> RSS_queue3 --->Q_vector3 ---->CPU3
+                                                  . .             
+.            .
+                                                  . .             
+.            .
+                                                   . .             
+.            .
+App7---> Prio7 --> TC7 --> RSS_queue28 --->Q_vector28 ---->CPU28
+                                  |----> RSS_queue29 --->Q_vector29 
+---->CPU29
+                                  |----> RSS_queue30 --->Q_vector30 
+---->CPU30
+                                  |----> RSS_queue31 --->Q_vector31 
+---->CPU31
+
+if we less CPUs, for example only 4 CPUs, the layout would be
+(according to current implementation)
+
+App0---> Prio0 --> TC0 --> RSS_queue0 --->Q_vector0 ---->CPU0
+                                  |----> RSS_queue1 --->Q_vector1 ---->CPU1
+                                  |----> RSS_queue2 --->Q_vector2 ---->CPU2
+                                  |----> RSS_queue3 --->Q_vector3 ---->CPU3
+                                               . .             
+.            .
+                                               . .             
+.            .
+                                               . .             
+.            .
+App7---> Prio7 --> TC7 --> RSS_queue28 --->Q_vector0 ---->CPU0
+                                  |----> RSS_queue29 --->Q_vector1 ---->CPU1
+                                  |----> RSS_queue30 --->Q_vector2 ---->CPU2
+                                  |----> RSS_queue31 --->Q_vector3 ---->CPU3
+
+So we bond two 8 queues to one q_vector / CPU.
+And here, Yes, we could scale every TC's traffic to all 4 CPUs with RSS.
+if the workload of one TC's traffic is beyond one CPU's capability, it
+is useful to be scalable.  though it might break the CPU affinity of
+application and stack/driver data flow.
 
 Thanks,
-Fengguang
+Ethan
+> mode.
+>
+> My advice would be to use a netperf TCP_CRR test and watch what queues
+> and what interrupts traffic is being delivered to.  Then if you have
+> DCB enabled on both ends you might try changing the priority of your
+> netperf session and watch what happens when you switch between TCs.
+> What you should find is that you will shift between groups of queues
+> and as you do so you should not have any active queues overlapping
+> unless you have less interrupts than CPUs.
+>
+> - Alex
+>
+
