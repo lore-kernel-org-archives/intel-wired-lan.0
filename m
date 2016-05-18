@@ -1,127 +1,40 @@
-From: Alexander Duyck <aduyck@mirantis.com>
-Date: Wed, 18 May 2016 10:44:53 -0700
-Subject: [Intel-wired-lan] [net-next PATCH 2/2] intel: Add support for IPv6
-	IP-in-IP offload
-In-Reply-To: <20160518173605.2608.42484.stgit@localhost.localdomain>
-References: <20160518173605.2608.42484.stgit@localhost.localdomain>
-Message-ID: <20160518174453.2608.59296.stgit@localhost.localdomain>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Wed, 18 May 2016 14:04:24 -0700
+Subject: [Intel-wired-lan] [PATCH v3 5/5] igb: call igb_ptp_suspend during
+	suspend/resume cycle
+In-Reply-To: <20160518210424.20744-1-jacob.e.keller@intel.com>
+References: <20160518210424.20744-1-jacob.e.keller@intel.com>
+Message-ID: <20160518210424.20744-5-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch adds support for offloading IPXIP6 type packets that represent
-either IPv4 or IPv6 encapsulated inside of an IPv6 outer IP header.  In
-addition with this change we should also be able to support FOU
-encapsulated traffic with outer IPv6 headers.
+Properly stop the extra workqueue items and ensure that we resume
+cleanly. This is better than using igb_ptp_init and igb_ptp_stop since
+these functions destroy the PHC device, which will cause other problems
+if we do so. Since igb_ptp_reset now re-schedules the work-queue item we
+don't need an equivalent igb_ptp_resume in the resume workflow.
 
-Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c       |    1 +
- drivers/net/ethernet/intel/i40e/i40e_txrx.c       |    1 +
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c     |    1 +
- drivers/net/ethernet/intel/i40evf/i40evf_main.c   |    1 +
- drivers/net/ethernet/intel/igb/igb_main.c         |    1 +
- drivers/net/ethernet/intel/igbvf/netdev.c         |    1 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c     |    1 +
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |    1 +
- 8 files changed, 8 insertions(+)
+ drivers/net/ethernet/intel/igb/igb_main.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 14e9c99e9d36..c059d09f3257 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -9113,6 +9113,7 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
- 				   NETIF_F_GSO_GRE		|
- 				   NETIF_F_GSO_GRE_CSUM		|
- 				   NETIF_F_GSO_IPXIP4		|
-+				   NETIF_F_GSO_IPXIP6		|
- 				   NETIF_F_GSO_UDP_TUNNEL	|
- 				   NETIF_F_GSO_UDP_TUNNEL_CSUM	|
- 				   NETIF_F_GSO_PARTIAL		|
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 0a8122c00ae2..55f151fca1dc 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2285,6 +2285,7 @@ static int i40e_tso(struct sk_buff *skb, u8 *hdr_len, u64 *cd_type_cmd_tso_mss)
- 	if (skb_shinfo(skb)->gso_type & (SKB_GSO_GRE |
- 					 SKB_GSO_GRE_CSUM |
- 					 SKB_GSO_IPXIP4 |
-+					 SKB_GSO_IPXIP6 |
- 					 SKB_GSO_UDP_TUNNEL |
- 					 SKB_GSO_UDP_TUNNEL_CSUM)) {
- 		if (!(skb_shinfo(skb)->gso_type & SKB_GSO_PARTIAL) &&
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index 2bbbbd0f9f15..be99189da925 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -1560,6 +1560,7 @@ static int i40e_tso(struct sk_buff *skb, u8 *hdr_len, u64 *cd_type_cmd_tso_mss)
- 	if (skb_shinfo(skb)->gso_type & (SKB_GSO_GRE |
- 					 SKB_GSO_GRE_CSUM |
- 					 SKB_GSO_IPXIP4 |
-+					 SKB_GSO_IPXIP6 |
- 					 SKB_GSO_UDP_TUNNEL |
- 					 SKB_GSO_UDP_TUNNEL_CSUM)) {
- 		if (!(skb_shinfo(skb)->gso_type & SKB_GSO_PARTIAL) &&
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 520c5b3b6cb4..eac057b88055 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -2231,6 +2231,7 @@ int i40evf_process_config(struct i40evf_adapter *adapter)
- 				   NETIF_F_GSO_GRE		|
- 				   NETIF_F_GSO_GRE_CSUM		|
- 				   NETIF_F_GSO_IPXIP4		|
-+				   NETIF_F_GSO_IPXIP6		|
- 				   NETIF_F_GSO_UDP_TUNNEL	|
- 				   NETIF_F_GSO_UDP_TUNNEL_CSUM	|
- 				   NETIF_F_GSO_PARTIAL		|
 diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index b1a5cdb77088..ef3d642f5ff2 100644
+index 21727692bef6..b7258402cb59 100644
 --- a/drivers/net/ethernet/intel/igb/igb_main.c
 +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -2419,6 +2419,7 @@ static int igb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- #define IGB_GSO_PARTIAL_FEATURES (NETIF_F_GSO_GRE | \
- 				  NETIF_F_GSO_GRE_CSUM | \
- 				  NETIF_F_GSO_IPXIP4 | \
-+				  NETIF_F_GSO_IPXIP6 | \
- 				  NETIF_F_GSO_UDP_TUNNEL | \
- 				  NETIF_F_GSO_UDP_TUNNEL_CSUM)
+@@ -7527,6 +7527,8 @@ static int __igb_shutdown(struct pci_dev *pdev, bool *enable_wake,
+ 	if (netif_running(netdev))
+ 		__igb_close(netdev, true);
  
-diff --git a/drivers/net/ethernet/intel/igbvf/netdev.c b/drivers/net/ethernet/intel/igbvf/netdev.c
-index 79b907f1a520..b0778ba65083 100644
---- a/drivers/net/ethernet/intel/igbvf/netdev.c
-+++ b/drivers/net/ethernet/intel/igbvf/netdev.c
-@@ -2764,6 +2764,7 @@ static int igbvf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- #define IGBVF_GSO_PARTIAL_FEATURES (NETIF_F_GSO_GRE | \
- 				    NETIF_F_GSO_GRE_CSUM | \
- 				    NETIF_F_GSO_IPXIP4 | \
-+				    NETIF_F_GSO_IPXIP6 | \
- 				    NETIF_F_GSO_UDP_TUNNEL | \
- 				    NETIF_F_GSO_UDP_TUNNEL_CSUM)
++	igb_ptp_suspend(adapter);
++
+ 	igb_clear_interrupt_scheme(adapter);
  
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 427084e7fbf4..e98affdb14b7 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -9544,6 +9544,7 @@ skip_sriov:
- #define IXGBE_GSO_PARTIAL_FEATURES (NETIF_F_GSO_GRE | \
- 				    NETIF_F_GSO_GRE_CSUM | \
- 				    NETIF_F_GSO_IPXIP4 | \
-+				    NETIF_F_GSO_IPXIP6 | \
- 				    NETIF_F_GSO_UDP_TUNNEL | \
- 				    NETIF_F_GSO_UDP_TUNNEL_CSUM)
- 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index d86e51116384..acc24010cfe0 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -4063,6 +4063,7 @@ static int ixgbevf_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- #define IXGBEVF_GSO_PARTIAL_FEATURES (NETIF_F_GSO_GRE | \
- 				      NETIF_F_GSO_GRE_CSUM | \
- 				      NETIF_F_GSO_IPXIP4 | \
-+				      NETIF_F_GSO_IPXIP6 | \
- 				      NETIF_F_GSO_UDP_TUNNEL | \
- 				      NETIF_F_GSO_UDP_TUNNEL_CSUM)
- 
+ #ifdef CONFIG_PM
+-- 
+2.8.2.820.gd1c5f70
 
