@@ -1,51 +1,24 @@
 From: David Miller <davem@davemloft.net>
-Date: Wed, 18 May 2016 21:10:43 -0700 (PDT)
-Subject: [Intel-wired-lan] [net-next PATCH 0/2] Follow-ups for GUEoIPv6
-	patches
-In-Reply-To: <1463606878.2713.68.camel@intel.com>
-References: <20160518173605.2608.42484.stgit@localhost.localdomain>
- <1463606878.2713.68.camel@intel.com>
-Message-ID: <20160518.211043.773402183440053556.davem@davemloft.net>
+Date: Thu, 19 May 2016 11:26:18 -0700 (PDT)
+Subject: [Intel-wired-lan] [PATCH 1/1] net: i40e: avoid null pointer
+	dereference
+In-Reply-To: <1463517693-10333-1-git-send-email-xypron.glpk@gmx.de>
+References: <1463517693-10333-1-git-send-email-xypron.glpk@gmx.de>
+Message-ID: <20160519.112618.515295810053057625.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 18 May 2016 14:27:58 -0700
+From: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Tue, 17 May 2016 22:41:33 +0200
 
-> On Wed, 2016-05-18 at 10:44 -0700, Alexander Duyck wrote:
->> This patch series is meant to be applied after:
->> [PATCH v7 net-next 00/16] ipv6: Enable GUEoIPv6 and more fixes for v6
->> tunneling
->> 
->> The first patch addresses an issue we already resolved in the GREv4 and
->> is
->> now present in GREv6 with the introduction of FOU/GUE for IPv6 based GRE
->> tunnels.
->> 
->> The second patch goes through and enables IPv6 tunnel offloads for the
->> Intel
->> NICs that already support the IPv4 based IP-in-IP tunnel offloads.? I
->> have
->> only done a bit of touch testing but have seen ~20 Gb/s over an i40e
->> interface using a v4-in-v6 tunnel, and I have verified IPv6 GRE is still
->> passing traffic at around the same rate.? I plan to do further testing
->> but
->> with these patches present it should enable a wider audience to be able
->> to
->> test the new features introduced in Tom's patchset with hardware
->> offloads.
->> 
->> ---
->> 
->> Alexander Duyck (2):
->> ????? ip6_gre: Do not allow segmentation offloads GRE_CSUM is enabled
->> with FOU/GUE
->> ????? intel: Add support for IPv6 IP-in-IP offload
+> In function i40e_debug_aq parameter desc is assumed to be
+> possibly NULL. Do not dereference it before checking the
+> value.
 > 
-> Dave, I have this series added to my queue.
+> Fixes: f905dd62be88 ("i40e/i40evf: add max buf len to aq debug print helper")
+> Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
 
-Why would you if it depends upon Tom's series, as mentioned above, which
-isn't even in my tree yet?
+I'll let Jeff pick this up.
