@@ -1,32 +1,137 @@
-From: David Miller <davem@davemloft.net>
-Date: Fri, 20 May 2016 19:26:17 -0400 (EDT)
-Subject: [Intel-wired-lan] [net-next PATCH 0/2] Follow-ups for GUEoIPv6
-	patches
-In-Reply-To: <20160518173605.2608.42484.stgit@localhost.localdomain>
-References: <20160518173605.2608.42484.stgit@localhost.localdomain>
-Message-ID: <20160520.192617.407123677086722342.davem@davemloft.net>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sun, 22 May 2016 08:47:39 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 1c32f76cd519f0de10136bdd62316c5f0d1a360c BUILD SUCCESS
+Message-ID: <574101ab.0fuEiBnadVNNHF0I%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Duyck <aduyck@mirantis.com>
-Date: Wed, 18 May 2016 10:44:40 -0700
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+1c32f76cd519f0de10136bdd62316c5f0d1a360c  igb: call igb_ptp_suspend during suspend/resume cycle
 
-> This patch series is meant to be applied after:
-> [PATCH v7 net-next 00/16] ipv6: Enable GUEoIPv6 and more fixes for v6 tunneling
-> 
-> The first patch addresses an issue we already resolved in the GREv4 and is
-> now present in GREv6 with the introduction of FOU/GUE for IPv6 based GRE
-> tunnels.
-> 
-> The second patch goes through and enables IPv6 tunnel offloads for the Intel
-> NICs that already support the IPv4 based IP-in-IP tunnel offloads.  I have
-> only done a bit of touch testing but have seen ~20 Gb/s over an i40e
-> interface using a v4-in-v6 tunnel, and I have verified IPv6 GRE is still
-> passing traffic at around the same rate.  I plan to do further testing but
-> with these patches present it should enable a wider audience to be able to
-> test the new features introduced in Tom's patchset with hardware offloads.
+elapsed time: 70m
 
-Series applied, thanks Alex.
+configs tested: 116
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201621
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+parisc                         b180_defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                 randconfig-x018-201621
+x86_64                 randconfig-x019-201621
+x86_64                 randconfig-x014-201621
+x86_64                 randconfig-x010-201621
+x86_64                 randconfig-x015-201621
+x86_64                 randconfig-x013-201621
+x86_64                 randconfig-x016-201621
+x86_64                 randconfig-x017-201621
+x86_64                 randconfig-x012-201621
+x86_64                 randconfig-x011-201621
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201621
+i386                     randconfig-s1-201621
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                             allmodconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201621
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201621
+i386                     randconfig-i1-201621
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                   randconfig-x017-201621
+i386                   randconfig-x018-201621
+i386                   randconfig-x011-201621
+i386                   randconfig-x016-201621
+i386                   randconfig-x014-201621
+i386                   randconfig-x013-201621
+i386                   randconfig-x010-201621
+i386                   randconfig-x019-201621
+i386                   randconfig-x015-201621
+i386                   randconfig-x012-201621
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201621
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                 randconfig-x007-201621
+x86_64                 randconfig-x003-201621
+x86_64                 randconfig-x006-201621
+x86_64                 randconfig-x000-201621
+x86_64                 randconfig-x008-201621
+x86_64                 randconfig-x005-201621
+x86_64                 randconfig-x004-201621
+x86_64                 randconfig-x001-201621
+x86_64                 randconfig-x002-201621
+x86_64                 randconfig-x009-201621
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201621
+i386                   randconfig-x005-201621
+i386                   randconfig-x008-201621
+i386                   randconfig-x000-201621
+i386                   randconfig-x009-201621
+i386                   randconfig-x006-201621
+i386                   randconfig-x001-201621
+i386                   randconfig-x003-201621
+i386                   randconfig-x004-201621
+i386                   randconfig-x007-201621
+i386                   randconfig-x002-201621
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+
+Thanks,
+Fengguang
