@@ -1,40 +1,34 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 24 May 2016 13:56:31 -0700
-Subject: [Intel-wired-lan] [PATCH v4 5/5] igb: call igb_ptp_suspend during
-	suspend/resume cycle
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Tue, 24 May 2016 20:57:36 +0000
+Subject: [Intel-wired-lan] [PATCH v4 1/5] igb: introduce ptp_flags
+ variable and use it to replace IGB_FLAG_PTP
 In-Reply-To: <20160524205631.21225-1-jacob.e.keller@intel.com>
 References: <20160524205631.21225-1-jacob.e.keller@intel.com>
-Message-ID: <20160524205631.21225-5-jacob.e.keller@intel.com>
+Message-ID: <1464123457.5045.3.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Properly stop the extra workqueue items and ensure that we resume
-cleanly. This is better than using igb_ptp_init and igb_ptp_stop since
-these functions destroy the PHC device, which will cause other problems
-if we do so. Since igb_ptp_reset now re-schedules the work-queue item we
-don't need an equivalent igb_ptp_resume in the resume workflow.
+On Tue, 2016-05-24 at 13:56 -0700, Jacob Keller wrote:
+> Upcoming patches will introduce new PTP specific flags. To avoid
+> cluttering the normal flags variable, introduce PTP specific
+> "ptp_flags"
+> variable for this purpose, and move IGB_FLAG_PTP to become
+> IGB_PTP_ENABLED.
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> ---
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/igb/igb_main.c | 2 ++
- 1 file changed, 2 insertions(+)
+For reference, I attached the interseries difference between v3 and v4.
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 0321f0884fa0..beb3c1dac8af 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -7528,6 +7528,8 @@ static int __igb_shutdown(struct pci_dev *pdev, bool *enable_wake,
- 	if (netif_running(netdev))
- 		__igb_close(netdev, true);
- 
-+	igb_ptp_suspend(adapter);
-+
- 	igb_clear_interrupt_scheme(adapter);
- 
- #ifdef CONFIG_PM
--- 
-2.8.2.820.gd1c5f70
-
+Thanks,
+Jake
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: interdiff-v3-v4.patch
+Type: text/x-patch
+Size: 1396 bytes
+Desc: interdiff-v3-v4.patch
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160524/a104e891/attachment.bin>
