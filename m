@@ -1,11 +1,11 @@
 From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Tue, 24 May 2016 18:37:05 +0000
+Date: Tue, 24 May 2016 20:50:49 +0000
 Subject: [Intel-wired-lan] [PATCH v3 1/5] igb: introduce ptp_flags
  variable	and use it to replace IGB_FLAG_PTP
 In-Reply-To: <309B89C4C689E141A5FF6A0C5FB2118B81EFFFBC@ORSMSX101.amr.corp.intel.com>
 References: <20160518210424.20744-1-jacob.e.keller@intel.com>
  <309B89C4C689E141A5FF6A0C5FB2118B81EFFFBC@ORSMSX101.amr.corp.intel.com>
-Message-ID: <1464115025.3908.0.camel@intel.com>
+Message-ID: <1464123049.5045.2.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -69,7 +69,7 @@ On Tue, 2016-05-24 at 02:30 +0000, Brown, Aaron F wrote:
 > to capture the trace on a serial console with one of the i350s
 > tomorrow.
 
-Oops. Thanks. I'll take a look.
+I'll send a v4 shortly, I think I have it resolved.
 
-Regards,
+Thanks,
 Jake
