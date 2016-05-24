@@ -1,92 +1,77 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 24 May 2016 13:56:27 -0700
-Subject: [Intel-wired-lan] [PATCH v4 1/5] igb: introduce ptp_flags variable
-	and use it to replace IGB_FLAG_PTP
-Message-ID: <20160524205631.21225-1-jacob.e.keller@intel.com>
+Date: Tue, 24 May 2016 13:56:30 -0700
+Subject: [Intel-wired-lan] [PATCH v4 4/5] igb: implement igb_ptp_suspend
+In-Reply-To: <20160524205631.21225-1-jacob.e.keller@intel.com>
+References: <20160524205631.21225-1-jacob.e.keller@intel.com>
+Message-ID: <20160524205631.21225-4-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Upcoming patches will introduce new PTP specific flags. To avoid
-cluttering the normal flags variable, introduce PTP specific "ptp_flags"
-variable for this purpose, and move IGB_FLAG_PTP to become
-IGB_PTP_ENABLED.
+Make igb_ptp_stop take advantage of this new function to reduce code
+duplication.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/igb/igb.h     | 5 ++++-
- drivers/net/ethernet/intel/igb/igb_ptp.c | 7 ++++---
- 2 files changed, 8 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/igb/igb.h     |  1 +
+ drivers/net/ethernet/intel/igb/igb_ptp.c | 22 +++++++++++++++++-----
+ 2 files changed, 18 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/igb/igb.h b/drivers/net/ethernet/intel/igb/igb.h
-index b9609afa5ca3..1e18a9eb16e0 100644
+index 38daaaba0cdb..5387b3a96489 100644
 --- a/drivers/net/ethernet/intel/igb/igb.h
 +++ b/drivers/net/ethernet/intel/igb/igb.h
-@@ -445,6 +445,7 @@ struct igb_adapter {
- 	unsigned long ptp_tx_start;
- 	unsigned long last_rx_ptp_check;
- 	unsigned long last_rx_timestamp;
-+	unsigned int ptp_flags;
- 	spinlock_t tmreg_lock;
- 	struct cyclecounter cc;
- 	struct timecounter tc;
-@@ -474,12 +475,14 @@ struct igb_adapter {
- 	u16 eee_advert;
- };
- 
-+/* flags controlling PTP/1588 function */
-+#define IGB_PTP_ENABLED		BIT(0)
-+
- #define IGB_FLAG_HAS_MSI		BIT(0)
- #define IGB_FLAG_DCA_ENABLED		BIT(1)
- #define IGB_FLAG_QUAD_PORT_A		BIT(2)
- #define IGB_FLAG_QUEUE_PAIRS		BIT(3)
- #define IGB_FLAG_DMAC			BIT(4)
--#define IGB_FLAG_PTP			BIT(5)
- #define IGB_FLAG_RSS_FIELD_IPV4_UDP	BIT(6)
- #define IGB_FLAG_RSS_FIELD_IPV6_UDP	BIT(7)
- #define IGB_FLAG_WOL_SUPPORTED		BIT(8)
+@@ -550,6 +550,7 @@ void igb_set_fw_version(struct igb_adapter *);
+ void igb_ptp_init(struct igb_adapter *adapter);
+ void igb_ptp_stop(struct igb_adapter *adapter);
+ void igb_ptp_reset(struct igb_adapter *adapter);
++void igb_ptp_suspend(struct igb_adapter *adapter);
+ void igb_ptp_rx_hang(struct igb_adapter *adapter);
+ void igb_ptp_rx_rgtstamp(struct igb_q_vector *q_vector, struct sk_buff *skb);
+ void igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector, unsigned char *va,
 diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
-index f097c5a8ab93..504102ba4bfb 100644
+index 907c225d9b20..e61b647f5f2a 100644
 --- a/drivers/net/ethernet/intel/igb/igb_ptp.c
 +++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
-@@ -684,6 +684,7 @@ void igb_ptp_rx_hang(struct igb_adapter *adapter)
- 	u32 tsyncrxctl = rd32(E1000_TSYNCRXCTL);
- 	unsigned long rx_event;
- 
-+	/* Other hardware uses per-packet timestamps */
- 	if (hw->mac.type != e1000_82576)
- 		return;
- 
-@@ -1156,7 +1157,7 @@ void igb_ptp_init(struct igb_adapter *adapter)
- 	} else {
- 		dev_info(&adapter->pdev->dev, "added PHC on %s\n",
- 			 adapter->netdev->name);
--		adapter->flags |= IGB_FLAG_PTP;
-+		adapter->ptp_flags |= IGB_PTP_ENABLED;
- 	}
+@@ -1147,12 +1147,13 @@ void igb_ptp_init(struct igb_adapter *adapter)
  }
  
-@@ -1194,7 +1195,7 @@ void igb_ptp_stop(struct igb_adapter *adapter)
+ /**
+- * igb_ptp_stop - Disable PTP device and stop the overflow check.
+- * @adapter: Board private structure.
++ * igb_ptp_suspend - Disable PTP work items and prepare for suspend
++ * @adapter: Board private structure
+  *
+- * This function stops the PTP support and cancels the delayed work.
+- **/
+-void igb_ptp_stop(struct igb_adapter *adapter)
++ * This function stops the overflow check work and PTP Tx timestamp work, and
++ * will prepare the device for OS suspend.
++ */
++void igb_ptp_suspend(struct igb_adapter *adapter)
+ {
+ 	if (!(adapter->ptp_flags & IGB_PTP_ENABLED))
+ 		return;
+@@ -1166,6 +1167,17 @@ void igb_ptp_stop(struct igb_adapter *adapter)
+ 		adapter->ptp_tx_skb = NULL;
+ 		clear_bit_unlock(__IGB_PTP_TX_IN_PROGRESS, &adapter->state);
+ 	}
++}
++
++/**
++ * igb_ptp_stop - Disable PTP device and stop the overflow check.
++ * @adapter: Board private structure.
++ *
++ * This function stops the PTP support and cancels the delayed work.
++ **/
++void igb_ptp_stop(struct igb_adapter *adapter)
++{
++	igb_ptp_suspend(adapter);
+ 
+ 	if (adapter->ptp_clock) {
  		ptp_clock_unregister(adapter->ptp_clock);
- 		dev_info(&adapter->pdev->dev, "removed PHC on %s\n",
- 			 adapter->netdev->name);
--		adapter->flags &= ~IGB_FLAG_PTP;
-+		adapter->ptp_flags &= ~IGB_PTP_ENABLED;
- 	}
- }
- 
-@@ -1209,7 +1210,7 @@ void igb_ptp_reset(struct igb_adapter *adapter)
- 	struct e1000_hw *hw = &adapter->hw;
- 	unsigned long flags;
- 
--	if (!(adapter->flags & IGB_FLAG_PTP))
-+	if (!(adapter->ptp_flags & IGB_PTP_ENABLED))
- 		return;
- 
- 	/* reset the tstamp_config */
 -- 
 2.8.2.820.gd1c5f70
 
