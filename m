@@ -1,71 +1,75 @@
-From: Alex Duyck <aduyck@mirantis.com>
-Date: Tue, 24 May 2016 10:46:10 -0700
-Subject: [Intel-wired-lan] [net-next PATCH 0/2] Follow-ups for GUEoIPv6
-	patches
-In-Reply-To: <1464110072.2631.13.camel@intel.com>
-References: <20160518173605.2608.42484.stgit@localhost.localdomain>
- <1463606878.2713.68.camel@intel.com>
- <20160518.211043.773402183440053556.davem@davemloft.net>
- <1464110072.2631.13.camel@intel.com>
-Message-ID: <CAMt9YRqHXFQ9uo-qZrJcJfz28uiMWaLRMukC4KJgt09U4yvf1Q@mail.gmail.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Tue, 24 May 2016 18:37:05 +0000
+Subject: [Intel-wired-lan] [PATCH v3 1/5] igb: introduce ptp_flags
+ variable	and use it to replace IGB_FLAG_PTP
+In-Reply-To: <309B89C4C689E141A5FF6A0C5FB2118B81EFFFBC@ORSMSX101.amr.corp.intel.com>
+References: <20160518210424.20744-1-jacob.e.keller@intel.com>
+ <309B89C4C689E141A5FF6A0C5FB2118B81EFFFBC@ORSMSX101.amr.corp.intel.com>
+Message-ID: <1464115025.3908.0.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, May 24, 2016 at 10:14 AM, Jeff Kirsher
-<jeffrey.t.kirsher@intel.com> wrote:
-> On Wed, 2016-05-18 at 21:10 -0700, David Miller wrote:
->> From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
->> Date: Wed, 18 May 2016 14:27:58 -0700
->>
->> > On Wed, 2016-05-18 at 10:44 -0700, Alexander Duyck wrote:
->> >> This patch series is meant to be applied after:
->> >> [PATCH v7 net-next 00/16] ipv6: Enable GUEoIPv6 and more fixes for v6
->> >> tunneling
->> >>
->> >> The first patch addresses an issue we already resolved in the GREv4
->> and
->> >> is
->> >> now present in GREv6 with the introduction of FOU/GUE for IPv6 based
->> GRE
->> >> tunnels.
->> >>
->> >> The second patch goes through and enables IPv6 tunnel offloads for the
->> >> Intel
->> >> NICs that already support the IPv4 based IP-in-IP tunnel offloads.  I
->> >> have
->> >> only done a bit of touch testing but have seen ~20 Gb/s over an i40e
->> >> interface using a v4-in-v6 tunnel, and I have verified IPv6 GRE is
->> still
->> >> passing traffic at around the same rate.  I plan to do further testing
->> >> but
->> >> with these patches present it should enable a wider audience to be
->> able
->> >> to
->> >> test the new features introduced in Tom's patchset with hardware
->> >> offloads.
->> >>
->> >> ---
->> >>
->> >> Alexander Duyck (2):
->> >>       ip6_gre: Do not allow segmentation offloads GRE_CSUM is enabled
->> >> with FOU/GUE
->> >>       intel: Add support for IPv6 IP-in-IP offload
->> >
->> > Dave, I have this series added to my queue.
->>
->> Why would you if it depends upon Tom's series, as mentioned above, which
->> isn't even in my tree yet?
->
-> I was not able to apply his patches to my dev-queue due to conflicts and
-> from discussion with Alex, I made the mistake in assuming the issues I saw
-> was because it did not have Tom's driver changes.
+On Tue, 2016-05-24 at 02:30 +0000, Brown, Aaron F wrote:
+> > 
+> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.
+> > org] On
+> > Behalf Of Jacob Keller
+> > Sent: Wednesday, May 18, 2016 2:04 PM
+> > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+> > Subject: [Intel-wired-lan] [PATCH v3 1/5] igb: introduce ptp_flags
+> > variable
+> > and use it to replace IGB_FLAG_PTP
+> > 
+> > Upcoming patches will introduce new PTP specific flags. To avoid
+> > cluttering the normal flags variable, introduce PTP specific
+> > "ptp_flags"
+> > variable for this purpose, and move IGB_FLAG_PTP to become
+> > IGB_PTP_ENABLED.
+> > 
+> > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> > ---
+> > ?drivers/net/ethernet/intel/igb/igb.h?????| 5 ++++-
+> > ?drivers/net/ethernet/intel/igb/igb_ptp.c | 8 ++++----
+> > ?2 files changed, 8 insertions(+), 5 deletions(-)
+> This series seemed completely fine for regression, but once I started
+> testing ptp I quickly ran into several bugs.??One showed up with this
+> patch, the other (and more serious one) shows up in patch 3/5.
+> 
+> With just this patch from the series applied an i211 and a dual port
+> 82580 [maybe more I only ran just this patch against those parts]
+> running `ptp4l -m -I ethX` starts getting a number of "clearing Rx
+> timestamp" messages intermixed with the timestamp display.??This is
+> very consistent, one RX timestamp hang??message for every 6 updates
+> to ptp shown.
+> 
+> Patch 3/5 causes more serious problems.??On the i211 the?
+> - Panic when ptp4l is started on dual port 82580 (Bartonville ~
+> either port)??Not captured to logs and on system w/o usable serial
+> port ~ but have snapshot of screen.
+> 
+> Having 3/5 igb: re-use igb_ptp_reset in igb_ptp_init, or later on top
+> of queue causes more serious issues:
+> - The i211 stops getting / displaying timestamp info, rather it
+> displays "received SYNC without timestamp" along with the frequent
+> "clearing RX timestamp hang" messages introduced with 1/5.
+> - The dual port 82580, however, gets a panic on the screen the moment
+> ptp4l is launched against it.??Seems to be a spinlock causing a
+> Kernel panic - not syncing: Fatal exception in interrupt.??The trace
+> does not get captured to logs and this particular box does not have a
+> working serial port to capture the trace via a serial console.??I do
+> have a bitmap screen shot (I'll forward to Jacob separately) and will
+> try to get and capture the trace on another machine.
+> 
+> With the entire series applied I get the same behavior as with
+> 3/5.??I have run that on a few more machines and it appears the
+> Kernel Panic / freeze also occurs with i350 parts so I should be able
+> to capture the trace on a serial console with one of the i350s
+> tomorrow.
 
-I thought Dave had already applied the patches to his tree?  If so
-there shouldn't be a need for you to pull them in and apply them.
-That might also be the source of the conflicts if they are already in
-the tree.
+Oops. Thanks. I'll take a look.
 
-- Alex
+Regards,
+Jake
