@@ -1,10 +1,11 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Tue, 24 May 2016 02:30:42 +0000
-Subject: [Intel-wired-lan] [PATCH v3 1/5] igb: introduce ptp_flags
- variable	and use it to replace IGB_FLAG_PTP
-In-Reply-To: <20160518210424.20744-1-jacob.e.keller@intel.com>
+Date: Tue, 24 May 2016 02:31:55 +0000
+Subject: [Intel-wired-lan] [PATCH v3 3/5] igb: re-use igb_ptp_reset
+	in	igb_ptp_init
+In-Reply-To: <20160518210424.20744-3-jacob.e.keller@intel.com>
 References: <20160518210424.20744-1-jacob.e.keller@intel.com>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81EFFFBC@ORSMSX101.amr.corp.intel.com>
+ <20160518210424.20744-3-jacob.e.keller@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81EFFFD2@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,19 +16,23 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Jacob Keller
 > Sent: Wednesday, May 18, 2016 2:04 PM
 > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [PATCH v3 1/5] igb: introduce ptp_flags variable
-> and use it to replace IGB_FLAG_PTP
+> Subject: [Intel-wired-lan] [PATCH v3 3/5] igb: re-use igb_ptp_reset in
+> igb_ptp_init
 > 
-> Upcoming patches will introduce new PTP specific flags. To avoid
-> cluttering the normal flags variable, introduce PTP specific "ptp_flags"
-> variable for this purpose, and move IGB_FLAG_PTP to become
-> IGB_PTP_ENABLED.
+> Modify igb_ptp_init to take advantage of igb_ptp_reset, and remove
+> duplicated work that was occurring in both igb_ptp_reset and
+> igb_ptp_init.
+> 
+> In total, resetting the TSAUXC register, and resetting the system time
+> both happen in igb_ptp_reset already. igb_ptp_reset now also takes care
+> of starting the delayed work item for overflow checks, as well.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 > ---
->  drivers/net/ethernet/intel/igb/igb.h     | 5 ++++-
->  drivers/net/ethernet/intel/igb/igb_ptp.c | 8 ++++----
->  2 files changed, 8 insertions(+), 5 deletions(-)
+>  drivers/net/ethernet/intel/igb/igb_ptp.c | 45 ++++++++++++--------------------
+>  1 file changed, 16 insertions(+), 29 deletions(-)
+
+This is the same message I sent with 1/5 of this series, just adding it to this message to get the info captured with this patch in patchwork.
 
 This series seemed completely fine for regression, but once I started testing ptp I quickly ran into several bugs.  One showed up with this patch, the other (and more serious one) shows up in patch 3/5.
 
