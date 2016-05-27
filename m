@@ -1,138 +1,66 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 26 May 2016 07:39:32 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
- a819ff7000f89cdb0a02958ce257677f8116e329 BUILD SUCCESS
-Message-ID: <574637b4.rWf4MuDuxhIfh5TN%fengguang.wu@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Fri, 27 May 2016 01:30:58 +0000
+Subject: [Intel-wired-lan] [RFC PATCH net] e1000e: keep vlan interfaces
+ functional after rxvlan off
+In-Reply-To: <1463607599.2713.70.camel@intel.com>
+References: <1463511831-13684-1-git-send-email-jarod@redhat.com>
+ <1463607599.2713.70.camel@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81F104AC@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-a819ff7000f89cdb0a02958ce257677f8116e329  ixgbevf: ixgbevf_write/read_posted_mbx should use IXGBE_ERR_MBX to initialize ret_val
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Jeff Kirsher
+> Sent: Wednesday, May 18, 2016 2:40 PM
+> To: Jarod Wilson <jarod@redhat.com>; linux-kernel at vger.kernel.org;
+> Avargil, Raanan <raanan.avargil@intel.com>
+> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
+> Subject: Re: [Intel-wired-lan] [RFC PATCH net] e1000e: keep vlan interfaces
+> functional after rxvlan off
+> 
+> On Tue, 2016-05-17 at 15:03 -0400, Jarod Wilson wrote:
+> > I've got a bug report about an e1000e interface, where a vlan interface
+> > is
+> > set up on top of it:
+> >
+> > $ ip link add link ens1f0 name ens1f0.99 type vlan id 99
+> > $ ip link set ens1f0 up
+> > $ ip link set ens1f0.99 up
+> > $ ip addr add 192.168.99.92 dev ens1f0.99
+> >
+> > At this point, I can ping another host on vlan 99, ip 192.168.99.91.
+> > However, if I do the following:
+> >
+> > $ ethtool -K ens1f0 rxvlan off
+> >
+> > Then no traffic passes on ens1f0.99. It comes back if I toggle rxvlan on
+> > again. I'm not sure if this is actually intended behavior, or if there's
+> > a
+> > lack of software vlan stripping fallback, or what, but things continue to
+> > work if I simply don't call e1000e_vlan_strip_disable() if there are
+> > active vlans (plagiarizing a function from the e1000 driver here) on the
+> > interface.
+> >
+> > Also slipped a related-ish fix to the kerneldoc text for
+> > e1000e_vlan_strip_disable here...
+> >
+> > CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> > CC: intel-wired-lan at lists.osuosl.org
+> > CC: netdev at vger.kernel.org
+> > Signed-off-by: Jarod Wilson <jarod@redhat.com>
+> > ---
+> > ?drivers/net/ethernet/intel/e1000e/netdev.c | 15 +++++++++++++--
+> > ?1 file changed, 13 insertions(+), 2 deletions(-)
+> 
+> Raanan, please review this patch. ?Even though it is an RFC I will be
+> adding it to my queue for testing.
+> http://patchwork.ozlabs.org/patch/623238/
 
-elapsed time: 60m
+Yup, without this patch disabling rxvlan offload does indeed break vlan connectivity and with the patch I can disable and re-enable rxvlan offloads as much as I care to.  It also makes it through my regression tests without problems.
 
-configs tested: 117
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
 
-i386                     randconfig-a0-201621
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64                           allmodconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                 randconfig-x018-201621
-x86_64                 randconfig-x019-201621
-x86_64                 randconfig-x014-201621
-x86_64                 randconfig-x010-201621
-x86_64                 randconfig-x015-201621
-x86_64                 randconfig-x013-201621
-x86_64                 randconfig-x016-201621
-x86_64                 randconfig-x017-201621
-x86_64                 randconfig-x012-201621
-x86_64                 randconfig-x011-201621
-i386                     randconfig-s0-201621
-i386                     randconfig-s1-201621
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-i386                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201621
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201621
-i386                     randconfig-i1-201621
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-n0-05260651
-i386                   randconfig-x017-201621
-i386                   randconfig-x018-201621
-i386                   randconfig-x011-201621
-i386                   randconfig-x016-201621
-i386                   randconfig-x014-201621
-i386                   randconfig-x013-201621
-i386                   randconfig-x010-201621
-i386                   randconfig-x019-201621
-i386                   randconfig-x015-201621
-i386                   randconfig-x012-201621
-i386                     randconfig-n0-201621
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                 randconfig-x007-201621
-x86_64                 randconfig-x003-201621
-x86_64                 randconfig-x006-201621
-x86_64                 randconfig-x000-201621
-x86_64                 randconfig-x008-201621
-x86_64                 randconfig-x005-201621
-x86_64                 randconfig-x004-201621
-x86_64                 randconfig-x001-201621
-x86_64                 randconfig-x002-201621
-x86_64                 randconfig-x009-201621
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-r0-201621
-i386                   randconfig-x005-201621
-i386                   randconfig-x008-201621
-i386                   randconfig-x000-201621
-i386                   randconfig-x009-201621
-i386                   randconfig-x006-201621
-i386                   randconfig-x001-201621
-i386                   randconfig-x003-201621
-i386                   randconfig-x004-201621
-i386                   randconfig-x007-201621
-i386                   randconfig-x002-201621
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-
-Thanks,
-Fengguang
+This is from functional - does it work - testing perspective so review is probably still in order.
