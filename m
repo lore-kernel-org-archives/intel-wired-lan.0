@@ -1,16 +1,15 @@
 From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Tue, 31 May 2016 18:07:11 +0000
+Date: Tue, 31 May 2016 18:08:07 +0000
 Subject: [Intel-wired-lan] [PATCH v2] fm10k: fix incorrect index
  calculation	in fm10k_write_reta
 In-Reply-To: <20160418224500.2680-1-jacob.e.keller@intel.com>
 References: <20160418224500.2680-1-jacob.e.keller@intel.com>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E2738EB12@ORSMSX103.amr.corp.intel.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E2738EB25@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
-
 
 
 -----Original Message-----
