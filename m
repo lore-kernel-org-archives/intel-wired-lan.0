@@ -1,137 +1,141 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sun, 22 May 2016 08:47:39 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 1c32f76cd519f0de10136bdd62316c5f0d1a360c BUILD SUCCESS
-Message-ID: <574101ab.0fuEiBnadVNNHF0I%fengguang.wu@intel.com>
+From: Johannes Thumshirn <jthumshirn@suse.de>
+Date: Tue, 31 May 2016 14:05:08 +0200
+Subject: [Intel-wired-lan] [PATCH 0/5] Introduce
+	pci_(request|release)_(mem|io)_regions
+Message-ID: <cover.1464694724.git.jthumshirn@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-1c32f76cd519f0de10136bdd62316c5f0d1a360c  igb: call igb_ptp_suspend during suspend/resume cycle
+The first patch in this series introduces the following 4 helper functions to
+the PCI core:
 
-elapsed time: 70m
+* pci_request_mem_regions()
+* pci_request_io_regions()
+* pci_release_mem_regions()
+* pci_release_io_regions()
 
-configs tested: 116
+which encapsulate the request and release of a PCI device's memory or I/O
+bars.
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201621
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                               tinyconfig
-parisc                         b180_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                 randconfig-x018-201621
-x86_64                 randconfig-x019-201621
-x86_64                 randconfig-x014-201621
-x86_64                 randconfig-x010-201621
-x86_64                 randconfig-x015-201621
-x86_64                 randconfig-x013-201621
-x86_64                 randconfig-x016-201621
-x86_64                 randconfig-x017-201621
-x86_64                 randconfig-x012-201621
-x86_64                 randconfig-x011-201621
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201621
-i386                     randconfig-s1-201621
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201621
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201621
-i386                     randconfig-i1-201621
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                   randconfig-x017-201621
-i386                   randconfig-x018-201621
-i386                   randconfig-x011-201621
-i386                   randconfig-x016-201621
-i386                   randconfig-x014-201621
-i386                   randconfig-x013-201621
-i386                   randconfig-x010-201621
-i386                   randconfig-x019-201621
-i386                   randconfig-x015-201621
-i386                   randconfig-x012-201621
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201621
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                 randconfig-x007-201621
-x86_64                 randconfig-x003-201621
-x86_64                 randconfig-x006-201621
-x86_64                 randconfig-x000-201621
-x86_64                 randconfig-x008-201621
-x86_64                 randconfig-x005-201621
-x86_64                 randconfig-x004-201621
-x86_64                 randconfig-x001-201621
-x86_64                 randconfig-x002-201621
-x86_64                 randconfig-x009-201621
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-r0-201621
-i386                   randconfig-x005-201621
-i386                   randconfig-x008-201621
-i386                   randconfig-x000-201621
-i386                   randconfig-x009-201621
-i386                   randconfig-x006-201621
-i386                   randconfig-x001-201621
-i386                   randconfig-x003-201621
-i386                   randconfig-x004-201621
-i386                   randconfig-x007-201621
-i386                   randconfig-x002-201621
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
+The subsequent patches convert the drivers, which use the
+pci_request_selected_regions(pdev, 
+	pci_select_bars(pdev, IORESOURCE_MEM), name); 
+and similar pattern to use the new interface.
 
-Thanks,
-Fengguang
+This was suggested by Christoph Hellwig in
+http://lists.infradead.org/pipermail/linux-nvme/2016-May/004570.html and
+tested on kernel v4.6 with NVMe.
+
+The conversion of the drivers has been performed by the following coccinelle
+spatch:
+// IORESOURCE_MEM
+@@
+expression err, pdev, name;
+@@
+
+- err = pci_request_selected_regions(pdev, pci_select_bars(pdev,
+IORESOURCE_MEM), name);
++ err = pci_request_mem_regions(pdev, name);
+
+@@
+expression pdev;
+@@
+- pci_release_selected_regions(pdev, pci_select_bars(pdev, IORESOURCE_MEM));
++ pci_release_mem_regions(pdev);
+
+@@
+expression err, pdev, name;
+identifier bars;
+@@
+- bars = pci_select_bars(pdev, IORESOURCE_MEM);
+...
+- err = pci_request_selected_regions(pdev, bars, name);
++ err = pci_request_mem_regions(pdev, name);
+
+@@
+expression pdev;
+identifier bars;
+@@
+- bars = pci_select_bars(pdev, IORESOURCE_MEM);
+...
+- pci_release_selected_regions(pdev, bars);
++ pci_release_mem_regions(pdev);
+
+// IORESOURCE_IO
+@@
+expression err, pdev, name;
+@@
+
+- err = pci_request_selected_regions(pdev, pci_select_bars(pdev,
+IORESOURCE_IO), name);
++ err = pci_request_io_regions(pdev, name);
+
+@@
+expression pdev;
+@@
+- pci_release_selected_regions(pdev, pci_select_bars(pdev, IORESOURCE_IO));
++ pci_release_io_regions(pdev);
+
+@@
+expression err, pdev, name;
+identifier bars;
+@@
+- bars = pci_select_bars(pdev, IORESOURCE_IO);
+...
+- err = pci_request_selected_regions(pdev, bars, name);
++ err = pci_request_io_regions(pdev, name);
+
+@@
+expression pdev;
+identifier bars;
+@@
+- bars = pci_select_bars(pdev, IORESOURCE_IO);
+...
+- pci_release_selected_regions(pdev, bars);
++ pci_release_io_regions(pdev);
+
+
+Johannes Thumshirn (5):
+  PCI: Add helpers to request/release memory and I/O regions
+  NVMe: Use pci_(request|release)_mem_regions
+  scsi: Use pci_(request|release)_mem_regions
+  GenWQE: Use pci_(request|release)_mem_regions
+  ethernet: Use pci_(request|release)_mem_regions
+
+ drivers/misc/genwqe/card_base.c               | 13 +++++-------
+ drivers/net/ethernet/atheros/alx/main.c       | 12 +++++------
+ drivers/net/ethernet/intel/e1000e/netdev.c    |  6 ++----
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c  | 11 +++-------
+ drivers/net/ethernet/intel/i40e/i40e_main.c   |  9 +++------
+ drivers/net/ethernet/intel/igb/igb_main.c     | 10 +++------
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  9 +++------
+ drivers/nvme/host/pci.c                       | 10 +++------
+ drivers/scsi/lpfc/lpfc_init.c                 |  5 +----
+ include/linux/pci.h                           | 29 +++++++++++++++++++++++++++
+ 10 files changed, 57 insertions(+), 57 deletions(-)
+
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: Keith Busch <keith.busch@intel.com>
+Cc: Jens Axboe <axboe@fb.com>
+Cc: linux-nvme at lists.infradead.org
+Cc: James Smart <james.smart@avagotech.com>
+Cc: Dick Kennedy <dick.kennedy@avagotech.com>
+Cc: "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: linux-scsi at vger.kernel.org
+Cc: linux-kernel at vger.kernel.org
+Cc: Frank Haverkamp <haver@linux.vnet.ibm.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Jay Cliburn <jcliburn@gmail.com>
+Cc: Chris Snook <chris.snook@gmail.com>
+Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Cc: David S. Miller <davem@davemloft.net>
+Cc: netdev at vger.kernel.org
+Cc: linux-kernel at vger.kernel.org
+Cc: intel-wired-lan at lists.osuosl.org
+-- 
+1.8.5.6
+
