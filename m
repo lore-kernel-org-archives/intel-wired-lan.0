@@ -1,18 +1,18 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 02 Jun 2016 03:53:37 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 65ca3618a893f0ec50e420152d998fb63507a422 BUILD SUCCESS
-Message-ID: <574f3d41.TjkJEQgSMfuGDqcQ%fengguang.wu@intel.com>
+Date: Thu, 02 Jun 2016 03:53:31 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ 9f681b3474142240254b42f8bfd9dd9abe5df15d BUILD SUCCESS
+Message-ID: <574f3d3b.GxjQdN/9oe/gXTn0%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-65ca3618a893f0ec50e420152d998fb63507a422  ixgbe: Correct reporting of timestamping for x550
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+9f681b3474142240254b42f8bfd9dd9abe5df15d  ixgbevf: ixgbevf_write/read_posted_mbx should use IXGBE_ERR_MBX to initialize ret_val
 
-elapsed time: 94m
+elapsed time: 95m
 
 The following configs have been built successfully. More configs may be tested in the coming days.
 configs tested: 122
@@ -26,6 +26,7 @@ blackfin                BF533-EZKIT_defconfig
 blackfin            BF561-EZKIT-SMP_defconfig
 blackfin                  TCM-BF537_defconfig
 cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
 sh                                allnoconfig
 sh                          rsk7269_defconfig
 sh                  sh7785lcr_32bit_defconfig
@@ -78,7 +79,6 @@ openrisc                    or1ksim_defconfig
 tile                         tilegx_defconfig
 um                             i386_defconfig
 um                           x86_64_defconfig
-i386                               tinyconfig
 mips                              allnoconfig
 mips                      fuloong2e_defconfig
 mips                                   jz4740
