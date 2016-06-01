@@ -1,58 +1,40 @@
-From: Bhaktipriya Shridhar <bhaktipriya96@gmail.com>
-Date: Wed, 1 Jun 2016 21:10:09 +0530
+From: Tejun Heo <tj@kernel.org>
+Date: Wed, 1 Jun 2016 11:45:52 -0400
 Subject: [Intel-wired-lan] [PATCH] net: ethernet: intel: fm10k: Remove
 	create_workqueue
-Message-ID: <20160601154009.GA31043@Karyakshetra>
+In-Reply-To: <20160601154009.GA31043@Karyakshetra>
+References: <20160601154009.GA31043@Karyakshetra>
+Message-ID: <20160601154552.GD14868@mtj.duckdns.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-alloc_workqueue replaces deprecated create_workqueue().
+On Wed, Jun 01, 2016 at 09:10:09PM +0530, Bhaktipriya Shridhar wrote:
+> alloc_workqueue replaces deprecated create_workqueue().
+> 
+> A dedicated workqueue has been used since the workitem (viz
+> fm10k_service_task, which manages and runs other subtasks) is involved in
+> normal device operation and requires forward progress under memory
+> pressure.
+> 
+> create_workqueue has been replaced with alloc_workqueue with max_active
+> as 0 since there is no need for throttling the number of active work
+> items.
+> 
+> Since network devices may be used in memory reclaim path,
+> WQ_MEM_RECLAIM has been set to guarantee forward progress.
+> 
+> flush_workqueue is unnecessary since destroy_workqueue() itself calls
+> drain_workqueue() which flushes repeatedly till the workqueue
+> becomes empty. Hence the call to flush_workqueue() has been dropped.
+> 
+> Signed-off-by: Bhaktipriya Shridhar <bhaktipriya96@gmail.com>
 
-A dedicated workqueue has been used since the workitem (viz
-fm10k_service_task, which manages and runs other subtasks) is involved in
-normal device operation and requires forward progress under memory
-pressure.
+Acked-by: Tejun Heo <tj@kernel.org>
 
-create_workqueue has been replaced with alloc_workqueue with max_active
-as 0 since there is no need for throttling the number of active work
-items.
+Thanks.
 
-Since network devices may be used in memory reclaim path,
-WQ_MEM_RECLAIM has been set to guarantee forward progress.
-
-flush_workqueue is unnecessary since destroy_workqueue() itself calls
-drain_workqueue() which flushes repeatedly till the workqueue
-becomes empty. Hence the call to flush_workqueue() has been dropped.
-
-Signed-off-by: Bhaktipriya Shridhar <bhaktipriya96@gmail.com>
----
- drivers/net/ethernet/intel/fm10k/fm10k_main.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index 0e166e9..add9166 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -56,7 +56,7 @@ static int __init fm10k_init_module(void)
- 	pr_info("%s\n", fm10k_copyright);
-
- 	/* create driver workqueue */
--	fm10k_workqueue = create_workqueue("fm10k");
-+	fm10k_workqueue = alloc_workqueue("fm10k", WQ_MEM_RECLAIM, 0);
-
- 	fm10k_dbg_init();
-
-@@ -77,7 +77,6 @@ static void __exit fm10k_exit_module(void)
- 	fm10k_dbg_exit();
-
- 	/* destroy driver workqueue */
--	flush_workqueue(fm10k_workqueue);
- 	destroy_workqueue(fm10k_workqueue);
- }
- module_exit(fm10k_exit_module);
---
-2.1.4
-
+-- 
+tejun
