@@ -1,40 +1,113 @@
-From: Tejun Heo <tj@kernel.org>
-Date: Wed, 1 Jun 2016 14:46:02 -0400
-Subject: [Intel-wired-lan] [PATCH] net: ethernet: intel: fm10k: Remove
-	create_workqueue
-In-Reply-To: <20160601154009.GA31043@Karyakshetra>
-References: <20160601154009.GA31043@Karyakshetra>
-Message-ID: <20160601184602.GE14868@mtj.duckdns.org>
+From: Jarod Wilson <jarod@redhat.com>
+Date: Wed, 1 Jun 2016 15:27:24 -0400
+Subject: [Intel-wired-lan] [RFC PATCH net] e1000e: keep vlan interfaces
+ functional after rxvlan off
+In-Reply-To: <CAKgT0UfKV23p18L=wCoyy7WXa7s7pQQRVVK8F_mVea0dOJKekA@mail.gmail.com>
+References: <1463511831-13684-1-git-send-email-jarod@redhat.com>
+ <CAKgT0UfKV23p18L=wCoyy7WXa7s7pQQRVVK8F_mVea0dOJKekA@mail.gmail.com>
+Message-ID: <20160601192724.GA56933@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Jun 01, 2016 at 09:10:09PM +0530, Bhaktipriya Shridhar wrote:
-> alloc_workqueue replaces deprecated create_workqueue().
+On Wed, Jun 01, 2016 at 07:31:53AM -0700, Alexander Duyck wrote:
+> On Tue, May 17, 2016 at 12:03 PM, Jarod Wilson <jarod@redhat.com> wrote:
+> > I've got a bug report about an e1000e interface, where a vlan interface is
+> > set up on top of it:
+> >
+> > $ ip link add link ens1f0 name ens1f0.99 type vlan id 99
+> > $ ip link set ens1f0 up
+> > $ ip link set ens1f0.99 up
+> > $ ip addr add 192.168.99.92 dev ens1f0.99
+> >
+> > At this point, I can ping another host on vlan 99, ip 192.168.99.91.
+> > However, if I do the following:
+> >
+> > $ ethtool -K ens1f0 rxvlan off
+> >
+> > Then no traffic passes on ens1f0.99. It comes back if I toggle rxvlan on
+> > again. I'm not sure if this is actually intended behavior, or if there's a
+> > lack of software vlan stripping fallback, or what, but things continue to
+> > work if I simply don't call e1000e_vlan_strip_disable() if there are
+> > active vlans (plagiarizing a function from the e1000 driver here) on the
+> > interface.
+> >
+> > Also slipped a related-ish fix to the kerneldoc text for
+> > e1000e_vlan_strip_disable here...
+> >
+> > CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> > CC: intel-wired-lan at lists.osuosl.org
+> > CC: netdev at vger.kernel.org
+> > Signed-off-by: Jarod Wilson <jarod@redhat.com>
+> > ---
+> >  drivers/net/ethernet/intel/e1000e/netdev.c | 15 +++++++++++++--
+> >  1 file changed, 13 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+> > index 75e6089..73f7452 100644
+> > --- a/drivers/net/ethernet/intel/e1000e/netdev.c
+> > +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+> > @@ -154,6 +154,16 @@ void __ew32(struct e1000_hw *hw, unsigned long reg, u32 val)
+> >         writel(val, hw->hw_addr + reg);
+> >  }
+> >
+> > +static bool e1000e_vlan_used(struct e1000_adapter *adapter)
+> > +{
+> > +       u16 vid;
+> > +
+> > +       for_each_set_bit(vid, adapter->active_vlans, VLAN_N_VID)
+> > +               return true;
+> > +
 > 
-> A dedicated workqueue has been used since the workitem (viz
-> fm10k_service_task, which manages and runs other subtasks) is involved in
-> normal device operation and requires forward progress under memory
-> pressure.
-> 
-> create_workqueue has been replaced with alloc_workqueue with max_active
-> as 0 since there is no need for throttling the number of active work
-> items.
-> 
-> Since network devices may be used in memory reclaim path,
-> WQ_MEM_RECLAIM has been set to guarantee forward progress.
-> 
-> flush_workqueue is unnecessary since destroy_workqueue() itself calls
-> drain_workqueue() which flushes repeatedly till the workqueue
-> becomes empty. Hence the call to flush_workqueue() has been dropped.
-> 
-> Signed-off-by: Bhaktipriya Shridhar <bhaktipriya96@gmail.com>
+> I'm pretty sure this is always going to return true if 8021q is loaded
+> because VLAN 0 is always added to the device even if no other VLANs
+> are in use.
 
-Acked-by: Tejun Heo <tj@kernel.org>
+Ah, hadn't considered that, I just plucked it straight from e1000.
 
-Thanks.
+> > +       return false;
+> > +}
+> > +
+> >  /**
+> >   * e1000_regdump - register printout routine
+> >   * @hw: pointer to the HW structure
+> > @@ -2789,7 +2799,7 @@ static void e1000e_vlan_filter_enable(struct e1000_adapter *adapter)
+> >  }
+> >
+> >  /**
+> > - * e1000e_vlan_strip_enable - helper to disable HW VLAN stripping
+> > + * e1000e_vlan_strip_disable - helper to disable HW VLAN stripping
+> >   * @adapter: board private structure to initialize
+> >   **/
+> >  static void e1000e_vlan_strip_disable(struct e1000_adapter *adapter)
+> > @@ -3443,7 +3453,8 @@ static void e1000e_set_rx_mode(struct net_device *netdev)
+> >
+> >         ew32(RCTL, rctl);
+> >
+> > -       if (netdev->features & NETIF_F_HW_VLAN_CTAG_RX)
+> > +       if (netdev->features & NETIF_F_HW_VLAN_CTAG_RX ||
+> > +           e1000e_vlan_used(adapter))
+> >                 e1000e_vlan_strip_enable(adapter);
+> >         else
+> >                 e1000e_vlan_strip_disable(adapter);
+> 
+> So if the VLAN tag stripping is disabled what happens that is causing
+> the VLAN test to fail?  It sounds like this might be working around a
+> kernel bug where a VLAN created on a device that supports hardware tag
+> stripping only supports hardware tag stripping.  Maybe a better fix
+> would be to add a fall back so if the VLAN tag is in the frame instead
+> of stripped it still makes it to the correct spot.
+
+That's the main reason I labeled it as an RFC -- I wasn't sure exactly how
+things were intended to work when the hardware stripping was disabled. It
+seems quite plausible to me that this patch simply papers over the real
+bug: lack of a functional software fallback. I'm not particularly up on
+the vlan code just yet though, so I'm not yet sure where to poke next.
+Suggestions welcomed. :)
 
 -- 
-tejun
+Jarod Wilson
+jarod at redhat.com
+
