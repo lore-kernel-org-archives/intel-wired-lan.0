@@ -1,32 +1,77 @@
-From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Wed, 01 Jun 2016 18:59:44 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: fix spoofed packets with macvlans
-Message-ID: <20160602015944.28731.47045.stgit@localhost6.localdomain6>
+From: Johannes Thumshirn <jthumshirn@suse.de>
+Date: Thu,  2 Jun 2016 09:30:34 +0200
+Subject: [Intel-wired-lan] [PATCH v2 6/6] alx: Use
+	pci_(request|release)_mem_regions
+In-Reply-To: <cover.1464795082.git.jthumshirn@suse.de>
+References: <cover.1464795082.git.jthumshirn@suse.de>
+Message-ID: <d23546e4a87cfd23082fdfbe648bd5269ba89df7.1464795082.git.jthumshirn@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When setting spoofing both vlan and mac need to be set together.
-This change resolves an issue where mac-vlans on the VF fail to pass
-traffic due to spoofed packets.
+Now that we do have pci_request_mem_regions() and pci_release_mem_regions() at
+hand, use it in the ethernet drivers.
 
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+Suggested-by: Christoph Hellwig <hch@infradead.org>
+Signed-off-by: Johannes Thumshirn <jthumshirn@suse.de>
+Cc: Jay Cliburn <jcliburn@gmail.com>
+Cc: Chris Snook <chris.snook@gmail.com>
+Cc: David S. Miller <davem@davemloft.net>
+Cc: netdev at vger.kernel.org
+Cc: linux-kernel at vger.kernel.org
+Cc: intel-wired-lan at lists.osuosl.org
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/net/ethernet/atheros/alx/main.c | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-index 398d7a9..40687e5 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-@@ -954,6 +954,7 @@ static int ixgbe_set_vf_macvlan_msg(struct ixgbe_adapter *adapter,
- 			struct ixgbe_hw *hw = &adapter->hw;
+diff --git a/drivers/net/ethernet/atheros/alx/main.c b/drivers/net/ethernet/atheros/alx/main.c
+index 55b118e..d2363de 100644
+--- a/drivers/net/ethernet/atheros/alx/main.c
++++ b/drivers/net/ethernet/atheros/alx/main.c
+@@ -1238,7 +1238,7 @@ static int alx_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	struct alx_priv *alx;
+ 	struct alx_hw *hw;
+ 	bool phy_configured;
+-	int bars, err;
++	int err;
  
- 			hw->mac.ops.set_mac_anti_spoofing(hw, false, vf);
-+			hw->mac.ops.set_vlan_anti_spoofing(hw, false, vf);
+ 	err = pci_enable_device_mem(pdev);
+ 	if (err)
+@@ -1258,11 +1258,10 @@ static int alx_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
  		}
  	}
  
+-	bars = pci_select_bars(pdev, IORESOURCE_MEM);
+-	err = pci_request_selected_regions(pdev, bars, alx_drv_name);
++	err = pci_request_mem_regions(pdev, alx_drv_name);
+ 	if (err) {
+ 		dev_err(&pdev->dev,
+-			"pci_request_selected_regions failed(bars:%d)\n", bars);
++			"pci_request_mem_regions failed\n");
+ 		goto out_pci_disable;
+ 	}
+ 
+@@ -1388,7 +1387,7 @@ out_unmap:
+ out_free_netdev:
+ 	free_netdev(netdev);
+ out_pci_release:
+-	pci_release_selected_regions(pdev, bars);
++	pci_release_mem_regions(pdev);
+ out_pci_disable:
+ 	pci_disable_device(pdev);
+ 	return err;
+@@ -1407,8 +1406,7 @@ static void alx_remove(struct pci_dev *pdev)
+ 
+ 	unregister_netdev(alx->dev);
+ 	iounmap(hw->hw_addr);
+-	pci_release_selected_regions(pdev,
+-				     pci_select_bars(pdev, IORESOURCE_MEM));
++	pci_release_mem_regions(pdev);
+ 
+ 	pci_disable_pcie_error_reporting(pdev);
+ 	pci_disable_device(pdev);
+-- 
+1.8.5.6
 
