@@ -1,121 +1,42 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri,  3 Jun 2016 15:42:24 -0700
-Subject: [Intel-wired-lan] [PATCH v1 14/18] fm10k: use common flow for
-	suspend and resume
+Date: Fri,  3 Jun 2016 15:42:25 -0700
+Subject: [Intel-wired-lan] [PATCH v1 15/18] fm10k: enable bus master after
+	every reset
 In-Reply-To: <20160603224228.10192-1-jacob.e.keller@intel.com>
 References: <20160603224228.10192-1-jacob.e.keller@intel.com>
-Message-ID: <20160603224228.10192-15-jacob.e.keller@intel.com>
+Message-ID: <20160603224228.10192-16-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Continuing the effort to commonize the similar suspend/resume flows,
-finish up by using the new fm10k_handle_suspand and fm10k_handle_resume
-functions for the standard suspend/resume flow.
+If an FLR occurs, VF devices will be knocked out of bus master mode, and
+the driver will be unable to recover from the reset properly, resulting
+in malicious driver events and an infinite reset loop. In the normal
+case, the bus master mode will already be enabled and this call will
+essentially be a no-op. Since we're doing this every reset, it is
+possible we could remove the other calls to pci_set_master() but it
+seems not harmful to just leave them in place.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 73 ++--------------------------
- 1 file changed, 3 insertions(+), 70 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index 10fd3f689728..8f68636aab12 100644
+index 8f68636aab12..8eaf6479b9dd 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -2181,60 +2181,13 @@ static int fm10k_resume(struct pci_dev *pdev)
- 	/* refresh hw_addr in case it was dropped */
- 	hw->hw_addr = interface->uc_addr;
+@@ -174,6 +174,8 @@ static int fm10k_handle_reset(struct fm10k_intfc *interface)
  
--	/* reset hardware to known state */
--	err = hw->mac.ops.init_hw(&interface->hw);
--	if (err) {
--		dev_err(&pdev->dev, "init_hw failed: %d\n", err);
-+	err = fm10k_handle_resume(interface);
-+	if (err)
- 		return err;
--	}
--
--	/* reset statistics starting values */
--	hw->mac.ops.rebind_hw_stats(hw, &interface->stats);
--
--	rtnl_lock();
--
--	err = fm10k_init_queueing_scheme(interface);
--	if (err)
--		goto err_queueing_scheme;
--
--	err = fm10k_mbx_request_irq(interface);
--	if (err)
--		goto err_mbx_irq;
--
--	err = fm10k_hw_ready(interface);
--	if (err)
--		goto err_open;
--
--	err = netif_running(netdev) ? fm10k_open(netdev) : 0;
--	if (err)
--		goto err_open;
--
--	rtnl_unlock();
--
--	/* assume host is not ready, to prevent race with watchdog in case we
--	 * actually don't have connection to the switch
--	 */
--	interface->host_ready = false;
--	fm10k_watchdog_host_not_ready(interface);
--
--	/* clear the service task disable bit to allow service task to start */
--	clear_bit(__FM10K_SERVICE_DISABLE, &interface->state);
--	fm10k_service_event_schedule(interface);
--
--	/* restore SR-IOV interface */
--	fm10k_iov_resume(pdev);
+ 	rtnl_lock();
  
- 	netif_device_attach(netdev);
- 
- 	return 0;
--err_open:
--	fm10k_mbx_free_irq(interface);
--err_mbx_irq:
--	fm10k_clear_queueing_scheme(interface);
--err_queueing_scheme:
--	rtnl_unlock();
--
--	return err;
- }
- 
- /**
-@@ -2254,27 +2207,7 @@ static int fm10k_suspend(struct pci_dev *pdev,
- 
- 	netif_device_detach(netdev);
- 
--	fm10k_iov_suspend(pdev);
--
--	/* the watchdog tasks may read registers, which will appear like a
--	 * surprise-remove event once the PCI device is disabled. This will
--	 * cause us to close the netdevice, so we don't retain the open/closed
--	 * state post-resume. Prevent this by disabling the service task while
--	 * suspended, until we actually resume.
--	 */
--	set_bit(__FM10K_SERVICE_DISABLE, &interface->state);
--	cancel_work_sync(&interface->service_task);
--
--	rtnl_lock();
--
--	if (netif_running(netdev))
--		fm10k_close(netdev);
--
--	fm10k_mbx_free_irq(interface);
--
--	fm10k_clear_queueing_scheme(interface);
--
--	rtnl_unlock();
-+	fm10k_prepare_suspend(interface);
- 
- 	err = pci_save_state(pdev);
- 	if (err)
++	pci_set_master(interface->pdev);
++
+ 	/* reset and initialize the hardware so it is in a known state */
+ 	err = hw->mac.ops.reset_hw(hw);
+ 	if (err) {
 -- 
 2.8.2.820.gd1c5f70
 
