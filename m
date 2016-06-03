@@ -1,40 +1,78 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri,  3 Jun 2016 15:42:17 -0700
-Subject: [Intel-wired-lan] [PATCH v1 07/18] fm10k: use actual hardware
-	registers when checking for pending Tx
+Date: Fri,  3 Jun 2016 15:42:23 -0700
+Subject: [Intel-wired-lan] [PATCH v1 13/18] fm10k: implement reset_notify
+	handler for PCIe FLR events
 In-Reply-To: <20160603224228.10192-1-jacob.e.keller@intel.com>
 References: <20160603224228.10192-1-jacob.e.keller@intel.com>
-Message-ID: <20160603224228.10192-8-jacob.e.keller@intel.com>
+Message-ID: <20160603224228.10192-14-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+When a function level PCI reset is triggered using sysfs, it calls the
+driver's .reset_notify error handler. Implement a handler based on the
+now split fm10k_prepare_for_reset and fm10k_handle_reset functions, so
+that we fully reset the driver when the PCI function level reset occurs.
+This also ensures the reset is handled in a clean way by first disabling
+all the driver bits first and then restoring them after the function
+reset. Previously the stack simply performed a blind function reset and
+our driver didn't take any part in the process.
+
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_main.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 33 ++++++++++++++++++++++++++++
+ 1 file changed, 33 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index a9ccc1eb3ea4..c6a464551577 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -1130,9 +1130,11 @@ static u64 fm10k_get_tx_completed(struct fm10k_ring *ring)
- 
- static u64 fm10k_get_tx_pending(struct fm10k_ring *ring)
- {
--	/* use SW head and tail until we have real hardware */
--	u32 head = ring->next_to_clean;
--	u32 tail = ring->next_to_use;
-+	struct fm10k_intfc *interface = ring->q_vector->interface;
-+	struct fm10k_hw *hw = &interface->hw;
-+
-+	u32 head = fm10k_read_reg(hw, FM10K_TDH(ring->reg_idx));
-+	u32 tail = fm10k_read_reg(hw, FM10K_TDT(ring->reg_idx));
- 
- 	return ((head <= tail) ? tail : tail + ring->count) - head;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index 0ab20d2c4ea6..10fd3f689728 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -2368,10 +2368,43 @@ static void fm10k_io_resume(struct pci_dev *pdev)
+ 		netif_device_attach(netdev);
  }
+ 
++/**
++ * fm10k_io_reset_notify - called when PCI function is reset
++ * @pdev: Pointer to PCI device
++ *
++ * This callback is called when the PCI function is reset such as from
++ * /sys/class/net/<enpX>/device/reset or similar. When prepare is true, it
++ * means we should prepare for a function reset. If prepare is false, it means
++ * the function reset just occurred.
++ */
++static void fm10k_io_reset_notify(struct pci_dev *pdev, bool prepare)
++{
++	struct fm10k_intfc *interface = pci_get_drvdata(pdev);
++	int err = 0;
++
++	if (prepare) {
++		/* warn incase we have any active VF devices */
++		if (pci_num_vf(pdev))
++			dev_warn(&pdev->dev,
++				 "PCIe FLR may cause issues for any active VF devices\n");
++
++		fm10k_prepare_suspend(interface);
++	} else {
++		err = fm10k_handle_resume(interface);
++	}
++
++	if (err) {
++		dev_warn(&pdev->dev,
++			 "fm10k_io_reset_notify failed: %d\n", err);
++		netif_device_detach(interface->netdev);
++	}
++}
++
+ static const struct pci_error_handlers fm10k_err_handler = {
+ 	.error_detected = fm10k_io_error_detected,
+ 	.slot_reset = fm10k_io_slot_reset,
+ 	.resume = fm10k_io_resume,
++	.reset_notify = fm10k_io_reset_notify,
+ };
+ 
+ static struct pci_driver fm10k_driver = {
 -- 
 2.8.2.820.gd1c5f70
 
