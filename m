@@ -1,70 +1,59 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Date: Fri,  3 Jun 2016 23:03:25 +0200
-Subject: [Intel-wired-lan] [PATCHv2 net-next] net: igb: Only dma sync frame
-	length
-Message-ID: <1464987805-17754-1-git-send-email-andrew@lunn.ch>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Fri,  3 Jun 2016 15:42:10 -0700
+Subject: [Intel-wired-lan] [PATCH v1 00/18] fm10k reset + suspend/resume
+	changes
+Message-ID: <20160603224228.10192-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On some platforms, syncing a buffer for DMA is expensive. Rather than
-sync the whole 2K receive buffer, only synchronise the length of the
-frame, which will typically be the MTU, or a much smaller TCP ACK.
+This series implements several fixes for suspend/resume and related
+behaviors for both PF and VF driver. The major changes are to commonize
+the suspend/resume, io_error_detected, reset_notify and reinit flows to
+use one set of functions. This ensures that all flows set the same
+state, preventing multiple flows from interacting together. In addition
+it ensures that each flow does every step that it needs. This was
+previously overlooked because each flow was coded separately.
 
-For an IMX6Q, this gives around 6% increased TCP receive performance,
-which is cache operations bound and reduces CPU load for TCP transmit.
+In addition, there are several bug fixes scattered around the series for
+issues that came up when testing the changes and the bugs that these
+changes fix.
 
-Signed-off-by: Andrew Lunn <andrew@lunn.ch>
----
-v2:
-Christmas tree the local variables
-Pass size into igb_add_rx_frag() rather than repeating the endiness swap.
----
- drivers/net/ethernet/intel/igb/igb_main.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+Jacob Keller (17):
+  fm10k: no need to continue in fm10k_down if __FM10K_DOWN already set
+  fm10k: avoid possible null pointer dereference in fm10k_update_stats
+  fm10k: prevent multiple threads updating statistics
+  fm10k: don't stop reset due to FM10K_ERR_REQUESTS_PENDING
+  fm10k: perform data path reset even when switch is not ready
+  fm10k: use actual hardware registers when checking for pending Tx
+  fm10k: only warn when stop_hw fails with FM10K_ERR_REQUESTS_PENDING
+  fm10k: wait for queues to drain fully before stop_hw
+  fm10k: split fm10k_reinit into two functions
+  fm10k: implement prepare_suspend and handle_resume
+  fm10k: use common reset flow when handling io errors from PCI stack
+  fm10k: implement reset_notify handler for PCIe FLR events
+  fm10k: use common flow for suspend and resume
+  fm10k: enable bus master after every reset
+  fm10k: check if PCIe link is restored
+  fm10k: implement request_lport_map pointer
+  fm10k: bump version number
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 0a289dda604a..8fa9e6e8c3b0 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -6856,12 +6856,12 @@ static bool igb_can_reuse_rx_page(struct igb_rx_buffer *rx_buffer,
-  **/
- static bool igb_add_rx_frag(struct igb_ring *rx_ring,
- 			    struct igb_rx_buffer *rx_buffer,
-+			    unsigned int size,
- 			    union e1000_adv_rx_desc *rx_desc,
- 			    struct sk_buff *skb)
- {
- 	struct page *page = rx_buffer->page;
- 	unsigned char *va = page_address(page) + rx_buffer->page_offset;
--	unsigned int size = le16_to_cpu(rx_desc->wb.upper.length);
- #if (PAGE_SIZE < 8192)
- 	unsigned int truesize = IGB_RX_BUFSZ;
- #else
-@@ -6913,6 +6913,7 @@ static struct sk_buff *igb_fetch_rx_buffer(struct igb_ring *rx_ring,
- 					   union e1000_adv_rx_desc *rx_desc,
- 					   struct sk_buff *skb)
- {
-+	unsigned int size = le16_to_cpu(rx_desc->wb.upper.length);
- 	struct igb_rx_buffer *rx_buffer;
- 	struct page *page;
- 
-@@ -6948,11 +6949,11 @@ static struct sk_buff *igb_fetch_rx_buffer(struct igb_ring *rx_ring,
- 	dma_sync_single_range_for_cpu(rx_ring->dev,
- 				      rx_buffer->dma,
- 				      rx_buffer->page_offset,
--				      IGB_RX_BUFSZ,
-+				      size,
- 				      DMA_FROM_DEVICE);
- 
- 	/* pull page into skb */
--	if (igb_add_rx_frag(rx_ring, rx_buffer, rx_desc, skb)) {
-+	if (igb_add_rx_frag(rx_ring, rx_buffer, size, rx_desc, skb)) {
- 		/* hand second half of page back to the ring */
- 		igb_reuse_rx_page(rx_ring, rx_buffer);
- 	} else {
+Ngai-Mint Kwan (1):
+  fm10k: Reset mailbox global interrupts
+
+ drivers/net/ethernet/intel/fm10k/fm10k.h         |   2 +
+ drivers/net/ethernet/intel/fm10k/fm10k_common.c  |   6 +-
+ drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c |   2 +
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c    |  12 +-
+ drivers/net/ethernet/intel/fm10k/fm10k_mbx.h     |   2 +
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c     | 311 +++++++++++++----------
+ drivers/net/ethernet/intel/fm10k/fm10k_pf.c      |  38 ++-
+ drivers/net/ethernet/intel/fm10k/fm10k_type.h    |   2 +
+ drivers/net/ethernet/intel/fm10k/fm10k_vf.c      |  12 +-
+ 9 files changed, 222 insertions(+), 165 deletions(-)
+
 -- 
-2.8.1
+2.8.2.820.gd1c5f70
 
