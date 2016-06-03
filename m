@@ -1,113 +1,121 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri,  3 Jun 2016 15:42:27 -0700
-Subject: [Intel-wired-lan] [PATCH v1 17/18] fm10k: implement
-	request_lport_map pointer
+Date: Fri,  3 Jun 2016 15:42:24 -0700
+Subject: [Intel-wired-lan] [PATCH v1 14/18] fm10k: use common flow for
+	suspend and resume
 In-Reply-To: <20160603224228.10192-1-jacob.e.keller@intel.com>
 References: <20160603224228.10192-1-jacob.e.keller@intel.com>
-Message-ID: <20160603224228.10192-18-jacob.e.keller@intel.com>
+Message-ID: <20160603224228.10192-15-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-If the fm10k interface is brought up, but the switch manager software is
-not running, the driver will continuously request the lport map every
-few seconds in the base driver watchdog routine. Eventually after
-several minutes the switch mailbox Tx fifo will fill up and the mailbox
-will timeout, resulting in a reset. This reset will appear as if for no
-reason, and occurs regularly every few minutes until the switch manager
-software is loaded.
-
-Prevent this from happening by only requesting the lport map after we've
-verified the switch mailbox is tx_ready. In order to simplify code logic
-and reduce code duplication, implement this as a new function pointer
-"mac.ops.request_lport_map" which the VF will not implement. Otherwise,
-we have to duplicate the tx_ready check outside of
-fm10k_get_host_state_generic, or re-implement most of
-fm10k_get_host_state_generic in the pf version.
-
-The resulting code is simpler and easier to understand, and prevents the
-PF from continuously requesting lport map and filling the Tx fifo of
-a switch mailbox that isn't ready.
+Continuing the effort to commonize the similar suspend/resume flows,
+finish up by using the new fm10k_handle_suspand and fm10k_handle_resume
+functions for the standard suspend/resume flow.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_common.c |  6 +++++-
- drivers/net/ethernet/intel/fm10k/fm10k_pf.c     | 15 +++------------
- drivers/net/ethernet/intel/fm10k/fm10k_type.h   |  1 +
- 3 files changed, 9 insertions(+), 13 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 73 ++--------------------------
+ 1 file changed, 3 insertions(+), 70 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_common.c b/drivers/net/ethernet/intel/fm10k/fm10k_common.c
-index 5bbf19cfe29b..d6baaea8bc7c 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_common.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_common.c
-@@ -519,8 +519,12 @@ s32 fm10k_get_host_state_generic(struct fm10k_hw *hw, bool *host_ready)
- 		goto out;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index 10fd3f689728..8f68636aab12 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -2181,60 +2181,13 @@ static int fm10k_resume(struct pci_dev *pdev)
+ 	/* refresh hw_addr in case it was dropped */
+ 	hw->hw_addr = interface->uc_addr;
  
- 	/* interface cannot receive traffic without logical ports */
--	if (mac->dglort_map == FM10K_DGLORTMAP_NONE)
-+	if (mac->dglort_map == FM10K_DGLORTMAP_NONE) {
-+		if (hw->mac.ops.request_lport_map)
-+			ret_val = hw->mac.ops.request_lport_map(hw);
-+
- 		goto out;
-+	}
- 
- 	/* if we passed all the tests above then the switch is ready and we no
- 	 * longer need to check for link
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-index 23f3566b17fc..682299dd0ce4 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-@@ -1622,25 +1622,15 @@ static s32 fm10k_request_lport_map_pf(struct fm10k_hw *hw)
-  **/
- static s32 fm10k_get_host_state_pf(struct fm10k_hw *hw, bool *switch_ready)
- {
--	s32 ret_val = 0;
- 	u32 dma_ctrl2;
- 
- 	/* verify the switch is ready for interaction */
- 	dma_ctrl2 = fm10k_read_reg(hw, FM10K_DMA_CTRL2);
- 	if (!(dma_ctrl2 & FM10K_DMA_CTRL2_SWITCH_READY))
--		goto out;
-+		return 0;
- 
- 	/* retrieve generic host state info */
--	ret_val = fm10k_get_host_state_generic(hw, switch_ready);
--	if (ret_val)
--		goto out;
+-	/* reset hardware to known state */
+-	err = hw->mac.ops.init_hw(&interface->hw);
+-	if (err) {
+-		dev_err(&pdev->dev, "init_hw failed: %d\n", err);
++	err = fm10k_handle_resume(interface);
++	if (err)
+ 		return err;
+-	}
 -
--	/* interface cannot receive traffic without logical ports */
--	if (hw->mac.dglort_map == FM10K_DGLORTMAP_NONE)
--		ret_val = fm10k_request_lport_map_pf(hw);
+-	/* reset statistics starting values */
+-	hw->mac.ops.rebind_hw_stats(hw, &interface->stats);
 -
--out:
--	return ret_val;
-+	return fm10k_get_host_state_generic(hw, switch_ready);
+-	rtnl_lock();
+-
+-	err = fm10k_init_queueing_scheme(interface);
+-	if (err)
+-		goto err_queueing_scheme;
+-
+-	err = fm10k_mbx_request_irq(interface);
+-	if (err)
+-		goto err_mbx_irq;
+-
+-	err = fm10k_hw_ready(interface);
+-	if (err)
+-		goto err_open;
+-
+-	err = netif_running(netdev) ? fm10k_open(netdev) : 0;
+-	if (err)
+-		goto err_open;
+-
+-	rtnl_unlock();
+-
+-	/* assume host is not ready, to prevent race with watchdog in case we
+-	 * actually don't have connection to the switch
+-	 */
+-	interface->host_ready = false;
+-	fm10k_watchdog_host_not_ready(interface);
+-
+-	/* clear the service task disable bit to allow service task to start */
+-	clear_bit(__FM10K_SERVICE_DISABLE, &interface->state);
+-	fm10k_service_event_schedule(interface);
+-
+-	/* restore SR-IOV interface */
+-	fm10k_iov_resume(pdev);
+ 
+ 	netif_device_attach(netdev);
+ 
+ 	return 0;
+-err_open:
+-	fm10k_mbx_free_irq(interface);
+-err_mbx_irq:
+-	fm10k_clear_queueing_scheme(interface);
+-err_queueing_scheme:
+-	rtnl_unlock();
+-
+-	return err;
  }
  
- /* This structure defines the attibutes to be parsed below */
-@@ -1816,6 +1806,7 @@ static const struct fm10k_mac_ops mac_ops_pf = {
- 	.set_dma_mask		= fm10k_set_dma_mask_pf,
- 	.get_fault		= fm10k_get_fault_pf,
- 	.get_host_state		= fm10k_get_host_state_pf,
-+	.request_lport_map	= fm10k_request_lport_map_pf,
- };
+ /**
+@@ -2254,27 +2207,7 @@ static int fm10k_suspend(struct pci_dev *pdev,
  
- static const struct fm10k_iov_ops iov_ops_pf = {
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_type.h b/drivers/net/ethernet/intel/fm10k/fm10k_type.h
-index 1d65ad85d72e..f4e75c498287 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_type.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_type.h
-@@ -526,6 +526,7 @@ struct fm10k_mac_ops {
- 	s32 (*stop_hw)(struct fm10k_hw *);
- 	s32 (*get_bus_info)(struct fm10k_hw *);
- 	s32 (*get_host_state)(struct fm10k_hw *, bool *);
-+	s32 (*request_lport_map)(struct fm10k_hw *);
- 	s32 (*update_vlan)(struct fm10k_hw *, u32, u8, bool);
- 	s32 (*read_mac_addr)(struct fm10k_hw *);
- 	s32 (*update_uc_addr)(struct fm10k_hw *, u16, const u8 *,
+ 	netif_device_detach(netdev);
+ 
+-	fm10k_iov_suspend(pdev);
+-
+-	/* the watchdog tasks may read registers, which will appear like a
+-	 * surprise-remove event once the PCI device is disabled. This will
+-	 * cause us to close the netdevice, so we don't retain the open/closed
+-	 * state post-resume. Prevent this by disabling the service task while
+-	 * suspended, until we actually resume.
+-	 */
+-	set_bit(__FM10K_SERVICE_DISABLE, &interface->state);
+-	cancel_work_sync(&interface->service_task);
+-
+-	rtnl_lock();
+-
+-	if (netif_running(netdev))
+-		fm10k_close(netdev);
+-
+-	fm10k_mbx_free_irq(interface);
+-
+-	fm10k_clear_queueing_scheme(interface);
+-
+-	rtnl_unlock();
++	fm10k_prepare_suspend(interface);
+ 
+ 	err = pci_save_state(pdev);
+ 	if (err)
 -- 
 2.8.2.820.gd1c5f70
 
