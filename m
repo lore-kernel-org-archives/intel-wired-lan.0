@@ -1,55 +1,42 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri,  3 Jun 2016 15:42:12 -0700
-Subject: [Intel-wired-lan] [PATCH v1 02/18] fm10k: avoid possible null
-	pointer dereference in fm10k_update_stats
+Date: Fri,  3 Jun 2016 15:42:18 -0700
+Subject: [Intel-wired-lan] [PATCH v1 08/18] fm10k: only warn when stop_hw
+	fails with FM10K_ERR_REQUESTS_PENDING
 In-Reply-To: <20160603224228.10192-1-jacob.e.keller@intel.com>
 References: <20160603224228.10192-1-jacob.e.keller@intel.com>
-Message-ID: <20160603224228.10192-3-jacob.e.keller@intel.com>
+Message-ID: <20160603224228.10192-9-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-It's currently possible for fm10k_update_stats to be called during the
-window when we go down and the rings are removed. This can result in
-a null pointer dereference. In fm10k_get_stats64 we work around this by
-using ACCESS_ONCE and a null pointer check inside the loop. Use this
-same flow in the fm10k_update_stats to avoid the potential null pointer.
+When stop_hw() routine fails with FM10K_ERR_REQUESTS_PENDING, this
+indicates that the Tx or Rx queues did not shutdown within the time
+limit. Print a more suitable message at the dev_info level instead of
+dev_err.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index 610c313610c8..be0b7dea6e72 100644
+index 44393763fe77..4dfd1284a8de 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -377,7 +377,10 @@ void fm10k_update_stats(struct fm10k_intfc *interface)
+@@ -1644,7 +1644,10 @@ void fm10k_down(struct fm10k_intfc *interface)
  
- 	/* gather some stats to the interface struct that are per queue */
- 	for (bytes = 0, pkts = 0, i = 0; i < interface->num_tx_queues; i++) {
--		struct fm10k_ring *tx_ring = interface->tx_ring[i];
-+		struct fm10k_ring *tx_ring = READ_ONCE(interface->tx_ring[i]);
-+
-+		if (!tx_ring)
-+			continue;
+ 	/* Disable DMA engine for Tx/Rx */
+ 	err = hw->mac.ops.stop_hw(hw);
+-	if (err)
++	if (err == FM10K_ERR_REQUESTS_PENDING)
++		dev_info(&interface->pdev->dev,
++			 "due to pending requests hw was not shut down gracefully\n");
++	else if (err)
+ 		dev_err(&interface->pdev->dev, "stop_hw failed: %d\n", err);
  
- 		restart_queue += tx_ring->tx_stats.restart_queue;
- 		tx_busy += tx_ring->tx_stats.tx_busy;
-@@ -396,7 +399,10 @@ void fm10k_update_stats(struct fm10k_intfc *interface)
- 
- 	/* gather some stats to the interface struct that are per queue */
- 	for (bytes = 0, pkts = 0, i = 0; i < interface->num_rx_queues; i++) {
--		struct fm10k_ring *rx_ring = interface->rx_ring[i];
-+		struct fm10k_ring *rx_ring = READ_ONCE(interface->rx_ring[i]);
-+
-+		if (!rx_ring)
-+			continue;
- 
- 		bytes += rx_ring->stats.bytes;
- 		pkts += rx_ring->stats.packets;
+ 	/* free any buffers still on the rings */
 -- 
 2.8.2.820.gd1c5f70
 
