@@ -1,61 +1,101 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri,  3 Jun 2016 15:42:14 -0700
-Subject: [Intel-wired-lan] [PATCH v1 04/18] fm10k: Reset mailbox global
-	interrupts
+Date: Fri,  3 Jun 2016 15:42:13 -0700
+Subject: [Intel-wired-lan] [PATCH v1 03/18] fm10k: prevent multiple threads
+	updating statistics
 In-Reply-To: <20160603224228.10192-1-jacob.e.keller@intel.com>
 References: <20160603224228.10192-1-jacob.e.keller@intel.com>
-Message-ID: <20160603224228.10192-5-jacob.e.keller@intel.com>
+Message-ID: <20160603224228.10192-4-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
+Also prevent updating stats while the interface is down. If we're
+already updating stats, just return doing nothing. When we take the
+device down, block stat updates until we come back up. This ensures that
+we avoid tearing down rings when we're updating statistics, and prevents
+updating statistics until we're up.
 
-When a data path reset is initiated, write control to the PCIE_GMBX is
-yanked from the switch manager. The switch manager writes to this
-register to clear mailbox global interrupt bits as part of its mailbox
-interrupt handling routine. When the device recovers from the data path
-reset and these bits are not cleared, it will prevent future mailbox
-global interrupts from being triggered. Upon confirming that the device
-has exited from a data path reset, clear these bits to ensure the proper
-functioning of the mailbox global interrupt.
+We can't re-use the __FM10K_DOWN for this because it wouldn't prevent
+multiple threads from accessing statistics. Neither does it prevent the
+case where we start updating stats and then start going down in another
+thread.
 
-Signed-off-by: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
+The fm10k_get_stats64 is except from this, because it has a completely
+different flow which does not suffer from the same issues as
+fm10k_update_stats might.
+
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_mbx.h | 2 ++
- drivers/net/ethernet/intel/fm10k/fm10k_pf.c  | 4 ++++
- 2 files changed, 6 insertions(+)
+ drivers/net/ethernet/intel/fm10k/fm10k.h     |  1 +
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 14 ++++++++++++++
+ 2 files changed, 15 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.h b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.h
-index b7dbc8a84c05..35c1dbad1330 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.h
-@@ -41,6 +41,8 @@ struct fm10k_mbx_info;
- #define FM10K_MBX_ACK_INTERRUPT			0x00000010
- #define FM10K_MBX_INTERRUPT_ENABLE		0x00000020
- #define FM10K_MBX_INTERRUPT_DISABLE		0x00000040
-+#define FM10K_MBX_GLOBAL_REQ_INTERRUPT		0x00000200
-+#define FM10K_MBX_GLOBAL_ACK_INTERRUPT		0x00000400
- #define FM10K_MBICR(_n)		((_n) + 0x18840)
- #define FM10K_GMBX		0x18842
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
+index e98b86bf0ca1..c8d0817766bf 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k.h
++++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
+@@ -362,6 +362,7 @@ enum fm10k_state_t {
+ 	__FM10K_SERVICE_DISABLE,
+ 	__FM10K_MBX_LOCK,
+ 	__FM10K_LINK_DOWN,
++	__FM10K_UPDATING_STATS,
+ };
  
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-index dc75507c9926..69e2c822db00 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-@@ -77,6 +77,10 @@ static s32 fm10k_reset_hw_pf(struct fm10k_hw *hw)
- 	if (!(reg & FM10K_IP_NOTINRESET))
- 		err = FM10K_ERR_RESET_FAILED;
+ static inline void fm10k_mbx_lock(struct fm10k_intfc *interface)
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index be0b7dea6e72..44393763fe77 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -372,6 +372,10 @@ void fm10k_update_stats(struct fm10k_intfc *interface)
+ 	u64 bytes, pkts;
+ 	int i;
  
-+	/* Reset mailbox global interrupts */
-+	reg = FM10K_MBX_GLOBAL_REQ_INTERRUPT | FM10K_MBX_GLOBAL_ACK_INTERRUPT;
-+	fm10k_write_reg(hw, FM10K_GMBX, reg);
++	/* ensure only one thread updates stats at a time */
++	if (test_and_set_bit(__FM10K_UPDATING_STATS, &interface->state))
++		return;
 +
- out:
- 	return err;
+ 	/* do not allow stats update via service task for next second */
+ 	interface->next_stats_update = jiffies + HZ;
+ 
+@@ -449,6 +453,8 @@ void fm10k_update_stats(struct fm10k_intfc *interface)
+ 	/* Fill out the OS statistics structure */
+ 	net_stats->rx_errors = rx_errors;
+ 	net_stats->rx_dropped = interface->stats.nodesc_drop.count;
++
++	clear_bit(__FM10K_UPDATING_STATS, &interface->state);
+ }
+ 
+ /**
+@@ -1572,6 +1578,9 @@ void fm10k_up(struct fm10k_intfc *interface)
+ 	/* configure interrupts */
+ 	hw->mac.ops.update_int_moderator(hw);
+ 
++	/* enable statistics capture again */
++	clear_bit(__FM10K_UPDATING_STATS, &interface->state);
++
+ 	/* clear down bit to indicate we are ready to go */
+ 	clear_bit(__FM10K_DOWN, &interface->state);
+ 
+@@ -1629,6 +1638,10 @@ void fm10k_down(struct fm10k_intfc *interface)
+ 	/* capture stats one last time before stopping interface */
+ 	fm10k_update_stats(interface);
+ 
++	/* prevent updating statistics while we're down */
++	while (test_and_set_bit(__FM10K_UPDATING_STATS, &interface->state))
++		usleep_range(1000, 2000);
++
+ 	/* Disable DMA engine for Tx/Rx */
+ 	err = hw->mac.ops.stop_hw(hw);
+ 	if (err)
+@@ -1757,6 +1770,7 @@ static int fm10k_sw_init(struct fm10k_intfc *interface,
+ 
+ 	/* Start off interface as being down */
+ 	set_bit(__FM10K_DOWN, &interface->state);
++	set_bit(__FM10K_UPDATING_STATS, &interface->state);
+ 
+ 	return 0;
  }
 -- 
 2.8.2.820.gd1c5f70
