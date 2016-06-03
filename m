@@ -1,161 +1,124 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri,  3 Jun 2016 15:42:15 -0700
-Subject: [Intel-wired-lan] [PATCH v1 05/18] fm10k: don't stop reset due to
-	FM10K_ERR_REQUESTS_PENDING
+Date: Fri,  3 Jun 2016 15:42:22 -0700
+Subject: [Intel-wired-lan] [PATCH v1 12/18] fm10k: use common reset flow
+	when handling io errors from PCI stack
 In-Reply-To: <20160603224228.10192-1-jacob.e.keller@intel.com>
 References: <20160603224228.10192-1-jacob.e.keller@intel.com>
-Message-ID: <20160603224228.10192-6-jacob.e.keller@intel.com>
+Message-ID: <20160603224228.10192-13-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Don't report FM10K_ERR_REQUESTS_PENDING when we fail to disable queues
-within the timeout. This can occur due to a hardware Tx hang, or when
-the switch ethernet fabric is resetting while we are transmitting
-traffic. It can sometimes take up to 500ms before the Tx DMA engine
-gives up. Instead, just skip the DMA engine check and perform
-a data-path reset anyways. Add a statistic counter to keep track of the
-number of resets occurring while we have pending DMA on the rings.
+Now that we have extracted the necessary steps for a split
+suspend/resume flow, re-use these functions instead of using the current
+open coded flow. This ensures that we don't miss any steps. It also
+ensures that we have the correct driver states set.
 
-In order to prevent having to re-assign err to 0, re-order the
-last few items of the reset_hw_pf function so that we don't perform
-"return err" at the end.
+Since we'll be handling all of the reset flow ourselves, we no longer
+need to request a reset in the io_slot_reset() function.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c |  2 ++
- drivers/net/ethernet/intel/fm10k/fm10k_pf.c      | 24 ++++++++++++++----------
- drivers/net/ethernet/intel/fm10k/fm10k_type.h    |  1 +
- drivers/net/ethernet/intel/fm10k/fm10k_vf.c      | 12 +++++++-----
- 4 files changed, 24 insertions(+), 15 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 60 ++++------------------------
+ 1 file changed, 7 insertions(+), 53 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-index 9b5195435c87..c04cbe9c9f7c 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c
-@@ -76,6 +76,8 @@ static const struct fm10k_stats fm10k_gstrings_global_stats[] = {
- 	FM10K_STAT("mac_rules_used", hw.swapi.mac.used),
- 	FM10K_STAT("mac_rules_avail", hw.swapi.mac.avail),
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index ab26bfa0a342..0ab20d2c4ea6 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -2307,17 +2307,7 @@ static pci_ers_result_t fm10k_io_error_detected(struct pci_dev *pdev,
+ 	if (state == pci_channel_io_perm_failure)
+ 		return PCI_ERS_RESULT_DISCONNECT;
  
-+	FM10K_STAT("reset_while_pending", hw.mac.reset_while_pending),
-+
- 	FM10K_STAT("tx_hang_count", tx_timeout_count),
- };
- 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-index 69e2c822db00..7fbd94ba6745 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-@@ -51,8 +51,12 @@ static s32 fm10k_reset_hw_pf(struct fm10k_hw *hw)
- 
- 	/* shut down all rings */
- 	err = fm10k_disable_queues_generic(hw, FM10K_MAX_QUEUES);
--	if (err)
-+	if (err == FM10K_ERR_REQUESTS_PENDING) {
-+		hw->mac.reset_while_pending++;
-+		goto force_reset;
-+	} else if (err) {
- 		return err;
-+	}
- 
- 	/* Verify that DMA is no longer active */
- 	reg = fm10k_read_reg(hw, FM10K_DMA_CTRL);
-@@ -62,27 +66,27 @@ static s32 fm10k_reset_hw_pf(struct fm10k_hw *hw)
- 	/* verify the switch is ready for reset */
- 	reg = fm10k_read_reg(hw, FM10K_DMA_CTRL2);
- 	if (!(reg & FM10K_DMA_CTRL2_SWITCH_READY))
--		goto out;
-+		return FM10K_ERR_DMA_PENDING;
- 
-+force_reset:
- 	/* Inititate data path reset */
--	reg |= FM10K_DMA_CTRL_DATAPATH_RESET;
-+	reg = FM10K_DMA_CTRL_DATAPATH_RESET;
- 	fm10k_write_reg(hw, FM10K_DMA_CTRL, reg);
- 
- 	/* Flush write and allow 100us for reset to complete */
- 	fm10k_write_flush(hw);
- 	udelay(FM10K_RESET_TIMEOUT);
- 
--	/* Verify we made it out of reset */
--	reg = fm10k_read_reg(hw, FM10K_IP);
--	if (!(reg & FM10K_IP_NOTINRESET))
--		err = FM10K_ERR_RESET_FAILED;
+-	rtnl_lock();
 -
- 	/* Reset mailbox global interrupts */
- 	reg = FM10K_MBX_GLOBAL_REQ_INTERRUPT | FM10K_MBX_GLOBAL_ACK_INTERRUPT;
- 	fm10k_write_reg(hw, FM10K_GMBX, reg);
+-	if (netif_running(netdev))
+-		fm10k_close(netdev);
+-
+-	fm10k_mbx_free_irq(interface);
+-
+-	/* free interrupts */
+-	fm10k_clear_queueing_scheme(interface);
+-
+-	rtnl_unlock();
++	fm10k_prepare_suspend(interface);
  
--out:
--	return err;
-+	/* Verify we made it out of reset */
-+	reg = fm10k_read_reg(hw, FM10K_IP);
-+	if (!(reg & FM10K_IP_NOTINRESET))
-+		return FM10K_ERR_RESET_FAILED;
-+
-+	return 0;
- }
+ 	/* Request a slot reset. */
+ 	return PCI_ERS_RESULT_NEED_RESET;
+@@ -2331,7 +2321,6 @@ static pci_ers_result_t fm10k_io_error_detected(struct pci_dev *pdev,
+  */
+ static pci_ers_result_t fm10k_io_slot_reset(struct pci_dev *pdev)
+ {
+-	struct fm10k_intfc *interface = pci_get_drvdata(pdev);
+ 	pci_ers_result_t result;
  
- /**
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_type.h b/drivers/net/ethernet/intel/fm10k/fm10k_type.h
-index b8bc06183720..1d65ad85d72e 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_type.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_type.h
-@@ -562,6 +562,7 @@ struct fm10k_mac_info {
- 	bool tx_ready;
- 	u32 dglort_map;
- 	u8 itr_scale;
-+	u64 reset_while_pending;
- };
+ 	if (pci_enable_device_mem(pdev)) {
+@@ -2349,12 +2338,6 @@ static pci_ers_result_t fm10k_io_slot_reset(struct pci_dev *pdev)
  
- struct fm10k_swapi_table_info {
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_vf.c b/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
-index 3b06685ea63b..337ba65a9411 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_vf.c
-@@ -34,7 +34,7 @@ static s32 fm10k_stop_hw_vf(struct fm10k_hw *hw)
+ 		pci_wake_from_d3(pdev, false);
  
- 	/* we need to disable the queues before taking further steps */
- 	err = fm10k_stop_hw_generic(hw);
--	if (err)
-+	if (err && err != FM10K_ERR_REQUESTS_PENDING)
- 		return err;
- 
- 	/* If permanent address is set then we need to restore it */
-@@ -67,7 +67,7 @@ static s32 fm10k_stop_hw_vf(struct fm10k_hw *hw)
- 		fm10k_write_reg(hw, FM10K_TDLEN(i), tdlen);
+-		/* refresh hw_addr in case it was dropped */
+-		interface->hw.hw_addr = interface->uc_addr;
+-
+-		interface->flags |= FM10K_FLAG_RESET_REQUESTED;
+-		fm10k_service_event_schedule(interface);
+-
+ 		result = PCI_ERS_RESULT_RECOVERED;
  	}
  
--	return 0;
-+	return err;
+@@ -2374,44 +2357,15 @@ static void fm10k_io_resume(struct pci_dev *pdev)
+ {
+ 	struct fm10k_intfc *interface = pci_get_drvdata(pdev);
+ 	struct net_device *netdev = interface->netdev;
+-	struct fm10k_hw *hw = &interface->hw;
+-	int err = 0;
++	int err;
+ 
+-	/* reset hardware to known state */
+-	err = hw->mac.ops.init_hw(&interface->hw);
+-	if (err) {
+-		dev_err(&pdev->dev, "init_hw failed: %d\n", err);
+-		return;
+-	}
++	err = fm10k_handle_resume(interface);
+ 
+-	/* reset statistics starting values */
+-	hw->mac.ops.rebind_hw_stats(hw, &interface->stats);
+-
+-	rtnl_lock();
+-
+-	err = fm10k_init_queueing_scheme(interface);
+-	if (err) {
+-		dev_err(&interface->pdev->dev,
+-			"init_queueing_scheme failed: %d\n", err);
+-		goto unlock;
+-	}
+-
+-	/* reassociate interrupts */
+-	fm10k_mbx_request_irq(interface);
+-
+-	rtnl_lock();
+-	if (netif_running(netdev))
+-		err = fm10k_open(netdev);
+-	rtnl_unlock();
+-
+-	/* final check of hardware state before registering the interface */
+-	err = err ? : fm10k_hw_ready(interface);
+-
+-	if (!err)
++	if (err)
++		dev_warn(&pdev->dev,
++			 "fm10k_io_resume failed: %d\n", err);
++	else
+ 		netif_device_attach(netdev);
+-
+-unlock:
+-	rtnl_unlock();
  }
  
- /**
-@@ -83,7 +83,9 @@ static s32 fm10k_reset_hw_vf(struct fm10k_hw *hw)
- 
- 	/* shut down queues we own and reset DMA configuration */
- 	err = fm10k_stop_hw_vf(hw);
--	if (err)
-+	if (err == FM10K_ERR_REQUESTS_PENDING)
-+		hw->mac.reset_while_pending++;
-+	else if (err)
- 		return err;
- 
- 	/* Inititate VF reset */
-@@ -96,9 +98,9 @@ static s32 fm10k_reset_hw_vf(struct fm10k_hw *hw)
- 	/* Clear reset bit and verify it was cleared */
- 	fm10k_write_reg(hw, FM10K_VFCTRL, 0);
- 	if (fm10k_read_reg(hw, FM10K_VFCTRL) & FM10K_VFCTRL_RST)
--		err = FM10K_ERR_RESET_FAILED;
-+		return FM10K_ERR_RESET_FAILED;
- 
--	return err;
-+	return 0;
- }
- 
- /**
+ static const struct pci_error_handlers fm10k_err_handler = {
 -- 
 2.8.2.820.gd1c5f70
 
