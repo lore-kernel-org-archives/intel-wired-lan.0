@@ -1,78 +1,54 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri,  3 Jun 2016 15:42:23 -0700
-Subject: [Intel-wired-lan] [PATCH v1 13/18] fm10k: implement reset_notify
-	handler for PCIe FLR events
+Date: Fri,  3 Jun 2016 15:42:26 -0700
+Subject: [Intel-wired-lan] [PATCH v1 16/18] fm10k: check if PCIe link is
+	restored
 In-Reply-To: <20160603224228.10192-1-jacob.e.keller@intel.com>
 References: <20160603224228.10192-1-jacob.e.keller@intel.com>
-Message-ID: <20160603224228.10192-14-jacob.e.keller@intel.com>
+Message-ID: <20160603224228.10192-17-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When a function level PCI reset is triggered using sysfs, it calls the
-driver's .reset_notify error handler. Implement a handler based on the
-now split fm10k_prepare_for_reset and fm10k_handle_reset functions, so
-that we fully reset the driver when the PCI function level reset occurs.
-This also ensures the reset is handled in a clean way by first disabling
-all the driver bits first and then restoring them after the function
-reset. Previously the stack simply performed a blind function reset and
-our driver didn't take any part in the process.
+Sometimes, a VF driver will lose PCIe address access, such as due to
+a PF FLR event. In fm10k_detach_subtask, poll and check whether the
+PCIe register space is active again and restore the device when it has.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 33 ++++++++++++++++++++++++++++
- 1 file changed, 33 insertions(+)
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index 0ab20d2c4ea6..10fd3f689728 100644
+index 8eaf6479b9dd..358fdb0d990b 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -2368,10 +2368,43 @@ static void fm10k_io_resume(struct pci_dev *pdev)
- 		netif_device_attach(netdev);
- }
+@@ -123,11 +123,24 @@ static void fm10k_service_timer(unsigned long data)
+ static void fm10k_detach_subtask(struct fm10k_intfc *interface)
+ {
+ 	struct net_device *netdev = interface->netdev;
++	u32 __iomem *hw_addr;
++	u32 value;
  
-+/**
-+ * fm10k_io_reset_notify - called when PCI function is reset
-+ * @pdev: Pointer to PCI device
-+ *
-+ * This callback is called when the PCI function is reset such as from
-+ * /sys/class/net/<enpX>/device/reset or similar. When prepare is true, it
-+ * means we should prepare for a function reset. If prepare is false, it means
-+ * the function reset just occurred.
-+ */
-+static void fm10k_io_reset_notify(struct pci_dev *pdev, bool prepare)
-+{
-+	struct fm10k_intfc *interface = pci_get_drvdata(pdev);
-+	int err = 0;
-+
-+	if (prepare) {
-+		/* warn incase we have any active VF devices */
-+		if (pci_num_vf(pdev))
-+			dev_warn(&pdev->dev,
-+				 "PCIe FLR may cause issues for any active VF devices\n");
-+
-+		fm10k_prepare_suspend(interface);
-+	} else {
-+		err = fm10k_handle_resume(interface);
+ 	/* do nothing if device is still present or hw_addr is set */
+ 	if (netif_device_present(netdev) || interface->hw.hw_addr)
+ 		return;
+ 
++	/* check the real address space to see if we've recovered */
++	hw_addr = READ_ONCE(interface->uc_addr);
++	value = readl(hw_addr);
++	if ((~value)) {
++		interface->hw.hw_addr = interface->uc_addr;
++		netif_device_attach(netdev);
++		interface->flags |= FM10K_FLAG_RESET_REQUESTED;
++		netdev_warn(netdev, "PCIe link restored, device now attached\n");
++		return;
 +	}
 +
-+	if (err) {
-+		dev_warn(&pdev->dev,
-+			 "fm10k_io_reset_notify failed: %d\n", err);
-+		netif_device_detach(interface->netdev);
-+	}
-+}
-+
- static const struct pci_error_handlers fm10k_err_handler = {
- 	.error_detected = fm10k_io_error_detected,
- 	.slot_reset = fm10k_io_slot_reset,
- 	.resume = fm10k_io_resume,
-+	.reset_notify = fm10k_io_reset_notify,
- };
+ 	rtnl_lock();
  
- static struct pci_driver fm10k_driver = {
+ 	if (netif_running(netdev))
 -- 
 2.8.2.820.gd1c5f70
 
