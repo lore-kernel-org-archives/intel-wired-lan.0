@@ -1,81 +1,121 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri,  3 Jun 2016 15:42:21 -0700
-Subject: [Intel-wired-lan] [PATCH v1 11/18] fm10k: implement prepare_suspend
-	and handle_resume
+Date: Fri,  3 Jun 2016 15:42:20 -0700
+Subject: [Intel-wired-lan] [PATCH v1 10/18] fm10k: split fm10k_reinit into
+	two functions
 In-Reply-To: <20160603224228.10192-1-jacob.e.keller@intel.com>
 References: <20160603224228.10192-1-jacob.e.keller@intel.com>
-Message-ID: <20160603224228.10192-12-jacob.e.keller@intel.com>
+Message-ID: <20160603224228.10192-11-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Implement fm10k_prepare_suspend and fm10k_handle_resume functions which
-abstract around the now existing fm10k_prepare_for_reset and
-fm10k_handle_reset. The new functions also handle stopping the service
-task, which is something that the original re-init flow does not need.
+There are several flows in the driver which perform the similar function
+of tearing down software and restoring software to recover from certain
+errors or PCIe events, including:
 
-Every other location that does a suspend/resume type flow is expected to
-use these functions, because otherwise they may have conflicts with the
-running watchdog routines. This also has the effect of preventing
-possible surprise remove events during handling of FLR events and PCIe
-errors.
+  * fm10k_reinit
+  * fm10k_suspend/resume
+  * fm10k_io_error_detected/fm10k_io_resume
+
+In addition, we want to implement a .reset_notify() handler as well
+which will also perform similar function.
+
+Rework how the driver codes reset and resume flows by separating out the
+reinit logic into two functions "fm10k_prepare_for_reset" and
+"fm10k_handle_reset". This first step will allow us to re-use this
+functionality in the similar blocks of code instead of re-coding the
+same sequence of events slightly different.
+
+The end result should be more maintainable and correct, fixing several
+inconsistencies with the work flow.
+
+The new functions expect to take the rtnl_lock() themselves, and it does
+have the unfortunate side effect of having the reinit flow take then
+release then take the rtnl_lock. However, this minor downside is
+outweighted by the benefits of code reduction and reducing needless
+difference between these flows.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 38 ++++++++++++++++++++++++++++
- 1 file changed, 38 insertions(+)
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 33 +++++++++++++++++++++++-----
+ 1 file changed, 28 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index 95a654adca84..ab26bfa0a342 100644
+index 469122cdb7db..95a654adca84 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -2107,6 +2107,44 @@ static void fm10k_remove(struct pci_dev *pdev)
- 	pci_disable_device(pdev);
+@@ -136,11 +136,9 @@ static void fm10k_detach_subtask(struct fm10k_intfc *interface)
+ 	rtnl_unlock();
  }
  
-+static void fm10k_prepare_suspend(struct fm10k_intfc *interface)
-+{
-+	/* the watchdog task reads from registers, which might appear like
-+	 * a surprise remove if the PCIe device is disabled while we're
-+	 * stopped. We stop the watchdog task until after we resume software
-+	 * activity.
-+	 */
-+	set_bit(__FM10K_SERVICE_DISABLE, &interface->state);
-+	cancel_work_sync(&interface->service_task);
-+
-+	fm10k_prepare_for_reset(interface);
+-static void fm10k_reinit(struct fm10k_intfc *interface)
++static void fm10k_prepare_for_reset(struct fm10k_intfc *interface)
+ {
+ 	struct net_device *netdev = interface->netdev;
+-	struct fm10k_hw *hw = &interface->hw;
+-	int err;
+ 
+ 	WARN_ON(in_interrupt());
+ 
+@@ -165,6 +163,17 @@ static void fm10k_reinit(struct fm10k_intfc *interface)
+ 	/* delay any future reset requests */
+ 	interface->last_reset = jiffies + (10 * HZ);
+ 
++	rtnl_unlock();
 +}
 +
-+static int fm10k_handle_resume(struct fm10k_intfc *interface)
++static int fm10k_handle_reset(struct fm10k_intfc *interface)
 +{
++	struct net_device *netdev = interface->netdev;
 +	struct fm10k_hw *hw = &interface->hw;
 +	int err;
 +
-+	/* reset statistics starting values */
-+	hw->mac.ops.rebind_hw_stats(hw, &interface->stats);
++	rtnl_lock();
 +
-+	err = fm10k_handle_reset(interface);
-+	if (err)
-+		return err;
-+
-+	/* assume host is not ready, to prevent race with watchdog in case we
-+	 * actually don't have connection to the switch
-+	 */
-+	interface->host_ready = false;
-+	fm10k_watchdog_host_not_ready(interface);
-+
-+	/* clear the service task disable bit to allow service task to start */
-+	clear_bit(__FM10K_SERVICE_DISABLE, &interface->state);
-+	fm10k_service_event_schedule(interface);
+ 	/* reset and initialize the hardware so it is in a known state */
+ 	err = hw->mac.ops.reset_hw(hw);
+ 	if (err) {
+@@ -185,7 +194,7 @@ static void fm10k_reinit(struct fm10k_intfc *interface)
+ 		goto reinit_err;
+ 	}
+ 
+-	/* reassociate interrupts */
++	/* re-associate interrupts */
+ 	err = fm10k_mbx_request_irq(interface);
+ 	if (err)
+ 		goto err_mbx_irq;
+@@ -219,7 +228,7 @@ static void fm10k_reinit(struct fm10k_intfc *interface)
+ 
+ 	clear_bit(__FM10K_RESETTING, &interface->state);
+ 
+-	return;
++	return err;
+ err_open:
+ 	fm10k_mbx_free_irq(interface);
+ err_mbx_irq:
+@@ -230,6 +239,20 @@ reinit_err:
+ 	rtnl_unlock();
+ 
+ 	clear_bit(__FM10K_RESETTING, &interface->state);
 +
 +	return err;
 +}
 +
- #ifdef CONFIG_PM
- /**
-  * fm10k_resume - Restore device to pre-sleep state
++static void fm10k_reinit(struct fm10k_intfc *interface)
++{
++	int err;
++
++	fm10k_prepare_for_reset(interface);
++
++	err = fm10k_handle_reset(interface);
++	if (err)
++		dev_err(&interface->pdev->dev,
++			"fm10k_handle_reset failed: %d\n", err);
+ }
+ 
+ static void fm10k_reset_subtask(struct fm10k_intfc *interface)
 -- 
 2.8.2.820.gd1c5f70
 
