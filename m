@@ -1,139 +1,41 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 04 Jun 2016 07:02:43 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- a0bb92a4804c2ae0f7a0b795d11e91e59e234fb8 BUILD SUCCESS
-Message-ID: <57520c93.mVKufPbA0Dgwxvwb%fengguang.wu@intel.com>
+From: Joerg Albert <jal2@gmx.de>
+Date: Sun, 5 Jun 2016 16:00:30 +0200
+Subject: [Intel-wired-lan] e1000e driver failed with error -3 after
+	power-on
+Message-ID: <5754307E.5030000@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-a0bb92a4804c2ae0f7a0b795d11e91e59e234fb8  ixgbe: Correct reporting of timestamping for x550
+Hi,
 
-elapsed time: 77m
+jal2 at gmx.de wrote on May 16th:
 
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 118
+> when I power on my Thinkpad T520 (running Ubuntu 16.04) I see that the driver e1000e is loaded
+> but the interface is missing. After a reboot (without a power-cycle) the
+> interface appears and works fine.
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                   randconfig-a0-06032003
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64                             acpi-redef
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-parisc                         b180_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x018-201622
-x86_64                 randconfig-x019-201622
-x86_64                 randconfig-x014-201622
-x86_64                 randconfig-x015-201622
-x86_64                 randconfig-x010-201622
-x86_64                 randconfig-x013-201622
-x86_64                 randconfig-x016-201622
-x86_64                 randconfig-x017-201622
-x86_64                 randconfig-x011-201622
-x86_64                 randconfig-x012-201622
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201622
-i386                     randconfig-s1-201622
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201622
-x86_64       randconfig-i0-201622+CONFIG_DEBUG_INFO_REDUCED
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201622
-i386                     randconfig-i1-201622
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                   randconfig-x010-201622
-i386                   randconfig-x011-201622
-i386                   randconfig-x012-201622
-i386                   randconfig-x013-201622
-i386                   randconfig-x014-201622
-i386                   randconfig-x015-201622
-i386                   randconfig-x016-201622
-i386                   randconfig-x017-201622
-i386                   randconfig-x018-201622
-i386                   randconfig-x019-201622
-i386                     randconfig-n0-201622
-i386         randconfig-n0-201622+CONFIG_DEBUG_INFO_REDUCED
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                 randconfig-x007-201622
-x86_64                 randconfig-x006-201622
-x86_64                 randconfig-x003-201622
-x86_64                 randconfig-x000-201622
-x86_64                 randconfig-x008-201622
-x86_64                 randconfig-x005-201622
-x86_64                 randconfig-x004-201622
-x86_64                 randconfig-x002-201622
-x86_64                 randconfig-x001-201622
-x86_64                 randconfig-x009-201622
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                   rhel
-i386                   randconfig-r0-06032005
-i386                   randconfig-x005-201622
-i386                   randconfig-x008-201622
-i386                   randconfig-x000-201622
-i386                   randconfig-x009-201622
-i386                   randconfig-x003-201622
-i386                   randconfig-x001-201622
-i386                   randconfig-x006-201622
-i386                   randconfig-x007-201622
-i386                   randconfig-x004-201622
-i386                   randconfig-x002-201622
+> dmesg  | grep e1000e
+> [    1.081798] e1000e: Intel(R) PRO/1000 Network Driver - 3.2.6-k
+> [    1.081800] e1000e: Copyright(c) 1999 - 2015 Intel Corporation.
+> [    1.082068] e1000e 0000:00:19.0: Interrupt Throttling Rate (ints/sec) set to dynamic conservative mode
+> [    2.106194] e1000e: probe of 0000:00:19.0 failed with error -3
 
-Thanks,
-Fengguang
+> Afterwards I've added some error output and changed some debugs into error prints in the e1000e and compiled my own kernel based on the latest vanilla version
+> (on a 14.04 Ubuntu SSD for speed reasons):
+
+> [ 7900.183212] e1000e 0000:00:19.0 0000:00:19.0 (uninitialized): Failed to acquire the semaphore, FW or HW has it: FWSM=0x60000040 EXTCNF_CTRL=0x002800c9)
+
+I've added some more debugging printout and I see that the EECD register contains 0x200 in the error case and 0x300 if everything is working.
+So either the NVM cannot be accessed or reading the signature failed.
+
+I've checked the GbE part of my SPI Flash and the Shared Init Control Word (word offset 0x13) in the first part has bits 15:14 set to 10, i.e. a valid signature.
+
+Are these two documents valid for my hardware?
+[1] http://www.intel.com/content/dam/doc/manual/i-o-controller-hub-8-9-10-82566-82567-82562v-software-dev-manual.pdf
+[2] http://www.intel.com/content/dam/doc/datasheet/82579-gbe-phy-datasheet-vol-2-1.pdf
+
+Regards,
+Joerg
