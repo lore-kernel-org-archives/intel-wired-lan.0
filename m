@@ -1,121 +1,62 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue,  7 Jun 2016 16:08:52 -0700
-Subject: [Intel-wired-lan] [PATCH v2 08/18] fm10k: split fm10k_reinit into
-	two functions
+Date: Tue,  7 Jun 2016 16:08:46 -0700
+Subject: [Intel-wired-lan] [PATCH v2 02/18] fm10k: Reset mailbox global
+	interrupts
 In-Reply-To: <20160607230902.5457-1-jacob.e.keller@intel.com>
 References: <20160607230902.5457-1-jacob.e.keller@intel.com>
-Message-ID: <20160607230902.5457-9-jacob.e.keller@intel.com>
+Message-ID: <20160607230902.5457-3-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-There are several flows in the driver which perform the similar function
-of tearing down software and restoring software to recover from certain
-errors or PCIe events, including:
+From: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
 
-  * fm10k_reinit
-  * fm10k_suspend/resume
-  * fm10k_io_error_detected/fm10k_io_resume
+When a data path reset is initiated, write control to the PCIE_GMBX is
+yanked from the switch manager. The switch manager writes to this
+register to clear mailbox global interrupt bits as part of its mailbox
+interrupt handling routine. When the device recovers from the data path
+reset and these bits are not cleared, it will prevent future mailbox
+global interrupts from being triggered. Upon confirming that the device
+has exited from a data path reset, clear these bits to ensure the proper
+functioning of the mailbox global interrupt.
 
-In addition, we want to implement a .reset_notify() handler as well
-which will also perform similar function.
-
-Rework how the driver codes reset and resume flows by separating out the
-reinit logic into two functions "fm10k_prepare_for_reset" and
-"fm10k_handle_reset". This first step will allow us to re-use this
-functionality in the similar blocks of code instead of re-coding the
-same sequence of events slightly different.
-
-The end result should be more maintainable and correct, fixing several
-inconsistencies with the work flow.
-
-The new functions expect to take the rtnl_lock() themselves, and it does
-have the unfortunate side effect of having the reinit flow take then
-release then take the rtnl_lock. However, this minor downside is
-outweighted by the benefits of code reduction and reducing needless
-difference between these flows.
-
+Signed-off-by: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 33 +++++++++++++++++++++++-----
- 1 file changed, 28 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_mbx.h | 2 ++
+ drivers/net/ethernet/intel/fm10k/fm10k_pf.c  | 4 ++++
+ 2 files changed, 6 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index 7c9b20c6b6c1..2963b41d01e2 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -136,11 +136,9 @@ static void fm10k_detach_subtask(struct fm10k_intfc *interface)
- 	rtnl_unlock();
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.h b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.h
+index b7dbc8a84c05..35c1dbad1330 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.h
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.h
+@@ -41,6 +41,8 @@ struct fm10k_mbx_info;
+ #define FM10K_MBX_ACK_INTERRUPT			0x00000010
+ #define FM10K_MBX_INTERRUPT_ENABLE		0x00000020
+ #define FM10K_MBX_INTERRUPT_DISABLE		0x00000040
++#define FM10K_MBX_GLOBAL_REQ_INTERRUPT		0x00000200
++#define FM10K_MBX_GLOBAL_ACK_INTERRUPT		0x00000400
+ #define FM10K_MBICR(_n)		((_n) + 0x18840)
+ #define FM10K_GMBX		0x18842
+ 
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+index dc75507c9926..69e2c822db00 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+@@ -77,6 +77,10 @@ static s32 fm10k_reset_hw_pf(struct fm10k_hw *hw)
+ 	if (!(reg & FM10K_IP_NOTINRESET))
+ 		err = FM10K_ERR_RESET_FAILED;
+ 
++	/* Reset mailbox global interrupts */
++	reg = FM10K_MBX_GLOBAL_REQ_INTERRUPT | FM10K_MBX_GLOBAL_ACK_INTERRUPT;
++	fm10k_write_reg(hw, FM10K_GMBX, reg);
++
+ out:
+ 	return err;
  }
- 
--static void fm10k_reinit(struct fm10k_intfc *interface)
-+static void fm10k_prepare_for_reset(struct fm10k_intfc *interface)
- {
- 	struct net_device *netdev = interface->netdev;
--	struct fm10k_hw *hw = &interface->hw;
--	int err;
- 
- 	WARN_ON(in_interrupt());
- 
-@@ -165,6 +163,17 @@ static void fm10k_reinit(struct fm10k_intfc *interface)
- 	/* delay any future reset requests */
- 	interface->last_reset = jiffies + (10 * HZ);
- 
-+	rtnl_unlock();
-+}
-+
-+static int fm10k_handle_reset(struct fm10k_intfc *interface)
-+{
-+	struct net_device *netdev = interface->netdev;
-+	struct fm10k_hw *hw = &interface->hw;
-+	int err;
-+
-+	rtnl_lock();
-+
- 	/* reset and initialize the hardware so it is in a known state */
- 	err = hw->mac.ops.reset_hw(hw);
- 	if (err) {
-@@ -185,7 +194,7 @@ static void fm10k_reinit(struct fm10k_intfc *interface)
- 		goto reinit_err;
- 	}
- 
--	/* reassociate interrupts */
-+	/* re-associate interrupts */
- 	err = fm10k_mbx_request_irq(interface);
- 	if (err)
- 		goto err_mbx_irq;
-@@ -219,7 +228,7 @@ static void fm10k_reinit(struct fm10k_intfc *interface)
- 
- 	clear_bit(__FM10K_RESETTING, &interface->state);
- 
--	return;
-+	return err;
- err_open:
- 	fm10k_mbx_free_irq(interface);
- err_mbx_irq:
-@@ -230,6 +239,20 @@ reinit_err:
- 	rtnl_unlock();
- 
- 	clear_bit(__FM10K_RESETTING, &interface->state);
-+
-+	return err;
-+}
-+
-+static void fm10k_reinit(struct fm10k_intfc *interface)
-+{
-+	int err;
-+
-+	fm10k_prepare_for_reset(interface);
-+
-+	err = fm10k_handle_reset(interface);
-+	if (err)
-+		dev_err(&interface->pdev->dev,
-+			"fm10k_handle_reset failed: %d\n", err);
- }
- 
- static void fm10k_reset_subtask(struct fm10k_intfc *interface)
 -- 
 2.9.0.rc1.405.g81f467e
 
