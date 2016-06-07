@@ -1,131 +1,121 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue,  7 Jun 2016 16:08:51 -0700
-Subject: [Intel-wired-lan] [PATCH v2 07/18] fm10k: wait for queues to drain
-	if stop_hw() fails once
+Date: Tue,  7 Jun 2016 16:08:52 -0700
+Subject: [Intel-wired-lan] [PATCH v2 08/18] fm10k: split fm10k_reinit into
+	two functions
 In-Reply-To: <20160607230902.5457-1-jacob.e.keller@intel.com>
 References: <20160607230902.5457-1-jacob.e.keller@intel.com>
-Message-ID: <20160607230902.5457-8-jacob.e.keller@intel.com>
+Message-ID: <20160607230902.5457-9-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-It turns out that sometimes during a reset the Tx queues will be
-temporarily stuck longer than .stop_hw() expects. Work around this issue
-by attempting to .stop_hw() first. If it tails, wait a number of
-attempts until the Tx queues appear to be drained. After this, attempt
-stop_hw() again. This ensures that we avoid waiting if we don't need to,
-such as during the first initialization of a VF, and give the proper
-amount of time necessary to recover from most situations. It is possible
-that the hardware is actually stuck. For PFs, this is usually fixed by
-a datapath reset. Unfortunately the VF cannot request a similar reset
-for itself.
+There are several flows in the driver which perform the similar function
+of tearing down software and restoring software to recover from certain
+errors or PCIe events, including:
+
+  * fm10k_reinit
+  * fm10k_suspend/resume
+  * fm10k_io_error_detected/fm10k_io_resume
+
+In addition, we want to implement a .reset_notify() handler as well
+which will also perform similar function.
+
+Rework how the driver codes reset and resume flows by separating out the
+reinit logic into two functions "fm10k_prepare_for_reset" and
+"fm10k_handle_reset". This first step will allow us to re-use this
+functionality in the similar blocks of code instead of re-coding the
+same sequence of events slightly different.
+
+The end result should be more maintainable and correct, fixing several
+inconsistencies with the work flow.
+
+The new functions expect to take the rtnl_lock() themselves, and it does
+have the unfortunate side effect of having the reinit flow take then
+release then take the rtnl_lock. However, this minor downside is
+outweighted by the benefits of code reduction and reducing needless
+difference between these flows.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k.h      |  1 +
- drivers/net/ethernet/intel/fm10k/fm10k_main.c |  2 +-
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c  | 44 +++++++++++++++++++++++----
- 3 files changed, 40 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 33 +++++++++++++++++++++++-----
+ 1 file changed, 28 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
-index c8d0817766bf..c4cf08dcf5af 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
-@@ -458,6 +458,7 @@ __be16 fm10k_tx_encap_offload(struct sk_buff *skb);
- netdev_tx_t fm10k_xmit_frame_ring(struct sk_buff *skb,
- 				  struct fm10k_ring *tx_ring);
- void fm10k_tx_timeout_reset(struct fm10k_intfc *interface);
-+u64 fm10k_get_tx_pending(struct fm10k_ring *ring);
- bool fm10k_check_tx_hang(struct fm10k_ring *tx_ring);
- void fm10k_alloc_rx_buffers(struct fm10k_ring *rx_ring, u16 cleaned_count);
- 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index c6a464551577..c85fc98945fa 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -1128,7 +1128,7 @@ static u64 fm10k_get_tx_completed(struct fm10k_ring *ring)
- 	return ring->stats.packets;
- }
- 
--static u64 fm10k_get_tx_pending(struct fm10k_ring *ring)
-+u64 fm10k_get_tx_pending(struct fm10k_ring *ring)
- {
- 	struct fm10k_intfc *interface = ring->q_vector->interface;
- 	struct fm10k_hw *hw = &interface->hw;
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index 4dfd1284a8de..7c9b20c6b6c1 100644
+index 7c9b20c6b6c1..2963b41d01e2 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -1613,7 +1613,7 @@ void fm10k_down(struct fm10k_intfc *interface)
+@@ -136,11 +136,9 @@ static void fm10k_detach_subtask(struct fm10k_intfc *interface)
+ 	rtnl_unlock();
+ }
+ 
+-static void fm10k_reinit(struct fm10k_intfc *interface)
++static void fm10k_prepare_for_reset(struct fm10k_intfc *interface)
  {
  	struct net_device *netdev = interface->netdev;
- 	struct fm10k_hw *hw = &interface->hw;
+-	struct fm10k_hw *hw = &interface->hw;
 -	int err;
-+	int err, i = 0, count = 0;
  
- 	/* signal that we are down to the interrupt handler and service task */
- 	if (test_and_set_bit(__FM10K_DOWN, &interface->state))
-@@ -1629,9 +1629,6 @@ void fm10k_down(struct fm10k_intfc *interface)
- 	/* reset Rx filters */
- 	fm10k_reset_rx_state(interface);
+ 	WARN_ON(in_interrupt());
  
--	/* allow 10ms for device to quiesce */
--	usleep_range(10000, 20000);
--
- 	/* disable polling routines */
- 	fm10k_napi_disable_all(interface);
+@@ -165,6 +163,17 @@ static void fm10k_reinit(struct fm10k_intfc *interface)
+ 	/* delay any future reset requests */
+ 	interface->last_reset = jiffies + (10 * HZ);
  
-@@ -1642,11 +1639,46 @@ void fm10k_down(struct fm10k_intfc *interface)
- 	while (test_and_set_bit(__FM10K_UPDATING_STATS, &interface->state))
- 		usleep_range(1000, 2000);
++	rtnl_unlock();
++}
++
++static int fm10k_handle_reset(struct fm10k_intfc *interface)
++{
++	struct net_device *netdev = interface->netdev;
++	struct fm10k_hw *hw = &interface->hw;
++	int err;
++
++	rtnl_lock();
++
+ 	/* reset and initialize the hardware so it is in a known state */
+ 	err = hw->mac.ops.reset_hw(hw);
+ 	if (err) {
+@@ -185,7 +194,7 @@ static void fm10k_reinit(struct fm10k_intfc *interface)
+ 		goto reinit_err;
+ 	}
  
-+	/* skip waiting for TX DMA if we lost PCIe link */
-+	if (FM10K_REMOVED(hw->hw_addr))
-+		goto skip_tx_dma_drain;
+-	/* reassociate interrupts */
++	/* re-associate interrupts */
+ 	err = fm10k_mbx_request_irq(interface);
+ 	if (err)
+ 		goto err_mbx_irq;
+@@ -219,7 +228,7 @@ static void fm10k_reinit(struct fm10k_intfc *interface)
+ 
+ 	clear_bit(__FM10K_RESETTING, &interface->state);
+ 
+-	return;
++	return err;
+ err_open:
+ 	fm10k_mbx_free_irq(interface);
+ err_mbx_irq:
+@@ -230,6 +239,20 @@ reinit_err:
+ 	rtnl_unlock();
+ 
+ 	clear_bit(__FM10K_RESETTING, &interface->state);
 +
-+	/* In some rare circumstances it can take a while for Tx queues to
-+	 * quiesce and be fully disabled. Attempt to .stop_hw() first, and
-+	 * then if we get ERR_REQUESTS_PENDING, go ahead and wait in a loop
-+	 * until the Tx queues have emptied, or until a number of retries. If
-+	 * we fail to clear within the retry loop, we will issue a warning
-+	 * indicating that Tx DMA is probably hung. Note this means we call
-+	 * .stop_hw() twice but this shouldn't cause any problems.
-+	 */
-+	err = hw->mac.ops.stop_hw(hw);
-+	if (err != FM10K_ERR_REQUESTS_PENDING)
-+		goto skip_tx_dma_drain;
++	return err;
++}
 +
-+#define TX_DMA_DRAIN_RETRIES 25
-+	for (count = 0; count < TX_DMA_DRAIN_RETRIES; count++) {
-+		usleep_range(10000, 20000);
++static void fm10k_reinit(struct fm10k_intfc *interface)
++{
++	int err;
 +
-+		/* start checking@the last ring to have pending Tx */
-+		for (; i < interface->num_tx_queues; i++)
-+			if (fm10k_get_tx_pending(interface->tx_ring[i]))
-+				break;
++	fm10k_prepare_for_reset(interface);
 +
-+		/* if all the queues are drained, we can break now */
-+		if (i == interface->num_tx_queues)
-+			break;
-+	}
-+
-+	if (count >= TX_DMA_DRAIN_RETRIES)
++	err = fm10k_handle_reset(interface);
++	if (err)
 +		dev_err(&interface->pdev->dev,
-+			"Tx queues failed to drain after %d tries. Tx DMA is probably hung.\n",
-+			count);
-+skip_tx_dma_drain:
- 	/* Disable DMA engine for Tx/Rx */
- 	err = hw->mac.ops.stop_hw(hw);
- 	if (err == FM10K_ERR_REQUESTS_PENDING)
--		dev_info(&interface->pdev->dev,
--			 "due to pending requests hw was not shut down gracefully\n");
-+		dev_err(&interface->pdev->dev,
-+			"due to pending requests hw was not shut down gracefully\n");
- 	else if (err)
- 		dev_err(&interface->pdev->dev, "stop_hw failed: %d\n", err);
++			"fm10k_handle_reset failed: %d\n", err);
+ }
  
+ static void fm10k_reset_subtask(struct fm10k_intfc *interface)
 -- 
 2.9.0.rc1.405.g81f467e
 
