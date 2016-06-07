@@ -1,78 +1,113 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue,  7 Jun 2016 16:08:55 -0700
-Subject: [Intel-wired-lan] [PATCH v2 11/18] fm10k: implement reset_notify
-	handler for PCIe FLR events
+Date: Tue,  7 Jun 2016 16:08:59 -0700
+Subject: [Intel-wired-lan] [PATCH v2 15/18] fm10k: implement
+	request_lport_map pointer
 In-Reply-To: <20160607230902.5457-1-jacob.e.keller@intel.com>
 References: <20160607230902.5457-1-jacob.e.keller@intel.com>
-Message-ID: <20160607230902.5457-12-jacob.e.keller@intel.com>
+Message-ID: <20160607230902.5457-16-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When a function level PCI reset is triggered using sysfs, it calls the
-driver's .reset_notify error handler. Implement a handler based on the
-now split fm10k_prepare_for_reset and fm10k_handle_reset functions, so
-that we fully reset the driver when the PCI function level reset occurs.
-This also ensures the reset is handled in a clean way by first disabling
-all the driver bits first and then restoring them after the function
-reset. Previously the stack simply performed a blind function reset and
-our driver didn't take any part in the process.
+If the fm10k interface is brought up, but the switch manager software is
+not running, the driver will continuously request the lport map every
+few seconds in the base driver watchdog routine. Eventually after
+several minutes the switch mailbox Tx fifo will fill up and the mailbox
+will timeout, resulting in a reset. This reset will appear as if for no
+reason, and occurs regularly every few minutes until the switch manager
+software is loaded.
+
+Prevent this from happening by only requesting the lport map after we've
+verified the switch mailbox is tx_ready. In order to simplify code logic
+and reduce code duplication, implement this as a new function pointer
+"mac.ops.request_lport_map" which the VF will not implement. Otherwise,
+we have to duplicate the tx_ready check outside of
+fm10k_get_host_state_generic, or re-implement most of
+fm10k_get_host_state_generic in the pf version.
+
+The resulting code is simpler and easier to understand, and prevents the
+PF from continuously requesting lport map and filling the Tx fifo of
+a switch mailbox that isn't ready.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 33 ++++++++++++++++++++++++++++
- 1 file changed, 33 insertions(+)
+ drivers/net/ethernet/intel/fm10k/fm10k_common.c |  6 +++++-
+ drivers/net/ethernet/intel/fm10k/fm10k_pf.c     | 15 +++------------
+ drivers/net/ethernet/intel/fm10k/fm10k_type.h   |  1 +
+ 3 files changed, 9 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index 716a5c852143..c60c3b0f89e9 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -2373,10 +2373,43 @@ static void fm10k_io_resume(struct pci_dev *pdev)
- 		netif_device_attach(netdev);
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_common.c b/drivers/net/ethernet/intel/fm10k/fm10k_common.c
+index 5bbf19cfe29b..d6baaea8bc7c 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_common.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_common.c
+@@ -519,8 +519,12 @@ s32 fm10k_get_host_state_generic(struct fm10k_hw *hw, bool *host_ready)
+ 		goto out;
+ 
+ 	/* interface cannot receive traffic without logical ports */
+-	if (mac->dglort_map == FM10K_DGLORTMAP_NONE)
++	if (mac->dglort_map == FM10K_DGLORTMAP_NONE) {
++		if (hw->mac.ops.request_lport_map)
++			ret_val = hw->mac.ops.request_lport_map(hw);
++
+ 		goto out;
++	}
+ 
+ 	/* if we passed all the tests above then the switch is ready and we no
+ 	 * longer need to check for link
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+index 23f3566b17fc..682299dd0ce4 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
+@@ -1622,25 +1622,15 @@ static s32 fm10k_request_lport_map_pf(struct fm10k_hw *hw)
+  **/
+ static s32 fm10k_get_host_state_pf(struct fm10k_hw *hw, bool *switch_ready)
+ {
+-	s32 ret_val = 0;
+ 	u32 dma_ctrl2;
+ 
+ 	/* verify the switch is ready for interaction */
+ 	dma_ctrl2 = fm10k_read_reg(hw, FM10K_DMA_CTRL2);
+ 	if (!(dma_ctrl2 & FM10K_DMA_CTRL2_SWITCH_READY))
+-		goto out;
++		return 0;
+ 
+ 	/* retrieve generic host state info */
+-	ret_val = fm10k_get_host_state_generic(hw, switch_ready);
+-	if (ret_val)
+-		goto out;
+-
+-	/* interface cannot receive traffic without logical ports */
+-	if (hw->mac.dglort_map == FM10K_DGLORTMAP_NONE)
+-		ret_val = fm10k_request_lport_map_pf(hw);
+-
+-out:
+-	return ret_val;
++	return fm10k_get_host_state_generic(hw, switch_ready);
  }
  
-+/**
-+ * fm10k_io_reset_notify - called when PCI function is reset
-+ * @pdev: Pointer to PCI device
-+ *
-+ * This callback is called when the PCI function is reset such as from
-+ * /sys/class/net/<enpX>/device/reset or similar. When prepare is true, it
-+ * means we should prepare for a function reset. If prepare is false, it means
-+ * the function reset just occurred.
-+ */
-+static void fm10k_io_reset_notify(struct pci_dev *pdev, bool prepare)
-+{
-+	struct fm10k_intfc *interface = pci_get_drvdata(pdev);
-+	int err = 0;
-+
-+	if (prepare) {
-+		/* warn incase we have any active VF devices */
-+		if (pci_num_vf(pdev))
-+			dev_warn(&pdev->dev,
-+				 "PCIe FLR may cause issues for any active VF devices\n");
-+
-+		fm10k_prepare_suspend(interface);
-+	} else {
-+		err = fm10k_handle_resume(interface);
-+	}
-+
-+	if (err) {
-+		dev_warn(&pdev->dev,
-+			 "fm10k_io_reset_notify failed: %d\n", err);
-+		netif_device_detach(interface->netdev);
-+	}
-+}
-+
- static const struct pci_error_handlers fm10k_err_handler = {
- 	.error_detected = fm10k_io_error_detected,
- 	.slot_reset = fm10k_io_slot_reset,
- 	.resume = fm10k_io_resume,
-+	.reset_notify = fm10k_io_reset_notify,
+ /* This structure defines the attibutes to be parsed below */
+@@ -1816,6 +1806,7 @@ static const struct fm10k_mac_ops mac_ops_pf = {
+ 	.set_dma_mask		= fm10k_set_dma_mask_pf,
+ 	.get_fault		= fm10k_get_fault_pf,
+ 	.get_host_state		= fm10k_get_host_state_pf,
++	.request_lport_map	= fm10k_request_lport_map_pf,
  };
  
- static struct pci_driver fm10k_driver = {
+ static const struct fm10k_iov_ops iov_ops_pf = {
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_type.h b/drivers/net/ethernet/intel/fm10k/fm10k_type.h
+index 1d65ad85d72e..f4e75c498287 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_type.h
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_type.h
+@@ -526,6 +526,7 @@ struct fm10k_mac_ops {
+ 	s32 (*stop_hw)(struct fm10k_hw *);
+ 	s32 (*get_bus_info)(struct fm10k_hw *);
+ 	s32 (*get_host_state)(struct fm10k_hw *, bool *);
++	s32 (*request_lport_map)(struct fm10k_hw *);
+ 	s32 (*update_vlan)(struct fm10k_hw *, u32, u8, bool);
+ 	s32 (*read_mac_addr)(struct fm10k_hw *);
+ 	s32 (*update_uc_addr)(struct fm10k_hw *, u16, const u8 *,
 -- 
 2.9.0.rc1.405.g81f467e
 
