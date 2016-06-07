@@ -1,65 +1,102 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue,  7 Jun 2016 16:08:44 -0700
-Subject: [Intel-wired-lan] [PATCH v2 00/18] fm10k fixes for suspend/resume
-	and related
-Message-ID: <20160607230902.5457-1-jacob.e.keller@intel.com>
+Date: Tue,  7 Jun 2016 16:08:45 -0700
+Subject: [Intel-wired-lan] [PATCH v2 01/18] fm10k: prevent multiple threads
+	updating statistics
+In-Reply-To: <20160607230902.5457-1-jacob.e.keller@intel.com>
+References: <20160607230902.5457-1-jacob.e.keller@intel.com>
+Message-ID: <20160607230902.5457-2-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This series implements several fixes for suspend/resume and related
-behaviors for both PF and VF driver. The major changes are to commonize
-the suspend/resume, io_error_detected, reset_notify and reinit flows to
-use one set of functions. This ensures that all flows set the same
-state, preventing multiple flows from interacting together. In addition
-it ensures that each flow does every step that it needs. This was
-previously overlooked because each flow was coded separately.
+Also prevent updating stats while the interface is down. If we're
+already updating stats, just return doing nothing. When we take the
+device down, block stat updates until we come back up. This ensures that
+we avoid tearing down rings when we're updating statistics, and prevents
+updating statistics until we're up.
 
-In addition, there are several bug fixes scattered around the series for
-issues that came up when testing the changes and the bugs that these
-changes fix.
+We can't re-use the __FM10K_DOWN for this because it wouldn't prevent
+multiple threads from accessing statistics. Neither does it prevent the
+case where we start updating stats and then start going down in another
+thread.
 
-Changes in V2:
-* This series does not include the 2 patches Jeff already applied on the
-  queue, which are the first two patches of the v1 series
-* Added 2 new patches to fix a few issues found in testing
+The fm10k_get_stats64 is except from this, because it has a completely
+different flow which does not suffer from the same issues as
+fm10k_update_stats might.
 
-Jacob Keller (17):
-  fm10k: prevent multiple threads updating statistics
-  fm10k: don't stop reset due to FM10K_ERR_REQUESTS_PENDING
-  fm10k: perform data path reset even when switch is not ready
-  fm10k: use actual hardware registers when checking for pending Tx
-  fm10k: only warn when stop_hw fails with FM10K_ERR_REQUESTS_PENDING
-  fm10k: wait for queues to drain if stop_hw() fails once
-  fm10k: split fm10k_reinit into two functions
-  fm10k: implement prepare_suspend and handle_resume
-  fm10k: use common reset flow when handling io errors from PCI stack
-  fm10k: implement reset_notify handler for PCIe FLR events
-  fm10k: use common flow for suspend and resume
-  fm10k: enable bus master after every reset
-  fm10k: check if PCIe link is restored
-  fm10k: implement request_lport_map pointer
-  fm10k: force link to remain down for at least a second on resume
-    events
-  fm10k: return proper error code when pci_enable_msix_range fails
-  fm10k: bump version number
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ drivers/net/ethernet/intel/fm10k/fm10k.h     |  1 +
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 14 ++++++++++++++
+ 2 files changed, 15 insertions(+)
 
-Ngai-Mint Kwan (1):
-  fm10k: Reset mailbox global interrupts
-
- drivers/net/ethernet/intel/fm10k/fm10k.h         |   2 +
- drivers/net/ethernet/intel/fm10k/fm10k_common.c  |   6 +-
- drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c |   2 +
- drivers/net/ethernet/intel/fm10k/fm10k_main.c    |  14 +-
- drivers/net/ethernet/intel/fm10k/fm10k_mbx.h     |   2 +
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c     | 309 +++++++++++++----------
- drivers/net/ethernet/intel/fm10k/fm10k_pf.c      |  38 ++-
- drivers/net/ethernet/intel/fm10k/fm10k_type.h    |   2 +
- drivers/net/ethernet/intel/fm10k/fm10k_vf.c      |  12 +-
- 9 files changed, 223 insertions(+), 164 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
+index e98b86bf0ca1..c8d0817766bf 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k.h
++++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
+@@ -362,6 +362,7 @@ enum fm10k_state_t {
+ 	__FM10K_SERVICE_DISABLE,
+ 	__FM10K_MBX_LOCK,
+ 	__FM10K_LINK_DOWN,
++	__FM10K_UPDATING_STATS,
+ };
+ 
+ static inline void fm10k_mbx_lock(struct fm10k_intfc *interface)
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index be0b7dea6e72..44393763fe77 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -372,6 +372,10 @@ void fm10k_update_stats(struct fm10k_intfc *interface)
+ 	u64 bytes, pkts;
+ 	int i;
+ 
++	/* ensure only one thread updates stats at a time */
++	if (test_and_set_bit(__FM10K_UPDATING_STATS, &interface->state))
++		return;
++
+ 	/* do not allow stats update via service task for next second */
+ 	interface->next_stats_update = jiffies + HZ;
+ 
+@@ -449,6 +453,8 @@ void fm10k_update_stats(struct fm10k_intfc *interface)
+ 	/* Fill out the OS statistics structure */
+ 	net_stats->rx_errors = rx_errors;
+ 	net_stats->rx_dropped = interface->stats.nodesc_drop.count;
++
++	clear_bit(__FM10K_UPDATING_STATS, &interface->state);
+ }
+ 
+ /**
+@@ -1572,6 +1578,9 @@ void fm10k_up(struct fm10k_intfc *interface)
+ 	/* configure interrupts */
+ 	hw->mac.ops.update_int_moderator(hw);
+ 
++	/* enable statistics capture again */
++	clear_bit(__FM10K_UPDATING_STATS, &interface->state);
++
+ 	/* clear down bit to indicate we are ready to go */
+ 	clear_bit(__FM10K_DOWN, &interface->state);
+ 
+@@ -1629,6 +1638,10 @@ void fm10k_down(struct fm10k_intfc *interface)
+ 	/* capture stats one last time before stopping interface */
+ 	fm10k_update_stats(interface);
+ 
++	/* prevent updating statistics while we're down */
++	while (test_and_set_bit(__FM10K_UPDATING_STATS, &interface->state))
++		usleep_range(1000, 2000);
++
+ 	/* Disable DMA engine for Tx/Rx */
+ 	err = hw->mac.ops.stop_hw(hw);
+ 	if (err)
+@@ -1757,6 +1770,7 @@ static int fm10k_sw_init(struct fm10k_intfc *interface,
+ 
+ 	/* Start off interface as being down */
+ 	set_bit(__FM10K_DOWN, &interface->state);
++	set_bit(__FM10K_UPDATING_STATS, &interface->state);
+ 
+ 	return 0;
+ }
 -- 
 2.9.0.rc1.405.g81f467e
 
