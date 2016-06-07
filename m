@@ -1,81 +1,40 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue,  7 Jun 2016 16:08:53 -0700
-Subject: [Intel-wired-lan] [PATCH v2 09/18] fm10k: implement prepare_suspend
-	and handle_resume
+Date: Tue,  7 Jun 2016 16:09:00 -0700
+Subject: [Intel-wired-lan] [PATCH v2 16/18] fm10k: force link to remain down
+	for at least a second on resume events
 In-Reply-To: <20160607230902.5457-1-jacob.e.keller@intel.com>
 References: <20160607230902.5457-1-jacob.e.keller@intel.com>
-Message-ID: <20160607230902.5457-10-jacob.e.keller@intel.com>
+Message-ID: <20160607230902.5457-17-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Implement fm10k_prepare_suspend and fm10k_handle_resume functions which
-abstract around the now existing fm10k_prepare_for_reset and
-fm10k_handle_reset. The new functions also handle stopping the service
-task, which is something that the original re-init flow does not need.
-
-Every other location that does a suspend/resume type flow is expected to
-use these functions, because otherwise they may have conflicts with the
-running watchdog routines. This also has the effect of preventing
-possible surprise remove events during handling of FLR events and PCIe
-errors.
+When we resume from an AER recovery with many active VFs, the PF sees
+many spurious link up and link down events. Prevent this by delaying
+link down for at least one second after the resume event.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 38 ++++++++++++++++++++++++++++
- 1 file changed, 38 insertions(+)
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
 diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index 2963b41d01e2..a6ee046e9824 100644
+index d4ccb2a0c585..b8245c734c96 100644
 --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
 +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -2112,6 +2112,44 @@ static void fm10k_remove(struct pci_dev *pdev)
- 	pci_disable_device(pdev);
- }
+@@ -2158,6 +2158,10 @@ static int fm10k_handle_resume(struct fm10k_intfc *interface)
+ 	interface->host_ready = false;
+ 	fm10k_watchdog_host_not_ready(interface);
  
-+static void fm10k_prepare_suspend(struct fm10k_intfc *interface)
-+{
-+	/* the watchdog task reads from registers, which might appear like
-+	 * a surprise remove if the PCIe device is disabled while we're
-+	 * stopped. We stop the watchdog task until after we resume software
-+	 * activity.
-+	 */
-+	set_bit(__FM10K_SERVICE_DISABLE, &interface->state);
-+	cancel_work_sync(&interface->service_task);
++	/* force link to stay down for a second to prevent link flutter */
++	interface->link_down_event = jiffies + (HZ);
++	set_bit(__FM10K_LINK_DOWN, &interface->state);
 +
-+	fm10k_prepare_for_reset(interface);
-+}
-+
-+static int fm10k_handle_resume(struct fm10k_intfc *interface)
-+{
-+	struct fm10k_hw *hw = &interface->hw;
-+	int err;
-+
-+	/* reset statistics starting values */
-+	hw->mac.ops.rebind_hw_stats(hw, &interface->stats);
-+
-+	err = fm10k_handle_reset(interface);
-+	if (err)
-+		return err;
-+
-+	/* assume host is not ready, to prevent race with watchdog in case we
-+	 * actually don't have connection to the switch
-+	 */
-+	interface->host_ready = false;
-+	fm10k_watchdog_host_not_ready(interface);
-+
-+	/* clear the service task disable bit to allow service task to start */
-+	clear_bit(__FM10K_SERVICE_DISABLE, &interface->state);
-+	fm10k_service_event_schedule(interface);
-+
-+	return err;
-+}
-+
- #ifdef CONFIG_PM
- /**
-  * fm10k_resume - Restore device to pre-sleep state
+ 	/* clear the service task disable bit to allow service task to start */
+ 	clear_bit(__FM10K_SERVICE_DISABLE, &interface->state);
+ 	fm10k_service_event_schedule(interface);
 -- 
 2.9.0.rc1.405.g81f467e
 
