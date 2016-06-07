@@ -1,62 +1,81 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue,  7 Jun 2016 16:08:46 -0700
-Subject: [Intel-wired-lan] [PATCH v2 02/18] fm10k: Reset mailbox global
-	interrupts
+Date: Tue,  7 Jun 2016 16:08:53 -0700
+Subject: [Intel-wired-lan] [PATCH v2 09/18] fm10k: implement prepare_suspend
+	and handle_resume
 In-Reply-To: <20160607230902.5457-1-jacob.e.keller@intel.com>
 References: <20160607230902.5457-1-jacob.e.keller@intel.com>
-Message-ID: <20160607230902.5457-3-jacob.e.keller@intel.com>
+Message-ID: <20160607230902.5457-10-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
+Implement fm10k_prepare_suspend and fm10k_handle_resume functions which
+abstract around the now existing fm10k_prepare_for_reset and
+fm10k_handle_reset. The new functions also handle stopping the service
+task, which is something that the original re-init flow does not need.
 
-When a data path reset is initiated, write control to the PCIE_GMBX is
-yanked from the switch manager. The switch manager writes to this
-register to clear mailbox global interrupt bits as part of its mailbox
-interrupt handling routine. When the device recovers from the data path
-reset and these bits are not cleared, it will prevent future mailbox
-global interrupts from being triggered. Upon confirming that the device
-has exited from a data path reset, clear these bits to ensure the proper
-functioning of the mailbox global interrupt.
+Every other location that does a suspend/resume type flow is expected to
+use these functions, because otherwise they may have conflicts with the
+running watchdog routines. This also has the effect of preventing
+possible surprise remove events during handling of FLR events and PCIe
+errors.
 
-Signed-off-by: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_mbx.h | 2 ++
- drivers/net/ethernet/intel/fm10k/fm10k_pf.c  | 4 ++++
- 2 files changed, 6 insertions(+)
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 38 ++++++++++++++++++++++++++++
+ 1 file changed, 38 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.h b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.h
-index b7dbc8a84c05..35c1dbad1330 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_mbx.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_mbx.h
-@@ -41,6 +41,8 @@ struct fm10k_mbx_info;
- #define FM10K_MBX_ACK_INTERRUPT			0x00000010
- #define FM10K_MBX_INTERRUPT_ENABLE		0x00000020
- #define FM10K_MBX_INTERRUPT_DISABLE		0x00000040
-+#define FM10K_MBX_GLOBAL_REQ_INTERRUPT		0x00000200
-+#define FM10K_MBX_GLOBAL_ACK_INTERRUPT		0x00000400
- #define FM10K_MBICR(_n)		((_n) + 0x18840)
- #define FM10K_GMBX		0x18842
- 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-index dc75507c9926..69e2c822db00 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-@@ -77,6 +77,10 @@ static s32 fm10k_reset_hw_pf(struct fm10k_hw *hw)
- 	if (!(reg & FM10K_IP_NOTINRESET))
- 		err = FM10K_ERR_RESET_FAILED;
- 
-+	/* Reset mailbox global interrupts */
-+	reg = FM10K_MBX_GLOBAL_REQ_INTERRUPT | FM10K_MBX_GLOBAL_ACK_INTERRUPT;
-+	fm10k_write_reg(hw, FM10K_GMBX, reg);
-+
- out:
- 	return err;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index 2963b41d01e2..a6ee046e9824 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -2112,6 +2112,44 @@ static void fm10k_remove(struct pci_dev *pdev)
+ 	pci_disable_device(pdev);
  }
+ 
++static void fm10k_prepare_suspend(struct fm10k_intfc *interface)
++{
++	/* the watchdog task reads from registers, which might appear like
++	 * a surprise remove if the PCIe device is disabled while we're
++	 * stopped. We stop the watchdog task until after we resume software
++	 * activity.
++	 */
++	set_bit(__FM10K_SERVICE_DISABLE, &interface->state);
++	cancel_work_sync(&interface->service_task);
++
++	fm10k_prepare_for_reset(interface);
++}
++
++static int fm10k_handle_resume(struct fm10k_intfc *interface)
++{
++	struct fm10k_hw *hw = &interface->hw;
++	int err;
++
++	/* reset statistics starting values */
++	hw->mac.ops.rebind_hw_stats(hw, &interface->stats);
++
++	err = fm10k_handle_reset(interface);
++	if (err)
++		return err;
++
++	/* assume host is not ready, to prevent race with watchdog in case we
++	 * actually don't have connection to the switch
++	 */
++	interface->host_ready = false;
++	fm10k_watchdog_host_not_ready(interface);
++
++	/* clear the service task disable bit to allow service task to start */
++	clear_bit(__FM10K_SERVICE_DISABLE, &interface->state);
++	fm10k_service_event_schedule(interface);
++
++	return err;
++}
++
+ #ifdef CONFIG_PM
+ /**
+  * fm10k_resume - Restore device to pre-sleep state
 -- 
 2.9.0.rc1.405.g81f467e
 
