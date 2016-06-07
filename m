@@ -1,33 +1,78 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue,  7 Jun 2016 16:09:02 -0700
-Subject: [Intel-wired-lan] [PATCH v2 18/18] fm10k: bump version number
+Date: Tue,  7 Jun 2016 16:08:55 -0700
+Subject: [Intel-wired-lan] [PATCH v2 11/18] fm10k: implement reset_notify
+	handler for PCIe FLR events
 In-Reply-To: <20160607230902.5457-1-jacob.e.keller@intel.com>
 References: <20160607230902.5457-1-jacob.e.keller@intel.com>
-Message-ID: <20160607230902.5457-19-jacob.e.keller@intel.com>
+Message-ID: <20160607230902.5457-12-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+When a function level PCI reset is triggered using sysfs, it calls the
+driver's .reset_notify error handler. Implement a handler based on the
+now split fm10k_prepare_for_reset and fm10k_handle_reset functions, so
+that we fully reset the driver when the PCI function level reset occurs.
+This also ensures the reset is handled in a clean way by first disabling
+all the driver bits first and then restoring them after the function
+reset. Previously the stack simply performed a blind function reset and
+our driver didn't take any part in the process.
+
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
- drivers/net/ethernet/intel/fm10k/fm10k_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 33 ++++++++++++++++++++++++++++
+ 1 file changed, 33 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index f72d1cae10ff..e9767b6366a8 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -28,7 +28,7 @@
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index 716a5c852143..c60c3b0f89e9 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -2373,10 +2373,43 @@ static void fm10k_io_resume(struct pci_dev *pdev)
+ 		netif_device_attach(netdev);
+ }
  
- #include "fm10k.h"
++/**
++ * fm10k_io_reset_notify - called when PCI function is reset
++ * @pdev: Pointer to PCI device
++ *
++ * This callback is called when the PCI function is reset such as from
++ * /sys/class/net/<enpX>/device/reset or similar. When prepare is true, it
++ * means we should prepare for a function reset. If prepare is false, it means
++ * the function reset just occurred.
++ */
++static void fm10k_io_reset_notify(struct pci_dev *pdev, bool prepare)
++{
++	struct fm10k_intfc *interface = pci_get_drvdata(pdev);
++	int err = 0;
++
++	if (prepare) {
++		/* warn incase we have any active VF devices */
++		if (pci_num_vf(pdev))
++			dev_warn(&pdev->dev,
++				 "PCIe FLR may cause issues for any active VF devices\n");
++
++		fm10k_prepare_suspend(interface);
++	} else {
++		err = fm10k_handle_resume(interface);
++	}
++
++	if (err) {
++		dev_warn(&pdev->dev,
++			 "fm10k_io_reset_notify failed: %d\n", err);
++		netif_device_detach(interface->netdev);
++	}
++}
++
+ static const struct pci_error_handlers fm10k_err_handler = {
+ 	.error_detected = fm10k_io_error_detected,
+ 	.slot_reset = fm10k_io_slot_reset,
+ 	.resume = fm10k_io_resume,
++	.reset_notify = fm10k_io_reset_notify,
+ };
  
--#define DRV_VERSION	"0.19.3-k"
-+#define DRV_VERSION	"0.21.2-k"
- #define DRV_SUMMARY	"Intel(R) Ethernet Switch Host Interface Driver"
- const char fm10k_driver_version[] = DRV_VERSION;
- char fm10k_driver_name[] = "fm10k";
+ static struct pci_driver fm10k_driver = {
 -- 
 2.9.0.rc1.405.g81f467e
 
