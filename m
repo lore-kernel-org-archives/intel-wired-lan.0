@@ -1,34 +1,77 @@
-From: Donald C Skidmore <donald.c.skidmore@intel.com>
-Date: Mon,  6 Jun 2016 20:23:24 -0400
-Subject: [Intel-wired-lan] [PATCH] ixgbevf: bump version number
-Message-ID: <1465259004-21242-1-git-send-email-donald.c.skidmore@intel.com>
+From: Johannes Thumshirn <jthumshirn@suse.de>
+Date: Tue,  7 Jun 2016 09:44:06 +0200
+Subject: [Intel-wired-lan] [PATCH v3 6/6] alx: Use
+	pci_(request|release)_mem_regions
+In-Reply-To: <cover.1465200424.git.jthumshirn@suse.de>
+References: <cover.1465200424.git.jthumshirn@suse.de>
+Message-ID: <996820d5a84063fa20d3d7d7cc1760f18eedf694.1465200425.git.jthumshirn@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Bump the version number to more closely match the function included
-in the driver.
+Now that we do have pci_request_mem_regions() and pci_release_mem_regions() at
+hand, use it in the ethernet drivers.
 
-Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
+Suggested-by: Christoph Hellwig <hch@infradead.org>
+Signed-off-by: Johannes Thumshirn <jthumshirn@suse.de>
+Cc: Jay Cliburn <jcliburn@gmail.com>
+Cc: Chris Snook <chris.snook@gmail.com>
+Cc: David S. Miller <davem@davemloft.net>
+Cc: netdev at vger.kernel.org
+Cc: linux-kernel at vger.kernel.org
+Cc: intel-wired-lan at lists.osuosl.org
 ---
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/atheros/alx/main.c | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index acc2401..a1c83c1 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -56,7 +56,7 @@ const char ixgbevf_driver_name[] = "ixgbevf";
- static const char ixgbevf_driver_string[] =
- 	"Intel(R) 10 Gigabit PCI Express Virtual Function Network Driver";
+diff --git a/drivers/net/ethernet/atheros/alx/main.c b/drivers/net/ethernet/atheros/alx/main.c
+index 55b118e..d2363de 100644
+--- a/drivers/net/ethernet/atheros/alx/main.c
++++ b/drivers/net/ethernet/atheros/alx/main.c
+@@ -1238,7 +1238,7 @@ static int alx_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	struct alx_priv *alx;
+ 	struct alx_hw *hw;
+ 	bool phy_configured;
+-	int bars, err;
++	int err;
  
--#define DRV_VERSION "2.12.1-k"
-+#define DRV_VERSION "3.2.2-k"
- const char ixgbevf_driver_version[] = DRV_VERSION;
- static char ixgbevf_copyright[] =
- 	"Copyright (c) 2009 - 2015 Intel Corporation.";
+ 	err = pci_enable_device_mem(pdev);
+ 	if (err)
+@@ -1258,11 +1258,10 @@ static int alx_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		}
+ 	}
+ 
+-	bars = pci_select_bars(pdev, IORESOURCE_MEM);
+-	err = pci_request_selected_regions(pdev, bars, alx_drv_name);
++	err = pci_request_mem_regions(pdev, alx_drv_name);
+ 	if (err) {
+ 		dev_err(&pdev->dev,
+-			"pci_request_selected_regions failed(bars:%d)\n", bars);
++			"pci_request_mem_regions failed\n");
+ 		goto out_pci_disable;
+ 	}
+ 
+@@ -1388,7 +1387,7 @@ out_unmap:
+ out_free_netdev:
+ 	free_netdev(netdev);
+ out_pci_release:
+-	pci_release_selected_regions(pdev, bars);
++	pci_release_mem_regions(pdev);
+ out_pci_disable:
+ 	pci_disable_device(pdev);
+ 	return err;
+@@ -1407,8 +1406,7 @@ static void alx_remove(struct pci_dev *pdev)
+ 
+ 	unregister_netdev(alx->dev);
+ 	iounmap(hw->hw_addr);
+-	pci_release_selected_regions(pdev,
+-				     pci_select_bars(pdev, IORESOURCE_MEM));
++	pci_release_mem_regions(pdev);
+ 
+ 	pci_disable_pcie_error_reporting(pdev);
+ 	pci_disable_device(pdev);
 -- 
-2.4.3
+1.8.5.6
 
