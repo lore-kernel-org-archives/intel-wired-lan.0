@@ -1,52 +1,65 @@
-From: Usha Ketineni <usha.k.ketineni@intel.com>
-Date: Tue, 07 Jun 2016 09:14:55 -0700
-Subject: [Intel-wired-lan] [PATCH] i40e: Don't notify client(s) for DCB
-	changes on all VSIs
-Message-ID: <20160607161455.4203.31219.stgit@ukketine.jf.intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Tue,  7 Jun 2016 16:08:44 -0700
+Subject: [Intel-wired-lan] [PATCH v2 00/18] fm10k fixes for suspend/resume
+	and related
+Message-ID: <20160607230902.5457-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Neerav Parikh <neerav.parikh@intel.com>
+This series implements several fixes for suspend/resume and related
+behaviors for both PF and VF driver. The major changes are to commonize
+the suspend/resume, io_error_detected, reset_notify and reinit flows to
+use one set of functions. This ensures that all flows set the same
+state, preventing multiple flows from interacting together. In addition
+it ensures that each flow does every step that it needs. This was
+previously overlooked because each flow was coded separately.
 
-When LLDP/DCBX change happens the i40e driver code flow tried to
-notify the client(s) for each of the PF VSIs. This resulted into
-kernel panic on the first VSI that didn't have any netdev
-associated to it.
+In addition, there are several bug fixes scattered around the series for
+issues that came up when testing the changes and the bugs that these
+changes fix.
 
-The DCB change notification to the client(s) should be done only
-once for the PF/LAN VSI where the client(s) instances have been
-added to. Also, move the notification call after the PF driver has
-made changes related to the updated DCB configuration.
+Changes in V2:
+* This series does not include the 2 patches Jeff already applied on the
+  queue, which are the first two patches of the v1 series
+* Added 2 new patches to fix a few issues found in testing
 
-Signed-off-by: Neerav Parikh <neerav.parikh@intel.com>
-Signed-off-by: Usha Ketineni <usha.k.ketineni@intel.com>
-Tested-by: Ronald J Bynoe <ronald.j.bynoe@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_main.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Jacob Keller (17):
+  fm10k: prevent multiple threads updating statistics
+  fm10k: don't stop reset due to FM10K_ERR_REQUESTS_PENDING
+  fm10k: perform data path reset even when switch is not ready
+  fm10k: use actual hardware registers when checking for pending Tx
+  fm10k: only warn when stop_hw fails with FM10K_ERR_REQUESTS_PENDING
+  fm10k: wait for queues to drain if stop_hw() fails once
+  fm10k: split fm10k_reinit into two functions
+  fm10k: implement prepare_suspend and handle_resume
+  fm10k: use common reset flow when handling io errors from PCI stack
+  fm10k: implement reset_notify handler for PCIe FLR events
+  fm10k: use common flow for suspend and resume
+  fm10k: enable bus master after every reset
+  fm10k: check if PCIe link is restored
+  fm10k: implement request_lport_map pointer
+  fm10k: force link to remain down for at least a second on resume
+    events
+  fm10k: return proper error code when pci_enable_msix_range fails
+  fm10k: bump version number
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 5ea2200..8b54894 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -4958,7 +4958,6 @@ static void i40e_dcb_reconfigure(struct i40e_pf *pf)
- 			if (pf->vsi[v]->netdev)
- 				i40e_dcbnl_set_all(pf->vsi[v]);
- 		}
--		i40e_notify_client_of_l2_param_changes(pf->vsi[v]);
- 	}
- }
- 
-@@ -5716,6 +5715,8 @@ static int i40e_handle_lldp_event(struct i40e_pf *pf,
- 		i40e_service_event_schedule(pf);
- 	} else {
- 		i40e_pf_unquiesce_all_vsi(pf);
-+		/* Notify the client for the DCB changes */
-+		i40e_notify_client_of_l2_param_changes(pf->vsi[pf->lan_vsi]);
- 	}
- 
- exit:
+Ngai-Mint Kwan (1):
+  fm10k: Reset mailbox global interrupts
+
+ drivers/net/ethernet/intel/fm10k/fm10k.h         |   2 +
+ drivers/net/ethernet/intel/fm10k/fm10k_common.c  |   6 +-
+ drivers/net/ethernet/intel/fm10k/fm10k_ethtool.c |   2 +
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c    |  14 +-
+ drivers/net/ethernet/intel/fm10k/fm10k_mbx.h     |   2 +
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c     | 309 +++++++++++++----------
+ drivers/net/ethernet/intel/fm10k/fm10k_pf.c      |  38 ++-
+ drivers/net/ethernet/intel/fm10k/fm10k_type.h    |   2 +
+ drivers/net/ethernet/intel/fm10k/fm10k_vf.c      |  12 +-
+ 9 files changed, 223 insertions(+), 164 deletions(-)
+
+-- 
+2.9.0.rc1.405.g81f467e
 
