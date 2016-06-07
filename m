@@ -1,8 +1,8 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 08 Jun 2016 02:20:50 +0800
+Date: Wed, 08 Jun 2016 04:03:03 +0800
 Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- ed5f1db2d6190d30afe910c8fbe14ddc0e83590e BUILD SUCCESS
-Message-ID: <57571082.O0F9CzjaLASOPw+j%fengguang.wu@intel.com>
+ 981b526681d9b7ef5f6069c3105aed01249406a2 BUILD SUCCESS
+Message-ID: <57572877.YVBuv8X+OKQ0lNGV%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,24 +10,14 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-ed5f1db2d6190d30afe910c8fbe14ddc0e83590e  ixgbe: fix spoofed packets with macvlans
+981b526681d9b7ef5f6069c3105aed01249406a2  igb: Only dma sync frame length
 
-elapsed time: 66m
+elapsed time: 96m
 
 The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 131
+configs tested: 125
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-powerpc                 mpc834x_mds_defconfig
-sh                          r7780mp_defconfig
-sh                           se7619_defconfig
 i386                     randconfig-a0-201623
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
 blackfin                BF526-EZBRD_defconfig
 blackfin                BF533-EZKIT_defconfig
 blackfin            BF561-EZKIT-SMP_defconfig
@@ -38,8 +28,20 @@ sh                                allnoconfig
 sh                          rsk7269_defconfig
 sh                  sh7785lcr_32bit_defconfig
 sh                            titan_defconfig
-i386                   randconfig-c0-06072326
-x86_64       acpi-redef+CONFIG_DEBUG_INFO_REDUCED
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
 x86_64                 randconfig-x010-201623
 x86_64                 randconfig-x011-201623
 x86_64                 randconfig-x012-201623
@@ -53,11 +55,14 @@ x86_64                 randconfig-x019-201623
 i386                             alldefconfig
 i386                              allnoconfig
 i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
 i386                     randconfig-s0-201623
 i386                     randconfig-s1-201623
-x86_64                 randconfig-s0-06072322
-x86_64                 randconfig-s1-06072322
-x86_64                 randconfig-s2-06072322
+x86_64                 randconfig-s0-06080114
+x86_64                 randconfig-s1-06080114
+x86_64                 randconfig-s2-06080114
 x86_64                 randconfig-s3-06072332
 x86_64                 randconfig-s4-06072332
 x86_64                 randconfig-s5-06072332
@@ -71,18 +76,14 @@ powerpc                             defconfig
 powerpc                       ppc64_defconfig
 s390                        default_defconfig
 x86_64                   randconfig-i0-201623
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
 i386                     randconfig-i0-201623
 i386                     randconfig-i1-201623
 sparc                               defconfig
 sparc64                           allnoconfig
 sparc64                             defconfig
 x86_64                           allmodconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
 i386                   randconfig-x017-201623
 i386                   randconfig-x018-201623
 i386                   randconfig-x014-201623
@@ -95,9 +96,6 @@ i386                   randconfig-x015-201623
 i386                   randconfig-x012-201623
 x86_64                                    lkp
 x86_64                                   rhel
-x86_64         rhel+CONFIG_DEBUG_INFO_REDUCED
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
 i386                     randconfig-n0-201623
 ia64                             alldefconfig
 ia64                              allnoconfig
@@ -110,7 +108,8 @@ openrisc                    or1ksim_defconfig
 tile                         tilegx_defconfig
 um                             i386_defconfig
 um                           x86_64_defconfig
-x86_64                 randconfig-n0-01111240
+x86_64                 randconfig-n0-01111329
+x86_64                 randconfig-n0-01111439
 arm                               allnoconfig
 arm                         at91_dt_defconfig
 arm                           efm32_defconfig
@@ -121,9 +120,6 @@ arm                        shmobile_defconfig
 arm                           sunxi_defconfig
 arm64                             allnoconfig
 arm64                               defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
 x86_64                 randconfig-x000-201623
 x86_64                 randconfig-x001-201623
 x86_64                 randconfig-x002-201623
@@ -135,9 +131,6 @@ x86_64                 randconfig-x007-201623
 x86_64                 randconfig-x008-201623
 x86_64                 randconfig-x009-201623
 i386                   randconfig-r0-06061713
-openrisc                         alldefconfig
-s390                              allnoconfig
-sh                        apsh4ad0a_defconfig
 i386                   randconfig-x000-201623
 i386                   randconfig-x001-201623
 i386                   randconfig-x002-201623
@@ -148,6 +141,7 @@ i386                   randconfig-x006-201623
 i386                   randconfig-x007-201623
 i386                   randconfig-x008-201623
 i386                   randconfig-x009-201623
+i386                   randconfig-x0-06080139
 
 Thanks,
 Fengguang
