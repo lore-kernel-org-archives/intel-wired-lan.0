@@ -1,257 +1,60 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 08 Jun 2016 09:02:47 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- a078f654f7c05b787fc25f065db5fcb4ba25ea98 BUILD DONE
-Message-ID: <57576eb7.MWe8rwT5Ahe0J0pm%fengguang.wu@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Tue, 7 Jun 2016 20:54:17 -0700
+Subject: [Intel-wired-lan] [PATCH] fm10k: restore D0 power state upon
+	probe
+In-Reply-To: <20160608002043.10367-1-jacob.e.keller@intel.com>
+References: <20160608002043.10367-1-jacob.e.keller@intel.com>
+Message-ID: <CAKgT0UdmTRUesM9hD9ifUw=+rx117=Ck7bzEgezHX=WGR2rArQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-a078f654f7c05b787fc25f065db5fcb4ba25ea98  i40e: Don't notify client(s) for DCB changes on all VSIs
+On Tue, Jun 7, 2016 at 5:20 PM, Jacob Keller <jacob.e.keller@intel.com> wrote:
+> It seems that under some circumstances, such as after performing an
+> unbind following an AER injection recovery, the power state of a VF
+> isn't set to PCI_D0. Following the unbind if we attempt to bind the
+> device, the MSI-X initialization fails due to incorrect power state.
 
-drivers/net/ethernet/intel/e1000e/netdev.c:7336:2: error: implicit declaration of function 'pci_release_mem_regions' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/fm10k/fm10k_pci.c:1879:8: error: implicit declaration of function 'pci_request_mem_regions' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/fm10k/fm10k_pci.c:1983:2: error: implicit declaration of function 'pci_release_mem_regions' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/i40e/i40e_main.c:10801:2: error: implicit declaration of function 'pci_request_mem_regions' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/i40e/i40e_main.c:11298:2: error: implicit declaration of function 'pci_release_mem_regions' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/igb/igb_main.c:2327:2: error: implicit declaration of function 'pci_request_mem_regions' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/igb/igb_main.c:2327:8: error: implicit declaration of function 'pci_request_mem_regions' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/igb/igb_main.c:2751:2: error: implicit declaration of function 'pci_release_mem_regions' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:9404:2: error: implicit declaration of function 'pci_request_mem_regions' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:9404:8: error: implicit declaration of function 'pci_request_mem_regions' [-Werror=implicit-function-declaration]
-drivers/net/ethernet/intel/ixgbe/ixgbe_main.c:9790:2: error: implicit declaration of function 'pci_release_mem_regions' [-Werror=implicit-function-declaration]
+That doesn't make much sense.  I didn't think the VFs had their own
+power state control.  After all it isn't as if they could switch off
+while the PF is active on the host.
 
-Error ids grouped by kconfigs:
+> Fix this by always calling pci_set_power_state(pdev, PCI_D0) on driver
+> device probe.
 
-recent_errors
-??? arm64-defconfig
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-pci_request_mem_regions
-??? arm-multi_v7_defconfig
-??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-pci_request_mem_regions
-??? i386-defconfig
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? i386-randconfig-r0-06061713
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-fm10k-fm10k_pci.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-fm10k-fm10k_pci.c:error:implicit-declaration-of-function-pci_request_mem_regions
-??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-pci_request_mem_regions
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:implicit-declaration-of-function-pci_request_mem_regions
-??? ia64-defconfig
-??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-pci_request_mem_regions
-??? sparc64-defconfig
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? x86_64-acpi-redef
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-pci_request_mem_regions
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:implicit-declaration-of-function-pci_request_mem_regions
-??? x86_64-allyesdebian
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-pci_request_mem_regions
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:implicit-declaration-of-function-pci_request_mem_regions
-??? x86_64-lkp
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-pci_request_mem_regions
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:implicit-declaration-of-function-pci_request_mem_regions
-??? x86_64-nfsroot
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-pci_request_mem_regions
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:implicit-declaration-of-function-pci_request_mem_regions
-??? x86_64-randconfig-i0-201623
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-pci_request_mem_regions
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:implicit-declaration-of-function-pci_request_mem_regions
-??? x86_64-randconfig-s0-06080735
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-pci_request_mem_regions
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:implicit-declaration-of-function-pci_request_mem_regions
-??? x86_64-randconfig-s2-06080709
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-pci_request_mem_regions
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:implicit-declaration-of-function-pci_request_mem_regions
-??? x86_64-randconfig-s3-06080748
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-pci_request_mem_regions
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:implicit-declaration-of-function-pci_request_mem_regions
-??? x86_64-randconfig-s4-06080719
-??? ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-pci_request_mem_regions
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:implicit-declaration-of-function-pci_release_mem_regions
-??? ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:implicit-declaration-of-function-pci_request_mem_regions
-??? x86_64-rhel
-    ??? drivers-net-ethernet-intel-e1000e-netdev.c:error:implicit-declaration-of-function-pci_release_mem_regions
-    ??? drivers-net-ethernet-intel-i40e-i40e_main.c:error:implicit-declaration-of-function-pci_release_mem_regions
-    ??? drivers-net-ethernet-intel-i40e-i40e_main.c:error:implicit-declaration-of-function-pci_request_mem_regions
-    ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-pci_release_mem_regions
-    ??? drivers-net-ethernet-intel-igb-igb_main.c:error:implicit-declaration-of-function-pci_request_mem_regions
-    ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:implicit-declaration-of-function-pci_release_mem_regions
-    ??? drivers-net-ethernet-intel-ixgbe-ixgbe_main.c:error:implicit-declaration-of-function-pci_request_mem_regions
+That should be redundant.  There is already code that is called to
+transition the power state to D0 in pci_enable_device_mem.  As long as
+nobody else has enabled the device it will be ran.
 
-elapsed time: 72m
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> ---
+>  drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> index b8245c734c96..f2b7b8447cb7 100644
+> --- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> +++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+> @@ -1975,6 +1975,8 @@ static int fm10k_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+>
+>         pci_enable_pcie_error_reporting(pdev);
+>
+> +       pci_set_power_state(pdev, PCI_D0);
+> +
+>         pci_set_master(pdev);
+>         pci_save_state(pdev);
 
-configs tested: 136
+The placement of this seems a bit suspicious to me.  Is it that you
+cannot enable the D0 power state until after error reporting has been
+enabled or is there some other reason to place it out there rather
+than enabling D0 before performing any other operations on the device.
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201623
-x86_64                 randconfig-a0-06080546
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-arm                       omap2plus_defconfig
-blackfin                         alldefconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-x010-201623
-x86_64                 randconfig-x011-201623
-x86_64                 randconfig-x012-201623
-x86_64                 randconfig-x013-201623
-x86_64                 randconfig-x014-201623
-x86_64                 randconfig-x015-201623
-x86_64                 randconfig-x016-201623
-x86_64                 randconfig-x017-201623
-x86_64                 randconfig-x018-201623
-x86_64                 randconfig-x019-201623
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                     randconfig-s0-201623
-i386                     randconfig-s1-201623
-x86_64                 randconfig-s0-06080709
-x86_64                 randconfig-s1-06080709
-x86_64                 randconfig-s2-06080709
-x86_64                 randconfig-s0-06080735
-x86_64                 randconfig-s1-06080735
-x86_64                 randconfig-s2-06080735
-x86_64                 randconfig-s3-06080643
-x86_64                 randconfig-s4-06080643
-x86_64                 randconfig-s5-06080643
-x86_64                 randconfig-s3-06080719
-x86_64                 randconfig-s4-06080719
-x86_64                 randconfig-s5-06080719
-x86_64                 randconfig-s3-06080748
-x86_64                 randconfig-s4-06080748
-x86_64                 randconfig-s5-06080748
-i386                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201623
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201623
-i386                     randconfig-i1-201623
-i386                   randconfig-x017-201623
-i386                   randconfig-x018-201623
-i386                   randconfig-x014-201623
-i386                   randconfig-x011-201623
-i386                   randconfig-x016-201623
-i386                   randconfig-x013-201623
-i386                   randconfig-x010-201623
-i386                   randconfig-x019-201623
-i386                   randconfig-x015-201623
-i386                   randconfig-x012-201623
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201623
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-powerpc                 mpc8272_ads_defconfig
-s390                              allnoconfig
-x86_64                 randconfig-n0-06080807
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-x86_64                 randconfig-x007-201623
-x86_64                 randconfig-x006-201623
-x86_64                 randconfig-x003-201623
-x86_64                 randconfig-x000-201623
-x86_64                 randconfig-x008-201623
-x86_64                 randconfig-x005-201623
-x86_64                 randconfig-x004-201623
-x86_64                 randconfig-x001-201623
-x86_64                 randconfig-x002-201623
-x86_64                 randconfig-x009-201623
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                   randconfig-r0-06061713
-i386                   randconfig-x005-201623
-i386                   randconfig-x008-201623
-i386                   randconfig-x000-201623
-i386                   randconfig-x009-201623
-i386                   randconfig-x003-201623
-i386                   randconfig-x006-201623
-i386                   randconfig-x001-201623
-i386                   randconfig-x004-201623
-i386                   randconfig-x007-201623
-i386                   randconfig-x002-201623
+It might make more sense to offload this work to the PF and have it
+reset the power state on the VF from underneath rather than relying on
+it being performed by the VF once it is in the guest.  There might be
+some hypervisors that prevent the guest from being able to make power
+state changes for devices on the host.
 
-Thanks,
-Fengguang
+- Alex
