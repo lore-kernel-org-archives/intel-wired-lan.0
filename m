@@ -1,125 +1,187 @@
-From: Jarod Wilson <jarod@redhat.com>
-Date: Thu, 9 Jun 2016 14:02:04 -0400
-Subject: [Intel-wired-lan] [RFC PATCH net] e1000e: keep vlan interfaces
- functional after rxvlan off
-In-Reply-To: <CAKgT0UdXyHt1tbFijqiN57H49TBxSrJ4VcT4A7uKS0oXUouWTA@mail.gmail.com>
-References: <1463511831-13684-1-git-send-email-jarod@redhat.com>
- <CAKgT0UfKV23p18L=wCoyy7WXa7s7pQQRVVK8F_mVea0dOJKekA@mail.gmail.com>
- <20160601192724.GA56933@redhat.com>
- <CAKgT0UdXyHt1tbFijqiN57H49TBxSrJ4VcT4A7uKS0oXUouWTA@mail.gmail.com>
-Message-ID: <20160609180204.GR56933@redhat.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Thu, 9 Jun 2016 18:30:15 +0000
+Subject: [Intel-wired-lan] [PATCH] fm10k: restore D0 power state upon
+ probe
+In-Reply-To: <CAKgT0UdFekv7wKshpuq-VqO6YZR-98aG1FB2oS-4Vz3OrV3m8Q@mail.gmail.com>
+References: <20160608002043.10367-1-jacob.e.keller@intel.com>
+ <CAKgT0UdmTRUesM9hD9ifUw=+rx117=Ck7bzEgezHX=WGR2rArQ@mail.gmail.com>
+ <02874ECE860811409154E81DA85FBB5857AE09FD@ORSMSX115.amr.corp.intel.com>
+ <CAKgT0UdjL=4d7vXi4oCYw4G7fTe864vA4=1=2HYTK9KBQPLuQA@mail.gmail.com>
+ <02874ECE860811409154E81DA85FBB5857AE0C0D@ORSMSX115.amr.corp.intel.com>
+ <CAKgT0Uft298E1zAkEJ+R7SGrA9oisS6Ufpkmo7V-KD+eBvLXnQ@mail.gmail.com>
+ <02874ECE860811409154E81DA85FBB5857AE0C33@ORSMSX115.amr.corp.intel.com>
+ <CAKgT0Ueno8VjnHDZsqGOU+t5h2DJQOkOLO8vJk8z-ZMpgn5_MA@mail.gmail.com>
+ <02874ECE860811409154E81DA85FBB5857AE19DE@ORSMSX115.amr.corp.intel.com>
+ <CAKgT0UdFekv7wKshpuq-VqO6YZR-98aG1FB2oS-4Vz3OrV3m8Q@mail.gmail.com>
+Message-ID: <02874ECE860811409154E81DA85FBB5857AE1AA8@ORSMSX115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Jun 01, 2016 at 03:31:46PM -0700, Alexander Duyck wrote:
-> On Wed, Jun 1, 2016 at 12:27 PM, Jarod Wilson <jarod@redhat.com> wrote:
-> > On Wed, Jun 01, 2016 at 07:31:53AM -0700, Alexander Duyck wrote:
-> >> On Tue, May 17, 2016 at 12:03 PM, Jarod Wilson <jarod@redhat.com> wrote:
-> >> > I've got a bug report about an e1000e interface, where a vlan interface is
-> >> > set up on top of it:
-> >> >
-> >> > $ ip link add link ens1f0 name ens1f0.99 type vlan id 99
-> >> > $ ip link set ens1f0 up
-> >> > $ ip link set ens1f0.99 up
-> >> > $ ip addr add 192.168.99.92 dev ens1f0.99
-> >> >
-> >> > At this point, I can ping another host on vlan 99, ip 192.168.99.91.
-> >> > However, if I do the following:
-> >> >
-> >> > $ ethtool -K ens1f0 rxvlan off
-> >> >
-> >> > Then no traffic passes on ens1f0.99. It comes back if I toggle rxvlan on
-> >> > again. I'm not sure if this is actually intended behavior, or if there's a
-> >> > lack of software vlan stripping fallback, or what, but things continue to
-> >> > work if I simply don't call e1000e_vlan_strip_disable() if there are
-> >> > active vlans (plagiarizing a function from the e1000 driver here) on the
-> >> > interface.
-> >> >
-> >> > Also slipped a related-ish fix to the kerneldoc text for
-> >> > e1000e_vlan_strip_disable here...
-> >> >
-> >> > CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> >> > CC: intel-wired-lan at lists.osuosl.org
-> >> > CC: netdev at vger.kernel.org
-> >> > Signed-off-by: Jarod Wilson <jarod@redhat.com>
-> >> > ---
-> >> >  drivers/net/ethernet/intel/e1000e/netdev.c | 15 +++++++++++++--
-> >> >  1 file changed, 13 insertions(+), 2 deletions(-)
-> >> >
-> >> > diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-> >> > index 75e6089..73f7452 100644
-> >> > --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> >> > +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> >> > @@ -154,6 +154,16 @@ void __ew32(struct e1000_hw *hw, unsigned long reg, u32 val)
-> >> >         writel(val, hw->hw_addr + reg);
-> >> >  }
-> >> >
-> >> > +static bool e1000e_vlan_used(struct e1000_adapter *adapter)
-> >> > +{
-> >> > +       u16 vid;
-> >> > +
-> >> > +       for_each_set_bit(vid, adapter->active_vlans, VLAN_N_VID)
-> >> > +               return true;
-> >> > +
-> >>
-> >> I'm pretty sure this is always going to return true if 8021q is loaded
-> >> because VLAN 0 is always added to the device even if no other VLANs
-> >> are in use.
-> >
-> > Ah, hadn't considered that, I just plucked it straight from e1000.
-> >
-> >> > +       return false;
-> >> > +}
-> >> > +
-> >> >  /**
-> >> >   * e1000_regdump - register printout routine
-> >> >   * @hw: pointer to the HW structure
-> >> > @@ -2789,7 +2799,7 @@ static void e1000e_vlan_filter_enable(struct e1000_adapter *adapter)
-> >> >  }
-> >> >
-> >> >  /**
-> >> > - * e1000e_vlan_strip_enable - helper to disable HW VLAN stripping
-> >> > + * e1000e_vlan_strip_disable - helper to disable HW VLAN stripping
-> >> >   * @adapter: board private structure to initialize
-> >> >   **/
-> >> >  static void e1000e_vlan_strip_disable(struct e1000_adapter *adapter)
-> >> > @@ -3443,7 +3453,8 @@ static void e1000e_set_rx_mode(struct net_device *netdev)
-> >> >
-> >> >         ew32(RCTL, rctl);
-> >> >
-> >> > -       if (netdev->features & NETIF_F_HW_VLAN_CTAG_RX)
-> >> > +       if (netdev->features & NETIF_F_HW_VLAN_CTAG_RX ||
-> >> > +           e1000e_vlan_used(adapter))
-> >> >                 e1000e_vlan_strip_enable(adapter);
-> >> >         else
-> >> >                 e1000e_vlan_strip_disable(adapter);
-> >>
-> >> So if the VLAN tag stripping is disabled what happens that is causing
-> >> the VLAN test to fail?  It sounds like this might be working around a
-> >> kernel bug where a VLAN created on a device that supports hardware tag
-> >> stripping only supports hardware tag stripping.  Maybe a better fix
-> >> would be to add a fall back so if the VLAN tag is in the frame instead
-> >> of stripped it still makes it to the correct spot.
-> >
-> > That's the main reason I labeled it as an RFC -- I wasn't sure exactly how
-> > things were intended to work when the hardware stripping was disabled. It
-> > seems quite plausible to me that this patch simply papers over the real
-> > bug: lack of a functional software fallback. I'm not particularly up on
-> > the vlan code just yet though, so I'm not yet sure where to poke next.
-> > Suggestions welcomed. :)
+> -----Original Message-----
+> From: Alexander Duyck [mailto:alexander.duyck at gmail.com]
+> Sent: Thursday, June 09, 2016 10:55 AM
+> To: Keller, Jacob E <jacob.e.keller@intel.com>
+> Cc: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+> Subject: Re: [Intel-wired-lan] [PATCH] fm10k: restore D0 power state upon
+> probe
 > 
-> Well the software fallback should be the call to skb_vlan_untag in
-> __netif_receive_skb_core.  If that isn't being triggered then we
-> should probably be fixing the files in the core code then.
+> On Thu, Jun 9, 2016 at 10:38 AM, Keller, Jacob E
+> <jacob.e.keller@intel.com> wrote:
+> >
+> >
+> >> -----Original Message-----
+> >> From: Alexander Duyck [mailto:alexander.duyck at gmail.com]
+> >> Sent: Wednesday, June 08, 2016 2:34 PM
+> >> To: Keller, Jacob E <jacob.e.keller@intel.com>
+> >> Cc: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+> >> Subject: Re: [Intel-wired-lan] [PATCH] fm10k: restore D0 power state
+> upon
+> >> probe
+> >>
+> >> On Wed, Jun 8, 2016 at 2:23 PM, Keller, Jacob E
+> >> <jacob.e.keller@intel.com> wrote:
+> >> >> -----Original Message-----
+> >> >> From: Alexander Duyck [mailto:alexander.duyck at gmail.com]
+> >> >> Sent: Wednesday, June 08, 2016 2:23 PM
+> >> >> To: Keller, Jacob E <jacob.e.keller@intel.com>
+> >> >> Cc: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+> >> >> Subject: Re: [Intel-wired-lan] [PATCH] fm10k: restore D0 power state
+> >> upon
+> >> >> probe
+> >> >>
+> >> >> On Wed, Jun 8, 2016 at 2:18 PM, Keller, Jacob E
+> >> >> <jacob.e.keller@intel.com> wrote:
+> >> >> >> -----Original Message-----
+> >> >> >> From: Alexander Duyck [mailto:alexander.duyck at gmail.com]
+> >> >> >> Sent: Wednesday, June 08, 2016 2:02 PM
+> >> >> >> To: Keller, Jacob E <jacob.e.keller@intel.com>
+> >> >> >> Cc: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+> >> >> >> Subject: Re: [Intel-wired-lan] [PATCH] fm10k: restore D0 power
+> state
+> >> >> upon
+> >> >> >> probe
+> >> >> >>
+> >> >> >> On Wed, Jun 8, 2016 at 12:11 PM, Keller, Jacob E
+> >> >> >> <jacob.e.keller@intel.com> wrote:
+> >> >> >> >> -----Original Message-----
+> >> >> >> >> From: Alexander Duyck [mailto:alexander.duyck at gmail.com]
+> >> >> >> >> Sent: Tuesday, June 07, 2016 8:54 PM
+> >> >> >> >> To: Keller, Jacob E <jacob.e.keller@intel.com>
+> >> >> >> >> Cc: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+> >> >> >> >> Subject: Re: [Intel-wired-lan] [PATCH] fm10k: restore D0 power
+> >> state
+> >> >> >> upon
+> >> >> >> >> probe
+> >> >> >> >>
+> >> >> >> >> On Tue, Jun 7, 2016 at 5:20 PM, Jacob Keller
+> >> >> <jacob.e.keller@intel.com>
+> >> >> >> >> wrote:
+> >> >> >> >> > It seems that under some circumstances, such as after
+> >> performing
+> >> >> an
+> >> >> >> >> > unbind following an AER injection recovery, the power state
+> of a
+> >> VF
+> >> >> >> >> > isn't set to PCI_D0. Following the unbind if we attempt to bind
+> >> the
+> >> >> >> >> > device, the MSI-X initialization fails due to incorrect power
+> state.
+> >> >> >> >>
+> >> >> >> >> That doesn't make much sense.  I didn't think the VFs had their
+> own
+> >> >> >> >> power state control.  After all it isn't as if they could switch off
+> >> >> >> >> while the PF is active on the host.
+> >> >> >> >>
+> >> >> >> >> > Fix this by always calling pci_set_power_state(pdev, PCI_D0)
+> on
+> >> >> driver
+> >> >> >> >> > device probe.
+> >> >> >> >>
+> >> >> >> >> That should be redundant.  There is already code that is called
+> to
+> >> >> >> >> transition the power state to D0 in pci_enable_device_mem.  As
+> >> long
+> >> >> as
+> >> >> >> >> nobody else has enabled the device it will be ran.
+> >> >> >> >>
+> >> >> >> >
+> >> >> >> > That's weird. In this case, after doing aer-inject on the PF, if we
+> >> unbind
+> >> >> >> then bind the VF device, it fails in pci_enable_msix_range which I
+> >> traced
+> >> >> into
+> >> >> >> eventually a call that fails because the state isn't PCI_D0. If I add a
+> >> >> >> "pci_set_power_state(pdev, PCI_D0)" call in the probe routine it
+> >> works
+> >> >> >> fine...?
+> >> >> >> >
+> >> >> >> > I don't really know why that'd be the case... thoughts?
+> >> >> >>
+> >> >> >> Does the VF even advertise support for PCI power management
+> >> >> >> capability?  If I recall a VF shouldn't.  As such I think a call to
+> >> >> >> pci_set_power_state should be returning an error and not doing
+> >> >> >> anything so I would think this code only has any effect on the PF.
+> So
+> >> >> >> I am not certain what this patch is even doing if you aren't
+> reloading
+> >> >> >> the PF driver to trigger it.
+> >> >> >>
+> >> >> >> - Alex
+> >> >> >
+> >> >> > I'm not sure either but without it we're ending up with the failure in
+> >> >> pci_msi_supported failing with -EINVAL because dev->current_state
+> !=
+> >> >> PCI_D0...
+> >> >> >
+> >> >> > It only happens after an unbind of the VF device then a bind. I think
+> >> >> somehow the dev->current_state gets messed up but I don't know
+> how
+> >> this
+> >> >> happens.
+> >> >> >
+> >> >> > Thanks,
+> >> >> > Jake
+> >> >>
+> >> >> When you say unbind/bind are you talking about using the sysfs or is
+> >> >> this via some other mechanism?
+> >> >>
+> >> >> - Alex
+> >> >
+> >> > Using sysfs. We echo the PCI address to fm10k's unbind, then echo it to
+> >> bind.
+> >> >
+> >> > Thanks,
+> >> > Jake
+> >>
+> >> I'm wondering if we have a reference count bug being created
+> >> somewhere.  One thing you might try tracking is the dev->enable_cnt
+> >> value for the VF through probe and after a remove to see if we are
+> >> leaking that somewhere.  The other thing to look for is to figure out
+> >> where we are setting dev->current_state to something other than
+> >> PCI_D0.  I'd be interested in knowing where we are messing on this
+> >> with a VF and what we are setting it to.
+> >>
+> >> - Alex
+> >
+> > Yep, when we call pci_enable_device_mem() in fm10k_io_slot_reset() we
+> leak an enable count and I think that?s at least partially responsible for the
+> failure since I bet VFs don't actually expose power state, so once enabled it
+> won't change back from unknown?
+> 
+> No, it will but you have to actually be re-enabling the device to trigger it.
+> 
+> You might try replacing the call to pci_enable_device_mem with
+> pci_reenable_device and see if that works for you.  I suspect this is
+> probably a bug that is common in many of the drivers out there.
+> 
+> - Alex
 
-So I've been poking at a debug-spew-laden kernel some, and skb_vlan_untag
-is most definitely not getting called when rxvlan off is set. I'm still
-poking around, trying to track down where things are going askew.
+The other possible fix is to put pci_device_disable into the .io_error_detected handler, which used to be there in the past. The downside to this call is that we have to check when we remove if we've already disabled to avoid disabling the device twice.
 
--- 
-Jarod Wilson
-jarod at redhat.com
+I'll look into using reenable instead and see how that goes.
 
+Thanks,
+Jake
