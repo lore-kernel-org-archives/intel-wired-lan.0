@@ -1,46 +1,92 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Thu, 9 Jun 2016 23:08:43 +0000
-Subject: [Intel-wired-lan] [PATCH v2] compat: WQ_MEM_RECLAIM was renamed
-	from WQ_RESCUER
-In-Reply-To: <20160609230653.4576-1-jacob.e.keller@intel.com>
-References: <20160609230653.4576-1-jacob.e.keller@intel.com>
-Message-ID: <1465513723.5590.2.camel@intel.com>
+From: Jarod Wilson <jarod@redhat.com>
+Date: Thu, 9 Jun 2016 19:26:10 -0400
+Subject: [Intel-wired-lan] [RFC PATCH net] e1000e: keep vlan interfaces
+ functional after rxvlan off
+In-Reply-To: <20160609221745.GT56933@redhat.com>
+References: <1463511831-13684-1-git-send-email-jarod@redhat.com>
+ <CAKgT0UfKV23p18L=wCoyy7WXa7s7pQQRVVK8F_mVea0dOJKekA@mail.gmail.com>
+ <20160601192724.GA56933@redhat.com>
+ <CAKgT0UdXyHt1tbFijqiN57H49TBxSrJ4VcT4A7uKS0oXUouWTA@mail.gmail.com>
+ <20160609180204.GR56933@redhat.com>
+ <20160609205501.GS56933@redhat.com>
+ <20160609221745.GT56933@redhat.com>
+Message-ID: <20160609232610.GU56933@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 2016-06-09 at 16:06 -0700, Jacob Keller wrote:
-> In upstream commit 6370a6ad3b53 ("workqueue: add and use
-> WQ_MEM_RECLAIM
-> flag", 2010-10-11), the WQ_RESCUER flag was renamed to
-> WQ_MEM_RECLAIM.
-> Backport the rename here.
+On Thu, Jun 09, 2016 at 06:17:45PM -0400, Jarod Wilson wrote:
+> On Thu, Jun 09, 2016 at 04:55:01PM -0400, Jarod Wilson wrote:
+> > On Thu, Jun 09, 2016 at 02:02:04PM -0400, Jarod Wilson wrote:
+> > > On Wed, Jun 01, 2016 at 03:31:46PM -0700, Alexander Duyck wrote:
+> > > > On Wed, Jun 1, 2016 at 12:27 PM, Jarod Wilson <jarod@redhat.com> wrote:
+> > > > > On Wed, Jun 01, 2016 at 07:31:53AM -0700, Alexander Duyck wrote:
+> > > > >> On Tue, May 17, 2016 at 12:03 PM, Jarod Wilson <jarod@redhat.com> wrote:
+> > > > >> > I've got a bug report about an e1000e interface, where a vlan interface is
+> > > > >> > set up on top of it:
+> > > > >> >
+> > > > >> > $ ip link add link ens1f0 name ens1f0.99 type vlan id 99
+> > > > >> > $ ip link set ens1f0 up
+> > > > >> > $ ip link set ens1f0.99 up
+> > > > >> > $ ip addr add 192.168.99.92 dev ens1f0.99
+> > > > >> >
+> > > > >> > At this point, I can ping another host on vlan 99, ip 192.168.99.91.
+> > > > >> > However, if I do the following:
+> > > > >> >
+> > > > >> > $ ethtool -K ens1f0 rxvlan off
+> > > > >> >
+> > > > >> > Then no traffic passes on ens1f0.99. It comes back if I toggle rxvlan on
+> > > > >> > again. I'm not sure if this is actually intended behavior, or if there's a
+> > > > >> > lack of software vlan stripping fallback, or what, but things continue to
+> > > > >> > work if I simply don't call e1000e_vlan_strip_disable() if there are
+> > > > >> > active vlans (plagiarizing a function from the e1000 driver here) on the
+> > > > >> > interface.
+...
+> > Okay, so rxvlan is *supposed* to only impact the rx path, right? It's
+> > looking like it is actually impacting the tx path too here. I actually
+> > *do* see calls to skb_vlan_untag with rxvlan off, if I ping from an
+> > external host, so it seems only the packets from the host with rxvlan
+> > toggled off aren't escaping correctly for some reason.
 > 
-> Change-Id: I217de4b3fecbcbdba753de8979f99c43f1053d5f
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
-> ?kcompat.h | 2 ++
-> ?1 file changed, 2 insertions(+)
-> 
-> diff --git a/kcompat.h b/kcompat.h ?
-> index 3085e3ccd35e..db2f2575298a 100644
-> --- a/kcompat.h
-> +++ b/kcompat.h
-> @@ -3785,6 +3785,8 @@ static inline int
-> __kc_netif_set_real_num_rx_queues(struct net_device __always_u
-> ?#define ETH_FLAG_RXVLAN (1 << 8)
-> ?#endif /* ETH_FLAG_RXVLAN */
-> ?
-> +#define WQ_MEM_RECLAIM 0
-> +
-> ?static inline void _kc_skb_checksum_none_assert(struct sk_buff *skb)
-> ?{
-> ?	WARN_ON(skb->ip_summed != CHECKSUM_NONE);
+> And this leads me to believe maybe the bit in the e1000 driver that
+> mentions explicitly that the hardware has no support for separate RX/TX
+> vlan accel toggling rings true for e1000e as well, and thus both
+> NETIF_F_HW_VLAN_CTAG_RX and NETIF_F_HW_VLAN_CTAG_TX need to be kept in
+> sync. Testing this theory out shortly...
 
+We have a winner. If I make sure the TX flag gets toggled too, ping
+continues to work after disabling rxvlan.
 
-Woops, wrong mailing list. You can ignore this...
+$ ping 192.168.99.91
+PING 192.168.99.91 (192.168.99.91) 56(84) bytes of data.
+64 bytes from 192.168.99.91: icmp_seq=1 ttl=64 time=0.591 ms
+64 bytes from 192.168.99.91: icmp_seq=2 ttl=64 time=0.335 ms
+64 bytes from 192.168.99.91: icmp_seq=3 ttl=64 time=0.417 ms
+^C
+--- 192.168.99.91 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2000ms
+rtt min/avg/max/mdev = 0.335/0.447/0.591/0.109 ms
 
-Thanks,
-Jake
+$ sudo ethtool -K ens1f0 rxvlan off
+Actual changes:
+rx-vlan-offload: off
+tx-vlan-offload: off [requested on]
+
+$ ping 192.168.99.91
+PING 192.168.99.91 (192.168.99.91) 56(84) bytes of data.
+64 bytes from 192.168.99.91: icmp_seq=1 ttl=64 time=0.327 ms
+64 bytes from 192.168.99.91: icmp_seq=2 ttl=64 time=0.393 ms
+64 bytes from 192.168.99.91: icmp_seq=3 ttl=64 time=0.424 ms
+^C
+--- 192.168.99.91 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 1999ms
+rtt min/avg/max/mdev = 0.327/0.381/0.424/0.043 ms
+
+I'll clean things up and submit a patch tonight or tomorrow.
+
+-- 
+Jarod Wilson
+jarod at redhat.com
+
