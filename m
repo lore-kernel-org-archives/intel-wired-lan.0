@@ -1,68 +1,95 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Fri, 10 Jun 2016 05:27:10 +0800
-Subject: [Intel-wired-lan] [PATCH] fm10k: use software values when
- checking for Tx hangs in hot path
-In-Reply-To: <20160609202817.6083-1-jacob.e.keller@intel.com>
-Message-ID: <201606100553.91YyWEJU%fengguang.wu@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Thu,  9 Jun 2016 14:56:05 -0700
+Subject: [Intel-wired-lan] [PATCH v2] fm10k: use software values when
+	checking for Tx hangs in hot path
+Message-ID: <20160609215605.19957-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+A previous patch added support to check for hardware tx pending in the
+fm10k_down routine. This support was intended to ensure that we
+accurately check what the hardware state is. However, checking for Tx
+hangs in this manor during the hotpath results in a large performance
+hit. Avoid this by making the hotpath check use the SW counters instead.
 
-[auto build test ERROR on jkirsher-next-queue/dev-queue]
-[cannot apply to v4.7-rc2 next-20160609]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
-
-url:    https://github.com/0day-ci/linux/commits/Jacob-Keller/fm10k-use-software-values-when-checking-for-Tx-hangs-in-hot-path/20160610-043049
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-config: i386-allmodconfig (attached as .config)
-compiler: gcc-6 (Debian 6.1.1-1) 6.1.1 20160430
-reproduce:
-        # save the attached .config to linux build tree
-        make ARCH=i386 
-
-All errors (new ones prefixed by >>):
-
->> drivers/net/ethernet/intel/fm10k/fm10k_main.c:1136:5: error: conflicting types for 'fm10k_get_tx_pending'
-    u64 fm10k_get_tx_pending(struct fm10k_ring *ring, bool in_sw)
-        ^~~~~~~~~~~~~~~~~~~~
-   In file included from drivers/net/ethernet/intel/fm10k/fm10k_main.c:29:0:
-   drivers/net/ethernet/intel/fm10k/fm10k.h:461:5: note: previous declaration of 'fm10k_get_tx_pending' was here
-    u64 fm10k_get_tx_pending(struct fm10k_ring *ring);
-        ^~~~~~~~~~~~~~~~~~~~
---
-   drivers/net/ethernet/intel/fm10k/fm10k_pci.c: In function 'fm10k_down':
->> drivers/net/ethernet/intel/fm10k/fm10k_pci.c:1702:8: error: too many arguments to function 'fm10k_get_tx_pending'
-       if (fm10k_get_tx_pending(interface->tx_ring[i], false))
-           ^~~~~~~~~~~~~~~~~~~~
-   In file included from drivers/net/ethernet/intel/fm10k/fm10k_pci.c:24:0:
-   drivers/net/ethernet/intel/fm10k/fm10k.h:461:5: note: declared here
-    u64 fm10k_get_tx_pending(struct fm10k_ring *ring);
-        ^~~~~~~~~~~~~~~~~~~~
-
-vim +/fm10k_get_tx_pending +1136 drivers/net/ethernet/intel/fm10k/fm10k_main.c
-
-  1130	
-  1131	/**
-  1132	 * fm10k_get_tx_pending - how many tx descriptors not processed
-  1133	 * @ring: the ring structure
-  1134	 * @in_sw: is tx_pending being checked in SW or in HW?
-  1135	 */
-> 1136	u64 fm10k_get_tx_pending(struct fm10k_ring *ring, bool in_sw)
-  1137	{
-  1138		struct fm10k_intfc *interface = ring->q_vector->interface;
-  1139		struct fm10k_hw *hw = &interface->hw;
-
+Fixes: a0f53cf49cb0 ("fm10k: use actual hardware registers when checking for pending Tx", 2016-06-08)
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/octet-stream
-Size: 55052 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160610/96c313ad/attachment-0001.obj>
+ drivers/net/ethernet/intel/fm10k/fm10k.h      |  2 +-
+ drivers/net/ethernet/intel/fm10k/fm10k_main.c | 19 +++++++++++++++----
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c  |  2 +-
+ 3 files changed, 17 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
+index c4cf08dcf5af..75429f2bbc97 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k.h
++++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
+@@ -458,7 +458,7 @@ __be16 fm10k_tx_encap_offload(struct sk_buff *skb);
+ netdev_tx_t fm10k_xmit_frame_ring(struct sk_buff *skb,
+ 				  struct fm10k_ring *tx_ring);
+ void fm10k_tx_timeout_reset(struct fm10k_intfc *interface);
+-u64 fm10k_get_tx_pending(struct fm10k_ring *ring);
++u64 fm10k_get_tx_pending(struct fm10k_ring *ring, bool in_sw);
+ bool fm10k_check_tx_hang(struct fm10k_ring *tx_ring);
+ void fm10k_alloc_rx_buffers(struct fm10k_ring *rx_ring, u16 cleaned_count);
+ 
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+index e9767b6366a8..a4ea84273ea1 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
+@@ -1128,13 +1128,24 @@ static u64 fm10k_get_tx_completed(struct fm10k_ring *ring)
+ 	return ring->stats.packets;
+ }
+ 
+-u64 fm10k_get_tx_pending(struct fm10k_ring *ring)
++/**
++ * fm10k_get_tx_pending - how many tx descriptors not processed
++ * @ring: the ring structure
++ * @in_sw: is tx_pending being checked in SW or in HW?
++ */
++u64 fm10k_get_tx_pending(struct fm10k_ring *ring, bool in_sw)
+ {
+ 	struct fm10k_intfc *interface = ring->q_vector->interface;
+ 	struct fm10k_hw *hw = &interface->hw;
++	u32 head, tail;
+ 
+-	u32 head = fm10k_read_reg(hw, FM10K_TDH(ring->reg_idx));
+-	u32 tail = fm10k_read_reg(hw, FM10K_TDT(ring->reg_idx));
++	if (likely(in_sw)) {
++		head = ring->next_to_clean;
++		tail = ring->next_to_use;
++	} else {
++		head = fm10k_read_reg(hw, FM10K_TDH(ring->reg_idx));
++		tail = fm10k_read_reg(hw, FM10K_TDT(ring->reg_idx));
++	}
+ 
+ 	return ((head <= tail) ? tail : tail + ring->count) - head;
+ }
+@@ -1143,7 +1154,7 @@ bool fm10k_check_tx_hang(struct fm10k_ring *tx_ring)
+ {
+ 	u32 tx_done = fm10k_get_tx_completed(tx_ring);
+ 	u32 tx_done_old = tx_ring->tx_stats.tx_done_old;
+-	u32 tx_pending = fm10k_get_tx_pending(tx_ring);
++	u32 tx_pending = fm10k_get_tx_pending(tx_ring, true);
+ 
+ 	clear_check_for_tx_hang(tx_ring);
+ 
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index 559cda999f49..b0c3d7b3a34c 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -1699,7 +1699,7 @@ void fm10k_down(struct fm10k_intfc *interface)
+ 
+ 		/* start checking at the last ring to have pending Tx */
+ 		for (; i < interface->num_tx_queues; i++)
+-			if (fm10k_get_tx_pending(interface->tx_ring[i]))
++			if (fm10k_get_tx_pending(interface->tx_ring[i], false))
+ 				break;
+ 
+ 		/* if all the queues are drained, we can break now */
+-- 
+2.9.0.rc1.405.g81f467e
+
