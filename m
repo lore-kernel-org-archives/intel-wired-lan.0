@@ -1,63 +1,38 @@
 From: Jarod Wilson <jarod@redhat.com>
-Date: Thu, 9 Jun 2016 19:26:10 -0400
-Subject: [Intel-wired-lan] [RFC PATCH net] e1000e: keep vlan interfaces
- functional after rxvlan off
-In-Reply-To: <20160609221745.GT56933@redhat.com>
+Date: Thu,  9 Jun 2016 19:50:13 -0400
+Subject: [Intel-wired-lan] [PATCH net v2] e1000e: keep vlan interfaces
+	functional after rxvlan off
+In-Reply-To: <1463511831-13684-1-git-send-email-jarod@redhat.com>
 References: <1463511831-13684-1-git-send-email-jarod@redhat.com>
- <CAKgT0UfKV23p18L=wCoyy7WXa7s7pQQRVVK8F_mVea0dOJKekA@mail.gmail.com>
- <20160601192724.GA56933@redhat.com>
- <CAKgT0UdXyHt1tbFijqiN57H49TBxSrJ4VcT4A7uKS0oXUouWTA@mail.gmail.com>
- <20160609180204.GR56933@redhat.com>
- <20160609205501.GS56933@redhat.com>
- <20160609221745.GT56933@redhat.com>
-Message-ID: <20160609232610.GU56933@redhat.com>
+Message-ID: <1465516213-18176-1-git-send-email-jarod@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Jun 09, 2016 at 06:17:45PM -0400, Jarod Wilson wrote:
-> On Thu, Jun 09, 2016 at 04:55:01PM -0400, Jarod Wilson wrote:
-> > On Thu, Jun 09, 2016 at 02:02:04PM -0400, Jarod Wilson wrote:
-> > > On Wed, Jun 01, 2016 at 03:31:46PM -0700, Alexander Duyck wrote:
-> > > > On Wed, Jun 1, 2016 at 12:27 PM, Jarod Wilson <jarod@redhat.com> wrote:
-> > > > > On Wed, Jun 01, 2016 at 07:31:53AM -0700, Alexander Duyck wrote:
-> > > > >> On Tue, May 17, 2016 at 12:03 PM, Jarod Wilson <jarod@redhat.com> wrote:
-> > > > >> > I've got a bug report about an e1000e interface, where a vlan interface is
-> > > > >> > set up on top of it:
-> > > > >> >
-> > > > >> > $ ip link add link ens1f0 name ens1f0.99 type vlan id 99
-> > > > >> > $ ip link set ens1f0 up
-> > > > >> > $ ip link set ens1f0.99 up
-> > > > >> > $ ip addr add 192.168.99.92 dev ens1f0.99
-> > > > >> >
-> > > > >> > At this point, I can ping another host on vlan 99, ip 192.168.99.91.
-> > > > >> > However, if I do the following:
-> > > > >> >
-> > > > >> > $ ethtool -K ens1f0 rxvlan off
-> > > > >> >
-> > > > >> > Then no traffic passes on ens1f0.99. It comes back if I toggle rxvlan on
-> > > > >> > again. I'm not sure if this is actually intended behavior, or if there's a
-> > > > >> > lack of software vlan stripping fallback, or what, but things continue to
-> > > > >> > work if I simply don't call e1000e_vlan_strip_disable() if there are
-> > > > >> > active vlans (plagiarizing a function from the e1000 driver here) on the
-> > > > >> > interface.
-...
-> > Okay, so rxvlan is *supposed* to only impact the rx path, right? It's
-> > looking like it is actually impacting the tx path too here. I actually
-> > *do* see calls to skb_vlan_untag with rxvlan off, if I ping from an
-> > external host, so it seems only the packets from the host with rxvlan
-> > toggled off aren't escaping correctly for some reason.
-> 
-> And this leads me to believe maybe the bit in the e1000 driver that
-> mentions explicitly that the hardware has no support for separate RX/TX
-> vlan accel toggling rings true for e1000e as well, and thus both
-> NETIF_F_HW_VLAN_CTAG_RX and NETIF_F_HW_VLAN_CTAG_TX need to be kept in
-> sync. Testing this theory out shortly...
+I've got a bug report about an e1000e interface, where a vlan interface is
+set up on top of it:
 
-We have a winner. If I make sure the TX flag gets toggled too, ping
-continues to work after disabling rxvlan.
+$ ip link add link ens1f0 name ens1f0.99 type vlan id 99
+$ ip link set ens1f0 up
+$ ip link set ens1f0.99 up
+$ ip addr add 192.168.99.92 dev ens1f0.99
+
+At this point, I can ping another host on vlan 99, ip 192.168.99.91.
+However, if I do the following:
+
+$ ethtool -K ens1f0 rxvlan off
+
+Then no traffic passes on ens1f0.99. It comes back if I toggle rxvlan on
+again. Upon discussion with folks here, and closer inspection, it appears
+that the software *receive* fallback is working correctly, but outbound
+traffic is broken. Upon glancing at the e1000 driver, I saw a note about
+having to keep RX and TX accel flags in sync, because there's no
+(hardware?) support for separate vlan accel toggle. Swipe the same hack
+from the e1000 driver, and things start to behave again with rxvlan off.
+
+After patch:
 
 $ ping 192.168.99.91
 PING 192.168.99.91 (192.168.99.91) 56(84) bytes of data.
@@ -84,9 +59,45 @@ PING 192.168.99.91 (192.168.99.91) 56(84) bytes of data.
 3 packets transmitted, 3 received, 0% packet loss, time 1999ms
 rtt min/avg/max/mdev = 0.327/0.381/0.424/0.043 ms
 
-I'll clean things up and submit a patch tonight or tomorrow.
+Also slipped a related-ish fix to the kerneldoc text for
+e1000e_vlan_strip_disable here...
 
+CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+CC: intel-wired-lan at lists.osuosl.org
+CC: netdev at vger.kernel.org
+Signed-off-by: Jarod Wilson <jarod@redhat.com>
+---
+ drivers/net/ethernet/intel/e1000e/netdev.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 75e6089..2b2e2f8 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -2789,7 +2789,7 @@ static void e1000e_vlan_filter_enable(struct e1000_adapter *adapter)
+ }
+ 
+ /**
+- * e1000e_vlan_strip_enable - helper to disable HW VLAN stripping
++ * e1000e_vlan_strip_disable - helper to disable HW VLAN stripping
+  * @adapter: board private structure to initialize
+  **/
+ static void e1000e_vlan_strip_disable(struct e1000_adapter *adapter)
+@@ -6915,6 +6915,14 @@ static netdev_features_t e1000_fix_features(struct net_device *netdev,
+ 	if ((hw->mac.type >= e1000_pch2lan) && (netdev->mtu > ETH_DATA_LEN))
+ 		features &= ~NETIF_F_RXFCS;
+ 
++	/* Since there is no support for separate Rx/Tx vlan accel
++	 * enable/disable make sure Tx flag is always in same state as Rx.
++	 */
++	if (features & NETIF_F_HW_VLAN_CTAG_RX)
++		features |= NETIF_F_HW_VLAN_CTAG_TX;
++	else
++		features &= ~NETIF_F_HW_VLAN_CTAG_TX;
++
+ 	return features;
+ }
+ 
 -- 
-Jarod Wilson
-jarod at redhat.com
+1.8.3.1
 
