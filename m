@@ -1,151 +1,151 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 09 Jun 2016 08:59:35 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 6011c26042a941a9527d3289300eeb22ad73f9c9 BUILD DONE
-Message-ID: <5758bf77.dTGnGwssAO9Js383%fengguang.wu@intel.com>
+From: Keller, Jacob E <jacob.e.keller@intel.com>
+Date: Thu, 9 Jun 2016 17:24:32 +0000
+Subject: [Intel-wired-lan] [PATCH] fm10k: restore D0 power state upon
+ probe
+In-Reply-To: <CAKgT0Ueno8VjnHDZsqGOU+t5h2DJQOkOLO8vJk8z-ZMpgn5_MA@mail.gmail.com>
+References: <20160608002043.10367-1-jacob.e.keller@intel.com>
+ <CAKgT0UdmTRUesM9hD9ifUw=+rx117=Ck7bzEgezHX=WGR2rArQ@mail.gmail.com>
+ <02874ECE860811409154E81DA85FBB5857AE09FD@ORSMSX115.amr.corp.intel.com>
+ <CAKgT0UdjL=4d7vXi4oCYw4G7fTe864vA4=1=2HYTK9KBQPLuQA@mail.gmail.com>
+ <02874ECE860811409154E81DA85FBB5857AE0C0D@ORSMSX115.amr.corp.intel.com>
+ <CAKgT0Uft298E1zAkEJ+R7SGrA9oisS6Ufpkmo7V-KD+eBvLXnQ@mail.gmail.com>
+ <02874ECE860811409154E81DA85FBB5857AE0C33@ORSMSX115.amr.corp.intel.com>
+ <CAKgT0Ueno8VjnHDZsqGOU+t5h2DJQOkOLO8vJk8z-ZMpgn5_MA@mail.gmail.com>
+Message-ID: <02874ECE860811409154E81DA85FBB5857AE19AB@ORSMSX115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-6011c26042a941a9527d3289300eeb22ad73f9c9  fm10k: bump version number
+> -----Original Message-----
+> From: Alexander Duyck [mailto:alexander.duyck at gmail.com]
+> Sent: Wednesday, June 08, 2016 2:34 PM
+> To: Keller, Jacob E <jacob.e.keller@intel.com>
+> Cc: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+> Subject: Re: [Intel-wired-lan] [PATCH] fm10k: restore D0 power state upon
+> probe
+> 
+> On Wed, Jun 8, 2016 at 2:23 PM, Keller, Jacob E
+> <jacob.e.keller@intel.com> wrote:
+> >> -----Original Message-----
+> >> From: Alexander Duyck [mailto:alexander.duyck at gmail.com]
+> >> Sent: Wednesday, June 08, 2016 2:23 PM
+> >> To: Keller, Jacob E <jacob.e.keller@intel.com>
+> >> Cc: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+> >> Subject: Re: [Intel-wired-lan] [PATCH] fm10k: restore D0 power state
+> upon
+> >> probe
+> >>
+> >> On Wed, Jun 8, 2016 at 2:18 PM, Keller, Jacob E
+> >> <jacob.e.keller@intel.com> wrote:
+> >> >> -----Original Message-----
+> >> >> From: Alexander Duyck [mailto:alexander.duyck at gmail.com]
+> >> >> Sent: Wednesday, June 08, 2016 2:02 PM
+> >> >> To: Keller, Jacob E <jacob.e.keller@intel.com>
+> >> >> Cc: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+> >> >> Subject: Re: [Intel-wired-lan] [PATCH] fm10k: restore D0 power state
+> >> upon
+> >> >> probe
+> >> >>
+> >> >> On Wed, Jun 8, 2016 at 12:11 PM, Keller, Jacob E
+> >> >> <jacob.e.keller@intel.com> wrote:
+> >> >> >> -----Original Message-----
+> >> >> >> From: Alexander Duyck [mailto:alexander.duyck at gmail.com]
+> >> >> >> Sent: Tuesday, June 07, 2016 8:54 PM
+> >> >> >> To: Keller, Jacob E <jacob.e.keller@intel.com>
+> >> >> >> Cc: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+> >> >> >> Subject: Re: [Intel-wired-lan] [PATCH] fm10k: restore D0 power
+> state
+> >> >> upon
+> >> >> >> probe
+> >> >> >>
+> >> >> >> On Tue, Jun 7, 2016 at 5:20 PM, Jacob Keller
+> >> <jacob.e.keller@intel.com>
+> >> >> >> wrote:
+> >> >> >> > It seems that under some circumstances, such as after
+> performing
+> >> an
+> >> >> >> > unbind following an AER injection recovery, the power state of a
+> VF
+> >> >> >> > isn't set to PCI_D0. Following the unbind if we attempt to bind
+> the
+> >> >> >> > device, the MSI-X initialization fails due to incorrect power state.
+> >> >> >>
+> >> >> >> That doesn't make much sense.  I didn't think the VFs had their own
+> >> >> >> power state control.  After all it isn't as if they could switch off
+> >> >> >> while the PF is active on the host.
+> >> >> >>
+> >> >> >> > Fix this by always calling pci_set_power_state(pdev, PCI_D0) on
+> >> driver
+> >> >> >> > device probe.
+> >> >> >>
+> >> >> >> That should be redundant.  There is already code that is called to
+> >> >> >> transition the power state to D0 in pci_enable_device_mem.  As
+> long
+> >> as
+> >> >> >> nobody else has enabled the device it will be ran.
+> >> >> >>
+> >> >> >
+> >> >> > That's weird. In this case, after doing aer-inject on the PF, if we
+> unbind
+> >> >> then bind the VF device, it fails in pci_enable_msix_range which I
+> traced
+> >> into
+> >> >> eventually a call that fails because the state isn't PCI_D0. If I add a
+> >> >> "pci_set_power_state(pdev, PCI_D0)" call in the probe routine it
+> works
+> >> >> fine...?
+> >> >> >
+> >> >> > I don't really know why that'd be the case... thoughts?
+> >> >>
+> >> >> Does the VF even advertise support for PCI power management
+> >> >> capability?  If I recall a VF shouldn't.  As such I think a call to
+> >> >> pci_set_power_state should be returning an error and not doing
+> >> >> anything so I would think this code only has any effect on the PF.  So
+> >> >> I am not certain what this patch is even doing if you aren't reloading
+> >> >> the PF driver to trigger it.
+> >> >>
+> >> >> - Alex
+> >> >
+> >> > I'm not sure either but without it we're ending up with the failure in
+> >> pci_msi_supported failing with -EINVAL because dev->current_state !=
+> >> PCI_D0...
+> >> >
+> >> > It only happens after an unbind of the VF device then a bind. I think
+> >> somehow the dev->current_state gets messed up but I don't know how
+> this
+> >> happens.
+> >> >
+> >> > Thanks,
+> >> > Jake
+> >>
+> >> When you say unbind/bind are you talking about using the sysfs or is
+> >> this via some other mechanism?
+> >>
+> >> - Alex
+> >
+> > Using sysfs. We echo the PCI address to fm10k's unbind, then echo it to
+> bind.
+> >
+> > Thanks,
+> > Jake
+> 
+> I'm wondering if we have a reference count bug being created
+> somewhere.  One thing you might try tracking is the dev->enable_cnt
+> value for the VF through probe and after a remove to see if we are
+> leaking that somewhere.  The other thing to look for is to figure out
+> where we are setting dev->current_state to something other than
+> PCI_D0.  I'd be interested in knowing where we are messing on this
+> with a VF and what we are setting it to.
+> 
+> - Alex
 
-drivers/net/ethernet/qlogic/qede/qede_dcbnl.c:304:50-51: getdcbx: first occurrence line 311, second occurrence line 327
+After a fresh bind, the current_state is PCI_UNKNOWN even after (a successful) pci_enable_device_mem...
 
-Error ids grouped by kconfigs:
+It stays unknown all the way through until the pci_enable_msix_range function is called and failed.
 
-recent_errors
-??? i386-allmodconfig
-    ??? drivers-net-ethernet-qlogic-qede-qede_dcbnl.c:getdcbx:first-occurrence-line-second-occurrence-line
-
-elapsed time: 65m
-
-configs tested: 122
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201623
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-parisc                         b180_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                 randconfig-x010-201623
-x86_64                 randconfig-x011-201623
-x86_64                 randconfig-x012-201623
-x86_64                 randconfig-x013-201623
-x86_64                 randconfig-x014-201623
-x86_64                 randconfig-x015-201623
-x86_64                 randconfig-x016-201623
-x86_64                 randconfig-x017-201623
-x86_64                 randconfig-x018-201623
-x86_64                 randconfig-x019-201623
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201623
-i386                     randconfig-s1-201623
-x86_64                 randconfig-s0-06090639
-x86_64                 randconfig-s1-06090639
-x86_64                 randconfig-s2-06090639
-x86_64                 randconfig-s3-06090533
-x86_64                 randconfig-s4-06090533
-x86_64                 randconfig-s5-06090533
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-i386                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201623
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                   randconfig-i0-06080914
-i386                   randconfig-i1-06080914
-i386                   randconfig-x017-201623
-i386                   randconfig-x018-201623
-i386                   randconfig-x014-201623
-i386                   randconfig-x011-201623
-i386                   randconfig-x016-201623
-i386                   randconfig-x013-201623
-i386                   randconfig-x010-201623
-i386                   randconfig-x019-201623
-i386                   randconfig-x015-201623
-i386                   randconfig-x012-201623
-x86_64                                    lkp
-x86_64                                   rhel
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201623
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-x86_64                 randconfig-x007-201623
-x86_64                 randconfig-x006-201623
-x86_64                 randconfig-x003-201623
-x86_64                 randconfig-x000-201623
-x86_64                 randconfig-x008-201623
-x86_64                 randconfig-x005-201623
-x86_64                 randconfig-x004-201623
-x86_64                 randconfig-x001-201623
-x86_64                 randconfig-x002-201623
-x86_64                 randconfig-x009-201623
-i386                     randconfig-r0-201623
-i386                   randconfig-x005-201623
-i386                   randconfig-x008-201623
-i386                   randconfig-x000-201623
-i386                   randconfig-x009-201623
-i386                   randconfig-x003-201623
-i386                   randconfig-x006-201623
-i386                   randconfig-x001-201623
-i386                   randconfig-x004-201623
-i386                   randconfig-x007-201623
-i386                   randconfig-x002-201623
+I'm adding code to check the enable count now.
 
 Thanks,
-Fengguang
+Jake
