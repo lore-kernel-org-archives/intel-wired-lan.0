@@ -1,5 +1,5 @@
 From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Thu, 9 Jun 2016 17:24:32 +0000
+Date: Thu, 9 Jun 2016 17:31:53 +0000
 Subject: [Intel-wired-lan] [PATCH] fm10k: restore D0 power state upon
  probe
 In-Reply-To: <CAKgT0Ueno8VjnHDZsqGOU+t5h2DJQOkOLO8vJk8z-ZMpgn5_MA@mail.gmail.com>
@@ -11,7 +11,7 @@ References: <20160608002043.10367-1-jacob.e.keller@intel.com>
  <CAKgT0Uft298E1zAkEJ+R7SGrA9oisS6Ufpkmo7V-KD+eBvLXnQ@mail.gmail.com>
  <02874ECE860811409154E81DA85FBB5857AE0C33@ORSMSX115.amr.corp.intel.com>
  <CAKgT0Ueno8VjnHDZsqGOU+t5h2DJQOkOLO8vJk8z-ZMpgn5_MA@mail.gmail.com>
-Message-ID: <02874ECE860811409154E81DA85FBB5857AE19AB@ORSMSX115.amr.corp.intel.com>
+Message-ID: <02874ECE860811409154E81DA85FBB5857AE19C6@ORSMSX115.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -141,11 +141,7 @@ List-ID: <intel-wired-lan.osuosl.org>
 > 
 > - Alex
 
-After a fresh bind, the current_state is PCI_UNKNOWN even after (a successful) pci_enable_device_mem...
-
-It stays unknown all the way through until the pci_enable_msix_range function is called and failed.
-
-I'm adding code to check the enable count now.
+It appears that after an AER injection error we end up leaking a pci device reference count. I'm currently investigating that now.
 
 Thanks,
 Jake
