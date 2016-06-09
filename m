@@ -1,53 +1,151 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 08 Jun 2016 16:04:46 -0700
-Subject: [Intel-wired-lan] [PATCH v3 0/6] Introduce
-	pci_(request|release)_(mem|io)_regions
-In-Reply-To: <20160608072854.ivcfvtlgxab2xkmp@c203.arch.suse.de>
-References: <cover.1465200424.git.jthumshirn@suse.de>
- <20160608072854.ivcfvtlgxab2xkmp@c203.arch.suse.de>
-Message-ID: <1465427086.2736.93.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 09 Jun 2016 08:59:35 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 6011c26042a941a9527d3289300eeb22ad73f9c9 BUILD DONE
+Message-ID: <5758bf77.dTGnGwssAO9Js383%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2016-06-08 at 09:28 +0200, Johannes Thumshirn wrote:
-> On Tue, Jun 07, 2016 at 09:44:00AM +0200, Johannes Thumshirn wrote:
-> > The first patch in this series introduces the following 4 helper
-> functions to
-> > the PCI core:
-> >?
-> > * pci_request_mem_regions()
-> > * pci_request_io_regions()
-> > * pci_release_mem_regions()
-> > * pci_release_io_regions()
-> >?
-> > which encapsulate the request and release of a PCI device's memory or
-> I/O
-> > bars.
-> >?
-> > The subsequent patches convert the drivers, which use the
-> > pci_request_selected_regions(pdev,?
-> >???????pci_select_bars(pdev, IORESOURCE_MEM), name);?
-> > and similar pattern to use the new interface.
-> >?
-> > This was suggested by Christoph Hellwig in
-> > http://lists.infradead.org/pipermail/linux-nvme/2016-May/004570.html?an
-> d
-> > tested on kernel v4.6 with NVMe.
-> >?
-> 
-> Btw, as I've seen already Jeff applying the Intel Ethernet patch to his
-> tree, I think this should go via the PCI tree as the build dependency is
-> the PCI patch.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+6011c26042a941a9527d3289300eeb22ad73f9c9  fm10k: bump version number
 
-Bjorn should pick up the entire series, I just applied the Intel patch (and
-dependent patches) so we could touch test it.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160608/37d3a717/attachment.asc>
+drivers/net/ethernet/qlogic/qede/qede_dcbnl.c:304:50-51: getdcbx: first occurrence line 311, second occurrence line 327
+
+Error ids grouped by kconfigs:
+
+recent_errors
+??? i386-allmodconfig
+    ??? drivers-net-ethernet-qlogic-qede-qede_dcbnl.c:getdcbx:first-occurrence-line-second-occurrence-line
+
+elapsed time: 65m
+
+configs tested: 122
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201623
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+parisc                         b180_defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                 randconfig-x010-201623
+x86_64                 randconfig-x011-201623
+x86_64                 randconfig-x012-201623
+x86_64                 randconfig-x013-201623
+x86_64                 randconfig-x014-201623
+x86_64                 randconfig-x015-201623
+x86_64                 randconfig-x016-201623
+x86_64                 randconfig-x017-201623
+x86_64                 randconfig-x018-201623
+x86_64                 randconfig-x019-201623
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201623
+i386                     randconfig-s1-201623
+x86_64                 randconfig-s0-06090639
+x86_64                 randconfig-s1-06090639
+x86_64                 randconfig-s2-06090639
+x86_64                 randconfig-s3-06090533
+x86_64                 randconfig-s4-06090533
+x86_64                 randconfig-s5-06090533
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+i386                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201623
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                   randconfig-i0-06080914
+i386                   randconfig-i1-06080914
+i386                   randconfig-x017-201623
+i386                   randconfig-x018-201623
+i386                   randconfig-x014-201623
+i386                   randconfig-x011-201623
+i386                   randconfig-x016-201623
+i386                   randconfig-x013-201623
+i386                   randconfig-x010-201623
+i386                   randconfig-x019-201623
+i386                   randconfig-x015-201623
+i386                   randconfig-x012-201623
+x86_64                                    lkp
+x86_64                                   rhel
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201623
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+x86_64                 randconfig-x007-201623
+x86_64                 randconfig-x006-201623
+x86_64                 randconfig-x003-201623
+x86_64                 randconfig-x000-201623
+x86_64                 randconfig-x008-201623
+x86_64                 randconfig-x005-201623
+x86_64                 randconfig-x004-201623
+x86_64                 randconfig-x001-201623
+x86_64                 randconfig-x002-201623
+x86_64                 randconfig-x009-201623
+i386                     randconfig-r0-201623
+i386                   randconfig-x005-201623
+i386                   randconfig-x008-201623
+i386                   randconfig-x000-201623
+i386                   randconfig-x009-201623
+i386                   randconfig-x003-201623
+i386                   randconfig-x006-201623
+i386                   randconfig-x001-201623
+i386                   randconfig-x004-201623
+i386                   randconfig-x007-201623
+i386                   randconfig-x002-201623
+
+Thanks,
+Fengguang
