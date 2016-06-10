@@ -1,67 +1,23 @@
-From: Julia Lawall <julia.lawall@lip6.fr>
-Date: Fri, 10 Jun 2016 09:26:54 +0200 (CEST)
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 119/181]
- drivers/net/ethernet/qlogic/qede/qede_dcbnl.c:304:50-51: getdcbx: first
- occurrence line 311, second occurrence line 327 (fwd)
-Message-ID: <alpine.DEB.2.10.1606100925360.4715@hadrien>
+From: Jawahar Balaji Thirumalaisamy <jawaharb@juniper.net>
+Date: Fri, 10 Jun 2016 22:25:34 +0000
+Subject: [Intel-wired-lan] patch for latest i40e driver kernel: stable 4.1
+Message-ID: <C2E5FB39-4FDD-4911-8096-BC2C1015908E@juniper.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
-head:   6011c26042a941a9527d3289300eeb22ad73f9c9
-commit: 489e45ae42f000a5e045ac203ad5d6f08824cd56 [119/181] qede: Add dcbnl support.
-:::::: branch date: 51 minutes ago
-:::::: commit date: 7 hours ago
+Hi all,
 
->> drivers/net/ethernet/qlogic/qede/qede_dcbnl.c:304:50-51: getdcbx: first occurrence line 311, second occurrence line 327
+Is there a patch available to update stable-4.1 kernel with the latest i40e driver ?
+
+I see that the i40e driver version available upstream is 1.3.2.
 
 
-It looks like the two lines are identical, and one should just be removed.
+Thanks,
 
-julia
-
-git remote add jkirsher-next-queue https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
-git remote update jkirsher-next-queue
-git checkout 489e45ae42f000a5e045ac203ad5d6f08824cd56
-vim +304 drivers/net/ethernet/qlogic/qede/qede_dcbnl.c
-
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  298  {
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  299  	struct qede_dev *edev = netdev_priv(netdev);
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  300
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  301  	return edev->ops->dcb->ieee_peer_getets(edev->cdev, ets);
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  302  }
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  303
-489e45ae Sudarsana Reddy Kalluru 2016-06-08 @304  static const struct dcbnl_rtnl_ops qede_dcbnl_ops = {
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  305  	.ieee_getpfc = qede_dcbnl_ieee_getpfc,
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  306  	.ieee_setpfc = qede_dcbnl_ieee_setpfc,
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  307  	.ieee_getets = qede_dcbnl_ieee_getets,
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  308  	.ieee_setets = qede_dcbnl_ieee_setets,
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  309  	.ieee_getapp = qede_dcbnl_ieee_getapp,
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  310  	.ieee_setapp = qede_dcbnl_ieee_setapp,
-489e45ae Sudarsana Reddy Kalluru 2016-06-08 @311  	.getdcbx = qede_dcbnl_getdcbx,
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  312  	.ieee_peer_getpfc = qede_dcbnl_ieee_peer_getpfc,
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  313  	.ieee_peer_getets = qede_dcbnl_ieee_peer_getets,
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  314  	.getstate = qede_dcbnl_getstate,
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  315  	.setstate = qede_dcbnl_setstate,
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  316  	.getpermhwaddr = qede_dcbnl_getpermhwaddr,
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  317  	.getpgtccfgtx = qede_dcbnl_getpgtccfgtx,
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  318  	.getpgbwgcfgtx = qede_dcbnl_getpgbwgcfgtx,
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  319  	.getpgtccfgrx = qede_dcbnl_getpgtccfgrx,
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  320  	.getpgbwgcfgrx = qede_dcbnl_getpgbwgcfgrx,
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  321  	.getpfccfg = qede_dcbnl_getpfccfg,
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  322  	.setpfccfg = qede_dcbnl_setpfccfg,
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  323  	.getcap = qede_dcbnl_getcap,
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  324  	.getnumtcs = qede_dcbnl_getnumtcs,
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  325  	.getpfcstate = qede_dcbnl_getpfcstate,
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  326  	.getapp = qede_dcbnl_getapp,
-489e45ae Sudarsana Reddy Kalluru 2016-06-08 @327  	.getdcbx = qede_dcbnl_getdcbx,
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  328  	.setpgtccfgtx = qede_dcbnl_setpgtccfgtx,
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  329  	.setpgtccfgrx = qede_dcbnl_setpgtccfgrx,
-489e45ae Sudarsana Reddy Kalluru 2016-06-08  330  	.setpgbwgcfgtx = qede_dcbnl_setpgbwgcfgtx,
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+Jawahar
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160610/f131d4f3/attachment.html>
