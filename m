@@ -1,103 +1,67 @@
-From: Jarod Wilson <jarod@redhat.com>
-Date: Thu,  9 Jun 2016 19:50:13 -0400
-Subject: [Intel-wired-lan] [PATCH net v2] e1000e: keep vlan interfaces
-	functional after rxvlan off
-In-Reply-To: <1463511831-13684-1-git-send-email-jarod@redhat.com>
-References: <1463511831-13684-1-git-send-email-jarod@redhat.com>
-Message-ID: <1465516213-18176-1-git-send-email-jarod@redhat.com>
+From: Julia Lawall <julia.lawall@lip6.fr>
+Date: Fri, 10 Jun 2016 09:26:54 +0200 (CEST)
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 119/181]
+ drivers/net/ethernet/qlogic/qede/qede_dcbnl.c:304:50-51: getdcbx: first
+ occurrence line 311, second occurrence line 327 (fwd)
+Message-ID: <alpine.DEB.2.10.1606100925360.4715@hadrien>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-I've got a bug report about an e1000e interface, where a vlan interface is
-set up on top of it:
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   6011c26042a941a9527d3289300eeb22ad73f9c9
+commit: 489e45ae42f000a5e045ac203ad5d6f08824cd56 [119/181] qede: Add dcbnl support.
+:::::: branch date: 51 minutes ago
+:::::: commit date: 7 hours ago
 
-$ ip link add link ens1f0 name ens1f0.99 type vlan id 99
-$ ip link set ens1f0 up
-$ ip link set ens1f0.99 up
-$ ip addr add 192.168.99.92 dev ens1f0.99
+>> drivers/net/ethernet/qlogic/qede/qede_dcbnl.c:304:50-51: getdcbx: first occurrence line 311, second occurrence line 327
 
-At this point, I can ping another host on vlan 99, ip 192.168.99.91.
-However, if I do the following:
 
-$ ethtool -K ens1f0 rxvlan off
+It looks like the two lines are identical, and one should just be removed.
 
-Then no traffic passes on ens1f0.99. It comes back if I toggle rxvlan on
-again. Upon discussion with folks here, and closer inspection, it appears
-that the software *receive* fallback is working correctly, but outbound
-traffic is broken. Upon glancing at the e1000 driver, I saw a note about
-having to keep RX and TX accel flags in sync, because there's no
-(hardware?) support for separate vlan accel toggle. Swipe the same hack
-from the e1000 driver, and things start to behave again with rxvlan off.
+julia
 
-After patch:
+git remote add jkirsher-next-queue https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git
+git remote update jkirsher-next-queue
+git checkout 489e45ae42f000a5e045ac203ad5d6f08824cd56
+vim +304 drivers/net/ethernet/qlogic/qede/qede_dcbnl.c
 
-$ ping 192.168.99.91
-PING 192.168.99.91 (192.168.99.91) 56(84) bytes of data.
-64 bytes from 192.168.99.91: icmp_seq=1 ttl=64 time=0.591 ms
-64 bytes from 192.168.99.91: icmp_seq=2 ttl=64 time=0.335 ms
-64 bytes from 192.168.99.91: icmp_seq=3 ttl=64 time=0.417 ms
-^C
---- 192.168.99.91 ping statistics ---
-3 packets transmitted, 3 received, 0% packet loss, time 2000ms
-rtt min/avg/max/mdev = 0.335/0.447/0.591/0.109 ms
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  298  {
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  299  	struct qede_dev *edev = netdev_priv(netdev);
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  300
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  301  	return edev->ops->dcb->ieee_peer_getets(edev->cdev, ets);
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  302  }
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  303
+489e45ae Sudarsana Reddy Kalluru 2016-06-08 @304  static const struct dcbnl_rtnl_ops qede_dcbnl_ops = {
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  305  	.ieee_getpfc = qede_dcbnl_ieee_getpfc,
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  306  	.ieee_setpfc = qede_dcbnl_ieee_setpfc,
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  307  	.ieee_getets = qede_dcbnl_ieee_getets,
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  308  	.ieee_setets = qede_dcbnl_ieee_setets,
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  309  	.ieee_getapp = qede_dcbnl_ieee_getapp,
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  310  	.ieee_setapp = qede_dcbnl_ieee_setapp,
+489e45ae Sudarsana Reddy Kalluru 2016-06-08 @311  	.getdcbx = qede_dcbnl_getdcbx,
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  312  	.ieee_peer_getpfc = qede_dcbnl_ieee_peer_getpfc,
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  313  	.ieee_peer_getets = qede_dcbnl_ieee_peer_getets,
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  314  	.getstate = qede_dcbnl_getstate,
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  315  	.setstate = qede_dcbnl_setstate,
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  316  	.getpermhwaddr = qede_dcbnl_getpermhwaddr,
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  317  	.getpgtccfgtx = qede_dcbnl_getpgtccfgtx,
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  318  	.getpgbwgcfgtx = qede_dcbnl_getpgbwgcfgtx,
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  319  	.getpgtccfgrx = qede_dcbnl_getpgtccfgrx,
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  320  	.getpgbwgcfgrx = qede_dcbnl_getpgbwgcfgrx,
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  321  	.getpfccfg = qede_dcbnl_getpfccfg,
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  322  	.setpfccfg = qede_dcbnl_setpfccfg,
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  323  	.getcap = qede_dcbnl_getcap,
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  324  	.getnumtcs = qede_dcbnl_getnumtcs,
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  325  	.getpfcstate = qede_dcbnl_getpfcstate,
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  326  	.getapp = qede_dcbnl_getapp,
+489e45ae Sudarsana Reddy Kalluru 2016-06-08 @327  	.getdcbx = qede_dcbnl_getdcbx,
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  328  	.setpgtccfgtx = qede_dcbnl_setpgtccfgtx,
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  329  	.setpgtccfgrx = qede_dcbnl_setpgtccfgrx,
+489e45ae Sudarsana Reddy Kalluru 2016-06-08  330  	.setpgbwgcfgtx = qede_dcbnl_setpgbwgcfgtx,
 
-$ sudo ethtool -K ens1f0 rxvlan off
-Actual changes:
-rx-vlan-offload: off
-tx-vlan-offload: off [requested on]
-
-$ ping 192.168.99.91
-PING 192.168.99.91 (192.168.99.91) 56(84) bytes of data.
-64 bytes from 192.168.99.91: icmp_seq=1 ttl=64 time=0.327 ms
-64 bytes from 192.168.99.91: icmp_seq=2 ttl=64 time=0.393 ms
-64 bytes from 192.168.99.91: icmp_seq=3 ttl=64 time=0.424 ms
-^C
---- 192.168.99.91 ping statistics ---
-3 packets transmitted, 3 received, 0% packet loss, time 1999ms
-rtt min/avg/max/mdev = 0.327/0.381/0.424/0.043 ms
-
-Also slipped a related-ish fix to the kerneldoc text for
-e1000e_vlan_strip_disable here...
-
-CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-CC: intel-wired-lan at lists.osuosl.org
-CC: netdev at vger.kernel.org
-Signed-off-by: Jarod Wilson <jarod@redhat.com>
 ---
- drivers/net/ethernet/intel/e1000e/netdev.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index 75e6089..2b2e2f8 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -2789,7 +2789,7 @@ static void e1000e_vlan_filter_enable(struct e1000_adapter *adapter)
- }
- 
- /**
-- * e1000e_vlan_strip_enable - helper to disable HW VLAN stripping
-+ * e1000e_vlan_strip_disable - helper to disable HW VLAN stripping
-  * @adapter: board private structure to initialize
-  **/
- static void e1000e_vlan_strip_disable(struct e1000_adapter *adapter)
-@@ -6915,6 +6915,14 @@ static netdev_features_t e1000_fix_features(struct net_device *netdev,
- 	if ((hw->mac.type >= e1000_pch2lan) && (netdev->mtu > ETH_DATA_LEN))
- 		features &= ~NETIF_F_RXFCS;
- 
-+	/* Since there is no support for separate Rx/Tx vlan accel
-+	 * enable/disable make sure Tx flag is always in same state as Rx.
-+	 */
-+	if (features & NETIF_F_HW_VLAN_CTAG_RX)
-+		features |= NETIF_F_HW_VLAN_CTAG_TX;
-+	else
-+		features &= ~NETIF_F_HW_VLAN_CTAG_TX;
-+
- 	return features;
- }
- 
--- 
-1.8.3.1
-
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
