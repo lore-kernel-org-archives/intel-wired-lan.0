@@ -1,46 +1,50 @@
-From: Hannes Frederic Sowa <hannes@redhat.com>
-Date: Mon, 13 Jun 2016 19:57:31 +0200
-Subject: [Intel-wired-lan] [net-next PATCH 02/15] net: Merge VXLAN and
- GENEVE push notifiers into a single notifier
-In-Reply-To: <20160613174806.15186.64702.stgit@localhost.localdomain>
-References: <20160613173750.15186.24381.stgit@localhost.localdomain>
- <20160613174806.15186.64702.stgit@localhost.localdomain>
-Message-ID: <77eb25b2-d775-ec6f-c945-524d73113c96@redhat.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Mon, 13 Jun 2016 14:05:26 -0500
+Subject: [Intel-wired-lan] [PATCH v6 0/3] PCI: Precision Time Measurement
+	support
+Message-ID: <20160613185945.12503.32760.stgit@bhelgaas-glaptop2.roam.corp.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Alex,
+This is a slightly different proposal for the PTM support Jonathan
+proposed here:
 
-very cool series!
+  http://lkml.kernel.org/r/1462956446-27361-2-git-send-email-jonathan.yong at intel.com
 
-On 13.06.2016 19:48, Alexander Duyck wrote:
-> diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-> index d101e4d904ba..e959b6348f91 100644
-> --- a/include/linux/netdevice.h
-> +++ b/include/linux/netdevice.h
-> @@ -1269,6 +1269,14 @@ struct net_device_ops {
->  	void			(*ndo_del_geneve_port)(struct  net_device *dev,
->  						       sa_family_t sa_family,
->  						       __be16 port);
-> +	void			(*ndo_add_udp_enc_port)(struct  net_device *dev,
-> +						       sa_family_t sa_family,
-> +						       __be16 port,
-> +						       unsigned int type);
-> +	void			(*ndo_del_udp_enc_port)(struct  net_device *dev,
-> +						       sa_family_t sa_family,
-> +						       __be16 port,
-> +						       unsigned int type);
->  	void*			(*ndo_dfwd_add_station)(struct net_device *pdev,
->  							struct net_device *dev);
->  	void			(*ndo_dfwd_del_station)(struct net_device *pdev,
+I split this into three pieces mostly for ease in reviewing.  They
+could all be squashed:
 
-What do you think about adding a struct as argument to
-ndo_*_udp_enc_port? As a result we can much easier add new fields in
-case future NICs allow us to e.g. specify a bound ip address?
+  - Enable PTM in root ports and switches automatically at boot
+  - Enable PTM in endpoints when requested by driver
+  - Add clock granularity information
 
-Thanks,
-Hannes
+I have some open questions about how PTM works on Root Complex
+Integrated Endpoints and whether we should enable it automatically
+even without a driver request.  And I probably left out some details
+of the clock granularity computation, so treat this as more of an RFC
+than anything.
 
+Bjorn
+
+---
+
+Bjorn Helgaas (2):
+      PCI: Add pci_enable_ptm() for drivers to enable PTM on endpoints
+      PCI: Add PTM clock granularity information
+
+Jonathan Yong (1):
+      PCI: Add Precision Time Measurement (PTM) support
+
+
+ drivers/pci/pci.h             |    6 ++
+ drivers/pci/pcie/Kconfig      |   12 ++++
+ drivers/pci/pcie/Makefile     |    1 
+ drivers/pci/pcie/ptm.c        |  140 +++++++++++++++++++++++++++++++++++++++++
+ drivers/pci/probe.c           |    3 +
+ include/linux/pci.h           |   13 ++++
+ include/uapi/linux/pci_regs.h |   12 +++-
+ 7 files changed, 186 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/pci/pcie/ptm.c
