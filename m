@@ -1,145 +1,78 @@
 From: Alexander Duyck <aduyck@mirantis.com>
-Date: Mon, 13 Jun 2016 10:49:58 -0700
-Subject: [Intel-wired-lan] [net-next PATCH 14/15] net: Remove deprecated
- tunnel specific UDP offload functions
+Date: Mon, 13 Jun 2016 10:50:08 -0700
+Subject: [Intel-wired-lan] [net-next PATCH 15/15] vxlan: Add new UDP
+ encapsulation offload type for VXLAN-GPE
 In-Reply-To: <20160613173750.15186.24381.stgit@localhost.localdomain>
 References: <20160613173750.15186.24381.stgit@localhost.localdomain>
-Message-ID: <20160613174958.15186.68608.stgit@localhost.localdomain>
+Message-ID: <20160613175008.15186.76657.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Now that we have all the drivers using udp_tunnel_get_rx_ports,
-ndo_add_udp_enc_rx_port, and ndo_del_udp_enc_rx_port we can drop the
-function calls that were specific to VXLAN and GENEVE.
+The fact is VXLAN with Generic Protocol Extensions cannot be supported by
+the same hardware parsers as that support VXLAN.  The protocol extensions
+allow for things like a Next Protocol field which in turn allows for things
+other than Ethernet to be passed over the tunnel.  Most existing parsers
+will not know how to interpret this.
+
+To resolve this I am giving VXLAN-GPE its own UDP encapsulation offload
+type.  This way hardware that does support GPE can simply add this type to
+the switch statement for VXLAN, and if they don't support it then this will
+fix any issues where headers might be interpreted incorrectly.
 
 Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 ---
- include/linux/netdevice.h |   12 ------------
- include/net/geneve.h      |    5 -----
- include/net/vxlan.h       |    5 -----
- net/ipv4/udp_tunnel.c     |   41 ++---------------------------------------
- 4 files changed, 2 insertions(+), 61 deletions(-)
+ drivers/net/vxlan.c      |   12 ++++++++++--
+ include/net/udp_tunnel.h |    1 +
+ 2 files changed, 11 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index e959b6348f91..ee3266d8aeaf 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -1257,18 +1257,6 @@ struct net_device_ops {
- 							struct netdev_phys_item_id *ppid);
- 	int			(*ndo_get_phys_port_name)(struct net_device *dev,
- 							  char *name, size_t len);
--	void			(*ndo_add_vxlan_port)(struct  net_device *dev,
--						      sa_family_t sa_family,
--						      __be16 port);
--	void			(*ndo_del_vxlan_port)(struct  net_device *dev,
--						      sa_family_t sa_family,
--						      __be16 port);
--	void			(*ndo_add_geneve_port)(struct  net_device *dev,
--						       sa_family_t sa_family,
--						       __be16 port);
--	void			(*ndo_del_geneve_port)(struct  net_device *dev,
--						       sa_family_t sa_family,
--						       __be16 port);
- 	void			(*ndo_add_udp_enc_port)(struct  net_device *dev,
- 						       sa_family_t sa_family,
- 						       __be16 port,
-diff --git a/include/net/geneve.h b/include/net/geneve.h
-index 7638ec62c5e1..ec0327d4331b 100644
---- a/include/net/geneve.h
-+++ b/include/net/geneve.h
-@@ -59,11 +59,6 @@ struct genevehdr {
- 	struct geneve_opt options[];
- };
- 
--static inline void geneve_get_rx_port(struct net_device *netdev)
--{
--	udp_tunnel_get_rx_port(netdev);
--}
--
- #ifdef CONFIG_INET
- struct net_device *geneve_dev_create_fb(struct net *net, const char *name,
- 					u8 name_assign_type, u16 dst_port);
-diff --git a/include/net/vxlan.h b/include/net/vxlan.h
-index 2c4f8fcd5a3b..a958cbea8676 100644
---- a/include/net/vxlan.h
-+++ b/include/net/vxlan.h
-@@ -393,11 +393,6 @@ static inline __be32 vxlan_compute_rco(unsigned int start, unsigned int offset)
- 	return vni_field;
- }
- 
--static inline void vxlan_get_rx_port(struct net_device *netdev)
--{
--	udp_tunnel_get_rx_port(netdev);
--}
--
- static inline unsigned short vxlan_get_sk_family(struct vxlan_sock *vs)
+diff --git a/drivers/net/vxlan.c b/drivers/net/vxlan.c
+index 72da056abdf4..501c9e4741ed 100644
+--- a/drivers/net/vxlan.c
++++ b/drivers/net/vxlan.c
+@@ -622,13 +622,19 @@ static int vxlan_gro_complete(struct sock *sk, struct sk_buff *skb, int nhoff)
+ /* Notify netdevs that UDP port started listening */
+ static void vxlan_notify_add_rx_port(struct vxlan_sock *vs)
  {
- 	return vs->sock->sk->sk_family;
-diff --git a/net/ipv4/udp_tunnel.c b/net/ipv4/udp_tunnel.c
-index a22677cd41d8..39dfe9e0e498 100644
---- a/net/ipv4/udp_tunnel.c
-+++ b/net/ipv4/udp_tunnel.c
-@@ -83,28 +83,10 @@ void udp_tunnel_push_rx_port(struct net_device *dev, struct socket *sock,
- 	sa_family_t sa_family = sk->sk_family;
- 	__be16 port = inet_sk(sk)->inet_sport;
- 
--	if (dev->netdev_ops->ndo_add_udp_enc_port) {
-+	if (dev->netdev_ops->ndo_add_udp_enc_port)
- 		dev->netdev_ops->ndo_add_udp_enc_port(dev, sa_family,
- 						      port, type);
--		return;
--	}
- 
--	switch (type) {
--	case UDP_ENC_OFFLOAD_TYPE_VXLAN:
--		if (!dev->netdev_ops->ndo_add_vxlan_port)
--			break;
--
--		dev->netdev_ops->ndo_add_vxlan_port(dev, sa_family, port);
--		break;
--	case UDP_ENC_OFFLOAD_TYPE_GENEVE:
--		if (!dev->netdev_ops->ndo_add_geneve_port)
--			break;
--
--		dev->netdev_ops->ndo_add_geneve_port(dev, sa_family, port);
--		break;
--	default:
--		break;
--	}
- }
- EXPORT_SYMBOL_GPL(udp_tunnel_push_rx_port);
- 
-@@ -128,28 +110,9 @@ static void udp_tunnel_pull_rx_port(struct net_device *dev,
- 	sa_family_t sa_family = sk->sk_family;
- 	__be16 port = inet_sk(sk)->inet_sport;
- 
--	if (dev->netdev_ops->ndo_del_udp_enc_port) {
-+	if (dev->netdev_ops->ndo_del_udp_enc_port)
- 		dev->netdev_ops->ndo_del_udp_enc_port(dev, sa_family,
- 						      port, type);
--		return;
--	}
--
--	switch (type) {
--	case UDP_ENC_OFFLOAD_TYPE_VXLAN:
--		if (!dev->netdev_ops->ndo_del_vxlan_port)
--			break;
--
--		dev->netdev_ops->ndo_del_vxlan_port(dev, sa_family, port);
--		break;
--	case UDP_ENC_OFFLOAD_TYPE_GENEVE:
--		if (!dev->netdev_ops->ndo_del_geneve_port)
--			break;
--
--		dev->netdev_ops->ndo_del_geneve_port(dev, sa_family, port);
--		break;
--	default:
--		break;
--	}
+-	udp_tunnel_notify_add_rx_port(vs->sock, UDP_ENC_OFFLOAD_TYPE_VXLAN);
++	udp_tunnel_notify_add_rx_port(vs->sock,
++				      (vs->flags & VXLAN_F_GPE) ?
++				      UDP_ENC_OFFLOAD_TYPE_VXLAN_GPE :
++				      UDP_ENC_OFFLOAD_TYPE_VXLAN);
  }
  
  /* Notify netdevs that UDP port is no more listening */
+ static void vxlan_notify_del_rx_port(struct vxlan_sock *vs)
+ {
+-	udp_tunnel_notify_del_rx_port(vs->sock, UDP_ENC_OFFLOAD_TYPE_VXLAN);
++	udp_tunnel_notify_del_rx_port(vs->sock,
++				      (vs->flags & VXLAN_F_GPE) ?
++				      UDP_ENC_OFFLOAD_TYPE_VXLAN_GPE :
++				      UDP_ENC_OFFLOAD_TYPE_VXLAN);
+ }
+ 
+ /* Add new entry to forwarding table -- assumes lock held */
+@@ -2516,6 +2522,8 @@ static void vxlan_push_rx_ports(struct net_device *dev)
+ 	for (i = 0; i < PORT_HASH_SIZE; ++i) {
+ 		hlist_for_each_entry_rcu(vs, &vn->sock_list[i], hlist)
+ 			udp_tunnel_push_rx_port(dev, vs->sock,
++						(vs->flags & VXLAN_F_GPE) ?
++						UDP_ENC_OFFLOAD_TYPE_VXLAN_GPE :
+ 						UDP_ENC_OFFLOAD_TYPE_VXLAN);
+ 	}
+ 	spin_unlock(&vn->sock_lock);
+diff --git a/include/net/udp_tunnel.h b/include/net/udp_tunnel.h
+index 9ea813740231..cc85e9e53f3d 100644
+--- a/include/net/udp_tunnel.h
++++ b/include/net/udp_tunnel.h
+@@ -88,6 +88,7 @@ void setup_udp_tunnel_sock(struct net *net, struct socket *sock,
+ enum udp_enc_offloads {
+ 	UDP_ENC_OFFLOAD_TYPE_VXLAN,	/* RFC 7348 */
+ 	UDP_ENC_OFFLOAD_TYPE_GENEVE,	/* draft-ietf-nvo3-geneve */
++	UDP_ENC_OFFLOAD_TYPE_VXLAN_GPE,	/* draft-ietf-nvo3-vxlan-gpe */
+ };
+ 
+ /* Notify network devices of offloadable types */
 
