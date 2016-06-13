@@ -1,74 +1,55 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Tue, 14 Jun 2016 03:42:37 +0800
-Subject: [Intel-wired-lan] [PATCH v6 3/3] PCI: Add PTM clock granularity
-	information
-In-Reply-To: <20160613190550.12503.18319.stgit@bhelgaas-glaptop2.roam.corp.google.com>
-Message-ID: <201606140328.v6pgxin6%fengguang.wu@intel.com>
+From: Tom Herbert <tom@herbertland.com>
+Date: Mon, 13 Jun 2016 12:31:26 -0700
+Subject: [Intel-wired-lan] [net-next PATCH 02/15] net: Merge VXLAN and
+ GENEVE push notifiers into a single notifier
+In-Reply-To: <77eb25b2-d775-ec6f-c945-524d73113c96@redhat.com>
+References: <20160613173750.15186.24381.stgit@localhost.localdomain>
+ <20160613174806.15186.64702.stgit@localhost.localdomain>
+ <77eb25b2-d775-ec6f-c945-524d73113c96@redhat.com>
+Message-ID: <CALx6S35MsGtRyxYiOi389w05v8y=pG6fXZC3spj8OZKDTeh=Cg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+On Mon, Jun 13, 2016 at 10:57 AM, Hannes Frederic Sowa
+<hannes@redhat.com> wrote:
+> Hi Alex,
+>
+> very cool series!
+>
+> On 13.06.2016 19:48, Alexander Duyck wrote:
+>> diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+>> index d101e4d904ba..e959b6348f91 100644
+>> --- a/include/linux/netdevice.h
+>> +++ b/include/linux/netdevice.h
+>> @@ -1269,6 +1269,14 @@ struct net_device_ops {
+>>       void                    (*ndo_del_geneve_port)(struct  net_device *dev,
+>>                                                      sa_family_t sa_family,
+>>                                                      __be16 port);
+>> +     void                    (*ndo_add_udp_enc_port)(struct  net_device *dev,
+>> +                                                    sa_family_t sa_family,
+>> +                                                    __be16 port,
+>> +                                                    unsigned int type);
+>> +     void                    (*ndo_del_udp_enc_port)(struct  net_device *dev,
+>> +                                                    sa_family_t sa_family,
+>> +                                                    __be16 port,
+>> +                                                    unsigned int type);
+>>       void*                   (*ndo_dfwd_add_station)(struct net_device *pdev,
+>>                                                       struct net_device *dev);
+>>       void                    (*ndo_dfwd_del_station)(struct net_device *pdev,
+>
+> What do you think about adding a struct as argument to
+> ndo_*_udp_enc_port? As a result we can much easier add new fields in
+> case future NICs allow us to e.g. specify a bound ip address?
+>
+This is why I think we should be using ntuple filtering for
+encapsulation instead perpetuating the notion that encapsulation
+offload can only be done based on receive ports.
 
-[auto build test WARNING on pci/next]
-[also build test WARNING on v4.7-rc3 next-20160609]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+Tom
 
-url:    https://github.com/0day-ci/linux/commits/Bjorn-Helgaas/PCI-Precision-Time-Measurement-support/20160614-031902
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/helgaas/pci.git next
-config: i386-defconfig (attached as .config)
-compiler: gcc-6 (Debian 6.1.1-1) 6.1.1 20160430
-reproduce:
-        # save the attached .config to linux build tree
-        make ARCH=i386 
-
-Note: it may well be a FALSE warning. FWIW you are at least aware of it now.
-http://gcc.gnu.org/wiki/Better_Uninitialized_Warnings
-
-All warnings (new ones prefixed by >>):
-
-   drivers/pci/pcie/ptm.c: In function 'pci_enable_ptm':
->> drivers/pci/pcie/ptm.c:129:28: warning: 'ups' may be used uninitialized in this function [-Wmaybe-uninitialized]
-     dev->ptm_granularity = ups->ptm_granularity;
-                            ~~~^~~~~~~~~~~~~~~~~
-
-vim +/ups +129 drivers/pci/pcie/ptm.c
-
-   113		 * For Root Complex Integrated Endpoints, there is no upstream
-   114		 * device, so there must be some implementation-specific way to
-   115		 * associate the endpoint with a time source.
-   116		 */
-   117		if (pci_pcie_type(dev) == PCI_EXP_TYPE_ENDPOINT) {
-   118			/* PTM is only useful if an upstream device has it enabled */
-   119			ups = pci_upstream_bridge(dev);
-   120			if (!ups || !ups->ptm_enabled)
-   121				return -EINVAL;
-   122		} else if (pci_pcie_type(dev) != PCI_EXP_TYPE_RC_END)
-   123			return -EINVAL;
-   124	
-   125		pci_read_config_dword(dev, pos + PCI_PTM_CAP, &cap);
-   126		if (!(cap & PCI_PTM_CAP_REQ))
-   127			return -EINVAL;
-   128	
- > 129		dev->ptm_granularity = ups->ptm_granularity;
-   130	
-   131		ctrl = PCI_PTM_CTRL_ENABLE;
-   132		pci_write_config_dword(dev, pos + PCI_PTM_CTRL, ctrl);
-   133		dev->ptm_enabled = 1;
-   134	
-   135		pci_ptm_info(dev);
-   136	
-   137		if (granularity)
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: .config.gz
-Type: application/octet-stream
-Size: 24885 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160614/3a2d613a/attachment-0001.obj>
+> Thanks,
+> Hannes
+>
