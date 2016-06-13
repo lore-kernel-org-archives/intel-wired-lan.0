@@ -1,10 +1,10 @@
 From: Alexander Duyck <aduyck@mirantis.com>
-Date: Mon, 13 Jun 2016 10:49:12 -0700
-Subject: [Intel-wired-lan] [net-next PATCH 09/15] mlx4_en: Replace
+Date: Mon, 13 Jun 2016 10:49:18 -0700
+Subject: [Intel-wired-lan] [net-next PATCH 10/15] mlx5_en: Replace
  ndo_add/del_vxlan_port with ndo_add/del_udp_enc_port
 In-Reply-To: <20160613173750.15186.24381.stgit@localhost.localdomain>
 References: <20160613173750.15186.24381.stgit@localhost.localdomain>
-Message-ID: <20160613174912.15186.33016.stgit@localhost.localdomain>
+Message-ID: <20160613174918.15186.83306.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,95 +17,65 @@ any UDP offload port but provide a type.  As such by just adding a line to
 verify that the offload type is VXLAN we can maintain the same
 functionality.
 
-In addition I updated the socket address family check so that instead of
-excluding IPv6 we instead abort of type is not IPv4.  This makes much more
-sense as we should only be supporting IPv4 outer addresses on this
-hardware.
-
 Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 ---
- drivers/net/ethernet/mellanox/mlx4/en_netdev.c |   30 +++++++++++++++---------
- 1 file changed, 19 insertions(+), 11 deletions(-)
+ drivers/net/ethernet/mellanox/mlx5/core/en_main.c |   18 +++++++++++++-----
+ 1 file changed, 13 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/mellanox/mlx4/en_netdev.c b/drivers/net/ethernet/mellanox/mlx4/en_netdev.c
-index 973391bfe286..d4d5fdffbcee 100644
---- a/drivers/net/ethernet/mellanox/mlx4/en_netdev.c
-+++ b/drivers/net/ethernet/mellanox/mlx4/en_netdev.c
-@@ -1694,7 +1694,7 @@ int mlx4_en_start_port(struct net_device *dev)
- 
- #ifdef CONFIG_MLX4_EN_VXLAN
- 	if (priv->mdev->dev->caps.tunnel_offload_mode == MLX4_TUNNEL_OFFLOAD_MODE_VXLAN)
--		vxlan_get_rx_port(dev);
-+		udp_tunnel_get_rx_port(dev);
- #endif
- 	priv->port_up = true;
- 	netif_tx_start_all_queues(dev);
-@@ -2392,15 +2392,19 @@ static void mlx4_en_del_vxlan_offloads(struct work_struct *work)
+diff --git a/drivers/net/ethernet/mellanox/mlx5/core/en_main.c b/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
+index f5c8d5db25a8..217ea4ba1a29 100644
+--- a/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
++++ b/drivers/net/ethernet/mellanox/mlx5/core/en_main.c
+@@ -2520,10 +2520,14 @@ static int mlx5e_get_vf_stats(struct net_device *dev,
  }
  
- static void mlx4_en_add_vxlan_port(struct  net_device *dev,
--				   sa_family_t sa_family, __be16 port)
-+				   sa_family_t sa_family, __be16 port,
-+				   unsigned int type)
+ static void mlx5e_add_vxlan_port(struct net_device *netdev,
+-				 sa_family_t sa_family, __be16 port)
++				 sa_family_t sa_family, __be16 port,
++				 unsigned int type)
  {
- 	struct mlx4_en_priv *priv = netdev_priv(dev);
- 	__be16 current_port;
+ 	struct mlx5e_priv *priv = netdev_priv(netdev);
  
--	if (priv->mdev->dev->caps.tunnel_offload_mode != MLX4_TUNNEL_OFFLOAD_MODE_VXLAN)
 +	if (type != UDP_ENC_OFFLOAD_TYPE_VXLAN)
 +		return;
 +
-+	if (sa_family != AF_INET)
+ 	if (!mlx5e_vxlan_allowed(priv->mdev))
  		return;
  
--	if (sa_family == AF_INET6)
-+	if (priv->mdev->dev->caps.tunnel_offload_mode != MLX4_TUNNEL_OFFLOAD_MODE_VXLAN)
- 		return;
- 
- 	current_port = priv->vxlan_port;
-@@ -2415,15 +2419,19 @@ static void mlx4_en_add_vxlan_port(struct  net_device *dev,
+@@ -2531,10 +2535,14 @@ static void mlx5e_add_vxlan_port(struct net_device *netdev,
  }
  
- static void mlx4_en_del_vxlan_port(struct  net_device *dev,
--				   sa_family_t sa_family, __be16 port)
-+				   sa_family_t sa_family, __be16 port,
-+				   unsigned int type)
+ static void mlx5e_del_vxlan_port(struct net_device *netdev,
+-				 sa_family_t sa_family, __be16 port)
++				 sa_family_t sa_family, __be16 port,
++				 unsigned int type)
  {
- 	struct mlx4_en_priv *priv = netdev_priv(dev);
- 	__be16 current_port;
+ 	struct mlx5e_priv *priv = netdev_priv(netdev);
  
--	if (priv->mdev->dev->caps.tunnel_offload_mode != MLX4_TUNNEL_OFFLOAD_MODE_VXLAN)
 +	if (type != UDP_ENC_OFFLOAD_TYPE_VXLAN)
 +		return;
 +
-+	if (sa_family != AF_INET)
+ 	if (!mlx5e_vxlan_allowed(priv->mdev))
  		return;
  
--	if (sa_family == AF_INET6)
-+	if (priv->mdev->dev->caps.tunnel_offload_mode != MLX4_TUNNEL_OFFLOAD_MODE_VXLAN)
- 		return;
+@@ -2624,8 +2632,8 @@ static const struct net_device_ops mlx5e_netdev_ops_sriov = {
+ 	.ndo_set_features        = mlx5e_set_features,
+ 	.ndo_change_mtu          = mlx5e_change_mtu,
+ 	.ndo_do_ioctl            = mlx5e_ioctl,
+-	.ndo_add_vxlan_port      = mlx5e_add_vxlan_port,
+-	.ndo_del_vxlan_port      = mlx5e_del_vxlan_port,
++	.ndo_add_udp_enc_port	 = mlx5e_add_vxlan_port,
++	.ndo_del_udp_enc_port	 = mlx5e_del_vxlan_port,
+ 	.ndo_features_check      = mlx5e_features_check,
+ #ifdef CONFIG_RFS_ACCEL
+ 	.ndo_rx_flow_steer	 = mlx5e_rx_flow_steer,
+@@ -3128,7 +3136,7 @@ static void *mlx5e_create_netdev(struct mlx5_core_dev *mdev)
  
- 	current_port = priv->vxlan_port;
-@@ -2507,8 +2515,8 @@ static const struct net_device_ops mlx4_netdev_ops = {
- #endif
- 	.ndo_get_phys_port_id	= mlx4_en_get_phys_port_id,
- #ifdef CONFIG_MLX4_EN_VXLAN
--	.ndo_add_vxlan_port	= mlx4_en_add_vxlan_port,
--	.ndo_del_vxlan_port	= mlx4_en_del_vxlan_port,
-+	.ndo_add_udp_enc_port	= mlx4_en_add_vxlan_port,
-+	.ndo_del_udp_enc_port	= mlx4_en_del_vxlan_port,
- 	.ndo_features_check	= mlx4_en_features_check,
- #endif
- 	.ndo_set_tx_maxrate	= mlx4_en_set_tx_maxrate,
-@@ -2545,8 +2553,8 @@ static const struct net_device_ops mlx4_netdev_ops_master = {
- #endif
- 	.ndo_get_phys_port_id	= mlx4_en_get_phys_port_id,
- #ifdef CONFIG_MLX4_EN_VXLAN
--	.ndo_add_vxlan_port	= mlx4_en_add_vxlan_port,
--	.ndo_del_vxlan_port	= mlx4_en_del_vxlan_port,
-+	.ndo_add_udp_enc_port	= mlx4_en_add_vxlan_port,
-+	.ndo_del_udp_enc_port	= mlx4_en_del_vxlan_port,
- 	.ndo_features_check	= mlx4_en_features_check,
- #endif
- 	.ndo_set_tx_maxrate	= mlx4_en_set_tx_maxrate,
+ 	if (mlx5e_vxlan_allowed(mdev)) {
+ 		rtnl_lock();
+-		vxlan_get_rx_port(netdev);
++		udp_tunnel_get_rx_port(netdev);
+ 		rtnl_unlock();
+ 	}
+ 
 
