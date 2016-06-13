@@ -1,45 +1,39 @@
-From: Alex Duyck <aduyck@mirantis.com>
-Date: Mon, 13 Jun 2016 12:16:28 -0700
+From: Michael Chan <michael.chan@broadcom.com>
+Date: Mon, 13 Jun 2016 12:16:42 -0700
 Subject: [Intel-wired-lan] [net-next PATCH 04/15] bnxt: Replace
 	ndo_add/del_vxlan_port with ndo_add/del_udp_enc_port
-In-Reply-To: <55c86ee3-4974-147e-c09a-a88f202fc3c4@redhat.com>
+In-Reply-To: <CAEh+42jyXOytgidZN4MNBoPaKL-xoQDXptFqnbhWrMGc5=8z=w@mail.gmail.com>
 References: <20160613173750.15186.24381.stgit@localhost.localdomain>
  <20160613174822.15186.55819.stgit@localhost.localdomain>
  <CAEh+42jyXOytgidZN4MNBoPaKL-xoQDXptFqnbhWrMGc5=8z=w@mail.gmail.com>
- <55c86ee3-4974-147e-c09a-a88f202fc3c4@redhat.com>
-Message-ID: <CAMt9YRqjsDGiZ9b+qaCYPrhJD_p7O5jPAk14nmbr_B0y54FHdw@mail.gmail.com>
+Message-ID: <CACKFLi=opqb393SGEKLgN-cvQn7xL8kYVr+=MhW7SO41-xPJZQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Jun 13, 2016 at 12:14 PM, Hannes Frederic Sowa
-<hannes@redhat.com> wrote:
-> On 13.06.2016 20:41, Jesse Gross wrote:
->> On Mon, Jun 13, 2016 at 10:48 AM, Alexander Duyck <aduyck@mirantis.com> wrote:
->>> This change replaces the network device operations for adding or removing a
->>> VXLAN port with operations that are more generically defined to be used for
->>> any UDP offload port but provide a type.  As such by just adding a line to
->>> verify that the offload type if VXLAN we can maintain the same
->>> functionality.
->>>
->>> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+On Mon, Jun 13, 2016 at 11:41 AM, Jesse Gross <jesse@kernel.org> wrote:
+> On Mon, Jun 13, 2016 at 10:48 AM, Alexander Duyck <aduyck@mirantis.com> wrote:
+>> This change replaces the network device operations for adding or removing a
+>> VXLAN port with operations that are more generically defined to be used for
+>> any UDP offload port but provide a type.  As such by just adding a line to
+>> verify that the offload type if VXLAN we can maintain the same
+>> functionality.
 >>
->> It looks like bnxt actually has a hardcoded offload of the Geneve port
->> rather than using the registration (maybe it predated it?). It would
->> be nice to incorporate that into your unified handler as well.
->>
->> I think you could actually just kill all of these
->> CONFIG_VXLAN/CONFIG_GENEVE checks (across all the drivers, not just
->> this one). They shouldn't be necessary any more now that there's no
->> longer strong linkage to the tunnel drivers.
+>> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 >
-> Yes, agreed. We can remove the CONFIG_VXLAN and CONFIG_GENEVE stuff now.
-> But I think this can be a separate series.
+> It looks like bnxt actually has a hardcoded offload of the Geneve port
+> rather than using the registration (maybe it predated it?).
 
-Actually it should be pretty easy to do all of this in the same
-series.  I am directly effecting the code where it is wrapped up
-anyway.  Dropping the defines will make this easier for me to test.
+It's not hardcoded.  The driver code just predated the ndo geneve calls.
 
-- Alex
+>  It would
+> be nice to incorporate that into your unified handler as well.
+>
+> I think you could actually just kill all of these
+> CONFIG_VXLAN/CONFIG_GENEVE checks (across all the drivers, not just
+> this one). They shouldn't be necessary any more now that there's no
+> longer strong linkage to the tunnel drivers.
+
+Agreed.
