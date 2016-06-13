@@ -1,41 +1,71 @@
 From: Hannes Frederic Sowa <hannes@redhat.com>
-Date: Mon, 13 Jun 2016 21:14:41 +0200
-Subject: [Intel-wired-lan] [net-next PATCH 04/15] bnxt: Replace
- ndo_add/del_vxlan_port with ndo_add/del_udp_enc_port
-In-Reply-To: <CAEh+42jyXOytgidZN4MNBoPaKL-xoQDXptFqnbhWrMGc5=8z=w@mail.gmail.com>
+Date: Mon, 13 Jun 2016 23:08:19 +0200
+Subject: [Intel-wired-lan] [net-next PATCH 02/15] net: Merge VXLAN and
+ GENEVE push notifiers into a single notifier
+In-Reply-To: <CAKgT0Ufd_BNSLrJUqN-eWjytf0aD2w_LVWFD7E1ym+A0jRhCtA@mail.gmail.com>
 References: <20160613173750.15186.24381.stgit@localhost.localdomain>
- <20160613174822.15186.55819.stgit@localhost.localdomain>
- <CAEh+42jyXOytgidZN4MNBoPaKL-xoQDXptFqnbhWrMGc5=8z=w@mail.gmail.com>
-Message-ID: <55c86ee3-4974-147e-c09a-a88f202fc3c4@redhat.com>
+ <20160613174806.15186.64702.stgit@localhost.localdomain>
+ <77eb25b2-d775-ec6f-c945-524d73113c96@redhat.com>
+ <CAKgT0Ufd_BNSLrJUqN-eWjytf0aD2w_LVWFD7E1ym+A0jRhCtA@mail.gmail.com>
+Message-ID: <014f26d6-c747-5506-8dee-59866408c760@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 13.06.2016 20:41, Jesse Gross wrote:
-> On Mon, Jun 13, 2016 at 10:48 AM, Alexander Duyck <aduyck@mirantis.com> wrote:
->> This change replaces the network device operations for adding or removing a
->> VXLAN port with operations that are more generically defined to be used for
->> any UDP offload port but provide a type.  As such by just adding a line to
->> verify that the offload type if VXLAN we can maintain the same
->> functionality.
+On 13.06.2016 21:47, Alexander Duyck wrote:
+> On Mon, Jun 13, 2016 at 10:57 AM, Hannes Frederic Sowa
+> <hannes@redhat.com> wrote:
+>> Hi Alex,
 >>
->> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+>> very cool series!
+>>
+>> On 13.06.2016 19:48, Alexander Duyck wrote:
+>>> diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+>>> index d101e4d904ba..e959b6348f91 100644
+>>> --- a/include/linux/netdevice.h
+>>> +++ b/include/linux/netdevice.h
+>>> @@ -1269,6 +1269,14 @@ struct net_device_ops {
+>>>       void                    (*ndo_del_geneve_port)(struct  net_device *dev,
+>>>                                                      sa_family_t sa_family,
+>>>                                                      __be16 port);
+>>> +     void                    (*ndo_add_udp_enc_port)(struct  net_device *dev,
+>>> +                                                    sa_family_t sa_family,
+>>> +                                                    __be16 port,
+>>> +                                                    unsigned int type);
+>>> +     void                    (*ndo_del_udp_enc_port)(struct  net_device *dev,
+>>> +                                                    sa_family_t sa_family,
+>>> +                                                    __be16 port,
+>>> +                                                    unsigned int type);
+>>>       void*                   (*ndo_dfwd_add_station)(struct net_device *pdev,
+>>>                                                       struct net_device *dev);
+>>>       void                    (*ndo_dfwd_del_station)(struct net_device *pdev,
+>>
+>> What do you think about adding a struct as argument to
+>> ndo_*_udp_enc_port? As a result we can much easier add new fields in
+>> case future NICs allow us to e.g. specify a bound ip address?
 > 
-> It looks like bnxt actually has a hardcoded offload of the Geneve port
-> rather than using the registration (maybe it predated it?). It would
-> be nice to incorporate that into your unified handler as well.
-> 
-> I think you could actually just kill all of these
-> CONFIG_VXLAN/CONFIG_GENEVE checks (across all the drivers, not just
-> this one). They shouldn't be necessary any more now that there's no
-> longer strong linkage to the tunnel drivers.
+> Actually that is probably a good idea.  Suggestions on the name are
+> welcome.  Otherwise I will try to come up with something in a bit as I
+> am currently going through and flushing out all the driver specific
+> VXLAN and GENEVE build flags.
 
-Yes, agreed. We can remove the CONFIG_VXLAN and CONFIG_GENEVE stuff now.
-But I think this can be a separate series.
+Hmmm... struct net_device_hw_offload, to be most generic? Maybe we can
+even drop the udp_enc in the name and go completely generic:
 
-Bye,
+int (*ndo_apply_offload)(..., struct hw_offload).
+
+(enc reminded me too much at encryption)
+
+Another idea, should we add error indications also for the future? We
+can signal if a specific card was not able to enable offloading.
+Different situations can be signaled: port list depleted, protocol
+unsupported etc.
+
+Might make sense for later postprocessing and signaling to user space.
+
+Thanks,
 Hannes
 
 
