@@ -1,10 +1,10 @@
 From: Alexander Duyck <aduyck@mirantis.com>
-Date: Mon, 13 Jun 2016 10:48:22 -0700
-Subject: [Intel-wired-lan] [net-next PATCH 04/15] bnxt: Replace
+Date: Mon, 13 Jun 2016 10:48:30 -0700
+Subject: [Intel-wired-lan] [net-next PATCH 05/15] benet: Replace
  ndo_add/del_vxlan_port with ndo_add/del_udp_enc_port
 In-Reply-To: <20160613173750.15186.24381.stgit@localhost.localdomain>
 References: <20160613173750.15186.24381.stgit@localhost.localdomain>
-Message-ID: <20160613174822.15186.55819.stgit@localhost.localdomain>
+Message-ID: <20160613174830.15186.27109.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,77 +19,63 @@ functionality.
 
 Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 ---
- drivers/net/ethernet/broadcom/bnxt/bnxt.c |   22 ++++++++++++++--------
- 1 file changed, 14 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/emulex/benet/be_main.c |   16 +++++++++++-----
+ 1 file changed, 11 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/broadcom/bnxt/bnxt.c b/drivers/net/ethernet/broadcom/bnxt/bnxt.c
-index c777cde85ce4..ab55da46cb51 100644
---- a/drivers/net/ethernet/broadcom/bnxt/bnxt.c
-+++ b/drivers/net/ethernet/broadcom/bnxt/bnxt.c
-@@ -5074,8 +5074,8 @@ static int __bnxt_open_nic(struct bnxt *bp, bool irq_re_init, bool link_re_init)
- 	}
- 
- 	if (irq_re_init) {
--#if defined(CONFIG_VXLAN) || defined(CONFIG_VXLAN_MODULE)
--		vxlan_get_rx_port(bp->dev);
-+#if IS_ENABLED(CONFIG_VXLAN)
-+		udp_tunnel_get_rx_port(bp->dev);
+diff --git a/drivers/net/ethernet/emulex/benet/be_main.c b/drivers/net/ethernet/emulex/benet/be_main.c
+index 2451a47e88ab..f0ec15a7cd85 100644
+--- a/drivers/net/ethernet/emulex/benet/be_main.c
++++ b/drivers/net/ethernet/emulex/benet/be_main.c
+@@ -3627,7 +3627,7 @@ static int be_open(struct net_device *netdev)
+ 	netif_tx_start_all_queues(netdev);
+ #ifdef CONFIG_BE2NET_VXLAN
+ 	if (skyhawk_chip(adapter))
+-		vxlan_get_rx_port(netdev);
++		udp_tunnel_get_rx_port(netdev);
  #endif
- 		if (!bnxt_hwrm_tunnel_dst_port_alloc(
- 				bp, htons(0x17c1),
-@@ -6049,16 +6049,19 @@ static void bnxt_cfg_ntp_filters(struct bnxt *bp)
- #endif /* CONFIG_RFS_ACCEL */
  
- static void bnxt_add_vxlan_port(struct net_device *dev, sa_family_t sa_family,
--				__be16 port)
-+				__be16 port, unsigned int type)
+ 	return 0;
+@@ -4721,12 +4721,15 @@ static int be_ndo_bridge_getlink(struct sk_buff *skb, u32 pid, u32 seq,
+  * until after all the tunnels are removed.
+  */
+ static void be_add_vxlan_port(struct net_device *netdev, sa_family_t sa_family,
+-			      __be16 port)
++			      __be16 port, unsigned int type)
  {
- 	struct bnxt *bp = netdev_priv(dev);
+ 	struct be_adapter *adapter = netdev_priv(netdev);
+ 	struct device *dev = &adapter->pdev->dev;
+ 	int status;
  
--	if (!netif_running(dev))
 +	if (type != UDP_ENC_OFFLOAD_TYPE_VXLAN)
- 		return;
- 
- 	if (sa_family != AF_INET6 && sa_family != AF_INET)
- 		return;
- 
-+	if (!netif_running(dev))
 +		return;
 +
- 	if (bp->vxlan_port_cnt && bp->vxlan_port != port)
+ 	if (lancer_chip(adapter) || BEx_chip(adapter) || be_is_mc(adapter))
  		return;
  
-@@ -6071,16 +6074,19 @@ static void bnxt_add_vxlan_port(struct net_device *dev, sa_family_t sa_family,
+@@ -4775,10 +4778,13 @@ err:
  }
  
- static void bnxt_del_vxlan_port(struct net_device *dev, sa_family_t sa_family,
--				__be16 port)
-+				__be16 port, unsigned int type)
+ static void be_del_vxlan_port(struct net_device *netdev, sa_family_t sa_family,
+-			      __be16 port)
++			      __be16 port, unsigned int type)
  {
- 	struct bnxt *bp = netdev_priv(dev);
+ 	struct be_adapter *adapter = netdev_priv(netdev);
  
--	if (!netif_running(dev))
 +	if (type != UDP_ENC_OFFLOAD_TYPE_VXLAN)
- 		return;
- 
- 	if (sa_family != AF_INET6 && sa_family != AF_INET)
- 		return;
- 
-+	if (!netif_running(dev))
 +		return;
 +
- 	if (bp->vxlan_port_cnt && bp->vxlan_port == port) {
- 		bp->vxlan_port_cnt--;
+ 	if (lancer_chip(adapter) || BEx_chip(adapter) || be_is_mc(adapter))
+ 		return;
  
-@@ -6119,8 +6125,8 @@ static const struct net_device_ops bnxt_netdev_ops = {
- #ifdef CONFIG_RFS_ACCEL
- 	.ndo_rx_flow_steer	= bnxt_rx_flow_steer,
+@@ -4888,8 +4894,8 @@ static const struct net_device_ops be_netdev_ops = {
+ 	.ndo_busy_poll		= be_busy_poll,
  #endif
--	.ndo_add_vxlan_port	= bnxt_add_vxlan_port,
--	.ndo_del_vxlan_port	= bnxt_del_vxlan_port,
-+	.ndo_add_udp_enc_port	= bnxt_add_vxlan_port,
-+	.ndo_del_udp_enc_port	= bnxt_del_vxlan_port,
- #ifdef CONFIG_NET_RX_BUSY_POLL
- 	.ndo_busy_poll		= bnxt_busy_poll,
+ #ifdef CONFIG_BE2NET_VXLAN
+-	.ndo_add_vxlan_port	= be_add_vxlan_port,
+-	.ndo_del_vxlan_port	= be_del_vxlan_port,
++	.ndo_add_udp_enc_port	= be_add_vxlan_port,
++	.ndo_del_udp_enc_port	= be_del_vxlan_port,
+ 	.ndo_features_check	= be_features_check,
  #endif
+ 	.ndo_get_phys_port_id   = be_get_phys_port_id,
 
