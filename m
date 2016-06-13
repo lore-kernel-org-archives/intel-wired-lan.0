@@ -1,179 +1,194 @@
 From: Alexander Duyck <aduyck@mirantis.com>
-Date: Mon, 13 Jun 2016 10:48:06 -0700
-Subject: [Intel-wired-lan] [net-next PATCH 02/15] net: Merge VXLAN and
- GENEVE push notifiers into a single notifier
+Date: Mon, 13 Jun 2016 10:48:15 -0700
+Subject: [Intel-wired-lan] [net-next PATCH 03/15] bnx2x: Move all UDP port
+ notifiers to single function
 In-Reply-To: <20160613173750.15186.24381.stgit@localhost.localdomain>
 References: <20160613173750.15186.24381.stgit@localhost.localdomain>
-Message-ID: <20160613174806.15186.64702.stgit@localhost.localdomain>
+Message-ID: <20160613174815.15186.73559.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch merges the notifiers for VXLAN and GENEVE into a single UDP
-encapsulation notifier.  The idea is that we will want to only have to make
-one notifier call to receive the list of ports for VXLAN and GENEVE tunnels
-that need to be offloaded.
+This patch goes through and combines the notifiers for VXLAN and GENEVE
+into a single function for each action.  So there is now one combined
+function for getting ports, one for adding the ports, and one for deleting
+the ports.
+
+While going through and updating this I also removed the use of IS_ENABLED
+for the CONFIG_BNX2X_GENEVE checks and instead just checked for defined
+since there is no option to have this as a module.
 
 Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 ---
- drivers/net/geneve.c      |    2 +-
- drivers/net/vxlan.c       |    2 +-
- include/linux/netdevice.h |   11 +++++++++--
- include/net/geneve.h      |    6 +-----
- include/net/udp_tunnel.h  |    6 ++++++
- include/net/vxlan.h       |    4 ++--
- net/ipv4/udp_tunnel.c     |   12 ++++++++++++
- 7 files changed, 32 insertions(+), 11 deletions(-)
+ drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c |   96 ++++++++++------------
+ 1 file changed, 44 insertions(+), 52 deletions(-)
 
-diff --git a/drivers/net/geneve.c b/drivers/net/geneve.c
-index f5ce41532cf4..f1d06bef1c55 100644
---- a/drivers/net/geneve.c
-+++ b/drivers/net/geneve.c
-@@ -1508,7 +1508,7 @@ static int geneve_netdevice_event(struct notifier_block *unused,
+diff --git a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c
+index a59d55e25d5f..8faef81aff89 100644
+--- a/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c
++++ b/drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c
+@@ -59,7 +59,7 @@
+ #include <linux/semaphore.h>
+ #include <linux/stringify.h>
+ #include <linux/vmalloc.h>
+-#if IS_ENABLED(CONFIG_BNX2X_GENEVE)
++#ifdef CONFIG_BNX2X_GENEVE
+ #include <net/geneve.h>
+ #endif
+ #include "bnx2x.h"
+@@ -10076,7 +10076,7 @@ static void bnx2x_parity_recover(struct bnx2x *bp)
+ 	}
+ }
+ 
+-#if defined(CONFIG_BNX2X_VXLAN) || IS_ENABLED(CONFIG_BNX2X_GENEVE)
++#if defined(CONFIG_BNX2X_VXLAN) || defined(CONFIG_BNX2X_GENEVE)
+ static int bnx2x_udp_port_update(struct bnx2x *bp)
  {
- 	struct net_device *dev = netdev_notifier_info_to_dev(ptr);
- 
--	if (event == NETDEV_OFFLOAD_PUSH_GENEVE)
-+	if (event == NETDEV_OFFLOAD_PUSH_UDP_ENC_OFFLOAD)
- 		geneve_push_rx_ports(dev);
- 
- 	return NOTIFY_DONE;
-diff --git a/drivers/net/vxlan.c b/drivers/net/vxlan.c
-index 43f634282726..72da056abdf4 100644
---- a/drivers/net/vxlan.c
-+++ b/drivers/net/vxlan.c
-@@ -3266,7 +3266,7 @@ static int vxlan_netdevice_event(struct notifier_block *unused,
- 
- 	if (event == NETDEV_UNREGISTER)
- 		vxlan_handle_lowerdev_unregister(vn, dev);
--	else if (event == NETDEV_OFFLOAD_PUSH_VXLAN)
-+	else if (event == NETDEV_OFFLOAD_PUSH_UDP_ENC_OFFLOAD)
- 		vxlan_push_rx_ports(dev);
- 
- 	return NOTIFY_DONE;
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index d101e4d904ba..e959b6348f91 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -1269,6 +1269,14 @@ struct net_device_ops {
- 	void			(*ndo_del_geneve_port)(struct  net_device *dev,
- 						       sa_family_t sa_family,
- 						       __be16 port);
-+	void			(*ndo_add_udp_enc_port)(struct  net_device *dev,
-+						       sa_family_t sa_family,
-+						       __be16 port,
-+						       unsigned int type);
-+	void			(*ndo_del_udp_enc_port)(struct  net_device *dev,
-+						       sa_family_t sa_family,
-+						       __be16 port,
-+						       unsigned int type);
- 	void*			(*ndo_dfwd_add_station)(struct net_device *pdev,
- 							struct net_device *dev);
- 	void			(*ndo_dfwd_del_station)(struct net_device *pdev,
-@@ -2251,8 +2259,7 @@ struct netdev_lag_lower_state_info {
- #define NETDEV_BONDING_INFO	0x0019
- #define NETDEV_PRECHANGEUPPER	0x001A
- #define NETDEV_CHANGELOWERSTATE	0x001B
--#define NETDEV_OFFLOAD_PUSH_VXLAN	0x001C
--#define NETDEV_OFFLOAD_PUSH_GENEVE	0x001D
-+#define NETDEV_OFFLOAD_PUSH_UDP_ENC_OFFLOAD	0x001C
- 
- int register_netdevice_notifier(struct notifier_block *nb);
- int unregister_netdevice_notifier(struct notifier_block *nb);
-diff --git a/include/net/geneve.h b/include/net/geneve.h
-index cb544a530146..7638ec62c5e1 100644
---- a/include/net/geneve.h
-+++ b/include/net/geneve.h
-@@ -1,10 +1,7 @@
- #ifndef __NET_GENEVE_H
- #define __NET_GENEVE_H  1
- 
--#ifdef CONFIG_INET
- #include <net/udp_tunnel.h>
+ 	struct bnx2x_func_switch_update_params *switch_update_params;
+@@ -10177,46 +10177,53 @@ static void __bnx2x_del_udp_port(struct bnx2x *bp, u16 port,
+ 		DP(BNX2X_MSG_SP, "Deleted UDP tunnel [%d] port %d\n",
+ 		   type, port);
+ }
 -#endif
+ 
+-#ifdef CONFIG_BNX2X_VXLAN
+-static void bnx2x_add_vxlan_port(struct net_device *netdev,
+-				 sa_family_t sa_family, __be16 port)
++static void bnx2x_add_udp_enc_port(struct net_device *netdev,
++				   sa_family_t sa_family, __be16 port,
++				   unsigned int type)
+ {
+ 	struct bnx2x *bp = netdev_priv(netdev);
+ 	u16 t_port = ntohs(port);
+ 
+-	__bnx2x_add_udp_port(bp, t_port, BNX2X_UDP_PORT_VXLAN);
++	switch (type) {
++#ifdef CONFIG_BNX2X_VXLAN
++	case UDP_ENC_OFFLOAD_TYPE_VXLAN:
++		__bnx2x_add_udp_port(bp, t_port, BNX2X_UDP_PORT_VXLAN);
++		break;
++#endif
++#ifdef CONFIG_BNX2X_GENEVE
++	case UDP_ENC_OFFLOAD_TYPE_GENEVE:
++		__bnx2x_add_udp_port(bp, t_port, BNX2X_UDP_PORT_GENEVE);
++		break;
++#endif
++	default:
++		break;
++	}
+ }
+ 
+-static void bnx2x_del_vxlan_port(struct net_device *netdev,
+-				 sa_family_t sa_family, __be16 port)
++static void bnx2x_del_udp_enc_port(struct net_device *netdev,
++				   sa_family_t sa_family, __be16 port,
++				   unsigned int type)
+ {
+ 	struct bnx2x *bp = netdev_priv(netdev);
+ 	u16 t_port = ntohs(port);
+ 
+-	__bnx2x_del_udp_port(bp, t_port, BNX2X_UDP_PORT_VXLAN);
+-}
++	switch (type) {
++#ifdef CONFIG_BNX2X_VXLAN
++	case UDP_ENC_OFFLOAD_TYPE_VXLAN:
++		__bnx2x_del_udp_port(bp, t_port, BNX2X_UDP_PORT_VXLAN);
++		break;
+ #endif
 -
- 
- /* Geneve Header:
-  *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-@@ -64,8 +61,7 @@ struct genevehdr {
- 
- static inline void geneve_get_rx_port(struct net_device *netdev)
- {
--	ASSERT_RTNL();
--	call_netdevice_notifiers(NETDEV_OFFLOAD_PUSH_GENEVE, netdev);
-+	udp_tunnel_get_rx_port(netdev);
+-#if IS_ENABLED(CONFIG_BNX2X_GENEVE)
+-static void bnx2x_add_geneve_port(struct net_device *netdev,
+-				  sa_family_t sa_family, __be16 port)
+-{
+-	struct bnx2x *bp = netdev_priv(netdev);
+-	u16 t_port = ntohs(port);
+-
+-	__bnx2x_add_udp_port(bp, t_port, BNX2X_UDP_PORT_GENEVE);
++#ifdef CONFIG_BNX2X_GENEVE
++	case UDP_ENC_OFFLOAD_TYPE_GENEVE:
++		__bnx2x_del_udp_port(bp, t_port, BNX2X_UDP_PORT_GENEVE);
++		break;
++#endif
++	default:
++		break;
++	}
  }
  
- #ifdef CONFIG_INET
-diff --git a/include/net/udp_tunnel.h b/include/net/udp_tunnel.h
-index 704f931fd9ad..9ea813740231 100644
---- a/include/net/udp_tunnel.h
-+++ b/include/net/udp_tunnel.h
-@@ -96,6 +96,12 @@ void udp_tunnel_push_rx_port(struct net_device *dev, struct socket *sock,
- void udp_tunnel_notify_add_rx_port(struct socket *sock, unsigned int type);
- void udp_tunnel_notify_del_rx_port(struct socket *sock, unsigned int type);
+-static void bnx2x_del_geneve_port(struct net_device *netdev,
+-				  sa_family_t sa_family, __be16 port)
+-{
+-	struct bnx2x *bp = netdev_priv(netdev);
+-	u16 t_port = ntohs(port);
+-
+-	__bnx2x_del_udp_port(bp, t_port, BNX2X_UDP_PORT_GENEVE);
+-}
+ #endif
  
-+static inline void udp_tunnel_get_rx_port(struct net_device *dev)
-+{
-+	ASSERT_RTNL();
-+	call_netdevice_notifiers(NETDEV_OFFLOAD_PUSH_UDP_ENC_OFFLOAD, dev);
-+}
-+
- /* Transmit the skb using UDP encapsulation. */
- void udp_tunnel_xmit_skb(struct rtable *rt, struct sock *sk, struct sk_buff *skb,
- 			 __be32 src, __be32 dst, __u8 tos, __u8 ttl,
-diff --git a/include/net/vxlan.h b/include/net/vxlan.h
-index b8803165df91..2c4f8fcd5a3b 100644
---- a/include/net/vxlan.h
-+++ b/include/net/vxlan.h
-@@ -8,6 +8,7 @@
- #include <linux/netdevice.h>
- #include <linux/udp.h>
- #include <net/dst_metadata.h>
-+#include <net/udp_tunnel.h>
+ static int bnx2x_close(struct net_device *dev);
+@@ -10325,7 +10332,7 @@ sp_rtnl_not_reset:
+ 			       &bp->sp_rtnl_state))
+ 		bnx2x_update_mng_version(bp);
  
- /* VXLAN protocol (RFC 7348) header:
-  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-@@ -394,8 +395,7 @@ static inline __be32 vxlan_compute_rco(unsigned int start, unsigned int offset)
+-#if defined(CONFIG_BNX2X_VXLAN) || IS_ENABLED(CONFIG_BNX2X_GENEVE)
++#if defined(CONFIG_BNX2X_VXLAN) || defined(CONFIG_BNX2X_GENEVE)
+ 	if (test_and_clear_bit(BNX2X_SP_RTNL_CHANGE_UDP_PORT,
+ 			       &bp->sp_rtnl_state)) {
+ 		if (bnx2x_udp_port_update(bp)) {
+@@ -10335,17 +10342,12 @@ sp_rtnl_not_reset:
+ 			       BNX2X_UDP_PORT_MAX);
+ 		} else {
+ 			/* Since we don't store additional port information,
+-			 * if no port is configured for any feature ask for
++			 * if no ports are configured for any feature ask for
+ 			 * information about currently configured ports.
+ 			 */
+-#ifdef CONFIG_BNX2X_VXLAN
+-			if (!bp->udp_tunnel_ports[BNX2X_UDP_PORT_VXLAN].count)
+-				vxlan_get_rx_port(bp->dev);
+-#endif
+-#if IS_ENABLED(CONFIG_BNX2X_GENEVE)
+-			if (!bp->udp_tunnel_ports[BNX2X_UDP_PORT_GENEVE].count)
+-				geneve_get_rx_port(bp->dev);
+-#endif
++			if (!bp->udp_tunnel_ports[BNX2X_UDP_PORT_VXLAN].count &&
++			    !bp->udp_tunnel_ports[BNX2X_UDP_PORT_GENEVE].count)
++				udp_tunnel_get_rx_port(bp->dev);
+ 		}
+ 	}
+ #endif
+@@ -12551,13 +12553,9 @@ static int bnx2x_open(struct net_device *dev)
+ 	if (rc)
+ 		return rc;
  
- static inline void vxlan_get_rx_port(struct net_device *netdev)
- {
--	ASSERT_RTNL();
--	call_netdevice_notifiers(NETDEV_OFFLOAD_PUSH_VXLAN, netdev);
-+	udp_tunnel_get_rx_port(netdev);
- }
+-#ifdef CONFIG_BNX2X_VXLAN
++#if defined(CONFIG_BNX2X_VXLAN) || defined(CONFIG_BNX2X_GENEVE)
+ 	if (IS_PF(bp))
+-		vxlan_get_rx_port(dev);
+-#endif
+-#if IS_ENABLED(CONFIG_BNX2X_GENEVE)
+-	if (IS_PF(bp))
+-		geneve_get_rx_port(dev);
++		udp_tunnel_get_rx_port(dev);
+ #endif
  
- static inline unsigned short vxlan_get_sk_family(struct vxlan_sock *vs)
-diff --git a/net/ipv4/udp_tunnel.c b/net/ipv4/udp_tunnel.c
-index d575b70644e3..a22677cd41d8 100644
---- a/net/ipv4/udp_tunnel.c
-+++ b/net/ipv4/udp_tunnel.c
-@@ -83,6 +83,12 @@ void udp_tunnel_push_rx_port(struct net_device *dev, struct socket *sock,
- 	sa_family_t sa_family = sk->sk_family;
- 	__be16 port = inet_sk(sk)->inet_sport;
+ 	return 0;
+@@ -13045,14 +13043,8 @@ static const struct net_device_ops bnx2x_netdev_ops = {
+ 	.ndo_get_phys_port_id	= bnx2x_get_phys_port_id,
+ 	.ndo_set_vf_link_state	= bnx2x_set_vf_link_state,
+ 	.ndo_features_check	= bnx2x_features_check,
+-#ifdef CONFIG_BNX2X_VXLAN
+-	.ndo_add_vxlan_port	= bnx2x_add_vxlan_port,
+-	.ndo_del_vxlan_port	= bnx2x_del_vxlan_port,
+-#endif
+-#if IS_ENABLED(CONFIG_BNX2X_GENEVE)
+-	.ndo_add_geneve_port	= bnx2x_add_geneve_port,
+-	.ndo_del_geneve_port	= bnx2x_del_geneve_port,
+-#endif
++	.ndo_add_udp_enc_port	= bnx2x_add_udp_enc_port,
++	.ndo_del_udp_enc_port	= bnx2x_del_udp_enc_port,
+ };
  
-+	if (dev->netdev_ops->ndo_add_udp_enc_port) {
-+		dev->netdev_ops->ndo_add_udp_enc_port(dev, sa_family,
-+						      port, type);
-+		return;
-+	}
-+
- 	switch (type) {
- 	case UDP_ENC_OFFLOAD_TYPE_VXLAN:
- 		if (!dev->netdev_ops->ndo_add_vxlan_port)
-@@ -122,6 +128,12 @@ static void udp_tunnel_pull_rx_port(struct net_device *dev,
- 	sa_family_t sa_family = sk->sk_family;
- 	__be16 port = inet_sk(sk)->inet_sport;
- 
-+	if (dev->netdev_ops->ndo_del_udp_enc_port) {
-+		dev->netdev_ops->ndo_del_udp_enc_port(dev, sa_family,
-+						      port, type);
-+		return;
-+	}
-+
- 	switch (type) {
- 	case UDP_ENC_OFFLOAD_TYPE_VXLAN:
- 		if (!dev->netdev_ops->ndo_del_vxlan_port)
+ static int bnx2x_set_coherency_mask(struct bnx2x *bp)
 
