@@ -1,10 +1,10 @@
 From: Alexander Duyck <aduyck@mirantis.com>
-Date: Mon, 13 Jun 2016 10:48:30 -0700
-Subject: [Intel-wired-lan] [net-next PATCH 05/15] benet: Replace
+Date: Mon, 13 Jun 2016 10:48:40 -0700
+Subject: [Intel-wired-lan] [net-next PATCH 06/15] fm10k: Replace
  ndo_add/del_vxlan_port with ndo_add/del_udp_enc_port
 In-Reply-To: <20160613173750.15186.24381.stgit@localhost.localdomain>
 References: <20160613173750.15186.24381.stgit@localhost.localdomain>
-Message-ID: <20160613174830.15186.27109.stgit@localhost.localdomain>
+Message-ID: <20160613174840.15186.22206.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -19,63 +19,77 @@ functionality.
 
 Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 ---
- drivers/net/ethernet/emulex/benet/be_main.c |   16 +++++++++++-----
- 1 file changed, 11 insertions(+), 5 deletions(-)
+ drivers/net/ethernet/intel/fm10k/fm10k_netdev.c |   18 +++++++++++++-----
+ 1 file changed, 13 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/emulex/benet/be_main.c b/drivers/net/ethernet/emulex/benet/be_main.c
-index 2451a47e88ab..f0ec15a7cd85 100644
---- a/drivers/net/ethernet/emulex/benet/be_main.c
-+++ b/drivers/net/ethernet/emulex/benet/be_main.c
-@@ -3627,7 +3627,7 @@ static int be_open(struct net_device *netdev)
- 	netif_tx_start_all_queues(netdev);
- #ifdef CONFIG_BE2NET_VXLAN
- 	if (skyhawk_chip(adapter))
--		vxlan_get_rx_port(netdev);
-+		udp_tunnel_get_rx_port(netdev);
- #endif
- 
- 	return 0;
-@@ -4721,12 +4721,15 @@ static int be_ndo_bridge_getlink(struct sk_buff *skb, u32 pid, u32 seq,
-  * until after all the tunnels are removed.
-  */
- static void be_add_vxlan_port(struct net_device *netdev, sa_family_t sa_family,
--			      __be16 port)
-+			      __be16 port, unsigned int type)
- {
- 	struct be_adapter *adapter = netdev_priv(netdev);
- 	struct device *dev = &adapter->pdev->dev;
- 	int status;
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+index 2a08d3f5b6df..dd107af28e3d 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
+@@ -436,6 +436,7 @@ static void fm10k_restore_vxlan_port(struct fm10k_intfc *interface)
+  * @netdev: network interface device structure
+  * @sa_family: Address family of new port
+  * @port: port number used for VXLAN
++ * @type: Enumerated value specifying udp encapsulation type
+  *
+  * This function is called when a new VXLAN interface has added a new port
+  * number to the range that is currently in use for VXLAN.  The new port
+@@ -444,10 +445,13 @@ static void fm10k_restore_vxlan_port(struct fm10k_intfc *interface)
+  * is always used as the VXLAN port number for offloads.
+  **/
+ static void fm10k_add_vxlan_port(struct net_device *dev,
+-				 sa_family_t sa_family, __be16 port) {
++				 sa_family_t sa_family, __be16 port,
++				 unsigned int type) {
+ 	struct fm10k_intfc *interface = netdev_priv(dev);
+ 	struct fm10k_vxlan_port *vxlan_port;
  
 +	if (type != UDP_ENC_OFFLOAD_TYPE_VXLAN)
 +		return;
-+
- 	if (lancer_chip(adapter) || BEx_chip(adapter) || be_is_mc(adapter))
+ 	/* only the PF supports configuring tunnels */
+ 	if (interface->hw.mac.type != fm10k_mac_pf)
  		return;
- 
-@@ -4775,10 +4778,13 @@ err:
- }
- 
- static void be_del_vxlan_port(struct net_device *netdev, sa_family_t sa_family,
--			      __be16 port)
-+			      __be16 port, unsigned int type)
- {
- 	struct be_adapter *adapter = netdev_priv(netdev);
+@@ -480,6 +484,7 @@ insert_tail:
+  * @netdev: network interface device structure
+  * @sa_family: Address family of freed port
+  * @port: port number used for VXLAN
++ * @type: Enumerated value specifying udp encapsulation type
+  *
+  * This function is called when a new VXLAN interface has freed a port
+  * number from the range that is currently in use for VXLAN.  The freed
+@@ -487,10 +492,13 @@ insert_tail:
+  * the port number for offloads.
+  **/
+ static void fm10k_del_vxlan_port(struct net_device *dev,
+-				 sa_family_t sa_family, __be16 port) {
++				 sa_family_t sa_family, __be16 port,
++				 unsigned int type) {
+ 	struct fm10k_intfc *interface = netdev_priv(dev);
+ 	struct fm10k_vxlan_port *vxlan_port;
  
 +	if (type != UDP_ENC_OFFLOAD_TYPE_VXLAN)
 +		return;
-+
- 	if (lancer_chip(adapter) || BEx_chip(adapter) || be_is_mc(adapter))
+ 	if (interface->hw.mac.type != fm10k_mac_pf)
  		return;
  
-@@ -4888,8 +4894,8 @@ static const struct net_device_ops be_netdev_ops = {
- 	.ndo_busy_poll		= be_busy_poll,
+@@ -555,7 +563,7 @@ int fm10k_open(struct net_device *netdev)
+ 
+ #ifdef CONFIG_FM10K_VXLAN
+ 	/* update VXLAN port configuration */
+-	vxlan_get_rx_port(netdev);
++	udp_tunnel_get_rx_port(netdev);
  #endif
- #ifdef CONFIG_BE2NET_VXLAN
--	.ndo_add_vxlan_port	= be_add_vxlan_port,
--	.ndo_del_vxlan_port	= be_del_vxlan_port,
-+	.ndo_add_udp_enc_port	= be_add_vxlan_port,
-+	.ndo_del_udp_enc_port	= be_del_vxlan_port,
- 	.ndo_features_check	= be_features_check,
- #endif
- 	.ndo_get_phys_port_id   = be_get_phys_port_id,
+ 
+ 	fm10k_up(interface);
+@@ -1375,8 +1383,8 @@ static const struct net_device_ops fm10k_netdev_ops = {
+ 	.ndo_set_vf_vlan	= fm10k_ndo_set_vf_vlan,
+ 	.ndo_set_vf_rate	= fm10k_ndo_set_vf_bw,
+ 	.ndo_get_vf_config	= fm10k_ndo_get_vf_config,
+-	.ndo_add_vxlan_port	= fm10k_add_vxlan_port,
+-	.ndo_del_vxlan_port	= fm10k_del_vxlan_port,
++	.ndo_add_udp_enc_port	= fm10k_add_vxlan_port,
++	.ndo_del_udp_enc_port	= fm10k_del_vxlan_port,
+ 	.ndo_dfwd_add_station	= fm10k_dfwd_add_station,
+ 	.ndo_dfwd_del_station	= fm10k_dfwd_del_station,
+ #ifdef CONFIG_NET_POLL_CONTROLLER
 
