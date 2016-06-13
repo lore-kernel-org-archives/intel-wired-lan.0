@@ -1,257 +1,112 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 13 Jun 2016 14:51:28 -0700
-Subject: [Intel-wired-lan] [net-next PATCH 01/15] net: Combine GENEVE
- and VXLAN port offload notifiers into single functions
-In-Reply-To: <CALx6S37_vdUwiiYieOxBPRchg-ofOXvM-2erjD3LvRux51oEtQ@mail.gmail.com>
-References: <20160613173750.15186.24381.stgit@localhost.localdomain>
- <20160613174754.15186.37885.stgit@localhost.localdomain>
- <CALx6S37b9pw4u5O1qm4uhsFuJ708DGLQ-sU4=xkPRbuw=wykGg@mail.gmail.com>
- <CAKgT0Ue+ik+wj2C=o66Va6f5qNSo=0xEkYsD--BV6_zqg16kHA@mail.gmail.com>
- <CALx6S37_vdUwiiYieOxBPRchg-ofOXvM-2erjD3LvRux51oEtQ@mail.gmail.com>
-Message-ID: <CAKgT0Uf4u4r_vk2CBeaf607L0TgKj4mHMocEk9N8acGRT4db6w@mail.gmail.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Date: Mon, 13 Jun 2016 08:45:28 -0500
+Subject: [Intel-wired-lan] [PATCH v5] PCI: PTM preliminary implementation
+In-Reply-To: <575E2184.6090701@intel.com>
+References: <1462956446-27361-1-git-send-email-jonathan.yong@intel.com>
+ <1462956446-27361-2-git-send-email-jonathan.yong@intel.com>
+ <20160612221847.GM16462@localhost> <575E2184.6090701@intel.com>
+Message-ID: <20160613134528.GB12221@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Jun 13, 2016 at 1:36 PM, Tom Herbert <tom@herbertland.com> wrote:
-> On Mon, Jun 13, 2016 at 1:24 PM, Alexander Duyck
-> <alexander.duyck@gmail.com> wrote:
->> On Mon, Jun 13, 2016 at 12:55 PM, Tom Herbert <tom@herbertland.com> wrote:
->>> On Mon, Jun 13, 2016 at 10:47 AM, Alexander Duyck <aduyck@mirantis.com> wrote:
->>>> This patch merges the GENEVE and VXLAN code so that both functions pass
->>>> through a shared code path.  This way we can start the effort of using a
->>>> single function on the network device drivers to handle both of these
->>>> tunnel offload types.
->>>>
->>>> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
->>>> ---
->>>>  drivers/net/geneve.c     |   48 ++++-------------------------
->>>>  drivers/net/vxlan.c      |   46 ++++-----------------------
->>>>  include/net/udp_tunnel.h |   12 +++++++
->>>>  net/ipv4/udp_tunnel.c    |   77 ++++++++++++++++++++++++++++++++++++++++++++++
->>>>  4 files changed, 103 insertions(+), 80 deletions(-)
->>>>
->>>> diff --git a/drivers/net/geneve.c b/drivers/net/geneve.c
->>>> index cadefe4fdaa2..f5ce41532cf4 100644
->>>> --- a/drivers/net/geneve.c
->>>> +++ b/drivers/net/geneve.c
->>>> @@ -399,19 +399,7 @@ static struct socket *geneve_create_sock(struct net *net, bool ipv6,
->>>>
->>>>  static void geneve_notify_add_rx_port(struct geneve_sock *gs)
->>>>  {
->>>> -       struct net_device *dev;
->>>> -       struct sock *sk = gs->sock->sk;
->>>> -       struct net *net = sock_net(sk);
->>>> -       sa_family_t sa_family = geneve_get_sk_family(gs);
->>>> -       __be16 port = inet_sk(sk)->inet_sport;
->>>> -
->>>> -       rcu_read_lock();
->>>> -       for_each_netdev_rcu(net, dev) {
->>>> -               if (dev->netdev_ops->ndo_add_geneve_port)
->>>> -                       dev->netdev_ops->ndo_add_geneve_port(dev, sa_family,
->>>> -                                                            port);
->>>> -       }
->>>> -       rcu_read_unlock();
->>>> +       udp_tunnel_notify_add_rx_port(gs->sock, UDP_ENC_OFFLOAD_TYPE_GENEVE);
->>>>  }
->>>>
->>>>  static int geneve_hlen(struct genevehdr *gh)
->>>> @@ -550,20 +538,7 @@ static struct geneve_sock *geneve_socket_create(struct net *net, __be16 port,
->>>>
->>>>  static void geneve_notify_del_rx_port(struct geneve_sock *gs)
->>>>  {
->>>> -       struct net_device *dev;
->>>> -       struct sock *sk = gs->sock->sk;
->>>> -       struct net *net = sock_net(sk);
->>>> -       sa_family_t sa_family = geneve_get_sk_family(gs);
->>>> -       __be16 port = inet_sk(sk)->inet_sport;
->>>> -
->>>> -       rcu_read_lock();
->>>> -       for_each_netdev_rcu(net, dev) {
->>>> -               if (dev->netdev_ops->ndo_del_geneve_port)
->>>> -                       dev->netdev_ops->ndo_del_geneve_port(dev, sa_family,
->>>> -                                                            port);
->>>> -       }
->>>> -
->>>> -       rcu_read_unlock();
->>>> +       udp_tunnel_notify_add_rx_port(gs->sock, UDP_ENC_OFFLOAD_TYPE_GENEVE);
->>>>  }
->>>>
->>>>  static void __geneve_sock_release(struct geneve_sock *gs)
->>>> @@ -1165,29 +1140,20 @@ static struct device_type geneve_type = {
->>>>         .name = "geneve",
->>>>  };
->>>>
->>>> -/* Calls the ndo_add_geneve_port of the caller in order to
->>>> +/* Calls the ndo_add_udp_enc_port of the caller in order to
->>>>   * supply the listening GENEVE udp ports. Callers are expected
->>>> - * to implement the ndo_add_geneve_port.
->>>> + * to implement the ndo_add_udp_enc_port.
->>>>   */
->>>>  static void geneve_push_rx_ports(struct net_device *dev)
->>>>  {
->>>>         struct net *net = dev_net(dev);
->>>>         struct geneve_net *gn = net_generic(net, geneve_net_id);
->>>>         struct geneve_sock *gs;
->>>> -       sa_family_t sa_family;
->>>> -       struct sock *sk;
->>>> -       __be16 port;
->>>> -
->>>> -       if (!dev->netdev_ops->ndo_add_geneve_port)
->>>> -               return;
->>>>
->>>>         rcu_read_lock();
->>>> -       list_for_each_entry_rcu(gs, &gn->sock_list, list) {
->>>> -               sk = gs->sock->sk;
->>>> -               sa_family = sk->sk_family;
->>>> -               port = inet_sk(sk)->inet_sport;
->>>> -               dev->netdev_ops->ndo_add_geneve_port(dev, sa_family, port);
->>>> -       }
->>>> +       list_for_each_entry_rcu(gs, &gn->sock_list, list)
->>>> +               udp_tunnel_push_rx_port(dev, gs->sock,
->>>> +                                       UDP_ENC_OFFLOAD_TYPE_GENEVE);
->>>>         rcu_read_unlock();
->>>>  }
->>>>
->>>> diff --git a/drivers/net/vxlan.c b/drivers/net/vxlan.c
->>>> index f999db2f97b4..43f634282726 100644
->>>> --- a/drivers/net/vxlan.c
->>>> +++ b/drivers/net/vxlan.c
->>>> @@ -622,37 +622,13 @@ static int vxlan_gro_complete(struct sock *sk, struct sk_buff *skb, int nhoff)
->>>>  /* Notify netdevs that UDP port started listening */
->>>>  static void vxlan_notify_add_rx_port(struct vxlan_sock *vs)
->>>>  {
->>>> -       struct net_device *dev;
->>>> -       struct sock *sk = vs->sock->sk;
->>>> -       struct net *net = sock_net(sk);
->>>> -       sa_family_t sa_family = vxlan_get_sk_family(vs);
->>>> -       __be16 port = inet_sk(sk)->inet_sport;
->>>> -
->>>> -       rcu_read_lock();
->>>> -       for_each_netdev_rcu(net, dev) {
->>>> -               if (dev->netdev_ops->ndo_add_vxlan_port)
->>>> -                       dev->netdev_ops->ndo_add_vxlan_port(dev, sa_family,
->>>> -                                                           port);
->>>> -       }
->>>> -       rcu_read_unlock();
->>>> +       udp_tunnel_notify_add_rx_port(vs->sock, UDP_ENC_OFFLOAD_TYPE_VXLAN);
->>>>  }
->>>>
->>>>  /* Notify netdevs that UDP port is no more listening */
->>>>  static void vxlan_notify_del_rx_port(struct vxlan_sock *vs)
->>>>  {
->>>> -       struct net_device *dev;
->>>> -       struct sock *sk = vs->sock->sk;
->>>> -       struct net *net = sock_net(sk);
->>>> -       sa_family_t sa_family = vxlan_get_sk_family(vs);
->>>> -       __be16 port = inet_sk(sk)->inet_sport;
->>>> -
->>>> -       rcu_read_lock();
->>>> -       for_each_netdev_rcu(net, dev) {
->>>> -               if (dev->netdev_ops->ndo_del_vxlan_port)
->>>> -                       dev->netdev_ops->ndo_del_vxlan_port(dev, sa_family,
->>>> -                                                           port);
->>>> -       }
->>>> -       rcu_read_unlock();
->>>> +       udp_tunnel_notify_del_rx_port(vs->sock, UDP_ENC_OFFLOAD_TYPE_VXLAN);
->>>>  }
->>>>
->>>>  /* Add new entry to forwarding table -- assumes lock held */
->>>> @@ -2525,30 +2501,22 @@ static struct device_type vxlan_type = {
->>>>         .name = "vxlan",
->>>>  };
->>>>
->>>> -/* Calls the ndo_add_vxlan_port of the caller in order to
->>>> +/* Calls the ndo_add_udp_enc_port of the caller in order to
->>>>   * supply the listening VXLAN udp ports. Callers are expected
->>>> - * to implement the ndo_add_vxlan_port.
->>>> + * to implement the ndo_add_udp_enc_port.
->>>>   */
->>>>  static void vxlan_push_rx_ports(struct net_device *dev)
->>>>  {
->>>>         struct vxlan_sock *vs;
->>>>         struct net *net = dev_net(dev);
->>>>         struct vxlan_net *vn = net_generic(net, vxlan_net_id);
->>>> -       sa_family_t sa_family;
->>>> -       __be16 port;
->>>>         unsigned int i;
->>>>
->>>> -       if (!dev->netdev_ops->ndo_add_vxlan_port)
->>>> -               return;
->>>> -
->>>>         spin_lock(&vn->sock_lock);
->>>>         for (i = 0; i < PORT_HASH_SIZE; ++i) {
->>>> -               hlist_for_each_entry_rcu(vs, &vn->sock_list[i], hlist) {
->>>> -                       port = inet_sk(vs->sock->sk)->inet_sport;
->>>> -                       sa_family = vxlan_get_sk_family(vs);
->>>> -                       dev->netdev_ops->ndo_add_vxlan_port(dev, sa_family,
->>>> -                                                           port);
->>>> -               }
->>>> +               hlist_for_each_entry_rcu(vs, &vn->sock_list[i], hlist)
->>>> +                       udp_tunnel_push_rx_port(dev, vs->sock,
->>>> +                                               UDP_ENC_OFFLOAD_TYPE_VXLAN);
->>>>         }
->>>>         spin_unlock(&vn->sock_lock);
->>>>  }
->>>> diff --git a/include/net/udp_tunnel.h b/include/net/udp_tunnel.h
->>>> index 9d14f707e534..704f931fd9ad 100644
->>>> --- a/include/net/udp_tunnel.h
->>>> +++ b/include/net/udp_tunnel.h
->>>> @@ -84,6 +84,18 @@ struct udp_tunnel_sock_cfg {
->>>>  void setup_udp_tunnel_sock(struct net *net, struct socket *sock,
->>>>                            struct udp_tunnel_sock_cfg *sock_cfg);
->>>>
->>>> +/* List of offloadable UDP tunnel types */
->>>> +enum udp_enc_offloads {
->>>> +       UDP_ENC_OFFLOAD_TYPE_VXLAN,     /* RFC 7348 */
->>>> +       UDP_ENC_OFFLOAD_TYPE_GENEVE,    /* draft-ietf-nvo3-geneve */
->>>> +};
->>>> +
->>> We've already had a lot of discussion on this. The clear outcome from
->>> netdev was that we need to support generic offloads and move away from
->>> protocol specific offload. Generalizing the interface to allow vendors
->>> to unnecessarily leak out protocol specific features undermines that
->>> effort.
->>
->> Then in turn we get dirty hacks like what we have right now where
->> VXLAN-GPE is attempting to reuse the VXLAN offload functions or
->> drivers that just hard-code GENEVE ports.
->>
->> Going full obstructionist on this isn't going to work.  We need to be
->> able to support these type of offloads because the switch vendors are
->> going to force the NIC vendors to do so.  We will likely never be able
->> to convince Cisco to implement an outer transmit checksum on their
->> switches.  In order to make offloads work without the outer checksum
->> we will need to be able to parse the frames in order to be able to
->> validate the inner checksum values.
->>
-> NIC vendors can support checksum-complete. This works with any form of
-> UDP encapsulation, and IP protocol (like extension headers), and other
-> form of tunneling we can dream up. That was the whole point of Dave's
-> keynote at netdev.
+[+cc Jeff, intel-wired-lan: questions about how PTM might be used]
 
-Right.  That covers one tiny piece of the whole problem, but you are
-holding out for hardware that may not be introduced for another 3 to 5
-years.  The fact is trying to getting NIC vendors to support
-checksum-complete is all well and good, but you seem to have forgotten
-that NIC vendors are incredibly slow when it comes to implementing
-anything.  In the meantime we will have the stuff that was already in
-the pipeline coming out over the next several years.
+On Mon, Jun 13, 2016 at 10:59:16AM +0800, Yong, Jonathan wrote:
+> On 06/13/2016 06:18, Bjorn Helgaas wrote:
+> >
+> >I'm still trying to understand what PTM should look like from the
+> >driver's perspective.  I know the PCIe spec doesn't define any way to
+> >initiate PTM dialogs or read the results.  But I don't know what the
+> >intended usage model is and how the device, driver, and PCI core
+> >pieces should fit together.
+> >
+> >- Do we expect endpoints to notice that PTM is enabled and
+> >automatically start using it, without the driver doing anything?
+> >Would driver changes be needed, e.g., to tell the device to add
+> >timestamps to network packet DMAs?
+> 
+> As far as I understand, it is a flag to tell the device that it may
+> begin using PTM to synchronize the on-board clock with PTM. From the
+> text in the specification (6.22.3.1 PTM Requester Role):
+> 
+> PTM Requesters are permitted to request PTM Master Time only when
+> PTM is enabled. The mechanism for directing a PTM Requester to issue
+> such a request is implementation specific.
+> 
+> If any, there won't be a generic way to trigger a PTM conversation.
+> 
+> >- Should there be a pci_enable_ptm() interface for a driver to
+> >enable PTM for its device?  If PTM isn't useful without driver
+> >changes, e.g., to tell the device to add timestamps, we probably
+> >should have such an interface so we don't enable PTM when it won't be
+> >useful.
 
-How about the fact that we need to know that there is a tunnel there
-if we want to do anything like try to parse the inner headers of a
-given tunnel on Rx?  How do you propose to solve the RSS problem?
-Enabling hashing on UDP source and destination port is okay-ish but
-runs into the issue that the tunnel can be potentially fragmented.  In
-addition any other fragmented UDP flows end up now being received with
-potential out-of-order issues on the system.
+Is there a Windows driver interface for enabling PTM?  I googled
+for such a thing, but didn't find anything.
 
-There ends up being a number of reasons why you need to have this.
-You can argue about checksum-complete all you want but in the end it
-doesn't matter because simple things like flow identification and
-steering will always be an issue regardless of how the checksum is
-handled.
+> >- If the PCI core instead enables PTM automatically whenever
+> >possible (as in the current patch), what performance impact do we
+> >expect?  I know you probably can't measure it yet, but can we at
+> >least calculate the worst-case bandwidth usage, based on the message
+> >size and frequency?  I previously assumed it would be small, but I
+> >hate to give up *any* performance unless there is some benefit.
+> 
+> If the driver is already utilizing timestamps from the device, it
+> would be more precise and compensated for link delays. According to
+> the Implementation Note part in the specs, it says it can be used to
+> approximate the round trip message transit time and from there,
+> measure the link delay times, assuming upstream/downstream delays
+> are symmetrical.
+> 
+> >- The PTM benefit is mostly for endpoints, and not so much for root
+> >ports or switches themselves.  If the PCI core enabled PTM
+> >automatically only on non-endpoints, would there be any overhead?
+> 
+> If it has any local clocks (noted with a requester bit, I have not
+> seen such a switch), it may start sending synchronization requests,
+> but from the specs...
+> 
+> >Here's my line of thought: If an endpoint never issued a PTM
+> >request, obviously there would never be a PTM dialog on the link
+> >between the last switch and the endpoint.  What about on links
+> >farther upstream? Would the switch ever issue a PTM request itself,
+> >without having received a request from the endpoint?  If not, the PCI
+> >core could enable PTM on all non-endpoint devices, and there should
+> >be no performance effect at all.  This would be nice because a driver
+> >call to enable PTM would only need to touch the endpoint; it wouldn't
+> >need to touch any upstream devices.
+> 
+> From the wording (6.22.2 PTM Link Protocol):
+> 
+> The Upstream Port, on behalf of the PTM Requester, initiates the PTM
+> dialog by transmitting a PTM Request message.
+> The Downstream Port, on behalf of the PTM Responder, has knowledge
+> of or access (directly or indirectly) to the PTM Master Time.
+> 
+> My naive interpretation tells me switches will only act on behalf of
+> requester/responder, never for itself.
 
-- Alex
+That would be my expectation as well.
+
+My own guess is that the driver should be involved somehow.  The clock
+granularity exposed in the PTM control register seems like it's
+intended for the driver, since it apparently doesn't affect the
+hardware at all.  So maybe we should:
+
+  - Enable PTM on all responder devices, i.e., everything except
+    endpoints, automatically.  This on the assumption that this would
+    not affect performance at all.
+
+  - Provide a driver interface like this:
+
+      int pci_enable_ptm(struct pci_dev *dev, u8 *granularity);
+
+    to enable PTM on an endpoint.  If successful, it returns the
+    effective clock granularity.  This only has to touch the endpoint
+    itself, not any upstream devices, since the upstream path would be
+    already enabled.
+
+Bjorn
