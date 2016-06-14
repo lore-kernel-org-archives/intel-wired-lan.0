@@ -1,307 +1,177 @@
-From: Tom Herbert <tom@herbertland.com>
-Date: Mon, 13 Jun 2016 17:28:22 -0700
-Subject: [Intel-wired-lan] [net-next PATCH 01/15] net: Combine GENEVE
- and VXLAN port offload notifiers into single functions
-In-Reply-To: <CAKgT0Uc8SZSsi9EULv0GVNO38OHhw__7_MDQ3PtDf-8y7+1Jgg@mail.gmail.com>
-References: <20160613173750.15186.24381.stgit@localhost.localdomain>
- <20160613174754.15186.37885.stgit@localhost.localdomain>
- <CALx6S37b9pw4u5O1qm4uhsFuJ708DGLQ-sU4=xkPRbuw=wykGg@mail.gmail.com>
- <CAKgT0Ue+ik+wj2C=o66Va6f5qNSo=0xEkYsD--BV6_zqg16kHA@mail.gmail.com>
- <CALx6S37_vdUwiiYieOxBPRchg-ofOXvM-2erjD3LvRux51oEtQ@mail.gmail.com>
- <CAKgT0Uf4u4r_vk2CBeaf607L0TgKj4mHMocEk9N8acGRT4db6w@mail.gmail.com>
- <CALx6S37BgUeaS1mHT+xL=n+Q=VZpWX+R3t+FDfZPLLCtYun1Xw@mail.gmail.com>
- <CAKgT0Uc8SZSsi9EULv0GVNO38OHhw__7_MDQ3PtDf-8y7+1Jgg@mail.gmail.com>
-Message-ID: <CALx6S359Q_qqj6Wc7K41hVfjzqHgLsHmH-91WTOS9tGw3=G5fA@mail.gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 14 Jun 2016 08:37:42 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ d1dff239e937c9eb3f52f8a24277b2e0c4555ac3 BUILD SUCCESS
+Message-ID: <575f51d6.KM2x7sREO7LJyhAu%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Jun 13, 2016 at 4:12 PM, Alexander Duyck
-<alexander.duyck@gmail.com> wrote:
-> On Mon, Jun 13, 2016 at 3:17 PM, Tom Herbert <tom@herbertland.com> wrote:
->> On Mon, Jun 13, 2016 at 2:51 PM, Alexander Duyck
->> <alexander.duyck@gmail.com> wrote:
->>> On Mon, Jun 13, 2016 at 1:36 PM, Tom Herbert <tom@herbertland.com> wrote:
->>>> On Mon, Jun 13, 2016 at 1:24 PM, Alexander Duyck
->>>> <alexander.duyck@gmail.com> wrote:
->>>>> On Mon, Jun 13, 2016 at 12:55 PM, Tom Herbert <tom@herbertland.com> wrote:
->>>>>> On Mon, Jun 13, 2016 at 10:47 AM, Alexander Duyck <aduyck@mirantis.com> wrote:
->>>>>>> This patch merges the GENEVE and VXLAN code so that both functions pass
->>>>>>> through a shared code path.  This way we can start the effort of using a
->>>>>>> single function on the network device drivers to handle both of these
->>>>>>> tunnel offload types.
->>>>>>>
->>>>>>> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
->>>>>>> ---
->>>>>>>  drivers/net/geneve.c     |   48 ++++-------------------------
->>>>>>>  drivers/net/vxlan.c      |   46 ++++-----------------------
->>>>>>>  include/net/udp_tunnel.h |   12 +++++++
->>>>>>>  net/ipv4/udp_tunnel.c    |   77 ++++++++++++++++++++++++++++++++++++++++++++++
->>>>>>>  4 files changed, 103 insertions(+), 80 deletions(-)
->>>>>>>
->>>>>>> diff --git a/drivers/net/geneve.c b/drivers/net/geneve.c
->>>>>>> index cadefe4fdaa2..f5ce41532cf4 100644
->>>>>>> --- a/drivers/net/geneve.c
->>>>>>> +++ b/drivers/net/geneve.c
->>>>>>> @@ -399,19 +399,7 @@ static struct socket *geneve_create_sock(struct net *net, bool ipv6,
->>>>>>>
->>>>>>>  static void geneve_notify_add_rx_port(struct geneve_sock *gs)
->>>>>>>  {
->>>>>>> -       struct net_device *dev;
->>>>>>> -       struct sock *sk = gs->sock->sk;
->>>>>>> -       struct net *net = sock_net(sk);
->>>>>>> -       sa_family_t sa_family = geneve_get_sk_family(gs);
->>>>>>> -       __be16 port = inet_sk(sk)->inet_sport;
->>>>>>> -
->>>>>>> -       rcu_read_lock();
->>>>>>> -       for_each_netdev_rcu(net, dev) {
->>>>>>> -               if (dev->netdev_ops->ndo_add_geneve_port)
->>>>>>> -                       dev->netdev_ops->ndo_add_geneve_port(dev, sa_family,
->>>>>>> -                                                            port);
->>>>>>> -       }
->>>>>>> -       rcu_read_unlock();
->>>>>>> +       udp_tunnel_notify_add_rx_port(gs->sock, UDP_ENC_OFFLOAD_TYPE_GENEVE);
->>>>>>>  }
->>>>>>>
->>>>>>>  static int geneve_hlen(struct genevehdr *gh)
->>>>>>> @@ -550,20 +538,7 @@ static struct geneve_sock *geneve_socket_create(struct net *net, __be16 port,
->>>>>>>
->>>>>>>  static void geneve_notify_del_rx_port(struct geneve_sock *gs)
->>>>>>>  {
->>>>>>> -       struct net_device *dev;
->>>>>>> -       struct sock *sk = gs->sock->sk;
->>>>>>> -       struct net *net = sock_net(sk);
->>>>>>> -       sa_family_t sa_family = geneve_get_sk_family(gs);
->>>>>>> -       __be16 port = inet_sk(sk)->inet_sport;
->>>>>>> -
->>>>>>> -       rcu_read_lock();
->>>>>>> -       for_each_netdev_rcu(net, dev) {
->>>>>>> -               if (dev->netdev_ops->ndo_del_geneve_port)
->>>>>>> -                       dev->netdev_ops->ndo_del_geneve_port(dev, sa_family,
->>>>>>> -                                                            port);
->>>>>>> -       }
->>>>>>> -
->>>>>>> -       rcu_read_unlock();
->>>>>>> +       udp_tunnel_notify_add_rx_port(gs->sock, UDP_ENC_OFFLOAD_TYPE_GENEVE);
->>>>>>>  }
->>>>>>>
->>>>>>>  static void __geneve_sock_release(struct geneve_sock *gs)
->>>>>>> @@ -1165,29 +1140,20 @@ static struct device_type geneve_type = {
->>>>>>>         .name = "geneve",
->>>>>>>  };
->>>>>>>
->>>>>>> -/* Calls the ndo_add_geneve_port of the caller in order to
->>>>>>> +/* Calls the ndo_add_udp_enc_port of the caller in order to
->>>>>>>   * supply the listening GENEVE udp ports. Callers are expected
->>>>>>> - * to implement the ndo_add_geneve_port.
->>>>>>> + * to implement the ndo_add_udp_enc_port.
->>>>>>>   */
->>>>>>>  static void geneve_push_rx_ports(struct net_device *dev)
->>>>>>>  {
->>>>>>>         struct net *net = dev_net(dev);
->>>>>>>         struct geneve_net *gn = net_generic(net, geneve_net_id);
->>>>>>>         struct geneve_sock *gs;
->>>>>>> -       sa_family_t sa_family;
->>>>>>> -       struct sock *sk;
->>>>>>> -       __be16 port;
->>>>>>> -
->>>>>>> -       if (!dev->netdev_ops->ndo_add_geneve_port)
->>>>>>> -               return;
->>>>>>>
->>>>>>>         rcu_read_lock();
->>>>>>> -       list_for_each_entry_rcu(gs, &gn->sock_list, list) {
->>>>>>> -               sk = gs->sock->sk;
->>>>>>> -               sa_family = sk->sk_family;
->>>>>>> -               port = inet_sk(sk)->inet_sport;
->>>>>>> -               dev->netdev_ops->ndo_add_geneve_port(dev, sa_family, port);
->>>>>>> -       }
->>>>>>> +       list_for_each_entry_rcu(gs, &gn->sock_list, list)
->>>>>>> +               udp_tunnel_push_rx_port(dev, gs->sock,
->>>>>>> +                                       UDP_ENC_OFFLOAD_TYPE_GENEVE);
->>>>>>>         rcu_read_unlock();
->>>>>>>  }
->>>>>>>
->>>>>>> diff --git a/drivers/net/vxlan.c b/drivers/net/vxlan.c
->>>>>>> index f999db2f97b4..43f634282726 100644
->>>>>>> --- a/drivers/net/vxlan.c
->>>>>>> +++ b/drivers/net/vxlan.c
->>>>>>> @@ -622,37 +622,13 @@ static int vxlan_gro_complete(struct sock *sk, struct sk_buff *skb, int nhoff)
->>>>>>>  /* Notify netdevs that UDP port started listening */
->>>>>>>  static void vxlan_notify_add_rx_port(struct vxlan_sock *vs)
->>>>>>>  {
->>>>>>> -       struct net_device *dev;
->>>>>>> -       struct sock *sk = vs->sock->sk;
->>>>>>> -       struct net *net = sock_net(sk);
->>>>>>> -       sa_family_t sa_family = vxlan_get_sk_family(vs);
->>>>>>> -       __be16 port = inet_sk(sk)->inet_sport;
->>>>>>> -
->>>>>>> -       rcu_read_lock();
->>>>>>> -       for_each_netdev_rcu(net, dev) {
->>>>>>> -               if (dev->netdev_ops->ndo_add_vxlan_port)
->>>>>>> -                       dev->netdev_ops->ndo_add_vxlan_port(dev, sa_family,
->>>>>>> -                                                           port);
->>>>>>> -       }
->>>>>>> -       rcu_read_unlock();
->>>>>>> +       udp_tunnel_notify_add_rx_port(vs->sock, UDP_ENC_OFFLOAD_TYPE_VXLAN);
->>>>>>>  }
->>>>>>>
->>>>>>>  /* Notify netdevs that UDP port is no more listening */
->>>>>>>  static void vxlan_notify_del_rx_port(struct vxlan_sock *vs)
->>>>>>>  {
->>>>>>> -       struct net_device *dev;
->>>>>>> -       struct sock *sk = vs->sock->sk;
->>>>>>> -       struct net *net = sock_net(sk);
->>>>>>> -       sa_family_t sa_family = vxlan_get_sk_family(vs);
->>>>>>> -       __be16 port = inet_sk(sk)->inet_sport;
->>>>>>> -
->>>>>>> -       rcu_read_lock();
->>>>>>> -       for_each_netdev_rcu(net, dev) {
->>>>>>> -               if (dev->netdev_ops->ndo_del_vxlan_port)
->>>>>>> -                       dev->netdev_ops->ndo_del_vxlan_port(dev, sa_family,
->>>>>>> -                                                           port);
->>>>>>> -       }
->>>>>>> -       rcu_read_unlock();
->>>>>>> +       udp_tunnel_notify_del_rx_port(vs->sock, UDP_ENC_OFFLOAD_TYPE_VXLAN);
->>>>>>>  }
->>>>>>>
->>>>>>>  /* Add new entry to forwarding table -- assumes lock held */
->>>>>>> @@ -2525,30 +2501,22 @@ static struct device_type vxlan_type = {
->>>>>>>         .name = "vxlan",
->>>>>>>  };
->>>>>>>
->>>>>>> -/* Calls the ndo_add_vxlan_port of the caller in order to
->>>>>>> +/* Calls the ndo_add_udp_enc_port of the caller in order to
->>>>>>>   * supply the listening VXLAN udp ports. Callers are expected
->>>>>>> - * to implement the ndo_add_vxlan_port.
->>>>>>> + * to implement the ndo_add_udp_enc_port.
->>>>>>>   */
->>>>>>>  static void vxlan_push_rx_ports(struct net_device *dev)
->>>>>>>  {
->>>>>>>         struct vxlan_sock *vs;
->>>>>>>         struct net *net = dev_net(dev);
->>>>>>>         struct vxlan_net *vn = net_generic(net, vxlan_net_id);
->>>>>>> -       sa_family_t sa_family;
->>>>>>> -       __be16 port;
->>>>>>>         unsigned int i;
->>>>>>>
->>>>>>> -       if (!dev->netdev_ops->ndo_add_vxlan_port)
->>>>>>> -               return;
->>>>>>> -
->>>>>>>         spin_lock(&vn->sock_lock);
->>>>>>>         for (i = 0; i < PORT_HASH_SIZE; ++i) {
->>>>>>> -               hlist_for_each_entry_rcu(vs, &vn->sock_list[i], hlist) {
->>>>>>> -                       port = inet_sk(vs->sock->sk)->inet_sport;
->>>>>>> -                       sa_family = vxlan_get_sk_family(vs);
->>>>>>> -                       dev->netdev_ops->ndo_add_vxlan_port(dev, sa_family,
->>>>>>> -                                                           port);
->>>>>>> -               }
->>>>>>> +               hlist_for_each_entry_rcu(vs, &vn->sock_list[i], hlist)
->>>>>>> +                       udp_tunnel_push_rx_port(dev, vs->sock,
->>>>>>> +                                               UDP_ENC_OFFLOAD_TYPE_VXLAN);
->>>>>>>         }
->>>>>>>         spin_unlock(&vn->sock_lock);
->>>>>>>  }
->>>>>>> diff --git a/include/net/udp_tunnel.h b/include/net/udp_tunnel.h
->>>>>>> index 9d14f707e534..704f931fd9ad 100644
->>>>>>> --- a/include/net/udp_tunnel.h
->>>>>>> +++ b/include/net/udp_tunnel.h
->>>>>>> @@ -84,6 +84,18 @@ struct udp_tunnel_sock_cfg {
->>>>>>>  void setup_udp_tunnel_sock(struct net *net, struct socket *sock,
->>>>>>>                            struct udp_tunnel_sock_cfg *sock_cfg);
->>>>>>>
->>>>>>> +/* List of offloadable UDP tunnel types */
->>>>>>> +enum udp_enc_offloads {
->>>>>>> +       UDP_ENC_OFFLOAD_TYPE_VXLAN,     /* RFC 7348 */
->>>>>>> +       UDP_ENC_OFFLOAD_TYPE_GENEVE,    /* draft-ietf-nvo3-geneve */
->>>>>>> +};
->>>>>>> +
->>>>>> We've already had a lot of discussion on this. The clear outcome from
->>>>>> netdev was that we need to support generic offloads and move away from
->>>>>> protocol specific offload. Generalizing the interface to allow vendors
->>>>>> to unnecessarily leak out protocol specific features undermines that
->>>>>> effort.
->>>>>
->>>>> Then in turn we get dirty hacks like what we have right now where
->>>>> VXLAN-GPE is attempting to reuse the VXLAN offload functions or
->>>>> drivers that just hard-code GENEVE ports.
->>>>>
->>>>> Going full obstructionist on this isn't going to work.  We need to be
->>>>> able to support these type of offloads because the switch vendors are
->>>>> going to force the NIC vendors to do so.  We will likely never be able
->>>>> to convince Cisco to implement an outer transmit checksum on their
->>>>> switches.  In order to make offloads work without the outer checksum
->>>>> we will need to be able to parse the frames in order to be able to
->>>>> validate the inner checksum values.
->>>>>
->>>> NIC vendors can support checksum-complete. This works with any form of
->>>> UDP encapsulation, and IP protocol (like extension headers), and other
->>>> form of tunneling we can dream up. That was the whole point of Dave's
->>>> keynote at netdev.
->>>
->>> Right.  That covers one tiny piece of the whole problem, but you are
->>> holding out for hardware that may not be introduced for another 3 to 5
->>> years.  The fact is trying to getting NIC vendors to support
->>> checksum-complete is all well and good, but you seem to have forgotten
->>> that NIC vendors are incredibly slow when it comes to implementing
->>> anything.  In the meantime we will have the stuff that was already in
->>> the pipeline coming out over the next several years.
->>>
->>> How about the fact that we need to know that there is a tunnel there
->>> if we want to do anything like try to parse the inner headers of a
->>> given tunnel on Rx?  How do you propose to solve the RSS problem?
->>
->> Solved by doing RSS and ECMP hash over 3-tuple of IP addresses and
->> IPv6 flow label (not ports). Non-zero flow labels will soon be widely
->> used over the Internet. IOS already is already setting them, Android
->> should pick up support in the next rebase, and the MS guys have
->> assured me that they will add support to next version of Windows. Like
->> a generic checksum offload, flow label works with an IP protocol,
->> extension header, fragmentation, UDP encapsulation, etc. With this
->> there is no reason for devices to parse L4 headers just to forward a
->> packet. HW vendors (both switches and NICs) are strongly encouraged to
->> support them.
->
-> Right so with all this encouragement, where are we at on getting the
-> switches out there to support this?  The switches are what is pushing
-> most of the tunnel workloads and such, and it is the switches that are
-> going to be the painful interfaces for us to try to offload data from.
->
-> Also have you looked into the effect on regular traffic for trying to
-> deal with an extra IPv4 options header?  The Intel NICs should be able
-> to deal with it, at least for Tx, but my concern would be the NICs
-> that perform parsing based offloads and such.
->
-> It seems like we might be arguing past each other as I am focused on
-> what we can do right now, and it seems like you are arguing the point
-> that we need features that probably won't be enabled in the ecosystem
-> for 5 to 10 years depending on the hardware release cycles.  Hopefully
-> we can agree to disagree and can address this again when new features
-> start to become available.  At that time we could probably look at
-> deprecating the driver API for the UDP ports assuming we have other
-> means of resolving this available by then.
->
-Alex,
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+d1dff239e937c9eb3f52f8a24277b2e0c4555ac3  e1000e: keep vlan interfaces functional after rxvlan off
 
-I looked though the previous thread on protocol specific vs. generic
-offloads in http://www.spinics.net/lists/netdev/msg354311.html and the
-outcome from that. To quote davem:
+elapsed time: 168m
 
-"Doing anything other than providing 2's complement checksums in the
-RX descriptor doesn't work.  We know this.
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 155
 
-So we will not add to our core architecture and frameworks anything
-that directly facilitates designs which we know are suboptimal.  And
-protocol specific support for tunnel offloading is suboptimal and not
-the way forward."
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201624
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+arm                        realview_defconfig
+blackfin                    DNP5370_defconfig
+ia64                             alldefconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-06140607
+x86_64                 randconfig-v0-06140230
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+parisc                         b180_defconfig
+i386                             allmodconfig
+powerpc                       ebony_defconfig
+powerpc                     sequoia_defconfig
+s390                                defconfig
+sh                        sh7763rdp_defconfig
+sparc64                             defconfig
+blackfin                   CM-BF561_defconfig
+m32r                             allyesconfig
+m68k                        mvme16x_defconfig
+mips                                defconfig
+mn10300                     asb2303_defconfig
+x86_64               randconfig-x010-06140233
+x86_64               randconfig-x012-06140233
+x86_64               randconfig-x015-06140233
+x86_64               randconfig-x013-06140233
+x86_64               randconfig-x016-06140233
+x86_64               randconfig-x011-06140233
+x86_64               randconfig-x014-06140233
+x86_64               randconfig-x017-06140233
+x86_64               randconfig-x018-06140233
+x86_64               randconfig-x019-06140233
+x86_64                 randconfig-x010-201624
+x86_64                 randconfig-x011-201624
+x86_64                 randconfig-x012-201624
+x86_64                 randconfig-x013-201624
+x86_64                 randconfig-x014-201624
+x86_64                 randconfig-x015-201624
+x86_64                 randconfig-x016-201624
+x86_64                 randconfig-x017-201624
+x86_64                 randconfig-x018-201624
+x86_64                 randconfig-x019-201624
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                   randconfig-s0-06140233
+i386                   randconfig-s1-06140233
+x86_64                 randconfig-s0-06140610
+x86_64                 randconfig-s1-06140610
+x86_64                 randconfig-s2-06140610
+x86_64                 randconfig-s0-06140739
+x86_64                 randconfig-s1-06140739
+x86_64                 randconfig-s2-06140739
+x86_64                           allmodconfig
+x86_64                 randconfig-s3-06140732
+x86_64                 randconfig-s4-06140732
+x86_64                 randconfig-s5-06140732
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                 randconfig-i0-06131548
+x86_64                   randconfig-i0-201624
+sparc                               defconfig
+sparc64                           allnoconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201624
+i386                     randconfig-i1-201624
+i386                   randconfig-x017-201624
+i386                   randconfig-x018-201624
+i386                   randconfig-x010-201624
+i386                   randconfig-x013-201624
+i386                   randconfig-x016-201624
+i386                   randconfig-x011-201624
+i386                   randconfig-x014-201624
+i386                   randconfig-x015-201624
+i386                   randconfig-x019-201624
+i386                   randconfig-x012-201624
+i386                     randconfig-n0-201624
+i386                             allyesconfig
+m68k                            mac_defconfig
+powerpc                     mpc512x_defconfig
+powerpc                     sbc8548_defconfig
+ia64                              allnoconfig
+ia64                                defconfig
+sh                            shmin_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                  randconfig-sb0-06140627
+x86_64                 randconfig-x007-201624
+x86_64                 randconfig-x000-201624
+x86_64                 randconfig-x003-201624
+x86_64                 randconfig-x006-201624
+x86_64                 randconfig-x008-201624
+x86_64                 randconfig-x005-201624
+x86_64                 randconfig-x002-201624
+x86_64                 randconfig-x001-201624
+x86_64                 randconfig-x004-201624
+x86_64                 randconfig-x009-201624
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-r0-201624
+i386                   randconfig-x005-201624
+i386                   randconfig-x008-201624
+i386                   randconfig-x000-201624
+i386                   randconfig-x009-201624
+i386                   randconfig-x007-201624
+i386                   randconfig-x004-201624
+i386                   randconfig-x001-201624
+i386                   randconfig-x006-201624
+i386                   randconfig-x003-201624
+i386                   randconfig-x002-201624
 
-Unless Dave has changed his mind on this or you have new arguments or
-new data, I really don't see point in participating in further
-discussion on patches like this. Sorry.
-
-Tom
-
-
-
-> - Alex
+Thanks,
+Fengguang
