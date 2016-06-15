@@ -1,92 +1,69 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Wed, 15 Jun 2016 16:42:16 -0700
-Subject: [Intel-wired-lan] [next PATCH S38 4/7] i40e: Remove device ID 0x37D4
+Date: Wed, 15 Jun 2016 16:42:15 -0700
+Subject: [Intel-wired-lan] [next PATCH S38 3/7] i40e/i40evf: remove useless
+	initializer
 In-Reply-To: <1466034139-11828-1-git-send-email-bimmy.pujari@intel.com>
 References: <1466034139-11828-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1466034139-11828-5-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1466034139-11828-4-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Catherine Sullivan <catherine.sullivan@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-This device ID is not needed, so take it out.
+This initializer isn't needed because the variable is assigned right
+away.
 
-Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-Change-ID: I148d29f68a1f58b03980ecd83047a1b440f4f74d
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-ID: I6ce3edb3f4e0364db248a7a0bcc62ca95c01d941
 ---
-Testing Hints: Make sure device ID does not appear in devids.h and we
-compile, note that the ID will remain in the upstream pciid database.
+Testing Hints : No functionality changes.
 
- drivers/net/ethernet/intel/i40e/i40e_common.c   | 1 -
- drivers/net/ethernet/intel/i40e/i40e_devids.h   | 1 -
- drivers/net/ethernet/intel/i40e/i40e_main.c     | 1 -
- drivers/net/ethernet/intel/i40evf/i40e_common.c | 1 -
- drivers/net/ethernet/intel/i40evf/i40e_devids.h | 1 -
- 5 files changed, 5 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 4 +---
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 3 +--
+ 2 files changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 3355f4d..9ffa409 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -61,7 +61,6 @@ static i40e_status i40e_set_mac_type(struct i40e_hw *hw)
- 		case I40E_DEV_ID_1G_BASE_T_X722:
- 		case I40E_DEV_ID_10G_BASE_T_X722:
- 		case I40E_DEV_ID_SFP_I_X722:
--		case I40E_DEV_ID_QSFP_I_X722:
- 			hw->mac.type = I40E_MAC_X722;
- 			break;
- 		default:
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_devids.h b/drivers/net/ethernet/intel/i40e/i40e_devids.h
-index d701861..dd4457d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_devids.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_devids.h
-@@ -45,7 +45,6 @@
- #define I40E_DEV_ID_1G_BASE_T_X722	0x37D1
- #define I40E_DEV_ID_10G_BASE_T_X722	0x37D2
- #define I40E_DEV_ID_SFP_I_X722		0x37D3
--#define I40E_DEV_ID_QSFP_I_X722		0x37D4
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 55f151f..2def562 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -740,14 +740,12 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
+ 	tx_ring->q_vector->tx.total_packets += total_packets;
  
- #define i40e_is_40G_device(d)		((d) == I40E_DEV_ID_QSFP_A  || \
- 					 (d) == I40E_DEV_ID_QSFP_B  || \
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 3b8d079..0898c9d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -91,7 +91,6 @@ static const struct pci_device_id i40e_pci_tbl[] = {
- 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_1G_BASE_T_X722), 0},
- 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_10G_BASE_T_X722), 0},
- 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_SFP_I_X722), 0},
--	{PCI_VDEVICE(INTEL, I40E_DEV_ID_QSFP_I_X722), 0},
- 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_20G_KR2), 0},
- 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_20G_KR2_A), 0},
- 	/* required last entry */
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_common.c b/drivers/net/ethernet/intel/i40evf/i40e_common.c
-index 8f64204..4db0c03 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_common.c
-@@ -59,7 +59,6 @@ i40e_status i40e_set_mac_type(struct i40e_hw *hw)
- 		case I40E_DEV_ID_1G_BASE_T_X722:
- 		case I40E_DEV_ID_10G_BASE_T_X722:
- 		case I40E_DEV_ID_SFP_I_X722:
--		case I40E_DEV_ID_QSFP_I_X722:
- 			hw->mac.type = I40E_MAC_X722;
- 			break;
- 		case I40E_DEV_ID_X722_VF:
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_devids.h b/drivers/net/ethernet/intel/i40evf/i40e_devids.h
-index d34972b..7023570 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_devids.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_devids.h
-@@ -45,7 +45,6 @@
- #define I40E_DEV_ID_1G_BASE_T_X722	0x37D1
- #define I40E_DEV_ID_10G_BASE_T_X722	0x37D2
- #define I40E_DEV_ID_SFP_I_X722		0x37D3
--#define I40E_DEV_ID_QSFP_I_X722		0x37D4
- #define I40E_DEV_ID_X722_VF		0x37CD
- #define I40E_DEV_ID_X722_VF_HV		0x37D9
+ 	if (tx_ring->flags & I40E_TXR_FLAGS_WB_ON_ITR) {
+-		unsigned int j = 0;
+-
+ 		/* check to see if there are < 4 descriptors
+ 		 * waiting to be written back, then kick the hardware to force
+ 		 * them to be written back in case we stay in NAPI.
+ 		 * In this mode on X722 we do not enable Interrupt.
+ 		 */
+-		j = i40e_get_tx_pending(tx_ring, false);
++		unsigned int j = i40e_get_tx_pending(tx_ring, false);
  
+ 		if (budget &&
+ 		    ((j / (WB_STRIDE + 1)) == 0) && (j != 0) &&
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index be99189..40f224f 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -259,13 +259,12 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
+ 	tx_ring->q_vector->tx.total_packets += total_packets;
+ 
+ 	if (tx_ring->flags & I40E_TXR_FLAGS_WB_ON_ITR) {
+-		unsigned int j = 0;
+ 		/* check to see if there are < 4 descriptors
+ 		 * waiting to be written back, then kick the hardware to force
+ 		 * them to be written back in case we stay in NAPI.
+ 		 * In this mode on X722 we do not enable Interrupt.
+ 		 */
+-		j = i40evf_get_tx_pending(tx_ring, false);
++		unsigned int j = i40evf_get_tx_pending(tx_ring, false);
+ 
+ 		if (budget &&
+ 		    ((j / (WB_STRIDE + 1)) == 0) && (j > 0) &&
 -- 
 2.4.11
 
