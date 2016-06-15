@@ -1,39 +1,141 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Wed, 15 Jun 2016 16:42:12 -0700
-Subject: [Intel-wired-lan] [next PATCH S38 0/7] i40e/i40evf updates
-Message-ID: <1466034139-11828-1-git-send-email-bimmy.pujari@intel.com>
+Date: Wed, 15 Jun 2016 16:42:13 -0700
+Subject: [Intel-wired-lan] [next PATCH S38 1/7] i40e: Fix to show correct
+	Advertised Link Modes when link is down
+In-Reply-To: <1466034139-11828-1-git-send-email-bimmy.pujari@intel.com>
+References: <1466034139-11828-1-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1466034139-11828-2-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Avinash Dayanand provides fix to show correct Advertised Link Modes when
-link is down.
+From: Avinash Dayanand <avinash.dayanand@intel.com>
 
-Catherine Sullivan removes device ID 0x37D4.
+When link is down, Advertised Link Modes was wrongly displaying full
+supported link modes instead of Advertised link mode. Added conditional
+checks in order to make sure correct Advertised link modes are
+displayed when the link is down.
 
-Joshua Hay adds hyperv dev ids.
+Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
+Change-ID: I8a61413f9ee174149c7a33157b5f0b0a8da9842d
+---
+Testing Hints: See HSD
+HSD-number: 7660092
+HSD-database: LADSW
 
-Kiran Patil enables VSI broadcast promiscuous mode instead of adding broadcast
-filter.
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 47 +++++++++++++++-----------
+ 1 file changed, 28 insertions(+), 19 deletions(-)
 
-Mitch Williams removes useless initializer & refactors rx filter handling.
-
-
- drivers/net/ethernet/intel/i40e/i40e.h          |  14 +-
- drivers/net/ethernet/intel/i40e/i40e_common.c   |   1 -
- drivers/net/ethernet/intel/i40e/i40e_debugfs.c  |  16 +-
- drivers/net/ethernet/intel/i40e/i40e_devids.h   |   1 -
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c  |  47 +-
- drivers/net/ethernet/intel/i40e/i40e_main.c     | 546 +++++++++++-------------
- drivers/net/ethernet/intel/i40e/i40e_txrx.c     |   4 +-
- drivers/net/ethernet/intel/i40evf/i40e_common.c |   1 -
- drivers/net/ethernet/intel/i40evf/i40e_devids.h |   1 -
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c   |   3 +-
- drivers/net/ethernet/intel/i40evf/i40evf_main.c |   4 +-
- 11 files changed, 310 insertions(+), 328 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 4962e85..0cfde30 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -272,15 +272,16 @@ static void i40e_phy_type_to_ethtool(struct i40e_pf *pf, u32 *supported,
+ 				     u32 *advertising)
+ {
+ 	enum i40e_aq_capabilities_phy_type phy_types = pf->hw.phy.phy_types;
+-
++	struct i40e_link_status *hw_link_info = &pf->hw.phy.link_info;
+ 	*supported = 0x0;
+ 	*advertising = 0x0;
+ 
+ 	if (phy_types & I40E_CAP_PHY_TYPE_SGMII) {
+ 		*supported |= SUPPORTED_Autoneg |
+ 			      SUPPORTED_1000baseT_Full;
+-		*advertising |= ADVERTISED_Autoneg |
+-				ADVERTISED_1000baseT_Full;
++		*advertising |= ADVERTISED_Autoneg;
++		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_1GB)
++			*advertising |= ADVERTISED_1000baseT_Full;
+ 		if (pf->flags & I40E_FLAG_100M_SGMII_CAPABLE) {
+ 			*supported |= SUPPORTED_100baseT_Full;
+ 			*advertising |= ADVERTISED_100baseT_Full;
+@@ -299,8 +300,9 @@ static void i40e_phy_type_to_ethtool(struct i40e_pf *pf, u32 *supported,
+ 	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_LR) {
+ 		*supported |= SUPPORTED_Autoneg |
+ 			      SUPPORTED_10000baseT_Full;
+-		*advertising |= ADVERTISED_Autoneg |
+-				ADVERTISED_10000baseT_Full;
++		*advertising |= ADVERTISED_Autoneg;
++		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_10GB)
++			*advertising |= ADVERTISED_10000baseT_Full;
+ 	}
+ 	if (phy_types & I40E_CAP_PHY_TYPE_XLAUI ||
+ 	    phy_types & I40E_CAP_PHY_TYPE_XLPPI ||
+@@ -310,14 +312,16 @@ static void i40e_phy_type_to_ethtool(struct i40e_pf *pf, u32 *supported,
+ 	    phy_types & I40E_CAP_PHY_TYPE_40GBASE_CR4) {
+ 		*supported |= SUPPORTED_Autoneg |
+ 			      SUPPORTED_40000baseCR4_Full;
+-		*advertising |= ADVERTISED_Autoneg |
+-				ADVERTISED_40000baseCR4_Full;
++		*advertising |= ADVERTISED_Autoneg;
++		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_40GB)
++			*advertising |= ADVERTISED_40000baseCR4_Full;
+ 	}
+ 	if (phy_types & I40E_CAP_PHY_TYPE_100BASE_TX) {
+ 		*supported |= SUPPORTED_Autoneg |
+ 			      SUPPORTED_100baseT_Full;
+-		*advertising |= ADVERTISED_Autoneg |
+-				ADVERTISED_100baseT_Full;
++		*advertising |= ADVERTISED_Autoneg;
++		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_100MB)
++			*advertising |= ADVERTISED_100baseT_Full;
+ 	}
+ 	if (phy_types & I40E_CAP_PHY_TYPE_1000BASE_T ||
+ 	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_SX ||
+@@ -325,8 +329,9 @@ static void i40e_phy_type_to_ethtool(struct i40e_pf *pf, u32 *supported,
+ 	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_T_OPTICAL) {
+ 		*supported |= SUPPORTED_Autoneg |
+ 			      SUPPORTED_1000baseT_Full;
+-		*advertising |= ADVERTISED_Autoneg |
+-				ADVERTISED_1000baseT_Full;
++		*advertising |= ADVERTISED_Autoneg;
++		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_1GB)
++			*advertising |= ADVERTISED_1000baseT_Full;
+ 	}
+ 	if (phy_types & I40E_CAP_PHY_TYPE_40GBASE_SR4)
+ 		*supported |= SUPPORTED_40000baseSR4_Full;
+@@ -341,26 +346,30 @@ static void i40e_phy_type_to_ethtool(struct i40e_pf *pf, u32 *supported,
+ 	if (phy_types & I40E_CAP_PHY_TYPE_20GBASE_KR2) {
+ 		*supported |= SUPPORTED_20000baseKR2_Full |
+ 			      SUPPORTED_Autoneg;
+-		*advertising |= ADVERTISED_20000baseKR2_Full |
+-				ADVERTISED_Autoneg;
++		*advertising |= ADVERTISED_Autoneg;
++		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_20GB)
++			*advertising |= ADVERTISED_20000baseKR2_Full;
+ 	}
+ 	if (phy_types & I40E_CAP_PHY_TYPE_10GBASE_KR) {
+ 		*supported |= SUPPORTED_10000baseKR_Full |
+ 			      SUPPORTED_Autoneg;
+-		*advertising |= ADVERTISED_10000baseKR_Full |
+-				ADVERTISED_Autoneg;
++		*advertising |= ADVERTISED_Autoneg;
++		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_10GB)
++			*advertising |= ADVERTISED_10000baseKR_Full;
+ 	}
+ 	if (phy_types & I40E_CAP_PHY_TYPE_10GBASE_KX4) {
+ 		*supported |= SUPPORTED_10000baseKX4_Full |
+ 			      SUPPORTED_Autoneg;
+-		*advertising |= ADVERTISED_10000baseKX4_Full |
+-				ADVERTISED_Autoneg;
++		*advertising |= ADVERTISED_Autoneg;
++		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_10GB)
++			*advertising |= ADVERTISED_10000baseKX4_Full;
+ 	}
+ 	if (phy_types & I40E_CAP_PHY_TYPE_1000BASE_KX) {
+ 		*supported |= SUPPORTED_1000baseKX_Full |
+ 			      SUPPORTED_Autoneg;
+-		*advertising |= ADVERTISED_1000baseKX_Full |
+-				ADVERTISED_Autoneg;
++		*advertising |= ADVERTISED_Autoneg;
++		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_1GB)
++			*advertising |= ADVERTISED_1000baseKX_Full;
+ 	}
+ }
+ 
 -- 
 2.4.11
 
