@@ -1,49 +1,40 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Tue, 14 Jun 2016 16:26:16 -0700
-Subject: [Intel-wired-lan] [PATCH] fm10k: don't continue probe if PCI device
-	not in normal IO state
-Message-ID: <20160614232616.27686-1-jacob.e.keller@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Wed, 15 Jun 2016 01:40:35 +0000
+Subject: [Intel-wired-lan] [PATCHv2 net-next] net: igb: Only dma sync
+ frame	length
+In-Reply-To: <1464987805-17754-1-git-send-email-andrew@lunn.ch>
+References: <1464987805-17754-1-git-send-email-andrew@lunn.ch>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81F1BC2E@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-In the event of an uncorrectable AER error occuring when the driver has
-not loaded, the recovery routines are not done. This is done because
-future loads of the driver may not be aware of the IO state and may not
-be able to recover at all. In this case, when we next load the driver it
-fails due to what appears to be a surprise remove event. Instead, add
-a check to ensure that the device is in the normal IO state before
-continuing to probe. This allows us to give a more descriptive message
-of what is wrong.
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Andrew Lunn
+> Sent: Friday, June 3, 2016 2:03 PM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; David Miller
+> <davem@davemloft.net>
+> Cc: netdev <netdev@vger.kernel.org>; intel-wired-lan at lists.osuosl.org;
+> Andrew Lunn <andrew@lunn.ch>
+> Subject: [Intel-wired-lan] [PATCHv2 net-next] net: igb: Only dma sync frame
+> length
+> 
+> On some platforms, syncing a buffer for DMA is expensive. Rather than
+> sync the whole 2K receive buffer, only synchronise the length of the
+> frame, which will typically be the MTU, or a much smaller TCP ACK.
+> 
+> For an IMX6Q, this gives around 6% increased TCP receive performance,
+> which is cache operations bound and reduces CPU load for TCP transmit.
+> 
+> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+> ---
+> v2:
+> Christmas tree the local variables
+> Pass size into igb_add_rx_frag() rather than repeating the endiness swap.
+> ---
+>  drivers/net/ethernet/intel/igb/igb_main.c | 7 ++++---
+>  1 file changed, 4 insertions(+), 3 deletions(-)
 
-Without this change, the driver will attempt to probe up to our first
-call of .reset_hw() which will be unable to read registers and act as if
-a surprise remove event occurred.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index b0c3d7b3a34c..e23923729541 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -1950,6 +1950,12 @@ static int fm10k_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	struct fm10k_intfc *interface;
- 	int err;
- 
-+	if (pdev->error_state != pci_channel_io_normal) {
-+		dev_err(&pdev->dev,
-+			"PCI device still in an error state. Unable to load...\n");
-+		return -EIO;
-+	}
-+
- 	err = pci_enable_device_mem(pdev);
- 	if (err) {
- 		dev_err(&pdev->dev,
--- 
-2.9.0.rc1.405.g81f467e
-
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
