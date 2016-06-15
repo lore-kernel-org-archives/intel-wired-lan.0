@@ -1,78 +1,27 @@
-From: Alexander Duyck <aduyck@mirantis.com>
-Date: Wed, 15 Jun 2016 15:09:04 -0700
-Subject: [Intel-wired-lan] [net-next PATCH v2 17/17] vxlan: Add new UDP
- encapsulation offload type for VXLAN-GPE
-In-Reply-To: <20160615220449.15575.17031.stgit@localhost.localdomain>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 15 Jun 2016 16:19:59 -0700
+Subject: [Intel-wired-lan] [net-next PATCH v2 06/17] bnxt: Move GENEVE
+ support from hard-coded port to using port notifier
+In-Reply-To: <20160615220754.15575.94576.stgit@localhost.localdomain>
 References: <20160615220449.15575.17031.stgit@localhost.localdomain>
-Message-ID: <20160615220904.15575.77650.stgit@localhost.localdomain>
+ <20160615220754.15575.94576.stgit@localhost.localdomain>
+Message-ID: <CAKgT0UfPFjy7_wuzzfgbPbnyBzZ+grUOnykEbrYSw4=EvhTVFA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The fact is VXLAN with Generic Protocol Extensions cannot be supported by
-the same hardware parsers that support VXLAN.  The protocol extensions
-allow for things like a Next Protocol field which in turn allows for things
-other than Ethernet to be passed over the tunnel.  Most existing parsers
-will not know how to interpret this.
+On Wed, Jun 15, 2016 at 3:07 PM, Alexander Duyck <aduyck@mirantis.com> wrote:
+> The port number for GENEVE is hard coded into the bnxt driver.  This is the
+> kind of thing we want to avoid going forward.  For now I will integrate
+> this back into the port notifier so that we can change the GENEVE port
+> number if we need to in the future.
+>
+> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 
-To resolve this I am giving VXLAN-GPE its own UDP encapsulation offload
-type.  This way hardware that does support GPE can simply add this type to
-the switch statement for VXLAN, and if they don't support it then this will
-fix any issues where headers might be interpreted incorrectly.
+So it turns out this patch doesn't apply on top of the current tree.
+I will submit a v3 of these patches tomorrow after everyone has had a
+chance to review.
 
-Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
----
- drivers/net/vxlan.c      |   12 ++++++++++--
- include/net/udp_tunnel.h |    1 +
- 2 files changed, 11 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/vxlan.c b/drivers/net/vxlan.c
-index 888356bc1233..ff1b47c9c03d 100644
---- a/drivers/net/vxlan.c
-+++ b/drivers/net/vxlan.c
-@@ -605,13 +605,19 @@ static int vxlan_gro_complete(struct sock *sk, struct sk_buff *skb, int nhoff)
- /* Notify netdevs that UDP port started listening */
- static void vxlan_notify_add_rx_port(struct vxlan_sock *vs)
- {
--	udp_tunnel_notify_add_rx_port(vs->sock, UDP_TUNNEL_TYPE_VXLAN);
-+	udp_tunnel_notify_add_rx_port(vs->sock,
-+				      (vs->flags & VXLAN_F_GPE) ?
-+				      UDP_TUNNEL_TYPE_VXLAN_GPE :
-+				      UDP_TUNNEL_TYPE_VXLAN);
- }
- 
- /* Notify netdevs that UDP port is no more listening */
- static void vxlan_notify_del_rx_port(struct vxlan_sock *vs)
- {
--	udp_tunnel_notify_del_rx_port(vs->sock, UDP_TUNNEL_TYPE_VXLAN);
-+	udp_tunnel_notify_del_rx_port(vs->sock,
-+				      (vs->flags & VXLAN_F_GPE) ?
-+				      UDP_TUNNEL_TYPE_VXLAN_GPE :
-+				      UDP_TUNNEL_TYPE_VXLAN);
- }
- 
- /* Add new entry to forwarding table -- assumes lock held */
-@@ -2499,6 +2505,8 @@ static void vxlan_push_rx_ports(struct net_device *dev)
- 	for (i = 0; i < PORT_HASH_SIZE; ++i) {
- 		hlist_for_each_entry_rcu(vs, &vn->sock_list[i], hlist)
- 			udp_tunnel_push_rx_port(dev, vs->sock,
-+						(vs->flags & VXLAN_F_GPE) ?
-+						UDP_TUNNEL_TYPE_VXLAN_GPE :
- 						UDP_TUNNEL_TYPE_VXLAN);
- 	}
- 	spin_unlock(&vn->sock_lock);
-diff --git a/include/net/udp_tunnel.h b/include/net/udp_tunnel.h
-index 1c9408a04213..02c5be037451 100644
---- a/include/net/udp_tunnel.h
-+++ b/include/net/udp_tunnel.h
-@@ -103,6 +103,7 @@ void setup_udp_tunnel_sock(struct net *net, struct socket *sock,
- enum udp_parsable_tunnel_type {
- 	UDP_TUNNEL_TYPE_VXLAN,		/* RFC 7348 */
- 	UDP_TUNNEL_TYPE_GENEVE,		/* draft-ietf-nvo3-geneve */
-+	UDP_TUNNEL_TYPE_VXLAN_GPE,	/* draft-ietf-nvo3-vxlan-gpe */
- };
- 
- struct udp_tunnel_info {
-
+- Alex
