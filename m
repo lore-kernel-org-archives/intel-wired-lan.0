@@ -1,53 +1,39 @@
-From: Venkatesh Srinivas <venkateshs@google.com>
-Date: Wed, 15 Jun 2016 09:34:49 -0700
-Subject: [Intel-wired-lan] [PATCH net] ixgbe: napi_poll must return the
-	work done
-In-Reply-To: <37ccedd746ed932b9d73eff592f324f2a3fc6c6f.1465995724.git.pabeni@redhat.com>
-References: <37ccedd746ed932b9d73eff592f324f2a3fc6c6f.1465995724.git.pabeni@redhat.com>
-Message-ID: <CAHdzE-8V8o9sg9xmiJ9J0G3u=k6K-fHQssb5v09TPJvN2N=a1Q@mail.gmail.com>
+From: Bimmy Pujari <bimmy.pujari@intel.com>
+Date: Wed, 15 Jun 2016 16:42:12 -0700
+Subject: [Intel-wired-lan] [next PATCH S38 0/7] i40e/i40evf updates
+Message-ID: <1466034139-11828-1-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Jun 15, 2016 at 6:37 AM, Paolo Abeni <pabeni@redhat.com> wrote:
-> Currently the function ixgbe_poll() returns 0 when it clean completely
-> the rx rings, but this foul budget accounting in core code.
-> Fix this returning the actual work done, capped to weight - 1, since
-> the core doesn't allow to return the full budget when the driver modifies
-> the napi status
->
-> Signed-off-by: Paolo Abeni <pabeni@redhat.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> index 088c47c..8bebd86 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-> @@ -2887,7 +2887,7 @@ int ixgbe_poll(struct napi_struct *napi, int budget)
->         if (!test_bit(__IXGBE_DOWN, &adapter->state))
->                 ixgbe_irq_enable_queues(adapter, BIT_ULL(q_vector->v_idx));
->
-> -       return 0;
-> +       return min(work_done, budget - 1);
->  }
->
->  /**
+Avinash Dayanand provides fix to show correct Advertised Link Modes when
+link is down.
 
-Reviewed-by: Venkatesh Srinivas <venkateshs@google.com>
+Catherine Sullivan removes device ID 0x37D4.
 
-The same bit of code appears in fm10k and i40e/i40evf. ixgb appears to
-correctly return work_done.
+Joshua Hay adds hyperv dev ids.
 
-ixgbe_poll also appears to return an (minor) incorrect work_done in
-another case, BTW. It divides its
-budget between Rx rings associated with a vector. If any ring exceeds
-its share of the budget, ixgbe_poll
-claims to have consumed the full budget, even if a full budget of
-frames was not received in a single
-pass.
+Kiran Patil enables VSI broadcast promiscuous mode instead of adding broadcast
+filter.
 
--- vs;
+Mitch Williams removes useless initializer & refactors rx filter handling.
+
+
+ drivers/net/ethernet/intel/i40e/i40e.h          |  14 +-
+ drivers/net/ethernet/intel/i40e/i40e_common.c   |   1 -
+ drivers/net/ethernet/intel/i40e/i40e_debugfs.c  |  16 +-
+ drivers/net/ethernet/intel/i40e/i40e_devids.h   |   1 -
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c  |  47 +-
+ drivers/net/ethernet/intel/i40e/i40e_main.c     | 546 +++++++++++-------------
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c     |   4 +-
+ drivers/net/ethernet/intel/i40evf/i40e_common.c |   1 -
+ drivers/net/ethernet/intel/i40evf/i40e_devids.h |   1 -
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c   |   3 +-
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c |   4 +-
+ 11 files changed, 310 insertions(+), 328 deletions(-)
+
+-- 
+2.4.11
+
