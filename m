@@ -1,40 +1,55 @@
-From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Wed, 15 Jun 2016 01:40:35 +0000
-Subject: [Intel-wired-lan] [PATCHv2 net-next] net: igb: Only dma sync
- frame	length
-In-Reply-To: <1464987805-17754-1-git-send-email-andrew@lunn.ch>
-References: <1464987805-17754-1-git-send-email-andrew@lunn.ch>
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81F1BC2E@ORSMSX101.amr.corp.intel.com>
+From: David Miller <davem@davemloft.net>
+Date: Wed, 15 Jun 2016 00:22:05 -0700 (PDT)
+Subject: [Intel-wired-lan] [net-next PATCH 01/15] net: Combine GENEVE
+ and VXLAN port offload notifiers into single functions
+In-Reply-To: <CAKgT0Ue_-2KTMY6LsJjonTC7A16jB3hJZj+VU=4Fcp_9ZoNf+g@mail.gmail.com>
+References: <CAKgT0Uc8SZSsi9EULv0GVNO38OHhw__7_MDQ3PtDf-8y7+1Jgg@mail.gmail.com>
+ <CALx6S359Q_qqj6Wc7K41hVfjzqHgLsHmH-91WTOS9tGw3=G5fA@mail.gmail.com>
+ <CAKgT0Ue_-2KTMY6LsJjonTC7A16jB3hJZj+VU=4Fcp_9ZoNf+g@mail.gmail.com>
+Message-ID: <20160615.002205.499467944175786.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Andrew Lunn
-> Sent: Friday, June 3, 2016 2:03 PM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; David Miller
-> <davem@davemloft.net>
-> Cc: netdev <netdev@vger.kernel.org>; intel-wired-lan at lists.osuosl.org;
-> Andrew Lunn <andrew@lunn.ch>
-> Subject: [Intel-wired-lan] [PATCHv2 net-next] net: igb: Only dma sync frame
-> length
-> 
-> On some platforms, syncing a buffer for DMA is expensive. Rather than
-> sync the whole 2K receive buffer, only synchronise the length of the
-> frame, which will typically be the MTU, or a much smaller TCP ACK.
-> 
-> For an IMX6Q, this gives around 6% increased TCP receive performance,
-> which is cache operations bound and reduces CPU load for TCP transmit.
-> 
-> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-> ---
-> v2:
-> Christmas tree the local variables
-> Pass size into igb_add_rx_frag() rather than repeating the endiness swap.
-> ---
->  drivers/net/ethernet/intel/igb/igb_main.c | 7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Mon, 13 Jun 2016 19:50:02 -0700
 
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+> I'm not going to speculate on what Dave's opinion on this is.  I'll
+> wait to hear it from him.
+> 
+> My concern at this point is that we have several issues.  Specifically
+> we have VXLAN-GPE trying to pass itself off as VXLAN when it clearly
+> is not, and I know we are going to end up with somebody eventually
+> trying to push this feature into the kernel.  I know for a fact there
+> is hardware out there that already supports it.  I'm trying to get
+> ahead of this and define what the interface is supposed to look like
+> myself so that we don't end up with somebody unfamiliar with all this
+> trying to push it.  This way we can avoid having some hardware vendor
+> on a timeline trying to push it through quick as in the case of i40e,
+> or somebody trying to get around it by just hard coding it into their
+> driver like occurred with bnxt.
+> 
+> While I appreciate the opinion, outright refusing to enable the
+> existing offloads is counterproductive.  There are customers out there
+> that already have this hardware.  There are driver writers out there
+> who are going to have to enable these features one way or another.  If
+> we want to be obstructionists then I am sure they can just work around
+> us and write up out-of-tree drivers and use something like module
+> parameters to enable offloads on a specific port.  Most of these
+> implementations only seem to support one port anyway.  I just thought
+> it might be better to have this figured out in the kernel so that we
+> didn't end up creating a bigger mess than needed with each vendor
+> going off and doing their own out-of-tree implementation.
+
+My plan is to try and properly balance the two side of this situation.
+
+Realistically, and Alex is right on this, we shoot ourselves in the
+foot by not supporting offloads that exist in hardware now even if
+they are not generic.
+
+So I would encourage Alex to keep working on his patch set and to
+keep working on the feedback he is given.
+
+Thanks.
