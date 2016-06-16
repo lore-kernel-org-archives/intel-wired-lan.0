@@ -1,138 +1,60 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 17 Jun 2016 07:08:16 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 195e98a10e1fe4198e143b0ed5f38b1597c7e16f BUILD SUCCESS
-Message-ID: <57633160.htegzBP954XsnLfF%fengguang.wu@intel.com>
+From: Pujari, Bimmy <bimmy.pujari@intel.com>
+Date: Thu, 16 Jun 2016 23:09:34 +0000
+Subject: [Intel-wired-lan] [next PATCH S38 2/7] i40e: enable VSI
+ broadcast promiscuous mode instead of adding broadcast filter
+In-Reply-To: <4197C471DCF8714FBA1FE32565271C149019FC55@ORSMSX103.amr.corp.intel.com>
+References: <1466034139-11828-1-git-send-email-bimmy.pujari@intel.com>
+ <1466034139-11828-3-git-send-email-bimmy.pujari@intel.com>
+ <576209FC.5000709@onemain.com>
+ <4197C471DCF8714FBA1FE32565271C149019FC55@ORSMSX103.amr.corp.intel.com>
+Message-ID: <B759292EEECB5C46AEDF3EC46470BC94A9C549@ORSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-195e98a10e1fe4198e143b0ed5f38b1597c7e16f  ixgbevf: fix NACK check in ixgbevf_set_uc_addr_vf()
+I will remove HSD database line from it.
 
-elapsed time: 53m
+Thanks
+Bimmy
 
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 116
+-----Original Message-----
+From: Patil, Kiran 
+Sent: Wednesday, June 15, 2016 9:16 PM
+To: Shannon Nelson <sln@onemain.com>; Pujari, Bimmy <bimmy.pujari@intel.com>; intel-wired-lan at lists.osuosl.org
+Subject: RE: [Intel-wired-lan] [next PATCH S38 2/7] i40e: enable VSI broadcast promiscuous mode instead of adding broadcast filter
 
-i386                     randconfig-a0-201624
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                 randconfig-x010-201624
-x86_64                 randconfig-x011-201624
-x86_64                 randconfig-x012-201624
-x86_64                 randconfig-x013-201624
-x86_64                 randconfig-x014-201624
-x86_64                 randconfig-x015-201624
-x86_64                 randconfig-x016-201624
-x86_64                 randconfig-x017-201624
-x86_64                 randconfig-x018-201624
-x86_64                 randconfig-x019-201624
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201624
-i386                     randconfig-s1-201624
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-i386                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201624
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201624
-i386                     randconfig-i1-201624
-x86_64                           allmodconfig
-i386                   randconfig-x017-201624
-i386                   randconfig-x018-201624
-i386                   randconfig-x010-201624
-i386                   randconfig-x013-201624
-i386                   randconfig-x016-201624
-i386                   randconfig-x011-201624
-i386                   randconfig-x014-201624
-i386                   randconfig-x015-201624
-i386                   randconfig-x019-201624
-i386                   randconfig-x012-201624
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201624
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                 randconfig-x007-201624
-x86_64                 randconfig-x000-201624
-x86_64                 randconfig-x003-201624
-x86_64                 randconfig-x006-201624
-x86_64                 randconfig-x008-201624
-x86_64                 randconfig-x005-201624
-x86_64                 randconfig-x002-201624
-x86_64                 randconfig-x001-201624
-x86_64                 randconfig-x004-201624
-x86_64                 randconfig-x009-201624
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-r0-201624
-i386                   randconfig-x005-201624
-i386                   randconfig-x008-201624
-i386                   randconfig-x000-201624
-i386                   randconfig-x009-201624
-i386                   randconfig-x007-201624
-i386                   randconfig-x004-201624
-i386                   randconfig-x001-201624
-i386                   randconfig-x006-201624
-i386                   randconfig-x003-201624
-i386                   randconfig-x002-201624
+Thanks Shannon.
 
-Thanks,
-Fengguang
+We shall take care of it.
+
+-- Kiran P.
+
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Shannon Nelson
+Sent: Wednesday, June 15, 2016 7:08 PM
+To: Pujari, Bimmy <bimmy.pujari@intel.com>; intel-wired-lan at lists.osuosl.org
+Subject: Re: [Intel-wired-lan] [next PATCH S38 2/7] i40e: enable VSI broadcast promiscuous mode instead of adding broadcast filter
+
+
+
+On 06/15/2016 04:42 PM, Bimmy Pujari wrote:
+> From: Kiran Patil <kiran.patil@intel.com>
+>
+> This patch sets VSI brodcast promiscuous mode during VSI add sequence 
+> and prevents adding MAC filter if specified MAC address is broadcast.
+[ ... ]
+> Likewise tried the test case mentioned in HSD where source MAC is 
+> broadcast and those packets are getting forwarded to one of the 
+> rx-queue.
+> HSD-number: 7661069
+> HSD-database: LADSW
+We shouldn't be seeing the internal bug tracking information.  If there's another useful test case it should be detailed here.
+
+sln
+
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan at lists.osuosl.org
+http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
