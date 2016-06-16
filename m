@@ -1,48 +1,28 @@
-From: Patil, Kiran <kiran.patil@intel.com>
-Date: Thu, 16 Jun 2016 04:15:57 +0000
-Subject: [Intel-wired-lan] [next PATCH S38 2/7] i40e: enable VSI
- broadcast promiscuous mode instead of adding broadcast filter
-In-Reply-To: <576209FC.5000709@onemain.com>
-References: <1466034139-11828-1-git-send-email-bimmy.pujari@intel.com>
- <1466034139-11828-3-git-send-email-bimmy.pujari@intel.com>
- <576209FC.5000709@onemain.com>
-Message-ID: <4197C471DCF8714FBA1FE32565271C149019FC55@ORSMSX103.amr.corp.intel.com>
+From: Michael Chan <michael.chan@broadcom.com>
+Date: Wed, 15 Jun 2016 21:23:30 -0700
+Subject: [Intel-wired-lan] [net-next PATCH v2 05/17] bnxt: Update
+ drivers to support unified UDP encapsulation offload functions
+In-Reply-To: <20160615220747.15575.31433.stgit@localhost.localdomain>
+References: <20160615220449.15575.17031.stgit@localhost.localdomain>
+ <20160615220747.15575.31433.stgit@localhost.localdomain>
+Message-ID: <CACKFLimVri8=L8XrgTgW_eieEwEygf4CTDZtr+wD1fE6qnrqRw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Thanks Shannon.
-
-We shall take care of it.
-
--- Kiran P.
-
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Shannon Nelson
-Sent: Wednesday, June 15, 2016 7:08 PM
-To: Pujari, Bimmy <bimmy.pujari@intel.com>; intel-wired-lan at lists.osuosl.org
-Subject: Re: [Intel-wired-lan] [next PATCH S38 2/7] i40e: enable VSI broadcast promiscuous mode instead of adding broadcast filter
-
-
-
-On 06/15/2016 04:42 PM, Bimmy Pujari wrote:
-> From: Kiran Patil <kiran.patil@intel.com>
+On Wed, Jun 15, 2016 at 3:07 PM, Alexander Duyck <aduyck@mirantis.com> wrote:
+> This patch ends up doing several things.  First it updates the driver to
+> make use of the new unified UDP tunnel offload notifier functions.  In
+> addition I updated the code so that we can work around the bits that were
+> checking for if VXLAN was enabled since we are now using a notifier based
+> setup.  Finally I moved the hard-coded GENEVE port over to using the
+> notifier based setup so that we can update it if needed.
 >
-> This patch sets VSI brodcast promiscuous mode during VSI add sequence 
-> and prevents adding MAC filter if specified MAC address is broadcast.
-[ ... ]
-> Likewise tried the test case mentioned in HSD where source MAC is 
-> broadcast and those packets are getting forwarded to one of the 
-> rx-queue.
-> HSD-number: 7661069
-> HSD-database: LADSW
-We shouldn't be seeing the internal bug tracking information.  If there's another useful test case it should be detailed here.
+> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 
-sln
+Looks good, except that the last item in the description above is
+actually done in the next patch.
 
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan at lists.osuosl.org
-http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+Acked-by: Michael Chan <michael.chan@broadcom.com>
