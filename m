@@ -1,60 +1,22 @@
-From: Pujari, Bimmy <bimmy.pujari@intel.com>
-Date: Thu, 16 Jun 2016 23:09:34 +0000
-Subject: [Intel-wired-lan] [next PATCH S38 2/7] i40e: enable VSI
- broadcast promiscuous mode instead of adding broadcast filter
-In-Reply-To: <4197C471DCF8714FBA1FE32565271C149019FC55@ORSMSX103.amr.corp.intel.com>
-References: <1466034139-11828-1-git-send-email-bimmy.pujari@intel.com>
- <1466034139-11828-3-git-send-email-bimmy.pujari@intel.com>
- <576209FC.5000709@onemain.com>
- <4197C471DCF8714FBA1FE32565271C149019FC55@ORSMSX103.amr.corp.intel.com>
-Message-ID: <B759292EEECB5C46AEDF3EC46470BC94A9C549@ORSMSX102.amr.corp.intel.com>
+From: Michael Chan <michael.chan@broadcom.com>
+Date: Thu, 16 Jun 2016 16:12:02 -0700
+Subject: [Intel-wired-lan] [net-next PATCH v3 06/17] bnxt: Move GENEVE
+ support from hard-coded port to using port notifier
+In-Reply-To: <20160616192136.20872.49824.stgit@localhost.localdomain>
+References: <20160616191851.20872.67154.stgit@localhost.localdomain>
+ <20160616192136.20872.49824.stgit@localhost.localdomain>
+Message-ID: <CACKFLinup=5BsJrSiePpVGFdsRDq6wSxt_XnkiDG4LmujXZ0Cg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-I will remove HSD database line from it.
-
-Thanks
-Bimmy
-
------Original Message-----
-From: Patil, Kiran 
-Sent: Wednesday, June 15, 2016 9:16 PM
-To: Shannon Nelson <sln@onemain.com>; Pujari, Bimmy <bimmy.pujari@intel.com>; intel-wired-lan at lists.osuosl.org
-Subject: RE: [Intel-wired-lan] [next PATCH S38 2/7] i40e: enable VSI broadcast promiscuous mode instead of adding broadcast filter
-
-Thanks Shannon.
-
-We shall take care of it.
-
--- Kiran P.
-
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Shannon Nelson
-Sent: Wednesday, June 15, 2016 7:08 PM
-To: Pujari, Bimmy <bimmy.pujari@intel.com>; intel-wired-lan at lists.osuosl.org
-Subject: Re: [Intel-wired-lan] [next PATCH S38 2/7] i40e: enable VSI broadcast promiscuous mode instead of adding broadcast filter
-
-
-
-On 06/15/2016 04:42 PM, Bimmy Pujari wrote:
-> From: Kiran Patil <kiran.patil@intel.com>
+On Thu, Jun 16, 2016 at 12:21 PM, Alexander Duyck <aduyck@mirantis.com> wrote:
+> The port number for GENEVE is hard coded into the bnxt driver.  This is the
+> kind of thing we want to avoid going forward.  For now I will integrate
+> this back into the port notifier so that we can change the GENEVE port
+> number if we need to in the future.
 >
-> This patch sets VSI brodcast promiscuous mode during VSI add sequence 
-> and prevents adding MAC filter if specified MAC address is broadcast.
-[ ... ]
-> Likewise tried the test case mentioned in HSD where source MAC is 
-> broadcast and those packets are getting forwarded to one of the 
-> rx-queue.
-> HSD-number: 7661069
-> HSD-database: LADSW
-We shouldn't be seeing the internal bug tracking information.  If there's another useful test case it should be detailed here.
-
-sln
-
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan at lists.osuosl.org
-http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+Acked-by: Michael Chan <michael.chan@broadcom.com>
