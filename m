@@ -1,11 +1,11 @@
 From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Thu, 16 Jun 2016 17:10:06 +0000
+Date: Thu, 16 Jun 2016 17:40:06 +0000
 Subject: [Intel-wired-lan] [PATCH net] ixgbe: napi_poll must return the
 	work done
 In-Reply-To: <CAHdzE-8V8o9sg9xmiJ9J0G3u=k6K-fHQssb5v09TPJvN2N=a1Q@mail.gmail.com>
 References: <37ccedd746ed932b9d73eff592f324f2a3fc6c6f.1465995724.git.pabeni@redhat.com>
  <CAHdzE-8V8o9sg9xmiJ9J0G3u=k6K-fHQssb5v09TPJvN2N=a1Q@mail.gmail.com>
-Message-ID: <1466097006.17117.7.camel@intel.com>
+Message-ID: <1466098806.17117.20.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -62,7 +62,12 @@ On Wed, 2016-06-15 at 09:34 -0700, Venkatesh Srinivas wrote:
 > 
 > -- vs;
 
-I can submit a patch for fm10k.
+For the record, I couldn't find any documentation on this in
+Documentatino/networking, or as a function header. Where would be the
+best place to document the expectations of the napi core? I'd like to
+submit a patch so that future it will be easier to determine what a new
+driver should do (without just blindly copying from other drivers as
+has caused these so far).
 
 Thanks,
 Jake
