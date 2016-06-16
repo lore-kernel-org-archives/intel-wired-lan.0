@@ -1,134 +1,145 @@
 From: Alexander Duyck <aduyck@mirantis.com>
-Date: Thu, 16 Jun 2016 12:20:35 -0700
-Subject: [Intel-wired-lan] [net-next PATCH v3 00/17] Future-proof tunnel
-	offload handlers
-Message-ID: <20160616191851.20872.67154.stgit@localhost.localdomain>
+Date: Thu, 16 Jun 2016 12:20:44 -0700
+Subject: [Intel-wired-lan] [net-next PATCH v3 01/17] vxlan/geneve: Include
+ udp_tunnel.h in vxlan/geneve.h and fixup includes
+In-Reply-To: <20160616191851.20872.67154.stgit@localhost.localdomain>
+References: <20160616191851.20872.67154.stgit@localhost.localdomain>
+Message-ID: <20160616192044.20872.17936.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-s patch is meant to address two things.  First we are currently using
-the ndo_add/del_vxlan_port calls with VXLAN-GPE tunnels and we cannot
-really support that as it is likely to cause more harm than good since
-VXLAN-GPE can support tunnels without a MAC address on the inner header.
+This patch makes it so that we add udp_tunnel.h to vxlan.h and geneve.h
+header files.  This is useful as I plan to move the generic handlers for
+the port offloads into the udp_tunnel header file and leave the vxlan and
+geneve headers to be a bit more protocol specific.
 
-As such we need to add a new offload to advertise this, but in doing so it
-would mean introducing 3 new functions for the driver to request the ports,
-and then for the tunnel to push the changes to add and delete the ports to
-the device.  However instead of taking that approach I think it would be
-much better if we just made one common function for fetching the ports, and
-provided a generic means to push the tunnels to the device.  So in order to
-make this work this patch set does several things.
+I also went through and cleaned out a number of redundant includes that
+where in the .h and .c files for these drivers.
 
-First it merges the existing VXLAN and GENEVE functionality into one set of
-functions and passes an enum in order to specify the type of tunnel we want
-to offload.  By doing this we only have to extend this enum in the future
-if we want to add additional types.
-
-Second it goes through the drivers replacing all of the tunnel specific
-offload calls with implementations that support the generic calls so that
-we can drop the VXLAN and GENEVE specific calls entirely.
-
-Finally I go through in the last patch and replace the VXLAN specific
-offload request that was being used for VXLAN-GPE with one that specifies
-if we want to offload VXLAN or VXLAN-GPE so that the hardware can decide if
-it can actually support it or not.
-
-I also ended up with some minor clean-up built into the driver patches for
-this.  Most of it is to either fix misuse of build flags, specifying a type
-to ignore instead of the type that should be used, or in the case of ixgbe
-I actually moved a rtnl_lock/unlock in order to avoid taking it unless it
-was actually needed.
-
-v2:
-I did my best to remove the word "offload" from any of the calls or
-notifiers as this isn't really an offload.  It
- is a workaround for the fact that the drivers don't provide basic features
-like CHECKSUM_COMPLETE.  I also added a disclaimer to the section defining
-the function prototypes explaining that these are essentially workarounds.
-
-I ended up going through and stripping all of the VXLAN and GENEVE build
-flags from the drivers.  There isn't much point in carrying them.  In
-addition I dropped the use of the vxlan.h or geneve.h header files in favor
-of udp_tunnel.h in the cases where a driver didn't need anything from
-either of those headers.
-
-I updated the tunnel add/del functions so that they pass a udp_tunnel_info
-structure instead of a list of arguments.  This way we should be able to
-add additional information in the future with little impact on the other
-drivers.
-
-I updated bnxt so that it doesn't use a hard-coded port number for GENEVE.
-
-I have been able to test mlx4e, mlx5e, and i40e and verified functionality
-on these drivers.  Though there are patches for the net tree I submitted
-due to unrelated bugs I found in the mlx4e and i40e/i40evf drivers.
-
-v3:
-Fixed a typo that caused us to add geneve port when we should have been
-deleting it.
-
-Ended up dropping geneve and vxlan wrappers for
-udp_tunnel_notify_rx_add/del_port and instead just called them directly.
-
-Updated comments for functions to call out RTNL instead of port lock.
-
-Updated patch description to remove changes that were moved into a second
-patch.
-
-Rebased on latest net-next to fix merge conflict on bnxt driver.
-
+Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
 ---
+ drivers/net/geneve.c     |    1 -
+ drivers/net/vxlan.c      |   17 -----------------
+ include/net/geneve.h     |    3 ---
+ include/net/udp_tunnel.h |    2 ++
+ include/net/vxlan.h      |    6 +-----
+ 5 files changed, 3 insertions(+), 26 deletions(-)
 
-Alexander Duyck (17):
-      vxlan/geneve: Include udp_tunnel.h in vxlan/geneve.h and fixup includes
-      net: Combine GENEVE and VXLAN port notifiers into single functions
-      net: Merge VXLAN and GENEVE push notifiers into a single notifier
-      bnx2x: Move all UDP port notifiers to single function
-      bnxt: Update drivers to support unified UDP encapsulation offload functions
-      bnxt: Move GENEVE support from hard-coded port to using port notifier
-      benet: Replace ndo_add/del_vxlan_port with ndo_add/del_udp_enc_port
-      fm10k: Replace ndo_add/del_vxlan_port with ndo_add/del_udp_enc_port
-      i40e: Move all UDP port notifiers to single function
-      ixgbe: Replace ndo_add/del_vxlan_port with ndo_add/del_udp_enc_port
-      mlx4_en: Replace ndo_add/del_vxlan_port with ndo_add/del_udp_enc_port
-      mlx5_en: Replace ndo_add/del_vxlan_port with ndo_add/del_udp_enc_port
-      nfp: Replace ndo_add/del_vxlan_port with ndo_add/del_udp_enc_port
-      qede: Move all UDP port notifiers to single function
-      qlcnic: Replace ndo_add/del_vxlan_port with ndo_add/del_udp_enc_port
-      net: Remove deprecated tunnel specific UDP offload functions
-      vxlan: Add new UDP encapsulation offload type for VXLAN-GPE
+diff --git a/drivers/net/geneve.c b/drivers/net/geneve.c
+index cadefe4fdaa2..e5e33cd01082 100644
+--- a/drivers/net/geneve.c
++++ b/drivers/net/geneve.c
+@@ -12,7 +12,6 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+-#include <linux/netdevice.h>
+ #include <linux/etherdevice.h>
+ #include <linux/hash.h>
+ #include <net/dst_metadata.h>
+diff --git a/drivers/net/vxlan.c b/drivers/net/vxlan.c
+index f999db2f97b4..10ad41d60652 100644
+--- a/drivers/net/vxlan.c
++++ b/drivers/net/vxlan.c
+@@ -11,32 +11,18 @@
+ #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+ 
+ #include <linux/kernel.h>
+-#include <linux/types.h>
+ #include <linux/module.h>
+ #include <linux/errno.h>
+ #include <linux/slab.h>
+-#include <linux/skbuff.h>
+-#include <linux/rculist.h>
+-#include <linux/netdevice.h>
+-#include <linux/in.h>
+-#include <linux/ip.h>
+ #include <linux/udp.h>
+ #include <linux/igmp.h>
+-#include <linux/etherdevice.h>
+ #include <linux/if_ether.h>
+-#include <linux/if_vlan.h>
+-#include <linux/hash.h>
+ #include <linux/ethtool.h>
+ #include <net/arp.h>
+ #include <net/ndisc.h>
+ #include <net/ip.h>
+-#include <net/ip_tunnels.h>
+ #include <net/icmp.h>
+-#include <net/udp.h>
+-#include <net/udp_tunnel.h>
+ #include <net/rtnetlink.h>
+-#include <net/route.h>
+-#include <net/dsfield.h>
+ #include <net/inet_ecn.h>
+ #include <net/net_namespace.h>
+ #include <net/netns/generic.h>
+@@ -44,12 +30,9 @@
+ #include <net/protocol.h>
+ 
+ #if IS_ENABLED(CONFIG_IPV6)
+-#include <net/ipv6.h>
+-#include <net/addrconf.h>
+ #include <net/ip6_tunnel.h>
+ #include <net/ip6_checksum.h>
+ #endif
+-#include <net/dst_metadata.h>
+ 
+ #define VXLAN_VERSION	"0.1"
+ 
+diff --git a/include/net/geneve.h b/include/net/geneve.h
+index cb544a530146..f8aff18d6702 100644
+--- a/include/net/geneve.h
++++ b/include/net/geneve.h
+@@ -1,10 +1,7 @@
+ #ifndef __NET_GENEVE_H
+ #define __NET_GENEVE_H  1
+ 
+-#ifdef CONFIG_INET
+ #include <net/udp_tunnel.h>
+-#endif
+-
+ 
+ /* Geneve Header:
+  *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+diff --git a/include/net/udp_tunnel.h b/include/net/udp_tunnel.h
+index 9d14f707e534..59019562d14c 100644
+--- a/include/net/udp_tunnel.h
++++ b/include/net/udp_tunnel.h
+@@ -105,12 +105,14 @@ struct metadata_dst *udp_tun_rx_dst(struct sk_buff *skb, unsigned short family,
+ 				    __be16 flags, __be64 tunnel_id,
+ 				    int md_size);
+ 
++#ifdef CONFIG_INET
+ static inline int udp_tunnel_handle_offloads(struct sk_buff *skb, bool udp_csum)
+ {
+ 	int type = udp_csum ? SKB_GSO_UDP_TUNNEL_CSUM : SKB_GSO_UDP_TUNNEL;
+ 
+ 	return iptunnel_handle_offloads(skb, type);
+ }
++#endif
+ 
+ static inline void udp_tunnel_encap_enable(struct socket *sock)
+ {
+diff --git a/include/net/vxlan.h b/include/net/vxlan.h
+index b8803165df91..7d944941f32f 100644
+--- a/include/net/vxlan.h
++++ b/include/net/vxlan.h
+@@ -1,12 +1,8 @@
+ #ifndef __NET_VXLAN_H
+ #define __NET_VXLAN_H 1
+ 
+-#include <linux/ip.h>
+-#include <linux/ipv6.h>
+ #include <linux/if_vlan.h>
+-#include <linux/skbuff.h>
+-#include <linux/netdevice.h>
+-#include <linux/udp.h>
++#include <net/udp_tunnel.h>
+ #include <net/dst_metadata.h>
+ 
+ /* VXLAN protocol (RFC 7348) header:
 
-
- drivers/net/ethernet/broadcom/Kconfig              |   21 --
- drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c   |   94 ++++------
- drivers/net/ethernet/broadcom/bnxt/bnxt.c          |  104 ++++++++---
- drivers/net/ethernet/broadcom/bnxt/bnxt.h          |    3 
- drivers/net/ethernet/emulex/benet/Kconfig          |    8 -
- drivers/net/ethernet/emulex/benet/be_main.c        |   32 ++-
- drivers/net/ethernet/intel/Kconfig                 |   43 -----
- drivers/net/ethernet/intel/fm10k/fm10k_netdev.c    |   36 ++--
- drivers/net/ethernet/intel/i40e/i40e_main.c        |  186 +++++---------------
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c      |   57 +++---
- drivers/net/ethernet/mellanox/mlx4/Kconfig         |    7 -
- drivers/net/ethernet/mellanox/mlx4/en_netdev.c     |   41 ++--
- drivers/net/ethernet/mellanox/mlx4/mlx4_en.h       |    2 
- drivers/net/ethernet/mellanox/mlx5/core/en_main.c  |   20 +-
- .../net/ethernet/netronome/nfp/nfp_net_common.c    |   22 ++
- drivers/net/ethernet/qlogic/Kconfig                |   30 ---
- drivers/net/ethernet/qlogic/qede/qede_main.c       |  115 +++++-------
- drivers/net/ethernet/qlogic/qlcnic/qlcnic.h        |    2 
- .../net/ethernet/qlogic/qlcnic/qlcnic_83xx_init.c  |    4 
- drivers/net/ethernet/qlogic/qlcnic/qlcnic_main.c   |   30 ++-
- drivers/net/geneve.c                               |   61 +------
- drivers/net/vxlan.c                                |   85 ++-------
- include/linux/netdevice.h                          |   58 ++----
- include/net/geneve.h                               |    9 -
- include/net/udp_tunnel.h                           |   42 +++++
- include/net/vxlan.h                                |   13 -
- net/ipv4/udp_tunnel.c                              |   61 +++++++
- 27 files changed, 477 insertions(+), 709 deletions(-)
-
---
