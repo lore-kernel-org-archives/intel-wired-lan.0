@@ -1,54 +1,88 @@
-From: Shannon Nelson <sln@onemain.com>
-Date: Fri, 17 Jun 2016 12:02:40 -0700
-Subject: [Intel-wired-lan] [next PATCH S38 6/7] i40e: refactor rx filter
- handling
-In-Reply-To: <AAEA33E297BCAC4B9BB20A7C2DF0AB8D79927A7F@FMSMSX113.amr.corp.intel.com>
-References: <1466034139-11828-1-git-send-email-bimmy.pujari@intel.com>
- <1466034139-11828-7-git-send-email-bimmy.pujari@intel.com>
- <57620EDD.2070407@onemain.com>
- <AAEA33E297BCAC4B9BB20A7C2DF0AB8D79927A7F@FMSMSX113.amr.corp.intel.com>
-Message-ID: <57644950.6040705@onemain.com>
+From: Donald C Skidmore <donald.c.skidmore@intel.com>
+Date: Fri, 17 Jun 2016 17:10:13 -0400
+Subject: [Intel-wired-lan] [PATCH] ixgbevf: Correct parameter sent to LED
+	function
+Message-ID: <1466197813-17401-1-git-send-email-donald.c.skidmore@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 06/17/2016 08:53 AM, Williams, Mitch A wrote:
->>> From: Mitch Williams <mitch.a.williams@intel.com>
->>>
->>> Properly track filter adds and deletes so the driver doesn't lose filters
->>> during resets and up/down cycles. Add a tracking mechanism so that the
->>> driver knows when to enter and leave promiscuous mode.
->> Thanks, this was sorely needed.
-> Yes, it was needed, but you should NOT CARE.
+The second parameter of these functions is the index to the led we
+are interested in affecting.  However we were mistakingly passing
+the offset in the register.  This patch corrects that and adds some
+bonds checking which would hopefully make bugs like this more noticeable
+in the future.
 
-I care because I still want to use this driver as a high point on my 
-resume :-).
+Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c  | 12 ++++++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |  4 ++--
+ 2 files changed, 14 insertions(+), 2 deletions(-)
 
-[...]
-
-
->    struct i40e_mac_filter {
->    	struct list_head list;
->    	u8 macaddr[ETH_ALEN];
-> @@ -456,8 +464,7 @@ struct i40e_mac_filter {
->    	u8 counter;		/* number of instances of this filter */
->    	bool is_vf;		/* filter belongs to a VF */
->    	bool is_netdev;		/* filter belongs to a netdev */
-> -	bool changed;		/* filter needs to be sync'd to the HW */
-> -	bool is_laa;		/* filter is a Locally Administered Address */
->> So you're dumping LAA support?  Or is this extra work no longer needed?
->> I would have expected some discussion of this in the commit notes.
-> I'll update the commit message. It's currently looking like we don't need this code.
-
-Perhaps you're using newer NVM?  Be sure to try it on an older NVM to 
-see what happens to your LAA when you do a few different resets. I 
-believe this code was specifically addressing an issue where the address 
-register was getting reset on Global and Core resets.  See net-next 
-commit 6252c7e4e from 2 years ago, which I believe references internal 
-commit 6e643f9a59.
-
-sln
-
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+index f8defc7..ce881a7 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+@@ -763,6 +763,9 @@ s32 ixgbe_led_on_generic(struct ixgbe_hw *hw, u32 index)
+ {
+ 	u32 led_reg = IXGBE_READ_REG(hw, IXGBE_LEDCTL);
+ 
++	if (index > 3)
++		return IXGBE_ERR_PARAM;
++
+ 	/* To turn on the LED, set mode to ON. */
+ 	led_reg &= ~IXGBE_LED_MODE_MASK(index);
+ 	led_reg |= IXGBE_LED_ON << IXGBE_LED_MODE_SHIFT(index);
+@@ -781,6 +784,9 @@ s32 ixgbe_led_off_generic(struct ixgbe_hw *hw, u32 index)
+ {
+ 	u32 led_reg = IXGBE_READ_REG(hw, IXGBE_LEDCTL);
+ 
++	if (index > 3)
++		return IXGBE_ERR_PARAM;
++
+ 	/* To turn off the LED, set mode to OFF. */
+ 	led_reg &= ~IXGBE_LED_MODE_MASK(index);
+ 	led_reg |= IXGBE_LED_OFF << IXGBE_LED_MODE_SHIFT(index);
+@@ -2698,6 +2704,9 @@ s32 ixgbe_blink_led_start_generic(struct ixgbe_hw *hw, u32 index)
+ 	bool locked = false;
+ 	s32 ret_val;
+ 
++	if (index > 3)
++		return IXGBE_ERR_PARAM;
++
+ 	/*
+ 	 * Link must be up to auto-blink the LEDs;
+ 	 * Force it if link is down.
+@@ -2741,6 +2750,9 @@ s32 ixgbe_blink_led_stop_generic(struct ixgbe_hw *hw, u32 index)
+ 	bool locked = false;
+ 	s32 ret_val;
+ 
++	if (index > 3)
++		return IXGBE_ERR_PARAM;
++
+ 	ret_val = hw->mac.ops.prot_autoc_read(hw, &locked, &autoc_reg);
+ 	if (ret_val)
+ 		return ret_val;
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+index 716e643..9547191 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+@@ -2206,11 +2206,11 @@ static int ixgbe_set_phys_id(struct net_device *netdev,
+ 		return 2;
+ 
+ 	case ETHTOOL_ID_ON:
+-		hw->mac.ops.led_on(hw, IXGBE_LED_ON);
++		hw->mac.ops.led_on(hw, hw->bus.func);
+ 		break;
+ 
+ 	case ETHTOOL_ID_OFF:
+-		hw->mac.ops.led_off(hw, IXGBE_LED_ON);
++		hw->mac.ops.led_off(hw, hw->bus.func);
+ 		break;
+ 
+ 	case ETHTOOL_ID_INACTIVE:
+-- 
+2.4.3
 
