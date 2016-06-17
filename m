@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 17 Jun 2016 16:25:30 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Change register variable
-	to	unsigned
-In-Reply-To: <1465928788-29757-1-git-send-email-donald.c.skidmore@intel.com>
-References: <1465928788-29757-1-git-send-email-donald.c.skidmore@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9E75D4@ORSMSX104.amr.corp.intel.com>
+Date: Fri, 17 Jun 2016 16:36:39 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbevf: fix NACK check
+	in	ixgbevf_set_uc_addr_vf()
+In-Reply-To: <20160609174534.25671.50164.stgit@localhost6.localdomain6>
+References: <20160609174534.25671.50164.stgit@localhost6.localdomain6>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9E75E8@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,20 +13,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Donald C Skidmore
-> Sent: Tuesday, June 14, 2016 11:26 AM
+> Behalf Of Emil Tantilov
+> Sent: Thursday, June 09, 2016 10:46 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] ixgbe: Change register variable to
-> unsigned
+> Subject: [Intel-wired-lan] [PATCH] ixgbevf: fix NACK check in
+> ixgbevf_set_uc_addr_vf()
 > 
-> I noticed this variable used for register reads wasn't an unsigned so this patch
-> corrects that.  I don't believe this was causing any issue as is but this is more
-> consistent with the rest of the driver.
+> Fix the NACK check in ixgbevf_set_uc_addr_vf() for instances where index
+> != 0.
 > 
-> Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
+> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_common.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ixgbevf/vf.c |   14 ++++++++------
+>  1 file changed, 8 insertions(+), 6 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Driver builds, compiles, and passes traffic.
+Driver builds, compiles, and passes traffic
