@@ -1,129 +1,54 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri, 17 Jun 2016 16:21:11 -0700
-Subject: [Intel-wired-lan] [PATCH] fm10k: prefer READ_ONCE instead of
-	ACCESS_ONCE
-Message-ID: <20160617232111.27182-1-jacob.e.keller@intel.com>
+From: David Miller <davem@davemloft.net>
+Date: Fri, 17 Jun 2016 20:26:41 -0700 (PDT)
+Subject: [Intel-wired-lan] [net-next PATCH v3 00/17] Future-proof tunnel
+	offload handlers
+In-Reply-To: <20160616191851.20872.67154.stgit@localhost.localdomain>
+References: <20160616191851.20872.67154.stgit@localhost.localdomain>
+Message-ID: <20160617.202641.1821023739498595024.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-While technically not needed, as all our uses of ACCESS_ONCE are scalar
-types, we already use READ_ONCE in a few places, and for code
-readability we can swap all the uses of the older ACCESS_ONCE into
-READ_ONCE.
+From: Alexander Duyck <aduyck@mirantis.com>
+Date: Thu, 16 Jun 2016 12:20:35 -0700
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/fm10k/fm10k_common.h | 4 ++--
- drivers/net/ethernet/intel/fm10k/fm10k_iov.c    | 4 ++--
- drivers/net/ethernet/intel/fm10k/fm10k_main.c   | 2 +-
- drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 6 +++---
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c    | 2 +-
- 5 files changed, 9 insertions(+), 9 deletions(-)
+> s patch is meant to address two things.  First we are currently using
+> the ndo_add/del_vxlan_port calls with VXLAN-GPE tunnels and we cannot
+> really support that as it is likely to cause more harm than good since
+> VXLAN-GPE can support tunnels without a MAC address on the inner header.
+> 
+> As such we need to add a new offload to advertise this, but in doing so it
+> would mean introducing 3 new functions for the driver to request the ports,
+> and then for the tunnel to push the changes to add and delete the ports to
+> the device.  However instead of taking that approach I think it would be
+> much better if we just made one common function for fetching the ports, and
+> provided a generic means to push the tunnels to the device.  So in order to
+> make this work this patch set does several things.
+ ...
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_common.h b/drivers/net/ethernet/intel/fm10k/fm10k_common.h
-index 50f71e997448..d51f9c7a47ff 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_common.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_common.h
-@@ -34,7 +34,7 @@ u32 fm10k_read_reg(struct fm10k_hw *hw, int reg);
- /* write operations, indexed using DWORDS */
- #define fm10k_write_reg(hw, reg, val) \
- do { \
--	u32 __iomem *hw_addr = ACCESS_ONCE((hw)->hw_addr); \
-+	u32 __iomem *hw_addr = READ_ONCE((hw)->hw_addr); \
- 	if (!FM10K_REMOVED(hw_addr)) \
- 		writel((val), &hw_addr[(reg)]); \
- } while (0)
-@@ -42,7 +42,7 @@ do { \
- /* Switch register write operations, index using DWORDS */
- #define fm10k_write_sw_reg(hw, reg, val) \
- do { \
--	u32 __iomem *sw_addr = ACCESS_ONCE((hw)->sw_addr); \
-+	u32 __iomem *sw_addr = READ_ONCE((hw)->sw_addr); \
- 	if (!FM10K_REMOVED(sw_addr)) \
- 		writel((val), &sw_addr[(reg)]); \
- } while (0)
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_iov.c b/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
-index 47f0743ec03b..d9dec81f6b6d 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_iov.c
-@@ -51,7 +51,7 @@ s32 fm10k_iov_event(struct fm10k_intfc *interface)
- 	int i;
- 
- 	/* if there is no iov_data then there is no mailbox to process */
--	if (!ACCESS_ONCE(interface->iov_data))
-+	if (!READ_ONCE(interface->iov_data))
- 		return 0;
- 
- 	rcu_read_lock();
-@@ -99,7 +99,7 @@ s32 fm10k_iov_mbx(struct fm10k_intfc *interface)
- 	int i;
- 
- 	/* if there is no iov_data then there is no mailbox to process */
--	if (!ACCESS_ONCE(interface->iov_data))
-+	if (!READ_ONCE(interface->iov_data))
- 		return 0;
- 
- 	rcu_read_lock();
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-index 6805f6fd0843..682a372bdb20 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-@@ -1408,7 +1408,7 @@ static void fm10k_update_itr(struct fm10k_ring_container *ring_container)
- 	 * that the calculation will never get below a 1. The bit shift
- 	 * accounts for changes in the ITR due to PCIe link speed.
- 	 */
--	itr_round = ACCESS_ONCE(ring_container->itr_scale) + 8;
-+	itr_round = READ_ONCE(ring_container->itr_scale) + 8;
- 	avg_wire_size += BIT(itr_round) - 1;
- 	avg_wire_size >>= itr_round;
- 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-index 2a08d3f5b6df..e2ba8a31ab16 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-@@ -1098,7 +1098,7 @@ static struct rtnl_link_stats64 *fm10k_get_stats64(struct net_device *netdev,
- 	rcu_read_lock();
- 
- 	for (i = 0; i < interface->num_rx_queues; i++) {
--		ring = ACCESS_ONCE(interface->rx_ring[i]);
-+		ring = READ_ONCE(interface->rx_ring[i]);
- 
- 		if (!ring)
- 			continue;
-@@ -1114,7 +1114,7 @@ static struct rtnl_link_stats64 *fm10k_get_stats64(struct net_device *netdev,
- 	}
- 
- 	for (i = 0; i < interface->num_tx_queues; i++) {
--		ring = ACCESS_ONCE(interface->tx_ring[i]);
-+		ring = READ_ONCE(interface->tx_ring[i]);
- 
- 		if (!ring)
- 			continue;
-@@ -1299,7 +1299,7 @@ static void *fm10k_dfwd_add_station(struct net_device *dev,
- static void fm10k_dfwd_del_station(struct net_device *dev, void *priv)
- {
- 	struct fm10k_intfc *interface = netdev_priv(dev);
--	struct fm10k_l2_accel *l2_accel = ACCESS_ONCE(interface->l2_accel);
-+	struct fm10k_l2_accel *l2_accel = READ_ONCE(interface->l2_accel);
- 	struct fm10k_dglort_cfg dglort = { 0 };
- 	struct fm10k_hw *hw = &interface->hw;
- 	struct net_device *sdev = priv;
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index e23923729541..0293eed5005b 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -62,7 +62,7 @@ u16 fm10k_read_pci_cfg_word(struct fm10k_hw *hw, u32 reg)
- 
- u32 fm10k_read_reg(struct fm10k_hw *hw, int reg)
- {
--	u32 __iomem *hw_addr = ACCESS_ONCE(hw->hw_addr);
-+	u32 __iomem *hw_addr = READ_ONCE(hw->hw_addr);
- 	u32 value = 0;
- 
- 	if (FM10K_REMOVED(hw_addr))
--- 
-2.9.0.rc1.405.g81f467e
+Series applied, thanks Alexander.
 
+Tom, I've heard your arguments, but I think your fears are unfounded.
+Look at what Alexander's patches are actually doing.
+
+First, he's fixing a bug.  Hardware that supports VXLAN offloading
+doesn't support VXLAN-GPE, yet we were sending such things to the
+VXLAN offload paths.
+
+Second, he's eliminating a metric ton of Kconfig garbage, as drivers
+had to have all kinds of contrived dependencies to support UDP tunnel
+offloads.
+
+Third, he's consolidating several driver NDO methods into just two.
+
+And finally, he added a big comment explaining that new tunnel types
+should not be added to the tunnel type list, and those that exist
+should only be used for RX.
+
+Therefore, this isn't openning the door for new random offloads, quite
+the contrary.  Instead, if it making clearer what the existing
+facilitites support, and putting an explicit cap on them.
+
+Thanks.
