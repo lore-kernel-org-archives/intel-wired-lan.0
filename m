@@ -1,69 +1,74 @@
-From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Mon, 20 Jun 2016 09:10:35 -0700
-Subject: [Intel-wired-lan] [next PTACH S38-v2 3/7] i40e/i40evf: remove
-	useless initializer
-In-Reply-To: <1466439039-16378-1-git-send-email-bimmy.pujari@intel.com>
-References: <1466439039-16378-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1466439039-16378-4-git-send-email-bimmy.pujari@intel.com>
+From: Tom Herbert <tom@herbertland.com>
+Date: Mon, 20 Jun 2016 10:05:01 -0700
+Subject: [Intel-wired-lan] [net-next PATCH v3 00/17] Future-proof tunnel
+	offload handlers
+In-Reply-To: <20160617.202641.1821023739498595024.davem@davemloft.net>
+References: <20160616191851.20872.67154.stgit@localhost.localdomain>
+ <20160617.202641.1821023739498595024.davem@davemloft.net>
+Message-ID: <CALx6S34Y3Qq6nMHuMcC2LC5duLBO3KVN3+A+0qmPrNvFfY7gJg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+> And finally, he added a big comment explaining that new tunnel types
+> should not be added to the tunnel type list, and those that exist
+> should only be used for RX.
+>
+> Therefore, this isn't openning the door for new random offloads, quite
+> the contrary.  Instead, if it making clearer what the existing
+> facilitites support, and putting an explicit cap on them.
+>
+We have no reason to believe there won't be more offloaded UDP
+protocols. There are plenty of other UDP encapsulations, transport
+protocols, and application layer protocols that could be offloaded and
+some of these may provide protocol specific features that have no
+generic analogue. The problem is that this interface is wrong.
 
-This initializer isn't needed because the variable is assigned right
-away.
+The interface and current NIC implementations are based on the
+assumption that UDP port number is sufficient to decode a UDP payload.
+This is incorrect, UDP port numbers do not have global meaning they
+can only be correctly interrupted by the endpoints in the
+communication (RFC7605).  Just because port number 4789 is assigned to
+VXLAN does not mean that any packet a device sees that has destination
+port 4789 is VXLAN, it may very well be something else completely
+different. This opens up the very real possibility that devices in the
+network, including NICs, misinterpret packets because they are looking
+only at port number. Furthermore, if a device modifies packets based
+on just port number, say like in GRO, this opens the door to silent
+data corruption. This will be a real problem with a router that is
+trying UDP offload packets just being forwarded, but even on just a
+host this can be an issue when using ns with ipvlan of macvlan.
 
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Change-ID: I6ce3edb3f4e0364db248a7a0bcc62ca95c01d941
----
-Testing Hints : No functionality changes.
+The design of a UDP offload interface should be predicated on the fact
+that we are offloading the receive path of a UDP socket. It follows
+that the requirement of the offload device is to match packets that
+will be received by the UDP socket. Generally, this means it needs to
+at least match by local addresses and port for an unconnected/unbound
+socket, the source address for an unconnected/bound socket, a the full
+4-tuple for a connected socket. VLAN, macvlan, or anything else that
+could affect the selection of receive socket would also need to be
+taken in to account. The typical driver interface that provides for
+fine grained packet matching is n-tuple filtering.
 
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 4 +---
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 3 +--
- 2 files changed, 2 insertions(+), 5 deletions(-)
+To address the immediate problem with the current existing UDP HW
+offloads I suggest:
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 55f151f..2def562 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -740,14 +740,12 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
- 	tx_ring->q_vector->tx.total_packets += total_packets;
- 
- 	if (tx_ring->flags & I40E_TXR_FLAGS_WB_ON_ITR) {
--		unsigned int j = 0;
--
- 		/* check to see if there are < 4 descriptors
- 		 * waiting to be written back, then kick the hardware to force
- 		 * them to be written back in case we stay in NAPI.
- 		 * In this mode on X722 we do not enable Interrupt.
- 		 */
--		j = i40e_get_tx_pending(tx_ring, false);
-+		unsigned int j = i40e_get_tx_pending(tx_ring, false);
- 
- 		if (budget &&
- 		    ((j / (WB_STRIDE + 1)) == 0) && (j != 0) &&
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index be99189..40f224f 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -259,13 +259,12 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
- 	tx_ring->q_vector->tx.total_packets += total_packets;
- 
- 	if (tx_ring->flags & I40E_TXR_FLAGS_WB_ON_ITR) {
--		unsigned int j = 0;
- 		/* check to see if there are < 4 descriptors
- 		 * waiting to be written back, then kick the hardware to force
- 		 * them to be written back in case we stay in NAPI.
- 		 * In this mode on X722 we do not enable Interrupt.
- 		 */
--		j = i40evf_get_tx_pending(tx_ring, false);
-+		unsigned int j = i40evf_get_tx_pending(tx_ring, false);
- 
- 		if (budget &&
- 		    ((j / (WB_STRIDE + 1)) == 0) && (j > 0) &&
--- 
-2.4.11
+1) Disallow UDP HW offload when forwarding is enabled. Applying
+offloads to UDP encapsulated packets that are only being forwarded is
+not correct.
+2) Open a socket for the encapsulation port in each created ns
+(similar to how RDS does this). This prevents a UDP port being used
+for encapsulation from being bound for other purposes in ns.
 
+btw, we also have this problem in the stack. GRO for UDP encapsulation
+is performed before we have verified the packet is for us ("us" being
+the encapsulation socket in the default name space).  The solution
+here I believe is to move UDP GRO to be in udp_receive, although if
+the above are implemented that would also address the issue in SW GRO
+at least for the short term. flow_dissector does not attempt crack
+open UDP encapsulation so we don't have the issue there.
+
+Thanks,
+Tom
