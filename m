@@ -1,130 +1,131 @@
-From: Hannes Frederic Sowa <hannes@redhat.com>
-Date: Mon, 20 Jun 2016 11:11:32 -0700
-Subject: [Intel-wired-lan] [net-next PATCH v3 00/17] Future-proof tunnel
-	offload handlers
-In-Reply-To: <CALx6S34Y3Qq6nMHuMcC2LC5duLBO3KVN3+A+0qmPrNvFfY7gJg@mail.gmail.com>
-References: <20160616191851.20872.67154.stgit@localhost.localdomain>
- <20160617.202641.1821023739498595024.davem@davemloft.net>
- <CALx6S34Y3Qq6nMHuMcC2LC5duLBO3KVN3+A+0qmPrNvFfY7gJg@mail.gmail.com>
-Message-ID: <34f19f9c-221b-78f0-3989-9384e0d22e54@redhat.com>
+From: Wyborny, Carolyn <carolyn.wyborny@intel.com>
+Date: Mon, 20 Jun 2016 18:16:43 +0000
+Subject: [Intel-wired-lan] [next PTACH S38-v2 2/7] i40e: enable
+	VSI	broadcast promiscuous mode instead of adding broadcast filter
+In-Reply-To: <1466439039-16378-3-git-send-email-bimmy.pujari@intel.com>
+References: <1466439039-16378-1-git-send-email-bimmy.pujari@intel.com>
+ <1466439039-16378-3-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <9BBC4E0CF881AA4299206E2E1412B6265020E834@ORSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello,
-
-On 20.06.2016 10:05, Tom Herbert wrote:
->> And finally, he added a big comment explaining that new tunnel types
->> should not be added to the tunnel type list, and those that exist
->> should only be used for RX.
->>
->> Therefore, this isn't openning the door for new random offloads, quite
->> the contrary.  Instead, if it making clearer what the existing
->> facilitites support, and putting an explicit cap on them.
->>
-> We have no reason to believe there won't be more offloaded UDP
-> protocols. There are plenty of other UDP encapsulations, transport
-> protocols, and application layer protocols that could be offloaded and
-> some of these may provide protocol specific features that have no
-> generic analogue. The problem is that this interface is wrong.
-
-Certainly not. And you have a hand in this as well. ;)
-
-When we will see more and more offloads on networking cards we certainly
-have to redesign this interface. New cards seem to be available which
-offer new kinds of offloads but I think we should wait until we have 2-3
-vendors supporting such interfaces and trying to come up with either a
-new version/extension of this interface or move over to a new interface.
-We simply don't know yet how and what we actually might need to support
-and what abstraction is best to communicate with those drivers. I think
-time will simply solve this problem. The Linux kernel is a living orgasm
-anyway so it will find a way to deal with that.
-
-> The interface and current NIC implementations are based on the
-> assumption that UDP port number is sufficient to decode a UDP payload.
-> This is incorrect, UDP port numbers do not have global meaning they
-> can only be correctly interrupted by the endpoints in the
-> communication (RFC7605).  Just because port number 4789 is assigned to
-> VXLAN does not mean that any packet a device sees that has destination
-> port 4789 is VXLAN, it may very well be something else completely
-> different. This opens up the very real possibility that devices in the
-> network, including NICs, misinterpret packets because they are looking
-> only at port number. Furthermore, if a device modifies packets based
-> on just port number, say like in GRO, this opens the door to silent
-> data corruption. This will be a real problem with a router that is
-> trying UDP offload packets just being forwarded, but even on just a
-> host this can be an issue when using ns with ipvlan of macvlan.
-
-The Linux kernel does it correctly: for every tunnel we open, we create
-a UDP socket and wildcard bind it to the configured port number, so
-nothing in the current namespace can bind to this port number at the
-same time.
-
-The problem is the actual hardware to date: Intel networking cards seem
-to only configure the UDP port in use, not even the address family nor
-the destination ip. Other networking cards seem to follow this schema.
-We currently can't do anything else. If later NICs support better
-filtering schemes, we can easily add it with Alex's series.
-
-The only improvement I see right now is that we basically have to bind
-to both IP protocol versions, because NICs don't care about the version.
-
-> The design of a UDP offload interface should be predicated on the fact
-> that we are offloading the receive path of a UDP socket. It follows
-> that the requirement of the offload device is to match packets that
-> will be received by the UDP socket. Generally, this means it needs to
-> at least match by local addresses and port for an unconnected/unbound
-> socket, the source address for an unconnected/bound socket, a the full
-> 4-tuple for a connected socket. VLAN, macvlan, or anything else that
-> could affect the selection of receive socket would also need to be
-> taken in to account. The typical driver interface that provides for
-> fine grained packet matching is n-tuple filtering.
-
-Agreed. But I fear that we have to deal with the hardware at hand.
-
-> To address the immediate problem with the current existing UDP HW
-> offloads I suggest:
-> 
-> 1) Disallow UDP HW offload when forwarding is enabled. Applying
-> offloads to UDP encapsulated packets that are only being forwarded is
-> not correct.
-
-Strictly speaking, this is the only correct way to do it right now. A
-forwarding host can apply the wrong the optimizations to received UDP
-packets if a tunnel is being created and the same host is used to act as
-a router. Unfortunately this basically kills vxlan offloading for most,
-if not all, virtualization cases and probably for most containers, too.
-
-> 2) Open a socket for the encapsulation port in each created ns
-> (similar to how RDS does this). This prevents a UDP port being used
-> for encapsulation from being bound for other purposes in ns.
-
-I am not sure if this is necessary. The devices actually having the
-ndo-ops, used to configure offloading, should only be visible inside one
-namespace. If those ndo-ops actually have side effects on other
-namespaces, they violate the contract and should be removed from the
-driver. :/
-
-I would strongly recommend against supporting geneve or vxlan based
-offloading request to propagate ipvlan or macvlan devices with this
-current infrastructure, thus I don't see this problem.
-
-> btw, we also have this problem in the stack. GRO for UDP encapsulation
-> is performed before we have verified the packet is for us ("us" being
-> the encapsulation socket in the default name space).  The solution
-> here I believe is to move UDP GRO to be in udp_receive, although if
-> the above are implemented that would also address the issue in SW GRO
-> at least for the short term. flow_dissector does not attempt crack
-> open UDP encapsulation so we don't have the issue there.
-
-Do we?
-
-We look up the socket in a proper way, inclusive the namespace belonging
-to the device we received the packet on. That said, I don't see a
-problem with that right now. But maybe I miss something?
+Please fix the patch description format below. There are two --- and there should only be one.  
 
 Thanks,
-Hannes
 
+Carolyn
+
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Bimmy Pujari
+> Sent: Monday, June 20, 2016 9:11 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PTACH S38-v2 2/7] i40e: enable VSI broadcast
+> promiscuous mode instead of adding broadcast filter
+> 
+> From: Kiran Patil <kiran.patil@intel.com>
+> 
+> This patch sets VSI brodcast promiscuous mode during VSI add sequence
+> and prevents adding MAC filter if specified MAC address is broadcast.
+> 
+> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
+> Change-ID: Ia62251fca095bc449d0497fc44bec3a5a0136773
+> ---
+> Testing Hints :
+> 1. Bring up network interface, assign IP address.
+> 2. Make sure it can ping to link partner.
+> This proves that ARP request are processed correctly due to VSI
+> broadcast promiscuous mode even though MAC filter for broadcast
+> address is not programmed.
+> 
+> Likewise tried the test case mentioned in HSD where source MAC is
+> broadcast and those packets are getting forwarded to one of the
+> rx-queue.
+> 
+> HSD-number: 7661069
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 32 ++++++++++++++++++--------
+> ---
+[CMW] please remove the line above that contains the "---"  Make sure the line that begins "drivers" is next to the one below that begins "1 file changed"
+
+>  1 file changed, 20 insertions(+), 12 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> index 6817275..3b8d079 100644
+> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
+> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+> @@ -1344,6 +1344,13 @@ struct i40e_mac_filter *i40e_add_filter(struct
+> i40e_vsi *vsi,
+>  	if (!vsi || !macaddr)
+>  		return NULL;
+> 
+> +	/* Do not allow broadcast filter to be added since broadcast filter
+> +	 * is added as part of add vsi for any newly created VSI except
+> +	 * FDIR VSI
+> +	 */
+> +	if (is_broadcast_ether_addr(macaddr))
+> +		return NULL;
+> +
+>  	f = i40e_find_filter(vsi, macaddr, vlan, is_vf, is_netdev);
+>  	if (!f) {
+>  		f = kzalloc(sizeof(*f), GFP_ATOMIC);
+> @@ -2179,18 +2186,6 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
+>  						     hw->aq.asq_last_status));
+>  			}
+>  		}
+> -		aq_ret = i40e_aq_set_vsi_broadcast(&vsi->back->hw,
+> -						   vsi->seid,
+> -						   cur_promisc, NULL);
+> -		if (aq_ret) {
+> -			retval = i40e_aq_rc_to_posix(aq_ret,
+> -						     pf->hw.aq.asq_last_status);
+> -			dev_info(&pf->pdev->dev,
+> -				 "set brdcast promisc failed, err %s, aq_err
+> %s\n",
+> -					 i40e_stat_str(hw, aq_ret),
+> -					 i40e_aq_str(hw,
+> -						     hw->aq.asq_last_status));
+> -		}
+>  	}
+>  out:
+>  	/* if something went wrong then set the changed flag so we try again */
+> @@ -9254,6 +9249,7 @@ int i40e_is_vsi_uplink_mode_veb(struct i40e_vsi
+> *vsi)
+>  static int i40e_add_vsi(struct i40e_vsi *vsi)
+>  {
+>  	int ret = -ENODEV;
+> +	i40e_status aq_ret = 0;
+>  	u8 laa_macaddr[ETH_ALEN];
+>  	bool found_laa_mac_filter = false;
+>  	struct i40e_pf *pf = vsi->back;
+> @@ -9443,6 +9439,18 @@ static int i40e_add_vsi(struct i40e_vsi *vsi)
+>  		vsi->seid = ctxt.seid;
+>  		vsi->id = ctxt.vsi_number;
+>  	}
+> +	/* Except FDIR VSI, for all othet VSI set the broadcast filter */
+> +	if (vsi->type != I40E_VSI_FDIR) {
+> +		aq_ret = i40e_aq_set_vsi_broadcast(hw, vsi->seid, true, NULL);
+> +		if (aq_ret) {
+> +			ret = i40e_aq_rc_to_posix(aq_ret,
+> +						  hw->aq.asq_last_status);
+> +			dev_info(&pf->pdev->dev,
+> +				 "set brdcast promisc failed, err %s, aq_err
+> %s\n",
+> +				 i40e_stat_str(hw, aq_ret),
+> +				 i40e_aq_str(hw, hw->aq.asq_last_status));
+> +		}
+> +	}
+> 
+>  	spin_lock_bh(&vsi->mac_filter_list_lock);
+>  	/* If macvlan filters already exist, force them to get loaded */
+> --
+> 2.4.11
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at lists.osuosl.org
+> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
