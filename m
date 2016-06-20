@@ -1,139 +1,92 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Mon, 20 Jun 2016 09:10:33 -0700
-Subject: [Intel-wired-lan] [next PTACH S38-v2 1/7] i40e: Fix to show correct
-	Advertised Link Modes when link is down
+Date: Mon, 20 Jun 2016 09:10:36 -0700
+Subject: [Intel-wired-lan] [next PTACH S38-v2 4/7] i40e: Remove device ID
+	0x37D4
 In-Reply-To: <1466439039-16378-1-git-send-email-bimmy.pujari@intel.com>
 References: <1466439039-16378-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1466439039-16378-2-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1466439039-16378-5-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Avinash Dayanand <avinash.dayanand@intel.com>
+From: Catherine Sullivan <catherine.sullivan@intel.com>
 
-When link is down, Advertised Link Modes was wrongly displaying full
-supported link modes instead of Advertised link mode. Added conditional
-checks in order to make sure correct Advertised link modes are
-displayed when the link is down.
+This device ID is not needed, so take it out.
 
-Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
-Change-ID: I8a61413f9ee174149c7a33157b5f0b0a8da9842d
+Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
+Change-ID: I148d29f68a1f58b03980ecd83047a1b440f4f74d
 ---
-Testing Hints: See HSD
-HSD-number: 7660092
+Testing Hints: Make sure device ID does not appear in devids.h and we
+compile, note that the ID will remain in the upstream pciid database.
 
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 47 +++++++++++++++-----------
- 1 file changed, 28 insertions(+), 19 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_common.c   | 1 -
+ drivers/net/ethernet/intel/i40e/i40e_devids.h   | 1 -
+ drivers/net/ethernet/intel/i40e/i40e_main.c     | 1 -
+ drivers/net/ethernet/intel/i40evf/i40e_common.c | 1 -
+ drivers/net/ethernet/intel/i40evf/i40e_devids.h | 1 -
+ 5 files changed, 5 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 4962e85..0cfde30 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -272,15 +272,16 @@ static void i40e_phy_type_to_ethtool(struct i40e_pf *pf, u32 *supported,
- 				     u32 *advertising)
- {
- 	enum i40e_aq_capabilities_phy_type phy_types = pf->hw.phy.phy_types;
--
-+	struct i40e_link_status *hw_link_info = &pf->hw.phy.link_info;
- 	*supported = 0x0;
- 	*advertising = 0x0;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 3355f4d..9ffa409 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -61,7 +61,6 @@ static i40e_status i40e_set_mac_type(struct i40e_hw *hw)
+ 		case I40E_DEV_ID_1G_BASE_T_X722:
+ 		case I40E_DEV_ID_10G_BASE_T_X722:
+ 		case I40E_DEV_ID_SFP_I_X722:
+-		case I40E_DEV_ID_QSFP_I_X722:
+ 			hw->mac.type = I40E_MAC_X722;
+ 			break;
+ 		default:
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_devids.h b/drivers/net/ethernet/intel/i40e/i40e_devids.h
+index d701861..dd4457d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_devids.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_devids.h
+@@ -45,7 +45,6 @@
+ #define I40E_DEV_ID_1G_BASE_T_X722	0x37D1
+ #define I40E_DEV_ID_10G_BASE_T_X722	0x37D2
+ #define I40E_DEV_ID_SFP_I_X722		0x37D3
+-#define I40E_DEV_ID_QSFP_I_X722		0x37D4
  
- 	if (phy_types & I40E_CAP_PHY_TYPE_SGMII) {
- 		*supported |= SUPPORTED_Autoneg |
- 			      SUPPORTED_1000baseT_Full;
--		*advertising |= ADVERTISED_Autoneg |
--				ADVERTISED_1000baseT_Full;
-+		*advertising |= ADVERTISED_Autoneg;
-+		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_1GB)
-+			*advertising |= ADVERTISED_1000baseT_Full;
- 		if (pf->flags & I40E_FLAG_100M_SGMII_CAPABLE) {
- 			*supported |= SUPPORTED_100baseT_Full;
- 			*advertising |= ADVERTISED_100baseT_Full;
-@@ -299,8 +300,9 @@ static void i40e_phy_type_to_ethtool(struct i40e_pf *pf, u32 *supported,
- 	    phy_types & I40E_CAP_PHY_TYPE_10GBASE_LR) {
- 		*supported |= SUPPORTED_Autoneg |
- 			      SUPPORTED_10000baseT_Full;
--		*advertising |= ADVERTISED_Autoneg |
--				ADVERTISED_10000baseT_Full;
-+		*advertising |= ADVERTISED_Autoneg;
-+		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_10GB)
-+			*advertising |= ADVERTISED_10000baseT_Full;
- 	}
- 	if (phy_types & I40E_CAP_PHY_TYPE_XLAUI ||
- 	    phy_types & I40E_CAP_PHY_TYPE_XLPPI ||
-@@ -310,14 +312,16 @@ static void i40e_phy_type_to_ethtool(struct i40e_pf *pf, u32 *supported,
- 	    phy_types & I40E_CAP_PHY_TYPE_40GBASE_CR4) {
- 		*supported |= SUPPORTED_Autoneg |
- 			      SUPPORTED_40000baseCR4_Full;
--		*advertising |= ADVERTISED_Autoneg |
--				ADVERTISED_40000baseCR4_Full;
-+		*advertising |= ADVERTISED_Autoneg;
-+		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_40GB)
-+			*advertising |= ADVERTISED_40000baseCR4_Full;
- 	}
- 	if (phy_types & I40E_CAP_PHY_TYPE_100BASE_TX) {
- 		*supported |= SUPPORTED_Autoneg |
- 			      SUPPORTED_100baseT_Full;
--		*advertising |= ADVERTISED_Autoneg |
--				ADVERTISED_100baseT_Full;
-+		*advertising |= ADVERTISED_Autoneg;
-+		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_100MB)
-+			*advertising |= ADVERTISED_100baseT_Full;
- 	}
- 	if (phy_types & I40E_CAP_PHY_TYPE_1000BASE_T ||
- 	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_SX ||
-@@ -325,8 +329,9 @@ static void i40e_phy_type_to_ethtool(struct i40e_pf *pf, u32 *supported,
- 	    phy_types & I40E_CAP_PHY_TYPE_1000BASE_T_OPTICAL) {
- 		*supported |= SUPPORTED_Autoneg |
- 			      SUPPORTED_1000baseT_Full;
--		*advertising |= ADVERTISED_Autoneg |
--				ADVERTISED_1000baseT_Full;
-+		*advertising |= ADVERTISED_Autoneg;
-+		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_1GB)
-+			*advertising |= ADVERTISED_1000baseT_Full;
- 	}
- 	if (phy_types & I40E_CAP_PHY_TYPE_40GBASE_SR4)
- 		*supported |= SUPPORTED_40000baseSR4_Full;
-@@ -341,26 +346,30 @@ static void i40e_phy_type_to_ethtool(struct i40e_pf *pf, u32 *supported,
- 	if (phy_types & I40E_CAP_PHY_TYPE_20GBASE_KR2) {
- 		*supported |= SUPPORTED_20000baseKR2_Full |
- 			      SUPPORTED_Autoneg;
--		*advertising |= ADVERTISED_20000baseKR2_Full |
--				ADVERTISED_Autoneg;
-+		*advertising |= ADVERTISED_Autoneg;
-+		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_20GB)
-+			*advertising |= ADVERTISED_20000baseKR2_Full;
- 	}
- 	if (phy_types & I40E_CAP_PHY_TYPE_10GBASE_KR) {
- 		*supported |= SUPPORTED_10000baseKR_Full |
- 			      SUPPORTED_Autoneg;
--		*advertising |= ADVERTISED_10000baseKR_Full |
--				ADVERTISED_Autoneg;
-+		*advertising |= ADVERTISED_Autoneg;
-+		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_10GB)
-+			*advertising |= ADVERTISED_10000baseKR_Full;
- 	}
- 	if (phy_types & I40E_CAP_PHY_TYPE_10GBASE_KX4) {
- 		*supported |= SUPPORTED_10000baseKX4_Full |
- 			      SUPPORTED_Autoneg;
--		*advertising |= ADVERTISED_10000baseKX4_Full |
--				ADVERTISED_Autoneg;
-+		*advertising |= ADVERTISED_Autoneg;
-+		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_10GB)
-+			*advertising |= ADVERTISED_10000baseKX4_Full;
- 	}
- 	if (phy_types & I40E_CAP_PHY_TYPE_1000BASE_KX) {
- 		*supported |= SUPPORTED_1000baseKX_Full |
- 			      SUPPORTED_Autoneg;
--		*advertising |= ADVERTISED_1000baseKX_Full |
--				ADVERTISED_Autoneg;
-+		*advertising |= ADVERTISED_Autoneg;
-+		if (hw_link_info->requested_speeds & I40E_LINK_SPEED_1GB)
-+			*advertising |= ADVERTISED_1000baseKX_Full;
- 	}
- }
+ #define i40e_is_40G_device(d)		((d) == I40E_DEV_ID_QSFP_A  || \
+ 					 (d) == I40E_DEV_ID_QSFP_B  || \
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 3b8d079..0898c9d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -91,7 +91,6 @@ static const struct pci_device_id i40e_pci_tbl[] = {
+ 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_1G_BASE_T_X722), 0},
+ 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_10G_BASE_T_X722), 0},
+ 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_SFP_I_X722), 0},
+-	{PCI_VDEVICE(INTEL, I40E_DEV_ID_QSFP_I_X722), 0},
+ 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_20G_KR2), 0},
+ 	{PCI_VDEVICE(INTEL, I40E_DEV_ID_20G_KR2_A), 0},
+ 	/* required last entry */
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_common.c b/drivers/net/ethernet/intel/i40evf/i40e_common.c
+index 8f64204..4db0c03 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_common.c
+@@ -59,7 +59,6 @@ i40e_status i40e_set_mac_type(struct i40e_hw *hw)
+ 		case I40E_DEV_ID_1G_BASE_T_X722:
+ 		case I40E_DEV_ID_10G_BASE_T_X722:
+ 		case I40E_DEV_ID_SFP_I_X722:
+-		case I40E_DEV_ID_QSFP_I_X722:
+ 			hw->mac.type = I40E_MAC_X722;
+ 			break;
+ 		case I40E_DEV_ID_X722_VF:
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_devids.h b/drivers/net/ethernet/intel/i40evf/i40e_devids.h
+index d34972b..7023570 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_devids.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_devids.h
+@@ -45,7 +45,6 @@
+ #define I40E_DEV_ID_1G_BASE_T_X722	0x37D1
+ #define I40E_DEV_ID_10G_BASE_T_X722	0x37D2
+ #define I40E_DEV_ID_SFP_I_X722		0x37D3
+-#define I40E_DEV_ID_QSFP_I_X722		0x37D4
+ #define I40E_DEV_ID_X722_VF		0x37CD
+ #define I40E_DEV_ID_X722_VF_HV		0x37D9
  
 -- 
 2.4.11
