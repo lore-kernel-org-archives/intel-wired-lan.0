@@ -1,116 +1,218 @@
-From: Tom Herbert <tom@herbertland.com>
-Date: Tue, 21 Jun 2016 11:42:52 -0700
-Subject: [Intel-wired-lan] [net-next PATCH v3 00/17] Future-proof tunnel
-	offload handlers
-In-Reply-To: <CAKgT0UdsYo84J087KUTiiwuHGUaykPvpQTVxCdvE9k21tM5hsQ@mail.gmail.com>
-References: <20160616191851.20872.67154.stgit@localhost.localdomain>
- <20160617.202641.1821023739498595024.davem@davemloft.net>
- <CALx6S34Y3Qq6nMHuMcC2LC5duLBO3KVN3+A+0qmPrNvFfY7gJg@mail.gmail.com>
- <20160621.042211.945844554759834352.davem@davemloft.net>
- <CAKgT0Ucze-+PYdvoHhDSLuaTLrn+Ene+CnfJaKO7AEHGHBsKzg@mail.gmail.com>
- <18b4d172-2cf5-8246-9cac-ce92adf65bc8@solarflare.com>
- <234d6a2f-6971-7029-0645-f98e51236c4f@redhat.com>
- <CAKgT0UdsYo84J087KUTiiwuHGUaykPvpQTVxCdvE9k21tM5hsQ@mail.gmail.com>
-Message-ID: <CALx6S34EXpxA5fs+HDUczMHaAD5q_yQMRVvwhCbSJCBO8_PRuQ@mail.gmail.com>
+From: Fujinaka, Todd <todd.fujinaka@intel.com>
+Date: Tue, 21 Jun 2016 19:46:15 +0000
+Subject: [Intel-wired-lan] ixgbevf-3.1.2: kernel panic due to NULL
+ pointer dereference in the function ixgbevf_alloc_rx_buffers
+In-Reply-To: <CAEwh2tKgnFCdo2O-j5F5mDLQDyR+8khYGPo2VpAGk+E_CJB96w@mail.gmail.com>
+References: <CAEwh2tKgnFCdo2O-j5F5mDLQDyR+8khYGPo2VpAGk+E_CJB96w@mail.gmail.com>
+Message-ID: <9B4A1B1917080E46B64F07F2989DADD65AC89655@ORSMSX114.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Jun 21, 2016 at 11:17 AM, Alexander Duyck
-<alexander.duyck@gmail.com> wrote:
-> On Tue, Jun 21, 2016 at 10:40 AM, Hannes Frederic Sowa
-> <hannes@redhat.com> wrote:
->> On 21.06.2016 10:27, Edward Cree wrote:
->>> On 21/06/16 18:05, Alexander Duyck wrote:
->>>> On Tue, Jun 21, 2016 at 1:22 AM, David Miller <davem@davemloft.net> wrote:
->>>>> But anyways, the vastness of the key is why we want to keep "sockets"
->>>>> out of network cards, because proper support of "sockets" requires
->>>>> access to information the card simply does not and should not have.
->>>> Right.  Really what I would like to see for most of these devices is a
->>>> 2 tuple filter where you specify the UDP port number, and the PF/VF ID
->>>> that the traffic is received on.
->>> But that doesn't make sense - the traffic is received on a physical network
->>> port, and it's the headers (i.e. flow) at that point that determine whether
->>> the traffic is encap or not.  After all, those headers are all that can
->>> determine which PF or VF it's sent to; and if it's multicast and goes to
->>> more than one of them, it seems odd for one to treat it as encap and the
->>> other to treat it as normal UDP - one of them must be misinterpreting it
->>> (unless the UDP is going to a userspace tunnel endpoint, but I'm ignoring
->>> that complication for now).
->>
->> Disabling offloading of packets is never going to cause data corruptions
->> or misinterpretations. In some cases we can hint the network card to do
->> even more (RSS+checksumming). We always have a safe choice, namely not
->> doing hw offloading.
->
-> Agreed.  Also we need to keep in mind that in many cases things like
-> RSS and checksumming can be very easily made port specific since what
-> we are talking about is just what is reported in the Rx descriptor and
-> not any sort of change to the packet data.
->
->> Multicast is often scoped, in some cases we have different multicast
->> scopes but the same addresses. In case of scoped traffic, we must verify
->> the device as well and can't install the same flow on every NIC.
->
-> Right.  Hopefully the NIC vendors are thinking ahead and testing to
-> validate such cases where multicast or broadcast traffic doesn't do
-> anything weird to their NICs in terms of offloads.
->
->>> At a given physical point in the network, a given UDP flow either is or is
->>> not carrying encapsulated traffic, and if it tries to be both then things
->>> are certain to break, just as much as if two different applications try to
->>> use the same UDP flow for two different application protocols.
->>
->> I think the example Tom was hinting at initially is like that:
->>
->> A net namespace acts as a router and has a vxlan endpoint active. The
->> vxlan endpoint enables vxlan offloading on all net_devices in the same
->> namespace. Because we only identify the tunnel endpoint by UDP port
->> number, traffic which should actually just be forwarded and should never
->> be processed locally suddenly can become processed by the offloading hw
->> units. Because UDP ports only form a contract between the end points and
->> not with the router in between it would be illegal to treat those not
->> locally designated packets as vxlan by the router.
->
-> Yes.  The problem is I am sure there are some vendors out there
-> wanting to tout their product as being excellent at routing VXLAN
-> traffic so they are probably exploiting this to try and claim
-> performance gains.
->
-> There is also some argument to be had for theory versus application.
-> Arguably it is the customers that are leading to some of the dirty
-> hacks as I think vendors are building NICs based on customer use cases
-> versus following any specifications.  In most data centers the tunnel
-> underlays will be deployed throughout the network and UDP will likely
-> be blocked for anything that isn't being used explicitly for
-> tunneling.  As such we seem to be seeing a lot of NICs that are only
-> supporting one port for things like this instead of designing them to
-> handle whatever we can throw at them.
->
-Actually, I don't believe that's true. It is not typical to deploy
-firewalls within a data center fabric, and nor do we restrict
-applications from binding to any UDP ports and they can pretty much
-transmit to any port on any host without cost using an unconnected UDP
-socket. I think it's more likely that NIC (and switch vendors) simply
-assumed that port numbers can be treated as global values. That's
-expedient and at small scale we can probably get away with it, but at
-large scale this will eventually bite someone.
+Wow, you?re seriously shotgunning this issue, aren?t you?
 
-> I really think it may be a few more years before we hit the point
-> where the vendors start to catch a clue about the fact that they need
-> to have a generic approach that works in all cases versus what we have
-> now were they are supporting whatever the buzzword of the day is and
-> not looking much further down the road than that.  The fact is in a
-> few years time we might even have to start dealing with
-> tunnel-in-tunnel type workloads to address the use of containers
-> inside of KVM guests.  I'm pretty sure we don't have support for
-> recursive tunnel offloads in hardware and likely never will.  To that
-> end all I would really need is support for CHECKSUM_COMPLETE or outer
-> Rx checksums enabled, RSS based on the outer source port assuming the
-> destination port is recognized as a tunnel, the ability to have DF bit
-> set for any of the inner tunnel headers, and GSO partial extended to
-> support tunnel-in-tunnel scenarios.
->
-> - Alex
+As I said in e1000-devel:
+
+Please don't file issues internally and externally at the same time. We are working through this issue via your factory representatives.
+
+Todd Fujinaka
+Software Application Engineer
+Networking Division (ND)
+Intel Corporation
+todd.fujinaka at intel.com
+(503) 712-4565
+
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of li yang
+Sent: Tuesday, June 21, 2016 2:51 AM
+To: intel-wired-lan@lists.osuosl.org
+Subject: [Intel-wired-lan] ixgbevf-3.1.2: kernel panic due to NULL pointer dereference in the function ixgbevf_alloc_rx_buffers
+
+
+Hi Driver experts,
+
+
+
+Recently, we met a kernel panic issue due to NULL pointer dereference in the function ixgbevf_alloc_rx_buffers when adding the VF into docker. We can reproduce the issue with a simple script as follows on certain brand server with high possibility, and other brand server with low possibility.
+
+Driver and kernel information: ixgbe-4.3.15 + ixgbevf-3.1.2 + RHEL kernel-3.0.10-327
+
+
+
+Two steps to reproduce the issue:
+
+1)  Enable SR-IOV
+
+      sudo sh -c 'echo 63 > /sys/bus/pci/devices/0000:03:00.0/sriov_numvfs'
+
+2)  Bring VF interface up and down in one command line:
+
+     sudo ifconfig eth66 up; sudo ifconfig eth66 down
+
+ The kernel panic occurs. The stack dump shows when the interface is up, it will call ixgbevf_open(), and simultaneously ixgbevf_service_task() will also be scheduled once with the RESET flag set.
+
+
+
+ixgbevf_service_task->ixgbevf_reset_subtask->ixgbevf_reinit_locked->ixgbevf_up->
+
+ixgbe_configure->ixgbevf_configure_rx->ixgbevf_configure_rx_ring->
+
+ixgbevf_alloc_rx_buffers->ixgbevf_alloc_mapped_page
+
+
+
+then the ixgbevf_close() may meet the NULL pointer dereference (bi= &rx_ring->rx_buffer_info[i])?
+
+
+
+Similar issue reported in the community
+
+http://thread.gmane.org/gmane.linux.network/410804
+
+
+
+
+
+The following patch can prevent the kernel panic happening.  But not sure why the race condition occurs there and what's the correct fix?
+
+
+
+static int ixgbevf_close(struct net_device *netdev)
+
+{
+
+struct ixgbevf_adapter *adapter = netdev_priv(netdev);
+
+
+
++      while(test_and_set_bit(__IXGBEVF_SERVICE_SCHED, &adapter->state))
+
++                msleep(1);
+
+
+
+ixgbevf_down(adapter);
+
+ixgbevf_free_irq(adapter);
+
+
+
+ixgbevf_free_all_tx_resources(adapter);
+
+ixgbevf_free_all_rx_resources(adapter);
+
++      clear_bit(__IXGBEVF_SERVICE_SCHED, &adapter->state);
+
+
+
+return 0;
+
+}
+
+
+
+
+
+
+
+2016-05-27 16:09:49        [11007.427399] VF could not set VLAN 0
+
+2016-05-27 16:09:49        [11007.434971] VF could not set VLAN 0
+
+2016-05-27 16:09:49        [11007.438482] eth0: Couldn't add bond vlan ids to eth6
+
+2016-05-27 16:12:08        [11146.639627] ixgbevf: eth8: ixgbevf_configure_tx_ring: Could not enable Tx Queue 0
+
+2016-05-27 16:12:08        [11146.666603] ixgbevf: eth8: ixgbevf_configure_tx_ring: Could not enable Tx Queue 1
+
+2016-05-27 16:12:08        [11146.685081] VF could not set VLAN 0
+
+2016-05-27 16:12:08        [11146.692181] VF could not set VLAN 0
+
+2016-05-27 16:12:08        [11146.695732] eth0: Couldn't add bond vlan ids to eth8
+
+2016-05-27 16:12:08        [11146.777091] BUG: unable to handle kernel NULL pointer dereference at 0000000000000008
+
+2016-05-27 16:12:08        [11146.785010] IP: [] ixgbevf_alloc_rx_buffers+0x60/0x160 [ixgbevf]
+
+2016-05-27 16:12:08        [11146.792650] PGD 0
+
+2016-05-27 16:12:08        [11146.794694] Oops: 0000 [#1] SMP
+
+2016-05-27 16:12:08        [11146.797986] Modules linked in: ixgbe(OE) bonding ixgbevf(OE) 8021q garp mrp openvswitch dccp_diag dccp tcp_diag udp_diag inet_diag xt_nat veth libcrc32c ipt_MASQUERADE nf_nat_masquerade_ipv4 iptable_nat nf_conntrack_ipv4 nf_defrag_ipv4 nf_nat_ipv4 xt_addrtype iptable_filter xt_conntrack nf_nat nf_conntrack bridge stp llc overlay() intel_powerclamp coretemp intel_rapl kvm_intel kvm crc32_pclmul ghash_clmulni_intel aesni_intel lrw gf128mul glue_helper ablk_helper cryptd vxlan ip6_udp_tunnel iTCO_wdt iTCO_vendor_support udp_tunnel lpc_ich ipmi_devintf i2c_i801 mfd_core ses mei_me mei enclosure sg ipmi_si pcspkr ipmi_msghandler ntb shpchp wmi ip_tables ext4 mbcache jbd2 sd_mod crc_t10dif crct10dif_generic ast syscopyarea sysfillrect sysimgblt drm_kms_helper ttm igb ahci mpt2sas drm isci libahci ptp pps_core libsas dca i2c_algo_bit crct10dif_pclmul raid_class crct10dif_common libata i2c_core crc32c_intel scsi_transport_sas [last unloaded: ixgbe]
+
+2016-05-27 16:12:08        [11146.883741] CPU: 0 PID: 14580 Comm: kworker/0:1 Tainted: G OE ------------ T 3.10.0-327.ali2000.alios7.x86_64 #1
+
+2016-05-27 16:12:08        [11146.894941] Hardware name: Inspur SA5212H2/YZMB-00101-108, BIOS 2.0.3 03/26/2014
+
+2016-05-27 16:12:08        [11146.902376] Workqueue: events ixgbevf_service_task [ixgbevf]
+
+2016-05-27 16:12:08        [11146.908102] task: ffff8817f00eae40 ti: ffff8817ebfc0000 task.ti: ffff8817ebfc0000
+
+2016-05-27 16:12:08        [11146.915626] RIP: 0010:[] [] ixgbevf_alloc_rx_buffers+0x60/0x160 [ixgbevf]
+
+2016-05-27 16:12:08        [11146.925700] RSP: 0018:ffff8817ebfc3d08 EFLAGS: 00010287
+
+2016-05-27 16:12:08        [11146.931042] RAX: 0000000000000200 RBX: 0000000000000000 RCX: 0000000000000000
+
+2016-05-27 16:12:08        [11146.938213] RDX: 0000000000000000 RSI: 00000000000001ff RDI: ffff8817fa391a40
+
+2016-05-27 16:12:08        [11146.945385] RBP: ffff8817ebfc3d40 R08: ffff8817ebfc0000 R09: 0000000000000001
+
+2016-05-27 16:12:08        [11146.952565] R10: 0000000000000000 R11: 0000000000000001 R12: 0000000000000000
+
+2016-05-27 16:12:08        [11146.959740] R13: 00000000fffffe00 R14: 00000000000001ff R15: ffff8817fa391a40
+
+2016-05-27 16:12:08        [11146.966909] FS: 0000000000000000(0000) GS:ffff88181f200000(0000) knlGS:0000000000000000
+
+2016-05-27 16:12:08        [11146.975046] CS: 0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+
+2016-05-27 16:12:08        [11146.980821] CR2: 0000000000000008 CR3: 0000000001942000 CR4: 00000000000407f0
+
+2016-05-27 16:12:08        [11146.987998] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+
+2016-05-27 16:12:08        [11146.995175] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+
+2016-05-27 16:12:08        [11147.002351] Stack:
+
+2016-05-27 16:12:08        [11147.004387] ffff8817d5a22bc0 ffff8817ebfc3d20 ffff8817d5a228c0 0000000000000009
+
+2016-05-27 16:12:08        [11147.011923] ffff8817d5a22bc0 ffff8817fa391a40 0000000000001028 ffff8817ebfc3db0
+
+2016-05-27 16:12:08        [11147.021668] ffffffffa058da23 0000000100000002 00000000ffff6000 0000000000000000
+
+2016-05-27 16:12:08        [11147.031375] Call Trace:
+
+2016-05-27 16:12:08        [11147.036043] [] ixgbevf_configure+0x5b3/0x740 [ixgbevf]
+
+2016-05-27 16:12:08        [11147.045082] [] ixgbevf_reinit_locked+0x93/0xd0 [ixgbevf]
+
+2016-05-27 16:12:08        [11147.054239] [] ixgbevf_service_task+0x2f7/0x3d0 [ixgbevf]
+
+2016-05-27 16:12:08        [11147.063441] [] process_one_work+0x17b/0x470
+
+2016-05-27 16:12:08        [11147.071390] [] worker_thread+0x11b/0x400
+
+2016-05-27 16:12:08        [11147.079050] [] ? rescuer_thread+0x400/0x400
+
+2016-05-27 16:12:08        [11147.086972] [] kthread+0xcf/0xe0
+
+2016-05-27 16:12:08        [11147.093875] [] ? kthread_create_on_node+0x140/0x140
+
+2016-05-27 16:12:08        [11147.102482] [] ret_from_fork+0x58/0x90
+
+2016-05-27 16:12:08        [11147.109946] [] ? kthread_create_on_node+0x140/0x140
+
+2016-05-27 16:12:08        [11147.118523] Code: c5 41 89 f6 49 89 c4 48 8d 14 40 48 8b 47 28 49 c1 e4 04 4c 03 67 20 48 8d 1c d0 0f b7 47 4c 41 29 c5 66 0f 1f 84 00 00 00 00 00 <48> 83 7b 08 00 74 75 48 8b 03 8b 53 10 89 d2 49 83 c4 10 48 83
+
+2016-05-27 16:12:08        [11147.142787] RIP [] ixgbevf_alloc_rx_buffers+0x60/0x160 [ixgbevf]
+
+2016-05-27 16:12:09        [11147.152654] RSP
+
+2016-05-27 16:12:09        [11147.158327] CR2: 0000000000000008
+
+2016-05-27 16:12:09        [11147.634988] ---[ end trace 6ad8ae4378f2f860 ]---
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160621/b9938b26/attachment-0001.html>
