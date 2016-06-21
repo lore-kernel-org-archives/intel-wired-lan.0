@@ -1,50 +1,54 @@
-From: Hannes Frederic Sowa <hannes@redhat.com>
-Date: Tue, 21 Jun 2016 14:34:35 -0700
-Subject: [Intel-wired-lan] [net-next PATCH v3 00/17] Future-proof tunnel
-	offload handlers
-In-Reply-To: <CALx6S34EXpxA5fs+HDUczMHaAD5q_yQMRVvwhCbSJCBO8_PRuQ@mail.gmail.com>
-References: <20160616191851.20872.67154.stgit@localhost.localdomain>
- <20160617.202641.1821023739498595024.davem@davemloft.net>
- <CALx6S34Y3Qq6nMHuMcC2LC5duLBO3KVN3+A+0qmPrNvFfY7gJg@mail.gmail.com>
- <20160621.042211.945844554759834352.davem@davemloft.net>
- <CAKgT0Ucze-+PYdvoHhDSLuaTLrn+Ene+CnfJaKO7AEHGHBsKzg@mail.gmail.com>
- <18b4d172-2cf5-8246-9cac-ce92adf65bc8@solarflare.com>
- <234d6a2f-6971-7029-0645-f98e51236c4f@redhat.com>
- <CAKgT0UdsYo84J087KUTiiwuHGUaykPvpQTVxCdvE9k21tM5hsQ@mail.gmail.com>
- <CALx6S34EXpxA5fs+HDUczMHaAD5q_yQMRVvwhCbSJCBO8_PRuQ@mail.gmail.com>
-Message-ID: <e0bf4896-d394-b1d0-1a0d-4affc3b0df4a@redhat.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Date: Tue, 21 Jun 2016 17:28:30 -0500
+Subject: [Intel-wired-lan] [PATCH v3 0/6] Introduce
+	pci_(request|release)_(mem|io)_regions
+In-Reply-To: <cover.1465200424.git.jthumshirn@suse.de>
+References: <cover.1465200424.git.jthumshirn@suse.de>
+Message-ID: <20160621222830.GF7603@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 21.06.2016 11:42, Tom Herbert wrote:
->> > There is also some argument to be had for theory versus application.
->> > Arguably it is the customers that are leading to some of the dirty
->> > hacks as I think vendors are building NICs based on customer use cases
->> > versus following any specifications.  In most data centers the tunnel
->> > underlays will be deployed throughout the network and UDP will likely
->> > be blocked for anything that isn't being used explicitly for
->> > tunneling.  As such we seem to be seeing a lot of NICs that are only
->> > supporting one port for things like this instead of designing them to
->> > handle whatever we can throw at them.
->> >
-> Actually, I don't believe that's true. It is not typical to deploy
-> firewalls within a data center fabric, and nor do we restrict
-> applications from binding to any UDP ports and they can pretty much
-> transmit to any port on any host without cost using an unconnected UDP
-> socket. I think it's more likely that NIC (and switch vendors) simply
-> assumed that port numbers can be treated as global values. That's
-> expedient and at small scale we can probably get away with it, but at
-> large scale this will eventually bite someone.
+On Tue, Jun 07, 2016 at 09:44:00AM +0200, Johannes Thumshirn wrote:
+> The first patch in this series introduces the following 4 helper functions to
+> the PCI core:
+> 
+> * pci_request_mem_regions()
+> * pci_request_io_regions()
+> * pci_release_mem_regions()
+> * pci_release_io_regions()
+> 
+> which encapsulate the request and release of a PCI device's memory or I/O
+> bars.
+> 
+> The subsequent patches convert the drivers, which use the
+> pci_request_selected_regions(pdev, 
+> 	pci_select_bars(pdev, IORESOURCE_MEM), name); 
+> and similar pattern to use the new interface.
+> 
+> This was suggested by Christoph Hellwig in
+> http://lists.infradead.org/pipermail/linux-nvme/2016-May/004570.html and
+> tested on kernel v4.6 with NVMe.
 
-I do have access to relatively normal expensive switches that can
-basically be used to realize a scenario like the one Alex described. No
-firewalls necessary. If you can guarantee that your customers never have
-access to your hypervisors or container management namespace, this is
-actually a pretty solid assumption.
+I applied all six of these to pci/resources for v4.8, thanks, Johannes.
 
-Bye,
-Hannes
-
+> Johannes Thumshirn (6):
+>   PCI: Add helpers to request/release memory and I/O regions
+>   NVMe: Use pci_(request|release)_mem_regions
+>   lpfc: Use pci_(request|release)_mem_regions
+>   GenWQE: Use pci_(request|release)_mem_regions
+>   ethernet/intel: Use pci_(request|release)_mem_regions
+>   alx: Use pci_(request|release)_mem_regions
+> 
+>  drivers/misc/genwqe/card_base.c               | 13 +++++--------
+>  drivers/net/ethernet/atheros/alx/main.c       | 12 +++++-------
+>  drivers/net/ethernet/intel/e1000e/netdev.c    |  6 ++----
+>  drivers/net/ethernet/intel/fm10k/fm10k_pci.c  | 11 +++--------
+>  drivers/net/ethernet/intel/i40e/i40e_main.c   |  9 +++------
+>  drivers/net/ethernet/intel/igb/igb_main.c     | 10 +++-------
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  9 +++------
+>  drivers/nvme/host/pci.c                       | 10 +++-------
+>  drivers/scsi/lpfc/lpfc_init.c                 | 15 ++++----------
+>  include/linux/pci.h                           | 28 +++++++++++++++++++++++++++
