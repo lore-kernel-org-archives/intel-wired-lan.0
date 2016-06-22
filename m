@@ -1,54 +1,209 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Date: Tue, 21 Jun 2016 17:28:30 -0500
-Subject: [Intel-wired-lan] [PATCH v3 0/6] Introduce
-	pci_(request|release)_(mem|io)_regions
-In-Reply-To: <cover.1465200424.git.jthumshirn@suse.de>
-References: <cover.1465200424.git.jthumshirn@suse.de>
-Message-ID: <20160621222830.GF7603@localhost>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 23 Jun 2016 03:58:45 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ 7ae4b597c179156ab927910af3805363409def8c BUILD SUCCESS
+Message-ID: <576aedf5.sXn9E5al5gMlAcvj%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Jun 07, 2016 at 09:44:00AM +0200, Johannes Thumshirn wrote:
-> The first patch in this series introduces the following 4 helper functions to
-> the PCI core:
-> 
-> * pci_request_mem_regions()
-> * pci_request_io_regions()
-> * pci_release_mem_regions()
-> * pci_release_io_regions()
-> 
-> which encapsulate the request and release of a PCI device's memory or I/O
-> bars.
-> 
-> The subsequent patches convert the drivers, which use the
-> pci_request_selected_regions(pdev, 
-> 	pci_select_bars(pdev, IORESOURCE_MEM), name); 
-> and similar pattern to use the new interface.
-> 
-> This was suggested by Christoph Hellwig in
-> http://lists.infradead.org/pipermail/linux-nvme/2016-May/004570.html and
-> tested on kernel v4.6 with NVMe.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+7ae4b597c179156ab927910af3805363409def8c  e1000e: keep vlan interfaces functional after rxvlan off
 
-I applied all six of these to pci/resources for v4.8, thanks, Johannes.
+elapsed time: 152m
 
-> Johannes Thumshirn (6):
->   PCI: Add helpers to request/release memory and I/O regions
->   NVMe: Use pci_(request|release)_mem_regions
->   lpfc: Use pci_(request|release)_mem_regions
->   GenWQE: Use pci_(request|release)_mem_regions
->   ethernet/intel: Use pci_(request|release)_mem_regions
->   alx: Use pci_(request|release)_mem_regions
-> 
->  drivers/misc/genwqe/card_base.c               | 13 +++++--------
->  drivers/net/ethernet/atheros/alx/main.c       | 12 +++++-------
->  drivers/net/ethernet/intel/e1000e/netdev.c    |  6 ++----
->  drivers/net/ethernet/intel/fm10k/fm10k_pci.c  | 11 +++--------
->  drivers/net/ethernet/intel/i40e/i40e_main.c   |  9 +++------
->  drivers/net/ethernet/intel/igb/igb_main.c     | 10 +++-------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  9 +++------
->  drivers/nvme/host/pci.c                       | 10 +++-------
->  drivers/scsi/lpfc/lpfc_init.c                 | 15 ++++----------
->  include/linux/pci.h                           | 28 +++++++++++++++++++++++++++
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 188
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201625
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-06230251
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+parisc                         b180_defconfig
+x86_64                 randconfig-x019-201625
+x86_64                 randconfig-x018-201625
+x86_64                 randconfig-x014-201625
+x86_64                 randconfig-x013-201625
+x86_64                 randconfig-x010-201625
+x86_64                 randconfig-x015-201625
+x86_64                 randconfig-x016-201625
+x86_64                 randconfig-x012-201625
+x86_64                 randconfig-x011-201625
+x86_64                 randconfig-x017-201625
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201625
+i386                     randconfig-s1-201625
+x86_64                 randconfig-s0-06230215
+x86_64                 randconfig-s1-06230215
+x86_64                 randconfig-s2-06230215
+x86_64                 randconfig-s0-06230228
+x86_64                 randconfig-s1-06230228
+x86_64                 randconfig-s2-06230228
+x86_64                 randconfig-s0-06230247
+x86_64                 randconfig-s1-06230247
+x86_64                 randconfig-s2-06230247
+x86_64                 randconfig-s0-06230306
+x86_64                 randconfig-s1-06230306
+x86_64                 randconfig-s2-06230306
+x86_64                 randconfig-s3-06230156
+x86_64                 randconfig-s4-06230156
+x86_64                 randconfig-s5-06230156
+x86_64                 randconfig-s3-06230217
+x86_64                 randconfig-s4-06230217
+x86_64                 randconfig-s5-06230217
+x86_64                 randconfig-s3-06230229
+x86_64                 randconfig-s4-06230229
+x86_64                 randconfig-s5-06230229
+x86_64                 randconfig-s3-06230247
+x86_64                 randconfig-s4-06230247
+x86_64                 randconfig-s5-06230247
+x86_64                 randconfig-s3-06230308
+x86_64                 randconfig-s4-06230308
+x86_64                 randconfig-s5-06230308
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+i386                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201625
+i386                   randconfig-b0-06230221
+i386                   randconfig-b0-06230312
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                       aspeed_g5_defconfig
+m68k                          atari_defconfig
+powerpc                 mpc832x_rdb_defconfig
+arm                  colibri_pxa270_defconfig
+mn10300                          allmodconfig
+powerpc                   currituck_defconfig
+powerpc                     tqm5200_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201625
+i386                     randconfig-i1-201625
+x86_64                 randconfig-b0-06230215
+x86_64                 randconfig-b0-06230237
+sh                          r7785rp_defconfig
+cris                    etrax-100lx_defconfig
+m32r                      mappi.smp_defconfig
+m32r                    mappi.nommu_defconfig
+um                               alldefconfig
+powerpc                         c2k_defconfig
+powerpc                    amigaone_defconfig
+mips                        nlm_xlr_defconfig
+x86_64                 randconfig-n0-06222207
+x86_64                 randconfig-n0-06230230
+x86_64                 randconfig-n0-06230254
+blackfin                 BlackStamp_defconfig
+parisc                      default_defconfig
+sh                        apsh4ad0a_defconfig
+i386                   randconfig-x017-201625
+i386                   randconfig-x018-201625
+i386                   randconfig-x013-201625
+i386                   randconfig-x010-201625
+i386                   randconfig-x011-201625
+i386                   randconfig-x016-201625
+i386                   randconfig-x014-201625
+i386                   randconfig-x015-201625
+i386                   randconfig-x019-201625
+i386                   randconfig-x012-201625
+i386                     randconfig-n0-201625
+i386                   randconfig-h0-06230234
+i386                   randconfig-h1-06230234
+arm                          nuc960_defconfig
+arm64                            alldefconfig
+m68k                          sun3x_defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-h0-06230240
+mips                  maltasmvp_eva_defconfig
+powerpc                    klondike_defconfig
+x86_64                 randconfig-x007-201625
+x86_64                 randconfig-x000-201625
+x86_64                 randconfig-x003-201625
+x86_64                 randconfig-x006-201625
+x86_64                 randconfig-x008-201625
+x86_64                 randconfig-x005-201625
+x86_64                 randconfig-x001-201625
+x86_64                 randconfig-x002-201625
+x86_64                 randconfig-x004-201625
+x86_64                 randconfig-x009-201625
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                              rhel-pmem
+i386                     randconfig-r0-201625
+x86_64                 randconfig-r0-06230209
+arm                            zeus_defconfig
+frv                               allnoconfig
+powerpc                     stx_gp3_defconfig
+mips                         tb0226_defconfig
+powerpc                     akebono_defconfig
+sh                           se7750_defconfig
+i386                   randconfig-x000-201625
+i386                   randconfig-x001-201625
+i386                   randconfig-x002-201625
+i386                   randconfig-x003-201625
+i386                   randconfig-x004-201625
+i386                   randconfig-x005-201625
+i386                   randconfig-x006-201625
+i386                   randconfig-x007-201625
+i386                   randconfig-x008-201625
+i386                   randconfig-x009-201625
+i386                   randconfig-x0-06230249
+i386                   randconfig-x0-06230312
+
+Thanks,
+Fengguang
