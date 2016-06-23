@@ -1,138 +1,108 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 23 Jun 2016 19:36:49 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 480d8d2fd934a811af0af202e7e8413c42ba4cae BUILD SUCCESS
-Message-ID: <576bc9d1.ltaF8gLCrfCEzNxQ%fengguang.wu@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 23 Jun 2016 15:45:10 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbevf: Correct parameter sent to
+ LED	function
+In-Reply-To: <1466197813-17401-1-git-send-email-donald.c.skidmore@intel.com>
+References: <1466197813-17401-1-git-send-email-donald.c.skidmore@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9E8E70@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-480d8d2fd934a811af0af202e7e8413c42ba4cae  fm10k: return smaller of actual work done or budget in fm10k_poll
+This patch breaks "ethtool -p" functionality to identify the port/adaptor. Status lights work otherwise but ethtool -p won't cause the light to blink, with or without link.
 
-elapsed time: 202m
-
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 116
-
-i386                     randconfig-a0-201625
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                 randconfig-x019-201625
-x86_64                 randconfig-x018-201625
-x86_64                 randconfig-x014-201625
-x86_64                 randconfig-x013-201625
-x86_64                 randconfig-x010-201625
-x86_64                 randconfig-x015-201625
-x86_64                 randconfig-x016-201625
-x86_64                 randconfig-x012-201625
-x86_64                 randconfig-x011-201625
-x86_64                 randconfig-x017-201625
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201625
-i386                     randconfig-s1-201625
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201625
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201625
-i386                     randconfig-i1-201625
-i386                               tinyconfig
-i386                   randconfig-x017-201625
-i386                   randconfig-x018-201625
-i386                   randconfig-x013-201625
-i386                   randconfig-x010-201625
-i386                   randconfig-x011-201625
-i386                   randconfig-x016-201625
-i386                   randconfig-x014-201625
-i386                   randconfig-x015-201625
-i386                   randconfig-x019-201625
-i386                   randconfig-x012-201625
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201625
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                 randconfig-x007-201625
-x86_64                 randconfig-x000-201625
-x86_64                 randconfig-x003-201625
-x86_64                 randconfig-x006-201625
-x86_64                 randconfig-x008-201625
-x86_64                 randconfig-x005-201625
-x86_64                 randconfig-x001-201625
-x86_64                 randconfig-x002-201625
-x86_64                 randconfig-x004-201625
-x86_64                 randconfig-x009-201625
-i386                     randconfig-r0-201625
-i386                   randconfig-x005-201625
-i386                   randconfig-x008-201625
-i386                   randconfig-x000-201625
-i386                   randconfig-x009-201625
-i386                   randconfig-x004-201625
-i386                   randconfig-x007-201625
-i386                   randconfig-x006-201625
-i386                   randconfig-x001-201625
-i386                   randconfig-x003-201625
-i386                   randconfig-x002-201625
-
-Thanks,
-Fengguang
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Donald C Skidmore
+> Sent: Friday, June 17, 2016 2:10 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH] ixgbevf: Correct parameter sent to LED
+> function
+> 
+> The second parameter of these functions is the index to the led we are
+> interested in affecting.  However we were mistakingly passing the offset in
+> the register.  This patch corrects that and adds some bonds checking which
+> would hopefully make bugs like this more noticeable in the future.
+> 
+> Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_common.c  | 12 ++++++++++++
+> drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |  4 ++--
+>  2 files changed, 14 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+> b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+> index f8defc7..ce881a7 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+> @@ -763,6 +763,9 @@ s32 ixgbe_led_on_generic(struct ixgbe_hw *hw, u32
+> index)  {
+>  	u32 led_reg = IXGBE_READ_REG(hw, IXGBE_LEDCTL);
+> 
+> +	if (index > 3)
+> +		return IXGBE_ERR_PARAM;
+> +
+>  	/* To turn on the LED, set mode to ON. */
+>  	led_reg &= ~IXGBE_LED_MODE_MASK(index);
+>  	led_reg |= IXGBE_LED_ON << IXGBE_LED_MODE_SHIFT(index); @@
+> -781,6 +784,9 @@ s32 ixgbe_led_off_generic(struct ixgbe_hw *hw, u32
+> index)  {
+>  	u32 led_reg = IXGBE_READ_REG(hw, IXGBE_LEDCTL);
+> 
+> +	if (index > 3)
+> +		return IXGBE_ERR_PARAM;
+> +
+>  	/* To turn off the LED, set mode to OFF. */
+>  	led_reg &= ~IXGBE_LED_MODE_MASK(index);
+>  	led_reg |= IXGBE_LED_OFF << IXGBE_LED_MODE_SHIFT(index); @@
+> -2698,6 +2704,9 @@ s32 ixgbe_blink_led_start_generic(struct ixgbe_hw
+> *hw, u32 index)
+>  	bool locked = false;
+>  	s32 ret_val;
+> 
+> +	if (index > 3)
+> +		return IXGBE_ERR_PARAM;
+> +
+>  	/*
+>  	 * Link must be up to auto-blink the LEDs;
+>  	 * Force it if link is down.
+> @@ -2741,6 +2750,9 @@ s32 ixgbe_blink_led_stop_generic(struct ixgbe_hw
+> *hw, u32 index)
+>  	bool locked = false;
+>  	s32 ret_val;
+> 
+> +	if (index > 3)
+> +		return IXGBE_ERR_PARAM;
+> +
+>  	ret_val = hw->mac.ops.prot_autoc_read(hw, &locked, &autoc_reg);
+>  	if (ret_val)
+>  		return ret_val;
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+> b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+> index 716e643..9547191 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+> @@ -2206,11 +2206,11 @@ static int ixgbe_set_phys_id(struct net_device
+> *netdev,
+>  		return 2;
+> 
+>  	case ETHTOOL_ID_ON:
+> -		hw->mac.ops.led_on(hw, IXGBE_LED_ON);
+> +		hw->mac.ops.led_on(hw, hw->bus.func);
+>  		break;
+> 
+>  	case ETHTOOL_ID_OFF:
+> -		hw->mac.ops.led_off(hw, IXGBE_LED_ON);
+> +		hw->mac.ops.led_off(hw, hw->bus.func);
+>  		break;
+> 
+>  	case ETHTOOL_ID_INACTIVE:
+> --
+> 2.4.3
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at lists.osuosl.org
+> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
