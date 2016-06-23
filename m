@@ -1,142 +1,60 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu, 23 Jun 2016 13:54:03 -0700
-Subject: [Intel-wired-lan] [PATCH 2/2] fm10k: add support for Rx offloads on
-	one Geneve tunnel
-In-Reply-To: <20160623205403.20327-1-jacob.e.keller@intel.com>
-References: <20160623205403.20327-1-jacob.e.keller@intel.com>
-Message-ID: <20160623205403.20327-3-jacob.e.keller@intel.com>
+From: Bimmy Pujari <bimmy.pujari@intel.com>
+Date: Thu, 23 Jun 2016 14:08:46 -0700
+Subject: [Intel-wired-lan] [next PATCH S39 3/3] i40e: Move the mutex lock in
+	i40e_client_unregister
+Message-ID: <1466716126-9971-1-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Similar to how we handle VXLAN offload, enable support for a single
-Geneve tunnel.
+From: Catherine Sullivan <catherine.sullivan@intel.com>
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+We need to lock the client list around the i40e_client_release call to
+prevent the release from interrupting the client instances while they are
+being added.
+
+Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
+Change-Id: I99993f20179aaf8730207833e7d0869d2ccffa1d
 ---
- drivers/net/ethernet/intel/fm10k/fm10k.h        |  1 +
- drivers/net/ethernet/intel/fm10k/fm10k_netdev.c | 30 ++++++++++++++++++++++---
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c    |  3 ++-
- drivers/net/ethernet/intel/fm10k/fm10k_type.h   |  1 +
- 4 files changed, 31 insertions(+), 4 deletions(-)
+Testing Hints: Do a insmod/rmmod of i40iw quickly and see if there is a
+kernel paging failure.
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k.h b/drivers/net/ethernet/intel/fm10k/fm10k.h
-index 209268a14712..67ff01aeb11a 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k.h
-@@ -335,6 +335,7 @@ struct fm10k_intfc {
- 
- 	/* UDP encapsulation port tracking information */
- 	struct list_head vxlan_port;
-+	struct list_head geneve_port;
- 
- #ifdef CONFIG_DEBUG_FS
- 	struct dentry *dbg_intfc;
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-index 411933b02712..554dd22887dd 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_netdev.c
-@@ -387,7 +387,7 @@ static void fm10k_request_glort_range(struct fm10k_intfc *interface)
-  * fm10k_free_udp_port_info
-  * @interface: board private structure
-  *
-- * This function frees the entire vxlan_port list
-+ * This function frees both geneve_port and vxlan_port structures
-  **/
- static void fm10k_free_udp_port_info(struct fm10k_intfc *interface)
- {
-@@ -403,6 +403,17 @@ static void fm10k_free_udp_port_info(struct fm10k_intfc *interface)
- 						struct fm10k_udp_port,
- 						list);
+HSD-number: 7661337
+
+ drivers/net/ethernet/intel/i40e/i40e_client.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c b/drivers/net/ethernet/intel/i40e/i40e_client.c
+index c6557d4..0d15f7e 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_client.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
+@@ -1007,13 +1007,13 @@ int i40e_unregister_client(struct i40e_client *client)
+ 	 * a close for each of the client instances that were opened.
+ 	 * client_release function is called to handle this.
+ 	 */
++	mutex_lock(&i40e_client_mutex);
+ 	if (!client || i40e_client_release(client)) {
+ 		ret = -EIO;
+ 		goto out;
  	}
-+
-+	/* flush all entries from geneve list */
-+	port = list_first_entry_or_null(&interface->geneve_port,
-+					struct fm10k_udp_port, list);
-+	while (port) {
-+		list_del(&port->list);
-+		kfree(port);
-+		port = list_first_entry_or_null(&interface->vxlan_port,
-+						struct fm10k_udp_port,
-+						list);
-+	}
+ 
+ 	/* TODO: check if device is in reset, or if that matters? */
+-	mutex_lock(&i40e_client_mutex);
+ 	if (!i40e_client_is_registered(client)) {
+ 		pr_info("i40e: Client %s has not been registered\n",
+ 			client->name);
+@@ -1032,8 +1032,8 @@ int i40e_unregister_client(struct i40e_client *client)
+ 		       client->name);
+ 	}
+ 
+-	mutex_unlock(&i40e_client_mutex);
+ out:
++	mutex_unlock(&i40e_client_mutex);
+ 	return ret;
  }
- 
- /**
-@@ -427,6 +438,13 @@ static void fm10k_restore_udp_port_info(struct fm10k_intfc *interface)
- 	fm10k_write_reg(hw, FM10K_TUNNEL_CFG,
- 			(port ? ntohs(port->port) : 0) |
- 			(ETH_P_TEB << FM10K_TUNNEL_CFG_NVGRE_SHIFT));
-+
-+	port = list_first_entry_or_null(&interface->geneve_port,
-+					struct fm10k_udp_port, list);
-+
-+	/* restore Geneve tunnel configuration register */
-+	fm10k_write_reg(hw, FM10K_TUNNEL_CFG_GENEVE,
-+			(port ? ntohs(port->port) : 0));
- }
- 
- static struct fm10k_udp_port *
-@@ -472,8 +490,8 @@ static void fm10k_insert_tunnel_port(struct list_head *ports,
-  * @ti: Tunnel endpoint information
-  *
-  * This function is called when a new UDP tunnel port has been added.
-- * Currently we only support VXLAN and only one port will actually be
-- * offloaded due to hardware restrictions.
-+ * Due to hardware restrictions, only one port per type can be offloaded at
-+ * once.
-  **/
- static void fm10k_udp_tunnel_add(struct net_device *dev,
- 				 struct udp_tunnel_info *ti)
-@@ -488,6 +506,9 @@ static void fm10k_udp_tunnel_add(struct net_device *dev,
- 	case UDP_TUNNEL_TYPE_VXLAN:
- 		fm10k_insert_tunnel_port(&interface->vxlan_port, ti);
- 		break;
-+	case UDP_TUNNEL_TYPE_GENEVE:
-+		fm10k_insert_tunnel_port(&interface->geneve_port, ti);
-+		break;
- 	default:
- 		return;
- 	}
-@@ -517,6 +538,9 @@ static void fm10k_udp_tunnel_del(struct net_device *dev,
- 	case UDP_TUNNEL_TYPE_VXLAN:
- 		port = fm10k_remove_tunnel_port(&interface->vxlan_port, ti);
- 		break;
-+	case UDP_TUNNEL_TYPE_GENEVE:
-+		port = fm10k_remove_tunnel_port(&interface->geneve_port, ti);
-+		break;
- 	default:
- 		return;
- 	}
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index 0293eed5005b..4bb352e3039b 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -1835,8 +1835,9 @@ static int fm10k_sw_init(struct fm10k_intfc *interface,
- 	interface->tx_itr = FM10K_TX_ITR_DEFAULT;
- 	interface->rx_itr = FM10K_ITR_ADAPTIVE | FM10K_RX_ITR_DEFAULT;
- 
--	/* initialize vxlan_port list */
-+	/* initialize udp port lists */
- 	INIT_LIST_HEAD(&interface->vxlan_port);
-+	INIT_LIST_HEAD(&interface->geneve_port);
- 
- 	netdev_rss_key_fill(rss_key, sizeof(rss_key));
- 	memcpy(interface->rssrk, rss_key, sizeof(rss_key));
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_type.h b/drivers/net/ethernet/intel/fm10k/fm10k_type.h
-index f4e75c498287..6bb16c13d9d6 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_type.h
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_type.h
-@@ -154,6 +154,7 @@ struct fm10k_hw;
- #define FM10K_DGLORTDEC_INNERRSS_ENABLE		0x08000000
- #define FM10K_TUNNEL_CFG	0x0040
- #define FM10K_TUNNEL_CFG_NVGRE_SHIFT		16
-+#define FM10K_TUNNEL_CFG_GENEVE	0x0041
- #define FM10K_SWPRI_MAP(_n)	((_n) + 0x0050)
- #define FM10K_SWPRI_MAX		16
- #define FM10K_RSSRK(_n, _m)	(((_n) * 0x10) + (_m) + 0x0800)
+ EXPORT_SYMBOL(i40e_unregister_client);
 -- 
-2.9.0.rc1.405.g81f467e
+2.4.11
 
