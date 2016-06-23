@@ -1,41 +1,40 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 22 Jun 2016 22:24:50 -0700
-Subject: [Intel-wired-lan] [PATCH] fm10k: don't continue probe if PCI
- device not in normal IO state
-In-Reply-To: <20160614232616.27686-1-jacob.e.keller@intel.com>
-References: <20160614232616.27686-1-jacob.e.keller@intel.com>
-Message-ID: <1466659490.2692.6.camel@intel.com>
+From: Amitoj Kaur Chawla <amitoj1606@gmail.com>
+Date: Thu, 23 Jun 2016 10:30:55 +0530
+Subject: [Intel-wired-lan] [PATCH] i40e: Remove redundant memset
+Message-ID: <20160623050055.GA15082@amitoj-Inspiron-3542>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2016-06-14 at 16:26 -0700, Jacob Keller wrote:
-> In the event of an uncorrectable AER error occuring when the driver has
-> not loaded, the recovery routines are not done. This is done because
-> future loads of the driver may not be aware of the IO state and may not
-> be able to recover at all. In this case, when we next load the driver it
-> fails due to what appears to be a surprise remove event. Instead, add
-> a check to ensure that the device is in the normal IO state before
-> continuing to probe. This allows us to give a more descriptive message
-> of what is wrong.
-> 
-> Without this change, the driver will attempt to probe up to our first
-> call of .reset_hw() which will be unable to read registers and act as if
-> a surprise remove event occurred.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> ---
-> ?drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 6 ++++++
-> ?1 file changed, 6 insertions(+)
+Remove redundant call to memset before a call to memcpy.
 
-This does not apply at all, the code was already removed in a previous
-patch. ?So I am dropping this patch.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160622/926489df/attachment.asc>
+The Coccinelle semantic patch used to make this change is as follows:
+@@
+expression e1,e2,e3,e4;
+@@
+
+- memset(e1,e2,e3);
+  memcpy(e1,e4,e3);
+
+Signed-off-by: Amitoj Kaur Chawla <amitoj1606@gmail.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 3449129..45c1671 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -7961,7 +7961,6 @@ static int i40e_config_rss_aq(struct i40e_vsi *vsi, const u8 *seed,
+ 	u8 *rss_lut;
+ 	int ret, i;
+ 
+-	memset(&rss_key, 0, sizeof(rss_key));
+ 	memcpy(&rss_key, seed, sizeof(rss_key));
+ 
+ 	rss_lut = kzalloc(pf->rss_table_size, GFP_KERNEL);
+-- 
+1.9.1
+
