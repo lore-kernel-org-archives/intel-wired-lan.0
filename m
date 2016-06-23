@@ -1,10 +1,8 @@
 From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Thu, 23 Jun 2016 13:31:02 -0700
+Date: Thu, 23 Jun 2016 13:31:00 -0700
 Subject: [Intel-wired-lan] [PATCH v2] fm10k: print error code when
 	pci_enable_device_mem fails during probe
-In-Reply-To: <20160623203103.30528-1-jacob.e.keller@intel.com>
-References: <20160623203103.30528-1-jacob.e.keller@intel.com>
-Message-ID: <20160623203103.30528-3-jacob.e.keller@intel.com>
+Message-ID: <20160623203103.30528-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
