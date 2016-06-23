@@ -1,60 +1,34 @@
-From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Thu, 23 Jun 2016 14:08:46 -0700
-Subject: [Intel-wired-lan] [next PATCH S39 3/3] i40e: Move the mutex lock in
-	i40e_client_unregister
-Message-ID: <1466716126-9971-1-git-send-email-bimmy.pujari@intel.com>
+From: Singh, Krishneil K <krishneil.k.singh@intel.com>
+Date: Thu, 23 Jun 2016 23:19:02 +0000
+Subject: [Intel-wired-lan] [PATCH v2 02/18] fm10k: Reset mailbox
+	global	interrupts
+In-Reply-To: <20160607230902.5457-3-jacob.e.keller@intel.com>
+References: <20160607230902.5457-1-jacob.e.keller@intel.com>
+ <20160607230902.5457-3-jacob.e.keller@intel.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E27397E7E@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Catherine Sullivan <catherine.sullivan@intel.com>
 
-We need to lock the client list around the i40e_client_release call to
-prevent the release from interrupting the client instances while they are
-being added.
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Jacob Keller
+Sent: Tuesday, June 7, 2016 4:09 PM
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Cc: Kwan, Ngai-mint <ngai-mint.kwan@intel.com>
+Subject: [Intel-wired-lan] [PATCH v2 02/18] fm10k: Reset mailbox global interrupts
 
-Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-Change-Id: I99993f20179aaf8730207833e7d0869d2ccffa1d
+From: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
+
+When a data path reset is initiated, write control to the PCIE_GMBX is yanked from the switch manager. The switch manager writes to this register to clear mailbox global interrupt bits as part of its mailbox interrupt handling routine. When the device recovers from the data path reset and these bits are not cleared, it will prevent future mailbox global interrupts from being triggered. Upon confirming that the device has exited from a data path reset, clear these bits to ensure the proper functioning of the mailbox global interrupt.
+
+Signed-off-by: Ngai-Mint Kwan <ngai-mint.kwan@intel.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
-Testing Hints: Do a insmod/rmmod of i40iw quickly and see if there is a
-kernel paging failure.
 
-HSD-number: 7661337
+Tested-by: Krishneil Singh <Krishneil.k.singh@intel.com>
 
- drivers/net/ethernet/intel/i40e/i40e_client.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c b/drivers/net/ethernet/intel/i40e/i40e_client.c
-index c6557d4..0d15f7e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_client.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
-@@ -1007,13 +1007,13 @@ int i40e_unregister_client(struct i40e_client *client)
- 	 * a close for each of the client instances that were opened.
- 	 * client_release function is called to handle this.
- 	 */
-+	mutex_lock(&i40e_client_mutex);
- 	if (!client || i40e_client_release(client)) {
- 		ret = -EIO;
- 		goto out;
- 	}
- 
- 	/* TODO: check if device is in reset, or if that matters? */
--	mutex_lock(&i40e_client_mutex);
- 	if (!i40e_client_is_registered(client)) {
- 		pr_info("i40e: Client %s has not been registered\n",
- 			client->name);
-@@ -1032,8 +1032,8 @@ int i40e_unregister_client(struct i40e_client *client)
- 		       client->name);
- 	}
- 
--	mutex_unlock(&i40e_client_mutex);
- out:
-+	mutex_unlock(&i40e_client_mutex);
- 	return ret;
- }
- EXPORT_SYMBOL(i40e_unregister_client);
--- 
-2.4.11
 
