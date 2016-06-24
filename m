@@ -1,138 +1,49 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 24 Jun 2016 12:53:05 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- b9e6e3f36365e85a109568ba4f2a8fe7d1bee125 BUILD SUCCESS
-Message-ID: <576cbcb1.TDGyYG2YVHBAb0PK%fengguang.wu@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 24 Jun 2016 16:25:06 +0000
+Subject: [Intel-wired-lan] [net PATCH] i40e/i40evf: Fix i40e_rx_checksum
+In-Reply-To: <20160614224542.9471.71002.stgit@localhost.localdomain>
+References: <20160614224542.9471.71002.stgit@localhost.localdomain>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9E9074@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-b9e6e3f36365e85a109568ba4f2a8fe7d1bee125  i40e: Move the mutex lock in i40e_client_unregister
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Alexander Duyck
+> Sent: Tuesday, June 14, 2016 3:46 PM
+> To: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [net PATCH] i40e/i40evf: Fix i40e_rx_checksum
+> 
+> There are a couple of issues I found in i40e_rx_checksum while doing some
+> recent testing.  As a result I have found the Rx checksum logic is pretty much
+> broken and returning that the checksum is valid for tunnels in cases where it
+> is not.
+> 
+> First the inner types are not the correct values to use to test for if a tunnel is
+> present or not.  In addition the inner protocol types are not a bitmask as such
+> performing an OR of the values doesn't make sense.  I have instead changed
+> the code so that the inner protocol types are used to determine if we report
+> CHECKSUM_UNNECESSARY or not.  For anything that does not end in UDP,
+> TCP, or SCTP it doesn't make much sense to report a checksum offload since
+> it won't contain a checksum anyway.
+> 
+> This leaves us with the need to set the csum_level based on some value.
+> For that purpose I am using the tunnel_type field.  If the tunnel type is
+> GRENAT or greater then this means we have a GRE or UDP tunnel with an
+> inner header.  In the case of GRE or UDP we will have a possible checksum
+> present so for this reason it should be safe to set the csum_level to 1 to
+> indicate that we are reporting the state of the inner header.
+> 
+> Signed-off-by: Alexander Duyck <aduyck@mirantis.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c   |   30 ++++++++++++++---------
+> --
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c |   30 ++++++++++++++--------
+> ---
+>  2 files changed, 34 insertions(+), 26 deletions(-)
 
-elapsed time: 213m
-
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 116
-
-i386                     randconfig-a0-201625
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                 randconfig-x019-201625
-x86_64                 randconfig-x018-201625
-x86_64                 randconfig-x014-201625
-x86_64                 randconfig-x013-201625
-x86_64                 randconfig-x010-201625
-x86_64                 randconfig-x015-201625
-x86_64                 randconfig-x016-201625
-x86_64                 randconfig-x012-201625
-x86_64                 randconfig-x011-201625
-x86_64                 randconfig-x017-201625
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s1-201625
-i386                     randconfig-s0-201625
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-i386                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201625
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201625
-i386                     randconfig-i1-201625
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-i386                   randconfig-x017-201625
-i386                   randconfig-x018-201625
-i386                   randconfig-x013-201625
-i386                   randconfig-x010-201625
-i386                   randconfig-x011-201625
-i386                   randconfig-x016-201625
-i386                   randconfig-x014-201625
-i386                   randconfig-x015-201625
-i386                   randconfig-x019-201625
-i386                   randconfig-x012-201625
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201625
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                 randconfig-x007-201625
-x86_64                 randconfig-x000-201625
-x86_64                 randconfig-x003-201625
-x86_64                 randconfig-x006-201625
-x86_64                 randconfig-x008-201625
-x86_64                 randconfig-x005-201625
-x86_64                 randconfig-x001-201625
-x86_64                 randconfig-x002-201625
-x86_64                 randconfig-x004-201625
-x86_64                 randconfig-x009-201625
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-r0-201625
-i386                   randconfig-x005-201625
-i386                   randconfig-x008-201625
-i386                   randconfig-x000-201625
-i386                   randconfig-x009-201625
-i386                   randconfig-x004-201625
-i386                   randconfig-x007-201625
-i386                   randconfig-x006-201625
-i386                   randconfig-x001-201625
-i386                   randconfig-x003-201625
-i386                   randconfig-x002-201625
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-
-Thanks,
-Fengguang
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Works as expected
