@@ -1,101 +1,141 @@
-From: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
-Date: Mon, 27 Jun 2016 12:16:43 -0300
-Subject: [Intel-wired-lan] [PATCH net] i40e: use valid online CPU on
-	q_vector initialization
-Message-ID: <1467040603-23008-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 28 Jun 2016 08:13:05 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ b3283dccfcb6f3574882e04eecb6aa038c3c3298 BUILD SUCCESS
+Message-ID: <5771c111.7vZFggStl/xlHUGI%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Currently, the q_vector initialization routine sets the affinity_mask
-of a q_vector based on v_idx value. Meaning a loop iterates on v_idx,
-which is an incremental value, and the cpumask is created based on
-this value.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+b3283dccfcb6f3574882e04eecb6aa038c3c3298  i40e: Move the mutex lock in i40e_client_unregister
 
-This is a problem in systems with multiple logical CPUs per core (like in
-SMT scenarios). If we disable some logical CPUs, by turning SMT off for
-example, we will end up with a sparse cpu_online_mask, i.e., only the first
-CPU in a core is online, and incremental filling in q_vector cpumask might
-lead to multiple offline CPUs being assigned to q_vectors.
+elapsed time: 132m
 
-Example: if we have a system with 8 cores each one containing 8 logical
-CPUs (SMT == 8 in this case), we have 64 CPUs in total. But if SMT is
-disabled, only the 1st CPU in each core remains online, so the
-cpu_online_mask in this case would have only 8 bits set, in a sparse way.
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 119
 
-In general case, when SMT is off the cpu_online_mask has only C bits set:
-0, 1*N, 2*N, ..., C*(N-1)  where
-C == # of cores;
-N == # of logical CPUs per core.
-In our example, only bits 0, 8, 16, 24, 32, 40, 48, 56 would be set.
+i386                     randconfig-a0-201626
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+arm                          pxa910_defconfig
+blackfin                   CM-BF548_defconfig
+powerpc                         c2k_defconfig
+s390                             allyesconfig
+x86_64                 randconfig-x019-201626
+x86_64                 randconfig-x018-201626
+x86_64                 randconfig-x014-201626
+x86_64                 randconfig-x013-201626
+x86_64                 randconfig-x015-201626
+x86_64                 randconfig-x010-201626
+x86_64                 randconfig-x016-201626
+x86_64                 randconfig-x011-201626
+x86_64                 randconfig-x012-201626
+x86_64                 randconfig-x017-201626
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s1-201626
+i386                     randconfig-s0-201626
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201626
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-i1-06271537
+i386                   randconfig-i0-06271537
+i386                   randconfig-x017-201626
+i386                   randconfig-x018-201626
+i386                   randconfig-x010-201626
+i386                   randconfig-x013-201626
+i386                   randconfig-x014-201626
+i386                   randconfig-x016-201626
+i386                   randconfig-x011-201626
+i386                   randconfig-x015-201626
+i386                   randconfig-x019-201626
+i386                   randconfig-x012-201626
+i386                     randconfig-n0-201626
+i386                             allmodconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                   rhel
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                 randconfig-x007-201626
+x86_64                 randconfig-x000-201626
+x86_64                 randconfig-x006-201626
+x86_64                 randconfig-x003-201626
+x86_64                 randconfig-x008-201626
+x86_64                 randconfig-x005-201626
+x86_64                 randconfig-x002-201626
+x86_64                 randconfig-x001-201626
+x86_64                 randconfig-x004-201626
+x86_64                 randconfig-x009-201626
+i386                     randconfig-r0-201626
+i386                   randconfig-x005-201626
+i386                   randconfig-x008-201626
+i386                   randconfig-x000-201626
+i386                   randconfig-x009-201626
+i386                   randconfig-x007-201626
+i386                   randconfig-x004-201626
+i386                   randconfig-x003-201626
+i386                   randconfig-x001-201626
+i386                   randconfig-x006-201626
+i386                   randconfig-x002-201626
 
-This patch changes the way q_vector's affinity_mask is created: it iterates
-on v_idx, but consumes the CPU index from the cpu_online_mask instead of
-just using the v_idx incremental value.
-
-No functional changes were introduced.
-
-Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 16 +++++++++++-----
- 1 file changed, 11 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 5ea2200..a89bddd 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -7726,10 +7726,11 @@ static int i40e_init_msix(struct i40e_pf *pf)
-  * i40e_vsi_alloc_q_vector - Allocate memory for a single interrupt vector
-  * @vsi: the VSI being configured
-  * @v_idx: index of the vector in the vsi struct
-+ * @cpu: cpu to be used on affinity_mask
-  *
-  * We allocate one q_vector.  If allocation fails we return -ENOMEM.
-  **/
--static int i40e_vsi_alloc_q_vector(struct i40e_vsi *vsi, int v_idx)
-+static int i40e_vsi_alloc_q_vector(struct i40e_vsi *vsi, int v_idx, int cpu)
- {
- 	struct i40e_q_vector *q_vector;
- 
-@@ -7740,7 +7741,8 @@ static int i40e_vsi_alloc_q_vector(struct i40e_vsi *vsi, int v_idx)
- 
- 	q_vector->vsi = vsi;
- 	q_vector->v_idx = v_idx;
--	cpumask_set_cpu(v_idx, &q_vector->affinity_mask);
-+	cpumask_set_cpu(cpu, &q_vector->affinity_mask);
-+
- 	if (vsi->netdev)
- 		netif_napi_add(vsi->netdev, &q_vector->napi,
- 			       i40e_napi_poll, NAPI_POLL_WEIGHT);
-@@ -7764,8 +7766,7 @@ static int i40e_vsi_alloc_q_vector(struct i40e_vsi *vsi, int v_idx)
- static int i40e_vsi_alloc_q_vectors(struct i40e_vsi *vsi)
- {
- 	struct i40e_pf *pf = vsi->back;
--	int v_idx, num_q_vectors;
--	int err;
-+	int err, v_idx, num_q_vectors, current_cpu;
- 
- 	/* if not MSIX, give the one vector only to the LAN VSI */
- 	if (pf->flags & I40E_FLAG_MSIX_ENABLED)
-@@ -7775,10 +7776,15 @@ static int i40e_vsi_alloc_q_vectors(struct i40e_vsi *vsi)
- 	else
- 		return -EINVAL;
- 
-+	current_cpu = cpumask_first(cpu_online_mask);
-+
- 	for (v_idx = 0; v_idx < num_q_vectors; v_idx++) {
--		err = i40e_vsi_alloc_q_vector(vsi, v_idx);
-+		err = i40e_vsi_alloc_q_vector(vsi, v_idx, current_cpu);
- 		if (err)
- 			goto err_out;
-+		current_cpu = cpumask_next(current_cpu, cpu_online_mask);
-+		if (unlikely(current_cpu >= nr_cpu_ids))
-+			current_cpu = cpumask_first(cpu_online_mask);
- 	}
- 
- 	return 0;
--- 
-2.1.0
-
+Thanks,
+Fengguang
