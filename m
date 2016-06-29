@@ -1,241 +1,101 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 30 Jun 2016 04:53:42 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:master]
- b3a3c5176c146ec7de653a3062237620464175fb BUILD SUCCESS
-Message-ID: <57743556.lewiVS/psENBvHqM%fengguang.wu@intel.com>
+From: Donald C Skidmore <donald.c.skidmore@intel.com>
+Date: Wed, 29 Jun 2016 19:32:24 -0400
+Subject: [Intel-wired-lan] [PATCH] ixgbevf: add VF support for new hardware
+Message-ID: <1467243144-28174-1-git-send-email-donald.c.skidmore@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
-b3a3c5176c146ec7de653a3062237620464175fb  ixgbevf: ixgbevf_write/read_posted_mbx should use IXGBE_ERR_MBX to initialize ret_val
+This patch add VF support for the new X553 hardware.
 
-elapsed time: 181m
+Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbevf/defines.h      | 1 +
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      | 2 ++
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 2 ++
+ drivers/net/ethernet/intel/ixgbevf/vf.c           | 5 +++++
+ drivers/net/ethernet/intel/ixgbevf/vf.h           | 1 +
+ 5 files changed, 11 insertions(+)
 
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 219
+diff --git a/drivers/net/ethernet/intel/ixgbevf/defines.h b/drivers/net/ethernet/intel/ixgbevf/defines.h
+index ae09d60..8617cae 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/defines.h
++++ b/drivers/net/ethernet/intel/ixgbevf/defines.h
+@@ -32,6 +32,7 @@
+ #define IXGBE_DEV_ID_X540_VF		0x1515
+ #define IXGBE_DEV_ID_X550_VF		0x1565
+ #define IXGBE_DEV_ID_X550EM_X_VF	0x15A8
++#define IXGBE_DEV_ID_X550EM_A_VF	0x15C5
+ 
+ #define IXGBE_DEV_ID_82599_VF_HV	0x152E
+ #define IXGBE_DEV_ID_X540_VF_HV		0x1530
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+index d5944c3..be52f59 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+@@ -457,6 +457,7 @@ enum ixgbevf_boards {
+ 	board_X550_vf_hv,
+ 	board_X550EM_x_vf,
+ 	board_X550EM_x_vf_hv,
++	board_x550em_a_vf,
+ };
+ 
+ enum ixgbevf_xcast_modes {
+@@ -470,6 +471,7 @@ extern const struct ixgbevf_info ixgbevf_X540_vf_info;
+ extern const struct ixgbevf_info ixgbevf_X550_vf_info;
+ extern const struct ixgbevf_info ixgbevf_X550EM_x_vf_info;
+ extern const struct ixgbe_mbx_operations ixgbevf_mbx_ops;
++extern const struct ixgbevf_info ixgbevf_x550em_a_vf_info;
+ 
+ extern const struct ixgbevf_info ixgbevf_82599_vf_hv_info;
+ extern const struct ixgbevf_info ixgbevf_X540_vf_hv_info;
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index a1c83c1..1bffac3 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -70,6 +70,7 @@ static const struct ixgbevf_info *ixgbevf_info_tbl[] = {
+ 	[board_X550_vf_hv]	= &ixgbevf_X550_vf_hv_info,
+ 	[board_X550EM_x_vf]	= &ixgbevf_X550EM_x_vf_info,
+ 	[board_X550EM_x_vf_hv]	= &ixgbevf_X550EM_x_vf_hv_info,
++	[board_x550em_a_vf]	= &ixgbevf_x550em_a_vf_info,
+ };
+ 
+ /* ixgbevf_pci_tbl - PCI Device ID Table
+@@ -89,6 +90,7 @@ static const struct pci_device_id ixgbevf_pci_tbl[] = {
+ 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550_VF_HV), board_X550_vf_hv },
+ 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_VF), board_X550EM_x_vf },
+ 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_X_VF_HV), board_X550EM_x_vf_hv},
++	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_VF), board_x550em_a_vf },
+ 	/* required last entry */
+ 	{0, }
+ };
+diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.c b/drivers/net/ethernet/intel/ixgbevf/vf.c
+index aa2b1e8..cb409b3 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/vf.c
++++ b/drivers/net/ethernet/intel/ixgbevf/vf.c
+@@ -1007,3 +1007,8 @@ const struct ixgbevf_info ixgbevf_X550EM_x_vf_hv_info = {
+ 	.mac = ixgbe_mac_X550EM_x_vf,
+ 	.mac_ops = &ixgbevf_hv_mac_ops,
+ };
++
++const struct ixgbevf_info ixgbevf_x550em_a_vf_info = {
++	.mac = ixgbe_mac_x550em_a_vf,
++	.mac_ops = &ixgbevf_mac_ops,
++};
+diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.h b/drivers/net/ethernet/intel/ixgbevf/vf.h
+index 2cac610..e3a0dea 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/vf.h
++++ b/drivers/net/ethernet/intel/ixgbevf/vf.h
+@@ -78,6 +78,7 @@ enum ixgbe_mac_type {
+ 	ixgbe_mac_X540_vf,
+ 	ixgbe_mac_X550_vf,
+ 	ixgbe_mac_X550EM_x_vf,
++	ixgbe_mac_x550em_a_vf,
+ 	ixgbe_num_macs
+ };
+ 
+-- 
+2.4.3
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201626
-x86_64                 randconfig-a0-06300326
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-parisc                         b180_defconfig
-arm                        raumfeld_defconfig
-blackfin                   CM-BF548_defconfig
-mips                  maltasmvp_eva_defconfig
-mips                          rm200_defconfig
-parisc                           alldefconfig
-arm                      integrator_defconfig
-arm                         s3c2410_defconfig
-mips                  mips_paravirt_defconfig
-parisc                          712_defconfig
-powerpc                       ep405_defconfig
-arm                          pxa910_defconfig
-arm                         s3c6400_defconfig
-blackfin                BF609-EZKIT_defconfig
-sh                           se7619_defconfig
-sparc                            alldefconfig
-arm                         socfpga_defconfig
-powerpc                          allmodconfig
-powerpc                       maple_defconfig
-xtensa                            allnoconfig
-arm                        magician_defconfig
-m68k                       m5275evb_defconfig
-mips                  cavium_octeon_defconfig
-parisc                generic-64bit_defconfig
-tile                                defconfig
-arm                         iop13xx_defconfig
-arm                            u300_defconfig
-powerpc                 mpc85xx_cds_defconfig
-sh                   sh7724_generic_defconfig
-sh                              ul2_defconfig
-i386                             alldefconfig
-ia64                      gensparse_defconfig
-mips                         cobalt_defconfig
-mips                          sead3_defconfig
-powerpc                      arches_defconfig
-arm                          ks8695_defconfig
-m32r                        oaks32r_defconfig
-m68k                        m5307c3_defconfig
-parisc                      default_defconfig
-sparc                            allyesconfig
-arm                       cns3420vb_defconfig
-arm                        spear6xx_defconfig
-m32r                       mappi.up_defconfig
-mips                           ci20_defconfig
-sh                               alldefconfig
-arm                       mainstone_defconfig
-arm                        trizeps4_defconfig
-cris                    etrax-100lx_defconfig
-m68k                       bvme6000_defconfig
-x86_64                 randconfig-x019-201626
-x86_64                 randconfig-x018-201626
-x86_64                 randconfig-x014-201626
-x86_64                 randconfig-x013-201626
-x86_64                 randconfig-x015-201626
-x86_64                 randconfig-x010-201626
-x86_64                 randconfig-x016-201626
-x86_64                 randconfig-x011-201626
-x86_64                 randconfig-x012-201626
-x86_64                 randconfig-x017-201626
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s1-201626
-i386                     randconfig-s0-201626
-x86_64                 randconfig-s0-06300233
-x86_64                 randconfig-s1-06300233
-x86_64                 randconfig-s2-06300233
-x86_64                 randconfig-s0-06300251
-x86_64                 randconfig-s1-06300251
-x86_64                 randconfig-s2-06300251
-x86_64                 randconfig-s0-06300310
-x86_64                 randconfig-s1-06300310
-x86_64                 randconfig-s2-06300310
-x86_64                 randconfig-s0-06300330
-x86_64                 randconfig-s1-06300330
-x86_64                 randconfig-s2-06300330
-x86_64                 randconfig-s0-06300352
-x86_64                 randconfig-s1-06300352
-x86_64                 randconfig-s2-06300352
-x86_64                 randconfig-s0-06300409
-x86_64                 randconfig-s1-06300409
-x86_64                 randconfig-s2-06300409
-x86_64                 randconfig-s3-06300221
-x86_64                 randconfig-s4-06300221
-x86_64                 randconfig-s5-06300221
-x86_64                 randconfig-s3-06300243
-x86_64                 randconfig-s4-06300243
-x86_64                 randconfig-s5-06300243
-x86_64                 randconfig-s3-06300257
-x86_64                 randconfig-s4-06300257
-x86_64                 randconfig-s5-06300257
-x86_64                 randconfig-s3-06300320
-x86_64                 randconfig-s4-06300320
-x86_64                 randconfig-s5-06300320
-x86_64                 randconfig-s3-06300346
-x86_64                 randconfig-s4-06300346
-x86_64                 randconfig-s5-06300346
-x86_64                 randconfig-s3-06300401
-x86_64                 randconfig-s4-06300401
-x86_64                 randconfig-s5-06300401
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
-x86_64                   randconfig-i0-201626
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i0-201626
-i386                     randconfig-i1-201626
-m32r                              allnoconfig
-microblaze                      mmu_defconfig
-sh                           se7343_defconfig
-x86_64                 randconfig-n0-06300333
-openrisc                         alldefconfig
-powerpc                         c2k_defconfig
-powerpc                 mpc832x_rdb_defconfig
-i386                   randconfig-x017-201626
-i386                   randconfig-x018-201626
-i386                   randconfig-x010-201626
-i386                   randconfig-x013-201626
-i386                   randconfig-x014-201626
-i386                   randconfig-x016-201626
-i386                   randconfig-x011-201626
-i386                   randconfig-x015-201626
-i386                   randconfig-x019-201626
-i386                   randconfig-x012-201626
-x86_64                                    lkp
-x86_64                                   rhel
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201626
-alpha                            alldefconfig
-powerpc                          allyesconfig
-powerpc                     mpc512x_defconfig
-mips                            gpr_defconfig
-powerpc                      pmac32_defconfig
-sparc                            allmodconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-x007-201626
-x86_64                 randconfig-x000-201626
-x86_64                 randconfig-x006-201626
-x86_64                 randconfig-x003-201626
-x86_64                 randconfig-x008-201626
-x86_64                 randconfig-x005-201626
-x86_64                 randconfig-x002-201626
-x86_64                 randconfig-x001-201626
-x86_64                 randconfig-x004-201626
-x86_64                 randconfig-x009-201626
-i386                     randconfig-r0-201626
-x86_64                 randconfig-r0-06300342
-m68k                         apollo_defconfig
-mips                     loongson1b_defconfig
-tile                             alldefconfig
-mips                           ip28_defconfig
-i386                   randconfig-x005-201626
-i386                   randconfig-x008-201626
-i386                   randconfig-x000-201626
-i386                   randconfig-x009-201626
-i386                   randconfig-x007-201626
-i386                   randconfig-x004-201626
-i386                   randconfig-x003-201626
-i386                   randconfig-x001-201626
-i386                   randconfig-x006-201626
-i386                   randconfig-x002-201626
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-i386                   randconfig-x0-06300252
-i386                   randconfig-x0-06300330
-
-Thanks,
-Fengguang
