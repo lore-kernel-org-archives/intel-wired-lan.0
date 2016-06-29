@@ -1,49 +1,180 @@
-From: tndave <tushar.n.dave@oracle.com>
-Date: Wed, 29 Jun 2016 13:05:59 -0700
-Subject: [Intel-wired-lan] Question on i40e PCIe relaxed ordering (RO)
-Message-ID: <57742A27.5040207@oracle.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Wed, 29 Jun 2016 20:06:08 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v5 1/4] igb: add support of
+ RX network flow classification
+In-Reply-To: <20160629191232.GA29990@beef>
+References: <1462786062-7572-1-git-send-email-gangfeng.huang@ni.com>
+ <1462786062-7572-2-git-send-email-gangfeng.huang@ni.com>
+ <309B89C4C689E141A5FF6A0C5FB2118B81EFDB5D@ORSMSX101.amr.corp.intel.com>
+ <20160629191232.GA29990@beef>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81F26C2D@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+> From: Matt Porter [mailto:mporter at konsulko.com]
+> Sent: Wednesday, June 29, 2016 12:13 PM
+> To: Brown, Aaron F <aaron.f.brown@intel.com>
+> Cc: Gangfeng <gangfeng.huang@ni.com>; intel-wired-lan at lists.osuosl.org;
+> Ruhao Gao <ruhao.gao@ni.com>
+> Subject: Re: [Intel-wired-lan] [PATCH net-next v5 1/4] igb: add support of RX
+> network flow classification
+> 
+> On Mon, May 16, 2016 at 10:09:04PM +0000, Brown, Aaron F wrote:
+> > > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org]
+> On
+> > > Behalf Of Gangfeng
+> > > Sent: Monday, May 9, 2016 2:28 AM
+> > > To: intel-wired-lan at lists.osuosl.org
+> > > Cc: Gangfeng Huang <gangfeng.huang@ni.com>; Ruhao Gao
+> > > <ruhao.gao@ni.com>
+> > > Subject: [Intel-wired-lan] [PATCH net-next v5 1/4] igb: add support of RX
+> > > network flow classification
+> > >
+> > > From: Gangfeng Huang <gangfeng.huang@ni.com>
+> > >
+> > > This patch is meant to allow for RX network flow classification to insert
+> > > and remove Rx filter by ethtool. Ethtool interface has it's own rules
+> > > manager
+> > >
+> > > Show all filters:
+> > > $ ethtool -n eth0
+> > > 4 RX rings available
+> > > Total 2 rules
+> > >
+> > > Signed-off-by: Ruhao Gao <ruhao.gao@ni.com>
+> > > Signed-off-by: Gangfeng Huang <gangfeng.huang@ni.com>
+> > > ---
+> > >  drivers/net/ethernet/intel/igb/igb.h         |  32 +++++
+> > >  drivers/net/ethernet/intel/igb/igb_ethtool.c | 193
+> > > +++++++++++++++++++++++++++
+> > >  drivers/net/ethernet/intel/igb/igb_main.c    |  44 ++++++
+> > >  3 files changed, 269 insertions(+)
+> >
+> > This patch is causing 3/4 of my regression systems to fail.  Driver load
+> seems normal, but applying an IP address via ifconfig causes the following
+> splat in dmesg and /var/log/messages:
+> 
+> Hi Aaron,
+> 
+> I'm looking at this series on current net-next and am wondering if you
+> saw this issue with just patch 1 applied or you meant the entire series?
 
-Running iperf tcp test on 2 sparc systems with i40e connected back to
-back, I see huge number of 'port.rx_dropped' (on iperf server). Based on
-past experience with ixgbe, this could very well because of PCIe RO
-(relaxed ordering) not enabled.
+Hi Matt,
 
-I am trying to confirm RO is enabled. i40e datasheet mentioned RO
-settings in 3 different sections:
+My recollection is that I saw it with just patch 1 applied.  And my procedure when I see an issue with a series is to try and isolate it to the individual patch and reply to the one in the series that triggers the issue, so I am pretty sure it was with this patch applied and the rest of the series not applied.
 
-1. section 10.2.2.2.38 PCIe Global Config 2 - GLPCI_CNF2 register
-contains global status fields of PCIe configuration. The bit 0 of the
-register is "RO_DIS". If this bit is set to 1 RO is disabled.
+> 
+> I've been working with this on an i210 and haven't reproduced your
+> results yet either with just the (non-functional) first patch applied or
+> the entire series. However, I noticed you had no problems on your system
+> with an i210.
 
-RO_DIS in my setup is 0 imply RO is not disabled.
+Correct, the system with an i210 included was one of the ones not affected by this.  I'm not sure if that is due to it not being a problem with the i210 or something more elusive like the system's chipset of a variation in the .config.
 
-2. section 12.3.5.5 Device Control Register (0xA8; RW) has bit 4
-that enable/disable RO. This is pcie cap register.
+> 
+> > ----------------------------------------------
+> > May 16 14:37:50 u1486 kernel: Hardware name: Supermicro A1SAi/A1SRi,
+> BIOS 1.0b 11/06/2013
+> > May 16 14:37:50 u1486 kernel: 0000000000000000 ffff880849ad3938
+> ffffffff813373d7 0000000000000007
+> > May 16 14:37:50 u1486 kernel: 0000000000000006 0000000000000000
+> ffff88085c2f6770 ffff880849ad3a58
+> > May 16 14:37:50 u1486 kernel: ffffffff810c4e13 ffff880849ad39f8
+> 0000000000000005 0000000000000000
+> > May 16 14:37:50 u1486 kernel: Call Trace:
+> > May 16 14:37:50 u1486 kernel: [<ffffffff813373d7>] dump_stack+0x6b/0xa4
+> > May 16 14:37:50 u1486 kernel: [<ffffffff810c4e13>]
+> register_lock_class+0x523/0x5c0
+> > May 16 14:37:50 u1486 kernel: [<ffffffff8136644b>] ?
+> check_preemption_disabled+0x1b/0x110
+> > May 16 14:37:50 u1486 kernel: [<ffffffff811f5655>] ? kfree+0x1a5/0x3a0
+> > May 16 14:37:50 u1486 kernel: [<ffffffff81366553>] ?
+> __this_cpu_preempt_check+0x13/0x20
+> > May 16 14:37:50 u1486 kernel: [<ffffffff810c7ae0>]
+> __lock_acquire+0x80/0x5d0
+> > May 16 14:37:50 u1486 kernel: [<ffffffff811f83f5>] ?
+> __kmalloc+0x265/0x3a0
+> > May 16 14:37:50 u1486 kernel: [<ffffffffa051864f>] ? kzalloc+0xf/0x20 [igb]
+> > May 16 14:37:50 u1486 kernel: [<ffffffff810c80fa>]
+> lock_acquire+0xca/0x240
+> > May 16 14:37:50 u1486 kernel: [<ffffffffa0520c3f>] ?
+> igb_configure+0xaf/0x1d0 [igb]
+> > May 16 14:37:50 u1486 kernel: [<ffffffff815b958b>] ?
+> netdev_rss_key_fill+0x5b/0xa0
+> > May 16 14:37:50 u1486 kernel: [<ffffffffa052dfb9>] ?
+> igb_vfta_set+0x189/0x1f0 [igb]
+> > May 16 14:37:50 u1486 kernel: [<ffffffff816a8930>]
+> _raw_spin_lock+0x40/0x80
+> > May 16 14:37:50 u1486 kernel: [<ffffffffa0520c3f>] ?
+> igb_configure+0xaf/0x1d0 [igb]
+> > May 16 14:37:50 u1486 kernel: [<ffffffffa051bf62>] ?
+> igb_setup_rctl+0x22/0xb0 [igb]
+> > May 16 14:37:50 u1486 kernel: [<ffffffffa0520c3f>]
+> igb_configure+0xaf/0x1d0 [igb]
+> > May 16 14:37:50 u1486 kernel: [<ffffffffa052408d>]
+> __igb_open+0xfd/0x300 [igb]
+> > May 16 14:37:50 u1486 kernel: [<ffffffff815ab260>] ?
+> call_netdevice_notifiers_info+0x40/0x70
+> > May 16 14:37:50 u1486 kernel: [<ffffffffa0524420>] igb_open+0x10/0x20
+> [igb]
+> > May 16 14:37:50 u1486 kernel: [<ffffffff815ac7f8>]
+> __dev_open+0xb8/0x110
+> > May 16 14:37:50 u1486 kernel: [<ffffffff815ac5fc>]
+> __dev_change_flags+0xac/0x180
+> > May 16 14:37:50 u1486 kernel: [<ffffffff815ac700>]
+> dev_change_flags+0x30/0x70
+> > May 16 14:37:50 u1486 kernel: [<ffffffff815c6685>] ?
+> lockdep_rtnl_is_held+0x15/0x20
+> > May 16 14:37:50 u1486 kernel: [<ffffffff816403a5>]
+> devinet_ioctl+0x5b5/0x620
+> > May 16 14:37:50 u1486 kernel: [<ffffffff81156660>] ?
+> trace_buffer_unlock_commit+0x60/0x80
+> > May 16 14:37:50 u1486 kernel: [<ffffffff81643033>] inet_ioctl+0x63/0x80
+> > May 16 14:37:50 u1486 kernel: [<ffffffff8158fd60>]
+> sock_do_ioctl+0x30/0x70
+> > May 16 14:37:50 u1486 kernel: [<ffffffff815901b3>] sock_ioctl+0x73/0x280
+> > May 16 14:37:50 u1486 kernel: [<ffffffff8121f678>] vfs_ioctl+0x18/0x30
+> > May 16 14:37:50 u1486 kernel: [<ffffffff81220057>]
+> do_vfs_ioctl+0x87/0x430
+> > May 16 14:37:50 u1486 kernel: [<ffffffff8100297e>] ?
+> syscall_trace_enter_phase2+0x6e/0x280
+> > May 16 14:37:50 u1486 kernel: [<ffffffff81220492>] SyS_ioctl+0x92/0xa0
+> > May 16 14:37:50 u1486 kernel: [<ffffffff81002fd3>]
+> do_syscall_64+0x63/0x130
+> > May 16 14:37:50 u1486 kernel: [<ffffffff8100201b>] ?
+> trace_hardirqs_on_thunk+0x1b/0x1d
+> > May 16 14:37:50 u1486 kernel: [<ffffffff816a981a>]
+> entry_SYSCALL64_slow_path+0x25/0x25
+> > ----------------------------------------------
+> 
+> Since it's doing dump_stack in register_lock_class it appears some of
+> the error has been truncated before this stack trace. Can you confirm
+> that this is the complete output logged? By inspection, I would expect
+> to see one of the contextual messages from register_lock_class when it
+> calls dump_stack.
 
-In my i40e pcie config space value at offset 0xA8 is "2110". i.e 4th bit
-set to 1 imply RO is enabled.
+I will see if I still have a copy of, or can reproduce the trace along with more of the log messages leading up to it.
 
-3. section 3.1.2.7.2 mentions some relaxed ordering rules
-e.g. "The GLLAN_RCTL.RXDESCRDROEN bit (loaded from NVM) enables relaxed
-ordering for Rx descriptor reads"
+> 
+> Also, any chance of seeing a .config for this run or a freshly
+> reproduced run? By inspection at least there's no obvious locking or
+> otherwise issues in the open path (only *filter_restore() is executed on
+> open and it's a mostly a NOP if this is just patch 1 applied) so I think
+> we need some more detailed output since you have the only system that
+> seems
+> to produce this issue.
 
-However, GLLAN_RCTL register definition has not bit like RXDESCRDROEN.
-Same goes for GLLAN_TCTL.TXDESCRDROEN.
+I can certainly get you a copy of the .config file on the affected systems, however, they will have changed some as the kernel gets updated frequently for tests, along with a make oldconfig pushing occasional changes in.  Assuming I can re-apply the patch to the current tree I'll try and reproduce the issue and get you copies of a .config known to be current when the issue strikes.
 
-Am I missing anything? please advise.
+> 
+> Any other details you can provide would be appreciated. I'm happy to dig
+> into the root cause.
 
-Thanks.
-
--Tushar
-
-(Ref:http://www.intel.com/content/dam/www/public/us/en/documents/datasheets/xl710-10-40-controller-datasheet.pdf)
-
-
-
+Only thing that immediately comes to mind is that my test systems all have multiple ports to minimize the lab space needed to get a sampling of the different parts.  I will see if I can reproduce the issue in a system with a single port.  If I remember correctly, it was a consistent issue, always appearing relatively quickly on the affected systems.
+ 
+> 
+> Thanks,
+> Matt
