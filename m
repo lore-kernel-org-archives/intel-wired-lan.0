@@ -1,60 +1,241 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 29 Jun 2016 13:32:42 -0700
-Subject: [Intel-wired-lan] Question on i40e PCIe relaxed ordering (RO)
-In-Reply-To: <1467231519.3404.11.camel@gmail.com>
-References: <57742A27.5040207@oracle.com> <1467231519.3404.11.camel@gmail.com>
-Message-ID: <1467232362.3733.23.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 30 Jun 2016 04:53:42 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:master]
+ b3a3c5176c146ec7de653a3062237620464175fb BUILD SUCCESS
+Message-ID: <57743556.lewiVS/psENBvHqM%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2016-06-29 at 13:18 -0700, Greg wrote:
-> On Wed, 2016-06-29 at 13:05 -0700, tndave wrote:
-> > Hi,
-> >?
-> > Running iperf tcp test on 2 sparc systems with i40e connected back to
-> > back, I see huge number of 'port.rx_dropped' (on iperf server). Based
-> on
-> > past experience with ixgbe, this could very well because of PCIe RO
-> > (relaxed ordering) not enabled.
-> >?
-> > I am trying to confirm RO is enabled. i40e datasheet mentioned RO
-> > settings in 3 different sections:
-> >?
-> > 1. section 10.2.2.2.38 PCIe Global Config 2 - GLPCI_CNF2 register
-> > contains global status fields of PCIe configuration. The bit 0 of the
-> > register is "RO_DIS". If this bit is set to 1 RO is disabled.
-> >?
-> > RO_DIS in my setup is 0 imply RO is not disabled.
-> >?
-> > 2. section 12.3.5.5 Device Control Register (0xA8; RW) has bit 4
-> > that enable/disable RO. This is pcie cap register.
-> >?
-> > In my i40e pcie config space value at offset 0xA8 is "2110". i.e 4th
-> bit
-> > set to 1 imply RO is enabled.
-> >?
-> > 3. section 3.1.2.7.2 mentions some relaxed ordering rules
-> > e.g. "The GLLAN_RCTL.RXDESCRDROEN bit (loaded from NVM) enables relaxed
-> > ordering for Rx descriptor reads"
-> >?
-> > However, GLLAN_RCTL register definition has not bit like RXDESCRDROEN.
-> > Same goes for GLLAN_TCTL.TXDESCRDROEN.
-> >?
-> > Am I missing anything? please advise.
-> 
-> I would try posting this question to the e1000 developer list over at
-> Source Forge.? The Intel customer support folks used to monitor that
-> list closely when I was there, hopefully they still are.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
+b3a3c5176c146ec7de653a3062237620464175fb  ixgbevf: ixgbevf_write/read_posted_mbx should use IXGBE_ERR_MBX to initialize ret_val
 
-We are supposed to be monitoring both lists, but just in case I have added
-e1000-devel list...
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160629/401d5a31/attachment.asc>
+elapsed time: 181m
+
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 219
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201626
+x86_64                 randconfig-a0-06300326
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+parisc                         b180_defconfig
+arm                        raumfeld_defconfig
+blackfin                   CM-BF548_defconfig
+mips                  maltasmvp_eva_defconfig
+mips                          rm200_defconfig
+parisc                           alldefconfig
+arm                      integrator_defconfig
+arm                         s3c2410_defconfig
+mips                  mips_paravirt_defconfig
+parisc                          712_defconfig
+powerpc                       ep405_defconfig
+arm                          pxa910_defconfig
+arm                         s3c6400_defconfig
+blackfin                BF609-EZKIT_defconfig
+sh                           se7619_defconfig
+sparc                            alldefconfig
+arm                         socfpga_defconfig
+powerpc                          allmodconfig
+powerpc                       maple_defconfig
+xtensa                            allnoconfig
+arm                        magician_defconfig
+m68k                       m5275evb_defconfig
+mips                  cavium_octeon_defconfig
+parisc                generic-64bit_defconfig
+tile                                defconfig
+arm                         iop13xx_defconfig
+arm                            u300_defconfig
+powerpc                 mpc85xx_cds_defconfig
+sh                   sh7724_generic_defconfig
+sh                              ul2_defconfig
+i386                             alldefconfig
+ia64                      gensparse_defconfig
+mips                         cobalt_defconfig
+mips                          sead3_defconfig
+powerpc                      arches_defconfig
+arm                          ks8695_defconfig
+m32r                        oaks32r_defconfig
+m68k                        m5307c3_defconfig
+parisc                      default_defconfig
+sparc                            allyesconfig
+arm                       cns3420vb_defconfig
+arm                        spear6xx_defconfig
+m32r                       mappi.up_defconfig
+mips                           ci20_defconfig
+sh                               alldefconfig
+arm                       mainstone_defconfig
+arm                        trizeps4_defconfig
+cris                    etrax-100lx_defconfig
+m68k                       bvme6000_defconfig
+x86_64                 randconfig-x019-201626
+x86_64                 randconfig-x018-201626
+x86_64                 randconfig-x014-201626
+x86_64                 randconfig-x013-201626
+x86_64                 randconfig-x015-201626
+x86_64                 randconfig-x010-201626
+x86_64                 randconfig-x016-201626
+x86_64                 randconfig-x011-201626
+x86_64                 randconfig-x012-201626
+x86_64                 randconfig-x017-201626
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s1-201626
+i386                     randconfig-s0-201626
+x86_64                 randconfig-s0-06300233
+x86_64                 randconfig-s1-06300233
+x86_64                 randconfig-s2-06300233
+x86_64                 randconfig-s0-06300251
+x86_64                 randconfig-s1-06300251
+x86_64                 randconfig-s2-06300251
+x86_64                 randconfig-s0-06300310
+x86_64                 randconfig-s1-06300310
+x86_64                 randconfig-s2-06300310
+x86_64                 randconfig-s0-06300330
+x86_64                 randconfig-s1-06300330
+x86_64                 randconfig-s2-06300330
+x86_64                 randconfig-s0-06300352
+x86_64                 randconfig-s1-06300352
+x86_64                 randconfig-s2-06300352
+x86_64                 randconfig-s0-06300409
+x86_64                 randconfig-s1-06300409
+x86_64                 randconfig-s2-06300409
+x86_64                 randconfig-s3-06300221
+x86_64                 randconfig-s4-06300221
+x86_64                 randconfig-s5-06300221
+x86_64                 randconfig-s3-06300243
+x86_64                 randconfig-s4-06300243
+x86_64                 randconfig-s5-06300243
+x86_64                 randconfig-s3-06300257
+x86_64                 randconfig-s4-06300257
+x86_64                 randconfig-s5-06300257
+x86_64                 randconfig-s3-06300320
+x86_64                 randconfig-s4-06300320
+x86_64                 randconfig-s5-06300320
+x86_64                 randconfig-s3-06300346
+x86_64                 randconfig-s4-06300346
+x86_64                 randconfig-s5-06300346
+x86_64                 randconfig-s3-06300401
+x86_64                 randconfig-s4-06300401
+x86_64                 randconfig-s5-06300401
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                             allmodconfig
+x86_64                   randconfig-i0-201626
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                     randconfig-i0-201626
+i386                     randconfig-i1-201626
+m32r                              allnoconfig
+microblaze                      mmu_defconfig
+sh                           se7343_defconfig
+x86_64                 randconfig-n0-06300333
+openrisc                         alldefconfig
+powerpc                         c2k_defconfig
+powerpc                 mpc832x_rdb_defconfig
+i386                   randconfig-x017-201626
+i386                   randconfig-x018-201626
+i386                   randconfig-x010-201626
+i386                   randconfig-x013-201626
+i386                   randconfig-x014-201626
+i386                   randconfig-x016-201626
+i386                   randconfig-x011-201626
+i386                   randconfig-x015-201626
+i386                   randconfig-x019-201626
+i386                   randconfig-x012-201626
+x86_64                                    lkp
+x86_64                                   rhel
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201626
+alpha                            alldefconfig
+powerpc                          allyesconfig
+powerpc                     mpc512x_defconfig
+mips                            gpr_defconfig
+powerpc                      pmac32_defconfig
+sparc                            allmodconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-x007-201626
+x86_64                 randconfig-x000-201626
+x86_64                 randconfig-x006-201626
+x86_64                 randconfig-x003-201626
+x86_64                 randconfig-x008-201626
+x86_64                 randconfig-x005-201626
+x86_64                 randconfig-x002-201626
+x86_64                 randconfig-x001-201626
+x86_64                 randconfig-x004-201626
+x86_64                 randconfig-x009-201626
+i386                     randconfig-r0-201626
+x86_64                 randconfig-r0-06300342
+m68k                         apollo_defconfig
+mips                     loongson1b_defconfig
+tile                             alldefconfig
+mips                           ip28_defconfig
+i386                   randconfig-x005-201626
+i386                   randconfig-x008-201626
+i386                   randconfig-x000-201626
+i386                   randconfig-x009-201626
+i386                   randconfig-x007-201626
+i386                   randconfig-x004-201626
+i386                   randconfig-x003-201626
+i386                   randconfig-x001-201626
+i386                   randconfig-x006-201626
+i386                   randconfig-x002-201626
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+i386                   randconfig-x0-06300252
+i386                   randconfig-x0-06300330
+
+Thanks,
+Fengguang
