@@ -1,101 +1,75 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Thu, 30 Jun 2016 11:17:46 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbevf: Correct parameter sent to
-	LED function
-In-Reply-To: <1466197813-17401-1-git-send-email-donald.c.skidmore@intel.com>
-References: <1466197813-17401-1-git-send-email-donald.c.skidmore@intel.com>
-Message-ID: <CAKgT0Ufy4Rqz0yi2cZWAaOik_6pQZiUnWKczV2bm9ba0s=_oLg@mail.gmail.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Thu, 30 Jun 2016 19:51:01 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v5 1/4] igb: add support of
+ RX network flow classification
+In-Reply-To: <20160630161628.GB29670@beef>
+References: <1462786062-7572-1-git-send-email-gangfeng.huang@ni.com>
+ <1462786062-7572-2-git-send-email-gangfeng.huang@ni.com>
+ <309B89C4C689E141A5FF6A0C5FB2118B81EFDB5D@ORSMSX101.amr.corp.intel.com>
+ <20160629191232.GA29990@beef>
+ <309B89C4C689E141A5FF6A0C5FB2118B81F26C2D@ORSMSX101.amr.corp.intel.com>
+ <309B89C4C689E141A5FF6A0C5FB2118B81F27012@ORSMSX101.amr.corp.intel.com>
+ <20160630161628.GB29670@beef>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81F274D9@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Jun 17, 2016 at 2:10 PM, Donald C Skidmore
-<donald.c.skidmore@intel.com> wrote:
-> The second parameter of these functions is the index to the led we
-> are interested in affecting.  However we were mistakingly passing
-> the offset in the register.  This patch corrects that and adds some
-> bonds checking which would hopefully make bugs like this more noticeable
-> in the future.
+
+
+> -----Original Message-----
+> From: 'Matt Porter' [mailto:mporter at konsulko.com]
+> Sent: Thursday, June 30, 2016 9:16 AM
+> To: Brown, Aaron F <aaron.f.brown@intel.com>
+> Cc: 'Gangfeng' <gangfeng.huang@ni.com>; 'intel-wired-lan at lists.osuosl.org'
+> <intel-wired-lan@lists.osuosl.org>; 'Ruhao Gao' <ruhao.gao@ni.com>
+> Subject: Re: [Intel-wired-lan] [PATCH net-next v5 1/4] igb: add support of RX
+> network flow classification
 >
-> Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
+<snip>
+> 
+> Ok, the full oops output made me notice the problem. Can you try the
+> following untested fix on your failing system? It'll apply against
+> patch 1/4 and is build tested against the next-queue dev-queue branch.
+> 
+> -Matt
+> 
+> From 8773d0f09741d7a318cdd96cf5aad2ddb79096e7 Mon Sep 17 00:00:00
+> 2001
+> From: Matt Porter <mporter@konsulko.com>
+> Date: Thu, 30 Jun 2016 11:47:50 -0400
+> Subject: [PATCH] igb: Fix missing lock init in rx network flow classification
+>  support
+> 
+> "[net-next,v5,1/4] igb: add support of RX network flow classification"
+> adds a new nfc_lock to each adapter to protect the rx filter hash list.
+> This lock is not initialized before use which results in intermittent
+> oopses. Initialize this lock during probe to fix the issue.
+> 
+> Signed-off-by: Matt Porter <mporter@konsulko.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_common.c  | 12 ++++++++++++
->  drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |  4 ++--
->  2 files changed, 14 insertions(+), 2 deletions(-)
-
-So the patch description says ixgbevf, but this looks like it is an
-ixgbe patch.  You might want to get the title updated.
-
-- Alex
-
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-> index f8defc7..ce881a7 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-> @@ -763,6 +763,9 @@ s32 ixgbe_led_on_generic(struct ixgbe_hw *hw, u32 index)
->  {
->         u32 led_reg = IXGBE_READ_REG(hw, IXGBE_LEDCTL);
->
-> +       if (index > 3)
-> +               return IXGBE_ERR_PARAM;
-> +
->         /* To turn on the LED, set mode to ON. */
->         led_reg &= ~IXGBE_LED_MODE_MASK(index);
->         led_reg |= IXGBE_LED_ON << IXGBE_LED_MODE_SHIFT(index);
-> @@ -781,6 +784,9 @@ s32 ixgbe_led_off_generic(struct ixgbe_hw *hw, u32 index)
->  {
->         u32 led_reg = IXGBE_READ_REG(hw, IXGBE_LEDCTL);
->
-> +       if (index > 3)
-> +               return IXGBE_ERR_PARAM;
-> +
->         /* To turn off the LED, set mode to OFF. */
->         led_reg &= ~IXGBE_LED_MODE_MASK(index);
->         led_reg |= IXGBE_LED_OFF << IXGBE_LED_MODE_SHIFT(index);
-> @@ -2698,6 +2704,9 @@ s32 ixgbe_blink_led_start_generic(struct ixgbe_hw *hw, u32 index)
->         bool locked = false;
->         s32 ret_val;
->
-> +       if (index > 3)
-> +               return IXGBE_ERR_PARAM;
-> +
->         /*
->          * Link must be up to auto-blink the LEDs;
->          * Force it if link is down.
-> @@ -2741,6 +2750,9 @@ s32 ixgbe_blink_led_stop_generic(struct ixgbe_hw *hw, u32 index)
->         bool locked = false;
->         s32 ret_val;
->
-> +       if (index > 3)
-> +               return IXGBE_ERR_PARAM;
-> +
->         ret_val = hw->mac.ops.prot_autoc_read(hw, &locked, &autoc_reg);
->         if (ret_val)
->                 return ret_val;
-> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-> index 716e643..9547191 100644
-> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
-> @@ -2206,11 +2206,11 @@ static int ixgbe_set_phys_id(struct net_device *netdev,
->                 return 2;
->
->         case ETHTOOL_ID_ON:
-> -               hw->mac.ops.led_on(hw, IXGBE_LED_ON);
-> +               hw->mac.ops.led_on(hw, hw->bus.func);
->                 break;
->
->         case ETHTOOL_ID_OFF:
-> -               hw->mac.ops.led_off(hw, IXGBE_LED_ON);
-> +               hw->mac.ops.led_off(hw, hw->bus.func);
->                 break;
->
->         case ETHTOOL_ID_INACTIVE:
+>  drivers/net/ethernet/intel/igb/igb_main.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c
+> b/drivers/net/ethernet/intel/igb/igb_main.c
+> index c04b1c2..e5a4949 100644
+> --- a/drivers/net/ethernet/intel/igb/igb_main.c
+> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
+> @@ -3075,6 +3075,7 @@ static int igb_sw_init(struct igb_adapter *adapter)
+>  				  VLAN_HLEN;
+>  	adapter->min_frame_size = ETH_ZLEN + ETH_FCS_LEN;
+> 
+> +	spin_lock_init(&adapter->nfc_lock);
+>  	spin_lock_init(&adapter->stats64_lock);
+>  #ifdef CONFIG_PCI_IOV
+>  	switch (hw->mac.type) {
 > --
-> 2.4.3
->
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at lists.osuosl.org
-> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+> 2.7.0
+
+Bingo!  That resolved it.  I can now load and bind (with ifconfig) on all the systems that were previously giving me the splat without seeing anything out of the ordinary.
+
+Thanks,
+Aaron
