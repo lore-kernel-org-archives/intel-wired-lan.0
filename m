@@ -1,188 +1,141 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 01 Jul 2016 09:36:58 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 0da4f12d61ce568be2c082cf3340d39112e35608 BUILD INCOMPLETE
-Message-ID: <5775c93a.rSm8NCJkuRaz2YHu%fengguang.wu@intel.com>
+From: Tushar Dave <tushar.n.dave@oracle.com>
+Date: Fri,  1 Jul 2016 10:11:20 -0700
+Subject: [Intel-wired-lan] [PATCH] i40e: Explicitly write platform-specific
+	mac address after PF reset
+Message-ID: <1467393080-2202-1-git-send-email-tushar.n.dave@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-0da4f12d61ce568be2c082cf3340d39112e35608  i40e: Move the mutex lock in i40e_client_unregister
+i40e PF reset clears mac filters. If platform-specific mac address
+is used, driver has to explicitly write default mac address to mac
+filters otherwise all incoming traffic destined to default mac
+address will be dropped after reset.
 
-TIMEOUT after 603m
+This issue was found on SPARC while toggling i40e ntuple via ethtool.
 
+Signed-off-by: Tushar Dave <tushar.n.dave@oracle.com>
+Acked-by: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 87 ++++++++++++++++-------------
+ 1 file changed, 49 insertions(+), 38 deletions(-)
 
-Sorry we cannot finish the testset for your branch within a reasonable time.
-It's our fault -- either some build server is down or some build worker is busy
-doing bisects for _other_ trees. The branch will get more complete coverage and
-possible error reports when our build infrastructure is restored or catches up.
-There will be no more build success notification for this branch head, but you
-can expect reasonably good test coverage after waiting for 1 day.
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 3449129..b330723 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -2573,6 +2573,44 @@ static int i40e_vlan_rx_kill_vid(struct net_device *netdev,
+ }
+ 
+ /**
++ * i40e_macaddr_init - explicitly write the mac address filters.
++ *
++ * @vsi: pointer to the vsi.
++ * @macaddr: the MAC address
++ *
++ * This is needed when the macaddr has been obtained by other
++ * means than the default, e.g., from Open Firmware or IDPROM.
++ * Returns 0 on success, negative on failure
++ **/
++static int i40e_macaddr_init(struct i40e_vsi *vsi, u8 *macaddr)
++{
++	int ret;
++	struct i40e_aqc_add_macvlan_element_data element;
++
++	ret = i40e_aq_mac_address_write(&vsi->back->hw,
++					I40E_AQC_WRITE_TYPE_LAA_WOL,
++					macaddr, NULL);
++	if (ret) {
++		dev_info(&vsi->back->pdev->dev,
++			 "Addr change for VSI failed: %d\n", ret);
++		return -EADDRNOTAVAIL;
++	}
++
++	memset(&element, 0, sizeof(element));
++	ether_addr_copy(element.mac_addr, macaddr);
++	element.flags = cpu_to_le16(I40E_AQC_MACVLAN_ADD_PERFECT_MATCH);
++	ret = i40e_aq_add_macvlan(&vsi->back->hw, vsi->seid, &element, 1, NULL);
++	if (ret) {
++		dev_info(&vsi->back->pdev->dev,
++			 "add filter failed err %s aq_err %s\n",
++			 i40e_stat_str(&vsi->back->hw, ret),
++			 i40e_aq_str(&vsi->back->hw,
++				     vsi->back->hw.aq.asq_last_status));
++	}
++	return ret;
++}
++
++/**
+  * i40e_restore_vlan - Reinstate vlans when vsi/netdev comes back up
+  * @vsi: the vsi being brought back up
+  **/
+@@ -3058,8 +3096,19 @@ static void i40e_vsi_config_dcb_rings(struct i40e_vsi *vsi)
+  **/
+ static void i40e_set_vsi_rx_mode(struct i40e_vsi *vsi)
+ {
++	struct i40e_pf *pf = vsi->back;
++	int err;
++
+ 	if (vsi->netdev)
+ 		i40e_set_rx_mode(vsi->netdev);
++
++	if (!!(pf->flags & I40E_FLAG_PF_MAC)) {
++		err = i40e_macaddr_init(vsi, pf->hw.mac.addr);
++		if (err) {
++			dev_warn(&pf->pdev->dev,
++				 "could not set up macaddr; err %d\n", err);
++		}
++	}
+ }
+ 
+ /**
+@@ -9719,44 +9768,6 @@ err_vsi:
+ }
+ 
+ /**
+- * i40e_macaddr_init - explicitly write the mac address filters.
+- *
+- * @vsi: pointer to the vsi.
+- * @macaddr: the MAC address
+- *
+- * This is needed when the macaddr has been obtained by other
+- * means than the default, e.g., from Open Firmware or IDPROM.
+- * Returns 0 on success, negative on failure
+- **/
+-static int i40e_macaddr_init(struct i40e_vsi *vsi, u8 *macaddr)
+-{
+-	int ret;
+-	struct i40e_aqc_add_macvlan_element_data element;
+-
+-	ret = i40e_aq_mac_address_write(&vsi->back->hw,
+-					I40E_AQC_WRITE_TYPE_LAA_WOL,
+-					macaddr, NULL);
+-	if (ret) {
+-		dev_info(&vsi->back->pdev->dev,
+-			 "Addr change for VSI failed: %d\n", ret);
+-		return -EADDRNOTAVAIL;
+-	}
+-
+-	memset(&element, 0, sizeof(element));
+-	ether_addr_copy(element.mac_addr, macaddr);
+-	element.flags = cpu_to_le16(I40E_AQC_MACVLAN_ADD_PERFECT_MATCH);
+-	ret = i40e_aq_add_macvlan(&vsi->back->hw, vsi->seid, &element, 1, NULL);
+-	if (ret) {
+-		dev_info(&vsi->back->pdev->dev,
+-			 "add filter failed err %s aq_err %s\n",
+-			 i40e_stat_str(&vsi->back->hw, ret),
+-			 i40e_aq_str(&vsi->back->hw,
+-				     vsi->back->hw.aq.asq_last_status));
+-	}
+-	return ret;
+-}
+-
+-/**
+  * i40e_vsi_setup - Set up a VSI by a given type
+  * @pf: board private structure
+  * @type: VSI type
+-- 
+1.9.1
 
-configs timed out: 52
-
-alpha                            allmodconfig
-alpha                            allyesconfig
-blackfin                         allmodconfig
-blackfin                         allyesconfig
-cris                             allmodconfig
-cris                             allyesconfig
-customconfig                                0
-customconfig                                1
-customconfig                                2
-customconfig                                3
-customconfig                                4
-customconfig                                5
-customconfig                                6
-customconfig                                7
-customconfig                                8
-customconfig                                9
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                          randconfig-x000
-i386                          randconfig-x001
-i386                          randconfig-x002
-i386                          randconfig-x003
-i386                          randconfig-x004
-i386                          randconfig-x005
-i386                          randconfig-x006
-i386                          randconfig-x007
-i386                          randconfig-x008
-i386                          randconfig-x009
-ia64                             allmodconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                             allyesconfig
-mips                             allmodconfig
-mips                             allyesconfig
-parisc                           allmodconfig
-parisc                           allyesconfig
-powerpc                          allmodconfig
-powerpc                          allyesconfig
-s390                             allmodconfig
-s390                             allyesconfig
-sh                               allmodconfig
-sh                               allyesconfig
-sparc64                          allmodconfig
-sparc64                          allyesconfig
-sparc                            allmodconfig
-sparc                            allyesconfig
-tile                             allmodconfig
-tile                             allyesconfig
-x86_64                           allyesconfig
-xtensa                           allmodconfig
-xtensa                           allyesconfig
-
-configs tested: 104
-
-parisc                        c3000_defconfig
-parisc                              defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-i386                     randconfig-a0-201626
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
-powerpc                             defconfig
-s390                        default_defconfig
-powerpc                       ppc64_defconfig
-powerpc                           allnoconfig
-parisc                         b180_defconfig
-cris                 etrax-100lx_v2_defconfig
-blackfin                  TCM-BF537_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin                BF526-EZBRD_defconfig
-x86_64                 randconfig-x019-201626
-x86_64                 randconfig-x018-201626
-x86_64                 randconfig-x014-201626
-x86_64                 randconfig-x013-201626
-x86_64                 randconfig-x015-201626
-x86_64                 randconfig-x010-201626
-x86_64                 randconfig-x016-201626
-x86_64                 randconfig-x011-201626
-x86_64                 randconfig-x012-201626
-x86_64                 randconfig-x017-201626
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-i386                     randconfig-s1-201626
-i386                     randconfig-s0-201626
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-um                           x86_64_defconfig
-um                             i386_defconfig
-avr32                      atngw100_defconfig
-frv                                 defconfig
-avr32                     atstk1006_defconfig
-tile                         tilegx_defconfig
-i386                               tinyconfig
-x86_64                   randconfig-i0-201626
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i0-201626
-i386                     randconfig-i1-201626
-i386                             allyesconfig
-xtensa                       common_defconfig
-m32r                       m32104ut_defconfig
-xtensa                          iss_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-m32r                     mappi3.smp_defconfig
-i386                   randconfig-x017-201626
-i386                   randconfig-x018-201626
-i386                   randconfig-x010-201626
-i386                   randconfig-x013-201626
-i386                   randconfig-x014-201626
-i386                   randconfig-x016-201626
-i386                   randconfig-x011-201626
-i386                   randconfig-x015-201626
-i386                   randconfig-x019-201626
-i386                   randconfig-x012-201626
-x86_64                                    lkp
-x86_64                                   rhel
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201626
-i386                             allmodconfig
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64                           allmodconfig
-x86_64                 randconfig-x007-201626
-x86_64                 randconfig-x000-201626
-x86_64                 randconfig-x006-201626
-x86_64                 randconfig-x003-201626
-x86_64                 randconfig-x008-201626
-x86_64                 randconfig-x005-201626
-x86_64                 randconfig-x002-201626
-x86_64                 randconfig-x001-201626
-x86_64                 randconfig-x004-201626
-x86_64                 randconfig-x009-201626
-i386                     randconfig-r0-201626
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-
-Thanks,
-Fengguang
