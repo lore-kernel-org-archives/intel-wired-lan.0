@@ -1,141 +1,128 @@
-From: Tushar Dave <tushar.n.dave@oracle.com>
-Date: Fri,  1 Jul 2016 10:11:20 -0700
-Subject: [Intel-wired-lan] [PATCH] i40e: Explicitly write platform-specific
-	mac address after PF reset
-Message-ID: <1467393080-2202-1-git-send-email-tushar.n.dave@oracle.com>
+From: Skidmore, Donald C <donald.c.skidmore@intel.com>
+Date: Fri, 1 Jul 2016 22:28:07 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbevf: Correct parameter sent to
+ LED function
+In-Reply-To: <CAKgT0Ufy4Rqz0yi2cZWAaOik_6pQZiUnWKczV2bm9ba0s=_oLg@mail.gmail.com>
+References: <1466197813-17401-1-git-send-email-donald.c.skidmore@intel.com>
+ <CAKgT0Ufy4Rqz0yi2cZWAaOik_6pQZiUnWKczV2bm9ba0s=_oLg@mail.gmail.com>
+Message-ID: <F6FB0E698C9B3143BDF729DF2228664696AC7169@ORSMSX116.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-i40e PF reset clears mac filters. If platform-specific mac address
-is used, driver has to explicitly write default mac address to mac
-filters otherwise all incoming traffic destined to default mac
-address will be dropped after reset.
 
-This issue was found on SPARC while toggling i40e ntuple via ethtool.
 
-Signed-off-by: Tushar Dave <tushar.n.dave@oracle.com>
-Acked-by: Sowmini Varadhan <sowmini.varadhan@oracle.com>
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 87 ++++++++++++++++-------------
- 1 file changed, 49 insertions(+), 38 deletions(-)
+> -----Original Message-----
+> From: Alexander Duyck [mailto:alexander.duyck at gmail.com]
+> Sent: Thursday, June 30, 2016 11:18 AM
+> To: Skidmore, Donald C <donald.c.skidmore@intel.com>
+> Cc: intel-wired-lan <intel-wired-lan@lists.osuosl.org>
+> Subject: Re: [Intel-wired-lan] [PATCH] ixgbevf: Correct parameter sent to LED
+> function
+> 
+> On Fri, Jun 17, 2016 at 2:10 PM, Donald C Skidmore
+> <donald.c.skidmore@intel.com> wrote:
+> > The second parameter of these functions is the index to the led we are
+> > interested in affecting.  However we were mistakingly passing the
+> > offset in the register.  This patch corrects that and adds some bonds
+> > checking which would hopefully make bugs like this more noticeable in
+> > the future.
+> >
+> > Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
+> > ---
+> >  drivers/net/ethernet/intel/ixgbe/ixgbe_common.c  | 12 ++++++++++++
+> > drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |  4 ++--
+> >  2 files changed, 14 insertions(+), 2 deletions(-)
+> 
+> So the patch description says ixgbevf, but this looks like it is an ixgbe patch.
+> You might want to get the title updated.
+> 
+> - Alex
+> 
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 3449129..b330723 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -2573,6 +2573,44 @@ static int i40e_vlan_rx_kill_vid(struct net_device *netdev,
- }
- 
- /**
-+ * i40e_macaddr_init - explicitly write the mac address filters.
-+ *
-+ * @vsi: pointer to the vsi.
-+ * @macaddr: the MAC address
-+ *
-+ * This is needed when the macaddr has been obtained by other
-+ * means than the default, e.g., from Open Firmware or IDPROM.
-+ * Returns 0 on success, negative on failure
-+ **/
-+static int i40e_macaddr_init(struct i40e_vsi *vsi, u8 *macaddr)
-+{
-+	int ret;
-+	struct i40e_aqc_add_macvlan_element_data element;
-+
-+	ret = i40e_aq_mac_address_write(&vsi->back->hw,
-+					I40E_AQC_WRITE_TYPE_LAA_WOL,
-+					macaddr, NULL);
-+	if (ret) {
-+		dev_info(&vsi->back->pdev->dev,
-+			 "Addr change for VSI failed: %d\n", ret);
-+		return -EADDRNOTAVAIL;
-+	}
-+
-+	memset(&element, 0, sizeof(element));
-+	ether_addr_copy(element.mac_addr, macaddr);
-+	element.flags = cpu_to_le16(I40E_AQC_MACVLAN_ADD_PERFECT_MATCH);
-+	ret = i40e_aq_add_macvlan(&vsi->back->hw, vsi->seid, &element, 1, NULL);
-+	if (ret) {
-+		dev_info(&vsi->back->pdev->dev,
-+			 "add filter failed err %s aq_err %s\n",
-+			 i40e_stat_str(&vsi->back->hw, ret),
-+			 i40e_aq_str(&vsi->back->hw,
-+				     vsi->back->hw.aq.asq_last_status));
-+	}
-+	return ret;
-+}
-+
-+/**
-  * i40e_restore_vlan - Reinstate vlans when vsi/netdev comes back up
-  * @vsi: the vsi being brought back up
-  **/
-@@ -3058,8 +3096,19 @@ static void i40e_vsi_config_dcb_rings(struct i40e_vsi *vsi)
-  **/
- static void i40e_set_vsi_rx_mode(struct i40e_vsi *vsi)
- {
-+	struct i40e_pf *pf = vsi->back;
-+	int err;
-+
- 	if (vsi->netdev)
- 		i40e_set_rx_mode(vsi->netdev);
-+
-+	if (!!(pf->flags & I40E_FLAG_PF_MAC)) {
-+		err = i40e_macaddr_init(vsi, pf->hw.mac.addr);
-+		if (err) {
-+			dev_warn(&pf->pdev->dev,
-+				 "could not set up macaddr; err %d\n", err);
-+		}
-+	}
- }
- 
- /**
-@@ -9719,44 +9768,6 @@ err_vsi:
- }
- 
- /**
-- * i40e_macaddr_init - explicitly write the mac address filters.
-- *
-- * @vsi: pointer to the vsi.
-- * @macaddr: the MAC address
-- *
-- * This is needed when the macaddr has been obtained by other
-- * means than the default, e.g., from Open Firmware or IDPROM.
-- * Returns 0 on success, negative on failure
-- **/
--static int i40e_macaddr_init(struct i40e_vsi *vsi, u8 *macaddr)
--{
--	int ret;
--	struct i40e_aqc_add_macvlan_element_data element;
--
--	ret = i40e_aq_mac_address_write(&vsi->back->hw,
--					I40E_AQC_WRITE_TYPE_LAA_WOL,
--					macaddr, NULL);
--	if (ret) {
--		dev_info(&vsi->back->pdev->dev,
--			 "Addr change for VSI failed: %d\n", ret);
--		return -EADDRNOTAVAIL;
--	}
--
--	memset(&element, 0, sizeof(element));
--	ether_addr_copy(element.mac_addr, macaddr);
--	element.flags = cpu_to_le16(I40E_AQC_MACVLAN_ADD_PERFECT_MATCH);
--	ret = i40e_aq_add_macvlan(&vsi->back->hw, vsi->seid, &element, 1, NULL);
--	if (ret) {
--		dev_info(&vsi->back->pdev->dev,
--			 "add filter failed err %s aq_err %s\n",
--			 i40e_stat_str(&vsi->back->hw, ret),
--			 i40e_aq_str(&vsi->back->hw,
--				     vsi->back->hw.aq.asq_last_status));
--	}
--	return ret;
--}
--
--/**
-  * i40e_vsi_setup - Set up a VSI by a given type
-  * @pf: board private structure
-  * @type: VSI type
--- 
-1.9.1
+Thanks for catching this Alex.
 
+Jeff,
+
+Do you want me to send out a new patch or do you just want to change ixgbevf -> ixgbe in the subject?
+
+Thanks,
+-Don
+
+
+> > diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+> > b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+> > index f8defc7..ce881a7 100644
+> > --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+> > +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+> > @@ -763,6 +763,9 @@ s32 ixgbe_led_on_generic(struct ixgbe_hw *hw, u32
+> > index)  {
+> >         u32 led_reg = IXGBE_READ_REG(hw, IXGBE_LEDCTL);
+> >
+> > +       if (index > 3)
+> > +               return IXGBE_ERR_PARAM;
+> > +
+> >         /* To turn on the LED, set mode to ON. */
+> >         led_reg &= ~IXGBE_LED_MODE_MASK(index);
+> >         led_reg |= IXGBE_LED_ON << IXGBE_LED_MODE_SHIFT(index); @@
+> > -781,6 +784,9 @@ s32 ixgbe_led_off_generic(struct ixgbe_hw *hw, u32
+> > index)  {
+> >         u32 led_reg = IXGBE_READ_REG(hw, IXGBE_LEDCTL);
+> >
+> > +       if (index > 3)
+> > +               return IXGBE_ERR_PARAM;
+> > +
+> >         /* To turn off the LED, set mode to OFF. */
+> >         led_reg &= ~IXGBE_LED_MODE_MASK(index);
+> >         led_reg |= IXGBE_LED_OFF << IXGBE_LED_MODE_SHIFT(index); @@
+> > -2698,6 +2704,9 @@ s32 ixgbe_blink_led_start_generic(struct ixgbe_hw
+> *hw, u32 index)
+> >         bool locked = false;
+> >         s32 ret_val;
+> >
+> > +       if (index > 3)
+> > +               return IXGBE_ERR_PARAM;
+> > +
+> >         /*
+> >          * Link must be up to auto-blink the LEDs;
+> >          * Force it if link is down.
+> > @@ -2741,6 +2750,9 @@ s32 ixgbe_blink_led_stop_generic(struct
+> ixgbe_hw *hw, u32 index)
+> >         bool locked = false;
+> >         s32 ret_val;
+> >
+> > +       if (index > 3)
+> > +               return IXGBE_ERR_PARAM;
+> > +
+> >         ret_val = hw->mac.ops.prot_autoc_read(hw, &locked, &autoc_reg);
+> >         if (ret_val)
+> >                 return ret_val;
+> > diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+> > b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+> > index 716e643..9547191 100644
+> > --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+> > +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+> > @@ -2206,11 +2206,11 @@ static int ixgbe_set_phys_id(struct net_device
+> *netdev,
+> >                 return 2;
+> >
+> >         case ETHTOOL_ID_ON:
+> > -               hw->mac.ops.led_on(hw, IXGBE_LED_ON);
+> > +               hw->mac.ops.led_on(hw, hw->bus.func);
+> >                 break;
+> >
+> >         case ETHTOOL_ID_OFF:
+> > -               hw->mac.ops.led_off(hw, IXGBE_LED_ON);
+> > +               hw->mac.ops.led_off(hw, hw->bus.func);
+> >                 break;
+> >
+> >         case ETHTOOL_ID_INACTIVE:
+> > --
+> > 2.4.3
+> >
+> > _______________________________________________
+> > Intel-wired-lan mailing list
+> > Intel-wired-lan at lists.osuosl.org
+> > http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
