@@ -1,7 +1,7 @@
 From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Thu, 07 Jul 2016 17:09:45 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: fix setup_fc for x550em
-Message-ID: <20160708000945.11008.71596.stgit@localhost6.localdomain6>
+Date: Thu, 07 Jul 2016 17:18:38 -0700
+Subject: [Intel-wired-lan] [PATCH v2] ixgbe: fix setup_fc for x550em
+Message-ID: <20160708001838.11232.8898.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,7 +11,9 @@ List-ID: <intel-wired-lan.osuosl.org>
 mac->ops.setup_fc can be null for backplanes which can cause the driver
 to crash on load.
 
-Reported-by: Matt Porter <mporter@konsulko.com>
+v2 - corrected Reported-by
+
+Reported-by: Patrick McLean <patrickm@gaikai.com>
 Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 ---
  drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |    4 ++--
