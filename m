@@ -1,117 +1,35 @@
-From: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
-Date: Mon, 11 Jul 2016 14:22:44 -0300
-Subject: [Intel-wired-lan] [PATCH net] i40e: use valid online CPU on
-	q_vector initialization
-In-Reply-To: <1467040603-23008-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
-References: <1467040603-23008-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
-Message-ID: <5783D5E4.3090902@linux.vnet.ibm.com>
+From: Tantilov, Emil S <emil.s.tantilov@intel.com>
+Date: Mon, 11 Jul 2016 18:41:40 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: always initialize setup_fc
+In-Reply-To: <CAE2NFgXEYU0mJDs638JYzykUSz4PCme6kecXVjWesH=0ySxZVQ@mail.gmail.com>
+References: <CAE2NFgXEYU0mJDs638JYzykUSz4PCme6kecXVjWesH=0ySxZVQ@mail.gmail.com>
+Message-ID: <87618083B2453E4A8714035B62D6799250670DA6@FMSMSX105.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 06/27/2016 12:16 PM, Guilherme G. Piccoli wrote:
-> Currently, the q_vector initialization routine sets the affinity_mask
-> of a q_vector based on v_idx value. Meaning a loop iterates on v_idx,
-> which is an incremental value, and the cpumask is created based on
-> this value.
+>-----Original Message-----
+>From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+>Behalf Of Patrick McLean
+>Sent: Friday, July 01, 2016 6:31 PM
+>To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+>Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
+>Subject: [Intel-wired-lan] [PATCH] ixgbe: always initialize setup_fc
 >
-> This is a problem in systems with multiple logical CPUs per core (like in
-> SMT scenarios). If we disable some logical CPUs, by turning SMT off for
-> example, we will end up with a sparse cpu_online_mask, i.e., only the first
-> CPU in a core is online, and incremental filling in q_vector cpumask might
-> lead to multiple offline CPUs being assigned to q_vectors.
+>In ixgbe_init_mac_link_ops_X550em, the code has a special case for
+>backplane media type, but does not fall through to the default case, so the
+>setup_fc never gets initialized. This causes a panic when it later tries to
+>set up the card, and the kernel dereferences the null pointer.
 >
-> Example: if we have a system with 8 cores each one containing 8 logical
-> CPUs (SMT == 8 in this case), we have 64 CPUs in total. But if SMT is
-> disabled, only the 1st CPU in each core remains online, so the
-> cpu_online_mask in this case would have only 8 bits set, in a sparse way.
->
-> In general case, when SMT is off the cpu_online_mask has only C bits set:
-> 0, 1*N, 2*N, ..., C*(N-1)  where
-> C == # of cores;
-> N == # of logical CPUs per core.
-> In our example, only bits 0, 8, 16, 24, 32, 40, 48, 56 would be set.
->
-> This patch changes the way q_vector's affinity_mask is created: it iterates
-> on v_idx, but consumes the CPU index from the cpu_online_mask instead of
-> just using the v_idx incremental value.
->
-> No functional changes were introduced.
->
-> Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
-> ---
->   drivers/net/ethernet/intel/i40e/i40e_main.c | 16 +++++++++++-----
->   1 file changed, 11 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index 5ea2200..a89bddd 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -7726,10 +7726,11 @@ static int i40e_init_msix(struct i40e_pf *pf)
->    * i40e_vsi_alloc_q_vector - Allocate memory for a single interrupt vector
->    * @vsi: the VSI being configured
->    * @v_idx: index of the vector in the vsi struct
-> + * @cpu: cpu to be used on affinity_mask
->    *
->    * We allocate one q_vector.  If allocation fails we return -ENOMEM.
->    **/
-> -static int i40e_vsi_alloc_q_vector(struct i40e_vsi *vsi, int v_idx)
-> +static int i40e_vsi_alloc_q_vector(struct i40e_vsi *vsi, int v_idx, int cpu)
->   {
->   	struct i40e_q_vector *q_vector;
->
-> @@ -7740,7 +7741,8 @@ static int i40e_vsi_alloc_q_vector(struct i40e_vsi *vsi, int v_idx)
->
->   	q_vector->vsi = vsi;
->   	q_vector->v_idx = v_idx;
-> -	cpumask_set_cpu(v_idx, &q_vector->affinity_mask);
-> +	cpumask_set_cpu(cpu, &q_vector->affinity_mask);
-> +
->   	if (vsi->netdev)
->   		netif_napi_add(vsi->netdev, &q_vector->napi,
->   			       i40e_napi_poll, NAPI_POLL_WEIGHT);
-> @@ -7764,8 +7766,7 @@ static int i40e_vsi_alloc_q_vector(struct i40e_vsi *vsi, int v_idx)
->   static int i40e_vsi_alloc_q_vectors(struct i40e_vsi *vsi)
->   {
->   	struct i40e_pf *pf = vsi->back;
-> -	int v_idx, num_q_vectors;
-> -	int err;
-> +	int err, v_idx, num_q_vectors, current_cpu;
->
->   	/* if not MSIX, give the one vector only to the LAN VSI */
->   	if (pf->flags & I40E_FLAG_MSIX_ENABLED)
-> @@ -7775,10 +7776,15 @@ static int i40e_vsi_alloc_q_vectors(struct i40e_vsi *vsi)
->   	else
->   		return -EINVAL;
->
-> +	current_cpu = cpumask_first(cpu_online_mask);
-> +
->   	for (v_idx = 0; v_idx < num_q_vectors; v_idx++) {
-> -		err = i40e_vsi_alloc_q_vector(vsi, v_idx);
-> +		err = i40e_vsi_alloc_q_vector(vsi, v_idx, current_cpu);
->   		if (err)
->   			goto err_out;
-> +		current_cpu = cpumask_next(current_cpu, cpu_online_mask);
-> +		if (unlikely(current_cpu >= nr_cpu_ids))
-> +			current_cpu = cpumask_first(cpu_online_mask);
->   	}
->
->   	return 0;
->
+>This patch lets the the function fall through, which initialized setup_fc
+>properly.
 
+Why are you resending this patch? I have already submitted a patch to handle this properly:
+http://patchwork.ozlabs.org/patch/646228/
 
-Ping?
-
-Sorry to bother, if you think I need to improve something here, let me 
-know :)
-
-I'm adding another Intel people in this thread, based on patches to i40e.
-
-Thanks in advance,
-
-
-
-Guilherme
+Thanks,
+Emil 
+ 
 
