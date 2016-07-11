@@ -1,10 +1,11 @@
 From: Singh, Krishneil K <krishneil.k.singh@intel.com>
-Date: Mon, 11 Jul 2016 19:21:25 +0000
-Subject: [Intel-wired-lan] [PATCH] net: ethernet: intel: fm10k:
-	Remove	create_workqueue
-In-Reply-To: <20160601154009.GA31043@Karyakshetra>
-References: <20160601154009.GA31043@Karyakshetra>
-Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E273A1832@ORSMSX103.amr.corp.intel.com>
+Date: Mon, 11 Jul 2016 19:23:22 +0000
+Subject: [Intel-wired-lan] [PATCH v1 01/18] fm10k: no need to continue
+ in	fm10k_down if __FM10K_DOWN already set
+In-Reply-To: <20160603224228.10192-2-jacob.e.keller@intel.com>
+References: <20160603224228.10192-1-jacob.e.keller@intel.com>
+ <20160603224228.10192-2-jacob.e.keller@intel.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E273A184E@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,25 +13,16 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 
+
 -----Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Bhaktipriya Shridhar
-Sent: Wednesday, June 1, 2016 8:40 AM
-To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-Cc: Tejun Heo <tj@kernel.org>; netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; linux-kernel at vger.kernel.org
-Subject: [Intel-wired-lan] [PATCH] net: ethernet: intel: fm10k: Remove create_workqueue
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Jacob Keller
+Sent: Friday, June 3, 2016 3:42 PM
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Subject: [Intel-wired-lan] [PATCH v1 01/18] fm10k: no need to continue in fm10k_down if __FM10K_DOWN already set
 
-alloc_workqueue replaces deprecated create_workqueue().
+Return early from fm10k_down() when we are already down, since that means another thread is either already finished or has started going down, so shouldn't conflict with them.
 
-A dedicated workqueue has been used since the workitem (viz fm10k_service_task, which manages and runs other subtasks) is involved in normal device operation and requires forward progress under memory pressure.
-
-create_workqueue has been replaced with alloc_workqueue with max_active as 0 since there is no need for throttling the number of active work items.
-
-Since network devices may be used in memory reclaim path, WQ_MEM_RECLAIM has been set to guarantee forward progress.
-
-flush_workqueue is unnecessary since destroy_workqueue() itself calls
-drain_workqueue() which flushes repeatedly till the workqueue becomes empty. Hence the call to flush_workqueue() has been dropped.
-
-Signed-off-by: Bhaktipriya Shridhar <bhaktipriya96@gmail.com>
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
 ---
 
 Tested-by: Krishneil Singh <Krishneil.k.singh@intel.com>
