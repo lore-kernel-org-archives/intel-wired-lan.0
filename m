@@ -1,37 +1,50 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 12 Jul 2016 04:39:27 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- aa1fdf1305ad332396a284f6cd96c64e26b582f2 BUILD SUCCESS
-Message-ID: <578403ff.gGAkyMwdbfhvyncE%fengguang.wu@intel.com>
+Date: Tue, 12 Jul 2016 04:39:23 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ 382d99052165dfc700d7a4e2f163c4dbafc02be2 BUILD SUCCESS
+Message-ID: <578403fb.SxtbKHngbyNjJMIf%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-aa1fdf1305ad332396a284f6cd96c64e26b582f2  fm10k: print error code when pci_enable_device_mem fails during probe
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+382d99052165dfc700d7a4e2f163c4dbafc02be2  ixgbe: fix setup_fc for x550em
 
-elapsed time: 41m
+elapsed time: 59m
 
 The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 87
+configs tested: 107
 
-i386                     randconfig-a0-201628
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
 alpha                               defconfig
 parisc                            allnoconfig
-parisc                         b180_defconfig
 parisc                        c3000_defconfig
 parisc                              defconfig
+i386                     randconfig-a0-201628
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
 blackfin                BF526-EZBRD_defconfig
 blackfin                BF533-EZKIT_defconfig
 blackfin            BF561-EZKIT-SMP_defconfig
 blackfin                  TCM-BF537_defconfig
 cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+parisc                         b180_defconfig
 x86_64                 randconfig-x018-201628
 x86_64                 randconfig-x019-201628
 x86_64                 randconfig-x010-201628
@@ -45,6 +58,9 @@ x86_64                 randconfig-x012-201628
 i386                             alldefconfig
 i386                              allnoconfig
 i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
 i386                     randconfig-s0-201628
 i386                     randconfig-s1-201628
 avr32                      atngw100_defconfig
@@ -55,23 +71,17 @@ openrisc                    or1ksim_defconfig
 tile                         tilegx_defconfig
 um                             i386_defconfig
 um                           x86_64_defconfig
+i386                               tinyconfig
 mips                              allnoconfig
 mips                      fuloong2e_defconfig
 mips                                   jz4740
 mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
 x86_64                   randconfig-i0-201628
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
 i386                     randconfig-i0-201628
 i386                     randconfig-i1-201628
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
 i386                   randconfig-x010-201628
 i386                   randconfig-x011-201628
 i386                   randconfig-x012-201628
@@ -93,17 +103,27 @@ i386                   randconfig-h1-07120237
 ia64                             alldefconfig
 ia64                              allnoconfig
 ia64                                defconfig
-x86_64                 randconfig-x000-201628
-x86_64                 randconfig-x001-201628
-x86_64                 randconfig-x002-201628
 x86_64                 randconfig-x003-201628
-x86_64                 randconfig-x004-201628
-x86_64                 randconfig-x005-201628
 x86_64                 randconfig-x006-201628
+x86_64                 randconfig-x000-201628
 x86_64                 randconfig-x007-201628
+x86_64                 randconfig-x005-201628
 x86_64                 randconfig-x008-201628
+x86_64                 randconfig-x004-201628
+x86_64                 randconfig-x002-201628
+x86_64                 randconfig-x001-201628
 x86_64                 randconfig-x009-201628
 i386                     randconfig-r0-201628
+i386                   randconfig-x000-201628
+i386                   randconfig-x001-201628
+i386                   randconfig-x002-201628
+i386                   randconfig-x003-201628
+i386                   randconfig-x004-201628
+i386                   randconfig-x005-201628
+i386                   randconfig-x006-201628
+i386                   randconfig-x007-201628
+i386                   randconfig-x008-201628
+i386                   randconfig-x009-201628
 
 Thanks,
 Fengguang
