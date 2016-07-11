@@ -1,21 +1,21 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 12 Jul 2016 04:31:53 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:master]
- 7d32eb8781a0eccf8ab7bf33877014c7637ad271 BUILD SUCCESS
-Message-ID: <57840239.5W65qj36obBhanpw%fengguang.wu@intel.com>
+Date: Tue, 12 Jul 2016 04:34:12 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 1aa5e1ee05a5be1c120daf8bedeb30d654df659b BUILD SUCCESS
+Message-ID: <578402c4.F9/PcSfgqfci9DGT%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
-7d32eb8781a0eccf8ab7bf33877014c7637ad271  Merge tag 'batadv-net-for-davem-20160708' of git://git.open-mesh.org/linux-merge
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+1aa5e1ee05a5be1c120daf8bedeb30d654df659b  ixgbe: fix setup_fc for x550em
 
-elapsed time: 60m
+elapsed time: 69m
 
 The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 116
+configs tested: 117
 
 alpha                               defconfig
 parisc                            allnoconfig
@@ -30,6 +30,13 @@ blackfin                BF533-EZKIT_defconfig
 blackfin            BF561-EZKIT-SMP_defconfig
 blackfin                  TCM-BF537_defconfig
 cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
 parisc                         b180_defconfig
 x86_64                 randconfig-x018-201628
 x86_64                 randconfig-x019-201628
@@ -73,12 +80,6 @@ sparc64                             defconfig
 i386                     randconfig-i0-201628
 i386                     randconfig-i1-201628
 x86_64                           allmodconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
 i386                   randconfig-x018-201628
 i386                   randconfig-x017-201628
 i386                   randconfig-x016-201628
