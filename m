@@ -1,152 +1,193 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 12 Jul 2016 14:27:41 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- fcf72b82d5e5a142b0bc8d0cf156f27463137492 BUILD SUCCESS
-Message-ID: <57848ddd.HriVDIyyfAzSPzB1%fengguang.wu@intel.com>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Tue, 12 Jul 2016 08:10:43 -0700
+Subject: [Intel-wired-lan] [PATCH 1/2] ixgbevf: Add range checking for
+	setting MTU
+Message-ID: <1468336244-24963-1-git-send-email-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-fcf72b82d5e5a142b0bc8d0cf156f27463137492  i40e: Move the mutex lock in i40e_client_unregister
+Currently when setting the VF's MTU, the PF can return a NACK but this
+isn't passed on to the VF.  Propagate the results from the PF to the VF
+so errors can be reported.
 
-elapsed time: 669m
+In ixgbevf_change_mtu, return an error and reject the change.
 
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 130
+For ixgbevf_configure_rx, log the error for debugging purposes since
+the function is buried in a series of Rx config routines that are void.
 
-i386                     randconfig-a0-201628
-x86_64                 randconfig-a0-07120510
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-07120508
-i386                   randconfig-c0-07121351
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm                      pxa255-idp_defconfig
-m32r                     mappi3.smp_defconfig
-microblaze                          defconfig
-mips                  cavium_octeon_defconfig
-sh                        sh7763rdp_defconfig
-arm                     am200epdkit_defconfig
-arm                            netx_defconfig
-blackfin                BF548-EZKIT_defconfig
-mips                             alldefconfig
-x86_64                 randconfig-x018-201628
-x86_64                 randconfig-x019-201628
-x86_64                 randconfig-x010-201628
-x86_64                 randconfig-x015-201628
-x86_64                 randconfig-x013-201628
-x86_64                 randconfig-x014-201628
-x86_64                 randconfig-x016-201628
-x86_64                 randconfig-x017-201628
-x86_64                 randconfig-x011-201628
-x86_64                 randconfig-x012-201628
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201628
-i386                     randconfig-s1-201628
-x86_64                 randconfig-s0-07120505
-x86_64                 randconfig-s1-07120505
-x86_64                 randconfig-s2-07120505
-x86_64                 randconfig-s0-07121406
-x86_64                 randconfig-s1-07121406
-x86_64                 randconfig-s2-07121406
-x86_64                 randconfig-s3-07120501
-x86_64                 randconfig-s4-07120501
-x86_64                 randconfig-s5-07120501
-x86_64                 randconfig-s3-07121357
-x86_64                 randconfig-s4-07121357
-x86_64                 randconfig-s5-07121357
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201628
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201628
-i386                     randconfig-i1-201628
-m32r                       m32104ut_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                   randconfig-x018-201628
-i386                   randconfig-x017-201628
-i386                   randconfig-x016-201628
-i386                   randconfig-x011-201628
-i386                   randconfig-x014-201628
-i386                   randconfig-x010-201628
-i386                   randconfig-x013-201628
-i386                   randconfig-x019-201628
-i386                   randconfig-x015-201628
-i386                   randconfig-x012-201628
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201628
-i386                             allmodconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                  randconfig-sb0-07120538
-x86_64                           allmodconfig
-x86_64                 randconfig-x000-201628
-x86_64                 randconfig-x001-201628
-x86_64                 randconfig-x002-201628
-x86_64                 randconfig-x003-201628
-x86_64                 randconfig-x004-201628
-x86_64                 randconfig-x005-201628
-x86_64                 randconfig-x006-201628
-x86_64                 randconfig-x007-201628
-x86_64                 randconfig-x008-201628
-x86_64                 randconfig-x009-201628
-i386                     randconfig-r0-201628
-x86_64                 randconfig-r0-07120513
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 19 ++++++----
+ drivers/net/ethernet/intel/ixgbevf/vf.c           | 42 +++++++++++++++--------
+ drivers/net/ethernet/intel/ixgbevf/vf.h           |  2 +-
+ 3 files changed, 41 insertions(+), 22 deletions(-)
 
-Thanks,
-Fengguang
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index 1bffac3..283ffd5 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -1802,16 +1802,19 @@ static void ixgbevf_configure_rx_ring(struct ixgbevf_adapter *adapter,
+  **/
+ static void ixgbevf_configure_rx(struct ixgbevf_adapter *adapter)
+ {
+-	int i;
+ 	struct ixgbe_hw *hw = &adapter->hw;
+ 	struct net_device *netdev = adapter->netdev;
++	int i, ret;
+ 
+ 	ixgbevf_setup_psrtype(adapter);
+ 	if (hw->mac.type >= ixgbe_mac_X550_vf)
+ 		ixgbevf_setup_vfmrqc(adapter);
+ 
+ 	/* notify the PF of our intent to use this size of frame */
+-	hw->mac.ops.set_rlpml(hw, netdev->mtu + ETH_HLEN + ETH_FCS_LEN);
++	ret = hw->mac.ops.set_rlpml(hw, netdev->mtu + ETH_HLEN + ETH_FCS_LEN);
++	if (ret)
++		dev_err(&adapter->pdev->dev,
++			"Failed to set MTU at %d\n", netdev->mtu);
+ 
+ 	/* Setup the HW Rx Head and Tail Descriptor Pointers and
+ 	 * the Base and Length of the Rx Descriptor Ring
+@@ -3734,6 +3737,7 @@ static int ixgbevf_change_mtu(struct net_device *netdev, int new_mtu)
+ 	struct ixgbe_hw *hw = &adapter->hw;
+ 	int max_frame = new_mtu + ETH_HLEN + ETH_FCS_LEN;
+ 	int max_possible_frame = MAXIMUM_ETHERNET_VLAN_SIZE;
++	int ret;
+ 
+ 	switch (adapter->hw.api_version) {
+ 	case ixgbe_mbox_api_11:
+@@ -3750,14 +3754,17 @@ static int ixgbevf_change_mtu(struct net_device *netdev, int new_mtu)
+ 	if ((new_mtu < 68) || (max_frame > max_possible_frame))
+ 		return -EINVAL;
+ 
++	/* notify the PF of our intent to use this size of frame */
++	ret = hw->mac.ops.set_rlpml(hw, max_frame);
++	if (ret)
++		return -EINVAL;
++
+ 	hw_dbg(hw, "changing MTU from %d to %d\n",
+-	       netdev->mtu, new_mtu);
++	       netdev->mtu, new_ntu);
++
+ 	/* must set new MTU before calling down or up */
+ 	netdev->mtu = new_mtu;
+ 
+-	/* notify the PF of our intent to use this size of frame */
+-	hw->mac.ops.set_rlpml(hw, max_frame);
+-
+ 	return 0;
+ }
+ 
+diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.c b/drivers/net/ethernet/intel/ixgbevf/vf.c
+index cb409b3..4862bc2 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/vf.c
++++ b/drivers/net/ethernet/intel/ixgbevf/vf.c
+@@ -33,6 +33,18 @@
+  */
+ #define IXGBE_HV_RESET_OFFSET           0x201
+ 
++static inline s32 ixgbevf_write_msg_read_ack(struct ixgbe_hw *hw, u32 *msg,
++					     u32 *retmsg, u16 size)
++{
++	struct ixgbe_mbx_info *mbx = &hw->mbx;
++	s32 retval = mbx->ops.write_posted(hw, msg, size);
++
++	if (retval)
++		return retval;
++
++	return mbx->ops.read_posted(hw, retmsg, size);
++}
++
+ /**
+  *  ixgbevf_start_hw_vf - Prepare hardware for Tx/Rx
+  *  @hw: pointer to hardware structure
+@@ -470,17 +482,6 @@ static s32 ixgbevf_hv_set_rar_vf(struct ixgbe_hw *hw, u32 index, u8 *addr,
+ 	return -EOPNOTSUPP;
+ }
+ 
+-static void ixgbevf_write_msg_read_ack(struct ixgbe_hw *hw,
+-				       u32 *msg, u16 size)
+-{
+-	struct ixgbe_mbx_info *mbx = &hw->mbx;
+-	u32 retmsg[IXGBE_VFMAILBOX_SIZE];
+-	s32 retval = mbx->ops.write_posted(hw, msg, size);
+-
+-	if (!retval)
+-		mbx->ops.read_posted(hw, retmsg, size);
+-}
+-
+ /**
+  *  ixgbevf_update_mc_addr_list_vf - Update Multicast addresses
+  *  @hw: pointer to the HW structure
+@@ -521,7 +522,7 @@ static s32 ixgbevf_update_mc_addr_list_vf(struct ixgbe_hw *hw,
+ 		vector_list[i++] = ixgbevf_mta_vector(hw, ha->addr);
+ 	}
+ 
+-	ixgbevf_write_msg_read_ack(hw, msgbuf, IXGBE_VFMAILBOX_SIZE);
++	ixgbevf_write_msg_read_ack(hw, msgbuf, msgbuf, IXGBE_VFMAILBOX_SIZE);
+ 
+ 	return 0;
+ }
+@@ -799,13 +800,22 @@ out:
+  *  @hw: pointer to the HW structure
+  *  @max_size: value to assign to max frame size
+  **/
+-static void ixgbevf_set_rlpml_vf(struct ixgbe_hw *hw, u16 max_size)
++static s32 ixgbevf_set_rlpml_vf(struct ixgbe_hw *hw, u16 max_size)
+ {
+ 	u32 msgbuf[2];
++	s32 ret_val;
+ 
+ 	msgbuf[0] = IXGBE_VF_SET_LPE;
+ 	msgbuf[1] = max_size;
+-	ixgbevf_write_msg_read_ack(hw, msgbuf, 2);
++
++	ret_val = ixgbevf_write_msg_read_ack(hw, msgbuf, msgbuf, 2);
++	if (ret_val)
++		return ret_val;
++	if ((msgbuf[0] & IXGBE_VF_SET_LPE) &&
++	    (msgbuf[0] & IXGBE_VT_MSGTYPE_NACK))
++		return IXGBE_ERR_MBX;
++
++	return 0;
+ }
+ 
+ /**
+@@ -814,7 +824,7 @@ static void ixgbevf_set_rlpml_vf(struct ixgbe_hw *hw, u16 max_size)
+  * @max_size: value to assign to max frame size
+  * Hyper-V variant.
+  **/
+-static void ixgbevf_hv_set_rlpml_vf(struct ixgbe_hw *hw, u16 max_size)
++static s32 ixgbevf_hv_set_rlpml_vf(struct ixgbe_hw *hw, u16 max_size)
+ {
+ 	u32 reg;
+ 
+@@ -825,6 +835,8 @@ static void ixgbevf_hv_set_rlpml_vf(struct ixgbe_hw *hw, u16 max_size)
+ 	/* CRC == 4 */
+ 	reg |= ((max_size + 4) | IXGBE_RXDCTL_RLPML_EN);
+ 	IXGBE_WRITE_REG(hw, IXGBE_VFRXDCTL(0), reg);
++
++	return 0;
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.h b/drivers/net/ethernet/intel/ixgbevf/vf.h
+index e3a0dea..04d8d4e 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/vf.h
++++ b/drivers/net/ethernet/intel/ixgbevf/vf.h
+@@ -69,7 +69,7 @@ struct ixgbe_mac_operations {
+ 	s32 (*disable_mc)(struct ixgbe_hw *);
+ 	s32 (*clear_vfta)(struct ixgbe_hw *);
+ 	s32 (*set_vfta)(struct ixgbe_hw *, u32, u32, bool);
+-	void (*set_rlpml)(struct ixgbe_hw *, u16);
++	s32 (*set_rlpml)(struct ixgbe_hw *, u16);
+ };
+ 
+ enum ixgbe_mac_type {
+-- 
+2.4.0
+
