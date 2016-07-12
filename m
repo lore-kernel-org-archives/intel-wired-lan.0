@@ -1,43 +1,34 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 12 Jul 2016 17:49:20 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: Remove redundant memset
-In-Reply-To: <20160623050055.GA15082@amitoj-Inspiron-3542>
-References: <20160623050055.GA15082@amitoj-Inspiron-3542>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9EA3B9@ORSMSX104.amr.corp.intel.com>
+From: Donald C Skidmore <donald.c.skidmore@intel.com>
+Date: Tue, 12 Jul 2016 18:47:38 -0400
+Subject: [Intel-wired-lan] [PATCH] ixgbevf: Protect ixgbevf_reset_subtask
+	from remove event
+Message-ID: <1468363658-29163-1-git-send-email-donald.c.skidmore@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Amitoj Kaur Chawla
-> Sent: Wednesday, June 22, 2016 10:01 PM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; Brandeburg, Jesse
-> <jesse.brandeburg@intel.com>; Nelson, Shannon
-> <shannon.nelson@intel.com>; Wyborny, Carolyn
-> <carolyn.wyborny@intel.com>; Skidmore, Donald C
-> <donald.c.skidmore@intel.com>; Allan, Bruce W <bruce.w.allan@intel.com>;
-> Ronciak, John <john.ronciak@intel.com>; Williams, Mitch A
-> <mitch.a.williams@intel.com>; intel-wired-lan at lists.osuosl.org;
-> netdev at vger.kernel.org; linux-kernel at vger.kernel.org
-> Cc: julia.lawall at lip6.fr
-> Subject: [Intel-wired-lan] [PATCH] i40e: Remove redundant memset
-> 
-> Remove redundant call to memset before a call to memcpy.
-> 
-> The Coccinelle semantic patch used to make this change is as follows:
-> @@
-> expression e1,e2,e3,e4;
-> @@
-> 
-> - memset(e1,e2,e3);
->   memcpy(e1,e4,e3);
-> 
-> Signed-off-by: Amitoj Kaur Chawla <amitoj1606@gmail.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 1 -
->  1 file changed, 1 deletion(-)
+In ixgbevf_reset_subtask We weren't verifying that the port haven't
+been removed, we are with this patch.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index 1bffac3..fe0661f 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -2774,6 +2774,7 @@ static void ixgbevf_reset_subtask(struct ixgbevf_adapter *adapter)
+ 
+ 	/* If we're already down or resetting, just bail */
+ 	if (test_bit(__IXGBEVF_DOWN, &adapter->state) ||
++	    test_bit(__IXGBEVF_REMOVING, &adapter->state) ||
+ 	    test_bit(__IXGBEVF_RESETTING, &adapter->state))
+ 		return;
+ 
+-- 
+2.4.3
+
