@@ -1,137 +1,37 @@
-From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Tue, 12 Jul 2016 08:10:44 -0700
-Subject: [Intel-wired-lan] [PATCH 2/2] ixgbevf: Commonize mailbox write/read
-In-Reply-To: <1468336244-24963-1-git-send-email-anthony.l.nguyen@intel.com>
-References: <1468336244-24963-1-git-send-email-anthony.l.nguyen@intel.com>
-Message-ID: <1468336244-24963-2-git-send-email-anthony.l.nguyen@intel.com>
+From: weiyj_lk@163.com <weiyj_lk@163.com>
+Date: Tue, 12 Jul 2016 15:17:02 +0000
+Subject: [Intel-wired-lan] [PATCH -next] ixgbe: Add missing
+	destroy_workqueue() on error in ixgbe_init_module()
+Message-ID: <1468336622-10538-1-git-send-email-weiyj_lk@163.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-With changes to ixgbevf_write_msg_read_ack(), other functions are
-performing the same operations done here; change those functions to
-utilize ixgbevf_write_msg_read_ack().
+From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Add the missing destroy_workqueue() before return from
+ixgbe_init_module() in the error handling case.
+
+Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 ---
- drivers/net/ethernet/intel/ixgbevf/vf.c | 35 ++++++---------------------------
- 1 file changed, 6 insertions(+), 29 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.c b/drivers/net/ethernet/intel/ixgbevf/vf.c
-index 4862bc2..a52f70e 100644
---- a/drivers/net/ethernet/intel/ixgbevf/vf.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/vf.c
-@@ -267,7 +267,6 @@ static s32 ixgbevf_get_mac_addr_vf(struct ixgbe_hw *hw, u8 *mac_addr)
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index ef82cf9..c5c3d68 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -10109,6 +10109,7 @@ static int __init ixgbe_init_module(void)
  
- static s32 ixgbevf_set_uc_addr_vf(struct ixgbe_hw *hw, u32 index, u8 *addr)
- {
--	struct ixgbe_mbx_info *mbx = &hw->mbx;
- 	u32 msgbuf[3], msgbuf_chk;
- 	u8 *msg_addr = (u8 *)(&msgbuf[1]);
- 	s32 ret_val;
-@@ -284,11 +283,8 @@ static s32 ixgbevf_set_uc_addr_vf(struct ixgbe_hw *hw, u32 index, u8 *addr)
- 
- 	if (addr)
- 		ether_addr_copy(msg_addr, addr);
--	ret_val = mbx->ops.write_posted(hw, msgbuf, 3);
--
--	if (!ret_val)
--		ret_val = mbx->ops.read_posted(hw, msgbuf, 3);
- 
-+	ret_val = ixgbevf_write_msg_read_ack(hw, msgbuf, msgbuf, 3);
- 	if (!ret_val) {
- 		msgbuf[0] &= ~IXGBE_VT_MSGTYPE_CTS;
- 
-@@ -437,7 +433,6 @@ int ixgbevf_get_rss_key_locked(struct ixgbe_hw *hw, u8 *rss_key)
- static s32 ixgbevf_set_rar_vf(struct ixgbe_hw *hw, u32 index, u8 *addr,
- 			      u32 vmdq)
- {
--	struct ixgbe_mbx_info *mbx = &hw->mbx;
- 	u32 msgbuf[3];
- 	u8 *msg_addr = (u8 *)(&msgbuf[1]);
- 	s32 ret_val;
-@@ -445,10 +440,8 @@ static s32 ixgbevf_set_rar_vf(struct ixgbe_hw *hw, u32 index, u8 *addr,
- 	memset(msgbuf, 0, sizeof(msgbuf));
- 	msgbuf[0] = IXGBE_VF_SET_MAC_ADDR;
- 	ether_addr_copy(msg_addr, addr);
--	ret_val = mbx->ops.write_posted(hw, msgbuf, 3);
- 
--	if (!ret_val)
--		ret_val = mbx->ops.read_posted(hw, msgbuf, 3);
-+	ret_val = ixgbevf_write_msg_read_ack(hw, msgbuf, msgbuf, 2);
- 
- 	msgbuf[0] &= ~IXGBE_VT_MSGTYPE_CTS;
- 
-@@ -545,7 +538,6 @@ static s32 ixgbevf_hv_update_mc_addr_list_vf(struct ixgbe_hw *hw,
-  **/
- static s32 ixgbevf_update_xcast_mode(struct ixgbe_hw *hw, int xcast_mode)
- {
--	struct ixgbe_mbx_info *mbx = &hw->mbx;
- 	u32 msgbuf[2];
- 	s32 err;
- 
-@@ -559,11 +551,7 @@ static s32 ixgbevf_update_xcast_mode(struct ixgbe_hw *hw, int xcast_mode)
- 	msgbuf[0] = IXGBE_VF_UPDATE_XCAST_MODE;
- 	msgbuf[1] = xcast_mode;
- 
--	err = mbx->ops.write_posted(hw, msgbuf, 2);
--	if (err)
--		return err;
--
--	err = mbx->ops.read_posted(hw, msgbuf, 2);
-+	err = ixgbevf_write_msg_read_ack(hw, msgbuf, msgbuf, 2);
- 	if (err)
- 		return err;
- 
-@@ -592,7 +580,6 @@ static s32 ixgbevf_hv_update_xcast_mode(struct ixgbe_hw *hw, int xcast_mode)
- static s32 ixgbevf_set_vfta_vf(struct ixgbe_hw *hw, u32 vlan, u32 vind,
- 			       bool vlan_on)
- {
--	struct ixgbe_mbx_info *mbx = &hw->mbx;
- 	u32 msgbuf[2];
- 	s32 err;
- 
-@@ -601,11 +588,7 @@ static s32 ixgbevf_set_vfta_vf(struct ixgbe_hw *hw, u32 vlan, u32 vind,
- 	/* Setting the 8 bit field MSG INFO to TRUE indicates "add" */
- 	msgbuf[0] |= vlan_on << IXGBE_VT_MSGINFO_SHIFT;
- 
--	err = mbx->ops.write_posted(hw, msgbuf, 2);
--	if (err)
--		goto mbx_err;
--
--	err = mbx->ops.read_posted(hw, msgbuf, 2);
-+	err = ixgbevf_write_msg_read_ack(hw, msgbuf, msgbuf, 2);
- 	if (err)
- 		goto mbx_err;
- 
-@@ -853,11 +836,8 @@ static int ixgbevf_negotiate_api_version_vf(struct ixgbe_hw *hw, int api)
- 	msg[0] = IXGBE_VF_API_NEGOTIATE;
- 	msg[1] = api;
- 	msg[2] = 0;
--	err = hw->mbx.ops.write_posted(hw, msg, 3);
--
--	if (!err)
--		err = hw->mbx.ops.read_posted(hw, msg, 3);
- 
-+	err = ixgbevf_write_msg_read_ack(hw, msg, msg, 3);
- 	if (!err) {
- 		msg[0] &= ~IXGBE_VT_MSGTYPE_CTS;
- 
-@@ -906,11 +886,8 @@ int ixgbevf_get_queues(struct ixgbe_hw *hw, unsigned int *num_tcs,
- 	/* Fetch queue configuration from the PF */
- 	msg[0] = IXGBE_VF_GET_QUEUE;
- 	msg[1] = msg[2] = msg[3] = msg[4] = 0;
--	err = hw->mbx.ops.write_posted(hw, msg, 5);
--
--	if (!err)
--		err = hw->mbx.ops.read_posted(hw, msg, 5);
- 
-+	err = ixgbevf_write_msg_read_ack(hw, msg, msg, 5);
- 	if (!err) {
- 		msg[0] &= ~IXGBE_VT_MSGTYPE_CTS;
- 
--- 
-2.4.0
+ 	ret = pci_register_driver(&ixgbe_driver);
+ 	if (ret) {
++		destroy_workqueue(ixgbe_wq);
+ 		ixgbe_dbg_exit();
+ 		return ret;
+ 	}
+
+
+
 
