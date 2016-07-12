@@ -1,193 +1,137 @@
 From: Tony Nguyen <anthony.l.nguyen@intel.com>
-Date: Tue, 12 Jul 2016 08:10:43 -0700
-Subject: [Intel-wired-lan] [PATCH 1/2] ixgbevf: Add range checking for
-	setting MTU
-Message-ID: <1468336244-24963-1-git-send-email-anthony.l.nguyen@intel.com>
+Date: Tue, 12 Jul 2016 08:10:44 -0700
+Subject: [Intel-wired-lan] [PATCH 2/2] ixgbevf: Commonize mailbox write/read
+In-Reply-To: <1468336244-24963-1-git-send-email-anthony.l.nguyen@intel.com>
+References: <1468336244-24963-1-git-send-email-anthony.l.nguyen@intel.com>
+Message-ID: <1468336244-24963-2-git-send-email-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Currently when setting the VF's MTU, the PF can return a NACK but this
-isn't passed on to the VF.  Propagate the results from the PF to the VF
-so errors can be reported.
-
-In ixgbevf_change_mtu, return an error and reject the change.
-
-For ixgbevf_configure_rx, log the error for debugging purposes since
-the function is buried in a series of Rx config routines that are void.
+With changes to ixgbevf_write_msg_read_ack(), other functions are
+performing the same operations done here; change those functions to
+utilize ixgbevf_write_msg_read_ack().
 
 Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 19 ++++++----
- drivers/net/ethernet/intel/ixgbevf/vf.c           | 42 +++++++++++++++--------
- drivers/net/ethernet/intel/ixgbevf/vf.h           |  2 +-
- 3 files changed, 41 insertions(+), 22 deletions(-)
+ drivers/net/ethernet/intel/ixgbevf/vf.c | 35 ++++++---------------------------
+ 1 file changed, 6 insertions(+), 29 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-index 1bffac3..283ffd5 100644
---- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-+++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-@@ -1802,16 +1802,19 @@ static void ixgbevf_configure_rx_ring(struct ixgbevf_adapter *adapter,
-  **/
- static void ixgbevf_configure_rx(struct ixgbevf_adapter *adapter)
- {
--	int i;
- 	struct ixgbe_hw *hw = &adapter->hw;
- 	struct net_device *netdev = adapter->netdev;
-+	int i, ret;
- 
- 	ixgbevf_setup_psrtype(adapter);
- 	if (hw->mac.type >= ixgbe_mac_X550_vf)
- 		ixgbevf_setup_vfmrqc(adapter);
- 
- 	/* notify the PF of our intent to use this size of frame */
--	hw->mac.ops.set_rlpml(hw, netdev->mtu + ETH_HLEN + ETH_FCS_LEN);
-+	ret = hw->mac.ops.set_rlpml(hw, netdev->mtu + ETH_HLEN + ETH_FCS_LEN);
-+	if (ret)
-+		dev_err(&adapter->pdev->dev,
-+			"Failed to set MTU at %d\n", netdev->mtu);
- 
- 	/* Setup the HW Rx Head and Tail Descriptor Pointers and
- 	 * the Base and Length of the Rx Descriptor Ring
-@@ -3734,6 +3737,7 @@ static int ixgbevf_change_mtu(struct net_device *netdev, int new_mtu)
- 	struct ixgbe_hw *hw = &adapter->hw;
- 	int max_frame = new_mtu + ETH_HLEN + ETH_FCS_LEN;
- 	int max_possible_frame = MAXIMUM_ETHERNET_VLAN_SIZE;
-+	int ret;
- 
- 	switch (adapter->hw.api_version) {
- 	case ixgbe_mbox_api_11:
-@@ -3750,14 +3754,17 @@ static int ixgbevf_change_mtu(struct net_device *netdev, int new_mtu)
- 	if ((new_mtu < 68) || (max_frame > max_possible_frame))
- 		return -EINVAL;
- 
-+	/* notify the PF of our intent to use this size of frame */
-+	ret = hw->mac.ops.set_rlpml(hw, max_frame);
-+	if (ret)
-+		return -EINVAL;
-+
- 	hw_dbg(hw, "changing MTU from %d to %d\n",
--	       netdev->mtu, new_mtu);
-+	       netdev->mtu, new_ntu);
-+
- 	/* must set new MTU before calling down or up */
- 	netdev->mtu = new_mtu;
- 
--	/* notify the PF of our intent to use this size of frame */
--	hw->mac.ops.set_rlpml(hw, max_frame);
--
- 	return 0;
- }
- 
 diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.c b/drivers/net/ethernet/intel/ixgbevf/vf.c
-index cb409b3..4862bc2 100644
+index 4862bc2..a52f70e 100644
 --- a/drivers/net/ethernet/intel/ixgbevf/vf.c
 +++ b/drivers/net/ethernet/intel/ixgbevf/vf.c
-@@ -33,6 +33,18 @@
-  */
- #define IXGBE_HV_RESET_OFFSET           0x201
+@@ -267,7 +267,6 @@ static s32 ixgbevf_get_mac_addr_vf(struct ixgbe_hw *hw, u8 *mac_addr)
  
-+static inline s32 ixgbevf_write_msg_read_ack(struct ixgbe_hw *hw, u32 *msg,
-+					     u32 *retmsg, u16 size)
-+{
-+	struct ixgbe_mbx_info *mbx = &hw->mbx;
-+	s32 retval = mbx->ops.write_posted(hw, msg, size);
-+
-+	if (retval)
-+		return retval;
-+
-+	return mbx->ops.read_posted(hw, retmsg, size);
-+}
-+
- /**
-  *  ixgbevf_start_hw_vf - Prepare hardware for Tx/Rx
-  *  @hw: pointer to hardware structure
-@@ -470,17 +482,6 @@ static s32 ixgbevf_hv_set_rar_vf(struct ixgbe_hw *hw, u32 index, u8 *addr,
- 	return -EOPNOTSUPP;
- }
- 
--static void ixgbevf_write_msg_read_ack(struct ixgbe_hw *hw,
--				       u32 *msg, u16 size)
--{
+ static s32 ixgbevf_set_uc_addr_vf(struct ixgbe_hw *hw, u32 index, u8 *addr)
+ {
 -	struct ixgbe_mbx_info *mbx = &hw->mbx;
--	u32 retmsg[IXGBE_VFMAILBOX_SIZE];
--	s32 retval = mbx->ops.write_posted(hw, msg, size);
--
--	if (!retval)
--		mbx->ops.read_posted(hw, retmsg, size);
--}
--
- /**
-  *  ixgbevf_update_mc_addr_list_vf - Update Multicast addresses
-  *  @hw: pointer to the HW structure
-@@ -521,7 +522,7 @@ static s32 ixgbevf_update_mc_addr_list_vf(struct ixgbe_hw *hw,
- 		vector_list[i++] = ixgbevf_mta_vector(hw, ha->addr);
- 	}
+ 	u32 msgbuf[3], msgbuf_chk;
+ 	u8 *msg_addr = (u8 *)(&msgbuf[1]);
+ 	s32 ret_val;
+@@ -284,11 +283,8 @@ static s32 ixgbevf_set_uc_addr_vf(struct ixgbe_hw *hw, u32 index, u8 *addr)
  
--	ixgbevf_write_msg_read_ack(hw, msgbuf, IXGBE_VFMAILBOX_SIZE);
-+	ixgbevf_write_msg_read_ack(hw, msgbuf, msgbuf, IXGBE_VFMAILBOX_SIZE);
+ 	if (addr)
+ 		ether_addr_copy(msg_addr, addr);
+-	ret_val = mbx->ops.write_posted(hw, msgbuf, 3);
+-
+-	if (!ret_val)
+-		ret_val = mbx->ops.read_posted(hw, msgbuf, 3);
  
- 	return 0;
- }
-@@ -799,13 +800,22 @@ out:
-  *  @hw: pointer to the HW structure
-  *  @max_size: value to assign to max frame size
-  **/
--static void ixgbevf_set_rlpml_vf(struct ixgbe_hw *hw, u16 max_size)
-+static s32 ixgbevf_set_rlpml_vf(struct ixgbe_hw *hw, u16 max_size)
++	ret_val = ixgbevf_write_msg_read_ack(hw, msgbuf, msgbuf, 3);
+ 	if (!ret_val) {
+ 		msgbuf[0] &= ~IXGBE_VT_MSGTYPE_CTS;
+ 
+@@ -437,7 +433,6 @@ int ixgbevf_get_rss_key_locked(struct ixgbe_hw *hw, u8 *rss_key)
+ static s32 ixgbevf_set_rar_vf(struct ixgbe_hw *hw, u32 index, u8 *addr,
+ 			      u32 vmdq)
  {
- 	u32 msgbuf[2];
-+	s32 ret_val;
+-	struct ixgbe_mbx_info *mbx = &hw->mbx;
+ 	u32 msgbuf[3];
+ 	u8 *msg_addr = (u8 *)(&msgbuf[1]);
+ 	s32 ret_val;
+@@ -445,10 +440,8 @@ static s32 ixgbevf_set_rar_vf(struct ixgbe_hw *hw, u32 index, u8 *addr,
+ 	memset(msgbuf, 0, sizeof(msgbuf));
+ 	msgbuf[0] = IXGBE_VF_SET_MAC_ADDR;
+ 	ether_addr_copy(msg_addr, addr);
+-	ret_val = mbx->ops.write_posted(hw, msgbuf, 3);
  
- 	msgbuf[0] = IXGBE_VF_SET_LPE;
- 	msgbuf[1] = max_size;
--	ixgbevf_write_msg_read_ack(hw, msgbuf, 2);
-+
+-	if (!ret_val)
+-		ret_val = mbx->ops.read_posted(hw, msgbuf, 3);
 +	ret_val = ixgbevf_write_msg_read_ack(hw, msgbuf, msgbuf, 2);
-+	if (ret_val)
-+		return ret_val;
-+	if ((msgbuf[0] & IXGBE_VF_SET_LPE) &&
-+	    (msgbuf[0] & IXGBE_VT_MSGTYPE_NACK))
-+		return IXGBE_ERR_MBX;
-+
-+	return 0;
- }
  
- /**
-@@ -814,7 +824,7 @@ static void ixgbevf_set_rlpml_vf(struct ixgbe_hw *hw, u16 max_size)
-  * @max_size: value to assign to max frame size
-  * Hyper-V variant.
+ 	msgbuf[0] &= ~IXGBE_VT_MSGTYPE_CTS;
+ 
+@@ -545,7 +538,6 @@ static s32 ixgbevf_hv_update_mc_addr_list_vf(struct ixgbe_hw *hw,
   **/
--static void ixgbevf_hv_set_rlpml_vf(struct ixgbe_hw *hw, u16 max_size)
-+static s32 ixgbevf_hv_set_rlpml_vf(struct ixgbe_hw *hw, u16 max_size)
+ static s32 ixgbevf_update_xcast_mode(struct ixgbe_hw *hw, int xcast_mode)
  {
- 	u32 reg;
+-	struct ixgbe_mbx_info *mbx = &hw->mbx;
+ 	u32 msgbuf[2];
+ 	s32 err;
  
-@@ -825,6 +835,8 @@ static void ixgbevf_hv_set_rlpml_vf(struct ixgbe_hw *hw, u16 max_size)
- 	/* CRC == 4 */
- 	reg |= ((max_size + 4) | IXGBE_RXDCTL_RLPML_EN);
- 	IXGBE_WRITE_REG(hw, IXGBE_VFRXDCTL(0), reg);
-+
-+	return 0;
- }
+@@ -559,11 +551,7 @@ static s32 ixgbevf_update_xcast_mode(struct ixgbe_hw *hw, int xcast_mode)
+ 	msgbuf[0] = IXGBE_VF_UPDATE_XCAST_MODE;
+ 	msgbuf[1] = xcast_mode;
  
- /**
-diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.h b/drivers/net/ethernet/intel/ixgbevf/vf.h
-index e3a0dea..04d8d4e 100644
---- a/drivers/net/ethernet/intel/ixgbevf/vf.h
-+++ b/drivers/net/ethernet/intel/ixgbevf/vf.h
-@@ -69,7 +69,7 @@ struct ixgbe_mac_operations {
- 	s32 (*disable_mc)(struct ixgbe_hw *);
- 	s32 (*clear_vfta)(struct ixgbe_hw *);
- 	s32 (*set_vfta)(struct ixgbe_hw *, u32, u32, bool);
--	void (*set_rlpml)(struct ixgbe_hw *, u16);
-+	s32 (*set_rlpml)(struct ixgbe_hw *, u16);
- };
+-	err = mbx->ops.write_posted(hw, msgbuf, 2);
+-	if (err)
+-		return err;
+-
+-	err = mbx->ops.read_posted(hw, msgbuf, 2);
++	err = ixgbevf_write_msg_read_ack(hw, msgbuf, msgbuf, 2);
+ 	if (err)
+ 		return err;
  
- enum ixgbe_mac_type {
+@@ -592,7 +580,6 @@ static s32 ixgbevf_hv_update_xcast_mode(struct ixgbe_hw *hw, int xcast_mode)
+ static s32 ixgbevf_set_vfta_vf(struct ixgbe_hw *hw, u32 vlan, u32 vind,
+ 			       bool vlan_on)
+ {
+-	struct ixgbe_mbx_info *mbx = &hw->mbx;
+ 	u32 msgbuf[2];
+ 	s32 err;
+ 
+@@ -601,11 +588,7 @@ static s32 ixgbevf_set_vfta_vf(struct ixgbe_hw *hw, u32 vlan, u32 vind,
+ 	/* Setting the 8 bit field MSG INFO to TRUE indicates "add" */
+ 	msgbuf[0] |= vlan_on << IXGBE_VT_MSGINFO_SHIFT;
+ 
+-	err = mbx->ops.write_posted(hw, msgbuf, 2);
+-	if (err)
+-		goto mbx_err;
+-
+-	err = mbx->ops.read_posted(hw, msgbuf, 2);
++	err = ixgbevf_write_msg_read_ack(hw, msgbuf, msgbuf, 2);
+ 	if (err)
+ 		goto mbx_err;
+ 
+@@ -853,11 +836,8 @@ static int ixgbevf_negotiate_api_version_vf(struct ixgbe_hw *hw, int api)
+ 	msg[0] = IXGBE_VF_API_NEGOTIATE;
+ 	msg[1] = api;
+ 	msg[2] = 0;
+-	err = hw->mbx.ops.write_posted(hw, msg, 3);
+-
+-	if (!err)
+-		err = hw->mbx.ops.read_posted(hw, msg, 3);
+ 
++	err = ixgbevf_write_msg_read_ack(hw, msg, msg, 3);
+ 	if (!err) {
+ 		msg[0] &= ~IXGBE_VT_MSGTYPE_CTS;
+ 
+@@ -906,11 +886,8 @@ int ixgbevf_get_queues(struct ixgbe_hw *hw, unsigned int *num_tcs,
+ 	/* Fetch queue configuration from the PF */
+ 	msg[0] = IXGBE_VF_GET_QUEUE;
+ 	msg[1] = msg[2] = msg[3] = msg[4] = 0;
+-	err = hw->mbx.ops.write_posted(hw, msg, 5);
+-
+-	if (!err)
+-		err = hw->mbx.ops.read_posted(hw, msg, 5);
+ 
++	err = ixgbevf_write_msg_read_ack(hw, msg, msg, 5);
+ 	if (!err) {
+ 		msg[0] &= ~IXGBE_VT_MSGTYPE_CTS;
+ 
 -- 
 2.4.0
 
