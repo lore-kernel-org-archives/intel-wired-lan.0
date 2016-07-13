@@ -1,18 +1,18 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 13 Jul 2016 13:40:44 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 890d2e1f191dfaddb9020bfce3e170fd6896c1fe BUILD SUCCESS
-Message-ID: <5785d45c.BX1KmUFismuL6ZL0%fengguang.wu@intel.com>
+Date: Wed, 13 Jul 2016 13:40:37 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ 3504ea302e4f973b8ab0d847ba9ab92c4e3f25b5 BUILD SUCCESS
+Message-ID: <5785d455.D97P/8rdxG61N8hz%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-890d2e1f191dfaddb9020bfce3e170fd6896c1fe  i40e: Explicitly write platform-specific mac address after PF reset
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+3504ea302e4f973b8ab0d847ba9ab92c4e3f25b5  i40e: use valid online CPU on q_vector initialization
 
-elapsed time: 93m
+elapsed time: 102m
 
 The following configs have been built successfully. More configs may be tested in the coming days.
 configs tested: 115
@@ -22,10 +22,6 @@ parisc                            allnoconfig
 parisc                        c3000_defconfig
 parisc                              defconfig
 i386                     randconfig-a0-201628
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                               tinyconfig
 arm                               allnoconfig
 arm                         at91_dt_defconfig
 arm                           efm32_defconfig
@@ -40,6 +36,9 @@ powerpc                           allnoconfig
 powerpc                             defconfig
 powerpc                       ppc64_defconfig
 s390                        default_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
 m32r                       m32104ut_defconfig
 m32r                     mappi3.smp_defconfig
 m32r                         opsput_defconfig
@@ -77,6 +76,7 @@ openrisc                    or1ksim_defconfig
 tile                         tilegx_defconfig
 um                             i386_defconfig
 um                           x86_64_defconfig
+i386                               tinyconfig
 i386                             allmodconfig
 mips                              allnoconfig
 mips                      fuloong2e_defconfig
@@ -100,8 +100,6 @@ i386                   randconfig-x013-201628
 i386                   randconfig-x019-201628
 i386                   randconfig-x015-201628
 i386                   randconfig-x012-201628
-x86_64                                    lkp
-x86_64                                   rhel
 i386                     randconfig-n0-201628
 sh                                allnoconfig
 sh                          rsk7269_defconfig
@@ -121,6 +119,8 @@ x86_64                 randconfig-x009-201628
 ia64                             alldefconfig
 ia64                              allnoconfig
 ia64                                defconfig
+x86_64                                    lkp
+x86_64                                   rhel
 i386                     randconfig-r0-201628
 i386                   randconfig-x008-201628
 i386                   randconfig-x005-201628
