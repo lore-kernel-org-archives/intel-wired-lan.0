@@ -1,103 +1,197 @@
-From: John Fastabend <john.fastabend@gmail.com>
-Date: Wed, 13 Jul 2016 10:44:51 -0700
-Subject: [Intel-wired-lan] Configure traffic class to bringup DCB in
-	back-to-back setup
-In-Reply-To: <loom.20160713T110657-740@post.gmane.org>
-References: <loom.20160713T110657-740@post.gmane.org>
-Message-ID: <57867E13.3040708@gmail.com>
+From: Tony Nguyen <anthony.l.nguyen@intel.com>
+Date: Wed, 13 Jul 2016 10:33:16 -0700
+Subject: [Intel-wired-lan] [PATCH v2 1/2] ixgbevf: Add range checking for
+	setting MTU
+Message-ID: <1468431196-23915-1-git-send-email-anthony.l.nguyen@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 16-07-13 02:09 AM, ayuj wrote:
-> I just checked TLV's. Below are the details:
-> 
+From: "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>
 
-OK so not really a netdev discussion seeing its just a user
-space protocol setup issue. Going forward probably drop
-netdev and add intel-wired-lan.
+Currently when setting the VF's MTU, the PF can return a NACK but this
+isn't passed on to the VF.  Propagate the results from the PF to the VF
+so errors can be reported.
 
-> OS :- CentOS 7.2
-> kernel 3.10.0-327.el7.x86_64
-> lldpad:- lldpad v0.9.46
-> dcbtool:- v0.9.46
-> ixgbe :- ixgbe-4.3.15
-> 
-> steps followed:- 
-> 
-> # modporbe ixgbe
-> # service lldpad start 
->     Redirecting to /bin/systemctl start  lldpad.service
-> 
-> # service lldpad status
-> Redirecting to /bin/systemctl status  lldpad.service
-> ? lldpad.service - Link Layer Discovery Protocol Agent Daemon.
->    Loaded: loaded (/usr/lib/systemd/system/lldpad.service; disabled; vendor
-> preset: disabled)
->    Active: active (running) since Tue 2016-07-05 05:49:12 EDT; 1s ago
->  Main PID: 133737 (lldpad)
->    CGroup: /system.slice/lldpad.service
->            ??133737 /usr/sbin/lldpad -t
-> 
-> Jul 05 05:49:12 localhost.localdomain systemd[1]: Started Link Layer
-> Discovery Protocol Agent Daemon..
-> Jul 05 05:49:12 localhost.localdomain systemd[1]: Starting Link Layer
-> Discovery Protocol Agent Daemon....
-> 
-> lldptool -t -i p3p2 -n
-> Chassis ID TLV
-> 	MAC: 00:1b:21:bb:2e:da
-> Port ID TLV
-> 	MAC: 00:1b:21:bb:2e:da
-> Time to Live TLV
-> 	120
-> IEEE 8021QAZ ETS Configuration TLV
-> 	 Willing: yes
-> 	 CBS: not supported
-> 	 MAX_TCS: 8
-> 	 PRIO_MAP: 0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0 
-> 	 TC Bandwidth: 0% 0% 0% 0% 0% 0% 0% 0% 
-> 	 TSA_MAP: 0:strict 1:strict 2:strict 3:strict 4:strict 5:strict 6:strict
-> 7:strict 
-> IEEE 8021QAZ PFC TLV
-> 	 Willing: yes
-> 	 MACsec Bypass Capable: no
-> 	 PFC capable traffic classes: 8
-> 	 PFC enabled: none
-> End of LLDPDU TLV
-> 
-> Please help me in configuring traffic classes. I want to bringup DCB setup
-> in a back-to-back senario.
-> 
+In ixgbevf_change_mtu, return an error and reject the change.
 
-So at the moment it appears to be configured to use 802.1QAZ spec which
-superseded the older spec even though lldpad supports both. Note the
-tool itself really requires some spec knowledge to use correctly. The
-spec to read is 802.1Q.
+For ixgbevf_configure_rx, log the error for debugging purposes since
+the function is buried in a series of Rx config routines that are void.
 
-To configure it back-to-back (typical scenario is connected to a DCB
-enabled switch where your administrator would setup the switch and this
-would autoneg just fine) the servers need to be setup manually.
+v2:
+  Fixed a typo
 
-Perhaps reading if you haven't already the man page for lldptool and
-lldptool-ets, lldptool-pfc would help. From the ets man page this
-should kick things off,
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 17 ++++++---
+ drivers/net/ethernet/intel/ixgbevf/vf.c           | 42 +++++++++++++++--------
+ drivers/net/ethernet/intel/ixgbevf/vf.h           |  2 +-
+ 3 files changed, 40 insertions(+), 21 deletions(-)
 
-
-#lldptool -T -i eth2 -V ETS-CFG \
-          tsa=0:ets,1:ets,2:ets,3:ets,4:ets,5:ets,6:ets,7:ets \
-          up2tc=0:0,1:1,2:2,3:3,4:4,5:5,6:6,7:7 \
-          tcbw=12,12,12,12,13,13,13,13
-
-
-#lldptool -T -i eth2 -V ETS-REC \
-           tsa=0:ets,1:ets,2:ets,3:ets,4:ets,5:ets,6:ets,7:ets \
-           up2tc=0:0,1:1,2:2,3:3,4:4,5:5,6:6,7:7 \
-           tcbw=12,12,12,12,13,13,13,13
-
-Thanks,
-John
-
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index 7dc4245..6ba624d 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -1802,16 +1802,19 @@ static void ixgbevf_configure_rx_ring(struct ixgbevf_adapter *adapter,
+  **/
+ static void ixgbevf_configure_rx(struct ixgbevf_adapter *adapter)
+ {
+-	int i;
+ 	struct ixgbe_hw *hw = &adapter->hw;
+ 	struct net_device *netdev = adapter->netdev;
++	int i, ret;
+ 
+ 	ixgbevf_setup_psrtype(adapter);
+ 	if (hw->mac.type >= ixgbe_mac_X550_vf)
+ 		ixgbevf_setup_vfmrqc(adapter);
+ 
+ 	/* notify the PF of our intent to use this size of frame */
+-	hw->mac.ops.set_rlpml(hw, netdev->mtu + ETH_HLEN + ETH_FCS_LEN);
++	ret = hw->mac.ops.set_rlpml(hw, netdev->mtu + ETH_HLEN + ETH_FCS_LEN);
++	if (ret)
++		dev_err(&adapter->pdev->dev,
++			"Failed to set MTU at %d\n", netdev->mtu);
+ 
+ 	/* Setup the HW Rx Head and Tail Descriptor Pointers and
+ 	 * the Base and Length of the Rx Descriptor Ring
+@@ -3736,6 +3739,7 @@ static int ixgbevf_change_mtu(struct net_device *netdev, int new_mtu)
+ 	struct ixgbe_hw *hw = &adapter->hw;
+ 	int max_frame = new_mtu + ETH_HLEN + ETH_FCS_LEN;
+ 	int max_possible_frame = MAXIMUM_ETHERNET_VLAN_SIZE;
++	int ret;
+ 
+ 	switch (adapter->hw.api_version) {
+ 	case ixgbe_mbox_api_11:
+@@ -3752,14 +3756,17 @@ static int ixgbevf_change_mtu(struct net_device *netdev, int new_mtu)
+ 	if ((new_mtu < 68) || (max_frame > max_possible_frame))
+ 		return -EINVAL;
+ 
++	/* notify the PF of our intent to use this size of frame */
++	ret = hw->mac.ops.set_rlpml(hw, max_frame);
++	if (ret)
++		return -EINVAL;
++
+ 	hw_dbg(hw, "changing MTU from %d to %d\n",
+ 	       netdev->mtu, new_mtu);
++
+ 	/* must set new MTU before calling down or up */
+ 	netdev->mtu = new_mtu;
+ 
+-	/* notify the PF of our intent to use this size of frame */
+-	hw->mac.ops.set_rlpml(hw, max_frame);
+-
+ 	return 0;
+ }
+ 
+diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.c b/drivers/net/ethernet/intel/ixgbevf/vf.c
+index cb409b3..4862bc2 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/vf.c
++++ b/drivers/net/ethernet/intel/ixgbevf/vf.c
+@@ -33,6 +33,18 @@
+  */
+ #define IXGBE_HV_RESET_OFFSET           0x201
+ 
++static inline s32 ixgbevf_write_msg_read_ack(struct ixgbe_hw *hw, u32 *msg,
++					     u32 *retmsg, u16 size)
++{
++	struct ixgbe_mbx_info *mbx = &hw->mbx;
++	s32 retval = mbx->ops.write_posted(hw, msg, size);
++
++	if (retval)
++		return retval;
++
++	return mbx->ops.read_posted(hw, retmsg, size);
++}
++
+ /**
+  *  ixgbevf_start_hw_vf - Prepare hardware for Tx/Rx
+  *  @hw: pointer to hardware structure
+@@ -470,17 +482,6 @@ static s32 ixgbevf_hv_set_rar_vf(struct ixgbe_hw *hw, u32 index, u8 *addr,
+ 	return -EOPNOTSUPP;
+ }
+ 
+-static void ixgbevf_write_msg_read_ack(struct ixgbe_hw *hw,
+-				       u32 *msg, u16 size)
+-{
+-	struct ixgbe_mbx_info *mbx = &hw->mbx;
+-	u32 retmsg[IXGBE_VFMAILBOX_SIZE];
+-	s32 retval = mbx->ops.write_posted(hw, msg, size);
+-
+-	if (!retval)
+-		mbx->ops.read_posted(hw, retmsg, size);
+-}
+-
+ /**
+  *  ixgbevf_update_mc_addr_list_vf - Update Multicast addresses
+  *  @hw: pointer to the HW structure
+@@ -521,7 +522,7 @@ static s32 ixgbevf_update_mc_addr_list_vf(struct ixgbe_hw *hw,
+ 		vector_list[i++] = ixgbevf_mta_vector(hw, ha->addr);
+ 	}
+ 
+-	ixgbevf_write_msg_read_ack(hw, msgbuf, IXGBE_VFMAILBOX_SIZE);
++	ixgbevf_write_msg_read_ack(hw, msgbuf, msgbuf, IXGBE_VFMAILBOX_SIZE);
+ 
+ 	return 0;
+ }
+@@ -799,13 +800,22 @@ out:
+  *  @hw: pointer to the HW structure
+  *  @max_size: value to assign to max frame size
+  **/
+-static void ixgbevf_set_rlpml_vf(struct ixgbe_hw *hw, u16 max_size)
++static s32 ixgbevf_set_rlpml_vf(struct ixgbe_hw *hw, u16 max_size)
+ {
+ 	u32 msgbuf[2];
++	s32 ret_val;
+ 
+ 	msgbuf[0] = IXGBE_VF_SET_LPE;
+ 	msgbuf[1] = max_size;
+-	ixgbevf_write_msg_read_ack(hw, msgbuf, 2);
++
++	ret_val = ixgbevf_write_msg_read_ack(hw, msgbuf, msgbuf, 2);
++	if (ret_val)
++		return ret_val;
++	if ((msgbuf[0] & IXGBE_VF_SET_LPE) &&
++	    (msgbuf[0] & IXGBE_VT_MSGTYPE_NACK))
++		return IXGBE_ERR_MBX;
++
++	return 0;
+ }
+ 
+ /**
+@@ -814,7 +824,7 @@ static void ixgbevf_set_rlpml_vf(struct ixgbe_hw *hw, u16 max_size)
+  * @max_size: value to assign to max frame size
+  * Hyper-V variant.
+  **/
+-static void ixgbevf_hv_set_rlpml_vf(struct ixgbe_hw *hw, u16 max_size)
++static s32 ixgbevf_hv_set_rlpml_vf(struct ixgbe_hw *hw, u16 max_size)
+ {
+ 	u32 reg;
+ 
+@@ -825,6 +835,8 @@ static void ixgbevf_hv_set_rlpml_vf(struct ixgbe_hw *hw, u16 max_size)
+ 	/* CRC == 4 */
+ 	reg |= ((max_size + 4) | IXGBE_RXDCTL_RLPML_EN);
+ 	IXGBE_WRITE_REG(hw, IXGBE_VFRXDCTL(0), reg);
++
++	return 0;
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.h b/drivers/net/ethernet/intel/ixgbevf/vf.h
+index e3a0dea..04d8d4e 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/vf.h
++++ b/drivers/net/ethernet/intel/ixgbevf/vf.h
+@@ -69,7 +69,7 @@ struct ixgbe_mac_operations {
+ 	s32 (*disable_mc)(struct ixgbe_hw *);
+ 	s32 (*clear_vfta)(struct ixgbe_hw *);
+ 	s32 (*set_vfta)(struct ixgbe_hw *, u32, u32, bool);
+-	void (*set_rlpml)(struct ixgbe_hw *, u16);
++	s32 (*set_rlpml)(struct ixgbe_hw *, u16);
+ };
+ 
+ enum ixgbe_mac_type {
+-- 
+2.4.0
 
