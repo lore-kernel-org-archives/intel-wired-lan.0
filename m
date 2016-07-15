@@ -1,139 +1,71 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 15 Jul 2016 18:30:14 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:master]
- 7f6c553902bfa1c4e3f6cfa955c5ea036c7fe8e4 BUILD SUCCESS
-Message-ID: <5788bb36.TOF37/EgJHkU2Nie%fengguang.wu@intel.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Sat, 16 Jul 2016 06:55:39 +0800
+Subject: [Intel-wired-lan] [PATCH] igb: fix adjusting ptp timestamps for
+	tx/rx latency
+In-Reply-To: <1468620496-7849-1-git-send-email-kshitiz.gupta@ni.com>
+Message-ID: <201607160644.Q6MtmLkD%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
-7f6c553902bfa1c4e3f6cfa955c5ea036c7fe8e4  i40e: use valid online CPU on q_vector initialization
+Hi,
 
-elapsed time: 206m
+[auto build test ERROR on jkirsher-next-queue/dev-queue]
+[also build test ERROR on v4.7-rc7 next-20160715]
+[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
 
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 117
+url:    https://github.com/0day-ci/linux/commits/Kshitiz-Gupta/igb-fix-adjusting-ptp-timestamps-for-tx-rx-latency/20160716-062544
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+config: sparc64-allyesconfig (attached as .config)
+compiler: sparc64-linux-gnu-gcc (Debian 5.3.1-8) 5.3.1 20160205
+reproduce:
+        wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # save the attached .config to linux build tree
+        make.cross ARCH=sparc64 
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201628
-i386         randconfig-a0-201628+CONFIG_DEBUG_INFO_REDUCED
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-parisc                         b180_defconfig
-x86_64                 randconfig-x018-201628
-x86_64                 randconfig-x019-201628
-x86_64                 randconfig-x010-201628
-x86_64                 randconfig-x015-201628
-x86_64                 randconfig-x013-201628
-x86_64                 randconfig-x014-201628
-x86_64                 randconfig-x016-201628
-x86_64                 randconfig-x017-201628
-x86_64                 randconfig-x011-201628
-x86_64                 randconfig-x012-201628
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s1-201628
-i386                     randconfig-s0-201628
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                   randconfig-i0-201628
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-i386                     randconfig-i0-201628
-i386                     randconfig-i1-201628
-i386                   randconfig-x018-201628
-i386                   randconfig-x017-201628
-i386                   randconfig-x016-201628
-i386                   randconfig-x011-201628
-i386                   randconfig-x014-201628
-i386                   randconfig-x010-201628
-i386                   randconfig-x013-201628
-i386                   randconfig-x019-201628
-i386                   randconfig-x015-201628
-i386                   randconfig-x012-201628
-x86_64                                    lkp
-x86_64                                   rhel
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-n0-201628
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                 randconfig-x003-201628
-x86_64                 randconfig-x006-201628
-x86_64                 randconfig-x000-201628
-x86_64                 randconfig-x007-201628
-x86_64                 randconfig-x005-201628
-x86_64                 randconfig-x008-201628
-x86_64                 randconfig-x004-201628
-x86_64                 randconfig-x002-201628
-x86_64                 randconfig-x001-201628
-x86_64                 randconfig-x009-201628
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-r0-201628
-i386                             allmodconfig
-i386                   randconfig-x008-201628
-i386                   randconfig-x005-201628
-i386                   randconfig-x009-201628
-i386                   randconfig-x000-201628
-i386                   randconfig-x001-201628
-i386                   randconfig-x006-201628
-i386                   randconfig-x003-201628
-i386                   randconfig-x007-201628
-i386                   randconfig-x004-201628
-i386                   randconfig-x002-201628
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-mips                                   jz4740
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                     txx9
+All errors (new ones prefixed by >>):
 
-Thanks,
-Fengguang
+   drivers/net/ethernet/intel/igb/igb_ptp.c: In function 'igb_ptp_rx_pktstamp':
+>> drivers/net/ethernet/intel/igb/igb_ptp.c:783:12: error: 'IGB_RX_LATENCY_10' undeclared (first use in this function)
+      adjust = IGB_RX_LATENCY_10;
+               ^
+   drivers/net/ethernet/intel/igb/igb_ptp.c:783:12: note: each undeclared identifier is reported only once for each function it appears in
+>> drivers/net/ethernet/intel/igb/igb_ptp.c:786:12: error: 'IGB_RX_LATENCY_100' undeclared (first use in this function)
+      adjust = IGB_RX_LATENCY_100;
+               ^
+>> drivers/net/ethernet/intel/igb/igb_ptp.c:789:12: error: 'IGB_RX_LATENCY_1000' undeclared (first use in this function)
+      adjust = IGB_RX_LATENCY_1000;
+               ^
+
+vim +/IGB_RX_LATENCY_10 +783 drivers/net/ethernet/intel/igb/igb_ptp.c
+
+   777		igb_ptp_systim_to_hwtstamp(adapter, skb_hwtstamps(skb),
+   778					   le64_to_cpu(regval[1]));
+   779	
+   780		/* adjust timestamp for the RX latency based on link speed */
+   781		switch (adapter->link_speed) {
+   782		case SPEED_10:
+ > 783			adjust = IGB_RX_LATENCY_10;
+   784			break;
+   785		case SPEED_100:
+ > 786			adjust = IGB_RX_LATENCY_100;
+   787			break;
+   788		case SPEED_1000:
+ > 789			adjust = IGB_RX_LATENCY_1000;
+   790			break;
+   791		}
+   792		skb_hwtstamps(skb)->hwtstamp =
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: .config.gz
+Type: application/octet-stream
+Size: 46471 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160716/2d523105/attachment-0001.obj>
