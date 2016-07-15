@@ -1,59 +1,35 @@
 From: Brown, Aaron F <aaron.f.brown@intel.com>
-Date: Fri, 15 Jul 2016 23:26:08 +0000
-Subject: [Intel-wired-lan] [net-next v6 3/4] igb: support RX flow
- classification by VLAN priority
-Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81F30D06@ORSMSX101.amr.corp.intel.com>
+Date: Fri, 15 Jul 2016 23:27:24 +0000
+Subject: [Intel-wired-lan] [net-next v6 4/4] igb: fix error code in
+ igb_add_ethtool_nfc_entry()
+In-Reply-To: <1467782577-25659-5-git-send-email-gangfeng.huang@ni.com>
+References: <1467782577-25659-1-git-send-email-gangfeng.huang@ni.com>
+ <1467782577-25659-5-git-send-email-gangfeng.huang@ni.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81F30D1E@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Gangfeng
+> From: Gangfeng [mailto:gangfeng.huang at ni.com]
 > Sent: Tuesday, July 5, 2016 10:23 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Gangfeng Huang <gangfeng.huang@ni.com>; Ruhao Gao
-> <ruhao.gao@ni.com>
-> Subject: [Intel-wired-lan] [net-next v6 3/4] igb: support RX flow classification
-> by VLAN priority
+> Cc: Gangfeng Huang <gangfeng.huang@ni.com>; Brown, Aaron F
+> <aaron.f.brown@intel.com>
+> Subject: [net-next v6 4/4] igb: fix error code in igb_add_ethtool_nfc_entry()
 > 
 > From: Gangfeng Huang <gangfeng.huang@ni.com>
 > 
-> This patch is meant to allow for RX network flow classification to insert
-> and remove VLAN priority filter by ethtool
+> Use error "rmgr: Cannot insert RX class rule: Operation not supported" is
+> more meaningful than "rmgr: Cannot insert RX class rule: Unknown error
+> 524"
 > 
-> Example:
-> Add an VLAN priority filter:
-> $ ethtool -N eth0 flow-type ether vlan 0x6000 vlan-mask 0x1FFF action 2 loc 1
-> 
-> Show all filters:
-> $ ethtool -n eth0
-> 4 RX rings available
-> Total 1 rules
-> 
-> Filter: 1
-> 	Flow Type: Raw Ethernet
-> 	Src MAC addr: 00:00:00:00:00:00 mask: FF:FF:FF:FF:FF:FF
-> 	Dest MAC addr: 00:00:00:00:00:00 mask: FF:FF:FF:FF:FF:FF
-> 	Ethertype: 0x0 mask: 0xFFFF
-> 	VLAN EtherType: 0x0 mask: 0xffff
-> 	VLAN: 0x6000 mask: 0x1fff
-> 	User-defined: 0x0 mask: 0xffffffffffffffff
-> 	Action: Direct to queue 2
-> 
-> Delete the filter by location:
-> $ ethtool -N delete 1
-> 
-> Signed-off-by: Ruhao Gao <ruhao.gao@ni.com>
+> CC: Brown Aaron F <aaron.f.brown@intel.com>
 > Signed-off-by: Gangfeng Huang <gangfeng.huang@ni.com>
 > ---
->  drivers/net/ethernet/intel/igb/e1000_defines.h |  4 ++
->  drivers/net/ethernet/intel/igb/e1000_regs.h    |  1 +
->  drivers/net/ethernet/intel/igb/igb.h           |  3 +
->  drivers/net/ethernet/intel/igb/igb_ethtool.c   | 91
-> ++++++++++++++++++++++++--
->  4 files changed, 92 insertions(+), 7 deletions(-)
->
+>  drivers/net/ethernet/intel/igb/igb_ethtool.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
 
 Tested-by: Aaron Brown <aaron.f.brown@intel.com>
