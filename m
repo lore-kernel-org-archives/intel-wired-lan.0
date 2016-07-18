@@ -1,9 +1,10 @@
 From: kan.liang@intel.com <kan.liang@intel.com>
-Date: Sun, 17 Jul 2016 23:56:08 -0700
-Subject: [Intel-wired-lan] [RFC PATCH 14/30] net/netpolicy: add MIX policy
+Date: Sun, 17 Jul 2016 23:56:04 -0700
+Subject: [Intel-wired-lan] [RFC PATCH 10/30] net/netpolicy: introduce
+	netpolicy object
 In-Reply-To: <1468824984-65318-1-git-send-email-kan.liang@intel.com>
 References: <1468824984-65318-1-git-send-email-kan.liang@intel.com>
-Message-ID: <1468824984-65318-15-git-send-email-kan.liang@intel.com>
+Message-ID: <1468824984-65318-11-git-send-email-kan.liang@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,276 +13,374 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Kan Liang <kan.liang@intel.com>
 
-MIX policy is combine of other policies. It allows different queue has
-different policy. If MIX policy is applied,
-/proc/net/netpolicy/$DEV/policy shows per queue policy.
-Usually, the workloads requires either high throughput or low latency.
-So for current implementation, MIX policy is combine of latency policy
-and bulk policy.
-The workloads which requires high throughput are usually utilize more
-CPU resources compared to the workloads which requires low latency. This
-means that if there is an equal interest in latency and throughput
-performance, it is better to reserve more bulk queues than latency
-queues.
-In this patch, MIX policy is forced to include 1/3 latency policy queues
-and 2/3 bulk policy queues.
+This patch introduces the concept of netpolicy object and policy object
+list.
+
+The netpolicy object is the instance of CPU/queue mapping. The object
+can be shared between different tasks/sockets. So besides CPU and queue
+information, the object also maintains a reference counter.
+
+Each policy will have a dedicated object list. If the policy is set as
+device policy, all objects will be inserted into the related policy
+object list. The user will search and pickup the available objects from
+the list later.
+
+The network performance for objects could be different because of the
+queue and CPU topology. To generate a proper object list, dev location,
+HT and CPU topology have to be considered. The high performance objects
+are in the front of the list.
+
+The object lists will be regenerated if sys mapping changes or device
+net policy changes.
+
+Lock np_ob_list_lock is used to protect the object list.
 
 Signed-off-by: Kan Liang <kan.liang@intel.com>
 ---
- include/linux/netpolicy.h |   7 +++
- net/core/netpolicy.c      | 139 ++++++++++++++++++++++++++++++++++++++++++----
- 2 files changed, 136 insertions(+), 10 deletions(-)
+ include/linux/netdevice.h |   2 +
+ include/linux/netpolicy.h |  15 +++
+ net/core/netpolicy.c      | 237 +++++++++++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 253 insertions(+), 1 deletion(-)
 
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index 3470943..e60c30f 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -1600,6 +1600,7 @@ enum netdev_priv_flags {
+  *	@proc_dev:	device node in proc to configure device net policy
+  *	@netpolicy:	NET policy related information of net device
+  *	@np_lock:	protect the state of NET policy
++ *	@np_ob_list_lock:	protect the net policy object list
+  *
+  *	FIXME: cleanup struct net_device such that network protocol info
+  *	moves out.
+@@ -1874,6 +1875,7 @@ struct net_device {
+ #endif /* CONFIG_PROC_FS */
+ 	struct netpolicy_info	*netpolicy;
+ 	spinlock_t		np_lock;
++	spinlock_t		np_ob_list_lock;
+ #endif /* CONFIG_NETPOLICY */
+ };
+ #define to_net_dev(d) container_of(d, struct net_device, dev)
 diff --git a/include/linux/netpolicy.h b/include/linux/netpolicy.h
-index 3d348a7..579ff98 100644
+index a946b75c..73a5fa6 100644
 --- a/include/linux/netpolicy.h
 +++ b/include/linux/netpolicy.h
-@@ -22,6 +22,12 @@ enum netpolicy_name {
- 	NET_POLICY_BULK,
- 	NET_POLICY_LATENCY,
+@@ -21,6 +21,12 @@ enum netpolicy_name {
  	NET_POLICY_MAX,
-+
-+	/*
-+	 * Mixture of the above policy
-+	 * Can only be set as global policy.
-+	 */
-+	NET_POLICY_MIX,
  };
  
- enum netpolicy_traffic {
-@@ -66,6 +72,7 @@ struct netpolicy_object {
++enum netpolicy_traffic {
++	NETPOLICY_RX		= 0,
++	NETPOLICY_TX,
++	NETPOLICY_RXTX,
++};
++
+ extern const char *policy_name[];
+ 
+ struct netpolicy_dev_info {
+@@ -46,11 +52,20 @@ struct netpolicy_sys_info {
+ 	struct netpolicy_sys_map	*tx;
+ };
+ 
++struct netpolicy_object {
++	struct list_head	list;
++	u32			cpu;
++	u32			queue;
++	atomic_t		refcnt;
++};
++
  struct netpolicy_info {
  	enum netpolicy_name	cur_policy;
  	unsigned long avail_policy[BITS_TO_LONGS(NET_POLICY_MAX)];
-+	bool	has_mix_policy;
  	/* cpu and queue mapping information */
  	struct netpolicy_sys_info	sys_info;
- 	/* List of policy objects 0 rx 1 tx */
++	/* List of policy objects 0 rx 1 tx */
++	struct list_head		obj_list[NETPOLICY_RXTX][NET_POLICY_MAX];
+ };
+ 
+ #endif /*__LINUX_NETPOLICY_H*/
 diff --git a/net/core/netpolicy.c b/net/core/netpolicy.c
-index 71e9163..8336106 100644
+index 7d4a49d..0f8ff16 100644
 --- a/net/core/netpolicy.c
 +++ b/net/core/netpolicy.c
-@@ -280,6 +280,9 @@ static inline int node_distance_cmp(const void *a, const void *b)
- 	return _a->distance - _b->distance;
+@@ -35,6 +35,7 @@
+ #include <linux/uaccess.h>
+ #include <linux/netdevice.h>
+ #include <net/net_namespace.h>
++#include <linux/sort.h>
+ 
+ static int netpolicy_get_dev_info(struct net_device *dev,
+ 				  struct netpolicy_dev_info *d_info)
+@@ -161,10 +162,30 @@ static void netpolicy_set_affinity(struct net_device *dev)
+ 	}
  }
  
-+#define mix_latency_num(num)	((num) / 3)
-+#define mix_throughput_num(num)	((num) - mix_latency_num(num))
++static void netpolicy_free_obj_list(struct net_device *dev)
++{
++	int i, j;
++	struct netpolicy_object *obj, *tmp;
 +
- static int _netpolicy_gen_obj_list(struct net_device *dev, bool is_rx,
- 				   enum netpolicy_name policy,
- 				   struct sort_node *nodes, int num_node,
-@@ -287,7 +290,9 @@ static int _netpolicy_gen_obj_list(struct net_device *dev, bool is_rx,
- {
- 	cpumask_var_t node_tmp_cpumask, sibling_tmp_cpumask;
- 	struct cpumask *node_assigned_cpumask;
-+	int *l_num = NULL, *b_num = NULL;
- 	int i, ret = -ENOMEM;
-+	int num_node_cpu;
- 	u32 cpu;
- 
- 	if (!alloc_cpumask_var(&node_tmp_cpumask, GFP_ATOMIC))
-@@ -299,6 +304,23 @@ static int _netpolicy_gen_obj_list(struct net_device *dev, bool is_rx,
- 	if (!node_assigned_cpumask)
- 		goto alloc_fail2;
- 
-+	if (policy == NET_POLICY_MIX) {
-+		l_num = kcalloc(num_node, sizeof(int), GFP_ATOMIC);
-+		if (!l_num)
-+			goto alloc_fail3;
-+		b_num = kcalloc(num_node, sizeof(int), GFP_ATOMIC);
-+		if (!b_num) {
-+			kfree(l_num);
-+			goto alloc_fail3;
-+		}
-+
-+		for (i = 0; i < num_node; i++) {
-+			num_node_cpu = cpumask_weight(&node_avail_cpumask[nodes[i].node]);
-+			l_num[i] = mix_latency_num(num_node_cpu);
-+			b_num[i] = mix_throughput_num(num_node_cpu);
-+		}
-+	}
-+
- 	/* Don't share physical core */
- 	for (i = 0; i < num_node; i++) {
- 		if (cpumask_weight(&node_avail_cpumask[nodes[i].node]) == 0)
-@@ -309,7 +331,13 @@ static int _netpolicy_gen_obj_list(struct net_device *dev, bool is_rx,
- 			cpu = cpumask_first(node_tmp_cpumask);
- 
- 			/* push to obj list */
--			ret = netpolicy_add_obj(dev, cpu, is_rx, policy);
-+			if (policy == NET_POLICY_MIX) {
-+				if (l_num[i]-- > 0)
-+					ret = netpolicy_add_obj(dev, cpu, is_rx, NET_POLICY_LATENCY);
-+				else if (b_num[i]-- > 0)
-+					ret = netpolicy_add_obj(dev, cpu, is_rx, NET_POLICY_BULK);
-+			} else
-+				ret = netpolicy_add_obj(dev, cpu, is_rx, policy);
- 			if (ret) {
- 				spin_unlock(&dev->np_ob_list_lock);
- 				goto err;
-@@ -322,6 +350,41 @@ static int _netpolicy_gen_obj_list(struct net_device *dev, bool is_rx,
- 		spin_unlock(&dev->np_ob_list_lock);
- 	}
- 
-+	if (policy == NET_POLICY_MIX) {
-+		struct netpolicy_object *obj;
-+		int dir = is_rx ? 0 : 1;
-+		u32 sibling;
-+
-+		/* if have to share core, choose latency core first. */
-+		for (i = 0; i < num_node; i++) {
-+			if ((l_num[i] < 1) && (b_num[i] < 1))
++	spin_lock(&dev->np_ob_list_lock);
++	for (i = 0; i < NETPOLICY_RXTX; i++) {
++		for (j = NET_POLICY_NONE; j < NET_POLICY_MAX; j++) {
++			if (list_empty(&dev->netpolicy->obj_list[i][j]))
 +				continue;
-+			spin_lock(&dev->np_ob_list_lock);
-+			list_for_each_entry(obj, &dev->netpolicy->obj_list[dir][NET_POLICY_LATENCY], list) {
-+				if (cpu_to_node(obj->cpu) != nodes[i].node)
-+					continue;
-+
-+				cpu = obj->cpu;
-+				for_each_cpu(sibling, topology_sibling_cpumask(cpu)) {
-+					if (cpumask_test_cpu(sibling, &node_assigned_cpumask[nodes[i].node]) ||
-+					    !cpumask_test_cpu(sibling, &node_avail_cpumask[nodes[i].node]))
-+						continue;
-+
-+					if (l_num[i]-- > 0)
-+						ret = netpolicy_add_obj(dev, sibling, is_rx, NET_POLICY_LATENCY);
-+					else if (b_num[i]-- > 0)
-+						ret = netpolicy_add_obj(dev, sibling, is_rx, NET_POLICY_BULK);
-+					if (ret) {
-+						spin_unlock(&dev->np_ob_list_lock);
-+						goto err;
-+					}
-+					cpumask_set_cpu(sibling, &node_assigned_cpumask[nodes[i].node]);
-+				}
++			list_for_each_entry_safe(obj, tmp, &dev->netpolicy->obj_list[i][j], list) {
++				list_del(&obj->list);
++				kfree(obj);
 +			}
-+			spin_unlock(&dev->np_ob_list_lock);
 +		}
 +	}
++	spin_unlock(&dev->np_ob_list_lock);
++}
 +
- 	for (i = 0; i < num_node; i++) {
- 		cpumask_xor(node_tmp_cpumask, &node_avail_cpumask[nodes[i].node], &node_assigned_cpumask[nodes[i].node]);
- 		if (cpumask_weight(node_tmp_cpumask) == 0)
-@@ -329,7 +392,15 @@ static int _netpolicy_gen_obj_list(struct net_device *dev, bool is_rx,
- 		spin_lock(&dev->np_ob_list_lock);
- 		for_each_cpu(cpu, node_tmp_cpumask) {
- 			/* push to obj list */
--			ret = netpolicy_add_obj(dev, cpu, is_rx, policy);
-+			if (policy == NET_POLICY_MIX) {
-+				if (l_num[i]-- > 0)
-+					ret = netpolicy_add_obj(dev, cpu, is_rx, NET_POLICY_LATENCY);
-+				else if (b_num[i]-- > 0)
-+					ret = netpolicy_add_obj(dev, cpu, is_rx, NET_POLICY_BULK);
-+				else
-+					ret = netpolicy_add_obj(dev, cpu, is_rx, NET_POLICY_NONE);
-+			} else
-+				ret = netpolicy_add_obj(dev, cpu, is_rx, policy);
- 			if (ret) {
- 				spin_unlock(&dev->np_ob_list_lock);
- 				goto err;
-@@ -340,6 +411,11 @@ static int _netpolicy_gen_obj_list(struct net_device *dev, bool is_rx,
- 	}
+ static int netpolicy_disable(struct net_device *dev)
+ {
+ 	netpolicy_clear_affinity(dev);
+ 	netpolicy_free_sys_map(dev);
++	netpolicy_free_obj_list(dev);
  
- err:
-+	if (policy == NET_POLICY_MIX) {
-+		kfree(l_num);
-+		kfree(b_num);
-+	}
-+alloc_fail3:
- 	kfree(node_assigned_cpumask);
- alloc_fail2:
- 	free_cpumask_var(sibling_tmp_cpumask);
-@@ -377,6 +453,22 @@ static int netpolicy_gen_obj_list(struct net_device *dev,
- 	 * 2. Remote core + the only logical core
- 	 * 3. Local core + the core's sibling is already in the object list
- 	 * 4. Remote core + the core's sibling is already in the object list
-+	 *
-+	 * For MIX policy, on each node, force 1/3 core as latency policy core,
-+	 * the rest cores are bulk policy core.
-+	 *
-+	 * Besides the above priority rules, there is one more rule
-+	 * - If it's sibling core's object has been applied a policy
-+	 *   Choose the object which the sibling logical core applies latency policy first
-+	 *
-+	 * So the order of object list for MIX policy is as below:
-+	 * 1. Local core + the only logical core
-+	 * 2. Remote core + the only logical core
-+	 * 3. Local core + the core's sibling is latency policy core
-+	 * 4. Remote core + the core's sibling is latency policy core
-+	 * 5. Local core + the core's sibling is bulk policy core
-+	 * 6. Remote core + the core's sibling is bulk policy core
-+	 *
- 	 */
- #ifdef CONFIG_NUMA
- 	dev_node = dev_to_node(dev->dev.parent);
-@@ -447,14 +539,23 @@ static int net_policy_set_by_name(char *name, struct net_device *dev)
- 		goto unlock;
- 	}
- 
--	for (i = 0; i < NET_POLICY_MAX; i++) {
--		if (!strncmp(name, policy_name[i], strlen(policy_name[i])))
--		break;
--	}
-+	if (!strncmp(name, "MIX", strlen("MIX"))) {
-+		if (dev->netpolicy->has_mix_policy) {
-+			i = NET_POLICY_MIX;
-+		} else {
-+			ret = -ENOTSUPP;
-+			goto unlock;
+ 	return 0;
+ }
+@@ -203,6 +224,212 @@ static int netpolicy_enable(struct net_device *dev)
+ const char *policy_name[NET_POLICY_MAX] = {
+ 	"NONE"
+ };
++
++static u32 cpu_to_queue(struct net_device *dev,
++			u32 cpu, bool is_rx)
++{
++	struct netpolicy_sys_info *s_info = &dev->netpolicy->sys_info;
++	int i;
++
++	if (is_rx) {
++		for (i = 0; i < s_info->avail_rx_num; i++) {
++			if (s_info->rx[i].cpu == cpu)
++				return s_info->rx[i].queue;
 +		}
 +	} else {
-+		for (i = 0; i < NET_POLICY_MAX; i++) {
-+			if (!strncmp(name, policy_name[i], strlen(policy_name[i])))
-+			break;
++		for (i = 0; i < s_info->avail_tx_num; i++) {
++			if (s_info->tx[i].cpu == cpu)
++				return s_info->tx[i].queue;
 +		}
- 
--	if (!test_bit(i, dev->netpolicy->avail_policy)) {
--		ret = -ENOTSUPP;
--		goto unlock;
-+		if (!test_bit(i, dev->netpolicy->avail_policy)) {
-+			ret = -ENOTSUPP;
-+			goto unlock;
-+		}
- 	}
- 
- 	if (i == dev->netpolicy->cur_policy)
-@@ -502,17 +603,35 @@ unlock:
- static int net_policy_proc_show(struct seq_file *m, void *v)
- {
- 	struct net_device *dev = (struct net_device *)m->private;
-+	enum netpolicy_name cur;
-+	struct netpolicy_object *obj, *tmp;
- 	int i;
- 
- 	if (WARN_ON(!dev->netpolicy))
- 		return -EINVAL;
- 
--	if (dev->netpolicy->cur_policy == NET_POLICY_NONE) {
-+	cur = dev->netpolicy->cur_policy;
-+	if (cur == NET_POLICY_NONE) {
- 		seq_printf(m, "%s: There is no policy applied\n", dev->name);
- 		seq_printf(m, "%s: The available policy include:", dev->name);
- 		for_each_set_bit(i, dev->netpolicy->avail_policy, NET_POLICY_MAX)
- 			seq_printf(m, " %s", policy_name[i]);
-+		if (dev->netpolicy->has_mix_policy)
-+			seq_printf(m, " MIX");
- 		seq_printf(m, "\n");
-+	} else if (cur == NET_POLICY_MIX) {
-+		seq_printf(m, "%s: MIX policy is running on the system\n", dev->name);
++	}
++
++	return ~0;
++}
++
++static int netpolicy_add_obj(struct net_device *dev,
++			     u32 cpu, bool is_rx,
++			     enum netpolicy_name policy)
++{
++	struct netpolicy_object *obj;
++	int dir = is_rx ? NETPOLICY_RX : NETPOLICY_TX;
++
++	obj = kzalloc(sizeof(*obj), GFP_ATOMIC);
++	if (!obj)
++		return -ENOMEM;
++	obj->cpu = cpu;
++	obj->queue = cpu_to_queue(dev, cpu, is_rx);
++	list_add_tail(&obj->list, &dev->netpolicy->obj_list[dir][policy]);
++
++	return 0;
++}
++
++struct sort_node {
++	int	node;
++	int	distance;
++};
++
++static inline int node_distance_cmp(const void *a, const void *b)
++{
++	const struct sort_node *_a = a;
++	const struct sort_node *_b = b;
++
++	return _a->distance - _b->distance;
++}
++
++static int _netpolicy_gen_obj_list(struct net_device *dev, bool is_rx,
++				   enum netpolicy_name policy,
++				   struct sort_node *nodes, int num_node,
++				   struct cpumask *node_avail_cpumask)
++{
++	cpumask_var_t node_tmp_cpumask, sibling_tmp_cpumask;
++	struct cpumask *node_assigned_cpumask;
++	int i, ret = -ENOMEM;
++	u32 cpu;
++
++	if (!alloc_cpumask_var(&node_tmp_cpumask, GFP_ATOMIC))
++		return ret;
++	if (!alloc_cpumask_var(&sibling_tmp_cpumask, GFP_ATOMIC))
++		goto alloc_fail1;
++
++	node_assigned_cpumask = kcalloc(num_node, sizeof(struct cpumask), GFP_ATOMIC);
++	if (!node_assigned_cpumask)
++		goto alloc_fail2;
++
++	/* Don't share physical core */
++	for (i = 0; i < num_node; i++) {
++		if (cpumask_weight(&node_avail_cpumask[nodes[i].node]) == 0)
++			continue;
 +		spin_lock(&dev->np_ob_list_lock);
-+		for (i = NET_POLICY_NONE; i < NET_POLICY_MAX; i++) {
-+			seq_printf(m, "%s: queues for %s policy\n", dev->name, policy_name[i]);
-+			list_for_each_entry_safe(obj, tmp, &dev->netpolicy->obj_list[NETPOLICY_RX][i], list) {
-+				seq_printf(m, "%s: rx queue %d\n", dev->name, obj->queue);
++		cpumask_copy(node_tmp_cpumask, &node_avail_cpumask[nodes[i].node]);
++		while (cpumask_weight(node_tmp_cpumask)) {
++			cpu = cpumask_first(node_tmp_cpumask);
++
++			/* push to obj list */
++			ret = netpolicy_add_obj(dev, cpu, is_rx, policy);
++			if (ret) {
++				spin_unlock(&dev->np_ob_list_lock);
++				goto err;
 +			}
-+			list_for_each_entry_safe(obj, tmp, &dev->netpolicy->obj_list[NETPOLICY_TX][i], list) {
-+				seq_printf(m, "%s: tx queue %d\n", dev->name, obj->queue);
-+			}
++
++			cpumask_set_cpu(cpu, &node_assigned_cpumask[nodes[i].node]);
++			cpumask_and(sibling_tmp_cpumask, node_tmp_cpumask, topology_sibling_cpumask(cpu));
++			cpumask_xor(node_tmp_cpumask, node_tmp_cpumask, sibling_tmp_cpumask);
 +		}
 +		spin_unlock(&dev->np_ob_list_lock);
- 	} else {
- 		seq_printf(m, "%s: POLICY %s is running on the system\n",
- 			   dev->name, policy_name[dev->netpolicy->cur_policy]);
++	}
++
++	for (i = 0; i < num_node; i++) {
++		cpumask_xor(node_tmp_cpumask, &node_avail_cpumask[nodes[i].node], &node_assigned_cpumask[nodes[i].node]);
++		if (cpumask_weight(node_tmp_cpumask) == 0)
++			continue;
++		spin_lock(&dev->np_ob_list_lock);
++		for_each_cpu(cpu, node_tmp_cpumask) {
++			/* push to obj list */
++			ret = netpolicy_add_obj(dev, cpu, is_rx, policy);
++			if (ret) {
++				spin_unlock(&dev->np_ob_list_lock);
++				goto err;
++			}
++			cpumask_set_cpu(cpu, &node_assigned_cpumask[nodes[i].node]);
++		}
++		spin_unlock(&dev->np_ob_list_lock);
++	}
++
++err:
++	kfree(node_assigned_cpumask);
++alloc_fail2:
++	free_cpumask_var(sibling_tmp_cpumask);
++alloc_fail1:
++	free_cpumask_var(node_tmp_cpumask);
++
++	return ret;
++}
++
++static int netpolicy_gen_obj_list(struct net_device *dev,
++				  enum netpolicy_name policy)
++{
++	struct netpolicy_sys_info *s_info = &dev->netpolicy->sys_info;
++	struct cpumask *node_avail_cpumask;
++	int dev_node = 0, num_nodes = 1;
++	struct sort_node *nodes;
++	int i, ret, node = 0;
++	u32 cpu;
++#ifdef CONFIG_NUMA
++	int val;
++#endif
++	/* The network performance for objects could be different
++	 * because of the queue and cpu topology.
++	 * The objects will be ordered accordingly,
++	 * and put high performance object in the front.
++	 *
++	 * The priority rules as below,
++	 * - The local object. (Local means cpu and queue are in the same node.)
++	 * - The cpu in the object is the only logical core in physical core.
++	 *   The sibiling core's object has not been added in the object list yet.
++	 * - The rest of objects
++	 *
++	 * So the order of object list is as below:
++	 * 1. Local core + the only logical core
++	 * 2. Remote core + the only logical core
++	 * 3. Local core + the core's sibling is already in the object list
++	 * 4. Remote core + the core's sibling is already in the object list
++	 */
++#ifdef CONFIG_NUMA
++	dev_node = dev_to_node(dev->dev.parent);
++	num_nodes = num_online_nodes();
++#endif
++
++	nodes = kcalloc(num_nodes, sizeof(*nodes), GFP_ATOMIC);
++	if (!nodes)
++		return -ENOMEM;
++
++	node_avail_cpumask = kcalloc(num_nodes, sizeof(struct cpumask), GFP_ATOMIC);
++	if (!node_avail_cpumask) {
++		kfree(nodes);
++		return -ENOMEM;
++	}
++
++#ifdef CONFIG_NUMA
++	/* order the node from near to far */
++	for_each_node_mask(i, node_online_map) {
++		val = node_distance(dev_node, i);
++		nodes[node].node = i;
++		nodes[node].distance = val;
++		node++;
++	}
++	sort(nodes, num_nodes, sizeof(*nodes),
++	     node_distance_cmp, NULL);
++#else
++	nodes[0].node = 0;
++#endif
++
++	for (i = 0; i < s_info->avail_rx_num; i++) {
++		cpu = s_info->rx[i].cpu;
++		cpumask_set_cpu(cpu, &node_avail_cpumask[cpu_to_node(cpu)]);
++	}
++	ret = _netpolicy_gen_obj_list(dev, true, policy, nodes,
++				      node, node_avail_cpumask);
++	if (ret)
++		goto err;
++
++	for (i = 0; i < node; i++)
++		cpumask_clear(&node_avail_cpumask[nodes[i].node]);
++
++	for (i = 0; i < s_info->avail_tx_num; i++) {
++		cpu = s_info->tx[i].cpu;
++		cpumask_set_cpu(cpu, &node_avail_cpumask[cpu_to_node(cpu)]);
++	}
++	ret = _netpolicy_gen_obj_list(dev, false, policy, nodes,
++				      node, node_avail_cpumask);
++	if (ret)
++		goto err;
++
++err:
++	kfree(nodes);
++	kfree(node_avail_cpumask);
++	return ret;
++}
++
+ #ifdef CONFIG_PROC_FS
+ 
+ static int net_policy_proc_show(struct seq_file *m, void *v)
+@@ -258,7 +485,7 @@ static int netpolicy_proc_dev_init(struct net *net, struct net_device *dev)
+ 
+ int init_netpolicy(struct net_device *dev)
+ {
+-	int ret;
++	int ret, i, j;
+ 
+ 	spin_lock(&dev->np_lock);
+ 	ret = 0;
+@@ -281,7 +508,15 @@ int init_netpolicy(struct net_device *dev)
+ 	if (ret) {
+ 		kfree(dev->netpolicy);
+ 		dev->netpolicy = NULL;
++		goto unlock;
++	}
++
++	spin_lock(&dev->np_ob_list_lock);
++	for (i = 0; i < NETPOLICY_RXTX; i++) {
++		for (j = NET_POLICY_NONE; j < NET_POLICY_MAX; j++)
++			INIT_LIST_HEAD(&dev->netpolicy->obj_list[i][j]);
+ 	}
++	spin_unlock(&dev->np_ob_list_lock);
+ 
+ unlock:
+ 	spin_unlock(&dev->np_lock);
 -- 
 2.5.5
 
