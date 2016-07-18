@@ -1,10 +1,10 @@
 From: kan.liang@intel.com <kan.liang@intel.com>
-Date: Sun, 17 Jul 2016 23:56:21 -0700
-Subject: [Intel-wired-lan] [RFC PATCH 27/30] net/netpolicy: fast path for
-	finding the queues
+Date: Sun, 17 Jul 2016 23:56:16 -0700
+Subject: [Intel-wired-lan] [RFC PATCH 22/30] net/netpolicy: set tx queues
+	according to policy
 In-Reply-To: <1468824984-65318-1-git-send-email-kan.liang@intel.com>
 References: <1468824984-65318-1-git-send-email-kan.liang@intel.com>
-Message-ID: <1468824984-65318-28-git-send-email-kan.liang@intel.com>
+Message-ID: <1468824984-65318-23-git-send-email-kan.liang@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,184 +13,53 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Kan Liang <kan.liang@intel.com>
 
-Current implementation searches the hash table to get assigned object
-for each transmit/receive packet. It's not necessory, because the
-assigned object usually remain unchanged.
-
-This patch store the assigned queue into netpolicy_reg struct. So it
-doesnot need to search the hash table everytime unless the system cpu
-and queue mapping changed.
-
-netpolicy_sys_map_version is used to track the system cpu and queue
-mapping changes. It's protected by a rw lock (TODO: will replace by RCU
-shortly).
+When the device tries to transmit a buffer, netdev_pick_tx is called to
+find the available tx queues. This patch checks the per socket net
+policy of the binding socket of the buffer. If net policy is set, it
+picks up the assigned tx queue from net policy module, and redirect the
+traffic to the assigned queue.
 
 Signed-off-by: Kan Liang <kan.liang@intel.com>
 ---
- include/linux/init_task.h |  3 +++
- include/linux/netpolicy.h |  5 +++++
- kernel/fork.c             |  3 +++
- net/core/netpolicy.c      | 36 ++++++++++++++++++++++++++++++++++++
- net/core/sock.c           |  6 ++++++
- 5 files changed, 53 insertions(+)
+ net/core/dev.c | 18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/init_task.h b/include/linux/init_task.h
-index eda7ffc..06ea231 100644
---- a/include/linux/init_task.h
-+++ b/include/linux/init_task.h
-@@ -189,6 +189,9 @@ extern struct task_group root_task_group;
- 	.task_netpolicy.dev = NULL,					\
- 	.task_netpolicy.location = ~0,					\
- 	.task_netpolicy.rule_queue = ~0,				\
-+	.task_netpolicy.rx_queue = ~0,					\
-+	.task_netpolicy.tx_queue = ~0,					\
-+	.task_netpolicy.sys_map_version = 0,				\
- 	.task_netpolicy.ptr = (void *)&tsk,
- #else
- #define INIT_NETPOLICY(tsk)
-diff --git a/include/linux/netpolicy.h b/include/linux/netpolicy.h
-index 1cd5ac4..fa740b5 100644
---- a/include/linux/netpolicy.h
-+++ b/include/linux/netpolicy.h
-@@ -39,6 +39,7 @@ enum netpolicy_traffic {
- 
- #define POLICY_NAME_LEN_MAX	64
- extern const char *policy_name[];
-+extern int netpolicy_sys_map_version __read_mostly;
- 
- struct netpolicy_dev_info {
- 	u32	rx_num;
-@@ -86,6 +87,10 @@ struct netpolicy_reg {
- 	void			*ptr;		/* pointers */
- 	u32			location;	/* rule location */
- 	u32			rule_queue;	/* queue set by rule */
-+	/* Info for fast path */
-+	u32			rx_queue;
-+	u32			tx_queue;
-+	int			sys_map_version;
- };
- 
- struct netpolicy_tcpudpip4_spec {
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 31262d2..fcb856b 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -1456,6 +1456,9 @@ static struct task_struct *copy_process(unsigned long clone_flags,
- #ifdef CONFIG_NETPOLICY
- 	p->task_netpolicy.location = ~0;
- 	p->task_netpolicy.rule_queue = ~0;
-+	p->task_netpolicy.rx_queue = ~0;
-+	p->task_netpolicy.tx_queue = ~0;
-+	p->task_netpolicy.sys_map_version = 0;
- 	p->task_netpolicy.ptr = (void *)p;
- 	if (is_net_policy_valid(p->task_netpolicy.policy))
- 		netpolicy_register(&p->task_netpolicy, p->task_netpolicy.policy);
-diff --git a/net/core/netpolicy.c b/net/core/netpolicy.c
-index 9e14137..a63ccd4 100644
---- a/net/core/netpolicy.c
-+++ b/net/core/netpolicy.c
-@@ -82,6 +82,10 @@ struct netpolicy_record {
- static DEFINE_HASHTABLE(np_record_hash, 10);
- static DEFINE_SPINLOCK(np_hashtable_lock);
- 
-+int netpolicy_sys_map_version;
-+/* read write lock to protect sys map version */
-+static DEFINE_RWLOCK(np_sys_map_lock);
-+
- static int netpolicy_get_dev_info(struct net_device *dev,
- 				  struct netpolicy_dev_info *d_info)
+diff --git a/net/core/dev.c b/net/core/dev.c
+index 7894e40..6108e3b 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -3266,6 +3266,7 @@ struct netdev_queue *netdev_pick_tx(struct net_device *dev,
+ 				    void *accel_priv)
  {
-@@ -394,6 +398,24 @@ int netpolicy_pick_queue(struct netpolicy_reg *reg, bool is_rx)
- 	    (current->task_netpolicy.policy != reg->policy))
- 		return -EINVAL;
+ 	int queue_index = 0;
++	struct sock *sk = skb->sk;
  
-+	/* fast path */
-+	read_lock(&np_sys_map_lock);
-+	if (netpolicy_sys_map_version == reg->sys_map_version) {
-+		if (is_rx && (reg->rx_queue != ~0)) {
-+			read_unlock(&np_sys_map_lock);
-+			return reg->rx_queue;
+ #ifdef CONFIG_XPS
+ 	u32 sender_cpu = skb->sender_cpu - 1;
+@@ -3279,8 +3280,21 @@ struct netdev_queue *netdev_pick_tx(struct net_device *dev,
+ 		if (ops->ndo_select_queue)
+ 			queue_index = ops->ndo_select_queue(dev, skb, accel_priv,
+ 							    __netdev_pick_tx);
+-		else
+-			queue_index = __netdev_pick_tx(dev, skb);
++		else {
++#ifdef CONFIG_NETPOLICY
++			queue_index = -1;
++			if (sk && (sk->sk_netpolicy.policy > NET_POLICY_NONE)) {
++				/* There is no device bind to socket when setting policy
++				 * Assign the dev now.
++				 */
++				if (!sk->sk_netpolicy.dev)
++					sk->sk_netpolicy.dev = dev;
++				queue_index = netpolicy_pick_queue(&sk->sk_netpolicy, false);
++			}
++			if (queue_index < 0)
++#endif
++				queue_index = __netdev_pick_tx(dev, skb);
 +		}
-+		if (!is_rx && (reg->tx_queue != ~0)) {
-+			read_unlock(&np_sys_map_lock);
-+			return reg->tx_queue;
-+		}
-+	} else {
-+		reg->rx_queue = ~0;
-+		reg->tx_queue = ~0;
-+		reg->sys_map_version = netpolicy_sys_map_version;
-+	}
-+	read_unlock(&np_sys_map_lock);
-+
- 	old_record = netpolicy_record_search(ptr_id);
- 	if (!old_record) {
- 		pr_warn("NETPOLICY: doesn't registered. Remove net policy settings!\n");
-@@ -435,6 +457,11 @@ int netpolicy_pick_queue(struct netpolicy_reg *reg, bool is_rx)
- 	spin_unlock_bh(&np_hashtable_lock);
- 	kfree(old_record);
  
-+	if (is_rx)
-+		reg->rx_queue  = queue;
-+	else
-+		reg->tx_queue  = queue;
-+
- 	return queue;
- 
- err:
-@@ -522,6 +549,9 @@ void netpolicy_unregister(struct netpolicy_reg *reg)
- 		rtnl_unlock();
- 		reg->location = ~0;
- 		reg->rule_queue = ~0;
-+		reg->rx_queue = ~0;
-+		reg->tx_queue = ~0;
-+		reg->sys_map_version = 0;
- 	}
- 
- 	spin_lock_bh(&np_hashtable_lock);
-@@ -1272,6 +1302,10 @@ void update_netpolicy_sys_map(void)
- 				netpolicy_disable(dev);
- 				goto unlock;
- 			}
-+			write_lock(&np_sys_map_lock);
-+			if (netpolicy_sys_map_version++ < 0)
-+				netpolicy_sys_map_version = 0;
-+			write_unlock(&np_sys_map_lock);
- 
- 			dev->netpolicy->cur_policy = cur_policy;
- unlock:
-@@ -1305,6 +1339,8 @@ static int __init netpolicy_init(void)
- {
- 	int ret;
- 
-+	netpolicy_sys_map_version = 0;
-+
- 	ret = register_pernet_subsys(&netpolicy_net_ops);
- 	if (!ret)
- 		register_netdevice_notifier(&netpolicy_dev_notf);
-diff --git a/net/core/sock.c b/net/core/sock.c
-index 4d47a89..284aafd 100644
---- a/net/core/sock.c
-+++ b/net/core/sock.c
-@@ -1447,6 +1447,9 @@ struct sock *sk_alloc(struct net *net, int family, gfp_t priority,
- 		sk->sk_netpolicy.policy = NET_POLICY_INVALID;
- 		sk->sk_netpolicy.location = ~0;
- 		sk->sk_netpolicy.rule_queue = ~0;
-+		sk->sk_netpolicy.rx_queue = ~0;
-+		sk->sk_netpolicy.tx_queue = ~0;
-+		sk->sk_netpolicy.sys_map_version = 0;
- #endif
- 	}
- 
-@@ -1630,6 +1633,9 @@ struct sock *sk_clone_lock(const struct sock *sk, const gfp_t priority)
- 		newsk->sk_netpolicy.ptr = (void *)newsk;
- 		newsk->sk_netpolicy.location = ~0;
- 		newsk->sk_netpolicy.rule_queue = ~0;
-+		newsk->sk_netpolicy.rx_queue = ~0;
-+		newsk->sk_netpolicy.tx_queue = ~0;
-+		newsk->sk_netpolicy.sys_map_version = 0;
- 		if (is_net_policy_valid(current->task_netpolicy.policy))
- 			newsk->sk_netpolicy.policy = NET_POLICY_INVALID;
- 		if (is_net_policy_valid(newsk->sk_netpolicy.policy))
+ 		if (!accel_priv)
+ 			queue_index = netdev_cap_txqueue(dev, queue_index);
 -- 
 2.5.5
 
