@@ -1,22 +1,45 @@
-From: Andi Kleen <andi@firstfloor.org>
-Date: Mon, 18 Jul 2016 12:49:52 -0700
+From: Liang, Kan <kan.liang@intel.com>
+Date: Mon, 18 Jul 2016 20:14:15 +0000
 Subject: [Intel-wired-lan] [RFC PATCH 00/30] Kernel NET policy
-In-Reply-To: <37D7C6CF3E00A74B8858931C1DB2F07712C19831@SHSMSX103.ccr.corp.intel.com>
+In-Reply-To: <CAM_iQpVRfoC0e43Pbsw8Q3RsyDDnMZeGu=oS0iVvAfMNwz6DeA@mail.gmail.com>
 References: <1468824984-65318-1-git-send-email-kan.liang@intel.com>
- <CAKgT0UfA6ShdVta615ZqH8WvedgxSd3SjA5nZ+5EZGROWYa_sg@mail.gmail.com>
- <37D7C6CF3E00A74B8858931C1DB2F07712C19831@SHSMSX103.ccr.corp.intel.com>
-Message-ID: <20160718194952.GM5871@two.firstfloor.org>
+ <20160718151841.GA19066@breakpoint.cc>
+ <20160718154512.GK5871@two.firstfloor.org>
+ <CAM_iQpVRfoC0e43Pbsw8Q3RsyDDnMZeGu=oS0iVvAfMNwz6DeA@mail.gmail.com>
+Message-ID: <37D7C6CF3E00A74B8858931C1DB2F07712C19852@SHSMSX103.ccr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> > So where is your policy for power saving?  From past experience I can tell you
+
+
 > 
-> There is no policy for power saving yet. I will add it to my todo list.
+> On Mon, Jul 18, 2016 at 8:45 AM, Andi Kleen <andi@firstfloor.org> wrote:
+> >> It seems strange to me to add such policies to the kernel.
+> >> Addmittingly, documentation of some settings is non-existent and one
+> >> needs various different tools to set this (sysctl, procfs, sysfs, ethtool, etc).
+> >
+> > The problem is that different applications need different policies.
+> >
+> > The only entity which can efficiently negotiate between different
+> > applications' conflicting requests is the kernel. And that is pretty
+> > much the basic job description of a kernel: multiplex hardware
+> > efficiently between different users.
+> >
+> > So yes the user space tuning approach works for simple cases ("only
+> > run workloads that require the same tuning"), but is ultimately not
+> > very interesting nor scalable.
+> 
+> I don't read the code yet, just the cover letter.
+> 
+> We have global tunings, per-network-namespace tunings, per-socket tunings.
+> It is still unclear why you can't just put different applications into different
+> namespaces/containers to get different policies.
 
-Yes it's interesting to consider. The main goal here is to maximize CPU
-idle residency? I wonder if that's that much different from the CPU policy.
+In NET policy, we do per queue tunings.
 
--Andi
+
+Thanks,
+Kan
