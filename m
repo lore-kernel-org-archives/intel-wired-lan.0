@@ -1,61 +1,138 @@
-From: Hannes Frederic Sowa <hannes@stressinduktion.org>
-Date: Mon, 18 Jul 2016 23:51:14 +0200
-Subject: [Intel-wired-lan] [RFC PATCH 00/30] Kernel NET policy
-In-Reply-To: <20160718194357.GL5871@two.firstfloor.org>
-References: <1468824984-65318-1-git-send-email-kan.liang@intel.com>
- <20160718151841.GA19066@breakpoint.cc>
- <20160718154512.GK5871@two.firstfloor.org>
- <7a03a353-4c1e-2bb4-2550-f84fc4cc79ac@stressinduktion.org>
- <20160718194357.GL5871@two.firstfloor.org>
-Message-ID: <1468878674.1778899.669950273.69750E32@webmail.messagingengine.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 19 Jul 2016 07:12:47 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ b2c67ee33e5e4c0d52cf906a08bfaa1ebd8954c1 BUILD SUCCESS
+Message-ID: <578d626f.ds+johAK78AIqngr%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello,
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+b2c67ee33e5e4c0d52cf906a08bfaa1ebd8954c1  ixgbe: fix setup_fc for x550em
 
-On Mon, Jul 18, 2016, at 21:43, Andi Kleen wrote:
-> > I wonder if this can be attacked from a different angle. What would be
-> > missing to add support for this in user space? The first possibility
-> > that came to my mind is to just multiplex those hints in the kernel.
-> 
-> "just" is the handwaving part here -- you're proposing a micro kernel
-> approach where part of the multiplexing job that the kernel is doing
-> is farmed out to a message passing user space component.
-> 
-> I suspect this would be far more complicated to get right and
-> perform well than a straight forward monolithic kernel subsystem --
-> which is traditionally how Linux has approached things.
+elapsed time: 69m
 
-At the same time having any kind of policy in the kernel was also always
-avoided.
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 116
 
-> The daemon would always need to work with out of date state
-> compared to the latest, because it cannot do any locking with the
-> kernel state.  So you end up with a complex distributed system with
-> multiple
-> agents "fighting" with each other, and the tuning agent
-> never being able to keep up with the actual work.
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201629
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+parisc                         b180_defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                 randconfig-x018-201629
+x86_64                 randconfig-x019-201629
+x86_64                 randconfig-x010-201629
+x86_64                 randconfig-x015-201629
+x86_64                 randconfig-x013-201629
+x86_64                 randconfig-x014-201629
+x86_64                 randconfig-x016-201629
+x86_64                 randconfig-x017-201629
+x86_64                 randconfig-x012-201629
+x86_64                 randconfig-x011-201629
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201629
+i386                     randconfig-s1-201629
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                 randconfig-i0-07182210
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201629
+i386                     randconfig-i1-201629
+x86_64                           allmodconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                   randconfig-x018-201629
+i386                   randconfig-x017-201629
+i386                   randconfig-x011-201629
+i386                   randconfig-x016-201629
+i386                   randconfig-x014-201629
+i386                   randconfig-x013-201629
+i386                   randconfig-x010-201629
+i386                   randconfig-x019-201629
+i386                   randconfig-x015-201629
+i386                   randconfig-x012-201629
+i386                     randconfig-n0-201629
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                 randconfig-x003-201629
+x86_64                 randconfig-x006-201629
+x86_64                 randconfig-x000-201629
+x86_64                 randconfig-x007-201629
+x86_64                 randconfig-x005-201629
+x86_64                 randconfig-x008-201629
+x86_64                 randconfig-x004-201629
+x86_64                 randconfig-x001-201629
+x86_64                 randconfig-x002-201629
+x86_64                 randconfig-x009-201629
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-r0-201629
+i386                             allmodconfig
+i386                   randconfig-x008-201629
+i386                   randconfig-x005-201629
+i386                   randconfig-x009-201629
+i386                   randconfig-x000-201629
+i386                   randconfig-x006-201629
+i386                   randconfig-x001-201629
+i386                   randconfig-x003-201629
+i386                   randconfig-x004-201629
+i386                   randconfig-x007-201629
+i386                   randconfig-x002-201629
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
 
-But you don't want to have the tuning agents in the fast path? If you
-really try to synchronously update all queue mappings/irqs during socket
-creation or connect time this would add rtnl lock to basically socket
-creation, as drivers require that. This would slow down basic socket
-operations a lot and synchronize them with the management interface.
-
-Even dst_entries are not synchronously updated anymore nowadays as that
-would require too much locking overhead in the kernel.
-
-> Also of course it would be fundamentally less efficient than
-> kernel code doing that, just because of the additional context
-> switches needed.
-
-Synchronizing or configuring any kind of queues already requires
-rtnl_mutex. I didn't test it but acquiring rtnl mutex in inet_recvmsg is
-unlikely to fly performance wise and might even be very dangerous under
-DoS attacks (like I see in 24/30).
-
-Bye,
-Hannes
+Thanks,
+Fengguang
