@@ -1,10 +1,10 @@
 From: kan.liang@intel.com <kan.liang@intel.com>
-Date: Sun, 17 Jul 2016 23:56:03 -0700
-Subject: [Intel-wired-lan] [RFC PATCH 09/30] net/netpolicy: enable and
-	disable net policy
+Date: Sun, 17 Jul 2016 23:56:06 -0700
+Subject: [Intel-wired-lan] [RFC PATCH 12/30] i40e/netpolicy: implement
+	ndo_set_net_policy
 In-Reply-To: <1468824984-65318-1-git-send-email-kan.liang@intel.com>
 References: <1468824984-65318-1-git-send-email-kan.liang@intel.com>
-Message-ID: <1468824984-65318-10-git-send-email-kan.liang@intel.com>
+Message-ID: <1468824984-65318-13-git-send-email-kan.liang@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,68 +13,108 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Kan Liang <kan.liang@intel.com>
 
-This patch introduces functions to enable and disable net policy.
-For enabling, it collects device and cpu information, setup cpu/queue
-mapping, and set irq affinity accordingly.
-For disabling, it removes the irq affinity and mapping information.
-np_lock should protect the enable and disable state. It will be done
-later in this series.
+Setting net policy for all tx and rx queues according to policy name.
+For i40e driver, the policy only changes per queue interrupt moderation.
+It uses new ethtool callback (per queue coalesce setting) to configure
+the driver.
 
 Signed-off-by: Kan Liang <kan.liang@intel.com>
 ---
- net/core/netpolicy.c | 39 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 39 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e.h         |  3 ++
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  6 ++--
+ drivers/net/ethernet/intel/i40e/i40e_main.c    | 43 ++++++++++++++++++++++++++
+ 3 files changed, 49 insertions(+), 3 deletions(-)
 
-diff --git a/net/core/netpolicy.c b/net/core/netpolicy.c
-index c44818d..7d4a49d 100644
---- a/net/core/netpolicy.c
-+++ b/net/core/netpolicy.c
-@@ -161,6 +161,45 @@ static void netpolicy_set_affinity(struct net_device *dev)
- 	}
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index e83fc8a..a4bd430 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -862,4 +862,7 @@ i40e_status i40e_get_npar_bw_setting(struct i40e_pf *pf);
+ i40e_status i40e_set_npar_bw_setting(struct i40e_pf *pf);
+ i40e_status i40e_commit_npar_bw_setting(struct i40e_pf *pf);
+ void i40e_print_link_message(struct i40e_vsi *vsi, bool isup);
++void i40e_set_itr_per_queue(struct i40e_vsi *vsi,
++			    struct ethtool_coalesce *ec,
++			    int queue);
+ #endif /* _I40E_H_ */
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 4962e85..1f3537e 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -2012,9 +2012,9 @@ static int i40e_get_per_queue_coalesce(struct net_device *netdev, u32 queue,
+ 	return __i40e_get_coalesce(netdev, ec, queue);
  }
  
-+static int netpolicy_disable(struct net_device *dev)
+-static void i40e_set_itr_per_queue(struct i40e_vsi *vsi,
+-				   struct ethtool_coalesce *ec,
+-				   int queue)
++void i40e_set_itr_per_queue(struct i40e_vsi *vsi,
++			    struct ethtool_coalesce *ec,
++			    int queue)
+ {
+ 	struct i40e_pf *pf = vsi->back;
+ 	struct i40e_hw *hw = &pf->hw;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 8a919e44..3336373 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -9035,6 +9035,48 @@ static int i40e_ndo_get_irq_info(struct net_device *dev,
+ 
+ 	return 0;
+ }
++
++/**
++ * i40e_set_net_policy
++ * @dev: the net device pointer
++ * @name: policy name
++ *
++ * set policy to each tx and rx queue
++ * Returns 0 on success, negative on failure
++ */
++static int i40e_set_net_policy(struct net_device *dev,
++			       enum netpolicy_name name)
 +{
-+	netpolicy_clear_affinity(dev);
-+	netpolicy_free_sys_map(dev);
++	struct i40e_netdev_priv *np = netdev_priv(dev);
++	struct i40e_vsi *vsi = np->vsi;
++	struct netpolicy_object *obj;
++	struct ethtool_coalesce ec;
 +
-+	return 0;
-+}
-+
-+static int netpolicy_enable(struct net_device *dev)
-+{
-+	int ret;
-+	struct netpolicy_dev_info d_info;
-+	u32 cpu;
-+
-+	if (WARN_ON(!dev->netpolicy))
++	if (policy_param[name][NETPOLICY_RX] > 0) {
++		ec.rx_coalesce_usecs = policy_param[name][NETPOLICY_RX];
++		ec.use_adaptive_rx_coalesce = 0;
++	} else if (policy_param[name][NETPOLICY_RX] == 0) {
++		ec.use_adaptive_rx_coalesce = 1;
++	} else {
 +		return -EINVAL;
-+
-+	/* get driver information */
-+	ret = netpolicy_get_dev_info(dev, &d_info);
-+	if (ret)
-+		return ret;
-+
-+	/* get cpu information */
-+	cpu = netpolicy_get_cpu_information();
-+
-+	/* create sys map */
-+	ret = netpolicy_update_sys_map(dev, &d_info, cpu);
-+	if (ret) {
-+		netpolicy_free_dev_info(&d_info);
-+		return ret;
 +	}
 +
-+	/* set irq affinity */
-+	netpolicy_set_affinity(dev);
++	if (policy_param[name][NETPOLICY_TX] > 0) {
++		ec.tx_coalesce_usecs = policy_param[name][NETPOLICY_TX];
++		ec.use_adaptive_tx_coalesce = 0;
++	} else if (policy_param[name][NETPOLICY_TX] == 0) {
++		ec.use_adaptive_tx_coalesce = 1;
++	} else {
++		return -EINVAL;
++	}
 +
-+	netpolicy_free_dev_info(&d_info);
++	/*For i40e driver, tx and rx are always in pair */
++	list_for_each_entry(obj, &dev->netpolicy->obj_list[NETPOLICY_RX][name], list) {
++		i40e_set_itr_per_queue(vsi, &ec, obj->queue);
++	}
++
 +	return 0;
 +}
-+
- const char *policy_name[NET_POLICY_MAX] = {
- 	"NONE"
+ #endif /* CONFIG_NETPOLICY */
+ 
+ static const struct net_device_ops i40e_netdev_ops = {
+@@ -9076,6 +9118,7 @@ static const struct net_device_ops i40e_netdev_ops = {
+ #ifdef CONFIG_NETPOLICY
+ 	.ndo_netpolicy_init	= i40e_ndo_netpolicy_init,
+ 	.ndo_get_irq_info	= i40e_ndo_get_irq_info,
++	.ndo_set_net_policy	= i40e_set_net_policy,
+ #endif /* CONFIG_NETPOLICY */
  };
+ 
 -- 
 2.5.5
 
