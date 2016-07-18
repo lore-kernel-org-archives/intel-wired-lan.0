@@ -1,10 +1,10 @@
 From: kan.liang@intel.com <kan.liang@intel.com>
-Date: Sun, 17 Jul 2016 23:56:09 -0700
-Subject: [Intel-wired-lan] [RFC PATCH 15/30] i40e/netpolicy: add MIX policy
-	support
+Date: Sun, 17 Jul 2016 23:56:07 -0700
+Subject: [Intel-wired-lan] [RFC PATCH 13/30] i40e/netpolicy: add three new
+	net policies
 In-Reply-To: <1468824984-65318-1-git-send-email-kan.liang@intel.com>
 References: <1468824984-65318-1-git-send-email-kan.liang@intel.com>
-Message-ID: <1468824984-65318-16-git-send-email-kan.liang@intel.com>
+Message-ID: <1468824984-65318-14-git-send-email-kan.liang@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,138 +13,86 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Kan Liang <kan.liang@intel.com>
 
-Enable i40e MIX policy support. Based on the test, the MIX policy has
-better performance if increasing rx interrupt moderation a little bit.
+Introduce three net policies for i40e driver.
+CPU policy: configure for higher throughput and lower CPU%.
+BULK policy: configure for highest throughput.
+LATENCY policy: configure for lowest latency.
 
-For evaluating the MIX policy performance, mixed workloads are tested.
-The mixed workloads are combination of throughput-first workload and
-latency-first workload. Five different types of combinations are
-evaluated.
-(pure throughput-first workload, pure latency-first workloads,
- 2/3 throughput-first workload + 1/3 latency-first workloads,
- 1/3 throughput-first workload + 2/3 latency-first workloads and
- 1/2 throughput-first workload + 1/2 latency-first workloads).
-
-For caculating the performance of mixed workloads, a weighted sum system
-is also introduced. Here is the formula.
-
-Score = normalized_latency * Weight + normalized_throughput * (1 -
-Weight).
-
-If we assume that the user has an equal interest in latency and
-throughput performance, the Score for "MIX" policy is on average ~1.52X
-than baseline.
+Lots of tests are done for net policy on platforms with Intel Xeon E5 V2
+and XL710 40G NIC. The baseline test is with Linux 4.6.0 kernel.
+Netperf is used to evaluate the throughput and latency performance for
+these three net policies.
+For "BULK" policy, the throughput performance is on average ~1.26X than
+baseline.
+For "CPU" policy, the throughput performance is on average ~1.20X than
+baseline, and has lower CPU% (on average ~5% lower than "BULK" policy).
+For "LATENCY" policy, the latency is on average 53.5% less than the
+baseline.
 
 Signed-off-by: Kan Liang <kan.liang@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 71 +++++++++++++++++++++--------
- 1 file changed, 51 insertions(+), 20 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 10 ++++++++++
+ include/linux/netpolicy.h                   |  3 +++
+ net/core/netpolicy.c                        |  5 ++++-
+ 3 files changed, 17 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 11b921b..d3f087d 100644
+index 3336373..11b921b 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -8966,6 +8966,8 @@ static netdev_features_t i40e_features_check(struct sk_buff *skb,
- #define NET_POLICY_CPU_TX	250
- #define NET_POLICY_BULK_RX	50
- #define NET_POLICY_BULK_TX	125
-+#define NET_POLICY_MIX_BULK_RX	62
-+#define NET_POLICY_MIX_BULK_TX	122
- #define NET_POLICY_LATENCY_RX	5
- #define NET_POLICY_LATENCY_TX	10
- 
-@@ -9004,6 +9006,9 @@ static int i40e_ndo_netpolicy_init(struct net_device *dev,
- 			set_bit(i, info->avail_policy);
- 	}
- 
-+	/* support MIX policy */
-+	info->has_mix_policy = true;
-+
- 	return 0;
+@@ -8961,12 +8961,22 @@ static netdev_features_t i40e_features_check(struct sk_buff *skb,
  }
  
-@@ -9046,6 +9051,30 @@ static int i40e_ndo_get_irq_info(struct net_device *dev,
- 	return 0;
+ #ifdef CONFIG_NETPOLICY
++/* Interrupt moderation in microseconds */
++#define NET_POLICY_CPU_RX	125
++#define NET_POLICY_CPU_TX	250
++#define NET_POLICY_BULK_RX	50
++#define NET_POLICY_BULK_TX	125
++#define NET_POLICY_LATENCY_RX	5
++#define NET_POLICY_LATENCY_TX	10
+ 
+ #define NET_POLICY_NOT_SUPPORT	-2
+ #define NET_POLICY_END		-3
+ static int policy_param[NET_POLICY_MAX + 1][2] = {
+ 	/* rx-usec, tx-usec */
+ 	{0, 0},
++	{NET_POLICY_CPU_RX, NET_POLICY_CPU_TX},		/* CPU policy */
++	{NET_POLICY_BULK_RX, NET_POLICY_BULK_TX},	/* BULK policy */
++	{NET_POLICY_LATENCY_RX, NET_POLICY_LATENCY_TX},	/* LATENCY policy */
+ 
+ 	{NET_POLICY_END, NET_POLICY_END},
+ };
+diff --git a/include/linux/netpolicy.h b/include/linux/netpolicy.h
+index b1d9277..3d348a7 100644
+--- a/include/linux/netpolicy.h
++++ b/include/linux/netpolicy.h
+@@ -18,6 +18,9 @@
+ 
+ enum netpolicy_name {
+ 	NET_POLICY_NONE		= 0,
++	NET_POLICY_CPU,
++	NET_POLICY_BULK,
++	NET_POLICY_LATENCY,
+ 	NET_POLICY_MAX,
+ };
+ 
+diff --git a/net/core/netpolicy.c b/net/core/netpolicy.c
+index 8112839..71e9163 100644
+--- a/net/core/netpolicy.c
++++ b/net/core/netpolicy.c
+@@ -223,7 +223,10 @@ static int netpolicy_enable(struct net_device *dev)
  }
  
-+static int i40e_fill_coalesce_for_policy(struct ethtool_coalesce *ec,
-+					 enum netpolicy_name name)
-+{
-+	if (policy_param[name][NETPOLICY_RX] > 0) {
-+		ec->rx_coalesce_usecs = policy_param[name][NETPOLICY_RX];
-+		ec->use_adaptive_rx_coalesce = 0;
-+	} else if (policy_param[name][NETPOLICY_RX] == 0) {
-+		ec->use_adaptive_rx_coalesce = 1;
-+	} else {
-+		return -EINVAL;
-+	}
-+
-+	if (policy_param[name][NETPOLICY_TX] > 0) {
-+		ec->tx_coalesce_usecs = policy_param[name][NETPOLICY_TX];
-+		ec->use_adaptive_tx_coalesce = 0;
-+	} else if (policy_param[name][NETPOLICY_TX] == 0) {
-+		ec->use_adaptive_tx_coalesce = 1;
-+	} else {
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
- /**
-  * i40e_set_net_policy
-  * @dev: the net device pointer
-@@ -9061,28 +9090,30 @@ static int i40e_set_net_policy(struct net_device *dev,
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct netpolicy_object *obj;
- 	struct ethtool_coalesce ec;
--
--	if (policy_param[name][NETPOLICY_RX] > 0) {
--		ec.rx_coalesce_usecs = policy_param[name][NETPOLICY_RX];
--		ec.use_adaptive_rx_coalesce = 0;
--	} else if (policy_param[name][NETPOLICY_RX] == 0) {
--		ec.use_adaptive_rx_coalesce = 1;
--	} else {
--		return -EINVAL;
--	}
--
--	if (policy_param[name][NETPOLICY_TX] > 0) {
--		ec.tx_coalesce_usecs = policy_param[name][NETPOLICY_TX];
--		ec.use_adaptive_tx_coalesce = 0;
--	} else if (policy_param[name][NETPOLICY_TX] == 0) {
--		ec.use_adaptive_tx_coalesce = 1;
--	} else {
--		return -EINVAL;
--	}
-+	int i, ret;
+ const char *policy_name[NET_POLICY_MAX] = {
+-	"NONE"
++	"NONE",
++	"CPU",
++	"BULK",
++	"LATENCY"
+ };
  
- 	/*For i40e driver, tx and rx are always in pair */
--	list_for_each_entry(obj, &dev->netpolicy->obj_list[NETPOLICY_RX][name], list) {
--		i40e_set_itr_per_queue(vsi, &ec, obj->queue);
-+	if (name == NET_POLICY_MIX) {
-+		/* Under MIX policy, the paramers for BULK object are different */
-+		policy_param[NET_POLICY_BULK][NETPOLICY_RX] = NET_POLICY_MIX_BULK_RX;
-+		policy_param[NET_POLICY_BULK][NETPOLICY_TX] = NET_POLICY_MIX_BULK_TX;
-+		for (i = NET_POLICY_NONE; i < NET_POLICY_MAX; i++) {
-+			ret = i40e_fill_coalesce_for_policy(&ec, i);
-+			if (ret)
-+				return ret;
-+			list_for_each_entry(obj, &dev->netpolicy->obj_list[NETPOLICY_RX][i], list) {
-+				i40e_set_itr_per_queue(vsi, &ec, obj->queue);
-+			}
-+		}
-+	} else {
-+		policy_param[NET_POLICY_BULK][NETPOLICY_RX] = NET_POLICY_BULK_RX;
-+		policy_param[NET_POLICY_BULK][NETPOLICY_TX] = NET_POLICY_BULK_TX;
-+		ret = i40e_fill_coalesce_for_policy(&ec, name);
-+		if (ret)
-+			return ret;
-+		list_for_each_entry(obj, &dev->netpolicy->obj_list[NETPOLICY_RX][name], list) {
-+			i40e_set_itr_per_queue(vsi, &ec, obj->queue);
-+		}
- 	}
- 
- 	return 0;
+ static u32 cpu_to_queue(struct net_device *dev,
 -- 
 2.5.5
 
