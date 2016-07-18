@@ -1,49 +1,36 @@
-From: Liang, Kan <kan.liang@intel.com>
-Date: Mon, 18 Jul 2016 20:24:01 +0000
+From: Daniel Borkmann <daniel@iogearbox.net>
+Date: Mon, 18 Jul 2016 22:51:05 +0200
 Subject: [Intel-wired-lan] [RFC PATCH 00/30] Kernel NET policy
-In-Reply-To: <CAM_iQpXWVGh6dsj5jSasi-Oy7w7dzB_z-vxT_Ot363_BXZpM2A@mail.gmail.com>
+In-Reply-To: <37D7C6CF3E00A74B8858931C1DB2F07712C197F1@SHSMSX103.ccr.corp.intel.com>
 References: <1468824984-65318-1-git-send-email-kan.liang@intel.com>
- <20160718151841.GA19066@breakpoint.cc>
- <20160718154512.GK5871@two.firstfloor.org>
- <CAM_iQpVRfoC0e43Pbsw8Q3RsyDDnMZeGu=oS0iVvAfMNwz6DeA@mail.gmail.com>
- <37D7C6CF3E00A74B8858931C1DB2F07712C19852@SHSMSX103.ccr.corp.intel.com>
- <CAM_iQpXWVGh6dsj5jSasi-Oy7w7dzB_z-vxT_Ot363_BXZpM2A@mail.gmail.com>
-Message-ID: <37D7C6CF3E00A74B8858931C1DB2F07712C19879@SHSMSX103.ccr.corp.intel.com>
+ <578D0244.7010707@iogearbox.net>
+ <37D7C6CF3E00A74B8858931C1DB2F07712C197F1@SHSMSX103.ccr.corp.intel.com>
+Message-ID: <578D4139.7060201@iogearbox.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On 07/18/2016 08:30 PM, Liang, Kan wrote:
+>> On 07/18/2016 08:55 AM, kan.liang at intel.com wrote:
+[...]
+>> On a higher level picture, why for example, a new cgroup in combination
+>> with tc shouldn't be the ones resolving these policies on resource usage?
+>
+> The NET policy doesn't support cgroup yet, but it's on my todo list.
+> The granularity for the device resource is per queue. The packet will be
+> redirected to the specific queue.
+> I'm not sure if cgroup with tc can do that.
 
+Did you have a look at sch_mqprio, which can be used along with either
+netprio cgroup or netcls cgroup plus tc on clsact's egress side to set
+the priority for mqprio mappings from application side? At leats ixgbe,
+i40e, fm10k have offload support for it and a number of other nics. You
+could also use cls_bpf for making the prio assignment if you need to
+involve also other meta data from the skb (like mark or prio derived from
+sockets, etc). Maybe it doesn't cover all of what you need, but could be
+a start to extend upon?
 
-> >>
-> >> On Mon, Jul 18, 2016 at 8:45 AM, Andi Kleen <andi@firstfloor.org> wrote:
-> >> >> It seems strange to me to add such policies to the kernel.
-> >> >> Addmittingly, documentation of some settings is non-existent and
-> >> >> one needs various different tools to set this (sysctl, procfs, sysfs,
-> ethtool, etc).
-> >> >
-> >> > The problem is that different applications need different policies.
-> >> >
-> >> > The only entity which can efficiently negotiate between different
-> >> > applications' conflicting requests is the kernel. And that is
-> >> > pretty much the basic job description of a kernel: multiplex
-> >> > hardware efficiently between different users.
-> >> >
-> >> > So yes the user space tuning approach works for simple cases ("only
-> >> > run workloads that require the same tuning"), but is ultimately not
-> >> > very interesting nor scalable.
-> >>
-> >> I don't read the code yet, just the cover letter.
-> >>
-> >> We have global tunings, per-network-namespace tunings, per-socket
-> tunings.
-> >> It is still unclear why you can't just put different applications
-> >> into different namespaces/containers to get different policies.
-> >
-> > In NET policy, we do per queue tunings.
-> 
-> Is it possible to isolate NIC queues for containers?
-
-Yes, but we don't  have containers support yet. 
+Thanks,
+Daniel
