@@ -1,45 +1,49 @@
-From: Cong Wang <xiyou.wangcong@gmail.com>
-Date: Mon, 18 Jul 2016 13:19:08 -0700
+From: Liang, Kan <kan.liang@intel.com>
+Date: Mon, 18 Jul 2016 20:24:01 +0000
 Subject: [Intel-wired-lan] [RFC PATCH 00/30] Kernel NET policy
-In-Reply-To: <37D7C6CF3E00A74B8858931C1DB2F07712C19852@SHSMSX103.ccr.corp.intel.com>
+In-Reply-To: <CAM_iQpXWVGh6dsj5jSasi-Oy7w7dzB_z-vxT_Ot363_BXZpM2A@mail.gmail.com>
 References: <1468824984-65318-1-git-send-email-kan.liang@intel.com>
  <20160718151841.GA19066@breakpoint.cc>
  <20160718154512.GK5871@two.firstfloor.org>
  <CAM_iQpVRfoC0e43Pbsw8Q3RsyDDnMZeGu=oS0iVvAfMNwz6DeA@mail.gmail.com>
  <37D7C6CF3E00A74B8858931C1DB2F07712C19852@SHSMSX103.ccr.corp.intel.com>
-Message-ID: <CAM_iQpXWVGh6dsj5jSasi-Oy7w7dzB_z-vxT_Ot363_BXZpM2A@mail.gmail.com>
+ <CAM_iQpXWVGh6dsj5jSasi-Oy7w7dzB_z-vxT_Ot363_BXZpM2A@mail.gmail.com>
+Message-ID: <37D7C6CF3E00A74B8858931C1DB2F07712C19879@SHSMSX103.ccr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Jul 18, 2016 at 1:14 PM, Liang, Kan <kan.liang@intel.com> wrote:
->
->
->>
->> On Mon, Jul 18, 2016 at 8:45 AM, Andi Kleen <andi@firstfloor.org> wrote:
->> >> It seems strange to me to add such policies to the kernel.
->> >> Addmittingly, documentation of some settings is non-existent and one
->> >> needs various different tools to set this (sysctl, procfs, sysfs, ethtool, etc).
->> >
->> > The problem is that different applications need different policies.
->> >
->> > The only entity which can efficiently negotiate between different
->> > applications' conflicting requests is the kernel. And that is pretty
->> > much the basic job description of a kernel: multiplex hardware
->> > efficiently between different users.
->> >
->> > So yes the user space tuning approach works for simple cases ("only
->> > run workloads that require the same tuning"), but is ultimately not
->> > very interesting nor scalable.
->>
->> I don't read the code yet, just the cover letter.
->>
->> We have global tunings, per-network-namespace tunings, per-socket tunings.
->> It is still unclear why you can't just put different applications into different
->> namespaces/containers to get different policies.
->
-> In NET policy, we do per queue tunings.
 
-Is it possible to isolate NIC queues for containers?
+
+> >>
+> >> On Mon, Jul 18, 2016 at 8:45 AM, Andi Kleen <andi@firstfloor.org> wrote:
+> >> >> It seems strange to me to add such policies to the kernel.
+> >> >> Addmittingly, documentation of some settings is non-existent and
+> >> >> one needs various different tools to set this (sysctl, procfs, sysfs,
+> ethtool, etc).
+> >> >
+> >> > The problem is that different applications need different policies.
+> >> >
+> >> > The only entity which can efficiently negotiate between different
+> >> > applications' conflicting requests is the kernel. And that is
+> >> > pretty much the basic job description of a kernel: multiplex
+> >> > hardware efficiently between different users.
+> >> >
+> >> > So yes the user space tuning approach works for simple cases ("only
+> >> > run workloads that require the same tuning"), but is ultimately not
+> >> > very interesting nor scalable.
+> >>
+> >> I don't read the code yet, just the cover letter.
+> >>
+> >> We have global tunings, per-network-namespace tunings, per-socket
+> tunings.
+> >> It is still unclear why you can't just put different applications
+> >> into different namespaces/containers to get different policies.
+> >
+> > In NET policy, we do per queue tunings.
+> 
+> Is it possible to isolate NIC queues for containers?
+
+Yes, but we don't  have containers support yet. 
