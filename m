@@ -1,10 +1,10 @@
 From: kan.liang@intel.com <kan.liang@intel.com>
-Date: Sun, 17 Jul 2016 23:56:06 -0700
-Subject: [Intel-wired-lan] [RFC PATCH 12/30] i40e/netpolicy: implement
-	ndo_set_net_policy
+Date: Sun, 17 Jul 2016 23:56:05 -0700
+Subject: [Intel-wired-lan] [RFC PATCH 11/30] net/netpolicy: set net policy
+	by policy name
 In-Reply-To: <1468824984-65318-1-git-send-email-kan.liang@intel.com>
 References: <1468824984-65318-1-git-send-email-kan.liang@intel.com>
-Message-ID: <1468824984-65318-13-git-send-email-kan.liang@intel.com>
+Message-ID: <1468824984-65318-12-git-send-email-kan.liang@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,108 +13,189 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Kan Liang <kan.liang@intel.com>
 
-Setting net policy for all tx and rx queues according to policy name.
-For i40e driver, the policy only changes per queue interrupt moderation.
-It uses new ethtool callback (per queue coalesce setting) to configure
-the driver.
+User can write policy name to /proc/net/netpolicy/$DEV/policy to enable
+net policy for specific device.
+
+When the policy is enabled, the module automatically disables irq
+balance and set irq affinity. The object list is also generated
+accordingly.
+
+np_lock will be used to protect the state.
 
 Signed-off-by: Kan Liang <kan.liang@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h         |  3 ++
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  6 ++--
- drivers/net/ethernet/intel/i40e/i40e_main.c    | 43 ++++++++++++++++++++++++++
- 3 files changed, 49 insertions(+), 3 deletions(-)
+ include/linux/netdevice.h |  5 +++
+ include/linux/netpolicy.h |  1 +
+ net/core/netpolicy.c      | 95 +++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 101 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index e83fc8a..a4bd430 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -862,4 +862,7 @@ i40e_status i40e_get_npar_bw_setting(struct i40e_pf *pf);
- i40e_status i40e_set_npar_bw_setting(struct i40e_pf *pf);
- i40e_status i40e_commit_npar_bw_setting(struct i40e_pf *pf);
- void i40e_print_link_message(struct i40e_vsi *vsi, bool isup);
-+void i40e_set_itr_per_queue(struct i40e_vsi *vsi,
-+			    struct ethtool_coalesce *ec,
-+			    int queue);
- #endif /* _I40E_H_ */
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 4962e85..1f3537e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -2012,9 +2012,9 @@ static int i40e_get_per_queue_coalesce(struct net_device *netdev, u32 queue,
- 	return __i40e_get_coalesce(netdev, ec, queue);
- }
- 
--static void i40e_set_itr_per_queue(struct i40e_vsi *vsi,
--				   struct ethtool_coalesce *ec,
--				   int queue)
-+void i40e_set_itr_per_queue(struct i40e_vsi *vsi,
-+			    struct ethtool_coalesce *ec,
-+			    int queue)
- {
- 	struct i40e_pf *pf = vsi->back;
- 	struct i40e_hw *hw = &pf->hw;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 8a919e44..3336373 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -9035,6 +9035,48 @@ static int i40e_ndo_get_irq_info(struct net_device *dev,
- 
- 	return 0;
- }
-+
-+/**
-+ * i40e_set_net_policy
-+ * @dev: the net device pointer
-+ * @name: policy name
-+ *
-+ * set policy to each tx and rx queue
-+ * Returns 0 on success, negative on failure
-+ */
-+static int i40e_set_net_policy(struct net_device *dev,
-+			       enum netpolicy_name name)
-+{
-+	struct i40e_netdev_priv *np = netdev_priv(dev);
-+	struct i40e_vsi *vsi = np->vsi;
-+	struct netpolicy_object *obj;
-+	struct ethtool_coalesce ec;
-+
-+	if (policy_param[name][NETPOLICY_RX] > 0) {
-+		ec.rx_coalesce_usecs = policy_param[name][NETPOLICY_RX];
-+		ec.use_adaptive_rx_coalesce = 0;
-+	} else if (policy_param[name][NETPOLICY_RX] == 0) {
-+		ec.use_adaptive_rx_coalesce = 1;
-+	} else {
-+		return -EINVAL;
-+	}
-+
-+	if (policy_param[name][NETPOLICY_TX] > 0) {
-+		ec.tx_coalesce_usecs = policy_param[name][NETPOLICY_TX];
-+		ec.use_adaptive_tx_coalesce = 0;
-+	} else if (policy_param[name][NETPOLICY_TX] == 0) {
-+		ec.use_adaptive_tx_coalesce = 1;
-+	} else {
-+		return -EINVAL;
-+	}
-+
-+	/*For i40e driver, tx and rx are always in pair */
-+	list_for_each_entry(obj, &dev->netpolicy->obj_list[NETPOLICY_RX][name], list) {
-+		i40e_set_itr_per_queue(vsi, &ec, obj->queue);
-+	}
-+
-+	return 0;
-+}
- #endif /* CONFIG_NETPOLICY */
- 
- static const struct net_device_ops i40e_netdev_ops = {
-@@ -9076,6 +9118,7 @@ static const struct net_device_ops i40e_netdev_ops = {
- #ifdef CONFIG_NETPOLICY
- 	.ndo_netpolicy_init	= i40e_ndo_netpolicy_init,
- 	.ndo_get_irq_info	= i40e_ndo_get_irq_info,
-+	.ndo_set_net_policy	= i40e_set_net_policy,
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index e60c30f..45cb589 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -1094,6 +1094,9 @@ struct tc_to_netdev {
+  * int (*ndo_get_irq_info)(struct net_device *dev,
+  * 			   struct netpolicy_dev_info *info);
+  * 	This function is used to get irq information of rx and tx queues
++ * int (*ndo_set_net_policy)(struct net_device *dev,
++ * 			     enum netpolicy_name name);
++ * 	This function is used to set global net policy by name
+  *
+  */
+ struct net_device_ops {
+@@ -1283,6 +1286,8 @@ struct net_device_ops {
+ 						      struct netpolicy_info *info);
+ 	int			(*ndo_get_irq_info)(struct net_device *dev,
+ 						    struct netpolicy_dev_info *info);
++	int			(*ndo_set_net_policy)(struct net_device *dev,
++						      enum netpolicy_name name);
  #endif /* CONFIG_NETPOLICY */
  };
  
+diff --git a/include/linux/netpolicy.h b/include/linux/netpolicy.h
+index 73a5fa6..b1d9277 100644
+--- a/include/linux/netpolicy.h
++++ b/include/linux/netpolicy.h
+@@ -27,6 +27,7 @@ enum netpolicy_traffic {
+ 	NETPOLICY_RXTX,
+ };
+ 
++#define POLICY_NAME_LEN_MAX	64
+ extern const char *policy_name[];
+ 
+ struct netpolicy_dev_info {
+diff --git a/net/core/netpolicy.c b/net/core/netpolicy.c
+index 0f8ff16..8112839 100644
+--- a/net/core/netpolicy.c
++++ b/net/core/netpolicy.c
+@@ -36,6 +36,7 @@
+ #include <linux/netdevice.h>
+ #include <net/net_namespace.h>
+ #include <linux/sort.h>
++#include <linux/ctype.h>
+ 
+ static int netpolicy_get_dev_info(struct net_device *dev,
+ 				  struct netpolicy_dev_info *d_info)
+@@ -430,6 +431,69 @@ err:
+ 	return ret;
+ }
+ 
++static int net_policy_set_by_name(char *name, struct net_device *dev)
++{
++	int i, ret;
++
++	spin_lock(&dev->np_lock);
++	ret = 0;
++
++	if (!dev->netpolicy ||
++	    !dev->netdev_ops->ndo_set_net_policy) {
++		ret = -ENOTSUPP;
++		goto unlock;
++	}
++
++	for (i = 0; i < NET_POLICY_MAX; i++) {
++		if (!strncmp(name, policy_name[i], strlen(policy_name[i])))
++		break;
++	}
++
++	if (!test_bit(i, dev->netpolicy->avail_policy)) {
++		ret = -ENOTSUPP;
++		goto unlock;
++	}
++
++	if (i == dev->netpolicy->cur_policy)
++		goto unlock;
++
++	/* If there is no policy applied yet, need to do enable first . */
++	if (dev->netpolicy->cur_policy == NET_POLICY_NONE) {
++		ret = netpolicy_enable(dev);
++		if (ret)
++			goto unlock;
++	}
++
++	netpolicy_free_obj_list(dev);
++
++	/* Generate object list according to policy name */
++	ret = netpolicy_gen_obj_list(dev, i);
++	if (ret)
++		goto err;
++
++	/* set policy */
++	ret = dev->netdev_ops->ndo_set_net_policy(dev, i);
++	if (ret)
++		goto err;
++
++	/* If removing policy, need to do disable. */
++	if (i == NET_POLICY_NONE)
++		netpolicy_disable(dev);
++
++	dev->netpolicy->cur_policy = i;
++
++	spin_unlock(&dev->np_lock);
++	return 0;
++
++err:
++	netpolicy_free_obj_list(dev);
++	if (dev->netpolicy->cur_policy == NET_POLICY_NONE)
++		netpolicy_disable(dev);
++unlock:
++	spin_unlock(&dev->np_lock);
++	return ret;
++}
++
+ #ifdef CONFIG_PROC_FS
+ 
+ static int net_policy_proc_show(struct seq_file *m, void *v)
+@@ -459,11 +523,40 @@ static int net_policy_proc_open(struct inode *inode, struct file *file)
+ 	return single_open(file, net_policy_proc_show, PDE_DATA(inode));
+ }
+ 
++static ssize_t net_policy_proc_write(struct file *file, const char __user *buf,
++				     size_t count, loff_t *pos)
++{
++	struct seq_file *m = file->private_data;
++	struct net_device *dev = (struct net_device *)m->private;
++	char name[POLICY_NAME_LEN_MAX];
++	int i, ret;
++
++	if (!dev->netpolicy)
++		return -ENOTSUPP;
++
++	if (count > POLICY_NAME_LEN_MAX)
++		return -EINVAL;
++
++	if (copy_from_user(name, buf, count))
++		return -EINVAL;
++
++	for (i = 0; i < count - 1; i++)
++		name[i] = toupper(name[i]);
++	name[POLICY_NAME_LEN_MAX - 1] = 0;
++
++	ret = net_policy_set_by_name(name, dev);
++	if (ret)
++		return ret;
++
++	return count;
++}
++
+ static const struct file_operations proc_net_policy_operations = {
+ 	.open		= net_policy_proc_open,
+ 	.read		= seq_read,
+ 	.llseek		= seq_lseek,
+ 	.release	= seq_release,
++	.write		= net_policy_proc_write,
+ 	.owner		= THIS_MODULE,
+ };
+ 
+@@ -527,6 +620,8 @@ void uninit_netpolicy(struct net_device *dev)
+ {
+ 	spin_lock(&dev->np_lock);
+ 	if (dev->netpolicy) {
++		if (dev->netpolicy->cur_policy > NET_POLICY_NONE)
++			netpolicy_disable(dev);
+ 		kfree(dev->netpolicy);
+ 		dev->netpolicy = NULL;
+ 	}
 -- 
 2.5.5
 
