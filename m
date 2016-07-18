@@ -1,10 +1,10 @@
 From: kan.liang@intel.com <kan.liang@intel.com>
-Date: Sun, 17 Jul 2016 23:56:10 -0700
-Subject: [Intel-wired-lan] [RFC PATCH 16/30] net/netpolicy: net device
-	hotplug
+Date: Sun, 17 Jul 2016 23:56:15 -0700
+Subject: [Intel-wired-lan] [RFC PATCH 21/30] net/policy: introduce
+	netpolicy_pick_queue
 In-Reply-To: <1468824984-65318-1-git-send-email-kan.liang@intel.com>
 References: <1468824984-65318-1-git-send-email-kan.liang@intel.com>
-Message-ID: <1468824984-65318-17-git-send-email-kan.liang@intel.com>
+Message-ID: <1468824984-65318-22-git-send-email-kan.liang@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,122 +13,169 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Kan Liang <kan.liang@intel.com>
 
-Support net device up/down/namechange in the netpolicy code.
+This function will be used to get assigned queues by policy and ptr.
+If it's first time, get_avail_queue will be called to find the available
+object from the given policy object list.
 
 Signed-off-by: Kan Liang <kan.liang@intel.com>
 ---
- net/core/netpolicy.c | 66 +++++++++++++++++++++++++++++++++++++++++++++-------
- 1 file changed, 58 insertions(+), 8 deletions(-)
+ include/linux/netpolicy.h |   5 ++
+ net/core/netpolicy.c      | 119 ++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 124 insertions(+)
 
+diff --git a/include/linux/netpolicy.h b/include/linux/netpolicy.h
+index 89361d9..e20820d 100644
+--- a/include/linux/netpolicy.h
++++ b/include/linux/netpolicy.h
+@@ -97,6 +97,7 @@ extern void update_netpolicy_sys_map(void);
+ extern int netpolicy_register(struct netpolicy_reg *reg,
+ 			      enum netpolicy_name policy);
+ extern void netpolicy_unregister(struct netpolicy_reg *reg);
++extern int netpolicy_pick_queue(struct netpolicy_reg *reg, bool is_rx);
+ #else
+ static inline void update_netpolicy_sys_map(void)
+ {
+@@ -111,6 +112,10 @@ static inline void netpolicy_unregister(struct netpolicy_reg *reg)
+ {
+ }
+ 
++static inline int netpolicy_pick_queue(struct netpolicy_reg *reg, bool is_rx)
++{
++	return 0;
++}
+ #endif
+ 
+ #endif /*__LINUX_NETPOLICY_H*/
 diff --git a/net/core/netpolicy.c b/net/core/netpolicy.c
-index 8336106..2a04fcf 100644
+index 13ab5e1..6992d08 100644
 --- a/net/core/netpolicy.c
 +++ b/net/core/netpolicy.c
-@@ -684,6 +684,9 @@ static const struct file_operations proc_net_policy_operations = {
- 
- static int netpolicy_proc_dev_init(struct net *net, struct net_device *dev)
- {
-+	if (dev->proc_dev)
-+		proc_remove(dev->proc_dev);
-+
- 	dev->proc_dev = proc_net_mkdir(net, dev->name, net->proc_netpolicy);
- 	if (!dev->proc_dev)
- 		return -ENOMEM;
-@@ -750,6 +753,19 @@ void uninit_netpolicy(struct net_device *dev)
- 	spin_unlock(&dev->np_lock);
+@@ -289,6 +289,125 @@ static void put_queue(struct net_device *dev,
+ 		atomic_dec(&tx_obj->refcnt);
  }
  
-+static void netpolicy_dev_init(struct net *net,
-+			       struct net_device *dev)
++static struct netpolicy_object *get_avail_queue(struct net_device *dev,
++						enum netpolicy_name policy,
++						bool is_rx)
 +{
-+	if (!init_netpolicy(dev)) {
-+#ifdef CONFIG_PROC_FS
-+		if (netpolicy_proc_dev_init(net, dev))
-+			uninit_netpolicy(dev);
-+		else
-+#endif /* CONFIG_PROC_FS */
-+		pr_info("NETPOLICY: Init net policy for %s\n", dev->name);
++	int dir = is_rx ? NETPOLICY_RX : NETPOLICY_TX;
++	struct netpolicy_object *tmp, *obj = NULL;
++	int val = -1;
++
++	/* Check if net policy is supported */
++	if (!dev || !dev->netpolicy)
++		return NULL;
++
++	/* The system should have queues which support the request policy. */
++	if ((policy != dev->netpolicy->cur_policy) &&
++	    (dev->netpolicy->cur_policy != NET_POLICY_MIX))
++		return NULL;
++
++	spin_lock(&dev->np_ob_list_lock);
++	list_for_each_entry(tmp, &dev->netpolicy->obj_list[dir][policy], list) {
++		if ((val > atomic_read(&tmp->refcnt)) ||
++		    (val == -1)) {
++			val = atomic_read(&tmp->refcnt);
++			obj = tmp;
++		}
 +	}
++	spin_unlock(&dev->np_ob_list_lock);
++
++	if (WARN_ON(!obj))
++		return NULL;
++	atomic_inc(&obj->refcnt);
++
++	return obj;
 +}
 +
- static int __net_init netpolicy_net_init(struct net *net)
- {
- 	struct net_device *dev, *aux;
-@@ -762,14 +778,7 @@ static int __net_init netpolicy_net_init(struct net *net)
- #endif /* CONFIG_PROC_FS */
- 
- 	for_each_netdev_safe(net, dev, aux) {
--		if (!init_netpolicy(dev)) {
--#ifdef CONFIG_PROC_FS
--			if (netpolicy_proc_dev_init(net, dev))
--				uninit_netpolicy(dev);
--			else
--#endif /* CONFIG_PROC_FS */
--			pr_info("NETPOLICY: Init net policy for %s\n", dev->name);
--		}
-+		netpolicy_dev_init(net, dev);
- 	}
- 
- 	return 0;
-@@ -791,17 +800,58 @@ static struct pernet_operations netpolicy_net_ops = {
- 	.exit = netpolicy_net_exit,
- };
- 
-+static int netpolicy_notify(struct notifier_block *this,
-+			    unsigned long event,
-+			    void *ptr)
++/**
++ * netpolicy_pick_queue() - Find assigned queue
++ * @reg:	NET policy register info
++ * @is_rx:	RX queue or TX queue
++ *
++ * This function intends to find the assigned queue according to policy and
++ * ptr. If it's first time, get_avail_queue will be called to find the
++ * available object from the given policy object list. Then the object info
++ * will be updated in the hash table.
++ *
++ * Return: negative on failure, otherwise on the assigned queue
++ */
++int netpolicy_pick_queue(struct netpolicy_reg *reg, bool is_rx)
 +{
-+	struct net_device *dev = netdev_notifier_info_to_dev(ptr);
++	struct netpolicy_record *old_record, *new_record;
++	struct net_device *dev = reg->dev;
++	enum netpolicy_name cur_policy;
++	unsigned long ptr_id = (uintptr_t)reg->ptr;
++	int queue = -1;
 +
-+	switch (event) {
-+	case NETDEV_CHANGENAME:
-+#ifdef CONFIG_PROC_FS
-+		if (dev->proc_dev) {
-+			proc_remove(dev->proc_dev);
-+			if ((netpolicy_proc_dev_init(dev_net(dev), dev) < 0) &&
-+			    dev->proc_dev) {
-+				proc_remove(dev->proc_dev);
-+				dev->proc_dev = NULL;
++	if (!dev || !dev->netpolicy)
++		goto err;
++
++	cur_policy = dev->netpolicy->cur_policy;
++	if ((reg->policy == NET_POLICY_NONE) ||
++	    (cur_policy == NET_POLICY_NONE))
++		return queue;
++
++	if (((cur_policy != NET_POLICY_MIX) && (cur_policy != reg->policy)) ||
++	    ((cur_policy == NET_POLICY_MIX) && (reg->policy == NET_POLICY_CPU))) {
++		pr_warn("NETPOLICY: %s current device policy %s doesn't support required policy %s! Remove net policy settings!\n",
++			dev->name, policy_name[cur_policy],
++			policy_name[reg->policy]);
++		goto err;
++	}
++
++	old_record = netpolicy_record_search(ptr_id);
++	if (!old_record) {
++		pr_warn("NETPOLICY: doesn't registered. Remove net policy settings!\n");
++		goto err;
++	}
++
++	new_record = kzalloc(sizeof(*new_record), GFP_KERNEL);
++	if (!new_record)
++		return -ENOMEM;
++	memcpy(new_record, old_record, sizeof(*new_record));
++
++	if (is_rx) {
++		if (!new_record->rx_obj) {
++			new_record->rx_obj = get_avail_queue(dev, new_record->policy, is_rx);
++			if (!new_record->dev)
++				new_record->dev = dev;
++			if (!new_record->rx_obj) {
++				kfree(new_record);
++				return -ENOTSUPP;
 +			}
 +		}
-+#endif
-+		break;
-+	case NETDEV_UP:
-+		netpolicy_dev_init(dev_net(dev), dev);
-+		break;
-+	case NETDEV_GOING_DOWN:
-+		uninit_netpolicy(dev);
-+#ifdef CONFIG_PROC_FS
-+		proc_remove(dev->proc_dev);
-+		dev->proc_dev = NULL;
-+#endif
-+		break;
++		queue = new_record->rx_obj->queue;
++	} else {
++		if (!new_record->tx_obj) {
++			new_record->tx_obj = get_avail_queue(dev, new_record->policy, is_rx);
++			if (!new_record->dev)
++				new_record->dev = dev;
++			if (!new_record->tx_obj) {
++				kfree(new_record);
++				return -ENOTSUPP;
++			}
++		}
++		queue = new_record->tx_obj->queue;
 +	}
 +
-+	return NOTIFY_OK;
++	/* update record */
++	spin_lock_bh(&np_hashtable_lock);
++	hlist_replace_rcu(&old_record->hash_node, &new_record->hash_node);
++	spin_unlock_bh(&np_hashtable_lock);
++	kfree(old_record);
++
++	return queue;
++
++err:
++	netpolicy_unregister(reg);
++	return -EINVAL;
 +}
++EXPORT_SYMBOL(netpolicy_pick_queue);
 +
-+static struct notifier_block netpolicy_dev_notf = {
-+	.notifier_call = netpolicy_notify,
-+};
-+
- static int __init netpolicy_init(void)
- {
- 	int ret;
- 
- 	ret = register_pernet_subsys(&netpolicy_net_ops);
-+	if (!ret)
-+		register_netdevice_notifier(&netpolicy_dev_notf);
- 
- 	return ret;
- }
- 
- static void __exit netpolicy_exit(void)
- {
-+	unregister_netdevice_notifier(&netpolicy_dev_notf);
- 	unregister_pernet_subsys(&netpolicy_net_ops);
- }
- 
+ /**
+  * netpolicy_register() - Register per socket/task policy request
+  * @reg:	NET policy register info
 -- 
 2.5.5
 
