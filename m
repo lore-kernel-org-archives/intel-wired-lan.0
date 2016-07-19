@@ -1,73 +1,44 @@
-From: Rustad, Mark D <mark.d.rustad@intel.com>
-Date: Tue, 19 Jul 2016 20:49:03 +0000
-Subject: [Intel-wired-lan] [PATCH net] e1000e: fix PTP on
-	e1000_pch_lpt	variants
-In-Reply-To: <1468959902-25071-1-git-send-email-jarod@redhat.com>
-References: <1468959902-25071-1-git-send-email-jarod@redhat.com>
-Message-ID: <B2E38BF8-6BB1-4904-B79B-B94B9C360F15@intel.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Date: Tue, 19 Jul 2016 16:19:26 -0500
+Subject: [Intel-wired-lan] [PATCH v6 0/3] PCI: Precision Time
+	Measurement support
+In-Reply-To: <20160613185945.12503.32760.stgit@bhelgaas-glaptop2.roam.corp.google.com>
+References: <20160613185945.12503.32760.stgit@bhelgaas-glaptop2.roam.corp.google.com>
+Message-ID: <20160719211926.GB17840@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Jarod Wilson <jarod@redhat.com> wrote:
-
-> I've got reports that the Intel I-218V NIC in Intel NUC5i5RYH systems used
-> as a PTP slave experiences random ~10 hour clock jumps, which are resolved
-> if the same workaround for the 82574 and 82583 is employed. Switching from
-> an if to a select, because the list of NIC types could well grow further
-> and we'd already have to wrap the conditionals.
->
-> CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> CC: intel-wired-lan at lists.osuosl.org
-> CC: netdev at vger.kernel.org
-> Signed-off-by: Jarod Wilson <jarod@redhat.com>
+On Mon, Jun 13, 2016 at 02:05:26PM -0500, Bjorn Helgaas wrote:
+> This is a slightly different proposal for the PTM support Jonathan
+> proposed here:
+> 
+>   http://lkml.kernel.org/r/1462956446-27361-2-git-send-email-jonathan.yong at intel.com
+> 
+> I split this into three pieces mostly for ease in reviewing.  They
+> could all be squashed:
+> 
+>   - Enable PTM in root ports and switches automatically at boot
+>   - Enable PTM in endpoints when requested by driver
+>   - Add clock granularity information
+> 
+> I have some open questions about how PTM works on Root Complex
+> Integrated Endpoints and whether we should enable it automatically
+> even without a driver request.  And I probably left out some details
+> of the clock granularity computation, so treat this as more of an RFC
+> than anything.
+> 
+> Bjorn
+> 
 > ---
->  drivers/net/ethernet/intel/e1000e/netdev.c | 8 +++++++-
->  1 file changed, 7 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c  
-> b/drivers/net/ethernet/intel/e1000e/netdev.c
-> index 2b2e2f8..866fea0 100644
-> --- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> +++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> @@ -4335,7 +4335,10 @@ static cycle_t e1000e_cyclecounter_read(const  
-> struct cyclecounter *cc)
->  	systim = (cycle_t)systimel;
->  	systim |= (cycle_t)systimeh << 32;
->
-> -	if ((hw->mac.type == e1000_82574) || (hw->mac.type == e1000_82583)) {
-> +	switch (hw->mac.type) {
-> +	case e1000_82574:
-> +	case e1000_82583:
-> +	case e1000_pch_lpt:
->  		u64 time_delta, rem, temp;
->  		u32 incvalue;
->  		int i;
+> 
+> Bjorn Helgaas (2):
+>       PCI: Add pci_enable_ptm() for drivers to enable PTM on endpoints
+>       PCI: Add PTM clock granularity information
+> 
+> Jonathan Yong (1):
+>       PCI: Add Precision Time Measurement (PTM) support
 
-I don't think that it is acceptable to declare local variables inside a  
-switch statement quite like this. At a minimum, a new block needs to be  
-opened to allow the declarations.
-
-> @@ -4360,6 +4363,9 @@ static cycle_t e1000e_cyclecounter_read(const  
-> struct cyclecounter *cc)
->  			    (rem == 0))
->  				break;
->  		}
-> +		break;
-> +	default:
-> +		break;
->  	}
->  	return systim;
->  }
-
---
-Mark Rustad, Networking Division, Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 841 bytes
-Desc: Message signed with OpenPGP using GPGMail
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160719/41d052ae/attachment.asc>
+Jonathan, any comments?
