@@ -1,61 +1,31 @@
-From: Jarod Wilson <jarod@redhat.com>
-Date: Wed, 20 Jul 2016 13:05:33 -0400
-Subject: [Intel-wired-lan] [PATCH net] e1000e: fix PTP on e1000_pch_lpt
- variants
-In-Reply-To: <B2E38BF8-6BB1-4904-B79B-B94B9C360F15@intel.com>
-References: <1468959902-25071-1-git-send-email-jarod@redhat.com>
- <B2E38BF8-6BB1-4904-B79B-B94B9C360F15@intel.com>
-Message-ID: <20160720170533.GE37138@redhat.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 20 Jul 2016 20:20:21 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbevf: Add lock
+	around	ixgbevf_reinit_locked call.
+In-Reply-To: <1468286996-27931-1-git-send-email-donald.c.skidmore@intel.com>
+References: <1468286996-27931-1-git-send-email-donald.c.skidmore@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9EAF10@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Jul 19, 2016 at 08:49:03PM +0000, Rustad, Mark D wrote:
-> Jarod Wilson <jarod@redhat.com> wrote:
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Donald C Skidmore
+> Sent: Monday, July 11, 2016 6:30 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH] ixgbevf: Add lock around
+> ixgbevf_reinit_locked call.
 > 
-> >I've got reports that the Intel I-218V NIC in Intel NUC5i5RYH systems used
-> >as a PTP slave experiences random ~10 hour clock jumps, which are resolved
-> >if the same workaround for the 82574 and 82583 is employed. Switching from
-> >an if to a select, because the list of NIC types could well grow further
-> >and we'd already have to wrap the conditionals.
-> >
-> >CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> >CC: intel-wired-lan at lists.osuosl.org
-> >CC: netdev at vger.kernel.org
-> >Signed-off-by: Jarod Wilson <jarod@redhat.com>
-> >---
-> > drivers/net/ethernet/intel/e1000e/netdev.c | 8 +++++++-
-> > 1 file changed, 7 insertions(+), 1 deletion(-)
-> >
-> >diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c
-> >b/drivers/net/ethernet/intel/e1000e/netdev.c
-> >index 2b2e2f8..866fea0 100644
-> >--- a/drivers/net/ethernet/intel/e1000e/netdev.c
-> >+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-> >@@ -4335,7 +4335,10 @@ static cycle_t
-> >e1000e_cyclecounter_read(const struct cyclecounter *cc)
-> > 	systim = (cycle_t)systimel;
-> > 	systim |= (cycle_t)systimeh << 32;
-> >
-> >-	if ((hw->mac.type == e1000_82574) || (hw->mac.type == e1000_82583)) {
-> >+	switch (hw->mac.type) {
-> >+	case e1000_82574:
-> >+	case e1000_82583:
-> >+	case e1000_pch_lpt:
-> > 		u64 time_delta, rem, temp;
-> > 		u32 incvalue;
-> > 		int i;
+> The function ixgbevf_reinit_locked() assumes you have the rtnl lock
+> however we didn't when calling from the service task.  This patch corrects
+> that.
 > 
-> I don't think that it is acceptable to declare local variables
-> inside a switch statement quite like this. At a minimum, a new block
-> needs to be opened to allow the declarations.
+> Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 2 ++
+>  1 file changed, 2 insertions(+)
 
-Gah, sorry, I think testing was done with an if, made a late change to a
-switch without doing sufficient re-testing. I'll fix that up and re-test.
-
--- 
-Jarod Wilson
-jarod at redhat.com
-
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
