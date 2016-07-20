@@ -1,9 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 20 Jul 2016 21:13:49 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbe: cleanup crosstalk fix
-In-Reply-To: <1468971808-39023-1-git-send-email-donald.c.skidmore@intel.com>
-References: <1468971808-39023-1-git-send-email-donald.c.skidmore@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9EAF74@ORSMSX104.amr.corp.intel.com>
+Date: Wed, 20 Jul 2016 21:14:59 +0000
+Subject: [Intel-wired-lan] [PATCH] i40e: Explicitly write
+ platform-specific	mac address after PF reset
+In-Reply-To: <1467393080-2202-1-git-send-email-tushar.n.dave@oracle.com>
+References: <1467393080-2202-1-git-send-email-tushar.n.dave@oracle.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9EAF84@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,25 +13,29 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Donald C Skidmore
-> Sent: Tuesday, July 19, 2016 4:43 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] ixgbe: cleanup crosstalk fix
+> Behalf Of Tushar Dave
+> Sent: Friday, July 01, 2016 10:11 AM
+> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; Brandeburg, Jesse
+> <jesse.brandeburg@intel.com>; shannon.nelson at intel.com; Wyborny,
+> Carolyn <carolyn.wyborny@intel.com>; Skidmore, Donald C
+> <donald.c.skidmore@intel.com>; Allan, Bruce W <bruce.w.allan@intel.com>;
+> john.ronciak at intel.com; Williams, Mitch A <mitch.a.williams@intel.com>;
+> intel-wired-lan at lists.osuosl.org; netdev at vger.kernel.org
+> Cc: sowmini.varadhan at oracle.com
+> Subject: [Intel-wired-lan] [PATCH] i40e: Explicitly write platform-specific mac
+> address after PF reset
 > 
-> This patch address a few issues with the initial crosstalk fix.  Most important
-> of which is the SDP that indicates the presents of a SFP+ module changes
-> between HW types.  With this change that is taken in to consideration
+> i40e PF reset clears mac filters. If platform-specific mac address is used,
+> driver has to explicitly write default mac address to mac filters otherwise all
+> incoming traffic destined to default mac address will be dropped after reset.
 > 
-> It also moves the check closer to the base code that checks link.  This makes it
-> so we only need to do the check in one spot.
+> This issue was found on SPARC while toggling i40e ntuple via ethtool.
 > 
-> Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
+> Signed-off-by: Tushar Dave <tushar.n.dave@oracle.com>
+> Acked-by: Sowmini Varadhan <sowmini.varadhan@oracle.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe.h        |  2 -
->  drivers/net/ethernet/intel/ixgbe/ixgbe_common.c | 71
-> +++++++++++++++++++++++++
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c   | 39 --------------
->  drivers/net/ethernet/intel/ixgbe/ixgbe_type.h   |  1 +
->  4 files changed, 72 insertions(+), 41 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 87 ++++++++++++++++-------
+> ------
+>  1 file changed, 49 insertions(+), 38 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
