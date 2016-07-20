@@ -1,35 +1,74 @@
-From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-Date: Wed, 20 Jul 2016 14:01:50 +0300
-Subject: [Intel-wired-lan] [PATCH net] e1000e: fix PTP on e1000_pch_lpt
-	variants
-In-Reply-To: <1468959902-25071-1-git-send-email-jarod@redhat.com>
-References: <1468959902-25071-1-git-send-email-jarod@redhat.com>
-Message-ID: <347052e2-bca8-98b3-a35d-0f387b612e61@cogentembedded.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 20 Jul 2016 07:29:18 -0700
+Subject: [Intel-wired-lan] [PATCH 1/1] ixgbevf: replace enum with MACROs
+In-Reply-To: <1469011313-30044-2-git-send-email-zyjzyj2000@gmail.com>
+References: <1469011313-30044-1-git-send-email-zyjzyj2000@gmail.com>
+ <1469011313-30044-2-git-send-email-zyjzyj2000@gmail.com>
+Message-ID: <CAKgT0UefaX0aqV+mC77zrpWZAQWBKygDCG0Bpq0x2sVyeMpyYw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello.
-
-On 7/19/2016 11:25 PM, Jarod Wilson wrote:
-
-> I've got reports that the Intel I-218V NIC in Intel NUC5i5RYH systems used
-> as a PTP slave experiences random ~10 hour clock jumps, which are resolved
-> if the same workaround for the 82574 and 82583 is employed. Switching from
-> an if to a select, because the list of NIC types could well grow further
-
-    s/select/switch/?
-
-> and we'd already have to wrap the conditionals.
+On Wed, Jul 20, 2016 at 3:41 AM,  <zyjzyj2000@gmail.com> wrote:
+> From: Zhu Yanjun <zyjzyj2000@gmail.com>
 >
-> CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> CC: intel-wired-lan at lists.osuosl.org
-> CC: netdev at vger.kernel.org
-> Signed-off-by: Jarod Wilson <jarod@redhat.com>
-[...]
+> With the original enum, when a several bits state is set, it is
+> possible that the wrong test occurs.
+>
+> For example,
+>
+> a state is 0x3, its bits are 11. When testing a state 0x2 whose
+> bits are 10, it is difficult to confirm that state 0x2 is set or
+> not.
+>
+> As such, the MACROs are defined to avoid the above error.
+>
+> Signed-off-by: Zhu Yanjun <zyjzyj2000@gmail.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h | 22 ++++++++++------------
+>  1 file changed, 10 insertions(+), 12 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+> index 60fc63b..d37b910 100644
+> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+> @@ -436,18 +436,16 @@ struct ixgbevf_adapter {
+>         u8 rss_indir_tbl[IXGBEVF_X550_VFRETA_SIZE];
+>  };
+>
+> -enum ixbgevf_state_t {
+> -       __IXGBEVF_TESTING,
+> -       __IXGBEVF_RESETTING,
+> -       __IXGBEVF_DOWN,
+> -       __IXGBEVF_DISABLED,
+> -       __IXGBEVF_REMOVING,
+> -       __IXGBEVF_SERVICE_SCHED,
+> -       __IXGBEVF_SERVICE_INITED,
+> -       __IXGBEVF_RESET_REQUESTED,
+> -       __IXGBEVF_QUEUE_RESET_REQUESTED,
+> -       __IXGBEVF_HW_RESETTING,
+> -};
+> +#define        __IXGBEVF_TESTING               0x0001
+> +#define        __IXGBEVF_RESETTING             0x0002
+> +#define        __IXGBEVF_DOWN                  0x0004
+> +#define        __IXGBEVF_DISABLED              0x0008
+> +#define        __IXGBEVF_REMOVING              0x0010
+> +#define        __IXGBEVF_SERVICE_SCHED         0x0020
+> +#define        __IXGBEVF_SERVICE_INITED        0x0040
+> +#define        __IXGBEVF_RESET_REQUESTED       0x0080
+> +#define        __IXGBEVF_QUEUE_RESET_REQUESTED 0x0100
+> +#define        __IXGBEVF_HW_RESETTING          0x0200
+>
+>  enum ixgbevf_boards {
+>         board_82599_vf,
 
-MBR, Sergei
+You cannot replace a bit offset with a mask without also having to
+update all the spots where the bit offset is used.
 
+There isn't much point to replacing the enum with a macro anyway.
+Using multiple test_bit expressions should be valid for testing
+multiple bits.
 
+- Alex
