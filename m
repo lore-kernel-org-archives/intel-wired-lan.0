@@ -1,10 +1,9 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 20 Jul 2016 21:12:17 +0000
-Subject: [Intel-wired-lan] [PATCH v2 2/2] ixgbevf: Commonize
-	mailbox	write/read
-In-Reply-To: <1468431214-23969-1-git-send-email-anthony.l.nguyen@intel.com>
-References: <1468431214-23969-1-git-send-email-anthony.l.nguyen@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9EAF63@ORSMSX104.amr.corp.intel.com>
+Date: Wed, 20 Jul 2016 21:13:49 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: cleanup crosstalk fix
+In-Reply-To: <1468971808-39023-1-git-send-email-donald.c.skidmore@intel.com>
+References: <1468971808-39023-1-git-send-email-donald.c.skidmore@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9EAF74@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,21 +12,25 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Tony Nguyen
-> Sent: Wednesday, July 13, 2016 10:34 AM
+> Behalf Of Donald C Skidmore
+> Sent: Tuesday, July 19, 2016 4:43 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH v2 2/2] ixgbevf: Commonize mailbox
-> write/read
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: cleanup crosstalk fix
 > 
-> From: "Nguyen, Anthony L" <anthony.l.nguyen@intel.com>
+> This patch address a few issues with the initial crosstalk fix.  Most important
+> of which is the SDP that indicates the presents of a SFP+ module changes
+> between HW types.  With this change that is taken in to consideration
 > 
-> With changes to ixgbevf_write_msg_read_ack(), other functions are
-> performing the same operations done here; change those functions to utilize
-> ixgbevf_write_msg_read_ack().
+> It also moves the check closer to the base code that checks link.  This makes it
+> so we only need to do the check in one spot.
 > 
-> Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
+> Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbevf/vf.c | 35 ++++++---------------------------
->  1 file changed, 6 insertions(+), 29 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe.h        |  2 -
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_common.c | 71
+> +++++++++++++++++++++++++
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c   | 39 --------------
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_type.h   |  1 +
+>  4 files changed, 72 insertions(+), 41 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
