@@ -1,87 +1,141 @@
-From: zhuyj <zyjzyj2000@gmail.com>
-Date: Thu, 21 Jul 2016 17:53:06 +0800
-Subject: [Intel-wired-lan] [PATCH 1/1] ixgbevf: replace enum with MACROs
-In-Reply-To: <CAKgT0UefaX0aqV+mC77zrpWZAQWBKygDCG0Bpq0x2sVyeMpyYw@mail.gmail.com>
-References: <1469011313-30044-1-git-send-email-zyjzyj2000@gmail.com>
- <1469011313-30044-2-git-send-email-zyjzyj2000@gmail.com>
- <CAKgT0UefaX0aqV+mC77zrpWZAQWBKygDCG0Bpq0x2sVyeMpyYw@mail.gmail.com>
-Message-ID: <CAD=hENf70skR=9a5JXbGtHJeg2MEv=DTgBgD_tbMEBz+hV7HPQ@mail.gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 22 Jul 2016 16:40:00 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ b700b35f35236d99d72e8ffca8261f8dcf60f27f BUILD SUCCESS
+Message-ID: <5791dbe0.TOBm9D551n7wGH4m%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Got it. Thanks a lot.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+b700b35f35236d99d72e8ffca8261f8dcf60f27f  i40e: use configured RSS key and lookup table in i40e_vsi_config_rss
 
-Zhu Yanjun
+elapsed time: 94m
 
-On Wed, Jul 20, 2016 at 10:29 PM, Alexander Duyck <alexander.duyck@gmail.com
-> wrote:
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 119
 
-> On Wed, Jul 20, 2016 at 3:41 AM,  <zyjzyj2000@gmail.com> wrote:
-> > From: Zhu Yanjun <zyjzyj2000@gmail.com>
-> >
-> > With the original enum, when a several bits state is set, it is
-> > possible that the wrong test occurs.
-> >
-> > For example,
-> >
-> > a state is 0x3, its bits are 11. When testing a state 0x2 whose
-> > bits are 10, it is difficult to confirm that state 0x2 is set or
-> > not.
-> >
-> > As such, the MACROs are defined to avoid the above error.
-> >
-> > Signed-off-by: Zhu Yanjun <zyjzyj2000@gmail.com>
-> > ---
-> >  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h | 22 ++++++++++------------
-> >  1 file changed, 10 insertions(+), 12 deletions(-)
-> >
-> > diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-> b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-> > index 60fc63b..d37b910 100644
-> > --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-> > +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
-> > @@ -436,18 +436,16 @@ struct ixgbevf_adapter {
-> >         u8 rss_indir_tbl[IXGBEVF_X550_VFRETA_SIZE];
-> >  };
-> >
-> > -enum ixbgevf_state_t {
-> > -       __IXGBEVF_TESTING,
-> > -       __IXGBEVF_RESETTING,
-> > -       __IXGBEVF_DOWN,
-> > -       __IXGBEVF_DISABLED,
-> > -       __IXGBEVF_REMOVING,
-> > -       __IXGBEVF_SERVICE_SCHED,
-> > -       __IXGBEVF_SERVICE_INITED,
-> > -       __IXGBEVF_RESET_REQUESTED,
-> > -       __IXGBEVF_QUEUE_RESET_REQUESTED,
-> > -       __IXGBEVF_HW_RESETTING,
-> > -};
-> > +#define        __IXGBEVF_TESTING               0x0001
-> > +#define        __IXGBEVF_RESETTING             0x0002
-> > +#define        __IXGBEVF_DOWN                  0x0004
-> > +#define        __IXGBEVF_DISABLED              0x0008
-> > +#define        __IXGBEVF_REMOVING              0x0010
-> > +#define        __IXGBEVF_SERVICE_SCHED         0x0020
-> > +#define        __IXGBEVF_SERVICE_INITED        0x0040
-> > +#define        __IXGBEVF_RESET_REQUESTED       0x0080
-> > +#define        __IXGBEVF_QUEUE_RESET_REQUESTED 0x0100
-> > +#define        __IXGBEVF_HW_RESETTING          0x0200
-> >
-> >  enum ixgbevf_boards {
-> >         board_82599_vf,
->
-> You cannot replace a bit offset with a mask without also having to
-> update all the spots where the bit offset is used.
->
-> There isn't much point to replacing the enum with a macro anyway.
-> Using multiple test_bit expressions should be valid for testing
-> multiple bits.
->
-> - Alex
->
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160721/d2d64899/attachment-0001.html>
+i386                     randconfig-a0-201629
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                             allyesconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-x018-201629
+x86_64                 randconfig-x019-201629
+x86_64                 randconfig-x010-201629
+x86_64                 randconfig-x015-201629
+x86_64                 randconfig-x013-201629
+x86_64                 randconfig-x014-201629
+x86_64                 randconfig-x016-201629
+x86_64                 randconfig-x017-201629
+x86_64                 randconfig-x012-201629
+x86_64                 randconfig-x011-201629
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                     randconfig-s0-201629
+i386                     randconfig-s1-201629
+x86_64                           allmodconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201629
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201629
+i386                     randconfig-i1-201629
+alpha                            allyesconfig
+sh                         ecovec24_defconfig
+i386                               tinyconfig
+i386                   randconfig-x018-201629
+i386                   randconfig-x017-201629
+i386                   randconfig-x011-201629
+i386                   randconfig-x016-201629
+i386                   randconfig-x014-201629
+i386                   randconfig-x013-201629
+i386                   randconfig-x010-201629
+i386                   randconfig-x019-201629
+i386                   randconfig-x015-201629
+i386                   randconfig-x012-201629
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201629
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                 randconfig-x003-201629
+x86_64                 randconfig-x006-201629
+x86_64                 randconfig-x000-201629
+x86_64                 randconfig-x007-201629
+x86_64                 randconfig-x005-201629
+x86_64                 randconfig-x008-201629
+x86_64                 randconfig-x004-201629
+x86_64                 randconfig-x001-201629
+x86_64                 randconfig-x002-201629
+x86_64                 randconfig-x009-201629
+i386                     randconfig-r0-201629
+i386                   randconfig-x008-201629
+i386                   randconfig-x005-201629
+i386                   randconfig-x009-201629
+i386                   randconfig-x000-201629
+i386                   randconfig-x006-201629
+i386                   randconfig-x001-201629
+i386                   randconfig-x003-201629
+i386                   randconfig-x004-201629
+i386                   randconfig-x007-201629
+i386                   randconfig-x002-201629
+
+Thanks,
+Fengguang
