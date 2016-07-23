@@ -1,32 +1,138 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Fri, 22 Jul 2016 16:00:37 -0700
-Subject: [Intel-wired-lan] [PATCH v1] fm10k: remove unnecessary extra
-	parenthesis around ((~value))
-Message-ID: <20160722230037.5128-1-jacob.e.keller@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 23 Jul 2016 15:53:59 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:10GbE]
+ aac9e053f1044bf21ac068eeb0e8518d080f4a66 BUILD SUCCESS
+Message-ID: <57932297.rFyK/3SoWACK/72U%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  10GbE
+aac9e053f1044bf21ac068eeb0e8518d080f4a66  ixgbe: cleanup crosstalk fix
 
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-index 4bb352e3039b..59dc13f3f321 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
-@@ -133,7 +133,7 @@ static void fm10k_detach_subtask(struct fm10k_intfc *interface)
- 	/* check the real address space to see if we've recovered */
- 	hw_addr = READ_ONCE(interface->uc_addr);
- 	value = readl(hw_addr);
--	if ((~value)) {
-+	if (~value) {
- 		interface->hw.hw_addr = interface->uc_addr;
- 		netif_device_attach(netdev);
- 		interface->flags |= FM10K_FLAG_RESET_REQUESTED;
--- 
-2.9.0.rc1.405.g81f467e
+elapsed time: 63m
 
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 117
+
+i386                     randconfig-a0-201629
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                             allyesconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                 randconfig-x018-201629
+x86_64                 randconfig-x019-201629
+x86_64                 randconfig-x010-201629
+x86_64                 randconfig-x015-201629
+x86_64                 randconfig-x013-201629
+x86_64                 randconfig-x014-201629
+x86_64                 randconfig-x016-201629
+x86_64                 randconfig-x017-201629
+x86_64                 randconfig-x012-201629
+x86_64                 randconfig-x011-201629
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201629
+i386                     randconfig-s1-201629
+x86_64                           allmodconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+i386                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201629
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201629
+i386                     randconfig-i1-201629
+i386                   randconfig-x018-201629
+i386                   randconfig-x017-201629
+i386                   randconfig-x011-201629
+i386                   randconfig-x016-201629
+i386                   randconfig-x014-201629
+i386                   randconfig-x013-201629
+i386                   randconfig-x010-201629
+i386                   randconfig-x019-201629
+i386                   randconfig-x015-201629
+i386                   randconfig-x012-201629
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201629
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                 randconfig-x003-201629
+x86_64                 randconfig-x006-201629
+x86_64                 randconfig-x000-201629
+x86_64                 randconfig-x007-201629
+x86_64                 randconfig-x005-201629
+x86_64                 randconfig-x008-201629
+x86_64                 randconfig-x004-201629
+x86_64                 randconfig-x001-201629
+x86_64                 randconfig-x002-201629
+x86_64                 randconfig-x009-201629
+i386                     randconfig-r0-201629
+i386                   randconfig-x008-201629
+i386                   randconfig-x005-201629
+i386                   randconfig-x009-201629
+i386                   randconfig-x000-201629
+i386                   randconfig-x006-201629
+i386                   randconfig-x001-201629
+i386                   randconfig-x003-201629
+i386                   randconfig-x004-201629
+i386                   randconfig-x007-201629
+i386                   randconfig-x002-201629
+
+Thanks,
+Fengguang
