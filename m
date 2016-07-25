@@ -1,45 +1,44 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Mon, 25 Jul 2016 16:15:50 -0700
-Subject: [Intel-wired-lan] [next PATCH S40 08/13] i40e: Force register
-	writes to mitigate sync issues with iwarp VF driver
+Date: Mon, 25 Jul 2016 16:15:47 -0700
+Subject: [Intel-wired-lan] [next PATCH S40 05/13] i40e: Increase minimum
+	number of allocated VSI
 In-Reply-To: <1469488555-28187-1-git-send-email-bimmy.pujari@intel.com>
 References: <1469488555-28187-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1469488555-28187-9-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1469488555-28187-6-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Avinash Dayanand <avinash.dayanand@intel.com>
+From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
 
-This patch is a fix for the bug i.e. unable to create iwarp device
-in VF. This is a sync issue and the iwarp device open is called even
-before the PCI register writes are done.
+This patch increases minimum number of allocated VSIs, so as to resolve
+failure adding VSI for VF when 64-VFs assigned to a PF. The driver
+supports up to 128 VFs per device, users can decide to enable up to
+64-VFs on a single PF, especially 2 X 40 devices. In that scenario, with
+VMDq co-existence, there would be starvation of VSIs - with this patch,
+supported features would have enough VSIs for configuration now.
 
-Forcing the PCI register writes to happen just before it exits the
-function.
-
-Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
-Change-ID: I60c6a2c709da89e845f2764cc50ce8b7373c8c44
+Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+Change-ID: If084f4cd823667af8fe7fdc11489c705b32039d5
 ---
- drivers/net/ethernet/intel/i40e/i40e_client.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/intel/i40e/i40e.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c b/drivers/net/ethernet/intel/i40e/i40e_client.c
-index e8d9e47..cc7403a 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_client.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
-@@ -815,7 +815,8 @@ static int i40e_client_setup_qvlist(struct i40e_info *ldev,
- 			wr32(hw, I40E_PFINT_AEQCTL, reg);
- 		}
- 	}
--
-+	/* Mitigate sync problems with iwarp VF driver */
-+	i40e_flush(hw);
- 	return 0;
- err:
- 	kfree(ldev->qvlist_info);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 2a88291..06e1835 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -74,7 +74,7 @@
+ #define I40E_MIN_NUM_DESCRIPTORS      64
+ #define I40E_MIN_MSIX                 2
+ #define I40E_DEFAULT_NUM_VMDQ_VSI     8 /* max 256 VSIs */
+-#define I40E_MIN_VSI_ALLOC            51 /* LAN, ATR, FCOE, 32 VF, 16 VMDQ */
++#define I40E_MIN_VSI_ALLOC            83 /* LAN, ATR, FCOE, 32 VF, 16 VMDQ */
+ /* max 16 qps */
+ #define i40e_default_queues_per_vmdq(pf) \
+ 		(((pf)->flags & I40E_FLAG_RSS_AQ_CAPABLE) ? 4 : 1)
 -- 
 2.4.11
 
