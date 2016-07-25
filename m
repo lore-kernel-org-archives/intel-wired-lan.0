@@ -1,99 +1,48 @@
-From: Kshitiz Gupta <kshitiz.gupta@ni.com>
-Date: Sat, 16 Jul 2016 02:23:45 -0500
-Subject: [Intel-wired-lan] [PATCH] igb: fix adjusting ptp timestamps for
-	tx/rx latency
-In-Reply-To: <1468620496-7849-1-git-send-email-kshitiz.gupta@ni.com>
-References: <1468620496-7849-1-git-send-email-kshitiz.gupta@ni.com>
-Message-ID: <1468653825-806-1-git-send-email-kshitiz.gupta@ni.com>
+From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Date: Mon, 25 Jul 2016 10:56:48 -0700
+Subject: [Intel-wired-lan] [PATCH v2 net-next 0/2] e1000e: fix PTP on
+ e1000_pch_variants
+In-Reply-To: <1469292274-59237-1-git-send-email-jarod@redhat.com>
+References: <1468959902-25071-1-git-send-email-jarod@redhat.com>
+ <1469292274-59237-1-git-send-email-jarod@redhat.com>
+Message-ID: <20160725105648.00000dda@unknown>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Fix PHY delay compensation math in igb_ptp_tx_hwtstamp() and
-igb_ptp_rx_rgtstamp. Add PHY delay compensation in
-igb_ptp_rx_pktstamp().
+On Sat, 23 Jul 2016 12:44:32 -0400
+Jarod Wilson <jarod@redhat.com> wrote:
 
-In the IGB driver, there are two functions that retrieve timestamps
-received by the PHY - igb_ptp_rx_rgtstamp() and igb_ptp_rx_pktstamp().
-The previous commit only changed igb_ptp_rx_rgtstamp(), and the change
-was incorrect.
+> This little series factors out the systim sanitization code first, then
+> adds e1000_pch_lpt as a new case in the switch that calls the sanitize
+> function, fixing PTP clock issues I've had reported against an Intel
+> I-218V NIC in an Intel NUC5ik5RYH system.
+> 
+> Jarod Wilson (2):
+>   e1000e: factor out systim sanitization
+>   e1000e: fix PTP on e1000_pch_lpt variants
+> 
 
-There are two instances in which PHY delay compensations should be
-made:
+Thanks for your patch Jarod, the refactor itself is fine and a good
+idea, and thanks for working on the fix!
 
-- Before the packet transmission over the PHY, the latency between
-  when the packet is timestamped and transmission of the packets,
-  should be an add operation, but it is currently a subtract.
+This code should have been using a feature flag, and the alert that
+you're having to add more device IDs to the switch statement makes it
+even more obvious.
 
-- After the packets are received from the PHY, the latency between
-  the receiving and timestamping of the packets should be a subtract
-  operation, but it is currently an add.
+Please see line 406 of e1000e/e1000.h, where the flags are declared,
+add a flag for this workaround (to flags2), and and add some code in the
+e1000_info_tbl entry to set the flag for the appropriate mac(s)
 
-Signed-off-by: Kshitiz Gupta <kshitiz.gupta@ni.com>
-Fixes: 3f544d2 (igb: adjust ptp timestamps for tx/rx latency)
----
- drivers/net/ethernet/intel/igb/igb_ptp.c | 26 +++++++++++++++++++++++---
- 1 file changed, 23 insertions(+), 3 deletions(-)
+Then the runtime code should only check the flag, and if any further
+devices require the workaround we just add the flag to that device, or
+if this is init code, just always call the workaround funtion and have
+the function itself make sure the right flags2 is set or return.
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_ptp.c b/drivers/net/ethernet/intel/igb/igb_ptp.c
-index f097c5a..3c7bcdf 100644
---- a/drivers/net/ethernet/intel/igb/igb_ptp.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ptp.c
-@@ -743,7 +743,8 @@ static void igb_ptp_tx_hwtstamp(struct igb_adapter *adapter)
- 		}
- 	}
- 
--	shhwtstamps.hwtstamp = ktime_sub_ns(shhwtstamps.hwtstamp, adjust);
-+	shhwtstamps.hwtstamp =
-+		ktime_add_ns(shhwtstamps.hwtstamp, adjust);
- 
- 	skb_tstamp_tx(adapter->ptp_tx_skb, &shhwtstamps);
- 	dev_kfree_skb_any(adapter->ptp_tx_skb);
-@@ -766,13 +767,32 @@ void igb_ptp_rx_pktstamp(struct igb_q_vector *q_vector,
- 			 struct sk_buff *skb)
- {
- 	__le64 *regval = (__le64 *)va;
-+	struct igb_adapter *adapter = q_vector->adapter;
-+	int adjust = 0;
- 
- 	/* The timestamp is recorded in little endian format.
- 	 * DWORD: 0        1        2        3
- 	 * Field: Reserved Reserved SYSTIML  SYSTIMH
- 	 */
--	igb_ptp_systim_to_hwtstamp(q_vector->adapter, skb_hwtstamps(skb),
-+	igb_ptp_systim_to_hwtstamp(adapter, skb_hwtstamps(skb),
- 				   le64_to_cpu(regval[1]));
-+
-+	/* adjust timestamp for the RX latency based on link speed */
-+	if (adapter->hw.mac.type == e1000_i210) {
-+		switch (adapter->link_speed) {
-+		case SPEED_10:
-+			adjust = IGB_I210_RX_LATENCY_10;
-+			break;
-+		case SPEED_100:
-+			adjust = IGB_I210_RX_LATENCY_100;
-+			break;
-+		case SPEED_1000:
-+			adjust = IGB_I210_RX_LATENCY_1000;
-+			break;
-+		}
-+	}
-+	skb_hwtstamps(skb)->hwtstamp =
-+		ktime_sub_ns(skb_hwtstamps(skb)->hwtstamp, adjust);
- }
- 
- /**
-@@ -824,7 +844,7 @@ void igb_ptp_rx_rgtstamp(struct igb_q_vector *q_vector,
- 		}
- 	}
- 	skb_hwtstamps(skb)->hwtstamp =
--		ktime_add_ns(skb_hwtstamps(skb)->hwtstamp, adjust);
-+		ktime_sub_ns(skb_hwtstamps(skb)->hwtstamp, adjust);
- 
- 	/* Update the last_rx_timestamp timer in order to enable watchdog check
- 	 * for error case of latched timestamp on a dropped packet.
--- 
-2.7.4
+The code has somehow gotten away from this model in some places and any
+new code we add should be doing it the right way.
 
+Thanks,
+ Jesse
