@@ -1,44 +1,42 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Mon, 25 Jul 2016 16:15:47 -0700
-Subject: [Intel-wired-lan] [next PATCH S40 05/13] i40e: Increase minimum
-	number of allocated VSI
+Date: Mon, 25 Jul 2016 16:15:44 -0700
+Subject: [Intel-wired-lan] [next PATCH S40 02/13] i40e/i40evf: Reset vlan
+	filter count when resetting
 In-Reply-To: <1469488555-28187-1-git-send-email-bimmy.pujari@intel.com>
 References: <1469488555-28187-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1469488555-28187-6-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1469488555-28187-3-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
+From: Catherine Sullivan <catherine.sullivan@intel.com>
 
-This patch increases minimum number of allocated VSIs, so as to resolve
-failure adding VSI for VF when 64-VFs assigned to a PF. The driver
-supports up to 128 VFs per device, users can decide to enable up to
-64-VFs on a single PF, especially 2 X 40 devices. In that scenario, with
-VMDq co-existence, there would be starvation of VSIs - with this patch,
-supported features would have enough VSIs for configuration now.
+When we do a reset, all the vlan filters get added again. Therefore we also
+want to reset the vlan count to 0 or we quickly run out of filters.
 
-Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
-Change-ID: If084f4cd823667af8fe7fdc11489c705b32039d5
+Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
+Change-ID: I459f26851e22204dc8b8999928ad87cde8170119
 ---
- drivers/net/ethernet/intel/i40e/i40e.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Testing Hints: Make sure that you don't run out of filters when doing
+multiple resets.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 2a88291..06e1835 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -74,7 +74,7 @@
- #define I40E_MIN_NUM_DESCRIPTORS      64
- #define I40E_MIN_MSIX                 2
- #define I40E_DEFAULT_NUM_VMDQ_VSI     8 /* max 256 VSIs */
--#define I40E_MIN_VSI_ALLOC            51 /* LAN, ATR, FCOE, 32 VF, 16 VMDQ */
-+#define I40E_MIN_VSI_ALLOC            83 /* LAN, ATR, FCOE, 32 VF, 16 VMDQ */
- /* max 16 qps */
- #define i40e_default_queues_per_vmdq(pf) \
- 		(((pf)->flags & I40E_FLAG_RSS_AQ_CAPABLE) ? 4 : 1)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 6fcbf76..0fa050a 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -992,6 +992,7 @@ complete_reset:
+ 		set_bit(I40E_VF_STAT_ACTIVE, &vf->vf_states);
+ 		clear_bit(I40E_VF_STAT_DISABLED, &vf->vf_states);
+ 		i40e_notify_client_of_vf_reset(pf, abs_vf_id);
++		vf->num_vlan = 0;
+ 	}
+ 	/* tell the VF the reset is done */
+ 	wr32(hw, I40E_VFGEN_RSTAT1(vf->vf_id), I40E_VFR_VFACTIVE);
 -- 
 2.4.11
 
