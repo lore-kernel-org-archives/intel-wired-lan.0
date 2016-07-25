@@ -1,42 +1,40 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Mon, 25 Jul 2016 16:15:44 -0700
-Subject: [Intel-wired-lan] [next PATCH S40 02/13] i40e/i40evf: Reset vlan
-	filter count when resetting
+Date: Mon, 25 Jul 2016 16:15:53 -0700
+Subject: [Intel-wired-lan] [next PATCH S40 11/13] i40e: fix memory leak
 In-Reply-To: <1469488555-28187-1-git-send-email-bimmy.pujari@intel.com>
 References: <1469488555-28187-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1469488555-28187-3-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1469488555-28187-12-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Catherine Sullivan <catherine.sullivan@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-When we do a reset, all the vlan filters get added again. Therefore we also
-want to reset the vlan count to 0 or we quickly run out of filters.
+When we allocate memory, we must free it. It's simple courtesy.
 
-Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-Change-ID: I459f26851e22204dc8b8999928ad87cde8170119
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-ID: Id007294096fb53344f1a8b9a0f78eddf9853c5d6
 ---
-Testing Hints: Make sure that you don't run out of filters when doing
-multiple resets.
+Testing Hints : Found by inspection. The VF driver
+doesn't currently call this function, so not testable.
 
  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 1 +
  1 file changed, 1 insertion(+)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 6fcbf76..0fa050a 100644
+index 5ea659c..68e3482 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -992,6 +992,7 @@ complete_reset:
- 		set_bit(I40E_VF_STAT_ACTIVE, &vf->vf_states);
- 		clear_bit(I40E_VF_STAT_DISABLED, &vf->vf_states);
- 		i40e_notify_client_of_vf_reset(pf, abs_vf_id);
-+		vf->num_vlan = 0;
- 	}
- 	/* tell the VF the reset is done */
- 	wr32(hw, I40E_VFGEN_RSTAT1(vf->vf_id), I40E_VFR_VFACTIVE);
+@@ -2318,6 +2318,7 @@ err:
+ 	/* send the response back to the VF */
+ 	aq_ret = i40e_vc_send_msg_to_vf(vf, I40E_VIRTCHNL_OP_GET_RSS_HENA_CAPS,
+ 					aq_ret, (u8 *)vrh, len);
++	kfree(vrh);
+ 	return aq_ret;
+ }
+ 
 -- 
 2.4.11
 
