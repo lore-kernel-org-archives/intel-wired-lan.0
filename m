@@ -1,48 +1,45 @@
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Date: Mon, 25 Jul 2016 10:56:48 -0700
-Subject: [Intel-wired-lan] [PATCH v2 net-next 0/2] e1000e: fix PTP on
- e1000_pch_variants
-In-Reply-To: <1469292274-59237-1-git-send-email-jarod@redhat.com>
-References: <1468959902-25071-1-git-send-email-jarod@redhat.com>
- <1469292274-59237-1-git-send-email-jarod@redhat.com>
-Message-ID: <20160725105648.00000dda@unknown>
+From: Bimmy Pujari <bimmy.pujari@intel.com>
+Date: Mon, 25 Jul 2016 16:15:42 -0700
+Subject: [Intel-wired-lan] [next PATCH S40 00/13] i40e/i40evf updates
+Message-ID: <1469488555-28187-1-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Sat, 23 Jul 2016 12:44:32 -0400
-Jarod Wilson <jarod@redhat.com> wrote:
+Akeem G Abodunrin adds code to increase minimum number of allocated VSI.
 
-> This little series factors out the systim sanitization code first, then
-> adds e1000_pch_lpt as a new case in the switch that calls the sanitize
-> function, fixing PTP clock issues I've had reported against an Intel
-> I-218V NIC in an Intel NUC5ik5RYH system.
-> 
-> Jarod Wilson (2):
->   e1000e: factor out systim sanitization
->   e1000e: fix PTP on e1000_pch_lpt variants
-> 
+Anjali Singhai Jain fixes a bug where a client close can be called 
+before an open is complete.
 
-Thanks for your patch Jarod, the refactor itself is fine and a good
-idea, and thanks for working on the fix!
+Avinash Dayanand adds code to force register writes to mitigate sync issues 
+with iwarp VF driver & adds code to not notify client of VF reset during VF 
+creation.
 
-This code should have been using a feature flag, and the alert that
-you're having to add more device IDs to the switch statement makes it
-even more obvious.
+Alan Brady fixes lookup table when RSS disabled/enabled.
 
-Please see line 406 of e1000e/e1000.h, where the flags are declared,
-add a flag for this workaround (to flags2), and and add some code in the
-e1000_info_tbl entry to set the flag for the appropriate mac(s)
+Carolyn Wyborny adds code to allow RSS Hash set with less than four parameters.
 
-Then the runtime code should only check the flag, and if any further
-devices require the workaround we just add the flag to that device, or
-if this is init code, just always call the workaround funtion and have
-the function itself make sure the right flags2 is set or return.
+Catherine Sullivan adds code to reset vlan filter count when resetting and 
+adds code to reset RX csum error stat with other pf stats.
 
-The code has somehow gotten away from this model in some places and any
-new code we add should be doing it the right way.
+Dave Ertman fixes static analysis tool warning.
 
-Thanks,
- Jesse
+Jacob Keller adds code for missing rtnl_lock() around i40evf_set_interrupt_
+capability and adds code to not allow reduction of channels below active FD 
+rules.
+
+Mitch Williams fixes memory leak.
+
+ drivers/net/ethernet/intel/i40e/i40e.h             |   5 +-
+ drivers/net/ethernet/intel/i40e/i40e_client.c      |   5 +-
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 232 ++++++++++++++-------
+ drivers/net/ethernet/intel/i40e/i40e_main.c        |  33 ++-
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |   9 +-
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    |   4 +-
+ 6 files changed, 199 insertions(+), 89 deletions(-)
+
+-- 
+2.4.11
+
