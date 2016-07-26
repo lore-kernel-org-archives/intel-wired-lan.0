@@ -1,192 +1,61 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 27 Jul 2016 02:48:28 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- f694b9029f5afb5bfa03d09f1eef39a845c382ed BUILD DONE
-Message-ID: <5797b07c.KP+fvNmzN87s39BT%fengguang.wu@intel.com>
+From: nick <xerofoify@gmail.com>
+Date: Tue, 26 Jul 2016 08:48:50 -0400
+Subject: [Intel-wired-lan] [e1000_netpoll] BUG: sleeping function called
+ from invalid context at kernel/irq/manage.c:110
+In-Reply-To: <alpine.DEB.2.11.1607261149570.19896@nanos>
+References: <20160726035003.GA15095@wfg-t540p.sh.intel.com>
+ <1469524492.17736.3.camel@edumazet-glaptop3.roam.corp.google.com>
+ <20160726093224.GA10339@wfg-t540p.sh.intel.com>
+ <alpine.DEB.2.11.1607261149570.19896@nanos>
+Message-ID: <8578bb16-cd04-e8a5-c7f4-be061ede95b4@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-f694b9029f5afb5bfa03d09f1eef39a845c382ed  e1000e: convert systim overflow check to use flags2
 
-drivers/net/ethernet/intel/e1000e/ich8lan.c:5889:9: error: 'FLAGS2_CHECK_SYSTIM_OVERFLOW' undeclared here (not in a function)
-drivers/net/ethernet/intel/e1000e/ich8lan.c:5889: error: 'FLAGS2_CHECK_SYSTIM_OVERFLOW' undeclared here (not in a function)
 
-Error ids grouped by kconfigs:
+On 2016-07-26 05:50 AM, Thomas Gleixner wrote:
+> On Tue, 26 Jul 2016, Fengguang Wu wrote:
+>> --- a/drivers/net/ethernet/intel/e1000/e1000_main.c
+>> +++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+>> @@ -3797,7 +3797,7 @@ static irqreturn_t e1000_intr(int irq, void *data)
+>> 		hw->get_link_status = 1;
+>> 		/* guard against interrupt when we're going down */
+>> 		if (!test_bit(__E1000_DOWN, &adapter->flags))
+>> -			schedule_delayed_work(&adapter->watchdog_task, 1);
+>> +			mod_timer(&adapter->watchdog_timer, jiffies + 1);
+> 
+> ROTFL ....
+> 
+Thomas,
+Yes it's a pretty funny typo, below is a patch that fixes the build error
+ as reported by kbuild robot:
+From 013dbc315c452d37d565e9c27b90b02239b5a1bb Mon Sep 17 00:00:00 2001
+From: Nicholas Krause <xerofoify@gmail.com>
+Date: Tue, 26 Jul 2016 08:43:56 -0400
+Subject: [PATCH] use atomic mod timer rather then schedule work
 
-recent_errors
-??? arm64-defconfig
-??? ??? drivers-net-ethernet-intel-e1000e-ich8lan.c:error:FLAGS2_CHECK_SYSTIM_OVERFLOW-undeclared-here-(not-in-a-function)
-??? i386-allmodconfig
-??? ??? drivers-net-ethernet-intel-e1000e-ich8lan.c:error:FLAGS2_CHECK_SYSTIM_OVERFLOW-undeclared-here-(not-in-a-function)
-??? i386-defconfig
-??? ??? drivers-net-ethernet-intel-e1000e-ich8lan.c:error:FLAGS2_CHECK_SYSTIM_OVERFLOW-undeclared-here-(not-in-a-function)
-??? i386-randconfig-s1-201630
-??? ??? drivers-net-ethernet-intel-e1000e-ich8lan.c:error:FLAGS2_CHECK_SYSTIM_OVERFLOW-undeclared-here-(not-in-a-function)
-??? parisc-allmodconfig
-??? ??? drivers-net-ethernet-intel-e1000e-ich8lan.c:error:FLAGS2_CHECK_SYSTIM_OVERFLOW-undeclared-here-(not-in-a-function)
-??? powerpc-defconfig
-??? ??? drivers-net-ethernet-intel-e1000e-ich8lan.c:error:FLAGS2_CHECK_SYSTIM_OVERFLOW-undeclared-here-(not-in-a-function)
-??? powerpc-ppc64_defconfig
-??? ??? drivers-net-ethernet-intel-e1000e-ich8lan.c:error:FLAGS2_CHECK_SYSTIM_OVERFLOW-undeclared-here-(not-in-a-function)
-??? s390-allmodconfig
-??? ??? drivers-net-ethernet-intel-e1000e-ich8lan.c:error:FLAGS2_CHECK_SYSTIM_OVERFLOW-undeclared-here-(not-in-a-function)
-??? s390-allyesconfig
-??? ??? drivers-net-ethernet-intel-e1000e-ich8lan.c:error:FLAGS2_CHECK_SYSTIM_OVERFLOW-undeclared-here-(not-in-a-function)
-??? sparc64-allmodconfig
-??? ??? drivers-net-ethernet-intel-e1000e-ich8lan.c:error:FLAGS2_CHECK_SYSTIM_OVERFLOW-undeclared-here-(not-in-a-function)
-??? sparc64-defconfig
-??? ??? drivers-net-ethernet-intel-e1000e-ich8lan.c:error:FLAGS2_CHECK_SYSTIM_OVERFLOW-undeclared-here-(not-in-a-function)
-??? tile-allmodconfig
-??? ??? drivers-net-ethernet-intel-e1000e-ich8lan.c:error:FLAGS2_CHECK_SYSTIM_OVERFLOW-undeclared-here-(not-in-a-function)
-??? x86_64-acpi-redef
-??? ??? drivers-net-ethernet-intel-e1000e-ich8lan.c:error:FLAGS2_CHECK_SYSTIM_OVERFLOW-undeclared-here-(not-in-a-function)
-??? x86_64-allmodconfig
-??? ??? drivers-net-ethernet-intel-e1000e-ich8lan.c:error:FLAGS2_CHECK_SYSTIM_OVERFLOW-undeclared-here-(not-in-a-function)
-??? x86_64-allyesconfig
-??? ??? drivers-net-ethernet-intel-e1000e-ich8lan.c:error:FLAGS2_CHECK_SYSTIM_OVERFLOW-undeclared-here-(not-in-a-function)
-??? x86_64-allyesdebian
-??? ??? drivers-net-ethernet-intel-e1000e-ich8lan.c:error:FLAGS2_CHECK_SYSTIM_OVERFLOW-undeclared-here-(not-in-a-function)
-??? x86_64-lkp
-??? ??? drivers-net-ethernet-intel-e1000e-ich8lan.c:error:FLAGS2_CHECK_SYSTIM_OVERFLOW-undeclared-here-(not-in-a-function)
-??? x86_64-nfsroot
-??? ??? drivers-net-ethernet-intel-e1000e-ich8lan.c:error:FLAGS2_CHECK_SYSTIM_OVERFLOW-undeclared-here-(not-in-a-function)
-??? x86_64-randconfig-s2-07270217
-??? ??? drivers-net-ethernet-intel-e1000e-ich8lan.c:error:FLAGS2_CHECK_SYSTIM_OVERFLOW-undeclared-here-(not-in-a-function)
-??? x86_64-randconfig-x011-201630
-??? ??? drivers-net-ethernet-intel-e1000e-ich8lan.c:error:FLAGS2_CHECK_SYSTIM_OVERFLOW-undeclared-here-(not-in-a-function)
-??? x86_64-rhel
-??? ??? drivers-net-ethernet-intel-e1000e-ich8lan.c:error:FLAGS2_CHECK_SYSTIM_OVERFLOW-undeclared-here-(not-in-a-function)
-??? xtensa-allmodconfig
-    ??? drivers-net-ethernet-intel-e1000e-ich8lan.c:error:FLAGS2_CHECK_SYSTIM_OVERFLOW-undeclared-here-(not-in-a-function)
+Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
+---
+ drivers/net/ethernet/intel/e1000/e1000_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-elapsed time: 63m
-
-configs tested: 120
-
-i386                     randconfig-a0-201630
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                 randconfig-x012-201630
-x86_64                 randconfig-x015-201630
-x86_64                 randconfig-x013-201630
-x86_64                 randconfig-x011-201630
-x86_64                 randconfig-x014-201630
-x86_64                 randconfig-x010-201630
-x86_64                 randconfig-x017-201630
-x86_64                 randconfig-x018-201630
-x86_64                 randconfig-x016-201630
-x86_64                 randconfig-x019-201630
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201630
-i386                     randconfig-s1-201630
-x86_64                 randconfig-s0-07270217
-x86_64                 randconfig-s1-07270217
-x86_64                 randconfig-s2-07270217
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-i386                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201630
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201630
-i386                     randconfig-i1-201630
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-n0-07270035
-i386                   randconfig-x016-201630
-i386                   randconfig-x014-201630
-i386                   randconfig-x010-201630
-i386                   randconfig-x017-201630
-i386                   randconfig-x018-201630
-i386                   randconfig-x013-201630
-i386                   randconfig-x012-201630
-i386                   randconfig-x019-201630
-i386                   randconfig-x015-201630
-i386                   randconfig-x011-201630
-i386                     randconfig-n0-201630
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-x86_64                 randconfig-x002-201630
-x86_64                 randconfig-x009-201630
-x86_64                 randconfig-x008-201630
-x86_64                 randconfig-x007-201630
-x86_64                 randconfig-x003-201630
-x86_64                 randconfig-x004-201630
-x86_64                 randconfig-x005-201630
-x86_64                 randconfig-x001-201630
-x86_64                 randconfig-x006-201630
-x86_64                 randconfig-x000-201630
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-r0-201630
-i386                   randconfig-x002-201630
-i386                   randconfig-x009-201630
-i386                   randconfig-x006-201630
-i386                   randconfig-x001-201630
-i386                   randconfig-x003-201630
-i386                   randconfig-x008-201630
-i386                   randconfig-x007-201630
-i386                   randconfig-x000-201630
-i386                   randconfig-x004-201630
-i386                   randconfig-x005-201630
-
-Thanks,
-Fengguang
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
+index f42129d..e1830af 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_main.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+@@ -3797,7 +3797,7 @@ static irqreturn_t e1000_intr(int irq, void *data)
+ 		hw->get_link_status = 1;
+ 		/* guard against interrupt when we're going down */
+ 		if (!test_bit(__E1000_DOWN, &adapter->flags))
+-			schedule_delayed_work(&adapter->watchdog_task, 1);
++			mod_work(&adapter->watchdog_task, jiffies + 1);
+ 	}
+ 
+ 	/* disable interrupts, without the synchronize_irq bit */
+-- 
+2.7.4
+Cheers,
+Nick
