@@ -1,129 +1,164 @@
-From: Fengguang Wu <fengguang.wu@intel.com>
-Date: Tue, 26 Jul 2016 17:32:24 +0800
-Subject: [Intel-wired-lan] [e1000_netpoll] BUG: sleeping function called
- from invalid context at kernel/irq/manage.c:110
-In-Reply-To: <1469524492.17736.3.camel@edumazet-glaptop3.roam.corp.google.com>
-References: <20160726035003.GA15095@wfg-t540p.sh.intel.com>
- <1469524492.17736.3.camel@edumazet-glaptop3.roam.corp.google.com>
-Message-ID: <20160726093224.GA10339@wfg-t540p.sh.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 26 Jul 2016 17:45:08 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 9d3344e6ff1aa4a06b12550d215e5b3a67e04dcd BUILD SUCCESS
+Message-ID: <57973124.63o+oYtGdwV1JO0e%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Eric,
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+9d3344e6ff1aa4a06b12550d215e5b3a67e04dcd  e1000e: fix PTP on e1000_pch_lpt variants
 
-On Tue, Jul 26, 2016 at 11:14:52AM +0200, Eric Dumazet wrote:
->On Tue, 2016-07-26 at 11:50 +0800, Fengguang Wu wrote:
->> Greetings,
->>
->> This BUG message can be found in recent kernels as well as v4.4 and
->> linux-stable. It happens when running
->>
->>         modprobe netconsole netconsole=@/,$port@$server/
->>
->> [   39.937534] 22 Jul 13:30:40 ntpdate[440]: step time server 192.168.1.1 offset -673.833841 sec
->> [   39.943285] netpoll: netconsole: local port 6665
->> [   39.943436] netpoll: netconsole: local IPv4 address 0.0.0.0
->> [   39.943609] netpoll: netconsole: interface 'eth0'
->> [   39.943756] netpoll: netconsole: remote port 6672
->> [   39.943913] netpoll: netconsole: remote IPv4 address 192.168.1.1
->> [   39.944099] netpoll: netconsole: remote ethernet address ff:ff:ff:ff:ff:ff
->> [   39.944311] netpoll: netconsole: local IP 192.168.1.193
->> [   39.944514] BUG: sleeping function called from invalid context at kernel/irq/manage.c:110
->> [   39.944515] in_atomic(): 1, irqs_disabled(): 1, pid: 448, name: modprobe
->> [   39.944517] CPU: 6 PID: 448 Comm: modprobe Not tainted 4.7.0-rc7-wt-ath-10122-gf9b5ec2 #102
->> [   39.944518] Hardware name:                  /DZ77BH-55K, BIOS BHZ7710H.86A.0097.2012.1228.1346 12/28/2012
->> [   39.944522]  0000000000000000 ffffc90001f2f9e8 ffffffff813417d9 ffff88007faba5c0
->> [   39.944524]  000000000000006e ffffc90001f2fa00 ffffffff810aec03 ffffffff81a25948
->> [   39.944525]  ffffc90001f2fa28 ffffffff810aec9a ffff8803e5bd9400 ffff8803e50fbd68
->> [   39.944526] Call Trace:
->> [   39.944533]  [<ffffffff813417d9>] dump_stack+0x63/0x8a
->> [   39.944536]  [<ffffffff810aec03>] ___might_sleep+0xd3/0x120
->> [   39.944537]  [<ffffffff810aec9a>] __might_sleep+0x4a/0x80
->> [   39.944541]  [<ffffffff810e4638>] synchronize_irq+0x38/0xa0
->> [   39.944543]  [<ffffffff810e3c8e>] ? __irq_put_desc_unlock+0x1e/0x40
->> [   39.944545]  [<ffffffff810e48e3>] ? __disable_irq_nosync+0x43/0x60
->> [   39.944547]  [<ffffffff810e492c>] disable_irq+0x1c/0x20
->> [   39.944559]  [<ffffffffa0220932>] e1000_netpoll+0xf2/0x120 [e1000e]
->> [   39.944563]  [<ffffffff815f2bdc>] netpoll_poll_dev+0x5c/0x1a0
->> [   39.944567]  [<ffffffff815bb361>] ? __kmalloc_reserve+0x31/0x90
->> [   39.944569]  [<ffffffff815f2e8b>] netpoll_send_skb_on_dev+0x16b/0x250
->> [   39.944572]  [<ffffffff815f325c>] netpoll_send_udp+0x2ec/0x450
->> [   39.944576]  [<ffffffffa003cb62>] write_msg+0xb2/0xf0 [netconsole]
->> [   39.944578]  [<ffffffff810e04e5>] call_console_drivers+0x115/0x120
->> [   39.944580]  [<ffffffff810e1f13>] console_unlock+0x333/0x5c0
->> [   39.944583]  [<ffffffff810e2c74>] register_console+0x1c4/0x380
->> [   39.944586]  [<ffffffffa004f1c5>] init_netconsole+0x1c5/0x1000 [netconsole]
->> [   39.944588]  [<ffffffffa004f000>] ? 0xffffffffa004f000
->> [   39.944591]  [<ffffffff8100216d>] do_one_initcall+0x3d/0x150
->> [   39.944592]  [<ffffffff810aec9a>] ? __might_sleep+0x4a/0x80
->> [   39.944596]  [<ffffffff811f5098>] ? kmem_cache_alloc_trace+0x188/0x1e0
->> [   39.944598]  [<ffffffff8118f871>] do_init_module+0x5f/0x1d8
->> [   39.944602]  [<ffffffff81114009>] load_module+0x1429/0x1b40
->> [   39.944604]  [<ffffffff81110cd0>] ? __symbol_put+0x40/0x40
->> [   39.944607]  [<ffffffff8121f348>] ? kernel_read_file+0x178/0x1a0
->> [   39.944608]  [<ffffffff8121f429>] ? kernel_read_file_from_fd+0x49/0x80
->> [   39.944611]  [<ffffffff81114973>] SYSC_finit_module+0xc3/0xf0
->> [   39.944614]  [<ffffffff811149be>] SyS_finit_module+0xe/0x10
->> [   39.944617]  [<ffffffff816e5877>] entry_SYSCALL_64_fastpath+0x1a/0xa9
->> [   39.946384] console [netcon0] enabled
->> [   39.946514] netconsole: network logging started
->>
->> Can this be possibly fixed?
->
->Could you try this ?
+elapsed time: 137m
 
-Sure, thank you!
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 142
 
->diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
->index f42129d09e2c23ba9fdb5cde890d50ecb7166a42..a53c41c4c4f7d1fe52f95a2cab8784a938b3820b 100644
->--- a/drivers/net/ethernet/intel/e1000/e1000_main.c
->+++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
->@@ -5257,9 +5257,13 @@ static void e1000_netpoll(struct net_device *netdev)
-> {
-> 	struct e1000_adapter *adapter = netdev_priv(netdev);
->
->-	disable_irq(adapter->pdev->irq);
->-	e1000_intr(adapter->pdev->irq, netdev);
->-	enable_irq(adapter->pdev->irq);
->+	if (napi_schedule_prep(&adapter->napi)) {
->+		adapter->total_tx_bytes = 0;
->+		adapter->total_tx_packets = 0;
->+		adapter->total_rx_bytes = 0;
->+		adapter->total_rx_packets = 0;
->+		__napi_schedule(&adapter->napi);
->+	}
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201630
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-07261436
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+parisc                         b180_defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+x86_64                 randconfig-x012-201630
+x86_64                 randconfig-x015-201630
+x86_64                 randconfig-x013-201630
+x86_64                 randconfig-x011-201630
+x86_64                 randconfig-x014-201630
+x86_64                 randconfig-x010-201630
+x86_64                 randconfig-x017-201630
+x86_64                 randconfig-x018-201630
+x86_64                 randconfig-x016-201630
+x86_64                 randconfig-x019-201630
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201630
+i386                     randconfig-s1-201630
+x86_64                 randconfig-s0-07261519
+x86_64                 randconfig-s1-07261519
+x86_64                 randconfig-s2-07261519
+x86_64                 randconfig-s0-07261631
+x86_64                 randconfig-s1-07261631
+x86_64                 randconfig-s2-07261631
+x86_64                 randconfig-s0-07261658
+x86_64                 randconfig-s1-07261658
+x86_64                 randconfig-s2-07261658
+x86_64                 randconfig-s3-07261603
+x86_64                 randconfig-s4-07261603
+x86_64                 randconfig-s5-07261603
+x86_64                 randconfig-s3-07261637
+x86_64                 randconfig-s4-07261637
+x86_64                 randconfig-s5-07261637
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+i386                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201630
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                     randconfig-i0-201630
+i386                     randconfig-i1-201630
+x86_64                 randconfig-b0-07261553
+x86_64                           allmodconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+mn10300                          allmodconfig
+powerpc               corenet_basic_defconfig
+x86_64                 randconfig-n0-07261301
+i386                   randconfig-x010-201630
+i386                   randconfig-x011-201630
+i386                   randconfig-x012-201630
+i386                   randconfig-x013-201630
+i386                   randconfig-x014-201630
+i386                   randconfig-x015-201630
+i386                   randconfig-x016-201630
+i386                   randconfig-x017-201630
+i386                   randconfig-x018-201630
+i386                   randconfig-x019-201630
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201630
+i386         randconfig-n0-201630+CONFIG_DEBUG_INFO_REDUCED
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                   rhel
+x86_64                               rhel-7.2
+arm                         s5pv210_defconfig
+cris                             alldefconfig
+powerpc                     tqm8555_defconfig
+powerpc                      walnut_defconfig
+x86_64                 randconfig-n0-07261607
+x86_64                 randconfig-x000-201630
+x86_64                 randconfig-x001-201630
+x86_64                 randconfig-x002-201630
+x86_64                 randconfig-x003-201630
+x86_64                 randconfig-x004-201630
+x86_64                 randconfig-x005-201630
+x86_64                 randconfig-x006-201630
+x86_64                 randconfig-x007-201630
+x86_64                 randconfig-x008-201630
+x86_64                 randconfig-x009-201630
+i386                     randconfig-r0-201630
+i386                   randconfig-x000-201630
+i386                   randconfig-x001-201630
+i386                   randconfig-x002-201630
+i386                   randconfig-x003-201630
+i386                   randconfig-x004-201630
+i386                   randconfig-x005-201630
+i386                   randconfig-x006-201630
+i386                   randconfig-x007-201630
+i386                   randconfig-x008-201630
+i386                   randconfig-x009-201630
 
-btw, Nicholas also send us a patch for evaluation:
-
-See if the below patch fixes the issue your reporting. Seems
-that we are calling a schedule function incorrectly in atomic
-interrupt context.
-Regards,
-Nicholas
-
-Subject: [PATCH] schedule function called for e1000 driver interrupt
- incorrectly
-
-Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
----
- drivers/net/ethernet/intel/e1000/e1000_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
-index f42129d..ae38513 100644
---- a/drivers/net/ethernet/intel/e1000/e1000_main.c
-+++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
-@@ -3797,7 +3797,7 @@ static irqreturn_t e1000_intr(int irq, void *data)
- 		hw->get_link_status = 1;
- 		/* guard against interrupt when we're going down */
- 		if (!test_bit(__E1000_DOWN, &adapter->flags))
--			schedule_delayed_work(&adapter->watchdog_task, 1);
-+			mod_timer(&adapter->watchdog_timer, jiffies + 1);
- 	}
- 
- 	/* disable interrupts, without the synchronize_irq bit */
--- 
-2.7.4
+Thanks,
+Fengguang
