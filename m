@@ -1,51 +1,38 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 26 Jul 2016 10:53:55 -0700
-Subject: [Intel-wired-lan] [PATCH net-next 3/2] e1000e: convert systim
- overflow check to use flags2
-In-Reply-To: <1469554746-410-1-git-send-email-jarod@redhat.com>
-References: <20160725105648.00000dda@unknown>
- <1469554746-410-1-git-send-email-jarod@redhat.com>
-Message-ID: <1469555635.2851.10.camel@intel.com>
+Date: Tue, 26 Jul 2016 10:56:28 -0700
+Subject: [Intel-wired-lan] [next PATCH S40 01/13] i40e: Fix a bug where
+ a client close can be called before an open is complete
+In-Reply-To: <1469488555-28187-2-git-send-email-bimmy.pujari@intel.com>
+References: <1469488555-28187-1-git-send-email-bimmy.pujari@intel.com>
+ <1469488555-28187-2-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1469555788.2851.13.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2016-07-26 at 13:39 -0400, Jarod Wilson wrote:
-> Per Jesse Brandeburg, e1000e should be using flags for this sort of
-> thing.
+On Mon, 2016-07-25 at 16:15 -0700, Bimmy Pujari wrote:
+> From: Anjali Singhai Jain <anjali.singhai@intel.com>
 > 
-> Littering functional code with device-specific checks is much messier
-> than
-> simply checking a flag, and having device-specific init set flags as
-> needed.
-> There are probably a number of other cases in the e1000e code that
-> could/should be converted similarly.
+> The client->open call in this path was not protected with the
+> client instance mutex. And hence the client->close can get initiated
+> before the open completes.
 > 
-> At present, this patch is a follow-up to the previously submitted 2
-> patches, but I can redo the series to omit the conversion to a switch
-> entirely, if so desired.
-> 
-> Suggested-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> CC: Jesse Brandeburg <jesse.brandeburg@intel.com>
-> CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-> CC: intel-wired-lan at lists.osuosl.org
-> CC: netdev at vger.kernel.org
-> Signed-off-by: Jarod Wilson <jarod@redhat.com>
+> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+> Change-Id: I0ed60c38868dd3f44966b6ed49a063d0e5b7edf5
 > ---
-> ?drivers/net/ethernet/intel/e1000e/82571.c?? |? 6 ++++--
-> ?drivers/net/ethernet/intel/e1000e/e1000.h?? |? 1 +
-> ?drivers/net/ethernet/intel/e1000e/ich8lan.c |? 3 ++-
-> ?drivers/net/ethernet/intel/e1000e/netdev.c? | 10 ++--------
-> ?4 files changed, 9 insertions(+), 11 deletions(-)
+> ?drivers/net/ethernet/intel/i40e/i40e_client.c | 2 ++
+> ?1 file changed, 2 insertions(+)
 
-This generates a compile issue, so I will be dropping this patch and will
-await an update.
+This does not apply cleanly to the current net-next tree. ?It appears that
+this series was based on an old/stale version of my next-queue branch. ?So
+I am dropping the series, please update/rebase your series to my current
+next-queue branch and resubmit.
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 819 bytes
 Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160726/3055a5ca/attachment-0001.asc>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160726/dab9ffb0/attachment.asc>
