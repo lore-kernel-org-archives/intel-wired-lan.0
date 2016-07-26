@@ -1,75 +1,70 @@
-From: Abodunrin, Akeem G <akeem.g.abodunrin@intel.com>
-Date: Tue, 26 Jul 2016 01:53:45 +0000
-Subject: [Intel-wired-lan] [next PATCH S40 05/13] i40e: Increase minimum
- number of allocated VSI
-In-Reply-To: <c78b8708-ef3c-3682-3182-f70b8669aa66@onemain.com>
-References: <1469488555-28187-1-git-send-email-bimmy.pujari@intel.com>
- <1469488555-28187-6-git-send-email-bimmy.pujari@intel.com>
- <c78b8708-ef3c-3682-3182-f70b8669aa66@onemain.com>
-Message-ID: <CFEEE81102D91947B9CC368106979EBA740FA575@ORSMSX105.amr.corp.intel.com>
+From: Fengguang Wu <fengguang.wu@intel.com>
+Date: Tue, 26 Jul 2016 11:50:03 +0800
+Subject: [Intel-wired-lan] [e1000_netpoll] BUG: sleeping function called
+ from invalid context at kernel/irq/manage.c:110
+Message-ID: <20160726035003.GA15095@wfg-t540p.sh.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Thanks Shannon!
+Greetings,
 
-Sure, we might not need to mention VMDq for upstream, Linux patch - since VMDq is not supported.
-Yes, original patch contains comment about 64 VFs, not sure how it got lost on the way here...  
+This BUG message can be found in recent kernels as well as v4.4 and
+linux-stable. It happens when running
 
-Regards,
-~Akeem
+        modprobe netconsole netconsole=@/,$port@$server/ 
 
-> -----Original Message-----
-> From: Shannon Nelson [mailto:sln at onemain.com]
-> Sent: Monday, July 25, 2016 4:47 PM
-> To: Pujari, Bimmy <bimmy.pujari@intel.com>; intel-wired-lan at lists.osuosl.org
-> Cc: Abodunrin, Akeem G <akeem.g.abodunrin@intel.com>
-> Subject: Re: [Intel-wired-lan] [next PATCH S40 05/13] i40e: Increase minimum
-> number of allocated VSI
-> 
-> 
-> 
-> On 07/25/2016 04:15 PM, Bimmy Pujari wrote:
-> > From: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
-> >
-> > This patch increases minimum number of allocated VSIs, so as to
-> > resolve failure adding VSI for VF when 64-VFs assigned to a PF. The
-> > driver supports up to 128 VFs per device, users can decide to enable
-> > up to 64-VFs on a single PF, especially 2 X 40 devices. In that
-> > scenario, with VMDq co-existence, there would be starvation of VSIs -
-> > with this patch, supported features would have enough VSIs for configuration
-> now.
-> >
-> > Signed-off-by: Akeem G Abodunrin <akeem.g.abodunrin@intel.com>
-> > Change-ID: If084f4cd823667af8fe7fdc11489c705b32039d5
-> > ---
-> >   drivers/net/ethernet/intel/i40e/i40e.h | 2 +-
-> >   1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/net/ethernet/intel/i40e/i40e.h
-> > b/drivers/net/ethernet/intel/i40e/i40e.h
-> > index 2a88291..06e1835 100644
-> > --- a/drivers/net/ethernet/intel/i40e/i40e.h
-> > +++ b/drivers/net/ethernet/intel/i40e/i40e.h
-> > @@ -74,7 +74,7 @@
-> >   #define I40E_MIN_NUM_DESCRIPTORS      64
-> >   #define I40E_MIN_MSIX                 2
-> >   #define I40E_DEFAULT_NUM_VMDQ_VSI     8 /* max 256 VSIs */
-> > -#define I40E_MIN_VSI_ALLOC            51 /* LAN, ATR, FCOE, 32 VF, 16 VMDQ
-> */
-> > +#define I40E_MIN_VSI_ALLOC            83 /* LAN, ATR, FCOE, 32 VF, 16 VMDQ
-> */
-> 
-> You should update the comment here to reflect 64 VFs.
-> 
-> Since VMDq is not really supported, perhaps you can remove those 16 from this
-> calculation?
-> 
-> sln
-> 
-> >   /* max 16 qps */
-> >   #define i40e_default_queues_per_vmdq(pf) \
-> >   		(((pf)->flags & I40E_FLAG_RSS_AQ_CAPABLE) ? 4 : 1)
+[   39.937534] 22 Jul 13:30:40 ntpdate[440]: step time server 192.168.1.1 offset -673.833841 sec
+[   39.943285] netpoll: netconsole: local port 6665
+[   39.943436] netpoll: netconsole: local IPv4 address 0.0.0.0
+[   39.943609] netpoll: netconsole: interface 'eth0'
+[   39.943756] netpoll: netconsole: remote port 6672
+[   39.943913] netpoll: netconsole: remote IPv4 address 192.168.1.1
+[   39.944099] netpoll: netconsole: remote ethernet address ff:ff:ff:ff:ff:ff
+[   39.944311] netpoll: netconsole: local IP 192.168.1.193
+[   39.944514] BUG: sleeping function called from invalid context at kernel/irq/manage.c:110
+[   39.944515] in_atomic(): 1, irqs_disabled(): 1, pid: 448, name: modprobe
+[   39.944517] CPU: 6 PID: 448 Comm: modprobe Not tainted 4.7.0-rc7-wt-ath-10122-gf9b5ec2 #102
+[   39.944518] Hardware name:                  /DZ77BH-55K, BIOS BHZ7710H.86A.0097.2012.1228.1346 12/28/2012
+[   39.944522]  0000000000000000 ffffc90001f2f9e8 ffffffff813417d9 ffff88007faba5c0
+[   39.944524]  000000000000006e ffffc90001f2fa00 ffffffff810aec03 ffffffff81a25948
+[   39.944525]  ffffc90001f2fa28 ffffffff810aec9a ffff8803e5bd9400 ffff8803e50fbd68
+[   39.944526] Call Trace:
+[   39.944533]  [<ffffffff813417d9>] dump_stack+0x63/0x8a
+[   39.944536]  [<ffffffff810aec03>] ___might_sleep+0xd3/0x120
+[   39.944537]  [<ffffffff810aec9a>] __might_sleep+0x4a/0x80
+[   39.944541]  [<ffffffff810e4638>] synchronize_irq+0x38/0xa0
+[   39.944543]  [<ffffffff810e3c8e>] ? __irq_put_desc_unlock+0x1e/0x40
+[   39.944545]  [<ffffffff810e48e3>] ? __disable_irq_nosync+0x43/0x60
+[   39.944547]  [<ffffffff810e492c>] disable_irq+0x1c/0x20
+[   39.944559]  [<ffffffffa0220932>] e1000_netpoll+0xf2/0x120 [e1000e]
+[   39.944563]  [<ffffffff815f2bdc>] netpoll_poll_dev+0x5c/0x1a0
+[   39.944567]  [<ffffffff815bb361>] ? __kmalloc_reserve+0x31/0x90
+[   39.944569]  [<ffffffff815f2e8b>] netpoll_send_skb_on_dev+0x16b/0x250
+[   39.944572]  [<ffffffff815f325c>] netpoll_send_udp+0x2ec/0x450
+[   39.944576]  [<ffffffffa003cb62>] write_msg+0xb2/0xf0 [netconsole]
+[   39.944578]  [<ffffffff810e04e5>] call_console_drivers+0x115/0x120
+[   39.944580]  [<ffffffff810e1f13>] console_unlock+0x333/0x5c0
+[   39.944583]  [<ffffffff810e2c74>] register_console+0x1c4/0x380
+[   39.944586]  [<ffffffffa004f1c5>] init_netconsole+0x1c5/0x1000 [netconsole]
+[   39.944588]  [<ffffffffa004f000>] ? 0xffffffffa004f000
+[   39.944591]  [<ffffffff8100216d>] do_one_initcall+0x3d/0x150
+[   39.944592]  [<ffffffff810aec9a>] ? __might_sleep+0x4a/0x80
+[   39.944596]  [<ffffffff811f5098>] ? kmem_cache_alloc_trace+0x188/0x1e0
+[   39.944598]  [<ffffffff8118f871>] do_init_module+0x5f/0x1d8
+[   39.944602]  [<ffffffff81114009>] load_module+0x1429/0x1b40
+[   39.944604]  [<ffffffff81110cd0>] ? __symbol_put+0x40/0x40
+[   39.944607]  [<ffffffff8121f348>] ? kernel_read_file+0x178/0x1a0
+[   39.944608]  [<ffffffff8121f429>] ? kernel_read_file_from_fd+0x49/0x80
+[   39.944611]  [<ffffffff81114973>] SYSC_finit_module+0xc3/0xf0
+[   39.944614]  [<ffffffff811149be>] SyS_finit_module+0xe/0x10
+[   39.944617]  [<ffffffff816e5877>] entry_SYSCALL_64_fastpath+0x1a/0xa9
+[   39.946384] console [netcon0] enabled
+[   39.946514] netconsole: network logging started
 
+Can this be possibly fixed?
+
+Thanks,
+Fengguang
