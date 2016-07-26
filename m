@@ -1,38 +1,51 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 26 Jul 2016 10:56:28 -0700
-Subject: [Intel-wired-lan] [next PATCH S40 01/13] i40e: Fix a bug where
- a client close can be called before an open is complete
-In-Reply-To: <1469488555-28187-2-git-send-email-bimmy.pujari@intel.com>
-References: <1469488555-28187-1-git-send-email-bimmy.pujari@intel.com>
- <1469488555-28187-2-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1469555788.2851.13.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 27 Jul 2016 01:56:08 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue 30/30]
+ drivers/net/ethernet/intel/e1000e/ich8lan.c:5889:9: error:
+ 'FLAGS2_CHECK_SYSTIM_OVERFLOW' undeclared here (not in a function)
+Message-ID: <201607270106.9yzqfevE%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2016-07-25 at 16:15 -0700, Bimmy Pujari wrote:
-> From: Anjali Singhai Jain <anjali.singhai@intel.com>
-> 
-> The client->open call in this path was not protected with the
-> client instance mutex. And hence the client->close can get initiated
-> before the open completes.
-> 
-> Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
-> Change-Id: I0ed60c38868dd3f44966b6ed49a063d0e5b7edf5
-> ---
-> ?drivers/net/ethernet/intel/i40e/i40e_client.c | 2 ++
-> ?1 file changed, 2 insertions(+)
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git dev-queue
+head:   f694b9029f5afb5bfa03d09f1eef39a845c382ed
+commit: f694b9029f5afb5bfa03d09f1eef39a845c382ed [30/30] e1000e: convert systim overflow check to use flags2
+config: x86_64-randconfig-x011-201630 (attached as .config)
+compiler: gcc-6 (Debian 6.1.1-9) 6.1.1 20160705
+reproduce:
+        git checkout f694b9029f5afb5bfa03d09f1eef39a845c382ed
+        # save the attached .config to linux build tree
+        make ARCH=x86_64 
 
-This does not apply cleanly to the current net-next tree. ?It appears that
-this series was based on an old/stale version of my next-queue branch. ?So
-I am dropping the series, please update/rebase your series to my current
-next-queue branch and resubmit.
+All errors (new ones prefixed by >>):
+
+>> drivers/net/ethernet/intel/e1000e/ich8lan.c:5889:9: error: 'FLAGS2_CHECK_SYSTIM_OVERFLOW' undeclared here (not in a function)
+          | FLAGS2_CHECK_SYSTIM_OVERFLOW,
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+vim +/FLAGS2_CHECK_SYSTIM_OVERFLOW +5889 drivers/net/ethernet/intel/e1000e/ich8lan.c
+
+  5883					  | FLAG_HAS_AMT
+  5884					  | FLAG_HAS_FLASH
+  5885					  | FLAG_HAS_JUMBO_FRAMES
+  5886					  | FLAG_APME_IN_WUC,
+  5887		.flags2			= FLAG2_HAS_PHY_STATS
+  5888					  | FLAG2_HAS_EEE
+> 5889					  | FLAGS2_CHECK_SYSTIM_OVERFLOW,
+  5890		.pba			= 26,
+  5891		.max_hw_frame_size	= 9022,
+  5892		.get_variants		= e1000_get_variants_ich8lan,
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
 -------------- next part --------------
 A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160726/dab9ffb0/attachment.asc>
+Name: .config.gz
+Type: application/octet-stream
+Size: 26488 bytes
+Desc: not available
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160727/cc459e6b/attachment-0001.obj>
