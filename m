@@ -1,63 +1,42 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Wed, 27 Jul 2016 12:02:37 -0700
-Subject: [Intel-wired-lan] [next PATCH S40-V2 08/12] i40e: Don't notify
-	client of VF reset during VF creation
+Date: Wed, 27 Jul 2016 12:02:31 -0700
+Subject: [Intel-wired-lan] [next PATCH S40-V2 02/12] i40e/i40evf: Reset vlan
+	filter count when resetting
 In-Reply-To: <1469646161-30024-1-git-send-email-bimmy.pujari@intel.com>
 References: <1469646161-30024-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1469646161-30024-9-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1469646161-30024-3-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Avinash Dayanand <avinash.dayanand@intel.com>
+From: Catherine Sullivan <catherine.sullivan@intel.com>
 
-VF goes through reset path during VF creation which happens to also
-have notification of VF reset to client. Adding conditional check to
-avoid wrongly notifying VF reset during VF creation.
+When we do a reset, all the vlan filters get added again. Therefore we also
+want to reset the vlan count to 0 or we quickly run out of filters.
 
-Also changing the call order of VF enable, calling it after VF creation
-rather than before.
-
-Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
-Change-ID: I96eabd99deae746a2f0fc465194c886f196178ce
+Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
+Change-ID: I459f26851e22204dc8b8999928ad87cde8170119
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+Testing Hints: Make sure that you don't run out of filters when doing
+multiple resets.
+
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 1 +
+ 1 file changed, 1 insertion(+)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 0fa050a..5ea659c 100644
+index 6fcbf76..0fa050a 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -991,7 +991,9 @@ complete_reset:
- 		i40e_enable_vf_mappings(vf);
+@@ -992,6 +992,7 @@ complete_reset:
  		set_bit(I40E_VF_STAT_ACTIVE, &vf->vf_states);
  		clear_bit(I40E_VF_STAT_DISABLED, &vf->vf_states);
--		i40e_notify_client_of_vf_reset(pf, abs_vf_id);
-+		/* Do not notify the client during VF init */
-+		if (vf->pf->num_alloc_vfs)
-+			i40e_notify_client_of_vf_reset(pf, abs_vf_id);
- 		vf->num_vlan = 0;
+ 		i40e_notify_client_of_vf_reset(pf, abs_vf_id);
++		vf->num_vlan = 0;
  	}
  	/* tell the VF the reset is done */
-@@ -1090,7 +1092,6 @@ int i40e_alloc_vfs(struct i40e_pf *pf, u16 num_alloc_vfs)
- 			goto err_iov;
- 		}
- 	}
--	i40e_notify_client_of_vf_enable(pf, num_alloc_vfs);
- 	/* allocate memory */
- 	vfs = kcalloc(num_alloc_vfs, sizeof(struct i40e_vf), GFP_KERNEL);
- 	if (!vfs) {
-@@ -1114,6 +1115,8 @@ int i40e_alloc_vfs(struct i40e_pf *pf, u16 num_alloc_vfs)
- 	}
- 	pf->num_alloc_vfs = num_alloc_vfs;
- 
-+	i40e_notify_client_of_vf_enable(pf, num_alloc_vfs);
-+
- err_alloc:
- 	if (ret)
- 		i40e_free_vfs(pf);
+ 	wr32(hw, I40E_VFGEN_RSTAT1(vf->vf_id), I40E_VFR_VFACTIVE);
 -- 
 2.4.11
 
