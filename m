@@ -1,52 +1,142 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Tue, 26 Jul 2016 13:39:42 -0700
-Subject: [Intel-wired-lan] [next PATCH S40 10/13] i40e: fix lookup table
- when RSS disabled/enabled
-In-Reply-To: <C8326AE922E1A04D91DF73B4913A8DCB01625281@ORSMSX102.amr.corp.intel.com>
-References: <1469488555-28187-1-git-send-email-bimmy.pujari@intel.com>
- <1469488555-28187-11-git-send-email-bimmy.pujari@intel.com>
- <C8326AE922E1A04D91DF73B4913A8DCB01625281@ORSMSX102.amr.corp.intel.com>
-Message-ID: <1469565582.2851.16.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 27 Jul 2016 10:46:21 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 23f8ee9275309f7bf8f1365e230f5aa55976fb13 BUILD SUCCESS
+Message-ID: <5798207d.jpJu/igBtQT2yo7V%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2016-07-26 at 15:48 +0000, Brady, Alan wrote:
-> ACK
-> 
-> -----Original Message-----
-> From: Pujari, Bimmy?
-> Sent: Monday, July 25, 2016 4:16 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Cc: Brady, Alan <alan.brady@intel.com>
-> Subject: [next PATCH S40 10/13] i40e: fix lookup table when RSS
-> disabled/enabled
-> 
-> From: "Alan, Brady" <alan.brady@intel.com>
-> 
-> This patch fixes the bug which causes RSS to continue to work after being
-> disabled.? After disabling RSS, traffic would continue to be assigned to
-> different queues instead of falling back to a single queue. Without this
-> patch, attempting to disable RSS would not work as expected. This patch
-> fixes the bug by clearing the lookup table used by RSS such that all
-> traffic is assigned to a single queue.? This patch also addresses the
-> issue of reinstating? the lookup table should RSS then be re-enabled.
-> 
-> Signed-off-by: Alan Brady <alan.brady@intel.com>
-> Change-ID: Ib20c7c6a7e9f1f772bb787370f8a8c664796b141
-> ---
-> ?drivers/net/ethernet/intel/i40e/i40e_main.c | 28
-> ++++++++++++++++++++++++++++
-> ?1 file changed, 28 insertions(+)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+23f8ee9275309f7bf8f1365e230f5aa55976fb13  e1000e: fix PTP on e1000_pch_lpt variants
 
-First why are you ACK'ing your own patch, which you already Signed-off-by
-on? ?Second, never top post.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160726/0a26257e/attachment.asc>
+elapsed time: 99m
+
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 120
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201630
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+parisc                         b180_defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+arm                         lubbock_defconfig
+blackfin                   CM-BF561_defconfig
+m32r                    mappi.nommu_defconfig
+sparc64                             defconfig
+x86_64                 randconfig-x012-201630
+x86_64                 randconfig-x015-201630
+x86_64                 randconfig-x013-201630
+x86_64                 randconfig-x011-201630
+x86_64                 randconfig-x014-201630
+x86_64                 randconfig-x010-201630
+x86_64                 randconfig-x017-201630
+x86_64                 randconfig-x018-201630
+x86_64                 randconfig-x016-201630
+x86_64                 randconfig-x019-201630
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201630
+i386                     randconfig-s1-201630
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201630
+i386                   randconfig-b0-07270919
+sparc                               defconfig
+sparc64                           allnoconfig
+i386                     randconfig-i0-201630
+i386                     randconfig-i1-201630
+i386                   randconfig-x016-201630
+i386                   randconfig-x014-201630
+i386                   randconfig-x010-201630
+i386                   randconfig-x017-201630
+i386                   randconfig-x018-201630
+i386                   randconfig-x013-201630
+i386                   randconfig-x012-201630
+i386                   randconfig-x019-201630
+i386                   randconfig-x015-201630
+i386                   randconfig-x011-201630
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201630
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                 randconfig-x002-201630
+x86_64                 randconfig-x009-201630
+x86_64                 randconfig-x008-201630
+x86_64                 randconfig-x007-201630
+x86_64                 randconfig-x003-201630
+x86_64                 randconfig-x004-201630
+x86_64                 randconfig-x005-201630
+x86_64                 randconfig-x001-201630
+x86_64                 randconfig-x006-201630
+x86_64                 randconfig-x000-201630
+i386                     randconfig-r0-201630
+i386                   randconfig-x002-201630
+i386                   randconfig-x009-201630
+i386                   randconfig-x006-201630
+i386                   randconfig-x001-201630
+i386                   randconfig-x003-201630
+i386                   randconfig-x008-201630
+i386                   randconfig-x007-201630
+i386                   randconfig-x000-201630
+i386                   randconfig-x004-201630
+i386                   randconfig-x005-201630
+
+Thanks,
+Fengguang
