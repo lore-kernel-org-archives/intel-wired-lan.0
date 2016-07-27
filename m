@@ -1,30 +1,53 @@
-From: Woodford, Timothy W. <Timothy.Woodford@jhuapl.edu>
-Date: Wed, 27 Jul 2016 21:15:23 +0000
-Subject: [Intel-wired-lan] [PATCH net-next v3 1/2] e1000e: factor out
- systim	sanitization
-In-Reply-To: <8F4C390AFA9F4444A4AA77F4A3BEC78A190E7843@HASMSX110.ger.corp.intel.com>
-References: <1469292274-59237-1-git-send-email-jarod@redhat.com>
- <1469557535-63429-1-git-send-email-jarod@redhat.com>
- <1469557535-63429-2-git-send-email-jarod@redhat.com>
- <8F4C390AFA9F4444A4AA77F4A3BEC78A190E7843@HASMSX110.ger.corp.intel.com>
-Message-ID: <c79639cd5a4c4907b83e2f5df50bd2bc@APLEX07.dom1.jhuapl.edu>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed, 27 Jul 2016 14:38:07 -0700
+Subject: [Intel-wired-lan] [e1000_netpoll] BUG: sleeping function called
+ from invalid context at kernel/irq/manage.c:110
+In-Reply-To: <1469524492.17736.3.camel@edumazet-glaptop3.roam.corp.google.com>
+References: <20160726035003.GA15095@wfg-t540p.sh.intel.com>
+ <1469524492.17736.3.camel@edumazet-glaptop3.roam.corp.google.com>
+Message-ID: <1469655487.2232.49.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
->> This is prepatory work for an expanding list of adapter families that have occasional ~10 hour clock jumps when being used for PTP. Factor out the sanitization function and convert to using a feature (bug) flag, per suggestion from Jesse Brandeburg.
->> 
->> Littering functional code with device-specific checks is much messier than simply checking a flag, and having device-specific init set flags as needed.
->> There are probably a number of other cases in the e1000e code that could/should be converted similarly.
+On Tue, 2016-07-26 at 11:14 +0200, Eric Dumazet wrote:
+> Could you try this ?
 > 
-> Looks ok to me.
-> Adding Chris who asked what happens if we reach the max retry counter (E1000_MAX_82574_SYSTIM_REREAD)?
-> This counter is set to 50. 
-> Can you, for testing purposes, decreased this value (or even set it to 0) and see what happens?
+> diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c
+> b/drivers/net/ethernet/intel/e1000/e1000_main.c
+> index
+> f42129d09e2c23ba9fdb5cde890d50ecb7166a42..a53c41c4c4f7d1fe52f95a2cab8784a
+> 938b3820b 100644
+> --- a/drivers/net/ethernet/intel/e1000/e1000_main.c
+> +++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+> @@ -5257,9 +5257,13 @@ static void e1000_netpoll(struct net_device
+> *netdev)
+> ?{
+> ????????struct e1000_adapter *adapter = netdev_priv(netdev);
+> ?
+> -???????disable_irq(adapter->pdev->irq);
+> -???????e1000_intr(adapter->pdev->irq, netdev);
+> -???????enable_irq(adapter->pdev->irq);
+> +???????if (napi_schedule_prep(&adapter->napi)) {
+> +???????????????adapter->total_tx_bytes = 0;
+> +???????????????adapter->total_tx_packets = 0;
+> +???????????????adapter->total_rx_bytes = 0;
+> +???????????????adapter->total_rx_packets = 0;
+> +???????????????__napi_schedule(&adapter->napi);
+> +???????}
+> ?}
+> ?#endif
+> ?
 
-I have one of the affected NICs.  I inserted some test code into the module to check the value of i after the for loop inside the sanitize function exits to check how many iterations of the loop were being run.  I ran a PTP test setup for a few hours with E1000_MAX_82574_SYSTIM_REREAD=50, and the maximum number was 5 iterations.
-It looks like setting E1000_MAX_82574_SYSTIM_REREAD to 0 will just disable the return value checking and will have the same results as disabling the sanitization function.  I'll set the max retry counter to 1 and run an overnight test to see what happens.
-
-Tim Woodford
+Since this fixes the issue?Fengguang saw, will you be submitting a formal
+patch Eric? (please) I can get this queued up for Dave's net tree as soon
+as I receive the formal patch.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160727/292e5060/attachment.asc>
