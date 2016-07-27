@@ -1,153 +1,97 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 28 Jul 2016 01:07:08 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
- d180b85ae84b62c2c35f0b8eb150d9d3650ef4a5 BUILD SUCCESS
-Message-ID: <5798ea3c.ciGf2GfdG6xISUyn%fengguang.wu@intel.com>
+From: Emil Tantilov <emil.s.tantilov@intel.com>
+Date: Wed, 27 Jul 2016 10:55:08 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbevf: fix incorrect MAC address on load
+Message-ID: <20160727175508.31818.55615.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-d180b85ae84b62c2c35f0b8eb150d9d3650ef4a5  ixgbe: fix setup_fc for x550em
+The PF driver was only receiving the first 4 bytes of the MAC due
+to an incorrect size parameter for ixgbevf_write_msg_read_ack()
+in ixgbevf_set_rar_vf().
 
-elapsed time: 89m
+Correct the size by calculating it on a fly for all instances where
+we call ixgbevf_write_msg_read_ack()
 
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 131
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbevf/vf.c |   21 ++++++++++++++-------
+ 1 file changed, 14 insertions(+), 7 deletions(-)
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201630
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                               tinyconfig
-avr32                             allnoconfig
-powerpc                      acadia_defconfig
-powerpc                     tqm5200_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-parisc                         b180_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x012-201630
-x86_64                 randconfig-x015-201630
-x86_64                 randconfig-x013-201630
-x86_64                 randconfig-x011-201630
-x86_64                 randconfig-x014-201630
-x86_64                 randconfig-x010-201630
-x86_64                 randconfig-x017-201630
-x86_64                 randconfig-x018-201630
-x86_64                 randconfig-x016-201630
-x86_64                 randconfig-x019-201630
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201630
-i386                     randconfig-s1-201630
-x86_64                 randconfig-s0-07280025
-x86_64                 randconfig-s1-07280025
-x86_64                 randconfig-s2-07280025
-x86_64                 randconfig-s0-07280030
-x86_64                 randconfig-s1-07280030
-x86_64                 randconfig-s2-07280030
-x86_64                           allmodconfig
-x86_64                 randconfig-s3-07280026
-x86_64                 randconfig-s4-07280026
-x86_64                 randconfig-s5-07280026
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201630
-i386                   randconfig-b0-07280026
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201630
-i386                     randconfig-i1-201630
-x86_64                 randconfig-b0-07280018
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-n0-07280028
-i386                   randconfig-x016-201630
-i386                   randconfig-x014-201630
-i386                   randconfig-x010-201630
-i386                   randconfig-x017-201630
-i386                   randconfig-x018-201630
-i386                   randconfig-x013-201630
-i386                   randconfig-x012-201630
-i386                   randconfig-x019-201630
-i386                   randconfig-x015-201630
-i386                   randconfig-x011-201630
-i386                     randconfig-n0-201630
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                   rhel
-x86_64                               rhel-7.2
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                 randconfig-x002-201630
-x86_64                 randconfig-x009-201630
-x86_64                 randconfig-x008-201630
-x86_64                 randconfig-x007-201630
-x86_64                 randconfig-x003-201630
-x86_64                 randconfig-x004-201630
-x86_64                 randconfig-x005-201630
-x86_64                 randconfig-x001-201630
-x86_64                 randconfig-x006-201630
-x86_64                 randconfig-x000-201630
-i386                     randconfig-r0-201630
-i386                   randconfig-x002-201630
-i386                   randconfig-x009-201630
-i386                   randconfig-x006-201630
-i386                   randconfig-x001-201630
-i386                   randconfig-x003-201630
-i386                   randconfig-x008-201630
-i386                   randconfig-x007-201630
-i386                   randconfig-x000-201630
-i386                   randconfig-x004-201630
-i386                   randconfig-x005-201630
+diff --git a/drivers/net/ethernet/intel/ixgbevf/vf.c b/drivers/net/ethernet/intel/ixgbevf/vf.c
+index a52f70e..d46ba1d 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/vf.c
++++ b/drivers/net/ethernet/intel/ixgbevf/vf.c
+@@ -284,7 +284,8 @@ static s32 ixgbevf_set_uc_addr_vf(struct ixgbe_hw *hw, u32 index, u8 *addr)
+ 	if (addr)
+ 		ether_addr_copy(msg_addr, addr);
+ 
+-	ret_val = ixgbevf_write_msg_read_ack(hw, msgbuf, msgbuf, 3);
++	ret_val = ixgbevf_write_msg_read_ack(hw, msgbuf, msgbuf,
++					     sizeof(msgbuf) / sizeof(u32));
+ 	if (!ret_val) {
+ 		msgbuf[0] &= ~IXGBE_VT_MSGTYPE_CTS;
+ 
+@@ -441,7 +442,8 @@ static s32 ixgbevf_set_rar_vf(struct ixgbe_hw *hw, u32 index, u8 *addr,
+ 	msgbuf[0] = IXGBE_VF_SET_MAC_ADDR;
+ 	ether_addr_copy(msg_addr, addr);
+ 
+-	ret_val = ixgbevf_write_msg_read_ack(hw, msgbuf, msgbuf, 2);
++	ret_val = ixgbevf_write_msg_read_ack(hw, msgbuf, msgbuf,
++					     sizeof(msgbuf) / sizeof(u32));
+ 
+ 	msgbuf[0] &= ~IXGBE_VT_MSGTYPE_CTS;
+ 
+@@ -551,7 +553,8 @@ static s32 ixgbevf_update_xcast_mode(struct ixgbe_hw *hw, int xcast_mode)
+ 	msgbuf[0] = IXGBE_VF_UPDATE_XCAST_MODE;
+ 	msgbuf[1] = xcast_mode;
+ 
+-	err = ixgbevf_write_msg_read_ack(hw, msgbuf, msgbuf, 2);
++	err = ixgbevf_write_msg_read_ack(hw, msgbuf, msgbuf,
++					 sizeof(msgbuf) / sizeof(u32));
+ 	if (err)
+ 		return err;
+ 
+@@ -588,7 +591,8 @@ static s32 ixgbevf_set_vfta_vf(struct ixgbe_hw *hw, u32 vlan, u32 vind,
+ 	/* Setting the 8 bit field MSG INFO to TRUE indicates "add" */
+ 	msgbuf[0] |= vlan_on << IXGBE_VT_MSGINFO_SHIFT;
+ 
+-	err = ixgbevf_write_msg_read_ack(hw, msgbuf, msgbuf, 2);
++	err = ixgbevf_write_msg_read_ack(hw, msgbuf, msgbuf,
++					 sizeof(msgbuf) / sizeof(u32));
+ 	if (err)
+ 		goto mbx_err;
+ 
+@@ -791,7 +795,8 @@ static s32 ixgbevf_set_rlpml_vf(struct ixgbe_hw *hw, u16 max_size)
+ 	msgbuf[0] = IXGBE_VF_SET_LPE;
+ 	msgbuf[1] = max_size;
+ 
+-	ret_val = ixgbevf_write_msg_read_ack(hw, msgbuf, msgbuf, 2);
++	ret_val = ixgbevf_write_msg_read_ack(hw, msgbuf, msgbuf,
++					     sizeof(msgbuf) / sizeof(u32));
+ 	if (ret_val)
+ 		return ret_val;
+ 	if ((msgbuf[0] & IXGBE_VF_SET_LPE) &&
+@@ -837,7 +842,8 @@ static int ixgbevf_negotiate_api_version_vf(struct ixgbe_hw *hw, int api)
+ 	msg[1] = api;
+ 	msg[2] = 0;
+ 
+-	err = ixgbevf_write_msg_read_ack(hw, msg, msg, 3);
++	err = ixgbevf_write_msg_read_ack(hw, msg, msg,
++					 sizeof(msg) / sizeof(u32));
+ 	if (!err) {
+ 		msg[0] &= ~IXGBE_VT_MSGTYPE_CTS;
+ 
+@@ -887,7 +893,8 @@ int ixgbevf_get_queues(struct ixgbe_hw *hw, unsigned int *num_tcs,
+ 	msg[0] = IXGBE_VF_GET_QUEUE;
+ 	msg[1] = msg[2] = msg[3] = msg[4] = 0;
+ 
+-	err = ixgbevf_write_msg_read_ack(hw, msg, msg, 5);
++	err = ixgbevf_write_msg_read_ack(hw, msg, msg,
++					 sizeof(msg) / sizeof(u32));
+ 	if (!err) {
+ 		msg[0] &= ~IXGBE_VT_MSGTYPE_CTS;
+ 
 
-Thanks,
-Fengguang
