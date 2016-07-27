@@ -1,142 +1,177 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 27 Jul 2016 15:39:31 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- f1003fe0368c3e35ac3ffce5eded26d104d20673 BUILD SUCCESS
-Message-ID: <57986533.ifr9bV887/lCVR1K%fengguang.wu@intel.com>
+From: Avargil, Raanan <raanan.avargil@intel.com>
+Date: Wed, 27 Jul 2016 14:09:13 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v3 1/2] e1000e: factor out
+ systim	sanitization
+In-Reply-To: <1469557535-63429-2-git-send-email-jarod@redhat.com>
+References: <1469292274-59237-1-git-send-email-jarod@redhat.com>
+ <1469557535-63429-1-git-send-email-jarod@redhat.com>
+ <1469557535-63429-2-git-send-email-jarod@redhat.com>
+Message-ID: <8F4C390AFA9F4444A4AA77F4A3BEC78A190E7843@HASMSX110.ger.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-f1003fe0368c3e35ac3ffce5eded26d104d20673  i40e: Program device correctly as part of adding flow director entry
+This is prepatory work for an expanding list of adapter families that have occasional ~10 hour clock jumps when being used for PTP. Factor out the sanitization function and convert to using a feature (bug) flag, per suggestion from Jesse Brandeburg.
 
-elapsed time: 103m
+Littering functional code with device-specific checks is much messier than simply checking a flag, and having device-specific init set flags as needed.
+There are probably a number of other cases in the e1000e code that could/should be converted similarly.
 
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 120
+Suggested-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+CC: Jesse Brandeburg <jesse.brandeburg@intel.com>
+CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+CC: intel-wired-lan at lists.osuosl.org
+CC: netdev at vger.kernel.org
+Signed-off-by: Jarod Wilson <jarod@redhat.com>
+---
+ drivers/net/ethernet/intel/e1000e/82571.c  |  6 ++-  drivers/net/ethernet/intel/e1000e/e1000.h  |  1 +  drivers/net/ethernet/intel/e1000e/netdev.c | 66 ++++++++++++++++++------------
+ 3 files changed, 44 insertions(+), 29 deletions(-)
 
-i386                     randconfig-a0-201630
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x012-201630
-x86_64                 randconfig-x015-201630
-x86_64                 randconfig-x013-201630
-x86_64                 randconfig-x011-201630
-x86_64                 randconfig-x014-201630
-x86_64                 randconfig-x010-201630
-x86_64                 randconfig-x017-201630
-x86_64                 randconfig-x018-201630
-x86_64                 randconfig-x016-201630
-x86_64                 randconfig-x019-201630
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201630
-i386                     randconfig-s1-201630
-x86_64                           allmodconfig
-x86_64                 randconfig-s3-07271435
-x86_64                 randconfig-s4-07271435
-x86_64                 randconfig-s5-07271435
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201630
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201630
-i386                     randconfig-i1-201630
-x86_64                 randconfig-b0-07271436
-i386                   randconfig-x016-201630
-i386                   randconfig-x014-201630
-i386                   randconfig-x010-201630
-i386                   randconfig-x017-201630
-i386                   randconfig-x018-201630
-i386                   randconfig-x013-201630
-i386                   randconfig-x012-201630
-i386                   randconfig-x019-201630
-i386                   randconfig-x015-201630
-i386                   randconfig-x011-201630
-i386                     randconfig-n0-201630
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                 randconfig-x002-201630
-x86_64                 randconfig-x009-201630
-x86_64                 randconfig-x008-201630
-x86_64                 randconfig-x007-201630
-x86_64                 randconfig-x003-201630
-x86_64                 randconfig-x004-201630
-x86_64                 randconfig-x005-201630
-x86_64                 randconfig-x001-201630
-x86_64                 randconfig-x006-201630
-x86_64                 randconfig-x000-201630
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-r0-201630
-i386                   randconfig-x002-201630
-i386                   randconfig-x009-201630
-i386                   randconfig-x006-201630
-i386                   randconfig-x001-201630
-i386                   randconfig-x003-201630
-i386                   randconfig-x008-201630
-i386                   randconfig-x007-201630
-i386                   randconfig-x000-201630
-i386                   randconfig-x004-201630
-i386                   randconfig-x005-201630
+diff --git a/drivers/net/ethernet/intel/e1000e/82571.c b/drivers/net/ethernet/intel/e1000e/82571.c
+index 7fd4d54..6b03c85 100644
+--- a/drivers/net/ethernet/intel/e1000e/82571.c
++++ b/drivers/net/ethernet/intel/e1000e/82571.c
+@@ -2032,7 +2032,8 @@ const struct e1000_info e1000_82574_info = {
+ 				  | FLAG2_DISABLE_ASPM_L0S
+ 				  | FLAG2_DISABLE_ASPM_L1
+ 				  | FLAG2_NO_DISABLE_RX
+-				  | FLAG2_DMA_BURST,
++				  | FLAG2_DMA_BURST
++				  | FLAG2_CHECK_SYSTIM_OVERFLOW,
+ 	.pba			= 32,
+ 	.max_hw_frame_size	= DEFAULT_JUMBO,
+ 	.get_variants		= e1000_get_variants_82571,
+@@ -2053,7 +2054,8 @@ const struct e1000_info e1000_82583_info = {
+ 				  | FLAG_HAS_CTRLEXT_ON_LOAD,
+ 	.flags2			= FLAG2_DISABLE_ASPM_L0S
+ 				  | FLAG2_DISABLE_ASPM_L1
+-				  | FLAG2_NO_DISABLE_RX,
++				  | FLAG2_NO_DISABLE_RX
++				  | FLAG2_CHECK_SYSTIM_OVERFLOW,
+ 	.pba			= 32,
+ 	.max_hw_frame_size	= DEFAULT_JUMBO,
+ 	.get_variants		= e1000_get_variants_82571,
+diff --git a/drivers/net/ethernet/intel/e1000e/e1000.h b/drivers/net/ethernet/intel/e1000e/e1000.h
+index ef96cd1..879cca4 100644
+--- a/drivers/net/ethernet/intel/e1000e/e1000.h
++++ b/drivers/net/ethernet/intel/e1000e/e1000.h
+@@ -452,6 +452,7 @@ s32 e1000e_get_base_timinca(struct e1000_adapter *adapter, u32 *timinca);
+ #define FLAG2_PCIM2PCI_ARBITER_WA         BIT(11)
+ #define FLAG2_DFLT_CRC_STRIPPING          BIT(12)
+ #define FLAG2_CHECK_RX_HWTSTAMP           BIT(13)
++#define FLAG2_CHECK_SYSTIM_OVERFLOW       BIT(14)
+ 
+ #define E1000_RX_DESC_PS(R, i)	    \
+ 	(&(((union e1000_rx_desc_packet_split *)((R).desc))[i])) diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 41f32c0..1b2df11 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -4303,6 +4303,42 @@ void e1000e_reinit_locked(struct e1000_adapter *adapter)  }
+ 
+ /**
++ * e1000e_sanitize_systim - sanitize raw cycle counter reads
++ * @hw: pointer to the HW structure
++ * @systim: cycle_t value read, sanitized and returned
++ *
++ * Errata for 82574/82583 possible bad bits read from SYSTIMH/L:
++ * check to see that the time is incrementing at a reasonable
++ * rate and is a multiple of incvalue.
++ **/
++static cycle_t e1000e_sanitize_systim(struct e1000_hw *hw, cycle_t 
++systim) {
++	u64 time_delta, rem, temp;
++	cycle_t systim_next;
++	u32 incvalue;
++	int i;
++
++	incvalue = er32(TIMINCA) & E1000_TIMINCA_INCVALUE_MASK;
++	for (i = 0; i < E1000_MAX_82574_SYSTIM_REREADS; i++) {
++		/* latch SYSTIMH on read of SYSTIML */
++		systim_next = (cycle_t)er32(SYSTIML);
++		systim_next |= (cycle_t)er32(SYSTIMH) << 32;
++
++		time_delta = systim_next - systim;
++		temp = time_delta;
++		/* VMWare users have seen incvalue of zero, don't div / 0 */
++		rem = incvalue ? do_div(temp, incvalue) : (time_delta != 0);
++
++		systim = systim_next;
++
++		if ((time_delta < E1000_82574_SYSTIM_EPSILON) && (rem == 0))
++			break;
++	}
++
++	return systim;
++}
++
++/**
+  * e1000e_cyclecounter_read - read raw cycle counter (used by time counter)
+  * @cc: cyclecounter structure
+  **/
+@@ -4312,7 +4348,7 @@ static cycle_t e1000e_cyclecounter_read(const struct cyclecounter *cc)
+ 						     cc);
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	u32 systimel, systimeh;
+-	cycle_t systim, systim_next;
++	cycle_t systim;
+ 	/* SYSTIMH latching upon SYSTIML read does not work well.
+ 	 * This means that if SYSTIML overflows after we read it but before
+ 	 * we read SYSTIMH, the value of SYSTIMH has been incremented and we @@ -4335,33 +4371,9 @@ static cycle_t e1000e_cyclecounter_read(const struct cyclecounter *cc)
+ 	systim = (cycle_t)systimel;
+ 	systim |= (cycle_t)systimeh << 32;
+ 
+-	if ((hw->mac.type == e1000_82574) || (hw->mac.type == e1000_82583)) {
+-		u64 time_delta, rem, temp;
+-		u32 incvalue;
+-		int i;
+-
+-		/* errata for 82574/82583 possible bad bits read from SYSTIMH/L
+-		 * check to see that the time is incrementing at a reasonable
+-		 * rate and is a multiple of incvalue
+-		 */
+-		incvalue = er32(TIMINCA) & E1000_TIMINCA_INCVALUE_MASK;
+-		for (i = 0; i < E1000_MAX_82574_SYSTIM_REREADS; i++) {
+-			/* latch SYSTIMH on read of SYSTIML */
+-			systim_next = (cycle_t)er32(SYSTIML);
+-			systim_next |= (cycle_t)er32(SYSTIMH) << 32;
+-
+-			time_delta = systim_next - systim;
+-			temp = time_delta;
+-			/* VMWare users have seen incvalue of zero, don't div / 0 */
+-			rem = incvalue ? do_div(temp, incvalue) : (time_delta != 0);
+-
+-			systim = systim_next;
++	if (adapter->flags2 & FLAG2_CHECK_SYSTIM_OVERFLOW)
++		systim = e1000e_sanitize_systim(hw, systim);
+ 
+-			if ((time_delta < E1000_82574_SYSTIM_EPSILON) &&
+-			    (rem == 0))
+-				break;
+-		}
+-	}
+ 	return systim;
+ }
+ 
+--
+1.8.3.1
 
-Thanks,
-Fengguang
+_______________________________________________
+Intel-wired-lan mailing list
+Intel-wired-lan@lists.osuosl.org
+http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+
+
+Looks ok to me.
+Adding Chris who asked what happens if we reach the max retry counter (E1000_MAX_82574_SYSTIM_REREAD)?
+This counter is set to 50. 
+Can you, for testing purposes, decreased this value (or even set it to 0) and see what happens?
+
+---------------------------------------------------------------------
+Intel Israel (74) Limited
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
+
