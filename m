@@ -1,42 +1,48 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Wed, 27 Jul 2016 12:02:32 -0700
-Subject: [Intel-wired-lan] [next PATCH S40-V2 03/12] i40e: reset RX csum
-	error stat with other pf stats
+Date: Wed, 27 Jul 2016 12:02:30 -0700
+Subject: [Intel-wired-lan] [next PATCH S40-V2 01/12] i40e: Fix a bug where a
+	client close can be called before an open is complete
 In-Reply-To: <1469646161-30024-1-git-send-email-bimmy.pujari@intel.com>
 References: <1469646161-30024-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1469646161-30024-4-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1469646161-30024-2-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Catherine Sullivan <catherine.sullivan@intel.com>
+From: Anjali Singhai Jain <anjali.singhai@intel.com>
 
-When we are resetting the pf stats we should also reset the RX csum
-error stat.
+The client->open call in this path was not protected with the
+client instance mutex, and hence the client->close can get initiated
+before the open completes.
 
-Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-Change-ID: I7af5ee0ec81a10f6deee1a7b8c2082ea068ef620
+Signed-off-by: Anjali Singhai Jain <anjali.singhai@intel.com>
+Change-Id: I0ed60c38868dd3f44966b6ed49a063d0e5b7edf5
 ---
-Testing Hints: Make sure the port.rx_csum_bad stat resets in ethtool
-after a pfr.
+ drivers/net/ethernet/intel/i40e/i40e_client.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
- drivers/net/ethernet/intel/i40e/i40e_main.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 2cf9d5b..77a35cf 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -527,6 +527,7 @@ void i40e_pf_reset_stats(struct i40e_pf *pf)
- 			pf->veb[i]->stat_offsets_loaded = false;
- 		}
- 	}
-+	pf->hw_csum_rx_error = 0;
- }
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c b/drivers/net/ethernet/intel/i40e/i40e_client.c
+index e1370c5..e14f041 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_client.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
+@@ -541,6 +541,7 @@ void i40e_client_subtask(struct i40e_pf *pf)
+ 			 client->name, pf->hw.pf_id,
+ 			 pf->hw.bus.device, pf->hw.bus.func);
  
- /**
++		mutex_lock(&i40e_client_instance_mutex);
+ 		/* Send an Open request to the client */
+ 		atomic_inc(&cdev->ref_cnt);
+ 		if (client->ops && client->ops->open)
+@@ -554,6 +555,7 @@ void i40e_client_subtask(struct i40e_pf *pf)
+ 			atomic_dec(&client->ref_cnt);
+ 			continue;
+ 		}
++		mutex_unlock(&i40e_client_instance_mutex);
+ 	}
+ 	mutex_unlock(&i40e_client_mutex);
+ }
 -- 
 2.4.11
 
