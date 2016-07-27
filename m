@@ -1,182 +1,30 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 28 Jul 2016 04:04:51 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 7844350add5044351f8aa7190ab9acdb873cc1b2 BUILD SUCCESS
-Message-ID: <579913e3.o1AcFgV1GltbUmdE%fengguang.wu@intel.com>
+From: Woodford, Timothy W. <Timothy.Woodford@jhuapl.edu>
+Date: Wed, 27 Jul 2016 21:15:23 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v3 1/2] e1000e: factor out
+ systim	sanitization
+In-Reply-To: <8F4C390AFA9F4444A4AA77F4A3BEC78A190E7843@HASMSX110.ger.corp.intel.com>
+References: <1469292274-59237-1-git-send-email-jarod@redhat.com>
+ <1469557535-63429-1-git-send-email-jarod@redhat.com>
+ <1469557535-63429-2-git-send-email-jarod@redhat.com>
+ <8F4C390AFA9F4444A4AA77F4A3BEC78A190E7843@HASMSX110.ger.corp.intel.com>
+Message-ID: <c79639cd5a4c4907b83e2f5df50bd2bc@APLEX07.dom1.jhuapl.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-7844350add5044351f8aa7190ab9acdb873cc1b2  i40e: Use list_move instead of list_del/list_add
+>> This is prepatory work for an expanding list of adapter families that have occasional ~10 hour clock jumps when being used for PTP. Factor out the sanitization function and convert to using a feature (bug) flag, per suggestion from Jesse Brandeburg.
+>> 
+>> Littering functional code with device-specific checks is much messier than simply checking a flag, and having device-specific init set flags as needed.
+>> There are probably a number of other cases in the e1000e code that could/should be converted similarly.
+> 
+> Looks ok to me.
+> Adding Chris who asked what happens if we reach the max retry counter (E1000_MAX_82574_SYSTIM_REREAD)?
+> This counter is set to 50. 
+> Can you, for testing purposes, decreased this value (or even set it to 0) and see what happens?
 
-elapsed time: 118m
+I have one of the affected NICs.  I inserted some test code into the module to check the value of i after the for loop inside the sanitize function exits to check how many iterations of the loop were being run.  I ran a PTP test setup for a few hours with E1000_MAX_82574_SYSTIM_REREAD=50, and the maximum number was 5 iterations.
+It looks like setting E1000_MAX_82574_SYSTIM_REREAD to 0 will just disable the return value checking and will have the same results as disabling the sanitization function.  I'll set the max retry counter to 1 and run an overnight test to see what happens.
 
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 160
-
-ia64                      gensparse_defconfig
-m68k                          hp300_defconfig
-powerpc                           allnoconfig
-i386                     randconfig-a0-201630
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x012-201630
-x86_64                 randconfig-x015-201630
-x86_64                 randconfig-x013-201630
-x86_64                 randconfig-x011-201630
-x86_64                 randconfig-x014-201630
-x86_64                 randconfig-x010-201630
-x86_64                 randconfig-x017-201630
-x86_64                 randconfig-x018-201630
-x86_64                 randconfig-x016-201630
-x86_64                 randconfig-x019-201630
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201630
-i386                     randconfig-s1-201630
-x86_64                 randconfig-s0-07280235
-x86_64                 randconfig-s1-07280235
-x86_64                 randconfig-s2-07280235
-x86_64                 randconfig-s0-07280249
-x86_64                 randconfig-s1-07280249
-x86_64                 randconfig-s2-07280249
-x86_64                 randconfig-s0-07280257
-x86_64                 randconfig-s1-07280257
-x86_64                 randconfig-s2-07280257
-x86_64                 randconfig-s0-07280311
-x86_64                 randconfig-s1-07280311
-x86_64                 randconfig-s2-07280311
-x86_64                           allmodconfig
-x86_64                 randconfig-s3-07280246
-x86_64                 randconfig-s4-07280246
-x86_64                 randconfig-s5-07280246
-x86_64                 randconfig-s3-07280303
-x86_64                 randconfig-s4-07280303
-x86_64                 randconfig-s5-07280303
-x86_64                 randconfig-s3-07280315
-x86_64                 randconfig-s4-07280315
-x86_64                 randconfig-s5-07280315
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201630
-i386                   randconfig-b0-07280241
-i386                   randconfig-b0-07280311
-i386                   randconfig-b0-07280331
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                            zeus_defconfig
-avr32                     atstk1004_defconfig
-cris                              allnoconfig
-mips                           xway_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201630
-i386                     randconfig-i1-201630
-x86_64                 randconfig-b0-07280322
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-powerpc                     kmp204x_defconfig
-mips                           ip22_defconfig
-sh                             shx3_defconfig
-x86_64                 randconfig-n0-07280246
-i386                   randconfig-x016-201630
-i386                   randconfig-x014-201630
-i386                   randconfig-x010-201630
-i386                   randconfig-x017-201630
-i386                   randconfig-x018-201630
-i386                   randconfig-x013-201630
-i386                   randconfig-x012-201630
-i386                   randconfig-x019-201630
-i386                   randconfig-x015-201630
-i386                   randconfig-x011-201630
-i386                     randconfig-n0-201630
-i386                   randconfig-h0-07280250
-i386                   randconfig-h1-07280250
-blackfin                  CM-BF537E_defconfig
-blackfin                    DNP5370_defconfig
-parisc                           alldefconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-arm                          nuc910_defconfig
-powerpc                     kmeter1_defconfig
-x86_64                 randconfig-x000-201630
-x86_64                 randconfig-x001-201630
-x86_64                 randconfig-x002-201630
-x86_64                 randconfig-x003-201630
-x86_64                 randconfig-x004-201630
-x86_64                 randconfig-x005-201630
-x86_64                 randconfig-x006-201630
-x86_64                 randconfig-x007-201630
-x86_64                 randconfig-x008-201630
-x86_64                 randconfig-x009-201630
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                     randconfig-r0-201630
-i386                   randconfig-x002-201630
-i386                   randconfig-x009-201630
-i386                   randconfig-x006-201630
-i386                   randconfig-x001-201630
-i386                   randconfig-x003-201630
-i386                   randconfig-x008-201630
-i386                   randconfig-x007-201630
-i386                   randconfig-x000-201630
-i386                   randconfig-x004-201630
-i386                   randconfig-x005-201630
-i386                   randconfig-x0-07280303
-
-Thanks,
-Fengguang
+Tim Woodford
