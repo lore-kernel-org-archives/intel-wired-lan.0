@@ -1,36 +1,138 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 27 Jul 2016 08:53:33 -0700
-Subject: [Intel-wired-lan] [PATCH V0] i40e: Program device correctly as
- part of adding flow director entry
-In-Reply-To: <1469598563-42383-1-git-send-email-kiran.patil@intel.com>
-References: <1469598563-42383-1-git-send-email-kiran.patil@intel.com>
-Message-ID: <1469634813.2232.14.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 28 Jul 2016 00:08:22 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 8a31cf45b89ecb41ff0745f81a7209d0e2f3f714 BUILD SUCCESS
+Message-ID: <5798dc76.CmrGlGYQZjQpCsGf%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2016-07-26 at 22:49 -0700, Kiran Patil wrote:
-> This patch fixes the problem where driver was not programming
-> underlying device correctly when user specifies less than full tuple
-> set as part of adding flow director entry (for flow-type tcp4/udp4)
-> using ethtool.
-> 
-> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
-> Change-Id: I90052508f8c172c0da5a4b78b949704b4a59ea78
-> Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-> ---
-> ?drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 116
-> +++++++++++++++++++++++++
-> ?1 file changed, 116 insertions(+)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+8a31cf45b89ecb41ff0745f81a7209d0e2f3f714  i40e: Program device correctly as part of adding flow director entry
 
-For public consumption, dropping this patch because a different approach is
-being taken to resolve this issue.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160727/a3cc89db/attachment.asc>
+elapsed time: 80m
+
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 116
+
+i386                     randconfig-a0-201630
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x012-201630
+x86_64                 randconfig-x015-201630
+x86_64                 randconfig-x013-201630
+x86_64                 randconfig-x011-201630
+x86_64                 randconfig-x014-201630
+x86_64                 randconfig-x010-201630
+x86_64                 randconfig-x017-201630
+x86_64                 randconfig-x018-201630
+x86_64                 randconfig-x016-201630
+x86_64                 randconfig-x019-201630
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201630
+i386                     randconfig-s1-201630
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201630
+i386                     randconfig-i0-201630
+i386                     randconfig-i1-201630
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+i386                   randconfig-x016-201630
+i386                   randconfig-x014-201630
+i386                   randconfig-x010-201630
+i386                   randconfig-x017-201630
+i386                   randconfig-x018-201630
+i386                   randconfig-x013-201630
+i386                   randconfig-x012-201630
+i386                   randconfig-x019-201630
+i386                   randconfig-x015-201630
+i386                   randconfig-x011-201630
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201630
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                 randconfig-x002-201630
+x86_64                 randconfig-x009-201630
+x86_64                 randconfig-x008-201630
+x86_64                 randconfig-x007-201630
+x86_64                 randconfig-x003-201630
+x86_64                 randconfig-x004-201630
+x86_64                 randconfig-x005-201630
+x86_64                 randconfig-x001-201630
+x86_64                 randconfig-x006-201630
+x86_64                 randconfig-x000-201630
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-r0-201630
+i386                   randconfig-x002-201630
+i386                   randconfig-x009-201630
+i386                   randconfig-x006-201630
+i386                   randconfig-x001-201630
+i386                   randconfig-x003-201630
+i386                   randconfig-x008-201630
+i386                   randconfig-x007-201630
+i386                   randconfig-x000-201630
+i386                   randconfig-x004-201630
+i386                   randconfig-x005-201630
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+
+Thanks,
+Fengguang
