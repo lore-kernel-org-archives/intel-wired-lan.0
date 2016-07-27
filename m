@@ -1,43 +1,40 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Wed, 27 Jul 2016 12:02:29 -0700
-Subject: [Intel-wired-lan] [next PATCH S40-V2 00/12] i40e/i40evf updates
-Message-ID: <1469646161-30024-1-git-send-email-bimmy.pujari@intel.com>
+Date: Wed, 27 Jul 2016 12:02:39 -0700
+Subject: [Intel-wired-lan] [next PATCH S40-V2 10/12] i40e: fix memory leak
+In-Reply-To: <1469646161-30024-1-git-send-email-bimmy.pujari@intel.com>
+References: <1469646161-30024-1-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1469646161-30024-11-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Anjali Singhai Jain fixes a bug where a client close can be called
-before an open is complete.
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-Avinash Dayanand adds code to force register writes to mitigate sync issues
-with iwarp VF driver & adds code to not notify client of VF reset during VF
-creation.
+When we allocate memory, we must free it. It's simple courtesy.
 
-Alan Brady fixes lookup table when RSS disabled/enabled.
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-ID: Id007294096fb53344f1a8b9a0f78eddf9853c5d6
+---
+ting Hints : Found by inspection. The VF driver
+doesn't currently call this function, so not testable.
 
-Carolyn Wyborny adds code to allow RSS Hash set with less than four parameters.
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Catherine Sullivan adds code to reset vlan filter count when resetting and
-adds code to reset RX csum error stat with other pf stats.
-
-Dave Ertman fixes static analysis tool warning.
-
-Jacob Keller adds code for missing rtnl_lock() around i40evf_set_interrupt_
-capability and adds code to not allow reduction of channels below active FD
-rules.
-
-Mitch Williams fixes memory leak.
-
- drivers/net/ethernet/intel/i40e/i40e.h             |   3 -
- drivers/net/ethernet/intel/i40e/i40e_client.c      |   5 +-
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 232 ++++++++++++++-------
- drivers/net/ethernet/intel/i40e/i40e_main.c        |  35 +++-
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |   9 +-
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    |   4 +-
- 6 files changed, 199 insertions(+), 89 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 5ea659c..68e3482 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -2318,6 +2318,7 @@ err:
+ 	/* send the response back to the VF */
+ 	aq_ret = i40e_vc_send_msg_to_vf(vf, I40E_VIRTCHNL_OP_GET_RSS_HENA_CAPS,
+ 					aq_ret, (u8 *)vrh, len);
++	kfree(vrh);
+ 	return aq_ret;
+ }
+ 
 -- 
 2.4.11
 
