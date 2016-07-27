@@ -1,53 +1,138 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Wed, 27 Jul 2016 14:38:07 -0700
-Subject: [Intel-wired-lan] [e1000_netpoll] BUG: sleeping function called
- from invalid context at kernel/irq/manage.c:110
-In-Reply-To: <1469524492.17736.3.camel@edumazet-glaptop3.roam.corp.google.com>
-References: <20160726035003.GA15095@wfg-t540p.sh.intel.com>
- <1469524492.17736.3.camel@edumazet-glaptop3.roam.corp.google.com>
-Message-ID: <1469655487.2232.49.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 28 Jul 2016 06:05:10 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 1b060f035ec68b24ce95bf768e0f8facc9e1082b BUILD SUCCESS
+Message-ID: <57993016.jD65FexGjrkFYno4%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2016-07-26 at 11:14 +0200, Eric Dumazet wrote:
-> Could you try this ?
-> 
-> diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c
-> b/drivers/net/ethernet/intel/e1000/e1000_main.c
-> index
-> f42129d09e2c23ba9fdb5cde890d50ecb7166a42..a53c41c4c4f7d1fe52f95a2cab8784a
-> 938b3820b 100644
-> --- a/drivers/net/ethernet/intel/e1000/e1000_main.c
-> +++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
-> @@ -5257,9 +5257,13 @@ static void e1000_netpoll(struct net_device
-> *netdev)
-> ?{
-> ????????struct e1000_adapter *adapter = netdev_priv(netdev);
-> ?
-> -???????disable_irq(adapter->pdev->irq);
-> -???????e1000_intr(adapter->pdev->irq, netdev);
-> -???????enable_irq(adapter->pdev->irq);
-> +???????if (napi_schedule_prep(&adapter->napi)) {
-> +???????????????adapter->total_tx_bytes = 0;
-> +???????????????adapter->total_tx_packets = 0;
-> +???????????????adapter->total_rx_bytes = 0;
-> +???????????????adapter->total_rx_packets = 0;
-> +???????????????__napi_schedule(&adapter->napi);
-> +???????}
-> ?}
-> ?#endif
-> ?
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+1b060f035ec68b24ce95bf768e0f8facc9e1082b  i40e/i40evf-Bump version from 1.6.11 to 1.6.12
 
-Since this fixes the issue?Fengguang saw, will you be submitting a formal
-patch Eric? (please) I can get this queued up for Dave's net tree as soon
-as I receive the formal patch.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160727/292e5060/attachment.asc>
+elapsed time: 78m
+
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 116
+
+i386                     randconfig-a0-201630
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x012-201630
+x86_64                 randconfig-x015-201630
+x86_64                 randconfig-x013-201630
+x86_64                 randconfig-x011-201630
+x86_64                 randconfig-x014-201630
+x86_64                 randconfig-x010-201630
+x86_64                 randconfig-x017-201630
+x86_64                 randconfig-x018-201630
+x86_64                 randconfig-x016-201630
+x86_64                 randconfig-x019-201630
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201630
+i386                     randconfig-s1-201630
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201630
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201630
+i386                     randconfig-i1-201630
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                   randconfig-x016-201630
+i386                   randconfig-x014-201630
+i386                   randconfig-x010-201630
+i386                   randconfig-x017-201630
+i386                   randconfig-x018-201630
+i386                   randconfig-x013-201630
+i386                   randconfig-x012-201630
+i386                   randconfig-x019-201630
+i386                   randconfig-x015-201630
+i386                   randconfig-x011-201630
+i386                     randconfig-n0-201630
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                 randconfig-x002-201630
+x86_64                 randconfig-x009-201630
+x86_64                 randconfig-x008-201630
+x86_64                 randconfig-x007-201630
+x86_64                 randconfig-x003-201630
+x86_64                 randconfig-x004-201630
+x86_64                 randconfig-x005-201630
+x86_64                 randconfig-x001-201630
+x86_64                 randconfig-x006-201630
+x86_64                 randconfig-x000-201630
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-r0-201630
+i386                   randconfig-x002-201630
+i386                   randconfig-x009-201630
+i386                   randconfig-x006-201630
+i386                   randconfig-x001-201630
+i386                   randconfig-x003-201630
+i386                   randconfig-x008-201630
+i386                   randconfig-x007-201630
+i386                   randconfig-x000-201630
+i386                   randconfig-x004-201630
+i386                   randconfig-x005-201630
+
+Thanks,
+Fengguang
