@@ -1,43 +1,48 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Wed, 27 Jul 2016 12:02:33 -0700
-Subject: [Intel-wired-lan] [next PATCH S40-V2 04/12] i40evf: add missing
-	rtnl_lock() around i40evf_set_interrupt_capability
+Date: Wed, 27 Jul 2016 12:02:41 -0700
+Subject: [Intel-wired-lan] [next PATCH S40-V2 12/12] i40e/i40evf-Bump
+	version from 1.6.11 to 1.6.12
 In-Reply-To: <1469646161-30024-1-git-send-email-bimmy.pujari@intel.com>
 References: <1469646161-30024-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1469646161-30024-5-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1469646161-30024-13-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
-
-The function calls netif_set_real_num_(tx|rx)_queues, both of which
-should be done only under rntl lock. Unfortunately the
-i40evf_init_task did not hold the rtnl_lock as necessary. This patch
-adds the locking needed.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Change-ID: Ib72a21c3ce22b71a226b16f9bbe0f5f8cc3e849b
+Signed-off-by: Bimmy Pujari <Bimmy.pujari@intel.com>
 ---
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 38b2c3d..feabb82 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -41,7 +41,7 @@ static const char i40e_driver_string[] =
+ 
+ #define DRV_VERSION_MAJOR 1
+ #define DRV_VERSION_MINOR 6
+-#define DRV_VERSION_BUILD 11
++#define DRV_VERSION_BUILD 12
+ #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
+ 	     __stringify(DRV_VERSION_MINOR) "." \
+ 	     __stringify(DRV_VERSION_BUILD)    DRV_KERN
 diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 600fb9c..d1d4a65 100644
+index d1d4a65..ba046d1 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
 +++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -1420,7 +1420,9 @@ int i40evf_init_interrupt_scheme(struct i40evf_adapter *adapter)
- {
- 	int err;
+@@ -38,7 +38,7 @@ static const char i40evf_driver_string[] =
  
-+	rtnl_lock();
- 	err = i40evf_set_interrupt_capability(adapter);
-+	rtnl_unlock();
- 	if (err) {
- 		dev_err(&adapter->pdev->dev,
- 			"Unable to setup interrupt capabilities\n");
+ #define DRV_VERSION_MAJOR 1
+ #define DRV_VERSION_MINOR 6
+-#define DRV_VERSION_BUILD 11
++#define DRV_VERSION_BUILD 12
+ #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
+ 	     __stringify(DRV_VERSION_MINOR) "." \
+ 	     __stringify(DRV_VERSION_BUILD) \
 -- 
 2.4.11
 
