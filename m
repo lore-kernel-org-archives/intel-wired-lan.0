@@ -1,82 +1,182 @@
-From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Wed, 27 Jul 2016 12:02:35 -0700
-Subject: [Intel-wired-lan] [next PATCH S40-V2 06/12] i40e: don't allow
-	reduction of channels below active FD rules
-In-Reply-To: <1469646161-30024-1-git-send-email-bimmy.pujari@intel.com>
-References: <1469646161-30024-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1469646161-30024-7-git-send-email-bimmy.pujari@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 28 Jul 2016 04:04:51 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 7844350add5044351f8aa7190ab9acdb873cc1b2 BUILD SUCCESS
+Message-ID: <579913e3.o1AcFgV1GltbUmdE%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+7844350add5044351f8aa7190ab9acdb873cc1b2  i40e: Use list_move instead of list_del/list_add
 
-If a driver is unable to maintain all current user supplied settings
-from ethtool (or other sources), it is not ok for a user request to
-succeed and silently trample over previous configuration.
+elapsed time: 118m
 
-To that end, if you change the number of channels, it must not be
-allowed to reduce the number of channels (queues) below the current
-flow director filter rules targets. In this case, return -EINVAL when
-a request to reduce the number of channels would do so. In addition
-log a warning to the kernel buffer explaining why we failed, and report
-the rules which prevent us from lowering the number of channels.
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 160
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Change-ID: If41464d63d7aab11cedf09e4f3aa1a69e21ffd88
----
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
+ia64                      gensparse_defconfig
+m68k                          hp300_defconfig
+powerpc                           allnoconfig
+i386                     randconfig-a0-201630
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x012-201630
+x86_64                 randconfig-x015-201630
+x86_64                 randconfig-x013-201630
+x86_64                 randconfig-x011-201630
+x86_64                 randconfig-x014-201630
+x86_64                 randconfig-x010-201630
+x86_64                 randconfig-x017-201630
+x86_64                 randconfig-x018-201630
+x86_64                 randconfig-x016-201630
+x86_64                 randconfig-x019-201630
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201630
+i386                     randconfig-s1-201630
+x86_64                 randconfig-s0-07280235
+x86_64                 randconfig-s1-07280235
+x86_64                 randconfig-s2-07280235
+x86_64                 randconfig-s0-07280249
+x86_64                 randconfig-s1-07280249
+x86_64                 randconfig-s2-07280249
+x86_64                 randconfig-s0-07280257
+x86_64                 randconfig-s1-07280257
+x86_64                 randconfig-s2-07280257
+x86_64                 randconfig-s0-07280311
+x86_64                 randconfig-s1-07280311
+x86_64                 randconfig-s2-07280311
+x86_64                           allmodconfig
+x86_64                 randconfig-s3-07280246
+x86_64                 randconfig-s4-07280246
+x86_64                 randconfig-s5-07280246
+x86_64                 randconfig-s3-07280303
+x86_64                 randconfig-s4-07280303
+x86_64                 randconfig-s5-07280303
+x86_64                 randconfig-s3-07280315
+x86_64                 randconfig-s4-07280315
+x86_64                 randconfig-s5-07280315
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201630
+i386                   randconfig-b0-07280241
+i386                   randconfig-b0-07280311
+i386                   randconfig-b0-07280331
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                            zeus_defconfig
+avr32                     atstk1004_defconfig
+cris                              allnoconfig
+mips                           xway_defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201630
+i386                     randconfig-i1-201630
+x86_64                 randconfig-b0-07280322
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+powerpc                     kmp204x_defconfig
+mips                           ip22_defconfig
+sh                             shx3_defconfig
+x86_64                 randconfig-n0-07280246
+i386                   randconfig-x016-201630
+i386                   randconfig-x014-201630
+i386                   randconfig-x010-201630
+i386                   randconfig-x017-201630
+i386                   randconfig-x018-201630
+i386                   randconfig-x013-201630
+i386                   randconfig-x012-201630
+i386                   randconfig-x019-201630
+i386                   randconfig-x015-201630
+i386                   randconfig-x011-201630
+i386                     randconfig-n0-201630
+i386                   randconfig-h0-07280250
+i386                   randconfig-h1-07280250
+blackfin                  CM-BF537E_defconfig
+blackfin                    DNP5370_defconfig
+parisc                           alldefconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+arm                          nuc910_defconfig
+powerpc                     kmeter1_defconfig
+x86_64                 randconfig-x000-201630
+x86_64                 randconfig-x001-201630
+x86_64                 randconfig-x002-201630
+x86_64                 randconfig-x003-201630
+x86_64                 randconfig-x004-201630
+x86_64                 randconfig-x005-201630
+x86_64                 randconfig-x006-201630
+x86_64                 randconfig-x007-201630
+x86_64                 randconfig-x008-201630
+x86_64                 randconfig-x009-201630
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                     randconfig-r0-201630
+i386                   randconfig-x002-201630
+i386                   randconfig-x009-201630
+i386                   randconfig-x006-201630
+i386                   randconfig-x001-201630
+i386                   randconfig-x003-201630
+i386                   randconfig-x008-201630
+i386                   randconfig-x007-201630
+i386                   randconfig-x000-201630
+i386                   randconfig-x004-201630
+i386                   randconfig-x005-201630
+i386                   randconfig-x0-07280303
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index e7613b2..1a06af9 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -2860,11 +2860,15 @@ static void i40e_get_channels(struct net_device *dev,
- static int i40e_set_channels(struct net_device *dev,
- 			      struct ethtool_channels *ch)
- {
-+	const u8 drop = I40E_FILTER_PROGRAM_DESC_DEST_DROP_PACKET;
- 	struct i40e_netdev_priv *np = netdev_priv(dev);
- 	unsigned int count = ch->combined_count;
- 	struct i40e_vsi *vsi = np->vsi;
- 	struct i40e_pf *pf = vsi->back;
-+	struct i40e_fdir_filter *rule;
-+	struct hlist_node *node2;
- 	int new_count;
-+	int err = 0;
- 
- 	/* We do not support setting channels for any other VSI at present */
- 	if (vsi->type != I40E_VSI_MAIN)
-@@ -2882,6 +2886,26 @@ static int i40e_set_channels(struct net_device *dev,
- 	if (count > i40e_max_channels(vsi))
- 		return -EINVAL;
- 
-+	/* verify that the number of channels does not invalidate any current
-+	 * flow director rules
-+	 */
-+	hlist_for_each_entry_safe(rule, node2,
-+				  &pf->fdir_filter_list, fdir_node) {
-+		if (rule->dest_ctl != drop && count <= rule->q_index) {
-+			dev_warn(&pf->pdev->dev,
-+				 "Existing user defined filter %d assigns flow to queue %d\n",
-+				 rule->fd_id, rule->q_index);
-+			err = -EINVAL;
-+		}
-+	}
-+
-+	if (err) {
-+		dev_err(&pf->pdev->dev,
-+			"Existing filter rules must be deleted to reduce combined channel count to %d\n",
-+			count);
-+		return err;
-+	}
-+
- 	/* update feature limits from largest to smallest supported values */
- 	/* TODO: Flow director limit, DCB etc */
- 
--- 
-2.4.11
-
+Thanks,
+Fengguang
