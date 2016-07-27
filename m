@@ -1,79 +1,56 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Wed, 27 Jul 2016 12:02:38 -0700
-Subject: [Intel-wired-lan] [next PATCH S40-V2 09/12] i40e: fix lookup table
-	when RSS disabled/enabled
+Date: Wed, 27 Jul 2016 12:02:34 -0700
+Subject: [Intel-wired-lan] [next PATCH S40-V2 05/12] i40e: Fix static
+	analysis tool warning
 In-Reply-To: <1469646161-30024-1-git-send-email-bimmy.pujari@intel.com>
 References: <1469646161-30024-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1469646161-30024-10-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1469646161-30024-6-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: "Alan Brady" <alan.brady@intel.com>
+From: Dave Ertman <david.m.ertman@intel.com>
 
-This patch fixes the bug which causes RSS to continue to work
-after being disabled.  After disabling RSS, traffic would continue
-to be assigned to different queues instead of falling back to a
-single queue. Without this patch, attempting to disable RSS would
-not work as expected. This patch fixes the bug by clearing the
-lookup table used by RSS such that all traffic is assigned to a
-single queue.  This patch also addresses the issue of reinstating
- the lookup table should RSS then be re-enabled.
+This patch fixes a problem where a static analysis tool generates
+a warning for "INVARIANT_CONDITION: Expression 'enabled_tc' used
+in the condition always yields the same result."
 
-Signed-off-by: Alan Brady <alan.brady@intel.com>
-Change-ID: Ib20c7c6a7e9f1f772bb787370f8a8c664796b141
+Without this patch, the driver will not pass the static analysis
+tool checks without generating warnings.
+
+This patch fixes the problem by eliminating the irrelevant check
+and redundant assignment for the value of enabled_tc.
+
+Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+Change-ID: Ia7d44cb050f507df7de333e96369d322e08bf408
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 28 ++++++++++++++++++++++++++++
- 1 file changed, 28 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index d80efc1..38b2c3d 100644
+index 77a35cf..d80efc1 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -8666,6 +8666,28 @@ bool i40e_set_ntuple(struct i40e_pf *pf, netdev_features_t features)
- }
+@@ -4590,7 +4590,7 @@ static u8 i40e_dcb_get_enabled_tc(struct i40e_dcbx_config *dcbcfg)
+ static u8 i40e_pf_get_num_tc(struct i40e_pf *pf)
+ {
+ 	struct i40e_hw *hw = &pf->hw;
+-	u8 i, enabled_tc;
++	u8 i, enabled_tc = 1;
+ 	u8 num_tc = 0;
+ 	struct i40e_dcbx_config *dcbcfg = &hw->local_dcbx_config;
  
- /**
-+ * i40e_clear_rss_lut - clear the rx hash lookup table
-+ * @vsi: the VSI being configured
-+ **/
-+static void i40e_clear_rss_lut(struct i40e_vsi *vsi)
-+{
-+	struct i40e_pf *pf = vsi->back;
-+	struct i40e_hw *hw = &pf->hw;
-+	u16 vf_id = vsi->vf_id;
-+	u8 i;
-+
-+	if (vsi->type == I40E_VSI_MAIN) {
-+		for (i = 0; i <= I40E_PFQF_HLUT_MAX_INDEX; i++)
-+			wr32(hw, I40E_PFQF_HLUT(i), 0);
-+	} else if (vsi->type == I40E_VSI_SRIOV) {
-+		for (i = 0; i <= I40E_VFQF_HLUT_MAX_INDEX; i++)
-+			i40e_write_rx_ctl(hw, I40E_VFQF_HLUT1(i, vf_id), 0);
-+	} else {
-+		dev_err(&pf->pdev->dev, "Cannot set RSS LUT - invalid VSI type\n");
-+	}
-+}
-+
-+/**
-  * i40e_set_features - set the netdev feature flags
-  * @netdev: ptr to the netdev being adjusted
-  * @features: the feature set that the stack is suggesting
-@@ -8678,6 +8700,12 @@ static int i40e_set_features(struct net_device *netdev,
- 	struct i40e_pf *pf = vsi->back;
- 	bool need_reset;
- 
-+	if (features & NETIF_F_RXHASH && !(netdev->features & NETIF_F_RXHASH))
-+		i40e_pf_config_rss(pf);
-+	else if (!(features & NETIF_F_RXHASH) &&
-+		 netdev->features & NETIF_F_RXHASH)
-+		i40e_clear_rss_lut(vsi);
-+
- 	if (features & NETIF_F_HW_VLAN_CTAG_RX)
- 		i40e_vlan_stripping_enable(vsi);
+@@ -4608,8 +4608,6 @@ static u8 i40e_pf_get_num_tc(struct i40e_pf *pf)
  	else
+ 		return 1; /* Only TC0 */
+ 
+-	/* At least have TC0 */
+-	enabled_tc = (enabled_tc ? enabled_tc : 0x1);
+ 	for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++) {
+ 		if (enabled_tc & BIT(i))
+ 			num_tc++;
 -- 
 2.4.11
 
