@@ -1,65 +1,122 @@
-From: Greg <gvrose8192@gmail.com>
-Date: Thu, 28 Jul 2016 07:29:06 -0700
-Subject: [Intel-wired-lan] [PATCH 1/1] ixgbevf: replace integer number
-	with bool value
-In-Reply-To: <1469626117-3669-1-git-send-email-zyjzyj2000@gmail.com>
-References: <1469626117-3669-1-git-send-email-zyjzyj2000@gmail.com>
-Message-ID: <1469716146.14256.1.camel@gmail.com>
+From: Sabrina Dubroca <sd@queasysnail.net>
+Date: Thu, 28 Jul 2016 12:19:58 +0200
+Subject: [Intel-wired-lan] [e1000_netpoll] BUG: sleeping function called
+ from invalid context at kernel/irq/manage.c:110
+In-Reply-To: <1469684635.9389.4.camel@edumazet-glaptop3.roam.corp.google.com>
+References: <20160726035003.GA15095@wfg-t540p.sh.intel.com>
+ <1469524492.17736.3.camel@edumazet-glaptop3.roam.corp.google.com>
+ <1469655487.2232.49.camel@intel.com>
+ <1469684635.9389.4.camel@edumazet-glaptop3.roam.corp.google.com>
+Message-ID: <20160728101958.GA26846@bistromath.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2016-07-27 at 21:28 +0800, Zhu Yanjun wrote:
-> The variable get_mac_status is a bool variable. So a bool value is
-> better than an integer number.
+2016-07-28, 07:43:55 +0200, Eric Dumazet wrote:
+> On Wed, 2016-07-27 at 14:38 -0700, Jeff Kirsher wrote:
+> > On Tue, 2016-07-26 at 11:14 +0200, Eric Dumazet wrote:
+> > > Could you try this ?
+> > > 
+> > > diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c
+> > > b/drivers/net/ethernet/intel/e1000/e1000_main.c
+> > > index
+> > > f42129d09e2c23ba9fdb5cde890d50ecb7166a42..a53c41c4c4f7d1fe52f95a2cab8784a
+> > > 938b3820b 100644
+> > > --- a/drivers/net/ethernet/intel/e1000/e1000_main.c
+> > > +++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+> > > @@ -5257,9 +5257,13 @@ static void e1000_netpoll(struct net_device
+> > > *netdev)
+> > >  {
+> > >         struct e1000_adapter *adapter = netdev_priv(netdev);
+> > >  
+> > > -       disable_irq(adapter->pdev->irq);
+> > > -       e1000_intr(adapter->pdev->irq, netdev);
+> > > -       enable_irq(adapter->pdev->irq);
+> > > +       if (napi_schedule_prep(&adapter->napi)) {
+> > > +               adapter->total_tx_bytes = 0;
+> > > +               adapter->total_tx_packets = 0;
+> > > +               adapter->total_rx_bytes = 0;
+> > > +               adapter->total_rx_packets = 0;
+> > > +               __napi_schedule(&adapter->napi);
+> > > +       }
+> > >  }
+> > >  #endif
+> > >  
+> > 
+> > Since this fixes the issue Fengguang saw, will you be submitting a formal
+> > patch Eric? (please) I can get this queued up for Dave's net tree as soon
+> > as I receive the formal patch.
 > 
-> Signed-off-by: Zhu Yanjun <zyjzyj2000@gmail.com>
-
-Looks good to me.
-
-Reviewed-by: Greg Rose <grose@lightfleet.com>
-
-> ---
->  drivers/net/ethernet/intel/ixgbevf/ethtool.c      | 2 +-
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c | 4 ++--
->  2 files changed, 3 insertions(+), 3 deletions(-)
+> I would prefer having a definitive advice from Thomas Gleixner and/or
+> others if disable_irq() is forbidden from IRQ path.
 > 
-> diff --git a/drivers/net/ethernet/intel/ixgbevf/ethtool.c b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
-> index 508e72c..ce221d1 100644
-> --- a/drivers/net/ethernet/intel/ixgbevf/ethtool.c
-> +++ b/drivers/net/ethernet/intel/ixgbevf/ethtool.c
-> @@ -104,7 +104,7 @@ static int ixgbevf_get_settings(struct net_device *netdev,
->  	ecmd->transceiver = XCVR_DUMMY1;
->  	ecmd->port = -1;
->  
-> -	hw->mac.get_link_status = 1;
-> +	hw->mac.get_link_status = true;
->  	hw->mac.ops.check_link(hw, &link_speed, &link_up, false);
->  
->  	if (link_up) {
-> diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> index acc2401..a98e7c2 100644
-> --- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> +++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
-> @@ -1285,7 +1285,7 @@ static irqreturn_t ixgbevf_msix_other(int irq, void *data)
->  	struct ixgbevf_adapter *adapter = data;
->  	struct ixgbe_hw *hw = &adapter->hw;
->  
-> -	hw->mac.get_link_status = 1;
-> +	hw->mac.get_link_status = true;
->  
->  	ixgbevf_service_event_schedule(adapter);
->  
-> @@ -2109,7 +2109,7 @@ static void ixgbevf_up_complete(struct ixgbevf_adapter *adapter)
->  	ixgbevf_save_reset_stats(adapter);
->  	ixgbevf_init_last_counter_stats(adapter);
->  
-> -	hw->mac.get_link_status = 1;
-> +	hw->mac.get_link_status = true;
->  	mod_timer(&adapter->service_timer, jiffies);
->  }
->  
+> As I said, about all netpoll() methods in net drivers use disable_irq()
+> so a lot of patches would be needed.
+> 
+> disable_irq() should then test this condition earlier, so that we can
+> detect potential bug, even if the IRQ is not (yet) threaded.
+
+The idea when this first came up was to skip the sleeping part of
+disable_irq():
+
+http://marc.info/?l=linux-netdev&m=142314159626052
+
+This fell off my todolist and I didn't send the conversion patches,
+which would basically look like this:
 
 
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index 41f32c0b341e..b022691e680b 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -6713,20 +6713,20 @@ static irqreturn_t e1000_intr_msix(int __always_unused irq, void *data)
+ 
+ 		vector = 0;
+ 		msix_irq = adapter->msix_entries[vector].vector;
+-		disable_irq(msix_irq);
+-		e1000_intr_msix_rx(msix_irq, netdev);
++		if (disable_hardirq(msix_irq))
++			e1000_intr_msix_rx(msix_irq, netdev);
+ 		enable_irq(msix_irq);
+ 
+ 		vector++;
+ 		msix_irq = adapter->msix_entries[vector].vector;
+-		disable_irq(msix_irq);
+-		e1000_intr_msix_tx(msix_irq, netdev);
++		if (disable_hardirq(msix_irq))
++			e1000_intr_msix_tx(msix_irq, netdev);
+ 		enable_irq(msix_irq);
+ 
+ 		vector++;
+ 		msix_irq = adapter->msix_entries[vector].vector;
+-		disable_irq(msix_irq);
+-		e1000_msix_other(msix_irq, netdev);
++		if (disable_hardirq(msix_irq))
++			e1000_msix_other(msix_irq, netdev);
+ 		enable_irq(msix_irq);
+ 	}
+ 
+@@ -6750,13 +6750,13 @@ static void e1000_netpoll(struct net_device *netdev)
+ 		e1000_intr_msix(adapter->pdev->irq, netdev);
+ 		break;
+ 	case E1000E_INT_MODE_MSI:
+-		disable_irq(adapter->pdev->irq);
+-		e1000_intr_msi(adapter->pdev->irq, netdev);
++		if (disable_hardirq(adapter->pdev->irq))
++			e1000_intr_msi(adapter->pdev->irq, netdev);
+ 		enable_irq(adapter->pdev->irq);
+ 		break;
+ 	default:		/* E1000E_INT_MODE_LEGACY */
+-		disable_irq(adapter->pdev->irq);
+-		e1000_intr(adapter->pdev->irq, netdev);
++		if (disable_hardirq(adapter->pdev->irq))
++			e1000_intr(adapter->pdev->irq, netdev);
+ 		enable_irq(adapter->pdev->irq);
+ 		break;
+ 	}
+
+
+-- 
+Sabrina
