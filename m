@@ -1,61 +1,33 @@
-From: Eric Dumazet <eric.dumazet@gmail.com>
-Date: Thu, 28 Jul 2016 07:43:55 +0200
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Thu, 28 Jul 2016 09:45:12 +0200 (CEST)
 Subject: [Intel-wired-lan] [e1000_netpoll] BUG: sleeping function called
  from invalid context at kernel/irq/manage.c:110
-In-Reply-To: <1469655487.2232.49.camel@intel.com>
+In-Reply-To: <8578bb16-cd04-e8a5-c7f4-be061ede95b4@gmail.com>
 References: <20160726035003.GA15095@wfg-t540p.sh.intel.com>
  <1469524492.17736.3.camel@edumazet-glaptop3.roam.corp.google.com>
- <1469655487.2232.49.camel@intel.com>
-Message-ID: <1469684635.9389.4.camel@edumazet-glaptop3.roam.corp.google.com>
+ <20160726093224.GA10339@wfg-t540p.sh.intel.com>
+ <alpine.DEB.2.11.1607261149570.19896@nanos>
+ <8578bb16-cd04-e8a5-c7f4-be061ede95b4@gmail.com>
+Message-ID: <alpine.DEB.2.11.1607280941450.19896@nanos>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2016-07-27 at 14:38 -0700, Jeff Kirsher wrote:
-> On Tue, 2016-07-26 at 11:14 +0200, Eric Dumazet wrote:
-> > Could you try this ?
-> > 
-> > diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c
-> > b/drivers/net/ethernet/intel/e1000/e1000_main.c
-> > index
-> > f42129d09e2c23ba9fdb5cde890d50ecb7166a42..a53c41c4c4f7d1fe52f95a2cab8784a
-> > 938b3820b 100644
-> > --- a/drivers/net/ethernet/intel/e1000/e1000_main.c
-> > +++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
-> > @@ -5257,9 +5257,13 @@ static void e1000_netpoll(struct net_device
-> > *netdev)
-> >  {
-> >         struct e1000_adapter *adapter = netdev_priv(netdev);
-> >  
-> > -       disable_irq(adapter->pdev->irq);
-> > -       e1000_intr(adapter->pdev->irq, netdev);
-> > -       enable_irq(adapter->pdev->irq);
-> > +       if (napi_schedule_prep(&adapter->napi)) {
-> > +               adapter->total_tx_bytes = 0;
-> > +               adapter->total_tx_packets = 0;
-> > +               adapter->total_rx_bytes = 0;
-> > +               adapter->total_rx_packets = 0;
-> > +               __napi_schedule(&adapter->napi);
-> > +       }
-> >  }
-> >  #endif
-> >  
-> 
-> Since this fixes the issue Fengguang saw, will you be submitting a formal
-> patch Eric? (please) I can get this queued up for Dave's net tree as soon
-> as I receive the formal patch.
+On Tue, 26 Jul 2016, nick wrote:
+> diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
+> index f42129d..e1830af 100644
+> --- a/drivers/net/ethernet/intel/e1000/e1000_main.c
+> +++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+> @@ -3797,7 +3797,7 @@ static irqreturn_t e1000_intr(int irq, void *data)
+>  		hw->get_link_status = 1;
+>  		/* guard against interrupt when we're going down */
+>  		if (!test_bit(__E1000_DOWN, &adapter->flags))
+> -			schedule_delayed_work(&adapter->watchdog_task, 1);
+> +			mod_work(&adapter->watchdog_task, jiffies + 1);
 
-I would prefer having a definitive advice from Thomas Gleixner and/or
-others if disable_irq() is forbidden from IRQ path.
-
-As I said, about all netpoll() methods in net drivers use disable_irq()
-so a lot of patches would be needed.
-
-disable_irq() should then test this condition earlier, so that we can
-detect potential bug, even if the IRQ is not (yet) threaded.
-
-Thanks.
+And that's not even funny anymore. Are you using a random generator to create
+these patches?
 
 
