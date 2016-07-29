@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 29 Jul 2016 16:10:44 +0000
-Subject: [Intel-wired-lan] [next PATCH S40-V2 04/12] i40evf: add
-	missing	rtnl_lock() around i40evf_set_interrupt_capability
-In-Reply-To: <1469646161-30024-5-git-send-email-bimmy.pujari@intel.com>
+Date: Fri, 29 Jul 2016 16:21:01 +0000
+Subject: [Intel-wired-lan] [next PATCH S40-V2 05/12] i40e: Fix
+	static	analysis tool warning
+In-Reply-To: <1469646161-30024-6-git-send-email-bimmy.pujari@intel.com>
 References: <1469646161-30024-1-git-send-email-bimmy.pujari@intel.com>
- <1469646161-30024-5-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9EB8DE@ORSMSX104.amr.corp.intel.com>
+ <1469646161-30024-6-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9EB8F8@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,19 +17,26 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Wednesday, July 27, 2016 12:03 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S40-V2 04/12] i40evf: add missing
-> rtnl_lock() around i40evf_set_interrupt_capability
+> Subject: [Intel-wired-lan] [next PATCH S40-V2 05/12] i40e: Fix static analysis
+> tool warning
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> From: Dave Ertman <david.m.ertman@intel.com>
 > 
-> The function calls netif_set_real_num_(tx|rx)_queues, both of which should
-> be done only under rntl lock. Unfortunately the i40evf_init_task did not hold
-> the rtnl_lock as necessary. This patch adds the locking needed.
+> This patch fixes a problem where a static analysis tool generates a warning
+> for "INVARIANT_CONDITION: Expression 'enabled_tc' used in the condition
+> always yields the same result."
 > 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Change-ID: Ib72a21c3ce22b71a226b16f9bbe0f5f8cc3e849b
+> Without this patch, the driver will not pass the static analysis tool checks
+> without generating warnings.
+> 
+> This patch fixes the problem by eliminating the irrelevant check and
+> redundant assignment for the value of enabled_tc.
+> 
+> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
+> Change-ID: Ia7d44cb050f507df7de333e96369d322e08bf408
 > ---
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 ++
->  1 file changed, 2 insertions(+)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+No error from static analysis
