@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 29 Jul 2016 17:17:11 +0000
-Subject: [Intel-wired-lan] [next PATCH S40-V2 10/12] i40e: fix memory
- leak
-In-Reply-To: <1469646161-30024-11-git-send-email-bimmy.pujari@intel.com>
+Date: Fri, 29 Jul 2016 17:26:07 +0000
+Subject: [Intel-wired-lan] [next PATCH S40-V2 11/12] i40e: Allow RSS
+ Hash	set with less than four parameters
+In-Reply-To: <1469646161-30024-12-git-send-email-bimmy.pujari@intel.com>
 References: <1469646161-30024-1-git-send-email-bimmy.pujari@intel.com>
- <1469646161-30024-11-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9EB966@ORSMSX104.amr.corp.intel.com>
+ <1469646161-30024-12-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9EB979@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,20 +17,22 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Wednesday, July 27, 2016 12:03 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S40-V2 10/12] i40e: fix memory leak
+> Subject: [Intel-wired-lan] [next PATCH S40-V2 11/12] i40e: Allow RSS Hash set
+> with less than four parameters
 > 
-> From: Mitch Williams <mitch.a.williams@intel.com>
+> From: Carolyn Wyborny <carolyn.wyborny@intel.com>
 > 
-> When we allocate memory, we must free it. It's simple courtesy.
+> This patch implements a feature change which allows using ethtool to set rss
+> hash opts using less than four parameters if desired.
 > 
-> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-> Change-ID: Id007294096fb53344f1a8b9a0f78eddf9853c5d6
+> Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
+> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
+> Change-ID: I0fbb91255d81e997c456697c21ac39cc9754821b
 > ---
-> ting Hints : Found by inspection. The VF driver doesn't currently call this
-> function, so not testable.
-> 
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 1 +
->  1 file changed, 1 insertion(+)
+>  drivers/net/ethernet/intel/i40e/i40e.h         |   3 -
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 208 +++++++++++++++----
+> ------
+>  2 files changed, 130 insertions(+), 81 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Code changes present, driver builds and passes traffic.
+Able to set with less than 4 parameters
