@@ -1,139 +1,105 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 30 Jul 2016 05:28:25 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 75a5788fc0c1b803410959fc9abdfafeb8091957 BUILD SUCCESS
-Message-ID: <579bca79.Vs45F7dEgx7CbODj%fengguang.wu@intel.com>
+From: Emil Tantilov <emil.s.tantilov@intel.com>
+Date: Fri, 29 Jul 2016 14:46:31 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: use atomic bitwise operations when
+ handling reset requests
+Message-ID: <20160729214631.1864.51421.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-75a5788fc0c1b803410959fc9abdfafeb8091957  ixgbevf: only check Tx queue enablement when debugging
+Use atomic bitwise operations when setting and checking reset
+requests. This should help with possible races in the service task.
 
-elapsed time: 111m
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h      |    2 +-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   16 +++++++---------
+ 2 files changed, 8 insertions(+), 10 deletions(-)
 
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 117
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index 9475ff9..5628e2d 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -653,7 +653,6 @@ struct ixgbe_adapter {
+ #define IXGBE_FLAG2_TEMP_SENSOR_EVENT		BIT(3)
+ #define IXGBE_FLAG2_SEARCH_FOR_SFP		BIT(4)
+ #define IXGBE_FLAG2_SFP_NEEDS_RESET		BIT(5)
+-#define IXGBE_FLAG2_RESET_REQUESTED		BIT(6)
+ #define IXGBE_FLAG2_FDIR_REQUIRES_REINIT	BIT(7)
+ #define IXGBE_FLAG2_RSS_FIELD_IPV4_UDP		BIT(8)
+ #define IXGBE_FLAG2_RSS_FIELD_IPV6_UDP		BIT(9)
+@@ -840,6 +839,7 @@ enum ixgbe_state_t {
+ 	__IXGBE_IN_SFP_INIT,
+ 	__IXGBE_PTP_RUNNING,
+ 	__IXGBE_PTP_TX_IN_PROGRESS,
++	__IXGBE_RESET_REQUESTED,
+ };
+ 
+ struct ixgbe_cb {
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index f687b76..60b8e6e 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -1103,7 +1103,7 @@ static void ixgbe_tx_timeout_reset(struct ixgbe_adapter *adapter)
+ 
+ 	/* Do the reset outside of interrupt context */
+ 	if (!test_bit(__IXGBE_DOWN, &adapter->state)) {
+-		adapter->flags2 |= IXGBE_FLAG2_RESET_REQUESTED;
++		set_bit(__IXGBE_RESET_REQUESTED, &adapter->state);
+ 		e_warn(drv, "initiating reset due to tx timeout\n");
+ 		ixgbe_service_event_schedule(adapter);
+ 	}
+@@ -2777,7 +2777,7 @@ static irqreturn_t ixgbe_msix_other(int irq, void *data)
+ 		}
+ 		if (eicr & IXGBE_EICR_ECC) {
+ 			e_info(link, "Received ECC Err, initiating reset\n");
+-			adapter->flags2 |= IXGBE_FLAG2_RESET_REQUESTED;
++			set_bit(__IXGBE_RESET_REQUESTED, &adapter->state);
+ 			ixgbe_service_event_schedule(adapter);
+ 			IXGBE_WRITE_REG(hw, IXGBE_EICR, IXGBE_EICR_ECC);
+ 		}
+@@ -3007,7 +3007,7 @@ static irqreturn_t ixgbe_intr(int irq, void *data)
+ 	case ixgbe_mac_x550em_a:
+ 		if (eicr & IXGBE_EICR_ECC) {
+ 			e_info(link, "Received ECC Err, initiating reset\n");
+-			adapter->flags2 |= IXGBE_FLAG2_RESET_REQUESTED;
++			set_bit(__IXGBE_RESET_REQUESTED, &adapter->state);
+ 			ixgbe_service_event_schedule(adapter);
+ 			IXGBE_WRITE_REG(hw, IXGBE_EICR, IXGBE_EICR_ECC);
+ 		}
+@@ -5494,8 +5494,8 @@ void ixgbe_down(struct ixgbe_adapter *adapter)
+ 
+ 	ixgbe_napi_disable_all(adapter);
+ 
+-	adapter->flags2 &= ~(IXGBE_FLAG2_FDIR_REQUIRES_REINIT |
+-			     IXGBE_FLAG2_RESET_REQUESTED);
++	clear_bit(__IXGBE_RESET_REQUESTED, &adapter->state);
++	adapter->flags2 &= ~IXGBE_FLAG2_FDIR_REQUIRES_REINIT;
+ 	adapter->flags &= ~IXGBE_FLAG_NEED_LINK_UPDATE;
+ 
+ 	del_timer_sync(&adapter->service_timer);
+@@ -6915,7 +6915,7 @@ static void ixgbe_watchdog_flush_tx(struct ixgbe_adapter *adapter)
+ 			 * (Do the reset outside of interrupt context).
+ 			 */
+ 			e_warn(drv, "initiating reset to clear Tx work after link loss\n");
+-			adapter->flags2 |= IXGBE_FLAG2_RESET_REQUESTED;
++			set_bit(__IXGBE_RESET_REQUESTED, &adapter->state);
+ 		}
+ 	}
+ }
+@@ -7181,11 +7181,9 @@ static void ixgbe_phy_interrupt_subtask(struct ixgbe_adapter *adapter)
+ 
+ static void ixgbe_reset_subtask(struct ixgbe_adapter *adapter)
+ {
+-	if (!(adapter->flags2 & IXGBE_FLAG2_RESET_REQUESTED))
++	if (!test_and_clear_bit(__IXGBE_RESET_REQUESTED, &adapter->state))
+ 		return;
+ 
+-	adapter->flags2 &= ~IXGBE_FLAG2_RESET_REQUESTED;
+-
+ 	/* If we're already down, removing or resetting, just bail */
+ 	if (test_bit(__IXGBE_DOWN, &adapter->state) ||
+ 	    test_bit(__IXGBE_REMOVING, &adapter->state) ||
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201630
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64       nfsroot+CONFIG_DEBUG_INFO_REDUCED
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-parisc                         b180_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x012-201630
-x86_64                 randconfig-x015-201630
-x86_64                 randconfig-x013-201630
-x86_64                 randconfig-x011-201630
-x86_64                 randconfig-x014-201630
-x86_64                 randconfig-x010-201630
-x86_64                 randconfig-x017-201630
-x86_64                 randconfig-x018-201630
-x86_64                 randconfig-x016-201630
-x86_64                 randconfig-x019-201630
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-x86_64                                   rhel
-x86_64                               rhel-7.2
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201630
-i386                     randconfig-s1-201630
-x86_64                           allmodconfig
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201630
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201630
-i386                     randconfig-i1-201630
-i386                   randconfig-x016-201630
-i386                   randconfig-x014-201630
-i386                   randconfig-x010-201630
-i386                   randconfig-x017-201630
-i386                   randconfig-x018-201630
-i386                   randconfig-x013-201630
-i386                   randconfig-x012-201630
-i386                   randconfig-x019-201630
-i386                   randconfig-x015-201630
-i386                   randconfig-x011-201630
-i386                     randconfig-n0-201630
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-x002-201630
-x86_64                 randconfig-x009-201630
-x86_64                 randconfig-x008-201630
-x86_64                 randconfig-x007-201630
-x86_64                 randconfig-x003-201630
-x86_64                 randconfig-x004-201630
-x86_64                 randconfig-x005-201630
-x86_64                 randconfig-x001-201630
-x86_64                 randconfig-x006-201630
-x86_64                 randconfig-x000-201630
-i386                     randconfig-r0-201630
-i386                   randconfig-x002-201630
-i386                   randconfig-x009-201630
-i386                   randconfig-x006-201630
-i386                   randconfig-x001-201630
-i386                   randconfig-x003-201630
-i386                   randconfig-x008-201630
-i386                   randconfig-x007-201630
-i386                   randconfig-x000-201630
-i386                   randconfig-x004-201630
-i386                   randconfig-x005-201630
-
-Thanks,
-Fengguang
