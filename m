@@ -1,30 +1,56 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 29 Jul 2016 17:27:06 +0000
-Subject: [Intel-wired-lan] [next PATCH S40-V2 12/12]
-	i40e/i40evf-Bump	version from 1.6.11 to 1.6.12
-In-Reply-To: <1469646161-30024-13-git-send-email-bimmy.pujari@intel.com>
-References: <1469646161-30024-1-git-send-email-bimmy.pujari@intel.com>
- <1469646161-30024-13-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9EB9AF@ORSMSX104.amr.corp.intel.com>
+From: Emil Tantilov <emil.s.tantilov@intel.com>
+Date: Fri, 29 Jul 2016 10:30:11 -0700
+Subject: [Intel-wired-lan] [PATCH 2/3] ixgbevf: change hw_dbg to use
+	netdev_dbg
+In-Reply-To: <20160729173006.25548.93033.stgit@localhost6.localdomain6>
+References: <20160729173006.25548.93033.stgit@localhost6.localdomain6>
+Message-ID: <20160729173011.25548.74817.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Bimmy Pujari
-> Sent: Wednesday, July 27, 2016 12:03 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S40-V2 12/12] i40e/i40evf-Bump
-> version from 1.6.11 to 1.6.12
-> 
-> Signed-off-by: Bimmy Pujari <Bimmy.pujari@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
+Instead of the home brewed macro make use of netdev_dbg same as
+the ixgbe driver.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Driver reports correct version
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |   11 ++++-------
+ drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |    1 +
+ 2 files changed, 5 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+index be52f59..5639fbe 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf.h
+@@ -502,12 +502,9 @@ extern void ixgbevf_write_eitr(struct ixgbevf_q_vector *q_vector);
+ void ixgbe_napi_add_all(struct ixgbevf_adapter *adapter);
+ void ixgbe_napi_del_all(struct ixgbevf_adapter *adapter);
+ 
+-#ifdef DEBUG
+-char *ixgbevf_get_hw_dev_name(struct ixgbe_hw *hw);
+-#define hw_dbg(hw, format, arg...) \
+-	printk(KERN_DEBUG "%s: " format, ixgbevf_get_hw_dev_name(hw), ##arg)
+-#else
+-#define hw_dbg(hw, format, arg...) do {} while (0)
+-#endif
++#define ixgbevf_hw_to_netdev(hw) \
++	(((struct ixgbevf_adapter *)(hw)->back)->netdev)
+ 
++#define hw_dbg(hw, format, arg...) \
++	netdev_dbg(ixgbevf_hw_to_netdev(hw), format, ## arg)
+ #endif /* _IXGBEVF_H_ */
+diff --git a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+index d9d6616..8d4f535 100644
+--- a/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
++++ b/drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c
+@@ -2993,6 +2993,7 @@ static void ixgbevf_free_all_tx_resources(struct ixgbevf_adapter *adapter)
+  **/
+ int ixgbevf_setup_tx_resources(struct ixgbevf_ring *tx_ring)
+ {
++	struct ixgbevf_adapter *adapter = netdev_priv(tx_ring->netdev);
+ 	int size;
+ 
+ 	size = sizeof(struct ixgbevf_tx_buffer) * tx_ring->count;
+
