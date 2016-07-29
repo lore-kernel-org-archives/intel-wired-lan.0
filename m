@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 29 Jul 2016 16:21:01 +0000
-Subject: [Intel-wired-lan] [next PATCH S40-V2 05/12] i40e: Fix
-	static	analysis tool warning
-In-Reply-To: <1469646161-30024-6-git-send-email-bimmy.pujari@intel.com>
+Date: Fri, 29 Jul 2016 17:02:57 +0000
+Subject: [Intel-wired-lan] [next PATCH S40-V2 07/12] i40e: Force
+ register	writes to mitigate sync issues with iwarp VF driver
+In-Reply-To: <1469646161-30024-8-git-send-email-bimmy.pujari@intel.com>
 References: <1469646161-30024-1-git-send-email-bimmy.pujari@intel.com>
- <1469646161-30024-6-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9EB8F8@ORSMSX104.amr.corp.intel.com>
+ <1469646161-30024-8-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9EB933@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,26 +17,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Wednesday, July 27, 2016 12:03 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S40-V2 05/12] i40e: Fix static analysis
-> tool warning
+> Subject: [Intel-wired-lan] [next PATCH S40-V2 07/12] i40e: Force register
+> writes to mitigate sync issues with iwarp VF driver
 > 
-> From: Dave Ertman <david.m.ertman@intel.com>
+> From: Avinash Dayanand <avinash.dayanand@intel.com>
 > 
-> This patch fixes a problem where a static analysis tool generates a warning
-> for "INVARIANT_CONDITION: Expression 'enabled_tc' used in the condition
-> always yields the same result."
+> This patch is a fix for the bug i.e. unable to create iwarp device in VF. This is a
+> sync issue and the iwarp device open is called even before the PCI register
+> writes are done.
 > 
-> Without this patch, the driver will not pass the static analysis tool checks
-> without generating warnings.
+> Forcing the PCI register writes to happen just before it exits the function.
 > 
-> This patch fixes the problem by eliminating the irrelevant check and
-> redundant assignment for the value of enabled_tc.
-> 
-> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
-> Change-ID: Ia7d44cb050f507df7de333e96369d322e08bf408
+> Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
+> Change-ID: I60c6a2c709da89e845f2764cc50ce8b7373c8c44
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_client.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-No error from static analysis
