@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 29 Jul 2016 17:02:57 +0000
+Date: Fri, 29 Jul 2016 17:04:35 +0000
 Subject: [Intel-wired-lan] [next PATCH S40-V2 07/12] i40e: Force
  register	writes to mitigate sync issues with iwarp VF driver
 In-Reply-To: <1469646161-30024-8-git-send-email-bimmy.pujari@intel.com>
 References: <1469646161-30024-1-git-send-email-bimmy.pujari@intel.com>
  <1469646161-30024-8-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9EB933@ORSMSX104.amr.corp.intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9EB943@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -35,3 +35,4 @@ List-ID: <intel-wired-lan.osuosl.org>
 >  1 file changed, 2 insertions(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+No reset messages during VF creation
