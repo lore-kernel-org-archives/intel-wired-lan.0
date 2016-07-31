@@ -1,105 +1,35 @@
-From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Fri, 29 Jul 2016 14:46:31 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: use atomic bitwise operations when
- handling reset requests
-Message-ID: <20160729214631.1864.51421.stgit@localhost6.localdomain6>
+From: Heinrich Schuchardt <xypron.glpk@gmx.de>
+Date: Sun, 31 Jul 2016 11:30:58 +0200
+Subject: [Intel-wired-lan] [PATCH 1/1] net: e1000: do not use uninitalized
+	variable.
+Message-ID: <1469957458-494-1-git-send-email-xypron.glpk@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Use atomic bitwise operations when setting and checking reset
-requests. This should help with possible races in the service task.
+phy_data has to be set to zero to avoid undefined
+behavior.
 
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe.h      |    2 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   16 +++++++---------
- 2 files changed, 8 insertions(+), 10 deletions(-)
+ drivers/net/ethernet/intel/e1000/e1000_hw.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index 9475ff9..5628e2d 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -653,7 +653,6 @@ struct ixgbe_adapter {
- #define IXGBE_FLAG2_TEMP_SENSOR_EVENT		BIT(3)
- #define IXGBE_FLAG2_SEARCH_FOR_SFP		BIT(4)
- #define IXGBE_FLAG2_SFP_NEEDS_RESET		BIT(5)
--#define IXGBE_FLAG2_RESET_REQUESTED		BIT(6)
- #define IXGBE_FLAG2_FDIR_REQUIRES_REINIT	BIT(7)
- #define IXGBE_FLAG2_RSS_FIELD_IPV4_UDP		BIT(8)
- #define IXGBE_FLAG2_RSS_FIELD_IPV6_UDP		BIT(9)
-@@ -840,6 +839,7 @@ enum ixgbe_state_t {
- 	__IXGBE_IN_SFP_INIT,
- 	__IXGBE_PTP_RUNNING,
- 	__IXGBE_PTP_TX_IN_PROGRESS,
-+	__IXGBE_RESET_REQUESTED,
- };
- 
- struct ixgbe_cb {
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index f687b76..60b8e6e 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -1103,7 +1103,7 @@ static void ixgbe_tx_timeout_reset(struct ixgbe_adapter *adapter)
- 
- 	/* Do the reset outside of interrupt context */
- 	if (!test_bit(__IXGBE_DOWN, &adapter->state)) {
--		adapter->flags2 |= IXGBE_FLAG2_RESET_REQUESTED;
-+		set_bit(__IXGBE_RESET_REQUESTED, &adapter->state);
- 		e_warn(drv, "initiating reset due to tx timeout\n");
- 		ixgbe_service_event_schedule(adapter);
- 	}
-@@ -2777,7 +2777,7 @@ static irqreturn_t ixgbe_msix_other(int irq, void *data)
- 		}
- 		if (eicr & IXGBE_EICR_ECC) {
- 			e_info(link, "Received ECC Err, initiating reset\n");
--			adapter->flags2 |= IXGBE_FLAG2_RESET_REQUESTED;
-+			set_bit(__IXGBE_RESET_REQUESTED, &adapter->state);
- 			ixgbe_service_event_schedule(adapter);
- 			IXGBE_WRITE_REG(hw, IXGBE_EICR, IXGBE_EICR_ECC);
- 		}
-@@ -3007,7 +3007,7 @@ static irqreturn_t ixgbe_intr(int irq, void *data)
- 	case ixgbe_mac_x550em_a:
- 		if (eicr & IXGBE_EICR_ECC) {
- 			e_info(link, "Received ECC Err, initiating reset\n");
--			adapter->flags2 |= IXGBE_FLAG2_RESET_REQUESTED;
-+			set_bit(__IXGBE_RESET_REQUESTED, &adapter->state);
- 			ixgbe_service_event_schedule(adapter);
- 			IXGBE_WRITE_REG(hw, IXGBE_EICR, IXGBE_EICR_ECC);
- 		}
-@@ -5494,8 +5494,8 @@ void ixgbe_down(struct ixgbe_adapter *adapter)
- 
- 	ixgbe_napi_disable_all(adapter);
- 
--	adapter->flags2 &= ~(IXGBE_FLAG2_FDIR_REQUIRES_REINIT |
--			     IXGBE_FLAG2_RESET_REQUESTED);
-+	clear_bit(__IXGBE_RESET_REQUESTED, &adapter->state);
-+	adapter->flags2 &= ~IXGBE_FLAG2_FDIR_REQUIRES_REINIT;
- 	adapter->flags &= ~IXGBE_FLAG_NEED_LINK_UPDATE;
- 
- 	del_timer_sync(&adapter->service_timer);
-@@ -6915,7 +6915,7 @@ static void ixgbe_watchdog_flush_tx(struct ixgbe_adapter *adapter)
- 			 * (Do the reset outside of interrupt context).
- 			 */
- 			e_warn(drv, "initiating reset to clear Tx work after link loss\n");
--			adapter->flags2 |= IXGBE_FLAG2_RESET_REQUESTED;
-+			set_bit(__IXGBE_RESET_REQUESTED, &adapter->state);
- 		}
- 	}
- }
-@@ -7181,11 +7181,9 @@ static void ixgbe_phy_interrupt_subtask(struct ixgbe_adapter *adapter)
- 
- static void ixgbe_reset_subtask(struct ixgbe_adapter *adapter)
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_hw.c b/drivers/net/ethernet/intel/e1000/e1000_hw.c
+index 8172cf0..456bb07 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_hw.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_hw.c
+@@ -5390,7 +5390,7 @@ static s32 e1000_set_phy_mode(struct e1000_hw *hw)
+ static s32 e1000_set_d3_lplu_state(struct e1000_hw *hw, bool active)
  {
--	if (!(adapter->flags2 & IXGBE_FLAG2_RESET_REQUESTED))
-+	if (!test_and_clear_bit(__IXGBE_RESET_REQUESTED, &adapter->state))
- 		return;
+ 	s32 ret_val;
+-	u16 phy_data;
++	u16 phy_data = 0;
  
--	adapter->flags2 &= ~IXGBE_FLAG2_RESET_REQUESTED;
--
- 	/* If we're already down, removing or resetting, just bail */
- 	if (test_bit(__IXGBE_DOWN, &adapter->state) ||
- 	    test_bit(__IXGBE_REMOVING, &adapter->state) ||
+ 	if (hw->phy_type != e1000_phy_igp)
+ 		return E1000_SUCCESS;
+-- 
+2.8.1
 
