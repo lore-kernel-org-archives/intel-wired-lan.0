@@ -1,8 +1,8 @@
 From: Baole Ni <baolex.ni@intel.com>
-Date: Tue,  2 Aug 2016 19:39:46 +0800
-Subject: [Intel-wired-lan] [PATCH 0720/1285] Replace numeric parameter like
+Date: Tue,  2 Aug 2016 19:39:51 +0800
+Subject: [Intel-wired-lan] [PATCH 0721/1285] Replace numeric parameter like
 	0444 with macro
-Message-ID: <20160802113946.30061-1-baolex.ni@intel.com>
+Message-ID: <20160802113951.30127-1-baolex.ni@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,21 +18,21 @@ thus, I suggest replacing the numeric parameter with the macro.
 Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
 Signed-off-by: Baole Ni <baolex.ni@intel.com>
 ---
- drivers/net/ethernet/intel/e1000e/param.c | 2 +-
+ drivers/net/ethernet/intel/ixgb/ixgb_main.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/param.c b/drivers/net/ethernet/intel/e1000e/param.c
-index 6d8c39a..bd6d1fb 100644
---- a/drivers/net/ethernet/intel/e1000e/param.c
-+++ b/drivers/net/ethernet/intel/e1000e/param.c
-@@ -36,7 +36,7 @@
+diff --git a/drivers/net/ethernet/intel/ixgb/ixgb_main.c b/drivers/net/ethernet/intel/ixgb/ixgb_main.c
+index 31f9145..ccc30c6 100644
+--- a/drivers/net/ethernet/intel/ixgb/ixgb_main.c
++++ b/drivers/net/ethernet/intel/ixgb/ixgb_main.c
+@@ -41,7 +41,7 @@ static const char ixgb_copyright[] = "Copyright (c) 1999-2008 Intel Corporation.
  
- #define COPYBREAK_DEFAULT 256
- unsigned int copybreak = COPYBREAK_DEFAULT;
+ #define IXGB_CB_LENGTH 256
+ static unsigned int copybreak __read_mostly = IXGB_CB_LENGTH;
 -module_param(copybreak, uint, 0644);
 +module_param(copybreak, uint, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
  MODULE_PARM_DESC(copybreak,
- 		 "Maximum size of packet that is copied to a new buffer on receive");
+ 	"Maximum size of packet that is copied to a new buffer on receive");
  
 -- 
 2.9.2
