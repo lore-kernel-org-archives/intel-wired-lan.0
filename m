@@ -1,28 +1,39 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Wed, 3 Aug 2016 22:01:07 +0300
-Subject: [Intel-wired-lan] [patch] i40e: remove a stray unlock
-Message-ID: <20160803190107.GC775@mwanda>
+From: Baole Ni <baolex.ni@intel.com>
+Date: Tue,  2 Aug 2016 19:39:41 +0800
+Subject: [Intel-wired-lan] [PATCH 0719/1285] Replace numeric parameter like
+	0444 with macro
+Message-ID: <20160802113941.29995-1-baolex.ni@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-We shifted the locking around a bit but forgot to delete this unlock so
-now it can unlock twice.
+I find that the developers often just specified the numeric value
+when calling a macro which is defined with a parameter for access permission.
+As we know, these numeric value for access permission have had the corresponding macro,
+and that using macro can improve the robustness and readability of the code,
+thus, I suggest replacing the numeric parameter with the macro.
 
-Fixes: cd3be169a5ff ('i40e: Move the mutex lock in i40e_client_unregister')
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
+Signed-off-by: Baole Ni <baolex.ni@intel.com>
+---
+ drivers/net/ethernet/intel/e1000/e1000_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c b/drivers/net/ethernet/intel/i40e/i40e_client.c
-index e1370c5..1a9682f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_client.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
-@@ -990,7 +990,6 @@ int i40e_unregister_client(struct i40e_client *client)
- 	if (!i40e_client_is_registered(client)) {
- 		pr_info("i40e: Client %s has not been registered\n",
- 			client->name);
--		mutex_unlock(&i40e_client_mutex);
- 		ret = -ENODEV;
- 		goto out;
- 	}
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
+index f42129d..7139b51 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_main.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+@@ -190,7 +190,7 @@ static void e1000_netpoll (struct net_device *netdev);
+ 
+ #define COPYBREAK_DEFAULT 256
+ static unsigned int copybreak __read_mostly = COPYBREAK_DEFAULT;
+-module_param(copybreak, uint, 0644);
++module_param(copybreak, uint, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+ MODULE_PARM_DESC(copybreak,
+ 	"Maximum size of packet that is copied to a new buffer on receive");
+ 
+-- 
+2.9.2
+
