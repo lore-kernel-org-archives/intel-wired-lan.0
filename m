@@ -1,8 +1,8 @@
 From: Baole Ni <baolex.ni@intel.com>
-Date: Tue,  2 Aug 2016 19:39:41 +0800
-Subject: [Intel-wired-lan] [PATCH 0719/1285] Replace numeric parameter like
+Date: Tue,  2 Aug 2016 19:39:46 +0800
+Subject: [Intel-wired-lan] [PATCH 0720/1285] Replace numeric parameter like
 	0444 with macro
-Message-ID: <20160802113941.29995-1-baolex.ni@intel.com>
+Message-ID: <20160802113946.30061-1-baolex.ni@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,21 +18,21 @@ thus, I suggest replacing the numeric parameter with the macro.
 Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
 Signed-off-by: Baole Ni <baolex.ni@intel.com>
 ---
- drivers/net/ethernet/intel/e1000/e1000_main.c | 2 +-
+ drivers/net/ethernet/intel/e1000e/param.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
-index f42129d..7139b51 100644
---- a/drivers/net/ethernet/intel/e1000/e1000_main.c
-+++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
-@@ -190,7 +190,7 @@ static void e1000_netpoll (struct net_device *netdev);
+diff --git a/drivers/net/ethernet/intel/e1000e/param.c b/drivers/net/ethernet/intel/e1000e/param.c
+index 6d8c39a..bd6d1fb 100644
+--- a/drivers/net/ethernet/intel/e1000e/param.c
++++ b/drivers/net/ethernet/intel/e1000e/param.c
+@@ -36,7 +36,7 @@
  
  #define COPYBREAK_DEFAULT 256
- static unsigned int copybreak __read_mostly = COPYBREAK_DEFAULT;
+ unsigned int copybreak = COPYBREAK_DEFAULT;
 -module_param(copybreak, uint, 0644);
 +module_param(copybreak, uint, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
  MODULE_PARM_DESC(copybreak,
- 	"Maximum size of packet that is copied to a new buffer on receive");
+ 		 "Maximum size of packet that is copied to a new buffer on receive");
  
 -- 
 2.9.2
