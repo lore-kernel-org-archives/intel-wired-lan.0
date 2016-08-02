@@ -1,43 +1,43 @@
-From: Denis Turischev <denis.turischev@compulab.co.il>
-Date: Mon, 1 Aug 2016 15:28:46 +0300
-Subject: [Intel-wired-lan] e1000e: PHY cann't be initialized correctly on
-	some I218 controllers
-Message-ID: <579F407E.9090602@compulab.co.il>
+From: Jarod Wilson <jarod@redhat.com>
+Date: Mon, 1 Aug 2016 21:32:14 -0400
+Subject: [Intel-wired-lan] [PATCH net-next v3 1/2] e1000e: factor out
+ systim	sanitization
+In-Reply-To: <20160727150155.GF36313@redhat.com>
+References: <1469292274-59237-1-git-send-email-jarod@redhat.com>
+ <1469557535-63429-1-git-send-email-jarod@redhat.com>
+ <1469557535-63429-2-git-send-email-jarod@redhat.com>
+ <8F4C390AFA9F4444A4AA77F4A3BEC78A190E7843@HASMSX110.ger.corp.intel.com>
+ <20160727150155.GF36313@redhat.com>
+Message-ID: <20160802013214.GU36313@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-There is an error "e1000e: probe of 0000:00:19.0 failed with error -3"
-that can be observed after power-on on some I218 controllers.
-Hardware reset and re-initialization fixes the issue.
+On Wed, Jul 27, 2016 at 11:01:55AM -0400, Jarod Wilson wrote:
+> On Wed, Jul 27, 2016 at 02:09:13PM +0000, Avargil, Raanan wrote:
+> >> This is prepatory work for an expanding list of adapter families that have occasional ~10 hour clock jumps when being used for PTP. Factor out the sanitization function and convert to using a feature (bug) flag, per suggestion from Jesse Brandeburg.
+> >> 
+> >> Littering functional code with device-specific checks is much messier than simply checking a flag, and having device-specific init set flags as needed.
+> >> There are probably a number of other cases in the e1000e code that could/should be converted similarly.
+> > 
+> > Looks ok to me.
+> > Adding Chris who asked what happens if we reach the max retry counter (E1000_MAX_82574_SYSTIM_REREAD)?
+> > This counter is set to 50. 
+> > Can you, for testing purposes, decreased this value (or even set it to 0) and see what happens?
+> 
+> Unfortunately, I don't have direct access to the affected hardware myself,
+> so I'd have to prep a test build, hand it off to someone and play relay. I
+> could do that, but it'd have some lag and possible multiple round-trips...
+> Anyone inside Intel have hardware handy to test on? :p
 
-Signed-off-by: Denis Turischev <denis.turischev@compulab.co.il>
+Was tied up with other work the middle of last week, then on vacation for
+a bit. There was some testing feedback provided from someone at neither
+Red Hat or Intel, but I'm not sure where it leaves us right now. What
+needs to happen next?
 
-diff -Nru linux-4.7.orig/drivers/net/ethernet/intel/e1000e/ich8lan.c linux-4.7/drivers/net/ethernet/intel/e1000e/ich8lan.c
---- linux-4.7.orig/drivers/net/ethernet/intel/e1000e/ich8lan.c	2016-07-24 22:23:50.000000000 +0300
-+++ linux-4.7/drivers/net/ethernet/intel/e1000e/ich8lan.c	2016-08-01 13:59:08.046563095 +0300
-@@ -155,6 +155,7 @@
- static s32 e1000_disable_ulp_lpt_lp(struct e1000_hw *hw, bool force);
- static s32 e1000_setup_copper_link_pch_lpt(struct e1000_hw *hw);
- static s32 e1000_oem_bits_config_ich8lan(struct e1000_hw *hw, bool d0_state);
-+static s32 e1000_reset_hw_ich8lan(struct e1000_hw *hw);
- 
- static inline u16 __er16flash(struct e1000_hw *hw, unsigned long reg)
- {
-@@ -459,8 +460,12 @@
- 	phy->id = e1000_phy_unknown;
- 
- 	ret_val = e1000_init_phy_workarounds_pchlan(hw);
--	if (ret_val)
--		return ret_val;
-+	if (ret_val) {
-+		e1000_reset_hw_ich8lan(hw);
-+		ret_val = e1000_init_phy_workarounds_pchlan(hw);
-+		if (ret_val)
-+			return ret_val;
-+	}
- 
- 	if (phy->id == e1000_phy_unknown)
- 		switch (hw->mac.type) {
+-- 
+Jarod Wilson
+jarod at redhat.com
+
