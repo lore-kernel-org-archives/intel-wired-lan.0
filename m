@@ -1,101 +1,60 @@
-From: Heinrich Schuchardt <xypron.glpk@gmx.de>
-Date: Tue,  2 Aug 2016 20:15:18 +0200
-Subject: [Intel-wired-lan] [PATCH 1/1 v2] net: i10e: use matching format
-	indentifiers
-In-Reply-To: <20160731.204759.1283451349474511870.davem@davemloft.net>
-References: <20160731.204759.1283451349474511870.davem@davemloft.net>
-Message-ID: <1470161718-8824-1-git-send-email-xypron.glpk@gmx.de>
+From: John Fastabend <john.fastabend@gmail.com>
+Date: Tue, 2 Aug 2016 11:25:09 -0700
+Subject: [Intel-wired-lan] [PATCH V0] i40e: Program device correctly as
+ part of adding flow director entry
+In-Reply-To: <9BBC4E0CF881AA4299206E2E1412B62650236576@ORSMSX102.amr.corp.intel.com>
+References: <1469598563-42383-1-git-send-email-kiran.patil@intel.com>
+ <1469599316.2851.50.camel@intel.com>
+ <9BBC4E0CF881AA4299206E2E1412B62650236576@ORSMSX102.amr.corp.intel.com>
+Message-ID: <57A0E585.7090709@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-i is defined as int but output as %u several times.
-Adjust the format identifiers.
+On 16-07-27 08:52 AM, Wyborny, Carolyn wrote:
+>> -----Original Message-----
+>> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+>> Behalf Of Jeff Kirsher
+>> Sent: Tuesday, July 26, 2016 11:02 PM
+>> To: Patil, Kiran <kiran.patil@intel.com>; intel-wired-lan at lists.osuosl.org;
+>> Bowers, AndrewX <andrewx.bowers@intel.com>
+>> Subject: Re: [Intel-wired-lan] [PATCH V0] i40e: Program device correctly as part
+>> of adding flow director entry
+>>
+>> On Tue, 2016-07-26 at 22:49 -0700, Kiran Patil wrote:
+>>> This patch fixes the problem where driver was not programming
+>>> underlying device correctly when user specifies less than full tuple
+>>> set as part of adding flow director entry (for flow-type tcp4/udp4)
+>>> using ethtool.
+>>>
+>>> Signed-off-by: Kiran Patil <kiran.patil@intel.com>
+>>> Change-Id: I90052508f8c172c0da5a4b78b949704b4a59ea78
+>>> Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+>>> ---
+>>>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 116
+>>> +++++++++++++++++++++++++
+>>>  1 file changed, 116 insertions(+)
+>>
+>> Andrew, I know your tested-by is already on this, but I also know it was
+>> not tested while in my dev-queue branch of my next-queue tree.  Can you
+>> please verify this patch in my tree?  No need to send another tested-by,
+>> just let me know if your tested-by still stands.
+> 
+> Please drop this patch. The i40e team is redesigning this feature
+> with a couple of others and it will be submitted at a future time.
+> 
+> Thanks,
+> 
+> Carolyn
+> _____________
 
-v2:
-	Keep definition of i as int.
-	David indicated that this is the preferable way to define
-	loop variables.
+But wasn't this a bugfix? Shouldn't the bug fix go out now or can I
+expect the redesign shortly. Another thing to consider is a redesign
+may be harder to pull into distributions if you just wanted a simple
+fix like this.
 
-Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
----
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 26 +++++++++++++-------------
- 1 file changed, 13 insertions(+), 13 deletions(-)
+.John
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index c912e04..94ac712 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -1560,13 +1560,13 @@ static void i40e_get_strings(struct net_device *netdev, u32 stringset,
- 		}
- #endif
- 		for (i = 0; i < vsi->num_queue_pairs; i++) {
--			snprintf(p, ETH_GSTRING_LEN, "tx-%u.tx_packets", i);
-+			snprintf(p, ETH_GSTRING_LEN, "tx-%d.tx_packets", i);
- 			p += ETH_GSTRING_LEN;
--			snprintf(p, ETH_GSTRING_LEN, "tx-%u.tx_bytes", i);
-+			snprintf(p, ETH_GSTRING_LEN, "tx-%d.tx_bytes", i);
- 			p += ETH_GSTRING_LEN;
--			snprintf(p, ETH_GSTRING_LEN, "rx-%u.rx_packets", i);
-+			snprintf(p, ETH_GSTRING_LEN, "rx-%d.rx_packets", i);
- 			p += ETH_GSTRING_LEN;
--			snprintf(p, ETH_GSTRING_LEN, "rx-%u.rx_bytes", i);
-+			snprintf(p, ETH_GSTRING_LEN, "rx-%d.rx_bytes", i);
- 			p += ETH_GSTRING_LEN;
- 		}
- 		if (vsi != pf->vsi[pf->lan_vsi] || pf->hw.partition_id != 1)
-@@ -1581,16 +1581,16 @@ static void i40e_get_strings(struct net_device *netdev, u32 stringset,
- 			}
- 			for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++) {
- 				snprintf(p, ETH_GSTRING_LEN,
--					 "veb.tc_%u_tx_packets", i);
-+					 "veb.tc_%d_tx_packets", i);
- 				p += ETH_GSTRING_LEN;
- 				snprintf(p, ETH_GSTRING_LEN,
--					 "veb.tc_%u_tx_bytes", i);
-+					 "veb.tc_%d_tx_bytes", i);
- 				p += ETH_GSTRING_LEN;
- 				snprintf(p, ETH_GSTRING_LEN,
--					 "veb.tc_%u_rx_packets", i);
-+					 "veb.tc_%d_rx_packets", i);
- 				p += ETH_GSTRING_LEN;
- 				snprintf(p, ETH_GSTRING_LEN,
--					 "veb.tc_%u_rx_bytes", i);
-+					 "veb.tc_%d_rx_bytes", i);
- 				p += ETH_GSTRING_LEN;
- 			}
- 		}
-@@ -1601,23 +1601,23 @@ static void i40e_get_strings(struct net_device *netdev, u32 stringset,
- 		}
- 		for (i = 0; i < I40E_MAX_USER_PRIORITY; i++) {
- 			snprintf(p, ETH_GSTRING_LEN,
--				 "port.tx_priority_%u_xon", i);
-+				 "port.tx_priority_%d_xon", i);
- 			p += ETH_GSTRING_LEN;
- 			snprintf(p, ETH_GSTRING_LEN,
--				 "port.tx_priority_%u_xoff", i);
-+				 "port.tx_priority_%d_xoff", i);
- 			p += ETH_GSTRING_LEN;
- 		}
- 		for (i = 0; i < I40E_MAX_USER_PRIORITY; i++) {
- 			snprintf(p, ETH_GSTRING_LEN,
--				 "port.rx_priority_%u_xon", i);
-+				 "port.rx_priority_%d_xon", i);
- 			p += ETH_GSTRING_LEN;
- 			snprintf(p, ETH_GSTRING_LEN,
--				 "port.rx_priority_%u_xoff", i);
-+				 "port.rx_priority_%d_xoff", i);
- 			p += ETH_GSTRING_LEN;
- 		}
- 		for (i = 0; i < I40E_MAX_USER_PRIORITY; i++) {
- 			snprintf(p, ETH_GSTRING_LEN,
--				 "port.rx_priority_%u_xon_2_xoff", i);
-+				 "port.rx_priority_%d_xon_2_xoff", i);
- 			p += ETH_GSTRING_LEN;
- 		}
- 		/* BUG_ON(p - data != I40E_STATS_LEN * ETH_GSTRING_LEN); */
--- 
-2.1.4
 
