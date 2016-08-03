@@ -1,81 +1,158 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Wed,  3 Aug 2016 10:20:15 -0700
-Subject: [Intel-wired-lan] [next PATCH S41 5/5] i40e: refactor tail_bump
-	check
+Date: Wed,  3 Aug 2016 10:20:12 -0700
+Subject: [Intel-wired-lan] [next PATCH S41 2/5] i40evf: report link speed
 In-Reply-To: <1470244815-31174-1-git-send-email-bimmy.pujari@intel.com>
 References: <1470244815-31174-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1470244815-31174-6-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1470244815-31174-3-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Carolyn Wyborny <carolyn.wyborny@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-This patch fixes usage of variable so that its
-not checked for NULL if there's no possiblity of
-it being NULL. Without this patch, static analysis
-tool complain. This patch fixes the problem by
-changing the wrapping of compat code.
+The PF driver tells us the link speed, so do something with that
+information. Add link speed to log messages, and report speed through
+ethtool.
 
-Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
-Change-ID: Ide0e19171d67d90cb2b06b8dcd4fa791ae120160
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-Id: I279dc9540cc5203376406050a3e8d67e128d5882
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 6 ++----
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 6 ++----
- 2 files changed, 4 insertions(+), 8 deletions(-)
+Testing Hints : Test reporting of link up/down and
+various speeds.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 5eb9ff2..266608a 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2849,10 +2849,9 @@ static inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 						  I40E_TXD_QW1_CMD_SHIFT);
+ drivers/net/ethernet/intel/i40evf/i40evf.h         |  1 +
+ drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 26 ++++++++--
+ .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    | 55 ++++++++++++++++++----
+ 3 files changed, 70 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
+index 2ef12a0..be1ca4c 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf.h
++++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
+@@ -251,6 +251,7 @@ struct i40evf_adapter {
+ 	struct work_struct watchdog_task;
+ 	bool netdev_registered;
+ 	bool link_up;
++	enum i40e_aq_link_speed link_speed;
+ 	enum i40e_virtchnl_ops current_op;
+ #define CLIENT_ENABLED(_a) ((_a)->vf_res ? \
+ 			    (_a)->vf_res->vf_offload_flags & \
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
+index c6bd659..daae492 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
+@@ -74,13 +74,33 @@ static const struct i40evf_stats i40evf_gstrings_stats[] = {
+ static int i40evf_get_settings(struct net_device *netdev,
+ 			       struct ethtool_cmd *ecmd)
+ {
+-	/* In the future the VF will be able to query the PF for
+-	 * some information - for now use a dummy value
+-	 */
++	struct i40evf_adapter *adapter = netdev_priv(netdev);
++
+ 	ecmd->supported = 0;
+ 	ecmd->autoneg = AUTONEG_DISABLE;
+ 	ecmd->transceiver = XCVR_DUMMY1;
+ 	ecmd->port = PORT_NONE;
++	/* Set speed and duplex */
++	switch (adapter->link_speed) {
++	case I40E_LINK_SPEED_40GB:
++		ethtool_cmd_speed_set(ecmd, SPEED_40000);
++		break;
++	case I40E_LINK_SPEED_20GB:
++		ethtool_cmd_speed_set(ecmd, SPEED_20000);
++		break;
++	case I40E_LINK_SPEED_10GB:
++		ethtool_cmd_speed_set(ecmd, SPEED_10000);
++		break;
++	case I40E_LINK_SPEED_1GB:
++		ethtool_cmd_speed_set(ecmd, SPEED_1000);
++		break;
++	case I40E_LINK_SPEED_100MB:
++		ethtool_cmd_speed_set(ecmd, SPEED_100);
++		break;
++	default:
++		break;
++	}
++	ecmd->duplex = DUPLEX_FULL;
  
- 	/* notify HW of packet */
--	if (!tail_bump)
-+	if (!tail_bump) {
- 		prefetchw(tx_desc + 1);
--
--	if (tail_bump) {
-+	} else {
- 		/* Force memory writes to complete before letting h/w
- 		 * know there are new descriptors to fetch.  (Only
- 		 * applicable for weak-ordered memory model archs,
-@@ -2861,7 +2860,6 @@ static inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 		wmb();
- 		writel(i, tx_ring->tail);
- 	}
--
- 	return;
+ 	return 0;
+ }
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+index d76c221..cc6cb30 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+@@ -817,6 +817,45 @@ void i40evf_set_rss_lut(struct i40evf_adapter *adapter)
+ }
  
- dma_error:
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index 5968cc6..f3eb76f 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -2086,10 +2086,9 @@ static inline void i40evf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 						  I40E_TXD_QW1_CMD_SHIFT);
- 
- 	/* notify HW of packet */
--	if (!tail_bump)
-+	if (!tail_bump) {
- 		prefetchw(tx_desc + 1);
--
--	if (tail_bump) {
-+	} else {
- 		/* Force memory writes to complete before letting h/w
- 		 * know there are new descriptors to fetch.  (Only
- 		 * applicable for weak-ordered memory model archs,
-@@ -2098,7 +2097,6 @@ static inline void i40evf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 		wmb();
- 		writel(i, tx_ring->tail);
- 	}
--
- 	return;
- 
- dma_error:
+ /**
++ * i40evf_print_link_message - print link up or down
++ * @adapter: adapter structure
++ *
++ * Log a message telling the world of our wonderous link status
++ */
++static void i40evf_print_link_message(struct i40evf_adapter *adapter)
++{
++	struct net_device *netdev = adapter->netdev;
++	char *speed = "Unknown ";
++
++	if (!adapter->link_up) {
++		netdev_info(netdev, "NIC Link is Down\n");
++		return;
++	}
++
++	switch (adapter->link_speed) {
++	case I40E_LINK_SPEED_40GB:
++		speed = "40 G";
++		break;
++	case I40E_LINK_SPEED_20GB:
++		speed = "20 G";
++		break;
++	case I40E_LINK_SPEED_10GB:
++		speed = "10 G";
++		break;
++	case I40E_LINK_SPEED_1GB:
++		speed = "1000 M";
++		break;
++	case I40E_LINK_SPEED_100MB:
++		speed = "100 M";
++		break;
++	default:
++		break;
++	}
++
++	netdev_info(netdev, "NIC Link is Up %sbps Full Duplex\n", speed);
++}
++
++/**
+  * i40evf_request_reset
+  * @adapter: adapter structure
+  *
+@@ -853,15 +892,13 @@ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
+ 			(struct i40e_virtchnl_pf_event *)msg;
+ 		switch (vpe->event) {
+ 		case I40E_VIRTCHNL_EVENT_LINK_CHANGE:
+-			adapter->link_up =
+-				vpe->event_data.link_event.link_status;
+-			if (adapter->link_up && !netif_carrier_ok(netdev)) {
+-				dev_info(&adapter->pdev->dev, "NIC Link is Up\n");
+-				netif_carrier_on(netdev);
+-				netif_tx_wake_all_queues(netdev);
+-			} else if (!adapter->link_up) {
+-				dev_info(&adapter->pdev->dev, "NIC Link is Down\n");
+-				netif_carrier_off(netdev);
++			adapter->link_speed =
++				vpe->event_data.link_event.link_speed;
++			if (adapter->link_up !=
++			    vpe->event_data.link_event.link_status) {
++				adapter->link_up =
++					vpe->event_data.link_event.link_status;
++				i40evf_print_link_message(adapter);
+ 				netif_tx_stop_all_queues(netdev);
+ 			}
+ 			break;
 -- 
 2.4.11
 
