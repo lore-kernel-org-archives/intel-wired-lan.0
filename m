@@ -1,10 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 3 Aug 2016 16:41:27 +0000
-Subject: [Intel-wired-lan] [PATCH 1/3] ixgbe: only check Tx queue
- enablement	when debugging
-In-Reply-To: <20160729173006.25548.93033.stgit@localhost6.localdomain6>
+Date: Wed, 3 Aug 2016 16:41:56 +0000
+Subject: [Intel-wired-lan] [PATCH 2/3] ixgbevf: change hw_dbg to
+	use	netdev_dbg
+In-Reply-To: <20160729173011.25548.74817.stgit@localhost6.localdomain6>
 References: <20160729173006.25548.93033.stgit@localhost6.localdomain6>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9F729E@ORSMSX104.amr.corp.intel.com>
+ <20160729173011.25548.74817.stgit@localhost6.localdomain6>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9F72AD@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,18 +17,17 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Emil Tantilov
 > Sent: Friday, July 29, 2016 10:30 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 1/3] ixgbe: only check Tx queue
-> enablement when debugging
+> Subject: [Intel-wired-lan] [PATCH 2/3] ixgbevf: change hw_dbg to use
+> netdev_dbg
 > 
-> Following a write the TXDCTL.ENABLE bit is set only when the Tx queue is
-> actually enabled, which may not happen during the configure phase even if
-> we waited for it. Make this check debug only since this is causing confusion
-> with users who notice the warning in dmesg.
+> Instead of the home brewed macro make use of netdev_dbg same as the
+> ixgbe driver.
 > 
 > Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf.h      |   11 ++++-------
+>  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |    1 +
+>  2 files changed, 5 insertions(+), 7 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
