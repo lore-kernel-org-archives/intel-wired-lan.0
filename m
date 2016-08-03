@@ -1,45 +1,32 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 3 Aug 2016 17:24:32 +0000
-Subject: [Intel-wired-lan] [next PATCH S40-V2 06/12] i40e: don't
-	allow	reduction of channels below active FD rules
-In-Reply-To: <1469646161-30024-7-git-send-email-bimmy.pujari@intel.com>
-References: <1469646161-30024-1-git-send-email-bimmy.pujari@intel.com>
- <1469646161-30024-7-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9F72EF@ORSMSX104.amr.corp.intel.com>
+From: Bimmy Pujari <bimmy.pujari@intel.com>
+Date: Wed,  3 Aug 2016 11:02:34 -0700
+Subject: [Intel-wired-lan] [next PATCH S41 0/5] i40e/i40evf updates
+Message-ID: <1470247359-31334-1-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Bimmy Pujari
-> Sent: Wednesday, July 27, 2016 12:03 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S40-V2 06/12] i40e: don't allow
-> reduction of channels below active FD rules
-> 
-> From: Jacob Keller <jacob.e.keller@intel.com>
-> 
-> If a driver is unable to maintain all current user supplied settings from ethtool
-> (or other sources), it is not ok for a user request to succeed and silently
-> trample over previous configuration.
-> 
-> To that end, if you change the number of channels, it must not be allowed to
-> reduce the number of channels (queues) below the current flow director
-> filter rules targets. In this case, return -EINVAL when a request to reduce the
-> number of channels would do so. In addition log a warning to the kernel
-> buffer explaining why we failed, and report the rules which prevent us from
-> lowering the number of channels.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Change-ID: If41464d63d7aab11cedf09e4f3aa1a69e21ffd88
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 24
-> ++++++++++++++++++++++++
->  1 file changed, 24 insertions(+)
+Carolyn Wyborny adds code to refactor tail_bump, adds support for HMC 
+ resource and profile for X722 & adds support for ARP NS in X722.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Unable to set channels lower than channel used for flow director rules
+Jacob Keller adds code to use alloc_workqueue instead of 
+create_singlethread_workqueue.
+
+Mitch Williams adds code to report link speed.
+
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  | 61 ++++++++++++++++------
+ drivers/net/ethernet/intel/i40e/i40e_main.c        |  3 +-
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c        |  6 +--
+ .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    | 61 ++++++++++++++++------
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c      |  6 +--
+ drivers/net/ethernet/intel/i40evf/i40evf.h         |  1 +
+ drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 26 +++++++--
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  3 +-
+ .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    | 55 +++++++++++++++----
+ 9 files changed, 166 insertions(+), 56 deletions(-)
+
+-- 
+2.4.11
 
