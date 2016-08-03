@@ -1,39 +1,47 @@
-From: Baole Ni <baolex.ni@intel.com>
-Date: Tue,  2 Aug 2016 19:39:51 +0800
-Subject: [Intel-wired-lan] [PATCH 0721/1285] Replace numeric parameter like
-	0444 with macro
-Message-ID: <20160802113951.30127-1-baolex.ni@intel.com>
+From: Wyborny, Carolyn <carolyn.wyborny@intel.com>
+Date: Wed, 3 Aug 2016 20:09:12 +0000
+Subject: [Intel-wired-lan] [next PATCH S41 4/5] i40e: Add support for
+ ARP NS in X722
+In-Reply-To: <754e82ce-75df-56f1-3fdd-d74631d36b5c@onemain.com>
+References: <1470244815-31174-1-git-send-email-bimmy.pujari@intel.com>
+ <1470244815-31174-5-git-send-email-bimmy.pujari@intel.com>
+ <754e82ce-75df-56f1-3fdd-d74631d36b5c@onemain.com>
+Message-ID: <9BBC4E0CF881AA4299206E2E1412B6265024985B@ORSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-I find that the developers often just specified the numeric value
-when calling a macro which is defined with a parameter for access permission.
-As we know, these numeric value for access permission have had the corresponding macro,
-and that using macro can improve the robustness and readability of the code,
-thus, I suggest replacing the numeric parameter with the macro.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Shannon Nelson
+> Sent: Wednesday, August 03, 2016 11:12 AM
+> To: Pujari, Bimmy <bimmy.pujari@intel.com>; intel-wired-lan at lists.osuosl.org
+> Subject: Re: [Intel-wired-lan] [next PATCH S41 4/5] i40e: Add support for ARP
+> NS in X722
+> 
+> 
+> 
+> On 08/03/2016 10:20 AM, Bimmy Pujari wrote:
+> > From: Carolyn Wyborny <carolyn.wyborny@intel.com>
+> >
+> > This patch adds support and interface for supporting ARP NS
+> > proxy offload in firmware for X722.
+> 
+> This looks like it fixes a byte order issue rather than adding new support.
+> sln
+> 
+Thanks, you are correct.  I missed that distinction when I split it up initially.  
 
-Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
-Signed-off-by: Baole Ni <baolex.ni@intel.com>
----
- drivers/net/ethernet/intel/ixgb/ixgb_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Bimmy, can we respin this patch with the following title and description instead:
 
-diff --git a/drivers/net/ethernet/intel/ixgb/ixgb_main.c b/drivers/net/ethernet/intel/ixgb/ixgb_main.c
-index 31f9145..ccc30c6 100644
---- a/drivers/net/ethernet/intel/ixgb/ixgb_main.c
-+++ b/drivers/net/ethernet/intel/ixgb/ixgb_main.c
-@@ -41,7 +41,7 @@ static const char ixgb_copyright[] = "Copyright (c) 1999-2008 Intel Corporation.
- 
- #define IXGB_CB_LENGTH 256
- static unsigned int copybreak __read_mostly = IXGB_CB_LENGTH;
--module_param(copybreak, uint, 0644);
-+module_param(copybreak, uint, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
- MODULE_PARM_DESC(copybreak,
- 	"Maximum size of packet that is copied to a new buffer on receive");
- 
--- 
-2.9.2
+I40e: Fix byte ordering in ARP NS code for X722
+
+This patch fixes byte ordering problems found when enabling this feature support.  Without this patch, the feature will not work correctly.  This patch fixes the definitions to have the correct byte order.
+
+Thanks,
+
+Carolyn
+
 
