@@ -1,47 +1,54 @@
-From: Wyborny, Carolyn <carolyn.wyborny@intel.com>
-Date: Wed, 3 Aug 2016 20:09:12 +0000
-Subject: [Intel-wired-lan] [next PATCH S41 4/5] i40e: Add support for
- ARP NS in X722
-In-Reply-To: <754e82ce-75df-56f1-3fdd-d74631d36b5c@onemain.com>
-References: <1470244815-31174-1-git-send-email-bimmy.pujari@intel.com>
- <1470244815-31174-5-git-send-email-bimmy.pujari@intel.com>
- <754e82ce-75df-56f1-3fdd-d74631d36b5c@onemain.com>
-Message-ID: <9BBC4E0CF881AA4299206E2E1412B6265024985B@ORSMSX102.amr.corp.intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
+Date: Wed,  3 Aug 2016 15:05:27 -0700
+Subject: [Intel-wired-lan] [PATCH v1 1/2] fm10k: don't clear the RXQCTL
+	register when enabling or disabling queues
+Message-ID: <20160803220528.26222-1-jacob.e.keller@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Shannon Nelson
-> Sent: Wednesday, August 03, 2016 11:12 AM
-> To: Pujari, Bimmy <bimmy.pujari@intel.com>; intel-wired-lan at lists.osuosl.org
-> Subject: Re: [Intel-wired-lan] [next PATCH S41 4/5] i40e: Add support for ARP
-> NS in X722
-> 
-> 
-> 
-> On 08/03/2016 10:20 AM, Bimmy Pujari wrote:
-> > From: Carolyn Wyborny <carolyn.wyborny@intel.com>
-> >
-> > This patch adds support and interface for supporting ARP NS
-> > proxy offload in firmware for X722.
-> 
-> This looks like it fixes a byte order issue rather than adding new support.
-> sln
-> 
-Thanks, you are correct.  I missed that distinction when I split it up initially.  
+Ensure that other bits in the RXQCTL register do not get cleared. This
+ensures that bits related to queue ownership are maintained.
 
-Bimmy, can we respin this patch with the following title and description instead:
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+---
+ drivers/net/ethernet/intel/fm10k/fm10k_pci.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-I40e: Fix byte ordering in ARP NS code for X722
-
-This patch fixes byte ordering problems found when enabling this feature support.  Without this patch, the feature will not work correctly.  This patch fixes the definitions to have the correct byte order.
-
-Thanks,
-
-Carolyn
-
+diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+index 59dc13f3f321..eea411472f1d 100644
+--- a/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
++++ b/drivers/net/ethernet/intel/fm10k/fm10k_pci.c
+@@ -734,15 +734,15 @@ static void fm10k_configure_rx_ring(struct fm10k_intfc *interface,
+ 	u64 rdba = ring->dma;
+ 	struct fm10k_hw *hw = &interface->hw;
+ 	u32 size = ring->count * sizeof(union fm10k_rx_desc);
+-	u32 rxqctl = FM10K_RXQCTL_ENABLE | FM10K_RXQCTL_PF;
+-	u32 rxdctl = FM10K_RXDCTL_WRITE_BACK_MIN_DELAY;
++	u32 rxqctl, rxdctl = FM10K_RXDCTL_WRITE_BACK_MIN_DELAY;
+ 	u32 srrctl = FM10K_SRRCTL_BUFFER_CHAINING_EN;
+ 	u32 rxint = FM10K_INT_MAP_DISABLE;
+ 	u8 rx_pause = interface->rx_pause;
+ 	u8 reg_idx = ring->reg_idx;
+ 
+ 	/* disable queue to avoid issues while updating state */
+-	fm10k_write_reg(hw, FM10K_RXQCTL(reg_idx), 0);
++	rxqctl = fm10k_read_reg(hw, FM10K_RXQCTL(reg_idx));
++	rxqctl &= ~FM10K_RXQCTL_ENABLE;
+ 	fm10k_write_flush(hw);
+ 
+ 	/* possible poll here to verify ring resources have been cleaned */
+@@ -797,6 +797,8 @@ static void fm10k_configure_rx_ring(struct fm10k_intfc *interface,
+ 	fm10k_write_reg(hw, FM10K_RXINT(reg_idx), rxint);
+ 
+ 	/* enable queue */
++	rxqctl = fm10k_read_reg(hw, FM10K_RXQCTL(reg_idx));
++	rxqctl |= FM10K_RXQCTL_ENABLE;
+ 	fm10k_write_reg(hw, FM10K_RXQCTL(reg_idx), rxqctl);
+ 
+ 	/* place buffers on ring for receive data */
+-- 
+2.9.2.701.gf965a18
 
