@@ -1,34 +1,81 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 3 Aug 2016 16:42:15 +0000
-Subject: [Intel-wired-lan] [PATCH 3/3] ixgbevf: only check Tx
-	queue	enablement when debugging
-In-Reply-To: <20160729173016.25548.28505.stgit@localhost6.localdomain6>
-References: <20160729173006.25548.93033.stgit@localhost6.localdomain6>
- <20160729173016.25548.28505.stgit@localhost6.localdomain6>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9F72BB@ORSMSX104.amr.corp.intel.com>
+From: Bimmy Pujari <bimmy.pujari@intel.com>
+Date: Wed,  3 Aug 2016 10:20:15 -0700
+Subject: [Intel-wired-lan] [next PATCH S41 5/5] i40e: refactor tail_bump
+	check
+In-Reply-To: <1470244815-31174-1-git-send-email-bimmy.pujari@intel.com>
+References: <1470244815-31174-1-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1470244815-31174-6-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Emil Tantilov
-> Sent: Friday, July 29, 2016 10:30 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH 3/3] ixgbevf: only check Tx queue
-> enablement when debugging
-> 
-> Following a write the VFTXDCTL.ENABLE bit is set only when the Tx queue is
-> actually enabled, which may not happen during the configure phase even if
-> we waited for it. Make this check debug only since this is causing confusion
-> with users who notice the warning in dmesg.
-> 
-> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
-> ---
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+From: Carolyn Wyborny <carolyn.wyborny@intel.com>
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+This patch fixes usage of variable so that its
+not checked for NULL if there's no possiblity of
+it being NULL. Without this patch, static analysis
+tool complain. This patch fixes the problem by
+changing the wrapping of compat code.
+
+Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
+Change-ID: Ide0e19171d67d90cb2b06b8dcd4fa791ae120160
+---
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 6 ++----
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 6 ++----
+ 2 files changed, 4 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 5eb9ff2..266608a 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -2849,10 +2849,9 @@ static inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 						  I40E_TXD_QW1_CMD_SHIFT);
+ 
+ 	/* notify HW of packet */
+-	if (!tail_bump)
++	if (!tail_bump) {
+ 		prefetchw(tx_desc + 1);
+-
+-	if (tail_bump) {
++	} else {
+ 		/* Force memory writes to complete before letting h/w
+ 		 * know there are new descriptors to fetch.  (Only
+ 		 * applicable for weak-ordered memory model archs,
+@@ -2861,7 +2860,6 @@ static inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 		wmb();
+ 		writel(i, tx_ring->tail);
+ 	}
+-
+ 	return;
+ 
+ dma_error:
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index 5968cc6..f3eb76f 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -2086,10 +2086,9 @@ static inline void i40evf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 						  I40E_TXD_QW1_CMD_SHIFT);
+ 
+ 	/* notify HW of packet */
+-	if (!tail_bump)
++	if (!tail_bump) {
+ 		prefetchw(tx_desc + 1);
+-
+-	if (tail_bump) {
++	} else {
+ 		/* Force memory writes to complete before letting h/w
+ 		 * know there are new descriptors to fetch.  (Only
+ 		 * applicable for weak-ordered memory model archs,
+@@ -2098,7 +2097,6 @@ static inline void i40evf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 		wmb();
+ 		writel(i, tx_ring->tail);
+ 	}
+-
+ 	return;
+ 
+ dma_error:
+-- 
+2.4.11
 
