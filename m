@@ -1,158 +1,142 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Wed,  3 Aug 2016 11:02:36 -0700
-Subject: [Intel-wired-lan] [next PATCH S41 2/5] i40evf: report link speed
+Date: Wed,  3 Aug 2016 11:02:38 -0700
+Subject: [Intel-wired-lan] [next PATCH S41 4/5] i40e: Add support for ARP NS
+	in X722
 In-Reply-To: <1470247359-31334-1-git-send-email-bimmy.pujari@intel.com>
 References: <1470247359-31334-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1470247359-31334-3-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1470247359-31334-5-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+From: Carolyn Wyborny <carolyn.wyborny@intel.com>
 
-The PF driver tells us the link speed, so do something with that
-information. Add link speed to log messages, and report speed through
-ethtool.
+This patch adds support and interface for supporting ARP NS
+proxy offload in firmware for X722.
 
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Change-Id: I279dc9540cc5203376406050a3e8d67e128d5882
+Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
+Change-ID: Ic7489fbcbe2195df7be62ff5e359201b827cefe6
 ---
-Testing Hints : Test reporting of link up/down and
-various speeds.
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  | 38 ++++++++++++----------
+ .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    | 38 ++++++++++++----------
+ 2 files changed, 42 insertions(+), 34 deletions(-)
 
- drivers/net/ethernet/intel/i40evf/i40evf.h         |  1 +
- drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 26 ++++++++--
- .../net/ethernet/intel/i40evf/i40evf_virtchnl.c    | 55 ++++++++++++++++++----
- 3 files changed, 70 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
-index 2ef12a0..be1ca4c 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
-@@ -251,6 +251,7 @@ struct i40evf_adapter {
- 	struct work_struct watchdog_task;
- 	bool netdev_registered;
- 	bool link_up;
-+	enum i40e_aq_link_speed link_speed;
- 	enum i40e_virtchnl_ops current_op;
- #define CLIENT_ENABLED(_a) ((_a)->vf_res ? \
- 			    (_a)->vf_res->vf_offload_flags & \
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-index c6bd659..daae492 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
-@@ -74,13 +74,33 @@ static const struct i40evf_stats i40evf_gstrings_stats[] = {
- static int i40evf_get_settings(struct net_device *netdev,
- 			       struct ethtool_cmd *ecmd)
- {
--	/* In the future the VF will be able to query the PF for
--	 * some information - for now use a dummy value
--	 */
-+	struct i40evf_adapter *adapter = netdev_priv(netdev);
-+
- 	ecmd->supported = 0;
- 	ecmd->autoneg = AUTONEG_DISABLE;
- 	ecmd->transceiver = XCVR_DUMMY1;
- 	ecmd->port = PORT_NONE;
-+	/* Set speed and duplex */
-+	switch (adapter->link_speed) {
-+	case I40E_LINK_SPEED_40GB:
-+		ethtool_cmd_speed_set(ecmd, SPEED_40000);
-+		break;
-+	case I40E_LINK_SPEED_20GB:
-+		ethtool_cmd_speed_set(ecmd, SPEED_20000);
-+		break;
-+	case I40E_LINK_SPEED_10GB:
-+		ethtool_cmd_speed_set(ecmd, SPEED_10000);
-+		break;
-+	case I40E_LINK_SPEED_1GB:
-+		ethtool_cmd_speed_set(ecmd, SPEED_1000);
-+		break;
-+	case I40E_LINK_SPEED_100MB:
-+		ethtool_cmd_speed_set(ecmd, SPEED_100);
-+		break;
-+	default:
-+		break;
-+	}
-+	ecmd->duplex = DUPLEX_FULL;
- 
- 	return 0;
- }
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-index d76c221..cc6cb30 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
-@@ -817,6 +817,45 @@ void i40evf_set_rss_lut(struct i40evf_adapter *adapter)
- }
- 
- /**
-+ * i40evf_print_link_message - print link up or down
-+ * @adapter: adapter structure
-+ *
-+ * Log a message telling the world of our wonderous link status
-+ */
-+static void i40evf_print_link_message(struct i40evf_adapter *adapter)
-+{
-+	struct net_device *netdev = adapter->netdev;
-+	char *speed = "Unknown ";
-+
-+	if (!adapter->link_up) {
-+		netdev_info(netdev, "NIC Link is Down\n");
-+		return;
-+	}
-+
-+	switch (adapter->link_speed) {
-+	case I40E_LINK_SPEED_40GB:
-+		speed = "40 G";
-+		break;
-+	case I40E_LINK_SPEED_20GB:
-+		speed = "20 G";
-+		break;
-+	case I40E_LINK_SPEED_10GB:
-+		speed = "10 G";
-+		break;
-+	case I40E_LINK_SPEED_1GB:
-+		speed = "1000 M";
-+		break;
-+	case I40E_LINK_SPEED_100MB:
-+		speed = "100 M";
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	netdev_info(netdev, "NIC Link is Up %sbps Full Duplex\n", speed);
-+}
-+
-+/**
-  * i40evf_request_reset
-  * @adapter: adapter structure
-  *
-@@ -853,15 +892,13 @@ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
- 			(struct i40e_virtchnl_pf_event *)msg;
- 		switch (vpe->event) {
- 		case I40E_VIRTCHNL_EVENT_LINK_CHANGE:
--			adapter->link_up =
--				vpe->event_data.link_event.link_status;
--			if (adapter->link_up && !netif_carrier_ok(netdev)) {
--				dev_info(&adapter->pdev->dev, "NIC Link is Up\n");
--				netif_carrier_on(netdev);
--				netif_tx_wake_all_queues(netdev);
--			} else if (!adapter->link_up) {
--				dev_info(&adapter->pdev->dev, "NIC Link is Down\n");
--				netif_carrier_off(netdev);
-+			adapter->link_speed =
-+				vpe->event_data.link_event.link_speed;
-+			if (adapter->link_up !=
-+			    vpe->event_data.link_event.link_status) {
-+				adapter->link_up =
-+					vpe->event_data.link_event.link_status;
-+				i40evf_print_link_message(adapter);
- 				netif_tx_stop_all_queues(netdev);
- 			}
- 			break;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+index aabacc3..736c3ab 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+@@ -455,13 +455,15 @@ I40E_CHECK_CMD_LENGTH(i40e_aqc_cppm_configuration);
+ /* Set ARP Proxy command / response (indirect 0x0104) */
+ struct i40e_aqc_arp_proxy_data {
+ 	__le16	command_flags;
+-#define I40E_AQ_ARP_INIT_IPV4	0x0008
+-#define I40E_AQ_ARP_UNSUP_CTL	0x0010
+-#define I40E_AQ_ARP_ENA		0x0020
+-#define I40E_AQ_ARP_ADD_IPV4	0x0040
+-#define I40E_AQ_ARP_DEL_IPV4	0x0080
++#define I40E_AQ_ARP_INIT_IPV4	0x0800
++#define I40E_AQ_ARP_UNSUP_CTL	0x1000
++#define I40E_AQ_ARP_ENA		0x2000
++#define I40E_AQ_ARP_ADD_IPV4	0x4000
++#define I40E_AQ_ARP_DEL_IPV4	0x8000
+ 	__le16	table_id;
+-	__le32	pfpm_proxyfc;
++	__le32	enabled_offloads;
++#define I40E_AQ_ARP_DIRECTED_OFFLOAD_ENABLE	0x00000020
++#define I40E_AQ_ARP_OFFLOAD_ENABLE		0x00000800
+ 	__le32	ip_addr;
+ 	u8	mac_addr[6];
+ 	u8	reserved[2];
+@@ -476,17 +478,19 @@ struct i40e_aqc_ns_proxy_data {
+ 	__le16	table_idx_ipv6_0;
+ 	__le16	table_idx_ipv6_1;
+ 	__le16	control;
+-#define I40E_AQ_NS_PROXY_ADD_0		0x0100
+-#define I40E_AQ_NS_PROXY_DEL_0		0x0200
+-#define I40E_AQ_NS_PROXY_ADD_1		0x0400
+-#define I40E_AQ_NS_PROXY_DEL_1		0x0800
+-#define I40E_AQ_NS_PROXY_ADD_IPV6_0	0x1000
+-#define I40E_AQ_NS_PROXY_DEL_IPV6_0	0x2000
+-#define I40E_AQ_NS_PROXY_ADD_IPV6_1	0x4000
+-#define I40E_AQ_NS_PROXY_DEL_IPV6_1	0x8000
+-#define I40E_AQ_NS_PROXY_COMMAND_SEQ	0x0001
+-#define I40E_AQ_NS_PROXY_INIT_IPV6_TBL	0x0002
+-#define I40E_AQ_NS_PROXY_INIT_MAC_TBL	0x0004
++#define I40E_AQ_NS_PROXY_ADD_0		0x0001
++#define I40E_AQ_NS_PROXY_DEL_0		0x0002
++#define I40E_AQ_NS_PROXY_ADD_1		0x0004
++#define I40E_AQ_NS_PROXY_DEL_1		0x0008
++#define I40E_AQ_NS_PROXY_ADD_IPV6_0	0x0010
++#define I40E_AQ_NS_PROXY_DEL_IPV6_0	0x0020
++#define I40E_AQ_NS_PROXY_ADD_IPV6_1	0x0040
++#define I40E_AQ_NS_PROXY_DEL_IPV6_1	0x0080
++#define I40E_AQ_NS_PROXY_COMMAND_SEQ	0x0100
++#define I40E_AQ_NS_PROXY_INIT_IPV6_TBL	0x0200
++#define I40E_AQ_NS_PROXY_INIT_MAC_TBL	0x0400
++#define I40E_AQ_NS_PROXY_OFFLOAD_ENABLE	0x0800
++#define I40E_AQ_NS_PROXY_DIRECTED_OFFLOAD_ENABLE	0x1000
+ 	u8	mac_addr_0[6];
+ 	u8	mac_addr_1[6];
+ 	u8	local_mac_addr[6];
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+index c07e3a3..0c099df 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+@@ -452,13 +452,15 @@ I40E_CHECK_CMD_LENGTH(i40e_aqc_cppm_configuration);
+ /* Set ARP Proxy command / response (indirect 0x0104) */
+ struct i40e_aqc_arp_proxy_data {
+ 	__le16	command_flags;
+-#define I40E_AQ_ARP_INIT_IPV4	0x0008
+-#define I40E_AQ_ARP_UNSUP_CTL	0x0010
+-#define I40E_AQ_ARP_ENA		0x0020
+-#define I40E_AQ_ARP_ADD_IPV4	0x0040
+-#define I40E_AQ_ARP_DEL_IPV4	0x0080
++#define I40E_AQ_ARP_INIT_IPV4	0x0800
++#define I40E_AQ_ARP_UNSUP_CTL	0x1000
++#define I40E_AQ_ARP_ENA		0x2000
++#define I40E_AQ_ARP_ADD_IPV4	0x4000
++#define I40E_AQ_ARP_DEL_IPV4	0x8000
+ 	__le16	table_id;
+-	__le32	pfpm_proxyfc;
++	__le32	enabled_offloads;
++#define I40E_AQ_ARP_DIRECTED_OFFLOAD_ENABLE	0x00000020
++#define I40E_AQ_ARP_OFFLOAD_ENABLE		0x00000800
+ 	__le32	ip_addr;
+ 	u8	mac_addr[6];
+ 	u8	reserved[2];
+@@ -473,17 +475,19 @@ struct i40e_aqc_ns_proxy_data {
+ 	__le16	table_idx_ipv6_0;
+ 	__le16	table_idx_ipv6_1;
+ 	__le16	control;
+-#define I40E_AQ_NS_PROXY_ADD_0		0x0100
+-#define I40E_AQ_NS_PROXY_DEL_0		0x0200
+-#define I40E_AQ_NS_PROXY_ADD_1		0x0400
+-#define I40E_AQ_NS_PROXY_DEL_1		0x0800
+-#define I40E_AQ_NS_PROXY_ADD_IPV6_0	0x1000
+-#define I40E_AQ_NS_PROXY_DEL_IPV6_0	0x2000
+-#define I40E_AQ_NS_PROXY_ADD_IPV6_1	0x4000
+-#define I40E_AQ_NS_PROXY_DEL_IPV6_1	0x8000
+-#define I40E_AQ_NS_PROXY_COMMAND_SEQ	0x0001
+-#define I40E_AQ_NS_PROXY_INIT_IPV6_TBL	0x0002
+-#define I40E_AQ_NS_PROXY_INIT_MAC_TBL	0x0004
++#define I40E_AQ_NS_PROXY_ADD_0		0x0001
++#define I40E_AQ_NS_PROXY_DEL_0		0x0002
++#define I40E_AQ_NS_PROXY_ADD_1		0x0004
++#define I40E_AQ_NS_PROXY_DEL_1		0x0008
++#define I40E_AQ_NS_PROXY_ADD_IPV6_0	0x0010
++#define I40E_AQ_NS_PROXY_DEL_IPV6_0	0x0020
++#define I40E_AQ_NS_PROXY_ADD_IPV6_1	0x0040
++#define I40E_AQ_NS_PROXY_DEL_IPV6_1	0x0080
++#define I40E_AQ_NS_PROXY_COMMAND_SEQ	0x0100
++#define I40E_AQ_NS_PROXY_INIT_IPV6_TBL	0x0200
++#define I40E_AQ_NS_PROXY_INIT_MAC_TBL	0x0400
++#define I40E_AQ_NS_PROXY_OFFLOAD_ENABLE	0x0800
++#define I40E_AQ_NS_PROXY_DIRECTED_OFFLOAD_ENABLE	0x1000
+ 	u8	mac_addr_0[6];
+ 	u8	mac_addr_1[6];
+ 	u8	local_mac_addr[6];
 -- 
 2.4.11
 
