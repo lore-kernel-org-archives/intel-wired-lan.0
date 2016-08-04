@@ -1,61 +1,65 @@
-From: Pujari, Bimmy <bimmy.pujari@intel.com>
-Date: Wed, 3 Aug 2016 22:18:32 +0000
-Subject: [Intel-wired-lan] [next PATCH S41 4/5] i40e: Add support for
- ARP NS in X722
-In-Reply-To: <9BBC4E0CF881AA4299206E2E1412B6265024985B@ORSMSX102.amr.corp.intel.com>
-References: <1470244815-31174-1-git-send-email-bimmy.pujari@intel.com>
- <1470244815-31174-5-git-send-email-bimmy.pujari@intel.com>
- <754e82ce-75df-56f1-3fdd-d74631d36b5c@onemain.com>
- <9BBC4E0CF881AA4299206E2E1412B6265024985B@ORSMSX102.amr.corp.intel.com>
-Message-ID: <B759292EEECB5C46AEDF3EC46470BC94AAF62A@ORSMSX102.amr.corp.intel.com>
+From: Raanan Avargil <raanan.avargil@intel.com>
+Date: Thu, 4 Aug 2016 19:18:08 +0300
+Subject: [Intel-wired-lan] e1000e: PHY cann't be initialized correctly
+ on some I218 controllers
+In-Reply-To: <579F407E.9090602@compulab.co.il>
+References: <579F407E.9090602@compulab.co.il>
+Message-ID: <1e8f37ec-eda4-eb2d-64d2-e96a7aa71902@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Changed patch title & description.
 
-Thanks
-bimmy
 
------Original Message-----
-From: Wyborny, Carolyn 
-Sent: Wednesday, August 3, 2016 1:09 PM
-To: Shannon Nelson <sln@onemain.com>; Pujari, Bimmy <bimmy.pujari@intel.com>; intel-wired-lan at lists.osuosl.org
-Subject: RE: [Intel-wired-lan] [next PATCH S41 4/5] i40e: Add support for ARP NS in X722
+On 8/1/2016 15:28, Denis Turischev wrote:
+> There is an error "e1000e: probe of 0000:00:19.0 failed with error -3"
+> that can be observed after power-on on some I218 controllers.
+> Hardware reset and re-initialization fixes the issue.
+>
+> Signed-off-by: Denis Turischev <denis.turischev@compulab.co.il>
+>
+> diff -Nru linux-4.7.orig/drivers/net/ethernet/intel/e1000e/ich8lan.c linux-4.7/drivers/net/ethernet/intel/e1000e/ich8lan.c
+> --- linux-4.7.orig/drivers/net/ethernet/intel/e1000e/ich8lan.c	2016-07-24 22:23:50.000000000 +0300
+> +++ linux-4.7/drivers/net/ethernet/intel/e1000e/ich8lan.c	2016-08-01 13:59:08.046563095 +0300
+> @@ -155,6 +155,7 @@
+>   static s32 e1000_disable_ulp_lpt_lp(struct e1000_hw *hw, bool force);
+>   static s32 e1000_setup_copper_link_pch_lpt(struct e1000_hw *hw);
+>   static s32 e1000_oem_bits_config_ich8lan(struct e1000_hw *hw, bool d0_state);
+> +static s32 e1000_reset_hw_ich8lan(struct e1000_hw *hw);
+>   
+>   static inline u16 __er16flash(struct e1000_hw *hw, unsigned long reg)
+>   {
+> @@ -459,8 +460,12 @@
+>   	phy->id = e1000_phy_unknown;
+>   
+>   	ret_val = e1000_init_phy_workarounds_pchlan(hw);
+> -	if (ret_val)
+> -		return ret_val;
+> +	if (ret_val) {
+> +		e1000_reset_hw_ich8lan(hw);
+> +		ret_val = e1000_init_phy_workarounds_pchlan(hw);
+> +		if (ret_val)
+> +			return ret_val;
+> +	}
+>   
+>   	if (phy->id == e1000_phy_unknown)
+>   		switch (hw->mac.type) {
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at lists.osuosl.org
+> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+>
 
-> -----Original Message-----
-> From: Intel-wired-lan 
-> [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Shannon 
-> Nelson
-> Sent: Wednesday, August 03, 2016 11:12 AM
-> To: Pujari, Bimmy <bimmy.pujari@intel.com>; 
-> intel-wired-lan at lists.osuosl.org
-> Subject: Re: [Intel-wired-lan] [next PATCH S41 4/5] i40e: Add support 
-> for ARP NS in X722
-> 
-> 
-> 
-> On 08/03/2016 10:20 AM, Bimmy Pujari wrote:
-> > From: Carolyn Wyborny <carolyn.wyborny@intel.com>
-> >
-> > This patch adds support and interface for supporting ARP NS proxy 
-> > offload in firmware for X722.
-> 
-> This looks like it fixes a byte order issue rather than adding new support.
-> sln
-> 
-Thanks, you are correct.  I missed that distinction when I split it up initially.  
+It is hard to determine what is exactly the problem here and what causes 
+the -3 error, but this is not the place to perform hw reset and retry to 
+init the phy.
+---------------------------------------------------------------------
+Intel Israel (74) Limited
 
-Bimmy, can we respin this patch with the following title and description instead:
-
-I40e: Fix byte ordering in ARP NS code for X722
-
-This patch fixes byte ordering problems found when enabling this feature support.  Without this patch, the feature will not work correctly.  This patch fixes the definitions to have the correct byte order.
-
-Thanks,
-
-Carolyn
-
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
