@@ -1,65 +1,35 @@
-From: Raanan Avargil <raanan.avargil@intel.com>
-Date: Thu, 4 Aug 2016 19:18:08 +0300
-Subject: [Intel-wired-lan] e1000e: PHY cann't be initialized correctly
- on some I218 controllers
-In-Reply-To: <579F407E.9090602@compulab.co.il>
-References: <579F407E.9090602@compulab.co.il>
-Message-ID: <1e8f37ec-eda4-eb2d-64d2-e96a7aa71902@intel.com>
+From: Sridhar Samudrala <sridhar.samudrala@intel.com>
+Date: Thu,  4 Aug 2016 18:45:47 +0200
+Subject: [Intel-wired-lan] [next PATCH] i40e: Expose 'trust' flag to
+	userspace via ndo_get_vf_config.
+Message-ID: <1470329147-25005-1-git-send-email-sridhar.samudrala@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+This enables
+	ip -d l
+to indicate if trust is on or off for VFs.
 
+Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-On 8/1/2016 15:28, Denis Turischev wrote:
-> There is an error "e1000e: probe of 0000:00:19.0 failed with error -3"
-> that can be observed after power-on on some I218 controllers.
-> Hardware reset and re-initialization fixes the issue.
->
-> Signed-off-by: Denis Turischev <denis.turischev@compulab.co.il>
->
-> diff -Nru linux-4.7.orig/drivers/net/ethernet/intel/e1000e/ich8lan.c linux-4.7/drivers/net/ethernet/intel/e1000e/ich8lan.c
-> --- linux-4.7.orig/drivers/net/ethernet/intel/e1000e/ich8lan.c	2016-07-24 22:23:50.000000000 +0300
-> +++ linux-4.7/drivers/net/ethernet/intel/e1000e/ich8lan.c	2016-08-01 13:59:08.046563095 +0300
-> @@ -155,6 +155,7 @@
->   static s32 e1000_disable_ulp_lpt_lp(struct e1000_hw *hw, bool force);
->   static s32 e1000_setup_copper_link_pch_lpt(struct e1000_hw *hw);
->   static s32 e1000_oem_bits_config_ich8lan(struct e1000_hw *hw, bool d0_state);
-> +static s32 e1000_reset_hw_ich8lan(struct e1000_hw *hw);
->   
->   static inline u16 __er16flash(struct e1000_hw *hw, unsigned long reg)
->   {
-> @@ -459,8 +460,12 @@
->   	phy->id = e1000_phy_unknown;
->   
->   	ret_val = e1000_init_phy_workarounds_pchlan(hw);
-> -	if (ret_val)
-> -		return ret_val;
-> +	if (ret_val) {
-> +		e1000_reset_hw_ich8lan(hw);
-> +		ret_val = e1000_init_phy_workarounds_pchlan(hw);
-> +		if (ret_val)
-> +			return ret_val;
-> +	}
->   
->   	if (phy->id == e1000_phy_unknown)
->   		switch (hw->mac.type) {
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at lists.osuosl.org
-> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
->
-
-It is hard to determine what is exactly the problem here and what causes 
-the -3 error, but this is not the place to perform hw reset and retry to 
-init the phy.
----------------------------------------------------------------------
-Intel Israel (74) Limited
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 6fcbf76..4bd66d7 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -2995,6 +2995,7 @@ int i40e_ndo_get_vf_config(struct net_device *netdev,
+ 	else
+ 		ivi->linkstate = IFLA_VF_LINK_STATE_DISABLE;
+ 	ivi->spoofchk = vf->spoofchk;
++	ivi->trusted = vf->trusted;
+ 	ret = 0;
+ 
+ error_param:
+-- 
+2.5.5
 
