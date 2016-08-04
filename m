@@ -1,141 +1,97 @@
-From: Sridhar Samudrala <sridhar.samudrala@intel.com>
-Date: Thu,  4 Aug 2016 18:49:45 +0200
-Subject: [Intel-wired-lan] [next PATCH 3/5] i40e: Enable VF specific ethtool
-	statistics via VF representor netdevs.
-In-Reply-To: <1470329387-25138-1-git-send-email-sridhar.samudrala@intel.com>
-References: <1470329387-25138-1-git-send-email-sridhar.samudrala@intel.com>
-Message-ID: <1470329387-25138-3-git-send-email-sridhar.samudrala@intel.com>
+From: Wyborny, Carolyn <carolyn.wyborny@intel.com>
+Date: Thu, 4 Aug 2016 18:04:09 +0000
+Subject: [Intel-wired-lan] [next PATCH S41 3/5] i40e: Add support for
+ HMC resource and profile for X722
+In-Reply-To: <9ec72b71-66c8-7c54-457f-c09e409fc540@onemain.com>
+References: <1470244815-31174-1-git-send-email-bimmy.pujari@intel.com>
+ <1470244815-31174-4-git-send-email-bimmy.pujari@intel.com>
+ <9ec72b71-66c8-7c54-457f-c09e409fc540@onemain.com>
+Message-ID: <9BBC4E0CF881AA4299206E2E1412B6265024B983@ORSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Sample script that shows ethtool stats on VF representor netdev
-PF: enp5s0f0, VF0: enp5s2  VF_REP0: enp5s0f0-vf0
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Shannon Nelson
+> Sent: Wednesday, August 03, 2016 11:10 AM
+> To: Pujari, Bimmy <bimmy.pujari@intel.com>; intel-wired-lan at lists.osuosl.org
+> Subject: Re: [Intel-wired-lan] [next PATCH S41 3/5] i40e: Add support for HMC
+> resource and profile for X722
+> 
+> 
+> 
+> On 08/03/2016 10:20 AM, Bimmy Pujari wrote:
+> > From: Carolyn Wyborny <carolyn.wyborny@intel.com>
+> >
+> > This patch adds support for HMC resource and profile cmds for X722
+> > firmware.
+> >
+> > Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
+> > Change-ID: Icc332101f38ab15d1bfa167823100eb4f6822f7e
+> > ---
+> >   drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  | 23
+> ++++++++++++++++++++++
+> >   .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    | 23
+> ++++++++++++++++++++++
+> >   2 files changed, 46 insertions(+)
+> >
+> > diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+> b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+> > index 11cf1a5..aabacc3 100644
+> > --- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+> > +++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+> > @@ -204,6 +204,11 @@ enum i40e_admin_queue_opc {
+> >   	i40e_aqc_opc_suspend_port_tx				= 0x041B,
+> >   	i40e_aqc_opc_resume_port_tx				= 0x041C,
+> >   	i40e_aqc_opc_configure_partition_bw			= 0x041D,
+> > +	/* hmc */
+> > +	i40e_aqc_opc_query_hmc_resource_profile	= 0x0500,
+> > +	i40e_aqc_opc_set_hmc_resource_profile	= 0x0501,
+> 
+> Hmmm - I see these already in the 4.5 kernel source I have lying around,
+> are you sure you need this patch?
+[CMW] thanks for the offline research Shannon, this was removed and now its coming back for X722.
 
-   # devlink dev set pci/0000:05:00.0 smode switchdev
-   # echo 2 > /sys/class/net/enp5s0f0/device/sriov_numvfs
-   # ip link set enp5s2 up
-   # ethtool -S enp5s0f0-vf0
-   NIC statistics:
-     rx_bytes: 0
-     rx_unicast: 0
-     rx_multicast: 0
-     rx_broadcast: 0
-     rx_discards: 0
-     rx_unknown_protocol: 0
-     tx_bytes: 140
-     tx_unicast: 0
-     tx_multicast: 2
-     tx_broadcast: 0
-     tx_discards: 0
-     tx_errors: 0
+> 
+> > +
+> > +	/* phy commands*/
+> 
+> This comment is already here
+[CMW] Will fix.  
+> 
+> >
+> >   	/* phy commands*/
+> >   	i40e_aqc_opc_get_phy_abilities		= 0x0600,
+> > @@ -1582,6 +1587,24 @@ struct i40e_aqc_configure_partition_bw_data {
+> >
+> >   I40E_CHECK_STRUCT_LEN(0x22, i40e_aqc_configure_partition_bw_data);
+> >
+> > +/* Get and set the active HMC resource profile and status.
+> > + * (direct 0x0500) and (direct 0x0501)
+> > + */
+> > +struct i40e_aq_get_set_hmc_resource_profile {
+> > +	u8	pm_profile;
+> > +	u8	pe_vf_enabled;
+> > +	u8	reserved[14];
+> > +};
+> > +
+> > +I40E_CHECK_CMD_LENGTH(i40e_aq_get_set_hmc_resource_profile);
+> > +
+> > +enum i40e_aq_hmc_profile {
+> > +	/* I40E_HMC_PROFILE_NO_CHANGE	= 0, reserved */
+> > +	I40E_HMC_PROFILE_DEFAULT	= 1,
+> > +	I40E_HMC_PROFILE_FAVOR_VF	= 2,
+> > +	I40E_HMC_PROFILE_EQUAL		= 3,
+> > +};
+> > +
+> 
+> Yep, these are already there as well.
+[CMW] Same story as above.  They were removed and are now coming back. 
+> sln
 
-Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e.h             |  1 +
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 67 ++++++++++++++++++++++
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  1 +
- 3 files changed, 69 insertions(+)
+Thanks,
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 724bd82..2d35c0d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -875,4 +875,5 @@ i40e_status i40e_get_npar_bw_setting(struct i40e_pf *pf);
- i40e_status i40e_set_npar_bw_setting(struct i40e_pf *pf);
- i40e_status i40e_commit_npar_bw_setting(struct i40e_pf *pf);
- void i40e_print_link_message(struct i40e_vsi *vsi, bool isup);
-+void i40e_set_vf_netdev_ethtool_ops(struct net_device *netdev);
- #endif /* _I40E_H_ */
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index c912e04..0c3bffa 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -3040,3 +3040,70 @@ void i40e_set_ethtool_ops(struct net_device *netdev)
- {
- 	netdev->ethtool_ops = &i40e_ethtool_ops;
- }
-+
-+static const char i40e_vf_netdev_ethtool_sset[][ETH_GSTRING_LEN] = {
-+	"rx_bytes",
-+	"rx_unicast",
-+	"rx_multicast",
-+	"rx_broadcast",
-+	"rx_discards",
-+	"rx_unknown_protocol",
-+	"tx_bytes",
-+	"tx_unicast",
-+	"tx_multicast",
-+	"tx_broadcast",
-+	"tx_discards",
-+	"tx_errors",
-+};
-+
-+#define I40E_VF_NETDEV_ETHTOOL_STAT_COUNT \
-+			ARRAY_SIZE(i40e_vf_netdev_ethtool_sset)
-+
-+static void i40e_vf_netdev_ethtool_get_strings(struct net_device *dev,
-+					       u32 stringset,
-+					       u8 *ethtool_strings)
-+{
-+	switch (stringset) {
-+	case ETH_SS_STATS:
-+		memcpy(ethtool_strings, &i40e_vf_netdev_ethtool_sset,
-+		       sizeof(i40e_vf_netdev_ethtool_sset));
-+		break;
-+	}
-+}
-+
-+static int i40e_vf_netdev_ethtool_get_sset_count(struct net_device *dev,
-+						 int stringset)
-+{
-+	switch (stringset) {
-+	case ETH_SS_STATS:
-+		return I40E_VF_NETDEV_ETHTOOL_STAT_COUNT;
-+	default:
-+		return -EOPNOTSUPP;
-+	}
-+}
-+
-+static void i40e_vf_netdev_ethtool_get_stats(struct net_device *dev,
-+				struct ethtool_stats *target_ethtool_stats,
-+				u64 *target_stat_values)
-+{
-+	struct i40e_vf_netdev_priv *priv = netdev_priv(dev);
-+	struct i40e_vf *vf = priv->vf;
-+	struct i40e_pf *pf = vf->pf;
-+	struct i40e_vsi *vsi;
-+
-+	vsi = pf->vsi[vf->lan_vsi_idx];
-+	i40e_update_stats(vsi);
-+	memcpy(target_stat_values, &vsi->eth_stats,
-+	       I40E_VF_NETDEV_ETHTOOL_STAT_COUNT * 8);
-+}
-+
-+static const struct ethtool_ops i40e_vf_netdev_ethtool_ops = {
-+	.get_strings		= i40e_vf_netdev_ethtool_get_strings,
-+	.get_ethtool_stats      = i40e_vf_netdev_ethtool_get_stats,
-+	.get_sset_count         = i40e_vf_netdev_ethtool_get_sset_count,
-+};
-+
-+void i40e_set_vf_netdev_ethtool_ops(struct net_device *netdev)
-+{
-+	netdev->ethtool_ops = &i40e_vf_netdev_ethtool_ops;
-+}
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index d41c37c..313a53c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1046,6 +1046,7 @@ int i40e_alloc_vf_netdev(struct i40e_vf *vf, u16 vf_num)
- 	priv->vf = &(pf->vf[vf_num]);
- 
- 	netdev->netdev_ops = &i40e_vf_netdev_ops;
-+	i40e_set_vf_netdev_ethtool_ops(netdev);
- 
- 	netif_carrier_off(netdev);
- 	netif_tx_disable(netdev);
--- 
-2.5.5
-
+Carolyn
