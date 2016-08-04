@@ -1,10 +1,10 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Thu,  4 Aug 2016 11:37:03 -0700
-Subject: [Intel-wired-lan] [next PATCH S41-V2 3/5] i40e: refactor tail_bump
-	check
+Date: Thu,  4 Aug 2016 11:37:04 -0700
+Subject: [Intel-wired-lan] [next PATCH S41-V2 4/5] i40e: Fix byte ordering
+	in ARP NS code for X722
 In-Reply-To: <1470335825-15534-1-git-send-email-bimmy.pujari@intel.com>
 References: <1470335825-15534-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1470335825-15534-4-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1470335825-15534-5-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,65 +13,131 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Carolyn Wyborny <carolyn.wyborny@intel.com>
 
-This patch refactors tail bump check.
+This patch fixes byte ordering problems found when enabling this feature
+support. Without this patch, the feature will not work correctly. This
+patch fixes the definitions to have the correct byte order.
 
 Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
-Change-ID: Ide0e19171d67d90cb2b06b8dcd4fa791ae120160
+Change-ID: Ic7489fbcbe2195df7be62ff5e359201b827cefe6
 ---
- drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 6 ++----
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 6 ++----
- 2 files changed, 4 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h  | 38 ++++++++++++----------
+ .../net/ethernet/intel/i40evf/i40e_adminq_cmd.h    | 38 ++++++++++++----------
+ 2 files changed, 42 insertions(+), 34 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 5eb9ff2..266608a 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -2849,10 +2849,9 @@ static inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 						  I40E_TXD_QW1_CMD_SHIFT);
- 
- 	/* notify HW of packet */
--	if (!tail_bump)
-+	if (!tail_bump) {
- 		prefetchw(tx_desc + 1);
--
--	if (tail_bump) {
-+	} else {
- 		/* Force memory writes to complete before letting h/w
- 		 * know there are new descriptors to fetch.  (Only
- 		 * applicable for weak-ordered memory model archs,
-@@ -2861,7 +2860,6 @@ static inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 		wmb();
- 		writel(i, tx_ring->tail);
- 	}
--
- 	return;
- 
- dma_error:
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-index 5968cc6..f3eb76f 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
-@@ -2086,10 +2086,9 @@ static inline void i40evf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 						  I40E_TXD_QW1_CMD_SHIFT);
- 
- 	/* notify HW of packet */
--	if (!tail_bump)
-+	if (!tail_bump) {
- 		prefetchw(tx_desc + 1);
--
--	if (tail_bump) {
-+	} else {
- 		/* Force memory writes to complete before letting h/w
- 		 * know there are new descriptors to fetch.  (Only
- 		 * applicable for weak-ordered memory model archs,
-@@ -2098,7 +2097,6 @@ static inline void i40evf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
- 		wmb();
- 		writel(i, tx_ring->tail);
- 	}
--
- 	return;
- 
- dma_error:
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+index 11cf1a5..5c4bf76 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
+@@ -450,13 +450,15 @@ I40E_CHECK_CMD_LENGTH(i40e_aqc_cppm_configuration);
+ /* Set ARP Proxy command / response (indirect 0x0104) */
+ struct i40e_aqc_arp_proxy_data {
+ 	__le16	command_flags;
+-#define I40E_AQ_ARP_INIT_IPV4	0x0008
+-#define I40E_AQ_ARP_UNSUP_CTL	0x0010
+-#define I40E_AQ_ARP_ENA		0x0020
+-#define I40E_AQ_ARP_ADD_IPV4	0x0040
+-#define I40E_AQ_ARP_DEL_IPV4	0x0080
++#define I40E_AQ_ARP_INIT_IPV4	0x0800
++#define I40E_AQ_ARP_UNSUP_CTL	0x1000
++#define I40E_AQ_ARP_ENA		0x2000
++#define I40E_AQ_ARP_ADD_IPV4	0x4000
++#define I40E_AQ_ARP_DEL_IPV4	0x8000
+ 	__le16	table_id;
+-	__le32	pfpm_proxyfc;
++	__le32	enabled_offloads;
++#define I40E_AQ_ARP_DIRECTED_OFFLOAD_ENABLE	0x00000020
++#define I40E_AQ_ARP_OFFLOAD_ENABLE		0x00000800
+ 	__le32	ip_addr;
+ 	u8	mac_addr[6];
+ 	u8	reserved[2];
+@@ -471,17 +473,19 @@ struct i40e_aqc_ns_proxy_data {
+ 	__le16	table_idx_ipv6_0;
+ 	__le16	table_idx_ipv6_1;
+ 	__le16	control;
+-#define I40E_AQ_NS_PROXY_ADD_0		0x0100
+-#define I40E_AQ_NS_PROXY_DEL_0		0x0200
+-#define I40E_AQ_NS_PROXY_ADD_1		0x0400
+-#define I40E_AQ_NS_PROXY_DEL_1		0x0800
+-#define I40E_AQ_NS_PROXY_ADD_IPV6_0	0x1000
+-#define I40E_AQ_NS_PROXY_DEL_IPV6_0	0x2000
+-#define I40E_AQ_NS_PROXY_ADD_IPV6_1	0x4000
+-#define I40E_AQ_NS_PROXY_DEL_IPV6_1	0x8000
+-#define I40E_AQ_NS_PROXY_COMMAND_SEQ	0x0001
+-#define I40E_AQ_NS_PROXY_INIT_IPV6_TBL	0x0002
+-#define I40E_AQ_NS_PROXY_INIT_MAC_TBL	0x0004
++#define I40E_AQ_NS_PROXY_ADD_0		0x0001
++#define I40E_AQ_NS_PROXY_DEL_0		0x0002
++#define I40E_AQ_NS_PROXY_ADD_1		0x0004
++#define I40E_AQ_NS_PROXY_DEL_1		0x0008
++#define I40E_AQ_NS_PROXY_ADD_IPV6_0	0x0010
++#define I40E_AQ_NS_PROXY_DEL_IPV6_0	0x0020
++#define I40E_AQ_NS_PROXY_ADD_IPV6_1	0x0040
++#define I40E_AQ_NS_PROXY_DEL_IPV6_1	0x0080
++#define I40E_AQ_NS_PROXY_COMMAND_SEQ	0x0100
++#define I40E_AQ_NS_PROXY_INIT_IPV6_TBL	0x0200
++#define I40E_AQ_NS_PROXY_INIT_MAC_TBL	0x0400
++#define I40E_AQ_NS_PROXY_OFFLOAD_ENABLE	0x0800
++#define I40E_AQ_NS_PROXY_DIRECTED_OFFLOAD_ENABLE	0x1000
+ 	u8	mac_addr_0[6];
+ 	u8	mac_addr_1[6];
+ 	u8	local_mac_addr[6];
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+index 3114dcf..0045650 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
+@@ -447,13 +447,15 @@ I40E_CHECK_CMD_LENGTH(i40e_aqc_cppm_configuration);
+ /* Set ARP Proxy command / response (indirect 0x0104) */
+ struct i40e_aqc_arp_proxy_data {
+ 	__le16	command_flags;
+-#define I40E_AQ_ARP_INIT_IPV4	0x0008
+-#define I40E_AQ_ARP_UNSUP_CTL	0x0010
+-#define I40E_AQ_ARP_ENA		0x0020
+-#define I40E_AQ_ARP_ADD_IPV4	0x0040
+-#define I40E_AQ_ARP_DEL_IPV4	0x0080
++#define I40E_AQ_ARP_INIT_IPV4	0x0800
++#define I40E_AQ_ARP_UNSUP_CTL	0x1000
++#define I40E_AQ_ARP_ENA		0x2000
++#define I40E_AQ_ARP_ADD_IPV4	0x4000
++#define I40E_AQ_ARP_DEL_IPV4	0x8000
+ 	__le16	table_id;
+-	__le32	pfpm_proxyfc;
++	__le32	enabled_offloads;
++#define I40E_AQ_ARP_DIRECTED_OFFLOAD_ENABLE	0x00000020
++#define I40E_AQ_ARP_OFFLOAD_ENABLE		0x00000800
+ 	__le32	ip_addr;
+ 	u8	mac_addr[6];
+ 	u8	reserved[2];
+@@ -468,17 +470,19 @@ struct i40e_aqc_ns_proxy_data {
+ 	__le16	table_idx_ipv6_0;
+ 	__le16	table_idx_ipv6_1;
+ 	__le16	control;
+-#define I40E_AQ_NS_PROXY_ADD_0		0x0100
+-#define I40E_AQ_NS_PROXY_DEL_0		0x0200
+-#define I40E_AQ_NS_PROXY_ADD_1		0x0400
+-#define I40E_AQ_NS_PROXY_DEL_1		0x0800
+-#define I40E_AQ_NS_PROXY_ADD_IPV6_0	0x1000
+-#define I40E_AQ_NS_PROXY_DEL_IPV6_0	0x2000
+-#define I40E_AQ_NS_PROXY_ADD_IPV6_1	0x4000
+-#define I40E_AQ_NS_PROXY_DEL_IPV6_1	0x8000
+-#define I40E_AQ_NS_PROXY_COMMAND_SEQ	0x0001
+-#define I40E_AQ_NS_PROXY_INIT_IPV6_TBL	0x0002
+-#define I40E_AQ_NS_PROXY_INIT_MAC_TBL	0x0004
++#define I40E_AQ_NS_PROXY_ADD_0		0x0001
++#define I40E_AQ_NS_PROXY_DEL_0		0x0002
++#define I40E_AQ_NS_PROXY_ADD_1		0x0004
++#define I40E_AQ_NS_PROXY_DEL_1		0x0008
++#define I40E_AQ_NS_PROXY_ADD_IPV6_0	0x0010
++#define I40E_AQ_NS_PROXY_DEL_IPV6_0	0x0020
++#define I40E_AQ_NS_PROXY_ADD_IPV6_1	0x0040
++#define I40E_AQ_NS_PROXY_DEL_IPV6_1	0x0080
++#define I40E_AQ_NS_PROXY_COMMAND_SEQ	0x0100
++#define I40E_AQ_NS_PROXY_INIT_IPV6_TBL	0x0200
++#define I40E_AQ_NS_PROXY_INIT_MAC_TBL	0x0400
++#define I40E_AQ_NS_PROXY_OFFLOAD_ENABLE	0x0800
++#define I40E_AQ_NS_PROXY_DIRECTED_OFFLOAD_ENABLE	0x1000
+ 	u8	mac_addr_0[6];
+ 	u8	mac_addr_1[6];
+ 	u8	local_mac_addr[6];
 -- 
 2.4.11
 
