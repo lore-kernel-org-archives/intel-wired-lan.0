@@ -1,106 +1,47 @@
-From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Thu,  4 Aug 2016 11:37:05 -0700
-Subject: [Intel-wired-lan] [next PATCH S41-V2 5/5] i40e: Add support for HMC
-	resource and profile for X722
-In-Reply-To: <1470335825-15534-1-git-send-email-bimmy.pujari@intel.com>
-References: <1470335825-15534-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1470335825-15534-6-git-send-email-bimmy.pujari@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Thu, 4 Aug 2016 19:30:42 +0000
+Subject: [Intel-wired-lan] [PATCH net-next v3 1/2] e1000e: factor out
+ systim	sanitization
+In-Reply-To: <1469557535-63429-2-git-send-email-jarod@redhat.com>
+References: <1469292274-59237-1-git-send-email-jarod@redhat.com>
+ <1469557535-63429-1-git-send-email-jarod@redhat.com>
+ <1469557535-63429-2-git-send-email-jarod@redhat.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81F6BB67@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Carolyn Wyborny <carolyn.wyborny@intel.com>
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Jarod Wilson
+> Sent: Tuesday, July 26, 2016 11:26 AM
+> To: linux-kernel at vger.kernel.org
+> Cc: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH net-next v3 1/2] e1000e: factor out systim
+> sanitization
+> 
+> This is prepatory work for an expanding list of adapter families that have
+> occasional ~10 hour clock jumps when being used for PTP. Factor out the
+> sanitization function and convert to using a feature (bug) flag, per
+> suggestion from Jesse Brandeburg.
+> 
+> Littering functional code with device-specific checks is much messier than
+> simply checking a flag, and having device-specific init set flags as needed.
+> There are probably a number of other cases in the e1000e code that
+> could/should be converted similarly.
+> 
+> Suggested-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> CC: Jesse Brandeburg <jesse.brandeburg@intel.com>
+> CC: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> CC: intel-wired-lan at lists.osuosl.org
+> CC: netdev at vger.kernel.org
+> Signed-off-by: Jarod Wilson <jarod@redhat.com>
+> ---
+>  drivers/net/ethernet/intel/e1000e/82571.c  |  6 ++-
+>  drivers/net/ethernet/intel/e1000e/e1000.h  |  1 +
+>  drivers/net/ethernet/intel/e1000e/netdev.c | 66 ++++++++++++++++++-------
+> -----
+>  3 files changed, 44 insertions(+), 29 deletions(-)
 
-This patch adds support for HMC resource and profile cmds for X722
-firmware.
-
-Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
-Change-ID: Icc332101f38ab15d1bfa167823100eb4f6822f7e
----
- drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h   | 21 +++++++++++++++++++++
- drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h | 21 +++++++++++++++++++++
- 2 files changed, 42 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-index 5c4bf76..67e396b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h
-@@ -204,6 +204,9 @@ enum i40e_admin_queue_opc {
- 	i40e_aqc_opc_suspend_port_tx				= 0x041B,
- 	i40e_aqc_opc_resume_port_tx				= 0x041C,
- 	i40e_aqc_opc_configure_partition_bw			= 0x041D,
-+	/* hmc */
-+	i40e_aqc_opc_query_hmc_resource_profile	= 0x0500,
-+	i40e_aqc_opc_set_hmc_resource_profile	= 0x0501,
- 
- 	/* phy commands*/
- 	i40e_aqc_opc_get_phy_abilities		= 0x0600,
-@@ -1586,6 +1589,24 @@ struct i40e_aqc_configure_partition_bw_data {
- 
- I40E_CHECK_STRUCT_LEN(0x22, i40e_aqc_configure_partition_bw_data);
- 
-+/* Get and set the active HMC resource profile and status.
-+ * (direct 0x0500) and (direct 0x0501)
-+ */
-+struct i40e_aq_get_set_hmc_resource_profile {
-+	u8	pm_profile;
-+	u8	pe_vf_enabled;
-+	u8	reserved[14];
-+};
-+
-+I40E_CHECK_CMD_LENGTH(i40e_aq_get_set_hmc_resource_profile);
-+
-+enum i40e_aq_hmc_profile {
-+	/* I40E_HMC_PROFILE_NO_CHANGE	= 0, reserved */
-+	I40E_HMC_PROFILE_DEFAULT	= 1,
-+	I40E_HMC_PROFILE_FAVOR_VF	= 2,
-+	I40E_HMC_PROFILE_EQUAL		= 3,
-+};
-+
- /* Get PHY Abilities (indirect 0x0600) uses the generic indirect struct */
- 
- /* set in param0 for get phy abilities to report qualified modules */
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-index 0045650..40b0eaf 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h
-@@ -204,6 +204,9 @@ enum i40e_admin_queue_opc {
- 	i40e_aqc_opc_suspend_port_tx				= 0x041B,
- 	i40e_aqc_opc_resume_port_tx				= 0x041C,
- 	i40e_aqc_opc_configure_partition_bw			= 0x041D,
-+	/* hmc */
-+	i40e_aqc_opc_query_hmc_resource_profile	= 0x0500,
-+	i40e_aqc_opc_set_hmc_resource_profile	= 0x0501,
- 
- 	/* phy commands*/
- 	i40e_aqc_opc_get_phy_abilities		= 0x0600,
-@@ -1583,6 +1586,24 @@ struct i40e_aqc_configure_partition_bw_data {
- 
- I40E_CHECK_STRUCT_LEN(0x22, i40e_aqc_configure_partition_bw_data);
- 
-+/* Get and set the active HMC resource profile and status.
-+ * (direct 0x0500) and (direct 0x0501)
-+ */
-+struct i40e_aq_get_set_hmc_resource_profile {
-+	u8	pm_profile;
-+	u8	pe_vf_enabled;
-+	u8	reserved[14];
-+};
-+
-+I40E_CHECK_CMD_LENGTH(i40e_aq_get_set_hmc_resource_profile);
-+
-+enum i40e_aq_hmc_profile {
-+	/* I40E_HMC_PROFILE_NO_CHANGE	= 0, reserved */
-+	I40E_HMC_PROFILE_DEFAULT	= 1,
-+	I40E_HMC_PROFILE_FAVOR_VF	= 2,
-+	I40E_HMC_PROFILE_EQUAL		= 3,
-+};
-+
- /* Get PHY Abilities (indirect 0x0600) uses the generic indirect struct */
- 
- /* set in param0 for get phy abilities to report qualified modules */
--- 
-2.4.11
-
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
