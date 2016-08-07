@@ -1,45 +1,27 @@
-From: Singhai, Anjali <anjali.singhai@intel.com>
-Date: Fri, 5 Aug 2016 20:00:28 +0000
-Subject: [Intel-wired-lan] [next PATCH] i40e: Expose 'trust' flag to
- userspace via ndo_get_vf_config.
-In-Reply-To: <1470329147-25005-1-git-send-email-sridhar.samudrala@intel.com>
-References: <1470329147-25005-1-git-send-email-sridhar.samudrala@intel.com>
-Message-ID: <C40BE8378EF49C44B9184714DBC8EF2993BC9BEB@ORSMSX115.amr.corp.intel.com>
+From: Denis Turischev <denis.turischev@compulab.co.il>
+Date: Sun, 7 Aug 2016 11:56:09 +0300
+Subject: [Intel-wired-lan] e1000e: PHY cann't be initialized correctly
+ on some I218 controllers
+In-Reply-To: <1e8f37ec-eda4-eb2d-64d2-e96a7aa71902@intel.com>
+References: <579F407E.9090602@compulab.co.il>
+ <1e8f37ec-eda4-eb2d-64d2-e96a7aa71902@intel.com>
+Message-ID: <57A6F7A9.1030401@compulab.co.il>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-ACK
+Hi Raanan,
 
------Original Message-----
-From: Samudrala, Sridhar 
-Sent: Thursday, August 4, 2016 9:46 AM
-To: intel-wired-lan@lists.osuosl.org; Singhai, Anjali <anjali.singhai@intel.com>
-Subject: [next PATCH] i40e: Expose 'trust' flag to userspace via ndo_get_vf_config.
+On 08/04/2016 07:18 PM, Raanan Avargil wrote:
+> It is hard to determine what is exactly the problem here and what causes the -3 error, but this is not the place to perform hw reset and retry to init the phy.
 
-This enables
-	ip -d l
-to indicate if trust is on or off for VFs.
+I agree that may be this is not the correct place for hw reset, can you advice about another solution?
 
-Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 1 +
- 1 file changed, 1 insertion(+)
+It works, not only for me, for example it helps here:
+http://www.linux.org.ru/forum/linux-hardware/10268216
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 6fcbf76..4bd66d7 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -2995,6 +2995,7 @@ int i40e_ndo_get_vf_config(struct net_device *netdev,
- 	else
- 		ivi->linkstate = IFLA_VF_LINK_STATE_DISABLE;
- 	ivi->spoofchk = vf->spoofchk;
-+	ivi->trusted = vf->trusted;
- 	ret = 0;
- 
- error_param:
--- 
-2.5.5
+Another fact that Windows drivers work fine with the same hw.
 
+Denis
