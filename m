@@ -1,121 +1,134 @@
-From: Jacob Keller <jacob.e.keller@intel.com>
-Date: Mon,  8 Aug 2016 17:08:19 -0700
-Subject: [Intel-wired-lan] [PATCH v2 2/2] fm10k: don't re-map queues when a
-	mailbox message suffices
-Message-ID: <20160809000819.27627-1-jacob.e.keller@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 09 Aug 2016 17:32:54 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 044a56261afcb4d59079c980c118930ebc0d1335 BUILD SUCCESS
+Message-ID: <57a9a346.n3ipdF6r39imY4ji%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-When the PF assigns a new MAC address to a VF it uses the base address
-registers to store the MAC address. This allows a VF which loads after
-this setup the ability to get the initial address without having to wait
-for a mailbox message. Unfortunately to do this, the PF must take queue
-ownership away from the VF, which can cause fault errors when there is
-already an active VF driver.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+044a56261afcb4d59079c980c118930ebc0d1335  ixgbevf: only check Tx queue enablement when debugging
 
-This queue ownership assignment causes race condition between the PF and
-the VF such that potentially a VF can cause FUM fault errors due to
-normal PF/VF driver behavior.
+elapsed time: 53m
 
-It is not safe to simply allow the PF to write the base address
-registers without taking queue ownership back as the PF must also
-disable the queues, and this would impact active VF use. The current
-code is safe because the queue ownership will prevent the VF from
-actually writing but does trigger the FUM fault.
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 112
 
-We can do better by simply avoiding the register write process when
-a mailbox message suffices. If the message can be sent over the mailbox,
-then we will not perform the queue ownership assignment and we won't
-update the base address to be the same as the MAC address.
+i386                     randconfig-a0-201632
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64       allyesdebian+CONFIG_DEBUG_INFO_REDUCED
+x86_64                                nfsroot
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x013-201632
+x86_64                 randconfig-x012-201632
+x86_64                 randconfig-x015-201632
+x86_64                 randconfig-x011-201632
+x86_64                 randconfig-x014-201632
+x86_64                 randconfig-x010-201632
+x86_64                 randconfig-x017-201632
+x86_64                 randconfig-x018-201632
+x86_64                 randconfig-x016-201632
+x86_64                 randconfig-x019-201632
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201632
+i386                     randconfig-s1-201632
+x86_64                 randconfig-s0-08091611
+x86_64                 randconfig-s1-08091611
+x86_64                 randconfig-s2-08091611
+x86_64                 randconfig-s3-08091558
+x86_64                 randconfig-s4-08091558
+x86_64                 randconfig-s5-08091558
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201632
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201632
+i386                     randconfig-i1-201632
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+x86_64                           allmodconfig
+x86_64                 randconfig-n0-08091631
+i386                   randconfig-x016-201632
+i386                   randconfig-x014-201632
+i386                   randconfig-x010-201632
+i386                   randconfig-x017-201632
+i386                   randconfig-x018-201632
+i386                   randconfig-x012-201632
+i386                   randconfig-x013-201632
+i386                   randconfig-x019-201632
+i386                   randconfig-x015-201632
+i386                   randconfig-x011-201632
+i386                     randconfig-n0-201632
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+powerpc                     akebono_defconfig
+x86_64                 randconfig-x002-201632
+x86_64                 randconfig-x008-201632
+x86_64                 randconfig-x009-201632
+x86_64                 randconfig-x007-201632
+x86_64                 randconfig-x003-201632
+x86_64                 randconfig-x004-201632
+x86_64                 randconfig-x005-201632
+x86_64                 randconfig-x000-201632
+x86_64                 randconfig-x001-201632
+x86_64                 randconfig-x006-201632
+i386                     randconfig-r0-201632
+i386                   randconfig-x002-201632
+i386                   randconfig-x009-201632
+i386                   randconfig-x006-201632
+i386                   randconfig-x001-201632
+i386                   randconfig-x003-201632
+i386                   randconfig-x008-201632
+i386                   randconfig-x007-201632
+i386                   randconfig-x000-201632
+i386                   randconfig-x005-201632
+i386                   randconfig-x004-201632
 
-We do still have to write the TXQCTL registers in order to update the
-VID of the queue. This is necessary because the TXQCTL register is
-read-only from the VF, and thus the VF cannot do this for itself. This
-register does not need to wait for the Tx queue to be disabled and is
-safe for the PF to write during normal VF operation, so we move this
-write to the top of the function above the mailbox message. Without
-this, the TXQCTL register would be misconfigured and cause the VF to Tx
-hang.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
----
- drivers/net/ethernet/intel/fm10k/fm10k_pf.c | 46 ++++++++++++++++++-----------
- 1 file changed, 29 insertions(+), 17 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-index 682299dd0ce4..23fb319fd2a0 100644
---- a/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-+++ b/drivers/net/ethernet/intel/fm10k/fm10k_pf.c
-@@ -867,10 +867,6 @@ static s32 fm10k_iov_assign_default_mac_vlan_pf(struct fm10k_hw *hw,
- 	vf_q_idx = fm10k_vf_queue_index(hw, vf_idx);
- 	qmap_idx = qmap_stride * vf_idx;
- 
--	/* MAP Tx queue back to 0 temporarily, and disable it */
--	fm10k_write_reg(hw, FM10K_TQMAP(qmap_idx), 0);
--	fm10k_write_reg(hw, FM10K_TXDCTL(vf_q_idx), 0);
--
- 	/* Determine correct default VLAN ID. The FM10K_VLAN_OVERRIDE bit is
- 	 * used here to indicate to the VF that it will not have privilege to
- 	 * write VLAN_TABLE. All policy is enforced on the PF but this allows
-@@ -886,9 +882,35 @@ static s32 fm10k_iov_assign_default_mac_vlan_pf(struct fm10k_hw *hw,
- 	fm10k_tlv_attr_put_mac_vlan(msg, FM10K_MAC_VLAN_MSG_DEFAULT_MAC,
- 				    vf_info->mac, vf_vid);
- 
--	/* load onto outgoing mailbox, ignore any errors on enqueue */
--	if (vf_info->mbx.ops.enqueue_tx)
--		vf_info->mbx.ops.enqueue_tx(hw, &vf_info->mbx, msg);
-+	/* Configure Queue control register with new VLAN ID. The TXQCTL
-+	 * register is RO from the VF, so the PF must do this even in the
-+	 * case of notifying the VF of a new VID via the mailbox.
-+	 */
-+	txqctl = ((u32)vf_vid << FM10K_TXQCTL_VID_SHIFT) &
-+		 FM10K_TXQCTL_VID_MASK;
-+	txqctl |= (vf_idx << FM10K_TXQCTL_TC_SHIFT) |
-+		  FM10K_TXQCTL_VF | vf_idx;
-+
-+	for (i = 0; i < queues_per_pool; i++)
-+		fm10k_write_reg(hw, FM10K_TXQCTL(vf_q_idx + i), txqctl);
-+
-+	/* try loading a message onto outgoing mailbox first */
-+	if (vf_info->mbx.ops.enqueue_tx) {
-+		err = vf_info->mbx.ops.enqueue_tx(hw, &vf_info->mbx, msg);
-+		if (err != FM10K_MBX_ERR_NO_MBX)
-+			return err;
-+		err = 0;
-+	}
-+
-+	/* If we aren't connected to a mailbox, this is most likely because
-+	 * the VF driver is not running. It should thus be safe to re-map
-+	 * queues and use the registers to pass the MAC address so that the VF
-+	 * driver gets correct information during its initialization.
-+	 */
-+
-+	/* MAP Tx queue back to 0 temporarily, and disable it */
-+	fm10k_write_reg(hw, FM10K_TQMAP(qmap_idx), 0);
-+	fm10k_write_reg(hw, FM10K_TXDCTL(vf_q_idx), 0);
- 
- 	/* verify ring has disabled before modifying base address registers */
- 	txdctl = fm10k_read_reg(hw, FM10K_TXDCTL(vf_q_idx));
-@@ -927,16 +949,6 @@ static s32 fm10k_iov_assign_default_mac_vlan_pf(struct fm10k_hw *hw,
- 						   FM10K_TDLEN_ITR_SCALE_SHIFT);
- 
- err_out:
--	/* configure Queue control register */
--	txqctl = ((u32)vf_vid << FM10K_TXQCTL_VID_SHIFT) &
--		 FM10K_TXQCTL_VID_MASK;
--	txqctl |= (vf_idx << FM10K_TXQCTL_TC_SHIFT) |
--		  FM10K_TXQCTL_VF | vf_idx;
--
--	/* assign VLAN ID */
--	for (i = 0; i < queues_per_pool; i++)
--		fm10k_write_reg(hw, FM10K_TXQCTL(vf_q_idx + i), txqctl);
--
- 	/* restore the queue back to VF ownership */
- 	fm10k_write_reg(hw, FM10K_TQMAP(qmap_idx), vf_q_idx);
- 	return err;
--- 
-2.9.2.701.gf965a18
-
+Thanks,
+Fengguang
