@@ -1,188 +1,61 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 10 Aug 2016 02:55:29 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
- 97e6dcec23849ce75c7b9bff0664b5497c487274 BUILD SUCCESS
-Message-ID: <57aa2721.7e80XCyv3urTqQqO%fengguang.wu@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Tue, 9 Aug 2016 18:59:04 +0000
+Subject: [Intel-wired-lan] e1000e: PHY cann't be initialized correctly
+ on some I218 controllers
+In-Reply-To: <f9d596bd-226b-0faf-bab1-858823f17ee4@intel.com>
+References: <579F407E.9090602@compulab.co.il>
+ <1e8f37ec-eda4-eb2d-64d2-e96a7aa71902@intel.com>
+ <57A6F7A9.1030401@compulab.co.il>
+ <f9d596bd-226b-0faf-bab1-858823f17ee4@intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81F70C7D@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-97e6dcec23849ce75c7b9bff0664b5497c487274  checkpatch.pl: seed camelcase from the provided kernel tree root
 
-elapsed time: 176m
 
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 166
+> -----Original Message-----
+> From: Avargil, Raanan
+> Sent: Tuesday, August 9, 2016 8:11 AM
+> To: Denis Turischev <denis.turischev@compulab.co.il>; intel-wired-
+> lan at lists.osuosl.org; Brown, Aaron F <aaron.f.brown@intel.com>; Kirsher,
+> Jeffrey T <jeffrey.t.kirsher@intel.com>
+> Cc: netdev at vger.kernel.org; linux-kernel at vger.kernel.org
+> Subject: Re: [Intel-wired-lan] e1000e: PHY cann't be initialized correctly on
+> some I218 controllers
+> 
+> 
+> 
+> On 8/7/2016 11:56, Denis Turischev wrote:
+> > Hi Raanan,
+> >
+> > On 08/04/2016 07:18 PM, Raanan Avargil wrote:
+> >> It is hard to determine what is exactly the problem here and what causes
+> the -3 error, but this is not the place to perform hw reset and retry to init the
+> phy.
+> > I agree that may be this is not the correct place for hw reset, can you advice
+> about another solution?
+> >
+> > It works, not only for me, for example it helps here:
+> > http://www.linux.org.ru/forum/linux-hardware/10268216
+> >
+> > Another fact that Windows drivers work fine with the same hw.
+> >
+> > Denis
+> >
+> 
+> Hi Denis,
+> 
+> More suitable place to retry init the device would be in probe function.
+> However, we haven't seen initialization issues like this on i218.
+> 
+> Adding Aaron.
+> 
+> @Aaron - have you seen initialization errors on i218 devices?
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201632
-x86_64                 randconfig-a0-08100141
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-v0-08092324
-x86_64                 randconfig-v0-08100030
-parisc                         b180_defconfig
-i386                             allmodconfig
-arm                         iop13xx_defconfig
-arm                       multi_v4t_defconfig
-m68k                          hp300_defconfig
-openrisc                         allmodconfig
-powerpc                 mpc8560_ads_defconfig
-arm                          pxa910_defconfig
-cris                              allnoconfig
-m68k                             allmodconfig
-mips                malta_kvm_guest_defconfig
-x86_64                 randconfig-x010-201632
-x86_64                 randconfig-x011-201632
-x86_64                 randconfig-x012-201632
-x86_64                 randconfig-x013-201632
-x86_64                 randconfig-x014-201632
-x86_64                 randconfig-x015-201632
-x86_64                 randconfig-x016-201632
-x86_64                 randconfig-x017-201632
-x86_64                 randconfig-x018-201632
-x86_64                 randconfig-x019-201632
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-x86_64                                   rhel
-x86_64                               rhel-7.2
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201632
-i386                     randconfig-s1-201632
-x86_64                 randconfig-s0-08092353
-x86_64                 randconfig-s1-08092353
-x86_64                 randconfig-s2-08092353
-x86_64                 randconfig-s0-08100126
-x86_64                 randconfig-s1-08100126
-x86_64                 randconfig-s2-08100126
-x86_64                 randconfig-s0-08100235
-x86_64                 randconfig-s1-08100235
-x86_64                 randconfig-s2-08100235
-x86_64                 randconfig-s3-08092341
-x86_64                 randconfig-s4-08092341
-x86_64                 randconfig-s5-08092341
-x86_64                 randconfig-s3-08100114
-x86_64                 randconfig-s4-08100114
-x86_64                 randconfig-s5-08100114
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201632
-avr32            atngw100_evklcd100_defconfig
-avr32                  atngw100mkii_defconfig
-avr32                     atstk1002_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201632
-i386                     randconfig-i1-201632
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-x86_64                           allmodconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-n0-08100135
-arm                          pcm027_defconfig
-ia64                              allnoconfig
-m68k                        mvme147_defconfig
-i386                   randconfig-x010-201632
-i386                   randconfig-x011-201632
-i386                   randconfig-x012-201632
-i386                   randconfig-x013-201632
-i386                   randconfig-x014-201632
-i386                   randconfig-x015-201632
-i386                   randconfig-x016-201632
-i386                   randconfig-x017-201632
-i386                   randconfig-x018-201632
-i386                   randconfig-x019-201632
-i386                     randconfig-n0-201632
-i386                   randconfig-h0-08092316
-i386                   randconfig-h1-08092316
-ia64                             alldefconfig
-ia64                                defconfig
-sparc64                          allyesconfig
-x86_64                 randconfig-n0-08092320
-x86_64                 randconfig-x000-201632
-x86_64                 randconfig-x001-201632
-x86_64                 randconfig-x002-201632
-x86_64                 randconfig-x003-201632
-x86_64                 randconfig-x004-201632
-x86_64                 randconfig-x005-201632
-x86_64                 randconfig-x006-201632
-x86_64                 randconfig-x007-201632
-x86_64                 randconfig-x008-201632
-x86_64                 randconfig-x009-201632
-i386                     randconfig-r0-201632
-i386                   randconfig-x000-201632
-i386                   randconfig-x001-201632
-i386                   randconfig-x002-201632
-i386                   randconfig-x003-201632
-i386                   randconfig-x004-201632
-i386                   randconfig-x005-201632
-i386                   randconfig-x006-201632
-i386                   randconfig-x007-201632
-i386                   randconfig-x008-201632
-i386                   randconfig-x009-201632
+I have not.  But I don't have many systems with i218 so all that means is my systems do not exhibit the problem.
 
-Thanks,
-Fengguang
+> 
+> Raanan
