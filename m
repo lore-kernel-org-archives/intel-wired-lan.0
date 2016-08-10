@@ -1,59 +1,38 @@
-From: John Fastabend <john.fastabend@gmail.com>
-Date: Wed, 10 Aug 2016 09:50:35 -0700
-Subject: [Intel-wired-lan] [next PATCH 1/5] i40e: Introduce devlink
- interface.
-In-Reply-To: <CAKgT0UeGtE2UUQWmjciz+zvLsCVPknvoUevmW6GRyDXMNCySSQ@mail.gmail.com>
-References: <1470329387-25138-1-git-send-email-sridhar.samudrala@intel.com>
- <CAKgT0UeGtE2UUQWmjciz+zvLsCVPknvoUevmW6GRyDXMNCySSQ@mail.gmail.com>
-Message-ID: <57AB5B5B.3090801@gmail.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed, 10 Aug 2016 10:50:48 -0700
+Subject: [Intel-wired-lan] [PATCH 1/1 v2] net: i10e: use matching format
+	indentifiers
+In-Reply-To: <1470161718-8824-1-git-send-email-xypron.glpk@gmx.de>
+References: <20160731.204759.1283451349474511870.davem@davemloft.net>
+ <1470161718-8824-1-git-send-email-xypron.glpk@gmx.de>
+Message-ID: <1470851448.2128.15.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 16-08-10 09:01 AM, Alexander Duyck wrote:
-> On Thu, Aug 4, 2016 at 9:49 AM, Sridhar Samudrala
-> <sridhar.samudrala@intel.com> wrote:
->> Add initial devlink support to set/get the mode of SRIOV switch.
->> This patch allows the mode to be set to either 'legacy' or 'switchdev', but
->> doesn't implement any functionality to create vf representors in switchdev
->> mode.
->>
->> With smode support in iproute2 'devlink' utility, switch mode can be set
->> and get via following commands.
->>
->>     # devlink dev smode pci/0000:05:00.0
->>     mode: legacy
->>     # devlink dev set pci/0000:05:00.0 smode switchdev
->>     # devlink dev smode pci/0000:05:00.0
->>     mode: switchdev
->>
->> Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+On Tue, 2016-08-02 at 20:15 +0200, Heinrich Schuchardt wrote:
+> i is defined as int but output as %u several times.
+> Adjust the format identifiers.
 > 
-> I really don't see much value in this patch.  If you are going to
-> support SwitchDev then just do it.  Otherwise you are adding extra
-> overhead for maintaining two different modes.
+> v2:
+> ????????Keep definition of i as int.
+> ????????David indicated that this is the preferable way to define
+> ????????loop variables.
 > 
-> I would recommend putting this series out to netdev as an RFC.
-> Submitting it to intel-wired-lan is kind of pointless as the audience
-> it to small to get any valuable review.
-> 
-> - Alex
+> Signed-off-by: Heinrich Schuchardt <xypron.glpk@gmx.de>
+> ---
+> ?drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 26 +++++++++++++-------
+> ------
+> ?1 file changed, 13 insertions(+), 13 deletions(-)
 
-I argued at length about this already. Jiri and company wanted this flag
-to push device in and out of this mode. Here we are just following the
-already upstreamed and debated decision.
-
-This is less about switchdev and more about generating VF netdevs to
-use with ip tools and friends.
-
-Another option would be to just always enable VF netdevs and have no
-legacy mode at all. I think that would be fine it just depends on if
-you think having extra netdevs around will confuse the stack at all.
-It might create a few corner cases but one reasonable thing to do
-would be to just fix those cases as they appear.
-
-Thanks,
-John
-
+your title needs fixing as well...
+s/i10e/i40e/ and s/indentifiers/identifiers/
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160810/b07485f8/attachment.asc>
