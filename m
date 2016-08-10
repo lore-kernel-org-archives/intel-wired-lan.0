@@ -1,88 +1,40 @@
-From: Neftin, Sasha <sasha.neftin@intel.com>
-Date: Wed, 10 Aug 2016 15:00:05 +0000
-Subject: [Intel-wired-lan] e1000e: PHY cann't be initialized correctly
- on some I218 controllers
-In-Reply-To: <309B89C4C689E141A5FF6A0C5FB2118B81F70C7D@ORSMSX101.amr.corp.intel.com>
-References: <579F407E.9090602@compulab.co.il>
- <1e8f37ec-eda4-eb2d-64d2-e96a7aa71902@intel.com>
- <57A6F7A9.1030401@compulab.co.il>
- <f9d596bd-226b-0faf-bab1-858823f17ee4@intel.com>
- <309B89C4C689E141A5FF6A0C5FB2118B81F70C7D@ORSMSX101.amr.corp.intel.com>
-Message-ID: <630A6B92B7EDEB45A87E20D3D286660153DE9E12@hasmsx109.ger.corp.intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 10 Aug 2016 09:01:33 -0700
+Subject: [Intel-wired-lan] [next PATCH 1/5] i40e: Introduce devlink
+	interface.
+In-Reply-To: <1470329387-25138-1-git-send-email-sridhar.samudrala@intel.com>
+References: <1470329387-25138-1-git-send-email-sridhar.samudrala@intel.com>
+Message-ID: <CAKgT0UeGtE2UUQWmjciz+zvLsCVPknvoUevmW6GRyDXMNCySSQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello Denis,
-In case this reset help you fix initialization error of I218 you can use it locally on your system. How many system with I218 encountered with initialization error on your side?
+On Thu, Aug 4, 2016 at 9:49 AM, Sridhar Samudrala
+<sridhar.samudrala@intel.com> wrote:
+> Add initial devlink support to set/get the mode of SRIOV switch.
+> This patch allows the mode to be set to either 'legacy' or 'switchdev', but
+> doesn't implement any functionality to create vf representors in switchdev
+> mode.
+>
+> With smode support in iproute2 'devlink' utility, switch mode can be set
+> and get via following commands.
+>
+>     # devlink dev smode pci/0000:05:00.0
+>     mode: legacy
+>     # devlink dev set pci/0000:05:00.0 smode switchdev
+>     # devlink dev smode pci/0000:05:00.0
+>     mode: switchdev
+>
+> Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
 
-Thanks,
-Sasha
------Original Message-----
-From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Brown, Aaron F
-Sent: Tuesday, August 09, 2016 9:59 PM
-To: Avargil, Raanan <raanan.avargil@intel.com>; Denis Turischev <denis.turischev@compulab.co.il>; intel-wired-lan at lists.osuosl.org; Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-Cc: netdev at vger.kernel.org; linux-kernel at vger.kernel.org
-Subject: Re: [Intel-wired-lan] e1000e: PHY cann't be initialized correctly on some I218 controllers
+I really don't see much value in this patch.  If you are going to
+support SwitchDev then just do it.  Otherwise you are adding extra
+overhead for maintaining two different modes.
 
+I would recommend putting this series out to netdev as an RFC.
+Submitting it to intel-wired-lan is kind of pointless as the audience
+it to small to get any valuable review.
 
-
-> -----Original Message-----
-> From: Avargil, Raanan
-> Sent: Tuesday, August 9, 2016 8:11 AM
-> To: Denis Turischev <denis.turischev@compulab.co.il>; intel-wired- 
-> lan at lists.osuosl.org; Brown, Aaron F <aaron.f.brown@intel.com>; 
-> Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
-> Cc: netdev at vger.kernel.org; linux-kernel at vger.kernel.org
-> Subject: Re: [Intel-wired-lan] e1000e: PHY cann't be initialized 
-> correctly on some I218 controllers
-> 
-> 
-> 
-> On 8/7/2016 11:56, Denis Turischev wrote:
-> > Hi Raanan,
-> >
-> > On 08/04/2016 07:18 PM, Raanan Avargil wrote:
-> >> It is hard to determine what is exactly the problem here and what 
-> >> causes
-> the -3 error, but this is not the place to perform hw reset and retry 
-> to init the phy.
-> > I agree that may be this is not the correct place for hw reset, can 
-> > you advice
-> about another solution?
-> >
-> > It works, not only for me, for example it helps here:
-> > http://www.linux.org.ru/forum/linux-hardware/10268216
-> >
-> > Another fact that Windows drivers work fine with the same hw.
-> >
-> > Denis
-> >
-> 
-> Hi Denis,
-> 
-> More suitable place to retry init the device would be in probe function.
-> However, we haven't seen initialization issues like this on i218.
-> 
-> Adding Aaron.
-> 
-> @Aaron - have you seen initialization errors on i218 devices?
-
-I have not.  But I don't have many systems with i218 so all that means is my systems do not exhibit the problem.
-
-> 
-> Raanan
-_______________________________________________
-Intel-wired-lan mailing list
-Intel-wired-lan at lists.osuosl.org
-http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
----------------------------------------------------------------------
-Intel Israel (74) Limited
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+- Alex
