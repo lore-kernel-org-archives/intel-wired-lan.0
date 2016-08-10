@@ -1,370 +1,83 @@
-From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Wed, 10 Aug 2016 11:19:23 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: add support for geneve Rx offload
-Message-ID: <20160810181923.14875.61286.stgit@localhost6.localdomain6>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Wed, 10 Aug 2016 11:18:59 -0700
+Subject: [Intel-wired-lan] [next PATCH 1/5] i40e: Introduce devlink
+	interface.
+In-Reply-To: <57AB5B5B.3090801@gmail.com>
+References: <1470329387-25138-1-git-send-email-sridhar.samudrala@intel.com>
+ <CAKgT0UeGtE2UUQWmjciz+zvLsCVPknvoUevmW6GRyDXMNCySSQ@mail.gmail.com>
+ <57AB5B5B.3090801@gmail.com>
+Message-ID: <CAKgT0Ud5LYhKeyD7_fbw-SXFFi7hSTe8mCSUdj_=oXQv5m+AeA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add geneve Rx offload support for x550em_a.
+On Wed, Aug 10, 2016 at 9:50 AM, John Fastabend
+<john.fastabend@gmail.com> wrote:
+> On 16-08-10 09:01 AM, Alexander Duyck wrote:
+>> On Thu, Aug 4, 2016 at 9:49 AM, Sridhar Samudrala
+>> <sridhar.samudrala@intel.com> wrote:
+>>> Add initial devlink support to set/get the mode of SRIOV switch.
+>>> This patch allows the mode to be set to either 'legacy' or 'switchdev', but
+>>> doesn't implement any functionality to create vf representors in switchdev
+>>> mode.
+>>>
+>>> With smode support in iproute2 'devlink' utility, switch mode can be set
+>>> and get via following commands.
+>>>
+>>>     # devlink dev smode pci/0000:05:00.0
+>>>     mode: legacy
+>>>     # devlink dev set pci/0000:05:00.0 smode switchdev
+>>>     # devlink dev smode pci/0000:05:00.0
+>>>     mode: switchdev
+>>>
+>>> Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+>>
+>> I really don't see much value in this patch.  If you are going to
+>> support SwitchDev then just do it.  Otherwise you are adding extra
+>> overhead for maintaining two different modes.
+>>
+>> I would recommend putting this series out to netdev as an RFC.
+>> Submitting it to intel-wired-lan is kind of pointless as the audience
+>> it to small to get any valuable review.
+>>
+>> - Alex
+>
+> I argued at length about this already. Jiri and company wanted this flag
+> to push device in and out of this mode. Here we are just following the
+> already upstreamed and debated decision.
 
-The implementation follows the vxlan code with the lower 16 bits of
-the VXLANCTRL register holding the UDP port for VXLAN and the upper
-for Geneve.
+Yeah, I started doing more research after reviewing this patch.  I see
+the idea behind it.  I think the issue if anything is that it seems
+like things are a bit backwards.  We probably should be enabling the
+SwitchDev bits first and then working on adding devlink knobs to
+disable things later.
 
-Disabled NFS filters in the RFCTL register which allows us to simplify
-the check for VXLAN and Geneve packets in ixgbe_rx_checksum().
+> This is less about switchdev and more about generating VF netdevs to
+> use with ip tools and friends.
 
-Removed vxlan from the name of the callback functions and replaced it
-with udp_tunnel which is more in line with the new API.
+Right.  One of the issues I have with this patch set is that it seems
+to get things backwards.  They are making VFs appear that don't do
+much of anything and then trying to bolt on features after the fact.
+We probably need to focus on enabling the VF representation, and then
+providing the ability to switch them on and off.  Also I would argue
+that we should actually be enabling switch features such as FDB
+entries instead of trying to bolt on stuff like flow director which
+doesn't really apply to very many switches and isn't as likely to be
+used on a switch port.
 
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe.h      |    4 -
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  174 ++++++++++++++++++-------
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |    7 +
- 3 files changed, 134 insertions(+), 51 deletions(-)
+> Another option would be to just always enable VF netdevs and have no
+> legacy mode at all. I think that would be fine it just depends on if
+> you think having extra netdevs around will confuse the stack at all.
+> It might create a few corner cases but one reasonable thing to do
+> would be to just fix those cases as they appear.
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-index 5628e2d..33c0250 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
-@@ -645,6 +645,7 @@ struct ixgbe_adapter {
- #define IXGBE_FLAG_RX_HWTSTAMP_ENABLED		BIT(25)
- #define IXGBE_FLAG_RX_HWTSTAMP_IN_REGISTER	BIT(26)
- #define IXGBE_FLAG_DCB_CAPABLE			BIT(27)
-+#define IXGBE_FLAG_GENEVE_OFFLOAD_CAPABLE	BIT(28)
- 
- 	u32 flags2;
- #define IXGBE_FLAG2_RSC_CAPABLE			BIT(0)
-@@ -658,7 +659,7 @@ struct ixgbe_adapter {
- #define IXGBE_FLAG2_RSS_FIELD_IPV6_UDP		BIT(9)
- #define IXGBE_FLAG2_PTP_PPS_ENABLED		BIT(10)
- #define IXGBE_FLAG2_PHY_INTERRUPT		BIT(11)
--#define IXGBE_FLAG2_VXLAN_REREG_NEEDED		BIT(12)
-+#define IXGBE_FLAG2_UDP_TUN_REREG_NEEDED	BIT(12)
- #define IXGBE_FLAG2_VLAN_PROMISC		BIT(13)
- 
- 	/* Tx fast path data */
-@@ -672,6 +673,7 @@ struct ixgbe_adapter {
- 
- 	/* Port number used to identify VXLAN traffic */
- 	__be16 vxlan_port;
-+	__be16 geneve_port;
- 
- 	/* TX */
- 	struct ixgbe_ring *tx_ring[MAX_TX_QUEUES] ____cacheline_aligned_in_smp;
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 9f2eed9..e06ca55 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -1495,7 +1495,6 @@ static inline void ixgbe_rx_checksum(struct ixgbe_ring *ring,
- 				     struct sk_buff *skb)
- {
- 	__le16 pkt_info = rx_desc->wb.lower.lo_dword.hs_rss.pkt_info;
--	__le16 hdr_info = rx_desc->wb.lower.lo_dword.hs_rss.hdr_info;
- 	bool encap_pkt = false;
- 
- 	skb_checksum_none_assert(skb);
-@@ -1504,8 +1503,8 @@ static inline void ixgbe_rx_checksum(struct ixgbe_ring *ring,
- 	if (!(ring->netdev->features & NETIF_F_RXCSUM))
- 		return;
- 
--	if ((pkt_info & cpu_to_le16(IXGBE_RXDADV_PKTTYPE_VXLAN)) &&
--	    (hdr_info & cpu_to_le16(IXGBE_RXDADV_PKTTYPE_TUNNEL >> 16))) {
-+	/* check for VXLAN and Geneve packets */
-+	if (pkt_info & cpu_to_le16(IXGBE_RXDADV_PKTTYPE_VXLAN)) {
- 		encap_pkt = true;
- 		skb->encapsulation = 1;
- 	}
-@@ -3922,6 +3921,9 @@ static void ixgbe_configure_rx(struct ixgbe_adapter *adapter)
- 	rfctl &= ~IXGBE_RFCTL_RSC_DIS;
- 	if (!(adapter->flags2 & IXGBE_FLAG2_RSC_ENABLED))
- 		rfctl |= IXGBE_RFCTL_RSC_DIS;
-+
-+	/* disable NFS filtering */
-+	rfctl |= (IXGBE_RFCTL_NFSW_DIS | IXGBE_RFCTL_NFSR_DIS);
- 	IXGBE_WRITE_REG(hw, IXGBE_RFCTL, rfctl);
- 
- 	/* Program registers for the distribution of queues */
-@@ -4580,18 +4582,23 @@ static void ixgbe_napi_disable_all(struct ixgbe_adapter *adapter)
- 	}
- }
- 
--static void ixgbe_clear_vxlan_port(struct ixgbe_adapter *adapter)
-+static void ixgbe_clear_udp_tunnel_port(struct ixgbe_adapter *adapter, u32 mask)
- {
--	switch (adapter->hw.mac.type) {
--	case ixgbe_mac_X550:
--	case ixgbe_mac_X550EM_x:
--	case ixgbe_mac_x550em_a:
--		IXGBE_WRITE_REG(&adapter->hw, IXGBE_VXLANCTRL, 0);
-+	struct ixgbe_hw *hw = &adapter->hw;
-+	u32 vxlanctrl;
-+
-+	if (!(adapter->flags & (IXGBE_FLAG_VXLAN_OFFLOAD_CAPABLE |
-+				IXGBE_FLAG_GENEVE_OFFLOAD_CAPABLE)))
-+		return;
-+
-+	vxlanctrl = IXGBE_READ_REG(hw, IXGBE_VXLANCTRL) && ~mask;
-+	IXGBE_WRITE_REG(hw, IXGBE_VXLANCTRL, vxlanctrl);
-+
-+	if (mask & IXGBE_VXLANCTRL_VXLAN_UDPPORT_MASK)
- 		adapter->vxlan_port = 0;
--		break;
--	default:
--		break;
--	}
-+
-+	if (mask & IXGBE_VXLANCTRL_GENEVE_UDPPORT_MASK)
-+		adapter->geneve_port = 0;
- }
- 
- #ifdef CONFIG_IXGBE_DCB
-@@ -5705,8 +5712,10 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter)
- 		if (fwsm & IXGBE_FWSM_TS_ENABLED)
- 			adapter->flags2 |= IXGBE_FLAG2_TEMP_SENSOR_CAPABLE;
- 		break;
--	case ixgbe_mac_X550EM_x:
- 	case ixgbe_mac_x550em_a:
-+		adapter->flags |= IXGBE_FLAG_GENEVE_OFFLOAD_CAPABLE;
-+	/* fall through */
-+	case ixgbe_mac_X550EM_x:
- #ifdef CONFIG_IXGBE_DCB
- 		adapter->flags &= ~IXGBE_FLAG_DCB_CAPABLE;
- #endif
-@@ -6138,7 +6147,7 @@ int ixgbe_open(struct net_device *netdev)
- 
- 	ixgbe_up_complete(adapter);
- 
--	ixgbe_clear_vxlan_port(adapter);
-+	ixgbe_clear_udp_tunnel_port(adapter, IXGBE_VXLANCTRL_ALL_UDPPORT_MASK);
- 	udp_tunnel_get_rx_info(netdev);
- 
- 	return 0;
-@@ -7217,9 +7226,9 @@ static void ixgbe_service_task(struct work_struct *work)
- 		ixgbe_service_event_complete(adapter);
- 		return;
- 	}
--	if (adapter->flags2 & IXGBE_FLAG2_VXLAN_REREG_NEEDED) {
-+	if (adapter->flags2 & IXGBE_FLAG2_UDP_TUN_REREG_NEEDED) {
- 		rtnl_lock();
--		adapter->flags2 &= ~IXGBE_FLAG2_VXLAN_REREG_NEEDED;
-+		adapter->flags2 &= ~IXGBE_FLAG2_UDP_TUN_REREG_NEEDED;
- 		udp_tunnel_get_rx_info(adapter->netdev);
- 		rtnl_unlock();
- 	}
-@@ -7659,6 +7668,10 @@ static void ixgbe_atr(struct ixgbe_ring *ring,
- 		if (adapter->vxlan_port &&
- 		    udp_hdr(skb)->dest == adapter->vxlan_port)
- 			hdr.network = skb_inner_network_header(skb);
-+
-+		if (adapter->geneve_port &&
-+		    udp_hdr(skb)->dest == adapter->geneve_port)
-+			hdr.network = skb_inner_network_header(skb);
- 	}
- 
- 	/* Currently only IPv4/IPv6 with TCP is supported */
-@@ -8792,10 +8805,23 @@ static int ixgbe_set_features(struct net_device *netdev,
- 	netdev->features = features;
- 
- 	if ((adapter->flags & IXGBE_FLAG_VXLAN_OFFLOAD_CAPABLE)) {
--		if (features & NETIF_F_RXCSUM)
--			adapter->flags2 |= IXGBE_FLAG2_VXLAN_REREG_NEEDED;
--		else
--			ixgbe_clear_vxlan_port(adapter);
-+		if (features & NETIF_F_RXCSUM) {
-+			adapter->flags2 |= IXGBE_FLAG2_UDP_TUN_REREG_NEEDED;
-+		} else {
-+			u32 port_mask = IXGBE_VXLANCTRL_VXLAN_UDPPORT_MASK;
-+
-+			ixgbe_clear_udp_tunnel_port(adapter, port_mask);
-+		}
-+	}
-+
-+	if ((adapter->flags & IXGBE_FLAG_GENEVE_OFFLOAD_CAPABLE)) {
-+		if (features & NETIF_F_RXCSUM) {
-+			adapter->flags2 |= IXGBE_FLAG2_UDP_TUN_REREG_NEEDED;
-+		} else {
-+			u32 port_mask = IXGBE_VXLANCTRL_GENEVE_UDPPORT_MASK;
-+
-+			ixgbe_clear_udp_tunnel_port(adapter, port_mask);
-+		}
- 	}
- 
- 	if (need_reset)
-@@ -8808,67 +8834,115 @@ static int ixgbe_set_features(struct net_device *netdev,
- }
- 
- /**
-- * ixgbe_add_vxlan_port - Get notifications about VXLAN ports that come up
-+ * ixgbe_add_udp_tunnel_port - Get notifications about adding UDP tunnel ports
-  * @dev: The port's netdev
-  * @ti: Tunnel endpoint information
-  **/
--static void ixgbe_add_vxlan_port(struct net_device *dev,
--				 struct udp_tunnel_info *ti)
-+static void ixgbe_add_udp_tunnel_port(struct net_device *dev,
-+				      struct udp_tunnel_info *ti)
- {
- 	struct ixgbe_adapter *adapter = netdev_priv(dev);
- 	struct ixgbe_hw *hw = &adapter->hw;
- 	__be16 port = ti->port;
--
--	if (ti->type != UDP_TUNNEL_TYPE_VXLAN)
--		return;
-+	u32 port_shift = 0;
-+	u32 reg;
- 
- 	if (ti->sa_family != AF_INET)
- 		return;
- 
--	if (!(adapter->flags & IXGBE_FLAG_VXLAN_OFFLOAD_CAPABLE))
--		return;
-+	switch (ti->type) {
-+	case UDP_TUNNEL_TYPE_VXLAN:
-+		if (!(adapter->flags & IXGBE_FLAG_VXLAN_OFFLOAD_CAPABLE))
-+			return;
- 
--	if (adapter->vxlan_port == port)
--		return;
-+		if (adapter->vxlan_port == port)
-+			return;
-+
-+		if (adapter->vxlan_port) {
-+			netdev_info(dev,
-+				    "VXLAN port %d set, not adding port %d\n",
-+				    ntohs(adapter->vxlan_port),
-+				    ntohs(port));
-+			return;
-+		}
-+
-+		adapter->vxlan_port = port;
-+		break;
-+	case UDP_TUNNEL_TYPE_GENEVE:
-+		if (!(adapter->flags & IXGBE_FLAG_GENEVE_OFFLOAD_CAPABLE))
-+			return;
-+
-+		if (adapter->geneve_port == port)
-+			return;
-+
-+		if (adapter->geneve_port) {
-+			netdev_info(dev,
-+				    "GENEVE port %d set, not adding port %d\n",
-+				    ntohs(adapter->geneve_port),
-+				    ntohs(port));
-+			return;
-+		}
- 
--	if (adapter->vxlan_port) {
--		netdev_info(dev,
--			    "Hit Max num of VXLAN ports, not adding port %d\n",
--			    ntohs(port));
-+		port_shift = IXGBE_VXLANCTRL_GENEVE_UDPPORT_SHIFT;
-+		adapter->geneve_port = port;
-+		break;
-+	default:
- 		return;
- 	}
- 
--	adapter->vxlan_port = port;
--	IXGBE_WRITE_REG(hw, IXGBE_VXLANCTRL, ntohs(port));
-+	reg = IXGBE_READ_REG(hw, IXGBE_VXLANCTRL) | ntohs(port) << port_shift;
-+	IXGBE_WRITE_REG(hw, IXGBE_VXLANCTRL, reg);
- }
- 
- /**
-- * ixgbe_del_vxlan_port - Get notifications about VXLAN ports that go away
-+ * ixgbe_del_udp_tunnel_port - Get notifications about removing UDP tunnel ports
-  * @dev: The port's netdev
-  * @ti: Tunnel endpoint information
-  **/
--static void ixgbe_del_vxlan_port(struct net_device *dev,
--				 struct udp_tunnel_info *ti)
-+static void ixgbe_del_udp_tunnel_port(struct net_device *dev,
-+				      struct udp_tunnel_info *ti)
- {
- 	struct ixgbe_adapter *adapter = netdev_priv(dev);
-+	u32 port_mask;
- 
--	if (ti->type != UDP_TUNNEL_TYPE_VXLAN)
-+	if (ti->type != UDP_TUNNEL_TYPE_VXLAN &&
-+	    ti->type != UDP_TUNNEL_TYPE_GENEVE)
- 		return;
- 
- 	if (ti->sa_family != AF_INET)
- 		return;
- 
--	if (!(adapter->flags & IXGBE_FLAG_VXLAN_OFFLOAD_CAPABLE))
--		return;
-+	switch (ti->type) {
-+	case UDP_TUNNEL_TYPE_VXLAN:
-+		if (!(adapter->flags & IXGBE_FLAG_VXLAN_OFFLOAD_CAPABLE))
-+			return;
- 
--	if (adapter->vxlan_port != ti->port) {
--		netdev_info(dev, "Port %d was not found, not deleting\n",
--			    ntohs(ti->port));
-+		if (adapter->vxlan_port != ti->port) {
-+			netdev_info(dev, "VXLAN port %d not found\n",
-+				    ntohs(ti->port));
-+			return;
-+		}
-+
-+		port_mask = IXGBE_VXLANCTRL_VXLAN_UDPPORT_MASK;
-+		break;
-+	case UDP_TUNNEL_TYPE_GENEVE:
-+		if (!(adapter->flags & IXGBE_FLAG_GENEVE_OFFLOAD_CAPABLE))
-+			return;
-+
-+		if (adapter->geneve_port != ti->port) {
-+			netdev_info(dev, "GENEVE port %d not found\n",
-+				    ntohs(ti->port));
-+			return;
-+		}
-+
-+		port_mask = IXGBE_VXLANCTRL_GENEVE_UDPPORT_MASK;
-+		break;
-+	default:
- 		return;
- 	}
- 
--	ixgbe_clear_vxlan_port(adapter);
--	adapter->flags2 |= IXGBE_FLAG2_VXLAN_REREG_NEEDED;
-+	ixgbe_clear_udp_tunnel_port(adapter, port_mask);
-+	adapter->flags2 |= IXGBE_FLAG2_UDP_TUN_REREG_NEEDED;
- }
- 
- static int ixgbe_ndo_fdb_add(struct ndmsg *ndm, struct nlattr *tb[],
-@@ -9182,8 +9256,8 @@ static const struct net_device_ops ixgbe_netdev_ops = {
- 	.ndo_bridge_getlink	= ixgbe_ndo_bridge_getlink,
- 	.ndo_dfwd_add_station	= ixgbe_fwd_add,
- 	.ndo_dfwd_del_station	= ixgbe_fwd_del,
--	.ndo_udp_tunnel_add	= ixgbe_add_vxlan_port,
--	.ndo_udp_tunnel_del	= ixgbe_del_vxlan_port,
-+	.ndo_udp_tunnel_add	= ixgbe_add_udp_tunnel_port,
-+	.ndo_udp_tunnel_del	= ixgbe_del_udp_tunnel_port,
- 	.ndo_features_check	= ixgbe_features_check,
- };
- 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-index 1248a99..5ff91b8 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-@@ -487,6 +487,13 @@ struct ixgbe_thermal_sensor_data {
- #define IXGBE_FHFT_EXT(_n)	(0x09800 + ((_n) * 0x100)) /* Ext Flexible Host
- 							    * Filter Table */
- 
-+/* masks for accessing VXLAN and GENEVE UDP ports */
-+#define IXGBE_VXLANCTRL_VXLAN_UDPPORT_MASK     0x0000ffff /* VXLAN port */
-+#define IXGBE_VXLANCTRL_GENEVE_UDPPORT_MASK    0xffff0000 /* GENEVE port */
-+#define IXGBE_VXLANCTRL_ALL_UDPPORT_MASK       0xffffffff /* GENEVE/VXLAN */
-+
-+#define IXGBE_VXLANCTRL_GENEVE_UDPPORT_SHIFT   16
-+
- #define IXGBE_FLEXIBLE_FILTER_COUNT_MAX         4
- #define IXGBE_EXT_FLEXIBLE_FILTER_COUNT_MAX     2
- 
+I'd say we are better off starting out with them just enabled and then
+enabling the option to disable them after the fact.  If we are going
+to have this extra code floating around we should be defaulting it to
+enabled so that it is more likely to be used.  The legacy option
+should only really be there so we can turn this off if we don't want
+it.
 
+- Alex
