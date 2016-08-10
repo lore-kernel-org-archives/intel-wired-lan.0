@@ -1,78 +1,141 @@
-From: Keller, Jacob E <jacob.e.keller@intel.com>
-Date: Wed, 10 Aug 2016 20:08:13 +0000
-Subject: [Intel-wired-lan] [PATCH 1/2] fm10k: napi polling routine must
- return actual work done
-In-Reply-To: <02874ECE860811409154E81DA85FBB5857B4D6C3@ORSMSX115.amr.corp.intel.com>
-References: <20160620173933.5638-1-jacob.e.keller@intel.com>
- <02874ECE860811409154E81DA85FBB5857B4D6C3@ORSMSX115.amr.corp.intel.com>
-Message-ID: <02874ECE860811409154E81DA85FBB5857B4D7B2@ORSMSX115.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 11 Aug 2016 04:10:20 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 2814bc6e709c1c8762858114bd17ee0d81bbaf8c BUILD SUCCESS
+Message-ID: <57ab8a2c.fZx9n6nFG8mdV9Ov%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+2814bc6e709c1c8762858114bd17ee0d81bbaf8c  fm10k: don't re-map queues when a mailbox message suffices
 
+elapsed time: 108m
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Keller, Jacob E
-> Sent: Wednesday, August 10, 2016 12:50 PM
-> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>; Duyck, Alexander H
-> <alexander.h.duyck@intel.com>
-> Cc: Paolo Abeni <pabeni@redhat.com>; Venkatesh Srinivas
-> <venkateshs@google.com>
-> Subject: Re: [Intel-wired-lan] [PATCH 1/2] fm10k: napi polling routine must
-> return actual work done
-> 
-> 
-> 
-> > -----Original Message-----
-> > From: Keller, Jacob E
-> > Sent: Monday, June 20, 2016 10:40 AM
-> > To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> > Cc: Keller, Jacob E <jacob.e.keller@intel.com>; Paolo Abeni
-> > <pabeni@redhat.com>; Venkatesh Srinivas <venkateshs@google.com>;
-> > Alexander Duyck <aduyck@mirantis.com>
-> > Subject: [PATCH 1/2] fm10k: napi polling routine must return actual work
-> > done
-> >
-> > When fm10k_poll fully cleans rings it returns 0. This is incorrect as it
-> > messes up the budget accounting in the core napi code. Fix this by
-> > returning actual work done, capped at budget - 1 since the core doesn't
-> > expect a return of the full budget when the driver modifies the napi
-> > status.
-> >
-> > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> > Cc: Paolo Abeni <pabeni@redhat.com>
-> > Cc: Venkatesh Srinivas <venkateshs@google.com>
-> > Cc: Alexander Duyck <aduyck@mirantis.com>
-> > ---
-> >  drivers/net/ethernet/intel/fm10k/fm10k_main.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-> > b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-> > index 682a372bdb20..79d5093d83d1 100644
-> > --- a/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-> > +++ b/drivers/net/ethernet/intel/fm10k/fm10k_main.c
-> > @@ -1484,7 +1484,7 @@ static int fm10k_poll(struct napi_struct *napi,
-> int
-> > budget)
-> >  	/* re-enable the q_vector */
-> >  	fm10k_qv_enable(q_vector);
-> >
-> > -	return 0;
-> > +	return min(work_done, budget - 1);
-> 
-> 
-> This patch potentially appears to be caused Tx hangs in the napi routines in
-> the stack, when under heavy traffic pressure. It appears that other drivers
-> (i40e, and ixgbe) don't do this either, so I am not sure which is correct...
-> 
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 120
 
-This patch is fine and should remain.
+i386                     randconfig-a0-201632
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x013-201632
+x86_64                 randconfig-x012-201632
+x86_64                 randconfig-x015-201632
+x86_64                 randconfig-x011-201632
+x86_64                 randconfig-x014-201632
+x86_64                 randconfig-x010-201632
+x86_64                 randconfig-x017-201632
+x86_64                 randconfig-x018-201632
+x86_64                 randconfig-x016-201632
+x86_64                 randconfig-x019-201632
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201632
+i386                     randconfig-s1-201632
+x86_64                 randconfig-s0-08110241
+x86_64                 randconfig-s1-08110241
+x86_64                 randconfig-s2-08110241
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201632
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201632
+i386                     randconfig-i1-201632
+i386                   randconfig-x016-201632
+i386                   randconfig-x014-201632
+i386                   randconfig-x010-201632
+i386                   randconfig-x017-201632
+i386                   randconfig-x018-201632
+i386                   randconfig-x012-201632
+i386                   randconfig-x013-201632
+i386                   randconfig-x019-201632
+i386                   randconfig-x015-201632
+i386                   randconfig-x011-201632
+i386                     randconfig-n0-201632
+x86_64                 randconfig-x002-201632
+x86_64                 randconfig-x008-201632
+x86_64                 randconfig-x009-201632
+x86_64                 randconfig-x007-201632
+x86_64                 randconfig-x003-201632
+x86_64                 randconfig-x004-201632
+x86_64                 randconfig-x005-201632
+x86_64                 randconfig-x000-201632
+x86_64                 randconfig-x001-201632
+x86_64                 randconfig-x006-201632
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-r0-201632
+i386                   randconfig-x002-201632
+i386                   randconfig-x009-201632
+i386                   randconfig-x006-201632
+i386                   randconfig-x001-201632
+i386                   randconfig-x003-201632
+i386                   randconfig-x008-201632
+i386                   randconfig-x007-201632
+i386                   randconfig-x000-201632
+i386                   randconfig-x005-201632
+i386                   randconfig-x004-201632
 
 Thanks,
-Jake
-
+Fengguang
