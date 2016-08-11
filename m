@@ -1,147 +1,69 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 11 Aug 2016 09:04:39 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- caad6a2bae2c073cf5029758e7e5a1a28e27ea18 BUILD SUCCESS
-Message-ID: <57abcf27./q/LygmpJtShhJPw%fengguang.wu@intel.com>
+From: Jarod Wilson <jarod@redhat.com>
+Date: Thu, 11 Aug 2016 11:48:09 -0400
+Subject: [Intel-wired-lan] [PATCH net-next v3 1/2] e1000e: factor out
+ systim	sanitization
+In-Reply-To: <309B89C4C689E141A5FF6A0C5FB2118B81F6579E@ORSMSX101.amr.corp.intel.com>
+References: <1469292274-59237-1-git-send-email-jarod@redhat.com>
+ <1469557535-63429-1-git-send-email-jarod@redhat.com>
+ <1469557535-63429-2-git-send-email-jarod@redhat.com>
+ <8F4C390AFA9F4444A4AA77F4A3BEC78A190E7843@HASMSX110.ger.corp.intel.com>
+ <20160727150155.GF36313@redhat.com>
+ <20160802013214.GU36313@redhat.com>
+ <309B89C4C689E141A5FF6A0C5FB2118B81F6579E@ORSMSX101.amr.corp.intel.com>
+Message-ID: <20160811154809.GA56642@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-caad6a2bae2c073cf5029758e7e5a1a28e27ea18  Subject: [1/1,v3] net: i40e: use matching format identifiers Cc: Heinrich Schuchardt <xypron.glpk@gmx.de>,  Shannon Nelson <shannon.nelson@intel.com>, linux-kernel at vger.kernel.org,  John Ronciak <john.ronciak@intel.com>, intel-wired-lan at lists.osuosl.org,  netdev at vger.kernel.org, David Miller <davem@davemloft.net>
+On Tue, Aug 02, 2016 at 07:33:01AM +0000, Brown, Aaron F wrote:
+> > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> > Behalf Of Jarod Wilson
+> > Sent: Monday, August 1, 2016 6:32 PM
+> > To: Avargil, Raanan <raanan.avargil@intel.com>
+> > Cc: Hall, Christopher S <christopher.s.hall@intel.com>;
+> > netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; linux-
+> > kernel at vger.kernel.org
+> > Subject: Re: [Intel-wired-lan] [PATCH net-next v3 1/2] e1000e: factor out
+> > systim sanitization
+> > 
+> > On Wed, Jul 27, 2016 at 11:01:55AM -0400, Jarod Wilson wrote:
+> > > On Wed, Jul 27, 2016 at 02:09:13PM +0000, Avargil, Raanan wrote:
+> > > >> This is prepatory work for an expanding list of adapter families that have
+> > occasional ~10 hour clock jumps when being used for PTP. Factor out the
+> > sanitization function and convert to using a feature (bug) flag, per suggestion
+> > from Jesse Brandeburg.
+> > > >>
+> > > >> Littering functional code with device-specific checks is much messier
+> > than simply checking a flag, and having device-specific init set flags as
+> > needed.
+> > > >> There are probably a number of other cases in the e1000e code that
+> > could/should be converted similarly.
+> > > >
+> > > > Looks ok to me.
+> > > > Adding Chris who asked what happens if we reach the max retry counter
+> > (E1000_MAX_82574_SYSTIM_REREAD)?
+> > > > This counter is set to 50.
+> > > > Can you, for testing purposes, decreased this value (or even set it to 0)
+> > and see what happens?
+> > >
+> > > Unfortunately, I don't have direct access to the affected hardware myself,
+> > > so I'd have to prep a test build, hand it off to someone and play relay. I
+> > > could do that, but it'd have some lag and possible multiple round-trips...
+> > > Anyone inside Intel have hardware handy to test on? :p
+> > 
+> > Was tied up with other work the middle of last week, then on vacation for
+> > a bit. There was some testing feedback provided from someone at neither
+> > Red Hat or Intel, but I'm not sure where it leaves us right now. What
+> > needs to happen next?
+> 
+> Probably nothing else needs to be done on your end.  I was out for the last week and a half and am now running the patches through a series of regression test covering a fair number of the different e1000e parts.  I will also try to duplicate Tim Woodford' success on a NUC with an i218 in my lab.  Assuming nothing jumps out at me I'll probably give it a tested-by later this week so that Jeff can push it on up.
 
-elapsed time: 101m
+Looking for a status update on this one, not seeing it pushed to DaveM
+just yet.
 
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 126
+-- 
+Jarod Wilson
+jarod at redhat.com
 
-i386                     randconfig-a0-201632
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x013-201632
-x86_64                 randconfig-x012-201632
-x86_64                 randconfig-x015-201632
-x86_64                 randconfig-x011-201632
-x86_64                 randconfig-x014-201632
-x86_64                 randconfig-x010-201632
-x86_64                 randconfig-x017-201632
-x86_64                 randconfig-x018-201632
-x86_64                 randconfig-x016-201632
-x86_64                 randconfig-x019-201632
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-x86_64                                   rhel
-x86_64                               rhel-7.2
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201632
-i386                     randconfig-s1-201632
-x86_64                 randconfig-s0-08110736
-x86_64                 randconfig-s1-08110736
-x86_64                 randconfig-s2-08110736
-x86_64                           allmodconfig
-x86_64                 randconfig-s3-08110657
-x86_64                 randconfig-s4-08110657
-x86_64                 randconfig-s5-08110657
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-frv                                 defconfig
-i386                               tinyconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201632
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201632
-i386                     randconfig-i1-201632
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                   randconfig-x016-201632
-i386                   randconfig-x014-201632
-i386                   randconfig-x010-201632
-i386                   randconfig-x017-201632
-i386                   randconfig-x018-201632
-i386                   randconfig-x012-201632
-i386                   randconfig-x013-201632
-i386                   randconfig-x019-201632
-i386                   randconfig-x015-201632
-i386                   randconfig-x011-201632
-x86_64                                    lkp
-x86_64         rhel+CONFIG_DEBUG_INFO_REDUCED
-i386         randconfig-n0-201632+CONFIG_DEBUG_INFO_REDUCED
-i386                     randconfig-n0-201632
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                 randconfig-x002-201632
-x86_64                 randconfig-x008-201632
-x86_64                 randconfig-x009-201632
-x86_64                 randconfig-x007-201632
-x86_64                 randconfig-x003-201632
-x86_64                 randconfig-x004-201632
-x86_64                 randconfig-x005-201632
-x86_64                 randconfig-x000-201632
-x86_64                 randconfig-x001-201632
-x86_64                 randconfig-x006-201632
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-r0-201632
-i386                   randconfig-x002-201632
-i386                   randconfig-x009-201632
-i386                   randconfig-x006-201632
-i386                   randconfig-x001-201632
-i386                   randconfig-x003-201632
-i386                   randconfig-x008-201632
-i386                   randconfig-x007-201632
-i386                   randconfig-x000-201632
-i386                   randconfig-x005-201632
-i386                   randconfig-x004-201632
-
-Thanks,
-Fengguang
