@@ -1,37 +1,84 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 11 Aug 2016 20:12:40 +0000
-Subject: [Intel-wired-lan] [next PATCH S41-V2 5/5] i40e: Add support for
- HMC	resource and profile for X722
-In-Reply-To: <1470335825-15534-6-git-send-email-bimmy.pujari@intel.com>
-References: <1470335825-15534-1-git-send-email-bimmy.pujari@intel.com>
- <1470335825-15534-6-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9F8A69@ORSMSX104.amr.corp.intel.com>
+From: Alexander Duyck <alexander.h.duyck@intel.com>
+Date: Thu, 11 Aug 2016 14:51:56 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Force VLNCTRL.VFE to be set in all
+	VMDq paths
+Message-ID: <147095231662.4841.672399088639313718.stgit@ahduyck-desk.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Bimmy Pujari
-> Sent: Thursday, August 04, 2016 11:37 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S41-V2 5/5] i40e: Add support for
-> HMC resource and profile for X722
-> 
-> From: Carolyn Wyborny <carolyn.wyborny@intel.com>
-> 
-> This patch adds support for HMC resource and profile cmds for X722
-> firmware.
-> 
-> Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
-> Change-ID: Icc332101f38ab15d1bfa167823100eb4f6822f7e
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_adminq_cmd.h   | 21
-> +++++++++++++++++++++
->  drivers/net/ethernet/intel/i40evf/i40e_adminq_cmd.h | 21
-> +++++++++++++++++++++
->  2 files changed, 42 insertions(+)
+When I was adding the code for enabling VLAN promiscuous mode with SR-IOV
+enabled I had inadvertently left the VLNCTRL.VFE bit unchanged as I has
+assumed there was code in another path that was setting it when we enabled
+SR-IOV.  This wasn't the case and as a result we were just disabling VLAN
+filtering for all the VFs apparently.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Also the previous patches were always clearing CFIEN which was always set
+to 0 by the hardware anyway so I am dropping the redundant bit clearing.
+
+Fixes: 16369564915a ("ixgbe: Add support for VLAN promiscuous with SR-IOV")
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index e06ca55..fa7fa09 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -4102,6 +4102,8 @@ static void ixgbe_vlan_promisc_enable(struct ixgbe_adapter *adapter)
+ 	struct ixgbe_hw *hw = &adapter->hw;
+ 	u32 vlnctrl, i;
+ 
++	vlnctrl = IXGBE_READ_REG(hw, IXGBE_VLNCTRL);
++
+ 	switch (hw->mac.type) {
+ 	case ixgbe_mac_82599EB:
+ 	case ixgbe_mac_X540:
+@@ -4114,8 +4116,7 @@ static void ixgbe_vlan_promisc_enable(struct ixgbe_adapter *adapter)
+ 		/* fall through */
+ 	case ixgbe_mac_82598EB:
+ 		/* legacy case, we can just disable VLAN filtering */
+-		vlnctrl = IXGBE_READ_REG(hw, IXGBE_VLNCTRL);
+-		vlnctrl &= ~(IXGBE_VLNCTRL_VFE | IXGBE_VLNCTRL_CFIEN);
++		vlnctrl &= ~IXGBE_VLNCTRL_VFE;
+ 		IXGBE_WRITE_REG(hw, IXGBE_VLNCTRL, vlnctrl);
+ 		return;
+ 	}
+@@ -4127,6 +4128,10 @@ static void ixgbe_vlan_promisc_enable(struct ixgbe_adapter *adapter)
+ 	/* Set flag so we don't redo unnecessary work */
+ 	adapter->flags2 |= IXGBE_FLAG2_VLAN_PROMISC;
+ 
++	/* For VMDq and SR-IOV we must leave VLAN filtering enabled */
++	vlnctrl |= IXGBE_VLNCTRL_VFE;
++	IXGBE_WRITE_REG(hw, IXGBE_VLNCTRL, vlnctrl);
++
+ 	/* Add PF to all active pools */
+ 	for (i = IXGBE_VLVF_ENTRIES; --i;) {
+ 		u32 reg_offset = IXGBE_VLVFB(i * 2 + VMDQ_P(0) / 32);
+@@ -4193,6 +4198,11 @@ static void ixgbe_vlan_promisc_disable(struct ixgbe_adapter *adapter)
+ 	struct ixgbe_hw *hw = &adapter->hw;
+ 	u32 vlnctrl, i;
+ 
++	/* Set VLAN filtering to enabled */
++	vlnctrl = IXGBE_READ_REG(hw, IXGBE_VLNCTRL);
++	vlnctrl |= IXGBE_VLNCTRL_VFE;
++	IXGBE_WRITE_REG(hw, IXGBE_VLNCTRL, vlnctrl);
++
+ 	switch (hw->mac.type) {
+ 	case ixgbe_mac_82599EB:
+ 	case ixgbe_mac_X540:
+@@ -4204,10 +4214,6 @@ static void ixgbe_vlan_promisc_disable(struct ixgbe_adapter *adapter)
+ 			break;
+ 		/* fall through */
+ 	case ixgbe_mac_82598EB:
+-		vlnctrl = IXGBE_READ_REG(hw, IXGBE_VLNCTRL);
+-		vlnctrl &= ~IXGBE_VLNCTRL_CFIEN;
+-		vlnctrl |= IXGBE_VLNCTRL_VFE;
+-		IXGBE_WRITE_REG(hw, IXGBE_VLNCTRL, vlnctrl);
+ 		return;
+ 	}
+ 
+
