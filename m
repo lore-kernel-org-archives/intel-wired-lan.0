@@ -1,10 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 12 Aug 2016 22:46:27 +0000
-Subject: [Intel-wired-lan] [net PATCH] ixgbe: Re-enable ability to
- toggle	VLAN filtering
-In-Reply-To: <147102081932.18173.913316945879981638.stgit@ahduyck-desk.amr.corp.intel.com>
-References: <147102081932.18173.913316945879981638.stgit@ahduyck-desk.amr.corp.intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9F8B89@ORSMSX104.amr.corp.intel.com>
+Date: Fri, 12 Aug 2016 22:47:24 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Force VLNCTRL.VFE to be set in
+ all	VMDq paths
+In-Reply-To: <147095231662.4841.672399088639313718.stgit@ahduyck-desk.amr.corp.intel.com>
+References: <147095231662.4841.672399088639313718.stgit@ahduyck-desk.amr.corp.intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9F8B99@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,22 +14,25 @@ List-ID: <intel-wired-lan.osuosl.org>
 > -----Original Message-----
 > From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
 > Behalf Of Alexander Duyck
-> Sent: Friday, August 12, 2016 9:54 AM
+> Sent: Thursday, August 11, 2016 2:52 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [net PATCH] ixgbe: Re-enable ability to toggle
-> VLAN filtering
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: Force VLNCTRL.VFE to be set in all
+> VMDq paths
 > 
-> Back when I submitted the GSO code I messed up and dropped the support
-> for disabling the VLAN tag filtering via the feature bit.  This patch re-enables
-> the use of the NETIF_F_HW_VLAN_CTAG_FILTER to enable/disable the
-> VLAN filtering independent of toggling promiscuous mode.
+> When I was adding the code for enabling VLAN promiscuous mode with SR-
+> IOV enabled I had inadvertently left the VLNCTRL.VFE bit unchanged as I has
+> assumed there was code in another path that was setting it when we
+> enabled SR-IOV.  This wasn't the case and as a result we were just disabling
+> VLAN filtering for all the VFs apparently.
 > 
-> Fixes: b83e30104b ("ixgbe/ixgbevf: Add support for GSO partial")
+> Also the previous patches were always clearing CFIEN which was always set
+> to 0 by the hardware anyway so I am dropping the redundant bit clearing.
+> 
+> Fixes: 16369564915a ("ixgbe: Add support for VLAN promiscuous with SR-
+> IOV")
 > Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 > ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    1 +
->  1 file changed, 1 insertion(+)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   18 ++++++++++++------
+>  1 file changed, 12 insertions(+), 6 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-
-
