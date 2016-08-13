@@ -1,140 +1,51 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 13 Aug 2016 07:33:51 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
- 6faee37426e7a29affd991bdb684d8ffd0237efe BUILD SUCCESS
-Message-ID: <57ae5cdf.X1qjJa4lHzltlkf/%fengguang.wu@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Sat, 13 Aug 2016 02:07:00 +0000
+Subject: [Intel-wired-lan] [net-next] igb: add function to set I210
+ transmit	mode
+In-Reply-To: <1470811692-24574-2-git-send-email-gangfeng.huang@ni.com>
+References: <1470811692-24574-1-git-send-email-gangfeng.huang@ni.com>
+ <1470811692-24574-2-git-send-email-gangfeng.huang@ni.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81F7314E@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-6faee37426e7a29affd991bdb684d8ffd0237efe  i40e: check for and deal with non-contiguous TCs
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Gangfeng
+> Sent: Tuesday, August 9, 2016 11:48 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Gangfeng Huang <gangfeng.huang@ni.com>
+> Subject: [Intel-wired-lan] [net-next] igb: add function to set I210 transmit
+> mode
+> 
+> From: Gangfeng Huang <gangfeng.huang@ni.com>
+> 
+> I210 supports two transmit modes, legacy and Qav. The transmit mode is
+> configured in TQAVCTRL.QavMode register. Before this patch igb driver
+> only support legacy mode. This patch makes it possible to configure the
+> transmit mode.
+> 
+> Example:
+> Get the transmit mode:
+> $ echo /sys/class/net/eth0/qav_mode
+> 0
 
-elapsed time: 94m
+I think you mean "cat /sys/class/net/eth0/qav_mode" to see the contents, echo just displays the file name.
 
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 118
+Having said that, I really appreciate you putting detailed instructions in the description.  It's rather surprising how often basic instructions do not get included. 
 
-i386                     randconfig-a0-201632
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-v0-08130445
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x013-201632
-x86_64                 randconfig-x012-201632
-x86_64                 randconfig-x015-201632
-x86_64                 randconfig-x011-201632
-x86_64                 randconfig-x014-201632
-x86_64                 randconfig-x010-201632
-x86_64                 randconfig-x017-201632
-x86_64                 randconfig-x018-201632
-x86_64                 randconfig-x016-201632
-x86_64                 randconfig-x019-201632
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201632
-i386                     randconfig-s1-201632
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201632
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i1-201632
-i386                     randconfig-i0-201632
-x86_64                           allmodconfig
-i386                   randconfig-x016-201632
-i386                   randconfig-x014-201632
-i386                   randconfig-x010-201632
-i386                   randconfig-x017-201632
-i386                   randconfig-x018-201632
-i386                   randconfig-x012-201632
-i386                   randconfig-x013-201632
-i386                   randconfig-x019-201632
-i386                   randconfig-x015-201632
-i386                   randconfig-x011-201632
-i386                     randconfig-n0-201632
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                   rhel
-x86_64                               rhel-7.2
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                 randconfig-x002-201632
-x86_64                 randconfig-x008-201632
-x86_64                 randconfig-x009-201632
-x86_64                 randconfig-x007-201632
-x86_64                 randconfig-x003-201632
-x86_64                 randconfig-x004-201632
-x86_64                 randconfig-x005-201632
-x86_64                 randconfig-x000-201632
-x86_64                 randconfig-x001-201632
-x86_64                 randconfig-x006-201632
-x86_64                                    lkp
-i386                     randconfig-r0-201632
-i386                   randconfig-x002-201632
-i386                   randconfig-x009-201632
-i386                   randconfig-x006-201632
-i386                   randconfig-x001-201632
-i386                   randconfig-x003-201632
-i386                   randconfig-x008-201632
-i386                   randconfig-x007-201632
-i386                   randconfig-x000-201632
-i386                   randconfig-x005-201632
-i386                   randconfig-x004-201632
+> Set transmit mode to qav mode
+> $ echo 1 > /sys/class/net/eth0/qav_mode
+>  
 
-Thanks,
-Fengguang
+<snip>
+
+>  #define MAXIMUM_ETHERNET_VLAN_SIZE 1522
+> 
+> +/* In qav mode, the maximum frame size is 1536 */
+> +#define IGB_MAX_QAV_FRAME_SIZE 1536
+> +
+
+When I am in qav_mode I am not able to set the MTU beyond 1514, which I believe adds up to 1536 when I add the Ethernet header and a VLAN header, so this part seems good.  However, I am able to toggle into qav_mode with the MTU set to a larger value, the MTU stays at the larger value and I do not get any indication on the console, dmesg or logs that the MTU should be reduced.  I think failing to change to qav_mode with a message stating to reduce the MTU would be the desired behavior here.
