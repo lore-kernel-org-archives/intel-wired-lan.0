@@ -1,92 +1,57 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Mon, 15 Aug 2016 14:17:18 -0700
-Subject: [Intel-wired-lan] [next PATCH S42-V2 1/2] i40e: Check client is
-	open before calling client ops
-Message-ID: <1471295839-13587-1-git-send-email-bimmy.pujari@intel.com>
+Date: Mon, 15 Aug 2016 14:17:19 -0700
+Subject: [Intel-wired-lan] [next PATCH S42-V2 2/2] i40e: Initialize pointer
+	in client_release function
+In-Reply-To: <1471295839-13587-1-git-send-email-bimmy.pujari@intel.com>
+References: <1471295839-13587-1-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1471295839-13587-2-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Catherine Sullivan <catherine.sullivan@intel.com>
+From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
 
-We were having a race between the completion of the client open and
-calls to the client ops so don't call a client op unless we are sure the
-client is open.
+The function i40e_client_release has a print statement that uses an
+adapter pointer which is not initialized if a previous if statement
+is not true. Hence, intialize it in the right place.
 
-Testing Hints: Load IWARP driver and make sure it works as expected.
+Testing Hints: Compile check
 
-Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
-Change-Id: I741f4f2aa4fcbfdad3e40dabbbb1b005856c396b
+Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+Change-ID: I1afdaa2c46771ac42be56edcc41bb56b455b06c8
 ---
- drivers/net/ethernet/intel/i40e/i40e_client.c | 25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_client.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c b/drivers/net/ethernet/intel/i40e/i40e_client.c
-index 677dae5..1035f88 100644
+index 1035f88..09a37cf 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_client.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
-@@ -148,6 +148,11 @@ i40e_notify_client_of_vf_msg(struct i40e_vsi *vsi, u32 vf_id, u8 *msg, u16 len)
- 					"Cannot locate client instance virtual channel receive routine\n");
- 				continue;
+@@ -662,7 +662,7 @@ int i40e_lan_del_device(struct i40e_pf *pf)
+ static int i40e_client_release(struct i40e_client *client)
+ {
+ 	struct i40e_client_instance *cdev, *tmp;
+-	struct i40e_pf *pf = NULL;
++	struct i40e_pf *pf;
+ 	int ret = 0;
+ 
+ 	LIST_HEAD(cdevs_tmp);
+@@ -672,12 +672,12 @@ static int i40e_client_release(struct i40e_client *client)
+ 		if (strncmp(cdev->client->name, client->name,
+ 			    I40E_CLIENT_STR_LENGTH))
+ 			continue;
++		pf = (struct i40e_pf *)cdev->lan_info.pf;
+ 		if (test_bit(__I40E_CLIENT_INSTANCE_OPENED, &cdev->state)) {
+ 			if (atomic_read(&cdev->ref_cnt) > 0) {
+ 				ret = I40E_ERR_NOT_READY;
+ 				goto out;
  			}
-+			if (!test_bit(__I40E_CLIENT_INSTANCE_OPENED,
-+				      &cdev->state)) {
-+				dev_dbg(&vsi->back->pdev->dev, "Client is not open, abort virtchnl_receive\n");
-+				continue;
-+			}
- 			cdev->client->ops->virtchnl_receive(&cdev->lan_info,
- 							    cdev->client,
- 							    vf_id, msg, len);
-@@ -181,6 +186,11 @@ void i40e_notify_client_of_l2_param_changes(struct i40e_vsi *vsi)
- 					"Cannot locate client instance l2_param_change routine\n");
- 				continue;
- 			}
-+			if (!test_bit(__I40E_CLIENT_INSTANCE_OPENED,
-+				      &cdev->state)) {
-+				dev_dbg(&vsi->back->pdev->dev, "Client is not open, abort l2 param change\n");
-+				continue;
-+			}
- 			cdev->lan_info.params = params;
- 			cdev->client->ops->l2_param_change(&cdev->lan_info,
- 							   cdev->client,
-@@ -298,6 +308,11 @@ void i40e_notify_client_of_vf_reset(struct i40e_pf *pf, u32 vf_id)
- 					"Cannot locate client instance VF reset routine\n");
- 				continue;
- 			}
-+			if (!test_bit(__I40E_CLIENT_INSTANCE_OPENED,
-+				      &cdev->state)) {
-+				dev_dbg(&pf->pdev->dev, "Client is not open, abort vf-reset\n");
-+				continue;
-+			}
- 			cdev->client->ops->vf_reset(&cdev->lan_info,
- 						    cdev->client, vf_id);
- 		}
-@@ -328,6 +343,11 @@ void i40e_notify_client_of_vf_enable(struct i40e_pf *pf, u32 num_vfs)
- 					"Cannot locate client instance VF enable routine\n");
- 				continue;
- 			}
-+			if (!test_bit(__I40E_CLIENT_INSTANCE_OPENED,
-+				      &cdev->state)) {
-+				dev_dbg(&pf->pdev->dev, "Client is not open, abort vf-enable\n");
-+				continue;
-+			}
- 			cdev->client->ops->vf_enable(&cdev->lan_info,
- 						     cdev->client, num_vfs);
- 		}
-@@ -362,6 +382,11 @@ int i40e_vf_client_capable(struct i40e_pf *pf, u32 vf_id,
- 					"Cannot locate client instance VF capability routine\n");
- 				continue;
- 			}
-+			if (!test_bit(__I40E_CLIENT_INSTANCE_OPENED,
-+				      &cdev->state)) {
-+				dev_dbg(&pf->pdev->dev, "Client is not open, abort vf-capable\n");
-+				continue;
-+			}
- 			capable = cdev->client->ops->vf_capable(&cdev->lan_info,
- 								cdev->client,
- 								vf_id);
+-			pf = (struct i40e_pf *)cdev->lan_info.pf;
+ 			if (client->ops && client->ops->close)
+ 				client->ops->close(&cdev->lan_info, client,
+ 						   false);
 -- 
 2.4.11
 
