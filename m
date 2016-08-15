@@ -1,33 +1,92 @@
-From: Tantilov, Emil S <emil.s.tantilov@intel.com>
-Date: Mon, 15 Aug 2016 20:58:15 +0000
-Subject: [Intel-wired-lan] ixgbe panic on ethtool after interface down/up
-In-Reply-To: <CAPeXnHs=7G_R8spwEsZmiFV2Yu19bbumQBC4OZemsOGBMVwMuQ@mail.gmail.com>
-References: <CAPeXnHs=7G_R8spwEsZmiFV2Yu19bbumQBC4OZemsOGBMVwMuQ@mail.gmail.com>
-Message-ID: <87618083B2453E4A8714035B62D67992506C9040@FMSMSX105.amr.corp.intel.com>
+From: Bimmy Pujari <bimmy.pujari@intel.com>
+Date: Mon, 15 Aug 2016 14:17:18 -0700
+Subject: [Intel-wired-lan] [next PATCH S42-V2 1/2] i40e: Check client is
+	open before calling client ops
+Message-ID: <1471295839-13587-1-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
->-----Original Message-----
->From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
->Behalf Of Matthew Garrett
->Sent: Monday, August 15, 2016 1:35 PM
->To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; intel-wired-
->lan at lists.osuosl.org
->Subject: [Intel-wired-lan] ixgbe panic on ethtool after interface down/up
->
->We're seeing the following panic on ixgbe after running ethtool -K
->ens802f0 l2-fwd-offload on:
+From: Catherine Sullivan <catherine.sullivan@intel.com>
 
-Which kernel version and what device are you using in this test?
+We were having a race between the completion of the client open and
+calls to the client ops so don't call a client op unless we are sure the
+client is open.
 
-We did have similar crashes reported due to a race in the service task.
-Unless you are running current pull from our dev tree, you may want to give
-this patch a try:
-http://patchwork.ozlabs.org/patch/654205/
+Testing Hints: Load IWARP driver and make sure it works as expected.
 
-Thanks,
-Emil
+Signed-off-by: Catherine Sullivan <catherine.sullivan@intel.com>
+Change-Id: I741f4f2aa4fcbfdad3e40dabbbb1b005856c396b
+---
+ drivers/net/ethernet/intel/i40e/i40e_client.c | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c b/drivers/net/ethernet/intel/i40e/i40e_client.c
+index 677dae5..1035f88 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_client.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
+@@ -148,6 +148,11 @@ i40e_notify_client_of_vf_msg(struct i40e_vsi *vsi, u32 vf_id, u8 *msg, u16 len)
+ 					"Cannot locate client instance virtual channel receive routine\n");
+ 				continue;
+ 			}
++			if (!test_bit(__I40E_CLIENT_INSTANCE_OPENED,
++				      &cdev->state)) {
++				dev_dbg(&vsi->back->pdev->dev, "Client is not open, abort virtchnl_receive\n");
++				continue;
++			}
+ 			cdev->client->ops->virtchnl_receive(&cdev->lan_info,
+ 							    cdev->client,
+ 							    vf_id, msg, len);
+@@ -181,6 +186,11 @@ void i40e_notify_client_of_l2_param_changes(struct i40e_vsi *vsi)
+ 					"Cannot locate client instance l2_param_change routine\n");
+ 				continue;
+ 			}
++			if (!test_bit(__I40E_CLIENT_INSTANCE_OPENED,
++				      &cdev->state)) {
++				dev_dbg(&vsi->back->pdev->dev, "Client is not open, abort l2 param change\n");
++				continue;
++			}
+ 			cdev->lan_info.params = params;
+ 			cdev->client->ops->l2_param_change(&cdev->lan_info,
+ 							   cdev->client,
+@@ -298,6 +308,11 @@ void i40e_notify_client_of_vf_reset(struct i40e_pf *pf, u32 vf_id)
+ 					"Cannot locate client instance VF reset routine\n");
+ 				continue;
+ 			}
++			if (!test_bit(__I40E_CLIENT_INSTANCE_OPENED,
++				      &cdev->state)) {
++				dev_dbg(&pf->pdev->dev, "Client is not open, abort vf-reset\n");
++				continue;
++			}
+ 			cdev->client->ops->vf_reset(&cdev->lan_info,
+ 						    cdev->client, vf_id);
+ 		}
+@@ -328,6 +343,11 @@ void i40e_notify_client_of_vf_enable(struct i40e_pf *pf, u32 num_vfs)
+ 					"Cannot locate client instance VF enable routine\n");
+ 				continue;
+ 			}
++			if (!test_bit(__I40E_CLIENT_INSTANCE_OPENED,
++				      &cdev->state)) {
++				dev_dbg(&pf->pdev->dev, "Client is not open, abort vf-enable\n");
++				continue;
++			}
+ 			cdev->client->ops->vf_enable(&cdev->lan_info,
+ 						     cdev->client, num_vfs);
+ 		}
+@@ -362,6 +382,11 @@ int i40e_vf_client_capable(struct i40e_pf *pf, u32 vf_id,
+ 					"Cannot locate client instance VF capability routine\n");
+ 				continue;
+ 			}
++			if (!test_bit(__I40E_CLIENT_INSTANCE_OPENED,
++				      &cdev->state)) {
++				dev_dbg(&pf->pdev->dev, "Client is not open, abort vf-capable\n");
++				continue;
++			}
+ 			capable = cdev->client->ops->vf_capable(&cdev->lan_info,
+ 								cdev->client,
+ 								vf_id);
+-- 
+2.4.11
 
