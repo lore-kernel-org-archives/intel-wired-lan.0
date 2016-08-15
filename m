@@ -1,51 +1,56 @@
-From: Joe Perches <joe@perches.com>
-Date: Wed, 31 Aug 2016 19:46:02 -0700
-Subject: [Intel-wired-lan] [PATCH v2] checkpatch.pl: seed camelcase from
- the provided kernel tree root
-In-Reply-To: <1472697190.2453.14.camel@intel.com>
-References: <20160829210047.25111-1-jacob.e.keller@intel.com>
- <309B89C4C689E141A5FF6A0C5FB2118B81F7A0C0@ORSMSX101.amr.corp.intel.com>
- <02874ECE860811409154E81DA85FBB5857B8D29D@ORSMSX115.amr.corp.intel.com>
- <309B89C4C689E141A5FF6A0C5FB2118B81F7A333@ORSMSX101.amr.corp.intel.com>
- <1472697190.2453.14.camel@intel.com>
-Message-ID: <1472697962.4176.77.camel@perches.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Date: Mon, 15 Aug 2016 13:51:11 -0500
+Subject: [Intel-wired-lan] [PATCH v6 0/3] PCI: Precision Time
+	Measurement support
+In-Reply-To: <578EBC81.3090601@intel.com>
+References: <20160613185945.12503.32760.stgit@bhelgaas-glaptop2.roam.corp.google.com>
+ <20160719211926.GB17840@localhost> <578EBC81.3090601@intel.com>
+Message-ID: <20160815185111.GC9790@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, 2016-08-31 at 19:33 -0700, Jeff Kirsher wrote:
-> On Thu, 2016-09-01 at 01:04 +0000, Brown, Aaron F wrote:
-> > From: Keller, Jacob E
-
-Hi all.
-
-> > > > ---------------------------------------------------------------------
-> > > > The first is clearly a false warning, thinks checkpatch is the tool
-> > > > that found the error rather than the tool being fixed.? ;)?? The second is just
-> > > > a long line in the perl code, which I don't really consider a blocking issue so...
-> > > Ya I saw those. I saw many lines over 80 characters in the file so I
-> > > just assumed we don't bother checking the tool with itself.
-> > Well, it showed up in as a patch so I ran it through...? But yeah, it
-> > does not make sense to enforce rules intended for the kernel against
-> > something else.? Especially as the precedent for line length is clearly
-> > already in the file
-> Although it technically is a part of the kernel source since it is in
-> scripts. ?So the question is, should kernel scripts follow the coding
-> standards? ?If so, then yes it should follow its own rules for kernel
-> source.
+On Wed, Jul 20, 2016 at 07:49:21AM +0800, Yong, Jonathan wrote:
+> On 07/20/2016 05:19, Bjorn Helgaas wrote:
+> > On Mon, Jun 13, 2016 at 02:05:26PM -0500, Bjorn Helgaas wrote:
+> >> This is a slightly different proposal for the PTM support Jonathan
+> >> proposed here:
+> >>
+> >>   http://lkml.kernel.org/r/1462956446-27361-2-git-send-email-jonathan.yong at intel.com
+> >>
+> >> I split this into three pieces mostly for ease in reviewing.  They
+> >> could all be squashed:
+> >>
+> >>   - Enable PTM in root ports and switches automatically at boot
+> >>   - Enable PTM in endpoints when requested by driver
+> >>   - Add clock granularity information
+> >>
+> >> I have some open questions about how PTM works on Root Complex
+> >> Integrated Endpoints and whether we should enable it automatically
+> >> even without a driver request.  And I probably left out some details
+> >> of the clock granularity computation, so treat this as more of an RFC
+> >> than anything.
+> >>
+> > 
+> > Jonathan, any comments?
+> > 
 > 
-> Personally I do not think it should be an issue for the contents of
-> /scripts in the kernel source, but that would be an interesting question to
-> pose to Joe Perches and the other checkpatch.pl warlords.
+> I don't have any new information on how to configure integrated endpoints.
+> 
+> This line:
+> ctrl = PCI_PTM_CTRL_ENABLE | PCI_PTM_CTRL_ROOT;
+> 
+> should also set the responder capable bit (7.32.2):
+> 	If PTM Root Capable is Set, this bit must be Set to 1b.
 
-Warlord? ?Damn. ?Where are my spoils of war?
+The PTM Responder Capable bit (bit 1 in Table 7-145) is a HwInit bit
+in the PTM Capability register, so it's read-only from the kernel's
+perspective.
 
-Perl is already basically unintelligible.
-80 column perl would be a whole lot worse.
+The line you mention ("ctrl = PCI_PTM_CTRL_ENABLE | PCI_PTM_CTRL_ROOT")
+is turning on bits in the PTM Control register, not the Capability
+register.
 
-Anyway, I don't look at scripts with checkpatch.
-
-I think it's really only useful for .[ch] files.
-
+Bjorn
