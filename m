@@ -1,174 +1,151 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 16 Aug 2016 13:39:53 -0700
-Subject: [Intel-wired-lan] [next PATCH 1/5] i40e: Introduce devlink
-	interface.
-In-Reply-To: <57B3615B.6020504@intel.com>
-References: <1470329387-25138-1-git-send-email-sridhar.samudrala@intel.com>
- <CAKgT0UeGtE2UUQWmjciz+zvLsCVPknvoUevmW6GRyDXMNCySSQ@mail.gmail.com>
- <57AB5B5B.3090801@gmail.com>
- <CAKgT0Ud5LYhKeyD7_fbw-SXFFi7hSTe8mCSUdj_=oXQv5m+AeA@mail.gmail.com>
- <57AB756D.1060600@gmail.com> <57B3615B.6020504@intel.com>
-Message-ID: <CAKgT0Udm2H53qYupN3N-p5aD9NSdnVaAr8zq1OgcO6apeR4j9Q@mail.gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 17 Aug 2016 05:01:26 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ 0552e2d78e7230f9b489171b8a25893d3763bacd BUILD SUCCESS
+Message-ID: <57b37f26.qpv65hl8GS+KYh9D%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Aug 16, 2016 at 11:54 AM, Samudrala, Sridhar
-<sridhar.samudrala@intel.com> wrote:
-> On 8/10/2016 11:41 AM, John Fastabend wrote:
->>
->> On 16-08-10 11:18 AM, Alexander Duyck wrote:
->>>
->>> On Wed, Aug 10, 2016 at 9:50 AM, John Fastabend
->>> <john.fastabend@gmail.com> wrote:
->>>>
->>>> On 16-08-10 09:01 AM, Alexander Duyck wrote:
->>>>>
->>>>> On Thu, Aug 4, 2016 at 9:49 AM, Sridhar Samudrala
->>>>> <sridhar.samudrala@intel.com> wrote:
->>>>>>
->>>>>> Add initial devlink support to set/get the mode of SRIOV switch.
->>>>>> This patch allows the mode to be set to either 'legacy' or
->>>>>> 'switchdev', but
->>>>>> doesn't implement any functionality to create vf representors in
->>>>>> switchdev
->>>>>> mode.
->>>>>>
->>>>>> With smode support in iproute2 'devlink' utility, switch mode can be
->>>>>> set
->>>>>> and get via following commands.
->>>>>>
->>>>>>      # devlink dev smode pci/0000:05:00.0
->>>>>>      mode: legacy
->>>>>>      # devlink dev set pci/0000:05:00.0 smode switchdev
->>>>>>      # devlink dev smode pci/0000:05:00.0
->>>>>>      mode: switchdev
->>>>>>
->>>>>> Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
->>>>>
->>>>> I really don't see much value in this patch.  If you are going to
->>>>> support SwitchDev then just do it.  Otherwise you are adding extra
->>>>> overhead for maintaining two different modes.
->>>>>
->>>>> I would recommend putting this series out to netdev as an RFC.
->>>>> Submitting it to intel-wired-lan is kind of pointless as the audience
->>>>> it to small to get any valuable review.
->
->
-> As these patches have only changes to i40e driver, i didn't include netdev.
-> Will do so when
-> i submit v2.
->
->>>>>
->>>>> - Alex
->>>>
->>>> I argued at length about this already. Jiri and company wanted this flag
->>>> to push device in and out of this mode. Here we are just following the
->>>> already upstreamed and debated decision.
->>>
->>> Yeah, I started doing more research after reviewing this patch.  I see
->>> the idea behind it.  I think the issue if anything is that it seems
->>> like things are a bit backwards.  We probably should be enabling the
->>> SwitchDev bits first and then working on adding devlink knobs to
->>> disable things later.
->>>
->> Sure, although its not clear to me exactly which switchdev bits are
->> useful for an edge NIC like this. Getting switch ids is one thing
->> that will become useful when we enable multiple bridges.
->
->
-> This patchset is not really adding any switchdev ops.  We are calling the
-> mode in which the
-> PF driver creates VF representors as SWITCHDEV mode (this is based on the
-> netdev
-> discussion of mellanox patches).
->
-> Amritha has a patch to add switchdev ops to VF representor netdevs that
-> enables returning
-> switch id via switchdev_port_attr_get() op.
->
->>
->> Otherwise I don't see what l2 switchdev blocks are useful vs
->> just using the standard ndo op interfaces already in place when
->> working on a device without learning/aging/etc. The one thing
->> that I've never bothered to add is pushing "learned" rules down
->> into the hardware but I'm not convinced for most use cases this
->> is particularly interesting because you _should_ know in a managed
->> system what MAC addresses a VM/container/etc is allowed to use
->> ahead of time via libvirt or other mgmt stack. I haven't tested
->> the VLAN handling though so that needs to be looked at.
->>
->> And l3 switchdev routing may be interesting but its fairly
->> low on my priority list unless someone is really excited about it.
->>
->>>> This is less about switchdev and more about generating VF netdevs to
->>>> use with ip tools and friends.
->>>
->>> Right.  One of the issues I have with this patch set is that it seems
->>> to get things backwards.  They are making VFs appear that don't do
->>> much of anything and then trying to bolt on features after the fact.
->>> We probably need to focus on enabling the VF representation, and then
->>> providing the ability to switch them on and off.  Also I would argue
->>> that we should actually be enabling switch features such as FDB
->>> entries instead of trying to bolt on stuff like flow director which
->>> doesn't really apply to very many switches and isn't as likely to be
->>> used on a switch port.
->>
->> Fair enough. Organizing the patches better seems OK to me. I plan to
->> use the 'tc' offloaded mechanisms not the ethtool flow director
->> interface for virtual switch offloads.
->>
->>>> Another option would be to just always enable VF netdevs and have no
->>>> legacy mode at all. I think that would be fine it just depends on if
->>>> you think having extra netdevs around will confuse the stack at all.
->>>> It might create a few corner cases but one reasonable thing to do
->>>> would be to just fix those cases as they appear.
->>>
->>> I'd say we are better off starting out with them just enabled and then
->>> enabling the option to disable them after the fact.  If we are going
->>> to have this extra code floating around we should be defaulting it to
->>> enabled so that it is more likely to be used.  The legacy option
->>> should only really be there so we can turn this off if we don't want
->>> it.
->>>
->> Works for me.
->>
->
-> OK.  If we all agree that 'creating VF netdevs' by default is the right way
-> to go,  I will rearrange the
-> patchset in the following order.
->    - Introduce VF representor netdevs (create VF netdevs by default when
-> sr-iov VFs are enabled)
->    - enable ethtool stats on VF representors
->    - enable ntuple filters on VF representors
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+0552e2d78e7230f9b489171b8a25893d3763bacd  i40e: check for and deal with non-contiguous TCs
 
-No NTUPLE filters.  This is not the way the community will want to do
-this, and this is not how I want to do this.
+elapsed time: 212m
 
-The easy way to think of this is that NTUPLE is just an alias for Rx
-network flow classification.  Now where are the VF representors
-supposed to receive traffic from?  It is the Tx path of the VF.  So by
-putting NTUPLE filters on the VF representors you are implying  you
-can get in the Tx path for the VF for all traffic, and last I knew
-that was not the case.  As such it makes no sense to do it this way.
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 130
 
->    - introduce devlink to enable the switch mode to be changed to 'legacy'
-> (no VF netdevs)
->
-> Thanks
-> Sridhar
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201633
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                 randconfig-v0-08170415
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+parisc                         b180_defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+arm                    vt8500_v6_v7_defconfig
+m68k                              allnoconfig
+mips                         mpc30x_defconfig
+mips                      pistachio_defconfig
+powerpc                     akebono_defconfig
+x86_64                 randconfig-x013-201633
+x86_64                 randconfig-x015-201633
+x86_64                 randconfig-x012-201633
+x86_64                 randconfig-x011-201633
+x86_64                 randconfig-x014-201633
+x86_64                 randconfig-x010-201633
+x86_64                 randconfig-x017-201633
+x86_64                 randconfig-x018-201633
+x86_64                 randconfig-x019-201633
+x86_64                 randconfig-x016-201633
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+x86_64                                   rhel
+x86_64                               rhel-7.2
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201633
+i386                     randconfig-s1-201633
+x86_64                 randconfig-s0-08170410
+x86_64                 randconfig-s1-08170410
+x86_64                 randconfig-s2-08170410
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                 randconfig-i0-08161126
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201633
+i386                     randconfig-i1-201633
+x86_64                 randconfig-b0-08170400
+x86_64                 randconfig-b0-08170437
+arm                         mv78xx0_defconfig
+i386                   randconfig-x010-201633
+i386                   randconfig-x011-201633
+i386                   randconfig-x012-201633
+i386                   randconfig-x013-201633
+i386                   randconfig-x014-201633
+i386                   randconfig-x015-201633
+i386                   randconfig-x016-201633
+i386                   randconfig-x017-201633
+i386                   randconfig-x018-201633
+i386                   randconfig-x019-201633
+x86_64                                    lkp
+i386                     randconfig-n0-201633
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-x002-201633
+x86_64                 randconfig-x008-201633
+x86_64                 randconfig-x009-201633
+x86_64                 randconfig-x007-201633
+x86_64                 randconfig-x003-201633
+x86_64                 randconfig-x004-201633
+x86_64                 randconfig-x005-201633
+x86_64                 randconfig-x000-201633
+x86_64                 randconfig-x006-201633
+x86_64                 randconfig-x001-201633
+i386                     randconfig-r0-201633
+i386                   randconfig-x009-201633
+i386                   randconfig-x002-201633
+i386                   randconfig-x006-201633
+i386                   randconfig-x001-201633
+i386                   randconfig-x003-201633
+i386                   randconfig-x007-201633
+i386                   randconfig-x008-201633
+i386                   randconfig-x000-201633
+i386                   randconfig-x005-201633
+i386                   randconfig-x004-201633
 
-You have to think of the VF representors as switch ports.  They don't
-actually represent the VFs.  So if you think about it a switch port
-will only have a few real features.  You can control the VLAN
-membership, tagged/untagged, what FDB entries are assigned to the
-port, the link speed, if the link is up/down, etc.  So some of your
-first steps might be to focus on the L1 and L2 type items.  So for
-example you might see if we can do things like control the upper limit
-of the MTU for the VF by controlling the MTU for the VF representor.
-See if you can at least make it so that the MAC and VLAN values for
-the VF show up as FDB entries for the VF representor and so forth.
-
-- Alex
+Thanks,
+Fengguang
