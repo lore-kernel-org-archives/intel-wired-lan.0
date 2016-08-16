@@ -1,57 +1,34 @@
-From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Mon, 15 Aug 2016 14:17:19 -0700
-Subject: [Intel-wired-lan] [next PATCH S42-V2 2/2] i40e: Initialize pointer
-	in client_release function
-In-Reply-To: <1471295839-13587-1-git-send-email-bimmy.pujari@intel.com>
-References: <1471295839-13587-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1471295839-13587-2-git-send-email-bimmy.pujari@intel.com>
+From: Yong, Jonathan <jonathan.yong@intel.com>
+Date: Tue, 16 Aug 2016 09:27:05 +0800
+Subject: [Intel-wired-lan] [PATCH v6 0/3] PCI: Precision Time
+	Measurement support
+In-Reply-To: <20160815185111.GC9790@localhost>
+References: <20160613185945.12503.32760.stgit@bhelgaas-glaptop2.roam.corp.google.com>
+ <20160719211926.GB17840@localhost> <578EBC81.3090601@intel.com>
+ <20160815185111.GC9790@localhost>
+Message-ID: <57B26BE9.3060902@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+On 08/16/2016 02:51, Bjorn Helgaas wrote:
+>>
+>> This line:
+>> ctrl = PCI_PTM_CTRL_ENABLE | PCI_PTM_CTRL_ROOT;
+>>
+>> should also set the responder capable bit (7.32.2):
+>> 	If PTM Root Capable is Set, this bit must be Set to 1b.
+> 
+> The PTM Responder Capable bit (bit 1 in Table 7-145) is a HwInit bit
+> in the PTM Capability register, so it's read-only from the kernel's
+> perspective.
+> 
+> The line you mention ("ctrl = PCI_PTM_CTRL_ENABLE | PCI_PTM_CTRL_ROOT")
+> is turning on bits in the PTM Control register, not the Capability
+> register.
+> 
 
-The function i40e_client_release has a print statement that uses an
-adapter pointer which is not initialized if a previous if statement
-is not true. Hence, intialize it in the right place.
-
-Testing Hints: Compile check
-
-Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-Change-ID: I1afdaa2c46771ac42be56edcc41bb56b455b06c8
----
- drivers/net/ethernet/intel/i40e/i40e_client.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c b/drivers/net/ethernet/intel/i40e/i40e_client.c
-index 1035f88..09a37cf 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_client.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
-@@ -662,7 +662,7 @@ int i40e_lan_del_device(struct i40e_pf *pf)
- static int i40e_client_release(struct i40e_client *client)
- {
- 	struct i40e_client_instance *cdev, *tmp;
--	struct i40e_pf *pf = NULL;
-+	struct i40e_pf *pf;
- 	int ret = 0;
- 
- 	LIST_HEAD(cdevs_tmp);
-@@ -672,12 +672,12 @@ static int i40e_client_release(struct i40e_client *client)
- 		if (strncmp(cdev->client->name, client->name,
- 			    I40E_CLIENT_STR_LENGTH))
- 			continue;
-+		pf = (struct i40e_pf *)cdev->lan_info.pf;
- 		if (test_bit(__I40E_CLIENT_INSTANCE_OPENED, &cdev->state)) {
- 			if (atomic_read(&cdev->ref_cnt) > 0) {
- 				ret = I40E_ERR_NOT_READY;
- 				goto out;
- 			}
--			pf = (struct i40e_pf *)cdev->lan_info.pf;
- 			if (client->ops && client->ops->close)
- 				client->ops->close(&cdev->lan_info, client,
- 						   false);
--- 
-2.4.11
+My bad, there is no "responder enable" bit control, patch looks good.
 
