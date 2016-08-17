@@ -1,127 +1,142 @@
-From: Donald C Skidmore <donald.c.skidmore@intel.com>
-Date: Wed, 17 Aug 2016 14:11:57 -0400
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix led interface for X557 devices.
-Message-ID: <1471457517-28904-1-git-send-email-donald.c.skidmore@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 18 Aug 2016 01:21:42 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 8db8ff8629cbb7e5921c04e0ae31020bb3619447 BUILD SUCCESS
+Message-ID: <57b49d26.1SplB5ZTW92zSzY6%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The X557 devices use a different interface to the LED for the port.
-This patch reflect that change.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+8db8ff8629cbb7e5921c04e0ae31020bb3619447  i40e: Initialize pointer in client_release function
 
-Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |  3 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 52 +++++++++++++++++++++++++--
- 2 files changed, 53 insertions(+), 2 deletions(-)
+elapsed time: 108m
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-index 5ff91b8..a59b65f7 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
-@@ -1830,6 +1830,9 @@ enum {
- #define IXGBE_LED_IVRT(_i)       IXGBE_LED_OFFSET(IXGBE_LED_IVRT_BASE, _i)
- #define IXGBE_LED_BLINK(_i)      IXGBE_LED_OFFSET(IXGBE_LED_BLINK_BASE, _i)
- #define IXGBE_LED_MODE_MASK(_i)  IXGBE_LED_OFFSET(IXGBE_LED_MODE_MASK_BASE, _i)
-+#define IXGBE_X557_LED_MANUAL_SET_MASK	BIT(8)
-+#define IXGBE_X557_MAX_LED_INDEX	3
-+#define IXGBE_X557_LED_PROVISIONING	0xC430
- 
- /* LED modes */
- #define IXGBE_LED_LINK_UP       0x0
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index 4716ca4..45ad6b1 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -2114,6 +2114,50 @@ static s32 ixgbe_reset_phy_t_X550em(struct ixgbe_hw *hw)
- 	return ixgbe_enable_lasi_ext_t_x550em(hw);
- }
- 
-+/**
-+ *  ixgbe_led_on_t_x550em - Turns on the software controllable LEDs.
-+ *  @hw: pointer to hardware structure
-+ *  @led_idx: led number to turn on
-+ **/
-+s32 ixgbe_led_on_t_x550em(struct ixgbe_hw *hw, u32 led_idx)
-+{
-+	u16 phy_data;
-+
-+	if (led_idx >= IXGBE_X557_MAX_LED_INDEX)
-+		return IXGBE_ERR_PARAM;
-+
-+	/* To turn on the LED, set mode to ON. */
-+	hw->phy.ops.read_reg(hw, IXGBE_X557_LED_PROVISIONING + led_idx,
-+			     IXGBE_MDIO_VENDOR_SPECIFIC_1_DEV_TYPE, &phy_data);
-+	phy_data |= IXGBE_X557_LED_MANUAL_SET_MASK;
-+	hw->phy.ops.write_reg(hw, IXGBE_X557_LED_PROVISIONING + led_idx,
-+			      IXGBE_MDIO_VENDOR_SPECIFIC_1_DEV_TYPE, phy_data);
-+
-+	return 0;
-+}
-+
-+/**
-+ *  ixgbe_led_off_t_x550em - Turns off the software controllable LEDs.
-+ *  @hw: pointer to hardware structure
-+ *  @led_idx: led number to turn off
-+ **/
-+s32 ixgbe_led_off_t_x550em(struct ixgbe_hw *hw, u32 led_idx)
-+{
-+	u16 phy_data;
-+
-+	if (led_idx >= IXGBE_X557_MAX_LED_INDEX)
-+		return IXGBE_ERR_PARAM;
-+
-+	/* To turn on the LED, set mode to ON. */
-+	hw->phy.ops.read_reg(hw, IXGBE_X557_LED_PROVISIONING + led_idx,
-+			     IXGBE_MDIO_VENDOR_SPECIFIC_1_DEV_TYPE, &phy_data);
-+	phy_data &= ~IXGBE_X557_LED_MANUAL_SET_MASK;
-+	hw->phy.ops.write_reg(hw, IXGBE_X557_LED_PROVISIONING + led_idx,
-+			      IXGBE_MDIO_VENDOR_SPECIFIC_1_DEV_TYPE, phy_data);
-+
-+	return 0;
-+}
-+
- /** ixgbe_get_lcd_x550em - Determine lowest common denominator
-  *  @hw: pointer to hardware structure
-  *  @lcd_speed: pointer to lowest common link speed
-@@ -2853,8 +2897,6 @@ static s32 ixgbe_write_phy_reg_x550a(struct ixgbe_hw *hw, u32 reg_addr,
- 	.write_analog_reg8		= NULL, \
- 	.set_rxpba			= &ixgbe_set_rxpba_generic, \
- 	.check_link			= &ixgbe_check_mac_link_generic, \
--	.led_on				= &ixgbe_led_on_generic, \
--	.led_off			= &ixgbe_led_off_generic, \
- 	.blink_led_start		= &ixgbe_blink_led_start_X540, \
- 	.blink_led_stop			= &ixgbe_blink_led_stop_X540, \
- 	.set_rar			= &ixgbe_set_rar_generic, \
-@@ -2886,6 +2928,8 @@ static s32 ixgbe_write_phy_reg_x550a(struct ixgbe_hw *hw, u32 reg_addr,
- 
- static const struct ixgbe_mac_operations mac_ops_X550 = {
- 	X550_COMMON_MAC
-+	.led_on			= ixgbe_led_on_generic,
-+	.led_off		= ixgbe_led_off_generic,
- 	.reset_hw		= &ixgbe_reset_hw_X540,
- 	.get_media_type		= &ixgbe_get_media_type_X540,
- 	.get_san_mac_addr	= &ixgbe_get_san_mac_addr_generic,
-@@ -2904,6 +2948,8 @@ static const struct ixgbe_mac_operations mac_ops_X550 = {
- 
- static const struct ixgbe_mac_operations mac_ops_X550EM_x = {
- 	X550_COMMON_MAC
-+	.led_on			= ixgbe_led_on_t_x550em,
-+	.led_off		= ixgbe_led_off_t_x550em,
- 	.reset_hw		= &ixgbe_reset_hw_X550em,
- 	.get_media_type		= &ixgbe_get_media_type_X550em,
- 	.get_san_mac_addr	= NULL,
-@@ -2922,6 +2968,8 @@ static const struct ixgbe_mac_operations mac_ops_X550EM_x = {
- 
- static struct ixgbe_mac_operations mac_ops_x550em_a = {
- 	X550_COMMON_MAC
-+	.led_on			= ixgbe_led_on_t_x550em,
-+	.led_off		= ixgbe_led_off_t_x550em,
- 	.reset_hw		= ixgbe_reset_hw_X550em,
- 	.get_media_type		= ixgbe_get_media_type_X550em,
- 	.get_san_mac_addr	= NULL,
--- 
-2.4.3
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 120
 
+i386                     randconfig-a0-201633
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x013-201633
+x86_64                 randconfig-x015-201633
+x86_64                 randconfig-x012-201633
+x86_64                 randconfig-x011-201633
+x86_64                 randconfig-x014-201633
+x86_64                 randconfig-x010-201633
+x86_64                 randconfig-x017-201633
+x86_64                 randconfig-x018-201633
+x86_64                 randconfig-x019-201633
+x86_64                 randconfig-x016-201633
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                   randconfig-s1-08171828
+i386                   randconfig-s0-08171828
+x86_64                 randconfig-s0-08172358
+x86_64                 randconfig-s1-08172358
+x86_64                 randconfig-s2-08172358
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201633
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                     randconfig-i1-201633
+i386                     randconfig-i0-201633
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                   randconfig-x016-201633
+i386                   randconfig-x014-201633
+i386                   randconfig-x010-201633
+i386                   randconfig-x017-201633
+i386                   randconfig-x018-201633
+i386                   randconfig-x012-201633
+i386                   randconfig-x013-201633
+i386                   randconfig-x019-201633
+i386                   randconfig-x015-201633
+i386                   randconfig-x011-201633
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201633
+x86_64                           allmodconfig
+x86_64                 randconfig-x000-201633
+x86_64                 randconfig-x001-201633
+x86_64                 randconfig-x002-201633
+x86_64                 randconfig-x003-201633
+x86_64                 randconfig-x004-201633
+x86_64                 randconfig-x005-201633
+x86_64                 randconfig-x006-201633
+x86_64                 randconfig-x007-201633
+x86_64                 randconfig-x008-201633
+x86_64                 randconfig-x009-201633
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201633
+i386                   randconfig-x000-201633
+i386                   randconfig-x001-201633
+i386                   randconfig-x002-201633
+i386                   randconfig-x003-201633
+i386                   randconfig-x004-201633
+i386                   randconfig-x005-201633
+i386                   randconfig-x006-201633
+i386                   randconfig-x007-201633
+i386                   randconfig-x008-201633
+i386                   randconfig-x009-201633
+
+Thanks,
+Fengguang
