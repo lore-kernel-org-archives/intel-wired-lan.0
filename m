@@ -1,63 +1,140 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 16 Aug 2016 17:17:26 -0700
-Subject: [Intel-wired-lan] [next PATCH 1/5] i40e: Introduce devlink
-	interface.
-In-Reply-To: <57B38AF1.3080203@intel.com>
-References: <1470329387-25138-1-git-send-email-sridhar.samudrala@intel.com>
- <CAKgT0UeGtE2UUQWmjciz+zvLsCVPknvoUevmW6GRyDXMNCySSQ@mail.gmail.com>
- <57AB5B5B.3090801@gmail.com>
- <CAKgT0Ud5LYhKeyD7_fbw-SXFFi7hSTe8mCSUdj_=oXQv5m+AeA@mail.gmail.com>
- <57AB756D.1060600@gmail.com> <57B3615B.6020504@intel.com>
- <CAKgT0Udm2H53qYupN3N-p5aD9NSdnVaAr8zq1OgcO6apeR4j9Q@mail.gmail.com>
- <57B38AF1.3080203@intel.com>
-Message-ID: <CAKgT0UfXn5=PqxKawx-TX6JTWU+EmzBVH6J91g5TeUJDi+3vsQ@mail.gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 17 Aug 2016 08:47:29 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:1GbE]
+ fbfe12c64f9650aa22f434dd9dd22df7ddf63221 BUILD SUCCESS
+Message-ID: <57b3b421.AAq8vdJBACwkMBXV%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Aug 16, 2016 at 2:51 PM, Samudrala, Sridhar
-<sridhar.samudrala@intel.com> wrote:
-> The idea behind NTUPLE filters on VF representors is to match RX traffic
-> that is destined
-> for the corresponding VF. Basically when adding the flow director filter, we
-> are setting the
-> dest vsi as the VSI of the corresponding VF.
-> Without VF representors, this is currently done by overloading user-def
-> value with VF id.
->
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  1GbE
+fbfe12c64f9650aa22f434dd9dd22df7ddf63221  i40e: check for and deal with non-contiguous TCs
 
-Yes, and for now that is preferable to what you are doing since it
-makes no sense.
+elapsed time: 246m
 
-I will try to clarify my point.  First, instead of calling these VF
-representors lets call them VF port representor, or VFPR for short
-(trying to avoid VFR because it sounds too much like VRF which is
-completely unrelated).  So the whole point of a VFPR is to present the
-VF as a port on your logical switch.  You should mostly only be
-capable of doing on it what you would do with an actual switch.  So
-for example if I have a switch connected to NIC.  Now most switches
-have certain options for controlling things.  For example I can force
-the switch port onto a given VLAN so that the port is isolated from
-other traffic.  I can control the max frame size allowed to be sent or
-received over the port.  I can block what traffic the port is allowed
-to send by restricting MAC addresses via ACLs, and I can manually
-program the forwarding table via FDB entries.
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 118
 
-The problem is Flow Director also know as NTUPLE or Rx NFC only
-operates on the Rx side of NICs.  In your VFPR the Rx side represents
-packets coming from your VF, not packets going to it.   If you
-transmit on a VFPR the packet should be received only by the VF, if
-you receive from it the packet should only be from the VF.  So really
-any Flow Director rule you add to the VFPR should not impact the VF,
-but instead should impact the VFPR and the PF since the PF will add
-the rule and it should only apply on traffic received on the VFPR from
-the VF.
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201633
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+cris                 etrax-100lx_v2_defconfig
+blackfin                  TCM-BF537_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin                BF526-EZBRD_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64       allyesdebian+CONFIG_DEBUG_INFO_REDUCED-CONFIG_DEBUG_INFO_REDUCED
+x86_64       nfsroot+CONFIG_DEBUG_INFO_REDUCED
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+parisc                         b180_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x013-201633
+x86_64                 randconfig-x015-201633
+x86_64                 randconfig-x012-201633
+x86_64                 randconfig-x011-201633
+x86_64                 randconfig-x014-201633
+x86_64                 randconfig-x010-201633
+x86_64                 randconfig-x017-201633
+x86_64                 randconfig-x018-201633
+x86_64                 randconfig-x019-201633
+x86_64                 randconfig-x016-201633
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+x86_64                                   rhel
+x86_64                               rhel-7.2
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201633
+i386                     randconfig-s1-201633
+x86_64                           allmodconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                 randconfig-i0-08161126
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i1-201633
+i386                     randconfig-i0-201633
+i386                               tinyconfig
+i386                   randconfig-x016-201633
+i386                   randconfig-x014-201633
+i386                   randconfig-x010-201633
+i386                   randconfig-x017-201633
+i386                   randconfig-x018-201633
+i386                   randconfig-x012-201633
+i386                   randconfig-x013-201633
+i386                   randconfig-x019-201633
+i386                   randconfig-x015-201633
+i386                   randconfig-x011-201633
+i386                     randconfig-n0-201633
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                 randconfig-x002-201633
+x86_64                 randconfig-x008-201633
+x86_64                 randconfig-x009-201633
+x86_64                 randconfig-x007-201633
+x86_64                 randconfig-x003-201633
+x86_64                 randconfig-x004-201633
+x86_64                 randconfig-x005-201633
+x86_64                 randconfig-x000-201633
+x86_64                 randconfig-x006-201633
+x86_64                 randconfig-x001-201633
+i386                     randconfig-r0-201633
+i386                   randconfig-x009-201633
+i386                   randconfig-x002-201633
+i386                   randconfig-x006-201633
+i386                   randconfig-x001-201633
+i386                   randconfig-x003-201633
+i386                   randconfig-x007-201633
+i386                   randconfig-x008-201633
+i386                   randconfig-x000-201633
+i386                   randconfig-x005-201633
+i386                   randconfig-x004-201633
 
-At some point in the future we can look at adding flow Tx offloads via
-either TC or SwitchDev.  For now adding NTUPLE is a strong no-go.  The
-VFPR are not the place to do it unless you are just wanting to add
-custom rules to the PF itself that won't impact the VF.
-
-- Alex
+Thanks,
+Fengguang
