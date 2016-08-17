@@ -1,28 +1,127 @@
-From: Yong, Jonathan <jonathan.yong@intel.com>
-Date: Wed, 17 Aug 2016 16:51:43 +0800
-Subject: [Intel-wired-lan] [PATCH v6 1/3] PCI: Add Precision Time
-	Measurement (PTM) support
-In-Reply-To: <20160816133715.GA30825@localhost>
-References: <20160613185945.12503.32760.stgit@bhelgaas-glaptop2.roam.corp.google.com>
- <20160613190534.12503.18923.stgit@bhelgaas-glaptop2.roam.corp.google.com>
- <57AA984E.8040308@intel.com> <20160815185931.GD9790@localhost>
- <57B2C90F.8010109@intel.com> <20160816133715.GA30825@localhost>
-Message-ID: <57B4259F.2040302@intel.com>
+From: Donald C Skidmore <donald.c.skidmore@intel.com>
+Date: Wed, 17 Aug 2016 14:11:57 -0400
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix led interface for X557 devices.
+Message-ID: <1471457517-28904-1-git-send-email-donald.c.skidmore@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 08/16/2016 21:37, Bjorn Helgaas wrote:
->> Looks like there is still this compile warning to fix:
->> http://patchwork.ozlabs.org/patch/634825/
-> 
-> That report was from June 16, and I think I fixed the warning already.
-> Or do you still see the warning?  I don't see it myself.
-> 
-> Bjorn
-> 
+The X557 devices use a different interface to the LED for the port.
+This patch reflect that change.
 
-If that is fixed, I don't anything else to add.
+Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |  3 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 52 +++++++++++++++++++++++++--
+ 2 files changed, 53 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index 5ff91b8..a59b65f7 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -1830,6 +1830,9 @@ enum {
+ #define IXGBE_LED_IVRT(_i)       IXGBE_LED_OFFSET(IXGBE_LED_IVRT_BASE, _i)
+ #define IXGBE_LED_BLINK(_i)      IXGBE_LED_OFFSET(IXGBE_LED_BLINK_BASE, _i)
+ #define IXGBE_LED_MODE_MASK(_i)  IXGBE_LED_OFFSET(IXGBE_LED_MODE_MASK_BASE, _i)
++#define IXGBE_X557_LED_MANUAL_SET_MASK	BIT(8)
++#define IXGBE_X557_MAX_LED_INDEX	3
++#define IXGBE_X557_LED_PROVISIONING	0xC430
+ 
+ /* LED modes */
+ #define IXGBE_LED_LINK_UP       0x0
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index 4716ca4..45ad6b1 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -2114,6 +2114,50 @@ static s32 ixgbe_reset_phy_t_X550em(struct ixgbe_hw *hw)
+ 	return ixgbe_enable_lasi_ext_t_x550em(hw);
+ }
+ 
++/**
++ *  ixgbe_led_on_t_x550em - Turns on the software controllable LEDs.
++ *  @hw: pointer to hardware structure
++ *  @led_idx: led number to turn on
++ **/
++s32 ixgbe_led_on_t_x550em(struct ixgbe_hw *hw, u32 led_idx)
++{
++	u16 phy_data;
++
++	if (led_idx >= IXGBE_X557_MAX_LED_INDEX)
++		return IXGBE_ERR_PARAM;
++
++	/* To turn on the LED, set mode to ON. */
++	hw->phy.ops.read_reg(hw, IXGBE_X557_LED_PROVISIONING + led_idx,
++			     IXGBE_MDIO_VENDOR_SPECIFIC_1_DEV_TYPE, &phy_data);
++	phy_data |= IXGBE_X557_LED_MANUAL_SET_MASK;
++	hw->phy.ops.write_reg(hw, IXGBE_X557_LED_PROVISIONING + led_idx,
++			      IXGBE_MDIO_VENDOR_SPECIFIC_1_DEV_TYPE, phy_data);
++
++	return 0;
++}
++
++/**
++ *  ixgbe_led_off_t_x550em - Turns off the software controllable LEDs.
++ *  @hw: pointer to hardware structure
++ *  @led_idx: led number to turn off
++ **/
++s32 ixgbe_led_off_t_x550em(struct ixgbe_hw *hw, u32 led_idx)
++{
++	u16 phy_data;
++
++	if (led_idx >= IXGBE_X557_MAX_LED_INDEX)
++		return IXGBE_ERR_PARAM;
++
++	/* To turn on the LED, set mode to ON. */
++	hw->phy.ops.read_reg(hw, IXGBE_X557_LED_PROVISIONING + led_idx,
++			     IXGBE_MDIO_VENDOR_SPECIFIC_1_DEV_TYPE, &phy_data);
++	phy_data &= ~IXGBE_X557_LED_MANUAL_SET_MASK;
++	hw->phy.ops.write_reg(hw, IXGBE_X557_LED_PROVISIONING + led_idx,
++			      IXGBE_MDIO_VENDOR_SPECIFIC_1_DEV_TYPE, phy_data);
++
++	return 0;
++}
++
+ /** ixgbe_get_lcd_x550em - Determine lowest common denominator
+  *  @hw: pointer to hardware structure
+  *  @lcd_speed: pointer to lowest common link speed
+@@ -2853,8 +2897,6 @@ static s32 ixgbe_write_phy_reg_x550a(struct ixgbe_hw *hw, u32 reg_addr,
+ 	.write_analog_reg8		= NULL, \
+ 	.set_rxpba			= &ixgbe_set_rxpba_generic, \
+ 	.check_link			= &ixgbe_check_mac_link_generic, \
+-	.led_on				= &ixgbe_led_on_generic, \
+-	.led_off			= &ixgbe_led_off_generic, \
+ 	.blink_led_start		= &ixgbe_blink_led_start_X540, \
+ 	.blink_led_stop			= &ixgbe_blink_led_stop_X540, \
+ 	.set_rar			= &ixgbe_set_rar_generic, \
+@@ -2886,6 +2928,8 @@ static s32 ixgbe_write_phy_reg_x550a(struct ixgbe_hw *hw, u32 reg_addr,
+ 
+ static const struct ixgbe_mac_operations mac_ops_X550 = {
+ 	X550_COMMON_MAC
++	.led_on			= ixgbe_led_on_generic,
++	.led_off		= ixgbe_led_off_generic,
+ 	.reset_hw		= &ixgbe_reset_hw_X540,
+ 	.get_media_type		= &ixgbe_get_media_type_X540,
+ 	.get_san_mac_addr	= &ixgbe_get_san_mac_addr_generic,
+@@ -2904,6 +2948,8 @@ static const struct ixgbe_mac_operations mac_ops_X550 = {
+ 
+ static const struct ixgbe_mac_operations mac_ops_X550EM_x = {
+ 	X550_COMMON_MAC
++	.led_on			= ixgbe_led_on_t_x550em,
++	.led_off		= ixgbe_led_off_t_x550em,
+ 	.reset_hw		= &ixgbe_reset_hw_X550em,
+ 	.get_media_type		= &ixgbe_get_media_type_X550em,
+ 	.get_san_mac_addr	= NULL,
+@@ -2922,6 +2968,8 @@ static const struct ixgbe_mac_operations mac_ops_X550EM_x = {
+ 
+ static struct ixgbe_mac_operations mac_ops_x550em_a = {
+ 	X550_COMMON_MAC
++	.led_on			= ixgbe_led_on_t_x550em,
++	.led_off		= ixgbe_led_off_t_x550em,
+ 	.reset_hw		= ixgbe_reset_hw_X550em,
+ 	.get_media_type		= ixgbe_get_media_type_X550em,
+ 	.get_san_mac_addr	= NULL,
+-- 
+2.4.3
 
