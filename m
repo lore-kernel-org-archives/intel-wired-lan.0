@@ -1,146 +1,92 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 18 Aug 2016 07:07:28 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- d59ed26598e4b309f3edd49ae915cd1dd0089929 BUILD SUCCESS
-Message-ID: <57b4ee30.ktacdXJrYM0/n4cq%fengguang.wu@intel.com>
+From: Donald C Skidmore <donald.c.skidmore@intel.com>
+Date: Wed, 17 Aug 2016 20:34:40 -0400
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Add support for new X557 device
+Message-ID: <1471480480-26483-1-git-send-email-donald.c.skidmore@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-d59ed26598e4b309f3edd49ae915cd1dd0089929  ixgbe: add device to MDIO speed setting
+This patch adds support for the new copper device X557.
 
-elapsed time: 81m
+Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c | 1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c   | 1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h   | 1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c   | 8 ++++++++
+ 4 files changed, 11 insertions(+)
 
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 124
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+index b4217f3..3095c24 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+@@ -99,6 +99,7 @@ bool ixgbe_device_supports_autoneg_fc(struct ixgbe_hw *hw)
+ 		case IXGBE_DEV_ID_X550T:
+ 		case IXGBE_DEV_ID_X550T1:
+ 		case IXGBE_DEV_ID_X550EM_X_10G_T:
++		case IXGBE_DEV_ID_X550EM_A_10G_T:
+ 			supported = true;
+ 			break;
+ 		default:
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index e06ca55..33ad52b 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -137,6 +137,7 @@ static const struct pci_device_id ixgbe_pci_tbl[] = {
+ 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_SFP_N), board_x550em_a },
+ 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_SGMII), board_x550em_a },
+ 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_SGMII_L), board_x550em_a },
++	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_10G_T), board_x550em_a},
+ 	{PCI_VDEVICE(INTEL, IXGBE_DEV_ID_X550EM_A_SFP), board_x550em_a },
+ 	/* required last entry */
+ 	{0, }
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index a59b65f7..31d82e3 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -90,6 +90,7 @@
+ #define IXGBE_DEV_ID_X550EM_A_SFP_N	0x15C4
+ #define IXGBE_DEV_ID_X550EM_A_SGMII	0x15C6
+ #define IXGBE_DEV_ID_X550EM_A_SGMII_L	0x15C7
++#define IXGBE_DEV_ID_X550EM_A_10G_T	0x15C8
+ #define IXGBE_DEV_ID_X550EM_A_SFP	0x15CE
+ 
+ /* VF Device IDs */
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index a8030e0..fb1b819 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -295,6 +295,12 @@ static s32 ixgbe_identify_phy_x550em(struct ixgbe_hw *hw)
+ 	case IXGBE_DEV_ID_X550EM_A_KR_L:
+ 		hw->phy.type = ixgbe_phy_x550em_kr;
+ 		break;
++	case IXGBE_DEV_ID_X550EM_A_10G_T:
++		if (hw->bus.lan_id)
++			hw->phy.phy_semaphore_mask = IXGBE_GSSR_PHY1_SM;
++		else
++			hw->phy.phy_semaphore_mask = IXGBE_GSSR_PHY0_SM;
++		/* Fallthrough */
+ 	case IXGBE_DEV_ID_X550EM_X_1G_T:
+ 	case IXGBE_DEV_ID_X550EM_X_10G_T:
+ 		return ixgbe_identify_phy_generic(hw);
+@@ -2500,6 +2506,7 @@ static enum ixgbe_media_type ixgbe_get_media_type_X550em(struct ixgbe_hw *hw)
+ 		break;
+ 	case IXGBE_DEV_ID_X550EM_X_1G_T:
+ 	case IXGBE_DEV_ID_X550EM_X_10G_T:
++	case IXGBE_DEV_ID_X550EM_A_10G_T:
+ 		media_type = ixgbe_media_type_copper;
+ 		break;
+ 	default:
+@@ -2560,6 +2567,7 @@ static void ixgbe_set_mdio_speed(struct ixgbe_hw *hw)
+ 	case IXGBE_DEV_ID_X550EM_X_10G_T:
+ 	case IXGBE_DEV_ID_X550EM_A_SGMII:
+ 	case IXGBE_DEV_ID_X550EM_A_SGMII_L:
++	case IXGBE_DEV_ID_X550EM_A_10G_T:
+ 	case IXGBE_DEV_ID_X550EM_A_SFP:
+ 		/* Config MDIO clock speed before the first MDIO PHY access */
+ 		hlreg0 = IXGBE_READ_REG(hw, IXGBE_HLREG0);
+-- 
+2.4.3
 
-i386                     randconfig-a0-201633
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm                        realview_defconfig
-blackfin                  CM-BF537E_defconfig
-powerpc                 mpc8540_ads_defconfig
-powerpc64                        allmodconfig
-sparc                       sparc32_defconfig
-x86_64                 randconfig-x013-201633
-x86_64                 randconfig-x015-201633
-x86_64                 randconfig-x012-201633
-x86_64                 randconfig-x011-201633
-x86_64                 randconfig-x014-201633
-x86_64                 randconfig-x010-201633
-x86_64                 randconfig-x017-201633
-x86_64                 randconfig-x018-201633
-x86_64                 randconfig-x019-201633
-x86_64                 randconfig-x016-201633
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201633
-i386                     randconfig-s1-201633
-x86_64                 randconfig-s0-08180528
-x86_64                 randconfig-s1-08180528
-x86_64                 randconfig-s2-08180528
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-i386                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201633
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201633
-i386                     randconfig-i1-201633
-x86_64                           allmodconfig
-i386                   randconfig-x016-201633
-i386                   randconfig-x014-201633
-i386                   randconfig-x010-201633
-i386                   randconfig-x017-201633
-i386                   randconfig-x018-201633
-i386                   randconfig-x012-201633
-i386                   randconfig-x013-201633
-i386                   randconfig-x019-201633
-i386                   randconfig-x015-201633
-i386                   randconfig-x011-201633
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201633
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                 randconfig-x000-201633
-x86_64                 randconfig-x001-201633
-x86_64                 randconfig-x002-201633
-x86_64                 randconfig-x003-201633
-x86_64                 randconfig-x004-201633
-x86_64                 randconfig-x005-201633
-x86_64                 randconfig-x006-201633
-x86_64                 randconfig-x007-201633
-x86_64                 randconfig-x008-201633
-x86_64                 randconfig-x009-201633
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                     randconfig-r0-201633
-i386                   randconfig-x009-201633
-i386                   randconfig-x002-201633
-i386                   randconfig-x006-201633
-i386                   randconfig-x001-201633
-i386                   randconfig-x003-201633
-i386                   randconfig-x007-201633
-i386                   randconfig-x008-201633
-i386                   randconfig-x000-201633
-i386                   randconfig-x005-201633
-i386                   randconfig-x004-201633
-
-Thanks,
-Fengguang
