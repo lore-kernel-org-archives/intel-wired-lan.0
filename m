@@ -1,242 +1,38 @@
-From: Sridhar Samudrala <sridhar.samudrala@intel.com>
-Date: Thu, 18 Aug 2016 19:55:01 +0200
-Subject: [Intel-wired-lan] [dev-queue PATCH v2 3/3] i40e: Introduce devlink
-	interface.
-In-Reply-To: <1471542901-13405-1-git-send-email-sridhar.samudrala@intel.com>
-References: <1471542901-13405-1-git-send-email-sridhar.samudrala@intel.com>
-Message-ID: <1471542901-13405-4-git-send-email-sridhar.samudrala@intel.com>
+From: Alexander Duyck <alexander.h.duyck@intel.com>
+Date: Thu, 18 Aug 2016 12:48:14 -0700
+Subject: [Intel-wired-lan] [net PATCH] ixgbe: Do not clear RAR entry when
+ clearing VMDq for SAN MAC
+Message-ID: <147154969452.19009.9564111024941912803.stgit@ahduyck-desk.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Add initial devlink support to set/get the mode of SRIOV switch.
-By default the switch mode is set to 'switchdev' as VF Port representors
-are created by default.
-This patch allows the mode to be set to 'legacy' to disable creation of
-VF Port representor netdevs.
+The RAR entry for the SAN MAC address was being cleared when we were
+clearing the VMDq pool bits.  In order to prevent this we need to add
+an extra check to protect the SAN MAC from being cleared.
 
-With smode support in iproute2 'devlink' utility, switch mode can be set
-and get via following commands.
-
-    # devlink dev smode pci/0000:05:00.0
-    mode: switchdev
-    # devlink dev set pci/0000:05:00.0 smode legacy
-    # devlink dev smode pci/0000:05:00.0
-    mode: legacy
-
-Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+Fixes: 6e982aeae ("ixgbe: Clear stale pool mappings")
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- drivers/net/ethernet/intel/Kconfig                 |  1 +
- drivers/net/ethernet/intel/i40e/i40e.h             |  3 +
- drivers/net/ethernet/intel/i40e/i40e_main.c        | 91 ++++++++++++++++++++--
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  6 +-
- 4 files changed, 91 insertions(+), 10 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/Kconfig b/drivers/net/ethernet/intel/Kconfig
-index c0e1743..2ede229 100644
---- a/drivers/net/ethernet/intel/Kconfig
-+++ b/drivers/net/ethernet/intel/Kconfig
-@@ -215,6 +215,7 @@ config I40E
- 	tristate "Intel(R) Ethernet Controller XL710 Family support"
- 	select PTP_1588_CLOCK
- 	depends on PCI
-+	depends on MAY_USE_DEVLINK
- 	---help---
- 	  This driver supports Intel(R) Ethernet Controller XL710 Family of
- 	  devices.  For more information on how to identify your adapter, go
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index ad3a720..e36ac0f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -53,6 +53,8 @@
- #include <linux/clocksource.h>
- #include <linux/net_tstamp.h>
- #include <linux/ptp_clock_kernel.h>
-+#include <net/devlink.h>
-+
- #include "i40e_type.h"
- #include "i40e_prototype.h"
- #ifdef I40E_FCOE
-@@ -446,6 +448,7 @@ struct i40e_pf {
- 	u32 ioremap_len;
- 	u32 fd_inv;
- 	u16 phy_led_val;
-+	enum devlink_eswitch_mode eswitch_mode;
- };
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+index b4217f3..c47b605 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+@@ -2958,8 +2958,10 @@ s32 ixgbe_clear_vmdq_generic(struct ixgbe_hw *hw, u32 rar, u32 vmdq)
+ 	}
  
- enum i40e_filter_state {
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index f169a75..148a771 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -10688,6 +10688,68 @@ static void i40e_get_platform_mac_addr(struct pci_dev *pdev, struct i40e_pf *pf)
+ 	/* was that the last pool using this rar? */
+-	if (mpsar_lo == 0 && mpsar_hi == 0 && rar != 0)
++	if (mpsar_lo == 0 && mpsar_hi == 0 &&
++	    rar != 0 && rar != hw->mac.san_mac_rar_index)
+ 		hw->mac.ops.clear_rar(hw, rar);
++
+ 	return 0;
  }
  
- /**
-+ * i40e_devlink_eswitch_mode_get
-+ *
-+ * @devlink: pointer to devlink struct
-+ * @mode: sr-iov switch mode pointer
-+ *
-+ * Returns the switch mode of the associated PF in the @mode pointer.
-+ */
-+static int i40e_devlink_eswitch_mode_get(struct devlink *devlink, u16 *mode)
-+{
-+	struct i40e_pf *pf = devlink_priv(devlink);
-+
-+	*mode = pf->eswitch_mode;
-+
-+	return 0;
-+}
-+
-+/**
-+ * i40e_devlink_eswitch_mode_set
-+ *
-+ * @devlink: pointer to devlink struct
-+ * @mode: sr-iov switch mode
-+ *
-+ * Set the switch mode of the associated PF.
-+ * Returns 0 on success and -EOPNOTSUPP on error.
-+ */
-+static int i40e_devlink_eswitch_mode_set(struct devlink *devlink, u16 mode)
-+{
-+	struct i40e_pf *pf = devlink_priv(devlink);
-+	struct i40e_vf *vf;
-+	int i, err = 0;
-+
-+	if (mode == pf->eswitch_mode)
-+		goto done;
-+
-+	switch (mode) {
-+	case DEVLINK_ESWITCH_MODE_LEGACY:
-+		for (i = 0; i < pf->num_alloc_vfs; i++) {
-+			vf = &(pf->vf[i]);
-+			i40e_free_vf_netdev(vf);
-+		}
-+		pf->eswitch_mode = mode;
-+		break;
-+	case DEVLINK_ESWITCH_MODE_SWITCHDEV:
-+		pf->eswitch_mode = mode;
-+		for (i = 0; i < pf->num_alloc_vfs; i++) {
-+			vf = &(pf->vf[i]);
-+			i40e_alloc_vf_netdev(vf, i);
-+		}
-+		break;
-+	default:
-+		err = -EOPNOTSUPP;
-+	}
-+done:
-+	return err;
-+}
-+
-+static const struct devlink_ops i40e_devlink_ops = {
-+	.eswitch_mode_get = i40e_devlink_eswitch_mode_get,
-+	.eswitch_mode_set = i40e_devlink_eswitch_mode_set,
-+};
-+
-+/**
-  * i40e_probe - Device initialization routine
-  * @pdev: PCI device information struct
-  * @ent: entry in i40e_pci_tbl
-@@ -10704,6 +10766,7 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	struct i40e_pf *pf;
- 	struct i40e_hw *hw;
- 	static u16 pfs_found;
-+	struct devlink *devlink;
- 	u16 wol_nvm_bits;
- 	u16 link_status;
- 	int err;
-@@ -10737,20 +10800,28 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	pci_enable_pcie_error_reporting(pdev);
- 	pci_set_master(pdev);
- 
-+	devlink = devlink_alloc(&i40e_devlink_ops, sizeof(*pf));
-+	if (!devlink) {
-+		dev_err(&pdev->dev, "devlink_alloc failed\n");
-+		err = -ENOMEM;
-+		goto err_devlink_alloc;
-+	}
-+
- 	/* Now that we have a PCI connection, we need to do the
- 	 * low level device setup.  This is primarily setting up
- 	 * the Admin Queue structures and then querying for the
- 	 * device's current profile information.
- 	 */
--	pf = kzalloc(sizeof(*pf), GFP_KERNEL);
--	if (!pf) {
--		err = -ENOMEM;
--		goto err_pf_alloc;
--	}
-+	pf = devlink_priv(devlink);
- 	pf->next_vsi = 0;
- 	pf->pdev = pdev;
- 	set_bit(__I40E_DOWN, &pf->state);
- 
-+	pf->eswitch_mode = DEVLINK_ESWITCH_MODE_SWITCHDEV;
-+	err = devlink_register(devlink, &pdev->dev);
-+	if (err)
-+		goto err_devlink_register;
-+
- 	hw = &pf->hw;
- 	hw->back = pf;
- 
-@@ -11221,8 +11292,10 @@ err_adminq_setup:
- err_pf_reset:
- 	iounmap(hw->hw_addr);
- err_ioremap:
--	kfree(pf);
--err_pf_alloc:
-+	devlink_unregister(devlink);
-+err_devlink_register:
-+	devlink_free(devlink);
-+err_devlink_alloc:
- 	pci_disable_pcie_error_reporting(pdev);
- 	pci_release_mem_regions(pdev);
- err_pci_reg:
-@@ -11244,6 +11317,7 @@ static void i40e_remove(struct pci_dev *pdev)
- {
- 	struct i40e_pf *pf = pci_get_drvdata(pdev);
- 	struct i40e_hw *hw = &pf->hw;
-+	struct devlink *devlink = priv_to_devlink(pf);
- 	i40e_status ret_code;
- 	int i;
- 
-@@ -11334,7 +11408,8 @@ static void i40e_remove(struct pci_dev *pdev)
- 	kfree(pf->vsi);
- 
- 	iounmap(hw->hw_addr);
--	kfree(pf);
-+	devlink_unregister(devlink);
-+	devlink_free(devlink);
- 	pci_release_mem_regions(pdev);
- 
- 	pci_disable_pcie_error_reporting(pdev);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index b5a716e..4551c84 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1131,7 +1131,8 @@ void i40e_free_vfs(struct i40e_pf *pf)
- 		/* disable qp mappings */
- 		i40e_disable_vf_mappings(&pf->vf[i]);
- 
--		i40e_free_vf_netdev(&pf->vf[i]);
-+		if (pf->eswitch_mode == DEVLINK_ESWITCH_MODE_SWITCHDEV)
-+			i40e_free_vf_netdev(&pf->vf[i]);
- 	}
- 
- 	kfree(pf->vf);
-@@ -1199,7 +1200,8 @@ int i40e_alloc_vfs(struct i40e_pf *pf, u16 num_alloc_vfs)
- 		/* VF resources get allocated during reset */
- 		i40e_reset_vf(&vfs[i], false);
- 
--		i40e_alloc_vf_netdev(&vfs[i], i);
-+		if (pf->eswitch_mode == DEVLINK_ESWITCH_MODE_SWITCHDEV)
-+			i40e_alloc_vf_netdev(&vfs[i], i);
- 
- 	}
- 	pf->num_alloc_vfs = num_alloc_vfs;
--- 
-2.5.5
 
