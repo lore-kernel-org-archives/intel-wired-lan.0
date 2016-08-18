@@ -1,140 +1,185 @@
 From: Sridhar Samudrala <sridhar.samudrala@intel.com>
-Date: Thu, 18 Aug 2016 19:55:00 +0200
-Subject: [Intel-wired-lan] [dev-queue PATCH v2 2/3] i40e: Enable VF specific
-	ethtool statistics via VF Port representor netdevs.
+Date: Thu, 18 Aug 2016 19:54:59 +0200
+Subject: [Intel-wired-lan] [dev-queue PATCH v2 1/3] i40e: Introduce VF port
+	representor/control netdevs.
 In-Reply-To: <1471542901-13405-1-git-send-email-sridhar.samudrala@intel.com>
 References: <1471542901-13405-1-git-send-email-sridhar.samudrala@intel.com>
-Message-ID: <1471542901-13405-3-git-send-email-sridhar.samudrala@intel.com>
+Message-ID: <1471542901-13405-2-git-send-email-sridhar.samudrala@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Sample script that shows ethtool stats on VF representor netdev
-PF: enp5s0f0, VF0: enp5s2  VF_REP0: enp5s0f0-vf0
+This patch enables creation of a VF Port representor/Control netdev
+associated with each VF. These netdevs can be used to control and configure
+VFs from PFs namespace. They enable exposing VF statistics, configuring
+link state, mtu, fdb/vlan entries etc.
 
-   # echo 2 > /sys/class/net/enp5s0f0/device/sriov_numvfs
-   # ip link set enp5s2 up
-   # ethtool -S enp5s0f0-vf0
-   NIC statistics:
-     rx_bytes: 0
-     rx_unicast: 0
-     rx_multicast: 0
-     rx_broadcast: 0
-     rx_discards: 0
-     rx_unknown_protocol: 0
-     tx_bytes: 140
-     tx_unicast: 0
-     tx_multicast: 2
-     tx_broadcast: 0
-     tx_discards: 0
-     tx_errors: 0
+    # echo 2 > /sys/class/net/enp5s0f0/device/sriov_numvfs
+    # ip l show
+    297: enp5s0f0: <BROADCAST,MULTICAST> mtu 1500 qdisc noop portid 6805ca2e7268 state DOWN mode DEFAULT group default qlen 1000
+    link/ether 68:05:ca:2e:72:68 brd ff:ff:ff:ff:ff:ff
+    vf 0 MAC 00:00:00:00:00:00, spoof checking on, link-state auto, trust off
+    vf 1 MAC 00:00:00:00:00:00, spoof checking on, link-state auto, trust off
+    299: enp5s0f0-vf0: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+    link/ether 00:00:00:00:00:00 brd ff:ff:ff:ff:ff:ff
+    300: enp5s0f0-vf1: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+    link/ether 00:00:00:00:00:00 brd ff:ff:ff:ff:ff:ff
 
 Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e.h             |  1 +
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 67 ++++++++++++++++++++++
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  1 +
- 3 files changed, 69 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 88 ++++++++++++++++++++++
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h | 14 ++++
+ 2 files changed, 102 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 8dc98c2..ad3a720 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -869,4 +869,5 @@ i40e_status i40e_get_npar_bw_setting(struct i40e_pf *pf);
- i40e_status i40e_set_npar_bw_setting(struct i40e_pf *pf);
- i40e_status i40e_commit_npar_bw_setting(struct i40e_pf *pf);
- void i40e_print_link_message(struct i40e_vsi *vsi, bool isup);
-+void i40e_set_vf_netdev_ethtool_ops(struct net_device *netdev);
- #endif /* _I40E_H_ */
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 1835186..104d2fb 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -3116,3 +3116,70 @@ void i40e_set_ethtool_ops(struct net_device *netdev)
- {
- 	netdev->ethtool_ops = &i40e_ethtool_ops;
- }
-+
-+static const char i40e_vf_netdev_ethtool_sset[][ETH_GSTRING_LEN] = {
-+	"rx_bytes",
-+	"rx_unicast",
-+	"rx_multicast",
-+	"rx_broadcast",
-+	"rx_discards",
-+	"rx_unknown_protocol",
-+	"tx_bytes",
-+	"tx_unicast",
-+	"tx_multicast",
-+	"tx_broadcast",
-+	"tx_discards",
-+	"tx_errors",
-+};
-+
-+#define I40E_VF_NETDEV_ETHTOOL_STAT_COUNT \
-+			ARRAY_SIZE(i40e_vf_netdev_ethtool_sset)
-+
-+static void i40e_vf_netdev_ethtool_get_strings(struct net_device *dev,
-+					       u32 stringset,
-+					       u8 *ethtool_strings)
-+{
-+	switch (stringset) {
-+	case ETH_SS_STATS:
-+		memcpy(ethtool_strings, &i40e_vf_netdev_ethtool_sset,
-+		       sizeof(i40e_vf_netdev_ethtool_sset));
-+		break;
-+	}
-+}
-+
-+static int i40e_vf_netdev_ethtool_get_sset_count(struct net_device *dev,
-+						 int stringset)
-+{
-+	switch (stringset) {
-+	case ETH_SS_STATS:
-+		return I40E_VF_NETDEV_ETHTOOL_STAT_COUNT;
-+	default:
-+		return -EOPNOTSUPP;
-+	}
-+}
-+
-+static void i40e_vf_netdev_ethtool_get_stats(struct net_device *dev,
-+				struct ethtool_stats *target_ethtool_stats,
-+				u64 *target_stat_values)
-+{
-+	struct i40e_vf_netdev_priv *priv = netdev_priv(dev);
-+	struct i40e_vf *vf = priv->vf;
-+	struct i40e_pf *pf = vf->pf;
-+	struct i40e_vsi *vsi;
-+
-+	vsi = pf->vsi[vf->lan_vsi_idx];
-+	i40e_update_stats(vsi);
-+	memcpy(target_stat_values, &vsi->eth_stats,
-+	       I40E_VF_NETDEV_ETHTOOL_STAT_COUNT * 8);
-+}
-+
-+static const struct ethtool_ops i40e_vf_netdev_ethtool_ops = {
-+	.get_strings		= i40e_vf_netdev_ethtool_get_strings,
-+	.get_ethtool_stats      = i40e_vf_netdev_ethtool_get_stats,
-+	.get_sset_count         = i40e_vf_netdev_ethtool_get_sset_count,
-+};
-+
-+void i40e_set_vf_netdev_ethtool_ops(struct net_device *netdev)
-+{
-+	netdev->ethtool_ops = &i40e_vf_netdev_ethtool_ops;
-+}
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 6167e56..b5a716e 100644
+index da34235..6167e56 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1049,6 +1049,7 @@ int i40e_alloc_vf_netdev(struct i40e_vf *vf, u16 vf_num)
- 	priv->vf = &(pf->vf[vf_num]);
+@@ -1003,6 +1003,90 @@ complete_reset:
+ 	clear_bit(__I40E_VF_DISABLE, &pf->state);
+ }
  
- 	netdev->netdev_ops = &i40e_vf_netdev_ops;
-+	i40e_set_vf_netdev_ethtool_ops(netdev);
++static int i40e_vf_netdev_open(struct net_device *dev)
++{
++	return 0;
++}
++
++static int i40e_vf_netdev_stop(struct net_device *dev)
++{
++	return 0;
++}
++
++static const struct net_device_ops i40e_vf_netdev_ops = {
++	.ndo_open       = i40e_vf_netdev_open,
++	.ndo_stop       = i40e_vf_netdev_stop,
++};
++
++/**
++ * i40e_alloc_vf_netdev
++ * @vf: pointer to the VF structure
++ * @vf_num: VF number
++ *
++ * Create VF representor/control netdev
++ **/
++int i40e_alloc_vf_netdev(struct i40e_vf *vf, u16 vf_num)
++{
++	struct net_device *netdev;
++	char netdev_name[IFNAMSIZ];
++	struct i40e_vf_netdev_priv *priv;
++	struct i40e_pf *pf = vf->pf;
++	struct i40e_vsi *vsi = pf->vsi[pf->lan_vsi];
++	int err;
++
++	snprintf(netdev_name, IFNAMSIZ, "%s-vf%d", vsi->netdev->name, vf_num);
++	netdev = alloc_netdev(sizeof(struct i40e_vf_netdev_priv), netdev_name,
++			      NET_NAME_UNKNOWN, ether_setup);
++	if (!netdev) {
++		dev_err(&pf->pdev->dev, "alloc_netdev failed for vf:%d\n",
++			vf_num);
++		return -ENOMEM;
++	}
++
++	pf->vf[vf_num].ctrl_netdev = netdev;
++
++	priv = netdev_priv(netdev);
++	priv->vf = &(pf->vf[vf_num]);
++
++	netdev->netdev_ops = &i40e_vf_netdev_ops;
++
++	netif_carrier_off(netdev);
++	netif_tx_disable(netdev);
++
++	err = register_netdev(netdev);
++	if (err) {
++		dev_err(&pf->pdev->dev, "register_netdev failed for vf: %s\n",
++			vf->ctrl_netdev->name);
++		free_netdev(netdev);
++		return err;
++	}
++
++	dev_info(&pf->pdev->dev, "VF representor(%s) created for VF %d\n",
++		 vf->ctrl_netdev->name, vf_num);
++
++	return 0;
++}
++
++/**
++ * i40e_free_vf_netdev
++ * @vf: pointer to the VF structure
++ *
++ * Free VF representor/control netdev
++ **/
++void i40e_free_vf_netdev(struct i40e_vf *vf)
++{
++	struct i40e_pf *pf = vf->pf;
++
++	if (!vf->ctrl_netdev)
++		return;
++
++	dev_info(&pf->pdev->dev, "Freeing VF representor(%s)\n",
++		 vf->ctrl_netdev->name);
++
++	unregister_netdev(vf->ctrl_netdev);
++	free_netdev(vf->ctrl_netdev);
++}
++
+ /**
+  * i40e_free_vfs
+  * @pf: pointer to the PF structure
+@@ -1045,6 +1129,8 @@ void i40e_free_vfs(struct i40e_pf *pf)
+ 			i40e_free_vf_res(&pf->vf[i]);
+ 		/* disable qp mappings */
+ 		i40e_disable_vf_mappings(&pf->vf[i]);
++
++		i40e_free_vf_netdev(&pf->vf[i]);
+ 	}
  
- 	netif_carrier_off(netdev);
- 	netif_tx_disable(netdev);
+ 	kfree(pf->vf);
+@@ -1112,6 +1198,8 @@ int i40e_alloc_vfs(struct i40e_pf *pf, u16 num_alloc_vfs)
+ 		/* VF resources get allocated during reset */
+ 		i40e_reset_vf(&vfs[i], false);
+ 
++		i40e_alloc_vf_netdev(&vfs[i], i);
++
+ 	}
+ 	pf->num_alloc_vfs = num_alloc_vfs;
+ 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+index 8751741..1d54b95 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
+@@ -72,10 +72,21 @@ enum i40e_vf_capabilities {
+ 	I40E_VIRTCHNL_VF_CAP_IWARP,
+ };
+ 
++/* VF Ctrl netdev private structure */
++struct i40e_vf_netdev_priv {
++	struct i40e_vf *vf;
++};
++
+ /* VF information structure */
+ struct i40e_vf {
+ 	struct i40e_pf *pf;
+ 
++	/* VF Port representor netdev that allows control and configuration
++	 * of VFs from the host. Enables returning VF stats, configuring link
++	 * state, mtu, fdb/vlans etc.
++	 */
++	struct net_device *ctrl_netdev;
++
+ 	/* VF id in the PF space */
+ 	s16 vf_id;
+ 	/* all VF vsis connect to the same parent */
+@@ -142,4 +153,7 @@ int i40e_ndo_set_vf_spoofchk(struct net_device *netdev, int vf_id, bool enable);
+ void i40e_vc_notify_link_state(struct i40e_pf *pf);
+ void i40e_vc_notify_reset(struct i40e_pf *pf);
+ 
++int i40e_alloc_vf_netdev(struct i40e_vf *vf, u16 vf_num);
++void i40e_free_vf_netdev(struct i40e_vf *vf);
++
+ #endif /* _I40E_VIRTCHNL_PF_H_ */
 -- 
 2.5.5
 
