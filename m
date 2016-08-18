@@ -1,178 +1,163 @@
-From: Amritha Nambiar <amritha.nambiar@intel.com>
-Date: Thu, 18 Aug 2016 16:01:23 -0700
-Subject: [Intel-wired-lan] [PATCH] [dev-queue]i40e: Add support for
-	switchdev API for Switch ID
-Message-ID: <20160818230123.6522.37801.stgit@terminator23.jf.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 19 Aug 2016 07:23:03 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE]
+ d40062f3c48612f075f99c58206ab8023eca1029 BUILD SUCCESS
+Message-ID: <57b64357.R4bgDHWwWQfZVav5%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This is a follow-on patch to Sridhar's patch series for VF Port
-representor support for SR-IOV VFs on i40e.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
+d40062f3c48612f075f99c58206ab8023eca1029  i40e: Expose 'trust' flag to userspace via ndo_get_vf_config.
 
-This patch adds support for switchdev ops on the VF Port representors
-and the PF uplink, the only operation implemented is the port attribute
-API to get the port parent ID or the switch ID. The switch ID is used
-to identify the net_devices attached to the same HW switch.
+elapsed time: 84m
 
-The switch ID returned for the VF Port representors and the PF uplink
-is the phys_port_id.
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 141
 
-# ip -d a
-102: enp9s0f0: <BROADCAST,MULTICAST> mtu 1500 qdisc mq state DOWN group default qlen 1000
-    link/ether 68:05:ca:35:77:50 brd ff:ff:ff:ff:ff:ff promiscuity 0 numtxqueues 64 numrxqueues 64 portid 6805ca357750 switchid 6805ca357750
-    vf 0 MAC 00:00:00:00:00:00, spoof checking on, link-state auto
-    vf 1 MAC 00:00:00:00:00:00, spoof checking on, link-state auto
-103: enp9s0f1: <BROADCAST,MULTICAST> mtu 1500 qdisc mq state DOWN group default qlen 1000
-    link/ether 68:05:ca:35:77:51 brd ff:ff:ff:ff:ff:ff promiscuity 0 numtxqueues 64 numrxqueues 64 portid 6805ca357751 switchid 6805ca357751
-104: enp9s0f0-vf0: <BROADCAST,MULTICAST> mtu 1500 qdisc fq_codel state DOWN group default qlen 1000
-    link/ether 00:00:00:00:00:00 brd ff:ff:ff:ff:ff:ff promiscuity 0 numtxqueues 1 numrxqueues 1 switchid 6805ca357750
-105: enp9s0f0-vf1: <BROADCAST,MULTICAST> mtu 1500 qdisc fq_codel state DOWN group default qlen 1000
-    link/ether 00:00:00:00:00:00 brd ff:ff:ff:ff:ff:ff promiscuity 0 numtxqueues 1 numrxqueues 1 switchid 6805ca357750
-    inet6 fe80::200:ff:fe00:0/64 scope link tentative
-       valid_lft forever preferred_lft forever
+i386                   randconfig-a0-08181326
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x013-201633
+x86_64                 randconfig-x015-201633
+x86_64                 randconfig-x012-201633
+x86_64                 randconfig-x011-201633
+x86_64                 randconfig-x014-201633
+x86_64                 randconfig-x010-201633
+x86_64                 randconfig-x017-201633
+x86_64                 randconfig-x018-201633
+x86_64                 randconfig-x019-201633
+x86_64                 randconfig-x016-201633
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201633
+i386                     randconfig-s1-201633
+x86_64                 randconfig-s0-08190548
+x86_64                 randconfig-s1-08190548
+x86_64                 randconfig-s2-08190548
+x86_64                 randconfig-s0-08190655
+x86_64                 randconfig-s1-08190655
+x86_64                 randconfig-s2-08190655
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                 randconfig-i0-08181459
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                     randconfig-i0-201633
+i386                     randconfig-i1-201633
+x86_64                           allmodconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+m68k                          sun3x_defconfig
+sh                             sh03_defconfig
+arm                        neponset_defconfig
+powerpc                    gamecube_defconfig
+x86_64                 randconfig-n0-08190621
+i386                   randconfig-x016-201633
+i386                   randconfig-x014-201633
+i386                   randconfig-x010-201633
+i386                   randconfig-x017-201633
+i386                   randconfig-x018-201633
+i386                   randconfig-x012-201633
+i386                   randconfig-x013-201633
+i386                   randconfig-x019-201633
+i386                   randconfig-x015-201633
+i386                   randconfig-x011-201633
+x86_64                                    lkp
+x86_64                                   rhel
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201633
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                 randconfig-x002-201633
+x86_64                 randconfig-x008-201633
+x86_64                 randconfig-x009-201633
+x86_64                 randconfig-x007-201633
+x86_64                 randconfig-x003-201633
+x86_64                 randconfig-x004-201633
+x86_64                 randconfig-x005-201633
+x86_64                 randconfig-x000-201633
+x86_64                 randconfig-x006-201633
+x86_64                 randconfig-x001-201633
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                  kexec
+i386                     randconfig-r0-201633
+i386                   randconfig-x009-201633
+i386                   randconfig-x002-201633
+i386                   randconfig-x006-201633
+i386                   randconfig-x001-201633
+i386                   randconfig-x003-201633
+i386                   randconfig-x007-201633
+i386                   randconfig-x008-201633
+i386                   randconfig-x000-201633
+i386                   randconfig-x005-201633
+i386                   randconfig-x004-201633
 
-Signed-off-by: Amritha Nambiar <amritha.nambiar@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e.h             |    1 
- drivers/net/ethernet/intel/i40e/i40e_main.c        |   17 ++++++
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |   57 ++++++++++++++++++++
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h |    2 +
- 4 files changed, 77 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 2f4525f..0c9d9e6 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -54,6 +54,7 @@
- #include <linux/net_tstamp.h>
- #include <linux/ptp_clock_kernel.h>
- #include <net/devlink.h>
-+#include <net/switchdev.h>
- 
- #include "i40e_type.h"
- #include "i40e_prototype.h"
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 3027bb6..b836b6e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -9088,6 +9088,20 @@ static const struct net_device_ops i40e_netdev_ops = {
- 	.ndo_bridge_setlink	= i40e_ndo_bridge_setlink,
- };
- 
-+static int i40e_sw_attr_get(struct net_device *dev, struct switchdev_attr *attr)
-+{
-+	struct i40e_netdev_priv *np = netdev_priv(dev);
-+	struct i40e_pf *pf = np->vsi->back;
-+	int err = 0;
-+
-+	err = __i40e_sw_attr_get(pf, attr);
-+	return err;
-+}
-+
-+static const struct switchdev_ops i40e_switchdev_ops = {
-+	.switchdev_port_attr_get	= i40e_sw_attr_get,
-+};
-+
- /**
-  * i40e_config_netdev - Setup the netdev flags
-  * @vsi: the VSI being configured
-@@ -9185,6 +9199,9 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
- 	netdev->netdev_ops = &i40e_netdev_ops;
- 	netdev->watchdog_timeo = 5 * HZ;
- 	i40e_set_ethtool_ops(netdev);
-+#ifdef CONFIG_NET_SWITCHDEV
-+	netdev->switchdev_ops = &i40e_switchdev_ops;
-+#endif
- #ifdef I40E_FCOE
- 	i40e_fcoe_config_netdev(netdev, vsi);
- #endif
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 4551c84..fe73bae 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -1019,6 +1019,60 @@ static const struct net_device_ops i40e_vf_netdev_ops = {
- };
- 
- /**
-+ * __i40e_sw_attr_get
-+ * @pf: pointer to the PF structure
-+ * @attr: pointer to switchdev_attr structure
-+ *
-+ * Get switchdev port attributes
-+ **/
-+int __i40e_sw_attr_get(struct i40e_pf *pf, struct switchdev_attr *attr)
-+{
-+	struct i40e_hw *hw = &pf->hw;
-+
-+	if (!(pf->flags & I40E_FLAG_SRIOV_ENABLED))
-+		return -EOPNOTSUPP;
-+
-+	switch (attr->id) {
-+	case SWITCHDEV_ATTR_ID_PORT_PARENT_ID:
-+		if (!(pf->flags & I40E_FLAG_PORT_ID_VALID))
-+			return -EOPNOTSUPP;
-+
-+		attr->u.ppid.id_len = min_t(int, sizeof(hw->mac.port_addr),
-+					    sizeof(attr->u.ppid.id));
-+		memcpy(&attr->u.ppid.id, hw->mac.port_addr,
-+		       attr->u.ppid.id_len);
-+		break;
-+	default:
-+		return -EOPNOTSUPP;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * i40e_vf_netdev_sw_attr_get
-+ * @dev: target device
-+ * @attr: pointer to switchdev_attr structure
-+ *
-+ * Handler for switchdev API to get port attributes for VF Port Representor
-+ **/
-+static int i40e_vf_netdev_sw_attr_get(struct net_device *dev,
-+				      struct switchdev_attr *attr)
-+{
-+	struct i40e_vf_netdev_priv *priv = netdev_priv(dev);
-+	struct i40e_vf *vf = priv->vf;
-+	struct i40e_pf *pf = vf->pf;
-+	int err = 0;
-+
-+	err = __i40e_sw_attr_get(pf, attr);
-+	return err;
-+}
-+
-+static const struct switchdev_ops i40e_vf_netdev_switchdev_ops = {
-+	.switchdev_port_attr_get	= i40e_vf_netdev_sw_attr_get,
-+};
-+
-+/**
-  * i40e_alloc_vf_netdev
-  * @vf: pointer to the VF structure
-  * @vf_num: VF number
-@@ -1050,6 +1104,9 @@ int i40e_alloc_vf_netdev(struct i40e_vf *vf, u16 vf_num)
- 
- 	netdev->netdev_ops = &i40e_vf_netdev_ops;
- 	i40e_set_vf_netdev_ethtool_ops(netdev);
-+#ifdef CONFIG_NET_SWITCHDEV
-+	netdev->switchdev_ops = &i40e_vf_netdev_switchdev_ops;
-+#endif
- 
- 	netif_carrier_off(netdev);
- 	netif_tx_disable(netdev);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-index 1d54b95..049ae59 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h
-@@ -156,4 +156,6 @@ void i40e_vc_notify_reset(struct i40e_pf *pf);
- int i40e_alloc_vf_netdev(struct i40e_vf *vf, u16 vf_num);
- void i40e_free_vf_netdev(struct i40e_vf *vf);
- 
-+int __i40e_sw_attr_get(struct i40e_pf *pf, struct switchdev_attr *attr);
-+
- #endif /* _I40E_VIRTCHNL_PF_H_ */
-
+Thanks,
+Fengguang
