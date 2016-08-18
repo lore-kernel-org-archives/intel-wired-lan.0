@@ -1,21 +1,28 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 19 Aug 2016 03:56:24 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
- f3803badc17ad36e71a2884a7e7c152e7bc50cf6 BUILD SUCCESS
-Message-ID: <57b612e8.r0SAVfwu02tC+/gY%fengguang.wu@intel.com>
+Date: Fri, 19 Aug 2016 04:05:23 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 41cb062aa18edc63ab0461f18d1ec5104fd4c6aa BUILD DONE
+Message-ID: <57b61503./xxgNDSbmz9glNY6%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-f3803badc17ad36e71a2884a7e7c152e7bc50cf6  checkpatch.pl: seed camelcase from the provided kernel tree root
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+41cb062aa18edc63ab0461f18d1ec5104fd4c6aa  ixgbe: add device to MDIO speed setting
 
-elapsed time: 78m
+drivers/net/ethernet/intel/igb/igb_main.c:8457:20-24: ERROR: adapter is NULL but dereferenced.
 
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 99
+Error ids grouped by kconfigs:
+
+recent_errors
+??? i386-allmodconfig
+    ??? drivers-net-ethernet-intel-igb-igb_main.c:ERROR:adapter-is-NULL-but-dereferenced.
+
+elapsed time: 84m
+
+configs tested: 125
 
 alpha                               defconfig
 parisc                            allnoconfig
@@ -49,20 +56,18 @@ arm                        shmobile_defconfig
 arm                           sunxi_defconfig
 arm64                             allnoconfig
 arm64                               defconfig
-x86_64                 randconfig-v0-08190315
-x86_64                 randconfig-v0-08190327
 parisc                         b180_defconfig
 i386                             allmodconfig
-x86_64                 randconfig-x010-201633
-x86_64                 randconfig-x011-201633
-x86_64                 randconfig-x012-201633
 x86_64                 randconfig-x013-201633
-x86_64                 randconfig-x014-201633
 x86_64                 randconfig-x015-201633
-x86_64                 randconfig-x016-201633
+x86_64                 randconfig-x012-201633
+x86_64                 randconfig-x011-201633
+x86_64                 randconfig-x014-201633
+x86_64                 randconfig-x010-201633
 x86_64                 randconfig-x017-201633
 x86_64                 randconfig-x018-201633
 x86_64                 randconfig-x019-201633
+x86_64                 randconfig-x016-201633
 i386                             alldefconfig
 i386                              allnoconfig
 i386                                defconfig
@@ -99,7 +104,6 @@ microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
 i386                   randconfig-i0-08181458
 i386                   randconfig-i1-08181458
-x86_64                 randconfig-b0-08190341
 m32r                       m32104ut_defconfig
 m32r                     mappi3.smp_defconfig
 m32r                         opsput_defconfig
@@ -108,14 +112,43 @@ xtensa                       common_defconfig
 xtensa                          iss_defconfig
 tile                             allmodconfig
 x86_64                 randconfig-n0-08190242
-x86_64                                    lkp
-x86_64                                   rhel
+i386                   randconfig-x016-201633
+i386                   randconfig-x014-201633
+i386                   randconfig-x010-201633
+i386                   randconfig-x017-201633
+i386                   randconfig-x018-201633
+i386                   randconfig-x012-201633
+i386                   randconfig-x013-201633
+i386                   randconfig-x019-201633
+i386                   randconfig-x015-201633
+i386                   randconfig-x011-201633
 i386                   randconfig-n0-08181509
 ia64                             alldefconfig
 ia64                              allnoconfig
 ia64                                defconfig
+x86_64                 randconfig-x002-201633
+x86_64                 randconfig-x008-201633
+x86_64                 randconfig-x009-201633
+x86_64                 randconfig-x007-201633
+x86_64                 randconfig-x003-201633
+x86_64                 randconfig-x004-201633
+x86_64                 randconfig-x005-201633
+x86_64                 randconfig-x000-201633
+x86_64                 randconfig-x006-201633
+x86_64                 randconfig-x001-201633
 x86_64                                  kexec
+x86_64                                   rhel
 i386                   randconfig-r0-08181525
+i386                   randconfig-x009-201633
+i386                   randconfig-x002-201633
+i386                   randconfig-x006-201633
+i386                   randconfig-x001-201633
+i386                   randconfig-x003-201633
+i386                   randconfig-x007-201633
+i386                   randconfig-x008-201633
+i386                   randconfig-x000-201633
+i386                   randconfig-x005-201633
+i386                   randconfig-x004-201633
 
 Thanks,
 Fengguang
