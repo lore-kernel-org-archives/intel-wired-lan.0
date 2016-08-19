@@ -1,18 +1,18 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 19 Aug 2016 08:42:40 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 76b3bf1482a2f41dce1df67a65e57df629b10850 BUILD SUCCESS
-Message-ID: <57b65600.YR8XSDQZ5pV2GAkB%fengguang.wu@intel.com>
+Date: Fri, 19 Aug 2016 09:01:37 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
+ 757cf593ce52fcc41d33c622dccdf6be7f2033ba BUILD SUCCESS
+Message-ID: <57b65a71.K/rWPAjyoHrKMfwG%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-76b3bf1482a2f41dce1df67a65e57df629b10850  i40e: Correcting mutex usage in client code
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+757cf593ce52fcc41d33c622dccdf6be7f2033ba  ixgbe: Do not clear RAR entry when clearing VMDq for SAN MAC
 
-elapsed time: 137m
+elapsed time: 89m
 
 The following configs have been built successfully. More configs may be tested in the coming days.
 configs tested: 119
@@ -30,6 +30,7 @@ sh                                allnoconfig
 sh                          rsk7269_defconfig
 sh                  sh7785lcr_32bit_defconfig
 sh                            titan_defconfig
+x86_64                           allmodconfig
 arm                               allnoconfig
 arm                         at91_dt_defconfig
 arm                           efm32_defconfig
@@ -56,10 +57,6 @@ parisc                         b180_defconfig
 parisc                        c3000_defconfig
 parisc                              defconfig
 i386                             allmodconfig
-arm                             rpc_defconfig
-blackfin                BF609-EZKIT_defconfig
-blackfin                  TCM-BF518_defconfig
-sh                               allyesconfig
 x86_64                 randconfig-x013-201633
 x86_64                 randconfig-x015-201633
 x86_64                 randconfig-x012-201633
@@ -73,20 +70,11 @@ x86_64                 randconfig-x016-201633
 i386                             alldefconfig
 i386                              allnoconfig
 i386                                defconfig
-x86_64                            eywa-module
-x86_64                                   rhel
-x86_64                               rhel-7.2
 m68k                       m5475evb_defconfig
 m68k                          multi_defconfig
 m68k                           sun3_defconfig
 i386                     randconfig-s0-201633
 i386                     randconfig-s1-201633
-x86_64                 randconfig-s0-08190548
-x86_64                 randconfig-s1-08190548
-x86_64                 randconfig-s2-08190548
-x86_64                 randconfig-s0-08190813
-x86_64                 randconfig-s1-08190813
-x86_64                 randconfig-s2-08190813
 avr32                      atngw100_defconfig
 avr32                     atstk1006_defconfig
 frv                                 defconfig
@@ -96,17 +84,15 @@ tile                         tilegx_defconfig
 um                             i386_defconfig
 um                           x86_64_defconfig
 i386                               tinyconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
 x86_64                 randconfig-i0-08181459
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
 i386                     randconfig-i0-201633
 i386                     randconfig-i1-201633
+x86_64                 randconfig-b0-08190845
 sparc                               defconfig
 sparc64                           allnoconfig
 sparc64                             defconfig
-x86_64                           allmodconfig
 x86_64                 randconfig-n0-08190804
 i386                   randconfig-x016-201633
 i386                   randconfig-x014-201633
@@ -118,8 +104,8 @@ i386                   randconfig-x013-201633
 i386                   randconfig-x019-201633
 i386                   randconfig-x015-201633
 i386                   randconfig-x011-201633
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
+x86_64                                    lkp
+x86_64                                   rhel
 i386                     randconfig-n0-201633
 x86_64                 randconfig-x002-201633
 x86_64                 randconfig-x008-201633
@@ -136,6 +122,20 @@ ia64                              allnoconfig
 ia64                                defconfig
 x86_64                                  kexec
 i386                     randconfig-r0-201633
+i386                   randconfig-x009-201633
+i386                   randconfig-x002-201633
+i386                   randconfig-x006-201633
+i386                   randconfig-x001-201633
+i386                   randconfig-x003-201633
+i386                   randconfig-x007-201633
+i386                   randconfig-x008-201633
+i386                   randconfig-x000-201633
+i386                   randconfig-x005-201633
+i386                   randconfig-x004-201633
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
 
 Thanks,
 Fengguang
