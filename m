@@ -1,11 +1,10 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 19 Aug 2016 22:00:02 +0000
-Subject: [Intel-wired-lan] [PATCH v1 3/3] i40e: use configured RSS key
- and	lookup table in i40e_vsi_config_rss
-In-Reply-To: <20160719232331.31422-4-jacob.e.keller@intel.com>
-References: <20160719232331.31422-1-jacob.e.keller@intel.com>
- <20160719232331.31422-4-jacob.e.keller@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9F9474@ORSMSX104.amr.corp.intel.com>
+Date: Fri, 19 Aug 2016 22:29:39 +0000
+Subject: [Intel-wired-lan] [net] ixgbe: Do not clear RAR entry when
+ clearing VMDq for SAN MAC
+In-Reply-To: <147154969452.19009.9564111024941912803.stgit@ahduyck-desk.amr.corp.intel.com>
+References: <147154969452.19009.9564111024941912803.stgit@ahduyck-desk.amr.corp.intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9F949A@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,24 +12,23 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 > -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Jacob Keller
-> Sent: Tuesday, July 19, 2016 4:24 PM
-> To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
-> Subject: [Intel-wired-lan] [PATCH v1 3/3] i40e: use configured RSS key and
-> lookup table in i40e_vsi_config_rss
+> From: Alexander Duyck [mailto:alexander.h.duyck at intel.com]
+> Sent: Thursday, August 18, 2016 12:48 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [net] ixgbe: Do not clear RAR entry when clearing VMDq for SAN
+> MAC
 > 
-> A previous refactor added support to store user configuration for VSIs, so
-> that extra VSIs such as for VMDq can use this information when configuring.
-> Unfortunately the i40e_vsi_config_rss function was missed in this refactor,
-> and the values were being ignored. Fix this by checking for the fields and
-> using those instead of always using the default values.
+> The RAR entry for the SAN MAC address was being cleared when we were
+> clearing the VMDq pool bits.  In order to prevent this we need to add an
+> extra check to protect the SAN MAC from being cleared.
 > 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Fixes: 6e982aeae ("ixgbe: Clear stale pool mappings")
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 21 +++++++++++++++++----
->  1 file changed, 17 insertions(+), 4 deletions(-)
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |    4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
 
+ 
