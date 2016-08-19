@@ -1,135 +1,38 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 20 Aug 2016 04:55:06 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- afaf6fca7458b42d9fa34b681f7b61a6dee8a57c BUILD DONE
-Message-ID: <57b7722a.hx/gQIf3A9p0Auju%fengguang.wu@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 19 Aug 2016 21:41:22 +0000
+Subject: [Intel-wired-lan] [next PATCH S43 3/3] i40evf: Open RDMA
+	Client	after reset
+In-Reply-To: <1471475048-25835-3-git-send-email-bimmy.pujari@intel.com>
+References: <1471475048-25835-1-git-send-email-bimmy.pujari@intel.com>
+ <1471475048-25835-3-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9F9412@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-afaf6fca7458b42d9fa34b681f7b61a6dee8a57c  i40e: Add support for switchdev API for Switch ID
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Bimmy Pujari
+> Sent: Wednesday, August 17, 2016 4:04 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S43 3/3] i40evf: Open RDMA Client
+> after reset
+> 
+> From: Avinash Dayanand <avinash.dayanand@intel.com>
+> 
+> RDMA client is closed during the PF reset and needs to be opened again.
+> Setting the flag so that RDMA client is opened in watchdog() function.
+> 
+> Signed-off-by: Avinash Dayanand <avinash.dayanand@intel.com>
+> Change-ID: I507b1e4cbd05528cdff68fd360ef3dcac8901263
+> ---
+> Testing Hints: Needs RDMA setup. Check if there is no error in opening
+>                 RDMA client after PF reset.
+> 
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 ++
+>  1 file changed, 2 insertions(+)
 
-drivers/net/ethernet/intel/igb/igb_main.c:8457:20-24: ERROR: adapter is NULL but dereferenced.
-
-Error ids grouped by kconfigs:
-
-recent_errors
-??? i386-allmodconfig
-    ??? drivers-net-ethernet-intel-igb-igb_main.c:ERROR:adapter-is-NULL-but-dereferenced.
-
-elapsed time: 142m
-
-configs tested: 106
-
-i386                     randconfig-a0-201633
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                               tinyconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x013-201633
-x86_64                 randconfig-x015-201633
-x86_64                 randconfig-x012-201633
-x86_64                 randconfig-x011-201633
-x86_64                 randconfig-x014-201633
-x86_64                 randconfig-x010-201633
-x86_64                 randconfig-x017-201633
-x86_64                 randconfig-x018-201633
-x86_64                 randconfig-x019-201633
-x86_64                 randconfig-x016-201633
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201633
-i386                     randconfig-s1-201633
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                 randconfig-i0-08181459
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i1-201633
-i386                     randconfig-i0-201633
-i386                   randconfig-x016-201633
-i386                   randconfig-x014-201633
-i386                   randconfig-x010-201633
-i386                   randconfig-x017-201633
-i386                   randconfig-x018-201633
-i386                   randconfig-x012-201633
-i386                   randconfig-x013-201633
-i386                   randconfig-x019-201633
-i386                   randconfig-x015-201633
-i386                   randconfig-x011-201633
-i386                     randconfig-n0-201633
-x86_64                 randconfig-x002-201633
-x86_64                 randconfig-x008-201633
-x86_64                 randconfig-x009-201633
-x86_64                 randconfig-x007-201633
-x86_64                 randconfig-x003-201633
-x86_64                 randconfig-x004-201633
-x86_64                 randconfig-x005-201633
-x86_64                 randconfig-x000-201633
-x86_64                 randconfig-x006-201633
-x86_64                 randconfig-x001-201633
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-i386                     randconfig-r0-201633
-
-Thanks,
-Fengguang
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Base driver functions normally
