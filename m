@@ -1,109 +1,44 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 23 Aug 2016 07:07:41 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 907764481a6b7f5010214a9ecf3c7d7ef6c32423 BUILD SUCCESS
-Message-ID: <57bb85bd.sQ7POpPMeU6Hlupr%fengguang.wu@intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Mon, 22 Aug 2016 16:13:32 -0700
+Subject: [Intel-wired-lan] [dev-queue PATCH v2 2/3] i40e: Enable VF
+ specific ethtool statistics via VF Port representor netdevs.
+In-Reply-To: <57BB2980.50902@intel.com>
+References: <1471542901-13405-1-git-send-email-sridhar.samudrala@intel.com>
+ <1471542901-13405-3-git-send-email-sridhar.samudrala@intel.com>
+ <CAKgT0UfsO=FGZAnHmXCHsrVXjtfK=G7ebNREw7nnX_KFP-Xi5g@mail.gmail.com>
+ <57BB2980.50902@intel.com>
+Message-ID: <1471907612.2325.27.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-907764481a6b7f5010214a9ecf3c7d7ef6c32423  i40e: Add support for switchdev API for Switch ID
+On Mon, 2016-08-22 at 09:34 -0700, Samudrala, Sridhar wrote:
+> > So one change you need to this is to swap the rx_ and tx_ portion of
+> > the strings.? You have to keep in mind this is a switch port
+> > representation so the Rx and Tx values are swapped.? Every byte the VF
+> > receives is actually a byte that we transmitted to the VF.
+> >
+> > You could probably also add a comment above this block stating that
+> > the two were swapped and why.
+> >
+> Yes. As we are saying that this netdev represents the switch port?
+> corresponding to the VF, it makes
+> sense to swap the rx and tx stats.
+> 
+> Jeff,
+> Should i submit a patch on top of this patchset as it is already in?
+> dev-queue branch?
+> Or resubmit the patchset as a v3 with this update.
 
-elapsed time: 74m
-
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 87
-
-i386                   randconfig-a0-08220729
-x86_64                 randconfig-a0-08230649
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                 randconfig-x012-201634
-x86_64                 randconfig-x015-201634
-x86_64                 randconfig-x013-201634
-x86_64                 randconfig-x011-201634
-x86_64                 randconfig-x010-201634
-x86_64                 randconfig-x014-201634
-x86_64                 randconfig-x018-201634
-x86_64                 randconfig-x017-201634
-x86_64                 randconfig-x016-201634
-x86_64                 randconfig-x019-201634
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201634
-i386                     randconfig-s1-201634
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                   randconfig-i0-08220007
-i386                   randconfig-i1-08220007
-x86_64                           allmodconfig
-arm                      jornada720_defconfig
-sh                          lboxre2_defconfig
-i386                               tinyconfig
-i386                   randconfig-x014-201634
-i386                   randconfig-x016-201634
-i386                   randconfig-x010-201634
-i386                   randconfig-x017-201634
-i386                   randconfig-x013-201634
-i386                   randconfig-x012-201634
-i386                   randconfig-x018-201634
-i386                   randconfig-x019-201634
-i386                   randconfig-x011-201634
-i386                   randconfig-x015-201634
-i386                     randconfig-n0-201634
-x86_64                 randconfig-x000-201634
-x86_64                 randconfig-x001-201634
-x86_64                 randconfig-x002-201634
-x86_64                 randconfig-x003-201634
-x86_64                 randconfig-x004-201634
-x86_64                 randconfig-x005-201634
-x86_64                 randconfig-x006-201634
-x86_64                 randconfig-x007-201634
-x86_64                 randconfig-x008-201634
-x86_64                 randconfig-x009-201634
-i386                   randconfig-x006-201634
-i386                   randconfig-x002-201634
-i386                   randconfig-x009-201634
-i386                   randconfig-x003-201634
-i386                   randconfig-x001-201634
-i386                   randconfig-x008-201634
-i386                   randconfig-x007-201634
-i386                   randconfig-x000-201634
-i386                   randconfig-x004-201634
-i386                   randconfig-x005-201634
-
-Thanks,
-Fengguang
+Alex is correct, please re-submit the series with the desired changes to
+this and any other patches, please. ?I can drop this series from my tree if
+that helps you.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160822/788f622d/attachment-0001.asc>
