@@ -1,44 +1,90 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Mon, 22 Aug 2016 16:13:32 -0700
-Subject: [Intel-wired-lan] [dev-queue PATCH v2 2/3] i40e: Enable VF
- specific ethtool statistics via VF Port representor netdevs.
-In-Reply-To: <57BB2980.50902@intel.com>
-References: <1471542901-13405-1-git-send-email-sridhar.samudrala@intel.com>
- <1471542901-13405-3-git-send-email-sridhar.samudrala@intel.com>
- <CAKgT0UfsO=FGZAnHmXCHsrVXjtfK=G7ebNREw7nnX_KFP-Xi5g@mail.gmail.com>
- <57BB2980.50902@intel.com>
-Message-ID: <1471907612.2325.27.camel@intel.com>
+From: Emil Tantilov <emil.s.tantilov@intel.com>
+Date: Mon, 22 Aug 2016 16:17:46 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: simplify the logic for setting
+	VLAN filtering
+Message-ID: <20160822231746.7715.25120.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, 2016-08-22 at 09:34 -0700, Samudrala, Sridhar wrote:
-> > So one change you need to this is to swap the rx_ and tx_ portion of
-> > the strings.? You have to keep in mind this is a switch port
-> > representation so the Rx and Tx values are swapped.? Every byte the VF
-> > receives is actually a byte that we transmitted to the VF.
-> >
-> > You could probably also add a comment above this block stating that
-> > the two were swapped and why.
-> >
-> Yes. As we are saying that this netdev represents the switch port?
-> corresponding to the VF, it makes
-> sense to swap the rx and tx stats.
-> 
-> Jeff,
-> Should i submit a patch on top of this patchset as it is already in?
-> dev-queue branch?
-> Or resubmit the patchset as a v3 with this update.
+Simplify the logic for setting VLNCTRL.VFE by checking the  VMDQ flag
+and 82598 MAC instead of having to maintain a list of MAC types.
 
-Alex is correct, please re-submit the series with the desired changes to
-this and any other patches, please. ?I can drop this series from my tree if
-that helps you.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160822/788f622d/attachment-0001.asc>
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   39 +++++++------------------
+ 1 file changed, 11 insertions(+), 28 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index d76bc1a..1c88858 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -4105,23 +4105,20 @@ static void ixgbe_vlan_promisc_enable(struct ixgbe_adapter *adapter)
+ 
+ 	vlnctrl = IXGBE_READ_REG(hw, IXGBE_VLNCTRL);
+ 
+-	switch (hw->mac.type) {
+-	case ixgbe_mac_82599EB:
+-	case ixgbe_mac_X540:
+-	case ixgbe_mac_X550:
+-	case ixgbe_mac_X550EM_x:
+-	case ixgbe_mac_x550em_a:
+-	default:
+-		if (adapter->flags & IXGBE_FLAG_VMDQ_ENABLED)
+-			break;
+-		/* fall through */
+-	case ixgbe_mac_82598EB:
+-		/* legacy case, we can just disable VLAN filtering */
++	if (adapter->flags & IXGBE_FLAG_VMDQ_ENABLED) {
++	/* For VMDq and SR-IOV we must leave VLAN filtering enabled */
++		vlnctrl |= IXGBE_VLNCTRL_VFE;
++		IXGBE_WRITE_REG(hw, IXGBE_VLNCTRL, vlnctrl);
++	} else {
+ 		vlnctrl &= ~IXGBE_VLNCTRL_VFE;
+ 		IXGBE_WRITE_REG(hw, IXGBE_VLNCTRL, vlnctrl);
+ 		return;
+ 	}
+ 
++	/* Nothing to do for 82598 */
++	if (hw->mac.type == ixgbe_mac_82598EB)
++		return;
++
+ 	/* We are already in VLAN promisc, nothing to do */
+ 	if (adapter->flags2 & IXGBE_FLAG2_VLAN_PROMISC)
+ 		return;
+@@ -4129,10 +4126,6 @@ static void ixgbe_vlan_promisc_enable(struct ixgbe_adapter *adapter)
+ 	/* Set flag so we don't redo unnecessary work */
+ 	adapter->flags2 |= IXGBE_FLAG2_VLAN_PROMISC;
+ 
+-	/* For VMDq and SR-IOV we must leave VLAN filtering enabled */
+-	vlnctrl |= IXGBE_VLNCTRL_VFE;
+-	IXGBE_WRITE_REG(hw, IXGBE_VLNCTRL, vlnctrl);
+-
+ 	/* Add PF to all active pools */
+ 	for (i = IXGBE_VLVF_ENTRIES; --i;) {
+ 		u32 reg_offset = IXGBE_VLVFB(i * 2 + VMDQ_P(0) / 32);
+@@ -4204,19 +4197,9 @@ static void ixgbe_vlan_promisc_disable(struct ixgbe_adapter *adapter)
+ 	vlnctrl |= IXGBE_VLNCTRL_VFE;
+ 	IXGBE_WRITE_REG(hw, IXGBE_VLNCTRL, vlnctrl);
+ 
+-	switch (hw->mac.type) {
+-	case ixgbe_mac_82599EB:
+-	case ixgbe_mac_X540:
+-	case ixgbe_mac_X550:
+-	case ixgbe_mac_X550EM_x:
+-	case ixgbe_mac_x550em_a:
+-	default:
+-		if (adapter->flags & IXGBE_FLAG_VMDQ_ENABLED)
+-			break;
+-		/* fall through */
+-	case ixgbe_mac_82598EB:
++	if (!(adapter->flags & IXGBE_FLAG_VMDQ_ENABLED) ||
++	    hw->mac.type == ixgbe_mac_82598EB)
+ 		return;
+-	}
+ 
+ 	/* We are not in VLAN promisc, nothing to do */
+ 	if (!(adapter->flags2 & IXGBE_FLAG2_VLAN_PROMISC))
+
