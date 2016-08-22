@@ -1,29 +1,114 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Date: Mon, 22 Aug 2016 12:01:10 -0500
-Subject: [Intel-wired-lan] [PATCH v6 1/3] PCI: Add Precision Time
-	Measurement (PTM) support
-In-Reply-To: <20160816133715.GA30825@localhost>
-References: <20160613185945.12503.32760.stgit@bhelgaas-glaptop2.roam.corp.google.com>
- <20160613190534.12503.18923.stgit@bhelgaas-glaptop2.roam.corp.google.com>
- <57AA984E.8040308@intel.com> <20160815185931.GD9790@localhost>
- <57B2C90F.8010109@intel.com> <20160816133715.GA30825@localhost>
-Message-ID: <20160822170110.GE18628@localhost>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Mon, 22 Aug 2016 10:04:55 -0700
+Subject: [Intel-wired-lan] [dev-queue PATCH v2 2/3] i40e: Enable VF
+ specific ethtool statistics via VF Port representor netdevs.
+In-Reply-To: <57BB2980.50902@intel.com>
+References: <1471542901-13405-1-git-send-email-sridhar.samudrala@intel.com>
+ <1471542901-13405-3-git-send-email-sridhar.samudrala@intel.com>
+ <CAKgT0UfsO=FGZAnHmXCHsrVXjtfK=G7ebNREw7nnX_KFP-Xi5g@mail.gmail.com>
+ <57BB2980.50902@intel.com>
+Message-ID: <CAKgT0Uc6VW3osqJOdg-+T4P6pcMFwm01Cch5ZAKt97qrCX2WJw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, Aug 16, 2016 at 08:37:15AM -0500, Bjorn Helgaas wrote:
-> On Tue, Aug 16, 2016 at 04:04:31PM +0800, Yong, Jonathan wrote:
-> > On 08/16/2016 02:59, Bjorn Helgaas wrote:
-> > > 
-> > > I guess I was hoping you could test these patches.  Do you have any
-> > > way to do that?
-> > > 
-> > 
-> > No real hardware with this feature yet, so testing is entirely on software.
-> 
-> OK, let me know the results of your software testing with these patches.
+On Mon, Aug 22, 2016 at 9:34 AM, Samudrala, Sridhar
+<sridhar.samudrala@intel.com> wrote:
+> On 8/19/2016 9:08 AM, Alexander Duyck wrote:
+>>
+>> On Thu, Aug 18, 2016 at 10:55 AM, Sridhar Samudrala
+>> <sridhar.samudrala@intel.com> wrote:
+>>>
+>>> Sample script that shows ethtool stats on VF representor netdev
+>>> PF: enp5s0f0, VF0: enp5s2  VF_REP0: enp5s0f0-vf0
+>>>
+>>>     # echo 2 > /sys/class/net/enp5s0f0/device/sriov_numvfs
+>>>     # ip link set enp5s2 up
+>>>     # ethtool -S enp5s0f0-vf0
+>>>     NIC statistics:
+>>>       rx_bytes: 0
+>>>       rx_unicast: 0
+>>>       rx_multicast: 0
+>>>       rx_broadcast: 0
+>>>       rx_discards: 0
+>>>       rx_unknown_protocol: 0
+>>>       tx_bytes: 140
+>>>       tx_unicast: 0
+>>>       tx_multicast: 2
+>>>       tx_broadcast: 0
+>>>       tx_discards: 0
+>>>       tx_errors: 0
+>>>
+>>> Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+>>> ---
+>>>   drivers/net/ethernet/intel/i40e/i40e.h             |  1 +
+>>>   drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 67
+>>> ++++++++++++++++++++++
+>>>   drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  1 +
+>>>   3 files changed, 69 insertions(+)
+>>>
+>>> diff --git a/drivers/net/ethernet/intel/i40e/i40e.h
+>>> b/drivers/net/ethernet/intel/i40e/i40e.h
+>>> index 8dc98c2..ad3a720 100644
+>>> --- a/drivers/net/ethernet/intel/i40e/i40e.h
+>>> +++ b/drivers/net/ethernet/intel/i40e/i40e.h
+>>> @@ -869,4 +869,5 @@ i40e_status i40e_get_npar_bw_setting(struct i40e_pf
+>>> *pf);
+>>>   i40e_status i40e_set_npar_bw_setting(struct i40e_pf *pf);
+>>>   i40e_status i40e_commit_npar_bw_setting(struct i40e_pf *pf);
+>>>   void i40e_print_link_message(struct i40e_vsi *vsi, bool isup);
+>>> +void i40e_set_vf_netdev_ethtool_ops(struct net_device *netdev);
+>>>   #endif /* _I40E_H_ */
+>>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+>>> b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+>>> index 1835186..104d2fb 100644
+>>> --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+>>> +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+>>> @@ -3116,3 +3116,70 @@ void i40e_set_ethtool_ops(struct net_device
+>>> *netdev)
+>>>   {
+>>>          netdev->ethtool_ops = &i40e_ethtool_ops;
+>>>   }
+>>> +
+>>> +static const char i40e_vf_netdev_ethtool_sset[][ETH_GSTRING_LEN] = {
+>>> +       "rx_bytes",
+>>> +       "rx_unicast",
+>>> +       "rx_multicast",
+>>> +       "rx_broadcast",
+>>> +       "rx_discards",
+>>> +       "rx_unknown_protocol",
+>>> +       "tx_bytes",
+>>> +       "tx_unicast",
+>>> +       "tx_multicast",
+>>> +       "tx_broadcast",
+>>> +       "tx_discards",
+>>> +       "tx_errors",
+>>> +};
+>>> +
+>>
+>> So one change you need to this is to swap the rx_ and tx_ portion of
+>> the strings.  You have to keep in mind this is a switch port
+>> representation so the Rx and Tx values are swapped.  Every byte the VF
+>> receives is actually a byte that we transmitted to the VF.
+>>
+>> You could probably also add a comment above this block stating that
+>> the two were swapped and why.
+>>
+> Yes. As we are saying that this netdev represents the switch port
+> corresponding to the VF, it makes
+> sense to swap the rx and tx stats.
+>
+> Jeff,
+> Should i submit a patch on top of this patchset as it is already in
+> dev-queue branch?
+> Or resubmit the patchset as a v3 with this update.
+>
+> Thanks
+> Sridhar
 
-Do you have some software testing you can do on these patches?
+You should probably resubmit.  No point in adding patches to this to
+fix stuff that hasn't been applied to Dave's tree yet.
+
+- Alex
