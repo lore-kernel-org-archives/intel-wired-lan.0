@@ -1,114 +1,149 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 22 Aug 2016 10:04:55 -0700
-Subject: [Intel-wired-lan] [dev-queue PATCH v2 2/3] i40e: Enable VF
- specific ethtool statistics via VF Port representor netdevs.
-In-Reply-To: <57BB2980.50902@intel.com>
-References: <1471542901-13405-1-git-send-email-sridhar.samudrala@intel.com>
- <1471542901-13405-3-git-send-email-sridhar.samudrala@intel.com>
- <CAKgT0UfsO=FGZAnHmXCHsrVXjtfK=G7ebNREw7nnX_KFP-Xi5g@mail.gmail.com>
- <57BB2980.50902@intel.com>
-Message-ID: <CAKgT0Uc6VW3osqJOdg-+T4P6pcMFwm01Cch5ZAKt97qrCX2WJw@mail.gmail.com>
+From: Rustad, Mark D <mark.d.rustad@intel.com>
+Date: Mon, 22 Aug 2016 18:24:10 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Fix led interface for X557
+ devices.
+In-Reply-To: <1471457517-28904-1-git-send-email-donald.c.skidmore@intel.com>
+References: <1471457517-28904-1-git-send-email-donald.c.skidmore@intel.com>
+Message-ID: <938CFDEB-D9DB-4074-B8C0-4CD72A4DDB25@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Aug 22, 2016 at 9:34 AM, Samudrala, Sridhar
-<sridhar.samudrala@intel.com> wrote:
-> On 8/19/2016 9:08 AM, Alexander Duyck wrote:
->>
->> On Thu, Aug 18, 2016 at 10:55 AM, Sridhar Samudrala
->> <sridhar.samudrala@intel.com> wrote:
->>>
->>> Sample script that shows ethtool stats on VF representor netdev
->>> PF: enp5s0f0, VF0: enp5s2  VF_REP0: enp5s0f0-vf0
->>>
->>>     # echo 2 > /sys/class/net/enp5s0f0/device/sriov_numvfs
->>>     # ip link set enp5s2 up
->>>     # ethtool -S enp5s0f0-vf0
->>>     NIC statistics:
->>>       rx_bytes: 0
->>>       rx_unicast: 0
->>>       rx_multicast: 0
->>>       rx_broadcast: 0
->>>       rx_discards: 0
->>>       rx_unknown_protocol: 0
->>>       tx_bytes: 140
->>>       tx_unicast: 0
->>>       tx_multicast: 2
->>>       tx_broadcast: 0
->>>       tx_discards: 0
->>>       tx_errors: 0
->>>
->>> Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
->>> ---
->>>   drivers/net/ethernet/intel/i40e/i40e.h             |  1 +
->>>   drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 67
->>> ++++++++++++++++++++++
->>>   drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  1 +
->>>   3 files changed, 69 insertions(+)
->>>
->>> diff --git a/drivers/net/ethernet/intel/i40e/i40e.h
->>> b/drivers/net/ethernet/intel/i40e/i40e.h
->>> index 8dc98c2..ad3a720 100644
->>> --- a/drivers/net/ethernet/intel/i40e/i40e.h
->>> +++ b/drivers/net/ethernet/intel/i40e/i40e.h
->>> @@ -869,4 +869,5 @@ i40e_status i40e_get_npar_bw_setting(struct i40e_pf
->>> *pf);
->>>   i40e_status i40e_set_npar_bw_setting(struct i40e_pf *pf);
->>>   i40e_status i40e_commit_npar_bw_setting(struct i40e_pf *pf);
->>>   void i40e_print_link_message(struct i40e_vsi *vsi, bool isup);
->>> +void i40e_set_vf_netdev_ethtool_ops(struct net_device *netdev);
->>>   #endif /* _I40E_H_ */
->>> diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
->>> b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
->>> index 1835186..104d2fb 100644
->>> --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
->>> +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
->>> @@ -3116,3 +3116,70 @@ void i40e_set_ethtool_ops(struct net_device
->>> *netdev)
->>>   {
->>>          netdev->ethtool_ops = &i40e_ethtool_ops;
->>>   }
->>> +
->>> +static const char i40e_vf_netdev_ethtool_sset[][ETH_GSTRING_LEN] = {
->>> +       "rx_bytes",
->>> +       "rx_unicast",
->>> +       "rx_multicast",
->>> +       "rx_broadcast",
->>> +       "rx_discards",
->>> +       "rx_unknown_protocol",
->>> +       "tx_bytes",
->>> +       "tx_unicast",
->>> +       "tx_multicast",
->>> +       "tx_broadcast",
->>> +       "tx_discards",
->>> +       "tx_errors",
->>> +};
->>> +
->>
->> So one change you need to this is to swap the rx_ and tx_ portion of
->> the strings.  You have to keep in mind this is a switch port
->> representation so the Rx and Tx values are swapped.  Every byte the VF
->> receives is actually a byte that we transmitted to the VF.
->>
->> You could probably also add a comment above this block stating that
->> the two were swapped and why.
->>
-> Yes. As we are saying that this netdev represents the switch port
-> corresponding to the VF, it makes
-> sense to swap the rx and tx stats.
->
-> Jeff,
-> Should i submit a patch on top of this patchset as it is already in
-> dev-queue branch?
-> Or resubmit the patchset as a v3 with this update.
->
-> Thanks
-> Sridhar
+Donald C Skidmore <donald.c.skidmore@intel.com> wrote:
 
-You should probably resubmit.  No point in adding patches to this to
-fix stuff that hasn't been applied to Dave's tree yet.
+> The X557 devices use a different interface to the LED for the port.
+> This patch reflect that change.
+>
+> Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |  3 ++
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 52 +++++++++++++++++++++++++--
+>  2 files changed, 53 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h  
+> b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+> index 5ff91b8..a59b65f7 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+> @@ -1830,6 +1830,9 @@ enum {
+>  #define IXGBE_LED_IVRT(_i)       IXGBE_LED_OFFSET(IXGBE_LED_IVRT_BASE, _i)
+>  #define IXGBE_LED_BLINK(_i)      IXGBE_LED_OFFSET(IXGBE_LED_BLINK_BASE, _i)
+>  #define IXGBE_LED_MODE_MASK(_i)  IXGBE_LED_OFFSET(IXGBE_LED_MODE_MASK_BASE, _i)
+> +#define IXGBE_X557_LED_MANUAL_SET_MASK	BIT(8)
+> +#define IXGBE_X557_MAX_LED_INDEX	3
+> +#define IXGBE_X557_LED_PROVISIONING	0xC430
+>
+>  /* LED modes */
+>  #define IXGBE_LED_LINK_UP       0x0
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c  
+> b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+> index 4716ca4..45ad6b1 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+> @@ -2114,6 +2114,50 @@ static s32 ixgbe_reset_phy_t_X550em(struct  
+> ixgbe_hw *hw)
+>  	return ixgbe_enable_lasi_ext_t_x550em(hw);
+>  }
+>
+> +/**
+> + *  ixgbe_led_on_t_x550em - Turns on the software controllable LEDs.
+> + *  @hw: pointer to hardware structure
+> + *  @led_idx: led number to turn on
+> + **/
+> +s32 ixgbe_led_on_t_x550em(struct ixgbe_hw *hw, u32 led_idx)
+> +{
+> +	u16 phy_data;
+> +
+> +	if (led_idx >= IXGBE_X557_MAX_LED_INDEX)
+> +		return IXGBE_ERR_PARAM;
+> +
+> +	/* To turn on the LED, set mode to ON. */
+> +	hw->phy.ops.read_reg(hw, IXGBE_X557_LED_PROVISIONING + led_idx,
+> +			     IXGBE_MDIO_VENDOR_SPECIFIC_1_DEV_TYPE, &phy_data);
+> +	phy_data |= IXGBE_X557_LED_MANUAL_SET_MASK;
+> +	hw->phy.ops.write_reg(hw, IXGBE_X557_LED_PROVISIONING + led_idx,
+> +			      IXGBE_MDIO_VENDOR_SPECIFIC_1_DEV_TYPE, phy_data);
+> +
+> +	return 0;
+> +}
+> +
+> +/**
+> + *  ixgbe_led_off_t_x550em - Turns off the software controllable LEDs.
+> + *  @hw: pointer to hardware structure
+> + *  @led_idx: led number to turn off
+> + **/
+> +s32 ixgbe_led_off_t_x550em(struct ixgbe_hw *hw, u32 led_idx)
+> +{
+> +	u16 phy_data;
+> +
+> +	if (led_idx >= IXGBE_X557_MAX_LED_INDEX)
+> +		return IXGBE_ERR_PARAM;
+> +
+> +	/* To turn on the LED, set mode to ON. */
+> +	hw->phy.ops.read_reg(hw, IXGBE_X557_LED_PROVISIONING + led_idx,
+> +			     IXGBE_MDIO_VENDOR_SPECIFIC_1_DEV_TYPE, &phy_data);
+> +	phy_data &= ~IXGBE_X557_LED_MANUAL_SET_MASK;
+> +	hw->phy.ops.write_reg(hw, IXGBE_X557_LED_PROVISIONING + led_idx,
+> +			      IXGBE_MDIO_VENDOR_SPECIFIC_1_DEV_TYPE, phy_data);
+> +
+> +	return 0;
+> +}
+> +
+>  /** ixgbe_get_lcd_x550em - Determine lowest common denominator
+>   *  @hw: pointer to hardware structure
+>   *  @lcd_speed: pointer to lowest common link speed
+> @@ -2853,8 +2897,6 @@ static s32 ixgbe_write_phy_reg_x550a(struct  
+> ixgbe_hw *hw, u32 reg_addr,
+>  	.write_analog_reg8		= NULL, \
+>  	.set_rxpba			= &ixgbe_set_rxpba_generic, \
+>  	.check_link			= &ixgbe_check_mac_link_generic, \
+> -	.led_on				= &ixgbe_led_on_generic, \
+> -	.led_off			= &ixgbe_led_off_generic, \
+>  	.blink_led_start		= &ixgbe_blink_led_start_X540, \
+>  	.blink_led_stop			= &ixgbe_blink_led_stop_X540, \
+>  	.set_rar			= &ixgbe_set_rar_generic, \
+> @@ -2886,6 +2928,8 @@ static s32 ixgbe_write_phy_reg_x550a(struct  
+> ixgbe_hw *hw, u32 reg_addr,
+>
+>  static const struct ixgbe_mac_operations mac_ops_X550 = {
+>  	X550_COMMON_MAC
+> +	.led_on			= ixgbe_led_on_generic,
+> +	.led_off		= ixgbe_led_off_generic,
+>  	.reset_hw		= &ixgbe_reset_hw_X540,
+>  	.get_media_type		= &ixgbe_get_media_type_X540,
+>  	.get_san_mac_addr	= &ixgbe_get_san_mac_addr_generic,
+> @@ -2904,6 +2948,8 @@ static const struct ixgbe_mac_operations  
+> mac_ops_X550 = {
+>
+>  static const struct ixgbe_mac_operations mac_ops_X550EM_x = {
+>  	X550_COMMON_MAC
+> +	.led_on			= ixgbe_led_on_t_x550em,
+> +	.led_off		= ixgbe_led_off_t_x550em,
+>  	.reset_hw		= &ixgbe_reset_hw_X550em,
+>  	.get_media_type		= &ixgbe_get_media_type_X550em,
+>  	.get_san_mac_addr	= NULL,
+> @@ -2922,6 +2968,8 @@ static const struct ixgbe_mac_operations  
+> mac_ops_X550EM_x = {
+>
+>  static struct ixgbe_mac_operations mac_ops_x550em_a = {
+>  	X550_COMMON_MAC
+> +	.led_on			= ixgbe_led_on_t_x550em,
+> +	.led_off		= ixgbe_led_off_t_x550em,
+>  	.reset_hw		= ixgbe_reset_hw_X550em,
+>  	.get_media_type		= ixgbe_get_media_type_X550em,
+>  	.get_san_mac_addr	= NULL,
 
-- Alex
+The new functions need to be made static to avoid namespace pollution and  
+to avoid compiler warnings with W=1.
+
+--
+Mark Rustad, Networking Division, Intel Corporation
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 841 bytes
+Desc: Message signed with OpenPGP using GPGMail
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160822/734feb59/attachment.asc>
