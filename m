@@ -1,40 +1,40 @@
-From: Wei Yongjun <weiyj.lk@gmail.com>
-Date: Tue, 23 Aug 2016 15:08:09 +0000
-Subject: [Intel-wired-lan] [PATCH -next] igb: fix non static symbol warning
-Message-ID: <1471964889-511-1-git-send-email-weiyj.lk@gmail.com>
+From: Tantilov, Emil S <emil.s.tantilov@intel.com>
+Date: Tue, 23 Aug 2016 17:18:01 +0000
+Subject: [Intel-wired-lan] [PATCH -next] ixgbe: Fix non static
+	symbol	warnings
+In-Reply-To: <1471964842-335-1-git-send-email-weiyj.lk@gmail.com>
+References: <1471964842-335-1-git-send-email-weiyj.lk@gmail.com>
+Message-ID: <87618083B2453E4A8714035B62D67992506CA9C8@FMSMSX105.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Wei Yongjun <weiyongjun1@huawei.com>
+>-----Original Message-----
+>From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+>Behalf Of Wei Yongjun
+>Sent: Tuesday, August 23, 2016 8:07 AM
+>To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
+>Cc: intel-wired-lan at lists.osuosl.org; Wei Yongjun <weiyongjun1@huawei.com>;
+>netdev at vger.kernel.org
+>Subject: [Intel-wired-lan] [PATCH -next] ixgbe: Fix non static symbol
+>warnings
+>
+>From: Wei Yongjun <weiyongjun1@huawei.com>
+>
+>Fixes the following sparse warnings:
+>
+>drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c:2128:5: warning:
+> symbol 'ixgbe_led_on_t_x550em' was not declared. Should it be static?
+>drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c:2150:5: warning:
+> symbol 'ixgbe_led_off_t_x550em' was not declared. Should it be static?
+>
+>Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
 
-Fixes the following sparse warning:
+Already resolved:
+http://patchwork.ozlabs.org/patch/661647/
 
-drivers/net/ethernet/intel/igb/igb_ethtool.c:2707:5: warning:
- symbol 'igb_rxnfc_write_vlan_prio_filter' was not declared. Should it be static?
-
-Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
----
- drivers/net/ethernet/intel/igb/igb_ethtool.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index 0c33eca..737b664 100644
---- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -2704,8 +2704,8 @@ static int igb_rxnfc_write_etype_filter(struct igb_adapter *adapter,
- 	return 0;
- }
- 
--int igb_rxnfc_write_vlan_prio_filter(struct igb_adapter *adapter,
--				     struct igb_nfc_filter *input)
-+static int igb_rxnfc_write_vlan_prio_filter(struct igb_adapter *adapter,
-+					    struct igb_nfc_filter *input)
- {
- 	struct e1000_hw *hw = &adapter->hw;
- 	u8 vlan_priority;
-
-
+Thanks,
+Emil
 
