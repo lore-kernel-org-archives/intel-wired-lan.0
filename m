@@ -1,55 +1,56 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Date: Tue, 23 Aug 2016 16:42:54 -0500
-Subject: [Intel-wired-lan] [PATCH v6 0/3] PCI: Precision Time
-	Measurement support
-In-Reply-To: <20160613185945.12503.32760.stgit@bhelgaas-glaptop2.roam.corp.google.com>
-References: <20160613185945.12503.32760.stgit@bhelgaas-glaptop2.roam.corp.google.com>
-Message-ID: <20160823214254.GD5838@localhost>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 23 Aug 2016 22:28:33 +0000
+Subject: [Intel-wired-lan] [dev-queue PATCH v3 1/3] i40e: Introduce VF
+ port	representor/control netdevs.
+In-Reply-To: <1471905790-4222-2-git-send-email-sridhar.samudrala@intel.com>
+References: <1471905790-4222-1-git-send-email-sridhar.samudrala@intel.com>
+ <1471905790-4222-2-git-send-email-sridhar.samudrala@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9F98DE@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Jun 13, 2016 at 02:05:26PM -0500, Bjorn Helgaas wrote:
-> This is a slightly different proposal for the PTM support Jonathan
-> proposed here:
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Sridhar Samudrala
+> Sent: Monday, August 22, 2016 3:43 PM
+> To: intel-wired-lan at lists.osuosl.org; Singhai, Anjali
+> <anjali.singhai@intel.com>; Fastabend, John R
+> <john.r.fastabend@intel.com>; Nambiar, Amritha
+> <amritha.nambiar@intel.com>; Duyck, Alexander H
+> <alexander.h.duyck@intel.com>
+> Subject: [Intel-wired-lan] [dev-queue PATCH v3 1/3] i40e: Introduce VF port
+> representor/control netdevs.
 > 
->   http://lkml.kernel.org/r/1462956446-27361-2-git-send-email-jonathan.yong at intel.com
+> This patch enables creation of a VF Port representor/Control netdev
+> associated with each VF. These netdevs can be used to control and configure
+> VFs from PFs namespace. They enable exposing VF statistics, configuring link
+> state, mtu, fdb/vlan entries etc.
 > 
-> I split this into three pieces mostly for ease in reviewing.  They
-> could all be squashed:
+>     # echo 2 > /sys/class/net/enp5s0f0/device/sriov_numvfs
+>     # ip l show
+>     297: enp5s0f0: <BROADCAST,MULTICAST> mtu 1500 qdisc noop portid
+> 6805ca2e7268 state DOWN mode DEFAULT group default qlen 1000
+>     link/ether 68:05:ca:2e:72:68 brd ff:ff:ff:ff:ff:ff
+>     vf 0 MAC 00:00:00:00:00:00, spoof checking on, link-state auto, trust off
+>     vf 1 MAC 00:00:00:00:00:00, spoof checking on, link-state auto, trust off
+>     299: enp5s0f0-vf0: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state
+> DOWN mode DEFAULT group default qlen 1000
+>     link/ether 00:00:00:00:00:00 brd ff:ff:ff:ff:ff:ff
+>     300: enp5s0f0-vf1: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state
+> DOWN mode DEFAULT group default qlen 1000
+>     link/ether 00:00:00:00:00:00 brd ff:ff:ff:ff:ff:ff
 > 
->   - Enable PTM in root ports and switches automatically at boot
->   - Enable PTM in endpoints when requested by driver
->   - Add clock granularity information
-> 
-> I have some open questions about how PTM works on Root Complex
-> Integrated Endpoints and whether we should enable it automatically
-> even without a driver request.  And I probably left out some details
-> of the clock granularity computation, so treat this as more of an RFC
-> than anything.
-> 
-> Bjorn
-> 
+> Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
 > ---
-> 
-> Bjorn Helgaas (2):
->       PCI: Add pci_enable_ptm() for drivers to enable PTM on endpoints
->       PCI: Add PTM clock granularity information
-> 
-> Jonathan Yong (1):
->       PCI: Add Precision Time Measurement (PTM) support
-> 
-> 
->  drivers/pci/pci.h             |    6 ++
->  drivers/pci/pcie/Kconfig      |   12 ++++
->  drivers/pci/pcie/Makefile     |    1 
->  drivers/pci/pcie/ptm.c        |  140 +++++++++++++++++++++++++++++++++++++++++
->  drivers/pci/probe.c           |    3 +
->  include/linux/pci.h           |   13 ++++
->  include/uapi/linux/pci_regs.h |   12 +++-
->  7 files changed, 186 insertions(+), 1 deletion(-)
->  create mode 100644 drivers/pci/pcie/ptm.c
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 88
+> ++++++++++++++++++++++
+> drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.h | 14 ++++
+>  2 files changed, 102 insertions(+)
 
-These are on pci/ptm and queued for v4.9.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Functions as expected
+
+
