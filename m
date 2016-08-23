@@ -1,40 +1,35 @@
-From: Tantilov, Emil S <emil.s.tantilov@intel.com>
-Date: Tue, 23 Aug 2016 17:18:01 +0000
-Subject: [Intel-wired-lan] [PATCH -next] ixgbe: Fix non static
-	symbol	warnings
-In-Reply-To: <1471964842-335-1-git-send-email-weiyj.lk@gmail.com>
-References: <1471964842-335-1-git-send-email-weiyj.lk@gmail.com>
-Message-ID: <87618083B2453E4A8714035B62D67992506CA9C8@FMSMSX105.amr.corp.intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 23 Aug 2016 17:19:04 +0000
+Subject: [Intel-wired-lan] [PATCH] ixgbe: make
+	ixgbe_led_on/off_t_x550em	static
+In-Reply-To: <20160822232834.9806.70247.stgit@localhost6.localdomain6>
+References: <20160822232834.9806.70247.stgit@localhost6.localdomain6>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9F97EE@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
->-----Original Message-----
->From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
->Behalf Of Wei Yongjun
->Sent: Tuesday, August 23, 2016 8:07 AM
->To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>
->Cc: intel-wired-lan at lists.osuosl.org; Wei Yongjun <weiyongjun1@huawei.com>;
->netdev at vger.kernel.org
->Subject: [Intel-wired-lan] [PATCH -next] ixgbe: Fix non static symbol
->warnings
->
->From: Wei Yongjun <weiyongjun1@huawei.com>
->
->Fixes the following sparse warnings:
->
->drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c:2128:5: warning:
-> symbol 'ixgbe_led_on_t_x550em' was not declared. Should it be static?
->drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c:2150:5: warning:
-> symbol 'ixgbe_led_off_t_x550em' was not declared. Should it be static?
->
->Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Emil Tantilov
+> Sent: Monday, August 22, 2016 4:29 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [PATCH] ixgbe: make ixgbe_led_on/off_t_x550em
+> static
+> 
+> These functions are only used in ixgbe_x550.c.
+> 
+> Fixes a warning when compiling with -Wmissing-prototypes
+> 
+> Reported-by: Krishneil Singh <krishneil.k.singh@intel.com>
+> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+> ---
+>  drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-Already resolved:
-http://patchwork.ozlabs.org/patch/661647/
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+No compiler warnings when compiled with -Wmissing-prototypes option
 
-Thanks,
-Emil
 
