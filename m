@@ -1,46 +1,40 @@
-From: Samudrala, Sridhar <sridhar.samudrala@intel.com>
-Date: Mon, 22 Aug 2016 16:53:28 -0700
-Subject: [Intel-wired-lan] [dev-queue PATCH v2 2/3] i40e: Enable VF
- specific ethtool statistics via VF Port representor netdevs.
-In-Reply-To: <1471907612.2325.27.camel@intel.com>
-References: <1471542901-13405-1-git-send-email-sridhar.samudrala@intel.com>	
- <1471542901-13405-3-git-send-email-sridhar.samudrala@intel.com>	
- <CAKgT0UfsO=FGZAnHmXCHsrVXjtfK=G7ebNREw7nnX_KFP-Xi5g@mail.gmail.com>	
- <57BB2980.50902@intel.com> <1471907612.2325.27.camel@intel.com>
-Message-ID: <57BB9078.4020101@intel.com>
+From: Yong, Jonathan <jonathan.yong@intel.com>
+Date: Tue, 23 Aug 2016 08:13:43 +0800
+Subject: [Intel-wired-lan] [PATCH v6 1/3] PCI: Add Precision Time
+	Measurement (PTM) support
+In-Reply-To: <20160822170110.GE18628@localhost>
+References: <20160613185945.12503.32760.stgit@bhelgaas-glaptop2.roam.corp.google.com>
+ <20160613190534.12503.18923.stgit@bhelgaas-glaptop2.roam.corp.google.com>
+ <57AA984E.8040308@intel.com> <20160815185931.GD9790@localhost>
+ <57B2C90F.8010109@intel.com> <20160816133715.GA30825@localhost>
+ <20160822170110.GE18628@localhost>
+Message-ID: <57BB9537.6040002@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-
-
-On 8/22/2016 4:13 PM, Jeff Kirsher wrote:
-> On Mon, 2016-08-22 at 09:34 -0700, Samudrala, Sridhar wrote:
->>> So one change you need to this is to swap the rx_ and tx_ portion of
->>> the strings.  You have to keep in mind this is a switch port
->>> representation so the Rx and Tx values are swapped.  Every byte the VF
->>> receives is actually a byte that we transmitted to the VF.
+On 08/23/2016 01:01, Bjorn Helgaas wrote:
+> On Tue, Aug 16, 2016 at 08:37:15AM -0500, Bjorn Helgaas wrote:
+>> On Tue, Aug 16, 2016 at 04:04:31PM +0800, Yong, Jonathan wrote:
+>>> On 08/16/2016 02:59, Bjorn Helgaas wrote:
+>>>>
+>>>> I guess I was hoping you could test these patches.  Do you have any
+>>>> way to do that?
+>>>>
 >>>
->>> You could probably also add a comment above this block stating that
->>> the two were swapped and why.
->>>
->> Yes. As we are saying that this netdev represents the switch port
->> corresponding to the VF, it makes
->> sense to swap the rx and tx stats.
+>>> No real hardware with this feature yet, so testing is entirely on software.
 >>
->> Jeff,
->> Should i submit a patch on top of this patchset as it is already in
->> dev-queue branch?
->> Or resubmit the patchset as a v3 with this update.
-> Alex is correct, please re-submit the series with the desired changes to
-> this and any other patches, please.  I can drop this series from my tree if
-> that helps you.
-I submitted a v3 version of these patches that should apply cleanly 
-after you drop the v2 series.
-Amritha's switchid patch should apply cleanly on top this patchset.
+>> OK, let me know the results of your software testing with these patches.
+> 
+> Do you have some software testing you can do on these patches?
+> 
 
-Thanks
-Sridhar
+Yes, they're entirely synthetic however and do not reflect real hardware.
+
+At the moment, they're hooks to pci_scan_bus and providing a fake config
+space for the driver to manipulate, inspected with lspci.
+
+The PTM bits are set properly as far as I can tell.
 
