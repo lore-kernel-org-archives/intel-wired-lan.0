@@ -1,38 +1,126 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 24 Aug 2016 22:28:57 +0000
-Subject: [Intel-wired-lan] [next PATCH S44 5/6] i40e: Fix to check for
- NULL
-In-Reply-To: <1472063631-9033-6-git-send-email-bimmy.pujari@intel.com>
-References: <1472063631-9033-1-git-send-email-bimmy.pujari@intel.com>
- <1472063631-9033-6-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9FAAC2@ORSMSX104.amr.corp.intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 25 Aug 2016 06:33:18 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 4a58e1c56c60f5df7e0371232c32880a6cd70b63 BUILD SUCCESS
+Message-ID: <57be20ae.VKSssdzwi+tC4N6X%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Bimmy Pujari
-> Sent: Wednesday, August 24, 2016 11:34 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S44 5/6] i40e: Fix to check for NULL
-> 
-> From: Carolyn Wyborny <carolyn.wyborny@intel.com>
-> 
-> This patch fixes an issue in the virt channel code, where a return from
-> i40e_find_vsi_from_id was not checked for NULL when applicable.
-> Without this patch, there is a risk for panic and static analysis tools complain.
-> This patch fixes the problem by adding the check and adding an additional
-> input check for similar reasons.
-> 
-> Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
-> Change-ID: I7e9be88eb7a3addb50eadc451c8336d9e06f5394
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 11 ++++++++++-
->  1 file changed, 10 insertions(+), 1 deletion(-)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+4a58e1c56c60f5df7e0371232c32880a6cd70b63  i40e: Fix for extra byte swap in tunnel setup
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+elapsed time: 121m
 
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 104
 
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                   randconfig-a0-08220729
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+parisc                         b180_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x012-201634
+x86_64                 randconfig-x015-201634
+x86_64                 randconfig-x013-201634
+x86_64                 randconfig-x011-201634
+x86_64                 randconfig-x010-201634
+x86_64                 randconfig-x014-201634
+x86_64                 randconfig-x018-201634
+x86_64                 randconfig-x017-201634
+x86_64                 randconfig-x016-201634
+x86_64                 randconfig-x019-201634
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201634
+i386                     randconfig-s1-201634
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-i0-08220007
+i386                   randconfig-i1-08220007
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                               tinyconfig
+i386                   randconfig-x014-201634
+i386                   randconfig-x016-201634
+i386                   randconfig-x010-201634
+i386                   randconfig-x017-201634
+i386                   randconfig-x013-201634
+i386                   randconfig-x012-201634
+i386                   randconfig-x018-201634
+i386                   randconfig-x019-201634
+i386                   randconfig-x011-201634
+i386                   randconfig-x015-201634
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201634
+x86_64                 randconfig-x009-201634
+x86_64                 randconfig-x008-201634
+x86_64                 randconfig-x002-201634
+x86_64                 randconfig-x003-201634
+x86_64                 randconfig-x007-201634
+x86_64                 randconfig-x004-201634
+x86_64                 randconfig-x005-201634
+x86_64                 randconfig-x001-201634
+x86_64                 randconfig-x006-201634
+x86_64                 randconfig-x000-201634
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+
+Thanks,
+Fengguang
