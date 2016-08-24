@@ -1,60 +1,138 @@
-From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Wed, 24 Aug 2016 11:33:47 -0700
-Subject: [Intel-wired-lan] [next PATCH S44 2/6] i40e: fix "dump port"
-	command when NPAR enabled
-In-Reply-To: <1472063631-9033-1-git-send-email-bimmy.pujari@intel.com>
-References: <1472063631-9033-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1472063631-9033-3-git-send-email-bimmy.pujari@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 25 Aug 2016 02:44:23 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 3cb98e16dd004a93575d80f45c5aca0e185f9b35 BUILD SUCCESS
+Message-ID: <57bdeb07.my0WGvW1ijEFGDfK%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alan Brady <alan.brady@intel.com>
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+3cb98e16dd004a93575d80f45c5aca0e185f9b35  igbvf: bump version to igbvf-2.4.0
 
-When using the debugfs to issue the "dump port" command
-with NPAR enabled, the firmware reports back with invalid argument.
+elapsed time: 122m
 
-The issue occurs because the pf->mac_seid was used to perform the query.
-This is fine when NPAR is disabled because the switch ID == pf->mac_seid,
-however this is not the case when NPAR is enabled.  This fix instead
-goes through the VSI to determine the correct ID to use in either case.
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 116
 
-HSD-number: 7661076
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-x012-201634
+x86_64                 randconfig-x015-201634
+x86_64                 randconfig-x013-201634
+x86_64                 randconfig-x011-201634
+x86_64                 randconfig-x010-201634
+x86_64                 randconfig-x014-201634
+x86_64                 randconfig-x018-201634
+x86_64                 randconfig-x017-201634
+x86_64                 randconfig-x016-201634
+x86_64                 randconfig-x019-201634
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                     randconfig-s0-201634
+i386                     randconfig-s1-201634
+x86_64                           allmodconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201634
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-i0-08220007
+i386                   randconfig-i1-08220007
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                               tinyconfig
+i386                   randconfig-x014-201634
+i386                   randconfig-x016-201634
+i386                   randconfig-x010-201634
+i386                   randconfig-x017-201634
+i386                   randconfig-x013-201634
+i386                   randconfig-x012-201634
+i386                   randconfig-x018-201634
+i386                   randconfig-x019-201634
+i386                   randconfig-x011-201634
+i386                   randconfig-x015-201634
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201634
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+x86_64                 randconfig-x009-201634
+x86_64                 randconfig-x008-201634
+x86_64                 randconfig-x002-201634
+x86_64                 randconfig-x003-201634
+x86_64                 randconfig-x007-201634
+x86_64                 randconfig-x004-201634
+x86_64                 randconfig-x005-201634
+x86_64                 randconfig-x001-201634
+x86_64                 randconfig-x006-201634
+x86_64                 randconfig-x000-201634
+x86_64                                  kexec
+i386                     randconfig-r0-201634
+i386                   randconfig-x000-201634
+i386                   randconfig-x001-201634
+i386                   randconfig-x002-201634
+i386                   randconfig-x003-201634
+i386                   randconfig-x004-201634
+i386                   randconfig-x005-201634
+i386                   randconfig-x006-201634
+i386                   randconfig-x007-201634
+i386                   randconfig-x008-201634
+i386                   randconfig-x009-201634
 
-Signed-off-by: Alan Brady <alan.brady@intel.com>
-Change-ID: I0cd67913a7f2c4a2962e06d39e32e7447cc55b6a
----
- drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-index 05cf9a7..8555f04 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-@@ -1054,6 +1054,7 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
- 			struct i40e_dcbx_config *r_cfg =
- 						&pf->hw.remote_dcbx_config;
- 			int i, ret;
-+			u32 switch_id;
- 
- 			bw_data = kzalloc(sizeof(
- 				    struct i40e_aqc_query_port_ets_config_resp),
-@@ -1063,8 +1064,12 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
- 				goto command_write_done;
- 			}
- 
-+			vsi = pf->vsi[pf->lan_vsi];
-+			switch_id =
-+				vsi->info.switch_id & I40E_AQ_VSI_SW_ID_MASK;
-+
- 			ret = i40e_aq_query_port_ets_config(&pf->hw,
--							    pf->mac_seid,
-+							    switch_id,
- 							    bw_data, NULL);
- 			if (ret) {
- 				dev_info(&pf->pdev->dev,
--- 
-2.4.11
-
+Thanks,
+Fengguang
