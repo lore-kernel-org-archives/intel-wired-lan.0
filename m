@@ -1,33 +1,51 @@
-From: Todd Fujinaka <todd.fujinaka@intel.com>
-Date: Wed, 24 Aug 2016 08:40:23 -0700
-Subject: [Intel-wired-lan] [PATCH] igb: bump version to igb-5.4.0
-Message-ID: <1472053223-2123-1-git-send-email-todd.fujinaka@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 24 Aug 2016 17:58:33 +0000
+Subject: [Intel-wired-lan] [dev-queue PATCH v3 3/3] i40e: Introduce
+ devlink	interface.
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9F99C1@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Bump igb version to match other igb drivers.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Sridhar Samudrala
+> Sent: Thursday, August 18, 2016 10:55 AM
+> To: intel-wired-lan at lists.osuosl.org; Singhai, Anjali
+> <anjali.singhai@intel.com>; Fastabend, John R
+> <john.r.fastabend@intel.com>; Nambiar, Amritha
+> <amritha.nambiar@intel.com>; Duyck, Alexander H
+> <alexander.h.duyck@intel.com>
+> Subject: [Intel-wired-lan] [dev-queue PATCH v3 3/3] i40e: Introduce devlink
+> interface.
+> 
+> Add initial devlink support to set/get the mode of SRIOV switch.
+> By default the switch mode is set to 'switchdev' as VF Port representors are
+> created by default.
+> This patch allows the mode to be set to 'legacy' to disable creation of VF Port
+> representor netdevs.
+> 
+> With smode support in iproute2 'devlink' utility, switch mode can be set and
+> get via following commands.
+> 
+>     # devlink dev smode pci/0000:05:00.0
+>     mode: switchdev
+>     # devlink dev set pci/0000:05:00.0 smode legacy
+>     # devlink dev smode pci/0000:05:00.0
+>     mode: legacy
+> 
+> Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+> ---
+>  drivers/net/ethernet/intel/Kconfig                 |  1 +
+>  drivers/net/ethernet/intel/i40e/i40e.h             |  3 +
+>  drivers/net/ethernet/intel/i40e/i40e_main.c        | 91
+> ++++++++++++++++++++--
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  6 +-
+>  4 files changed, 91 insertions(+), 10 deletions(-)
 
-Signed-off-by: Todd Fujinaka <todd.fujinaka@intel.com>
----
- drivers/net/ethernet/intel/igb/igb_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Works as expected
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_main.c b/drivers/net/ethernet/intel/igb/igb_main.c
-index 1684a75..293c210 100644
---- a/drivers/net/ethernet/intel/igb/igb_main.c
-+++ b/drivers/net/ethernet/intel/igb/igb_main.c
-@@ -58,7 +58,7 @@
- #include "igb.h"
- 
- #define MAJ 5
--#define MIN 3
-+#define MIN 4
- #define BUILD 0
- #define DRV_VERSION __stringify(MAJ) "." __stringify(MIN) "." \
- __stringify(BUILD) "-k"
--- 
-2.7.4
 
