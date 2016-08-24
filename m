@@ -1,8 +1,8 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 24 Aug 2016 17:58:33 +0000
-Subject: [Intel-wired-lan] [dev-queue PATCH v3 3/3] i40e: Introduce
- devlink	interface.
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9F99C1@ORSMSX104.amr.corp.intel.com>
+Date: Wed, 24 Aug 2016 18:00:51 +0000
+Subject: [Intel-wired-lan] [dev-queue, v3,
+ 3/3] i40e: Introduce devlink interface.
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9F99D4@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -18,7 +18,7 @@ List-ID: <intel-wired-lan.osuosl.org>
 > <john.r.fastabend@intel.com>; Nambiar, Amritha
 > <amritha.nambiar@intel.com>; Duyck, Alexander H
 > <alexander.h.duyck@intel.com>
-> Subject: [Intel-wired-lan] [dev-queue PATCH v3 3/3] i40e: Introduce devlink
+> Subject: [Intel-wired-lan] [dev-queue,v3,3/3] i40e: Introduce devlink interface.
 > interface.
 > 
 > Add initial devlink support to set/get the mode of SRIOV switch.
