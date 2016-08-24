@@ -1,47 +1,60 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Wed, 24 Aug 2016 11:33:51 -0700
-Subject: [Intel-wired-lan] [next PATCH S44 6/6] i40e: Fix for extra byte
-	swap in tunnel setup
+Date: Wed, 24 Aug 2016 11:33:47 -0700
+Subject: [Intel-wired-lan] [next PATCH S44 2/6] i40e: fix "dump port"
+	command when NPAR enabled
 In-Reply-To: <1472063631-9033-1-git-send-email-bimmy.pujari@intel.com>
 References: <1472063631-9033-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1472063631-9033-7-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1472063631-9033-3-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Carolyn Wyborny <carolyn.wyborny@intel.com>
+From: Alan Brady <alan.brady@intel.com>
 
-This patch fixes an issue where we were byte swapping the port
-parameter, then byte swapping it again in function execution.
-Obviously, that's unnecessary, so take it out of the function calls.
-Without this patch, the udp based tunnel configuration would
-not be correct.
+When using the debugfs to issue the "dump port" command
+with NPAR enabled, the firmware reports back with invalid argument.
 
-Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
-Change-ID: I788d83c5bd5732170f1a81dbfa0b1ac3ca8ea5b7
+The issue occurs because the pf->mac_seid was used to perform the query.
+This is fine when NPAR is disabled because the switch ID == pf->mac_seid,
+however this is not the case when NPAR is enabled.  This fix instead
+goes through the VSI to determine the correct ID to use in either case.
+
+HSD-number: 7661076
+
+Signed-off-by: Alan Brady <alan.brady@intel.com>
+Change-ID: I0cd67913a7f2c4a2962e06d39e32e7447cc55b6a
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 47cf91c..68c1253 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -7138,9 +7138,9 @@ static void i40e_sync_udp_filters_subtask(struct i40e_pf *pf)
- 			pf->pending_udp_bitmap &= ~BIT_ULL(i);
- 			port = pf->udp_ports[i].index;
- 			if (port)
--				ret = i40e_aq_add_udp_tunnel(hw, ntohs(port),
--						     pf->udp_ports[i].type,
--						     NULL, NULL);
-+				ret = i40e_aq_add_udp_tunnel(hw, port,
-+							pf->udp_ports[i].type,
-+							NULL, NULL);
- 			else
- 				ret = i40e_aq_del_udp_tunnel(hw, i, NULL);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+index 05cf9a7..8555f04 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
+@@ -1054,6 +1054,7 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
+ 			struct i40e_dcbx_config *r_cfg =
+ 						&pf->hw.remote_dcbx_config;
+ 			int i, ret;
++			u32 switch_id;
  
+ 			bw_data = kzalloc(sizeof(
+ 				    struct i40e_aqc_query_port_ets_config_resp),
+@@ -1063,8 +1064,12 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
+ 				goto command_write_done;
+ 			}
+ 
++			vsi = pf->vsi[pf->lan_vsi];
++			switch_id =
++				vsi->info.switch_id & I40E_AQ_VSI_SW_ID_MASK;
++
+ 			ret = i40e_aq_query_port_ets_config(&pf->hw,
+-							    pf->mac_seid,
++							    switch_id,
+ 							    bw_data, NULL);
+ 			if (ret) {
+ 				dev_info(&pf->pdev->dev,
 -- 
 2.4.11
 
