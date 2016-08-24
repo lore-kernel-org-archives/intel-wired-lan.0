@@ -1,110 +1,60 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Wed, 24 Aug 2016 11:33:46 -0700
-Subject: [Intel-wired-lan] [next PATCH S44 1/6] i40e: fix setting user
-	defined RSS hash key
+Date: Wed, 24 Aug 2016 11:33:50 -0700
+Subject: [Intel-wired-lan] [next PATCH S44 5/6] i40e: Fix to check for NULL
 In-Reply-To: <1472063631-9033-1-git-send-email-bimmy.pujari@intel.com>
 References: <1472063631-9033-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1472063631-9033-2-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1472063631-9033-6-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alan Brady <alan.brady@intel.com>
+From: Carolyn Wyborny <carolyn.wyborny@intel.com>
 
-Previously, when using ethtool to change the RSS hash key, ethtool would
-report back saying the old key was still being used and no error was
-reported.  It was unclear whether it was being reported incorrectly or
-being set incorrectly.  Debugging revealed 'i40e_set_rxfh()' returned
-zero immediately instead of setting the key because a user defined
-indirection table is not supplied when changing the hash key.
+This patch fixes an issue in the virt channel code, where a return
+from i40e_find_vsi_from_id was not checked for NULL when applicable.
+Without this patch, there is a risk for panic and static analysis
+tools complain. This patch fixes the problem by adding the check
+and adding an additional input check for similar reasons.
 
-This fix instead changes it such that if an indirection table is not
-supplied, then a default one is created and the hash key is now
-correctly set.
-
-Signed-off-by: Alan Brady <alan.brady@intel.com>
-Change-ID: Iddb621897ecf208650272b7ee46702cad7b69a71
+Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
+Change-ID: I7e9be88eb7a3addb50eadc451c8336d9e06f5394
 ---
- drivers/net/ethernet/intel/i40e/i40e.h         |  2 ++
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 12 +++++++-----
- drivers/net/ethernet/intel/i40e/i40e_main.c    |  6 ++----
- 3 files changed, 11 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 7c5f579..22657ea 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -705,6 +705,8 @@ void i40e_do_reset_safe(struct i40e_pf *pf, u32 reset_flags);
- void i40e_do_reset(struct i40e_pf *pf, u32 reset_flags);
- int i40e_config_rss(struct i40e_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size);
- int i40e_get_rss(struct i40e_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size);
-+void i40e_fill_rss_lut(struct i40e_pf *pf, u8 *lut,
-+		       u16 rss_table_size, u16 rss_size);
- struct i40e_vsi *i40e_find_vsi_from_id(struct i40e_pf *pf, u16 id);
- void i40e_update_stats(struct i40e_vsi *vsi);
- void i40e_update_eth_stats(struct i40e_vsi *vsi);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 104d2fb..bfdf46e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -2922,15 +2922,13 @@ static int i40e_set_rxfh(struct net_device *netdev, const u32 *indir,
- {
- 	struct i40e_netdev_priv *np = netdev_priv(netdev);
- 	struct i40e_vsi *vsi = np->vsi;
-+	struct i40e_pf *pf = vsi->back;
- 	u8 *seed = NULL;
- 	u16 i;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+index 27df091..5eb2069 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
+@@ -502,8 +502,16 @@ static int i40e_config_vsi_tx_queue(struct i40e_vf *vf, u16 vsi_id,
+ 	u32 qtx_ctl;
+ 	int ret = 0;
  
- 	if (hfunc != ETH_RSS_HASH_NO_CHANGE && hfunc != ETH_RSS_HASH_TOP)
- 		return -EOPNOTSUPP;
++	if (!i40e_vc_isvalid_vsi_id(vf, info->vsi_id)) {
++		ret = -ENOENT;
++		goto error_context;
++	}
+ 	pf_queue_id = i40e_vc_get_pf_queue_id(vf, vsi_id, vsi_queue_id);
+ 	vsi = i40e_find_vsi_from_id(pf, vsi_id);
++	if (!vsi) {
++		ret = -ENOENT;
++		goto error_context;
++	}
  
--	if (!indir)
--		return 0;
--
- 	if (key) {
- 		if (!vsi->rss_hkey_user) {
- 			vsi->rss_hkey_user = kzalloc(I40E_HKEY_ARRAY_SIZE,
-@@ -2948,8 +2946,12 @@ static int i40e_set_rxfh(struct net_device *netdev, const u32 *indir,
+ 	/* clear the context structure first */
+ 	memset(&tx_ctx, 0, sizeof(struct i40e_hmc_obj_txq));
+@@ -1624,7 +1632,8 @@ static int i40e_vc_config_promiscuous_mode_msg(struct i40e_vf *vf,
+ 
+ 	vsi = i40e_find_vsi_from_id(pf, info->vsi_id);
+ 	if (!test_bit(I40E_VF_STAT_ACTIVE, &vf->vf_states) ||
+-	    !i40e_vc_isvalid_vsi_id(vf, info->vsi_id)) {
++	    !i40e_vc_isvalid_vsi_id(vf, info->vsi_id) ||
++	    !vsi) {
+ 		aq_ret = I40E_ERR_PARAM;
+ 		goto error_param;
  	}
- 
- 	/* Each 32 bits pointed by 'indir' is stored with a lut entry */
--	for (i = 0; i < I40E_HLUT_ARRAY_SIZE; i++)
--		vsi->rss_lut_user[i] = (u8)(indir[i]);
-+	if (indir)
-+		for (i = 0; i < I40E_HLUT_ARRAY_SIZE; i++)
-+			vsi->rss_lut_user[i] = (u8)(indir[i]);
-+	else
-+		i40e_fill_rss_lut(pf, vsi->rss_lut_user, I40E_HLUT_ARRAY_SIZE,
-+				  vsi->rss_size);
- 
- 	return i40e_config_rss(vsi, seed, vsi->rss_lut_user,
- 			       I40E_HLUT_ARRAY_SIZE);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index b836b6e..196a7750 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -57,8 +57,6 @@ static int i40e_setup_pf_switch(struct i40e_pf *pf, bool reinit);
- static int i40e_setup_misc_vector(struct i40e_pf *pf);
- static void i40e_determine_queue_usage(struct i40e_pf *pf);
- static int i40e_setup_pf_filter_control(struct i40e_pf *pf);
--static void i40e_fill_rss_lut(struct i40e_pf *pf, u8 *lut,
--			      u16 rss_table_size, u16 rss_size);
- static void i40e_fdir_sb_setup(struct i40e_pf *pf);
- static int i40e_veb_get_bw_info(struct i40e_veb *veb);
- 
-@@ -8228,8 +8226,8 @@ int i40e_get_rss(struct i40e_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size)
-  * @rss_table_size: Lookup table size
-  * @rss_size: Range of queue number for hashing
-  */
--static void i40e_fill_rss_lut(struct i40e_pf *pf, u8 *lut,
--			      u16 rss_table_size, u16 rss_size)
-+void i40e_fill_rss_lut(struct i40e_pf *pf, u8 *lut,
-+		       u16 rss_table_size, u16 rss_size)
- {
- 	u16 i;
- 
 -- 
 2.4.11
 
