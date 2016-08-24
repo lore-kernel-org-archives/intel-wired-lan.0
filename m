@@ -1,41 +1,46 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Wed, 24 Aug 2016 11:33:49 -0700
-Subject: [Intel-wired-lan] [next PATCH S44 4/6] i40e: return correct opcode
-	to VF
+Date: Wed, 24 Aug 2016 11:33:51 -0700
+Subject: [Intel-wired-lan] [next PATCH S44 6/6] i40e: Fix for extra byte
+	swap in tunnel setup
 In-Reply-To: <1472063631-9033-1-git-send-email-bimmy.pujari@intel.com>
 References: <1472063631-9033-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1472063631-9033-5-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1472063631-9033-7-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+From: Carolyn Wyborny <carolyn.wyborny@intel.com>
 
-This conditional is backward, so the driver responds back to the VF with
-the wrong opcode. Do the old switcheroo to fix this.
+This patch fixes an issue where we were byte swapping the port
+parameter, then byte swapping it again in function execution.
+Obviously, that's unnecessary, so take it out of the function calls.
+Without this patch, the udp based tunnel configuration would
+not be correct.
 
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Change-ID: I384035b0fef8a3881c176de4b4672009b3400b25
+Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
+Change-ID: I788d83c5bd5732170f1a81dbfa0b1ac3ca8ea5b7
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index fe73bae..27df091 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -2365,8 +2365,8 @@ static int i40e_vc_iwarp_qvmap_msg(struct i40e_vf *vf, u8 *msg, u16 msglen,
- error_param:
- 	/* send the response to the VF */
- 	return i40e_vc_send_resp_to_vf(vf,
--			       config ? I40E_VIRTCHNL_OP_RELEASE_IWARP_IRQ_MAP :
--			       I40E_VIRTCHNL_OP_CONFIG_IWARP_IRQ_MAP,
-+			       config ? I40E_VIRTCHNL_OP_CONFIG_IWARP_IRQ_MAP :
-+			       I40E_VIRTCHNL_OP_RELEASE_IWARP_IRQ_MAP,
- 			       aq_ret);
- }
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 47cf91c..68c1253 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -7138,9 +7138,9 @@ static void i40e_sync_udp_filters_subtask(struct i40e_pf *pf)
+ 			pf->pending_udp_bitmap &= ~BIT_ULL(i);
+ 			port = pf->udp_ports[i].index;
+ 			if (port)
+-				ret = i40e_aq_add_udp_tunnel(hw, ntohs(port),
+-						     pf->udp_ports[i].type,
+-						     NULL, NULL);
++				ret = i40e_aq_add_udp_tunnel(hw, port,
++							pf->udp_ports[i].type,
++							NULL, NULL);
+ 			else
+ 				ret = i40e_aq_del_udp_tunnel(hw, i, NULL);
  
 -- 
 2.4.11
