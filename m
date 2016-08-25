@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 25 Aug 2016 14:47:49 +0000
-Subject: [Intel-wired-lan] [next PATCH S44 2/6] i40e: fix "dump
-	port"	command when NPAR enabled
-In-Reply-To: <1472063631-9033-3-git-send-email-bimmy.pujari@intel.com>
+Date: Thu, 25 Aug 2016 15:47:30 +0000
+Subject: [Intel-wired-lan] [next PATCH S44 6/6] i40e: Fix for extra
+	byte	swap in tunnel setup
+In-Reply-To: <1472063631-9033-7-git-send-email-bimmy.pujari@intel.com>
 References: <1472063631-9033-1-git-send-email-bimmy.pujari@intel.com>
- <1472063631-9033-3-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9FAB0A@ORSMSX104.amr.corp.intel.com>
+ <1472063631-9033-7-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9FAB27@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,28 +17,21 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Wednesday, August 24, 2016 11:34 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Brady, Alan <alan.brady@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH S44 2/6] i40e: fix "dump port"
-> command when NPAR enabled
+> Subject: [Intel-wired-lan] [next PATCH S44 6/6] i40e: Fix for extra byte swap
+> in tunnel setup
 > 
-> From: Alan Brady <alan.brady@intel.com>
+> From: Carolyn Wyborny <carolyn.wyborny@intel.com>
 > 
-> When using the debugfs to issue the "dump port" command with NPAR
-> enabled, the firmware reports back with invalid argument.
+> This patch fixes an issue where we were byte swapping the port parameter,
+> then byte swapping it again in function execution.
+> Obviously, that's unnecessary, so take it out of the function calls.
+> Without this patch, the udp based tunnel configuration would not be correct.
 > 
-> The issue occurs because the pf->mac_seid was used to perform the query.
-> This is fine when NPAR is disabled because the switch ID == pf->mac_seid,
-> however this is not the case when NPAR is enabled.  This fix instead goes
-> through the VSI to determine the correct ID to use in either case.
-> 
-> HSD-number: 7661076
-> 
-> Signed-off-by: Alan Brady <alan.brady@intel.com>
-> Change-ID: I0cd67913a7f2c4a2962e06d39e32e7447cc55b6a
+> Signed-off-by: Carolyn Wyborny <carolyn.wyborny@intel.com>
+> Change-ID: I788d83c5bd5732170f1a81dbfa0b1ac3ca8ea5b7
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-
 
