@@ -1,94 +1,44 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 25 Aug 2016 09:49:57 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
- 995ded3802fbfbeafd607fdbe880c1b190b956a6 BUILD SUCCESS
-Message-ID: <57be4ec5.U0lrMSQTorK2BhfY%fengguang.wu@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 25 Aug 2016 14:47:49 +0000
+Subject: [Intel-wired-lan] [next PATCH S44 2/6] i40e: fix "dump
+	port"	command when NPAR enabled
+In-Reply-To: <1472063631-9033-3-git-send-email-bimmy.pujari@intel.com>
+References: <1472063631-9033-1-git-send-email-bimmy.pujari@intel.com>
+ <1472063631-9033-3-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9FAB0A@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-995ded3802fbfbeafd607fdbe880c1b190b956a6  checkpatch.pl: seed camelcase from the provided kernel tree root
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Bimmy Pujari
+> Sent: Wednesday, August 24, 2016 11:34 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Cc: Brady, Alan <alan.brady@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S44 2/6] i40e: fix "dump port"
+> command when NPAR enabled
+> 
+> From: Alan Brady <alan.brady@intel.com>
+> 
+> When using the debugfs to issue the "dump port" command with NPAR
+> enabled, the firmware reports back with invalid argument.
+> 
+> The issue occurs because the pf->mac_seid was used to perform the query.
+> This is fine when NPAR is disabled because the switch ID == pf->mac_seid,
+> however this is not the case when NPAR is enabled.  This fix instead goes
+> through the VSI to determine the correct ID to use in either case.
+> 
+> HSD-number: 7661076
+> 
+> Signed-off-by: Alan Brady <alan.brady@intel.com>
+> Change-ID: I0cd67913a7f2c4a2962e06d39e32e7447cc55b6a
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
 
-elapsed time: 85m
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 72
 
-x86_64                           allmodconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201634
-i386                     randconfig-s1-201634
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-i386                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-i0-08220007
-i386                   randconfig-i1-08220007
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                   rhel
-x86_64                               rhel-7.2
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-
-Thanks,
-Fengguang
