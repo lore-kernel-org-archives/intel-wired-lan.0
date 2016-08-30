@@ -1,143 +1,31 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 30 Aug 2016 16:24:55 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
- 66b43eef432d6884ac6fb6f9cb82fecab3157076 BUILD SUCCESS
-Message-ID: <57c542d7.nnVUBjys+gcEx0TV%fengguang.wu@intel.com>
+From: Singh, Krishneil K <krishneil.k.singh@intel.com>
+Date: Tue, 30 Aug 2016 16:15:13 +0000
+Subject: [Intel-wired-lan] [PATCH 1/2] fm10k: napi polling routine
+	must	return actual work done
+In-Reply-To: <20160620173933.5638-1-jacob.e.keller@intel.com>
+References: <20160620173933.5638-1-jacob.e.keller@intel.com>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E273BF2B7@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-66b43eef432d6884ac6fb6f9cb82fecab3157076  i40e: Fix kernel panic on enable/disable lldp
 
-elapsed time: 84m
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Jacob Keller
+Sent: Monday, June 20, 2016 10:40 AM
+To: Intel Wired LAN <intel-wired-lan@lists.osuosl.org>
+Cc: Paolo Abeni <pabeni@redhat.com>; Alexander Duyck <aduyck@mirantis.com>; Venkatesh Srinivas <venkateshs@google.com>
+Subject: [Intel-wired-lan] [PATCH 1/2] fm10k: napi polling routine must return actual work done
 
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 121
+When fm10k_poll fully cleans rings it returns 0. This is incorrect as it messes up the budget accounting in the core napi code. Fix this by returning actual work done, capped at budget - 1 since the core doesn't expect a return of the full budget when the driver modifies the napi status.
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201635
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-parisc                         b180_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x015-201635
-x86_64                 randconfig-x012-201635
-x86_64                 randconfig-x013-201635
-x86_64                 randconfig-x011-201635
-x86_64                 randconfig-x010-201635
-x86_64                 randconfig-x014-201635
-x86_64                 randconfig-x018-201635
-x86_64                 randconfig-x017-201635
-x86_64                 randconfig-x019-201635
-x86_64                 randconfig-x016-201635
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201635
-i386                     randconfig-s1-201635
-x86_64                           allmodconfig
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201635
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-i0-08300523
-i386                   randconfig-i1-08300523
-x86_64                 randconfig-b0-08302338
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-n0-08301409
-i386                               tinyconfig
-i386                   randconfig-x014-201635
-i386                   randconfig-x016-201635
-i386                   randconfig-x010-201635
-i386                   randconfig-x017-201635
-i386                   randconfig-x013-201635
-i386                   randconfig-x012-201635
-i386                   randconfig-x018-201635
-i386                   randconfig-x019-201635
-i386                   randconfig-x011-201635
-i386                   randconfig-x015-201635
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201635
-x86_64                               rhel-7.2
-x86_64                 randconfig-n0-07261326
-x86_64                 randconfig-x009-201635
-x86_64                 randconfig-x008-201635
-x86_64                 randconfig-x002-201635
-x86_64                 randconfig-x003-201635
-x86_64                 randconfig-x007-201635
-x86_64                 randconfig-x004-201635
-x86_64                 randconfig-x005-201635
-x86_64                 randconfig-x006-201635
-x86_64                 randconfig-x001-201635
-x86_64                 randconfig-x000-201635
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                  kexec
-i386                     randconfig-r0-201635
-i386                   randconfig-x006-201635
-i386                   randconfig-x009-201635
-i386                   randconfig-x002-201635
-i386                   randconfig-x003-201635
-i386                   randconfig-x001-201635
-i386                   randconfig-x007-201635
-i386                   randconfig-x008-201635
-i386                   randconfig-x000-201635
-i386                   randconfig-x004-201635
-i386                   randconfig-x005-201635
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Cc: Paolo Abeni <pabeni@redhat.com>
+Cc: Venkatesh Srinivas <venkateshs@google.com>
+Cc: Alexander Duyck <aduyck@mirantis.com>
+---
+ 
+Tested-by: Krishneil Singh <Krishneil.k.singh@intel.com>
 
-Thanks,
-Fengguang
