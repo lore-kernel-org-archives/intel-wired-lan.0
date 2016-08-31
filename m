@@ -1,36 +1,37 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 30 Aug 2016 17:55:19 +0000
-Subject: [Intel-wired-lan] [PATCH] ixgbevf: add spinlocks for MTU
-	change	calls
-In-Reply-To: <20160829233928.10108.99079.stgit@localhost6.localdomain6>
-References: <20160829233928.10108.99079.stgit@localhost6.localdomain6>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9FB0DE@ORSMSX104.amr.corp.intel.com>
+From: Mark D Rustad <mark.d.rustad@intel.com>
+Date: Wed, 31 Aug 2016 10:34:28 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Return error when getting PHY
+ address if PHY access is not supported
+Message-ID: <147266486833.85990.11581043019718532911.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Emil Tantilov
-> Sent: Monday, August 29, 2016 4:39 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [PATCH] ixgbevf: add spinlocks for MTU change
-> calls
-> 
-> Protect set_rlpml with mailbox lock to make sure tha MTU configuration is
-> handled properly.
-> 
-> This change resolves an issue where set_rlpml can fail when the VF interface
-> is brought up:
-> ixgbevf 0000:03:1d.6: Failed to set MTU at 1500
-> 
-> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
-> ---
->  drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c |    4 ++++
->  1 file changed, 4 insertions(+)
+In cases where PHY register access is not supported, don't mislead
+a caller into thinking that it is supported by returning a PHY
+address. Instead, return -EOPNOTSUPP when PHY access is not
+supported.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 1c888588cecd..9081b2ecb949 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -8008,6 +8008,10 @@ static int ixgbe_ioctl(struct net_device *netdev, struct ifreq *req, int cmd)
+ 		return ixgbe_ptp_set_ts_config(adapter, req);
+ 	case SIOCGHWTSTAMP:
+ 		return ixgbe_ptp_get_ts_config(adapter, req);
++	case SIOCGMIIPHY:
++		if (!adapter->hw.phy.ops.read_reg)
++			return -EOPNOTSUPP;
++		/* fall through */
+ 	default:
+ 		return mdio_mii_ioctl(&adapter->hw.phy.mdio, if_mii(req), cmd);
+ 	}
 
