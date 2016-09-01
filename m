@@ -1,48 +1,57 @@
-From: Mark D Rustad <mark.d.rustad@intel.com>
-Date: Thu, 01 Sep 2016 13:58:51 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Use MDIO_PRTAD_NONE consistently
-Message-ID: <147276353170.65625.9520381365094159590.stgit@mdrustad-wks.jf.intel.com>
+From: Pavel Machek <pavel@ucw.cz>
+Date: Thu, 1 Sep 2016 22:14:27 +0200
+Subject: [Intel-wired-lan] e1000e on Thinkpad x60: gigabit not available due
+	to "SmartSpeed"
+Message-ID: <20160901201408.GA5061@amd>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The value MDIO_PRTAD_NONE should be used to indicate no PHY address.
-Not 0, not 0xFFFF. Use the MDIO_PRTAD_NONE value consistently.
+Hi!
 
-Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  |    4 ++--
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+I have trouble getting 1000mbit out of my ethernet card.
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-index db0731e05401..021ab9b89c71 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-@@ -346,8 +346,8 @@ s32 ixgbe_identify_phy_generic(struct ixgbe_hw *hw)
- 				return 0;
- 			}
- 		}
--		/* clear value if nothing found */
--		hw->phy.mdio.prtad = 0;
-+		/* indicate no PHY found */
-+		hw->phy.mdio.prtad = MDIO_PRTAD_NONE;
- 		return IXGBE_ERR_PHY_ADDR_INVALID;
- 	}
- 	return 0;
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index cd22efb940ad..7e6b9267ca9d 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -1459,7 +1459,7 @@ ixgbe_setup_mac_link_sfp_x550a(struct ixgbe_hw *hw, ixgbe_link_speed speed,
- 	/* Configure internal PHY for KR/KX. */
- 	ixgbe_setup_kr_speed_x550em(hw, speed);
- 
--	if (!hw->phy.mdio.prtad || hw->phy.mdio.prtad == 0xFFFF)
-+	if (hw->phy.mdio.prtad == MDIO_PRTAD_NONE)
- 		return IXGBE_ERR_PHY_ADDR_INVALID;
- 
- 	/* Get external PHY device id */
+I tried direct connection between two PCs with different cables, and
+no luck.
 
+Today I tried connection to 1000mbit switch, and no luck, either. (Two
+cables, one was cat6, both short).
+
+My computer sees 1000mbit being advertised by the other side, but does
+not advertise 1000mbit, "Link Speed was downgraded by SmartSpeed".
+
+4.8.0-rc4+ kernel.
+
+Does it work for other people? Card is:
+
+02:00.0 Ethernet controller: Intel Corporation 82573L Gigabit Ethernet
+Controller
+
+root at duo:/data/l/linux# mii-tool -v eth1
+SIOCGMIIREG on eth1 failed: Input/output error
+SIOCGMIIREG on eth1 failed: Input/output error
+eth1: negotiated 100baseTx-FD, link ok
+  product info: Yukon-EC 88E1111 rev 0
+  basic mode:   autonegotiation enabled
+  basic status: autonegotiation complete, link ok
+  capabilities: 1000baseT-FD 100baseTx-FD 100baseTx-HD 10baseT-FD 10baseT-HD
+  advertising:  100baseTx-FD 100baseTx-HD 10baseT-FD 10baseT-HD flow-control
+  link partner: 1000baseT-FD 100baseTx-FD 100baseTx-HD 10baseT-FD 10baseT-HD
+root at duo:/data/l/linux#
+
+[ 1330.622658] e1000e: eth1 NIC Link is Up 100 Mbps Full Duplex, Flow
+Control: None
+[ 1330.622840] e1000e 0000:02:00.0 eth1: Link Speed was downgraded by
+SmartSpeed
+[ 1330.622846] e1000e 0000:02:00.0 eth1: 10/100 speed: disabling TSO
+root at duo:/data/l/linux#
+
+Best regards,
+
+									Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
