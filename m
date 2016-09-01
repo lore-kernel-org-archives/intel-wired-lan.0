@@ -1,143 +1,35 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 01 Sep 2016 06:53:22 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- f99f275785168d827a38f0adde1f1444ab4d91b4 BUILD SUCCESS
-Message-ID: <57c75fe2.Mpvf3KTHSscXtFWu%fengguang.wu@intel.com>
+From: Brown, Aaron F <aaron.f.brown@intel.com>
+Date: Thu, 1 Sep 2016 01:04:02 +0000
+Subject: [Intel-wired-lan] [PATCH v2] checkpatch.pl: seed camelcase from
+ the	provided kernel tree root
+In-Reply-To: <02874ECE860811409154E81DA85FBB5857B8D29D@ORSMSX115.amr.corp.intel.com>
+References: <20160829210047.25111-1-jacob.e.keller@intel.com>
+ <309B89C4C689E141A5FF6A0C5FB2118B81F7A0C0@ORSMSX101.amr.corp.intel.com>
+ <02874ECE860811409154E81DA85FBB5857B8D29D@ORSMSX115.amr.corp.intel.com>
+Message-ID: <309B89C4C689E141A5FF6A0C5FB2118B81F7A333@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-f99f275785168d827a38f0adde1f1444ab4d91b4  ixgbevf: add spinlocks for MTU change calls
+> From: Keller, Jacob E
+> Sent: Wednesday, August 31, 2016 3:37 PM
+> To: Brown, Aaron F <aaron.f.brown@intel.com>; Intel Wired LAN <intel-
+> wired-lan at lists.osuosl.org>
+> Subject: RE: [Intel-wired-lan] [PATCH v2] checkpatch.pl: seed camelcase from
+> the provided kernel tree root
+> 
+<snip>
+> > total: 0 errors, 2 warnings, 22 lines checked
+> > ---------------------------------------------------------------------
+> > The first is clearly a false warning, thinks checkpatch is the tool that found
+> > the error rather than the tool being fixed.  ;)   The second is just a long line
+> in
+> > the perl code, which I don't really consider a blocking issue so...
+> >
+> 
+> Ya I saw those. I saw many lines over 80 characters in the file so I just
+> assumed we don't bother checking the tool with itself.
 
-elapsed time: 113m
-
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 121
-
-i386                     randconfig-a0-201635
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-x86_64                 randconfig-x015-201635
-x86_64                 randconfig-x012-201635
-x86_64                 randconfig-x013-201635
-x86_64                 randconfig-x011-201635
-x86_64                 randconfig-x010-201635
-x86_64                 randconfig-x014-201635
-x86_64                 randconfig-x018-201635
-x86_64                 randconfig-x017-201635
-x86_64                 randconfig-x019-201635
-x86_64                 randconfig-x016-201635
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201635
-i386                     randconfig-s1-201635
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201635
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201635
-i386                     randconfig-i1-201635
-x86_64                           allmodconfig
-i386                               tinyconfig
-i386                   randconfig-x014-201635
-i386                   randconfig-x016-201635
-i386                   randconfig-x010-201635
-i386                   randconfig-x017-201635
-i386                   randconfig-x013-201635
-i386                   randconfig-x012-201635
-i386                   randconfig-x018-201635
-i386                   randconfig-x019-201635
-i386                   randconfig-x011-201635
-i386                   randconfig-x015-201635
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201635
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-n0-07261326
-x86_64                 randconfig-n0-07261351
-x86_64                 randconfig-n0-07261421
-x86_64                 randconfig-x009-201635
-x86_64                 randconfig-x008-201635
-x86_64                 randconfig-x002-201635
-x86_64                 randconfig-x003-201635
-x86_64                 randconfig-x007-201635
-x86_64                 randconfig-x004-201635
-x86_64                 randconfig-x005-201635
-x86_64                 randconfig-x006-201635
-x86_64                 randconfig-x001-201635
-x86_64                 randconfig-x000-201635
-x86_64                                  kexec
-x86_64                               rhel-7.2
-i386                     randconfig-r0-201635
-i386                             allmodconfig
-i386                   randconfig-x006-201635
-i386                   randconfig-x009-201635
-i386                   randconfig-x002-201635
-i386                   randconfig-x003-201635
-i386                   randconfig-x001-201635
-i386                   randconfig-x007-201635
-i386                   randconfig-x008-201635
-i386                   randconfig-x000-201635
-i386                   randconfig-x004-201635
-i386                   randconfig-x005-201635
-
-Thanks,
-Fengguang
+Well, it showed up in as a patch so I ran it through...  But yeah, it does not make sense to enforce rules intended for the kernel against something else.  Especially as the precedent for line length is clearly already in the file ;)
