@@ -1,8 +1,8 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 01 Sep 2016 10:39:34 +0800
+Date: Fri, 02 Sep 2016 03:38:13 +0800
 Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 3473deeaccacb16d39a9ff8b2157a0545f1c1cc1 BUILD SUCCESS
-Message-ID: <57c794e6.jSEoetAmgMqyMOyp%fengguang.wu@intel.com>
+ 311c8e976aa3d0a7ab1b6e32b4363713f1f733f8 BUILD SUCCESS
+Message-ID: <57c883a5.4ccJfwgMkfjdaduq%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -10,21 +10,18 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-3473deeaccacb16d39a9ff8b2157a0545f1c1cc1  ixgbe: Return error when getting PHY address if PHY access is not  supported
+311c8e976aa3d0a7ab1b6e32b4363713f1f733f8  ixgbevf: add spinlocks for MTU change calls
 
-elapsed time: 156m
+elapsed time: 155m
 
 The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 150
+configs tested: 120
 
 alpha                               defconfig
 parisc                            allnoconfig
 parisc                        c3000_defconfig
 parisc                              defconfig
 i386                     randconfig-a0-201635
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
 blackfin                BF526-EZBRD_defconfig
 blackfin                BF533-EZKIT_defconfig
 blackfin            BF561-EZKIT-SMP_defconfig
@@ -34,7 +31,6 @@ sh                                allnoconfig
 sh                          rsk7269_defconfig
 sh                  sh7785lcr_32bit_defconfig
 sh                            titan_defconfig
-i386                   randconfig-c0-09011013
 arm                               allnoconfig
 arm                         at91_dt_defconfig
 arm                           efm32_defconfig
@@ -49,18 +45,11 @@ powerpc                           allnoconfig
 powerpc                             defconfig
 powerpc                       ppc64_defconfig
 s390                        default_defconfig
-x86_64                 randconfig-v0-09011012
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
 parisc                         b180_defconfig
-arm                           omap1_defconfig
-mips                             alldefconfig
-powerpc                       maple_defconfig
-sh                          rsk7264_defconfig
+i386                             allmodconfig
 x86_64                 randconfig-x015-201635
 x86_64                 randconfig-x012-201635
 x86_64                 randconfig-x013-201635
@@ -87,9 +76,6 @@ arm                                        sh
 arm                           tegra_defconfig
 arm64                            alldefconfig
 arm64                            allmodconfig
-x86_64                            eywa-module
-x86_64                                   rhel
-x86_64                               rhel-7.2
 m68k                       m5475evb_defconfig
 m68k                          multi_defconfig
 m68k                           sun3_defconfig
@@ -108,20 +94,20 @@ mips                      fuloong2e_defconfig
 mips                                   jz4740
 mips                                     txx9
 x86_64                   randconfig-i0-201635
-avr32                  atngw100mkii_defconfig
-mips                         bigsur_defconfig
-powerpc                     stx_gp3_defconfig
-sh                        sh7757lcr_defconfig
 microblaze                      mmu_defconfig
 microblaze                    nommu_defconfig
 i386                     randconfig-i0-201635
 i386                     randconfig-i1-201635
-x86_64                 randconfig-b0-09010903
-x86_64                 randconfig-b0-09011032
 sparc                               defconfig
 sparc64                           allnoconfig
 sparc64                             defconfig
 x86_64                           allmodconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
 i386                               tinyconfig
 i386                   randconfig-x014-201635
 i386                   randconfig-x016-201635
@@ -133,18 +119,13 @@ i386                   randconfig-x018-201635
 i386                   randconfig-x019-201635
 i386                   randconfig-x011-201635
 i386                   randconfig-x015-201635
+x86_64                                    lkp
+x86_64                                   rhel
 i386                     randconfig-n0-201635
 ia64                             alldefconfig
 ia64                              allnoconfig
 ia64                                defconfig
-sh                         ap325rxa_defconfig
-sh                     sh7710voipgw_defconfig
-arm                        spear6xx_defconfig
-mips                           ip32_defconfig
-arm                         ebsa110_defconfig
-um                               allmodconfig
-x86_64                 randconfig-n0-09010841
-x86_64                 randconfig-n0-09011000
+x86_64                 randconfig-n0-09020000
 x86_64                 randconfig-x009-201635
 x86_64                 randconfig-x008-201635
 x86_64                 randconfig-x002-201635
@@ -156,17 +137,6 @@ x86_64                 randconfig-x006-201635
 x86_64                 randconfig-x001-201635
 x86_64                 randconfig-x000-201635
 i386                     randconfig-r0-201635
-i386                             allmodconfig
-i386                   randconfig-x006-201635
-i386                   randconfig-x009-201635
-i386                   randconfig-x002-201635
-i386                   randconfig-x003-201635
-i386                   randconfig-x001-201635
-i386                   randconfig-x007-201635
-i386                   randconfig-x008-201635
-i386                   randconfig-x000-201635
-i386                   randconfig-x004-201635
-i386                   randconfig-x005-201635
 
 Thanks,
 Fengguang
