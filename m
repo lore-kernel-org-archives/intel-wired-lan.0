@@ -1,57 +1,112 @@
-From: Pavel Machek <pavel@ucw.cz>
-Date: Thu, 1 Sep 2016 22:14:27 +0200
-Subject: [Intel-wired-lan] e1000e on Thinkpad x60: gigabit not available due
-	to "SmartSpeed"
-Message-ID: <20160901201408.GA5061@amd>
+From: Sridhar Samudrala <sridhar.samudrala@intel.com>
+Date: Thu,  1 Sep 2016 22:27:27 +0200
+Subject: [Intel-wired-lan] [dev-queue PATCH v2] i40evf: Fix link state event
+	handling.
+Message-ID: <1472761647-2595-1-git-send-email-sridhar.samudrala@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi!
+Currently disabling the link state from PF via
+	ip link set enp5s0f0 vf 0 state disable
+doesn't disable the CARRIER on the VF.
 
-I have trouble getting 1000mbit out of my ethernet card.
+This patch updates the carrier and starts/stops the tx queues based on the
+link state notification from PF.
 
-I tried direct connection between two PCs with different cables, and
-no luck.
+  PF: enp5s0f0, VF: enp5s2
+  #modprobe i40e
+  #echo 2 > /sys/class/net/enp5s0f0/device/sriov_numvfs
+  #ip link set enp5s2 up
+  #ip -d link show enp5s2
+  175: enp5s2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP mode DEFAULT group default qlen 1000
+      link/ether ea:4d:60:bc:6f:85 brd ff:ff:ff:ff:ff:ff promiscuity 0 addrgenmode eui64
+  #ip link set enp5s0f0 vf 0 state disable
+  #ip -d link show enp5s0f0
+  171: enp5s0f0: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+      link/ether 68:05:ca:2e:72:68 brd ff:ff:ff:ff:ff:ff promiscuity 0 addrgenmode eui64 numtxqueues 72 numrxqueues 72 portid 6805ca2e7268
+      vf 0 MAC 00:00:00:00:00:00, spoof checking on, link-state disable, trust off
+      vf 1 MAC 00:00:00:00:00:00, spoof checking on, link-state auto, trust off
+  #ip -d link show enp5s2
+  175: enp5s2: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc mq state DOWN mode DEFAULT group default qlen 1000
+       link/ether ea:4d:60:bc:6f:85 brd ff:ff:ff:ff:ff:ff promiscuity 0 addrgenmode eui64 numtxqueues 16 numrxqueues 16
 
-Today I tried connection to 1000mbit switch, and no luck, either. (Two
-cables, one was cat6, both short).
+v2:
+Update adapter->link_up when carrier is turned off.
 
-My computer sees 1000mbit being advertised by the other side, but does
-not advertise 1000mbit, "Link Speed was downgraded by SmartSpeed".
+Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+---
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c     |  4 ++++
+ drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c | 10 +++++++---
+ 2 files changed, 11 insertions(+), 3 deletions(-)
 
-4.8.0-rc4+ kernel.
-
-Does it work for other people? Card is:
-
-02:00.0 Ethernet controller: Intel Corporation 82573L Gigabit Ethernet
-Controller
-
-root at duo:/data/l/linux# mii-tool -v eth1
-SIOCGMIIREG on eth1 failed: Input/output error
-SIOCGMIIREG on eth1 failed: Input/output error
-eth1: negotiated 100baseTx-FD, link ok
-  product info: Yukon-EC 88E1111 rev 0
-  basic mode:   autonegotiation enabled
-  basic status: autonegotiation complete, link ok
-  capabilities: 1000baseT-FD 100baseTx-FD 100baseTx-HD 10baseT-FD 10baseT-HD
-  advertising:  100baseTx-FD 100baseTx-HD 10baseT-FD 10baseT-HD flow-control
-  link partner: 1000baseT-FD 100baseTx-FD 100baseTx-HD 10baseT-FD 10baseT-HD
-root at duo:/data/l/linux#
-
-[ 1330.622658] e1000e: eth1 NIC Link is Up 100 Mbps Full Duplex, Flow
-Control: None
-[ 1330.622840] e1000e 0000:02:00.0 eth1: Link Speed was downgraded by
-SmartSpeed
-[ 1330.622846] e1000e 0000:02:00.0 eth1: 10/100 speed: disabling TSO
-root at duo:/data/l/linux#
-
-Best regards,
-
-									Pavel
-
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index f751f7b..e0a8cd8 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -1037,6 +1037,7 @@ void i40evf_down(struct i40evf_adapter *adapter)
+ 
+ 	netif_carrier_off(netdev);
+ 	netif_tx_disable(netdev);
++	adapter->link_up = false;
+ 	i40evf_napi_disable_all(adapter);
+ 	i40evf_irq_disable(adapter);
+ 
+@@ -1731,6 +1732,7 @@ static void i40evf_reset_task(struct work_struct *work)
+ 			set_bit(__I40E_DOWN, &adapter->vsi.state);
+ 			netif_carrier_off(netdev);
+ 			netif_tx_disable(netdev);
++			adapter->link_up = false;
+ 			i40evf_napi_disable_all(adapter);
+ 			i40evf_irq_disable(adapter);
+ 			i40evf_free_traffic_irqs(adapter);
+@@ -1769,6 +1771,7 @@ continue_reset:
+ 	if (netif_running(adapter->netdev)) {
+ 		netif_carrier_off(netdev);
+ 		netif_tx_stop_all_queues(netdev);
++		adapter->link_up = false;
+ 		i40evf_napi_disable_all(adapter);
+ 	}
+ 	i40evf_irq_disable(adapter);
+@@ -2457,6 +2460,7 @@ static void i40evf_init_task(struct work_struct *work)
+ 		goto err_sw_init;
+ 
+ 	netif_carrier_off(netdev);
++	adapter->link_up = false;
+ 
+ 	if (!adapter->netdev_registered) {
+ 		err = register_netdev(netdev);
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+index cc6cb30..ddf478d 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_virtchnl.c
+@@ -898,8 +898,14 @@ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
+ 			    vpe->event_data.link_event.link_status) {
+ 				adapter->link_up =
+ 					vpe->event_data.link_event.link_status;
++				if (adapter->link_up) {
++					netif_tx_start_all_queues(netdev);
++					netif_carrier_on(netdev);
++				} else {
++					netif_tx_stop_all_queues(netdev);
++					netif_carrier_off(netdev);
++				}
+ 				i40evf_print_link_message(adapter);
+-				netif_tx_stop_all_queues(netdev);
+ 			}
+ 			break;
+ 		case I40E_VIRTCHNL_EVENT_RESET_IMPENDING:
+@@ -974,8 +980,6 @@ void i40evf_virtchnl_completion(struct i40evf_adapter *adapter,
+ 	case I40E_VIRTCHNL_OP_ENABLE_QUEUES:
+ 		/* enable transmits */
+ 		i40evf_irq_enable(adapter, true);
+-		netif_tx_start_all_queues(adapter->netdev);
+-		netif_carrier_on(adapter->netdev);
+ 		break;
+ 	case I40E_VIRTCHNL_OP_DISABLE_QUEUES:
+ 		i40evf_free_all_tx_resources(adapter);
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+2.5.5
+
