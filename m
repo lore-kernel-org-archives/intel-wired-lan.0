@@ -1,41 +1,139 @@
-From: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Date: Fri, 2 Sep 2016 12:57:35 -0400
-Subject: [Intel-wired-lan] e1000e on Thinkpad x60: gigabit not available
-	due to "SmartSpeed"
-In-Reply-To: <1472767093.3889.4.camel@gmail.com>
-References: <20160901201408.GA5061@amd>
- <1472767093.3889.4.camel@gmail.com>
-Message-ID: <20160902165735.GJ14311@csclub.uwaterloo.ca>
+From: John Fastabend <john.fastabend@gmail.com>
+Date: Fri, 2 Sep 2016 12:17:20 -0700
+Subject: [Intel-wired-lan] [net-next PATCH =v2] e1000: add initial XDP
+	support
+In-Reply-To: <20160902085031.752a97cc@redhat.com>
+References: <20160901213944.31705.93780.stgit@john-Precision-Tower-5810>
+ <20160902085031.752a97cc@redhat.com>
+Message-ID: <57C9D040.2050600@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Sep 01, 2016 at 02:58:13PM -0700, Greg wrote:
-> On Thu, 2016-09-01 at 22:14 +0200, Pavel Machek wrote:
-> > Hi!
-> > 
-> > I have trouble getting 1000mbit out of my ethernet card.
-> > 
-> > I tried direct connection between two PCs with different cables, and
-> > no luck.
-> > 
-> > Today I tried connection to 1000mbit switch, and no luck, either. (Two
-> > cables, one was cat6, both short).
-> > 
-> > My computer sees 1000mbit being advertised by the other side, but does
-> > not advertise 1000mbit, "Link Speed was downgraded by SmartSpeed".
+On 16-09-01 11:50 PM, Jesper Dangaard Brouer wrote:
+> On Thu, 01 Sep 2016 14:39:44 -0700
+> John Fastabend <john.fastabend@gmail.com> wrote:
 > 
-> Check your cables?
+>> From: Alexei Starovoitov <ast@fb.com>
+>>
+>> This patch adds initial support for XDP on e1000 driver. Note e1000
+>> driver does not support page recycling in general which could be
+>> added as a further improvement. However XDP_DROP case will recycle.
+>> XDP_TX and XDP_PASS do not support recycling yet.
+>>
+>> This patch includes the rcu_read_lock/rcu_read_unlock pair noted by
+>> Brenden Blanco in another pending patch.
+>>
+>>   net/mlx4_en: protect ring->xdp_prog with rcu_read_lock
+>>
+>> I tested this patch running e1000 in a VM using KVM over a tap
+>> device.
+>>
+>> CC: William Tu <u9012063@gmail.com>
+>> Signed-off-by: Alexei Starovoitov <ast@kernel.org>
+>> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
+>> ---
+>>  drivers/net/ethernet/intel/e1000/e1000.h      |    2 
+>>  drivers/net/ethernet/intel/e1000/e1000_main.c |  170 +++++++++++++++++++++++++
+>>  2 files changed, 169 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/net/ethernet/intel/e1000/e1000.h b/drivers/net/ethernet/intel/e1000/e1000.h
+>> index d7bdea7..5cf8a0a 100644
+>> --- a/drivers/net/ethernet/intel/e1000/e1000.h
+>> +++ b/drivers/net/ethernet/intel/e1000/e1000.h
+>> @@ -150,6 +150,7 @@ struct e1000_adapter;
+>>   */
+>>  struct e1000_tx_buffer {
+>>  	struct sk_buff *skb;
+>> +	struct page *page;
+>>  	dma_addr_t dma;
+>>  	unsigned long time_stamp;
+>>  	u16 length;
+>> @@ -279,6 +280,7 @@ struct e1000_adapter {
+>>  			     struct e1000_rx_ring *rx_ring,
+>>  			     int cleaned_count);
+>>  	struct e1000_rx_ring *rx_ring;      /* One per active queue */
+>> +	struct bpf_prog *prog;
 > 
-> https://vmxp.wordpress.com/2015/01/06/1gbe-intel-nic-throttled-to-100mbit-by-smartspeed/
+> The bpf_prog should be in the rx_ring structure.
+> 
 
-Of course if it isn't the cable, then it could even be a broken pin in
-the port.  As far as I can tell, anything that causes one of the 3rd
-or 4th pairs of wires to not work will degrade to 100Mbit on just the
-first 2 pairs of wires and give that message.  Some badly implemented
-switches can also cause it of course.
+ok sure it helps I guess if you use e1000 as a template for implementing
+XDP and logically makes a bit more sense. But it doesn't functionally
+matter here.
 
--- 
-Len Sorensen
+
+>>  	struct napi_struct napi;
+>>  
+>>  	int num_tx_queues;
+
+[...]
+
+>> +static void e1000_xmit_raw_frame(struct e1000_rx_buffer *rx_buffer_info,
+>> +				 unsigned int len,
+>> +				 struct net_device *netdev,
+>> +				 struct e1000_adapter *adapter)
+>> +{
+>> +	struct netdev_queue *txq = netdev_get_tx_queue(netdev, 0);
+>> +	struct e1000_hw *hw = &adapter->hw;
+>> +	struct e1000_tx_ring *tx_ring;
+>> +
+>> +	if (len > E1000_MAX_DATA_PER_TXD)
+>> +		return;
+>> +
+>> +	/* e1000 only support a single txq at the moment so the queue is being
+>> +	 * shared with stack. To support this requires locking to ensure the
+>> +	 * stack and XDP are not running at the same time. Devices with
+>> +	 * multiple queues should allocate a separate queue space.
+>> +	 */
+>> +	HARD_TX_LOCK(netdev, txq, smp_processor_id());
+>> +
+>> +	tx_ring = adapter->tx_ring;
+>> +
+>> +	if (E1000_DESC_UNUSED(tx_ring) < 2)
+>> +		return;
+>> +
+>> +	e1000_tx_map_rxpage(tx_ring, rx_buffer_info, len);
+>> +
+>> +	e1000_tx_queue(adapter, tx_ring, 0/*tx_flags*/, 1);
+>> +
+>> +	writel(tx_ring->next_to_use, hw->hw_addr + tx_ring->tdt);
+>> +	mmiowb();
+>> +
+>> +	HARD_TX_UNLOCK(netdev, txq);
+>> +}
+> 
+> Above is going to give really bad XDP_TX performance. Both locking and
+> a HW TX tailptr pointer per TX packet, that is as bad as it gets.
+> 
+
+Yep.
+
+> You might say this is just for testing my eBPF-XDP program. BUT people
+> wanting to try XDP is going to start with this driver, and they will be
+> disappointed and never return (and no they will not read the comment in
+> the code).
+
+hmm perhaps we should look at a vhost_net implementation for performance
+setup. My gut feeling is vhost_net is a better target for performance.
+
+> 
+> It should be fairly easy to introduce a bulking/bundling XDP_TX
+> facility into the TX-ring (taking HARD_TX_LOCK a single time), and then
+> flush the TX-ring at the end of the loop (in e1000_clean_jumbo_rx_irq).
+> All you need is an array/stack of RX *buffer_info ptrs being build up
+> in the XDP_TX case. (Experiments show minimum bulking/array size should
+> be 8).
+> 
+> If you want to get fancy, and save space in the bulking structure,
+> then you can even just use the RX ring index "i" to describe which RX
+> packets need to be XDP_TX'ed. (as the driver code "owns" this part of
+> the ring, until updating rx_ring->next_to_clean).
+> 
+
+Sure I'll add this seems easy enough.
+
+
+
