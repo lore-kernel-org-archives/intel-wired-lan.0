@@ -1,66 +1,160 @@
-From: Greg <gvrose8192@gmail.com>
-Date: Thu, 01 Sep 2016 14:58:13 -0700
-Subject: [Intel-wired-lan] e1000e on Thinkpad x60: gigabit not available
- due to "SmartSpeed"
-In-Reply-To: <20160901201408.GA5061@amd>
-References: <20160901201408.GA5061@amd>
-Message-ID: <1472767093.3889.4.camel@gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 02 Sep 2016 08:36:56 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:master]
+ 29c994e361009142ec0bca6493cc8f7b0d3c561a BUILD SUCCESS
+Message-ID: <57c8c9a8.Grbj6LUaKDqzYbLQ%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 2016-09-01 at 22:14 +0200, Pavel Machek wrote:
-> Hi!
-> 
-> I have trouble getting 1000mbit out of my ethernet card.
-> 
-> I tried direct connection between two PCs with different cables, and
-> no luck.
-> 
-> Today I tried connection to 1000mbit switch, and no luck, either. (Two
-> cables, one was cat6, both short).
-> 
-> My computer sees 1000mbit being advertised by the other side, but does
-> not advertise 1000mbit, "Link Speed was downgraded by SmartSpeed".
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
+29c994e361009142ec0bca6493cc8f7b0d3c561a  netconf: add a notif when settings are created
 
-Check your cables?
+elapsed time: 137m
 
-https://vmxp.wordpress.com/2015/01/06/1gbe-intel-nic-throttled-to-100mbit-by-smartspeed/
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 139
 
-- Greg
+i386                     randconfig-a0-201635
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-x015-201635
+x86_64                 randconfig-x012-201635
+x86_64                 randconfig-x013-201635
+x86_64                 randconfig-x011-201635
+x86_64                 randconfig-x010-201635
+x86_64                 randconfig-x014-201635
+x86_64                 randconfig-x018-201635
+x86_64                 randconfig-x017-201635
+x86_64                 randconfig-x019-201635
+x86_64                 randconfig-x016-201635
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201635
+i386                     randconfig-s1-201635
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201635
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201635
+i386                     randconfig-i1-201635
+x86_64                           allmodconfig
+parisc                generic-32bit_defconfig
+powerpc                  mpc885_ads_defconfig
+x86_64                 randconfig-n0-09020719
+i386                   randconfig-x014-201635
+i386                   randconfig-x016-201635
+i386                   randconfig-x010-201635
+i386                   randconfig-x017-201635
+i386                   randconfig-x013-201635
+i386                   randconfig-x012-201635
+i386                   randconfig-x018-201635
+i386                   randconfig-x019-201635
+i386                   randconfig-x011-201635
+i386                   randconfig-x015-201635
+x86_64                                    lkp
+x86_64                                   rhel
+i386                     randconfig-n0-201635
+x86_64                               rhel-7.2
+arm                      integrator_defconfig
+arm                         vf610m4_defconfig
+mn10300                          alldefconfig
+powerpc                      cm5200_defconfig
+x86_64                 randconfig-n0-09020651
+x86_64                 randconfig-n0-09020755
+x86_64                 randconfig-n0-09020814
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                 randconfig-x000-201635
+x86_64                 randconfig-x001-201635
+x86_64                 randconfig-x002-201635
+x86_64                 randconfig-x003-201635
+x86_64                 randconfig-x004-201635
+x86_64                 randconfig-x005-201635
+x86_64                 randconfig-x006-201635
+x86_64                 randconfig-x007-201635
+x86_64                 randconfig-x008-201635
+x86_64                 randconfig-x009-201635
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                   randconfig-x006-201635
+i386                   randconfig-x009-201635
+i386                   randconfig-x002-201635
+i386                   randconfig-x003-201635
+i386                   randconfig-x001-201635
+i386                   randconfig-x007-201635
+i386                   randconfig-x008-201635
+i386                   randconfig-x000-201635
+i386                   randconfig-x004-201635
+i386                   randconfig-x005-201635
 
-> 
-> 4.8.0-rc4+ kernel.
-> 
-> Does it work for other people? Card is:
-> 
-> 02:00.0 Ethernet controller: Intel Corporation 82573L Gigabit Ethernet
-> Controller
-> 
-> root at duo:/data/l/linux# mii-tool -v eth1
-> SIOCGMIIREG on eth1 failed: Input/output error
-> SIOCGMIIREG on eth1 failed: Input/output error
-> eth1: negotiated 100baseTx-FD, link ok
->   product info: Yukon-EC 88E1111 rev 0
->   basic mode:   autonegotiation enabled
->   basic status: autonegotiation complete, link ok
->   capabilities: 1000baseT-FD 100baseTx-FD 100baseTx-HD 10baseT-FD 10baseT-HD
->   advertising:  100baseTx-FD 100baseTx-HD 10baseT-FD 10baseT-HD flow-control
->   link partner: 1000baseT-FD 100baseTx-FD 100baseTx-HD 10baseT-FD 10baseT-HD
-> root at duo:/data/l/linux#
-> 
-> [ 1330.622658] e1000e: eth1 NIC Link is Up 100 Mbps Full Duplex, Flow
-> Control: None
-> [ 1330.622840] e1000e 0000:02:00.0 eth1: Link Speed was downgraded by
-> SmartSpeed
-> [ 1330.622846] e1000e 0000:02:00.0 eth1: 10/100 speed: disabling TSO
-> root at duo:/data/l/linux#
-> 
-> Best regards,
-> 
-> 									Pavel
-> 
-
-
+Thanks,
+Fengguang
