@@ -1,139 +1,132 @@
-From: John Fastabend <john.fastabend@gmail.com>
-Date: Fri, 2 Sep 2016 12:17:20 -0700
-Subject: [Intel-wired-lan] [net-next PATCH =v2] e1000: add initial XDP
-	support
-In-Reply-To: <20160902085031.752a97cc@redhat.com>
-References: <20160901213944.31705.93780.stgit@john-Precision-Tower-5810>
- <20160902085031.752a97cc@redhat.com>
-Message-ID: <57C9D040.2050600@gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 03 Sep 2016 18:41:37 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ 738327d0920b7d1fc5a69b6196f2bc4e57e0d583 BUILD SUCCESS
+Message-ID: <57caa8e1.T74rh3atRekKz6b+%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 16-09-01 11:50 PM, Jesper Dangaard Brouer wrote:
-> On Thu, 01 Sep 2016 14:39:44 -0700
-> John Fastabend <john.fastabend@gmail.com> wrote:
-> 
->> From: Alexei Starovoitov <ast@fb.com>
->>
->> This patch adds initial support for XDP on e1000 driver. Note e1000
->> driver does not support page recycling in general which could be
->> added as a further improvement. However XDP_DROP case will recycle.
->> XDP_TX and XDP_PASS do not support recycling yet.
->>
->> This patch includes the rcu_read_lock/rcu_read_unlock pair noted by
->> Brenden Blanco in another pending patch.
->>
->>   net/mlx4_en: protect ring->xdp_prog with rcu_read_lock
->>
->> I tested this patch running e1000 in a VM using KVM over a tap
->> device.
->>
->> CC: William Tu <u9012063@gmail.com>
->> Signed-off-by: Alexei Starovoitov <ast@kernel.org>
->> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
->> ---
->>  drivers/net/ethernet/intel/e1000/e1000.h      |    2 
->>  drivers/net/ethernet/intel/e1000/e1000_main.c |  170 +++++++++++++++++++++++++
->>  2 files changed, 169 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/net/ethernet/intel/e1000/e1000.h b/drivers/net/ethernet/intel/e1000/e1000.h
->> index d7bdea7..5cf8a0a 100644
->> --- a/drivers/net/ethernet/intel/e1000/e1000.h
->> +++ b/drivers/net/ethernet/intel/e1000/e1000.h
->> @@ -150,6 +150,7 @@ struct e1000_adapter;
->>   */
->>  struct e1000_tx_buffer {
->>  	struct sk_buff *skb;
->> +	struct page *page;
->>  	dma_addr_t dma;
->>  	unsigned long time_stamp;
->>  	u16 length;
->> @@ -279,6 +280,7 @@ struct e1000_adapter {
->>  			     struct e1000_rx_ring *rx_ring,
->>  			     int cleaned_count);
->>  	struct e1000_rx_ring *rx_ring;      /* One per active queue */
->> +	struct bpf_prog *prog;
-> 
-> The bpf_prog should be in the rx_ring structure.
-> 
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+738327d0920b7d1fc5a69b6196f2bc4e57e0d583  e1000: add initial XDP support
 
-ok sure it helps I guess if you use e1000 as a template for implementing
-XDP and logically makes a bit more sense. But it doesn't functionally
-matter here.
+elapsed time: 177m
 
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 110
 
->>  	struct napi_struct napi;
->>  
->>  	int num_tx_queues;
+i386                     randconfig-a0-201635
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64       allyesdebian+CONFIG_DEBUG_INFO_REDUCED-CONFIG_DEBUG_INFO_REDUCED+CONFIG_DEBUG_INFO_REDUCED
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-x015-201635
+x86_64                 randconfig-x012-201635
+x86_64                 randconfig-x013-201635
+x86_64                 randconfig-x011-201635
+x86_64                 randconfig-x010-201635
+x86_64                 randconfig-x014-201635
+x86_64                 randconfig-x018-201635
+x86_64                 randconfig-x017-201635
+x86_64                 randconfig-x019-201635
+x86_64                 randconfig-x016-201635
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                     randconfig-s0-201635
+i386                     randconfig-s1-201635
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201635
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201635
+i386                     randconfig-i1-201635
+i386                             allyesconfig
+x86_64                 randconfig-b0-09031756
+blackfin             BF527-TLL6527M_defconfig
+m68k                        mvme16x_defconfig
+i386                               tinyconfig
+i386                   randconfig-x014-201635
+i386                   randconfig-x016-201635
+i386                   randconfig-x010-201635
+i386                   randconfig-x017-201635
+i386                   randconfig-x013-201635
+i386                   randconfig-x012-201635
+i386                   randconfig-x018-201635
+i386                   randconfig-x019-201635
+i386                   randconfig-x011-201635
+i386                   randconfig-x015-201635
+i386                     randconfig-n0-201635
+x86_64                                   rhel
+x86_64                               rhel-7.2
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+x86_64                           allmodconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                   randconfig-x006-201635
+i386                   randconfig-x009-201635
+i386                   randconfig-x002-201635
+i386                   randconfig-x003-201635
+i386                   randconfig-x001-201635
+i386                   randconfig-x007-201635
+i386                   randconfig-x008-201635
+i386                   randconfig-x000-201635
+i386                   randconfig-x004-201635
+i386                   randconfig-x005-201635
 
-[...]
-
->> +static void e1000_xmit_raw_frame(struct e1000_rx_buffer *rx_buffer_info,
->> +				 unsigned int len,
->> +				 struct net_device *netdev,
->> +				 struct e1000_adapter *adapter)
->> +{
->> +	struct netdev_queue *txq = netdev_get_tx_queue(netdev, 0);
->> +	struct e1000_hw *hw = &adapter->hw;
->> +	struct e1000_tx_ring *tx_ring;
->> +
->> +	if (len > E1000_MAX_DATA_PER_TXD)
->> +		return;
->> +
->> +	/* e1000 only support a single txq at the moment so the queue is being
->> +	 * shared with stack. To support this requires locking to ensure the
->> +	 * stack and XDP are not running at the same time. Devices with
->> +	 * multiple queues should allocate a separate queue space.
->> +	 */
->> +	HARD_TX_LOCK(netdev, txq, smp_processor_id());
->> +
->> +	tx_ring = adapter->tx_ring;
->> +
->> +	if (E1000_DESC_UNUSED(tx_ring) < 2)
->> +		return;
->> +
->> +	e1000_tx_map_rxpage(tx_ring, rx_buffer_info, len);
->> +
->> +	e1000_tx_queue(adapter, tx_ring, 0/*tx_flags*/, 1);
->> +
->> +	writel(tx_ring->next_to_use, hw->hw_addr + tx_ring->tdt);
->> +	mmiowb();
->> +
->> +	HARD_TX_UNLOCK(netdev, txq);
->> +}
-> 
-> Above is going to give really bad XDP_TX performance. Both locking and
-> a HW TX tailptr pointer per TX packet, that is as bad as it gets.
-> 
-
-Yep.
-
-> You might say this is just for testing my eBPF-XDP program. BUT people
-> wanting to try XDP is going to start with this driver, and they will be
-> disappointed and never return (and no they will not read the comment in
-> the code).
-
-hmm perhaps we should look at a vhost_net implementation for performance
-setup. My gut feeling is vhost_net is a better target for performance.
-
-> 
-> It should be fairly easy to introduce a bulking/bundling XDP_TX
-> facility into the TX-ring (taking HARD_TX_LOCK a single time), and then
-> flush the TX-ring at the end of the loop (in e1000_clean_jumbo_rx_irq).
-> All you need is an array/stack of RX *buffer_info ptrs being build up
-> in the XDP_TX case. (Experiments show minimum bulking/array size should
-> be 8).
-> 
-> If you want to get fancy, and save space in the bulking structure,
-> then you can even just use the RX ring index "i" to describe which RX
-> packets need to be XDP_TX'ed. (as the driver code "owns" this part of
-> the ring, until updating rx_ring->next_to_clean).
-> 
-
-Sure I'll add this seems easy enough.
-
-
-
+Thanks,
+Fengguang
