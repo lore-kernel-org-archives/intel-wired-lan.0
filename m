@@ -1,146 +1,62 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 07 Sep 2016 11:50:45 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue]
- e8823edbb425b75004126590eee3d90ce17b71c8 BUILD SUCCESS
-Message-ID: <57cf8e95.36iOfi3kjknN+i9v%fengguang.wu@intel.com>
+From: Wyborny, Carolyn <carolyn.wyborny@intel.com>
+Date: Tue, 6 Sep 2016 20:07:43 +0000
+Subject: [Intel-wired-lan] [next PATCH S45 00/10] i40e/i40evf updates
+In-Reply-To: <1473190807-26377-1-git-send-email-bimmy.pujari@intel.com>
+References: <1473190807-26377-1-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <9BBC4E0CF881AA4299206E2E1412B6265026F241@ORSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-e8823edbb425b75004126590eee3d90ce17b71c8  checkpatch.pl: seed camelcase from the provided kernel tree root
+Hello Bimmy,
 
-elapsed time: 680m
-
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 124
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201636
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-x86_64       allyesdebian+CONFIG_DEBUG_INFO_REDUCED-CONFIG_DEBUG_INFO_REDUCED
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-parisc                         b180_defconfig
-i386                             allmodconfig
-arm                           viper_defconfig
-avr32        atngw100mkii_evklcd100_defconfig
-cris                             allmodconfig
-mips                           ip28_defconfig
-mips                           mtx1_defconfig
-x86_64                 randconfig-x010-201636
-x86_64                 randconfig-x011-201636
-x86_64                 randconfig-x012-201636
-x86_64                 randconfig-x013-201636
-x86_64                 randconfig-x014-201636
-x86_64                 randconfig-x015-201636
-x86_64                 randconfig-x016-201636
-x86_64                 randconfig-x017-201636
-x86_64                 randconfig-x018-201636
-x86_64                 randconfig-x019-201636
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201636
-i386                     randconfig-s1-201636
-x86_64                           allmodconfig
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201636
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201636
-i386                     randconfig-i1-201636
-i386                   randconfig-x010-201636
-i386                   randconfig-x011-201636
-i386                   randconfig-x012-201636
-i386                   randconfig-x013-201636
-i386                   randconfig-x014-201636
-i386                   randconfig-x015-201636
-i386                   randconfig-x016-201636
-i386                   randconfig-x017-201636
-i386                   randconfig-x018-201636
-i386                   randconfig-x019-201636
-x86_64                                    lkp
-x86_64                                   rhel
-i386                     randconfig-n0-201636
-x86_64                               rhel-7.2
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                 randconfig-x000-201636
-x86_64                 randconfig-x001-201636
-x86_64                 randconfig-x002-201636
-x86_64                 randconfig-x003-201636
-x86_64                 randconfig-x004-201636
-x86_64                 randconfig-x005-201636
-x86_64                 randconfig-x006-201636
-x86_64                 randconfig-x007-201636
-x86_64                 randconfig-x008-201636
-x86_64                 randconfig-x009-201636
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                  kexec
-i386                     randconfig-r0-201636
-i386                   randconfig-x000-201636
-i386                   randconfig-x001-201636
-i386                   randconfig-x002-201636
-i386                   randconfig-x003-201636
-i386                   randconfig-x004-201636
-i386                   randconfig-x005-201636
-i386                   randconfig-x006-201636
-i386                   randconfig-x007-201636
-i386                   randconfig-x008-201636
-i386                   randconfig-x009-201636
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
+The "g" on the end of Lihong's last name is missing.  8-)
 
 Thanks,
-Fengguang
+
+Carolyn
+
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Bimmy Pujari
+> Sent: Tuesday, September 06, 2016 12:40 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S45 00/10] i40e/i40evf updates
+> 
+> Alexander Duyck adds code to limit TX descriptor count in cases where frag
+> size is greater than 16K.
+> 
+> Bimmy Pujari removes unnecessary error checking against i40evf_up_complete.
+> 
+> Alan Brady adds code to fix deleting mac filters.
+> 
+> Harshitha Ramamurthy removes 100 Mbps SGMII support for X722.
+> 
+> Henry Tieman removes unreachable code.
+> 
+> Jacob Keller adds code to cleanup ATR auto_disable_flags use & checks
+> conflicting ntuple/sideband rules when re-enabling ATR.
+> 
+> Lihong Yan removes unnecessary error checking against
+> i40e_shutdown_adminq.
+> 
+> Preethi Banala adds encap csum VF offload flag.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c    |  3 ++
+>  drivers/net/ethernet/intel/i40e/i40e_main.c       | 43 ++++++++++-------------
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c       | 21 +++++------
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl.h   |  1 +
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c     |  7 ++--
+>  drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h |  1 +
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c   | 16 +++------
+>  7 files changed, 39 insertions(+), 53 deletions(-)
+> 
+> --
+> 2.4.11
+> 
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at lists.osuosl.org
+> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
