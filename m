@@ -1,57 +1,48 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue,  6 Sep 2016 12:40:05 -0700
-Subject: [Intel-wired-lan] [next PATCH S45 08/10] i40e: check conflicting
-	ntuple/sideband rules when re-enabling ATR
+Date: Tue,  6 Sep 2016 12:40:07 -0700
+Subject: [Intel-wired-lan] [next PATCH S45 10/10] i40e/i40evf: Changed
+	version to 1.6.16
 In-Reply-To: <1473190807-26377-1-git-send-email-bimmy.pujari@intel.com>
 References: <1473190807-26377-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1473190807-26377-9-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1473190807-26377-11-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
-
-In i40e_fdir_check_and_reenable(), the driver performs some checks to
-determine whether it is safe to re-enable FD Sideband and FD ATR
-support. The current check will only determine if there is available
-space in the flow director table. However, this ignores the fact that
-ATR should be disabled when there are TCP/IPv4 sideband rules in effect.
-Add the missing check, and update the info message printed when
-I40E_DEBUG_FD is enabled.
-
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Change-ID: Ibb9c63e5be95d63c53a498fdd5dbf69f54a00e08
+Signed-off-by: Bimmy Pujari <bimmy.pujari@intel.com>
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 9ab15e2d..3be9675 100644
+index f741649..995dc44 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -5923,13 +5923,17 @@ void i40e_fdir_check_and_reenable(struct i40e_pf *pf)
- 				dev_info(&pf->pdev->dev, "FD Sideband/ntuple is being enabled since we have space in the table now\n");
- 		}
- 	}
--	/* Wait for some more space to be available to turn on ATR */
-+
-+	/* Wait for some more space to be available to turn on ATR. We also
-+	 * must check that no existing ntuple rules for TCP are in effect
-+	 */
- 	if (fcnt_prog < (fcnt_avail - I40E_FDIR_BUFFER_HEAD_ROOM * 2)) {
- 		if ((pf->flags & I40E_FLAG_FD_ATR_ENABLED) &&
--		    (pf->auto_disable_flags & I40E_FLAG_FD_ATR_ENABLED)) {
-+		    (pf->auto_disable_flags & I40E_FLAG_FD_ATR_ENABLED) &&
-+		    (pf->fd_tcp_rule == 0)) {
- 			pf->auto_disable_flags &= ~I40E_FLAG_FD_ATR_ENABLED;
- 			if (I40E_DEBUG_FD & pf->hw.debug_mask)
--				dev_info(&pf->pdev->dev, "ATR is being enabled since we have space in the table now\n");
-+				dev_info(&pf->pdev->dev, "ATR is being enabled since we have space in the table and there are no conflicting ntuple rules\n");
- 		}
- 	}
+@@ -41,7 +41,7 @@ static const char i40e_driver_string[] =
  
+ #define DRV_VERSION_MAJOR 1
+ #define DRV_VERSION_MINOR 6
+-#define DRV_VERSION_BUILD 12
++#define DRV_VERSION_BUILD 16
+ #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
+ 	     __stringify(DRV_VERSION_MINOR) "." \
+ 	     __stringify(DRV_VERSION_BUILD)    DRV_KERN
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index f2111d2..39268e2 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -38,7 +38,7 @@ static const char i40evf_driver_string[] =
+ 
+ #define DRV_VERSION_MAJOR 1
+ #define DRV_VERSION_MINOR 6
+-#define DRV_VERSION_BUILD 12
++#define DRV_VERSION_BUILD 16
+ #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
+ 	     __stringify(DRV_VERSION_MINOR) "." \
+ 	     __stringify(DRV_VERSION_BUILD) \
 -- 
 2.4.11
 
