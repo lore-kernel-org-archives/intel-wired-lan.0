@@ -1,69 +1,93 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue,  6 Sep 2016 12:39:58 -0700
-Subject: [Intel-wired-lan] [next PATCH S45 01/10] i40evf: remove unnecessary
-	error checking against i40evf_up_complete
+Date: Tue,  6 Sep 2016 12:39:59 -0700
+Subject: [Intel-wired-lan] [next PATCH S45 02/10] i40e: Limit TX descriptor
+	count in cases where frag size is greater than 16K
 In-Reply-To: <1473190807-26377-1-git-send-email-bimmy.pujari@intel.com>
 References: <1473190807-26377-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1473190807-26377-2-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1473190807-26377-3-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Function i40evf_up_complete() always returns success. Changed this to a
-void type and removed the code that checks the return status and prints
-an error message.
+From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-Signed-off-by: Bimmy Pujari <bimmy.pujari@intel.com>
-Change-ID: I8c400f174786b9c855f679e470f35af292fb50ad
+The i40e driver was incorrectly assuming that we would always be pulling
+no more than 1 descriptor from each fragment.  It is in fact possible for
+us to end up with the case where 2 descriptors worth of data may be pulled
+when a frame is larger than one of the pieces generated when aligning the
+payload to either 4K or pieces smaller than 16K.
+
+To adjust for this we just need to make certain to test all the way to the
+end of the fragments as it is possible for us to span 2 descriptors in the
+block before us so we need to guarantee that even the last 6 descriptors
+have enough data to fill a full frame.
+
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+Change-ID: Ic2ecb4d6b745f447d334e66c14002152f50e2f99
 ---
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
+Testing Hints:
+        This is hard to reproduce.  Patch submitted to customer for
+        testing.  Best effort would be to try testing TSO, if possible
+        TSO with iSCSI to verify nothing there is broken.
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index f751f7b..2074a8f 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -1007,7 +1007,7 @@ static void i40evf_configure(struct i40evf_adapter *adapter)
-  * i40evf_up_complete - Finish the last steps of bringing up a connection
-  * @adapter: board private structure
-  **/
--static int i40evf_up_complete(struct i40evf_adapter *adapter)
-+static void i40evf_up_complete(struct i40evf_adapter *adapter)
- {
- 	adapter->state = __I40EVF_RUNNING;
- 	clear_bit(__I40E_DOWN, &adapter->vsi.state);
-@@ -1016,7 +1016,6 @@ static int i40evf_up_complete(struct i40evf_adapter *adapter)
+HSD-number: 10021204
+
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 7 ++-----
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 7 ++-----
+ 2 files changed, 4 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index f8d6623..bf7bb7c 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -2621,9 +2621,7 @@ bool __i40e_chk_linearize(struct sk_buff *skb)
+ 		return false;
  
- 	adapter->aq_required |= I40EVF_FLAG_AQ_ENABLE_QUEUES;
- 	mod_timer_pending(&adapter->watchdog_timer, jiffies + 1);
--	return 0;
- }
+ 	/* We need to walk through the list and validate that each group
+-	 * of 6 fragments totals at least gso_size.  However we don't need
+-	 * to perform such validation on the last 6 since the last 6 cannot
+-	 * inherit any data from a descriptor after them.
++	 * of 6 fragments totals at least gso_size.
+ 	 */
+ 	nr_frags -= I40E_MAX_BUFFER_TXD - 2;
+ 	frag = &skb_shinfo(skb)->frags[0];
+@@ -2654,8 +2652,7 @@ bool __i40e_chk_linearize(struct sk_buff *skb)
+ 		if (sum < 0)
+ 			return true;
  
- /**
-@@ -1824,9 +1823,7 @@ continue_reset:
+-		/* use pre-decrement to avoid processing last fragment */
+-		if (!--nr_frags)
++		if (!nr_frags--)
+ 			break;
  
- 		i40evf_configure(adapter);
+ 		sum -= skb_frag_size(stale++);
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index 0130458..e3427eb 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -1832,9 +1832,7 @@ bool __i40evf_chk_linearize(struct sk_buff *skb)
+ 		return false;
  
--		err = i40evf_up_complete(adapter);
--		if (err)
--			goto reset_err;
-+		i40evf_up_complete(adapter);
+ 	/* We need to walk through the list and validate that each group
+-	 * of 6 fragments totals at least gso_size.  However we don't need
+-	 * to perform such validation on the last 6 since the last 6 cannot
+-	 * inherit any data from a descriptor after them.
++	 * of 6 fragments totals@least gso_size.
+ 	 */
+ 	nr_frags -= I40E_MAX_BUFFER_TXD - 2;
+ 	frag = &skb_shinfo(skb)->frags[0];
+@@ -1865,8 +1863,7 @@ bool __i40evf_chk_linearize(struct sk_buff *skb)
+ 		if (sum < 0)
+ 			return true;
  
- 		i40evf_irq_enable(adapter, true);
- 	} else {
-@@ -2056,9 +2053,7 @@ static int i40evf_open(struct net_device *netdev)
- 	i40evf_add_filter(adapter, adapter->hw.mac.addr);
- 	i40evf_configure(adapter);
+-		/* use pre-decrement to avoid processing last fragment */
+-		if (!--nr_frags)
++		if (!nr_frags--)
+ 			break;
  
--	err = i40evf_up_complete(adapter);
--	if (err)
--		goto err_req_irq;
-+	i40evf_up_complete(adapter);
- 
- 	i40evf_irq_enable(adapter, true);
- 
+ 		sum -= skb_frag_size(stale++);
 -- 
 2.4.11
 
