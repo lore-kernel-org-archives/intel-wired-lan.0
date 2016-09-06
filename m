@@ -1,45 +1,48 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue,  6 Sep 2016 12:40:01 -0700
-Subject: [Intel-wired-lan] [next PATCH S45 04/10] i40e: Remove 100 Mbps
-	SGMII support for X722
+Date: Tue,  6 Sep 2016 12:40:06 -0700
+Subject: [Intel-wired-lan] [next PATCH S45 09/10] i40e: removing unreachable
+	code
 In-Reply-To: <1473190807-26377-1-git-send-email-bimmy.pujari@intel.com>
 References: <1473190807-26377-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1473190807-26377-5-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1473190807-26377-10-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+From: Henry Tieman <henry.w.tieman@intel.com>
 
-X722 devices do not support 100 Mbps on SGMII. Hence, don't set
-that flag.
+The return value from i40e_shutdown_adminq() is always 0
+(I40E_SUCCESS). So, the test for non-0 will never be true. Cleanup
+by removing the test and debug print statement.
 
-Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
-Change-ID: I8c3d7c4251a9402d98994ed29749b7b895a0f205
+Signed-off-by: Henry Tieman <henry.w.tieman@intel.com>
+Change-ID: Ie51e8e37515c3e3a6a9ff26fa951d0e5e24343c1
 ---
-Testing Hints: Test on Copperpeak that 100 Mbps is not listed as
-supported or advertised on ethtool. Also ensure we are not able
-to configure the speed to 100 Mbps.
+Testing Hints:
+   Found by static code analysis. Test by code inspection.
 
-HSD-number: 10021180
-
- drivers/net/ethernet/intel/i40e/i40e_main.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 68c1253..e83b317 100644
+index 3be9675..f741649 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -8591,7 +8591,6 @@ static int i40e_sw_init(struct i40e_pf *pf)
- 			     I40E_FLAG_WB_ON_ITR_CAPABLE |
- 			     I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE |
- 			     I40E_FLAG_NO_PCI_LINK_CHECK |
--			     I40E_FLAG_100M_SGMII_CAPABLE |
- 			     I40E_FLAG_USE_SET_LLDP_MIB |
- 			     I40E_FLAG_GENEVE_OFFLOAD_CAPABLE;
- 	} else if ((pf->hw.aq.api_maj_ver > 1) ||
+@@ -11405,11 +11405,7 @@ static void i40e_remove(struct pci_dev *pdev)
+ 	}
+ 
+ 	/* shutdown the adminq */
+-	ret_code = i40e_shutdown_adminq(hw);
+-	if (ret_code)
+-		dev_warn(&pdev->dev,
+-			 "Failed to destroy the Admin Queue resources: %d\n",
+-			 ret_code);
++	i40e_shutdown_adminq(hw);
+ 
+ 	/* destroy the locks only once, here */
+ 	mutex_destroy(&hw->aq.arq_mutex);
 -- 
 2.4.11
 
