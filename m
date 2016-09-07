@@ -1,67 +1,57 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue,  6 Sep 2016 18:05:07 -0700
-Subject: [Intel-wired-lan] [next PATCH S45 05/10] i40e: fix deleting mac
-	filters
+Date: Tue,  6 Sep 2016 18:05:10 -0700
+Subject: [Intel-wired-lan] [next PATCH S45 08/10] i40e: check conflicting
+	ntuple/sideband rules when re-enabling ATR
 In-Reply-To: <1473210312-29592-1-git-send-email-bimmy.pujari@intel.com>
 References: <1473210312-29592-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1473210312-29592-6-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1473210312-29592-9-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alan Brady <alan.brady@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-There exists a bug in which deleting a mac filter does not actually
-occur.  The driver reports that the filter has been deleted with no
-error.  The problem occurs because the wrong cmd_flag is passed to the
-firmware when deleting the filter.  The firmware reports an error back
-to the driver but it is expressly ignored.
+In i40e_fdir_check_and_reenable(), the driver performs some checks to
+determine whether it is safe to re-enable FD Sideband and FD ATR
+support. The current check will only determine if there is available
+space in the flow director table. However, this ignores the fact that
+ATR should be disabled when there are TCP/IPv4 sideband rules in effect.
+Add the missing check, and update the info message printed when
+I40E_DEBUG_FD is enabled.
 
-This fixes the bug by using the correct flag when deleting a filter.
-Without this patch, deleted filters remain in firmware and function as
-if they had not been deleted.
-
-Signed-off-by: Alan Brady <alan.brady@intel.com>
-Change-ID: I5f22b874f3b83f457702f18f0d5602ca21ac40c3
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Change-ID: Ibb9c63e5be95d63c53a498fdd5dbf69f54a00e08
 ---
-Testing-hints:
-        I used 'tcpdump -npi <iface>' to watch traffic.
-
-        1.  Pass traffic with mac header 00:aa:00:aa:02:01 - no traffic
-        2.  Add mac filter - ip maddr add 00:aa:00:aa:02:01 dev enp5s0f0
-        3.  Pass traffic with mac header 00:aa:00:aa:02:01 - traffic
-        4.  Delete mac filter - ip maddr del 00:aa:00:aa:02:01 dev enp5s0f0
-        5.  Pass traffic with mac header 00:aa:00:aa:02:01
-                Expected - no traffic
-                Actual - traffic
-
- drivers/net/ethernet/intel/i40e/i40e_main.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index e83b317..4c3c6ce 100644
+index 9ab15e2d..3be9675 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1315,7 +1315,7 @@ static void i40e_rm_default_mac_filter(struct i40e_vsi *vsi, u8 *macaddr)
- 	element.vlan_tag = 0;
- 	/* ...and some firmware does it this way. */
- 	element.flags = I40E_AQC_MACVLAN_DEL_PERFECT_MATCH |
--			I40E_AQC_MACVLAN_ADD_IGNORE_VLAN;
-+			I40E_AQC_MACVLAN_DEL_IGNORE_VLAN;
- 	i40e_aq_remove_macvlan(&pf->hw, vsi->seid, &element, 1, NULL);
- }
+@@ -5923,13 +5923,17 @@ void i40e_fdir_check_and_reenable(struct i40e_pf *pf)
+ 				dev_info(&pf->pdev->dev, "FD Sideband/ntuple is being enabled since we have space in the table now\n");
+ 		}
+ 	}
+-	/* Wait for some more space to be available to turn on ATR */
++
++	/* Wait for some more space to be available to turn on ATR. We also
++	 * must check that no existing ntuple rules for TCP are in effect
++	 */
+ 	if (fcnt_prog < (fcnt_avail - I40E_FDIR_BUFFER_HEAD_ROOM * 2)) {
+ 		if ((pf->flags & I40E_FLAG_FD_ATR_ENABLED) &&
+-		    (pf->auto_disable_flags & I40E_FLAG_FD_ATR_ENABLED)) {
++		    (pf->auto_disable_flags & I40E_FLAG_FD_ATR_ENABLED) &&
++		    (pf->fd_tcp_rule == 0)) {
+ 			pf->auto_disable_flags &= ~I40E_FLAG_FD_ATR_ENABLED;
+ 			if (I40E_DEBUG_FD & pf->hw.debug_mask)
+-				dev_info(&pf->pdev->dev, "ATR is being enabled since we have space in the table now\n");
++				dev_info(&pf->pdev->dev, "ATR is being enabled since we have space in the table and there are no conflicting ntuple rules\n");
+ 		}
+ 	}
  
-@@ -1908,7 +1908,7 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 			ether_addr_copy(del_list[num_del].mac_addr, f->macaddr);
- 			if (f->vlan == I40E_VLAN_ANY) {
- 				del_list[num_del].vlan_tag = 0;
--				cmd_flags |= I40E_AQC_MACVLAN_ADD_IGNORE_VLAN;
-+				cmd_flags |= I40E_AQC_MACVLAN_DEL_IGNORE_VLAN;
- 			} else {
- 				del_list[num_del].vlan_tag =
- 					cpu_to_le16((u16)(f->vlan));
 -- 
 2.4.11
 
