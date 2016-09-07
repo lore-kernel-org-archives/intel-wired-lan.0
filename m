@@ -1,48 +1,69 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue,  6 Sep 2016 18:05:12 -0700
-Subject: [Intel-wired-lan] [next PATCH S45 10/10] i40e/i40evf: Changed
-	version to 1.6.16
+Date: Tue,  6 Sep 2016 18:05:03 -0700
+Subject: [Intel-wired-lan] [next PATCH S45 01/10] i40evf: remove unnecessary
+	error checking against i40evf_up_complete
 In-Reply-To: <1473210312-29592-1-git-send-email-bimmy.pujari@intel.com>
 References: <1473210312-29592-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1473210312-29592-11-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1473210312-29592-2-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Signed-off-by: Bimmy Pujari <bimmy.pujari@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+Function i40evf_up_complete() always returns success. Changed this to a
+void type and removed the code that checks the return status and prints
+an error message.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index f741649..995dc44 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -41,7 +41,7 @@ static const char i40e_driver_string[] =
- 
- #define DRV_VERSION_MAJOR 1
- #define DRV_VERSION_MINOR 6
--#define DRV_VERSION_BUILD 12
-+#define DRV_VERSION_BUILD 16
- #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
- 	     __stringify(DRV_VERSION_MINOR) "." \
- 	     __stringify(DRV_VERSION_BUILD)    DRV_KERN
+Signed-off-by: Bimmy Pujari <bimmy.pujari@intel.com>
+Change-ID: I8c400f174786b9c855f679e470f35af292fb50ad
+---
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c | 11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
+
 diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index f2111d2..39268e2 100644
+index f751f7b..2074a8f 100644
 --- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
 +++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -38,7 +38,7 @@ static const char i40evf_driver_string[] =
+@@ -1007,7 +1007,7 @@ static void i40evf_configure(struct i40evf_adapter *adapter)
+  * i40evf_up_complete - Finish the last steps of bringing up a connection
+  * @adapter: board private structure
+  **/
+-static int i40evf_up_complete(struct i40evf_adapter *adapter)
++static void i40evf_up_complete(struct i40evf_adapter *adapter)
+ {
+ 	adapter->state = __I40EVF_RUNNING;
+ 	clear_bit(__I40E_DOWN, &adapter->vsi.state);
+@@ -1016,7 +1016,6 @@ static int i40evf_up_complete(struct i40evf_adapter *adapter)
  
- #define DRV_VERSION_MAJOR 1
- #define DRV_VERSION_MINOR 6
--#define DRV_VERSION_BUILD 12
-+#define DRV_VERSION_BUILD 16
- #define DRV_VERSION __stringify(DRV_VERSION_MAJOR) "." \
- 	     __stringify(DRV_VERSION_MINOR) "." \
- 	     __stringify(DRV_VERSION_BUILD) \
+ 	adapter->aq_required |= I40EVF_FLAG_AQ_ENABLE_QUEUES;
+ 	mod_timer_pending(&adapter->watchdog_timer, jiffies + 1);
+-	return 0;
+ }
+ 
+ /**
+@@ -1824,9 +1823,7 @@ continue_reset:
+ 
+ 		i40evf_configure(adapter);
+ 
+-		err = i40evf_up_complete(adapter);
+-		if (err)
+-			goto reset_err;
++		i40evf_up_complete(adapter);
+ 
+ 		i40evf_irq_enable(adapter, true);
+ 	} else {
+@@ -2056,9 +2053,7 @@ static int i40evf_open(struct net_device *netdev)
+ 	i40evf_add_filter(adapter, adapter->hw.mac.addr);
+ 	i40evf_configure(adapter);
+ 
+-	err = i40evf_up_complete(adapter);
+-	if (err)
+-		goto err_req_irq;
++	i40evf_up_complete(adapter);
+ 
+ 	i40evf_irq_enable(adapter, true);
+ 
 -- 
 2.4.11
 
