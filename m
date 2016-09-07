@@ -1,13 +1,25 @@
-From: Jayakumar, Muthurajan <muthurajan.jayakumar@intel.com>
-Date: Wed, 7 Sep 2016 16:12:50 +0000
+From: Skidmore, Donald C <donald.c.skidmore@intel.com>
+Date: Wed, 7 Sep 2016 18:29:35 +0000
 Subject: [Intel-wired-lan] Dear Wired Lan Experts,
  kindly offer your guidance on customer's input please
-Message-ID: <5D695A7F6F10504DBD9B9187395A21797E8F7782@ORSMSX112.amr.corp.intel.com>
+In-Reply-To: <5D695A7F6F10504DBD9B9187395A21797E8F7782@ORSMSX112.amr.corp.intel.com>
+References: <5D695A7F6F10504DBD9B9187395A21797E8F7782@ORSMSX112.amr.corp.intel.com>
+Message-ID: <F6FB0E698C9B3143BDF729DF2228664696AE7E3B@ORSMSX116.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
+
+The limitation is due to interrupts limits of a VF.  We only get four and since with two queues we need 3 interrupts (1 per queue and 1 for LSC among other events) we don't have enough to support a 4 queues VF and sharing interrupt would eliminate the advantages of the additional queues.  :(
+
+Thanks,
+-Don <donald.c.skidmore@intel.com>
+
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Jayakumar, Muthurajan
+Sent: Wednesday, September 07, 2016 9:13 AM
+To: intel-wired-lan@lists.osuosl.org; Blevins, Christopher R <christopher.r.blevins@intel.com>
+Subject: [Intel-wired-lan] Dear Wired Lan Experts, kindly offer your guidance on customer's input please
 
 
 
@@ -73,7 +85,6 @@ diff -urN src/ixgbe_main.c src_new/ixgbe_main.c
                                 mrqc = IXGBE_MRQC_VMDQRSS32EN;
                         else
                                 mrqc = IXGBE_MRQC_VMDQRSS64EN;
-
 -------------- next part --------------
 An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160907/a2dde1cf/attachment.html>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160907/dafab3a4/attachment-0001.html>
