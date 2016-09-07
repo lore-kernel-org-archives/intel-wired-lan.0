@@ -1,57 +1,50 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue,  6 Sep 2016 18:05:10 -0700
-Subject: [Intel-wired-lan] [next PATCH S45 08/10] i40e: check conflicting
-	ntuple/sideband rules when re-enabling ATR
+Date: Tue,  6 Sep 2016 18:05:06 -0700
+Subject: [Intel-wired-lan] [next PATCH S45 04/10] i40e: Remove 100 Mbps
+	SGMII support for X722
 In-Reply-To: <1473210312-29592-1-git-send-email-bimmy.pujari@intel.com>
 References: <1473210312-29592-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1473210312-29592-9-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1473210312-29592-5-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
 
-In i40e_fdir_check_and_reenable(), the driver performs some checks to
-determine whether it is safe to re-enable FD Sideband and FD ATR
-support. The current check will only determine if there is available
-space in the flow director table. However, this ignores the fact that
-ATR should be disabled when there are TCP/IPv4 sideband rules in effect.
-Add the missing check, and update the info message printed when
-I40E_DEBUG_FD is enabled.
+This patch fixes the problem where driver shows 100 Mbps as a supported speed, 
+and allows it to be configured for advertising on X722 devices. This patch 
+fixes the problem by not setting the 100 Mbps SGMII flag for X722 devices. 
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Change-ID: Ibb9c63e5be95d63c53a498fdd5dbf69f54a00e08
+Without this patch, the user incorrectly thinks that 100 Mbps is supported 
+and hence might try to advertise it on X722 devices when it is actually not 
+a supported speed. 
+
+Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+Change-ID: I8c3d7c4251a9402d98994ed29749b7b895a0f205
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+Testing Hints: Test on Copperpeak that 100 Mbps is not listed as
+supported or advertised on ethtool. Also ensure we are not able
+to configure the speed to 100 Mbps.
+
+HSD-number: 10021180
+
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 1 -
+ 1 file changed, 1 deletion(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 9ab15e2d..3be9675 100644
+index 68c1253..e83b317 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -5923,13 +5923,17 @@ void i40e_fdir_check_and_reenable(struct i40e_pf *pf)
- 				dev_info(&pf->pdev->dev, "FD Sideband/ntuple is being enabled since we have space in the table now\n");
- 		}
- 	}
--	/* Wait for some more space to be available to turn on ATR */
-+
-+	/* Wait for some more space to be available to turn on ATR. We also
-+	 * must check that no existing ntuple rules for TCP are in effect
-+	 */
- 	if (fcnt_prog < (fcnt_avail - I40E_FDIR_BUFFER_HEAD_ROOM * 2)) {
- 		if ((pf->flags & I40E_FLAG_FD_ATR_ENABLED) &&
--		    (pf->auto_disable_flags & I40E_FLAG_FD_ATR_ENABLED)) {
-+		    (pf->auto_disable_flags & I40E_FLAG_FD_ATR_ENABLED) &&
-+		    (pf->fd_tcp_rule == 0)) {
- 			pf->auto_disable_flags &= ~I40E_FLAG_FD_ATR_ENABLED;
- 			if (I40E_DEBUG_FD & pf->hw.debug_mask)
--				dev_info(&pf->pdev->dev, "ATR is being enabled since we have space in the table now\n");
-+				dev_info(&pf->pdev->dev, "ATR is being enabled since we have space in the table and there are no conflicting ntuple rules\n");
- 		}
- 	}
- 
+@@ -8591,7 +8591,6 @@ static int i40e_sw_init(struct i40e_pf *pf)
+ 			     I40E_FLAG_WB_ON_ITR_CAPABLE |
+ 			     I40E_FLAG_MULTIPLE_TCP_UDP_RSS_PCTYPE |
+ 			     I40E_FLAG_NO_PCI_LINK_CHECK |
+-			     I40E_FLAG_100M_SGMII_CAPABLE |
+ 			     I40E_FLAG_USE_SET_LLDP_MIB |
+ 			     I40E_FLAG_GENEVE_OFFLOAD_CAPABLE;
+ 	} else if ((pf->hw.aq.api_maj_ver > 1) ||
 -- 
 2.4.11
 
