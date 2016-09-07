@@ -1,83 +1,79 @@
-From: Duyck, Alexander H <alexander.h.duyck@intel.com>
-Date: Wed, 7 Sep 2016 14:49:39 +0000
-Subject: [Intel-wired-lan] [PATCH 249/249]
- net:ethernet:intel:igb_main.c: Add Throttling disable option in order to
- decrease latency usually required by RT applications.
-In-Reply-To: <48faffefd02040f7a2af65691454ad3c@Hummer.waves.com>
-References: <20abe8058531466d8d60835ce88b6489@Hummer.waves.com>
- <48faffefd02040f7a2af65691454ad3c@Hummer.waves.com>
-Message-ID: <1473259777.31962.401.camel@intel.com>
+From: Jayakumar, Muthurajan <muthurajan.jayakumar@intel.com>
+Date: Wed, 7 Sep 2016 16:12:50 +0000
+Subject: [Intel-wired-lan] Dear Wired Lan Experts,
+ kindly offer your guidance on customer's input please
+Message-ID: <5D695A7F6F10504DBD9B9187395A21797E8F7782@ORSMSX112.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2016-09-06 at 14:46 +0000, Amir Yihie wrote:
-> From e433f5bedd49a65b7337d025f3f204f0f21ad5e5 Mon Sep 17 00:00:00
-> 2001
-> From: amiry <amiry@waves.com>
-> Date: Tue, 6 Sep 2016 14:58:38 +0300
-> Subject: [PATCH 249/249] net:ethernet:intel:igb_main.c: Add
-> Throttling disable
-> ?option in order to decrease latency usually required by RT
-> applications.
-> 
-> Add an option to Disable Throttling algorithm , which will result
-> with minimum latency on received frames .
-> mainly targets for RT application that look for low larceny and less
-> cares about throughput .
-> How to use :
-> On insmod , add parameter : InterruptThrottleRate=0
-> 
-> This patch is currently against a linux 4.1.27-rt31 kernel.
-> 
-> Signed-off-by: Amir Yihie <amiry@waves.com>
-> ---
-> ?drivers/net/ethernet/intel/igb/igb_main.c | 11 +++++++++++
-> ?1 file changed, 11 insertions(+)
-> 
-> diff --git a/drivers/net/ethernet/intel/igb/igb_main.c
-> b/drivers/net/ethernet/intel/igb/igb_main.c
-> index 7dfbcde..9480850 100644
-> --- a/drivers/net/ethernet/intel/igb/igb_main.c
-> +++ b/drivers/net/ethernet/intel/igb/igb_main.c
-> @@ -251,6 +251,14 @@ static int debug = -1;
-> ?module_param(debug, int, 0);
-> ?MODULE_PARM_DESC(debug, "Debug level (0=none,...,16=all)");
-> ?
-> +/* Interrupt Throttle Rate (interrupts/sec)
-> + *
-> + * Valid Range: 0=off, 3=dynamic conservative
-> + */
-> +static int InterruptThrottleRate = 3;
-> +module_param(InterruptThrottleRate, int, 0);
-> +MODULE_PARM_DESC(InterruptThrottleRate, "InterruptThrottleRate
-> (0=off, 3=dynamic conservative)");
-> +
 
-This is creating redundant functionality. ?The same can be done via the
-ethtool command "ethtool -C <iface> rx-usecs 0". ?Is there some reason
-why you couldn't use ethtool?
 
-> ?struct igb_reg_info {
-> ????????u32 ofs;
-> ????????char *name;
-> @@ -2966,6 +2974,9 @@ static int igb_sw_init(struct igb_adapter
-> *adapter)
-> ????????adapter->rx_itr_setting = IGB_DEFAULT_ITR;
-> ????????adapter->tx_itr_setting = IGB_DEFAULT_ITR;
-> ?
-> +???????if (InterruptThrottleRate == 0)
-> +???????????????adapter->rx_itr_setting = InterruptThrottleRate;
-> +
-> ????????/* set default work limits */
-> ????????adapter->tx_work_limit = IGB_DEFAULT_TX_WORK;
+Dear Wired Lan Experts,
+kindly offer your guidance on following customer's input below please
+Much appreciated.
 
-If you are going to use InterruptThrottleRate you might as well use it
-fully instead of making it a boolean value with 0 having one meaning
-and the default of 3 being another.
+Best Regards,
+M Jay
 
-Thanks.
 
-- Alex
+
+In the ixgbe driver (82599EB/X540/X550/X550EM_x), if RSS < 4 and we allocate VFs, the driver forces to use 2-queue (per VF) mode instead of 4-queue mode (see ixgbe_set_vmdq_queues function in ixgbe_lib.c)
+Is there any fundamental reason to do so? Is it possible to still use 4-queue mode (per VF) even when RSS=1 (i.e., a physical function uses only 1 TX/RX queue but all VFs use 4 TX/RX queues)
+
+The proposed change to use 4-queue mode is as follows (please double check if anything else needs to be changed):
+
+diff -urN src/ixgbe_lib.c src_new/ixgbe_lib.c
+--- src/ixgbe_lib.c     2016-07-12 13:11:56.976425563 -0700
++++ src_new/ixgbe_lib.c 2016-07-12 13:12:55.540425563 -0700
+@@ -582,7 +582,7 @@
+                vmdq_i = min_t(u16, IXGBE_MAX_VMDQ_INDICES, vmdq_i);
+
+                /* 64 pool mode with 2 queues per pool */
+-               if ((vmdq_i > 32) || (rss_i < 4)) {
++               if (vmdq_i > 32) {
+                        vmdq_m = IXGBE_82599_VMDQ_2Q_MASK;
+                        rss_m = IXGBE_RSS_2Q_MASK;
+                        rss_i = min_t(u16, rss_i, 2);
+@@ -590,7 +590,7 @@
+                } else {
+                        vmdq_m = IXGBE_82599_VMDQ_4Q_MASK;
+                        rss_m = IXGBE_RSS_4Q_MASK;
+-                       rss_i = 4;
++                       rss_i = min_t(u16, rss_i, 4);
+                }
+
+ #if IS_ENABLED(CONFIG_FCOE)
+diff -urN src/ixgbe_main.c src_new/ixgbe_main.c
+--- src/ixgbe_main.c    2016-07-12 13:11:56.980425563 -0700
++++ src_new/ixgbe_main.c        2016-07-12 13:12:55.544425563 -0700
+@@ -2883,7 +2883,7 @@
+                        mtqc |= IXGBE_MTQC_RT_ENA | IXGBE_MTQC_8TC_8TQ;
+                else if (tcs > 1)
+                        mtqc |= IXGBE_MTQC_RT_ENA | IXGBE_MTQC_4TC_4TQ;
+-               else if (adapter->ring_feature[RING_F_RSS].indices == 4)
++               else if (adapter->ring_feature[RING_F_VMDQ].mask == IXGBE_82599_VMDQ_4Q_MASK)
+                        mtqc |= IXGBE_MTQC_32VF;
+                else
+                        mtqc |= IXGBE_MTQC_64VF;
+@@ -3186,13 +3186,12 @@
+                        mrqc = IXGBE_MRQC_RSSEN;
+        } else {
+                u8 tcs = netdev_get_num_tc(adapter->netdev);
+-
+                if (adapter->flags & IXGBE_FLAG_VMDQ_ENABLED) {
+                        if (tcs > 4)
+                                mrqc = IXGBE_MRQC_VMDQRT8TCEN;  /* 8 TCs */
+                        else if (tcs > 1)
+                                mrqc = IXGBE_MRQC_VMDQRT4TCEN;  /* 4 TCs */
+-                       else if (adapter->ring_feature[RING_F_RSS].indices == 4)
++                       else if (adapter->ring_feature[RING_F_VMDQ].mask == IXGBE_82599_VMDQ_4Q_MASK)
+                                mrqc = IXGBE_MRQC_VMDQRSS32EN;
+                        else
+                                mrqc = IXGBE_MRQC_VMDQRSS64EN;
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160907/a2dde1cf/attachment.html>
