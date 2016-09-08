@@ -1,96 +1,57 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 07 Sep 2016 20:28:24 -0700
-Subject: [Intel-wired-lan] [next PATCH 3/3] ixgbe: Support 4 queue RSS on
- VFs with 1 or 2 queue RSS on PF
-In-Reply-To: <20160908032606.25312.86849.stgit@localhost.localdomain>
-References: <20160908032606.25312.86849.stgit@localhost.localdomain>
-Message-ID: <20160908032824.25312.34696.stgit@localhost.localdomain>
+From: Sasha Neftin <sasha.neftin@intel.com>
+Date: Thu,  8 Sep 2016 09:27:28 +0300
+Subject: [Intel-wired-lan] [PATCH] PCI: disable FLR for 82579 device
+Message-ID: <1473316048-7598-1-git-send-email-sasha.neftin@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Duyck <alexander.h.duyck@intel.com>
+82579 has a problem reattaching itself after the device is detached.
+The bug was reported by Redhat. The suggested fix is to disable
+FLR capability in PCIe configuration space.
 
-Instead of limiting the VFs if we don't use 4 queues for RSS in the PF we
-can instead just limit the RSS queues used to a power of 2.  By doing this
-we can support use cases where VFs are using more queues than the PF is
-currently using and can support RSS if so desired.
+Reproduction:
+Attach the device to a VM, then detach and try to attach again.
 
-The only limitation on this is that we cannot support 3 queues of RSS in
-the PF or VF.  In either of these cases we should fall back to 2 queues in
-order to be able to use the power of 2 masking provided by the psrtype
-register.
+Fix:
+Disable FLR capability to prevent the 82579 from hanging.
 
-Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+Signed-off-by: Sasha Neftin <sasha.neftin@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c  |    7 ++++---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   12 +++++++-----
- 2 files changed, 11 insertions(+), 8 deletions(-)
+ drivers/pci/quirks.c | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-index bcdc88444ceb..15ab337fd7ad 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
-@@ -515,15 +515,16 @@ static bool ixgbe_set_sriov_queues(struct ixgbe_adapter *adapter)
- 	vmdq_i = min_t(u16, IXGBE_MAX_VMDQ_INDICES, vmdq_i);
- 
- 	/* 64 pool mode with 2 queues per pool */
--	if ((vmdq_i > 32) || (rss_i < 4) || (vmdq_i > 16 && pools)) {
-+	if ((vmdq_i > 32) || (vmdq_i > 16 && pools)) {
- 		vmdq_m = IXGBE_82599_VMDQ_2Q_MASK;
- 		rss_m = IXGBE_RSS_2Q_MASK;
- 		rss_i = min_t(u16, rss_i, 2);
--	/* 32 pool mode with 4 queues per pool */
-+	/* 32 pool mode with up to 4 queues per pool */
- 	} else {
- 		vmdq_m = IXGBE_82599_VMDQ_4Q_MASK;
- 		rss_m = IXGBE_RSS_4Q_MASK;
--		rss_i = 4;
-+		/* We can support 4, 2, or 1 queues */
-+		rss_i = (rss_i > 3) ? 4 : (rss_i > 1) ? 2 : 1;
+diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+index 37ff015..729ca69 100644
+--- a/drivers/pci/quirks.c
++++ b/drivers/pci/quirks.c
+@@ -4428,3 +4428,24 @@ static void quirk_intel_qat_vf_cap(struct pci_dev *pdev)
  	}
- 
- #ifdef IXGBE_FCOE
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 1c888588cecd..a244d9a67264 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -3248,7 +3248,8 @@ static void ixgbe_setup_mtqc(struct ixgbe_adapter *adapter)
- 			mtqc |= IXGBE_MTQC_RT_ENA | IXGBE_MTQC_8TC_8TQ;
- 		else if (tcs > 1)
- 			mtqc |= IXGBE_MTQC_RT_ENA | IXGBE_MTQC_4TC_4TQ;
--		else if (adapter->ring_feature[RING_F_RSS].indices == 4)
-+		else if (adapter->ring_feature[RING_F_VMDQ].mask ==
-+			 IXGBE_82599_VMDQ_4Q_MASK)
- 			mtqc |= IXGBE_MTQC_32VF;
- 		else
- 			mtqc |= IXGBE_MTQC_64VF;
-@@ -3475,12 +3476,12 @@ static void ixgbe_setup_reta(struct ixgbe_adapter *adapter)
- 	u32 reta_entries = ixgbe_rss_indir_tbl_entries(adapter);
- 	u16 rss_i = adapter->ring_feature[RING_F_RSS].indices;
- 
--	/* Program table for at least 2 queues w/ SR-IOV so that VFs can
-+	/* Program table for at least 4 queues w/ SR-IOV so that VFs can
- 	 * make full use of any rings they may have.  We will use the
- 	 * PSRTYPE register to control how many rings we use within the PF.
- 	 */
--	if ((adapter->flags & IXGBE_FLAG_SRIOV_ENABLED) && (rss_i < 2))
--		rss_i = 2;
-+	if ((adapter->flags & IXGBE_FLAG_SRIOV_ENABLED) && (rss_i < 4))
-+		rss_i = 4;
- 
- 	/* Fill out hash function seeds */
- 	for (i = 0; i < 10; i++)
-@@ -3544,7 +3545,8 @@ static void ixgbe_setup_mrqc(struct ixgbe_adapter *adapter)
- 				mrqc = IXGBE_MRQC_VMDQRT8TCEN;	/* 8 TCs */
- 			else if (tcs > 1)
- 				mrqc = IXGBE_MRQC_VMDQRT4TCEN;	/* 4 TCs */
--			else if (adapter->ring_feature[RING_F_RSS].indices == 4)
-+			else if (adapter->ring_feature[RING_F_VMDQ].mask ==
-+				 IXGBE_82599_VMDQ_4Q_MASK)
- 				mrqc = IXGBE_MRQC_VMDQRSS32EN;
- 			else
- 				mrqc = IXGBE_MRQC_VMDQRSS64EN;
+ }
+ DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_INTEL, 0x443, quirk_intel_qat_vf_cap);
++/*
++ * Workaround FLR issues for 82579
++ * This code disables the FLR (Function Level Reset) via PCIe, in order
++ * to workaround a bug found while using device passthrough, where the
++ * interface would become non-responsive.
++ * NOTE: the FLR bit is Read/Write Once (RWO) in config space, so if
++ * the BIOS or kernel writes this register * then this workaround will
++ * not work.
++ */
++static void quirk_intel_flr_cap_dis(struct pci_dev *dev)
++{
++	int pos = pci_find_capability(dev, PCI_CAP_ID_AF);
++	if (pos) {
++		u8 cap;
++		pci_read_config_byte(dev, pos + PCI_AF_CAP, &cap);
++		cap = cap & (~PCI_AF_CAP_FLR);
++		pci_write_config_byte(dev, pos + PCI_AF_CAP, cap);
++	}
++}
++DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_INTEL, 0x1502, quirk_intel_flr_cap_dis);
++DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_INTEL, 0x1503, quirk_intel_flr_cap_dis);
+-- 
+1.8.3.1
 
