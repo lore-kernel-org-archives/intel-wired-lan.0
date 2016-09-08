@@ -1,140 +1,88 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 08 Sep 2016 15:02:50 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 1991da7bfbf25d1d4a65883fce592224c8d261b4 BUILD SUCCESS
-Message-ID: <57d10d1a.Yr9RkhX4WC2Jho+4%fengguang.wu@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 8 Sep 2016 16:46:42 +0000
+Subject: [Intel-wired-lan] [dev-queue PATCH] i40e: Sync link state
+ between	VFs and VF Port representors(VFPR).
+In-Reply-To: <1472761803-2683-1-git-send-email-sridhar.samudrala@intel.com>
+References: <1472761803-2683-1-git-send-email-sridhar.samudrala@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9FC80A@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-1991da7bfbf25d1d4a65883fce592224c8d261b4  i40e/i40evf: Changed version to 1.6.16
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Sridhar Samudrala
+> Sent: Thursday, September 01, 2016 1:30 PM
+> To: intel-wired-lan at lists.osuosl.org; Fastabend, John R
+> <john.r.fastabend@intel.com>; Singhai, Anjali <anjali.singhai@intel.com>;
+> Duyck, Alexander H <alexander.h.duyck@intel.com>
+> Subject: [Intel-wired-lan] [dev-queue PATCH] i40e: Sync link state between
+> VFs and VF Port representors(VFPR).
+> 
+> This patch enables
+> - reflecting the link state of VFPR based on VF admin state & link state
+>   of VF based on admin state of VFPR.
+> - bringing up/down the VFPR sends a notification to update VF link state.
+> - bringing up/down the VF will cause the link state update of VFPR.
+> - enable/disable VF link state via ndo_set_vf_link_state will update the
+>   admin state of associated VFPR.
+> 
+>     PF: enp5s0f0, VFs: enp5s2,enp5s2f1 VFPRs:enp5s0f0-vf0, enp5s0f0-vf1
+>     # modprobe i40e
+>     # echo 2 > /sys/class/net/enp5s0f0/device/sriov_numvfs
+> 
+>     # ip link set enp5s2 up
+>     # ip link set enp5s0f0-vf0 up
+>     # ip link set enp5s0f0-vf1 up
+> 
+>     # ip link show enp5s0f0-vf0
+> 215: enp5s0f0-vf0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc
+> fq_codel state UP mode DEFAULT group default qlen 1000
+>     link/ether 00:00:00:00:00:00 brd ff:ff:ff:ff:ff:ff
+> 
+>     /* enp5s0f0-vf0 UP -> enp5s2 CARRIER ON */
+>     # ip link show enp5s2
+> 218: enp5s2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq
+> state UP mode DEFAULT group default qlen 1000
+>     link/ether ea:4d:60:bc:6f:85 brd ff:ff:ff:ff:ff:ff
+> 
+>     /* enp5s2f1 DOWN -> enp5s0f0-vf1 NO-CARRIER */
+>     # ip link show enp5s0f0-vf1
+> 216: enp5s0f0-vf1: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500
+> qdisc fq_codel state DOWN mode DEFAULT group default qlen 1000
+>     link/ether 00:00:00:00:00:00 brd ff:ff:ff:ff:ff:ff
+> 
+>     # ip link set enp5s0f0-vf0 down
+>     # ip link set enp5s2f1 up
+> 
+>     /* enp5s2 UP -> enp5s0f0-vf1 CARRIER ON */
+>     # ip link show enp5s0f0-vf1
+> 216: enp5s0f0-vf1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc
+> fq_codel state UP mode DEFAULT group default qlen 1000
+>     link/ether 00:00:00:00:00:00 brd ff:ff:ff:ff:ff:ff
+> 
+>     /* enp5s0-vf0 DOWN -> enp5s2 NO_CARRIER */
+>     # ip link show enp5s2
+> 218: enp5s2: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc mq
+> state DOWN mode DEFAULT group default qlen 1000
+>     link/ether ea:4d:60:bc:6f:85 brd ff:ff:ff:ff:ff:ff
+> 
+>     # ip -d link show enp5s0f0
+> 213: enp5s0f0: <BROADCAST,MULTICAST> mtu 1500 qdisc noop portid
+> 6805ca2e7268 state DOWN mode DEFAULT group default qlen 1000
+>     link/ether 68:05:ca:2e:72:68 brd ff:ff:ff:ff:ff:ff promiscuity 0 addrgenmode
+> eui64
+>     vf 0 MAC 00:00:00:00:00:00, spoof checking on, link-state disable
+>     vf 1 MAC 00:00:00:00:00:00, spoof checking on, link-state enable
+> 
+> Signed-off-by: Sridhar Samudrala <sridhar.samudrala@intel.com>
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 33
+> ++++++++++++++++++++++
+>  1 file changed, 33 insertions(+)
 
-elapsed time: 194m
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 118
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201636
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64       allyesdebian+CONFIG_DEBUG_INFO_REDUCED-CONFIG_DEBUG_INFO_REDUCED+CONFIG_DEBUG_INFO_REDUCED
-x86_64                                nfsroot
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-parisc                         b180_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x013-201636
-x86_64                 randconfig-x012-201636
-x86_64                 randconfig-x015-201636
-x86_64                 randconfig-x011-201636
-x86_64                 randconfig-x010-201636
-x86_64                 randconfig-x014-201636
-x86_64                 randconfig-x018-201636
-x86_64                 randconfig-x017-201636
-x86_64                 randconfig-x016-201636
-x86_64                 randconfig-x019-201636
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-x86_64                            eywa-module
-x86_64                                   rhel
-x86_64                               rhel-7.2
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201636
-i386                     randconfig-s1-201636
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201636
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201636
-i386                     randconfig-i1-201636
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                               tinyconfig
-i386                   randconfig-x014-201636
-i386                   randconfig-x016-201636
-i386                   randconfig-x010-201636
-i386                   randconfig-x017-201636
-i386                   randconfig-x012-201636
-i386                   randconfig-x013-201636
-i386                   randconfig-x018-201636
-i386                   randconfig-x019-201636
-i386                   randconfig-x011-201636
-i386                   randconfig-x015-201636
-i386                     randconfig-n0-201636
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-x008-201636
-x86_64                 randconfig-x009-201636
-x86_64                 randconfig-x002-201636
-x86_64                 randconfig-x003-201636
-x86_64                 randconfig-x007-201636
-x86_64                 randconfig-x004-201636
-x86_64                 randconfig-x005-201636
-x86_64                 randconfig-x000-201636
-x86_64                 randconfig-x001-201636
-x86_64                 randconfig-x006-201636
-i386                     randconfig-r0-201636
-i386                   randconfig-x006-201636
-i386                   randconfig-x002-201636
-i386                   randconfig-x009-201636
-i386                   randconfig-x003-201636
-i386                   randconfig-x001-201636
-i386                   randconfig-x008-201636
-i386                   randconfig-x007-201636
-i386                   randconfig-x000-201636
-i386                   randconfig-x005-201636
-i386                   randconfig-x004-201636
-
-Thanks,
-Fengguang
