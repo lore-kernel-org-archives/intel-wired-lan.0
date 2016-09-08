@@ -1,31 +1,104 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 8 Sep 2016 17:43:58 +0000
-Subject: [Intel-wired-lan] [next PATCH S45 10/10] i40e/i40evf:
-	Changed	version to 1.6.16
-In-Reply-To: <1473210312-29592-11-git-send-email-bimmy.pujari@intel.com>
-References: <1473210312-29592-1-git-send-email-bimmy.pujari@intel.com>
- <1473210312-29592-11-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9FC880@ORSMSX104.amr.corp.intel.com>
+From: Ruslan Nikolaev <ruslan@purestorage.com>
+Date: Thu, 8 Sep 2016 11:20:08 -0700
+Subject: [Intel-wired-lan] [next PATCH 3/3] ixgbe: Support 4 queue RSS
+	on VFs with 1 or 2 queue RSS on PF
+In-Reply-To: <20160908032824.25312.34696.stgit@localhost.localdomain>
+References: <20160908032606.25312.86849.stgit@localhost.localdomain>
+ <20160908032824.25312.34696.stgit@localhost.localdomain>
+Message-ID: <842C844A-0A7A-46FD-A5D7-BF7B584C2A24@purestorage.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Bimmy Pujari
-> Sent: Tuesday, September 06, 2016 6:05 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S45 10/10] i40e/i40evf: Changed
-> version to 1.6.16
+Thank you very much for giving the feedback and creating new set of patches!
+
+Ruslan
+
+On Sep 7, 2016, at 8:28 PM, Alexander Duyck <alexander.duyck@gmail.com> wrote:
+
+> From: Alexander Duyck <alexander.h.duyck@intel.com>
 > 
-> Signed-off-by: Bimmy Pujari <bimmy.pujari@intel.com>
+> Instead of limiting the VFs if we don't use 4 queues for RSS in the PF we
+> can instead just limit the RSS queues used to a power of 2.  By doing this
+> we can support use cases where VFs are using more queues than the PF is
+> currently using and can support RSS if so desired.
+> 
+> The only limitation on this is that we cannot support 3 queues of RSS in
+> the PF or VF.  In either of these cases we should fall back to 2 queues in
+> order to be able to use the power of 2 masking provided by the psrtype
+> register.
+> 
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-
+> drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c  |    7 ++++---
+> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   12 +++++++-----
+> 2 files changed, 11 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
+> index bcdc88444ceb..15ab337fd7ad 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
+> @@ -515,15 +515,16 @@ static bool ixgbe_set_sriov_queues(struct ixgbe_adapter *adapter)
+>  	vmdq_i = min_t(u16, IXGBE_MAX_VMDQ_INDICES, vmdq_i);
+> 
+>  	/* 64 pool mode with 2 queues per pool */
+> -	if ((vmdq_i > 32) || (rss_i < 4) || (vmdq_i > 16 && pools)) {
+> +	if ((vmdq_i > 32) || (vmdq_i > 16 && pools)) {
+>  		vmdq_m = IXGBE_82599_VMDQ_2Q_MASK;
+>  		rss_m = IXGBE_RSS_2Q_MASK;
+>  		rss_i = min_t(u16, rss_i, 2);
+> -	/* 32 pool mode with 4 queues per pool */
+> +	/* 32 pool mode with up to 4 queues per pool */
+>  	} else {
+>  		vmdq_m = IXGBE_82599_VMDQ_4Q_MASK;
+>  		rss_m = IXGBE_RSS_4Q_MASK;
+> -		rss_i = 4;
+> +		/* We can support 4, 2, or 1 queues */
+> +		rss_i = (rss_i > 3) ? 4 : (rss_i > 1) ? 2 : 1;
+>  	}
+> 
+> #ifdef IXGBE_FCOE
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> index 1c888588cecd..a244d9a67264 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> @@ -3248,7 +3248,8 @@ static void ixgbe_setup_mtqc(struct ixgbe_adapter *adapter)
+>  			mtqc |= IXGBE_MTQC_RT_ENA | IXGBE_MTQC_8TC_8TQ;
+>  		else if (tcs > 1)
+>  			mtqc |= IXGBE_MTQC_RT_ENA | IXGBE_MTQC_4TC_4TQ;
+> -		else if (adapter->ring_feature[RING_F_RSS].indices == 4)
+> +		else if (adapter->ring_feature[RING_F_VMDQ].mask ==
+> +			 IXGBE_82599_VMDQ_4Q_MASK)
+>  			mtqc |= IXGBE_MTQC_32VF;
+>  		else
+>  			mtqc |= IXGBE_MTQC_64VF;
+> @@ -3475,12 +3476,12 @@ static void ixgbe_setup_reta(struct ixgbe_adapter *adapter)
+>  	u32 reta_entries = ixgbe_rss_indir_tbl_entries(adapter);
+>  	u16 rss_i = adapter->ring_feature[RING_F_RSS].indices;
+> 
+> -	/* Program table for at least 2 queues w/ SR-IOV so that VFs can
+> +	/* Program table for at least 4 queues w/ SR-IOV so that VFs can
+>  	 * make full use of any rings they may have.  We will use the
+>  	 * PSRTYPE register to control how many rings we use within the PF.
+>  	 */
+> -	if ((adapter->flags & IXGBE_FLAG_SRIOV_ENABLED) && (rss_i < 2))
+> -		rss_i = 2;
+> +	if ((adapter->flags & IXGBE_FLAG_SRIOV_ENABLED) && (rss_i < 4))
+> +		rss_i = 4;
+> 
+>  	/* Fill out hash function seeds */
+>  	for (i = 0; i < 10; i++)
+> @@ -3544,7 +3545,8 @@ static void ixgbe_setup_mrqc(struct ixgbe_adapter *adapter)
+>  				mrqc = IXGBE_MRQC_VMDQRT8TCEN;	/* 8 TCs */
+>  			else if (tcs > 1)
+>  				mrqc = IXGBE_MRQC_VMDQRT4TCEN;	/* 4 TCs */
+> -			else if (adapter->ring_feature[RING_F_RSS].indices == 4)
+> +			else if (adapter->ring_feature[RING_F_VMDQ].mask ==
+> +				 IXGBE_82599_VMDQ_4Q_MASK)
+>  				mrqc = IXGBE_MRQC_VMDQRSS32EN;
+>  			else
+>  				mrqc = IXGBE_MRQC_VMDQRSS64EN;
+> 
 
