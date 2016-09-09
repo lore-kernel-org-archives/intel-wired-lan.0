@@ -1,146 +1,312 @@
-From: Ruslan Nikolaev <ruslan@purestorage.com>
-Date: Fri, 9 Sep 2016 14:00:58 -0700
-Subject: [Intel-wired-lan] [next PATCH 3/3] ixgbe: Support 4 queue RSS
-	on VFs with 1 or 2 queue RSS on PF
-In-Reply-To: <CAKgT0UchckNG=6g_wyrvvJXQvCEYRTUzCCZ2RP5wGcKg0=X5sg@mail.gmail.com>
-References: <20160908032606.25312.86849.stgit@localhost.localdomain>
- <20160908032824.25312.34696.stgit@localhost.localdomain>
- <842C844A-0A7A-46FD-A5D7-BF7B584C2A24@purestorage.com>
- <CDB2D0B6-82C2-4E08-BFE0-61D3ECA6502F@purestorage.com>
- <CAKgT0UchckNG=6g_wyrvvJXQvCEYRTUzCCZ2RP5wGcKg0=X5sg@mail.gmail.com>
-Message-ID: <E0798E0C-070E-4888-85B6-0C84C3E2B032@purestorage.com>
+From: John Fastabend <john.fastabend@gmail.com>
+Date: Fri, 09 Sep 2016 14:29:15 -0700
+Subject: [Intel-wired-lan] [net-next PATCH v2 1/2] e1000: add initial XDP
+	support
+Message-ID: <20160909212915.4001.25504.stgit@john-Precision-Tower-5810>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Sorry in advance if I have any misconception regarding how VFRETA works. But I was more thinking about rss_i being smaller than needed. For instance, rss_i is 1 (because RSS=1 for PF) but we use VFs with larger number of RX queues (RSS=2 or RSS=4 for VF). Should we program the table for VFs using value 2 (or 4) that we at least support 2 RX queues (or 4 RX queues if interrupts are shared)? I guess, it does not matter when we use just one RX queue.
+From: Alexei Starovoitov <ast@fb.com>
 
-Thanks,
-Ruslan
+This patch adds initial support for XDP on e1000 driver. Note e1000
+driver does not support page recycling in general which could be
+added as a further improvement. However XDP_DROP case will recycle.
+XDP_TX and XDP_PASS do not support recycling yet.
 
-On Sep 9, 2016, at 8:32 AM, Alexander Duyck <alexander.duyck@gmail.com> wrote:
+I tested this patch running e1000 in a VM using KVM over a tap
+device.
 
-> That shouldn't be needed since the VFRETA is actually per virtual pool
-> so it isn't shared with the VFs.  In theory we could support 3 queues
-> on the X550 without any issues, but that would be a change of how
-> things are currently handled so I figured I will leave it as it is for
-> now.
-> 
-> - Alex
-> 
-> On Thu, Sep 8, 2016 at 6:14 PM, Ruslan Nikolaev <ruslan@purestorage.com> wrote:
->> I still have on more question. There is also ixgbe_setup_vfreta function in
->> the code. Do we need to adjust rss_i there as well?
->> 
->> Thanks,
->> Ruslan
->> 
->> On Sep 8, 2016, at 11:20 AM, Ruslan Nikolaev <ruslan@purestorage.com> wrote:
->> 
->> Thank you very much for giving the feedback and creating new set of patches!
->> 
->> Ruslan
->> 
->> On Sep 7, 2016, at 8:28 PM, Alexander Duyck <alexander.duyck@gmail.com>
->> wrote:
->> 
->> From: Alexander Duyck <alexander.h.duyck@intel.com>
->> 
->> Instead of limiting the VFs if we don't use 4 queues for RSS in the PF we
->> can instead just limit the RSS queues used to a power of 2.  By doing this
->> we can support use cases where VFs are using more queues than the PF is
->> currently using and can support RSS if so desired.
->> 
->> The only limitation on this is that we cannot support 3 queues of RSS in
->> the PF or VF.  In either of these cases we should fall back to 2 queues in
->> order to be able to use the power of 2 masking provided by the psrtype
->> register.
->> 
->> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
->> ---
->> drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c  |    7 ++++---
->> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   12 +++++++-----
->> 2 files changed, 11 insertions(+), 8 deletions(-)
->> 
->> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
->> b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
->> index bcdc88444ceb..15ab337fd7ad 100644
->> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
->> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
->> @@ -515,15 +515,16 @@ static bool ixgbe_set_sriov_queues(struct
->> ixgbe_adapter *adapter)
->> vmdq_i = min_t(u16, IXGBE_MAX_VMDQ_INDICES, vmdq_i);
->> 
->> /* 64 pool mode with 2 queues per pool */
->> - if ((vmdq_i > 32) || (rss_i < 4) || (vmdq_i > 16 && pools)) {
->> + if ((vmdq_i > 32) || (vmdq_i > 16 && pools)) {
->> vmdq_m = IXGBE_82599_VMDQ_2Q_MASK;
->> rss_m = IXGBE_RSS_2Q_MASK;
->> rss_i = min_t(u16, rss_i, 2);
->> - /* 32 pool mode with 4 queues per pool */
->> + /* 32 pool mode with up to 4 queues per pool */
->> } else {
->> vmdq_m = IXGBE_82599_VMDQ_4Q_MASK;
->> rss_m = IXGBE_RSS_4Q_MASK;
->> - rss_i = 4;
->> + /* We can support 4, 2, or 1 queues */
->> + rss_i = (rss_i > 3) ? 4 : (rss_i > 1) ? 2 : 1;
->> }
->> 
->> #ifdef IXGBE_FCOE
->> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
->> b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
->> index 1c888588cecd..a244d9a67264 100644
->> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
->> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
->> @@ -3248,7 +3248,8 @@ static void ixgbe_setup_mtqc(struct ixgbe_adapter
->> *adapter)
->> mtqc |= IXGBE_MTQC_RT_ENA | IXGBE_MTQC_8TC_8TQ;
->> else if (tcs > 1)
->> mtqc |= IXGBE_MTQC_RT_ENA | IXGBE_MTQC_4TC_4TQ;
->> - else if (adapter->ring_feature[RING_F_RSS].indices == 4)
->> + else if (adapter->ring_feature[RING_F_VMDQ].mask ==
->> + IXGBE_82599_VMDQ_4Q_MASK)
->> mtqc |= IXGBE_MTQC_32VF;
->> else
->> mtqc |= IXGBE_MTQC_64VF;
->> @@ -3475,12 +3476,12 @@ static void ixgbe_setup_reta(struct ixgbe_adapter
->> *adapter)
->> u32 reta_entries = ixgbe_rss_indir_tbl_entries(adapter);
->> u16 rss_i = adapter->ring_feature[RING_F_RSS].indices;
->> 
->> - /* Program table for at least 2 queues w/ SR-IOV so that VFs can
->> + /* Program table for at least 4 queues w/ SR-IOV so that VFs can
->> * make full use of any rings they may have.  We will use the
->> * PSRTYPE register to control how many rings we use within the PF.
->> */
->> - if ((adapter->flags & IXGBE_FLAG_SRIOV_ENABLED) && (rss_i < 2))
->> - rss_i = 2;
->> + if ((adapter->flags & IXGBE_FLAG_SRIOV_ENABLED) && (rss_i < 4))
->> + rss_i = 4;
->> 
->> /* Fill out hash function seeds */
->> for (i = 0; i < 10; i++)
->> @@ -3544,7 +3545,8 @@ static void ixgbe_setup_mrqc(struct ixgbe_adapter
->> *adapter)
->> mrqc = IXGBE_MRQC_VMDQRT8TCEN; /* 8 TCs */
->> else if (tcs > 1)
->> mrqc = IXGBE_MRQC_VMDQRT4TCEN; /* 4 TCs */
->> - else if (adapter->ring_feature[RING_F_RSS].indices == 4)
->> + else if (adapter->ring_feature[RING_F_VMDQ].mask ==
->> + IXGBE_82599_VMDQ_4Q_MASK)
->> mrqc = IXGBE_MRQC_VMDQRSS32EN;
->> else
->> mrqc = IXGBE_MRQC_VMDQRSS64EN;
->> 
->> 
->> 
->> 
->> _______________________________________________
->> Intel-wired-lan mailing list
->> Intel-wired-lan at lists.osuosl.org
->> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
->> 
+CC: William Tu <u9012063@gmail.com>
+Signed-off-by: Alexei Starovoitov <ast@kernel.org>
+Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
+---
+ drivers/net/ethernet/intel/e1000/e1000.h      |    2 
+ drivers/net/ethernet/intel/e1000/e1000_main.c |  171 +++++++++++++++++++++++++
+ 2 files changed, 170 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/e1000/e1000.h b/drivers/net/ethernet/intel/e1000/e1000.h
+index d7bdea7..5cf8a0a 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000.h
++++ b/drivers/net/ethernet/intel/e1000/e1000.h
+@@ -150,6 +150,7 @@ struct e1000_adapter;
+  */
+ struct e1000_tx_buffer {
+ 	struct sk_buff *skb;
++	struct page *page;
+ 	dma_addr_t dma;
+ 	unsigned long time_stamp;
+ 	u16 length;
+@@ -279,6 +280,7 @@ struct e1000_adapter {
+ 			     struct e1000_rx_ring *rx_ring,
+ 			     int cleaned_count);
+ 	struct e1000_rx_ring *rx_ring;      /* One per active queue */
++	struct bpf_prog *prog;
+ 	struct napi_struct napi;
+ 
+ 	int num_tx_queues;
+diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
+index f42129d..91d5c87 100644
+--- a/drivers/net/ethernet/intel/e1000/e1000_main.c
++++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+@@ -32,6 +32,7 @@
+ #include <linux/prefetch.h>
+ #include <linux/bitops.h>
+ #include <linux/if_vlan.h>
++#include <linux/bpf.h>
+ 
+ char e1000_driver_name[] = "e1000";
+ static char e1000_driver_string[] = "Intel(R) PRO/1000 Network Driver";
+@@ -842,6 +843,44 @@ static int e1000_set_features(struct net_device *netdev,
+ 	return 0;
+ }
+ 
++static int e1000_xdp_set(struct net_device *netdev, struct bpf_prog *prog)
++{
++	struct e1000_adapter *adapter = netdev_priv(netdev);
++	struct bpf_prog *old_prog;
++
++	old_prog = xchg(&adapter->prog, prog);
++	if (old_prog) {
++		synchronize_net();
++		bpf_prog_put(old_prog);
++	}
++
++	if (netif_running(netdev))
++		e1000_reinit_locked(adapter);
++	else
++		e1000_reset(adapter);
++	return 0;
++}
++
++static bool e1000_xdp_attached(struct net_device *dev)
++{
++	struct e1000_adapter *priv = netdev_priv(dev);
++
++	return !!priv->prog;
++}
++
++static int e1000_xdp(struct net_device *dev, struct netdev_xdp *xdp)
++{
++	switch (xdp->command) {
++	case XDP_SETUP_PROG:
++		return e1000_xdp_set(dev, xdp->prog);
++	case XDP_QUERY_PROG:
++		xdp->prog_attached = e1000_xdp_attached(dev);
++		return 0;
++	default:
++		return -EINVAL;
++	}
++}
++
+ static const struct net_device_ops e1000_netdev_ops = {
+ 	.ndo_open		= e1000_open,
+ 	.ndo_stop		= e1000_close,
+@@ -860,6 +899,7 @@ static const struct net_device_ops e1000_netdev_ops = {
+ #endif
+ 	.ndo_fix_features	= e1000_fix_features,
+ 	.ndo_set_features	= e1000_set_features,
++	.ndo_xdp		= e1000_xdp,
+ };
+ 
+ /**
+@@ -1276,6 +1316,9 @@ static void e1000_remove(struct pci_dev *pdev)
+ 	e1000_down_and_stop(adapter);
+ 	e1000_release_manageability(adapter);
+ 
++	if (adapter->prog)
++		bpf_prog_put(adapter->prog);
++
+ 	unregister_netdev(netdev);
+ 
+ 	e1000_phy_hw_reset(hw);
+@@ -1859,7 +1902,7 @@ static void e1000_configure_rx(struct e1000_adapter *adapter)
+ 	struct e1000_hw *hw = &adapter->hw;
+ 	u32 rdlen, rctl, rxcsum;
+ 
+-	if (adapter->netdev->mtu > ETH_DATA_LEN) {
++	if (adapter->netdev->mtu > ETH_DATA_LEN || adapter->prog) {
+ 		rdlen = adapter->rx_ring[0].count *
+ 			sizeof(struct e1000_rx_desc);
+ 		adapter->clean_rx = e1000_clean_jumbo_rx_irq;
+@@ -1973,6 +2016,11 @@ e1000_unmap_and_free_tx_resource(struct e1000_adapter *adapter,
+ 		dev_kfree_skb_any(buffer_info->skb);
+ 		buffer_info->skb = NULL;
+ 	}
++	if (buffer_info->page) {
++		put_page(buffer_info->page);
++		buffer_info->page = NULL;
++	}
++
+ 	buffer_info->time_stamp = 0;
+ 	/* buffer_info must be completely set up in the transmit path */
+ }
+@@ -3298,6 +3346,63 @@ static netdev_tx_t e1000_xmit_frame(struct sk_buff *skb,
+ 	return NETDEV_TX_OK;
+ }
+ 
++static void e1000_tx_map_rxpage(struct e1000_tx_ring *tx_ring,
++				struct e1000_rx_buffer *rx_buffer_info,
++				unsigned int len)
++{
++	struct e1000_tx_buffer *buffer_info;
++	unsigned int i = tx_ring->next_to_use;
++
++	buffer_info = &tx_ring->buffer_info[i];
++
++	buffer_info->length = len;
++	buffer_info->time_stamp = jiffies;
++	buffer_info->mapped_as_page = false;
++	buffer_info->dma = rx_buffer_info->dma;
++	buffer_info->next_to_watch = i;
++	buffer_info->page = rx_buffer_info->rxbuf.page;
++
++	tx_ring->buffer_info[i].skb = NULL;
++	tx_ring->buffer_info[i].segs = 1;
++	tx_ring->buffer_info[i].bytecount = len;
++	tx_ring->buffer_info[i].next_to_watch = i;
++}
++
++static void e1000_xmit_raw_frame(struct e1000_rx_buffer *rx_buffer_info,
++				 unsigned int len,
++				 struct net_device *netdev,
++				 struct e1000_adapter *adapter)
++{
++	struct netdev_queue *txq = netdev_get_tx_queue(netdev, 0);
++	struct e1000_hw *hw = &adapter->hw;
++	struct e1000_tx_ring *tx_ring;
++
++	if (len > E1000_MAX_DATA_PER_TXD)
++		return;
++
++	/* e1000 only support a single txq at the moment so the queue is being
++	 * shared with stack. To support this requires locking to ensure the
++	 * stack and XDP are not running at the same time. Devices with
++	 * multiple queues should allocate a separate queue space.
++	 */
++	HARD_TX_LOCK(netdev, txq, smp_processor_id());
++
++	tx_ring = adapter->tx_ring;
++
++	if (E1000_DESC_UNUSED(tx_ring) < 2) {
++		HARD_TX_UNLOCK(netdev, txq);
++		return;
++	}
++
++	e1000_tx_map_rxpage(tx_ring, rx_buffer_info, len);
++	e1000_tx_queue(adapter, tx_ring, 0/*tx_flags*/, 1);
++
++	writel(tx_ring->next_to_use, hw->hw_addr + tx_ring->tdt);
++	mmiowb();
++
++	HARD_TX_UNLOCK(netdev, txq);
++}
++
+ #define NUM_REGS 38 /* 1 based count */
+ static void e1000_regdump(struct e1000_adapter *adapter)
+ {
+@@ -4142,6 +4247,19 @@ static struct sk_buff *e1000_alloc_rx_skb(struct e1000_adapter *adapter,
+ 	return skb;
+ }
+ 
++static inline int e1000_call_bpf(struct bpf_prog *prog, void *data,
++				 unsigned int length)
++{
++	struct xdp_buff xdp;
++	int ret;
++
++	xdp.data = data;
++	xdp.data_end = data + length;
++	ret = BPF_PROG_RUN(prog, (void *)&xdp);
++
++	return ret;
++}
++
+ /**
+  * e1000_clean_jumbo_rx_irq - Send received data up the network stack; legacy
+  * @adapter: board private structure
+@@ -4160,12 +4278,15 @@ static bool e1000_clean_jumbo_rx_irq(struct e1000_adapter *adapter,
+ 	struct pci_dev *pdev = adapter->pdev;
+ 	struct e1000_rx_desc *rx_desc, *next_rxd;
+ 	struct e1000_rx_buffer *buffer_info, *next_buffer;
++	struct bpf_prog *prog;
+ 	u32 length;
+ 	unsigned int i;
+ 	int cleaned_count = 0;
+ 	bool cleaned = false;
+ 	unsigned int total_rx_bytes = 0, total_rx_packets = 0;
+ 
++	rcu_read_lock(); /* rcu lock needed here to protect xdp programs */
++	prog = READ_ONCE(adapter->prog);
+ 	i = rx_ring->next_to_clean;
+ 	rx_desc = E1000_RX_DESC(*rx_ring, i);
+ 	buffer_info = &rx_ring->buffer_info[i];
+@@ -4191,12 +4312,55 @@ static bool e1000_clean_jumbo_rx_irq(struct e1000_adapter *adapter,
+ 
+ 		cleaned = true;
+ 		cleaned_count++;
++		length = le16_to_cpu(rx_desc->length);
++
++		if (prog) {
++			struct page *p = buffer_info->rxbuf.page;
++			dma_addr_t dma = buffer_info->dma;
++			int act;
++
++			if (unlikely(!(status & E1000_RXD_STAT_EOP))) {
++				/* attached bpf disallows larger than page
++				 * packets, so this is hw error or corruption
++				 */
++				pr_info_once("%s buggy !eop\n", netdev->name);
++				break;
++			}
++			if (unlikely(rx_ring->rx_skb_top)) {
++				pr_info_once("%s ring resizing bug\n",
++					     netdev->name);
++				break;
++			}
++			dma_sync_single_for_cpu(&pdev->dev, dma,
++						length, DMA_FROM_DEVICE);
++			act = e1000_call_bpf(prog, page_address(p), length);
++			switch (act) {
++			case XDP_PASS:
++				break;
++			case XDP_TX:
++				dma_sync_single_for_device(&pdev->dev,
++							   dma,
++							   length,
++							   DMA_TO_DEVICE);
++				e1000_xmit_raw_frame(buffer_info, length,
++						     netdev, adapter);
++				buffer_info->rxbuf.page = NULL;
++			case XDP_DROP:
++			default:
++				/* re-use mapped page. keep buffer_info->dma
++				 * as-is, so that e1000_alloc_jumbo_rx_buffers
++				 * only needs to put it back into rx ring
++				 */
++				total_rx_bytes += length;
++				total_rx_packets++;
++				goto next_desc;
++			}
++		}
++
+ 		dma_unmap_page(&pdev->dev, buffer_info->dma,
+ 			       adapter->rx_buffer_len, DMA_FROM_DEVICE);
+ 		buffer_info->dma = 0;
+ 
+-		length = le16_to_cpu(rx_desc->length);
+-
+ 		/* errors is only valid for DD + EOP descriptors */
+ 		if (unlikely((status & E1000_RXD_STAT_EOP) &&
+ 		    (rx_desc->errors & E1000_RXD_ERR_FRAME_ERR_MASK))) {
+@@ -4330,6 +4494,7 @@ next_desc:
+ 		rx_desc = next_rxd;
+ 		buffer_info = next_buffer;
+ 	}
++	rcu_read_unlock();
+ 	rx_ring->next_to_clean = i;
+ 
+ 	cleaned_count = E1000_DESC_UNUSED(rx_ring);
 
