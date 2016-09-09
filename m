@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 9 Sep 2016 20:10:29 +0000
-Subject: [Intel-wired-lan] [next PATCH S45 08/10] i40e: check
- conflicting	ntuple/sideband rules when re-enabling ATR
-In-Reply-To: <1473210312-29592-9-git-send-email-bimmy.pujari@intel.com>
+Date: Fri, 9 Sep 2016 20:38:06 +0000
+Subject: [Intel-wired-lan] [next PATCH S45 04/10] i40e: Remove 100
+	Mbps	SGMII support for X722
+In-Reply-To: <1473210312-29592-5-git-send-email-bimmy.pujari@intel.com>
 References: <1473210312-29592-1-git-send-email-bimmy.pujari@intel.com>
- <1473210312-29592-9-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9FCABA@ORSMSX104.amr.corp.intel.com>
+ <1473210312-29592-5-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9FCAD6@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,25 +17,33 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Tuesday, September 06, 2016 6:05 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S45 08/10] i40e: check conflicting
-> ntuple/sideband rules when re-enabling ATR
+> Subject: [Intel-wired-lan] [next PATCH S45 04/10] i40e: Remove 100 Mbps
+> SGMII support for X722
 > 
-> From: Jacob Keller <jacob.e.keller@intel.com>
+> From: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
 > 
-> In i40e_fdir_check_and_reenable(), the driver performs some checks to
-> determine whether it is safe to re-enable FD Sideband and FD ATR support.
-> The current check will only determine if there is available space in the flow
-> director table. However, this ignores the fact that ATR should be disabled
-> when there are TCP/IPv4 sideband rules in effect.
-> Add the missing check, and update the info message printed when
-> I40E_DEBUG_FD is enabled.
+> This patch fixes the problem where driver shows 100 Mbps as a supported
+> speed, and allows it to be configured for advertising on X722 devices. This
+> patch fixes the problem by not setting the 100 Mbps SGMII flag for X722
+> devices.
 > 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Change-ID: Ibb9c63e5be95d63c53a498fdd5dbf69f54a00e08
+> Without this patch, the user incorrectly thinks that 100 Mbps is supported
+> and hence might try to advertise it on X722 devices when it is actually not a
+> supported speed.
+> 
+> Signed-off-by: Harshitha Ramamurthy <harshitha.ramamurthy@intel.com>
+> Change-ID: I8c3d7c4251a9402d98994ed29749b7b895a0f205
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 10 +++++++---
->  1 file changed, 7 insertions(+), 3 deletions(-)
+> Testing Hints: Test on Copperpeak that 100 Mbps is not listed as supported or
+> advertised on ethtool. Also ensure we are not able to configure the speed to
+> 100 Mbps.
+> 
+> HSD-number: 10021180
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 1 -
+>  1 file changed, 1 deletion(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Bugs no longer present
+Driver no longer reports 100Base/T nor allows advertise to be set to 100Base/T
+
 
