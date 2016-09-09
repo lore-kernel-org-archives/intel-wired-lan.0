@@ -1,164 +1,137 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Fri, 09 Sep 2016 12:31:02 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 6e7c270d6f5c00922f1dafe09a4bc1e7a75a1326 BUILD SUCCESS
-Message-ID: <57d23b06.kPAuSoWJBVP8cnlf%fengguang.wu@intel.com>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Fri, 9 Sep 2016 08:32:43 -0700
+Subject: [Intel-wired-lan] [next PATCH 3/3] ixgbe: Support 4 queue RSS
+ on VFs with 1 or 2 queue RSS on PF
+In-Reply-To: <CDB2D0B6-82C2-4E08-BFE0-61D3ECA6502F@purestorage.com>
+References: <20160908032606.25312.86849.stgit@localhost.localdomain>
+ <20160908032824.25312.34696.stgit@localhost.localdomain>
+ <842C844A-0A7A-46FD-A5D7-BF7B584C2A24@purestorage.com>
+ <CDB2D0B6-82C2-4E08-BFE0-61D3ECA6502F@purestorage.com>
+Message-ID: <CAKgT0UchckNG=6g_wyrvvJXQvCEYRTUzCCZ2RP5wGcKg0=X5sg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-6e7c270d6f5c00922f1dafe09a4bc1e7a75a1326  PCI: disable FLR for 82579 device
+That shouldn't be needed since the VFRETA is actually per virtual pool
+so it isn't shared with the VFs.  In theory we could support 3 queues
+on the X550 without any issues, but that would be a change of how
+things are currently handled so I figured I will leave it as it is for
+now.
 
-elapsed time: 415m
+- Alex
 
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 143
-
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201636
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64       allyesdebian+CONFIG_DEBUG_INFO_REDUCED-CONFIG_DEBUG_INFO_REDUCED
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                             allyesconfig
-x86_64       allyesdebian+CONFIG_DEBUG_INFO_REDUCED
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-parisc                         b180_defconfig
-i386                             allmodconfig
-avr32            atngw100_evklcd100_defconfig
-mips                          sead3_defconfig
-powerpc                 mpc8315_rdb_defconfig
-x86_64                 randconfig-x013-201636
-x86_64                 randconfig-x012-201636
-x86_64                 randconfig-x015-201636
-x86_64                 randconfig-x011-201636
-x86_64                 randconfig-x010-201636
-x86_64                 randconfig-x014-201636
-x86_64                 randconfig-x018-201636
-x86_64                 randconfig-x017-201636
-x86_64                 randconfig-x016-201636
-x86_64                 randconfig-x019-201636
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-x86_64                            eywa-module
-x86_64                                   rhel
-x86_64                               rhel-7.2
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201636
-i386                     randconfig-s1-201636
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-frv                                 defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201636
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201636
-i386                     randconfig-i1-201636
-x86_64                 randconfig-n0-09091125
-i386                               tinyconfig
-i386                   randconfig-x014-201636
-i386                   randconfig-x016-201636
-i386                   randconfig-x010-201636
-i386                   randconfig-x017-201636
-i386                   randconfig-x012-201636
-i386                   randconfig-x013-201636
-i386                   randconfig-x018-201636
-i386                   randconfig-x019-201636
-i386                   randconfig-x011-201636
-i386                   randconfig-x015-201636
-x86_64                                    lkp
-i386                     randconfig-n0-201636
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-arm                       imx_v4_v5_defconfig
-arm                        magician_defconfig
-m32r                    mappi.nommu_defconfig
-xtensa                           alldefconfig
-x86_64                 randconfig-x008-201636
-x86_64                 randconfig-x009-201636
-x86_64                 randconfig-x002-201636
-x86_64                 randconfig-x003-201636
-x86_64                 randconfig-x007-201636
-x86_64                 randconfig-x004-201636
-x86_64                 randconfig-x005-201636
-x86_64                 randconfig-x000-201636
-x86_64                 randconfig-x001-201636
-x86_64                 randconfig-x006-201636
-i386                     randconfig-r0-201636
-i386                   randconfig-x006-201636
-i386                   randconfig-x002-201636
-i386                   randconfig-x009-201636
-i386                   randconfig-x003-201636
-i386                   randconfig-x001-201636
-i386                   randconfig-x008-201636
-i386                   randconfig-x007-201636
-i386                   randconfig-x000-201636
-i386                   randconfig-x005-201636
-i386                   randconfig-x004-201636
-
-Thanks,
-Fengguang
+On Thu, Sep 8, 2016 at 6:14 PM, Ruslan Nikolaev <ruslan@purestorage.com> wrote:
+> I still have on more question. There is also ixgbe_setup_vfreta function in
+> the code. Do we need to adjust rss_i there as well?
+>
+> Thanks,
+> Ruslan
+>
+> On Sep 8, 2016, at 11:20 AM, Ruslan Nikolaev <ruslan@purestorage.com> wrote:
+>
+> Thank you very much for giving the feedback and creating new set of patches!
+>
+> Ruslan
+>
+> On Sep 7, 2016, at 8:28 PM, Alexander Duyck <alexander.duyck@gmail.com>
+> wrote:
+>
+> From: Alexander Duyck <alexander.h.duyck@intel.com>
+>
+> Instead of limiting the VFs if we don't use 4 queues for RSS in the PF we
+> can instead just limit the RSS queues used to a power of 2.  By doing this
+> we can support use cases where VFs are using more queues than the PF is
+> currently using and can support RSS if so desired.
+>
+> The only limitation on this is that we cannot support 3 queues of RSS in
+> the PF or VF.  In either of these cases we should fall back to 2 queues in
+> order to be able to use the power of 2 masking provided by the psrtype
+> register.
+>
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+> ---
+> drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c  |    7 ++++---
+> drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   12 +++++++-----
+> 2 files changed, 11 insertions(+), 8 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
+> b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
+> index bcdc88444ceb..15ab337fd7ad 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_lib.c
+> @@ -515,15 +515,16 @@ static bool ixgbe_set_sriov_queues(struct
+> ixgbe_adapter *adapter)
+> vmdq_i = min_t(u16, IXGBE_MAX_VMDQ_INDICES, vmdq_i);
+>
+> /* 64 pool mode with 2 queues per pool */
+> - if ((vmdq_i > 32) || (rss_i < 4) || (vmdq_i > 16 && pools)) {
+> + if ((vmdq_i > 32) || (vmdq_i > 16 && pools)) {
+> vmdq_m = IXGBE_82599_VMDQ_2Q_MASK;
+> rss_m = IXGBE_RSS_2Q_MASK;
+> rss_i = min_t(u16, rss_i, 2);
+> - /* 32 pool mode with 4 queues per pool */
+> + /* 32 pool mode with up to 4 queues per pool */
+> } else {
+> vmdq_m = IXGBE_82599_VMDQ_4Q_MASK;
+> rss_m = IXGBE_RSS_4Q_MASK;
+> - rss_i = 4;
+> + /* We can support 4, 2, or 1 queues */
+> + rss_i = (rss_i > 3) ? 4 : (rss_i > 1) ? 2 : 1;
+> }
+>
+> #ifdef IXGBE_FCOE
+> diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> index 1c888588cecd..a244d9a67264 100644
+> --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+> @@ -3248,7 +3248,8 @@ static void ixgbe_setup_mtqc(struct ixgbe_adapter
+> *adapter)
+> mtqc |= IXGBE_MTQC_RT_ENA | IXGBE_MTQC_8TC_8TQ;
+> else if (tcs > 1)
+> mtqc |= IXGBE_MTQC_RT_ENA | IXGBE_MTQC_4TC_4TQ;
+> - else if (adapter->ring_feature[RING_F_RSS].indices == 4)
+> + else if (adapter->ring_feature[RING_F_VMDQ].mask ==
+> + IXGBE_82599_VMDQ_4Q_MASK)
+> mtqc |= IXGBE_MTQC_32VF;
+> else
+> mtqc |= IXGBE_MTQC_64VF;
+> @@ -3475,12 +3476,12 @@ static void ixgbe_setup_reta(struct ixgbe_adapter
+> *adapter)
+> u32 reta_entries = ixgbe_rss_indir_tbl_entries(adapter);
+> u16 rss_i = adapter->ring_feature[RING_F_RSS].indices;
+>
+> - /* Program table for at least 2 queues w/ SR-IOV so that VFs can
+> + /* Program table for at least 4 queues w/ SR-IOV so that VFs can
+> * make full use of any rings they may have.  We will use the
+> * PSRTYPE register to control how many rings we use within the PF.
+> */
+> - if ((adapter->flags & IXGBE_FLAG_SRIOV_ENABLED) && (rss_i < 2))
+> - rss_i = 2;
+> + if ((adapter->flags & IXGBE_FLAG_SRIOV_ENABLED) && (rss_i < 4))
+> + rss_i = 4;
+>
+> /* Fill out hash function seeds */
+> for (i = 0; i < 10; i++)
+> @@ -3544,7 +3545,8 @@ static void ixgbe_setup_mrqc(struct ixgbe_adapter
+> *adapter)
+> mrqc = IXGBE_MRQC_VMDQRT8TCEN; /* 8 TCs */
+> else if (tcs > 1)
+> mrqc = IXGBE_MRQC_VMDQRT4TCEN; /* 4 TCs */
+> - else if (adapter->ring_feature[RING_F_RSS].indices == 4)
+> + else if (adapter->ring_feature[RING_F_VMDQ].mask ==
+> + IXGBE_82599_VMDQ_4Q_MASK)
+> mrqc = IXGBE_MRQC_VMDQRSS32EN;
+> else
+> mrqc = IXGBE_MRQC_VMDQRSS64EN;
+>
+>
+>
+>
+> _______________________________________________
+> Intel-wired-lan mailing list
+> Intel-wired-lan at lists.osuosl.org
+> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+>
