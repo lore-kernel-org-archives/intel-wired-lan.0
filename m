@@ -1,58 +1,46 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 9 Sep 2016 19:50:45 +0000
-Subject: [Intel-wired-lan] [next PATCH S45 07/10] i40e: cleanup
-	ATR	auto_disable_flags use
-In-Reply-To: <1473210312-29592-8-git-send-email-bimmy.pujari@intel.com>
-References: <1473210312-29592-1-git-send-email-bimmy.pujari@intel.com>
- <1473210312-29592-8-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9FCA9B@ORSMSX104.amr.corp.intel.com>
+From: Emil Tantilov <emil.s.tantilov@intel.com>
+Date: Fri, 09 Sep 2016 12:59:10 -0700
+Subject: [Intel-wired-lan] [next PATCH] ixgbe: reset before SRIOV init to
+	avoid mailbox issues
+Message-ID: <20160909195910.32272.11650.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Bimmy Pujari
-> Sent: Tuesday, September 06, 2016 6:05 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S45 07/10] i40e: cleanup ATR
-> auto_disable_flags use
-> 
-> From: Jacob Keller <jacob.e.keller@intel.com>
-> 
-> Some locations that disable ATR accidentally used the "full" disable by
-> disabling the flag in the standard flags field. This incorrectly forces ATR off
-> permanently instead of temporarily disabling it. In addition, some code
-> locations accidentally set the ATR flag enabled when they only meant to clear
-> the auto_disable_flags. This results in ignoring the user's ethtool private flag
-> settings.
-> 
-> Additionally, when disabling ATR via ethtool, we did not perform a flush of
-> the FD table. This results in the previously assigned ATR rules still functioning
-> which was not expected.
-> 
-> Cleanup all these areas so that automatic disable uses only the
-> auto_disable_flag. Fix the flush code so that we can trigger a flush even
-> when we've disabled ATR and SB support, as otherwise the flush doesn't
-> work. Fix ethtool setting to actually request a flush. Fix NETIF_F_NTUPLE flag
-> to only clear the auto_disable setting and not enable the full feature.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Change-ID: Ib2486111f8031bd16943e9308757b276305c03b5
-> ---
-> Testing-hints:
->   See the marked HSDs for details
-> 
-> HSD-number: 5645176, 5645175
-> 
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  3 +++
->  drivers/net/ethernet/intel/i40e/i40e_main.c    | 20 +++++++-------------
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c    | 14 +++++++-------
->  3 files changed, 17 insertions(+), 20 deletions(-)
+Enabling SRIOV while the ixgbevf driver is loaded will result in all
+mailbox requests from ixgbevf_open() being rejected by ixgbe because
+adapter->clear_to_send is set to false on reset.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Bugs no longer present
+Call ixgbe_sriov_reinit() before pci_enable_sriov() to make sure that
+mailbox requests are handled from the time ixgbevf is loaded.
 
+Reported-by: Andrew Bowers <andrewx.bowers@intel.com>
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+index 8618599..343a182 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
+@@ -329,13 +329,15 @@ static int ixgbe_pci_sriov_enable(struct pci_dev *dev, int num_vfs)
+ 	for (i = 0; i < adapter->num_vfs; i++)
+ 		ixgbe_vf_configuration(dev, (i | 0x10000000));
+ 
++	/* reset before enabling SRIOV to avoid mailbox issues */
++	ixgbe_sriov_reinit(adapter);
++
+ 	err = pci_enable_sriov(dev, num_vfs);
+ 	if (err) {
+ 		e_dev_warn("Failed to enable PCI sriov: %d\n", err);
+ 		return err;
+ 	}
+ 	ixgbe_get_vfs(adapter);
+-	ixgbe_sriov_reinit(adapter);
+ 
+ 	return num_vfs;
+ #else
 
