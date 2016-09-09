@@ -1,84 +1,45 @@
 From: John Fastabend <john.fastabend@gmail.com>
-Date: Fri, 9 Sep 2016 16:33:10 -0700
-Subject: [Intel-wired-lan] [net-next PATCH v2 1/2] e1000: add initial
-	XDP support
-In-Reply-To: <1473458654.18970.69.camel@edumazet-glaptop3.roam.corp.google.com>
+Date: Fri, 9 Sep 2016 16:37:06 -0700
+Subject: [Intel-wired-lan] [net-next PATCH v2 2/2] e1000: bundle xdp
+	xmit routines
+In-Reply-To: <20160909212938.4001.40540.stgit@john-Precision-Tower-5810>
 References: <20160909212915.4001.25504.stgit@john-Precision-Tower-5810>
- <1473458654.18970.69.camel@edumazet-glaptop3.roam.corp.google.com>
-Message-ID: <57D346B6.3000204@gmail.com>
+ <20160909212938.4001.40540.stgit@john-Precision-Tower-5810>
+Message-ID: <57D347A2.4060909@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 16-09-09 03:04 PM, Eric Dumazet wrote:
-> On Fri, 2016-09-09 at 14:29 -0700, John Fastabend wrote:
->> From: Alexei Starovoitov <ast@fb.com>
->>
+On 16-09-09 02:29 PM, John Fastabend wrote:
+> e1000 supports a single TX queue so it is being shared with the stack
+> when XDP runs XDP_TX action. This requires taking the xmit lock to
+> ensure we don't corrupt the tx ring. To avoid taking and dropping the
+> lock per packet this patch adds a bundling implementation to submit
+> a bundle of packets to the xmit routine.
 > 
+> I tested this patch running e1000 in a VM using KVM over a tap
+> device using pktgen to generate traffic along with 'ping -f -l 100'.
 > 
-> So it looks like e1000_xmit_raw_frame() can return early,
-> say if there is no available descriptor.
-> 
->> +static void e1000_xmit_raw_frame(struct e1000_rx_buffer *rx_buffer_info,
->> +				 unsigned int len,
->> +				 struct net_device *netdev,
->> +				 struct e1000_adapter *adapter)
->> +{
->> +	struct netdev_queue *txq = netdev_get_tx_queue(netdev, 0);
->> +	struct e1000_hw *hw = &adapter->hw;
->> +	struct e1000_tx_ring *tx_ring;
->> +
->> +	if (len > E1000_MAX_DATA_PER_TXD)
->> +		return;
->> +
->> +	/* e1000 only support a single txq at the moment so the queue is being
->> +	 * shared with stack. To support this requires locking to ensure the
->> +	 * stack and XDP are not running at the same time. Devices with
->> +	 * multiple queues should allocate a separate queue space.
->> +	 */
->> +	HARD_TX_LOCK(netdev, txq, smp_processor_id());
->> +
->> +	tx_ring = adapter->tx_ring;
->> +
->> +	if (E1000_DESC_UNUSED(tx_ring) < 2) {
->> +		HARD_TX_UNLOCK(netdev, txq);
->> +		return;
->> +	}
->> +
->> +	e1000_tx_map_rxpage(tx_ring, rx_buffer_info, len);
->> +	e1000_tx_queue(adapter, tx_ring, 0/*tx_flags*/, 1);
->> +
->> +	writel(tx_ring->next_to_use, hw->hw_addr + tx_ring->tdt);
->> +	mmiowb();
->> +
->> +	HARD_TX_UNLOCK(netdev, txq);
->> +}
->> +
->>  #define NUM_REGS 38 /* 1 based count */
->>  static void e1000_regdump(struct e1000_adapter *adapter)
->>  {
->> @@ -4142,6 +4247,19 @@ static struct sk_buff *e1000_alloc_rx_skb(struct e1000_adapter *adapter,
->>  	return skb;
->>  }
->> +			act = e1000_call_bpf(prog, page_address(p), length);
->> +			switch (act) {
->> +			case XDP_PASS:
->> +				break;
->> +			case XDP_TX:
->> +				dma_sync_single_for_device(&pdev->dev,
->> +							   dma,
->> +							   length,
->> +							   DMA_TO_DEVICE);
->> +				e1000_xmit_raw_frame(buffer_info, length,
->> +						     netdev, adapter);
->> +				buffer_info->rxbuf.page = NULL;
-> 
-> 
-> So I am trying to understand how pages are not leaked ?
-> 
-> 
+> Suggested-by: Jesper Dangaard Brouer <brouer@redhat.com>
+> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
+> ---
 
-Pages are being leaked thanks! v3 coming soon.
+This patch is a bit bogus in a few spots as well...
+
+
+> -
+> -	if (E1000_DESC_UNUSED(tx_ring) < 2) {
+> -		HARD_TX_UNLOCK(netdev, txq);
+> -		return;
+> +	for (; i < E1000_XDP_XMIT_BUNDLE_MAX && buffer_info[i].buffer; i++) {
+> +		e1000_xmit_raw_frame(buffer_info[i].buffer,
+> +				     buffer_info[i].length,
+> +				     adapter, tx_ring);
+> +		buffer_info[i].buffer->rxbuf.page = NULL;
+> +		buffer_info[i].buffer = NULL;
+> +		buffer_info[i].length = 0;
+> +		i++;
+              ^^^^^^^^
 
