@@ -1,46 +1,41 @@
-From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Fri, 09 Sep 2016 12:59:10 -0700
-Subject: [Intel-wired-lan] [next PATCH] ixgbe: reset before SRIOV init to
-	avoid mailbox issues
-Message-ID: <20160909195910.32272.11650.stgit@localhost6.localdomain6>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 9 Sep 2016 20:10:29 +0000
+Subject: [Intel-wired-lan] [next PATCH S45 08/10] i40e: check
+ conflicting	ntuple/sideband rules when re-enabling ATR
+In-Reply-To: <1473210312-29592-9-git-send-email-bimmy.pujari@intel.com>
+References: <1473210312-29592-1-git-send-email-bimmy.pujari@intel.com>
+ <1473210312-29592-9-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9FCABA@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Enabling SRIOV while the ixgbevf driver is loaded will result in all
-mailbox requests from ixgbevf_open() being rejected by ixgbe because
-adapter->clear_to_send is set to false on reset.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Bimmy Pujari
+> Sent: Tuesday, September 06, 2016 6:05 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S45 08/10] i40e: check conflicting
+> ntuple/sideband rules when re-enabling ATR
+> 
+> From: Jacob Keller <jacob.e.keller@intel.com>
+> 
+> In i40e_fdir_check_and_reenable(), the driver performs some checks to
+> determine whether it is safe to re-enable FD Sideband and FD ATR support.
+> The current check will only determine if there is available space in the flow
+> director table. However, this ignores the fact that ATR should be disabled
+> when there are TCP/IPv4 sideband rules in effect.
+> Add the missing check, and update the info message printed when
+> I40E_DEBUG_FD is enabled.
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Change-ID: Ibb9c63e5be95d63c53a498fdd5dbf69f54a00e08
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 10 +++++++---
+>  1 file changed, 7 insertions(+), 3 deletions(-)
 
-Call ixgbe_sriov_reinit() before pci_enable_sriov() to make sure that
-mailbox requests are handled from the time ixgbevf is loaded.
-
-Reported-by: Andrew Bowers <andrewx.bowers@intel.com>
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-index 8618599..343a182 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c
-@@ -329,13 +329,15 @@ static int ixgbe_pci_sriov_enable(struct pci_dev *dev, int num_vfs)
- 	for (i = 0; i < adapter->num_vfs; i++)
- 		ixgbe_vf_configuration(dev, (i | 0x10000000));
- 
-+	/* reset before enabling SRIOV to avoid mailbox issues */
-+	ixgbe_sriov_reinit(adapter);
-+
- 	err = pci_enable_sriov(dev, num_vfs);
- 	if (err) {
- 		e_dev_warn("Failed to enable PCI sriov: %d\n", err);
- 		return err;
- 	}
- 	ixgbe_get_vfs(adapter);
--	ixgbe_sriov_reinit(adapter);
- 
- 	return num_vfs;
- #else
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Bugs no longer present
 
