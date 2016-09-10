@@ -1,56 +1,64 @@
-From: John Fastabend <john.fastabend@gmail.com>
-Date: Fri, 9 Sep 2016 17:01:43 -0700
+From: Tom Herbert <tom@herbertland.com>
+Date: Fri, 9 Sep 2016 18:04:25 -0700
 Subject: [Intel-wired-lan] [net-next PATCH v2 2/2] e1000: bundle xdp
 	xmit routines
-In-Reply-To: <CALx6S35VCq9yPjcuhtx6jEJ78-WugkQZ6GSsqkcTr0Fa7edkVg@mail.gmail.com>
+In-Reply-To: <57D34D67.40804@gmail.com>
 References: <20160909212915.4001.25504.stgit@john-Precision-Tower-5810>
  <20160909212938.4001.40540.stgit@john-Precision-Tower-5810>
  <CALx6S35VCq9yPjcuhtx6jEJ78-WugkQZ6GSsqkcTr0Fa7edkVg@mail.gmail.com>
-Message-ID: <57D34D67.40804@gmail.com>
+ <57D34D67.40804@gmail.com>
+Message-ID: <CALx6S36dH87e6TPxEBGsy0F-vD0fZzKyP8tbuuaAfLNSF1DGpw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 16-09-09 04:44 PM, Tom Herbert wrote:
-> On Fri, Sep 9, 2016 at 2:29 PM, John Fastabend <john.fastabend@gmail.com> wrote:
->> e1000 supports a single TX queue so it is being shared with the stack
->> when XDP runs XDP_TX action. This requires taking the xmit lock to
->> ensure we don't corrupt the tx ring. To avoid taking and dropping the
->> lock per packet this patch adds a bundling implementation to submit
->> a bundle of packets to the xmit routine.
+On Fri, Sep 9, 2016 at 5:01 PM, John Fastabend <john.fastabend@gmail.com> wrote:
+> On 16-09-09 04:44 PM, Tom Herbert wrote:
+>> On Fri, Sep 9, 2016 at 2:29 PM, John Fastabend <john.fastabend@gmail.com> wrote:
+>>> e1000 supports a single TX queue so it is being shared with the stack
+>>> when XDP runs XDP_TX action. This requires taking the xmit lock to
+>>> ensure we don't corrupt the tx ring. To avoid taking and dropping the
+>>> lock per packet this patch adds a bundling implementation to submit
+>>> a bundle of packets to the xmit routine.
+>>>
+>>> I tested this patch running e1000 in a VM using KVM over a tap
+>>> device using pktgen to generate traffic along with 'ping -f -l 100'.
+>>>
+>> Hi John,
 >>
->> I tested this patch running e1000 in a VM using KVM over a tap
->> device using pktgen to generate traffic along with 'ping -f -l 100'.
+>> How does this interact with BQL on e1000?
 >>
-> Hi John,
-> 
-> How does this interact with BQL on e1000?
-> 
-> Tom
-> 
+>> Tom
+>>
+>
+> Let me check if I have the API correct. When we enqueue a packet to
+> be sent we must issue a netdev_sent_queue() call and then on actual
+> transmission issue a netdev_completed_queue().
+>
+> The patch attached here missed a few things though.
+>
+> But it looks like I just need to call netdev_sent_queue() from the
+> e1000_xmit_raw_frame() routine and then let the tx completion logic
+> kick in which will call netdev_completed_queue() correctly.
+>
+> I'll need to add a check for the queue state as well. So if I do these
+> three things,
+>
+>         check __QUEUE_STATE_XOFF before sending
+>         netdev_sent_queue() -> on XDP_TX
+>         netdev_completed_queue()
+>
+> It should work agree? Now should we do this even when XDP owns the
+> queue? Or is this purely an issue with sharing the queue between
+> XDP and stack.
+>
+But what is the action for XDP_TX if the queue is stopped? There is no
+qdisc to back pressure in the XDP path. Would we just start dropping
+packets then?
 
-Let me check if I have the API correct. When we enqueue a packet to
-be sent we must issue a netdev_sent_queue() call and then on actual
-transmission issue a netdev_completed_queue().
+Tom
 
-The patch attached here missed a few things though.
-
-But it looks like I just need to call netdev_sent_queue() from the
-e1000_xmit_raw_frame() routine and then let the tx completion logic
-kick in which will call netdev_completed_queue() correctly.
-
-I'll need to add a check for the queue state as well. So if I do these
-three things,
-
-	check __QUEUE_STATE_XOFF before sending
-	netdev_sent_queue() -> on XDP_TX
-	netdev_completed_queue()
-
-It should work agree? Now should we do this even when XDP owns the
-queue? Or is this purely an issue with sharing the queue between
-XDP and stack.
-
-.John
-
+> .John
+>
