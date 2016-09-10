@@ -1,136 +1,153 @@
-From: Tom Herbert <tom@herbertland.com>
-Date: Fri, 9 Sep 2016 21:13:13 -0700
-Subject: [Intel-wired-lan] [net-next PATCH v2 2/2] e1000: bundle xdp
-	xmit routines
-In-Reply-To: <57D37D79.1050806@gmail.com>
-References: <20160909212915.4001.25504.stgit@john-Precision-Tower-5810>
- <20160909212938.4001.40540.stgit@john-Precision-Tower-5810>
- <CALx6S35VCq9yPjcuhtx6jEJ78-WugkQZ6GSsqkcTr0Fa7edkVg@mail.gmail.com>
- <57D34D67.40804@gmail.com>
- <CALx6S36dH87e6TPxEBGsy0F-vD0fZzKyP8tbuuaAfLNSF1DGpw@mail.gmail.com>
- <57D35E08.8010204@gmail.com>
- <CALx6S36SM-wq6Fj8XK7GfMta1dVGr3RZ5uAgGdnxm7kgpVNFbw@mail.gmail.com>
- <20160910014032.GA83023@ast-mbp.thefacebook.com>
- <CALx6S36Xo4ZJJg5k2RT9rcT_1_zKRG1n_EOruU=JqvXBnq=E3w@mail.gmail.com>
- <57D37D79.1050806@gmail.com>
-Message-ID: <CALx6S373K92E5uabb8MtyHpDvkpWUQmZRmoRF7pFnZ3wBW68Cw@mail.gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 10 Sep 2016 15:05:12 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ c345ba39a678cb43403642b4713e34d5ac90758f BUILD SUCCESS
+Message-ID: <57d3b0a8.BZaaRxJ2pzBP/a/E%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Sep 9, 2016 at 8:26 PM, John Fastabend <john.fastabend@gmail.com> wrote:
-> On 16-09-09 08:12 PM, Tom Herbert wrote:
->> On Fri, Sep 9, 2016 at 6:40 PM, Alexei Starovoitov
->> <alexei.starovoitov@gmail.com> wrote:
->>> On Fri, Sep 09, 2016 at 06:19:56PM -0700, Tom Herbert wrote:
->>>> On Fri, Sep 9, 2016 at 6:12 PM, John Fastabend <john.fastabend@gmail.com> wrote:
->>>>> On 16-09-09 06:04 PM, Tom Herbert wrote:
->>>>>> On Fri, Sep 9, 2016 at 5:01 PM, John Fastabend <john.fastabend@gmail.com> wrote:
->>>>>>> On 16-09-09 04:44 PM, Tom Herbert wrote:
->>>>>>>> On Fri, Sep 9, 2016 at 2:29 PM, John Fastabend <john.fastabend@gmail.com> wrote:
->>>>>>>>> e1000 supports a single TX queue so it is being shared with the stack
->>>>>>>>> when XDP runs XDP_TX action. This requires taking the xmit lock to
->>>>>>>>> ensure we don't corrupt the tx ring. To avoid taking and dropping the
->>>>>>>>> lock per packet this patch adds a bundling implementation to submit
->>>>>>>>> a bundle of packets to the xmit routine.
->>>>>>>>>
->>>>>>>>> I tested this patch running e1000 in a VM using KVM over a tap
->>>>>>>>> device using pktgen to generate traffic along with 'ping -f -l 100'.
->>>>>>>>>
->>>>>>>> Hi John,
->>>>>>>>
->>>>>>>> How does this interact with BQL on e1000?
->>>>>>>>
->>>>>>>> Tom
->>>>>>>>
->>>>>>>
->>>>>>> Let me check if I have the API correct. When we enqueue a packet to
->>>>>>> be sent we must issue a netdev_sent_queue() call and then on actual
->>>>>>> transmission issue a netdev_completed_queue().
->>>>>>>
->>>>>>> The patch attached here missed a few things though.
->>>>>>>
->>>>>>> But it looks like I just need to call netdev_sent_queue() from the
->>>>>>> e1000_xmit_raw_frame() routine and then let the tx completion logic
->>>>>>> kick in which will call netdev_completed_queue() correctly.
->>>>>>>
->>>>>>> I'll need to add a check for the queue state as well. So if I do these
->>>>>>> three things,
->>>>>>>
->>>>>>>         check __QUEUE_STATE_XOFF before sending
->>>>>>>         netdev_sent_queue() -> on XDP_TX
->>>>>>>         netdev_completed_queue()
->>>>>>>
->>>>>>> It should work agree? Now should we do this even when XDP owns the
->>>>>>> queue? Or is this purely an issue with sharing the queue between
->>>>>>> XDP and stack.
->>>>>>>
->>>>>> But what is the action for XDP_TX if the queue is stopped? There is no
->>>>>> qdisc to back pressure in the XDP path. Would we just start dropping
->>>>>> packets then?
->>>>>
->>>>> Yep that is what the patch does if there is any sort of error packets
->>>>> get dropped on the floor. I don't think there is anything else that
->>>>> can be done.
->>>>>
->>>> That probably means that the stack will always win out under load.
->>>> Trying to used the same queue where half of the packets are well
->>>> managed by a qdisc and half aren't is going to leave someone unhappy.
->>>> Maybe in the this case where we have to share the qdisc we can
->>>> allocate the skb on on returning XDP_TX and send through the normal
->>>> qdisc for the device.
->>>
->>> I wouldn't go to such extremes for e1k.
->>> The only reason to have xdp in e1k is to use it for testing
->>> of xdp programs. Nothing else. e1k is, best case, 1Gbps adapter.
->>
->> I imagine someone may want this for the non-forwarding use cases like
->> early drop for DOS mitigation. Regardless of the use case, I don't
->> think we can break the fundamental assumptions made for qdiscs or the
->> rest of the transmit path. If XDP must transmit on a queue shared with
->> the stack we need to abide by the stack's rules for transmitting on
->> the queue-- which would mean alloc skbuff and go through qdisc (which
->
-> If we require XDP_TX to go up to qdisc layer its best not to implement
-> it at all and just handle it in normal ingress path. That said I think
-> users have to expect that XDP will interfere with qdisc schemes. Even
-> with its own tx queue its going to interfere at the hardware level with
-> bandwidth as the hardware round robins through the queues or uses
-> whatever hardware strategy it is configured to use. Additionally it
-> will bypass things like BQL, etc.
->
-Right, but not all use cases involve XDP_TX (like DOS mitigation as I
-pointed out). Since you've already done 95% of the work, can you take
-a look at creating the skbuff and injecting into the stack for XDP_TX
-so we can evaluate the performance and impact of that :-)
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+c345ba39a678cb43403642b4713e34d5ac90758f  e1000: bundle xdp xmit routines
 
-With separate TX queues it's explicit which queues are managed by the
-stack. This is no different than what kernel bypass gives use, we are
-relying on HW to do something reasonable in scheduling MQ.
+elapsed time: 420m
 
->> really shouldn't be difficult to implement). Emulating various
->> functions of the stack in the XDP TX path, like this patch seems to be
->> doing for XMIT_MORE, potentially gets us into a wack-a-mole situation
->> trying to keep things coherent.
->
-> I think bundling tx xmits is fair game as an internal optimization and
-> doesn't need to be exposed at the XDP layer. Drivers already do this
-> type of optimizations for allocating buffers. It likely doesn't matter
-> much at the e1k level but doing a tail update on every pkt with the
-> 40gbps drivers likely will be noticeable is my gut feeling.
->
-How is this different than what XMIT_MORE gives us?
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 131
 
-Tom
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+x86_64       allyesdebian+CONFIG_DEBUG_INFO_REDUCED
+x86_64       allyesdebian+CONFIG_DEBUG_INFO_REDUCED-CONFIG_DEBUG_INFO_REDUCED+CONFIG_DEBUG_INFO_REDUCED
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+parisc                         b180_defconfig
+x86_64                 randconfig-x013-201636
+x86_64                 randconfig-x012-201636
+x86_64                 randconfig-x015-201636
+x86_64                 randconfig-x011-201636
+x86_64                 randconfig-x010-201636
+x86_64                 randconfig-x014-201636
+x86_64                 randconfig-x018-201636
+x86_64                 randconfig-x017-201636
+x86_64                 randconfig-x016-201636
+x86_64                 randconfig-x019-201636
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+x86_64                            eywa-module
+x86_64                                   rhel
+x86_64                               rhel-7.2
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201636
+i386                     randconfig-s1-201636
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+i386                             allmodconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201636
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201636
+i386                     randconfig-i1-201636
+x86_64                           allmodconfig
+i386                   randconfig-x014-201636
+i386                   randconfig-x016-201636
+i386                   randconfig-x010-201636
+i386                   randconfig-x017-201636
+i386                   randconfig-x012-201636
+i386                   randconfig-x013-201636
+i386                   randconfig-x018-201636
+i386                   randconfig-x019-201636
+i386                   randconfig-x011-201636
+i386                   randconfig-x015-201636
+i386                     randconfig-n0-201636
+x86_64                 randconfig-x008-201636
+x86_64                 randconfig-x009-201636
+x86_64                 randconfig-x002-201636
+x86_64                 randconfig-x003-201636
+x86_64                 randconfig-x007-201636
+x86_64                 randconfig-x004-201636
+x86_64                 randconfig-x005-201636
+x86_64                 randconfig-x000-201636
+x86_64                 randconfig-x001-201636
+x86_64                 randconfig-x006-201636
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201636
+i386                   randconfig-x006-201636
+i386                   randconfig-x002-201636
+i386                   randconfig-x009-201636
+i386                   randconfig-x003-201636
+i386                   randconfig-x001-201636
+i386                   randconfig-x008-201636
+i386                   randconfig-x007-201636
+i386                   randconfig-x000-201636
+i386                   randconfig-x005-201636
+i386                   randconfig-x004-201636
 
->
->>
->>> Existing stack with skb is perfectly fine as it is.
->>> No need to do recycling, batching or any other complex things.
->>> xdp for e1k cannot be used as an example for other drivers either,
->>> since there is only one tx ring and any high performance adapter
->>> has more which makes the driver support quite different.
->>>
->
+Thanks,
+Fengguang
