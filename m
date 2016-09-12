@@ -1,160 +1,659 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Mon, 12 Sep 2016 14:18:42 -0700
-Subject: [Intel-wired-lan] [next PATCH S46 6/8] i40e: Strip out debugfs hook
-	for Flow Director filter programming
+Date: Mon, 12 Sep 2016 14:18:44 -0700
+Subject: [Intel-wired-lan] [next PATCH S46 8/8] i40evf: support
+	queue-specific settings for interrupt moderation
 In-Reply-To: <1473715124-31296-1-git-send-email-bimmy.pujari@intel.com>
 References: <1473715124-31296-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1473715124-31296-7-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1473715124-31296-9-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Duyck <alexander.h.duyck@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-This  interface was only ever meant for debug only. Since it is not
-supposed to be here we are removing it.
+In commit a75e8005d506f3 ("i40e: queue-specific settings for interrupt
+moderation") the i40e driver gained support for setting interrupt
+moderation values per queue. This patch adds support for this feature
+to the i40evf driver as well. In addition, a few changes are made to
+the i40e implementation to add function header documentation comments,
+as well.
 
-Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-Change-ID: Id771a1e5e7d3e2b4b7f56591b61fb48c921e1d04
+This behaves in a similar fashion to the implementation in i40e. Thus,
+requesting the moderation value when no queue is provided will report
+queue 0 value, while setting the value without a queue will set all
+queues at once.
+
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Change-ID: I1f310a57c8e6c84a8524c178d44d1b7a6d3a848e
 ---
-Testing Hints:
-        Verify the "add fd_filter" and "rem fd_filter" functionality
-        and all references to it have been removed.
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c     |  72 ++++++-
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c        |  21 ++-
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c      |  26 ++-
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.h      |   8 +
+ drivers/net/ethernet/intel/i40evf/i40evf.h         |   7 -
+ drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 206 ++++++++++++++++-----
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  10 +-
+ 7 files changed, 280 insertions(+), 70 deletions(-)
 
- drivers/net/ethernet/intel/i40e/i40e.h         |  2 -
- drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 80 --------------------------
- drivers/net/ethernet/intel/i40e/i40e_txrx.c    |  5 +-
- 3 files changed, 3 insertions(+), 84 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index ca2d317..dfc52a9 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -714,8 +714,6 @@ struct rtnl_link_stats64 *i40e_get_vsi_stats_struct(struct i40e_vsi *vsi);
- int i40e_fetch_switch_configuration(struct i40e_pf *pf,
- 				    bool printconfig);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index e842628..c1c0775 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -1970,11 +1970,22 @@ static int i40e_set_phys_id(struct net_device *netdev,
+  * 125us (8000 interrupts per second) == ITR(62)
+  */
  
--int i40e_program_fdir_filter(struct i40e_fdir_filter *fdir_data, u8 *raw_packet,
--			     struct i40e_pf *pf, bool add);
- int i40e_add_del_fdir(struct i40e_vsi *vsi,
- 		      struct i40e_fdir_filter *input, bool add);
- void i40e_fdir_check_and_reenable(struct i40e_pf *pf);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-index 05cf9a7..435b96c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-@@ -1425,84 +1425,6 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
- 		buff = NULL;
- 		kfree(desc);
- 		desc = NULL;
--	} else if ((strncmp(cmd_buf, "add fd_filter", 13) == 0) ||
--		   (strncmp(cmd_buf, "rem fd_filter", 13) == 0)) {
--		struct i40e_fdir_filter fd_data;
--		u16 packet_len, i, j = 0;
--		char *asc_packet;
--		u8 *raw_packet;
--		bool add = false;
--		int ret;
--
--		if (!(pf->flags & I40E_FLAG_FD_SB_ENABLED))
--			goto command_write_done;
--
--		if (strncmp(cmd_buf, "add", 3) == 0)
--			add = true;
--
--		if (add && (pf->auto_disable_flags & I40E_FLAG_FD_SB_ENABLED))
--			goto command_write_done;
--
--		asc_packet = kzalloc(I40E_FDIR_MAX_RAW_PACKET_SIZE,
--				     GFP_KERNEL);
--		if (!asc_packet)
--			goto command_write_done;
--
--		raw_packet = kzalloc(I40E_FDIR_MAX_RAW_PACKET_SIZE,
--				     GFP_KERNEL);
--
--		if (!raw_packet) {
--			kfree(asc_packet);
--			asc_packet = NULL;
--			goto command_write_done;
--		}
--
--		cnt = sscanf(&cmd_buf[13],
--			     "%hx %2hhx %2hhx %hx %2hhx %2hhx %hx %x %hd %511s",
--			     &fd_data.q_index,
--			     &fd_data.flex_off, &fd_data.pctype,
--			     &fd_data.dest_vsi, &fd_data.dest_ctl,
--			     &fd_data.fd_status, &fd_data.cnt_index,
--			     &fd_data.fd_id, &packet_len, asc_packet);
--		if (cnt != 10) {
--			dev_info(&pf->pdev->dev,
--				 "program fd_filter: bad command string, cnt=%d\n",
--				 cnt);
--			kfree(asc_packet);
--			asc_packet = NULL;
--			kfree(raw_packet);
--			goto command_write_done;
--		}
--
--		/* fix packet length if user entered 0 */
--		if (packet_len == 0)
--			packet_len = I40E_FDIR_MAX_RAW_PACKET_SIZE;
--
--		/* make sure to check the max as well */
--		packet_len = min_t(u16,
--				   packet_len, I40E_FDIR_MAX_RAW_PACKET_SIZE);
--
--		for (i = 0; i < packet_len; i++) {
--			cnt = sscanf(&asc_packet[j], "%2hhx ", &raw_packet[i]);
--			if (!cnt)
--				break;
--			j += 3;
--		}
--		dev_info(&pf->pdev->dev, "FD raw packet dump\n");
--		print_hex_dump(KERN_INFO, "FD raw packet: ",
--			       DUMP_PREFIX_OFFSET, 16, 1,
--			       raw_packet, packet_len, true);
--		ret = i40e_program_fdir_filter(&fd_data, raw_packet, pf, add);
--		if (!ret) {
--			dev_info(&pf->pdev->dev, "Filter command send Status : Success\n");
--		} else {
--			dev_info(&pf->pdev->dev,
--				 "Filter command send failed %d\n", ret);
--		}
--		kfree(raw_packet);
--		raw_packet = NULL;
--		kfree(asc_packet);
--		asc_packet = NULL;
- 	} else if (strncmp(cmd_buf, "fd current cnt", 14) == 0) {
- 		dev_info(&pf->pdev->dev, "FD current total filter count for this interface: %d\n",
- 			 i40e_get_current_fd_count(pf));
-@@ -1727,8 +1649,6 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
- 		dev_info(&pf->pdev->dev, "  globr\n");
- 		dev_info(&pf->pdev->dev, "  send aq_cmd <flags> <opcode> <datalen> <retval> <cookie_h> <cookie_l> <param0> <param1> <param2> <param3>\n");
- 		dev_info(&pf->pdev->dev, "  send indirect aq_cmd <flags> <opcode> <datalen> <retval> <cookie_h> <cookie_l> <param0> <param1> <param2> <param3> <buffer_len>\n");
--		dev_info(&pf->pdev->dev, "  add fd_filter <dest q_index> <flex_off> <pctype> <dest_vsi> <dest_ctl> <fd_status> <cnt_index> <fd_id> <packet_len> <packet>\n");
--		dev_info(&pf->pdev->dev, "  rem fd_filter <dest q_index> <flex_off> <pctype> <dest_vsi> <dest_ctl> <fd_status> <cnt_index> <fd_id> <packet_len> <packet>\n");
- 		dev_info(&pf->pdev->dev, "  fd current cnt");
- 		dev_info(&pf->pdev->dev, "  lldp start\n");
- 		dev_info(&pf->pdev->dev, "  lldp stop\n");
++/**
++ * __i40e_get_coalesce - get per-queue coalesce settings
++ * @netdev: the netdev to check
++ * @ec: ethtool coalesce data structure
++ * @queue: which queue to pick
++ *
++ * Gets the per-queue settings for coalescence. Specifically rx and tx usecs
++ * are per queue. If queue is <0 then we default to queue 0 as the
++ * representative value.
++ **/
+ static int __i40e_get_coalesce(struct net_device *netdev,
+ 			       struct ethtool_coalesce *ec,
+ 			       int queue)
+ {
+ 	struct i40e_netdev_priv *np = netdev_priv(netdev);
++	struct i40e_ring *rx_ring, *tx_ring;
+ 	struct i40e_vsi *vsi = np->vsi;
+ 
+ 	ec->tx_max_coalesced_frames_irq = vsi->work_limit;
+@@ -1989,14 +2000,18 @@ static int __i40e_get_coalesce(struct net_device *netdev,
+ 		return -EINVAL;
+ 	}
+ 
+-	if (ITR_IS_DYNAMIC(vsi->rx_rings[queue]->rx_itr_setting))
++	rx_ring = vsi->rx_rings[queue];
++	tx_ring = vsi->tx_rings[queue];
++
++	if (ITR_IS_DYNAMIC(rx_ring->rx_itr_setting))
+ 		ec->use_adaptive_rx_coalesce = 1;
+ 
+-	if (ITR_IS_DYNAMIC(vsi->tx_rings[queue]->tx_itr_setting))
++	if (ITR_IS_DYNAMIC(tx_ring->tx_itr_setting))
+ 		ec->use_adaptive_tx_coalesce = 1;
+ 
+-	ec->rx_coalesce_usecs = vsi->rx_rings[queue]->rx_itr_setting & ~I40E_ITR_DYNAMIC;
+-	ec->tx_coalesce_usecs = vsi->tx_rings[queue]->tx_itr_setting & ~I40E_ITR_DYNAMIC;
++	ec->rx_coalesce_usecs = rx_ring->rx_itr_setting & ~I40E_ITR_DYNAMIC;
++	ec->tx_coalesce_usecs = tx_ring->tx_itr_setting & ~I40E_ITR_DYNAMIC;
++
+ 
+ 	/* we use the _usecs_high to store/set the interrupt rate limit
+ 	 * that the hardware supports, that almost but not quite
+@@ -2010,18 +2025,44 @@ static int __i40e_get_coalesce(struct net_device *netdev,
+ 	return 0;
+ }
+ 
++/**
++ * i40e_get_coalesce - get a netdev's coalesce settings
++ * @netdev: the netdev to check
++ * @ec: ethtool coalesce data structure
++ *
++ * Gets the coalesce settings for a particular netdev. Note that if user has
++ * modified per-queue settings, this only guarantees to represent queue 0. See
++ * __i40e_get_coalesce for more details.
++ **/
+ static int i40e_get_coalesce(struct net_device *netdev,
+ 			     struct ethtool_coalesce *ec)
+ {
+ 	return __i40e_get_coalesce(netdev, ec, -1);
+ }
+ 
++/**
++ * i40e_get_per_queue_coalesce - gets coalesce settings for particular queue
++ * @netdev: netdev structure
++ * @ec: ethtool's coalesce settings
++ * @queue: the particular queue to read
++ *
++ * Will read a specific queue's coalesce settings
++ **/
+ static int i40e_get_per_queue_coalesce(struct net_device *netdev, u32 queue,
+ 				       struct ethtool_coalesce *ec)
+ {
+ 	return __i40e_get_coalesce(netdev, ec, queue);
+ }
+ 
++/**
++ * i40e_set_itr_per_queue - set ITR values for specific queue
++ * @vsi: the vsi to set values for
++ * @ec: coalesce settings from ethtool
++ * @queue: the queue to modify
++ *
++ * Change the ITR settings for a specific queue.
++ **/
++
+ static void i40e_set_itr_per_queue(struct i40e_vsi *vsi,
+ 				   struct ethtool_coalesce *ec,
+ 				   int queue)
+@@ -2060,6 +2101,14 @@ static void i40e_set_itr_per_queue(struct i40e_vsi *vsi,
+ 	i40e_flush(hw);
+ }
+ 
++/**
++ * __i40e_set_coalesce - set coalesce settings for particular queue
++ * @netdev: the netdev to change
++ * @ec: ethtool coalesce settings
++ * @queue: the queue to change
++ *
++ * Sets the coalesce settings for a particular queue.
++ **/
+ static int __i40e_set_coalesce(struct net_device *netdev,
+ 			       struct ethtool_coalesce *ec,
+ 			       int queue)
+@@ -2120,12 +2169,27 @@ static int __i40e_set_coalesce(struct net_device *netdev,
+ 	return 0;
+ }
+ 
++/**
++ * i40e_set_coalesce - set coalesce settings for every queue on the netdev
++ * @netdev: the netdev to change
++ * @ec: ethtool coalesce settings
++ *
++ * This will set each queue to the same coalesce settings.
++ **/
+ static int i40e_set_coalesce(struct net_device *netdev,
+ 			     struct ethtool_coalesce *ec)
+ {
+ 	return __i40e_set_coalesce(netdev, ec, -1);
+ }
+ 
++/**
++ * i40e_set_per_queue_coalesce - set specific queue's coalesce settings
++ * @netdev: the netdev to change
++ * @ec: ethtool's coalesce settings
++ * @queue: the queue to change
++ *
++ * Sets the specified queue's coalesce settings.
++ **/
+ static int i40e_set_per_queue_coalesce(struct net_device *netdev, u32 queue,
+ 				       struct ethtool_coalesce *ec)
+ {
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 9b11fc6..e94e4e1 100644
+index e94e4e1..9b82240 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -111,8 +111,9 @@ static void i40e_fdir(struct i40e_ring *tx_ring,
-  * @pf: The PF pointer
-  * @add: True for add/update, False for remove
+@@ -1877,6 +1877,15 @@ static u32 i40e_buildreg_itr(const int type, const u16 itr)
+ 
+ /* a small macro to shorten up some long lines */
+ #define INTREG I40E_PFINT_DYN_CTLN
++static inline int get_rx_itr_enabled(struct i40e_vsi *vsi, int idx)
++{
++	return !!(vsi->rx_rings[idx]->rx_itr_setting);
++}
++
++static inline int get_tx_itr_enabled(struct i40e_vsi *vsi, int idx)
++{
++	return !!(vsi->tx_rings[idx]->tx_itr_setting);
++}
+ 
+ /**
+  * i40e_update_enable_itr - Update itr and re-enable MSIX interrupt
+@@ -1892,6 +1901,7 @@ static inline void i40e_update_enable_itr(struct i40e_vsi *vsi,
+ 	u32 rxval, txval;
+ 	int vector;
+ 	int idx = q_vector->v_idx;
++	int rx_itr_setting, tx_itr_setting;
+ 
+ 	vector = (q_vector->v_idx + vsi->base_vector);
+ 
+@@ -1900,18 +1910,21 @@ static inline void i40e_update_enable_itr(struct i40e_vsi *vsi,
+ 	 */
+ 	rxval = txval = i40e_buildreg_itr(I40E_ITR_NONE, 0);
+ 
++	rx_itr_setting = get_rx_itr_enabled(vsi, idx);
++	tx_itr_setting = get_tx_itr_enabled(vsi, idx);
++
+ 	if (q_vector->itr_countdown > 0 ||
+-	    (!ITR_IS_DYNAMIC(vsi->rx_rings[idx]->rx_itr_setting) &&
+-	     !ITR_IS_DYNAMIC(vsi->tx_rings[idx]->tx_itr_setting))) {
++	    (!ITR_IS_DYNAMIC(rx_itr_setting) &&
++	     !ITR_IS_DYNAMIC(tx_itr_setting))) {
+ 		goto enable_int;
+ 	}
+ 
+-	if (ITR_IS_DYNAMIC(vsi->rx_rings[idx]->rx_itr_setting)) {
++	if (ITR_IS_DYNAMIC(tx_itr_setting)) {
+ 		rx = i40e_set_new_dynamic_itr(&q_vector->rx);
+ 		rxval = i40e_buildreg_itr(I40E_RX_ITR, q_vector->rx.itr);
+ 	}
+ 
+-	if (ITR_IS_DYNAMIC(vsi->tx_rings[idx]->tx_itr_setting)) {
++	if (ITR_IS_DYNAMIC(tx_itr_setting)) {
+ 		tx = i40e_set_new_dynamic_itr(&q_vector->tx);
+ 		txval = i40e_buildreg_itr(I40E_TX_ITR, q_vector->tx.itr);
+ 	}
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index d4c6a76..75f2a2c 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -1311,6 +1311,19 @@ static u32 i40e_buildreg_itr(const int type, const u16 itr)
+ 
+ /* a small macro to shorten up some long lines */
+ #define INTREG I40E_VFINT_DYN_CTLN1
++static inline int get_rx_itr_enabled(struct i40e_vsi *vsi, int idx)
++{
++	struct i40evf_adapter *adapter = vsi->back;
++
++	return !!(adapter->rx_rings[idx].rx_itr_setting);
++}
++
++static inline int get_tx_itr_enabled(struct i40e_vsi *vsi, int idx)
++{
++	struct i40evf_adapter *adapter = vsi->back;
++
++	return !!(adapter->tx_rings[idx].tx_itr_setting);
++}
+ 
+ /**
+  * i40e_update_enable_itr - Update itr and re-enable MSIX interrupt
+@@ -1325,6 +1338,8 @@ static inline void i40e_update_enable_itr(struct i40e_vsi *vsi,
+ 	bool rx = false, tx = false;
+ 	u32 rxval, txval;
+ 	int vector;
++	int idx = q_vector->v_idx;
++	int rx_itr_setting, tx_itr_setting;
+ 
+ 	vector = (q_vector->v_idx + vsi->base_vector);
+ 
+@@ -1333,18 +1348,21 @@ static inline void i40e_update_enable_itr(struct i40e_vsi *vsi,
+ 	 */
+ 	rxval = txval = i40e_buildreg_itr(I40E_ITR_NONE, 0);
+ 
++	rx_itr_setting = get_rx_itr_enabled(vsi, idx);
++	tx_itr_setting = get_tx_itr_enabled(vsi, idx);
++
+ 	if (q_vector->itr_countdown > 0 ||
+-	    (!ITR_IS_DYNAMIC(vsi->rx_itr_setting) &&
+-	     !ITR_IS_DYNAMIC(vsi->tx_itr_setting))) {
++	    (!ITR_IS_DYNAMIC(rx_itr_setting) &&
++	     !ITR_IS_DYNAMIC(tx_itr_setting))) {
+ 		goto enable_int;
+ 	}
+ 
+-	if (ITR_IS_DYNAMIC(vsi->rx_itr_setting)) {
++	if (ITR_IS_DYNAMIC(rx_itr_setting)) {
+ 		rx = i40e_set_new_dynamic_itr(&q_vector->rx);
+ 		rxval = i40e_buildreg_itr(I40E_RX_ITR, q_vector->rx.itr);
+ 	}
+ 
+-	if (ITR_IS_DYNAMIC(vsi->tx_itr_setting)) {
++	if (ITR_IS_DYNAMIC(tx_itr_setting)) {
+ 		tx = i40e_set_new_dynamic_itr(&q_vector->tx);
+ 		txval = i40e_buildreg_itr(I40E_TX_ITR, q_vector->tx.itr);
+ 	}
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
+index 7f72ee7..1bc5b99 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
+@@ -287,6 +287,14 @@ struct i40e_ring {
+ 	u8 dcb_tc;			/* Traffic class of ring */
+ 	u8 __iomem *tail;
+ 
++	/* high bit set means dynamic, use accessor routines to read/write.
++	 * hardware only supports 2us resolution for the ITR registers.
++	 * these values always store the USER setting, and must be converted
++	 * before programming to a register.
++	 */
++	u16 rx_itr_setting;
++	u16 tx_itr_setting;
++
+ 	u16 count;			/* Number of descriptors */
+ 	u16 reg_idx;			/* HW register index of the ring */
+ 	u16 rx_buf_len;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf.h b/drivers/net/ethernet/intel/i40evf/i40evf.h
+index dc00aaf..c5fd724 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf.h
++++ b/drivers/net/ethernet/intel/i40evf/i40evf.h
+@@ -59,13 +59,6 @@ struct i40e_vsi {
+ 	unsigned long state;
+ 	int base_vector;
+ 	u16 work_limit;
+-	/* high bit set means dynamic, use accessor routines to read/write.
+-	 * hardware only supports 2us resolution for the ITR registers.
+-	 * these values always store the USER setting, and must be converted
+-	 * before programming to a register.
+-	 */
+-	u16 rx_itr_setting;
+-	u16 tx_itr_setting;
+ 	u16 qs_handle;
+ };
+ 
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
+index e17a154..6d15a71 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c
+@@ -296,93 +296,207 @@ static int i40evf_set_ringparam(struct net_device *netdev,
+ }
+ 
+ /**
+- * i40evf_get_coalesce - Get interrupt coalescing settings
+- * @netdev: network interface device structure
+- * @ec: ethtool coalesce structure
++ * __i40evf_get_coalesce - get per-queue coalesce settings
++ * @netdev: the netdev to check
++ * @ec: ethtool coalesce data structure
++ * @queue: which queue to pick
+  *
+- * Returns current coalescing settings. This is referred to elsewhere in the
+- * driver as Interrupt Throttle Rate, as this is how the hardware describes
+- * this functionality.
++ * Gets the per-queue settings for coalescence. Specifically rx and tx usecs
++ * are per queue. If queue is <0 then we default to queue 0 as the
++ * representative value.
   **/
--int i40e_program_fdir_filter(struct i40e_fdir_filter *fdir_data, u8 *raw_packet,
--			     struct i40e_pf *pf, bool add)
-+static int i40e_program_fdir_filter(struct i40e_fdir_filter *fdir_data,
-+				    u8 *raw_packet, struct i40e_pf *pf,
-+				    bool add)
+-static int i40evf_get_coalesce(struct net_device *netdev,
+-			       struct ethtool_coalesce *ec)
++static int __i40evf_get_coalesce(struct net_device *netdev,
++				 struct ethtool_coalesce *ec,
++				 int queue)
  {
- 	struct i40e_tx_buffer *tx_buf, *first;
- 	struct i40e_tx_desc *tx_desc;
+ 	struct i40evf_adapter *adapter = netdev_priv(netdev);
+ 	struct i40e_vsi *vsi = &adapter->vsi;
++	struct i40e_ring *rx_ring, *tx_ring;
+ 
+ 	ec->tx_max_coalesced_frames = vsi->work_limit;
+ 	ec->rx_max_coalesced_frames = vsi->work_limit;
+ 
+-	if (ITR_IS_DYNAMIC(vsi->rx_itr_setting))
++	/* rx and tx usecs per queue value. If user doesn't specify the
++	 * queue, return queue 0's value to represent.
++	 */
++	if (queue < 0)
++		queue = 0;
++	else if (queue >= adapter->num_active_queues)
++		return -EINVAL;
++
++	rx_ring = &adapter->rx_rings[queue];
++	tx_ring = &adapter->tx_rings[queue];
++
++	if (ITR_IS_DYNAMIC(rx_ring->rx_itr_setting))
+ 		ec->use_adaptive_rx_coalesce = 1;
+ 
+-	if (ITR_IS_DYNAMIC(vsi->tx_itr_setting))
++	if (ITR_IS_DYNAMIC(tx_ring->tx_itr_setting))
+ 		ec->use_adaptive_tx_coalesce = 1;
+ 
+-	ec->rx_coalesce_usecs = vsi->rx_itr_setting & ~I40E_ITR_DYNAMIC;
+-	ec->tx_coalesce_usecs = vsi->tx_itr_setting & ~I40E_ITR_DYNAMIC;
++	ec->rx_coalesce_usecs = rx_ring->rx_itr_setting & ~I40E_ITR_DYNAMIC;
++	ec->tx_coalesce_usecs = tx_ring->tx_itr_setting & ~I40E_ITR_DYNAMIC;
+ 
+ 	return 0;
+ }
+ 
+ /**
+- * i40evf_set_coalesce - Set interrupt coalescing settings
++ * i40evf_get_coalesce - Get interrupt coalescing settings
+  * @netdev: network interface device structure
+  * @ec: ethtool coalesce structure
+  *
+- * Change current coalescing settings.
++ * Returns current coalescing settings. This is referred to elsewhere in the
++ * driver as Interrupt Throttle Rate, as this is how the hardware describes
++ * this functionality. Note that if per-queue settings have been modified this
++ * only represents the settings of queue 0.
+  **/
+-static int i40evf_set_coalesce(struct net_device *netdev,
++static int i40evf_get_coalesce(struct net_device *netdev,
+ 			       struct ethtool_coalesce *ec)
+ {
+-	struct i40evf_adapter *adapter = netdev_priv(netdev);
+-	struct i40e_hw *hw = &adapter->hw;
++	return __i40evf_get_coalesce(netdev, ec, -1);
++}
++
++/**
++ * i40evf_get_per_queue_coalesce - get coalesce values for specific queue
++ * @netdev: netdev to read
++ * @ec: coalesce settings from ethtool
++ * @queue: the queue to read
++ *
++ * Read specific queue's coalesce settings.
++ **/
++static int i40evf_get_per_queue_coalesce(struct net_device *netdev,
++					 u32 queue,
++					 struct ethtool_coalesce *ec)
++{
++	return __i40evf_get_coalesce(netdev, ec, queue);
++}
++
++/**
++ * i40evf_set_itr_per_queue - set ITR values for specific queue
++ * @vsi: the vsi to set values for
++ * @ec: coalesce settings from ethtool
++ * @queue: the queue to modify
++ *
++ * Change the ITR settings for a specific queue.
++ **/
++static void i40evf_set_itr_per_queue(struct i40evf_adapter *adapter,
++				     struct ethtool_coalesce *ec,
++				     int queue)
++{
+ 	struct i40e_vsi *vsi = &adapter->vsi;
++	struct i40e_hw *hw = &adapter->hw;
+ 	struct i40e_q_vector *q_vector;
++	u16 vector;
++
++	adapter->rx_rings[queue].rx_itr_setting = ec->rx_coalesce_usecs;
++	adapter->tx_rings[queue].tx_itr_setting = ec->tx_coalesce_usecs;
++
++	if (ec->use_adaptive_rx_coalesce)
++		adapter->rx_rings[queue].rx_itr_setting |= I40E_ITR_DYNAMIC;
++	else
++		adapter->rx_rings[queue].rx_itr_setting &= ~I40E_ITR_DYNAMIC;
++
++	if (ec->use_adaptive_tx_coalesce)
++		adapter->tx_rings[queue].tx_itr_setting |= I40E_ITR_DYNAMIC;
++	else
++		adapter->tx_rings[queue].tx_itr_setting &= ~I40E_ITR_DYNAMIC;
++
++	q_vector = adapter->rx_rings[queue].q_vector;
++	q_vector->rx.itr = ITR_TO_REG(adapter->rx_rings[queue].rx_itr_setting);
++	vector = vsi->base_vector + q_vector->v_idx;
++	wr32(hw, I40E_VFINT_ITRN1(I40E_RX_ITR, vector - 1), q_vector->rx.itr);
++
++	q_vector = adapter->tx_rings[queue].q_vector;
++	q_vector->tx.itr = ITR_TO_REG(adapter->tx_rings[queue].tx_itr_setting);
++	vector = vsi->base_vector + q_vector->v_idx;
++	wr32(hw, I40E_VFINT_ITRN1(I40E_TX_ITR, vector - 1), q_vector->tx.itr);
++
++	i40e_flush(hw);
++}
++
++/**
++ * __i40evf_set_coalesce - set coalesce settings for particular queue
++ * @netdev: the netdev to change
++ * @ec: ethtool coalesce settings
++ * @queue: the queue to change
++ *
++ * Sets the coalesce settings for a particular queue.
++ **/
++static int __i40evf_set_coalesce(struct net_device *netdev,
++				 struct ethtool_coalesce *ec,
++				 int queue)
++{
++	struct i40evf_adapter *adapter = netdev_priv(netdev);
++	struct i40e_vsi *vsi = &adapter->vsi;
+ 	int i;
+ 
+ 	if (ec->tx_max_coalesced_frames_irq || ec->rx_max_coalesced_frames_irq)
+ 		vsi->work_limit = ec->tx_max_coalesced_frames_irq;
+ 
+-	if ((ec->rx_coalesce_usecs >= (I40E_MIN_ITR << 1)) &&
+-	    (ec->rx_coalesce_usecs <= (I40E_MAX_ITR << 1)))
+-		vsi->rx_itr_setting = ec->rx_coalesce_usecs;
+-
+-	else
++	if (ec->rx_coalesce_usecs == 0) {
++		if (ec->use_adaptive_rx_coalesce)
++			netif_info(adapter, drv, netdev, "rx-usecs=0, need to disable adaptive-rx for a complete disable\n");
++	} else if ((ec->rx_coalesce_usecs < (I40E_MIN_ITR << 1)) ||
++		   (ec->rx_coalesce_usecs > (I40E_MAX_ITR << 1))) {
++		netif_info(adapter, drv, netdev, "Invalid value, rx-usecs range is 0-8160\n");
+ 		return -EINVAL;
++	}
+ 
+-	if ((ec->tx_coalesce_usecs >= (I40E_MIN_ITR << 1)) &&
+-	    (ec->tx_coalesce_usecs <= (I40E_MAX_ITR << 1)))
+-		vsi->tx_itr_setting = ec->tx_coalesce_usecs;
+-	else if (ec->use_adaptive_tx_coalesce)
+-		vsi->tx_itr_setting = (I40E_ITR_DYNAMIC |
+-				       ITR_REG_TO_USEC(I40E_ITR_RX_DEF));
+ 	else
++	if (ec->tx_coalesce_usecs == 0) {
++		if (ec->use_adaptive_tx_coalesce)
++			netif_info(adapter, drv, netdev, "tx-usecs=0, need to disable adaptive-tx for a complete disable\n");
++	} else if ((ec->tx_coalesce_usecs < (I40E_MIN_ITR << 1)) ||
++		   (ec->tx_coalesce_usecs > (I40E_MAX_ITR << 1))) {
++		netif_info(adapter, drv, netdev, "Invalid value, tx-usecs range is 0-8160\n");
+ 		return -EINVAL;
++	}
+ 
+-	if (ec->use_adaptive_rx_coalesce)
+-		vsi->rx_itr_setting |= I40E_ITR_DYNAMIC;
+-	else
+-		vsi->rx_itr_setting &= ~I40E_ITR_DYNAMIC;
+-
+-	if (ec->use_adaptive_tx_coalesce)
+-		vsi->tx_itr_setting |= I40E_ITR_DYNAMIC;
+-	else
+-		vsi->tx_itr_setting &= ~I40E_ITR_DYNAMIC;
+-
+-	for (i = 0; i < adapter->num_msix_vectors - NONQ_VECS; i++) {
+-		q_vector = &adapter->q_vectors[i];
+-		q_vector->rx.itr = ITR_TO_REG(vsi->rx_itr_setting);
+-		wr32(hw, I40E_VFINT_ITRN1(0, i), q_vector->rx.itr);
+-		q_vector->tx.itr = ITR_TO_REG(vsi->tx_itr_setting);
+-		wr32(hw, I40E_VFINT_ITRN1(1, i), q_vector->tx.itr);
+-		i40e_flush(hw);
++	/* rx and tx usecs has per queue value. If user doesn't specify the
++	 * queue, apply to all queues.
++	 */
++	if (queue < 0) {
++		for (i = 0; i < adapter->num_active_queues; i++)
++			i40evf_set_itr_per_queue(adapter, ec, i);
++	} else if (queue < adapter->num_active_queues) {
++		i40evf_set_itr_per_queue(adapter, ec, queue);
++	} else {
++		netif_info(adapter, drv, netdev, "Invalid queue value, queue range is 0 - %d\n",
++			   adapter->num_active_queues - 1);
++		return -EINVAL;
+ 	}
+ 
+ 	return 0;
+ }
+ 
+ /**
++ * i40evf_set_coalesce - Set interrupt coalescing settings
++ * @netdev: network interface device structure
++ * @ec: ethtool coalesce structure
++ *
++ * Change current coalescing settings for every queue.
++ **/
++static int i40evf_set_coalesce(struct net_device *netdev,
++			       struct ethtool_coalesce *ec)
++{
++	return __i40evf_set_coalesce(netdev, ec, -1);
++}
++
++/**
++ * i40evf_set_per_queue_coalesce - set specific queue's coalesce settings
++ * @netdev: the netdev to change
++ * @ec: ethtool's coalesce settings
++ * @queue: the queue to modify
++ *
++ * Modifies a specific queue's coalesce settings.
++ */
++static int i40evf_set_per_queue_coalesce(struct net_device *netdev,
++					 u32 queue,
++					 struct ethtool_coalesce *ec)
++{
++	return __i40evf_set_coalesce(netdev, ec, queue);
++}
++
++/**
+  * i40evf_get_rxnfc - command to get RX flow classification rules
+  * @netdev: network interface device structure
+  * @cmd: ethtool rxnfc command
+@@ -533,6 +647,8 @@ static const struct ethtool_ops i40evf_ethtool_ops = {
+ 	.set_msglevel		= i40evf_set_msglevel,
+ 	.get_coalesce		= i40evf_get_coalesce,
+ 	.set_coalesce		= i40evf_set_coalesce,
++	.get_per_queue_coalesce = i40evf_get_per_queue_coalesce,
++	.set_per_queue_coalesce = i40evf_set_per_queue_coalesce,
+ 	.get_rxnfc		= i40evf_get_rxnfc,
+ 	.get_rxfh_indir_size	= i40evf_get_rxfh_indir_size,
+ 	.get_rxfh		= i40evf_get_rxfh,
+diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+index 302c974..1437281 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
++++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
+@@ -370,7 +370,6 @@ i40evf_map_vector_to_rxq(struct i40evf_adapter *adapter, int v_idx, int r_idx)
+ {
+ 	struct i40e_q_vector *q_vector = &adapter->q_vectors[v_idx];
+ 	struct i40e_ring *rx_ring = &adapter->rx_rings[r_idx];
+-	struct i40e_vsi *vsi = &adapter->vsi;
+ 	struct i40e_hw *hw = &adapter->hw;
+ 
+ 	rx_ring->q_vector = q_vector;
+@@ -379,7 +378,7 @@ i40evf_map_vector_to_rxq(struct i40evf_adapter *adapter, int v_idx, int r_idx)
+ 	q_vector->rx.ring = rx_ring;
+ 	q_vector->rx.count++;
+ 	q_vector->rx.latency_range = I40E_LOW_LATENCY;
+-	q_vector->rx.itr = ITR_TO_REG(vsi->rx_itr_setting);
++	q_vector->rx.itr = ITR_TO_REG(rx_ring->rx_itr_setting);
+ 	q_vector->ring_mask |= BIT(r_idx);
+ 	q_vector->itr_countdown = ITR_COUNTDOWN_START;
+ 	wr32(hw, I40E_VFINT_ITRN1(I40E_RX_ITR, v_idx - 1), q_vector->rx.itr);
+@@ -396,7 +395,6 @@ i40evf_map_vector_to_txq(struct i40evf_adapter *adapter, int v_idx, int t_idx)
+ {
+ 	struct i40e_q_vector *q_vector = &adapter->q_vectors[v_idx];
+ 	struct i40e_ring *tx_ring = &adapter->tx_rings[t_idx];
+-	struct i40e_vsi *vsi = &adapter->vsi;
+ 	struct i40e_hw *hw = &adapter->hw;
+ 
+ 	tx_ring->q_vector = q_vector;
+@@ -405,7 +403,7 @@ i40evf_map_vector_to_txq(struct i40evf_adapter *adapter, int v_idx, int t_idx)
+ 	q_vector->tx.ring = tx_ring;
+ 	q_vector->tx.count++;
+ 	q_vector->tx.latency_range = I40E_LOW_LATENCY;
+-	q_vector->tx.itr = ITR_TO_REG(vsi->tx_itr_setting);
++	q_vector->tx.itr = ITR_TO_REG(tx_ring->tx_itr_setting);
+ 	q_vector->itr_countdown = ITR_COUNTDOWN_START;
+ 	q_vector->num_ringpairs++;
+ 	wr32(hw, I40E_VFINT_ITRN1(I40E_TX_ITR, v_idx - 1), q_vector->tx.itr);
+@@ -1162,6 +1160,7 @@ static int i40evf_alloc_queues(struct i40evf_adapter *adapter)
+ 		tx_ring->netdev = adapter->netdev;
+ 		tx_ring->dev = &adapter->pdev->dev;
+ 		tx_ring->count = adapter->tx_desc_count;
++		tx_ring->tx_itr_setting = (I40E_ITR_DYNAMIC | I40E_ITR_TX_DEF);
+ 		if (adapter->flags & I40E_FLAG_WB_ON_ITR_CAPABLE)
+ 			tx_ring->flags |= I40E_TXR_FLAGS_WB_ON_ITR;
+ 
+@@ -1170,6 +1169,7 @@ static int i40evf_alloc_queues(struct i40evf_adapter *adapter)
+ 		rx_ring->netdev = adapter->netdev;
+ 		rx_ring->dev = &adapter->pdev->dev;
+ 		rx_ring->count = adapter->rx_desc_count;
++		rx_ring->rx_itr_setting = (I40E_ITR_DYNAMIC | I40E_ITR_RX_DEF);
+ 	}
+ 
+ 	return 0;
+@@ -2277,8 +2277,6 @@ int i40evf_process_config(struct i40evf_adapter *adapter)
+ 	adapter->vsi.back = adapter;
+ 	adapter->vsi.base_vector = 1;
+ 	adapter->vsi.work_limit = I40E_DEFAULT_IRQ_WORK;
+-	adapter->vsi.rx_itr_setting = (I40E_ITR_DYNAMIC | I40E_ITR_RX_DEF);
+-	adapter->vsi.tx_itr_setting = (I40E_ITR_DYNAMIC | I40E_ITR_TX_DEF);
+ 	vsi->netdev = adapter->netdev;
+ 	vsi->qs_handle = adapter->vsi_res->qset_handle;
+ 	if (vfres->vf_offload_flags & I40E_VIRTCHNL_VF_OFFLOAD_RSS_PF) {
 -- 
 2.4.11
 
