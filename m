@@ -1,132 +1,111 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 03 Sep 2016 18:41:37 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 738327d0920b7d1fc5a69b6196f2bc4e57e0d583 BUILD SUCCESS
-Message-ID: <57caa8e1.T74rh3atRekKz6b+%fengguang.wu@intel.com>
+From: John Fastabend <john.fastabend@gmail.com>
+Date: Sun, 11 Sep 2016 20:07:18 -0700
+Subject: [Intel-wired-lan] [net-next PATCH v2 2/2] e1000: bundle xdp
+	xmit routines
+In-Reply-To: <CALx6S34+Mgb173vReYt=yPOztcFhVU9rRZyodVc56toXP1OiHQ@mail.gmail.com>
+References: <20160909212915.4001.25504.stgit@john-Precision-Tower-5810>
+ <20160909212938.4001.40540.stgit@john-Precision-Tower-5810>
+ <CALx6S34+Mgb173vReYt=yPOztcFhVU9rRZyodVc56toXP1OiHQ@mail.gmail.com>
+Message-ID: <57D61BE6.2080002@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-738327d0920b7d1fc5a69b6196f2bc4e57e0d583  e1000: add initial XDP support
+On 16-09-10 08:36 AM, Tom Herbert wrote:
+> On Fri, Sep 9, 2016 at 2:29 PM, John Fastabend <john.fastabend@gmail.com> wrote:
+>> e1000 supports a single TX queue so it is being shared with the stack
+>> when XDP runs XDP_TX action. This requires taking the xmit lock to
+>> ensure we don't corrupt the tx ring. To avoid taking and dropping the
+>> lock per packet this patch adds a bundling implementation to submit
+>> a bundle of packets to the xmit routine.
+>>
+>> I tested this patch running e1000 in a VM using KVM over a tap
+>> device using pktgen to generate traffic along with 'ping -f -l 100'.
+>>
+>> Suggested-by: Jesper Dangaard Brouer <brouer@redhat.com>
+>> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
+>> ---
 
-elapsed time: 177m
+[...]
 
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 110
+>> diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
+>> index 91d5c87..b985271 100644
+>> --- a/drivers/net/ethernet/intel/e1000/e1000_main.c
+>> +++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+>> @@ -1738,10 +1738,18 @@ static int e1000_setup_rx_resources(struct e1000_adapter *adapter,
+>>         struct pci_dev *pdev = adapter->pdev;
+>>         int size, desc_len;
+>>
+>> +       size = sizeof(struct e1000_rx_buffer_bundle) *
+>> +                       E1000_XDP_XMIT_BUNDLE_MAX;
+>> +       rxdr->xdp_buffer = vzalloc(size);
+>> +       if (!rxdr->xdp_buffer)
+>> +               return -ENOMEM;
+>> +
+>>         size = sizeof(struct e1000_rx_buffer) * rxdr->count;
+>>         rxdr->buffer_info = vzalloc(size);
+>> -       if (!rxdr->buffer_info)
+>> +       if (!rxdr->buffer_info) {
+>> +               vfree(rxdr->xdp_buffer);
+> 
+> This could be deferred until an XDP program is added.
 
-i386                     randconfig-a0-201635
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64       allyesdebian+CONFIG_DEBUG_INFO_REDUCED-CONFIG_DEBUG_INFO_REDUCED+CONFIG_DEBUG_INFO_REDUCED
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-x86_64                 randconfig-x015-201635
-x86_64                 randconfig-x012-201635
-x86_64                 randconfig-x013-201635
-x86_64                 randconfig-x011-201635
-x86_64                 randconfig-x010-201635
-x86_64                 randconfig-x014-201635
-x86_64                 randconfig-x018-201635
-x86_64                 randconfig-x017-201635
-x86_64                 randconfig-x019-201635
-x86_64                 randconfig-x016-201635
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-i386                     randconfig-s0-201635
-i386                     randconfig-s1-201635
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201635
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201635
-i386                     randconfig-i1-201635
-i386                             allyesconfig
-x86_64                 randconfig-b0-09031756
-blackfin             BF527-TLL6527M_defconfig
-m68k                        mvme16x_defconfig
-i386                               tinyconfig
-i386                   randconfig-x014-201635
-i386                   randconfig-x016-201635
-i386                   randconfig-x010-201635
-i386                   randconfig-x017-201635
-i386                   randconfig-x013-201635
-i386                   randconfig-x012-201635
-i386                   randconfig-x018-201635
-i386                   randconfig-x019-201635
-i386                   randconfig-x011-201635
-i386                   randconfig-x015-201635
-i386                     randconfig-n0-201635
-x86_64                                   rhel
-x86_64                               rhel-7.2
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-x86_64                           allmodconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-i386                   randconfig-x006-201635
-i386                   randconfig-x009-201635
-i386                   randconfig-x002-201635
-i386                   randconfig-x003-201635
-i386                   randconfig-x001-201635
-i386                   randconfig-x007-201635
-i386                   randconfig-x008-201635
-i386                   randconfig-x000-201635
-i386                   randconfig-x004-201635
-i386                   randconfig-x005-201635
+Yep that would be best to avoid overhead in the normal non-XDP case.
+Also I'll move the xdp prog pointer into the rx ring per Jespers comment
+that I missed in this rev.
 
-Thanks,
-Fengguang
+[...]
+
+>> +
+>> +static void e1000_xdp_xmit_bundle(struct e1000_rx_buffer_bundle *buffer_info,
+>> +                                 struct net_device *netdev,
+>> +                                 struct e1000_adapter *adapter)
+>> +{
+>> +       struct netdev_queue *txq = netdev_get_tx_queue(netdev, 0);
+>> +       struct e1000_tx_ring *tx_ring = adapter->tx_ring;
+>> +       struct e1000_hw *hw = &adapter->hw;
+>> +       int i = 0;
+>> +
+>>         /* e1000 only support a single txq at the moment so the queue is being
+>>          * shared with stack. To support this requires locking to ensure the
+>>          * stack and XDP are not running at the same time. Devices with
+>>          * multiple queues should allocate a separate queue space.
+>> +        *
+>> +        * To amortize the locking cost e1000 bundles the xmits and sends as
+>> +        * many as possible until either running out of descriptors or failing.
+> 
+> Up to E1000_XDP_XMIT_BUNDLE_MAX  at least...
+
+Yep will fix comment.
+
+[...]
+
+>>
+>>                 /* use prefetched values */
+>> @@ -4498,8 +4536,11 @@ next_desc:
+>>         rx_ring->next_to_clean = i;
+>>
+>>         cleaned_count = E1000_DESC_UNUSED(rx_ring);
+>> -       if (cleaned_count)
+>> +       if (cleaned_count) {
+>> +               if (xdp_xmit)
+>> +                       e1000_xdp_xmit_bundle(xdp_bundle, netdev, adapter);
+>>                 adapter->alloc_rx_buf(adapter, rx_ring, cleaned_count);
+>> +       }
+> 
+> Looks good for XDP path. Is this something we can abstract out into a
+> library for use by other drivers?
+> 
+
+I'm not really sure it can be abstracted much its a bit intertwined with
+the normal rx receive path. But it should probably be a pattern that
+gets copied so we avoid unnecessary tx work.
+
+> 
+>>
+>>         adapter->total_rx_packets += total_rx_packets;
+>>         adapter->total_rx_bytes += total_rx_bytes;
+>>
+
