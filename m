@@ -1,68 +1,45 @@
 From: Javier Martinez Canillas <javier@osg.samsung.com>
-Date: Mon, 12 Sep 2016 10:03:31 -0400
-Subject: [Intel-wired-lan] [PATCH 00/15] drivers: net: use IS_ENABLED()
-	instead of checking for built-in or module
-Message-ID: <1473689026-6983-1-git-send-email-javier@osg.samsung.com>
+Date: Mon, 12 Sep 2016 10:03:39 -0400
+Subject: [Intel-wired-lan] [PATCH 08/15] ixgbe: use IS_ENABLED() instead of
+	checking for built-in or module
+In-Reply-To: <1473689026-6983-1-git-send-email-javier@osg.samsung.com>
+References: <1473689026-6983-1-git-send-email-javier@osg.samsung.com>
+Message-ID: <1473689026-6983-9-git-send-email-javier@osg.samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hello David,
-
-This trivial series is similar to [0] for net/ that you already merged, but
-for drivers/net. The patches replaces the open coding to check for a Kconfig
-symbol being built-in or module, with IS_ENABLED() macro that does the same.
+The IS_ENABLED() macro checks if a Kconfig symbol has been enabled either
+built-in or as a module, use that macro instead of open coding the same.
 
 Using the macro makes the code more readable by helping abstract away some
 of the Kconfig built-in and module enable details.
 
-[0]: https://lkml.org/lkml/2016/9/9/323
+Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
+---
 
-Best regards,
-Javier
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-
-Javier Martinez Canillas (15):
-  3c59x: use IS_ENABLED() instead of checking for built-in or module
-  starfire: use IS_ENABLED() instead of checking for built-in or module
-  ethernet: amd: use IS_ENABLED() instead of checking for built-in or
-    module
-  bnx2: use IS_ENABLED() instead of checking for built-in or module
-  sundance: use IS_ENABLED() instead of checking for built-in or module
-  net/fsl_pq_mdio: use IS_ENABLED() instead of checking for built-in or
-    module
-  i825xx: use IS_ENABLED() instead of checking for built-in or module
-  ixgbe: use IS_ENABLED() instead of checking for built-in or module
-  net: mvneta: use IS_ENABLED() instead of checking for built-in or
-    module
-  natsemi: use IS_ENABLED() instead of checking for built-in or module
-  sfc: use IS_ENABLED() instead of checking for built-in or module
-  sis900: use IS_ENABLED() instead of checking for built-in or module
-  stmmac: use IS_ENABLED() instead of checking for built-in or module
-  hamradio: use IS_ENABLED() instead of checking for built-in or module
-  iwlegacy: use IS_ENABLED() instead of checking for built-in or module
-
- drivers/net/ethernet/3com/3c59x.c            | 2 +-
- drivers/net/ethernet/adaptec/starfire.c      | 2 +-
- drivers/net/ethernet/amd/7990.c              | 6 +++---
- drivers/net/ethernet/amd/amd8111e.c          | 2 +-
- drivers/net/ethernet/broadcom/bnx2.c         | 2 +-
- drivers/net/ethernet/dlink/sundance.c        | 2 +-
- drivers/net/ethernet/freescale/fsl_pq_mdio.c | 8 ++++----
- drivers/net/ethernet/i825xx/82596.c          | 4 ++--
- drivers/net/ethernet/intel/ixgbe/ixgbe.h     | 4 ++--
- drivers/net/ethernet/marvell/mvneta_bm.h     | 2 +-
- drivers/net/ethernet/natsemi/ns83820.c       | 2 +-
- drivers/net/ethernet/sfc/falcon_boards.c     | 4 ++--
- drivers/net/ethernet/sis/sis900.c            | 4 ++--
- drivers/net/ethernet/sis/sis900.h            | 2 +-
- drivers/net/ethernet/stmicro/stmmac/common.h | 2 +-
- drivers/net/hamradio/bpqether.c              | 2 +-
- drivers/net/wireless/intel/iwlegacy/common.h | 4 ++--
- 17 files changed, 27 insertions(+), 27 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+index 33c025055011..b06e32d0d22a 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+@@ -45,10 +45,10 @@
+ #include "ixgbe_type.h"
+ #include "ixgbe_common.h"
+ #include "ixgbe_dcb.h"
+-#if defined(CONFIG_FCOE) || defined(CONFIG_FCOE_MODULE)
++#if IS_ENABLED(CONFIG_FCOE)
+ #define IXGBE_FCOE
+ #include "ixgbe_fcoe.h"
+-#endif /* CONFIG_FCOE or CONFIG_FCOE_MODULE */
++#endif /* IS_ENABLED(CONFIG_FCOE) */
+ #ifdef CONFIG_IXGBE_DCA
+ #include <linux/dca.h>
+ #endif
 -- 
 2.7.4
 
