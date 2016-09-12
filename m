@@ -1,146 +1,68 @@
-From: Jesper Dangaard Brouer <brouer@redhat.com>
-Date: Mon, 12 Sep 2016 14:17:55 +0200
-Subject: [Intel-wired-lan] [net-next PATCH v2 2/2] e1000: bundle xdp
-	xmit routines
-In-Reply-To: <20160909212938.4001.40540.stgit@john-Precision-Tower-5810>
-References: <20160909212915.4001.25504.stgit@john-Precision-Tower-5810>
- <20160909212938.4001.40540.stgit@john-Precision-Tower-5810>
-Message-ID: <20160912141755.365c169e@redhat.com>
+From: Javier Martinez Canillas <javier@osg.samsung.com>
+Date: Mon, 12 Sep 2016 10:03:31 -0400
+Subject: [Intel-wired-lan] [PATCH 00/15] drivers: net: use IS_ENABLED()
+	instead of checking for built-in or module
+Message-ID: <1473689026-6983-1-git-send-email-javier@osg.samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, 09 Sep 2016 14:29:38 -0700
-John Fastabend <john.fastabend@gmail.com> wrote:
+Hello David,
 
-> e1000 supports a single TX queue so it is being shared with the stack
-> when XDP runs XDP_TX action. This requires taking the xmit lock to
-> ensure we don't corrupt the tx ring. To avoid taking and dropping the
-> lock per packet this patch adds a bundling implementation to submit
-> a bundle of packets to the xmit routine.
-> 
-> I tested this patch running e1000 in a VM using KVM over a tap
-> device using pktgen to generate traffic along with 'ping -f -l 100'.
-> 
-> Suggested-by: Jesper Dangaard Brouer <brouer@redhat.com>
+This trivial series is similar to [0] for net/ that you already merged, but
+for drivers/net. The patches replaces the open coding to check for a Kconfig
+symbol being built-in or module, with IS_ENABLED() macro that does the same.
 
-Thank you for actually implementing this! :-)
+Using the macro makes the code more readable by helping abstract away some
+of the Kconfig built-in and module enable details.
 
-> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
-> ---
-[...]
-> diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
-> index 91d5c87..b985271 100644
-> --- a/drivers/net/ethernet/intel/e1000/e1000_main.c
-> +++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
->  
-[...]
-> @@ -3369,33 +3381,52 @@ static void e1000_tx_map_rxpage(struct e1000_tx_ring *tx_ring,
->  }
->  
->  static void e1000_xmit_raw_frame(struct e1000_rx_buffer *rx_buffer_info,
-> -				 unsigned int len,
-> -				 struct net_device *netdev,
-> -				 struct e1000_adapter *adapter)
-> +				 __u32 len,
-> +				 struct e1000_adapter *adapter,
-> +				 struct e1000_tx_ring *tx_ring)
->  {
-> -	struct netdev_queue *txq = netdev_get_tx_queue(netdev, 0);
-> -	struct e1000_hw *hw = &adapter->hw;
-> -	struct e1000_tx_ring *tx_ring;
-> -
->  	if (len > E1000_MAX_DATA_PER_TXD)
->  		return;
->  
-> +	if (E1000_DESC_UNUSED(tx_ring) < 2)
-> +		return;
-> +
-> +	e1000_tx_map_rxpage(tx_ring, rx_buffer_info, len);
-> +	e1000_tx_queue(adapter, tx_ring, 0/*tx_flags*/, 1);
-> +}
-> +
-> +static void e1000_xdp_xmit_bundle(struct e1000_rx_buffer_bundle *buffer_info,
-> +				  struct net_device *netdev,
-> +				  struct e1000_adapter *adapter)
-> +{
-> +	struct netdev_queue *txq = netdev_get_tx_queue(netdev, 0);
-> +	struct e1000_tx_ring *tx_ring = adapter->tx_ring;
-> +	struct e1000_hw *hw = &adapter->hw;
-> +	int i = 0;
-> +
->  	/* e1000 only support a single txq at the moment so the queue is being
->  	 * shared with stack. To support this requires locking to ensure the
->  	 * stack and XDP are not running at the same time. Devices with
->  	 * multiple queues should allocate a separate queue space.
-> +	 *
-> +	 * To amortize the locking cost e1000 bundles the xmits and sends as
-> +	 * many as possible until either running out of descriptors or failing.
->  	 */
->  	HARD_TX_LOCK(netdev, txq, smp_processor_id());
->  
-> -	tx_ring = adapter->tx_ring;
-> -
-> -	if (E1000_DESC_UNUSED(tx_ring) < 2) {
-> -		HARD_TX_UNLOCK(netdev, txq);
-> -		return;
-> +	for (; i < E1000_XDP_XMIT_BUNDLE_MAX && buffer_info[i].buffer; i++) {
-                                                                       ^^^
-> +		e1000_xmit_raw_frame(buffer_info[i].buffer,
-> +				     buffer_info[i].length,
-> +				     adapter, tx_ring);
-> +		buffer_info[i].buffer->rxbuf.page = NULL;
-> +		buffer_info[i].buffer = NULL;
-> +		buffer_info[i].length = 0;
-> +		i++;
-                ^^^
-Looks like "i" is incremented twice, is that correct?
+[0]: https://lkml.org/lkml/2016/9/9/323
 
->  	}
->  
-> -	e1000_tx_map_rxpage(tx_ring, rx_buffer_info, len);
-> -	e1000_tx_queue(adapter, tx_ring, 0/*tx_flags*/, 1);
-> +	/* kick hardware to send bundle and return control back to the stack */
-> +	writel(tx_ring->next_to_use, hw->hw_addr + tx_ring->tdt);
-> +	mmiowb();
->  
->  	writel(tx_ring->next_to_use, hw->hw_addr + tx_ring->tdt);
->  	mmiowb();
-> @@ -4281,9 +4312,10 @@ static bool e1000_clean_jumbo_rx_irq(struct e1000_adapter *adapter,
->  	struct bpf_prog *prog;
->  	u32 length;
->  	unsigned int i;
-> -	int cleaned_count = 0;
-> +	int cleaned_count = 0, xdp_xmit = 0;
->  	bool cleaned = false;
->  	unsigned int total_rx_bytes = 0, total_rx_packets = 0;
-> +	struct e1000_rx_buffer_bundle *xdp_bundle = rx_ring->xdp_buffer;
->  
->  	rcu_read_lock(); /* rcu lock needed here to protect xdp programs */
->  	prog = READ_ONCE(adapter->prog);
-> @@ -4338,13 +4370,13 @@ static bool e1000_clean_jumbo_rx_irq(struct e1000_adapter *adapter,
->  			case XDP_PASS:
->  				break;
->  			case XDP_TX:
-> +				xdp_bundle[xdp_xmit].buffer = buffer_info;
-> +				xdp_bundle[xdp_xmit].length = length;
->  				dma_sync_single_for_device(&pdev->dev,
->  							   dma,
->  							   length,
->  							   DMA_TO_DEVICE);
-> -				e1000_xmit_raw_frame(buffer_info, length,
-> -						     netdev, adapter);
-> -				buffer_info->rxbuf.page = NULL;
-> +				xdp_xmit++;
->  			case XDP_DROP:
->  			default:
->  				/* re-use mapped page. keep buffer_info->dma
+Best regards,
+Javier
+
+
+Javier Martinez Canillas (15):
+  3c59x: use IS_ENABLED() instead of checking for built-in or module
+  starfire: use IS_ENABLED() instead of checking for built-in or module
+  ethernet: amd: use IS_ENABLED() instead of checking for built-in or
+    module
+  bnx2: use IS_ENABLED() instead of checking for built-in or module
+  sundance: use IS_ENABLED() instead of checking for built-in or module
+  net/fsl_pq_mdio: use IS_ENABLED() instead of checking for built-in or
+    module
+  i825xx: use IS_ENABLED() instead of checking for built-in or module
+  ixgbe: use IS_ENABLED() instead of checking for built-in or module
+  net: mvneta: use IS_ENABLED() instead of checking for built-in or
+    module
+  natsemi: use IS_ENABLED() instead of checking for built-in or module
+  sfc: use IS_ENABLED() instead of checking for built-in or module
+  sis900: use IS_ENABLED() instead of checking for built-in or module
+  stmmac: use IS_ENABLED() instead of checking for built-in or module
+  hamradio: use IS_ENABLED() instead of checking for built-in or module
+  iwlegacy: use IS_ENABLED() instead of checking for built-in or module
+
+ drivers/net/ethernet/3com/3c59x.c            | 2 +-
+ drivers/net/ethernet/adaptec/starfire.c      | 2 +-
+ drivers/net/ethernet/amd/7990.c              | 6 +++---
+ drivers/net/ethernet/amd/amd8111e.c          | 2 +-
+ drivers/net/ethernet/broadcom/bnx2.c         | 2 +-
+ drivers/net/ethernet/dlink/sundance.c        | 2 +-
+ drivers/net/ethernet/freescale/fsl_pq_mdio.c | 8 ++++----
+ drivers/net/ethernet/i825xx/82596.c          | 4 ++--
+ drivers/net/ethernet/intel/ixgbe/ixgbe.h     | 4 ++--
+ drivers/net/ethernet/marvell/mvneta_bm.h     | 2 +-
+ drivers/net/ethernet/natsemi/ns83820.c       | 2 +-
+ drivers/net/ethernet/sfc/falcon_boards.c     | 4 ++--
+ drivers/net/ethernet/sis/sis900.c            | 4 ++--
+ drivers/net/ethernet/sis/sis900.h            | 2 +-
+ drivers/net/ethernet/stmicro/stmmac/common.h | 2 +-
+ drivers/net/hamradio/bpqether.c              | 2 +-
+ drivers/net/wireless/intel/iwlegacy/common.h | 4 ++--
+ 17 files changed, 27 insertions(+), 27 deletions(-)
 
 -- 
-Best regards,
-  Jesper Dangaard Brouer
-  MSc.CS, Principal Kernel Engineer at Red Hat
-  Author of http://www.iptv-analyzer.org
-  LinkedIn: http://www.linkedin.com/in/brouer
+2.7.4
+
