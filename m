@@ -1,96 +1,142 @@
 From: Jesper Dangaard Brouer <brouer@redhat.com>
-Date: Mon, 12 Sep 2016 13:56:35 +0200
+Date: Mon, 12 Sep 2016 14:17:55 +0200
 Subject: [Intel-wired-lan] [net-next PATCH v2 2/2] e1000: bundle xdp
 	xmit routines
-In-Reply-To: <CALx6S36SM-wq6Fj8XK7GfMta1dVGr3RZ5uAgGdnxm7kgpVNFbw@mail.gmail.com>
+In-Reply-To: <20160909212938.4001.40540.stgit@john-Precision-Tower-5810>
 References: <20160909212915.4001.25504.stgit@john-Precision-Tower-5810>
  <20160909212938.4001.40540.stgit@john-Precision-Tower-5810>
- <CALx6S35VCq9yPjcuhtx6jEJ78-WugkQZ6GSsqkcTr0Fa7edkVg@mail.gmail.com>
- <57D34D67.40804@gmail.com>
- <CALx6S36dH87e6TPxEBGsy0F-vD0fZzKyP8tbuuaAfLNSF1DGpw@mail.gmail.com>
- <57D35E08.8010204@gmail.com>
- <CALx6S36SM-wq6Fj8XK7GfMta1dVGr3RZ5uAgGdnxm7kgpVNFbw@mail.gmail.com>
-Message-ID: <20160912135635.1fcb21f7@redhat.com>
+Message-ID: <20160912141755.365c169e@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+On Fri, 09 Sep 2016 14:29:38 -0700
+John Fastabend <john.fastabend@gmail.com> wrote:
 
-On Fri, 9 Sep 2016 18:19:56 -0700 Tom Herbert <tom@herbertland.com> wrote:
-> On Fri, Sep 9, 2016 at 6:12 PM, John Fastabend <john.fastabend@gmail.com> wrote:
-> > On 16-09-09 06:04 PM, Tom Herbert wrote:  
-> >> On Fri, Sep 9, 2016 at 5:01 PM, John Fastabend <john.fastabend@gmail.com> wrote:  
-> >>> On 16-09-09 04:44 PM, Tom Herbert wrote:  
-> >>>> On Fri, Sep 9, 2016 at 2:29 PM, John Fastabend <john.fastabend@gmail.com> wrote:  
-> >>>>> e1000 supports a single TX queue so it is being shared with the stack
-> >>>>> when XDP runs XDP_TX action. This requires taking the xmit lock to
-> >>>>> ensure we don't corrupt the tx ring. To avoid taking and dropping the
-> >>>>> lock per packet this patch adds a bundling implementation to submit
-> >>>>> a bundle of packets to the xmit routine.
-> >>>>>
-> >>>>> I tested this patch running e1000 in a VM using KVM over a tap
-> >>>>> device using pktgen to generate traffic along with 'ping -f -l 100'.
-> >>>>>  
-> >>>> Hi John,
-> >>>>
-> >>>> How does this interact with BQL on e1000?
-> >>>>
-> >>>> Tom
-> >>>>  
-> >>>
-> >>> Let me check if I have the API correct. When we enqueue a packet to
-> >>> be sent we must issue a netdev_sent_queue() call and then on actual
-> >>> transmission issue a netdev_completed_queue().
-> >>>
-> >>> The patch attached here missed a few things though.
-> >>>
-> >>> But it looks like I just need to call netdev_sent_queue() from the
-> >>> e1000_xmit_raw_frame() routine and then let the tx completion logic
-> >>> kick in which will call netdev_completed_queue() correctly.
-> >>>
-> >>> I'll need to add a check for the queue state as well. So if I do these
-> >>> three things,
-> >>>
-> >>>         check __QUEUE_STATE_XOFF before sending
-> >>>         netdev_sent_queue() -> on XDP_TX
-> >>>         netdev_completed_queue()
-> >>>
-> >>> It should work agree? Now should we do this even when XDP owns the
-> >>> queue? Or is this purely an issue with sharing the queue between
-> >>> XDP and stack.
-> >>>  
-> >> But what is the action for XDP_TX if the queue is stopped? There is no
-> >> qdisc to back pressure in the XDP path. Would we just start dropping
-> >> packets then?  
-> >
-> > Yep that is what the patch does if there is any sort of error packets
-> > get dropped on the floor. I don't think there is anything else that
-> > can be done.
+> e1000 supports a single TX queue so it is being shared with the stack
+> when XDP runs XDP_TX action. This requires taking the xmit lock to
+> ensure we don't corrupt the tx ring. To avoid taking and dropping the
+> lock per packet this patch adds a bundling implementation to submit
+> a bundle of packets to the xmit routine.
+> 
+> I tested this patch running e1000 in a VM using KVM over a tap
+> device using pktgen to generate traffic along with 'ping -f -l 100'.
+> 
+> Suggested-by: Jesper Dangaard Brouer <brouer@redhat.com>
 
-I agree, the only option is the drop the packet. For a DDoS use-case,
-this is good, because this "switch" XDP into a more efficient mode
-(direct recycling pages).
+Thank you for actually implementing this! :-)
 
-> >  
-> That probably means that the stack will always win out under load.
+> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
+> ---
+[...]
+> diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
+> index 91d5c87..b985271 100644
+> --- a/drivers/net/ethernet/intel/e1000/e1000_main.c
+> +++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+>  
+[...]
+> @@ -3369,33 +3381,52 @@ static void e1000_tx_map_rxpage(struct e1000_tx_ring *tx_ring,
+>  }
+>  
+>  static void e1000_xmit_raw_frame(struct e1000_rx_buffer *rx_buffer_info,
+> -				 unsigned int len,
+> -				 struct net_device *netdev,
+> -				 struct e1000_adapter *adapter)
+> +				 __u32 len,
+> +				 struct e1000_adapter *adapter,
+> +				 struct e1000_tx_ring *tx_ring)
+>  {
+> -	struct netdev_queue *txq = netdev_get_tx_queue(netdev, 0);
+> -	struct e1000_hw *hw = &adapter->hw;
+> -	struct e1000_tx_ring *tx_ring;
+> -
+>  	if (len > E1000_MAX_DATA_PER_TXD)
+>  		return;
+>  
+> +	if (E1000_DESC_UNUSED(tx_ring) < 2)
+> +		return;
+> +
+> +	e1000_tx_map_rxpage(tx_ring, rx_buffer_info, len);
+> +	e1000_tx_queue(adapter, tx_ring, 0/*tx_flags*/, 1);
+> +}
+> +
+> +static void e1000_xdp_xmit_bundle(struct e1000_rx_buffer_bundle *buffer_info,
+> +				  struct net_device *netdev,
+> +				  struct e1000_adapter *adapter)
+> +{
+> +	struct netdev_queue *txq = netdev_get_tx_queue(netdev, 0);
+> +	struct e1000_tx_ring *tx_ring = adapter->tx_ring;
+> +	struct e1000_hw *hw = &adapter->hw;
+> +	int i = 0;
+> +
+>  	/* e1000 only support a single txq at the moment so the queue is being
+>  	 * shared with stack. To support this requires locking to ensure the
+>  	 * stack and XDP are not running at the same time. Devices with
+>  	 * multiple queues should allocate a separate queue space.
+> +	 *
+> +	 * To amortize the locking cost e1000 bundles the xmits and sends as
+> +	 * many as possible until either running out of descriptors or failing.
+>  	 */
+>  	HARD_TX_LOCK(netdev, txq, smp_processor_id());
+>  
+> -	tx_ring = adapter->tx_ring;
+> -
+> -	if (E1000_DESC_UNUSED(tx_ring) < 2) {
+> -		HARD_TX_UNLOCK(netdev, txq);
+> -		return;
+> +	for (; i < E1000_XDP_XMIT_BUNDLE_MAX && buffer_info[i].buffer; i++) {
+                                                                       ^^^
+> +		e1000_xmit_raw_frame(buffer_info[i].buffer,
+> +				     buffer_info[i].length,
+> +				     adapter, tx_ring);
+> +		buffer_info[i].buffer->rxbuf.page = NULL;
+> +		buffer_info[i].buffer = NULL;
+> +		buffer_info[i].length = 0;
+> +		i++;
+                ^^^
+Looks like "i" is incremented twice, is that correct?
 
-Why would the stack win? Wouldn't XDP_TX win?
-
-> Trying to used the same queue where half of the packets are well
-> managed by a qdisc and half aren't is going to leave someone unhappy.
-> Maybe in the this case where we have to share the qdisc we can
-> allocate the skb on on returning XDP_TX and send through the normal
-> qdisc for the device.
-
-Hmmm. I'm not sure I like the approach of allocating an SKB, and
-injecting into the qdisc.  Most of the performance gain goes out the
-window.  Unless, we (1) bulk alloc SKBs, and (2) can avoid initializing
-the entire SKB, and (3) bulk enqueue into qdisc.  It would be an
-interesting "tool" for a zoom-in benchmark, what would allow us to
-determine the cost/overhead of the network stack between RX to
-qdisc-enqueue.
+>  	}
+>  
+> -	e1000_tx_map_rxpage(tx_ring, rx_buffer_info, len);
+> -	e1000_tx_queue(adapter, tx_ring, 0/*tx_flags*/, 1);
+> +	/* kick hardware to send bundle and return control back to the stack */
+> +	writel(tx_ring->next_to_use, hw->hw_addr + tx_ring->tdt);
+> +	mmiowb();
+>  
+>  	writel(tx_ring->next_to_use, hw->hw_addr + tx_ring->tdt);
+>  	mmiowb();
+> @@ -4281,9 +4312,10 @@ static bool e1000_clean_jumbo_rx_irq(struct e1000_adapter *adapter,
+>  	struct bpf_prog *prog;
+>  	u32 length;
+>  	unsigned int i;
+> -	int cleaned_count = 0;
+> +	int cleaned_count = 0, xdp_xmit = 0;
+>  	bool cleaned = false;
+>  	unsigned int total_rx_bytes = 0, total_rx_packets = 0;
+> +	struct e1000_rx_buffer_bundle *xdp_bundle = rx_ring->xdp_buffer;
+>  
+>  	rcu_read_lock(); /* rcu lock needed here to protect xdp programs */
+>  	prog = READ_ONCE(adapter->prog);
+> @@ -4338,13 +4370,13 @@ static bool e1000_clean_jumbo_rx_irq(struct e1000_adapter *adapter,
+>  			case XDP_PASS:
+>  				break;
+>  			case XDP_TX:
+> +				xdp_bundle[xdp_xmit].buffer = buffer_info;
+> +				xdp_bundle[xdp_xmit].length = length;
+>  				dma_sync_single_for_device(&pdev->dev,
+>  							   dma,
+>  							   length,
+>  							   DMA_TO_DEVICE);
+> -				e1000_xmit_raw_frame(buffer_info, length,
+> -						     netdev, adapter);
+> -				buffer_info->rxbuf.page = NULL;
+> +				xdp_xmit++;
+>  			case XDP_DROP:
+>  			default:
+>  				/* re-use mapped page. keep buffer_info->dma
 
 -- 
 Best regards,
