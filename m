@@ -1,37 +1,88 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Mon, 12 Sep 2016 17:01:05 +0000
-Subject: [Intel-wired-lan] [next PATCH] ixgbe: reset before SRIOV init
- to	avoid mailbox issues
-In-Reply-To: <20160909195910.32272.11650.stgit@localhost6.localdomain6>
-References: <20160909195910.32272.11650.stgit@localhost6.localdomain6>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9FCD34@ORSMSX104.amr.corp.intel.com>
+From: John Fastabend <john.fastabend@gmail.com>
+Date: Mon, 12 Sep 2016 11:11:52 -0700
+Subject: [Intel-wired-lan] [net-next PATCH v2 2/2] e1000: bundle xdp
+	xmit routines
+In-Reply-To: <20160912141755.365c169e@redhat.com>
+References: <20160909212915.4001.25504.stgit@john-Precision-Tower-5810>
+ <20160909212938.4001.40540.stgit@john-Precision-Tower-5810>
+ <20160912141755.365c169e@redhat.com>
+Message-ID: <57D6EFE8.50707@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Emil Tantilov
-> Sent: Friday, September 09, 2016 12:59 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH] ixgbe: reset before SRIOV init to
-> avoid mailbox issues
+On 16-09-12 05:17 AM, Jesper Dangaard Brouer wrote:
+> On Fri, 09 Sep 2016 14:29:38 -0700
+> John Fastabend <john.fastabend@gmail.com> wrote:
 > 
-> Enabling SRIOV while the ixgbevf driver is loaded will result in all mailbox
-> requests from ixgbevf_open() being rejected by ixgbe because
-> adapter->clear_to_send is set to false on reset.
+>> e1000 supports a single TX queue so it is being shared with the stack
+>> when XDP runs XDP_TX action. This requires taking the xmit lock to
+>> ensure we don't corrupt the tx ring. To avoid taking and dropping the
+>> lock per packet this patch adds a bundling implementation to submit
+>> a bundle of packets to the xmit routine.
+>>
+>> I tested this patch running e1000 in a VM using KVM over a tap
+>> device using pktgen to generate traffic along with 'ping -f -l 100'.
+>>
+>> Suggested-by: Jesper Dangaard Brouer <brouer@redhat.com>
 > 
-> Call ixgbe_sriov_reinit() before pci_enable_sriov() to make sure that mailbox
-> requests are handled from the time ixgbevf is loaded.
+> Thank you for actually implementing this! :-)
 > 
-> Reported-by: Andrew Bowers <andrewx.bowers@intel.com>
-> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
-> ---
->  drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c |    4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Issue is no longer present
+Yep no problem the effects are minimal on e1000 but should be
+noticeable at 10/40/100gbps nics.
+
+>> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
+>> ---
+> [...]
+
+
+[...]
+
+>> +static void e1000_xdp_xmit_bundle(struct e1000_rx_buffer_bundle *buffer_info,
+>> +				  struct net_device *netdev,
+>> +				  struct e1000_adapter *adapter)
+>> +{
+>> +	struct netdev_queue *txq = netdev_get_tx_queue(netdev, 0);
+>> +	struct e1000_tx_ring *tx_ring = adapter->tx_ring;
+>> +	struct e1000_hw *hw = &adapter->hw;
+>> +	int i = 0;
+>> +
+>>  	/* e1000 only support a single txq at the moment so the queue is being
+>>  	 * shared with stack. To support this requires locking to ensure the
+>>  	 * stack and XDP are not running at the same time. Devices with
+>>  	 * multiple queues should allocate a separate queue space.
+>> +	 *
+>> +	 * To amortize the locking cost e1000 bundles the xmits and sends as
+>> +	 * many as possible until either running out of descriptors or failing.
+>>  	 */
+>>  	HARD_TX_LOCK(netdev, txq, smp_processor_id());
+>>  
+>> -	tx_ring = adapter->tx_ring;
+>> -
+>> -	if (E1000_DESC_UNUSED(tx_ring) < 2) {
+>> -		HARD_TX_UNLOCK(netdev, txq);
+>> -		return;
+>> +	for (; i < E1000_XDP_XMIT_BUNDLE_MAX && buffer_info[i].buffer; i++) {
+>                                                                        ^^^
+>> +		e1000_xmit_raw_frame(buffer_info[i].buffer,
+>> +				     buffer_info[i].length,
+>> +				     adapter, tx_ring);
+>> +		buffer_info[i].buffer->rxbuf.page = NULL;
+>> +		buffer_info[i].buffer = NULL;
+>> +		buffer_info[i].length = 0;
+>> +		i++;
+>                 ^^^
+> Looks like "i" is incremented twice, is that correct?
+> 
+>>  	}
+
+Yep this and a couple other issues are resolved in v3 which I'll send
+out in a moment.
+
+Also in v3 I kept the program in the adapter structure. Moving it into
+the ring structure made the code a bit uglier IMO. I agree with the
+logic but practically only one program can exist for e1000.
 
