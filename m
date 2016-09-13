@@ -1,71 +1,166 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Tue, 13 Sep 2016 06:17:35 -0700
-Subject: [Intel-wired-lan] [net-next PATCH v3 1/3] e1000: track BQL
- bytes regardless of skb or not
-In-Reply-To: <CALx6S364cmWz-6trzyX5pdhk_G_AC4XNoxCga13=_6uoWb5CTg@mail.gmail.com>
-References: <20160912220312.5610.77528.stgit@john-Precision-Tower-5810>
- <20160912221327.5610.74333.stgit@john-Precision-Tower-5810>
- <CAKgT0UdShvcviYP=VVp8c0OOESDnqsppArVeUhjxfM6XqX6HwQ@mail.gmail.com>
- <CALx6S364cmWz-6trzyX5pdhk_G_AC4XNoxCga13=_6uoWb5CTg@mail.gmail.com>
-Message-ID: <CAKgT0UckLn4nyR12Jb0nb-1n96COQZZCLp4-p4B_Mi0qFh_n8A@mail.gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 13 Sep 2016 22:09:25 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ b0b5adeeb6ac888bb5c4c2b9f8c7cc697e5d1228 BUILD SUCCESS
+Message-ID: <57d80895.vGCtGAPNe7ul9svP%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Sep 12, 2016 at 9:25 PM, Tom Herbert <tom@herbertland.com> wrote:
-> On Mon, Sep 12, 2016 at 8:00 PM, Alexander Duyck
-> <alexander.duyck@gmail.com> wrote:
->> On Mon, Sep 12, 2016 at 3:13 PM, John Fastabend
->> <john.fastabend@gmail.com> wrote:
->>> The BQL API does not reference the sk_buff nor does the driver need to
->>> reference the sk_buff to calculate the length of a transmitted frame.
->>> This patch removes an sk_buff reference from the xmit irq path and
->>> also allows packets sent from XDP to use BQL.
->>>
->>> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
->>> ---
->>>  drivers/net/ethernet/intel/e1000/e1000_main.c |    7 ++-----
->>>  1 file changed, 2 insertions(+), 5 deletions(-)
->>>
->>> diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
->>> index f42129d..62a7f8d 100644
->>> --- a/drivers/net/ethernet/intel/e1000/e1000_main.c
->>> +++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
->>> @@ -3882,11 +3882,8 @@ static bool e1000_clean_tx_irq(struct e1000_adapter *adapter,
->>>                         if (cleaned) {
->>>                                 total_tx_packets += buffer_info->segs;
->>>                                 total_tx_bytes += buffer_info->bytecount;
->>> -                               if (buffer_info->skb) {
->>> -                                       bytes_compl += buffer_info->skb->len;
->>> -                                       pkts_compl++;
->>> -                               }
->>> -
->>> +                               bytes_compl += buffer_info->length;
->>> +                               pkts_compl++;
->>>                         }
->>>                         e1000_unmap_and_free_tx_resource(adapter, buffer_info);
->>>                         tx_desc->upper.data = 0;
->>
->> Actually it might be worth looking into why we have two different
->> stats for tracking bytecount and segs.  From what I can tell the
->> pkts_compl value is never actually used.  The function doesn't even
->> use the value so it is just wasted cycles.  And as far as the bytes go
->
-> Transmit flow steering which I posted and is pending on some testing
-> uses the pkt count BQL to track inflight packets.
->
->> the accounting would be more accurate if you were to use bytecount
->> instead of buffer_info->skb->len.  You would just need to update the
->> xmit function to use that on the other side so that they match.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+b0b5adeeb6ac888bb5c4c2b9f8c7cc697e5d1228  e1000: bundle xdp xmit routines
 
-Okay, that makes sense.
+elapsed time: 235m
 
-But as I was saying we might be better off using the segs and
-bytecount values instead of the skb->len in the xmit and cleanup paths
-to get more accurate accounting for the total bytes/packets coming and
-going from the interface.  That way we can avoid any significant
-change in behavior between TSO and GSO.
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 144
 
-- Alex
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                   randconfig-a0-09120819
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+arm                            zeus_defconfig
+avr32                  atngw100mkii_defconfig
+avr32                     atstk1006_defconfig
+arm                         shannon_defconfig
+blackfin                BF538-EZKIT_defconfig
+cris                              allnoconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+parisc                         b180_defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+arm                        clps711x_defconfig
+arm                         em_x270_defconfig
+arm64                               defconfig
+blackfin          BF527-AD7160-EVAL_defconfig
+m68k                        m5307c3_defconfig
+x86_64                 randconfig-x013-201637
+x86_64                 randconfig-x015-201637
+x86_64                 randconfig-x012-201637
+x86_64                 randconfig-x011-201637
+x86_64                 randconfig-x010-201637
+x86_64                 randconfig-x014-201637
+x86_64                 randconfig-x018-201637
+x86_64                 randconfig-x017-201637
+x86_64                 randconfig-x019-201637
+x86_64                 randconfig-x016-201637
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201637
+i386                     randconfig-s1-201637
+x86_64                           allmodconfig
+avr32                      atngw100_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                 randconfig-i0-09111857
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+i386                     randconfig-i1-201637
+i386                     randconfig-i0-201637
+x86_64                 randconfig-b0-09131721
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+mn10300                          allyesconfig
+powerpc                      mgcoge_defconfig
+i386                   randconfig-x014-201637
+i386                   randconfig-x016-201637
+i386                   randconfig-x010-201637
+i386                   randconfig-x017-201637
+i386                   randconfig-x012-201637
+i386                   randconfig-x013-201637
+i386                   randconfig-x018-201637
+i386                   randconfig-x019-201637
+i386                   randconfig-x011-201637
+i386                   randconfig-x015-201637
+x86_64                                    lkp
+x86_64                                   rhel
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201637
+x86_64                               rhel-7.2
+powerpc                     ksi8560_defconfig
+powerpc                      ppc40x_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+x86_64                 randconfig-x008-201637
+x86_64                 randconfig-x009-201637
+x86_64                 randconfig-x002-201637
+x86_64                 randconfig-x003-201637
+x86_64                 randconfig-x007-201637
+x86_64                 randconfig-x004-201637
+x86_64                 randconfig-x005-201637
+x86_64                 randconfig-x000-201637
+x86_64                 randconfig-x006-201637
+x86_64                 randconfig-x001-201637
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201637
+i386                   randconfig-x006-201637
+i386                   randconfig-x009-201637
+i386                   randconfig-x002-201637
+i386                   randconfig-x003-201637
+i386                   randconfig-x001-201637
+i386                   randconfig-x007-201637
+i386                   randconfig-x008-201637
+i386                   randconfig-x000-201637
+i386                   randconfig-x005-201637
+i386                   randconfig-x004-201637
+
+Thanks,
+Fengguang
