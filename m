@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 13 Sep 2016 18:22:25 +0000
-Subject: [Intel-wired-lan] [next PATCH S46 5/8] i40e: Split Flow
- Director	descriptor config into separate function
-In-Reply-To: <1473715124-31296-6-git-send-email-bimmy.pujari@intel.com>
+Date: Tue, 13 Sep 2016 18:26:07 +0000
+Subject: [Intel-wired-lan] [next PATCH S46 6/8] i40e: Strip out debugfs
+ hook	for Flow Director filter programming
+In-Reply-To: <1473715124-31296-7-git-send-email-bimmy.pujari@intel.com>
 References: <1473715124-31296-1-git-send-email-bimmy.pujari@intel.com>
- <1473715124-31296-6-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9FD0D7@ORSMSX104.amr.corp.intel.com>
+ <1473715124-31296-7-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9FD0EA@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,30 +17,27 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Monday, September 12, 2016 2:19 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S46 5/8] i40e: Split Flow Director
-> descriptor config into separate function
+> Subject: [Intel-wired-lan] [next PATCH S46 6/8] i40e: Strip out debugfs hook
+> for Flow Director filter programming
 > 
 > From: Alexander Duyck <alexander.h.duyck@intel.com>
 > 
-> In an effort to improve code readability I am splitting the Flow Director filter
-> configuration out into a separate function like we have done for the standard
-> xmit path.  The general idea is to provide a single block of code that translates
-> the flow specification into a proper Flow Director descriptor.
+> This  interface was only ever meant for debug only. Since it is not supposed
+> to be here we are removing it.
 > 
 > Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-> Change-ID: Id355ad8030c4e6c72c57504fa09de60c976a8ffe
+> Change-ID: Id771a1e5e7d3e2b4b7f56591b61fb48c921e1d04
 > ---
 > Testing Hints:
->         This will impact the Flow Director setup for Rx NFC based flows.  A
->         good test for this will be to add multiple flows via ethtool -N
->         interface and verify that all flow-type rules are being added
->         correctly.
+>         Verify the "add fd_filter" and "rem fd_filter" functionality
+>         and all references to it have been removed.
 > 
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c | 115 ++++++++++++++++-------
-> -----
->  1 file changed, 64 insertions(+), 51 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e.h         |  2 -
+>  drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 80 --------------------------
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c    |  5 +-
+>  3 files changed, 3 insertions(+), 84 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Flow director rules and functions work as expected
+Debugfs commands/references removed
 
 
