@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 13 Sep 2016 18:13:51 +0000
-Subject: [Intel-wired-lan] [next PATCH S46 4/8] i40e/i40evf: Add
- txring_txq	function to match fm10k and ixgbe
-In-Reply-To: <1473715124-31296-5-git-send-email-bimmy.pujari@intel.com>
+Date: Tue, 13 Sep 2016 18:22:25 +0000
+Subject: [Intel-wired-lan] [next PATCH S46 5/8] i40e: Split Flow
+ Director	descriptor config into separate function
+In-Reply-To: <1473715124-31296-6-git-send-email-bimmy.pujari@intel.com>
 References: <1473715124-31296-1-git-send-email-bimmy.pujari@intel.com>
- <1473715124-31296-5-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9FD0C7@ORSMSX104.amr.corp.intel.com>
+ <1473715124-31296-6-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9FD0D7@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,32 +17,30 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Monday, September 12, 2016 2:19 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S46 4/8] i40e/i40evf: Add txring_txq
-> function to match fm10k and ixgbe
+> Subject: [Intel-wired-lan] [next PATCH S46 5/8] i40e: Split Flow Director
+> descriptor config into separate function
 > 
 > From: Alexander Duyck <alexander.h.duyck@intel.com>
 > 
-> This patch adds a txring_txq function which allows us to convert a
-> i40e_ring/i40evf_ring to a netdev_tx_queue structure.  This way we can
-> avoid having to make a multi-line function call for all the spots that need
-> access to this.
+> In an effort to improve code readability I am splitting the Flow Director filter
+> configuration out into a separate function like we have done for the standard
+> xmit path.  The general idea is to provide a single block of code that translates
+> the flow specification into a proper Flow Director descriptor.
 > 
 > Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-> Change-ID: Ic063b71d8b92ea406d2c32e798c8e2b02809d65b
+> Change-ID: Id355ad8030c4e6c72c57504fa09de60c976a8ffe
 > ---
 > Testing Hints:
->         This functionality is most heavily used to stop/start the Tx queues
->         so a good way to exercise this is to push the device with multiple
->         large flows to the point that you start seeing the Tx restart stat
->         incrementing.  As long as no data corruption is reported it is
->         passing.
+>         This will impact the Flow Director setup for Rx NFC based flows.  A
+>         good test for this will be to add multiple flows via ethtool -N
+>         interface and verify that all flow-type rules are being added
+>         correctly.
 > 
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 17 ++++++-----------
->  drivers/net/ethernet/intel/i40e/i40e_txrx.h   |  9 +++++++++
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 17 ++++++-----------
-> drivers/net/ethernet/intel/i40evf/i40e_txrx.h |  9 +++++++++
->  4 files changed, 30 insertions(+), 22 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c | 115 ++++++++++++++++-------
+> -----
+>  1 file changed, 64 insertions(+), 51 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Flow director rules and functions work as expected
 
 
