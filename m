@@ -1,5 +1,5 @@
-From: Eric Dumazet <eric.dumazet@gmail.com>
-Date: Tue, 13 Sep 2016 10:37:32 -0700
+From: Tom Herbert <tom@herbertland.com>
+Date: Tue, 13 Sep 2016 10:55:00 -0700
 Subject: [Intel-wired-lan] [net-next PATCH v3 2/3] e1000: add initial
 	XDP support
 In-Reply-To: <20160913171340.GA37341@ast-mbp.thefacebook.com>
@@ -12,15 +12,54 @@ References: <20160912220312.5610.77528.stgit@john-Precision-Tower-5810>
  <20160913012815.GB25756@ast-mbp.thefacebook.com>
  <CALx6S36u+tQUEVhu0BaLZ6-_0=GSMwxd4m89-H+brVZ-rr-U2g@mail.gmail.com>
  <20160913171340.GA37341@ast-mbp.thefacebook.com>
-Message-ID: <1473788252.18970.177.camel@edumazet-glaptop3.roam.corp.google.com>
+Message-ID: <CALx6S36Vrmcv23Q0fZxK4gO5bz8nVH5DSyQwbe_E6DQrr8AB=Q@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2016-09-13 at 10:13 -0700, Alexei Starovoitov wrote:
-
+On Tue, Sep 13, 2016 at 10:13 AM, Alexei Starovoitov
+<alexei.starovoitov@gmail.com> wrote:
+> On Tue, Sep 13, 2016 at 09:21:47AM -0700, Tom Herbert wrote:
+>> On Mon, Sep 12, 2016 at 6:28 PM, Alexei Starovoitov
+>> <alexei.starovoitov@gmail.com> wrote:
+>> > On Mon, Sep 12, 2016 at 05:03:25PM -0700, Tom Herbert wrote:
+>> >> On Mon, Sep 12, 2016 at 4:46 PM, Eric Dumazet <eric.dumazet@gmail.com> wrote:
+>> >> > On Mon, 2016-09-12 at 16:07 -0700, Alexei Starovoitov wrote:
+>> >> >
+>> >> >> yep. there are various ways to shoot yourself in the foot with xdp.
+>> >> >> The simplest program that drops all the packets will make the box unpingable.
+>> >> >
+>> >> > Well, my comment was about XDP_TX only, not about XDP_DROP or driving a
+>> >> > scooter on 101 highway ;)
+>> >> >
+>> >> > This XDP_TX thing was one of the XDP marketing stuff, but there is
+>> >> > absolutely no documentation on it, warning users about possible
+>> >> > limitations/outcomes.
+>> >> >
+>> >> > BTW, I am not sure mlx4 implementation even works, vs BQL :
+>> >> >
+>> >> > mlx4_en_xmit_frame() does not call netdev_tx_sent_queue(),
+>> >> > but tx completion will call netdev_tx_completed_queue() -> crash
+>> >> >
+>> >> > Do we have one test to validate that a XDP_TX implementation is actually
+>> >> > correct ?
+>> >> >
+>> >> Obviously not for e1000 :-(. We really need some real test and
+>> >> performance results and analysis on the interaction between the stack
+>> >> data path and XDP data path.
+>> >
+>> > no. we don't need it for e1k and we cannot really do it.
+>> > <broken record mode on> this patch is for debugging of xdp programs only.
+>> >
+>> You can say this "only for a debugging" a thousand times and that
+>> still won't justify putting bad code into the kernel. Material issues
+>> have been raised with these patches, I have proposed a fix for one
+>> core issue, and we have requested a lot more testing. So, please, if
+>> you really want to move these patches forward start addressing the
+>> concerns being raised by reviewers.
+>
 > I'm afraid the point 'only for debugging' still didn't make it across.
 > xdp+e1k is for development (and debugging) of xdp-type of bpf
 > programs and _not_ for debugging of xdp itself, kernel or anything else.
@@ -29,16 +68,25 @@ On Tue, 2016-09-13 at 10:13 -0700, Alexei Starovoitov wrote:
 > Doing special hacks are not acceptable. Therefore your
 > 'proposed fix' misses the mark, since:
 > 1. ignoring bql/qdisc is not a bug, but the requirement
+
+You don't seem to understand the problem. In the shared queue scenario
+if one party (the stack) implements qdiscs, BQL, and such and the
+other (XDP) just throws packets onto the queue then these are
+incompatible behaviors and something will break. I suppose it's
+possible that some how this does not affect the stack path, but
+remains to be proven. In any case the patches under review look very
+much like they break things; either a fix is needed or tests run to
+show it's not a problem. Until this is resolved I am going to nack the
+patch.
+
+Tom
+
 > 2. such 'fix' goes against the goal above since behaviors will be
 > different and xdp developer won't be able to build something like
 > xdp loadbalancer in the kvm.
-> 
-
-
-Is e1k the only way a VM can receive and send packets ?
-
-Instead of adding more cruft to a legacy driver, risking breaking real
-old machines, I am sure we can find modern alternative.
-
-
-
+>
+> If you have other concerns please raise them or if you have
+> suggestions on how to develop xdp programs without this e1k patch
+> I would love hear them.
+> Alexander's review comments are discussed in separate thread.
+>
