@@ -1,65 +1,54 @@
-From: Rustad, Mark D <mark.d.rustad@intel.com>
-Date: Tue, 13 Sep 2016 19:14:27 +0000
-Subject: [Intel-wired-lan] [net-next PATCH v3 2/3] e1000: add initial
- XDP support
-In-Reply-To: <20160913182959.GA38950@ast-mbp.thefacebook.com>
-References: <1473720399.18970.91.camel@edumazet-glaptop3.roam.corp.google.com>
- <20160912230745.GA24171@ast-mbp.thefacebook.com>
- <1473723968.18970.111.camel@edumazet-glaptop3.roam.corp.google.com>
- <CALx6S35CE+ZYbGm96Y5YKnTqU0zfhg9_h0VSpD3ot8xB-scdFQ@mail.gmail.com>
- <20160913012815.GB25756@ast-mbp.thefacebook.com>
- <CALx6S36u+tQUEVhu0BaLZ6-_0=GSMwxd4m89-H+brVZ-rr-U2g@mail.gmail.com>
- <20160913171340.GA37341@ast-mbp.thefacebook.com>
- <1473788252.18970.177.camel@edumazet-glaptop3.roam.corp.google.com>
- <20160913175926.GA38737@ast-mbp.thefacebook.com>
- <36ECC79A-0810-4D06-A72D-702AD9901E83@intel.com>
- <20160913182959.GA38950@ast-mbp.thefacebook.com>
-Message-ID: <AB6E7248-F1A3-4C9C-9249-7F25E51BA1E4@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Tue, 13 Sep 2016 20:34:20 +0000
+Subject: [Intel-wired-lan] [next PATCH S46 3/8] i40e: Fix Flow
+	Director	raw_buf cleanup
+In-Reply-To: <1473715124-31296-4-git-send-email-bimmy.pujari@intel.com>
+References: <1473715124-31296-1-git-send-email-bimmy.pujari@intel.com>
+ <1473715124-31296-4-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9FD175@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Alexei Starovoitov <alexei.starovoitov@gmail.com> wrote:
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Bimmy Pujari
+> Sent: Monday, September 12, 2016 2:19 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S46 3/8] i40e: Fix Flow Director
+> raw_buf cleanup
+> 
+> From: Alexander Duyck <alexander.h.duyck@intel.com>
+> 
+> The Tx cleanup flow was incorrectly assuming it could check for the flow
+> director bits after it had unmapped the buffer.  However in this case it results
+> in us trying to free a raw_buf as though it is an sk_buff.
+> 
+> To fix this I am moving up the flag test for the FD_SB bit so that when find a
+> non-NULL skb or raw_buf value we then check the flag and use the
+> appropriate call to free the buffer.
+> 
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+> Change-ID: I6284034ba1ea87c9922e56f6eb3181f7f09bddde
+> ---
+> Testing Hints:
+>         The issue fixed here would present itself as a memory leak or data
+>         corruption.  The trick would be to find a way to cause the Tx ring
+>         for the Flow Director sideband to have buffers on it when the queue
+>         is disabled.  This would likely require ifconfig up/down on the
+>         interface in a loop while also adding filters.
+> 
+>         1.  ifconfig <iface> up
+>         2.  disable interrupts for FD SB queue. (via setpci or pciraw)
+>         3.  dump a number of filters on the ring via ethtool -N <iface>
+>         4.  shut down interface via ifconfig <iface> down
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 8 ++++----
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 8 ++++----
+>  2 files changed, 8 insertions(+), 8 deletions(-)
 
-> On Tue, Sep 13, 2016 at 06:28:03PM +0000, Rustad, Mark D wrote:
->> Alexei Starovoitov <alexei.starovoitov@gmail.com> wrote:
->>
->>> I've looked through qemu and it appears only emulate e1k and tg3.
->>> The latter is still used in the field, so the risk of touching
->>> it is higher.
->>
->> I have no idea what makes you think that e1k is *not* "used in the field".
->> I grant you it probably is used more virtualized than not these days,  
->> but it
->> certainly exists and is used. You can still buy them new at Newegg for
->> goodness sakes!
->
-> the point that it's only used virtualized, since PCI (not PCIE) have
-> been long dead.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
-My point is precisely the opposite. It is a real device, it exists in real  
-systems and it is used in those systems. I worked on embedded systems that  
-ran Linux and used e1000 devices. I am sure they are still out there  
-because customers are still paying for support of those systems.
 
-Yes, PCI(-X) is absent from any current hardware and has been for some  
-years now, but there is an installed base that continues. What part of that  
-installed base updates software? I don't know, but I would not just assume  
-that it is 0. I know that I updated the kernel on those embedded systems  
-that I worked on when I was supporting them. Never at the bleeding edge,  
-but generally hopping from one LTS kernel to another as needed.
-
-The day is coming when all the motherboards with PCI(-X) will be gone, but  
-I think it is still at least a few years off.
-
---
-Mark Rustad, Networking Division, Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 841 bytes
-Desc: Message signed with OpenPGP using GPGMail
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160913/c33ae462/attachment.asc>
