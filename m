@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Tue, 13 Sep 2016 18:26:07 +0000
-Subject: [Intel-wired-lan] [next PATCH S46 6/8] i40e: Strip out debugfs
- hook	for Flow Director filter programming
-In-Reply-To: <1473715124-31296-7-git-send-email-bimmy.pujari@intel.com>
+Date: Tue, 13 Sep 2016 18:27:25 +0000
+Subject: [Intel-wired-lan] [next PATCH S46 7/8] i40e: don't
+	configure	zero-size RSS table
+In-Reply-To: <1473715124-31296-8-git-send-email-bimmy.pujari@intel.com>
 References: <1473715124-31296-1-git-send-email-bimmy.pujari@intel.com>
- <1473715124-31296-7-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9FD0EA@ORSMSX104.amr.corp.intel.com>
+ <1473715124-31296-8-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0F9FD0FA@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,27 +17,27 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Monday, September 12, 2016 2:19 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S46 6/8] i40e: Strip out debugfs hook
-> for Flow Director filter programming
+> Subject: [Intel-wired-lan] [next PATCH S46 7/8] i40e: don't configure zero-
+> size RSS table
 > 
-> From: Alexander Duyck <alexander.h.duyck@intel.com>
+> From: Mitch Williams <mitch.a.williams@intel.com>
 > 
-> This  interface was only ever meant for debug only. Since it is not supposed
-> to be here we are removing it.
+> In some rare cases, we might get a VSI with no queues. In this case, we
+> cannot configure RSS on this VSI as it will try to divide by zero when
+> configuring the lookup table.
 > 
-> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-> Change-ID: Id771a1e5e7d3e2b4b7f56591b61fb48c921e1d04
+> Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+> Change-ID: I6ae173a7dd3481a081e079eb10eb80275de2adb0
 > ---
-> Testing Hints:
->         Verify the "add fd_filter" and "rem fd_filter" functionality
->         and all references to it have been removed.
+> Testing Hints : This bug showed up at Red Hat while testing a DUP. It looks
+> like you need Purley and need to enable 32 VFs on all PFs. I haven't
+> reproduced the bug; this was found via code inspection.
 > 
->  drivers/net/ethernet/intel/i40e/i40e.h         |  2 -
->  drivers/net/ethernet/intel/i40e/i40e_debugfs.c | 80 --------------------------
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c    |  5 +-
->  3 files changed, 3 insertions(+), 84 deletions(-)
+> HSD-number: 10020370
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 2 ++
+>  1 file changed, 2 insertions(+)
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Debugfs commands/references removed
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com
 
 
