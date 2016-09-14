@@ -1,146 +1,59 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Wed, 14 Sep 2016 16:24:36 -0700
-Subject: [Intel-wired-lan] [next PATCH S47 6/9] i40e: reopen client after
-	reset
+Date: Wed, 14 Sep 2016 16:24:37 -0700
+Subject: [Intel-wired-lan] [next PATCH S47 7/9] i40e: group base mode VF
+	offload flags
 In-Reply-To: <1473895479-23035-1-git-send-email-bimmy.pujari@intel.com>
 References: <1473895479-23035-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1473895479-23035-7-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1473895479-23035-8-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Mitch Williams <mitch.a.williams@intel.com>
+From: Preethi Banala <preethi.banala@intel.com>
 
-Allow the client interface to reopen existing clients if they were
-closed. This allows clients to recover from reset, which is essential
-for supporting VF RDMA. In one instance, the driver was not clearing the
-open bit when the client was closed. Add the code to clear this bit so
-that the state is accurate and the driver will not attempt to reopen
-already-open clients. Remove the ref_cnt variable; it was just getting
-in the way and was not being used consistently.
+Group together the minimum set of offload capabilities that are always
+supported by VF in base mode. This define would be used by PF to make
+sure VF in base mode gets minimum of base capabilities .
 
-Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
-Change-ID: Ic71af4553b096963ac0c56a997f887c9a4ed162d
+Signed-off-by: Preethi Banala <preethi.banala@intel.com>
+Change-ID: Id5e8f22ba169c8f0a38d22fc36b2cb531c02582c
 ---
-Testing Hints : enable VF RDMA
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl.h   | 4 ++++
+ drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h | 4 ++++
+ 2 files changed, 8 insertions(+)
 
- drivers/net/ethernet/intel/i40e/i40e_client.c | 47 ++++++++++-----------------
- drivers/net/ethernet/intel/i40e/i40e_client.h |  2 --
- 2 files changed, 17 insertions(+), 32 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c b/drivers/net/ethernet/intel/i40e/i40e_client.c
-index 417ac16..7fe72ab 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_client.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
-@@ -287,6 +287,7 @@ void i40e_notify_client_of_netdev_close(struct i40e_vsi *vsi, bool reset)
- 			}
- 			cdev->client->ops->close(&cdev->lan_info, cdev->client,
- 						 reset);
-+			clear_bit(__I40E_CLIENT_INSTANCE_OPENED, &cdev->state);
- 			i40e_client_release_qvlist(&cdev->lan_info);
- 		}
- 	}
-@@ -544,28 +545,27 @@ void i40e_client_subtask(struct i40e_pf *pf)
- 			continue;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl.h
+index f861d31..974ba2b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl.h
+@@ -165,6 +165,10 @@ struct i40e_virtchnl_vsi_resource {
+ #define I40E_VIRTCHNL_VF_OFFLOAD_RSS_PF		0X00080000
+ #define I40E_VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM	0X00100000
  
- 		if (!existing) {
--			/* Also up the ref_cnt for no. of instances of this
--			 * client.
--			 */
--			atomic_inc(&client->ref_cnt);
- 			dev_info(&pf->pdev->dev, "Added instance of Client %s to PF%d bus=0x%02x func=0x%02x\n",
- 				 client->name, pf->hw.pf_id,
- 				 pf->hw.bus.device, pf->hw.bus.func);
--			mutex_lock(&i40e_client_instance_mutex);
--			atomic_inc(&cdev->ref_cnt);
-+		}
++#define I40E_VF_BASE_MODE_OFFLOADS (I40E_VIRTCHNL_VF_OFFLOAD_L2 | \
++				    I40E_VIRTCHNL_VF_OFFLOAD_VLAN | \
++				    I40E_VIRTCHNL_VF_OFFLOAD_RSS_PF)
 +
-+		mutex_lock(&i40e_client_instance_mutex);
-+		if (!test_bit(__I40E_CLIENT_INSTANCE_OPENED,
-+			      &cdev->state)) {
-+			/* Send an Open request to the client */
- 			if (client->ops && client->ops->open)
- 				ret = client->ops->open(&cdev->lan_info,
- 							client);
--			atomic_dec(&cdev->ref_cnt);
--			if (ret < 0) {
--				mutex_unlock(&i40e_client_instance_mutex);
-+			if (!ret) {
-+				set_bit(__I40E_CLIENT_INSTANCE_OPENED,
-+					&cdev->state);
-+			} else {
-+				/* remove client instance */
- 				i40e_client_del_instance(pf, client);
--				atomic_dec(&client->ref_cnt);
--				continue;
- 			}
--			set_bit(__I40E_CLIENT_INSTANCE_OPENED, &cdev->state);
--			mutex_unlock(&i40e_client_instance_mutex);
- 		}
-+		mutex_unlock(&i40e_client_instance_mutex);
- 	}
- 	mutex_unlock(&i40e_client_mutex);
- }
-@@ -660,10 +660,6 @@ static int i40e_client_release(struct i40e_client *client)
- 			continue;
- 		pf = (struct i40e_pf *)cdev->lan_info.pf;
- 		if (test_bit(__I40E_CLIENT_INSTANCE_OPENED, &cdev->state)) {
--			if (atomic_read(&cdev->ref_cnt) > 0) {
--				ret = I40E_ERR_NOT_READY;
--				goto out;
--			}
- 			if (client->ops && client->ops->close)
- 				client->ops->close(&cdev->lan_info, client,
- 						   false);
-@@ -676,11 +672,9 @@ static int i40e_client_release(struct i40e_client *client)
- 		}
- 		/* delete the client instance from the list */
- 		list_move(&cdev->list, &cdevs_tmp);
--		atomic_dec(&client->ref_cnt);
- 		dev_info(&pf->pdev->dev, "Deleted client instance of Client %s\n",
- 			 client->name);
- 	}
--out:
- 	mutex_unlock(&i40e_client_instance_mutex);
+ struct i40e_virtchnl_vf_resource {
+ 	u16 num_vsis;
+ 	u16 num_queue_pairs;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h b/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h
+index bd691ad..fc374f8 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h
+@@ -162,6 +162,10 @@ struct i40e_virtchnl_vsi_resource {
+ #define I40E_VIRTCHNL_VF_OFFLOAD_RSS_PF		0X00080000
+ #define I40E_VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM	0X00100000
  
- 	/* free the client device and release its vsi */
-@@ -1006,17 +1000,10 @@ int i40e_unregister_client(struct i40e_client *client)
- 		ret = -ENODEV;
- 		goto out;
- 	}
--	if (atomic_read(&client->ref_cnt) == 0) {
--		clear_bit(__I40E_CLIENT_REGISTERED, &client->state);
--		list_del(&client->list);
--		pr_info("i40e: Unregistered client %s with return code %d\n",
--			client->name, ret);
--	} else {
--		ret = I40E_ERR_NOT_READY;
--		pr_err("i40e: Client %s failed unregister - client has open instances\n",
--		       client->name);
--	}
--
-+	clear_bit(__I40E_CLIENT_REGISTERED, &client->state);
-+	list_del(&client->list);
-+	pr_info("i40e: Unregistered client %s with return code %d\n",
-+		client->name, ret);
- out:
- 	mutex_unlock(&i40e_client_mutex);
- 	return ret;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.h b/drivers/net/ethernet/intel/i40e/i40e_client.h
-index 38a6c36..528bd79 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_client.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_client.h
-@@ -203,8 +203,6 @@ struct i40e_client_instance {
- 	struct i40e_info lan_info;
- 	struct i40e_client *client;
- 	unsigned long  state;
--	/* A count of all the in-progress calls to the client */
--	atomic_t ref_cnt;
- };
- 
- struct i40e_client {
++#define I40E_VF_BASE_MODE_OFFLOADS (I40E_VIRTCHNL_VF_OFFLOAD_L2 | \
++				    I40E_VIRTCHNL_VF_OFFLOAD_VLAN | \
++				    I40E_VIRTCHNL_VF_OFFLOAD_RSS_PF)
++
+ struct i40e_virtchnl_vf_resource {
+ 	u16 num_vsis;
+ 	u16 num_queue_pairs;
 -- 
 2.4.11
 
