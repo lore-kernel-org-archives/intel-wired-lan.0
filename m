@@ -1,87 +1,146 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Wed, 14 Sep 2016 16:24:34 -0700
-Subject: [Intel-wired-lan] [next PATCH S47 4/9] i40e: Remove unused function
-	i40e_vsi_lookup
+Date: Wed, 14 Sep 2016 16:24:36 -0700
+Subject: [Intel-wired-lan] [next PATCH S47 6/9] i40e: reopen client after
+	reset
 In-Reply-To: <1473895479-23035-1-git-send-email-bimmy.pujari@intel.com>
 References: <1473895479-23035-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1473895479-23035-5-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1473895479-23035-7-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Duyck <alexander.h.duyck@intel.com>
+From: Mitch Williams <mitch.a.williams@intel.com>
 
-The function is not used so there is no need to carry it forward.  I have
-plans to add a slightly different function that can be inlined to handle
-the same kind of functionality.
+Allow the client interface to reopen existing clients if they were
+closed. This allows clients to recover from reset, which is essential
+for supporting VF RDMA. In one instance, the driver was not clearing the
+open bit when the client was closed. Add the code to clear this bit so
+that the state is accurate and the driver will not attempt to reopen
+already-open clients. Remove the ref_cnt variable; it was just getting
+in the way and was not being used consistently.
 
-Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-Change-ID: Ie2dfcb189dc75e5fbc156bac23003e3b4210ae0f
+Signed-off-by: Mitch Williams <mitch.a.williams@intel.com>
+Change-ID: Ic71af4553b096963ac0c56a997f887c9a4ed162d
 ---
-Testing Hints:
-        Verify driver builds without issues under various configurations.
+Testing Hints : enable VF RDMA
 
- drivers/net/ethernet/intel/i40e/i40e.h        |  2 --
- drivers/net/ethernet/intel/i40e/i40e_client.c | 31 ---------------------------
- 2 files changed, 33 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_client.c | 47 ++++++++++-----------------
+ drivers/net/ethernet/intel/i40e/i40e_client.h |  2 --
+ 2 files changed, 17 insertions(+), 32 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index dfc52a9..29bc649 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -732,8 +732,6 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi);
- struct i40e_vsi *i40e_vsi_setup(struct i40e_pf *pf, u8 type,
- 				u16 uplink, u32 param1);
- int i40e_vsi_release(struct i40e_vsi *vsi);
--struct i40e_vsi *i40e_vsi_lookup(struct i40e_pf *pf, enum i40e_vsi_type type,
--				 struct i40e_vsi *start_vsi);
- #ifdef I40E_FCOE
- void i40e_vsi_setup_queue_map(struct i40e_vsi *vsi,
- 			      struct i40e_vsi_context *ctxt,
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c b/drivers/net/ethernet/intel/i40e/i40e_client.c
-index 6ffac03..417ac16 100644
+index 417ac16..7fe72ab 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_client.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
-@@ -406,37 +406,6 @@ int i40e_vf_client_capable(struct i40e_pf *pf, u32 vf_id,
- }
+@@ -287,6 +287,7 @@ void i40e_notify_client_of_netdev_close(struct i40e_vsi *vsi, bool reset)
+ 			}
+ 			cdev->client->ops->close(&cdev->lan_info, cdev->client,
+ 						 reset);
++			clear_bit(__I40E_CLIENT_INSTANCE_OPENED, &cdev->state);
+ 			i40e_client_release_qvlist(&cdev->lan_info);
+ 		}
+ 	}
+@@ -544,28 +545,27 @@ void i40e_client_subtask(struct i40e_pf *pf)
+ 			continue;
  
- /**
-- * i40e_vsi_lookup - finds a matching VSI from the PF list starting at start_vsi
-- * @pf: board private structure
-- * @type: vsi type
-- * @start_vsi: a VSI pointer from where to start the search
-- *
-- * Returns non NULL on success or NULL for failure
-- **/
--struct i40e_vsi *i40e_vsi_lookup(struct i40e_pf *pf,
--				 enum i40e_vsi_type type,
--				 struct i40e_vsi *start_vsi)
--{
--	struct i40e_vsi *vsi;
--	int i = 0;
--
--	if (start_vsi) {
--		for (i = 0; i < pf->num_alloc_vsi; i++) {
--			vsi = pf->vsi[i];
--			if (vsi == start_vsi)
--				break;
--		}
+ 		if (!existing) {
+-			/* Also up the ref_cnt for no. of instances of this
+-			 * client.
+-			 */
+-			atomic_inc(&client->ref_cnt);
+ 			dev_info(&pf->pdev->dev, "Added instance of Client %s to PF%d bus=0x%02x func=0x%02x\n",
+ 				 client->name, pf->hw.pf_id,
+ 				 pf->hw.bus.device, pf->hw.bus.func);
+-			mutex_lock(&i40e_client_instance_mutex);
+-			atomic_inc(&cdev->ref_cnt);
++		}
++
++		mutex_lock(&i40e_client_instance_mutex);
++		if (!test_bit(__I40E_CLIENT_INSTANCE_OPENED,
++			      &cdev->state)) {
++			/* Send an Open request to the client */
+ 			if (client->ops && client->ops->open)
+ 				ret = client->ops->open(&cdev->lan_info,
+ 							client);
+-			atomic_dec(&cdev->ref_cnt);
+-			if (ret < 0) {
+-				mutex_unlock(&i40e_client_instance_mutex);
++			if (!ret) {
++				set_bit(__I40E_CLIENT_INSTANCE_OPENED,
++					&cdev->state);
++			} else {
++				/* remove client instance */
+ 				i40e_client_del_instance(pf, client);
+-				atomic_dec(&client->ref_cnt);
+-				continue;
+ 			}
+-			set_bit(__I40E_CLIENT_INSTANCE_OPENED, &cdev->state);
+-			mutex_unlock(&i40e_client_instance_mutex);
+ 		}
++		mutex_unlock(&i40e_client_instance_mutex);
+ 	}
+ 	mutex_unlock(&i40e_client_mutex);
+ }
+@@ -660,10 +660,6 @@ static int i40e_client_release(struct i40e_client *client)
+ 			continue;
+ 		pf = (struct i40e_pf *)cdev->lan_info.pf;
+ 		if (test_bit(__I40E_CLIENT_INSTANCE_OPENED, &cdev->state)) {
+-			if (atomic_read(&cdev->ref_cnt) > 0) {
+-				ret = I40E_ERR_NOT_READY;
+-				goto out;
+-			}
+ 			if (client->ops && client->ops->close)
+ 				client->ops->close(&cdev->lan_info, client,
+ 						   false);
+@@ -676,11 +672,9 @@ static int i40e_client_release(struct i40e_client *client)
+ 		}
+ 		/* delete the client instance from the list */
+ 		list_move(&cdev->list, &cdevs_tmp);
+-		atomic_dec(&client->ref_cnt);
+ 		dev_info(&pf->pdev->dev, "Deleted client instance of Client %s\n",
+ 			 client->name);
+ 	}
+-out:
+ 	mutex_unlock(&i40e_client_instance_mutex);
+ 
+ 	/* free the client device and release its vsi */
+@@ -1006,17 +1000,10 @@ int i40e_unregister_client(struct i40e_client *client)
+ 		ret = -ENODEV;
+ 		goto out;
+ 	}
+-	if (atomic_read(&client->ref_cnt) == 0) {
+-		clear_bit(__I40E_CLIENT_REGISTERED, &client->state);
+-		list_del(&client->list);
+-		pr_info("i40e: Unregistered client %s with return code %d\n",
+-			client->name, ret);
+-	} else {
+-		ret = I40E_ERR_NOT_READY;
+-		pr_err("i40e: Client %s failed unregister - client has open instances\n",
+-		       client->name);
 -	}
--	for (; i < pf->num_alloc_vsi; i++) {
--		vsi = pf->vsi[i];
--		if (vsi && vsi->type == type)
--			return vsi;
--	}
 -
--	return NULL;
--}
--
--/**
-  * i40e_client_add_instance - add a client instance struct to the instance list
-  * @pf: pointer to the board struct
-  * @client: pointer to a client struct in the client list.
++	clear_bit(__I40E_CLIENT_REGISTERED, &client->state);
++	list_del(&client->list);
++	pr_info("i40e: Unregistered client %s with return code %d\n",
++		client->name, ret);
+ out:
+ 	mutex_unlock(&i40e_client_mutex);
+ 	return ret;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.h b/drivers/net/ethernet/intel/i40e/i40e_client.h
+index 38a6c36..528bd79 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_client.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_client.h
+@@ -203,8 +203,6 @@ struct i40e_client_instance {
+ 	struct i40e_info lan_info;
+ 	struct i40e_client *client;
+ 	unsigned long  state;
+-	/* A count of all the in-progress calls to the client */
+-	atomic_t ref_cnt;
+ };
+ 
+ struct i40e_client {
 -- 
 2.4.11
 
