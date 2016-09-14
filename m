@@ -1,52 +1,41 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 14 Sep 2016 14:16:04 +0000
-Subject: [Intel-wired-lan] [next PATCH S46 8/8] i40evf:
-	support	queue-specific settings for interrupt moderation
-In-Reply-To: <1473715124-31296-9-git-send-email-bimmy.pujari@intel.com>
-References: <1473715124-31296-1-git-send-email-bimmy.pujari@intel.com>
- <1473715124-31296-9-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA04E8F@ORSMSX104.amr.corp.intel.com>
+From: Bimmy Pujari <bimmy.pujari@intel.com>
+Date: Wed, 14 Sep 2016 16:24:30 -0700
+Subject: [Intel-wired-lan] [next PATCH S47 0/9] i40e/i40evf updates
+Message-ID: <1473895479-23035-1-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Bimmy Pujari
-> Sent: Monday, September 12, 2016 2:19 PM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S46 8/8] i40evf: support queue-
-> specific settings for interrupt moderation
-> 
-> From: Jacob Keller <jacob.e.keller@intel.com>
-> 
-> In commit a75e8005d506f3 ("i40e: queue-specific settings for interrupt
-> moderation") the i40e driver gained support for setting interrupt moderation
-> values per queue. This patch adds support for this feature to the i40evf
-> driver as well. In addition, a few changes are made to the i40e
-> implementation to add function header documentation comments, as well.
-> 
-> This behaves in a similar fashion to the implementation in i40e. Thus,
-> requesting the moderation value when no queue is provided will report
-> queue 0 value, while setting the value without a queue will set all queues at
-> once.
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Change-ID: I1f310a57c8e6c84a8524c178d44d1b7a6d3a848e
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c     |  72 ++++++-
->  drivers/net/ethernet/intel/i40e/i40e_txrx.c        |  21 ++-
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.c      |  26 ++-
->  drivers/net/ethernet/intel/i40evf/i40e_txrx.h      |   8 +
->  drivers/net/ethernet/intel/i40evf/i40evf.h         |   7 -
->  drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 206
-> ++++++++++++++++-----
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  10 +-
->  7 files changed, 280 insertions(+), 70 deletions(-)
+Alan Brady adds code to fix interrupt affinity bug.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Feature works as expected
+Alexander Duyck rewrites Flow Director busy wait loop, removes unused 
+function i40e_vsi_lookup and drops code for unsupported flow types.
 
+Bimmy Pujari changes version from 1.6.16 to 1.6.19
+
+Carolyn Wyborny adds code to fix client interaction.
+
+Filip Sadowski adds code for bit test mask correction.
+
+Mitch Williams adds code to reopen client after reset.
+
+Preethi Banala adds code for group based mode VF offload flags.
+
+ drivers/net/ethernet/intel/i40e/i40e.h            |  4 +-
+ drivers/net/ethernet/intel/i40e/i40e_client.c     | 85 +++++------------------
+ drivers/net/ethernet/intel/i40e/i40e_client.h     |  2 -
+ drivers/net/ethernet/intel/i40e/i40e_common.c     |  2 +-
+ drivers/net/ethernet/intel/i40e/i40e_main.c       | 66 ++++++++++++++----
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c       | 80 ++++++++++-----------
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl.h   |  4 ++
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c     | 31 +++++++--
+ drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h |  4 ++
+ drivers/net/ethernet/intel/i40evf/i40evf.h        |  3 +-
+ drivers/net/ethernet/intel/i40evf/i40evf_main.c   | 73 +++++++++++++------
+ 11 files changed, 198 insertions(+), 156 deletions(-)
+
+-- 
+2.4.11
 
