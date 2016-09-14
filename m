@@ -1,54 +1,52 @@
-From: Rustad, Mark D <mark.d.rustad@intel.com>
-Date: Wed, 14 Sep 2016 00:13:48 +0000
-Subject: [Intel-wired-lan] [net-next PATCH v3 2/3] e1000: add initial
- XDP support
-In-Reply-To: <20160913234039.GA42336@ast-mbp.thefacebook.com>
-References: <20160913012815.GB25756@ast-mbp.thefacebook.com>
- <CALx6S36u+tQUEVhu0BaLZ6-_0=GSMwxd4m89-H+brVZ-rr-U2g@mail.gmail.com>
- <20160913171340.GA37341@ast-mbp.thefacebook.com>
- <1473788252.18970.177.camel@edumazet-glaptop3.roam.corp.google.com>
- <20160913175926.GA38737@ast-mbp.thefacebook.com>
- <36ECC79A-0810-4D06-A72D-702AD9901E83@intel.com>
- <20160913182959.GA38950@ast-mbp.thefacebook.com>
- <AB6E7248-F1A3-4C9C-9249-7F25E51BA1E4@intel.com>
- <20160913215208.GA40872@ast-mbp.thefacebook.com>
- <151DF165-61A2-428A-BD24-04E7704F9724@intel.com>
- <20160913234039.GA42336@ast-mbp.thefacebook.com>
-Message-ID: <94647EDC-4FB2-412F-9340-031060FCE568@intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Wed, 14 Sep 2016 14:16:04 +0000
+Subject: [Intel-wired-lan] [next PATCH S46 8/8] i40evf:
+	support	queue-specific settings for interrupt moderation
+In-Reply-To: <1473715124-31296-9-git-send-email-bimmy.pujari@intel.com>
+References: <1473715124-31296-1-git-send-email-bimmy.pujari@intel.com>
+ <1473715124-31296-9-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA04E8F@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Alexei Starovoitov <alexei.starovoitov@gmail.com> wrote:
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Bimmy Pujari
+> Sent: Monday, September 12, 2016 2:19 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S46 8/8] i40evf: support queue-
+> specific settings for interrupt moderation
+> 
+> From: Jacob Keller <jacob.e.keller@intel.com>
+> 
+> In commit a75e8005d506f3 ("i40e: queue-specific settings for interrupt
+> moderation") the i40e driver gained support for setting interrupt moderation
+> values per queue. This patch adds support for this feature to the i40evf
+> driver as well. In addition, a few changes are made to the i40e
+> implementation to add function header documentation comments, as well.
+> 
+> This behaves in a similar fashion to the implementation in i40e. Thus,
+> requesting the moderation value when no queue is provided will report
+> queue 0 value, while setting the value without a queue will set all queues at
+> once.
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Change-ID: I1f310a57c8e6c84a8524c178d44d1b7a6d3a848e
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c     |  72 ++++++-
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c        |  21 ++-
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c      |  26 ++-
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.h      |   8 +
+>  drivers/net/ethernet/intel/i40evf/i40evf.h         |   7 -
+>  drivers/net/ethernet/intel/i40evf/i40evf_ethtool.c | 206
+> ++++++++++++++++-----
+>  drivers/net/ethernet/intel/i40evf/i40evf_main.c    |  10 +-
+>  7 files changed, 280 insertions(+), 70 deletions(-)
 
-> On Tue, Sep 13, 2016 at 10:41:12PM +0000, Rustad, Mark D wrote:
->> That said, I can see that you have tried to keep the original code path
->> pretty much intact. I would note that you introduced rcu calls into the  
->> !bpf
->> path that would never have been done before. While that should be ok, I
->> would really like to see it tested, at least for the !bpf case, on real
->> hardware to be sure.
->
-> please go ahead and test. rcu_read_lock is zero extra instructions
-> for everything but preempt or debug kernels.
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Feature works as expected
 
-Well, I don't have any hardware in hand to test with, though my former  
-employer would. I guess my current employer would too! :-) FWIW, the kernel  
-used in that system I referred to before was a preempt kernel.
 
-The test matrix is large, the tail is long and you can't just gloss these  
-things over. I understand that it isn't the focus of your work, just as  
-regression testing the e1000 is not the focus of any of our work any more.  
-That is precisely why it is a sensitive area.
-
---
-Mark Rustad, Networking Division, Intel Corporation
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 841 bytes
-Desc: Message signed with OpenPGP using GPGMail
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160914/af2b8812/attachment-0001.asc>
