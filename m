@@ -1,10 +1,10 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Wed, 14 Sep 2016 16:24:35 -0700
-Subject: [Intel-wired-lan] [next PATCH S47 5/9] i40e: Drop code for
-	unsupported flow types
+Date: Wed, 14 Sep 2016 16:24:34 -0700
+Subject: [Intel-wired-lan] [next PATCH S47 4/9] i40e: Remove unused function
+	i40e_vsi_lookup
 In-Reply-To: <1473895479-23035-1-git-send-email-bimmy.pujari@intel.com>
 References: <1473895479-23035-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1473895479-23035-6-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1473895479-23035-5-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,87 +13,75 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-We cannot currently support SCTP in the hardware, and IPV4_FLOW is not used
-anywhere by the software so we can go through and drop the functionality
-related to these two flow types.
-
-In addition we cannot support masking based on the protocol value so if the
-user is expecting a value other than TCP or UDP we should simply return an
-error rather then trying to allocate a filter for a rule that will only
-partially match what the user requested.
+The function is not used so there is no need to carry it forward.  I have
+plans to add a slightly different function that can be inlined to handle
+the same kind of functionality.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-Change-ID: I10d52bb97d8104d76255fe244551814ff9531a63
+Change-ID: Ie2dfcb189dc75e5fbc156bac23003e3b4210ae0f
 ---
 Testing Hints:
-        This change should have no impact on actual functionality.  All it
-        should be doing is removing dead code.  As such we should see no
-        actual change in how ethtool Flow Director filters are handled.
+        Verify driver builds without issues under various configurations.
 
- drivers/net/ethernet/intel/i40e/i40e_txrx.c | 31 +++++------------------------
- 1 file changed, 5 insertions(+), 26 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h        |  2 --
+ drivers/net/ethernet/intel/i40e/i40e_client.c | 31 ---------------------------
+ 2 files changed, 33 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index d1c3a3a..eba16a1 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -330,22 +330,6 @@ static int i40e_add_del_fdir_tcpv4(struct i40e_vsi *vsi,
- 	return err ? -EOPNOTSUPP : 0;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index dfc52a9..29bc649 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -732,8 +732,6 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi);
+ struct i40e_vsi *i40e_vsi_setup(struct i40e_pf *pf, u8 type,
+ 				u16 uplink, u32 param1);
+ int i40e_vsi_release(struct i40e_vsi *vsi);
+-struct i40e_vsi *i40e_vsi_lookup(struct i40e_pf *pf, enum i40e_vsi_type type,
+-				 struct i40e_vsi *start_vsi);
+ #ifdef I40E_FCOE
+ void i40e_vsi_setup_queue_map(struct i40e_vsi *vsi,
+ 			      struct i40e_vsi_context *ctxt,
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_client.c b/drivers/net/ethernet/intel/i40e/i40e_client.c
+index 6ffac03..417ac16 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_client.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_client.c
+@@ -406,37 +406,6 @@ int i40e_vf_client_capable(struct i40e_pf *pf, u32 vf_id,
  }
  
--/**
-- * i40e_add_del_fdir_sctpv4 - Add/Remove SCTPv4 Flow Director filters for
-- * a specific flow spec
-- * @vsi: pointer to the targeted VSI
-- * @fd_data: the flow director data required for the FDir descriptor
-- * @add: true adds a filter, false removes it
+ /**
+- * i40e_vsi_lookup - finds a matching VSI from the PF list starting at start_vsi
+- * @pf: board private structure
+- * @type: vsi type
+- * @start_vsi: a VSI pointer from where to start the search
 - *
-- * Returns 0 if the filters were successfully added or removed
+- * Returns non NULL on success or NULL for failure
 - **/
--static int i40e_add_del_fdir_sctpv4(struct i40e_vsi *vsi,
--				    struct i40e_fdir_filter *fd_data,
--				    bool add)
+-struct i40e_vsi *i40e_vsi_lookup(struct i40e_pf *pf,
+-				 enum i40e_vsi_type type,
+-				 struct i40e_vsi *start_vsi)
 -{
--	return -EOPNOTSUPP;
+-	struct i40e_vsi *vsi;
+-	int i = 0;
+-
+-	if (start_vsi) {
+-		for (i = 0; i < pf->num_alloc_vsi; i++) {
+-			vsi = pf->vsi[i];
+-			if (vsi == start_vsi)
+-				break;
+-		}
+-	}
+-	for (; i < pf->num_alloc_vsi; i++) {
+-		vsi = pf->vsi[i];
+-		if (vsi && vsi->type == type)
+-			return vsi;
+-	}
+-
+-	return NULL;
 -}
 -
- #define I40E_IP_DUMMY_PACKET_LEN 34
- /**
-  * i40e_add_del_fdir_ipv4 - Add/Remove IPv4 Flow Director filters for
-@@ -428,12 +412,6 @@ int i40e_add_del_fdir(struct i40e_vsi *vsi,
- 	case UDP_V4_FLOW:
- 		ret = i40e_add_del_fdir_udpv4(vsi, input, add);
- 		break;
--	case SCTP_V4_FLOW:
--		ret = i40e_add_del_fdir_sctpv4(vsi, input, add);
--		break;
--	case IPV4_FLOW:
--		ret = i40e_add_del_fdir_ipv4(vsi, input, add);
--		break;
- 	case IP_USER_FLOW:
- 		switch (input->ip4_proto) {
- 		case IPPROTO_TCP:
-@@ -442,15 +420,16 @@ int i40e_add_del_fdir(struct i40e_vsi *vsi,
- 		case IPPROTO_UDP:
- 			ret = i40e_add_del_fdir_udpv4(vsi, input, add);
- 			break;
--		case IPPROTO_SCTP:
--			ret = i40e_add_del_fdir_sctpv4(vsi, input, add);
--			break;
--		default:
-+		case IPPROTO_IP:
- 			ret = i40e_add_del_fdir_ipv4(vsi, input, add);
- 			break;
-+		default:
-+			/* We cannot support masking based on protocol */
-+			goto unsupported_flow;
- 		}
- 		break;
- 	default:
-+unsupported_flow:
- 		dev_info(&pf->pdev->dev, "Could not specify spec type %d\n",
- 			 input->flow_type);
- 		ret = -EINVAL;
+-/**
+  * i40e_client_add_instance - add a client instance struct to the instance list
+  * @pf: pointer to the board struct
+  * @client: pointer to a client struct in the client list.
 -- 
 2.4.11
 
