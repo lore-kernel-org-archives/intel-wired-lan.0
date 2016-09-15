@@ -1,52 +1,64 @@
-From: John Fastabend <john.fastabend@gmail.com>
-Date: Wed, 14 Sep 2016 21:22:12 -0700
-Subject: [Intel-wired-lan] [net-next PATCH v3 1/3] e1000: track BQL
- bytes regardless of skb or not
-In-Reply-To: <20160915004353.GA63116@ast-mbp.thefacebook.com>
-References: <20160912220312.5610.77528.stgit@john-Precision-Tower-5810>
- <20160912221327.5610.74333.stgit@john-Precision-Tower-5810>
- <309B89C4C689E141A5FF6A0C5FB2118B81F90268@ORSMSX101.amr.corp.intel.com>
- <20160915004353.GA63116@ast-mbp.thefacebook.com>
-Message-ID: <57DA21F4.20700@gmail.com>
+From: Stefan Assmann <sassmann@kpanic.de>
+Date: Thu, 15 Sep 2016 15:38:09 +0200
+Subject: [Intel-wired-lan] [PATCH net-next 2/2] i40e: fix setting debug
+	parameter early
+In-Reply-To: <1473946689-28427-1-git-send-email-sassmann@kpanic.de>
+References: <1473946689-28427-1-git-send-email-sassmann@kpanic.de>
+Message-ID: <1473946689-28427-3-git-send-email-sassmann@kpanic.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 16-09-14 05:43 PM, Alexei Starovoitov wrote:
-> On Wed, Sep 14, 2016 at 11:57:24PM +0000, Brown, Aaron F wrote:
->>> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
->>> Behalf Of John Fastabend
->>> Sent: Monday, September 12, 2016 3:13 PM
->>> To: bblanco at plumgrid.com; john.fastabend at gmail.com;
->>> alexei.starovoitov at gmail.com; Kirsher, Jeffrey T
->>> <jeffrey.t.kirsher@intel.com>; brouer at redhat.com; davem at davemloft.net
->>> Cc: xiyou.wangcong at gmail.com; intel-wired-lan at lists.osuosl.org;
->>> u9012063 at gmail.com; netdev at vger.kernel.org
->>> Subject: [Intel-wired-lan] [net-next PATCH v3 1/3] e1000: track BQL bytes
->>> regardless of skb or not
->>>
->>> The BQL API does not reference the sk_buff nor does the driver need to
->>> reference the sk_buff to calculate the length of a transmitted frame.
->>> This patch removes an sk_buff reference from the xmit irq path and
->>> also allows packets sent from XDP to use BQL.
->>>
->>> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
->>> ---
->>>  drivers/net/ethernet/intel/e1000/e1000_main.c |    7 ++-----
->>>  1 file changed, 2 insertions(+), 5 deletions(-)
->>
->> This patch is causing all my e1000 adapters to fail a simple ftp session with really slow response (hashing on) followed by adapter resets.  I have seen this on 4 different e1000 nics now, an 82543GC, 82544GC, 82546EB and an 82545GM.  On a few occasions I get a splat captured to dmesg.  Here is an example:
->> --------------------------------
->> ------------[ cut here ]------------
->> WARNING: CPU: 1 PID: 0 at net/sched/sch_generic.c:316 dev_watchdog+0x1c2/0x1d0
->> NETDEV WATCHDOG: eth1 (e1000): transmit queue 0 timed out
-> 
-> Thanks a lot for the tests! Really appreciate it.
-> 
+pf->msg_enable is a bitmask, therefore assigning the value of the
+"debug" parameter is wrong. It is initialized again later in
+i40e_sw_init() so it didn't cause any problem, except that we missed
+early debug messages. Moved the initialization and assigned
+pf->hw.debug_mask the bitmask as that's what the driver actually uses
+in i40e_debug(). Otherwise the debug parameter is just a noop.
 
-Thanks.
+Fixes: 5b5faa4 ("i40e: enable debug earlier")
 
-Jeff, please drop the series for now obviously this wont work. It needs
-some work.
+Signed-off-by: Stefan Assmann <sassmann@kpanic.de>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 16 +++++++---------
+ 1 file changed, 7 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 56369761..f972f0d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -8498,11 +8498,6 @@ static int i40e_sw_init(struct i40e_pf *pf)
+ 	int err = 0;
+ 	int size;
+ 
+-	pf->msg_enable = netif_msg_init(debug,
+-					NETIF_MSG_DRV    |
+-					NETIF_MSG_PROBE  |
+-					NETIF_MSG_LINK);
+-
+ 	/* Set default capability flags */
+ 	pf->flags = I40E_FLAG_RX_CSUM_ENABLED |
+ 		    I40E_FLAG_MSI_ENABLED     |
+@@ -10812,10 +10807,13 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	mutex_init(&hw->aq.asq_mutex);
+ 	mutex_init(&hw->aq.arq_mutex);
+ 
+-	if (debug != -1) {
+-		pf->msg_enable = pf->hw.debug_mask;
+-		pf->msg_enable = debug;
+-	}
++	/* enable debug prints if requested */
++	pf->msg_enable = netif_msg_init(debug,
++					NETIF_MSG_DRV   |
++					NETIF_MSG_PROBE |
++					NETIF_MSG_LINK);
++	if (debug != -1)
++		pf->hw.debug_mask = pf->msg_enable;
+ 
+ 	/* do a special CORER for clearing PXE mode once at init */
+ 	if (hw->revision_id == 0 &&
+-- 
+2.7.4
+
