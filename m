@@ -1,41 +1,32 @@
-From: Baoyou Xie <baoyou.xie@linaro.org>
-Date: Sun, 18 Sep 2016 16:50:28 +0800
-Subject: [Intel-wired-lan] [PATCH] igb: mark
-	igb_rxnfc_write_vlan_prio_filter() static
-Message-ID: <1474188628-420-1-git-send-email-baoyou.xie@linaro.org>
+From: Jesper Dangaard Brouer <brouer@redhat.com>
+Date: Sun, 18 Sep 2016 19:25:14 +0200
+Subject: [Intel-wired-lan] [net-next PATCH v3 2/3] e1000: add initial
+	XDP support
+In-Reply-To: <1473723968.18970.111.camel@edumazet-glaptop3.roam.corp.google.com>
+References: <20160912220312.5610.77528.stgit@john-Precision-Tower-5810>
+ <20160912221351.5610.29043.stgit@john-Precision-Tower-5810>
+ <1473720399.18970.91.camel@edumazet-glaptop3.roam.corp.google.com>
+ <20160912230745.GA24171@ast-mbp.thefacebook.com>
+ <1473723968.18970.111.camel@edumazet-glaptop3.roam.corp.google.com>
+Message-ID: <20160918192514.510d4702@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-We get 1 warning when building kernel with W=1:
-drivers/net/ethernet/intel/igb/igb_ethtool.c:2707:5: warning: no previous prototype for 'igb_rxnfc_write_vlan_prio_filter' [-Wmissing-prototypes]
+On Mon, 12 Sep 2016 16:46:08 -0700
+Eric Dumazet <eric.dumazet@gmail.com> wrote:
 
-In fact, this function is only used in the file in which it is
-declared and don't need a declaration, but can be made static.
-so this patch marks this function with 'static'.
+> This XDP_TX thing was one of the XDP marketing stuff, but there is
+> absolutely no documentation on it, warning users about possible
+> limitations/outcomes.
 
-Signed-off-by: Baoyou Xie <baoyou.xie@linaro.org>
----
- drivers/net/ethernet/intel/igb/igb_ethtool.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+I will take care of documentation for the XDP project.
 
-diff --git a/drivers/net/ethernet/intel/igb/igb_ethtool.c b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-index 0c33eca..737b664 100644
---- a/drivers/net/ethernet/intel/igb/igb_ethtool.c
-+++ b/drivers/net/ethernet/intel/igb/igb_ethtool.c
-@@ -2704,8 +2704,8 @@ static int igb_rxnfc_write_etype_filter(struct igb_adapter *adapter,
- 	return 0;
- }
- 
--int igb_rxnfc_write_vlan_prio_filter(struct igb_adapter *adapter,
--				     struct igb_nfc_filter *input)
-+static int igb_rxnfc_write_vlan_prio_filter(struct igb_adapter *adapter,
-+					    struct igb_nfc_filter *input)
- {
- 	struct e1000_hw *hw = &adapter->hw;
- 	u8 vlan_priority;
 -- 
-2.7.4
-
+Best regards,
+  Jesper Dangaard Brouer
+  MSc.CS, Principal Kernel Engineer at Red Hat
+  Author of http://www.iptv-analyzer.org
+  LinkedIn: http://www.linkedin.com/in/brouer
