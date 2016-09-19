@@ -1,60 +1,22 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 30 Sep 2016 22:55:28 +0000
-Subject: [Intel-wired-lan] [PATCH net] i40e: avoid NULL pointer
- dereference	and recursive errors on early PCI error
-In-Reply-To: <1475010871-31682-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
-References: <1475010871-31682-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA0F567@ORSMSX104.amr.corp.intel.com>
+From: Stefan Assmann <sassmann@kpanic.de>
+Date: Mon, 19 Sep 2016 13:37:48 +0200
+Subject: [Intel-wired-lan] [PATCH net-next 0/3] i40e: fix MSI-X vector
+	allocation for > 128 CPU threads
+Message-ID: <1474285071-28218-1-git-send-email-sassmann@kpanic.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Guilherme G. Piccoli
-> Sent: Tuesday, September 27, 2016 2:15 PM
-> To: Kirsher, Jeffrey T <jeffrey.t.kirsher@intel.com>; intel-wired-
-> lan at lists.osuosl.org
-> Cc: netdev at vger.kernel.org; gpiccoli at linux.vnet.ibm.com
-> Subject: [Intel-wired-lan] [PATCH net] i40e: avoid NULL pointer dereference
-> and recursive errors on early PCI error
-> 
-> Although rare, it's possible to hit PCI error early on device probe, meaning
-> possibly some structs are not entirely initialized, and some might even be
-> completely uninitialized, leading to NULL pointer dereference.
-> 
-> The i40e driver currently presents a "bad" behavior if device hits such early
-> PCI error: firstly, the struct i40e_pf might not be attached to pci_dev yet,
-> leading to a NULL pointer dereference on access to pf->state.
-> 
-> Even checking if the struct is NULL and avoiding the access in that case isn't
-> enough, since the driver cannot recover from PCI error that early; in our
-> experiments we saw multiple failures on kernel log, like:
-> 
->   [549.664] i40e 0007:01:00.1: Initial pf_reset failed: -15
->   [549.664] i40e: probe of 0007:01:00.1 failed with error -15
->   [...]
->   [871.644] i40e 0007:01:00.1: The driver for the device stopped because the
->   device firmware failed to init. Try updating your NVM image.
->   [871.644] i40e: probe of 0007:01:00.1 failed with error -32
->   [...]
->   [872.516] i40e 0007:01:00.0: ARQ: Unknown event 0x0000 ignored
-> 
-> Between the first probe failure (error -15) and the second (error -32) another
-> PCI error happened due to the first bad probe. Also, driver started to flood
-> console with those ARQ event messages.
-> 
-> This patch will prevent these issues by allowing error recovery mechanism to
-> remove the failed device from the system instead of trying to recover from
-> early PCI errors during device probe.
-> 
-> Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 6 ++++++
->  1 file changed, 6 insertions(+)
+Stefan Assmann (3):
+  i40e: check if vectors are already depleted when doing VMDq allocation
+  i40e: fix MSI-X vector redistribution if hw limit is reached
+  i40e: fix sideband flow director vector allocation
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 76 ++++++++++++++++++-----------
+ 1 file changed, 47 insertions(+), 29 deletions(-)
 
+-- 
+2.7.4
 
