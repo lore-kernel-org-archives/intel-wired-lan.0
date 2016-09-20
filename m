@@ -1,204 +1,59 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Tue, 20 Sep 2016 07:15:36 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- bc031a695a2e3c3357d70c4dfc9f92cb03d07a25 BUILD SUCCESS
-Message-ID: <57e07198.e6S6xr6BR98yujzQ%fengguang.wu@intel.com>
+From: zhuyj <zyjzyj2000@gmail.com>
+Date: Tue, 20 Sep 2016 21:09:47 +0800
+Subject: [Intel-wired-lan] [PATCH 1/1] ixgbe: replace defined with
+	IS_ENABLED
+In-Reply-To: <87618083B2453E4A8714035B62D67992506E6E4B@FMSMSX105.amr.corp.intel.com>
+References: <1473866814-21374-1-git-send-email-zyjzyj2000@gmail.com>
+ <87618083B2453E4A8714035B62D67992506E6E4B@FMSMSX105.amr.corp.intel.com>
+Message-ID: <CAD=hENd2MO-3AuFZQz0i4sPSf5puDyrqgDw8Xgh=LnOXPizVrQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-bc031a695a2e3c3357d70c4dfc9f92cb03d07a25  i40e: fix sideband flow director vector allocation
+how about this patch "ixgbe: remove the useless header file ixgbe_type.h"?
 
-elapsed time: 187m
-
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 182
-
-i386                     randconfig-a0-201638
-x86_64                 randconfig-a0-09200349
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64       allyesdebian+CONFIG_DEBUG_INFO_REDUCED-CONFIG_DEBUG_INFO_REDUCED
-x86_64                                nfsroot
-x86_64       allyesdebian+CONFIG_DEBUG_INFO_REDUCED-CONFIG_DEBUG_INFO_REDUCED+CONFIG_DEBUG_INFO_REDUCED
-i386                               tinyconfig
-m32r                   m32700ut.smp_defconfig
-openrisc                          allnoconfig
-powerpc                    sam440ep_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-v0-09191451
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-blackfin                  CM-BF537E_defconfig
-m68k                             allyesconfig
-powerpc                 mpc834x_mds_defconfig
-avr32                       favr-32_defconfig
-mips                      maltaaprp_defconfig
-powerpc                        cell_defconfig
-x86_64               randconfig-x019-09191616
-x86_64               randconfig-x010-09191616
-x86_64               randconfig-x013-09191616
-x86_64               randconfig-x015-09191616
-x86_64               randconfig-x018-09191616
-x86_64               randconfig-x011-09191616
-x86_64               randconfig-x014-09191616
-x86_64               randconfig-x017-09191616
-x86_64               randconfig-x012-09191616
-x86_64               randconfig-x016-09191616
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                   randconfig-s0-09191616
-i386                   randconfig-s1-09191616
-x86_64                 randconfig-s0-09200437
-x86_64                 randconfig-s1-09200437
-x86_64                 randconfig-s2-09200437
-x86_64                 randconfig-s0-09200542
-x86_64                 randconfig-s1-09200542
-x86_64                 randconfig-s2-09200542
-x86_64                 randconfig-s3-09200446
-x86_64                 randconfig-s4-09200446
-x86_64                 randconfig-s5-09200446
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-avr32                  atngw100mkii_defconfig
-powerpc               corenet_basic_defconfig
-powerpc                          g5_defconfig
-powerpc                     redwood_defconfig
-x86_64                   randconfig-i0-201638
-i386                   randconfig-b0-09200305
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-i0-09190418
-i386                   randconfig-i1-09190418
-x86_64                 randconfig-b0-09200353
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-mips                      fuloong2e_defconfig
-mn10300                          allmodconfig
-tile                              allnoconfig
-powerpc                 mpc837x_rdb_defconfig
-x86_64                 randconfig-u0-09200343
-x86_64                 randconfig-u0-09200533
-arm                     davinci_all_defconfig
-sparc64                          alldefconfig
-mips                      loongson3_defconfig
-sh                        apsh4ad0a_defconfig
-x86_64                 randconfig-n0-09200402
-i386                   randconfig-x010-201638
-i386                   randconfig-x016-201638
-i386                   randconfig-x014-201638
-i386                   randconfig-x017-201638
-i386                   randconfig-x018-201638
-i386                   randconfig-x013-201638
-i386                   randconfig-x012-201638
-i386                   randconfig-x015-201638
-i386                   randconfig-x011-201638
-i386                   randconfig-x019-201638
-x86_64                                    lkp
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                     randconfig-n0-201638
-blackfin                            defconfig
-ia64                                defconfig
-mips                                defconfig
-x86_64                 randconfig-h0-09192117
-arm                           h3600_defconfig
-arm                            mmp2_defconfig
-alpha                            allmodconfig
-blackfin                 BlackStamp_defconfig
-x86_64                 randconfig-x002-201638
-x86_64                 randconfig-x009-201638
-x86_64                 randconfig-x008-201638
-x86_64                 randconfig-x004-201638
-x86_64                 randconfig-x007-201638
-x86_64                 randconfig-x003-201638
-x86_64                 randconfig-x005-201638
-x86_64                 randconfig-x001-201638
-x86_64                 randconfig-x006-201638
-x86_64                 randconfig-x000-201638
-ia64                             alldefconfig
-ia64                              allnoconfig
-x86_64                                  kexec
-i386                   randconfig-r0-09190352
-x86_64                 randconfig-r0-09191609
-i386                             allmodconfig
-i386                   randconfig-x002-201638
-i386                   randconfig-x009-201638
-i386                   randconfig-x006-201638
-i386                   randconfig-x008-201638
-i386                   randconfig-x007-201638
-i386                   randconfig-x001-201638
-i386                   randconfig-x003-201638
-i386                   randconfig-x000-201638
-i386                   randconfig-x004-201638
-i386                   randconfig-x005-201638
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-mips                              allnoconfig
-mips                                   jz4740
-mips                                     txx9
-i386                   randconfig-x0-09200356
-
-Thanks,
-Fengguang
+On Tue, Sep 20, 2016 at 1:00 AM, Tantilov, Emil S
+<emil.s.tantilov@intel.com> wrote:
+>>-----Original Message-----
+>>From: netdev-owner at vger.kernel.org [mailto:netdev-owner at vger.kernel.org] On
+>>Behalf Of zyjzyj2000 at gmail.com
+>>Sent: Wednesday, September 14, 2016 8:27 AM
+>>To: netdev at vger.kernel.org; intel-wired-lan at lists.osuosl.org; Kirsher,
+>>Jeffrey T <jeffrey.t.kirsher@intel.com>; zyjzyj2000 at gmail.com; e1000-
+>>devel at lists.sourceforge.net
+>>Subject: [PATCH 1/1] ixgbe: replace defined with IS_ENABLED
+>>
+>>From: Zhu Yanjun <zyjzyj2000@gmail.com>
+>>
+>>Replace defined macro with IS_ENABLED in ixgbe.h file
+>>
+>>Signed-off-by: Zhu Yanjun <zyjzyj2000@gmail.com>
+>>---
+>> drivers/net/ethernet/intel/ixgbe/ixgbe.h | 2 +-
+>> 1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>>diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+>>b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+>>index 9475ff9..f8bc1d0 100644
+>>--- a/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+>>+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe.h
+>>@@ -45,7 +45,7 @@
+>> #include "ixgbe_type.h"
+>> #include "ixgbe_common.h"
+>> #include "ixgbe_dcb.h"
+>>-#if defined(CONFIG_FCOE) || defined(CONFIG_FCOE_MODULE)
+>>+#if IS_ENABLED(CONFIG_FCOE)
+>> #define IXGBE_FCOE
+>> #include "ixgbe_fcoe.h"
+>> #endif /* CONFIG_FCOE or CONFIG_FCOE_MODULE */
+>>--
+>>2.7.4
+>
+> Already taken care of by the following patch:
+> http://patchwork.ozlabs.org/patch/668894/
+>
+> Thanks,
+> Emil
+>
