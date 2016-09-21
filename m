@@ -1,39 +1,57 @@
-From: Bynoe, Ronald J <ronald.j.bynoe@intel.com>
-Date: Wed, 21 Sep 2016 19:28:46 +0000
-Subject: [Intel-wired-lan] [PATCH] i40e: Fix configure TCs after initial
- DCB disable
-In-Reply-To: <1474380650-8771-1-git-send-email-david.m.ertman@intel.com>
-References: <1474380650-8771-1-git-send-email-david.m.ertman@intel.com>
-Message-ID: <1474486126.2485.10.camel@intel.com>
+From: Wyborny, Carolyn <carolyn.wyborny@intel.com>
+Date: Wed, 21 Sep 2016 21:38:59 +0000
+Subject: [Intel-wired-lan] [PATCH net-next 0/2] i40e: clean-up and fix
+ for the i40e debug code
+In-Reply-To: <9BBC4E0CF881AA4299206E2E1412B6265028E486@ORSMSX102.amr.corp.intel.com>
+References: <1473946689-28427-1-git-send-email-sassmann@kpanic.de>
+ <9BBC4E0CF881AA4299206E2E1412B6265028E486@ORSMSX102.amr.corp.intel.com>
+Message-ID: <9BBC4E0CF881AA4299206E2E1412B6265028E6FE@ORSMSX102.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 2016-09-20 at 07:10 -0700, Dave Ertman wrote:
-> in commit a036244c068612a43fa8c0f33a0eb4daa4d8dba0 a fix
-> was put into place to avoid a kernel panic when a non-
-> supported traffic class configuration was put into place
-> and then lldp was enabled/disabled on the link partner
-> switch.??This fix caused it to be necessary to
-> unload/reload the driver to reenable DCB once a supported
-> TC config was in place.
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Wyborny, Carolyn
+> Sent: Wednesday, September 21, 2016 11:31 AM
+> To: Stefan Assmann <sassmann@kpanic.de>; intel-wired-lan at lists.osuosl.org
+> Subject: Re: [Intel-wired-lan] [PATCH net-next 0/2] i40e: clean-up and fix for the
+> i40e debug code
 > 
-> The root cause of the original panic was that the function
-> i40e_pf_get_default_tc was allowing for a default TC other
-> than TC 0, and only TC 0 is supported as a default.
+> > -----Original Message-----
+> > From: netdev-owner at vger.kernel.org [mailto:netdev-
+> owner at vger.kernel.org]
+> > On Behalf Of Stefan Assmann
+> > Sent: Thursday, September 15, 2016 6:38 AM
+> > To: intel-wired-lan at lists.osuosl.org
+> > Cc: netdev at vger.kernel.org; davem at davemloft.net; Kirsher, Jeffrey T
+> > <jeffrey.t.kirsher@intel.com>; sassmann at kpanic.de
+> > Subject: [PATCH net-next 0/2] i40e: clean-up and fix for the i40e debug code
+> >
+> > Stefan Assmann (2):
+> >   i40e: remove superfluous I40E_DEBUG_USER statement
+> >   i40e: fix setting debug parameter early
+> >
+> >  drivers/net/ethernet/intel/i40e/i40e_common.c  |  3 --
+> >  drivers/net/ethernet/intel/i40e/i40e_debugfs.c |  6 ----
+> >  drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  2 --
+> >  drivers/net/ethernet/intel/i40e/i40e_main.c    | 43 ++++++++++++-------------
+> -
+> >  drivers/net/ethernet/intel/i40e/i40e_type.h    |  2 --
+> >  5 files changed, 20 insertions(+), 36 deletions(-)
+> >
+> > --
+> > 2.7.4
+> NACK
 > 
-> This patch removes the get_default_tc function and replaces
-> it with a #define since there is only one TC supported as
-> a default.
-> 
-> Change-Id: I448371974e946386d0a7718d73668b450b7c72ef
-> Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
-> ---
-> ?drivers/net/ethernet/intel/i40e/i40e.h??????|??1 +
-> ?drivers/net/ethernet/intel/i40e/i40e_main.c | 31 ++++---------------
-> ----------
-> ?2 files changed, 5 insertions(+), 27 deletions(-)
+> I'm not sure what problem is intended to be solved here.  This is code that
+> enables output by the user using ethtool's msglvl feature.  I40E_DEBUG_USER is
+> not superfluous is a mask for user input.
 
-Tested-by: Ronald Bynoe <ronald.j.bynoe@intel.com>
+To provide more info on this.  Yes, the debug output in this driver was implemented in a non-ideal way.  However, we are working on refactoring this in a way that is consistent with our newer development and in a way that is consistent with how this kind of debugging is expected to work generically.
+
+Thanks,
+
+Carolyn
