@@ -1,191 +1,339 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 21 Sep 2016 11:55:38 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- d2cc36c6e171581da32dde438eccb5e8562129f5 BUILD SUCCESS
-Message-ID: <57e204ba.cDhelDFQaqMxHO4V%fengguang.wu@intel.com>
+From: zhuyj <zyjzyj2000@gmail.com>
+Date: Wed, 21 Sep 2016 12:26:18 +0800
+Subject: [Intel-wired-lan] [net-next PATCH v2 1/2] e1000: add initial
+	XDP support
+In-Reply-To: <20160909212915.4001.25504.stgit@john-Precision-Tower-5810>
+References: <20160909212915.4001.25504.stgit@john-Precision-Tower-5810>
+Message-ID: <CAD=hENf9UZppBSx11Pdg8A9U2tmNLYOXeY5tpzyYiBF4dOcGLg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-d2cc36c6e171581da32dde438eccb5e8562129f5  i40e: fix sideband flow director vector allocation
+ +static int e1000_xdp_set(struct net_device *netdev, struct bpf_prog *prog)
++{
++       struct e1000_adapter *adapter = netdev_priv(netdev);
++       struct bpf_prog *old_prog;
++
++       old_prog = xchg(&adapter->prog, prog);
++       if (old_prog) {
++               synchronize_net();
++               bpf_prog_put(old_prog);
++       }
++
++       if (netif_running(netdev))
++               e1000_reinit_locked(adapter);
++       else
++               e1000_reset(adapter);
++       return 0;
++}
 
-elapsed time: 107m
+To this function, is it better to use "static void
+e1000_xdp_set(struct net_device *netdev, struct bpf_prog *prog)"?
+since it is always to return 0.
 
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 169
 
-i386                     randconfig-a0-201638
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-m68k                        mvme147_defconfig
-powerpc                    socrates_defconfig
-powerpc64                         allnoconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-09210957
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                             allmodconfig
-x86_64                 randconfig-x012-201638
-x86_64                 randconfig-x015-201638
-x86_64                 randconfig-x013-201638
-x86_64                 randconfig-x011-201638
-x86_64                 randconfig-x017-201638
-x86_64                 randconfig-x018-201638
-x86_64                 randconfig-x014-201638
-x86_64                 randconfig-x010-201638
-x86_64                 randconfig-x016-201638
-x86_64                 randconfig-x019-201638
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201638
-i386                     randconfig-s1-201638
-x86_64                 randconfig-s0-09211004
-x86_64                 randconfig-s1-09211004
-x86_64                 randconfig-s2-09211004
-x86_64                           allmodconfig
-x86_64                 randconfig-s3-09211018
-x86_64                 randconfig-s4-09211018
-x86_64                 randconfig-s5-09211018
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-arm                              allyesconfig
-arm                      integrator_defconfig
-powerpc                     akebono_defconfig
-powerpc                     mpc512x_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201638
-i386                   randconfig-b0-09211019
-i386                   randconfig-b0-09211101
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                   randconfig-i0-09201520
-i386                   randconfig-i1-09201520
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-n0-09210906
-x86_64                 randconfig-n0-09211052
-arm                          ep93xx_defconfig
-arm                          imote2_defconfig
-arm                        trizeps4_defconfig
-blackfin                            defconfig
-i386                   randconfig-x010-201638
-i386                   randconfig-x016-201638
-i386                   randconfig-x014-201638
-i386                   randconfig-x017-201638
-i386                   randconfig-x018-201638
-i386                   randconfig-x013-201638
-i386                   randconfig-x012-201638
-i386                   randconfig-x015-201638
-i386                   randconfig-x011-201638
-i386                   randconfig-x019-201638
-i386                     randconfig-n0-201638
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64                 randconfig-h0-09211027
-arm                           corgi_defconfig
-mn10300                             defconfig
-mips                            e55_defconfig
-powerpc               mpc85xx_basic_defconfig
-arm                         ebsa110_defconfig
-sh                                  defconfig
-arm                          pcm027_defconfig
-sh                            shmin_defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                 randconfig-x000-201638
-x86_64                 randconfig-x001-201638
-x86_64                 randconfig-x002-201638
-x86_64                 randconfig-x003-201638
-x86_64                 randconfig-x004-201638
-x86_64                 randconfig-x005-201638
-x86_64                 randconfig-x006-201638
-x86_64                 randconfig-x007-201638
-x86_64                 randconfig-x008-201638
-x86_64                 randconfig-x009-201638
-x86_64                                  kexec
-i386                   randconfig-r0-09190352
-x86_64                 randconfig-r0-09210940
-ia64                             allyesconfig
-i386                   randconfig-x000-201638
-i386                   randconfig-x001-201638
-i386                   randconfig-x002-201638
-i386                   randconfig-x003-201638
-i386                   randconfig-x004-201638
-i386                   randconfig-x005-201638
-i386                   randconfig-x006-201638
-i386                   randconfig-x007-201638
-i386                   randconfig-x008-201638
-i386                   randconfig-x009-201638
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-i386                   randconfig-x0-09210951
-i386                   randconfig-x0-09211050
-
-Thanks,
-Fengguang
+On Sat, Sep 10, 2016 at 5:29 AM, John Fastabend
+<john.fastabend@gmail.com> wrote:
+> From: Alexei Starovoitov <ast@fb.com>
+>
+> This patch adds initial support for XDP on e1000 driver. Note e1000
+> driver does not support page recycling in general which could be
+> added as a further improvement. However XDP_DROP case will recycle.
+> XDP_TX and XDP_PASS do not support recycling yet.
+>
+> I tested this patch running e1000 in a VM using KVM over a tap
+> device.
+>
+> CC: William Tu <u9012063@gmail.com>
+> Signed-off-by: Alexei Starovoitov <ast@kernel.org>
+> Signed-off-by: John Fastabend <john.r.fastabend@intel.com>
+> ---
+>  drivers/net/ethernet/intel/e1000/e1000.h      |    2
+>  drivers/net/ethernet/intel/e1000/e1000_main.c |  171 +++++++++++++++++++++++++
+>  2 files changed, 170 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/net/ethernet/intel/e1000/e1000.h b/drivers/net/ethernet/intel/e1000/e1000.h
+> index d7bdea7..5cf8a0a 100644
+> --- a/drivers/net/ethernet/intel/e1000/e1000.h
+> +++ b/drivers/net/ethernet/intel/e1000/e1000.h
+> @@ -150,6 +150,7 @@ struct e1000_adapter;
+>   */
+>  struct e1000_tx_buffer {
+>         struct sk_buff *skb;
+> +       struct page *page;
+>         dma_addr_t dma;
+>         unsigned long time_stamp;
+>         u16 length;
+> @@ -279,6 +280,7 @@ struct e1000_adapter {
+>                              struct e1000_rx_ring *rx_ring,
+>                              int cleaned_count);
+>         struct e1000_rx_ring *rx_ring;      /* One per active queue */
+> +       struct bpf_prog *prog;
+>         struct napi_struct napi;
+>
+>         int num_tx_queues;
+> diff --git a/drivers/net/ethernet/intel/e1000/e1000_main.c b/drivers/net/ethernet/intel/e1000/e1000_main.c
+> index f42129d..91d5c87 100644
+> --- a/drivers/net/ethernet/intel/e1000/e1000_main.c
+> +++ b/drivers/net/ethernet/intel/e1000/e1000_main.c
+> @@ -32,6 +32,7 @@
+>  #include <linux/prefetch.h>
+>  #include <linux/bitops.h>
+>  #include <linux/if_vlan.h>
+> +#include <linux/bpf.h>
+>
+>  char e1000_driver_name[] = "e1000";
+>  static char e1000_driver_string[] = "Intel(R) PRO/1000 Network Driver";
+> @@ -842,6 +843,44 @@ static int e1000_set_features(struct net_device *netdev,
+>         return 0;
+>  }
+>
+> +static int e1000_xdp_set(struct net_device *netdev, struct bpf_prog *prog)
+> +{
+> +       struct e1000_adapter *adapter = netdev_priv(netdev);
+> +       struct bpf_prog *old_prog;
+> +
+> +       old_prog = xchg(&adapter->prog, prog);
+> +       if (old_prog) {
+> +               synchronize_net();
+> +               bpf_prog_put(old_prog);
+> +       }
+> +
+> +       if (netif_running(netdev))
+> +               e1000_reinit_locked(adapter);
+> +       else
+> +               e1000_reset(adapter);
+> +       return 0;
+> +}
+> +
+> +static bool e1000_xdp_attached(struct net_device *dev)
+> +{
+> +       struct e1000_adapter *priv = netdev_priv(dev);
+> +
+> +       return !!priv->prog;
+> +}
+> +
+> +static int e1000_xdp(struct net_device *dev, struct netdev_xdp *xdp)
+> +{
+> +       switch (xdp->command) {
+> +       case XDP_SETUP_PROG:
+> +               return e1000_xdp_set(dev, xdp->prog);
+> +       case XDP_QUERY_PROG:
+> +               xdp->prog_attached = e1000_xdp_attached(dev);
+> +               return 0;
+> +       default:
+> +               return -EINVAL;
+> +       }
+> +}
+> +
+>  static const struct net_device_ops e1000_netdev_ops = {
+>         .ndo_open               = e1000_open,
+>         .ndo_stop               = e1000_close,
+> @@ -860,6 +899,7 @@ static const struct net_device_ops e1000_netdev_ops = {
+>  #endif
+>         .ndo_fix_features       = e1000_fix_features,
+>         .ndo_set_features       = e1000_set_features,
+> +       .ndo_xdp                = e1000_xdp,
+>  };
+>
+>  /**
+> @@ -1276,6 +1316,9 @@ static void e1000_remove(struct pci_dev *pdev)
+>         e1000_down_and_stop(adapter);
+>         e1000_release_manageability(adapter);
+>
+> +       if (adapter->prog)
+> +               bpf_prog_put(adapter->prog);
+> +
+>         unregister_netdev(netdev);
+>
+>         e1000_phy_hw_reset(hw);
+> @@ -1859,7 +1902,7 @@ static void e1000_configure_rx(struct e1000_adapter *adapter)
+>         struct e1000_hw *hw = &adapter->hw;
+>         u32 rdlen, rctl, rxcsum;
+>
+> -       if (adapter->netdev->mtu > ETH_DATA_LEN) {
+> +       if (adapter->netdev->mtu > ETH_DATA_LEN || adapter->prog) {
+>                 rdlen = adapter->rx_ring[0].count *
+>                         sizeof(struct e1000_rx_desc);
+>                 adapter->clean_rx = e1000_clean_jumbo_rx_irq;
+> @@ -1973,6 +2016,11 @@ e1000_unmap_and_free_tx_resource(struct e1000_adapter *adapter,
+>                 dev_kfree_skb_any(buffer_info->skb);
+>                 buffer_info->skb = NULL;
+>         }
+> +       if (buffer_info->page) {
+> +               put_page(buffer_info->page);
+> +               buffer_info->page = NULL;
+> +       }
+> +
+>         buffer_info->time_stamp = 0;
+>         /* buffer_info must be completely set up in the transmit path */
+>  }
+> @@ -3298,6 +3346,63 @@ static netdev_tx_t e1000_xmit_frame(struct sk_buff *skb,
+>         return NETDEV_TX_OK;
+>  }
+>
+> +static void e1000_tx_map_rxpage(struct e1000_tx_ring *tx_ring,
+> +                               struct e1000_rx_buffer *rx_buffer_info,
+> +                               unsigned int len)
+> +{
+> +       struct e1000_tx_buffer *buffer_info;
+> +       unsigned int i = tx_ring->next_to_use;
+> +
+> +       buffer_info = &tx_ring->buffer_info[i];
+> +
+> +       buffer_info->length = len;
+> +       buffer_info->time_stamp = jiffies;
+> +       buffer_info->mapped_as_page = false;
+> +       buffer_info->dma = rx_buffer_info->dma;
+> +       buffer_info->next_to_watch = i;
+> +       buffer_info->page = rx_buffer_info->rxbuf.page;
+> +
+> +       tx_ring->buffer_info[i].skb = NULL;
+> +       tx_ring->buffer_info[i].segs = 1;
+> +       tx_ring->buffer_info[i].bytecount = len;
+> +       tx_ring->buffer_info[i].next_to_watch = i;
+> +}
+> +
+> +static void e1000_xmit_raw_frame(struct e1000_rx_buffer *rx_buffer_info,
+> +                                unsigned int len,
+> +                                struct net_device *netdev,
+> +                                struct e1000_adapter *adapter)
+> +{
+> +       struct netdev_queue *txq = netdev_get_tx_queue(netdev, 0);
+> +       struct e1000_hw *hw = &adapter->hw;
+> +       struct e1000_tx_ring *tx_ring;
+> +
+> +       if (len > E1000_MAX_DATA_PER_TXD)
+> +               return;
+> +
+> +       /* e1000 only support a single txq at the moment so the queue is being
+> +        * shared with stack. To support this requires locking to ensure the
+> +        * stack and XDP are not running at the same time. Devices with
+> +        * multiple queues should allocate a separate queue space.
+> +        */
+> +       HARD_TX_LOCK(netdev, txq, smp_processor_id());
+> +
+> +       tx_ring = adapter->tx_ring;
+> +
+> +       if (E1000_DESC_UNUSED(tx_ring) < 2) {
+> +               HARD_TX_UNLOCK(netdev, txq);
+> +               return;
+> +       }
+> +
+> +       e1000_tx_map_rxpage(tx_ring, rx_buffer_info, len);
+> +       e1000_tx_queue(adapter, tx_ring, 0/*tx_flags*/, 1);
+> +
+> +       writel(tx_ring->next_to_use, hw->hw_addr + tx_ring->tdt);
+> +       mmiowb();
+> +
+> +       HARD_TX_UNLOCK(netdev, txq);
+> +}
+> +
+>  #define NUM_REGS 38 /* 1 based count */
+>  static void e1000_regdump(struct e1000_adapter *adapter)
+>  {
+> @@ -4142,6 +4247,19 @@ static struct sk_buff *e1000_alloc_rx_skb(struct e1000_adapter *adapter,
+>         return skb;
+>  }
+>
+> +static inline int e1000_call_bpf(struct bpf_prog *prog, void *data,
+> +                                unsigned int length)
+> +{
+> +       struct xdp_buff xdp;
+> +       int ret;
+> +
+> +       xdp.data = data;
+> +       xdp.data_end = data + length;
+> +       ret = BPF_PROG_RUN(prog, (void *)&xdp);
+> +
+> +       return ret;
+> +}
+> +
+>  /**
+>   * e1000_clean_jumbo_rx_irq - Send received data up the network stack; legacy
+>   * @adapter: board private structure
+> @@ -4160,12 +4278,15 @@ static bool e1000_clean_jumbo_rx_irq(struct e1000_adapter *adapter,
+>         struct pci_dev *pdev = adapter->pdev;
+>         struct e1000_rx_desc *rx_desc, *next_rxd;
+>         struct e1000_rx_buffer *buffer_info, *next_buffer;
+> +       struct bpf_prog *prog;
+>         u32 length;
+>         unsigned int i;
+>         int cleaned_count = 0;
+>         bool cleaned = false;
+>         unsigned int total_rx_bytes = 0, total_rx_packets = 0;
+>
+> +       rcu_read_lock(); /* rcu lock needed here to protect xdp programs */
+> +       prog = READ_ONCE(adapter->prog);
+>         i = rx_ring->next_to_clean;
+>         rx_desc = E1000_RX_DESC(*rx_ring, i);
+>         buffer_info = &rx_ring->buffer_info[i];
+> @@ -4191,12 +4312,55 @@ static bool e1000_clean_jumbo_rx_irq(struct e1000_adapter *adapter,
+>
+>                 cleaned = true;
+>                 cleaned_count++;
+> +               length = le16_to_cpu(rx_desc->length);
+> +
+> +               if (prog) {
+> +                       struct page *p = buffer_info->rxbuf.page;
+> +                       dma_addr_t dma = buffer_info->dma;
+> +                       int act;
+> +
+> +                       if (unlikely(!(status & E1000_RXD_STAT_EOP))) {
+> +                               /* attached bpf disallows larger than page
+> +                                * packets, so this is hw error or corruption
+> +                                */
+> +                               pr_info_once("%s buggy !eop\n", netdev->name);
+> +                               break;
+> +                       }
+> +                       if (unlikely(rx_ring->rx_skb_top)) {
+> +                               pr_info_once("%s ring resizing bug\n",
+> +                                            netdev->name);
+> +                               break;
+> +                       }
+> +                       dma_sync_single_for_cpu(&pdev->dev, dma,
+> +                                               length, DMA_FROM_DEVICE);
+> +                       act = e1000_call_bpf(prog, page_address(p), length);
+> +                       switch (act) {
+> +                       case XDP_PASS:
+> +                               break;
+> +                       case XDP_TX:
+> +                               dma_sync_single_for_device(&pdev->dev,
+> +                                                          dma,
+> +                                                          length,
+> +                                                          DMA_TO_DEVICE);
+> +                               e1000_xmit_raw_frame(buffer_info, length,
+> +                                                    netdev, adapter);
+> +                               buffer_info->rxbuf.page = NULL;
+> +                       case XDP_DROP:
+> +                       default:
+> +                               /* re-use mapped page. keep buffer_info->dma
+> +                                * as-is, so that e1000_alloc_jumbo_rx_buffers
+> +                                * only needs to put it back into rx ring
+> +                                */
+> +                               total_rx_bytes += length;
+> +                               total_rx_packets++;
+> +                               goto next_desc;
+> +                       }
+> +               }
+> +
+>                 dma_unmap_page(&pdev->dev, buffer_info->dma,
+>                                adapter->rx_buffer_len, DMA_FROM_DEVICE);
+>                 buffer_info->dma = 0;
+>
+> -               length = le16_to_cpu(rx_desc->length);
+> -
+>                 /* errors is only valid for DD + EOP descriptors */
+>                 if (unlikely((status & E1000_RXD_STAT_EOP) &&
+>                     (rx_desc->errors & E1000_RXD_ERR_FRAME_ERR_MASK))) {
+> @@ -4330,6 +4494,7 @@ next_desc:
+>                 rx_desc = next_rxd;
+>                 buffer_info = next_buffer;
+>         }
+> +       rcu_read_unlock();
+>         rx_ring->next_to_clean = i;
+>
+>         cleaned_count = E1000_DESC_UNUSED(rx_ring);
+>
