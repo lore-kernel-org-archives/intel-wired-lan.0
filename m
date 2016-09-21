@@ -1,119 +1,191 @@
-From: Dave Ertman <david.m.ertman@intel.com>
-Date: Tue, 20 Sep 2016 07:10:50 -0700
-Subject: [Intel-wired-lan] [PATCH] i40e: Fix configure TCs after initial DCB
-	disable
-Message-ID: <1474380650-8771-1-git-send-email-david.m.ertman@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 21 Sep 2016 11:55:38 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
+ d2cc36c6e171581da32dde438eccb5e8562129f5 BUILD SUCCESS
+Message-ID: <57e204ba.cDhelDFQaqMxHO4V%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-in commit a036244c068612a43fa8c0f33a0eb4daa4d8dba0 a fix
-was put into place to avoid a kernel panic when a non-
-supported traffic class configuration was put into place
-and then lldp was enabled/disabled on the link partner
-switch.  This fix caused it to be necessary to
-unload/reload the driver to reenable DCB once a supported
-TC config was in place.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+d2cc36c6e171581da32dde438eccb5e8562129f5  i40e: fix sideband flow director vector allocation
 
-The root cause of the original panic was that the function
-i40e_pf_get_default_tc was allowing for a default TC other
-than TC 0, and only TC 0 is supported as a default.
+elapsed time: 107m
 
-This patch removes the get_default_tc function and replaces
-it with a #define since there is only one TC supported as
-a default.
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 169
 
-Change-Id: I448371974e946386d0a7718d73668b450b7c72ef
-Signed-off-by: Dave Ertman <david.m.ertman@intel.com>
----
- drivers/net/ethernet/intel/i40e/i40e.h      |  1 +
- drivers/net/ethernet/intel/i40e/i40e_main.c | 31 ++++-------------------------
- 2 files changed, 5 insertions(+), 27 deletions(-)
+i386                     randconfig-a0-201638
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m68k                        mvme147_defconfig
+powerpc                    socrates_defconfig
+powerpc64                         allnoconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-09210957
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x012-201638
+x86_64                 randconfig-x015-201638
+x86_64                 randconfig-x013-201638
+x86_64                 randconfig-x011-201638
+x86_64                 randconfig-x017-201638
+x86_64                 randconfig-x018-201638
+x86_64                 randconfig-x014-201638
+x86_64                 randconfig-x010-201638
+x86_64                 randconfig-x016-201638
+x86_64                 randconfig-x019-201638
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201638
+i386                     randconfig-s1-201638
+x86_64                 randconfig-s0-09211004
+x86_64                 randconfig-s1-09211004
+x86_64                 randconfig-s2-09211004
+x86_64                           allmodconfig
+x86_64                 randconfig-s3-09211018
+x86_64                 randconfig-s4-09211018
+x86_64                 randconfig-s5-09211018
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+arm                              allyesconfig
+arm                      integrator_defconfig
+powerpc                     akebono_defconfig
+powerpc                     mpc512x_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201638
+i386                   randconfig-b0-09211019
+i386                   randconfig-b0-09211101
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-i0-09201520
+i386                   randconfig-i1-09201520
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+x86_64                 randconfig-n0-09210906
+x86_64                 randconfig-n0-09211052
+arm                          ep93xx_defconfig
+arm                          imote2_defconfig
+arm                        trizeps4_defconfig
+blackfin                            defconfig
+i386                   randconfig-x010-201638
+i386                   randconfig-x016-201638
+i386                   randconfig-x014-201638
+i386                   randconfig-x017-201638
+i386                   randconfig-x018-201638
+i386                   randconfig-x013-201638
+i386                   randconfig-x012-201638
+i386                   randconfig-x015-201638
+i386                   randconfig-x011-201638
+i386                   randconfig-x019-201638
+i386                     randconfig-n0-201638
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                   rhel
+x86_64                               rhel-7.2
+x86_64                 randconfig-h0-09211027
+arm                           corgi_defconfig
+mn10300                             defconfig
+mips                            e55_defconfig
+powerpc               mpc85xx_basic_defconfig
+arm                         ebsa110_defconfig
+sh                                  defconfig
+arm                          pcm027_defconfig
+sh                            shmin_defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                 randconfig-x000-201638
+x86_64                 randconfig-x001-201638
+x86_64                 randconfig-x002-201638
+x86_64                 randconfig-x003-201638
+x86_64                 randconfig-x004-201638
+x86_64                 randconfig-x005-201638
+x86_64                 randconfig-x006-201638
+x86_64                 randconfig-x007-201638
+x86_64                 randconfig-x008-201638
+x86_64                 randconfig-x009-201638
+x86_64                                  kexec
+i386                   randconfig-r0-09190352
+x86_64                 randconfig-r0-09210940
+ia64                             allyesconfig
+i386                   randconfig-x000-201638
+i386                   randconfig-x001-201638
+i386                   randconfig-x002-201638
+i386                   randconfig-x003-201638
+i386                   randconfig-x004-201638
+i386                   randconfig-x005-201638
+i386                   randconfig-x006-201638
+i386                   randconfig-x007-201638
+i386                   randconfig-x008-201638
+i386                   randconfig-x009-201638
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+i386                   randconfig-x0-09210951
+i386                   randconfig-x0-09211050
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 19103a6..b37956e 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -92,6 +92,7 @@
- #define I40E_AQ_LEN			256
- #define I40E_AQ_WORK_LIMIT		66 /* max number of VFs + a little */
- #define I40E_MAX_USER_PRIORITY		8
-+#define I40E_DEFAULT_TRAFFIC_CLASS	BIT(0)
- #define I40E_DEFAULT_MSG_ENABLE		4
- #define I40E_QUEUE_WAIT_RETRY_LIMIT	10
- #define I40E_INT_NAME_STR_LEN		(IFNAMSIZ + 16)
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 61b0fc4..4c9d6b9 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -4643,29 +4643,6 @@ static u8 i40e_pf_get_num_tc(struct i40e_pf *pf)
- }
- 
- /**
-- * i40e_pf_get_default_tc - Get bitmap for first enabled TC
-- * @pf: PF being queried
-- *
-- * Return a bitmap for first enabled traffic class for this PF.
-- **/
--static u8 i40e_pf_get_default_tc(struct i40e_pf *pf)
--{
--	u8 enabled_tc = pf->hw.func_caps.enabled_tcmap;
--	u8 i = 0;
--
--	if (!enabled_tc)
--		return 0x1; /* TC0 */
--
--	/* Find the first enabled TC */
--	for (i = 0; i < I40E_MAX_TRAFFIC_CLASS; i++) {
--		if (enabled_tc & BIT(i))
--			break;
--	}
--
--	return BIT(i);
--}
--
--/**
-  * i40e_pf_get_pf_tc_map - Get bitmap for enabled traffic classes
-  * @pf: PF being queried
-  *
-@@ -4675,7 +4652,7 @@ static u8 i40e_pf_get_tc_map(struct i40e_pf *pf)
- {
- 	/* If DCB is not enabled for this PF then just return default TC */
- 	if (!(pf->flags & I40E_FLAG_DCB_ENABLED))
--		return i40e_pf_get_default_tc(pf);
-+		return I40E_DEFAULT_TRAFFIC_CLASS;
- 
- 	/* SFP mode we want PF to be enabled for all TCs */
- 	if (!(pf->flags & I40E_FLAG_MFP_ENABLED))
-@@ -4685,7 +4662,7 @@ static u8 i40e_pf_get_tc_map(struct i40e_pf *pf)
- 	if (pf->hw.func_caps.iscsi)
- 		return i40e_get_iscsi_tc_map(pf);
- 	else
--		return i40e_pf_get_default_tc(pf);
-+		return I40E_DEFAULT_TRAFFIC_CLASS;
- }
- 
- /**
-@@ -5031,7 +5008,7 @@ static void i40e_dcb_reconfigure(struct i40e_pf *pf)
- 		if (v == pf->lan_vsi)
- 			tc_map = i40e_pf_get_tc_map(pf);
- 		else
--			tc_map = i40e_pf_get_default_tc(pf);
-+			tc_map = I40E_DEFAULT_TRAFFIC_CLASS;
- #ifdef I40E_FCOE
- 		if (pf->vsi[v]->type == I40E_VSI_FCOE)
- 			tc_map = i40e_get_fcoe_tc_map(pf);
-@@ -5719,7 +5696,7 @@ static int i40e_handle_lldp_event(struct i40e_pf *pf,
- 	u8 type;
- 
- 	/* Not DCB capable or capability disabled */
--	if (!(pf->flags & I40E_FLAG_DCB_ENABLED))
-+	if (!(pf->flags & I40E_FLAG_DCB_CAPABLE))
- 		return ret;
- 
- 	/* Ignore if event is not for Nearest Bridge */
--- 
-2.7.4
-
+Thanks,
+Fengguang
