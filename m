@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 21 Sep 2016 17:15:53 +0000
-Subject: [Intel-wired-lan] [next PATCH S47 3/9] i40e: Bit test
-	mask	correction
-In-Reply-To: <1473895479-23035-4-git-send-email-bimmy.pujari@intel.com>
+Date: Wed, 21 Sep 2016 17:22:19 +0000
+Subject: [Intel-wired-lan] [next PATCH S47 4/9] i40e: Remove unused
+ function	i40e_vsi_lookup
+In-Reply-To: <1473895479-23035-5-git-send-email-bimmy.pujari@intel.com>
 References: <1473895479-23035-1-git-send-email-bimmy.pujari@intel.com>
- <1473895479-23035-4-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA0E4D2@ORSMSX104.amr.corp.intel.com>
+ <1473895479-23035-5-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA0E4FA@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,20 +17,25 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Wednesday, September 14, 2016 4:25 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Sadowski, Filip <filip.sadowski@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH S47 3/9] i40e: Bit test mask correction
+> Subject: [Intel-wired-lan] [next PATCH S47 4/9] i40e: Remove unused
+> function i40e_vsi_lookup
 > 
-> From: Filip Sadowski <filip.sadowski@intel.com>
+> From: Alexander Duyck <alexander.h.duyck@intel.com>
 > 
-> Incorrect bit mask was used for testing "get link status" response.
-> Instead of I40E_AQ_LSE_ENABLE (which is actually 0x03) it most probably
-> should be I40E_AQ_LSE_IS_ENABLED (which is defined as 0x01).
+> The function is not used so there is no need to carry it forward.  I have plans
+> to add a slightly different function that can be inlined to handle the same
+> kind of functionality.
 > 
-> Signed-off-by: Filip Sadowski <filip.sadowski@intel.com>
-> Change-ID: Ia199142906720507f847de3a33a25c61a9781b2f
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+> Change-ID: Ie2dfcb189dc75e5fbc156bac23003e3b4210ae0f
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_common.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> Testing Hints:
+>         Verify driver builds without issues under various configurations.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e.h        |  2 --
+>  drivers/net/ethernet/intel/i40e/i40e_client.c | 31 ---------------------------
+>  2 files changed, 33 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+
 
