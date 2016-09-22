@@ -1,66 +1,46 @@
-From: Stefan Assmann <sassmann@kpanic.de>
-Date: Thu, 22 Sep 2016 09:57:48 +0200
-Subject: [Intel-wired-lan] [PATCH net-next 0/2] i40e: clean-up and fix
- for the i40e debug code
-In-Reply-To: <9BBC4E0CF881AA4299206E2E1412B6265028E6FE@ORSMSX102.amr.corp.intel.com>
-References: <1473946689-28427-1-git-send-email-sassmann@kpanic.de>
- <9BBC4E0CF881AA4299206E2E1412B6265028E486@ORSMSX102.amr.corp.intel.com>
- <9BBC4E0CF881AA4299206E2E1412B6265028E6FE@ORSMSX102.amr.corp.intel.com>
-Message-ID: <6af82f3b-88d4-6780-956f-acc4b95dc500@kpanic.de>
+From: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+Date: Thu, 22 Sep 2016 10:03:58 -0300
+Subject: [Intel-wired-lan] [PATCH net] i40e: disable MSI-X interrupts if we
+	cannot reserve enough vectors
+Message-ID: <1474549438-27468-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 21.09.2016 23:38, Wyborny, Carolyn wrote:
->> -----Original Message-----
->> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
->> Behalf Of Wyborny, Carolyn
->> Sent: Wednesday, September 21, 2016 11:31 AM
->> To: Stefan Assmann <sassmann@kpanic.de>; intel-wired-lan at lists.osuosl.org
->> Subject: Re: [Intel-wired-lan] [PATCH net-next 0/2] i40e: clean-up and fix for the
->> i40e debug code
->>
->>> -----Original Message-----
->>> From: netdev-owner at vger.kernel.org [mailto:netdev-
->> owner at vger.kernel.org]
->>> On Behalf Of Stefan Assmann
->>> Sent: Thursday, September 15, 2016 6:38 AM
->>> To: intel-wired-lan at lists.osuosl.org
->>> Cc: netdev at vger.kernel.org; davem at davemloft.net; Kirsher, Jeffrey T
->>> <jeffrey.t.kirsher@intel.com>; sassmann at kpanic.de
->>> Subject: [PATCH net-next 0/2] i40e: clean-up and fix for the i40e debug code
->>>
->>> Stefan Assmann (2):
->>>   i40e: remove superfluous I40E_DEBUG_USER statement
->>>   i40e: fix setting debug parameter early
->>>
->>>  drivers/net/ethernet/intel/i40e/i40e_common.c  |  3 --
->>>  drivers/net/ethernet/intel/i40e/i40e_debugfs.c |  6 ----
->>>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  2 --
->>>  drivers/net/ethernet/intel/i40e/i40e_main.c    | 43 ++++++++++++-------------
->> -
->>>  drivers/net/ethernet/intel/i40e/i40e_type.h    |  2 --
->>>  5 files changed, 20 insertions(+), 36 deletions(-)
->>>
->>> --
->>> 2.7.4
->> NACK
->>
->> I'm not sure what problem is intended to be solved here.  This is code that
->> enables output by the user using ethtool's msglvl feature.  I40E_DEBUG_USER is
->> not superfluous is a mask for user input.
+If we fail on allocating enough MSI-X interrupts, we should disable
+them since they were previously enabled in this point of code.
 
-Well, then please enlighten me what's the value of this flag? The
-intention of this set is to improve and fix the debug code. I'd
-appreciate it if your feedback would be more constructive.
+Not disabling them can lead to WARN_ON() being triggered and subsequent
+failure in enabling MSI as a fallback; the below message was shown without
+this patch while we played with interrupt allocation in i40e driver:
 
-> To provide more info on this.  Yes, the debug output in this driver was implemented in a non-ideal way.  However, we are working on refactoring this in a way that is consistent with our newer development and in a way that is consistent with how this kind of debugging is expected to work generically.
+[ 21.461346] sysfs: cannot create duplicate filename '/devices/pci0007:00/0007:00:00.0/0007:01:00.3/msi_irqs'
+[ 21.461459] ------------[ cut here ]------------
+[ 21.461514] WARNING: CPU: 64 PID: 1155 at fs/sysfs/dir.c:31 sysfs_warn_dup+0x88/0xc0
 
-In retrospective, the only flaw I see in the set is that I broke setting
-the debug_mask in i40e_set_msglevel(). So unless you plan to revamp the
-debug code the next few days or provide a good reason to keep
-I40E_DEBUG_USER I'll send a v2 with i40e_set_msglevel() fixed.
+Also, we noticed that without this patch, if we modprobe the module without
+enough MSI-X interrupts (triggering the above warning), unload the module
+and re-load it again, we got a crash on the system.
 
-  Stefan
+Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index d0b3a1b..f8ebe78 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -7721,6 +7721,7 @@ static int i40e_init_msix(struct i40e_pf *pf)
+ 		pf->flags &= ~I40E_FLAG_MSIX_ENABLED;
+ 		kfree(pf->msix_entries);
+ 		pf->msix_entries = NULL;
++		pci_disable_msix(pf->pdev);
+ 		return -ENODEV;
+ 
+ 	} else if (v_actual == I40E_MIN_MSIX) {
+-- 
+2.1.0
+
