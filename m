@@ -1,137 +1,66 @@
-From: Donald C Skidmore <donald.c.skidmore@intel.com>
-Date: Wed, 21 Sep 2016 20:21:52 -0400
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Add X552 iXFI configuration helper
-	function
-Message-ID: <1474503712-1901-1-git-send-email-donald.c.skidmore@intel.com>
+From: Stefan Assmann <sassmann@kpanic.de>
+Date: Thu, 22 Sep 2016 09:57:48 +0200
+Subject: [Intel-wired-lan] [PATCH net-next 0/2] i40e: clean-up and fix
+ for the i40e debug code
+In-Reply-To: <9BBC4E0CF881AA4299206E2E1412B6265028E6FE@ORSMSX102.amr.corp.intel.com>
+References: <1473946689-28427-1-git-send-email-sassmann@kpanic.de>
+ <9BBC4E0CF881AA4299206E2E1412B6265028E486@ORSMSX102.amr.corp.intel.com>
+ <9BBC4E0CF881AA4299206E2E1412B6265028E6FE@ORSMSX102.amr.corp.intel.com>
+Message-ID: <6af82f3b-88d4-6780-956f-acc4b95dc500@kpanic.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-X553 doesn't need all the initialization that X552 did for iXFI. This
-patch will allow native SPI SFP+ to work with X553 devices.  Future
-patches will add additional configuration as needed.
+On 21.09.2016 23:38, Wyborny, Carolyn wrote:
+>> -----Original Message-----
+>> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+>> Behalf Of Wyborny, Carolyn
+>> Sent: Wednesday, September 21, 2016 11:31 AM
+>> To: Stefan Assmann <sassmann@kpanic.de>; intel-wired-lan at lists.osuosl.org
+>> Subject: Re: [Intel-wired-lan] [PATCH net-next 0/2] i40e: clean-up and fix for the
+>> i40e debug code
+>>
+>>> -----Original Message-----
+>>> From: netdev-owner at vger.kernel.org [mailto:netdev-
+>> owner at vger.kernel.org]
+>>> On Behalf Of Stefan Assmann
+>>> Sent: Thursday, September 15, 2016 6:38 AM
+>>> To: intel-wired-lan at lists.osuosl.org
+>>> Cc: netdev at vger.kernel.org; davem at davemloft.net; Kirsher, Jeffrey T
+>>> <jeffrey.t.kirsher@intel.com>; sassmann at kpanic.de
+>>> Subject: [PATCH net-next 0/2] i40e: clean-up and fix for the i40e debug code
+>>>
+>>> Stefan Assmann (2):
+>>>   i40e: remove superfluous I40E_DEBUG_USER statement
+>>>   i40e: fix setting debug parameter early
+>>>
+>>>  drivers/net/ethernet/intel/i40e/i40e_common.c  |  3 --
+>>>  drivers/net/ethernet/intel/i40e/i40e_debugfs.c |  6 ----
+>>>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c |  2 --
+>>>  drivers/net/ethernet/intel/i40e/i40e_main.c    | 43 ++++++++++++-------------
+>> -
+>>>  drivers/net/ethernet/intel/i40e/i40e_type.h    |  2 --
+>>>  5 files changed, 20 insertions(+), 36 deletions(-)
+>>>
+>>> --
+>>> 2.7.4
+>> NACK
+>>
+>> I'm not sure what problem is intended to be solved here.  This is code that
+>> enables output by the user using ethtool's msglvl feature.  I40E_DEBUG_USER is
+>> not superfluous is a mask for user input.
 
-Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 86 ++++++++++++++++-----------
- 1 file changed, 52 insertions(+), 34 deletions(-)
+Well, then please enlighten me what's the value of this flag? The
+intention of this set is to improve and fix the debug code. I'd
+appreciate it if your feedback would be more constructive.
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index 7e6b926..3e3458e 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-@@ -1128,47 +1128,17 @@ out:
- 	return ret;
- }
- 
--/** ixgbe_setup_ixfi_x550em - Configure the KR PHY for iXFI mode.
-+/**
-+ *  ixgbe_setup_ixfi_x550em_x - MAC specific iXFI configuration
-  *  @hw: pointer to hardware structure
-- *  @speed: the link speed to force
-  *
-- *  Configures the integrated KR PHY to use iXFI mode. Used to connect an
-- *  internal and external PHY at a specific speed, without autonegotiation.
-+ *  iXfI configuration needed for ixgbe_mac_X550EM_x devices.
-  **/
--static s32 ixgbe_setup_ixfi_x550em(struct ixgbe_hw *hw, ixgbe_link_speed *speed)
-+static s32 ixgbe_setup_ixfi_x550em_x(struct ixgbe_hw *hw)
- {
- 	s32 status;
- 	u32 reg_val;
- 
--	/* Disable AN and force speed to 10G Serial. */
--	status = ixgbe_read_iosf_sb_reg_x550(hw,
--					IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
--					IXGBE_SB_IOSF_TARGET_KR_PHY, &reg_val);
--	if (status)
--		return status;
--
--	reg_val &= ~IXGBE_KRM_LINK_CTRL_1_TETH_AN_ENABLE;
--	reg_val &= ~IXGBE_KRM_LINK_CTRL_1_TETH_FORCE_SPEED_MASK;
--
--	/* Select forced link speed for internal PHY. */
--	switch (*speed) {
--	case IXGBE_LINK_SPEED_10GB_FULL:
--		reg_val |= IXGBE_KRM_LINK_CTRL_1_TETH_FORCE_SPEED_10G;
--		break;
--	case IXGBE_LINK_SPEED_1GB_FULL:
--		reg_val |= IXGBE_KRM_LINK_CTRL_1_TETH_FORCE_SPEED_1G;
--		break;
--	default:
--		/* Other link speeds are not supported by internal KR PHY. */
--		return IXGBE_ERR_LINK_SETUP;
--	}
--
--	status = ixgbe_write_iosf_sb_reg_x550(hw,
--				IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
--				IXGBE_SB_IOSF_TARGET_KR_PHY, reg_val);
--	if (status)
--		return status;
--
- 	/* Disable training protocol FSM. */
- 	status = ixgbe_read_iosf_sb_reg_x550(hw,
- 				IXGBE_KRM_RX_TRN_LINKUP_CTRL(hw->bus.lan_id),
-@@ -1228,9 +1198,57 @@ static s32 ixgbe_setup_ixfi_x550em(struct ixgbe_hw *hw, ixgbe_link_speed *speed)
- 	status = ixgbe_write_iosf_sb_reg_x550(hw,
- 				IXGBE_KRM_TX_COEFF_CTRL_1(hw->bus.lan_id),
- 				IXGBE_SB_IOSF_TARGET_KR_PHY, reg_val);
-+	return status;
-+}
-+
-+/** ixgbe_setup_ixfi_x550em - Configure the KR PHY for iXFI mode.
-+ *  @hw: pointer to hardware structure
-+ *  @speed: the link speed to force
-+ *
-+ *  Configures the integrated KR PHY to use iXFI mode. Used to connect an
-+ *  internal and external PHY at a specific speed, without autonegotiation.
-+ **/
-+static s32 ixgbe_setup_ixfi_x550em(struct ixgbe_hw *hw, ixgbe_link_speed *speed)
-+{
-+	s32 status;
-+	u32 reg_val;
-+
-+	/* Disable AN and force speed to 10G Serial. */
-+	status = ixgbe_read_iosf_sb_reg_x550(hw,
-+					IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
-+					IXGBE_SB_IOSF_TARGET_KR_PHY, &reg_val);
-+	if (status)
-+		return status;
-+
-+	reg_val &= ~IXGBE_KRM_LINK_CTRL_1_TETH_AN_ENABLE;
-+	reg_val &= ~IXGBE_KRM_LINK_CTRL_1_TETH_FORCE_SPEED_MASK;
-+
-+	/* Select forced link speed for internal PHY. */
-+	switch (*speed) {
-+	case IXGBE_LINK_SPEED_10GB_FULL:
-+		reg_val |= IXGBE_KRM_LINK_CTRL_1_TETH_FORCE_SPEED_10G;
-+		break;
-+	case IXGBE_LINK_SPEED_1GB_FULL:
-+		reg_val |= IXGBE_KRM_LINK_CTRL_1_TETH_FORCE_SPEED_1G;
-+		break;
-+	default:
-+		/* Other link speeds are not supported by internal KR PHY. */
-+		return IXGBE_ERR_LINK_SETUP;
-+	}
-+
-+	status = ixgbe_write_iosf_sb_reg_x550(hw,
-+				IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
-+				IXGBE_SB_IOSF_TARGET_KR_PHY, reg_val);
- 	if (status)
- 		return status;
- 
-+	/* Additional configuration needed for x550em_x */
-+	if (hw->mac.type == ixgbe_mac_X550EM_x) {
-+		status = ixgbe_setup_ixfi_x550em_x(hw);
-+		if (status)
-+			return status;
-+	}
-+
- 	/* Toggle port SW reset by AN reset. */
- 	status = ixgbe_read_iosf_sb_reg_x550(hw,
- 				IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
--- 
-2.4.3
+> To provide more info on this.  Yes, the debug output in this driver was implemented in a non-ideal way.  However, we are working on refactoring this in a way that is consistent with our newer development and in a way that is consistent with how this kind of debugging is expected to work generically.
 
+In retrospective, the only flaw I see in the set is that I broke setting
+the debug_mask in i40e_set_msglevel(). So unless you plan to revamp the
+debug code the next few days or provide a good reason to keep
+I40E_DEBUG_USER I'll send a v2 with i40e_set_msglevel() fixed.
+
+  Stefan
