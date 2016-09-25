@@ -1,220 +1,48 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sun, 25 Sep 2016 17:11:48 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:40GbE]
- 65e87c0398f542d5bd51cfd8a29b9dfd246b6a1c BUILD SUCCESS
-Message-ID: <57e794d4.PWegkw5VD2bFYseN%fengguang.wu@intel.com>
+From: Baoyou Xie <baoyou.xie@linaro.org>
+Date: Sun, 25 Sep 2016 14:03:58 +0800
+Subject: [Intel-wired-lan] [PATCH] ixgbe: mark symbols static where possible
+Message-ID: <1474783438-7278-1-git-send-email-baoyou.xie@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  40GbE
-65e87c0398f542d5bd51cfd8a29b9dfd246b6a1c  i40evf: support queue-specific settings for interrupt moderation
+We get 2 warnings when building kernel with W=1:
+drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c:2128:5: warning: no previous prototype for 'ixgbe_led_on_t_x550em' [-Wmissing-prototypes]
+drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c:2150:5: warning: no previous prototype for 'ixgbe_led_off_t_x550em' [-Wmissing-prototypes]
 
-elapsed time: 148m
+In fact, these two functions are only used in the file in which they are
+declared and don't need a declaration, but can be made static.
+so this patch marks these functions with 'static'.
 
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 198
+Signed-off-by: Baoyou Xie <baoyou.xie@linaro.org>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-ia64                          tiger_defconfig
-powerpc                      virtex_defconfig
-sh                        dreamcast_defconfig
-i386                     randconfig-a0-201639
-x86_64                 randconfig-a0-09251405
-x86_64                 randconfig-a0-09251521
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-arm                          pcm027_defconfig
-arm64                            allyesconfig
-mips                         tb0226_defconfig
-i386                   randconfig-c0-09251548
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-i386                             allmodconfig
-arm                         lpc32xx_defconfig
-arm                          pxa168_defconfig
-sh                          rsk7269_defconfig
-tile                         tilegx_defconfig
-arm                      footbridge_defconfig
-arm                          pxa3xx_defconfig
-mn10300                     asb2364_defconfig
-parisc                         a500_defconfig
-sh                 kfr2r09-romimage_defconfig
-x86_64                 randconfig-x015-201639
-x86_64                 randconfig-x012-201639
-x86_64                 randconfig-x013-201639
-x86_64                 randconfig-x011-201639
-x86_64                 randconfig-x017-201639
-x86_64                 randconfig-x018-201639
-x86_64                 randconfig-x014-201639
-x86_64                 randconfig-x010-201639
-x86_64                 randconfig-x019-201639
-x86_64                 randconfig-x016-201639
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-x86_64                            eywa-module
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                     randconfig-s0-201639
-i386                     randconfig-s1-201639
-x86_64                 randconfig-s0-09251444
-x86_64                 randconfig-s1-09251444
-x86_64                 randconfig-s2-09251444
-x86_64                 randconfig-s0-09251538
-x86_64                 randconfig-s1-09251538
-x86_64                 randconfig-s2-09251538
-x86_64                           allmodconfig
-x86_64                 randconfig-s3-09251419
-x86_64                 randconfig-s4-09251419
-x86_64                 randconfig-s5-09251419
-x86_64                 randconfig-s3-09251529
-x86_64                 randconfig-s4-09251529
-x86_64                 randconfig-s5-09251529
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-openrisc                    or1ksim_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-arm                          collie_defconfig
-blackfin                  TCM-BF518_defconfig
-um                               alldefconfig
-arm                        spear6xx_defconfig
-blackfin                BF548-EZKIT_defconfig
-powerpc                     asp8347_defconfig
-sparc                               defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201639
-i386                   randconfig-b0-09251440
-i386                   randconfig-b0-09251551
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                    nommu_defconfig
-powerpc                 mpc837x_mds_defconfig
-sh                         microdev_defconfig
-i386                     randconfig-i0-201639
-i386                     randconfig-i1-201639
-x86_64                 randconfig-b0-09251324
-avr32                     atstk1003_defconfig
-microblaze                          defconfig
-powerpc                     tqm8560_defconfig
-arm                          nuc910_defconfig
-blackfin                BF527-EZKIT_defconfig
-x86_64                 randconfig-u0-09251325
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-m68k                       m5208evb_defconfig
-microblaze                       allmodconfig
-x86_64                 randconfig-n0-09251402
-x86_64                 randconfig-n0-09251528
-i386                               tinyconfig
-arm                            pleb_defconfig
-s390                              allnoconfig
-sh                          sdk7780_defconfig
-i386                   randconfig-x010-201639
-i386                   randconfig-x016-201639
-i386                   randconfig-x014-201639
-i386                   randconfig-x017-201639
-i386                   randconfig-x018-201639
-i386                   randconfig-x013-201639
-i386                   randconfig-x012-201639
-i386                   randconfig-x015-201639
-i386                   randconfig-x011-201639
-i386                   randconfig-x019-201639
-microblaze                      mmu_defconfig
-i386                     randconfig-n0-201638
-i386                   randconfig-h0-09251525
-i386                   randconfig-h1-09251525
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                 randconfig-h0-09251402
-blackfin                    DNP5370_defconfig
-sh                  sh7785lcr_32bit_defconfig
-powerpc                          allmodconfig
-powerpc                     kilauea_defconfig
-x86_64                 randconfig-n0-09251432
-x86_64                 randconfig-n0-09251512
-x86_64                 randconfig-n0-09251551
-m68k                           sun3_defconfig
-m68k                          multi_defconfig
-m68k                       m5475evb_defconfig
-sh                                allnoconfig
-sh                            titan_defconfig
-x86_64                 randconfig-x002-201639
-x86_64                 randconfig-x009-201639
-x86_64                 randconfig-x008-201639
-x86_64                 randconfig-x004-201639
-x86_64                 randconfig-x007-201639
-x86_64                 randconfig-x003-201639
-x86_64                 randconfig-x005-201639
-x86_64                 randconfig-x006-201639
-x86_64                 randconfig-x001-201639
-x86_64                 randconfig-x000-201639
-i386                     randconfig-r0-201639
-x86_64                 randconfig-r0-09251437
-parisc                           allyesconfig
-i386                   randconfig-x009-201639
-i386                   randconfig-x002-201639
-i386                   randconfig-x006-201639
-i386                   randconfig-x007-201639
-i386                   randconfig-x008-201639
-i386                   randconfig-x001-201639
-i386                   randconfig-x003-201639
-i386                   randconfig-x000-201639
-i386                   randconfig-x004-201639
-i386                   randconfig-x005-201639
-i386                              allnoconfig
-i386                                defconfig
-i386                             alldefconfig
-i386                   randconfig-x0-09251430
-i386                   randconfig-x0-09251541
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index e092a89..dec8b11 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -2125,7 +2125,7 @@ static s32 ixgbe_reset_phy_t_X550em(struct ixgbe_hw *hw)
+  *  @hw: pointer to hardware structure
+  *  @led_idx: led number to turn on
+  **/
+-s32 ixgbe_led_on_t_x550em(struct ixgbe_hw *hw, u32 led_idx)
++static s32 ixgbe_led_on_t_x550em(struct ixgbe_hw *hw, u32 led_idx)
+ {
+ 	u16 phy_data;
+ 
+@@ -2147,7 +2147,7 @@ s32 ixgbe_led_on_t_x550em(struct ixgbe_hw *hw, u32 led_idx)
+  *  @hw: pointer to hardware structure
+  *  @led_idx: led number to turn off
+  **/
+-s32 ixgbe_led_off_t_x550em(struct ixgbe_hw *hw, u32 led_idx)
++static s32 ixgbe_led_off_t_x550em(struct ixgbe_hw *hw, u32 led_idx)
+ {
+ 	u16 phy_data;
+ 
+-- 
+2.7.4
 
-Thanks,
-Fengguang
