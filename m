@@ -1,224 +1,178 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Mon, 26 Sep 2016 08:32:19 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue]
- 7f6834c7b3161c4848f951823dda76faa5cd3951 BUILD SUCCESS
-Message-ID: <57e86c93.pGMw1u7wGBPaS17q%fengguang.wu@intel.com>
+From: Kurien Mathew <kurien.mathew@ericsson.com>
+Date: Mon, 26 Sep 2016 09:53:01 +0000
+Subject: [Intel-wired-lan] ixgbe FdirMode for Perfect filter mode
+In-Reply-To: <22B3FA801D86A143A7D448636913BBD2C2BE57@ESESSMB107.ericsson.se>
+References: <22B3FA801D86A143A7D448636913BBD2C2BB52@ESESSMB107.ericsson.se>
+ <87618083B2453E4A8714035B62D67992506E7B4C@FMSMSX105.amr.corp.intel.com>
+ <22B3FA801D86A143A7D448636913BBD2C2BDC0@ESESSMB107.ericsson.se>
+ <87618083B2453E4A8714035B62D67992506E7C09@FMSMSX105.amr.corp.intel.com>
+ <22B3FA801D86A143A7D448636913BBD2C2BE57@ESESSMB107.ericsson.se>
+Message-ID: <22B3FA801D86A143A7D448636913BBD2C2C7FC@ESESSMB107.ericsson.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-7f6834c7b3161c4848f951823dda76faa5cd3951  ixgbe: fix panic when using macvlan with l2-fwd-offload enabled
+Would it be possible to support the IP header field "identification" as an option for rx-flow-hash? I could not find this option in ethtool.
 
-elapsed time: 241m
+Kurien
 
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 203
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Kurien Mathew
+Sent: 23 September 2016 21:23
+To: Tantilov, Emil S; intel-wired-lan at lists.osuosl.org
+Subject: Re: [Intel-wired-lan] ixgbe FdirMode for Perfect filter mode
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-i386                     randconfig-a0-201639
-x86_64                 randconfig-a0-09260457
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-arm                           h3600_defconfig
-avr32                     atstk1004_defconfig
-powerpc                         ps3_defconfig
-powerpc                 linkstation_defconfig
-sh                            migor_defconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-i386                   randconfig-c0-09260319
-i386                   randconfig-c0-09260729
-x86_64                           allmodconfig
-x86_64                 randconfig-v0-09260325
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-blackfin                            defconfig
-ia64                                defconfig
-mips                                defconfig
-sh                                  defconfig
-arm                            xcep_defconfig
-m32r                        oaks32r_defconfig
-m68k                       m5208evb_defconfig
-powerpc                 mpc837x_rdb_defconfig
-tile                             alldefconfig
-arm                         s3c6400_defconfig
-mn10300                          allmodconfig
-powerpc64                         allnoconfig
-um                                allnoconfig
-x86_64               randconfig-x010-09252039
-x86_64               randconfig-x011-09252039
-x86_64               randconfig-x012-09252039
-x86_64               randconfig-x013-09252039
-x86_64               randconfig-x014-09252039
-x86_64               randconfig-x015-09252039
-x86_64               randconfig-x016-09252039
-x86_64               randconfig-x017-09252039
-x86_64               randconfig-x018-09252039
-x86_64               randconfig-x019-09252039
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                   randconfig-s0-09252040
-i386                   randconfig-s1-09252040
-x86_64                 randconfig-s0-09252041
-x86_64                 randconfig-s1-09252041
-x86_64                 randconfig-s2-09252041
-x86_64                 randconfig-s0-09260705
-x86_64                 randconfig-s1-09260705
-x86_64                 randconfig-s2-09260705
-x86_64                 randconfig-s0-09260726
-x86_64                 randconfig-s1-09260726
-x86_64                 randconfig-s2-09260726
-x86_64                 randconfig-s3-09252041
-x86_64                 randconfig-s4-09252041
-x86_64                 randconfig-s5-09252041
-x86_64                 randconfig-s3-09260651
-x86_64                 randconfig-s4-09260651
-x86_64                 randconfig-s5-09260651
-x86_64                 randconfig-s3-09260716
-x86_64                 randconfig-s4-09260716
-x86_64                 randconfig-s5-09260716
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                               tinyconfig
-i386                             allmodconfig
-powerpc                             defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-powerpc                           allnoconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-i0-09252028
-i386                   randconfig-b0-09252028
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-arm                       imx_v4_v5_defconfig
-blackfin                BF548-EZKIT_defconfig
-ia64                          tiger_defconfig
-powerpc                      chrp32_defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i1-201639
-i386                     randconfig-i0-201639
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-arm                       aspeed_g5_defconfig
-mips                         tb0226_defconfig
-powerpc                     kmp204x_defconfig
-sh                        sh7763rdp_defconfig
-sh                   sh7770_generic_defconfig
-frv                              alldefconfig
-mn10300                           allnoconfig
-sh                           se7780_defconfig
-x86_64                 randconfig-u0-09260620
-arm                         s5pv210_defconfig
-x86_64                 randconfig-n0-09260550
-x86_64                 randconfig-n0-09260648
-i386                   randconfig-x010-201639
-i386                   randconfig-x016-201639
-i386                   randconfig-x014-201639
-i386                   randconfig-x017-201639
-i386                   randconfig-x018-201639
-i386                   randconfig-x013-201639
-i386                   randconfig-x012-201639
-i386                   randconfig-x015-201639
-i386                   randconfig-x011-201639
-i386                   randconfig-x019-201639
-i386                     randconfig-n0-201639
-powerpc                 mpc834x_itx_defconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-x86_64                 randconfig-h0-09260540
-x86_64                 randconfig-x002-201639
-x86_64                 randconfig-x009-201639
-x86_64                 randconfig-x008-201639
-x86_64                 randconfig-x004-201639
-x86_64                 randconfig-x007-201639
-x86_64                 randconfig-x003-201639
-x86_64                 randconfig-x005-201639
-x86_64                 randconfig-x006-201639
-x86_64                 randconfig-x001-201639
-x86_64                 randconfig-x000-201639
-i386                     randconfig-r0-201639
-i386                   randconfig-x009-201639
-i386                   randconfig-x002-201639
-i386                   randconfig-x006-201639
-i386                   randconfig-x007-201639
-i386                   randconfig-x008-201639
-i386                   randconfig-x001-201639
-i386                   randconfig-x003-201639
-i386                   randconfig-x000-201639
-i386                   randconfig-x004-201639
-i386                   randconfig-x005-201639
-i386                 randconfig-x000-09252223
-i386                 randconfig-x001-09252223
-i386                 randconfig-x002-09252223
-i386                 randconfig-x003-09252223
-i386                 randconfig-x004-09252223
-i386                 randconfig-x005-09252223
-i386                 randconfig-x006-09252223
-i386                 randconfig-x007-09252223
-i386                 randconfig-x008-09252223
-i386                 randconfig-x009-09252223
+
+>>This will enable RSS for UDP, but I'm not sure what you mean by "automatic perfect filtering".
+
+Yes, RSS for UDP along with precise distribution of packets to queues is what I want. Eg if I have 16 UDP streams coming in I want each to go to a different RX queue based on the "sdfn" hash (resulting in 16 active RSS queues). The benefit of the "sdfn" hash is that it is automatic as opposed to explicit rules which don't work when the application defined ports change dynamically.
+
+
+
+>>Probably due to fragmented UDP packets.
+
+Good point. I forgot to mention that the UDP flows use jumbo packets. This could explain why some packets escape the filter and go into a default queue. Do you have suggestions on how to handle this case using rx-flow-hash? Can the ip.id field be used for the hash in order to achieve perfect jumbo UDP filtering?
+
+
+
+Kurien
+
+
+
+-----Original Message-----
+From: Tantilov, Emil S [mailto:emil.s.tantilov at intel.com]
+Sent: 23 September 2016 20:03
+To: Kurien Mathew; intel-wired-lan at lists.osuosl.org<mailto:intel-wired-lan@lists.osuosl.org>
+Subject: RE: ixgbe FdirMode for Perfect filter mode
+
+
+
+>-----Original Message-----
+
+>From: Kurien Mathew [mailto:kurien.mathew at ericsson.com]
+
+>Sent: Friday, September 23, 2016 9:25 AM
+
+>To: Tantilov, Emil S <emil.s.tantilov at intel.com<mailto:emil.s.tantilov@intel.com>>; intel-wired-
+
+>lan at lists.osuosl.org<mailto:lan@lists.osuosl.org>
+
+>Subject: RE: ixgbe FdirMode for Perfect filter mode
+
+>
+
+>I see commands for enabling fdir (flow director) and adding filters but
+
+>no way to enable "perfect filter" mode instead of the "ATR" mode which
+
+>is mentioned as the default director mode.
+
+>
+
+>Other ethtool Commands:
+
+>
+
+>To enable Flow Director
+
+>
+
+>                ethtool -K ethX ntuple on
+
+
+
+This will enable "perfect filter" mode, but there are no filters yet, so the received packets will fall back to RSS.
+
+
+
+>
+
+>To add a filter
+
+>
+
+>                Use -U switch. e.g., ethtool -U ethX flow-type tcp4
+
+>src-ip
+
+>10.0.128.23
+
+>
+
+>        action 1
+
+>
+
+>To see the list of filters currently present:
+
+>
+
+>                ethtool -u ethX
+
+>
+
+>
+
+>
+
+>I would like to have balanced queues by having automatic perfect
+
+>filtering when using "rx-flow-hash udp sfdn".
+
+
+
+This will enable RSS for UDP, but I'm not sure what you mean by "automatic perfect filtering".
+
+
+
+>[root at ace ~]# ethtool -u ens802f1 rx-flow-hash udp4
+
+>
+
+>UDP over IPV4 flows use these fields for computing Hash flow key:
+
+>
+
+>IP SA
+
+>
+
+>IP DA
+
+>
+
+>L4 bytes 0 & 1 [TCP/UDP src port]
+
+>
+
+>L4 bytes 2 & 3 [TCP/UDP dst port]
+
+>
+
+>
+
+>
+
+>Currently I find that one or a few queues are populated irrespective of
+
+>the number of unique UDP streams (in my case it is 16). If I use
+
+>explicit rules using < flow-type udp4 dst-port <xxxxx> action <n>, all
+
+>specified queues are populated but one queue remains dominant and receives way more packets.
+
+
+
+Probably due to fragmented UDP packets.
+
+
 
 Thanks,
-Fengguang
+
+Emil
+
+
+-------------- next part --------------
+An HTML attachment was scrubbed...
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160926/b50eef1f/attachment.html>
