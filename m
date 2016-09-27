@@ -1,59 +1,99 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue, 27 Sep 2016 11:26:55 -0700
-Subject: [Intel-wired-lan] [next PATCH S47 7/9] i40e: group base mode VF
-	offload flags
+Date: Tue, 27 Sep 2016 11:26:53 -0700
+Subject: [Intel-wired-lan] [next PATCH S47 5/9] i40e: Drop code for
+	unsupported flow types
 In-Reply-To: <1475000817-27280-1-git-send-email-bimmy.pujari@intel.com>
 References: <1475000817-27280-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1475000817-27280-8-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1475000817-27280-6-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Preethi Banala <preethi.banala@intel.com>
+From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-Group together the minimum set of offload capabilities that are always
-supported by VF in base mode. This define would be used by PF to make
-sure VF in base mode gets minimum of base capabilities .
+We cannot currently support SCTP in the hardware, and IPV4_FLOW is not used
+anywhere by the software so we can go through and drop the functionality
+related to these two flow types.
 
-Signed-off-by: Preethi Banala <preethi.banala@intel.com>
-Change-ID: Id5e8f22ba169c8f0a38d22fc36b2cb531c02582c
+In addition we cannot support masking based on the protocol value so if the
+user is expecting a value other than TCP or UDP we should simply return an
+error rather then trying to allocate a filter for a rule that will only
+partially match what the user requested.
+
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+Change-ID: I10d52bb97d8104d76255fe244551814ff9531a63
 ---
- drivers/net/ethernet/intel/i40e/i40e_virtchnl.h   | 4 ++++
- drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h | 4 ++++
- 2 files changed, 8 insertions(+)
+Testing Hints:
+        This change should have no impact on actual functionality.  All it
+        should be doing is removing dead code.  As such we should see no
+        actual change in how ethtool Flow Director filters are handled.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl.h
-index f861d31..974ba2b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl.h
-@@ -165,6 +165,10 @@ struct i40e_virtchnl_vsi_resource {
- #define I40E_VIRTCHNL_VF_OFFLOAD_RSS_PF		0X00080000
- #define I40E_VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM	0X00100000
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c | 31 +++++------------------------
+ 1 file changed, 5 insertions(+), 26 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index d1c3a3a..eba16a1 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -330,22 +330,6 @@ static int i40e_add_del_fdir_tcpv4(struct i40e_vsi *vsi,
+ 	return err ? -EOPNOTSUPP : 0;
+ }
  
-+#define I40E_VF_BASE_MODE_OFFLOADS (I40E_VIRTCHNL_VF_OFFLOAD_L2 | \
-+				    I40E_VIRTCHNL_VF_OFFLOAD_VLAN | \
-+				    I40E_VIRTCHNL_VF_OFFLOAD_RSS_PF)
-+
- struct i40e_virtchnl_vf_resource {
- 	u16 num_vsis;
- 	u16 num_queue_pairs;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h b/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h
-index bd691ad..fc374f8 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h
-@@ -162,6 +162,10 @@ struct i40e_virtchnl_vsi_resource {
- #define I40E_VIRTCHNL_VF_OFFLOAD_RSS_PF		0X00080000
- #define I40E_VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM	0X00100000
- 
-+#define I40E_VF_BASE_MODE_OFFLOADS (I40E_VIRTCHNL_VF_OFFLOAD_L2 | \
-+				    I40E_VIRTCHNL_VF_OFFLOAD_VLAN | \
-+				    I40E_VIRTCHNL_VF_OFFLOAD_RSS_PF)
-+
- struct i40e_virtchnl_vf_resource {
- 	u16 num_vsis;
- 	u16 num_queue_pairs;
+-/**
+- * i40e_add_del_fdir_sctpv4 - Add/Remove SCTPv4 Flow Director filters for
+- * a specific flow spec
+- * @vsi: pointer to the targeted VSI
+- * @fd_data: the flow director data required for the FDir descriptor
+- * @add: true adds a filter, false removes it
+- *
+- * Returns 0 if the filters were successfully added or removed
+- **/
+-static int i40e_add_del_fdir_sctpv4(struct i40e_vsi *vsi,
+-				    struct i40e_fdir_filter *fd_data,
+-				    bool add)
+-{
+-	return -EOPNOTSUPP;
+-}
+-
+ #define I40E_IP_DUMMY_PACKET_LEN 34
+ /**
+  * i40e_add_del_fdir_ipv4 - Add/Remove IPv4 Flow Director filters for
+@@ -428,12 +412,6 @@ int i40e_add_del_fdir(struct i40e_vsi *vsi,
+ 	case UDP_V4_FLOW:
+ 		ret = i40e_add_del_fdir_udpv4(vsi, input, add);
+ 		break;
+-	case SCTP_V4_FLOW:
+-		ret = i40e_add_del_fdir_sctpv4(vsi, input, add);
+-		break;
+-	case IPV4_FLOW:
+-		ret = i40e_add_del_fdir_ipv4(vsi, input, add);
+-		break;
+ 	case IP_USER_FLOW:
+ 		switch (input->ip4_proto) {
+ 		case IPPROTO_TCP:
+@@ -442,15 +420,16 @@ int i40e_add_del_fdir(struct i40e_vsi *vsi,
+ 		case IPPROTO_UDP:
+ 			ret = i40e_add_del_fdir_udpv4(vsi, input, add);
+ 			break;
+-		case IPPROTO_SCTP:
+-			ret = i40e_add_del_fdir_sctpv4(vsi, input, add);
+-			break;
+-		default:
++		case IPPROTO_IP:
+ 			ret = i40e_add_del_fdir_ipv4(vsi, input, add);
+ 			break;
++		default:
++			/* We cannot support masking based on protocol */
++			goto unsupported_flow;
+ 		}
+ 		break;
+ 	default:
++unsupported_flow:
+ 		dev_info(&pf->pdev->dev, "Could not specify spec type %d\n",
+ 			 input->flow_type);
+ 		ret = -EINVAL;
 -- 
 2.4.11
 
