@@ -1,41 +1,59 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue, 27 Sep 2016 11:26:51 -0700
-Subject: [Intel-wired-lan] [next PATCH S47 3/9] i40e: Bit test mask
-	correction
+Date: Tue, 27 Sep 2016 11:26:55 -0700
+Subject: [Intel-wired-lan] [next PATCH S47 7/9] i40e: group base mode VF
+	offload flags
 In-Reply-To: <1475000817-27280-1-git-send-email-bimmy.pujari@intel.com>
 References: <1475000817-27280-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1475000817-27280-4-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1475000817-27280-8-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Filip Sadowski <filip.sadowski@intel.com>
+From: Preethi Banala <preethi.banala@intel.com>
 
-Incorrect bit mask was used for testing "get link status" response.
-Instead of I40E_AQ_LSE_ENABLE (which is actually 0x03) it most probably
-should be I40E_AQ_LSE_IS_ENABLED (which is defined as 0x01).
+Group together the minimum set of offload capabilities that are always
+supported by VF in base mode. This define would be used by PF to make
+sure VF in base mode gets minimum of base capabilities .
 
-Signed-off-by: Filip Sadowski <filip.sadowski@intel.com>
-Change-ID: Ia199142906720507f847de3a33a25c61a9781b2f
+Signed-off-by: Preethi Banala <preethi.banala@intel.com>
+Change-ID: Id5e8f22ba169c8f0a38d22fc36b2cb531c02582c
 ---
- drivers/net/ethernet/intel/i40e/i40e_common.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/ethernet/intel/i40e/i40e_virtchnl.h   | 4 ++++
+ drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h | 4 ++++
+ 2 files changed, 8 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index 2154a34..fe8100b 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -1849,7 +1849,7 @@ i40e_status i40e_aq_get_link_info(struct i40e_hw *hw,
- 	else
- 		hw_link_info->crc_enable = false;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl.h b/drivers/net/ethernet/intel/i40e/i40e_virtchnl.h
+index f861d31..974ba2b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl.h
+@@ -165,6 +165,10 @@ struct i40e_virtchnl_vsi_resource {
+ #define I40E_VIRTCHNL_VF_OFFLOAD_RSS_PF		0X00080000
+ #define I40E_VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM	0X00100000
  
--	if (resp->command_flags & cpu_to_le16(I40E_AQ_LSE_ENABLE))
-+	if (resp->command_flags & cpu_to_le16(I40E_AQ_LSE_IS_ENABLED))
- 		hw_link_info->lse_enable = true;
- 	else
- 		hw_link_info->lse_enable = false;
++#define I40E_VF_BASE_MODE_OFFLOADS (I40E_VIRTCHNL_VF_OFFLOAD_L2 | \
++				    I40E_VIRTCHNL_VF_OFFLOAD_VLAN | \
++				    I40E_VIRTCHNL_VF_OFFLOAD_RSS_PF)
++
+ struct i40e_virtchnl_vf_resource {
+ 	u16 num_vsis;
+ 	u16 num_queue_pairs;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h b/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h
+index bd691ad..fc374f8 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_virtchnl.h
+@@ -162,6 +162,10 @@ struct i40e_virtchnl_vsi_resource {
+ #define I40E_VIRTCHNL_VF_OFFLOAD_RSS_PF		0X00080000
+ #define I40E_VIRTCHNL_VF_OFFLOAD_ENCAP_CSUM	0X00100000
+ 
++#define I40E_VF_BASE_MODE_OFFLOADS (I40E_VIRTCHNL_VF_OFFLOAD_L2 | \
++				    I40E_VIRTCHNL_VF_OFFLOAD_VLAN | \
++				    I40E_VIRTCHNL_VF_OFFLOAD_RSS_PF)
++
+ struct i40e_virtchnl_vf_resource {
+ 	u16 num_vsis;
+ 	u16 num_queue_pairs;
 -- 
 2.4.11
 
