@@ -1,37 +1,96 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue, 27 Sep 2016 11:28:47 -0700
-Subject: [Intel-wired-lan] [next PATCH S48 0/7] i40e/i40evf updates
-Message-ID: <1475000934-27335-1-git-send-email-bimmy.pujari@intel.com>
+Date: Tue, 27 Sep 2016 11:28:53 -0700
+Subject: [Intel-wired-lan] [next PATCH S48 6/7] i40e: Removal of workaround
+	for simple MAC address filter deletion
+In-Reply-To: <1475000934-27335-1-git-send-email-bimmy.pujari@intel.com>
+References: <1475000934-27335-1-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1475000934-27335-7-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Alexander Duyck drops redundant Rx descriptor processing code.
+From: Filip Sadowski <filip.sadowski@intel.com>
 
-Bimmy Pujari changes version from 1.6.19 to 1.6.21.
+This is code refactoring. This patch removes the workaround which deleted
+a default MAC filter added by the firmware when the interface was brought
+up. This filter caused frames to pass disregarding the VLAN tagging.
+It used to be automatically applied after reset in pre-SRA FW versions.
+This workaround is not needed in production NICs and hence can be removed.
 
-Carolyn Wyborny adds code to fix for long link down notification time.
+Signed-off-by: Filip Sadowski <filip.sadowski@intel.com>
+Change-ID: I129fe1aae1f17b5a224c9b29a996d916aa1be1ec
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 41 -----------------------------
+ 1 file changed, 41 deletions(-)
 
-Filip Sadowski removes workaround for simple MAC address filter deletion.
-
-Harshitha Ramamurthy fixes ethtool LED blinking on X722 for 1GbE.
-
-Henry Tieman adds code to correctly restore LED status after ethtool 
-identify.
-
-Lihong Yang fixes confusing dmesg info for ethtool -L option.
-
- drivers/net/ethernet/intel/i40e/i40e.h          |  2 +-
- drivers/net/ethernet/intel/i40e/i40e_common.c   |  5 ++-
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c  | 10 ++---
- drivers/net/ethernet/intel/i40e/i40e_main.c     | 52 +++----------------------
- drivers/net/ethernet/intel/i40e/i40e_txrx.c     | 18 +++------
- drivers/net/ethernet/intel/i40evf/i40e_txrx.c   | 18 +++------
- drivers/net/ethernet/intel/i40evf/i40evf_main.c |  2 +-
- 7 files changed, 29 insertions(+), 78 deletions(-)
-
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index e6ab33c..69a9ae5 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -1287,39 +1287,6 @@ int i40e_del_mac_all_vlan(struct i40e_vsi *vsi, u8 *macaddr,
+ }
+ 
+ /**
+- * i40e_rm_default_mac_filter - Remove the default MAC filter set by NVM
+- * @vsi: the PF Main VSI - inappropriate for any other VSI
+- * @macaddr: the MAC address
+- *
+- * Remove whatever filter the firmware set up so the driver can manage
+- * its own filtering intelligently.
+- **/
+-static void i40e_rm_default_mac_filter(struct i40e_vsi *vsi, u8 *macaddr)
+-{
+-	struct i40e_aqc_remove_macvlan_element_data element;
+-	struct i40e_pf *pf = vsi->back;
+-
+-	/* Only appropriate for the PF main VSI */
+-	if (vsi->type != I40E_VSI_MAIN)
+-		return;
+-
+-	memset(&element, 0, sizeof(element));
+-	ether_addr_copy(element.mac_addr, macaddr);
+-	element.vlan_tag = 0;
+-	/* Ignore error returns, some firmware does it this way... */
+-	element.flags = I40E_AQC_MACVLAN_DEL_PERFECT_MATCH;
+-	i40e_aq_remove_macvlan(&pf->hw, vsi->seid, &element, 1, NULL);
+-
+-	memset(&element, 0, sizeof(element));
+-	ether_addr_copy(element.mac_addr, macaddr);
+-	element.vlan_tag = 0;
+-	/* ...and some firmware does it this way. */
+-	element.flags = I40E_AQC_MACVLAN_DEL_PERFECT_MATCH |
+-			I40E_AQC_MACVLAN_DEL_IGNORE_VLAN;
+-	i40e_aq_remove_macvlan(&pf->hw, vsi->seid, &element, 1, NULL);
+-}
+-
+-/**
+  * i40e_add_filter - Add a mac/vlan filter to the VSI
+  * @vsi: the VSI to be searched
+  * @macaddr: the MAC address
+@@ -9179,12 +9146,6 @@ static int i40e_config_netdev(struct i40e_vsi *vsi)
+ 	if (vsi->type == I40E_VSI_MAIN) {
+ 		SET_NETDEV_DEV(netdev, &pf->pdev->dev);
+ 		ether_addr_copy(mac_addr, hw->mac.perm_addr);
+-		/* The following steps are necessary to prevent reception
+-		 * of tagged packets - some older NVM configurations load a
+-		 * default a MAC-VLAN filter that accepts any tagged packet
+-		 * which must be replaced by a normal filter.
+-		 */
+-		i40e_rm_default_mac_filter(vsi, mac_addr);
+ 		spin_lock_bh(&vsi->mac_filter_list_lock);
+ 		i40e_add_filter(vsi, mac_addr, I40E_VLAN_ANY, false, true);
+ 		spin_unlock_bh(&vsi->mac_filter_list_lock);
+@@ -9697,8 +9658,6 @@ static struct i40e_vsi *i40e_vsi_reinit_setup(struct i40e_vsi *vsi)
+ 	pf->vsi[pf->lan_vsi]->tc_config.enabled_tc = 0;
+ 	pf->vsi[pf->lan_vsi]->seid = pf->main_vsi_seid;
+ 	i40e_vsi_config_tc(pf->vsi[pf->lan_vsi], enabled_tc);
+-	if (vsi->type == I40E_VSI_MAIN)
+-		i40e_rm_default_mac_filter(vsi, pf->hw.mac.perm_addr);
+ 
+ 	/* assign it some queues */
+ 	ret = i40e_alloc_rings(vsi);
 -- 
 2.4.11
 
