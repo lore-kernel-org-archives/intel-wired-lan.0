@@ -1,101 +1,144 @@
-From: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
-Date: Tue, 27 Sep 2016 20:09:57 -0300
-Subject: [Intel-wired-lan] [PATCH net] i40e: avoid NULL pointer
- dereference and recursive errors on early PCI error
-In-Reply-To: <1475016118.22933.1.camel@intel.com>
-References: <1475010871-31682-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <1475016118.22933.1.camel@intel.com>
-Message-ID: <57EAFC45.4040303@linux.vnet.ibm.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 28 Sep 2016 09:30:53 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ e49a4d4bb2df34038606302182ba3fa3bc622483
+Message-ID: <57eb1d4d.SU2XuNj5+YRwdbgT%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 09/27/2016 07:41 PM, Keller, Jacob E wrote:
-> On Tue, 2016-09-27 at 18:14 -0300, Guilherme G. Piccoli wrote:
->> Although rare, it's possible to hit PCI error early on device
->> probe, meaning possibly some structs are not entirely initialized,
->> and some might even be completely uninitialized, leading to NULL
->> pointer dereference.
->>
->> The i40e driver currently presents a "bad" behavior if device hits
->> such early PCI error: firstly, the struct i40e_pf might not be
->> attached to pci_dev yet, leading to a NULL pointer dereference on
->> access to pf->state.
->>
-> 
-> Oops! Nice find!
-> 
->> Even checking if the struct is NULL and avoiding the access in that
->> case isn't enough, since the driver cannot recover from PCI error
->> that early; in our experiments we saw multiple failures on kernel
->> log, like:
->>
->>   [549.664] i40e 0007:01:00.1: Initial pf_reset failed: -15
->>   [549.664] i40e: probe of 0007:01:00.1 failed with error -15
->>   [...]
->>   [871.644] i40e 0007:01:00.1: The driver for the device stopped
->> because the
->>   device firmware failed to init. Try updating your NVM image.
->>   [871.644] i40e: probe of 0007:01:00.1 failed with error -32
->>   [...]
->>   [872.516] i40e 0007:01:00.0: ARQ: Unknown event 0x0000 ignored
->>
->> Between the first probe failure (error -15) and the second (error
->> -32)
->> another PCI error happened due to the first bad probe. Also, driver
->> started to flood console with those ARQ event messages.
->>
->> This patch will prevent these issues by allowing error recovery
->> mechanism to remove the failed device from the system instead of
->> trying to recover from early PCI errors during device probe.
->>
-> 
-> This seems reasonable.
-> 
->> Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
->> ---
->>  drivers/net/ethernet/intel/i40e/i40e_main.c | 6 ++++++
->>  1 file changed, 6 insertions(+)
->>
->> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c
->> b/drivers/net/ethernet/intel/i40e/i40e_main.c
->> index d0b3a1b..dad15b6 100644
->> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
->> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
->> @@ -11360,6 +11360,12 @@ static pci_ers_result_t
->> i40e_pci_error_detected(struct pci_dev *pdev,
->>  
->>  	dev_info(&pdev->dev, "%s: error %d\n", __func__, error);
->>  
->> +	if (!pf) {
->> +		dev_info(&pdev->dev,
->> +			 "Cannot recover - error happened during
->> device probe\n");
->> +		return PCI_ERS_RESULT_DISCONNECT;
->> +	}
->> +
-> 
-> Looks good to me.
-> 
-> Acked-by: Jacob Keller <jacob.e.keller@intel.com>
-> 
-> Thanks for the bug fix and detailed explanation!
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+e49a4d4bb2df34038606302182ba3fa3bc622483  i40e: fix call of ndo_dflt_bridge_getlink()
 
-Nice Jacob, thanks very much for the review and ack.
+elapsed time: 58m
 
-Cheers,
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 122
 
+i386                   randconfig-a0-09261546
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+x86_64                           allmodconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64       allyesdebian+CONFIG_DEBUG_INFO_REDUCED-CONFIG_DEBUG_INFO_REDUCED+CONFIG_DEBUG_INFO_REDUCED
+x86_64                                nfsroot
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-x015-201639
+x86_64                 randconfig-x012-201639
+x86_64                 randconfig-x013-201639
+x86_64                 randconfig-x011-201639
+x86_64                 randconfig-x017-201639
+x86_64                 randconfig-x018-201639
+x86_64                 randconfig-x014-201639
+x86_64                 randconfig-x010-201639
+x86_64                 randconfig-x019-201639
+x86_64                 randconfig-x016-201639
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201639
+i386                     randconfig-s1-201639
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                   randconfig-i0-201639
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201639
+i386                     randconfig-i1-201639
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                               tinyconfig
+i386                   randconfig-x010-201639
+i386                   randconfig-x016-201639
+i386                   randconfig-x014-201639
+i386                   randconfig-x017-201639
+i386                   randconfig-x018-201639
+i386                   randconfig-x013-201639
+i386                   randconfig-x012-201639
+i386                   randconfig-x015-201639
+i386                   randconfig-x011-201639
+i386                   randconfig-x019-201639
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                     randconfig-n0-201639
+x86_64                 randconfig-x002-201639
+x86_64                 randconfig-x009-201639
+x86_64                 randconfig-x008-201639
+x86_64                 randconfig-x004-201639
+x86_64                 randconfig-x007-201639
+x86_64                 randconfig-x003-201639
+x86_64                 randconfig-x005-201639
+x86_64                 randconfig-x006-201639
+x86_64                 randconfig-x001-201639
+x86_64                 randconfig-x000-201639
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201639
+i386                             allmodconfig
+i386                   randconfig-x009-201639
+i386                   randconfig-x002-201639
+i386                   randconfig-x006-201639
+i386                   randconfig-x007-201639
+i386                   randconfig-x008-201639
+i386                   randconfig-x001-201639
+i386                   randconfig-x003-201639
+i386                   randconfig-x000-201639
+i386                   randconfig-x004-201639
+i386                   randconfig-x005-201639
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
 
-
-Guilherme
-
-
-> Regards,
-> Jake
-> 
->>  	/* shutdown all operations */
->>  	if (!test_bit(__I40E_SUSPENDED, &pf->state)) {
->>  		rtnl_lock();
-
+Thanks,
+Fengguang
