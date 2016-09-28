@@ -1,32 +1,34 @@
-From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 28 Sep 2016 19:17:37 +0000
-Subject: [Intel-wired-lan] [next PATCH S48 7/7] i40e/i40evf: Changed
- version	from 1.6.19 to 1.6.21
-In-Reply-To: <1475000934-27335-8-git-send-email-bimmy.pujari@intel.com>
-References: <1475000934-27335-1-git-send-email-bimmy.pujari@intel.com>
- <1475000934-27335-8-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA0F14A@ORSMSX104.amr.corp.intel.com>
+From: Mark D Rustad <mark.d.rustad@intel.com>
+Date: Wed, 28 Sep 2016 15:36:38 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Handle previously-freed
+	msix_entries
+Message-ID: <147510219815.65927.11331530245019014313.stgit@mdrustad-wks.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-> -----Original Message-----
-> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
-> Behalf Of Bimmy Pujari
-> Sent: Tuesday, September 27, 2016 11:29 AM
-> To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S48 7/7] i40e/i40evf: Changed version
-> from 1.6.19 to 1.6.21
-> 
-> Signed-off-by: Bimmy Pujari <bimmy.pujari@intel.com>
-> ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c     | 2 +-
->  drivers/net/ethernet/intel/i40evf/i40evf_main.c | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
+The msix_entries memory can be freed by a previous suspend or
+remove, so don't crash on close when it isn't there.
 
-Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Driver reports correct version
+Signed-off-by: Mark Rustad <mark.d.rustad@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index bd93d823cc25..f6f18ca35fb7 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -3070,6 +3070,9 @@ static void ixgbe_free_irq(struct ixgbe_adapter *adapter)
+ 		return;
+ 	}
+ 
++	if (!adapter->msix_entries)
++		return;
++
+ 	for (vector = 0; vector < adapter->num_q_vectors; vector++) {
+ 		struct ixgbe_q_vector *q_vector = adapter->q_vector[vector];
+ 		struct msix_entry *entry = &adapter->msix_entries[vector];
 
