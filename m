@@ -1,204 +1,220 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Thu, 29 Sep 2016 10:11:26 -0700
-Subject: [Intel-wired-lan] [next PATCH S49 06/15] i40e: implement
-	__i40e_del_filter and use where applicable
+Date: Thu, 29 Sep 2016 10:11:29 -0700
+Subject: [Intel-wired-lan] [next PATCH S49 09/15] i40e: fix mac filters when
+	removing vlans
 In-Reply-To: <1475169095-20873-1-git-send-email-bimmy.pujari@intel.com>
 References: <1475169095-20873-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1475169095-20873-7-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1475169095-20873-10-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: "Brady, Alan" <alan.brady@intel.com>
 
-When inside a loop where we call i40e_del_filter we use an O(n^2)
-pattern where i40e_del_filter calls i40e_find_filter for us. We can
-avoid this O(n^2) logic by factoring a function, __i40e_del_filter() out
-from the i40e_del_filter code. This allows us to re-use the delete logic
-where appropriate without having to search for the filter twice.
+Currently there exists a bug where adding at least one VLAN and then
+removing all VLANs leaves the mac filters for the VSI with an incorrect
+value for 'vid' which indicates the mac filter's vlan status.
 
-This new function benefits several functions including i40e_vsi_add_vlan,
-i40e_vsi_kill_vlan, i40e_del_mac_vlan_all, and i40e_vsi_release.
+The current implementation for handling the removal of VLANs is wrong
+for a couple reasons.  The first is that when i40e_vsi_kill_vlan
+iterates through the mac filters, it fails to account for the mac filter
+status; i.e. it's not accomdating for filters that are about to be
+deleted.  The second problem is that mac filters can be deleted in other
+places (specifically i40e_set_rx_mode).  Thus if it occurs that all the
+vlan mac filters get deleted we need to switch out of vlan mode, but the
+code path through i40e_vsi_kill_vlan has already been executed and we're
+now stuck in vlan mode.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Change-ID: I75fabe0f53bf73f56b80d342e5fdcfcc28f4d3eb
+This patch fixes the issue by removing the check from i40e_vsi_kill_vlan
+and puts the check instead in i40e_sync_vsi_filters where we're
+guaranteed to see all filter deletions and can properly detect when we
+need to switch out of vlan mode.
+
+Signed-off-by: Alan Brady <alan.brady@intel.com>
+Change-ID: Ib38fe6034b356eee9a0e20b8a9eeed5ff2debcd9
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 88 +++++++++++++++++++----------
- 1 file changed, 57 insertions(+), 31 deletions(-)
+HSD-number: 10020696
+
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 120 +++++++++++++++++-----------
+ 1 file changed, 72 insertions(+), 48 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 3d7bdf2..eaaaaf8 100644
+index 6cd9053..5ea761c 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1271,10 +1271,13 @@ struct i40e_mac_filter *i40e_add_filter(struct i40e_vsi *vsi,
- }
- 
- /**
-- * i40e_del_filter - Remove a mac/vlan filter from the VSI
-- * @vsi: the VSI to be searched
-- * @macaddr: the MAC address
-- * @vlan: the vlan
-+ * __i40e_del_filter - Remove a specific filter from the VSI
-+ * @vsi: VSI to remove from
-+ * @f: the filter to remove from the list
-+ *
-+ * This function should be called instead of i40e_del_filter only if you know
-+ * the exact filter you will remove already, such as via i40e_find_filter or
-+ * i40e_find_mac.
-  *
-  * NOTE: This function is expected to be called with mac_filter_list_lock
-  * being held.
-@@ -1282,14 +1285,8 @@ struct i40e_mac_filter *i40e_add_filter(struct i40e_vsi *vsi,
-  * the "safe" variants of any list iterators, e.g. list_for_each_entry_safe()
-  * instead of list_for_each_entry().
+@@ -1774,19 +1774,22 @@ i40e_update_filter_state(int count,
   **/
--void i40e_del_filter(struct i40e_vsi *vsi, const u8 *macaddr, s16 vlan)
-+static void __i40e_del_filter(struct i40e_vsi *vsi, struct i40e_mac_filter *f)
+ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
  {
--	struct i40e_mac_filter *f;
--
--	if (!vsi || !macaddr)
--		return;
--
--	f = i40e_find_filter(vsi, macaddr, vlan);
- 	if (!f)
- 		return;
- 
-@@ -1308,6 +1305,29 @@ void i40e_del_filter(struct i40e_vsi *vsi, const u8 *macaddr, s16 vlan)
- }
- 
- /**
-+ * i40e_del_filter - Remove a mac/vlan filter from the VSI
-+ * @vsi: the VSI to be searched
-+ * @macaddr: the MAC address
-+ * @vlan: the vlan
-+ *
-+ * NOTE: This function is expected to be called with mac_filter_list_lock
-+ * being held.
-+ * ANOTHER NOTE: This function MUST be called from within the context of
-+ * the "safe" variants of any list iterators, e.g. list_for_each_entry_safe()
-+ * instead of list_for_each_entry().
-+ **/
-+void i40e_del_filter(struct i40e_vsi *vsi, const u8 *macaddr, s16 vlan)
-+{
-+	struct i40e_mac_filter *f;
+-	struct i40e_mac_filter *f, *add_head = NULL;
+ 	struct hlist_head tmp_add_list, tmp_del_list;
++	struct i40e_mac_filter *f, *add_head = NULL;
+ 	struct i40e_hw *hw = &vsi->back->hw;
++	unsigned int vlan_any_filters = 0;
++	unsigned int non_vlan_filters = 0;
++	unsigned int vlan_filters = 0;
+ 	bool promisc_changed = false;
+ 	char vsi_name[16] = "PF";
+ 	int filter_list_len = 0;
+-	u32 changed_flags = 0;
+ 	i40e_status aq_ret = 0;
++	u32 changed_flags = 0;
+ 	struct hlist_node *h;
+-	int retval = 0;
+ 	struct i40e_pf *pf;
+ 	int num_add = 0;
+ 	int num_del = 0;
++	int retval = 0;
+ 	int aq_err = 0;
+ 	u16 cmd_flags;
+ 	int list_size;
+@@ -1825,11 +1828,75 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
+ 				hash_del(&f->hlist);
+ 				hlist_add_head(&f->hlist, &tmp_del_list);
+ 				vsi->active_filters--;
 +
-+	if (!vsi || !macaddr)
-+		return;
++				/* Avoid counting removed filters */
++				continue;
+ 			}
+ 			if (f->state == I40E_FILTER_NEW) {
+ 				hash_del(&f->hlist);
+ 				hlist_add_head(&f->hlist, &tmp_add_list);
+ 			}
 +
-+	f = i40e_find_filter(vsi, macaddr, vlan);
-+	__i40e_del_filter(vsi, f);
-+}
++			/* Count the number of each type of filter we have
++			 * remaining, ignoring any filters we're about to
++			 * delete.
++			 */
++			if (f->vlan > 0)
++				vlan_filters++;
++			else if (!f->vlan)
++				non_vlan_filters++;
++			else
++				vlan_any_filters++;
++		}
 +
-+/**
-  * i40e_put_mac_in_vlan - Make macvlan filters from macaddrs and vlans
-  * @vsi: the VSI to be searched
-  * @macaddr: the mac address to be filtered
-@@ -1349,21 +1369,22 @@ struct i40e_mac_filter *i40e_put_mac_in_vlan(struct i40e_vsi *vsi,
-  **/
- int i40e_del_mac_all_vlan(struct i40e_vsi *vsi, const u8 *macaddr)
- {
--	struct i40e_mac_filter *f = NULL;
--	int changed = 0;
-+	struct i40e_mac_filter *f, *ftmp;
-+	bool found = false;
- 
- 	WARN(!spin_is_locked(&vsi->mac_filter_list_lock),
- 	     "Missing mac_filter_list_lock\n");
--	list_for_each_entry(f, &vsi->mac_filter_list, list) {
-+	list_for_each_entry_safe(f, ftmp, &vsi->mac_filter_list, list) {
- 		if (ether_addr_equal(macaddr, f->macaddr))
- 			f->state = I40E_FILTER_REMOVE;
-+			__i40e_del_filter(vsi, f);
-+			found = true;
++		/* We should never have VLAN=-1 filters at the same time as we
++		 * have either VLAN=0 or VLAN>0 filters, so warn about this
++		 * case here to help catch any issues.
++		 */
++		WARN_ON(vlan_any_filters && (vlan_filters + non_vlan_filters));
++
++		/* If we only have VLAN=0 filters remaining, and don't have
++		 * any other VLAN filters, we need to convert these VLAN=0
++		 * filters into VLAN=-1 (I40E_VLAN_ANY) so that we operate
++		 * correctly in non-VLAN mode and receive all traffic tagged
++		 * or untagged.
++		 */
++		if (non_vlan_filters && !vlan_filters) {
++			hash_for_each_safe(vsi->mac_filter_hash, bkt, h, f,
++					   hlist) {
++				/* Only replace VLAN=0 filters */
++				if (f->vlan)
++					continue;
++
++				/* Allocate a replacement element */
++				add_head = kzalloc(sizeof(*add_head),
++						   GFP_KERNEL);
++				if (!add_head)
++					goto err_no_memory_locked;
++
++				/* Copy the filter, with new state and VLAN */
++				*add_head = *f;
++				add_head->state = I40E_FILTER_NEW;
++				add_head->vlan = I40E_VLAN_ANY;
++
++				/* Move the replacement to the add list */
++				INIT_HLIST_NODE(&add_head->hlist);
++				hlist_add_head(&add_head->hlist,
++					       &tmp_add_list);
++
++				/* Move the original to the delete list */
++				f->state = I40E_FILTER_REMOVE;
++				hash_del(&f->hlist);
++				hlist_add_head(&f->hlist, &tmp_del_list);
++				vsi->active_filters--;
++			}
++
++			/* Also update any filters on the tmp_add list */
++			hlist_for_each_entry(f, &tmp_add_list, hlist) {
++				if (!f->vlan)
++					f->vlan = I40E_VLAN_ANY;
++			}
++			add_head = NULL;
+ 		}
+ 		spin_unlock_bh(&vsi->mac_filter_hash_lock);
  	}
--	if (changed) {
--		vsi->flags |= I40E_VSI_FLAG_FILTER_CHANGED;
--		vsi->back->flags |= I40E_FLAG_FILTER_SYNC;
-+
-+	if (found)
- 		return 0;
--	}
--	return -ENOENT;
-+	else
-+		return -ENOENT;
- }
- 
- /**
-@@ -2249,7 +2270,7 @@ static void i40e_vlan_rx_register(struct net_device *netdev, u32 features)
-  **/
- int i40e_vsi_add_vlan(struct i40e_vsi *vsi, s16 vid)
+@@ -2138,6 +2205,7 @@ out:
+ err_no_memory:
+ 	/* Restore elements on the temporary add and delete lists */
+ 	spin_lock_bh(&vsi->mac_filter_hash_lock);
++err_no_memory_locked:
+ 	i40e_undo_filter_entries(vsi, &tmp_del_list);
+ 	i40e_undo_filter_entries(vsi, &tmp_add_list);
+ 	spin_unlock_bh(&vsi->mac_filter_hash_lock);
+@@ -2396,9 +2464,8 @@ int i40e_vsi_add_vlan(struct i40e_vsi *vsi, s16 vid)
+ int i40e_vsi_kill_vlan(struct i40e_vsi *vsi, s16 vid)
  {
--	struct i40e_mac_filter *f, *ftmp, *add_f;
-+	struct i40e_mac_filter *f, *ftmp, *add_f, *del_f;
+ 	struct net_device *netdev = vsi->netdev;
+-	struct i40e_mac_filter *f, *add_f;
++	struct i40e_mac_filter *f;
+ 	struct hlist_node *h;
+-	int filter_count = 0;
+ 	int bkt;
  
- 	/* Locked once because all functions invoked below iterates list*/
- 	spin_lock_bh(&vsi->mac_filter_list_lock);
-@@ -2283,11 +2304,11 @@ int i40e_vsi_add_vlan(struct i40e_vsi *vsi, s16 vid)
- 	 * with 0, so we now accept untagged and specified tagged traffic
- 	 * (and not all tags along with untagged)
- 	 */
--	if (vid > 0) {
--		if (vsi->netdev && i40e_find_filter(vsi, vsi->netdev->dev_addr,
--						    I40E_VLAN_ANY)) {
--			i40e_del_filter(vsi, vsi->netdev->dev_addr,
--					I40E_VLAN_ANY);
-+	if (vid > 0 && vsi->netdev) {
-+		del_f = i40e_find_filter(vsi, vsi->netdev->dev_addr,
-+					 I40E_VLAN_ANY);
-+		if (del_f) {
-+			__i40e_del_filter(vsi, del_f);
- 			add_f = i40e_add_filter(vsi, vsi->netdev->dev_addr, 0);
- 			if (!add_f) {
- 				dev_info(&vsi->back->pdev->dev,
-@@ -2304,9 +2325,11 @@ int i40e_vsi_add_vlan(struct i40e_vsi *vsi, s16 vid)
- 		list_for_each_entry_safe(f, ftmp, &vsi->mac_filter_list, list) {
- 			if (f->state == I40E_FILTER_REMOVE)
- 				continue;
--			if (!i40e_find_filter(vsi, f->macaddr, I40E_VLAN_ANY))
-+			del_f = i40e_find_filter(vsi, f->macaddr,
-+						 I40E_VLAN_ANY);
-+			if (!del_f)
- 				continue;
--			i40e_del_filter(vsi, f->macaddr, I40E_VLAN_ANY);
-+			__i40e_del_filter(vsi, del_f);
- 			add_f = i40e_add_filter(vsi, f->macaddr, 0);
- 			if (!add_f) {
- 				dev_info(&vsi->back->pdev->dev,
-@@ -2346,8 +2369,10 @@ int i40e_vsi_kill_vlan(struct i40e_vsi *vsi, s16 vid)
- 	if (vsi->netdev)
- 		i40e_del_filter(vsi, netdev->dev_addr, vid);
+ 	/* Locked once because all functions invoked below iterates list */
+@@ -2412,49 +2479,6 @@ int i40e_vsi_kill_vlan(struct i40e_vsi *vsi, s16 vid)
+ 			__i40e_del_filter(vsi, f);
+ 	}
  
--	list_for_each_entry_safe(f, ftmp, &vsi->mac_filter_list, list)
--		i40e_del_filter(vsi, f->macaddr, vid);
-+	list_for_each_entry_safe(f, ftmp, &vsi->mac_filter_list, list) {
-+		if (f->vlan == vid)
-+			__i40e_del_filter(vsi, f);
-+	}
+-	/* go through all the filters for this VSI and if there is only
+-	 * vid == 0 it means there are no other filters, so vid 0 must
+-	 * be replaced with -1. This signifies that we should from now
+-	 * on accept any traffic (with any tag present, or untagged)
+-	 */
+-	hash_for_each(vsi->mac_filter_hash, bkt, f, hlist) {
+-		if (vsi->netdev) {
+-			if (f->vlan &&
+-			    ether_addr_equal(netdev->dev_addr, f->macaddr))
+-				filter_count++;
+-		}
+-
+-		if (f->vlan)
+-			filter_count++;
+-	}
+-
+-	if (!filter_count && vsi->netdev) {
+-		i40e_del_filter(vsi, netdev->dev_addr, 0);
+-		f = i40e_add_filter(vsi, netdev->dev_addr, I40E_VLAN_ANY);
+-		if (!f) {
+-			dev_info(&vsi->back->pdev->dev,
+-				 "Could not add filter %d for %pM\n",
+-				 I40E_VLAN_ANY, netdev->dev_addr);
+-			spin_unlock_bh(&vsi->mac_filter_hash_lock);
+-			return -ENOMEM;
+-		}
+-	}
+-
+-	if (!filter_count) {
+-		hash_for_each_safe(vsi->mac_filter_hash, bkt, h, f, hlist) {
+-			if (!f->vlan)
+-				__i40e_del_filter(vsi, f);
+-			add_f = i40e_add_filter(vsi, f->macaddr, I40E_VLAN_ANY);
+-			if (!add_f) {
+-				dev_info(&vsi->back->pdev->dev,
+-					 "Could not add filter %d for %pM\n",
+-					 I40E_VLAN_ANY, f->macaddr);
+-				spin_unlock_bh(&vsi->mac_filter_hash_lock);
+-				return -ENOMEM;
+-			}
+-		}
+-	}
+-
+ 	spin_unlock_bh(&vsi->mac_filter_hash_lock);
  
- 	/* go through all the filters for this VSI and if there is only
- 	 * vid == 0 it means there are no other filters, so vid 0 must
-@@ -2379,7 +2404,8 @@ int i40e_vsi_kill_vlan(struct i40e_vsi *vsi, s16 vid)
- 
- 	if (!filter_count) {
- 		list_for_each_entry_safe(f, ftmp, &vsi->mac_filter_list, list) {
--			i40e_del_filter(vsi, f->macaddr, 0);
-+			if (!f->vlan)
-+				__i40e_del_filter(vsi, f);
- 			add_f = i40e_add_filter(vsi, f->macaddr, I40E_VLAN_ANY);
- 			if (!add_f) {
- 				dev_info(&vsi->back->pdev->dev,
-@@ -9442,7 +9468,7 @@ int i40e_vsi_release(struct i40e_vsi *vsi)
- 
- 	/* make sure any remaining filters are marked for deletion */
- 	list_for_each_entry_safe(f, ftmp, &vsi->mac_filter_list, list)
--		i40e_del_filter(vsi, f->macaddr, f->vlan);
-+		__i40e_del_filter(vsi, f);
- 
- 	spin_unlock_bh(&vsi->mac_filter_list_lock);
- 
+ 	/* schedule our worker thread which will take care of
 -- 
 2.4.11
 
