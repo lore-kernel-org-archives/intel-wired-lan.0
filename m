@@ -1,10 +1,10 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Thu, 29 Sep 2016 10:11:23 -0700
-Subject: [Intel-wired-lan] [next PATCH S49 03/15] i40e: move
-	i40e_put_mac_in_vlan and i40e_del_mac_all_vlan
+Date: Thu, 29 Sep 2016 10:11:32 -0700
+Subject: [Intel-wired-lan] [next PATCH S49 12/15] i40e: correct check for
+	reading TSYNINDX from the receive descriptor
 In-Reply-To: <1475169095-20873-1-git-send-email-bimmy.pujari@intel.com>
 References: <1475169095-20873-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1475169095-20873-4-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1475169095-20873-13-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,148 +13,55 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-A future patch will be modifying these functions and making a call to
-a static function which currently is defined after these functions. Move
-them in a separate patch to ease review and ensure the moved code is
-correct.
+When hardware has taken a timestamp for a received packet, it indicates
+which RXTIME register the timestamp was placed in by some bits in the
+receive descriptor. It uses 3 bits, one to indicate if the descriptor
+index is valid (ie: there was a timestamp) and 2 bits to indicate which
+of the 4 registers to read. However, the driver currently does not check
+the TSYNVALID bit and only checks the index. It assumes a zero index
+means no timestamp, and a non zero index means a timestamp occurred.
+While this appears to be true, it prevents ever reading a timestamp in
+RXTIME[0], and causes the first timestamp the device captures to be
+ignored.
+
+Fix this by using the TSYNVALID bit correctly as the true indicator of
+whether the packet has an associated timestamp.
+
+Also rename the variable rsyn to tsyn as this is more descriptive and
+matches the register names.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Change-ID: I2ca7fd4e10c0c07ed2291db1ea41bf5987fc6474
+Change-ID: I4437e8f3a3df2c2ddb458b0fb61420f3dafc4c12
 ---
- drivers/net/ethernet/intel/i40e/i40e_main.c | 113 ++++++++++++++--------------
- 1 file changed, 56 insertions(+), 57 deletions(-)
+Testing-hints:
+  This is difficult to notice because the hardware has 4 timestamp
+  registers, and we rarely need more than 1 or 2 at a time. I discovered
+  it with a modified driver using trace_printk on the PRTTSYN_STAT_1
+  register.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index f6235d5..e31821d 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1208,63 +1208,6 @@ bool i40e_is_vsi_in_vlan(struct i40e_vsi *vsi)
- }
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 54764dd..4092d0b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -1407,11 +1407,12 @@ void i40e_process_skb_fields(struct i40e_ring *rx_ring,
+ 	u64 qword = le64_to_cpu(rx_desc->wb.qword1.status_error_len);
+ 	u32 rx_status = (qword & I40E_RXD_QW1_STATUS_MASK) >>
+ 			I40E_RXD_QW1_STATUS_SHIFT;
+-	u32 rsyn = (rx_status & I40E_RXD_QW1_STATUS_TSYNINDX_MASK) >>
++	u32 tsynvalid = rx_status & I40E_RXD_QW1_STATUS_TSYNVALID_MASK;
++	u32 tsyn = (rx_status & I40E_RXD_QW1_STATUS_TSYNINDX_MASK) >>
+ 		   I40E_RXD_QW1_STATUS_TSYNINDX_SHIFT;
  
- /**
-- * i40e_put_mac_in_vlan - Make macvlan filters from macaddrs and vlans
-- * @vsi: the VSI to be searched
-- * @macaddr: the mac address to be filtered
-- *
-- * Goes through all the macvlan filters and adds a
-- * macvlan filter for each unique vlan that already exists
-- *
-- * Returns first filter found on success, else NULL
-- **/
--struct i40e_mac_filter *i40e_put_mac_in_vlan(struct i40e_vsi *vsi,
--					     const u8 *macaddr)
--{
--	struct i40e_mac_filter *f;
--
--	list_for_each_entry(f, &vsi->mac_filter_list, list) {
--		if (vsi->info.pvid)
--			f->vlan = le16_to_cpu(vsi->info.pvid);
--		if (!i40e_find_filter(vsi, macaddr, f->vlan)) {
--			if (!i40e_add_filter(vsi, macaddr, f->vlan))
--				return NULL;
--		}
--	}
--
--	return list_first_entry_or_null(&vsi->mac_filter_list,
--					struct i40e_mac_filter, list);
--}
--
--/**
-- * i40e_del_mac_all_vlan - Remove a MAC filter from all VLANS
-- * @vsi: the VSI to be searched
-- * @macaddr: the mac address to be removed
-- *
-- * Removes a given MAC address from a VSI, regardless of VLAN
-- *
-- * Returns 0 for success, or error
-- **/
--int i40e_del_mac_all_vlan(struct i40e_vsi *vsi, const u8 *macaddr)
--{
--	struct i40e_mac_filter *f = NULL;
--	int changed = 0;
--
--	WARN(!spin_is_locked(&vsi->mac_filter_list_lock),
--	     "Missing mac_filter_list_lock\n");
--	list_for_each_entry(f, &vsi->mac_filter_list, list) {
--		if ((ether_addr_equal(macaddr, f->macaddr))) {
--			f->state = I40E_FILTER_REMOVE;
--		}
--	}
--	if (changed) {
--		vsi->flags |= I40E_VSI_FLAG_FILTER_CHANGED;
--		vsi->back->flags |= I40E_FLAG_FILTER_SYNC;
--		return 0;
--	}
--	return -ENOENT;
--}
--
--/**
-  * i40e_add_filter - Add a mac/vlan filter to the VSI
-  * @vsi: the VSI to be searched
-  * @macaddr: the MAC address
-@@ -1365,6 +1308,62 @@ void i40e_del_filter(struct i40e_vsi *vsi, const u8 *macaddr, s16 vlan)
- }
+-	if (unlikely(rsyn)) {
+-		i40e_ptp_rx_hwtstamp(rx_ring->vsi->back, skb, rsyn);
++	if (unlikely(tsynvalid)) {
++		i40e_ptp_rx_hwtstamp(rx_ring->vsi->back, skb, tsyn);
+ 		rx_ring->last_rx_timestamp = jiffies;
+ 	}
  
- /**
-+ * i40e_put_mac_in_vlan - Make macvlan filters from macaddrs and vlans
-+ * @vsi: the VSI to be searched
-+ * @macaddr: the mac address to be filtered
-+ *
-+ * Goes through all the macvlan filters and adds a
-+ * macvlan filter for each unique vlan that already exists
-+ *
-+ * Returns first filter found on success, else NULL
-+ **/
-+struct i40e_mac_filter *i40e_put_mac_in_vlan(struct i40e_vsi *vsi,
-+					     const u8 *macaddr)
-+{
-+	struct i40e_mac_filter *f;
-+
-+	list_for_each_entry(f, &vsi->mac_filter_list, list) {
-+		if (vsi->info.pvid)
-+			f->vlan = le16_to_cpu(vsi->info.pvid);
-+		if (!i40e_find_filter(vsi, macaddr, f->vlan)) {
-+			if (!i40e_add_filter(vsi, macaddr, f->vlan))
-+				return NULL;
-+		}
-+	}
-+
-+	return list_first_entry_or_null(&vsi->mac_filter_list,
-+					struct i40e_mac_filter, list);
-+}
-+
-+/**
-+ * i40e_del_mac_all_vlan - Remove a MAC filter from all VLANS
-+ * @vsi: the VSI to be searched
-+ * @macaddr: the mac address to be removed
-+ *
-+ * Removes a given MAC address from a VSI, regardless of VLAN
-+ *
-+ * Returns 0 for success, or error
-+ **/
-+int i40e_del_mac_all_vlan(struct i40e_vsi *vsi, const u8 *macaddr)
-+{
-+	struct i40e_mac_filter *f = NULL;
-+	int changed = 0;
-+
-+	WARN(!spin_is_locked(&vsi->mac_filter_list_lock),
-+	     "Missing mac_filter_list_lock\n");
-+	list_for_each_entry(f, &vsi->mac_filter_list, list) {
-+		if (ether_addr_equal(macaddr, f->macaddr))
-+			f->state = I40E_FILTER_REMOVE;
-+	}
-+	if (changed) {
-+		vsi->flags |= I40E_VSI_FLAG_FILTER_CHANGED;
-+		vsi->back->flags |= I40E_FLAG_FILTER_SYNC;
-+		return 0;
-+	}
-+	return -ENOENT;
-+}
-+
-+/**
-  * i40e_set_mac - NDO callback to set mac address
-  * @netdev: network interface device structure
-  * @p: pointer to an address structure
 -- 
 2.4.11
 
