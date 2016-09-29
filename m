@@ -1,220 +1,116 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Thu, 29 Sep 2016 10:11:29 -0700
-Subject: [Intel-wired-lan] [next PATCH S49 09/15] i40e: fix mac filters when
-	removing vlans
+Date: Thu, 29 Sep 2016 10:11:33 -0700
+Subject: [Intel-wired-lan] [next PATCH S49 13/15] i40e: use a mutex instead
+	of spinlock in PTP user entry points
 In-Reply-To: <1475169095-20873-1-git-send-email-bimmy.pujari@intel.com>
 References: <1475169095-20873-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1475169095-20873-10-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1475169095-20873-14-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: "Brady, Alan" <alan.brady@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-Currently there exists a bug where adding at least one VLAN and then
-removing all VLANs leaves the mac filters for the VSI with an incorrect
-value for 'vid' which indicates the mac filter's vlan status.
+We need a locking mechanism to protect the hardware SYSTIME register
+which is split over 2 values, and has internal hardware latching. We
+can't allow multiple accesses at the same time. However....
 
-The current implementation for handling the removal of VLANs is wrong
-for a couple reasons.  The first is that when i40e_vsi_kill_vlan
-iterates through the mac filters, it fails to account for the mac filter
-status; i.e. it's not accomdating for filters that are about to be
-deleted.  The second problem is that mac filters can be deleted in other
-places (specifically i40e_set_rx_mode).  Thus if it occurs that all the
-vlan mac filters get deleted we need to switch out of vlan mode, but the
-code path through i40e_vsi_kill_vlan has already been executed and we're
-now stuck in vlan mode.
+The spinlock_t is overkill here, especially use of spin_lock_irqsave,
+since every PTP access will halt hardirqs. Notice that the only places
+which need the SYSTIME value are user context and are capable of sleeping.
+Thus, it is safe to use a mutex here instead of the spinlock.
 
-This patch fixes the issue by removing the check from i40e_vsi_kill_vlan
-and puts the check instead in i40e_sync_vsi_filters where we're
-guaranteed to see all filter deletions and can properly detect when we
-need to switch out of vlan mode.
-
-Signed-off-by: Alan Brady <alan.brady@intel.com>
-Change-ID: Ib38fe6034b356eee9a0e20b8a9eeed5ff2debcd9
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Change-ID: I971761a89b58c6aad953590162e85a327fbba232
 ---
-HSD-number: 10020696
+Testing-hints:
+  Suggested by Alex after seeing that the code flows don't take the lock
+  in irq context. Not sure how to test this directly, but should ensure
+  that PTP functionality remains unchanged, and that driver
+  functionality remains consistent especially when using PTP software.
 
- drivers/net/ethernet/intel/i40e/i40e_main.c | 120 +++++++++++++++++-----------
- 1 file changed, 72 insertions(+), 48 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e.h     |  2 +-
+ drivers/net/ethernet/intel/i40e/i40e_ptp.c | 20 +++++++-------------
+ 2 files changed, 8 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 6cd9053..5ea761c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1774,19 +1774,22 @@ i40e_update_filter_state(int count,
-  **/
- int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 1d9a6b9..f7f32aa 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -430,7 +430,7 @@ struct i40e_pf {
+ 	struct sk_buff *ptp_tx_skb;
+ 	struct hwtstamp_config tstamp_config;
+ 	unsigned long last_rx_ptp_check;
+-	spinlock_t tmreg_lock; /* Used to protect the device time registers. */
++	struct mutex tmreg_lock; /* Used to protect the SYSTIME registers. */
+ 	u64 ptp_base_adj;
+ 	u32 tx_hwtstamp_timeouts;
+ 	u32 rx_hwtstamp_cleared;
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ptp.c b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+index f1fecea..177b7fb 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ptp.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ptp.c
+@@ -159,16 +159,15 @@ static int i40e_ptp_adjtime(struct ptp_clock_info *ptp, s64 delta)
  {
--	struct i40e_mac_filter *f, *add_head = NULL;
- 	struct hlist_head tmp_add_list, tmp_del_list;
-+	struct i40e_mac_filter *f, *add_head = NULL;
- 	struct i40e_hw *hw = &vsi->back->hw;
-+	unsigned int vlan_any_filters = 0;
-+	unsigned int non_vlan_filters = 0;
-+	unsigned int vlan_filters = 0;
- 	bool promisc_changed = false;
- 	char vsi_name[16] = "PF";
- 	int filter_list_len = 0;
--	u32 changed_flags = 0;
- 	i40e_status aq_ret = 0;
-+	u32 changed_flags = 0;
- 	struct hlist_node *h;
--	int retval = 0;
- 	struct i40e_pf *pf;
- 	int num_add = 0;
- 	int num_del = 0;
-+	int retval = 0;
- 	int aq_err = 0;
- 	u16 cmd_flags;
- 	int list_size;
-@@ -1825,11 +1828,75 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 				hash_del(&f->hlist);
- 				hlist_add_head(&f->hlist, &tmp_del_list);
- 				vsi->active_filters--;
-+
-+				/* Avoid counting removed filters */
-+				continue;
- 			}
- 			if (f->state == I40E_FILTER_NEW) {
- 				hash_del(&f->hlist);
- 				hlist_add_head(&f->hlist, &tmp_add_list);
- 			}
-+
-+			/* Count the number of each type of filter we have
-+			 * remaining, ignoring any filters we're about to
-+			 * delete.
-+			 */
-+			if (f->vlan > 0)
-+				vlan_filters++;
-+			else if (!f->vlan)
-+				non_vlan_filters++;
-+			else
-+				vlan_any_filters++;
-+		}
-+
-+		/* We should never have VLAN=-1 filters at the same time as we
-+		 * have either VLAN=0 or VLAN>0 filters, so warn about this
-+		 * case here to help catch any issues.
-+		 */
-+		WARN_ON(vlan_any_filters && (vlan_filters + non_vlan_filters));
-+
-+		/* If we only have VLAN=0 filters remaining, and don't have
-+		 * any other VLAN filters, we need to convert these VLAN=0
-+		 * filters into VLAN=-1 (I40E_VLAN_ANY) so that we operate
-+		 * correctly in non-VLAN mode and receive all traffic tagged
-+		 * or untagged.
-+		 */
-+		if (non_vlan_filters && !vlan_filters) {
-+			hash_for_each_safe(vsi->mac_filter_hash, bkt, h, f,
-+					   hlist) {
-+				/* Only replace VLAN=0 filters */
-+				if (f->vlan)
-+					continue;
-+
-+				/* Allocate a replacement element */
-+				add_head = kzalloc(sizeof(*add_head),
-+						   GFP_KERNEL);
-+				if (!add_head)
-+					goto err_no_memory_locked;
-+
-+				/* Copy the filter, with new state and VLAN */
-+				*add_head = *f;
-+				add_head->state = I40E_FILTER_NEW;
-+				add_head->vlan = I40E_VLAN_ANY;
-+
-+				/* Move the replacement to the add list */
-+				INIT_HLIST_NODE(&add_head->hlist);
-+				hlist_add_head(&add_head->hlist,
-+					       &tmp_add_list);
-+
-+				/* Move the original to the delete list */
-+				f->state = I40E_FILTER_REMOVE;
-+				hash_del(&f->hlist);
-+				hlist_add_head(&f->hlist, &tmp_del_list);
-+				vsi->active_filters--;
-+			}
-+
-+			/* Also update any filters on the tmp_add list */
-+			hlist_for_each_entry(f, &tmp_add_list, hlist) {
-+				if (!f->vlan)
-+					f->vlan = I40E_VLAN_ANY;
-+			}
-+			add_head = NULL;
- 		}
- 		spin_unlock_bh(&vsi->mac_filter_hash_lock);
- 	}
-@@ -2138,6 +2205,7 @@ out:
- err_no_memory:
- 	/* Restore elements on the temporary add and delete lists */
- 	spin_lock_bh(&vsi->mac_filter_hash_lock);
-+err_no_memory_locked:
- 	i40e_undo_filter_entries(vsi, &tmp_del_list);
- 	i40e_undo_filter_entries(vsi, &tmp_add_list);
- 	spin_unlock_bh(&vsi->mac_filter_hash_lock);
-@@ -2396,9 +2464,8 @@ int i40e_vsi_add_vlan(struct i40e_vsi *vsi, s16 vid)
- int i40e_vsi_kill_vlan(struct i40e_vsi *vsi, s16 vid)
- {
- 	struct net_device *netdev = vsi->netdev;
--	struct i40e_mac_filter *f, *add_f;
-+	struct i40e_mac_filter *f;
- 	struct hlist_node *h;
--	int filter_count = 0;
- 	int bkt;
+ 	struct i40e_pf *pf = container_of(ptp, struct i40e_pf, ptp_caps);
+ 	struct timespec64 now, then;
+-	unsigned long flags;
  
- 	/* Locked once because all functions invoked below iterates list */
-@@ -2412,49 +2479,6 @@ int i40e_vsi_kill_vlan(struct i40e_vsi *vsi, s16 vid)
- 			__i40e_del_filter(vsi, f);
+ 	then = ns_to_timespec64(delta);
+-	spin_lock_irqsave(&pf->tmreg_lock, flags);
++	mutex_lock(&pf->tmreg_lock);
+ 
+ 	i40e_ptp_read(pf, &now);
+ 	now = timespec64_add(now, then);
+ 	i40e_ptp_write(pf, (const struct timespec64 *)&now);
+ 
+-	spin_unlock_irqrestore(&pf->tmreg_lock, flags);
++	mutex_unlock(&pf->tmreg_lock);
+ 
+ 	return 0;
+ }
+@@ -184,11 +183,10 @@ static int i40e_ptp_adjtime(struct ptp_clock_info *ptp, s64 delta)
+ static int i40e_ptp_gettime(struct ptp_clock_info *ptp, struct timespec64 *ts)
+ {
+ 	struct i40e_pf *pf = container_of(ptp, struct i40e_pf, ptp_caps);
+-	unsigned long flags;
+ 
+-	spin_lock_irqsave(&pf->tmreg_lock, flags);
++	mutex_lock(&pf->tmreg_lock);
+ 	i40e_ptp_read(pf, ts);
+-	spin_unlock_irqrestore(&pf->tmreg_lock, flags);
++	mutex_unlock(&pf->tmreg_lock);
+ 
+ 	return 0;
+ }
+@@ -205,11 +203,10 @@ static int i40e_ptp_settime(struct ptp_clock_info *ptp,
+ 			    const struct timespec64 *ts)
+ {
+ 	struct i40e_pf *pf = container_of(ptp, struct i40e_pf, ptp_caps);
+-	unsigned long flags;
+ 
+-	spin_lock_irqsave(&pf->tmreg_lock, flags);
++	mutex_lock(&pf->tmreg_lock);
+ 	i40e_ptp_write(pf, ts);
+-	spin_unlock_irqrestore(&pf->tmreg_lock, flags);
++	mutex_unlock(&pf->tmreg_lock);
+ 
+ 	return 0;
+ }
+@@ -658,10 +655,7 @@ void i40e_ptp_init(struct i40e_pf *pf)
+ 		return;
  	}
  
--	/* go through all the filters for this VSI and if there is only
--	 * vid == 0 it means there are no other filters, so vid 0 must
--	 * be replaced with -1. This signifies that we should from now
--	 * on accept any traffic (with any tag present, or untagged)
+-	/* we have to initialize the lock first, since we can't control
+-	 * when the user will enter the PHC device entry points
 -	 */
--	hash_for_each(vsi->mac_filter_hash, bkt, f, hlist) {
--		if (vsi->netdev) {
--			if (f->vlan &&
--			    ether_addr_equal(netdev->dev_addr, f->macaddr))
--				filter_count++;
--		}
--
--		if (f->vlan)
--			filter_count++;
--	}
--
--	if (!filter_count && vsi->netdev) {
--		i40e_del_filter(vsi, netdev->dev_addr, 0);
--		f = i40e_add_filter(vsi, netdev->dev_addr, I40E_VLAN_ANY);
--		if (!f) {
--			dev_info(&vsi->back->pdev->dev,
--				 "Could not add filter %d for %pM\n",
--				 I40E_VLAN_ANY, netdev->dev_addr);
--			spin_unlock_bh(&vsi->mac_filter_hash_lock);
--			return -ENOMEM;
--		}
--	}
--
--	if (!filter_count) {
--		hash_for_each_safe(vsi->mac_filter_hash, bkt, h, f, hlist) {
--			if (!f->vlan)
--				__i40e_del_filter(vsi, f);
--			add_f = i40e_add_filter(vsi, f->macaddr, I40E_VLAN_ANY);
--			if (!add_f) {
--				dev_info(&vsi->back->pdev->dev,
--					 "Could not add filter %d for %pM\n",
--					 I40E_VLAN_ANY, f->macaddr);
--				spin_unlock_bh(&vsi->mac_filter_hash_lock);
--				return -ENOMEM;
--			}
--		}
--	}
--
- 	spin_unlock_bh(&vsi->mac_filter_hash_lock);
+-	spin_lock_init(&pf->tmreg_lock);
++	mutex_init(&pf->tmreg_lock);
  
- 	/* schedule our worker thread which will take care of
+ 	/* ensure we have a clock device */
+ 	err = i40e_ptp_create_clock(pf);
 -- 
 2.4.11
 
