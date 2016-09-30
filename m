@@ -1,103 +1,204 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri, 30 Sep 2016 00:03:23 -0700
-Subject: [Intel-wired-lan] [next PATCH S49 01/15] i40e: drop is_vf and
- is_netdev fields in struct i40e_mac_filter
-In-Reply-To: <1475169095-20873-2-git-send-email-bimmy.pujari@intel.com>
-References: <1475169095-20873-1-git-send-email-bimmy.pujari@intel.com>
- <1475169095-20873-2-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1475219003.2320.38.camel@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Fri, 30 Sep 2016 15:08:29 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ ced93f741009b576599183e6e834e5f1d8b54fb3
+Message-ID: <57ee0f6d.xS2HCA7oO+QniQf9%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, 2016-09-29 at 10:11 -0700, Bimmy Pujari wrote:
-> From: Jacob Keller <jacob.e.keller@intel.com>
-> 
-> Originally the is_vf and is_netdev fields were added in order to
-> distinguish between VF and netdev filters in a single VSI. However, it
-> can be noted that we use separate VSI for SRIOV VFs and for netdev VSI.
-> Thus, since a single VSI should only ever have one type of filter, we
-> can simply remove the checks and remove the typing.
-> 
-> In a similar fashion, we can note that the only remaining way to get
-> multiple filters of a single type is through a debug command that was
-> added to debugfs. This command is useless in practice, and results in
-> causing bugs if we keep counter tracking but lose the is_vf and
-> is_netdev protections as desired above.
-> 
-> Since the only time we'd actually have a counter value besides 0 and
-> 1 is through use of this debugfs hook, we can remove this unnecessary
-> command, and the entire counter logic it required.
-> 
-> We vastly simplify mac filters by removing
-> 
-> (a) the distinction between vf and netdev filters
-> (b) counting logic
-> (c) the ability to add and remove filters bypassing the stack via debugfs
-> 
-> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Change-ID: Idf916dd2a1159b1188ddbab5bef6b85ea6bf27d9
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+ced93f741009b576599183e6e834e5f1d8b54fb3  ixgbe: Add X553 FW ALEF support
 
-Does not compile, here are the errors:
+elapsed time: 247m
 
-[23:59:15 @jtkirshe-linux:next-queue]$ make -j 77 -s
-? DESCEND??objtool
-drivers/net/ethernet/intel/i40e/i40e_fcoe.c: In function
-?i40e_fcoe_config_netdev?:
-drivers/net/ethernet/intel/i40e/i40e_fcoe.c:1526:2: error: too many
-arguments to function ?i40e_add_filter?
-? i40e_add_filter(vsi, hw->mac.san_addr, 0, false, false);
-? ^~~~~~~~~~~~~~~
-In file included from drivers/net/ethernet/intel/i40e/i40e_fcoe.c:37:0:
-drivers/net/ethernet/intel/i40e/i40e.h:722:25: note: declared here
-?struct i40e_mac_filter *i40e_add_filter(struct i40e_vsi *vsi,
-?????????????????????????^~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/i40e/i40e_fcoe.c:1527:2: error: too many
-arguments to function ?i40e_add_filter?
-? i40e_add_filter(vsi, (u8[6]) FC_FCOE_FLOGI_MAC, 0, false, false);
-? ^~~~~~~~~~~~~~~
-In file included from drivers/net/ethernet/intel/i40e/i40e_fcoe.c:37:0:
-drivers/net/ethernet/intel/i40e/i40e.h:722:25: note: declared here
-?struct i40e_mac_filter *i40e_add_filter(struct i40e_vsi *vsi,
-?????????????????????????^~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/i40e/i40e_fcoe.c:1528:2: error: too many
-arguments to function ?i40e_add_filter?
-? i40e_add_filter(vsi, FIP_ALL_FCOE_MACS, 0, false, false);
-? ^~~~~~~~~~~~~~~
-In file included from drivers/net/ethernet/intel/i40e/i40e_fcoe.c:37:0:
-drivers/net/ethernet/intel/i40e/i40e.h:722:25: note: declared here
-?struct i40e_mac_filter *i40e_add_filter(struct i40e_vsi *vsi,
-?????????????????????????^~~~~~~~~~~~~~~
-drivers/net/ethernet/intel/i40e/i40e_fcoe.c:1529:2: error: too many
-arguments to function ?i40e_add_filter?
-? i40e_add_filter(vsi, FIP_ALL_ENODE_MACS, 0, false, false);
-? ^~~~~~~~~~~~~~~
-In file included from drivers/net/ethernet/intel/i40e/i40e_fcoe.c:37:0:
-drivers/net/ethernet/intel/i40e/i40e.h:722:25: note: declared here
-?struct i40e_mac_filter *i40e_add_filter(struct i40e_vsi *vsi,
-?????????????????????????^~~~~~~~~~~~~~~
-scripts/Makefile.build:289: recipe for target
-'drivers/net/ethernet/intel/i40e/i40e_fcoe.o' failed
-make[5]: *** [drivers/net/ethernet/intel/i40e/i40e_fcoe.o] Error 1
-make[5]: *** Waiting for unfinished jobs....
-scripts/Makefile.build:440: recipe for target
-'drivers/net/ethernet/intel/i40e' failed
-make[4]: *** [drivers/net/ethernet/intel/i40e] Error 2
-scripts/Makefile.build:440: recipe for target 'drivers/net/ethernet/intel'
-failed
-make[3]: *** [drivers/net/ethernet/intel] Error 2
-scripts/Makefile.build:440: recipe for target 'drivers/net/ethernet' failed
-make[2]: *** [drivers/net/ethernet] Error 2
-scripts/Makefile.build:440: recipe for target 'drivers/net' failed
-make[1]: *** [drivers/net] Error 2
-Makefile:968: recipe for target 'drivers' failed
-make: *** [drivers] Error 2
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 819 bytes
-Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160930/f6f17b56/attachment.asc>
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 182
+
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                             pxa_defconfig
+m68k                        m5407c3_defconfig
+powerpc                     kmeter1_defconfig
+i386                     randconfig-a0-201639
+x86_64                 randconfig-a0-09301112
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+arm                        magician_defconfig
+s390                                defconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-09301131
+i386                   randconfig-c0-09301350
+c6x                        evmc6457_defconfig
+ia64                             alldefconfig
+mips                        msp71xx_defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                 randconfig-v0-09301122
+x86_64                                  kexec
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                             allmodconfig
+arm                         hackkit_defconfig
+arm                         s3c6400_defconfig
+avr32        atngw100mkii_evklcd100_defconfig
+mips                      maltaaprp_defconfig
+mips                      pistachio_defconfig
+x86_64                 randconfig-x015-201639
+x86_64                 randconfig-x012-201639
+x86_64                 randconfig-x013-201639
+x86_64                 randconfig-x011-201639
+x86_64                 randconfig-x017-201639
+x86_64                 randconfig-x018-201639
+x86_64                 randconfig-x014-201639
+x86_64                 randconfig-x010-201639
+x86_64                 randconfig-x019-201639
+x86_64                 randconfig-x016-201639
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201639
+i386                     randconfig-s1-201639
+i386         randconfig-s1-201639+CONFIG_DEBUG_INFO_REDUCED
+x86_64                 randconfig-s0-09301117
+x86_64                 randconfig-s1-09301117
+x86_64                 randconfig-s2-09301117
+x86_64                 randconfig-s3-09301108
+x86_64                 randconfig-s4-09301108
+x86_64                 randconfig-s5-09301108
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+arm                          pcm027_defconfig
+ia64                            sim_defconfig
+sh                               allmodconfig
+x86_64                   randconfig-i0-201639
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                   randconfig-i0-09290821
+i386                   randconfig-i1-09290821
+x86_64                 randconfig-b0-09292134
+x86_64                           allmodconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+avr32                     atstk1002_defconfig
+parisc                generic-32bit_defconfig
+powerpc                     mpc83xx_defconfig
+m68k                            mac_defconfig
+powerpc64                        allyesconfig
+sh                           se7751_defconfig
+x86_64                 randconfig-u0-09301119
+arm                  colibri_pxa270_defconfig
+powerpc                     asp8347_defconfig
+powerpc                     tqm8548_defconfig
+i386                   randconfig-x010-201639
+i386                   randconfig-x016-201639
+i386                   randconfig-x014-201639
+i386                   randconfig-x017-201639
+i386                   randconfig-x018-201639
+i386                   randconfig-x013-201639
+i386                   randconfig-x012-201639
+i386                   randconfig-x015-201639
+i386                   randconfig-x011-201639
+i386                   randconfig-x019-201639
+x86_64                                    lkp
+i386                     randconfig-n0-201639
+i386                   randconfig-h0-09301315
+i386                   randconfig-h1-09301315
+blackfin                  CM-BF537U_defconfig
+powerpc                      makalu_defconfig
+powerpc                  storcenter_defconfig
+arm                     davinci_all_defconfig
+powerpc                  mpc885_ads_defconfig
+powerpc                     sequoia_defconfig
+x86_64                 randconfig-h0-09301227
+arm                          collie_defconfig
+ia64                             allmodconfig
+avr32                       mimc200_defconfig
+cris                             allmodconfig
+x86_64                 randconfig-n0-09301120
+x86_64                 randconfig-n0-09301343
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+arm                         palmz72_defconfig
+m68k                             allmodconfig
+mips                        xilfpga_defconfig
+x86_64                 randconfig-x002-201639
+x86_64                 randconfig-x009-201639
+x86_64                 randconfig-x008-201639
+x86_64                 randconfig-x004-201639
+x86_64                 randconfig-x007-201639
+x86_64                 randconfig-x003-201639
+x86_64                 randconfig-x005-201639
+x86_64                 randconfig-x006-201639
+x86_64                 randconfig-x001-201639
+x86_64                 randconfig-x000-201639
+ia64                              allnoconfig
+ia64                                defconfig
+i386                     randconfig-r0-201639
+x86_64                 randconfig-r0-09301132
+x86_64                 randconfig-r0-09301231
+m68k                       m5249evb_defconfig
+i386                   randconfig-x009-201639
+i386                   randconfig-x002-201639
+i386                   randconfig-x006-201639
+i386                   randconfig-x007-201639
+i386                   randconfig-x008-201639
+i386                   randconfig-x001-201639
+i386                   randconfig-x003-201639
+i386                   randconfig-x000-201639
+i386                   randconfig-x004-201639
+i386                   randconfig-x005-201639
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+i386                   randconfig-x0-09301131
+i386                   randconfig-x0-09301340
+
+Thanks,
+Fengguang
