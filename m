@@ -1,9 +1,11 @@
 From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Fri, 30 Sep 2016 00:02:35 -0700
-Subject: [Intel-wired-lan] [next PATCH S49 00/15] i40e/i40evf updates
-In-Reply-To: <1475169095-20873-1-git-send-email-bimmy.pujari@intel.com>
+Date: Fri, 30 Sep 2016 00:03:23 -0700
+Subject: [Intel-wired-lan] [next PATCH S49 01/15] i40e: drop is_vf and
+ is_netdev fields in struct i40e_mac_filter
+In-Reply-To: <1475169095-20873-2-git-send-email-bimmy.pujari@intel.com>
 References: <1475169095-20873-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1475218955.2320.37.camel@intel.com>
+ <1475169095-20873-2-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1475219003.2320.38.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,39 +13,34 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 On Thu, 2016-09-29 at 10:11 -0700, Bimmy Pujari wrote:
-> Alan Brady adds code to fix mac filters when removing vlans.
+> From: Jacob Keller <jacob.e.keller@intel.com>
 > 
-> Jacob Keller drops is_vf and is_netdev fields in struct?
-> i40e_mac_filter, adds code to make use of __dev_uc_sync?
-> and __dev_mc_sync, moves i40e_put_mac_in_vlan and?
-> i40e_del_mac_all_vlan, fixes i40e_put_mac_in_vlan to?
-> return actual filter added, adds code to ignore removed?
-> filters When searching all MAC/VLAN filters, implements?
-> __i40e_del_filter and use where applicable, adds code to?
-> store MAC/VLAN filters in a hash with the MAC Address as?
-> key, adds code to properly cleanup on allocation failure?
-> in i40e_sync_vsi_filters, adds code to avoid looping to?
-> check whether we're in vlan mode, removes duplicate add/
-> delete adminq command code for filters, corrects check?
-> for reading TSYNINDX from the receive descriptor, uses a?
-> mutex instead of spinlock in PTP user entry points, replaces?
-> PTP Rx timestamp hang logic and adds code to avoid an extra?
-> msleep while waiting for reset.
+> Originally the is_vf and is_netdev fields were added in order to
+> distinguish between VF and netdev filters in a single VSI. However, it
+> can be noted that we use separate VSI for SRIOV VFs and for netdev VSI.
+> Thus, since a single VSI should only ever have one type of filter, we
+> can simply remove the checks and remove the typing.
 > 
-> ?drivers/net/ethernet/intel/i40e/i40e.h?????????????|??50 +-
-> ?drivers/net/ethernet/intel/i40e/i40e_debugfs.c?????|??92 +-
-> ?drivers/net/ethernet/intel/i40e/i40e_main.c????????| 949 +++++++++++--
-> --------
-> ?drivers/net/ethernet/intel/i40e/i40e_ptp.c?????????| 137 +--
-> ?drivers/net/ethernet/intel/i40e/i40e_txrx.c????????|???9 +-
-> ?drivers/net/ethernet/intel/i40e/i40e_txrx.h????????|???2 -
-> ?drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |??57 +-
-> ?drivers/net/ethernet/intel/i40evf/i40evf_main.c????|???8 +-
-> ?8 files changed, 663 insertions(+), 641 deletions(-)
+> In a similar fashion, we can note that the only remaining way to get
+> multiple filters of a single type is through a debug command that was
+> added to debugfs. This command is useless in practice, and results in
+> causing bugs if we keep counter tracking but lose the is_vf and
+> is_netdev protections as desired above.
 > 
+> Since the only time we'd actually have a counter value besides 0 and
+> 1 is through use of this debugfs hook, we can remove this unnecessary
+> command, and the entire counter logic it required.
+> 
+> We vastly simplify mac filters by removing
+> 
+> (a) the distinction between vf and netdev filters
+> (b) counting logic
+> (c) the ability to add and remove filters bypassing the stack via debugfs
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Change-ID: Idf916dd2a1159b1188ddbab5bef6b85ea6bf27d9
 
-I tried to compile the very first patch it does not compile. ?I get the
-following errors:
+Does not compile, here are the errors:
 
 [23:59:15 @jtkirshe-linux:next-queue]$ make -j 77 -s
 ? DESCEND??objtool
@@ -97,14 +94,10 @@ scripts/Makefile.build:440: recipe for target 'drivers/net' failed
 make[1]: *** [drivers/net] Error 2
 Makefile:968: recipe for target 'drivers' failed
 make: *** [drivers] Error 2
-
-So I am dropping this series. ?Make sure every patch compiles on its own,
-once you fix the first patch (and any other patches that may need changes),
-please resubmit the series.
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 819 bytes
 Desc: This is a digitally signed message part
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160930/b46f98c1/attachment.asc>
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160930/f6f17b56/attachment.asc>
