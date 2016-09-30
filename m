@@ -1,52 +1,55 @@
-From: Ertman, David M <david.m.ertman@intel.com>
-Date: Fri, 30 Sep 2016 16:43:57 +0000
-Subject: [Intel-wired-lan] [bug report] i40e: Fix kernel panic on
-	enable/disable LLDP
-In-Reply-To: <20160930104101.GA10918@mwanda>
-References: <20160930104101.GA10918@mwanda>
-Message-ID: <2B0E3F215D1AB84DA946C8BEE234CCC9451FB079@ORSMSX101.amr.corp.intel.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 30 Sep 2016 17:53:39 +0000
+Subject: [Intel-wired-lan] [next PATCH S48 1/7] i40e: fix confusing
+ dmesg	info for ethtool -L option
+In-Reply-To: <1475000934-27335-2-git-send-email-bimmy.pujari@intel.com>
+References: <1475000934-27335-1-git-send-email-bimmy.pujari@intel.com>
+ <1475000934-27335-2-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA0F4EA@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Dan,
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Bimmy Pujari
+> Sent: Tuesday, September 27, 2016 11:29 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S48 1/7] i40e: fix confusing dmesg info
+> for ethtool -L option
+> 
+> From: Lihong Yang <lihong.yang@intel.com>
+> 
+> Ethtool -L option with the combined parameter is for changing the number of
+> multi-purpose channels of the specified network device. The pre-set
+> maximum for the combined channels is cpu dependent. Currently, for an
+> i40e device, when the user sets a value between 64 and the maximum that
+> the cpu can support for the combined parameter, the i40e driver displays the
+> confusing info in dmesg to only show 64 as the RSS count regardless of what
+> the accepted user input is as long as it is larger than 64.
+> 
+> This patch fixes the message in the i40e driver when the user uses ethtool -L
+> to change the number of the combined channels to consistently display the
+> user requested value if it is valid and accepted by ethtool.
+> 
+> Signed-off-by: Lihong Yang <lihong.yang@intel.com>
+> Change-ID: Ia80a68bc844b779a49e0f76e7d3dcc915032d9af
+> ---
+> Testing Hints:
+> 1. ethtool -l devname to show defaults
+> 2. ethtool -L devname combined 72 to change the number of channels 3.
+> ethtool -l devname to check settings 4. ethtool -S devname to verify 72
+> queues(tx/rx) got set up 5. run dmesg to check the i40e driver provided info
+> to be consistent:
+>         i40e 0000:xx:00.x: User requested queue count/
+>                 HW max RSS count:  72/64
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-Nice catch!  I have submitted a patch to fix this to intel-wired-lan at lists.osuosl.org and credited you with a Reported-by.  Thanks for letting me know!  
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
+Works as described
 
-Thanks,
-Dave Ertman
 
------Original Message-----
-From: Dan Carpenter [mailto:dan.carpenter at oracle.com] 
-Sent: Friday, September 30, 2016 3:41 AM
-To: Ertman, David M <david.m.ertman@intel.com>
-Cc: intel-wired-lan at lists.osuosl.org; kernel-janitors at vger.kernel.org
-Subject: [bug report] i40e: Fix kernel panic on enable/disable LLDP
-
-Hello Dave Ertman,
-
-The patch a036244c0686: "i40e: Fix kernel panic on enable/disable LLDP" from Aug 29, 2016, leads to the following static checker
-warning:
-
-	drivers/net/ethernet/intel/i40e/i40e_main.c:10958 i40e_probe()
-	warn: odd binop '0x20000000 & 0x100000'
-
-drivers/net/ethernet/intel/i40e/i40e_main.c
- 10952          pci_set_drvdata(pdev, pf);
- 10953          pci_save_state(pdev);
- 10954  #ifdef CONFIG_I40E_DCB
- 10955          err = i40e_init_pf_dcb(pf);
- 10956          if (err) {
- 10957                  dev_info(&pdev->dev, "DCB init failed %d, disabled\n", err);
- 10958                  pf->flags &= ~(I40E_FLAG_DCB_CAPABLE & I40E_FLAG_DCB_ENABLED);
-
-Should this be an | instead of an &?  The current code is a no-op.
-
- 10959                  /* Continue without DCB enabled */
- 10960          }
- 10961  #endif /* CONFIG_I40E_DCB */
-
-regards,
-dan carpenter
