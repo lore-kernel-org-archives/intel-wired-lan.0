@@ -1,145 +1,52 @@
-From: Alexander Duyck <alexander.h.duyck@intel.com>
-Date: Fri, 30 Sep 2016 06:42:22 -0400
-Subject: [Intel-wired-lan] [net-next PATCH v2] i40e: Clean up handling of
- msglevel flags and debug parameter
-Message-ID: <20160930104149.8147.10913.stgit@ahduyck-blue-test.jf.intel.com>
+From: Ertman, David M <david.m.ertman@intel.com>
+Date: Fri, 30 Sep 2016 16:43:57 +0000
+Subject: [Intel-wired-lan] [bug report] i40e: Fix kernel panic on
+	enable/disable LLDP
+In-Reply-To: <20160930104101.GA10918@mwanda>
+References: <20160930104101.GA10918@mwanda>
+Message-ID: <2B0E3F215D1AB84DA946C8BEE234CCC9451FB079@ORSMSX101.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-So the i40e driver had a really convoluted configuration for how to handle
-the debug flags contained in msg_level.  Part of the issue is that the
-driver has its own 32 bit mask that it was using to track a separate set of
-debug features.  From what I can tell it was trying to use the upper 4 bits
-to determine if the value was meant to represent a bit-mask or the numeric
-value provided by debug level.
+Dan,
 
-What this patch does is clean this up by compressing those 4 bits into bit
-31, as a result we just have to perform a check against the value being
-negative to determine if we are looking at a debug level (positive), or a
-debug mask (negative).  The debug level will populate the msg_level, and
-the debug mask will populate the debug_mask in the hardware struct.
+Nice catch!  I have submitted a patch to fix this to intel-wired-lan at lists.osuosl.org and credited you with a Reported-by.  Thanks for letting me know!  
 
-I added similar logic for ethtool.  If the value being provided has bit 31
-set we assume the value being provided is a debug mask, otherwise we assume
-it is a msg_enable mask.  For displaying we only provide the msg_enable,
-and if debug_mask is in use we will print it to the dmesg log.
+Thanks,
+Dave Ertman
 
-Lastly I removed the debugfs interface.  It is redundant with what we
-already have in ethtool and really doesn't belong anyway.
+-----Original Message-----
+From: Dan Carpenter [mailto:dan.carpenter at oracle.com] 
+Sent: Friday, September 30, 2016 3:41 AM
+To: Ertman, David M <david.m.ertman@intel.com>
+Cc: intel-wired-lan at lists.osuosl.org; kernel-janitors at vger.kernel.org
+Subject: [bug report] i40e: Fix kernel panic on enable/disable LLDP
 
-Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
----
+Hello Dave Ertman,
 
-v2: Consolidated setup for msg_enable and hw.debug_mask to one point in probe.
+The patch a036244c0686: "i40e: Fix kernel panic on enable/disable LLDP" from Aug 29, 2016, leads to the following static checker
+warning:
 
- drivers/net/ethernet/intel/i40e/i40e_debugfs.c |   18 ------------------
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c |    7 ++++++-
- drivers/net/ethernet/intel/i40e/i40e_main.c    |   23 ++++++++---------------
- 3 files changed, 14 insertions(+), 34 deletions(-)
+	drivers/net/ethernet/intel/i40e/i40e_main.c:10958 i40e_probe()
+	warn: odd binop '0x20000000 & 0x100000'
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-index 0c1875b..acb0f13 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-@@ -1210,24 +1210,6 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
- 			dev_info(&pf->pdev->dev,
- 				 "dump debug fwdata <cluster_id> <table_id> <index>\n");
- 		}
--
--	} else if (strncmp(cmd_buf, "msg_enable", 10) == 0) {
--		u32 level;
--		cnt = sscanf(&cmd_buf[10], "%i", &level);
--		if (cnt) {
--			if (I40E_DEBUG_USER & level) {
--				pf->hw.debug_mask = level;
--				dev_info(&pf->pdev->dev,
--					 "set hw.debug_mask = 0x%08x\n",
--					 pf->hw.debug_mask);
--			}
--			pf->msg_enable = level;
--			dev_info(&pf->pdev->dev, "set msg_enable = 0x%08x\n",
--				 pf->msg_enable);
--		} else {
--			dev_info(&pf->pdev->dev, "msg_enable = 0x%08x\n",
--				 pf->msg_enable);
--		}
- 	} else if (strncmp(cmd_buf, "pfr", 3) == 0) {
- 		dev_info(&pf->pdev->dev, "debugfs: forcing PFR\n");
- 		i40e_do_reset_safe(pf, BIT(__I40E_PF_RESET_REQUESTED));
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index e79a920..b133a77 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -978,6 +978,10 @@ static u32 i40e_get_msglevel(struct net_device *netdev)
- {
- 	struct i40e_netdev_priv *np = netdev_priv(netdev);
- 	struct i40e_pf *pf = np->vsi->back;
-+	u32 debug_mask = pf->hw.debug_mask;
-+
-+	if (debug_mask)
-+		netdev_info(netdev, "i40e debug_mask: 0x%08X\n", debug_mask);
- 
- 	return pf->msg_enable;
- }
-@@ -989,7 +993,8 @@ static void i40e_set_msglevel(struct net_device *netdev, u32 data)
- 
- 	if (I40E_DEBUG_USER & data)
- 		pf->hw.debug_mask = data;
--	pf->msg_enable = data;
-+	else
-+		pf->msg_enable = data;
- }
- 
- static int i40e_get_regs_len(struct net_device *netdev)
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index b93fa2a..c5417aa 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -93,8 +93,8 @@ MODULE_DEVICE_TABLE(pci, i40e_pci_tbl);
- 
- #define I40E_MAX_VF_COUNT 128
- static int debug = -1;
--module_param(debug, int, 0);
--MODULE_PARM_DESC(debug, "Debug level (0=none,...,16=all)");
-+module_param(debug, uint, 0);
-+MODULE_PARM_DESC(debug, "Debug level (0=none,...,16=all), Debug mask (0x8XXXXXXX)");
- 
- MODULE_AUTHOR("Intel Corporation, <e1000-devel@lists.sourceforge.net>");
- MODULE_DESCRIPTION("Intel(R) Ethernet Connection XL710 Network Driver");
-@@ -8481,15 +8481,6 @@ static int i40e_sw_init(struct i40e_pf *pf)
- 	int err = 0;
- 	int size;
- 
--	pf->msg_enable = netif_msg_init(I40E_DEFAULT_MSG_ENABLE,
--				(NETIF_MSG_DRV|NETIF_MSG_PROBE|NETIF_MSG_LINK));
--	if (debug != -1 && debug != I40E_DEFAULT_MSG_ENABLE) {
--		if (I40E_DEBUG_USER & debug)
--			pf->hw.debug_mask = debug;
--		pf->msg_enable = netif_msg_init((debug & ~I40E_DEBUG_USER),
--						I40E_DEFAULT_MSG_ENABLE);
--	}
--
- 	/* Set default capability flags */
- 	pf->flags = I40E_FLAG_RX_CSUM_ENABLED |
- 		    I40E_FLAG_MSI_ENABLED     |
-@@ -10790,10 +10781,12 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	mutex_init(&hw->aq.asq_mutex);
- 	mutex_init(&hw->aq.arq_mutex);
- 
--	if (debug != -1) {
--		pf->msg_enable = pf->hw.debug_mask;
--		pf->msg_enable = debug;
--	}
-+	pf->msg_enable = netif_msg_init(debug,
-+					NETIF_MSG_DRV |
-+					NETIF_MSG_PROBE |
-+					NETIF_MSG_LINK);
-+	if (debug < -1)
-+		pf->hw.debug_mask = debug;
- 
- 	/* do a special CORER for clearing PXE mode once at init */
- 	if (hw->revision_id == 0 &&
+drivers/net/ethernet/intel/i40e/i40e_main.c
+ 10952          pci_set_drvdata(pdev, pf);
+ 10953          pci_save_state(pdev);
+ 10954  #ifdef CONFIG_I40E_DCB
+ 10955          err = i40e_init_pf_dcb(pf);
+ 10956          if (err) {
+ 10957                  dev_info(&pdev->dev, "DCB init failed %d, disabled\n", err);
+ 10958                  pf->flags &= ~(I40E_FLAG_DCB_CAPABLE & I40E_FLAG_DCB_ENABLED);
 
+Should this be an | instead of an &?  The current code is a no-op.
+
+ 10959                  /* Continue without DCB enabled */
+ 10960          }
+ 10961  #endif /* CONFIG_I40E_DCB */
+
+regards,
+dan carpenter
