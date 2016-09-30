@@ -1,166 +1,110 @@
-From: Stefan Assmann <sassmann@kpanic.de>
-Date: Fri, 30 Sep 2016 08:35:16 +0200
-Subject: [Intel-wired-lan] [net-next PATCH] i40e: Clean up handling of
- msg_enable flags and debug parameter
-In-Reply-To: <20160929115832.42066.71367.stgit@ahduyck-blue-test.jf.intel.com>
-References: <20160929115832.42066.71367.stgit@ahduyck-blue-test.jf.intel.com>
-Message-ID: <b9354e9a-69b0-b9e3-3abb-7866339845ac@kpanic.de>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Fri, 30 Sep 2016 00:02:35 -0700
+Subject: [Intel-wired-lan] [next PATCH S49 00/15] i40e/i40evf updates
+In-Reply-To: <1475169095-20873-1-git-send-email-bimmy.pujari@intel.com>
+References: <1475169095-20873-1-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1475218955.2320.37.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 29.09.2016 14:05, Alexander Duyck wrote:
-> So the i40e driver had a really convoluted configuration for how to handle
-> the debug flags contained in msg_enable.  Part of the issue is that the
-> driver has its own 32 bit mask that it was using to track a separate set of
-> debug features.  From what I can tell it was trying to use the upper 4 bits
-> to determine if the value was meant to represent a bit-mask or the numeric
-> value provided by debug level.
+On Thu, 2016-09-29 at 10:11 -0700, Bimmy Pujari wrote:
+> Alan Brady adds code to fix mac filters when removing vlans.
 > 
-> What this patch does is clean this up by compressing those 4 bits into bit
-> 31, as a result we just have to perform a check against the value being
-> negative to determine if we are looking at a debug level (positive), or a
-> debug mask (negative).  The debug level will populate the msg_level, and
-> the debug mask will populate the debug_mask in the hardware struct.
+> Jacob Keller drops is_vf and is_netdev fields in struct?
+> i40e_mac_filter, adds code to make use of __dev_uc_sync?
+> and __dev_mc_sync, moves i40e_put_mac_in_vlan and?
+> i40e_del_mac_all_vlan, fixes i40e_put_mac_in_vlan to?
+> return actual filter added, adds code to ignore removed?
+> filters When searching all MAC/VLAN filters, implements?
+> __i40e_del_filter and use where applicable, adds code to?
+> store MAC/VLAN filters in a hash with the MAC Address as?
+> key, adds code to properly cleanup on allocation failure?
+> in i40e_sync_vsi_filters, adds code to avoid looping to?
+> check whether we're in vlan mode, removes duplicate add/
+> delete adminq command code for filters, corrects check?
+> for reading TSYNINDX from the receive descriptor, uses a?
+> mutex instead of spinlock in PTP user entry points, replaces?
+> PTP Rx timestamp hang logic and adds code to avoid an extra?
+> msleep while waiting for reset.
 > 
-> I added similar logic for ethtool.  If the value being provided has bit 31
-> set we assume the value being provided is a debug mask, otherwise we assume
-> it is a msg_enable mask.  For displaying we only provide the msg_enable,
-> and if debug_mask is in use we will print it to the dmesg log.
-> 
-> Lastly I removed the debugfs interface.  It is redundant with what we
-> already have in ethtool and really doesn't belong anyway.
-> 
-> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-> ---
-> 
-> So I am running this through a slightly different process than standard
-> because there are some items here that might be objectionable so I want to
-> have that ironed out before I deal with the out-of-tree Intel driver.
-> 
-> I just want to verify if this fix for this will work for net-next or if I
-> need to look at taking a different approach.  Once I get the go-no-go, I
-> will back-port this into the out-of-tree i40e driver.
-> 
->  drivers/net/ethernet/intel/i40e/i40e_debugfs.c |   18 ---------------
->  drivers/net/ethernet/intel/i40e/i40e_ethtool.c |    7 +++++-
->  drivers/net/ethernet/intel/i40e/i40e_main.c    |   28 ++++++++++++------------
->  3 files changed, 20 insertions(+), 33 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-> index 0c1875b..acb0f13 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_debugfs.c
-> @@ -1210,24 +1210,6 @@ static ssize_t i40e_dbg_command_write(struct file *filp,
->  			dev_info(&pf->pdev->dev,
->  				 "dump debug fwdata <cluster_id> <table_id> <index>\n");
->  		}
-> -
-> -	} else if (strncmp(cmd_buf, "msg_enable", 10) == 0) {
-> -		u32 level;
-> -		cnt = sscanf(&cmd_buf[10], "%i", &level);
-> -		if (cnt) {
-> -			if (I40E_DEBUG_USER & level) {
-> -				pf->hw.debug_mask = level;
-> -				dev_info(&pf->pdev->dev,
-> -					 "set hw.debug_mask = 0x%08x\n",
-> -					 pf->hw.debug_mask);
-> -			}
-> -			pf->msg_enable = level;
-> -			dev_info(&pf->pdev->dev, "set msg_enable = 0x%08x\n",
-> -				 pf->msg_enable);
-> -		} else {
-> -			dev_info(&pf->pdev->dev, "msg_enable = 0x%08x\n",
-> -				 pf->msg_enable);
-> -		}
->  	} else if (strncmp(cmd_buf, "pfr", 3) == 0) {
->  		dev_info(&pf->pdev->dev, "debugfs: forcing PFR\n");
->  		i40e_do_reset_safe(pf, BIT(__I40E_PF_RESET_REQUESTED));
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> index e79a920..b133a77 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-> @@ -978,6 +978,10 @@ static u32 i40e_get_msglevel(struct net_device *netdev)
->  {
->  	struct i40e_netdev_priv *np = netdev_priv(netdev);
->  	struct i40e_pf *pf = np->vsi->back;
-> +	u32 debug_mask = pf->hw.debug_mask;
-> +
-> +	if (debug_mask)
-> +		netdev_info(netdev, "i40e debug_mask: 0x%08X\n", debug_mask);
->  
->  	return pf->msg_enable;
->  }
-> @@ -989,7 +993,8 @@ static void i40e_set_msglevel(struct net_device *netdev, u32 data)
->  
->  	if (I40E_DEBUG_USER & data)
->  		pf->hw.debug_mask = data;
-> -	pf->msg_enable = data;
-> +	else
-> +		pf->msg_enable = data;
->  }
->  
->  static int i40e_get_regs_len(struct net_device *netdev)
-> diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> index b93fa2a..b24c6eb 100644
-> --- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-> +++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-> @@ -93,8 +93,8 @@ MODULE_DEVICE_TABLE(pci, i40e_pci_tbl);
->  
->  #define I40E_MAX_VF_COUNT 128
->  static int debug = -1;
-> -module_param(debug, int, 0);
-> -MODULE_PARM_DESC(debug, "Debug level (0=none,...,16=all)");
-> +module_param(debug, uint, 0);
-> +MODULE_PARM_DESC(debug, "Debug level (0=none,...,16=all), Debug mask (0x8XXXXXXX)");
->  
->  MODULE_AUTHOR("Intel Corporation, <e1000-devel@lists.sourceforge.net>");
->  MODULE_DESCRIPTION("Intel(R) Ethernet Connection XL710 Network Driver");
-> @@ -8481,14 +8481,12 @@ static int i40e_sw_init(struct i40e_pf *pf)
->  	int err = 0;
->  	int size;
->  
-> -	pf->msg_enable = netif_msg_init(I40E_DEFAULT_MSG_ENABLE,
-> -				(NETIF_MSG_DRV|NETIF_MSG_PROBE|NETIF_MSG_LINK));
-> -	if (debug != -1 && debug != I40E_DEFAULT_MSG_ENABLE) {
-> -		if (I40E_DEBUG_USER & debug)
-> -			pf->hw.debug_mask = debug;
-> -		pf->msg_enable = netif_msg_init((debug & ~I40E_DEBUG_USER),
-> -						I40E_DEFAULT_MSG_ENABLE);
-> -	}
-> +	pf->msg_enable = netif_msg_init(debug,
-> +					NETIF_MSG_DRV |
-> +					NETIF_MSG_PROBE |
-> +					NETIF_MSG_LINK);
-> +	if (debug < -1)
-> +		pf->hw.debug_mask = debug;
-
-It's enough to set msg_enable and debug_mask once. Better to choose the
-i40e_probe() location, as that's the earliest possible point to set
-those values.
-
-  Stefan
-
->  	/* Set default capability flags */
->  	pf->flags = I40E_FLAG_RX_CSUM_ENABLED |
-> @@ -10790,10 +10788,12 @@ static int i40e_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
->  	mutex_init(&hw->aq.asq_mutex);
->  	mutex_init(&hw->aq.arq_mutex);
->  
-> -	if (debug != -1) {
-> -		pf->msg_enable = pf->hw.debug_mask;
-> -		pf->msg_enable = debug;
-> -	}
-> +	pf->msg_enable = netif_msg_init(debug,
-> +					NETIF_MSG_DRV |
-> +					NETIF_MSG_PROBE |
-> +					NETIF_MSG_LINK);
-> +	if (debug < -1)
-> +		pf->hw.debug_mask = debug;
->  
->  	/* do a special CORER for clearing PXE mode once at init */
->  	if (hw->revision_id == 0 &&
+> ?drivers/net/ethernet/intel/i40e/i40e.h?????????????|??50 +-
+> ?drivers/net/ethernet/intel/i40e/i40e_debugfs.c?????|??92 +-
+> ?drivers/net/ethernet/intel/i40e/i40e_main.c????????| 949 +++++++++++--
+> --------
+> ?drivers/net/ethernet/intel/i40e/i40e_ptp.c?????????| 137 +--
+> ?drivers/net/ethernet/intel/i40e/i40e_txrx.c????????|???9 +-
+> ?drivers/net/ethernet/intel/i40e/i40e_txrx.h????????|???2 -
+> ?drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |??57 +-
+> ?drivers/net/ethernet/intel/i40evf/i40evf_main.c????|???8 +-
+> ?8 files changed, 663 insertions(+), 641 deletions(-)
 > 
 
+I tried to compile the very first patch it does not compile. ?I get the
+following errors:
+
+[23:59:15 @jtkirshe-linux:next-queue]$ make -j 77 -s
+? DESCEND??objtool
+drivers/net/ethernet/intel/i40e/i40e_fcoe.c: In function
+?i40e_fcoe_config_netdev?:
+drivers/net/ethernet/intel/i40e/i40e_fcoe.c:1526:2: error: too many
+arguments to function ?i40e_add_filter?
+? i40e_add_filter(vsi, hw->mac.san_addr, 0, false, false);
+? ^~~~~~~~~~~~~~~
+In file included from drivers/net/ethernet/intel/i40e/i40e_fcoe.c:37:0:
+drivers/net/ethernet/intel/i40e/i40e.h:722:25: note: declared here
+?struct i40e_mac_filter *i40e_add_filter(struct i40e_vsi *vsi,
+?????????????????????????^~~~~~~~~~~~~~~
+drivers/net/ethernet/intel/i40e/i40e_fcoe.c:1527:2: error: too many
+arguments to function ?i40e_add_filter?
+? i40e_add_filter(vsi, (u8[6]) FC_FCOE_FLOGI_MAC, 0, false, false);
+? ^~~~~~~~~~~~~~~
+In file included from drivers/net/ethernet/intel/i40e/i40e_fcoe.c:37:0:
+drivers/net/ethernet/intel/i40e/i40e.h:722:25: note: declared here
+?struct i40e_mac_filter *i40e_add_filter(struct i40e_vsi *vsi,
+?????????????????????????^~~~~~~~~~~~~~~
+drivers/net/ethernet/intel/i40e/i40e_fcoe.c:1528:2: error: too many
+arguments to function ?i40e_add_filter?
+? i40e_add_filter(vsi, FIP_ALL_FCOE_MACS, 0, false, false);
+? ^~~~~~~~~~~~~~~
+In file included from drivers/net/ethernet/intel/i40e/i40e_fcoe.c:37:0:
+drivers/net/ethernet/intel/i40e/i40e.h:722:25: note: declared here
+?struct i40e_mac_filter *i40e_add_filter(struct i40e_vsi *vsi,
+?????????????????????????^~~~~~~~~~~~~~~
+drivers/net/ethernet/intel/i40e/i40e_fcoe.c:1529:2: error: too many
+arguments to function ?i40e_add_filter?
+? i40e_add_filter(vsi, FIP_ALL_ENODE_MACS, 0, false, false);
+? ^~~~~~~~~~~~~~~
+In file included from drivers/net/ethernet/intel/i40e/i40e_fcoe.c:37:0:
+drivers/net/ethernet/intel/i40e/i40e.h:722:25: note: declared here
+?struct i40e_mac_filter *i40e_add_filter(struct i40e_vsi *vsi,
+?????????????????????????^~~~~~~~~~~~~~~
+scripts/Makefile.build:289: recipe for target
+'drivers/net/ethernet/intel/i40e/i40e_fcoe.o' failed
+make[5]: *** [drivers/net/ethernet/intel/i40e/i40e_fcoe.o] Error 1
+make[5]: *** Waiting for unfinished jobs....
+scripts/Makefile.build:440: recipe for target
+'drivers/net/ethernet/intel/i40e' failed
+make[4]: *** [drivers/net/ethernet/intel/i40e] Error 2
+scripts/Makefile.build:440: recipe for target 'drivers/net/ethernet/intel'
+failed
+make[3]: *** [drivers/net/ethernet/intel] Error 2
+scripts/Makefile.build:440: recipe for target 'drivers/net/ethernet' failed
+make[2]: *** [drivers/net/ethernet] Error 2
+scripts/Makefile.build:440: recipe for target 'drivers/net' failed
+make[1]: *** [drivers/net] Error 2
+Makefile:968: recipe for target 'drivers' failed
+make: *** [drivers] Error 2
+
+So I am dropping this series. ?Make sure every patch compiles on its own,
+once you fix the first patch (and any other patches that may need changes),
+please resubmit the series.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20160930/b46f98c1/attachment.asc>
