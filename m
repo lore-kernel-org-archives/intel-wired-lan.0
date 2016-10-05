@@ -1,33 +1,160 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Wed,  5 Oct 2016 09:30:30 -0700
-Subject: [Intel-wired-lan] [next PATCH S49-V2 00/15] i40e-i40evf updates
-Message-ID: <1475685046-16900-1-git-send-email-bimmy.pujari@intel.com>
+Date: Wed,  5 Oct 2016 09:30:33 -0700
+Subject: [Intel-wired-lan] [next PATCH S49-V2 03/15] i40e: move
+	i40e_put_mac_in_vlan and i40e_del_mac_all_vlan
+In-Reply-To: <1475685046-16900-1-git-send-email-bimmy.pujari@intel.com>
+References: <1475685046-16900-1-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1475685046-16900-4-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Alan Brady adds code to fix mac filters when removing vlans.
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-Jacob Keller provides several patches to refactor handling of MAC 
-filters and fix several issues, and improve code design. This 
-includes removal of unnecessary tracking of VF and Netdev filters, 
-as well as removal of a faulty debugfs command. Additionally he 
-provides patches to fix an issue with PTP Rx timestamps, updating 
-the logic for handling timestamps on discarded frames.
+A future patch will be modifying these functions and making a call to
+a static function which currently is defined after these functions. Move
+them in a separate patch to ease review and ensure the moved code is
+correct.
 
- drivers/net/ethernet/intel/i40e/i40e.h             |  50 +-
- drivers/net/ethernet/intel/i40e/i40e_debugfs.c     |  92 +-
- drivers/net/ethernet/intel/i40e/i40e_fcoe.c        |  12 +-
- drivers/net/ethernet/intel/i40e/i40e_main.c        | 949 +++++++++++----------
- drivers/net/ethernet/intel/i40e/i40e_ptp.c         | 137 +--
- drivers/net/ethernet/intel/i40e/i40e_txrx.c        |   9 +-
- drivers/net/ethernet/intel/i40e/i40e_txrx.h        |   2 -
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  57 +-
- drivers/net/ethernet/intel/i40evf/i40evf_main.c    |   8 +-
- 9 files changed, 669 insertions(+), 647 deletions(-)
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Change-ID: I2ca7fd4e10c0c07ed2291db1ea41bf5987fc6474
+---
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 113 ++++++++++++++--------------
+ 1 file changed, 56 insertions(+), 57 deletions(-)
 
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index eb05ca8..5908f7d 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -1208,63 +1208,6 @@ bool i40e_is_vsi_in_vlan(struct i40e_vsi *vsi)
+ }
+ 
+ /**
+- * i40e_put_mac_in_vlan - Make macvlan filters from macaddrs and vlans
+- * @vsi: the VSI to be searched
+- * @macaddr: the mac address to be filtered
+- *
+- * Goes through all the macvlan filters and adds a
+- * macvlan filter for each unique vlan that already exists
+- *
+- * Returns first filter found on success, else NULL
+- **/
+-struct i40e_mac_filter *i40e_put_mac_in_vlan(struct i40e_vsi *vsi,
+-					     const u8 *macaddr)
+-{
+-	struct i40e_mac_filter *f;
+-
+-	list_for_each_entry(f, &vsi->mac_filter_list, list) {
+-		if (vsi->info.pvid)
+-			f->vlan = le16_to_cpu(vsi->info.pvid);
+-		if (!i40e_find_filter(vsi, macaddr, f->vlan)) {
+-			if (!i40e_add_filter(vsi, macaddr, f->vlan))
+-				return NULL;
+-		}
+-	}
+-
+-	return list_first_entry_or_null(&vsi->mac_filter_list,
+-					struct i40e_mac_filter, list);
+-}
+-
+-/**
+- * i40e_del_mac_all_vlan - Remove a MAC filter from all VLANS
+- * @vsi: the VSI to be searched
+- * @macaddr: the mac address to be removed
+- *
+- * Removes a given MAC address from a VSI, regardless of VLAN
+- *
+- * Returns 0 for success, or error
+- **/
+-int i40e_del_mac_all_vlan(struct i40e_vsi *vsi, const u8 *macaddr)
+-{
+-	struct i40e_mac_filter *f = NULL;
+-	int changed = 0;
+-
+-	WARN(!spin_is_locked(&vsi->mac_filter_list_lock),
+-	     "Missing mac_filter_list_lock\n");
+-	list_for_each_entry(f, &vsi->mac_filter_list, list) {
+-		if ((ether_addr_equal(macaddr, f->macaddr))) {
+-			f->state = I40E_FILTER_REMOVE;
+-		}
+-	}
+-	if (changed) {
+-		vsi->flags |= I40E_VSI_FLAG_FILTER_CHANGED;
+-		vsi->back->flags |= I40E_FLAG_FILTER_SYNC;
+-		return 0;
+-	}
+-	return -ENOENT;
+-}
+-
+-/**
+  * i40e_add_filter - Add a mac/vlan filter to the VSI
+  * @vsi: the VSI to be searched
+  * @macaddr: the MAC address
+@@ -1365,6 +1308,62 @@ void i40e_del_filter(struct i40e_vsi *vsi, const u8 *macaddr, s16 vlan)
+ }
+ 
+ /**
++ * i40e_put_mac_in_vlan - Make macvlan filters from macaddrs and vlans
++ * @vsi: the VSI to be searched
++ * @macaddr: the mac address to be filtered
++ *
++ * Goes through all the macvlan filters and adds a
++ * macvlan filter for each unique vlan that already exists
++ *
++ * Returns first filter found on success, else NULL
++ **/
++struct i40e_mac_filter *i40e_put_mac_in_vlan(struct i40e_vsi *vsi,
++					     const u8 *macaddr)
++{
++	struct i40e_mac_filter *f;
++
++	list_for_each_entry(f, &vsi->mac_filter_list, list) {
++		if (vsi->info.pvid)
++			f->vlan = le16_to_cpu(vsi->info.pvid);
++		if (!i40e_find_filter(vsi, macaddr, f->vlan)) {
++			if (!i40e_add_filter(vsi, macaddr, f->vlan))
++				return NULL;
++		}
++	}
++
++	return list_first_entry_or_null(&vsi->mac_filter_list,
++					struct i40e_mac_filter, list);
++}
++
++/**
++ * i40e_del_mac_all_vlan - Remove a MAC filter from all VLANS
++ * @vsi: the VSI to be searched
++ * @macaddr: the mac address to be removed
++ *
++ * Removes a given MAC address from a VSI, regardless of VLAN
++ *
++ * Returns 0 for success, or error
++ **/
++int i40e_del_mac_all_vlan(struct i40e_vsi *vsi, const u8 *macaddr)
++{
++	struct i40e_mac_filter *f = NULL;
++	int changed = 0;
++
++	WARN(!spin_is_locked(&vsi->mac_filter_list_lock),
++	     "Missing mac_filter_list_lock\n");
++	list_for_each_entry(f, &vsi->mac_filter_list, list) {
++		if (ether_addr_equal(macaddr, f->macaddr))
++			f->state = I40E_FILTER_REMOVE;
++	}
++	if (changed) {
++		vsi->flags |= I40E_VSI_FLAG_FILTER_CHANGED;
++		vsi->back->flags |= I40E_FLAG_FILTER_SYNC;
++		return 0;
++	}
++	return -ENOENT;
++}
++
++/**
+  * i40e_set_mac - NDO callback to set mac address
+  * @netdev: network interface device structure
+  * @p: pointer to an address structure
 -- 
 2.4.11
 
