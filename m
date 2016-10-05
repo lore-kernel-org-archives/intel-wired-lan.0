@@ -1,10 +1,10 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Wed,  5 Oct 2016 09:30:35 -0700
-Subject: [Intel-wired-lan] [next PATCH S49-V2 05/15] i40e: When searching
-	all MAC/VLAN filters, ignore removed filters
+Date: Wed,  5 Oct 2016 09:30:42 -0700
+Subject: [Intel-wired-lan] [next PATCH S49-V2 12/15] i40e: correct check for
+	reading TSYNINDX from the receive descriptor
 In-Reply-To: <1475685046-16900-1-git-send-email-bimmy.pujari@intel.com>
 References: <1475685046-16900-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1475685046-16900-6-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1475685046-16900-13-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,81 +13,49 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-When adding new MAC address filters, the driver determines if it should
-behave in VLAN mode (where all MAC addresses get assigned to every
-existing VLAN) or in non-VLAN mode where MAC addresses get assigned the
-VLAN_ANY identifier. Under some circumstances it is possible that a VLAN
-has been marked for removal (such that all filters of that VLAN are set
-to I40E_FILTER_REMOVE), and a subsequent call to i40e_put_mac_in_vlan
-may occur prior to the driver subtask that syncs filters to the
-hardware.
+When hardware has taken a timestamp for a received packet, it indicates
+which RXTIME register the timestamp was placed in by some bits in the
+receive descriptor. It uses 3 bits, one to indicate if the descriptor
+index is valid (ie: there was a timestamp) and 2 bits to indicate which
+of the 4 registers to read. However, the driver currently does not check
+the TSYNVALID bit and only checks the index. It assumes a zero index
+means no timestamp, and a non zero index means a timestamp occurred.
+While this appears to be true, it prevents ever reading a timestamp in
+RXTIME[0], and causes the first timestamp the device captures to be
+ignored.
 
-In this case, we may add filters to the new removed VLAN, even though it
-should have been removed. This is most obvious when first adding a new
-VLAN. We will delete all filters which are in I40E_VLAN_ANY (-1) and
-then re-add them as in VLAN 0 (untagged). Then before we sync filters,
-we will add new MAC address filter, which will be added to every VLAN
-that exists. Unfortunately, this will include I40E_VLAN_ANY, so we will
-end up incorrectly adding filters to the -1 VLAN. This can be fixed by
-simply skipping all filters which are marked for removal.
+Fix this by using the TSYNVALID bit correctly as the true indicator of
+whether the packet has an associated timestamp.
 
-A similar check is not necessary in i40e_del_mac_all_vlan, since we are
-deleting, and any filter which we find already marked for removal would
-simply be deleted again, which doesn't cause any issues.
+Also rename the variable rsyn to tsyn as this is more descriptive and
+matches the register names.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Change-Id: I7962154013ce02fe950584690aeeb3ed853d0086
+Change-ID: I4437e8f3a3df2c2ddb458b0fb61420f3dafc4c12
 ---
-Testing-hints:
-  1. Load driver and bring link up
-    modprobe i40e
-    ip link set enp130s0 up
-  2. Add a VLAN
-    ip link add link enp130s0 enp130s0.4000 type vlan id 4000
-    ip link set enp130s0.4000 up
-  3. Dump filters:
-    echo "dump filters" > /sys/kernel/debug/i40e/0000:82:00.0/command
-    dmesg | tail -n40
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-  Note that without this patch you should see some filters repeated with
-  both VLAN 0 and VLAN -1, when we expect only seeing filters on VLAN 0.
-  It may take multiple steps to reproduce as it might be a race
-  condition, though I did not have trouble reproducing the issue.
-
- drivers/net/ethernet/intel/i40e/i40e_main.c | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 9a18c67..d365652 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1328,6 +1328,8 @@ struct i40e_mac_filter *i40e_put_mac_in_vlan(struct i40e_vsi *vsi,
- 				       le16_to_cpu(vsi->info.pvid));
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index daade4fe..c9eb6b8 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -1410,11 +1410,12 @@ void i40e_process_skb_fields(struct i40e_ring *rx_ring,
+ 	u64 qword = le64_to_cpu(rx_desc->wb.qword1.status_error_len);
+ 	u32 rx_status = (qword & I40E_RXD_QW1_STATUS_MASK) >>
+ 			I40E_RXD_QW1_STATUS_SHIFT;
+-	u32 rsyn = (rx_status & I40E_RXD_QW1_STATUS_TSYNINDX_MASK) >>
++	u32 tsynvalid = rx_status & I40E_RXD_QW1_STATUS_TSYNVALID_MASK;
++	u32 tsyn = (rx_status & I40E_RXD_QW1_STATUS_TSYNINDX_MASK) >>
+ 		   I40E_RXD_QW1_STATUS_TSYNINDX_SHIFT;
  
- 	list_for_each_entry(f, &vsi->mac_filter_list, list) {
-+		if (f->state == I40E_FILTER_REMOVE)
-+			continue;
- 		add = i40e_add_filter(vsi, macaddr, f->vlan);
- 		if (!add)
- 			return NULL;
-@@ -2264,6 +2266,8 @@ int i40e_vsi_add_vlan(struct i40e_vsi *vsi, s16 vid)
+-	if (unlikely(rsyn)) {
+-		i40e_ptp_rx_hwtstamp(rx_ring->vsi->back, skb, rsyn);
++	if (unlikely(tsynvalid)) {
++		i40e_ptp_rx_hwtstamp(rx_ring->vsi->back, skb, tsyn);
+ 		rx_ring->last_rx_timestamp = jiffies;
  	}
  
- 	list_for_each_entry_safe(f, ftmp, &vsi->mac_filter_list, list) {
-+		if (f->state == I40E_FILTER_REMOVE)
-+			continue;
- 		add_f = i40e_add_filter(vsi, f->macaddr, vid);
- 		if (!add_f) {
- 			dev_info(&vsi->back->pdev->dev,
-@@ -2298,6 +2302,8 @@ int i40e_vsi_add_vlan(struct i40e_vsi *vsi, s16 vid)
- 	/* Do not assume that I40E_VLAN_ANY should be reset to VLAN 0 */
- 	if (vid > 0 && !vsi->info.pvid) {
- 		list_for_each_entry_safe(f, ftmp, &vsi->mac_filter_list, list) {
-+			if (f->state == I40E_FILTER_REMOVE)
-+				continue;
- 			if (!i40e_find_filter(vsi, f->macaddr, I40E_VLAN_ANY))
- 				continue;
- 			i40e_del_filter(vsi, f->macaddr, I40E_VLAN_ANY);
 -- 
 2.4.11
 
