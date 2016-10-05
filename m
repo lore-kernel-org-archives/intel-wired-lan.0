@@ -1,109 +1,84 @@
-From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Wed,  5 Oct 2016 09:30:38 -0700
-Subject: [Intel-wired-lan] [next PATCH S49-V2 08/15] i40e: properly cleanup
-	on allocation failure in i40e_sync_vsi_filters
-In-Reply-To: <1475685046-16900-1-git-send-email-bimmy.pujari@intel.com>
-References: <1475685046-16900-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1475685046-16900-9-git-send-email-bimmy.pujari@intel.com>
+From: Julia Cartwright <julia@ni.com>
+Date: Wed, 5 Oct 2016 10:59:59 -0500
+Subject: [Intel-wired-lan] Kernel 4.6.7-rt13: Intel Ethernet driver igb
+ causes huge latencies in cyclictest
+In-Reply-To: <584755c2766e4b94a604ece16760fe14@FE-MBX1012.de.bosch.com>
+References: <c91ce66d47ff470a94e10e2347eafe4a@FE-MBX1012.de.bosch.com>
+ <ac1207c12ad34059956c2729ccf31e97@FE-MBX1012.de.bosch.com>
+ <20160923123224.odybv2uos6tot6it@linutronix.de>
+ <ae35c863cdf246ac8da94277418921ef@FE-MBX1012.de.bosch.com>
+ <20160923144140.5tkzeymamrb5qnsv@linutronix.de>
+ <a5ea146cf078457ab001131ca0886b0b@FE-MBX1012.de.bosch.com>
+ <20160928194519.GA32423@jcartwri.amer.corp.natinst.com>
+ <487032ca81f84e70bdacc39a024eff5e@FE-MBX1012.de.bosch.com>
+ <20161004193445.GF10625@jcartwri.amer.corp.natinst.com>
+ <584755c2766e4b94a604ece16760fe14@FE-MBX1012.de.bosch.com>
+Message-ID: <20161005155959.GH10625@jcartwri.amer.corp.natinst.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+On Wed, Oct 05, 2016 at 07:02:21AM +0000, Koehrer Mathias (ETAS/ESW5) wrote:
+> Hi Julia,
+> 
+> > > In the meanwhile I have detected another finding which might be relevant:
+> > >
+> > > With the 3.18 kernel the igb driver comes with two interrupts per
+> > > NIC (e.g. eth2 and eth2-TxRx0) with the 4.6. kernel the igb driver
+> > > comes with 9 (!) interrupts per NIC: eth2, and eth2-TxRx-0,
+> > > eth2-TxRx-1, ... , eth2-TxRx-7.
+> > >
+> > > As I have used initially the same kernel configuration from 3.18 also
+> > > for the 4.6. kernel I wonder where this comes from and if there is any
+> > > kernel option I may use to disable these many interrupts and to reduce
+> > > it to 2 again.
+> > 
+> > If it's all of these interrupts that are firing and being handled at the same time, that
+> > can account for the latencies you were seeing.  As I suggested before, having a
+> > trace with the sched_wakeup event enabled can help confirm that it's these
+> > interrupts causing problems.
+> > 
+> > If it is true, then the question is: why is the device triggering all of these interrupts all
+> > at once?  Is that expected?  These are questions for netdev folks, I think.
+> > 
+> >    Julia
+> 
+> OK - I ran again the cyclictest. This time I used the -C option:
+> # cyclictest -a -i 100 -m -n -p 80 -t 1 -b 21 -C
+> 
+> And the last output lines of the trace are:
+> cyclicte-5887    0d...2.. 1504647266us!: sched_switch: prev_comm=cyclictest prev_pid=5887 prev_prio=19 prev_state=S ==> next_comm=kworker/0:0 next_pid=5 next_prio=120
+> kworker/-5       0dN.h2.. 1504647372us : sched_wakeup: comm=cyclictest pid=5887 prio=19 target_cpu=000
+> kworker/-5       0dN.h3.. 1504647374us : sched_wakeup: comm=irq/54-eth2-TxR pid=5883 prio=49 target_cpu=000
+> kworker/-5       0dN.h3.. 1504647375us : sched_wakeup: comm=irq/53-eth2-TxR pid=5882 prio=49 target_cpu=000
+> kworker/-5       0dN.h3.. 1504647377us : sched_wakeup: comm=irq/52-eth2-TxR pid=5881 prio=49 target_cpu=000
+> kworker/-5       0dN.h3.. 1504647378us : sched_wakeup: comm=irq/51-eth2-TxR pid=5880 prio=49 target_cpu=000
+> kworker/-5       0dN.h3.. 1504647380us : sched_wakeup: comm=irq/50-eth2-TxR pid=5879 prio=49 target_cpu=000
+> kworker/-5       0dN.h3.. 1504647381us : sched_wakeup: comm=irq/49-eth2-TxR pid=5878 prio=49 target_cpu=000
+> kworker/-5       0dN.h3.. 1504647382us : sched_wakeup: comm=irq/48-eth2-TxR pid=5877 prio=49 target_cpu=000
+> kworker/-5       0dN.h3.. 1504647383us : sched_wakeup: comm=irq/47-eth2-TxR pid=5876 prio=49 target_cpu=000
+> kworker/-5       0d...2.. 1504647384us : sched_switch: prev_comm=kworker/0:0 prev_pid=5 prev_prio=120 prev_state=R+ ==> next_comm=cyclictest next_pid=5887 next_prio=19
+> cyclicte-5887    0.....11 1504647389us : tracing_mark_write: hit latency threshold (28 > 21)
+> 
+> The attached trace-extract.gz shows some more lines.
+> It actually looks to me as if the the many irq threads from igb are causing the issue.
 
-Currently, we fail to correctly restore filters on the temporary add
-list when we fail to allocate memory either for deletion or addition.
-Replace calls to "goto out;" with calls to a new location that correctly
-handles memory allocation failures.
+Yes, I think so.
 
-Note that it is safe for us to call i40e_undo_filter_entries on the
-tmp_del_list even after we've deleted filters because at this point it
-will be empty, so we don't need to separate the logic for add and
-delete failure.
+Although, to be clear, it isn't the fact that there exists 8 threads,
+it's that the device is firing all 8 interrupts at the same time.  The
+time spent in hardirq context just waking up all 8 of those threads (and
+the cyclictest wakeup) is enough to cause your regression.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Change-Id: Iee107fd219c6e03e2fd9645c2debf8e8384a8521
----
- drivers/net/ethernet/intel/i40e/i40e_main.c | 39 ++++++++++++++++-------------
- 1 file changed, 22 insertions(+), 17 deletions(-)
+netdev/igb folks-
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index cce1e18..2071727 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -1683,15 +1683,16 @@ static void i40e_set_rx_mode(struct net_device *netdev)
- }
- 
- /**
-- * i40e_undo_del_filter_entries - Undo the changes made to MAC filter entries
-- * @vsi: pointer to vsi struct
-+ * i40e_undo_filter_entries - Undo the changes made to MAC filter entries
-+ * @vsi: Pointer to vsi struct
-  * @from: Pointer to list which contains MAC filter entries - changes to
-  *        those entries needs to be undone.
-  *
-- * MAC filter entries from list were slated to be removed from device.
-+ * MAC filter entries from list were slated to be sent to firmware, either for
-+ * addition or deletion.
-  **/
--static void i40e_undo_del_filter_entries(struct i40e_vsi *vsi,
--					 struct hlist_head *from)
-+static void i40e_undo_filter_entries(struct i40e_vsi *vsi,
-+				     struct hlist_head *from)
- {
- 	struct i40e_mac_filter *f;
- 	struct hlist_node *h;
-@@ -1840,14 +1841,8 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 		list_size = filter_list_len *
- 			    sizeof(struct i40e_aqc_remove_macvlan_element_data);
- 		del_list = kzalloc(list_size, GFP_ATOMIC);
--		if (!del_list) {
--			/* Undo VSI's MAC filter entry element updates */
--			spin_lock_bh(&vsi->mac_filter_hash_lock);
--			i40e_undo_del_filter_entries(vsi, &tmp_del_list);
--			spin_unlock_bh(&vsi->mac_filter_hash_lock);
--			retval = -ENOMEM;
--			goto out;
--		}
-+		if (!del_list)
-+			goto err_no_memory;
- 
- 		hlist_for_each_entry_safe(f, h, &tmp_del_list, hlist) {
- 			cmd_flags = 0;
-@@ -1924,10 +1919,9 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
- 		list_size = filter_list_len *
- 			       sizeof(struct i40e_aqc_add_macvlan_element_data);
- 		add_list = kzalloc(list_size, GFP_ATOMIC);
--		if (!add_list) {
--			retval = -ENOMEM;
--			goto out;
--		}
-+		if (!add_list)
-+			goto err_no_memory;
-+
- 		num_add = 0;
- 		hlist_for_each_entry(f, &tmp_add_list, hlist) {
- 			if (test_bit(__I40E_FILTER_OVERFLOW_PROMISC,
-@@ -2140,6 +2134,17 @@ out:
- 
- 	clear_bit(__I40E_CONFIG_BUSY, &vsi->state);
- 	return retval;
-+
-+err_no_memory:
-+	/* Restore elements on the temporary add and delete lists */
-+	spin_lock_bh(&vsi->mac_filter_hash_lock);
-+	i40e_undo_filter_entries(vsi, &tmp_del_list);
-+	i40e_undo_filter_entries(vsi, &tmp_add_list);
-+	spin_unlock_bh(&vsi->mac_filter_hash_lock);
-+
-+	vsi->flags |= I40E_VSI_FLAG_FILTER_CHANGED;
-+	clear_bit(__I40E_CONFIG_BUSY, &vsi->state);
-+	return -ENOMEM;
- }
- 
- /**
--- 
-2.4.11
+Under what conditions should it be expected that the i350 trigger all of
+the TxRx interrupts simultaneously?  Any ideas here?
 
+See the start of this thread here:
+
+  http://lkml.kernel.org/r/d648628329bc446fa63b5e19d4d3fb56 at FE-MBX1012.de.bosch.com
+
+   Julia
