@@ -1,10 +1,10 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Wed,  5 Oct 2016 09:30:45 -0700
-Subject: [Intel-wired-lan] [next PATCH S49-V2 15/15] i40evf: avoid an extra
-	msleep while
+Date: Wed,  5 Oct 2016 09:30:38 -0700
+Subject: [Intel-wired-lan] [next PATCH S49-V2 08/15] i40e: properly cleanup
+	on allocation failure in i40e_sync_vsi_filters
 In-Reply-To: <1475685046-16900-1-git-send-email-bimmy.pujari@intel.com>
 References: <1475685046-16900-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1475685046-16900-16-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1475685046-16900-9-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,42 +13,97 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Jacob Keller <jacob.e.keller@intel.com>
 
-Remove the second call to msleep outside the loop, and move the msleep
-within the loop as the first step. This guarantees that a single loop
-will wait the minimum time first, and then after the reset finishes we
-no longer need an extra msleep.
+Currently, we fail to correctly restore filters on the temporary add
+list when we fail to allocate memory either for deletion or addition.
+Replace calls to "goto out;" with calls to a new location that correctly
+handles memory allocation failures.
+
+Note that it is safe for us to call i40e_undo_filter_entries on the
+tmp_del_list even after we've deleted filters because at this point it
+will be empty, so we don't need to separate the logic for add and
+delete failure.
 
 Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Change-ID: Ib2086f0a142402b614f67846bc091754203a0b9a
+Change-Id: Iee107fd219c6e03e2fd9645c2debf8e8384a8521
 ---
- drivers/net/ethernet/intel/i40evf/i40evf_main.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_main.c | 39 ++++++++++++++++-------------
+ 1 file changed, 22 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40evf/i40evf_main.c b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-index 2099517..8b37556 100644
---- a/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40evf_main.c
-@@ -1746,15 +1746,17 @@ static void i40evf_reset_task(struct work_struct *work)
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index cce1e18..2071727 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -1683,15 +1683,16 @@ static void i40e_set_rx_mode(struct net_device *netdev)
+ }
  
- 	/* wait until the reset is complete and the PF is responding to us */
- 	for (i = 0; i < I40EVF_RESET_WAIT_COUNT; i++) {
-+		/* sleep first to make sure a minimum wait time is met */
-+		msleep(I40EVF_RESET_WAIT_MS);
+ /**
+- * i40e_undo_del_filter_entries - Undo the changes made to MAC filter entries
+- * @vsi: pointer to vsi struct
++ * i40e_undo_filter_entries - Undo the changes made to MAC filter entries
++ * @vsi: Pointer to vsi struct
+  * @from: Pointer to list which contains MAC filter entries - changes to
+  *        those entries needs to be undone.
+  *
+- * MAC filter entries from list were slated to be removed from device.
++ * MAC filter entries from list were slated to be sent to firmware, either for
++ * addition or deletion.
+  **/
+-static void i40e_undo_del_filter_entries(struct i40e_vsi *vsi,
+-					 struct hlist_head *from)
++static void i40e_undo_filter_entries(struct i40e_vsi *vsi,
++				     struct hlist_head *from)
+ {
+ 	struct i40e_mac_filter *f;
+ 	struct hlist_node *h;
+@@ -1840,14 +1841,8 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
+ 		list_size = filter_list_len *
+ 			    sizeof(struct i40e_aqc_remove_macvlan_element_data);
+ 		del_list = kzalloc(list_size, GFP_ATOMIC);
+-		if (!del_list) {
+-			/* Undo VSI's MAC filter entry element updates */
+-			spin_lock_bh(&vsi->mac_filter_hash_lock);
+-			i40e_undo_del_filter_entries(vsi, &tmp_del_list);
+-			spin_unlock_bh(&vsi->mac_filter_hash_lock);
+-			retval = -ENOMEM;
+-			goto out;
+-		}
++		if (!del_list)
++			goto err_no_memory;
+ 
+ 		hlist_for_each_entry_safe(f, h, &tmp_del_list, hlist) {
+ 			cmd_flags = 0;
+@@ -1924,10 +1919,9 @@ int i40e_sync_vsi_filters(struct i40e_vsi *vsi)
+ 		list_size = filter_list_len *
+ 			       sizeof(struct i40e_aqc_add_macvlan_element_data);
+ 		add_list = kzalloc(list_size, GFP_ATOMIC);
+-		if (!add_list) {
+-			retval = -ENOMEM;
+-			goto out;
+-		}
++		if (!add_list)
++			goto err_no_memory;
 +
- 		reg_val = rd32(hw, I40E_VFGEN_RSTAT) &
- 			  I40E_VFGEN_RSTAT_VFR_STATE_MASK;
- 		if (reg_val == I40E_VFR_VFACTIVE)
- 			break;
--		msleep(I40EVF_RESET_WAIT_MS);
- 	}
+ 		num_add = 0;
+ 		hlist_for_each_entry(f, &tmp_add_list, hlist) {
+ 			if (test_bit(__I40E_FILTER_OVERFLOW_PROMISC,
+@@ -2140,6 +2134,17 @@ out:
+ 
+ 	clear_bit(__I40E_CONFIG_BUSY, &vsi->state);
+ 	return retval;
 +
- 	pci_set_master(adapter->pdev);
--	/* extra wait to make sure minimum wait is met */
--	msleep(I40EVF_RESET_WAIT_MS);
++err_no_memory:
++	/* Restore elements on the temporary add and delete lists */
++	spin_lock_bh(&vsi->mac_filter_hash_lock);
++	i40e_undo_filter_entries(vsi, &tmp_del_list);
++	i40e_undo_filter_entries(vsi, &tmp_add_list);
++	spin_unlock_bh(&vsi->mac_filter_hash_lock);
 +
- 	if (i == I40EVF_RESET_WAIT_COUNT) {
- 		struct i40evf_mac_filter *ftmp;
- 		struct i40evf_vlan_filter *fv, *fvtmp;
++	vsi->flags |= I40E_VSI_FLAG_FILTER_CHANGED;
++	clear_bit(__I40E_CONFIG_BUSY, &vsi->state);
++	return -ENOMEM;
+ }
+ 
+ /**
 -- 
 2.4.11
 
