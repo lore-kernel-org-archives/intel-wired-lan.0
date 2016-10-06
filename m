@@ -1,138 +1,44 @@
-From: Henri Roosen <henri.roosen@ginzinger.com>
-Date: Thu, 6 Oct 2016 12:12:12 +0200
-Subject: [Intel-wired-lan] Kernel 4.6.7-rt13: Intel Ethernet driver igb
- causes huge latencies in cyclictest
-In-Reply-To: <13c3cd3ffee4490fb22b8de383e51361@FE-MBX1012.de.bosch.com>
-References: <c91ce66d47ff470a94e10e2347eafe4a@FE-MBX1012.de.bosch.com>
- <ac1207c12ad34059956c2729ccf31e97@FE-MBX1012.de.bosch.com>
- <20160923123224.odybv2uos6tot6it@linutronix.de>
- <ae35c863cdf246ac8da94277418921ef@FE-MBX1012.de.bosch.com>
- <20160923144140.5tkzeymamrb5qnsv@linutronix.de>
- <a5ea146cf078457ab001131ca0886b0b@FE-MBX1012.de.bosch.com>
- <20160928194519.GA32423@jcartwri.amer.corp.natinst.com>
- <487032ca81f84e70bdacc39a024eff5e@FE-MBX1012.de.bosch.com>
- <20161004193445.GF10625@jcartwri.amer.corp.natinst.com>
- <584755c2766e4b94a604ece16760fe14@FE-MBX1012.de.bosch.com>
- <20161005155959.GH10625@jcartwri.amer.corp.natinst.com>
- <13c3cd3ffee4490fb22b8de383e51361@FE-MBX1012.de.bosch.com>
-Message-ID: <ab4f2dd2-6227-8f5b-c175-2b80e8a1c08c@ginzinger.com>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Thu, 6 Oct 2016 20:31:08 +0000
+Subject: [Intel-wired-lan] [next PATCH S49-V2 07/15] i40e: store
+ MAC/VLAN	filters in a hash with the MAC Address as key
+In-Reply-To: <1475685046-16900-8-git-send-email-bimmy.pujari@intel.com>
+References: <1475685046-16900-1-git-send-email-bimmy.pujari@intel.com>
+ <1475685046-16900-8-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA0FAE0@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 10/06/2016 09:01 AM, Koehrer Mathias (ETAS/ESW5) wrote:
-> Hi all,
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Bimmy Pujari
+> Sent: Wednesday, October 05, 2016 9:31 AM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S49-V2 07/15] i40e: store MAC/VLAN
+> filters in a hash with the MAC Address as key
+> 
+> From: Jacob Keller <jacob.e.keller@intel.com>
+> 
+> Replace the mac_filter_list with a static size hash table of 8bits. The primary
+> advantage of this is a decrease in latency of operations related to searching
+> for specific MAC filters, including .set_rx_mode. Using a linked list resulted in
+> several locations which were O(n^2). Using a hash table should give us
+> latency growth closer to O(n*log(n)).
+> 
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Change-ID: I5330bd04053b880e670210933e35830b95948ebb
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e.h             |  24 ++-
+>  drivers/net/ethernet/intel/i40e/i40e_debugfs.c     |   4 +-
+>  drivers/net/ethernet/intel/i40e/i40e_fcoe.c        |   4 +-
+>  drivers/net/ethernet/intel/i40e/i40e_main.c        | 198 ++++++++++++--------
+> -
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c |  38 ++--
+>  5 files changed, 161 insertions(+), 107 deletions(-)
 
-Hi Mathias,
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
->>
->> Although, to be clear, it isn't the fact that there exists 8 threads, it's that the device is
->> firing all 8 interrupts at the same time.  The time spent in hardirq context just waking
->> up all 8 of those threads (and the cyclictest wakeup) is enough to cause your
->> regression.
->>
->> netdev/igb folks-
->>
->> Under what conditions should it be expected that the i350 trigger all of the TxRx
->> interrupts simultaneously?  Any ideas here?
->>
->> See the start of this thread here:
->>
->>   http://lkml.kernel.org/r/d648628329bc446fa63b5e19d4d3fb56 at FE-
->> MBX1012.de.bosch.com
->>
-> Greg recommended to use "ethtool -L eth2 combined 1" to reduce the number of queues.
-> I tried that. Now, I have actually only three irqs (eth2, eth2-rx-0, eth2-tx-0).
-> However the issue remains the same.
->
-> I ran the cyclictest again:
-> # cyclictest -a -i 105 -m -n -p 80 -t 1  -b 23 -C
-> (Note: When using 105us instead of 100us the long latencies seem to occur more often).
->
-> Here are the final lines of the kernel trace output:
->   <idle>-0       4d...2.. 1344661649us : sched_switch: prev_comm=swapper/4 prev_pid=0 prev_prio=120 prev_state=R ==> next_comm=rcuc/4 next_pid=56 next_prio=98
-> ktimerso-46      3d...2.. 1344661650us : sched_switch: prev_comm=ktimersoftd/3 prev_pid=46 prev_prio=98 prev_state=S ==> next_comm=swapper/3 next_pid=0 next_prio=120
-> ktimerso-24      1d...2.. 1344661650us : sched_switch: prev_comm=ktimersoftd/1 prev_pid=24 prev_prio=98 prev_state=S ==> next_comm=swapper/1 next_pid=0 next_prio=120
-> ktimerso-79      6d...2.. 1344661650us : sched_switch: prev_comm=ktimersoftd/6 prev_pid=79 prev_prio=98 prev_state=S ==> next_comm=swapper/6 next_pid=0 next_prio=120
-> ktimerso-35      2d...2.. 1344661650us : sched_switch: prev_comm=ktimersoftd/2 prev_pid=35 prev_prio=98 prev_state=S ==> next_comm=swapper/2 next_pid=0 next_prio=120
->   rcuc/5-67      5d...2.. 1344661650us : sched_switch: prev_comm=rcuc/5 prev_pid=67 prev_prio=98 prev_state=S ==> next_comm=ktimersoftd/5 next_pid=68 next_prio=98
->   rcuc/7-89      7d...2.. 1344661650us : sched_switch: prev_comm=rcuc/7 prev_pid=89 prev_prio=98 prev_state=S ==> next_comm=ktimersoftd/7 next_pid=90 next_prio=98
-> ktimerso-4       0d...211 1344661650us : sched_wakeup: comm=rcu_preempt pid=8 prio=98 target_cpu=000
->   rcuc/4-56      4d...2.. 1344661651us : sched_switch: prev_comm=rcuc/4 prev_pid=56 prev_prio=98 prev_state=S ==> next_comm=ktimersoftd/4 next_pid=57 next_prio=98
-> ktimerso-4       0d...2.. 1344661651us : sched_switch: prev_comm=ktimersoftd/0 prev_pid=4 prev_prio=98 prev_state=S ==> next_comm=rcu_preempt next_pid=8 next_prio=98
-> ktimerso-90      7d...2.. 1344661651us : sched_switch: prev_comm=ktimersoftd/7 prev_pid=90 prev_prio=98 prev_state=S ==> next_comm=swapper/7 next_pid=0 next_prio=120
-> ktimerso-68      5d...2.. 1344661651us : sched_switch: prev_comm=ktimersoftd/5 prev_pid=68 prev_prio=98 prev_state=S ==> next_comm=swapper/5 next_pid=0 next_prio=120
-> rcu_pree-8       0d...3.. 1344661652us : sched_wakeup: comm=rcuop/0 pid=10 prio=120 target_cpu=000
-> ktimerso-57      4d...2.. 1344661652us : sched_switch: prev_comm=ktimersoftd/4 prev_pid=57 prev_prio=98 prev_state=S ==> next_comm=swapper/4 next_pid=0 next_prio=120
-> rcu_pree-8       0d...2.. 1344661653us+: sched_switch: prev_comm=rcu_preempt prev_pid=8 prev_prio=98 prev_state=S ==> next_comm=kworker/0:0 next_pid=5 next_prio=120
-> kworker/-5       0dN.h2.. 1344661741us : sched_wakeup: comm=cyclictest pid=6314 prio=19 target_cpu=000
-> kworker/-5       0d...2.. 1344661742us : sched_switch: prev_comm=kworker/0:0 prev_pid=5 prev_prio=120 prev_state=R+ ==> next_comm=cyclictest next_pid=6314 next_prio=19
-> cyclicte-6314    0d...2.. 1344661743us : sched_switch: prev_comm=cyclictest prev_pid=6314 prev_prio=19 prev_state=S ==> next_comm=rcuop/0 next_pid=10 next_prio=120
->  rcuop/0-10      0d...2.. 1344661744us!: sched_switch: prev_comm=rcuop/0 prev_pid=10 prev_prio=120 prev_state=S ==> next_comm=kworker/0:0 next_pid=5 next_prio=120
-> kworker/-5       0dN.h2.. 1344661858us : sched_wakeup: comm=cyclictest pid=6314 prio=19 target_cpu=000
-> kworker/-5       0d...2.. 1344661859us : sched_switch: prev_comm=kworker/0:0 prev_pid=5 prev_prio=120 prev_state=R+ ==> next_comm=cyclictest next_pid=6314 next_prio=19
-> cyclicte-6314    0d...2.. 1344661860us!: sched_switch: prev_comm=cyclictest prev_pid=6314 prev_prio=19 prev_state=S ==> next_comm=kworker/0:0 next_pid=5 next_prio=120
-> kworker/-5       0dN.h2.. 1344661966us : sched_wakeup: comm=cyclictest pid=6314 prio=19 target_cpu=000
-> kworker/-5       0d...2.. 1344661966us : sched_switch: prev_comm=kworker/0:0 prev_pid=5 prev_prio=120 prev_state=R+ ==> next_comm=cyclictest next_pid=6314 next_prio=19
-> cyclicte-6314    0d...2.. 1344661967us+: sched_switch: prev_comm=cyclictest prev_pid=6314 prev_prio=19 prev_state=S ==> next_comm=kworker/0:0 next_pid=5 next_prio=120
-> kworker/-5       0dN.h2.. 1344662052us : sched_wakeup: comm=cyclictest pid=6314 prio=19 target_cpu=000
-> kworker/-5       0d...2.. 1344662053us : sched_switch: prev_comm=kworker/0:0 prev_pid=5 prev_prio=120 prev_state=R+ ==> next_comm=cyclictest next_pid=6314 next_prio=19
-> cyclicte-6314    0d...2.. 1344662054us!: sched_switch: prev_comm=cyclictest prev_pid=6314 prev_prio=19 prev_state=S ==> next_comm=kworker/0:0 next_pid=5 next_prio=120
-> kworker/-5       0dN.h2.. 1344662168us : sched_wakeup: comm=cyclictest pid=6314 prio=19 target_cpu=000
-> kworker/-5       0d...2.. 1344662168us : sched_switch: prev_comm=kworker/0:0 prev_pid=5 prev_prio=120 prev_state=R+ ==> next_comm=cyclictest next_pid=6314 next_prio=19
-> cyclicte-6314    0d...2.. 1344662169us+: sched_switch: prev_comm=cyclictest prev_pid=6314 prev_prio=19 prev_state=S ==> next_comm=kworker/0:0 next_pid=5 next_prio=120
-> kworker/-5       0dN.h2.. 1344662255us : sched_wakeup: comm=irq/48-eth2-tx- pid=6310 prio=49 target_cpu=000
-> kworker/-5       0dN.h3.. 1344662256us : sched_wakeup: comm=irq/47-eth2-rx- pid=6309 prio=49 target_cpu=000
-> kworker/-5       0d...2.. 1344662256us : sched_switch: prev_comm=kworker/0:0 prev_pid=5 prev_prio=120 prev_state=R+ ==> next_comm=irq/48-eth2-tx- next_pid=6310 next_prio=49
-> irq/48-e-6310    0d...2.. 1344662259us : sched_switch: prev_comm=irq/48-eth2-tx- prev_pid=6310 prev_prio=49 prev_state=S ==> next_comm=irq/47-eth2-rx- next_pid=6309 next_prio=49
-> irq/47-e-6309    0d...2.. 1344662260us+: sched_switch: prev_comm=irq/47-eth2-rx- prev_pid=6309 prev_prio=49 prev_state=S ==> next_comm=kworker/0:0 next_pid=5 next_prio=120
-> kworker/-5       0dN.h2.. 1344662300us : sched_wakeup: comm=cyclictest pid=6314 prio=19 target_cpu=000
-> kworker/-5       0d...2.. 1344662300us : sched_switch: prev_comm=kworker/0:0 prev_pid=5 prev_prio=120 prev_state=R+ ==> next_comm=cyclictest next_pid=6314 next_prio=19
-> cyclicte-6314    0.....11 1344662306us : tracing_mark_write: hit latency threshold (39 > 23)
->
-> Just before the long latency,  the irqs "48-eth2-tx" and "48-eth2-rx" are active.
-> When looking at the 4th line from the bottom, the time for irq/47 is 1344662260us, for the next line (kworker) it is 1344662300us.
-> Does this mean that the irq/47 took 40us for irq processing? Or is this a misinterpretation?
-
-That is a misinterpretation: at 1344662256us there is a sched_switch
-event to pid 6310 (irq/48-eth2-tx-). It completes (prev_state=S) at
-1344662259us when there is a sched_switch event to pid 6309
-(irq/47-eth2-rx-). That one completes at 1344662260us when there is a
-sched_switch event to pid 5. So the thread for irq/48 takes 3us and
-irq/47 takes 1us.
-
-If you'd blend in the irq events (irq_handler_entry, irq_handler_exit),
-you'll see the timer-irq between 1344662260us and 1344662300us (likely
-close to 1344662300us) waking up the cyclictest thread.
-
-Regards,
-     Henri
---
->
-> For more lines of the trace please see the attached trace-extract.gz.
->
-> Thanks for any feedback.
->
-> Regard
->
-> Mahias
->
->
->
->
->
->
-
-________________________________
-
-Ginzinger electronic systems GmbH
-Gewerbegebiet Pirath 16
-4952 Weng im Innkreis
-www.ginzinger.com
-
-Firmenbuchnummer: FN 364958d
-Firmenbuchgericht: Ried im Innkreis
-UID-Nr.: ATU66521089
 
