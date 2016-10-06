@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Thu, 6 Oct 2016 20:41:51 +0000
-Subject: [Intel-wired-lan] [next PATCH S49-V2 09/15] i40e: fix mac
- filters	when removing vlans
-In-Reply-To: <1475685046-16900-10-git-send-email-bimmy.pujari@intel.com>
+Date: Thu, 6 Oct 2016 20:43:14 +0000
+Subject: [Intel-wired-lan] [next PATCH S49-V2 10/15] i40e: avoid looping
+ to	check whether we're in vlan mode
+In-Reply-To: <1475685046-16900-11-git-send-email-bimmy.pujari@intel.com>
 References: <1475685046-16900-1-git-send-email-bimmy.pujari@intel.com>
- <1475685046-16900-10-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA0FAF3@ORSMSX104.amr.corp.intel.com>
+ <1475685046-16900-11-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA0FB03@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,36 +17,30 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Wednesday, October 05, 2016 9:31 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Brady, Alan <alan.brady@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH S49-V2 09/15] i40e: fix mac filters
-> when removing vlans
+> Subject: [Intel-wired-lan] [next PATCH S49-V2 10/15] i40e: avoid looping to
+> check whether we're in vlan mode
 > 
-> From: Alan Brady <alan.brady@intel.com>
+> From: Jacob Keller <jacob.e.keller@intel.com>
 > 
-> Currently there exists a bug where adding at least one VLAN and then
-> removing all VLANs leaves the mac filters for the VSI with an incorrect value
-> for 'vid' which indicates the mac filter's vlan status.
+> We determine that a vsi is in vlan_mode whenever it has any filters with a
+> vlan other than -1 (I40E_VLAN_ALL). The previous method of doing so was to
+> perform a loop whenever we needed the check. However, we can notice
+> that only place where filters are added (i40e_add_filter) can change the
+> condition from false to true, and the only place we can return to false is in
+> i40e_vsi_sync_filters_subtask. Thus, we can remove the loop and use a
+> boolean directly.
 > 
-> The current implementation for handling the removal of VLANs is wrong for a
-> couple reasons. The first is that when i40e_vsi_kill_vlan iterates through the
-> mac filters, it fails to account for the mac filter status; i.e. it's not accomdating
-> for filters that are about to be deleted. The second problem is that mac filters
-> can be deleted in other places (specifically i40e_set_rx_mode). Thus if it
-> occurs that all the vlan mac filters get deleted we need to switch out of vlan
-> mode, but the code path through i40e_vsi_kill_vlan has already been
-> executed and we're now stuck in vlan mode.
+> Doing this avoids looping over filters repeatedly especially while we're
+> already inside a loop over all the filters. This should reduce the latency of
+> filter operations throughout the driver.
 > 
-> This patch fixes the issue by removing the check from i40e_vsi_kill_vlan and
-> puts the check instead in i40e_sync_vsi_filters where we're guaranteed to
-> see all filter deletions and can properly detect when we need to switch out
-> of vlan mode.
-> 
-> Signed-off-by: Alan Brady <alan.brady@intel.com>
-> Change-ID: Ib38fe6034b356eee9a0e20b8a9eeed5ff2debcd9
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Change-ID: Iafde08df588da2a2ea666997d05e11fad8edc338
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 120 +++++++++++++++++----
-> -------
->  1 file changed, 72 insertions(+), 48 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e.h      |  1 +
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 48
+> ++++++++++++++++++++++-------
+>  2 files changed, 38 insertions(+), 11 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
