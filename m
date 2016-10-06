@@ -1,21 +1,21 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 06 Oct 2016 23:21:06 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:master] BUILD SUCCESS
- af70c1f92d3567035d2f73f39079459d58c706dc
-Message-ID: <57f66be2.YRp5uX321WaVmz//%fengguang.wu@intel.com>
+Date: Fri, 07 Oct 2016 00:00:09 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ 91e5782d859384f3ea9800fad115cb6a90391f40
+Message-ID: <57f67509./b3rWJrrguR3q90H%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  master
-af70c1f92d3567035d2f73f39079459d58c706dc  phy: micrel.c: Enable ksz9031 energy-detect power-down mode
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+91e5782d859384f3ea9800fad115cb6a90391f40  i40e: fix call of ndo_dflt_bridge_getlink()
 
-elapsed time: 841m
+elapsed time: 460m
 
 The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 134
+configs tested: 131
 
 parisc                        c3000_defconfig
 parisc                         b180_defconfig
@@ -23,20 +23,30 @@ parisc                              defconfig
 alpha                               defconfig
 parisc                            allnoconfig
 i386                     randconfig-a0-201640
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
 cris                 etrax-100lx_v2_defconfig
 blackfin                  TCM-BF537_defconfig
 blackfin            BF561-EZKIT-SMP_defconfig
 blackfin                BF533-EZKIT_defconfig
 blackfin                BF526-EZBRD_defconfig
-i386                               tinyconfig
-i386                             allyesconfig
+x86_64                           allmodconfig
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
 powerpc                             defconfig
 s390                        default_defconfig
 powerpc                       ppc64_defconfig
 powerpc                           allnoconfig
+i386                             allmodconfig
 x86_64               randconfig-x014-10030115
 x86_64               randconfig-x015-10030115
 x86_64               randconfig-x012-10030115
@@ -63,9 +73,6 @@ arm                                      arm5
 arm64                            alldefconfig
 arm                                        sh
 arm                                     arm67
-x86_64                            eywa-module
-x86_64                                   rhel
-x86_64                               rhel-7.2
 i386                   randconfig-s1-10030116
 i386                   randconfig-s0-10030116
 mn10300                     asb2364_defconfig
@@ -92,6 +99,7 @@ m32r                           usrv_defconfig
 m32r                     mappi3.smp_defconfig
 nios2                         10m50_defconfig
 h8300                    h8300h-sim_defconfig
+i386                               tinyconfig
 i386                 randconfig-x014-10030614
 i386                 randconfig-x016-10030614
 i386                 randconfig-x015-10030614
@@ -102,17 +110,12 @@ i386                 randconfig-x018-10030614
 i386                 randconfig-x017-10030614
 i386                 randconfig-x012-10030614
 i386                 randconfig-x010-10030614
+x86_64                                    lkp
+x86_64                                   rhel
 i386                   randconfig-n0-10030615
-arm                         at91_dt_defconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm64                               defconfig
-arm                        multi_v5_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm                          exynos_defconfig
-arm                        shmobile_defconfig
-arm                        multi_v7_defconfig
+ia64                              allnoconfig
+ia64                                defconfig
+ia64                             alldefconfig
 m68k                           sun3_defconfig
 m68k                          multi_defconfig
 m68k                       m5475evb_defconfig
@@ -120,7 +123,6 @@ sh                            titan_defconfig
 sh                          rsk7269_defconfig
 sh                  sh7785lcr_32bit_defconfig
 sh                                allnoconfig
-x86_64                           allmodconfig
 x86_64                 randconfig-x001-201640
 x86_64                 randconfig-x008-201640
 x86_64                 randconfig-x009-201640
@@ -131,12 +133,7 @@ x86_64                 randconfig-x007-201640
 x86_64                 randconfig-x002-201640
 x86_64                 randconfig-x006-201640
 x86_64                 randconfig-x004-201640
-ia64                              allnoconfig
-ia64                                defconfig
-ia64                             alldefconfig
-x86_64                                  kexec
 i386                     randconfig-r0-201640
-i386                             allmodconfig
 i386                   randconfig-x004-201640
 i386                   randconfig-x006-201640
 i386                   randconfig-x007-201640
