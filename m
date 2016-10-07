@@ -1,7 +1,7 @@
 From: Donald C Skidmore <donald.c.skidmore@intel.com>
-Date: Thu,  6 Oct 2016 19:36:42 -0400
-Subject: [Intel-wired-lan] [PATCH v3] ixgbe: Add X553 FW ALEF support
-Message-ID: <1475797002-23826-1-git-send-email-donald.c.skidmore@intel.com>
+Date: Thu,  6 Oct 2016 20:25:02 -0400
+Subject: [Intel-wired-lan] [PATCH v4] ixgbe: Add X553 FW ALEF support
+Message-ID: <1475799902-33734-1-git-send-email-donald.c.skidmore@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,26 +15,10 @@ the native SFI flow as it is no longer supported by FW.
 
 Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_common.c |   4 +
- drivers/net/ethernet/intel/ixgbe/ixgbe_type.h   |  16 ++
- drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c   | 237 +++++++++++++++++-------
- 3 files changed, 192 insertions(+), 65 deletions(-)
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |  16 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 239 +++++++++++++++++++-------
+ 2 files changed, 189 insertions(+), 66 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-index deac764..6166735 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
-@@ -2112,6 +2112,10 @@ s32 ixgbe_fc_enable_generic(struct ixgbe_hw *hw)
- 	u32 fcrtl, fcrth;
- 	int i;
- 
-+	/* Nothing to do if FC not supported */
-+	if (hw->mac.ops.fc_autoneg)
-+		return 0;
-+
- 	/* Validate the water mark configuration. */
- 	if (!hw->fc.pause_time)
- 		return IXGBE_ERR_INVALID_LINK_SETTINGS;
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
 index 998708c..312bffb 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
@@ -66,7 +50,7 @@ index 998708c..312bffb 100644
  #define IXGBE_KRM_PORT_CAR_GEN_CTRL_NELB_KRPCS		BIT(11)
  
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
-index 3796482..031a70e 100644
+index 3796482..57c9ceb 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
 @@ -1204,6 +1204,53 @@ static s32 ixgbe_setup_ixfi_x550em_x(struct ixgbe_hw *hw)
@@ -410,6 +394,15 @@ index 3796482..031a70e 100644
  
  	return status;
  }
+@@ -3215,7 +3322,7 @@ static struct ixgbe_mac_operations mac_ops_x550em_a = {
+ 	.acquire_swfw_sync	= ixgbe_acquire_swfw_sync_x550em_a,
+ 	.release_swfw_sync	= ixgbe_release_swfw_sync_x550em_a,
+ 	.setup_fc		= ixgbe_setup_fc_x550em,
+-	.fc_autoneg		= NULL, /* defined later */
++	.fc_autoneg		= ixgbe_fc_autoneg,
+ 	.read_iosf_sb_reg	= ixgbe_read_iosf_sb_reg_x550a,
+ 	.write_iosf_sb_reg	= ixgbe_write_iosf_sb_reg_x550a,
+ };
 -- 
 2.4.3
 
