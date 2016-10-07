@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 7 Oct 2016 19:28:39 +0000
-Subject: [Intel-wired-lan] [next PATCH S49-V2 05/15] i40e: When
- searching	all MAC/VLAN filters, ignore removed filters
-In-Reply-To: <1475685046-16900-6-git-send-email-bimmy.pujari@intel.com>
+Date: Fri, 7 Oct 2016 19:30:06 +0000
+Subject: [Intel-wired-lan] [next PATCH S49-V2 06/15] i40e:
+	implement	__i40e_del_filter and use where applicable
+In-Reply-To: <1475685046-16900-7-git-send-email-bimmy.pujari@intel.com>
 References: <1475685046-16900-1-git-send-email-bimmy.pujari@intel.com>
- <1475685046-16900-6-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA0FC82@ORSMSX104.amr.corp.intel.com>
+ <1475685046-16900-7-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA0FC92@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,53 +17,27 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Wednesday, October 05, 2016 9:31 AM
 > To: intel-wired-lan at lists.osuosl.org
-> Subject: [Intel-wired-lan] [next PATCH S49-V2 05/15] i40e: When searching all
-> MAC/VLAN filters, ignore removed filters
+> Subject: [Intel-wired-lan] [next PATCH S49-V2 06/15] i40e: implement
+> __i40e_del_filter and use where applicable
 > 
 > From: Jacob Keller <jacob.e.keller@intel.com>
 > 
-> When adding new MAC address filters, the driver determines if it should
-> behave in VLAN mode (where all MAC addresses get assigned to every
-> existing VLAN) or in non-VLAN mode where MAC addresses get assigned the
-> VLAN_ANY identifier. Under some circumstances it is possible that a VLAN
-> has been marked for removal (such that all filters of that VLAN are set to
-> I40E_FILTER_REMOVE), and a subsequent call to i40e_put_mac_in_vlan may
-> occur prior to the driver subtask that syncs filters to the hardware.
+> When inside a loop where we call i40e_del_filter we use an O(n^2) pattern
+> where i40e_del_filter calls i40e_find_filter for us. We can avoid this O(n^2)
+> logic by factoring a function, __i40e_del_filter() out from the i40e_del_filter
+> code. This allows us to re-use the delete logic where appropriate without
+> having to search for the filter twice.
 > 
-> In this case, we may add filters to the new removed VLAN, even though it
-> should have been removed. This is most obvious when first adding a new
-> VLAN. We will delete all filters which are in I40E_VLAN_ANY (-1) and then re-
-> add them as in VLAN 0 (untagged). Then before we sync filters, we will add
-> new MAC address filter, which will be added to every VLAN that exists.
-> Unfortunately, this will include I40E_VLAN_ANY, so we will end up incorrectly
-> adding filters to the -1 VLAN. This can be fixed by simply skipping all filters
-> which are marked for removal.
-> 
-> A similar check is not necessary in i40e_del_mac_all_vlan, since we are
-> deleting, and any filter which we find already marked for removal would
-> simply be deleted again, which doesn't cause any issues.
+> This new function benefits several functions including i40e_vsi_add_vlan,
+> i40e_vsi_kill_vlan, i40e_del_mac_vlan_all, and i40e_vsi_release.
 > 
 > Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-> Change-Id: I7962154013ce02fe950584690aeeb3ed853d0086
+> Change-ID: I75fabe0f53bf73f56b80d342e5fdcfcc28f4d3eb
 > ---
-> Testing-hints:
->   1. Load driver and bring link up
->     modprobe i40e
->     ip link set enp130s0 up
->   2. Add a VLAN
->     ip link add link enp130s0 enp130s0.4000 type vlan id 4000
->     ip link set enp130s0.4000 up
->   3. Dump filters:
->     echo "dump filters" > /sys/kernel/debug/i40e/0000:82:00.0/command
->     dmesg | tail -n40
-> 
->   Note that without this patch you should see some filters repeated with
->   both VLAN 0 and VLAN -1, when we expect only seeing filters on VLAN 0.
->   It may take multiple steps to reproduce as it might be a race
->   condition, though I did not have trouble reproducing the issue.
-> 
->  drivers/net/ethernet/intel/i40e/i40e_main.c | 6 ++++++
->  1 file changed, 6 insertions(+)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 92 ++++++++++++++++++----
+> -------
+>  1 file changed, 59 insertions(+), 33 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-Works as described
+
+
