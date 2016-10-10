@@ -1,8 +1,8 @@
 From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Mon, 10 Oct 2016 13:21:43 -0700
-Subject: [Intel-wired-lan] [PATCH v2] ixgbe: use link instead of I2C
+Date: Mon, 10 Oct 2016 14:54:03 -0700
+Subject: [Intel-wired-lan] [PATCH v3] ixgbe: use link instead of I2C
 	combined abstraction
-Message-ID: <20161010202143.26303.41174.stgit@localhost6.localdomain6>
+Message-ID: <20161010215403.27440.5694.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -28,26 +28,28 @@ out the combined I2C accesses were left in ixgbe_phy.c because
 they share some functions with other I2C methods.
 
 v2 - set hw->link.ops in probe.
-
+v3 - check ii->link_ops before setting it since we don't have it
+for all devices.
 
 Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
 ---
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    1 
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |    2 
  drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  |   68 +---------------
  drivers/net/ethernet/intel/ixgbe/ixgbe_phy.h  |   12 +--
  drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |   26 +++++-
  drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c |  106 ++++++++++++++++++++++---
- 5 files changed, 123 insertions(+), 90 deletions(-)
+ 5 files changed, 124 insertions(+), 90 deletions(-)
 
 diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index f6f18ca..95617be 100644
+index f6f18ca..5227b61 100644
 --- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
 +++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -9480,6 +9480,7 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+@@ -9480,6 +9480,8 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
  	hw->mac.ops   = *ii->mac_ops;
  	hw->mac.type  = ii->mac;
  	hw->mvals     = ii->mvals;
-+	hw->link.ops  = *ii->link_ops;
++	if (ii->link_ops)
++		hw->link.ops  = *ii->link_ops;
  
  	/* EEPROM */
  	hw->eeprom.ops = *ii->eeprom_ops;
