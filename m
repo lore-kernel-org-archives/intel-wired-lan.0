@@ -1,53 +1,38 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 31 Oct 2016 14:30:24 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbevf: handle race between close
- and suspend on shutdown
-In-Reply-To: <20161031200034.4729.18959.stgit@localhost6.localdomain6>
-References: <20161031200034.4729.18959.stgit@localhost6.localdomain6>
-Message-ID: <CAKgT0UckEekjeSPY3nt-nVJKG5RU0YCv9+09kEDYUoHckxmm9g@mail.gmail.com>
+From: David Miller <davem@davemloft.net>
+Date: Mon, 10 Oct 2016 05:01:25 -0400 (EDT)
+Subject: [Intel-wired-lan] igb driver can cause cache invalidation of
+	non-owned memory?
+In-Reply-To: <0b57cbe2-84f7-6c0a-904a-d166571234b5@cogentembedded.com>
+References: <0b57cbe2-84f7-6c0a-904a-d166571234b5@cogentembedded.com>
+Message-ID: <20161010.050125.1981283393312167625.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Oct 31, 2016 at 1:00 PM, Emil Tantilov <emil.s.tantilov@intel.com>
-wrote:
+From: Nikita Yushchenko <nikita.yoush@cogentembedded.com>
+Date: Mon, 10 Oct 2016 11:52:06 +0300
 
-> When an interface is part of a namespace it is possible that
-> ixgbevf_close() may be called while ixgbevf_suspend() is running
-> which ends up in a double free WARN and/or a BUG in free_msi_irqs()
->
-> This patch introduces a new adapter->state bit that will allow us
-> to handle this rate atomically. The idea is that ixgbevf_close() should
-> not run if ixgbevf_suspend is in session.
->
-> Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
->
+> With this scheme, page used for Rx is completely dma_map()ed at
+> allocation time, split into two buffers, and individual buffer is
+> sync_to_cpu()ed AND PASSED TO NETWORK STACK via skb_add_rx_frag() -
+> while driver driver still uses other buffer. Later, when driver decides
+> to no longer use this page, it will dma_unmap() it completely - which on
+> archs with non-coherent caches means cache invalidation. This cache
+> invalidation will include area that is already passed elsewhere.
 
-I'm pretty sure this isn't the correct fix for this.  You still have the
-two technically race against each other because the close could get caught
-behind the rtnl lock and then flow through trying to free the interrupt
-from it's side.  Also there are scenarios where this can leak interrupts
-and such since suspend could set the bit, close could run through take the
-rtnl lock, see the bit set so it doesn't free anything, then suspend
-resumes and netif_running returns false so you never free the ring
-resources.
+This should happen only if the device wrote into that piece of the
+memory which it absolutely should not.
 
-I think the correct fix for this is to move the rtnl_lock/unlock so that
-they are outside of the netif_device_detach() and
-ixgbevf_clear_interrupt_scheme() calls that are a part of ixgbevf_suspend.
-That way you shouldn't race with close.
+When the dma sync occurs, no dirty data should be in the caches for
+the portion of the page any more, and therefore nothing should be
+written back unless the device illegally wrote to that part of the
+page again.
 
-It also looks like there is a similar bug in
-the ixgbevf_queue_reset_subtask().  It should be taking the rtnl_lock
-before checking netif_running, and releasing it at the end of the
-function.  You could also add a call to netif_device_present to
-ixgbevf_close and if it returns false then just return since the rtnl_lock
-will guarantee that if it is set then suspend will have already freed the
-resources.
+If something is causing data to be written back even if the device
+doesn't write into that area again, it's a bug.
 
-- Alex
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20161031/ae8fc41e/attachment.html>
+And FWIW the swiommu code has this bug.  It should never (re-)copy
+back into the mapped area after a sync unless the device wrote into
+that area in the time between the sync and the unmap.
