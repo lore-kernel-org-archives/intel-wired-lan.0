@@ -1,41 +1,43 @@
 From: Nikita Yushchenko <nikita.yoush@cogentembedded.com>
-Date: Mon, 10 Oct 2016 11:52:06 +0300
+Date: Mon, 10 Oct 2016 12:51:28 +0300
 Subject: [Intel-wired-lan] igb driver can cause cache invalidation of
 	non-owned memory?
-Message-ID: <0b57cbe2-84f7-6c0a-904a-d166571234b5@cogentembedded.com>
+In-Reply-To: <20161010.050125.1981283393312167625.davem@davemloft.net>
+References: <0b57cbe2-84f7-6c0a-904a-d166571234b5@cogentembedded.com>
+ <20161010.050125.1981283393312167625.davem@davemloft.net>
+Message-ID: <10474d19-df1a-3b09-917e-70659be3a56c@cogentembedded.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi
+>> With this scheme, page used for Rx is completely dma_map()ed at
+>> allocation time, split into two buffers, and individual buffer is
+>> sync_to_cpu()ed AND PASSED TO NETWORK STACK via skb_add_rx_frag() -
+>> while driver driver still uses other buffer. Later, when driver decides
+>> to no longer use this page, it will dma_unmap() it completely - which on
+>> archs with non-coherent caches means cache invalidation. This cache
+>> invalidation will include area that is already passed elsewhere.
+> 
+> This should happen only if the device wrote into that piece of the
+> memory which it absolutely should not.
+
+Hmm...  I'm not about device writing to memory.
 
 
-DMA mapping scheme introduced in commit cbc8e55f6fda ('igb: Map entire
-page and sync half instead of mapping and unmapping half pages') back in
-2012, and used up to now, can probably cause breakage of unrelated code
-on archs with non-coherent caches.
+Sequence in igb driver is:
 
-With this scheme, page used for Rx is completely dma_map()ed at
-allocation time, split into two buffers, and individual buffer is
-sync_to_cpu()ed AND PASSED TO NETWORK STACK via skb_add_rx_frag() -
-while driver driver still uses other buffer. Later, when driver decides
-to no longer use this page, it will dma_unmap() it completely - which on
-archs with non-coherent caches means cache invalidation. This cache
-invalidation will include area that is already passed elsewhere. If
-external code has performed any writes to that area and writes still are
-in cache only, cache invalidation will cause writes to be lost.
+dma_map(full_page)
+  <device writes here>
+sync_to_cpu(half_page);
+skb_add_rx_frag(skb, half_page);
+napi_gro_receive(skb);
+  ...
+dma_unmap(full_page)
+
+What I'm concerned about is - same area is first passed up to network
+stack, and _later_ dma_unmap()ed.  Is this indeed safe?
 
 
-I'm not sure if this breakage is indeed possible. I did not face it,
-just found while checking how things work.
-
-Code in question is in kernel already for 4 years. However, since (1)
-igb is mostly used on x86 where caches are coherent, and (2) Rx buffers
-are normally not written to, it could stay unnoticed all that time.
-
-Could somebody please comment on this?
-
-
-Nikita Yushchenko
+Nikita
