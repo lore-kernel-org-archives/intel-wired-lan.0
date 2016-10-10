@@ -1,10 +1,12 @@
 From: David Miller <davem@davemloft.net>
-Date: Mon, 10 Oct 2016 05:01:25 -0400 (EDT)
+Date: Mon, 10 Oct 2016 07:57:31 -0400 (EDT)
 Subject: [Intel-wired-lan] igb driver can cause cache invalidation of
 	non-owned memory?
-In-Reply-To: <0b57cbe2-84f7-6c0a-904a-d166571234b5@cogentembedded.com>
+In-Reply-To: <10474d19-df1a-3b09-917e-70659be3a56c@cogentembedded.com>
 References: <0b57cbe2-84f7-6c0a-904a-d166571234b5@cogentembedded.com>
-Message-ID: <20161010.050125.1981283393312167625.davem@davemloft.net>
+ <20161010.050125.1981283393312167625.davem@davemloft.net>
+ <10474d19-df1a-3b09-917e-70659be3a56c@cogentembedded.com>
+Message-ID: <20161010.075731.2449861168238706.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,27 +14,35 @@ To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
 From: Nikita Yushchenko <nikita.yoush@cogentembedded.com>
-Date: Mon, 10 Oct 2016 11:52:06 +0300
+Date: Mon, 10 Oct 2016 12:51:28 +0300
 
-> With this scheme, page used for Rx is completely dma_map()ed at
-> allocation time, split into two buffers, and individual buffer is
-> sync_to_cpu()ed AND PASSED TO NETWORK STACK via skb_add_rx_frag() -
-> while driver driver still uses other buffer. Later, when driver decides
-> to no longer use this page, it will dma_unmap() it completely - which on
-> archs with non-coherent caches means cache invalidation. This cache
-> invalidation will include area that is already passed elsewhere.
+> Hmm...  I'm not about device writing to memory.
 
-This should happen only if the device wrote into that piece of the
-memory which it absolutely should not.
+This absolutely is about whether the device wrote into the
+area or not.
 
-When the dma sync occurs, no dirty data should be in the caches for
-the portion of the page any more, and therefore nothing should be
-written back unless the device illegally wrote to that part of the
-page again.
+> Sequence in igb driver is:
+> 
+> dma_map(full_page)
+>   <device writes here>
+> sync_to_cpu(half_page);
+> skb_add_rx_frag(skb, half_page);
+> napi_gro_receive(skb);
+>   ...
+> dma_unmap(full_page)
+> 
+> What I'm concerned about is - same area is first passed up to network
+> stack, and _later_ dma_unmap()ed.  Is this indeed safe?
 
-If something is causing data to be written back even if the device
-doesn't write into that area again, it's a bug.
+dma_unmap() should never write anything unless the device has
+meanwhile written to that chunk of memory.
 
-And FWIW the swiommu code has this bug.  It should never (re-)copy
-back into the mapped area after a sync unless the device wrote into
-that area in the time between the sync and the unmap.
+If the device made no intervening writes into the area, dma_unmap()
+should not cause any data to be written to that area, period.
+
+In your example above, consider the case where the device never
+writes into the memory area after sync_to_cpu().  In that case
+there is nothing that dma_unmap() can possibly write.  All the
+data has been synced, and no device writes into the memory are
+have occurred.
+
