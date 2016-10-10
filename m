@@ -1,97 +1,206 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Mon, 10 Oct 2016 10:38:21 -0700
-Subject: [Intel-wired-lan] igb driver can cause cache invalidation of
-	non-owned memory?
-In-Reply-To: <19aebfc3-5f1a-9206-4493-2255af7269f9@cogentembedded.com>
-References: <0b57cbe2-84f7-6c0a-904a-d166571234b5@cogentembedded.com>
- <20161010.050125.1981283393312167625.davem@davemloft.net>
- <10474d19-df1a-3b09-917e-70659be3a56c@cogentembedded.com>
- <20161010.075731.2449861168238706.davem@davemloft.net>
- <f75cf1e1-d7e8-e044-188a-987f05f321a5@cogentembedded.com>
- <CAKgT0Uc2nL1aPoryhNxdbf3+TQO+fOvAZMZDe+=9NaqnHCZPyw@mail.gmail.com>
- <19aebfc3-5f1a-9206-4493-2255af7269f9@cogentembedded.com>
-Message-ID: <CAKgT0UcSkG1Nws1kcUp-QV0jnwdXcXrOZ2m0vsWRziETA-11sw@mail.gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 11 Oct 2016 01:43:30 +0800
+Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
+ bc429d638f3506da473d98d8e18f4e7b72534371
+Message-ID: <57fbd342.IvFd5e+UfjyRcjP+%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mon, Oct 10, 2016 at 10:00 AM, Nikita Yushchenko
-<nikita.yoush@cogentembedded.com> wrote:
-> Hi Alexander
->
-> Thanks for your explanation.
->
->> The main reason why this isn't a concern for the igb driver is because
->> we currently pass the page up as read-only.  We don't allow the stack
->> to write into the page by keeping the page count greater than 1 which
->> means that the page is shared.  It isn't until we unmap the page that
->> the page count is allowed to drop to 1 indicating that it is writable.
->
-> Doesn't that mean that sync_to_device() in igb_reuse_rx_page() can be
-> avoided? If page is read only for entire world, then it can't be dirty
-> in cache and thus device can safely write to it without preparation step.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
+bc429d638f3506da473d98d8e18f4e7b72534371  i40e: fix call of ndo_dflt_bridge_getlink()
 
-For the sake of correctness we were adding the
-dma_sync_single_range_for_device.  Since it is an DMA_FROM_DEVICE
-mapping calling it should really have no effect for most DMA mapping
-interfaces.
+elapsed time: 81m
 
-Also you may want to try updating to the 4.8 version of the driver.
-It reduces the size of the dma_sync_single_range_for_cpu loops by
-reducing the sync size down to the size that was DMAed into the
-buffer.
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 185
 
-> Nikita
->
->
-> P.S.
->
-> We are observing strange performance anomaly with igb on imx6q board.
->
-> Test is - simple iperf UDP receive. Other host runs
->   iperf -c X.X.X.X -u -b xxxM -t 300 -i 3
->
-> Imx6q board can run iperf -s -u, or it can run nothing - result is the same.
->
-> While generated traffic (controlled via xxx) is slow, softirq thread on
-> imx6 board takes near-zero cpu time.  With increasing xxx, it still is
-> near zero - up to some moment about 700 Mbps. At this moment softirqd
-> cpu usage suddenly jumps to almost 100%.  Without anything in between:
-> it is near-zero with slightly smaller traffic, and it is immediately
->>99% with slightly larger traffic.
->
-> Profiling this situation (>99% in softirqd) with perf gives up to 50%
-> hits inside cache invalidation loops. That's why originally we thought
-> cache invalidation is slow. But having the above dependency between
-> traffic and softirq cpu usage (where napi code runs) can't be explained
-> with slow cache invalidation.
->
-> Also there are additional factors:
-> - if UDP traffic is dropped - via iptables, or via forcing error paths
-> at different points of network stack - softirqd cpu usage drops back to
-> near-zero - although it still does all the same cache invalidations,
-> - I tried to modify igb driver to disallow page reuse (made
-> igb_add_rx_frag() always returning false). Result was - "border traffic"
-> where softirq cpu usage goes from zero to 100% changed from ~700 Mbps to
-> ~400 Mbps.
->
-> Any ideas what can happen there, and how to debug it?
->
-> TIA
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+i386                     randconfig-a0-201641
+x86_64                 randconfig-a0-10101709
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+arm                        neponset_defconfig
+arm                         socfpga_defconfig
+sparc64                          allmodconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-10102145
+i386                   randconfig-c0-10110115
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                      pxa255-idp_defconfig
+ia64                              allnoconfig
+mips                            ar7_defconfig
+mips                            gpr_defconfig
+powerpc                 mpc836x_rdk_defconfig
+arm                      footbridge_defconfig
+c6x                         dsk6455_defconfig
+mips                        jmr3927_defconfig
+powerpc                 mpc837x_mds_defconfig
+powerpc                     virtex5_defconfig
+arm                     eseries_pxa_defconfig
+ia64                        generic_defconfig
+m32r                        oaks32r_defconfig
+mips                         cobalt_defconfig
+powerpc                mpc7448_hpc2_defconfig
+x86_64                 randconfig-x014-201641
+x86_64                 randconfig-x011-201641
+x86_64                 randconfig-x015-201641
+x86_64                 randconfig-x017-201641
+x86_64                 randconfig-x012-201641
+x86_64                 randconfig-x018-201641
+x86_64                 randconfig-x019-201641
+x86_64                 randconfig-x013-201641
+x86_64                 randconfig-x016-201641
+x86_64                 randconfig-x010-201641
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201641
+i386                     randconfig-s1-201641
+x86_64                 randconfig-s0-10102353
+x86_64                 randconfig-s1-10102353
+x86_64                 randconfig-s2-10102353
+x86_64                 randconfig-s3-10102354
+x86_64                 randconfig-s4-10102354
+x86_64                 randconfig-s5-10102354
+x86_64                 randconfig-s3-10110106
+x86_64                 randconfig-s4-10110106
+x86_64                 randconfig-s5-10110106
+i386                             allmodconfig
+blackfin                            defconfig
+ia64                                defconfig
+mips                                defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                 randconfig-i0-10101126
+i386                   randconfig-b0-10102126
+i386                   randconfig-b0-10110051
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201641
+i386                     randconfig-i1-201641
+x86_64                 randconfig-b0-10102144
+arm                          iop32x_defconfig
+m68k                            q40_defconfig
+mips                       markeins_defconfig
+x86_64                 randconfig-u0-10102257
+x86_64                 randconfig-u0-10110056
+mips                      loongson3_defconfig
+parisc                           allmodconfig
+x86_64                 randconfig-n0-10102117
+x86_64                 randconfig-n0-10110107
+i386                   randconfig-x014-201641
+i386                   randconfig-x019-201641
+i386                   randconfig-x017-201641
+i386                   randconfig-x018-201641
+i386                   randconfig-x015-201641
+i386                   randconfig-x016-201641
+i386                   randconfig-x012-201641
+i386                   randconfig-x013-201641
+i386                   randconfig-x011-201641
+i386                   randconfig-x010-201641
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                     randconfig-n0-201641
+i386                   randconfig-h0-10102153
+i386                   randconfig-h1-10102153
+ia64                             alldefconfig
+x86_64                 randconfig-h0-10102147
+x86_64                 randconfig-x001-201641
+x86_64                 randconfig-x008-201641
+x86_64                 randconfig-x009-201641
+x86_64                 randconfig-x000-201641
+x86_64                 randconfig-x005-201641
+x86_64                 randconfig-x003-201641
+x86_64                 randconfig-x007-201641
+x86_64                 randconfig-x002-201641
+x86_64                 randconfig-x006-201641
+x86_64                 randconfig-x004-201641
+i386                     randconfig-r0-201641
+x86_64                 randconfig-r0-10101759
+frv                              alldefconfig
+mips                malta_kvm_guest_defconfig
+powerpc                 mpc832x_rdb_defconfig
+i386                   randconfig-x004-201641
+i386                   randconfig-x006-201641
+i386                   randconfig-x007-201641
+i386                   randconfig-x003-201641
+i386                   randconfig-x008-201641
+i386                   randconfig-x000-201641
+i386                   randconfig-x002-201641
+i386                   randconfig-x009-201641
+i386                   randconfig-x001-201641
+i386                   randconfig-x005-201641
 
-I'm adding Eric Dumazet as he is more of an expert on all things NAPI
-than I am, but it is my understanding that there are known issues in
-regards to how the softirq traffic is handled.  Specifically I believe
-the 0->100% accounting problem is due to the way this is all tracked.
-You may want to try pulling the most recent net-next kernel and
-testing that to see if you still see the same behavior as Eric has
-recently added a fix that is meant to allow for better sharing between
-softirq polling and applications when dealing with stuff like UDP
-traffic.
-
-As far as identifying the problem areas your best bet would be to push
-the CPU to 100% and then identify the hot spots.
-
-- Alex
+Thanks,
+Fengguang
