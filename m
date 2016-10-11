@@ -1,10 +1,10 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue, 11 Oct 2016 15:26:53 -0700
-Subject: [Intel-wired-lan] [next PATCH S50 1/6] i40e: Add common function
-	for finding VSI by type
+Date: Tue, 11 Oct 2016 15:26:54 -0700
+Subject: [Intel-wired-lan] [next PATCH S50 2/6] i40e: Reorder logic for
+	coalescing RS bits
 In-Reply-To: <1476224818-16844-1-git-send-email-bimmy.pujari@intel.com>
 References: <1476224818-16844-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1476224818-16844-2-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1476224818-16844-3-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,150 +13,378 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-This patch adds a common method for finding a VSI by type.  The main
-motivation for doing this is that the Flow Director path actually had two
-ways of handling this, one stopped on first match and one did not.  This
-patch makes it so that all callers of this function will get the same
-approach for finding a VSI.
+This patch reorders the logic at the end of i40e_tx_map to address the
+fact that the logic was rather convoluted and much larger than it needed
+to be.
+
+In order to try and coalesce the code paths I have updated some of the
+comments and repurposed some of the variables in order to reduce
+unnecessary overhead.
+
+This patch does the following:
+1.  Quit tracking skb->xmit_more with a flag, just max out packet_stride
+2.  Drop tail_bump and do_rs and instead just use desc_count and td_cmd
+3.  Pull comments from ixgbe that make need for wmb() more explicit.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-Signed-off-by: Bimmy Pujari <bimmy.pujari@intel.com>
-Change-ID: Ibf25de8acd8466582520694424aa87da66965fbd
+Change-ID: Ic7da85ec75043c634e87fef958109789bcc6317c
 ---
 Testing Hints:
-        Verify that Flow Director / NTUPLE filters still function.
-        Verify that having VMDq2 VSIs still block ethtool offline test.
+        The big area to test for this is performance.  This should perform
+        as well as the original code if not better.  If any signficant
+        performance regressions are seen or hangs are seen then this patch
+        has failed.
 
- drivers/net/ethernet/intel/i40e/i40e.h         | 19 +++++++++++++++++++
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 12 +-----------
- drivers/net/ethernet/intel/i40e/i40e_main.c    | 21 ++++++---------------
- drivers/net/ethernet/intel/i40e/i40e_txrx.c    |  5 +----
- 4 files changed, 27 insertions(+), 30 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 105 +++++++++++++-------------
+ drivers/net/ethernet/intel/i40e/i40e_txrx.h   |   1 -
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 105 +++++++++++++-------------
+ drivers/net/ethernet/intel/i40evf/i40e_txrx.h |   1 -
+ 4 files changed, 108 insertions(+), 104 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index 9121e46..bb02280 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -723,6 +723,25 @@ int i40e_get_rss(struct i40e_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size);
- void i40e_fill_rss_lut(struct i40e_pf *pf, u8 *lut,
- 		       u16 rss_table_size, u16 rss_size);
- struct i40e_vsi *i40e_find_vsi_from_id(struct i40e_pf *pf, u16 id);
-+/**
-+ * i40e_find_vsi_by_type - Find and return Flow Director VSI
-+ * @pf: PF to search for VSI
-+ * @type: Value indicating type of VSI we are looking for
-+ **/
-+static inline struct i40e_vsi *
-+i40e_find_vsi_by_type(struct i40e_pf *pf, u16 type)
-+{
-+	int i;
-+
-+	for (i = 0; i < pf->num_alloc_vsi; i++) {
-+		struct i40e_vsi *vsi = pf->vsi[i];
-+
-+		if (vsi && vsi->type == type)
-+			return vsi;
-+	}
-+
-+	return NULL;
-+}
- void i40e_update_stats(struct i40e_vsi *vsi);
- void i40e_update_eth_stats(struct i40e_vsi *vsi);
- struct rtnl_link_stats64 *i40e_get_vsi_stats_struct(struct i40e_vsi *vsi);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index fb4fb52..962a9bb 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -1768,17 +1768,7 @@ static inline bool i40e_active_vfs(struct i40e_pf *pf)
- 
- static inline bool i40e_active_vmdqs(struct i40e_pf *pf)
- {
--	struct i40e_vsi **vsi = pf->vsi;
--	int i;
--
--	for (i = 0; i < pf->num_alloc_vsi; i++) {
--		if (!vsi[i])
--			continue;
--		if (vsi[i]->type == I40E_VSI_VMDQ2)
--			return true;
--	}
--
--	return false;
-+	return !!i40e_find_vsi_by_type(pf, I40E_VSI_VMDQ2);
- }
- 
- static void i40e_diag_test(struct net_device *netdev,
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index 4f14b55..e4e2775 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -6711,7 +6711,6 @@ static int i40e_vsi_clear(struct i40e_vsi *vsi);
- static void i40e_fdir_sb_setup(struct i40e_pf *pf)
- {
- 	struct i40e_vsi *vsi;
--	int i;
- 
- 	/* quick workaround for an NVM issue that leaves a critical register
- 	 * uninitialized
-@@ -6722,6 +6721,7 @@ static void i40e_fdir_sb_setup(struct i40e_pf *pf)
- 			0xeacb7d61, 0xaa4f05b6, 0x9c5c89ed, 0xfc425ddb,
- 			0xa4654832, 0xfc7461d4, 0x8f827619, 0xf5c63c21,
- 			0x95b3a76d};
-+		int i;
- 
- 		for (i = 0; i <= I40E_GLQF_HKEY_MAX_INDEX; i++)
- 			wr32(&pf->hw, I40E_GLQF_HKEY(i), hkey[i]);
-@@ -6731,13 +6731,7 @@ static void i40e_fdir_sb_setup(struct i40e_pf *pf)
- 		return;
- 
- 	/* find existing VSI and see if it needs configuring */
--	vsi = NULL;
--	for (i = 0; i < pf->num_alloc_vsi; i++) {
--		if (pf->vsi[i] && pf->vsi[i]->type == I40E_VSI_FDIR) {
--			vsi = pf->vsi[i];
--			break;
--		}
--	}
-+	vsi = i40e_find_vsi_by_type(pf, I40E_VSI_FDIR);
- 
- 	/* create a new VSI if none exists */
- 	if (!vsi) {
-@@ -6759,15 +6753,12 @@ static void i40e_fdir_sb_setup(struct i40e_pf *pf)
-  **/
- static void i40e_fdir_teardown(struct i40e_pf *pf)
- {
--	int i;
-+	struct i40e_vsi *vsi;
- 
- 	i40e_fdir_filter_exit(pf);
--	for (i = 0; i < pf->num_alloc_vsi; i++) {
--		if (pf->vsi[i] && pf->vsi[i]->type == I40E_VSI_FDIR) {
--			i40e_vsi_release(pf->vsi[i]);
--			break;
--		}
--	}
-+	vsi = i40e_find_vsi_by_type(pf, I40E_VSI_FDIR);
-+	if (vsi)
-+		i40e_vsi_release(vsi);
- }
- 
- /**
 diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-index 783ac4e..75b8f5b 100644
+index 75b8f5b..5544b50 100644
 --- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
 +++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
-@@ -125,10 +125,7 @@ static int i40e_program_fdir_filter(struct i40e_fdir_filter *fdir_data,
- 	u16 i;
+@@ -616,7 +616,7 @@ u32 i40e_get_tx_pending(struct i40e_ring *ring, bool in_sw)
+ 	return 0;
+ }
  
- 	/* find existing FDIR VSI */
--	vsi = NULL;
--	for (i = 0; i < pf->num_alloc_vsi; i++)
--		if (pf->vsi[i] && pf->vsi[i]->type == I40E_VSI_FDIR)
--			vsi = pf->vsi[i];
-+	vsi = i40e_find_vsi_by_type(pf, I40E_VSI_FDIR);
- 	if (!vsi)
- 		return -ENOENT;
+-#define WB_STRIDE 0x3
++#define WB_STRIDE 4
  
+ /**
+  * i40e_clean_tx_irq - Reclaim resources after transmit completes
+@@ -732,7 +732,7 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
+ 		unsigned int j = i40e_get_tx_pending(tx_ring, false);
+ 
+ 		if (budget &&
+-		    ((j / (WB_STRIDE + 1)) == 0) && (j != 0) &&
++		    ((j / WB_STRIDE) == 0) && (j > 0) &&
+ 		    !test_bit(__I40E_DOWN, &vsi->state) &&
+ 		    (I40E_DESC_UNUSED(tx_ring) != tx_ring->count))
+ 			tx_ring->arm_wb = true;
+@@ -2700,9 +2700,7 @@ static inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 	u32 td_tag = 0;
+ 	dma_addr_t dma;
+ 	u16 gso_segs;
+-	u16 desc_count = 0;
+-	bool tail_bump = true;
+-	bool do_rs = false;
++	u16 desc_count = 1;
+ 
+ 	if (tx_flags & I40E_TX_FLAGS_HW_VLAN) {
+ 		td_cmd |= I40E_TX_DESC_CMD_IL2TAG1;
+@@ -2785,8 +2783,7 @@ static inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 		tx_bi = &tx_ring->tx_bi[i];
+ 	}
+ 
+-	/* set next_to_watch value indicating a packet is present */
+-	first->next_to_watch = tx_desc;
++	netdev_tx_sent_queue(txring_txq(tx_ring), first->bytecount);
+ 
+ 	i++;
+ 	if (i == tx_ring->count)
+@@ -2794,66 +2791,72 @@ static inline void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 
+ 	tx_ring->next_to_use = i;
+ 
+-	netdev_tx_sent_queue(txring_txq(tx_ring), first->bytecount);
+ 	i40e_maybe_stop_tx(tx_ring, DESC_NEEDED);
+ 
++	/* write last descriptor with EOP bit */
++	td_cmd |= I40E_TX_DESC_CMD_EOP;
++
++	/* We can OR these values together as they both are checked against
++	 * 4 below and at this point desc_count will be used as a boolean value
++	 * after this if/else block.
++	 */
++	desc_count |= ++tx_ring->packet_stride;
++
+ 	/* Algorithm to optimize tail and RS bit setting:
+-	 * if xmit_more is supported
+-	 *	if xmit_more is true
+-	 *		do not update tail and do not mark RS bit.
+-	 *	if xmit_more is false and last xmit_more was false
+-	 *		if every packet spanned less than 4 desc
+-	 *			then set RS bit on 4th packet and update tail
+-	 *			on every packet
+-	 *		else
+-	 *			update tail and set RS bit on every packet.
+-	 *	if xmit_more is false and last_xmit_more was true
+-	 *		update tail and set RS bit.
++	 * if queue is stopped
++	 *	mark RS bit
++	 *	reset packet counter
++	 * else if xmit_more is supported and is true
++	 *	advance packet counter to 4
++	 *	reset desc_count to 0
+ 	 *
+-	 * Optimization: wmb to be issued only in case of tail update.
+-	 * Also optimize the Descriptor WB path for RS bit with the same
+-	 * algorithm.
++	 * if desc_count >= 4
++	 *	mark RS bit
++	 *	reset packet counter
++	 * if desc_count > 0
++	 *	update tail
+ 	 *
+-	 * Note: If there are less than 4 packets
++	 * Note: If there are less than 4 descriptors
+ 	 * pending and interrupts were disabled the service task will
+ 	 * trigger a force WB.
+ 	 */
+-	if (skb->xmit_more  &&
+-	    !netif_xmit_stopped(txring_txq(tx_ring))) {
+-		tx_ring->flags |= I40E_TXR_FLAGS_LAST_XMIT_MORE_SET;
+-		tail_bump = false;
+-	} else if (!skb->xmit_more &&
+-		   !netif_xmit_stopped(txring_txq(tx_ring)) &&
+-		   (!(tx_ring->flags & I40E_TXR_FLAGS_LAST_XMIT_MORE_SET)) &&
+-		   (tx_ring->packet_stride < WB_STRIDE) &&
+-		   (desc_count < WB_STRIDE)) {
+-		tx_ring->packet_stride++;
+-	} else {
++	if (netif_xmit_stopped(txring_txq(tx_ring))) {
++		goto do_rs;
++	} else if (skb->xmit_more) {
++		/* set stride to arm on next packet and reset desc_count */
++		tx_ring->packet_stride = WB_STRIDE;
++		desc_count = 0;
++	} else if (desc_count >= WB_STRIDE) {
++do_rs:
++		/* write last descriptor with RS bit set */
++		td_cmd |= I40E_TX_DESC_CMD_RS;
+ 		tx_ring->packet_stride = 0;
+-		tx_ring->flags &= ~I40E_TXR_FLAGS_LAST_XMIT_MORE_SET;
+-		do_rs = true;
+ 	}
+-	if (do_rs)
+-		tx_ring->packet_stride = 0;
+ 
+ 	tx_desc->cmd_type_offset_bsz =
+-			build_ctob(td_cmd, td_offset, size, td_tag) |
+-			cpu_to_le64((u64)(do_rs ? I40E_TXD_CMD :
+-						  I40E_TX_DESC_CMD_EOP) <<
+-						  I40E_TXD_QW1_CMD_SHIFT);
++			build_ctob(td_cmd, td_offset, size, td_tag);
++
++	/* Force memory writes to complete before letting h/w know there
++	 * are new descriptors to fetch.
++	 *
++	 * We also use this memory barrier to make certain all of the
++	 * status bits have been updated before next_to_watch is written.
++	 */
++	wmb();
++
++	/* set next_to_watch value indicating a packet is present */
++	first->next_to_watch = tx_desc;
+ 
+ 	/* notify HW of packet */
+-	if (!tail_bump) {
+-		prefetchw(tx_desc + 1);
+-	} else {
+-		/* Force memory writes to complete before letting h/w
+-		 * know there are new descriptors to fetch.  (Only
+-		 * applicable for weak-ordered memory model archs,
+-		 * such as IA-64).
+-		 */
+-		wmb();
++	if (desc_count) {
+ 		writel(i, tx_ring->tail);
++
++		/* we need this if more than one processor can write to our tail
++		 * at a time, it synchronizes IO on IA64/Altix systems
++		 */
++		mmiowb();
+ 	}
++
+ 	return;
+ 
+ dma_error:
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.h b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+index 42f04d6..de8550f 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.h
+@@ -313,7 +313,6 @@ struct i40e_ring {
+ 
+ 	u16 flags;
+ #define I40E_TXR_FLAGS_WB_ON_ITR	BIT(0)
+-#define I40E_TXR_FLAGS_LAST_XMIT_MORE_SET BIT(2)
+ 
+ 	/* stats structs */
+ 	struct i40e_queue_stats	stats;
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+index e2d3622..c4b174a 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.c
+@@ -150,7 +150,7 @@ u32 i40evf_get_tx_pending(struct i40e_ring *ring, bool in_sw)
+ 	return 0;
+ }
+ 
+-#define WB_STRIDE 0x3
++#define WB_STRIDE 4
+ 
+ /**
+  * i40e_clean_tx_irq - Reclaim resources after transmit completes
+@@ -266,7 +266,7 @@ static bool i40e_clean_tx_irq(struct i40e_vsi *vsi,
+ 		unsigned int j = i40evf_get_tx_pending(tx_ring, false);
+ 
+ 		if (budget &&
+-		    ((j / (WB_STRIDE + 1)) == 0) && (j > 0) &&
++		    ((j / WB_STRIDE) == 0) && (j > 0) &&
+ 		    !test_bit(__I40E_DOWN, &vsi->state) &&
+ 		    (I40E_DESC_UNUSED(tx_ring) != tx_ring->count))
+ 			tx_ring->arm_wb = true;
+@@ -1950,9 +1950,7 @@ static inline void i40evf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 	u32 td_tag = 0;
+ 	dma_addr_t dma;
+ 	u16 gso_segs;
+-	u16 desc_count = 0;
+-	bool tail_bump = true;
+-	bool do_rs = false;
++	u16 desc_count = 1;
+ 
+ 	if (tx_flags & I40E_TX_FLAGS_HW_VLAN) {
+ 		td_cmd |= I40E_TX_DESC_CMD_IL2TAG1;
+@@ -2035,8 +2033,7 @@ static inline void i40evf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 		tx_bi = &tx_ring->tx_bi[i];
+ 	}
+ 
+-	/* set next_to_watch value indicating a packet is present */
+-	first->next_to_watch = tx_desc;
++	netdev_tx_sent_queue(txring_txq(tx_ring), first->bytecount);
+ 
+ 	i++;
+ 	if (i == tx_ring->count)
+@@ -2044,66 +2041,72 @@ static inline void i40evf_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 
+ 	tx_ring->next_to_use = i;
+ 
+-	netdev_tx_sent_queue(txring_txq(tx_ring), first->bytecount);
+ 	i40e_maybe_stop_tx(tx_ring, DESC_NEEDED);
+ 
++	/* write last descriptor with EOP bit */
++	td_cmd |= I40E_TX_DESC_CMD_EOP;
++
++	/* We can OR these values together as they both are checked against
++	 * 4 below and at this point desc_count will be used as a boolean value
++	 * after this if/else block.
++	 */
++	desc_count |= ++tx_ring->packet_stride;
++
+ 	/* Algorithm to optimize tail and RS bit setting:
+-	 * if xmit_more is supported
+-	 *	if xmit_more is true
+-	 *		do not update tail and do not mark RS bit.
+-	 *	if xmit_more is false and last xmit_more was false
+-	 *		if every packet spanned less than 4 desc
+-	 *			then set RS bit on 4th packet and update tail
+-	 *			on every packet
+-	 *		else
+-	 *			update tail and set RS bit on every packet.
+-	 *	if xmit_more is false and last_xmit_more was true
+-	 *		update tail and set RS bit.
++	 * if queue is stopped
++	 *	mark RS bit
++	 *	reset packet counter
++	 * else if xmit_more is supported and is true
++	 *	advance packet counter to 4
++	 *	reset desc_count to 0
+ 	 *
+-	 * Optimization: wmb to be issued only in case of tail update.
+-	 * Also optimize the Descriptor WB path for RS bit with the same
+-	 * algorithm.
++	 * if desc_count >= 4
++	 *	mark RS bit
++	 *	reset packet counter
++	 * if desc_count > 0
++	 *	update tail
+ 	 *
+-	 * Note: If there are less than 4 packets
++	 * Note: If there are less than 4 descriptors
+ 	 * pending and interrupts were disabled the service task will
+ 	 * trigger a force WB.
+ 	 */
+-	if (skb->xmit_more  &&
+-	    !netif_xmit_stopped(txring_txq(tx_ring))) {
+-		tx_ring->flags |= I40E_TXR_FLAGS_LAST_XMIT_MORE_SET;
+-		tail_bump = false;
+-	} else if (!skb->xmit_more &&
+-		   !netif_xmit_stopped(txring_txq(tx_ring)) &&
+-		   (!(tx_ring->flags & I40E_TXR_FLAGS_LAST_XMIT_MORE_SET)) &&
+-		   (tx_ring->packet_stride < WB_STRIDE) &&
+-		   (desc_count < WB_STRIDE)) {
+-		tx_ring->packet_stride++;
+-	} else {
++	if (netif_xmit_stopped(txring_txq(tx_ring))) {
++		goto do_rs;
++	} else if (skb->xmit_more) {
++		/* set stride to arm on next packet and reset desc_count */
++		tx_ring->packet_stride = WB_STRIDE;
++		desc_count = 0;
++	} else if (desc_count >= WB_STRIDE) {
++do_rs:
++		/* write last descriptor with RS bit set */
++		td_cmd |= I40E_TX_DESC_CMD_RS;
+ 		tx_ring->packet_stride = 0;
+-		tx_ring->flags &= ~I40E_TXR_FLAGS_LAST_XMIT_MORE_SET;
+-		do_rs = true;
+ 	}
+-	if (do_rs)
+-		tx_ring->packet_stride = 0;
+ 
+ 	tx_desc->cmd_type_offset_bsz =
+-			build_ctob(td_cmd, td_offset, size, td_tag) |
+-			cpu_to_le64((u64)(do_rs ? I40E_TXD_CMD :
+-						  I40E_TX_DESC_CMD_EOP) <<
+-						  I40E_TXD_QW1_CMD_SHIFT);
++			build_ctob(td_cmd, td_offset, size, td_tag);
++
++	/* Force memory writes to complete before letting h/w know there
++	 * are new descriptors to fetch.
++	 *
++	 * We also use this memory barrier to make certain all of the
++	 * status bits have been updated before next_to_watch is written.
++	 */
++	wmb();
++
++	/* set next_to_watch value indicating a packet is present */
++	first->next_to_watch = tx_desc;
+ 
+ 	/* notify HW of packet */
+-	if (!tail_bump) {
+-		prefetchw(tx_desc + 1);
+-	} else {
+-		/* Force memory writes to complete before letting h/w
+-		 * know there are new descriptors to fetch.  (Only
+-		 * applicable for weak-ordered memory model archs,
+-		 * such as IA-64).
+-		 */
+-		wmb();
++	if (desc_count) {
+ 		writel(i, tx_ring->tail);
++
++		/* we need this if more than one processor can write to our tail
++		 * at a time, it synchronizes IO on IA64/Altix systems
++		 */
++		mmiowb();
+ 	}
++
+ 	return;
+ 
+ dma_error:
+diff --git a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
+index abcdeca..a586e19 100644
+--- a/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
++++ b/drivers/net/ethernet/intel/i40evf/i40e_txrx.h
+@@ -309,7 +309,6 @@ struct i40e_ring {
+ 	bool ring_active;		/* is ring online or not */
+ 	bool arm_wb;		/* do something to arm write back */
+ 	u8 packet_stride;
+-#define I40E_TXR_FLAGS_LAST_XMIT_MORE_SET BIT(2)
+ 
+ 	u16 flags;
+ #define I40E_TXR_FLAGS_WB_ON_ITR	BIT(0)
 -- 
 2.4.11
 
