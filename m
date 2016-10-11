@@ -1,131 +1,162 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue, 11 Oct 2016 15:26:57 -0700
-Subject: [Intel-wired-lan] [next PATCH S50 5/6] i40e: Implementation of
-	ERROR state for NVM update state machine
+Date: Tue, 11 Oct 2016 15:26:53 -0700
+Subject: [Intel-wired-lan] [next PATCH S50 1/6] i40e: Add common function
+	for finding VSI by type
 In-Reply-To: <1476224818-16844-1-git-send-email-bimmy.pujari@intel.com>
 References: <1476224818-16844-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1476224818-16844-6-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1476224818-16844-2-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Maciej Sosin <maciej.sosin@intel.com>
+From: Alexander Duyck <alexander.h.duyck@intel.com>
 
-This patch adds I40E_NVMUPD_STATE_ERROR state for NVM update.
-Without this patch driver has no possibility to return NVM image write
-failure.This state is being set when ARQ rises error.
-arq_last_status is also updated every time when ARQ event comes,
-not only on error cases.
+This patch adds a common method for finding a VSI by type.  The main
+motivation for doing this is that the Flow Director path actually had two
+ways of handling this, one stopped on first match and one did not.  This
+patch makes it so that all callers of this function will get the same
+approach for finding a VSI.
 
-Signed-off-by: Maciej Sosin <maciej.sosin@intel.com>
-Change-ID: I67ce43ba22a240773c2821b436e96054db0b7c81
+Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+Signed-off-by: Bimmy Pujari <bimmy.pujari@intel.com>
+Change-ID: Ibf25de8acd8466582520694424aa87da66965fbd
 ---
- drivers/net/ethernet/intel/i40e/i40e_adminq.c   |  4 ++--
- drivers/net/ethernet/intel/i40e/i40e_nvm.c      | 16 ++++++++++++++++
- drivers/net/ethernet/intel/i40e/i40e_type.h     |  1 +
- drivers/net/ethernet/intel/i40evf/i40e_adminq.c |  4 ++--
- drivers/net/ethernet/intel/i40evf/i40e_type.h   |  1 +
- 5 files changed, 22 insertions(+), 4 deletions(-)
+Testing Hints:
+        Verify that Flow Director / NTUPLE filters still function.
+        Verify that having VMDq2 VSIs still block ethtool offline test.
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_adminq.c b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-index 738b42a..56fb272 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_adminq.c
-@@ -964,11 +964,11 @@ i40e_status i40e_clean_arq_element(struct i40e_hw *hw,
- 	desc = I40E_ADMINQ_DESC(hw->aq.arq, ntc);
- 	desc_idx = ntc;
- 
-+	hw->aq.arq_last_status =
-+		(enum i40e_admin_queue_err)le16_to_cpu(desc->retval);
- 	flags = le16_to_cpu(desc->flags);
- 	if (flags & I40E_AQ_FLAG_ERR) {
- 		ret_code = I40E_ERR_ADMIN_QUEUE_ERROR;
--		hw->aq.arq_last_status =
--			(enum i40e_admin_queue_err)le16_to_cpu(desc->retval);
- 		i40e_debug(hw,
- 			   I40E_DEBUG_AQ_MESSAGE,
- 			   "AQRX: Event received with error 0x%X.\n",
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_nvm.c b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-index 954efe3..38ee18f 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_nvm.c
-@@ -722,9 +722,20 @@ i40e_status i40e_nvmupd_command(struct i40e_hw *hw,
- 			*((u16 *)&bytes[2]) = hw->nvm_wait_opcode;
- 		}
- 
-+		/* Clear error status on read */
-+		if (hw->nvmupd_state == I40E_NVMUPD_STATE_ERROR)
-+			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
+ drivers/net/ethernet/intel/i40e/i40e.h         | 19 +++++++++++++++++++
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 12 +-----------
+ drivers/net/ethernet/intel/i40e/i40e_main.c    | 21 ++++++---------------
+ drivers/net/ethernet/intel/i40e/i40e_txrx.c    |  5 +----
+ 4 files changed, 27 insertions(+), 30 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
+index 9121e46..bb02280 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e.h
++++ b/drivers/net/ethernet/intel/i40e/i40e.h
+@@ -723,6 +723,25 @@ int i40e_get_rss(struct i40e_vsi *vsi, u8 *seed, u8 *lut, u16 lut_size);
+ void i40e_fill_rss_lut(struct i40e_pf *pf, u8 *lut,
+ 		       u16 rss_table_size, u16 rss_size);
+ struct i40e_vsi *i40e_find_vsi_from_id(struct i40e_pf *pf, u16 id);
++/**
++ * i40e_find_vsi_by_type - Find and return Flow Director VSI
++ * @pf: PF to search for VSI
++ * @type: Value indicating type of VSI we are looking for
++ **/
++static inline struct i40e_vsi *
++i40e_find_vsi_by_type(struct i40e_pf *pf, u16 type)
++{
++	int i;
 +
- 		return 0;
- 	}
- 
-+	/* Clear status even it is not read and log */
-+	if (hw->nvmupd_state == I40E_NVMUPD_STATE_ERROR) {
-+		i40e_debug(hw, I40E_DEBUG_NVM,
-+			   "Clearing I40E_NVMUPD_STATE_ERROR state without reading\n");
-+		hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
++	for (i = 0; i < pf->num_alloc_vsi; i++) {
++		struct i40e_vsi *vsi = pf->vsi[i];
++
++		if (vsi && vsi->type == type)
++			return vsi;
 +	}
 +
- 	switch (hw->nvmupd_state) {
- 	case I40E_NVMUPD_STATE_INIT:
- 		status = i40e_nvmupd_state_init(hw, cmd, bytes, perrno);
-@@ -1074,6 +1085,11 @@ void i40e_nvmupd_check_wait_event(struct i40e_hw *hw, u16 opcode)
- 		}
- 		hw->nvm_wait_opcode = 0;
++	return NULL;
++}
+ void i40e_update_stats(struct i40e_vsi *vsi);
+ void i40e_update_eth_stats(struct i40e_vsi *vsi);
+ struct rtnl_link_stats64 *i40e_get_vsi_stats_struct(struct i40e_vsi *vsi);
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index fb4fb52..962a9bb 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -1768,17 +1768,7 @@ static inline bool i40e_active_vfs(struct i40e_pf *pf)
  
-+		if (hw->aq.arq_last_status) {
-+			hw->nvmupd_state = I40E_NVMUPD_STATE_ERROR;
-+			return;
-+		}
-+
- 		switch (hw->nvmupd_state) {
- 		case I40E_NVMUPD_STATE_INIT_WAIT:
- 			hw->nvmupd_state = I40E_NVMUPD_STATE_INIT;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-index bd5f13b..d9a2660 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-@@ -366,6 +366,7 @@ enum i40e_nvmupd_state {
- 	I40E_NVMUPD_STATE_WRITING,
- 	I40E_NVMUPD_STATE_INIT_WAIT,
- 	I40E_NVMUPD_STATE_WRITE_WAIT,
-+	I40E_NVMUPD_STATE_ERROR
- };
+ static inline bool i40e_active_vmdqs(struct i40e_pf *pf)
+ {
+-	struct i40e_vsi **vsi = pf->vsi;
+-	int i;
+-
+-	for (i = 0; i < pf->num_alloc_vsi; i++) {
+-		if (!vsi[i])
+-			continue;
+-		if (vsi[i]->type == I40E_VSI_VMDQ2)
+-			return true;
+-	}
+-
+-	return false;
++	return !!i40e_find_vsi_by_type(pf, I40E_VSI_VMDQ2);
+ }
  
- /* nvm_access definition and its masks/shifts need to be accessible to
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_adminq.c b/drivers/net/ethernet/intel/i40evf/i40e_adminq.c
-index 44f7ed7..9638515 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_adminq.c
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_adminq.c
-@@ -912,11 +912,11 @@ i40e_status i40evf_clean_arq_element(struct i40e_hw *hw,
- 	desc = I40E_ADMINQ_DESC(hw->aq.arq, ntc);
- 	desc_idx = ntc;
+ static void i40e_diag_test(struct net_device *netdev,
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
+index 4f14b55..e4e2775 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_main.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
+@@ -6711,7 +6711,6 @@ static int i40e_vsi_clear(struct i40e_vsi *vsi);
+ static void i40e_fdir_sb_setup(struct i40e_pf *pf)
+ {
+ 	struct i40e_vsi *vsi;
+-	int i;
  
-+	hw->aq.arq_last_status =
-+		(enum i40e_admin_queue_err)le16_to_cpu(desc->retval);
- 	flags = le16_to_cpu(desc->flags);
- 	if (flags & I40E_AQ_FLAG_ERR) {
- 		ret_code = I40E_ERR_ADMIN_QUEUE_ERROR;
--		hw->aq.arq_last_status =
--			(enum i40e_admin_queue_err)le16_to_cpu(desc->retval);
- 		i40e_debug(hw,
- 			   I40E_DEBUG_AQ_MESSAGE,
- 			   "AQRX: Event received with error 0x%X.\n",
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-index 97f96e0..ca7afe5 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-@@ -348,6 +348,7 @@ enum i40e_nvmupd_state {
- 	I40E_NVMUPD_STATE_WRITING,
- 	I40E_NVMUPD_STATE_INIT_WAIT,
- 	I40E_NVMUPD_STATE_WRITE_WAIT,
-+	I40E_NVMUPD_STATE_ERROR
- };
+ 	/* quick workaround for an NVM issue that leaves a critical register
+ 	 * uninitialized
+@@ -6722,6 +6721,7 @@ static void i40e_fdir_sb_setup(struct i40e_pf *pf)
+ 			0xeacb7d61, 0xaa4f05b6, 0x9c5c89ed, 0xfc425ddb,
+ 			0xa4654832, 0xfc7461d4, 0x8f827619, 0xf5c63c21,
+ 			0x95b3a76d};
++		int i;
  
- /* nvm_access definition and its masks/shifts need to be accessible to
+ 		for (i = 0; i <= I40E_GLQF_HKEY_MAX_INDEX; i++)
+ 			wr32(&pf->hw, I40E_GLQF_HKEY(i), hkey[i]);
+@@ -6731,13 +6731,7 @@ static void i40e_fdir_sb_setup(struct i40e_pf *pf)
+ 		return;
+ 
+ 	/* find existing VSI and see if it needs configuring */
+-	vsi = NULL;
+-	for (i = 0; i < pf->num_alloc_vsi; i++) {
+-		if (pf->vsi[i] && pf->vsi[i]->type == I40E_VSI_FDIR) {
+-			vsi = pf->vsi[i];
+-			break;
+-		}
+-	}
++	vsi = i40e_find_vsi_by_type(pf, I40E_VSI_FDIR);
+ 
+ 	/* create a new VSI if none exists */
+ 	if (!vsi) {
+@@ -6759,15 +6753,12 @@ static void i40e_fdir_sb_setup(struct i40e_pf *pf)
+  **/
+ static void i40e_fdir_teardown(struct i40e_pf *pf)
+ {
+-	int i;
++	struct i40e_vsi *vsi;
+ 
+ 	i40e_fdir_filter_exit(pf);
+-	for (i = 0; i < pf->num_alloc_vsi; i++) {
+-		if (pf->vsi[i] && pf->vsi[i]->type == I40E_VSI_FDIR) {
+-			i40e_vsi_release(pf->vsi[i]);
+-			break;
+-		}
+-	}
++	vsi = i40e_find_vsi_by_type(pf, I40E_VSI_FDIR);
++	if (vsi)
++		i40e_vsi_release(vsi);
+ }
+ 
+ /**
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_txrx.c b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+index 783ac4e..75b8f5b 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_txrx.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_txrx.c
+@@ -125,10 +125,7 @@ static int i40e_program_fdir_filter(struct i40e_fdir_filter *fdir_data,
+ 	u16 i;
+ 
+ 	/* find existing FDIR VSI */
+-	vsi = NULL;
+-	for (i = 0; i < pf->num_alloc_vsi; i++)
+-		if (pf->vsi[i] && pf->vsi[i]->type == I40E_VSI_FDIR)
+-			vsi = pf->vsi[i];
++	vsi = i40e_find_vsi_by_type(pf, I40E_VSI_FDIR);
+ 	if (!vsi)
+ 		return -ENOENT;
+ 
 -- 
 2.4.11
 
