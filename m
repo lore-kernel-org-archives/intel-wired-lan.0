@@ -1,138 +1,88 @@
 From: David Ahern <dsa@cumulusnetworks.com>
-Date: Wed, 12 Oct 2016 13:51:49 -0700
-Subject: [Intel-wired-lan] [PATCH net-next 01/11] net: Remove refnr arg when
-	inserting link adjacencies
+Date: Wed, 12 Oct 2016 13:51:53 -0700
+Subject: [Intel-wired-lan] [PATCH net-next 05/11] IB/ipoib: Flip to new dev
+	walk API
 In-Reply-To: <1476305519-28833-1-git-send-email-dsa@cumulusnetworks.com>
 References: <1476305519-28833-1-git-send-email-dsa@cumulusnetworks.com>
-Message-ID: <1476305519-28833-2-git-send-email-dsa@cumulusnetworks.com>
+Message-ID: <1476305519-28833-6-git-send-email-dsa@cumulusnetworks.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Commit 93409033ae65 ("net: Add netdev all_adj_list refcnt propagation to
-fix panic") propagated the refnr to insert and remove functions tracking
-the netdev adjacency graph. However, for the insert path the refnr can
-only be 1. Accordingly, remove the refnr argument to make that clear.
-ie., the refnr arg in 93409033ae65 was only needed for the remove path.
+Convert ipoib_get_net_dev_match_addr to the new upper device walk API.
+This is just a move to the new API; no functional change is intended.
 
 Signed-off-by: David Ahern <dsa@cumulusnetworks.com>
 ---
- net/core/dev.c | 27 ++++++++++++---------------
- 1 file changed, 12 insertions(+), 15 deletions(-)
+ drivers/infiniband/ulp/ipoib/ipoib_main.c | 37 +++++++++++++++++++++----------
+ 1 file changed, 25 insertions(+), 12 deletions(-)
 
-diff --git a/net/core/dev.c b/net/core/dev.c
-index f1fe26f66458..5aaa12a9e369 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -5589,7 +5589,6 @@ static inline bool netdev_adjacent_is_neigh_list(struct net_device *dev,
- 
- static int __netdev_adjacent_dev_insert(struct net_device *dev,
- 					struct net_device *adj_dev,
--					u16 ref_nr,
- 					struct list_head *dev_list,
- 					void *private, bool master)
- {
-@@ -5599,7 +5598,7 @@ static int __netdev_adjacent_dev_insert(struct net_device *dev,
- 	adj = __netdev_find_adj(adj_dev, dev_list);
- 
- 	if (adj) {
--		adj->ref_nr += ref_nr;
-+		adj->ref_nr += 1;
- 		return 0;
- 	}
- 
-@@ -5609,7 +5608,7 @@ static int __netdev_adjacent_dev_insert(struct net_device *dev,
- 
- 	adj->dev = adj_dev;
- 	adj->master = master;
--	adj->ref_nr = ref_nr;
-+	adj->ref_nr = 1;
- 	adj->private = private;
- 	dev_hold(adj_dev);
- 
-@@ -5683,22 +5682,21 @@ static void __netdev_adjacent_dev_remove(struct net_device *dev,
- 
- static int __netdev_adjacent_dev_link_lists(struct net_device *dev,
- 					    struct net_device *upper_dev,
--					    u16 ref_nr,
- 					    struct list_head *up_list,
- 					    struct list_head *down_list,
- 					    void *private, bool master)
- {
- 	int ret;
- 
--	ret = __netdev_adjacent_dev_insert(dev, upper_dev, ref_nr, up_list,
-+	ret = __netdev_adjacent_dev_insert(dev, upper_dev, up_list,
- 					   private, master);
- 	if (ret)
- 		return ret;
- 
--	ret = __netdev_adjacent_dev_insert(upper_dev, dev, ref_nr, down_list,
-+	ret = __netdev_adjacent_dev_insert(upper_dev, dev, down_list,
- 					   private, false);
- 	if (ret) {
--		__netdev_adjacent_dev_remove(dev, upper_dev, ref_nr, up_list);
-+		__netdev_adjacent_dev_remove(dev, upper_dev, 1, up_list);
- 		return ret;
- 	}
- 
-@@ -5706,10 +5704,9 @@ static int __netdev_adjacent_dev_link_lists(struct net_device *dev,
+diff --git a/drivers/infiniband/ulp/ipoib/ipoib_main.c b/drivers/infiniband/ulp/ipoib/ipoib_main.c
+index 5636fc3da6b8..624855ab7205 100644
+--- a/drivers/infiniband/ulp/ipoib/ipoib_main.c
++++ b/drivers/infiniband/ulp/ipoib/ipoib_main.c
+@@ -292,6 +292,25 @@ static struct net_device *ipoib_get_master_net_dev(struct net_device *dev)
+ 	return dev;
  }
  
- static int __netdev_adjacent_dev_link(struct net_device *dev,
--				      struct net_device *upper_dev,
--				      u16 ref_nr)
-+				      struct net_device *upper_dev)
++struct ipoib_walk_data {
++	const struct sockaddr *addr;
++	struct net_device *result;
++};
++
++static int ipoib_upper_walk(struct net_device *upper, void *_data)
++{
++	struct ipoib_walk_data *data = (struct ipoib_walk_data *)_data;
++	int ret = 0;
++
++	if (ipoib_is_dev_match_addr_rcu(data->addr, upper)) {
++		dev_hold(upper);
++		data->result = upper;
++		ret = 1;
++	}
++
++	return ret;
++}
++
+ /**
+  * Find a net_device matching the given address, which is an upper device of
+  * the given net_device.
+@@ -304,27 +323,21 @@ static struct net_device *ipoib_get_master_net_dev(struct net_device *dev)
+ static struct net_device *ipoib_get_net_dev_match_addr(
+ 		const struct sockaddr *addr, struct net_device *dev)
  {
--	return __netdev_adjacent_dev_link_lists(dev, upper_dev, ref_nr,
-+	return __netdev_adjacent_dev_link_lists(dev, upper_dev,
- 						&dev->all_adj_list.upper,
- 						&upper_dev->all_adj_list.lower,
- 						NULL, false);
-@@ -5738,12 +5735,12 @@ static int __netdev_adjacent_dev_link_neighbour(struct net_device *dev,
- 						struct net_device *upper_dev,
- 						void *private, bool master)
- {
--	int ret = __netdev_adjacent_dev_link(dev, upper_dev, 1);
-+	int ret = __netdev_adjacent_dev_link(dev, upper_dev);
+-	struct net_device *upper,
+-			  *result = NULL;
+-	struct list_head *iter;
++	struct ipoib_walk_data data = {
++		.addr = addr,
++	};
  
- 	if (ret)
- 		return ret;
+ 	rcu_read_lock();
+ 	if (ipoib_is_dev_match_addr_rcu(addr, dev)) {
+ 		dev_hold(dev);
+-		result = dev;
++		data.result = dev;
+ 		goto out;
+ 	}
  
--	ret = __netdev_adjacent_dev_link_lists(dev, upper_dev, 1,
-+	ret = __netdev_adjacent_dev_link_lists(dev, upper_dev,
- 					       &dev->adj_list.upper,
- 					       &upper_dev->adj_list.lower,
- 					       private, master);
-@@ -5812,7 +5809,7 @@ static int __netdev_upper_dev_link(struct net_device *dev,
- 		list_for_each_entry(j, &upper_dev->all_adj_list.upper, list) {
- 			pr_debug("Interlinking %s with %s, non-neighbour\n",
- 				 i->dev->name, j->dev->name);
--			ret = __netdev_adjacent_dev_link(i->dev, j->dev, i->ref_nr);
-+			ret = __netdev_adjacent_dev_link(i->dev, j->dev);
- 			if (ret)
- 				goto rollback_mesh;
- 		}
-@@ -5822,7 +5819,7 @@ static int __netdev_upper_dev_link(struct net_device *dev,
- 	list_for_each_entry(i, &upper_dev->all_adj_list.upper, list) {
- 		pr_debug("linking %s's upper device %s with %s\n",
- 			 upper_dev->name, i->dev->name, dev->name);
--		ret = __netdev_adjacent_dev_link(dev, i->dev, i->ref_nr);
-+		ret = __netdev_adjacent_dev_link(dev, i->dev);
- 		if (ret)
- 			goto rollback_upper_mesh;
- 	}
-@@ -5831,7 +5828,7 @@ static int __netdev_upper_dev_link(struct net_device *dev,
- 	list_for_each_entry(i, &dev->all_adj_list.lower, list) {
- 		pr_debug("linking %s's lower device %s with %s\n", dev->name,
- 			 i->dev->name, upper_dev->name);
--		ret = __netdev_adjacent_dev_link(i->dev, upper_dev, i->ref_nr);
-+		ret = __netdev_adjacent_dev_link(i->dev, upper_dev);
- 		if (ret)
- 			goto rollback_lower_mesh;
- 	}
+-	netdev_for_each_all_upper_dev_rcu(dev, upper, iter) {
+-		if (ipoib_is_dev_match_addr_rcu(addr, upper)) {
+-			dev_hold(upper);
+-			result = upper;
+-			break;
+-		}
+-	}
++	netdev_walk_all_upper_dev_rcu(dev, ipoib_upper_walk, &data);
+ out:
+ 	rcu_read_unlock();
+-	return result;
++	return data.result;
+ }
+ 
+ /* returns the number of IPoIB netdevs on top a given ipoib device matching a
 -- 
 2.1.4
 
