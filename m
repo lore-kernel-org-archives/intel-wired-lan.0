@@ -1,56 +1,111 @@
 From: David Ahern <dsa@cumulusnetworks.com>
-Date: Wed, 12 Oct 2016 13:51:58 -0700
-Subject: [Intel-wired-lan] [PATCH net-next 10/11] net: Add warning if any
-	lower device is still in adjacency list
+Date: Wed, 12 Oct 2016 13:51:52 -0700
+Subject: [Intel-wired-lan] [PATCH net-next 04/11] IB/core: Flip to the new
+	dev walk API
 In-Reply-To: <1476305519-28833-1-git-send-email-dsa@cumulusnetworks.com>
 References: <1476305519-28833-1-git-send-email-dsa@cumulusnetworks.com>
-Message-ID: <1476305519-28833-11-git-send-email-dsa@cumulusnetworks.com>
+Message-ID: <1476305519-28833-5-git-send-email-dsa@cumulusnetworks.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Lower list should be empty just like upper.
+Convert rdma_is_upper_dev_rcu, handle_netdev_upper and
+ipoib_get_net_dev_match_addr to the new upper device walk API.
+This is just a move to the new API; no functional change is intended.
 
 Signed-off-by: David Ahern <dsa@cumulusnetworks.com>
 ---
- net/core/dev.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ drivers/infiniband/core/core_priv.h     |  9 +------
+ drivers/infiniband/core/roce_gid_mgmt.c | 42 ++++++++++++++++++---------------
+ 2 files changed, 24 insertions(+), 27 deletions(-)
 
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 0f9b0985a84c..52e70a3d61a4 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -5361,6 +5361,20 @@ struct net_device *netdev_master_upper_dev_get(struct net_device *dev)
+diff --git a/drivers/infiniband/core/core_priv.h b/drivers/infiniband/core/core_priv.h
+index 19d499dcab76..0c0bea091de8 100644
+--- a/drivers/infiniband/core/core_priv.h
++++ b/drivers/infiniband/core/core_priv.h
+@@ -127,14 +127,7 @@ void ib_cache_release_one(struct ib_device *device);
+ static inline bool rdma_is_upper_dev_rcu(struct net_device *dev,
+ 					 struct net_device *upper)
+ {
+-	struct net_device *_upper = NULL;
+-	struct list_head *iter;
+-
+-	netdev_for_each_all_upper_dev_rcu(dev, _upper, iter)
+-		if (_upper == upper)
+-			break;
+-
+-	return _upper == upper;
++	return netdev_has_upper_dev_all_rcu(dev, upper);
  }
- EXPORT_SYMBOL(netdev_master_upper_dev_get);
  
-+/**
-+ * netdev_has_any_lower_dev - Check if device is linked to some device
-+ * @dev: device
-+ *
-+ * Find out if a device is linked to a lower device and return true in case
-+ * it is. The caller must hold the RTNL lock.
-+ */
-+static bool netdev_has_any_lower_dev(struct net_device *dev)
-+{
-+	ASSERT_RTNL();
+ int addr_init(void);
+diff --git a/drivers/infiniband/core/roce_gid_mgmt.c b/drivers/infiniband/core/roce_gid_mgmt.c
+index 06556c34606d..db759a68d948 100644
+--- a/drivers/infiniband/core/roce_gid_mgmt.c
++++ b/drivers/infiniband/core/roce_gid_mgmt.c
+@@ -437,6 +437,28 @@ static void callback_for_addr_gid_device_scan(struct ib_device *device,
+ 			  &parsed->gid_attr);
+ }
+ 
++struct upper_list {
++	struct list_head list;
++	struct net_device *upper;
++};
 +
-+	return !list_empty(&dev->adj_list.lower);
++static int netdev_upper_walk(struct net_device *upper, void *data)
++{
++	struct upper_list *entry = kmalloc(sizeof(*entry), GFP_ATOMIC);
++	struct list_head *upper_list = (struct list_head *)data;
++
++	if (!entry) {
++		pr_info("roce_gid_mgmt: couldn't allocate entry to delete ndev\n");
++		return 0;
++	}
++
++	list_add_tail(&entry->list, upper_list);
++	dev_hold(upper);
++	entry->upper = upper;
++
++	return 0;
 +}
 +
- void *netdev_adjacent_get_private(struct list_head *adj_list)
+ static void handle_netdev_upper(struct ib_device *ib_dev, u8 port,
+ 				void *cookie,
+ 				void (*handle_netdev)(struct ib_device *ib_dev,
+@@ -444,30 +466,12 @@ static void handle_netdev_upper(struct ib_device *ib_dev, u8 port,
+ 						      struct net_device *ndev))
  {
- 	struct netdev_adjacent *adj;
-@@ -6746,6 +6760,7 @@ static void rollback_registered_many(struct list_head *head)
+ 	struct net_device *ndev = (struct net_device *)cookie;
+-	struct upper_list {
+-		struct list_head list;
+-		struct net_device *upper;
+-	};
+-	struct net_device *upper;
+-	struct list_head *iter;
+ 	struct upper_list *upper_iter;
+ 	struct upper_list *upper_temp;
+ 	LIST_HEAD(upper_list);
  
- 		/* Notifier chain MUST detach us all upper devices. */
- 		WARN_ON(netdev_has_any_upper_dev(dev));
-+		WARN_ON(netdev_has_any_lower_dev(dev));
+ 	rcu_read_lock();
+-	netdev_for_each_all_upper_dev_rcu(ndev, upper, iter) {
+-		struct upper_list *entry = kmalloc(sizeof(*entry),
+-						   GFP_ATOMIC);
+-
+-		if (!entry) {
+-			pr_info("roce_gid_mgmt: couldn't allocate entry to delete ndev\n");
+-			continue;
+-		}
+-
+-		list_add_tail(&entry->list, &upper_list);
+-		dev_hold(upper);
+-		entry->upper = upper;
+-	}
++	netdev_walk_all_upper_dev_rcu(ndev, netdev_upper_walk, &upper_list);
+ 	rcu_read_unlock();
  
- 		/* Remove entries from kobject tree */
- 		netdev_unregister_kobject(dev);
+ 	handle_netdev(ib_dev, port, ndev);
 -- 
 2.1.4
 
