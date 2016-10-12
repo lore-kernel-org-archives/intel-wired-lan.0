@@ -1,8 +1,8 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 12 Oct 2016 10:56:32 -0700
+From: Nikita Yushchenko <nikita.yoush@cogentembedded.com>
+Date: Wed, 12 Oct 2016 21:12:39 +0300
 Subject: [Intel-wired-lan] igb driver can cause cache invalidation of
 	non-owned memory?
-In-Reply-To: <cbd0f41d-bc01-3f93-9171-2795c61afdc9@cogentembedded.com>
+In-Reply-To: <CAKgT0UdqwpjP0b4knt2d4DqS1Z9dR+vg-smkgBTZDeACGGdx=Q@mail.gmail.com>
 References: <0b57cbe2-84f7-6c0a-904a-d166571234b5@cogentembedded.com>
  <20161010.050125.1981283393312167625.davem@davemloft.net>
  <10474d19-df1a-3b09-917e-70659be3a56c@cogentembedded.com>
@@ -15,77 +15,50 @@ References: <0b57cbe2-84f7-6c0a-904a-d166571234b5@cogentembedded.com>
  <CAKgT0UfPC_uAn5=+0iiAOGyY7QA-4NWAmedVmWf6TGnywjJR8A@mail.gmail.com>
  <063D6719AE5E284EB5DD2968C1650D6DB01E6F0F@AcuExch.aculab.com>
  <cbd0f41d-bc01-3f93-9171-2795c61afdc9@cogentembedded.com>
-Message-ID: <CAKgT0UdqwpjP0b4knt2d4DqS1Z9dR+vg-smkgBTZDeACGGdx=Q@mail.gmail.com>
+ <CAKgT0UdqwpjP0b4knt2d4DqS1Z9dR+vg-smkgBTZDeACGGdx=Q@mail.gmail.com>
+Message-ID: <d34b7175-1024-8cc9-d422-d9f75f56c069@cogentembedded.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Oct 12, 2016 at 9:11 AM, Nikita Yushchenko
-<nikita.yoush@cogentembedded.com> wrote:
->>>> To get some throughput improvement, I propose removal of that
->>>> sync_for_device() before reusing buffer. Will you accept such a patch ;)
->>>
->>> Not one that gets rid of sync_for_device() in the driver.  From what I
->>> can tell there are some DMA APIs that use that to perform the
->>> invalidation on the region of memory so that it can be DMAed into.
->>> Without that we run the risk of having a race between something the
->>> CPU might have placed in the cache and something the device wrote into
->>> memory.  The sync_for_device() call is meant to invalidate the cache
->>> for the region so that when the device writes into memory there is no
->>> risk of that race.
->>
->> I'm not expert, but some thought...
->>
->> Just remember that the cpu can do speculative memory and cache line reads.
->> So you need to ensure there are no dirty cache lines when the receive
->> buffer is setup and no cache lines at all at before looking at the frame.
->
-> Exactly.
->
-> And because of that, arm does cache invalidation both in sync_for_cpu()
-> and sync_for_device().
->
->> If you can 100% guarantee the cpu hasn't dirtied the cache then I
->> think the invalidate prior to reusing the buffer can be skipped.
->> But I wouldn't want to debug that going wrong.
->
-> I've written earlier in this thread why it is the case for igb - as long
-> as Alexander's statement that igb's buffers are readonly for the stack
-> is true. If Alexander's statement is wrong, then igb is vulnerable to
-> issue I've described in the first message of this thread.
->
-> Btw, we are unable get any breakage with that sync_to_device() removed
-> already for a day. And - our tests run with software checksumming,
-> because on our hardware i210 is wired connected to DSA switch and in
-> this config, no i210 offloading works (i210 hardware gets frames with
-> eDSA headers that it can't parse). Thus any breakage should be
-> immediately discovered.
->
-> And throughput measured by iperf raises from 650 to 850 Mbps.
->
-> Nikita
+> It would make more sense to update the DMA API for
+> __dma_page_cpu_to_dev on ARM so that you don't invalidate the cache if
+> the direction is DMA_FROM_DEVICE.
 
-The point I was trying to make is that you are invalidating the cache
-in both the sync_for_device and sync_for_cpu.  Do you really need that
-for ARM or do you need to perform the invalidation on sync_for_device
-if that may be pushed out anyway?  If you aren't running with with
-speculative look-ups do you even need the invalidation in
-sync_for_cpu?  The underlying problem lives in the code for
-__dma_page_cpu_to_dev and __dma_page_dev_to_cpu.  It seems like they
-are trying to solve for both speculative and non-speculative setups
-and having "FIXME" comments in the code related to this kind of points
-to your problems being there.
+No, in generic case it's unsafe.
 
-Changing the driver code for this won't necessarily work on all
-architectures, and on top of it we have some changes planned which
-will end up making the pages writable in the future to support the
-ongoing XDP effort.  That is one of the reasons why I would not be
-okay with changing the driver to make this work.
+If CPU issued a write to a location, and sometime later that location is
+used as DMA buffer, there is danger that write is still in cache only,
+and writeback is pending. Later this writeback can overwrite data
+written to memory via DMA, causing corruption.
 
-It would make more sense to update the DMA API for
-__dma_page_cpu_to_dev on ARM so that you don't invalidate the cache if
-the direction is DMA_FROM_DEVICE.
 
-- Alex
+> The point I was trying to make is that you are invalidating the cache
+> in both the sync_for_device and sync_for_cpu.  Do you really need that
+> for ARM or do you need to perform the invalidation on sync_for_device
+> if that may be pushed out anyway?  If you aren't running with with
+> speculative look-ups do you even need the invalidation in
+> sync_for_cpu?
+
+I'm not lowlevel arm guru and I don't know for sure. Probably another
+CPU core can be accessing locations neighbor page, causing specilative
+load of locations in DMA page.
+
+
+> Changing the driver code for this won't necessarily work on all
+> architectures, and on top of it we have some changes planned which
+> will end up making the pages writable in the future to support the
+> ongoing XDP effort.  That is one of the reasons why I would not be
+> okay with changing the driver to make this work.
+
+Well I was not really serious about removing that sync_for_device() in
+mainline :)   Although >20% throughput win that this provides is
+impressive...
+
+But what about doing something safer, e.g. adding a bit of tracking and
+only sync_for_device() what was previously sync_for_cpu()ed?  Will you
+accept that?
+
+Nikita
