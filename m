@@ -1,73 +1,170 @@
 From: David Ahern <dsa@cumulusnetworks.com>
-Date: Wed, 12 Oct 2016 13:51:56 -0700
-Subject: [Intel-wired-lan] [PATCH net-next 08/11] rocker: Flip to the new
-	dev walk API
+Date: Wed, 12 Oct 2016 13:51:51 -0700
+Subject: [Intel-wired-lan] [PATCH net-next 03/11] net: bonding: Flip to the
+	new dev walk API
 In-Reply-To: <1476305519-28833-1-git-send-email-dsa@cumulusnetworks.com>
 References: <1476305519-28833-1-git-send-email-dsa@cumulusnetworks.com>
-Message-ID: <1476305519-28833-9-git-send-email-dsa@cumulusnetworks.com>
+Message-ID: <1476305519-28833-4-git-send-email-dsa@cumulusnetworks.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Convert rocker to the new dev walk API. This is just a code conversion;
-no functional change is intended.
+Convert alb_send_learning_packets and bond_has_this_ip to use the new
+netdev_walk_all_upper_dev_rcu API. In both cases this is just a move
+to the new API; no functional change is intended.
 
 Signed-off-by: David Ahern <dsa@cumulusnetworks.com>
 ---
- drivers/net/ethernet/rocker/rocker_main.c | 31 ++++++++++++++++++++++++-------
- 1 file changed, 24 insertions(+), 7 deletions(-)
+ drivers/net/bonding/bond_alb.c  | 82 ++++++++++++++++++++++++++---------------
+ drivers/net/bonding/bond_main.c | 21 +++++++----
+ 2 files changed, 65 insertions(+), 38 deletions(-)
 
-diff --git a/drivers/net/ethernet/rocker/rocker_main.c b/drivers/net/ethernet/rocker/rocker_main.c
-index 5424fb341613..9310adc0bcbb 100644
---- a/drivers/net/ethernet/rocker/rocker_main.c
-+++ b/drivers/net/ethernet/rocker/rocker_main.c
-@@ -2839,20 +2839,37 @@ static bool rocker_port_dev_check_under(const struct net_device *dev,
- 	return true;
+diff --git a/drivers/net/bonding/bond_alb.c b/drivers/net/bonding/bond_alb.c
+index 551f0f8dead3..1ddedec61900 100644
+--- a/drivers/net/bonding/bond_alb.c
++++ b/drivers/net/bonding/bond_alb.c
+@@ -950,13 +950,61 @@ static void alb_send_lp_vid(struct slave *slave, u8 mac_addr[],
+ 	dev_queue_xmit(skb);
  }
  
-+struct rocker_walk_data {
-+	struct rocker *rocker;
-+	struct rocker_port *port;
++struct alb_walk_data {
++	struct bonding *bond;
++	struct slave *slave;
++	u8 *mac_addr;
++	bool strict_match;
 +};
 +
-+static int rocker_lower_dev_walk(struct net_device *lower_dev, void *_data)
++static int alb_upper_dev_walk(struct net_device *upper, void *data)
 +{
-+	struct rocker_walk_data *data = (struct rocker_walk_data *)_data;
++	struct alb_walk_data *_data = (struct alb_walk_data *)data;
++	bool strict_match = _data->strict_match;
++	struct bonding *bond = _data->bond;
++	struct slave *slave = _data->slave;
++	u8 *mac_addr = _data->mac_addr;
++	struct bond_vlan_tag *tags;
++
++	if (is_vlan_dev(upper) && vlan_get_encap_level(upper) == 0) {
++		if (strict_match &&
++		    ether_addr_equal_64bits(mac_addr,
++					    upper->dev_addr)) {
++			alb_send_lp_vid(slave, mac_addr,
++					vlan_dev_vlan_proto(upper),
++					vlan_dev_vlan_id(upper));
++		} else if (!strict_match) {
++			alb_send_lp_vid(slave, upper->dev_addr,
++					vlan_dev_vlan_proto(upper),
++					vlan_dev_vlan_id(upper));
++		}
++	}
++
++	/* If this is a macvlan device, then only send updates
++	 * when strict_match is turned off.
++	 */
++	if (netif_is_macvlan(upper) && !strict_match) {
++		tags = bond_verify_device_path(bond->dev, upper, 0);
++		if (IS_ERR_OR_NULL(tags))
++			BUG();
++		alb_send_lp_vid(slave, upper->dev_addr,
++				tags[0].vlan_proto, tags[0].vlan_id);
++		kfree(tags);
++	}
++
++	return 0;
++}
++
+ static void alb_send_learning_packets(struct slave *slave, u8 mac_addr[],
+ 				      bool strict_match)
+ {
+ 	struct bonding *bond = bond_get_bond_by_slave(slave);
+-	struct net_device *upper;
+-	struct list_head *iter;
+-	struct bond_vlan_tag *tags;
++	struct alb_walk_data data = {
++		.strict_match = strict_match,
++		.mac_addr = mac_addr,
++		.slave = slave,
++		.bond = bond,
++	};
+ 
+ 	/* send untagged */
+ 	alb_send_lp_vid(slave, mac_addr, 0, 0);
+@@ -965,33 +1013,7 @@ static void alb_send_learning_packets(struct slave *slave, u8 mac_addr[],
+ 	 * for that device.
+ 	 */
+ 	rcu_read_lock();
+-	netdev_for_each_all_upper_dev_rcu(bond->dev, upper, iter) {
+-		if (is_vlan_dev(upper) && vlan_get_encap_level(upper) == 0) {
+-			if (strict_match &&
+-			    ether_addr_equal_64bits(mac_addr,
+-						    upper->dev_addr)) {
+-				alb_send_lp_vid(slave, mac_addr,
+-						vlan_dev_vlan_proto(upper),
+-						vlan_dev_vlan_id(upper));
+-			} else if (!strict_match) {
+-				alb_send_lp_vid(slave, upper->dev_addr,
+-						vlan_dev_vlan_proto(upper),
+-						vlan_dev_vlan_id(upper));
+-			}
+-		}
+-
+-		/* If this is a macvlan device, then only send updates
+-		 * when strict_match is turned off.
+-		 */
+-		if (netif_is_macvlan(upper) && !strict_match) {
+-			tags = bond_verify_device_path(bond->dev, upper, 0);
+-			if (IS_ERR_OR_NULL(tags))
+-				BUG();
+-			alb_send_lp_vid(slave, upper->dev_addr,
+-					tags[0].vlan_proto, tags[0].vlan_id);
+-			kfree(tags);
+-		}
+-	}
++	netdev_walk_all_upper_dev_rcu(bond->dev, alb_upper_dev_walk, &data);
+ 	rcu_read_unlock();
+ }
+ 
+diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
+index 3f31ca32f52b..2b4134d5e081 100644
+--- a/drivers/net/bonding/bond_main.c
++++ b/drivers/net/bonding/bond_main.c
+@@ -2270,22 +2270,27 @@ static void bond_mii_monitor(struct work_struct *work)
+ 	}
+ }
+ 
++static int bond_upper_dev_walk(struct net_device *upper, void *data)
++{
++	__be32 ip = *((__be32 *)data);
 +	int ret = 0;
 +
-+	if (rocker_port_dev_check_under(lower_dev, data->rocker)) {
-+		data->port = netdev_priv(lower_dev);
++	if (ip == bond_confirm_addr(upper, 0, ip))
 +		ret = 1;
-+	}
 +
 +	return ret;
 +}
 +
- struct rocker_port *rocker_port_dev_lower_find(struct net_device *dev,
- 					       struct rocker *rocker)
+ static bool bond_has_this_ip(struct bonding *bond, __be32 ip)
  {
--	struct net_device *lower_dev;
+-	struct net_device *upper;
 -	struct list_head *iter;
-+	struct rocker_walk_data data;
+ 	bool ret = false;
  
- 	if (rocker_port_dev_check_under(dev, rocker))
- 		return netdev_priv(dev);
+ 	if (ip == bond_confirm_addr(bond->dev, 0, ip))
+ 		return true;
  
--	netdev_for_each_all_lower_dev(dev, lower_dev, iter) {
--		if (rocker_port_dev_check_under(lower_dev, rocker))
--			return netdev_priv(lower_dev);
+ 	rcu_read_lock();
+-	netdev_for_each_all_upper_dev_rcu(bond->dev, upper, iter) {
+-		if (ip == bond_confirm_addr(upper, 0, ip)) {
+-			ret = true;
+-			break;
+-		}
 -	}
--	return NULL;
-+	data.rocker = rocker;
-+	data.port = NULL;
-+	netdev_walk_all_lower_dev(dev, rocker_lower_dev_walk, &data);
-+
-+	return data.port;
- }
++	if (netdev_walk_all_upper_dev_rcu(bond->dev, bond_upper_dev_walk, &ip))
++		ret = true;
+ 	rcu_read_unlock();
  
- static int rocker_netdevice_event(struct notifier_block *unused,
+ 	return ret;
 -- 
 2.1.4
 
