@@ -1,8 +1,8 @@
-From: David Laight <David.Laight@ACULAB.COM>
-Date: Wed, 12 Oct 2016 16:03:39 +0000
+From: Nikita Yushchenko <nikita.yoush@cogentembedded.com>
+Date: Wed, 12 Oct 2016 19:11:08 +0300
 Subject: [Intel-wired-lan] igb driver can cause cache invalidation of
 	non-owned memory?
-In-Reply-To: <CAKgT0UfPC_uAn5=+0iiAOGyY7QA-4NWAmedVmWf6TGnywjJR8A@mail.gmail.com>
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6DB01E6F0F@AcuExch.aculab.com>
 References: <0b57cbe2-84f7-6c0a-904a-d166571234b5@cogentembedded.com>
  <20161010.050125.1981283393312167625.davem@davemloft.net>
  <10474d19-df1a-3b09-917e-70659be3a56c@cogentembedded.com>
@@ -13,42 +13,53 @@ References: <0b57cbe2-84f7-6c0a-904a-d166571234b5@cogentembedded.com>
  <CAKgT0UcSkG1Nws1kcUp-QV0jnwdXcXrOZ2m0vsWRziETA-11sw@mail.gmail.com>
  <a0779e4d-3228-8649-1e68-21dffd4249bd@cogentembedded.com>
  <CAKgT0UfPC_uAn5=+0iiAOGyY7QA-4NWAmedVmWf6TGnywjJR8A@mail.gmail.com>
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6DB01E6F0F@AcuExch.aculab.com>
+ <063D6719AE5E284EB5DD2968C1650D6DB01E6F0F@AcuExch.aculab.com>
+Message-ID: <cbd0f41d-bc01-3f93-9171-2795c61afdc9@cogentembedded.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Alexander Duyck
-> Sent: 12 October 2016 16:33
-...
-> > To get some throughput improvement, I propose removal of that
-> > sync_for_device() before reusing buffer. Will you accept such a patch ;)
+>>> To get some throughput improvement, I propose removal of that
+>>> sync_for_device() before reusing buffer. Will you accept such a patch ;)
+>>
+>> Not one that gets rid of sync_for_device() in the driver.  From what I
+>> can tell there are some DMA APIs that use that to perform the
+>> invalidation on the region of memory so that it can be DMAed into.
+>> Without that we run the risk of having a race between something the
+>> CPU might have placed in the cache and something the device wrote into
+>> memory.  The sync_for_device() call is meant to invalidate the cache
+>> for the region so that when the device writes into memory there is no
+>> risk of that race.
 > 
-> Not one that gets rid of sync_for_device() in the driver.  From what I
-> can tell there are some DMA APIs that use that to perform the
-> invalidation on the region of memory so that it can be DMAed into.
-> Without that we run the risk of having a race between something the
-> CPU might have placed in the cache and something the device wrote into
-> memory.  The sync_for_device() call is meant to invalidate the cache
-> for the region so that when the device writes into memory there is no
-> risk of that race.
+> I'm not expert, but some thought...
+> 
+> Just remember that the cpu can do speculative memory and cache line reads.
+> So you need to ensure there are no dirty cache lines when the receive
+> buffer is setup and no cache lines at all at before looking at the frame.
 
-I'm not expert, but some thought...
+Exactly.
 
-Just remember that the cpu can do speculative memory and cache line reads.
-So you need to ensure there are no dirty cache lines when the receive
-buffer is setup and no cache lines at all at before looking at the frame.
+And because of that, arm does cache invalidation both in sync_for_cpu()
+and sync_for_device().
 
-So unless you know the exact rules for these speculative cache line reads
-you have to invalidate the cache after the buffer is written to by the
-hardware even it was invalidated when the buffer was set up.
+> If you can 100% guarantee the cpu hasn't dirtied the cache then I
+> think the invalidate prior to reusing the buffer can be skipped.
+> But I wouldn't want to debug that going wrong.
 
-If you can 100% guarantee the cpu hasn't dirtied the cache then I
-think the invalidate prior to reusing the buffer can be skipped.
-But I wouldn't want to debug that going wrong.
-Might be provable safe in the 'copybreak' path.
+I've written earlier in this thread why it is the case for igb - as long
+as Alexander's statement that igb's buffers are readonly for the stack
+is true. If Alexander's statement is wrong, then igb is vulnerable to
+issue I've described in the first message of this thread.
 
-	David
+Btw, we are unable get any breakage with that sync_to_device() removed
+already for a day. And - our tests run with software checksumming,
+because on our hardware i210 is wired connected to DSA switch and in
+this config, no i210 offloading works (i210 hardware gets frames with
+eDSA headers that it can't parse). Thus any breakage should be
+immediately discovered.
 
+And throughput measured by iperf raises from 650 to 850 Mbps.
+
+Nikita
