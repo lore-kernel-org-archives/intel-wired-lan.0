@@ -1,96 +1,56 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Wed, 12 Oct 2016 11:30:13 -0700
-Subject: [Intel-wired-lan] igb driver can cause cache invalidation of
-	non-owned memory?
-In-Reply-To: <d34b7175-1024-8cc9-d422-d9f75f56c069@cogentembedded.com>
-References: <0b57cbe2-84f7-6c0a-904a-d166571234b5@cogentembedded.com>
- <20161010.050125.1981283393312167625.davem@davemloft.net>
- <10474d19-df1a-3b09-917e-70659be3a56c@cogentembedded.com>
- <20161010.075731.2449861168238706.davem@davemloft.net>
- <f75cf1e1-d7e8-e044-188a-987f05f321a5@cogentembedded.com>
- <CAKgT0Uc2nL1aPoryhNxdbf3+TQO+fOvAZMZDe+=9NaqnHCZPyw@mail.gmail.com>
- <19aebfc3-5f1a-9206-4493-2255af7269f9@cogentembedded.com>
- <CAKgT0UcSkG1Nws1kcUp-QV0jnwdXcXrOZ2m0vsWRziETA-11sw@mail.gmail.com>
- <a0779e4d-3228-8649-1e68-21dffd4249bd@cogentembedded.com>
- <CAKgT0UfPC_uAn5=+0iiAOGyY7QA-4NWAmedVmWf6TGnywjJR8A@mail.gmail.com>
- <063D6719AE5E284EB5DD2968C1650D6DB01E6F0F@AcuExch.aculab.com>
- <cbd0f41d-bc01-3f93-9171-2795c61afdc9@cogentembedded.com>
- <CAKgT0UdqwpjP0b4knt2d4DqS1Z9dR+vg-smkgBTZDeACGGdx=Q@mail.gmail.com>
- <d34b7175-1024-8cc9-d422-d9f75f56c069@cogentembedded.com>
-Message-ID: <CAKgT0UdMG4D8CZCVhBD7vF+E5aOk7zyPEp1xXaBukg3v0aYfFg@mail.gmail.com>
+From: Emil Tantilov <emil.s.tantilov@intel.com>
+Date: Wed, 12 Oct 2016 12:34:25 -0700
+Subject: [Intel-wired-lan] [PATCH] ixgbe: set device if before calling
+	get_invariants
+Message-ID: <20161012193425.20797.48614.stgit@localhost6.localdomain6>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Wed, Oct 12, 2016 at 11:12 AM, Nikita Yushchenko
-<nikita.yoush@cogentembedded.com> wrote:
->> It would make more sense to update the DMA API for
->> __dma_page_cpu_to_dev on ARM so that you don't invalidate the cache if
->> the direction is DMA_FROM_DEVICE.
->
-> No, in generic case it's unsafe.
->
-> If CPU issued a write to a location, and sometime later that location is
-> used as DMA buffer, there is danger that write is still in cache only,
-> and writeback is pending. Later this writeback can overwrite data
-> written to memory via DMA, causing corruption.
+Fix an issue where set_phy_power was NULL for X550 copper devices
+because get_invariants was called before hw->device_id was set.
 
-Okay so if I understand it correctly then the invalidation in
-sync_for_device is to force any writes to be flushed out, and the
-invalidation in sync_for_cpu is to flush out any speculative reads.
-So without speculative reads then the sync_for_cpu portion is not
-needed.  You might want to determine if the core you are using
-supports the speculative reads, if not you might be able to get away
-without having to do the sync_for_cpu at all.
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
->> The point I was trying to make is that you are invalidating the cache
->> in both the sync_for_device and sync_for_cpu.  Do you really need that
->> for ARM or do you need to perform the invalidation on sync_for_device
->> if that may be pushed out anyway?  If you aren't running with with
->> speculative look-ups do you even need the invalidation in
->> sync_for_cpu?
->
-> I'm not lowlevel arm guru and I don't know for sure. Probably another
-> CPU core can be accessing locations neighbor page, causing specilative
-> load of locations in DMA page.
->
->
->> Changing the driver code for this won't necessarily work on all
->> architectures, and on top of it we have some changes planned which
->> will end up making the pages writable in the future to support the
->> ongoing XDP effort.  That is one of the reasons why I would not be
->> okay with changing the driver to make this work.
->
-> Well I was not really serious about removing that sync_for_device() in
-> mainline :)   Although >20% throughput win that this provides is
-> impressive...
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index 5227b61..5fb6378 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -5621,7 +5621,8 @@ static void ixgbe_init_dcb(struct ixgbe_adapter *adapter)
+  * Fields are initialized based on PCI device information and
+  * OS network device settings (MTU size).
+  **/
+-static int ixgbe_sw_init(struct ixgbe_adapter *adapter)
++static int ixgbe_sw_init(struct ixgbe_adapter *adapter,
++			 const struct ixgbe_info *ii)
+ {
+ 	struct ixgbe_hw *hw = &adapter->hw;
+ 	struct pci_dev *pdev = adapter->pdev;
+@@ -5637,6 +5638,9 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter)
+ 	hw->subsystem_vendor_id = pdev->subsystem_vendor;
+ 	hw->subsystem_device_id = pdev->subsystem_device;
+ 
++	/* get_invariants needs the device IDs */
++	ii->get_invariants(hw);
++
+ 	/* Set common capability flags and settings */
+ 	rss = min_t(int, ixgbe_max_rss_indices(adapter), num_online_cpus());
+ 	adapter->ring_feature[RING_F_RSS].limit = rss;
+@@ -9505,10 +9509,8 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	hw->phy.mdio.mdio_read = ixgbe_mdio_read;
+ 	hw->phy.mdio.mdio_write = ixgbe_mdio_write;
+ 
+-	ii->get_invariants(hw);
+-
+ 	/* setup the private structure */
+-	err = ixgbe_sw_init(adapter);
++	err = ixgbe_sw_init(adapter, ii);
+ 	if (err)
+ 		goto err_sw_init;
+ 
 
-I agree the improvement is pretty impressive.  The think is there are
-similar gains we can generate on x86 by stripping out bits and pieces
-that are needed for other architectures.  I'm just wanting to make
-certain we aren't optimizing for one architecture at the detriment of
-others.
-
-> But what about doing something safer, e.g. adding a bit of tracking and
-> only sync_for_device() what was previously sync_for_cpu()ed?  Will you
-> accept that?
->
-> Nikita
-
-The problem is that as we move things over for XDP we will be looking
-at having the CPU potentially write to any spot in the region that was
-mapped as we could append headers to the front or pad data onto the
-end of the frame.  It is probably safest for us to invalidate the
-entire region just to make sure we don't have a collision with
-something that is writing to the page.
-
-So for example in the near future I am planning to expand out the
-DMA_ATTR_SKIP_CPU_SYNC DMA attribute beyond just the ARM architecture
-to see if I can expand it for use with SWIOTLB.  If we can use this on
-unmap we might be able to solve some of the existing problems that
-required us to make the page read-only since we could unmap the page
-without invalidating any existing writes on the page.
-
-- Alex
