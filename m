@@ -1,56 +1,51 @@
-From: Emil Tantilov <emil.s.tantilov@intel.com>
-Date: Wed, 12 Oct 2016 12:34:25 -0700
-Subject: [Intel-wired-lan] [PATCH] ixgbe: set device if before calling
-	get_invariants
-Message-ID: <20161012193425.20797.48614.stgit@localhost6.localdomain6>
+From: Aaron Sierra <asierra@xes-inc.com>
+Date: Wed, 12 Oct 2016 15:19:19 -0500 (CDT)
+Subject: [Intel-wired-lan] Bug with 'igb: Remove GS40G specific
+	defines/functions'
+In-Reply-To: <77C85CBC-39FD-40B4-9456-56A3FEE3544A@vectranetworks.com>
+References: <77C85CBC-39FD-40B4-9456-56A3FEE3544A@vectranetworks.com>
+Message-ID: <1570773976.567827.1476303559656.JavaMail.zimbra@xes-inc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Fix an issue where set_phy_power was NULL for X550 copper devices
-because get_invariants was called before hw->device_id was set.
+Chris,
+Someone else reported a similar issue back in April. Would you
+mind taking a look at the discussion that we had back then to
+see if it applies to you?
 
-Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+http://lists.osuosl.org/pipermail/intel-wired-lan/Week-of-Mon-20160425/005171.html
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index 5227b61..5fb6378 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -5621,7 +5621,8 @@ static void ixgbe_init_dcb(struct ixgbe_adapter *adapter)
-  * Fields are initialized based on PCI device information and
-  * OS network device settings (MTU size).
-  **/
--static int ixgbe_sw_init(struct ixgbe_adapter *adapter)
-+static int ixgbe_sw_init(struct ixgbe_adapter *adapter,
-+			 const struct ixgbe_info *ii)
- {
- 	struct ixgbe_hw *hw = &adapter->hw;
- 	struct pci_dev *pdev = adapter->pdev;
-@@ -5637,6 +5638,9 @@ static int ixgbe_sw_init(struct ixgbe_adapter *adapter)
- 	hw->subsystem_vendor_id = pdev->subsystem_vendor;
- 	hw->subsystem_device_id = pdev->subsystem_device;
- 
-+	/* get_invariants needs the device IDs */
-+	ii->get_invariants(hw);
-+
- 	/* Set common capability flags and settings */
- 	rss = min_t(int, ixgbe_max_rss_indices(adapter), num_online_cpus());
- 	adapter->ring_feature[RING_F_RSS].limit = rss;
-@@ -9505,10 +9509,8 @@ static int ixgbe_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	hw->phy.mdio.mdio_read = ixgbe_mdio_read;
- 	hw->phy.mdio.mdio_write = ixgbe_mdio_write;
- 
--	ii->get_invariants(hw);
--
- 	/* setup the private structure */
--	err = ixgbe_sw_init(adapter);
-+	err = ixgbe_sw_init(adapter, ii);
- 	if (err)
- 		goto err_sw_init;
- 
+-- 
+--- Extreme Engineering Solutions, Inc (X-ES) ---
+Aaron Sierra
+Senior Embedded Engineer
+X-ES http://www.xes-inc.com
+3225 Deming Way, Ste 120
+Middleton, WI  53562
+Phone: (608) 833-1155 x115
+Email: asierra at xes-inc.com
 
+----- Original Message -----
+> From: "Chris Arges" <carges@vectranetworks.com>
+> To: "Aaron Sierra" <asierra@xes-inc.com>, "jeffrey t kirsher" <jeffrey.t.kirsher@intel.com>
+> Cc: "intel-wired-lan" <intel-wired-lan@lists.osuosl.org>
+> Sent: Wednesday, October 12, 2016 2:51:41 PM
+> Subject: Bug with 'igb: Remove GS40G specific defines/functions'
+
+> Hi,
+> 
+> I have an Intel I210 NIC which shows:
+> 'igb: probe of 0000:07:00.0 failed wtih error -2'
+> Upon boot after power has been completely disconnected.
+> 
+> v4.4 works, while v4.5 fails and I was able to bisect it down to:
+> commit 2a3cdead8b408351fa1e3079b220fa331480ffbc
+> 
+> Any ideas for a fix? I'm happy to test any patches.
+> 
+> (apologies for the resend, typed the wrong address.)
+> 
+> --chris
