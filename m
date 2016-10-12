@@ -1,46 +1,228 @@
-From: Chris Arges <carges@vectranetworks.com>
-Date: Wed, 12 Oct 2016 21:18:33 +0000
-Subject: [Intel-wired-lan] Bug with 'igb: Remove GS40G specific
-	defines/functions'
-In-Reply-To: <133564642.602581.1476305193640.JavaMail.zimbra@xes-inc.com>
-References: <77C85CBC-39FD-40B4-9456-56A3FEE3544A@vectranetworks.com>
- <1570773976.567827.1476303559656.JavaMail.zimbra@xes-inc.com>
- <20F028E5-EC20-4F65-8889-3F254196ABF8@vectranetworks.com>
- <133564642.602581.1476305193640.JavaMail.zimbra@xes-inc.com>
-Message-ID: <F267652D-6FE2-4808-BFE7-013510C5A733@vectranetworks.com>
+From: David Ahern <dsa@cumulusnetworks.com>
+Date: Wed, 12 Oct 2016 13:51:54 -0700
+Subject: [Intel-wired-lan] [PATCH net-next 06/11] ixgbe: Flip to the new dev
+	walk API
+In-Reply-To: <1476305519-28833-1-git-send-email-dsa@cumulusnetworks.com>
+References: <1476305519-28833-1-git-send-email-dsa@cumulusnetworks.com>
+Message-ID: <1476305519-28833-7-git-send-email-dsa@cumulusnetworks.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
+Convert ixgbe users of the old macros to new dev walk API. 
+This is just a move to the new API; no functional change is intended.
 
+Signed-off-by: David Ahern <dsa@cumulusnetworks.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 132 ++++++++++++++++----------
+ 1 file changed, 82 insertions(+), 50 deletions(-)
 
-On 10/12/16, 3:46 PM, "Aaron Sierra" <asierra@xes-inc.com> wrote:
-
-    Chris,
-    
-    > I?m not sure exactly which part I need to comment out to verify in
-    > ?igb_init_phy_params_82575()?.
-    > Is there a fix already planned for this? Any additional information I can
-    > provide?
-    
-    Did you follow any of the "Next message" links? There is more to the
-    discussion than that first page that I linked to.
-    
-    In that discussion we determined that the PHY was somehow setup with a
-    non-zero register page setting. That was treated as a BIOS bug rather
-    than a driver bug.
-    
-    If you're having the same problem, then it could be possible to explicitly
-    set the default page to zero, but I'm not sure where that _should_ be done
-    or if that is generally the correct/safe thing to do.
-    
-    -Aaron
-    
-Aaron,
-Ah sorry about that, I thought you were referring just to that particular post.
-I?ll forward this along to the BIOS vendor.
-Thanks,
---chris
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+index a244d9a67264..aae5e0349d93 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
+@@ -5012,24 +5012,23 @@ static int ixgbe_fwd_ring_up(struct net_device *vdev,
+ 	return err;
+ }
+ 
+-static void ixgbe_configure_dfwd(struct ixgbe_adapter *adapter)
++static int ixgbe_upper_dev_walk(struct net_device *upper, void *data)
+ {
+-	struct net_device *upper;
+-	struct list_head *iter;
+-	int err;
+-
+-	netdev_for_each_all_upper_dev_rcu(adapter->netdev, upper, iter) {
+-		if (netif_is_macvlan(upper)) {
+-			struct macvlan_dev *dfwd = netdev_priv(upper);
+-			struct ixgbe_fwd_adapter *vadapter = dfwd->fwd_priv;
++	if (netif_is_macvlan(upper)) {
++		struct macvlan_dev *dfwd = netdev_priv(upper);
++		struct ixgbe_fwd_adapter *vadapter = dfwd->fwd_priv;
+ 
+-			if (dfwd->fwd_priv) {
+-				err = ixgbe_fwd_ring_up(upper, vadapter);
+-				if (err)
+-					continue;
+-			}
+-		}
++		if (dfwd->fwd_priv)
++			ixgbe_fwd_ring_up(upper, vadapter);
+ 	}
++
++	return 0;
++}
++
++static void ixgbe_configure_dfwd(struct ixgbe_adapter *adapter)
++{
++	netdev_walk_all_upper_dev_rcu(adapter->netdev,
++				      ixgbe_upper_dev_walk, NULL);
+ }
+ 
+ static void ixgbe_configure(struct ixgbe_adapter *adapter)
+@@ -5448,12 +5447,25 @@ static void ixgbe_fdir_filter_exit(struct ixgbe_adapter *adapter)
+ 	spin_unlock(&adapter->fdir_perfect_lock);
+ }
+ 
++static int ixgbe_disable_macvlan(struct net_device *upper, void *data)
++{
++	if (netif_is_macvlan(upper)) {
++		struct macvlan_dev *vlan = netdev_priv(upper);
++
++		if (vlan->fwd_priv) {
++			netif_tx_stop_all_queues(upper);
++			netif_carrier_off(upper);
++			netif_tx_disable(upper);
++		}
++	}
++
++	return 0;
++}
++
+ void ixgbe_down(struct ixgbe_adapter *adapter)
+ {
+ 	struct net_device *netdev = adapter->netdev;
+ 	struct ixgbe_hw *hw = &adapter->hw;
+-	struct net_device *upper;
+-	struct list_head *iter;
+ 	int i;
+ 
+ 	/* signal that we are down to the interrupt handler */
+@@ -5477,17 +5489,8 @@ void ixgbe_down(struct ixgbe_adapter *adapter)
+ 	netif_tx_disable(netdev);
+ 
+ 	/* disable any upper devices */
+-	netdev_for_each_all_upper_dev_rcu(adapter->netdev, upper, iter) {
+-		if (netif_is_macvlan(upper)) {
+-			struct macvlan_dev *vlan = netdev_priv(upper);
+-
+-			if (vlan->fwd_priv) {
+-				netif_tx_stop_all_queues(upper);
+-				netif_carrier_off(upper);
+-				netif_tx_disable(upper);
+-			}
+-		}
+-	}
++	netdev_walk_all_upper_dev_rcu(adapter->netdev,
++				      ixgbe_disable_macvlan, NULL);
+ 
+ 	ixgbe_irq_disable(adapter);
+ 
+@@ -6728,6 +6731,18 @@ static void ixgbe_update_default_up(struct ixgbe_adapter *adapter)
+ #endif
+ }
+ 
++static int ixgbe_enable_macvlan(struct net_device *upper, void *data)
++{
++	if (netif_is_macvlan(upper)) {
++		struct macvlan_dev *vlan = netdev_priv(upper);
++
++		if (vlan->fwd_priv)
++			netif_tx_wake_all_queues(upper);
++	}
++
++	return 0;
++}
++
+ /**
+  * ixgbe_watchdog_link_is_up - update netif_carrier status and
+  *                             print link up message
+@@ -6737,8 +6752,6 @@ static void ixgbe_watchdog_link_is_up(struct ixgbe_adapter *adapter)
+ {
+ 	struct net_device *netdev = adapter->netdev;
+ 	struct ixgbe_hw *hw = &adapter->hw;
+-	struct net_device *upper;
+-	struct list_head *iter;
+ 	u32 link_speed = adapter->link_speed;
+ 	const char *speed_str;
+ 	bool flow_rx, flow_tx;
+@@ -6809,14 +6822,8 @@ static void ixgbe_watchdog_link_is_up(struct ixgbe_adapter *adapter)
+ 
+ 	/* enable any upper devices */
+ 	rtnl_lock();
+-	netdev_for_each_all_upper_dev_rcu(adapter->netdev, upper, iter) {
+-		if (netif_is_macvlan(upper)) {
+-			struct macvlan_dev *vlan = netdev_priv(upper);
+-
+-			if (vlan->fwd_priv)
+-				netif_tx_wake_all_queues(upper);
+-		}
+-	}
++	netdev_walk_all_upper_dev_rcu(adapter->netdev,
++				      ixgbe_enable_macvlan, NULL);
+ 	rtnl_unlock();
+ 
+ 	/* update the default user priority for VFs */
+@@ -8350,12 +8357,38 @@ static int ixgbe_configure_clsu32_del_hnode(struct ixgbe_adapter *adapter,
+ }
+ 
+ #ifdef CONFIG_NET_CLS_ACT
++struct upper_walk_data {
++	struct ixgbe_adapter *adapter;
++	int ifindex;
++	u64 action;
++	u8 queue;
++};
++
++static int get_macvlan_queue(struct net_device *upper, void *_data)
++{
++	if (netif_is_macvlan(upper)) {
++		struct macvlan_dev *dfwd = netdev_priv(upper);
++		struct ixgbe_fwd_adapter *vadapter = dfwd->fwd_priv;
++		struct upper_walk_data *data = _data;
++		struct ixgbe_adapter *adapter = data->adapter;
++		int ifindex = data->ifindex;
++
++		if (vadapter && vadapter->netdev->ifindex == ifindex) {
++			data->queue = adapter->rx_ring[vadapter->rx_base_queue]->reg_idx;
++			data->action = data->queue;
++			return 1;
++		}
++	}
++
++	return 0;
++}
++
+ static int handle_redirect_action(struct ixgbe_adapter *adapter, int ifindex,
+ 				  u8 *queue, u64 *action)
+ {
+ 	unsigned int num_vfs = adapter->num_vfs, vf;
++	struct upper_walk_data data;
+ 	struct net_device *upper;
+-	struct list_head *iter;
+ 
+ 	/* redirect to a SRIOV VF */
+ 	for (vf = 0; vf < num_vfs; ++vf) {
+@@ -8373,17 +8406,16 @@ static int handle_redirect_action(struct ixgbe_adapter *adapter, int ifindex,
+ 	}
+ 
+ 	/* redirect to a offloaded macvlan netdev */
+-	netdev_for_each_all_upper_dev_rcu(adapter->netdev, upper, iter) {
+-		if (netif_is_macvlan(upper)) {
+-			struct macvlan_dev *dfwd = netdev_priv(upper);
+-			struct ixgbe_fwd_adapter *vadapter = dfwd->fwd_priv;
+-
+-			if (vadapter && vadapter->netdev->ifindex == ifindex) {
+-				*queue = adapter->rx_ring[vadapter->rx_base_queue]->reg_idx;
+-				*action = *queue;
+-				return 0;
+-			}
+-		}
++	data.adapter = adapter;
++	data.ifindex = ifindex;
++	data.action = 0;
++	data.queue = 0;
++	if (netdev_walk_all_upper_dev_rcu(adapter->netdev,
++					  get_macvlan_queue, &data)) {
++		*action = data.action;
++		*queue = data.queue;
++
++		return 0;
+ 	}
+ 
+ 	return -EINVAL;
+-- 
+2.1.4
 
