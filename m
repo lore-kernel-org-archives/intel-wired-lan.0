@@ -1,51 +1,39 @@
-From: Aaron Sierra <asierra@xes-inc.com>
-Date: Wed, 12 Oct 2016 15:19:19 -0500 (CDT)
-Subject: [Intel-wired-lan] Bug with 'igb: Remove GS40G specific
-	defines/functions'
-In-Reply-To: <77C85CBC-39FD-40B4-9456-56A3FEE3544A@vectranetworks.com>
-References: <77C85CBC-39FD-40B4-9456-56A3FEE3544A@vectranetworks.com>
-Message-ID: <1570773976.567827.1476303559656.JavaMail.zimbra@xes-inc.com>
+From: Singh, Krishneil K <krishneil.k.singh@intel.com>
+Date: Wed, 12 Oct 2016 20:41:18 +0000
+Subject: [Intel-wired-lan] [PATCH v3] ixgbe: use link instead of
+	I2C	combined abstraction
+In-Reply-To: <20161010215403.27440.5694.stgit@localhost6.localdomain6>
+References: <20161010215403.27440.5694.stgit@localhost6.localdomain6>
+Message-ID: <EF50CC0C76A53A44BAD798C58E0A157E42E37730@ORSMSX103.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Chris,
-Someone else reported a similar issue back in April. Would you
-mind taking a look at the discussion that we had back then to
-see if it applies to you?
 
-http://lists.osuosl.org/pipermail/intel-wired-lan/Week-of-Mon-20160425/005171.html
+-----Original Message-----
+From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On Behalf Of Emil Tantilov
+Sent: Monday, October 10, 2016 2:54 PM
+To: intel-wired-lan@lists.osuosl.org
+Subject: [Intel-wired-lan] [PATCH v3] ixgbe: use link instead of I2C combined abstraction
 
--- 
---- Extreme Engineering Solutions, Inc (X-ES) ---
-Aaron Sierra
-Senior Embedded Engineer
-X-ES http://www.xes-inc.com
-3225 Deming Way, Ste 120
-Middleton, WI  53562
-Phone: (608) 833-1155 x115
-Email: asierra at xes-inc.com
+Introduce ixgbe_link_operations struct with the following changes:
 
------ Original Message -----
-> From: "Chris Arges" <carges@vectranetworks.com>
-> To: "Aaron Sierra" <asierra@xes-inc.com>, "jeffrey t kirsher" <jeffrey.t.kirsher@intel.com>
-> Cc: "intel-wired-lan" <intel-wired-lan@lists.osuosl.org>
-> Sent: Wednesday, October 12, 2016 2:51:41 PM
-> Subject: Bug with 'igb: Remove GS40G specific defines/functions'
+	read_i2c_combined		=> read_link
+	read_i2c_combined_unlocked	=> read_link_unlocked
+	write_i2c_combined		=> write_link
+	write_i2c_combined_unlocked	=> write_link_unlocked
 
-> Hi,
-> 
-> I have an Intel I210 NIC which shows:
-> 'igb: probe of 0000:07:00.0 failed wtih error -2'
-> Upon boot after power has been completely disconnected.
-> 
-> v4.4 works, while v4.5 fails and I was able to bisect it down to:
-> commit 2a3cdead8b408351fa1e3079b220fa331480ffbc
-> 
-> Any ideas for a fix? I'm happy to test any patches.
-> 
-> (apologies for the resend, typed the wrong address.)
-> 
-> --chris
+This will allow X550EM_a to override these methods for MDIO access while X550EM_x provides methods to use I2C combined access. This also adds a new structure, ixgbe_link_info, to hold information about the link. Initially this is just method pointers and a bus address.
+
+The functions involved in combined I2C accesses were moved from ixgbe_phy.c to ixgbe_x550.c. The underlying functions that carry out the combined I2C accesses were left in ixgbe_phy.c because they share some functions with other I2C methods.
+
+v2 - set hw->link.ops in probe.
+v3 - check ii->link_ops before setting it since we don't have it for all devices.
+
+Signed-off-by: Emil Tantilov <emil.s.tantilov@intel.com>
+---
+
+Tested-by: Krishneil Singh <krishneil.k.singh@intel.com>
+
