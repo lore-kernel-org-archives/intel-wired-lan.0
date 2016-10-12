@@ -1,302 +1,195 @@
-From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue, 11 Oct 2016 15:26:58 -0700
-Subject: [Intel-wired-lan] [next PATCH S50 6/6] i40e: removed unreachable
-	code
-In-Reply-To: <1476224818-16844-1-git-send-email-bimmy.pujari@intel.com>
-References: <1476224818-16844-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1476224818-16844-7-git-send-email-bimmy.pujari@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Wed, 12 Oct 2016 10:58:32 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 2fc5b0811300447a3e3d0ad60c535e1d9fa7391c
+Message-ID: <57fda6d8.KKLq9pq6vZzBSETF%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Filip Sadowski <filip.sadowski@intel.com>
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+2fc5b0811300447a3e3d0ad60c535e1d9fa7391c  ixgbe: use link instead of I2C combined abstraction
 
-Removed some of unnecessary if statements and unreachable code found by
-static code analysis tool.
-The return value of i40e_vsi_control_rings(..., false) is always 0. So,
-test for non-zero will never be true. The function has been split into
-"int i40e_vsi_start_rings()" and "void i40e_vsi_stop_rings()" for better
-understanding.
-Similarly, the function i40e_vsi_kill_vlan() never fails. So, checking
-for return value is also unnecessary. Function definition changed to void.
-The i40e_loopback_test() function is not impelemented. The function and
-all references to loopback testing were removed.
+elapsed time: 141m
 
-Signed-off-by: Filip Sadowski <filip.sadowski@intel.com>
-Change-ID: Id45cf66f6689ce2bc4e887de13f073e30e8431bd
----
-Testing hints:
-        Found by static code analysis. Test by code inspection.
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 173
 
- drivers/net/ethernet/intel/i40e/i40e.h             |  5 +--
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 18 ----------
- drivers/net/ethernet/intel/i40e/i40e_main.c        | 41 ++++++++++++----------
- drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 29 +++++----------
- 4 files changed, 33 insertions(+), 60 deletions(-)
+arm                     davinci_all_defconfig
+frv                                 defconfig
+m68k                        mvme147_defconfig
+i386                     randconfig-a0-201641
+x86_64                 randconfig-a0-10120653
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+arm                              allyesconfig
+arm                        realview_defconfig
+avr32                     atstk1003_defconfig
+um                                allnoconfig
+x86_64                 randconfig-x014-201641
+x86_64                 randconfig-x011-201641
+x86_64                 randconfig-x015-201641
+x86_64                 randconfig-x017-201641
+x86_64                 randconfig-x012-201641
+x86_64                 randconfig-x018-201641
+x86_64                 randconfig-x019-201641
+x86_64                 randconfig-x013-201641
+x86_64                 randconfig-x016-201641
+x86_64                 randconfig-x010-201641
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+x86_64                            eywa-module
+x86_64                                   rhel
+x86_64                               rhel-7.2
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201641
+i386                     randconfig-s1-201641
+x86_64                 randconfig-s0-10120733
+x86_64                 randconfig-s1-10120733
+x86_64                 randconfig-s2-10120733
+x86_64                 randconfig-s0-10120945
+x86_64                 randconfig-s1-10120945
+x86_64                 randconfig-s2-10120945
+x86_64                 randconfig-s3-10120733
+x86_64                 randconfig-s4-10120733
+x86_64                 randconfig-s5-10120733
+m68k                       m5249evb_defconfig
+m68k                        m5407c3_defconfig
+powerpc                         c2k_defconfig
+powerpc                 mpc832x_mds_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+x86_64                   randconfig-i0-201641
+i386                   randconfig-b0-10120654
+i386                   randconfig-b0-10120947
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i1-201641
+i386                     randconfig-i0-201641
+x86_64                 randconfig-b0-10120735
+x86_64                           allmodconfig
+x86_64                 randconfig-n0-10120834
+i386                               tinyconfig
+x86_64                              defconfig
+m32r                    m32700ut.up_defconfig
+powerpc                      ppc64e_defconfig
+xtensa                           allmodconfig
+i386                   randconfig-x014-201641
+i386                   randconfig-x019-201641
+i386                   randconfig-x017-201641
+i386                   randconfig-x018-201641
+i386                   randconfig-x015-201641
+i386                   randconfig-x016-201641
+i386                   randconfig-x012-201641
+i386                   randconfig-x013-201641
+i386                   randconfig-x011-201641
+i386                   randconfig-x010-201641
+x86_64                                    lkp
+i386                     randconfig-n0-201641
+i386                   randconfig-h0-10120720
+i386                   randconfig-h1-10120720
+i386                   randconfig-h0-10120926
+i386                   randconfig-h1-10120926
+powerpc                      acadia_defconfig
+sh                           cayman_defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+mips                        xilfpga_defconfig
+mn10300                          allyesconfig
+x86_64                 randconfig-x001-201641
+x86_64                 randconfig-x008-201641
+x86_64                 randconfig-x009-201641
+x86_64                 randconfig-x000-201641
+x86_64                 randconfig-x005-201641
+x86_64                 randconfig-x003-201641
+x86_64                 randconfig-x007-201641
+x86_64                 randconfig-x002-201641
+x86_64                 randconfig-x006-201641
+x86_64                 randconfig-x004-201641
+i386                     randconfig-r0-201641
+x86_64                 randconfig-r0-10120843
+i386                   randconfig-x004-201641
+i386                   randconfig-x006-201641
+i386                   randconfig-x007-201641
+i386                   randconfig-x003-201641
+i386                   randconfig-x008-201641
+i386                   randconfig-x000-201641
+i386                   randconfig-x002-201641
+i386                   randconfig-x009-201641
+i386                   randconfig-x001-201641
+i386                   randconfig-x005-201641
+i386                   randconfig-x0-10120943
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e.h b/drivers/net/ethernet/intel/i40e/i40e.h
-index bb02280..29c2318 100644
---- a/drivers/net/ethernet/intel/i40e/i40e.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e.h
-@@ -773,7 +773,8 @@ void i40e_service_event_schedule(struct i40e_pf *pf);
- void i40e_notify_client_of_vf_msg(struct i40e_vsi *vsi, u32 vf_id,
- 				  u8 *msg, u16 len);
- 
--int i40e_vsi_control_rings(struct i40e_vsi *vsi, bool enable);
-+int i40e_vsi_start_rings(struct i40e_vsi *vsi);
-+void i40e_vsi_stop_rings(struct i40e_vsi *vsi);
- int i40e_reconfig_rss_queues(struct i40e_pf *pf, int queue_count);
- struct i40e_veb *i40e_veb_setup(struct i40e_pf *pf, u16 flags, u16 uplink_seid,
- 				u16 downlink_seid, u8 enabled_tc);
-@@ -849,7 +850,7 @@ int i40e_close(struct net_device *netdev);
- int i40e_vsi_open(struct i40e_vsi *vsi);
- void i40e_vlan_stripping_disable(struct i40e_vsi *vsi);
- int i40e_vsi_add_vlan(struct i40e_vsi *vsi, s16 vid);
--int i40e_vsi_kill_vlan(struct i40e_vsi *vsi, s16 vid);
-+void i40e_vsi_kill_vlan(struct i40e_vsi *vsi, s16 vid);
- struct i40e_mac_filter *i40e_put_mac_in_vlan(struct i40e_vsi *vsi,
- 					     const u8 *macaddr);
- int i40e_del_mac_all_vlan(struct i40e_vsi *vsi, const u8 *macaddr);
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index 962a9bb..b9e1162 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -216,7 +216,6 @@ enum i40e_ethtool_test_id {
- 	I40E_ETH_TEST_REG = 0,
- 	I40E_ETH_TEST_EEPROM,
- 	I40E_ETH_TEST_INTR,
--	I40E_ETH_TEST_LOOPBACK,
- 	I40E_ETH_TEST_LINK,
- };
- 
-@@ -224,7 +223,6 @@ static const char i40e_gstrings_test[][ETH_GSTRING_LEN] = {
- 	"Register test  (offline)",
- 	"Eeprom test    (offline)",
- 	"Interrupt test (offline)",
--	"Loopback test  (offline)",
- 	"Link test   (on/offline)"
- };
- 
-@@ -1744,17 +1742,6 @@ static int i40e_intr_test(struct net_device *netdev, u64 *data)
- 	return *data;
- }
- 
--static int i40e_loopback_test(struct net_device *netdev, u64 *data)
--{
--	struct i40e_netdev_priv *np = netdev_priv(netdev);
--	struct i40e_pf *pf = np->vsi->back;
--
--	netif_info(pf, hw, netdev, "loopback test not implemented\n");
--	*data = 0;
--
--	return *data;
--}
--
- static inline bool i40e_active_vfs(struct i40e_pf *pf)
- {
- 	struct i40e_vf *vfs = pf->vf;
-@@ -1790,7 +1777,6 @@ static void i40e_diag_test(struct net_device *netdev,
- 			data[I40E_ETH_TEST_REG]		= 1;
- 			data[I40E_ETH_TEST_EEPROM]	= 1;
- 			data[I40E_ETH_TEST_INTR]	= 1;
--			data[I40E_ETH_TEST_LOOPBACK]	= 1;
- 			data[I40E_ETH_TEST_LINK]	= 1;
- 			eth_test->flags |= ETH_TEST_FL_FAILED;
- 			clear_bit(__I40E_TESTING, &pf->state);
-@@ -1818,9 +1804,6 @@ static void i40e_diag_test(struct net_device *netdev,
- 		if (i40e_intr_test(netdev, &data[I40E_ETH_TEST_INTR]))
- 			eth_test->flags |= ETH_TEST_FL_FAILED;
- 
--		if (i40e_loopback_test(netdev, &data[I40E_ETH_TEST_LOOPBACK]))
--			eth_test->flags |= ETH_TEST_FL_FAILED;
--
- 		/* run reg test last, a reset is required after it */
- 		if (i40e_reg_test(netdev, &data[I40E_ETH_TEST_REG]))
- 			eth_test->flags |= ETH_TEST_FL_FAILED;
-@@ -1841,7 +1824,6 @@ static void i40e_diag_test(struct net_device *netdev,
- 		data[I40E_ETH_TEST_REG] = 0;
- 		data[I40E_ETH_TEST_EEPROM] = 0;
- 		data[I40E_ETH_TEST_INTR] = 0;
--		data[I40E_ETH_TEST_LOOPBACK] = 0;
- 	}
- 
- skip_ol_tests:
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_main.c b/drivers/net/ethernet/intel/i40e/i40e_main.c
-index e4e2775..3ffc59c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_main.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_main.c
-@@ -2496,10 +2496,8 @@ int i40e_vsi_add_vlan(struct i40e_vsi *vsi, s16 vid)
-  * i40e_vsi_kill_vlan - Remove vsi membership for given vlan
-  * @vsi: the vsi being configured
-  * @vid: vlan id to be removed (0 = untagged only , -1 = any)
-- *
-- * Return: 0 on success or negative otherwise
-  **/
--int i40e_vsi_kill_vlan(struct i40e_vsi *vsi, s16 vid)
-+void i40e_vsi_kill_vlan(struct i40e_vsi *vsi, s16 vid)
- {
- 	struct net_device *netdev = vsi->netdev;
- 	struct i40e_mac_filter *f;
-@@ -2523,7 +2521,6 @@ int i40e_vsi_kill_vlan(struct i40e_vsi *vsi, s16 vid)
- 	 * applying the new filter changes
- 	 */
- 	i40e_service_event_schedule(vsi->back);
--	return 0;
- }
- 
- /**
-@@ -4010,30 +4007,36 @@ static int i40e_vsi_control_rx(struct i40e_vsi *vsi, bool enable)
- }
- 
- /**
-- * i40e_vsi_control_rings - Start or stop a VSI's rings
-+ * i40e_vsi_start_rings - Start a VSI's rings
-  * @vsi: the VSI being configured
-- * @enable: start or stop the rings
-  **/
--int i40e_vsi_control_rings(struct i40e_vsi *vsi, bool request)
-+int i40e_vsi_start_rings(struct i40e_vsi *vsi)
- {
- 	int ret = 0;
- 
- 	/* do rx first for enable and last for disable */
--	if (request) {
--		ret = i40e_vsi_control_rx(vsi, request);
--		if (ret)
--			return ret;
--		ret = i40e_vsi_control_tx(vsi, request);
--	} else {
--		/* Ignore return value, we need to shutdown whatever we can */
--		i40e_vsi_control_tx(vsi, request);
--		i40e_vsi_control_rx(vsi, request);
--	}
-+	ret = i40e_vsi_control_rx(vsi, true);
-+	if (ret)
-+		return ret;
-+	ret = i40e_vsi_control_tx(vsi, true);
- 
- 	return ret;
- }
- 
- /**
-+ * i40e_vsi_stop_rings - Stop a VSI's rings
-+ * @vsi: the VSI being configured
-+ **/
-+void i40e_vsi_stop_rings(struct i40e_vsi *vsi)
-+{
-+	/* do rx first for enable and last for disable
-+	 * Ignore return value, we need to shutdown whatever we can
-+	 */
-+	i40e_vsi_control_tx(vsi, false);
-+	i40e_vsi_control_rx(vsi, false);
-+}
-+
-+/**
-  * i40e_vsi_free_irq - Free the irq association with the OS
-  * @vsi: the VSI being configured
-  **/
-@@ -5231,7 +5234,7 @@ static int i40e_up_complete(struct i40e_vsi *vsi)
- 		i40e_configure_msi_and_legacy(vsi);
- 
- 	/* start rings */
--	err = i40e_vsi_control_rings(vsi, true);
-+	err = i40e_vsi_start_rings(vsi);
- 	if (err)
- 		return err;
- 
-@@ -5328,7 +5331,7 @@ void i40e_down(struct i40e_vsi *vsi)
- 		netif_tx_disable(vsi->netdev);
- 	}
- 	i40e_vsi_disable_irq(vsi);
--	i40e_vsi_control_rings(vsi, false);
-+	i40e_vsi_stop_rings(vsi);
- 	i40e_napi_disable_all(vsi);
- 
- 	for (i = 0; i < vsi->num_queue_pairs; i++) {
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-index 69e184b..53b46553 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c
-@@ -991,7 +991,7 @@ void i40e_reset_vf(struct i40e_vf *vf, bool flr)
- 	if (vf->lan_vsi_idx == 0)
- 		goto complete_reset;
- 
--	i40e_vsi_control_rings(pf->vsi[vf->lan_vsi_idx], false);
-+	i40e_vsi_stop_rings(pf->vsi[vf->lan_vsi_idx]);
- complete_reset:
- 	/* reallocate VF resources to reset the VSI state */
- 	i40e_free_vf_res(vf);
-@@ -1032,8 +1032,7 @@ void i40e_free_vfs(struct i40e_pf *pf)
- 	i40e_notify_client_of_vf_enable(pf, 0);
- 	for (i = 0; i < pf->num_alloc_vfs; i++)
- 		if (test_bit(I40E_VF_STAT_INIT, &pf->vf[i].vf_states))
--			i40e_vsi_control_rings(pf->vsi[pf->vf[i].lan_vsi_idx],
--					       false);
-+			i40e_vsi_stop_rings(pf->vsi[pf->vf[i].lan_vsi_idx]);
- 
- 	/* Disable IOV before freeing resources. This lets any VF drivers
- 	 * running in the host get themselves cleaned up before we yank
-@@ -1759,7 +1758,7 @@ static int i40e_vc_enable_queues_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
- 		goto error_param;
- 	}
- 
--	if (i40e_vsi_control_rings(pf->vsi[vf->lan_vsi_idx], true))
-+	if (i40e_vsi_start_rings(pf->vsi[vf->lan_vsi_idx]))
- 		aq_ret = I40E_ERR_TIMEOUT;
- error_param:
- 	/* send the response to the VF */
-@@ -1798,8 +1797,7 @@ static int i40e_vc_disable_queues_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
- 		goto error_param;
- 	}
- 
--	if (i40e_vsi_control_rings(pf->vsi[vf->lan_vsi_idx], false))
--		aq_ret = I40E_ERR_TIMEOUT;
-+	i40e_vsi_stop_rings(pf->vsi[vf->lan_vsi_idx]);
- 
- error_param:
- 	/* send the response to the VF */
-@@ -2139,9 +2137,8 @@ static int i40e_vc_remove_vlan_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
- 	}
- 
- 	for (i = 0; i < vfl->num_elements; i++) {
--		int ret = i40e_vsi_kill_vlan(vsi, vfl->vlan_id[i]);
--		if (!ret)
--			vf->num_vlan--;
-+		i40e_vsi_kill_vlan(vsi, vfl->vlan_id[i]);
-+		vf->num_vlan--;
- 
- 		if (test_bit(I40E_VF_STAT_UC_PROMISC, &vf->vf_states))
- 			i40e_aq_set_vsi_uc_promisc_on_vlan(&pf->hw, vsi->seid,
-@@ -2153,11 +2150,6 @@ static int i40e_vc_remove_vlan_msg(struct i40e_vf *vf, u8 *msg, u16 msglen)
- 							   false,
- 							   vfl->vlan_id[i],
- 							   NULL);
--
--		if (ret)
--			dev_err(&pf->pdev->dev,
--				"Unable to delete VLAN filter %d for VF %d, error %d\n",
--				vfl->vlan_id[i], vf->vf_id, ret);
- 	}
- 
- error_param:
-@@ -2835,13 +2827,8 @@ int i40e_ndo_set_vf_port_vlan(struct net_device *netdev, int vf_id,
- 
- 	if (vsi->info.pvid) {
- 		/* kill old VLAN */
--		ret = i40e_vsi_kill_vlan(vsi, (le16_to_cpu(vsi->info.pvid) &
--					       VLAN_VID_MASK));
--		if (ret) {
--			dev_info(&vsi->back->pdev->dev,
--				 "remove VLAN failed, ret=%d, aq_err=%d\n",
--				 ret, pf->hw.aq.asq_last_status);
--		}
-+		i40e_vsi_kill_vlan(vsi, (le16_to_cpu(vsi->info.pvid) &
-+					 VLAN_VID_MASK));
- 	}
- 	if (vlan_id || qos)
- 		ret = i40e_vsi_add_pvid(vsi, vlanprio);
--- 
-2.4.11
-
+Thanks,
+Fengguang
