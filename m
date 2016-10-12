@@ -1,88 +1,56 @@
 From: David Ahern <dsa@cumulusnetworks.com>
-Date: Wed, 12 Oct 2016 13:51:53 -0700
-Subject: [Intel-wired-lan] [PATCH net-next 05/11] IB/ipoib: Flip to new dev
-	walk API
+Date: Wed, 12 Oct 2016 13:51:58 -0700
+Subject: [Intel-wired-lan] [PATCH net-next 10/11] net: Add warning if any
+	lower device is still in adjacency list
 In-Reply-To: <1476305519-28833-1-git-send-email-dsa@cumulusnetworks.com>
 References: <1476305519-28833-1-git-send-email-dsa@cumulusnetworks.com>
-Message-ID: <1476305519-28833-6-git-send-email-dsa@cumulusnetworks.com>
+Message-ID: <1476305519-28833-11-git-send-email-dsa@cumulusnetworks.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Convert ipoib_get_net_dev_match_addr to the new upper device walk API.
-This is just a move to the new API; no functional change is intended.
+Lower list should be empty just like upper.
 
 Signed-off-by: David Ahern <dsa@cumulusnetworks.com>
 ---
- drivers/infiniband/ulp/ipoib/ipoib_main.c | 37 +++++++++++++++++++++----------
- 1 file changed, 25 insertions(+), 12 deletions(-)
+ net/core/dev.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-diff --git a/drivers/infiniband/ulp/ipoib/ipoib_main.c b/drivers/infiniband/ulp/ipoib/ipoib_main.c
-index 5636fc3da6b8..624855ab7205 100644
---- a/drivers/infiniband/ulp/ipoib/ipoib_main.c
-+++ b/drivers/infiniband/ulp/ipoib/ipoib_main.c
-@@ -292,6 +292,25 @@ static struct net_device *ipoib_get_master_net_dev(struct net_device *dev)
- 	return dev;
+diff --git a/net/core/dev.c b/net/core/dev.c
+index 0f9b0985a84c..52e70a3d61a4 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -5361,6 +5361,20 @@ struct net_device *netdev_master_upper_dev_get(struct net_device *dev)
  }
+ EXPORT_SYMBOL(netdev_master_upper_dev_get);
  
-+struct ipoib_walk_data {
-+	const struct sockaddr *addr;
-+	struct net_device *result;
-+};
-+
-+static int ipoib_upper_walk(struct net_device *upper, void *_data)
++/**
++ * netdev_has_any_lower_dev - Check if device is linked to some device
++ * @dev: device
++ *
++ * Find out if a device is linked to a lower device and return true in case
++ * it is. The caller must hold the RTNL lock.
++ */
++static bool netdev_has_any_lower_dev(struct net_device *dev)
 +{
-+	struct ipoib_walk_data *data = (struct ipoib_walk_data *)_data;
-+	int ret = 0;
++	ASSERT_RTNL();
 +
-+	if (ipoib_is_dev_match_addr_rcu(data->addr, upper)) {
-+		dev_hold(upper);
-+		data->result = upper;
-+		ret = 1;
-+	}
-+
-+	return ret;
++	return !list_empty(&dev->adj_list.lower);
 +}
 +
- /**
-  * Find a net_device matching the given address, which is an upper device of
-  * the given net_device.
-@@ -304,27 +323,21 @@ static struct net_device *ipoib_get_master_net_dev(struct net_device *dev)
- static struct net_device *ipoib_get_net_dev_match_addr(
- 		const struct sockaddr *addr, struct net_device *dev)
+ void *netdev_adjacent_get_private(struct list_head *adj_list)
  {
--	struct net_device *upper,
--			  *result = NULL;
--	struct list_head *iter;
-+	struct ipoib_walk_data data = {
-+		.addr = addr,
-+	};
+ 	struct netdev_adjacent *adj;
+@@ -6746,6 +6760,7 @@ static void rollback_registered_many(struct list_head *head)
  
- 	rcu_read_lock();
- 	if (ipoib_is_dev_match_addr_rcu(addr, dev)) {
- 		dev_hold(dev);
--		result = dev;
-+		data.result = dev;
- 		goto out;
- 	}
+ 		/* Notifier chain MUST detach us all upper devices. */
+ 		WARN_ON(netdev_has_any_upper_dev(dev));
++		WARN_ON(netdev_has_any_lower_dev(dev));
  
--	netdev_for_each_all_upper_dev_rcu(dev, upper, iter) {
--		if (ipoib_is_dev_match_addr_rcu(addr, upper)) {
--			dev_hold(upper);
--			result = upper;
--			break;
--		}
--	}
-+	netdev_walk_all_upper_dev_rcu(dev, ipoib_upper_walk, &data);
- out:
- 	rcu_read_unlock();
--	return result;
-+	return data.result;
- }
- 
- /* returns the number of IPoIB netdevs on top a given ipoib device matching a
+ 		/* Remove entries from kobject tree */
+ 		netdev_unregister_kobject(dev);
 -- 
 2.1.4
 
