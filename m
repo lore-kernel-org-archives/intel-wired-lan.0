@@ -1,170 +1,62 @@
-From: David Ahern <dsa@cumulusnetworks.com>
-Date: Wed, 12 Oct 2016 13:51:51 -0700
-Subject: [Intel-wired-lan] [PATCH net-next 03/11] net: bonding: Flip to the
-	new dev walk API
-In-Reply-To: <1476305519-28833-1-git-send-email-dsa@cumulusnetworks.com>
-References: <1476305519-28833-1-git-send-email-dsa@cumulusnetworks.com>
-Message-ID: <1476305519-28833-4-git-send-email-dsa@cumulusnetworks.com>
+From: Chris Arges <carges@vectranetworks.com>
+Date: Wed, 12 Oct 2016 20:27:52 +0000
+Subject: [Intel-wired-lan] Bug with 'igb: Remove GS40G specific
+	defines/functions'
+In-Reply-To: <1570773976.567827.1476303559656.JavaMail.zimbra@xes-inc.com>
+References: <77C85CBC-39FD-40B4-9456-56A3FEE3544A@vectranetworks.com>
+ <1570773976.567827.1476303559656.JavaMail.zimbra@xes-inc.com>
+Message-ID: <20F028E5-EC20-4F65-8889-3F254196ABF8@vectranetworks.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Convert alb_send_learning_packets and bond_has_this_ip to use the new
-netdev_walk_all_upper_dev_rcu API. In both cases this is just a move
-to the new API; no functional change is intended.
+On 10/12/16, 3:19 PM, "Aaron Sierra" <asierra@xes-inc.com> wrote:
 
-Signed-off-by: David Ahern <dsa@cumulusnetworks.com>
----
- drivers/net/bonding/bond_alb.c  | 82 ++++++++++++++++++++++++++---------------
- drivers/net/bonding/bond_main.c | 21 +++++++----
- 2 files changed, 65 insertions(+), 38 deletions(-)
+    Chris,
+    Someone else reported a similar issue back in April. Would you
+    mind taking a look at the discussion that we had back then to
+    see if it applies to you?
+    
+I?m not sure exactly which part I need to comment out to verify in ?igb_init_phy_params_82575()?.
+Is there a fix already planned for this? Any additional information I can provide?
+Thanks,
+--chris
 
-diff --git a/drivers/net/bonding/bond_alb.c b/drivers/net/bonding/bond_alb.c
-index 551f0f8dead3..1ddedec61900 100644
---- a/drivers/net/bonding/bond_alb.c
-+++ b/drivers/net/bonding/bond_alb.c
-@@ -950,13 +950,61 @@ static void alb_send_lp_vid(struct slave *slave, u8 mac_addr[],
- 	dev_queue_xmit(skb);
- }
- 
-+struct alb_walk_data {
-+	struct bonding *bond;
-+	struct slave *slave;
-+	u8 *mac_addr;
-+	bool strict_match;
-+};
-+
-+static int alb_upper_dev_walk(struct net_device *upper, void *data)
-+{
-+	struct alb_walk_data *_data = (struct alb_walk_data *)data;
-+	bool strict_match = _data->strict_match;
-+	struct bonding *bond = _data->bond;
-+	struct slave *slave = _data->slave;
-+	u8 *mac_addr = _data->mac_addr;
-+	struct bond_vlan_tag *tags;
-+
-+	if (is_vlan_dev(upper) && vlan_get_encap_level(upper) == 0) {
-+		if (strict_match &&
-+		    ether_addr_equal_64bits(mac_addr,
-+					    upper->dev_addr)) {
-+			alb_send_lp_vid(slave, mac_addr,
-+					vlan_dev_vlan_proto(upper),
-+					vlan_dev_vlan_id(upper));
-+		} else if (!strict_match) {
-+			alb_send_lp_vid(slave, upper->dev_addr,
-+					vlan_dev_vlan_proto(upper),
-+					vlan_dev_vlan_id(upper));
-+		}
-+	}
-+
-+	/* If this is a macvlan device, then only send updates
-+	 * when strict_match is turned off.
-+	 */
-+	if (netif_is_macvlan(upper) && !strict_match) {
-+		tags = bond_verify_device_path(bond->dev, upper, 0);
-+		if (IS_ERR_OR_NULL(tags))
-+			BUG();
-+		alb_send_lp_vid(slave, upper->dev_addr,
-+				tags[0].vlan_proto, tags[0].vlan_id);
-+		kfree(tags);
-+	}
-+
-+	return 0;
-+}
-+
- static void alb_send_learning_packets(struct slave *slave, u8 mac_addr[],
- 				      bool strict_match)
- {
- 	struct bonding *bond = bond_get_bond_by_slave(slave);
--	struct net_device *upper;
--	struct list_head *iter;
--	struct bond_vlan_tag *tags;
-+	struct alb_walk_data data = {
-+		.strict_match = strict_match,
-+		.mac_addr = mac_addr,
-+		.slave = slave,
-+		.bond = bond,
-+	};
- 
- 	/* send untagged */
- 	alb_send_lp_vid(slave, mac_addr, 0, 0);
-@@ -965,33 +1013,7 @@ static void alb_send_learning_packets(struct slave *slave, u8 mac_addr[],
- 	 * for that device.
- 	 */
- 	rcu_read_lock();
--	netdev_for_each_all_upper_dev_rcu(bond->dev, upper, iter) {
--		if (is_vlan_dev(upper) && vlan_get_encap_level(upper) == 0) {
--			if (strict_match &&
--			    ether_addr_equal_64bits(mac_addr,
--						    upper->dev_addr)) {
--				alb_send_lp_vid(slave, mac_addr,
--						vlan_dev_vlan_proto(upper),
--						vlan_dev_vlan_id(upper));
--			} else if (!strict_match) {
--				alb_send_lp_vid(slave, upper->dev_addr,
--						vlan_dev_vlan_proto(upper),
--						vlan_dev_vlan_id(upper));
--			}
--		}
--
--		/* If this is a macvlan device, then only send updates
--		 * when strict_match is turned off.
--		 */
--		if (netif_is_macvlan(upper) && !strict_match) {
--			tags = bond_verify_device_path(bond->dev, upper, 0);
--			if (IS_ERR_OR_NULL(tags))
--				BUG();
--			alb_send_lp_vid(slave, upper->dev_addr,
--					tags[0].vlan_proto, tags[0].vlan_id);
--			kfree(tags);
--		}
--	}
-+	netdev_walk_all_upper_dev_rcu(bond->dev, alb_upper_dev_walk, &data);
- 	rcu_read_unlock();
- }
- 
-diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
-index 3f31ca32f52b..2b4134d5e081 100644
---- a/drivers/net/bonding/bond_main.c
-+++ b/drivers/net/bonding/bond_main.c
-@@ -2270,22 +2270,27 @@ static void bond_mii_monitor(struct work_struct *work)
- 	}
- }
- 
-+static int bond_upper_dev_walk(struct net_device *upper, void *data)
-+{
-+	__be32 ip = *((__be32 *)data);
-+	int ret = 0;
-+
-+	if (ip == bond_confirm_addr(upper, 0, ip))
-+		ret = 1;
-+
-+	return ret;
-+}
-+
- static bool bond_has_this_ip(struct bonding *bond, __be32 ip)
- {
--	struct net_device *upper;
--	struct list_head *iter;
- 	bool ret = false;
- 
- 	if (ip == bond_confirm_addr(bond->dev, 0, ip))
- 		return true;
- 
- 	rcu_read_lock();
--	netdev_for_each_all_upper_dev_rcu(bond->dev, upper, iter) {
--		if (ip == bond_confirm_addr(upper, 0, ip)) {
--			ret = true;
--			break;
--		}
--	}
-+	if (netdev_walk_all_upper_dev_rcu(bond->dev, bond_upper_dev_walk, &ip))
-+		ret = true;
- 	rcu_read_unlock();
- 
- 	return ret;
--- 
-2.1.4
+
+    http://lists.osuosl.org/pipermail/intel-wired-lan/Week-of-Mon-20160425/005171.html
+    
+    -- 
+    --- Extreme Engineering Solutions, Inc (X-ES) ---
+    Aaron Sierra
+    Senior Embedded Engineer
+    X-ES http://www.xes-inc.com
+    3225 Deming Way, Ste 120
+    Middleton, WI  53562
+    Phone: (608) 833-1155 x115
+    Email: asierra at xes-inc.com
+    
+    ----- Original Message -----
+    > From: "Chris Arges" <carges@vectranetworks.com>
+    > To: "Aaron Sierra" <asierra@xes-inc.com>, "jeffrey t kirsher" <jeffrey.t.kirsher@intel.com>
+    > Cc: "intel-wired-lan" <intel-wired-lan@lists.osuosl.org>
+    > Sent: Wednesday, October 12, 2016 2:51:41 PM
+    > Subject: Bug with 'igb: Remove GS40G specific defines/functions'
+    
+    > Hi,
+    > 
+    > I have an Intel I210 NIC which shows:
+    > 'igb: probe of 0000:07:00.0 failed wtih error -2'
+    > Upon boot after power has been completely disconnected.
+    > 
+    > v4.4 works, while v4.5 fails and I was able to bisect it down to:
+    > commit 2a3cdead8b408351fa1e3079b220fa331480ffbc
+    > 
+    > Any ideas for a fix? I'm happy to test any patches.
+    > 
+    > (apologies for the resend, typed the wrong address.)
+    > 
+    > --chris
+    
 
