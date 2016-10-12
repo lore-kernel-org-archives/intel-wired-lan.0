@@ -1,195 +1,102 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 12 Oct 2016 10:58:32 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 2fc5b0811300447a3e3d0ad60c535e1d9fa7391c
-Message-ID: <57fda6d8.KKLq9pq6vZzBSETF%fengguang.wu@intel.com>
+From: Nikita Yushchenko <nikita.yoush@cogentembedded.com>
+Date: Wed, 12 Oct 2016 09:55:31 +0300
+Subject: [Intel-wired-lan] igb driver can cause cache invalidation of
+	non-owned memory?
+In-Reply-To: <CAKgT0UcSkG1Nws1kcUp-QV0jnwdXcXrOZ2m0vsWRziETA-11sw@mail.gmail.com>
+References: <0b57cbe2-84f7-6c0a-904a-d166571234b5@cogentembedded.com>
+ <20161010.050125.1981283393312167625.davem@davemloft.net>
+ <10474d19-df1a-3b09-917e-70659be3a56c@cogentembedded.com>
+ <20161010.075731.2449861168238706.davem@davemloft.net>
+ <f75cf1e1-d7e8-e044-188a-987f05f321a5@cogentembedded.com>
+ <CAKgT0Uc2nL1aPoryhNxdbf3+TQO+fOvAZMZDe+=9NaqnHCZPyw@mail.gmail.com>
+ <19aebfc3-5f1a-9206-4493-2255af7269f9@cogentembedded.com>
+ <CAKgT0UcSkG1Nws1kcUp-QV0jnwdXcXrOZ2m0vsWRziETA-11sw@mail.gmail.com>
+Message-ID: <a0779e4d-3228-8649-1e68-21dffd4249bd@cogentembedded.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-2fc5b0811300447a3e3d0ad60c535e1d9fa7391c  ixgbe: use link instead of I2C combined abstraction
+>>> The main reason why this isn't a concern for the igb driver is because
+>>> we currently pass the page up as read-only.  We don't allow the stack
+>>> to write into the page by keeping the page count greater than 1 which
+>>> means that the page is shared.  It isn't until we unmap the page that
+>>> the page count is allowed to drop to 1 indicating that it is writable.
+>>
+>> Doesn't that mean that sync_to_device() in igb_reuse_rx_page() can be
+>> avoided? If page is read only for entire world, then it can't be dirty
+>> in cache and thus device can safely write to it without preparation step.
+> 
+> For the sake of correctness we were adding the
+> dma_sync_single_range_for_device.
 
-elapsed time: 141m
+Could you please elaborate this "for sake of correctness"?
 
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 173
+If by "correctness" you mean ensuring that buffer gets frame DMAed by
+device and that's not broken by cache activity, then:
+- on first use of this buffer after page allocation, sync_for_device()
+is not needed due to previous dma_page_map() call,
+- on later uses of the same buffer, sync_for_device() is not needed due
+to buffer being read-only since dma_page_map() call, thus it can't be
+dirty in cache and thus no writebacks of this area can be possible.
 
-arm                     davinci_all_defconfig
-frv                                 defconfig
-m68k                        mvme147_defconfig
-i386                     randconfig-a0-201641
-x86_64                 randconfig-a0-10120653
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-i386                             allmodconfig
-arm                              allyesconfig
-arm                        realview_defconfig
-avr32                     atstk1003_defconfig
-um                                allnoconfig
-x86_64                 randconfig-x014-201641
-x86_64                 randconfig-x011-201641
-x86_64                 randconfig-x015-201641
-x86_64                 randconfig-x017-201641
-x86_64                 randconfig-x012-201641
-x86_64                 randconfig-x018-201641
-x86_64                 randconfig-x019-201641
-x86_64                 randconfig-x013-201641
-x86_64                 randconfig-x016-201641
-x86_64                 randconfig-x010-201641
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-x86_64                            eywa-module
-x86_64                                   rhel
-x86_64                               rhel-7.2
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201641
-i386                     randconfig-s1-201641
-x86_64                 randconfig-s0-10120733
-x86_64                 randconfig-s1-10120733
-x86_64                 randconfig-s2-10120733
-x86_64                 randconfig-s0-10120945
-x86_64                 randconfig-s1-10120945
-x86_64                 randconfig-s2-10120945
-x86_64                 randconfig-s3-10120733
-x86_64                 randconfig-s4-10120733
-x86_64                 randconfig-s5-10120733
-m68k                       m5249evb_defconfig
-m68k                        m5407c3_defconfig
-powerpc                         c2k_defconfig
-powerpc                 mpc832x_mds_defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201641
-i386                   randconfig-b0-10120654
-i386                   randconfig-b0-10120947
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i1-201641
-i386                     randconfig-i0-201641
-x86_64                 randconfig-b0-10120735
-x86_64                           allmodconfig
-x86_64                 randconfig-n0-10120834
-i386                               tinyconfig
-x86_64                              defconfig
-m32r                    m32700ut.up_defconfig
-powerpc                      ppc64e_defconfig
-xtensa                           allmodconfig
-i386                   randconfig-x014-201641
-i386                   randconfig-x019-201641
-i386                   randconfig-x017-201641
-i386                   randconfig-x018-201641
-i386                   randconfig-x015-201641
-i386                   randconfig-x016-201641
-i386                   randconfig-x012-201641
-i386                   randconfig-x013-201641
-i386                   randconfig-x011-201641
-i386                   randconfig-x010-201641
-x86_64                                    lkp
-i386                     randconfig-n0-201641
-i386                   randconfig-h0-10120720
-i386                   randconfig-h1-10120720
-i386                   randconfig-h0-10120926
-i386                   randconfig-h1-10120926
-powerpc                      acadia_defconfig
-sh                           cayman_defconfig
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-mips                        xilfpga_defconfig
-mn10300                          allyesconfig
-x86_64                 randconfig-x001-201641
-x86_64                 randconfig-x008-201641
-x86_64                 randconfig-x009-201641
-x86_64                 randconfig-x000-201641
-x86_64                 randconfig-x005-201641
-x86_64                 randconfig-x003-201641
-x86_64                 randconfig-x007-201641
-x86_64                 randconfig-x002-201641
-x86_64                 randconfig-x006-201641
-x86_64                 randconfig-x004-201641
-i386                     randconfig-r0-201641
-x86_64                 randconfig-r0-10120843
-i386                   randconfig-x004-201641
-i386                   randconfig-x006-201641
-i386                   randconfig-x007-201641
-i386                   randconfig-x003-201641
-i386                   randconfig-x008-201641
-i386                   randconfig-x000-201641
-i386                   randconfig-x002-201641
-i386                   randconfig-x009-201641
-i386                   randconfig-x001-201641
-i386                   randconfig-x005-201641
-i386                   randconfig-x0-10120943
+If by "correctness" you mean strict following "ownership" concept - i.e.
+memory area is "owned" either by cpu or by device, and "ownersip" must
+be passed to device before DMA and back to cpu after DMA - then, igb
+driver already breaks these rules anyway:
+- igb calls dma_map_page() at page allocation time, thus entire page
+becomes "owned" by device,
+- and then, on first use of second buffer inside the page, igb calls
+sync_for_device() for buffer area, despite of that area is already
+"owned" by device,
+- and later, if a buffer within page gets reused, igb calls
+sync_for_device() for entire buffer, despite of only part of buffer was
+sync_for_cpu()'ed at time of completing receive of previous frame into
+this buffer,
+- and later, igb calls dma_unmap_page(), despite of that part of page
+was sync_for_cpu()'ed and thus is "owned" by CPU.
 
-Thanks,
-Fengguang
+Given all that, not calling sync_for_device() before reusing buffer
+won't make picture much worse :)
+
+> Since it is an DMA_FROM_DEVICE
+> mapping calling it should really have no effect for most DMA mapping
+> interfaces.
+
+Unfortunately dma_sync_single_range_for_device() *is* slow on imx6q - it
+does cache invalidation.  I don't really understand why invalidating
+cache can be slow - it only removes data from cache, it should not
+access slow outer memory - but cache invalidation *is* in top of perf
+profiles.
+
+To get some throughput improvement, I propose removal of that
+sync_for_device() before reusing buffer. Will you accept such a patch ;)
+
+
+> Also you may want to try updating to the 4.8 version of the driver.
+> It reduces the size of the dma_sync_single_range_for_cpu loops by
+> reducing the sync size down to the size that was DMAed into the
+> buffer.
+
+Actually that patch came out of the work I'm currently participating in
+;).  Sure I have it.
+
+> Specifically I believe
+> the 0->100% accounting problem is due to the way this is all tracked.
+
+Thanks for this hint - shame on me not realizing this earlier...
+
+> You may want to try pulling the most recent net-next kernel and
+> testing that to see if you still see the same behavior as Eric has
+> recently added a fix that is meant to allow for better sharing between
+> softirq polling and applications when dealing with stuff like UDP
+> traffic.
+> 
+> As far as identifying the problem areas your best bet would be to push
+> the CPU to 100% and then identify the hot spots.
+
+Thanks for hints
+
+
+Nikita
