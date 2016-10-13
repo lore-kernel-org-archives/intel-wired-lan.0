@@ -1,91 +1,66 @@
-From: Jochen Henneberg <jh@henneberg-systemdesign.com>
-Date: Thu, 13 Oct 2016 10:58:15 +0200
-Subject: [Intel-wired-lan] Bug with 'igb: Remove GS40G specific
- defines/functions'
-In-Reply-To: <F267652D-6FE2-4808-BFE7-013510C5A733@vectranetworks.com>
-References: <77C85CBC-39FD-40B4-9456-56A3FEE3544A@vectranetworks.com>
- <1570773976.567827.1476303559656.JavaMail.zimbra@xes-inc.com>
- <20F028E5-EC20-4F65-8889-3F254196ABF8@vectranetworks.com>
- <133564642.602581.1476305193640.JavaMail.zimbra@xes-inc.com>
- <F267652D-6FE2-4808-BFE7-013510C5A733@vectranetworks.com>
-Message-ID: <1476349095.18484.15.camel@maxwell>
+From: David Laight <David.Laight@ACULAB.COM>
+Date: Thu, 13 Oct 2016 10:39:52 +0000
+Subject: [Intel-wired-lan] igb driver can cause cache invalidation of
+	non-owned memory?
+In-Reply-To: <CAKgT0UdMG4D8CZCVhBD7vF+E5aOk7zyPEp1xXaBukg3v0aYfFg@mail.gmail.com>
+References: <0b57cbe2-84f7-6c0a-904a-d166571234b5@cogentembedded.com>
+ <20161010.050125.1981283393312167625.davem@davemloft.net>
+ <10474d19-df1a-3b09-917e-70659be3a56c@cogentembedded.com>
+ <20161010.075731.2449861168238706.davem@davemloft.net>
+ <f75cf1e1-d7e8-e044-188a-987f05f321a5@cogentembedded.com>
+ <CAKgT0Uc2nL1aPoryhNxdbf3+TQO+fOvAZMZDe+=9NaqnHCZPyw@mail.gmail.com>
+ <19aebfc3-5f1a-9206-4493-2255af7269f9@cogentembedded.com>
+ <CAKgT0UcSkG1Nws1kcUp-QV0jnwdXcXrOZ2m0vsWRziETA-11sw@mail.gmail.com>
+ <a0779e4d-3228-8649-1e68-21dffd4249bd@cogentembedded.com>
+ <CAKgT0UfPC_uAn5=+0iiAOGyY7QA-4NWAmedVmWf6TGnywjJR8A@mail.gmail.com>
+ <063D6719AE5E284EB5DD2968C1650D6DB01E6F0F@AcuExch.aculab.com>
+ <cbd0f41d-bc01-3f93-9171-2795c61afdc9@cogentembedded.com>
+ <CAKgT0UdqwpjP0b4knt2d4DqS1Z9dR+vg-smkgBTZDeACGGdx=Q@mail.gmail.com>
+ <d34b7175-1024-8cc9-d422-d9f75f56c069@cogentembedded.com>
+ <CAKgT0UdMG4D8CZCVhBD7vF+E5aOk7zyPEp1xXaBukg3v0aYfFg@mail.gmail.com>
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6DB01E773C@AcuExch.aculab.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Mi, 2016-10-12 at 21:18 +0000, Chris Arges wrote:
+From: Alexander Duyck
+> Sent: 12 October 2016 19:30
+> On Wed, Oct 12, 2016 at 11:12 AM, Nikita Yushchenko
+> <nikita.yoush@cogentembedded.com> wrote:
+> >> It would make more sense to update the DMA API for
+> >> __dma_page_cpu_to_dev on ARM so that you don't invalidate the cache if
+> >> the direction is DMA_FROM_DEVICE.
+> >
+> > No, in generic case it's unsafe.
+> >
+> > If CPU issued a write to a location, and sometime later that location is
+> > used as DMA buffer, there is danger that write is still in cache only,
+> > and writeback is pending. Later this writeback can overwrite data
+> > written to memory via DMA, causing corruption.
 > 
-> On 10/12/16, 3:46 PM, "Aaron Sierra" <asierra@xes-inc.com> wrote:
-> 
->     Chris,
->     
->     > I?m not sure exactly which part I need to comment out to verify in
->     > ?igb_init_phy_params_82575()?.
->     > Is there a fix already planned for this? Any additional information I can
->     > provide?
->     
->     Did you follow any of the "Next message" links? There is more to the
->     discussion than that first page that I linked to.
->     
->     In that discussion we determined that the PHY was somehow setup with a
->     non-zero register page setting. That was treated as a BIOS bug rather
->     than a driver bug.
->     
->     If you're having the same problem, then it could be possible to explicitly
->     set the default page to zero, but I'm not sure where that _should_ be done
->     or if that is generally the correct/safe thing to do.
->     
->     -Aaron
->     
-> Aaron,
-> Ah sorry about that, I thought you were referring just to that particular post.
-> I?ll forward this along to the BIOS vendor.
-> Thanks,
-> --chris
+> Okay so if I understand it correctly then the invalidation in
+> sync_for_device is to force any writes to be flushed out, and the
+> invalidation in sync_for_cpu is to flush out any speculative reads.
+> So without speculative reads then the sync_for_cpu portion is not
+> needed.  You might want to determine if the core you are using
+> supports the speculative reads, if not you might be able to get away
+> without having to do the sync_for_cpu at all.
 
-Chris,
+For reads the sync_for_device invalidates (ie discards the contents of)
+the cache lines to ensure the cpu won't write back dirty lines.
+The sync_for_cpu invalidates the cache to ensure the cpu actually
+reads from memory.
 
-I was the original reporter of that issue. Find attached the patch that
-I currently use to ensure correct page selection before the
-configuration is started (id read).
-I am not sure if this is a good fix (though it is quite small which I
-would assume makes it good) and it applies to 4.5 kernel, I did not test
-with current head.
-The chips datasheet says that the initial page selection is 0, so this
-is assumed to be obsolete, but the BIOS may mess up things and as not
-everybody has means to modify or request a BIOS update it might make
-sense to bring this patch into the driver. It comes with almost no cost
-from what I can see.
-Please let me know if this fixes your problem.
+For writes you need to flush (write back) cache lines prior to the DMA.
+I don't think anything is needed when the transfer finishes.
 
-Regards
--Jochen
+If headers/trailers might be added the sync_for_device must cover
+the entire area the frame will be written to.
+Clearly the sync_for_cpu need only cover the valid frame data.
+I suspect you can safely skip the sync_for_device in the 'copybreak'
+path but not if the frame is passed up the protocol stack.
 
+	David
 
-> 
-> _______________________________________________
-> Intel-wired-lan mailing list
-> Intel-wired-lan at lists.osuosl.org
-> http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
-
--- 
-Henneberg - Systemdesign
-Jochen Henneberg
-Loehnfeld 26
-21423 Winsen (Luhe)
---
-Fon: +49 4174 668 773
-Mobile: +49 172 160 14 69
-Fax: +49 321 210 761 64
-www: www.henneberg-systemdesign.com
-
-
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: 0026-igb-reset-page-select-to-0-on-initial-phy-id-read.patch
-Type: text/x-patch
-Size: 847 bytes
-Desc: not available
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20161013/c9c182c4/attachment.bin>
