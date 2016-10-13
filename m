@@ -1,116 +1,108 @@
-From: Jiri Pirko <jiri@resnulli.us>
-Date: Thu, 13 Oct 2016 09:34:24 +0200
-Subject: [Intel-wired-lan] [PATCH net-next 00/11] net: Fix netdev
-	adjacency tracking
-In-Reply-To: <1476305519-28833-1-git-send-email-dsa@cumulusnetworks.com>
-References: <1476305519-28833-1-git-send-email-dsa@cumulusnetworks.com>
-Message-ID: <20161013073424.GB1816@nanopsycho.orion>
+From: Julia Cartwright <julia@ni.com>
+Date: Thu, 13 Oct 2016 11:18:39 -0500
+Subject: [Intel-wired-lan] Kernel 4.6.7-rt13: Intel Ethernet driver igb
+ causes huge latencies in cyclictest
+In-Reply-To: <b77ea8ab312149d2b20a717d3ab0a8dc@FE-MBX1012.de.bosch.com>
+References: <487032ca81f84e70bdacc39a024eff5e@FE-MBX1012.de.bosch.com>
+ <20161004193445.GF10625@jcartwri.amer.corp.natinst.com>
+ <584755c2766e4b94a604ece16760fe14@FE-MBX1012.de.bosch.com>
+ <20161005155959.GH10625@jcartwri.amer.corp.natinst.com>
+ <13c3cd3ffee4490fb22b8de383e51361@FE-MBX1012.de.bosch.com>
+ <AAEA33E297BCAC4B9BB20A7C2DF0AB8D8045E418@FMSMSX113.amr.corp.intel.com>
+ <29250f87b1d84aacb8aa312935582291@FE-MBX1012.de.bosch.com>
+ <20161010193958.GE22235@jcartwri.amer.corp.natinst.com>
+ <e9661abf93194ad3849e3864a8361993@FE-MBX1012.de.bosch.com>
+ <b77ea8ab312149d2b20a717d3ab0a8dc@FE-MBX1012.de.bosch.com>
+Message-ID: <20161013161839.GV10625@jcartwri.amer.corp.natinst.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Wed, Oct 12, 2016 at 10:51:48PM CEST, dsa at cumulusnetworks.com wrote:
->The netdev adjacency tracking is failing to create proper dependencies
->for some topologies. For example this topology
->
->        +--------+
->        |  myvrf |
->        +--------+
->          |    |
->          |  +---------+
->          |  | macvlan |
->          |  +---------+
->          |    |
->      +----------+
->      |  bridge  |
->      +----------+
->          |
->      +--------+
->      | bond0  |
->      +--------+
->          |
->      +--------+
->      |  eth3  |
->      +--------+
->
->hits 1 of 2 problems depending on the order of enslavement. The base set of
->commands for both cases:
->
->    ip link add bond1 type bond
->    ip link set bond1 up
->    ip link set eth3 down
->    ip link set eth3 master bond1
->    ip link set eth3 up
->
->    ip link add bridge type bridge
->    ip link set bridge up
->    ip link add macvlan link bridge type macvlan
->    ip link set macvlan up
->
->    ip link add myvrf type vrf table 1234
->    ip link set myvrf up
->
->    ip link set bridge master myvrf
->
->Case 1 enslave macvlan to the vrf before enslaving the bond to the bridge:
->
->    ip link set macvlan master myvrf
->    ip link set bond1 master bridge
->
->Attempts to delete the VRF:
->    ip link delete myvrf
->
->trigger the BUG in __netdev_adjacent_dev_remove:
->
->[  587.405260] tried to remove device eth3 from myvrf
->[  587.407269] ------------[ cut here ]------------
->[  587.408918] kernel BUG at /home/dsa/kernel.git/net/core/dev.c:5661!
->[  587.411113] invalid opcode: 0000 [#1] SMP
->[  587.412454] Modules linked in: macvlan bridge stp llc bonding vrf
->[  587.414765] CPU: 0 PID: 726 Comm: ip Not tainted 4.8.0+ #109
->[  587.416766] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.7.5-20140531_083030-gandalf 04/01/2014
->[  587.420241] task: ffff88013ab6eec0 task.stack: ffffc90000628000
->[  587.422163] RIP: 0010:[<ffffffff813cef03>]  [<ffffffff813cef03>] __netdev_adjacent_dev_remove+0x40/0x12c
->...
->[  587.446053] Call Trace:
->[  587.446424]  [<ffffffff813d1542>] __netdev_adjacent_dev_unlink+0x20/0x3c
->[  587.447390]  [<ffffffff813d16a3>] netdev_upper_dev_unlink+0xfa/0x15e
->[  587.448297]  [<ffffffffa00003a3>] vrf_del_slave+0x13/0x2a [vrf]
->[  587.449153]  [<ffffffffa00004a4>] vrf_dev_uninit+0xea/0x114 [vrf]
->[  587.450036]  [<ffffffff813d19b0>] rollback_registered_many+0x22b/0x2da
->[  587.450974]  [<ffffffff813d1aac>] unregister_netdevice_many+0x17/0x48
->[  587.451903]  [<ffffffff813de444>] rtnl_delete_link+0x3c/0x43
->[  587.452719]  [<ffffffff813dedcd>] rtnl_dellink+0x180/0x194
->
->When the BUG is converted to a WARN_ON it shows 4 missing adjacencies:
->  eth3 - myvrf, mvrf - eth3, bond1 - myvrf and myvrf - bond1
->
->All of those are because the __netdev_upper_dev_link function does not
->properly link macvlan lower devices to myvrf when it is enslaved.
->
->The second case just flips the ordering of the enslavements:
->    ip link set bond1 master bridge
->    ip link set macvlan master myvrf
->
->Then run:
->    ip link delete bond1
->    ip link delete myvrf
->
->The vrf delete command hangs because myvrf has a reference that has not
->been released. In this case the removal code does not account for 2 paths 
->between eth3 and myvrf - one from bridge to vrf and the other through the
->macvlan.
->
->Rather than try to maintain a linked list of all upper and lower devices
->per netdevice, only track the direct neighbors. The remaining stack can
->be determined by recursively walking the neighbors.
+Hey Mathias-
 
-Although I didn't like the "all-list" idea when Veaceslav pushed it
-because it looked to me like a big hammer, it turned out to be very handy
-and quick for traversing neighbours. Why it cannot be fixed?
+On Thu, Oct 13, 2016 at 10:57:18AM +0000, Koehrer Mathias (ETAS/ESW5) wrote:
+[..]
 
-The walks with possibly hundreds of function calls instead of a single
-list traverse worries me.
+Interesting indeed!
 
+> > Here are some places where I added traces:
+> > In file igb_ptp.c:
+> > void igb_ptp_rx_hang(struct igb_adapter *adapter) {
+> >         struct e1000_hw *hw = &adapter->hw;
+> >         unsigned long rx_event;
+> >         u32 tsyncrxctl;
+> >         trace_igb(700);
+> >         tsyncrxctl = rd32(E1000_TSYNCRXCTL);
+> >         trace_igb(701);
+> >
+> >         /* Other hardware uses per-packet timestamps */
+> >         if (hw->mac.type != e1000_82576)
+> >                 return;
+> > ...
+> >
+> > In file igb_main.c:
+> > static void igb_check_lvmmc(struct igb_adapter *adapter) {
+> >         struct e1000_hw *hw = &adapter->hw;
+> >         u32 lvmmc;
+> >
+> >         trace_igb(600);
+> >         lvmmc = rd32(E1000_LVMMC);
+> >         trace_igb(601);
+> >         if (lvmmc) {
+> > ...
+> >
+[..]
+> > The time between my trace points 700 and 701 is about 30us, the time between my
+> > trace points 600 and 601 is even 37us!!
+> >
+> > The code in between is
+> >      tsyncrxctl = rd32(E1000_TSYNCRXCTL); resp.
+> >      lvmmc = rd32(E1000_LVMMC);
+> >
+> > In both cases this is a single read from a register.
+> >
+> > I have no idea why this single read could take that much time!
+
+Are these the only registers you see this amount of delay when reading?
+
+It's also possible that it's not these registers themselves that cause
+problems, but any writes prior to these reads.  That is, given to PCI's
+posted write behavior, it could be that these reads are delayed only
+because it's flushing previously writes to the device.
+
+> > Is it possible that the igb hardware is in a state that delays the read access and this is
+> > why the whole I/O system might be delayed?
+
+One additional hypothesis is that some register accesses trigger
+accesses to off-chip resources synchronously; for example, a write to
+enable timestamping needs to access an external phy on a slower bus,
+etc.  I don't know enough about this device to say whether or not that
+happens or not.
+
+> To have a proper comparison, I did the same with kernel 3.18.27-rt27.
+> Also here, I instrumented the igb driver to get traces for the rd32 calls.
+> However, here everything is generally much faster!
+
+> In the idle system the maximum I got for a read was about 6us, most times it was 1-2us.
+> On the 4.8 kernel this is always much slower (see above).
+> My question is now: Is there any kernel config option that has been introduced in the meantime
+> that may lead to this effect and which is not set in my 4.8 config?
+
+Have you tested on a vanilla (non-RT) kernel?  I doubt there is anything
+RT specific about what you are seeing, but it might be nice to get
+confirmation.  Also, bisection would probably be easier if you confirm
+on a vanilla kernel.
+
+I find it unlikely that it's a kernel config option that changed which
+regressed you, but instead was a code change to a driver.  Which driver
+is now the question, and the surface area is still big (processor
+mapping attributes for this region, PCI root complex configuration, PCI
+brige configuration, igb driver itself, etc.).
+
+Big enough that I'd recommend a bisection.  It looks like a bisection
+between 3.18 and 4.8 would take you about 18 tries to narrow down,
+assuming all goes well.
+
+   Julia
