@@ -1,137 +1,564 @@
-From: Alexander Duyck <alexander.duyck@gmail.com>
-Date: Thu, 13 Oct 2016 13:32:33 -0700
-Subject: [Intel-wired-lan] igb driver can cause cache invalidation of
-	non-owned memory?
-In-Reply-To: <070385e5-7cfb-4f87-bb53-9b8549ea2c89@cogentembedded.com>
-References: <0b57cbe2-84f7-6c0a-904a-d166571234b5@cogentembedded.com>
- <20161010.050125.1981283393312167625.davem@davemloft.net>
- <10474d19-df1a-3b09-917e-70659be3a56c@cogentembedded.com>
- <20161010.075731.2449861168238706.davem@davemloft.net>
- <f75cf1e1-d7e8-e044-188a-987f05f321a5@cogentembedded.com>
- <CAKgT0Uc2nL1aPoryhNxdbf3+TQO+fOvAZMZDe+=9NaqnHCZPyw@mail.gmail.com>
- <19aebfc3-5f1a-9206-4493-2255af7269f9@cogentembedded.com>
- <CAKgT0UcSkG1Nws1kcUp-QV0jnwdXcXrOZ2m0vsWRziETA-11sw@mail.gmail.com>
- <a0779e4d-3228-8649-1e68-21dffd4249bd@cogentembedded.com>
- <CAKgT0UfPC_uAn5=+0iiAOGyY7QA-4NWAmedVmWf6TGnywjJR8A@mail.gmail.com>
- <063D6719AE5E284EB5DD2968C1650D6DB01E6F0F@AcuExch.aculab.com>
- <cbd0f41d-bc01-3f93-9171-2795c61afdc9@cogentembedded.com>
- <CAKgT0UdqwpjP0b4knt2d4DqS1Z9dR+vg-smkgBTZDeACGGdx=Q@mail.gmail.com>
- <d34b7175-1024-8cc9-d422-d9f75f56c069@cogentembedded.com>
- <CAKgT0UdMG4D8CZCVhBD7vF+E5aOk7zyPEp1xXaBukg3v0aYfFg@mail.gmail.com>
- <070385e5-7cfb-4f87-bb53-9b8549ea2c89@cogentembedded.com>
-Message-ID: <CAKgT0Uc8inNwwcVWmLSPG6pVb9k=DPpMCGSs1G97YYMyZaB-Ew@mail.gmail.com>
+From: Donald C Skidmore <donald.c.skidmore@intel.com>
+Date: Thu, 13 Oct 2016 19:53:50 -0400
+Subject: [Intel-wired-lan] [Patch V5 ] ixgbe: Add X553 FW ALEF support
+Message-ID: <1476402830-32229-1-git-send-email-donald.c.skidmore@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Thu, Oct 13, 2016 at 4:00 AM, Nikita Yushchenko
-<nikita.yoush@cogentembedded.com> wrote:
->>>> It would make more sense to update the DMA API for
->>>> __dma_page_cpu_to_dev on ARM so that you don't invalidate the cache if
->>>> the direction is DMA_FROM_DEVICE.
->>>
->>> No, in generic case it's unsafe.
->>>
->>> If CPU issued a write to a location, and sometime later that location is
->>> used as DMA buffer, there is danger that write is still in cache only,
->>> and writeback is pending. Later this writeback can overwrite data
->>> written to memory via DMA, causing corruption.
->>
->> Okay so if I understand it correctly then the invalidation in
->> sync_for_device is to force any writes to be flushed out, and the
->> invalidation in sync_for_cpu is to flush out any speculative reads.
->> So without speculative reads then the sync_for_cpu portion is not
->> needed.  You might want to determine if the core you are using
->> supports the speculative reads, if not you might be able to get away
->> without having to do the sync_for_cpu at all.
->
-> pl310 L2 cache controller does support prefetching - and I think most
-> arm systems use pl310.
->
->
->>>> Changing the driver code for this won't necessarily work on all
->>>> architectures, and on top of it we have some changes planned which
->>>> will end up making the pages writable in the future to support the
->>>> ongoing XDP effort.  That is one of the reasons why I would not be
->>>> okay with changing the driver to make this work.
->>>
->>> Well I was not really serious about removing that sync_for_device() in
->>> mainline :)   Although >20% throughput win that this provides is
->>> impressive...
->>
->> I agree the improvement is pretty impressive.  The think is there are
->> similar gains we can generate on x86 by stripping out bits and pieces
->> that are needed for other architectures.  I'm just wanting to make
->> certain we aren't optimizing for one architecture at the detriment of
->> others.
->
-> Well in ideal world needs of other architectures should not limit x86 -
-> and if they do then that's a bug and should be fixed - by designing
-> proper set of abstractions :)
->
-> Perhaps issue is that "do whatever needed for device to perform DMA
-> correctly" semantics of dma_map() / sync_for_device() - and symmetric
-> for dma_unmap() / sync_for_cpu() - is too abstract and that hurts
-> performance. In particular, "setup i/o" and "sync caches" is different
-> activity with conflicting performance properties: for better
-> performance, one wants to setup i/o for larger blocks, but sync caches
-> for smaller blocks.  Probably separation of these activities into
-> different calls is the way for better performance.
->
->
->>> But what about doing something safer, e.g. adding a bit of tracking and
->>> only sync_for_device() what was previously sync_for_cpu()ed?  Will you
->>> accept that?
->>
->> The problem is that as we move things over for XDP we will be looking
->> at having the CPU potentially write to any spot in the region that was
->> mapped as we could append headers to the front or pad data onto the
->> end of the frame.  It is probably safest for us to invalidate the
->> entire region just to make sure we don't have a collision with
->> something that is writing to the page.
->
-> Can't comment without knowning particular access patterns that XDP will
-> cause. Still rule is simple - "invalidate more" does hurt performance,
-> thus need to invalidate minimal required area. To avoid this
-> invalidation thing hurting performance on x86 that does not need
-> invalidation at all, good idea is to use some compile-time magic - just
-> to compile out unneeded things completely.
+From: Don Skidmore <donald.c.skidmore@intel.com>
 
-On x86 we don't perform any invalidation.  We just have the function
-pointers usually referencing functions that don't do anything unless
-we can't handle the DMA address for some reason as we usually default
-to swiotlb setup on x86_64.
+This patch add X553 FW ALEF support for B0.  ALEF is the new unified
+FW.  This contains updated register defines for ALEF speed
+configuration.  Likewise it also removes the AN_CNTL_8 usage from
+the native SFI flow as it is no longer supported by FW.
 
-> Still, XDP is future question, currently igb does not use it. Why not
-> improve sync_for_cpu() / sync_for_device() pairing in the current code?
-> I can propare such a patch. If XDP will make it irrelevant in future,
-> perhaps it could be just undone (and if this will cause performance
-> degradation, then it will be something to work on)
+Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c  |  96 +++++++----
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h |  17 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c | 239 +++++++++++++++++++-------
+ 3 files changed, 255 insertions(+), 97 deletions(-)
 
-So the plan is to update the code path in the near future.  I'm
-working on rewriting the DMA APIs for the drivers now, will update the
-page count handling for the pages, and in the near future we should be
-able to support XDP and the use of build_skb.  Once we get to that
-point there should be a modest bump in performance since we can drop
-the memcpy for headers.
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+index 78edf5b..2019db5 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
+@@ -243,6 +243,42 @@ fail:
+ }
+ 
+ /**
++ *  ixgbe_probe_phy - Probe a single address for a PHY
++ *  @hw: pointer to hardware structure
++ *  @phy_addr: PHY address to probe
++ *
++ *  Returns true if PHY found
++ **/
++static bool ixgbe_probe_phy(struct ixgbe_hw *hw, u16 phy_addr)
++{
++	u16 ext_ability = 0;
++
++	hw->phy.mdio.prtad = phy_addr;
++	if (mdio45_probe(&hw->phy.mdio, phy_addr) != 0)
++		return false;
++
++	if (ixgbe_get_phy_id(hw))
++		return false;
++
++	hw->phy.type = ixgbe_get_phy_type_from_id(hw->phy.id);
++
++	if (hw->phy.type == ixgbe_phy_unknown) {
++		hw->phy.ops.read_reg(hw,
++				     MDIO_PMA_EXTABLE,
++				     MDIO_MMD_PMAPMD,
++				     &ext_ability);
++		if (ext_ability &
++		    (MDIO_PMA_EXTABLE_10GBT |
++		     MDIO_PMA_EXTABLE_1000BT))
++			hw->phy.type = ixgbe_phy_cu_unknown;
++		else
++			hw->phy.type = ixgbe_phy_generic;
++	}
++
++	return true;
++}
++
++/**
+  *  ixgbe_identify_phy_generic - Get physical layer module
+  *  @hw: pointer to hardware structure
+  *
+@@ -251,7 +287,7 @@ fail:
+ s32 ixgbe_identify_phy_generic(struct ixgbe_hw *hw)
+ {
+ 	u32 phy_addr;
+-	u16 ext_ability = 0;
++	u32 status = IXGBE_ERR_PHY_ADDR_INVALID;
+ 
+ 	if (!hw->phy.phy_semaphore_mask) {
+ 		if (hw->bus.lan_id)
+@@ -260,37 +296,34 @@ s32 ixgbe_identify_phy_generic(struct ixgbe_hw *hw)
+ 			hw->phy.phy_semaphore_mask = IXGBE_GSSR_PHY0_SM;
+ 	}
+ 
+-	if (hw->phy.type == ixgbe_phy_unknown) {
+-		for (phy_addr = 0; phy_addr < IXGBE_MAX_PHY_ADDR; phy_addr++) {
+-			hw->phy.mdio.prtad = phy_addr;
+-			if (mdio45_probe(&hw->phy.mdio, phy_addr) == 0) {
+-				ixgbe_get_phy_id(hw);
+-				hw->phy.type =
+-					ixgbe_get_phy_type_from_id(hw->phy.id);
+-
+-				if (hw->phy.type == ixgbe_phy_unknown) {
+-					hw->phy.ops.read_reg(hw,
+-							     MDIO_PMA_EXTABLE,
+-							     MDIO_MMD_PMAPMD,
+-							     &ext_ability);
+-					if (ext_ability &
+-					    (MDIO_PMA_EXTABLE_10GBT |
+-					     MDIO_PMA_EXTABLE_1000BT))
+-						hw->phy.type =
+-							 ixgbe_phy_cu_unknown;
+-					else
+-						hw->phy.type =
+-							 ixgbe_phy_generic;
+-				}
++	if (hw->phy.type != ixgbe_phy_unknown)
++		return 0;
+ 
+-				return 0;
+-			}
++	if (hw->phy.nw_mng_if_sel) {
++		phy_addr = (hw->phy.nw_mng_if_sel &
++			    IXGBE_NW_MNG_IF_SEL_MDIO_PHY_ADD) >>
++			   IXGBE_NW_MNG_IF_SEL_MDIO_PHY_ADD_SHIFT;
++		if (ixgbe_probe_phy(hw, phy_addr))
++			return 0;
++		else
++			return IXGBE_ERR_PHY_ADDR_INVALID;
++	}
++
++	for (phy_addr = 0; phy_addr < IXGBE_MAX_PHY_ADDR; phy_addr++) {
++		if (ixgbe_probe_phy(hw, phy_addr)) {
++			status = 0;
++			break;
+ 		}
+-		/* indicate no PHY found */
+-		hw->phy.mdio.prtad = MDIO_PRTAD_NONE;
+-		return IXGBE_ERR_PHY_ADDR_INVALID;
+ 	}
+-	return 0;
++
++	/* Certain media types do not have a phy so an address will not
++	 * be found and the code will take this path.  Caller has to
++	 * decide if it is an error or not.
++	 */
++	if (!status)
++		hw->phy.mdio.prtad = MDIO_PRTAD_NONE;
++
++	return status;
+ }
+ 
+ /**
+@@ -367,6 +400,7 @@ static enum ixgbe_phy_type ixgbe_get_phy_type_from_id(u32 phy_id)
+ 		phy_type = ixgbe_phy_nl;
+ 		break;
+ 	case X557_PHY_ID:
++	case X557_PHY_ID2:
+ 		phy_type = ixgbe_phy_x550em_ext_t;
+ 		break;
+ 	default:
+@@ -417,8 +451,7 @@ s32 ixgbe_reset_phy_generic(struct ixgbe_hw *hw)
+ 	 */
+ 	for (i = 0; i < 30; i++) {
+ 		msleep(100);
+-		hw->phy.ops.read_reg(hw, MDIO_CTRL1,
+-				     MDIO_MMD_PHYXS, &ctrl);
++		hw->phy.ops.read_reg(hw, MDIO_CTRL1, MDIO_MMD_PHYXS, &ctrl);
+ 		if (!(ctrl & MDIO_CTRL1_RESET)) {
+ 			udelay(2);
+ 			break;
+@@ -770,6 +803,7 @@ static s32 ixgbe_get_copper_speeds_supported(struct ixgbe_hw *hw)
+ 		hw->phy.speeds_supported |= IXGBE_LINK_SPEED_5GB_FULL;
+ 		break;
+ 	case ixgbe_mac_X550EM_x:
++	case ixgbe_mac_x550em_a:
+ 		hw->phy.speeds_supported &= ~IXGBE_LINK_SPEED_100_FULL;
+ 		break;
+ 	default:
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index fe1d13e..dfd6143 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -1379,6 +1379,7 @@ struct ixgbe_thermal_sensor_data {
+ #define X540_PHY_ID      0x01540200
+ #define X550_PHY_ID      0x01540220
+ #define X557_PHY_ID      0x01540240
++#define X557_PHY_ID2	0x01540250
+ #define QT2022_PHY_ID    0x0043A400
+ #define ATH_PHY_ID       0x03429050
+ #define AQ_FW_REV        0x20
+@@ -3602,9 +3603,25 @@ struct ixgbe_info {
+ #define IXGBE_KRM_DSP_TXFFE_STATE_5(P)	((P) ? 0x8638 : 0x4638)
+ #define IXGBE_KRM_RX_TRN_LINKUP_CTRL(P)	((P) ? 0x8B00 : 0x4B00)
+ #define IXGBE_KRM_PMD_DFX_BURNIN(P)	((P) ? 0x8E00 : 0x4E00)
++#define IXGBE_KRM_PMD_FLX_MASK_ST20(P)	((P) ? 0x9054 : 0x5054)
+ #define IXGBE_KRM_TX_COEFF_CTRL_1(P)	((P) ? 0x9520 : 0x5520)
+ #define IXGBE_KRM_RX_ANA_CTL(P)		((P) ? 0x9A00 : 0x5A00)
+ 
++#define IXGBE_KRM_PMD_FLX_MASK_ST20_SFI_10G_DA		~(0x3 << 20)
++#define IXGBE_KRM_PMD_FLX_MASK_ST20_SFI_10G_SR		BIT(20)
++#define IXGBE_KRM_PMD_FLX_MASK_ST20_SFI_10G_LR		(0x2 << 20)
++#define IXGBE_KRM_PMD_FLX_MASK_ST20_SGMII_EN		BIT(25)
++#define IXGBE_KRM_PMD_FLX_MASK_ST20_AN37_EN		BIT(26)
++#define IXGBE_KRM_PMD_FLX_MASK_ST20_AN_EN		BIT(27)
++#define IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_10M		~(0x7 << 28)
++#define IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_100M		BIT(28)
++#define IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_1G		(0x2 << 28)
++#define IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_10G		(0x3 << 28)
++#define IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_AN		(0x4 << 28)
++#define IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_2_5G		(0x7 << 28)
++#define IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_MASK		(0x7 << 28)
++#define IXGBE_KRM_PMD_FLX_MASK_ST20_FW_AN_RESTART	BIT(31)
++
+ #define IXGBE_KRM_PORT_CAR_GEN_CTRL_NELB_32B		BIT(9)
+ #define IXGBE_KRM_PORT_CAR_GEN_CTRL_NELB_KRPCS		BIT(11)
+ 
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index 6206b51..b6b35e4 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -1281,6 +1281,53 @@ static s32 ixgbe_setup_ixfi_x550em_x(struct ixgbe_hw *hw)
+ 	return status;
+ }
+ 
++/**
++ *  ixgbe_restart_an_internal_phy_x550em - restart autonegotiation for the
++ *  internal PHY
++ *  @hw: pointer to hardware structure
++ **/
++static s32 ixgbe_restart_an_internal_phy_x550em(struct ixgbe_hw *hw)
++{
++	s32 status;
++	u32 link_ctrl;
++
++	/* Restart auto-negotiation. */
++	status = hw->mac.ops.read_iosf_sb_reg(hw,
++				IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
++				IXGBE_SB_IOSF_TARGET_KR_PHY, &link_ctrl);
++
++	if (status) {
++		hw_dbg(hw, "Auto-negotiation did not complete\n");
++		return status;
++	}
++
++	link_ctrl |= IXGBE_KRM_LINK_CTRL_1_TETH_AN_RESTART;
++	status = hw->mac.ops.write_iosf_sb_reg(hw,
++				IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
++				IXGBE_SB_IOSF_TARGET_KR_PHY, link_ctrl);
++
++	if (hw->mac.type == ixgbe_mac_x550em_a) {
++		u32 flx_mask_st20;
++
++		/* Indicate to FW that AN restart has been asserted */
++		status = hw->mac.ops.read_iosf_sb_reg(hw,
++				IXGBE_KRM_PMD_FLX_MASK_ST20(hw->bus.lan_id),
++				IXGBE_SB_IOSF_TARGET_KR_PHY, &flx_mask_st20);
++
++		if (status) {
++			hw_dbg(hw, "Auto-negotiation did not complete\n");
++			return status;
++		}
++
++		flx_mask_st20 |= IXGBE_KRM_PMD_FLX_MASK_ST20_FW_AN_RESTART;
++		status = hw->mac.ops.write_iosf_sb_reg(hw,
++				IXGBE_KRM_PMD_FLX_MASK_ST20(hw->bus.lan_id),
++				IXGBE_SB_IOSF_TARGET_KR_PHY, flx_mask_st20);
++	}
++
++	return status;
++}
++
+ /** ixgbe_setup_ixfi_x550em - Configure the KR PHY for iXFI mode.
+  *  @hw: pointer to hardware structure
+  *  @speed: the link speed to force
+@@ -1330,16 +1377,7 @@ static s32 ixgbe_setup_ixfi_x550em(struct ixgbe_hw *hw, ixgbe_link_speed *speed)
+ 	}
+ 
+ 	/* Toggle port SW reset by AN reset. */
+-	status = ixgbe_read_iosf_sb_reg_x550(hw,
+-				IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
+-				IXGBE_SB_IOSF_TARGET_KR_PHY, &reg_val);
+-	if (status)
+-		return status;
+-
+-	reg_val |= IXGBE_KRM_LINK_CTRL_1_TETH_AN_RESTART;
+-	status = ixgbe_write_iosf_sb_reg_x550(hw,
+-				IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
+-				IXGBE_SB_IOSF_TARGET_KR_PHY, reg_val);
++	status = ixgbe_restart_an_internal_phy_x550em(hw);
+ 
+ 	return status;
+ }
+@@ -1423,6 +1461,55 @@ ixgbe_setup_mac_link_sfp_x550em(struct ixgbe_hw *hw,
+ }
+ 
+ /**
++ * ixgbe_setup_sfi_x550a - Configure the internal PHY for native SFI mode
++ * @hw: pointer to hardware structure
++ * @speed: the link speed to force
++ *
++ * Configures the integrated PHY for native SFI mode. Used to connect the
++ * internal PHY directly to an SFP cage, without autonegotiation.
++ **/
++static s32 ixgbe_setup_sfi_x550a(struct ixgbe_hw *hw, ixgbe_link_speed *speed)
++{
++	struct ixgbe_mac_info *mac = &hw->mac;
++	s32 status;
++	u32 reg_val;
++
++	/* Disable all AN and force speed to 10G Serial. */
++	status = mac->ops.read_iosf_sb_reg(hw,
++				IXGBE_KRM_PMD_FLX_MASK_ST20(hw->bus.lan_id),
++				IXGBE_SB_IOSF_TARGET_KR_PHY, &reg_val);
++	if (status)
++		return status;
++
++	reg_val &= ~IXGBE_KRM_PMD_FLX_MASK_ST20_AN_EN;
++	reg_val &= ~IXGBE_KRM_PMD_FLX_MASK_ST20_AN37_EN;
++	reg_val &= ~IXGBE_KRM_PMD_FLX_MASK_ST20_SGMII_EN;
++	reg_val &= ~IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_MASK;
++
++	/* Select forced link speed for internal PHY. */
++	switch (*speed) {
++	case IXGBE_LINK_SPEED_10GB_FULL:
++		reg_val |= IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_10G;
++		break;
++	case IXGBE_LINK_SPEED_1GB_FULL:
++		reg_val |= IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_1G;
++		break;
++	default:
++		/* Other link speeds are not supported by internal PHY. */
++		return IXGBE_ERR_LINK_SETUP;
++	}
++
++	status = mac->ops.write_iosf_sb_reg(hw,
++				IXGBE_KRM_PMD_FLX_MASK_ST20(hw->bus.lan_id),
++				IXGBE_SB_IOSF_TARGET_KR_PHY, reg_val);
++
++	/* Toggle port SW reset by AN reset. */
++	status = ixgbe_restart_an_internal_phy_x550em(hw);
++
++	return status;
++}
++
++/**
+  * ixgbe_setup_mac_link_sfp_n - Setup internal PHY for native SFP
+  * @hw: pointer to hardware structure
+  *
+@@ -1434,45 +1521,39 @@ ixgbe_setup_mac_link_sfp_n(struct ixgbe_hw *hw, ixgbe_link_speed speed,
+ {
+ 	bool setup_linear = false;
+ 	u32 reg_phy_int;
+-	s32 rc;
++	s32 ret_val;
+ 
+ 	/* Check if SFP module is supported and linear */
+-	rc = ixgbe_supported_sfp_modules_X550em(hw, &setup_linear);
++	ret_val = ixgbe_supported_sfp_modules_X550em(hw, &setup_linear);
+ 
+ 	/* If no SFP module present, then return success. Return success since
+ 	 * SFP not present error is not excepted in the setup MAC link flow.
+ 	 */
+-	if (rc == IXGBE_ERR_SFP_NOT_PRESENT)
++	if (ret_val == IXGBE_ERR_SFP_NOT_PRESENT)
+ 		return 0;
+ 
+-	if (!rc)
+-		return rc;
++	if (!ret_val)
++		return ret_val;
+ 
+-	/* Configure internal PHY for native SFI */
+-	rc = hw->mac.ops.read_iosf_sb_reg(hw,
+-					  IXGBE_KRM_AN_CNTL_8(hw->bus.lan_id),
+-					  IXGBE_SB_IOSF_TARGET_KR_PHY,
+-					  &reg_phy_int);
+-	if (rc)
+-		return rc;
++	/* Configure internal PHY for native SFI based on module type */
++	ret_val = hw->mac.ops.read_iosf_sb_reg(hw,
++				IXGBE_KRM_PMD_FLX_MASK_ST20(hw->bus.lan_id),
++				IXGBE_SB_IOSF_TARGET_KR_PHY, &reg_phy_int);
++	if (!ret_val)
++		return ret_val;
+ 
+-	if (setup_linear) {
+-		reg_phy_int &= ~IXGBE_KRM_AN_CNTL_8_LIMITING;
+-		reg_phy_int |= IXGBE_KRM_AN_CNTL_8_LINEAR;
+-	} else {
+-		reg_phy_int |= IXGBE_KRM_AN_CNTL_8_LIMITING;
+-		reg_phy_int &= ~IXGBE_KRM_AN_CNTL_8_LINEAR;
+-	}
++	reg_phy_int &= IXGBE_KRM_PMD_FLX_MASK_ST20_SFI_10G_DA;
++	if (!setup_linear)
++		reg_phy_int |= IXGBE_KRM_PMD_FLX_MASK_ST20_SFI_10G_SR;
+ 
+-	rc = hw->mac.ops.write_iosf_sb_reg(hw,
+-					   IXGBE_KRM_AN_CNTL_8(hw->bus.lan_id),
+-					   IXGBE_SB_IOSF_TARGET_KR_PHY,
+-					   reg_phy_int);
+-	if (rc)
+-		return rc;
++	ret_val = hw->mac.ops.write_iosf_sb_reg(hw,
++				IXGBE_KRM_PMD_FLX_MASK_ST20(hw->bus.lan_id),
++				IXGBE_SB_IOSF_TARGET_KR_PHY, reg_phy_int);
++	if (!ret_val)
++		return ret_val;
+ 
+-	/* Setup XFI/SFI internal link */
+-	return ixgbe_setup_ixfi_x550em(hw, &speed);
++	/* Setup SFI internal link. */
++	return ixgbe_setup_sfi_x550a(hw, &speed);
+ }
+ 
+ /**
+@@ -1488,19 +1569,19 @@ ixgbe_setup_mac_link_sfp_x550a(struct ixgbe_hw *hw, ixgbe_link_speed speed,
+ 	u32 reg_slice, slice_offset;
+ 	bool setup_linear = false;
+ 	u16 reg_phy_ext;
+-	s32 rc;
++	s32 ret_val;
+ 
+ 	/* Check if SFP module is supported and linear */
+-	rc = ixgbe_supported_sfp_modules_X550em(hw, &setup_linear);
++	ret_val = ixgbe_supported_sfp_modules_X550em(hw, &setup_linear);
+ 
+ 	/* If no SFP module present, then return success. Return success since
+ 	 * SFP not present error is not excepted in the setup MAC link flow.
+ 	 */
+-	if (rc == IXGBE_ERR_SFP_NOT_PRESENT)
++	if (ret_val == IXGBE_ERR_SFP_NOT_PRESENT)
+ 		return 0;
+ 
+-	if (!rc)
+-		return rc;
++	if (!ret_val)
++		return ret_val;
+ 
+ 	/* Configure internal PHY for KR/KX. */
+ 	ixgbe_setup_kr_speed_x550em(hw, speed);
+@@ -1509,10 +1590,10 @@ ixgbe_setup_mac_link_sfp_x550a(struct ixgbe_hw *hw, ixgbe_link_speed speed,
+ 		return IXGBE_ERR_PHY_ADDR_INVALID;
+ 
+ 	/* Get external PHY device id */
+-	rc = hw->phy.ops.read_reg(hw, IXGBE_CS4227_GLOBAL_ID_MSB,
++	ret_val = hw->phy.ops.read_reg(hw, IXGBE_CS4227_GLOBAL_ID_MSB,
+ 				  IXGBE_MDIO_ZERO_DEV_TYPE, &reg_phy_ext);
+-	if (rc)
+-		return rc;
++	if (ret_val)
++		return ret_val;
+ 
+ 	/* When configuring quad port CS4223, the MAC instance is part
+ 	 * of the slice offset.
+@@ -1625,7 +1706,7 @@ ixgbe_setup_sgmii(struct ixgbe_hw *hw, __always_unused ixgbe_link_speed speed,
+ 		  __always_unused bool autoneg_wait_to_complete)
+ {
+ 	struct ixgbe_mac_info *mac = &hw->mac;
+-	u32 lval, sval;
++	u32 lval, sval, flx_val;
+ 	s32 rc;
+ 
+ 	rc = mac->ops.read_iosf_sb_reg(hw,
+@@ -1659,11 +1740,31 @@ ixgbe_setup_sgmii(struct ixgbe_hw *hw, __always_unused ixgbe_link_speed speed,
+ 	if (rc)
+ 		return rc;
+ 
+-	lval |= IXGBE_KRM_LINK_CTRL_1_TETH_AN_RESTART;
++	rc = mac->ops.read_iosf_sb_reg(hw,
++				IXGBE_KRM_PMD_FLX_MASK_ST20(hw->bus.lan_id),
++				IXGBE_SB_IOSF_TARGET_KR_PHY, &flx_val);
++	if (rc)
++		return rc;
++
++	rc = mac->ops.read_iosf_sb_reg(hw,
++				IXGBE_KRM_PMD_FLX_MASK_ST20(hw->bus.lan_id),
++				IXGBE_SB_IOSF_TARGET_KR_PHY, &flx_val);
++	if (rc)
++		return rc;
++
++	flx_val &= ~IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_MASK;
++	flx_val |= IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_1G;
++	flx_val &= ~IXGBE_KRM_PMD_FLX_MASK_ST20_AN_EN;
++	flx_val |= IXGBE_KRM_PMD_FLX_MASK_ST20_SGMII_EN;
++	flx_val |= IXGBE_KRM_PMD_FLX_MASK_ST20_AN37_EN;
++
+ 	rc = mac->ops.write_iosf_sb_reg(hw,
+-					IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
+-					IXGBE_SB_IOSF_TARGET_KR_PHY, lval);
++				IXGBE_KRM_PMD_FLX_MASK_ST20(hw->bus.lan_id),
++				IXGBE_SB_IOSF_TARGET_KR_PHY, flx_val);
++	if (rc)
++		return rc;
+ 
++	rc = ixgbe_restart_an_internal_phy_x550em(hw);
+ 	return rc;
+ }
+ 
+@@ -2018,13 +2119,31 @@ static s32 ixgbe_setup_kr_speed_x550em(struct ixgbe_hw *hw,
+ 	if (speed & IXGBE_LINK_SPEED_1GB_FULL)
+ 		reg_val |= IXGBE_KRM_LINK_CTRL_1_TETH_AN_CAP_KX;
+ 
+-	/* Restart auto-negotiation. */
+-	reg_val |= IXGBE_KRM_LINK_CTRL_1_TETH_AN_RESTART;
+ 	status = hw->mac.ops.write_iosf_sb_reg(hw,
+ 					IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
+ 					IXGBE_SB_IOSF_TARGET_KR_PHY, reg_val);
+ 
+-	return status;
++	if (hw->mac.type == ixgbe_mac_x550em_a) {
++		/* Set lane mode  to KR auto negotiation */
++		status = hw->mac.ops.read_iosf_sb_reg(hw,
++				IXGBE_KRM_PMD_FLX_MASK_ST20(hw->bus.lan_id),
++				IXGBE_SB_IOSF_TARGET_KR_PHY, &reg_val);
++
++		if (status)
++			return status;
++
++		reg_val &= ~IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_MASK;
++		reg_val |= IXGBE_KRM_PMD_FLX_MASK_ST20_SPEED_AN;
++		reg_val |= IXGBE_KRM_PMD_FLX_MASK_ST20_AN_EN;
++		reg_val &= ~IXGBE_KRM_PMD_FLX_MASK_ST20_AN37_EN;
++		reg_val &= ~IXGBE_KRM_PMD_FLX_MASK_ST20_SGMII_EN;
++
++		status = hw->mac.ops.write_iosf_sb_reg(hw,
++				IXGBE_KRM_PMD_FLX_MASK_ST20(hw->bus.lan_id),
++				IXGBE_SB_IOSF_TARGET_KR_PHY, reg_val);
++	}
++
++	return ixgbe_restart_an_internal_phy_x550em(hw);
+ }
+ 
+ /** ixgbe_setup_kx4_x550em - Configure the KX4 PHY.
+@@ -2892,7 +3011,6 @@ static void ixgbe_set_source_address_pruning_X550(struct ixgbe_hw *hw,
+ static s32 ixgbe_setup_fc_backplane_x550em_a(struct ixgbe_hw *hw)
+ {
+ 	s32 status = 0;
+-	u32 link_ctrl = 0;
+ 	u32 an_cntl = 0;
+ 
+ 	/* Validate the requested mode */
+@@ -2963,18 +3081,7 @@ static s32 ixgbe_setup_fc_backplane_x550em_a(struct ixgbe_hw *hw)
+ 					IXGBE_SB_IOSF_TARGET_KR_PHY, an_cntl);
+ 
+ 	/* Restart auto-negotiation. */
+-	status = hw->mac.ops.read_iosf_sb_reg(hw,
+-				IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
+-				IXGBE_SB_IOSF_TARGET_KR_PHY, &link_ctrl);
+-	if (status) {
+-		hw_dbg(hw, "Auto-Negotiation did not complete\n");
+-		return status;
+-	}
+-
+-	link_ctrl |= IXGBE_KRM_LINK_CTRL_1_TETH_AN_RESTART;
+-	status = hw->mac.ops.write_iosf_sb_reg(hw,
+-				IXGBE_KRM_LINK_CTRL_1(hw->bus.lan_id),
+-				IXGBE_SB_IOSF_TARGET_KR_PHY, link_ctrl);
++	status = ixgbe_restart_an_internal_phy_x550em(hw);
+ 
+ 	return status;
+ }
+@@ -3238,7 +3345,7 @@ static struct ixgbe_mac_operations mac_ops_x550em_a = {
+ 	.acquire_swfw_sync	= ixgbe_acquire_swfw_sync_x550em_a,
+ 	.release_swfw_sync	= ixgbe_release_swfw_sync_x550em_a,
+ 	.setup_fc		= ixgbe_setup_fc_x550em,
+-	.fc_autoneg		= NULL, /* defined later */
++	.fc_autoneg		= ixgbe_fc_autoneg,
+ 	.read_iosf_sb_reg	= ixgbe_read_iosf_sb_reg_x550a,
+ 	.write_iosf_sb_reg	= ixgbe_write_iosf_sb_reg_x550a,
+ };
+-- 
+2.4.3
 
->> So for example in the near future I am planning to expand out the
->> DMA_ATTR_SKIP_CPU_SYNC DMA attribute beyond just the ARM architecture
->> to see if I can expand it for use with SWIOTLB.  If we can use this on
->> unmap we might be able to solve some of the existing problems that
->> required us to make the page read-only since we could unmap the page
->> without invalidating any existing writes on the page.
->
-> Ack. Actually it is the same decoupling between "setup i/o" and "sync
-> caches" I've mentioned above.
-
-Right.  That is kind of what I was thinking as well.  We need to be
-able to create and destroy DMA mappable pages without corrupting
-things once we hand the pages up the stack.  If we can get away from
-having to worry about unmap invalidating any writes from the CPU then
-we can get away with using things like build_skb which should give us
-a pretty good increase in throughput.
-
-- Alex
