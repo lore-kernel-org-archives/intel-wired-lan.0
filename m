@@ -1,27 +1,178 @@
-From: Chris Arges <carges@vectranetworks.com>
-Date: Wed, 12 Oct 2016 19:51:41 +0000
-Subject: [Intel-wired-lan] Bug with 'igb: Remove GS40G specific
-	defines/functions'
-Message-ID: <77C85CBC-39FD-40B4-9456-56A3FEE3544A@vectranetworks.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Thu, 13 Oct 2016 11:32:16 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ b07a3bc96169c58045fcfc7292d4466800744a03
+Message-ID: <57ff0040.vU47A/OCIPXpsT/V%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi,
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+b07a3bc96169c58045fcfc7292d4466800744a03  i40e: Fix for division by zero
 
-I have an Intel I210 NIC which shows:
-'igb: probe of 0000:07:00.0 failed wtih error -2'
-Upon boot after power has been completely disconnected.
+elapsed time: 105m
 
-v4.4 works, while v4.5 fails and I was able to bisect it down to:
-commit 2a3cdead8b408351fa1e3079b220fa331480ffbc
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 156
 
-Any ideas for a fix? I'm happy to test any patches.
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+parisc                           allmodconfig
+i386                     randconfig-a0-201641
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-10131046
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+i386                             allmodconfig
+c6x                        evmc6678_defconfig
+ia64                             allyesconfig
+sh                          rsk7201_defconfig
+sh                   sh7770_generic_defconfig
+x86_64                 randconfig-x014-201641
+x86_64                 randconfig-x011-201641
+x86_64                 randconfig-x015-201641
+x86_64                 randconfig-x017-201641
+x86_64                 randconfig-x012-201641
+x86_64                 randconfig-x018-201641
+x86_64                 randconfig-x019-201641
+x86_64                 randconfig-x013-201641
+x86_64                 randconfig-x016-201641
+x86_64                 randconfig-x010-201641
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201641
+i386                     randconfig-s1-201641
+x86_64                 randconfig-s0-10130947
+x86_64                 randconfig-s1-10130947
+x86_64                 randconfig-s2-10130947
+x86_64                           allmodconfig
+x86_64                 randconfig-s3-10130941
+x86_64                 randconfig-s4-10130941
+x86_64                 randconfig-s5-10130941
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201641
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+arm                     davinci_all_defconfig
+arm                         ebsa110_defconfig
+microblaze                       allyesconfig
+sh                             espt_defconfig
+i386                     randconfig-i0-201641
+i386                     randconfig-i1-201641
+x86_64                 randconfig-b0-10130926
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                            hisi_defconfig
+x86_64                 randconfig-n0-10130946
+i386                   randconfig-x014-201641
+i386                   randconfig-x019-201641
+i386                   randconfig-x017-201641
+i386                   randconfig-x018-201641
+i386                   randconfig-x015-201641
+i386                   randconfig-x016-201641
+i386                   randconfig-x012-201641
+i386                   randconfig-x013-201641
+i386                   randconfig-x011-201641
+i386                   randconfig-x010-201641
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-n0-201641
+arm                        magician_defconfig
+powerpc                       eiger_defconfig
+tile                                defconfig
+x86_64                 randconfig-h0-10131018
+x86_64                 randconfig-x001-201641
+x86_64                 randconfig-x008-201641
+x86_64                 randconfig-x009-201641
+x86_64                 randconfig-x000-201641
+x86_64                 randconfig-x005-201641
+x86_64                 randconfig-x003-201641
+x86_64                 randconfig-x007-201641
+x86_64                 randconfig-x002-201641
+x86_64                 randconfig-x006-201641
+x86_64                 randconfig-x004-201641
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+x86_64                                  kexec
+x86_64                                   rhel
+i386                     randconfig-r0-201641
+x86_64                 randconfig-r0-10130944
+i386                   randconfig-x004-201641
+i386                   randconfig-x006-201641
+i386                   randconfig-x007-201641
+i386                   randconfig-x003-201641
+i386                   randconfig-x008-201641
+i386                   randconfig-x000-201641
+i386                   randconfig-x002-201641
+i386                   randconfig-x009-201641
+i386                   randconfig-x001-201641
+i386                   randconfig-x005-201641
 
-(apologies for the resend, typed the wrong address.)
-
---chris
-
-
+Thanks,
+Fengguang
