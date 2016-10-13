@@ -1,64 +1,100 @@
-From: David Laight <David.Laight@ACULAB.COM>
-Date: Thu, 13 Oct 2016 14:02:15 +0000
-Subject: [Intel-wired-lan] Kernel 4.6.7-rt13: Intel Ethernet driver igb
- causes huge latencies in cyclictest
-In-Reply-To: <b77ea8ab312149d2b20a717d3ab0a8dc@FE-MBX1012.de.bosch.com>
-References: <20160923144140.5tkzeymamrb5qnsv@linutronix.de>
- <a5ea146cf078457ab001131ca0886b0b@FE-MBX1012.de.bosch.com>
- <20160928194519.GA32423@jcartwri.amer.corp.natinst.com>
- <487032ca81f84e70bdacc39a024eff5e@FE-MBX1012.de.bosch.com>
- <20161004193445.GF10625@jcartwri.amer.corp.natinst.com>
- <584755c2766e4b94a604ece16760fe14@FE-MBX1012.de.bosch.com>
- <20161005155959.GH10625@jcartwri.amer.corp.natinst.com>
- <13c3cd3ffee4490fb22b8de383e51361@FE-MBX1012.de.bosch.com>
- <AAEA33E297BCAC4B9BB20A7C2DF0AB8D8045E418@FMSMSX113.amr.corp.intel.com>
- <29250f87b1d84aacb8aa312935582291@FE-MBX1012.de.bosch.com>
- <20161010193958.GE22235@jcartwri.amer.corp.natinst.com>
- <e9661abf93194ad3849e3864a8361993@FE-MBX1012.de.bosch.com>
- <b77ea8ab312149d2b20a717d3ab0a8dc@FE-MBX1012.de.bosch.com>
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6DB01E7AC1@AcuExch.aculab.com>
+From: Chris Arges <carges@vectranetworks.com>
+Date: Thu, 13 Oct 2016 13:56:42 +0000
+Subject: [Intel-wired-lan] Bug with 'igb: Remove GS40G specific
+ defines/functions'
+In-Reply-To: <1476349095.18484.15.camel@maxwell>
+References: <77C85CBC-39FD-40B4-9456-56A3FEE3544A@vectranetworks.com>
+ <1570773976.567827.1476303559656.JavaMail.zimbra@xes-inc.com>
+ <20F028E5-EC20-4F65-8889-3F254196ABF8@vectranetworks.com>
+ <133564642.602581.1476305193640.JavaMail.zimbra@xes-inc.com>
+ <F267652D-6FE2-4808-BFE7-013510C5A733@vectranetworks.com>
+ <1476349095.18484.15.camel@maxwell>
+Message-ID: <1749CC13-EEFE-4EEB-B74E-40B563D7230C@vectranetworks.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Koehrer Mathias
-> Sent: 13 October 2016 11:57
-..
-> > The time between my trace points 700 and 701 is about 30us, the time between my
-> > trace points 600 and 601 is even 37us!!
-> > The code in between is
-> >      tsyncrxctl = rd32(E1000_TSYNCRXCTL); resp.
-> >      lvmmc = rd32(E1000_LVMMC);
-> >
-> > In both cases this is a single read from a register.
-> > I have no idea why this single read could take that much time!
-> > Is it possible that the igb hardware is in a state that delays the read access and this is
-> > why the whole I/O system might be delayed?
-> >
-> 
-> To have a proper comparison, I did the same with kernel 3.18.27-rt27.
-> Also here, I instrumented the igb driver to get traces for the rd32 calls.
-> However, here everything is generally much faster!
-> In the idle system the maximum I got for a read was about 6us, most times it was 1-2us.
+On 10/13/16, 3:58 AM, "Jochen Henneberg" <jh@henneberg-systemdesign.com> wrote:
 
-1-2us is probably about right, PCIe is high throughput high latency.
-You should see the latencies we get talking to fpga!
+    On Mi, 2016-10-12 at 21:18 +0000, Chris Arges wrote:
+    > 
+    > On 10/12/16, 3:46 PM, "Aaron Sierra" <asierra@xes-inc.com> wrote:
+    > 
+    >     Chris,
+    >     
+    >     > I?m not sure exactly which part I need to comment out to verify in
+    >     > ?igb_init_phy_params_82575()?.
+    >     > Is there a fix already planned for this? Any additional information I can
+    >     > provide?
+    >     
+    >     Did you follow any of the "Next message" links? There is more to the
+    >     discussion than that first page that I linked to.
+    >     
+    >     In that discussion we determined that the PHY was somehow setup with a
+    >     non-zero register page setting. That was treated as a BIOS bug rather
+    >     than a driver bug.
+    >     
+    >     If you're having the same problem, then it could be possible to explicitly
+    >     set the default page to zero, but I'm not sure where that _should_ be done
+    >     or if that is generally the correct/safe thing to do.
+    >     
+    >     -Aaron
+    >     
+    > Aaron,
+    > Ah sorry about that, I thought you were referring just to that particular post.
+    > I?ll forward this along to the BIOS vendor.
+    > Thanks,
+    > --chris
+    
+    Chris,
+    
+    I was the original reporter of that issue. Find attached the patch that
+    I currently use to ensure correct page selection before the
+    configuration is started (id read).
+    I am not sure if this is a good fix (though it is quite small which I
+    would assume makes it good) and it applies to 4.5 kernel, I did not test
+    with current head.
+    The chips datasheet says that the initial page selection is 0, so this
+    is assumed to be obsolete, but the BIOS may mess up things and as not
+    everybody has means to modify or request a BIOS update it might make
+    sense to bring this patch into the driver. It comes with almost no cost
+    from what I can see.
+    Please let me know if this fixes your problem.
+    
+    Regards
+    -Jochen
+    
 
-> On the 4.8 kernel this is always much slower (see above).
-> My question is now: Is there any kernel config option that has been introduced in the meantime
-> that may lead to this effect and which is not set in my 4.8 config?
+Jochen,
 
-Have a look at the generated code for rd32().
-Someone might have added a load of synchronisation instructions to it.
-On x86 I don't think it needs any.
+Thanks for this update. I tested this patch and it fixes my issue!
+If there are no other ill effects from this patch perhaps it would be a good
+candidate for mainline and stable.
 
-It is also possible for other PCIe accesses to slow things down
-(which might be why you see 6us).
+--chris
 
-I presume you are doing these comparisons on the same hardware?
-Obscure bus topologies could slow things down.
 
-	David
+
+    
+    > 
+    > _______________________________________________
+    > Intel-wired-lan mailing list
+    > Intel-wired-lan at lists.osuosl.org
+    > http://lists.osuosl.org/mailman/listinfo/intel-wired-lan
+    
+    -- 
+    Henneberg - Systemdesign
+    Jochen Henneberg
+    Loehnfeld 26
+    21423 Winsen (Luhe)
+    --
+    Fon: +49 4174 668 773
+    Mobile: +49 172 160 14 69
+    Fax: +49 321 210 761 64
+    www: www.henneberg-systemdesign.com
+    
+    
+    
 
