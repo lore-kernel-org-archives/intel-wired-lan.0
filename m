@@ -1,155 +1,72 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Sat, 15 Oct 2016 03:46:39 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 00ad5aefb3622c76c2c077da030718df44ee0bcc
-Message-ID: <5801361f.qJ4nT7SbJR061ag1%fengguang.wu@intel.com>
+From: Julia Cartwright <julia@ni.com>
+Date: Fri, 14 Oct 2016 14:55:36 -0500
+Subject: [Intel-wired-lan] Kernel 4.6.7-rt13: Intel Ethernet driver igb
+ causes huge latencies in cyclictest
+In-Reply-To: <f395ea6cd1274fac83d2744121da7441@FE-MBX1012.de.bosch.com>
+References: <584755c2766e4b94a604ece16760fe14@FE-MBX1012.de.bosch.com>
+ <20161005155959.GH10625@jcartwri.amer.corp.natinst.com>
+ <13c3cd3ffee4490fb22b8de383e51361@FE-MBX1012.de.bosch.com>
+ <AAEA33E297BCAC4B9BB20A7C2DF0AB8D8045E418@FMSMSX113.amr.corp.intel.com>
+ <29250f87b1d84aacb8aa312935582291@FE-MBX1012.de.bosch.com>
+ <20161010193958.GE22235@jcartwri.amer.corp.natinst.com>
+ <e9661abf93194ad3849e3864a8361993@FE-MBX1012.de.bosch.com>
+ <b77ea8ab312149d2b20a717d3ab0a8dc@FE-MBX1012.de.bosch.com>
+ <20161013161839.GV10625@jcartwri.amer.corp.natinst.com>
+ <f395ea6cd1274fac83d2744121da7441@FE-MBX1012.de.bosch.com>
+Message-ID: <20161014195536.GB27124@jcartwri.amer.corp.natinst.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-00ad5aefb3622c76c2c077da030718df44ee0bcc  ixgbe: Add X553 FW ALEF support
+On Fri, Oct 14, 2016 at 08:58:22AM +0000, Koehrer Mathias (ETAS/ESW5) wrote:
+> Hi Julia,
+>
+> > Have you tested on a vanilla (non-RT) kernel?  I doubt there is anything RT specific
+> > about what you are seeing, but it might be nice to get confirmation.  Also, bisection
+> > would probably be easier if you confirm on a vanilla kernel.
+> >
+> > I find it unlikely that it's a kernel config option that changed which regressed you, but
+> > instead was a code change to a driver.  Which driver is now the question, and the
+> > surface area is still big (processor mapping attributes for this region, PCI root
+> > complex configuration, PCI brige configuration, igb driver itself, etc.).
+> >
+> > Big enough that I'd recommend a bisection.  It looks like a bisection between 3.18
+> > and 4.8 would take you about 18 tries to narrow down, assuming all goes well.
+> >
+>
+> I have now repeated my tests using the vanilla kernel.
+> There I got the very same issue.
+> Using kernel 4.0 is fine, however starting with kernel 4.1, the issue appears.
 
-elapsed time: 129m
+Great, thanks for confirming!  That helps narrow things down quite a
+bit.
 
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 134
+> Here is my exact (reproducible) test description:
+> I applied the following patch to the kernel to get the igb trace.
+> This patch instruments the igb_rd32() function to measure the call
+> to readl() which is used to access registers of the igb NIC.
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                             allmodconfig
-x86_64                 randconfig-x014-201641
-x86_64                 randconfig-x011-201641
-x86_64                 randconfig-x015-201641
-x86_64                 randconfig-x017-201641
-x86_64                 randconfig-x012-201641
-x86_64                 randconfig-x018-201641
-x86_64                 randconfig-x019-201641
-x86_64                 randconfig-x013-201641
-x86_64                 randconfig-x016-201641
-x86_64                 randconfig-x010-201641
-x86_64                            eywa-module
-x86_64                                   rhel
-x86_64                               rhel-7.2
-x86_64       rhel-7.2+CONFIG_DEBUG_INFO_REDUCED
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201641
-i386                     randconfig-s1-201641
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                 randconfig-i0-10140936
-i386                   randconfig-b0-10140936
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201641
-i386                     randconfig-i1-201641
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-blackfin                   CM-BF561_defconfig
-mips                             alldefconfig
-x86_64                 randconfig-u0-10141710
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-cris                        etraxfs_defconfig
-arm                           tegra_defconfig
-m32r                             allyesconfig
-i386                               tinyconfig
-i386                   randconfig-x014-201641
-i386                   randconfig-x019-201641
-i386                   randconfig-x017-201641
-i386                   randconfig-x018-201641
-i386                   randconfig-x015-201641
-i386                   randconfig-x016-201641
-i386                   randconfig-x012-201641
-i386                   randconfig-x013-201641
-i386                   randconfig-x011-201641
-i386                   randconfig-x010-201641
-x86_64                                    lkp
-i386                     randconfig-n0-201641
-i386                   randconfig-h0-10142315
-i386                   randconfig-h1-10142315
-ia64                             alldefconfig
-ia64                              allnoconfig
-sh                                allnoconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                            titan_defconfig
-x86_64                           allmodconfig
-arm                               allnoconfig
-arm                         at91_dt_defconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                 randconfig-x001-201641
-x86_64                 randconfig-x008-201641
-x86_64                 randconfig-x009-201641
-x86_64                 randconfig-x000-201641
-x86_64                 randconfig-x005-201641
-x86_64                 randconfig-x003-201641
-x86_64                 randconfig-x007-201641
-x86_64                 randconfig-x002-201641
-x86_64                 randconfig-x006-201641
-x86_64                 randconfig-x004-201641
-i386                     randconfig-r0-201641
-arm                       multi_v4t_defconfig
-avr32                  atngw100mkii_defconfig
-powerpc                     mpc5200_defconfig
-i386                   randconfig-x000-201641
-i386                   randconfig-x001-201641
-i386                   randconfig-x002-201641
-i386                   randconfig-x003-201641
-i386                   randconfig-x004-201641
-i386                   randconfig-x005-201641
-i386                   randconfig-x006-201641
-i386                   randconfig-x007-201641
-i386                   randconfig-x008-201641
-i386                   randconfig-x009-201641
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
+I took your test setup and ran it between 4.0 and 4.1 on the hardware on
+my desk, which is an Atom-based board with dual I210s, however I didn't
+see much difference.
 
-Thanks,
-Fengguang
+However, it's a fairly simple board, with a much simpler PCI topology
+than your workstation.  I'll see if I can find some other hardware to
+test on.
+
+[..]
+> This means, that I think that some other stuff in kernel 4.1 has changed,
+> which has impact on the igb accesses.
+>
+> Any idea what component could cause this kind of issue?
+
+Can you continue your bisection using 'git bisect'?  You've already
+narrowed it down between 4.0 and 4.1, so you're well on your way.
+
+Another option might be to try to eliminate igb from the picture as
+well, and try reading from another device from the same (or, perhaps
+nearest) bus segment, and see if you see the same results.
+
+   Julia
