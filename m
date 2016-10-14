@@ -1,39 +1,56 @@
-From: Richard Cochran <richardcochran@gmail.com>
-Date: Sat, 15 Oct 2016 00:06:33 +0200
-Subject: [Intel-wired-lan] Kernel 4.6.7-rt13: Intel Ethernet driver igb
- causes huge latencies in cyclictest
-In-Reply-To: <f395ea6cd1274fac83d2744121da7441@FE-MBX1012.de.bosch.com>
-References: <584755c2766e4b94a604ece16760fe14@FE-MBX1012.de.bosch.com>
- <20161005155959.GH10625@jcartwri.amer.corp.natinst.com>
- <13c3cd3ffee4490fb22b8de383e51361@FE-MBX1012.de.bosch.com>
- <AAEA33E297BCAC4B9BB20A7C2DF0AB8D8045E418@FMSMSX113.amr.corp.intel.com>
- <29250f87b1d84aacb8aa312935582291@FE-MBX1012.de.bosch.com>
- <20161010193958.GE22235@jcartwri.amer.corp.natinst.com>
- <e9661abf93194ad3849e3864a8361993@FE-MBX1012.de.bosch.com>
- <b77ea8ab312149d2b20a717d3ab0a8dc@FE-MBX1012.de.bosch.com>
- <20161013161839.GV10625@jcartwri.amer.corp.natinst.com>
- <f395ea6cd1274fac83d2744121da7441@FE-MBX1012.de.bosch.com>
-Message-ID: <20161014220633.GA1811@netboy>
+From: Bowers, AndrewX <andrewx.bowers@intel.com>
+Date: Fri, 14 Oct 2016 22:48:07 +0000
+Subject: [Intel-wired-lan] [next PATCH S50 2/6] i40e: Reorder logic
+	for	coalescing RS bits
+In-Reply-To: <1476224818-16844-3-git-send-email-bimmy.pujari@intel.com>
+References: <1476224818-16844-1-git-send-email-bimmy.pujari@intel.com>
+ <1476224818-16844-3-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA17EA7@ORSMSX106.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Fri, Oct 14, 2016 at 08:58:22AM +0000, Koehrer Mathias (ETAS/ESW5) wrote:
-> @@ -753,7 +756,9 @@ u32 igb_rd32(struct e1000_hw *hw, u32 re
->  	if (E1000_REMOVED(hw_addr))
->  		return ~value;
->  
-> +        trace_igb(801);
->  	value = readl(&hw_addr[reg]);
-> +        trace_igb(802);
+> -----Original Message-----
+> From: Intel-wired-lan [mailto:intel-wired-lan-bounces at lists.osuosl.org] On
+> Behalf Of Bimmy Pujari
+> Sent: Tuesday, October 11, 2016 3:27 PM
+> To: intel-wired-lan at lists.osuosl.org
+> Subject: [Intel-wired-lan] [next PATCH S50 2/6] i40e: Reorder logic for
+> coalescing RS bits
+> 
+> From: Alexander Duyck <alexander.h.duyck@intel.com>
+> 
+> This patch reorders the logic at the end of i40e_tx_map to address the fact
+> that the logic was rather convoluted and much larger than it needed to be.
+> 
+> In order to try and coalesce the code paths I have updated some of the
+> comments and repurposed some of the variables in order to reduce
+> unnecessary overhead.
+> 
+> This patch does the following:
+> 1.  Quit tracking skb->xmit_more with a flag, just max out packet_stride 2.
+> Drop tail_bump and do_rs and instead just use desc_count and td_cmd 3.
+> Pull comments from ixgbe that make need for wmb() more explicit.
+> 
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+> Change-ID: Ic7da85ec75043c634e87fef958109789bcc6317c
+> ---
+> Testing Hints:
+>         The big area to test for this is performance.  This should perform
+>         as well as the original code if not better.  If any signficant
+>         performance regressions are seen or hangs are seen then this patch
+>         has failed.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.c   | 105 +++++++++++++----------
+> ---
+>  drivers/net/ethernet/intel/i40e/i40e_txrx.h   |   1 -
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.c | 105 +++++++++++++---------
+> ----
+>  drivers/net/ethernet/intel/i40evf/i40e_txrx.h |   1 -
+>  4 files changed, 108 insertions(+), 104 deletions(-)
 
-Nothing prevents this code from being preempted between the two trace
-points, and so you can't be sure whether the time delta in the trace
-is caused by the PCIe read stalling or not.
-
-Thanks,
-Richard
+Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
 
