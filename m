@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Fri, 14 Oct 2016 16:41:03 +0000
-Subject: [Intel-wired-lan] [next PATCH S50 5/6] i40e: Implementation
-	of	ERROR state for NVM update state machine
-In-Reply-To: <1476224818-16844-6-git-send-email-bimmy.pujari@intel.com>
+Date: Fri, 14 Oct 2016 16:42:14 +0000
+Subject: [Intel-wired-lan] [next PATCH S50 6/6] i40e: removed
+ unreachable	code
+In-Reply-To: <1476224818-16844-7-git-send-email-bimmy.pujari@intel.com>
 References: <1476224818-16844-1-git-send-email-bimmy.pujari@intel.com>
- <1476224818-16844-6-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA11410@ORSMSX104.amr.corp.intel.com>
+ <1476224818-16844-7-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA11421@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,28 +17,35 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Tuesday, October 11, 2016 3:27 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Sosin, Maciej <maciej.sosin@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH S50 5/6] i40e: Implementation of
-> ERROR state for NVM update state machine
+> Cc: Sadowski, Filip <filip.sadowski@intel.com>
+> Subject: [Intel-wired-lan] [next PATCH S50 6/6] i40e: removed unreachable
+> code
 > 
-> From: Maciej Sosin <maciej.sosin@intel.com>
+> From: Filip Sadowski <filip.sadowski@intel.com>
 > 
-> This patch adds I40E_NVMUPD_STATE_ERROR state for NVM update.
-> Without this patch driver has no possibility to return NVM image write
-> failure.This state is being set when ARQ rises error.
-> arq_last_status is also updated every time when ARQ event comes, not only
-> on error cases.
+> Removed some of unnecessary if statements and unreachable code found
+> by static code analysis tool.
+> The return value of i40e_vsi_control_rings(..., false) is always 0. So, test for
+> non-zero will never be true. The function has been split into "int
+> i40e_vsi_start_rings()" and "void i40e_vsi_stop_rings()" for better
+> understanding.
+> Similarly, the function i40e_vsi_kill_vlan() never fails. So, checking for return
+> value is also unnecessary. Function definition changed to void.
+> The i40e_loopback_test() function is not impelemented. The function and all
+> references to loopback testing were removed.
 > 
-> Signed-off-by: Maciej Sosin <maciej.sosin@intel.com>
-> Change-ID: I67ce43ba22a240773c2821b436e96054db0b7c81
+> Signed-off-by: Filip Sadowski <filip.sadowski@intel.com>
+> Change-ID: Id45cf66f6689ce2bc4e887de13f073e30e8431bd
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_adminq.c   |  4 ++--
->  drivers/net/ethernet/intel/i40e/i40e_nvm.c      | 16 ++++++++++++++++
->  drivers/net/ethernet/intel/i40e/i40e_type.h     |  1 +
->  drivers/net/ethernet/intel/i40evf/i40e_adminq.c |  4 ++--
->  drivers/net/ethernet/intel/i40evf/i40e_type.h   |  1 +
->  5 files changed, 22 insertions(+), 4 deletions(-)
+> Testing hints:
+>         Found by static code analysis. Test by code inspection.
+> 
+>  drivers/net/ethernet/intel/i40e/i40e.h             |  5 +--
+>  drivers/net/ethernet/intel/i40e/i40e_ethtool.c     | 18 ----------
+>  drivers/net/ethernet/intel/i40e/i40e_main.c        | 41 ++++++++++++---------
+> -
+>  drivers/net/ethernet/intel/i40e/i40e_virtchnl_pf.c | 29 +++++----------
+>  4 files changed, 33 insertions(+), 60 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
-
 
