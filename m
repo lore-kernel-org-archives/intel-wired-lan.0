@@ -1,89 +1,73 @@
 From: David Ahern <dsa@cumulusnetworks.com>
-Date: Fri, 14 Oct 2016 18:28:47 -0700
-Subject: [Intel-wired-lan] [PATCH net-next 07/11] mlxsw: Flip to the new dev
-	walk API
+Date: Fri, 14 Oct 2016 18:28:48 -0700
+Subject: [Intel-wired-lan] [PATCH net-next 08/11] rocker: Flip to the new
+	dev walk API
 In-Reply-To: <1476494931-31813-1-git-send-email-dsa@cumulusnetworks.com>
 References: <1476494931-31813-1-git-send-email-dsa@cumulusnetworks.com>
-Message-ID: <1476494931-31813-8-git-send-email-dsa@cumulusnetworks.com>
+Message-ID: <1476494931-31813-9-git-send-email-dsa@cumulusnetworks.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Convert mlxsw users to new dev walk API. This is just a code conversion;
+Convert rocker to the new dev walk API. This is just a code conversion;
 no functional change is intended.
 
 Signed-off-by: David Ahern <dsa@cumulusnetworks.com>
 ---
- drivers/net/ethernet/mellanox/mlxsw/spectrum.c | 37 ++++++++++++++++----------
- 1 file changed, 23 insertions(+), 14 deletions(-)
+ drivers/net/ethernet/rocker/rocker_main.c | 31 ++++++++++++++++++++++++-------
+ 1 file changed, 24 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/mellanox/mlxsw/spectrum.c b/drivers/net/ethernet/mellanox/mlxsw/spectrum.c
-index 43a5eddc2c11..99805fd3d110 100644
---- a/drivers/net/ethernet/mellanox/mlxsw/spectrum.c
-+++ b/drivers/net/ethernet/mellanox/mlxsw/spectrum.c
-@@ -3092,19 +3092,30 @@ static bool mlxsw_sp_port_dev_check(const struct net_device *dev)
- 	return dev->netdev_ops == &mlxsw_sp_port_netdev_ops;
+diff --git a/drivers/net/ethernet/rocker/rocker_main.c b/drivers/net/ethernet/rocker/rocker_main.c
+index 5424fb341613..9310adc0bcbb 100644
+--- a/drivers/net/ethernet/rocker/rocker_main.c
++++ b/drivers/net/ethernet/rocker/rocker_main.c
+@@ -2839,20 +2839,37 @@ static bool rocker_port_dev_check_under(const struct net_device *dev,
+ 	return true;
  }
  
-+static int mlxsw_lower_dev_walk(struct net_device *lower_dev, void *data)
++struct rocker_walk_data {
++	struct rocker *rocker;
++	struct rocker_port *port;
++};
++
++static int rocker_lower_dev_walk(struct net_device *lower_dev, void *_data)
 +{
-+	struct mlxsw_sp_port **port = data;
++	struct rocker_walk_data *data = (struct rocker_walk_data *)_data;
 +	int ret = 0;
 +
-+	if (mlxsw_sp_port_dev_check(lower_dev)) {
-+		*port = netdev_priv(lower_dev);
++	if (rocker_port_dev_check_under(lower_dev, data->rocker)) {
++		data->port = netdev_priv(lower_dev);
 +		ret = 1;
 +	}
 +
 +	return ret;
 +}
 +
- static struct mlxsw_sp_port *mlxsw_sp_port_dev_lower_find(struct net_device *dev)
+ struct rocker_port *rocker_port_dev_lower_find(struct net_device *dev,
+ 					       struct rocker *rocker)
  {
 -	struct net_device *lower_dev;
 -	struct list_head *iter;
-+	struct mlxsw_sp_port *port;
++	struct rocker_walk_data data;
  
- 	if (mlxsw_sp_port_dev_check(dev))
+ 	if (rocker_port_dev_check_under(dev, rocker))
  		return netdev_priv(dev);
  
 -	netdev_for_each_all_lower_dev(dev, lower_dev, iter) {
--		if (mlxsw_sp_port_dev_check(lower_dev))
+-		if (rocker_port_dev_check_under(lower_dev, rocker))
 -			return netdev_priv(lower_dev);
 -	}
 -	return NULL;
-+	port = NULL;
-+	netdev_walk_all_lower_dev(dev, mlxsw_lower_dev_walk, &port);
++	data.rocker = rocker;
++	data.port = NULL;
++	netdev_walk_all_lower_dev(dev, rocker_lower_dev_walk, &data);
 +
-+	return port;
++	return data.port;
  }
  
- static struct mlxsw_sp *mlxsw_sp_lower_get(struct net_device *dev)
-@@ -3117,17 +3128,15 @@ static struct mlxsw_sp *mlxsw_sp_lower_get(struct net_device *dev)
- 
- static struct mlxsw_sp_port *mlxsw_sp_port_dev_lower_find_rcu(struct net_device *dev)
- {
--	struct net_device *lower_dev;
--	struct list_head *iter;
-+	struct mlxsw_sp_port *port;
- 
- 	if (mlxsw_sp_port_dev_check(dev))
- 		return netdev_priv(dev);
- 
--	netdev_for_each_all_lower_dev_rcu(dev, lower_dev, iter) {
--		if (mlxsw_sp_port_dev_check(lower_dev))
--			return netdev_priv(lower_dev);
--	}
--	return NULL;
-+	port = NULL;
-+	netdev_walk_all_lower_dev_rcu(dev, mlxsw_lower_dev_walk, &port);
-+
-+	return port;
- }
- 
- struct mlxsw_sp_port *mlxsw_sp_port_lower_dev_hold(struct net_device *dev)
+ static int rocker_netdevice_event(struct notifier_block *unused,
 -- 
 2.1.4
 
