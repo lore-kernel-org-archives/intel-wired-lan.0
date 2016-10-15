@@ -1,73 +1,56 @@
 From: David Ahern <dsa@cumulusnetworks.com>
-Date: Fri, 14 Oct 2016 18:28:48 -0700
-Subject: [Intel-wired-lan] [PATCH net-next 08/11] rocker: Flip to the new
-	dev walk API
+Date: Fri, 14 Oct 2016 18:28:50 -0700
+Subject: [Intel-wired-lan] [PATCH net-next 10/11] net: Add warning if any
+	lower device is still in adjacency list
 In-Reply-To: <1476494931-31813-1-git-send-email-dsa@cumulusnetworks.com>
 References: <1476494931-31813-1-git-send-email-dsa@cumulusnetworks.com>
-Message-ID: <1476494931-31813-9-git-send-email-dsa@cumulusnetworks.com>
+Message-ID: <1476494931-31813-11-git-send-email-dsa@cumulusnetworks.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Convert rocker to the new dev walk API. This is just a code conversion;
-no functional change is intended.
+Lower list should be empty just like upper.
 
 Signed-off-by: David Ahern <dsa@cumulusnetworks.com>
 ---
- drivers/net/ethernet/rocker/rocker_main.c | 31 ++++++++++++++++++++++++-------
- 1 file changed, 24 insertions(+), 7 deletions(-)
+ net/core/dev.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-diff --git a/drivers/net/ethernet/rocker/rocker_main.c b/drivers/net/ethernet/rocker/rocker_main.c
-index 5424fb341613..9310adc0bcbb 100644
---- a/drivers/net/ethernet/rocker/rocker_main.c
-+++ b/drivers/net/ethernet/rocker/rocker_main.c
-@@ -2839,20 +2839,37 @@ static bool rocker_port_dev_check_under(const struct net_device *dev,
- 	return true;
+diff --git a/net/core/dev.c b/net/core/dev.c
+index a012c7266230..99a1cb432945 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -5225,6 +5225,20 @@ struct net_device *netdev_master_upper_dev_get(struct net_device *dev)
  }
+ EXPORT_SYMBOL(netdev_master_upper_dev_get);
  
-+struct rocker_walk_data {
-+	struct rocker *rocker;
-+	struct rocker_port *port;
-+};
-+
-+static int rocker_lower_dev_walk(struct net_device *lower_dev, void *_data)
++/**
++ * netdev_has_any_lower_dev - Check if device is linked to some device
++ * @dev: device
++ *
++ * Find out if a device is linked to a lower device and return true in case
++ * it is. The caller must hold the RTNL lock.
++ */
++static bool netdev_has_any_lower_dev(struct net_device *dev)
 +{
-+	struct rocker_walk_data *data = (struct rocker_walk_data *)_data;
-+	int ret = 0;
++	ASSERT_RTNL();
 +
-+	if (rocker_port_dev_check_under(lower_dev, data->rocker)) {
-+		data->port = netdev_priv(lower_dev);
-+		ret = 1;
-+	}
-+
-+	return ret;
++	return !list_empty(&dev->adj_list.lower);
 +}
 +
- struct rocker_port *rocker_port_dev_lower_find(struct net_device *dev,
- 					       struct rocker *rocker)
+ void *netdev_adjacent_get_private(struct list_head *adj_list)
  {
--	struct net_device *lower_dev;
--	struct list_head *iter;
-+	struct rocker_walk_data data;
+ 	struct netdev_adjacent *adj;
+@@ -6622,6 +6636,7 @@ static void rollback_registered_many(struct list_head *head)
  
- 	if (rocker_port_dev_check_under(dev, rocker))
- 		return netdev_priv(dev);
+ 		/* Notifier chain MUST detach us all upper devices. */
+ 		WARN_ON(netdev_has_any_upper_dev(dev));
++		WARN_ON(netdev_has_any_lower_dev(dev));
  
--	netdev_for_each_all_lower_dev(dev, lower_dev, iter) {
--		if (rocker_port_dev_check_under(lower_dev, rocker))
--			return netdev_priv(lower_dev);
--	}
--	return NULL;
-+	data.rocker = rocker;
-+	data.port = NULL;
-+	netdev_walk_all_lower_dev(dev, rocker_lower_dev_walk, &data);
-+
-+	return data.port;
- }
- 
- static int rocker_netdevice_event(struct notifier_block *unused,
+ 		/* Remove entries from kobject tree */
+ 		netdev_unregister_kobject(dev);
 -- 
 2.1.4
 
