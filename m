@@ -1,138 +1,263 @@
 From: David Ahern <dsa@cumulusnetworks.com>
-Date: Fri, 14 Oct 2016 18:28:41 -0700
-Subject: [Intel-wired-lan] [PATCH net-next 01/11] net: Remove refnr arg when
-	inserting link adjacencies
+Date: Fri, 14 Oct 2016 18:28:42 -0700
+Subject: [Intel-wired-lan] [PATCH net-next 02/11] net: Introduce new api for
+	walking upper and lower devices
 In-Reply-To: <1476494931-31813-1-git-send-email-dsa@cumulusnetworks.com>
 References: <1476494931-31813-1-git-send-email-dsa@cumulusnetworks.com>
-Message-ID: <1476494931-31813-2-git-send-email-dsa@cumulusnetworks.com>
+Message-ID: <1476494931-31813-3-git-send-email-dsa@cumulusnetworks.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Commit 93409033ae65 ("net: Add netdev all_adj_list refcnt propagation to
-fix panic") propagated the refnr to insert and remove functions tracking
-the netdev adjacency graph. However, for the insert path the refnr can
-only be 1. Accordingly, remove the refnr argument to make that clear.
-ie., the refnr arg in 93409033ae65 was only needed for the remove path.
+This patch introduces netdev_walk_all_upper_dev_rcu,
+netdev_walk_all_lower_dev and netdev_walk_all_lower_dev_rcu. These
+functions recursively walk the adj_list of devices to determine all upper
+and lower devices.
+
+The functions take a callback function that is invoked for each device
+in the list. If the callback returns non-0, the walk is terminated and
+the functions return that code back to callers.
+
+v2
+- fixed definition of netdev_next_lower_dev_rcu to mirror the upper_dev
+  version.
 
 Signed-off-by: David Ahern <dsa@cumulusnetworks.com>
 ---
- net/core/dev.c | 27 ++++++++++++---------------
- 1 file changed, 12 insertions(+), 15 deletions(-)
+ include/linux/netdevice.h |  17 +++++
+ net/core/dev.c            | 161 ++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 178 insertions(+)
 
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index bf341b65ca5e..a5902d995907 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -3778,6 +3778,14 @@ struct net_device *netdev_all_upper_get_next_dev_rcu(struct net_device *dev,
+ 	     updev; \
+ 	     updev = netdev_all_upper_get_next_dev_rcu(dev, &(iter)))
+ 
++int netdev_walk_all_upper_dev_rcu(struct net_device *dev,
++				  int (*fn)(struct net_device *upper_dev,
++					    void *data),
++				  void *data);
++
++bool netdev_has_upper_dev_all_rcu(struct net_device *dev,
++				  struct net_device *upper_dev);
++
+ void *netdev_lower_get_next_private(struct net_device *dev,
+ 				    struct list_head **iter);
+ void *netdev_lower_get_next_private_rcu(struct net_device *dev,
+@@ -3821,6 +3829,15 @@ struct net_device *netdev_all_lower_get_next_rcu(struct net_device *dev,
+ 	     ldev; \
+ 	     ldev = netdev_all_lower_get_next_rcu(dev, &(iter)))
+ 
++int netdev_walk_all_lower_dev(struct net_device *dev,
++			      int (*fn)(struct net_device *lower_dev,
++					void *data),
++			      void *data);
++int netdev_walk_all_lower_dev_rcu(struct net_device *dev,
++				  int (*fn)(struct net_device *lower_dev,
++					    void *data),
++				  void *data);
++
+ void *netdev_adjacent_get_private(struct list_head *adj_list);
+ void *netdev_lower_get_first_private_rcu(struct net_device *dev);
+ struct net_device *netdev_master_upper_dev_get(struct net_device *dev);
 diff --git a/net/core/dev.c b/net/core/dev.c
-index 6498cc2ba8f6..5399af8fdac0 100644
+index 5399af8fdac0..1780f94ed25f 100644
 --- a/net/core/dev.c
 +++ b/net/core/dev.c
-@@ -5453,7 +5453,6 @@ static inline bool netdev_adjacent_is_neigh_list(struct net_device *dev,
+@@ -5156,6 +5156,37 @@ bool netdev_has_upper_dev(struct net_device *dev,
+ EXPORT_SYMBOL(netdev_has_upper_dev);
  
- static int __netdev_adjacent_dev_insert(struct net_device *dev,
- 					struct net_device *adj_dev,
--					u16 ref_nr,
- 					struct list_head *dev_list,
- 					void *private, bool master)
- {
-@@ -5463,7 +5462,7 @@ static int __netdev_adjacent_dev_insert(struct net_device *dev,
- 	adj = __netdev_find_adj(adj_dev, dev_list);
- 
- 	if (adj) {
--		adj->ref_nr += ref_nr;
-+		adj->ref_nr += 1;
- 		return 0;
- 	}
- 
-@@ -5473,7 +5472,7 @@ static int __netdev_adjacent_dev_insert(struct net_device *dev,
- 
- 	adj->dev = adj_dev;
- 	adj->master = master;
--	adj->ref_nr = ref_nr;
-+	adj->ref_nr = 1;
- 	adj->private = private;
- 	dev_hold(adj_dev);
- 
-@@ -5547,22 +5546,21 @@ static void __netdev_adjacent_dev_remove(struct net_device *dev,
- 
- static int __netdev_adjacent_dev_link_lists(struct net_device *dev,
- 					    struct net_device *upper_dev,
--					    u16 ref_nr,
- 					    struct list_head *up_list,
- 					    struct list_head *down_list,
- 					    void *private, bool master)
- {
- 	int ret;
- 
--	ret = __netdev_adjacent_dev_insert(dev, upper_dev, ref_nr, up_list,
-+	ret = __netdev_adjacent_dev_insert(dev, upper_dev, up_list,
- 					   private, master);
- 	if (ret)
- 		return ret;
- 
--	ret = __netdev_adjacent_dev_insert(upper_dev, dev, ref_nr, down_list,
-+	ret = __netdev_adjacent_dev_insert(upper_dev, dev, down_list,
- 					   private, false);
- 	if (ret) {
--		__netdev_adjacent_dev_remove(dev, upper_dev, ref_nr, up_list);
-+		__netdev_adjacent_dev_remove(dev, upper_dev, 1, up_list);
- 		return ret;
- 	}
- 
-@@ -5570,10 +5568,9 @@ static int __netdev_adjacent_dev_link_lists(struct net_device *dev,
+ /**
++ * netdev_has_upper_dev_all - Check if device is linked to an upper device
++ * @dev: device
++ * @upper_dev: upper device to check
++ *
++ * Find out if a device is linked to specified upper device and return true
++ * in case it is. Note that this checks the entire upper device chain.
++ * The caller must hold rcu lock.
++ */
++
++static int __netdev_has_upper_dev(struct net_device *upper_dev, void *data)
++{
++	struct net_device *dev = (struct net_device *)data;
++
++	if (upper_dev == dev)
++		return 1;
++
++	return 0;
++}
++
++bool netdev_has_upper_dev_all_rcu(struct net_device *dev,
++				  struct net_device *upper_dev)
++{
++	if (netdev_walk_all_upper_dev_rcu(dev, __netdev_has_upper_dev,
++					  upper_dev))
++		return true;
++
++	return false;
++}
++EXPORT_SYMBOL(netdev_has_upper_dev_all_rcu);
++
++/**
+  * netdev_has_any_upper_dev - Check if device is linked to some device
+  * @dev: device
+  *
+@@ -5255,6 +5286,51 @@ struct net_device *netdev_all_upper_get_next_dev_rcu(struct net_device *dev,
  }
+ EXPORT_SYMBOL(netdev_all_upper_get_next_dev_rcu);
  
- static int __netdev_adjacent_dev_link(struct net_device *dev,
--				      struct net_device *upper_dev,
--				      u16 ref_nr)
-+				      struct net_device *upper_dev)
- {
--	return __netdev_adjacent_dev_link_lists(dev, upper_dev, ref_nr,
-+	return __netdev_adjacent_dev_link_lists(dev, upper_dev,
- 						&dev->all_adj_list.upper,
- 						&upper_dev->all_adj_list.lower,
- 						NULL, false);
-@@ -5602,12 +5599,12 @@ static int __netdev_adjacent_dev_link_neighbour(struct net_device *dev,
- 						struct net_device *upper_dev,
- 						void *private, bool master)
- {
--	int ret = __netdev_adjacent_dev_link(dev, upper_dev, 1);
-+	int ret = __netdev_adjacent_dev_link(dev, upper_dev);
++static struct net_device *netdev_next_upper_dev_rcu(struct net_device *dev,
++						    struct list_head **iter)
++{
++	struct netdev_adjacent *upper;
++
++	WARN_ON_ONCE(!rcu_read_lock_held() && !lockdep_rtnl_is_held());
++
++	upper = list_entry_rcu((*iter)->next, struct netdev_adjacent, list);
++
++	if (&upper->list == &dev->adj_list.upper)
++		return NULL;
++
++	*iter = &upper->list;
++
++	return upper->dev;
++}
++
++int netdev_walk_all_upper_dev_rcu(struct net_device *dev,
++				  int (*fn)(struct net_device *dev,
++					    void *data),
++				  void *data)
++{
++	struct net_device *udev;
++	struct list_head *iter;
++	int ret;
++
++	for (iter = &dev->adj_list.upper,
++	     udev = netdev_next_upper_dev_rcu(dev, &iter);
++	     udev;
++	     udev = netdev_next_upper_dev_rcu(dev, &iter)) {
++		/* first is the upper device itself */
++		ret = fn(udev, data);
++		if (ret)
++			return ret;
++
++		/* then look at all of its upper devices */
++		ret = netdev_walk_all_upper_dev_rcu(udev, fn, data);
++		if (ret)
++			return ret;
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(netdev_walk_all_upper_dev_rcu);
++
+ /**
+  * netdev_lower_get_next_private - Get the next ->private from the
+  *				   lower neighbour list
+@@ -5361,6 +5437,49 @@ struct net_device *netdev_all_lower_get_next(struct net_device *dev, struct list
+ }
+ EXPORT_SYMBOL(netdev_all_lower_get_next);
  
- 	if (ret)
- 		return ret;
++static struct net_device *netdev_next_lower_dev(struct net_device *dev,
++						struct list_head **iter)
++{
++	struct netdev_adjacent *lower;
++
++	lower = list_entry(*iter, struct netdev_adjacent, list);
++
++	if (&lower->list == &dev->adj_list.lower)
++		return NULL;
++
++	*iter = lower->list.next;
++
++	return lower->dev;
++}
++
++int netdev_walk_all_lower_dev(struct net_device *dev,
++			      int (*fn)(struct net_device *dev,
++					void *data),
++			      void *data)
++{
++	struct net_device *ldev;
++	struct list_head *iter;
++	int ret;
++
++	for (iter = &dev->adj_list.lower,
++	     ldev = netdev_next_lower_dev(dev, &iter);
++	     ldev;
++	     ldev = netdev_next_lower_dev(dev, &iter)) {
++		/* first is the lower device itself */
++		ret = fn(ldev, data);
++		if (ret)
++			return ret;
++
++		/* then look at all of its lower devices */
++		ret = netdev_walk_all_lower_dev(ldev, fn, data);
++		if (ret)
++			return ret;
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(netdev_walk_all_lower_dev);
++
+ /**
+  * netdev_all_lower_get_next_rcu - Get the next device from all
+  *				   lower neighbour list, RCU variant
+@@ -5382,6 +5501,48 @@ struct net_device *netdev_all_lower_get_next_rcu(struct net_device *dev,
+ }
+ EXPORT_SYMBOL(netdev_all_lower_get_next_rcu);
  
--	ret = __netdev_adjacent_dev_link_lists(dev, upper_dev, 1,
-+	ret = __netdev_adjacent_dev_link_lists(dev, upper_dev,
- 					       &dev->adj_list.upper,
- 					       &upper_dev->adj_list.lower,
- 					       private, master);
-@@ -5676,7 +5673,7 @@ static int __netdev_upper_dev_link(struct net_device *dev,
- 		list_for_each_entry(j, &upper_dev->all_adj_list.upper, list) {
- 			pr_debug("Interlinking %s with %s, non-neighbour\n",
- 				 i->dev->name, j->dev->name);
--			ret = __netdev_adjacent_dev_link(i->dev, j->dev, i->ref_nr);
-+			ret = __netdev_adjacent_dev_link(i->dev, j->dev);
- 			if (ret)
- 				goto rollback_mesh;
- 		}
-@@ -5686,7 +5683,7 @@ static int __netdev_upper_dev_link(struct net_device *dev,
- 	list_for_each_entry(i, &upper_dev->all_adj_list.upper, list) {
- 		pr_debug("linking %s's upper device %s with %s\n",
- 			 upper_dev->name, i->dev->name, dev->name);
--		ret = __netdev_adjacent_dev_link(dev, i->dev, i->ref_nr);
-+		ret = __netdev_adjacent_dev_link(dev, i->dev);
- 		if (ret)
- 			goto rollback_upper_mesh;
- 	}
-@@ -5695,7 +5692,7 @@ static int __netdev_upper_dev_link(struct net_device *dev,
- 	list_for_each_entry(i, &dev->all_adj_list.lower, list) {
- 		pr_debug("linking %s's lower device %s with %s\n", dev->name,
- 			 i->dev->name, upper_dev->name);
--		ret = __netdev_adjacent_dev_link(i->dev, upper_dev, i->ref_nr);
-+		ret = __netdev_adjacent_dev_link(i->dev, upper_dev);
- 		if (ret)
- 			goto rollback_lower_mesh;
- 	}
++static struct net_device *netdev_next_lower_dev_rcu(struct net_device *dev,
++						    struct list_head **iter)
++{
++	struct netdev_adjacent *lower;
++
++	lower = list_entry_rcu((*iter)->next, struct netdev_adjacent, list);
++	if (&lower->list == &dev->adj_list.lower)
++		return NULL;
++
++	*iter = &lower->list;
++
++	return lower->dev;
++}
++
++int netdev_walk_all_lower_dev_rcu(struct net_device *dev,
++				  int (*fn)(struct net_device *dev,
++					    void *data),
++				  void *data)
++{
++	struct net_device *ldev;
++	struct list_head *iter;
++	int ret;
++
++	for (iter = &dev->adj_list.lower,
++	     ldev = netdev_next_lower_dev_rcu(dev, &iter);
++	     ldev;
++	     ldev = netdev_next_lower_dev_rcu(dev, &iter)) {
++		/* first is the lower device itself */
++		ret = fn(ldev, data);
++		if (ret)
++			return ret;
++
++		/* then look at all of its lower devices */
++		ret = netdev_walk_all_lower_dev_rcu(ldev, fn, data);
++		if (ret)
++			return ret;
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(netdev_walk_all_lower_dev_rcu);
++
+ /**
+  * netdev_lower_get_first_private_rcu - Get the first ->private from the
+  *				       lower neighbour list, RCU
 -- 
 2.1.4
 
