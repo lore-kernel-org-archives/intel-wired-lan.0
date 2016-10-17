@@ -1,8 +1,8 @@
-From: Koehrer Mathias (ETAS/ESW5) <mathias.koehrer@etas.com>
-Date: Mon, 17 Oct 2016 15:00:43 +0000
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Date: Mon, 17 Oct 2016 08:39:40 -0700
 Subject: [Intel-wired-lan] Kernel 4.6.7-rt13: Intel Ethernet driver igb
  causes huge latencies in cyclictest
-In-Reply-To: <20161014195536.GB27124@jcartwri.amer.corp.natinst.com>
+In-Reply-To: <82dcd5bb210f4f82af1e88313c3ec742@FE-MBX1012.de.bosch.com>
 References: <584755c2766e4b94a604ece16760fe14@FE-MBX1012.de.bosch.com>
  <20161005155959.GH10625@jcartwri.amer.corp.natinst.com>
  <13c3cd3ffee4490fb22b8de383e51361@FE-MBX1012.de.bosch.com>
@@ -14,114 +14,116 @@ References: <584755c2766e4b94a604ece16760fe14@FE-MBX1012.de.bosch.com>
  <20161013161839.GV10625@jcartwri.amer.corp.natinst.com>
  <f395ea6cd1274fac83d2744121da7441@FE-MBX1012.de.bosch.com>
  <20161014195536.GB27124@jcartwri.amer.corp.natinst.com>
-Message-ID: <82dcd5bb210f4f82af1e88313c3ec742@FE-MBX1012.de.bosch.com>
+ <82dcd5bb210f4f82af1e88313c3ec742@FE-MBX1012.de.bosch.com>
+Message-ID: <CAKgT0Uf-F9V+AeP0+92Gf=40Tye-687_GFbhp4Sex=Hat+Ha+w@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Hi Julia!
-> > > Have you tested on a vanilla (non-RT) kernel?  I doubt there is
-> > > anything RT specific about what you are seeing, but it might be nice
-> > > to get confirmation.  Also, bisection would probably be easier if you confirm on a
-> vanilla kernel.
-> > >
-> > > I find it unlikely that it's a kernel config option that changed
-> > > which regressed you, but instead was a code change to a driver.
-> > > Which driver is now the question, and the surface area is still big
-> > > (processor mapping attributes for this region, PCI root complex configuration,
-> PCI brige configuration, igb driver itself, etc.).
-> > >
-> > > Big enough that I'd recommend a bisection.  It looks like a
-> > > bisection between 3.18 and 4.8 would take you about 18 tries to narrow down,
-> assuming all goes well.
-> > >
-> >
-> > I have now repeated my tests using the vanilla kernel.
-> > There I got the very same issue.
-> > Using kernel 4.0 is fine, however starting with kernel 4.1, the issue appears.
-> 
-> Great, thanks for confirming!  That helps narrow things down quite a bit.
-> 
-> > Here is my exact (reproducible) test description:
-> > I applied the following patch to the kernel to get the igb trace.
-> > This patch instruments the igb_rd32() function to measure the call to
-> > readl() which is used to access registers of the igb NIC.
-> 
-> I took your test setup and ran it between 4.0 and 4.1 on the hardware on my desk,
-> which is an Atom-based board with dual I210s, however I didn't see much
-> difference.
-> 
-> However, it's a fairly simple board, with a much simpler PCI topology than your
-> workstation.  I'll see if I can find some other hardware to test on.
-> 
-> [..]
-> > This means, that I think that some other stuff in kernel 4.1 has
-> > changed, which has impact on the igb accesses.
-> >
-> > Any idea what component could cause this kind of issue?
-> 
-> Can you continue your bisection using 'git bisect'?  You've already narrowed it down
-> between 4.0 and 4.1, so you're well on your way.
-> 
+On Mon, Oct 17, 2016 at 8:00 AM, Koehrer Mathias (ETAS/ESW5)
+<mathias.koehrer@etas.com> wrote:
+> Hi Julia!
+>> > > Have you tested on a vanilla (non-RT) kernel?  I doubt there is
+>> > > anything RT specific about what you are seeing, but it might be nice
+>> > > to get confirmation.  Also, bisection would probably be easier if you confirm on a
+>> vanilla kernel.
+>> > >
+>> > > I find it unlikely that it's a kernel config option that changed
+>> > > which regressed you, but instead was a code change to a driver.
+>> > > Which driver is now the question, and the surface area is still big
+>> > > (processor mapping attributes for this region, PCI root complex configuration,
+>> PCI brige configuration, igb driver itself, etc.).
+>> > >
+>> > > Big enough that I'd recommend a bisection.  It looks like a
+>> > > bisection between 3.18 and 4.8 would take you about 18 tries to narrow down,
+>> assuming all goes well.
+>> > >
+>> >
+>> > I have now repeated my tests using the vanilla kernel.
+>> > There I got the very same issue.
+>> > Using kernel 4.0 is fine, however starting with kernel 4.1, the issue appears.
+>>
+>> Great, thanks for confirming!  That helps narrow things down quite a bit.
+>>
+>> > Here is my exact (reproducible) test description:
+>> > I applied the following patch to the kernel to get the igb trace.
+>> > This patch instruments the igb_rd32() function to measure the call to
+>> > readl() which is used to access registers of the igb NIC.
+>>
+>> I took your test setup and ran it between 4.0 and 4.1 on the hardware on my desk,
+>> which is an Atom-based board with dual I210s, however I didn't see much
+>> difference.
+>>
+>> However, it's a fairly simple board, with a much simpler PCI topology than your
+>> workstation.  I'll see if I can find some other hardware to test on.
+>>
+>> [..]
+>> > This means, that I think that some other stuff in kernel 4.1 has
+>> > changed, which has impact on the igb accesses.
+>> >
+>> > Any idea what component could cause this kind of issue?
+>>
+>> Can you continue your bisection using 'git bisect'?  You've already narrowed it down
+>> between 4.0 and 4.1, so you're well on your way.
+>>
+>
+> OK - done.
+> And finally I was successful!
+> The following git commit is the one that is causing the trouble!
+> (The full commit is in the attachment).
+> +++++++++++++++++++++ BEGIN +++++++++++++++++++++++++++
+> commit 387d37577fdd05e9472c20885464c2a53b3c945f
+> Author: Matthew Garrett <mjg59@coreos.com>
+> Date:   Tue Apr 7 11:07:00 2015 -0700
+>
+>     PCI: Don't clear ASPM bits when the FADT declares it's unsupported
+>
+>     Communications with a hardware vendor confirm that the expected behaviour
+>     on systems that set the FADT ASPM disable bit but which still grant full
+>     PCIe control is for the OS to leave any BIOS configuration intact and
+>     refuse to touch the ASPM bits.  This mimics the behaviour of Windows.
+>
+>     Signed-off-by: Matthew Garrett <mjg59@coreos.com>
+>     Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+> +++++++++++++++++++++ HEADER +++++++++++++++++++++++++++
+>
+> The only files that are modified by this commit are
+> drivers/acpi/pci_root.c
+> drivers/pci/pcie/aspm.c
+> include/linux/pci-aspm.h
+>
+> This is all generic PCIe stuff - however I do not really understand what
+> the changes of the commit are...
+>
+> In my setup I am using a dual port igb Ethernet adapter.
+> This has an onboard PCIe switch and it might be that the configuration of this
+> PCIe switch on the Intel board is causing the trouble.
+>
+> Please see also the output of "lspci -v" in the attachment.
+> The relevant PCI address of the NIC is 04:00.0 / 04:00.1
+>
+> Any feedback on this is welcome!
+>
+> Thanks
+>
+> Mathias
 
-OK - done.
-And finally I was successful!
-The following git commit is the one that is causing the trouble!
-(The full commit is in the attachment).
-+++++++++++++++++++++ BEGIN +++++++++++++++++++++++++++
-commit 387d37577fdd05e9472c20885464c2a53b3c945f
-Author: Matthew Garrett <mjg59@coreos.com>
-Date:   Tue Apr 7 11:07:00 2015 -0700
+Hi Mathias,
 
-    PCI: Don't clear ASPM bits when the FADT declares it's unsupported
+If you could set the output of lspci -vvv it might be more useful as
+most of the configuration data isn't present in the lspci dump you had
+attached.  Specifically if you could do this for the working case and
+the non-working case we could verify if this issue is actually due to
+the ASPM configuration on the device.
 
-    Communications with a hardware vendor confirm that the expected behaviour
-    on systems that set the FADT ASPM disable bit but which still grant full
-    PCIe control is for the OS to leave any BIOS configuration intact and
-    refuse to touch the ASPM bits.  This mimics the behaviour of Windows.
+Also one thing you might try is booting your kernel with the kernel
+parameter "pcie_aspm=off".  It sounds like the extra latency is likely
+due to your platform enabling ASPM on the device and this in turn will
+add latency if the PCIe link is disabled when you attempt to perform a
+read as it takes some time to bring the PCIe link up when in L1 state.
 
-    Signed-off-by: Matthew Garrett <mjg59@coreos.com>
-    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-+++++++++++++++++++++ HEADER +++++++++++++++++++++++++++
+Thanks for bisecting this.
 
-The only files that are modified by this commit are 
-drivers/acpi/pci_root.c
-drivers/pci/pcie/aspm.c
-include/linux/pci-aspm.h
-
-This is all generic PCIe stuff - however I do not really understand what
-the changes of the commit are...
-
-In my setup I am using a dual port igb Ethernet adapter.
-This has an onboard PCIe switch and it might be that the configuration of this
-PCIe switch on the Intel board is causing the trouble.
-
-Please see also the output of "lspci -v" in the attachment.
-The relevant PCI address of the NIC is 04:00.0 / 04:00.1
-
-Any feedback on this is welcome!
-
-Thanks
-
-Mathias
-
-
-
-
-
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: 387d37577fdd05e9472c20885464c2a53b3c945f.patch.gz
-Type: application/x-gzip
-Size: 1694 bytes
-Desc: 387d37577fdd05e9472c20885464c2a53b3c945f.patch.gz
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20161017/3e2b3e35/attachment.bin>
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: lspci.gz
-Type: application/x-gzip
-Size: 2038 bytes
-Desc: lspci.gz
-URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20161017/3e2b3e35/attachment-0001.bin>
+- Alex
