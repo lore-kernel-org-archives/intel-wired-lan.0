@@ -1,89 +1,25 @@
 From: David Ahern <dsa@cumulusnetworks.com>
-Date: Mon, 17 Oct 2016 19:15:53 -0700
-Subject: [Intel-wired-lan] [PATCH net-next 11/11] net: dev: Improve debug
-	statements for adjacency tracking
-In-Reply-To: <1476756953-30923-1-git-send-email-dsa@cumulusnetworks.com>
+Date: Tue, 18 Oct 2016 09:58:23 -0600
+Subject: [Intel-wired-lan] [PATCH v3 net-next 00/11] net: Fix netdev
+	adjacency tracking
+In-Reply-To: <20161018.114631.1954199143257806104.davem@davemloft.net>
 References: <1476756953-30923-1-git-send-email-dsa@cumulusnetworks.com>
-Message-ID: <1476756953-30923-12-git-send-email-dsa@cumulusnetworks.com>
+ <20161018.114631.1954199143257806104.davem@davemloft.net>
+Message-ID: <295372c1-a359-d560-2856-45e5f0c183be@cumulusnetworks.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-Adjacency code only has debugs for the insert case. Add debugs for
-the remove path and make both consistently worded to make it easier
-to follow the insert and removal with reference counts.
+On 10/18/16 9:46 AM, David Miller wrote:
+> Series applied, but the recursion is disappointing.
+> 
+> If we run into problems due to kernel stack depth because of this with
+> some configurations (reasonable or not, if we allow it then it can't
+> crash the kernel), we will either need to find a way to make this walk
+> iterative or revert these changes.
 
-In addition, change the BUG to a WARN_ON. A missing adjacency at
-removal time is not cause for a panic.
+understood.
 
-Signed-off-by: David Ahern <dsa@cumulusnetworks.com>
----
- net/core/dev.c | 22 +++++++++++++++-------
- 1 file changed, 15 insertions(+), 7 deletions(-)
-
-diff --git a/net/core/dev.c b/net/core/dev.c
-index c6bbf310d407..f55fb4536016 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -5561,6 +5561,9 @@ static int __netdev_adjacent_dev_insert(struct net_device *dev,
- 
- 	if (adj) {
- 		adj->ref_nr += 1;
-+		pr_debug("Insert adjacency: dev %s adj_dev %s adj->ref_nr %d\n",
-+			 dev->name, adj_dev->name, adj->ref_nr);
-+
- 		return 0;
- 	}
- 
-@@ -5574,8 +5577,8 @@ static int __netdev_adjacent_dev_insert(struct net_device *dev,
- 	adj->private = private;
- 	dev_hold(adj_dev);
- 
--	pr_debug("dev_hold for %s, because of link added from %s to %s\n",
--		 adj_dev->name, dev->name, adj_dev->name);
-+	pr_debug("Insert adjacency: dev %s adj_dev %s adj->ref_nr %d; dev_hold on %s\n",
-+		 dev->name, adj_dev->name, adj->ref_nr, adj_dev->name);
- 
- 	if (netdev_adjacent_is_neigh_list(dev, adj_dev, dev_list)) {
- 		ret = netdev_adjacent_sysfs_add(dev, adj_dev, dev_list);
-@@ -5614,17 +5617,22 @@ static void __netdev_adjacent_dev_remove(struct net_device *dev,
- {
- 	struct netdev_adjacent *adj;
- 
-+	pr_debug("Remove adjacency: dev %s adj_dev %s ref_nr %d\n",
-+		 dev->name, adj_dev->name, ref_nr);
-+
- 	adj = __netdev_find_adj(adj_dev, dev_list);
- 
- 	if (!adj) {
--		pr_err("tried to remove device %s from %s\n",
-+		pr_err("Adjacency does not exist for device %s from %s\n",
- 		       dev->name, adj_dev->name);
--		BUG();
-+		WARN_ON(1);
-+		return;
- 	}
- 
- 	if (adj->ref_nr > ref_nr) {
--		pr_debug("%s to %s ref_nr-%d = %d\n", dev->name, adj_dev->name,
--			 ref_nr, adj->ref_nr-ref_nr);
-+		pr_debug("adjacency: %s to %s ref_nr - %d = %d\n",
-+			 dev->name, adj_dev->name, ref_nr,
-+			 adj->ref_nr - ref_nr);
- 		adj->ref_nr -= ref_nr;
- 		return;
- 	}
-@@ -5636,7 +5644,7 @@ static void __netdev_adjacent_dev_remove(struct net_device *dev,
- 		netdev_adjacent_sysfs_del(dev, adj_dev->name, dev_list);
- 
- 	list_del_rcu(&adj->list);
--	pr_debug("dev_put for %s, because link removed from %s to %s\n",
-+	pr_debug("adjacency: dev_put for %s, because link removed from %s to %s\n",
- 		 adj_dev->name, dev->name, adj_dev->name);
- 	dev_put(adj_dev);
- 	kfree_rcu(adj, rcu);
--- 
-2.1.4
-
+Since 4.9 is tagged as the next LTS I would like to see the series applied to it at some point - assuming no problems show up with wider exposure in net-next.
