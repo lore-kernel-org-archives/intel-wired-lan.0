@@ -1,169 +1,208 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Thu, 20 Oct 2016 09:44:56 +0800
-Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
- 54b2a8a50cfac5a35ea1afba223d83575595b509
-Message-ID: <58082198.5pwEsrVItao1pDKG%fengguang.wu@intel.com>
+From: Donald C Skidmore <donald.c.skidmore@intel.com>
+Date: Thu, 20 Oct 2016 21:42:00 -0400
+Subject: [Intel-wired-lan] [PATCH] ixgbe: Add support to retrieve and store
+	LED link active
+Message-ID: <1477014120-23682-1-git-send-email-donald.c.skidmore@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
-54b2a8a50cfac5a35ea1afba223d83575595b509  ixgbe: ixgbe_atr() compute l4_proto only if non-paged data has network/transport headers
+This patch adds support to get the LED link active via the LEDCTL
+register.  If the LEDCTL register does not have LED link active
+(LED mode field = 0x0100) set then default LED link active returned.
 
-elapsed time: 94m
+Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
+---
+ drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c   |  1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c   |  1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.c  | 46 ++++++++++++++++++++++++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_common.h  |  1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c |  4 +--
+ drivers/net/ethernet/intel/ixgbe/ixgbe_type.h    |  2 ++
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c    |  1 +
+ drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c    |  3 ++
+ 8 files changed, 57 insertions(+), 2 deletions(-)
 
-The following configs have been built successfully. More configs may be tested in the coming days.
-configs tested: 147
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
+index 1b7009b..805ab31 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_82598.c
+@@ -1179,6 +1179,7 @@ static const struct ixgbe_mac_operations mac_ops_82598 = {
+ 	.get_link_capabilities	= &ixgbe_get_link_capabilities_82598,
+ 	.led_on			= &ixgbe_led_on_generic,
+ 	.led_off		= &ixgbe_led_off_generic,
++	.init_led_link_act	= ixgbe_init_led_link_act_generic,
+ 	.blink_led_start	= &ixgbe_blink_led_start_generic,
+ 	.blink_led_stop		= &ixgbe_blink_led_stop_generic,
+ 	.set_rar		= &ixgbe_set_rar_generic,
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
+index 709af71..e00aaeb 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_82599.c
+@@ -2204,6 +2204,7 @@ static const struct ixgbe_mac_operations mac_ops_82599 = {
+ 	.get_link_capabilities  = &ixgbe_get_link_capabilities_82599,
+ 	.led_on                 = &ixgbe_led_on_generic,
+ 	.led_off                = &ixgbe_led_off_generic,
++	.init_led_link_act	= ixgbe_init_led_link_act_generic,
+ 	.blink_led_start        = &ixgbe_blink_led_start_generic,
+ 	.blink_led_stop         = &ixgbe_blink_led_stop_generic,
+ 	.set_rar                = &ixgbe_set_rar_generic,
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+index deac764..8832df3 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.c
+@@ -392,6 +392,9 @@ s32 ixgbe_init_hw_generic(struct ixgbe_hw *hw)
+ 		status = hw->mac.ops.start_hw(hw);
+ 	}
+ 
++	/* Initialize the LED link active for LED blink support */
++	hw->mac.ops.init_led_link_act(hw);
++
+ 	return status;
+ }
+ 
+@@ -775,6 +778,49 @@ s32 ixgbe_stop_adapter_generic(struct ixgbe_hw *hw)
+ }
+ 
+ /**
++ *  ixgbe_init_led_link_act_generic - Store the LED index link/activity.
++ *  @hw: pointer to hardware structure
++ *
++ *  Store the index for the link active LED. This will be used to support
++ *  blinking the LED.
++ **/
++s32 ixgbe_init_led_link_act_generic(struct ixgbe_hw *hw)
++{
++	struct ixgbe_mac_info *mac = &hw->mac;
++	u32 led_reg, led_mode;
++	u16 i;
++
++	led_reg = IXGBE_READ_REG(hw, IXGBE_LEDCTL);
++
++	/* Get LED link active from the LEDCTL register */
++	for (i = 0; i < 4; i++) {
++		led_mode = led_reg >> IXGBE_LED_MODE_SHIFT(i);
++
++		if ((led_mode & IXGBE_LED_MODE_MASK_BASE) ==
++		    IXGBE_LED_LINK_ACTIVE) {
++			mac->led_link_act = i;
++			return 0;
++		}
++	}
++
++	/* If LEDCTL register does not have the LED link active set, then use
++	 * known MAC defaults.
++	 */
++	switch (hw->mac.type) {
++	case ixgbe_mac_x550em_a:
++		mac->led_link_act = 0;
++		break;
++	case ixgbe_mac_X550EM_x:
++		mac->led_link_act = 1;
++		break;
++	default:
++		mac->led_link_act = 2;
++	}
++
++	return 0;
++}
++
++/**
+  *  ixgbe_led_on_generic - Turns on the software controllable LEDs.
+  *  @hw: pointer to hardware structure
+  *  @index: led number to turn on
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
+index 6d4c260..5b3e3c6 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_common.h
+@@ -49,6 +49,7 @@ s32 ixgbe_stop_adapter_generic(struct ixgbe_hw *hw);
+ 
+ s32 ixgbe_led_on_generic(struct ixgbe_hw *hw, u32 index);
+ s32 ixgbe_led_off_generic(struct ixgbe_hw *hw, u32 index);
++s32 ixgbe_init_led_link_act_generic(struct ixgbe_hw *hw);
+ 
+ s32 ixgbe_init_eeprom_params_generic(struct ixgbe_hw *hw);
+ s32 ixgbe_write_eeprom_generic(struct ixgbe_hw *hw, u16 offset, u16 data);
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+index f49f803..fd192bf 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_ethtool.c
+@@ -2225,11 +2225,11 @@ static int ixgbe_set_phys_id(struct net_device *netdev,
+ 		return 2;
+ 
+ 	case ETHTOOL_ID_ON:
+-		hw->mac.ops.led_on(hw, hw->bus.func);
++		hw->mac.ops.led_on(hw, hw->mac.led_link_act);
+ 		break;
+ 
+ 	case ETHTOOL_ID_OFF:
+-		hw->mac.ops.led_off(hw, hw->bus.func);
++		hw->mac.ops.led_off(hw, hw->mac.led_link_act);
+ 		break;
+ 
+ 	case ETHTOOL_ID_INACTIVE:
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+index dfd6143..856152f 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_type.h
+@@ -3337,6 +3337,7 @@ struct ixgbe_mac_operations {
+ 	s32 (*led_off)(struct ixgbe_hw *, u32);
+ 	s32 (*blink_led_start)(struct ixgbe_hw *, u32);
+ 	s32 (*blink_led_stop)(struct ixgbe_hw *, u32);
++	s32 (*init_led_link_act)(struct ixgbe_hw *);
+ 
+ 	/* RAR, Multicast, VLAN */
+ 	s32 (*set_rar)(struct ixgbe_hw *, u32, u8 *, u32, u32);
+@@ -3460,6 +3461,7 @@ struct ixgbe_mac_info {
+ 	u8				san_mac_rar_index;
+ 	struct ixgbe_thermal_sensor_data  thermal_sensor_data;
+ 	bool				set_lben;
++	u8				led_link_act;
+ };
+ 
+ struct ixgbe_phy_info {
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
+index 22425c2..e2ff823 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x540.c
+@@ -851,6 +851,7 @@ static const struct ixgbe_mac_operations mac_ops_X540 = {
+ 	.get_link_capabilities  = &ixgbe_get_copper_link_capabilities_generic,
+ 	.led_on                 = &ixgbe_led_on_generic,
+ 	.led_off                = &ixgbe_led_off_generic,
++	.init_led_link_act	= ixgbe_init_led_link_act_generic,
+ 	.blink_led_start        = &ixgbe_blink_led_start_X540,
+ 	.blink_led_stop         = &ixgbe_blink_led_stop_X540,
+ 	.set_rar                = &ixgbe_set_rar_generic,
+diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+index b6b35e4..f06b0e1 100644
+--- a/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
++++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_x550.c
+@@ -3292,6 +3292,7 @@ static const struct ixgbe_mac_operations mac_ops_X550 = {
+ 	X550_COMMON_MAC
+ 	.led_on			= ixgbe_led_on_generic,
+ 	.led_off		= ixgbe_led_off_generic,
++	.init_led_link_act	= ixgbe_init_led_link_act_generic,
+ 	.reset_hw		= &ixgbe_reset_hw_X540,
+ 	.get_media_type		= &ixgbe_get_media_type_X540,
+ 	.get_san_mac_addr	= &ixgbe_get_san_mac_addr_generic,
+@@ -3313,6 +3314,7 @@ static const struct ixgbe_mac_operations mac_ops_X550EM_x = {
+ 	X550_COMMON_MAC
+ 	.led_on			= ixgbe_led_on_t_x550em,
+ 	.led_off		= ixgbe_led_off_t_x550em,
++	.init_led_link_act	= ixgbe_init_led_link_act_generic,
+ 	.reset_hw		= &ixgbe_reset_hw_X550em,
+ 	.get_media_type		= &ixgbe_get_media_type_X550em,
+ 	.get_san_mac_addr	= NULL,
+@@ -3334,6 +3336,7 @@ static struct ixgbe_mac_operations mac_ops_x550em_a = {
+ 	X550_COMMON_MAC
+ 	.led_on			= ixgbe_led_on_t_x550em,
+ 	.led_off		= ixgbe_led_off_t_x550em,
++	.init_led_link_act	= ixgbe_init_led_link_act_generic,
+ 	.reset_hw		= ixgbe_reset_hw_X550em,
+ 	.get_media_type		= ixgbe_get_media_type_X550em,
+ 	.get_san_mac_addr	= NULL,
+-- 
+2.4.3
 
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-arm                         em_x270_defconfig
-m32r                    mappi2.opsp_defconfig
-mips                           ip22_defconfig
-i386                     randconfig-a0-201642
-x86_64                 randconfig-a0-10200831
-i386                               tinyconfig
-i386                   randconfig-c0-10200821
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-i386                             allmodconfig
-arm                         at91_dt_defconfig
-arm                            pleb_defconfig
-m68k                       m5475evb_defconfig
-mips                            ar7_defconfig
-powerpc                  iss476-smp_defconfig
-arm                          pxa168_defconfig
-blackfin                          allnoconfig
-cris                             allmodconfig
-sh                             sh03_defconfig
-x86_64                 randconfig-x014-201642
-x86_64                 randconfig-x011-201642
-x86_64                 randconfig-x017-201642
-x86_64                 randconfig-x015-201642
-x86_64                 randconfig-x012-201642
-x86_64                 randconfig-x018-201642
-x86_64                 randconfig-x019-201642
-x86_64                 randconfig-x013-201642
-x86_64                 randconfig-x010-201642
-x86_64                 randconfig-x016-201642
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                   randconfig-s0-10191144
-i386                   randconfig-s1-10191144
-x86_64                 randconfig-s0-10200815
-x86_64                 randconfig-s1-10200815
-x86_64                 randconfig-s2-10200815
-x86_64                 randconfig-s0-10200906
-x86_64                 randconfig-s1-10200906
-x86_64                 randconfig-s2-10200906
-x86_64                 randconfig-s3-10200816
-x86_64                 randconfig-s4-10200816
-x86_64                 randconfig-s5-10200816
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
-x86_64                   randconfig-i0-201642
-i386                   randconfig-b0-10200728
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i1-201642
-i386                     randconfig-i0-201642
-x86_64                 randconfig-u0-10200702
-x86_64                 randconfig-n0-10200823
-i386                     randconfig-n0-201642
-arm                           spitz_defconfig
-m68k                            mac_defconfig
-mips                      bmips_stb_defconfig
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-arm                            xcep_defconfig
-powerpc                     taishan_defconfig
-sparc                            alldefconfig
-blackfin                   CM-BF561_defconfig
-mips                malta_kvm_guest_defconfig
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-x86_64                           allmodconfig
-arm                               allnoconfig
-arm                           efm32_defconfig
-arm                          exynos_defconfig
-arm                        multi_v5_defconfig
-arm                        multi_v7_defconfig
-arm                        shmobile_defconfig
-arm                           sunxi_defconfig
-arm64                             allnoconfig
-arm64                               defconfig
-x86_64                 randconfig-x001-201642
-x86_64                 randconfig-x008-201642
-x86_64                 randconfig-x009-201642
-x86_64                 randconfig-x000-201642
-x86_64                 randconfig-x003-201642
-x86_64                 randconfig-x005-201642
-x86_64                 randconfig-x007-201642
-x86_64                 randconfig-x002-201642
-x86_64                 randconfig-x004-201642
-x86_64                 randconfig-x006-201642
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                     randconfig-r0-201642
-ia64                            sim_defconfig
-m32r                             allmodconfig
-m68k                        mvme147_defconfig
-i386                   randconfig-x004-201642
-i386                   randconfig-x006-201642
-i386                   randconfig-x007-201642
-i386                   randconfig-x003-201642
-i386                   randconfig-x008-201642
-i386                   randconfig-x000-201642
-i386                   randconfig-x009-201642
-i386                   randconfig-x002-201642
-i386                   randconfig-x001-201642
-i386                   randconfig-x005-201642
-i386                   randconfig-x0-10200711
-
-Thanks,
-Fengguang
