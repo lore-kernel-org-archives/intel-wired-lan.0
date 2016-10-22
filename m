@@ -1,120 +1,240 @@
-From: Donald C Skidmore <donald.c.skidmore@intel.com>
-Date: Fri, 21 Oct 2016 21:10:54 -0400
-Subject: [Intel-wired-lan] [PATCH] ixgbe: Update setup PHY link to unset all
-	speeds
-Message-ID: <1477098654-29228-1-git-send-email-donald.c.skidmore@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Sat, 22 Oct 2016 09:56:02 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 3702599c8c0c05c27a50e00f6c524314ad2f244d
+Message-ID: <580ac732.ro1UndDVlCj43Sja%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This patch updates ixgbe_setup_phy_link_generic to set/unset
-auto-negotiation for all speeds. This ensures that unsupported
-speeds are unset. This is necessary since the PHY NVM may
-advertise unsupported speeds.
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+3702599c8c0c05c27a50e00f6c524314ad2f244d  ixgbe: Add support to retrieve and store LED link active
 
-Signed-off-by: Don Skidmore <donald.c.skidmore@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c | 77 ++++++++++++++--------------
- 1 file changed, 38 insertions(+), 39 deletions(-)
+elapsed time: 176m
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-index 2019db5..e27798d9 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_phy.c
-@@ -678,53 +678,52 @@ s32 ixgbe_setup_phy_link_generic(struct ixgbe_hw *hw)
- 
- 	ixgbe_get_copper_link_capabilities_generic(hw, &speed, &autoneg);
- 
--	if (speed & IXGBE_LINK_SPEED_10GB_FULL) {
--		/* Set or unset auto-negotiation 10G advertisement */
--		hw->phy.ops.read_reg(hw, MDIO_AN_10GBT_CTRL,
--				     MDIO_MMD_AN,
--				     &autoneg_reg);
-+	/* Set or unset auto-negotiation 10G advertisement */
-+	hw->phy.ops.read_reg(hw, MDIO_AN_10GBT_CTRL, MDIO_MMD_AN, &autoneg_reg);
- 
--		autoneg_reg &= ~MDIO_AN_10GBT_CTRL_ADV10G;
--		if (hw->phy.autoneg_advertised & IXGBE_LINK_SPEED_10GB_FULL)
--			autoneg_reg |= MDIO_AN_10GBT_CTRL_ADV10G;
-+	autoneg_reg &= ~MDIO_AN_10GBT_CTRL_ADV10G;
-+	if ((hw->phy.autoneg_advertised & IXGBE_LINK_SPEED_10GB_FULL) &&
-+	    (speed & IXGBE_LINK_SPEED_10GB_FULL))
-+		autoneg_reg |= MDIO_AN_10GBT_CTRL_ADV10G;
- 
--		hw->phy.ops.write_reg(hw, MDIO_AN_10GBT_CTRL,
--				      MDIO_MMD_AN,
--				      autoneg_reg);
--	}
-+	hw->phy.ops.write_reg(hw, MDIO_AN_10GBT_CTRL, MDIO_MMD_AN, autoneg_reg);
- 
--	if (speed & IXGBE_LINK_SPEED_1GB_FULL) {
--		/* Set or unset auto-negotiation 1G advertisement */
--		hw->phy.ops.read_reg(hw,
--				     IXGBE_MII_AUTONEG_VENDOR_PROVISION_1_REG,
--				     MDIO_MMD_AN,
--				     &autoneg_reg);
--
--		autoneg_reg &= ~IXGBE_MII_1GBASE_T_ADVERTISE;
--		if (hw->phy.autoneg_advertised & IXGBE_LINK_SPEED_1GB_FULL)
--			autoneg_reg |= IXGBE_MII_1GBASE_T_ADVERTISE;
-+	hw->phy.ops.read_reg(hw, IXGBE_MII_AUTONEG_VENDOR_PROVISION_1_REG,
-+			     MDIO_MMD_AN, &autoneg_reg);
- 
--		hw->phy.ops.write_reg(hw,
--				      IXGBE_MII_AUTONEG_VENDOR_PROVISION_1_REG,
--				      MDIO_MMD_AN,
--				      autoneg_reg);
-+	if (hw->mac.type == ixgbe_mac_X550) {
-+		/* Set or unset auto-negotiation 5G advertisement */
-+		autoneg_reg &= ~IXGBE_MII_5GBASE_T_ADVERTISE;
-+		if ((hw->phy.autoneg_advertised & IXGBE_LINK_SPEED_5GB_FULL) &&
-+		    (speed & IXGBE_LINK_SPEED_5GB_FULL))
-+			autoneg_reg |= IXGBE_MII_5GBASE_T_ADVERTISE;
-+
-+		/* Set or unset auto-negotiation 2.5G advertisement */
-+		autoneg_reg &= ~IXGBE_MII_2_5GBASE_T_ADVERTISE;
-+		if ((hw->phy.autoneg_advertised &
-+		     IXGBE_LINK_SPEED_2_5GB_FULL) &&
-+		    (speed & IXGBE_LINK_SPEED_2_5GB_FULL))
-+			autoneg_reg |= IXGBE_MII_2_5GBASE_T_ADVERTISE;
- 	}
- 
--	if (speed & IXGBE_LINK_SPEED_100_FULL) {
--		/* Set or unset auto-negotiation 100M advertisement */
--		hw->phy.ops.read_reg(hw, MDIO_AN_ADVERTISE,
--				     MDIO_MMD_AN,
--				     &autoneg_reg);
-+	/* Set or unset auto-negotiation 1G advertisement */
-+	autoneg_reg &= ~IXGBE_MII_1GBASE_T_ADVERTISE;
-+	if ((hw->phy.autoneg_advertised & IXGBE_LINK_SPEED_1GB_FULL) &&
-+	    (speed & IXGBE_LINK_SPEED_1GB_FULL))
-+		autoneg_reg |= IXGBE_MII_1GBASE_T_ADVERTISE;
- 
--		autoneg_reg &= ~(ADVERTISE_100FULL |
--				 ADVERTISE_100HALF);
--		if (hw->phy.autoneg_advertised & IXGBE_LINK_SPEED_100_FULL)
--			autoneg_reg |= ADVERTISE_100FULL;
-+	hw->phy.ops.write_reg(hw, IXGBE_MII_AUTONEG_VENDOR_PROVISION_1_REG,
-+			      MDIO_MMD_AN, autoneg_reg);
- 
--		hw->phy.ops.write_reg(hw, MDIO_AN_ADVERTISE,
--				      MDIO_MMD_AN,
--				      autoneg_reg);
--	}
-+	/* Set or unset auto-negotiation 100M advertisement */
-+	hw->phy.ops.read_reg(hw, MDIO_AN_ADVERTISE, MDIO_MMD_AN, &autoneg_reg);
-+
-+	autoneg_reg &= ~(ADVERTISE_100FULL | ADVERTISE_100HALF);
-+	if ((hw->phy.autoneg_advertised & IXGBE_LINK_SPEED_100_FULL) &&
-+	    (speed & IXGBE_LINK_SPEED_100_FULL))
-+		autoneg_reg |= ADVERTISE_100FULL;
-+
-+	hw->phy.ops.write_reg(hw, MDIO_AN_ADVERTISE, MDIO_MMD_AN, autoneg_reg);
- 
- 	/* Blocked by MNG FW so don't reset PHY */
- 	if (ixgbe_check_reset_blocked(hw))
--- 
-2.4.3
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 219
 
+arm                     am200epdkit_defconfig
+arm                           h5000_defconfig
+sparc                             allnoconfig
+arm                         axm55xx_defconfig
+sh                   rts7751r2dplus_defconfig
+sh                           se7780_defconfig
+i386                     randconfig-a0-201642
+x86_64                 randconfig-a0-10220749
+x86_64                             acpi-redef
+x86_64       acpi-redef+CONFIG_DEBUG_INFO_REDUCED
+x86_64                           allyesdebian
+x86_64                                nfsroot
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+i386                   randconfig-c0-10220850
+x86_64                           allmodconfig
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+i386                             allmodconfig
+x86_64                 randconfig-x010-201642
+x86_64                 randconfig-x011-201642
+x86_64                 randconfig-x012-201642
+x86_64                 randconfig-x013-201642
+x86_64                 randconfig-x014-201642
+x86_64                 randconfig-x015-201642
+x86_64                 randconfig-x016-201642
+x86_64                 randconfig-x017-201642
+x86_64                 randconfig-x018-201642
+x86_64                 randconfig-x019-201642
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
+arm                              allmodconfig
+arm                                      arm5
+arm                                     arm67
+arm                       imx_v6_v7_defconfig
+arm                          ixp4xx_defconfig
+arm                        mvebu_v7_defconfig
+arm                       omap2plus_defconfig
+arm                                    sa1100
+arm                                   samsung
+arm                                        sh
+arm                           tegra_defconfig
+arm64                            alldefconfig
+arm64                            allmodconfig
+x86_64                            eywa-module
+x86_64                                   rhel
+x86_64                               rhel-7.2
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201642
+i386                     randconfig-s1-201642
+x86_64                 randconfig-s0-10211700
+x86_64                 randconfig-s1-10211700
+x86_64                 randconfig-s2-10211700
+x86_64                 randconfig-s0-10220749
+x86_64                 randconfig-s1-10220749
+x86_64                 randconfig-s2-10220749
+x86_64                 randconfig-s0-10220853
+x86_64                 randconfig-s1-10220853
+x86_64                 randconfig-s2-10220853
+x86_64                 randconfig-s3-10220635
+x86_64                 randconfig-s4-10220635
+x86_64                 randconfig-s5-10220635
+x86_64                 randconfig-s3-10220815
+x86_64                 randconfig-s4-10220815
+x86_64                 randconfig-s5-10220815
+x86_64                 randconfig-s3-10220906
+x86_64                 randconfig-s4-10220906
+x86_64                 randconfig-s5-10220906
+avr32                      atngw100_defconfig
+avr32                     atstk1006_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+i386                               tinyconfig
+arm                           acs5k_defconfig
+c6x                        evmc6472_defconfig
+powerpc                 mpc836x_mds_defconfig
+xtensa                           allmodconfig
+ia64                              allnoconfig
+microblaze                          defconfig
+openrisc                          allnoconfig
+powerpc                 mpc836x_rdk_defconfig
+arm                     davinci_all_defconfig
+mips                        qi_lb60_defconfig
+powerpc                        icon_defconfig
+sh                      rts7751r2d1_defconfig
+arm                         em_x270_defconfig
+arm                         socfpga_defconfig
+powerpc                      virtex_defconfig
+blackfin                BF548-EZKIT_defconfig
+m68k                       m5208evb_defconfig
+mips                       rbtx49xx_defconfig
+powerpc                 mpc832x_mds_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201642
+i386                   randconfig-b0-10220723
+i386                   randconfig-b0-10220854
+i386                   randconfig-b0-10220925
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201642
+i386                     randconfig-i1-201642
+i386                             allyesconfig
+x86_64                 randconfig-b0-10211259
+arm                         lubbock_defconfig
+powerpc                      arches_defconfig
+x86_64                 randconfig-u0-10220656
+arm                         s3c2410_defconfig
+sparc                       sparc64_defconfig
+powerpc                 mpc834x_itx_defconfig
+powerpc                     tqm8541_defconfig
+x86_64                 randconfig-n0-10220601
+alpha                            alldefconfig
+mips                          rm200_defconfig
+powerpc                     mpc512x_defconfig
+arm                       spear13xx_defconfig
+powerpc                     akebono_defconfig
+powerpc                 canyonlands_defconfig
+arm                          ks8695_defconfig
+arm                      tct_hammer_defconfig
+cris                          dev88_defconfig
+sh                ecovec24-romimage_defconfig
+i386                   randconfig-x010-201642
+i386                   randconfig-x011-201642
+i386                   randconfig-x012-201642
+i386                   randconfig-x013-201642
+i386                   randconfig-x014-201642
+i386                   randconfig-x015-201642
+i386                   randconfig-x016-201642
+i386                   randconfig-x017-201642
+i386                   randconfig-x018-201642
+i386                   randconfig-x019-201642
+i386                     randconfig-n0-201642
+i386                   randconfig-h0-10220746
+i386                   randconfig-h1-10220746
+i386                   randconfig-h0-10220828
+i386                   randconfig-h1-10220828
+ia64                             alldefconfig
+ia64                                defconfig
+x86_64                 randconfig-h0-10220831
+arm                        cerfcube_defconfig
+m68k                          atari_defconfig
+mips                     loongson1c_defconfig
+sh                            migor_defconfig
+h8300                       h8s-sim_defconfig
+sh                          landisk_defconfig
+arm                             pxa_defconfig
+arm                         mv78xx0_defconfig
+powerpc                     virtex5_defconfig
+arm                            pleb_defconfig
+mn10300                          alldefconfig
+x86_64                 randconfig-x000-201642
+x86_64                 randconfig-x001-201642
+x86_64                 randconfig-x002-201642
+x86_64                 randconfig-x003-201642
+x86_64                 randconfig-x004-201642
+x86_64                 randconfig-x005-201642
+x86_64                 randconfig-x006-201642
+x86_64                 randconfig-x007-201642
+x86_64                 randconfig-x008-201642
+x86_64                 randconfig-x009-201642
+i386                   randconfig-x004-201642
+i386                   randconfig-x006-201642
+i386                   randconfig-x007-201642
+i386                   randconfig-x003-201642
+i386                   randconfig-x008-201642
+i386                   randconfig-x000-201642
+i386                   randconfig-x009-201642
+i386                   randconfig-x002-201642
+i386                   randconfig-x001-201642
+i386                   randconfig-x005-201642
+i386                   randconfig-x0-10220859
+
+Thanks,
+Fengguang
