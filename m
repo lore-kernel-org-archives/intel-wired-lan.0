@@ -1,89 +1,172 @@
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Mon, 24 Oct 2016 15:36:39 -0700
-Subject: [Intel-wired-lan] [PATCH 2/2] ixgbe: ixgbe_atr() compute l4_proto
-	only if non-paged data has network/transport headers
-In-Reply-To: <1477348599-30723-1-git-send-email-jeffrey.t.kirsher@intel.com>
-References: <1477348599-30723-1-git-send-email-jeffrey.t.kirsher@intel.com>
-Message-ID: <1477348599-30723-2-git-send-email-jeffrey.t.kirsher@intel.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Date: Tue, 25 Oct 2016 07:58:29 +0800
+Subject: [Intel-wired-lan] [jkirsher-next-queue:dev-queue] BUILD SUCCESS
+ 5bedb144e8daabb309d1d4d825e4d0d0fa3b7735
+Message-ID: <580ea025.fwNjTYwuQUgwFVsH%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/next-queue.git  dev-queue
+5bedb144e8daabb309d1d4d825e4d0d0fa3b7735  ixgbe: Add support to retrieve and store LED link active
 
-For some Tx paths (e.g., tpacket_snd()), ixgbe_atr may be
-passed down an sk_buff that has the network and transport
-header in the paged data, so it needs to make sure these
-headers are available in the headlen bytes to calculate the
-l4_proto.
+elapsed time: 102m
 
-This patch expect that network and transport headers are
-already available in the non-paged header dat.  The assumption
-is that the caller has set this up if l4_proto based Tx
-steering is desired.
+The following configs have been built successfully. More configs may be tested in the coming days.
+configs tested: 150
 
-Signed-off-by: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-Reviewed-by: Alexander Duyck <alexander.h.duyck@intel.com>
----
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+i386                   randconfig-a0-10240424
+x86_64                 randconfig-a0-10250222
+x86_64                             acpi-redef
+x86_64       acpi-redef+CONFIG_DEBUG_INFO_REDUCED
+x86_64                           allyesdebian
+x86_64                                nfsroot
+i386                               tinyconfig
+sh                                allnoconfig
+sh                          rsk7269_defconfig
+sh                  sh7785lcr_32bit_defconfig
+sh                            titan_defconfig
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+blackfin                BF526-EZBRD_defconfig
+blackfin                BF533-EZKIT_defconfig
+blackfin            BF561-EZKIT-SMP_defconfig
+blackfin                  TCM-BF537_defconfig
+cris                 etrax-100lx_v2_defconfig
+arm                         ebsa110_defconfig
+avr32                     atstk1006_defconfig
+mips                          malta_defconfig
+sh                               allmodconfig
+sparc                             allnoconfig
+x86_64                 randconfig-x014-201643
+x86_64                 randconfig-x011-201643
+x86_64                 randconfig-x017-201643
+x86_64                 randconfig-x015-201643
+x86_64                 randconfig-x012-201643
+x86_64                 randconfig-x018-201643
+x86_64                 randconfig-x019-201643
+x86_64                 randconfig-x013-201643
+x86_64                 randconfig-x010-201643
+x86_64                 randconfig-x016-201643
+m68k                       m5475evb_defconfig
+m68k                          multi_defconfig
+m68k                           sun3_defconfig
+i386                     randconfig-s0-201643
+i386                     randconfig-s1-201643
+x86_64                 randconfig-s0-10250626
+x86_64                 randconfig-s1-10250626
+x86_64                 randconfig-s2-10250626
+x86_64                 randconfig-s3-10250551
+x86_64                 randconfig-s4-10250551
+x86_64                 randconfig-s5-10250551
+avr32                      atngw100_defconfig
+frv                                 defconfig
+mn10300                     asb2364_defconfig
+openrisc                    or1ksim_defconfig
+tile                         tilegx_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                   jz4740
+mips                                     txx9
+powerpc                           allnoconfig
+powerpc                             defconfig
+powerpc                       ppc64_defconfig
+s390                        default_defconfig
+x86_64                   randconfig-i0-201643
+i386                   randconfig-b0-10250417
+sparc                               defconfig
+sparc64                           allnoconfig
+sparc64                             defconfig
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i0-201643
+i386                     randconfig-i1-201643
+x86_64                           allmodconfig
+arm                           viper_defconfig
+s390                                defconfig
+xtensa                           alldefconfig
+x86_64                 randconfig-u0-10241652
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+m32r                       m32104ut_defconfig
+m32r                     mappi3.smp_defconfig
+m32r                         opsput_defconfig
+m32r                           usrv_defconfig
+nios2                         10m50_defconfig
+score                      spct6600_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+arm                          moxart_defconfig
+microblaze                          defconfig
+mips                          ath25_defconfig
+powerpc                        cell_defconfig
+i386                   randconfig-x014-201643
+i386                   randconfig-x019-201643
+i386                   randconfig-x017-201643
+i386                   randconfig-x018-201643
+i386                   randconfig-x015-201643
+i386                   randconfig-x016-201643
+i386                   randconfig-x012-201643
+i386                   randconfig-x013-201643
+i386                   randconfig-x011-201643
+i386                   randconfig-x010-201643
+x86_64                                    lkp
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                   randconfig-n0-10241126
+i386                   randconfig-h0-10250205
+i386                   randconfig-h1-10250205
+blackfin                            defconfig
+ia64                                defconfig
+mips                                defconfig
+ia64                             alldefconfig
+ia64                              allnoconfig
+x86_64                 randconfig-h0-10242341
+powerpc                          allmodconfig
+powerpc                       holly_defconfig
+x86_64                 randconfig-n0-10250603
+arm                               allnoconfig
+arm                         at91_dt_defconfig
+arm                           efm32_defconfig
+arm                          exynos_defconfig
+arm                        multi_v5_defconfig
+arm                        multi_v7_defconfig
+arm                        shmobile_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm64                               defconfig
+x86_64                 randconfig-x001-201643
+x86_64                 randconfig-x008-201643
+x86_64                 randconfig-x009-201643
+x86_64                 randconfig-x000-201643
+x86_64                 randconfig-x003-201643
+x86_64                 randconfig-x005-201643
+x86_64                 randconfig-x007-201643
+x86_64                 randconfig-x002-201643
+x86_64                 randconfig-x004-201643
+x86_64                 randconfig-x006-201643
+i386                     randconfig-r0-201643
+i386                             allmodconfig
+i386                   randconfig-x004-201643
+i386                   randconfig-x006-201643
+i386                   randconfig-x007-201643
+i386                   randconfig-x003-201643
+i386                   randconfig-x008-201643
+i386                   randconfig-x000-201643
+i386                   randconfig-x002-201643
+i386                   randconfig-x009-201643
+i386                   randconfig-x001-201643
+i386                   randconfig-x005-201643
+i386                             alldefconfig
+i386                              allnoconfig
+i386                                defconfig
 
-diff --git a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-index e4a3227..2436984 100644
---- a/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-+++ b/drivers/net/ethernet/intel/ixgbe/ixgbe_main.c
-@@ -54,6 +54,7 @@
- #include <net/pkt_cls.h>
- #include <net/tc_act/tc_gact.h>
- #include <net/tc_act/tc_mirred.h>
-+#include <net/vxlan.h>
- 
- #include "ixgbe.h"
- #include "ixgbe_common.h"
-@@ -7660,11 +7661,17 @@ static void ixgbe_atr(struct ixgbe_ring *ring,
- 	/* snag network header to get L4 type and address */
- 	skb = first->skb;
- 	hdr.network = skb_network_header(skb);
-+	if (unlikely(hdr.network <= skb->data))
-+		return;
- 	if (skb->encapsulation &&
- 	    first->protocol == htons(ETH_P_IP) &&
- 	    hdr.ipv4->protocol == IPPROTO_UDP) {
- 		struct ixgbe_adapter *adapter = q_vector->adapter;
- 
-+		if (unlikely(skb_tail_pointer(skb) < hdr.network +
-+			     VXLAN_HEADROOM))
-+			return;
-+
- 		/* verify the port is recognized as VXLAN */
- 		if (adapter->vxlan_port &&
- 		    udp_hdr(skb)->dest == adapter->vxlan_port)
-@@ -7675,6 +7682,12 @@ static void ixgbe_atr(struct ixgbe_ring *ring,
- 			hdr.network = skb_inner_network_header(skb);
- 	}
- 
-+	/* Make sure we have at least [minimum IPv4 header + TCP]
-+	 * or [IPv6 header] bytes
-+	 */
-+	if (unlikely(skb_tail_pointer(skb) < hdr.network + 40))
-+		return;
-+
- 	/* Currently only IPv4/IPv6 with TCP is supported */
- 	switch (hdr.ipv4->version) {
- 	case IPVERSION:
-@@ -7694,6 +7707,10 @@ static void ixgbe_atr(struct ixgbe_ring *ring,
- 	if (l4_proto != IPPROTO_TCP)
- 		return;
- 
-+	if (unlikely(skb_tail_pointer(skb) < hdr.network +
-+		     hlen + sizeof(struct tcphdr)))
-+		return;
-+
- 	th = (struct tcphdr *)(hdr.network + hlen);
- 
- 	/* skip this packet since the socket is closing */
--- 
-2.7.4
-
+Thanks,
+Fengguang
