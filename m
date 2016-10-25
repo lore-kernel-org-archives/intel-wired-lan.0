@@ -1,10 +1,10 @@
 From: Alexander Duyck <alexander.h.duyck@intel.com>
-Date: Tue, 25 Oct 2016 11:37:57 -0400
-Subject: [Intel-wired-lan] [net-next PATCH 13/27] arch/microblaze: Add
- option to skip DMA sync as a part of map and unmap
+Date: Tue, 25 Oct 2016 11:37:51 -0400
+Subject: [Intel-wired-lan] [net-next PATCH 12/27] arch/metag: Add option to
+ skip DMA sync as a part of map and unmap
 In-Reply-To: <20161025153220.4815.61239.stgit@ahduyck-blue-test.jf.intel.com>
 References: <20161025153220.4815.61239.stgit@ahduyck-blue-test.jf.intel.com>
-Message-ID: <20161025153757.4815.8960.stgit@ahduyck-blue-test.jf.intel.com>
+Message-ID: <20161025153751.4815.28856.stgit@ahduyck-blue-test.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,45 +15,59 @@ This change allows us to pass DMA_ATTR_SKIP_CPU_SYNC which allows us to
 avoid invoking cache line invalidation if the driver will just handle it
 via a sync_for_cpu or sync_for_device call.
 
-Cc: Michal Simek <monstr@monstr.eu>
+Cc: James Hogan <james.hogan@imgtec.com>
+Cc: linux-metag at vger.kernel.org
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- arch/microblaze/kernel/dma.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ arch/metag/kernel/dma.c |   16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
 
-diff --git a/arch/microblaze/kernel/dma.c b/arch/microblaze/kernel/dma.c
-index ec04dc1..818daf2 100644
---- a/arch/microblaze/kernel/dma.c
-+++ b/arch/microblaze/kernel/dma.c
-@@ -61,6 +61,10 @@ static int dma_direct_map_sg(struct device *dev, struct scatterlist *sgl,
- 	/* FIXME this part of code is untested */
- 	for_each_sg(sgl, sg, nents, i) {
+diff --git a/arch/metag/kernel/dma.c b/arch/metag/kernel/dma.c
+index 0db31e2..91968d9 100644
+--- a/arch/metag/kernel/dma.c
++++ b/arch/metag/kernel/dma.c
+@@ -484,8 +484,9 @@ static dma_addr_t metag_dma_map_page(struct device *dev, struct page *page,
+ 		unsigned long offset, size_t size,
+ 		enum dma_data_direction direction, unsigned long attrs)
+ {
+-	dma_sync_for_device((void *)(page_to_phys(page) + offset), size,
+-			    direction);
++	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
++		dma_sync_for_device((void *)(page_to_phys(page) + offset),
++				    size, direction);
+ 	return page_to_phys(page) + offset;
+ }
+ 
+@@ -493,7 +494,8 @@ static void metag_dma_unmap_page(struct device *dev, dma_addr_t dma_address,
+ 		size_t size, enum dma_data_direction direction,
+ 		unsigned long attrs)
+ {
+-	dma_sync_for_cpu(phys_to_virt(dma_address), size, direction);
++	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
++		dma_sync_for_cpu(phys_to_virt(dma_address), size, direction);
+ }
+ 
+ static int metag_dma_map_sg(struct device *dev, struct scatterlist *sglist,
+@@ -507,6 +509,10 @@ static int metag_dma_map_sg(struct device *dev, struct scatterlist *sglist,
+ 		BUG_ON(!sg_page(sg));
+ 
  		sg->dma_address = sg_phys(sg);
 +
 +		if (attrs & DMA_ATTR_SKIP_CPU_SYNC)
 +			continue;
 +
- 		__dma_sync(page_to_phys(sg_page(sg)) + sg->offset,
- 							sg->length, direction);
+ 		dma_sync_for_device(sg_virt(sg), sg->length, direction);
  	}
-@@ -80,7 +84,8 @@ static inline dma_addr_t dma_direct_map_page(struct device *dev,
- 					     enum dma_data_direction direction,
- 					     unsigned long attrs)
- {
--	__dma_sync(page_to_phys(page) + offset, size, direction);
-+	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
-+		__dma_sync(page_to_phys(page) + offset, size, direction);
- 	return page_to_phys(page) + offset;
- }
  
-@@ -95,7 +100,8 @@ static inline void dma_direct_unmap_page(struct device *dev,
-  * phys_to_virt is here because in __dma_sync_page is __virt_to_phys and
-  * dma_address is physical address
-  */
--	__dma_sync(dma_address, size, direction);
-+	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
-+		__dma_sync(dma_address, size, direction);
- }
+@@ -525,6 +531,10 @@ static void metag_dma_unmap_sg(struct device *dev, struct scatterlist *sglist,
+ 		BUG_ON(!sg_page(sg));
  
- static inline void
+ 		sg->dma_address = sg_phys(sg);
++
++		if (attrs & DMA_ATTR_SKIP_CPU_SYNC)
++			continue;
++
+ 		dma_sync_for_cpu(sg_virt(sg), sg->length, direction);
+ 	}
+ }
 
