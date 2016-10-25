@@ -1,80 +1,96 @@
 From: Alexander Duyck <alexander.h.duyck@intel.com>
-Date: Tue, 25 Oct 2016 11:38:02 -0400
-Subject: [Intel-wired-lan] [net-next PATCH 14/27] arch/mips: Add option to
- skip DMA sync as a part of map and unmap
+Date: Tue, 25 Oct 2016 11:37:36 -0400
+Subject: [Intel-wired-lan] [net-next PATCH 09/27] arch/frv: Add option to
+	skip sync on DMA map
 In-Reply-To: <20161025153220.4815.61239.stgit@ahduyck-blue-test.jf.intel.com>
 References: <20161025153220.4815.61239.stgit@ahduyck-blue-test.jf.intel.com>
-Message-ID: <20161025153802.4815.97633.stgit@ahduyck-blue-test.jf.intel.com>
+Message-ID: <20161025153736.4815.49992.stgit@ahduyck-blue-test.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This change allows us to pass DMA_ATTR_SKIP_CPU_SYNC which allows us to
-avoid invoking cache line invalidation if the driver will just handle it
-via a sync_for_cpu or sync_for_device call.
+The use of DMA_ATTR_SKIP_CPU_SYNC was not consistent across all of the DMA
+APIs in the arch/arm folder.  This change is meant to correct that so that
+we get consistent behavior.
 
-Cc: Ralf Baechle <ralf@linux-mips.org>
-Cc: Keguang Zhang <keguang.zhang@gmail.com>
-Cc: linux-mips at linux-mips.org
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- arch/mips/loongson64/common/dma-swiotlb.c |    2 +-
- arch/mips/mm/dma-default.c                |    8 +++++---
- 2 files changed, 6 insertions(+), 4 deletions(-)
+ arch/frv/mb93090-mb00/pci-dma-nommu.c |   14 ++++++++++----
+ arch/frv/mb93090-mb00/pci-dma.c       |    9 +++++++--
+ 2 files changed, 17 insertions(+), 6 deletions(-)
 
-diff --git a/arch/mips/loongson64/common/dma-swiotlb.c b/arch/mips/loongson64/common/dma-swiotlb.c
-index 1a80b6f..aab4fd6 100644
---- a/arch/mips/loongson64/common/dma-swiotlb.c
-+++ b/arch/mips/loongson64/common/dma-swiotlb.c
-@@ -61,7 +61,7 @@ static int loongson_dma_map_sg(struct device *dev, struct scatterlist *sg,
- 				int nents, enum dma_data_direction dir,
- 				unsigned long attrs)
+diff --git a/arch/frv/mb93090-mb00/pci-dma-nommu.c b/arch/frv/mb93090-mb00/pci-dma-nommu.c
+index 90f2e4c..1876881 100644
+--- a/arch/frv/mb93090-mb00/pci-dma-nommu.c
++++ b/arch/frv/mb93090-mb00/pci-dma-nommu.c
+@@ -109,16 +109,19 @@ static int frv_dma_map_sg(struct device *dev, struct scatterlist *sglist,
+ 		int nents, enum dma_data_direction direction,
+ 		unsigned long attrs)
  {
--	int r = swiotlb_map_sg_attrs(dev, sg, nents, dir, 0);
-+	int r = swiotlb_map_sg_attrs(dev, sg, nents, dir, attrs);
- 	mb();
- 
- 	return r;
-diff --git a/arch/mips/mm/dma-default.c b/arch/mips/mm/dma-default.c
-index b2eadd6..dd998d7 100644
---- a/arch/mips/mm/dma-default.c
-+++ b/arch/mips/mm/dma-default.c
-@@ -293,7 +293,7 @@ static inline void __dma_sync(struct page *page,
- static void mips_dma_unmap_page(struct device *dev, dma_addr_t dma_addr,
- 	size_t size, enum dma_data_direction direction, unsigned long attrs)
- {
--	if (cpu_needs_post_dma_flush(dev))
-+	if (cpu_needs_post_dma_flush(dev) && !(attrs & DMA_ATTR_SKIP_CPU_SYNC))
- 		__dma_sync(dma_addr_to_page(dev, dma_addr),
- 			   dma_addr & ~PAGE_MASK, size, direction);
- 	plat_post_dma_flush(dev);
-@@ -307,7 +307,8 @@ static int mips_dma_map_sg(struct device *dev, struct scatterlist *sglist,
+-	int i;
  	struct scatterlist *sg;
++	int i;
++
++	BUG_ON(direction == DMA_NONE);
++
++	if (attrs & DMA_ATTR_SKIP_CPU_SYNC)
++		return nents;
  
  	for_each_sg(sglist, sg, nents, i) {
--		if (!plat_device_is_coherent(dev))
-+		if (!plat_device_is_coherent(dev) &&
-+		    !(attrs & DMA_ATTR_SKIP_CPU_SYNC))
- 			__dma_sync(sg_page(sg), sg->offset, sg->length,
- 				   direction);
- #ifdef CONFIG_NEED_SG_DMA_LENGTH
-@@ -324,7 +325,7 @@ static dma_addr_t mips_dma_map_page(struct device *dev, struct page *page,
- 	unsigned long offset, size_t size, enum dma_data_direction direction,
- 	unsigned long attrs)
+ 		frv_cache_wback_inv(sg_dma_address(sg),
+ 				    sg_dma_address(sg) + sg_dma_len(sg));
+ 	}
+ 
+-	BUG_ON(direction == DMA_NONE);
+-
+ 	return nents;
+ }
+ 
+@@ -127,7 +130,10 @@ static dma_addr_t frv_dma_map_page(struct device *dev, struct page *page,
+ 		enum dma_data_direction direction, unsigned long attrs)
  {
--	if (!plat_device_is_coherent(dev))
-+	if (!plat_device_is_coherent(dev) && !(attrs & DMA_ATTR_SKIP_CPU_SYNC))
- 		__dma_sync(page, offset, size, direction);
+ 	BUG_ON(direction == DMA_NONE);
+-	flush_dcache_page(page);
++
++	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
++		flush_dcache_page(page);
++
+ 	return (dma_addr_t) page_to_phys(page) + offset;
+ }
  
- 	return plat_map_dma_mem_page(dev, page) + offset;
-@@ -339,6 +340,7 @@ static void mips_dma_unmap_sg(struct device *dev, struct scatterlist *sglist,
+diff --git a/arch/frv/mb93090-mb00/pci-dma.c b/arch/frv/mb93090-mb00/pci-dma.c
+index f585745..dba7df9 100644
+--- a/arch/frv/mb93090-mb00/pci-dma.c
++++ b/arch/frv/mb93090-mb00/pci-dma.c
+@@ -40,13 +40,16 @@ static int frv_dma_map_sg(struct device *dev, struct scatterlist *sglist,
+ 		int nents, enum dma_data_direction direction,
+ 		unsigned long attrs)
+ {
++	struct scatterlist *sg;
+ 	unsigned long dampr2;
+ 	void *vaddr;
+ 	int i;
+-	struct scatterlist *sg;
  
- 	for_each_sg(sglist, sg, nhwentries, i) {
- 		if (!plat_device_is_coherent(dev) &&
-+		    !(attrs & DMA_ATTR_SKIP_CPU_SYNC) &&
- 		    direction != DMA_TO_DEVICE)
- 			__dma_sync(sg_page(sg), sg->offset, sg->length,
- 				   direction);
+ 	BUG_ON(direction == DMA_NONE);
+ 
++	if (attrs & DMA_ATTR_SKIP_CPU_SYNC)
++		return nents;
++
+ 	dampr2 = __get_DAMPR(2);
+ 
+ 	for_each_sg(sglist, sg, nents, i) {
+@@ -70,7 +73,9 @@ static dma_addr_t frv_dma_map_page(struct device *dev, struct page *page,
+ 		unsigned long offset, size_t size,
+ 		enum dma_data_direction direction, unsigned long attrs)
+ {
+-	flush_dcache_page(page);
++	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
++		flush_dcache_page(page);
++
+ 	return (dma_addr_t) page_to_phys(page) + offset;
+ }
+ 
 
