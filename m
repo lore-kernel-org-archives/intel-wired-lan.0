@@ -1,116 +1,52 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue, 25 Oct 2016 15:17:59 -0700
-Subject: [Intel-wired-lan] [next PATCH S51 5/9] i40e: avoid duplicate
-	private flags definitions
+Date: Tue, 25 Oct 2016 15:18:01 -0700
+Subject: [Intel-wired-lan] [next PATCH S51 7/9] i40e: fix compile error due
+	to type conflict
 In-Reply-To: <1477433883-3248-1-git-send-email-bimmy.pujari@intel.com>
 References: <1477433883-3248-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1477433883-3248-6-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1477433883-3248-8-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+From: Matt Jared <matthew.a.jared@intel.com>
 
-Separate the global private flags and the regular private flags per
-interface into two arrays. Future additions of private flags will not
-need to be duplicated which may lead to buggy code. Also rename
-"i40e_priv_flags_strings_gl" to "i40e_gl_priv_flags_strings" for
-clarity, as it reads more naturally.
+For the clause 22 and 45 phy register read funcions, cast u32 variables to
+u8, resolving compiler error due to data being truncated when placing it
+in u8 variable.
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Change-ID: I68caef3c9954eb7da342d7f9d20f2873186f2758
+Signed-off-by: Matt Jared <matthew.a.jared@intel.com>
+Change-ID: I8b144b1fc503401369b765b7c76965a6cfc7d28c
 ---
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 42 +++++++++++---------------
- 1 file changed, 17 insertions(+), 25 deletions(-)
+ drivers/net/ethernet/intel/i40e/i40e_common.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index c8d5680..661ed11 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -228,26 +228,22 @@ static const char i40e_gstrings_test[][ETH_GSTRING_LEN] = {
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
+index 5ba34be..fb72fb3 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_common.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
+@@ -4442,7 +4442,7 @@ i40e_status i40e_read_phy_register_clause22(struct i40e_hw *hw,
+ 					u16 reg, u8 phy_addr, u16 *value)
+ {
+ 	i40e_status status = I40E_ERR_TIMEOUT;
+-	u8 port_num = hw->func_caps.mdio_port_num;
++	u8 port_num = (u8)hw->func_caps.mdio_port_num;
+ 	u32 command = 0;
+ 	u16 retry = 1000;
  
- #define I40E_TEST_LEN (sizeof(i40e_gstrings_test) / ETH_GSTRING_LEN)
+@@ -4494,9 +4494,9 @@ i40e_status i40e_write_phy_register_clause22(struct i40e_hw *hw,
+ 					u16 reg, u8 phy_addr, u16 value)
+ {
+ 	i40e_status status = I40E_ERR_TIMEOUT;
++	u8 port_num = (u8)hw->func_caps.mdio_port_num;
+ 	u32 command  = 0;
+ 	u16 retry = 1000;
+-	u8 port_num = hw->func_caps.mdio_port_num;
  
--static const char i40e_priv_flags_strings_gl[][ETH_GSTRING_LEN] = {
-+static const char i40e_priv_flags_strings[][ETH_GSTRING_LEN] = {
- 	"MFP",
- 	"LinkPolling",
- 	"flow-director-atr",
- 	"veb-stats",
- 	"hw-atr-eviction",
--	"vf-true-promisc-support",
- };
- 
--#define I40E_PRIV_FLAGS_GL_STR_LEN ARRAY_SIZE(i40e_priv_flags_strings_gl)
-+#define I40E_PRIV_FLAGS_STR_LEN ARRAY_SIZE(i40e_priv_flags_strings)
- 
--static const char i40e_priv_flags_strings[][ETH_GSTRING_LEN] = {
--	"NPAR",
--	"LinkPolling",
--	"flow-director-atr",
--	"veb-stats",
--	"hw-atr-eviction",
-+/* Private flags with a global effect, restricted to PF 0 */
-+static const char i40e_gl_priv_flags_strings[][ETH_GSTRING_LEN] = {
-+	"vf-true-promisc-support",
- };
- 
--#define I40E_PRIV_FLAGS_STR_LEN ARRAY_SIZE(i40e_priv_flags_strings)
-+#define I40E_GL_PRIV_FLAGS_STR_LEN ARRAY_SIZE(i40e_gl_priv_flags_strings)
- 
- /**
-  * i40e_partition_setting_complaint - generic complaint for MFP restriction
-@@ -1198,10 +1194,9 @@ static void i40e_get_drvinfo(struct net_device *netdev,
- 		sizeof(drvinfo->fw_version));
- 	strlcpy(drvinfo->bus_info, pci_name(pf->pdev),
- 		sizeof(drvinfo->bus_info));
-+	drvinfo->n_priv_flags = I40E_PRIV_FLAGS_STR_LEN;
- 	if (pf->hw.pf_id == 0)
--		drvinfo->n_priv_flags = I40E_PRIV_FLAGS_GL_STR_LEN;
--	else
--		drvinfo->n_priv_flags = I40E_PRIV_FLAGS_STR_LEN;
-+		drvinfo->n_priv_flags += I40E_GL_PRIV_FLAGS_STR_LEN;
- }
- 
- static void i40e_get_ringparam(struct net_device *netdev,
-@@ -1429,10 +1424,8 @@ static int i40e_get_sset_count(struct net_device *netdev, int sset)
- 			return I40E_VSI_STATS_LEN(netdev);
- 		}
- 	case ETH_SS_PRIV_FLAGS:
--		if (pf->hw.pf_id == 0)
--			return I40E_PRIV_FLAGS_GL_STR_LEN;
--		else
--			return I40E_PRIV_FLAGS_STR_LEN;
-+		return I40E_PRIV_FLAGS_STR_LEN +
-+			(pf->hw.pf_id == 0 ? I40E_GL_PRIV_FLAGS_STR_LEN : 0);
- 	default:
- 		return -EOPNOTSUPP;
- 	}
-@@ -1630,15 +1623,14 @@ static void i40e_get_strings(struct net_device *netdev, u32 stringset,
- 		/* BUG_ON(p - data != I40E_STATS_LEN * ETH_GSTRING_LEN); */
- 		break;
- 	case ETH_SS_PRIV_FLAGS:
-+		for (i = 0; i < I40E_PRIV_FLAGS_STR_LEN; i++) {
-+			memcpy(data, i40e_priv_flags_strings[i],
-+			       ETH_GSTRING_LEN);
-+			data += ETH_GSTRING_LEN;
-+		}
- 		if (pf->hw.pf_id == 0) {
--			for (i = 0; i < I40E_PRIV_FLAGS_GL_STR_LEN; i++) {
--				memcpy(data, i40e_priv_flags_strings_gl[i],
--				       ETH_GSTRING_LEN);
--				data += ETH_GSTRING_LEN;
--			}
--		} else {
--			for (i = 0; i < I40E_PRIV_FLAGS_STR_LEN; i++) {
--				memcpy(data, i40e_priv_flags_strings[i],
-+			for (i = 0; i < I40E_GL_PRIV_FLAGS_STR_LEN; i++) {
-+				memcpy(data, i40e_gl_priv_flags_strings[i],
- 				       ETH_GSTRING_LEN);
- 				data += ETH_GSTRING_LEN;
- 			}
+ 	command = value << I40E_GLGEN_MSRWD_MDIWRDATA_SHIFT;
+ 	wr32(hw, I40E_GLGEN_MSRWD(port_num), command);
 -- 
 2.4.11
 
