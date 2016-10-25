@@ -1,110 +1,86 @@
 From: Alexander Duyck <alexander.h.duyck@intel.com>
-Date: Tue, 25 Oct 2016 11:36:58 -0400
-Subject: [Intel-wired-lan] [net-next PATCH 02/27] swiotlb-xen: Enforce
- return of DMA_ERROR_CODE in mapping function
+Date: Tue, 25 Oct 2016 11:37:14 -0400
+Subject: [Intel-wired-lan] [net-next PATCH 05/27] arch/arm: Add option to
+ skip sync on DMA map and unmap
 In-Reply-To: <20161025153220.4815.61239.stgit@ahduyck-blue-test.jf.intel.com>
 References: <20161025153220.4815.61239.stgit@ahduyck-blue-test.jf.intel.com>
-Message-ID: <20161025153658.4815.84254.stgit@ahduyck-blue-test.jf.intel.com>
+Message-ID: <20161025153714.4815.86741.stgit@ahduyck-blue-test.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-The mapping function should always return DMA_ERROR_CODE when a mapping has
-failed as this is what the DMA API expects when a DMA error has occurred.
-The current function for mapping a page in Xen was returning either
-DMA_ERROR_CODE or 0 depending on where it failed.
+The use of DMA_ATTR_SKIP_CPU_SYNC was not consistent across all of the DMA
+APIs in the arch/arm folder.  This change is meant to correct that so that
+we get consistent behavior.
 
-On x86 DMA_ERROR_CODE is 0, but on other architectures such as ARM it is
-~0. We need to make sure we return the same error value if either the
-mapping failed or the device is not capable of accessing the mapping.
-
-If we are returning DMA_ERROR_CODE as our error value we can drop the
-function for checking the error code as the default is to compare the
-return value against DMA_ERROR_CODE if no function is defined.
-
-Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Cc: Russell King <linux@armlinux.org.uk>
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- arch/arm/xen/mm.c              |    1 -
- arch/x86/xen/pci-swiotlb-xen.c |    1 -
- drivers/xen/swiotlb-xen.c      |   18 ++++++------------
- include/xen/swiotlb-xen.h      |    3 ---
- 4 files changed, 6 insertions(+), 17 deletions(-)
+ arch/arm/common/dmabounce.c |   16 ++++++++++------
+ 1 file changed, 10 insertions(+), 6 deletions(-)
 
-diff --git a/arch/arm/xen/mm.c b/arch/arm/xen/mm.c
-index d062f08..bd62d94 100644
---- a/arch/arm/xen/mm.c
-+++ b/arch/arm/xen/mm.c
-@@ -186,7 +186,6 @@ void xen_destroy_contiguous_region(phys_addr_t pstart, unsigned int order)
- EXPORT_SYMBOL(xen_dma_ops);
- 
- static struct dma_map_ops xen_swiotlb_dma_ops = {
--	.mapping_error = xen_swiotlb_dma_mapping_error,
- 	.alloc = xen_swiotlb_alloc_coherent,
- 	.free = xen_swiotlb_free_coherent,
- 	.sync_single_for_cpu = xen_swiotlb_sync_single_for_cpu,
-diff --git a/arch/x86/xen/pci-swiotlb-xen.c b/arch/x86/xen/pci-swiotlb-xen.c
-index 0e98e5d..a9fafb5 100644
---- a/arch/x86/xen/pci-swiotlb-xen.c
-+++ b/arch/x86/xen/pci-swiotlb-xen.c
-@@ -19,7 +19,6 @@
- int xen_swiotlb __read_mostly;
- 
- static struct dma_map_ops xen_swiotlb_dma_ops = {
--	.mapping_error = xen_swiotlb_dma_mapping_error,
- 	.alloc = xen_swiotlb_alloc_coherent,
- 	.free = xen_swiotlb_free_coherent,
- 	.sync_single_for_cpu = xen_swiotlb_sync_single_for_cpu,
-diff --git a/drivers/xen/swiotlb-xen.c b/drivers/xen/swiotlb-xen.c
-index 87e6035..b8014bf 100644
---- a/drivers/xen/swiotlb-xen.c
-+++ b/drivers/xen/swiotlb-xen.c
-@@ -416,11 +416,12 @@ dma_addr_t xen_swiotlb_map_page(struct device *dev, struct page *page,
- 	/*
- 	 * Ensure that the address returned is DMA'ble
- 	 */
--	if (!dma_capable(dev, dev_addr, size)) {
--		swiotlb_tbl_unmap_single(dev, map, size, dir);
--		dev_addr = 0;
--	}
--	return dev_addr;
-+	if (dma_capable(dev, dev_addr, size))
-+		return dev_addr;
-+
-+	swiotlb_tbl_unmap_single(dev, map, size, dir);
-+
-+	return DMA_ERROR_CODE;
+diff --git a/arch/arm/common/dmabounce.c b/arch/arm/common/dmabounce.c
+index 3012816..75055df 100644
+--- a/arch/arm/common/dmabounce.c
++++ b/arch/arm/common/dmabounce.c
+@@ -243,7 +243,8 @@ static int needs_bounce(struct device *dev, dma_addr_t dma_addr, size_t size)
  }
- EXPORT_SYMBOL_GPL(xen_swiotlb_map_page);
  
-@@ -648,13 +649,6 @@ void xen_swiotlb_unmap_page(struct device *hwdev, dma_addr_t dev_addr,
+ static inline dma_addr_t map_single(struct device *dev, void *ptr, size_t size,
+-		enum dma_data_direction dir)
++				    enum dma_data_direction dir,
++				    unsigned long attrs)
+ {
+ 	struct dmabounce_device_info *device_info = dev->archdata.dmabounce;
+ 	struct safe_buffer *buf;
+@@ -262,7 +263,8 @@ static inline dma_addr_t map_single(struct device *dev, void *ptr, size_t size,
+ 		__func__, buf->ptr, virt_to_dma(dev, buf->ptr),
+ 		buf->safe, buf->safe_dma_addr);
+ 
+-	if (dir == DMA_TO_DEVICE || dir == DMA_BIDIRECTIONAL) {
++	if ((dir == DMA_TO_DEVICE || dir == DMA_BIDIRECTIONAL) &&
++	    !(attrs & DMA_ATTR_SKIP_CPU_SYNC)) {
+ 		dev_dbg(dev, "%s: copy unsafe %p to safe %p, size %d\n",
+ 			__func__, ptr, buf->safe, size);
+ 		memcpy(buf->safe, ptr, size);
+@@ -272,7 +274,8 @@ static inline dma_addr_t map_single(struct device *dev, void *ptr, size_t size,
  }
- EXPORT_SYMBOL_GPL(xen_swiotlb_sync_sg_for_device);
  
--int
--xen_swiotlb_dma_mapping_error(struct device *hwdev, dma_addr_t dma_addr)
--{
--	return !dma_addr;
--}
--EXPORT_SYMBOL_GPL(xen_swiotlb_dma_mapping_error);
--
+ static inline void unmap_single(struct device *dev, struct safe_buffer *buf,
+-		size_t size, enum dma_data_direction dir)
++				size_t size, enum dma_data_direction dir,
++				unsigned long attrs)
+ {
+ 	BUG_ON(buf->size != size);
+ 	BUG_ON(buf->direction != dir);
+@@ -283,7 +286,8 @@ static inline void unmap_single(struct device *dev, struct safe_buffer *buf,
+ 
+ 	DO_STATS(dev->archdata.dmabounce->bounce_count++);
+ 
+-	if (dir == DMA_FROM_DEVICE || dir == DMA_BIDIRECTIONAL) {
++	if ((dir == DMA_FROM_DEVICE || dir == DMA_BIDIRECTIONAL) &&
++	    !(attrs & DMA_ATTR_SKIP_CPU_SYNC)) {
+ 		void *ptr = buf->ptr;
+ 
+ 		dev_dbg(dev, "%s: copy back safe %p to unsafe %p size %d\n",
+@@ -334,7 +338,7 @@ static dma_addr_t dmabounce_map_page(struct device *dev, struct page *page,
+ 		return DMA_ERROR_CODE;
+ 	}
+ 
+-	return map_single(dev, page_address(page) + offset, size, dir);
++	return map_single(dev, page_address(page) + offset, size, dir, attrs);
+ }
+ 
  /*
-  * Return whether the given device DMA address mask can be supported
-  * properly.  For example, if your device can only drive the low 24-bits
-diff --git a/include/xen/swiotlb-xen.h b/include/xen/swiotlb-xen.h
-index 7c35e27..a0083be 100644
---- a/include/xen/swiotlb-xen.h
-+++ b/include/xen/swiotlb-xen.h
-@@ -51,9 +51,6 @@ extern void xen_swiotlb_unmap_page(struct device *hwdev, dma_addr_t dev_addr,
- 			       int nelems, enum dma_data_direction dir);
+@@ -357,7 +361,7 @@ static void dmabounce_unmap_page(struct device *dev, dma_addr_t dma_addr, size_t
+ 		return;
+ 	}
  
- extern int
--xen_swiotlb_dma_mapping_error(struct device *hwdev, dma_addr_t dma_addr);
--
--extern int
- xen_swiotlb_dma_supported(struct device *hwdev, u64 mask);
+-	unmap_single(dev, buf, size, dir);
++	unmap_single(dev, buf, size, dir, attrs);
+ }
  
- extern int
+ static int __dmabounce_sync_for_cpu(struct device *dev, dma_addr_t addr,
 
