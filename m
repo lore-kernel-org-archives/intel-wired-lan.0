@@ -1,10 +1,10 @@
 From: Alexander Duyck <alexander.h.duyck@intel.com>
-Date: Tue, 25 Oct 2016 11:37:51 -0400
-Subject: [Intel-wired-lan] [net-next PATCH 12/27] arch/metag: Add option to
+Date: Tue, 25 Oct 2016 11:38:02 -0400
+Subject: [Intel-wired-lan] [net-next PATCH 14/27] arch/mips: Add option to
  skip DMA sync as a part of map and unmap
 In-Reply-To: <20161025153220.4815.61239.stgit@ahduyck-blue-test.jf.intel.com>
 References: <20161025153220.4815.61239.stgit@ahduyck-blue-test.jf.intel.com>
-Message-ID: <20161025153751.4815.28856.stgit@ahduyck-blue-test.jf.intel.com>
+Message-ID: <20161025153802.4815.97633.stgit@ahduyck-blue-test.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,59 +15,66 @@ This change allows us to pass DMA_ATTR_SKIP_CPU_SYNC which allows us to
 avoid invoking cache line invalidation if the driver will just handle it
 via a sync_for_cpu or sync_for_device call.
 
-Cc: James Hogan <james.hogan@imgtec.com>
-Cc: linux-metag at vger.kernel.org
+Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: Keguang Zhang <keguang.zhang@gmail.com>
+Cc: linux-mips at linux-mips.org
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- arch/metag/kernel/dma.c |   16 +++++++++++++---
- 1 file changed, 13 insertions(+), 3 deletions(-)
+ arch/mips/loongson64/common/dma-swiotlb.c |    2 +-
+ arch/mips/mm/dma-default.c                |    8 +++++---
+ 2 files changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/arch/metag/kernel/dma.c b/arch/metag/kernel/dma.c
-index 0db31e2..91968d9 100644
---- a/arch/metag/kernel/dma.c
-+++ b/arch/metag/kernel/dma.c
-@@ -484,8 +484,9 @@ static dma_addr_t metag_dma_map_page(struct device *dev, struct page *page,
- 		unsigned long offset, size_t size,
- 		enum dma_data_direction direction, unsigned long attrs)
+diff --git a/arch/mips/loongson64/common/dma-swiotlb.c b/arch/mips/loongson64/common/dma-swiotlb.c
+index 1a80b6f..aab4fd6 100644
+--- a/arch/mips/loongson64/common/dma-swiotlb.c
++++ b/arch/mips/loongson64/common/dma-swiotlb.c
+@@ -61,7 +61,7 @@ static int loongson_dma_map_sg(struct device *dev, struct scatterlist *sg,
+ 				int nents, enum dma_data_direction dir,
+ 				unsigned long attrs)
  {
--	dma_sync_for_device((void *)(page_to_phys(page) + offset), size,
--			    direction);
-+	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
-+		dma_sync_for_device((void *)(page_to_phys(page) + offset),
-+				    size, direction);
- 	return page_to_phys(page) + offset;
- }
+-	int r = swiotlb_map_sg_attrs(dev, sg, nents, dir, 0);
++	int r = swiotlb_map_sg_attrs(dev, sg, nents, dir, attrs);
+ 	mb();
  
-@@ -493,7 +494,8 @@ static void metag_dma_unmap_page(struct device *dev, dma_addr_t dma_address,
- 		size_t size, enum dma_data_direction direction,
- 		unsigned long attrs)
+ 	return r;
+diff --git a/arch/mips/mm/dma-default.c b/arch/mips/mm/dma-default.c
+index b2eadd6..dd998d7 100644
+--- a/arch/mips/mm/dma-default.c
++++ b/arch/mips/mm/dma-default.c
+@@ -293,7 +293,7 @@ static inline void __dma_sync(struct page *page,
+ static void mips_dma_unmap_page(struct device *dev, dma_addr_t dma_addr,
+ 	size_t size, enum dma_data_direction direction, unsigned long attrs)
  {
--	dma_sync_for_cpu(phys_to_virt(dma_address), size, direction);
-+	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
-+		dma_sync_for_cpu(phys_to_virt(dma_address), size, direction);
- }
+-	if (cpu_needs_post_dma_flush(dev))
++	if (cpu_needs_post_dma_flush(dev) && !(attrs & DMA_ATTR_SKIP_CPU_SYNC))
+ 		__dma_sync(dma_addr_to_page(dev, dma_addr),
+ 			   dma_addr & ~PAGE_MASK, size, direction);
+ 	plat_post_dma_flush(dev);
+@@ -307,7 +307,8 @@ static int mips_dma_map_sg(struct device *dev, struct scatterlist *sglist,
+ 	struct scatterlist *sg;
  
- static int metag_dma_map_sg(struct device *dev, struct scatterlist *sglist,
-@@ -507,6 +509,10 @@ static int metag_dma_map_sg(struct device *dev, struct scatterlist *sglist,
- 		BUG_ON(!sg_page(sg));
+ 	for_each_sg(sglist, sg, nents, i) {
+-		if (!plat_device_is_coherent(dev))
++		if (!plat_device_is_coherent(dev) &&
++		    !(attrs & DMA_ATTR_SKIP_CPU_SYNC))
+ 			__dma_sync(sg_page(sg), sg->offset, sg->length,
+ 				   direction);
+ #ifdef CONFIG_NEED_SG_DMA_LENGTH
+@@ -324,7 +325,7 @@ static dma_addr_t mips_dma_map_page(struct device *dev, struct page *page,
+ 	unsigned long offset, size_t size, enum dma_data_direction direction,
+ 	unsigned long attrs)
+ {
+-	if (!plat_device_is_coherent(dev))
++	if (!plat_device_is_coherent(dev) && !(attrs & DMA_ATTR_SKIP_CPU_SYNC))
+ 		__dma_sync(page, offset, size, direction);
  
- 		sg->dma_address = sg_phys(sg);
-+
-+		if (attrs & DMA_ATTR_SKIP_CPU_SYNC)
-+			continue;
-+
- 		dma_sync_for_device(sg_virt(sg), sg->length, direction);
- 	}
+ 	return plat_map_dma_mem_page(dev, page) + offset;
+@@ -339,6 +340,7 @@ static void mips_dma_unmap_sg(struct device *dev, struct scatterlist *sglist,
  
-@@ -525,6 +531,10 @@ static void metag_dma_unmap_sg(struct device *dev, struct scatterlist *sglist,
- 		BUG_ON(!sg_page(sg));
- 
- 		sg->dma_address = sg_phys(sg);
-+
-+		if (attrs & DMA_ATTR_SKIP_CPU_SYNC)
-+			continue;
-+
- 		dma_sync_for_cpu(sg_virt(sg), sg->length, direction);
- 	}
- }
+ 	for_each_sg(sglist, sg, nhwentries, i) {
+ 		if (!plat_device_is_coherent(dev) &&
++		    !(attrs & DMA_ATTR_SKIP_CPU_SYNC) &&
+ 		    direction != DMA_TO_DEVICE)
+ 			__dma_sync(sg_page(sg), sg->offset, sg->length,
+ 				   direction);
 
