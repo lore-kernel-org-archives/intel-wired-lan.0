@@ -1,51 +1,50 @@
 From: Alexander Duyck <alexander.h.duyck@intel.com>
-Date: Tue, 25 Oct 2016 11:37:46 -0400
-Subject: [Intel-wired-lan] [net-next PATCH 11/27] arch/m68k: Add option to
- skip DMA sync as a part of mapping
+Date: Tue, 25 Oct 2016 11:37:25 -0400
+Subject: [Intel-wired-lan] [net-next PATCH 07/27] arch/blackfin: Add option
+ to skip sync on DMA map
 In-Reply-To: <20161025153220.4815.61239.stgit@ahduyck-blue-test.jf.intel.com>
 References: <20161025153220.4815.61239.stgit@ahduyck-blue-test.jf.intel.com>
-Message-ID: <20161025153746.4815.67012.stgit@ahduyck-blue-test.jf.intel.com>
+Message-ID: <20161025153725.4815.46410.stgit@ahduyck-blue-test.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-This change allows us to pass DMA_ATTR_SKIP_CPU_SYNC which allows us to
-avoid invoking cache line invalidation if the driver will just handle it
-later via a sync_for_cpu or sync_for_device call.
+The use of DMA_ATTR_SKIP_CPU_SYNC was not consistent across all of the DMA
+APIs in the arch/arm folder.  This change is meant to correct that so that
+we get consistent behavior.
 
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-m68k at lists.linux-m68k.org
+Cc: Steven Miao <realmz6@gmail.com>
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- arch/m68k/kernel/dma.c |    8 +++++++-
+ arch/blackfin/kernel/dma-mapping.c |    8 +++++++-
  1 file changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/arch/m68k/kernel/dma.c b/arch/m68k/kernel/dma.c
-index 8cf97cb..0707006 100644
---- a/arch/m68k/kernel/dma.c
-+++ b/arch/m68k/kernel/dma.c
-@@ -134,7 +134,9 @@ static dma_addr_t m68k_dma_map_page(struct device *dev, struct page *page,
- {
- 	dma_addr_t handle = page_to_phys(page) + offset;
+diff --git a/arch/blackfin/kernel/dma-mapping.c b/arch/blackfin/kernel/dma-mapping.c
+index 53fbbb6..a27a74a 100644
+--- a/arch/blackfin/kernel/dma-mapping.c
++++ b/arch/blackfin/kernel/dma-mapping.c
+@@ -118,6 +118,10 @@ static int bfin_dma_map_sg(struct device *dev, struct scatterlist *sg_list,
  
--	dma_sync_single_for_device(dev, handle, size, dir);
-+	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
-+		dma_sync_single_for_device(dev, handle, size, dir);
-+
- 	return handle;
- }
- 
-@@ -146,6 +148,10 @@ static int m68k_dma_map_sg(struct device *dev, struct scatterlist *sglist,
- 
- 	for_each_sg(sglist, sg, nents, i) {
- 		sg->dma_address = sg_phys(sg);
+ 	for_each_sg(sg_list, sg, nents, i) {
+ 		sg->dma_address = (dma_addr_t) sg_virt(sg);
 +
 +		if (attrs & DMA_ATTR_SKIP_CPU_SYNC)
 +			continue;
 +
- 		dma_sync_single_for_device(dev, sg->dma_address, sg->length,
- 					   dir);
+ 		__dma_sync(sg_dma_address(sg), sg_dma_len(sg), direction);
  	}
+ 
+@@ -143,7 +147,9 @@ static dma_addr_t bfin_dma_map_page(struct device *dev, struct page *page,
+ {
+ 	dma_addr_t handle = (dma_addr_t)(page_address(page) + offset);
+ 
+-	_dma_sync(handle, size, dir);
++	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
++		_dma_sync(handle, size, dir);
++
+ 	return handle;
+ }
+ 
 
