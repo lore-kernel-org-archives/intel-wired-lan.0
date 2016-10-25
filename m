@@ -1,158 +1,107 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Date: Wed, 26 Oct 2016 02:37:07 +0800
-Subject: [Intel-wired-lan] [jkirsher-net-queue:dev-queue] BUILD SUCCESS
- abb21919e2f60eb96bd7a474bd19c75fe93bede4
-Message-ID: <580fa653.1jomI+r+fEWWhMwd%fengguang.wu@intel.com>
+From: Alexander Duyck <alexander.h.duyck@intel.com>
+Date: Tue, 25 Oct 2016 11:36:48 -0400
+Subject: [Intel-wired-lan] [net-next PATCH 00/27] Add support for DMA
+ writable pages being writable by the network stack
+Message-ID: <20161025153220.4815.61239.stgit@ahduyck-blue-test.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-https://git.kernel.org/pub/scm/linux/kernel/git/jkirsher/net-queue.git  dev-queue
-abb21919e2f60eb96bd7a474bd19c75fe93bede4  checkpatch: Fix warnings when --no-tree is used
+The first 22 patches in the set add support for the DMA attribute
+DMA_ATTR_SKIP_CPU_SYNC on multiple platforms/architectures.  This is needed
+so that we can flag the calls to dma_map/unmap_page so that we do not
+invalidate cache lines that do not currently belong to the device.  Instead
+we have to take care of this in the driver via a call to
+sync_single_range_for_cpu prior to freeing the Rx page.
 
-elapsed time: 88m
+Patch 23 adds support for dma_map_page_attrs and dma_unmap_page_attrs so
+that we can unmap and map a page using the DMA_ATTR_SKIP_CPU_SYNC
+attribute.
 
-configs tested: 134
+Patch 24 adds support for freeing a page that has multiple references being
+held by a single caller.  This way we can free page fragments that were
+allocated by a given driver.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+The last 3 patches use these updates in the igb driver to allow for us to
+reimpelement the use of build_skb.
 
-i386                     randconfig-a0-201643
-x86_64                             acpi-redef
-x86_64                           allyesdebian
-x86_64                                nfsroot
-i386                               tinyconfig
-alpha                               defconfig
-parisc                            allnoconfig
-parisc                         b180_defconfig
-parisc                        c3000_defconfig
-parisc                              defconfig
-blackfin                BF526-EZBRD_defconfig
-blackfin                BF533-EZKIT_defconfig
-blackfin            BF561-EZKIT-SMP_defconfig
-blackfin                  TCM-BF537_defconfig
-cris                 etrax-100lx_v2_defconfig
-c6x                        evmc6678_defconfig
-h8300                    h8300h-sim_defconfig
-m32r                       m32104ut_defconfig
-m32r                     mappi3.smp_defconfig
-m32r                         opsput_defconfig
-m32r                           usrv_defconfig
-nios2                         10m50_defconfig
-score                      spct6600_defconfig
-xtensa                       common_defconfig
-xtensa                          iss_defconfig
-x86_64                 randconfig-x014-201643
-x86_64                 randconfig-x011-201643
-x86_64                 randconfig-x017-201643
-x86_64                 randconfig-x015-201643
-x86_64                 randconfig-x012-201643
-x86_64                 randconfig-x018-201643
-x86_64                 randconfig-x019-201643
-x86_64                 randconfig-x013-201643
-x86_64                 randconfig-x010-201643
-x86_64                 randconfig-x016-201643
-i386                             alldefconfig
-i386                              allnoconfig
-i386                                defconfig
-arm                              allmodconfig
-arm                                      arm5
-arm                                     arm67
-arm                       imx_v6_v7_defconfig
-arm                          ixp4xx_defconfig
-arm                        mvebu_v7_defconfig
-arm                       omap2plus_defconfig
-arm                                    sa1100
-arm                                   samsung
-arm                                        sh
-arm                           tegra_defconfig
-arm64                            alldefconfig
-arm64                            allmodconfig
-m68k                       m5475evb_defconfig
-m68k                          multi_defconfig
-m68k                           sun3_defconfig
-i386                     randconfig-s0-201643
-i386                     randconfig-s1-201643
-x86_64                           allmodconfig
-avr32                      atngw100_defconfig
-avr32                     atstk1006_defconfig
-frv                                 defconfig
-mn10300                     asb2364_defconfig
-openrisc                    or1ksim_defconfig
-tile                         tilegx_defconfig
-um                             i386_defconfig
-um                           x86_64_defconfig
-i386                             allmodconfig
-powerpc                           allnoconfig
-powerpc                             defconfig
-powerpc                       ppc64_defconfig
-s390                        default_defconfig
-x86_64                   randconfig-i0-201643
-sparc                               defconfig
-sparc64                           allnoconfig
-sparc64                             defconfig
-microblaze                      mmu_defconfig
-microblaze                    nommu_defconfig
-i386                     randconfig-i0-201643
-i386                     randconfig-i1-201643
-i386                   randconfig-x014-201643
-i386                   randconfig-x019-201643
-i386                   randconfig-x017-201643
-i386                   randconfig-x018-201643
-i386                   randconfig-x015-201643
-i386                   randconfig-x016-201643
-i386                   randconfig-x012-201643
-i386                   randconfig-x013-201643
-i386                   randconfig-x011-201643
-i386                   randconfig-x010-201643
-i386                   randconfig-n0-10241126
-i386                   randconfig-x071-201643
-i386                   randconfig-x073-201643
-i386                   randconfig-x072-201643
-i386                   randconfig-x076-201643
-i386                   randconfig-x078-201643
-i386                   randconfig-x075-201643
-i386                   randconfig-x077-201643
-i386                   randconfig-x074-201643
-i386                   randconfig-x079-201643
-i386                   randconfig-x070-201643
-sh                            titan_defconfig
-sh                          rsk7269_defconfig
-sh                  sh7785lcr_32bit_defconfig
-sh                                allnoconfig
-x86_64                 randconfig-x001-201643
-x86_64                 randconfig-x008-201643
-x86_64                 randconfig-x009-201643
-x86_64                 randconfig-x000-201643
-x86_64                 randconfig-x003-201643
-x86_64                 randconfig-x005-201643
-x86_64                 randconfig-x007-201643
-x86_64                 randconfig-x002-201643
-x86_64                 randconfig-x004-201643
-x86_64                 randconfig-x006-201643
-ia64                             alldefconfig
-ia64                              allnoconfig
-ia64                                defconfig
-x86_64                                  kexec
-x86_64                                   rhel
-x86_64                               rhel-7.2
-i386                     randconfig-r0-201643
-i386                   randconfig-x004-201643
-i386                   randconfig-x006-201643
-i386                   randconfig-x007-201643
-i386                   randconfig-x003-201643
-i386                   randconfig-x008-201643
-i386                   randconfig-x000-201643
-i386                   randconfig-x002-201643
-i386                   randconfig-x009-201643
-i386                   randconfig-x001-201643
-i386                   randconfig-x005-201643
-mips                              allnoconfig
-mips                      fuloong2e_defconfig
-mips                                   jz4740
-mips                                     txx9
+My hope is to get the series accepted into the net-next tree as I have a
+number of other Intel drivers I could then begin updating once these
+patches are accepted.
 
-Thanks,
-Fengguang
+v1: Split out changes DMA_ERROR_CODE fix for swiotlb-xen
+    Minor fixes based on issues found by kernel build bot
+    Few minor changes for issues found on code review
+    Added Acked-by for patches that were acked and not changed
+
+---
+
+Alexander Duyck (27):
+      swiotlb: Drop unused function swiotlb_map_sg
+      swiotlb-xen: Enforce return of DMA_ERROR_CODE in mapping function
+      swiotlb: Add support for DMA_ATTR_SKIP_CPU_SYNC
+      arch/arc: Add option to skip sync on DMA mapping
+      arch/arm: Add option to skip sync on DMA map and unmap
+      arch/avr32: Add option to skip sync on DMA map
+      arch/blackfin: Add option to skip sync on DMA map
+      arch/c6x: Add option to skip sync on DMA map and unmap
+      arch/frv: Add option to skip sync on DMA map
+      arch/hexagon: Add option to skip DMA sync as a part of mapping
+      arch/m68k: Add option to skip DMA sync as a part of mapping
+      arch/metag: Add option to skip DMA sync as a part of map and unmap
+      arch/microblaze: Add option to skip DMA sync as a part of map and unmap
+      arch/mips: Add option to skip DMA sync as a part of map and unmap
+      arch/nios2: Add option to skip DMA sync as a part of map and unmap
+      arch/openrisc: Add option to skip DMA sync as a part of mapping
+      arch/parisc: Add option to skip DMA sync as a part of map and unmap
+      arch/powerpc: Add option to skip DMA sync as a part of mapping
+      arch/sh: Add option to skip DMA sync as a part of mapping
+      arch/sparc: Add option to skip DMA sync as a part of map and unmap
+      arch/tile: Add option to skip DMA sync as a part of map and unmap
+      arch/xtensa: Add option to skip DMA sync as a part of mapping
+      dma: Add calls for dma_map_page_attrs and dma_unmap_page_attrs
+      mm: Add support for releasing multiple instances of a page
+      igb: Update driver to make use of DMA_ATTR_SKIP_CPU_SYNC
+      igb: Update code to better handle incrementing page count
+      igb: Revert "igb: Revert support for build_skb in igb"
+
+
+ arch/arc/mm/dma.c                         |    5 +
+ arch/arm/common/dmabounce.c               |   16 +-
+ arch/arm/xen/mm.c                         |    1 
+ arch/avr32/mm/dma-coherent.c              |    7 +
+ arch/blackfin/kernel/dma-mapping.c        |    8 +
+ arch/c6x/kernel/dma.c                     |   14 +-
+ arch/frv/mb93090-mb00/pci-dma-nommu.c     |   14 +-
+ arch/frv/mb93090-mb00/pci-dma.c           |    9 +
+ arch/hexagon/kernel/dma.c                 |    6 +
+ arch/m68k/kernel/dma.c                    |    8 +
+ arch/metag/kernel/dma.c                   |   16 ++
+ arch/microblaze/kernel/dma.c              |   10 +
+ arch/mips/loongson64/common/dma-swiotlb.c |    2 
+ arch/mips/mm/dma-default.c                |    8 +
+ arch/nios2/mm/dma-mapping.c               |   26 +++-
+ arch/openrisc/kernel/dma.c                |    3 
+ arch/parisc/kernel/pci-dma.c              |   20 ++-
+ arch/powerpc/kernel/dma.c                 |    9 +
+ arch/sh/kernel/dma-nommu.c                |    7 +
+ arch/sparc/kernel/iommu.c                 |    4 -
+ arch/sparc/kernel/ioport.c                |    4 -
+ arch/tile/kernel/pci-dma.c                |   12 +-
+ arch/x86/xen/pci-swiotlb-xen.c            |    1 
+ arch/xtensa/kernel/pci-dma.c              |    7 +
+ drivers/net/ethernet/intel/igb/igb.h      |   36 ++++-
+ drivers/net/ethernet/intel/igb/igb_main.c |  207 +++++++++++++++++++++++------
+ drivers/xen/swiotlb-xen.c                 |   27 ++--
+ include/linux/dma-mapping.h               |   20 ++-
+ include/linux/gfp.h                       |    2 
+ include/linux/swiotlb.h                   |   10 +
+ include/xen/swiotlb-xen.h                 |    3 
+ lib/swiotlb.c                             |   56 ++++----
+ mm/page_alloc.c                           |   14 ++
+ 33 files changed, 433 insertions(+), 159 deletions(-)
+
+--
+Signature
