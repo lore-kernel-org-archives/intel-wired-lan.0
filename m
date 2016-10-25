@@ -1,116 +1,48 @@
-From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue, 25 Oct 2016 16:08:50 -0700
-Subject: [Intel-wired-lan] [next PATCH S51-V2 5/8] i40e: avoid duplicate
-	private flags definitions
-In-Reply-To: <1477436933-13679-1-git-send-email-bimmy.pujari@intel.com>
-References: <1477436933-13679-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1477436933-13679-6-git-send-email-bimmy.pujari@intel.com>
+From: Vineet Gupta <Vineet.Gupta1@synopsys.com>
+Date: Tue, 25 Oct 2016 15:00:55 -0700
+Subject: [Intel-wired-lan] [net-next PATCH 04/27] arch/arc: Add option
+ to skip sync on DMA mapping
+In-Reply-To: <20161025153709.4815.82720.stgit@ahduyck-blue-test.jf.intel.com>
+References: <20161025153220.4815.61239.stgit@ahduyck-blue-test.jf.intel.com>
+ <20161025153709.4815.82720.stgit@ahduyck-blue-test.jf.intel.com>
+Message-ID: <64b46a7b-7ad4-5d09-5a0b-22dfaed8855e@synopsys.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Jacob Keller <jacob.e.keller@intel.com>
+On 10/25/2016 02:38 PM, Alexander Duyck wrote:
+> This change allows us to pass DMA_ATTR_SKIP_CPU_SYNC which allows us to
+> avoid invoking cache line invalidation if the driver will just handle it
+> later via a sync_for_cpu or sync_for_device call.
+>
+> Cc: Vineet Gupta <vgupta@synopsys.com>
+> Cc: linux-snps-arc at lists.infradead.org
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
+> ---
+>  arch/arc/mm/dma.c |    5 ++++-
 
-Separate the global private flags and the regular private flags per
-interface into two arrays. Future additions of private flags will not
-need to be duplicated which may lead to buggy code. Also rename
-"i40e_priv_flags_strings_gl" to "i40e_gl_priv_flags_strings" for
-clarity, as it reads more naturally.
+Acked-by: Vineet Gupta <vgupta@synopsys.com>
 
-Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
-Change-ID: I68caef3c9954eb7da342d7f9d20f2873186f2758
----
- drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 42 +++++++++++---------------
- 1 file changed, 17 insertions(+), 25 deletions(-)
-
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-index b9e1162..f99c135 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
-@@ -228,26 +228,22 @@ static const char i40e_gstrings_test[][ETH_GSTRING_LEN] = {
- 
- #define I40E_TEST_LEN (sizeof(i40e_gstrings_test) / ETH_GSTRING_LEN)
- 
--static const char i40e_priv_flags_strings_gl[][ETH_GSTRING_LEN] = {
-+static const char i40e_priv_flags_strings[][ETH_GSTRING_LEN] = {
- 	"MFP",
- 	"LinkPolling",
- 	"flow-director-atr",
- 	"veb-stats",
- 	"hw-atr-eviction",
--	"vf-true-promisc-support",
- };
- 
--#define I40E_PRIV_FLAGS_GL_STR_LEN ARRAY_SIZE(i40e_priv_flags_strings_gl)
-+#define I40E_PRIV_FLAGS_STR_LEN ARRAY_SIZE(i40e_priv_flags_strings)
- 
--static const char i40e_priv_flags_strings[][ETH_GSTRING_LEN] = {
--	"NPAR",
--	"LinkPolling",
--	"flow-director-atr",
--	"veb-stats",
--	"hw-atr-eviction",
-+/* Private flags with a global effect, restricted to PF 0 */
-+static const char i40e_gl_priv_flags_strings[][ETH_GSTRING_LEN] = {
-+	"vf-true-promisc-support",
- };
- 
--#define I40E_PRIV_FLAGS_STR_LEN ARRAY_SIZE(i40e_priv_flags_strings)
-+#define I40E_GL_PRIV_FLAGS_STR_LEN ARRAY_SIZE(i40e_gl_priv_flags_strings)
- 
- /**
-  * i40e_partition_setting_complaint - generic complaint for MFP restriction
-@@ -1194,10 +1190,9 @@ static void i40e_get_drvinfo(struct net_device *netdev,
- 		sizeof(drvinfo->fw_version));
- 	strlcpy(drvinfo->bus_info, pci_name(pf->pdev),
- 		sizeof(drvinfo->bus_info));
-+	drvinfo->n_priv_flags = I40E_PRIV_FLAGS_STR_LEN;
- 	if (pf->hw.pf_id == 0)
--		drvinfo->n_priv_flags = I40E_PRIV_FLAGS_GL_STR_LEN;
--	else
--		drvinfo->n_priv_flags = I40E_PRIV_FLAGS_STR_LEN;
-+		drvinfo->n_priv_flags += I40E_GL_PRIV_FLAGS_STR_LEN;
- }
- 
- static void i40e_get_ringparam(struct net_device *netdev,
-@@ -1425,10 +1420,8 @@ static int i40e_get_sset_count(struct net_device *netdev, int sset)
- 			return I40E_VSI_STATS_LEN(netdev);
- 		}
- 	case ETH_SS_PRIV_FLAGS:
--		if (pf->hw.pf_id == 0)
--			return I40E_PRIV_FLAGS_GL_STR_LEN;
--		else
--			return I40E_PRIV_FLAGS_STR_LEN;
-+		return I40E_PRIV_FLAGS_STR_LEN +
-+			(pf->hw.pf_id == 0 ? I40E_GL_PRIV_FLAGS_STR_LEN : 0);
- 	default:
- 		return -EOPNOTSUPP;
- 	}
-@@ -1626,15 +1619,14 @@ static void i40e_get_strings(struct net_device *netdev, u32 stringset,
- 		/* BUG_ON(p - data != I40E_STATS_LEN * ETH_GSTRING_LEN); */
- 		break;
- 	case ETH_SS_PRIV_FLAGS:
-+		for (i = 0; i < I40E_PRIV_FLAGS_STR_LEN; i++) {
-+			memcpy(data, i40e_priv_flags_strings[i],
-+			       ETH_GSTRING_LEN);
-+			data += ETH_GSTRING_LEN;
-+		}
- 		if (pf->hw.pf_id == 0) {
--			for (i = 0; i < I40E_PRIV_FLAGS_GL_STR_LEN; i++) {
--				memcpy(data, i40e_priv_flags_strings_gl[i],
--				       ETH_GSTRING_LEN);
--				data += ETH_GSTRING_LEN;
--			}
--		} else {
--			for (i = 0; i < I40E_PRIV_FLAGS_STR_LEN; i++) {
--				memcpy(data, i40e_priv_flags_strings[i],
-+			for (i = 0; i < I40E_GL_PRIV_FLAGS_STR_LEN; i++) {
-+				memcpy(data, i40e_gl_priv_flags_strings[i],
- 				       ETH_GSTRING_LEN);
- 				data += ETH_GSTRING_LEN;
- 			}
--- 
-2.4.11
+>  1 file changed, 4 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/arc/mm/dma.c b/arch/arc/mm/dma.c
+> index 20afc65..6303c34 100644
+> --- a/arch/arc/mm/dma.c
+> +++ b/arch/arc/mm/dma.c
+> @@ -133,7 +133,10 @@ static dma_addr_t arc_dma_map_page(struct device *dev, struct page *page,
+>  		unsigned long attrs)
+>  {
+>  	phys_addr_t paddr = page_to_phys(page) + offset;
+> -	_dma_cache_sync(paddr, size, dir);
+> +
+> +	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
+> +		_dma_cache_sync(paddr, size, dir);
+> +
+>  	return plat_phys_to_dma(dev, paddr);
+>  }
+>  
+>
+>
 
