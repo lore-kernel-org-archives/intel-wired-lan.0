@@ -1,78 +1,116 @@
 From: Bimmy Pujari <bimmy.pujari@intel.com>
-Date: Tue, 25 Oct 2016 15:18:03 -0700
-Subject: [Intel-wired-lan] [next PATCH S51 9/9] i40e: Add protocols over
-	MCTP to i40e_aq_discover_capabilities
+Date: Tue, 25 Oct 2016 15:17:59 -0700
+Subject: [Intel-wired-lan] [next PATCH S51 5/9] i40e: avoid duplicate
+	private flags definitions
 In-Reply-To: <1477433883-3248-1-git-send-email-bimmy.pujari@intel.com>
 References: <1477433883-3248-1-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <1477433883-3248-10-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <1477433883-3248-6-git-send-email-bimmy.pujari@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-From: Piotr Raczynski <piotr.raczynski@intel.com>
+From: Jacob Keller <jacob.e.keller@intel.com>
 
-Add logical_id to I40E_AQ_CAP_ID_MNG_MODE capability starting from major
-version 2.
+Separate the global private flags and the regular private flags per
+interface into two arrays. Future additions of private flags will not
+need to be duplicated which may lead to buggy code. Also rename
+"i40e_priv_flags_strings_gl" to "i40e_gl_priv_flags_strings" for
+clarity, as it reads more naturally.
 
-Signed-off-by: Piotr Raczynski <piotr.raczynski@intel.com>
-Change-ID: Idb29214b172ea5c70cbd45a99e6745c0215af7e4
+Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+Change-ID: I68caef3c9954eb7da342d7f9d20f2873186f2758
 ---
- drivers/net/ethernet/intel/i40e/i40e_common.c | 8 ++++++++
- drivers/net/ethernet/intel/i40e/i40e_type.h   | 4 ++++
- drivers/net/ethernet/intel/i40evf/i40e_type.h | 4 ++++
- 3 files changed, 16 insertions(+)
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 42 +++++++++++---------------
+ 1 file changed, 17 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_common.c b/drivers/net/ethernet/intel/i40e/i40e_common.c
-index fb72fb3..e75cc1c 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_common.c
-+++ b/drivers/net/ethernet/intel/i40e/i40e_common.c
-@@ -3181,6 +3181,14 @@ static void i40e_parse_discover_capabilities(struct i40e_hw *hw, void *buff,
- 			break;
- 		case I40E_AQ_CAP_ID_MNG_MODE:
- 			p->management_mode = number;
-+			if (major_rev > 1) {
-+				p->mng_protocols_over_mctp = logical_id;
-+				i40e_debug(hw, I40E_DEBUG_INIT,
-+					   "HW Capability: Protocols over MCTP = %d\n",
-+					   p->mng_protocols_over_mctp);
-+			} else {
-+				p->mng_protocols_over_mctp = 0;
-+			}
- 			break;
- 		case I40E_AQ_CAP_ID_NPAR_ACTIVE:
- 			p->npar_enable = number;
-diff --git a/drivers/net/ethernet/intel/i40e/i40e_type.h b/drivers/net/ethernet/intel/i40e/i40e_type.h
-index bffe1e3..20ad389 100644
---- a/drivers/net/ethernet/intel/i40e/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40e/i40e_type.h
-@@ -263,6 +263,10 @@ struct i40e_hw_capabilities {
- #define I40E_NVM_IMAGE_TYPE_UDP_CLOUD	0x3
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index c8d5680..661ed11 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -228,26 +228,22 @@ static const char i40e_gstrings_test[][ETH_GSTRING_LEN] = {
  
- 	u32  management_mode;
-+	u32  mng_protocols_over_mctp;
-+#define I40E_MNG_PROTOCOL_PLDM		0x2
-+#define I40E_MNG_PROTOCOL_OEM_COMMANDS	0x4
-+#define I40E_MNG_PROTOCOL_NCSI		0x8
- 	u32  npar_enable;
- 	u32  os2bmc;
- 	u32  valid_functions;
-diff --git a/drivers/net/ethernet/intel/i40evf/i40e_type.h b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-index dfa2446..f3b6716 100644
---- a/drivers/net/ethernet/intel/i40evf/i40e_type.h
-+++ b/drivers/net/ethernet/intel/i40evf/i40e_type.h
-@@ -237,6 +237,10 @@ struct i40e_hw_capabilities {
- #define I40E_NVM_IMAGE_TYPE_UDP_CLOUD	0x3
+ #define I40E_TEST_LEN (sizeof(i40e_gstrings_test) / ETH_GSTRING_LEN)
  
- 	u32  management_mode;
-+	u32  mng_protocols_over_mctp;
-+#define I40E_MNG_PROTOCOL_PLDM		0x2
-+#define I40E_MNG_PROTOCOL_OEM_COMMANDS	0x4
-+#define I40E_MNG_PROTOCOL_NCSI		0x8
- 	u32  npar_enable;
- 	u32  os2bmc;
- 	u32  valid_functions;
+-static const char i40e_priv_flags_strings_gl[][ETH_GSTRING_LEN] = {
++static const char i40e_priv_flags_strings[][ETH_GSTRING_LEN] = {
+ 	"MFP",
+ 	"LinkPolling",
+ 	"flow-director-atr",
+ 	"veb-stats",
+ 	"hw-atr-eviction",
+-	"vf-true-promisc-support",
+ };
+ 
+-#define I40E_PRIV_FLAGS_GL_STR_LEN ARRAY_SIZE(i40e_priv_flags_strings_gl)
++#define I40E_PRIV_FLAGS_STR_LEN ARRAY_SIZE(i40e_priv_flags_strings)
+ 
+-static const char i40e_priv_flags_strings[][ETH_GSTRING_LEN] = {
+-	"NPAR",
+-	"LinkPolling",
+-	"flow-director-atr",
+-	"veb-stats",
+-	"hw-atr-eviction",
++/* Private flags with a global effect, restricted to PF 0 */
++static const char i40e_gl_priv_flags_strings[][ETH_GSTRING_LEN] = {
++	"vf-true-promisc-support",
+ };
+ 
+-#define I40E_PRIV_FLAGS_STR_LEN ARRAY_SIZE(i40e_priv_flags_strings)
++#define I40E_GL_PRIV_FLAGS_STR_LEN ARRAY_SIZE(i40e_gl_priv_flags_strings)
+ 
+ /**
+  * i40e_partition_setting_complaint - generic complaint for MFP restriction
+@@ -1198,10 +1194,9 @@ static void i40e_get_drvinfo(struct net_device *netdev,
+ 		sizeof(drvinfo->fw_version));
+ 	strlcpy(drvinfo->bus_info, pci_name(pf->pdev),
+ 		sizeof(drvinfo->bus_info));
++	drvinfo->n_priv_flags = I40E_PRIV_FLAGS_STR_LEN;
+ 	if (pf->hw.pf_id == 0)
+-		drvinfo->n_priv_flags = I40E_PRIV_FLAGS_GL_STR_LEN;
+-	else
+-		drvinfo->n_priv_flags = I40E_PRIV_FLAGS_STR_LEN;
++		drvinfo->n_priv_flags += I40E_GL_PRIV_FLAGS_STR_LEN;
+ }
+ 
+ static void i40e_get_ringparam(struct net_device *netdev,
+@@ -1429,10 +1424,8 @@ static int i40e_get_sset_count(struct net_device *netdev, int sset)
+ 			return I40E_VSI_STATS_LEN(netdev);
+ 		}
+ 	case ETH_SS_PRIV_FLAGS:
+-		if (pf->hw.pf_id == 0)
+-			return I40E_PRIV_FLAGS_GL_STR_LEN;
+-		else
+-			return I40E_PRIV_FLAGS_STR_LEN;
++		return I40E_PRIV_FLAGS_STR_LEN +
++			(pf->hw.pf_id == 0 ? I40E_GL_PRIV_FLAGS_STR_LEN : 0);
+ 	default:
+ 		return -EOPNOTSUPP;
+ 	}
+@@ -1630,15 +1623,14 @@ static void i40e_get_strings(struct net_device *netdev, u32 stringset,
+ 		/* BUG_ON(p - data != I40E_STATS_LEN * ETH_GSTRING_LEN); */
+ 		break;
+ 	case ETH_SS_PRIV_FLAGS:
++		for (i = 0; i < I40E_PRIV_FLAGS_STR_LEN; i++) {
++			memcpy(data, i40e_priv_flags_strings[i],
++			       ETH_GSTRING_LEN);
++			data += ETH_GSTRING_LEN;
++		}
+ 		if (pf->hw.pf_id == 0) {
+-			for (i = 0; i < I40E_PRIV_FLAGS_GL_STR_LEN; i++) {
+-				memcpy(data, i40e_priv_flags_strings_gl[i],
+-				       ETH_GSTRING_LEN);
+-				data += ETH_GSTRING_LEN;
+-			}
+-		} else {
+-			for (i = 0; i < I40E_PRIV_FLAGS_STR_LEN; i++) {
+-				memcpy(data, i40e_priv_flags_strings[i],
++			for (i = 0; i < I40E_GL_PRIV_FLAGS_STR_LEN; i++) {
++				memcpy(data, i40e_gl_priv_flags_strings[i],
+ 				       ETH_GSTRING_LEN);
+ 				data += ETH_GSTRING_LEN;
+ 			}
 -- 
 2.4.11
 
