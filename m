@@ -1,10 +1,10 @@
 From: Alexander Duyck <alexander.h.duyck@intel.com>
-Date: Tue, 25 Oct 2016 11:37:09 -0400
-Subject: [Intel-wired-lan] [net-next PATCH 04/27] arch/arc: Add option to
- skip sync on DMA mapping
+Date: Tue, 25 Oct 2016 11:37:57 -0400
+Subject: [Intel-wired-lan] [net-next PATCH 13/27] arch/microblaze: Add
+ option to skip DMA sync as a part of map and unmap
 In-Reply-To: <20161025153220.4815.61239.stgit@ahduyck-blue-test.jf.intel.com>
 References: <20161025153220.4815.61239.stgit@ahduyck-blue-test.jf.intel.com>
-Message-ID: <20161025153709.4815.82720.stgit@ahduyck-blue-test.jf.intel.com>
+Message-ID: <20161025153757.4815.8960.stgit@ahduyck-blue-test.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,29 +13,47 @@ List-ID: <intel-wired-lan.osuosl.org>
 
 This change allows us to pass DMA_ATTR_SKIP_CPU_SYNC which allows us to
 avoid invoking cache line invalidation if the driver will just handle it
-later via a sync_for_cpu or sync_for_device call.
+via a sync_for_cpu or sync_for_device call.
 
-Cc: Vineet Gupta <vgupta@synopsys.com>
-Cc: linux-snps-arc at lists.infradead.org
+Cc: Michal Simek <monstr@monstr.eu>
 Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
 ---
- arch/arc/mm/dma.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ arch/microblaze/kernel/dma.c |   10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arc/mm/dma.c b/arch/arc/mm/dma.c
-index 20afc65..6303c34 100644
---- a/arch/arc/mm/dma.c
-+++ b/arch/arc/mm/dma.c
-@@ -133,7 +133,10 @@ static dma_addr_t arc_dma_map_page(struct device *dev, struct page *page,
- 		unsigned long attrs)
+diff --git a/arch/microblaze/kernel/dma.c b/arch/microblaze/kernel/dma.c
+index ec04dc1..818daf2 100644
+--- a/arch/microblaze/kernel/dma.c
++++ b/arch/microblaze/kernel/dma.c
+@@ -61,6 +61,10 @@ static int dma_direct_map_sg(struct device *dev, struct scatterlist *sgl,
+ 	/* FIXME this part of code is untested */
+ 	for_each_sg(sgl, sg, nents, i) {
+ 		sg->dma_address = sg_phys(sg);
++
++		if (attrs & DMA_ATTR_SKIP_CPU_SYNC)
++			continue;
++
+ 		__dma_sync(page_to_phys(sg_page(sg)) + sg->offset,
+ 							sg->length, direction);
+ 	}
+@@ -80,7 +84,8 @@ static inline dma_addr_t dma_direct_map_page(struct device *dev,
+ 					     enum dma_data_direction direction,
+ 					     unsigned long attrs)
  {
- 	phys_addr_t paddr = page_to_phys(page) + offset;
--	_dma_cache_sync(paddr, size, dir);
-+
+-	__dma_sync(page_to_phys(page) + offset, size, direction);
 +	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
-+		_dma_cache_sync(paddr, size, dir);
-+
- 	return plat_phys_to_dma(dev, paddr);
++		__dma_sync(page_to_phys(page) + offset, size, direction);
+ 	return page_to_phys(page) + offset;
  }
  
+@@ -95,7 +100,8 @@ static inline void dma_direct_unmap_page(struct device *dev,
+  * phys_to_virt is here because in __dma_sync_page is __virt_to_phys and
+  * dma_address is physical address
+  */
+-	__dma_sync(dma_address, size, direction);
++	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
++		__dma_sync(dma_address, size, direction);
+ }
+ 
+ static inline void
 
