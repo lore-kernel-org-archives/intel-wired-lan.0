@@ -1,48 +1,43 @@
-From: Vineet Gupta <Vineet.Gupta1@synopsys.com>
-Date: Tue, 25 Oct 2016 15:00:55 -0700
-Subject: [Intel-wired-lan] [net-next PATCH 04/27] arch/arc: Add option
- to skip sync on DMA mapping
-In-Reply-To: <20161025153709.4815.82720.stgit@ahduyck-blue-test.jf.intel.com>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Date: Wed, 26 Oct 2016 10:21:05 -0700
+Subject: [Intel-wired-lan] [net-next PATCH 25/27] igb: Update driver to
+ make use of DMA_ATTR_SKIP_CPU_SYNC
+In-Reply-To: <20161025153900.4815.4927.stgit@ahduyck-blue-test.jf.intel.com>
 References: <20161025153220.4815.61239.stgit@ahduyck-blue-test.jf.intel.com>
- <20161025153709.4815.82720.stgit@ahduyck-blue-test.jf.intel.com>
-Message-ID: <64b46a7b-7ad4-5d09-5a0b-22dfaed8855e@synopsys.com>
+ <20161025153900.4815.4927.stgit@ahduyck-blue-test.jf.intel.com>
+Message-ID: <1477502465.2431.0.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On 10/25/2016 02:38 PM, Alexander Duyck wrote:
-> This change allows us to pass DMA_ATTR_SKIP_CPU_SYNC which allows us to
-> avoid invoking cache line invalidation if the driver will just handle it
-> later via a sync_for_cpu or sync_for_device call.
->
-> Cc: Vineet Gupta <vgupta@synopsys.com>
-> Cc: linux-snps-arc at lists.infradead.org
+On Tue, 2016-10-25 at 11:39 -0400, Alexander Duyck wrote:
+> The ARM architecture provides a mechanism for deferring cache line
+> invalidation in the case of map/unmap.? This patch makes use of this
+> mechanism to avoid unnecessary synchronization.
+> 
+> A secondary effect of this change is that the portion of the page that
+> has
+> been synchronized for use by the CPU should be writable and could be
+> passed
+> up the stack (at least on ARM).
+> 
+> The last bit that occurred to me is that on architectures where the
+> sync_for_cpu call invalidates cache lines we were prefetching and then
+> invalidating the first 128 bytes of the packet.? To avoid that I have
+> moved
+> the sync up to before we perform the prefetch and allocate the skbuff so
+> that we can actually make use of it.
+> 
 > Signed-off-by: Alexander Duyck <alexander.h.duyck@intel.com>
-> ---
->  arch/arc/mm/dma.c |    5 ++++-
+>?
 
-Acked-by: Vineet Gupta <vgupta@synopsys.com>
-
->  1 file changed, 4 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/arc/mm/dma.c b/arch/arc/mm/dma.c
-> index 20afc65..6303c34 100644
-> --- a/arch/arc/mm/dma.c
-> +++ b/arch/arc/mm/dma.c
-> @@ -133,7 +133,10 @@ static dma_addr_t arc_dma_map_page(struct device *dev, struct page *page,
->  		unsigned long attrs)
->  {
->  	phys_addr_t paddr = page_to_phys(page) + offset;
-> -	_dma_cache_sync(paddr, size, dir);
-> +
-> +	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
-> +		_dma_cache_sync(paddr, size, dir);
-> +
->  	return plat_phys_to_dma(dev, paddr);
->  }
->  
->
->
-
+Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 819 bytes
+Desc: This is a digitally signed message part
+URL: <http://lists.osuosl.org/pipermail/intel-wired-lan/attachments/20161026/9dad1ece/attachment.asc>
