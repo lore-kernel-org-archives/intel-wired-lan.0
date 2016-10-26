@@ -1,52 +1,131 @@
-From: Jesper Dangaard Brouer <brouer@redhat.com>
-Date: Wed, 26 Oct 2016 17:45:42 +0200
-Subject: [Intel-wired-lan] [net-next PATCH 00/27] Add support for DMA
- writable pages being writable by the network stack
-In-Reply-To: <20161025153220.4815.61239.stgit@ahduyck-blue-test.jf.intel.com>
-References: <20161025153220.4815.61239.stgit@ahduyck-blue-test.jf.intel.com>
-Message-ID: <20161026174542.334798db@redhat.com>
+From: Tushar Dave <tushar.n.dave@oracle.com>
+Date: Wed, 26 Oct 2016 10:49:27 -0700
+Subject: [Intel-wired-lan] [PATCH] i40e: fix panic on SPARC while changing
+	num of desc
+Message-ID: <1477504167-10910-1-git-send-email-tushar.n.dave@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: intel-wired-lan@osuosl.org
 List-ID: <intel-wired-lan.osuosl.org>
 
-On Tue, 25 Oct 2016 11:36:48 -0400
-Alexander Duyck <alexander.h.duyck@intel.com> wrote:
+On SPARC, writel() should not be used to write directly to memory
+address but only to memory mapped I/O address otherwise it causes
+data access exception.
 
-> The first 22 patches in the set add support for the DMA attribute
-> DMA_ATTR_SKIP_CPU_SYNC on multiple platforms/architectures.  This is needed
-> so that we can flag the calls to dma_map/unmap_page so that we do not
-> invalidate cache lines that do not currently belong to the device.  Instead
-> we have to take care of this in the driver via a call to
-> sync_single_range_for_cpu prior to freeing the Rx page.
-> 
-> Patch 23 adds support for dma_map_page_attrs and dma_unmap_page_attrs so
-> that we can unmap and map a page using the DMA_ATTR_SKIP_CPU_SYNC
-> attribute.
-> 
-> Patch 24 adds support for freeing a page that has multiple references being
-> held by a single caller.  This way we can free page fragments that were
-> allocated by a given driver.
-> 
-> The last 3 patches use these updates in the igb driver to allow for us to
-> reimpelement the use of build_skb.
-> 
-> My hope is to get the series accepted into the net-next tree as I have a
-> number of other Intel drivers I could then begin updating once these
-> patches are accepted.
-> 
-> v1: Split out changes DMA_ERROR_CODE fix for swiotlb-xen
->     Minor fixes based on issues found by kernel build bot
->     Few minor changes for issues found on code review
->     Added Acked-by for patches that were acked and not changed
+Commit 147e81ec75689 ("i40e: Test memory before ethtool alloc
+succeeds") introduced a code that uses memory address to fake the HW
+tail address and attempt to write to that address using writel()
+causes kernel panic on SPARC. The issue is reproduced while changing
+number of descriptors using ethtool.
 
-I really appreciate you are doing this work Alex, thanks! And I do
-think it fits into my page pool plans. Thanks!
+This change resolves the panic by using HW read-only memory mapped
+I/O register to fake HW tail address instead memory address.
 
+e.g.
+> ethtool -G eth2 tx 2048 rx 2048
+i40e 0000:03:00.2 eth2: Changing Tx descriptor count from 512 to 2048.
+i40e 0000:03:00.2 eth2: Changing Rx descriptor count from 512 to 2048
+sun4v_data_access_exception: ADDR[fff8001f9734a000] CTX[0000]
+TYPE[0004], going.
+              \|/ ____ \|/
+              "@'/ .. \`@"
+              /_| \__/ |_\
+                 \__U_/
+ethtool(3273): Dax [#1]
+CPU: 9 PID: 3273 Comm: ethtool Tainted: G            E
+4.8.0-linux-net_temp+ #7
+task: fff8001f96d7a660 task.stack: fff8001f97348000
+TSTATE: 0000009911001601 TPC: 00000000103189e4 TNPC: 00000000103189e8 Y:
+00000000    Tainted: G            E
+TPC: <i40e_alloc_rx_buffers+0x124/0x260 [i40e]>
+g0: fff8001f4eb64000 g1: 00000000000007ff g2: fff8001f9734b92c g3:
+00203e0000000000
+g4: fff8001f96d7a660 g5: fff8001fa6704000 g6: fff8001f97348000 g7:
+0000000000000001
+o0: 0006000046706928 o1: 00000000db3e2000 o2: fff8001f00000000 o3:
+0000000000002000
+o4: 0000000000002000 o5: 0000000000000001 sp: fff8001f9734afc1 ret_pc:
+0000000010318a64
+RPC: <i40e_alloc_rx_buffers+0x1a4/0x260 [i40e]>
+l0: fff8001f4e8bffe0 l1: fff8001f4e8cffe0 l2: 00000000000007ff l3:
+00000000ff000000
+l4: 0000000000ff0000 l5: 000000000000ff00 l6: 0000000000cda6a8 l7:
+0000000000e822f0
+i0: fff8001f96380000 i1: 0000000000000000 i2: 00203edb00000000 i3:
+0006000046706928
+i4: 0000000002086320 i5: 0000000000e82370 i6: fff8001f9734b071 i7:
+00000000103062d4
+I7: <i40e_set_ringparam+0x3b4/0x540 [i40e]>
+Call Trace:
+ [00000000103062d4] i40e_set_ringparam+0x3b4/0x540 [i40e]
+ [000000000094e2f8] dev_ethtool+0x898/0xbe0
+ [0000000000965570] dev_ioctl+0x250/0x300
+ [0000000000923800] sock_do_ioctl+0x40/0x60
+ [000000000092427c] sock_ioctl+0x7c/0x280
+ [00000000005ef040] vfs_ioctl+0x20/0x60
+ [00000000005ef5d4] do_vfs_ioctl+0x194/0x4c0
+ [00000000005ef974] SyS_ioctl+0x74/0xa0
+ [0000000000406214] linux_sparc_syscall+0x34/0x44
+Disabling lock debugging due to kernel taint
+Caller[00000000103062d4]: i40e_set_ringparam+0x3b4/0x540 [i40e]
+Caller[000000000094e2f8]: dev_ethtool+0x898/0xbe0
+Caller[0000000000965570]: dev_ioctl+0x250/0x300
+Caller[0000000000923800]: sock_do_ioctl+0x40/0x60
+Caller[000000000092427c]: sock_ioctl+0x7c/0x280
+Caller[00000000005ef040]: vfs_ioctl+0x20/0x60
+Caller[00000000005ef5d4]: do_vfs_ioctl+0x194/0x4c0
+Caller[00000000005ef974]: SyS_ioctl+0x74/0xa0
+Caller[0000000000406214]: linux_sparc_syscall+0x34/0x44
+Caller[0000000000107154]: 0x107154
+Instruction DUMP: e43620c8
+ e436204a  c45e2038
+<c2a083a0> 82102000
+ 81cfe008  90086001
+ 82102000  81cfe008
+
+Kernel panic - not syncing: Fatal exception
+
+Signed-off-by: Tushar Dave <tushar.n.dave@oracle.com>
+---
+ drivers/net/ethernet/intel/i40e/i40e_ethtool.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+index 92bc884..23f4eee 100644
+--- a/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
++++ b/drivers/net/ethernet/intel/i40e/i40e_ethtool.c
+@@ -1219,6 +1219,7 @@ static int i40e_set_ringparam(struct net_device *netdev,
+ {
+ 	struct i40e_ring *tx_rings = NULL, *rx_rings = NULL;
+ 	struct i40e_netdev_priv *np = netdev_priv(netdev);
++	struct i40e_hw *hw = &np->vsi->back->hw;
+ 	struct i40e_vsi *vsi = np->vsi;
+ 	struct i40e_pf *pf = vsi->back;
+ 	u32 new_rx_count, new_tx_count;
+@@ -1311,10 +1312,6 @@ static int i40e_set_ringparam(struct net_device *netdev,
+ 		}
+ 
+ 		for (i = 0; i < vsi->num_queue_pairs; i++) {
+-			/* this is to allow wr32 to have something to write to
+-			 * during early allocation of Rx buffers
+-			 */
+-			u32 __iomem faketail = 0;
+ 			struct i40e_ring *ring;
+ 			u16 unused;
+ 
+@@ -1326,7 +1323,10 @@ static int i40e_set_ringparam(struct net_device *netdev,
+ 			 */
+ 			rx_rings[i].desc = NULL;
+ 			rx_rings[i].rx_bi = NULL;
+-			rx_rings[i].tail = (u8 __iomem *)&faketail;
++			/* this is to allow wr32 to have something to write to
++			 * during early allocation of Rx buffers
++			 */
++			rx_rings[i].tail = hw->hw_addr + I40E_PRTGEN_STATUS;
+ 			err = i40e_setup_rx_descriptors(&rx_rings[i]);
+ 			if (err)
+ 				goto rx_unwind;
 -- 
-Best regards,
-  Jesper Dangaard Brouer
-  MSc.CS, Principal Kernel Engineer at Red Hat
-  Author of http://www.iptv-analyzer.org
-  LinkedIn: http://www.linkedin.com/in/brouer
+1.9.1
+
