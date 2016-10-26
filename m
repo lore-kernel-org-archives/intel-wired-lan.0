@@ -1,11 +1,11 @@
 From: Bowers, AndrewX <andrewx.bowers@intel.com>
-Date: Wed, 26 Oct 2016 22:21:35 +0000
-Subject: [Intel-wired-lan] [next PATCH S51-V2 6/8] i40e: Add
-	Clause22	implementation
-In-Reply-To: <1477436933-13679-7-git-send-email-bimmy.pujari@intel.com>
+Date: Wed, 26 Oct 2016 22:23:18 +0000
+Subject: [Intel-wired-lan] [next PATCH S51-V2 7/8] i40e: fix trivial
+ typo in	naming of i40e_sync_filters_subtask
+In-Reply-To: <1477436933-13679-8-git-send-email-bimmy.pujari@intel.com>
 References: <1477436933-13679-1-git-send-email-bimmy.pujari@intel.com>
- <1477436933-13679-7-git-send-email-bimmy.pujari@intel.com>
-Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA292C2@ORSMSX104.amr.corp.intel.com>
+ <1477436933-13679-8-git-send-email-bimmy.pujari@intel.com>
+Message-ID: <26D9FDECA4FBDD4AADA65D8E2FC68A4A0FA292D3@ORSMSX104.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -17,26 +17,19 @@ List-ID: <intel-wired-lan.osuosl.org>
 > Behalf Of Bimmy Pujari
 > Sent: Tuesday, October 25, 2016 4:09 PM
 > To: intel-wired-lan at lists.osuosl.org
-> Cc: Jared, Matthew A <matthew.a.jared@intel.com>; Kosiarz, Michal
-> <michal.kosiarz@intel.com>
-> Subject: [Intel-wired-lan] [next PATCH S51-V2 6/8] i40e: Add Clause22
-> implementation
+> Subject: [Intel-wired-lan] [next PATCH S51-V2 7/8] i40e: fix trivial typo in
+> naming of i40e_sync_filters_subtask
 > 
-> From: Michal Kosiarz <michal.kosiarz@intel.com>
+> From: Jacob Keller <jacob.e.keller@intel.com>
 > 
-> Some external PHYs require Clause22 method for accessing registers.
-> This patch also adds some defines to support blink led on devices using
-> 10CBaseT PHY.
+> A comment incorrectly referred to i40e_vsi_sync_filters_subtask which does
+> not actually exist. Reference the correct function instead.
 > 
-> Signed-off-by: Michal Kosiarz <michal.kosiarz@intel.com>
-> Signed-off-by: Matt Jared <matthew.a.jared@intel.com>
-> Change-ID: I868a4326911900f6c89e7e522fda4968b0825f14
+> Signed-off-by: Jacob Keller <jacob.e.keller@intel.com>
+> Change-ID: I6bd805c605741ffb6fe34377259bb0d597edfafd
 > ---
->  drivers/net/ethernet/intel/i40e/i40e_common.c    | 180
-> +++++++++++++++++------
->  drivers/net/ethernet/intel/i40e/i40e_prototype.h |  12 +-
->  drivers/net/ethernet/intel/i40e/i40e_type.h      |  19 ++-
->  3 files changed, 159 insertions(+), 52 deletions(-)
+>  drivers/net/ethernet/intel/i40e/i40e_main.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
 Tested-by: Andrew Bowers <andrewx.bowers@intel.com>
 
